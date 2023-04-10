@@ -181,8 +181,13 @@ class GajiSupirDetail extends MyModel
                 case "AND":
                     $tempQuery->where(function ($tempQuery) {
                         foreach ($this->params['filters']['rules'] as $index => $filters) {
-
-                            $tempQuery = $tempQuery->where($this->tempTable . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
+                            if ($filters['field'] == 'gajisupir' || $filters['field'] == 'gajikenek' || $filters['field'] == 'komisisupir' || $filters['field'] == 'tolsupir' || $filters['field'] == 'upahritasi' || $filters['field'] == 'biayaextra') {
+                                $query = $tempQuery->whereRaw("format(".$this->tempTable . "." . $filters['field'].", '#,#0.00') LIKE '%$filters[data]%'");
+                            } else if ($filters['field'] == 'tglsp') {
+                                $query = $tempQuery->whereRaw("format(".$this->tempTable . "." . $filters['field'].", 'dd-MM-yyyy') LIKE '%$filters[data]%'");
+                            } else{
+                                $tempQuery = $tempQuery->where($this->tempTable . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
+                            }
                         }
                     });
 
@@ -191,8 +196,13 @@ class GajiSupirDetail extends MyModel
 
                     $tempQuery->where(function ($tempQuery) {
                         foreach ($this->params['filters']['rules'] as $index => $filters) {
-
-                            $tempQuery = $tempQuery->orWhere($this->tempTable . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
+                            if ($filters['field'] == 'gajisupir' || $filters['field'] == 'gajikenek' || $filters['field'] == 'komisisupir' || $filters['field'] == 'tolsupir' || $filters['field'] == 'upahritasi' || $filters['field'] == 'biayaextra') {
+                                $query = $tempQuery->orWhereRaw("format(".$this->tempTable . "." . $filters['field'].", '#,#0.00') LIKE '%$filters[data]%'");
+                            } else if ($filters['field'] == 'tglsp') {
+                                $query = $tempQuery->orWhereRaw("format(".$this->tempTable . "." . $filters['field'].", 'dd-MM-yyyy') LIKE '%$filters[data]%'");
+                            } else{
+                                $tempQuery = $tempQuery->orWhere($this->tempTable . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
+                            }
                         }
                     });
 

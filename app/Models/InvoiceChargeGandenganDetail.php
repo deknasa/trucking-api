@@ -53,10 +53,7 @@ class InvoiceChargeGandenganDetail extends MyModel
             $query->where($this->table . '.invoicechargegandengan_id', '=', request()->invoicechargegandengan_id);
         } else {
             $query->select(
-                'invoicechargegandengandetail.id',
-                'header.nobukti as nobukti_header',
-                'header.tglbukti',
-                'header.nominal as nominal_header',
+                'invoicechargegandengandetail.nobukti',
                 'invoicechargegandengandetail.jobtrucking',
                 'invoicechargegandengandetail.tgltrip',
                 'invoicechargegandengandetail.jumlahhari',
@@ -65,7 +62,6 @@ class InvoiceChargeGandenganDetail extends MyModel
                 'trado.kodetrado as nopolisi',
                 'invoicechargegandengandetail.keterangan',
             )
-            ->leftJoin(DB::raw("invoicechargegandenganheader as header with (readuncommitted)"), 'header.id', 'invoicechargegandengandetail.invoicechargegandengan_id')
             ->leftJoin(DB::raw("trado with (readuncommitted)"), 'trado.id', 'invoicechargegandengandetail.trado_id');
 
 
@@ -98,8 +94,15 @@ class InvoiceChargeGandenganDetail extends MyModel
                 case "AND":
                     $query->where(function ($query) {
                         foreach ($this->params['filters']['rules'] as $index => $filters) {
-
-                            $query = $query->where($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
+                            if ($filters['field'] == 'nopolisi') {
+                                $query = $query->where('trado.kodetrado', 'LIKE', "%$filters[data]%");
+                            } else if ($filters['field'] == 'nominal') {
+                                $query = $query->whereRaw("format($this->table.nominal, '#,#0.00') LIKE '%$filters[data]%'");
+                            } else if ($filters['field'] == 'tgltrip') {
+                                $query = $query->whereRaw("format(".$this->table . "." . $filters['field'].", 'dd-MM-yyyy') LIKE '%$filters[data]%'");
+                            } else {
+                                $query = $query->where($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
+                            }
                         }
                     });
 
@@ -107,8 +110,15 @@ class InvoiceChargeGandenganDetail extends MyModel
                 case "OR":
                     $query->where(function ($query) {
                         foreach ($this->params['filters']['rules'] as $index => $filters) {
-
-                            $query = $query->orWhere($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
+                            if ($filters['field'] == 'nopolisi') {
+                                $query = $query->orWhere('trado.kodetrado', 'LIKE', "%$filters[data]%");
+                            } else if ($filters['field'] == 'nominal') {
+                                $query = $query->orWhereRaw("format($this->table.nominal, '#,#0.00') LIKE '%$filters[data]%'");
+                            } else if ($filters['field'] == 'tgltrip') {
+                                $query = $query->orWhereRaw("format(".$this->table . "." . $filters['field'].", 'dd-MM-yyyy') LIKE '%$filters[data]%'");
+                            } else{
+                                $query = $query->orWhere($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
+                            }
                         }
                     });
                     break;

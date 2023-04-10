@@ -47,13 +47,13 @@ class PencairanGiroPengeluaranHeader extends MyModel
             ->whereRaw("YEAR(pengeluaranheader.tglbukti) = $year")
             ->where('pengeluaranheader.alatbayar_id', $alatBayar->id);
 
-        $this->totalRows = $query->count();
-        $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;
-
         $this->sort($query, 'pengeluaranheader');
         $this->filter($query, 'pengeluaranheader');
         $this->paginate($query);
 
+
+        $this->totalRows = $query->count();
+        $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;
         $data = $query->get();
 
         return $data;
@@ -143,13 +143,18 @@ class PencairanGiroPengeluaranHeader extends MyModel
                         } else if ($filters['field'] == 'bank_id') {
                             $query = $query->where('bank.namabank', 'LIKE', "%$filters[data]%");
                         } else if ($filters['field'] == 'alatbayar_id') {
-                            $query = $query->where('alatbayar.keterangan', 'LIKE', "%$filters[data]%");
+                            $query = $query->where('alatbayar.namaalatbayar', 'LIKE', "%$filters[data]%");
                         } else if ($filters['field'] == 'nobukti') {
                             $query = $query->where('pgp.nobukti', 'LIKE', "%$filters[data]%");
                         } else if ($filters['field'] == 'tglbukti') {
-                            $query = $query->where('pgp.tglbukti', 'LIKE', "%$filters[data]%");
+                            $query->whereRaw("format(pgp.tglbukti, 'dd-MM-yyyy') LIKE '%$filters[data]%'");
                         } else if ($filters['field'] == 'pengeluaran_nobukti') {
                             $query = $query->where('pengeluaranheader.nobukti', 'LIKE', "%$filters[data]%");
+                        } else if ($filters['field'] == 'nominal') {
+                            $query = $query->whereRaw("format((SELECT (SUM(pengeluarandetail.nominal)) FROM pengeluarandetail 
+                            WHERE pengeluarandetail.nobukti= pengeluaranheader.nobukti), '#,#0.00') LIKE '%$filters[data]%'");
+                        } else if ($filters['field'] == 'created_at' || $filters['field'] == 'updated_at') {
+                            $query = $query->whereRaw("format(" . $table . "." . $filters['field'] . ", 'dd-MM-yyyy HH:mm:ss') LIKE '%$filters[data]%'");
                         } else {
                             $query = $query->where($table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
                         }
@@ -157,23 +162,31 @@ class PencairanGiroPengeluaranHeader extends MyModel
 
                     break;
                 case "OR":
-                    foreach ($this->params['filters']['rules'] as $index => $filters) {
-                        if ($filters['field'] == 'statusapproval') {
-                            $query = $query->orWhere('parameter.text', '=', "$filters[data]");
-                        } else if ($filters['field'] == 'bank_id') {
-                            $query = $query->orWhere('bank.namabank', 'LIKE', "%$filters[data]%");
-                        } else if ($filters['field'] == 'alatbayar_id') {
-                            $query = $query->orWhere('alatbayar.keterangan', 'LIKE', "%$filters[data]%");
-                        } else if ($filters['field'] == 'nobukti') {
-                            $query = $query->orWhere('pgp.nobukti', 'LIKE', "%$filters[data]%");
-                        } else if ($filters['field'] == 'tglbukti') {
-                            $query = $query->orWhere('pgp.tglbukti', 'LIKE', "%$filters[data]%");
-                        } else if ($filters['field'] == 'pengeluaran_nobukti') {
-                            $query = $query->orWhere('pengeluaranheader.nobukti', 'LIKE', "%$filters[data]%");
-                        } else {
-                            $query = $query->orWhere($table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
+
+                    $query = $query->where(function ($query) {
+                        foreach ($this->params['filters']['rules'] as $index => $filters) {
+                            if ($filters['field'] == 'statusapproval') {
+                                $query = $query->orWhere('parameter.text', '=', "$filters[data]");
+                            } else if ($filters['field'] == 'bank_id') {
+                                $query = $query->orWhere('bank.namabank', 'LIKE', "%$filters[data]%");
+                            } else if ($filters['field'] == 'alatbayar_id') {
+                                $query = $query->orWhere('alatbayar.namaalatbayar', 'LIKE', "%$filters[data]%");
+                            } else if ($filters['field'] == 'nobukti') {
+                                $query = $query->orWhere('pgp.nobukti', 'LIKE', "%$filters[data]%");
+                            } else if ($filters['field'] == 'tglbukti') {
+                                $query->orWhereRaw("format(pgp.tglbukti, 'dd-MM-yyyy') LIKE '%$filters[data]%'");
+                            } else if ($filters['field'] == 'pengeluaran_nobukti') {
+                                $query = $query->orWhere('pengeluaranheader.nobukti', 'LIKE', "%$filters[data]%");
+                            } else if ($filters['field'] == 'nominal') {
+                                $query = $query->orWhereRaw("format((SELECT (SUM(pengeluarandetail.nominal)) FROM pengeluarandetail 
+                            WHERE pengeluarandetail.nobukti= pengeluaranheader.nobukti), '#,#0.00') LIKE '%$filters[data]%'");
+                            } else if ($filters['field'] == 'created_at' || $filters['field'] == 'updated_at') {
+                                $query = $query->orWhereRaw("format(" . $this->anotherTable . "." . $filters['field'] . ", 'dd-MM-yyyy HH:mm:ss') LIKE '%$filters[data]%'");
+                            } else {
+                                $query = $query->orWhere($this->anotherTable . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
+                            }
                         }
-                    }
+                    });
 
                     break;
                 default:

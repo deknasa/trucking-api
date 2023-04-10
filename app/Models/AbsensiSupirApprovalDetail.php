@@ -109,7 +109,15 @@ class AbsensiSupirApprovalDetail extends MyModel
 
     public function sort($query)
     {
-        return $query->orderBy($this->table . '.' . $this->params['sortIndex'], $this->params['sortOrder']);
+        if($this->params['sortIndex'] == 'trado'){
+            return $query->orderBy('trado.kodetrado', $this->params['sortOrder']);
+        } else if($this->params['sortIndex'] == 'supir'){
+            return $query->orderBy('supirutama.namasupir', $this->params['sortOrder']);
+        } else if($this->params['sortIndex'] == 'supirserap'){
+            return $query->orderBy('supirserap.namasupir', $this->params['sortOrder']);
+        }else{
+            return $query->orderBy($this->table . '.' . $this->params['sortIndex'], $this->params['sortOrder']);
+        }
     }
 
     public function paginate($query)
@@ -126,7 +134,7 @@ class AbsensiSupirApprovalDetail extends MyModel
                     $query->where(function ($query) {
                         foreach ($this->params['filters']['rules'] as $index => $filters) {
                             if ($filters['field'] == 'trado') {
-                                $query = $query->where('trado.keterangan', 'LIKE', "%$filters[data]%");
+                                $query = $query->where('trado.kodetrado', 'LIKE', "%$filters[data]%");
                             } else if ($filters['field'] == 'supir') {
                                 $query = $query->where('supirutama.namasupir', 'LIKE', "%$filters[data]%");
                             } else if ($filters['field'] == 'supirserap') {
@@ -142,7 +150,7 @@ class AbsensiSupirApprovalDetail extends MyModel
                     $query->where(function ($query) {
                         foreach ($this->params['filters']['rules'] as $index => $filters) {
                             if ($filters['field'] == 'trado') {
-                                $query = $query->orWhere('trado.keterangan', 'LIKE', "%$filters[data]%");
+                                $query = $query->orWhere('trado.kodetrado', 'LIKE', "%$filters[data]%");
                             } else if ($filters['field'] == 'supir') {
                                 $query = $query->orWhere('supirutama.namasupir', 'LIKE', "%$filters[data]%");
                             } else if ($filters['field'] == 'supirserap') {

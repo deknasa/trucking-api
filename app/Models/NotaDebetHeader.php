@@ -124,6 +124,8 @@ class NotaDebetHeader extends MyModel
                 "$this->table.tgllunas",
                 "$this->table.userapproval",
                 DB::raw('(case when (year(notadebetheader.tglapproval) <= 2000) then null else notadebetheader.tglapproval end ) as tglapproval'),
+                "$this->table.userbukacetak",
+                DB::raw('(case when (year(notadebetheader.tglbukacetak) <= 2000) then null else notadebetheader.tglbukacetak end ) as tglbukacetak'),
                 "$this->table.statusformat",
                 "$this->table.statuscetak",
                 "$this->table.created_at",
@@ -203,6 +205,10 @@ class NotaDebetHeader extends MyModel
                                 $query = $query->where('parameter.text', '=', $filters['data']);
                             } else if ($filters['field'] == 'statuscetak_memo') {
                                 $query = $query->where('statuscetak.text', '=', $filters['data']);
+                            } else if ($filters['field'] == 'tglbukti' || $filters['field'] == 'tgllunas' || $filters['field'] == 'tglapproval' || $filters['field'] == 'tglbukacetak') {
+                                $query = $query->whereRaw("format(".$this->table . "." . $filters['field'].", 'dd-MM-yyyy') LIKE '%$filters[data]%'");
+                            } else if ($filters['field'] == 'created_at' || $filters['field'] == 'updated_at') {
+                                $query = $query->whereRaw("format(".$this->table . "." . $filters['field'].", 'dd-MM-yyyy HH:mm:ss') LIKE '%$filters[data]%'");
                             } else {
                                 $query = $query->where($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
                             }
@@ -218,6 +224,10 @@ class NotaDebetHeader extends MyModel
                                     $query = $query->orWhere('parameter.text', '=', $filters['data']);
                                 } else if ($filters['field'] == 'statuscetak_memo') {
                                     $query = $query->orWhere('statuscetak.text', '=', $filters['data']);
+                                } else if ($filters['field'] == 'tglbukti' || $filters['field'] == 'tgllunas' || $filters['field'] == 'tglapproval' || $filters['field'] == 'tglbukacetak') {
+                                    $query = $query->orWhereRaw("format(".$this->table . "." . $filters['field'].", 'dd-MM-yyyy') LIKE '%$filters[data]%'");
+                                } else if ($filters['field'] == 'created_at' || $filters['field'] == 'updated_at') {
+                                    $query = $query->orWhereRaw("format(".$this->table . "." . $filters['field'].", 'dd-MM-yyyy HH:mm:ss') LIKE '%$filters[data]%'");
                                 } else {
                                     $query = $query->orWhere($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
                                 }

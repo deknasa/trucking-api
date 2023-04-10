@@ -216,10 +216,12 @@ class JurnalUmumDetail extends MyModel
                             if ($filters['field'] == 'keterangancoa') {
                                 $query = $query->where('coa.keterangancoa', 'LIKE', "%$filters[data]%");
                             } else if ($filters['field'] == 'nominaldebet') {
-                                $query = $query->where(DB::raw("(case when jurnalumumdetail.nominal<=0 then 0 else jurnalumumdetail.nominal end)"), 'LIKE', "%$filters[data]%");
+                                $query = $query->whereRaw("format((case when jurnalumumdetail.nominal<=0 then 0 else jurnalumumdetail.nominal end), '#,#0.00') LIKE '%$filters[data]%'");
                             } else if ($filters['field'] == 'nominalkredit') {
-                                $query = $query->where(DB::raw("(case when jurnalumumdetail.nominal>=0 then 0 else abs(jurnalumumdetail.nominal) end)"), 'LIKE', "%$filters[data]%");
-                            }else {
+                                $query = $query->whereRaw("format((case when jurnalumumdetail.nominal>=0 then 0 else abs(jurnalumumdetail.nominal) end), '#,#0.00') LIKE '%$filters[data]%'");
+                            } else if ($filters['field'] == 'tglbukti') {
+                                $query = $query->whereRaw("format(".$this->table . "." . $filters['field'].", 'dd-MM-yyyy') LIKE '%$filters[data]%'");
+                            } else {
                                 $query = $query->where($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
                             }
                         }
@@ -232,10 +234,12 @@ class JurnalUmumDetail extends MyModel
                             if ($filters['field'] == 'keterangancoa') {
                                 $query = $query->orWhere('coa.keterangancoa', 'LIKE', "%$filters[data]%");
                             } else if ($filters['field'] == 'nominaldebet') {
-                                $query = $query->orWhere(DB::raw("(case when jurnalumumdetail.nominal<=0 then 0 else jurnalumumdetail.nominal end)"), 'LIKE', "%$filters[data]%");
+                                $query = $query->orWhereRaw("format((case when jurnalumumdetail.nominal<=0 then 0 else jurnalumumdetail.nominal end), '#,#0.00') LIKE '%$filters[data]%'");
                             } else if ($filters['field'] == 'nominalkredit') {
-                                $query = $query->orWhere(DB::raw("(case when jurnalumumdetail.nominal>=0 then 0 else abs(jurnalumumdetail.nominal) end)"), 'LIKE', "%$filters[data]%");
-                            }else {
+                                $query = $query->orWhereRaw("format((case when jurnalumumdetail.nominal>=0 then 0 else abs(jurnalumumdetail.nominal) end), '#,#0.00') LIKE '%$filters[data]%'");
+                            } else if ($filters['field'] == 'tglbukti') {
+                                $query = $query->orWhereRaw("format(".$this->table . "." . $filters['field'].", 'dd-MM-yyyy') LIKE '%$filters[data]%'");
+                            } else {
                                 $query = $query->orWhere($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
                             }
                         }

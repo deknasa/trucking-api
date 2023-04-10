@@ -77,6 +77,8 @@ class PencairanGiroPengeluaranDetail extends MyModel
                                 $query = $query->where('coadebet.keterangancoa', 'LIKE', "%$filters[data]%");
                             } else if ($filters['field'] == 'coakredit') {
                                 $query = $query->where('coakredit.keterangancoa', 'LIKE', "%$filters[data]%");
+                            } else if ($filters['field'] == 'nominal') {
+                                $query = $query->whereRaw("format($this->anotherTable.nominal, '#,#0.00') LIKE '%$filters[data]%'");
                             } else {
                                 $query = $query->where($this->anotherTable . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
                             }
@@ -91,6 +93,8 @@ class PencairanGiroPengeluaranDetail extends MyModel
                                 $query = $query->orWhere('coadebet.keterangancoa', 'LIKE', "%$filters[data]%");
                             } else if ($filters['field'] == 'coakredit') {
                                 $query = $query->orWhere('coakredit.keterangancoa', 'LIKE', "%$filters[data]%");
+                            } else if ($filters['field'] == 'nominal') {
+                                $query = $query->orWhereRaw("format($this->anotherTable.nominal, '#,#0.00') LIKE '%$filters[data]%'");
                             } else {
                                 $query = $query->orWhere($this->anotherTable . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
                             }

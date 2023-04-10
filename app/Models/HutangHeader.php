@@ -325,13 +325,15 @@ class HutangHeader extends MyModel
                         } else if ($filters['field'] == 'coa') {
                             $query->where('akunpusat.keterangancoa', 'LIKE', "%$filters[data]%");
                         } else if ($filters['field'] == 'total') {
-                            $query->Where(DB::raw("hutangheader.total"), 'LIKE', "%$filters[data]%");
+                            $query = $query->whereRaw("format(hutangheader.total, '#,#0.00') LIKE '%$filters[data]%'");
                         } else if ($filters['field'] == 'tglbukti') {
-                            $query->where('hutangheader.tglbukti', '=', date('Y-m-d', strtotime($filters['data'])));
-                        } else if ($filters['field'] == 'nominalbayar') {
-                            $query->where('c.nominal', 'LIKE', "%$filters[data]%");
+                            $query = $query->whereRaw("format(".$this->table . "." . $filters['field'].", 'dd-MM-yyyy') LIKE '%$filters[data]%'");
+                        } else if ($filters['field'] == 'nominalbayar') {                         
+                            $query = $query->whereRaw("format(c.nominal, '#,#0.00') LIKE '%$filters[data]%'");
                         } else if ($filters['field'] == 'sisahutang') {
-                            $query->where(DB::raw("(hutangheader.total - isnull(c.nominal,0))"), 'LIKE', "%$filters[data]%");
+                            $query = $query->whereRaw("format((hutangheader.total - isnull(c.nominal,0)), '#,#0.00') LIKE '%$filters[data]%'");
+                        } else if ($filters['field'] == 'created_at' || $filters['field'] == 'updated_at') {
+                            $query = $query->whereRaw("format(".$this->table . "." . $filters['field'].", 'dd-MM-yyyy HH:mm:ss') LIKE '%$filters[data]%'");
                         } else {
                             $query->where($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
                         }
@@ -348,13 +350,15 @@ class HutangHeader extends MyModel
                             } else if ($filters['field'] == 'coa') {
                                 $query->orWhere('akunpusat.keterangancoa', 'LIKE', "%$filters[data]%");
                             } else if ($filters['field'] == 'tglbukti') {
-                                $query->orWhere('hutangheader.tglbukti', '=', date('Y-m-d', strtotime($filters['data'])));
+                                $query = $query->orWhereRaw("format(".$this->table . "." . $filters['field'].", 'dd-MM-yyyy') LIKE '%$filters[data]%'");
                             } else if ($filters['field'] == 'total') {
-                                $query->orWhere(DB::raw("hutangheader.total"), 'LIKE', "%$filters[data]%");
+                                $query = $query->orWhereRaw("format(hutangheader.total, '#,#0.00') LIKE '%$filters[data]%'");
                             } else if ($filters['field'] == 'nominalbayar') {
-                                $query->orWhere('c.nominal', 'LIKE', "%$filters[data]%");
+                                $query = $query->orWhereRaw("format(c.nominal, '#,#0.00') LIKE '%$filters[data]%'");
                             } else if ($filters['field'] == 'sisahutang') {
-                                $query->orWhere(DB::raw("hutangheader.total - isnull(c.nominal,0)"), 'LIKE', "%$filters[data]%");
+                                $query = $query->orWhereRaw("format((hutangheader.total - isnull(c.nominal,0)), '#,#0.00') LIKE '%$filters[data]%'");
+                            } else if ($filters['field'] == 'created_at' || $filters['field'] == 'updated_at') {
+                                $query = $query->orWhereRaw("format(".$this->table . "." . $filters['field'].", 'dd-MM-yyyy HH:mm:ss') LIKE '%$filters[data]%'");
                             } else {
                                 $query->orWhere($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
                             }

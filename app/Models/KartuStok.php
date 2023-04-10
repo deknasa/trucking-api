@@ -568,13 +568,21 @@ class KartuStok extends MyModel
                 case "AND":
                     foreach ($this->params['filters']['rules'] as $index => $filters) {
                         if ($filters['field'] == 'namabarang') {
-                            $query = $query->where('stok.namastok', 'LIKE', "%$filters[data]%");
+                            $query = $query->where('a.namabarang', 'LIKE', "%$filters[data]%");
                         } else if ($filters['field'] == 'kodebarang') {
-                            $query = $query->where('stok.namaterpusat', 'LIKE', "%$filters[data]%");
+                            $query = $query->where('a.kodebarang', 'LIKE', "%$filters[data]%");
                         } else if ($filters['field'] == 'kategori_id') {
-                            $query = $query->where('kategori.keterangan', 'LIKE', "%$filters[data]%");
+                            $query = $query->where('b.kodekategori', 'LIKE', "%$filters[data]%");
+                        }else if ($filters['field'] == 'qtymasuk' || $filters['field'] == 'nilaimasuk' || $filters['field'] == 'qtykeluar' || $filters['field'] == 'nilaikeluar') {
+                            $query = $query->whereRaw("format(a." . $filters['field'].", '#,#0.00') LIKE '%$filters[data]%'");
+                        } else if ($filters['field'] == 'qtysaldo') {
+                            $query = $query->whereRaw("format((isnull(a.qtysaldo,0)+a.qtymasuk)-a.qtykeluar, '#,#0.00') LIKE '%$filters[data]%'");
+                        } else if ($filters['field'] == 'nilaisaldo') {
+                            $query = $query->whereRaw("format((isnull(a.nilaisaldo,0)+a.nilaimasuk)-a.nilaikeluar, '#,#0.00') LIKE '%$filters[data]%'");
+                        } else if ($filters['field'] == 'tglbukti') {
+                            $query = $query->whereRaw("format(a.tglbukti, 'dd-MM-yyyy') LIKE '%$filters[data]%'");
                         } else {
-                            $query = $query->where($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
+                            $query = $query->where('a.' . $filters['field'], 'LIKE', "%$filters[data]%");
                         }
                     }
 
@@ -584,13 +592,21 @@ class KartuStok extends MyModel
                         foreach ($this->params['filters']['rules'] as $index => $filters) {
 
                             if ($filters['field'] == 'namabarang') {
-                                $query = $query->orWhere('stok.namastok', 'LIKE', "%$filters[data]%");
+                                $query = $query->orWhere('a.namabarang', 'LIKE', "%$filters[data]%");
                             } else if ($filters['field'] == 'kodebarang') {
-                                $query = $query->orWhere('stok.namaterpusat', 'LIKE', "%$filters[data]%");
+                                $query = $query->orWhere('a.kodebarang', 'LIKE', "%$filters[data]%");
                             } else if ($filters['field'] == 'kategori') {
-                                $query = $query->orWhere('kategori.keterangan', 'LIKE', "%$filters[data]%");
+                                $query = $query->orWhere('b.kodekategori', 'LIKE', "%$filters[data]%");
+                            } else if ($filters['field'] == 'qtymasuk' || $filters['field'] == 'nilaimasuk' || $filters['field'] == 'qtykeluar' || $filters['field'] == 'nilaikeluar') {
+                                $query = $query->orWhereRaw("format(a." . $filters['field'].", '#,#0.00') LIKE '%$filters[data]%'");
+                            } else if ($filters['field'] == 'qtysaldo') {
+                                $query = $query->orWhereRaw("format((isnull(a.qtysaldo,0)+a.qtymasuk)-a.qtykeluar, '#,#0.00') LIKE '%$filters[data]%'");
+                            } else if ($filters['field'] == 'nilaisaldo') {
+                                $query = $query->orWhereRaw("format((isnull(a.nilaisaldo,0)+a.nilaimasuk)-a.nilaikeluar, '#,#0.00') LIKE '%$filters[data]%'");
+                            } else if ($filters['field'] == 'tglbukti') {
+                                $query = $query->orWhereRaw("format(a.tglbukti, 'dd-MM-yyyy') LIKE '%$filters[data]%'");
                             } else {
-                                $query->orWhere($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
+                                $query->orWhere('a.' . $filters['field'], 'LIKE', "%$filters[data]%");
                             }
                         }
                     });

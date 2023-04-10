@@ -162,11 +162,13 @@ class PiutangDetail extends MyModel
                             } else if ($filters['field'] == 'invoice_pelunasan') {
                                 $query = $query->where('pelunasanpiutangdetail.invoice_nobukti', 'LIKE', "%$filters[data]%");
                             } else if ($filters['field'] == 'nominal_pelunasan') {
-                                $query = $query->where('pelunasanpiutangdetail.nominal', 'LIKE', "%$filters[data]%");
+                                $query = $query->whereRaw("format(pelunasanpiutangdetail.nominal, '#,#0.00') LIKE '%$filters[data]%'");
                             } else if ($filters['field'] == 'potongan') {
-                                $query = $query->where('pelunasanpiutangdetail.potongan', 'LIKE', "%$filters[data]%");
+                                $query = $query->whereRaw("format(pelunasanpiutangdetail.potongan, '#,#0.00') LIKE '%$filters[data]%'");
                             } else if ($filters['field'] == 'nominallebihbayar') {
-                                $query = $query->where('pelunasanpiutangdetail.nominallebihbayar', 'LIKE', "%$filters[data]%");
+                                $query = $query->whereRaw("format(pelunasanpiutangdetail.nominallebihbayar, '#,#0.00') LIKE '%$filters[data]%'");
+                            } else if ($filters['field'] == 'nominal') {
+                                $query = $query->whereRaw("format(piutangdetail.nominal, '#,#0.00') LIKE '%$filters[data]%'");
                             } else {
                                 $query = $query->where($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
                             }
@@ -186,11 +188,13 @@ class PiutangDetail extends MyModel
                             } else if ($filters['field'] == 'invoice_pelunasan') {
                                 $query = $query->orWhere('pelunasanpiutangdetail.invoice_nobukti', 'LIKE', "%$filters[data]%");
                             } else if ($filters['field'] == 'nominal_pelunasan') {
-                                $query = $query->orWhere('pelunasanpiutangdetail.nominal', 'LIKE', "%$filters[data]%");
+                                $query = $query->orWhereRaw("format(pelunasanpiutangdetail.nominal, '#,#0.00') LIKE '%$filters[data]%'");
                             } else if ($filters['field'] == 'potongan') {
-                                $query = $query->orWhere('pelunasanpiutangdetail.potongan', 'LIKE', "%$filters[data]%");
+                                $query = $query->orWhereRaw("format(pelunasanpiutangdetail.potongan, '#,#0.00') LIKE '%$filters[data]%'");
                             } else if ($filters['field'] == 'nominallebihbayar') {
-                                $query = $query->orWhere('pelunasanpiutangdetail.nominallebihbayar', 'LIKE', "%$filters[data]%");
+                                $query = $query->orWhereRaw("format(pelunasanpiutangdetail.nominallebihbayar, '#,#0.00') LIKE '%$filters[data]%'");
+                            } else if ($filters['field'] == 'nominal') {
+                                $query = $query->orWhereRaw("format(piutangdetail.nominal, '#,#0.00') LIKE '%$filters[data]%'");
                             } else {
                                 $query = $query->orWhere($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
                             }

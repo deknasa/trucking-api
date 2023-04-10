@@ -295,7 +295,7 @@ class AbsensiSupirDetail extends MyModel
                     $query->where(function ($query) {
                         foreach ($this->params['filters']['rules'] as $index => $filters) {
                             if ($filters['field'] == 'trado') {
-                                $query = $query->where('trado.keterangan', 'LIKE', "%$filters[data]%");
+                                $query = $query->where('trado.kodetrado', 'LIKE', "%$filters[data]%");
                             } else if ($filters['field'] == 'supir') {
                                 $query = $query->where('supir.namasupir', 'LIKE', "%$filters[data]%");
                             } else if ($filters['field'] == 'status') {
@@ -304,7 +304,11 @@ class AbsensiSupirDetail extends MyModel
                                 $query = $query->where('absentrado.keterangan', 'LIKE', "%$filters[data]%");
                             } else if ($filters['field'] == 'keterangan_detail') {
                                 $query = $query->where("$this->table.keterangan", 'LIKE', "%$filters[data]%");
-                            } else {
+                            } else if ($filters['field'] == 'uangjalan') {
+                                $query = $query->whereRaw("format($this->table.uangjalan, '#,#0.00') LIKE '%$filters[data]%'");
+                            } else if ($filters['field'] == 'jumlahtrip') {
+                                $query = $query->whereRaw("format(c.jumlah, '#,#0.00') LIKE '%$filters[data]%'");
+                            }else {
                                 $query = $query->where($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
                             }
                         }
@@ -315,7 +319,7 @@ class AbsensiSupirDetail extends MyModel
                     $query->where(function ($query) {
                         foreach ($this->params['filters']['rules'] as $index => $filters) {
                             if ($filters['field'] == 'trado') {
-                                $query = $query->orWhere('trado.keterangan', 'LIKE', "%$filters[data]%");
+                                $query = $query->orWhere('trado.kodetrado', 'LIKE', "%$filters[data]%");
                             } else if ($filters['field'] == 'supir') {
                                 $query = $query->orWhere('supir.namasupir', 'LIKE', "%$filters[data]%");
                             } else if ($filters['field'] == 'status') {
@@ -324,7 +328,11 @@ class AbsensiSupirDetail extends MyModel
                                 $query = $query->orWhere('absentrado.keterangan', 'LIKE', "%$filters[data]%");
                             } else if ($filters['field'] == 'keterangan_detail') {
                                 $query = $query->orWhere("$this->table.keterangan", 'LIKE', "%$filters[data]%");
-                            } else {
+                            } else if ($filters['field'] == 'uangjalan') {
+                                $query = $query->orWhereRaw("format($this->table.uangjalan, '#,#0.00') LIKE '%$filters[data]%'");
+                            } else if ($filters['field'] == 'jumlahtrip') {
+                                $query = $query->orWhereRaw("format(c.jumlah, '#,#0.00') LIKE '%$filters[data]%'");
+                            }else {
                                 $query = $query->orWhere($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
                             }
                         }
@@ -344,7 +352,19 @@ class AbsensiSupirDetail extends MyModel
     }
     public function sort($query)
     {
-        return $query->orderBy($this->table . '.' . $this->params['sortIndex'], $this->params['sortOrder']);
+        if($this->params['sortIndex'] == 'trado'){
+            return $query->orderBy('trado.kodetrado', $this->params['sortOrder']);
+        } else if($this->params['sortIndex'] == 'supir'){
+            return $query->orderBy('supir.namasupir', $this->params['sortOrder']);
+        } else if($this->params['sortIndex'] == 'status'){
+            return $query->orderBy('absenstrado.kodeabsen', $this->params['sortOrder']);
+        } else if($this->params['sortIndex'] == 'keterangan_detail'){
+            return $query->orderBy($this->table . '.keterangan', $this->params['sortOrder']);
+        } else if($this->params['sortIndex'] == 'jumlahtrip'){
+            return $query->orderBy('c.jumlah', $this->params['sortOrder']);
+        } else{
+            return $query->orderBy($this->table . '.' . $this->params['sortIndex'], $this->params['sortOrder']);
+        }
     }
 
     public function paginate($query)

@@ -28,8 +28,8 @@ class AbsensiSupirHeader extends MyModel
     {
         return $this->hasMany(AbsensiSupirDetail::class, 'absensi_id');
     }
-    
-    
+
+
     public function cekvalidasiaksi($nobukti)
     {
         $absensiSupir = DB::table('absensisupirapprovalheader')
@@ -49,7 +49,7 @@ class AbsensiSupirHeader extends MyModel
             goto selesai;
         }
 
-        
+
         $data = [
             'kondisi' => false,
             'keterangan' => '',
@@ -63,26 +63,26 @@ class AbsensiSupirHeader extends MyModel
         $this->setRequestParameters();
 
         $query = DB::table($this->table)->from(DB::raw("absensisupirheader with (readuncommitted)"))
-        ->select(
-            'absensisupirheader.id',
-            'absensisupirheader.nobukti',
-            'absensisupirheader.tglbukti',
-            'absensisupirheader.kasgantung_nobukti',
-            DB::raw("(case when absensisupirheader.nominal IS NULL then 0 else absensisupirheader.nominal end) as nominal"),
-            DB::raw('(case when (year(absensisupirheader.tglbukacetak) <= 2000) then null else absensisupirheader.tglbukacetak end ) as tglbukacetak'),
-            'statuscetak.memo as statuscetak',
-            'absensisupirheader.userbukacetak',
-            'absensisupirheader.jumlahcetak',
-            'absensisupirheader.modifiedby',
-            'absensisupirheader.created_at',
-            'absensisupirheader.updated_at'
-        )
-        // request()->tgldari ?? date('Y-m-d',strtotime('today'))
-        ->leftJoin(DB::raw("parameter as statuscetak with (readuncommitted)"), 'absensisupirheader.statuscetak', 'statuscetak.id');
+            ->select(
+                'absensisupirheader.id',
+                'absensisupirheader.nobukti',
+                'absensisupirheader.tglbukti',
+                'absensisupirheader.kasgantung_nobukti',
+                DB::raw("(case when absensisupirheader.nominal IS NULL then 0 else absensisupirheader.nominal end) as nominal"),
+                DB::raw('(case when (year(absensisupirheader.tglbukacetak) <= 2000) then null else absensisupirheader.tglbukacetak end ) as tglbukacetak'),
+                'statuscetak.memo as statuscetak',
+                'absensisupirheader.userbukacetak',
+                'absensisupirheader.jumlahcetak',
+                'absensisupirheader.modifiedby',
+                'absensisupirheader.created_at',
+                'absensisupirheader.updated_at'
+            )
+            // request()->tgldari ?? date('Y-m-d',strtotime('today'))
+            ->leftJoin(DB::raw("parameter as statuscetak with (readuncommitted)"), 'absensisupirheader.statuscetak', 'statuscetak.id');
         if (request()->tgldari) {
-            $query->whereBetween('tglbukti', [date('Y-m-d',strtotime(request()->tgldari )), date('Y-m-d',strtotime(request()->tglsampai ))]);
+            $query->whereBetween('tglbukti', [date('Y-m-d', strtotime(request()->tgldari)), date('Y-m-d', strtotime(request()->tglsampai))]);
         }
-           
+
 
         $this->totalRows = $query->count();
         $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;
@@ -107,7 +107,7 @@ class AbsensiSupirHeader extends MyModel
                 'absensisupirheader.statusapprovaleditabsensi',
                 'absensisupirheader.userbukacetak',
                 'absensisupirheader.jumlahcetak',
-    
+
             )
             ->where('id', $id);
         $data = $query->first();
@@ -117,12 +117,12 @@ class AbsensiSupirHeader extends MyModel
 
     public function selectColumns($query)
     {
-        
+
         return $query->from(
             DB::raw($this->table . " with (readuncommitted)")
         )->select(
             DB::raw(
-            "$this->table.id,
+                "$this->table.id,
             $this->table.nobukti,
             $this->table.tglbukti,
             $this->table.kasgantung_nobukti,
@@ -136,22 +136,22 @@ class AbsensiSupirHeader extends MyModel
             $this->table.updated_at"
             )
         )
-        ->leftJoin(DB::raw("parameter as statuscetak with (readuncommitted)") , 'absensisupirheader.statuscetak', 'statuscetak.id');
+            ->leftJoin(DB::raw("parameter as statuscetak with (readuncommitted)"), 'absensisupirheader.statuscetak', 'statuscetak.id');
     }
 
     public function createTemp(string $modelTable)
     {
 
         $temp = '##temp' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
-        
+
         Schema::create($temp, function ($table) {
             $table->bigInteger('id')->nullable();
             $table->string('nobukti', 1000)->nullable();
             $table->string('tglbukti', 1000)->nullable();
             $table->string('kasgantung_nobukti', 1000)->nullable();
             $table->string('nominal', 1000)->nullable();
-            $table->string('statuscetak',1000)->nullable();
-            $table->string('userbukacetak',50)->nullable();
+            $table->string('statuscetak', 1000)->nullable();
+            $table->string('userbukacetak', 50)->nullable();
             $table->date('tglbukacetak')->nullable();
             $table->integer('jumlahcetak')->Length(11)->nullable();
             $table->string('modifiedby', 1000)->nullable();
@@ -197,7 +197,7 @@ class AbsensiSupirHeader extends MyModel
                 'supirutama.namasupir as supir',
                 'trado.id as trado_id',
                 DB::raw("(case when supirutama.id IS NULL then 0 else supirutama.id end) as supir_id"),
-            
+
                 'absensisupirheader.kasgantung_nobukti',
             )
             ->leftJoin(DB::raw("absensisupirheader with (readuncommitted)"), 'absensisupirdetail.absensi_id', 'absensisupirheader.id')
@@ -221,18 +221,18 @@ class AbsensiSupirHeader extends MyModel
     public function getTradoAbsensi($id)
     {
         $query = DB::table('absentrado')
-        ->select('absentrado.kodeabsen', DB::raw('COUNT(absensisupirdetail.absen_id) as jumlah'))
-        ->leftJoin('absensisupirdetail', function($join) use ($id) {
-            $join->on('absensisupirdetail.absen_id', '=', 'absentrado.id')
-            ->where('absensisupirdetail.absensi_id', '=',$id);
-        })
-        ->groupBy('absentrado.kodeabsen')
-        ->orderBy("absentrado.kodeabsen","asc")
-        ->get();
-        
+            ->select('absentrado.kodeabsen', DB::raw('COUNT(absensisupirdetail.absen_id) as jumlah'))
+            ->leftJoin('absensisupirdetail', function ($join) use ($id) {
+                $join->on('absensisupirdetail.absen_id', '=', 'absentrado.id')
+                    ->where('absensisupirdetail.absensi_id', '=', $id);
+            })
+            ->groupBy('absentrado.kodeabsen')
+            ->orderBy("absentrado.kodeabsen", "asc")
+            ->get();
+
         return $query;
     }
-        
+
     public function sort($query)
     {
         return $query->orderBy($this->table . '.' . $this->params['sortIndex'], $this->params['sortOrder']);
@@ -244,14 +244,34 @@ class AbsensiSupirHeader extends MyModel
             switch ($this->params['filters']['groupOp']) {
                 case "AND":
                     foreach ($this->params['filters']['rules'] as $index => $filters) {
-                        $query = $query->where($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
+                        if ($filters['field'] == 'statuscetak') {
+                            $query = $query->where('statuscetak.text', '=', "$filters[data]");
+                        }else if ($filters['field'] == 'nominal') {
+                            $query = $query->whereRaw("format($this->table.nominal, '#,#0.00') LIKE '%$filters[data]%'");
+                        } else if ($filters['field'] == 'tglbukti' || $filters['field'] == 'tglbukacetak') {
+                            $query = $query->whereRaw("format(".$this->table . "." . $filters['field'].", 'dd-MM-yyyy') LIKE '%$filters[data]%'");
+                        } else if ($filters['field'] == 'created_at' || $filters['field'] == 'updated_at') {
+                            $query = $query->whereRaw("format(".$this->table . "." . $filters['field'].", 'dd-MM-yyyy HH:mm:ss') LIKE '%$filters[data]%'");
+                        }  else {
+                            $query = $query->where($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
+                        }
                     }
 
                     break;
                 case "OR":
-                    $query = $query->where(function($query){
+                    $query = $query->where(function ($query) {
                         foreach ($this->params['filters']['rules'] as $index => $filters) {
-                            $query->orWhere($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
+                            if ($filters['field'] == 'statuscetak') {
+                                $query = $query->orWhere('statuscetak.text', '=', "$filters[data]");
+                            } else if ($filters['field'] == 'nominal') {
+                                $query = $query->orWhereRaw("format($this->table.nominal, '#,#0.00') LIKE '%$filters[data]%'");
+                            } else if ($filters['field'] == 'tglbukti' || $filters['field'] == 'tglbukacetak') {
+                                $query = $query->orWhereRaw("format(".$this->table . "." . $filters['field'].", 'dd-MM-yyyy') LIKE '%$filters[data]%'");
+                            } else if ($filters['field'] == 'created_at' || $filters['field'] == 'updated_at') {
+                                $query = $query->orWhereRaw("format(".$this->table . "." . $filters['field'].", 'dd-MM-yyyy HH:mm:ss') LIKE '%$filters[data]%'");
+                            } else {
+                                $query->orWhere($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
+                            }
                         }
                     });
 
@@ -275,55 +295,56 @@ class AbsensiSupirHeader extends MyModel
         return $query->skip($this->params['offset'])->take($this->params['limit']);
     }
 
-    public function todayValidation($id){
+    public function todayValidation($id)
+    {
         $query = DB::table('absensisupirheader')->from(DB::raw("absensisupirheader with (readuncommitted)"))
-        ->select('tglbukti')
-        ->where('id',$id)
-        ->first();
+            ->select('tglbukti')
+            ->where('id', $id)
+            ->first();
         $tglbukti = strtotime($query->tglbukti);
         $today = strtotime('today');
-        if($tglbukti === $today) return true;
+        if ($tglbukti === $today) return true;
         return false;
     }
-    public function isApproved($nobukti){
+    public function isApproved($nobukti)
+    {
         $query = DB::table('absensisupirapprovalheader')
-        ->from(
-            DB::raw("absensisupirapprovalheader as a with (readuncommitted)")
-        )
-        ->select(
-            'a.absensisupir_nobukti'
-        )
-        ->where('a.absensisupir_nobukti', '=', $nobukti)
-        ->first();
+            ->from(
+                DB::raw("absensisupirapprovalheader as a with (readuncommitted)")
+            )
+            ->select(
+                'a.absensisupir_nobukti'
+            )
+            ->where('a.absensisupir_nobukti', '=', $nobukti)
+            ->first();
         //jika ada return false
         if (empty($absensiSupir)) return true;
         return false;
     }
-    public function isEditAble($id){
+    public function isEditAble($id)
+    {
         $tidakBolehEdit = DB::table('absensisupirheader')->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS EDIT ABSENSI')->where('default', 'YA')->first();
 
         $query = DB::table('absensisupirheader')->from(DB::raw("absensisupirheader with (readuncommitted)"))
-        ->select('statusapprovaleditabsensi as statusedit')
-        ->where('id',$id)
-        ->first();
+            ->select('statusapprovaleditabsensi as statusedit')
+            ->where('id', $id)
+            ->first();
 
-        if($query->statusedit != $tidakBolehEdit->id) return true;
+        if ($query->statusedit != $tidakBolehEdit->id) return true;
         return false;
     }
 
-    public function printValidation($id){
+    public function printValidation($id)
+    {
 
         $statusCetak = DB::table('absensisupirheader')->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUSCETAK')->where('text', 'CETAK')->first();
 
         $query = DB::table('absensisupirheader')->from(DB::raw("absensisupirheader with (readuncommitted)"))
-        ->select('statuscetak')
-        ->where('id',$id)
-        ->first();
+            ->select('statuscetak')
+            ->where('id', $id)
+            ->first();
 
-        if($query->statuscetak != $statusCetak->id) return true;
+        if ($query->statuscetak != $statusCetak->id) return true;
         return false;
     }
-
-
-
 }

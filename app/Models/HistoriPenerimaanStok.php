@@ -273,13 +273,21 @@ class HistoriPenerimaanStok extends MyModel
                 case "AND":
                     foreach ($this->params['filters']['rules'] as $index => $filters) {
                         if ($filters['field'] == 'namabarang') {
-                            $query = $query->where('stok.namastok', 'LIKE', "%$filters[data]%");
+                            $query = $query->where('a.namabarang', 'LIKE', "%$filters[data]%");
                         } else if ($filters['field'] == 'kodebarang') {
-                            $query = $query->where('stok.namaterpusat', 'LIKE', "%$filters[data]%");
+                            $query = $query->where('a.kodebarang', 'LIKE', "%$filters[data]%");
                         } else if ($filters['field'] == 'kategori_id') {
-                            $query = $query->where('kategori.keterangan', 'LIKE', "%$filters[data]%");
+                            $query = $query->where('b.kodekategori', 'LIKE', "%$filters[data]%");
+                        } else if ($filters['field'] == 'nilaimasuk') {
+                            $query = $query->whereRaw("format(a.nilaimasuk, '#,#0.00') LIKE '%$filters[data]%'");
+                        } else if ($filters['field'] == 'qtymasuk') {
+                            $query = $query->whereRaw("format(a.qtymasuk, '#,#0.00') LIKE '%$filters[data]%'");
+                        } else if ($filters['field'] == 'total') {
+                            $query = $query->whereRaw("format((a.qtymasuk * a.nilaimasuk), '#,#0.00') LIKE '%$filters[data]%'");
+                        } else if ($filters['field'] == 'tglbukti') {
+                            $query = $query->whereRaw("format(a.tglbukti, 'dd-MM-yyyy') LIKE '%$filters[data]%'");
                         } else {
-                            $query = $query->where($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
+                            $query = $query->where('a.' . $filters['field'], 'LIKE', "%$filters[data]%");
                         }
                     }
 
@@ -289,13 +297,21 @@ class HistoriPenerimaanStok extends MyModel
                         foreach ($this->params['filters']['rules'] as $index => $filters) {
 
                             if ($filters['field'] == 'namabarang') {
-                                $query = $query->orWhere('stok.namastok', 'LIKE', "%$filters[data]%");
+                                $query = $query->orWhere('a.namabarang', 'LIKE', "%$filters[data]%");
                             } else if ($filters['field'] == 'kodebarang') {
-                                $query = $query->orWhere('stok.namaterpusat', 'LIKE', "%$filters[data]%");
+                                $query = $query->orWhere('a.kodebarang', 'LIKE', "%$filters[data]%");
                             } else if ($filters['field'] == 'kategori') {
-                                $query = $query->orWhere('kategori.keterangan', 'LIKE', "%$filters[data]%");
+                                $query = $query->orWhere('b.kodekategori', 'LIKE', "%$filters[data]%");
+                            } else if ($filters['field'] == 'nilaimasuk') {
+                                $query = $query->orWhereRaw("format(a.nilaimasuk, '#,#0.00') LIKE '%$filters[data]%'");
+                            } else if ($filters['field'] == 'qtymasuk') {
+                                $query = $query->orWhereRaw("format(a.qtymasuk, '#,#0.00') LIKE '%$filters[data]%'");
+                            } else if ($filters['field'] == 'total') {
+                                $query = $query->orWhereRaw("format((a.qtymasuk * a.nilaimasuk), '#,#0.00') LIKE '%$filters[data]%'");
+                            } else if ($filters['field'] == 'tglbukti') {
+                                $query = $query->orWhereRaw("format(a.tglbukti, 'dd-MM-yyyy') LIKE '%$filters[data]%'");
                             } else {
-                                $query->orWhere($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
+                                $query->orWhere('a.' . $filters['field'], 'LIKE', "%$filters[data]%");
                             }
                         }
                     });

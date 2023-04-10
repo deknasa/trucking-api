@@ -932,21 +932,25 @@ class ProsesGajiSupirHeader extends MyModel
                         } else if ($filters['field'] == 'statuscetak') {
                             $query = $query->where('statuscetak.text', '=', "$filters[data]");
                         } else if ($filters['field'] == 'total') {
-                            $query = $query->where($this->tableTotal . '.total', 'LIKE', "%$filters[data]%");
+                            $query = $query->whereRaw("format($this->tableTotal.total, '#,#0.00') LIKE '%$filters[data]%'");
                         } else if ($filters['field'] == 'totalposting') {
-                            $query = $query->where($this->tableTotal . '.totalposting', 'LIKE', "%$filters[data]%");
+                            $query = $query->whereRaw("format($this->tableTotal.totalposting, '#,#0.00') LIKE '%$filters[data]%'");
                         } else if ($filters['field'] == 'uangjalan') {
-                            $query = $query->where($this->tableTotal . '.uangjalan', 'LIKE', "%$filters[data]%");
+                            $query = $query->whereRaw("format($this->tableTotal.uangjalan, '#,#0.00') LIKE '%$filters[data]%'");
                         } else if ($filters['field'] == 'bbm') {
-                            $query = $query->where($this->tableTotal . '.bbm', 'LIKE', "%$filters[data]%");
+                            $query = $query->whereRaw("format($this->tableTotal.bbm, '#,#0.00') LIKE '%$filters[data]%'");
                         } else if ($filters['field'] == 'potonganpinjaman') {
-                            $query = $query->where($this->tableTotal . '.potonganpinjaman', 'LIKE', "%$filters[data]%");
+                            $query = $query->whereRaw("format($this->tableTotal.potonganpinjaman, '#,#0.00') LIKE '%$filters[data]%'");
                         } else if ($filters['field'] == 'potonganpinjamansemua') {
-                            $query = $query->where($this->tableTotal . '.potonganpinjamansemua', 'LIKE', "%$filters[data]%");
+                            $query = $query->whereRaw("format($this->tableTotal.potonganpinjamansemua, '#,#0.00') LIKE '%$filters[data]%'");
                         } else if ($filters['field'] == 'uangmakanharian') {
-                            $query = $query->where($this->tableTotal . '.uangmakanharian', 'LIKE', "%$filters[data]%");
+                            $query = $query->whereRaw("format($this->tableTotal.uangmakanharian, '#,#0.00') LIKE '%$filters[data]%'");
                         } else if ($filters['field'] == 'deposito') {
-                            $query = $query->where($this->tableTotal . '.deposito', 'LIKE', "%$filters[data]%");
+                            $query = $query->whereRaw("format($this->tableTotal.deposito, '#,#0.00') LIKE '%$filters[data]%'");
+                        } else if ($filters['field'] == 'tglbukti' || $filters['field'] == 'tgldari' || $filters['field'] == 'tglsampai' || $filters['field'] == 'tglapproval' || $filters['field'] == 'tglbukacetak') {
+                            $query = $query->whereRaw("format(".$this->table . "." . $filters['field'].", 'dd-MM-yyyy') LIKE '%$filters[data]%'");
+                        } else if ($filters['field'] == 'created_at' || $filters['field'] == 'updated_at') {
+                            $query = $query->whereRaw("format(".$this->table . "." . $filters['field'].", 'dd-MM-yyyy HH:mm:ss') LIKE '%$filters[data]%'");
                         } else {
                             $query = $query->where($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
                         }
@@ -961,21 +965,25 @@ class ProsesGajiSupirHeader extends MyModel
                             } else if ($filters['field'] == 'statuscetak') {
                                 $query = $query->orWhere('statuscetak.text', '=', "$filters[data]");
                             } else if ($filters['field'] == 'total') {
-                                $query = $query->orWhere($this->tableTotal . '.total', 'LIKE', "%$filters[data]%");
+                                $query = $query->orWhereRaw("format($this->tableTotal.total, '#,#0.00') LIKE '%$filters[data]%'");
                             } else if ($filters['field'] == 'totalposting') {
-                                $query = $query->orWhere($this->tableTotal . '.totalposting', 'LIKE', "%$filters[data]%");
+                                $query = $query->orWhereRaw("format($this->tableTotal.totalposting, '#,#0.00') LIKE '%$filters[data]%'");
                             } else if ($filters['field'] == 'uangjalan') {
-                                $query = $query->orWhere($this->tableTotal . '.uangjalan', 'LIKE', "%$filters[data]%");
+                                $query = $query->orWhereRaw("format($this->tableTotal.uangjalan, '#,#0.00') LIKE '%$filters[data]%'");
                             } else if ($filters['field'] == 'bbm') {
-                                $query = $query->orWhere($this->tableTotal . '.bbm', 'LIKE', "%$filters[data]%");
+                                $query = $query->orWhereRaw("format($this->tableTotal.bbm, '#,#0.00') LIKE '%$filters[data]%'");
                             } else if ($filters['field'] == 'potonganpinjaman') {
-                                $query = $query->orWhere($this->tableTotal . '.potonganpinjaman', 'LIKE', "%$filters[data]%");
+                                $query = $query->orWhereRaw("format($this->tableTotal.potonganpinjaman, '#,#0.00') LIKE '%$filters[data]%'");
                             } else if ($filters['field'] == 'potonganpinjamansemua') {
-                                $query = $query->orWhere($this->tableTotal . '.potonganpinjamansemua', 'LIKE', "%$filters[data]%");
+                                $query = $query->orWhereRaw("format($this->tableTotal.potonganpinjamansemua, '#,#0.00') LIKE '%$filters[data]%'");
                             } else if ($filters['field'] == 'uangmakanharian') {
-                                $query = $query->orWhere($this->tableTotal . '.uangmakanharian', 'LIKE', "%$filters[data]%");
+                                $query = $query->orWhereRaw("format($this->tableTotal.uangmakanharian, '#,#0.00') LIKE '%$filters[data]%'");
                             } else if ($filters['field'] == 'deposito') {
-                                $query = $query->orWhere($this->tableTotal . '.deposito', 'LIKE', "%$filters[data]%");
+                                $query = $query->orWhereRaw("format($this->tableTotal.deposito, '#,#0.00') LIKE '%$filters[data]%'");
+                            } else if ($filters['field'] == 'tglbukti' || $filters['field'] == 'tgldari' || $filters['field'] == 'tglsampai' || $filters['field'] == 'tglapproval' || $filters['field'] == 'tglbukacetak') {
+                                $query = $query->orWhereRaw("format(".$this->table . "." . $filters['field'].", 'dd-MM-yyyy') LIKE '%$filters[data]%'");
+                            } else if ($filters['field'] == 'created_at' || $filters['field'] == 'updated_at') {
+                                $query = $query->orWhereRaw("format(".$this->table . "." . $filters['field'].", 'dd-MM-yyyy HH:mm:ss') LIKE '%$filters[data]%'");
                             } else {
                                 $query = $query->orWhere($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
                             }

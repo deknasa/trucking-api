@@ -36,7 +36,6 @@ class InvoiceChargeGandenganHeader extends MyModel
 
             ->whereBetween($this->table . '.tglbukti', [date('Y-m-d', strtotime(request()->tgldari)), date('Y-m-d', strtotime(request()->tglsampai))])
             ->leftJoin(DB::raw("parameter with (readuncommitted)"), 'invoicechargegandenganheader.statusapproval', 'parameter.id')
-            ->leftJoin(DB::raw("parameter as statusformat with (readuncommitted)"), 'invoicechargegandenganheader.statusformat', 'statusformat.id')
             ->leftJoin(DB::raw("parameter as cetak with (readuncommitted)"), 'invoicechargegandenganheader.statuscetak', 'cetak.id')
 
             ->leftJoin(DB::raw("agen with (readuncommitted)"), 'invoicechargegandenganheader.agen_id', 'agen.id');
@@ -68,16 +67,15 @@ class InvoiceChargeGandenganHeader extends MyModel
                 "$this->table.statusformat as statusformat_id",
                 "$this->table.statuscetak as statuscetak_id",
                 "$this->table.userbukacetak",
-                "$this->table.tglbukacetak",
                 "$this->table.jumlahcetak",
                 "$this->table.modifiedby",
                 "agen.namaagen as  agen",
                 "parameter.memo as statusapproval",
                 "cetak.memo as statuscetak",
-                "statusformat.memo as  statusformat",
                 "$this->table.created_at",
                 "$this->table.updated_at",
                 DB::raw('(case when (year(invoicechargegandenganheader.tglapproval) <= 2000) then null else invoicechargegandenganheader.tglapproval end ) as tglapproval'),
+                DB::raw('(case when (year(invoicechargegandenganheader.tglbukacetak) <= 2000) then null else invoicechargegandenganheader.tglbukacetak end ) as tglbukacetak'),
 
 
 
@@ -211,9 +209,19 @@ class InvoiceChargeGandenganHeader extends MyModel
             switch ($this->params['filters']['groupOp']) {
                 case "AND":
                     foreach ($this->params['filters']['rules'] as $index => $filters) {
-                        if ($filters['field'] == 'agen') {
+                        if ($filters['field'] == 'statusapproval') {
+                            $query = $query->where('parameter.text', '=', $filters['data']);
+                        } else if ($filters['field'] == 'statuscetak') {
+                            $query = $query->where('cetak.text', '=', $filters['data']);
+                        } else if ($filters['field'] == 'agen') {
                             $query = $query->orWhere('agen.namaagen', 'LIKE', "%$filters[data]%");
-                        }else{
+                        } else if ($filters['field'] == 'nominal') {
+                            $query = $query->whereRaw("format($this->table.nominal, '#,#0.00') LIKE '%$filters[data]%'");
+                        } else if ($filters['field'] == 'tglbukti' || $filters['field'] == 'tglproses' || $filters['field'] == 'tglbukacetak' || $filters['field'] == 'tglapproval') {
+                            $query = $query->whereRaw("format(".$this->table . "." . $filters['field'].", 'dd-MM-yyyy') LIKE '%$filters[data]%'");
+                        } else if ($filters['field'] == 'created_at' || $filters['field'] == 'updated_at') {
+                            $query = $query->whereRaw("format(".$this->table . "." . $filters['field'].", 'dd-MM-yyyy HH:mm:ss') LIKE '%$filters[data]%'");
+                        } else{
                             $query = $query->where($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
                         }
                     }
@@ -221,9 +229,19 @@ class InvoiceChargeGandenganHeader extends MyModel
                 case "OR":
                     $query = $query->where(function ($query) {
                         foreach ($this->params['filters']['rules'] as $index => $filters) {
-                            if ($filters['field'] == 'agen') {
+                            if ($filters['field'] == 'statusapproval') {
+                                $query = $query->orWhere('parameter.text', '=', $filters['data']);
+                            } else if ($filters['field'] == 'statuscetak') {
+                                $query = $query->orWhere('cetak.text', '=', $filters['data']);
+                            } else if ($filters['field'] == 'agen') {
                                 $query = $query->orWhere('agen.namaagen', 'LIKE', "%$filters[data]%");
-                            }else{
+                            } else if ($filters['field'] == 'nominal') {
+                                $query = $query->orWhereRaw("format($this->table.nominal, '#,#0.00') LIKE '%$filters[data]%'");
+                            } else if ($filters['field'] == 'tglbukti' || $filters['field'] == 'tglproses' || $filters['field'] == 'tglbukacetak' || $filters['field'] == 'tglapproval') {
+                                $query = $query->orWhereRaw("format(".$this->table . "." . $filters['field'].", 'dd-MM-yyyy') LIKE '%$filters[data]%'");
+                            } else if ($filters['field'] == 'created_at' || $filters['field'] == 'updated_at') {
+                                $query = $query->orWhereRaw("format(".$this->table . "." . $filters['field'].", 'dd-MM-yyyy HH:mm:ss') LIKE '%$filters[data]%'");
+                            } else{
                                 $query = $query->orWhere($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
                             }
                         }

@@ -130,10 +130,10 @@ class HutangDetail extends MyModel
             return $query->orderBy($table . '.nobukti', $this->params['sortOrder']);
         } else if ($this->params['sortIndex'] == 'keterangan_bayar') {
             return $query->orderBy($table . '.keterangan', $this->params['sortOrder']);
-        } else if ($this->params['sortIndex'] == 'potongan') {
-            return $query->orderBy($table . '.potongan', $this->params['sortOrder']);
         } else if ($this->params['sortIndex'] == 'nominal_bayar') {
             return $query->orderBy($table . '.nominal', $this->params['sortOrder']);
+        } else if ($this->params['sortIndex'] == 'potongan') {
+            return $query->orderBy($table . '.potongan', $this->params['sortOrder']);
         } else {
             return $query->orderBy($table . '.' . $this->params['sortIndex'], $this->params['sortOrder']);
         }
@@ -153,9 +153,13 @@ class HutangDetail extends MyModel
                             } else if ($filters['field'] == 'nobukti_bayar') {
                                 $query = $query->where('hutangbayardetail.nobukti', 'LIKE', "%$filters[data]%");
                             } else if ($filters['field'] == 'nominal_bayar') {
-                                $query = $query->where('hutangbayardetail.nominal', 'LIKE', "%$filters[data]%");
+                                $query = $query->whereRaw("format(hutangbayardetail.nominal, '#,#0.00') LIKE '%$filters[data]%'");
                             } else if ($filters['field'] == 'potongan') {
-                                $query = $query->where('hutangbayardetail.potongan', 'LIKE', "%$filters[data]%");
+                                $query = $query->whereRaw("format(hutangbayardetail.potongan, '#,#0.00') LIKE '%$filters[data]%'");
+                            } else if ($filters['field'] == 'total') {
+                                $query = $query->whereRaw("format(hutangdetail.total, '#,#0.00') LIKE '%$filters[data]%'");
+                            } else if ($filters['field'] == 'tgljatuhtempo') {
+                                $query = $query->whereRaw("format(hutangdetail." . $filters['field'].", 'dd-MM-yyyy') LIKE '%$filters[data]%'");
                             } else {
                                 $query = $query->where($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
                             }
@@ -173,9 +177,13 @@ class HutangDetail extends MyModel
                             } else if ($filters['field'] == 'nobukti_bayar') {
                                 $query = $query->orWhere('hutangbayardetail.nobukti', 'LIKE', "%$filters[data]%");
                             } else if ($filters['field'] == 'nominal_bayar') {
-                                $query = $query->orWhere('hutangbayardetail.nominal', 'LIKE', "%$filters[data]%");
+                                $query = $query->orWhereRaw("format(hutangbayardetail.nominal, '#,#0.00') LIKE '%$filters[data]%'");
                             } else if ($filters['field'] == 'potongan') {
-                                $query = $query->orWhere('hutangbayardetail.potongan', 'LIKE', "%$filters[data]%");
+                                $query = $query->orWhereRaw("format(hutangbayardetail.potongan, '#,#0.00') LIKE '%$filters[data]%'");
+                            } else if ($filters['field'] == 'total') {
+                                $query = $query->orWhereRaw("format(hutangdetail.total, '#,#0.00') LIKE '%$filters[data]%'");
+                            } else if ($filters['field'] == 'tgljatuhtempo') {
+                                $query = $query->orWhereRaw("format(hutangdetail." . $filters['field'].", 'dd-MM-yyyy') LIKE '%$filters[data]%'");
                             } else {
                                 $query = $query->orWhere($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
                             }

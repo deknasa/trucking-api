@@ -286,14 +286,20 @@ class PiutangHeader extends MyModel
                             $query = $query->where('parameter.text', '=', "$filters[data]");
                         } else if ($filters['field'] == 'agen_id') {
                             $query = $query->where('agen.namaagen', 'LIKE', "%$filters[data]%");
+                        } else if ($filters['field'] == 'nominal') {
+                            $query = $query->whereRaw("format(piutangheader.nominal, '#,#0.00') LIKE '%$filters[data]%'");
                         } else if ($filters['field'] == 'nominalpelunasan') {
-                            $query = $query->where('c.nominal', 'LIKE', "%$filters[data]%");
+                            $query = $query->whereRaw("format(c.nominal, '#,#0.00') LIKE '%$filters[data]%'");
                         } else if ($filters['field'] == 'sisapiutang') {
-                            $query->where(DB::raw("(piutangheader.nominal - isnull(c.nominal,0))"), 'LIKE', "%$filters[data]%");
+                            $query = $query->whereRaw("format((piutangheader.nominal - isnull(c.nominal,0)), '#,#0.00') LIKE '%$filters[data]%'");
                         } else if ($filters['field'] == 'coadebet') {
                             $query = $query->where('debet.keterangancoa', 'LIKE', "%$filters[data]%");
                         } else if ($filters['field'] == 'coakredit') {
                             $query = $query->where('kredit.keterangancoa', 'LIKE', "%$filters[data]%");
+                        } else if ($filters['field'] == 'tglbukti') {
+                            $query = $query->whereRaw("format(".$this->table . "." . $filters['field'].", 'dd-MM-yyyy') LIKE '%$filters[data]%'");
+                        } else if ($filters['field'] == 'created_at' || $filters['field'] == 'updated_at') {
+                            $query = $query->whereRaw("format(".$this->table . "." . $filters['field'].", 'dd-MM-yyyy HH:mm:ss') LIKE '%$filters[data]%'");
                         } else {
                             $query = $query->where($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
                         }
@@ -307,14 +313,20 @@ class PiutangHeader extends MyModel
                                 $query = $query->orWhere('parameter.text', '=', "$filters[data]");
                             } else if ($filters['field'] == 'agen_id') {
                                 $query = $query->orWhere('agen.namaagen', 'LIKE', "%$filters[data]%");
+                            } else if ($filters['field'] == 'nominal') {
+                                $query = $query->orWhereRaw("format(piutangheader.nominal, '#,#0.00') LIKE '%$filters[data]%'");
                             } else if ($filters['field'] == 'nominalpelunasan') {
-                                $query = $query->orWhere('c.nominal', 'LIKE', "%$filters[data]%");
+                                $query = $query->orWhereRaw("format(c.nominal, '#,#0.00') LIKE '%$filters[data]%'");
                             } else if ($filters['field'] == 'sisapiutang') {
-                                $query->where(DB::raw("(piutangheader.nominal - isnull(c.nominal,0))"), 'LIKE', "%$filters[data]%");
+                                $query = $query->orWhereRaw("format((piutangheader.nominal - isnull(c.nominal,0)), '#,#0.00') LIKE '%$filters[data]%'");
                             } else if ($filters['field'] == 'coadebet') {
                                 $query = $query->orWhere('debet.keterangancoa', 'LIKE', "%$filters[data]%");
                             } else if ($filters['field'] == 'coakredit') {
                                 $query = $query->orWhere('kredit.keterangancoa', 'LIKE', "%$filters[data]%");
+                            } else if ($filters['field'] == 'tglbukti') {
+                                $query = $query->orWhereRaw("format(".$this->table . "." . $filters['field'].", 'dd-MM-yyyy') LIKE '%$filters[data]%'");
+                            } else if ($filters['field'] == 'created_at' || $filters['field'] == 'updated_at') {
+                                $query = $query->orWhereRaw("format(".$this->table . "." . $filters['field'].", 'dd-MM-yyyy HH:mm:ss') LIKE '%$filters[data]%'");
                             } else {
                                 $query = $query->orWhere($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
                             }

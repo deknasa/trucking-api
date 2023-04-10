@@ -33,7 +33,6 @@ class NotaKreditHeader extends MyModel
 
             ->whereBetween($this->table . '.tglbukti', [date('Y-m-d', strtotime(request()->tgldari)), date('Y-m-d', strtotime(request()->tglsampai))])
             ->leftJoin('parameter as statuscetak', 'notakreditheader.statuscetak', 'statuscetak.id')
-            ->leftJoin('pelunasanpiutangheader as pelunasanpiutang', 'notakreditheader.pelunasanpiutang_nobukti', 'pelunasanpiutang.nobukti')
             ->leftJoin('parameter', 'notakreditheader.statusapproval', 'parameter.id');
 
 
@@ -118,6 +117,8 @@ class NotaKreditHeader extends MyModel
             "$this->table.statusapproval",
             "$this->table.tgllunas",
             "$this->table.userapproval",
+            "$this->table.userbukacetak",
+            DB::raw('(case when (year(notakreditheader.tglbukacetak) <= 2000) then null else notakreditheader.tglbukacetak end ) as tglbukacetak'),
             "$this->table.statusformat",
             "$this->table.modifiedby",
             "$this->table.statuscetak",
@@ -195,6 +196,10 @@ class NotaKreditHeader extends MyModel
                                 $query = $query->where('parameter.text', '=', $filters['data']);
                             } else if ($filters['field'] == 'statuscetak_memo') {
                                 $query = $query->where('statuscetak.text', '=', $filters['data']);
+                            } else if ($filters['field'] == 'tglbukti' || $filters['field'] == 'tgllunas' || $filters['field'] == 'tglapproval' || $filters['field'] == 'tglbukacetak') {
+                                $query = $query->whereRaw("format(".$this->table . "." . $filters['field'].", 'dd-MM-yyyy') LIKE '%$filters[data]%'");
+                            } else if ($filters['field'] == 'created_at' || $filters['field'] == 'updated_at') {
+                                $query = $query->whereRaw("format(".$this->table . "." . $filters['field'].", 'dd-MM-yyyy HH:mm:ss') LIKE '%$filters[data]%'");
                             } else {
                                 $query = $query->where($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
                             }
@@ -210,6 +215,10 @@ class NotaKreditHeader extends MyModel
                                     $query = $query->orWhere('parameter.text', '=', $filters['data']);
                                 } else if ($filters['field'] == 'statuscetak_memo') {
                                     $query = $query->orWhere('statuscetak.text', '=', $filters['data']);
+                                } else if ($filters['field'] == 'tglbukti' || $filters['field'] == 'tgllunas' || $filters['field'] == 'tglapproval' || $filters['field'] == 'tglbukacetak') {
+                                    $query = $query->orWhereRaw("format(".$this->table . "." . $filters['field'].", 'dd-MM-yyyy') LIKE '%$filters[data]%'");
+                                } else if ($filters['field'] == 'created_at' || $filters['field'] == 'updated_at') {
+                                    $query = $query->orWhereRaw("format(".$this->table . "." . $filters['field'].", 'dd-MM-yyyy HH:mm:ss') LIKE '%$filters[data]%'");
                                 } else {
                                     $query = $query->orWhere($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
                                 }

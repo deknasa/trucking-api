@@ -172,9 +172,13 @@ class JurnalUmumHeader extends MyModel
                             if ($filters['field'] == 'statusapproval') {
                                 $query = $query->where('statusapproval.text', '=', $filters['data']);
                             } else if ($filters['field'] == 'nominaldebet') {
-                                $query = $query->where('c.nominaldebet', 'LIKE', "%$filters[data]%");
+                                $query = $query->whereRaw("format(c.nominaldebet, '#,#0.00') LIKE '%$filters[data]%'");
                             } else if ($filters['field'] == 'nominalkredit') {
-                                $query = $query->where('c.nominalkredit', 'LIKE', "%$filters[data]%");
+                                $query = $query->whereRaw("format(c.nominalkredit, '#,#0.00') LIKE '%$filters[data]%'");
+                            } else if ($filters['field'] == 'tglbukti' || $filters['field'] == 'tglapproval') {
+                                $query = $query->whereRaw("format(".$this->table . "." . $filters['field'].", 'dd-MM-yyyy') LIKE '%$filters[data]%'");
+                            } else if ($filters['field'] == 'created_at' || $filters['field'] == 'updated_at') {
+                                $query = $query->whereRaw("format(".$this->table . "." . $filters['field'].", 'dd-MM-yyyy HH:mm:ss') LIKE '%$filters[data]%'");
                             } else {
                                 $query = $query->where($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
                             }
@@ -189,9 +193,13 @@ class JurnalUmumHeader extends MyModel
                                 if ($filters['field'] == 'statusapproval') {
                                     $query = $query->orWhere('statusapproval.text', '=', $filters['data']);
                                 } else if ($filters['field'] == 'nominaldebet') {
-                                    $query = $query->orWhere('c.nominaldebet', 'LIKE', "%$filters[data]%");
+                                    $query = $query->orWhereRaw("format(c.nominaldebet, '#,#0.00') LIKE '%$filters[data]%'");
                                 } else if ($filters['field'] == 'nominalkredit') {
-                                    $query = $query->orWhere('c.nominalkredit', 'LIKE', "%$filters[data]%");
+                                    $query = $query->orWhereRaw("format(c.nominalkredit, '#,#0.00') LIKE '%$filters[data]%'");
+                                } else if ($filters['field'] == 'tglbukti' || $filters['field'] == 'tglapproval') {
+                                    $query = $query->orWhereRaw("format(".$this->table . "." . $filters['field'].", 'dd-MM-yyyy') LIKE '%$filters[data]%'");
+                                } else if ($filters['field'] == 'created_at' || $filters['field'] == 'updated_at') {
+                                    $query = $query->orWhereRaw("format(".$this->table . "." . $filters['field'].", 'dd-MM-yyyy HH:mm:ss') LIKE '%$filters[data]%'");
                                 } else {
                                     $query = $query->orWhere($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
                                 }
