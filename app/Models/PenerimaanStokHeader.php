@@ -41,6 +41,7 @@ class PenerimaanStokHeader extends MyModel
         ->leftJoin('gudang as ke','penerimaanstokheader.gudangke_id','ke.id')
         ->leftJoin('parameter as statuscetak','penerimaanstokheader.statuscetak','statuscetak.id')
         ->leftJoin('penerimaanstok','penerimaanstokheader.penerimaanstok_id','penerimaanstok.id')
+        ->leftJoin('akunpusat','penerimaanstokheader.coa','akunpusat.coa')
         ->leftJoin('trado','penerimaanstokheader.trado_id','trado.id')
         ->leftJoin('trado as tradodari ','penerimaanstokheader.tradodari_id','tradodari.id')
         ->leftJoin('trado as tradoke ','penerimaanstokheader.tradoke_id','tradoke.id')
@@ -112,9 +113,11 @@ class PenerimaanStokHeader extends MyModel
             "dari.gudang as gudangdari",
             "ke.gudang as gudangke",
             "$this->table.statusformat",
-            "$this->table.coa",
+            "akunpusat.keterangancoa as coa",
             "$this->table.keterangan",
             "$this->table.modifiedby",
+            "$this->table.created_at",
+            "$this->table.updated_at",
             "penerimaanstokheader.gudang_id",
             "penerimaanstokheader.gudangdari_id",
             "penerimaanstokheader.gudangke_id",
@@ -250,6 +253,8 @@ class PenerimaanStokHeader extends MyModel
             return $query->orderBy('dari.gudang', $this->params['sortOrder']);    
         } else if($this->params['sortIndex'] == 'gudangke'){
             return $query->orderBy('ke.gudang', $this->params['sortOrder']);    
+        } else if($this->params['sortIndex'] == 'coa'){
+            return $query->orderBy('akunpusat.keterangancoa', $this->params['sortOrder']);    
         }
         return $query->orderBy($this->table . '.' . $this->params['sortIndex'], $this->params['sortOrder']);
     }
@@ -260,29 +265,26 @@ class PenerimaanStokHeader extends MyModel
             switch ($this->params['filters']['groupOp']) {
                 case "AND":
                     foreach ($this->params['filters']['rules'] as $index => $filters) {
-                        switch ($filters['field']) {
-                            case 'penerimaanstok':
-                                $query = $query->where('penerimaanstok.kodepenerimaan', 'LIKE', "%$filters[data]%");
-                                break;
-                            case 'gudang':
-                                $query = $query->where('gudangs.gudang', 'LIKE', "%$filters[data]%");
-                                break;
-                            case 'trado':
-                                $query = $query->where('trado.keterangan', 'LIKE', "%$filters[data]%");
-                                break;
-                            case 'supplier':
-                                $query = $query->where('supplier.namasupplier', 'LIKE', "%$filters[data]%");
-                                break;
-                            case 'gudangdari':
-                                $query = $query->where('dari.gudang', 'LIKE', "%$filters[data]%");
-                                break;
-                            case 'gudangke':
-                                $query = $query->where('ke.gudang', 'LIKE', "%$filters[data]%");
-                                break;
-                          
-                            default:
-                                $query = $query->where($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
-                                break;
+                        if ($filters['field'] == 'penerimaanstok') {
+                            $query = $query->where('penerimaanstok.kodepenerimaan', 'LIKE', "%$filters[data]%");
+                        } else if ($filters['field'] == 'gudangs') {
+                            $query = $query->where('gudangs.gudang', 'LIKE', "%$filters[data]%");
+                        } else if ($filters['field'] == 'trado') {
+                            $query = $query->where('trado.kodetrado', 'LIKE', "%$filters[data]%");
+                        } else if ($filters['field'] == 'supplier') {
+                            $query = $query->where('supplier.namasupplier', 'LIKE', "%$filters[data]%");
+                        } else if ($filters['field'] == 'gudangdari') {
+                            $query = $query->where('dari.gudang', 'LIKE', "%$filters[data]%");
+                        } else if ($filters['field'] == 'gudangke') {
+                            $query = $query->where('ke.gudang', 'LIKE', "%$filters[data]%");
+                        } else if ($filters['field'] == 'coa') {
+                            $query = $query->where('akunpusat.keterangancoa', 'LIKE', "%$filters[data]%");
+                        } else if ($filters['field'] == 'tglbukti') {
+                            $query = $query->whereRaw("format(".$this->table . "." . $filters['field'].", 'dd-MM-yyyy') LIKE '%$filters[data]%'");
+                        } else if ($filters['field'] == 'created_at' || $filters['field'] == 'updated_at') {
+                            $query = $query->whereRaw("format(".$this->table . "." . $filters['field'].", 'dd-MM-yyyy HH:mm:ss') LIKE '%$filters[data]%'");
+                        } else {
+                            $query = $query->where($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
                         }
                     }
 
@@ -290,33 +292,30 @@ class PenerimaanStokHeader extends MyModel
                 case "OR":
                     $query = $query->where(function($query){
                         foreach ($this->params['filters']['rules'] as $index => $filters) {
-                            switch ($filters['field']) {
-                                case 'penerimaanstok':
-                                    $query->orWhere('penerimaanstok.kodepenerimaan', 'LIKE', "%$filters[data]%");
-                                    break;
-                                case 'gudangs':
-                                    $query->orWhere('gudangs.gudang', 'LIKE', "%$filters[data]%");
-                                    break;
-                                case 'trado':
-                                    $query->orWhere('trado.keterangan', 'LIKE', "%$filters[data]%");
-                                    break;
-                                case 'supplier':
-                                    $query->orWhere('supplier.namasupplier', 'LIKE', "%$filters[data]%");
-                                    break;
-                                case 'gudangdari':
-                                    $query->orWhere('dari.gudang', 'LIKE', "%$filters[data]%");
-                                    break;
-                                case 'gudangke':
-                                    $query->orWhere('ke.gudang', 'LIKE', "%$filters[data]%");
-                                    break;
-                                case 'penerimaanstok_id_not_null':
-                                    break;
-                                default:
-                                    $query->orWhere($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
-                                    break;
+                            if ($filters['field'] == 'penerimaanstok') {
+                                $query = $query->orWhere('penerimaanstok.kodepenerimaan', 'LIKE', "%$filters[data]%");
+                            } else if ($filters['field'] == 'gudangs') {
+                                $query = $query->orWhere('gudangs.gudang', 'LIKE', "%$filters[data]%");
+                            } else if ($filters['field'] == 'trado') {
+                                $query = $query->orWhere('trado.kodetrado', 'LIKE', "%$filters[data]%");
+                            } else if ($filters['field'] == 'supplier') {
+                                $query = $query->orWhere('supplier.namasupplier', 'LIKE', "%$filters[data]%");
+                            } else if ($filters['field'] == 'gudangdari') {
+                                $query = $query->orWhere('dari.gudang', 'LIKE', "%$filters[data]%");
+                            } else if ($filters['field'] == 'gudangke') {
+                                $query = $query->orWhere('ke.gudang', 'LIKE', "%$filters[data]%");
+                            } else if ($filters['field'] == 'coa') {
+                                $query = $query->orWhere('akunpusat.keterangancoa', 'LIKE', "%$filters[data]%");
+                            } else if ($filters['field'] == 'tglbukti') {
+                                $query = $query->orWhereRaw("format(".$this->table . "." . $filters['field'].", 'dd-MM-yyyy') LIKE '%$filters[data]%'");
+                            } else if ($filters['field'] == 'created_at' || $filters['field'] == 'updated_at') {
+                                $query = $query->orWhereRaw("format(".$this->table . "." . $filters['field'].", 'dd-MM-yyyy HH:mm:ss') LIKE '%$filters[data]%'");
+                            } else {
+                                $query = $query->orWhere($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
                             }
                         }
-                    });//function query
+                    });
+                    //function query
                     // foreach ($this->params['filters']['rules'] as $index => $filters) {
                     //     if ($filters['field'] == 'penerimaanstok_id_not_null') {
                     //         $query = $query->where($this->table . '.penerimaanstok_id', '=', "$filters[data]")->whereRaw(" $this->table.nobukti NOT IN 

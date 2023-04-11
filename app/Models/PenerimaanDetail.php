@@ -129,7 +129,11 @@ class PenerimaanDetail extends MyModel
                                 $query = $query->where('a.keterangancoa', 'LIKE', "%$filters[data]%");
                             } else if ($filters['field'] == 'coakredit') {
                                 $query = $query->where('b.keterangancoa', 'LIKE', "%$filters[data]%");
-                            } else {
+                            } else if ($filters['field'] == 'nominal') {
+                                $query = $query->whereRaw("format($this->table.nominal, '#,#0.00') LIKE '%$filters[data]%'");
+                            } else if ($filters['field'] == 'tglbukti' || $filters['field'] == 'tgljatuhtempo' || $filters['field'] == 'bulanbeban') {
+                                $query = $query->whereRaw("format(".$this->table . "." . $filters['field'].", 'dd-MM-yyyy') LIKE '%$filters[data]%'");
+                            }else {
                                 $query = $query->where($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
                             }
                         }
@@ -147,6 +151,10 @@ class PenerimaanDetail extends MyModel
                                 $query = $query->orWhere('a.keterangancoa', 'LIKE', "%$filters[data]%");
                             } else if ($filters['field'] == 'coakredit') {
                                 $query = $query->orWhere('b.keterangancoa', 'LIKE', "%$filters[data]%");
+                            } else if ($filters['field'] == 'nominal') {
+                                $query = $query->orWhereRaw("format($this->table.nominal, '#,#0.00') LIKE '%$filters[data]%'");
+                            } else if ($filters['field'] == 'tgljatuhtempo' || $filters['field'] == 'bulanbeban') {
+                                $query = $query->orWhereRaw("format(".$this->table . "." . $filters['field'].", 'dd-MM-yyyy') LIKE '%$filters[data]%'");
                             } else {
                                 $query = $query->orWhere($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
                             }

@@ -199,6 +199,8 @@ class Ritasi extends MyModel
             return $query->orderBy('supir.namasupir', $this->params['sortOrder']);
         } else if($this->params['sortIndex'] == 'trado_id'){
             return $query->orderBy('trado.kodetrado', $this->params['sortOrder']);
+        } else if($this->params['sortIndex'] == 'statusritasi'){
+            return $query->orderBy('parameter.text', $this->params['sortOrder']);
         } else{
             return $query->orderBy($this->table . '.' . $this->params['sortIndex'], $this->params['sortOrder']);
         }
@@ -220,6 +222,12 @@ class Ritasi extends MyModel
                             $query = $query->where('dari.keterangan', 'LIKE', "%$filters[data]%");
                         } elseif ($filters['field'] == 'sampai_id') {
                             $query = $query->where('sampai.keterangan', 'LIKE', "%$filters[data]%");
+                        } else if ($filters['field'] == 'jarak' || $filters['field'] == 'gaji') {
+                            $query = $query->whereRaw("format(".$this->table . "." . $filters['field'].", '#,#0.00') LIKE '%$filters[data]%'");
+                        } else if ($filters['field'] == 'tglbukti') {
+                            $query = $query->whereRaw("format(".$this->table . "." . $filters['field'].", 'dd-MM-yyyy') LIKE '%$filters[data]%'");
+                        } else if ($filters['field'] == 'created_at' || $filters['field'] == 'updated_at') {
+                            $query = $query->whereRaw("format(".$this->table . "." . $filters['field'].", 'dd-MM-yyyy HH:mm:ss') LIKE '%$filters[data]%'");
                         } else {
                             $query = $query->where($this->table . '.' .$filters['field'], 'LIKE', "%$filters[data]%");
                         }
@@ -239,6 +247,12 @@ class Ritasi extends MyModel
                                 $query = $query->where('dari.keterangan', 'LIKE', "%$filters[data]%");
                             } elseif ($filters['field'] == 'sampai_id') {
                                 $query = $query->where('sampai.keterangan', 'LIKE', "%$filters[data]%");
+                            } else if ($filters['field'] == 'jarak' || $filters['field'] == 'gaji') {
+                                $query = $query->orWhereRaw("format(".$this->table . "." . $filters['field'].", '#,#0.00') LIKE '%$filters[data]%'");
+                            } else if ($filters['field'] == 'tglbukti') {
+                                $query = $query->orWhereRaw("format(".$this->table . "." . $filters['field'].", 'dd-MM-yyyy') LIKE '%$filters[data]%'");
+                            } else if ($filters['field'] == 'created_at' || $filters['field'] == 'updated_at') {
+                                $query = $query->orWhereRaw("format(".$this->table . "." . $filters['field'].", 'dd-MM-yyyy HH:mm:ss') LIKE '%$filters[data]%'");
                             } else {
                                 $query = $query->orWhere($this->table . '.' .$filters['field'], 'LIKE', "%$filters[data]%");
                             }

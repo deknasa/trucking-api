@@ -128,6 +128,10 @@ class PengeluaranDetail extends MyModel
                                 $query = $query->where('debet.keterangancoa', 'LIKE', "%$filters[data]%");
                             } else if ($filters['field'] == 'coakredit') {
                                 $query = $query->where('kredit.keterangancoa', 'LIKE', "%$filters[data]%");
+                            }  else if ($filters['field'] == 'nominal') {
+                                $query = $query->whereRaw("format($this->table.nominal, '#,#0.00') LIKE '%$filters[data]%'");
+                            } else if ($filters['field'] == 'bulanbeban' || $filters['field'] == 'tgljatuhtempo') {
+                                $query = $query->whereRaw("format(".$this->table . "." . $filters['field'].", 'dd-MM-yyyy') LIKE '%$filters[data]%'");
                             } else {
                                 $query = $query->where($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
                             }
@@ -142,6 +146,10 @@ class PengeluaranDetail extends MyModel
                                 $query = $query->orWhere('debet.keterangancoa', 'LIKE', "%$filters[data]%");
                             } else if ($filters['field'] == 'coakredit') {
                                 $query = $query->orWhere('kredit.keterangancoa', 'LIKE', "%$filters[data]%");
+                            }  else if ($filters['field'] == 'nominal') {
+                                $query = $query->orWhereRaw("format($this->table.nominal, '#,#0.00') LIKE '%$filters[data]%'");
+                            } else if ($filters['field'] == 'bulanbeban' || $filters['field'] == 'tgljatuhtempo') {
+                                $query = $query->orWhereRaw("format(".$this->table . "." . $filters['field'].", 'dd-MM-yyyy') LIKE '%$filters[data]%'");
                             } else {
                                 $query = $query->orWhere($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
                             }

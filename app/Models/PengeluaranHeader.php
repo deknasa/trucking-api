@@ -283,10 +283,6 @@ class PengeluaranHeader extends MyModel
 
         $data = $query->first();
 
-
-
-        $data = $query->first();
-
         return $data;
     }
 
@@ -422,6 +418,10 @@ class PengeluaranHeader extends MyModel
                                 $query = $query->where('alatbayar.namaalatbayar', 'LIKE', "%$filters[data]%");
                             } else if ($filters['field'] == 'bank_id') {
                                 $query = $query->where('bank.namabank', 'LIKE', "%$filters[data]%");
+                            } else if ($filters['field'] == 'tglbukti' || $filters['field'] == 'tglapproval' || $filters['field'] == 'tglbukacetak') {
+                                $query = $query->whereRaw("format(".$this->table . "." . $filters['field'].", 'dd-MM-yyyy') LIKE '%$filters[data]%'");
+                            } else if ($filters['field'] == 'created_at' || $filters['field'] == 'updated_at') {
+                                $query = $query->whereRaw("format(".$this->table . "." . $filters['field'].", 'dd-MM-yyyy HH:mm:ss') LIKE '%$filters[data]%'");
                             } else {
                                 $query = $query->where($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
                             }
@@ -443,6 +443,10 @@ class PengeluaranHeader extends MyModel
                                     $query->orWhere('alatbayar.namaalatbayar', 'LIKE', "%$filters[data]%");
                                 } else if ($filters['field'] == 'bank_id') {
                                     $query->orWhere('bank.namabank', 'LIKE', "%$filters[data]%");
+                                } else if ($filters['field'] == 'tglbukti' || $filters['field'] == 'tglapproval' || $filters['field'] == 'tglbukacetak') {
+                                    $query = $query->orWhereRaw("format(".$this->table . "." . $filters['field'].", 'dd-MM-yyyy') LIKE '%$filters[data]%'");
+                                } else if ($filters['field'] == 'created_at' || $filters['field'] == 'updated_at') {
+                                    $query = $query->orWhereRaw("format(".$this->table . "." . $filters['field'].", 'dd-MM-yyyy HH:mm:ss') LIKE '%$filters[data]%'");
                                 } else {
                                     $query->orWhere($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
                                 }

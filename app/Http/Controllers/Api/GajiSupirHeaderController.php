@@ -161,7 +161,7 @@ class GajiSupirHeaderController extends Controller
 
                 $nobukti = app(Controller::class)->getRunningNumber($content)->original['data'];
                 $gajisupirheader->nobukti = $nobukti;
-               
+
                 $gajisupirheader->save();
                 /* Store detail */
 
@@ -266,7 +266,7 @@ class GajiSupirHeaderController extends Controller
 
                     $penerimaanTruckingDetailPS = [];
                     for ($i = 0; $i < count($request->pinjSemua); $i++) {
-                       
+
 
                         $penerimaanTruckingDetailPS[] = [
                             'supir_id' => 0,
@@ -950,7 +950,6 @@ class GajiSupirHeaderController extends Controller
                         foreach ($getDetailGSPP as $key => $value) {
                             app(GajiSupirPelunasanPinjamanController::class)->destroy($request, $value->id);
                         }
-                        
                     }
                 }
 
@@ -1174,13 +1173,12 @@ class GajiSupirHeaderController extends Controller
                         'modifiedby' => auth('api')->user()->name,
                         'datadetail' => $jurnalDetail
                     ];
-    
+
                     $getJurnal = JurnalUmumHeader::from(DB::raw("jurnalumumheader with (readuncommitted)"))->where('nobukti', $nobuktiPenerimaanTruckingBBM)->first();
                     $newJurnal = new JurnalUmumHeader();
                     $newJurnal = $newJurnal->find($getJurnal->id);
                     $jurnal = new UpdateJurnalUmumHeaderRequest($jurnalHeader);
                     app(JurnalUmumHeaderController::class)->update($jurnal, $newJurnal);
-
                 } else {
                     $fetchBBM = GajiSupirBBM::from(DB::raw("gajisupirbbm with (readuncommitted)"))
                         ->where('gajisupir_nobukti', $gajisupirheader->nobukti)->first();
@@ -1344,32 +1342,41 @@ class GajiSupirHeaderController extends Controller
         $tglDari = date('Y-m-d', strtotime($dari));
         $tglSampai = date('Y-m-d', strtotime($sampai));
 
+        if ($dari && $sampai) {
+            $cekSP = SuratPengantar::from(DB::raw("suratpengantar with (readuncommitted)"))
+                ->where('tglbukti', '>=', $tglDari)
+                ->where('tglbukti', '<=', $tglSampai)
+                ->where('supir_id', $supir_id)->first();
 
-        $cekSP = SuratPengantar::from(DB::raw("suratpengantar with (readuncommitted)"))
-            ->where('tglbukti', '>=', $tglDari)
-            ->where('tglbukti', '<=', $tglSampai)
-            ->where('supir_id', $supir_id)->first();
+            // CEK APAKAH ADA SP UNTUK DATA TERSEBUT
+            if ($cekSP) {
+                $nobukti = $cekSP->nobukti;
+                $cekTrip = GajiSupirDetail::from(DB::raw("gajisupirdetail with (readuncommitted)"))->where('suratpengantar_nobukti', $nobukti)->first();
 
-        // CEK APAKAH ADA SP UNTUK DATA TERSEBUT
-        if ($cekSP) {
-            $nobukti = $cekSP->nobukti;
-            $cekTrip = GajiSupirDetail::from(DB::raw("gajisupirdetail with (readuncommitted)"))->where('suratpengantar_nobukti', $nobukti)->first();
-            
 
-            return response([
-                'errors' => false,
-                'data' => $gajiSupir->getTrip($supir_id, $tglDari, $tglSampai),
-                'attributes' => [
-                    'totalRows' => $gajiSupir->totalRows,
-                    'totalPages' => $gajiSupir->totalPages,
-                    'totalGajiSupir' => $gajiSupir->totalGajiSupir,
-                    'totalGajiKenek' => $gajiSupir->totalGajiKenek,
-                    'totalKomisiSupir' => $gajiSupir->totalKomisiSupir,
-                    'totalUpahRitasi' => $gajiSupir->totalUpahRitasi,
-                    'totalBiayaExtra' => $gajiSupir->totalBiayaExtra,
-                    'totalTolSupir' => $gajiSupir->totalTolSupir,
-                ]
-            ]);
+                return response([
+                    'errors' => false,
+                    'data' => $gajiSupir->getTrip($supir_id, $tglDari, $tglSampai),
+                    'attributes' => [
+                        'totalRows' => $gajiSupir->totalRows,
+                        'totalPages' => $gajiSupir->totalPages,
+                        'totalGajiSupir' => $gajiSupir->totalGajiSupir,
+                        'totalGajiKenek' => $gajiSupir->totalGajiKenek,
+                        'totalKomisiSupir' => $gajiSupir->totalKomisiSupir,
+                        'totalUpahRitasi' => $gajiSupir->totalUpahRitasi,
+                        'totalBiayaExtra' => $gajiSupir->totalBiayaExtra,
+                        'totalTolSupir' => $gajiSupir->totalTolSupir,
+                    ]
+                ]);
+            } else {
+                return response([
+                    'data' => [],
+                    'attributes' => [
+                        'totalRows' => 0,
+                        'totalPages' => 0,
+                    ]
+                ]);
+            }
         } else {
             return response([
                 'data' => [],
@@ -1378,11 +1385,6 @@ class GajiSupirHeaderController extends Controller
                     'totalPages' => 0,
                 ]
             ]);
-            // $query = Error::from(DB::raw("error with (readuncommitted)"))->select('keterangan')->where('kodeerror', '=', 'NT')
-            //     ->first();
-            // return response([
-            //     'message' => "$query->keterangan",
-            // ], 422);
         }
     }
 
