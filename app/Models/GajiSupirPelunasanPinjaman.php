@@ -28,21 +28,70 @@ class GajiSupirPelunasanPinjaman extends MyModel
     {
         $this->setRequestParameters();
 
-        $temp = $this->createTempPinjamanPribadi($nobukti, $supir_id);
-        $query = DB::table('pengeluarantruckingdetail')
+        $tempPinjaman = $this->createTempPinjamanPribadi($nobukti, $supir_id);
+        $tempPengeluaran = $this->createTempPengeluaranPribadi($supir_id);
+
+        $temp = '##tempGet' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+        $fetch = DB::table($tempPinjaman)->from(DB::raw("$tempPinjaman with (readuncommitted)"))
+            ->select(DB::raw("tglbukti,pengeluarantrucking_nobukti as nobukti,sisaawal,keterangan,gajisupir_id,nominal,sisa"));
+      
+        Schema::create($temp, function ($table) {
+            $table->date('tglbukti')->nullable();
+            $table->string('nobukti');
+            $table->bigInteger('sisaawal')->nullable();
+            $table->string('keterangan')->nullable();
+            $table->bigInteger('gajisupir_id')->nullable();
+            $table->bigInteger('nominal')->nullable();
+            $table->bigInteger('sisa')->nullable();
+        });
+
+        DB::table($temp)->insertUsing(['tglbukti', 'nobukti', 'sisaawal', 'keterangan', 'gajisupir_id', 'nominal', 'sisa'], $fetch);
+
+        $fetchPengeluaran = DB::table($tempPengeluaran)->from(DB::raw("$tempPengeluaran as A with (readuncommitted)"))
+            ->select(DB::raw("A.tglbukti,A.nobukti,A.sisaawal,A.keterangan,null as gajisupir_id, null as nominal,A.sisa"))
+            ->leftJoin(DB::raw("$tempPinjaman as B with (readuncommitted)"), "A.nobukti", "B.pengeluarantrucking_nobukti")
+            ->whereRaw("isnull(b.pengeluarantrucking_nobukti,'') = ''")
+            ->where('A.sisa', '>', '0');
+
+        DB::table($temp)->insertUsing(['tglbukti', 'nobukti', 'sisaawal', 'keterangan', 'gajisupir_id', 'nominal', 'sisa'], $fetchPengeluaran);
+
+        $data = DB::table($temp)
+            ->select(DB::raw("row_number() Over(Order By $temp.nobukti) as id,tglbukti,nobukti,sisaawal,keterangan,nominal,gajisupir_id,sisa"))
+            ->orderBy("$temp.tglbukti", 'asc')
+            ->orderBy("$temp.nobukti", 'asc')
+            ->get();
+
+        return $data;
+    }
+
+    public function createTempPengeluaranPribadi($supir_id)
+    {
+        $temp = '##tempPengeluaran' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+
+        $fetchSisa = DB::table('pengeluarantruckingdetail')
             ->from(
                 DB::raw("pengeluarantruckingdetail with (readuncommitted)")
-            )
-            ->select(DB::raw("row_number() Over(Order By pengeluarantruckingdetail.nobukti) as id,pengeluarantruckingheader.tglbukti,pengeluarantruckingdetail.nobukti,pengeluarantruckingdetail.nominal as sisaawal ,pengeluarantruckingdetail.keterangan, $temp.nominal, $temp.gajisupir_id,
-        (SELECT (pengeluarantruckingdetail.nominal - COALESCE(SUM(gajisupirpelunasanpinjaman.nominal),0))
-            FROM gajisupirpelunasanpinjaman WHERE pengeluarantruckingdetail.nobukti= gajisupirpelunasanpinjaman.pengeluarantrucking_nobukti) AS sisa"))
-            ->leftJoin(DB::raw("$temp with (readuncommitted)"), 'pengeluarantruckingdetail.nobukti', $temp . ".pengeluarantrucking_nobukti")
+            )->select(DB::raw("pengeluarantruckingheader.tglbukti,pengeluarantruckingdetail.nobukti, (SELECT (pengeluarantruckingdetail.nominal - COALESCE(SUM(gajisupirpelunasanpinjaman.nominal),0))
+                FROM gajisupirpelunasanpinjaman WHERE pengeluarantruckingdetail.nobukti= gajisupirpelunasanpinjaman.pengeluarantrucking_nobukti) AS sisaawal,pengeluarantruckingdetail.keterangan,
+            (SELECT (pengeluarantruckingdetail.nominal - COALESCE(SUM(gajisupirpelunasanpinjaman.nominal),0))
+                FROM gajisupirpelunasanpinjaman WHERE pengeluarantruckingdetail.nobukti= gajisupirpelunasanpinjaman.pengeluarantrucking_nobukti) AS sisa"))
             ->leftJoin(DB::raw("pengeluarantruckingheader with (readuncommitted)"), 'pengeluarantruckingdetail.nobukti', 'pengeluarantruckingheader.nobukti')
             ->whereRaw("pengeluarantruckingdetail.supir_id = $supir_id")
             ->orderBy('pengeluarantruckingheader.tglbukti', 'asc')
             ->orderBy('pengeluarantruckingdetail.nobukti', 'asc');
+        
+        Schema::create($temp, function ($table) {
 
-        return $query->get();
+            $table->date('tglbukti');
+            $table->string('nobukti');
+            $table->bigInteger('sisaawal');
+            $table->string('keterangan');
+            $table->bigInteger('sisa');
+        });
+
+        DB::table($temp)->insertUsing(['tglbukti', 'nobukti', 'sisaawal', 'keterangan', 'sisa'], $fetchSisa);
+
+        return $temp;
     }
 
     public function createTempPinjamanPribadi($nobukti, $supir_id)
@@ -51,17 +100,26 @@ class GajiSupirPelunasanPinjaman extends MyModel
 
 
         $fetch = DB::table('gajisupirpelunasanpinjaman')->from(DB::raw("gajisupirpelunasanpinjaman with (readuncommitted)"))
-            ->select(DB::raw("nominal, pengeluarantrucking_nobukti,gajisupir_id"))
-            ->whereRaw("gajisupir_nobukti = '$nobukti'")
-            ->whereRaw("supir_id = $supir_id");
-
+            ->select(DB::raw("pengeluarantruckingheader.tglbukti,gajisupirpelunasanpinjaman.pengeluarantrucking_nobukti, (SELECT (pengeluarantruckingdetail.nominal - COALESCE(SUM(gajisupirpelunasanpinjaman.nominal),0))
+            FROM gajisupirpelunasanpinjaman WHERE gajisupirpelunasanpinjaman.pengeluarantrucking_nobukti=pengeluarantruckingdetail.nobukti 
+            and gajisupirpelunasanpinjaman.gajisupir_nobukti! = '$nobukti') as sisaawal, pengeluarantruckingdetail.keterangan,gajisupirpelunasanpinjaman.gajisupir_id, gajisupirpelunasanpinjaman.nominal, (SELECT (pengeluarantruckingdetail.nominal - COALESCE(SUM(gajisupirpelunasanpinjaman.nominal),0))
+        FROM gajisupirpelunasanpinjaman WHERE gajisupirpelunasanpinjaman.pengeluarantrucking_nobukti=pengeluarantruckingdetail.nobukti) AS sisa"))
+            ->join(DB::raw("pengeluarantruckingdetail with (readuncommitted)"), 'gajisupirpelunasanpinjaman.pengeluarantrucking_nobukti', 'pengeluarantruckingdetail.nobukti')
+            ->join(DB::raw("pengeluarantruckingheader with (readuncommitted)"), 'pengeluarantruckingdetail.nobukti', 'pengeluarantruckingheader.nobukti')
+            ->whereRaw("gajisupirpelunasanpinjaman.gajisupir_nobukti = '$nobukti'")
+            ->whereRaw("gajisupirpelunasanpinjaman.supir_id = $supir_id");
+       
         Schema::create($temp, function ($table) {
-            $table->bigInteger('nominal');
+            $table->date('tglbukti');
             $table->string('pengeluarantrucking_nobukti');
+            $table->bigInteger('sisaawal');
+            $table->string('keterangan');
             $table->bigInteger('gajisupir_id');
+            $table->bigInteger('nominal');
+            $table->bigInteger('sisa');
         });
 
-        $tes = DB::table($temp)->insertUsing(['nominal', 'pengeluarantrucking_nobukti', 'gajisupir_id'], $fetch);
+        $tes = DB::table($temp)->insertUsing(['tglbukti', 'pengeluarantrucking_nobukti', 'sisaawal', 'keterangan', 'gajisupir_id', 'nominal', 'sisa'], $fetch);
 
         return $temp;
     }
@@ -71,21 +129,70 @@ class GajiSupirPelunasanPinjaman extends MyModel
     {
         $this->setRequestParameters();
 
-        $temp = $this->createTempPinjamanSemua($nobukti);
-        $query = DB::table('pengeluarantruckingdetail')
+        $tempPinjaman = $this->createTempPinjamanSemua($nobukti);
+        $tempPengeluaran = $this->createTempPengeluaran();
+
+        $temp = '##tempGet' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+        $fetch = DB::table($tempPinjaman)->from(DB::raw("$tempPinjaman with (readuncommitted)"))
+            ->select(DB::raw("tglbukti,pengeluarantrucking_nobukti as nobukti,sisaawal,keterangan,gajisupir_id,nominal,sisa"));
+
+        Schema::create($temp, function ($table) {
+            $table->date('tglbukti')->nullable();
+            $table->string('nobukti');
+            $table->bigInteger('sisaawal')->nullable();
+            $table->string('keterangan')->nullable();
+            $table->bigInteger('gajisupir_id')->nullable();
+            $table->bigInteger('nominal')->nullable();
+            $table->bigInteger('sisa')->nullable();
+        });
+
+        DB::table($temp)->insertUsing(['tglbukti', 'nobukti', 'sisaawal', 'keterangan', 'gajisupir_id', 'nominal', 'sisa'], $fetch);
+
+        $fetchPengeluaran = DB::table($tempPengeluaran)->from(DB::raw("$tempPengeluaran as A with (readuncommitted)"))
+            ->select(DB::raw("A.tglbukti,A.nobukti,A.sisaawal,A.keterangan,null as gajisupir_id, null as nominal,A.sisa"))
+            ->leftJoin(DB::raw("$tempPinjaman as B with (readuncommitted)"), "A.nobukti", "B.pengeluarantrucking_nobukti")
+            ->whereRaw("isnull(b.pengeluarantrucking_nobukti,'') = ''")
+            ->where('A.sisa', '>', '0');
+
+        DB::table($temp)->insertUsing(['tglbukti', 'nobukti', 'sisaawal', 'keterangan', 'gajisupir_id', 'nominal', 'sisa'], $fetchPengeluaran);
+
+        $data = DB::table($temp)
+            ->select(DB::raw("row_number() Over(Order By $temp.nobukti) as id,tglbukti,nobukti,sisaawal,keterangan,nominal,gajisupir_id,sisa"))
+            ->orderBy("$temp.tglbukti", 'asc')
+            ->orderBy("$temp.nobukti", 'asc')
+            ->get();
+
+        return $data;
+    }
+
+    public function createTempPengeluaran()
+    {
+        $temp = '##tempPengeluaran' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+
+        $fetchSisa = DB::table('pengeluarantruckingdetail')
             ->from(
                 DB::raw("pengeluarantruckingdetail with (readuncommitted)")
-            )
-            ->select(DB::raw("row_number() Over(Order By pengeluarantruckingdetail.nobukti) as id,pengeluarantruckingheader.tglbukti,pengeluarantruckingdetail.nobukti,pengeluarantruckingdetail.nominal as sisaawal ,pengeluarantruckingdetail.keterangan, $temp.nominal, $temp.gajisupir_id,
-        (SELECT (pengeluarantruckingdetail.nominal - COALESCE(SUM(gajisupirpelunasanpinjaman.nominal),0))
-            FROM gajisupirpelunasanpinjaman WHERE pengeluarantruckingdetail.nobukti= gajisupirpelunasanpinjaman.pengeluarantrucking_nobukti) AS sisa"))
-            ->leftJoin(DB::raw("$temp with (readuncommitted)"), 'pengeluarantruckingdetail.nobukti', $temp . ".pengeluarantrucking_nobukti")
+            )->select(DB::raw("pengeluarantruckingheader.tglbukti,pengeluarantruckingdetail.nobukti, (SELECT (pengeluarantruckingdetail.nominal - COALESCE(SUM(gajisupirpelunasanpinjaman.nominal),0))
+            FROM gajisupirpelunasanpinjaman WHERE pengeluarantruckingdetail.nobukti= gajisupirpelunasanpinjaman.pengeluarantrucking_nobukti) AS sisaawal,pengeluarantruckingdetail.keterangan,
+            (SELECT (pengeluarantruckingdetail.nominal - COALESCE(SUM(gajisupirpelunasanpinjaman.nominal),0))
+                FROM gajisupirpelunasanpinjaman WHERE pengeluarantruckingdetail.nobukti= gajisupirpelunasanpinjaman.pengeluarantrucking_nobukti) AS sisa"))
             ->leftJoin(DB::raw("pengeluarantruckingheader with (readuncommitted)"), 'pengeluarantruckingdetail.nobukti', 'pengeluarantruckingheader.nobukti')
             ->whereRaw("pengeluarantruckingdetail.supir_id = 0")
             ->orderBy('pengeluarantruckingheader.tglbukti', 'asc')
             ->orderBy('pengeluarantruckingdetail.nobukti', 'asc');
 
-        return $query->get();
+        Schema::create($temp, function ($table) {
+
+            $table->date('tglbukti');
+            $table->string('nobukti');
+            $table->bigInteger('sisaawal');
+            $table->string('keterangan');
+            $table->bigInteger('sisa');
+        });
+
+        DB::table($temp)->insertUsing(['tglbukti', 'nobukti', 'sisaawal', 'keterangan', 'sisa'], $fetchSisa);
+
+        return $temp;
     }
 
     public function createTempPinjamanSemua($nobukti)
@@ -94,18 +201,26 @@ class GajiSupirPelunasanPinjaman extends MyModel
 
 
         $fetch = DB::table('gajisupirpelunasanpinjaman')->from(DB::raw("gajisupirpelunasanpinjaman with (readuncommitted)"))
-            ->select(DB::raw("nominal, pengeluarantrucking_nobukti,gajisupir_id"))
-            ->whereRaw("gajisupir_nobukti = '$nobukti'")
-            ->whereRaw("supir_id = 0");
+            ->select(DB::raw("pengeluarantruckingheader.tglbukti,gajisupirpelunasanpinjaman.pengeluarantrucking_nobukti, (SELECT (pengeluarantruckingdetail.nominal - COALESCE(SUM(gajisupirpelunasanpinjaman.nominal),0))
+            FROM gajisupirpelunasanpinjaman WHERE gajisupirpelunasanpinjaman.pengeluarantrucking_nobukti=pengeluarantruckingdetail.nobukti 
+            and gajisupirpelunasanpinjaman.gajisupir_nobukti! = '$nobukti') as sisaawal, pengeluarantruckingdetail.keterangan,gajisupirpelunasanpinjaman.gajisupir_id, gajisupirpelunasanpinjaman.nominal, (SELECT (pengeluarantruckingdetail.nominal - COALESCE(SUM(gajisupirpelunasanpinjaman.nominal),0))
+            FROM gajisupirpelunasanpinjaman WHERE gajisupirpelunasanpinjaman.pengeluarantrucking_nobukti=pengeluarantruckingdetail.nobukti) AS sisa"))
+            ->join(DB::raw("pengeluarantruckingdetail with (readuncommitted)"), 'gajisupirpelunasanpinjaman.pengeluarantrucking_nobukti', 'pengeluarantruckingdetail.nobukti')
+            ->join(DB::raw("pengeluarantruckingheader with (readuncommitted)"), 'pengeluarantruckingdetail.nobukti', 'pengeluarantruckingheader.nobukti')
+            ->whereRaw("gajisupirpelunasanpinjaman.gajisupir_nobukti = '$nobukti'")
+            ->whereRaw("gajisupirpelunasanpinjaman.supir_id = 0");
 
         Schema::create($temp, function ($table) {
-            $table->bigInteger('nominal');
+            $table->date('tglbukti');
             $table->string('pengeluarantrucking_nobukti');
+            $table->bigInteger('sisaawal');
+            $table->string('keterangan');
             $table->bigInteger('gajisupir_id');
+            $table->bigInteger('nominal');
+            $table->bigInteger('sisa');
         });
 
-        $tes = DB::table($temp)->insertUsing(['nominal', 'pengeluarantrucking_nobukti', 'gajisupir_id'], $fetch);
-
+        $tes = DB::table($temp)->insertUsing(['tglbukti', 'pengeluarantrucking_nobukti', 'sisaawal', 'keterangan', 'gajisupir_id', 'nominal', 'sisa'], $fetch);
 
         return $temp;
     }
