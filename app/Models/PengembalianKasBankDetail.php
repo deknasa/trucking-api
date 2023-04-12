@@ -91,7 +91,7 @@ class PengembalianKasBankDetail extends MyModel
             'pengembaliankasbankdetail.tgljatuhtempo',
             'pengembaliankasbankdetail.nominal',
             'pengembaliankasbankdetail.keterangan',
-            DB::raw("(case when year(isnull(pengembaliankasbankdetail.bulanbeban,'1900/1/1'))<2000 then null else pengembaliankasbankdetail.bulanbeban end) as bulanbeban"),
+            DB::raw("(case when year(cast(pengembaliankasbankdetail.bulanbeban as datetime))='1900' then '' else format(pengembaliankasbankdetail.bulanbeban,'yyyy-MM-dd') end) as bulanbeban"),
                 
             'pengembaliankasbankdetail.coadebet',
             'debet.keterangancoa as ketcoadebet',

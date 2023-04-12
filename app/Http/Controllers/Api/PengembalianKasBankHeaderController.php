@@ -45,6 +45,16 @@ class PengembalianKasBankHeaderController extends Controller
             ]
         ]);
     }
+    
+    public function default()
+    {
+        $pengembalianKasBankHeader = new PengembalianKasBankHeader();
+        return response([
+            'status' => true,
+            'data' => $pengembalianKasBankHeader->default(),
+        ]);
+    }
+
     /**
      * @ClassName 
      */
@@ -115,7 +125,7 @@ class PengembalianKasBankHeaderController extends Controller
                     'tgljatuhtempo' =>  date('Y-m-d', strtotime($request->tgljatuhtempo[$i])),
                     'nominal' => $request->nominal_detail[$i],
                     'coadebet' => $request->coadebet[$i],
-                    'coakredit' => $request->coakredit[$i],
+                    'coakredit' => $bank->coa,
                     'keterangan' => $request->keterangan_detail[$i],
                     'bulanbeban' => date('Y-m-d', strtotime($request->bulanbeban[$i] ?? '1900/1/1')),
                     'modifiedby' => auth('api')->user()->name,
@@ -168,7 +178,7 @@ class PengembalianKasBankHeaderController extends Controller
             $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
 
             $datalogtrail = [
-                'namatabel' => $tabeldetail,
+                'namatabel' => strtoupper($tabeldetail),
                 'postingdari' => 'ENTRY PENGEMBALIAN KAS BANK DETAIL',
                 'idtrans' =>  $storedLogTrail['id'],
                 'nobuktitrans' => $pengembalianKasBankHeader->nobukti,
@@ -192,7 +202,7 @@ class PengembalianKasBankHeaderController extends Controller
                     'tgljatuhtempo' =>   date('Y-m-d', strtotime($request->tgljatuhtempo[$i])),
                     'nominal' =>  $request->nominal_detail[$i],
                     'coadebet' =>  $request->coadebet[$i],
-                    'coakredit' =>  $request->coakredit[$i],
+                    'coakredit' =>  $bank->coa,
                     'keterangan' =>  $request->keterangan_detail[$i],
                     'bulanbeban' =>  date('Y-m-d', strtotime($request->bulanbeban[$i] ?? '1900/1/1')),
                     'modifiedby' =>  auth('api')->user()->name,
@@ -290,7 +300,6 @@ class PengembalianKasBankHeaderController extends Controller
             $pengembalianKasBankHeader->tglbukti = date('Y-m-d', strtotime($request->tglbukti));
             $pengembalianKasBankHeader->postingdari = $request->postingdari ?? 'EDIT PENGEMBALIAN KAS BANK';
             $pengembalianKasBankHeader->dibayarke = $request->dibayarke ?? '';
-            $pengembalianKasBankHeader->cabang_id = $request->cabang_id ?? 0;
             $pengembalianKasBankHeader->transferkeac = $request->transferkeac ?? '';
             $pengembalianKasBankHeader->transferkean = $request->transferkean ?? '';
             $pengembalianKasBankHeader->transferkebank = $request->transferkebank ?? '';
@@ -326,7 +335,7 @@ class PengembalianKasBankHeaderController extends Controller
                     'tgljatuhtempo' =>  date('Y-m-d', strtotime($request->tgljatuhtempo[$i])),
                     'nominal' => $request->nominal_detail[$i],
                     'coadebet' => $request->coadebet[$i],
-                    'coakredit' => $request->coakredit[$i],
+                    'coakredit' => $bank->coa,
                     'keterangan' => $request->keterangan_detail[$i],
                     'bulanbeban' =>  date('Y-m-d', strtotime($request->bulanbeban[$i] ?? '1900/1/1')),
                     'modifiedby' => auth('api')->user()->name,
@@ -345,7 +354,7 @@ class PengembalianKasBankHeaderController extends Controller
                 $detaillog[] = $datadetail;
             }
             $datalogtrail = [
-                'namatabel' => $tabeldetail,
+                'namatabel' => strtoupper($tabeldetail),
                 'postingdari' => 'EDIT PENGEMBALIAN KAS BANK DETAIL',
                 'idtrans' =>  $iddetail,
                 'nobuktitrans' => $pengembalianKasBankHeader->nobukti,
@@ -354,7 +363,7 @@ class PengembalianKasBankHeaderController extends Controller
                 'modifiedby' => auth('api')->user()->name,
             ];
 
-            $validatedLogTrail = new StoreLogTrailRequest($logTrail);
+            $validatedLogTrail = new StoreLogTrailRequest($datalogtrail);
             $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
             $statusApp = Parameter::where('grp', 'STATUS APPROVAL')->where('text', 'NON APPROVAL')->first();
 
@@ -370,7 +379,7 @@ class PengembalianKasBankHeaderController extends Controller
                     'tgljatuhtempo' =>   date('Y-m-d', strtotime($request->tgljatuhtempo[$i])),
                     'nominal' =>  $request->nominal_detail[$i],
                     'coadebet' =>  $request->coadebet[$i],
-                    'coakredit' =>  $request->coakredit[$i],
+                    'coakredit' =>  $bank->coa,
                     'keterangan' =>  $request->keterangan_detail[$i],
                     'bulanbeban' =>   date('Y-m-d', strtotime($request->bulanbeban[$i] ?? '1900/1/1')),
                     'modifiedby' =>  auth('api')->user()->name,

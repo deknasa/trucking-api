@@ -40,7 +40,7 @@ class Container extends MyModel
             ->first();
 
         if (isset($tarif)) {
-             $data = [
+            $data = [
                 'kondisi' => true,
                 'keterangan' => 'Tarif',
             ];
@@ -59,7 +59,7 @@ class Container extends MyModel
             ->first();
 
         if (isset($upahSupir)) {
-             $data = [
+            $data = [
                 'kondisi' => true,
                 'keterangan' => 'Upah Supir',
             ];
@@ -76,16 +76,16 @@ class Container extends MyModel
             )
             ->where('a.container_id', '=', $id)
             ->first();
-            
+
         if (isset($upahRitasi)) {
-             $data = [
+            $data = [
                 'kondisi' => true,
                 'keterangan' => 'Upah Ritasi',
             ];
 
             goto selesai;
         }
-        
+
         $suratPengantar = DB::table('suratpengantar')
             ->from(
                 DB::raw("suratpengantar as a with (readuncommitted)")
@@ -95,9 +95,9 @@ class Container extends MyModel
             )
             ->where('a.container_id', '=', $id)
             ->first();
-            
+
         if (isset($suratPengantar)) {
-             $data = [
+            $data = [
                 'kondisi' => true,
                 'keterangan' => 'Surat Pengantar',
             ];
@@ -114,9 +114,9 @@ class Container extends MyModel
             )
             ->where('a.container_id', '=', $id)
             ->first();
-            
+
         if (isset($orderanTrucking)) {
-             $data = [
+            $data = [
                 'kondisi' => true,
                 'keterangan' => 'Orderan Trucking',
             ];
@@ -170,7 +170,7 @@ class Container extends MyModel
         $this->totalRows = $query->count();
         $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;
 
-        $this->sort($query);        
+        $this->sort($query);
         $this->paginate($query);
 
         $data = $query->get();
@@ -284,22 +284,24 @@ class Container extends MyModel
 
                     break;
                 case "OR":
-                    foreach ($this->params['filters']['rules'] as $index => $filters) {
-                        if ($filters['field'] == 'statusaktif') {
-                            $query = $query->orWhere('parameter.text', 'LIKE', "%$filters[data]%");
-                        } elseif ($filters['field'] == 'id') {
-                            $query = $query->orWhereRaw("(container.id like '%$filters[data]%'");
-                        } elseif ($filters['field'] == 'updated_at') {
-                            $query = $query->orWhereRaw("format(container.updated_at,'dd-MM-yyyy HH:mm:ss') like '%$filters[data]%')");
-                        } elseif ($filters['field'] == 'modifiedby') {
-                            $query = $query->orWhere('container.modifiedby', 'LIKE', "%$filters[data]%");
-                        } elseif ($filters['field'] == 'created_at') {
-                            $query = $query->orWhere('container.created_at', 'LIKE', "%$filters[data]%");
-                        } else {
-                            $query = $query->orWhere($filters['field'], 'LIKE', "%$filters[data]%");
-                        }
-                    }
 
+                    $query->where(function ($query) {
+                        foreach ($this->params['filters']['rules'] as $index => $filters) {
+                            if ($filters['field'] == 'statusaktif') {
+                                $query = $query->orWhere('parameter.text', 'LIKE', "%$filters[data]%");
+                            } elseif ($filters['field'] == 'id') {
+                                $query = $query->orWhereRaw("(container.id like '%$filters[data]%'");
+                            } elseif ($filters['field'] == 'updated_at') {
+                                $query = $query->orWhereRaw("format(container.updated_at,'dd-MM-yyyy HH:mm:ss') like '%$filters[data]%'");
+                            } elseif ($filters['field'] == 'modifiedby') {
+                                $query = $query->orWhere('container.modifiedby', 'LIKE', "%$filters[data]%");
+                            } elseif ($filters['field'] == 'created_at') {
+                                $query = $query->orWhere('container.created_at', 'LIKE', "%$filters[data]%");
+                            } else {
+                                $query = $query->orWhere($filters['field'], 'LIKE', "%$filters[data]%");
+                            }
+                        }
+                    });
                     break;
                 default:
 

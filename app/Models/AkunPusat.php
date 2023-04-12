@@ -29,7 +29,7 @@ class AkunPusat extends MyModel
 
         $aktif = request()->aktif ?? '';
 
-  
+
 
         $query = DB::table($this->table)->from(
             DB::raw($this->table . " with (readuncommitted)")
@@ -59,23 +59,21 @@ class AkunPusat extends MyModel
             ->leftJoin(DB::raw("parameter as parameter_statuslabarugi with (readuncommitted)"), 'akunpusat.statuslabarugi', '=', 'parameter_statuslabarugi.id');
 
 
- 
+
         $this->filter($query);
 
         if ($level != '') {
-            if ($level=='3') {
+            if ($level == '3') {
                 $query->whereRaw(DB::raw("right(akunpusat.coa,3)<>'.00'"));
-
             } else {
                 $query->where('akunpusat.level', '=', $level);
-
             }
         }
         if ($potongan != '') {
             $temp = implode(',', $this->TempParameter());
 
             $query->whereRaw("akunpusat.coa in ($temp)");
-        } 
+        }
         if ($aktif == 'AKTIF') {
             $statusaktif = Parameter::from(
                 DB::raw("parameter with (readuncommitted)")
@@ -91,7 +89,6 @@ class AkunPusat extends MyModel
 
         $this->sort($query);
         $this->paginate($query);
-
         $data = $query->get();
 
         return $data;
@@ -305,25 +302,27 @@ class AkunPusat extends MyModel
 
                     break;
                 case "OR":
-                    foreach ($this->params['filters']['rules'] as $index => $filters) {
-                        if ($filters['field'] == 'statusaktif') {
-                            $query = $query->orWhere('parameter_statusaktif.text', '=', $filters['data']);
-                        } elseif ($filters['field'] == 'id') {
-                            $query = $query->orWhereRaw("(akunpusat.id like '%$filters[data]%'");
-                        } elseif ($filters['field'] == 'updated_at') {
-                            $query = $query->orWhereRaw("format(akunpusat.updated_at,'dd-MM-yyyy HH:mm:ss') like '%$filters[data]%')");
-                        } else if ($filters['field'] == 'statuscoa') {
-                            $query = $query->orWhere('parameter_statuscoa.text', '=', "$filters[data]");
-                        } else if ($filters['field'] == 'statusaccountpayable') {
-                            $query = $query->orWhere('parameter_statusaccountpayable.text', '=', "$filters[data]");
-                        } else if ($filters['field'] == 'statusneraca') {
-                            $query = $query->orWhere('parameter_statusneraca.text', '=', "$filters[data]");
-                        } else if ($filters['field'] == 'statuslabarugi') {
-                            $query = $query->orWhere('parameter_statuslabarugi.text', '=', "$filters[data]");
-                        } else {
-                            $query = $query->orWhere($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
+                    $query->where(function ($query) {
+                        foreach ($this->params['filters']['rules'] as $index => $filters) {
+                            if ($filters['field'] == 'statusaktif') {
+                                $query = $query->orWhere('parameter_statusaktif.text', '=', $filters['data']);
+                            } elseif ($filters['field'] == 'id') {
+                                $query = $query->orWhereRaw("(akunpusat.id like '%$filters[data]%'");
+                            } elseif ($filters['field'] == 'updated_at') {
+                                $query = $query->orWhereRaw("format(akunpusat.updated_at,'dd-MM-yyyy HH:mm:ss') like '%$filters[data]%'");
+                            } else if ($filters['field'] == 'statuscoa') {
+                                $query = $query->orWhere('parameter_statuscoa.text', '=', "$filters[data]");
+                            } else if ($filters['field'] == 'statusaccountpayable') {
+                                $query = $query->orWhere('parameter_statusaccountpayable.text', '=', "$filters[data]");
+                            } else if ($filters['field'] == 'statusneraca') {
+                                $query = $query->orWhere('parameter_statusneraca.text', '=', "$filters[data]");
+                            } else if ($filters['field'] == 'statuslabarugi') {
+                                $query = $query->orWhere('parameter_statuslabarugi.text', '=', "$filters[data]");
+                            } else {
+                                $query = $query->orWhere($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
+                            }
                         }
-                    }
+                    });
 
                     break;
                 default:

@@ -23,7 +23,7 @@ class JenisOrder extends MyModel
     //     'updated_at' => 'date:d-m-Y H:i:s'
     // ]; 
     public function cekvalidasihapus($id)
-    {     
+    {
 
         $orderanTrucking = DB::table('orderantrucking')
             ->from(
@@ -82,11 +82,11 @@ class JenisOrder extends MyModel
             'kondisi' => false,
             'keterangan' => '',
         ];
- 
+
         selesai:
         return $data;
     }
-    
+
     public function get()
     {
         $this->setRequestParameters();
@@ -123,7 +123,7 @@ class JenisOrder extends MyModel
         $this->totalRows = $query->count();
         $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;
 
-        $this->sort($query);        
+        $this->sort($query);
         $this->paginate($query);
 
         $data = $query->get();
@@ -230,17 +230,19 @@ class JenisOrder extends MyModel
 
                     break;
                 case "OR":
-                    foreach ($this->params['filters']['rules'] as $index => $filters) {
-                        if ($filters['field'] == 'statusaktif') {
-                            $query = $query->orWhere('parameter.text', '=', "$filters[data]");
-                        } elseif ($filters['field'] == 'id') {
-                            $query = $query->orWhereRaw("(jenisorder.id like '%$filters[data]%'");
-                        } elseif ($filters['field'] == 'updated_at') {
-                            $query = $query->orWhereRaw("format(jenisorder.updated_at,'dd-MM-yyyy HH:mm:ss') like '%$filters[data]%')");
-                        } else {
-                            $query = $query->orWhere('jenisorder.' . $filters['field'], 'LIKE', "%$filters[data]%");
+                    $query->where(function ($query) {
+                        foreach ($this->params['filters']['rules'] as $index => $filters) {
+                            if ($filters['field'] == 'statusaktif') {
+                                $query = $query->orWhere('parameter.text', '=', "$filters[data]");
+                            } elseif ($filters['field'] == 'id') {
+                                $query = $query->orWhereRaw("(jenisorder.id like '%$filters[data]%'");
+                            } elseif ($filters['field'] == 'updated_at') {
+                                $query = $query->orWhereRaw("format(jenisorder.updated_at,'dd-MM-yyyy HH:mm:ss') like '%$filters[data]%'");
+                            } else {
+                                $query = $query->orWhere('jenisorder.' . $filters['field'], 'LIKE', "%$filters[data]%");
+                            }
                         }
-                    }
+                    });
 
                     break;
                 default:

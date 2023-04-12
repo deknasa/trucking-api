@@ -62,7 +62,8 @@ class PengembalianKasBankHeader extends MyModel
             ->leftJoin('parameter as statuscetak', 'pengembaliankasbankheader.statuscetak', 'statuscetak.id')
             ->leftJoin('parameter as statusjenistransaksi', 'pengembaliankasbankheader.statusjenistransaksi', 'statusjenistransaksi.id');
         if (request()->tgldari) {
-            $query->whereBetween('tglbukti', [date('Y-m-d', strtotime(request()->tgldari)), date('Y-m-d', strtotime(request()->tglsampai))]);
+            $query->whereBetween('tglbukti', [date('Y-m-d', strtotime(request()->tgldari)), date('Y-m-d', strtotime(request()->tglsampai))])
+                ->where('pengembaliankasbankheader.bank_id', request()->bank_id);
         }
         $this->totalRows = $query->count();
         $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;
@@ -72,6 +73,61 @@ class PengembalianKasBankHeader extends MyModel
         $this->paginate($query);
 
         $data = $query->get();
+
+        return $data;
+    }
+    public function default()
+    {
+
+        $tempdefault = '##tempdefault' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+        Schema::create($tempdefault, function ($table) {
+            $table->unsignedBigInteger('bank_id')->nullable();
+            $table->string('bank', 255)->nullable();
+            $table->unsignedBigInteger('alatbayar_id')->nullable();
+            $table->string('alatbayar', 255)->nullable();
+        });
+
+
+        $bank = DB::table('bank')->from(
+            DB::raw('bank with (readuncommitted)')
+        )
+            ->select(
+                'id as bank_id',
+                'namabank as bank',
+                'statusdefault'
+
+            )
+            ->where('tipe', '=', 'BANK')
+            ->first();
+
+
+        $alatbayar = DB::table('alatbayar')->from(
+            DB::raw('alatbayar with (readuncommitted)')
+        )
+            ->select(
+                'id as alatbayar_id',
+                'namaalatbayar as alatbayar',
+
+            )
+            ->where('statusdefault', '=', $bank->statusdefault)
+            ->first();
+
+
+        DB::table($tempdefault)->insert(
+            ["bank_id" => $bank->bank_id, "bank" => $bank->bank, "alatbayar_id" => $alatbayar->alatbayar_id, "alatbayar" => $alatbayar->alatbayar]
+        );
+
+        $query = DB::table($tempdefault)->from(
+            DB::raw($tempdefault)
+        )
+            ->select(
+                'bank_id',
+                'bank',
+                'alatbayar_id',
+                'alatbayar',
+            );
+
+        $data = $query->first();
 
         return $data;
     }
@@ -188,12 +244,12 @@ class PengembalianKasBankHeader extends MyModel
             'updated_at'
         );
 
-        if (request()->tgldari) {
-            $query->whereBetween('tglbukti', [date('Y-m-d', strtotime(request()->tgldari)), date('Y-m-d', strtotime(request()->tglsampai))]);
-        }
-
         $this->sort($query);
         $models = $this->filter($query);
+        if (request()->tgldariheader) {
+            $models =  $query->whereBetween($this->table . '.tglbukti', [date('Y-m-d', strtotime(request()->tgldariheader)), date('Y-m-d', strtotime(request()->tglsampaiheader))])->where($this->table . '.bank_id', request()->bankheader);
+        }
+
         DB::table($temp)->insertUsing([
             'id',
             'nobukti',
@@ -217,11 +273,11 @@ class PengembalianKasBankHeader extends MyModel
     }
     public function sort($query)
     {
-        if($this->params['sortIndex'] == 'bank_id'){
+        if ($this->params['sortIndex'] == 'bank_id') {
             return $query->orderBy('bank.namabank', $this->params['sortOrder']);
-        } else if($this->params['sortIndex'] == 'cabang_id'){
+        } else if ($this->params['sortIndex'] == 'cabang_id') {
             return $query->orderBy('cabang.namacabang', $this->params['sortOrder']);
-        }else{
+        } else {
             return $query->orderBy($this->table . '.' . $this->params['sortIndex'], $this->params['sortOrder']);
         }
     }
@@ -245,9 +301,9 @@ class PengembalianKasBankHeader extends MyModel
                         } else if ($filters['field'] == 'bank_id') {
                             $query = $query->where('bank.namabank', 'LIKE', "%$filters[data]%");
                         } else if ($filters['field'] == 'tglbukti' || $filters['field'] == 'tglapproval' || $filters['field'] == 'tglbukacetak') {
-                            $query = $query->whereRaw("format(".$this->table . "." . $filters['field'].", 'dd-MM-yyyy') LIKE '%$filters[data]%'");
+                            $query = $query->whereRaw("format(" . $this->table . "." . $filters['field'] . ", 'dd-MM-yyyy') LIKE '%$filters[data]%'");
                         } else if ($filters['field'] == 'created_at' || $filters['field'] == 'updated_at') {
-                            $query = $query->whereRaw("format(".$this->table . "." . $filters['field'].", 'dd-MM-yyyy HH:mm:ss') LIKE '%$filters[data]%'");
+                            $query = $query->whereRaw("format(" . $this->table . "." . $filters['field'] . ", 'dd-MM-yyyy HH:mm:ss') LIKE '%$filters[data]%'");
                         } else {
                             $query = $query->where($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
                         }
@@ -270,9 +326,9 @@ class PengembalianKasBankHeader extends MyModel
                             } else if ($filters['field'] == 'bank_id') {
                                 $query = $query->orWhere('bank.namabank', 'LIKE', "%$filters[data]%");
                             } else if ($filters['field'] == 'tglbukti' || $filters['field'] == 'tglapproval' || $filters['field'] == 'tglbukacetak') {
-                                $query = $query->orWhereRaw("format(".$this->table . "." . $filters['field'].", 'dd-MM-yyyy') LIKE '%$filters[data]%'");
+                                $query = $query->orWhereRaw("format(" . $this->table . "." . $filters['field'] . ", 'dd-MM-yyyy') LIKE '%$filters[data]%'");
                             } else if ($filters['field'] == 'created_at' || $filters['field'] == 'updated_at') {
-                                $query = $query->orWhereRaw("format(".$this->table . "." . $filters['field'].", 'dd-MM-yyyy HH:mm:ss') LIKE '%$filters[data]%'");
+                                $query = $query->orWhereRaw("format(" . $this->table . "." . $filters['field'] . ", 'dd-MM-yyyy HH:mm:ss') LIKE '%$filters[data]%'");
                             } else {
                                 $query = $query->orWhere($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
                             }

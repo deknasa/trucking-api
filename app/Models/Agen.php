@@ -24,7 +24,7 @@ class Agen extends MyModel
     ];
 
     public function cekvalidasihapus($id)
-    {     
+    {
 
         $suratPengantar = DB::table('suratpengantar')
             ->from(
@@ -147,11 +147,11 @@ class Agen extends MyModel
             'kondisi' => false,
             'keterangan' => '',
         ];
- 
+
         selesai:
         return $data;
     }
-    
+
     public function isDeletable()
     {
         $statusApproval = Parameter::from(
@@ -166,7 +166,7 @@ class Agen extends MyModel
         $this->setRequestParameters();
 
         $aktif = request()->aktif ?? '';
-        
+
         $query = Agen::from(DB::raw("$this->table with (readuncommitted)"))
             ->select(
                 'agen.id',
@@ -193,33 +193,34 @@ class Agen extends MyModel
             ->leftJoin(DB::raw("parameter as statusapproval with (readuncommitted)"), 'agen.statusapproval', 'statusapproval.id')
             ->leftJoin(DB::raw("parameter as statustas with (readuncommitted)"), 'agen.statustas', 'statustas.id');
 
-   
-    
+
+
 
 
         $this->filter($query);
 
         if ($aktif == 'AKTIF') {
-            $statusaktif=Parameter::from(
+            $statusaktif = Parameter::from(
                 DB::raw("parameter with (readuncommitted)")
             )
-            ->where('grp','=','STATUS AKTIF')
-            ->where('text','=','AKTIF')
-            ->first();
+                ->where('grp', '=', 'STATUS AKTIF')
+                ->where('text', '=', 'AKTIF')
+                ->first();
 
-            $query ->where('agen.statusaktif','=',$statusaktif->id);
-        }        
+            $query->where('agen.statusaktif', '=', $statusaktif->id);
+        }
 
         $this->totalRows = $query->count();
         $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;
 
-        $this->sort($query);        
+        $this->sort($query);
         $this->paginate($query);
 
         $data = $query->get();
 
-        // dd($$query->toSql());
-;        return $data;
+            // dd($$query->toSql());
+        ;
+        return $data;
     }
 
     public function default()
@@ -231,7 +232,6 @@ class Agen extends MyModel
             $table->unsignedBigInteger('statustas')->nullable();
             $table->unsignedBigInteger('jenisemkl')->nullable();
             $table->string('keteranganjenisemkl', 255)->nullable();
-
         });
 
         $status = Parameter::from(
@@ -242,11 +242,11 @@ class Agen extends MyModel
             )
             ->where('grp', '=', 'STATUS AKTIF')
             ->where('subgrp', '=', 'STATUS AKTIF')
-            ->where('default','=','YA')
+            ->where('default', '=', 'YA')
             ->first();
 
         $iddefaultstatusaktif = $status->id ?? 0;
-        
+
         $status = Parameter::from(
             db::Raw("parameter with (readuncommitted)")
         )
@@ -255,11 +255,11 @@ class Agen extends MyModel
             )
             ->where('grp', '=', 'STATUS TAS')
             ->where('subgrp', '=', 'STATUS TAS')
-            ->where('default','=','YA')
+            ->where('default', '=', 'YA')
             ->first();
 
         $iddefaultstatustas = $status->id ?? 0;
-        
+
 
         $jenisemkl = DB::table('jenisemkl')->from(
             DB::raw('jenisemkl with (readuncommitted)')
@@ -270,10 +270,12 @@ class Agen extends MyModel
 
             )
             ->where('kodejenisemkl', '=', 'TAS')
-            ->first();        
+            ->first();
         DB::table($tempdefault)->insert(
-            ["statusaktif" => $iddefaultstatusaktif,"statustas" => $iddefaultstatustas,
-            "jenisemkl" => $jenisemkl->jenisemkl,"keteranganjenisemkl" => $jenisemkl->keteranganjenisemkl]
+            [
+                "statusaktif" => $iddefaultstatusaktif, "statustas" => $iddefaultstatustas,
+                "jenisemkl" => $jenisemkl->jenisemkl, "keteranganjenisemkl" => $jenisemkl->keteranganjenisemkl
+            ]
         );
 
         $query = DB::table($tempdefault)->from(
@@ -287,7 +289,7 @@ class Agen extends MyModel
             );
 
         $data = $query->first();
-        
+
         return $data;
     }
 
@@ -407,21 +409,23 @@ class Agen extends MyModel
 
                     break;
                 case "OR":
-                    foreach ($this->params['filters']['rules'] as $index => $filters) {
-                        if ($filters['field'] == 'statusaktif') {
-                            $query = $query->orWhere('parameter.text', '=', $filters['data']);
-                        } elseif ($filters['field'] == 'id') {
-                            $query = $query->orWhereRaw("(agen.id like '%$filters[data]%'");
-                        } elseif ($filters['field'] == 'updated_at') {
-                            $query = $query->orWhereRaw("format(agen.updated_at,'dd-MM-yyyy HH:mm:ss') like '%$filters[data]%')");                            
-                        } else if ($filters['field'] == 'statusapproval') {
-                            $query = $query->orWhere('statusapproval.text', '=', $filters['data']);
-                        } else if ($filters['field'] == 'statustas') {
-                            $query = $query->orWhere('statustas.text', '=', $filters['data']);
-                        } else {
-                            $query = $query->orWhere($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
+                    $query->where(function ($query) {
+                        foreach ($this->params['filters']['rules'] as $index => $filters) {
+                            if ($filters['field'] == 'statusaktif') {
+                                $query = $query->orWhere('parameter.text', '=', $filters['data']);
+                            } elseif ($filters['field'] == 'id') {
+                                $query = $query->orWhereRaw("(agen.id like '%$filters[data]%'");
+                            } elseif ($filters['field'] == 'updated_at') {
+                                $query = $query->orWhereRaw("format(agen.updated_at,'dd-MM-yyyy HH:mm:ss') like '%$filters[data]%'");
+                            } else if ($filters['field'] == 'statusapproval') {
+                                $query = $query->orWhere('statusapproval.text', '=', $filters['data']);
+                            } else if ($filters['field'] == 'statustas') {
+                                $query = $query->orWhere('statustas.text', '=', $filters['data']);
+                            } else {
+                                $query = $query->orWhere($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
+                            }
                         }
-                    }
+                    });
 
                     break;
                 default:

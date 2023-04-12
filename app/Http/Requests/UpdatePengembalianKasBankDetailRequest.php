@@ -30,8 +30,6 @@ class UpdatePengembalianKasBankDetailRequest extends FormRequest
             'keterangan_detail.*' => 'required',
             'ketcoadebet' => 'required|array',
             'ketcoadebet.*' => 'required',
-            'ketcoakredit' => 'required|array',
-            'ketcoakredit.*' => 'required',
         ];
     }
 }

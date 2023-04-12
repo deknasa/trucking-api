@@ -29,7 +29,6 @@ class StorePengembalianKasBankHeaderRequest extends FormRequest
                 "required",
                 new DateTutupBuku()
             ],
-            'cabang' => 'required',
             'alatbayar' => 'required',
             'dibayarke' => 'required',
 
@@ -55,7 +54,6 @@ class StorePengembalianKasBankHeaderRequest extends FormRequest
             'alatbayar' => 'alat bayar',
             'dibayarke' => 'dibayar ke',
             'ketcoadebet.*' => 'nama perkiraan (debet)',
-            'ketcoakredit.*' => 'nama perkiraan (kredit)',
             'keterangan_detail.*' => 'keterangan detail'
         ];
     }

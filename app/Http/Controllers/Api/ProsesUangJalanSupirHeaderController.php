@@ -276,7 +276,7 @@ class ProsesUangJalanSupirHeaderController extends Controller
                     'tglbukti' => date('Y-m-d', strtotime($request->tgltransfer[$i])),
                     'pengeluarantrucking_id' => $fetchFormatBLS->id,
                     'bank_id' => $bankid,
-                    'coa' => $fetchFormatBLS->coapostingkredit,
+                    'coa' => $fetchFormatBLS->coapostingdebet,
                     'pengeluaran_nobukti' => $nobuktiPengeluaran,
                     'statusformat' => $formatBLS->id,
                     'postingdari' => 'ENTRY PROSES UANG JALAN',
@@ -675,7 +675,7 @@ class ProsesUangJalanSupirHeaderController extends Controller
                     'isUpdate' => 1,
                     'postingdari' => 'EDIT PROSES UANG JALAN SUPIR',
                     'datadetail' => $pengeluaranTruckingDetailTransfer,
-                    'coa' => $fetchFormatBLS->coapostingkredit,
+                    'coa' => $fetchFormatBLS->coapostingdebet,
                 ];
 
                 $newPengeluaranTrucking = new PengeluaranTruckingHeader();

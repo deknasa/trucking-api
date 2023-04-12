@@ -241,7 +241,7 @@ class Supir extends MyModel
         $this->totalRows = $query->count();
         $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;
 
-        $this->sort($query);        
+        $this->sort($query);
         $this->paginate($query);
 
         $data = $query->get();
@@ -568,9 +568,9 @@ class Supir extends MyModel
 
     public function sort($query)
     {
-        if($this->params['sortIndex'] == 'supirold_id'){
+        if ($this->params['sortIndex'] == 'supirold_id') {
             return $query->orderBy('supirlama.namasupir', $this->params['sortOrder']);
-        }else{
+        } else {
             return $query->orderBy($this->table . '.' . $this->params['sortIndex'], $this->params['sortOrder']);
         }
     }
@@ -603,29 +603,31 @@ class Supir extends MyModel
 
                     break;
                 case "OR":
-                    foreach ($this->params['filters']['rules'] as $index => $filters) {
-                        if ($filters['field'] == 'statusaktif') {
-                            $query = $query->orWhere('parameter.text', '=', $filters['data']);
-                        } elseif ($filters['field'] == 'id') {
-                            $query = $query->orWhereRaw("(supir.id like '%$filters[data]%'");
-                        } elseif ($filters['field'] == 'updated_at') {
-                            $query = $query->orWhereRaw("format(supir.updated_at,'dd-MM-yyyy HH:mm:ss') like '%$filters[data]%')");
-                        } else if ($filters['field'] == 'statusadaupdategambar') {
-                            $query = $query->orWhere('statusadaupdategambar.text', '=', $filters['data']);
-                        } else if ($filters['field'] == 'statusluarkota') {
-                            $query = $query->orWhere('statusluarkota.text', '=', $filters['data']);
-                        } else if ($filters['field'] == 'statuszonatertentu') {
-                            $query = $query->orWhere('statuszonatertentu.text', '=', $filters['data']);
-                        } else if ($filters['field'] == 'statusblacklist') {
-                            $query = $query->orWhere('statusblacklist.text', '=', $filters['data']);
-                        } else if ($filters['field'] == 'zona_id') {
-                            $query = $query->orWhere('zona.zona', 'LIKE', "%$filters[data]%");
-                        } else if ($filters['field'] == 'supirold_id') {
-                            $query = $query->orWhere('supirlama.namasupir', 'LIKE', "%$filters[data]%");
-                        } else {
-                            $query = $query->orWhere($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
+                    $query->where(function ($query) {
+                        foreach ($this->params['filters']['rules'] as $index => $filters) {
+                            if ($filters['field'] == 'statusaktif') {
+                                $query = $query->orWhere('parameter.text', '=', $filters['data']);
+                            } elseif ($filters['field'] == 'id') {
+                                $query = $query->orWhereRaw("(supir.id like '%$filters[data]%'");
+                            } elseif ($filters['field'] == 'updated_at') {
+                                $query = $query->orWhereRaw("format(supir.updated_at,'dd-MM-yyyy HH:mm:ss') like '%$filters[data]%'");
+                            } else if ($filters['field'] == 'statusadaupdategambar') {
+                                $query = $query->orWhere('statusadaupdategambar.text', '=', $filters['data']);
+                            } else if ($filters['field'] == 'statusluarkota') {
+                                $query = $query->orWhere('statusluarkota.text', '=', $filters['data']);
+                            } else if ($filters['field'] == 'statuszonatertentu') {
+                                $query = $query->orWhere('statuszonatertentu.text', '=', $filters['data']);
+                            } else if ($filters['field'] == 'statusblacklist') {
+                                $query = $query->orWhere('statusblacklist.text', '=', $filters['data']);
+                            } else if ($filters['field'] == 'zona_id') {
+                                $query = $query->orWhere('zona.zona', 'LIKE', "%$filters[data]%");
+                            } else if ($filters['field'] == 'supirold_id') {
+                                $query = $query->orWhere('supirlama.namasupir', 'LIKE', "%$filters[data]%");
+                            } else {
+                                $query = $query->orWhere($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
+                            }
                         }
-                    }
+                    });
 
                     break;
                 default:
