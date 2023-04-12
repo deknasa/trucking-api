@@ -339,9 +339,9 @@ class AlatBayar extends MyModel
 
     public function sort($query)
     {
-        if($this->params['sortIndex'] == 'bank'){
+        if ($this->params['sortIndex'] == 'bank') {
             return $query->orderBy('bank.namabank', $this->params['sortOrder']);
-        }else{
+        } else {
             return $query->orderBy($this->table . '.' . $this->params['sortIndex'], $this->params['sortOrder']);
         }
     }
@@ -352,12 +352,16 @@ class AlatBayar extends MyModel
             switch ($this->params['filters']['groupOp']) {
                 case "AND":
                     foreach ($this->params['filters']['rules'] as $index => $filters) {
-                        if ($filters['field'] == 'statuslangsungcair') {
+                        if ($filters['field'] == 'statusaktif') {
+                            $query = $query->where('parameter.text', '=', "$filters[data]");
+                        } else if ($filters['field'] == 'statuslangsungcair') {
                             $query = $query->where('parameter_statuslangsungcair.text', '=', "$filters[data]");
                         } else if ($filters['field'] == 'statusdefault') {
                             $query = $query->where('parameter_statusdefault.text', '=', "$filters[data]");
                         } else if ($filters['field'] == 'bank') {
                             $query = $query->where('bank.namabank', 'LIKE', "%$filters[data]%");
+                        } else if ($filters['field'] == 'created_at' || $filters['field'] == 'updated_at') {
+                            $query = $query->whereRaw("format(".$this->table . "." . $filters['field'].", 'dd-MM-yyyy HH:mm:ss') LIKE '%$filters[data]%'");
                         } else {
                             $query = $query->where($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
                         }
@@ -365,21 +369,23 @@ class AlatBayar extends MyModel
 
                     break;
                 case "OR":
-                    foreach ($this->params['filters']['rules'] as $index => $filters) {
-                        if ($filters['field'] == 'statuslangsungcair') {
-                            $query = $query->orWhere('parameter_statuslangsungcair.text', '=', "$filters[data]");
-                        } elseif ($filters['field'] == 'id') {
-                            $query = $query->orWhereRaw("(alatbayar.id like '%$filters[data]%'");
-                        } elseif ($filters['field'] == 'updated_at') {
-                            $query = $query->orWhereRaw("format(alatbayar.updated_at,'dd-MM-yyyy HH:mm:ss') like '%$filters[data]%')");
-                        } else if ($filters['field'] == 'statusdefault') {
-                            $query = $query->orWhere('parameter_statusdefault.text', '=', "$filters[data]");
-                        } else if ($filters['field'] == 'bank') {
-                            $query = $query->orWhere('bank.namabank', 'LIKE', "%$filters[data]%");
-                        } else {
-                            $query = $query->orWhere($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
+                    $query->where(function ($query) {
+                        foreach ($this->params['filters']['rules'] as $index => $filters) {
+                            if ($filters['field'] == 'statusaktif') {
+                                $query = $query->orWhere('parameter.text', '=', "$filters[data]");
+                            } else if ($filters['field'] == 'statuslangsungcair') {
+                                $query = $query->orWhere('parameter_statuslangsungcair.text', '=', "$filters[data]");
+                            } else if ($filters['field'] == 'statusdefault') {
+                                $query = $query->orWhere('parameter_statusdefault.text', '=', "$filters[data]");
+                            } else if ($filters['field'] == 'bank') {
+                                $query = $query->orWhere('bank.namabank', 'LIKE', "%$filters[data]%");
+                            } else if ($filters['field'] == 'created_at' || $filters['field'] == 'updated_at') {
+                                $query = $query->orWhereRaw("format(".$this->table . "." . $filters['field'].", 'dd-MM-yyyy HH:mm:ss') LIKE '%$filters[data]%'");
+                            } else {
+                                $query = $query->orWhere($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
+                            }
                         }
-                    }
+                    });
 
                     break;
                 default:

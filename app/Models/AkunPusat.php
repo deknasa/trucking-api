@@ -295,6 +295,8 @@ class AkunPusat extends MyModel
                             $query = $query->where('parameter_statusneraca.text', '=', "$filters[data]");
                         } else if ($filters['field'] == 'statuslabarugi') {
                             $query = $query->where('parameter_statuslabarugi.text', '=', "$filters[data]");
+                        } else if ($filters['field'] == 'created_at' || $filters['field'] == 'updated_at') {
+                            $query = $query->whereRaw("format(".$this->table . "." . $filters['field'].", 'dd-MM-yyyy HH:mm:ss') LIKE '%$filters[data]%'");
                         } else {
                             $query = $query->where($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
                         }
@@ -306,10 +308,8 @@ class AkunPusat extends MyModel
                         foreach ($this->params['filters']['rules'] as $index => $filters) {
                             if ($filters['field'] == 'statusaktif') {
                                 $query = $query->orWhere('parameter_statusaktif.text', '=', $filters['data']);
-                            } elseif ($filters['field'] == 'id') {
-                                $query = $query->orWhereRaw("(akunpusat.id like '%$filters[data]%'");
-                            } elseif ($filters['field'] == 'updated_at') {
-                                $query = $query->orWhereRaw("format(akunpusat.updated_at,'dd-MM-yyyy HH:mm:ss') like '%$filters[data]%'");
+                            } else if ($filters['field'] == 'created_at' || $filters['field'] == 'updated_at') {
+                                $query = $query->orWhereRaw("format(".$this->table . "." . $filters['field'].", 'dd-MM-yyyy HH:mm:ss') LIKE '%$filters[data]%'");
                             } else if ($filters['field'] == 'statuscoa') {
                                 $query = $query->orWhere('parameter_statuscoa.text', '=', "$filters[data]");
                             } else if ($filters['field'] == 'statusaccountpayable') {

@@ -268,17 +268,11 @@ class Container extends MyModel
                 case "AND":
                     foreach ($this->params['filters']['rules'] as $index => $filters) {
                         if ($filters['field'] == 'statusaktif') {
-                            $query = $query->where('parameter.text', 'LIKE', "%$filters[data]%");
-                        } elseif ($filters['field'] == 'id') {
-                            $query = $query->where('container.id', 'LIKE', "%$filters[data]%");
-                        } elseif ($filters['field'] == 'modifiedby') {
-                            $query = $query->where('container.modifiedby', 'LIKE', "%$filters[data]%");
-                        } elseif ($filters['field'] == 'created_at') {
-                            $query = $query->where('container.created_at', 'LIKE', "%$filters[data]%");
-                        } elseif ($filters['field'] == 'updated_at') {
-                            $query = $query->where('container.updated_at', 'LIKE', "%$filters[data]%");
+                            $query = $query->where('parameter.text', '=', "$filters[data]");
+                        } else if ($filters['field'] == 'created_at' || $filters['field'] == 'updated_at') {
+                            $query = $query->whereRaw("format(".$this->table . "." . $filters['field'].", 'dd-MM-yyyy HH:mm:ss') LIKE '%$filters[data]%'");
                         } else {
-                            $query = $query->where($filters['field'], 'LIKE', "%$filters[data]%");
+                            $query = $query->where($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
                         }
                     }
 
@@ -288,17 +282,11 @@ class Container extends MyModel
                     $query->where(function ($query) {
                         foreach ($this->params['filters']['rules'] as $index => $filters) {
                             if ($filters['field'] == 'statusaktif') {
-                                $query = $query->orWhere('parameter.text', 'LIKE', "%$filters[data]%");
-                            } elseif ($filters['field'] == 'id') {
-                                $query = $query->orWhereRaw("(container.id like '%$filters[data]%'");
-                            } elseif ($filters['field'] == 'updated_at') {
-                                $query = $query->orWhereRaw("format(container.updated_at,'dd-MM-yyyy HH:mm:ss') like '%$filters[data]%'");
-                            } elseif ($filters['field'] == 'modifiedby') {
-                                $query = $query->orWhere('container.modifiedby', 'LIKE', "%$filters[data]%");
-                            } elseif ($filters['field'] == 'created_at') {
-                                $query = $query->orWhere('container.created_at', 'LIKE', "%$filters[data]%");
+                                $query = $query->orWhere('parameter.text', '=', "$filters[data]");
+                            } else if ($filters['field'] == 'created_at' || $filters['field'] == 'updated_at') {
+                                $query = $query->orWhereRaw("format(".$this->table . "." . $filters['field'].", 'dd-MM-yyyy HH:mm:ss') LIKE '%$filters[data]%'");
                             } else {
-                                $query = $query->orWhere($filters['field'], 'LIKE', "%$filters[data]%");
+                                $query = $query->orWhere($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
                             }
                         }
                     });

@@ -37,7 +37,7 @@ class Supplier extends MyModel
             ->where('a.supplier_id', '=', $id)
             ->first();
         if (isset($hutang)) {
-             $data = [
+            $data = [
                 'kondisi' => true,
                 'keterangan' => 'Hutang',
             ];
@@ -54,7 +54,7 @@ class Supplier extends MyModel
             ->where('a.supplier_id', '=', $id)
             ->first();
         if (isset($hutangBayar)) {
-             $data = [
+            $data = [
                 'kondisi' => true,
                 'keterangan' => 'Hutang Bayar',
             ];
@@ -70,7 +70,7 @@ class Supplier extends MyModel
             ->where('a.supplier_id', '=', $id)
             ->first();
         if (isset($penerimaanStok)) {
-             $data = [
+            $data = [
                 'kondisi' => true,
                 'keterangan' => 'Penerimaan Stok',
             ];
@@ -86,7 +86,7 @@ class Supplier extends MyModel
             ->where('a.supplier_id', '=', $id)
             ->first();
         if (isset($pengeluaranStok)) {
-             $data = [
+            $data = [
                 'kondisi' => true,
                 'keterangan' => 'Pengeluaran Stok',
             ];
@@ -141,16 +141,16 @@ class Supplier extends MyModel
             ->leftJoin('parameter as parameter_statusaktif', "supplier.statusaktif", '=', 'parameter_statusaktif.id')
             ->leftJoin('parameter as parameter_statusdaftarharga', "supplier.statusdaftarharga", '=', 'parameter_statusdaftarharga.id');
 
-            if ($aktif == 'AKTIF') {
-                $statusaktif = Parameter::from(
-                    DB::raw("parameter with (readuncommitted)")
-                )
-                    ->where('grp', '=', 'STATUS AKTIF')
-                    ->where('text', '=', 'AKTIF')
-                    ->first();
-    
-                $query->where('supplier.statusaktif', '=', $statusaktif->id);
-            }
+        if ($aktif == 'AKTIF') {
+            $statusaktif = Parameter::from(
+                DB::raw("parameter with (readuncommitted)")
+            )
+                ->where('grp', '=', 'STATUS AKTIF')
+                ->where('text', '=', 'AKTIF')
+                ->first();
+
+            $query->where('supplier.statusaktif', '=', $statusaktif->id);
+        }
 
         $this->totalRows = $query->count();
         $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;
@@ -181,11 +181,11 @@ class Supplier extends MyModel
             )
             ->where('grp', '=', 'STATUS AKTIF')
             ->where('subgrp', '=', 'STATUS AKTIF')
-            ->where('default','=','YA')
+            ->where('default', '=', 'YA')
             ->first();
 
         $iddefaultstatusaktif = $status->id ?? 0;
-        
+
         $status = Parameter::from(
             db::Raw("parameter with (readuncommitted)")
         )
@@ -194,14 +194,14 @@ class Supplier extends MyModel
             )
             ->where('grp', '=', 'STATUS DAFTAR HARGA')
             ->where('subgrp', '=', 'STATUS DAFTAR HARGA')
-            ->where('default','=','YA')
+            ->where('default', '=', 'YA')
             ->first();
 
         $iddefaultstatusdaftarharga = $status->id ?? 0;
-        
+
 
         DB::table($tempdefault)->insert(
-            ["statusaktif" => $iddefaultstatusaktif,"statusdaftarharga" => $iddefaultstatusdaftarharga]
+            ["statusaktif" => $iddefaultstatusaktif, "statusdaftarharga" => $iddefaultstatusdaftarharga]
         );
 
         $query = DB::table($tempdefault)->from(
@@ -213,7 +213,7 @@ class Supplier extends MyModel
             );
 
         $data = $query->first();
-        
+
         return $data;
     }
 
@@ -248,7 +248,7 @@ class Supplier extends MyModel
             'supplier.updated_at'
 
         )
-        ->where('supplier.id', $id);
+            ->where('supplier.id', $id);
 
         $data = $query->first();
 
@@ -286,7 +286,7 @@ class Supplier extends MyModel
             $this->table.updated_at"
             )
 
-            );
+        );
     }
 
     public function createTemp(string $modelTable)
@@ -342,6 +342,8 @@ class Supplier extends MyModel
                             $query = $query->where('parameter_statusaktif.text', '=', $filters['data']);
                         } else if ($filters['field'] == 'statusdaftarharga') {
                             $query = $query->where('parameter_statusdaftarharga.text', '=', $filters['data']);
+                        } else if ($filters['field'] == 'created_at' || $filters['field'] == 'updated_at') {
+                            $query = $query->whereRaw("format(".$this->table . "." . $filters['field'].", 'dd-MM-yyyy HH:mm:ss') LIKE '%$filters[data]%'");
                         } else {
                             $query = $query->where($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
                         }
@@ -349,15 +351,19 @@ class Supplier extends MyModel
 
                     break;
                 case "OR":
-                    foreach ($this->params['filters']['rules'] as $index => $filters) {
-                        if ($filters['field'] == 'statusaktif') {
-                            $query = $query->orWhere('parameter_statusaktif.text', '=', $filters['data']);
-                        } else if ($filters['field'] == 'statusdaftarharga') {
-                            $query = $query->orWhere('parameter_statusdaftarharga.text', '=', $filters['data']);
-                        } else {
-                            $query = $query->orWhere($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
+                    $query->where(function ($query) {
+                        foreach ($this->params['filters']['rules'] as $index => $filters) {
+                            if ($filters['field'] == 'statusaktif') {
+                                $query = $query->orWhere('parameter_statusaktif.text', '=', $filters['data']);
+                            } else if ($filters['field'] == 'statusdaftarharga') {
+                                $query = $query->orWhere('parameter_statusdaftarharga.text', '=', $filters['data']);
+                            } else if ($filters['field'] == 'created_at' || $filters['field'] == 'updated_at') {
+                                $query = $query->orWhereRaw("format(".$this->table . "." . $filters['field'].", 'dd-MM-yyyy HH:mm:ss') LIKE '%$filters[data]%'");
+                            } else {
+                                $query = $query->orWhere($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
+                            }
                         }
-                    }
+                    });
 
                     break;
                 default:

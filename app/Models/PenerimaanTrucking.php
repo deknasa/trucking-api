@@ -174,6 +174,8 @@ class PenerimaanTrucking extends MyModel
                             $query = $query->where('postingdebet.keterangancoa', 'LIKE', "%$filters[data]%");
                         } else if ($filters['field'] == 'coapostingkredit_keterangan') {
                             $query = $query->where('postingkredit.keterangancoa', 'LIKE', "%$filters[data]%");
+                        } else if ($filters['field'] == 'created_at' || $filters['field'] == 'updated_at') {
+                            $query = $query->whereRaw("format(" . $this->table . "." . $filters['field'] . ", 'dd-MM-yyyy HH:mm:ss') LIKE '%$filters[data]%'");
                         } else {
                             $query = $query->where($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
                         }
@@ -192,6 +194,8 @@ class PenerimaanTrucking extends MyModel
                             $query = $query->orWhere('postingdebet.keterangancoa', 'LIKE', "%$filters[data]%");
                         } else if ($filters['field'] == 'coapostingkredit_keterangan') {
                             $query = $query->orWhere('postingkredit.keterangancoa', 'LIKE', "%$filters[data]%");
+                        } else if ($filters['field'] == 'created_at' || $filters['field'] == 'updated_at') {
+                            $query = $query->orWhereRaw("format(" . $this->table . "." . $filters['field'] . ", 'dd-MM-yyyy HH:mm:ss') LIKE '%$filters[data]%'");
                         } else {
                             $query = $query->orWhere($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
                         }

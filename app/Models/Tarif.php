@@ -332,6 +332,10 @@ class Tarif extends MyModel
                             $query = $query->where('p.text', '=', "$filters[data]");
                         } elseif ($filters['field'] == 'statussistemton') {
                             $query = $query->where('sistemton.text', '=', "$filters[data]");
+                        } else if ($filters['field'] == 'tglmulaiberlaku') {
+                            $query = $query->whereRaw("format(".$this->table . "." . $filters['field'].", 'dd-MM-yyyy') LIKE '%$filters[data]%'");
+                        } else if ($filters['field'] == 'created_at' || $filters['field'] == 'updated_at') {
+                            $query = $query->whereRaw("format(".$this->table . "." . $filters['field'].", 'dd-MM-yyyy HH:mm:ss') LIKE '%$filters[data]%'");
                         } else {
                             $query = $query->where('tarif.' . $filters['field'], 'LIKE', "%$filters[data]%");
                         }
@@ -339,25 +343,31 @@ class Tarif extends MyModel
 
                     break;
                 case "OR":
-                    foreach ($this->params['filters']['rules'] as $index => $filters) {
-                        if ($filters['field'] == 'statusaktif') {
-                            $query = $query->orWhere('parameter.text', '=', "$filters[data]");
-                        } elseif ($filters['field'] == 'container_id') {
-                            $query = $query->orWhere('container.keterangan', 'LIKE', "%$filters[data]%");
-                        } elseif ($filters['field'] == 'upahsupir_id') {
-                            $query = $query->orWhere('B.kotasampai_id', 'LIKE', "%$filters[data]%");
-                        } elseif ($filters['field'] == 'kota_id') {
-                            $query = $query->orWhere('kota.keterangan', 'LIKE', "%$filters[data]%");
-                        } elseif ($filters['field'] == 'zona_id') {
-                            $query = $query->orWhere('zona.keterangan', 'LIKE', "%$filters[data]%");
-                        } elseif ($filters['field'] == 'statuspenyesuaianharga') {
-                            $query = $query->orWhere('p.text', '=', "$filters[data]");
-                        } elseif ($filters['field'] == 'statussistemton') {
-                            $query = $query->orWhere('sistemton.text', '=', "$filters[data]");
-                        } else {
-                            $query = $query->orWhere('tarif.' . $filters['field'], 'LIKE', "%$filters[data]%");
+                    $query->where(function ($query) {
+                        foreach ($this->params['filters']['rules'] as $index => $filters) {
+                            if ($filters['field'] == 'statusaktif') {
+                                $query = $query->orWhere('parameter.text', '=', "$filters[data]");
+                            } elseif ($filters['field'] == 'container_id') {
+                                $query = $query->orWhere('container.keterangan', 'LIKE', "%$filters[data]%");
+                            } elseif ($filters['field'] == 'upahsupir_id') {
+                                $query = $query->orWhere('B.kotasampai_id', 'LIKE', "%$filters[data]%");
+                            } elseif ($filters['field'] == 'kota_id') {
+                                $query = $query->orWhere('kota.keterangan', 'LIKE', "%$filters[data]%");
+                            } elseif ($filters['field'] == 'zona_id') {
+                                $query = $query->orWhere('zona.keterangan', 'LIKE', "%$filters[data]%");
+                            } elseif ($filters['field'] == 'statuspenyesuaianharga') {
+                                $query = $query->orWhere('p.text', '=', "$filters[data]");
+                            } elseif ($filters['field'] == 'statussistemton') {
+                                $query = $query->orWhere('sistemton.text', '=', "$filters[data]");
+                            } else if ($filters['field'] == 'tglmulaiberlaku') {
+                                $query = $query->orWhereRaw("format(".$this->table . "." . $filters['field'].", 'dd-MM-yyyy') LIKE '%$filters[data]%'");
+                            } else if ($filters['field'] == 'created_at' || $filters['field'] == 'updated_at') {
+                                $query = $query->orWhereRaw("format(".$this->table . "." . $filters['field'].", 'dd-MM-yyyy HH:mm:ss') LIKE '%$filters[data]%'");
+                            } else {
+                                $query = $query->orWhere('tarif.' . $filters['field'], 'LIKE', "%$filters[data]%");
+                            }
                         }
-                    }
+                    });
 
                     break;
                 default:

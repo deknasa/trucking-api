@@ -24,7 +24,7 @@ class Gudang extends MyModel
     //     'updated_at' => 'date:d-m-Y H:i:s'
     // ]; 
     public function cekvalidasihapus($id)
-    {     
+    {
 
         $penerimaanStok = DB::table('penerimaanstokheader')
             ->from(
@@ -41,7 +41,7 @@ class Gudang extends MyModel
                 'keterangan' => 'Penerimaan Stok',
             ];
 
-            
+
             goto selesai;
         }
 
@@ -60,7 +60,7 @@ class Gudang extends MyModel
                 'keterangan' => 'Pengeluaran Stok',
             ];
 
-            
+
             goto selesai;
         }
         $stok = DB::table('stok')
@@ -78,14 +78,14 @@ class Gudang extends MyModel
                 'keterangan' => 'Stok',
             ];
 
-            
+
             goto selesai;
         }
         $data = [
             'kondisi' => false,
             'keterangan' => '',
         ];
- 
+
         selesai:
         return $data;
     }
@@ -124,7 +124,7 @@ class Gudang extends MyModel
         $this->totalRows = $query->count();
         $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;
 
-        $this->sort($query);        
+        $this->sort($query);
         $this->paginate($query);
 
         $data = $query->get();
@@ -221,7 +221,9 @@ class Gudang extends MyModel
                 case "AND":
                     foreach ($this->params['filters']['rules'] as $index => $filters) {
                         if ($filters['field'] == 'statusaktif') {
-                            $query = $query->where('parameter.text', 'LIKE', "%$filters[data]%");
+                            $query = $query->where('parameter.text', '=', "$filters[data]");
+                        } else if ($filters['field'] == 'created_at' || $filters['field'] == 'updated_at') {
+                            $query = $query->whereRaw("format(" . $this->table . "." . $filters['field'] . ", 'dd-MM-yyyy HH:mm:ss') LIKE '%$filters[data]%'");
                         } else {
                             $query = $query->where('gudang.' . $filters['field'], 'LIKE', "%$filters[data]%");
                         }
@@ -229,17 +231,17 @@ class Gudang extends MyModel
 
                     break;
                 case "OR":
-                    foreach ($this->params['filters']['rules'] as $index => $filters) {
-                        if ($filters['field'] == 'statusaktif') {
-                            $query = $query->orWhere('parameter.text', 'LIKE', "%$filters[data]%");
-                        } elseif ($filters['field'] == 'id') {
-                            $query = $query->orWhereRaw("(gudang.id like '%$filters[data]%'");
-                        } elseif ($filters['field'] == 'updated_at') {
-                            $query = $query->orWhereRaw("format(gudang.updated_at,'dd-MM-yyyy HH:mm:ss') like '%$filters[data]%')");
-                        } else {
-                            $query = $query->orWhere('gudang.' . $filters['field'], 'LIKE', "%$filters[data]%");
+                    $query->where(function ($query) {
+                        foreach ($this->params['filters']['rules'] as $index => $filters) {
+                            if ($filters['field'] == 'statusaktif') {
+                                $query = $query->orWhere('parameter.text', '=', "$filters[data]");
+                            } else if ($filters['field'] == 'created_at' || $filters['field'] == 'updated_at') {
+                                $query = $query->orWhereRaw("format(" . $this->table . "." . $filters['field'] . ", 'dd-MM-yyyy HH:mm:ss') LIKE '%$filters[data]%'");
+                            } else {
+                                $query = $query->orWhere('gudang.' . $filters['field'], 'LIKE', "%$filters[data]%");
+                            }
                         }
-                    }
+                    });
 
                     break;
                 default:

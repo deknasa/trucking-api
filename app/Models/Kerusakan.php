@@ -23,7 +23,7 @@ class Kerusakan extends MyModel
     //     'updated_at' => 'date:d-m-Y H:i:s'
     // ]; 
     public function cekvalidasihapus($id)
-    {     
+    {
 
         $pengeluaranStok = DB::table('pengeluaranstokheader')
             ->from(
@@ -40,7 +40,7 @@ class Kerusakan extends MyModel
                 'keterangan' => 'Pengeluaran Stok',
             ];
 
-            
+
             goto selesai;
         }
 
@@ -49,7 +49,7 @@ class Kerusakan extends MyModel
             'kondisi' => false,
             'keterangan' => '',
         ];
- 
+
         selesai:
         return $data;
     }
@@ -69,7 +69,7 @@ class Kerusakan extends MyModel
                 'kerusakan.updated_at'
             )
             ->leftJoin(DB::raw("parameter with (readuncommitted)"), 'kerusakan.statusaktif', '=', 'parameter.id');
-          
+
 
 
         $this->filter($query);
@@ -83,7 +83,7 @@ class Kerusakan extends MyModel
                 ->first();
 
             $query->where('kerusakan.statusaktif', '=', $statusaktif->id);
-        }          
+        }
         $this->totalRows = $query->count();
         $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;
 
@@ -97,30 +97,31 @@ class Kerusakan extends MyModel
 
     public function default()
     {
-        
+
         $tempdefault = '##tempdefault' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
         Schema::create($tempdefault, function ($table) {
             $table->unsignedBigInteger('statusaktif')->nullable();
         });
 
-        $statusaktif=Parameter::from (
+        $statusaktif = Parameter::from(
             db::Raw("parameter with (readuncommitted)")
         )
-        ->select (
-            'id'
-        )
-        ->where('grp','=','STATUS AKTIF')
-        ->where('subgrp','=','STATUS AKTIF')
-        ->where('default', '=', 'YA')
-        ->first();
+            ->select(
+                'id'
+            )
+            ->where('grp', '=', 'STATUS AKTIF')
+            ->where('subgrp', '=', 'STATUS AKTIF')
+            ->where('default', '=', 'YA')
+            ->first();
 
         DB::table($tempdefault)->insert(["statusaktif" => $statusaktif->id]);
 
-        $query=DB::table($tempdefault)->from(
-            DB::raw($tempdefault )
+        $query = DB::table($tempdefault)->from(
+            DB::raw($tempdefault)
         )
             ->select(
-                'statusaktif');
+                'statusaktif'
+            );
 
         $data = $query->first();
         // dd($data);
@@ -181,6 +182,8 @@ class Kerusakan extends MyModel
                     foreach ($this->params['filters']['rules'] as $index => $filters) {
                         if ($filters['field'] == 'statusaktif') {
                             $query = $query->where('parameter.text', '=', "$filters[data]");
+                        } else if ($filters['field'] == 'created_at' || $filters['field'] == 'updated_at') {
+                            $query = $query->whereRaw("format(".$this->table . "." . $filters['field'].", 'dd-MM-yyyy HH:mm:ss') LIKE '%$filters[data]%'");
                         } else {
                             $query = $query->where('kerusakan.' . $filters['field'], 'LIKE', "%$filters[data]%");
                         }
@@ -188,17 +191,17 @@ class Kerusakan extends MyModel
 
                     break;
                 case "OR":
-                    foreach ($this->params['filters']['rules'] as $index => $filters) {
-                        if ($filters['field'] == 'statusaktif') {
-                            $query = $query->orWhere('parameter.text', '=', "$filters[data]");
-                        } elseif ($filters['field'] == 'id') {
-                            $query = $query->orWhereRaw("(kerusakan.id like '%$filters[data]%'");
-                        } elseif ($filters['field'] == 'updated_at') {
-                            $query = $query->orWhereRaw("format(kerusakan.updated_at,'dd-MM-yyyy HH:mm:ss') like '%$filters[data]%')");
-                        } else {
-                            $query = $query->orWhere('kerusakan.' . $filters['field'], 'LIKE', "%$filters[data]%");
+                    $query->where(function ($query) {
+                        foreach ($this->params['filters']['rules'] as $index => $filters) {
+                            if ($filters['field'] == 'statusaktif') {
+                                $query = $query->orWhere('parameter.text', '=', "$filters[data]");
+                            } else if ($filters['field'] == 'created_at' || $filters['field'] == 'updated_at') {
+                                $query = $query->orWhereRaw("format(".$this->table . "." . $filters['field'].", 'dd-MM-yyyy HH:mm:ss') LIKE '%$filters[data]%'");
+                            } else {
+                                $query = $query->orWhere('kerusakan.' . $filters['field'], 'LIKE', "%$filters[data]%");
+                            }
                         }
-                    }
+                    });
 
                     break;
                 default:

@@ -41,7 +41,7 @@ class Kota extends MyModel
             ];
             goto selesai;
         }
-        
+
         $suratpengantar = DB::table('suratpengantar')
             ->from(
                 DB::raw("suratpengantar as a with (readuncommitted)")
@@ -140,7 +140,7 @@ class Kota extends MyModel
         $this->totalRows = $query->count();
         $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;
 
-        $this->sort($query);        
+        $this->sort($query);
         $this->paginate($query);
 
         $data = $query->get();
@@ -240,9 +240,9 @@ class Kota extends MyModel
 
     public function sort($query)
     {
-        if($this->params['sortIndex'] == 'zona_id'){
+        if ($this->params['sortIndex'] == 'zona_id') {
             return $query->orderBy('zona.zona', $this->params['sortOrder']);
-        }else{
+        } else {
             return $query->orderBy($this->table . '.' . $this->params['sortIndex'], $this->params['sortOrder']);
         }
     }
@@ -257,6 +257,8 @@ class Kota extends MyModel
                             $query = $query->where('parameter.text', '=', "$filters[data]");
                         } else if ($filters['field'] == 'zona_id') {
                             $query = $query->where('zona.zona', 'LIKE', "%$filters[data]%");
+                        } else if ($filters['field'] == 'created_at' || $filters['field'] == 'updated_at') {
+                            $query = $query->whereRaw("format(".$this->table . "." . $filters['field'].", 'dd-MM-yyyy HH:mm:ss') LIKE '%$filters[data]%'");
                         } else {
                             $query = $query->where('kota.' . $filters['field'], 'LIKE', "%$filters[data]%");
                         }
@@ -264,19 +266,19 @@ class Kota extends MyModel
 
                     break;
                 case "OR":
-                    foreach ($this->params['filters']['rules'] as $index => $filters) {
-                        if ($filters['field'] == 'statusaktif') {
-                            $query = $query->orWhere('parameter.text', '=', "$filters[data]");
-                        } elseif ($filters['field'] == 'id') {
-                            $query = $query->orWhereRaw("(kota.id like '%$filters[data]%'");
-                        } elseif ($filters['field'] == 'updated_at') {
-                            $query = $query->orWhereRaw("format(kota.updated_at,'dd-MM-yyyy HH:mm:ss') like '%$filters[data]%')");
-                        } else if ($filters['field'] == 'zona_id') {
-                            $query = $query->orWhere('zona.zona', 'LIKE', "%$filters[data]%");
-                        } else {
-                            $query = $query->orWhere('kota.' . $filters['field'], 'LIKE', "%$filters[data]%");
+                    $query->where(function ($query) {
+                        foreach ($this->params['filters']['rules'] as $index => $filters) {
+                            if ($filters['field'] == 'statusaktif') {
+                                $query = $query->orWhere('parameter.text', '=', "$filters[data]");
+                            } else if ($filters['field'] == 'created_at' || $filters['field'] == 'updated_at') {
+                                $query = $query->orWhereRaw("format(".$this->table . "." . $filters['field'].", 'dd-MM-yyyy HH:mm:ss') LIKE '%$filters[data]%'");
+                            } else if ($filters['field'] == 'zona_id') {
+                                $query = $query->orWhere('zona.zona', 'LIKE', "%$filters[data]%");
+                            } else {
+                                $query = $query->orWhere('kota.' . $filters['field'], 'LIKE', "%$filters[data]%");
+                            }
                         }
-                    }
+                    });
 
                     break;
                 default:

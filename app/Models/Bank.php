@@ -282,16 +282,16 @@ class Bank extends MyModel
 
             $query->where('bank.statusaktif', '=', $statusaktif->id);
         }
-        if($tipe == 'KAS'){
+        if ($tipe == 'KAS') {
             $query->where('bank.tipe', '=', 'KAS');
         }
-        if($tipe == 'BANK'){
+        if ($tipe == 'BANK') {
             $query->where('bank.tipe', '=', 'BANK');
         }
-        if($bankId != 0){
+        if ($bankId != 0) {
             $query->where('bank.id', '=', $bankId);
         }
-        if($bankExclude != 0){
+        if ($bankExclude != 0) {
             $query->where('bank.id', '!=', $bankExclude);
         }
 
@@ -417,9 +417,9 @@ class Bank extends MyModel
 
     public function sort($query)
     {
-        if($this->params['sortIndex'] == 'coa'){
+        if ($this->params['sortIndex'] == 'coa') {
             return $query->orderBy('akunpusat.keterangancoa', $this->params['sortOrder']);
-        }else{
+        } else {
             return $query->orderBy($this->table . '.' . $this->params['sortIndex'], $this->params['sortOrder']);
         }
     }
@@ -438,6 +438,8 @@ class Bank extends MyModel
                             $query = $query->where('formatpenerimaan.text', 'LIKE', "%$filters[data]%");
                         } else if ($filters['field'] == 'formatpengeluaran') {
                             $query = $query->where('formatpengeluaran.text', 'LIKE', "%$filters[data]%");
+                        } else if ($filters['field'] == 'created_at' || $filters['field'] == 'updated_at') {
+                            $query = $query->whereRaw("format(" . $this->table . "." . $filters['field'] . ", 'dd-MM-yyyy HH:mm:ss') LIKE '%$filters[data]%'");
                         } else {
                             $query = $query->where($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
                         }
@@ -445,23 +447,23 @@ class Bank extends MyModel
 
                     break;
                 case "OR":
-                    foreach ($this->params['filters']['rules'] as $index => $filters) {
-                        if ($filters['field'] == 'statusaktif') {
-                            $query = $query->orWhere('parameter.text', '=', $filters['data']);
-                        } elseif ($filters['field'] == 'id') {
-                            $query = $query->orWhereRaw("(bank.id like '%$filters[data]%'");
-                        } elseif ($filters['field'] == 'updated_at') {
-                            $query = $query->orWhereRaw("format(bank.updated_at,'dd-MM-yyyy HH:mm:ss') like '%$filters[data]%')");
-                        } else if ($filters['field'] == 'coa') {
-                            $query = $query->orWhere('akunpusat.keterangancoa', 'LIKE', "%$filters[data]%");
-                        } else if ($filters['field'] == 'formatpenerimaan') {
-                            $query = $query->orWhere('formatpenerimaan.text', 'LIKE', "%$filters[data]%");
-                        } else if ($filters['field'] == 'formatpengeluaran') {
-                            $query = $query->orWhere('formatpengeluaran.text', 'LIKE', "%$filters[data]%");
-                        } else {
-                            $query = $query->orWhere($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
+                    $query->where(function ($query) {
+                        foreach ($this->params['filters']['rules'] as $index => $filters) {
+                            if ($filters['field'] == 'statusaktif') {
+                                $query = $query->orWhere('parameter.text', '=', $filters['data']);
+                            } else if ($filters['field'] == 'coa') {
+                                $query = $query->orWhere('akunpusat.keterangancoa', 'LIKE', "%$filters[data]%");
+                            } else if ($filters['field'] == 'formatpenerimaan') {
+                                $query = $query->orWhere('formatpenerimaan.text', 'LIKE', "%$filters[data]%");
+                            } else if ($filters['field'] == 'formatpengeluaran') {
+                                $query = $query->orWhere('formatpengeluaran.text', 'LIKE', "%$filters[data]%");
+                            } else if ($filters['field'] == 'created_at' || $filters['field'] == 'updated_at') {
+                                $query = $query->orWhereRaw("format(" . $this->table . "." . $filters['field'] . ", 'dd-MM-yyyy HH:mm:ss') LIKE '%$filters[data]%'");
+                            } else {
+                                $query = $query->orWhere($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
+                            }
                         }
-                    }
+                    });
 
                     break;
                 default:

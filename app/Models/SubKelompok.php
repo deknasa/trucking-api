@@ -204,6 +204,8 @@ class SubKelompok extends MyModel
                             $query = $query->where('parameter.text', '=', $filters['data']);
                         } else if ($filters['field'] == 'kelompok_id') {
                             $query = $query->where('kelompok.keterangan', 'LIKE', "%$filters[data]%");
+                        } else if ($filters['field'] == 'created_at' || $filters['field'] == 'updated_at') {
+                            $query = $query->whereRaw("format(".$this->table . "." . $filters['field'].", 'dd-MM-yyyy HH:mm:ss') LIKE '%$filters[data]%'");
                         } else {
                             $query = $query->where($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
                         }
@@ -216,6 +218,8 @@ class SubKelompok extends MyModel
                             $query = $query->orWhere('parameter.text', '=', $filters['data']);
                         } else if ($filters['field'] == 'kelompok_id') {
                             $query = $query->orWhere('kelompok.keterangan', 'LIKE', "%$filters[data]%");
+                        } else if ($filters['field'] == 'created_at' || $filters['field'] == 'updated_at') {
+                            $query = $query->orWhereRaw("format(".$this->table . "." . $filters['field'].", 'dd-MM-yyyy HH:mm:ss') LIKE '%$filters[data]%'");
                         } else {
                             $query = $query->orWhere($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
                         }

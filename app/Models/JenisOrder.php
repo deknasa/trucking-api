@@ -223,6 +223,8 @@ class JenisOrder extends MyModel
                     foreach ($this->params['filters']['rules'] as $index => $filters) {
                         if ($filters['field'] == 'statusaktif') {
                             $query = $query->where('parameter.text', '=', "$filters[data]");
+                        } else if ($filters['field'] == 'created_at' || $filters['field'] == 'updated_at') {
+                            $query = $query->whereRaw("format(".$this->table . "." . $filters['field'].", 'dd-MM-yyyy HH:mm:ss') LIKE '%$filters[data]%'");
                         } else {
                             $query = $query->where('jenisorder.' . $filters['field'], 'LIKE', "%$filters[data]%");
                         }
@@ -234,10 +236,8 @@ class JenisOrder extends MyModel
                         foreach ($this->params['filters']['rules'] as $index => $filters) {
                             if ($filters['field'] == 'statusaktif') {
                                 $query = $query->orWhere('parameter.text', '=', "$filters[data]");
-                            } elseif ($filters['field'] == 'id') {
-                                $query = $query->orWhereRaw("(jenisorder.id like '%$filters[data]%'");
-                            } elseif ($filters['field'] == 'updated_at') {
-                                $query = $query->orWhereRaw("format(jenisorder.updated_at,'dd-MM-yyyy HH:mm:ss') like '%$filters[data]%'");
+                            } else if ($filters['field'] == 'created_at' || $filters['field'] == 'updated_at') {
+                                $query = $query->orWhereRaw("format(".$this->table . "." . $filters['field'].", 'dd-MM-yyyy HH:mm:ss') LIKE '%$filters[data]%'");
                             } else {
                                 $query = $query->orWhere('jenisorder.' . $filters['field'], 'LIKE', "%$filters[data]%");
                             }

@@ -219,6 +219,8 @@ class User extends Authenticatable
                             $query = $query->where('menu2.menuname', 'LIKE', "%$filters[data]%");
                         } else if ($filters['field'] == 'aco_id') {
                             $query = $query->where('acos.nama', 'LIKE', "%$filters[data]%");
+                        } else if ($filters['field'] == 'created_at' || $filters['field'] == 'updated_at') {
+                            $query = $query->whereRaw("format([user].".$filters['field'].", 'dd-MM-yyyy HH:mm:ss') LIKE '%$filters[data]%'");
                         } else {
                             $query = $query->where($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
                         }
@@ -233,6 +235,8 @@ class User extends Authenticatable
                             $query = $query->orWhere('menu2.menuname', 'LIKE', "%$filters[data]%");
                         } else if ($filters['field'] == 'aco_id') {
                             $query = $query->orWhere('acos.nama', 'LIKE', "%$filters[data]%");
+                        } else if ($filters['field'] == 'created_at' || $filters['field'] == 'updated_at') {
+                            $query = $query->orWhereRaw("format([user].".$filters['field'].", 'dd-MM-yyyy HH:mm:ss') LIKE '%$filters[data]%'");
                         } else {
                             $query = $query->orWhere($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
                         }

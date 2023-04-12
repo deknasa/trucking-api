@@ -23,7 +23,7 @@ class JenisEmkl extends MyModel
     //     'updated_at' => 'date:d-m-Y H:i:s'
     // ];
     public function cekvalidasihapus($id)
-    {     
+    {
 
         $agen = DB::table('agen')
             ->from(
@@ -40,7 +40,7 @@ class JenisEmkl extends MyModel
                 'keterangan' => 'Agen',
             ];
 
-            
+
             goto selesai;
         }
 
@@ -49,11 +49,11 @@ class JenisEmkl extends MyModel
             'kondisi' => false,
             'keterangan' => '',
         ];
- 
+
         selesai:
         return $data;
     }
-    
+
     public function get()
     {
         $this->setRequestParameters();
@@ -89,7 +89,7 @@ class JenisEmkl extends MyModel
         $this->totalRows = $query->count();
         $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;
 
-        $this->sort($query);        
+        $this->sort($query);
         $this->paginate($query);
 
         $data = $query->get();
@@ -197,6 +197,8 @@ class JenisEmkl extends MyModel
                             $query = $query->where('jenisemkl.created_at', 'LIKE', "%$filters[data]%");
                         } elseif ($filters['field'] == 'updated_at') {
                             $query = $query->where('jenisemkl.updated_at', 'LIKE', "%$filters[data]%");
+                        } else if ($filters['field'] == 'created_at' || $filters['field'] == 'updated_at') {
+                            $query = $query->whereRaw("format(" . $this->table . "." . $filters['field'] . ", 'dd-MM-yyyy HH:mm:ss') LIKE '%$filters[data]%'");
                         } else {
                             $query = $query->where($filters['field'], 'LIKE', "%$filters[data]%");
                         }
@@ -204,22 +206,21 @@ class JenisEmkl extends MyModel
 
                     break;
                 case "OR":
-                    foreach ($this->params['filters']['rules'] as $index => $filters) {
-                        if ($filters['field'] == 'statusaktif') {
-                            $query = $query->where('parameter.text', 'LIKE', "%$filters[data]%");
-                        } elseif ($filters['field'] == 'id') {
-                            $query = $query->orWhereRaw("(jenisemkl.id like '%$filters[data]%'");
-                        } elseif ($filters['field'] == 'updated_at') {
-                            $query = $query->orWhereRaw("format(jenisemkl.updated_at,'dd-MM-yyyy HH:mm:ss') like '%$filters[data]%')");
-                        } elseif ($filters['field'] == 'modifiedby') {
-                            $query = $query->orWhere('jenisemkl.modifiedby', 'LIKE', "%$filters[data]%");
-                        } elseif ($filters['field'] == 'created_at') {
-                            $query = $query->orWhere('jenisemkl.created_at', 'LIKE', "%$filters[data]%");
-                        } else {
-                            $query = $query->orWhere($filters['field'], 'LIKE', "%$filters[data]%");
+                    $query->where(function ($query) {
+                        foreach ($this->params['filters']['rules'] as $index => $filters) {
+                            if ($filters['field'] == 'statusaktif') {
+                                $query = $query->where('parameter.text', 'LIKE', "%$filters[data]%");
+                            } elseif ($filters['field'] == 'modifiedby') {
+                                $query = $query->orWhere('jenisemkl.modifiedby', 'LIKE', "%$filters[data]%");
+                            } elseif ($filters['field'] == 'created_at') {
+                                $query = $query->orWhere('jenisemkl.created_at', 'LIKE', "%$filters[data]%");
+                            } else if ($filters['field'] == 'created_at' || $filters['field'] == 'updated_at') {
+                                $query = $query->orWhereRaw("format(" . $this->table . "." . $filters['field'] . ", 'dd-MM-yyyy HH:mm:ss') LIKE '%$filters[data]%'");
+                            } else {
+                                $query = $query->orWhere($filters['field'], 'LIKE', "%$filters[data]%");
+                            }
                         }
-                    }
-
+                    });
                     break;
                 default:
 

@@ -25,7 +25,7 @@ class Pelanggan extends MyModel
     ];
 
     public function cekvalidasihapus($id)
-    {     
+    {
 
         $penerimaan = DB::table('penerimaanheader')
             ->from(
@@ -40,7 +40,7 @@ class Pelanggan extends MyModel
             $data = [
                 'kondisi' => true,
                 'keterangan' => 'Penerimaan Kas/Bank',
-            ];            
+            ];
             goto selesai;
         }
 
@@ -57,7 +57,7 @@ class Pelanggan extends MyModel
             $data = [
                 'kondisi' => true,
                 'keterangan' => 'Pengeluaran Kas/Bank',
-            ];            
+            ];
             goto selesai;
         }
 
@@ -74,7 +74,7 @@ class Pelanggan extends MyModel
             $data = [
                 'kondisi' => true,
                 'keterangan' => 'Penerimaan Giro',
-            ];            
+            ];
             goto selesai;
         }
 
@@ -91,7 +91,7 @@ class Pelanggan extends MyModel
             $data = [
                 'kondisi' => true,
                 'keterangan' => 'Orderan Trucking',
-            ];            
+            ];
             goto selesai;
         }
         $suratPengantar = DB::table('suratpengantar')
@@ -107,7 +107,7 @@ class Pelanggan extends MyModel
             $data = [
                 'kondisi' => true,
                 'keterangan' => 'Surat Pengantar',
-            ];            
+            ];
             goto selesai;
         }
         $invoiceExtra = DB::table('invoiceextraheader')
@@ -123,7 +123,7 @@ class Pelanggan extends MyModel
             $data = [
                 'kondisi' => true,
                 'keterangan' => 'Invoice Extra',
-            ];            
+            ];
             goto selesai;
         }
 
@@ -132,7 +132,7 @@ class Pelanggan extends MyModel
             'kondisi' => false,
             'keterangan' => '',
         ];
- 
+
         selesai:
         return $data;
     }
@@ -158,7 +158,7 @@ class Pelanggan extends MyModel
             'pelanggan.modifiedby',
             'parameter.memo as statusaktif',
             'pelanggan.created_at',
-            'pelanggan.updated_at'            
+            'pelanggan.updated_at'
         )
             ->leftJoin(DB::raw("parameter with (readuncommitted)"), 'pelanggan.statusaktif', 'parameter.id');
 
@@ -178,7 +178,7 @@ class Pelanggan extends MyModel
         $this->totalRows = $query->count();
         $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;
 
-        $this->sort($query);        
+        $this->sort($query);
         $this->paginate($query);
 
         $data = $query->get();
@@ -291,20 +291,24 @@ class Pelanggan extends MyModel
             switch ($this->params['filters']['groupOp']) {
                 case "AND":
                     foreach ($this->params['filters']['rules'] as $index => $filters) {
-                        $query = $query->where($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
+                        if ($filters['field'] == 'created_at' || $filters['field'] == 'updated_at') {
+                            $query = $query->whereRaw("format(".$this->table . "." . $filters['field'].", 'dd-MM-yyyy HH:mm:ss') LIKE '%$filters[data]%'");
+                        } else {
+                            $query = $query->where($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
+                        } 
                     }
 
                     break;
                 case "OR":
-                    foreach ($this->params['filters']['rules'] as $index => $filters) {
-                        if ($filters['field'] == 'id') {
-                            $query = $query->orWhereRaw("(pelanggan.id like '%$filters[data]%'");
-                        } elseif ($filters['field'] == 'updated_at') {
-                            $query = $query->orWhereRaw("format(pelanggan.updated_at,'dd-MM-yyyy HH:mm:ss') like '%$filters[data]%')");
-                        } else {
-                            $query = $query->orWhere($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
+                    $query->where(function ($query) {
+                        foreach ($this->params['filters']['rules'] as $index => $filters) {
+                           if ($filters['field'] == 'created_at' || $filters['field'] == 'updated_at') {
+                                $query = $query->orWhereRaw("format(".$this->table . "." . $filters['field'].", 'dd-MM-yyyy HH:mm:ss') LIKE '%$filters[data]%'");
+                            } else {
+                                $query = $query->orWhere($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
+                            }
                         }
-                    }
+                    });
 
                     break;
                 default:

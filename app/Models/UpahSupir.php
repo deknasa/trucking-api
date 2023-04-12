@@ -270,9 +270,9 @@ class UpahSupir extends MyModel
                         } else if ($filters['field'] == 'jarak') {
                             $query = $query->whereRaw("format($this->table.jarak, '#,#0.00') LIKE '%$filters[data]%'");
                         } else if ($filters['field'] == 'tglmulaiberlaku') {
-                            $query = $query->whereRaw("format(".$this->table . "." . $filters['field'].", 'dd-MM-yyyy') LIKE '%$filters[data]%'");
+                            $query = $query->whereRaw("format(" . $this->table . "." . $filters['field'] . ", 'dd-MM-yyyy') LIKE '%$filters[data]%'");
                         } else if ($filters['field'] == 'created_at' || $filters['field'] == 'updated_at') {
-                            $query = $query->whereRaw("format(".$this->table . "." . $filters['field'].", 'dd-MM-yyyy HH:mm:ss') LIKE '%$filters[data]%'");
+                            $query = $query->whereRaw("format(" . $this->table . "." . $filters['field'] . ", 'dd-MM-yyyy HH:mm:ss') LIKE '%$filters[data]%'");
                         } else {
                             $query = $query->where($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
                         }
@@ -280,28 +280,29 @@ class UpahSupir extends MyModel
 
                     break;
                 case "OR":
-                    foreach ($this->params['filters']['rules'] as $index => $filters) {
-                        if ($filters['field'] == 'statusaktif') {
-                            $query = $query->orWhere('parameter.text', '=', $filters['data']);
-                        } elseif ($filters['field'] == 'statusluarkota') {
-                            $query = $query->orWhere('statusluarkota.text', '=', $filters['data']);
-                        } else if ($filters['field'] == 'kotadari_id') {
-                            $query = $query->orWhere('kotadari.keterangan', 'LIKE', "%$filters[data]%");
-                        } else if ($filters['field'] == 'kotasampai_id') {
-                            $query = $query->orWhere('kotasampai.keterangan', 'LIKE', "%$filters[data]%");
-                        } else if ($filters['field'] == 'zona_id') {
-                            $query = $query->orWhere('zona.keterangan', 'LIKE', "%$filters[data]%");
-                        } else if ($filters['field'] == 'jarak') {
-                            $query = $query->orWhereRaw("format($this->table.jarak, '#,#0.00') LIKE '%$filters[data]%'");
-                        } else if ($filters['field'] == 'tglmulaiberlaku') {
-                            $query = $query->orWhereRaw("format(".$this->table . "." . $filters['field'].", 'dd-MM-yyyy') LIKE '%$filters[data]%'");
-                        } else if ($filters['field'] == 'created_at' || $filters['field'] == 'updated_at') {
-                            $query = $query->orWhereRaw("format(".$this->table . "." . $filters['field'].", 'dd-MM-yyyy HH:mm:ss') LIKE '%$filters[data]%'");
-                        } else {
-                            $query = $query->orWhere($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
+                    $query->where(function ($query) {
+                        foreach ($this->params['filters']['rules'] as $index => $filters) {
+                            if ($filters['field'] == 'statusaktif') {
+                                $query = $query->orWhere('parameter.text', '=', $filters['data']);
+                            } elseif ($filters['field'] == 'statusluarkota') {
+                                $query = $query->orWhere('statusluarkota.text', '=', $filters['data']);
+                            } else if ($filters['field'] == 'kotadari_id') {
+                                $query = $query->orWhere('kotadari.keterangan', 'LIKE', "%$filters[data]%");
+                            } else if ($filters['field'] == 'kotasampai_id') {
+                                $query = $query->orWhere('kotasampai.keterangan', 'LIKE', "%$filters[data]%");
+                            } else if ($filters['field'] == 'zona_id') {
+                                $query = $query->orWhere('zona.keterangan', 'LIKE', "%$filters[data]%");
+                            } else if ($filters['field'] == 'jarak') {
+                                $query = $query->orWhereRaw("format($this->table.jarak, '#,#0.00') LIKE '%$filters[data]%'");
+                            } else if ($filters['field'] == 'tglmulaiberlaku') {
+                                $query = $query->orWhereRaw("format(" . $this->table . "." . $filters['field'] . ", 'dd-MM-yyyy') LIKE '%$filters[data]%'");
+                            } else if ($filters['field'] == 'created_at' || $filters['field'] == 'updated_at') {
+                                $query = $query->orWhereRaw("format(" . $this->table . "." . $filters['field'] . ", 'dd-MM-yyyy HH:mm:ss') LIKE '%$filters[data]%'");
+                            } else {
+                                $query = $query->orWhere($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
+                            }
                         }
-                    }
-
+                    });
                     break;
                 default:
 
