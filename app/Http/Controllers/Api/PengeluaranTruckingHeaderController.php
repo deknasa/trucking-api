@@ -24,6 +24,7 @@ use App\Models\Error;
 use App\Models\LogTrail;
 use App\Models\PenerimaanTruckingHeader;
 use App\Models\PengeluaranHeader;
+use App\Models\InvoiceHeader;
 use App\Models\PengeluaranTrucking;
 use App\Models\PengeluaranTruckingDetail;
 use App\Models\Supir;
@@ -55,7 +56,7 @@ class PengeluaranTruckingHeaderController extends Controller
     {
         DB::beginTransaction();
         try {
-
+// return response($request->all(),422);
             $tanpaprosesnobukti = $request->tanpaprosesnobukti ?? 0;
 
             if ($tanpaprosesnobukti == 0) {
@@ -91,6 +92,8 @@ class PengeluaranTruckingHeaderController extends Controller
             $pengeluarantruckingheader->statusposting = $statusPosting->id ?? 0;
             $pengeluarantruckingheader->coa = $request->coa;
             $pengeluarantruckingheader->pengeluaran_nobukti = $request->pengeluaran_nobukti ?? '';
+            $pengeluarantruckingheader->periodedari = date('Y-m-d', strtotime($request->tgldari)) ?? null;
+            $pengeluarantruckingheader->periodesampai = date('Y-m-d', strtotime($request->tglsampai)) ?? null;
             $pengeluarantruckingheader->supir_id = $request->supirheader_id ?? '';
             $pengeluarantruckingheader->statusformat = $request->statusformat ?? $format->id;
             $pengeluarantruckingheader->statuscetak = $statusCetak->id;
@@ -118,7 +121,9 @@ class PengeluaranTruckingHeaderController extends Controller
                     'nobukti' => $pengeluarantruckingheader->nobukti,
                     'supir_id' => ($request->datadetail != '') ? $request->datadetail[$i]['supir_id']  :  $request->supir_id[$i] ?? 0,
                     'penerimaantruckingheader_nobukti' => ($request->datadetail != '') ? '' :  $request->penerimaantruckingheader_nobukti[$i] ?? '',
-                    'keterangan' => ($request->datadetail != '') ? $request->datadetail[$i]['keterangan']  :  $request->keterangan[$i],
+                    'invoice_nobukti' => ($request->datadetail != '') ? '' :  $request->noinvoice_detail[$i] ?? '',
+                    'orderantrucking_nobukti' => ($request->datadetail != '') ? '' :  $request->nojobtrucking_detail[$i] ?? '',
+                    'keterangan' => ($request->datadetail != '') ? $request->datadetail[$i]['keterangan']  :  $request->keterangan[$i] ?? '',
                     'nominal' => ($request->datadetail != '') ? $request->datadetail[$i]['nominal']  :  $request->nominal[$i],
                     'modifiedby' => $pengeluarantruckingheader->modifiedby,
                 ];
@@ -213,7 +218,7 @@ class PengeluaranTruckingHeaderController extends Controller
                         'tgljatuhtempo' => date('Y-m-d', strtotime($request->tglkasmasuk)) ?? date('Y-m-d', strtotime($request->tglbukti)),
                         'coadebet' => $request->coa,
                         'coakredit' => $queryPengeluaran->coa,
-                        'keterangan' => ($request->datadetail != '') ? $request->datadetail[$i]['keterangan'] : $request->keterangan[$i],
+                        'keterangan' => ($request->datadetail != '') ? $request->datadetail[$i]['keterangan'] : $request->keterangan[$i] ?? '',
                         "nominal" => ($request->datadetail != '') ? $request->datadetail[$i]['nominal'] : $request->nominal[$i],
                         'bulanbeban' => date('Y-m-d', strtotime($request->tglkasmasuk)) ?? date('Y-m-d', strtotime($request->tglbukti)),
                         'modifiedby' => auth('api')->user()->name,
@@ -324,6 +329,8 @@ class PengeluaranTruckingHeaderController extends Controller
                 $pengeluarantruckingheader->tglbukti = date('Y-m-d', strtotime($request->tglbukti));
                 $pengeluarantruckingheader->coa = $request->coa;
                 $pengeluarantruckingheader->supir_id = $request->supirheader_id ?? '';
+                $pengeluarantruckingheader->periodedari = date('Y-m-d', strtotime($request->tgldari)) ?? null;
+                $pengeluarantruckingheader->periodesampai = date('Y-m-d', strtotime($request->tglsampai)) ?? null;
                 $pengeluarantruckingheader->modifiedby = auth('api')->user()->name;
                 $pengeluarantruckingheader->save();
             }
@@ -369,7 +376,9 @@ class PengeluaranTruckingHeaderController extends Controller
                         'nobukti' => $pengeluarantruckingheader->nobukti,
                         'supir_id' => ($request->datadetail != '') ? $request->datadetail[$i]['supir_id'] : $request->supir_id[$i] ?? 0,
                         'penerimaantruckingheader_nobukti' => ($request->datadetail != '') ? $request->datadetail[$i]['penerimaantruckingheader_nobukti'] : $request->penerimaantruckingheader_nobukti[$i] ?? '',
-                        'keterangan' => ($request->datadetail != '') ? $request->datadetail[$i]['keterangan'] : $request->keterangan[$i],
+                        'invoice_nobukti' => ($request->datadetail != '') ? '' :  $request->noinvoice_detail[$i] ?? '',
+                        'orderantrucking_nobukti' => ($request->datadetail != '') ? '' :  $request->nojobtrucking_detail[$i] ?? '',
+                        'keterangan' => ($request->datadetail != '') ? $request->datadetail[$i]['keterangan']  :  $request->keterangan[$i] ?? '',    
                         'nominal' => ($request->datadetail != '') ? $request->datadetail[$i]['nominal'] : $request->nominal[$i],
                         'modifiedby' => $pengeluarantruckingheader->modifiedby,
                     ];
@@ -419,7 +428,7 @@ class PengeluaranTruckingHeaderController extends Controller
                             'tgljatuhtempo' => date('Y-m-d', strtotime($request->tglkasmasuk)) ?? date('Y-m-d', strtotime($request->tglbukti)),
                             'coadebet' => $request->coa,
                             'coakredit' => $bank->coa,
-                            'keterangan' => ($request->datadetail != '') ? $request->datadetail[$i]['keterangan'] : $request->keterangan[$i],
+                            'keterangan' => ($request->datadetail != '') ? $request->datadetail[$i]['keterangan'] : $request->keterangan[$i] ?? '', 
                             "nominal" => ($request->datadetail != '') ? $request->datadetail[$i]['nominal'] : $request->nominal[$i],
                             'bulanbeban' => date('Y-m-d', strtotime($request->tglkasmasuk)) ?? date('Y-m-d', strtotime($request->tglbukti)),
                             'modifiedby' => auth('api')->user()->name,
@@ -680,6 +689,19 @@ class PengeluaranTruckingHeaderController extends Controller
             'data' => $data
         ]);
         // return $pengeluaranTrucking->getTarikDeposito($id);
+    }
+
+    public function getInvoice(Request $request)
+    {
+        $tgldari = $request->tgldari;
+        $tglsampai = $request->tglsampai;
+        $invoiceHeader = new InvoiceHeader ();
+        $data = $invoiceHeader->getInvoicePengeluaran($tgldari, $tglsampai);
+        // $data = $pengeluaranTrucking->getTarikDeposito($pengeluaranTrucking->pengeluarantruckingdetail[0]->supir_id);
+        return response([
+            'status' => true,
+            'data' => $data
+        ]);
     }
 
     public function fieldLength()

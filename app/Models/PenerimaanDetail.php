@@ -129,11 +129,15 @@ class PenerimaanDetail extends MyModel
                                 $query = $query->where('a.keterangancoa', 'LIKE', "%$filters[data]%");
                             } else if ($filters['field'] == 'coakredit') {
                                 $query = $query->where('b.keterangancoa', 'LIKE', "%$filters[data]%");
+                            } else if ($filters['field'] == 'created_at') {
+                                $query = $query->whereRaw("format($this->table.created_at,'dd-MM-yyyy HH:mm:ss') like '%$filters[data]%'");
+                            } else if ($filters['field'] == 'updated_at') {
+                                $query = $query->whereRaw("format($this->table.updated_at,'dd-MM-yyyy HH:mm:ss') like '%$filters[data]%'");
+                            } else if ($filters['field'] == 'tgljatuhtempo') {
+                                $query = $query->whereRaw("format($this->table.tgljatuhtempo,'dd-MM-yyyy') like '%$filters[data]%'");
                             } else if ($filters['field'] == 'nominal') {
-                                $query = $query->whereRaw("format($this->table.nominal, '#,#0.00') LIKE '%$filters[data]%'");
-                            } else if ($filters['field'] == 'tglbukti' || $filters['field'] == 'tgljatuhtempo' || $filters['field'] == 'bulanbeban') {
-                                $query = $query->whereRaw("format((case when year(isnull($this->table.".$filters['field'].",'1900/1/1'))<2000 then null else penerimaandetail.".$filters['field']." end), 'dd-MM-yyyy') LIKE '%$filters[data]%'");
-                            }else {
+                                $query = $query->whereRaw("format($this->table.nominal,'#,#0.00') like '%$filters[data]%'");                                
+                            } else {
                                 $query = $query->where($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
                             }
                         }
@@ -151,10 +155,14 @@ class PenerimaanDetail extends MyModel
                                 $query = $query->orWhere('a.keterangancoa', 'LIKE', "%$filters[data]%");
                             } else if ($filters['field'] == 'coakredit') {
                                 $query = $query->orWhere('b.keterangancoa', 'LIKE', "%$filters[data]%");
+                            } else if ($filters['field'] == 'created_at') {
+                                $query = $query->orWhereRaw("format($this->table.created_at,'dd-MM-yyyy HH:mm:ss') like '%$filters[data]%'");
+                            } else if ($filters['field'] == 'updated_at') {
+                                $query = $query->orWhereRaw("format($this->table.updated_at,'dd-MM-yyyy HH:mm:ss') like '%$filters[data]%'");
+                            } else if ($filters['field'] == 'tgljatuhtempo') {
+                                $query = $query->orWhereRaw("format($this->table.tgljatuhtempo,'dd-MM-yyyy') like '%$filters[data]%'");
                             } else if ($filters['field'] == 'nominal') {
-                                $query = $query->orWhereRaw("format($this->table.nominal, '#,#0.00') LIKE '%$filters[data]%'");
-                            } else if ($filters['field'] == 'tgljatuhtempo' || $filters['field'] == 'bulanbeban') {
-                                $query = $query->orWhereRaw("format((case when year(isnull($this->table.".$filters['field'].",'1900/1/1'))<2000 then null else penerimaandetail.".$filters['field']." end), 'dd-MM-yyyy') LIKE '%$filters[data]%'");
+                                $query = $query->orWhereRaw("format($this->table.nominal,'#,#0.00') like '%$filters[data]%'");
                             } else {
                                 $query = $query->orWhere($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
                             }

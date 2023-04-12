@@ -231,6 +231,33 @@ class InvoiceHeader extends MyModel
         return $temp;
     }
 
+    public function getInvoicePengeluaran($tgldari, $tglsampai)
+    {
+
+        $query = InvoiceDetail::from(DB::raw("invoicedetail with (readuncommitted)"))
+            ->select(DB::raw("
+            invoicedetail.id as id_detail,
+            invoicedetail.nobukti as noinvoice_detail,
+            invoicedetail.orderantrucking_nobukti as nojobtrucking_detail,
+            container.keterangan as container_detail,
+            invoiceheader.tglbukti,
+            container.nominalsumbangan as nominal_detail
+
+            "))
+
+            ->leftJoin(DB::raw("invoiceheader with (readuncommitted)"), 'invoicedetail.invoice_id', 'invoiceheader.id')
+            ->leftJoin(DB::raw("orderantrucking as ot with (readuncommitted)"), 'invoicedetail.orderantrucking_nobukti', 'ot.nobukti')
+            ->leftJoin(DB::raw("container with (readuncommitted)"), 'ot.container_id', 'container.id')
+            ->whereBetween('invoiceheader.tglbukti', [date('Y-m-d',strtotime($tgldari)), date('Y-m-d', strtotime($tglsampai))]); 
+            // ->where('invoiceheader.tsglbukti', '<=', date('Y-m-d', strtotime($tglsampai)));
+            
+
+        $data = $query->get();
+        
+
+        return $data;
+    }
+
     public function getEdit($id, $request)
     {
         $temp = $this->createTempSP($request);

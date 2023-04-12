@@ -53,18 +53,23 @@ class PengeluaranTruckingDetail extends MyModel
                 $this->table . '.nobukti',
                 $this->table . '.nominal',
                 $this->table . '.keterangan',
-
+                $this->table . '.invoice_nobukti',
+                $this->table . '.orderantrucking_nobukti',
+                DB::raw("container.keterangan as container"),
                 'supir.namasupir as supir_id',
                 $this->table . '.penerimaantruckingheader_nobukti',
             )
-                ->leftJoin(DB::raw("supir with (readuncommitted)"), $this->table . '.supir_id', 'supir.id');
+                ->leftJoin(DB::raw("supir with (readuncommitted)"), $this->table . '.supir_id', 'supir.id')
+                ->leftJoin(DB::raw("orderantrucking as ot with (readuncommitted)"), 'pengeluarantruckingdetail.orderantrucking_nobukti', 'ot.nobukti')
+                ->leftJoin(DB::raw("container with (readuncommitted)"), 'ot.container_id', 'container.id');
 
+    
             $query->where($this->table . '.pengeluarantruckingheader_id', '=', request()->pengeluarantruckingheader_id);
 
             $this->sort($query);
             $this->filter($query);
 
-            $this->totalNominal = $query->sum('nominal');
+            $this->totalNominal = $query->sum($this->table.'.nominal');
             $this->filter($query);
             $this->totalRows = $query->count();
             $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;
@@ -84,10 +89,17 @@ class PengeluaranTruckingDetail extends MyModel
                 'pengeluarantruckingdetail.nominal',
                 'pengeluarantruckingdetail.keterangan',
                 'pengeluarantruckingdetail.penerimaantruckingheader_nobukti',
-
+                DB::raw("pengeluarantruckingdetail.id as id_detail"),
+                DB::raw("pengeluarantruckingdetail.invoice_nobukti as noinvoice_detail"),
+                DB::raw("pengeluarantruckingdetail.orderantrucking_nobukti as nojobtrucking_detail"),
+                DB::raw("container.keterangan as container_detail"),
+                DB::raw("pengeluarantruckingdetail.nominal as nominal_detail"),
+                               
                 'supir.namasupir as supir',
                 'supir.id as supir_id'
-            )
+                )
+            ->leftJoin(DB::raw("orderantrucking as ot with (readuncommitted)"), 'pengeluarantruckingdetail.orderantrucking_nobukti', 'ot.nobukti')
+            ->leftJoin(DB::raw("container with (readuncommitted)"), 'ot.container_id', 'container.id')    
             ->leftJoin(DB::raw("supir with (readuncommitted)"), 'pengeluarantruckingdetail.supir_id', 'supir.id')
             ->where('pengeluarantruckingdetail.pengeluarantruckingheader_id', '=', $id);
 

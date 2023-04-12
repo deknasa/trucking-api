@@ -135,10 +135,10 @@ class PenerimaanGiroDetail extends MyModel
                                 $query = $query->where('bank.namabank', 'LIKE', "%$filters[data]%");
                             } else if ($filters['field'] == 'bankpelanggan_id') {
                                 $query = $query->where('bankpelanggan.namabank', 'LIKE', "%$filters[data]%");
+                            } else if ($filters['field'] == 'tgljatuhtempo') {
+                                $query = $query->whereRaw("format($this->table.tgljatuhtempo,'dd-MM-yyyy') like '%$filters[data]%'");
                             } else if ($filters['field'] == 'nominal') {
-                                $query = $query->whereRaw("format($this->table.nominal, '#,#0.00') LIKE '%$filters[data]%'");
-                            } else if ($filters['field'] == 'tgljatuhtempo' || $filters['field'] == 'bulanbeban') {
-                                $query = $query->whereRaw("format((case when year(isnull($this->table.".$filters['field'].",'1900/1/1'))<2000 then null else penerimaangirodetail.".$filters['field']." end), 'dd-MM-yyyy') LIKE '%$filters[data]%'");
+                                $query = $query->whereRaw("format($this->table.nominal,'#,#0.00') like '%$filters[data]%'");
                             } else {
                                 $query = $query->where($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
                             }
@@ -157,10 +157,8 @@ class PenerimaanGiroDetail extends MyModel
                                 $query = $query->orWhere('bank.namabank', 'LIKE', "%$filters[data]%");
                             } else if ($filters['field'] == 'bankpelanggan_id') {
                                 $query = $query->orWhere('bankpelanggan.namabank', 'LIKE', "%$filters[data]%");
-                            } else if ($filters['field'] == 'nominal') {
-                                $query = $query->orWhereRaw("format($this->table.nominal, '#,#0.00') LIKE '%$filters[data]%'");
-                            } else if ($filters['field'] == 'tgljatuhtempo' || $filters['field'] == 'bulanbeban') {
-                                $query = $query->orWhereRaw("format((case when year(isnull($this->table.".$filters['field'].",'1900/1/1'))<2000 then null else penerimaangirodetail.".$filters['field']." end), 'dd-MM-yyyy') LIKE '%$filters[data]%'");
+                            } else if ($filters['field'] == 'tgljatuhtempo') {
+                                $query = $query->orWhereRaw("format($this->table.tgljatuhtempo,'dd-MM-yyyy') like '%$filters[data]%'");
                             } else {
                                 $query = $query->orWhere($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
                             }

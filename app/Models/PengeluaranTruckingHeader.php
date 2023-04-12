@@ -136,6 +136,8 @@ class PengeluaranTruckingHeader extends MyModel
             'supir.namasupir as supir',
             'pengeluarantruckingheader.statusposting',
             'pengeluarantruckingheader.coa',
+            'pengeluarantruckingheader.periodedari',
+            'pengeluarantruckingheader.periodesampai',
             'akunpusat.keterangancoa',
             'pengeluarantruckingheader.pengeluaran_nobukti'            
         )
@@ -153,7 +155,6 @@ class PengeluaranTruckingHeader extends MyModel
 
     public function getTarikDeposito($supir_id)
     {
-        // return $supir_id;
         $tempPribadi = $this->createTempTarikDeposito($supir_id);
         PengeluaranTruckingDetail::from(DB::raw("$tempPribadi with (readuncommitted)"))->get();
 
@@ -163,10 +164,10 @@ class PengeluaranTruckingHeader extends MyModel
             ->leftJoin(DB::raw("penerimaantruckingheader with (readuncommitted)"), 'penerimaantruckingdetail.nobukti', "penerimaantruckingheader.nobukti")
             ->whereRaw("penerimaantruckingdetail.supir_id = $supir_id")
             ->whereRaw("penerimaantruckingdetail.nobukti = $tempPribadi.nobukti")
-            ->where(function ($query) use ($tempPribadi) {
-                $query->whereRaw("$tempPribadi.sisa <> 0")
-                    ->orWhereRaw("$tempPribadi.sisa is null");
-            })
+            // ->where(function ($query) use ($tempPribadi) {
+            //     $query->whereRaw("$tempPribadi.sisa <> 0")
+            //         ->orWhereRaw("$tempPribadi.sisa is null");
+            // })
             ->orderBy('penerimaantruckingheader.tglbukti', 'asc')
             ->orderBy('penerimaantruckingdetail.nobukti', 'asc');
 
@@ -176,7 +177,6 @@ class PengeluaranTruckingHeader extends MyModel
     public function createTempTarikDeposito($supir_id)
     {
         $temp = '##temp' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
-
 
         $fetch = DB::table('penerimaantruckingdetail')
             ->from(
@@ -193,10 +193,7 @@ class PengeluaranTruckingHeader extends MyModel
             $table->bigInteger('bayar')->nullable();
             $table->bigInteger('sisa')->nullable();
         });
-        // return $fetch->get();
         $tes = DB::table($temp)->insertUsing(['nobukti', 'bayar', 'sisa'], $fetch);
-
-
         return $temp;
     }
 
