@@ -276,7 +276,7 @@ class ProsesUangJalanSupirHeaderController extends Controller
                     'tglbukti' => date('Y-m-d', strtotime($request->tgltransfer[$i])),
                     'pengeluarantrucking_id' => $fetchFormatBLS->id,
                     'bank_id' => $bankid,
-                    'coa' => $fetchFormatBLS->coa,
+                    'coa' => $fetchFormatBLS->coapostingkredit,
                     'pengeluaran_nobukti' => $nobuktiPengeluaran,
                     'statusformat' => $formatBLS->id,
                     'postingdari' => 'ENTRY PROSES UANG JALAN',
@@ -470,7 +470,7 @@ class ProsesUangJalanSupirHeaderController extends Controller
                     'tglbukti' => date('Y-m-d', strtotime($request->tgldeposit)),
                     'penerimaantrucking_id' => $fetchFormatDPO->id,
                     'bank_id' => $bankidDeposit,
-                    'coa' => $fetchFormatDPO->coa,
+                    'coa' => $fetchFormatDPO->coapostingkredit,
                     'penerimaan_nobukti' => $nobuktiPenerimaan,
                     'statusformat' => $formatDPO->id,
                     'postingdari' => 'ENTRY PROSES UANG JALAN',
@@ -570,7 +570,7 @@ class ProsesUangJalanSupirHeaderController extends Controller
                         'tglbukti' => date('Y-m-d', strtotime($request->tglbukti)),
                         'penerimaantrucking_id' => $fetchFormatPJP->id,
                         'bank_id' => $bankidPengembalian,
-                        'coa' => $fetchFormatPJP->coa,
+                        'coa' => $fetchFormatPJP->coapostingkredit,
                         'penerimaan_nobukti' => $nobuktiPenerimaanPinjaman,
                         'statusformat' => $formatPJP->id,
                         'postingdari' => 'ENTRY PROSES UANG JALAN',
@@ -675,7 +675,7 @@ class ProsesUangJalanSupirHeaderController extends Controller
                     'isUpdate' => 1,
                     'postingdari' => 'EDIT PROSES UANG JALAN SUPIR',
                     'datadetail' => $pengeluaranTruckingDetailTransfer,
-                    'coa' => $fetchFormatBLS->coa,
+                    'coa' => $fetchFormatBLS->coapostingkredit,
                 ];
 
                 $newPengeluaranTrucking = new PengeluaranTruckingHeader();
@@ -741,7 +741,7 @@ class ProsesUangJalanSupirHeaderController extends Controller
                 $penerimaanTruckingDPO = [
                     'isUpdate' => 1,
                     'postingdari' => 'EDIT PROSES UANG JALAN SUPIR',                    
-                    'coa' => $fetchFormatDPO->coa,
+                    'coa' => $fetchFormatDPO->coapostingkredit,
                     'datadetail' => $penerimaanTruckingDetailDPO
                 ];
 

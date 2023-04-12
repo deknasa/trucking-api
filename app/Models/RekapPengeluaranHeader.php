@@ -76,13 +76,18 @@ class RekapPengeluaranHeader extends MyModel
             switch ($this->params['filters']['groupOp']) {
                 case "AND":
                     foreach ($this->params['filters']['rules'] as $index => $filters) {
-                        switch ($filters['field']) {
-                            case 'bank':
-                                $query = $query->where('bank.namabank', 'LIKE', "%$filters[data]%");
-                                break;
-                            default:
-                                $query = $query->where($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
-                                break;
+                        if ($filters['field'] == 'statusapproval') {
+                            $query = $query->where('statusapproval.text', '=', $filters['data']);
+                        } else if ($filters['field'] == 'statuscetak') {
+                            $query = $query->where('statuscetak.text', '=', $filters['data']);
+                        } else if ($filters['field'] == 'bank') {
+                            $query = $query->where('bank.namabank', 'LIKE', "%$filters[data]%");
+                        } else if ($filters['field'] == 'tglbukti' || $filters['field'] == 'tglapproval' || $filters['field'] == 'tglbukacetak' || $filters['field'] == 'tgltransaksi') {
+                            $query = $query->whereRaw("format(".$this->table . "." . $filters['field'].", 'dd-MM-yyyy') LIKE '%$filters[data]%'");
+                        } else if ($filters['field'] == 'created_at' || $filters['field'] == 'updated_at') {
+                            $query = $query->whereRaw("format(".$this->table . "." . $filters['field'].", 'dd-MM-yyyy HH:mm:ss') LIKE '%$filters[data]%'");
+                        } else {
+                            $query = $query->where($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
                         }
                     }
 
@@ -90,13 +95,18 @@ class RekapPengeluaranHeader extends MyModel
                 case "OR":
                     $query = $query->where(function ($query) {
                         foreach ($this->params['filters']['rules'] as $index => $filters) {
-                            switch ($filters['field']) {
-                                case 'bank':
-                                    $query = $query->orWhere('bank.namabank', 'LIKE', "%$filters[data]%");
-                                    break;
-                                default:
-                                    $query = $query->orWhere($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
-                                    break;
+                            if ($filters['field'] == 'statusapproval') {
+                                $query = $query->orWhere('statusapproval.text', '=', $filters['data']);
+                            } else if ($filters['field'] == 'statuscetak') {
+                                $query = $query->orWhere('statuscetak.text', '=', $filters['data']);
+                            } else if ($filters['field'] == 'bank') {
+                                $query = $query->orWhere('bank.namabank', 'LIKE', "%$filters[data]%");
+                            } else if ($filters['field'] == 'tglbukti' || $filters['field'] == 'tglapproval' || $filters['field'] == 'tglbukacetak' || $filters['field'] == 'tgltransaksi') {
+                                $query = $query->orWhereRaw("format(".$this->table . "." . $filters['field'].", 'dd-MM-yyyy') LIKE '%$filters[data]%'");
+                            } else if ($filters['field'] == 'created_at' || $filters['field'] == 'updated_at') {
+                                $query = $query->orWhereRaw("format(".$this->table . "." . $filters['field'].", 'dd-MM-yyyy HH:mm:ss') LIKE '%$filters[data]%'");
+                            } else {
+                                $query = $query->orWhere($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
                             }
                         }
                     });
@@ -191,6 +201,8 @@ class RekapPengeluaranHeader extends MyModel
             "$this->table.statusapproval",
             "$this->table.userapproval",
             DB::raw('(case when (year(rekappengeluaranheader.tglapproval) <= 2000) then null else rekappengeluaranheader.tglapproval end ) as tglapproval'),
+            "$this->table.userbukacetak",
+            DB::raw("(case when year(isnull($this->table.tglbukacetak,'1900/1/1'))=1900 then null else $this->table.tglbukacetak end) as tglbukacetak"),
             "$this->table.statusformat",
             "$this->table.modifiedby",
             "bank.namabank as bank",

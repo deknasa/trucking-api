@@ -30,24 +30,24 @@ class PengeluaranStokHeader extends MyModel
 
         $query = DB::table($this->table);
         $query = $this->selectColumns($query)
-        ->leftJoin('gudang','pengeluaranstokheader.gudang_id','gudang.id')
-        ->leftJoin('pengeluaranstok','pengeluaranstokheader.pengeluaranstok_id','pengeluaranstok.id')
-        ->leftJoin('trado','pengeluaranstokheader.trado_id','trado.id')
-        ->leftJoin('supplier','pengeluaranstokheader.supplier_id','supplier.id')
-        ->leftJoin('kerusakan','pengeluaranstokheader.kerusakan_id','kerusakan.id')
-        ->leftJoin('bank','pengeluaranstokheader.bank_id','bank.id')
-        ->leftJoin('penerimaanstokheader as penerimaan' ,'pengeluaranstokheader.penerimaanstok_nobukti','penerimaan.nobukti')
-        ->leftJoin('penerimaanheader' ,'pengeluaranstokheader.penerimaan_nobukti','penerimaanheader.nobukti')
-        ->leftJoin('pengeluaranstokheader as pengeluaran' ,'pengeluaranstokheader.pengeluaranstok_nobukti','pengeluaran.nobukti')
-        // ->leftJoin('servicein','pengeluaranstokheader.servicein_nobukti','servicein.nobukti')
-        ->leftJoin('supir','pengeluaranstokheader.supir_id','supir.id');
+            ->leftJoin('gudang', 'pengeluaranstokheader.gudang_id', 'gudang.id')
+            ->leftJoin('pengeluaranstok', 'pengeluaranstokheader.pengeluaranstok_id', 'pengeluaranstok.id')
+            ->leftJoin('trado', 'pengeluaranstokheader.trado_id', 'trado.id')
+            ->leftJoin('supplier', 'pengeluaranstokheader.supplier_id', 'supplier.id')
+            ->leftJoin('kerusakan', 'pengeluaranstokheader.kerusakan_id', 'kerusakan.id')
+            ->leftJoin('bank', 'pengeluaranstokheader.bank_id', 'bank.id')
+            ->leftJoin('penerimaanstokheader as penerimaan', 'pengeluaranstokheader.penerimaanstok_nobukti', 'penerimaan.nobukti')
+            ->leftJoin('penerimaanheader', 'pengeluaranstokheader.penerimaan_nobukti', 'penerimaanheader.nobukti')
+            ->leftJoin('pengeluaranstokheader as pengeluaran', 'pengeluaranstokheader.pengeluaranstok_nobukti', 'pengeluaran.nobukti')
+            // ->leftJoin('servicein','pengeluaranstokheader.servicein_nobukti','servicein.nobukti')
+            ->leftJoin('supir', 'pengeluaranstokheader.supir_id', 'supir.id');
         if (request()->tgldari) {
             $query->whereBetween('pengeluaranstokheader.tglbukti', [date('Y-m-d', strtotime(request()->tgldari)), date('Y-m-d', strtotime(request()->tglsampai))]);
         }
         if (request()->pengeluaranheader_id) {
-            $query->where('pengeluaranstokheader.pengeluaranstok_id',request()->pengeluaranheader_id);
+            $query->where('pengeluaranstokheader.pengeluaranstok_id', request()->pengeluaranheader_id);
         }
-        
+
         $this->totalRows = $query->count();
         $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;
 
@@ -95,9 +95,12 @@ class PengeluaranStokHeader extends MyModel
             case 'supir':
                 return $query->orderBy('supir.namasupir', $this->params['sortOrder']);
                 break;
-                
+            case 'bank':
+                return $query->orderBy('bank.namabank', $this->params['sortOrder']);
+                break;
+
             default:
-            return $query->orderBy($this->table . '.' . $this->params['sortIndex'], $this->params['sortOrder']);
+                return $query->orderBy($this->table . '.' . $this->params['sortIndex'], $this->params['sortOrder']);
                 break;
         }
     }
@@ -107,69 +110,59 @@ class PengeluaranStokHeader extends MyModel
             switch ($this->params['filters']['groupOp']) {
                 case "AND":
                     foreach ($this->params['filters']['rules'] as $index => $filters) {
-                        switch ($filters['field']) {
-                            case 'pengeluaranstok':
-                                $query = $query->where('pengeluaranstok.kodepengeluaran', 'LIKE', "%$filters[data]%");
-                                break;
-                            case 'gudang':
-                                $query = $query->where('gudang.gudang', 'LIKE', "%$filters[data]%");
-                                break;
-                            case 'trado':
-                                $query = $query->where('trado.kodetrado', 'LIKE', "%$filters[data]%");
-                                break;
-                            case 'supplier':
-                                $query = $query->where('supplier.namasupplier', 'LIKE', "%$filters[data]%");
-                                break;
-                            case 'kerusakan':
-                                $query = $query->where('kerusakan.keterangan', 'LIKE', "%$filters[data]%");
-                                break;
-                            case 'supir':
-                                $query = $query->where('supir.namasupir', 'LIKE', "%$filters[data]%");
-                                break;
-                            case 'bank':
-                                $query = $query->where('bank.namabank', 'LIKE', "%$filters[data]%");
-                                break;
-                                
-                            default:
-                                $query = $query->where($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
-                                break;
+                       
+                        if ($filters['field'] == 'pengeluaranstok') {
+                            $query = $query->where('pengeluaranstok.kodepengeluaran', 'LIKE', "%$filters[data]%");
+                        } else if ($filters['field'] == 'gudang') {
+                            $query = $query->where('gudang.gudang', 'LIKE', "%$filters[data]%");
+                        } else if ($filters['field'] == 'trado') {
+                            $query = $query->where('trado.kodetrado', 'LIKE', "%$filters[data]%");
+                        } else if ($filters['field'] == 'supplier') {
+                            $query = $query->where('supplier.namasupplier', 'LIKE', "%$filters[data]%");
+                        } else if ($filters['field'] == 'kerusakan') {
+                            $query = $query->where('kerusakan.keterangan', 'LIKE', "%$filters[data]%");
+                        } else if ($filters['field'] == 'supir') {
+                            $query = $query->where('supir.namasupir', 'LIKE', "%$filters[data]%");
+                        } else if ($filters['field'] == 'bank') {
+                            $query = $query->where('bank.namabank', 'LIKE', "%$filters[data]%");
+                        } else if ($filters['field'] == 'tglbukti') {
+                            $query = $query->whereRaw("format(" . $this->table . "." . $filters['field'] . ", 'dd-MM-yyyy') LIKE '%$filters[data]%'");
+                        } else if ($filters['field'] == 'created_at' || $filters['field'] == 'updated_at') {
+                            $query = $query->whereRaw("format(" . $this->table . "." . $filters['field'] . ", 'dd-MM-yyyy HH:mm:ss') LIKE '%$filters[data]%'");
+                        } else {
+                            $query = $query->where($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
                         }
                     }
 
                     break;
-                    case "OR":
-                        $query = $query->where(function($query){
-                        
-                            foreach ($this->params['filters']['rules'] as $index => $filters) {
-                                switch ($filters['field']) {
-                                    case 'pengeluaranstok':
-                                        $query = $query->orWhere('pengeluaranstok.kodepengeluaran', 'LIKE', "%$filters[data]%");
-                                        break;
-                                    case 'gudang':
-                                        $query = $query->orWhere('gudang.gudang', 'LIKE', "%$filters[data]%");
-                                        break;
-                                    case 'trado':
-                                        $query = $query->orWhere('trado.kodetrado', 'LIKE', "%$filters[data]%");
-                                        break;
-                                    case 'supplier':
-                                        $query = $query->orWhere('supplier.namasupplier', 'LIKE', "%$filters[data]%");
-                                        break;
-                                    case 'kerusakan':
-                                        $query = $query->orWhere('kerusakan.keterangan', 'LIKE', "%$filters[data]%");
-                                        break;
-                                    case 'supir':
-                                        $query = $query->orWhere('supir.namasupir', 'LIKE', "%$filters[data]%");
-                                        break;
-                                    case 'bank':
-                                        $query = $query->orWhere('bank.namabank', 'LIKE', "%$filters[data]%");
-                                        break;
-                                    default:
-                                        $query = $query->orWhere($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
-                                        break;
-                                }
+                case "OR":
+                    $query = $query->where(function ($query) {
+
+                        foreach ($this->params['filters']['rules'] as $index => $filters) {
+                            if ($filters['field'] == 'pengeluaranstok') {
+                                $query = $query->orWhere('pengeluaranstok.kodepengeluaran', 'LIKE', "%$filters[data]%");
+                            } else if ($filters['field'] == 'gudang') {
+                                $query = $query->orWhere('gudang.gudang', 'LIKE', "%$filters[data]%");
+                            } else if ($filters['field'] == 'trado') {
+                                $query = $query->orWhere('trado.kodetrado', 'LIKE', "%$filters[data]%");
+                            } else if ($filters['field'] == 'supplier') {
+                                $query = $query->orWhere('supplier.namasupplier', 'LIKE', "%$filters[data]%");
+                            } else if ($filters['field'] == 'kerusakan') {
+                                $query = $query->orWhere('kerusakan.keterangan', 'LIKE', "%$filters[data]%");
+                            } else if ($filters['field'] == 'supir') {
+                                $query = $query->orWhere('supir.namasupir', 'LIKE', "%$filters[data]%");
+                            } else if ($filters['field'] == 'bank') {
+                                $query = $query->orWhere('bank.namabank', 'LIKE', "%$filters[data]%");
+                            } else if ($filters['field'] == 'tglbukti') {
+                                $query = $query->orWhereRaw("format(" . $this->table . "." . $filters['field'] . ", 'dd-MM-yyyy') LIKE '%$filters[data]%'");
+                            } else if ($filters['field'] == 'created_at' || $filters['field'] == 'updated_at') {
+                                $query = $query->orWhereRaw("format(" . $this->table . "." . $filters['field'] . ", 'dd-MM-yyyy HH:mm:ss') LIKE '%$filters[data]%'");
+                            } else {
+                                $query = $query->orWhere($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
                             }
-                        });
-                            
+                        }
+                    });
+
                     break;
                 default:
 
@@ -191,23 +184,23 @@ class PengeluaranStokHeader extends MyModel
 
         Schema::create($temp, function ($table) {
             $table->bigInteger('id')->nullable();
-            $table->string('nobukti',50)->unique();
-            $table->date('tglbukti',50)->nullable();
-            $table->unsignedBigInteger('pengeluaranstok_id')->nullable();            
+            $table->string('nobukti', 50)->unique();
+            $table->date('tglbukti', 50)->nullable();
+            $table->unsignedBigInteger('pengeluaranstok_id')->nullable();
             $table->unsignedBigInteger('trado_id')->nullable();
             $table->unsignedBigInteger('gudang_id')->nullable();
             $table->unsignedBigInteger('supir_id')->nullable();
             $table->unsignedBigInteger('supplier_id')->nullable();
-            $table->string('pengeluaranstok_nobukti',50)->nullable();
-            $table->string('penerimaanstok_nobukti',50)->nullable();
-            $table->string('penerimaan_nobukti',50)->nullable();
-            $table->string('servicein_nobukti',50)->nullable();
+            $table->string('pengeluaranstok_nobukti', 50)->nullable();
+            $table->string('penerimaanstok_nobukti', 50)->nullable();
+            $table->string('penerimaan_nobukti', 50)->nullable();
+            $table->string('servicein_nobukti', 50)->nullable();
             $table->unsignedBigInteger('kerusakan_id')->nullable();
-            $table->unsignedBigInteger('statusformat')->nullable();  
-            $table->unsignedBigInteger('statuspotongretur')->nullable();  
-            $table->unsignedBigInteger('bank_id')->nullable();  
-            $table->date('tglkasmasuk')->nullable(); 
-            $table->string('modifiedby',50)->nullable();
+            $table->unsignedBigInteger('statusformat')->nullable();
+            $table->unsignedBigInteger('statuspotongretur')->nullable();
+            $table->unsignedBigInteger('bank_id')->nullable();
+            $table->date('tglkasmasuk')->nullable();
+            $table->string('modifiedby', 50)->nullable();
             $table->increments('position');
             $table->dateTime('created_at')->nullable();
             $table->dateTime('updated_at')->nullable();
@@ -236,7 +229,7 @@ class PengeluaranStokHeader extends MyModel
         );
         $query = $this->sort($query);
         $models = $this->filter($query);
-        
+
         DB::table($temp)->insertUsing([
             "id",
             "nobukti",
@@ -283,6 +276,8 @@ class PengeluaranStokHeader extends MyModel
             "$this->table.bank_id",
             "$this->table.tglkasmasuk",
             "$this->table.modifiedby",
+            "$this->table.created_at",
+            "$this->table.updated_at",
             "kerusakan.keterangan as kerusakan",
             "bank.namabank as bank",
             "pengeluaranstok.kodepengeluaran as pengeluaranstok",
@@ -299,19 +294,19 @@ class PengeluaranStokHeader extends MyModel
 
         $query = DB::table($this->table);
         $query = $this->selectColumns($query)
-        ->leftJoin('gudang','pengeluaranstokheader.gudang_id','gudang.id')
-        ->leftJoin('pengeluaranstok','pengeluaranstokheader.pengeluaranstok_id','pengeluaranstok.id')
-        ->leftJoin('trado','pengeluaranstokheader.trado_id','trado.id')
-        ->leftJoin('supplier','pengeluaranstokheader.supplier_id','supplier.id')
-        ->leftJoin('kerusakan','pengeluaranstokheader.kerusakan_id','kerusakan.id')
-        ->leftJoin('bank','pengeluaranstokheader.bank_id','bank.id')
-        ->leftJoin('penerimaanstokheader as penerimaan' ,'pengeluaranstokheader.penerimaanstok_nobukti','penerimaan.nobukti')
-        ->leftJoin('penerimaanheader','pengeluaranstokheader.penerimaan_nobukti','penerimaanheader.nobukti')
-        ->leftJoin('pengeluaranstokheader as pengeluaran' ,'pengeluaranstokheader.pengeluaranstok_nobukti','pengeluaran.nobukti')
-        // ->leftJoin('servicein','pengeluaranstokheader.servicein_nobukti','servicein.nobukti')
-        ->leftJoin('supir','pengeluaranstokheader.supir_id','supir.id');
+            ->leftJoin('gudang', 'pengeluaranstokheader.gudang_id', 'gudang.id')
+            ->leftJoin('pengeluaranstok', 'pengeluaranstokheader.pengeluaranstok_id', 'pengeluaranstok.id')
+            ->leftJoin('trado', 'pengeluaranstokheader.trado_id', 'trado.id')
+            ->leftJoin('supplier', 'pengeluaranstokheader.supplier_id', 'supplier.id')
+            ->leftJoin('kerusakan', 'pengeluaranstokheader.kerusakan_id', 'kerusakan.id')
+            ->leftJoin('bank', 'pengeluaranstokheader.bank_id', 'bank.id')
+            ->leftJoin('penerimaanstokheader as penerimaan', 'pengeluaranstokheader.penerimaanstok_nobukti', 'penerimaan.nobukti')
+            ->leftJoin('penerimaanheader', 'pengeluaranstokheader.penerimaan_nobukti', 'penerimaanheader.nobukti')
+            ->leftJoin('pengeluaranstokheader as pengeluaran', 'pengeluaranstokheader.pengeluaranstok_nobukti', 'pengeluaran.nobukti')
+            // ->leftJoin('servicein','pengeluaranstokheader.servicein_nobukti','servicein.nobukti')
+            ->leftJoin('supir', 'pengeluaranstokheader.supir_id', 'supir.id');
 
-        $data = $query->where("$this->table.id",$id)->first();
+        $data = $query->where("$this->table.id", $id)->first();
         return $data;
     }
     public function paginate($query)
@@ -319,6 +314,3 @@ class PengeluaranStokHeader extends MyModel
         return $query->skip($this->params['offset'])->take($this->params['limit']);
     }
 }
- 
- 
- 

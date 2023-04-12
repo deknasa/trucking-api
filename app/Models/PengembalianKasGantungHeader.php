@@ -101,9 +101,9 @@ class PengembalianKasGantungHeader extends MyModel
             'pengembaliankasgantungheader.id',
             'pengembaliankasgantungheader.nobukti',
             'pengembaliankasgantungheader.tglbukti',
-            'pelanggan.namapelanggan as pelanggan_id',
+            'pelanggan.namapelanggan as pelanggan',
             'pengembaliankasgantungheader.keterangan',
-            'bank.namabank as bank_id',
+            'bank.namabank as bank',
             DB::raw('(case when (year(pengembaliankasgantungheader.tgldari) <= 2000) then null else pengembaliankasgantungheader.tgldari end ) as tgldari'),
             DB::raw('(case when (year(pengembaliankasgantungheader.tglsampai) <= 2000) then null else pengembaliankasgantungheader.tglsampai end ) as tglsampai'),
             'pengembaliankasgantungheader.penerimaan_nobukti',
@@ -192,12 +192,11 @@ class PengembalianKasGantungHeader extends MyModel
             "jumlahcetak",
             "modifiedby",
         );
-        if (request()->tgldari) {
-            $query->whereBetween('tglbukti', [date('Y-m-d', strtotime(request()->tgldari)), date('Y-m-d', strtotime(request()->tglsampai))]);
-        }
         $query = $this->sort($query);
         $models = $this->filter($query);
-
+        if (request()->tgldariheader) {
+            $models =  $query->whereBetween($this->table . '.tglbukti', [date('Y-m-d', strtotime(request()->tgldariheader)), date('Y-m-d', strtotime(request()->tglsampaiheader))]);
+        }
         DB::table($temp)->insertUsing([
             "id",
             "nobukti",
@@ -306,9 +305,9 @@ class PengembalianKasGantungHeader extends MyModel
                 ->orderBy($this->table . '.id', $this->params['sortOrder']);
         }
 
-        if ($this->params['sortIndex'] == 'pelanggan_id') {
+        if ($this->params['sortIndex'] == 'pelanggan') {
             return $query->orderBy('pelanggan.namapelanggan', $this->params['sortOrder']);
-        } else if ($this->params['sortIndex'] == 'bank_id') {
+        } else if ($this->params['sortIndex'] == 'bank') {
             return $query->orderBy('bank.namabank', $this->params['sortOrder']);
         } else if ($this->params['sortIndex'] == 'coa') {
             return $query->orderBy('akunpusat.keterangancoa', $this->params['sortOrder']);
@@ -324,12 +323,16 @@ class PengembalianKasGantungHeader extends MyModel
                     foreach ($this->params['filters']['rules'] as $index => $filters) {
                         if ($filters['field'] == 'statuscetak') {
                             $query = $query->where('statuscetak.text', '=', $filters['data']);
-                        } else if ($filters['field'] == 'pelanggan_id') {
+                        } else if ($filters['field'] == 'pelanggan') {
                             $query = $query->where('pelanggan.namapelanggan', 'LIKE', "%$filters[data]%");
-                        } else if ($filters['field'] == 'bank_id') {
+                        } else if ($filters['field'] == 'bank') {
                             $query = $query->where('bank.namabank', 'LIKE', "%$filters[data]%");
                         } else if ($filters['field'] == 'coa') {
                             $query = $query->where('akunpusat.keterangancoa', 'LIKE', "%$filters[data]%");
+                        } else if ($filters['field'] == 'tglbukti' || $filters['field'] == 'tglkasmasuk' || $filters['field'] == 'tgldari' || $filters['field'] == 'tglsampai' || $filters['field'] == 'tglbukacetak') {
+                            $query = $query->whereRaw("format(".$this->table . "." . $filters['field'].", 'dd-MM-yyyy') LIKE '%$filters[data]%'");
+                        } else if ($filters['field'] == 'created_at' || $filters['field'] == 'updated_at') {
+                            $query = $query->whereRaw("format(".$this->table . "." . $filters['field'].", 'dd-MM-yyyy HH:mm:ss') LIKE '%$filters[data]%'");
                         } else {
                             $query = $query->where($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
                         }
@@ -341,12 +344,16 @@ class PengembalianKasGantungHeader extends MyModel
                         foreach ($this->params['filters']['rules'] as $index => $filters) {
                             if ($filters['field'] == 'statuscetak') {
                                 $query = $query->orWhere('statuscetak.text', '=', $filters['data']);
-                            } else if ($filters['field'] == 'pelanggan_id') {
+                            } else if ($filters['field'] == 'pelanggan') {
                                 $query = $query->orWhere('pelanggan.namapelanggan', 'LIKE', "%$filters[data]%");
-                            } else if ($filters['field'] == 'bank_id') {
+                            } else if ($filters['field'] == 'bank') {
                                 $query = $query->orWhere('bank.namabank', 'LIKE', "%$filters[data]%");
                             } else if ($filters['field'] == 'coa') {
                                 $query = $query->orWhere('akunpusat.keterangancoa', 'LIKE', "%$filters[data]%");
+                            } else if ($filters['field'] == 'tglbukti' || $filters['field'] == 'tglkasmasuk' || $filters['field'] == 'tgldari' || $filters['field'] == 'tglsampai' || $filters['field'] == 'tglbukacetak') {
+                                $query = $query->orWhereRaw("format(".$this->table . "." . $filters['field'].", 'dd-MM-yyyy') LIKE '%$filters[data]%'");
+                            } else if ($filters['field'] == 'created_at' || $filters['field'] == 'updated_at') {
+                                $query = $query->orWhereRaw("format(".$this->table . "." . $filters['field'].", 'dd-MM-yyyy HH:mm:ss') LIKE '%$filters[data]%'");
                             } else {
                                 $query = $query->orWhere($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
                             }

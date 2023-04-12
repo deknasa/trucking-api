@@ -38,7 +38,7 @@ class PengembalianKasBankHeader extends MyModel
             'pengembaliankasbankheader.dibayarke',
             'cabang.namacabang as cabang_id',
             'bank.namabank as bank_id',
-            
+
             'statusjenistransaksi.text as statusjenistransaksi',
             'statusapproval.memo as statusapproval',
             'statuscetak.memo as statuscetak',
@@ -56,13 +56,13 @@ class PengembalianKasBankHeader extends MyModel
 
         )
 
-        ->leftJoin('cabang', 'pengembaliankasbankheader.cabang_id', 'cabang.id')
-        ->leftJoin('bank', 'pengembaliankasbankheader.bank_id', 'bank.id')
-        ->leftJoin('parameter as statusapproval' , 'pengembaliankasbankheader.statusapproval', 'statusapproval.id')
-        ->leftJoin('parameter as statuscetak' , 'pengembaliankasbankheader.statuscetak', 'statuscetak.id')
-        ->leftJoin('parameter as statusjenistransaksi' , 'pengembaliankasbankheader.statusjenistransaksi', 'statusjenistransaksi.id');
+            ->leftJoin('cabang', 'pengembaliankasbankheader.cabang_id', 'cabang.id')
+            ->leftJoin('bank', 'pengembaliankasbankheader.bank_id', 'bank.id')
+            ->leftJoin('parameter as statusapproval', 'pengembaliankasbankheader.statusapproval', 'statusapproval.id')
+            ->leftJoin('parameter as statuscetak', 'pengembaliankasbankheader.statuscetak', 'statuscetak.id')
+            ->leftJoin('parameter as statusjenistransaksi', 'pengembaliankasbankheader.statusjenistransaksi', 'statusjenistransaksi.id');
         if (request()->tgldari) {
-            $query->whereBetween('tglbukti', [date('Y-m-d',strtotime(request()->tgldari )), date('Y-m-d',strtotime(request()->tglsampai ))]);
+            $query->whereBetween('tglbukti', [date('Y-m-d', strtotime(request()->tgldari)), date('Y-m-d', strtotime(request()->tglsampai))]);
         }
         $this->totalRows = $query->count();
         $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;
@@ -92,7 +92,7 @@ class PengembalianKasBankHeader extends MyModel
             'pengembaliankasbankheader.cabang_id',
             'bank.namabank as bank',
             'pengembaliankasbankheader.bank_id',
-            
+
             'pengembaliankasbankheader.tglapproval',
             'pengembaliankasbankheader.userapproval',
             'pengembaliankasbankheader.transferkeac',
@@ -104,16 +104,16 @@ class PengembalianKasBankHeader extends MyModel
             'pengembaliankasbankheader.updated_at'
 
         )
-        ->leftJoin('cabang', 'pengembaliankasbankheader.cabang_id', 'cabang.id')
-        ->leftJoin('alatbayar', 'pengembaliankasbankheader.alatbayar_id', 'alatbayar.id')
-        ->leftJoin('bank', 'pengembaliankasbankheader.bank_id', 'bank.id')
-        ->where('pengembaliankasbankheader.id',$id);
+            ->leftJoin('cabang', 'pengembaliankasbankheader.cabang_id', 'cabang.id')
+            ->leftJoin('alatbayar', 'pengembaliankasbankheader.alatbayar_id', 'alatbayar.id')
+            ->leftJoin('bank', 'pengembaliankasbankheader.bank_id', 'bank.id')
+            ->where('pengembaliankasbankheader.id', $id);
 
         $data = $query->first();
 
         return $data;
     }
-    
+
     public function selectColumns($query)
     {
         return $query->select(
@@ -137,13 +137,12 @@ class PengembalianKasBankHeader extends MyModel
                  $this->table.updated_at"
             )
         )
-        // ->leftJoin('pengeluaran', 'pengembaliankasbankheader.pengeluaran_nobukti', 'pengeluaranheader.nobukti')
-        ->leftJoin('cabang', 'pengembaliankasbankheader.cabang_id', 'cabang.id')
-        ->leftJoin('bank', 'pengembaliankasbankheader.bank_id', 'bank.id')
-        ->leftJoin('parameter as statusapproval' , 'pengembaliankasbankheader.statusapproval', 'statusapproval.id')
-        ->leftJoin('parameter as statuscetak' , 'pengembaliankasbankheader.statuscetak', 'statuscetak.id')
-        ->leftJoin('parameter as statusjenistransaksi' , 'pengembaliankasbankheader.statusjenistransaksi', 'statusjenistransaksi.id');
-
+            // ->leftJoin('pengeluaran', 'pengembaliankasbankheader.pengeluaran_nobukti', 'pengeluaranheader.nobukti')
+            ->leftJoin('cabang', 'pengembaliankasbankheader.cabang_id', 'cabang.id')
+            ->leftJoin('bank', 'pengembaliankasbankheader.bank_id', 'bank.id')
+            ->leftJoin('parameter as statusapproval', 'pengembaliankasbankheader.statusapproval', 'statusapproval.id')
+            ->leftJoin('parameter as statuscetak', 'pengembaliankasbankheader.statuscetak', 'statuscetak.id')
+            ->leftJoin('parameter as statusjenistransaksi', 'pengembaliankasbankheader.statusjenistransaksi', 'statusjenistransaksi.id');
     }
 
     public function createTemp(string $modelTable)
@@ -170,25 +169,27 @@ class PengembalianKasBankHeader extends MyModel
         });
         $this->setRequestParameters();
         $query = DB::table($modelTable);
-        $query = $this->select('id',
-        'nobukti',
-        'tglbukti',
-        'pengeluaran_nobukti',
-        'postingdari',
-        'dibayarke',
-        'cabang_id',
-        'bank_id',
-        'statusjenistransaksi',
-        'statusapproval',
-        'transferkeac',
-        'transferkean',
-        'transferkebank',
-        'modifiedby',
-        'created_at',
-        'updated_at');
+        $query = $this->select(
+            'id',
+            'nobukti',
+            'tglbukti',
+            'pengeluaran_nobukti',
+            'postingdari',
+            'dibayarke',
+            'cabang_id',
+            'bank_id',
+            'statusjenistransaksi',
+            'statusapproval',
+            'transferkeac',
+            'transferkean',
+            'transferkebank',
+            'modifiedby',
+            'created_at',
+            'updated_at'
+        );
 
         if (request()->tgldari) {
-            $query->whereBetween('tglbukti', [date('Y-m-d',strtotime(request()->tgldari )), date('Y-m-d',strtotime(request()->tglsampai ))]);
+            $query->whereBetween('tglbukti', [date('Y-m-d', strtotime(request()->tgldari)), date('Y-m-d', strtotime(request()->tglsampai))]);
         }
 
         $this->sort($query);
@@ -211,76 +212,93 @@ class PengembalianKasBankHeader extends MyModel
             'created_at',
             'updated_at'
         ], $models);
-            
+
         return $temp;
     }
-        public function sort($query)
-        {
+    public function sort($query)
+    {
+        if($this->params['sortIndex'] == 'bank_id'){
+            return $query->orderBy('bank.namabank', $this->params['sortOrder']);
+        } else if($this->params['sortIndex'] == 'cabang_id'){
+            return $query->orderBy('cabang.namacabang', $this->params['sortOrder']);
+        }else{
             return $query->orderBy($this->table . '.' . $this->params['sortIndex'], $this->params['sortOrder']);
         }
-    
-        public function filter($query, $relationFields = [])
-        {
-            if (count($this->params['filters']) > 0 && @$this->params['filters']['rules'][0]['data'] != '') {
-                switch ($this->params['filters']['groupOp']) {
-                    case "AND":
-                        foreach ($this->params['filters']['rules'] as $index => $filters) {
-                            if ($filters['field'] == 'statusapproval') {
-                                $query = $query->where('statusapproval.text', '=', "$filters[data]");
-                            } else if ($filters['field'] == 'statusjenistransaksi') {
-                                $query = $query->where('statusjenistransaksi.text', '=', "$filters[data]");
+    }
+
+    public function filter($query, $relationFields = [])
+    {
+        if (count($this->params['filters']) > 0 && @$this->params['filters']['rules'][0]['data'] != '') {
+            switch ($this->params['filters']['groupOp']) {
+                case "AND":
+                    foreach ($this->params['filters']['rules'] as $index => $filters) {
+                        if ($filters['field'] == 'statusapproval') {
+                            $query = $query->where('statusapproval.text', '=', "$filters[data]");
+                        } else if ($filters['field'] == 'statuscetak') {
+                            $query = $query->where('statuscetak.text', '=', "$filters[data]");
+                        } else if ($filters['field'] == 'statusjenistransaksi') {
+                            $query = $query->where('statusjenistransaksi.text', '=', "$filters[data]");
                             // } else if ($filters['field'] == 'pelanggan_id') {
                             //     $query = $query->where('pelanggan.namapelanggan', 'LIKE', "%$filters[data]%");
-                            } else if ($filters['field'] == 'cabang_id') {
-                                $query = $query->where('cabang.namacabang', 'LIKE', "%$filters[data]%");
-                            } else if ($filters['field'] == 'bank_id') {
-                                $query = $query->where('bank.namabank', 'LIKE', "%$filters[data]%");
-                            } else {
-                                $query = $query->where($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
-                            }
+                        } else if ($filters['field'] == 'cabang_id') {
+                            $query = $query->where('cabang.namacabang', 'LIKE', "%$filters[data]%");
+                        } else if ($filters['field'] == 'bank_id') {
+                            $query = $query->where('bank.namabank', 'LIKE', "%$filters[data]%");
+                        } else if ($filters['field'] == 'tglbukti' || $filters['field'] == 'tglapproval' || $filters['field'] == 'tglbukacetak') {
+                            $query = $query->whereRaw("format(".$this->table . "." . $filters['field'].", 'dd-MM-yyyy') LIKE '%$filters[data]%'");
+                        } else if ($filters['field'] == 'created_at' || $filters['field'] == 'updated_at') {
+                            $query = $query->whereRaw("format(".$this->table . "." . $filters['field'].", 'dd-MM-yyyy HH:mm:ss') LIKE '%$filters[data]%'");
+                        } else {
+                            $query = $query->where($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
                         }
-    
-                        break;
-                    case "OR":
-                        $query = $query->where(function($query){
-                            foreach ($this->params['filters']['rules'] as $index => $filters) {
-                                if ($filters['field'] == 'statusapproval') {
-                                    $query = $query->orWhere('statusapproval.text', '=', "$filters[data]");
-                                } else if ($filters['field'] == 'statusjenistransaksi') {
-                                    $query = $query->orWhere('statusjenistransaksi.text', '=', "$filters[data]");
+                    }
+
+                    break;
+                case "OR":
+                    $query = $query->where(function ($query) {
+                        foreach ($this->params['filters']['rules'] as $index => $filters) {
+                            if ($filters['field'] == 'statusapproval') {
+                                $query = $query->orWhere('statusapproval.text', '=', "$filters[data]");
+                            } else if ($filters['field'] == 'statuscetak') {
+                                $query = $query->orWhere('statuscetak.text', '=', "$filters[data]");
+                            } else if ($filters['field'] == 'statusjenistransaksi') {
+                                $query = $query->orWhere('statusjenistransaksi.text', '=', "$filters[data]");
                                 // }else if ($filters['field'] == 'pelanggan_id') {
                                 //     $query = $query->orWhere('pelanggan.namapelanggan', 'LIKE', "%$filters[data]%");
-                                } else if ($filters['field'] == 'cabang_id') {
-                                    $query = $query->orWhere('cabang.namacabang', 'LIKE', "%$filters[data]%");
-                                } else if ($filters['field'] == 'bank_id') {
-                                    $query = $query->orWhere('bank.namabank', 'LIKE', "%$filters[data]%");
-                                }else {
-                                    $query = $query->orWhere($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
-                                }
+                            } else if ($filters['field'] == 'cabang_id') {
+                                $query = $query->orWhere('cabang.namacabang', 'LIKE', "%$filters[data]%");
+                            } else if ($filters['field'] == 'bank_id') {
+                                $query = $query->orWhere('bank.namabank', 'LIKE', "%$filters[data]%");
+                            } else if ($filters['field'] == 'tglbukti' || $filters['field'] == 'tglapproval' || $filters['field'] == 'tglbukacetak') {
+                                $query = $query->orWhereRaw("format(".$this->table . "." . $filters['field'].", 'dd-MM-yyyy') LIKE '%$filters[data]%'");
+                            } else if ($filters['field'] == 'created_at' || $filters['field'] == 'updated_at') {
+                                $query = $query->orWhereRaw("format(".$this->table . "." . $filters['field'].", 'dd-MM-yyyy HH:mm:ss') LIKE '%$filters[data]%'");
+                            } else {
+                                $query = $query->orWhere($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
                             }
-                        });
-                            
-                        break;
-                    default:
-    
-                        break;
-                }
-    
-                $this->totalRows = $query->count();
-                $this->totalPages = $this->params['limit'] > 0 ? ceil($this->totalRows / $this->params['limit']) : 1;
+                        }
+                    });
+
+                    break;
+                default:
+
+                    break;
             }
-            if (request()->cetak && request()->periode) {
-                $query->where('pengembaliankasbankheader.statuscetak','<>', request()->cetak)
-                      ->whereYear('pengembaliankasbankheader.tglbukti','=', request()->year)
-                      ->whereMonth('pengembaliankasbankheader.tglbukti','=', request()->month);
-                return $query;
-            }
+
+            $this->totalRows = $query->count();
+            $this->totalPages = $this->params['limit'] > 0 ? ceil($this->totalRows / $this->params['limit']) : 1;
+        }
+        if (request()->cetak && request()->periode) {
+            $query->where('pengembaliankasbankheader.statuscetak', '<>', request()->cetak)
+                ->whereYear('pengembaliankasbankheader.tglbukti', '=', request()->year)
+                ->whereMonth('pengembaliankasbankheader.tglbukti', '=', request()->month);
             return $query;
         }
-    
-        public function paginate($query)
-        {
-            return $query->skip($this->params['offset'])->take($this->params['limit']);
-        }
+        return $query;
+    }
 
+    public function paginate($query)
+    {
+        return $query->skip($this->params['offset'])->take($this->params['limit']);
+    }
 }

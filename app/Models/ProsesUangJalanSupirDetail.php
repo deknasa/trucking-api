@@ -196,6 +196,8 @@ class ProsesUangJalanSupirDetail extends MyModel
             return $query->orderBy('pengeluaranbank.namabank', $this->params['sortOrder']);
         } else if($this->params['sortIndex'] == 'pengembaliankasgantung_bank_id'){
             return $query->orderBy('pengembalianbank.namabank', $this->params['sortOrder']);
+        } else if($this->params['sortIndex'] == 'statusprosesuangjalan'){
+            return $query->orderBy('parameter.text', $this->params['sortOrder']);
         } else{
             return $query->orderBy($this->table . '.' . $this->params['sortIndex'], $this->params['sortOrder']);
         }
@@ -216,6 +218,10 @@ class ProsesUangJalanSupirDetail extends MyModel
                                 $query = $query->where('pengembalianbank.namabank', 'LIKE', "%$filters[data]%");
                             } else if ($filters['field'] == 'statusprosesuangjalan') {
                                 $query = $query->where('parameter.text', 'LIKE', "%$filters[data]%");
+                            } else if ($filters['field'] == 'nominal') {
+                                $query = $query->whereRaw("format($this->table.nominal, '#,#0.00') LIKE '%$filters[data]%'");
+                            } else if ($filters['field'] == 'penerimaantrucking_tglbukti' || $filters['field'] == 'pengeluarantrucking_tglbukti' || $filters['field'] == 'pengembaliankasgantung_tglbukti') {
+                                $query = $query->whereRaw("format(".$this->table . "." . $filters['field'].", 'dd-MM-yyyy') LIKE '%$filters[data]%'");
                             } else {
                                 $query = $query->where($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
                             }
@@ -234,6 +240,10 @@ class ProsesUangJalanSupirDetail extends MyModel
                                 $query = $query->orWhere('pengembalianbank.namabank', 'LIKE', "%$filters[data]%");
                             } else if ($filters['field'] == 'statusprosesuangjalan') {
                                 $query = $query->orWhere('parameter.text', 'LIKE', "%$filters[data]%");
+                            } else if ($filters['field'] == 'nominal') {
+                                $query = $query->orWhereRaw("format($this->table.nominal, '#,#0.00') LIKE '%$filters[data]%'");
+                            } else if ($filters['field'] == 'penerimaantrucking_tglbukti' || $filters['field'] == 'pengeluarantrucking_tglbukti' || $filters['field'] == 'pengembaliankasgantung_tglbukti') {
+                                $query = $query->orWhereRaw("format(".$this->table . "." . $filters['field'].", 'dd-MM-yyyy') LIKE '%$filters[data]%'");
                             } else {
                                 $query = $query->orWhere($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
                             }

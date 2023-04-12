@@ -227,7 +227,7 @@ class PengeluaranTruckingHeaderController extends Controller
                     'tglbukti' => date('Y-m-d', strtotime($request->tglbukti)),
                     'pelanggan_id' => '',
                     'alatbayar_id' =>$alatbayar->id,
-                    'postingdari' => 'ENTRY PENGELUARAN TRUCKING',
+                    'postingdari' => $request->postingdari ?? 'ENTRY PENGELUARAN TRUCKING',
                     'bank_id' => $request->bank_id,
                     'statusformat' => $format->id,
                     'modifiedby' => auth('api')->user()->name,

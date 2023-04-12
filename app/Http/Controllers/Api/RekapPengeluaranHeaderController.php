@@ -57,13 +57,15 @@ class RekapPengeluaranHeaderController extends Controller
             $content['tgl'] = date('Y-m-d', strtotime($request->tglbukti));
             $statusNonApproval = Parameter::where('grp', '=', 'STATUS APPROVAL')->where('text', '=', 'NON APPROVAL')->first();
 
+            $statuscetak = Parameter::from(DB::raw("parameter with (readuncommitted)"))
+                ->where('grp', 'STATUSCETAK')->where('text', 'BELUM CETAK')->first();
             $rekapPengeluaranHeader = new RekapPengeluaranHeader();
 
             $rekapPengeluaranHeader->tglbukti = date('Y-m-d', strtotime($request->tglbukti));
             $rekapPengeluaranHeader->tgltransaksi  = date('Y-m-d', strtotime($request->tgltransaksi));
             $rekapPengeluaranHeader->bank_id = $request->bank_id;
             $rekapPengeluaranHeader->statusapproval = $statusNonApproval->id;
-            $rekapPengeluaranHeader->userapproval = auth('api')->user()->name;
+            $rekapPengeluaranHeader->statuscetak = $statuscetak->id;
             $rekapPengeluaranHeader->statusformat = $format->id;
             $rekapPengeluaranHeader->modifiedby = auth('api')->user()->name;
             TOP:
@@ -163,14 +165,11 @@ class RekapPengeluaranHeaderController extends Controller
         DB::beginTransaction();
 
         try {
-            $statusNonApproval = Parameter::where('grp', '=', 'STATUS APPROVAL')->where('text', '=', 'NON APPROVAL')->first();
 
             $rekapPengeluaranHeader = RekapPengeluaranHeader::lockForUpdate()->findOrFail($id);
 
             $rekapPengeluaranHeader->tglbukti = date('Y-m-d', strtotime($request->tglbukti));
             $rekapPengeluaranHeader->tgltransaksi  = date('Y-m-d', strtotime($request->tgltransaksi));
-            $rekapPengeluaranHeader->statusapproval = $statusNonApproval->id;
-            $rekapPengeluaranHeader->userapproval = auth('api')->user()->name;
             $rekapPengeluaranHeader->bank_id = $request->bank_id;
             $rekapPengeluaranHeader->modifiedby = auth('api')->user()->name;
 

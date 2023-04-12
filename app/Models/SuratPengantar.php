@@ -710,6 +710,8 @@ class SuratPengantar extends MyModel
                             $query = $query->where('supir.namasupir', 'LIKE', "%$filters[data]%");
                         } else if ($filters['field'] == 'agen_id') {
                             $query = $query->where('agen.namaagen', 'LIKE', "%$filters[data]%");
+                        } else if ($filters['field'] == 'gandengan_id') {
+                            $query = $query->where('gandengan.keterangan', 'LIKE', "%$filters[data]%");
                         } else if ($filters['field'] == 'jenisorder_id') {
                             $query = $query->where('jenisorder.keterangan', 'LIKE', "%$filters[data]%");
                         } else if ($filters['field'] == 'tarif_id') {
@@ -728,7 +730,9 @@ class SuratPengantar extends MyModel
                             $query = $query->where('statusgudangsama.text', '=', "$filters[data]");
                         } else if ($filters['field'] == 'statusbatalmuat') {
                             $query = $query->where('statusbatalmuat.text', '=', "$filters[data]");
-                        } else if ($filters['field'] == 'tglbukti') {
+                        } else if ($filters['field'] == 'gajisupir' || $filters['field'] == 'jarak') {
+                            $query = $query->whereRaw("format(".$this->table . "." . $filters['field'].", '#,#0.00') LIKE '%$filters[data]%'");
+                        } else if ($filters['field'] == 'tglbukti' || $filters['field'] == 'tglsp') {
                             $query = $query->whereRaw("format(".$this->table . "." . $filters['field'].", 'dd-MM-yyyy') LIKE '%$filters[data]%'");
                         } else if ($filters['field'] == 'created_at' || $filters['field'] == 'updated_at') {
                             $query = $query->whereRaw("format(".$this->table . "." . $filters['field'].", 'dd-MM-yyyy HH:mm:ss') LIKE '%$filters[data]%'");
@@ -757,6 +761,8 @@ class SuratPengantar extends MyModel
                                 $query = $query->orWhere('supir.namasupir', 'LIKE', "%$filters[data]%");
                             } else if ($filters['field'] == 'agen_id') {
                                 $query = $query->orWhere('agen.namaagen', 'LIKE', "%$filters[data]%");
+                            } else if ($filters['field'] == 'gandengan_id') {
+                                $query = $query->orWhere('gandengan.keterangan', 'LIKE', "%$filters[data]%");
                             } else if ($filters['field'] == 'jenisorder_id') {
                                 $query = $query->orWhere('jenisorder.keterangan', 'LIKE', "%$filters[data]%");
                             } else if ($filters['field'] == 'tarif_id') {
@@ -775,7 +781,9 @@ class SuratPengantar extends MyModel
                                 $query = $query->orWhere('statusgudangsama.text', '=', "$filters[data]");
                             } else if ($filters['field'] == 'statusbatalmuat') {
                                 $query = $query->orWhere('statusbatalmuat.text', '=', "$filters[data]");
-                            } else if ($filters['field'] == 'tglbukti') {
+                            } else if ($filters['field'] == 'gajisupir' || $filters['field'] == 'jarak') {
+                                $query = $query->orWhereRaw("format(".$this->table . "." . $filters['field'].", '#,#0.00') LIKE '%$filters[data]%'");
+                            } else if ($filters['field'] == 'tglbukti' || $filters['field'] == 'tglsp') {
                                 $query = $query->orWhereRaw("format(".$this->table . "." . $filters['field'].", 'dd-MM-yyyy') LIKE '%$filters[data]%'");
                             } else if ($filters['field'] == 'created_at' || $filters['field'] == 'updated_at') {
                                 $query = $query->orWhereRaw("format(".$this->table . "." . $filters['field'].", 'dd-MM-yyyy HH:mm:ss') LIKE '%$filters[data]%'");
