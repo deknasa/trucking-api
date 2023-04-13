@@ -66,11 +66,12 @@ class ProsesUangJalanSupirHeader extends MyModel
     public function getPinjaman($supirId)
     {
         $pjt = PengeluaranTrucking::from(DB::raw("pengeluarantrucking with (readuncommitted)"))->where('kodepengeluaran', 'PJT')->first();
+        
         $query = PengeluaranTruckingDetail::from(DB::raw("pengeluarantruckingdetail with (readuncommitted)"))
             ->select(
                 DB::raw("
                     pengeluarantruckingheader.id, pengeluarantruckingdetail.nobukti, pengeluarantruckingheader.tglbukti, supir.namasupir, pengeluarantruckingdetail.nominal as jlhpinjaman,
-                    (SELECT (penerimaantruckingdetail.nominal)
+                    (SELECT SUM(penerimaantruckingdetail.nominal)
                     FROM penerimaantruckingdetail 
                     WHERE penerimaantruckingdetail.pengeluarantruckingheader_nobukti= pengeluarantruckingheader.nobukti) AS totalbayar,
                     (SELECT (pengeluarantruckingdetail.nominal - coalesce(SUM(penerimaantruckingdetail.nominal),0))
@@ -81,9 +82,9 @@ class ProsesUangJalanSupirHeader extends MyModel
             ->leftJoin(DB::raw("pengeluarantruckingheader with (readuncommitted)"), 'pengeluarantruckingheader.nobukti', 'pengeluarantruckingdetail.nobukti')
             ->leftJoin(DB::raw("supir with (readuncommitted)"), 'pengeluarantruckingdetail.supir_id', 'supir.id')
             ->where('pengeluarantruckingdetail.supir_id', $supirId)
-            ->where('pengeluarantruckingheader.pengeluarantrucking_id', $pjt->id)
-            ->get();
-
+            ->where('pengeluarantruckingheader.pengeluarantrucking_id', $pjt->id);
+            // ->get();
+        dd($query->toSql());
         return $query;
 
     }
@@ -145,11 +146,10 @@ class ProsesUangJalanSupirHeader extends MyModel
         $this->setRequestParameters();
         $query = DB::table($modelTable);
         $query = $this->selectColumns($query);
-        if (request()->tgldari) {
-            $query->whereBetween('tglbukti', [date('Y-m-d',strtotime(request()->tgldari )), date('Y-m-d',strtotime(request()->tglsampai ))]);
-        }
+        
         $this->sort($query);
         $models = $this->filter($query);
+        $models =  $query->whereBetween($this->table . '.tglbukti', [date('Y-m-d', strtotime(request()->tgldariheader)), date('Y-m-d', strtotime(request()->tglsampaiheader))]);
         DB::table($temp)->insertUsing(['id', 'nobukti', 'tglbukti', 'absensisupir_nobukti', 'trado_id', 'supir_id', 'nominaluangjalan', 'statusapproval', 'modifiedby', 'updated_at'], $models);
 
         return $temp;

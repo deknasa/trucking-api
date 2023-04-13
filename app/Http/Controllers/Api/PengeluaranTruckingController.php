@@ -118,11 +118,12 @@ class PengeluaranTruckingController extends Controller
         }
     }
 
-    public function show(PengeluaranTrucking $pengeluaranTrucking)
+    public function show($id)
     {
+        $pengeluaranTrucking = new PengeluaranTrucking();
         return response([
             'status' => true,
-            'data' => $pengeluaranTrucking
+            'data' => $pengeluaranTrucking->findAll($id)
         ]);
     }
 

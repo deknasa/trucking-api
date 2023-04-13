@@ -96,6 +96,32 @@ class PengeluaranTrucking extends MyModel
 
         return $data;
     }
+
+    public function findAll($id)
+    {
+        $query = DB::table('pengeluarantrucking')->from(DB::raw("pengeluarantrucking with (readuncommitted)"))
+            ->select(
+                'pengeluarantrucking.id',
+                'pengeluarantrucking.kodepengeluaran',
+                'pengeluarantrucking.keterangan',
+                'pengeluarantrucking.coadebet',
+                'debet.keterangancoa as coadebetKeterangan',
+                'pengeluarantrucking.coakredit',
+                'kredit.keterangancoa as coakreditKeterangan',
+                'pengeluarantrucking.coapostingdebet',
+                'postingdebet.keterangancoa as coapostingdebetKeterangan',
+                'pengeluarantrucking.coapostingkredit',
+                'postingkredit.keterangancoa as coapostingkreditKeterangan',
+                'pengeluarantrucking.format'
+            )
+            ->leftJoin(DB::raw("akunpusat as debet  with (readuncommitted)"), "pengeluarantrucking.coadebet", "debet.coa")
+            ->leftJoin(DB::raw("akunpusat as kredit  with (readuncommitted)"), "pengeluarantrucking.coakredit", "kredit.coa")
+            ->leftJoin(DB::raw("akunpusat as postingdebet  with (readuncommitted)"), "pengeluarantrucking.coapostingdebet", "postingdebet.coa")
+            ->leftJoin(DB::raw("akunpusat as postingkredit  with (readuncommitted)"), "pengeluarantrucking.coapostingkredit", "postingkredit.coa")
+            ->where('pengeluarantrucking.id', $id);
+
+        return $query->first();
+    }
     public function selectColumns($query)
     {
         return $query->select(

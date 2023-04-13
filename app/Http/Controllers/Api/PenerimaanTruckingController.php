@@ -117,11 +117,12 @@ class PenerimaanTruckingController extends Controller
         }
     }
 
-    public function show(PenerimaanTrucking $penerimaanTrucking)
+    public function show($id)
     {
+        $penerimaanTrucking = new PenerimaanTrucking();
         return response([
             'status' => true,
-            'data' => $penerimaanTrucking
+            'data' => $penerimaanTrucking->findAll($id)
         ]);
     }
 
