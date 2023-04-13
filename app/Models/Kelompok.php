@@ -79,7 +79,7 @@ class Kelompok extends MyModel
 
         $aktif = request()->aktif ?? '';
 
-        $query = Kelompok::from(DB::raw("$this->table with (readuncommitted)"))
+        $query = DB::table($this->table)->from(DB::raw("$this->table with (readuncommitted)"))
             ->select(
                 'kelompok.id',
                 'kelompok.kodekelompok',

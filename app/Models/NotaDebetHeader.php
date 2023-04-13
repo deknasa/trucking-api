@@ -133,6 +133,7 @@ class NotaDebetHeader extends MyModel
                 "statuscetak.memo as statuscetak_memo",
                 "$this->table.modifiedby",
                 "parameter.memo as  statusapproval_memo",
+                'pelunasanpiutang.penerimaan_nobukti'
 
             );
     }

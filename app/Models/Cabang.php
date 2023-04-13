@@ -19,14 +19,13 @@ class Cabang extends MyModel
         'updated_at',
     ];
 
-
     public function get()
     {
         $this->setRequestParameters();
 
         $aktif = request()->aktif ?? '';
 
-        $query = Cabang::from(DB::raw("$this->table with (readuncommitted)"))
+        $query = DB::table($this->table)->from(DB::raw("$this->table with (readuncommitted)"))
             ->select(
                 'cabang.id',
                 'cabang.kodecabang',
@@ -58,7 +57,6 @@ class Cabang extends MyModel
 
         $this->sort($query);
         $this->paginate($query);
-
         $data = $query->get();
 
         return $data;

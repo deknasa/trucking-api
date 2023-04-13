@@ -24,7 +24,7 @@ class Mandor extends MyModel
 
         $aktif = request()->aktif ?? '';
 
-        $query = Mandor::from(DB::raw("mandor with (readuncommitted)"))
+        $query = DB::table($this->table)->from(DB::raw("mandor with (readuncommitted)"))
             ->select(
                 'mandor.id',
                 'mandor.namamandor',

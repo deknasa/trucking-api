@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\PelunasanPiutangDetail;
 use App\Http\Requests\StorePelunasanPiutangDetailRequest;
 use App\Http\Requests\UpdatePelunasanPiutangDetailRequest;
+use App\Models\PelunasanPiutangHeader;
 use App\Models\User;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -31,7 +32,31 @@ class PelunasanPiutangDetailController extends Controller
         ]);
     }
 
-
+    public function getPelunasan(): JsonResponse
+    {
+        $pelunasanPiutang = new PelunasanPiutangDetail();
+        if(request()->nobukti != 'false' && request()->nobukti != null){
+            $fetch = PelunasanPiutangHeader::from(DB::raw("pelunasanpiutangheader with (readuncommitted)"))->where('nobukti', request()->nobukti)->first();
+            request()->pelunasanpiutang_id = $fetch->id;
+            return response()->json([
+                'data' => $pelunasanPiutang->get(request()->pelunasanpiutang_id),
+                'attributes' => [
+                    'totalRows' => $pelunasanPiutang->totalRows,
+                    'totalPages' => $pelunasanPiutang->totalPages,
+                    'totalNominal' => $pelunasanPiutang->totalNominal
+                ]
+            ]);
+        }else{
+            return response()->json([
+                'data' => [],
+                'attributes' => [
+                    'totalRows' => $pelunasanPiutang->totalRows,
+                    'totalPages' => $pelunasanPiutang->totalPages,
+                    'totalNominal' => 0
+                ]
+            ]);
+        }
+    }
 
     public function store(StorePelunasanPiutangDetailRequest $request)
     {

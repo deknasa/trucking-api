@@ -32,6 +32,7 @@ class NotaKreditHeader extends MyModel
         $query = $this->selectColumns($query)
 
             ->whereBetween($this->table . '.tglbukti', [date('Y-m-d', strtotime(request()->tgldari)), date('Y-m-d', strtotime(request()->tglsampai))])
+            ->leftJoin(DB::raw("pelunasanpiutangheader as pelunasanpiutang with (readuncommitted)"), 'notakreditheader.pelunasanpiutang_nobukti', 'pelunasanpiutang.nobukti')
             ->leftJoin('parameter as statuscetak', 'notakreditheader.statuscetak', 'statuscetak.id')
             ->leftJoin('parameter', 'notakreditheader.statusapproval', 'parameter.id');
 
@@ -126,6 +127,7 @@ class NotaKreditHeader extends MyModel
             "$this->table.updated_at",
             "parameter.memo as  statusapproval_memo",
             "statuscetak.memo as  statuscetak_memo",
+            'pelunasanpiutang.penerimaan_nobukti'
         );
     }
 

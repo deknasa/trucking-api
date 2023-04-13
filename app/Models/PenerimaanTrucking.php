@@ -60,7 +60,7 @@ class PenerimaanTrucking extends MyModel
     {
         $this->setRequestParameters();
 
-        $query = PenerimaanTrucking::from(DB::raw("$this->table with (readuncommitted)"))
+        $query = DB::table($this->table)->from(DB::raw("$this->table with (readuncommitted)"))
             ->select(
                 'penerimaantrucking.id',
                 'penerimaantrucking.kodepenerimaan',

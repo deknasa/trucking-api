@@ -608,6 +608,7 @@ route::middleware(['auth:api'])->group(function () {
     Route::get('pelunasanpiutangheader/grid', [PelunasanPiutangHeaderController::class, 'grid']);
     Route::get('pelunasanpiutangheader/field_length', [PelunasanPiutangHeaderController::class, 'fieldLength']);
     Route::resource('pelunasanpiutangheader', PelunasanPiutangHeaderController::class);
+    Route::get('pelunasanpiutangdetail/getPelunasan', [PelunasanPiutangDetailController::class, 'getPelunasan']);
     Route::resource('pelunasanpiutangdetail', PelunasanPiutangDetailController::class);
 
     Route::get('hutangbayarheader/{id}/printreport', [HutangBayarHeaderController::class, 'printReport']);

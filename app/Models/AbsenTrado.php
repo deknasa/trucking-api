@@ -50,7 +50,7 @@ class AbsenTrado extends MyModel
         $this->setRequestParameters();
         $aktif = request()->aktif ?? '';
 
-        $query = AbsenTrado::from(DB::raw("$this->table with (readuncommitted)"))
+        $query = DB::table($this->table)->from(DB::raw("$this->table with (readuncommitted)"))
             ->select(
                 'absentrado.id',
                 'absentrado.kodeabsen',

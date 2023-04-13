@@ -178,7 +178,7 @@ class Supir extends MyModel
 
         $aktif = request()->aktif ?? '';
 
-        $query = Supir::from(DB::raw("$this->table with (readuncommitted)"))
+        $query = DB::table($this->table)->from(DB::raw("$this->table with (readuncommitted)"))
             ->select(
                 'supir.id',
                 'supir.namasupir',
@@ -193,8 +193,8 @@ class Supir extends MyModel
                 'supir.nominalpinjamansaldoawal',
                 'supirlama.namasupir as supirold_id',
                 'supir.nosim',
-                'supir.tglterbitsim',
-                'supir.tglexpsim',
+                DB::raw('(case when (year(supir.tglterbitsim) <= 2000) then null else supir.tglterbitsim end ) as tglterbitsim'),
+                DB::raw('(case when (year(supir.tglexpsim) <= 2000) then null else supir.tglexpsim end ) as tglexpsim'),
                 'supir.keterangan',
                 'supir.noktp',
                 'supir.nokk',
@@ -599,7 +599,7 @@ class Supir extends MyModel
                         } else if ($filters['field'] == 'created_at' || $filters['field'] == 'updated_at') {
                             $query = $query->whereRaw("format(".$this->table . "." . $filters['field'].", 'dd-MM-yyyy HH:mm:ss') LIKE '%$filters[data]%'");
                         } else if ($filters['field'] == 'tgllahir' || $filters['field'] == 'tglterbitsim' || $filters['field'] == 'tglexpsim' || $filters['field'] == 'tglberhentisupir') {
-                            $query = $query->whereRaw("format(".$this->table . "." . $filters['field'].", 'dd-MM-yyyy') LIKE '%$filters[data]%'");
+                            $query = $query->whereRaw("format((case when year(isnull($this->table.".$filters['field'].",'1900/1/1'))<2000 then null else supir.".$filters['field']." end), 'dd-MM-yyyy') LIKE '%$filters[data]%'");
                         } else {
                             $query = $query->where($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
                         }
@@ -626,7 +626,7 @@ class Supir extends MyModel
                             } else if ($filters['field'] == 'supirold_id') {
                                 $query = $query->orWhere('supirlama.namasupir', 'LIKE', "%$filters[data]%");
                             } else if ($filters['field'] == 'tgllahir' || $filters['field'] == 'tglterbitsim' || $filters['field'] == 'tglexpsim' || $filters['field'] == 'tglberhentisupir') {
-                                $query = $query->orWhereRaw("format(".$this->table . "." . $filters['field'].", 'dd-MM-yyyy') LIKE '%$filters[data]%'");
+                                $query = $query->orWhereRaw("format((case when year(isnull($this->table.".$filters['field'].",'1900/1/1'))<2000 then null else supir.".$filters['field']." end), 'dd-MM-yyyy') LIKE '%$filters[data]%'");
                             } else {
                                 $query = $query->orWhere($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
                             }

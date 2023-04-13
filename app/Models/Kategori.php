@@ -60,7 +60,7 @@ class Kategori extends MyModel
 
         $aktif = request()->aktif ?? '';
 
-        $query = Kategori::from(DB::raw("$this->table with (readuncommitted)"))
+        $query = DB::table($this->table)->from(DB::raw("$this->table with (readuncommitted)"))
             ->select(
                 'kategori.id',
                 'kategori.kodekategori',

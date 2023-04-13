@@ -167,7 +167,7 @@ class Agen extends MyModel
 
         $aktif = request()->aktif ?? '';
 
-        $query = Agen::from(DB::raw("$this->table with (readuncommitted)"))
+        $query = DB::table($this->table)->from(DB::raw("$this->table with (readuncommitted)"))
             ->select(
                 'agen.id',
                 'agen.kodeagen',

@@ -75,7 +75,7 @@ class Tarif extends MyModel
         $aktif = request()->aktif ?? '';
 
         $tempUpahsupir = $this->tempUpahsupir();
-        $query = Tarif::from(DB::raw("$this->table with (readuncommitted)"))
+        $query = DB::table($this->table)->from(DB::raw("$this->table with (readuncommitted)"))
             ->select(
                 'tarif.id',
                 'parent.tujuan as parent_id',

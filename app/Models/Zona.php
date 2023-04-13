@@ -70,7 +70,7 @@ class Zona extends MyModel
 
         $aktif = request()->aktif ?? '';
 
-        $query = Zona::from(DB::raw("$this->table with (readuncommitted)"))
+        $query = DB::table($this->table)->from(DB::raw("$this->table with (readuncommitted)"))
             ->select(
                 'zona.id',
                 'zona.zona',
