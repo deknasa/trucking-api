@@ -1,3 +1,4 @@
+
 <?php
 
 namespace Database\Seeders;
@@ -20,8 +21,8 @@ class ParameterSeeder extends Seeder
 
         parameter::create(['grp' => 'STATUS AKTIF', 'subgrp' => 'STATUS AKTIF', 'kelompok' => '', 'text' => 'AKTIF', 'memo' => '{"MEMO":"AKTIF","SINGKATAN":"A","WARNA":"#28A745"}', 'type' => '0', 'modifiedby' => 'ADMIN', 'default' => 'YA',]);
         parameter::create(['grp' => 'STATUS AKTIF', 'subgrp' => 'STATUS AKTIF', 'kelompok' => '', 'text' => 'NON AKTIF', 'memo' => '{"MEMO":"NON AKTIF","SINGKATAN":"NA","WARNA":"#6C757D"}', 'type' => '0', 'modifiedby' => 'ADMIN', 'default' => '',]);
-        parameter::create(['grp' => 'STATUS APPROVAL', 'subgrp' => 'STATUS APPROVAL', 'kelompok' => '', 'text' => 'APPROVAL', 'memo' => '{"MEMO":"DI SETUJUI","SINGKATAN":"S","WARNA":"#28A745"}', 'type' => '0', 'modifiedby' => 'ADMIN', 'default' => '',]);
-        parameter::create(['grp' => 'STATUS APPROVAL', 'subgrp' => 'STATUS APPROVAL', 'kelompok' => '', 'text' => 'NON APPROVAL', 'memo' => '{"MEMO":"BELUM DI SETUJUI","SINGKATAN":"BS","WARNA":"#6C757D"}', 'type' => '0', 'modifiedby' => 'ADMIN', 'default' => 'YA',]);
+        parameter::create(['grp' => 'STATUS APPROVAL', 'subgrp' => 'STATUS APPROVAL', 'kelompok' => '', 'text' => 'APPROVAL', 'memo' => '{"MEMO":"DI APPROVAL","SINGKATAN":"APP","WARNA":"#28A745"}', 'type' => '0', 'modifiedby' => 'ADMIN', 'default' => '',]);
+        parameter::create(['grp' => 'STATUS APPROVAL', 'subgrp' => 'STATUS APPROVAL', 'kelompok' => '', 'text' => 'NON APPROVAL', 'memo' => '{"MEMO":"BELUM DI APPROVAL","SINGKATAN":"NON-APP","WARNA":"#6C757D"}', 'type' => '0', 'modifiedby' => 'ADMIN', 'default' => 'YA',]);
         parameter::create(['grp' => 'ABSENSI', 'subgrp' => 'ABSENSI', 'kelompok' => '', 'text' => '#ABS #9999#/#R#/#Y', 'memo' => '{"MEMO":"UNTUK PENOMORAN ABSENSI","SINGKATAN":"#ABS #9999#/#R#/#Y","WARNA":"#28A745"}', 'type' => '118', 'modifiedby' => 'ADMIN', 'default' => '',]);
         parameter::create(['grp' => 'STATUS KARYAWAN', 'subgrp' => 'STATUS KARYAWAN', 'kelompok' => '', 'text' => 'KARYAWAN', 'memo' => '{"MEMO":"KARYAWAN","SINGKATAN":"K","WARNA":"#28A745"}', 'type' => '0', 'modifiedby' => 'ADMIN', 'default' => 'YA',]);
         parameter::create(['grp' => 'STATUS KARYAWAN', 'subgrp' => 'STATUS KARYAWAN', 'kelompok' => '', 'text' => 'NON KARYAWAN', 'memo' => '{"MEMO":"NON KARYAWAN","SINGKATAN":"NK","WARNA":"#6C757D"}', 'type' => '0', 'modifiedby' => 'ADMIN', 'default' => '',]);
