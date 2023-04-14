@@ -1,5 +1,59 @@
 <?php
 
+function WindowsToIana($timezone)
+{
+    $map = array(
+        'UTC+00:00' => 'Africa/Abidjan',
+        'UTC+01:00' => 'Africa/Algiers',
+        'UTC+02:00' => 'Africa/Blantyre',
+        'UTC+03:00' => 'Africa/Djibouti',
+        'UTC+04:00' => 'Asia/Baku',
+        'UTC+05:00' => 'Asia/Aqtobe',
+        'UTC+06:00' => 'Asia/Bishkek',
+        'UTC+07:00' => 'Asia/Jakarta',
+        'UTC+08:00' => 'Asia/Makassar',
+        'UTC+09:00' => 'Asia/Jayapura',
+        'UTC+10:00' => 'Australia/Sydney',
+        'UTC+11:00' => 'Pacific/Noumea',
+        'UTC+12:00' => 'Pacific/Fiji',
+        'UTC-01:00' => 'Atlantic/Cape_Verde',
+        'UTC-02:00' => 'America/Noronha',
+        'UTC-03:00' => 'America/Sao_Paulo',
+        'UTC-04:00' => 'America/Manaus',
+        'UTC-05:00' => 'America/New_York',
+        'UTC-06:00' => 'America/Mexico_City',
+        'UTC-07:00' => 'America/Denver',
+        'UTC-08:00' => 'America/Los_Angeles',
+        'UTC-09:00' => 'Pacific/Gambier',
+        'UTC-10:00' => 'Pacific/Honolulu',
+        'UTC-11:00' => 'Pacific/Midway',
+    );
+    return isset($map[$timezone]) ? $map[$timezone] : '';
+}
+
+
+// Buat instance dari objek WScript.Shell
+$wshShell = new COM('WScript.Shell');
+
+// Tentukan spesifikasi kunci registri yang ingin dibaca
+$key = 'HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\TimeZoneInformation';
+
+$valueName = 'ActiveTimeBias';
+
+// Gabungkan path kunci dan nama nilai
+$valuePath = $key . '\\' . $valueName;
+
+$value = $wshShell->RegRead($valuePath);
+
+// Konversi nilai UTC offset dari menit ke detik
+$utc_offset = -$value * 60;
+
+// Tampilkan nilai UTC offset dalam format yang lebih mudah dibaca
+$etcValue =  'UTC' . ($utc_offset < 0 ? '-' : '+') . gmdate('H:i', abs($utc_offset));
+
+// Konversi nilai zona waktu Windows ke zona waktu IANA
+$timezone_iana = WindowsToIana($etcValue);
+
 return [
 
     /*
