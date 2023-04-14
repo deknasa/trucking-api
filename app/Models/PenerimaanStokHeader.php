@@ -200,7 +200,7 @@ class PenerimaanStokHeader extends MyModel
             $models->whereBetween('tglbukti', [date('Y-m-d',strtotime(request()->tgldariheader)), date('Y-m-d',strtotime(request()->tglsampaiheader))]);
         }
         if (request()->penerimaanheader_id) {
-            $models->where('penerimaanstok_id',request()->penerimaanheader_id);
+            $models->where('penerimaanstok_id',request()->penerimaanstok_id);
         }
         DB::table($temp)->insertUsing([
             'id',
@@ -356,6 +356,7 @@ class PenerimaanStokHeader extends MyModel
         ->leftJoin('parameter as statuscetak','penerimaanstokheader.statuscetak','statuscetak.id')
         ->leftJoin('trado as tradodari ','penerimaanstokheader.tradodari_id','tradodari.id')
         ->leftJoin('trado as tradoke ','penerimaanstokheader.tradoke_id','tradoke.id')
+        ->leftJoin('akunpusat','penerimaanstokheader.coa','akunpusat.coa')
         ->leftJoin('gandengan as gandengandari ','penerimaanstokheader.gandengandari_id','gandengandari.id')
         ->leftJoin('gandengan as gandenganke ','penerimaanstokheader.gandenganke_id','gandenganke.id')
         ->leftJoin('gandengan as gandengan ','penerimaanstokheader.gandenganke_id','gandengan.id')
