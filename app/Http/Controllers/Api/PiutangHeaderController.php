@@ -700,6 +700,20 @@ class PiutangHeaderController extends Controller
             return response($data);
         }
     }
+
+    /**
+     * @ClassName
+     */
+    public function report()
+    {
+    }
+
+    /**
+     * @ClassName
+     */
+    public function export()
+    {
+    }
     public function fieldLength()
     {
         $data = [];
