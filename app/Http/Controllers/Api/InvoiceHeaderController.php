@@ -849,4 +849,17 @@ class InvoiceHeaderController extends Controller
             return response($data);
         }
     }
+     /**
+     * @ClassName
+     */
+    public function report()
+    {
+    }
+
+    /**
+     * @ClassName
+     */
+    public function export()
+    {
+    }
 }
