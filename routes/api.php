@@ -916,6 +916,7 @@ route::middleware(['auth:api'])->group(function () {
     Route::get('prosesuangjalansupirheader/{id}/getPinjaman', [ProsesUangJalanSupirHeaderController::class, 'getPinjaman']);
     Route::resource('prosesuangjalansupirheader', ProsesUangJalanSupirHeaderController::class);
 
+    Route::get('prosesuangjalansupirdetail/transfer', [ProsesUangJalanSupirDetailController::class, 'transfer']);
     Route::resource('prosesuangjalansupirdetail', ProsesUangJalanSupirDetailController::class);
 
     Route::get('/orderanemkl', [OrderanEmklController::class, 'index'])->middleware('handle-token');

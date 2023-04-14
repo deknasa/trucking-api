@@ -215,6 +215,7 @@ class AbsensiSupirHeader extends MyModel
 
 
         $data = $query->get();
+        $this->totalUangJalan = $query->sum('uangjalan');
         return $data;
     }
 

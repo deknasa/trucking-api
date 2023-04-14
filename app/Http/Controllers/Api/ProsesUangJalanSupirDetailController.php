@@ -6,6 +6,8 @@ use App\Http\Controllers\Controller;
 use App\Models\ProsesUangJalanSupirDetail;
 use App\Http\Requests\StoreProsesUangJalanSupirDetailRequest;
 use App\Http\Requests\UpdateProsesUangJalanSupirDetailRequest;
+use App\Models\JurnalUmumDetail;
+use App\Models\Parameter;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -24,6 +26,38 @@ class ProsesUangJalanSupirDetailController extends Controller
                 'totalNominal' => $prosesUangJalanSupir->totalNominal
             ]
         ]);
+    }
+    public function transfer(): JsonResponse
+    {
+        $transfer = Parameter::from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS PROSES UANG JALAN')->where('text', 'TRANSFER')->first();
+        $nobukti = ProsesUangJalanSupirDetail::from(DB::raw("prosesuangjalansupirdetail with (readuncommitted)"))
+        ->where('statusprosesuangjalan', $transfer->id)->where('prosesuangjalansupir_id', request()->prosesuangjalan_id)->first();
+
+        $jurnalDetail = new JurnalUmumDetail();
+        
+        if(request()->nobukti != 'false' && request()->nobukti != null){
+            
+            return response()->json([
+                'data' => $jurnalDetail->getJurnalFromAnotherTable($nobukti->pengeluarantrucking_nobukti),
+                'attributes' => [
+                    'totalRows' => $jurnalDetail->totalRows,
+                    'totalPages' => $jurnalDetail->totalPages,
+                    'totalNominalDebet' => $jurnalDetail->totalNominalDebet,
+                    'totalNominalKredit' => $jurnalDetail->totalNominalKredit,
+                ]
+            ]);
+        }else{
+            
+            return response()->json([
+                'data' => [],
+                'attributes' => [
+                    'totalRows' => $jurnalDetail->totalRows,
+                    'totalPages' => $jurnalDetail->totalPages,
+                    'totalNominalDebet' => 0,
+                    'totalNominalKredit' => 0,
+                ]
+            ]);
+        }
     }
 
 

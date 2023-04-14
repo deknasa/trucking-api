@@ -82,9 +82,8 @@ class ProsesUangJalanSupirHeader extends MyModel
             ->leftJoin(DB::raw("pengeluarantruckingheader with (readuncommitted)"), 'pengeluarantruckingheader.nobukti', 'pengeluarantruckingdetail.nobukti')
             ->leftJoin(DB::raw("supir with (readuncommitted)"), 'pengeluarantruckingdetail.supir_id', 'supir.id')
             ->where('pengeluarantruckingdetail.supir_id', $supirId)
-            ->where('pengeluarantruckingheader.pengeluarantrucking_id', $pjt->id);
-            // ->get();
-        dd($query->toSql());
+            ->where('pengeluarantruckingheader.pengeluarantrucking_id', $pjt->id)
+            ->get();
         return $query;
 
     }

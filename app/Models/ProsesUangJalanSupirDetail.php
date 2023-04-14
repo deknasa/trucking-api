@@ -62,18 +62,19 @@ class ProsesUangJalanSupirDetail extends MyModel
 
     public function pengembalian($id)
     {
-        $penerimaanTrucking = $this->createTempPenerimaanTrucking($id);
-
         $status = Parameter::from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS PROSES UANG JALAN')->where('text', 'PENGEMBALIAN PINJAMAN')->first();
+        // ambil data yang sudah pernah dibuat
+        $penerimaanTrucking = $this->createTempPenerimaanTrucking($id,$status->id);
+       
        $pjt = PengeluaranTrucking::from(DB::raw("pengeluarantrucking with (readuncommitted)"))->where('kodepengeluaran', 'PJT')->first();
         $query = PengeluaranTruckingDetail::from(DB::raw("pengeluarantruckingdetail with (readuncommitted)"))
             ->select(
                 DB::raw("
                     pengeluarantruckingheader.id, pengeluarantruckingdetail.nobukti, pengeluarantruckingheader.tglbukti, supir.namasupir, pengeluarantruckingdetail.nominal as jlhpinjaman,
-                    (SELECT (penerimaantruckingdetail.nominal)
+                    (SELECT sum(penerimaantruckingdetail.nominal)
                     FROM penerimaantruckingdetail 
                     WHERE penerimaantruckingdetail.pengeluarantruckingheader_nobukti= pengeluarantruckingheader.nobukti) AS totalbayar,
-                    (SELECT (pengeluarantruckingdetail.nominal - penerimaantruckingdetail.nominal)
+                    (SELECT (pengeluarantruckingdetail.nominal - coalesce(SUM(penerimaantruckingdetail.nominal),0))
                         FROM penerimaantruckingdetail 
                         WHERE penerimaantruckingdetail.pengeluarantruckingheader_nobukti= pengeluarantruckingheader.nobukti) AS sisa, $penerimaanTrucking.keterangan, $penerimaanTrucking.nominal, $penerimaanTrucking.pengeluarantruckingheader_nobukti
                 ")
@@ -97,9 +98,10 @@ class ProsesUangJalanSupirDetail extends MyModel
         ];
         return $datapengembalian;
     }
-    public function createTempPenerimaanTrucking($id)
+    public function createTempPenerimaanTrucking($id, $statusId)
     {
-        
+        $getPenerimaan = ProsesUangJalanSupirDetail::from(DB::raw("prosesuangjalansupirdetail with (readuncommitted)"))->where('statusprosesuangjalan', $statusId)->first();
+
         $pjp = PenerimaanTrucking::from(DB::raw("penerimaantrucking with (readuncommitted)"))->where('kodepenerimaan', 'PJP')->first();
         $temp = '##tempPenerimaanTrucking' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
 
@@ -109,7 +111,7 @@ class ProsesUangJalanSupirDetail extends MyModel
             ->leftJoin(DB::raw("penerimaantruckingheader with (readuncommitted)"), 'prosesuangjalansupirdetail.penerimaantrucking_nobukti', 'penerimaantruckingheader.penerimaan_nobukti')
             ->leftJoin(DB::raw("penerimaantruckingdetail with (readuncommitted)"), 'penerimaantruckingheader.nobukti', 'penerimaantruckingdetail.nobukti')
             ->where('penerimaantruckingheader.penerimaantrucking_id', $pjp->id)
-            ->where('prosesuangjalansupirdetail.prosesuangjalansupir_id', $id);
+            ->where('penerimaantruckingheader.penerimaan_nobukti', $getPenerimaan->penerimaantrucking_nobukti);
 
         Schema::create($temp, function ($table) {
             $table->bigInteger('id');

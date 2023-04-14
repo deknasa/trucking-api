@@ -321,7 +321,7 @@ class PengeluaranTruckingHeaderController extends Controller
         try {
 
             $isUpdate = $request->isUpdate ?? 0;
-            $from = $request->from ?? 0;
+            $from = $request->from ?? 'not';
 
             if ($isUpdate == 0) {
 
@@ -334,7 +334,6 @@ class PengeluaranTruckingHeaderController extends Controller
                 $pengeluarantruckingheader->modifiedby = auth('api')->user()->name;
                 $pengeluarantruckingheader->save();
             }
-
 
             if ($from == 'ebs') {
                 $pengeluarantruckingheader->bank_id = $request->bank_id;

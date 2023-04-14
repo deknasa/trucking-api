@@ -628,7 +628,8 @@ class AbsensiSupirApprovalHeaderController extends Controller
             'previousURL' => $previousURL,
             'attributes' => [
                 'totalRows' => $absensiSupir->totalRows,
-                'totalPages' => $absensiSupir->totalPages
+                'totalPages' => $absensiSupir->totalPages,
+                'totalUangJalan' => $absensiSupir->totalUangJalan,
             ]
         ]);
     }
