@@ -24,10 +24,10 @@ class UpdatePelunasanPiutangDetailRequest extends FormRequest
     public function rules()
     {
         return [
-            'bayarppd' => 'required|array',
-            'bayarppd.*' => 'required|numeric|gt:0',
-            'keterangandetailppd' => 'required|array',
-            'keterangandetailppd.*' => 'required'
+            'bayar' => 'required|array',
+            'bayar.*' => 'required|numeric|gt:0',
+            'keterangan' => 'required|array',
+            'keterangan.*' => 'required'
         ];
     }
 }
