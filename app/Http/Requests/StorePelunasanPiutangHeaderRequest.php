@@ -49,8 +49,8 @@ class StorePelunasanPiutangHeaderRequest extends FormRequest
         $attributes = [
             'tglbukti' => 'Tanggal Bukti',
             'alatbayar' => 'alat bayar',
-            'bayarppd.*' => 'Nominal Bayar',
-            'keterangandetailppd.*' => 'keterangan'
+            'bayar.*' => 'Nominal Bayar',
+            'keterangan.*' => 'keterangan'
         ];
         
         return $attributes;
@@ -59,7 +59,7 @@ class StorePelunasanPiutangHeaderRequest extends FormRequest
     public function messages() 
     {
         return [
-            'bayarppd.*.gt' => 'Nominal Tidak Boleh Kosong dan Harus Lebih Besar Dari 0'
+            'bayar.*.gt' => 'Nominal Tidak Boleh Kosong dan Harus Lebih Besar Dari 0'
         ];
     }
 }
