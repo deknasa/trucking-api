@@ -1,7 +1,7 @@
 <?php return array (
   'app' => 
   array (
-    'name' => 'API-TRUCKING Laravel',
+    'name' => 'API-TRUCKING laravel',
     'env' => 'local',
     'debug' => true,
     'url' => 'http://localhost',
@@ -10,7 +10,7 @@
     'locale' => 'id',
     'fallback_locale' => 'en',
     'faker_locale' => 'id_ID',
-    'key' => 'base64:kaI9Z7tVqRITFX5pviGcBq+FDXWu5t22X4E6BWWY6Do=',
+    'key' => 'base64:sEAxjKTSXe8j9qNWnJE42Bgi2v+MdbKvlyOUR1iRbFg=',
     'cipher' => 'AES-256-CBC',
     'providers' => 
     array (
@@ -200,7 +200,7 @@
       'file' => 
       array (
         'driver' => 'file',
-        'path' => 'C:\\laragon\\www\\trucking-laravel\\storage\\framework/cache/data',
+        'path' => 'C:\\laragon\\www\\trucking-api\\storage\\framework/cache/data',
       ),
       'memcached' => 
       array (
@@ -380,12 +380,12 @@
       'local' => 
       array (
         'driver' => 'local',
-        'root' => 'C:\\laragon\\www\\trucking-laravel\\storage\\app',
+        'root' => 'C:\\laragon\\www\\trucking-api\\storage\\app',
       ),
       'public' => 
       array (
         'driver' => 'local',
-        'root' => 'C:\\laragon\\www\\trucking-laravel\\storage\\app/public',
+        'root' => 'C:\\laragon\\www\\trucking-api\\storage\\app/public',
         'url' => 'http://localhost/storage',
         'visibility' => 'public',
       ),
@@ -403,7 +403,7 @@
     ),
     'links' => 
     array (
-      'C:\\laragon\\www\\trucking-laravel\\public\\storage' => 'C:\\laragon\\www\\trucking-laravel\\storage\\app/public',
+      'C:\\laragon\\www\\trucking-api\\public\\storage' => 'C:\\laragon\\www\\trucking-api\\storage\\app/public',
     ),
   ),
   'hashing' => 
@@ -438,13 +438,13 @@
       'single' => 
       array (
         'driver' => 'single',
-        'path' => 'C:\\laragon\\www\\trucking-laravel\\storage\\logs/laravel.log',
+        'path' => 'C:\\laragon\\www\\trucking-api\\storage\\logs/laravel.log',
         'level' => 'debug',
       ),
       'daily' => 
       array (
         'driver' => 'daily',
-        'path' => 'C:\\laragon\\www\\trucking-laravel\\storage\\logs/laravel.log',
+        'path' => 'C:\\laragon\\www\\trucking-api\\storage\\logs/laravel.log',
         'level' => 'debug',
         'days' => 14,
       ),
@@ -495,7 +495,7 @@
       ),
       'emergency' => 
       array (
-        'path' => 'C:\\laragon\\www\\trucking-laravel\\storage\\logs/laravel.log',
+        'path' => 'C:\\laragon\\www\\trucking-api\\storage\\logs/laravel.log',
       ),
     ),
   ),
@@ -554,14 +554,14 @@
     'from' => 
     array (
       'address' => NULL,
-      'name' => 'API-TRUCKING Laravel',
+      'name' => 'API-TRUCKING laravel',
     ),
     'markdown' => 
     array (
       'theme' => 'default',
       'paths' => 
       array (
-        0 => 'C:\\laragon\\www\\trucking-laravel\\resources\\views/vendor/mail',
+        0 => 'C:\\laragon\\www\\trucking-api\\resources\\views/vendor/mail',
       ),
     ),
   ),
@@ -666,7 +666,7 @@
     'lifetime' => '120',
     'expire_on_close' => false,
     'encrypt' => false,
-    'files' => 'C:\\laragon\\www\\trucking-laravel\\storage\\framework/sessions',
+    'files' => 'C:\\laragon\\www\\trucking-api\\storage\\framework/sessions',
     'connection' => NULL,
     'table' => 'sessions',
     'store' => NULL,
@@ -686,9 +686,9 @@
   array (
     'paths' => 
     array (
-      0 => 'C:\\laragon\\www\\trucking-laravel\\resources\\views',
+      0 => 'C:\\laragon\\www\\trucking-api\\resources\\views',
     ),
-    'compiled' => 'C:\\laragon\\www\\trucking-laravel\\storage\\framework\\views',
+    'compiled' => 'C:\\laragon\\www\\trucking-api\\storage\\framework\\views',
   ),
   'websockets' => 
   array (
@@ -701,7 +701,7 @@
       0 => 
       array (
         'id' => '',
-        'name' => 'API-TRUCKING Laravel',
+        'name' => 'API-TRUCKING laravel',
         'key' => '',
         'secret' => '',
         'path' => NULL,
