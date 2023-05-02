@@ -2205,7 +2205,7 @@ class StokPersediaanSeeder extends Seeder
         stokpersediaan::create(['stok_id' => '2184', 'gudang_id' => '1', 'trado_id' => '0', 'gandengan_id' => '0', 'qty' => '0', 'modifiedby' => 'ADMIN',]);
         stokpersediaan::create(['stok_id' => '2185', 'gudang_id' => '1', 'trado_id' => '0', 'gandengan_id' => '0', 'qty' => '0', 'modifiedby' => 'ADMIN',]);
         stokpersediaan::create(['stok_id' => '2186', 'gudang_id' => '1', 'trado_id' => '0', 'gandengan_id' => '0', 'qty' => '0', 'modifiedby' => 'ADMIN',]);
-        stokpersediaan::create(['stok_id' => '2187', 'gudang_id' => '1', 'trado_id' => '0', 'gandengan_id' => '0', 'qty' => '0', 'modifiedby' => 'ADMIN',]);
+        stokpersediaan::create(['stok_id' => '2187', 'gudang_id' => '1', 'trado_id' => '0', 'gandengan_id' => '0', 'qty' => '20', 'modifiedby' => 'ADMIN',]);
         stokpersediaan::create(['stok_id' => '2188', 'gudang_id' => '1', 'trado_id' => '0', 'gandengan_id' => '0', 'qty' => '0', 'modifiedby' => 'ADMIN',]);
         stokpersediaan::create(['stok_id' => '2189', 'gudang_id' => '1', 'trado_id' => '0', 'gandengan_id' => '0', 'qty' => '0', 'modifiedby' => 'ADMIN',]);
         stokpersediaan::create(['stok_id' => '2190', 'gudang_id' => '1', 'trado_id' => '0', 'gandengan_id' => '0', 'qty' => '0', 'modifiedby' => 'ADMIN',]);
@@ -2276,7 +2276,7 @@ class StokPersediaanSeeder extends Seeder
         stokpersediaan::create(['stok_id' => '2255', 'gudang_id' => '1', 'trado_id' => '0', 'gandengan_id' => '0', 'qty' => '0', 'modifiedby' => 'ADMIN',]);
         stokpersediaan::create(['stok_id' => '2256', 'gudang_id' => '1', 'trado_id' => '0', 'gandengan_id' => '0', 'qty' => '0', 'modifiedby' => 'ADMIN',]);
         stokpersediaan::create(['stok_id' => '2257', 'gudang_id' => '1', 'trado_id' => '0', 'gandengan_id' => '0', 'qty' => '0', 'modifiedby' => 'ADMIN',]);
-        stokpersediaan::create(['stok_id' => '2258', 'gudang_id' => '1', 'trado_id' => '0', 'gandengan_id' => '0', 'qty' => '0', 'modifiedby' => 'ADMIN',]);
+        stokpersediaan::create(['stok_id' => '2258', 'gudang_id' => '1', 'trado_id' => '0', 'gandengan_id' => '0', 'qty' => '20', 'modifiedby' => 'ADMIN',]);
         stokpersediaan::create(['stok_id' => '2259', 'gudang_id' => '1', 'trado_id' => '0', 'gandengan_id' => '0', 'qty' => '0', 'modifiedby' => 'ADMIN',]);
         stokpersediaan::create(['stok_id' => '2260', 'gudang_id' => '1', 'trado_id' => '0', 'gandengan_id' => '0', 'qty' => '0', 'modifiedby' => 'ADMIN',]);
         stokpersediaan::create(['stok_id' => '2261', 'gudang_id' => '1', 'trado_id' => '0', 'gandengan_id' => '0', 'qty' => '0', 'modifiedby' => 'ADMIN',]);
@@ -2327,7 +2327,7 @@ class StokPersediaanSeeder extends Seeder
         stokpersediaan::create(['stok_id' => '2306', 'gudang_id' => '1', 'trado_id' => '0', 'gandengan_id' => '0', 'qty' => '0', 'modifiedby' => 'ADMIN',]);
         stokpersediaan::create(['stok_id' => '2307', 'gudang_id' => '1', 'trado_id' => '0', 'gandengan_id' => '0', 'qty' => '0', 'modifiedby' => 'ADMIN',]);
         stokpersediaan::create(['stok_id' => '2308', 'gudang_id' => '1', 'trado_id' => '0', 'gandengan_id' => '0', 'qty' => '0', 'modifiedby' => 'ADMIN',]);
-        stokpersediaan::create(['stok_id' => '2309', 'gudang_id' => '1', 'trado_id' => '0', 'gandengan_id' => '0', 'qty' => '0', 'modifiedby' => 'ADMIN',]);
+        stokpersediaan::create(['stok_id' => '2309', 'gudang_id' => '1', 'trado_id' => '0', 'gandengan_id' => '0', 'qty' => '30', 'modifiedby' => 'ADMIN',]);
         stokpersediaan::create(['stok_id' => '2310', 'gudang_id' => '1', 'trado_id' => '0', 'gandengan_id' => '0', 'qty' => '0', 'modifiedby' => 'ADMIN',]);
         stokpersediaan::create(['stok_id' => '2311', 'gudang_id' => '1', 'trado_id' => '0', 'gandengan_id' => '0', 'qty' => '0', 'modifiedby' => 'ADMIN',]);
         stokpersediaan::create(['stok_id' => '2312', 'gudang_id' => '1', 'trado_id' => '0', 'gandengan_id' => '0', 'qty' => '0', 'modifiedby' => 'ADMIN',]);
@@ -2379,7 +2379,7 @@ class StokPersediaanSeeder extends Seeder
         stokpersediaan::create(['stok_id' => '2358', 'gudang_id' => '1', 'trado_id' => '0', 'gandengan_id' => '0', 'qty' => '10', 'modifiedby' => 'ADMIN',]);
         stokpersediaan::create(['stok_id' => '2359', 'gudang_id' => '1', 'trado_id' => '0', 'gandengan_id' => '0', 'qty' => '0', 'modifiedby' => 'ADMIN',]);
         stokpersediaan::create(['stok_id' => '2360', 'gudang_id' => '1', 'trado_id' => '0', 'gandengan_id' => '0', 'qty' => '0', 'modifiedby' => 'ADMIN',]);
-        stokpersediaan::create(['stok_id' => '2361', 'gudang_id' => '1', 'trado_id' => '0', 'gandengan_id' => '0', 'qty' => '0', 'modifiedby' => 'ADMIN',]);
+        stokpersediaan::create(['stok_id' => '2361', 'gudang_id' => '1', 'trado_id' => '0', 'gandengan_id' => '0', 'qty' => '40', 'modifiedby' => 'ADMIN',]);
         stokpersediaan::create(['stok_id' => '2362', 'gudang_id' => '1', 'trado_id' => '0', 'gandengan_id' => '0', 'qty' => '0', 'modifiedby' => 'ADMIN',]);
         stokpersediaan::create(['stok_id' => '2363', 'gudang_id' => '1', 'trado_id' => '0', 'gandengan_id' => '0', 'qty' => '0', 'modifiedby' => 'ADMIN',]);
         stokpersediaan::create(['stok_id' => '2364', 'gudang_id' => '1', 'trado_id' => '0', 'gandengan_id' => '0', 'qty' => '5', 'modifiedby' => 'ADMIN',]);
@@ -2431,7 +2431,7 @@ class StokPersediaanSeeder extends Seeder
         stokpersediaan::create(['stok_id' => '2410', 'gudang_id' => '1', 'trado_id' => '0', 'gandengan_id' => '0', 'qty' => '0', 'modifiedby' => 'ADMIN',]);
         stokpersediaan::create(['stok_id' => '2411', 'gudang_id' => '1', 'trado_id' => '0', 'gandengan_id' => '0', 'qty' => '9', 'modifiedby' => 'ADMIN',]);
         stokpersediaan::create(['stok_id' => '2412', 'gudang_id' => '1', 'trado_id' => '0', 'gandengan_id' => '0', 'qty' => '8', 'modifiedby' => 'ADMIN',]);
-        stokpersediaan::create(['stok_id' => '2413', 'gudang_id' => '1', 'trado_id' => '0', 'gandengan_id' => '0', 'qty' => '11', 'modifiedby' => 'ADMIN',]);
+        stokpersediaan::create(['stok_id' => '2413', 'gudang_id' => '1', 'trado_id' => '0', 'gandengan_id' => '0', 'qty' => '16', 'modifiedby' => 'ADMIN',]);
         stokpersediaan::create(['stok_id' => '2414', 'gudang_id' => '1', 'trado_id' => '0', 'gandengan_id' => '0', 'qty' => '0', 'modifiedby' => 'ADMIN',]);
         stokpersediaan::create(['stok_id' => '2415', 'gudang_id' => '1', 'trado_id' => '0', 'gandengan_id' => '0', 'qty' => '5', 'modifiedby' => 'ADMIN',]);
         stokpersediaan::create(['stok_id' => '2416', 'gudang_id' => '1', 'trado_id' => '0', 'gandengan_id' => '0', 'qty' => '8', 'modifiedby' => 'ADMIN',]);
@@ -3106,7 +3106,7 @@ class StokPersediaanSeeder extends Seeder
         stokpersediaan::create(['stok_id' => '3085', 'gudang_id' => '1', 'trado_id' => '0', 'gandengan_id' => '0', 'qty' => '2', 'modifiedby' => 'ADMIN',]);
         stokpersediaan::create(['stok_id' => '3086', 'gudang_id' => '1', 'trado_id' => '0', 'gandengan_id' => '0', 'qty' => '1', 'modifiedby' => 'ADMIN',]);
         stokpersediaan::create(['stok_id' => '3087', 'gudang_id' => '1', 'trado_id' => '0', 'gandengan_id' => '0', 'qty' => '0', 'modifiedby' => 'ADMIN',]);
-        stokpersediaan::create(['stok_id' => '3088', 'gudang_id' => '1', 'trado_id' => '0', 'gandengan_id' => '0', 'qty' => '13', 'modifiedby' => 'ADMIN',]);
+        stokpersediaan::create(['stok_id' => '3088', 'gudang_id' => '1', 'trado_id' => '0', 'gandengan_id' => '0', 'qty' => '16', 'modifiedby' => 'ADMIN',]);
         stokpersediaan::create(['stok_id' => '3089', 'gudang_id' => '1', 'trado_id' => '0', 'gandengan_id' => '0', 'qty' => '9', 'modifiedby' => 'ADMIN',]);
         stokpersediaan::create(['stok_id' => '3090', 'gudang_id' => '1', 'trado_id' => '0', 'gandengan_id' => '0', 'qty' => '0', 'modifiedby' => 'ADMIN',]);
         stokpersediaan::create(['stok_id' => '3091', 'gudang_id' => '1', 'trado_id' => '0', 'gandengan_id' => '0', 'qty' => '0', 'modifiedby' => 'ADMIN',]);
@@ -3546,7 +3546,7 @@ class StokPersediaanSeeder extends Seeder
         stokpersediaan::create(['stok_id' => '3525', 'gudang_id' => '1', 'trado_id' => '0', 'gandengan_id' => '0', 'qty' => '2', 'modifiedby' => 'ADMIN',]);
         stokpersediaan::create(['stok_id' => '3526', 'gudang_id' => '1', 'trado_id' => '0', 'gandengan_id' => '0', 'qty' => '0', 'modifiedby' => 'ADMIN',]);
         stokpersediaan::create(['stok_id' => '3527', 'gudang_id' => '1', 'trado_id' => '0', 'gandengan_id' => '0', 'qty' => '0', 'modifiedby' => 'ADMIN',]);
-        stokpersediaan::create(['stok_id' => '3528', 'gudang_id' => '1', 'trado_id' => '0', 'gandengan_id' => '0', 'qty' => '6', 'modifiedby' => 'ADMIN',]);
+        stokpersediaan::create(['stok_id' => '3528', 'gudang_id' => '1', 'trado_id' => '0', 'gandengan_id' => '0', 'qty' => '8', 'modifiedby' => 'ADMIN',]);
         stokpersediaan::create(['stok_id' => '3529', 'gudang_id' => '1', 'trado_id' => '0', 'gandengan_id' => '0', 'qty' => '0', 'modifiedby' => 'ADMIN',]);
         stokpersediaan::create(['stok_id' => '3530', 'gudang_id' => '1', 'trado_id' => '0', 'gandengan_id' => '0', 'qty' => '5', 'modifiedby' => 'ADMIN',]);
         stokpersediaan::create(['stok_id' => '3531', 'gudang_id' => '1', 'trado_id' => '0', 'gandengan_id' => '0', 'qty' => '0', 'modifiedby' => 'ADMIN',]);
@@ -3616,7 +3616,7 @@ class StokPersediaanSeeder extends Seeder
         stokpersediaan::create(['stok_id' => '3595', 'gudang_id' => '1', 'trado_id' => '0', 'gandengan_id' => '0', 'qty' => '0', 'modifiedby' => 'ADMIN',]);
         stokpersediaan::create(['stok_id' => '3596', 'gudang_id' => '1', 'trado_id' => '0', 'gandengan_id' => '0', 'qty' => '5', 'modifiedby' => 'ADMIN',]);
         stokpersediaan::create(['stok_id' => '3597', 'gudang_id' => '1', 'trado_id' => '0', 'gandengan_id' => '0', 'qty' => '0', 'modifiedby' => 'ADMIN',]);
-        stokpersediaan::create(['stok_id' => '3598', 'gudang_id' => '1', 'trado_id' => '0', 'gandengan_id' => '0', 'qty' => '0', 'modifiedby' => 'ADMIN',]);
+        stokpersediaan::create(['stok_id' => '3598', 'gudang_id' => '1', 'trado_id' => '0', 'gandengan_id' => '0', 'qty' => '1', 'modifiedby' => 'ADMIN',]);
         stokpersediaan::create(['stok_id' => '3599', 'gudang_id' => '1', 'trado_id' => '0', 'gandengan_id' => '0', 'qty' => '0', 'modifiedby' => 'ADMIN',]);
         stokpersediaan::create(['stok_id' => '3600', 'gudang_id' => '1', 'trado_id' => '0', 'gandengan_id' => '0', 'qty' => '0', 'modifiedby' => 'ADMIN',]);
         stokpersediaan::create(['stok_id' => '3601', 'gudang_id' => '1', 'trado_id' => '0', 'gandengan_id' => '0', 'qty' => '0', 'modifiedby' => 'ADMIN',]);
@@ -3631,10 +3631,10 @@ class StokPersediaanSeeder extends Seeder
         stokpersediaan::create(['stok_id' => '3610', 'gudang_id' => '1', 'trado_id' => '0', 'gandengan_id' => '0', 'qty' => '0', 'modifiedby' => 'ADMIN',]);
         stokpersediaan::create(['stok_id' => '3611', 'gudang_id' => '1', 'trado_id' => '0', 'gandengan_id' => '0', 'qty' => '0', 'modifiedby' => 'ADMIN',]);
         stokpersediaan::create(['stok_id' => '3612', 'gudang_id' => '1', 'trado_id' => '0', 'gandengan_id' => '0', 'qty' => '0', 'modifiedby' => 'ADMIN',]);
-        stokpersediaan::create(['stok_id' => '3613', 'gudang_id' => '1', 'trado_id' => '0', 'gandengan_id' => '0', 'qty' => '0', 'modifiedby' => 'ADMIN',]);
+        stokpersediaan::create(['stok_id' => '3613', 'gudang_id' => '1', 'trado_id' => '0', 'gandengan_id' => '0', 'qty' => '1', 'modifiedby' => 'ADMIN',]);
         stokpersediaan::create(['stok_id' => '3614', 'gudang_id' => '1', 'trado_id' => '0', 'gandengan_id' => '0', 'qty' => '0', 'modifiedby' => 'ADMIN',]);
         stokpersediaan::create(['stok_id' => '3615', 'gudang_id' => '1', 'trado_id' => '0', 'gandengan_id' => '0', 'qty' => '0', 'modifiedby' => 'ADMIN',]);
-        stokpersediaan::create(['stok_id' => '3616', 'gudang_id' => '1', 'trado_id' => '0', 'gandengan_id' => '0', 'qty' => '0', 'modifiedby' => 'ADMIN',]);
+        stokpersediaan::create(['stok_id' => '3616', 'gudang_id' => '1', 'trado_id' => '0', 'gandengan_id' => '0', 'qty' => '1', 'modifiedby' => 'ADMIN',]);
         stokpersediaan::create(['stok_id' => '3617', 'gudang_id' => '1', 'trado_id' => '0', 'gandengan_id' => '0', 'qty' => '0', 'modifiedby' => 'ADMIN',]);
         stokpersediaan::create(['stok_id' => '3618', 'gudang_id' => '1', 'trado_id' => '0', 'gandengan_id' => '0', 'qty' => '0', 'modifiedby' => 'ADMIN',]);
         stokpersediaan::create(['stok_id' => '3619', 'gudang_id' => '1', 'trado_id' => '0', 'gandengan_id' => '0', 'qty' => '0', 'modifiedby' => 'ADMIN',]);
@@ -3652,7 +3652,7 @@ class StokPersediaanSeeder extends Seeder
         stokpersediaan::create(['stok_id' => '3631', 'gudang_id' => '1', 'trado_id' => '0', 'gandengan_id' => '0', 'qty' => '0', 'modifiedby' => 'ADMIN',]);
         stokpersediaan::create(['stok_id' => '3632', 'gudang_id' => '1', 'trado_id' => '0', 'gandengan_id' => '0', 'qty' => '0', 'modifiedby' => 'ADMIN',]);
         stokpersediaan::create(['stok_id' => '3633', 'gudang_id' => '1', 'trado_id' => '0', 'gandengan_id' => '0', 'qty' => '0', 'modifiedby' => 'ADMIN',]);
-        stokpersediaan::create(['stok_id' => '3634', 'gudang_id' => '1', 'trado_id' => '0', 'gandengan_id' => '0', 'qty' => '0', 'modifiedby' => 'ADMIN',]);
+        stokpersediaan::create(['stok_id' => '3634', 'gudang_id' => '1', 'trado_id' => '0', 'gandengan_id' => '0', 'qty' => '1', 'modifiedby' => 'ADMIN',]);
         stokpersediaan::create(['stok_id' => '3635', 'gudang_id' => '1', 'trado_id' => '0', 'gandengan_id' => '0', 'qty' => '0', 'modifiedby' => 'ADMIN',]);
         stokpersediaan::create(['stok_id' => '3636', 'gudang_id' => '1', 'trado_id' => '0', 'gandengan_id' => '0', 'qty' => '0', 'modifiedby' => 'ADMIN',]);
         stokpersediaan::create(['stok_id' => '3637', 'gudang_id' => '1', 'trado_id' => '0', 'gandengan_id' => '0', 'qty' => '0', 'modifiedby' => 'ADMIN',]);
@@ -4162,7 +4162,7 @@ class StokPersediaanSeeder extends Seeder
         stokpersediaan::create(['stok_id' => '4141', 'gudang_id' => '1', 'trado_id' => '0', 'gandengan_id' => '0', 'qty' => '5', 'modifiedby' => 'ADMIN',]);
         stokpersediaan::create(['stok_id' => '4142', 'gudang_id' => '1', 'trado_id' => '0', 'gandengan_id' => '0', 'qty' => '0', 'modifiedby' => 'ADMIN',]);
         stokpersediaan::create(['stok_id' => '4143', 'gudang_id' => '1', 'trado_id' => '0', 'gandengan_id' => '0', 'qty' => '0', 'modifiedby' => 'ADMIN',]);
-        stokpersediaan::create(['stok_id' => '4144', 'gudang_id' => '1', 'trado_id' => '0', 'gandengan_id' => '0', 'qty' => '9', 'modifiedby' => 'ADMIN',]);
+        stokpersediaan::create(['stok_id' => '4144', 'gudang_id' => '1', 'trado_id' => '0', 'gandengan_id' => '0', 'qty' => '14', 'modifiedby' => 'ADMIN',]);
         stokpersediaan::create(['stok_id' => '4145', 'gudang_id' => '1', 'trado_id' => '0', 'gandengan_id' => '0', 'qty' => '18', 'modifiedby' => 'ADMIN',]);
         stokpersediaan::create(['stok_id' => '4146', 'gudang_id' => '1', 'trado_id' => '0', 'gandengan_id' => '0', 'qty' => '0', 'modifiedby' => 'ADMIN',]);
         stokpersediaan::create(['stok_id' => '4147', 'gudang_id' => '1', 'trado_id' => '0', 'gandengan_id' => '0', 'qty' => '0', 'modifiedby' => 'ADMIN',]);
@@ -4427,7 +4427,7 @@ class StokPersediaanSeeder extends Seeder
         stokpersediaan::create(['stok_id' => '4406', 'gudang_id' => '1', 'trado_id' => '0', 'gandengan_id' => '0', 'qty' => '0', 'modifiedby' => 'ADMIN',]);
         stokpersediaan::create(['stok_id' => '4407', 'gudang_id' => '1', 'trado_id' => '0', 'gandengan_id' => '0', 'qty' => '0', 'modifiedby' => 'ADMIN',]);
         stokpersediaan::create(['stok_id' => '4408', 'gudang_id' => '1', 'trado_id' => '0', 'gandengan_id' => '0', 'qty' => '0', 'modifiedby' => 'ADMIN',]);
-        stokpersediaan::create(['stok_id' => '4409', 'gudang_id' => '1', 'trado_id' => '0', 'gandengan_id' => '0', 'qty' => '0', 'modifiedby' => 'ADMIN',]);
+        stokpersediaan::create(['stok_id' => '4409', 'gudang_id' => '1', 'trado_id' => '0', 'gandengan_id' => '0', 'qty' => '2', 'modifiedby' => 'ADMIN',]);
         stokpersediaan::create(['stok_id' => '4410', 'gudang_id' => '1', 'trado_id' => '0', 'gandengan_id' => '0', 'qty' => '0', 'modifiedby' => 'ADMIN',]);
         stokpersediaan::create(['stok_id' => '4411', 'gudang_id' => '1', 'trado_id' => '0', 'gandengan_id' => '0', 'qty' => '7', 'modifiedby' => 'ADMIN',]);
         stokpersediaan::create(['stok_id' => '4412', 'gudang_id' => '1', 'trado_id' => '0', 'gandengan_id' => '0', 'qty' => '0', 'modifiedby' => 'ADMIN',]);
