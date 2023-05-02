@@ -90,6 +90,8 @@ class DatabaseSeeder extends Seeder
             InvoiceDetailSeeder::class,            
             PiutangHeaderSeeder::class,
             PiutangDetailSeeder::class,            
+            HutangHeaderSeeder::class,
+            HutangDetailSeeder::class,            
             AbsensiSupirApprovalHeaderSeeder::class,
             AbsensiSupirApprovalDetailSeeder::class,
             UpahSupirSeeder::class,
