@@ -20,17 +20,17 @@ class CreateServiceindetailTable extends Migration
             $table->id();
             $table->unsignedBigInteger('servicein_id')->nullable();
             $table->string('nobukti',50)->nullable();
-            $table->unsignedBigInteger('mekanik_id')->nullable();
+            $table->unsignedBigInteger('karyawan_id')->nullable();
             $table->longText('keterangan')->nullable();
             $table->string('modifiedby',50)->nullable();
             $table->timestamps();
 
             $table->foreign('servicein_id', 'serviceindetail_serviceinheader_servicein_id_foreign')->references('id')->on('serviceinheader')->onDelete('cascade');    
-            $table->foreign('mekanik_id', 'serviceindetail_mekanik_mekanik_id_foreign')->references('id')->on('mekanik');
+            $table->foreign('karyawan_id', 'serviceindetail_karyawan_karyawan_id_foreign')->references('id')->on('karyawan');
 
 
         });
-        DB::statement("ALTER TABLE serviceindetail NOCHECK CONSTRAINT serviceindetail_mekanik_mekanik_id_foreign");
+        DB::statement("ALTER TABLE serviceindetail NOCHECK CONSTRAINT serviceindetail_karyawan_karyawan_id_foreign");
     }
 
     /**
