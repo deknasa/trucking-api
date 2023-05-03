@@ -19,6 +19,6 @@ class ServiceInDetailSeeder extends Seeder
         DB::statement("delete ServiceInDetail");
         DB::statement("DBCC CHECKIDENT ('ServiceInDetail', RESEED, 1);");
 
-        ServiceInDetail::create(['servicein_id' => '1', 'nobukti' => 'SIN 0001/V/2022', 'mekanik_id' => '1', 'keterangan' => 'SERVICE OPNAME', 'modifiedby' => 'ADMIN',]);
+        ServiceInDetail::create(['servicein_id' => '1', 'nobukti' => 'SIN 0001/V/2022', 'karyawan_id' => '1', 'keterangan' => 'SERVICE OPNAME', 'modifiedby' => 'ADMIN',]);
     }
 }
