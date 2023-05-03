@@ -37,23 +37,23 @@ class ServiceInDetail extends MyModel
                 "header.keterangan as keterangan_header",
                 "header.tglmasuk as tglmasuk",
                 "trado.kodetrado as trado_id",
-                "mekanik.namamekanik as mekanik_id",
+                "karyawan.namakaryawan as karyawan_id",
                 "$this->table.keterangan",
                 "$this->table.nobukti"
             )
 
             ->leftJoin("serviceinheader as header", "header.id", "$this->table.servicein_id")
             ->leftJoin("trado", "header.trado_id", "trado.id")
-            ->leftJoin("mekanik", "$this->table.mekanik_id", "mekanik.id");
+            ->leftJoin("karyawan", "$this->table.karyawan_id", "karyawan.id");
             $query->where($this->table . ".servicein_id", "=", request()->servicein_id);
 
         }else {
             $query->select(
-                "mekanik.namamekanik as mekanik_id",
+                "karyawan.namakaryawan as karyawan_id",
                 "$this->table.keterangan",
                 "$this->table.nobukti"
             )
-            ->leftJoin("mekanik", "$this->table.mekanik_id", "mekanik.id");
+            ->leftJoin(DB::raw("karyawan with (readuncommitted)"), "$this->table.karyawan_id", "karyawan.id");
             $query->where($this->table . ".servicein_id", "=", request()->servicein_id);
 
             $this->filter($query);
@@ -72,13 +72,13 @@ class ServiceInDetail extends MyModel
         $query = DB::table('serviceindetail')->from(DB::raw("serviceindetail with (readuncommitted)"))
         ->select(
             // 'serviceindetail.nobukti',
-            'mekanik.id as mekanik_id',
-            'mekanik.namamekanik as mekanik',
+            'serviceindetail.karyawan_id',
+            'karyawan.namakaryawan as karyawan',
 
             'serviceindetail.keterangan',
 
         )
-            ->leftJoin('mekanik', 'serviceindetail.mekanik_id', 'mekanik.id')
+            ->leftJoin('karyawan', 'serviceindetail.karyawan_id', 'karyawan.id')
             ->where('servicein_id', '=', $id);
 
         $data = $query->get();
@@ -93,8 +93,8 @@ class ServiceInDetail extends MyModel
                 case "AND":
                     $query->where(function ($query) {
                         foreach ($this->params['filters']['rules'] as $index => $filters) {
-                            if ($filters['field'] == 'mekanik_id') {
-                                $query = $query->where('mekanik.namamekanik', 'LIKE', "%$filters[data]%");
+                            if ($filters['field'] == 'karyawan_id') {
+                                $query = $query->where('karyawan.namakaryawan', 'LIKE', "%$filters[data]%");
                             } else {
                                 $query = $query->where($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
                             }
@@ -105,8 +105,8 @@ class ServiceInDetail extends MyModel
                 case "OR":
                     $query->where(function ($query) {
                         foreach ($this->params['filters']['rules'] as $index => $filters) {
-                            if ($filters['field'] == 'mekanik_id') {
-                                $query = $query->orWhere('mekanik.namamekanik', 'LIKE', "%$filters[data]%");
+                            if ($filters['field'] == 'karyawan_id') {
+                                $query = $query->orWhere('karyawan.namakaryawan', 'LIKE', "%$filters[data]%");
                             } else {
                                 $query = $query->orWhere($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
                             }
@@ -122,8 +122,8 @@ class ServiceInDetail extends MyModel
 
     public function sort($query)
     {
-        if($this->params['sortIndex'] == 'mekanik_id') {
-            return $query->orderBy('mekanik.namamekanik', $this->params['sortOrder']);
+        if($this->params['sortIndex'] == 'karyawan_id') {
+            return $query->orderBy('karyawan.namakaryawan', $this->params['sortOrder']);
         }else{   
             return $query->orderBy($this->table . '.' . $this->params['sortIndex'], $this->params['sortOrder']);
         }

@@ -24,8 +24,8 @@ class UpdateServiceInDetailRequest extends FormRequest
     public function rules()
     {
         return [
-            'mekanik' => 'required|array',
-            'mekanik.*' => 'required',
+            'karyawan' => 'required|array',
+            'karyawan.*' => 'required',
             'keterangan_detail' => 'required|array',
             'keterangan_detail.*' => 'required'
         ];
