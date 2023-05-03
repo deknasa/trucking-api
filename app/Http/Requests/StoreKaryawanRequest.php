@@ -13,7 +13,7 @@ class StoreKaryawanRequest extends FormRequest
      */
     public function authorize()
     {
-        return false;
+        return true;
     }
 
     /**
@@ -24,7 +24,19 @@ class StoreKaryawanRequest extends FormRequest
     public function rules()
     {
         return [
-            //
+            'namakaryawan' => 'required',
+            'keterangan' => 'required',
+            'statusaktif' => 'required',
+            'statusstaff' => 'required'
+        ];
+    }
+
+    public function attributes()
+    {
+        return [
+          'namakaryawan' => 'Nama Karyawan',
+          'statusaktif' => 'status aktif',
+          'statusstaff' => 'status staff'
         ];
     }
 }
