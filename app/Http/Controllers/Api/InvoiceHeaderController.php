@@ -558,12 +558,9 @@ class InvoiceHeaderController extends Controller
                 "data" => $invoice->getSP($request)
             ]);
         } else {
-
-            $query = Error::from(DB::raw("error with (readuncommitted)"))->select('keterangan')->where('kodeerror', '=', 'NSP')
-                ->first();
             return response([
-                'message' => "$query->keterangan",
-            ], 422);
+                "data" => []
+            ]);
         }
     }
 
