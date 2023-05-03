@@ -42,7 +42,7 @@ class ServiceInDetailController extends Controller
             $serviceInDetail = new serviceInDetail();
             $serviceInDetail->servicein_id = $request->servicein_id;
             $serviceInDetail->nobukti = $request->nobukti;
-            $serviceInDetail->mekanik_id =  $request->mekanik_id;
+            $serviceInDetail->karyawan_id =  $request->karyawan_id;
             $serviceInDetail->keterangan = $request->keterangan;
             $serviceInDetail->modifiedby = auth('api')->user()->name;
 
