@@ -297,6 +297,9 @@ class ParameterSeeder extends Seeder
         parameter::create(['grp' => 'PENGEMBALIAN KE PUSAT BANK BCA-3', 'subgrp' => 'PENGEMBALIAN KE PUSAT BANK BCA-3', 'kelompok' => 'PENGELUARAN BANK', 'text' => '#BPT-M BCA3 # 9999#/#R#/#Y', 'memo' => '{"MEMO":"PENGEMBALIAN KE PUSAT BANK BCA3","SINGKATAN":"#BPT-M BCA3 # 9999#/#R#/#Y","WARNA":"#28A745"}', 'type' => '0', 'modifiedby' => 'ADMIN', 'default' => '',]);
         parameter::create(['grp' => 'PINDAH BUKU', 'subgrp' => 'NOMOR PINDAH BUKU', 'kelompok' => 'PINDAH BUKU', 'text' => '#PBT #9999#/#R#/#Y', 'memo' => '{"MEMO":"NOMOR PINDAH BUKU","SINGKATAN":"#PBT #9999#/#R#/#Y","WARNA":"#28A745"}', 'type' => '118', 'modifiedby' => 'ADMIN', 'default' => '',]);
         parameter::create(['grp' => 'PENGELUARAN TRUCKING', 'subgrp' => 'BIAYA LAIN SUPIR', 'kelompok' => '', 'text' => '#BLS #9999#/#R#/#Y', 'memo' => '{"MEMO":"BIAYA LAIN SUPIR","SINGKATAN":"#BLS #9999#/#R#/#Y","WARNA":"#28A745"}', 'type' => '118', 'modifiedby' => 'ADMIN', 'default' => '',]);
+        parameter::create(['grp' => 'STATUS STAFF', 'subgrp' => 'STATUS STAFF', 'kelompok' => '', 'text' => 'KARYAWAN', 'memo' => '{"MEMO":"KARYAWAN","SINGKATAN":"K","WARNA":"#28A745"}', 'type' => '0', 'modifiedby' => 'ADMIN', 'default' => '',]);
+        parameter::create(['grp' => 'STATUS STAFF', 'subgrp' => 'STATUS STAFF', 'kelompok' => '', 'text' => 'MEKANIK', 'memo' => '{"MEMO":"MEKANIK","SINGKATAN":"M","WARNA":"#6C757D"}', 'type' => '0', 'modifiedby' => 'ADMIN', 'default' => 'YA',]);
+
         
     }
 }
