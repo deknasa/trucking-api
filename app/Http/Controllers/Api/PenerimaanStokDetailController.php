@@ -170,7 +170,7 @@ class PenerimaanStokDetailController extends Controller
             if ($penerimaanstokheader->penerimaanstok_id == $pg->text and $reuse==true) {
 
                 $datahitungstok = PenerimaanStok::select('statushitungstok as statushitungstok_id')
-                    ->where('statusformat', '=', $penerimaanstokheader->statusformat)
+                    ->where('format', '=', $penerimaanstokheader->statusformat)
                     ->first();
 
                 $statushitungstok = Parameter::where('grp', 'STATUS HITUNG STOK')->where('text', 'HITUNG STOK')->first();

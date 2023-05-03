@@ -31,6 +31,8 @@ class PenerimaanStokHeader extends MyModel
 
         $spb = Parameter::where('grp', 'SPB STOK')->where('subgrp', 'SPB STOK')->first();
         $po = Parameter::where('grp', 'PO STOK')->where('subgrp', 'PO STOK')->first();
+        $spbs = Parameter::where('grp', 'REUSE STOK')->where('subgrp', 'REUSE STOK')->first();
+        $do = Parameter::where('grp', 'DO STOK')->where('subgrp', 'DO STOK')->first();
         $rtb = Parameter::where('grp', 'RETUR STOK')->where('subgrp', 'RETUR STOK')->first();
 
         $query = DB::table($this->table);
@@ -53,6 +55,19 @@ class PenerimaanStokHeader extends MyModel
             
             // $query->leftJoin('penerimaanstokheader as po', 'penerimaanstokheader.penerimaanstok_nobukti', '=', 'po.nobukti')
             $query->where('penerimaanstokheader.penerimaanstok_id', '=', $po->text)
+            ->whereNotIn('penerimaanstokheader.nobukti', function($query) {
+                $query->select(DB::raw('DISTINCT penerimaanstokheader.penerimaanstok_nobukti'))
+                      ->from('penerimaanstokheader')
+                      ->whereNotNull('penerimaanstokheader.penerimaanstok_nobukti')
+                      ->where('penerimaanstokheader.penerimaanstok_nobukti','!=','');
+            });
+            return $query->get();
+        }
+
+        if (request()->penerimaanstok_id==$spbs->text) {
+            
+            // $query->leftJoin('penerimaanstokheader as po', 'penerimaanstokheader.penerimaanstok_nobukti', '=', 'po.nobukti')
+            $query->where('penerimaanstokheader.penerimaanstok_id', '=', $do->text)
             ->whereNotIn('penerimaanstokheader.nobukti', function($query) {
                 $query->select(DB::raw('DISTINCT penerimaanstokheader.penerimaanstok_nobukti'))
                       ->from('penerimaanstokheader')
