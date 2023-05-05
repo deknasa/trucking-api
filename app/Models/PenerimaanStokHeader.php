@@ -31,6 +31,8 @@ class PenerimaanStokHeader extends MyModel
 
         $spb = Parameter::where('grp', 'SPB STOK')->where('subgrp', 'SPB STOK')->first();
         $po = Parameter::where('grp', 'PO STOK')->where('subgrp', 'PO STOK')->first();
+        $spbs = Parameter::where('grp', 'REUSE STOK')->where('subgrp', 'REUSE STOK')->first();
+        $do = Parameter::where('grp', 'DO STOK')->where('subgrp', 'DO STOK')->first();
         $rtb = Parameter::where('grp', 'RETUR STOK')->where('subgrp', 'RETUR STOK')->first();
 
         $query = DB::table($this->table);
@@ -48,11 +50,25 @@ class PenerimaanStokHeader extends MyModel
         ->leftJoin('gandengan as gandengandari ','penerimaanstokheader.gandengandari_id','gandengandari.id')
         ->leftJoin('gandengan as gandenganke ','penerimaanstokheader.gandenganke_id','gandenganke.id')
         ->leftJoin('gandengan as gandengan ','penerimaanstokheader.gandenganke_id','gandengan.id')
+        ->leftJoin('penerimaanstokheader as nobuktipenerimaanstok','nobuktipenerimaanstok.nobukti','penerimaanstokheader.penerimaanstok_nobukti')
         ->leftJoin('supplier','penerimaanstokheader.supplier_id','supplier.id');
         if (request()->penerimaanstok_id==$spb->text) {
             
             // $query->leftJoin('penerimaanstokheader as po', 'penerimaanstokheader.penerimaanstok_nobukti', '=', 'po.nobukti')
             $query->where('penerimaanstokheader.penerimaanstok_id', '=', $po->text)
+            ->whereNotIn('penerimaanstokheader.nobukti', function($query) {
+                $query->select(DB::raw('DISTINCT penerimaanstokheader.penerimaanstok_nobukti'))
+                      ->from('penerimaanstokheader')
+                      ->whereNotNull('penerimaanstokheader.penerimaanstok_nobukti')
+                      ->where('penerimaanstokheader.penerimaanstok_nobukti','!=','');
+            });
+            return $query->get();
+        }
+
+        if (request()->penerimaanstok_id==$spbs->text) {
+            
+            // $query->leftJoin('penerimaanstokheader as po', 'penerimaanstokheader.penerimaanstok_nobukti', '=', 'po.nobukti')
+            $query->where('penerimaanstokheader.penerimaanstok_id', '=', $do->text)
             ->whereNotIn('penerimaanstokheader.nobukti', function($query) {
                 $query->select(DB::raw('DISTINCT penerimaanstokheader.penerimaanstok_nobukti'))
                       ->from('penerimaanstokheader')
@@ -73,10 +89,10 @@ class PenerimaanStokHeader extends MyModel
             $query->where('penerimaanstokheader.penerimaanstok_id','=',$spb->text);
         }
         if (request()->tgldari) {
-            $query->whereBetween('tglbukti', [date('Y-m-d',strtotime(request()->tgldari)), date('Y-m-d',strtotime(request()->tglsampai))]);
+            $query->whereBetween('penerimaanstokheader.tglbukti', [date('Y-m-d',strtotime(request()->tgldari)), date('Y-m-d',strtotime(request()->tglsampai))]);
         }
         if (request()->penerimaanheader_id) {
-            $query->where('penerimaanstok_id',request()->penerimaanheader_id);
+            $query->where('penerimaanstokheader.penerimaanstok_id',request()->penerimaanheader_id);
         }
         
         $this->totalRows = $query->count();
@@ -130,6 +146,7 @@ class PenerimaanStokHeader extends MyModel
             "penerimaanstokheader.gandengan_id",
             "penerimaanstokheader.supplier_id",
             "statuscetak.memo as  statuscetak",
+            "nobuktipenerimaanstok.tglbukti as parrenttglbukti",
             "statuscetak.id as  statuscetak_id",
         );
     }
@@ -362,6 +379,7 @@ class PenerimaanStokHeader extends MyModel
         ->leftJoin('gandengan as gandengan ','penerimaanstokheader.gandenganke_id','gandengan.id')
         ->leftJoin('penerimaanstok','penerimaanstokheader.penerimaanstok_id','penerimaanstok.id')
         ->leftJoin('trado','penerimaanstokheader.trado_id','trado.id')
+        ->leftJoin('penerimaanstokheader as nobuktipenerimaanstok','nobuktipenerimaanstok.nobukti','penerimaanstokheader.penerimaanstok_nobukti')
         ->leftJoin('supplier','penerimaanstokheader.supplier_id','supplier.id');
         $data = $query->where("$this->table.id",$id)->first();
         return $data;

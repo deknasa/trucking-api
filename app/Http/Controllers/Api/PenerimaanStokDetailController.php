@@ -168,15 +168,15 @@ class PenerimaanStokDetailController extends Controller
 
             $pg = Parameter::where('grp', 'PG STOK')->where('subgrp', 'PG STOK')->first();
             if ($penerimaanstokheader->penerimaanstok_id == $pg->text and $reuse==true) {
-
                 $datahitungstok = PenerimaanStok::select('statushitungstok as statushitungstok_id')
-                    ->where('statusformat', '=', $penerimaanstokheader->statusformat)
+                    ->where('format', '=', $penerimaanstokheader->statusformat)
                     ->first();
-
+                    
                 $statushitungstok = Parameter::where('grp', 'STATUS HITUNG STOK')->where('text', 'HITUNG STOK')->first();
                 if ($datahitungstok->statushitungstok_id == $statushitungstok->id) {
+                    // return ["error" =>[ $request->stok_id,$penerimaanstokheader->gudangke_id]];
                     $stokpersediaangudangke  = StokPersediaan::lockForUpdate()->where("stok_id", $request->stok_id)
-                        ->where("gudang_id", $penerimaanstokheader->gudangke_id)->firstorFail();
+                    ->where("gudang_id", $penerimaanstokheader->gudangke_id)->firstorFail();
 
                     $stokpersediaangudangdari  = StokPersediaan::lockForUpdate()->where("stok_id", $request->stok_id)
                         ->where("gudang_id", $penerimaanstokheader->gudangdari_id)->firstorFail();

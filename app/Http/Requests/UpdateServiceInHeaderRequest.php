@@ -53,7 +53,7 @@ class UpdateServiceInHeaderRequest extends FormRequest
         return [
             'tglbukti' => 'tanggal bukti',
             'tglmasuk' => 'tanggal masuk',
-            'mekanik.*' => 'mekanik',
+            'karyawan.*' => 'karyawan',
             'keterangan_detail.*' => 'keterangan detail'
         ];
     }

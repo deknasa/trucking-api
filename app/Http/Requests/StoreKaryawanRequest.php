@@ -4,7 +4,7 @@ namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
 
-class UpdateServiceInDetailRequest extends FormRequest
+class StoreKaryawanRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
@@ -24,10 +24,19 @@ class UpdateServiceInDetailRequest extends FormRequest
     public function rules()
     {
         return [
-            'karyawan' => 'required|array',
-            'karyawan.*' => 'required',
-            'keterangan_detail' => 'required|array',
-            'keterangan_detail.*' => 'required'
+            'namakaryawan' => 'required',
+            'keterangan' => 'required',
+            'statusaktif' => 'required',
+            'statusstaff' => 'required'
+        ];
+    }
+
+    public function attributes()
+    {
+        return [
+          'namakaryawan' => 'Nama Karyawan',
+          'statusaktif' => 'status aktif',
+          'statusstaff' => 'status staff'
         ];
     }
 }

@@ -92,7 +92,7 @@ class ServiceInHeaderController extends Controller
                 $datadetail = [
                     'servicein_id' => $servicein->id,
                     'nobukti' => $servicein->nobukti,
-                    'mekanik_id' => $request->mekanik_id[$i],
+                    'karyawan_id' => $request->karyawan_id[$i],
                     'keterangan' => $request->keterangan_detail[$i],
                     'modifiedby' => $servicein->modifiedby,
                 ];
@@ -190,7 +190,7 @@ class ServiceInHeaderController extends Controller
                     $datadetail = [
                         'servicein_id' => $serviceinheader->id,
                         'nobukti' => $serviceinheader->nobukti,
-                        'mekanik_id' => $request->mekanik_id[$i],
+                        'karyawan_id' => $request->karyawan_id[$i],
                         'keterangan' => $request->keterangan_detail[$i],
                         'modifiedby' => $serviceinheader->modifiedby,
                     ];

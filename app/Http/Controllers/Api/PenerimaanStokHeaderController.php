@@ -19,6 +19,7 @@ use App\Http\Requests\StoreHutangDetailRequest;
 
 use App\Models\Parameter;
 use App\Models\Error;
+use App\Models\Gudang;
 use App\Models\StokPersediaan;
 
 use App\Http\Requests\StorePenerimaanStokDetailRequest;
@@ -95,6 +96,30 @@ class PenerimaanStokHeaderController extends Controller
                 $hutang_nobukti = app(Controller::class)->getRunningNumber($nobuktiHutang)->original['data'];
             }
 
+            $pg = Parameter::where('grp', 'PG STOK')->where('subgrp', 'PG STOK')->first();
+            $do = Parameter::where('grp', 'DO STOK')->where('subgrp', 'DO STOK')->first();
+            $statuspindah = null;
+
+            $gudangdari_id = "";
+            $gudangke_id = "";
+            $tradodari_id = "";
+            $tradoke_id = "";
+            $gandengandari_id = "";
+            $gandenganke_id = "";
+
+            if ($request->penerimaanstok_id !== $pg->text) {
+                $statuspindahgudang = Parameter::where('grp', 'STATUS PINDAH GUDANG')->where('text', 'BUKAN PINDAH GUDANG')->first();
+                if ($request->penerimaanstok_id === $do->text) {
+                    $statuspindahgudang = Parameter::where('grp', 'STATUS PINDAH GUDANG')->where('text', 'GUDANG KE GUDANG')->first();
+                    $gudangdari_id = Gudang::where('gudang','GUDANG SEMENTARA')->first()->id;
+                    $gudangke_id = Gudang::where('gudang','GUDANG PIHAK III')->first()->id;
+                }
+                
+            }else {
+                $dari = $this->pindahDari($request->gudangdari_id,$request->tradodari_id,$request->gandengandari_id);
+                $ke = $this->pindahDari($request->gudangke_id,$request->tradoke_id,$request->gandenganke_id);
+                $statuspindahgudang = Parameter::where('grp', 'STATUS PINDAH GUDANG')->where("text", "$dari ke $ke")->first();
+            }
             /* Store header */
             $penerimaanStokHeader = new PenerimaanStokHeader();
 
@@ -110,12 +135,13 @@ class PenerimaanStokHeaderController extends Controller
             $penerimaanStokHeader->gudang_id         = ($request->gudang_id == null) ? "" : $request->gudang_id;
             $penerimaanStokHeader->trado_id          = ($request->trado_id == null) ? "" : $request->trado_id;
             $penerimaanStokHeader->supplier_id         = ($request->supplier_id == null) ? "" : $request->supplier_id;
-            $penerimaanStokHeader->gudangdari_id     = ($request->gudangdari_id == null) ? "" : $request->gudangdari_id;
-            $penerimaanStokHeader->gudangke_id       = ($request->gudangke_id == null) ? "" : $request->gudangke_id;
-            $penerimaanStokHeader->tradodari_id     = ($request->tradodari_id == null) ? "" : $request->tradodari_id;
-            $penerimaanStokHeader->tradoke_id       = ($request->tradoke_id == null) ? "" : $request->tradoke_id;
-            $penerimaanStokHeader->gandengandari_id     = ($request->gandengandari_id == null) ? "" : $request->gandengandari_id;
-            $penerimaanStokHeader->gandenganke_id       = ($request->gandenganke_id == null) ? "" : $request->gandenganke_id;
+            $penerimaanStokHeader->gudangdari_id     = ($request->gudangdari_id == null) ? $gudangdari_id : $request->gudangdari_id;
+            $penerimaanStokHeader->gudangke_id       = ($request->gudangke_id == null) ? $gudangke_id : $request->gudangke_id;
+            $penerimaanStokHeader->tradodari_id     = ($request->tradodari_id == null) ? $tradodari_id : $request->tradodari_id;
+            $penerimaanStokHeader->tradoke_id       = ($request->tradoke_id == null) ? $tradoke_id : $request->tradoke_id;
+            $penerimaanStokHeader->gandengandari_id     = ($request->gandengandari_id == null) ? $gandengandari_id : $request->gandengandari_id;
+            $penerimaanStokHeader->gandenganke_id       = ($request->gandenganke_id == null) ? $gandenganke_id : $request->gandenganke_id;
+            $penerimaanStokHeader->statuspindahgudang     = ($statuspindahgudang == null) ? "" : $statuspindahgudang->id;
             $penerimaanStokHeader->gandengan_id       = ($request->gandengan_id == null) ? "" : $request->gandengan_id;
             $penerimaanStokHeader->modifiedby        = auth('api')->user()->name;
             $penerimaanStokHeader->statuscetak        = $statusCetak->id;
@@ -279,6 +305,33 @@ class PenerimaanStokHeaderController extends Controller
 
             $statusformat = $fetchFormat->format;
             $fetchGrp = Parameter::where('id', $statusformat)->first();
+
+            $pg = Parameter::where('grp', 'PG STOK')->where('subgrp', 'PG STOK')->first();
+            $do = Parameter::where('grp', 'DO STOK')->where('subgrp', 'DO STOK')->first();
+            $statuspindah = null;
+
+            $gudangdari_id = "";
+            $gudangke_id = "";
+            $tradodari_id = "";
+            $tradoke_id = "";
+            $gandengandari_id = "";
+            $gandenganke_id = "";
+
+            if ($request->penerimaanstok_id !== $pg->text) {
+                $statuspindahgudang = Parameter::where('grp', 'STATUS PINDAH GUDANG')->where('text', 'BUKAN PINDAH GUDANG')->first();
+                if ($request->penerimaanstok_id === $do->text) {
+                    $statuspindahgudang = Parameter::where('grp', 'STATUS PINDAH GUDANG')->where('text', 'GUDANG KE GUDANG')->first();
+                    $gudangdari_id = Gudang::where('gudang','GUDANG SEMENTARA')->first()->id;
+                    $gudangke_id = Gudang::where('gudang','GUDANG PIHAK III')->first()->id;
+                }
+                
+            }else {
+                $dari = $this->pindahDari($request->gudangdari_id,$request->tradodari_id,$request->gandengandari_id);
+                $ke = $this->pindahDari($request->gudangke_id,$request->tradoke_id,$request->gandenganke_id);
+                $statuspindahgudang = Parameter::where('grp', 'STATUS PINDAH GUDANG')->where("text", "$dari ke $ke")->first();
+            }
+
+
             $penerimaanStokHeader = PenerimaanStokHeader::lockForUpdate()->findOrFail($id);
 
             $penerimaanStokHeader->tglbukti          = date('Y-m-d', strtotime($request->tglbukti));
@@ -293,13 +346,16 @@ class PenerimaanStokHeaderController extends Controller
             $penerimaanStokHeader->gudang_id         = ($request->gudang_id == null) ? "" : $request->gudang_id;
             $penerimaanStokHeader->trado_id          = ($request->trado_id == null) ? "" : $request->trado_id;
             $penerimaanStokHeader->supplier_id         = ($request->supplier_id == null) ? "" : $request->supplier_id;
-            $penerimaanStokHeader->gudangdari_id     = ($request->gudangdari_id == null) ? "" : $request->gudangdari_id;
-            $penerimaanStokHeader->gudangke_id       = ($request->gudangke_id == null) ? "" : $request->gudangke_id;
-            $penerimaanStokHeader->tradodari_id     = ($request->tradodari_id == null) ? "" : $request->tradodari_id;
-            $penerimaanStokHeader->tradoke_id       = ($request->tradoke_id == null) ? "" : $request->tradoke_id;
-            $penerimaanStokHeader->gandengandari_id     = ($request->gandengandari_id == null) ? "" : $request->gandengandari_id;
-            $penerimaanStokHeader->gandenganke_id       = ($request->gandenganke_id == null) ? "" : $request->gandenganke_id;
             $penerimaanStokHeader->gandengan_id       = ($request->gandengan_id == null) ? "" : $request->gandengan_id;
+            
+            $penerimaanStokHeader->gudangdari_id     = ($request->gudangdari_id == null) ? $gudangdari_id : $request->gudangdari_id;
+            $penerimaanStokHeader->gudangke_id       = ($request->gudangke_id == null) ? $gudangke_id : $request->gudangke_id;
+            $penerimaanStokHeader->tradodari_id     = ($request->tradodari_id == null) ? $tradodari_id : $request->tradodari_id;
+            $penerimaanStokHeader->tradoke_id       = ($request->tradoke_id == null) ? $tradoke_id : $request->tradoke_id;
+            $penerimaanStokHeader->gandengandari_id     = ($request->gandengandari_id == null) ? $gandengandari_id : $request->gandengandari_id;
+            $penerimaanStokHeader->gandenganke_id       = ($request->gandenganke_id == null) ? $gandenganke_id : $request->gandenganke_id;
+            $penerimaanStokHeader->statuspindahgudang     = ($statuspindahgudang == null) ? "" : $statuspindahgudang->id;
+            
             $penerimaanStokHeader->modifiedby        = auth('api')->user()->name;
             $request->sortname                 = $request->sortname ?? 'id';
             $request->sortorder                = $request->sortorder ?? 'asc';
@@ -397,7 +453,7 @@ class PenerimaanStokHeaderController extends Controller
                 if ($request->penerimaanstok_id == $pg->text and $reuse == true) {
 
                     $datahitungstok = PenerimaanStok::select('statushitungstok as statushitungstok_id')
-                        ->where('statusformat', '=', $statusformat)
+                        ->where('format', '=', $statusformat)
                         ->first();
 
                     $statushitungstok = Parameter::where('grp', 'STATUS HITUNG STOK')->where('text', 'HITUNG STOK')->first();
@@ -645,6 +701,19 @@ class PenerimaanStokHeaderController extends Controller
             ]);
         }
     }
+    public function pindahDari($gudang,$trado,$gandengan)
+    {
+        $statuspindah = null;
+        if(!empty($gudang)) {
+            $statuspindah = "GUDANG";
+          } elseif(!empty($trado)) {
+            $statuspindah = "TRADO";
+          } elseif(!empty($gandengan)) {
+            $statuspindah = "GANDENGAN";
+          }
+          return $statuspindah;
+    }
+
     public function cekvalidasi($id)
     {
         $pengeluaran = PenerimaanStokHeader::findOrFail($id);
