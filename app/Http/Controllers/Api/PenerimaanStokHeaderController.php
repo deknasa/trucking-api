@@ -120,7 +120,6 @@ class PenerimaanStokHeaderController extends Controller
                 $ke = $this->pindahDari($request->gudangke_id,$request->tradoke_id,$request->gandenganke_id);
                 $statuspindahgudang = Parameter::where('grp', 'STATUS PINDAH GUDANG')->where("text", "$dari ke $ke")->first();
             }
-
             /* Store header */
             $penerimaanStokHeader = new PenerimaanStokHeader();
 

@@ -50,6 +50,7 @@ class PenerimaanStokHeader extends MyModel
         ->leftJoin('gandengan as gandengandari ','penerimaanstokheader.gandengandari_id','gandengandari.id')
         ->leftJoin('gandengan as gandenganke ','penerimaanstokheader.gandenganke_id','gandenganke.id')
         ->leftJoin('gandengan as gandengan ','penerimaanstokheader.gandenganke_id','gandengan.id')
+        ->leftJoin('penerimaanstokheader as nobuktipenerimaanstok','nobuktipenerimaanstok.nobukti','penerimaanstokheader.penerimaanstok_nobukti')
         ->leftJoin('supplier','penerimaanstokheader.supplier_id','supplier.id');
         if (request()->penerimaanstok_id==$spb->text) {
             
@@ -88,10 +89,10 @@ class PenerimaanStokHeader extends MyModel
             $query->where('penerimaanstokheader.penerimaanstok_id','=',$spb->text);
         }
         if (request()->tgldari) {
-            $query->whereBetween('tglbukti', [date('Y-m-d',strtotime(request()->tgldari)), date('Y-m-d',strtotime(request()->tglsampai))]);
+            $query->whereBetween('penerimaanstokheader.tglbukti', [date('Y-m-d',strtotime(request()->tgldari)), date('Y-m-d',strtotime(request()->tglsampai))]);
         }
         if (request()->penerimaanheader_id) {
-            $query->where('penerimaanstok_id',request()->penerimaanheader_id);
+            $query->where('penerimaanstokheader.penerimaanstok_id',request()->penerimaanheader_id);
         }
         
         $this->totalRows = $query->count();
@@ -145,6 +146,7 @@ class PenerimaanStokHeader extends MyModel
             "penerimaanstokheader.gandengan_id",
             "penerimaanstokheader.supplier_id",
             "statuscetak.memo as  statuscetak",
+            "nobuktipenerimaanstok.tglbukti as parrenttglbukti",
             "statuscetak.id as  statuscetak_id",
         );
     }
@@ -377,6 +379,7 @@ class PenerimaanStokHeader extends MyModel
         ->leftJoin('gandengan as gandengan ','penerimaanstokheader.gandenganke_id','gandengan.id')
         ->leftJoin('penerimaanstok','penerimaanstokheader.penerimaanstok_id','penerimaanstok.id')
         ->leftJoin('trado','penerimaanstokheader.trado_id','trado.id')
+        ->leftJoin('penerimaanstokheader as nobuktipenerimaanstok','nobuktipenerimaanstok.nobukti','penerimaanstokheader.penerimaanstok_nobukti')
         ->leftJoin('supplier','penerimaanstokheader.supplier_id','supplier.id');
         $data = $query->where("$this->table.id",$id)->first();
         return $data;
