@@ -617,7 +617,7 @@ route::middleware(['auth:api'])->group(function () {
     Route::get('hutangbayarheader/no_bukti', [HutangBayarHeaderController::class, 'getNoBukti']);
     Route::get('hutangbayarheader/field_length', [HutangBayarHeaderController::class, 'fieldLength']);
     Route::get('hutangbayarheader/combo', [HutangBayarHeaderController::class, 'combo']);
-    Route::get('hutangbayarheader/{id}/{field}/getHutang', [HutangBayarHeaderController::class, 'getHutang'])->name('hutangbayarheader.getHutang');
+    Route::get('hutangbayarheader/{id}/getHutang', [HutangBayarHeaderController::class, 'getHutang'])->name('hutangbayarheader.getHutang');
     Route::get('hutangbayarheader/comboapproval', [HutangBayarHeaderController::class, 'comboapproval']);
     Route::post('hutangbayarheader/approval', [HutangBayarHeaderController::class, 'approval']);
     Route::post('hutangbayarheader/{id}/cekapproval', [HutangBayarHeaderController::class, 'cekapproval'])->name('hutangbayarheader.cekapproval');

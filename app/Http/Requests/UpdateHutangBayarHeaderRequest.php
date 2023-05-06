@@ -51,7 +51,7 @@ class UpdateHutangBayarHeaderRequest extends FormRequest
     public function attributes() {
         return [
             'hutang_id' => 'Pilih Hutang',
-            'keterangandetail.*' => 'keterangan detail',
+            'keterangan.*' => 'keterangan detail',
             'bayar.*' => 'bayar',
         ];
     }
