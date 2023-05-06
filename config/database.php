@@ -2,6 +2,25 @@
 
 use Illuminate\Support\Str;
 
+$path = getenv('PASSWORD_FILE');
+
+$json_data = file_get_contents($path);
+
+$data = json_decode($json_data);
+
+$tasmdnTrucking = $data->trucking->tasmdn;
+$tasjktTrucking = $data->trucking->tasjkt;
+$tassbyTrucking = $data->trucking->tassby;
+$tasbtgTrucking = $data->trucking->tasbtg;
+
+$local = $data->trucking->local;
+
+$tasmdnEmkl = $data->emkl->tasmdn;
+$tasjktEmkl = $data->emkl->tasjkt;
+$tassbyEmkl = $data->emkl->tassby;
+$tasbtgEmkl = $data->emkl->tasbtg;
+
+
 return [
 
     /*
@@ -85,7 +104,7 @@ return [
             'port' => env('DB_PORT', '1450'),
             'database' => env('DB_DATABASE', 'trucking'),
             'username' => env('DB_USERNAME', 'sa'),
-            'password' => env('DB_PASSWORD', 'MDF123!@#ldf1411'),
+            'password' =>$local,
             'charset' => 'utf8',
             'prefix' => '',
             'prefix_indexes' => true,
@@ -123,7 +142,7 @@ return [
 
         'options' => [
             'cluster' => env('REDIS_CLUSTER', 'redis'),
-            'prefix' => env('REDIS_PREFIX', Str::slug(env('APP_NAME', 'laravel'), '_').'_database_'),
+            'prefix' => env('REDIS_PREFIX', Str::slug(env('APP_NAME', 'laravel'), '_') . '_database_'),
         ],
 
         'default' => [
