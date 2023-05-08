@@ -3,6 +3,7 @@
 namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
+use App\Rules\DateTutupBuku;
 
 class StorePengembalianKasGantungHeaderRequest extends FormRequest
 {
@@ -23,13 +24,35 @@ class StorePengembalianKasGantungHeaderRequest extends FormRequest
      */
     public function rules()
     {
-        return [
-            // "pelanggan_id" => "required",
-            // "pelanggan" => "required",
-            "bank_id" => "required",
+        $rules = [
+            'tglbukti' => [
+                'required',
+                new DateTutupBuku()
+            ],
+           
             "bank" => "required",
             "tgldari" => "required",
             "tglsampai" => "required",
+        ];
+        $relatedRequests = [
+            StorePengembalianKasGantungDetailRequest::class
+        ];
+
+        foreach ($relatedRequests as $relatedRequest) {
+            $rules = array_merge(
+                $rules,
+                (new $relatedRequest)->rules()
+            );
+        }
+        
+        return $rules;
+    }
+
+    public function attributes()
+    {
+        return [
+            'keterangandetail.*' => 'keterangan',
+            'coadetail.*' => 'kode perkiraan'
         ];
     }
 }

@@ -211,28 +211,30 @@ class UserController extends Controller
     /**
      * @ClassName 
      */
-    public function destroy(User $user, Request $request)
+    public function destroy(Request $request, $id)
     {
         DB::beginTransaction();
 
-        try {
-            if ($user->lockForUpdate()->delete()) {
-                $logTrail = [
-                    'namatabel' => strtoupper($user->getTable()),
-                    'postingdari' => 'DELETE USER',
-                    'idtrans' => $user->id,
-                    'nobuktitrans' => $user->id,
-                    'aksi' => 'DELETE',
-                    'datajson' => $user->makeVisible(['password', 'remember_token'])->toArray(),
-                    'modifiedby' => $user->modifiedby
-                ];
+        $user = new User();
+        $user = $user->lockAndDestroy($id);
+        if ($user) {
+            $logTrail = [
+                'namatabel' => strtoupper($user->getTable()),
+                'postingdari' => 'DELETE USER',
+                'idtrans' => $user->id,
+                'nobuktitrans' => $user->id,
+                'aksi' => 'DELETE',
+                'datajson' => $user->toArray(),
+                'modifiedby' => auth('api')->user()->name
+            ];
 
-                $validatedLogTrail = new StoreLogTrailRequest($logTrail);
-                $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
+            $validatedLogTrail = new StoreLogTrailRequest($logTrail);
+            $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
 
-                DB::commit();
-            }
+            DB::commit();
 
+
+            /* Set position and page */
             $selected = $this->getPosition($user, $user->getTable(), true);
             $user->position = $selected->position;
             $user->id = $selected->id;
@@ -243,10 +245,13 @@ class UserController extends Controller
                 'message' => 'Berhasil dihapus',
                 'data' => $user
             ]);
-        } catch (\Throwable $th) {
+        } else {
             DB::rollBack();
 
-            throw $th;
+            return response([
+                'status' => false,
+                'message' => 'Gagal dihapus'
+            ]);
         }
     }
 
