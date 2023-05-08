@@ -544,11 +544,15 @@ class PenerimaanTruckingHeaderController extends Controller
         }
     }
 
-    public function getPengembalianPinjaman($id)
+    public function getPengembalianPinjaman($id,$aksi)
     {
-        $penerimaanTrucking = new PenerimaanTruckingHeader ();
-        $penerimaanTrucking = $penerimaanTrucking->find($id);
-        $data = $penerimaanTrucking->getPengembalianPinjaman($penerimaanTrucking->penerimaantruckingdetail[0]->supir_id);
+        $penerimaanTrucking = new PenerimaanTruckingHeader();
+        $getSupir = $penerimaanTrucking->find($id);
+        if($aksi == 'edit'){
+            $data = $penerimaanTrucking->getPengembalianPinjaman($id, $getSupir->supir_id);
+        }else{
+            $data = $penerimaanTrucking->getDeletePengembalianPinjaman($id, $getSupir->supir_id);
+        }
         return response([
             'status' => true,
             'data' => $data
