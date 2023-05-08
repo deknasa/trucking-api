@@ -3,8 +3,11 @@
 namespace App\Models;
 
 use DateTimeInterface;
+use Exception;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Facades\DB;
@@ -201,6 +204,23 @@ class User extends Authenticatable
         return  $temp;
     }
 
+    public function lockAndDestroy($identifier, string $field = 'id'): Model
+    {
+        $table = $this->getTable();
+        $model = $this->where($field, $identifier)->lockForUpdate()->first();
+
+        if ($model) {
+            $isDeleted = $model->where($field, $identifier)->delete();
+
+            if ($isDeleted) {
+                return $model;
+            }
+
+            throw new Exception("Error deleting '$field' '$identifier' in '$table'");
+        }
+
+        throw new ModelNotFoundException("No data found for '$field' '$identifier' in '$table'");
+    }
 
     public function sort($query)
     {
