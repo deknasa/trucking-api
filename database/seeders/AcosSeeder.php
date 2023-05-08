@@ -431,5 +431,9 @@ class AcosSeeder extends Seeder
         acos::create(['class' => 'invoicechargegandenganheader', 'method' => 'store', 'nama' => 'store InvoiceChargeGandenganHeaderController', 'modifiedby' => 'ADMIN',]);
         acos::create(['class' => 'invoicechargegandenganheader', 'method' => 'show', 'nama' => 'show InvoiceChargeGandenganHeaderController', 'modifiedby' => 'ADMIN',]);
         acos::create(['class' => 'invoicechargegandenganheader', 'method' => 'update', 'nama' => 'update InvoiceChargeGandenganHeaderController', 'modifiedby' => 'ADMIN',]);
+        acos::create(['class' => 'karyawan', 'method' => 'index', 'nama' => 'index KaryawanController', 'modifiedby' => 'ADMIN',]);
+        acos::create(['class' => 'karyawan', 'method' => 'store', 'nama' => 'store KaryawanController', 'modifiedby' => 'ADMIN',]);
+        acos::create(['class' => 'karyawan', 'method' => 'update', 'nama' => 'update KaryawanController', 'modifiedby' => 'ADMIN',]);
+        acos::create(['class' => 'karyawan', 'method' => 'destroy', 'nama' => 'destroy KaryawanController', 'modifiedby' => 'ADMIN',]);
     }
 }

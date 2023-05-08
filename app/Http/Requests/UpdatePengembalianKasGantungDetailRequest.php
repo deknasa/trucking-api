@@ -13,7 +13,7 @@ class UpdatePengembalianKasGantungDetailRequest extends FormRequest
      */
     public function authorize()
     {
-        return false;
+        return true;
     }
 
     /**
@@ -24,7 +24,11 @@ class UpdatePengembalianKasGantungDetailRequest extends FormRequest
     public function rules()
     {
         return [
-            //
+            
+            'keterangandetail' => 'required|array',
+            'keterangandetail.*' => 'required',
+            'coadetail' => 'required|array',
+            'coadetail.*' => 'required',
         ];
     }
 }
