@@ -53,14 +53,14 @@ class UpdatePenerimaanTruckingHeaderRequest extends FormRequest
             'tglbukti' => 'Tgl Bukti',
             'keterangancoa' => 'nama perkiraan',
             'penerimaantrucking' => 'Kode Penerimaan',
-            'keterangan.*' => 'keterangan'
+            // 'keterangan.*' => 'keterangan'
         ];
     }
     
-    public function messages() 
-    {
-        return [
-            'nominal.*.gt' => 'Nominal Tidak Boleh Kosong dan Harus Lebih Besar Dari 0'
-        ];
-    }
+    // public function messages() 
+    // {
+    //     return [
+    //         'nominal.*.gt' => 'Nominal Tidak Boleh Kosong dan Harus Lebih Besar Dari 0'
+    //     ];
+    // }
 }
