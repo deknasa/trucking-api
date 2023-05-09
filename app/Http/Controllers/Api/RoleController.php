@@ -149,28 +149,30 @@ class RoleController extends Controller
     /**
      * @ClassName 
      */
-    public function destroy(Role $role, Request $request)
+    public function destroy(Request $request, $id)
     {
         DB::beginTransaction();
 
-        try {
-            if ($role->lockForUpdate()->delete()) {
-                $logTrail = [
-                    'namatabel' => strtoupper($role->getTable()),
-                    'postingdari' => 'DELETE ROLE',
-                    'idtrans' => $role->id,
-                    'nobuktitrans' => $role->id,
-                    'aksi' => 'DELETE',
-                    'datajson' => $role->toArray(),
-                    'modifiedby' => $role->modifiedby
-                ];
+        $role = new Role();
+        $role = $role->lockAndDestroy($id);
+        if ($role) {
+            $logTrail = [
+                'namatabel' => strtoupper($role->getTable()),
+                'postingdari' => 'DELETE ROLE',
+                'idtrans' => $role->id,
+                'nobuktitrans' => $role->id,
+                'aksi' => 'DELETE',
+                'datajson' => $role->toArray(),
+                'modifiedby' => auth('api')->user()->name
+            ];
 
-                $validatedLogTrail = new StoreLogTrailRequest($logTrail);
-                $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
+            $validatedLogTrail = new StoreLogTrailRequest($logTrail);
+            $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
 
-                DB::commit();
-            }
+            DB::commit();
 
+
+            /* Set position and page */
             $selected = $this->getPosition($role, $role->getTable(), true);
             $role->position = $selected->position;
             $role->id = $selected->id;
@@ -181,10 +183,13 @@ class RoleController extends Controller
                 'message' => 'Berhasil dihapus',
                 'data' => $role
             ]);
-        } catch (\Throwable $th) {
+        } else {
             DB::rollBack();
 
-            throw $th;
+            return response([
+                'status' => false,
+                'message' => 'Gagal dihapus'
+            ]);
         }
     }
 

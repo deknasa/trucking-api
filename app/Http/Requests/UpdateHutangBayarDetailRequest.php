@@ -25,8 +25,8 @@ class UpdateHutangBayarDetailRequest extends FormRequest
     {
         return [
             'hutang_id' => 'required',
-            'keterangandetail' => 'required|array',
-            'keterangandetail.*' => 'required',
+            'keterangan' => 'required|array',
+            'keterangan.*' => 'required',
             'bayar' => 'required|array',
             'bayar.*' => 'required|numeric|gt:0',
         ];

@@ -24,7 +24,11 @@ class StorePengembalianKasGantungDetailRequest extends FormRequest
     public function rules()
     {
         return [
-            //
+            
+            'keterangandetail' => 'required|array',
+            'keterangandetail.*' => 'required',
+            'coadetail' => 'required|array',
+            'coadetail.*' => 'required',
         ];
     }
 }

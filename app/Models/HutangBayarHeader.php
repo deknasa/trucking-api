@@ -188,7 +188,8 @@ class HutangBayarHeader extends MyModel
         DB::table($temp)->insertUsing(['hutangbayar_id', 'hutang_nobukti', 'tglbukti', 'bayar', 'keterangan',  'potongan', 'nominalhutang', 'sisa'], $hutang);
 
         $data = DB::table($temp)->from(DB::raw("$temp with (readuncommitted)"))
-            ->select(DB::raw("row_number() Over(Order By $temp.hutang_nobukti) as id,hutangbayar_id,hutang_nobukti,tglbukti,bayar,keterangan,potongan,nominalhutang,sisa"))
+            ->select(DB::raw("row_number() Over(Order By $temp.hutang_nobukti) as id,hutangbayar_id,hutang_nobukti as nobukti,tglbukti,bayar,keterangan,potongan,nominalhutang as nominal,sisa,
+            (case when bayar IS NULL then 0 else (bayar + coalesce(potongan,0)) end) as total"))
             ->get();
 
         return $data;
@@ -200,7 +201,7 @@ class HutangBayarHeader extends MyModel
 
 
         $fetch = DB::table('hutangheader')->from(DB::raw("hutangheader with (readuncommitted)"))
-            ->select(DB::raw("hutangheader.nobukti,hutangheader.tglbukti,hutangheader.supplier_id,hutangheader.total as nominalhutang, (SELECT (hutangheader.total - COALESCE(SUM(hutangbayardetail.nominal),0)) FROM hutangbayardetail WHERE hutangbayardetail.hutang_nobukti= hutangheader.nobukti) AS sisa"))
+            ->select(DB::raw("hutangheader.nobukti,hutangheader.tglbukti,hutangheader.supplier_id,hutangheader.total as nominalhutang, (SELECT (hutangheader.total - COALESCE(SUM(hutangbayardetail.nominal),0) - COALESCE(SUM(hutangbayardetail.potongan),0)) FROM hutangbayardetail WHERE hutangbayardetail.hutang_nobukti= hutangheader.nobukti) AS sisa"))
             ->leftJoin(DB::raw("hutangbayardetail with (readuncommitted)"), 'hutangheader.nobukti', 'hutangbayardetail.hutang_nobukti')
             ->whereRaw("hutangheader.supplier_id = $supplierId")
             ->groupBy('hutangheader.id', 'hutangheader.nobukti', 'hutangheader.supplier_id', 'hutangheader.total', 'hutangheader.tglbukti');
@@ -223,7 +224,7 @@ class HutangBayarHeader extends MyModel
         $tempo = '##tempPembayaran' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
 
         $fetch = DB::table('hutangbayardetail as hbd')->from(DB::raw("hutangbayardetail as hbd with (readuncommitted)"))
-            ->select(DB::raw("hbd.hutangbayar_id,hbd.hutang_nobukti,hutangheader.tglbukti,hbd.nominal as bayar, hbd.keterangan,hbd.potongan,hutangheader.total as nominalhutang, (SELECT (hutangheader.total - SUM(hutangbayardetail.nominal)) FROM hutangbayardetail WHERE hutangbayardetail.hutang_nobukti= hutangheader.nobukti) AS sisa"))
+            ->select(DB::raw("hbd.hutangbayar_id,hbd.hutang_nobukti,hutangheader.tglbukti,hbd.nominal as bayar, hbd.keterangan,hbd.potongan,hutangheader.total as nominalhutang, (SELECT (hutangheader.total - SUM(hutangbayardetail.nominal) - SUM(hutangbayardetail.potongan)) FROM hutangbayardetail WHERE hutangbayardetail.hutang_nobukti= hutangheader.nobukti) AS sisa"))
             ->join(DB::raw("hutangheader with (readuncommitted)"), 'hbd.hutang_nobukti', 'hutangheader.nobukti')
             ->whereRaw("hbd.hutangbayar_id = $id");
 

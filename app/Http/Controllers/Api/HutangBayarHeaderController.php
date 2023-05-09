@@ -148,7 +148,7 @@ class HutangBayarHeaderController extends Controller
                     'cicilan' => '',
                     'userid' => '',
                     'potongan' => $request->potongan[$i],
-                    'keterangan' => $request->keterangandetail[$i],
+                    'keterangan' => $request->keterangan[$i],
                     'modifiedby' => $hutangbayarheader->modifiedby,
                 ];
 
@@ -276,7 +276,7 @@ class HutangBayarHeaderController extends Controller
                     'nominal' => $request->bayar[$i] - $request->potongan[$i],
                     'coadebet' => $coa,
                     'coakredit' => $coakredit,
-                    'keterangan' => $request->keterangandetail[$i],
+                    'keterangan' => $request->keterangan[$i],
                     'bulanbeban' => '',
                     'modifiedby' =>  auth('api')->user()->name
                 ];
@@ -415,7 +415,7 @@ class HutangBayarHeaderController extends Controller
                         'userid' => '',
                         'coa_id' => '',
                         'potongan' => $request->potongan[$i],
-                        'keterangan' => $request->keterangandetail[$i],
+                        'keterangan' => $request->keterangan[$i],
                         'modifiedby' => $hutangbayarheader->modifiedby,
                     ];
                     $data = new StoreHutangBayarDetailRequest($datadetail);
@@ -503,7 +503,7 @@ class HutangBayarHeaderController extends Controller
                     'nominal' => $request->bayar[$i] - $request->potongan[$i],
                     'coadebet' => $coa,
                     'coakredit' => $coakredit,
-                    'keterangan' => $request->keterangandetail[$i],
+                    'keterangan' => $request->keterangan[$i],
                     'bulanbeban' => '',
                     'modifiedby' =>  auth('api')->user()->name
                 ];
@@ -640,11 +640,11 @@ class HutangBayarHeaderController extends Controller
         ]);
     }
 
-    public function getHutang($id, $field)
+    public function getHutang($id)
     {
         $hutang = new HutangHeader();
         return response([
-            'data' => $hutang->getHutang($id, $field),
+            'data' => $hutang->getHutang($id),
             'id' => $id,
             'attributes' => [
                 'totalRows' => $hutang->totalRows,
