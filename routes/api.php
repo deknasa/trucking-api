@@ -197,6 +197,9 @@ use App\Http\Controllers\Api\ReportNeracaController;
 use App\Http\Controllers\Api\StokPersediaanController;
 use App\Http\Controllers\Api\TutupBukuController;
 use App\Http\Controllers\Api\LaporanOrderPembelianController;
+use App\Http\Controllers\Api\LapKartuHutangPerVendorDetailController;
+use App\Http\Controllers\Api\LaporanWarkatBelumCairController;
+use App\Http\Controllers\Api\LaporanPenyesuaianBarangController;
 
 /*
     |--------------------------------------------------------------------------
@@ -528,11 +531,12 @@ route::middleware(['auth:api'])->group(function () {
     Route::resource('penerimaantruckingdetail', PenerimaanTruckingDetailController::class);
 
     Route::get('pengeluarantruckingheader/getinvoice', [PengeluaranTruckingHeaderController::class, 'getInvoice']);
+    Route::get('pengeluarantruckingheader/{id}/geteditinvoice', [PengeluaranTruckingHeaderController::class, 'getEditInvoice']);
     Route::get('pengeluarantruckingheader/{id}/printreport', [PengeluaranTruckingHeaderController::class, 'printReport']);
     Route::post('pengeluarantruckingheader/{id}/cekValidasiAksi', [PengeluaranTruckingHeaderController::class, 'cekValidasiAksi'])->name('pengeluarantruckingheader.cekValidasiAksi');
     Route::post('pengeluarantruckingheader/{id}/cekvalidasi', [PengeluaranTruckingHeaderController::class, 'cekvalidasi'])->name('pengeluarantruckingheader.cekvalidasi');
-    Route::post('pengeluarantruckingheader/getdeposito', [PengeluaranTruckingHeaderController::class, 'getdeposito'])->name('pengeluarantruckingheader.getdeposito');
-    Route::post('pengeluarantruckingheader/{id}/gettarikdeposito', [PengeluaranTruckingHeaderController::class, 'getTarikDeposito'])->name('pengeluarantruckingheader.gettarikdeposito');
+    Route::get('pengeluarantruckingheader/getdeposito', [PengeluaranTruckingHeaderController::class, 'getdeposito'])->name('pengeluarantruckingheader.getdeposito');
+    Route::get('pengeluarantruckingheader/{id}/{aksi}/gettarikdeposito', [PengeluaranTruckingHeaderController::class, 'getTarikDeposito'])->name('pengeluarantruckingheader.gettarikdeposito');
     Route::get('pengeluarantruckingheader/no_bukti', [PengeluaranTruckingHeaderController::class, 'getNoBukti']);
     Route::get('pengeluarantruckingheader/combo', [PengeluaranTruckingHeaderController::class, 'combo']);
     Route::get('pengeluarantruckingheader/grid', [PengeluaranTruckingHeaderController::class, 'grid']);
@@ -935,9 +939,17 @@ route::middleware(['auth:api'])->group(function () {
     Route::get('laporanhutangbbm/report', [LaporanHutangBBMController::class, 'report'])->name('laporanhutangbbm.report');
     Route::resource('laporanhutangbbm', LaporanHutangBBMController::class);
     Route::get('laporanestimasikasgantung/report', [LaporanEstimasiKasGantungController::class, 'report'])->name('laporanestimasikasgantung.report');
+    Route::get('lapkartuhutangpervendordetail/report', [LapKartuHutangPerVendorDetailController::class, 'report'])->name('lapkartuhutangpervendordetail.report');
+    Route::resource('lapkartuhutangpervendordetail', LapKartuHutangPerVendorDetailController::class);
+    // laporan warkat belum cair
+    Route::get('laporanwarkatbelumcair/report', [LaporanWarkatBelumCairController::class, 'report'])->name('laporanwarkatbelumcair.report');
+    Route::resource('laporanwarkatbelumcair', LaporanWarkatBelumCairController::class);
+    Route::get('laporanpenyesuaianbarang/report', [LaporanPenyesuaianBarangController::class, 'report'])->name('laporanpenyesuaianbarang.report');
+    Route::resource('laporanpenyesuaianbarang', LaporanPenyesuaianBarangController::class);
+
     Route::resource('laporanestimasikasgantung', LaporanEstimasiKasGantungController::class);
     Route::get('laporantriptrado/report', [LaporanTripTradoController::class, 'report'])->name('laporantriptrado.report');
-    Route::resource('laporantriptrado', LaporanTripTradoController::class);
+    Route::resource('laporantriptrado', zLaporanTripTradoController::class);
     Route::get('laporankartuhutangprediksi/report', [LaporanKartuHutangPrediksiController::class, 'report'])->name('laporankartuhutangprediksi.report');
     Route::resource('laporankartuhutangprediksi', LaporanKartuHutangPrediksiController::class);
     Route::get('laporantripgandengandetail/report', [LaporanTripGandenganDetailController::class, 'report'])->name('laporantripgandengandetail.report');
@@ -1152,6 +1164,11 @@ Route::get('pengeluaran/grid', [PengeluaranHeaderController::class, 'grid']);
 Route::resource('pengeluaran', PengeluaranHeaderController::class);
 
 Route::resource('pengeluarandetail', PengeluaranDetailController::class);
+
+
+
+
+
 
     //Penerimaan trucking
     // Route::get('running_number', [Controller::class, 'getRunningNumber'])->name('running_number');

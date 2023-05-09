@@ -92,6 +92,7 @@ class ContainerController extends Controller
             $container = new Container();
             $container->kodecontainer = strtoupper($request->kodecontainer);
             $container->keterangan = strtoupper($request->keterangan);
+            $container->nominalsumbangan = $request->nominalsumbangan;
             $container->statusaktif = $request->statusaktif;
             $container->modifiedby = auth('api')->user()->name;
 
@@ -146,6 +147,7 @@ class ContainerController extends Controller
         try {
             $container->kodecontainer = $request->kodecontainer;
             $container->keterangan = $request->keterangan;
+            $container->nominalsumbangan = $request->nominalsumbangan;
             $container->statusaktif = $request->statusaktif;
             $container->modifiedby = auth('api')->user()->name;
 

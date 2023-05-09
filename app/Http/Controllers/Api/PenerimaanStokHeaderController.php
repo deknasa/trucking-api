@@ -120,6 +120,11 @@ class PenerimaanStokHeaderController extends Controller
                 $ke = $this->pindahDari($request->gudangke_id,$request->tradoke_id,$request->gandenganke_id);
                 $statuspindahgudang = Parameter::where('grp', 'STATUS PINDAH GUDANG')->where("text", "$dari ke $ke")->first();
             }
+
+            // return response([
+            //     ($request->gudangdari_id == null) ? $gudangdari_id : $request->gudangdari_id,
+            //     ($request->gudangke_id == null) ? $gudangke_id : $request->gudangke_id,
+            // ],422);
             /* Store header */
             $penerimaanStokHeader = new PenerimaanStokHeader();
 
@@ -180,6 +185,7 @@ class PenerimaanStokHeaderController extends Controller
                         "persentasediscount" => $request->detail_persentasediscount[$i],
                         "vulkanisirke" => $request->detail_vulkanisirke[$i],
                         "detail_keterangan" => $request->detail_keterangan[$i],
+                        "detail_penerimaanstoknobukti" => $request->detail_penerimaanstoknobukti[$i],
                     ];
 
                     $data = new StorePenerimaanStokDetailRequest($datadetail);
@@ -458,17 +464,24 @@ class PenerimaanStokHeaderController extends Controller
 
                     $statushitungstok = Parameter::where('grp', 'STATUS HITUNG STOK')->where('text', 'HITUNG STOK')->first();
                     if ($datahitungstok->statushitungstok_id == $statushitungstok->id) {
-                        $stokpersediaangudangke  = StokPersediaan::lockForUpdate()->where("stok_id", $request->stok_id)
-                            ->where("gudang_id", $request->gudangke_id)->firstorFail();
+                        $datadetail = PenerimaanStokDetail::select('stok_id', 'qty')
+                        ->where('penerimaanstokheader_id', '=', $id)
+                        ->get();
+                        
+                        $datadetail = json_decode($datadetail, true);
+                        foreach ($datadetail as $item) {
+                            $stokpersediaangudangke  = StokPersediaan::lockForUpdate()->where("stok_id", $item['stok_id'])
+                                ->where("gudang_id", $request->gudangke_id)->firstorFail();
 
-                        $stokpersediaangudangdari  = StokPersediaan::lockForUpdate()->where("stok_id", $request->stok_id)
-                            ->where("gudang_id", $request->gudangdari_id)->firstorFail();
+                            $stokpersediaangudangdari  = StokPersediaan::lockForUpdate()->where("stok_id", $item['stok_id'])
+                                ->where("gudang_id", $request->gudangdari_id)->firstorFail();
 
-                        $stokpersediaangudangke->qty -= $request->qty;
-                        $stokpersediaangudangke->save();
+                            $stokpersediaangudangke->qty -= $request->qty;
+                            $stokpersediaangudangke->save();
 
-                        $stokpersediaangudangdari->qty += $request->qty;
-                        $stokpersediaangudangdari->save();
+                            $stokpersediaangudangdari->qty += $request->qty;
+                            $stokpersediaangudangdari->save();
+                        }
                     }
                 }
 

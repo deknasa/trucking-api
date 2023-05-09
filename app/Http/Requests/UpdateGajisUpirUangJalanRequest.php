@@ -4,7 +4,7 @@ namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
 
-class StorePengeluaranTruckingDetailRequest extends FormRequest
+class UpdateGajisUpirUangJalanRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
@@ -13,7 +13,7 @@ class StorePengeluaranTruckingDetailRequest extends FormRequest
      */
     public function authorize()
     {
-        return true;
+        return false;
     }
 
     /**
@@ -24,10 +24,7 @@ class StorePengeluaranTruckingDetailRequest extends FormRequest
     public function rules()
     {
         return [
-            // 'nominal' => 'required|array',
-            // 'nominal.*' => 'required|numeric|gt:0',
-            // 'keterangan' => 'required|array',
-            // 'keterangan.*' => 'required'
+            //
         ];
     }
 }

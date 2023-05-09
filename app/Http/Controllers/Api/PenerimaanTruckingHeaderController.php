@@ -68,13 +68,45 @@ class PenerimaanTruckingHeaderController extends Controller
                     ->first();
 
                 if ($fetchFormat->kodepenerimaan == 'PJP') {
+                    if ($request->pjp_id != '') {
+
+                        for ($i = 0; $i < count($request->pjp_id); $i++) {
+                            if ($request->sisa[$i] < 0) {
+
+                                $query =  Error::from(DB::raw("error with (readuncommitted)"))->select('keterangan')->where('kodeerror', '=', 'STM')
+                                    ->first();
+                                return response([
+                                    'errors' => [
+                                        "nominal.$i" => ["$query->keterangan"]
+                                    ],
+                                    'message' => "sisa",
+                                ], 422);
+                            }
+                        }
+                        $request->validate([
+                            'nominal' => 'required|array',
+                            'nominal.*' => 'required|numeric|gt:0'
+                        ], [
+                            'nominal.*.gt' => 'Nominal Tidak Boleh Kosong dan Harus Lebih Besar Dari 0'
+                        ]);
+                    } else {
+                        $query = DB::table('error')->select('keterangan')->where('kodeerror', '=', 'WP')
+                            ->first();
+                        return response([
+                            'errors' => [
+                                'pjp' => "PENGEMBALIAN PINJAMAN $query->keterangan"
+                            ],
+                            'message' => "PENGEMBALIAN PINJAMAN $query->keterangan",
+                        ], 422);
+                    }
+                } else {
                     $request->validate([
-                        'pengeluarantruckingheader_nobukti' => 'required|array',
-                        'supirheader_id' => 'required',
-                        'pengeluarantruckingheader_nobukti.*' => 'required'
+                        'nominal' => 'required|array',
+                        'nominal.*' => 'required|numeric|gt:0',
+                        'keterangan' => 'required|array',
+                        'keterangan.*' => 'required'
                     ], [
-                        'pengeluarantruckingheader_nobukti.*.required' => 'pengeluaran trucking ' . app(ErrorController::class)->geterror('WI')->keterangan,
-                        'supirheader_id.required' => 'Supir Header ' . app(ErrorController::class)->geterror('WI')->keterangan,
+                        'nominal.*.gt' => 'Nominal Tidak Boleh Kosong dan Harus Lebih Besar Dari 0'
                     ]);
                 }
                 $statusformat = $fetchFormat->format;
@@ -333,7 +365,53 @@ class PenerimaanTruckingHeaderController extends Controller
             $from = $request->from;
 
             if ($isUpdate == 0) {
+                $idpenerimaan = $request->penerimaantrucking_id;
+                $fetchFormat =  DB::table('penerimaantrucking')
+                    ->where('id', $idpenerimaan)
+                    ->first();
+                    
+                if ($fetchFormat->kodepenerimaan == 'PJP') {
+                    if ($request->pjp_id != '') {
 
+                        for ($i = 0; $i < count($request->pjp_id); $i++) {
+                            if ($request->sisa[$i] < 0) {
+
+                                $query =  Error::from(DB::raw("error with (readuncommitted)"))->select('keterangan')->where('kodeerror', '=', 'STM')
+                                    ->first();
+                                return response([
+                                    'errors' => [
+                                        "nominal.$i" => ["$query->keterangan"]
+                                    ],
+                                    'message' => "sisa",
+                                ], 422);
+                            }
+                        }
+                        $request->validate([
+                            'nominal' => 'required|array',
+                            'nominal.*' => 'required|numeric|gt:0'
+                        ], [
+                            'nominal.*.gt' => 'Nominal Tidak Boleh Kosong dan Harus Lebih Besar Dari 0'
+                        ]);
+                    } else {
+                        $query = DB::table('error')->select('keterangan')->where('kodeerror', '=', 'WP')
+                            ->first();
+                        return response([
+                            'errors' => [
+                                'pjp' => "PENGEMBALIAN PINJAMAN $query->keterangan"
+                            ],
+                            'message' => "PENGEMBALIAN PINJAMAN $query->keterangan",
+                        ], 422);
+                    }
+                } else {
+                    $request->validate([
+                        'nominal' => 'required|array',
+                        'nominal.*' => 'required|numeric|gt:0',
+                        'keterangan' => 'required|array',
+                        'keterangan.*' => 'required'
+                    ], [
+                        'nominal.*.gt' => 'Nominal Tidak Boleh Kosong dan Harus Lebih Besar Dari 0'
+                    ]);
+                }
 
                 $penerimaantruckingheader->tglbukti = date('Y-m-d', strtotime($request->tglbukti));
                 $penerimaantruckingheader->coa = $request->coa ?? '';
@@ -346,7 +424,7 @@ class PenerimaanTruckingHeaderController extends Controller
             if ($from == 'ebs') {
                 $penerimaantruckingheader->bank_id = $request->bank_id;
                 $penerimaantruckingheader->penerimaan_nobukti = $request->penerimaan_nobukti;
-                
+
                 $penerimaantruckingheader->save();
             }
 
@@ -365,7 +443,7 @@ class PenerimaanTruckingHeaderController extends Controller
             $validatedLogTrail = new StoreLogTrailRequest($logTrail);
 
             $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
-            
+
             if ($from != 'ebs') {
 
                 PenerimaanTruckingDetail::where('penerimaantruckingheader_id', $penerimaantruckingheader->id)->lockForUpdate()->delete();
@@ -544,13 +622,13 @@ class PenerimaanTruckingHeaderController extends Controller
         }
     }
 
-    public function getPengembalianPinjaman($id,$aksi)
+    public function getPengembalianPinjaman($id, $aksi)
     {
         $penerimaanTrucking = new PenerimaanTruckingHeader();
         $getSupir = $penerimaanTrucking->find($id);
-        if($aksi == 'edit'){
+        if ($aksi == 'edit') {
             $data = $penerimaanTrucking->getPengembalianPinjaman($id, $getSupir->supir_id);
-        }else{
+        } else {
             $data = $penerimaanTrucking->getDeletePengembalianPinjaman($id, $getSupir->supir_id);
         }
         return response([
