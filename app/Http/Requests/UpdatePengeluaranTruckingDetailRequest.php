@@ -24,8 +24,8 @@ class UpdatePengeluaranTruckingDetailRequest extends FormRequest
     public function rules()
     {
         return [
-            'nominal' => 'required|array',
-            'nominal.*' => 'required|numeric|gt:0',
+            // 'nominal' => 'required|array',
+            // 'nominal.*' => 'required|numeric|gt:0',
             // 'keterangan' => 'required|array',
             // 'keterangan.*' => 'required'
         ];

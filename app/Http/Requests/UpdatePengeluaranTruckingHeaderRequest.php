@@ -58,10 +58,10 @@ class UpdatePengeluaranTruckingHeaderRequest extends FormRequest
         ];
     }
     
-    public function messages() 
-    {
-        return [
-            'nominal.*.gt' => 'Nominal Tidak Boleh Kosong dan Harus Lebih Besar Dari 0'
-        ];
-    }
+    // public function messages() 
+    // {
+    //     return [
+    //         'nominal.*.gt' => 'Nominal Tidak Boleh Kosong dan Harus Lebih Besar Dari 0'
+    //     ];
+    // }
 }
