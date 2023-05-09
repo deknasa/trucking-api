@@ -26,8 +26,9 @@ class LaporanPinjamanSupir extends MyModel
 
 
 
-    public function getReport($sampai)
+    public function getReport($sampai, $jenis)
     {
+        $jenisKaryawan = Parameter::from(DB::raw("parameter with (readuncommitted)"))->where('grp','JENIS KARYAWAN')->where('id',$jenis)->first();
         $sampai = date("Y-m-d", strtotime($sampai));
         // data coba coba
         $query = DB::table('penerimaantruckingdetail')->from(
