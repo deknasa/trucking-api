@@ -104,7 +104,7 @@ return [
             'port' => env('DB_PORT', '1450'),
             'database' => env('DB_DATABASE', 'trucking'),
             'username' => env('DB_USERNAME', 'sa'),
-            'password' =>$local,
+            'password' => $local,
             'charset' => 'utf8',
             'prefix' => '',
             'prefix_indexes' => true,
