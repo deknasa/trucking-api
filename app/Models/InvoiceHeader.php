@@ -241,7 +241,7 @@ class InvoiceHeader extends MyModel
             invoicedetail.orderantrucking_nobukti as nojobtrucking_detail,
             container.keterangan as container_detail,
             invoiceheader.tglbukti,
-            container.nominalsumbangan as nominal_detail
+            (case when container.nominalsumbangan IS NULL then 0 else container.nominalsumbangan end) as nominal_detail
 
             "))
 
