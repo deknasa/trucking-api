@@ -168,7 +168,7 @@ class InvoiceHeader extends MyModel
         $statusLongtrip = Parameter::from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS LONGTRIP')->where('text', 'LONGTRIP')->first();
         $statusPeralihan = Parameter::from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS PERALIHAN')->where('text', 'PERALIHAN')->first();
         // dd(DB::table($temp)->get());
-        $query = SuratPengantar::from(DB::raw("suratpengantar as sp with (readuncommitted)"))
+        $query = DB::table('suratpengantar')->from(DB::raw("suratpengantar as sp with (readuncommitted)"))
             ->select(DB::raw("$temp.id,$temp.jobtrucking,sp.tglsp, sp.keterangan,jenisorder.keterangan as jenisorder_id, agen.namaagen as agen_id, (case when sp.statuslongtrip = $statusLongtrip->id then 'true' else 'false' end) as statuslongtrip,(case when ot.statusperalihan = $statusPeralihan->id then 'true' else 'false' end) as statusperalihan, (case when ot.nocont IS NULL then '-' else ot.nocont end) as nocont, 
             (case when tarif.tujuan IS NULL then '-' else tarif.tujuan end) as tarif_id,
             ot.nominal as omset, (case when $biayaTambahan.nominaltagih IS NULL then 0 else $biayaTambahan.nominaltagih end) as nominalextra,
