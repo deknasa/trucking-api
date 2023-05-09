@@ -195,7 +195,7 @@ class PenerimaanStokDetailController extends Controller
             $penerimaanStokDetail->harga = $request->harga;
             $penerimaanStokDetail->nominaldiscount = $nominaldiscount;
             $penerimaanStokDetail->total = $total;
-            $penerimaanStokDetail->total = $request->detail_penerimaanstoknobukti;
+            $penerimaanStokDetail->penerimaanstok_nobukti = $request->detail_penerimaanstoknobukti;
             $penerimaanStokDetail->persentasediscount = $request->persentasediscount ?? 0;
             $penerimaanStokDetail->vulkanisirke = $request->vulkanisirke ?? '';
             $penerimaanStokDetail->keterangan = $request->detail_keterangan;
