@@ -31,10 +31,13 @@ class LaporanKartuPiutangPerPelangganController extends Controller
     {
         $sampai = $request->sampai;
         $dari = $request->dari;
-        $kategori = $request->kategori;
+        $pelanggandari_id = $request->pelanggandari_id;
+        $pelanggansampai_id = $request->pelanggansampai_id;
 
         $report = [
             [
+                'judul' => 'Transporindo Agung Sejahtera',
+                'subjudul' => 'Laporan Kartu Piutang Per Pelanggan',
                 'kodepelanggan' => 'SAMUDERA',
                 'namapelanggan' => 'SAMUDERA',
                 'memoheader' => 'Saldo Awal',
@@ -44,9 +47,7 @@ class LaporanKartuPiutangPerPelangganController extends Controller
                 'cicilanke' => '0.00',
                 'nominal' => '0.00',
                 'terima' => '0.00',
-                'saldo' =>  '0.00',
-                'pelanggandari' => '{SEMUA}',
-                'pelanggansampai' => '{SEMUA}'
+                'saldo' =>  '0.00'
             ], 
         ];
         return response([
