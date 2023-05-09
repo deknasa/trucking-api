@@ -310,6 +310,8 @@ class ParameterSeeder extends Seeder
         parameter::create(['grp' => 'LAPORAN PEMAKAIAN BAN', 'subgrp' => 'LAPORAN PEMAKAIAN BAN', 'kelompok' => '', 'text' => 'LAPORAN BAN STANDART', 'memo' => '{"MEMO":"LAPORAN BAN STANDART","SINGKATAN":"P","WARNA":"#6C757D"}', 'type' => '0', 'modifiedby' => 'ADMIN', 'default' => 'YA',]);
         parameter::create(['grp' => 'LAPORAN PEMAKAIAN BAN', 'subgrp' => 'LAPORAN PEMAKAIAN BAN', 'kelompok' => '', 'text' => 'LAPORAN BAN YANG SUDAH PG BELUM DI VULKANISIR SELAMA 1 BULAN ATAU LEBIH', 'memo' => '{"MEMO":"LAPORAN BAN YANG SUDAH PG BELUM DI VULKANISIR SELAMA 1 BULAN ATAU LEBIH","SINGKATAN":"P","WARNA":"#6C757D"}', 'type' => '0', 'modifiedby' => 'ADMIN', 'default' => 'YA',]);
         parameter::create(['grp' => 'LAPORAN PEMAKAIAN BAN', 'subgrp' => 'LAPORAN PEMAKAIAN BAN', 'kelompok' => '', 'text' => 'LAPORAN BAN KETERANGAN AFKIR DENGAN VULKANISIR DIBAWAH 2X', 'memo' => '{"MEMO":"LAPORAN BAN KETERANGAN AFKIR DENGAN VULKANISIR DIBAWAH 2X","SINGKATAN":"P","WARNA":"#6C757D"}', 'type' => '0', 'modifiedby' => 'ADMIN', 'default' => 'YA',]);
+        parameter::create(['grp' => 'LAPORAN KARTU PIUTANG PER PELANGGAN', 'subgrp' => 'LAPORAN KARTU PIUTANG PER PELANGGAN', 'kelompok' => '', 'text' => 'UTAMA', 'memo' => '{"MEMO":"UTAMA","SINGKATAN":"P","WARNA":"#6C757D"}', 'type' => '0', 'modifiedby' => 'ADMIN', 'default' => 'YA',]);
+        parameter::create(['grp' => 'LAPORAN KARTU PIUTANG PER PELANGGAN', 'subgrp' => 'LAPORAN KARTU PIUTANG PER PELANGGAN', 'kelompok' => '', 'text' => 'TAMBAHAN', 'memo' => '{"MEMO":"UTAMA","SINGKATAN":"P","WARNA":"#6C757D"}', 'type' => '0', 'modifiedby' => 'ADMIN', 'default' => 'TIDAK',]);
         
     }
 }
