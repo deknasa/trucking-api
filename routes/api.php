@@ -195,6 +195,8 @@ use App\Http\Controllers\Api\ProsesUangJalanSupirHeaderController;
 use App\Http\Controllers\Api\ReportNeracaController;
 use App\Http\Controllers\Api\StokPersediaanController;
 use App\Http\Controllers\Api\TutupBukuController;
+use App\Http\Controllers\Api\LapKartuHutangPerVendorDetailController;
+use App\Http\Controllers\Api\LaporanWarkatBelumCairController;
 
 /*
     |--------------------------------------------------------------------------
@@ -933,9 +935,15 @@ route::middleware(['auth:api'])->group(function () {
     Route::get('laporanhutangbbm/report', [LaporanHutangBBMController::class, 'report'])->name('laporanhutangbbm.report');
     Route::resource('laporanhutangbbm', LaporanHutangBBMController::class);
     Route::get('laporanestimasikasgantung/report', [LaporanEstimasiKasGantungController::class, 'report'])->name('laporanestimasikasgantung.report');
+    Route::get('lapkartuhutangpervendordetail/report', [LapKartuHutangPerVendorDetailController::class, 'report'])->name('lapkartuhutangpervendordetail.report');
+    Route::resource('lapkartuhutangpervendordetail', LapKartuHutangPerVendorDetailController::class);
+    // laporan warkat belum cair
+    Route::get('laporanwarkatbelumcair/report', [LaporanWarkatBelumCairController::class, 'report'])->name('laporanwarkatbelumcair.report');
+    Route::resource('laporanwarkatbelumcair', LaporanWarkatBelumCairController::class);
+
     Route::resource('laporanestimasikasgantung', LaporanEstimasiKasGantungController::class);
     Route::get('laporantriptrado/report', [LaporanTripTradoController::class, 'report'])->name('laporantriptrado.report');
-    Route::resource('laporantriptrado', LaporanTripTradoController::class);
+    Route::resource('laporantriptrado', zLaporanTripTradoController::class);
     Route::get('laporankartuhutangprediksi/report', [LaporanKartuHutangPrediksiController::class, 'report'])->name('laporankartuhutangprediksi.report');
     Route::resource('laporankartuhutangprediksi', LaporanKartuHutangPrediksiController::class);
     Route::get('laporantripgandengandetail/report', [LaporanTripGandenganDetailController::class, 'report'])->name('laporantripgandengandetail.report');
@@ -1146,6 +1154,11 @@ Route::get('pengeluaran/grid', [PengeluaranHeaderController::class, 'grid']);
 Route::resource('pengeluaran', PengeluaranHeaderController::class);
 
 Route::resource('pengeluarandetail', PengeluaranDetailController::class);
+
+
+
+
+
 
     //Penerimaan trucking
     // Route::get('running_number', [Controller::class, 'getRunningNumber'])->name('running_number');
