@@ -170,6 +170,7 @@ use App\Http\Controllers\Api\LaporanKasGantungController;
 use App\Http\Controllers\Api\LaporanKeteranganPinjamanSupirController;
 use App\Http\Controllers\Api\LaporanKlaimPJTSupirController;
 use App\Http\Controllers\Api\LaporanKartuPiutangPerPelangganController;
+use App\Http\Controllers\Api\LaporanKartuPiutangPerPlgDetailController;
 use App\Http\Controllers\Api\LaporanPemotonganPinjamanDepoController;
 use App\Http\Controllers\Api\LaporanPemotonganPinjamanDepositoController;
 use App\Http\Controllers\Api\LaporanPemotonganPinjamanPerEBSController;
@@ -970,6 +971,8 @@ route::middleware(['auth:api'])->group(function () {
     Route::resource('laporanklaimpjtsupir', LaporanKlaimPJTSupirController::class);
     Route::get('laporankartupiutangperpelanggan/report', [LaporanKartuPiutangPerPelangganController::class, 'report'])->name('laporankartupiutangperpelanggan.report');
     Route::resource('laporankartupiutangperpelanggan', LaporanKartuPiutangPerPelangganController::class);
+    Route::get('laporankartupiutangperplgdetail/report', [LaporanKartuPiutangPerPlgDetailController::class, 'report'])->name('laporankartupiutangperplgdetail.report');
+    Route::resource('laporankartupiutangperplgdetail', LaporanKartuPiutangPerPlgDetailController::class);
     Route::get('laporanorderpembelian/report', [LaporanOrderPembelianController::class, 'report'])->name('laporanorderpembelian.report');
     Route::resource('laporanorderpembelian', LaporanOrderPembelianController::class);
 
