@@ -1,16 +1,16 @@
 <?php return array (
   'app' => 
   array (
-    'name' => 'poi',
+    'name' => 'Laravel-Api',
     'env' => 'local',
     'debug' => true,
-    'url' => 'http://localhost/trucking-laravel/public/api/',
+    'url' => 'http://localhost',
     'asset_url' => NULL,
     'timezone' => 'Asia/Jakarta',
     'locale' => 'id',
     'fallback_locale' => 'en',
     'faker_locale' => 'id_ID',
-    'key' => 'base64:BNBpz+WrMS+MBvLkikfjK3J8bDeOO6T/4k8wvnDZy6Q=',
+    'key' => 'base64:p5yOZjvehmN4GiH1LhzuCsjW76SGmsJvZRgBA2sUK90=',
     'cipher' => 'AES-256-CBC',
     'providers' => 
     array (
@@ -200,7 +200,7 @@
       'file' => 
       array (
         'driver' => 'file',
-        'path' => 'C:\\xampp\\htdocs\\trucking-laravel\\storage\\framework/cache/data',
+        'path' => 'C:\\laragon\\www\\trucking-api\\storage\\framework/cache/data',
       ),
       'memcached' => 
       array (
@@ -244,7 +244,7 @@
         'driver' => 'octane',
       ),
     ),
-    'prefix' => 'poi_cache',
+    'prefix' => 'laravel_api_cache',
   ),
   'cors' => 
   array (
@@ -283,7 +283,7 @@
       array (
         'driver' => 'sqlite',
         'url' => NULL,
-        'database' => 'truckinglaravel',
+        'database' => 'trucking',
         'prefix' => '',
         'foreign_key_constraints' => true,
       ),
@@ -291,9 +291,9 @@
       array (
         'driver' => 'mysql',
         'url' => NULL,
-        'host' => '192.168.3.19',
-        'port' => '1440',
-        'database' => 'truckinglaravel',
+        'host' => '192.168.3.211',
+        'port' => '1433',
+        'database' => 'trucking',
         'username' => 'sa',
         'password' => 'Aa123456',
         'unix_socket' => '',
@@ -311,9 +311,9 @@
       array (
         'driver' => 'pgsql',
         'url' => NULL,
-        'host' => '192.168.3.19',
-        'port' => '1440',
-        'database' => 'truckinglaravel',
+        'host' => '192.168.3.211',
+        'port' => '1433',
+        'database' => 'trucking',
         'username' => 'sa',
         'password' => 'Aa123456',
         'charset' => 'utf8',
@@ -326,9 +326,9 @@
       array (
         'driver' => 'sqlsrv',
         'url' => NULL,
-        'host' => '192.168.3.19',
-        'port' => '1440',
-        'database' => 'truckinglaravel',
+        'host' => '192.168.3.211',
+        'port' => '1433',
+        'database' => 'trucking',
         'username' => 'sa',
         'password' => 'Aa123456',
         'charset' => 'utf8',
@@ -343,7 +343,7 @@
       'options' => 
       array (
         'cluster' => 'redis',
-        'prefix' => 'poi_database_',
+        'prefix' => 'laravel_api_database_',
       ),
       'default' => 
       array (
@@ -367,9 +367,9 @@
   array (
     'api' => 
     array (
-      'url' => NULL,
-      'client_id' => NULL,
-      'client_secret' => NULL,
+      'url' => '',
+      'client_id' => '',
+      'client_secret' => '',
     ),
   ),
   'filesystems' => 
@@ -380,13 +380,13 @@
       'local' => 
       array (
         'driver' => 'local',
-        'root' => 'C:\\xampp\\htdocs\\trucking-laravel\\storage\\app',
+        'root' => 'C:\\laragon\\www\\trucking-api\\storage\\app',
       ),
       'public' => 
       array (
         'driver' => 'local',
-        'root' => 'C:\\xampp\\htdocs\\trucking-laravel\\storage\\app/public',
-        'url' => 'http://localhost/trucking-laravel/public/api//storage',
+        'root' => 'C:\\laragon\\www\\trucking-api\\storage\\app/public',
+        'url' => 'http://localhost/storage',
         'visibility' => 'public',
       ),
       's3' => 
@@ -403,7 +403,7 @@
     ),
     'links' => 
     array (
-      'C:\\xampp\\htdocs\\trucking-laravel\\public\\storage' => 'C:\\xampp\\htdocs\\trucking-laravel\\storage\\app/public',
+      'C:\\laragon\\www\\trucking-api\\public\\storage' => 'C:\\laragon\\www\\trucking-api\\storage\\app/public',
     ),
   ),
   'hashing' => 
@@ -438,13 +438,13 @@
       'single' => 
       array (
         'driver' => 'single',
-        'path' => 'C:\\xampp\\htdocs\\trucking-laravel\\storage\\logs/laravel.log',
+        'path' => 'C:\\laragon\\www\\trucking-api\\storage\\logs/laravel.log',
         'level' => 'debug',
       ),
       'daily' => 
       array (
         'driver' => 'daily',
-        'path' => 'C:\\xampp\\htdocs\\trucking-laravel\\storage\\logs/laravel.log',
+        'path' => 'C:\\laragon\\www\\trucking-api\\storage\\logs/laravel.log',
         'level' => 'debug',
         'days' => 14,
       ),
@@ -495,7 +495,7 @@
       ),
       'emergency' => 
       array (
-        'path' => 'C:\\xampp\\htdocs\\trucking-laravel\\storage\\logs/laravel.log',
+        'path' => 'C:\\laragon\\www\\trucking-api\\storage\\logs/laravel.log',
       ),
     ),
   ),
@@ -554,14 +554,14 @@
     'from' => 
     array (
       'address' => NULL,
-      'name' => 'poi',
+      'name' => 'Laravel-Api',
     ),
     'markdown' => 
     array (
       'theme' => 'default',
       'paths' => 
       array (
-        0 => 'C:\\xampp\\htdocs\\trucking-laravel\\resources\\views/vendor/mail',
+        0 => 'C:\\laragon\\www\\trucking-api\\resources\\views/vendor/mail',
       ),
     ),
   ),
@@ -666,7 +666,7 @@
     'lifetime' => '120',
     'expire_on_close' => false,
     'encrypt' => false,
-    'files' => 'C:\\xampp\\htdocs\\trucking-laravel\\storage\\framework/sessions',
+    'files' => 'C:\\laragon\\www\\trucking-api\\storage\\framework/sessions',
     'connection' => NULL,
     'table' => 'sessions',
     'store' => NULL,
@@ -675,7 +675,7 @@
       0 => 2,
       1 => 100,
     ),
-    'cookie' => 'poi_session',
+    'cookie' => 'laravel_api_session',
     'path' => '/',
     'domain' => NULL,
     'secure' => NULL,
@@ -686,9 +686,9 @@
   array (
     'paths' => 
     array (
-      0 => 'C:\\xampp\\htdocs\\trucking-laravel\\resources\\views',
+      0 => 'C:\\laragon\\www\\trucking-api\\resources\\views',
     ),
-    'compiled' => 'C:\\xampp\\htdocs\\trucking-laravel\\storage\\framework\\views',
+    'compiled' => 'C:\\laragon\\www\\trucking-api\\storage\\framework\\views',
   ),
   'websockets' => 
   array (
@@ -701,7 +701,7 @@
       0 => 
       array (
         'id' => '',
-        'name' => 'poi',
+        'name' => 'Laravel-Api',
         'key' => '',
         'secret' => '',
         'path' => NULL,
