@@ -1107,6 +1107,10 @@ Route::get('prosesabsensisupir/combo', [ProsesAbsensiSupirController::class, 'co
 Route::get('prosesabsensisupir/field_length', [ProsesAbsensiSupirController::class, 'fieldLength']);
 Route::resource('prosesabsensisupir', ProsesAbsensiSupirController::class);
 
+Route::get('mandorabsensisupir/{tradoId}/cekvalidasi', [MandorAbsensiSupirController::class, 'cekValidasi']);
+Route::get('mandorabsensisupir/{tradoId}/cekvalidasiadd', [MandorAbsensiSupirController::class, 'cekValidasiAdd']);
+Route::post('mandorabsensisupir/{id}/update', [MandorAbsensiSupirController::class, 'update']);
+Route::post('mandorabsensisupir/{id}/delete', [MandorAbsensiSupirController::class, 'destroy']);
 Route::resource('mandorabsensisupir', MandorAbsensiSupirController::class);
 
 Route::get('historytrip', [HistoryTripController::class, 'index']);
