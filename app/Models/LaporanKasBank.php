@@ -203,8 +203,6 @@ class LaporanKasBank extends MyModel
             ->where('a.id', '=', $bank_id)
             ->first();
 
-        // dd($querykasbank);
-
         $queryhasil = DB::table($temprekap)->from(
             $tempsaldo . " as a"
         )
