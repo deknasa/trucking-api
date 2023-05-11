@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests;
 
+use App\Http\Controllers\Api\ErrorController;
 use Illuminate\Foundation\Http\FormRequest;
 use App\Rules\DateTutupBuku;
 
@@ -26,7 +27,7 @@ class UpdatePengeluaranTruckingHeaderRequest extends FormRequest
     {
         $rules = [
             "tglbukti" => [
-                "required",
+                "required",'date_format:d-m-Y',
                 new DateTutupBuku()
             ],
             'pengeluarantrucking' => 'required',
@@ -58,10 +59,10 @@ class UpdatePengeluaranTruckingHeaderRequest extends FormRequest
         ];
     }
     
-    // public function messages() 
-    // {
-    //     return [
-    //         'nominal.*.gt' => 'Nominal Tidak Boleh Kosong dan Harus Lebih Besar Dari 0'
-    //     ];
-    // }
+    public function messages() 
+    {
+        return [
+            'tglbukti.date_format' => app(ErrorController::class)->geterror('DF')->keterangan,
+        ];
+    }
 }

@@ -26,7 +26,7 @@ class StorePengeluaranDetailRequest extends FormRequest
         return [
 
             'tgljatuhtempo' => 'required|array',
-            'tgljatuhtempo.*' => 'required',
+            'tgljatuhtempo.*' => 'required|date_format:d-m-Y',
             'nominal_detail' => 'required|array',
             'nominal_detail.*' => 'required|numeric|gt:0',
             'ketcoadebet' => 'required|array',

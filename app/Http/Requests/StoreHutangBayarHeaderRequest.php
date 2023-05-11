@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests;
 
+use App\Http\Controllers\Api\ErrorController;
 use Illuminate\Foundation\Http\FormRequest;
 use App\Rules\DateTutupBuku;
 
@@ -26,7 +27,7 @@ class StoreHutangBayarHeaderRequest extends FormRequest
     {
         $rules = [
             'tglbukti' => [
-                'required',
+                'required','date_format:d-m-Y',
                 new DateTutupBuku()
             ],
             'bank' => 'required',
@@ -68,6 +69,7 @@ class StoreHutangBayarHeaderRequest extends FormRequest
     {
         return [
             'bayar.*.gt' => 'bayar wajib di isi',
+            'tglbukti.date_format' => app(ErrorController::class)->geterror('DF')->keterangan
         ];
     }
 }

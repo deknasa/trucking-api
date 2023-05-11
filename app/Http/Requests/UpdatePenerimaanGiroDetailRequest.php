@@ -25,7 +25,7 @@ class UpdatePenerimaanGiroDetailRequest extends FormRequest
     {
         return [
             'tgljatuhtempo' => 'required|array',
-            'tgljatuhtempo.*' => 'required',
+            'tgljatuhtempo.*' => 'required|date_format:d-m-Y',
             'nominal' => 'required|array',
             'nominal.*' => 'required|numeric|gt:0',
             'keterangan_detail' => 'required|array',

@@ -2,6 +2,8 @@
 
 namespace App\Http\Requests;
 
+use App\Http\Controllers\Api\ErrorController;
+use App\Rules\DateTutupBuku;
 use Illuminate\Foundation\Http\FormRequest;
 
 class StorePengeluaranHeaderRequest extends FormRequest
@@ -24,6 +26,10 @@ class StorePengeluaranHeaderRequest extends FormRequest
     public function rules()
     {
         $rules = [
+            'tglbukti' => [
+                'required','date_format:d-m-Y',
+                new DateTutupBuku()
+            ],
             'alatbayar' => 'required',
             'dibayarke' => 'required',
             'bank' => 'required',
@@ -72,7 +78,9 @@ class StorePengeluaranHeaderRequest extends FormRequest
     public function messages() 
     {
         return [
-            'nominal_detail.*.gt' => 'Nominal Tidak Boleh Kosong dan Harus Lebih Besar Dari 0'
+            'nominal_detail.*.gt' => 'Nominal Tidak Boleh Kosong dan Harus Lebih Besar Dari 0',
+            'tglbukti.date_format' => app(ErrorController::class)->geterror('DF')->keterangan,
+            'tgljatuhtempo.*.date_format' => app(ErrorController::class)->geterror('DF')->keterangan
         ];
     }
 }
