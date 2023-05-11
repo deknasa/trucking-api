@@ -46,7 +46,6 @@ use App\Http\Controllers\Api\ApprovalHutangBayarController;
 use App\Http\Controllers\Api\ApprovalNotaHeaderController;
 use App\Http\Controllers\Api\ApprovalPendapatanSupirController;
 use App\Http\Controllers\Api\BankPelangganController;
-use App\Http\Controllers\Api\ExportLaporanDepositoController;
 use App\Http\Controllers\Api\ExportLaporanKasGantungController;
 use App\Http\Controllers\Api\ExportLaporanKasHarianController;
 use App\Http\Controllers\Api\ExportLaporanStokController;
@@ -930,6 +929,7 @@ route::middleware(['auth:api'])->group(function () {
     Route::get('/orderanemkl', [OrderanEmklController::class, 'index'])->middleware('handle-token');
 
     Route::get('laporandepositosupir/report', [LaporanDepositoSupirController::class, 'report'])->name('laporandepositosupir.report');
+    Route::get('laporandepositosupir/export', [LaporanDepositoSupirController::class, 'export'])->name('laporandepositosupir.export');
     Route::resource('laporandepositosupir', LaporanDepositoSupirController::class);
     Route::get('laporanpinjamansupir/report', [LaporanPinjamanSupirController::class, 'report'])->name('laporanpinjamansupir.report');
     Route::resource('laporanpinjamansupir', LaporanPinjamanSupirController::class);
@@ -980,8 +980,8 @@ route::middleware(['auth:api'])->group(function () {
     Route::resource('exportpengeluaranbarang', ExportPengeluaranBarangController::class);
     Route::get('exportpembelianbarang/export', [ExportPembelianBarangController::class, 'export'])->name('exportpembelianbarang.export');
     Route::resource('exportpembelianbarang', ExportPembelianBarangController::class);
-    Route::get('exportlaporandeposito/export', [ExportLaporanDepositoController::class, 'export'])->name('exportlaporandeposito.export');
-    Route::resource('exportlaporandeposito', ExportLaporanDepositoController::class);
+    // Route::get('exportlaporandeposito/export', [ExportLaporanDepositoController::class, 'export'])->name('exportlaporandeposito.export');
+    // Route::resource('exportlaporandeposito', ExportLaporanDepositoController::class);
     Route::get('exportlaporankasgantung/export', [ExportLaporanKasGantungController::class, 'export'])->name('exportlaporankasgantung.export');
     Route::resource('exportlaporankasgantung', ExportLaporanKasGantungController::class);
     Route::get('exportlaporanstok/export', [ExportLaporanStokController::class, 'export'])->name('exportlaporanstok.export');
