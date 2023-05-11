@@ -47,4 +47,18 @@ class LaporanKeteranganPinjamanSupirController extends Controller
             'data' => $report
         ]);
     }
+    public function export(Request $request)
+    {
+        $periode = $request->periode;
+        $jenis = $request->jenis;
+
+
+        $export = LaporanKeteranganPinjamanSupir::getReport($periode, $jenis);
+
+       
+
+        return response([
+            'data' => $export
+        ]);
+    }
 }
