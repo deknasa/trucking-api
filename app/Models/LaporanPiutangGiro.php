@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 
-class LaporanWarkat extends MyModel
+class LaporanPiutangGiro extends MyModel
 {
     use HasFactory;
 
