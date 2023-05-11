@@ -909,7 +909,9 @@ route::middleware(['auth:api'])->group(function () {
     Route::resource('historipengeluaranstok', HistoriPengeluaranStokController::class);
 
     Route::get('laporankasbank/report', [LaporanKasBankController::class, 'report'])->name('laporankasbank.report');
+    Route::get('laporankasbank/export', [LaporanKasBankController::class, 'export'])->name('laporankasbank.export');
     Route::resource('laporankasbank', LaporanKasBankController::class);
+    
     Route::get('laporanbukubesar/report', [LaporanBukuBesarController::class, 'report'])->name('laporanbukubesar.report');
     Route::resource('laporanbukubesar', LaporanBukuBesarController::class);
 
