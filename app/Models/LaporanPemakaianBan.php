@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 
-class LaporanKeteranganPinjamanSupir extends MyModel
+class LaporanPemakaianBan extends MyModel
 {
     use HasFactory;
 
@@ -26,13 +26,13 @@ class LaporanKeteranganPinjamanSupir extends MyModel
 
 
 
-    public function getReport($dari, $sampai, $supplierDariId, $supplierSampaiId)
+    public function getReport($dari, $sampai, $posisiAkhir, $jenisLaporan)
     {
         $dari = date('Y-m-d', strtotime(request()->dari)) ?? '1900/1/1';
         $sampai = date('Y-m-d', strtotime(request()->sampai)) ?? '1900/1/1';
 
-        $supplierDariId = $supplierDariId;
-        $supplierSampaiId = $supplierSampaiId;
-
+        $posisiAkhir = $posisiAkhir;
+        $jenisLaporan = $jenisLaporan;
+       
     }
 }
