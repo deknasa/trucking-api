@@ -26,11 +26,18 @@ class StorePemutihanSupirRequest extends FormRequest
     {
         return [
             'tglbukti' => [
-                'required',
+                'required','date_format:d-m-Y',
                 new DateTutupBuku()
             ],
             'supir' => 'required',
             'bank' => 'required'
+        ];
+    }
+    
+    public function messages() 
+    {
+        return [
+            'tglbukti.date_format' => app(ErrorController::class)->geterror('DF')->keterangan,
         ];
     }
 }
