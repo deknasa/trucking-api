@@ -64,27 +64,27 @@ class ProsesUangJalanSupirDetail extends MyModel
     {
         $status = Parameter::from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS PROSES UANG JALAN')->where('text', 'PENGEMBALIAN PINJAMAN')->first();
         // ambil data yang sudah pernah dibuat
-        $penerimaanTrucking = $this->createTempPenerimaanTrucking($id,$status->id);
+    //     $penerimaanTrucking = $this->createTempPenerimaanTrucking($id,$status->id);
        
-       $pjt = PengeluaranTrucking::from(DB::raw("pengeluarantrucking with (readuncommitted)"))->where('kodepengeluaran', 'PJT')->first();
-        $query = PengeluaranTruckingDetail::from(DB::raw("pengeluarantruckingdetail with (readuncommitted)"))
-            ->select(
-                DB::raw("
-                    pengeluarantruckingheader.id, pengeluarantruckingdetail.nobukti, pengeluarantruckingheader.tglbukti, supir.namasupir, pengeluarantruckingdetail.nominal as jlhpinjaman,
-                    (SELECT sum(penerimaantruckingdetail.nominal)
-                    FROM penerimaantruckingdetail 
-                    WHERE penerimaantruckingdetail.pengeluarantruckingheader_nobukti= pengeluarantruckingheader.nobukti) AS totalbayar,
-                    (SELECT (pengeluarantruckingdetail.nominal - coalesce(SUM(penerimaantruckingdetail.nominal),0))
-                        FROM penerimaantruckingdetail 
-                        WHERE penerimaantruckingdetail.pengeluarantruckingheader_nobukti= pengeluarantruckingheader.nobukti) AS sisa, $penerimaanTrucking.keterangan, $penerimaanTrucking.nominal, $penerimaanTrucking.pengeluarantruckingheader_nobukti
-                ")
-            )
-            ->leftJoin(DB::raw("pengeluarantruckingheader with (readuncommitted)"), 'pengeluarantruckingheader.nobukti', 'pengeluarantruckingdetail.nobukti')
-            ->leftJoin(DB::raw("supir with (readuncommitted)"), 'pengeluarantruckingdetail.supir_id', 'supir.id')
-            ->leftJoin(DB::raw("$penerimaanTrucking with (readuncommitted)"), "$penerimaanTrucking.pengeluarantruckingheader_nobukti", 'pengeluarantruckingdetail.nobukti')
-            ->where('pengeluarantruckingheader.pengeluarantrucking_id', $pjt->id)
-            ->whereRaw("isnull($penerimaanTrucking.pengeluarantruckingheader_nobukti,'') != ''")
-            ->get();
+    //    $pjt = PengeluaranTrucking::from(DB::raw("pengeluarantrucking with (readuncommitted)"))->where('kodepengeluaran', 'PJT')->first();
+    //     $query = PengeluaranTruckingDetail::from(DB::raw("pengeluarantruckingdetail with (readuncommitted)"))
+    //         ->select(
+    //             DB::raw("
+    //                 pengeluarantruckingheader.id, pengeluarantruckingdetail.nobukti, pengeluarantruckingheader.tglbukti, supir.namasupir, pengeluarantruckingdetail.nominal as jlhpinjaman,
+    //                 (SELECT sum(penerimaantruckingdetail.nominal)
+    //                 FROM penerimaantruckingdetail 
+    //                 WHERE penerimaantruckingdetail.pengeluarantruckingheader_nobukti= pengeluarantruckingheader.nobukti) AS totalbayar,
+    //                 (SELECT (pengeluarantruckingdetail.nominal - coalesce(SUM(penerimaantruckingdetail.nominal),0))
+    //                     FROM penerimaantruckingdetail 
+    //                     WHERE penerimaantruckingdetail.pengeluarantruckingheader_nobukti= pengeluarantruckingheader.nobukti) AS sisa, $penerimaanTrucking.keterangan, $penerimaanTrucking.nominal, $penerimaanTrucking.pengeluarantruckingheader_nobukti
+    //             ")
+    //         )
+    //         ->leftJoin(DB::raw("pengeluarantruckingheader with (readuncommitted)"), 'pengeluarantruckingheader.nobukti', 'pengeluarantruckingdetail.nobukti')
+    //         ->leftJoin(DB::raw("supir with (readuncommitted)"), 'pengeluarantruckingdetail.supir_id', 'supir.id')
+    //         ->leftJoin(DB::raw("$penerimaanTrucking with (readuncommitted)"), "$penerimaanTrucking.pengeluarantruckingheader_nobukti", 'pengeluarantruckingdetail.nobukti')
+    //         ->where('pengeluarantruckingheader.pengeluarantrucking_id', $pjt->id)
+    //         ->whereRaw("isnull($penerimaanTrucking.pengeluarantruckingheader_nobukti,'') != ''")
+    //         ->get();
         $bank = ProsesUangJalanSupirDetail::from(DB::raw("prosesuangjalansupirdetail with (readuncommitted)"))
         ->select('penerimaantrucking_bank_id as bank_idpengembalian', 'bank.namabank as bankpengembalian')
         ->leftJoin(DB::raw("bank with (readuncommitted)"), 'prosesuangjalansupirdetail.penerimaantrucking_bank_id', 'bank.id')
@@ -93,7 +93,6 @@ class ProsesUangJalanSupirDetail extends MyModel
         ->first();
 
         $datapengembalian = [
-            'detail' => $query,
             'bank' => $bank
         ];
         return $datapengembalian;

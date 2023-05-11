@@ -68,6 +68,7 @@ class PenerimaanTruckingHeaderController extends Controller
                     ->first();
 
                 if ($fetchFormat->kodepenerimaan == 'PJP') {
+                    $request['coa'] = $fetchFormat->coapostingkredit;
                     if ($request->pjp_id != '') {
 
                         for ($i = 0; $i < count($request->pjp_id); $i++) {
@@ -100,6 +101,9 @@ class PenerimaanTruckingHeaderController extends Controller
                         ], 422);
                     }
                 } else {
+                    if ($fetchFormat->kodepenerimaan == 'BBM') {
+                        $request['coa'] = $fetchFormat->coakredit;
+                    }
                     $request->validate([
                         'nominal' => 'required|array',
                         'nominal.*' => 'required|numeric|gt:0',
@@ -369,8 +373,9 @@ class PenerimaanTruckingHeaderController extends Controller
                 $fetchFormat =  DB::table('penerimaantrucking')
                     ->where('id', $idpenerimaan)
                     ->first();
-                    
+
                 if ($fetchFormat->kodepenerimaan == 'PJP') {
+                    $request['coa'] = $fetchFormat->coapostingkredit;
                     if ($request->pjp_id != '') {
 
                         for ($i = 0; $i < count($request->pjp_id); $i++) {
@@ -403,6 +408,9 @@ class PenerimaanTruckingHeaderController extends Controller
                         ], 422);
                     }
                 } else {
+                    if ($fetchFormat->kodepenerimaan == 'BBM') {
+                        $request['coa'] = $fetchFormat->coakredit;
+                    }
                     $request->validate([
                         'nominal' => 'required|array',
                         'nominal.*' => 'required|numeric|gt:0',
