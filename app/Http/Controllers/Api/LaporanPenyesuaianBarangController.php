@@ -102,16 +102,16 @@ class LaporanPenyesuaianBarangController extends Controller
             'data' => $report
         ]);
     }
-    public function export(Request $request)
-    {
-        $dari = $request->dari;
-        $sampai = $request->sampai;
+    // public function export(Request $request)
+    // {
+    //     $dari = $request->dari;
+    //     $sampai = $request->sampai;
 
-        $report = LaporanPenyesuaianBarang::getReport($dari,$sampai);
+    //     $report = LaporanPenyesuaianBarang::getReport($dari,$sampai);
 
         
-        return response([
-            'data' => $report
-        ]);
-    }
+    //     return response([
+    //         'data' => $report
+    //     ]);
+    // }
 }
