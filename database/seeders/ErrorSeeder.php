@@ -56,5 +56,7 @@ class ErrorSeeder extends Seeder
         Error::create([ 'kodeerror' => 'TSTB', 'keterangan' => 'TANGGAL SUDAH TIDAK BERLAKU', 'modifiedby' => 'ADMIN',]);
         Error::create([ 'kodeerror' => 'TSPTB', 'keterangan' => 'TANGGAL TIDAK BISA DI PROSES  SEBELUM TANGGAL TUTUP BUKU', 'modifiedby' => 'ADMIN',]);
         Error::create([ 'kodeerror' => 'SPIT', 'keterangan' => 'SUDAH PERNAH DI INPUT DI TRADO', 'modifiedby' => 'ADMIN',]);
+        Error::create([ 'kodeerror' => 'HF', 'keterangan' => 'FORMAT JAM SALAH', 'modifiedby' => 'ADMIN',]);
+        Error::create([ 'kodeerror' => 'TAB', 'keterangan' => 'TIDAK ADA ABSENSI. SILAHKAN INPUT ABSENSI', 'modifiedby' => 'ADMIN',]);
     }
 }

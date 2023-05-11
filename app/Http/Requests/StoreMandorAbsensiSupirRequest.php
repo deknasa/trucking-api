@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests;
 
+use App\Http\Controllers\Api\ErrorController;
 use Illuminate\Foundation\Http\FormRequest;
 use App\Rules\MandorAbsensiSupirInputSupirValidasiTrado ;
 use Illuminate\Validation\Rule;
@@ -31,9 +32,9 @@ class StoreMandorAbsensiSupirRequest extends FormRequest
             'supir' => 'required',
             'supir_id' => ['required',new MandorAbsensiSupirInputSupirValidasiTrado()],
             'absen' => 'nullable',
-            'jam' => Rule::requiredIf(function () {
+            'jam' => [Rule::requiredIf(function () {
                 return empty($this->input('absen'));
-            }),
+            }),Rule::when(empty($this->input('absen')),'date_format:H:i')]
         ];
     }
 
@@ -41,6 +42,13 @@ class StoreMandorAbsensiSupirRequest extends FormRequest
     {
         return [
             'supir_id' => 'supir',
+        ];
+    }
+
+    public function messages()
+    {
+        return [
+            'jam.date_format' => app(ErrorController::class)->geterror('HF')->keterangan,
         ];
     }
 

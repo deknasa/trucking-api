@@ -92,19 +92,16 @@ class ProsesUangJalanSupirHeaderController extends Controller
                     ]
                 );
                 for ($i = 0; $i < count($request->pjt_id); $i++) {
-                    $pjt_id = $request->pjt_id[$i];
-                    $pengeluarantrucking = PengeluaranTruckingDetail::where('pengeluarantruckingheader_id', $pjt_id)->first();
+                   
+                    if ($request->sisa[$i] < 0) {
 
-                    if ($request->nombayar[$i] > $pengeluarantrucking->nominal) {
-
-                        $query =  Error::from(DB::raw("error with (readuncommitted)"))->select('keterangan')->where('kodeerror', '=', 'NBPT')
+                        $query =  Error::from(DB::raw("error with (readuncommitted)"))->select('keterangan')->where('kodeerror', '=', 'STM')
                             ->first();
                         return response([
                             'errors' => [
-                                "nombayar.$i" =>
-                                [$i => "$query->keterangan"]
+                                "nombayar.$i" => ["$query->keterangan"]
                             ],
-                            'message' => "The given data was invalid.",
+                            'message' => "sisa",
                         ], 422);
                     }
                 }
@@ -195,7 +192,7 @@ class ProsesUangJalanSupirHeaderController extends Controller
             for ($i = 0; $i < count($request->nilaitransfer); $i++) {
                 $content = new Request();
                 $bankid = $request->bank_idtransfer[$i];
-
+                $coatransfer = Bank::from(DB::raw("bank with (readuncommitted)"))->where('id', $bankid)->first();
                 // PENGELUARAN TRUCKING HEADER
                 $fetchFormatBLS =  DB::table('pengeluarantrucking')
                     ->where('kodepengeluaran', 'BLS')
@@ -229,7 +226,7 @@ class ProsesUangJalanSupirHeaderController extends Controller
                     'tglbukti' => date('Y-m-d', strtotime($request->tgltransfer[$i])),
                     'pengeluarantrucking_id' => $fetchFormatBLS->id,
                     'bank_id' => $bankid,
-                    'coa' => $fetchFormatBLS->coapostingdebet,
+                    'coa' => $coatransfer->coa,
                     'pengeluaran_nobukti' => '',
                     'statusformat' => $formatBLS->id,
                     'postingdari' => 'ENTRY PROSES UANG JALAN',
@@ -813,6 +810,14 @@ class ProsesUangJalanSupirHeaderController extends Controller
         return response([
             'status' => true,
             'data' => $prosesUangJalan->getPinjaman($supirId)
+        ]);
+    }
+    public function getPengembalian($id)
+    {
+        $prosesUangJalan = new ProsesUangJalanSupirHeader();
+        return response([
+            'status' => true,
+            'data' => $prosesUangJalan->getPengembalian($id)
         ]);
     }
 

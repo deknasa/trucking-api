@@ -200,6 +200,7 @@ use App\Http\Controllers\Api\LaporanOrderPembelianController;
 use App\Http\Controllers\Api\LapKartuHutangPerVendorDetailController;
 use App\Http\Controllers\Api\LaporanWarkatBelumCairController;
 use App\Http\Controllers\Api\LaporanPenyesuaianBarangController;
+use App\Http\Controllers\Api\LaporanPemakaianBanController;
 
 /*
     |--------------------------------------------------------------------------
@@ -923,6 +924,7 @@ route::middleware(['auth:api'])->group(function () {
     Route::get('prosesuangjalansupirheader/grid', [ProsesUangJalanSupirHeaderController::class, 'grid']);
     Route::get('prosesuangjalansupirheader/{id}/tarikPelunasan', [ProsesUangJalanSupirHeaderController::class, 'tarikPelunasan']);
     Route::get('prosesuangjalansupirheader/{id}/getPinjaman', [ProsesUangJalanSupirHeaderController::class, 'getPinjaman']);
+    Route::get('prosesuangjalansupirheader/{id}/getPengembalian', [ProsesUangJalanSupirHeaderController::class, 'getPengembalian']);
     Route::resource('prosesuangjalansupirheader', ProsesUangJalanSupirHeaderController::class);
 
     Route::get('prosesuangjalansupirdetail/transfer', [ProsesUangJalanSupirDetailController::class, 'transfer']);
@@ -944,11 +946,15 @@ route::middleware(['auth:api'])->group(function () {
     Route::get('laporanestimasikasgantung/report', [LaporanEstimasiKasGantungController::class, 'report'])->name('laporanestimasikasgantung.report');
     Route::get('lapkartuhutangpervendordetail/report', [LapKartuHutangPerVendorDetailController::class, 'report'])->name('lapkartuhutangpervendordetail.report');
     Route::resource('lapkartuhutangpervendordetail', LapKartuHutangPerVendorDetailController::class);
-    // laporan warkat belum cair
     Route::get('laporanwarkatbelumcair/report', [LaporanWarkatBelumCairController::class, 'report'])->name('laporanwarkatbelumcair.report');
     Route::resource('laporanwarkatbelumcair', LaporanWarkatBelumCairController::class);
     Route::get('laporanpenyesuaianbarang/report', [LaporanPenyesuaianBarangController::class, 'report'])->name('laporanpenyesuaianbarang.report');
+    Route::get('laporanpenyesuaianbarang/export', [LaporanPenyesuaianBarangController::class, 'export'])->name('laporanpenyesuaianbarang.export');
     Route::resource('laporanpenyesuaianbarang', LaporanPenyesuaianBarangController::class);
+
+    // laporan pemakaian ban
+    Route::get('laporanpemakaianban/report', [LaporanPemakaianBanController::class, 'report'])->name('laporanpemakaianban.report');
+    Route::resource('laporanpemakaianban', LaporanPemakaianBanController::class);
 
     Route::resource('laporanestimasikasgantung', LaporanEstimasiKasGantungController::class);
     Route::get('laporantriptrado/report', [LaporanTripTradoController::class, 'report'])->name('laporantriptrado.report');
@@ -1108,6 +1114,10 @@ Route::get('prosesabsensisupir/combo', [ProsesAbsensiSupirController::class, 'co
 Route::get('prosesabsensisupir/field_length', [ProsesAbsensiSupirController::class, 'fieldLength']);
 Route::resource('prosesabsensisupir', ProsesAbsensiSupirController::class);
 
+Route::get('mandorabsensisupir/{tradoId}/cekvalidasi', [MandorAbsensiSupirController::class, 'cekValidasi']);
+Route::get('mandorabsensisupir/{tradoId}/cekvalidasiadd', [MandorAbsensiSupirController::class, 'cekValidasiAdd']);
+Route::post('mandorabsensisupir/{id}/update', [MandorAbsensiSupirController::class, 'update']);
+Route::post('mandorabsensisupir/{id}/delete', [MandorAbsensiSupirController::class, 'destroy']);
 Route::resource('mandorabsensisupir', MandorAbsensiSupirController::class);
 
 Route::get('historytrip', [HistoryTripController::class, 'index']);

@@ -32,7 +32,8 @@ class LaporanPenyesuaianBarangController extends Controller
         $sampai = $request->sampai;
 
 
-        // $report = LaporanPenyesuaianBarang::getReport($dari,$sampai);
+        $report = LaporanPenyesuaianBarang::getReport($dari,$sampai);
+
         $report = [
             [
                 "header"=> "PT. Transporindo Agung Sejahtera",
@@ -94,10 +95,21 @@ class LaporanPenyesuaianBarangController extends Controller
                 "hargasatuan" => "360000",
                 "nominal" => "-360000",
             ],
-            
-           
+             
             
         ];
+        return response([
+            'data' => $report
+        ]);
+    }
+    public function export(Request $request)
+    {
+        $dari = $request->dari;
+        $sampai = $request->sampai;
+
+        $report = LaporanPenyesuaianBarang::getReport($dari,$sampai);
+
+        
         return response([
             'data' => $report
         ]);

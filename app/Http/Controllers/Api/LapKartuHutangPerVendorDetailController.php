@@ -37,6 +37,7 @@ class LapKartuHutangPerVendorDetailController extends Controller
         // $report = LaporanKartuHutangPerVendorDetail::getReport($dari, $sampai, $supplierDariId, $supplierSampaiId);
         $report = [
             [
+                "header"=> "PT. Transporindo Agung Sejahtera",
                 "supplierid" => "2",
                 "namavendor" => "CV.RODA MAS VULKANISIR BAN",
                 "nobukti" => "SPB 0001/IV/2023",
@@ -50,6 +51,7 @@ class LapKartuHutangPerVendorDetailController extends Controller
                 "suppliersampai" =>"INFO MEDIA"
             ],
             [
+                "header"=> "PT. Transporindo Agung Sejahtera",
                 "supplierid" => "25",
                 "namavendor" => "HOKI JAYA",
                 "nobukti" => "SPB 0002/IV/2023",
@@ -64,6 +66,7 @@ class LapKartuHutangPerVendorDetailController extends Controller
                 
             ],
             [
+                "header"=> "PT. Transporindo Agung Sejahtera",
                 "supplierid" => "27",
                 "namavendor" => "INFO MEDIA",
                 "nobukti" => "SPB 0003/IV/2023",

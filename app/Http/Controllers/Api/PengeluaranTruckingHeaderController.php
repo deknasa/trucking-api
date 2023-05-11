@@ -67,6 +67,9 @@ class PengeluaranTruckingHeaderController extends Controller
                     ->where('id', $idpengeluaran)
                     ->first();
 
+                if ($fetchFormat->kodepengeluaran != 'BLS') {
+                    $request['coa'] = $fetchFormat->coapostingdebet;
+                }
                 if ($fetchFormat->kodepengeluaran == 'TDE') {
                     if ($request->tde_id != '') {
 
@@ -87,7 +90,7 @@ class PengeluaranTruckingHeaderController extends Controller
                             'nominal' => 'required|array',
                             'nominal.*' => 'required|numeric|gt:0'
                         ], [
-                            'nominal.*.gt' =>'Nominal Tidak Boleh Kosong dan Harus Lebih Besar Dari 0'
+                            'nominal.*.gt' => 'Nominal Tidak Boleh Kosong dan Harus Lebih Besar Dari 0'
                         ]);
                     } else {
                         $query = DB::table('error')->select('keterangan')->where('kodeerror', '=', 'WP')
@@ -99,12 +102,12 @@ class PengeluaranTruckingHeaderController extends Controller
                             'message' => "PENARIKAN DEPOSITO $query->keterangan",
                         ], 422);
                     }
-                }else{
+                } else {
                     $request->validate([
                         'nominal' => 'required|array',
                         'nominal.*' => 'required|numeric|gt:0'
                     ], [
-                        'nominal.*.gt' =>'Nominal Tidak Boleh Kosong dan Harus Lebih Besar Dari 0'
+                        'nominal.*.gt' => 'Nominal Tidak Boleh Kosong dan Harus Lebih Besar Dari 0'
                     ]);
                 }
 
@@ -116,7 +119,7 @@ class PengeluaranTruckingHeaderController extends Controller
                 $statusformat = $fetchFormat->format;
 
                 $fetchGrp = Parameter::where('id', $statusformat)->first();
-                
+
                 $format = DB::table('parameter')
                     ->where('grp', $fetchGrp->grp)
                     ->where('subgrp', $fetchGrp->subgrp)
@@ -347,10 +350,10 @@ class PengeluaranTruckingHeaderController extends Controller
     {
 
         $data = PengeluaranTruckingHeader::findAll($id);
-        if($data->kodepengeluaran == 'BST'){
+        if ($data->kodepengeluaran == 'BST') {
             $pengeluaranTrucking = new PengeluaranTruckingHeader();
-            $detail = $pengeluaranTrucking->getEditInvoice($id,$data->periodedari,$data->periodesampai);
-        }else{
+            $detail = $pengeluaranTrucking->getEditInvoice($id, $data->periodedari, $data->periodesampai);
+        } else {
             $detail = PengeluaranTruckingDetail::getAll($id);
         }
 
@@ -382,7 +385,9 @@ class PengeluaranTruckingHeaderController extends Controller
                 $fetchFormat =  DB::table('pengeluarantrucking')
                     ->where('id', $idpengeluaran)
                     ->first();
-
+                if ($fetchFormat->kodepengeluaran != 'BLS') {
+                    $request['coa'] = $fetchFormat->coapostingdebet;
+                }
                 if ($fetchFormat->kodepengeluaran == 'TDE') {
                     if ($request->tde_id != '') {
 
@@ -403,7 +408,7 @@ class PengeluaranTruckingHeaderController extends Controller
                             'nominal' => 'required|array',
                             'nominal.*' => 'required|numeric|gt:0'
                         ], [
-                            'nominal.*.gt' =>'Nominal Tidak Boleh Kosong dan Harus Lebih Besar Dari 0'
+                            'nominal.*.gt' => 'Nominal Tidak Boleh Kosong dan Harus Lebih Besar Dari 0'
                         ]);
                     } else {
                         $query = DB::table('error')->select('keterangan')->where('kodeerror', '=', 'WP')
@@ -415,12 +420,12 @@ class PengeluaranTruckingHeaderController extends Controller
                             'message' => "PENARIKAN DEPOSITO $query->keterangan",
                         ], 422);
                     }
-                }else{
+                } else {
                     $request->validate([
                         'nominal' => 'required|array',
                         'nominal.*' => 'required|numeric|gt:0'
                     ], [
-                        'nominal.*.gt' =>'Nominal Tidak Boleh Kosong dan Harus Lebih Besar Dari 0'
+                        'nominal.*.gt' => 'Nominal Tidak Boleh Kosong dan Harus Lebih Besar Dari 0'
                     ]);
                 }
 
@@ -781,9 +786,9 @@ class PengeluaranTruckingHeaderController extends Controller
     {
         $pengeluaranTrucking = new PengeluaranTruckingHeader();
         $getSupir = $pengeluaranTrucking->find($id);
-        if($aksi == 'edit'){
+        if ($aksi == 'edit') {
             $data = $pengeluaranTrucking->getTarikDeposito($id, $getSupir->supir_id);
-        }else{
+        } else {
             $data = $pengeluaranTrucking->getDeleteTarikDeposito($id, $getSupir->supir_id);
         }
         return response([
@@ -809,7 +814,7 @@ class PengeluaranTruckingHeaderController extends Controller
     public function getEditInvoice($id)
     {
         $pengeluaranTrucking = new PengeluaranTruckingHeader();
-        $data = $pengeluaranTrucking->getEditInvoice($id,request()->tgldari,request()->tglsampai);
+        $data = $pengeluaranTrucking->getEditInvoice($id, request()->tgldari, request()->tglsampai);
         return response([
             'status' => true,
             'data' => $data
