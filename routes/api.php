@@ -947,6 +947,7 @@ route::middleware(['auth:api'])->group(function () {
     Route::get('laporanwarkatbelumcair/report', [LaporanWarkatBelumCairController::class, 'report'])->name('laporanwarkatbelumcair.report');
     Route::resource('laporanwarkatbelumcair', LaporanWarkatBelumCairController::class);
     Route::get('laporanpenyesuaianbarang/report', [LaporanPenyesuaianBarangController::class, 'report'])->name('laporanpenyesuaianbarang.report');
+    Route::get('laporanpenyesuaianbarang/export', [LaporanPenyesuaianBarangController::class, 'export'])->name('laporanpenyesuaianbarang.export');
     Route::resource('laporanpenyesuaianbarang', LaporanPenyesuaianBarangController::class);
 
     // laporan pemakaian ban
