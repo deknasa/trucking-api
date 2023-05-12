@@ -433,7 +433,7 @@ class GajiSupirHeader extends MyModel
     {
         $temp = $this->createTempPinjSemua();
         $query = PengeluaranTruckingDetail::from(DB::raw("pengeluarantruckingdetail with (readuncommitted)"))
-            ->select(DB::raw("pengeluarantruckingdetail.nobukti,row_number() Over(Order By pengeluarantruckingdetail.nobukti) as id,$temp.tglbukti,pengeluarantruckingdetail.supir_id,pengeluarantruckingdetail.keterangan,$temp.sisa"))
+            ->select(DB::raw("pengeluarantruckingdetail.nobukti as pinjSemua_nobukti,row_number() Over(Order By pengeluarantruckingdetail.nobukti) as id,$temp.tglbukti,pengeluarantruckingdetail.supir_id, 'SEMUA' as pinjSemua_supir,pengeluarantruckingdetail.keterangan as pinjSemua_keterangan,$temp.sisa as pinjSemua_sisa"))
             // ->distinct('pengeluarantruckingheader.tglbukti')
             ->join(DB::raw("$temp with (readuncommitted)"), $temp . '.nobukti', 'pengeluarantruckingdetail.nobukti')
             // ->leftJoin(DB::raw("penerimaantruckingdetail with (readuncommitted)"), 'penerimaantruckingdetail.pengeluarantruckingheader_nobukti', 'pengeluarantruckingdetail.nobukti')
@@ -457,6 +457,7 @@ class GajiSupirHeader extends MyModel
             ->select(DB::raw("pengeluarantruckingdetail.nobukti, pengeluarantruckingheader.tglbukti, (SELECT (pengeluarantruckingdetail.nominal - coalesce(SUM(penerimaantruckingdetail.nominal),0)) FROM penerimaantruckingdetail WHERE penerimaantruckingdetail.pengeluarantruckingheader_nobukti= pengeluarantruckingdetail.nobukti) AS sisa"))
             ->leftJoin(DB::raw("pengeluarantruckingdetail with (readuncommitted)"), 'pengeluarantruckingdetail.nobukti', 'pengeluarantruckingheader.nobukti')
             ->where("pengeluarantruckingdetail.supir_id", 0)
+            ->where("pengeluarantruckingdetail.nobukti",'LIKE','%PJT%')
             ->orderBy('pengeluarantruckingheader.tglbukti', 'asc')
             ->orderBy('pengeluarantruckingdetail.nobukti', 'asc');
         Schema::create($temp, function ($table) {
@@ -477,7 +478,7 @@ class GajiSupirHeader extends MyModel
         $tempPribadi = $this->createTempPinjPribadi($supir_id);
 
         $query = PengeluaranTruckingDetail::from(DB::raw("pengeluarantruckingdetail with (readuncommitted)"))
-            ->select(DB::raw("row_number() Over(Order By pengeluarantruckingdetail.nobukti) as id,pengeluarantruckingheader.tglbukti,pengeluarantruckingdetail.nobukti,pengeluarantruckingdetail.keterangan," . $tempPribadi . ".sisa"))
+            ->select(DB::raw("row_number() Over(Order By pengeluarantruckingdetail.nobukti) as pinjPribadi_id,pengeluarantruckingheader.tglbukti,pengeluarantruckingdetail.nobukti as pinjPribadi_nobukti,pengeluarantruckingdetail.keterangan as pinjPribadi_keterangan," . $tempPribadi . ".sisa as pinjPribadi_sisa"))
             ->leftJoin(DB::raw("$tempPribadi with (readuncommitted)"), 'pengeluarantruckingdetail.nobukti', $tempPribadi . ".nobukti")
             ->leftJoin(DB::raw("pengeluarantruckingheader with (readuncommitted)"), 'pengeluarantruckingdetail.nobukti', "pengeluarantruckingheader.nobukti")
             ->whereRaw("pengeluarantruckingdetail.supir_id = $supir_id")

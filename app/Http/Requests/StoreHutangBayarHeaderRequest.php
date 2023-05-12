@@ -68,7 +68,8 @@ class StoreHutangBayarHeaderRequest extends FormRequest
     public function messages()
     {
         return [
-            'bayar.*.gt' => 'bayar wajib di isi',
+            'bayar.*.numeric' => 'nominal harus '.app(ErrorController::class)->geterror('BTSANGKA')->keterangan,
+            'bayar.*.gt' => 'Nominal Tidak Boleh Kosong dan Harus Lebih Besar Dari 0',
             'tglbukti.date_format' => app(ErrorController::class)->geterror('DF')->keterangan
         ];
     }

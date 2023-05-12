@@ -65,6 +65,7 @@ class UpdatePelunasanPiutangHeaderRequest extends FormRequest
     {
         return [
             'bayar.*.gt' => 'Nominal Tidak Boleh Kosong dan Harus Lebih Besar Dari 0',
+            'bayar.*.numeric' => 'nominal harus '.app(ErrorController::class)->geterror('BTSANGKA')->keterangan,
             'tglbukti.date_format' => app(ErrorController::class)->geterror('DF')->keterangan,
         ];
     }
