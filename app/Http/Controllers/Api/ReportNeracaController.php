@@ -27,9 +27,10 @@ class ReportNeracaController extends Controller
         $tglsd = $request->tglsd;
         $coadr = $request->coadr;
         $coasd = $request->coasd;
-        $report = ReportNeraca::getReport($tgldr, $tglsd, $coadr,$coasd);
+
+        $laporanneraca = new ReportNeraca(); 
         return response([
-            'data' => $report
+            'data' => $laporanneraca->getReport($tgldr, $tglsd, $coadr,$coasd)
         ]);
     }
 }
