@@ -27,7 +27,7 @@ class StorePenerimaanDetailRequest extends FormRequest
             'ketcoakredit' => 'required|array',
             'ketcoakredit.*' => 'required',
             'tgljatuhtempo' => 'required|array',
-            'tgljatuhtempo.*' => 'required',
+            'tgljatuhtempo.*' => 'required|date_format:d-m-Y',
             // 'nowarkat' => 'required|array',
             // 'nowarkat.*' => 'required',
             'nominal_detail' => 'required|array',

@@ -2,6 +2,8 @@
 
 namespace App\Http\Requests;
 
+use App\Http\Controllers\Api\ErrorController;
+use App\Rules\DateTutupBuku;
 use Illuminate\Foundation\Http\FormRequest;
 
 class StoreInvoiceChargeGandenganHeaderRequest extends FormRequest
@@ -24,7 +26,19 @@ class StoreInvoiceChargeGandenganHeaderRequest extends FormRequest
     public function rules()
     {
         return [
-            //
+            'tglbukti' => [
+                'required','date_format:d-m-Y',
+                new DateTutupBuku()
+            ],
+            'agen' => 'required',
+            'tglproses' => 'required|date_format:d-m-Y'
+        ];
+    }
+    public function messages() 
+    {
+        return [
+            'tglbukti.date_format' => app(ErrorController::class)->geterror('DF')->keterangan,
+            'tglproses.date_format' => app(ErrorController::class)->geterror('DF')->keterangan,
         ];
     }
 }
