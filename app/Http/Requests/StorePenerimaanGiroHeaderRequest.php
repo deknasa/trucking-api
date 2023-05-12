@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests;
 
+use App\Http\Controllers\Api\ErrorController;
 use Illuminate\Foundation\Http\FormRequest;
 use App\Rules\DateTutupBuku;
 
@@ -26,11 +27,11 @@ class StorePenerimaanGiroHeaderRequest extends FormRequest
     {
         $rules = [
             'tglbukti' => [
-                'required',
+                'required','date_format:d-m-Y',
                 new DateTutupBuku()
             ],
             'diterimadari' => 'required',
-            'tgllunas' => 'required'
+            'tgllunas' => 'required|date_format:d-m-Y'
         ];
         $relatedRequests = [
             StorePenerimaanGiroDetailRequest::class
@@ -63,7 +64,10 @@ class StorePenerimaanGiroHeaderRequest extends FormRequest
     public function messages()
     {
         return [
-            'nominal.*.gt' => 'Nominal Tidak Boleh Kosong dan Harus Lebih Besar Dari 0'
+            'nominal.*.gt' => 'Nominal Tidak Boleh Kosong dan Harus Lebih Besar Dari 0',
+            'tglbukti.date_format' => app(ErrorController::class)->geterror('DF')->keterangan,
+            'tgllunas.date_format' => app(ErrorController::class)->geterror('DF')->keterangan,
+            'tgljatuhtempo.*.date_format' => app(ErrorController::class)->geterror('DF')->keterangan,
         ];
     }
 }

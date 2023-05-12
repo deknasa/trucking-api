@@ -34,7 +34,7 @@ class GajiSupirPelunasanPinjaman extends MyModel
         $temp = '##tempGet' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
         $fetch = DB::table($tempPinjaman)->from(DB::raw("$tempPinjaman with (readuncommitted)"))
             ->select(DB::raw("tglbukti,pengeluarantrucking_nobukti as nobukti,sisaawal,keterangan,gajisupir_id,nominal,sisa"));
-      
+
         Schema::create($temp, function ($table) {
             $table->date('tglbukti')->nullable();
             $table->string('nobukti');
@@ -56,7 +56,7 @@ class GajiSupirPelunasanPinjaman extends MyModel
         DB::table($temp)->insertUsing(['tglbukti', 'nobukti', 'sisaawal', 'keterangan', 'gajisupir_id', 'nominal', 'sisa'], $fetchPengeluaran);
 
         $data = DB::table($temp)
-            ->select(DB::raw("row_number() Over(Order By $temp.nobukti) as id,tglbukti,nobukti,sisaawal,keterangan,nominal,gajisupir_id,sisa"))
+            ->select(DB::raw("row_number() Over(Order By $temp.nobukti) as pinjPribadi_id,tglbukti,nobukti as pinjPribadi_nobukti,sisaawal,keterangan as pinjPribadi_keterangan,nominal as nominalPP,gajisupir_id,sisa as pinjPribadi_sisa"))
             ->orderBy("$temp.tglbukti", 'asc')
             ->orderBy("$temp.nobukti", 'asc')
             ->get();
@@ -79,7 +79,7 @@ class GajiSupirPelunasanPinjaman extends MyModel
             ->whereRaw("pengeluarantruckingdetail.supir_id = $supir_id")
             ->orderBy('pengeluarantruckingheader.tglbukti', 'asc')
             ->orderBy('pengeluarantruckingdetail.nobukti', 'asc');
-        
+
         Schema::create($temp, function ($table) {
 
             $table->date('tglbukti');
@@ -108,7 +108,7 @@ class GajiSupirPelunasanPinjaman extends MyModel
             ->join(DB::raw("pengeluarantruckingheader with (readuncommitted)"), 'pengeluarantruckingdetail.nobukti', 'pengeluarantruckingheader.nobukti')
             ->whereRaw("gajisupirpelunasanpinjaman.gajisupir_nobukti = '$nobukti'")
             ->whereRaw("gajisupirpelunasanpinjaman.supir_id = $supir_id");
-       
+
         Schema::create($temp, function ($table) {
             $table->date('tglbukti');
             $table->string('pengeluarantrucking_nobukti');
@@ -157,7 +157,7 @@ class GajiSupirPelunasanPinjaman extends MyModel
         DB::table($temp)->insertUsing(['tglbukti', 'nobukti', 'sisaawal', 'keterangan', 'gajisupir_id', 'nominal', 'sisa'], $fetchPengeluaran);
 
         $data = DB::table($temp)
-            ->select(DB::raw("row_number() Over(Order By $temp.nobukti) as id,tglbukti,nobukti,sisaawal,keterangan,nominal,gajisupir_id,sisa"))
+            ->select(DB::raw("row_number() Over(Order By $temp.nobukti) as id,tglbukti,nobukti as pinjSemua_nobukti,sisaawal,keterangan as pinjSemua_keterangan,nominal as nominalPS,gajisupir_id,sisa as pinjSemua_sisa,'SEMUA' as pinjSemua_supir"))
             ->orderBy("$temp.tglbukti", 'asc')
             ->orderBy("$temp.nobukti", 'asc')
             ->get();
@@ -223,5 +223,25 @@ class GajiSupirPelunasanPinjaman extends MyModel
         $tes = DB::table($temp)->insertUsing(['tglbukti', 'pengeluarantrucking_nobukti', 'sisaawal', 'keterangan', 'gajisupir_id', 'nominal', 'sisa'], $fetch);
 
         return $temp;
+    }
+
+    public function getDeletePinjSemua($nobukti)
+    {
+        $tempPinjaman = $this->createTempPinjamanSemua($nobukti);
+        $data = DB::table($tempPinjaman)->from(DB::raw("$tempPinjaman with (readuncommitted)"))
+            ->select(DB::raw("row_number() Over(Order By $tempPinjaman.pengeluarantrucking_nobukti) as id,gajisupir_id, 'SEMUA' as pinjSemua_supir,pengeluarantrucking_nobukti as pinjSemua_nobukti,keterangan as pinjSemua_keterangan,sisa as pinjSemua_sisa,nominal as nominalPS"))
+            ->get();
+
+        return $data;
+    }
+    public function getDeletePinjPribadi($nobukti, $supirId)
+    {
+
+        $tempPinjaman = $this->createTempPinjamanPribadi($nobukti, $supirId);
+
+        $data = DB::table($tempPinjaman)->from(DB::raw("$tempPinjaman with (readuncommitted)"))
+            ->select(DB::raw("row_number() Over(Order By $tempPinjaman.pengeluarantrucking_nobukti) as pinjPribadi_id,gajisupir_id, pengeluarantrucking_nobukti as pinjPribadi_nobukti,keterangan as pinjPribadi_keterangan,sisa as pinjPribadi_sisa,nominal as nominalPP"))
+            ->get();
+        return $data;
     }
 }

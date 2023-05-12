@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests;
 
+use App\Http\Controllers\Api\ErrorController;
 use Illuminate\Foundation\Http\FormRequest;
 use App\Rules\DateTutupBuku;
 
@@ -27,7 +28,7 @@ class UpdateSuratPengantarRequest extends FormRequest
         return [
             'jobtrucking' => 'required',
             "tglbukti" => [
-                "required",
+                "required",'date_format:d-m-Y',
                 new DateTutupBuku()
             ],
             'dari' => 'required',
@@ -62,10 +63,10 @@ class UpdateSuratPengantarRequest extends FormRequest
         ];
     }
 
-    // public function messages()
-    // {
-    //     return [
-    //         'qtyton.gt' => 'QTY Ton tidak boleh kosong',
-    //     ];
-    // }
+    public function messages()
+    {
+        return [
+            'tglbukti.date_format' => app(ErrorController::class)->geterror('DF')->keterangan,
+        ];
+    }
 }

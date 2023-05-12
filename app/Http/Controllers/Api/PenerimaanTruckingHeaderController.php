@@ -88,6 +88,7 @@ class PenerimaanTruckingHeaderController extends Controller
                             'nominal' => 'required|array',
                             'nominal.*' => 'required|numeric|gt:0'
                         ], [
+                            'nominal.*.numeric' => 'nominal harus '.app(ErrorController::class)->geterror('BTSANGKA')->keterangan,
                             'nominal.*.gt' => 'Nominal Tidak Boleh Kosong dan Harus Lebih Besar Dari 0'
                         ]);
                     } else {
@@ -395,6 +396,7 @@ class PenerimaanTruckingHeaderController extends Controller
                             'nominal' => 'required|array',
                             'nominal.*' => 'required|numeric|gt:0'
                         ], [
+                            'nominal.*.numeric' => 'nominal harus '.app(ErrorController::class)->geterror('BTSANGKA')->keterangan,
                             'nominal.*.gt' => 'Nominal Tidak Boleh Kosong dan Harus Lebih Besar Dari 0'
                         ]);
                     } else {
@@ -642,6 +644,14 @@ class PenerimaanTruckingHeaderController extends Controller
         return response([
             'status' => true,
             'data' => $data
+        ]);
+    }
+
+    public function getPinjaman($supir_id)
+    {
+        $penerimaanTrucking = new PenerimaanTruckingHeader();
+        return response([
+            'data' => $penerimaanTrucking->getPinjaman($supir_id)
         ]);
     }
     public function printReport($id)

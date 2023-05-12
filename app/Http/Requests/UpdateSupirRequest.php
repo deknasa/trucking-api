@@ -49,7 +49,9 @@ class UpdateSupirRequest extends FormRequest
             'photodomisili' => 'required|array',
             'photodomisili.*' => 'required|image',
             'photovaksin' => 'required|array',
-            'photovaksin.*' => 'required|image'
+            'photovaksin.*' => 'required|image',
+            'pdfsuratperjanjian' => 'required|array',
+            'pdfsuratperjanjian.*' => 'required|mimes:pdf'
         ];
     }
 

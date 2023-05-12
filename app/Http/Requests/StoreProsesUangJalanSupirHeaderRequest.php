@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests;
 
+use App\Http\Controllers\Api\ErrorController;
 use Illuminate\Foundation\Http\FormRequest;
 use App\Rules\DateTutupBuku;
 
@@ -26,7 +27,7 @@ class StoreProsesUangJalanSupirHeaderRequest extends FormRequest
     {
         return [
             "tglbukti" => [
-                "required",
+                "required",'date_format:d-m-Y',
                 new DateTutupBuku()
             ],
             'absensisupir' => 'required',
@@ -61,7 +62,8 @@ class StoreProsesUangJalanSupirHeaderRequest extends FormRequest
     {
         return [
             'nilaitransfer.*.gt' => 'nilai transfer Tidak Boleh Kosong dan Harus Lebih Besar Dari 0',
-            'nilaiadjust.gt' => 'nilai adjust transfer Tidak Boleh Kosong dan Harus Lebih Besar Dari 0'
+            'nilaiadjust.gt' => 'nilai adjust transfer Tidak Boleh Kosong dan Harus Lebih Besar Dari 0',
+            'tglbukti.date_format' => app(ErrorController::class)->geterror('DF')->keterangan,
         ];
     }
 }

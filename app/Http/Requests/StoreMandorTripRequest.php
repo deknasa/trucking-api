@@ -26,7 +26,7 @@ class StoreMandorTripRequest extends FormRequest
     {
         return [
             'tglbukti' => [
-                'required',
+                'required','date_format:d-m-Y',
                 new DateApprovalQuota()
             ],
             
@@ -76,6 +76,7 @@ class StoreMandorTripRequest extends FormRequest
             "sampai_id.required"=>":attribute".' '.$controller->geterror('WI')->keterangan,
             "statuscontainer_id.required"=>":attribute".' '.$controller->geterror('WI')->keterangan,
             "trado_id.required"=>":attribute".' '.$controller->geterror('WI')->keterangan,
+            'tglbukti.date_format' => app(ErrorController::class)->geterror('DF')->keterangan,
 
         ];
     }  
