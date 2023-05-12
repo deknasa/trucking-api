@@ -61,6 +61,7 @@ class UpdateHutangBayarHeaderRequest extends FormRequest
     {
         return [
             'bayar.*.gt' => 'bayar wajib di isi & harus lebih besar dari 0', 
+            'bayar.*.numeric' => 'nominal harus '.app(ErrorController::class)->geterror('BTSANGKA')->keterangan,
             'tglbukti.date_format' => app(ErrorController::class)->geterror('DF')->keterangan, 
             'tglcair.date_format' => app(ErrorController::class)->geterror('DF')->keterangan,
         ];
