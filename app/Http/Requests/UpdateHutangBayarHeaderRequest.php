@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests;
 
+use App\Http\Controllers\Api\ErrorController;
 use Illuminate\Foundation\Http\FormRequest;
 use App\Rules\DateTutupBuku;
 
@@ -26,12 +27,12 @@ class UpdateHutangBayarHeaderRequest extends FormRequest
     {
         $rules = [
             "tglbukti" => [
-                "required",
+                "required",'date_format:d-m-Y',
                 new DateTutupBuku()
             ],
             'bank' => 'required',
             'alatbayar' => 'required',
-            'tglcair' => 'required',
+            'tglcair' => 'required|date_format:d-m-Y',
             'supplier' => 'required'
         ];
         $relatedRequests = [
@@ -59,7 +60,9 @@ class UpdateHutangBayarHeaderRequest extends FormRequest
     public function messages()
     {
         return [
-            'bayar.*.gt' => 'bayar wajib di isi & harus lebih besar dari 0',
+            'bayar.*.gt' => 'bayar wajib di isi & harus lebih besar dari 0', 
+            'tglbukti.date_format' => app(ErrorController::class)->geterror('DF')->keterangan, 
+            'tglcair.date_format' => app(ErrorController::class)->geterror('DF')->keterangan,
         ];
     }
 }
