@@ -364,9 +364,9 @@ class Supir extends MyModel
 
     public function cekPemutihan($ktp)
     {
-        $pemutihan = PemutihanSupir::from(DB::raw("pemutihansupir with (readuncommitted)"))
+        $pemutihan = PemutihanSupir::from(DB::raw("pemutihansupirheader with (readuncommitted)"))
             ->select(DB::raw("supir.noktp"))
-            ->join(DB::raw("supir with (readuncommitted)"), 'pemutihansupir.supir_id', 'supir.id')
+            ->join(DB::raw("supir with (readuncommitted)"), 'pemutihansupirheader.supir_id', 'supir.id')
             ->where('supir.noktp', $ktp)
             ->first();
 

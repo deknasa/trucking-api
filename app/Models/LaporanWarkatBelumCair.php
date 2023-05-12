@@ -28,6 +28,6 @@ class LaporanWarkatBelumCair extends MyModel
 
     public function getReport($periode)
     {
-        //    
+        $periode = date('Y-m-d', strtotime(request()->periode)) ?? '1900/1/1';
     }
 }

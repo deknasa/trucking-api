@@ -33,22 +33,23 @@ class LaporanKasBankController extends Controller
         $bank_id = $request->bankid;
 
         $laporankasbank=new LaporanKasBank();
-
-        // $report = LaporanKasBank::getReport($dari, $sampai, $bank_id);
-        $report = [
-            [
-                "namabank" => "BCA 5125151",
-                "saldo_awal" => "47346223",
-                "nobukti" => "BKT-M BCA 0001/II/2023",
-                "nama_perkiraan" => "BCA 2515124",
-                "keterangan" => "TES KETERANGAN",
-                "debet" => "1254125",
-                "kredit" => "25112512",
-                "saldo" => "215125125"
-            ]
-        ];
         return response([
             'data' => $laporankasbank->getReport($dari,$sampai, $bank_id) 
+        ]);
+    }
+
+    /**
+     * @ClassName
+     */
+    public function export(Request $request)
+    {
+        $dari = $request->dari;
+        $sampai = $request->sampai;
+        $bank_id = $request->bankid;
+
+        $laporankasbank=new LaporanKasBank();                
+        return response([
+            'data' => $laporankasbank->getReport($dari,$sampai, $bank_id)  
         ]);
     }
 }
