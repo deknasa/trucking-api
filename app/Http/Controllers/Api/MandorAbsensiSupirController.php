@@ -361,7 +361,7 @@ class MandorAbsensiSupirController extends Controller
 
         $now = date("Y-m-d");
         $getAbsen = AbsensiSupirHeader::from(DB::raw("absensisupirheader with (readuncommitted)"))->where('tglbukti', $now)->first();
-
+        
         if ($getAbsen != null) {
             $cekAbsen = AbsensiSupirDetail::from(DB::raw("absensisupirdetail with (readuncommitted)"))->where('nobukti', $getAbsen->nobukti)->where('trado_id', $tradoId)->first();
             if ($cekAbsen != null) {
@@ -379,6 +379,10 @@ class MandorAbsensiSupirController extends Controller
                     'errors' => false,
                 ]);
             }
+        } else {
+            return response([
+                'errors' => false,
+            ]);
         }
     }
 }
