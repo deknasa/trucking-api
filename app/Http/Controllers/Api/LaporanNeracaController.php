@@ -5,9 +5,9 @@ namespace App\Http\Controllers\Api;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\DB;
-use App\Models\LaporanLabaRugi;
+use App\Models\LaporanNeraca;
 
-class LaporanLabaRugiController extends Controller
+class LaporanNeracaController extends Controller
 {
     /**
      * @ClassName
@@ -33,14 +33,8 @@ class LaporanLabaRugiController extends Controller
         $report = [
             [
                 'judul' => 'PT. Transporindo Agung Sejahtera',
-                'subjudul' => 'Laporan Laba Rugi Divisi Trucking',
-                'pndptusaha' => '414.623.710,00',
-                'pndptusahamdn' => '414.623.710,00',
-                'pndptlainheader' => '18.765.282,00', 
-                'pndptlain' => '18.746.236,00',
-                'pndptbunga' => '19.046,50',
-                'potonganpndpt' => '0,00',
-                'penghapusanpndpt' => '0,00',
+                'subjudul' => 'Laporan Neraca Divisi Trucking',
+                'aktivalancar' => '30.292.637.247,41',
 
             ], 
         ];

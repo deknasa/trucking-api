@@ -201,6 +201,7 @@ use App\Http\Controllers\Api\LapKartuHutangPerVendorDetailController;
 use App\Http\Controllers\Api\LaporanWarkatBelumCairController;
 use App\Http\Controllers\Api\LaporanPiutangGiroController;
 use App\Http\Controllers\Api\LaporanLabaRugiController;
+use App\Http\Controllers\Api\LaporanNeracaController;
 use App\Http\Controllers\Api\LaporanPenyesuaianBarangController;
 use App\Http\Controllers\Api\LaporanPemakaianBanController;
 
@@ -954,6 +955,8 @@ route::middleware(['auth:api'])->group(function () {
     Route::resource('laporanpiutanggiro', LaporanPiutangGiroController::class);
     Route::get('laporanlabarugi/report', [LaporanLabaRugiController::class, 'report'])->name('laporanlabarugi.report');
     Route::resource('laporanlabarugi', LaporanLabaRugiController::class);
+    Route::get('laporanneraca/report', [LaporanNeracaController::class, 'report'])->name('laporanneraca.report');
+    Route::resource('laporanneraca', LaporanNeracaController::class);
     Route::get('laporanpenyesuaianbarang/report', [LaporanPenyesuaianBarangController::class, 'report'])->name('laporanpenyesuaianbarang.report');
     Route::get('laporanpenyesuaianbarang/export', [LaporanPenyesuaianBarangController::class, 'export'])->name('laporanpenyesuaianbarang.export');
     Route::resource('laporanpenyesuaianbarang', LaporanPenyesuaianBarangController::class);
