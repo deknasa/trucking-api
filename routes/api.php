@@ -204,6 +204,7 @@ use App\Http\Controllers\Api\LaporanLabaRugiController;
 use App\Http\Controllers\Api\LaporanNeracaController;
 use App\Http\Controllers\Api\LaporanPenyesuaianBarangController;
 use App\Http\Controllers\Api\LaporanPemakaianBanController;
+use App\Http\Controllers\Api\LaporanTransaksiHarianController;
 
 /*
     |--------------------------------------------------------------------------
@@ -1071,9 +1072,12 @@ route::middleware(['auth:api'])->group(function () {
     Route::get('laporanpenyesuaianbarang/export', [LaporanPenyesuaianBarangController::class, 'export'])->name('laporanpenyesuaianbarang.export');
     Route::resource('laporanpenyesuaianbarang', LaporanPenyesuaianBarangController::class);
 
-    // laporan pemakaian ban
     Route::get('laporanpemakaianban/report', [LaporanPemakaianBanController::class, 'report'])->name('laporanpemakaianban.report');
     Route::resource('laporanpemakaianban', LaporanPemakaianBanController::class);
+
+    Route::get('laporantransaksiharian/report', [LaporanTransaksiHarianController::class, 'report'])->name('laporantransaksiharian.report');
+    Route::get('laporantransaksiharian/export', [LaporanTransaksiHarianController::class, 'export'])->name('laporantransaksiharian.export');
+    Route::resource('laporantransaksiharian', LaporanTransaksiHarianController::class);
 
     Route::resource('laporanestimasikasgantung', LaporanEstimasiKasGantungController::class);
     Route::get('laporantriptrado/report', [LaporanTripTradoController::class, 'report'])->name('laporantriptrado.report');
