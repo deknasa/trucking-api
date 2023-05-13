@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests;
 
+use App\Http\Controllers\Api\ErrorController;
 use Illuminate\Foundation\Http\FormRequest;
 use App\Rules\DateTutupBuku;
 
@@ -26,12 +27,12 @@ class UpdateServiceInHeaderRequest extends FormRequest
     {
         $rules = [
             "tglbukti" => [
-                "required",
+                "required",'date_format:d-m-Y',
                 new DateTutupBuku()
             ],
             'trado' => 'required',
             'tglmasuk' => [
-                "required",
+                "required",'date_format:d-m-Y',
                 new DateTutupBuku()
             ],
         ];
@@ -53,8 +54,15 @@ class UpdateServiceInHeaderRequest extends FormRequest
         return [
             'tglbukti' => 'tanggal bukti',
             'tglmasuk' => 'tanggal masuk',
-            'mekanik.*' => 'mekanik',
+            'karyawan.*' => 'karyawan',
             'keterangan_detail.*' => 'keterangan detail'
+        ];
+    }
+    public function messages() 
+    {
+        return [
+            'tglbukti.date_format' => app(ErrorController::class)->geterror('DF')->keterangan,
+            'tglmasuk.date_format' => app(ErrorController::class)->geterror('DF')->keterangan,
         ];
     }
 }

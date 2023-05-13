@@ -131,7 +131,6 @@ class HutangHeader extends MyModel
         $this->sort($query);
         $this->filter($query);
         $this->paginate($query);
-
         $data = $query->get();
 
         return $data;
@@ -162,16 +161,14 @@ class HutangHeader extends MyModel
         return $data;
     }
 
-    public function getHutang($id, $field)
+    public function getHutang($id)
     {
         $this->setRequestParameters();
 
-        $temp = $this->createTempHutang($id, $field);
-
-
+        $temp = $this->createTempHutang($id);
 
         $query = DB::table('hutangheader')->from(DB::raw("hutangheader with (readuncommitted)"))
-            ->select(DB::raw("row_number() Over(Order By hutangheader.id) as id,hutangheader.nobukti as nobukti,hutangheader.tglbukti, hutangheader.total," . $temp . ".sisa"))
+            ->select(DB::raw("row_number() Over(Order By hutangheader.id) as id,hutangheader.nobukti as nobukti,hutangheader.tglbukti, hutangheader.total as nominal," . $temp . ".sisa, 0 as total"))
             ->join(DB::raw("$temp with (readuncommitted)"), 'hutangheader.nobukti', $temp . ".nobukti")
             ->whereRaw("hutangheader.nobukti = $temp.nobukti")
             ->where(function ($query) use ($temp) {
@@ -183,16 +180,16 @@ class HutangHeader extends MyModel
         return $data;
     }
 
-    public function createTempHutang($id, $field)
+    public function createTempHutang($id)
     {
         $temp = '##temp' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
 
         $fetch = DB::table('hutangheader')->from(
             DB::raw("hutangheader with (readuncommitted)")
         )
-            ->select(DB::raw("hutangheader.nobukti,sum(hutangbayardetail.nominal) as terbayar, (SELECT (hutangheader.total - coalesce(SUM(hutangbayardetail.nominal),0)) FROM hutangbayardetail WHERE hutangbayardetail.hutang_nobukti= hutangheader.nobukti) AS sisa"))
+            ->select(DB::raw("hutangheader.nobukti,sum(hutangbayardetail.nominal) as terbayar, (SELECT (hutangheader.total - coalesce(SUM(hutangbayardetail.nominal),0) - coalesce(SUM(hutangbayardetail.potongan),0)) FROM hutangbayardetail WHERE hutangbayardetail.hutang_nobukti= hutangheader.nobukti) AS sisa"))
             ->leftJoin(DB::raw("hutangbayardetail with (readuncommitted)"), 'hutangbayardetail.hutang_nobukti', 'hutangheader.nobukti')
-            ->whereRaw("hutangheader.$field = $id")
+            ->whereRaw("hutangheader.supplier_id = $id")
             ->groupBy('hutangheader.nobukti', 'hutangheader.total');
         // ->get();
         Schema::create($temp, function ($table) {

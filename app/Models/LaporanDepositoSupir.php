@@ -31,8 +31,6 @@ class LaporanDepositoSupir extends MyModel
         $sampai = date('Y-m-d', strtotime(request()->sampai)) ?? '1900/1/1';
         $jenis = request()->jenis ?? '';
 
-        // dd($sampai);
-
         $temppenerimaantrucking = '##temppenerimaantrucking' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
         Schema::create($temppenerimaantrucking, function ($table) {
             $table->unsignedBigInteger('supir_id')->nullable();
@@ -155,12 +153,6 @@ class LaporanDepositoSupir extends MyModel
             ->where('a.subgrp', '=', 'RANGE DEPOSITO SUPIR')
             ->OrderBy('id', 'Asc');
 
-        //    $ar= array_map(function($row){
-        //     // return $this->appHelper->terbilang($row->nominal);
-        //     return $this->terbilang($row->keterangan);
-        // },$queryrangedeposito->toArray());
-
-
         DB::table($temprangedeposito)->insertUsing([
             'id',
             'nominalawal',
@@ -238,6 +230,4 @@ class LaporanDepositoSupir extends MyModel
        
         return $data;
     }
-
-
 }

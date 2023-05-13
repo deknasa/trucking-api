@@ -341,7 +341,6 @@ class UpahSupirController extends Controller
                 'message' => 'Gagal dihapus'
             ]);
         }
-        throw $th;
     }
 
     public function default()
@@ -418,6 +417,10 @@ class UpahSupirController extends Controller
 
     public function getImage(string $filename, string $type)
     {
-        return response()->file(storage_path("app/upahsupir/$type-$filename"));
+        if(Storage::exists("upahsupir/$type-$filename")){
+            return response()->file(storage_path("app/upahsupir/$type-$filename"));
+        }else{
+            return response()->file(storage_path("app/upahsupir/$filename"));
+        }
     }
 }

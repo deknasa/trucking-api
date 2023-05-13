@@ -43,13 +43,15 @@ class PenerimaanDetail extends MyModel
                 "$this->table.invoice_nobukti",
                 "bpd.namabank as bankpelanggan_detail",
                 DB::raw("(case when year(isnull($this->table.bulanbeban,'1900/1/1'))=1900 then null else $this->table.bulanbeban end) as bulanbeban"),
-                "$this->table.coakredit",
-                "$this->table.coadebet",
+                "debet.keterangancoa as coadebet",
+                "kredit.keterangancoa as coakredit",
 
             )
                 ->leftJoin(DB::raw("penerimaanheader as header with (readuncommitted)"), "header.id", "$this->table.penerimaan_id")
                 ->leftJoin(DB::raw("bank with (readuncommitted)"), "bank.id", "header.bank_id")
                 ->leftJoin(DB::raw("bank as bd with (readuncommitted)"), "bd.id", "=", "$this->table.bank_id")
+                ->leftJoin(DB::raw("akunpusat as debet with (readuncommitted)"), "debet.coa", "$this->table.coadebet")
+                ->leftJoin(DB::raw("akunpusat as kredit with (readuncommitted)"), "kredit.coa", "$this->table.coakredit")
                 ->leftJoin(DB::raw("bankpelanggan as bpd with (readuncommitted)"), "bpd.id", "=", "$this->table.bankpelanggan_id");
             $query->where($this->table . ".penerimaan_id", "=", request()->penerimaan_id);
 

@@ -146,6 +146,7 @@ class Container extends MyModel
                 'container.id',
                 'container.kodecontainer',
                 'container.keterangan',
+                'container.nominalsumbangan',
                 'parameter.memo as statusaktif',
                 'container.modifiedby',
                 'container.created_at',
@@ -222,6 +223,7 @@ class Container extends MyModel
             $this->table.kodecontainer,
             $this->table.keterangan,
             'parameter.text as statusaktif',
+            $this->table.nominalsumbangan,
 
             $this->table.modifiedby,
             $this->table.created_at,
@@ -239,6 +241,7 @@ class Container extends MyModel
             $table->string('kodecontainer', 50)->nullable();
             $table->longText('keterangan')->nullable();
             $table->string('statusaktif', 500)->nullable();
+            $table->bigInteger('nominalsumbangan')->nullable();
 
             $table->string('modifiedby', 50)->nullable();
             $table->dateTime('created_at')->nullable();
@@ -251,7 +254,7 @@ class Container extends MyModel
         $query = $this->selectColumns($query);
         $this->sort($query);
         $models = $this->filter($query);
-        DB::table($temp)->insertUsing(['id', 'kodecontainer', 'keterangan', 'statusaktif', 'modifiedby', 'created_at', 'updated_at'], $models);
+        DB::table($temp)->insertUsing(['id', 'kodecontainer', 'keterangan', 'statusaktif','nominalsumbangan', 'modifiedby', 'created_at', 'updated_at'], $models);
 
         return  $temp;
     }

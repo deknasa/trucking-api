@@ -24,8 +24,6 @@ class LaporanRekapSumbangan extends MyModel
         'updated_at',
     ];
 
-
-
     public function getReport($sampai, $dari)
     {
         $sampai = date("Y-m-d", strtotime($sampai));

@@ -51,23 +51,7 @@ class PengembalianKasGantungDetailController extends Controller
     public function store(StorePengembalianKasGantungDetailRequest $request)
     {
         DB::beginTransaction();
-        $validator = Validator::make($request->all(), [
-            'coadetail' => 'required',
-            'keterangandetail' => 'required',
-         ], [
-             'keterangandetail.required' => ':attribute' . ' ' . app(ErrorController::class)->geterror('WI')->keterangan,
-             'coadetail.required' => ':attribute' . ' ' . app(ErrorController::class)->geterror('WI')->keterangan,
-              ], [
-             'coadetail' => 'coa detail',
-             'keterangandetail' => 'keterangandetail Detail',
-            ],
-         );         
-         if (!$validator->passes()) {
-            return [
-                'error' => true,
-                'errors' => $validator->messages()
-            ];
-        }
+       
         try {
 
             $pengembalianKasGantungDetail = new PengembalianKasGantungDetail();

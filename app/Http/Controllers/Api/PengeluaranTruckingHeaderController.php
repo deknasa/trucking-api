@@ -29,6 +29,7 @@ use App\Models\PengeluaranTrucking;
 use App\Models\PengeluaranTruckingDetail;
 use App\Models\Supir;
 use Illuminate\Database\QueryException;
+use PhpParser\Node\Stmt\Else_;
 
 class PengeluaranTruckingHeaderController extends Controller
 {
@@ -56,10 +57,62 @@ class PengeluaranTruckingHeaderController extends Controller
     {
         DB::beginTransaction();
         try {
-// return response($request->all(),422);
+            // return response($request->all(),422);
             $tanpaprosesnobukti = $request->tanpaprosesnobukti ?? 0;
 
             if ($tanpaprosesnobukti == 0) {
+
+                $idpengeluaran = $request->pengeluarantrucking_id;
+                $fetchFormat =  DB::table('pengeluarantrucking')
+                    ->where('id', $idpengeluaran)
+                    ->first();
+
+                if ($fetchFormat->kodepengeluaran != 'BLS') {
+                    $request['coa'] = $fetchFormat->coapostingdebet;
+                }
+                if ($fetchFormat->kodepengeluaran == 'TDE') {
+                    if ($request->tde_id != '') {
+
+                        for ($i = 0; $i < count($request->tde_id); $i++) {
+                            if ($request->sisa[$i] < 0) {
+
+                                $query =  Error::from(DB::raw("error with (readuncommitted)"))->select('keterangan')->where('kodeerror', '=', 'STM')
+                                    ->first();
+                                return response([
+                                    'errors' => [
+                                        "nominal.$i" => ["$query->keterangan"]
+                                    ],
+                                    'message' => "sisa",
+                                ], 422);
+                            }
+                        }
+                        $request->validate([
+                            'nominal' => 'required|array',
+                            'nominal.*' => 'required|numeric|gt:0'
+                        ], [
+                            'nominal.*.numeric' => 'nominal harus '.app(ErrorController::class)->geterror('BTSANGKA')->keterangan,
+                            'nominal.*.gt' => 'Nominal Tidak Boleh Kosong dan Harus Lebih Besar Dari 0'
+                        ]);
+                    } else {
+                        $query = DB::table('error')->select('keterangan')->where('kodeerror', '=', 'WP')
+                            ->first();
+                        return response([
+                            'errors' => [
+                                'tde' => "PENARIKAN DEPOSITO $query->keterangan"
+                            ],
+                            'message' => "PENARIKAN DEPOSITO $query->keterangan",
+                        ], 422);
+                    }
+                } else {
+                    $request->validate([
+                        'nominal' => 'required|array',
+                        'nominal.*' => 'required|numeric|gt:0'
+                    ], [
+                        'nominal.*.gt' => 'Nominal Tidak Boleh Kosong dan Harus Lebih Besar Dari 0'
+                    ]);
+                }
+
+
                 $idpengeluaran = $request->pengeluarantrucking_id;
                 $fetchFormat =  DB::table('pengeluarantrucking')
                     ->where('id', $idpengeluaran)
@@ -204,7 +257,7 @@ class PengeluaranTruckingHeaderController extends Controller
                 $data = new StoreLogTrailRequest($datalogtrail);
                 app(LogTrailController::class)->store($data);
 
-                $alatbayar = AlatBayar::where('bank_id',$pengeluarantruckingheader->bank_id)->first();
+                $alatbayar = AlatBayar::where('bank_id', $pengeluarantruckingheader->bank_id)->first();
                 $pengeluaranDetail = [];
 
                 for ($i = 0; $i < count($counter); $i++) {
@@ -231,7 +284,7 @@ class PengeluaranTruckingHeaderController extends Controller
                     'nobukti' => $nobuktiPengeluaran,
                     'tglbukti' => date('Y-m-d', strtotime($request->tglbukti)),
                     'pelanggan_id' => '',
-                    'alatbayar_id' =>$alatbayar->id,
+                    'alatbayar_id' => $alatbayar->id,
                     'postingdari' => $request->postingdari ?? 'ENTRY PENGELUARAN TRUCKING',
                     'bank_id' => $request->bank_id,
                     'statusformat' => $format->id,
@@ -298,7 +351,12 @@ class PengeluaranTruckingHeaderController extends Controller
     {
 
         $data = PengeluaranTruckingHeader::findAll($id);
-        $detail = PengeluaranTruckingDetail::getAll($id);
+        if ($data->kodepengeluaran == 'BST') {
+            $pengeluaranTrucking = new PengeluaranTruckingHeader();
+            $detail = $pengeluaranTrucking->getEditInvoice($id, $data->periodedari, $data->periodesampai);
+        } else {
+            $detail = PengeluaranTruckingDetail::getAll($id);
+        }
 
         // dd($details);
         // $datas = array_merge($data, $detail);
@@ -324,7 +382,54 @@ class PengeluaranTruckingHeaderController extends Controller
             $from = $request->from ?? 'not';
 
             if ($isUpdate == 0) {
+                $idpengeluaran = $request->pengeluarantrucking_id;
+                $fetchFormat =  DB::table('pengeluarantrucking')
+                    ->where('id', $idpengeluaran)
+                    ->first();
+                if ($fetchFormat->kodepengeluaran != 'BLS') {
+                    $request['coa'] = $fetchFormat->coapostingdebet;
+                }
+                if ($fetchFormat->kodepengeluaran == 'TDE') {
+                    if ($request->tde_id != '') {
 
+                        for ($i = 0; $i < count($request->tde_id); $i++) {
+                            if ($request->sisa[$i] < 0) {
+
+                                $query =  Error::from(DB::raw("error with (readuncommitted)"))->select('keterangan')->where('kodeerror', '=', 'STM')
+                                    ->first();
+                                return response([
+                                    'errors' => [
+                                        "nominal.$i" => ["$query->keterangan"]
+                                    ],
+                                    'message' => "sisa",
+                                ], 422);
+                            }
+                        }
+                        $request->validate([
+                            'nominal' => 'required|array',
+                            'nominal.*' => 'required|numeric|gt:0'
+                        ], [
+                            'nominal.*.numeric' => 'nominal harus '.app(ErrorController::class)->geterror('BTSANGKA')->keterangan,
+                            'nominal.*.gt' => 'Nominal Tidak Boleh Kosong dan Harus Lebih Besar Dari 0'
+                        ]);
+                    } else {
+                        $query = DB::table('error')->select('keterangan')->where('kodeerror', '=', 'WP')
+                            ->first();
+                        return response([
+                            'errors' => [
+                                'tde' => "PENARIKAN DEPOSITO $query->keterangan"
+                            ],
+                            'message' => "PENARIKAN DEPOSITO $query->keterangan",
+                        ], 422);
+                    }
+                } else {
+                    $request->validate([
+                        'nominal' => 'required|array',
+                        'nominal.*' => 'required|numeric|gt:0'
+                    ], [
+                        'nominal.*.gt' => 'Nominal Tidak Boleh Kosong dan Harus Lebih Besar Dari 0'
+                    ]);
+                }
 
                 $pengeluarantruckingheader->tglbukti = date('Y-m-d', strtotime($request->tglbukti));
                 $pengeluarantruckingheader->coa = $request->coa;
@@ -377,7 +482,7 @@ class PengeluaranTruckingHeaderController extends Controller
                         'penerimaantruckingheader_nobukti' => ($request->datadetail != '') ? $request->datadetail[$i]['penerimaantruckingheader_nobukti'] : $request->penerimaantruckingheader_nobukti[$i] ?? '',
                         'invoice_nobukti' => ($request->datadetail != '') ? '' :  $request->noinvoice_detail[$i] ?? '',
                         'orderantrucking_nobukti' => ($request->datadetail != '') ? '' :  $request->nojobtrucking_detail[$i] ?? '',
-                        'keterangan' => ($request->datadetail != '') ? $request->datadetail[$i]['keterangan']  :  $request->keterangan[$i] ?? '',    
+                        'keterangan' => ($request->datadetail != '') ? $request->datadetail[$i]['keterangan']  :  $request->keterangan[$i] ?? '',
                         'nominal' => ($request->datadetail != '') ? $request->datadetail[$i]['nominal'] : $request->nominal[$i],
                         'modifiedby' => $pengeluarantruckingheader->modifiedby,
                     ];
@@ -427,7 +532,7 @@ class PengeluaranTruckingHeaderController extends Controller
                             'tgljatuhtempo' => date('Y-m-d', strtotime($request->tglkasmasuk)) ?? date('Y-m-d', strtotime($request->tglbukti)),
                             'coadebet' => $request->coa,
                             'coakredit' => $bank->coa,
-                            'keterangan' => ($request->datadetail != '') ? $request->datadetail[$i]['keterangan'] : $request->keterangan[$i] ?? '', 
+                            'keterangan' => ($request->datadetail != '') ? $request->datadetail[$i]['keterangan'] : $request->keterangan[$i] ?? '',
                             "nominal" => ($request->datadetail != '') ? $request->datadetail[$i]['nominal'] : $request->nominal[$i],
                             'bulanbeban' => date('Y-m-d', strtotime($request->tglkasmasuk)) ?? date('Y-m-d', strtotime($request->tglbukti)),
                             'modifiedby' => auth('api')->user()->name,
@@ -669,20 +774,25 @@ class PengeluaranTruckingHeaderController extends Controller
         }
     }
 
-    public function getdeposito(Request $request){
-        $penerimaanTrucking = new PenerimaanTruckingHeader ();
+    public function getdeposito(Request $request)
+    {
+        $penerimaanTrucking = new PenerimaanTruckingHeader();
         $data = $penerimaanTrucking->getDeposito($request->supir);
         return response([
             'status' => true,
             'data' => $data
         ]);
     }
-    
-    public function getTarikDeposito($id)
+
+    public function getTarikDeposito($id, $aksi)
     {
-        $pengeluaranTrucking = new PengeluaranTruckingHeader ();
-        $pengeluaranTrucking = $pengeluaranTrucking->find($id);
-        $data = $pengeluaranTrucking->getTarikDeposito($pengeluaranTrucking->pengeluarantruckingdetail[0]->supir_id);
+        $pengeluaranTrucking = new PengeluaranTruckingHeader();
+        $getSupir = $pengeluaranTrucking->find($id);
+        if ($aksi == 'edit') {
+            $data = $pengeluaranTrucking->getTarikDeposito($id, $getSupir->supir_id);
+        } else {
+            $data = $pengeluaranTrucking->getDeleteTarikDeposito($id, $getSupir->supir_id);
+        }
         return response([
             'status' => true,
             'data' => $data
@@ -694,7 +804,7 @@ class PengeluaranTruckingHeaderController extends Controller
     {
         $tgldari = $request->tgldari;
         $tglsampai = $request->tglsampai;
-        $invoiceHeader = new InvoiceHeader ();
+        $invoiceHeader = new InvoiceHeader();
         $data = $invoiceHeader->getInvoicePengeluaran($tgldari, $tglsampai);
         // $data = $pengeluaranTrucking->getTarikDeposito($pengeluaranTrucking->pengeluarantruckingdetail[0]->supir_id);
         return response([
@@ -703,6 +813,15 @@ class PengeluaranTruckingHeaderController extends Controller
         ]);
     }
 
+    public function getEditInvoice($id)
+    {
+        $pengeluaranTrucking = new PengeluaranTruckingHeader();
+        $data = $pengeluaranTrucking->getEditInvoice($id, request()->tgldari, request()->tglsampai);
+        return response([
+            'status' => true,
+            'data' => $data
+        ]);
+    }
     public function fieldLength()
     {
         $data = [];

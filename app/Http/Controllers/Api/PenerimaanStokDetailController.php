@@ -154,7 +154,11 @@ class PenerimaanStokDetailController extends Controller
 
             $reuse = Parameter::where('grp', 'REUSE STOK')->where('subgrp', 'REUSE STOK')->first();
             if ($penerimaanstokheader->penerimaanstok_id == $reuse->text) {
-
+//  return [
+//     'error' => true,
+//     'gudang'=> $penerimaanstokheader,
+//     'sdf'=> StokPersediaan::lockForUpdate()->where("stok_id", $request->stok_id)->get()
+//  ];
                 $datahitungstok = PenerimaanStok::select('statushitungstok as statushitungstok_id')
                     ->where('format', '=', $penerimaanstokheader->statusformat)
                     ->first();
@@ -168,15 +172,14 @@ class PenerimaanStokDetailController extends Controller
 
             $pg = Parameter::where('grp', 'PG STOK')->where('subgrp', 'PG STOK')->first();
             if ($penerimaanstokheader->penerimaanstok_id == $pg->text and $reuse==true) {
-
                 $datahitungstok = PenerimaanStok::select('statushitungstok as statushitungstok_id')
-                    ->where('statusformat', '=', $penerimaanstokheader->statusformat)
+                    ->where('format', '=', $penerimaanstokheader->statusformat)
                     ->first();
-
+                    
                 $statushitungstok = Parameter::where('grp', 'STATUS HITUNG STOK')->where('text', 'HITUNG STOK')->first();
                 if ($datahitungstok->statushitungstok_id == $statushitungstok->id) {
                     $stokpersediaangudangke  = StokPersediaan::lockForUpdate()->where("stok_id", $request->stok_id)
-                        ->where("gudang_id", $penerimaanstokheader->gudangke_id)->firstorFail();
+                    ->where("gudang_id", $penerimaanstokheader->gudangke_id)->firstorFail();
 
                     $stokpersediaangudangdari  = StokPersediaan::lockForUpdate()->where("stok_id", $request->stok_id)
                         ->where("gudang_id", $penerimaanstokheader->gudangdari_id)->firstorFail();
@@ -192,6 +195,7 @@ class PenerimaanStokDetailController extends Controller
             $penerimaanStokDetail->harga = $request->harga;
             $penerimaanStokDetail->nominaldiscount = $nominaldiscount;
             $penerimaanStokDetail->total = $total;
+            $penerimaanStokDetail->penerimaanstok_nobukti = $request->detail_penerimaanstoknobukti;
             $penerimaanStokDetail->persentasediscount = $request->persentasediscount ?? 0;
             $penerimaanStokDetail->vulkanisirke = $request->vulkanisirke ?? '';
             $penerimaanStokDetail->keterangan = $request->detail_keterangan;

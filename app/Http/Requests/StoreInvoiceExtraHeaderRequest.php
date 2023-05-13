@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests;
 
+use App\Http\Controllers\Api\ErrorController;
 use Illuminate\Foundation\Http\FormRequest;
 use App\Rules\DateTutupBuku;
 
@@ -28,7 +29,7 @@ class StoreInvoiceExtraHeaderRequest extends FormRequest
             "agen"=>"required",
             // "pelanggan"=>"required",
             'tglbukti' => [
-                'required',
+                'required','date_format:d-m-Y',
                 new DateTutupBuku()
             ],
         ];
@@ -60,7 +61,8 @@ class StoreInvoiceExtraHeaderRequest extends FormRequest
     public function messages() 
     {
         return [
-            'nominal_detail.*.gt' => 'Harga Tidak Boleh Kosong dan Harus Lebih Besar Dari 0'
+            'nominal_detail.*.gt' => 'Harga Tidak Boleh Kosong dan Harus Lebih Besar Dari 0',
+            'tglbukti.date_format' => app(ErrorController::class)->geterror('DF')->keterangan,
         ];
     }
 

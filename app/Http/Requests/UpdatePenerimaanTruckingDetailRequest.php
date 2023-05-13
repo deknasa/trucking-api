@@ -24,10 +24,10 @@ class UpdatePenerimaanTruckingDetailRequest extends FormRequest
     public function rules()
     {
         return [
-            'nominal' => 'required|array',
-            'nominal.*' => 'required|numeric|gt:0',
-            'keterangan' => 'required|array',
-            'keterangan.*' => 'required'
+            // 'nominal' => 'required|array',
+            // 'nominal.*' => 'required|numeric|gt:0',
+            // 'keterangan' => 'required|array',
+            // 'keterangan.*' => 'required'
         ];
     }
 }

@@ -1,6 +1,7 @@
 <?php
 
 namespace App\Http\Controllers\Api;
+
 use App\Http\Controllers\Controller;
 
 use App\Models\MandorAbsensiSupir;
@@ -14,6 +15,8 @@ use App\Http\Requests\StoreAbsensiSupirDetailRequest;
 use App\Http\Requests\StoreKasGantungDetailRequest;
 use App\Http\Requests\StoreKasGantungHeaderRequest;
 use App\Http\Requests\StoreLogTrailRequest;
+use App\Http\Requests\UpdateMandorAbsensiSupirRequest;
+use App\Models\Error;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
@@ -41,7 +44,7 @@ class MandorAbsensiSupirController extends Controller
     {
         DB::beginTransaction();
         try {
-            $absensiSupir = AbsensiSupirHeader::where('tglbukti',date('Y-m-d',strtotime('now')))->first();
+            $absensiSupir = AbsensiSupirHeader::where('tglbukti', date('Y-m-d', strtotime('now')))->first();
             if (!$absensiSupir) {
                 $absensiSupir = new AbsensiSupirHeader();
 
@@ -52,12 +55,12 @@ class MandorAbsensiSupirController extends Controller
                     ->where('subgrp', $subgroup)
                     ->first();
                 $content = new Request();
-                
+
                 $content['group'] = $group;
                 $content['subgroup'] = $subgroup;
                 $content['table'] = 'absensisupirheader';
                 $content['tgl'] = date('Y-m-d', strtotime($request->tglbukti));
-                
+
                 $statusCetak = Parameter::from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUSCETAK')->where('text', 'BELUM CETAK')->first();
 
                 $absensiSupir->nobukti = app(Controller::class)->getRunningNumber($content)->original['data'];
@@ -65,7 +68,7 @@ class MandorAbsensiSupirController extends Controller
                 $absensiSupir->statusformat = $format->id;
                 $absensiSupir->modifiedby = auth('api')->user()->name;
                 $absensiSupir->statuscetak = $statusCetak->id ?? 0;
-    
+
 
                 $noBuktiKasgantungRequest = new Request();
                 $noBuktiKasgantungRequest['group'] = 'KAS GANTUNG';
@@ -93,7 +96,7 @@ class MandorAbsensiSupirController extends Controller
                 ];
 
                 $kasGantungDetail = [];
-                
+
                 $detail = [];
 
                 $detail = [
@@ -105,7 +108,7 @@ class MandorAbsensiSupirController extends Controller
                     'modifiedby' =>  auth('api')->user()->name
                 ];
                 $kasGantungDetail[] = $detail;
-                
+
 
                 $kasGantung = $this->storeKasGantung($kasGantungHeader, $kasGantungDetail);
                 if (!$kasGantung['status']) {
@@ -114,7 +117,7 @@ class MandorAbsensiSupirController extends Controller
             }
             $absensiSupir->modifiedby = auth('api')->user()->name;
             $absensiSupir->save();
-            $absensiSupirDetail = AbsensiSupirDetail::where('absensi_id', $absensiSupir->id)->where('trado_id',$request->trado_id)->delete();
+            $absensiSupirDetail = AbsensiSupirDetail::where('absensi_id', $absensiSupir->id)->where('trado_id', $request->trado_id)->delete();
             $datadetail = [
                 'absensi_id' => $absensiSupir->id,
                 'nobukti' => $absensiSupir->nobukti,
@@ -125,7 +128,7 @@ class MandorAbsensiSupirController extends Controller
                 'jam' => $request->jam,
                 'modifiedby' => $absensiSupir->modifiedby,
             ];
-    
+
             $data = new StoreAbsensiSupirDetailRequest($datadetail);
             $datadetails = app(AbsensiSupirDetailController::class)->store($data);
 
@@ -137,20 +140,20 @@ class MandorAbsensiSupirController extends Controller
                 $tabeldetail = $datadetails['tabel'];
             }
             $detaillog[] = $datadetails['detail'];
-              /* Store Header LogTrail */
+            /* Store Header LogTrail */
             $logTrail = [
                 'namatabel' => strtoupper($absensiSupir->getTable()),
                 'postingdari' => 'INPUT MANDOR ABSENSI SUPIR HEADER',
                 'idtrans' => $absensiSupir->id,
                 'nobuktitrans' => $absensiSupir->nobukti,
-                'aksi' => 'EDIT',
+                'aksi' => 'ENTRY',
                 'datajson' => $absensiSupir->toArray(),
                 'modifiedby' => $absensiSupir->modifiedby
             ];
-    
+
             $validatedLogTrail = new StoreLogTrailRequest($logTrail);
             $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
-    
+
             // Store detail logtrail
             $detailLogTrail = [
                 'namatabel' => strtoupper($tabeldetail),
@@ -171,8 +174,6 @@ class MandorAbsensiSupirController extends Controller
 
             throw $th;
         }
-        
-        
     }
 
     /**
@@ -190,7 +191,6 @@ class MandorAbsensiSupirController extends Controller
             'status' => true,
             'data' => $isTradoAbsen
         ]);
-
     }
 
     public function storeKasGantung($kasGantungHeader, $kasGantungDetail)
@@ -237,16 +237,152 @@ class MandorAbsensiSupirController extends Controller
     /**
      * @ClassName 
      */
-    public function update(UpdateMandorAbsensiSupirRequest $request, MandorAbsensiSupir $mandorAbsensiSupir)
+    public function update(UpdateMandorAbsensiSupirRequest $request, $id)
     {
-        //
+        DB::beginTransaction();
+
+        try {
+
+            $absensiMandor = AbsensiSupirDetail::findOrFail($id);
+            $absensiMandor->trado_id = $request->trado_id;
+            $absensiMandor->supir_id = $request->supir_id;
+            $absensiMandor->absen_id = $request->absen_id;
+            $absensiMandor->keterangan = $request->keterangan;
+            $absensiMandor->jam = $request->jam;
+            $absensiMandor->modifiedby = auth('api')->user()->name;
+            $absensiMandor->update();
+
+            $absensiSupir = AbsensiSupirHeader::from(DB::raw("absensisupirheader with (readuncommitted)"))->where('nobukti', $absensiMandor->nobukti)->first();
+
+            $logTrail = [
+                'namatabel' => 'ABSENSISUPIRHEADER',
+                'postingdari' => 'EDIT MANDOR ABSENSI SUPIR HEADER',
+                'idtrans' => $absensiSupir->id,
+                'nobuktitrans' => $absensiSupir->nobukti,
+                'aksi' => 'EDIT',
+                'datajson' => $absensiSupir->toArray(),
+                'modifiedby' => auth('api')->user()->name
+            ];
+
+            $validatedLogTrail = new StoreLogTrailRequest($logTrail);
+            $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
+
+            $logTrail = [
+                'namatabel' => strtoupper($absensiMandor->getTable()),
+                'postingdari' => 'EDIT MANDOR ABSENSI SUPIR DETAIL',
+                'idtrans' => $storedLogTrail['id'],
+                'nobuktitrans' => $absensiMandor->nobukti,
+                'aksi' => 'EDIT',
+                'datajson' => $absensiMandor->toArray(),
+                'modifiedby' => auth('api')->user()->name
+            ];
+
+            $validatedLogTrail = new StoreLogTrailRequest($logTrail);
+            $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
+            DB::commit();
+            return response([
+                'status' => true,
+                'message' => 'Berhasil disimpan',
+                'data' => $absensiMandor
+            ]);
+        } catch (\Throwable $th) {
+            DB::rollBack();
+
+            throw $th;
+        }
     }
 
     /**
      * @ClassName 
      */
-    public function destroy(MandorAbsensiSupir $mandorAbsensiSupir)
+    public function destroy(Request $request, $id)
     {
-        //
+        DB::beginTransaction();
+        $getDetail = AbsensiSupirDetail::lockForUpdate()->where('id', $id)->first();
+        $delete = AbsensiSupirDetail::where('id', $id)->delete();
+        if ($delete) {
+            $logTrailAbsensiDetail = [
+                'namatabel' => 'ABSENSISUPIRDETAIL',
+                'postingdari' => 'DELETE MANDOR ABSENSI SUPIR DETAIL',
+                'idtrans' => $id,
+                'nobuktitrans' => $getDetail->nobukti,
+                'aksi' => 'DELETE',
+                'datajson' => $getDetail->toArray(),
+                'modifiedby' => auth('api')->user()->name
+            ];
+
+            $validatedLogTrailAbsensiDetail = new StoreLogTrailRequest($logTrailAbsensiDetail);
+            app(LogTrailController::class)->store($validatedLogTrailAbsensiDetail);
+            DB::commit();
+            return response([
+                'status' => true,
+                'message' => 'Berhasil dihapus',
+                'data' => $getDetail
+            ]);
+        }else {
+            DB::rollBack();
+
+            return response([
+                'status' => false,
+                'message' => 'Gagal dihapus'
+            ]);
+        }
+    }
+
+    public function cekValidasi($tradoId)
+    {
+
+        $now = date("Y-m-d");
+        $getAbsen = AbsensiSupirHeader::from(DB::raw("absensisupirheader with (readuncommitted)"))->where('tglbukti', $now)->first();
+
+        if ($getAbsen != null) {
+            $cekAbsen = AbsensiSupirDetail::from(DB::raw("absensisupirdetail with (readuncommitted)"))->where('nobukti', $getAbsen->nobukti)->where('trado_id', $tradoId)->first();
+            if ($cekAbsen != null) {
+
+                return response([
+                    'errors' => false
+                ]);
+            } else {
+                $getError = Error::from(DB::raw("error with (readuncommitted)"))
+                    ->select('keterangan')
+                    ->where('kodeerror', '=', 'TAB')
+                    ->first();
+
+                return response([
+                    'errors' => true,
+                    'message' => $getError->keterangan
+                ]);
+            }
+        }
+    }
+    
+    public function cekValidasiAdd($tradoId)
+    {
+
+        $now = date("Y-m-d");
+        $getAbsen = AbsensiSupirHeader::from(DB::raw("absensisupirheader with (readuncommitted)"))->where('tglbukti', $now)->first();
+        
+        if ($getAbsen != null) {
+            $cekAbsen = AbsensiSupirDetail::from(DB::raw("absensisupirdetail with (readuncommitted)"))->where('nobukti', $getAbsen->nobukti)->where('trado_id', $tradoId)->first();
+            if ($cekAbsen != null) {
+                $getError = Error::from(DB::raw("error with (readuncommitted)"))
+                ->select('keterangan')
+                ->where('kodeerror', '=', 'SPI')
+                ->first();
+
+                return response([
+                    'errors' => true,
+                    'message' => 'ABSENSI '.$getError->keterangan
+                ]);
+            } else {
+                return response([
+                    'errors' => false,
+                ]);
+            }
+        } else {
+            return response([
+                'errors' => false,
+            ]);
+        }
     }
 }

@@ -49,12 +49,15 @@ class ErrorSeeder extends Seeder
         Error::create([ 'kodeerror' => 'NTC', 'keterangan' => 'NILAI TIDAK COCOK', 'modifiedby' => 'ADMIN',]);
         Error::create([ 'kodeerror' => 'FXLS', 'keterangan' => 'HARUS BERTIPE XLS ATAU XLSX', 'modifiedby' => 'ADMIN',]);
         Error::create([ 'kodeerror' => 'SATL', 'keterangan' => 'PROSES TIDAK BISA LANJUT KARENA SUDAH DIPAKAI DI TRANSAKSI LAIN', 'modifiedby' => 'ADMIN',]);
-        Error::create([ 'kodeerror' => 'STM', 'keterangan' => 'SISA BAYAR TIDAK BOLEH MINUS', 'modifiedby' => 'ADMIN',]);
+        Error::create([ 'kodeerror' => 'STM', 'keterangan' => 'SISA TIDAK BOLEH MINUS', 'modifiedby' => 'ADMIN',]);
         Error::create([ 'kodeerror' => 'TDT', 'keterangan' => 'TRANSAKSI BERASAL DARI INPUTAN TRANSAKSI LAIN', 'modifiedby' => 'ADMIN',]);
         Error::create([ 'kodeerror' => 'ETS', 'keterangan' => 'HANYA BISA EDIT/DELETE DI TANGGAL YANG SAMA', 'modifiedby' => 'ADMIN',]);
         Error::create([ 'kodeerror' => 'TBT', 'keterangan' => 'TIDAK BISA MEMILIH TANGGAL TERSEBUT', 'modifiedby' => 'ADMIN',]);
         Error::create([ 'kodeerror' => 'TSTB', 'keterangan' => 'TANGGAL SUDAH TIDAK BERLAKU', 'modifiedby' => 'ADMIN',]);
         Error::create([ 'kodeerror' => 'TSPTB', 'keterangan' => 'TANGGAL TIDAK BISA DI PROSES  SEBELUM TANGGAL TUTUP BUKU', 'modifiedby' => 'ADMIN',]);
         Error::create([ 'kodeerror' => 'SPIT', 'keterangan' => 'SUDAH PERNAH DI INPUT DI TRADO', 'modifiedby' => 'ADMIN',]);
+        Error::create([ 'kodeerror' => 'HF', 'keterangan' => 'FORMAT JAM SALAH', 'modifiedby' => 'ADMIN',]);
+        Error::create([ 'kodeerror' => 'TAB', 'keterangan' => 'TIDAK ADA ABSENSI. SILAHKAN INPUT ABSENSI', 'modifiedby' => 'ADMIN',]);
+        Error::create([ 'kodeerror' => 'DF', 'keterangan' => 'FORMAT TANGGAL SALAH', 'modifiedby' => 'ADMIN',]);
     }
 }
