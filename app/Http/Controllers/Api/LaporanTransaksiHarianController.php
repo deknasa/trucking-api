@@ -68,10 +68,10 @@ class LaporanTransaksiHarianController extends Controller
 
         $export = LaporanTransaksiHarian::getReport($dari,$sampai);
 
-        // foreach ($export as $data) {
+        foreach ($export as $data) {
            
-        //     $data->tglbukti = date('d-m-Y', strtotime($data->tglbukti));
-        // }
+            $data->tanggal = date('d-m-Y', strtotime($data->tanggal));
+        }
 
         return response([
             'data' => $export
