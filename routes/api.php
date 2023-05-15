@@ -1104,6 +1104,7 @@ route::middleware(['auth:api'])->group(function () {
     Route::get('laporanpemotonganpinjamandepo/report', [LaporanPemotonganPinjamanDepoController::class, 'report'])->name('laporanpemotonganpinjamandepo.report');
     Route::resource('laporanpemotonganpinjamandepo', LaporanPemotonganPinjamanDepoController::class);
     Route::get('laporanrekapsumbangan/report', [LaporanRekapSumbanganController::class, 'report'])->name('laporanrekapsumbangan.report');
+    Route::get('laporanrekapsumbangan/export', [LaporanRekapSumbanganController::class, 'export'])->name('laporanrekapsumbangan.export');
     Route::resource('laporanrekapsumbangan', LaporanRekapSumbanganController::class);
     Route::get('laporanklaimpjtsupir/report', [LaporanKlaimPJTSupirController::class, 'report'])->name('laporanklaimpjtsupir.report');
     Route::resource('laporanklaimpjtsupir', LaporanKlaimPJTSupirController::class);

@@ -31,23 +31,36 @@ class LaporanRekapSumbanganController extends Controller
         $sampai = $request->sampai;
         $dari = $request->dari;
 
-        // $report = LaporanRekapSumbangan::getReport($sampai, $dari);
-        $report = [
-            [
-                'nobukti' => 'INV 0001/II/2023',
-                'container' => '2x20"',
-                'nominal' => '5125121',
-                'nobst' => 'BST 0001/II/2023'
-            ],
-            [
-                'nobukti' => 'INV 0002/II/2023',
-                'container' => '20"',
-                'nominal' => '912478',
-                'nobst' => 'BST 0002/II/2023'
-            ]
-        ];
+        $report = LaporanRekapSumbangan::getReport($sampai, $dari);
+
+        // $report = [
+        //     [
+        //         'nobukti' => 'INV 0001/II/2023',
+        //         'container' => '2x20"',
+        //         'nominal' => '5125121',
+        //         'nobst' => 'BST 0001/II/2023'
+        //     ],
+        //     [
+        //         'nobukti' => 'INV 0002/II/2023',
+        //         'container' => '20"',
+        //         'nominal' => '912478',
+        //         'nobst' => 'BST 0002/II/2023'
+        //     ]
+        // ];
         return response([
             'data' => $report
+        ]);
+    }
+
+    public function export(Request $request)
+    {
+        $dari = $request->dari;
+        $sampai = $request->sampai;
+
+        $export = LaporanRekapSumbangan::getReport($dari,$sampai);
+
+        return response([
+            'data' => $export
         ]);
     }
 }
