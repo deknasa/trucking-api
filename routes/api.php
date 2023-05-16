@@ -541,6 +541,8 @@ route::middleware(['auth:api'])->group(function () {
     Route::post('pengeluarantruckingheader/{id}/cekvalidasi', [PengeluaranTruckingHeaderController::class, 'cekvalidasi'])->name('pengeluarantruckingheader.cekvalidasi');
     Route::get('pengeluarantruckingheader/getdeposito', [PengeluaranTruckingHeaderController::class, 'getdeposito'])->name('pengeluarantruckingheader.getdeposito');
     Route::get('pengeluarantruckingheader/{id}/{aksi}/gettarikdeposito', [PengeluaranTruckingHeaderController::class, 'getTarikDeposito'])->name('pengeluarantruckingheader.gettarikdeposito');
+    Route::get('pengeluarantruckingheader/getpelunasan', [PengeluaranTruckingHeaderController::class, 'getpelunasan'])->name('pengeluarantruckingheader.getpelunasan');
+    Route::get('pengeluarantruckingheader/{id}/{aksi}/geteditpelunasan', [PengeluaranTruckingHeaderController::class, 'getEditPelunasan'])->name('pengeluarantruckingheader.geteditpelunasan');
     Route::get('pengeluarantruckingheader/no_bukti', [PengeluaranTruckingHeaderController::class, 'getNoBukti']);
     Route::get('pengeluarantruckingheader/combo', [PengeluaranTruckingHeaderController::class, 'combo']);
     Route::get('pengeluarantruckingheader/grid', [PengeluaranTruckingHeaderController::class, 'grid']);

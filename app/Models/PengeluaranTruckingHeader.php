@@ -248,6 +248,108 @@ class PengeluaranTruckingHeader extends MyModel
         return $data;
     }
 
+    public function getEditPelunasan($id, $periodedari, $periodesampai)
+    {
+        $tempPribadi = $this->createTempEditPelunasan($id, $periodedari, $periodesampai);
+        $tempAll = $this->createTempPelunasan($id, $periodedari, $periodesampai);
+
+        $temp = '##tempGet' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+        $pelunasan = DB::table($tempPribadi)->from(DB::raw("$tempPribadi with (readuncommitted)"))
+            ->select(DB::raw("pengeluarantruckingheader_id,nobukti,keterangan,sisa,bayar"));
+            
+
+        Schema::create($temp, function ($table) {
+            $table->bigInteger('pengeluarantruckingheader_id')->nullable();
+            $table->string('nobukti');
+            $table->string('keterangan')->nullable();
+            $table->bigInteger('sisa')->nullable();
+            $table->bigInteger('bayar')->nullable();
+        });
+        
+        DB::table($temp)->insertUsing(['pengeluarantruckingheader_id', 'nobukti', 'keterangan', 'sisa', 'bayar'], $pelunasan);
+        
+
+        $pinjaman = DB::table($tempAll)->from(DB::raw("$tempAll with (readuncommitted)"))
+            ->select(DB::raw("null as pengeluarantruckingheader_id,nobukti,keterangan,sisa, 0 as bayar"));
+        DB::table($temp)->insertUsing(['pengeluarantruckingheader_id', 'nobukti', 'keterangan', 'sisa', 'bayar'], $pinjaman);
+
+        
+        $data = DB::table($temp)->from(DB::raw("$temp with (readuncommitted)"))
+            ->select(DB::raw("row_number() Over(Order By $temp.nobukti) as id,pengeluarantruckingheader_id,nobukti,keterangan,sisa,bayar as nominal"))
+            ->get();
+
+        // echo json_encode($data);
+        // die;
+            
+        return $data;
+    }
+
+    public function createTempPelunasan($id, $periodedari, $periodesampai)
+    {
+        $temp = '##temp' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+        $fetch = DB::table('penerimaantruckingdetail')
+            ->from(
+                DB::raw("penerimaantruckingdetail with (readuncommitted)")
+            )
+            ->select(DB::raw("penerimaantruckingdetail.nobukti,penerimaantruckingdetail.keterangan,
+        (SELECT (penerimaantruckingdetail.nominal - coalesce(SUM(pengeluarantruckingdetail.nominal),0)) FROM pengeluarantruckingdetail WHERE pengeluarantruckingdetail.penerimaantruckingheader_nobukti= penerimaantruckingdetail.nobukti) AS sisa"))
+            ->leftJoin(DB::raw("penerimaantruckingheader with (readuncommitted)"), 'penerimaantruckingheader.nobukti', 'penerimaantruckingdetail.nobukti')
+            ->whereBetween('penerimaantruckingheader.tglbukti', [date('Y-m-d',strtotime($periodedari)), date('Y-m-d', strtotime($periodesampai))])
+            ->whereRaw("penerimaantruckingheader.nobukti not in (select penerimaantruckingheader_nobukti from pengeluarantruckingdetail where pengeluarantruckingheader_id=$id)")
+            ->orderBy('penerimaantruckingheader.tglbukti', 'asc')
+            ->orderBy('penerimaantruckingdetail.nobukti', 'asc');
+
+        Schema::create($temp, function ($table) {
+            $table->string('nobukti');
+            $table->string('keterangan');
+            $table->bigInteger('sisa')->nullable();
+        });
+        // return $fetch->get();
+        $tes = DB::table($temp)->insertUsing(['nobukti', 'keterangan', 'sisa'], $fetch);
+        return $temp;
+    }
+
+    public function createTempEditPelunasan($id, $periodedari, $periodesampai)
+    {
+        $temp = '##temp' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+
+        $fetch = DB::table('penerimaantruckingdetail')
+            ->from(
+                DB::raw("penerimaantruckingdetail with (readuncommitted)")
+            )
+            ->select(DB::raw("pengeluarantruckingdetail.pengeluarantruckingheader_id,penerimaantruckingdetail.nobukti,penerimaantruckingdetail.keterangan,pengeluarantruckingdetail.nominal as bayar ,(SELECT (penerimaantruckingdetail.nominal - coalesce(SUM(pengeluarantruckingdetail.nominal),0)) FROM pengeluarantruckingdetail WHERE pengeluarantruckingdetail.penerimaantruckingheader_nobukti= penerimaantruckingdetail.nobukti) AS sisa"))
+            ->leftJoin(DB::raw("penerimaantruckingheader with (readuncommitted)"), 'penerimaantruckingheader.nobukti', 'penerimaantruckingdetail.nobukti')
+            ->leftJoin(DB::raw("pengeluarantruckingdetail with (readuncommitted)"), 'pengeluarantruckingdetail.penerimaantruckingheader_nobukti', 'penerimaantruckingdetail.nobukti')
+            ->whereBetween('penerimaantruckingheader.tglbukti', [date('Y-m-d',strtotime($periodedari)), date('Y-m-d', strtotime($periodesampai))])
+            ->where("pengeluarantruckingdetail.pengeluarantruckingheader_id", $id)
+            ->orderBy('penerimaantruckingheader.tglbukti', 'asc')
+            ->orderBy('penerimaantruckingdetail.nobukti', 'asc');
+
+        Schema::create($temp, function ($table) {
+            $table->bigInteger('pengeluarantruckingheader_id')->nullable();
+            $table->string('nobukti');
+            $table->string('keterangan');
+            $table->bigInteger('bayar')->nullable();
+            $table->bigInteger('sisa')->nullable();
+        });
+        $tes = DB::table($temp)->insertUsing(['pengeluarantruckingheader_id', 'nobukti', 'keterangan', 'bayar', 'sisa'], $fetch);
+        return $temp;
+
+        echo json_encode($temp);
+        die;
+    }
+
+    public function getDeleteEditPelunasan($id, $periodedari, $periodesampai)
+    {
+        $tempPribadi = $this->createTempEditPelunasan($id, $periodedari, $periodesampai);
+
+        $data = DB::table($tempPribadi)->from(DB::raw("$tempPribadi with (readuncommitted)"))
+            ->select(DB::raw("row_number() Over(Order By $tempPribadi.nobukti) as id,pengeluarantruckingheader_id,nobukti,keterangan,sisa,bayar as nominal"))
+            ->get();
+
+        return $data;
+    }
+
     // public function getTarikDeposito($id){
     //     $penerimaantrucking = DB::table($this->table)->from(DB::raw("penerimaantrucking with (readuncommitted)"))->where('kodepenerimaan','DPO')->first();
     //     // return $pengeluarantruckingheader->id;

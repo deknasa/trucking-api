@@ -58,6 +58,7 @@ class PengeluaranTruckingHeaderController extends Controller
         DB::beginTransaction();
         try {
             // return response($request->all(),422);
+           
             $tanpaprosesnobukti = $request->tanpaprosesnobukti ?? 0;
 
             if ($tanpaprosesnobukti == 0) {
@@ -776,6 +777,33 @@ class PengeluaranTruckingHeaderController extends Controller
     {
         $penerimaanTrucking = new PenerimaanTruckingHeader();
         $data = $penerimaanTrucking->getDeposito($request->supir);
+        return response([
+            'status' => true,
+            'data' => $data
+        ]);
+    }
+
+    public function getpelunasan(Request $request)
+    {
+        $penerimaanTrucking = new PenerimaanTruckingHeader();
+        $data = $penerimaanTrucking->getPelunasan($request->tgldari, $request->tglsampai);
+        return response([
+            'status' => true,
+            'data' => $data
+        ]);
+    }
+
+    public function getEditPelunasan($id, $aksi)
+    {
+        $pengeluaranTrucking = new PengeluaranTruckingHeader();
+        $getPelunasan = $pengeluaranTrucking->find($id);
+    ///echo json_encode($getPelunasan);die;
+   
+        if ($aksi == 'edit') {
+            $data = $pengeluaranTrucking->getEditPelunasan($id, $getPelunasan->periodedari, $getPelunasan->periodesampai);
+        } else {
+            $data = $pengeluaranTrucking->getDeleteEditPelunasan($id, $getPelunasan->periodedari, $getPelunasan->periodesampai);
+        }
         return response([
             'status' => true,
             'data' => $data
