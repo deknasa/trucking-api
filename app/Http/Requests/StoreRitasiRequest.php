@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests;
 
+use App\Http\Controllers\Api\ErrorController;
 use Illuminate\Foundation\Http\FormRequest;
 use App\Rules\DateTutupBuku;
 
@@ -26,7 +27,7 @@ class StoreRitasiRequest extends FormRequest
     {
         return [
             "tglbukti" => [
-                "required",
+                "required",'date_format:d-m-Y',
                 new DateTutupBuku()
             ],
             'statusritasi' => 'required',
@@ -43,6 +44,13 @@ class StoreRitasiRequest extends FormRequest
             'tglbukti' => 'tanggal bukti',
             'statusritasi' => 'status ritasi',
             'suratpengantar_nobukti' => 'No bukti surat pengantar',
+        ];
+    }
+    
+    public function messages() 
+    {
+        return [
+            'tglbukti.date_format' => app(ErrorController::class)->geterror('DF')->keterangan,
         ];
     }
 }

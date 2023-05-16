@@ -134,6 +134,9 @@ class PengeluaranStokHeaderController extends Controller
                             "persentasediscount" => $request->detail_persentasediscount[$i],
                             "vulkanisirke" => $request->detail_vulkanisirke[$i],
                             "detail_keterangan" => $request->detail_keterangan[$i],
+                            "trado_id" => ($request->trado_id == null) ? "" : $request->trado_id,
+                            "gandengan_id" => ($request->gandengan_id == null) ? "" : $request->gandengan_id,
+                            "gudang_id" => ($request->gudang_id == null) ? "" : $request->gudang_id,
                         ];
 
                         $data = new StorePengeluaranStokDetailRequest($datadetail);
@@ -164,7 +167,7 @@ class PengeluaranStokHeaderController extends Controller
 
                         $datafifo = new StorePengeluaranStokDetailFifoRequest($datadetailfifo);
                         $pengeluaranStokDetailFifo = app(PengeluaranStokDetailFifoController::class)->store($datafifo);
-
+                        // return response([$pengeluaranStokDetailFifo], 422);
 
                         if ($pengeluaranStokDetailFifo['error']) {
                             return response($pengeluaranStokDetailFifo, 422);
@@ -194,8 +197,8 @@ class PengeluaranStokHeaderController extends Controller
                 if ($statusformat->id == $rbt->id) {
 
                     $potongKas = Parameter::where('grp', 'STATUS POTONG RETUR')->where('text', 'POSTING KE KAS/BANK')->first();
-                    $potongHutang = Parameter::where('grp', 'STATUS POTONG RETUR')->where('text', 'POSTING HUTANG')->first();
-
+                    $potongHutang = Parameter::where('grp', 'STATUS POTONG RETUR')->where('text', 'POTONG HUTANG')->first();
+                    
                     if ($pengeluaranStokHeader->statuspotongretur == $potongKas->id) {
 
                         $statusApproval = DB::table('parameter')
@@ -293,13 +296,14 @@ class PengeluaranStokHeaderController extends Controller
                             "alatbayar_id" => 0,
                             "tglcair" => $request->tglcair,
                         ];
-                        for ($i = 0; $i < count($request->detail_stok); $i++) {
-                            $hutangHeader['keterangandetail'][] = $request->keterangandetail[$i];
-                            $hutangHeader['bayar'][] = $request->bayar[$i];
-                            $hutangHeader['hutang_id'][] = $request->hutang_id[$i];
-                            $hutangHeader['total'][] = $request->total[$i];
-                            $hutangHeader['potongan'][] = $request->potongan[$i];
-                        }
+                        // return response([$potongHutang],422);
+                        // for ($i = 0; $i < count($request->detail_stok); $i++) {
+                        //     $hutangHeader['keterangandetail'][] = $request->detail_keterangan[$i];
+                        //     $hutangHeader['bayar'][] = $request->bayar[$i];
+                        //     $hutangHeader['hutang_id'][] = $request->hutang_id[$i];
+                        //     $hutangHeader['total'][] = $request->total[$i];
+                        //     $hutangHeader['potongan'][] = $request->potongan[$i];
+                        // }
                     }
                 }
 
@@ -483,6 +487,9 @@ class PengeluaranStokHeaderController extends Controller
                             "persentasediscount" => $request->detail_persentasediscount[$i],
                             "vulkanisirke" => $request->detail_vulkanisirke[$i],
                             "detail_keterangan" => $request->detail_keterangan[$i],
+                            "trado_id" => ($request->trado_id == null) ? "" : $request->trado_id,
+                            "gandengan_id" => ($request->gandengan_id == null) ? "" : $request->gandengan_id,
+                            "gudang_id" => ($request->gudang_id == null) ? "" : $request->gudang_id,
                         ];
 
                         $data = new StorePengeluaranStokDetailRequest($datadetail);
@@ -546,7 +553,7 @@ class PengeluaranStokHeaderController extends Controller
                 if ($statusformat->id == $rbt->id) {
 
                         $potongKas = Parameter::where('grp', 'STATUS POTONG RETUR')->where('text', 'POSTING KE KAS/BANK')->first();
-                        $potongHutang = Parameter::where('grp', 'STATUS POTONG RETUR')->where('text', 'POSTING HUTANG')->first();
+                        $potongHutang = Parameter::where('grp', 'STATUS POTONG RETUR')->where('text', 'POTONG HUTANG')->first();
 
                         if ($pengeluaranStokHeader->statuspotongretur == $potongKas->id) {
 
@@ -645,13 +652,13 @@ class PengeluaranStokHeaderController extends Controller
                                 "alatbayar_id" => 0,
                                 "tglcair" => $request->tglcair,
                             ];
-                            for ($i = 0; $i < count($request->detail_stok); $i++) {
-                                $hutangHeader['keterangandetail'][] = $request->keterangandetail[$i];
-                                $hutangHeader['bayar'][] = $request->bayar[$i];
-                                $hutangHeader['hutang_id'][] = $request->hutang_id[$i];
-                                $hutangHeader['total'][] = $request->total[$i];
-                                $hutangHeader['potongan'][] = $request->potongan[$i];
-                            }
+                            // for ($i = 0; $i < count($request->detail_stok); $i++) {
+                            //     $hutangHeader['keterangandetail'][] = $request->keterangandetail[$i];
+                            //     $hutangHeader['bayar'][] = $request->bayar[$i];
+                            //     $hutangHeader['hutang_id'][] = $request->hutang_id[$i];
+                            //     $hutangHeader['total'][] = $request->total[$i];
+                            //     $hutangHeader['potongan'][] = $request->potongan[$i];
+                            // }
                         }
                     }
                 }

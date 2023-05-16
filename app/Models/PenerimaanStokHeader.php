@@ -62,7 +62,7 @@ class PenerimaanStokHeader extends MyModel
                       ->whereNotNull('penerimaanstokheader.penerimaanstok_nobukti')
                       ->where('penerimaanstokheader.penerimaanstok_nobukti','!=','');
             });
-            return $query->get();
+            // return $query->get();
         }
 
         if (request()->penerimaanstok_id==$spbs->text) {
@@ -75,7 +75,7 @@ class PenerimaanStokHeader extends MyModel
                       ->whereNotNull('penerimaanstokheader.penerimaanstok_nobukti')
                       ->where('penerimaanstokheader.penerimaanstok_nobukti','!=','');
             });
-            return $query->get();
+            // return $query->get();
         }
 
         if (request()->supplier_id) {

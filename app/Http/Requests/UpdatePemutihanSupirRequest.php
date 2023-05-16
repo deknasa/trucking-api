@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests;
 
+use App\Http\Controllers\Api\ErrorController;
 use App\Rules\DateTutupBuku;
 use Illuminate\Foundation\Http\FormRequest;
 
@@ -26,10 +27,16 @@ class UpdatePemutihanSupirRequest extends FormRequest
     {
         return [
             'tglbukti' => [
-                'required',
+                'required','date_format:d-m-Y',
                 new DateTutupBuku()
             ],
             'supir' => 'required'
+        ];
+    }
+    public function messages() 
+    {
+        return [
+            'tglbukti.date_format' => app(ErrorController::class)->geterror('DF')->keterangan,
         ];
     }
 }

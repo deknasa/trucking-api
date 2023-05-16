@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests;
 
+use App\Http\Controllers\Api\ErrorController;
 use Illuminate\Foundation\Http\FormRequest;
 use App\Rules\DateTutupBuku;
 
@@ -26,11 +27,18 @@ class UpdateAbsensiSupirApprovalHeaderRequest extends FormRequest
     {
         return [
             // "keterangan"=>"required",
-            "absensisupir_nobukti"=>"required",
+            "absensisupir_nobukti" => "required",
             "tglbukti" => [
-                "required",
+                "required", 'date_format:d-m-Y',
                 new DateTutupBuku()
             ],
+        ];
+    }
+
+    public function messages()
+    {
+        return [
+            'tglbukti.date_format' => app(ErrorController::class)->geterror('DF')->keterangan,
         ];
     }
 }
