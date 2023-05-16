@@ -167,7 +167,7 @@ class PengeluaranStokHeaderController extends Controller
 
                         $datafifo = new StorePengeluaranStokDetailFifoRequest($datadetailfifo);
                         $pengeluaranStokDetailFifo = app(PengeluaranStokDetailFifoController::class)->store($datafifo);
-
+                        // return response([$pengeluaranStokDetailFifo], 422);
 
                         if ($pengeluaranStokDetailFifo['error']) {
                             return response($pengeluaranStokDetailFifo, 422);
