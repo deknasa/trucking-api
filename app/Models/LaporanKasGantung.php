@@ -50,7 +50,6 @@ class LaporanKasGantung extends MyModel
             $table->dateTime('created_at')->nullable();
             $table->dateTime('updated_at')->nullable();
         });
-       
 
         $dataheader = DB::table('pengembaliankasgantungheader')->from(DB::raw("pengembaliankasgantungheader AS A WITH (READUNCOMMITTED)"))
         ->select([
