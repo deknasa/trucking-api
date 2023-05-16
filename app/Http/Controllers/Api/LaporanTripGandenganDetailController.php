@@ -30,14 +30,17 @@ class LaporanTripGandenganDetailController extends Controller
     {
         $dari = $request->dari;
         $sampai = $request->sampai;
+        $gandengandari = $request->gandengandari;
+        $gandengansampai = $request->gandengansampai;
         $gandengandari_id = $request->gandengandari_id;
         $gandengansampai_id = $request->gandengansampai_id;
 
+        $laporantripgandengandetail = new LaporanTripGandenganDetail();
         // $report = LaporanTripGandenganDetail::getReport($sampai, $jenis);
         $report = [
             [
                 'gandengan' => 'T2',
-                'tanggal' => '23/2/2023',
+                'tanggal' => '23-2-2023',
                 'nosp' => '2414215412',
                 'supir' => 'HERMAN',
                 'nocont' => '124512',
@@ -48,7 +51,9 @@ class LaporanTripGandenganDetailController extends Controller
             ]
         ];
         return response([
-            'data' => $report
+            // date('d-m-Y', strtotime($item->tanggal));
+            // 'data' => $report
+            'data' => $laporantripgandengandetail->getReport($gandengandari_id, $gandengansampai_id, date('Y-m-d', strtotime($dari)), date('Y-m-d', strtotime($sampai)))
         ]);
     }
 }
