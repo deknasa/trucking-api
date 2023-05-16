@@ -103,6 +103,38 @@ class PengeluaranTruckingHeaderController extends Controller
                             'message' => "PENARIKAN DEPOSITO $query->keterangan",
                         ], 422);
                     }
+                } else if ($fetchFormat->kodepengeluaran == 'KBBM') {
+                    if ($request->kbbm_id != '') {
+                        for ($i = 0; $i < count($request->kbbm_id); $i++) {
+                            if ($request->sisa[$i] < 0) {
+
+                                $query =  Error::from(DB::raw("error with (readuncommitted)"))->select('keterangan')->where('kodeerror', '=', 'STM')
+                                    ->first();
+                                return response([
+                                    'errors' => [
+                                        "nominal.$i" => ["$query->keterangan"]
+                                    ],
+                                    'message' => "sisa",
+                                ], 422);
+                            }
+                        }
+                        $request->validate([
+                            'nominal' => 'required|array',
+                            'nominal.*' => 'required|numeric|gt:0'
+                        ], [
+                            'nominal.*.numeric' => 'nominal harus '.app(ErrorController::class)->geterror('BTSANGKA')->keterangan,
+                            'nominal.*.gt' => 'Nominal Tidak Boleh Kosong dan Harus Lebih Besar Dari 0'
+                        ]);
+                    } else {
+                        $query = DB::table('error')->select('keterangan')->where('kodeerror', '=', 'WP')
+                            ->first();
+                        return response([
+                            'errors' => [
+                                'tde' => "PELUNASAN HUTANG BBM $query->keterangan"
+                            ],
+                            'message' => "PELUNASAN HUTANG BBM $query->keterangan",
+                        ], 422);
+                    }
                 } else {
                     $request->validate([
                         'nominal' => 'required|array',
