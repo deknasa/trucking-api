@@ -1090,6 +1090,7 @@ route::middleware(['auth:api'])->group(function () {
 
     Route::resource('laporanestimasikasgantung', LaporanEstimasiKasGantungController::class);
     Route::get('laporantriptrado/report', [LaporanTripTradoController::class, 'report'])->name('laporantriptrado.report');
+    Route::get('laporantriptrado/export', [LaporanTripTradoController::class, 'export'])->name('laporantriptrado.export');
     Route::resource('laporantriptrado', zLaporanTripTradoController::class);
     Route::get('laporankartuhutangprediksi/report', [LaporanKartuHutangPrediksiController::class, 'report'])->name('laporankartuhutangprediksi.report');
     Route::resource('laporankartuhutangprediksi', LaporanKartuHutangPrediksiController::class);
