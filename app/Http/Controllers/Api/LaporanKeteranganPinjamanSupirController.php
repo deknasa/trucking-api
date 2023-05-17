@@ -31,7 +31,6 @@ class LaporanKeteranganPinjamanSupirController extends Controller
         $periode = $request->periode;
         $jenis = $request->jenis;
 
-
         $report = LaporanKeteranganPinjamanSupir::getReport($periode, $jenis);
         // $report = [
         //     [
@@ -47,6 +46,7 @@ class LaporanKeteranganPinjamanSupirController extends Controller
             'data' => $report
         ]);
     }
+
     public function export(Request $request)
     {
         $periode = $request->periode;

@@ -45,6 +45,7 @@ class AbsensiSupirHeader extends MyModel
             $data = [
                 'kondisi' => true,
                 'keterangan' => 'Absensi Supir Posting',
+                'kodeerror' => 'SATL'
             ];
             goto selesai;
         }
