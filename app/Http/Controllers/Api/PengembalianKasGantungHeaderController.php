@@ -64,6 +64,8 @@ class PengembalianKasGantungHeaderController extends Controller
 
         try {
 
+            
+
             $group = 'PENGEMBALIAN KAS GANTUNG BUKTI';
             $subgroup = 'PENGEMBALIAN KAS GANTUNG BUKTI';
 
@@ -169,17 +171,31 @@ class PengembalianKasGantungHeaderController extends Controller
                         $kasgantung = KasGantungHeader::where('id', $idKasgantungDetail)->first();
                         $kasgantungnobukti = $kasgantung->nobukti;
                     }
+                    if (stripos(strtolower($request->keterangandetail[$i]),'input type=')) {
+                        $keterangandetail=null;
+                    } else {
+                        $keterangandetail=$request->keterangandetail[$i];
+
+                    }
+                    if (stripos(strtolower($request->coadetail[$i]),'input-group')) {
+                        $coadetail= null;
+                    } else {
+                       $coadetail= $request->coadetail[$i];
+                    }
+                    // dd($request['coadetail']);
+                    // dd($request->coadetail[$i]);
 
                     $datadetail = [
                         "pengembaliankasgantung_id" => $pengembalianKasGantungHeader->id,
                         "nobukti" => $pengembalianKasGantungHeader->nobukti,
                         "nominal" => ($request->datadetail != '') ? $request->datadetail[$i]['nominal'] : $request->nominal[$i],
-                        "coadetail" => ($request->datadetail != '') ? $coakreditmemo['JURNAL'] : $request->coadetail[$i],
-                        "keterangandetail" => ($request->datadetail != '') ? $request->datadetail[$i]['keterangandetail'] : $request->keterangandetail[$i],
+                        "coadetail" => ($request->datadetail != '') ? $coakreditmemo['JURNAL'] :  $coadetail,
+                        "keterangandetail" => ($request->datadetail != '') ? $request->datadetail[$i]['keterangandetail'] : $keterangandetail,
                         "kasgantung_nobukti" => $kasgantungnobukti,
                     ];
                     $detaillog[] = $datadetail;
                     $data = new StorePengembalianKasGantungDetailRequest($datadetail);
+                    dd( $data );
                     $pengembalianKasGantungDetail = app(PengembalianKasGantungDetailController::class)->store($data);
 
                     if ($pengembalianKasGantungDetail['error']) {
@@ -319,6 +335,7 @@ class PengembalianKasGantungHeaderController extends Controller
             throw $th;
         }
     }
+
 
     public function show(PengembalianKasGantungHeader $pengembalianKasGantungHeader, $id)
     {
