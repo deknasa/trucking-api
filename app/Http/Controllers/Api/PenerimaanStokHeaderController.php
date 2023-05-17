@@ -98,6 +98,7 @@ class PenerimaanStokHeaderController extends Controller
 
             $pg = Parameter::where('grp', 'PG STOK')->where('subgrp', 'PG STOK')->first();
             $do = Parameter::where('grp', 'DO STOK')->where('subgrp', 'DO STOK')->first();
+            $spbs = Parameter::where('grp', 'REUSE STOK')->where('subgrp', 'REUSE STOK')->first();
             $statuspindah = null;
 
             $gudangdari_id = "";
@@ -113,6 +114,11 @@ class PenerimaanStokHeaderController extends Controller
                     $statuspindahgudang = Parameter::where('grp', 'STATUS PINDAH GUDANG')->where('text', 'GUDANG KE GUDANG')->first();
                     $gudangdari_id = Gudang::where('gudang','GUDANG SEMENTARA')->first()->id;
                     $gudangke_id = Gudang::where('gudang','GUDANG PIHAK III')->first()->id;
+                }
+                if ($request->penerimaanstok_id === $spbs->text) {
+                    $statuspindahgudang = Parameter::where('grp', 'STATUS PINDAH GUDANG')->where('text', 'GUDANG KE GUDANG')->first();
+                    $gudangdari_id = Gudang::where('gudang','GUDANG PIHAK III')->first()->id;
+                    $gudangke_id = Gudang::where('gudang','GUDANG KANTOR')->first()->id;
                 }
                 
             }else {

@@ -75,23 +75,53 @@ class GajiSupirHeaderController extends Controller
                     $request->validate(
                         [
                             'nominalPS' => 'required|array',
-                            'nominalPS.*' => 'required|gt:0',
+                            'nominalPS.*' => 'required|numeric|gt:0',
                         ],
                         [
+                            'nominalPS.*.numeric' => 'nominal pinjaman yang dipilih pot. pinjaman (semua) harus berupa angka',
                             'nominalPS.*.gt' => 'nominal pinjaman yang dipilih pot. pinjaman (semua) tidak boleh 0 (pot. pinjaman (semua))'
                         ]
                     );
+
+                    for ($i = 0; $i < count($request->pinjSemua); $i++) {
+                        if ($request->pinjSemua_sisa[$i] < 0) {
+
+                            $query =  Error::from(DB::raw("error with (readuncommitted)"))->select('keterangan')->where('kodeerror', '=', 'STM')
+                                ->first();
+                            return response([
+                                'errors' => [
+                                    "nominalPS.$i" => ["$query->keterangan"]
+                                ],
+                                'message' => "pinjSemua_sisa",
+                            ], 422);
+                        }
+                    }
                 }
                 if ($request->pinjPribadi) {
                     $request->validate(
                         [
                             'nominalPP' => 'required|array',
-                            'nominalPP.*' => 'required|gt:0',
+                            'nominalPP.*' => 'required|numeric|gt:0',
                         ],
                         [
+                            'nominalPP.*.numeric' => 'nominal pinjaman yang dipilih pot. pinjaman (pribadi) harus berupa angka',
                             'nominalPP.*.gt' => 'nominal pinjaman yang dipilih tidak boleh 0 (pot. pinjaman (pribadi))'
                         ]
                     );
+
+                    for ($i = 0; $i < count($request->pinjPribadi); $i++) {
+                        if ($request->pinjPribadi_sisa[$i] < 0) {
+
+                            $query =  Error::from(DB::raw("error with (readuncommitted)"))->select('keterangan')->where('kodeerror', '=', 'STM')
+                                ->first();
+                            return response([
+                                'errors' => [
+                                    "nominalPP.$i" => ["$query->keterangan"]
+                                ],
+                                'message' => "pinjPribadi_sisa",
+                            ], 422);
+                        }
+                    }
                 }
                 if ($request->nomDeposito > 0) {
                     $request->validate(
@@ -539,16 +569,12 @@ class GajiSupirHeaderController extends Controller
         $gajisupirpinjaman = new GajiSupirPelunasanPinjaman();
         $data = GajiSupirHeader::findAll($id);
         $deposito = GajiSupirDeposito::findAll($data->nobukti);
-        $pinjamanPribadi = $gajisupirpinjaman->getPinjamanPribadi($data->nobukti, $data->supir_id);
-        $pinjamanSemua = $gajisupirpinjaman->getPinjamanSemua($data->nobukti);
         $BBM = GajiSupirBBM::findAll($data->nobukti);
 
         return response([
             'status' => true,
             'data' => $data,
             'deposito' => $deposito,
-            'pinjamanpribadi' => $pinjamanPribadi,
-            'pinjamansemua' => $pinjamanSemua,
             'bbm' => $BBM
         ]);
     }
@@ -568,23 +594,53 @@ class GajiSupirHeaderController extends Controller
                     $request->validate(
                         [
                             'nominalPS' => 'required|array',
-                            'nominalPS.*' => 'required|gt:0',
+                            'nominalPS.*' => 'required|numeric|gt:0',
                         ],
                         [
-                            'nominalPS.*.gt' => 'nominal pinjaman yang dipilih tidak boleh 0 (pot. pinjaman (semua))'
+                            'nominalPS.*.numeric' => 'nominal pinjaman yang dipilih pot. pinjaman (semua) harus berupa angka',
+                            'nominalPS.*.gt' => 'nominal pinjaman yang dipilih pot. pinjaman (semua) tidak boleh 0 (pot. pinjaman (semua))'
                         ]
                     );
+
+                    for ($i = 0; $i < count($request->pinjSemua); $i++) {
+                        if ($request->pinjSemua_sisa[$i] < 0) {
+
+                            $query =  Error::from(DB::raw("error with (readuncommitted)"))->select('keterangan')->where('kodeerror', '=', 'STM')
+                                ->first();
+                            return response([
+                                'errors' => [
+                                    "nominalPS.$i" => ["$query->keterangan"]
+                                ],
+                                'message' => "pinjSemua_sisa",
+                            ], 422);
+                        }
+                    }
                 }
                 if ($request->pinjPribadi) {
                     $request->validate(
                         [
                             'nominalPP' => 'required|array',
-                            'nominalPP.*' => 'required|gt:0',
+                            'nominalPP.*' => 'required|numeric|gt:0',
                         ],
                         [
+                            'nominalPP.*.numeric' => 'nominal pinjaman yang dipilih pot. pinjaman (pribadi) harus berupa angka',
                             'nominalPP.*.gt' => 'nominal pinjaman yang dipilih tidak boleh 0 (pot. pinjaman (pribadi))'
                         ]
                     );
+
+                    for ($i = 0; $i < count($request->pinjPribadi); $i++) {
+                        if ($request->pinjPribadi_sisa[$i] < 0) {
+
+                            $query =  Error::from(DB::raw("error with (readuncommitted)"))->select('keterangan')->where('kodeerror', '=', 'STM')
+                                ->first();
+                            return response([
+                                'errors' => [
+                                    "nominalPP.$i" => ["$query->keterangan"]
+                                ],
+                                'message' => "pinjPribadi_sisa",
+                            ], 422);
+                        }
+                    }
                 }
                 if ($request->nomDeposito > 0) {
                     $request->validate(
@@ -1606,6 +1662,36 @@ class GajiSupirHeaderController extends Controller
                 'message' => $e->getMessage(),
             ];
         }
+    }
+
+    public function getEditPinjSemua($id, $aksi)
+    {
+        $data = GajiSupirHeader::from(DB::raw("gajisupirheader with (readuncommitted)"))->where('id', $id)->first();
+        $pinjamanSemua = new GajiSupirPelunasanPinjaman();
+
+        if($aksi == 'edit'){
+            $data = $pinjamanSemua->getPinjamanSemua($data->nobukti);
+        }else{
+            $data = $pinjamanSemua->getDeletePinjSemua($data->nobukti);
+        }
+        return response([
+            'data' => $data
+        ]);
+    }
+
+    public function getEditPinjPribadi($id, $supirId, $aksi)
+    {
+        $data = GajiSupirHeader::from(DB::raw("gajisupirheader with (readuncommitted)"))->where('id', $id)->first();
+        $pinjamanPribadi = new GajiSupirPelunasanPinjaman();
+
+        if($aksi == 'edit'){
+            $data =$pinjamanPribadi->getPinjamanPribadi($data->nobukti,$supirId);
+        }else{
+            $data = $pinjamanPribadi->getDeletePinjPribadi($data->nobukti,$supirId);
+        }
+        return response([
+            'data' => $data
+        ]);
     }
 
     public function fieldLength()

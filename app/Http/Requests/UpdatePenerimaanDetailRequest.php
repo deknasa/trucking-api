@@ -27,7 +27,7 @@ class UpdatePenerimaanDetailRequest extends FormRequest
             'ketcoakredit' => 'required|array',
             'ketcoakredit.*' => 'required',
             'tgljatuhtempo' => 'required|array',
-            'tgljatuhtempo.*' => 'required',
+            'tgljatuhtempo.*' => 'required|date_format:d-m-Y',
             'nominal_detail' => 'required|array',
             'nominal_detail.*' => 'required|numeric|gt:0',
             'keterangan_detail' => 'required|array',

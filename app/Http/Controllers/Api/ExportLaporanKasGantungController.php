@@ -30,9 +30,10 @@ class ExportLaporanKasGantungController extends Controller
     {
         $periode = $request->periode;
 
-        $report = ExportLaporanKasGantung::getExport($periode);
+        $exportlaporankasgantung = new ExportLaporanKasGantung();
+        // $report = ExportLaporanKasGantung::getExport($periode);
         return response([
-            'data' => $report
+            'data' => $exportlaporankasgantung->getExport($periode)
         ]);
     }
 }

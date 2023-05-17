@@ -91,6 +91,7 @@ class PengeluaranTruckingHeaderController extends Controller
                             'nominal' => 'required|array',
                             'nominal.*' => 'required|numeric|gt:0'
                         ], [
+                            'nominal.*.numeric' => 'nominal harus '.app(ErrorController::class)->geterror('BTSANGKA')->keterangan,
                             'nominal.*.gt' => 'Nominal Tidak Boleh Kosong dan Harus Lebih Besar Dari 0'
                         ]);
                     } else {
@@ -441,6 +442,7 @@ class PengeluaranTruckingHeaderController extends Controller
                             'nominal' => 'required|array',
                             'nominal.*' => 'required|numeric|gt:0'
                         ], [
+                            'nominal.*.numeric' => 'nominal harus '.app(ErrorController::class)->geterror('BTSANGKA')->keterangan,
                             'nominal.*.gt' => 'Nominal Tidak Boleh Kosong dan Harus Lebih Besar Dari 0'
                         ]);
                     } else {

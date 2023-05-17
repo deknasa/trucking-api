@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests;
 
+use App\Http\Controllers\Api\ErrorController;
 use Illuminate\Foundation\Http\FormRequest;
 use App\Rules\DateTutupBuku;
 
@@ -26,7 +27,7 @@ class StoreOrderanTruckingRequest extends FormRequest
     {
         return [
             'tglbukti' => [
-                'required',
+                'required','date_format:d-m-Y',
                 new DateTutupBuku()
             ],
             'container' => 'required',
@@ -36,6 +37,13 @@ class StoreOrderanTruckingRequest extends FormRequest
             'tarifrincian' => 'required',
             'statuslangsir' => 'required',
             'statusperalihan' => 'required',
+        ];
+    }
+    
+    public function messages()
+    {
+        return [
+            'tglbukti.date_format' => app(ErrorController::class)->geterror('DF')->keterangan,
         ];
     }
 }
