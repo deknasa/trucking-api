@@ -45,6 +45,6 @@ class DateTutupBuku implements Rule
      */
     public function message()
     {
-        return 'Tangal tidak bisa diproses sebelum tanggal tutup buku';
+        return 'Tanggal tidak bisa diproses sebelum tanggal tutup buku';
     }
 }
