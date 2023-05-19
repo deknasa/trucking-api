@@ -827,6 +827,50 @@ class ProsesGajiSupirHeader extends MyModel
         }
     }
 
+    public function showUangjalan($id)
+    {
+        $gajidetail = ProsesGajiSupirDetail::from(DB::raw("prosesgajisupirdetail with (readuncommitted)"))->where('prosesgajisupir_id', $id)->get();
+        $total = 0;
+        $tes = '';
+        $allSP = "";
+        foreach ($gajidetail as $key => $value) {
+            if ($key == 0) {
+                $allSP = $allSP . "'$value->gajisupir_nobukti'";
+            } else {
+                $allSP = $allSP . ',' . "'$value->gajisupir_nobukti'";
+            }
+        }
+        $getUangjalan = GajisUpirUangJalan::from(DB::raw("gajisupiruangjalan with (readuncommitted)"))
+            ->select('absensisupirheader.kasgantung_nobukti')
+            ->join(DB::raw("absensisupirheader with (readuncommitted)"), 'gajisupiruangjalan.absensisupir_nobukti', 'absensisupirheader.nobukti')
+            ->whereRaw("gajisupir_nobukti in ($allSP)")->get();
+
+
+        $allSP = "";
+        foreach ($getUangjalan as $key => $value) {
+            if ($key == 0) {
+                $allSP = $allSP . "'$value->kasgantung_nobukti'";
+            } else {
+                $allSP = $allSP . ',' . "'$value->kasgantung_nobukti'";
+            }
+        }
+        if ($allSP != '') {
+            $getKasgantung = PengembalianKasGantungHeader::from(DB::raw("pengembaliankasgantungheader with (readuncommitted)"))
+                ->select("pengembaliankasgantungheader.penerimaan_nobukti", 'pengembaliankasgantungheader.bank_id', 'bank.namabank')
+                ->join(DB::raw("pengembaliankasgantungdetail with (readuncommitted)"), 'pengembaliankasgantungheader.nobukti', 'pengembaliankasgantungdetail.nobukti')
+                ->join(DB::raw("bank with (readuncommitted)"), 'pengembaliankasgantungheader.bank_id', 'bank.id')
+                ->whereRaw("pengembaliankasgantungdetail.kasgantung_nobukti in ($allSP)")
+                ->first();
+
+            $data = [
+                'bank_idUangjalan' => $getKasgantung->bank_id,
+                'bankUangjalan' => $getKasgantung->namabank,
+                'nobuktiUangjalan' => $getKasgantung->penerimaan_nobukti
+            ];
+            return $data;
+        }
+    }
+
     public function getDataJurnal($nobukti)
     {
 
@@ -948,9 +992,9 @@ class ProsesGajiSupirHeader extends MyModel
                         } else if ($filters['field'] == 'deposito') {
                             $query = $query->whereRaw("format($this->tableTotal.deposito, '#,#0.00') LIKE '%$filters[data]%'");
                         } else if ($filters['field'] == 'tglbukti' || $filters['field'] == 'tgldari' || $filters['field'] == 'tglsampai' || $filters['field'] == 'tglapproval' || $filters['field'] == 'tglbukacetak') {
-                            $query = $query->whereRaw("format(".$this->table . "." . $filters['field'].", 'dd-MM-yyyy') LIKE '%$filters[data]%'");
+                            $query = $query->whereRaw("format(" . $this->table . "." . $filters['field'] . ", 'dd-MM-yyyy') LIKE '%$filters[data]%'");
                         } else if ($filters['field'] == 'created_at' || $filters['field'] == 'updated_at') {
-                            $query = $query->whereRaw("format(".$this->table . "." . $filters['field'].", 'dd-MM-yyyy HH:mm:ss') LIKE '%$filters[data]%'");
+                            $query = $query->whereRaw("format(" . $this->table . "." . $filters['field'] . ", 'dd-MM-yyyy HH:mm:ss') LIKE '%$filters[data]%'");
                         } else {
                             $query = $query->where($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
                         }
@@ -981,9 +1025,9 @@ class ProsesGajiSupirHeader extends MyModel
                             } else if ($filters['field'] == 'deposito') {
                                 $query = $query->orWhereRaw("format($this->tableTotal.deposito, '#,#0.00') LIKE '%$filters[data]%'");
                             } else if ($filters['field'] == 'tglbukti' || $filters['field'] == 'tgldari' || $filters['field'] == 'tglsampai' || $filters['field'] == 'tglapproval' || $filters['field'] == 'tglbukacetak') {
-                                $query = $query->orWhereRaw("format(".$this->table . "." . $filters['field'].", 'dd-MM-yyyy') LIKE '%$filters[data]%'");
+                                $query = $query->orWhereRaw("format(" . $this->table . "." . $filters['field'] . ", 'dd-MM-yyyy') LIKE '%$filters[data]%'");
                             } else if ($filters['field'] == 'created_at' || $filters['field'] == 'updated_at') {
-                                $query = $query->orWhereRaw("format(".$this->table . "." . $filters['field'].", 'dd-MM-yyyy HH:mm:ss') LIKE '%$filters[data]%'");
+                                $query = $query->orWhereRaw("format(" . $this->table . "." . $filters['field'] . ", 'dd-MM-yyyy HH:mm:ss') LIKE '%$filters[data]%'");
                             } else {
                                 $query = $query->orWhere($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
                             }

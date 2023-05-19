@@ -777,6 +777,7 @@ route::middleware(['auth:api'])->group(function () {
     Route::get('gajisupirheader/no_bukti', [GajiSupirHeaderController::class, 'getNoBukti']);
     Route::get('gajisupirheader/grid', [GajiSupirHeaderController::class, 'grid']);
     Route::get('gajisupirheader/field_length', [GajiSupirHeaderController::class, 'fieldLength']);
+    Route::get('gajisupirheader/getAbsensi', [GajiSupirHeaderController::class, 'getAbsensi']);
     Route::get('gajisupirheader/getTrip', [GajiSupirHeaderController::class, 'getTrip']);
     Route::get('gajisupirheader/getpinjsemua', [GajiSupirHeaderController::class, 'getPinjSemua']);
     Route::get('gajisupirheader/{id}/{aksi}/editpinjsemua', [GajiSupirHeaderController::class, 'getEditPinjSemua']);
@@ -785,9 +786,11 @@ route::middleware(['auth:api'])->group(function () {
     Route::post('gajisupirheader/noEdit', [GajiSupirHeaderController::class, 'noEdit']);
     Route::post('gajisupirheader/getuangjalan', [GajiSupirHeaderController::class, 'getUangJalan']);
     Route::get('gajisupirheader/{gajiId}/getEditTrip', [GajiSupirHeaderController::class, 'getEditTrip']);
+    Route::get('gajisupirheader/{gajiId}/getEditAbsensi', [GajiSupirHeaderController::class, 'getEditAbsensi']);
     Route::resource('gajisupirheader', GajiSupirHeaderController::class);
 
     Route::get('gajisupirdetail/jurnalbbm', [GajiSupirDetailController::class, 'jurnalBBM']);
+    Route::get('gajisupirdetail/absensi', [GajiSupirDetailController::class, 'absensi']);
     Route::get('gajisupirdetail/deposito', [GajiSupirDetailController::class, 'deposito']);
     Route::get('gajisupirdetail/potpribadi', [GajiSupirDetailController::class, 'potPribadi']);
     Route::get('gajisupirdetail/potsemua', [GajiSupirDetailController::class, 'potSemua']);

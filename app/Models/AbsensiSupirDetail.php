@@ -286,6 +286,39 @@ class AbsensiSupirDetail extends MyModel
         $detail = $query->get();
         return $detail;
     }
+    
+    public function getAbsensiUangJalan($nobukti)
+    {
+        $this->setRequestParameters();
+        $fetch =  DB::table('gajisupiruangjalan')->from(DB::raw("gajisupiruangjalan with (readuncommitted)"))
+            ->select(DB::raw("supir_id"))
+            ->whereRaw("gajisupir_nobukti = '$nobukti'")
+            ->first();
+
+        $query = DB::table('absensisupirdetail')->from(DB::raw("absensisupirdetail with (readuncommitted)"))
+            ->select(
+                'absensisupirdetail.absensi_id',
+                'absensisupirdetail.nobukti',
+                'absensisupirheader.tglbukti',
+                'absensisupirdetail.uangjalan'
+            )
+            ->join(DB::raw("absensisupirheader with (readuncommitted)"), 'absensisupirheader.nobukti', 'absensisupirdetail.nobukti')
+            ->whereRaw("absensisupirdetail.nobukti in (select absensisupir_nobukti from gajisupiruangjalan where gajisupir_nobukti='$nobukti')")
+            ->where('absensisupirdetail.supir_id', $fetch->supir_id);
+        
+        if($query->first() != null) {
+            $this->sort($query);
+            $this->filter($query);
+            $this->paginate($query);
+
+            $this->totalRows = $query->count();
+            $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;
+            $this->totalUangJalan = $query->sum('absensisupirdetail.uangjalan');
+            return $query->get();
+        }else{
+            $this->totalUangJalan = 0;
+        }
+    }
 
     public function filter($query, $relationFields = [])
     {
@@ -308,7 +341,9 @@ class AbsensiSupirDetail extends MyModel
                                 $query = $query->whereRaw("format($this->table.uangjalan, '#,#0.00') LIKE '%$filters[data]%'");
                             } else if ($filters['field'] == 'jumlahtrip') {
                                 $query = $query->whereRaw("format(c.jumlah, '#,#0.00') LIKE '%$filters[data]%'");
-                            }else {
+                            } else if ($filters['field'] == 'tglbukti') {
+                                $query->whereRaw("format(absensisupirheader.tglbukti, 'dd-MM-yyyy') LIKE '%$filters[data]%'");
+                            } else {
                                 $query = $query->where($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
                             }
                         }
@@ -332,7 +367,9 @@ class AbsensiSupirDetail extends MyModel
                                 $query = $query->orWhereRaw("format($this->table.uangjalan, '#,#0.00') LIKE '%$filters[data]%'");
                             } else if ($filters['field'] == 'jumlahtrip') {
                                 $query = $query->orWhereRaw("format(c.jumlah, '#,#0.00') LIKE '%$filters[data]%'");
-                            }else {
+                            } else if ($filters['field'] == 'tglbukti') {
+                                $query->orWhereRaw("format(absensisupirheader.tglbukti, 'dd-MM-yyyy') LIKE '%$filters[data]%'");
+                            } else {
                                 $query = $query->orWhere($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
                             }
                         }
@@ -351,7 +388,7 @@ class AbsensiSupirDetail extends MyModel
         return $query;
     }
     public function sort($query)
-    {
+    {        
         if($this->params['sortIndex'] == 'trado'){
             return $query->orderBy('trado.kodetrado', $this->params['sortOrder']);
         } else if($this->params['sortIndex'] == 'supir'){
@@ -362,6 +399,8 @@ class AbsensiSupirDetail extends MyModel
             return $query->orderBy($this->table . '.keterangan', $this->params['sortOrder']);
         } else if($this->params['sortIndex'] == 'jumlahtrip'){
             return $query->orderBy('c.jumlah', $this->params['sortOrder']);
+        } else if($this->params['sortIndex'] == 'tglbukti'){
+            return $query->orderBy('absensisupirheader.tglbukti', $this->params['sortOrder']);
         } else{
             return $query->orderBy($this->table . '.' . $this->params['sortIndex'], $this->params['sortOrder']);
         }
