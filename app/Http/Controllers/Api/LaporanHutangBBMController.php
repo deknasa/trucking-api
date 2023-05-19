@@ -56,4 +56,21 @@ class LaporanHutangBBMController extends Controller
             'data' => $report
         ]);
     }
+    public function export(Request $request)
+        {
+            $sampai = $request->sampai;
+    
+            $export = LaporanHutangBBM::getReport($sampai);
+
+            foreach ($export as $data) {
+           
+                $data->tanggal = date('d-m-Y', strtotime($data->tanggal));
+            }
+
+    
+    
+            return response([
+                'data' => $export
+            ]);
+        }
 }

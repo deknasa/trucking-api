@@ -65,7 +65,6 @@ class LaporanTripTradoController extends Controller
     
             $export = LaporanTripTrado::getReport($dari,$sampai);
     
-            dd($export);
     
             return response([
                 'data' => $export
