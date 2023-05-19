@@ -5,6 +5,7 @@ use App\Http\Controllers\Controller;
 use App\Models\GajiSupirDetail;
 use App\Http\Requests\StoreGajiSupirDetailRequest;
 use App\Http\Requests\UpdateGajiSupirDetailRequest;
+use App\Models\AbsensiSupirDetail;
 use App\Models\GajiSupirBBM;
 use App\Models\GajiSupirDeposito;
 use App\Models\GajiSupirPelunasanPinjaman;
@@ -142,6 +143,30 @@ class GajiSupirDetailController extends Controller
         }
     }
 
+    public function absensi(): JsonResponse
+    {
+        $absensi = new AbsensiSupirDetail();
+
+        if(request()->nobukti != 'false' && request()->nobukti != null){
+            return response()->json([
+                'data' => $absensi->getAbsensiUangJalan(request()->nobukti),
+                'attributes' => [
+                    'totalRows' => $absensi->totalRows,
+                    'totalPages' => $absensi->totalPages,
+                    'totalUangJalan' => $absensi->totalUangJalan
+                ]
+            ]);
+        }else{
+            return response()->json([
+                'data' => [],
+                'attributes' => [
+                    'totalRows' => $absensi->totalRows,
+                    'totalPages' => $absensi->totalPages,
+                    'totalUangJalan' => 0
+                ]
+            ]);
+        }
+    }
     public function store(StoreGajiSupirDetailRequest $request)
     {
         DB::beginTransaction();
