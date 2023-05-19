@@ -314,6 +314,8 @@ class ParameterSeeder extends Seeder
         parameter::create(['grp' => 'LAPORAN KARTU PIUTANG PER PELANGGAN', 'subgrp' => 'LAPORAN KARTU PIUTANG PER PELANGGAN', 'kelompok' => '', 'text' => 'TAMBAHAN', 'memo' => '{"MEMO":"UTAMA","SINGKATAN":"P","WARNA":"#6C757D"}', 'type' => '0', 'modifiedby' => 'ADMIN', 'default' => 'TIDAK',]);
         parameter::create(['grp' => 'LAPORAN PIUTANG GIRO', 'subgrp' => 'LAPORAN PIUTANG GIRO', 'kelompok' => '', 'text' => 'CAIR', 'memo' => '{"MEMO":"CAIR","SINGKATAN":"C","WARNA":"#6C757D"}', 'type' => '0', 'modifiedby' => 'ADMIN', 'default' => 'TIDAK',]);
         parameter::create(['grp' => 'LAPORAN PIUTANG GIRO', 'subgrp' => 'LAPORAN PIUTANG GIRO', 'kelompok' => '', 'text' => 'BELUM CAIR', 'memo' => '{"MEMO":"CAIR","SINGKATAN":"C","WARNA":"#6C757D"}', 'type' => '0', 'modifiedby' => 'ADMIN', 'default' => 'TIDAK',]);
+        parameter::create(['grp' => 'PENGELUARAN TRUCKING', 'subgrp' => 'INSENTIF SUPIR', 'kelompok' => '', 'text' => '#BSB #9999#/#R#/#Y', 'memo' => '{"MEMO":"INSENTIF SUPIR","SINGKATAN":"#BSB #9999#/#R#/#Y","WARNA":"#28A745"}', 'type' => '118', 'modifiedby' => 'ADMIN', 'default' => '',]);
+        parameter::create(['grp' => 'PENGELUARAN TRUCKING', 'subgrp' => 'PELUNASAN HUTANG BBM', 'kelompok' => '', 'text' => '#KBBM #9999#/#R#/#Y', 'memo' => '{"MEMO":"PELUNASAN HUTAN BBM","SINGKATAN":"#KBBM #9999#/#R#/#Y","WARNA":"#28A745"}', 'type' => '118', 'modifiedby' => 'ADMIN', 'default' => '',]);
         
     }
 }

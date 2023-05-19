@@ -513,7 +513,6 @@ class LaporanKeteranganPinjamanSupir extends MyModel
 
         $data = $queryRekap->get();
 
-
         return $data;
     }
 }

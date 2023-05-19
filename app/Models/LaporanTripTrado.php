@@ -28,20 +28,195 @@ class LaporanTripTrado extends MyModel
 
     public function getReport($sampai, $dari)
     {
-        $sampai = date("Y-m-d", strtotime($sampai));
-        // data coba coba
-        $query = DB::table('penerimaantruckingdetail')->from(
-            DB::raw("penerimaantruckingdetail with (readuncommitted)")
-        )->select(
-            'penerimaantruckingdetail.id',
-            'supir.namasupir',
-            'penerimaantruckingdetail.nominal',
-        )
-        ->leftJoin(DB::raw("supir with (readuncommitted)"), 'penerimaantruckingdetail.supir_id', 'supir.id')
-        ->leftJoin(DB::raw("penerimaantruckingheader with (readuncommitted)"), 'penerimaantruckingdetail.penerimaantruckingheader_id', 'penerimaantruckingheader.id')
-        ->where('penerimaantruckingheader.tglbukti','<=',$sampai);
 
-        $data = $query->get();
-        return $data;
+        // // data coba coba
+        // $query = DB::table('penerimaantruckingdetail')->from(
+        //     DB::raw("penerimaantruckingdetail with (readuncommitted)")
+        // )->select(
+        //     'penerimaantruckingdetail.id',
+        //     'supir.namasupir',
+        //     'penerimaantruckingdetail.nominal',
+        // )
+        // ->leftJoin(DB::raw("supir with (readuncommitted)"), 'penerimaantruckingdetail.supir_id', 'supir.id')
+        // ->leftJoin(DB::raw("penerimaantruckingheader with (readuncommitted)"), 'penerimaantruckingdetail.penerimaantruckingheader_id', 'penerimaantruckingheader.id')
+        // ->where('penerimaantruckingheader.tglbukti','<=',$sampai);
+
+        // $data = $query->get();
+        $dari = date('Y-m-d', strtotime(request()->dari)) ?? '1900/1/1';
+        $sampai = date('Y-m-d', strtotime(request()->sampai)) ?? '1900/1/1';
+
+        $statusContainer1 = StatusContainer::where('kodestatuscontainer', '=', 'FULL')->first();
+
+        $statusContainer2 = StatusContainer::where('kodestatuscontainer', '=', 'EMPTY')->first();
+
+        $statusContainer3 = StatusContainer::where('kodestatuscontainer', '=', 'FULL EMPTY')->first();
+
+        $kotaPort = Kota::where('kodekota', '=', 'BELAWAN')->first();
+
+        $full_id = $statusContainer1->id;
+        $empty_id = $statusContainer2->id;
+        $fullEmpty_id = $statusContainer3->id;
+        $kotaport_id = $kotaPort->id;
+
+
+        $tempData = '##tempData' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+        Schema::create($tempData, function ($table) {
+            $table->string('nobukti', 50)->nullable();
+            $table->datetime('tglbukti')->nullable();
+            $table->integer('statuscontainer_id')->nullable();
+            $table->integer('upah_id')->nullable();
+            $table->integer('trado_id')->nullable();
+            $table->integer('supir_id')->nullable();
+            $table->integer('dari_id')->nullable();
+        });
+
+        $queryTempData = DB::table("suratpengantar")->from(
+            DB::raw("suratpengantar as a with (readuncommitted)")
+        )
+            ->select(
+                'a.nobukti',
+                'a.tglbukti',
+                'a.statuscontainer_id',
+                'a.upah_id',
+                'a.trado_id',
+                'a.supir_id',
+                'a.dari_id',
+            )
+            ->where('a.tglbukti', '>=', $dari)
+            ->where('a.tglbukti', '<=', $sampai);
+
+        DB::table($tempData)->insertUsing([
+            'nobukti',
+            'tglbukti',
+            'statuscontainer_id',
+            'upah_id',
+            'trado_id',
+            'supir_id',
+            'dari_id',
+
+        ], $queryTempData);
+
+
+        $tempRekapTradoStatus = '##tempRekapTradoStatus' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+        Schema::create($tempRekapTradoStatus, function ($table) {
+            $table->integer('trado_id')->nullable();
+            $table->integer('full')->nullable();
+            $table->integer('empty')->nullable();
+        });
+
+        $queryTempRekapTradoStatus = DB::table($tempData)->from(
+            DB::raw($tempData . " as a with (readuncommitted)")
+        )
+            ->select(
+                'a.trado_id',
+                DB::raw("(case when A.statuscontainer_id in($full_id,$fullEmpty_id) then 1 else 0 end) as [full]"),
+                DB::raw("(case when A.statuscontainer_id in($empty_id) then 1 else 0 end) as [empty]"),
+
+            );
+
+        DB::table($tempRekapTradoStatus)->insertUsing([
+            'trado_id',
+            'full',
+            'empty',
+        ], $queryTempRekapTradoStatus);
+
+        $tempDariPort = '##tempDariPort' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+        Schema::create($tempDariPort, function ($table) {
+            $table->integer('trado_id')->nullable();
+            $table->integer('full')->nullable();
+            $table->integer('empty')->nullable();
+        });
+
+        $queryDariPort = DB::table($tempData)->from(
+            DB::raw($tempData . " as a with (readuncommitted)")
+        )
+            ->select(
+                'a.trado_id',
+                DB::raw("(case when A.statuscontainer_id in($full_id,$fullEmpty_id) then 1 else 0 end) as [full]"),
+                DB::raw("(case when A.statuscontainer_id in($empty_id) then 1 else 0 end) as [empty]"),
+
+            )
+            ->where('a.dari_id', '=', $kotaport_id);
+
+        DB::table($tempDariPort)->insertUsing([
+            'trado_id',
+            'full',
+            'empty',
+        ], $queryDariPort);
+
+        $RekapStatus = '##RekapStatus' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+        Schema::create($RekapStatus, function ($table) {
+            $table->integer('trado_id')->nullable();
+            $table->integer('full')->nullable();
+            $table->integer('empty')->nullable();
+        });
+
+        $tempRekapPort = '##tempRekapPort' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+        Schema::create($tempRekapPort, function ($table) {
+            $table->integer('trado_id')->nullable();
+            $table->integer('full')->nullable();
+            $table->integer('empty')->nullable();
+        });
+
+        $queryRekapStatus = DB::table($tempRekapTradoStatus)->from(
+            DB::raw("$tempRekapTradoStatus as a")
+        )
+            ->select(
+                'a.trado_id',
+                DB::raw("sum(a.[full]) as [full]"),
+                DB::raw("sum(a.[empty]) as [empty]")
+
+            )
+            ->groupBy("a.trado_id");
+
+        DB::table($RekapStatus)->insertUsing([
+            'trado_id',
+            'full',
+            'empty',
+        ], $queryRekapStatus);
+
+
+        $queryRekapPort = DB::table($tempDariPort)->from(
+            DB::raw("$tempDariPort as a")
+        )
+            ->select(
+                'a.trado_id',
+                DB::raw("sum(a.[full]) as [full]"),
+                DB::raw("sum(a.[empty]) as [empty]")
+
+            )
+            ->groupBy("a.trado_id");
+
+        DB::table($tempRekapPort)->insertUsing([
+            'trado_id',
+            'full',
+            'empty',
+        ], $queryRekapPort);
+
+        $result = DB::table("trado")->from(
+            DB::raw("trado as a with (readuncommitted)")
+        )
+            ->select(
+                DB::raw("a.kodetrado as [NoPol]"),
+                DB::raw("isnull(c.[full], 0) as [full]"),
+                DB::raw("isnull(c.[empty], 0) as [empty]"),
+                DB::raw("isnull(B.namasupir, '') as NamaSupir"),
+                DB::raw("isnull(D.[full], 0) as [fullport]"),
+                DB::raw("isnull(D.[empty], 0) as [emptyport]"),
+
+            )
+           ->leftJoin(DB::raw("supir as b with (readuncommitted)"), 'a.supir_id', 'b.id')
+           ->leftJoin(DB::raw("$RekapStatus as c with (readuncommitted)"), 'a.id', 'c.trado_id')
+           ->leftJoin(DB::raw("$tempRekapPort as d with (readuncommitted)"), 'a.id', 'd.trado_id')
+           ->whereRaw("isnull(C.[full], 0) <> 0")
+           ->orWhereRaw("isnull(c.[empty], 0) <> 0")
+           ->orwhereRaw("isnull(d.[full], 0) <> 0")
+           ->orwhereRaw("isnull(d.[empty], 0) <> 0");
+
+
+         $data = $result->get();
+
+
+         return $data;
     }
 }

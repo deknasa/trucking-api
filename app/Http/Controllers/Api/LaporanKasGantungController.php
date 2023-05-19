@@ -47,4 +47,45 @@ class LaporanKasGantungController extends Controller
             // 'data' => $report
         ]);
     }
+
+
+    public function export(Request $request){
+        $periode = $request->periode;
+        $laporankasgantung = new LaporanKasGantung();
+        //   $export = LaporanKasGantung::getExport($sampai, $jenis);
+        // $export = [
+        //     [
+        //         'tanggal' => "24/2/2023",
+        //         "nobukti" => "KGT 0002/II/2023",
+        //         "keterangan" => "BELANJAS",
+        //         "debet" => "25412",
+        //         "kredit" => "351251",
+        //         "saldo" => "151511"
+        //     ],
+        //     [
+        //         'tanggal' => "24/2/2023",
+        //         "nobukti" => "KGT 0002/II/2023",
+        //         "keterangan" => "BELANJAS",
+        //         "debet" => "25412",
+        //         "kredit" => "351251",
+        //         "saldo" => "151511"
+        //     ],
+        //     [
+        //         'tanggal' => "24/2/2023",
+        //         "nobukti" => "KGT 0002/II/2023",
+        //         "keterangan" => "BELANJAS",
+        //         "debet" => "25412",
+        //         "kredit" => "351251",
+        //         "saldo" => "151511"
+        //     ]
+        // ];
+        $laporan_kas_gantung = $laporankasgantung->getExport($periode);
+        foreach($laporan_kas_gantung as $item){
+            $item->tanggal = date('d-m-Y', strtotime($item->tanggal));
+        }
+        return response([
+            'data' => $laporan_kas_gantung
+            //   'data' => $export
+        ]);
+    }
 }

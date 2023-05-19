@@ -8,6 +8,7 @@ use App\Http\Requests\StoreAbsensiSupirHeaderRequest;
 use App\Http\Requests\StoreKasGantungDetailRequest;
 use App\Http\Requests\StoreKasGantungHeaderRequest;
 use App\Models\AbsensiSupirHeader;
+use App\Models\AbsensiSupirApprovalHeader;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use App\Http\Requests\StoreLogTrailRequest;
@@ -674,39 +675,40 @@ class AbsensiSupirHeaderController extends Controller
         ]);
     }
 
-    // public function cekValidasiAksi($id) {
-    //     $absensiSupirHeader= new AbsensiSupirHeader();
-    //     $nobukti = AbsensiSupirHeader::from(DB::raw("absensisupirheader"))->where('id', $id)->first();
-    //     $cekdata=$absensiSupirHeader->cekvalidasiaksi($nobukti->nobukti);
-    //     if ($cekdata['kondisi']==true) {
-    //         $query = DB::table('error')
-    //         ->select(
-    //             DB::raw("ltrim(rtrim(keterangan))+' (".$cekdata['keterangan'].")' as keterangan")
-    //             )
-    //         ->where('kodeerror', '=', 'SATL')
-    //         ->get();
-    //     $keterangan = $query['0'];
+    public function cekValidasiAksi($id) {
+        $absensiSupirHeader= new AbsensiSupirHeader();
+        $nobukti = AbsensiSupirHeader::from(DB::raw("absensisupirheader"))->where('id', $id)->first();
+        $cekdata=$absensiSupirHeader->cekvalidasiaksi($nobukti->nobukti);
+        if ($cekdata['kondisi']==true) {
+            $query = DB::table('error')
+            ->select(
+                DB::raw("ltrim(rtrim(keterangan))+' (".$cekdata['keterangan'].")' as keterangan")
+                )
+            ->where('kodeerror', '=', 'SATL')
+            ->get();
+        $keterangan = $query['0'];
 
-    //         $data = [
-    //             'status' => false,
-    //             'message' => $keterangan,
-    //             'errors' => '',
-    //             'kondisi' => $cekdata['kondisi'],
-    //         ];
+            $data = [
+                'status' => false,
+                'message' => $keterangan,
+                'errors' => '',
+                'kondisi' => $cekdata['kondisi'],
+            ];
 
-    //         return response($data);
+            return response($data);
 
-    //     } else {
-    //             $data = [
-    //                 'status' => false,
-    //                 'message' => '',
-    //                 'errors' => '',
-    //                 'kondisi' => $cekdata['kondisi'],
-    //             ];
+        } else {
+                $data = [
+                    'status' => false,
+                    'message' => '',
+                    'errors' => '',
+                    'kondisi' => $cekdata['kondisi'],
+                ];
 
-    //         return response($data); 
-    //     }
-    // }
+            return response($data); 
+        }
+    }
+
     public function fieldLength()
     {
         $data = [];

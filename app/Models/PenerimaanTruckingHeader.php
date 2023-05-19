@@ -260,6 +260,48 @@ class PenerimaanTruckingHeader extends MyModel
 
 
         return $temp;
+    }  
+    
+    public function getPelunasan($tgldari, $tglsampai)
+    {
+        $tempPribadi = $this->createTempPelunasan($tgldari, $tglsampai);
+
+        $query = PenerimaanTruckingDetail::from(DB::raw("penerimaantruckingdetail with (readuncommitted)"))
+            ->select(DB::raw("row_number() Over(Order By penerimaantruckingdetail.nobukti) as id, penerimaantruckingheader.tglbukti, penerimaantruckingdetail.nobukti, penerimaantruckingdetail.keterangan, {$tempPribadi}.sisa"))
+            ->leftJoin(DB::raw("{$tempPribadi} with (readuncommitted)"), 'penerimaantruckingdetail.nobukti', '=', "{$tempPribadi}.nobukti")
+            ->leftJoin(DB::raw("penerimaantruckingheader with (readuncommitted)"), 'penerimaantruckingdetail.nobukti', "penerimaantruckingheader.nobukti")
+            ->whereBetween('penerimaantruckingheader.tglbukti', [date('Y-m-d',strtotime($tgldari)), date('Y-m-d', strtotime($tglsampai))])
+            ->where('penerimaantruckingheader.penerimaantrucking_id', '=', 1)
+            ->where(function ($query) use ($tempPribadi) {
+                $query->whereRaw("$tempPribadi.sisa != 0")
+                    ->orWhereRaw("$tempPribadi.sisa is null");
+            })
+            ->orderBy('penerimaantruckingheader.tglbukti', 'asc')
+            ->orderBy('penerimaantruckingdetail.nobukti', 'asc');
+
+        return $query->get();
+    }
+
+    public function createTempPelunasan($tgldari, $tglsampai)
+    {
+        $temp = '##temp' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+
+        $fetch = DB::table('penerimaantruckingdetail')
+            ->from(DB::raw("penerimaantruckingdetail with (readuncommitted)"))
+            ->leftJoin('penerimaantruckingheader', 'penerimaantruckingdetail.nobukti', '=', 'penerimaantruckingheader.nobukti')
+            ->select(DB::raw("penerimaantruckingdetail.nobukti, (SELECT (penerimaantruckingdetail.nominal - COALESCE(SUM(pengeluarantruckingdetail.nominal), 0)) FROM pengeluarantruckingdetail WHERE pengeluarantruckingdetail.penerimaantruckingheader_nobukti = penerimaantruckingdetail.nobukti) AS sisa"))
+            ->whereBetween('penerimaantruckingheader.tglbukti', [date('Y-m-d', strtotime($tgldari)), date('Y-m-d', strtotime($tglsampai))])
+            ->where('penerimaantruckingheader.penerimaantrucking_id', '=', 1)
+            ->groupBy('penerimaantruckingdetail.nobukti', 'penerimaantruckingdetail.nominal');
+
+        Schema::create($temp, function ($table) {
+            $table->string('nobukti');
+            $table->bigInteger('sisa')->nullable();
+        });
+
+        $tes = DB::table($temp)->insertUsing(['nobukti', 'sisa'], $fetch);
+
+        return $temp;
     }
 
     public function getPinjaman($supir_id)
