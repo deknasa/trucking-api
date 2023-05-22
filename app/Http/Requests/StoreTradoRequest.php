@@ -24,7 +24,7 @@ class StoreTradoRequest extends FormRequest
     public function rules()
     {
         return [
-            'keterangan' => 'required',
+            'kodetrado' => 'required',
             'statusaktif' => 'required',
             'tahun' => 'required',
             'merek' => 'required',
@@ -58,7 +58,7 @@ class StoreTradoRequest extends FormRequest
     public function attributes()
     {
         return [
-            'keterangan' => 'Keterangan',
+            'kodetrado' => 'Kode trado',
             'statusaktif' => 'Status Aktif',
             'tahun' => 'Tahun',
             'merek' => 'Merek',

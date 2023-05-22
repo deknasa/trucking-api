@@ -97,7 +97,7 @@ class TradoController extends Controller
             $statusAppeditban = Parameter::from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS APPROVAL EDIT BAN')->where('default', 'YA')->first();
             $statusLewatValidasi = Parameter::from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS LEWAT VALIDASI')->where('default', 'YA')->first();
             $trado = new Trado();
-            $trado->keterangan = $request->keterangan;
+            $trado->keterangan = $request->keterangan ?? '';
             $trado->kodetrado = $request->kodetrado;
             $trado->statusaktif = $request->statusaktif;
             $trado->tahun = $request->tahun;
@@ -228,7 +228,7 @@ class TradoController extends Controller
     {
         DB::beginTransaction();
         try {
-            $trado->keterangan = $request->keterangan;
+            $trado->keterangan = $request->keterangan ?? '';
             $trado->kodetrado = $request->kodetrado;
             $trado->statusaktif = $request->statusaktif;
             $trado->tahun = $request->tahun;
@@ -383,6 +383,7 @@ class TradoController extends Controller
 
 
             $this->deleteFiles($trado);
+            dd('here');
             DB::commit();
 
             /* Set position and page */
@@ -440,15 +441,19 @@ class TradoController extends Controller
         ]);
     }
 
-    public function getImage(string $field, string $filename, string $type)
+    public function getImage(string $field, string $filename, string $type, string $aksi)
     {
         if (Storage::exists("trado/$field/$type" . '_' . "$filename")) {
             return response()->file(storage_path("app/trado/$field/$type" . '_' . "$filename"));
         } else {
             if (Storage::exists("trado/$field/$filename")) {
                 return response()->file(storage_path("app/trado/$field/$filename"));
-            }else{
-                return response()->file(storage_path("app/no-image.jpg"));
+            } else {
+                if ($aksi == 'show') {
+                    return response()->file(storage_path("app/no-image.jpg"));
+                }else{
+                    return response('no-image');
+                }
             }
         }
     }
@@ -459,7 +464,7 @@ class TradoController extends Controller
 
         foreach ($files as $file) {
             $originalFileName = $file->hashName();
-            $storedFile = Storage::putFileAs("trado/".$destinationFolder, $file, 'ori-' . $originalFileName);
+            $storedFile = Storage::putFileAs("trado/" . $destinationFolder, $file, $originalFileName);
             $resizedFiles = App::imageResize(storage_path("app/trado/$destinationFolder/"), storage_path("app/$storedFile"), $originalFileName);
 
             $storedFiles[] = $originalFileName;
@@ -470,7 +475,7 @@ class TradoController extends Controller
 
     private function deleteFiles(Trado $trado)
     {
-        $sizeTypes = ['ori', 'medium', 'small'];
+        $sizeTypes = ['', 'medium_', 'small_'];
 
         $relatedPhotoTrado = [];
         $relatedPhotoStnk = [];
@@ -483,7 +488,7 @@ class TradoController extends Controller
         if ($photoTrado != '') {
             foreach ($photoTrado as $path) {
                 foreach ($sizeTypes as $sizeType) {
-                    $relatedPhotoTrado[] = "trado/trado/$sizeType-$path";
+                    $relatedPhotoTrado[] = "trado/trado/$sizeType$path";
                 }
             }
             Storage::delete($relatedPhotoTrado);
@@ -492,7 +497,7 @@ class TradoController extends Controller
         if ($photoStnk != '') {
             foreach ($photoStnk as $path) {
                 foreach ($sizeTypes as $sizeType) {
-                    $relatedPhotoStnk[] = "trado/stnk/$sizeType-$path";
+                    $relatedPhotoStnk[] = "trado/stnk/$sizeType$path";
                 }
             }
             Storage::delete($relatedPhotoStnk);
@@ -501,7 +506,7 @@ class TradoController extends Controller
         if ($photoBpkb != '') {
             foreach ($photoBpkb as $path) {
                 foreach ($sizeTypes as $sizeType) {
-                    $relatedPhotoBpkb[] = "trado/bpkb/$sizeType-$path";
+                    $relatedPhotoBpkb[] = "trado/bpkb/$sizeType$path";
                 }
             }
             Storage::delete($relatedPhotoBpkb);

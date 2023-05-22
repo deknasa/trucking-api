@@ -501,23 +501,29 @@ class SupirController extends Controller
         ]);
     }
 
-    public function getImage(string $field, string $filename, string $type)
+    public function getImage(string $field, string $filename, string $type, string $aksi)
     {
-        
-        if (Storage::exists("supir/$type" . '_' . "$filename")) {
-            return response()->file(storage_path("app/supir/$type" . '_' . "$filename"));
+        if($field == 'supir') {
+            $field = 'profil';
+        }
+        if (Storage::exists("supir/$field/$type" . '_' . "$filename")) {
+            return response()->file(storage_path("app/supir/$field/$type" . '_' . "$filename"));
         } else {
-            if (Storage::exists("supir/$filename")) {
-                return response()->file(storage_path("app/supir/$filename"));
+            if (Storage::exists("supir/$field/$filename")) {
+                return response()->file(storage_path("app/supir/$field/$filename"));
             }else{
-                return response()->file(storage_path("app/no-image.jpg"));
+                if ($aksi == 'show') {
+                    return response()->file(storage_path("app/no-image.jpg"));
+                }else{
+                    return response('no-image');
+                }
             }
         }
     }
     public function getPdf(string $field, string $filename)
     {
-        if (Storage::exists("supir/$filename")) {
-            return response()->file(storage_path("app/supir/$filename"));
+        if (Storage::exists("supir/$field/$filename")) {
+            return response()->file(storage_path("app/supir/$field/$filename"));
         }else{
             return response(['data'=>'']);
         }
@@ -526,11 +532,13 @@ class SupirController extends Controller
     private function storeFiles(array $files, string $destinationFolder): string
     {
         $storedFiles = [];
-
+        if($destinationFolder == 'supir') {
+            $destinationFolder = 'profil';
+        }
         foreach ($files as $file) {
-            $originalFileName = $file->hashName();
-            $storedFile = Storage::putFileAs('supir', $file, 'ori-' . $originalFileName);
-            $resizedFiles = App::imageResize(storage_path("app/supir/"), storage_path("app/$storedFile"), $originalFileName);
+            $originalFileName = "$destinationFolder-".$file->hashName();
+            $storedFile = Storage::putFileAs('supir/'. $destinationFolder, $file,$originalFileName);
+            $resizedFiles = App::imageResize(storage_path("app/supir/$destinationFolder/"), storage_path("app/$storedFile"), $originalFileName);
 
             $storedFiles[] = $originalFileName;
         }
@@ -542,8 +550,8 @@ class SupirController extends Controller
         $storedFiles = [];
 
         foreach ($files as $file) {
-            $originalFileName = $file->hashName();
-            $storedFile = Storage::putFileAs('supir', $file, $originalFileName);
+            $originalFileName = "SURAT-".$file->hashName();
+            $storedFile = Storage::putFileAs('supir/'.$destinationFolder, $file, $originalFileName);
             $storedFiles[] = $originalFileName;
         }
 
@@ -552,7 +560,7 @@ class SupirController extends Controller
 
     private function deleteFiles(Supir $supir)
     {
-        $sizeTypes = ['ori', 'medium', 'small'];
+        $sizeTypes = ['', 'medium_', 'small_'];
 
         $relatedPhotoSupir = [];
         $relatedPhotoKtp = [];
@@ -575,7 +583,7 @@ class SupirController extends Controller
         if ($photoSupir != '') {
             foreach ($photoSupir as $path) {
                 foreach ($sizeTypes as $sizeType) {
-                    $relatedPhotoSupir[] = "supir/$sizeType-$path";
+                    $relatedPhotoSupir[] = "supir/profil/$sizeType$path";
                 }
             }
             Storage::delete($relatedPhotoSupir);
@@ -584,7 +592,7 @@ class SupirController extends Controller
         if ($photoKtp != '') {
             foreach ($photoKtp as $path) {
                 foreach ($sizeTypes as $sizeType) {
-                    $relatedPhotoKtp[] = "ktp/$sizeType-$path";
+                    $relatedPhotoKtp[] = "supir/ktp/$sizeType$path";
                 }
             }
             Storage::delete($relatedPhotoKtp);
@@ -593,7 +601,7 @@ class SupirController extends Controller
         if ($photoSim != '') {
             foreach ($photoSim as $path) {
                 foreach ($sizeTypes as $sizeType) {
-                    $relatedPhotoSim[] = "supir/$sizeType-$path";
+                    $relatedPhotoSim[] = "supir/sim/$sizeType$path";
                 }
             }
             Storage::delete($relatedPhotoSim);
@@ -602,7 +610,7 @@ class SupirController extends Controller
         if ($photoKk != '') {
             foreach ($photoKk as $path) {
                 foreach ($sizeTypes as $sizeType) {
-                    $relatedPhotoKk[] = "supir/$sizeType-$path";
+                    $relatedPhotoKk[] = "supir/kk/$sizeType$path";
                 }
             }
             Storage::delete($relatedPhotoKk);
@@ -611,7 +619,7 @@ class SupirController extends Controller
         if ($photoSkck != '') {
             foreach ($photoSkck as $path) {
                 foreach ($sizeTypes as $sizeType) {
-                    $relatedPhotoSkck[] = "supir/$sizeType-$path";
+                    $relatedPhotoSkck[] = "supir/skck/$sizeType$path";
                 }
             }
             Storage::delete($relatedPhotoSkck);
@@ -620,7 +628,7 @@ class SupirController extends Controller
         if ($photoDomisili != '') {
             foreach ($photoDomisili as $path) {
                 foreach ($sizeTypes as $sizeType) {
-                    $relatedPhotoDomisili[] = "supir/$sizeType-$path";
+                    $relatedPhotoDomisili[] = "supir/domisili/$sizeType$path";
                 }
             }
             Storage::delete($relatedPhotoDomisili);
@@ -628,14 +636,14 @@ class SupirController extends Controller
         if ($photoVaksin != '') {
             foreach ($photoVaksin as $path) {
                 foreach ($sizeTypes as $sizeType) {
-                    $relatedPhotoVaksin[] = "supir/$sizeType-$path";
+                    $relatedPhotoVaksin[] = "supir/vaksin/$sizeType$path";
                 }
             }
             Storage::delete($relatedPhotoVaksin);
         }
         if ($pdfSuratPerjanjian != '') {
             foreach ($pdfSuratPerjanjian as $path) {
-                $relatedPdfSuratPerjanjian[] = "supir/$path";
+                $relatedPdfSuratPerjanjian[] = "supir/suratperjanjian/$path";
             }
             Storage::delete($relatedPdfSuratPerjanjian);
         }

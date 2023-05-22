@@ -31,8 +31,8 @@ class UpdateStokRequest extends FormRequest
             "statusaktif"=>'required',
             "namaterpusat"=>'required',
             "keterangan"=>'required',
-            "qtymin"=>'required',
-            "qtymax"=>'required',
+            // "qtymin"=>'required',
+            // "qtymax"=>'required',
         ];
     }
 }

@@ -5,6 +5,7 @@ namespace App\Http\Requests;
 use App\Http\Controllers\Api\ErrorController;
 use Illuminate\Foundation\Http\FormRequest;
 use App\Rules\DateTutupBuku;
+use App\Rules\PreventInputType;
 
 class StorePengembalianKasGantungHeaderRequest extends FormRequest
 {
