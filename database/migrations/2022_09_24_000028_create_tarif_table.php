@@ -28,6 +28,7 @@ class CreateTarifTable extends Migration
             $table->unsignedBigInteger('zona_id')->nullable();
             $table->date('tglmulaiberlaku')->nullable();
             $table->integer('statuspenyesuaianharga')->length(11)->nullable();
+            $table->longText('keterangan')->nullable();
             $table->string('modifiedby',50)->nullable();
             $table->timestamps();
 

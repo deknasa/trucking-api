@@ -22,6 +22,7 @@ class CreateTradoTable extends Migration
             $table->longText('keterangan')->nullable();
             $table->integer('statusaktif')->length(11)->nullable();
             $table->integer('statusgerobak')->length(11)->nullable();
+            $table->double('nominalplusborongan', 15,2)->nullable();
             $table->double('kmawal', 15,2)->nullable();
             $table->double('kmakhirgantioli', 15,2)->nullable();
             $table->date('tglakhirgantioli')->nullable();
@@ -35,7 +36,6 @@ class CreateTradoTable extends Migration
             $table->string('nama', 40)->nullable();
             $table->string('nostnk', 30)->nullable();
             $table->string('alamatstnk', 30)->nullable();
-            $table->string('modifiedby', 30)->nullable();
             $table->date('tglstandarisasi')->nullable();
             $table->date('tglserviceopname')->nullable();
             $table->integer('statusstandarisasi')->length(11)->nullable();
@@ -64,6 +64,7 @@ class CreateTradoTable extends Migration
             $table->string('photostnk', 1500)->nullable();
             $table->string('photobpkb', 1500)->nullable();
             $table->string('phototrado', 1500)->nullable();
+            $table->string('modifiedby', 30)->nullable();
             $table->timestamps();
 
 
