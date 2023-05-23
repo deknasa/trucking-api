@@ -3,6 +3,8 @@
 namespace App\Http\Requests;
 
 use App\Http\Controllers\Api\ErrorController;
+use App\Rules\KeteranganInput;
+use App\Rules\PreventInputType;
 use Illuminate\Foundation\Http\FormRequest;
 
 class StorePengembalianKasGantungDetailRequest extends FormRequest
@@ -27,9 +29,9 @@ class StorePengembalianKasGantungDetailRequest extends FormRequest
         return [
 
             'keterangandetail' => 'required|array',
-            'keterangandetail.*' => 'required',
+            'keterangandetail.*' => ['required', new KeteranganInput()],
             'coadetail' => 'required|array',
-            'coadetail.*' => 'required',
+            'coadetail.*' => ['required',new PreventInputType()],
         ];
     }
 

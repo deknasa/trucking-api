@@ -165,8 +165,8 @@ class App
 
     static function imageResize(string $path, string $from, string $uniqueName): array
     {
-        $destinationMedium = $path . "medium-" . $uniqueName;
-        $destinationSmall = $path . "small-" . $uniqueName;
+        $destinationMedium = $path . "medium_" . $uniqueName;
+        $destinationSmall = $path . "small_" . $uniqueName;
 
         $image_resize = Image::make($from);
         $image_resize->backup();
@@ -182,8 +182,8 @@ class App
         $image_resize->save($destinationSmall);
 
         $result = [];
-        $result[] = "medium-" . $uniqueName;
-        $result[] = "small-" . $uniqueName;
+        $result[] = "medium_" . $uniqueName;
+        $result[] = "small_" . $uniqueName;
 
         return $result;
     }
