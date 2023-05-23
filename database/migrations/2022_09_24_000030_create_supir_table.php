@@ -19,6 +19,7 @@ class CreateSupirTable extends Migration
         Schema::create('supir', function (Blueprint $table) {
             $table->id();
             $table->string('namasupir', 100)->nullable();
+            $table->string('namaalias', 100)->nullable();
             $table->string('alamat', 100)->nullable();
             $table->string('kota', 100)->nullable();
             $table->string('telp', 30)->nullable();
@@ -51,6 +52,7 @@ class CreateSupirTable extends Migration
             $table->longText('keteranganresign')->nullable();
             $table->integer('statusblacklist')->length(11)->nullable();
             $table->date('tglberhentisupir')->nullable();
+            $table->longText('keteranganberhentisupir')->nullable();
             $table->date('tgllahir')->nullable();
             $table->date('tglterbitsim')->nullable();
             $table->string('modifiedby', 30)->nullable();

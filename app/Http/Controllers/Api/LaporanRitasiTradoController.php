@@ -29,10 +29,17 @@ class LaporanRitasiTradoController extends Controller
     public function export(Request $request)
     {
         $periode = $request->periode;
-
-        $report = LaporanRitasiTrado::getExport($periode);
+        $laporanritasi = new LaporanRitasiTrado();
+        // $report = LaporanRitasiTrado::getExport($periode);
+         $export = [
+            [
+                'nopol' => "BK 213121",
+            ],
+         
+        ];
         return response([
-            'data' => $report
+            'data' => $laporanritasi->getExport($periode)
+            // 'data' => $export
         ]);
     }
 }

@@ -219,6 +219,8 @@ class Kategori extends MyModel
                             $query = $query->where('parameter.text', '=', $filters['data']);
                         } elseif ($filters['field'] == 'subkelompok') {
                             $query = $query->where('p.keterangan', 'LIKE', "%$filters[data]%");
+                        } elseif ($filters['field'] == 'subkelompok_id') {
+                            $query = $query->where('kategori.subkelompok_id', '=', "$filters[data]");
                         } else if ($filters['field'] == 'created_at' || $filters['field'] == 'updated_at') {
                             $query = $query->whereRaw("format(" . $this->table . "." . $filters['field'] . ", 'dd-MM-yyyy HH:mm:ss') LIKE '%$filters[data]%'");
                         } else {
