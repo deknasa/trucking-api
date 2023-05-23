@@ -37,9 +37,12 @@ class InvoiceDetail extends MyModel
                 'agen.namaagen as agen',
                 'cabang.namacabang as cabang',
                 $this->table . '.orderantrucking_nobukti',
-                $this->table . '.nominal as nominal_detail',
+                $this->table . '.nominal as omset',
+                $this->table . '.total as total_detail',
+                $this->table . '.nominalextra as extra',
                 'suratpengantar.nocont',
                 'suratpengantar.tglsp',
+                'suratpengantar.nosp',
                 'suratpengantar.keterangan',
                 'kota.keterangan as tujuan',
                 $this->table . '.invoice_id'

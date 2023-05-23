@@ -90,6 +90,15 @@ class PengeluaranStokDetailController extends Controller
         $total -= $nominaldiscount;
         $pengeluaranstokheader = PengeluaranStokHeader::where('id', $request->pengeluaranstokheader_id)->first();
 
+        $stok= Stok::where('id', $request->stok_id)->first();
+        $stokreuse = Parameter::where('grp', 'STATUS REUSE')->where('subgrp', 'STATUS REUSE')->where('text', 'REUSE')->first();
+        
+        $reuse=false;
+        if ($stok->statusreuse==$stokreuse->id) {
+            $reuse=true;
+        } 
+
+        
         try {
             
             $datahitungstok = PengeluaranStok::select('statushitungstok as statushitungstok_id')
@@ -102,7 +111,14 @@ class PengeluaranStokDetailController extends Controller
             $rtr = Parameter::where('grp', 'RETUR STOK')->where('subgrp', 'RETUR STOK')->first();
 
             if ($datahitungstok->statushitungstok_id == $statushitungstok->id) {
-                if (($pengeluaranstokheader->pengeluaranstok_id == $spk->text)||($pengeluaranstokheader->pengeluaranstok_id == $kor->text)||($pengeluaranstokheader->pengeluaranstok_id == $rtr->text)) {
+                if (($pengeluaranstokheader->pengeluaranstok_id == $spk->text)) {
+                    $dari = $this->persediaanDari($request->stok_id,'gudang_id',$request->gudang_id,$request->qty);
+                    if ($reuse) {
+                        $persediaan = $this->persediaan(null,$pengeluaranstokheader->trado_id,$pengeluaranstokheader->gandengan_id);
+                        $ke = $this->persediaanKe($request->stok_id,$persediaan['column'].'_id',$persediaan['value'],$request->qty);
+                    }
+                }
+                if (($pengeluaranstokheader->pengeluaranstok_id == $kor->text)||($pengeluaranstokheader->pengeluaranstok_id == $rtr->text)) {
                     $persediaan = $this->persediaan($pengeluaranstokheader->gudang_id,$pengeluaranstokheader->trado_id,$pengeluaranstokheader->gandengan_id);
                     $dari = $this->persediaanDari($request->stok_id,$persediaan['column'].'_id',$persediaan['value'],$request->qty);
 
@@ -131,95 +147,6 @@ class PengeluaranStokDetailController extends Controller
             $pengeluaranStokDetail->modifiedby = auth('api')->user()->name;
 
             $pengeluaranStokDetail->save();
-
-
-
-            
-            // $spk = DB::table('parameter')->from(
-            //     DB::raw("parameter with (readuncommitted)")
-            // )
-            //     ->where('grp', 'SPK STOK')->where('subgrp', 'SPK STOK')
-            //     ->where('text', '=', $pengeluaranstokheader->pengeluaranstok_id)
-            //     ->first();
-            // if (isset($spk)) {
-            //     // $spk = Parameter::where('grp', 'SPK STOK')->where('subgrp', 'SPK STOK')->first();
-
-            //     if ($pengeluaranstokheader->pengeluaranstok_id == $spk->text) {
-            //         $datahitungstok = PengeluaranStok::select('statushitungstok as statushitungstok_id')
-            //         ->where('format', '=', $pengeluaranstokheader->statusformat)
-            //         ->first();
-                    
-            //         $statushitungstok = Parameter::where('grp', 'STATUS HITUNG STOK')->where('text', 'HITUNG STOK')->first();
-            //         if ($datahitungstok->statushitungstok_id == $statushitungstok->id) {
-            //             $stokpersediaan  = StokPersediaan::lockForUpdate()->where("stok_id", $request->stok_id)
-            //             ->where($gudang['column'], $gudang['value'])->firstorFail();
-            //         }
-            //     }
-            //     // return [
-            //     //     'error' => true,
-            //     //     'errors' => ['asd'=>$stokpersediaan]
-            //     // ];
-
-            //     goto prosesstokpersediaan;
-            // }
-
-            // $kor = DB::table('parameter')->from(
-            //     DB::raw("parameter with (readuncommitted)")
-            // )
-            //     ->where('grp', 'KOR MINUS STOK')->where('subgrp', 'KOR MINUS STOK')
-            //     ->where('text', '=', $pengeluaranstokheader->pengeluaranstok_id)
-            //     ->first();
-
-            // if (isset($kor)) {
-
-            //     if ($pengeluaranstokheader->pengeluaranstok_id == $kor->text) {
-
-            //         $datahitungstok = PengeluaranStok::select('statushitungstok as statushitungstok_id')
-            //             ->where('format', '=', $pengeluaranstokheader->statusformat)
-            //             ->first();
-
-            //         $statushitungstok = Parameter::where('grp', 'STATUS HITUNG STOK')->where('text', 'HITUNG STOK')->first();
-            //         if ($datahitungstok->statushitungstok_id == $statushitungstok->id) {
-            //             $stokpersediaan  = StokPersediaan::lockForUpdate()->where("stok_id", $request->stok_id)
-            //                 ->where($gudang['column'], $gudang['value'])->firstorFail();
-            //         }
-            //     }
-            //     goto prosesstokpersediaan;
-            // }
-
-            // $rtr = DB::table('parameter')->from(
-            //     DB::raw("parameter with (readuncommitted)")
-            // )
-            //     ->where('grp', 'RETUR STOK')->where('subgrp', 'RETUR STOK')
-            //     ->where('text', '=', $pengeluaranstokheader->pengeluaranstok_id)
-            //     ->first();
-
-            // if (isset($rtr)) {
-            //     if ($pengeluaranstokheader->pengeluaranstok_id == $rtr->text) {
-
-            //         $datahitungstok = PengeluaranStok::select('statushitungstok as statushitungstok_id')
-            //             ->where('format', '=', $pengeluaranstokheader->statusformat)
-            //             ->first();
-
-            //         $statushitungstok = Parameter::where('grp', 'STATUS HITUNG STOK')->where('text', 'HITUNG STOK')->first();
-            //         if ($datahitungstok->statushitungstok_id == $statushitungstok->id) {
-            //             $stokpersediaan  = StokPersediaan::lockForUpdate()->where("stok_id", $request->stok_id)
-            //                 ->where($gudang['column'], $gudang['value'])->firstorFail();
-            //         }
-            //     }
-            //     goto prosesstokpersediaan;
-            // }
-
-
-            // prosesstokpersediaan:;
-            // // dd($spk);
-            // $stokpersediaan->qty -= $request->qty;
-            // // return [
-            // //     'error' => true,
-            // //     'errors' => ['asd'=>$stokpersediaan]
-            // // ];
-            //         $stokpersediaan->save();
-               
 
             DB::commit();
 
