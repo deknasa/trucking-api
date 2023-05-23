@@ -18,6 +18,7 @@ class CreateApprovaltradogambarTable extends Migration
             $table->string('kodetrado', 30)->nullable();
             $table->integer('statusapproval')->length(11)->nullable();
             $table->date('tglbatas')->nullable();
+            $table->string('modifiedby',50)->nullable();            
             $table->timestamps();
         });
     }
