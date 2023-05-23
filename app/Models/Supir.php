@@ -182,6 +182,7 @@ class Supir extends MyModel
             ->select(
                 'supir.id',
                 'supir.namasupir',
+                'supir.namaalias',
                 'supir.tgllahir',
                 'supir.alamat',
                 'supir.kota',
@@ -384,6 +385,7 @@ class Supir extends MyModel
             ->select(
                 'supir.id',
                 'supir.namasupir',
+                'supir.namaalias',
                 'supir.alamat',
                 'supir.kota',
                 'supir.telp',
@@ -441,6 +443,7 @@ class Supir extends MyModel
             DB::raw(
                 "$this->table.id,
                 $this->table.namasupir,
+                $this->table.namaalias,
                 $this->table.tgllahir,
                 $this->table.alamat,
                 $this->table.kota,
@@ -488,6 +491,7 @@ class Supir extends MyModel
         Schema::create($temp, function ($table) {
             $table->bigInteger('id')->nullable();
             $table->string('namasupir', 100)->nullable();
+            $table->string('namaalias', 100)->nullable();
             $table->date('tgllahir')->nullable();
             $table->string('alamat', 100)->nullable();
             $table->string('kota', 100)->nullable();
@@ -530,6 +534,7 @@ class Supir extends MyModel
         DB::table($temp)->insertUsing([
             'id',
             'namasupir',
+            'namaalias',
             'tgllahir',
             'alamat',
             'kota',

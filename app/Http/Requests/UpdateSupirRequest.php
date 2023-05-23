@@ -26,13 +26,14 @@ class UpdateSupirRequest extends FormRequest
         return [
             'namasupir' => 'required',
             'alamat' => 'required',
+            'namaalias' => 'required',
             'kota' => 'required',
             'telp' => 'required',
             'statusaktif' => 'required|int|exists:parameter,id',
             'tglmasuk' => 'required',
             'tglexpsim' => 'required',
-            'nosim' => 'required|min:12|max:12',
-            'noktp' => 'required|min:16|max:16',
+            'nosim' => 'required|min:12|max:12|unique:supir,nosim,'.$this->supir->id,//.',nosim',
+            'noktp' => 'required|min:16|max:16|unique:supir,noktp,'.$this->supir->id,//.',noktp',
             'nokk' => 'required|min:16|max:16',
             'tgllahir' => 'required',
             'tglterbitsim' => 'required',
@@ -59,6 +60,7 @@ class UpdateSupirRequest extends FormRequest
     {
         return [
             'namasupir' => 'Nama Supir',
+            'namaalias' => 'nama alias',
             'alamat' => 'Alamat',
             'kota' => 'Kota',
             'telp' => 'Telp',
@@ -81,6 +83,8 @@ class UpdateSupirRequest extends FormRequest
             'nokk.min' => 'Min. 16 karakter',
             'nosim.max' => 'Max. 12 karakter',
             'nosim.min' => 'Min. 12 karakter',
+            'nosim.unique' => ':attribute Sudah digunakan',
+            'noktp.unique' => ':attribute Sudah digunakan',
         ];
     }
 }
