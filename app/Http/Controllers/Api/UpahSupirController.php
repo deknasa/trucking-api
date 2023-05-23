@@ -75,7 +75,7 @@ class UpahSupirController extends Controller
             $upahsupir->tglmulaiberlaku = date('Y-m-d', strtotime($request->tglmulaiberlaku));
             // $upahsupir->tglakhirberlaku = ($request->tglakhirberlaku == null) ? "" : date('Y-m-d', strtotime($request->tglakhirberlaku));
             $upahsupir->statusluarkota = $request->statusluarkota;
-
+            $upahsupir->keterangan = $request->keterangan;
             $upahsupir->modifiedby = auth('api')->user()->name;
             $this->deleteFiles($upahsupir);
             if ($request->gambar) {
@@ -195,7 +195,7 @@ class UpahSupirController extends Controller
             $upahsupir->tglmulaiberlaku = date('Y-m-d', strtotime($request->tglmulaiberlaku));
             // $upahsupir->tglakhirberlaku = ($request->tglakhirberlaku == null) ? "" : date('Y-m-d', strtotime($request->tglakhirberlaku));
             $upahsupir->statusluarkota = $request->statusluarkota;
-
+            $upahsupir->keterangan = $request->keterangan;
             $upahsupir->modifiedby = auth('api')->user()->name;
 
             $this->deleteFiles($upahsupir);

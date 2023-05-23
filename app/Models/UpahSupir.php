@@ -70,6 +70,7 @@ class UpahSupir extends MyModel
                 // 'upahsupir.tglakhirberlaku',
                 'statusluarkota.memo as statusluarkota',
                 'upahsupir.gambar',
+                'upahsupir.keterangan',
                 'upahsupir.created_at',
                 'upahsupir.modifiedby',
                 'upahsupir.updated_at'
@@ -115,7 +116,7 @@ class UpahSupir extends MyModel
             'tarif.tujuan as tarif',
             'upahsupir.kotadari_id',
             'kotadari.keterangan as kotadari',
-
+            'upahsupir.keterangan',
             'upahsupir.kotasampai_id',
             'kotasampai.keterangan as kotasampai',
             'upahsupir.jarak',
