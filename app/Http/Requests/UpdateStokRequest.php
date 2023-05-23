@@ -30,7 +30,6 @@ class UpdateStokRequest extends FormRequest
             "kategori"=>'required',
             "statusaktif"=>'required',
             "namaterpusat"=>'required',
-            "keterangan"=>'required',
             // "qtymin"=>'required',
             // "qtymax"=>'required',
         ];

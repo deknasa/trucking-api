@@ -80,7 +80,7 @@ class KaryawanController extends Controller
 
             $karyawan = new Karyawan();
             $karyawan->namakaryawan = $request->namakaryawan;
-            $karyawan->keterangan = $request->keterangan;
+            $karyawan->keterangan = $request->keterangan ?? '';
             $karyawan->statusaktif = $request->statusaktif;
             $karyawan->statusstaff = $request->statusstaff;
             $karyawan->modifiedby = auth('api')->user()->name;
@@ -134,7 +134,7 @@ class KaryawanController extends Controller
         DB::beginTransaction();
         try {
             $karyawan->namakaryawan = $request->namakaryawan;
-            $karyawan->keterangan = $request->keterangan;
+            $karyawan->keterangan = $request->keterangan ?? '';
             $karyawan->statusaktif = $request->statusaktif;
             $karyawan->statusstaff = $request->statusstaff;
             $karyawan->modifiedby = auth('api')->user()->name;

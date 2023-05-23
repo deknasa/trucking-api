@@ -31,7 +31,6 @@ class StorePelangganRequest extends FormRequest
             'alamat' => 'required',
             'kota' => 'required',
             'kodepos' => 'required',
-            'keterangan' => 'required',
             'statusaktif' => 'required',
             
         ];
@@ -62,7 +61,6 @@ class StorePelangganRequest extends FormRequest
             'telp.required' => ':attribute' . ' ' . $controller->geterror('WI')->keterangan,
             'alamat.required' => ':attribute' . ' ' . $controller->geterror('WI')->keterangan,
             'kota.required' => ':attribute' . ' ' . $controller->geterror('WI')->keterangan,
-            'keterangan.required' => ':attribute' . ' ' . $controller->geterror('WI')->keterangan,
             'statusaktif.required' => ':attribute' . ' ' . $controller->geterror('WI')->keterangan,
         ];
     }  

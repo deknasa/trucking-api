@@ -25,7 +25,6 @@ class StoreHariLiburRequest extends FormRequest
     {
         return [
             'tgl' => 'required',
-            'keterangan' => 'required',
             'statusaktif' => 'required'
         ];
     }

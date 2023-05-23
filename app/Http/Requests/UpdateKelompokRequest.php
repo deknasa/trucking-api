@@ -26,7 +26,6 @@ class UpdateKelompokRequest extends FormRequest
     {
         return [
             'kodekelompok' => 'required',
-            'keterangan' => 'required',
             'statusaktif' => 'required'
         ];
     }
@@ -46,7 +45,6 @@ class UpdateKelompokRequest extends FormRequest
 
         return [
             'kodekelompok.required' => ':attribute' . ' ' . $controller->geterror('WI')->keterangan,
-            'keterangan.required' => ':attribute' . ' ' . $controller->geterror('WI')->keterangan,
             'statusaktif.required' => ':attribute' . ' ' . $controller->geterror('WI')->keterangan,
         ];
     }

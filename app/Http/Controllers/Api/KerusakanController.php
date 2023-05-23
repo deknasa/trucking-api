@@ -88,7 +88,7 @@ class KerusakanController extends Controller
 
         try {
             $kerusakan = new Kerusakan();
-            $kerusakan->keterangan = $request->keterangan;
+            $kerusakan->keterangan = $request->keterangan ?? '';
             $kerusakan->statusaktif = $request->statusaktif;
             $kerusakan->modifiedby = auth('api')->user()->name;
             $request->sortname = $request->sortname ?? 'id';
@@ -142,7 +142,7 @@ class KerusakanController extends Controller
     {
         DB::beginTransaction();
         try {
-            $kerusakan->keterangan = $request->keterangan;
+            $kerusakan->keterangan = $request->keterangan ?? '';
             $kerusakan->statusaktif = $request->statusaktif;
             $kerusakan->modifiedby = auth('api')->user()->name;
 

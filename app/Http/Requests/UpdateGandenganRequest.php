@@ -26,7 +26,6 @@ class UpdateGandenganRequest extends FormRequest
     {
         return [
             'kodegandengan' => 'required',
-            'keterangan' => 'required',
             'statusaktif' => 'required',
         ];
     }
@@ -45,7 +44,6 @@ class UpdateGandenganRequest extends FormRequest
         $controller = new ErrorController;
         return [
             'kodegandengan.required' => ':attribute'.' '. $controller->geterror('WI')->keterangan,
-            'keterangan.required' => ':attribute'.' '. $controller->geterror('WI')->keterangan,
             'statusaktif.required' => ':attribute'.' '. $controller->geterror('WI')->keterangan,
 
         ];

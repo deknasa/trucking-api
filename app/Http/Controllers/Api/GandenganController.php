@@ -95,7 +95,7 @@ class GandenganController extends Controller
         try {
             $gandengan = new Gandengan();
             $gandengan->kodegandengan = $request->kodegandengan;
-            $gandengan->keterangan = $request->keterangan;
+            $gandengan->keterangan = $request->keterangan ?? '';
             $gandengan->statusaktif = $request->statusaktif;
             $gandengan->modifiedby = auth('api')->user()->name;
 
@@ -211,7 +211,7 @@ class GandenganController extends Controller
         DB::beginTransaction();
         try {
             $gandengan->kodegandengan = $request->kodegandengan;
-            $gandengan->keterangan = $request->keterangan;
+            $gandengan->keterangan = $request->keterangan ?? '';
             $gandengan->statusaktif = $request->statusaktif;
             $gandengan->modifiedby = auth('api')->user()->name;
 

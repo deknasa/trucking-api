@@ -85,7 +85,7 @@ class JenisOrderController extends Controller
             $jenisorder = new JenisOrder();
             $jenisorder->kodejenisorder = $request->kodejenisorder;
             $jenisorder->statusaktif = $request->statusaktif;
-            $jenisorder->keterangan = $request->keterangan;
+            $jenisorder->keterangan = $request->keterangan ?? '';
             $jenisorder->modifiedby = auth('api')->user()->name;
             $request->sortname = $request->sortname ?? 'id';
             $request->sortorder = $request->sortorder ?? 'asc';
@@ -139,7 +139,7 @@ class JenisOrderController extends Controller
         DB::beginTransaction();
         try {
             $jenisorder->kodejenisorder = $request->kodejenisorder;
-            $jenisorder->keterangan = $request->keterangan;
+            $jenisorder->keterangan = $request->keterangan ?? '';
             $jenisorder->statusaktif = $request->statusaktif;
             $jenisorder->modifiedby = auth('api')->user()->name;
 

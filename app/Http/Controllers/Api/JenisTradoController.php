@@ -87,7 +87,7 @@ class JenisTradoController extends Controller
             $jenistrado = new jenistrado();
             $jenistrado->kodejenistrado = $request->kodejenistrado;
             $jenistrado->statusaktif = $request->statusaktif;
-            $jenistrado->keterangan = $request->keterangan;
+            $jenistrado->keterangan = $request->keterangan ?? '';
             $jenistrado->modifiedby = auth('api')->user()->name;
             $request->sortname = $request->sortname ?? 'id';
             $request->sortorder = $request->sortorder ?? 'asc';
@@ -143,7 +143,7 @@ class JenisTradoController extends Controller
         DB::beginTransaction();
         try {
             $jenistrado->kodejenistrado = $request->kodejenistrado;
-            $jenistrado->keterangan = $request->keterangan;
+            $jenistrado->keterangan = $request->keterangan ?? '';
             $jenistrado->statusaktif = $request->statusaktif;
             $jenistrado->modifiedby = auth('api')->user()->name;
 
