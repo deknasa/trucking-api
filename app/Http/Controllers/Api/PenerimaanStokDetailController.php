@@ -230,19 +230,19 @@ class PenerimaanStokDetailController extends Controller
         if(!empty($gudang)) {
             $kolom = "gudang";
             $value = $gudang;
-          } elseif(!empty($trado)) {
+        } elseif(!empty($trado)) {
             $kolom = "trado";
             $value = $trado;
-          } elseif(!empty($gandengan)) {
+        } elseif(!empty($gandengan)) {
             $kolom = "gandengan";
             $value = $gandengan;
-          }
-          return [
+        }
+        return [
             "column"=>$kolom,
             "value"=>$value
         ];
     }
-
+          
     public function checkTempat($stokId,$persediaan,$persediaanId)
     {
         $result = StokPersediaan::lockForUpdate()->where("stok_id", $stokId)->where("$persediaan", $persediaanId)->first();
