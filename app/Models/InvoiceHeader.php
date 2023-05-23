@@ -164,7 +164,7 @@ class InvoiceHeader extends MyModel
     {
         $temp = $this->createTempSP($request);
         $biayaTambahan = $this->createBiayaTambahan($request);
-        
+
         $statusLongtrip = Parameter::from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS LONGTRIP')->where('text', 'LONGTRIP')->first();
         $statusPeralihan = Parameter::from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS PERALIHAN')->where('text', 'PERALIHAN')->first();
         // dd(DB::table($temp)->get());
@@ -248,12 +248,15 @@ class InvoiceHeader extends MyModel
             ->leftJoin(DB::raw("invoiceheader with (readuncommitted)"), 'invoicedetail.invoice_id', 'invoiceheader.id')
             ->leftJoin(DB::raw("orderantrucking as ot with (readuncommitted)"), 'invoicedetail.orderantrucking_nobukti', 'ot.nobukti')
             ->leftJoin(DB::raw("container with (readuncommitted)"), 'ot.container_id', 'container.id')
-            ->whereBetween('invoiceheader.tglbukti', [date('Y-m-d',strtotime($tgldari)), date('Y-m-d', strtotime($tglsampai))]); 
-            // ->where('invoiceheader.tsglbukti', '<=', date('Y-m-d', strtotime($tglsampai)));
-            
-
-        $data = $query->get();
+            ->whereRaw("invoicedetail.orderantrucking_nobukti not in (select orderantrucking_nobukti from pengeluarantruckingdetail where orderantrucking_nobukti != '')")
+            ->whereBetween('invoiceheader.tglbukti', [date('Y-m-d', strtotime($tgldari)), date('Y-m-d', strtotime($tglsampai))]);
+        // ->where('invoiceheader.tsglbukti', '<=', date('Y-m-d', strtotime($tglsampai)));
         
+        $this->totalRows = $query->count();
+        $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;
+        $this->totalNominal = $query->sum('container.nominalsumbangan');
+        $data = $query->get();
+
 
         return $data;
     }
@@ -319,7 +322,7 @@ class InvoiceHeader extends MyModel
             $table->bigInteger('total')->nullable();
         });
 
-        DB::table($temp)->insertUsing(['id', 'jobtrucking', 'tglsp', 'keterangan', 'jenisorder_id', 'agen_id', 'statuslongtrip', 'statusperalihan', 'nocont', 'tarif_id', 'omset', 'nominalretribusi', 'nominalextra','total'], $fetch);
+        DB::table($temp)->insertUsing(['id', 'jobtrucking', 'tglsp', 'keterangan', 'jenisorder_id', 'agen_id', 'statuslongtrip', 'statusperalihan', 'nocont', 'tarif_id', 'omset', 'nominalretribusi', 'nominalextra', 'total'], $fetch);
 
         $fetch2 = SuratPengantar::from(DB::raw("suratpengantar as sp with (readuncommitted)"))
             ->select(DB::raw("$tempSP.id,$tempSP.jobtrucking,sp.tglsp, sp.keterangan,jenisorder.keterangan as jenisorder_id, agen.namaagen as agen_id, sp.statuslongtrip, ot.statusperalihan, (case when ot.nocont IS NULL then '-' else ot.nocont end) as nocont, 
@@ -335,7 +338,7 @@ class InvoiceHeader extends MyModel
             ->whereRaw("sp.jobtrucking not in(select orderantrucking_nobukti from invoicedetail)")
             ->orderBy("sp.jobtrucking", 'asc');
 
-        DB::table($temp)->insertUsing(['id', 'jobtrucking', 'tglsp', 'keterangan', 'jenisorder_id', 'agen_id', 'statuslongtrip', 'statusperalihan', 'nocont', 'tarif_id', 'omset', 'nominalextra','total'], $fetch2);
+        DB::table($temp)->insertUsing(['id', 'jobtrucking', 'tglsp', 'keterangan', 'jenisorder_id', 'agen_id', 'statuslongtrip', 'statusperalihan', 'nocont', 'tarif_id', 'omset', 'nominalextra', 'total'], $fetch2);
 
         return $temp;
     }
@@ -370,9 +373,9 @@ class InvoiceHeader extends MyModel
                             } else if ($filters['field'] == 'nominal') {
                                 $query = $query->whereRaw("format($this->table.nominal, '#,#0.00') LIKE '%$filters[data]%'");
                             } else if ($filters['field'] == 'tglbukti' || $filters['field'] == 'tgljatuhtempo' || $filters['field'] == 'tglterima' || $filters['field'] == 'tglbukacetak' || $filters['field'] == 'tglapproval') {
-                                $query = $query->whereRaw("format(".$this->table . "." . $filters['field'].", 'dd-MM-yyyy') LIKE '%$filters[data]%'");
+                                $query = $query->whereRaw("format(" . $this->table . "." . $filters['field'] . ", 'dd-MM-yyyy') LIKE '%$filters[data]%'");
                             } else if ($filters['field'] == 'created_at' || $filters['field'] == 'updated_at') {
-                                $query = $query->whereRaw("format(".$this->table . "." . $filters['field'].", 'dd-MM-yyyy HH:mm:ss') LIKE '%$filters[data]%'");
+                                $query = $query->whereRaw("format(" . $this->table . "." . $filters['field'] . ", 'dd-MM-yyyy HH:mm:ss') LIKE '%$filters[data]%'");
                             } else {
                                 $query = $query->where($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
                             }
@@ -395,9 +398,9 @@ class InvoiceHeader extends MyModel
                                 } else if ($filters['field'] == 'nominal') {
                                     $query = $query->orWhereRaw("format($this->table.nominal, '#,#0.00') LIKE '%$filters[data]%'");
                                 } else if ($filters['field'] == 'tglbukti' || $filters['field'] == 'tgljatuhtempo' || $filters['field'] == 'tglterima' || $filters['field'] == 'tglbukacetak' || $filters['field'] == 'tglapproval') {
-                                    $query = $query->orWhereRaw("format(".$this->table . "." . $filters['field'].", 'dd-MM-yyyy') LIKE '%$filters[data]%'");
+                                    $query = $query->orWhereRaw("format(" . $this->table . "." . $filters['field'] . ", 'dd-MM-yyyy') LIKE '%$filters[data]%'");
                                 } else if ($filters['field'] == 'created_at' || $filters['field'] == 'updated_at') {
-                                    $query = $query->orWhereRaw("format(".$this->table . "." . $filters['field'].", 'dd-MM-yyyy HH:mm:ss') LIKE '%$filters[data]%'");
+                                    $query = $query->orWhereRaw("format(" . $this->table . "." . $filters['field'] . ", 'dd-MM-yyyy HH:mm:ss') LIKE '%$filters[data]%'");
                                 } else {
                                     $query = $query->orWhere($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
                                 }
