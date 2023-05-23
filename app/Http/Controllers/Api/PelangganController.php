@@ -90,7 +90,7 @@ class PelangganController extends Controller
             $pelanggan->alamat2 = $request->alamat2 ?? '';
             $pelanggan->kota = $request->kota;
             $pelanggan->kodepos = $request->kodepos;
-            $pelanggan->keterangan = $request->keterangan;
+            $pelanggan->keterangan = $request->keterangan ?? '';
             $pelanggan->modifiedby = auth('api')->user()->name;
             $pelanggan->statusaktif = $request->statusaktif;
             $request->sortname = $request->sortname ?? 'id';
@@ -153,7 +153,7 @@ class PelangganController extends Controller
             $pelanggan->alamat2 = $request->alamat2 ?? '';
             $pelanggan->kota = $request->kota;
             $pelanggan->kodepos = $request->kodepos;
-            $pelanggan->keterangan = $request->keterangan;
+            $pelanggan->keterangan = $request->keterangan ?? '';
             $pelanggan->statusaktif = $request->statusaktif;            
             $pelanggan->modifiedby = auth('api')->user()->name;
 

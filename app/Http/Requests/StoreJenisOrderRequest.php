@@ -25,7 +25,6 @@ class StoreJenisOrderRequest extends FormRequest
     {
         return [
             'kodejenisorder' => 'required',
-            'keterangan' => 'required',
             'statusaktif' => 'required',
         ];
     }

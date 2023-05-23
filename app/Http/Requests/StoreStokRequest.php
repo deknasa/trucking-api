@@ -29,8 +29,7 @@ class StoreStokRequest extends FormRequest
             "subkelompok"=>'required',
             "kategori"=>'required',
             "statusaktif"=>'required',
-            // "namaterpusat"=>'required',
-            "keterangan"=>'required',
+            "namaterpusat"=>'required',
             // "qtymin"=>'required|gt:0|numeric',
             // "qtymax"=>'required|gt:0|numeric',
         ];

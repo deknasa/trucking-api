@@ -112,7 +112,7 @@ class AlatBayarController extends Controller
             $alatbayar = new AlatBayar();
             $alatbayar->kodealatbayar = $request->kodealatbayar;
             $alatbayar->namaalatbayar = $request->namaalatbayar;
-            $alatbayar->keterangan = $request->keterangan;
+            $alatbayar->keterangan = $request->keterangan ?? '';
             $alatbayar->statuslangsungcair = $request->statuslangsungcair;
             $alatbayar->statusdefault = $request->statusdefault;
             $alatbayar->bank_id = $request->bank_id;
@@ -193,7 +193,7 @@ class AlatBayarController extends Controller
             }
             $alatbayar->kodealatbayar = $request->kodealatbayar;
             $alatbayar->namaalatbayar = $request->namaalatbayar;
-            $alatbayar->keterangan = $request->keterangan;
+            $alatbayar->keterangan = $request->keterangan ?? '';
             $alatbayar->statuslangsungcair = $request->statuslangsungcair;
             $alatbayar->statusdefault = $request->statusdefault;
             $alatbayar->bank_id = $request->bank_id;

@@ -25,7 +25,6 @@ class StoreZonaRequest extends FormRequest
     {
         return [
             'zona' => 'required',
-            'keterangan' => 'required',
             'statusaktif' => 'required',
         ];
     }

@@ -25,7 +25,6 @@ class UpdatePenerimaanStokRequest extends FormRequest
     {
         return [
             "kodepenerimaan" => "required",
-            "keterangan" => "required",
             "coa"=>"required",
             "format" => "required",
             "statushitungstok" => "required"

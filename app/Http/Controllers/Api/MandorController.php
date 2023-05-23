@@ -86,7 +86,7 @@ class MandorController extends Controller
         try {
             $mandor = new Mandor();
             $mandor->namamandor = $request->namamandor;
-            $mandor->keterangan = $request->keterangan;
+            $mandor->keterangan = $request->keterangan ?? '';
             $mandor->statusaktif = $request->statusaktif;
             $mandor->modifiedby = auth('api')->user()->name;
             $request->sortname = $request->sortname ?? 'id';
@@ -141,7 +141,7 @@ class MandorController extends Controller
         DB::beginTransaction();
         try {
             $mandor->namamandor = $request->namamandor;
-            $mandor->keterangan = $request->keterangan;
+            $mandor->keterangan = $request->keterangan ?? '';
             $mandor->statusaktif = $request->statusaktif;
             $mandor->modifiedby = auth('api')->user()->name;
 

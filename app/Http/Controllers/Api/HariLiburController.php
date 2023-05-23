@@ -47,7 +47,7 @@ class HariLiburController extends Controller
 
             $hariLibur = new HariLibur();
             $hariLibur->tgl = date('Y-m-d', strtotime($request->tgl));
-            $hariLibur->keterangan = $request->keterangan;
+            $hariLibur->keterangan = $request->keterangan ?? '';
             $hariLibur->statusaktif = $request->statusaktif;
             $hariLibur->modifiedby = auth('api')->user()->name;
 
@@ -101,7 +101,7 @@ class HariLiburController extends Controller
 
         try {
             $harilibur->tgl = date('Y-m-d', strtotime($request->tgl));
-            $harilibur->keterangan = $request->keterangan;
+            $harilibur->keterangan = $request->keterangan ?? '';
             $harilibur->statusaktif = $request->statusaktif;
             $harilibur->modifiedby = auth('api')->user()->name;
 

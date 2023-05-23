@@ -27,7 +27,6 @@ class UpdateAgenRequest extends FormRequest
         return [
             "kodeagen" => "required",
             "namaagen" => "required",
-            "keterangan" => "required",
             "statusaktif" => "required",
             "namaperusahaan" => "required",
             "alamat" => "required",
@@ -36,7 +35,6 @@ class UpdateAgenRequest extends FormRequest
             "contactperson" => "required",
             "top" => "required|numeric|gt:0",
             "statustas" => "required",
-            "keteranganjenisemkl" => "required",
         ];
     }
 
@@ -63,7 +61,6 @@ class UpdateAgenRequest extends FormRequest
         return [
             'kodeagen.required' => ':attribute' . ' ' . $controller->geterror('WI')->keterangan,
             'namaagen.required' => ':attribute' . ' ' . $controller->geterror('WI')->keterangan,
-            'keterangan.required' => ':attribute' . ' ' . $controller->geterror('WI')->keterangan,
             'statusaktif.required' => ':attribute' . ' ' . $controller->geterror('WI')->keterangan,
             'namaperusahaan.required' => ':attribute' . ' ' . $controller->geterror('WI')->keterangan,
             'alamat.required' => ':attribute' . ' ' . $controller->geterror('WI')->keterangan,
@@ -73,7 +70,6 @@ class UpdateAgenRequest extends FormRequest
             'top.required' => ':attribute' . ' ' . $controller->geterror('WI')->keterangan,
             'jenisusaha.required' => ':attribute' . ' ' . $controller->geterror('WI')->keterangan,
             'statustas.required' => ':attribute' . ' ' . $controller->geterror('WI')->keterangan,
-            'keteranganjenisemkl.required' => ':attribute' . ' ' . $controller->geterror('WI')->keterangan,
             'top.gt' => ':attribute' . ' ' . $controller->geterror('GT-ANGKA-0')->keterangan,
         ];
     }   

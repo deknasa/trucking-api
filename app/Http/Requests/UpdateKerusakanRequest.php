@@ -24,7 +24,6 @@ class UpdateKerusakanRequest extends FormRequest
     public function rules()
     {
         return [
-            'keterangan' => 'required',
             'statusaktif' => 'required'
         ];
     }

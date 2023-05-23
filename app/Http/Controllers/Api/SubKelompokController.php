@@ -92,7 +92,7 @@ class SubKelompokController extends Controller
         try {
             $subKelompok = new SubKelompok();
             $subKelompok->kodesubkelompok = $request->kodesubkelompok;
-            $subKelompok->keterangan = $request->keterangan;
+            $subKelompok->keterangan = $request->keterangan ?? '';
             $subKelompok->kelompok_id = $request->kelompok_id;
             $subKelompok->statusaktif = $request->statusaktif;
             $subKelompok->modifiedby = auth('api')->user()->name;
@@ -141,7 +141,7 @@ class SubKelompokController extends Controller
         DB::beginTransaction();
         try {
             $subKelompok->kodesubkelompok = $request->kodesubkelompok;
-            $subKelompok->keterangan = $request->keterangan;
+            $subKelompok->keterangan = $request->keterangan ?? '';
             $subKelompok->kelompok_id = $request->kelompok_id;
             $subKelompok->statusaktif = $request->statusaktif;
             $subKelompok->modifiedby = auth('api')->user()->name;
