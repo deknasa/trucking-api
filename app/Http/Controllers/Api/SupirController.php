@@ -153,6 +153,7 @@ class SupirController extends Controller
             }
             
             $supir->tglberhentisupir = $tanggalberhenti;
+            $supir->keteranganberhentisupir = ($request->keteranganberhentisupir == null) ? "" : $request->keteranganberhentisupir;
     
             if ($supir->save()) {
                 $logTrail = [
@@ -172,6 +173,9 @@ class SupirController extends Controller
             }
 
             return response([
+                "data"=>[
+                    "id"=>$supir->id
+                ],
                 'message' => 'Berhasil'
             ]);
 
