@@ -39,6 +39,7 @@ class CreateSupplierTable extends Migration
             $table->integer('statusdaftarharga')->length(11)->nullable();
             $table->string('kategoriusaha', 150)->nullable();
             $table->string('modifiedby', 50)->nullable();
+            $table->string('coa', 50)->nullable();
             $table->timestamps();
         });
     }
