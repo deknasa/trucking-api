@@ -196,4 +196,37 @@ class HariLiburController extends Controller
             'data' => $data
         ]);
     }
+    public function export()
+    {
+     
+        header('Access-Control-Allow-Origin: *');
+
+        $response = $this->index();
+        $decodedResponse = json_decode($response->content(), true);
+        $parameters = $decodedResponse['data'];
+
+        $columns = [
+            [
+                'label' => 'No',
+            ],
+            [
+                'label' => 'ID',
+                'index' => 'id',
+            ],
+            [
+                'label' => 'Tanggal',
+                'index' => 'tgl',
+            ],
+            [
+                'label' => 'Keterangan',
+                'index' => 'keterangan',
+            ],
+            [
+                'label' => 'Status',
+                'index' => 'statusaktif',
+            ],
+        ];
+
+        $this->toExcel('HariLibur', $parameters, $columns);
+    }
 }

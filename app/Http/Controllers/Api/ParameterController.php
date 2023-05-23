@@ -319,14 +319,6 @@ class ParameterController extends Controller
                 'index' => 'type',
             ],
             [
-                'label' => 'Singkatan',
-                'index' => 'singkatan',
-            ],
-            [
-                'label' => 'Warna',
-                'index' => 'warna',
-            ],
-            [
                 'label' => 'Memo',
                 'index' => 'memo',
             ],

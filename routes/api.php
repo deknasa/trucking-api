@@ -983,6 +983,8 @@ route::middleware(['auth:api'])->group(function () {
 
     Route::get('harilibur/field_length', [HariLiburController::class, 'fieldLength']);
     Route::get('harilibur/default', [HariLiburController::class, 'default']);
+    Route::get('harilibur/export', [HariLiburController::class, 'export']);
+    Route::get('harilibur/report', [HariLiburController::class, 'report']);
     Route::resource('harilibur', HariLiburController::class);
 
     Route::get('jurnalumumpusatheader/grid', [JurnalUmumPusatHeaderController::class, 'grid']);
