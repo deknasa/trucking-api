@@ -63,7 +63,7 @@ class UpahSupir extends MyModel
                 'parent.keterangan as parent_id',
                 'kotadari.keterangan as kotadari_id',
                 'kotasampai.keterangan as kotasampai_id',
-                'upahsupir.jarak',
+                DB::raw("CONCAT(upahsupir.jarak, ' KM') as jarak"),
                 'zona.keterangan as zona_id',
                 'parameter.memo as statusaktif',
                 'upahsupir.tglmulaiberlaku',
