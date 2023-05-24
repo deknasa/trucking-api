@@ -4,6 +4,7 @@ namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
 use App\Http\Controllers\Api\ErrorController;
+use Illuminate\Validation\Rule;
 
 class UpdateCabangRequest extends FormRequest
 {
@@ -25,8 +26,8 @@ class UpdateCabangRequest extends FormRequest
     public function rules()
     {
         return [
-            'kodecabang' => 'required',
-            'namacabang' => 'required',
+            'kodecabang' => ['required',Rule::unique('cabang')->whereNotIn('id', [$this->id])],
+            'namacabang' => ['required',Rule::unique('cabang')->whereNotIn('id', [$this->id])],
             'statusaktif' => 'required',
         ];
     }
