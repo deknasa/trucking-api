@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
 
 class MandorAbsensiSupir extends MyModel
 {
@@ -13,44 +14,87 @@ class MandorAbsensiSupir extends MyModel
     protected $table = 'trado';
 
 
-   
+
 
     public function get()
     {
         $this->setRequestParameters();
-        $statusaktif = DB::table('parameter')->where('grp','STATUS AKTIF')->where('subgrp','STATUS AKTIF')->where('text','AKTIF')->first();
+        $statusNonAktif = DB::table('parameter')->where('grp', 'STATUS AKTIF')->where('subgrp', 'STATUS AKTIF')->where('text', 'NON AKTIF')->first();
+        $now = date('Y-m-d');
+        $cekApprovalTrado = DB::table("approvaltradogambar")->from(DB::raw("approvaltradogambar with (readuncommitted)"))
+            ->whereRaw("kodetrado in (select kodetrado from trado)")
+            ->where('tglbatas', '<', "$now")
+            ->get();
+        foreach ($cekApprovalTrado as $cekApproval) {
+            $cekGambar = DB::table("trado")->from(DB::raw("trado with (readuncommitted)"))->where('kodetrado', $cekApproval->kodetrado)->first();
+            if ($cekGambar->photostnk == '' || $cekGambar->phototrado == '' || $cekGambar->photobpkb == '') {
+                DB::table('trado')->where('kodetrado', $cekApproval->kodetrado)->update([
+                    'statusaktif' => $statusNonAktif->id,
+                ]);
+                goto selesai;
+            } else {
+                foreach (json_decode($cekGambar->photobpkb) as $value) {
+                    if (!Storage::exists("trado/bpkb/$value")) {
+                        DB::table('trado')->where('kodetrado', $cekApproval->kodetrado)->update([
+                            'statusaktif' => $statusNonAktif->id,
+                        ]);
+                        goto selesai;
+                    }
+                }
+                foreach (json_decode($cekGambar->photostnk) as $value) {
+                    if (!Storage::exists("trado/stnk/$value")) {
+                        DB::table('trado')->where('kodetrado', $cekApproval->kodetrado)->update([
+                            'statusaktif' => $statusNonAktif->id,
+                        ]);
+                        goto selesai;
+                    }
+                }
+                foreach (json_decode($cekGambar->phototrado) as $value) {
+                    if (!Storage::exists("trado/trado/$value")) {
+                        DB::table('trado')->where('kodetrado', $cekApproval->kodetrado)->update([
+                            'statusaktif' => $statusNonAktif->id,
+                        ]);
+                        goto selesai;
+                    }
+                }
+            }
+            selesai:
+        }
+        
+        $statusaktif = DB::table('parameter')->where('grp', 'STATUS AKTIF')->where('subgrp', 'STATUS AKTIF')->where('text', 'AKTIF')->first();
         $trado = DB::table('trado')
-        ->select(
-            'trado.id as id',
-            'trado.kodetrado as trado_id',
-            DB::raw('null as supir_id'),
-            DB::raw('null as absen_id'),
-            DB::raw('null as keterangan'),
-            DB::raw('null as jam'),
-            DB::raw('null as tglbukti'))
-->where('trado.statusaktif',$statusaktif->id)
-        ->whereNotExists(function ($query) {
-            $query->select(DB::raw(1))
-                  ->from('absensisupirdetail')
-                  ->whereRaw('trado.id = absensisupirdetail.trado_id')
-                  ->where('absensisupirheader.tglbukti',date('Y-m-d',strtotime('now')))
-                  ->leftJoin('absensisupirheader','absensisupirdetail.absensi_id','absensisupirheader.id');
-
-        });
+            ->select(
+                'trado.id as id',
+                'trado.kodetrado as trado_id',
+                DB::raw('null as supir_id'),
+                DB::raw('null as absen_id'),
+                DB::raw('null as keterangan'),
+                DB::raw('null as jam'),
+                DB::raw('null as tglbukti')
+            )
+            ->where('trado.statusaktif', $statusaktif->id)
+            ->whereNotExists(function ($query) {
+                $query->select(DB::raw(1))
+                    ->from('absensisupirdetail')
+                    ->whereRaw('trado.id = absensisupirdetail.trado_id')
+                    ->where('absensisupirheader.tglbukti', date('Y-m-d', strtotime('now')))
+                    ->leftJoin('absensisupirheader', 'absensisupirdetail.absensi_id', 'absensisupirheader.id');
+            });
         $absensisupirdetail = DB::table('absensisupirdetail')
-        ->select(
-            'trado.id as id',
-            'trado.kodetrado as trado_id',
-            'supir.namasupir as supir_id',
-            'absentrado.keterangan as absen_id',
-            'absensisupirdetail.keterangan',
-            'absensisupirdetail.jam',
-            'absensisupirheader.tglbukti')
-        ->where('absensisupirheader.tglbukti',date('Y-m-d',strtotime('now')))
-        ->leftJoin(DB::raw("absensisupirheader with (readuncommitted)"),'absensisupirdetail.absensi_id','absensisupirheader.id')
-        ->leftJoin(DB::raw("trado with (readuncommitted)"),'absensisupirdetail.trado_id','trado.id')
-        ->leftJoin(DB::raw("absentrado with (readuncommitted)"),'absensisupirdetail.absen_id','absentrado.id')
-        ->leftJoin(DB::raw("supir with (readuncommitted)"),'absensisupirdetail.supir_id','supir.id');
+            ->select(
+                'trado.id as id',
+                'trado.kodetrado as trado_id',
+                'supir.namasupir as supir_id',
+                'absentrado.keterangan as absen_id',
+                'absensisupirdetail.keterangan',
+                'absensisupirdetail.jam',
+                'absensisupirheader.tglbukti'
+            )
+            ->where('absensisupirheader.tglbukti', date('Y-m-d', strtotime('now')))
+            ->leftJoin(DB::raw("absensisupirheader with (readuncommitted)"), 'absensisupirdetail.absensi_id', 'absensisupirheader.id')
+            ->leftJoin(DB::raw("trado with (readuncommitted)"), 'absensisupirdetail.trado_id', 'trado.id')
+            ->leftJoin(DB::raw("absentrado with (readuncommitted)"), 'absensisupirdetail.absen_id', 'absentrado.id')
+            ->leftJoin(DB::raw("supir with (readuncommitted)"), 'absensisupirdetail.supir_id', 'supir.id');
         $query = $trado->union($absensisupirdetail);
 
         $this->sort($query);
@@ -58,8 +102,6 @@ class MandorAbsensiSupir extends MyModel
         $data = $query->get();
 
         return $data;
-
-
     }
 
     public function getAll($id)
@@ -69,42 +111,43 @@ class MandorAbsensiSupir extends MyModel
     public function isAbsen($id)
     {
         $absensisupirdetail = DB::table('absensisupirdetail')
-        ->select(
-            'absensisupirdetail.id as id',
-            'trado.id as trado_id',
-            'trado.kodetrado as trado',
-            'supir.id as supir_id',
-            'supir.namasupir as supir',
-            'absentrado.id as absen_id',
-            'absentrado.keterangan as absen',
-            'absensisupirdetail.keterangan',
-            'absensisupirdetail.jam',
-            'absensisupirheader.tglbukti')
-        ->where('absensisupirdetail.trado_id',$id)
-        ->where('absensisupirheader.tglbukti',date('Y-m-d',strtotime('now')))
-        ->leftJoin(DB::raw("absensisupirheader with (readuncommitted)"),'absensisupirdetail.absensi_id','absensisupirheader.id')
-        ->leftJoin(DB::raw("trado with (readuncommitted)"),'absensisupirdetail.trado_id','trado.id')
-        ->leftJoin(DB::raw("absentrado with (readuncommitted)"),'absensisupirdetail.absen_id','absentrado.id')
-        ->leftJoin(DB::raw("supir with (readuncommitted)"),'absensisupirdetail.supir_id','supir.id');
+            ->select(
+                'absensisupirdetail.id as id',
+                'trado.id as trado_id',
+                'trado.kodetrado as trado',
+                'supir.id as supir_id',
+                'supir.namasupir as supir',
+                'absentrado.id as absen_id',
+                'absentrado.keterangan as absen',
+                'absensisupirdetail.keterangan',
+                'absensisupirdetail.jam',
+                'absensisupirheader.tglbukti'
+            )
+            ->where('absensisupirdetail.trado_id', $id)
+            ->where('absensisupirheader.tglbukti', date('Y-m-d', strtotime('now')))
+            ->leftJoin(DB::raw("absensisupirheader with (readuncommitted)"), 'absensisupirdetail.absensi_id', 'absensisupirheader.id')
+            ->leftJoin(DB::raw("trado with (readuncommitted)"), 'absensisupirdetail.trado_id', 'trado.id')
+            ->leftJoin(DB::raw("absentrado with (readuncommitted)"), 'absensisupirdetail.absen_id', 'absentrado.id')
+            ->leftJoin(DB::raw("supir with (readuncommitted)"), 'absensisupirdetail.supir_id', 'supir.id');
         return $absensisupirdetail->first();
     }
 
     public function getTrado($id)
     {
         $absensisupirdetail = DB::table('trado')
-        ->select(
-            DB::raw('null as id'),
-            'trado.id as trado_id',
-            'trado.kodetrado as trado',
-            DB::raw('null as supir_id'),
-            DB::raw('null as absen_id'),
-            DB::raw('null as keterangan'),
-            DB::raw('null as jam'),
-            DB::raw('null as tglbukti')
-        )->where('trado.id',$id);
+            ->select(
+                DB::raw('null as id'),
+                'trado.id as trado_id',
+                'trado.kodetrado as trado',
+                DB::raw('null as supir_id'),
+                DB::raw('null as absen_id'),
+                DB::raw('null as keterangan'),
+                DB::raw('null as jam'),
+                DB::raw('null as tglbukti')
+            )->where('trado.id', $id);
         return $absensisupirdetail->first();
     }
-    
+
 
     public function sort($query)
     {
@@ -112,7 +155,7 @@ class MandorAbsensiSupir extends MyModel
     }
     public function paginate($query)
     {
-        return $query->skip(request()->page* request()->limit)->take(request()->limit);
+        return $query->skip(request()->page * request()->limit)->take(request()->limit);
     }
 
     public function filter($query, $relationFields = [])
@@ -138,27 +181,27 @@ class MandorAbsensiSupir extends MyModel
                     }
 
                     break;
-                    case "OR":
-                        $query = $query->where(function($query){
-                        
-                            foreach ($this->params['filters']['rules'] as $index => $filters) {
-                                switch ($filters['field']) {
-                                    case 'trado_id':
-                                        $query = $query->orWhere('trado.kodetrado', 'LIKE', "%$filters[data]%");
-                                        break;
-                                    case 'supir':
-                                        $query = $query->orWhere('supir.namasupir', 'LIKE', "%$filters[data]%");
-                                        break;
-                                    case 'absen':
-                                        $query = $query->orWhere('absentrado.keterangan ', 'LIKE', "%$filters[data]%");
-                                        break;
-                                    default:
-                                        $query = $query->orWhere($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
-                                        break;
-                                }
+                case "OR":
+                    $query = $query->where(function ($query) {
+
+                        foreach ($this->params['filters']['rules'] as $index => $filters) {
+                            switch ($filters['field']) {
+                                case 'trado_id':
+                                    $query = $query->orWhere('trado.kodetrado', 'LIKE', "%$filters[data]%");
+                                    break;
+                                case 'supir':
+                                    $query = $query->orWhere('supir.namasupir', 'LIKE', "%$filters[data]%");
+                                    break;
+                                case 'absen':
+                                    $query = $query->orWhere('absentrado.keterangan ', 'LIKE', "%$filters[data]%");
+                                    break;
+                                default:
+                                    $query = $query->orWhere($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
+                                    break;
                             }
-                        });
-                            
+                        }
+                    });
+
                     break;
                 default:
 
@@ -171,5 +214,4 @@ class MandorAbsensiSupir extends MyModel
 
         return $query;
     }
-        
 }

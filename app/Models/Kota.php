@@ -125,7 +125,7 @@ class Kota extends MyModel
             )
             ->leftJoin(DB::raw("parameter with (readuncommitted)"), 'kota.statusaktif', '=', 'parameter.id')
             ->leftJoin(DB::raw("zona with (readuncommitted)"), 'kota.zona_id', '=', 'zona.id');
-
+            
         $this->filter($query);
         if ($aktif == 'AKTIF') {
             $statusaktif = Parameter::from(
@@ -144,7 +144,6 @@ class Kota extends MyModel
         $this->paginate($query);
 
         $data = $query->get();
-
         return $data;
     }
 
@@ -185,7 +184,7 @@ class Kota extends MyModel
 
         $query = Kota::from(DB::raw("kota with (readuncommitted)"))
             ->select(DB::raw('kota.*, zona.zona as zona'))
-            ->join(DB::raw("zona with (readuncommitted)"), 'kota.zona_id', 'zona.id')->whereRaw("kota.id = $id");
+            ->leftJoin(DB::raw("zona with (readuncommitted)"), 'kota.zona_id', 'zona.id')->whereRaw("kota.id = $id");
 
         $data = $query->first();
         return $data;

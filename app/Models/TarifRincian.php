@@ -320,7 +320,7 @@ class TarifRincian extends MyModel
 
         $this->filter($query);
 
-        if ($aktif == 'AKTIF') {
+        if (($aktif == 'AKTIF')&&(request()->filters == null)) {
             $statusaktif = Parameter::from(
                 DB::raw("parameter with (readuncommitted)")
             )

@@ -28,13 +28,14 @@ class StoreSupirRequest extends FormRequest
         return [
             'namasupir' => 'required',
             'alamat' => 'required',
+            'namaalias' => 'required',
             'kota' => 'required',
             'telp' => 'required',
             'statusaktif' => 'required|int|exists:parameter,id',
             'tglmasuk' => 'required',
             'tglexpsim' => 'required',
-            'nosim' => 'required|min:12|max:12',
-            'noktp' => 'required|min:16|max:16',
+            'nosim' => 'required|unique:supir|min:12|max:12',
+            'noktp' => 'required|unique:supir|min:16|max:16',
             'nokk' => 'required|min:16|max:16',
             'tgllahir' => 'required',
             'tglterbitsim' => 'required',
@@ -63,6 +64,7 @@ class StoreSupirRequest extends FormRequest
             'namasupir' => 'Nama Supir',
             'alamat' => 'Alamat',
             'kota' => 'Kota',
+            'namaalias' => 'nama alias',
             'telp' => 'Telp',
             'statusaktif' => 'Status Aktif',
             'tglmasuk' => 'Tanggal Masuk',
@@ -83,6 +85,8 @@ class StoreSupirRequest extends FormRequest
             'nokk.min' => 'Min. 16 karakter',
             'nosim.max' => 'Max. 12 karakter',
             'nosim.min' => 'Min. 12 karakter',
+            'nosim.unique' => ':attribute Sudah digunakan',
+            'noktp.unique' => ':attribute Sudah digunakan',
         ];
     }
 }

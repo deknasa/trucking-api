@@ -24,7 +24,8 @@ class StoreKotaRequest extends FormRequest
     public function rules()
     {
         return [
-            'kodekota' => 'required',
+            'kodekota' => ['required','unique:kota'],
+            'keterangan' => ['nullable','unique:kota'],
             'zona' => 'required',
             'statusaktif' => 'required'
         ];

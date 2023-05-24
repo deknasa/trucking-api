@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests;
 
+use App\Http\Controllers\Api\ErrorController;
 use App\Rules\DateTutupBuku;
 use Illuminate\Foundation\Http\FormRequest;
 
