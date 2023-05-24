@@ -28,14 +28,14 @@ class StoreSupirRequest extends FormRequest
     public function rules()
     {
         $ruleGambar = Rule::requiredIf(function () {
-            $kodeTrado = request()->kodetrado;
+            $noktp = request()->noktp;
             $nonApp = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))
                 ->whereRaw("grp like '%STATUS APPROVAL%'")
                 ->whereRaw("text like '%NON APPROVAL%'")
                 ->first();
             $cekValidasi = DB::table('approvalsupirgambar')->from(DB::raw("approvalsupirgambar with (readuncommitted)"))
-                ->select('kodetrado', 'tglbatas','statusapproval')
-                ->whereRaw("kodetrado in ('$kodeTrado')")
+                ->select('noktp', 'tglbatas','statusapproval')
+                ->whereRaw("noktp in ('$noktp')")
                 ->first();
             if ($cekValidasi != '') {
                 if ($cekValidasi->statusapproval == $nonApp->id) {

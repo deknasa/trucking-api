@@ -3,6 +3,10 @@
 namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\Rule;
 
 class UpdateSupirRequest extends FormRequest
 {
@@ -23,6 +27,27 @@ class UpdateSupirRequest extends FormRequest
      */
     public function rules()
     {
+
+        $ruleGambar = Rule::requiredIf(function () {
+            $noktp = request()->noktp;
+            $nonApp = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))
+                ->whereRaw("grp like '%STATUS APPROVAL%'")
+                ->whereRaw("text like '%NON APPROVAL%'")
+                ->first();
+            $cekValidasi = DB::table('approvalsupirgambar')->from(DB::raw("approvalsupirgambar with (readuncommitted)"))
+                ->select('noktp', 'tglbatas','statusapproval')
+                ->whereRaw("noktp in ('$noktp')")
+                ->first();
+            if ($cekValidasi != '') {
+                if ($cekValidasi->statusapproval == $nonApp->id) {
+                    return true;
+                } else {
+                    if (date('Y-m-d') > $cekValidasi->tglbatas) {
+                        return true;
+                    }
+                }
+            }
+        });
         return [
             'namasupir' => 'required',
             'alamat' => 'required',
@@ -37,22 +62,22 @@ class UpdateSupirRequest extends FormRequest
             'nokk' => 'required|min:16|max:16',
             'tgllahir' => 'required',
             'tglterbitsim' => 'required',
-            'photosupir' => 'required|array',
-            'photosupir.*' => 'required|image',
-            'photoktp' => 'required|array',
-            'photoktp.*' => 'required|image',
-            'photosim' => 'required|array',
-            'photosim.*' => 'required|image',
-            'photokk' => 'required|array',
-            'photokk.*' => 'required|image',
-            'photoskck' => 'required|array',
-            'photoskck.*' => 'required|image',
-            'photodomisili' => 'required|array',
-            'photodomisili.*' => 'required|image',
-            'photovaksin' => 'required|array',
-            'photovaksin.*' => 'required|image',
-            'pdfsuratperjanjian' => 'required|array',
-            'pdfsuratperjanjian.*' => 'required|mimes:pdf'
+            'photosupir' => [$ruleGambar,'array'],
+            'photosupir.*' => [$ruleGambar,'image'],
+            'photoktp' => [$ruleGambar,'array'],
+            'photoktp.*' => [$ruleGambar,'image'],
+            'photosim' => [$ruleGambar,'array'],
+            'photosim.*' => [$ruleGambar,'image'],
+            'photokk' => [$ruleGambar,'array'],
+            'photokk.*' => [$ruleGambar,'image'],
+            'photoskck' => [$ruleGambar,'array'],
+            'photoskck.*' => [$ruleGambar,'image'],
+            'photodomisili' => [$ruleGambar,'array'],
+            'photodomisili.*' => [$ruleGambar,'image'],
+            'photovaksin' => [$ruleGambar,'array'],
+            'photovaksin.*' => [$ruleGambar,'image'],
+            'pdfsuratperjanjian' => [$ruleGambar,'array'],
+            'pdfsuratperjanjian.*' => [$ruleGambar,'mimes:pdf']
         ];
     }
 

@@ -299,14 +299,15 @@ class SupirController extends Controller
             $supir->statuszonatertentu = $statusZonaTertentu->id;
             $supir->statusblacklist = $statusBlackList->id;
 
-            $supir->photosupir = $this->storeFiles($request->photosupir, 'supir');
-            $supir->photoktp = $this->storeFiles($request->photoktp, 'ktp');
-            $supir->photosim = $this->storeFiles($request->photosim, 'sim');
-            $supir->photokk = $this->storeFiles($request->photokk, 'kk');
-            $supir->photoskck = $this->storeFiles($request->photoskck, 'skck');
-            $supir->photodomisili = $this->storeFiles($request->photodomisili, 'domisili');
-            $supir->photovaksin = $this->storeFiles($request->photovaksin, 'vaksin');
-            $supir->pdfsuratperjanjian = $this->storePdfFiles($request->pdfsuratperjanjian, 'suratperjanjian');
+            // $trado->photostnk = ($request->photostnk) ? $this->storeFiles($request->photostnk, 'stnk') : '';
+            $supir->photosupir = ($request->photosupir) ? $this->storeFiles($request->photosupir, 'supir') : '';
+            $supir->photoktp = ($request->photoktp) ? $this->storeFiles($request->photoktp, 'ktp') : '';
+            $supir->photosim = ($request->photosim) ? $this->storeFiles($request->photosim, 'sim') : '';
+            $supir->photokk = ($request->photokk) ? $this->storeFiles($request->photokk, 'kk') : '';
+            $supir->photoskck = ($request->photoskck) ? $this->storeFiles($request->photoskck, 'skck') : '';
+            $supir->photodomisili = ($request->photodomisili) ? $this->storeFiles($request->photodomisili, 'domisili') : '';
+            $supir->photovaksin = ($request->photovaksin) ? $this->storeFiles($request->photovaksin, 'vaksin') : '';
+            $supir->pdfsuratperjanjian = ($request->pdfsuratperjanjian) ? $this->storePdfFiles($request->pdfsuratperjanjian, 'suratperjanjian') : '';
 
             $supir->save();
 
@@ -387,14 +388,14 @@ class SupirController extends Controller
 
             $this->deleteFiles($supir);
 
-            $supir->photosupir = $this->storeFiles($request->photosupir, 'supir');
-            $supir->photoktp = $this->storeFiles($request->photoktp, 'ktp');
-            $supir->photosim = $this->storeFiles($request->photosim, 'sim');
-            $supir->photokk = $this->storeFiles($request->photokk, 'kk');
-            $supir->photoskck = $this->storeFiles($request->photoskck, 'skck');
-            $supir->photodomisili = $this->storeFiles($request->photodomisili, 'domisili');
-            $supir->photovaksin = $this->storeFiles($request->photovaksin, 'vaksin');
-            $supir->pdfsuratperjanjian = $this->storePdfFiles($request->pdfsuratperjanjian, 'suratperjanjian');
+            $supir->photosupir = ($request->photosupir) ? $this->storeFiles($request->photosupir, 'supir') : '';
+            $supir->photoktp = ($request->photoktp) ? $this->storeFiles($request->photoktp, 'ktp') : '';
+            $supir->photosim = ($request->photosim) ? $this->storeFiles($request->photosim, 'sim') : '';
+            $supir->photokk = ($request->photokk) ? $this->storeFiles($request->photokk, 'kk') : '';
+            $supir->photoskck = ($request->photoskck) ? $this->storeFiles($request->photoskck, 'skck') : '';
+            $supir->photodomisili = ($request->photodomisili) ? $this->storeFiles($request->photodomisili, 'domisili') : '';
+            $supir->photovaksin = ($request->photovaksin) ? $this->storeFiles($request->photovaksin, 'vaksin') : '';
+            $supir->pdfsuratperjanjian = ($request->pdfsuratperjanjian) ? $this->storePdfFiles($request->pdfsuratperjanjian, 'suratperjanjian') : '';
 
             $supir->save();
 
