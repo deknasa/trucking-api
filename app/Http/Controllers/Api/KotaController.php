@@ -155,7 +155,7 @@ class KotaController extends Controller
             $kota->zona_id = $request->zona_id;
             $kota->statusaktif = $request->statusaktif;
             $kota->modifiedby = auth('api')->user()->name;
-
+            $kota->save();
             if ($kota->save()) {
                 $logTrail = [
                     'namatabel' => strtoupper($kota->getTable()),
