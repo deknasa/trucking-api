@@ -25,11 +25,24 @@ class StoreSubKelompokRequest extends FormRequest
      */
     public function rules()
     {
-        return [
-            'kodesubkelompok' => 'required',
-            'kelompok' => 'required',
-            'statusaktif' => 'required|numeric',
-        ];
+
+        if ($this->kelompok=='' and $this->kelompok_id=='') {
+            return [
+                'kodesubkelompok' => 'required',
+                'kelompok' => 'required',
+                'statusaktif' => 'required|numeric',
+            ];
+        } else {
+            return [
+                'kodesubkelompok' => 'required',
+                'kelompok' => 'required',
+                'kelompok_id' => 'required',
+                'statusaktif' => 'required|numeric',
+            ];
+        }
+
+    
+        
     }
 
     public function attributes()
@@ -37,19 +50,11 @@ class StoreSubKelompokRequest extends FormRequest
         return [
             'kodesubkelompok' => 'kode subkelompok',
             'kelompok' => 'kelompok',
+            'kelompok_id' => 'kelompok ',
             'keterangan' => 'keterangan',
             'statusaktif' => 'status aktif',
         ];
     }
 
-    public function messages()
-    {
-        $controller = new ErrorController;
-
-        return [
-            'kodesubkelompok.required' => ':attribute' . ' ' . $controller->geterror('WI')->keterangan,
-            'kelompok.required' => ':attribute' . ' ' . $controller->geterror('WI')->keterangan,
-            'statusaktif.required' => ':attribute' . ' ' . $controller->geterror('WI')->keterangan,
-        ];
-    }
+  
 }
