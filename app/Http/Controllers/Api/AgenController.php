@@ -97,7 +97,7 @@ class AgenController extends Controller
             $agen->top = $request->top;
             $agen->statusapproval = $statusNonApproval->id;
             $agen->statustas = $request->statustas;
-            $agen->jenisemkl = $request->jenisemkl;
+            // $agen->jenisemkl = $request->jenisemkl;
             $agen->tglapproval = '';
             $agen->modifiedby = auth('api')->user()->name;
             $request->sortname = $request->sortname ?? 'id';
@@ -138,8 +138,7 @@ class AgenController extends Controller
 
     public function show($id)
     {
-        $agen = Agen::from(DB::raw("agen with (readuncommitted)"))
-            ->select('agen.*', 'jenisemkl.keterangan as keteranganjenisemkl')->join('jenisemkl', 'agen.jenisemkl', 'jenisemkl.id')->where('agen.id', $id)->first();
+        $agen = Agen::from(DB::raw("agen with (readuncommitted)"))->where('agen.id', $id)->first();
         return response([
             'status' => true,
             'data' => $agen
@@ -156,7 +155,7 @@ class AgenController extends Controller
         try {
             $agen->kodeagen = $request->kodeagen;
             $agen->namaagen = $request->namaagen;
-            $agen->keterangan = $request->keterangan;
+            $agen->keterangan = $request->keterangan ?? '';
             $agen->statusaktif = $request->statusaktif;
             $agen->namaperusahaan = $request->namaperusahaan;
             $agen->alamat = $request->alamat;
@@ -165,7 +164,7 @@ class AgenController extends Controller
             $agen->contactperson = $request->contactperson;
             $agen->top = $request->top;
             $agen->statustas = $request->statustas;
-            $agen->jenisemkl = $request->jenisemkl;
+            // $agen->jenisemkl = $request->jenisemkl;
             $agen->modifiedby = auth('api')->user()->name;
             $request->sortname = $request->sortname ?? 'id';
             $request->sortorder = $request->sortorder ?? 'asc';

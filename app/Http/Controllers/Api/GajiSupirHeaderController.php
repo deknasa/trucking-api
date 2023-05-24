@@ -1746,7 +1746,7 @@ class GajiSupirHeaderController extends Controller
         $tglDari = date('Y-m-d', strtotime(request()->dari));
         $tglSampai = date('Y-m-d', strtotime(request()->sampai));
 
-        if (request()->dari && request()->sampai) {
+        if (request()->dari && request()->sampai && request()->supir_id) {
 
             $data = $gajiSupir->getAbsensi($supir_id, $tglDari, $tglSampai);
             if ($data != null) {

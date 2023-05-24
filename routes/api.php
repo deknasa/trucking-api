@@ -45,6 +45,7 @@ use App\Http\Controllers\Api\AlatBayarController;
 use App\Http\Controllers\Api\ApprovalHutangBayarController;
 use App\Http\Controllers\Api\ApprovalNotaHeaderController;
 use App\Http\Controllers\Api\ApprovalPendapatanSupirController;
+use App\Http\Controllers\Api\ApprovalTradoGambarController;
 use App\Http\Controllers\Api\BankPelangganController;
 use App\Http\Controllers\Api\ExportLaporanKasGantungController;
 use App\Http\Controllers\Api\ExportLaporanKasHarianController;
@@ -903,6 +904,7 @@ route::middleware(['auth:api'])->group(function () {
     Route::get('suratpengantar/combo', [SuratPengantarController::class, 'combo']);
     Route::get('suratpengantar/field_length', [SuratPengantarController::class, 'fieldLength']);
     Route::post('suratpengantar/cekUpahSupir', [SuratPengantarController::class, 'cekUpahSupir']);
+    Route::post('suratpengantar/{id}/cekValidasi', [SuratPengantarController::class, 'cekValidasi']);
     Route::get('suratpengantar/{id}/getTarifOmset', [SuratPengantarController::class, 'getTarifOmset']);
     Route::get('suratpengantar/{id}/getpelabuhan', [SuratPengantarController::class, 'getpelabuhan']);
     Route::post('suratpengantar/{id}/batalmuat', [SuratPengantarController::class, 'approvalBatalMuat']);
@@ -1186,4 +1188,7 @@ route::middleware(['auth:api'])->group(function () {
     Route::get('karyawan/export', [KaryawanController::class, 'export']);
     Route::get('karyawan/report', [KaryawanController::class, 'report']);
     Route::resource('karyawan', KaryawanController::class);
+
+    Route::get('approvaltradogambar/field_length', [ApprovalTradoGambarController::class, 'fieldLength']);
+    Route::resource('approvaltradogambar', ApprovalTradoGambarController::class);
 });

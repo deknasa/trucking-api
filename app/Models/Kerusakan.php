@@ -71,7 +71,6 @@ class Kerusakan extends MyModel
             ->leftJoin(DB::raw("parameter with (readuncommitted)"), 'kerusakan.statusaktif', '=', 'parameter.id');
 
 
-
         $this->filter($query);
 
         if ($aktif == 'AKTIF') {
@@ -91,7 +90,6 @@ class Kerusakan extends MyModel
         $this->paginate($query);
 
         $data = $query->get();
-
         return $data;
     }
 

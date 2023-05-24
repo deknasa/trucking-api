@@ -25,16 +25,17 @@ class StoreAgenRequest extends FormRequest
     public function rules()
     {
         return [
-            "kodeagen" => "required",
-            "namaagen" => "required",
+            "kodeagen" => "required|unique:agen",
+            "namaagen" => "required|unique:agen",
             "statusaktif" => "required",
             "namaperusahaan" => "required",
             "alamat" => "required",
-            "notelp" => "required",
+            "notelp" => "required|unique:agen",
             "nohp" => "required",
             "contactperson" => "required",
             "top" => "required|numeric|gt:0",
             "statustas" => "required",
+            // "keteranganjenisemkl" => "required",
         ];
     }
 
@@ -50,6 +51,7 @@ class StoreAgenRequest extends FormRequest
             "contactperson" => "contact person",
             "top" => "top",
             "statustas" => "status tas",
+            // "keteranganjenisemkl" => "jenis emkl",
         ];
     }
 
@@ -70,7 +72,12 @@ class StoreAgenRequest extends FormRequest
             'top.required' => ':attribute' . ' ' . $controller->geterror('WI')->keterangan,
             'jenisusaha.required' => ':attribute' . ' ' . $controller->geterror('WI')->keterangan,
             'statustas.required' => ':attribute' . ' ' . $controller->geterror('WI')->keterangan,
+            // 'keteranganjenisemkl.required' => ':attribute' . ' ' . $controller->geterror('WI')->keterangan,
+
             'top.gt' => ':attribute' . ' ' . $controller->geterror('GT-ANGKA-0')->keterangan,
+            'kodeagen.unique' => ':attribute' . ' ' . $controller->geterror('SPI')->keterangan,
+            'namaagen.unique' => ':attribute' . ' ' . $controller->geterror('SPI')->keterangan,
+            'notelp.unique' => ':attribute' . ' ' . $controller->geterror('SPI')->keterangan,
         ];
     }    
 }
