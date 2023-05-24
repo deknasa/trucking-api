@@ -126,6 +126,7 @@ class Supplier extends MyModel
             'supplier.namapemilik',
             'supplier.jenisusaha',
             'supplier.bank',
+            'supplier.coa',
             'supplier.rekeningbank',
             'supplier.namarekening',
             'supplier.jabatan',
@@ -236,6 +237,7 @@ class Supplier extends MyModel
             'supplier.namapemilik',
             'supplier.jenisusaha',
             'supplier.bank',
+            'supplier.coa',
             'supplier.rekeningbank',
             'supplier.namarekening',
             'supplier.jabatan',
@@ -275,6 +277,7 @@ class Supplier extends MyModel
             $this->table.namapemilik,
             $this->table.jenisusaha,
             $this->table.bank,
+            $this->table.coa,
             $this->table.rekeningbank,
             $this->table.namarekening,
             $this->table.jabatan,
@@ -307,6 +310,7 @@ class Supplier extends MyModel
             $table->string('namapemilik', 150)->nullable();
             $table->string('jenisusaha', 150)->nullable();
             $table->string('bank', 150)->nullable();
+            $table->string('coa', 150)->nullable();
             $table->string('rekeningbank', 150)->nullable();
             $table->string('namarekening', 150)->nullable();
             $table->string('jabatan', 150)->nullable();
@@ -322,7 +326,7 @@ class Supplier extends MyModel
         $query = $this->selectColumns($query);
         $this->sort($query);
         $models = $this->filter($query);
-        DB::table($temp)->insertUsing(['id', 'namasupplier', 'namakontak',  'alamat', 'kota', 'kodepos', 'notelp1', 'notelp2', 'email',  'statusaktif', 'web', 'namapemilik', 'jenisusaha', 'bank', 'rekeningbank',  'namarekening', 'jabatan', 'statusdaftarharga', 'kategoriusaha', 'modifiedby', 'created_at', 'updated_at'], $models);
+        DB::table($temp)->insertUsing(['id', 'namasupplier', 'namakontak',  'alamat', 'kota', 'kodepos', 'notelp1', 'notelp2', 'email',  'statusaktif', 'web', 'namapemilik', 'jenisusaha', 'bank', 'coa','rekeningbank',  'namarekening', 'jabatan', 'statusdaftarharga', 'kategoriusaha', 'modifiedby', 'created_at', 'updated_at'], $models);
 
         return  $temp;
     }
