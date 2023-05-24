@@ -261,6 +261,7 @@ class UserController extends Controller
         $decodedResponse = json_decode($response->content(), true);
         $users = $decodedResponse['data'];
 
+
         $columns = [
             [
                 'label' => 'No',

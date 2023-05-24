@@ -293,6 +293,7 @@ class ParameterController extends Controller
         $response = $this->index();
         $decodedResponse = json_decode($response->content(), true);
         $parameters = $decodedResponse['data'];
+       
 
         $columns = [
             [
