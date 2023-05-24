@@ -144,17 +144,22 @@ class SupirController extends Controller
         DB::beginTransaction();
         try{
             $supir = Supir::lockForUpdate()->findOrFail($id);
-            $tanggalberhenti = date('Y-m-d', strtotime("1900-01-01"));
-            $aksi = "UNAPPROVED SUPIR RESIGN";
-            
-            if ($request->tanggalberhenti) {
-                $tanggalberhenti = date('Y-m-d', strtotime($request->tanggalberhenti));
+           
+            if ($request->action =="approve") {
+                $supir->tglberhentisupir = date('Y-m-d', strtotime($request->tglberhentisupir));
                 $aksi = "APPROVED SUPIR RESIGN";
+                // $supir->keteranganberhentisupir = ($request->keteranganberhentisupir == null) ? "" : $request->keteranganberhentisupir;
+                $supir->keteranganberhentisupir = $request->keteranganberhentisupir ;
+
+            }else if($request->action =="unapprove"){
+                $supir->tglberhentisupir = date('Y-m-d', strtotime("1900-01-01"));
+                $aksi = "UNAPPROVED SUPIR RESIGN";
+                $supir->keteranganberhentisupir = null ;
+
             }
             
-            $supir->tglberhentisupir = $tanggalberhenti;
-            $supir->keteranganberhentisupir = ($request->keteranganberhentisupir == null) ? "" : $request->keteranganberhentisupir;
-    
+            // $supir->tglberhentisupir = $tanggalberhenti;
+    // return response([$supir],422);
             if ($supir->save()) {
                 $logTrail = [
                     'namatabel' => strtoupper($supir->getTable()),
