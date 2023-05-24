@@ -25,7 +25,6 @@ class UpdateContainerRequest extends FormRequest
     public function rules()
     {
         return [
-            'keterangan' => 'required',
             'statusaktif' => 'required'
         ];
     }
@@ -43,7 +42,6 @@ class UpdateContainerRequest extends FormRequest
         $controller = new ErrorController;
         
         return [
-            'keterangan.required' => ':attribute '. $controller->geterror('WI')->keterangan,
             'statusaktif.required' => ':attribute '. $controller->geterror('WI')->keterangan,
         ];
     }

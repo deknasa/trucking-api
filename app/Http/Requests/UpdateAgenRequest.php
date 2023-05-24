@@ -37,6 +37,7 @@ class UpdateAgenRequest extends FormRequest
             "top" => "required|numeric|gt:0",
             "statustas" => "required",
             // "keteranganjenisemkl" => "required",
+
         ];
     }
 
@@ -63,7 +64,6 @@ class UpdateAgenRequest extends FormRequest
         return [
             'kodeagen.required' => ':attribute' . ' ' . $controller->geterror('WI')->keterangan,
             'namaagen.required' => ':attribute' . ' ' . $controller->geterror('WI')->keterangan,
-            'keterangan.required' => ':attribute' . ' ' . $controller->geterror('WI')->keterangan,
             'statusaktif.required' => ':attribute' . ' ' . $controller->geterror('WI')->keterangan,
             'namaperusahaan.required' => ':attribute' . ' ' . $controller->geterror('WI')->keterangan,
             'alamat.required' => ':attribute' . ' ' . $controller->geterror('WI')->keterangan,

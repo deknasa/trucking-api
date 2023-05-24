@@ -58,7 +58,7 @@ class PengeluaranTruckingHeaderController extends Controller
         DB::beginTransaction();
         try {
             // return response($request->all(),422);
-           
+
             $tanpaprosesnobukti = $request->tanpaprosesnobukti ?? 0;
 
             if ($tanpaprosesnobukti == 0) {
@@ -91,7 +91,7 @@ class PengeluaranTruckingHeaderController extends Controller
                             'nominal' => 'required|array',
                             'nominal.*' => 'required|numeric|gt:0'
                         ], [
-                            'nominal.*.numeric' => 'nominal harus '.app(ErrorController::class)->geterror('BTSANGKA')->keterangan,
+                            'nominal.*.numeric' => 'nominal harus ' . app(ErrorController::class)->geterror('BTSANGKA')->keterangan,
                             'nominal.*.gt' => 'Nominal Tidak Boleh Kosong dan Harus Lebih Besar Dari 0'
                         ]);
                     } else {
@@ -123,7 +123,7 @@ class PengeluaranTruckingHeaderController extends Controller
                             'nominal' => 'required|array',
                             'nominal.*' => 'required|numeric|gt:0'
                         ], [
-                            'nominal.*.numeric' => 'nominal harus '.app(ErrorController::class)->geterror('BTSANGKA')->keterangan,
+                            'nominal.*.numeric' => 'nominal harus ' . app(ErrorController::class)->geterror('BTSANGKA')->keterangan,
                             'nominal.*.gt' => 'Nominal Tidak Boleh Kosong dan Harus Lebih Besar Dari 0'
                         ]);
                     } else {
@@ -151,14 +151,13 @@ class PengeluaranTruckingHeaderController extends Controller
                     ->where('id', $idpengeluaran)
                     ->first();
                 $statusformat = $fetchFormat->format;
-
                 $fetchGrp = Parameter::where('id', $statusformat)->first();
-
+                
                 $format = DB::table('parameter')
-                    ->where('grp', $fetchGrp->grp)
-                    ->where('subgrp', $fetchGrp->subgrp)
-                    ->first();
-
+                ->where('grp', $fetchGrp->grp)
+                ->where('subgrp', $fetchGrp->subgrp)
+                ->first();
+                
                 $content = new Request();
                 $content['group'] = $fetchGrp->grp;
                 $content['subgroup'] = $fetchGrp->subgrp;
@@ -184,6 +183,7 @@ class PengeluaranTruckingHeaderController extends Controller
             $pengeluarantruckingheader->statusformat = $request->statusformat ?? $format->id;
             $pengeluarantruckingheader->statuscetak = $statusCetak->id;
             $pengeluarantruckingheader->modifiedby = auth('api')->user()->name;
+
             if ($tanpaprosesnobukti == 0) {
                 $nobukti = app(Controller::class)->getRunningNumber($content)->original['data'];
                 $pengeluarantruckingheader->nobukti = $nobukti;
@@ -386,7 +386,7 @@ class PengeluaranTruckingHeaderController extends Controller
         $data = PengeluaranTruckingHeader::findAll($id);
         if ($data->kodepengeluaran == 'BST') {
             $pengeluaranTrucking = new PengeluaranTruckingHeader();
-            $detail = $pengeluaranTrucking->getEditInvoice($id, $data->periodedari, $data->periodesampai);
+            $detail = $pengeluaranTrucking->getShowInvoice($id, $data->periodedari, $data->periodesampai);
         } else {
             $detail = PengeluaranTruckingDetail::getAll($id);
         }
@@ -442,7 +442,7 @@ class PengeluaranTruckingHeaderController extends Controller
                             'nominal' => 'required|array',
                             'nominal.*' => 'required|numeric|gt:0'
                         ], [
-                            'nominal.*.numeric' => 'nominal harus '.app(ErrorController::class)->geterror('BTSANGKA')->keterangan,
+                            'nominal.*.numeric' => 'nominal harus ' . app(ErrorController::class)->geterror('BTSANGKA')->keterangan,
                             'nominal.*.gt' => 'Nominal Tidak Boleh Kosong dan Harus Lebih Besar Dari 0'
                         ]);
                     } else {
@@ -831,8 +831,8 @@ class PengeluaranTruckingHeaderController extends Controller
     {
         $pengeluaranTrucking = new PengeluaranTruckingHeader();
         $getPelunasan = $pengeluaranTrucking->find($id);
-    ///echo json_encode($getPelunasan);die;
-   
+        ///echo json_encode($getPelunasan);die;
+
         if ($aksi == 'edit') {
             $data = $pengeluaranTrucking->getEditPelunasan($id, $getPelunasan->periodedari, $getPelunasan->periodesampai);
         } else {
@@ -869,17 +869,32 @@ class PengeluaranTruckingHeaderController extends Controller
         // $data = $pengeluaranTrucking->getTarikDeposito($pengeluaranTrucking->pengeluarantruckingdetail[0]->supir_id);
         return response([
             'status' => true,
-            'data' => $data
+            'data' => $data, 
+            'attributes' => [
+                'totalRows' => $invoiceHeader->totalRows,
+                'totalPages' => $invoiceHeader->totalPages,
+                'totalNominal' => $invoiceHeader->totalNominal,
+            ]
         ]);
     }
 
     public function getEditInvoice($id)
     {
         $pengeluaranTrucking = new PengeluaranTruckingHeader();
-        $data = $pengeluaranTrucking->getEditInvoice($id, request()->tgldari, request()->tglsampai);
+        if(request()->aksi == 'show'){
+            $data = $pengeluaranTrucking->getShowInvoice($id, request()->tgldari, request()->tglsampai);
+        }else{
+            $data = $pengeluaranTrucking->getEditInvoice($id, request()->tgldari, request()->tglsampai);
+        }
+
         return response([
             'status' => true,
-            'data' => $data
+            'data' => $data,
+            'attributes' => [
+                'totalRows' => $pengeluaranTrucking->totalRows,
+                'totalPages' => $pengeluaranTrucking->totalPages,
+                'totalNominal' => $pengeluaranTrucking->totalNominal,
+            ]
         ]);
     }
     public function fieldLength()

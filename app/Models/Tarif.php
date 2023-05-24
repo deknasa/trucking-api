@@ -87,6 +87,7 @@ class Tarif extends MyModel
                 'zona.zona as zona_id',
                 'tarif.tglmulaiberlaku',
                 'p.memo as statuspenyesuaianharga',
+                'tarif.keterangan',
                 'tarif.modifiedby',
                 'tarif.created_at',
                 'tarif.updated_at'
@@ -153,6 +154,7 @@ class Tarif extends MyModel
              $this->table.tglmulaiberlaku,
              p.text as statuspenyesuaianharga,
              $this->table.modifiedby,
+             $this->table.keterangan,
              $this->table.created_at,
              $this->table.updated_at"
 
@@ -178,9 +180,11 @@ class Tarif extends MyModel
             $table->date('tglmulaiberlaku')->nullable();
             $table->string('statuspenyesuaianharga')->nullable();
             $table->string('modifiedby', 50)->nullable();
+            $table->longText('keterangan')->nullable();
             $table->dateTime('created_at')->nullable();
             $table->dateTime('updated_at')->nullable();
             $table->increments('position');
+            
         });
 
         $this->setRequestParameters();
@@ -188,7 +192,7 @@ class Tarif extends MyModel
         $query = $this->selectColumns($query);
         $this->sort($query);
         $models = $this->filter($query);
-        DB::table($temp)->insertUsing(['id', 'tujuan',  'statusaktif',  'statussistemton', 'kota_id', 'zona_id',  'tglmulaiberlaku', 'statuspenyesuaianharga', 'modifiedby', 'created_at', 'updated_at'], $models);
+        DB::table($temp)->insertUsing(['id', 'tujuan',  'statusaktif',  'statussistemton', 'kota_id', 'zona_id',  'tglmulaiberlaku', 'statuspenyesuaianharga', 'keterangan', 'modifiedby', 'created_at', 'updated_at'], $models);
 
 
         return  $temp;
@@ -284,6 +288,7 @@ class Tarif extends MyModel
                 'zona.keterangan as zona',
                 'tarif.tglmulaiberlaku',
                 'tarif.statuspenyesuaianharga',
+                'tarif.keterangan'
             )
             ->leftJoin(DB::raw("kota with (readuncommitted)"), 'tarif.kota_id', '=', 'kota.id')
             ->leftJoin(DB::raw("zona with (readuncommitted)"), 'tarif.zona_id', '=', 'zona.id')
@@ -326,6 +331,8 @@ class Tarif extends MyModel
                             $query = $query->where('B.kotasampai_id', 'LIKE', "%$filters[data]%");
                         } elseif ($filters['field'] == 'kota_id') {
                             $query = $query->where('kota.keterangan', 'LIKE', "%$filters[data]%");
+                        }elseif ($filters['field'] == 'keterangan_id') {
+                            $query = $query->where('keterangan.keterangan', 'LIKE', "%$filters[data]%");
                         } elseif ($filters['field'] == 'zona_id') {
                             $query = $query->where('zona.keterangan', 'LIKE', "%$filters[data]%");
                         } elseif ($filters['field'] == 'statuspenyesuaianharga') {

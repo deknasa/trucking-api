@@ -18,7 +18,8 @@ class CreateApprovalsupirgambarTable extends Migration
             $table->string('namasupir', 30)->nullable();
             $table->string('noktp', 30)->nullable();
             $table->integer('statusapproval')->length(11)->nullable();
-            $table->date('tglbatas')->nullable();            
+            $table->date('tglbatas')->nullable();      
+            $table->string('modifiedby',50)->nullable();                  
             $table->timestamps();
         });
     }

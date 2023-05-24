@@ -72,7 +72,7 @@ class PengeluaranTruckingController extends Controller
         try {
             $pengeluaranTrucking = new PengeluaranTrucking();
             $pengeluaranTrucking->kodepengeluaran = $request->kodepengeluaran;
-            $pengeluaranTrucking->keterangan = $request->keterangan;
+            $pengeluaranTrucking->keterangan = $request->keterangan ?? '';
             $pengeluaranTrucking->coadebet = $request->coadebet ?? '';;
             $pengeluaranTrucking->coakredit = $request->coakredit ?? '';;
             $pengeluaranTrucking->coapostingdebet = $request->coapostingdebet;

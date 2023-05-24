@@ -92,7 +92,7 @@ class StokController extends Controller
             $stok->kategori_id = $request->kategori_id;
             $stok->merk_id = $request->merk_id ?? 0;
             $stok->jenistrado_id = $request->jenistrado_id ?? 0;
-            $stok->keterangan = $request->keterangan;
+            $stok->keterangan = $request->keterangan ?? '';
             $stok->qtymin = $request->qtymin ?? 0;
             $stok->qtymax = $request->qtymax ?? 0;
             $stok->modifiedby = auth('api')->user()->name;
@@ -164,7 +164,7 @@ class StokController extends Controller
             $stok->kategori_id = $request->kategori_id;
             $stok->merk_id =  $request->merk_id ?? 0;
             $stok->jenistrado_id = $request->jenistrado_id ?? 0;
-            $stok->keterangan = $request->keterangan;
+            $stok->keterangan = $request->keterangan ?? '';
             $stok->qtymin = $request->qtymin ?? 0;
             $stok->qtymax = $request->qtymax ?? 0;
             $stok->modifiedby = auth('api')->user()->name;

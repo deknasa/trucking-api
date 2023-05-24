@@ -26,7 +26,6 @@ class StoreKategoriRequest extends FormRequest
     {
         return [
             'kodekategori' => 'required',
-            'keterangan' => 'required',
             'subkelompok' => 'required',
             'statusaktif' => 'required'
         ];
@@ -50,7 +49,6 @@ class StoreKategoriRequest extends FormRequest
         return [
             'kodekategori.required' => ':attribute' . ' ' . $controller->geterror('WI')->keterangan,
             'subkelompok.required' => ':attribute' . ' ' . $controller->geterror('WI')->keterangan,
-            'keterangan.required' => ':attribute' . ' ' . $controller->geterror('WI')->keterangan,
             'statusaktif.required' => ':attribute' . ' ' . $controller->geterror('WI')->keterangan,
         ];
     }    

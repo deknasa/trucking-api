@@ -27,7 +27,6 @@ class StoreBankPelangganRequest extends FormRequest
         return [
             'kodebank' => 'required',
             'namabank' => 'required',
-            'keterangan' => 'required',
             'statusaktif' => 'required',
         ];
     }
@@ -51,7 +50,6 @@ class StoreBankPelangganRequest extends FormRequest
             'kodebank.required' => ':attribute' . ' ' . $controller->geterror('WI')->keterangan,
             'namabank.required' => ':attribute' . ' ' . $controller->geterror('WI')->keterangan,
             'statusaktif.required' => ':attribute' . ' ' . $controller->geterror('WI')->keterangan,
-            'keterangan.required' => ':attribute' . ' ' . $controller->geterror('WI')->keterangan,
             
         ];
     }

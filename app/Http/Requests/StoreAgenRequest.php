@@ -64,7 +64,6 @@ class StoreAgenRequest extends FormRequest
         return [
             'kodeagen.required' => ':attribute' . ' ' . $controller->geterror('WI')->keterangan,
             'namaagen.required' => ':attribute' . ' ' . $controller->geterror('WI')->keterangan,
-            'keterangan.required' => ':attribute' . ' ' . $controller->geterror('WI')->keterangan,
             'statusaktif.required' => ':attribute' . ' ' . $controller->geterror('WI')->keterangan,
             'namaperusahaan.required' => ':attribute' . ' ' . $controller->geterror('WI')->keterangan,
             'alamat.required' => ':attribute' . ' ' . $controller->geterror('WI')->keterangan,
@@ -75,6 +74,7 @@ class StoreAgenRequest extends FormRequest
             'jenisusaha.required' => ':attribute' . ' ' . $controller->geterror('WI')->keterangan,
             'statustas.required' => ':attribute' . ' ' . $controller->geterror('WI')->keterangan,
             // 'keteranganjenisemkl.required' => ':attribute' . ' ' . $controller->geterror('WI')->keterangan,
+
             'top.gt' => ':attribute' . ' ' . $controller->geterror('GT-ANGKA-0')->keterangan,
             'kodeagen.unique' => ':attribute' . ' ' . $controller->geterror('SPI')->keterangan,
             'namaagen.unique' => ':attribute' . ' ' . $controller->geterror('SPI')->keterangan,

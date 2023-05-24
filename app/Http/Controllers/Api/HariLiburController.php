@@ -47,7 +47,7 @@ class HariLiburController extends Controller
 
             $hariLibur = new HariLibur();
             $hariLibur->tgl = date('Y-m-d', strtotime($request->tgl));
-            $hariLibur->keterangan = $request->keterangan;
+            $hariLibur->keterangan = $request->keterangan ?? '';
             $hariLibur->statusaktif = $request->statusaktif;
             $hariLibur->modifiedby = auth('api')->user()->name;
 
@@ -101,7 +101,7 @@ class HariLiburController extends Controller
 
         try {
             $harilibur->tgl = date('Y-m-d', strtotime($request->tgl));
-            $harilibur->keterangan = $request->keterangan;
+            $harilibur->keterangan = $request->keterangan ?? '';
             $harilibur->statusaktif = $request->statusaktif;
             $harilibur->modifiedby = auth('api')->user()->name;
 
@@ -195,5 +195,38 @@ class HariLiburController extends Controller
         return response([
             'data' => $data
         ]);
+    }
+    public function export()
+    {
+     
+        header('Access-Control-Allow-Origin: *');
+
+        $response = $this->index();
+        $decodedResponse = json_decode($response->content(), true);
+        $parameters = $decodedResponse['data'];
+
+        $columns = [
+            [
+                'label' => 'No',
+            ],
+            [
+                'label' => 'ID',
+                'index' => 'id',
+            ],
+            [
+                'label' => 'Tanggal',
+                'index' => 'tgl',
+            ],
+            [
+                'label' => 'Keterangan',
+                'index' => 'keterangan',
+            ],
+            [
+                'label' => 'Status',
+                'index' => 'statusaktif',
+            ],
+        ];
+
+        $this->toExcel('HariLibur', $parameters, $columns);
     }
 }

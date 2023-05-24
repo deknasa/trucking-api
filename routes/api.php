@@ -983,6 +983,8 @@ route::middleware(['auth:api'])->group(function () {
 
     Route::get('harilibur/field_length', [HariLiburController::class, 'fieldLength']);
     Route::get('harilibur/default', [HariLiburController::class, 'default']);
+    Route::get('harilibur/export', [HariLiburController::class, 'export']);
+    Route::get('harilibur/report', [HariLiburController::class, 'report']);
     Route::resource('harilibur', HariLiburController::class);
 
     Route::get('jurnalumumpusatheader/grid', [JurnalUmumPusatHeaderController::class, 'grid']);
@@ -1179,5 +1181,7 @@ route::middleware(['auth:api'])->group(function () {
     Route::get('karyawan/field_length', [KaryawanController::class, 'fieldLength']);
     Route::get('karyawan/default', [KaryawanController::class, 'default']);
     Route::post('karyawan/{id}/cekValidasi', [KaryawanController::class, 'cekValidasi'])->name('karyawan.cekValidasi');
+    Route::get('karyawan/export', [KaryawanController::class, 'export']);
+    Route::get('karyawan/report', [KaryawanController::class, 'report']);
     Route::resource('karyawan', KaryawanController::class);
 });

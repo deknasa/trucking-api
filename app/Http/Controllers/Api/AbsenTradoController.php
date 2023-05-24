@@ -82,7 +82,7 @@ class AbsenTradoController extends Controller
         try {
             $absenTrado = new AbsenTrado();
             $absenTrado->kodeabsen = $request->kodeabsen;
-            $absenTrado->keterangan = $request->keterangan;
+            $absenTrado->keterangan = $request->keterangan ?? '';
             $absenTrado->statusaktif = $request->statusaktif;
             $absenTrado->modifiedby = auth('api')->user()->name;
             $request->sortname = $request->sortname ?? 'id';
@@ -146,7 +146,7 @@ class AbsenTradoController extends Controller
 
         try {
             $absentrado->kodeabsen = $request->kodeabsen;
-            $absentrado->keterangan = $request->keterangan;
+            $absentrado->keterangan = $request->keterangan ?? '';
             $absentrado->statusaktif = $request->statusaktif;
             $absentrado->modifiedby = auth('api')->user()->name;
             $detailmemo = [];
