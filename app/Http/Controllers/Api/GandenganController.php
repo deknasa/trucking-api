@@ -359,6 +359,24 @@ class GandenganController extends Controller
         $decodedResponse = json_decode($response->content(), true);
         $gandengans = $decodedResponse['data'];
 
+        $i = 0;
+        foreach ($gandengans as $index => $params) {
+
+            $statusaktif = $params['statusaktif'];
+
+            $result = json_decode($statusaktif, true);
+
+            $statusaktif = $result['MEMO'];
+
+
+            $gandengans[$i]['statusaktif'] = $statusaktif;
+
+        
+            $i++;
+
+
+        }
+
         $columns = [
             [
                 'label' => 'No',
