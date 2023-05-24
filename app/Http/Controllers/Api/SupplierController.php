@@ -120,6 +120,7 @@ class SupplierController extends Controller
             $supplier->jenisusaha = $request->jenisusaha;
             // $supplier->top = $request->top;
             $supplier->bank = $request->bank;
+            $supplier->coa = $request->coa;
             $supplier->rekeningbank = $request->rekeningbank;
             $supplier->namarekening = $request->namarekening;
             $supplier->jabatan = $request->jabatan;
@@ -184,6 +185,7 @@ class SupplierController extends Controller
             $supplier->jenisusaha = $request->jenisusaha;
             // $supplier->top = $request->top;
             $supplier->bank = $request->bank;
+            $supplier->coa = $request->coa;
             $supplier->rekeningbank = $request->rekeningbank;
             $supplier->namarekening = $request->namarekening;
             $supplier->jabatan = $request->jabatan;
