@@ -184,9 +184,10 @@ class SubKelompokController extends Controller
      */
     public function destroy(Request $request, $id)
     {
-        // $cekvalidasi = $this->cekValidasi($id);
-        // dd($cekvalidasi);
-        // if ($cekvalidasi) {
+        $cekvalidasi = $this->cekValidasi($id);
+        // dd($cekvalidasi->original['kondisi']);
+        
+         if ($cekvalidasi->original['kondisi']==false) {
 
 
             DB::beginTransaction();
@@ -227,9 +228,15 @@ class SubKelompokController extends Controller
                     'message' => 'Gagal dihapus'
                 ]);
             }
-        // }
+         } else {
+            return response([
+                'status' => false,
+                'message' => $cekvalidasi->original['message']
+            ]);
+         }
     }
 
+   
     /**
      * @ClassName
      */
