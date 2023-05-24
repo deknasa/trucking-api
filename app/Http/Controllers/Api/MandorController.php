@@ -246,4 +246,48 @@ class MandorController extends Controller
             'data' => $data
         ]);
     }
+    public function export()
+    {
+        $response = $this->index();
+        $decodedResponse = json_decode($response->content(), true);
+        $mandors = $decodedResponse['data'];
+
+
+        $i = 0;
+        foreach ($mandors as $index => $params) {
+
+            $statusaktif = $params['statusaktif'];
+
+            $result = json_decode($statusaktif, true);
+
+            $statusaktif = $result['MEMO'];
+
+
+            $mandors[$i]['statusaktif'] = $statusaktif;
+
+        
+            $i++;
+
+
+        }
+        $columns = [
+            [
+                'label' => 'No',
+            ],
+            [
+                'label' => 'Nama Mandor',
+                'index' => 'namamandor',
+            ],
+            [
+                'label' => 'Keterangan',
+                'index' => 'keterangan',
+            ],
+            [
+                'label' => 'Status Aktif',
+                'index' => 'statusaktif',
+            ],
+        ];
+
+        $this->toExcel('Mandor', $mandors, $columns);
+    }
 }
