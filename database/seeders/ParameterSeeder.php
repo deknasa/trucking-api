@@ -317,6 +317,7 @@ class ParameterSeeder extends Seeder
         parameter::create(['grp' => 'PENGELUARAN TRUCKING', 'subgrp' => 'INSENTIF SUPIR', 'kelompok' => '', 'text' => '#BSB #9999#/#R#/#Y', 'memo' => '{"MEMO":"INSENTIF SUPIR","SINGKATAN":"#BSB #9999#/#R#/#Y","WARNA":"#28A745"}', 'type' => '118', 'modifiedby' => 'ADMIN', 'default' => '',]);
         parameter::create(['grp' => 'PENGELUARAN TRUCKING', 'subgrp' => 'PELUNASAN HUTANG BBM', 'kelompok' => '', 'text' => '#KBBM #9999#/#R#/#Y', 'memo' => '{"MEMO":"PELUNASAN HUTAN BBM","SINGKATAN":"#KBBM #9999#/#R#/#Y","WARNA":"#28A745"}', 'type' => '118', 'modifiedby' => 'ADMIN', 'default' => '',]);
         parameter::create(['grp' => 'UKURANCONTAINER2X20', 'subgrp' => 'UKURANCONTAINER2X20', 'kelompok' => '', 'text' => '3', 'memo' => '{"MEMO":"3","SINGKATAN":"UC","WARNA":"#28A745"}', 'type' => '0', 'modifiedby' => 'ADMIN', 'default' => 'YA',]);
+        parameter::create(['grp' => 'INVOICE CHARGE GANDENGAN', 'subgrp' => 'INVOICE CHARGE GANDENGAN', 'kelompok' => '', 'text' => '#INVG #9999#/#R#/#Y', 'memo' => '{"MEMO":"#INVG #9999#/#R#/#Y","SINGKATAN":"UC","WARNA":"#28A745"}', 'type' => '0', 'modifiedby' => 'ADMIN', 'default' => 'YA',]);
         
     }
 }
