@@ -268,6 +268,8 @@ route::middleware(['auth:api'])->group(function () {
     Route::get('mandor/field_length', [MandorController::class, 'fieldLength']);
     Route::get('mandor/default', [MandorController::class, 'default']);
     Route::post('mandor/{id}/cekValidasi', [MandorController::class, 'cekValidasi'])->name('mandor.cekValidasi');
+    Route::get('mandor/export', [MandorController::class, 'export']);
+    Route::get('mandor/report', [MandorController::class, 'report']);
     Route::resource('mandor', MandorController::class);
 
     Route::get('merk/combo', [MerkController::class, 'combo']);
