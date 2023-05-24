@@ -1181,5 +1181,7 @@ route::middleware(['auth:api'])->group(function () {
     Route::get('karyawan/field_length', [KaryawanController::class, 'fieldLength']);
     Route::get('karyawan/default', [KaryawanController::class, 'default']);
     Route::post('karyawan/{id}/cekValidasi', [KaryawanController::class, 'cekValidasi'])->name('karyawan.cekValidasi');
+    Route::get('karyawan/export', [KaryawanController::class, 'export']);
+    Route::get('karyawan/report', [KaryawanController::class, 'report']);
     Route::resource('karyawan', KaryawanController::class);
 });
