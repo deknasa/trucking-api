@@ -488,6 +488,8 @@ route::middleware(['auth:api'])->group(function () {
     Route::get('jenistrado/field_length', [JenisTradoController::class, 'fieldLength']);
     Route::get('jenistrado/default', [JenisTradoController::class, 'default']);
     Route::post('jenistrado/{id}/cekValidasi', [JenisTradoController::class, 'cekValidasi'])->name('jenistrado.cekValidasi');
+    Route::get('jenistrado/export', [JenisTradoController::class, 'export']);
+    Route::get('jenistrado/report', [JenisTradoController::class, 'report']);
     Route::resource('jenistrado', JenisTradoController::class);
 
     Route::get('akunpusat/field_length', [AkunPusatController::class, 'fieldLength']);

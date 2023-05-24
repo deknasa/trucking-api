@@ -249,4 +249,47 @@ class JenisTradoController extends Controller
             'data' => $data
         ]);
     }
+    public function export()
+    {
+        $response = $this->index();
+        $decodedResponse = json_decode($response->content(), true);
+        $jenisTrados = $decodedResponse['data'];
+
+        $i = 0;
+        foreach ($jenisTrados as $index => $params) {
+
+            $statusaktif = $params['statusaktif'];
+
+            $result = json_decode($statusaktif, true);
+
+            $statusaktif = $result['MEMO'];
+
+
+            $jenisTrados[$i]['statusaktif'] = $statusaktif;
+
+        
+            $i++;
+
+
+        }
+        $columns = [
+            [
+                'label' => 'No',
+            ],
+            [
+                'label' => 'Kode Jenis Trado',
+                'index' => 'kodejenistrado',
+            ],
+            [
+                'label' => 'Keterangan',
+                'index' => 'keterangan',
+            ],
+            [
+                'label' => 'Status Aktif',
+                'index' => 'statusaktif',
+            ],
+        ];
+
+        $this->toExcel('Jenis Trado', $jenisTrados, $columns);
+    }
 }
