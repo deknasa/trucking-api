@@ -898,6 +898,7 @@ route::middleware(['auth:api'])->group(function () {
     Route::get('suratpengantar/combo', [SuratPengantarController::class, 'combo']);
     Route::get('suratpengantar/field_length', [SuratPengantarController::class, 'fieldLength']);
     Route::post('suratpengantar/cekUpahSupir', [SuratPengantarController::class, 'cekUpahSupir']);
+    Route::post('suratpengantar/{id}/cekValidasi', [SuratPengantarController::class, 'cekValidasi']);
     Route::get('suratpengantar/{id}/getTarifOmset', [SuratPengantarController::class, 'getTarifOmset']);
     Route::get('suratpengantar/{id}/getpelabuhan', [SuratPengantarController::class, 'getpelabuhan']);
     Route::post('suratpengantar/{id}/batalmuat', [SuratPengantarController::class, 'approvalBatalMuat']);
@@ -1138,6 +1139,7 @@ route::middleware(['auth:api'])->group(function () {
     Route::resource('exportlaporanstok', ExportLaporanStokController::class);
     Route::get('laporanritasitrado/export', [LaporanRitasiTradoController::class, 'export'])->name('laporanritasitrado.export');
     Route::resource('laporanritasitrado', LaporanRitasiTradoController::class);
+    Route::get('laporanritasigandengan/header', [LaporanRitasiGandenganController::class, 'header'])->name('laporanritasigandengan.header');
     Route::get('laporanritasigandengan/export', [LaporanRitasiGandenganController::class, 'export'])->name('laporanritasigandengan.export');
     Route::resource('laporanritasigandengan', LaporanRitasiGandenganController::class);
     Route::get('laporanhistorypinjaman/export', [LaporanHistoryPinjamanController::class, 'export'])->name('laporanhistorypinjaman.export');

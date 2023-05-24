@@ -122,8 +122,6 @@ class LaporanRekapSumbangan extends MyModel
 
         $data = $result->get();
 
-
-
        return $data;
 
     }
