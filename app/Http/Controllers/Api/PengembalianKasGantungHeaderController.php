@@ -62,15 +62,11 @@ class PengembalianKasGantungHeaderController extends Controller
     public function store(StorePengembalianKasGantungHeaderRequest $request)
     {
         DB::beginTransaction();
-
         try {
-
             $tanpaprosesnobukti = $request->tanpaprosesnobukti ?? 0;
             if ($tanpaprosesnobukti == 0) {
                 $group = 'PENGEMBALIAN KAS GANTUNG BUKTI';
                 $subgroup = 'PENGEMBALIAN KAS GANTUNG BUKTI';
-
-
 
                 $format = DB::table('parameter')
                     ->where('grp', $group)
@@ -111,7 +107,7 @@ class PengembalianKasGantungHeaderController extends Controller
             $statusCetak = Parameter::where('grp', 'STATUSCETAK')->where('text', 'BELUM CETAK')->first();
 
             $pengembalianKasGantungHeader->tglbukti = date('Y-m-d', strtotime($request->tglbukti));
-            $pengembalianKasGantungHeader->pelanggan_id = $request->pelanggan_id ?? 0;
+            //$pengembalianKasGantungHeader->pelanggan_id = $request->pelanggan_id ?? 0;
             $pengembalianKasGantungHeader->bank_id = $request->bank_id;
             $pengembalianKasGantungHeader->tgldari = date('Y-m-d', strtotime($request->tgldari)) ?? date('Y-m-d', strtotime($request->tglbukti));
             $pengembalianKasGantungHeader->tglsampai = date('Y-m-d', strtotime($request->tglsampai)) ?? date('Y-m-d', strtotime($request->tglbukti));
@@ -200,7 +196,6 @@ class PengembalianKasGantungHeaderController extends Controller
                     ];
                     $detaillog[] = $datadetail;
                     $data = new StorePengembalianKasGantungDetailRequest($datadetail);
-                    dd( $data );
                     $pengembalianKasGantungDetail = app(PengembalianKasGantungDetailController::class)->store($data);
 
                     if ($pengembalianKasGantungDetail['error']) {
@@ -290,7 +285,7 @@ class PengembalianKasGantungHeaderController extends Controller
                     "tanpagetposition" => 1,
                     'nobukti' => $nobuktiPenerimaan,
                     'tglbukti' => date('Y-m-d', strtotime($request->tglbukti)),
-                    'pelanggan_id' => '',
+                    //'pelanggan_id' => '',
                     'bank_id' => $pengembalianKasGantungHeader->bank_id,
                     'postingdari' => $request->postingdari ?? 'PENGEMBALIAN KAS GANTUNG',
                     'diterimadari' => $request->diterimadari ?? 'PENGEMBALIAN KAS GANTUNG',
@@ -383,7 +378,7 @@ class PengembalianKasGantungHeaderController extends Controller
                 $memo = json_decode($coaKasMasuk->memo, true);
 
                 $pengembaliankasgantungheader->tglbukti = date('Y-m-d', strtotime($request->tglbukti));
-                $pengembaliankasgantungheader->pelanggan_id = $request->pelanggan_id;
+                //$pengembaliankasgantungheader->pelanggan_id = $request->pelanggan_id;
                 $pengembaliankasgantungheader->bank_id = $request->bank_id;
                 $pengembaliankasgantungheader->tgldari = date('Y-m-d', strtotime($request->tgldari));
                 $pengembaliankasgantungheader->tglsampai = date('Y-m-d', strtotime($request->tglsampai));

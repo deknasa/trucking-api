@@ -31,7 +31,6 @@ class StorePengembalianKasGantungHeaderRequest extends FormRequest
                 'required', 'date_format:d-m-Y',
                 new DateTutupBuku()
             ],
-
             "bank" => "required",
             "tgldari" => [
                 'required', 'date_format:d-m-Y'

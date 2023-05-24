@@ -18,7 +18,7 @@ class PengembalianKasGantungHeaderSeeder extends Seeder
         PengembalianKasGantungHeader::create([
             'nobukti' => 'PKGT 0001/V/2022',
             'tglbukti' => '2022/5/31',
-            'pelanggan_id' => 0,
+            //'pelanggan_id' => 0,
             'keterangan' => 'PENGEMBALIAN KAS GANTUNG',
             'bank_id' => 1,
             'tgldari' => '',

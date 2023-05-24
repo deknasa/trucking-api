@@ -101,7 +101,6 @@ class PengembalianKasGantungHeader extends MyModel
             'pengembaliankasgantungheader.id',
             'pengembaliankasgantungheader.nobukti',
             'pengembaliankasgantungheader.tglbukti',
-            'pelanggan.namapelanggan as pelanggan',
             'pengembaliankasgantungheader.keterangan',
             'bank.namabank as bank',
             DB::raw('(case when (year(pengembaliankasgantungheader.tgldari) <= 2000) then null else pengembaliankasgantungheader.tgldari end ) as tgldari'),
@@ -122,7 +121,6 @@ class PengembalianKasGantungHeader extends MyModel
             ->whereBetween('pengembaliankasgantungheader.tglbukti', [date('Y-m-d', strtotime(request()->tgldari)), date('Y-m-d', strtotime(request()->tglsampai))])
 
             ->leftJoin('akunpusat', 'pengembaliankasgantungheader.coakasmasuk', 'akunpusat.coa')
-            ->leftJoin('pelanggan', 'pengembaliankasgantungheader.pelanggan_id', 'pelanggan.id')
             ->leftJoin('bank', 'pengembaliankasgantungheader.bank_id', 'bank.id')
             ->leftJoin('parameter as statuscetak', 'pengembaliankasgantungheader.statuscetak', 'statuscetak.id');
 
@@ -151,7 +149,6 @@ class PengembalianKasGantungHeader extends MyModel
             $table->bigInteger('id')->nullable();
             $table->string('nobukti', 50)->unique();
             $table->date('tglbukti')->nullable();
-            $table->string('pelanggan_id', 1000)->nullable();
             $table->longText('keterangan')->nullable();
             $table->string('bank_id', 1000)->nullable();
             $table->date('tgldari')->nullable();
@@ -176,7 +173,6 @@ class PengembalianKasGantungHeader extends MyModel
             "id",
             "nobukti",
             "tglbukti",
-            "pelanggan_id",
             "keterangan",
             "bank_id",
             "tgldari",
@@ -201,7 +197,6 @@ class PengembalianKasGantungHeader extends MyModel
             "id",
             "nobukti",
             "tglbukti",
-            "pelanggan_id",
             "keterangan",
             "bank_id",
             "tgldari",
@@ -226,7 +221,6 @@ class PengembalianKasGantungHeader extends MyModel
             "$this->table.id",
             "$this->table.nobukti",
             "$this->table.tglbukti",
-            "$this->table.pelanggan_id",
             "$this->table.keterangan",
             "$this->table.bank_id",
             "$this->table.tgldari",
@@ -241,7 +235,6 @@ class PengembalianKasGantungHeader extends MyModel
             "$this->table.tglbukacetak",
             "$this->table.jumlahcetak",
             "$this->table.modifiedby",
-            "pelanggan.namapelanggan as pelanggan",
             "bank.namabank as bank",
             "akunpusat.coa as coa",
         );
@@ -262,7 +255,6 @@ class PengembalianKasGantungHeader extends MyModel
                 and pengembaliankasgantungdetail.pengembaliankasgantung_id = " . $id . "
           )")
             ->whereRaw('pengembaliankasgantungdetail.kasgantung_nobukti = kasgantungheader.nobukti')
-            // ->whereRaw('pengembaliankasgantungdetail.nominal = kasgantungheader.nominal')
             ->whereRaw('pengembaliankasgantungdetail.pengembaliankasgantung_id = ' . $id)
             ->leftJoin('kasgantungdetail', 'kasgantungdetail.kasgantung_id', 'kasgantungheader.id')
             ->leftJoin('pengembaliankasgantungdetail', 'kasgantungheader.nobukti', 'pengembaliankasgantungdetail.kasgantung_nobukti')
@@ -304,10 +296,7 @@ class PengembalianKasGantungHeader extends MyModel
                 ->orderBy($this->table . '.grp', $this->params['sortOrder'])
                 ->orderBy($this->table . '.id', $this->params['sortOrder']);
         }
-
-        if ($this->params['sortIndex'] == 'pelanggan') {
-            return $query->orderBy('pelanggan.namapelanggan', $this->params['sortOrder']);
-        } else if ($this->params['sortIndex'] == 'bank') {
+        if ($this->params['sortIndex'] == 'bank') {
             return $query->orderBy('bank.namabank', $this->params['sortOrder']);
         } else if ($this->params['sortIndex'] == 'coa') {
             return $query->orderBy('akunpusat.keterangancoa', $this->params['sortOrder']);
@@ -323,9 +312,8 @@ class PengembalianKasGantungHeader extends MyModel
                     foreach ($this->params['filters']['rules'] as $index => $filters) {
                         if ($filters['field'] == 'statuscetak') {
                             $query = $query->where('statuscetak.text', '=', $filters['data']);
-                        } else if ($filters['field'] == 'pelanggan') {
-                            $query = $query->where('pelanggan.namapelanggan', 'LIKE', "%$filters[data]%");
-                        } else if ($filters['field'] == 'bank') {
+                        } 
+                        else if ($filters['field'] == 'bank') {
                             $query = $query->where('bank.namabank', 'LIKE', "%$filters[data]%");
                         } else if ($filters['field'] == 'coa') {
                             $query = $query->where('akunpusat.keterangancoa', 'LIKE', "%$filters[data]%");
@@ -344,9 +332,8 @@ class PengembalianKasGantungHeader extends MyModel
                         foreach ($this->params['filters']['rules'] as $index => $filters) {
                             if ($filters['field'] == 'statuscetak') {
                                 $query = $query->orWhere('statuscetak.text', '=', $filters['data']);
-                            } else if ($filters['field'] == 'pelanggan') {
-                                $query = $query->orWhere('pelanggan.namapelanggan', 'LIKE', "%$filters[data]%");
-                            } else if ($filters['field'] == 'bank') {
+                            } 
+                            else if ($filters['field'] == 'bank') {
                                 $query = $query->orWhere('bank.namabank', 'LIKE', "%$filters[data]%");
                             } else if ($filters['field'] == 'coa') {
                                 $query = $query->orWhere('akunpusat.keterangancoa', 'LIKE', "%$filters[data]%");
@@ -383,7 +370,6 @@ class PengembalianKasGantungHeader extends MyModel
 
         $query = PengembalianKasGantungHeader::from(DB::raw("pengembaliankasgantungheader with (readuncommitted)"));
         $query = $this->selectColumns($query)
-            ->leftJoin('pelanggan', 'pengembaliankasgantungheader.pelanggan_id', 'pelanggan.id')
             ->leftJoin('bank', 'pengembaliankasgantungheader.bank_id', 'bank.id')
             ->leftJoin('penerimaanheader', 'pengembaliankasgantungheader.penerimaan_nobukti', 'penerimaanheader.nobukti')
             ->leftJoin('akunpusat', 'pengembaliankasgantungheader.coakasmasuk', 'akunpusat.coa');
