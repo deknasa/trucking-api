@@ -239,7 +239,31 @@ class KaryawanController extends Controller
 
         $response = $this->index();
         $decodedResponse = json_decode($response->content(), true);
-        $parameters = $decodedResponse['data'];
+        $karyawans = $decodedResponse['data'];
+
+        $i = 0;
+        foreach ($karyawans as $index => $params) {
+
+            $statusaktif = $params['statusaktif'];
+            $statustaff = $params['statusstaff'];
+
+            $result = json_decode($statusaktif, true);
+            $resultStaff = json_decode($statustaff, true);
+
+            $statusaktif = $result['MEMO'];
+            $statustaff = $resultStaff['MEMO'];
+
+
+            $karyawans[$i]['statusaktif'] = $statusaktif;
+            $karyawans[$i]['statusstaff'] = $statustaff;
+
+        
+            $i++;
+
+
+        }
+
+      
 
         $columns = [
             [
@@ -267,6 +291,6 @@ class KaryawanController extends Controller
             ],
         ];
 
-        $this->toExcel('Karyawan', $parameters, $columns);
+        $this->toExcel('Karyawan', $karyawans, $columns);
     }
 }

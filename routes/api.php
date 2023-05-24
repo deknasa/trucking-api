@@ -437,6 +437,8 @@ route::middleware(['auth:api'])->group(function () {
     Route::post('trado/upload_image/{id}', [TradoController::class, 'uploadImage']);
     Route::get('trado/default', [TradoController::class, 'default']);
     Route::post('trado/{id}/cekValidasi', [TradoController::class, 'cekValidasi'])->name('trado.cekValidasi');
+    Route::get('trado/export', [TradoController::class, 'export']);
+    Route::get('trado/report', [TradoController::class, 'report']);
     Route::resource('trado', TradoController::class);
 
     Route::get('absentrado/field_length', [AbsenTradoController::class, 'fieldLength']);
