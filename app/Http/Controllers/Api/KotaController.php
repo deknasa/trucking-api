@@ -83,6 +83,7 @@ class KotaController extends Controller
      */
     public function store(StoreKotaRequest $request)
     {
+  
         DB::beginTransaction();
 
         try {
@@ -128,7 +129,10 @@ class KotaController extends Controller
 
     public function show($id)
     {
+  
+
         $data = Kota::findAll($id);
+        // dd($data);
         return response([
             'status' => true,
             'data' => $data
@@ -141,9 +145,11 @@ class KotaController extends Controller
      */
     public function update(UpdateKotaRequest $request, Kota $kota)
     {
+
         DB::beginTransaction();
 
         try {
+            $kota = Kota::find($request->id);
             $kota->kodekota = $request->kodekota;
             $kota->keterangan = $request->keterangan ?? '';
             $kota->zona_id = $request->zona_id;
