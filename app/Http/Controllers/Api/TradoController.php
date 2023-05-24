@@ -130,9 +130,9 @@ class TradoController extends Controller
             $trado->statuslewatvalidasi = $statusLewatValidasi->id;
             $trado->modifiedby = auth('api')->user()->name;
 
-            $trado->photostnk = $this->storeFiles($request->photostnk, 'stnk');
-            $trado->photobpkb = $this->storeFiles($request->photobpkb, 'bpkb');
-            $trado->phototrado = $this->storeFiles($request->phototrado, 'trado');
+            $trado->photostnk = ($request->photostnk) ? $this->storeFiles($request->photostnk, 'stnk') : '';
+            $trado->photobpkb = ($request->photobpkb) ? $this->storeFiles($request->photobpkb, 'bpkb') : '';
+            $trado->phototrado = ($request->phototrado) ? $this->storeFiles($request->phototrado, 'trado') : '';
 
             $trado->save();
 
@@ -256,9 +256,9 @@ class TradoController extends Controller
 
             $this->deleteFiles($trado);
 
-            $trado->photostnk = $this->storeFiles($request->photostnk, 'stnk');
-            $trado->photobpkb = $this->storeFiles($request->photobpkb, 'bpkb');
-            $trado->phototrado = $this->storeFiles($request->phototrado, 'trado');
+            $trado->photostnk = ($request->photostnk) ? $this->storeFiles($request->photostnk, 'stnk') : '';
+            $trado->photobpkb = ($request->photobpkb) ? $this->storeFiles($request->photobpkb, 'bpkb') : '';
+            $trado->phototrado = ($request->phototrado) ? $this->storeFiles($request->phototrado, 'trado') : '';
             $trado->save();
             if ($trado->save()) {
                 $logTrail = [
@@ -383,7 +383,6 @@ class TradoController extends Controller
 
 
             $this->deleteFiles($trado);
-            dd('here');
             DB::commit();
 
             /* Set position and page */
@@ -392,7 +391,6 @@ class TradoController extends Controller
             $trado->id = $selected->id;
             $trado->page = ceil($trado->position / ($request->limit ?? 10));
 
-            // dd($trado);
             return response([
                 'status' => true,
                 'message' => 'Berhasil dihapus',
