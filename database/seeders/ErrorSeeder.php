@@ -62,5 +62,6 @@ class ErrorSeeder extends Seeder
         Error::create([ 'kodeerror' => 'ENTER', 'keterangan' => 'TEKAN ENTER PADA CELL UNTUK MENYIMPAN PERUBAHAN', 'modifiedby' => 'ADMIN',]);
         Error::create([ 'kodeerror' => 'WG', 'keterangan' => 'FILE HARUS BERUPA GAMBAR', 'modifiedby' => 'ADMIN',]);
         Error::create([ 'kodeerror' => 'TBMINUS', 'keterangan' => 'NILAI TIDAK BOLEH MINUS', 'modifiedby' => 'ADMIN',]);
+        Error::create([ 'kodeerror' => 'NTM', 'keterangan' => 'NILAI TIDAK BOLEH MINUS', 'modifiedby' => 'ADMIN',]);
     }
 }

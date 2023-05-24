@@ -4,6 +4,7 @@ use App\Http\Controllers\Api\AkunPusatController;
 use App\Http\Controllers\Api\AbsensiSupirDetailController;
 use App\Http\Controllers\Api\AbsensiSupirHeaderController;
 
+use App\Http\Controllers\Api\ApprovalSupirGambarController;
 use App\Http\Controllers\Api\BukaAbsensiController;
 use App\Http\Controllers\Api\SuratPengantarApprovalInputTripController;
 
@@ -259,6 +260,8 @@ route::middleware(['auth:api'])->group(function () {
     Route::get('kerusakan/field_length', [KerusakanController::class, 'fieldLength']);
     Route::get('kerusakan/default', [KerusakanController::class, 'default']);
     Route::post('kerusakan/{id}/cekValidasi', [KerusakanController::class, 'cekValidasi'])->name('kerusakan.cekValidasi');
+    Route::get('kerusakan/export', [KerusakanController::class, 'export']);
+    Route::get('kerusakan/report', [KerusakanController::class, 'report']);
     Route::resource('kerusakan', KerusakanController::class);
 
 
@@ -266,6 +269,8 @@ route::middleware(['auth:api'])->group(function () {
     Route::get('mandor/field_length', [MandorController::class, 'fieldLength']);
     Route::get('mandor/default', [MandorController::class, 'default']);
     Route::post('mandor/{id}/cekValidasi', [MandorController::class, 'cekValidasi'])->name('mandor.cekValidasi');
+    Route::get('mandor/export', [MandorController::class, 'export']);
+    Route::get('mandor/report', [MandorController::class, 'report']);
     Route::resource('mandor', MandorController::class);
 
     Route::get('merk/combo', [MerkController::class, 'combo']);
@@ -368,6 +373,9 @@ route::middleware(['auth:api'])->group(function () {
     Route::get('absensisupirdetail/get', [AbsensiSupirDetailController::class, 'getDetailAbsensi']);
     Route::resource('absensisupirdetail', AbsensiSupirDetailController::class);
     Route::resource('bukaabsensi', BukaAbsensiController::class);
+    
+    Route::get('approvalsupirgambar/default', [ApprovalSupirGambarController::class,'default']);
+    Route::resource('approvalsupirgambar', ApprovalSupirGambarController::class);
 
     Route::get('suratpengantarapprovalinputtrip/cektanggal', [SuratPengantarApprovalInputTripController::class, 'isTanggalAvaillable']);
     Route::resource('suratpengantarapprovalinputtrip', SuratPengantarApprovalInputTripController::class);
@@ -488,6 +496,8 @@ route::middleware(['auth:api'])->group(function () {
     Route::get('jenistrado/field_length', [JenisTradoController::class, 'fieldLength']);
     Route::get('jenistrado/default', [JenisTradoController::class, 'default']);
     Route::post('jenistrado/{id}/cekValidasi', [JenisTradoController::class, 'cekValidasi'])->name('jenistrado.cekValidasi');
+    Route::get('jenistrado/export', [JenisTradoController::class, 'export']);
+    Route::get('jenistrado/report', [JenisTradoController::class, 'report']);
     Route::resource('jenistrado', JenisTradoController::class);
 
     Route::get('akunpusat/field_length', [AkunPusatController::class, 'fieldLength']);

@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests;
 
+use App\Http\Controllers\Api\ErrorController;
 use App\Rules\MinNull;
 use App\Rules\NotDecimal;
 use App\Rules\NumberMax;
