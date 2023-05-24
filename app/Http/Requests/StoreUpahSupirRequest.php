@@ -4,6 +4,7 @@ namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
 use App\Http\Controllers\Api\ParameterController;
+use App\Http\Controllers\Api\ErrorController;
 
 class StoreUpahSupirRequest extends FormRequest
 {
@@ -28,7 +29,7 @@ class StoreUpahSupirRequest extends FormRequest
             'kotadari' => 'required',
             'kotasampai' => 'required',
             // 'zona' => 'required',
-            'jarak' => ['required','numeric','gt:0','max:'. (new ParameterController)->getparamid('BATAS KM UPAH SUPIR','BATAS KM UPAH SUPIR')->text],
+            'jarak' => ['required','numeric','gt:0','min:0','max:'. (new ParameterController)->getparamid('BATAS KM UPAH SUPIR','BATAS KM UPAH SUPIR')->text],
             'statusaktif' => 'required',
             'statusluarkota' => 'required',
             'tglmulaiberlaku' => 'required',
@@ -66,8 +67,9 @@ class StoreUpahSupirRequest extends FormRequest
     public function messages()
     {
         return [
-            'jarak.max' => 'Jarak wajib di isi',
-            'nominalsupir.*.gt' => 'nominal supir wajib di isi',
+            'jarak.max' => ':attribute ' . 'maximal jarak '. (new ParameterController)->getparamid('BATAS KM UPAH SUPIR','BATAS KM UPAH SUPIR')->text,
+            'jarak.min' => ':attribute ' . (new ErrorController)->geterror('TBMINUS')->keterangan,
+            'nominalsupir.*.gt' => ':attribute ' . (new ErrorController)->geterror('WI')->keterangan,
         ];
     }
 }
