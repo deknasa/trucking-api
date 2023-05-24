@@ -204,6 +204,8 @@ class SubKelompok extends MyModel
                             $query = $query->where('parameter.text', '=', $filters['data']);
                         } else if ($filters['field'] == 'kelompok_id') {
                             $query = $query->where('kelompok.keterangan', 'LIKE', "%$filters[data]%");
+                        } else if ($filters['field'] == 'kelompokid') {
+                            $query = $query->where('kelompok.id', '=', "$filters[data]");
                         } else if ($filters['field'] == 'created_at' || $filters['field'] == 'updated_at') {
                             $query = $query->whereRaw("format(".$this->table . "." . $filters['field'].", 'dd-MM-yyyy HH:mm:ss') LIKE '%$filters[data]%'");
                         } else {

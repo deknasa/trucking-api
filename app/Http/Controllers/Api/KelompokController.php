@@ -83,7 +83,7 @@ class KelompokController extends Controller
         try {
             $kelompok = new Kelompok();
             $kelompok->kodekelompok = $request->kodekelompok;
-            $kelompok->keterangan = $request->keterangan;
+            $kelompok->keterangan = $request->keterangan ?? '';
             $kelompok->statusaktif = $request->statusaktif;
             $kelompok->modifiedby = auth('api')->user()->name;
             $request->sortname = $request->sortname ?? 'id';
@@ -138,7 +138,7 @@ class KelompokController extends Controller
         DB::beginTransaction();
         try {
             $kelompok->kodekelompok = $request->kodekelompok;
-            $kelompok->keterangan = $request->keterangan;
+            $kelompok->keterangan = $request->keterangan ?? '';
             $kelompok->statusaktif = $request->statusaktif;
             $kelompok->modifiedby = auth('api')->user()->name;
 

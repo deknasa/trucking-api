@@ -85,7 +85,7 @@ class KategoriController extends Controller
         try {
             $kategori = new Kategori();
             $kategori->kodekategori = $request->kodekategori;
-            $kategori->keterangan = $request->keterangan;
+            $kategori->keterangan = $request->keterangan ?? '';
             $kategori->subkelompok_id = $request->subkelompok_id;
             $kategori->statusaktif = $request->statusaktif;
             $kategori->modifiedby = auth('api')->user()->name;
@@ -147,7 +147,7 @@ class KategoriController extends Controller
         DB::beginTransaction();
         try {
             $kategori->kodekategori = $request->kodekategori;
-            $kategori->keterangan = $request->keterangan;
+            $kategori->keterangan = $request->keterangan ?? '';
             $kategori->subkelompok_id = $request->subkelompok_id;
             $kategori->statusaktif = $request->statusaktif;
             $kategori->modifiedby = auth('api')->user()->name;

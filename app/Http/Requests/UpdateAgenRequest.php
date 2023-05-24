@@ -25,18 +25,19 @@ class UpdateAgenRequest extends FormRequest
     public function rules()
     {
         return [
-            "kodeagen" => "required",
-            "namaagen" => "required",
+            "kodeagen" => "required|unique:agen,kodeagen,".$this->agen->id,
+            "namaagen" => "required|unique:agen,namaagen,".$this->agen->id,
             "keterangan" => "required",
             "statusaktif" => "required",
             "namaperusahaan" => "required",
             "alamat" => "required",
-            "notelp" => "required",
+            "notelp" => "required|unique:agen,notelp,".$this->agen->id,
             "nohp" => "required",
             "contactperson" => "required",
             "top" => "required|numeric|gt:0",
             "statustas" => "required",
-            "keteranganjenisemkl" => "required",
+            // "keteranganjenisemkl" => "required",
+
         ];
     }
 
@@ -52,7 +53,7 @@ class UpdateAgenRequest extends FormRequest
             "contactperson" => "contact person",
             "top" => "top",
             "statustas" => "status tas",
-            "keteranganjenisemkl" => "jenis emkl",
+            // "keteranganjenisemkl" => "jenis emkl",
         ];
     }
     
@@ -63,7 +64,6 @@ class UpdateAgenRequest extends FormRequest
         return [
             'kodeagen.required' => ':attribute' . ' ' . $controller->geterror('WI')->keterangan,
             'namaagen.required' => ':attribute' . ' ' . $controller->geterror('WI')->keterangan,
-            'keterangan.required' => ':attribute' . ' ' . $controller->geterror('WI')->keterangan,
             'statusaktif.required' => ':attribute' . ' ' . $controller->geterror('WI')->keterangan,
             'namaperusahaan.required' => ':attribute' . ' ' . $controller->geterror('WI')->keterangan,
             'alamat.required' => ':attribute' . ' ' . $controller->geterror('WI')->keterangan,
@@ -73,8 +73,11 @@ class UpdateAgenRequest extends FormRequest
             'top.required' => ':attribute' . ' ' . $controller->geterror('WI')->keterangan,
             'jenisusaha.required' => ':attribute' . ' ' . $controller->geterror('WI')->keterangan,
             'statustas.required' => ':attribute' . ' ' . $controller->geterror('WI')->keterangan,
-            'keteranganjenisemkl.required' => ':attribute' . ' ' . $controller->geterror('WI')->keterangan,
+            // 'keteranganjenisemkl.required' => ':attribute' . ' ' . $controller->geterror('WI')->keterangan,
             'top.gt' => ':attribute' . ' ' . $controller->geterror('GT-ANGKA-0')->keterangan,
+            'kodeagen.unique' => ':attribute' . ' ' . $controller->geterror('SPI')->keterangan,
+            'namaagen.unique' => ':attribute' . ' ' . $controller->geterror('SPI')->keterangan,
+            'notelp.unique' => ':attribute' . ' ' . $controller->geterror('SPI')->keterangan,
         ];
     }   
 }

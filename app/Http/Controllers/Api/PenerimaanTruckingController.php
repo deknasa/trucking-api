@@ -73,7 +73,7 @@ class PenerimaanTruckingController extends Controller
         try {
             $penerimaanTrucking = new PenerimaanTrucking();
             $penerimaanTrucking->kodepenerimaan = $request->kodepenerimaan;
-            $penerimaanTrucking->keterangan = $request->keterangan;
+            $penerimaanTrucking->keterangan = $request->keterangan ?? '';
             $penerimaanTrucking->coadebet = $request->coadebet ?? '';
             $penerimaanTrucking->coakredit = $request->coakredit ?? '';
             $penerimaanTrucking->coapostingdebet = $request->coapostingdebet ?? '';
@@ -135,7 +135,7 @@ class PenerimaanTruckingController extends Controller
 
         try {
             $penerimaanTrucking->kodepenerimaan = $request->kodepenerimaan;
-            $penerimaanTrucking->keterangan = $request->keterangan;
+            $penerimaanTrucking->keterangan = $request->keterangan ?? '';
             $penerimaanTrucking->coadebet = $request->coadebet ?? '';
             $penerimaanTrucking->coakredit = $request->coakredit ?? '';
             $penerimaanTrucking->coapostingdebet = $request->coapostingdebet ?? '';

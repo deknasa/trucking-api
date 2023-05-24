@@ -80,7 +80,7 @@ class KaryawanController extends Controller
 
             $karyawan = new Karyawan();
             $karyawan->namakaryawan = $request->namakaryawan;
-            $karyawan->keterangan = $request->keterangan;
+            $karyawan->keterangan = $request->keterangan ?? '';
             $karyawan->statusaktif = $request->statusaktif;
             $karyawan->statusstaff = $request->statusstaff;
             $karyawan->modifiedby = auth('api')->user()->name;
@@ -134,7 +134,7 @@ class KaryawanController extends Controller
         DB::beginTransaction();
         try {
             $karyawan->namakaryawan = $request->namakaryawan;
-            $karyawan->keterangan = $request->keterangan;
+            $karyawan->keterangan = $request->keterangan ?? '';
             $karyawan->statusaktif = $request->statusaktif;
             $karyawan->statusstaff = $request->statusstaff;
             $karyawan->modifiedby = auth('api')->user()->name;
@@ -230,5 +230,43 @@ class KaryawanController extends Controller
         return response([
             'data' => $data
         ]);
+    }
+    public function export()
+    {
+     
+      
+        header('Access-Control-Allow-Origin: *');
+
+        $response = $this->index();
+        $decodedResponse = json_decode($response->content(), true);
+        $parameters = $decodedResponse['data'];
+
+        $columns = [
+            [
+                'label' => 'No',
+            ],
+            [
+                'label' => 'ID',
+                'index' => 'id',
+            ],
+            [
+                'label' => 'Nama Karyawan',
+                'index' => 'namakaryawan',
+            ],
+            [
+                'label' => 'Keterangan',
+                'index' => 'keterangan',
+            ],
+            [
+                'label' => 'Status Staff',
+                'index' => 'statusstaff',
+            ],
+            [
+                'label' => 'Status Aktif',
+                'index' => 'statusaktif',
+            ],
+        ];
+
+        $this->toExcel('Karyawan', $parameters, $columns);
     }
 }

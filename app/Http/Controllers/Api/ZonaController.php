@@ -87,7 +87,7 @@ class ZonaController extends Controller
             $zona = new Zona();
             $zona->zona = $request->zona;
             $zona->statusaktif = $request->statusaktif;
-            $zona->keterangan = $request->keterangan;
+            $zona->keterangan = $request->keterangan ?? '';
             $zona->modifiedby = auth('api')->user()->name;
             $request->sortname = $request->sortname ?? 'id';
             $request->sortorder = $request->sortorder ?? 'asc';
@@ -141,7 +141,7 @@ class ZonaController extends Controller
         DB::beginTransaction();
         try {
             $zona->zona = $request->zona;
-            $zona->keterangan = $request->keterangan;
+            $zona->keterangan = $request->keterangan ?? '';
             $zona->statusaktif = $request->statusaktif;
             $zona->modifiedby = auth('api')->user()->name;
 

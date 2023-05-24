@@ -25,7 +25,6 @@ class UpdateKaryawanRequest extends FormRequest
     {
         return [
             'namakaryawan' => 'required',
-            'keterangan' => 'required',
             'statusaktif' => 'required',
             'statusstaff' => 'required'
         ];

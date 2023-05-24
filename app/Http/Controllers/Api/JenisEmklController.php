@@ -83,7 +83,7 @@ class JenisEmklController extends Controller
         try {
             $jenisemkl = new JenisEmkl();
             $jenisemkl->kodejenisemkl = $request->kodejenisemkl;
-            $jenisemkl->keterangan = $request->keterangan;
+            $jenisemkl->keterangan = $request->keterangan ?? '';
             $jenisemkl->statusaktif = $request->statusaktif;
             $jenisemkl->modifiedby = auth('api')->user()->name;
             $request->sortname = $request->sortname ?? 'id';
@@ -138,7 +138,7 @@ class JenisEmklController extends Controller
         DB::beginTransaction();
         try {
             $jenisemkl->kodejenisemkl = $request->kodejenisemkl;
-            $jenisemkl->keterangan = $request->keterangan;
+            $jenisemkl->keterangan = $request->keterangan ?? '';
             $jenisemkl->modifiedby = auth('api')->user()->name;
             $jenisemkl->statusaktif = $request->statusaktif;
 

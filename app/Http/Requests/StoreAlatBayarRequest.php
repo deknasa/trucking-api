@@ -27,7 +27,6 @@ class StoreAlatBayarRequest extends FormRequest
         return [
             'kodealatbayar' => 'required',
             'namaalatbayar' => 'required',
-            'keterangan' => 'required',
             'statuslangsungcair' => 'required',
             'statusdefault' => 'required',
             'statusaktif' => 'required',
@@ -59,7 +58,6 @@ class StoreAlatBayarRequest extends FormRequest
             'statuslangsungcair.required' => ':attribute' . ' ' . $controller->geterror('WI')->keterangan,
             'statusdefault.required' => ':attribute' . ' ' . $controller->geterror('WI')->keterangan,
             'statusaktif.required' => ':attribute' . ' ' . $controller->geterror('WI')->keterangan,
-            'keterangan.required' => ':attribute' . ' ' . $controller->geterror('WI')->keterangan,
             'bank.required' => ':attribute' . ' ' . $controller->geterror('WI')->keterangan,
            
         ];

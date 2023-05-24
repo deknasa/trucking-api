@@ -153,6 +153,7 @@ class SupirController extends Controller
             }
             
             $supir->tglberhentisupir = $tanggalberhenti;
+            $supir->keteranganberhentisupir = ($request->keteranganberhentisupir == null) ? "" : $request->keteranganberhentisupir;
     
             if ($supir->save()) {
                 $logTrail = [
@@ -172,6 +173,9 @@ class SupirController extends Controller
             }
 
             return response([
+                "data"=>[
+                    "id"=>$supir->id
+                ],
                 'message' => 'Berhasil'
             ]);
 
@@ -260,6 +264,7 @@ class SupirController extends Controller
             $depositke = str_replace(',', '', $request->depositke);
             $supir->namasupir = $request->namasupir;
             $supir->alamat = $request->alamat;
+            $supir->namaalias = $request->namaalias;
             $supir->kota = $request->kota;
             $supir->telp = $request->telp;
             $supir->statusaktif = $request->statusaktif;
@@ -353,6 +358,7 @@ class SupirController extends Controller
             }
             $depositke = str_replace(',', '', $request->depositke);
             $supir->namasupir = $request->namasupir;
+            $supir->namaalias = $request->namaalias;
             $supir->alamat = $request->alamat;
             $supir->kota = $request->kota;
             $supir->telp = $request->telp;

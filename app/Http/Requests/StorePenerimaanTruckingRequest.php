@@ -25,7 +25,6 @@ class StorePenerimaanTruckingRequest extends FormRequest
     {
         return [
             'kodepenerimaan' => 'required',
-            'keterangan' => 'required',
             'format' => 'required',
         ];
     }

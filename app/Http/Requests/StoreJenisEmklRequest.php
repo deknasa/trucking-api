@@ -25,7 +25,7 @@ class StoreJenisEmklRequest extends FormRequest
     {
         return [
             'kodejenisemkl' => 'required',
-            'keterangan' => 'required'
+           
         ];
     }
 }

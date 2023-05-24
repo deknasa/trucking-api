@@ -25,7 +25,6 @@ class StoreStatusContainerRequest extends FormRequest
     {
         return [
             'kodestatuscontainer' => 'required',
-            'keterangan' => 'required',
             'statusaktif' => 'required|int',
         ];
     }

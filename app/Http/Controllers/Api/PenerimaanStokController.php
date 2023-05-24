@@ -78,7 +78,7 @@ class PenerimaanStokController extends Controller
         try {
             $penerimaanStok = new PenerimaanStok();
             $penerimaanStok->kodepenerimaan = $request->kodepenerimaan;
-            $penerimaanStok->keterangan = $request->keterangan;
+            $penerimaanStok->keterangan = $request->keterangan ?? '';
             $penerimaanStok->coa = $request->coa;
             $penerimaanStok->format = $request->format;
             $penerimaanStok->statushitungstok = $request->statushitungstok;
@@ -154,7 +154,7 @@ class PenerimaanStokController extends Controller
         try {
             $penerimaanStok = PenerimaanStok::where('id',$id)->first();
             $penerimaanStok->kodepenerimaan = $request->kodepenerimaan;
-            $penerimaanStok->keterangan = $request->keterangan;
+            $penerimaanStok->keterangan = $request->keterangan ?? '';
             $penerimaanStok->coa = $request->coa;
             $penerimaanStok->format = $request->format;
             $penerimaanStok->statushitungstok = $request->statushitungstok;

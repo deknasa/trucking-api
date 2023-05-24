@@ -85,7 +85,7 @@ class MerkController extends Controller
         try {
             $merk = new Merk();
             $merk->kodemerk = $request->kodemerk;
-            $merk->keterangan = $request->keterangan;
+            $merk->keterangan = $request->keterangan ?? '';
             $merk->statusaktif = $request->statusaktif;
             $merk->modifiedby = auth('api')->user()->name;
             $request->sortname = $request->sortname ?? 'id';
@@ -142,7 +142,7 @@ class MerkController extends Controller
         try {
             $merk = Merk::lockForUpdate()->findOrFail($merk->id);
             $merk->kodemerk = $request->kodemerk;
-            $merk->keterangan = $request->keterangan;
+            $merk->keterangan = $request->keterangan ?? '';
             $merk->statusaktif = $request->statusaktif;
             $merk->modifiedby = auth('api')->user()->name;
 

@@ -117,6 +117,7 @@ class TarifController extends Controller
             $tarif->zona_id = $request->zona_id ?? '';
             $tarif->tglmulaiberlaku = date('Y-m-d', strtotime($request->tglmulaiberlaku));
             $tarif->statuspenyesuaianharga = $request->statuspenyesuaianharga;
+            $tarif->keterangan = $request->keterangan;
             $tarif->modifiedby = auth('api')->user()->name;
 
             if ($tarif->save()) {
@@ -229,6 +230,7 @@ class TarifController extends Controller
             $tarif->zona_id = $request->zona_id ?? '';
             $tarif->tglmulaiberlaku = date('Y-m-d', strtotime($request->tglmulaiberlaku));
             $tarif->statuspenyesuaianharga = $request->statuspenyesuaianharga;
+            $tarif->keterangan = $request->keterangan;
             $tarif->modifiedby = auth('api')->user()->name;
 
             if ($tarif->save()) {

@@ -25,7 +25,6 @@ class StoreKotaRequest extends FormRequest
     {
         return [
             'kodekota' => ['required','unique:kota'],
-            'keterangan' => 'required',
             'zona' => 'required',
             'statusaktif' => 'required'
         ];
