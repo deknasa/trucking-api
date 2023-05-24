@@ -128,6 +128,7 @@ class TradoController extends Controller
             $trado->statusgerobak = $request->statusgerobak;
             $trado->statusappeditban = $statusAppeditban->id;
             $trado->statuslewatvalidasi = $statusLewatValidasi->id;
+            $trado->nominalplusborongan = str_replace( ',', '', $request->nominalplusborongan) ?? 0;
             $trado->modifiedby = auth('api')->user()->name;
 
             $trado->photostnk = ($request->photostnk) ? $this->storeFiles($request->photostnk, 'stnk') : '';
@@ -253,6 +254,7 @@ class TradoController extends Controller
             $trado->supir_id = $request->supir_id ?? 0;
             $trado->jumlahbanserap = $request->jumlahbanserap;
             $trado->statusgerobak = $request->statusgerobak;
+            $trado->nominalplusborongan = str_replace( ',', '', $request->nominalplusborongan) ?? 0;
 
             $this->deleteFiles($trado);
 

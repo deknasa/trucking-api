@@ -44,6 +44,6 @@ class NotDecimal implements Rule
      */
     public function message()
     {
-        return app(ErrorController::class)->geterror('GT-ANGKA-0')->keterangan;
+        return app(ErrorController::class)->geterror('NTM')->keterangan;
     }
 }
