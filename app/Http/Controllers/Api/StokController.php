@@ -92,9 +92,9 @@ class StokController extends Controller
             $stok->kategori_id = $request->kategori_id;
             $stok->merk_id = $request->merk_id ?? 0;
             $stok->jenistrado_id = $request->jenistrado_id ?? 0;
-            $stok->keterangan = $request->keterangan;
-            $stok->qtymin = $request->qtymin;
-            $stok->qtymax = $request->qtymax;
+            $stok->keterangan = $request->keterangan ?? '';
+            $stok->qtymin = $request->qtymin ?? 0;
+            $stok->qtymax = $request->qtymax ?? 0;
             $stok->modifiedby = auth('api')->user()->name;
 
             if ($request->gambar) {
@@ -164,9 +164,9 @@ class StokController extends Controller
             $stok->kategori_id = $request->kategori_id;
             $stok->merk_id =  $request->merk_id ?? 0;
             $stok->jenistrado_id = $request->jenistrado_id ?? 0;
-            $stok->keterangan = $request->keterangan;
-            $stok->qtymin = $request->qtymin;
-            $stok->qtymax = $request->qtymax;
+            $stok->keterangan = $request->keterangan ?? '';
+            $stok->qtymin = $request->qtymin ?? 0;
+            $stok->qtymax = $request->qtymax ?? 0;
             $stok->modifiedby = auth('api')->user()->name;
 
             $this->deleteFiles($stok);
@@ -262,7 +262,7 @@ class StokController extends Controller
 
         foreach ($files as $file) {
             $originalFileName = $file->hashName();
-            $storedFile = Storage::putFileAs($destinationFolder, $file, 'ori-' . $originalFileName);
+            $storedFile = Storage::putFileAs($destinationFolder, $file, $originalFileName);
             $resizedFiles = App::imageResize(storage_path("app/$destinationFolder/"), storage_path("app/$storedFile"), $originalFileName);
 
             $storedFiles[] = $originalFileName;
@@ -273,14 +273,14 @@ class StokController extends Controller
 
     private function deleteFiles(Stok $stok)
     {
-        $sizeTypes = ['ori', 'medium', 'small'];
+        $sizeTypes = ['', 'medium_', 'small_'];
 
         $relatedPhotoStok = [];
         $photoStok = json_decode($stok->gambar, true);
         if ($photoStok) {
             foreach ($photoStok as $path) {
                 foreach ($sizeTypes as $sizeType) {
-                    $relatedPhotoStok[] = "stok/$sizeType-$path";
+                    $relatedPhotoStok[] = "stok/$sizeType$path";
                 }
             }
             Storage::delete($relatedPhotoStok);
@@ -289,6 +289,10 @@ class StokController extends Controller
 
     public function getImage(string $filename, string $type)
     {
-        return response()->file(storage_path("app/stok/$type-$filename"));
+        if(Storage::exists("stok/$type" . '_' . "$filename")){
+            return response()->file(storage_path("app/stok/$type" . '_' . "$filename"));
+        }else{
+            return response()->file(storage_path("app/stok/$filename"));
+        }
     }
 }

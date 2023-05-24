@@ -59,6 +59,8 @@ class LaporanRekapSumbanganController extends Controller
 
         $export = LaporanRekapSumbangan::getReport($dari,$sampai);
 
+        dd($export);
+
         return response([
             'data' => $export
         ]);

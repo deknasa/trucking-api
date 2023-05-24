@@ -67,6 +67,7 @@ class UpahSupirController extends Controller
 
             $upahsupir->kotadari_id = $request->kotadari_id;
             $upahsupir->parent_id = $request->parent_id ?? 0;
+            $upahsupir->tarif_id = $request->tarif_id ?? 0;
             $upahsupir->kotasampai_id = $request->kotasampai_id;
             $upahsupir->jarak = str_replace(',', '', str_replace('.', '', $request->jarak));
             $upahsupir->zona_id = ($request->zona_id == null) ? 0 : $request->zona_id ?? 0;
@@ -74,7 +75,7 @@ class UpahSupirController extends Controller
             $upahsupir->tglmulaiberlaku = date('Y-m-d', strtotime($request->tglmulaiberlaku));
             // $upahsupir->tglakhirberlaku = ($request->tglakhirberlaku == null) ? "" : date('Y-m-d', strtotime($request->tglakhirberlaku));
             $upahsupir->statusluarkota = $request->statusluarkota;
-
+            $upahsupir->keterangan = $request->keterangan;
             $upahsupir->modifiedby = auth('api')->user()->name;
             $this->deleteFiles($upahsupir);
             if ($request->gambar) {
@@ -186,6 +187,7 @@ class UpahSupirController extends Controller
         try {
             $upahsupir->kotadari_id = $request->kotadari_id;
             $upahsupir->parent_id = $request->parent_id ?? 0;
+            $upahsupir->tarif_id = $request->tarif_id ?? 0;
             $upahsupir->kotasampai_id = $request->kotasampai_id;
             $upahsupir->jarak = str_replace(',', '', str_replace('.', '', $request->jarak));
             $upahsupir->zona_id = ($request->zona_id == null) ? 0 : $request->zona_id ?? 0;
@@ -193,7 +195,7 @@ class UpahSupirController extends Controller
             $upahsupir->tglmulaiberlaku = date('Y-m-d', strtotime($request->tglmulaiberlaku));
             // $upahsupir->tglakhirberlaku = ($request->tglakhirberlaku == null) ? "" : date('Y-m-d', strtotime($request->tglakhirberlaku));
             $upahsupir->statusluarkota = $request->statusluarkota;
-
+            $upahsupir->keterangan = $request->keterangan;
             $upahsupir->modifiedby = auth('api')->user()->name;
 
             $this->deleteFiles($upahsupir);
@@ -390,7 +392,7 @@ class UpahSupirController extends Controller
 
         foreach ($files as $file) {
             $originalFileName = $file->hashName();
-            $storedFile = Storage::putFileAs($destinationFolder, $file, 'ori-' . $originalFileName);
+            $storedFile = Storage::putFileAs($destinationFolder, $file, $originalFileName);
             $resizedFiles = App::imageResize(storage_path("app/$destinationFolder/"), storage_path("app/$storedFile"), $originalFileName);
 
             $storedFiles[] = $originalFileName;
@@ -401,14 +403,14 @@ class UpahSupirController extends Controller
 
     private function deleteFiles(UpahSupir $upahsupir)
     {
-        $sizeTypes = ['ori', 'medium', 'small'];
+        $sizeTypes = ['', 'medium_', 'small_'];
 
         $relatedPhotoUpahSupir = [];
         $photoUpahSupir = json_decode($upahsupir->gambar, true);
         if ($photoUpahSupir) {
             foreach ($photoUpahSupir as $path) {
                 foreach ($sizeTypes as $sizeType) {
-                    $relatedPhotoUpahSupir[] = "upahsupir/$sizeType-$path";
+                    $relatedPhotoUpahSupir[] = "upahsupir/$sizeType$path";
                 }
             }
             Storage::delete($relatedPhotoUpahSupir);
@@ -417,8 +419,8 @@ class UpahSupirController extends Controller
 
     public function getImage(string $filename, string $type)
     {
-        if(Storage::exists("upahsupir/$type-$filename")){
-            return response()->file(storage_path("app/upahsupir/$type-$filename"));
+        if(Storage::exists("upahsupir/$type" . '_' . "$filename")){
+            return response()->file(storage_path("app/upahsupir/$type" . '_' . "$filename"));
         }else{
             return response()->file(storage_path("app/upahsupir/$filename"));
         }

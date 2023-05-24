@@ -82,7 +82,7 @@ class PengeluaranStokController extends Controller
         try {
             $pengeluaranStok = new PengeluaranStok();
             $pengeluaranStok->kodepengeluaran = $request->kodepengeluaran;
-            $pengeluaranStok->keterangan = $request->keterangan;
+            $pengeluaranStok->keterangan = $request->keterangan ?? '';
             $pengeluaranStok->coa = $request->coa;
             $pengeluaranStok->format = $request->format;
             $pengeluaranStok->statushitungstok = $request->statushitungstok;
@@ -150,7 +150,7 @@ class PengeluaranStokController extends Controller
         try {
             $pengeluaranStok = PengeluaranStok::lockForUpdate()->where('id',$id)->first();
             $pengeluaranStok->kodepengeluaran = $request->kodepengeluaran;
-            $pengeluaranStok->keterangan = $request->keterangan;
+            $pengeluaranStok->keterangan = $request->keterangan ?? '';
             $pengeluaranStok->coa = $request->coa;
             $pengeluaranStok->format = $request->format;
             $pengeluaranStok->statushitungstok = $request->statushitungstok;

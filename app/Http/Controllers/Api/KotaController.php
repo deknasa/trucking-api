@@ -88,7 +88,7 @@ class KotaController extends Controller
         try {
             $kota = new Kota();
             $kota->kodekota = $request->kodekota;
-            $kota->keterangan = $request->keterangan;
+            $kota->keterangan = $request->keterangan ?? '';
             $kota->zona_id = $request->zona_id;
             $kota->statusaktif = $request->statusaktif;
             $kota->modifiedby = auth('api')->user()->name;
@@ -145,7 +145,7 @@ class KotaController extends Controller
 
         try {
             $kota->kodekota = $request->kodekota;
-            $kota->keterangan = $request->keterangan;
+            $kota->keterangan = $request->keterangan ?? '';
             $kota->zona_id = $request->zona_id;
             $kota->statusaktif = $request->statusaktif;
             $kota->modifiedby = auth('api')->user()->name;

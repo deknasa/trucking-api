@@ -30,9 +30,8 @@ class StoreStokRequest extends FormRequest
             "kategori"=>'required',
             "statusaktif"=>'required',
             "namaterpusat"=>'required',
-            "keterangan"=>'required',
-            "qtymin"=>'required',
-            "qtymax"=>'required',
+            // "qtymin"=>'required|gt:0|numeric',
+            // "qtymax"=>'required|gt:0|numeric',
         ];
     }
 }

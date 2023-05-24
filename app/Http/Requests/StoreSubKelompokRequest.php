@@ -28,7 +28,6 @@ class StoreSubKelompokRequest extends FormRequest
         return [
             'kodesubkelompok' => 'required',
             'kelompok' => 'required',
-            'keterangan' => 'required',
             'statusaktif' => 'required|numeric',
         ];
     }
@@ -50,7 +49,6 @@ class StoreSubKelompokRequest extends FormRequest
         return [
             'kodesubkelompok.required' => ':attribute' . ' ' . $controller->geterror('WI')->keterangan,
             'kelompok.required' => ':attribute' . ' ' . $controller->geterror('WI')->keterangan,
-            'keterangan.required' => ':attribute' . ' ' . $controller->geterror('WI')->keterangan,
             'statusaktif.required' => ':attribute' . ' ' . $controller->geterror('WI')->keterangan,
         ];
     }

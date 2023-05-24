@@ -25,7 +25,6 @@ class UpdateKotaRequest extends FormRequest
     {
         return [
             'kodekota' => 'required',
-            'keterangan' => 'required',
             'zona' => 'required',
             'statusaktif' => 'required'
         ];

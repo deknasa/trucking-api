@@ -321,7 +321,7 @@ class TarifRincian extends MyModel
 
         $this->filter($query);
 
-        if ($aktif == 'AKTIF') {
+        if (($aktif == 'AKTIF')&&(request()->filters == null)) {
             $statusaktif = Parameter::from(
                 DB::raw("parameter with (readuncommitted)")
             )
@@ -412,7 +412,8 @@ class TarifRincian extends MyModel
                     foreach ($this->params['filters']['rules'] as $index => $filters) {
 
                         if ($filters['field'] == 'statusaktif') {
-                            $query = $query->where('parameter.text', '=', "$filters[data]");
+                            $query = $query->where('tarif.statusaktif', '=', "$filters[data]");
+                            // $query = $query->where('parameter.text', '=', "$filters[data]");
                         } elseif ($filters['field'] == 'container_id') {
                             $query = $query->where('container.keterangan', 'LIKE', "%$filters[data]%");
                         } elseif ($filters['field'] == 'kota_id') {

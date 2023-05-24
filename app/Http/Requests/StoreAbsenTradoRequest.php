@@ -26,7 +26,6 @@ class StoreAbsenTradoRequest extends FormRequest
     {
         return [
             'kodeabsen' => 'required',
-            'keterangan' => 'required',
             'statusaktif' => 'required'
         ];
     }

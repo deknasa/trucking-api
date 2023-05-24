@@ -10,6 +10,7 @@ use App\Models\GajiSupirHeader;
 use App\Http\Requests\StoreGajiSupirHeaderRequest;
 use App\Http\Requests\StoreGajiSupirPelunasanPinjamanRequest;
 use App\Http\Requests\StoreGajiSupirPinjamanRequest;
+use App\Http\Requests\StoreGajisUpirUangJalanRequest;
 use App\Http\Requests\StoreJurnalUmumDetailRequest;
 use App\Http\Requests\StoreJurnalUmumHeaderRequest;
 use App\Http\Requests\StoreLogTrailRequest;
@@ -29,6 +30,7 @@ use App\Models\GajiSupirDeposito;
 use App\Models\GajiSupirDetail;
 use App\Models\GajiSupirPelunasanPinjaman;
 use App\Models\GajiSupirPinjaman;
+use App\Models\GajisUpirUangJalan;
 use App\Models\JurnalUmumHeader;
 use App\Models\LogTrail;
 use App\Models\Parameter;
@@ -528,6 +530,21 @@ class GajiSupirHeaderController extends Controller
                         ]
                     ];
                     $jurnal = $this->storeJurnal($jurnalHeader, $jurnalDetail);
+                }
+
+                if ($request->absensi_nobukti) {
+                    for ($i = 0; $i < count($request->absensi_nobukti); $i++) {
+                        $gajiSupirUangJalan = [
+                            'gajisupir_id' => $gajisupirheader->id,
+                            'gajisupir_nobukti' => $gajisupirheader->nobukti,
+                            'absensisupir_nobukti' => $request->absensi_nobukti[$i],
+                            'supir_id' => $request->supir_id,
+                            'nominal' => $request->absensi_uangjalan[$i]
+                        ];
+
+                        $gajiSupirUang = new StoreGajisUpirUangJalanRequest($gajiSupirUangJalan);
+                        app(GajisUpirUangJalanController::class)->store($gajiSupirUang);
+                    }
                 }
 
                 $request->sortname = $request->sortname ?? 'id';
@@ -1251,6 +1268,27 @@ class GajiSupirHeaderController extends Controller
                     }
                 }
 
+                if ($request->absensi_nobukti) {
+                    $cekUangjalan = GajisUpirUangJalan::from(DB::raw("gajisupiruangjalan with (readuncommitted)"))
+                        ->where('gajisupir_nobukti', $gajisupirheader->nobukti)->where('supir_id', $request->supir_id)->first();
+
+                    if ($cekUangjalan != null) {
+                        GajisUpirUangJalan::where('gajisupir_nobukti', $gajisupirheader->nobukti)->where('supir_id', $request->supir_id)->delete();
+                    }
+
+                    for ($i = 0; $i < count($request->absensi_nobukti); $i++) {
+                        $gajiSupirUangJalan = [
+                            'gajisupir_id' => $gajisupirheader->id,
+                            'gajisupir_nobukti' => $gajisupirheader->nobukti,
+                            'absensisupir_nobukti' => $request->absensi_nobukti[$i],
+                            'supir_id' => $request->supir_id,
+                            'nominal' => $request->absensi_uangjalan[$i]
+                        ];
+
+                        $gajiSupirUang = new StoreGajisUpirUangJalanRequest($gajiSupirUangJalan);
+                        app(GajisUpirUangJalanController::class)->store($gajiSupirUang);
+                    }
+                }
                 $request->sortname = $request->sortname ?? 'id';
                 $request->sortorder = $request->sortorder ?? 'asc';
 
@@ -1364,7 +1402,13 @@ class GajiSupirHeaderController extends Controller
                 }
             }
 
-
+            $fetchUangJalan = GajisUpirUangJalan::from(DB::raw("gajisupiruangjalan with (readuncommitted)"))->whereRaw("gajisupir_nobukti = '$gajiSupir->nobukti'")->first();
+            if ($fetchUangJalan != null) {
+                $getDetailUangJalan = GajisUpirUangJalan::lockForUpdate()->where('gajisupir_nobukti', $gajiSupir->nobukti)->get();
+                foreach ($getDetailUangJalan as $key => $value) {
+                    app(GajisUpirUangJalanController::class)->destroy($request, $value->id);
+                }
+            }
 
             DB::commit();
 
@@ -1669,9 +1713,9 @@ class GajiSupirHeaderController extends Controller
         $data = GajiSupirHeader::from(DB::raw("gajisupirheader with (readuncommitted)"))->where('id', $id)->first();
         $pinjamanSemua = new GajiSupirPelunasanPinjaman();
 
-        if($aksi == 'edit'){
+        if ($aksi == 'edit') {
             $data = $pinjamanSemua->getPinjamanSemua($data->nobukti);
-        }else{
+        } else {
             $data = $pinjamanSemua->getDeletePinjSemua($data->nobukti);
         }
         return response([
@@ -1684,13 +1728,79 @@ class GajiSupirHeaderController extends Controller
         $data = GajiSupirHeader::from(DB::raw("gajisupirheader with (readuncommitted)"))->where('id', $id)->first();
         $pinjamanPribadi = new GajiSupirPelunasanPinjaman();
 
-        if($aksi == 'edit'){
-            $data =$pinjamanPribadi->getPinjamanPribadi($data->nobukti,$supirId);
-        }else{
-            $data = $pinjamanPribadi->getDeletePinjPribadi($data->nobukti,$supirId);
+        if ($aksi == 'edit') {
+            $data = $pinjamanPribadi->getPinjamanPribadi($data->nobukti, $supirId);
+        } else {
+            $data = $pinjamanPribadi->getDeletePinjPribadi($data->nobukti, $supirId);
         }
         return response([
             'data' => $data
+        ]);
+    }
+
+    public function getAbsensi()
+    {
+        $gajiSupir = new GajiSupirHeader();
+
+        $supir_id = request()->supirId;
+        $tglDari = date('Y-m-d', strtotime(request()->dari));
+        $tglSampai = date('Y-m-d', strtotime(request()->sampai));
+
+        if (request()->dari && request()->sampai && request()->supir_id) {
+
+            $data = $gajiSupir->getAbsensi($supir_id, $tglDari, $tglSampai);
+            if ($data != null) {
+                return response([
+                    'errors' => false,
+                    'data' => $data,
+                    'attributes' => [
+                        'totalRows' => $gajiSupir->totalRows,
+                        'totalPages' => $gajiSupir->totalPages,
+                        'uangjalan' => $gajiSupir->totalUangJalan,
+                    ]
+                ]);
+            } else {
+                return response([
+                    'errors' => false,
+                    'data' => [],
+                    'attributes' => [
+                        'totalRows' => 0,
+                        'totalPages' => 0,
+                        'uangjalan' => 0,
+                    ]
+                ]);
+            }
+        } else {
+            return response([
+                'data' => [],
+                'attributes' => [
+                    'totalRows' => 0,
+                    'totalPages' => 0,
+                ]
+            ]);
+        }
+    }
+
+    public function getEditAbsensi($gajiId)
+    {
+        $gajisupir = new GajiSupirHeader();
+        $aksi = request()->aksi;
+        if ($aksi == 'edit') {
+            $supir_id = request()->supirId;
+            $dari = date('Y-m-d', strtotime(request()->dari));
+            $sampai = date('Y-m-d', strtotime(request()->sampai));
+            $data = $gajisupir->getAllEditAbsensi($gajiId, $supir_id, $dari, $sampai);
+        } else {
+            $data = $gajisupir->getEditAbsensi($gajiId);
+        }
+
+        return response([
+            'data' => $data,
+            'attributes' => [
+                'totalRows' => $gajisupir->totalRows,
+                'totalPages' => $gajisupir->totalPages,
+                'uangjalan' => $gajisupir->totalUangJalan,
+            ]
         ]);
     }
 

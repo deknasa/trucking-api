@@ -228,9 +228,9 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
 
 Route::post('token', [AuthController::class, 'token']);
 
-Route::get('supir/image/{field}/{filename}/{type}', [SupirController::class, 'getImage']);
+Route::get('supir/image/{field}/{filename}/{type}/{aksi}', [SupirController::class, 'getImage']);
 Route::get('supir/pdf/{field}/{filename}', [SupirController::class, 'getPdf']);
-Route::get('trado/image/{field}/{filename}/{type}', [TradoController::class, 'getImage']);
+Route::get('trado/image/{field}/{filename}/{type}/{aksi}', [TradoController::class, 'getImage']);
 Route::get('stok/{filename}/{type}', [StokController::class, 'getImage']);
 Route::get('upahsupir/{filename}/{type}', [UpahSupirController::class, 'getImage']);
 
@@ -785,6 +785,7 @@ route::middleware(['auth:api'])->group(function () {
     Route::get('gajisupirheader/no_bukti', [GajiSupirHeaderController::class, 'getNoBukti']);
     Route::get('gajisupirheader/grid', [GajiSupirHeaderController::class, 'grid']);
     Route::get('gajisupirheader/field_length', [GajiSupirHeaderController::class, 'fieldLength']);
+    Route::get('gajisupirheader/getAbsensi', [GajiSupirHeaderController::class, 'getAbsensi']);
     Route::get('gajisupirheader/getTrip', [GajiSupirHeaderController::class, 'getTrip']);
     Route::get('gajisupirheader/getpinjsemua', [GajiSupirHeaderController::class, 'getPinjSemua']);
     Route::get('gajisupirheader/{id}/{aksi}/editpinjsemua', [GajiSupirHeaderController::class, 'getEditPinjSemua']);
@@ -793,9 +794,11 @@ route::middleware(['auth:api'])->group(function () {
     Route::post('gajisupirheader/noEdit', [GajiSupirHeaderController::class, 'noEdit']);
     Route::post('gajisupirheader/getuangjalan', [GajiSupirHeaderController::class, 'getUangJalan']);
     Route::get('gajisupirheader/{gajiId}/getEditTrip', [GajiSupirHeaderController::class, 'getEditTrip']);
+    Route::get('gajisupirheader/{gajiId}/getEditAbsensi', [GajiSupirHeaderController::class, 'getEditAbsensi']);
     Route::resource('gajisupirheader', GajiSupirHeaderController::class);
 
     Route::get('gajisupirdetail/jurnalbbm', [GajiSupirDetailController::class, 'jurnalBBM']);
+    Route::get('gajisupirdetail/absensi', [GajiSupirDetailController::class, 'absensi']);
     Route::get('gajisupirdetail/deposito', [GajiSupirDetailController::class, 'deposito']);
     Route::get('gajisupirdetail/potpribadi', [GajiSupirDetailController::class, 'potPribadi']);
     Route::get('gajisupirdetail/potsemua', [GajiSupirDetailController::class, 'potSemua']);
@@ -981,6 +984,8 @@ route::middleware(['auth:api'])->group(function () {
 
     Route::get('harilibur/field_length', [HariLiburController::class, 'fieldLength']);
     Route::get('harilibur/default', [HariLiburController::class, 'default']);
+    Route::get('harilibur/export', [HariLiburController::class, 'export']);
+    Route::get('harilibur/report', [HariLiburController::class, 'report']);
     Route::resource('harilibur', HariLiburController::class);
 
     Route::get('jurnalumumpusatheader/grid', [JurnalUmumPusatHeaderController::class, 'grid']);
@@ -1066,6 +1071,7 @@ route::middleware(['auth:api'])->group(function () {
     Route::resource('laporankasgantung', LaporanKasGantungController::class);
 
     Route::get('laporanhutangbbm/report', [LaporanHutangBBMController::class, 'report'])->name('laporanhutangbbm.report');
+    Route::get('laporanhutangbbm/export', [LaporanHutangBBMController::class, 'export'])->name('laporanhutangbbm.export');
     Route::resource('laporanhutangbbm', LaporanHutangBBMController::class);
     Route::get('laporanestimasikasgantung/report', [LaporanEstimasiKasGantungController::class, 'report'])->name('laporanestimasikasgantung.report');
     Route::get('lapkartuhutangpervendordetail/report', [LapKartuHutangPerVendorDetailController::class, 'report'])->name('lapkartuhutangpervendordetail.report');
@@ -1091,6 +1097,7 @@ route::middleware(['auth:api'])->group(function () {
 
     Route::resource('laporanestimasikasgantung', LaporanEstimasiKasGantungController::class);
     Route::get('laporantriptrado/report', [LaporanTripTradoController::class, 'report'])->name('laporantriptrado.report');
+    Route::get('laporantriptrado/export', [LaporanTripTradoController::class, 'export'])->name('laporantriptrado.export');
     Route::resource('laporantriptrado', zLaporanTripTradoController::class);
     Route::get('laporankartuhutangprediksi/report', [LaporanKartuHutangPrediksiController::class, 'report'])->name('laporankartuhutangprediksi.report');
     Route::resource('laporankartuhutangprediksi', LaporanKartuHutangPrediksiController::class);
@@ -1176,5 +1183,7 @@ route::middleware(['auth:api'])->group(function () {
     Route::get('karyawan/field_length', [KaryawanController::class, 'fieldLength']);
     Route::get('karyawan/default', [KaryawanController::class, 'default']);
     Route::post('karyawan/{id}/cekValidasi', [KaryawanController::class, 'cekValidasi'])->name('karyawan.cekValidasi');
+    Route::get('karyawan/export', [KaryawanController::class, 'export']);
+    Route::get('karyawan/report', [KaryawanController::class, 'report']);
     Route::resource('karyawan', KaryawanController::class);
 });

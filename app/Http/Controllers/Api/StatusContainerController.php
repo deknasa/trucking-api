@@ -91,7 +91,7 @@ class StatusContainerController extends Controller
         try {
             $statusContainer = new StatusContainer();
             $statusContainer->kodestatuscontainer = $request->kodestatuscontainer;
-            $statusContainer->keterangan = $request->keterangan;
+            $statusContainer->keterangan = $request->keterangan ?? '';
             $statusContainer->statusaktif = $request->statusaktif;
             $statusContainer->modifiedby = auth('api')->user()->name;
             $request->sortname = $request->sortname ?? 'id';
@@ -138,7 +138,7 @@ class StatusContainerController extends Controller
         DB::beginTransaction();
         try {
             $statusContainer->kodestatuscontainer = $request->kodestatuscontainer;
-            $statusContainer->keterangan = $request->keterangan;
+            $statusContainer->keterangan = $request->keterangan ?? '';
             $statusContainer->statusaktif = $request->statusaktif;
             $statusContainer->modifiedby = auth('api')->user()->name;
 

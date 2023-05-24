@@ -25,7 +25,6 @@ class StoreMandorRequest extends FormRequest
     {
         return [
             'namamandor' => 'required',
-            'keterangan' => 'required',
             'statusaktif' => 'required',
         ];
     }

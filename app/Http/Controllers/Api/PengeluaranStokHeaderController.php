@@ -11,11 +11,14 @@ use App\Models\PengeluaranStok;
 use App\Models\PengeluaranStokHeader;
 use App\Models\PengeluaranStokDetail;
 use App\Models\PenerimaanStokDetail;
+use App\Models\PenerimaanStokHeader;
+use App\Models\HutangHeader;
 use App\Models\PengeluaranStokDetailFifo;
 use App\Models\StokPersediaan;
 use App\Models\Stok;
 use App\Models\Bank;
 use App\Models\Error;
+use Illuminate\Support\Facades\Validator;
 
 use Illuminate\Support\Facades\Schema;
 use App\Http\Requests\StoreLogTrailRequest;
@@ -23,6 +26,7 @@ use App\Http\Requests\StorePengeluaranStokHeaderRequest;
 use App\Http\Requests\UpdatePengeluaranStokHeaderRequest;
 use App\Http\Requests\StorePengeluaranStokDetailRequest;
 use App\Http\Requests\StorePengeluaranStokDetailFifoRequest;
+use App\Http\Requests\StoreHutangBayarHeaderRequest;
 use App\Http\Requests\StorePenerimaanHeaderRequest;
 use App\Http\Requests\StorePenerimaanDetailRequest;
 use App\Models\PenerimaanHeader;
@@ -167,8 +171,7 @@ class PengeluaranStokHeaderController extends Controller
 
                         $datafifo = new StorePengeluaranStokDetailFifoRequest($datadetailfifo);
                         $pengeluaranStokDetailFifo = app(PengeluaranStokDetailFifoController::class)->store($datafifo);
-                        // return response([$pengeluaranStokDetailFifo], 422);
-
+                        // return response($pengeluaranStokDetailFifo, 422);
                         if ($pengeluaranStokDetailFifo['error']) {
                             return response($pengeluaranStokDetailFifo, 422);
                         }
@@ -195,10 +198,25 @@ class PengeluaranStokHeaderController extends Controller
                 $statusformat = Parameter::where('id', $pengeluaranstok->format)->first();
 
                 if ($statusformat->id == $rbt->id) {
-
+                    $validator = Validator::make(
+                        $request->all(),
+                        [
+                            'statuspotongretur' => 'required',
+                            'bank_id' => 'required',
+                        ],
+                        [
+                            'statuspotongretur.required' => ':attribute' . ' ' . app(ErrorController::class)->geterror('WI')->keterangan,
+                            'bank_id.required' => ':attribute' . ' ' . app(ErrorController::class)->geterror('WI')->keterangan,
+                           
+                        ],
+                        [
+                            'statuspotongretur' => 'status potong retur',
+                            'bank_id' => 'bank',
+                        ],
+                    )->validate();
                     $potongKas = Parameter::where('grp', 'STATUS POTONG RETUR')->where('text', 'POSTING KE KAS/BANK')->first();
                     $potongHutang = Parameter::where('grp', 'STATUS POTONG RETUR')->where('text', 'POTONG HUTANG')->first();
-                    
+                    // return response([$pengeluaranStokHeader->statuspotongretur],422);
                     if ($pengeluaranStokHeader->statuspotongretur == $potongKas->id) {
 
                         $statusApproval = DB::table('parameter')
@@ -289,21 +307,52 @@ class PengeluaranStokHeaderController extends Controller
                         $pengeluaranStokHeader->penerimaan_nobukti = $penerimaan['data']['nobukti'];
                         $pengeluaranStokHeader->save();
                     } else if ($pengeluaranStokHeader->statuspotongretur == $potongHutang->id) {
+                        $validator = Validator::make(
+                            $request->all(),
+                            [
+                                'bank_id' => 'required',
+                            ],
+                            [
+                                'bank_id.required' => ':attribute' . ' ' . app(ErrorController::class)->geterror('WI')->keterangan,
+                               
+                            ],
+                            [
+                                'bank_id' => 'bank',
+                            ],
+                        )->validate();
+                        
+                        // if (!$validator->passes()) {
+                        //     return [
+                        //         'error' => true,
+                        //         'errors' => $validator->messages()
+                        //     ];
+                        // }
+                        $penerimaanstok = Penerimaanstokheader::where('nobukti',$request->penerimaanstok_nobukti)->first();
+                        $hutang = HutangHeader::where('nobukti',$penerimaanstok->hutang_nobukti)->first();
+                        $totalItem = 0;
+                        for ($i = 0; $i < count($request->detail_stok); $i++) {
+                            $totalItem += ($request->detail_harga[0]*$request->detail_qty[$i]);
+                        }
                         $hutangHeader = [
                             "tglbukti" => $request->tglbukti,
                             "bank_id" => $request->bank_id,
                             "supplier_id" => $request->supplier_id,
                             "alatbayar_id" => 0,
-                            "tglcair" => $request->tglcair,
+                            "tglcair" => $request->tglbukti,
+                        // ];
+
+                        // $hutangDetail = [
+                            "hutang_id"=> [$hutang->id],
+                            "hutang_nobukti"=> [$hutang->nobukti],
+                            "bayar"=> [$totalItem],
+                            "potongan"=> [0],
+                            "keterangan"=> ["PENGELUARAN STOK RETUR"]
                         ];
-                        // return response([$potongHutang],422);
-                        // for ($i = 0; $i < count($request->detail_stok); $i++) {
-                        //     $hutangHeader['keterangandetail'][] = $request->detail_keterangan[$i];
-                        //     $hutangHeader['bayar'][] = $request->bayar[$i];
-                        //     $hutangHeader['hutang_id'][] = $request->hutang_id[$i];
-                        //     $hutangHeader['total'][] = $request->total[$i];
-                        //     $hutangHeader['potongan'][] = $request->potongan[$i];
-                        // }
+                        // return response([$hutangHeader],422);
+                        $pembayaranHutang = $this->storePembayaranHutang($hutangHeader);
+                        $pengeluaranStokHeader->hutangbayar_nobukti = $pembayaranHutang['data']['nobukti'];
+                        $pengeluaranStokHeader->save();
+                        
                     }
                 }
 
@@ -462,12 +511,15 @@ class PengeluaranStokHeaderController extends Controller
                             ->get();
 
                         $datadetail = json_decode($datadetail, true);
-
+                        $persediaan = $this->persediaan($pengeluaranStokHeader->gudang_id,$pengeluaranStokHeader->trado_id,$pengeluaranStokHeader->gandengan_id);
                         foreach ($datadetail as $item) {
-                            $stokpersediaan  = StokPersediaan::lockForUpdate()->where("stok_id", $item['stok_id'])
-                                ->where("gudang_id", ($request->gudang_id))->firstorFail();
-                            $stokpersediaan->qty += $item['qty'];
-                            $stokpersediaan->save();
+                            $stokpersediaangudang = $this->checkTempat($item['stok_id'],$persediaan['column'].'_id',$persediaan['value']); //stok persediaan 
+                            if (!$stokpersediaangudang) {
+                                $stokpersediaangudang= StokPersediaan::create(["stok_id"=> $item['stok_id'], $persediaan['column'] => $persediaan['value']]);
+                            }
+                            
+                            $stokpersediaangudang->qty += $item['qty'];
+                            $stokpersediaangudang->save();
                         }
                     }
 
@@ -515,6 +567,8 @@ class PengeluaranStokHeaderController extends Controller
 
                         $datafifo = new StorePengeluaranStokDetailFifoRequest($datadetailfifo);
                         $pengeluaranStokDetailFifo = app(PengeluaranStokDetailFifoController::class)->store($datafifo);
+                        // return response([$pengeluaranStokDetailFifo],422);
+
                         if ($pengeluaranStokDetailFifo['error']) {
                             return response($pengeluaranStokDetailFifo, 422);
                         }
@@ -541,10 +595,10 @@ class PengeluaranStokHeaderController extends Controller
                     app(LogTrailController::class)->store($data);
 
                     /* Delete existing Jurnal */
-                    PenerimaanDetail::where('nobukti', $pengeluaranStokHeader->penerimaan_nobukti)->delete();
-                    PenerimaanHeader::where('nobukti', $pengeluaranStokHeader->penerimaan_nobukti)->delete();
                     JurnalUmumDetail::where('nobukti', $pengeluaranStokHeader->penerimaan_nobukti)->delete();
                     JurnalUmumHeader::where('nobukti', $pengeluaranStokHeader->penerimaan_nobukti)->delete();
+                    PenerimaanDetail::where('nobukti', $pengeluaranStokHeader->penerimaan_nobukti)->delete();
+                    PenerimaanHeader::where('nobukti', $pengeluaranStokHeader->penerimaan_nobukti)->delete();
 
                      $rbt = Parameter::where('grp', 'PENGELUARAN STOK')->where('subgrp', 'RETUR BELI BUKTI')->first();
                      $pengeluaranstok = PengeluaranStok::where('id',$request->pengeluaranstok_id)->first();
@@ -693,41 +747,49 @@ class PengeluaranStokHeaderController extends Controller
     {
         $pengeluaranStokHeader = PengeluaranStokHeader::where('id', $id)->first();
 
-        /*Update  di stok persediaan*/
-
-        $spk = Parameter::where('grp', 'SPK STOK')->where('subgrp', 'SPK STOK')->first();
-        if ($pengeluaranStokHeader->pengeluaranstok_id == $spk->text) {
-
-            $querypengeluaranstokdetail = PengeluaranStokDetail::from(
-                "pengeluaranstokdetail as i"
-            )
-                ->select(
-                    'i.stok_id',
-
-                )
-                ->where('i.pengeluaranstokheader_id', '=', $id)
-                ->orderBy('i.id', 'Asc')
-                ->get();
-
-
-            $datastokdetail = json_decode($querypengeluaranstokdetail, true);
-            foreach ($datastokdetail as $item) {
-
-                $reset = $this->resethpp($pengeluaranStokHeader->id, $item['stok_id'], true);
-                // return  $reset;
-
-                if (!$reset['status']) {
-                    throw new \Throwable($reset['message']);
-                }
-            }
-        }
 
         DB::beginTransaction();
         $getDetail = PengeluaranStokDetail::where('pengeluaranstokheader_id', $id)->get();
         $pengeluaranStok = new PengeluaranStokHeader();
         $pengeluaranStok = $pengeluaranStok->lockAndDestroy($id);
-
-
+        // return response([$pengeluaranStok],422);
+        /* Delete existing Jurnal */
+        $spk = Parameter::where('grp', 'SPK STOK')->where('subgrp', 'SPK STOK')
+            // ->where('text', '=', $pengeluaranStok->pengeluaranstok_id)
+            ->first();
+        $kor = Parameter::where('grp', 'KOR MINUS STOK')->where('subgrp', 'KOR MINUS STOK')
+            // ->where('text', '=', $pengeluaranStok->pengeluaranstok_id)
+            ->first();
+        $rtr = Parameter::where('grp', 'RETUR STOK')->where('subgrp', 'RETUR STOK')
+            // ->where('text', '=', $pengeluaranStok->pengeluaranstok_id)
+            ->first();
+        switch ($pengeluaranStok->pengeluaranstok_id) {
+            case $spk->text:
+                $JurnalUmumDetail = JurnalUmumDetail::where('nobukti', $pengeluaranStok->nobukti)->delete();
+                $JurnalUmumHeader = JurnalUmumHeader::where('nobukti', $pengeluaranStok->nobukti)->delete();                break;
+            case $kor->text:
+                $JurnalUmumDetail = JurnalUmumDetail::where('nobukti', $pengeluaranStok->nobukti)->delete();
+                $JurnalUmumHeader = JurnalUmumHeader::where('nobukti', $pengeluaranStok->nobukti)->delete();                break;
+            case $rtr->text:
+                if ($pengeluaranStok->penerimaan_nobukti) {
+                    $PenerimaanDetail = PenerimaanDetail::where('nobukti', $pengeluaranStok->penerimaan_nobukti)->delete();
+                    $PenerimaanHeader = PenerimaanHeader::where('nobukti', $pengeluaranStok->penerimaan_nobukti)->delete();
+                    $JurnalUmumDetail = JurnalUmumDetail::where('nobukti', $pengeluaranStok->penerimaan_nobukti)->delete();
+                    $JurnalUmumHeader = JurnalUmumHeader::where('nobukti', $pengeluaranStok->penerimaan_nobukti)->delete();
+                }
+                if ($pengeluaranStok->hutangbayar_nobukti) {
+                    $PenerimaanDetail = PenerimaanDetail::where('nobukti', $pengeluaranStok->hutangbayar_nobukti)->delete();
+                    $PenerimaanHeader = PenerimaanHeader::where('nobukti', $pengeluaranStok->hutangbayar_nobukti)->delete();
+                    $JurnalUmumDetail = JurnalUmumDetail::where('nobukti', $pengeluaranStok->hutangbayar_nobukti)->delete();
+                    $JurnalUmumHeader = JurnalUmumHeader::where('nobukti', $pengeluaranStok->hutangbayar_nobukti)->delete();
+                }
+                break;
+            
+            default:
+                # code...
+                break;
+        }
+       
         /*Update  di stok persediaan*/
 
         $spk = Parameter::where('grp', 'SPK STOK')->where('subgrp', 'SPK STOK')
@@ -828,22 +890,6 @@ class PengeluaranStokHeaderController extends Controller
             $penerimaan = new StorePenerimaanHeaderRequest($penerimaanHeader);
             $header = app(PenerimaanHeaderController::class)->store($penerimaan);
 
-            // $nobukti = $penerimaanHeader['nobukti'];
-            // $fetchPenerimaan = PenerimaanHeader::where("nobukti",$nobukti)->first();
-
-            // $parameterController = new ParameterController;
-            // $statusApp = $parameterController->getparameterid('STATUS APPROVAL', 'STATUS APPROVAL', 'NON APPROVAL');
-
-            // $id = $fetchPenerimaan->id;
-
-            // foreach ($penerimaanDetail as $value) {
-
-            //     $value['penerimaan_id'] = $id;
-            //     $penerimaanDetail = new StorePenerimaanDetailRequest($value);
-            //     $tes = app(PenerimaanDetailController::class)->store($penerimaanDetail);
-
-            // }
-
 
             return [
                 'status' => true,
@@ -853,8 +899,72 @@ class PengeluaranStokHeaderController extends Controller
             throw $th;
         }
     }
+    
+    public function storePembayaranHutang($penerimaanHeader){
+        try {            
+            $penerimaan = new StoreHutangBayarHeaderRequest($penerimaanHeader);
+            $header = app(HutangBayarHeaderController::class)->store($penerimaan);
+            return [
+                'status' => true,
+                'data' => $header->original['data'],
+            ];
+            
 
+        } catch (\Throwable $th) {
+            throw $th;
+        }
+            
+    }
+    
+    public function persediaanDari($stokId,$persediaan,$persediaanId,$qty)
+    {
+        $stokpersediaangudang = $this->checkTempat($stokId,$persediaan,$persediaanId); //stok persediaan 
+        if (!$stokpersediaangudang) {
+            return false;
+        }
+        $stokpersediaan = StokPersediaan::lockForUpdate()->find($stokpersediaangudang->id);
+        if ($qty > $stokpersediaan->qty){ //check qty
+            return false;
+        }
+        $result = $stokpersediaan->qty - $qty;
+        $stokpersediaan->update(['qty'=> $result]);
+        return $stokpersediaan;
+    }
+    public function persediaanKe($stokId,$persediaan,$persediaanId,$qty)
+    {
+        $stokpersediaangudang = $this->checkTempat($stokId,$persediaan,$persediaanId); //stok persediaan 
+        if (!$stokpersediaangudang) {
+            $stokpersediaangudang= StokPersediaan::create(["stok_id"=> $stokId, $persediaan => $persediaanId]);
+        }
+        $stokpersediaangudang->qty += $qty;
+        $stokpersediaangudang->save();
+        return $stokpersediaangudang;
+    }
 
+    public function persediaan($gudang,$trado,$gandengan)
+    {
+        $kolom = null;
+        $value = 0;
+        if(!empty($gudang)) {
+            $kolom = "gudang";
+            $value = $gudang;
+          } elseif(!empty($trado)) {
+            $kolom = "trado";
+            $value = $trado;
+          } elseif(!empty($gandengan)) {
+            $kolom = "gandengan";
+            $value = $gandengan;
+          }
+          return [
+            "column"=>$kolom,
+            "value"=>$value
+        ];
+    }
+    public function checkTempat($stokId,$persediaan,$persediaanId)
+    {
+        $result = StokPersediaan::lockForUpdate()->where("stok_id", $stokId)->where("$persediaan", $persediaanId)->first();
+        return (!$result) ? false :$result;
+    }
     private function resethppedit($id, $stok_id)
     {
         try {

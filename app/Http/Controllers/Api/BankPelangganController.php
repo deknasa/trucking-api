@@ -88,7 +88,7 @@ class BankPelangganController extends Controller
             $bankpelanggan = new BankPelanggan();
             $bankpelanggan->kodebank = $request->kodebank;
             $bankpelanggan->namabank = $request->namabank;
-            $bankpelanggan->keterangan = $request->keterangan;
+            $bankpelanggan->keterangan = $request->keterangan ?? '';
             $bankpelanggan->statusaktif = $request->statusaktif;
             $bankpelanggan->modifiedby = auth('api')->user()->name;
 

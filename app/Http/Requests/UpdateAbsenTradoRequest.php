@@ -27,7 +27,6 @@ class UpdateAbsenTradoRequest extends FormRequest
     {
         return [
             'kodeabsen' => 'required',
-            'keterangan' => 'required',
             'statusaktif' => 'required'
         ];
     }
@@ -46,7 +45,6 @@ class UpdateAbsenTradoRequest extends FormRequest
 
         return [
             'kodeabsen.required' => ':attribute ' . $controller->geterror('WI')->keterangan,
-            'keterangan.required' => ':attribute ' . $controller->geterror('WI')->keterangan,
             'statusaktif.required' => ':attribute ' . $controller->geterror('WI')->keterangan
         ];
     }

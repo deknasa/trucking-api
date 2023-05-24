@@ -101,9 +101,7 @@ class PengeluaranStokDetailFifoController extends Controller
                 ->where('B.gudang_id', '=',  $request->gudang_id)
                 ->where('penerimaanstokdetail.stok_id', '=',  $request->stok_id)
                 // ->where('penerimaanstokdetail.qtykeluar', '<',  'penerimaanstokdetail.qty')
-                // ->whereRaw("penerimaanstokdetail.qtykeluar<penerimaanstokdetail.qty")
                 ->whereRaw("isnull(penerimaanstokdetail.qtykeluar,0)<penerimaanstokdetail.qty")
-
                 ->orderBy('B.tglbukti', 'Asc')
                 ->orderBy('penerimaanstokdetail.id', 'Asc');
 
