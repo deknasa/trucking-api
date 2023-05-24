@@ -4,6 +4,7 @@ use App\Http\Controllers\Api\AkunPusatController;
 use App\Http\Controllers\Api\AbsensiSupirDetailController;
 use App\Http\Controllers\Api\AbsensiSupirHeaderController;
 
+use App\Http\Controllers\Api\ApprovalSupirGambarController;
 use App\Http\Controllers\Api\BukaAbsensiController;
 use App\Http\Controllers\Api\SuratPengantarApprovalInputTripController;
 
@@ -368,6 +369,9 @@ route::middleware(['auth:api'])->group(function () {
     Route::get('absensisupirdetail/get', [AbsensiSupirDetailController::class, 'getDetailAbsensi']);
     Route::resource('absensisupirdetail', AbsensiSupirDetailController::class);
     Route::resource('bukaabsensi', BukaAbsensiController::class);
+    
+    Route::get('approvalsupirgambar/default', [ApprovalSupirGambarController::class,'default']);
+    Route::resource('approvalsupirgambar', ApprovalSupirGambarController::class);
 
     Route::get('suratpengantarapprovalinputtrip/cektanggal', [SuratPengantarApprovalInputTripController::class, 'isTanggalAvaillable']);
     Route::resource('suratpengantarapprovalinputtrip', SuratPengantarApprovalInputTripController::class);
