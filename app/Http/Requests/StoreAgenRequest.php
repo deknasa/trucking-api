@@ -27,7 +27,6 @@ class StoreAgenRequest extends FormRequest
         return [
             "kodeagen" => "required|unique:agen",
             "namaagen" => "required|unique:agen",
-            "keterangan" => "required",
             "statusaktif" => "required",
             "namaperusahaan" => "required",
             "alamat" => "required",
