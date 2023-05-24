@@ -99,6 +99,8 @@ class StokController extends Controller
 
             if ($request->gambar) {
                 $stok->gambar = $this->storeFiles($request->gambar, 'stok');
+            } else {
+                $stok->gambar = '';
             }
             $stok->save();
 
@@ -246,7 +248,6 @@ class StokController extends Controller
                 'data' => $stok
             ]);
         } else {
-            $this->deleteFiles($stok);
             DB::rollBack();
 
             return response([
