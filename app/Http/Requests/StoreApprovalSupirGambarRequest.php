@@ -4,6 +4,8 @@ namespace App\Http\Requests;
 
 use App\Http\Controllers\Api\ErrorController;
 use Illuminate\Foundation\Http\FormRequest;
+use App\Rules\DateApprovalTradoGambar;
+
 
 class StoreApprovalSupirGambarRequest extends FormRequest
 {
@@ -28,7 +30,7 @@ class StoreApprovalSupirGambarRequest extends FormRequest
             "namasupir"=> "required",
             'noktp' => 'required|unique:approvalsupirgambar|min:16|max:16',
             "statusapproval"=> "required",
-            "tglbatas"=> "required"
+            "tglbatas" => ['required','date_format:d-m-Y',new DateApprovalTradoGambar()],
         ];
     }
 
@@ -38,7 +40,7 @@ class StoreApprovalSupirGambarRequest extends FormRequest
             'namasupir' => 'Nama Supir',
             'noktp' => 'No KTP',
             'statusapproval' => 'status approval',
-            'tglbatas' => 'Tanggal absensi',
+            'tglbatas' => 'Tanggal Batas',
         ];
     }
     public function messages() 

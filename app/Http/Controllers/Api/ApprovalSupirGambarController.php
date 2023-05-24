@@ -98,6 +98,9 @@ class ApprovalSupirGambarController extends Controller
         DB::beginTransaction();
         try {
             $approvalSupirGambar = ApprovalSupirGambar::findOrFail($id);
+            $approvalSupirGambar->namasupir = ($request->namasupir == null) ? "" : $request->namasupir;
+            $approvalSupirGambar->noktp = ($request->noktp == null) ? "" : $request->noktp;
+            $approvalSupirGambar->statusapproval = ($request->statusapproval == null) ? "" : $request->statusapproval;
             $approvalSupirGambar->tglbatas = date('Y-m-d', strtotime($request->tglbatas));
             // $approvalSupirGambar->modifiedby = auth('api')->user()->name;
 
