@@ -260,6 +260,8 @@ route::middleware(['auth:api'])->group(function () {
     Route::get('kerusakan/field_length', [KerusakanController::class, 'fieldLength']);
     Route::get('kerusakan/default', [KerusakanController::class, 'default']);
     Route::post('kerusakan/{id}/cekValidasi', [KerusakanController::class, 'cekValidasi'])->name('kerusakan.cekValidasi');
+    Route::get('kerusakan/export', [KerusakanController::class, 'export']);
+    Route::get('kerusakan/report', [KerusakanController::class, 'report']);
     Route::resource('kerusakan', KerusakanController::class);
 
 
