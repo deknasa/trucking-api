@@ -185,11 +185,7 @@ class SubKelompokController extends Controller
     public function destroy(Request $request, $id)
     {
         $cekvalidasi = $this->cekValidasi($id);
-        // dd($cekvalidasi->original['kondisi']);
-        
          if ($cekvalidasi->original['kondisi']==false) {
-
-
             DB::beginTransaction();
 
             $subKelompok = new SubKelompok();
