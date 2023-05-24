@@ -283,6 +283,19 @@ class ParameterController extends Controller
         return $data;
     }
 
+    
+    public function getparamid($grp, $subgrp)
+    {
+
+        $querydata = Parameter::select('id as id', 'text')
+            ->where('grp', '=',  $grp)
+            ->where('subgrp', '=',  $subgrp)
+            ->orderBy('id');
+
+
+        $data = $querydata->first();
+        return $data;
+    }
     /**
      * @ClassName
      */
