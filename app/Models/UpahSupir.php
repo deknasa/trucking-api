@@ -67,10 +67,9 @@ class UpahSupir extends MyModel
                 'zona.keterangan as zona_id',
                 'parameter.memo as statusaktif',
                 'upahsupir.tglmulaiberlaku',
-                // 'upahsupir.tglakhirberlaku',
+                'upahsupir.keterangan',
                 'statusluarkota.memo as statusluarkota',
                 'upahsupir.gambar',
-                'upahsupir.keterangan',
                 'upahsupir.created_at',
                 'upahsupir.modifiedby',
                 'upahsupir.updated_at'
@@ -116,13 +115,12 @@ class UpahSupir extends MyModel
             'tarif.tujuan as tarif',
             'upahsupir.kotadari_id',
             'kotadari.keterangan as kotadari',
-            'upahsupir.keterangan',
             'upahsupir.kotasampai_id',
             'kotasampai.keterangan as kotasampai',
             'upahsupir.jarak',
             'upahsupir.zona_id',
             'zona.keterangan as zona',
-
+             'upahsupir.keterangan',
             'upahsupir.statusaktif',
 
             'upahsupir.tglmulaiberlaku',
@@ -216,7 +214,6 @@ class UpahSupir extends MyModel
                 $this->table.statusaktif,
                 $this->table.tglmulaiberlaku,
                 $this->table.statusluarkota,
-
                  $this->table.modifiedby,
                  $this->table.created_at,
                  $this->table.updated_at"
@@ -225,12 +222,13 @@ class UpahSupir extends MyModel
         )
             ->leftJoin(DB::raw("kota as kotadari with (readuncommitted)"), 'kotadari.id', '=', 'upahsupir.kotadari_id')
             ->leftJoin(DB::raw("kota as kotasampai with (readuncommitted)"), 'kotasampai.id', '=', 'upahsupir.kotasampai_id')
+            ->leftJoin(DB::raw("parameter with (readuncommitted)"), 'upahsupir.statusaktif', 'parameter.id')
+            ->leftJoin(DB::raw("parameter as statusluarkota with (readuncommitted)"), 'upahsupir.statusluarkota', 'statusluarkota.id')
             ->leftJoin(DB::raw("zona with (readuncommitted)"), 'upahsupir.zona_id', 'zona.id');
     }
 
     public function createTemp(string $modelTable)
     {
-
         $temp = '##temp' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
         Schema::create($temp, function ($table) {
             $table->bigInteger('id')->nullable();
@@ -241,7 +239,6 @@ class UpahSupir extends MyModel
             $table->double('jarak', 15, 2)->nullable();
             $table->integer('statusaktif')->length(11)->nullable();
             $table->date('tglmulaiberlaku')->nullable();
-            // $table->date('tglakhirberlaku')->nullable();
             $table->integer('statusluarkota')->length(11)->nullable();
             $table->string('modifiedby', 50)->nullable();
             $table->dateTime('created_at')->nullable();
