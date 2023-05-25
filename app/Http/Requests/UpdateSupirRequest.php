@@ -47,6 +47,8 @@ class UpdateSupirRequest extends FormRequest
                     }
                 }
             }
+            return true;
+
         });
         return [
             'namasupir' => 'required',
