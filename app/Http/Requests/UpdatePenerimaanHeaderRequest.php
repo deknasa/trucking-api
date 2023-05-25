@@ -30,7 +30,6 @@ class UpdatePenerimaanHeaderRequest extends FormRequest
                 'required','date_format:d-m-Y',
                 new DateTutupBuku()
             ],
-            'diterimadari' => 'required',
             // 'pelanggan' => 'required',
             'tgllunas'  => 'required',
             // 'cabang' => 'required',

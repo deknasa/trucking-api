@@ -119,7 +119,6 @@ class TarifController extends Controller
             $tarif->statuspenyesuaianharga = $request->statuspenyesuaianharga;
             $tarif->keterangan = $request->keterangan;
             $tarif->modifiedby = auth('api')->user()->name;
-
             if ($tarif->save()) {
 
               
@@ -179,11 +178,12 @@ class TarifController extends Controller
                 DB::commit();
             }
 
+            
             /* Set position and page */
             $selected = $this->getPosition($tarif, $tarif->getTable());
             $tarif->position = $selected->position;
             $tarif->page = ceil($tarif->position / ($request->limit ?? 10));
-
+            
             return response([
                 'status' => true,
                 'message' => 'Berhasil disimpan',
@@ -465,5 +465,86 @@ class TarifController extends Controller
             $hasil=chr(64+$kolom);
         }
         return $hasil;
+    }
+
+    public function export()
+    {
+        $response = $this->index();
+        $decodedResponse = json_decode($response->content(), true);
+        $tarifs = $decodedResponse['data'];
+
+
+        $i = 0;
+        foreach ($tarifs as $index => $params) {
+
+            $statusaktif = $params['statusaktif'];
+            $statusSistemTon = $params['statussistemton'];
+            $statusPenyesuaianHarga = $params['statuspenyesuaianharga'];
+
+            $result = json_decode($statusaktif, true);
+            $resultSistemTon = json_decode($statusSistemTon, true);
+            $resultPenyesuaianHarga = json_decode($statusPenyesuaianHarga, true);
+
+            $statusaktif = $result['MEMO'];
+            $statusSistemTon = $resultSistemTon['MEMO'];
+            $statusPenyesuaianHarga = $resultPenyesuaianHarga['MEMO'];
+
+
+            $tarifs[$i]['statusaktif'] = $statusaktif;
+            $tarifs[$i]['statussistemton'] = $statusSistemTon;
+            $tarifs[$i]['statuspenyesuaianharga'] = $statusPenyesuaianHarga;
+
+        
+            $i++;
+
+        }
+
+        $columns = [
+            [
+                'label' => 'No',
+            ],
+            [
+                'label' => 'Parent',
+                'index' => 'parent_id',
+            ],
+            [
+                'label' => 'Upah Supir',
+                'index' => 'upahsupir_id',
+            ],
+            [
+                'label' => 'Tujuan',
+                'index' => 'tujuan',
+            ],
+            [
+                'label' => 'Status Aktif',
+                'index' => 'statusaktif',
+            ],
+            [
+                'label' => 'Status Sistem Ton',
+                'index' => 'statussistemton',
+            ],
+            [
+                'label' => 'Kota',
+                'index' => 'kota_id',
+            ],
+            [
+                'label' => 'Zona',
+                'index' => 'zona_id',
+            ],
+            [
+                'label' => 'Tgl Mulai Berlaku',
+                'index' => 'tglmulaiberlaku',
+            ],
+            [
+                'label' => 'Status Penyesuaian Harga',
+                'index' => 'statuspenyesuaianharga',
+            ],
+            [
+                'label' => 'Keterangan',
+                'index' => 'keterangan',
+            ],
+        ];
+
+        $this->toExcel('Tarif', $tarifs, $columns);
     }
 }

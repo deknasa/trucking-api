@@ -136,6 +136,20 @@ class PengeluaranTruckingHeaderController extends Controller
                             'message' => "PELUNASAN HUTANG BBM $query->keterangan",
                         ], 422);
                     }
+                } else if ($fetchFormat->kodepengeluaran == 'PJT') {
+                    $request->validate([
+                        'supir' => 'required|array',
+                        'supir.*' => 'required',
+                        'supir_id' => 'required|array',
+                        'supir_id.*' => 'required',
+                        'nominal' => 'required|array',
+                        'nominal.*' => 'required|numeric|gt:0'
+                    ], [
+                        'nominal.*.numeric' => 'nominal harus ' . app(ErrorController::class)->geterror('BTSANGKA')->keterangan,
+                        'nominal.*.gt' => 'Nominal Tidak Boleh Kosong dan Harus Lebih Besar Dari 0'
+                    ],[
+                        "supir_id"=>"SUPIR"
+                    ]);
                 } else {
                     $request->validate([
                         'nominal' => 'required|array',
@@ -173,8 +187,8 @@ class PengeluaranTruckingHeaderController extends Controller
 
             $pengeluarantruckingheader->tglbukti = date('Y-m-d', strtotime($request->tglbukti));
             $pengeluarantruckingheader->pengeluarantrucking_id = $request->pengeluarantrucking_id;
-            $pengeluarantruckingheader->bank_id = $request->bank_id;
-            $pengeluarantruckingheader->statusposting = $statusPosting->id ?? 0;
+            $pengeluarantruckingheader->bank_id = ($request->bank_id) ? $request->bank_id : 0 ;
+            $pengeluarantruckingheader->statusposting =  ($request->statusposting) ? $request->statusposting : $statusPosting->id ;
             $pengeluarantruckingheader->coa = $request->coa;
             $pengeluarantruckingheader->pengeluaran_nobukti = $request->pengeluaran_nobukti ?? '';
             $pengeluarantruckingheader->periodedari = date('Y-m-d', strtotime($request->tgldari)) ?? null;
@@ -231,8 +245,7 @@ class PengeluaranTruckingHeaderController extends Controller
                 $detaillog[] = $datadetails['detail']->toArray();
             }
 
-
-            if ($tanpaprosesnobukti != 2) {
+            if (($tanpaprosesnobukti != 2 ) && ($request->statusposting != $statusPosting->id)) {
                 // SAVE TO PENERIMAAN
                 $queryPengeluaran = Bank::from(DB::raw("bank with (readuncommitted)"))
                     ->select(
@@ -413,7 +426,8 @@ class PengeluaranTruckingHeaderController extends Controller
 
             $isUpdate = $request->isUpdate ?? 0;
             $from = $request->from ?? 'not';
-
+            $statusPosting = Parameter::from(DB::raw("parameter with (readuncommitted)"))
+            ->where('grp', 'STATUS POSTING')->where('text', 'BUKAN POSTING')->first();
             if ($isUpdate == 0) {
                 $idpengeluaran = $request->pengeluarantrucking_id;
                 $fetchFormat =  DB::table('pengeluarantrucking')
@@ -470,6 +484,8 @@ class PengeluaranTruckingHeaderController extends Controller
                 $pengeluarantruckingheader->periodedari = date('Y-m-d', strtotime($request->tgldari)) ?? null;
                 $pengeluarantruckingheader->periodesampai = date('Y-m-d', strtotime($request->tglsampai)) ?? null;
                 $pengeluarantruckingheader->modifiedby = auth('api')->user()->name;
+                $pengeluarantruckingheader->statusposting =  ($request->statusposting) ? $request->statusposting: $statusPosting->id ;
+
                 $pengeluarantruckingheader->save();
             }
 

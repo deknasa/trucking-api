@@ -30,6 +30,7 @@ class UpahSupirController extends Controller
      */
     public function index()
     {
+
         $upahsupir = new UpahSupir();
 
         return response([
@@ -48,6 +49,7 @@ class UpahSupirController extends Controller
     
      public function listpivot()
      {
+
  
          $upahsupirrincian = new UpahSupirRincian();
  
@@ -64,7 +66,6 @@ class UpahSupirController extends Controller
 
         try {
             $upahsupir = new UpahSupir();
-
             $upahsupir->kotadari_id = $request->kotadari_id;
             $upahsupir->parent_id = $request->parent_id ?? 0;
             $upahsupir->tarif_id = $request->tarif_id ?? 0;
@@ -141,7 +142,6 @@ class UpahSupirController extends Controller
 
                 DB::commit();
             }
-
             /* Set position and page */
             $selected = $this->getPosition($upahsupir, $upahsupir->getTable());
             $upahsupir->position = $selected->position;
@@ -424,5 +424,87 @@ class UpahSupirController extends Controller
         }else{
             return response()->file(storage_path("app/upahsupir/$filename"));
         }
+    }
+    public function export()
+    {
+        $response = $this->index();
+        $decodedResponse = json_decode($response->content(), true);
+        $upahSupirs = $decodedResponse['data'];
+
+        // dd($upahSupirs);
+
+
+        $i = 0;
+        foreach ($tarifs as $index => $params) {
+
+            $statusaktif = $params['statusaktif'];
+            $statusSistemTon = $params['statussistemton'];
+            $statusPenyesuaianHarga = $params['statuspenyesuaianharga'];
+
+            $result = json_decode($statusaktif, true);
+            $resultSistemTon = json_decode($statusSistemTon, true);
+            $resultPenyesuaianHarga = json_decode($statusPenyesuaianHarga, true);
+
+            $statusaktif = $result['MEMO'];
+            $statusSistemTon = $resultSistemTon['MEMO'];
+            $statusPenyesuaianHarga = $resultPenyesuaianHarga['MEMO'];
+
+
+            $tarifs[$i]['statusaktif'] = $statusaktif;
+            $tarifs[$i]['statussistemton'] = $statusSistemTon;
+            $tarifs[$i]['statuspenyesuaianharga'] = $statusPenyesuaianHarga;
+
+        
+            $i++;
+
+        }
+
+        $columns = [
+            [
+                'label' => 'No',
+            ],
+            [
+                'label' => 'Parent',
+                'index' => 'parent_id',
+            ],
+            [
+                'label' => 'Upah Supir',
+                'index' => 'upahsupir_id',
+            ],
+            [
+                'label' => 'Tujuan',
+                'index' => 'tujuan',
+            ],
+            [
+                'label' => 'Status Aktif',
+                'index' => 'statusaktif',
+            ],
+            [
+                'label' => 'Status Sistem Ton',
+                'index' => 'statussistemton',
+            ],
+            [
+                'label' => 'Kota',
+                'index' => 'kota_id',
+            ],
+            [
+                'label' => 'Zona',
+                'index' => 'zona_id',
+            ],
+            [
+                'label' => 'Tgl Mulai Berlaku',
+                'index' => 'tglmulaiberlaku',
+            ],
+            [
+                'label' => 'Status Penyesuaian Harga',
+                'index' => 'statuspenyesuaianharga',
+            ],
+            [
+                'label' => 'Keterangan',
+                'index' => 'keterangan',
+            ],
+        ];
+
+        $this->toExcel('Tarif', $tarifs, $columns);
     }
 }

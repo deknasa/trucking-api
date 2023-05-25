@@ -1,6 +1,8 @@
 <?php
 
 namespace App\Http\Requests;
+use App\Http\Controllers\Api\ParameterController;
+use App\Http\Controllers\Api\ErrorController;
 
 use Illuminate\Foundation\Http\FormRequest;
 
@@ -27,7 +29,7 @@ class UpdateUpahSupirRequest extends FormRequest
             'kotadari' => 'required',
             'kotasampai' => 'required',
             // 'zona' => 'required',
-            'jarak' => 'required|numeric|gt:0',
+            'jarak' => ['required','numeric','gt:0','min:0','max:'. (new ParameterController)->getparamid('BATAS KM UPAH SUPIR','BATAS KM UPAH SUPIR')->text],
             'statusaktif' => 'required',
             'statusluarkota' => 'required',
             'tglmulaiberlaku' => 'required',
@@ -65,8 +67,9 @@ class UpdateUpahSupirRequest extends FormRequest
     public function messages()
     {
         return [
-            'jarak.gt' => 'Jarak wajib di isi',
-            'nominalsupir.*.gt' => 'nominal supir wajib di isi',
+            'jarak.max' => ':attribute ' . 'maximal jarak '. (new ParameterController)->getparamid('BATAS KM UPAH SUPIR','BATAS KM UPAH SUPIR')->text,
+            'jarak.min' => ':attribute ' . (new ErrorController)->geterror('TBMINUS')->keterangan,
+            'nominalsupir.*.gt' => ':attribute ' . (new ErrorController)->geterror('WI')->keterangan,
         ];
     }
 }

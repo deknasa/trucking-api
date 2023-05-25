@@ -46,6 +46,8 @@ class StoreTradoRequest extends FormRequest
                     }
                 }
             }
+            return true;
+
         });
 
         return [
