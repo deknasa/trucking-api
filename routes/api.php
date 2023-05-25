@@ -879,7 +879,7 @@ route::middleware(['auth:api'])->group(function () {
 
     Route::get('pengembaliankasgantungheader/field_length', [PengembalianKasGantungHeaderController::class, 'fieldLength']);
     Route::get('pengembaliankasgantungheader/getkasgantung', [PengembalianKasGantungHeaderController::class, 'getKasGantung']);
-    Route::get('pengembaliankasgantungheader/getpengembalian/{id}', [PengembalianKasGantungHeaderController::class, 'getPengembalian']);
+    Route::get('pengembaliankasgantungheader/{id}/{aksi}/getpengembalian', [PengembalianKasGantungHeaderController::class, 'getPengembalian']);
     Route::get('pengembaliankasgantungheader/default', [PengembalianKasGantungHeaderController::class, 'default']);
     Route::post('pengembaliankasgantungheader/{id}/cekValidasiAksi', [PengembalianKasGantungHeaderController::class, 'cekValidasiAksi'])->name('pengembaliankasgantungheader.cekValidasiAksi');
     Route::post('pengembaliankasgantungheader/{id}/cekvalidasi', [PengembalianKasGantungHeaderController::class, 'cekvalidasi'])->name('pengembaliankasgantungheader.cekvalidasi');
@@ -1179,6 +1179,7 @@ route::middleware(['auth:api'])->group(function () {
     Route::resource('exportlaporanstok', ExportLaporanStokController::class);
     Route::get('laporanritasitrado/export', [LaporanRitasiTradoController::class, 'export'])->name('laporanritasitrado.export');
     Route::resource('laporanritasitrado', LaporanRitasiTradoController::class);
+    Route::get('laporanritasigandengan/header', [LaporanRitasiGandenganController::class, 'header'])->name('laporanritasigandengan.header');
     Route::get('laporanritasigandengan/export', [LaporanRitasiGandenganController::class, 'export'])->name('laporanritasigandengan.export');
     Route::resource('laporanritasigandengan', LaporanRitasiGandenganController::class);
     Route::get('laporanhistorypinjaman/export', [LaporanHistoryPinjamanController::class, 'export'])->name('laporanhistorypinjaman.export');

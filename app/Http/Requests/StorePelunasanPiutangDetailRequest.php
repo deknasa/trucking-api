@@ -26,10 +26,13 @@ class StorePelunasanPiutangDetailRequest extends FormRequest
     {
         
             return [
+                'piutang_id' => 'required',
                 'bayar' => 'required|array',
                 'bayar.*' => 'required|numeric|gt:0',
                 'keterangan' => 'required|array',
-                'keterangan.*' => 'required'
+                'keterangan.*' => 'required',
+                'sisa' => 'required|array',
+                'sisa.*' => 'required|numeric|min:0',
                 
             ];
        

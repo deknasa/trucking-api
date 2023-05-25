@@ -328,7 +328,6 @@ class PenerimaanTruckingHeader extends MyModel
     {
         $temp = '##temp' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
 
-
         $fetch = DB::table('pengeluarantruckingdetail')
             ->from(
                 DB::raw("pengeluarantruckingdetail with (readuncommitted)")
@@ -408,6 +407,7 @@ class PenerimaanTruckingHeader extends MyModel
         return $temp;
 
     }
+
     public function createTempPengembalianPinjaman($id, $supir_id)
     {
         $temp = '##tempPengembalian' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));

@@ -24,7 +24,8 @@ class StoreInvoiceDetailRequest extends FormRequest
     public function rules()
     {
         return [
-            'sp_id' => 'required'
+            'sp_id' => 'required',
+            'nominalretribusi.*' => 'numeric|min:0'
         ];
     }
 }

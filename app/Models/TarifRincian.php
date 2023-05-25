@@ -190,7 +190,6 @@ class TarifRincian extends MyModel
 
     public function listpivot()
     {
-
         $tempdata = '##tempdata' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
         Schema::create($tempdata, function ($table) {
             $table->unsignedBigInteger('id')->nullable();
@@ -259,7 +258,10 @@ class TarifRincian extends MyModel
         }
 
 
-        $statement = " select b.tujuan as [Tujuan],cast(format(isnull(b.tglmulaiberlaku,'1900/1/1'),'yyyy/MM/dd') as date) as [Tgl Mulai Berlaku],isnull(C.kodekota,'') as [Kota],A.* from (select " . $columnid . ",id from 
+        $statement = " select b.tujuan as 
+        [Tujuan],cast(format(isnull(b.tglmulaiberlaku,'1900/1/1'),'yyyy/MM/dd') 
+        as date) as [Tgl Mulai Berlaku],isnull(C.kodekota,'') 
+        as [Kota],A.* from (select " . $columnid . ",id from 
          (
             select A.container,A.nominal,A.id
             from " . $tempdata . " A) as SourceTable
@@ -272,7 +274,6 @@ class TarifRincian extends MyModel
         ";
 
         $data = DB::select(DB::raw($statement));
-
 
         return $data;
     }

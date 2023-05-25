@@ -27,17 +27,22 @@ class StorePengembalianKasGantungDetailRequest extends FormRequest
     public function rules()
     {
         return [
-
+            'kasgantungdetail_id' => 'required',
+            'nominal' => 'required|array',
+            'nominal.*' => 'required|numeric|gt:0',
             'keterangandetail' => 'required|array',
-            'keterangandetail.*' => ['required', new KeteranganInput()],
+            'keterangandetail.*' => 'required',
             'coadetail' => 'required|array',
-            'coadetail.*' => ['required',new PreventInputType()],
+            'coadetail.*' => 'required',
+            'sisa' => 'required|array',
+            'sisa.*' => 'required|numeric|min:0',
         ];
     }
 
     public function attributes()
     {
         return [
+            'nominal' => 'nominal',
             'coadetail' => 'kode perkiraan',
             'keterangandetail' => 'keterangan',
         ];

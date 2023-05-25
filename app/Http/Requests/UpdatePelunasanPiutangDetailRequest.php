@@ -24,6 +24,7 @@ class UpdatePelunasanPiutangDetailRequest extends FormRequest
     public function rules()
     {
         return [
+            'piutang_id' => 'required',
             'bayar' => 'required|array',
             'bayar.*' => 'required|numeric|gt:0',
             'keterangan' => 'required|array',
