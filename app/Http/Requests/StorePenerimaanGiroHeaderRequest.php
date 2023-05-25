@@ -30,7 +30,6 @@ class StorePenerimaanGiroHeaderRequest extends FormRequest
                 'required','date_format:d-m-Y',
                 new DateTutupBuku()
             ],
-            'diterimadari' => 'required',
             'tgllunas' => 'required|date_format:d-m-Y'
         ];
         $relatedRequests = [
