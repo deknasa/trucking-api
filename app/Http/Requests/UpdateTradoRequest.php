@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests;
 
+use App\Rules\NotDecimal;
 use App\Rules\ValidasiGambarTrado;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Support\Facades\DB;
@@ -70,6 +71,7 @@ class UpdateTradoRequest extends FormRequest
             'nobpkb' => 'required',
             'jumlahbanserap' => 'required',
             'statusgerobak' => 'required',
+            'nominalplusborongan' => [new NotDecimal()],
             'phototrado' => [$ruleGambar, 'array'],
             'phototrado.*' => [$ruleGambar, 'image'],
             'photobpkb' => [$ruleGambar, 'array'],

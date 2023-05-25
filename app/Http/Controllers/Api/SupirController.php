@@ -660,4 +660,154 @@ class SupirController extends Controller
             Storage::delete($relatedPdfSuratPerjanjian);
         }
     }
+    public function export()
+    {
+        $response = $this->index();
+        $decodedResponse = json_decode($response->content(), true);
+        $supirs = $decodedResponse['data'];
+
+
+        $i = 0;
+        foreach ($supirs as $index => $params) {
+
+            $statusaktif = $params['statusaktif'];
+            $statusLuarKota = $params['statusluarkota'];
+            $statusZonaTertentu = $params['statuszonatertentu'];
+            $statusBlacklist = $params['statusblacklist'];
+            $statusUpdateGambar = $params['statusadaupdategambar'];
+
+            $result = json_decode($statusaktif, true);
+            $resultLuarKota = json_decode($statusLuarKota, true);
+            $resultZonaTertentu = json_decode($statusZonaTertentu, true);
+            $resultBlacklist = json_decode($statusBlacklist, true);
+            $resultUpdateGambar = json_decode($statusUpdateGambar, true);
+
+            $statusaktif = $result['MEMO'];
+            $statusLuarKota = $resultLuarKota['MEMO'];
+            $statusZonaTertentu = $resultZonaTertentu['MEMO'];
+            $statusBlacklist = $resultBlacklist['MEMO'];
+            $statusUpdateGambar = $resultUpdateGambar['MEMO'];
+
+
+            $supirs[$i]['statusaktif'] = $statusaktif;
+            $supirs[$i]['statusluarkota'] = $statusLuarKota;
+            $supirs[$i]['statuszonatertentu'] = $statusZonaTertentu;
+            $supirs[$i]['statusblacklist'] = $statusBlacklist;
+            $supirs[$i]['statusadaupdategambar'] = $statusUpdateGambar;
+
+        
+            $i++;
+
+
+        }
+      
+        $columns = [
+            [
+                'label' => 'No',
+            ],
+            [
+                'label' => 'Nama Supir',
+                'index' => 'namasupir',
+            ],
+            [
+                'label' => 'Nama Alias',
+                'index' => 'namaalias',
+            ],
+            [
+                'label' => 'Tgl Lahir',
+                'index' => 'tgllahir',
+            ],
+            [
+                'label' => 'Alamat',
+                'index' => 'alamat',
+            ],
+            [
+                'label' => 'Kota',
+                'index' => 'kota',
+            ],
+            [
+                'label' => 'Telepon',
+                'index' => 'telp',
+            ],
+            [
+                'label' => 'Pemutihan Supir No Bukti',
+                'index' => 'pemutihansupir_nobukti',
+            ],
+            [
+                'label' => 'Status Aktif',
+                'index' => 'statusaktif',
+            ],
+            [
+                'label' => 'Nominal Deposit SA',
+                'index' => 'nominaldepositsa',
+            ],
+            [
+                'label' => 'Deposit Ke',
+                'index' => 'depositke',
+            ],
+            [
+                'label' => 'Nominal Pinjaman Saldo Awal',
+                'index' => 'nominalpinjamansaldoawal',
+            ],
+            [
+                'label' => 'Supir Rold',
+                'index' => 'supirold_id',
+            ],
+            [
+                'label' => 'No Sim',
+                'index' => 'nosim',
+            ],
+            [
+                'label' => 'Tgl Terbit Sim',
+                'index' => 'tglterbitsim',
+            ],
+            [
+                'label' => 'Tgl Exp Sim',
+                'index' => 'tglexpsim',
+            ],
+            [
+                'label' => 'Keterangan',
+                'index' => 'keterangan',
+            ],
+            [
+                'label' => 'No KTP',
+                'index' => 'noktp',
+            ],
+            [
+                'label' => 'No KK',
+                'index' => 'nokk',
+            ],
+            [
+                'label' => 'Status Ada Update Gambar',
+                'index' => 'statusadaupdategambar',
+            ],
+            [
+                'label' => 'Status Luar Kota',
+                'index' => 'statusluarkota',
+            ],
+            [
+                'label' => 'Status Zona Tertentu',
+                'index' => 'statuszonatertentu',
+            ],
+            [
+                'label' => 'Zona',
+                'index' => 'zona_id',
+            ],
+            [
+                'label' => 'Keterangan Resign',
+                'index' => 'keteranganresign',
+            ],
+            [
+                'label' => 'Status Blacklist',
+                'index' => 'statusblacklist',
+            ],
+            [
+                'label' => 'Tgl Berhenti Supir',
+                'index' => 'tglberhentisupir',
+            ],
+           
+        ];
+
+        $this->toExcel('Supir', $supirs, $columns);
+    }
 }

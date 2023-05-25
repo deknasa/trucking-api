@@ -244,13 +244,27 @@ class StatusContainerController extends Controller
         $decodedResponse = json_decode($response->content(), true);
         $statusContainers = $decodedResponse['data'];
 
+        $i = 0;
+        foreach ($statusContainers as $index => $params) {
+
+            $statusaktif = $params['statusaktif'];
+
+            $result = json_decode($statusaktif, true);
+
+            $statusaktif = $result['MEMO'];
+
+
+            $statusContainers[$i]['statusaktif'] = $statusaktif;
+
+        
+            $i++;
+
+
+        }
+
         $columns = [
             [
                 'label' => 'No',
-            ],
-            [
-                'label' => 'ID',
-                'index' => 'id',
             ],
             [
                 'label' => 'Kode Status Container',
