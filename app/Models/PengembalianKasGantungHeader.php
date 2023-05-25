@@ -24,7 +24,6 @@ class PengembalianKasGantungHeader extends MyModel
         'updated_at',
     ];
 
-
     public function cekvalidasiaksi($nobukti)
     {
 
@@ -239,46 +238,97 @@ class PengembalianKasGantungHeader extends MyModel
         );
     }
 
-
-    public function getPengembalian($id)
+    public function getPengembalian($id, $dari, $sampai)
     {
-        $this->setRequestParameters();
+        $tempPribadi = $this->createTempPengembalianKasGantung($id, $dari, $sampai);
+        $tempAll = $this->createTempPengembalian($id, $dari, $sampai);
         
-        $query = DB::table('kasgantungheader')
-            ->select(DB::raw("kasgantungheader.id as detail_id, sum(kasgantungdetail.nominal) as sisa,  kasgantungheader.id, kasgantungheader.nobukti, kasgantungheader.tglbukti, pengembaliankasgantungdetail.coa as coadetail, pengembaliankasgantungdetail.keterangan as keterangandetail, pengembaliankasgantungheader.id as pengembaliankasgantungheader_id"))
-            ->whereRaw(" EXISTS (
-                SELECT pengembaliankasgantungdetail.kasgantung_nobukti 
-                FROM pengembaliankasgantungdetail with (readuncommitted)
-                WHERE pengembaliankasgantungdetail.kasgantung_nobukti = kasgantungheader.nobukti
-                
-                and pengembaliankasgantungdetail.pengembaliankasgantung_id = " . $id . "
-          )")
-            ->whereRaw('pengembaliankasgantungdetail.kasgantung_nobukti = kasgantungheader.nobukti')
-            ->whereRaw('pengembaliankasgantungdetail.pengembaliankasgantung_id = ' . $id)
-            ->leftJoin('kasgantungdetail', 'kasgantungdetail.kasgantung_id', 'kasgantungheader.id')
-            ->leftJoin('pengembaliankasgantungdetail', 'kasgantungheader.nobukti', 'pengembaliankasgantungdetail.kasgantung_nobukti')
-            ->leftJoin('pengembaliankasgantungheader', 'pengembaliankasgantungdetail.pengembaliankasgantung_id', 'pengembaliankasgantungheader.id')
-            ->groupBy(
-                'kasgantungheader.id',
-                'kasgantungheader.nobukti',
-                'kasgantungheader.tglbukti',
-                'pengembaliankasgantungdetail.coa',
-                'pengembaliankasgantungdetail.keterangan',
-                'pengembaliankasgantungheader.id',
-            );
-        $this->totalRows = $query->count();
-        $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;
+        $temp = '##tempGet' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+        $pengembalian = DB::table($tempPribadi)->from(DB::raw("$tempPribadi with (readuncommitted)"))
+            ->select(DB::raw("pengembaliankasgantungheader_id,nobukti,sisa,bayar"));
 
-        $this->sort($query);
-        $this->filter($query);
-        $this->paginate($query);
+        Schema::create($temp, function ($table) {
+            $table->bigInteger('pengembaliankasgantungheader_id')->nullable();
+            $table->string('nobukti');
+            $table->bigInteger('sisa')->nullable();
+            $table->bigInteger('bayar')->nullable();
+        });
 
-        $data = $query->get();
+        DB::table($temp)->insertUsing(['pengembaliankasgantungheader_id', 'nobukti','sisa','bayar'], $pengembalian);
+
+        $pinjaman = DB::table($tempAll)->from(DB::raw("$tempAll with (readuncommitted)"))
+        ->select(DB::raw("null as pengembaliankasgantungheader_id,nobukti,sisa, 0 as bayar"));
+        DB::table($temp)->insertUsing(['pengembaliankasgantungheader_id', 'nobukti','sisa','bayar'], $pinjaman);
+
+        $data = DB::table($temp)->from(DB::raw("$temp with (readuncommitted)"))
+            ->select(DB::raw("row_number() Over(Order By $temp.nobukti) as id,pengembaliankasgantungheader_id,nobukti,sisa,bayar as nominal"))
+            ->get();
 
         return $data;
     }
 
+    public function createTempPengembalianKasGantung($id, $dari, $sampai)
+    {
+        $temp = '##tempPengembalian' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
 
+        $fetch = DB::table('kasgantungdetail')
+            ->from(
+                DB::raw("kasgantungdetail with (readuncommitted)")
+            )
+            ->select(DB::raw("pengembaliankasgantungdetail.pengembaliankasgantung_id,kasgantungdetail.nobukti, pengembaliankasgantungdetail.nominal as bayar ,
+                (SELECT (kasgantungdetail.nominal - coalesce(SUM(pengembaliankasgantungdetail.nominal),0)) 
+                FROM pengembaliankasgantungdetail WHERE pengembaliankasgantungdetail.kasgantung_nobukti= kasgantungdetail.nobukti) AS sisa "))
+            ->leftJoin(DB::raw("kasgantungheader with (readuncommitted)"), 'kasgantungheader.nobukti', 'kasgantungdetail.nobukti')
+            ->leftJoin(DB::raw("pengembaliankasgantungdetail with (readuncommitted)"), 'pengembaliankasgantungdetail.kasgantung_nobukti', 'kasgantungdetail.nobukti')
+            ->whereBetween('kasgantungheader.tglbukti', [$dari, $sampai])       
+            ->where("pengembaliankasgantungdetail.pengembaliankasgantung_id", $id);
+
+            Schema::create($temp, function ($table) {
+                $table->bigInteger('pengembaliankasgantungheader_id')->nullable();
+                $table->string('nobukti');
+                $table->bigInteger('bayar')->nullable();
+                $table->bigInteger('sisa')->nullable();
+            });
+            $tes = DB::table($temp)->insertUsing(['pengembaliankasgantungheader_id','nobukti','bayar', 'sisa'], $fetch);
+            return $temp;
+    }
+
+    public function createTempPengembalian($id, $dari, $sampai)
+    {
+        $temp = '##temp' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+        $fetch = DB::table('kasgantungdetail')
+        ->from(
+            DB::raw("kasgantungdetail with (readuncommitted)")
+        )
+        ->select(DB::raw("kasgantungdetail.nobukti,
+            (SELECT (sum(kasgantungdetail.nominal) - coalesce(SUM(pengembaliankasgantungdetail.nominal),0)) 
+            FROM pengembaliankasgantungdetail WHERE pengembaliankasgantungdetail.kasgantung_nobukti= kasgantungdetail.nobukti) AS sisa "))
+        ->leftJoin(DB::raw("kasgantungheader with (readuncommitted)"), 'kasgantungheader.nobukti', 'kasgantungdetail.nobukti')
+        ->leftJoin(DB::raw("pengembaliankasgantungdetail with (readuncommitted)"), 'pengembaliankasgantungdetail.kasgantung_nobukti', 'kasgantungdetail.nobukti')
+        ->whereRaw("kasgantungheader.nobukti not in (select kasgantung_nobukti from pengembaliankasgantungdetail where pengembaliankasgantung_id=$id)")
+        ->whereBetween('kasgantungheader.tglbukti', [$dari, $sampai])   
+        ->where("pengembaliankasgantungdetail.pengembaliankasgantung_id", $id) 
+        ->groupBy('kasgantungdetail.nobukti');
+        
+
+        Schema::create($temp, function ($table) {
+            $table->string('nobukti');
+            $table->bigInteger('sisa')->nullable();
+        });
+        $tes = DB::table($temp)->insertUsing(['nobukti','sisa'], $fetch);
+        return $temp;
+    }
+
+    public function getDeletePengembalian($id, $dari, $sampai)
+    {
+        $tempPribadi = $this->createTempPengembalianKasGantung($id, $dari, $sampai);
+       
+        $data = DB::table($tempPribadi)->from(DB::raw("$tempPribadi with (readuncommitted)"))
+            ->select(DB::raw("row_number() Over(Order By $tempPribadi.nobukti) as id,pengembaliankasgantungheader_id,nobukti,sisa,bayar as nominal"))
+            ->get();
+
+        return $data;
+    }
 
     public function sort($query)
     {
@@ -363,6 +413,7 @@ class PengembalianKasGantungHeader extends MyModel
         }
         return $query;
     }
+
     public function findAll($id)
     {
         $this->setRequestParameters();
@@ -376,6 +427,7 @@ class PengembalianKasGantungHeader extends MyModel
         $data = $query->where("$this->table.id", $id)->first();
         return $data;
     }
+
     public function paginate($query)
     {
         return $query->skip($this->params['offset'])->take($this->params['limit']);

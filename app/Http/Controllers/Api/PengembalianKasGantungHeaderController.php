@@ -168,9 +168,8 @@ class PengembalianKasGantungHeaderController extends Controller
                             ->where('grp', 'JURNAL KAS GANTUNG')->where('subgrp', 'DEBET')->first();
                         $coakreditmemo = json_decode($coakredit->memo, true);
                     } else {
-                        $idKasgantungDetail = $request->kasgantungdetail_id[$i];
-                        $kasgantung = KasGantungHeader::where('id', $idKasgantungDetail)->first();
-                        $kasgantungnobukti = $kasgantung->nobukti;
+                       
+                        $kasgantungnobukti = $request->kasgantung_nobukti[$i];
                     }
                     if (stripos(strtolower($request->keterangandetail[$i]),'input type=')) {
                         $keterangandetail=null;
@@ -431,6 +430,7 @@ class PengembalianKasGantungHeaderController extends Controller
                 $counter = $request->datadetail;
             } else {
                 $counter = $request->kasgantungdetail_id;
+                
             }
 
             for ($i = 0; $i < count($counter); $i++) {
@@ -441,9 +441,7 @@ class PengembalianKasGantungHeaderController extends Controller
                     $coakreditmemo = json_decode($coakredit->memo, true);
                     $kasgantungnobukti = $request->datadetail[$i]['kasgantung_nobukti'];
                 } else {
-                    $idKasgantungDetail = $request->kasgantungdetail_id[$i];
-                    $kasgantung = KasGantungDetail::where('id', $idKasgantungDetail)->first();
-                    $kasgantungnobukti = $kasgantung->nobukti;
+                    $kasgantungnobukti = $request->kasgantung_nobukti[$i];
                 }
 
                 $datadetail = [
@@ -719,6 +717,7 @@ class PengembalianKasGantungHeaderController extends Controller
 
         $dari = date('Y-m-d', strtotime($request->tgldari));
         $sampai = date('Y-m-d', strtotime($request->tglsampai));
+
         return response([
             'data' => $KasGantung->getKasGantung($dari, $sampai),
             'currentURL' => $currentURL,
@@ -730,11 +729,31 @@ class PengembalianKasGantungHeaderController extends Controller
         ]);
     }
 
-    public function getPengembalian($id)
+    public function getPengembalian(Request $request, $id, $aksi)
     {
+        $pengembalianKasGantung = new PengembalianKasGantungHeader();
+        $dari = $request->tgldari;
+        $sampai = $request->tglsampai;
+
+        if ($aksi == 'edit') {
+            $data = $pengembalianKasGantung->getPengembalian($id, $dari, $sampai);
+        } else {
+            $data = $pengembalianKasGantung->getDeletePengembalian($id, $dari, $sampai);
+        }
+        return response([
+            'status' => true,
+            'data' => $data
+        ]);
+
+
         $pengembalian = new PengembalianKasGantungHeader();
         $currentURL = url()->current();
         $previousURL = url()->previous();
+
+        $dari = date('Y-m-d', strtotime($request->tgldari));
+        $sampai = date('Y-m-d', strtotime($request->tglsampai));
+        dd($sampai);
+
         return response([
             'data' => $pengembalian->getPengembalian($id),
             'currentURL' => $currentURL,
@@ -744,6 +763,15 @@ class PengembalianKasGantungHeaderController extends Controller
                 'totalPages' => $pengembalian->totalPages
             ]
         ]);
+        // if ($aksi == 'edit') {
+        //     $data = $pengembalian->getPengembalian($id);
+        // } else {
+        //     $data = $pengembalian->getDeletePengembalian($id);
+        // }
+        // return response([
+        //     'status' => true,
+        //     'data' => $data
+        // ]);
     }
 
     public function cekvalidasi($id)

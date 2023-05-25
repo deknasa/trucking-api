@@ -654,6 +654,7 @@ class PenerimaanTruckingHeaderController extends Controller
             'data' => $penerimaanTrucking->getPinjaman($supir_id)
         ]);
     }
+    
     public function printReport($id)
     {
         DB::beginTransaction();
