@@ -259,4 +259,51 @@ class KotaController extends Controller
             'data' => $data
         ]);
     }
+    public function export()
+    {
+        $response = $this->index();
+        $decodedResponse = json_decode($response->content(), true);
+        $kotas = $decodedResponse['data'];
+
+        $i = 0;
+        foreach ($kotas as $index => $params) {
+
+            $statusaktif = $params['statusaktif'];
+
+            $result = json_decode($statusaktif, true);
+
+            $statusaktif = $result['MEMO'];
+
+
+            $kotas[$i]['statusaktif'] = $statusaktif;
+
+        
+            $i++;
+
+
+        }
+        $columns = [
+            [
+                'label' => 'No',
+            ],
+            [
+                'label' => 'Kode Kota',
+                'index' => 'kodekota',
+            ],
+            [
+                'label' => 'Keterangan',
+                'index' => 'keterangan',
+            ],
+            [
+                'label' => 'Zona',
+                'index' => 'zona_id',
+            ],
+            [
+                'label' => 'Status Aktif',
+                'index' => 'statusaktif',
+            ],
+        ];
+
+        $this->toExcel('Kota', $kotas, $columns);
+    }
 }
