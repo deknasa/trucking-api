@@ -713,8 +713,6 @@ class PengembalianKasGantungHeaderController extends Controller
     //untuk create
     public function getKasGantung(Request $request)
     {
-
-
         $KasGantung = new KasGantungHeader();
         $currentURL = url()->current();
         $previousURL = url()->previous();
@@ -731,6 +729,7 @@ class PengembalianKasGantungHeaderController extends Controller
             ]
         ]);
     }
+
     public function getPengembalian($id)
     {
         $pengembalian = new PengembalianKasGantungHeader();

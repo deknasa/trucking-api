@@ -35,7 +35,7 @@ class CreatePengembaliankasgantungheaderTable extends Migration
             $table->integer('jumlahcetak')->Length(11)->nullable();            
             $table->string('modifiedby',50)->nullable();
             $table->timestamps();
-  
+
             $table->foreign('bank_id', 'pengembaliankasgantungheader_bank_bank_id_foreign')->references('id')->on('bank');    
             $table->foreign('penerimaan_nobukti', 'pengembaliankasgantungheader_penerimaanheader_penerimaan_nobukti_foreign')->references('nobukti')->on('penerimaanheader');    
             $table->foreign('coakasmasuk', 'pengembaliankasgantungheader_akunpusat_coakasmasuk_foreign')->references('coa')->on('akunpusat');    

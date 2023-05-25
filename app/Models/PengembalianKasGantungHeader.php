@@ -138,7 +138,6 @@ class PengembalianKasGantungHeader extends MyModel
         return $data;
     }
 
-
     public function createTemp(string $modelTable)
     {
         $this->setRequestParameters();
@@ -246,7 +245,7 @@ class PengembalianKasGantungHeader extends MyModel
         $this->setRequestParameters();
         
         $query = DB::table('kasgantungheader')
-            ->select(DB::raw("kasgantungheader.id as detail_id, sum(kasgantungdetail.nominal) as nominal,  kasgantungheader.id, kasgantungheader.nobukti, kasgantungheader.tglbukti, pengembaliankasgantungdetail.coa as coadetail, pengembaliankasgantungdetail.keterangan as keterangandetail, pengembaliankasgantungheader.id as pengembaliankasgantungheader_id"))
+            ->select(DB::raw("kasgantungheader.id as detail_id, sum(kasgantungdetail.nominal) as sisa,  kasgantungheader.id, kasgantungheader.nobukti, kasgantungheader.tglbukti, pengembaliankasgantungdetail.coa as coadetail, pengembaliankasgantungdetail.keterangan as keterangandetail, pengembaliankasgantungheader.id as pengembaliankasgantungheader_id"))
             ->whereRaw(" EXISTS (
                 SELECT pengembaliankasgantungdetail.kasgantung_nobukti 
                 FROM pengembaliankasgantungdetail with (readuncommitted)

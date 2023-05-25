@@ -265,7 +265,7 @@ class KasGantungHeader extends MyModel
     {
         $this->setRequestParameters();
         $query = DB::table('kasgantungheader')->from(DB::raw("kasgantungheader with (readuncommitted)"))
-            ->select(DB::raw("kasgantungheader.id as detail_id, sum(kasgantungdetail.nominal) as nominal,  kasgantungheader.id,kasgantungheader.nobukti, kasgantungheader.tglbukti "))
+            ->select(DB::raw("kasgantungheader.id as detail_id, sum(kasgantungdetail.nominal) as sisa,  kasgantungheader.id,kasgantungheader.nobukti, kasgantungheader.tglbukti "))
             ->whereBetween('tglbukti', [$dari, $sampai])
             ->whereRaw(" NOT EXISTS (
             SELECT pengembaliankasgantungdetail.kasgantung_nobukti 
