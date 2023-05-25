@@ -2,7 +2,11 @@
 
 namespace App\Http\Requests;
 
+use App\Rules\NotDecimal;
+use App\Rules\ValidasiGambarTrado;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\Rule;
 
 class UpdateTradoRequest extends FormRequest
 {
@@ -23,6 +27,29 @@ class UpdateTradoRequest extends FormRequest
      */
     public function rules()
     {
+        $ruleGambar = Rule::requiredIf(function () {
+            $kodeTrado = request()->kodetrado;
+            $nonApp = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))
+                ->whereRaw("grp like '%STATUS APPROVAL%'")
+                ->whereRaw("text like '%NON APPROVAL%'")
+                ->first();
+            $cekValidasi = DB::table('approvaltradogambar')->from(DB::raw("approvaltradogambar with (readuncommitted)"))
+                ->select('kodetrado', 'tglbatas','statusapproval')
+                ->whereRaw("kodetrado in ('$kodeTrado')")
+                ->first();
+            if ($cekValidasi != '') {
+                if ($cekValidasi->statusapproval == $nonApp->id) {
+                    return true;
+                } else {
+                    if (date('Y-m-d') > $cekValidasi->tglbatas) {
+                        return true;
+                    }
+                }
+            }
+            return true;
+
+        });
+
         return [
             'kodetrado' => 'required',
             'statusaktif' => 'required',
@@ -46,12 +73,13 @@ class UpdateTradoRequest extends FormRequest
             'nobpkb' => 'required',
             'jumlahbanserap' => 'required',
             'statusgerobak' => 'required',
-            'phototrado' => 'required|array',
-            'phototrado.*' => 'required|image',
-            'photobpkb' => 'required|array',
-            'photobpkb.*' => 'required|image',
-            'photostnk' => 'required|array',
-            'photostnk.*' => 'required|image',
+            'nominalplusborongan' => [new NotDecimal()],
+            'phototrado' => [$ruleGambar, 'array'],
+            'phototrado.*' => [$ruleGambar, 'image'],
+            'photobpkb' => [$ruleGambar, 'array'],
+            'photobpkb.*' => [$ruleGambar, 'image'],
+            'photostnk' => [$ruleGambar, 'array'],
+            'photostnk.*' => [$ruleGambar, 'image'],
         ];
     }
 

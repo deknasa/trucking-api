@@ -31,17 +31,18 @@ class SubKelompokController extends Controller
         ]);
     }
 
-    public function cekValidasi($id) {
-        $subKelompok= new SubKelompok();
-        $cekdata=$subKelompok->cekvalidasihapus($id);
-        if ($cekdata['kondisi']==true) {
+    public function cekValidasi($id)
+    {
+        $subKelompok = new SubKelompok();
+        $cekdata = $subKelompok->cekvalidasihapus($id);
+        if ($cekdata['kondisi'] == true) {
             $query = DB::table('error')
-            ->select(
-                DB::raw("ltrim(rtrim(keterangan))+' (".$cekdata['keterangan'].")' as keterangan")
+                ->select(
+                    DB::raw("ltrim(rtrim(keterangan))+' (" . $cekdata['keterangan'] . ")' as keterangan")
                 )
-            ->where('kodeerror', '=', 'SATL')
-            ->get();
-        $keterangan = $query['0'];
+                ->where('kodeerror', '=', 'SATL')
+                ->get();
+            $keterangan = $query['0'];
 
             $data = [
                 'status' => false,
@@ -51,7 +52,6 @@ class SubKelompokController extends Controller
             ];
 
             return response($data);
-         
         } else {
             $data = [
                 'status' => false,
@@ -60,7 +60,7 @@ class SubKelompokController extends Controller
                 'kondisi' => $cekdata['kondisi'],
             ];
 
-            return response($data); 
+            return response($data);
         }
     }
     public function default()
@@ -86,7 +86,7 @@ class SubKelompokController extends Controller
     public function store(StoreSubKelompokRequest $request)
     {
 
-   
+
         DB::beginTransaction();
 
         try {
@@ -184,46 +184,55 @@ class SubKelompokController extends Controller
      */
     public function destroy(Request $request, $id)
     {
-        DB::beginTransaction();
+        $cekvalidasi = $this->cekValidasi($id);
+         if ($cekvalidasi->original['kondisi']==false) {
+            DB::beginTransaction();
 
-        $subKelompok = new SubKelompok();
-        $subKelompok = $subKelompok->lockAndDestroy($id);
-        if ($subKelompok) {
-            $logTrail = [
-                'namatabel' => strtoupper($subKelompok->getTable()),
-                'postingdari' => 'DELETE PARAMETER',
-                'idtrans' => $subKelompok->id,
-                'nobuktitrans' => $subKelompok->id,
-                'aksi' => 'DELETE',
-                'datajson' => $subKelompok->toArray(),
-                'modifiedby' => $subKelompok->modifiedby
-            ];
+            $subKelompok = new SubKelompok();
+            $subKelompok = $subKelompok->lockAndDestroy($id);
+            if ($subKelompok) {
+                $logTrail = [
+                    'namatabel' => strtoupper($subKelompok->getTable()),
+                    'postingdari' => 'DELETE PARAMETER',
+                    'idtrans' => $subKelompok->id,
+                    'nobuktitrans' => $subKelompok->id,
+                    'aksi' => 'DELETE',
+                    'datajson' => $subKelompok->toArray(),
+                    'modifiedby' => $subKelompok->modifiedby
+                ];
 
-            $validatedLogTrail = new StoreLogTrailRequest($logTrail);
-            app(LogTrailController::class)->store($validatedLogTrail);
+                $validatedLogTrail = new StoreLogTrailRequest($logTrail);
+                app(LogTrailController::class)->store($validatedLogTrail);
 
-            DB::commit();
-            /* Set position and page */
-            $selected = $this->getPosition($subKelompok, $subKelompok->getTable(), true);
-            $subKelompok->position = $selected->position;
-            $subKelompok->id = $selected->id;
-            $subKelompok->page = ceil($subKelompok->position / ($request->limit ?? 10));
+                DB::commit();
+                /* Set position and page */
+                $selected = $this->getPosition($subKelompok, $subKelompok->getTable(), true);
+                $subKelompok->position = $selected->position;
+                $subKelompok->id = $selected->id;
+                $subKelompok->page = ceil($subKelompok->position / ($request->limit ?? 10));
 
-            return response([
-                'status' => true,
-                'message' => 'Berhasil dihapus',
-                'data' => $subKelompok
-            ]);
-        } else {
-            DB::rollBack();
+                return response([
+                    'status' => true,
+                    'message' => 'Berhasil dihapus',
+                    'data' => $subKelompok
+                ]);
+            } else {
+                DB::rollBack();
 
+                return response([
+                    'status' => false,
+                    'message' => 'Gagal dihapus'
+                ]);
+            }
+         } else {
             return response([
                 'status' => false,
-                'message' => 'Gagal dihapus'
+                'message' => $cekvalidasi->original['message']
             ]);
-        }
+         }
     }
 
+   
     /**
      * @ClassName
      */
@@ -275,4 +284,6 @@ class SubKelompokController extends Controller
             'data' => $data
         ]);
     }
+
+    
 }

@@ -203,7 +203,23 @@ class HariLiburController extends Controller
 
         $response = $this->index();
         $decodedResponse = json_decode($response->content(), true);
-        $parameters = $decodedResponse['data'];
+        $hariLiburs = $decodedResponse['data'];
+
+        $i = 0;
+        foreach ($hariLiburs as $index => $params) {
+
+
+            $statusaktif = $params['statusaktif'];
+
+
+            $result = json_decode($statusaktif, true);
+
+            $statusaktif = $result['MEMO'];
+
+
+            $hariLiburs[$i]['statusaktif'] = $statusaktif;
+            $i++;
+        }
 
         $columns = [
             [
@@ -227,6 +243,6 @@ class HariLiburController extends Controller
             ],
         ];
 
-        $this->toExcel('HariLibur', $parameters, $columns);
+        $this->toExcel('Hari Libur', $hariLiburs, $columns);
     }
 }

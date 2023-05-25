@@ -27,7 +27,7 @@ class StorePenerimaanTruckingHeaderRequest extends FormRequest
     {
         $rules = [
             'tglbukti' => [
-                'required','date_format:d-m-Y',
+                'required', 'date_format:d-m-Y',
                 new DateTutupBuku()
             ],
             'penerimaantrucking' => 'required',
@@ -49,19 +49,43 @@ class StorePenerimaanTruckingHeaderRequest extends FormRequest
 
     public function attributes()
     {
-        return [
-            
+        $attributes = [
             'tglbukti' => 'Tgl Bukti',
             'keterangancoa' => 'nama perkiraan',
             'penerimaantrucking' => 'Kode Penerimaan',
-            // 'keterangan.*' => 'keterangan'
         ];
+
+        $relatedRequests = [
+            StorePenerimaanTruckingDetailRequest::class
+        ];
+
+        foreach ($relatedRequests as $relatedRequest) {
+            $attributes = array_merge(
+                $attributes,
+                (new $relatedRequest)->attributes()
+            );
+        }
+
+        return $attributes;
     }
-    
-    public function messages() 
+
+    public function messages()
     {
-        return [
+        $messages = [
             'tglbukti.date_format' => app(ErrorController::class)->geterror('DF')->keterangan,
         ];
+
+        $relatedRequests = [
+            StorePenerimaanTruckingDetailRequest::class
+        ];
+
+        foreach ($relatedRequests as $relatedRequest) {
+            $messages = array_merge(
+                $messages,
+                (new $relatedRequest)->messages()
+            );
+        }
+
+        return $messages;
     }
 }

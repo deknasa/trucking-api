@@ -22,6 +22,7 @@ use Intervention\Image\ImageManagerStatic as Image;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\Storage;
+use stdClass;
 
 class TradoController extends Controller
 {
@@ -128,11 +129,12 @@ class TradoController extends Controller
             $trado->statusgerobak = $request->statusgerobak;
             $trado->statusappeditban = $statusAppeditban->id;
             $trado->statuslewatvalidasi = $statusLewatValidasi->id;
+            $trado->nominalplusborongan = str_replace( ',', '', $request->nominalplusborongan) ?? 0;
             $trado->modifiedby = auth('api')->user()->name;
 
-            $trado->photostnk = $this->storeFiles($request->photostnk, 'stnk');
-            $trado->photobpkb = $this->storeFiles($request->photobpkb, 'bpkb');
-            $trado->phototrado = $this->storeFiles($request->phototrado, 'trado');
+            $trado->photostnk = ($request->photostnk) ? $this->storeFiles($request->photostnk, 'stnk') : '';
+            $trado->photobpkb = ($request->photobpkb) ? $this->storeFiles($request->photobpkb, 'bpkb') : '';
+            $trado->phototrado = ($request->phototrado) ? $this->storeFiles($request->phototrado, 'trado') : '';
 
             $trado->save();
 
@@ -253,12 +255,13 @@ class TradoController extends Controller
             $trado->supir_id = $request->supir_id ?? 0;
             $trado->jumlahbanserap = $request->jumlahbanserap;
             $trado->statusgerobak = $request->statusgerobak;
+            $trado->nominalplusborongan = str_replace( ',', '', $request->nominalplusborongan) ?? 0;
 
             $this->deleteFiles($trado);
 
-            $trado->photostnk = $this->storeFiles($request->photostnk, 'stnk');
-            $trado->photobpkb = $this->storeFiles($request->photobpkb, 'bpkb');
-            $trado->phototrado = $this->storeFiles($request->phototrado, 'trado');
+            $trado->photostnk = ($request->photostnk) ? $this->storeFiles($request->photostnk, 'stnk') : '';
+            $trado->photobpkb = ($request->photobpkb) ? $this->storeFiles($request->photobpkb, 'bpkb') : '';
+            $trado->phototrado = ($request->phototrado) ? $this->storeFiles($request->phototrado, 'trado') : '';
             $trado->save();
             if ($trado->save()) {
                 $logTrail = [
@@ -383,7 +386,7 @@ class TradoController extends Controller
 
 
             $this->deleteFiles($trado);
-            dd('here');
+
             DB::commit();
 
             /* Set position and page */
@@ -392,7 +395,6 @@ class TradoController extends Controller
             $trado->id = $selected->id;
             $trado->page = ceil($trado->position / ($request->limit ?? 10));
 
-            // dd($trado);
             return response([
                 'status' => true,
                 'message' => 'Berhasil dihapus',
@@ -451,7 +453,7 @@ class TradoController extends Controller
             } else {
                 if ($aksi == 'show') {
                     return response()->file(storage_path("app/no-image.jpg"));
-                }else{
+                } else {
                     return response('no-image');
                 }
             }
@@ -511,5 +513,226 @@ class TradoController extends Controller
             }
             Storage::delete($relatedPhotoBpkb);
         }
+    }
+    public function export()
+    {
+
+        header('Access-Control-Allow-Origin: *');
+
+        $response = $this->index();
+        $decodedResponse = json_decode($response->content(), true);
+        $trados = $decodedResponse['data'];
+
+        $i = 0;
+        foreach ($trados as $index => $params) {
+
+
+            $statusaktif = $params['statusaktif'];
+            $statusStandarisasi = $params['statusstandarisasi'];
+            $statusJenisPlat = $params['statusjenisplat'];
+            $statusMutasi = $params['statusmutasi'];
+            $statusValidasiKendaraan = $params['statusvalidasikendaraan'];
+            $statusMobilStoring= $params['statusmobilstoring'];
+            $statusAppEditBan= $params['statusappeditban'];
+            $statusLewatValidasi= $params['statuslewatvalidasi'];
+
+
+            $result = json_decode($statusaktif, true);
+            $resultStandarisasi = json_decode($statusStandarisasi, true);
+            $resultJenisPlat = json_decode($statusJenisPlat, true);
+            $resultMutasi = json_decode($statusMutasi, true);
+            $resultValidasiKendaraan = json_decode($statusValidasiKendaraan, true);
+            $resultMobilStoring = json_decode($statusMobilStoring, true);
+            $resultAppEditBan = json_decode($statusAppEditBan, true);
+            $resultLewatValidasi = json_decode($statusLewatValidasi, true);
+
+            $statusaktif = $result['MEMO'];
+            $statusStandarisasi = $resultStandarisasi['MEMO'];
+            $statusJenisPlat = $resultJenisPlat['MEMO'];
+            $statusMutasi = $resultMutasi['MEMO'];
+            $statusValidasiKendaraan = $resultValidasiKendaraan['MEMO'];
+            $statusMobilStoring = $resultMobilStoring['MEMO'];
+            $statusAppEditBan = $resultAppEditBan['MEMO'];
+            $statusLewatValidasi = $resultLewatValidasi['MEMO'];
+
+
+            $trados[$i]['statusaktif'] = $statusaktif;
+            $trados[$i]['statusstandarisasi'] = $statusStandarisasi;
+            $trados[$i]['statusjenisplat'] = $statusJenisPlat;
+            $trados[$i]['statusmutasi'] = $statusMutasi;
+            $trados[$i]['statusvalidasikendaraan'] = $statusValidasiKendaraan;
+            $trados[$i]['statusmobilstoring'] = $statusMobilStoring;
+            $trados[$i]['statusappeditban'] = $statusAppEditBan;
+            $trados[$i]['statuslewatvalidasi'] = $statusLewatValidasi;
+
+            $i++;
+        }
+
+        $columns = [
+            [
+                'label' => 'No',
+            ],
+            [
+                'label' => 'ID',
+                'index' => 'id',
+            ],
+            [
+                'label' => 'Keterangan',
+                'index' => 'keterangan',
+            ],
+            [
+                'label' => 'Kode Trado',
+                'index' => 'kodetrado',
+            ],
+            [
+                'label' => 'KM Awal',
+                'index' => 'kmawal',
+            ],
+            [
+                'label' => 'KM Akhir Ganti Oli',
+                'index' => 'kmakhirgantioli',
+            ],
+            [
+                'label' => 'Tgl Asuransi Mati',
+                'index' => 'tglasuransimati',
+            ],
+            [
+                'label' => 'Merek',
+                'index' => 'merek',
+            ],
+            [
+                'label' => 'No Rangka',
+                'index' => 'norangka',
+            ],
+            [
+                'label' => 'No Mesin',
+                'index' => 'nomesin',
+            ],
+            [
+                'label' => 'Nama',
+                'index' => 'nama',
+            ],
+            [
+                'label' => 'No STNK',
+                'index' => 'nostnk',
+            ],
+            [
+                'label' => 'Alamat STNK',
+                'index' => 'alamatstnk',
+            ],
+            [
+                'label' => 'Tgl Service Opname',
+                'index' => 'tglserviceopname',
+            ],
+            [
+                'label' => 'Keterangan Progress Standarisasi',
+                'index' => 'keteranganprogressstandarisasi',
+            ],
+            [
+                'label' => 'Tgl Pajak STNK',
+                'index' => 'tglpajakstnk',
+            ],
+            [
+                'label' => 'Tgl Ganti Aki Terakhir',
+                'index' => 'tglgantiakiterakhir',
+            ],
+            [
+                'label' => 'Tipe',
+                'index' => 'tipe',
+            ],
+            [
+                'label' => 'Jenis',
+                'index' => 'jenis',
+            ],
+            [
+                'label' => 'Isi Silinder',
+                'index' => 'isisilinder',
+            ],
+            [
+                'label' => 'Warna',
+                'index' => 'warna',
+            ],
+            [
+                'label' => 'Jenis Bahan Bakar',
+                'index' => 'jenisbahanbakar',
+            ],
+            [
+                'label' => 'Jumlah Sumbu',
+                'index' => 'jumlahsumbu',
+            ],
+            [
+                'label' => 'Jumlah Roda',
+                'index' => 'jumlahroda',
+            ],
+            [
+                'label' => 'Model',
+                'index' => 'model',
+            ],
+            [
+                'label' => 'No BPKB',
+                'index' => 'nobpkb',
+            ],
+            [
+                'label' => 'Jumlah Ban Serap',
+                'index' => 'jumlahbanserap',
+            ],
+            [
+                'label' => 'Status Aktif',
+                'index' => 'statusaktif',
+            ],
+            [
+                'label' => 'Status Standarisasi',
+                'index' => 'statusstandarisasi',
+            ],
+            [
+                'label' => 'Status Jenis Plat',
+                'index' => 'statusjenisplat',
+            ],
+            [
+                'label' => 'Status Mutasi',
+                'index' => 'statusmutasi',
+            ],
+            [
+                'label' => 'Status Validasi Kendaraan',
+                'index' => 'statusvalidasikendaraan',
+            ],
+            [
+                'label' => 'Status Mobil Storing',
+                'index' => 'statusmobilstoring',
+            ],
+            [
+                'label' => 'Status App Edit Ban',
+                'index' => 'statusappeditban',
+            ],
+            [
+                'label' => 'Status Lewat Validasi',
+                'index' => 'statuslewatvalidasi',
+            ],
+            [
+                'label' => 'Mandor',
+                'index' => 'mandor_id',
+            ],
+            [
+                'label' => 'Supir',
+                'index' => 'supir_id',
+            ],
+
+        ];
+
+        // foreach ($parameters as $index => $params) {
+        //     $data = $params['statusaktif'];
+
+
+        //     $result = json_decode($data, true);
+
+        //     $statusaktif = $result['MEMO'];
+
+
+
+        //     // Memperbarui nilai 'statusaktif' pada $columns
+        //     $columns[$index + 4]['index'] = $statusaktif;
+        // }
+
+        $this->toExcel('Trado', $trados, $columns);
     }
 }

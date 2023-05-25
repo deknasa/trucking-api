@@ -51,6 +51,7 @@ class PenerimaanStokHeader extends MyModel
         ->leftJoin('gandengan as gandenganke ','penerimaanstokheader.gandenganke_id','gandenganke.id')
         ->leftJoin('gandengan as gandengan ','penerimaanstokheader.gandenganke_id','gandengan.id')
         ->leftJoin('penerimaanstokheader as nobuktipenerimaanstok','nobuktipenerimaanstok.nobukti','penerimaanstokheader.penerimaanstok_nobukti')
+        ->leftJoin('penerimaanstokheader as nobuktispb','penerimaanstokheader.nobukti','nobuktispb.penerimaanstok_nobukti')
         ->leftJoin('supplier','penerimaanstokheader.supplier_id','supplier.id');
         if (request()->penerimaanstok_id==$spb->text) {
             
@@ -110,12 +111,18 @@ class PenerimaanStokHeader extends MyModel
     
     public function selectColumns($query)
     {
+        $po = Parameter::where('grp', 'PO STOK')->where('subgrp', 'PO STOK')->first();
+        $penerimaanstok_nobukti = $this->table.".penerimaanstok_nobukti";
+        if (request()->penerimaanheader_id==$po->text) {
+            $penerimaanstok_nobukti = "nobuktispb.nobukti as penerimaanstok_nobukti";
+        }
+            
         return $query->select(
             "$this->table.id",
             "$this->table.nobukti",
             "$this->table.tglbukti",
             "penerimaanstok.kodepenerimaan as penerimaanstok",
-            "$this->table.penerimaanstok_nobukti",
+            $penerimaanstok_nobukti,
             "$this->table.pengeluaranstok_nobukti",
             "gudangs.gudang as gudang",
             "trado.kodetrado as trado",

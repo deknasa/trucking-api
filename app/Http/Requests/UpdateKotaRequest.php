@@ -3,6 +3,7 @@
 namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
 class UpdateKotaRequest extends FormRequest
 {
@@ -23,8 +24,10 @@ class UpdateKotaRequest extends FormRequest
      */
     public function rules()
     {
+        //  dd($this->id);
         return [
-            'kodekota' => 'required',
+            'kodekota' => ['required',Rule::unique('kota')->whereNotIn('id', [$this->id])],
+            'keterangan' => ['nullable',Rule::unique('kota')->whereNotIn('id', [$this->id])],
             'zona' => 'required',
             'statusaktif' => 'required'
         ];

@@ -27,7 +27,6 @@ class UpdateAgenRequest extends FormRequest
         return [
             "kodeagen" => "required|unique:agen,kodeagen,".$this->agen->id,
             "namaagen" => "required|unique:agen,namaagen,".$this->agen->id,
-            "keterangan" => "required",
             "statusaktif" => "required",
             "namaperusahaan" => "required",
             "alamat" => "required",

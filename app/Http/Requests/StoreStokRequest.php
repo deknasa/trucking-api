@@ -2,6 +2,10 @@
 
 namespace App\Http\Requests;
 
+use App\Http\Controllers\Api\ErrorController;
+use App\Rules\MinNull;
+use App\Rules\NotDecimal;
+use App\Rules\NumberMax;
 use Illuminate\Foundation\Http\FormRequest;
 
 class StoreStokRequest extends FormRequest
@@ -15,7 +19,6 @@ class StoreStokRequest extends FormRequest
     {
         return true;
     }
-
     /**
      * Get the validation rules that apply to the request.
      *
@@ -30,8 +33,17 @@ class StoreStokRequest extends FormRequest
             "kategori"=>'required',
             "statusaktif"=>'required',
             "namaterpusat"=>'required',
-            // "qtymin"=>'required|gt:0|numeric',
-            // "qtymax"=>'required|gt:0|numeric',
+            "qtymin"=> [new NotDecimal(), new MinNull()],
+            "qtymax"=> [new NotDecimal(), new NumberMax()],
+            'gambar' => 'array',
+            'gambar.*' => 'image'
+        ];
+    }
+
+    public function messages()
+    {
+        return [
+            'gambar.*.image' => app(ErrorController::class)->geterror('WG')->keterangan
         ];
     }
 }

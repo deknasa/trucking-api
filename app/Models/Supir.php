@@ -210,6 +210,7 @@ class Supir extends MyModel
                 'supir.photoskck',
                 'supir.photodomisili',
                 'supir.keteranganresign',
+                'supir.keteranganberhentisupir',
                 'statusblacklist.memo as statusblacklist',
                 DB::raw('(case when (year(supir.tglberhentisupir) <= 2000) then null else supir.tglberhentisupir end ) as tglberhentisupir'),
 
@@ -418,6 +419,7 @@ class Supir extends MyModel
                 'supir.pdfsuratperjanjian',
                 'supir.photodomisili',
                 'supir.keteranganresign',
+                'supir.keteranganberhentisupir',
                 'supir.statusblacklist',
                 'supir.tglberhentisupir',
                 'supir.tgllahir',

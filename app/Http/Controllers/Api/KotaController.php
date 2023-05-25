@@ -83,6 +83,7 @@ class KotaController extends Controller
      */
     public function store(StoreKotaRequest $request)
     {
+  
         DB::beginTransaction();
 
         try {
@@ -128,7 +129,10 @@ class KotaController extends Controller
 
     public function show($id)
     {
+  
+
         $data = Kota::findAll($id);
+        // dd($data);
         return response([
             'status' => true,
             'data' => $data
@@ -141,15 +145,17 @@ class KotaController extends Controller
      */
     public function update(UpdateKotaRequest $request, Kota $kota)
     {
+
         DB::beginTransaction();
 
         try {
+            $kota = Kota::find($request->id);
             $kota->kodekota = $request->kodekota;
             $kota->keterangan = $request->keterangan ?? '';
             $kota->zona_id = $request->zona_id;
             $kota->statusaktif = $request->statusaktif;
             $kota->modifiedby = auth('api')->user()->name;
-
+            $kota->save();
             if ($kota->save()) {
                 $logTrail = [
                     'namatabel' => strtoupper($kota->getTable()),
@@ -252,5 +258,52 @@ class KotaController extends Controller
         return response([
             'data' => $data
         ]);
+    }
+    public function export()
+    {
+        $response = $this->index();
+        $decodedResponse = json_decode($response->content(), true);
+        $kotas = $decodedResponse['data'];
+
+        $i = 0;
+        foreach ($kotas as $index => $params) {
+
+            $statusaktif = $params['statusaktif'];
+
+            $result = json_decode($statusaktif, true);
+
+            $statusaktif = $result['MEMO'];
+
+
+            $kotas[$i]['statusaktif'] = $statusaktif;
+
+        
+            $i++;
+
+
+        }
+        $columns = [
+            [
+                'label' => 'No',
+            ],
+            [
+                'label' => 'Kode Kota',
+                'index' => 'kodekota',
+            ],
+            [
+                'label' => 'Keterangan',
+                'index' => 'keterangan',
+            ],
+            [
+                'label' => 'Zona',
+                'index' => 'zona_id',
+            ],
+            [
+                'label' => 'Status Aktif',
+                'index' => 'statusaktif',
+            ],
+        ];
+
+        $this->toExcel('Kota', $kotas, $columns);
     }
 }

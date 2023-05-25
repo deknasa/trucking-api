@@ -56,7 +56,6 @@ class PenerimaanTruckingHeaderController extends Controller
         DB::beginTransaction();
 
         try {
-
             $tanpaprosesnobukti = $request->tanpaprosesnobukti ?? 0;
 
             if ($tanpaprosesnobukti == 0) {
@@ -69,50 +68,10 @@ class PenerimaanTruckingHeaderController extends Controller
 
                 if ($fetchFormat->kodepenerimaan == 'PJP') {
                     $request['coa'] = $fetchFormat->coapostingkredit;
-                    if ($request->pjp_id != '') {
-
-                        for ($i = 0; $i < count($request->pjp_id); $i++) {
-                            if ($request->sisa[$i] < 0) {
-
-                                $query =  Error::from(DB::raw("error with (readuncommitted)"))->select('keterangan')->where('kodeerror', '=', 'STM')
-                                    ->first();
-                                return response([
-                                    'errors' => [
-                                        "nominal.$i" => ["$query->keterangan"]
-                                    ],
-                                    'message' => "sisa",
-                                ], 422);
-                            }
-                        }
-                        $request->validate([
-                            'nominal' => 'required|array',
-                            'nominal.*' => 'required|numeric|gt:0'
-                        ], [
-                            'nominal.*.numeric' => 'nominal harus '.app(ErrorController::class)->geterror('BTSANGKA')->keterangan,
-                            'nominal.*.gt' => 'Nominal Tidak Boleh Kosong dan Harus Lebih Besar Dari 0'
-                        ]);
-                    } else {
-                        $query = DB::table('error')->select('keterangan')->where('kodeerror', '=', 'WP')
-                            ->first();
-                        return response([
-                            'errors' => [
-                                'pjp' => "PENGEMBALIAN PINJAMAN $query->keterangan"
-                            ],
-                            'message' => "PENGEMBALIAN PINJAMAN $query->keterangan",
-                        ], 422);
-                    }
                 } else {
                     if ($fetchFormat->kodepenerimaan == 'BBM') {
                         $request['coa'] = $fetchFormat->coakredit;
                     }
-                    $request->validate([
-                        'nominal' => 'required|array',
-                        'nominal.*' => 'required|numeric|gt:0',
-                        'keterangan' => 'required|array',
-                        'keterangan.*' => 'required'
-                    ], [
-                        'nominal.*.gt' => 'Nominal Tidak Boleh Kosong dan Harus Lebih Besar Dari 0'
-                    ]);
                 }
                 $statusformat = $fetchFormat->format;
 
@@ -130,6 +89,7 @@ class PenerimaanTruckingHeaderController extends Controller
                 $content['tgl'] = date('Y-m-d', strtotime($request->tglbukti));
             }
 
+            
             $penerimaantruckingheader = new PenerimaanTruckingHeader();
             $statusCetak = Parameter::from(DB::raw("parameter with (readuncommitted)"))
                 ->where('grp', 'STATUSCETAK')->where('text', 'BELUM CETAK')->first();
@@ -377,50 +337,10 @@ class PenerimaanTruckingHeaderController extends Controller
 
                 if ($fetchFormat->kodepenerimaan == 'PJP') {
                     $request['coa'] = $fetchFormat->coapostingkredit;
-                    if ($request->pjp_id != '') {
-
-                        for ($i = 0; $i < count($request->pjp_id); $i++) {
-                            if ($request->sisa[$i] < 0) {
-
-                                $query =  Error::from(DB::raw("error with (readuncommitted)"))->select('keterangan')->where('kodeerror', '=', 'STM')
-                                    ->first();
-                                return response([
-                                    'errors' => [
-                                        "nominal.$i" => ["$query->keterangan"]
-                                    ],
-                                    'message' => "sisa",
-                                ], 422);
-                            }
-                        }
-                        $request->validate([
-                            'nominal' => 'required|array',
-                            'nominal.*' => 'required|numeric|gt:0'
-                        ], [
-                            'nominal.*.numeric' => 'nominal harus '.app(ErrorController::class)->geterror('BTSANGKA')->keterangan,
-                            'nominal.*.gt' => 'Nominal Tidak Boleh Kosong dan Harus Lebih Besar Dari 0'
-                        ]);
-                    } else {
-                        $query = DB::table('error')->select('keterangan')->where('kodeerror', '=', 'WP')
-                            ->first();
-                        return response([
-                            'errors' => [
-                                'pjp' => "PENGEMBALIAN PINJAMAN $query->keterangan"
-                            ],
-                            'message' => "PENGEMBALIAN PINJAMAN $query->keterangan",
-                        ], 422);
-                    }
                 } else {
                     if ($fetchFormat->kodepenerimaan == 'BBM') {
                         $request['coa'] = $fetchFormat->coakredit;
                     }
-                    $request->validate([
-                        'nominal' => 'required|array',
-                        'nominal.*' => 'required|numeric|gt:0',
-                        'keterangan' => 'required|array',
-                        'keterangan.*' => 'required'
-                    ], [
-                        'nominal.*.gt' => 'Nominal Tidak Boleh Kosong dan Harus Lebih Besar Dari 0'
-                    ]);
                 }
 
                 $penerimaantruckingheader->tglbukti = date('Y-m-d', strtotime($request->tglbukti));

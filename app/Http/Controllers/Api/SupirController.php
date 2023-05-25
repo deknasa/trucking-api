@@ -144,17 +144,22 @@ class SupirController extends Controller
         DB::beginTransaction();
         try{
             $supir = Supir::lockForUpdate()->findOrFail($id);
-            $tanggalberhenti = date('Y-m-d', strtotime("1900-01-01"));
-            $aksi = "UNAPPROVED SUPIR RESIGN";
-            
-            if ($request->tanggalberhenti) {
-                $tanggalberhenti = date('Y-m-d', strtotime($request->tanggalberhenti));
+           
+            if ($request->action =="approve") {
+                $supir->tglberhentisupir = date('Y-m-d', strtotime($request->tglberhentisupir));
                 $aksi = "APPROVED SUPIR RESIGN";
+                // $supir->keteranganberhentisupir = ($request->keteranganberhentisupir == null) ? "" : $request->keteranganberhentisupir;
+                $supir->keteranganberhentisupir = $request->keteranganberhentisupir ;
+
+            }else if($request->action =="unapprove"){
+                $supir->tglberhentisupir = date('Y-m-d', strtotime("1900-01-01"));
+                $aksi = "UNAPPROVED SUPIR RESIGN";
+                $supir->keteranganberhentisupir = null ;
+
             }
             
-            $supir->tglberhentisupir = $tanggalberhenti;
-            $supir->keteranganberhentisupir = ($request->keteranganberhentisupir == null) ? "" : $request->keteranganberhentisupir;
-    
+            // $supir->tglberhentisupir = $tanggalberhenti;
+    // return response([$supir],422);
             if ($supir->save()) {
                 $logTrail = [
                     'namatabel' => strtoupper($supir->getTable()),
@@ -294,14 +299,15 @@ class SupirController extends Controller
             $supir->statuszonatertentu = $statusZonaTertentu->id;
             $supir->statusblacklist = $statusBlackList->id;
 
-            $supir->photosupir = $this->storeFiles($request->photosupir, 'supir');
-            $supir->photoktp = $this->storeFiles($request->photoktp, 'ktp');
-            $supir->photosim = $this->storeFiles($request->photosim, 'sim');
-            $supir->photokk = $this->storeFiles($request->photokk, 'kk');
-            $supir->photoskck = $this->storeFiles($request->photoskck, 'skck');
-            $supir->photodomisili = $this->storeFiles($request->photodomisili, 'domisili');
-            $supir->photovaksin = $this->storeFiles($request->photovaksin, 'vaksin');
-            $supir->pdfsuratperjanjian = $this->storePdfFiles($request->pdfsuratperjanjian, 'suratperjanjian');
+            // $trado->photostnk = ($request->photostnk) ? $this->storeFiles($request->photostnk, 'stnk') : '';
+            $supir->photosupir = ($request->photosupir) ? $this->storeFiles($request->photosupir, 'supir') : '';
+            $supir->photoktp = ($request->photoktp) ? $this->storeFiles($request->photoktp, 'ktp') : '';
+            $supir->photosim = ($request->photosim) ? $this->storeFiles($request->photosim, 'sim') : '';
+            $supir->photokk = ($request->photokk) ? $this->storeFiles($request->photokk, 'kk') : '';
+            $supir->photoskck = ($request->photoskck) ? $this->storeFiles($request->photoskck, 'skck') : '';
+            $supir->photodomisili = ($request->photodomisili) ? $this->storeFiles($request->photodomisili, 'domisili') : '';
+            $supir->photovaksin = ($request->photovaksin) ? $this->storeFiles($request->photovaksin, 'vaksin') : '';
+            $supir->pdfsuratperjanjian = ($request->pdfsuratperjanjian) ? $this->storePdfFiles($request->pdfsuratperjanjian, 'suratperjanjian') : '';
 
             $supir->save();
 
@@ -382,14 +388,14 @@ class SupirController extends Controller
 
             $this->deleteFiles($supir);
 
-            $supir->photosupir = $this->storeFiles($request->photosupir, 'supir');
-            $supir->photoktp = $this->storeFiles($request->photoktp, 'ktp');
-            $supir->photosim = $this->storeFiles($request->photosim, 'sim');
-            $supir->photokk = $this->storeFiles($request->photokk, 'kk');
-            $supir->photoskck = $this->storeFiles($request->photoskck, 'skck');
-            $supir->photodomisili = $this->storeFiles($request->photodomisili, 'domisili');
-            $supir->photovaksin = $this->storeFiles($request->photovaksin, 'vaksin');
-            $supir->pdfsuratperjanjian = $this->storePdfFiles($request->pdfsuratperjanjian, 'suratperjanjian');
+            $supir->photosupir = ($request->photosupir) ? $this->storeFiles($request->photosupir, 'supir') : '';
+            $supir->photoktp = ($request->photoktp) ? $this->storeFiles($request->photoktp, 'ktp') : '';
+            $supir->photosim = ($request->photosim) ? $this->storeFiles($request->photosim, 'sim') : '';
+            $supir->photokk = ($request->photokk) ? $this->storeFiles($request->photokk, 'kk') : '';
+            $supir->photoskck = ($request->photoskck) ? $this->storeFiles($request->photoskck, 'skck') : '';
+            $supir->photodomisili = ($request->photodomisili) ? $this->storeFiles($request->photodomisili, 'domisili') : '';
+            $supir->photovaksin = ($request->photovaksin) ? $this->storeFiles($request->photovaksin, 'vaksin') : '';
+            $supir->pdfsuratperjanjian = ($request->pdfsuratperjanjian) ? $this->storePdfFiles($request->pdfsuratperjanjian, 'suratperjanjian') : '';
 
             $supir->save();
 
@@ -653,5 +659,155 @@ class SupirController extends Controller
             }
             Storage::delete($relatedPdfSuratPerjanjian);
         }
+    }
+    public function export()
+    {
+        $response = $this->index();
+        $decodedResponse = json_decode($response->content(), true);
+        $supirs = $decodedResponse['data'];
+
+
+        $i = 0;
+        foreach ($supirs as $index => $params) {
+
+            $statusaktif = $params['statusaktif'];
+            $statusLuarKota = $params['statusluarkota'];
+            $statusZonaTertentu = $params['statuszonatertentu'];
+            $statusBlacklist = $params['statusblacklist'];
+            $statusUpdateGambar = $params['statusadaupdategambar'];
+
+            $result = json_decode($statusaktif, true);
+            $resultLuarKota = json_decode($statusLuarKota, true);
+            $resultZonaTertentu = json_decode($statusZonaTertentu, true);
+            $resultBlacklist = json_decode($statusBlacklist, true);
+            $resultUpdateGambar = json_decode($statusUpdateGambar, true);
+
+            $statusaktif = $result['MEMO'];
+            $statusLuarKota = $resultLuarKota['MEMO'];
+            $statusZonaTertentu = $resultZonaTertentu['MEMO'];
+            $statusBlacklist = $resultBlacklist['MEMO'];
+            $statusUpdateGambar = $resultUpdateGambar['MEMO'];
+
+
+            $supirs[$i]['statusaktif'] = $statusaktif;
+            $supirs[$i]['statusluarkota'] = $statusLuarKota;
+            $supirs[$i]['statuszonatertentu'] = $statusZonaTertentu;
+            $supirs[$i]['statusblacklist'] = $statusBlacklist;
+            $supirs[$i]['statusadaupdategambar'] = $statusUpdateGambar;
+
+        
+            $i++;
+
+
+        }
+      
+        $columns = [
+            [
+                'label' => 'No',
+            ],
+            [
+                'label' => 'Nama Supir',
+                'index' => 'namasupir',
+            ],
+            [
+                'label' => 'Nama Alias',
+                'index' => 'namaalias',
+            ],
+            [
+                'label' => 'Tgl Lahir',
+                'index' => 'tgllahir',
+            ],
+            [
+                'label' => 'Alamat',
+                'index' => 'alamat',
+            ],
+            [
+                'label' => 'Kota',
+                'index' => 'kota',
+            ],
+            [
+                'label' => 'Telepon',
+                'index' => 'telp',
+            ],
+            [
+                'label' => 'Pemutihan Supir No Bukti',
+                'index' => 'pemutihansupir_nobukti',
+            ],
+            [
+                'label' => 'Status Aktif',
+                'index' => 'statusaktif',
+            ],
+            [
+                'label' => 'Nominal Deposit SA',
+                'index' => 'nominaldepositsa',
+            ],
+            [
+                'label' => 'Deposit Ke',
+                'index' => 'depositke',
+            ],
+            [
+                'label' => 'Nominal Pinjaman Saldo Awal',
+                'index' => 'nominalpinjamansaldoawal',
+            ],
+            [
+                'label' => 'Supir Rold',
+                'index' => 'supirold_id',
+            ],
+            [
+                'label' => 'No Sim',
+                'index' => 'nosim',
+            ],
+            [
+                'label' => 'Tgl Terbit Sim',
+                'index' => 'tglterbitsim',
+            ],
+            [
+                'label' => 'Tgl Exp Sim',
+                'index' => 'tglexpsim',
+            ],
+            [
+                'label' => 'Keterangan',
+                'index' => 'keterangan',
+            ],
+            [
+                'label' => 'No KTP',
+                'index' => 'noktp',
+            ],
+            [
+                'label' => 'No KK',
+                'index' => 'nokk',
+            ],
+            [
+                'label' => 'Status Ada Update Gambar',
+                'index' => 'statusadaupdategambar',
+            ],
+            [
+                'label' => 'Status Luar Kota',
+                'index' => 'statusluarkota',
+            ],
+            [
+                'label' => 'Status Zona Tertentu',
+                'index' => 'statuszonatertentu',
+            ],
+            [
+                'label' => 'Zona',
+                'index' => 'zona_id',
+            ],
+            [
+                'label' => 'Keterangan Resign',
+                'index' => 'keteranganresign',
+            ],
+            [
+                'label' => 'Status Blacklist',
+                'index' => 'statusblacklist',
+            ],
+            [
+                'label' => 'Tgl Berhenti Supir',
+                'index' => 'tglberhentisupir',
+            ],
+           
+        ];
+
+        $this->toExcel('Supir', $supirs, $columns);
     }
 }

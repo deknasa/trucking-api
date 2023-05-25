@@ -131,16 +131,28 @@ class Controller extends BaseController
         $startRow = $tableHeaderRow + 1;
         $alphabets = range('A', 'Z');
 
+        for ($i = 'A'; $i <= 'B'; $i++) {
+            for ($j = 'A'; $j <= 'Z'; $j++) {
+                $alphabets[] = $i . $j;
+            }
+        }
+       
+
+
         $spreadsheet = new Spreadsheet();
         $sheet = $spreadsheet->getActiveSheet();
         $sheet->setCellValue('A1', 'Laporan ' . $title);
         $sheet->getStyle("A1")->getFont()->setSize(20);
         $sheet->getStyle('A1')->getAlignment()->setHorizontal('center');
         $sheet->mergeCells('A1:' . $alphabets[count($columns) - 1] . '1');
+       
 
         /* Set the table header */
         foreach ($columns as $columnsIndex => $column) {
             $sheet->setCellValue($alphabets[$columnsIndex] . $tableHeaderRow, $column['label'] ?? $columnsIndex + 1);
+
+            $sheet->getColumnDimension($alphabets[$columnsIndex])->setAutoSize(true);
+            
         }
 
         /* Set the table header style */
@@ -150,6 +162,7 @@ class Controller extends BaseController
             ->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID)
             ->getStartColor()
             ->setARGB('FF02c4f5');
+            
 
         $totalRows = count($data);
 

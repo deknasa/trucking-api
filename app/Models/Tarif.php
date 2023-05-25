@@ -157,9 +157,7 @@ class Tarif extends MyModel
              $this->table.keterangan,
              $this->table.created_at,
              $this->table.updated_at"
-
             )
-
         )
             ->leftJoin('parameter', 'tarif.statusaktif', '=', 'parameter.id')
             ->leftJoin('kota', 'tarif.kota_id', '=', 'kota.id')
@@ -327,6 +325,8 @@ class Tarif extends MyModel
                             $query = $query->where('parameter.text', '=', "$filters[data]");
                         } elseif ($filters['field'] == 'container_id') {
                             $query = $query->where('container.keterangan', 'LIKE', "%$filters[data]%");
+                        }elseif ($filters['field'] == 'parent_id') {
+                            $query = $query->where('parent.tujuan', 'LIKE', "%$filters[data]%");
                         } elseif ($filters['field'] == 'upahsupir_id') {
                             $query = $query->where('B.kotasampai_id', 'LIKE', "%$filters[data]%");
                         } elseif ($filters['field'] == 'kota_id') {
@@ -356,8 +356,10 @@ class Tarif extends MyModel
                                 $query = $query->orWhere('parameter.text', '=', "$filters[data]");
                             } elseif ($filters['field'] == 'container_id') {
                                 $query = $query->orWhere('container.keterangan', 'LIKE', "%$filters[data]%");
+                            } elseif ($filters['field'] == 'parent_id') {
+                                $query = $query->orWhere('parent.tujuan', 'LIKE', "%$filters[data]%");
                             } elseif ($filters['field'] == 'upahsupir_id') {
-                                $query = $query->orWhere('B.kotasampai_id', 'LIKE', "%$filters[data]%");
+                                $query = $query->orWhere('kotasampai_id', 'LIKE', "%$filters[data]%");
                             } elseif ($filters['field'] == 'kota_id') {
                                 $query = $query->orWhere('kota.keterangan', 'LIKE', "%$filters[data]%");
                             } elseif ($filters['field'] == 'zona_id') {

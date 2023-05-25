@@ -323,6 +323,7 @@ class SuratPengantar extends MyModel
                 'suratpengantar.nosp',
                 'suratpengantar.trado_id',
                 'trado.kodetrado as trado',
+                'trado.nominalplusborongan',
                 'suratpengantar.supir_id',
                 'supir.namasupir as supir',
                 'suratpengantar.dari_id',
@@ -626,8 +627,8 @@ class SuratPengantar extends MyModel
         $this->setRequestParameters();
         $query = DB::table($modelTable);
         $query = $this->selectColumns($query);
-        if (request()->tgldari) {
-            $query->whereBetween('suratpengantar.tglbukti', [date('Y-m-d', strtotime(request()->tgldari)), date('Y-m-d', strtotime(request()->tglsampai))]);
+        if (request()->tgldariheader) {
+            $query->whereBetween('suratpengantar.tglbukti', [date('Y-m-d', strtotime(request()->tgldariheader)), date('Y-m-d', strtotime(request()->tglsampaiheader))]);
         }
         $this->sort($query);
 

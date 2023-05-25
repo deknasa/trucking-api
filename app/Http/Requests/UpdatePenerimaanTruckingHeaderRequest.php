@@ -49,19 +49,43 @@ class UpdatePenerimaanTruckingHeaderRequest extends FormRequest
 
     public function attributes()
     {
-        return [
-            
+        $attributes = [
             'tglbukti' => 'Tgl Bukti',
             'keterangancoa' => 'nama perkiraan',
             'penerimaantrucking' => 'Kode Penerimaan',
-            // 'keterangan.*' => 'keterangan'
         ];
+
+        $relatedRequests = [
+            UpdatePenerimaanTruckingDetailRequest::class
+        ];
+
+        foreach ($relatedRequests as $relatedRequest) {
+            $attributes = array_merge(
+                $attributes,
+                (new $relatedRequest)->attributes()
+            );
+        }
+
+        return $attributes;
     }
     
     public function messages() 
     {
-        return [
+        $messages = [
             'tglbukti.date_format' => app(ErrorController::class)->geterror('DF')->keterangan,
         ];
+
+        $relatedRequests = [
+            UpdatePenerimaanTruckingDetailRequest::class
+        ];
+
+        foreach ($relatedRequests as $relatedRequest) {
+            $messages = array_merge(
+                $messages,
+                (new $relatedRequest)->messages()
+            );
+        }
+
+        return $messages;
     }
 }

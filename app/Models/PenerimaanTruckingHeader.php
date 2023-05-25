@@ -369,7 +369,9 @@ class PenerimaanTruckingHeader extends MyModel
         DB::table($temp)->insertUsing(['penerimaantrucking_id', 'nobukti','keterangan','sisa','bayar'], $pengembalian);
         
         $pinjaman = DB::table($tempAll)->from(DB::raw("$tempAll with (readuncommitted)"))
-        ->select(DB::raw("null as penerimaantrucking_id,nobukti,keterangan,sisa, 0 as bayar"));
+        ->select(DB::raw("null as penerimaantrucking_id,nobukti,keterangan,sisa, 0 as bayar"))
+        ->where('sisa','!=','0');
+        
         DB::table($temp)->insertUsing(['penerimaantrucking_id', 'nobukti','keterangan','sisa','bayar'], $pinjaman);
 
         $data = DB::table($temp)->from(DB::raw("$temp with (readuncommitted)"))
@@ -395,7 +397,6 @@ class PenerimaanTruckingHeader extends MyModel
         ->whereRaw("pengeluarantruckingheader.nobukti not in (select pengeluarantruckingheader_nobukti from penerimaantruckingdetail where penerimaantruckingheader_id=$id)")
         ->orderBy('pengeluarantruckingheader.tglbukti', 'asc')
         ->orderBy('pengeluarantruckingdetail.nobukti', 'asc');
-        
         Schema::create($temp, function ($table) {
             $table->string('nobukti');
             $table->string('keterangan');
@@ -426,7 +427,6 @@ class PenerimaanTruckingHeader extends MyModel
             ->where("penerimaantruckingdetail.penerimaantruckingheader_id", $id)
             ->orderBy('pengeluarantruckingheader.tglbukti', 'asc')
             ->orderBy('pengeluarantruckingdetail.nobukti', 'asc');
-
         Schema::create($temp, function ($table) {
             $table->bigInteger('penerimaantrucking_id')->nullable();
             $table->string('nobukti');

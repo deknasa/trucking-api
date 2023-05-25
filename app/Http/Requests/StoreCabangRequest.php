@@ -25,8 +25,8 @@ class StoreCabangRequest extends FormRequest
     public function rules()
     {
         return [
-            'kodecabang' => 'required',
-            'namacabang' => 'required',
+            'kodecabang' => ['required','unique:cabang'],
+            'namacabang' => ['required','unique:cabang'],
             'statusaktif' => 'required',
         ];
     }
@@ -40,14 +40,5 @@ class StoreCabangRequest extends FormRequest
         ];
     }
 
-    public function messages()
-    {
-        $controller = new ErrorController;
-
-        return [
-            'kodecabang.required' => ':attribute' . ' ' . $controller->geterror('WI')->keterangan,
-            'namacabang.required' => ':attribute' . ' ' . $controller->geterror('WI')->keterangan,
-            'statusaktif.required' => ':attribute' . ' ' . $controller->geterror('WI')->keterangan,
-        ];
-    }
+ 
 }

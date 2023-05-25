@@ -155,7 +155,7 @@ class AgenController extends Controller
         try {
             $agen->kodeagen = $request->kodeagen;
             $agen->namaagen = $request->namaagen;
-            $agen->keterangan = $request->keterangan;
+            $agen->keterangan = $request->keterangan ?? '';
             $agen->statusaktif = $request->statusaktif;
             $agen->namaperusahaan = $request->namaperusahaan;
             $agen->alamat = $request->alamat;
