@@ -284,4 +284,51 @@ class ContainerController extends Controller
             'data' => $data
         ]);
     }
+    public function export()
+    {
+        $response = $this->index();
+        $decodedResponse = json_decode($response->content(), true);
+        $containers = $decodedResponse['data'];
+
+        $i = 0;
+        foreach ($containers as $index => $params) {
+
+            $statusaktif = $params['statusaktif'];
+
+            $result = json_decode($statusaktif, true);
+
+            $statusaktif = $result['MEMO'];
+
+
+            $containers[$i]['statusaktif'] = $statusaktif;
+
+        
+            $i++;
+
+
+        }
+        $columns = [
+            [
+                'label' => 'No',
+            ],
+            [
+                'label' => 'Kode Container',
+                'index' => 'kodecontainer',
+            ],
+            [
+                'label' => 'Keterangan',
+                'index' => 'keterangan',
+            ],
+            [
+                'label' => 'Nominal Sumbangan',
+                'index' => 'nominalsumbangan',
+            ],
+            [
+                'label' => 'Status Aktif',
+                'index' => 'statusaktif',
+            ],
+        ];
+
+        $this->toExcel('Container', $containers, $columns);
+    }
 }

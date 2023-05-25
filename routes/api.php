@@ -296,6 +296,8 @@ route::middleware(['auth:api'])->group(function () {
     Route::get('tarif/default', [TarifController::class, 'default']);
     Route::get('tarif/listpivot', [TarifController::class, 'listpivot']);
     Route::post('tarif/import', [TarifController::class, 'import']);
+    Route::get('tarif/export', [TarifController::class, 'export']);
+    Route::get('tarif/report', [TarifController::class, 'report']);
     Route::post('tarif/{id}/cekValidasi', [TarifController::class, 'cekValidasi'])->name('tarif.cekValidasi');
     Route::resource('tarif', TarifController::class);
 
@@ -460,6 +462,8 @@ route::middleware(['auth:api'])->group(function () {
     Route::get('container/getPosition2', [ContainerController::class, 'getPosition2']);
     Route::get('container/default', [ContainerController::class, 'default']);
     Route::post('container/{id}/cekValidasi', [ContainerController::class, 'cekValidasi'])->name('container.cekValidasi');
+    Route::get('container/export', [ContainerController::class, 'export']);
+    Route::get('container/report', [ContainerController::class, 'report']);
     Route::resource('container', ContainerController::class);
 
     Route::get('bank/combo', [BankController::class, 'combo']);
@@ -585,6 +589,8 @@ route::middleware(['auth:api'])->group(function () {
     Route::post('supir/{id}/approvalluarkota', [SupirController::class, 'approvalSupirLuarKota']);
     Route::post('supir/{id}/approvalresign', [SupirController::class, 'approvalSupirResign']);
     Route::post('supir/{id}/cekValidasi', [SupirController::class, 'cekValidasi'])->name('supir.cekValidasi');
+    Route::get('supir/export', [SupirController::class, 'export']);
+    Route::get('supir/report', [SupirController::class, 'report']);
     Route::resource('supir', SupirController::class);
 
     Route::get('subkelompok/export', [SubKelompokController::class, 'export']);

@@ -31,7 +31,6 @@ class UpdatePenerimaanGiroHeaderRequest extends FormRequest
                 new DateTutupBuku()
             ],
             'pelanggan' => 'required',
-            'diterimadari' => 'required',
             'tgllunas' => 'required'
         ];
         $relatedRequests = [

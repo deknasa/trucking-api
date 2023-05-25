@@ -31,7 +31,6 @@ class UpdatePengeluaranHeaderRequest extends FormRequest
                 new DateTutupBuku()
             ],
             'alatbayar' => 'required',
-            'dibayarke' => 'required',
             'bank' => 'required',
         ];
         $relatedRequests = [
