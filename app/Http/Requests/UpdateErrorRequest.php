@@ -27,7 +27,6 @@ class UpdateErrorRequest extends FormRequest
     {
         return [
             'kodeerror' => 'required',
-            'keterangan' => 'required',
         ];
     }
 

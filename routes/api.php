@@ -287,6 +287,8 @@ route::middleware(['auth:api'])->group(function () {
     Route::get('zona/field_length', [ZonaController::class, 'fieldLength']);
     Route::get('zona/default', [ZonaController::class, 'default']);
     Route::post('zona/{id}/cekValidasi', [ZonaController::class, 'cekValidasi'])->name('zona.cekValidasi');
+    Route::get('zona/export', [ZonaController::class, 'export']);
+    Route::get('zona/report', [ZonaController::class, 'report']);
     Route::resource('zona', ZonaController::class);
 
 
@@ -432,6 +434,8 @@ route::middleware(['auth:api'])->group(function () {
     Route::get('kota/field_length', [KotaController::class, 'fieldLength']);
     Route::get('kota/default', [KotaController::class, 'default']);
     Route::post('kota/{id}/cekValidasi', [KotaController::class, 'cekValidasi'])->name('kota.cekValidasi');
+    Route::get('kota/export', [KotaController::class, 'export']);
+    Route::get('kota/report', [KotaController::class, 'report']);
     Route::resource('kota', KotaController::class);
 
     Route::get('logtrail/detail', [LogTrailController::class, 'detail']);
@@ -629,6 +633,8 @@ route::middleware(['auth:api'])->group(function () {
     Route::get('penerimaantrucking/export', [PenerimaanTruckingController::class, 'export']);
     Route::get('penerimaantrucking/field_length', [PenerimaanTruckingController::class, 'fieldLength']);
     Route::post('penerimaantrucking/{id}/cekValidasi', [PenerimaanTruckingController::class, 'cekValidasi'])->name('penerimaantrucking.cekValidasi');
+    Route::get('penerimaantrucking/export', [PenerimaanTruckingController::class, 'export']);
+    Route::get('penerimaantrucking/report', [PenerimaanTruckingController::class, 'report']);
     Route::resource('penerimaantrucking', PenerimaanTruckingController::class)->parameters(['penerimaantrucking' => 'penerimaanTrucking']);
 
     Route::get('pengeluarantrucking/export', [PengeluaranTruckingController::class, 'export']);

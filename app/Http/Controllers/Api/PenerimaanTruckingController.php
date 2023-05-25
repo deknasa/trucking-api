@@ -230,13 +230,27 @@ class PenerimaanTruckingController extends Controller
         $decodedResponse = json_decode($response->content(), true);
         $penerimaanTruckings = $decodedResponse['data'];
 
+        $i = 0;
+        foreach ($penerimaanTruckings as $index => $params) {
+
+            $statusaktif = $params['format'];
+
+            $result = json_decode($statusaktif, true);
+
+            $statusaktif = $result['MEMO'];
+
+
+            $penerimaanTruckings[$i]['format'] = $statusaktif;
+
+        
+            $i++;
+
+
+        }
+
         $columns = [
             [
                 'label' => 'No',
-            ],
-            [
-                'label' => 'ID',
-                'index' => 'id',
             ],
             [
                 'label' => 'Kode Penerimaan',
@@ -247,20 +261,36 @@ class PenerimaanTruckingController extends Controller
                 'index' => 'keterangan',
             ],
             [
-                'label' => 'coadebet',
+                'label' => 'COA Debet',
                 'index' => 'coadebet',
             ],
             [
-                'label' => 'coakredit',
+                'label' => 'COA Kredit',
                 'index' => 'coakredit',
             ],
             [
-                'label' => 'coapostingdebet',
+                'label' => 'COA Posting Debet',
                 'index' => 'coapostingdebet',
             ],
             [
-                'label' => 'coapostingkredit',
+                'label' => 'COA Posting Kredit',
                 'index' => 'coapostingkredit',
+            ],
+            [
+                'label' => 'COA Debet Keterangan',
+                'index' => 'coadebet_keterangan',
+            ],
+            [
+                'label' => 'COA Kredit Keterangan',
+                'index' => 'coakredit_keterangan',
+            ],
+            [
+                'label' => 'COA Posting Debet Keterangan',
+                'index' => 'coapostingdebet_keterangan',
+            ],
+            [
+                'label' => 'COA Posting Kredit Keterangan',
+                'index' => 'coapostingkredit_keterangan',
             ],
             [
                 'label' => 'Format Bukti',
