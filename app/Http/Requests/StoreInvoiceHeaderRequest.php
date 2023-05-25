@@ -36,7 +36,18 @@ class StoreInvoiceHeaderRequest extends FormRequest
             'tgldari' => 'required|date_format:d-m-Y',
             'tglsampai' => 'required|date_format:d-m-Y',
         ];
+       
+        $relatedRequests = [
+            StoreInvoiceDetailRequest::class
+        ];
 
+        foreach ($relatedRequests as $relatedRequest) {
+            $rules = array_merge(
+                $rules,
+                (new $relatedRequest)->rules()
+            );
+        }
+        
         return $rules;
     }
 
@@ -54,6 +65,8 @@ class StoreInvoiceHeaderRequest extends FormRequest
     public function messages()
     {
         return [
+            'sp_id.required' => 'SP '.app(ErrorController::class)->geterror('WP')->keterangan,
+            'nominalretribusi.*.min' => 'nominal retribusi '.app(ErrorController::class)->geterror('NTM')->keterangan,
             'tglbukti.date_format' => app(ErrorController::class)->geterror('DF')->keterangan,
             'tgldari.date_format' => app(ErrorController::class)->geterror('DF')->keterangan,
             'tglsampai.date_format' => app(ErrorController::class)->geterror('DF')->keterangan,
