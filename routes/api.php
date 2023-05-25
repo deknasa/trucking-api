@@ -458,6 +458,8 @@ route::middleware(['auth:api'])->group(function () {
     Route::get('absentrado/field_length', [AbsenTradoController::class, 'fieldLength']);
     Route::get('absentrado/default', [AbsenTradoController::class, 'default']);
     Route::post('absentrado/{id}/cekValidasi', [AbsenTradoController::class, 'cekValidasi'])->name('absentrado.cekValidasi');
+    Route::get('absentrado/export', [AbsenTradoController::class, 'export']);
+    Route::get('absentrado/report', [AbsenTradoController::class, 'report']);
     Route::resource('absentrado', AbsenTradoController::class);
     Route::get('absentrado/detail', [AbsenTradoController::class, 'detail']);
 
@@ -492,12 +494,16 @@ route::middleware(['auth:api'])->group(function () {
     Route::get('jenisemkl/field_length', [JenisEmklController::class, 'fieldLength']);
     Route::get('jenisemkl/default', [JenisEmklController::class, 'default']);
     Route::post('jenisemkl/{id}/cekValidasi', [JenisEmklController::class, 'cekValidasi'])->name('jenisemkl.cekValidasi');
+    Route::get('jenisemkl/export', [JenisEmklController::class, 'export']);
+    Route::get('jenisemkl/report', [JenisEmklController::class, 'report']);
     Route::resource('jenisemkl', JenisEmklController::class);
 
     Route::get('jenisorder/combo', [JenisOrderController::class, 'combo']);
     Route::get('jenisorder/field_length', [JenisOrderController::class, 'fieldLength']);
     Route::get('jenisorder/default', [JenisOrderController::class, 'default']);
     Route::post('jenisorder/{id}/cekValidasi', [JenisOrderController::class, 'cekValidasi'])->name('jenisorder.cekValidasi');
+    Route::get('jenisorder/export', [JenisOrderController::class, 'export']);
+    Route::get('jenisorder/report', [JenisOrderController::class, 'report']);
     Route::resource('jenisorder', JenisOrderController::class);
 
     Route::get('jenistrado/combo', [JenisTradoController::class, 'combo']);
@@ -644,6 +650,8 @@ route::middleware(['auth:api'])->group(function () {
     Route::get('pengeluarantrucking/export', [PengeluaranTruckingController::class, 'export']);
     Route::get('pengeluarantrucking/field_length', [PengeluaranTruckingController::class, 'fieldLength']);
     Route::post('pengeluarantrucking/{id}/cekValidasi', [PengeluaranTruckingController::class, 'cekValidasi'])->name('pengeluarantrucking.cekValidasi');
+    Route::get('pengeluarantrucking/export', [PengeluaranTruckingController::class, 'export']);
+    Route::get('pengeluarantrucking/report', [PengeluaranTruckingController::class, 'report']);
     Route::resource('pengeluarantrucking', PengeluaranTruckingController::class)->parameters(['pengeluarantrucking' => 'pengeluaranTrucking']);
 
 

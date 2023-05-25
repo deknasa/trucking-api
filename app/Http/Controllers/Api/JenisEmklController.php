@@ -32,17 +32,18 @@ class JenisEmklController extends Controller
             ]
         ]);
     }
-    public function cekValidasi($id) {
-        $jenisEmkl= new JenisEmkl();
-        $cekdata=$jenisEmkl->cekvalidasihapus($id);
-        if ($cekdata['kondisi']==true) {
+    public function cekValidasi($id)
+    {
+        $jenisEmkl = new JenisEmkl();
+        $cekdata = $jenisEmkl->cekvalidasihapus($id);
+        if ($cekdata['kondisi'] == true) {
             $query = DB::table('error')
-            ->select(
-                DB::raw("ltrim(rtrim(keterangan))+' (".$cekdata['keterangan'].")' as keterangan")
+                ->select(
+                    DB::raw("ltrim(rtrim(keterangan))+' (" . $cekdata['keterangan'] . ")' as keterangan")
                 )
-            ->where('kodeerror', '=', 'SATL')
-            ->get();
-        $keterangan = $query['0'];
+                ->where('kodeerror', '=', 'SATL')
+                ->get();
+            $keterangan = $query['0'];
 
             $data = [
                 'status' => false,
@@ -52,7 +53,6 @@ class JenisEmklController extends Controller
             ];
 
             return response($data);
-         
         } else {
             $data = [
                 'status' => false,
@@ -61,10 +61,10 @@ class JenisEmklController extends Controller
                 'kondisi' => $cekdata['kondisi'],
             ];
 
-            return response($data); 
+            return response($data);
         }
     }
-    
+
     public function default()
     {
         $jenisEmkl = new JenisEmkl();
@@ -241,5 +241,46 @@ class JenisEmklController extends Controller
         return response([
             'data' => $jenisemkls
         ]);
+    }
+    public function export()
+    {
+        $response = $this->index();
+        $decodedResponse = json_decode($response->content(), true);
+        $jenisemkls = $decodedResponse['data'];
+
+        $i = 0;
+        foreach ($jenisemkls as $index => $params) {
+
+            $statusaktif = $params['statusaktif'];
+
+            $result = json_decode($statusaktif, true);
+
+            $statusaktif = $result['MEMO'];
+
+
+            $jenisemkls[$i]['statusaktif'] = $statusaktif;
+
+
+            $i++;
+        }
+        $columns = [
+            [
+                'label' => 'No',
+            ],
+            [
+                'label' => 'Kode Jenis EMKL',
+                'index' => 'kodejenisemkl',
+            ],
+            [
+                'label' => 'Keterangan',
+                'index' => 'keterangan',
+            ],
+            [
+                'label' => 'Status Aktif',
+                'index' => 'statusaktif',
+            ],
+        ];
+
+        $this->toExcel('Jenis Emkl', $jenisemkls, $columns);
     }
 }
