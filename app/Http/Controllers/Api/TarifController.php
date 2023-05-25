@@ -119,7 +119,6 @@ class TarifController extends Controller
             $tarif->statuspenyesuaianharga = $request->statuspenyesuaianharga;
             $tarif->keterangan = $request->keterangan;
             $tarif->modifiedby = auth('api')->user()->name;
-
             if ($tarif->save()) {
 
               
@@ -179,11 +178,12 @@ class TarifController extends Controller
                 DB::commit();
             }
 
+            
             /* Set position and page */
             $selected = $this->getPosition($tarif, $tarif->getTable());
             $tarif->position = $selected->position;
             $tarif->page = ceil($tarif->position / ($request->limit ?? 10));
-
+            
             return response([
                 'status' => true,
                 'message' => 'Berhasil disimpan',

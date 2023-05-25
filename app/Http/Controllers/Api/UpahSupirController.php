@@ -66,7 +66,6 @@ class UpahSupirController extends Controller
 
         try {
             $upahsupir = new UpahSupir();
-
             $upahsupir->kotadari_id = $request->kotadari_id;
             $upahsupir->parent_id = $request->parent_id ?? 0;
             $upahsupir->tarif_id = $request->tarif_id ?? 0;
@@ -143,7 +142,6 @@ class UpahSupirController extends Controller
 
                 DB::commit();
             }
-
             /* Set position and page */
             $selected = $this->getPosition($upahsupir, $upahsupir->getTable());
             $upahsupir->position = $selected->position;
