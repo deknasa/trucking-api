@@ -26,13 +26,13 @@ class StoreUpahSupirRequest extends FormRequest
     public function rules()
     {
         $rules =  [
-            'kotadari' => 'required',
-            'kotasampai' => 'required',
+            'kotadari' => ['required','unique:upahsupir'],
+            'kotasampai' => ['required','unique:upahsupir'],
             // 'zona' => 'required',
-            'jarak' => ['required','numeric','gt:0','min:0','max:'. (new ParameterController)->getparamid('BATAS KM UPAH SUPIR','BATAS KM UPAH SUPIR')->text],
+            'jarak' => ['required','numeric','min:0','max:'. (new ParameterController)->getparamid('BATAS KM UPAH SUPIR','BATAS KM UPAH SUPIR')->text],
             'statusaktif' => 'required',
             'statusluarkota' => 'required',
-            'tglmulaiberlaku' => 'required',
+            'tglmulaiberlaku' => ['required','date_format:d-m-Y'],
             // 'tglakhirberlaku' => 'required',
         ];
         $relatedRequests = [
@@ -64,12 +64,5 @@ class StoreUpahSupirRequest extends FormRequest
         ];
     }
 
-    public function messages()
-    {
-        return [
-            'jarak.max' => ':attribute ' . 'maximal jarak '. (new ParameterController)->getparamid('BATAS KM UPAH SUPIR','BATAS KM UPAH SUPIR')->text,
-            'jarak.min' => ':attribute ' . (new ErrorController)->geterror('TBMINUS')->keterangan,
-            'nominalsupir.*.gt' => ':attribute ' . (new ErrorController)->geterror('WI')->keterangan,
-        ];
-    }
+
 }

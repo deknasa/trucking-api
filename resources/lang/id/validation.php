@@ -27,7 +27,7 @@ return [
     'before' => 'The :attribute must be a date before :date.',
     'before_or_equal' => 'The :attribute must be a date before or equal to :date.',
     'between' => [
-        'numeric' => 'The :attribute must be between :min and :max.',
+        'numeric' => ':attribute ' . (new ErrorController)->geterror('NTLK')->keterangan.' :min dan '. (new ErrorController)->geterror('NTLB')->keterangan. ' :max.',
         'file' => 'The :attribute must be between :min and :max kilobytes.',
         'string' => 'The :attribute must be between :min and :max characters.',
         'array' => 'The :attribute must have between :min and :max items.',
@@ -85,7 +85,7 @@ return [
         'array' => 'The :attribute must not have more than :value items.',
     ],
     'max' => [
-        'numeric' => 'The :attribute must not be greater than :max.',
+        'numeric' => ':attribute ' . (new ErrorController)->geterror('NTLB')->keterangan. ' :max.',
         'file' => 'The :attribute must not be greater than :max kilobytes.',
         'string' => 'The :attribute must not be greater than :max characters.',
         'array' => 'The :attribute must not have more than :max items.',
@@ -93,7 +93,7 @@ return [
     'mimes' => 'The :attribute must be a file of type: :values.',
     'mimetypes' => 'The :attribute must be a file of type: :values.',
     'min' => [
-        'numeric' => 'The :attribute must be at least :min.',
+        'numeric' => ':attribute ' . (new ErrorController)->geterror('NTLK')->keterangan.' :min.',
         'file' => 'The :attribute must be at least :min kilobytes.',
         'string' => 'The :attribute must be at least :min characters.',
         'array' => 'The :attribute must have at least :min items.',
@@ -101,7 +101,7 @@ return [
     'multiple_of' => 'The :attribute must be a multiple of :value.',
     'not_in' => 'The selected :attribute is invalid.',
     'not_regex' => 'The :attribute format is invalid.',
-    'numeric' => 'The :attribute must be a number.',
+    'numeric' => ':attribute Nilai Harus ' . (new ErrorController)->geterror('BTSANGKA')->keterangan,
     'password' => 'The password is incorrect.',
     'present' => 'The :attribute field must be present.',
     'prohibited' => 'The :attribute field is prohibited.',

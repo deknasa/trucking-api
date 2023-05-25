@@ -3,6 +3,7 @@
 namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
 class UpdateUpahRitasiRequest extends FormRequest
 {
@@ -24,11 +25,11 @@ class UpdateUpahRitasiRequest extends FormRequest
     public function rules()
     {
         $rules =  [
-            'kotadari' => 'required',
-            'kotasampai' => 'required',
+            'kotadari_id' => ['required',Rule::unique('upahritasi')->whereNotIn('id', [$this->id])],
+            'kotasampai_id' => ['required',Rule::unique('upahritasi')->whereNotIn('id', [$this->id])],
             'jarak' => 'required|numeric|gt:0',
             'statusaktif' => 'required',
-            'tglmulaiberlaku' => 'required',
+            'tglmulaiberlaku' => ['required','date_format:d-m-Y'],
         ];
         $relatedRequests = [
             UpdateUpahRitasiRincianRequest::class

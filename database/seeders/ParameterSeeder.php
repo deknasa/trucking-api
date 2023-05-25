@@ -319,6 +319,13 @@ class ParameterSeeder extends Seeder
         parameter::create(['grp' => 'UKURANCONTAINER2X20', 'subgrp' => 'UKURANCONTAINER2X20', 'kelompok' => '', 'text' => '3', 'memo' => '{"MEMO":"3","SINGKATAN":"UC","WARNA":"#28A745"}', 'type' => '0', 'modifiedby' => 'ADMIN', 'default' => 'YA',]);
         parameter::create(['grp' => 'INVOICE CHARGE GANDENGAN', 'subgrp' => 'INVOICE CHARGE GANDENGAN', 'kelompok' => '', 'text' => '#INVG #9999#/#R#/#Y', 'memo' => '{"MEMO":"#INVG #9999#/#R#/#Y","SINGKATAN":"UC","WARNA":"#28A745"}', 'type' => '0', 'modifiedby' => 'ADMIN', 'default' => 'YA',]);
         parameter::create(['grp' => 'BATAS KM UPAH SUPIR', 'subgrp' => 'BATAS KM UPAH SUPIR', 'kelompok' => '', 'text' => '10000', 'memo' => '{"MEMO":"10000","SINGKATAN":"UC","WARNA":"#28A745"}', 'type' => '0', 'modifiedby' => 'ADMIN', 'default' => 'YA',]);
+        parameter::create(['grp' => 'BATAS NILAI UPAH', 'subgrp' => 'BATAS NILAI UPAH', 'kelompok' => '', 'text' => '15.000.000', 'memo' => '{"MEMO":"15000000","SINGKATAN":"UC","WARNA":"#28A745"}', 'type' => '0', 'modifiedby' => 'ADMIN', 'default' => 'YA',]);
+        parameter::create(['grp' => 'BATAS NILAI TARIF', 'subgrp' => 'BATAS NILAI TARIF', 'kelompok' => '', 'text' => '20.000.000', 'memo' => '{"MEMO":"20000000","SINGKATAN":"UC","WARNA":"#28A745"}', 'type' => '0', 'modifiedby' => 'ADMIN', 'default' => 'YA',]);
+        parameter::create(['grp' => 'BATAS NILAI UPAH KERNEK', 'subgrp' => 'BATAS NILAI UPAH KERNEK', 'kelompok' => '', 'text' => '1.000.000', 'memo' => '{"MEMO":"1000000","SINGKATAN":"UC","WARNA":"#28A745"}', 'type' => '0', 'modifiedby' => 'ADMIN', 'default' => 'YA',]);
+        parameter::create(['grp' => 'BATAS NILAI UPAH KOMISI', 'subgrp' => 'BATAS NILAI UPAH KOMISI', 'kelompok' => '', 'text' => '1.000.000', 'memo' => '{"MEMO":"1000000","SINGKATAN":"UC","WARNA":"#28A745"}', 'type' => '0', 'modifiedby' => 'ADMIN', 'default' => 'YA',]);
+        parameter::create(['grp' => 'BATAS NILAI TOL', 'subgrp' => 'BATAS NILAI TOL', 'kelompok' => '', 'text' => '10.000', 'memo' => '{"MEMO":"10000","SINGKATAN":"UC","WARNA":"#28A745"}', 'type' => '0', 'modifiedby' => 'ADMIN', 'default' => 'YA',]);
+        parameter::create(['grp' => 'BATAS NILAI LITER', 'subgrp' => 'BATAS NILAI LITER', 'kelompok' => '', 'text' => '10.000', 'memo' => '{"MEMO":"10000","SINGKATAN":"UC","WARNA":"#28A745"}', 'type' => '0', 'modifiedby' => 'ADMIN', 'default' => 'YA',]);
+        parameter::create(['grp' => 'BATAS NILAI JARAK', 'subgrp' => 'BATAS NILAI JARAK', 'kelompok' => '', 'text' => '10.000', 'memo' => '{"MEMO":"10000","SINGKATAN":"UC","WARNA":"#28A745"}', 'type' => '0', 'modifiedby' => 'ADMIN', 'default' => 'YA',]);
         
     }
 }

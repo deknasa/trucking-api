@@ -182,6 +182,8 @@ class UpahSupirController extends Controller
      */
     public function update(UpdateUpahSupirRequest $request, UpahSupir $upahsupir)
     {
+
+        
         DB::beginTransaction();
 
         try {
