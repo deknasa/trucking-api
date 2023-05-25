@@ -245,4 +245,45 @@ class JenisOrderController extends Controller
             'data' => $data
         ]);
     }
+    public function export()
+    {
+        $response = $this->index();
+        $decodedResponse = json_decode($response->content(), true);
+        $jenisorders = $decodedResponse['data'];
+
+        $i = 0;
+        foreach ($jenisorders as $index => $params) {
+
+            $statusaktif = $params['statusaktif'];
+
+            $result = json_decode($statusaktif, true);
+
+            $statusaktif = $result['MEMO'];
+
+
+            $jenisorders[$i]['statusaktif'] = $statusaktif;
+
+
+            $i++;
+        }
+        $columns = [
+            [
+                'label' => 'No',
+            ],
+            [
+                'label' => 'Kode Jenis Order',
+                'index' => 'kodejenisorder',
+            ],
+            [
+                'label' => 'Keterangan',
+                'index' => 'keterangan',
+            ],
+            [
+                'label' => 'Status Aktif',
+                'index' => 'statusaktif',
+            ],
+        ];
+
+        $this->toExcel('Jenis Order', $jenisorders, $columns);
+    }
 }

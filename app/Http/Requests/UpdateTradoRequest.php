@@ -46,6 +46,8 @@ class UpdateTradoRequest extends FormRequest
                     }
                 }
             }
+            return true;
+
         });
 
         return [
