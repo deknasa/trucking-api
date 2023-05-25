@@ -5,6 +5,8 @@ namespace App\Http\Requests;
 use App\Http\Controllers\Api\ErrorController;
 use Illuminate\Foundation\Http\FormRequest;
 use App\Rules\DateTutupBuku;
+use Illuminate\Validation\Rule;
+use Illuminate\Support\Facades\DB;
 
 class UpdatePengeluaranTruckingHeaderRequest extends FormRequest
 {
@@ -25,13 +27,24 @@ class UpdatePengeluaranTruckingHeaderRequest extends FormRequest
      */
     public function rules()
     {
+        $ruleBank = Rule::requiredIf(function () {
+            $postingParameter = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))
+                ->whereRaw("grp = 'STATUS POSTING'")
+                ->whereRaw("text = 'POSTING'")
+                ->first();
+            if ($postingParameter->id ==  request()->statusposting) {
+                return true;
+            }
+            return false;
+        });
+
         $rules = [
             "tglbukti" => [
                 "required",'date_format:d-m-Y',
                 new DateTutupBuku()
             ],
             'pengeluarantrucking' => 'required',
-            'bank' => 'required',
+            'bank' => [$ruleBank],
             // 'keterangancoa' => 'required',
         ];
         $relatedRequests = [
