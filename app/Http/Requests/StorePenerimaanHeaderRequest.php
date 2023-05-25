@@ -30,7 +30,7 @@ class StorePenerimaanHeaderRequest extends FormRequest
                 'required','date_format:d-m-Y',
                 new DateTutupBuku()
             ],
-            'diterimadari' => 'required',
+           
             'tgllunas'  => 'required|date_format:d-m-Y',
             // 'cabang' => 'required',
             // 'statuskas' => 'required',
