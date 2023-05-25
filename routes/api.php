@@ -585,6 +585,8 @@ route::middleware(['auth:api'])->group(function () {
     Route::post('supir/{id}/approvalluarkota', [SupirController::class, 'approvalSupirLuarKota']);
     Route::post('supir/{id}/approvalresign', [SupirController::class, 'approvalSupirResign']);
     Route::post('supir/{id}/cekValidasi', [SupirController::class, 'cekValidasi'])->name('supir.cekValidasi');
+    Route::get('supir/export', [SupirController::class, 'export']);
+    Route::get('supir/report', [SupirController::class, 'report']);
     Route::resource('supir', SupirController::class);
 
     Route::get('subkelompok/export', [SubKelompokController::class, 'export']);
