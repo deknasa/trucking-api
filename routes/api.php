@@ -456,6 +456,8 @@ route::middleware(['auth:api'])->group(function () {
     Route::get('container/getPosition2', [ContainerController::class, 'getPosition2']);
     Route::get('container/default', [ContainerController::class, 'default']);
     Route::post('container/{id}/cekValidasi', [ContainerController::class, 'cekValidasi'])->name('container.cekValidasi');
+    Route::get('container/export', [ContainerController::class, 'export']);
+    Route::get('container/report', [ContainerController::class, 'report']);
     Route::resource('container', ContainerController::class);
 
     Route::get('bank/combo', [BankController::class, 'combo']);
