@@ -27,10 +27,10 @@ class UpdatePelangganRequest extends FormRequest
         return [
             'kodepelanggan' => 'required',
             'namapelanggan' => 'required',
-            'telp' => 'required',
+            'telp' => 'required|min:12|max:13',
             'alamat' => 'required',
             'kota' => 'required',
-            'kodepos' => 'required',
+            'kodepos' => 'required|min:5|max:5',
             'statusaktif' => 'required',
         ];
     }
@@ -64,6 +64,10 @@ class UpdatePelangganRequest extends FormRequest
             'alamat.required' => ':attribute' . ' ' . $controller->geterror('WI')->keterangan,
             'kota.required' => ':attribute' . ' ' . $controller->geterror('WI')->keterangan,
             'statusaktif.required' => ':attribute' . ' ' . $controller->geterror('WI')->keterangan,
+            'telp.min' => 'min. 12 karakter',
+            'telp.max' => 'max. 13 karakter',
+            'kodepos.min' => 'min. 5 karakter',
+            'kodepos.max' => 'max. 5 karakter',
         ];
     }  
 }
