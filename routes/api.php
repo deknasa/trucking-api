@@ -295,6 +295,8 @@ route::middleware(['auth:api'])->group(function () {
     Route::get('tarif/default', [TarifController::class, 'default']);
     Route::get('tarif/listpivot', [TarifController::class, 'listpivot']);
     Route::post('tarif/import', [TarifController::class, 'import']);
+    Route::get('tarif/export', [TarifController::class, 'export']);
+    Route::get('tarif/report', [TarifController::class, 'report']);
     Route::post('tarif/{id}/cekValidasi', [TarifController::class, 'cekValidasi'])->name('tarif.cekValidasi');
     Route::resource('tarif', TarifController::class);
 
