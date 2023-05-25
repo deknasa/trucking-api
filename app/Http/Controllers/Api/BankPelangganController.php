@@ -68,6 +68,7 @@ class BankPelangganController extends Controller
             return response($data); 
         }
     }
+
     public function default()
     {
         $bankPelanggan = new BankPelanggan();
@@ -76,6 +77,7 @@ class BankPelangganController extends Controller
             'data' => $bankPelanggan->default()
         ]);
     }
+    
     /**
      * @ClassName 
      */

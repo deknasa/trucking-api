@@ -121,6 +121,7 @@ class PenerimaanTrucking extends MyModel
 
         return $query->first();
     }
+    
     public function selectColumns($query)
     {
         return $query->select(

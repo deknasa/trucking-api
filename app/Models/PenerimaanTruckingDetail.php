@@ -98,8 +98,6 @@ class PenerimaanTruckingDetail extends MyModel
         return $data;
     }
 
-
-
     public function getPotSemua($nobukti)
     {
         $fetch =  DB::table('gajisupirpelunasanpinjaman')->from(DB::raw("gajisupirpelunasanpinjaman with (readuncommitted)"))
@@ -245,6 +243,7 @@ class PenerimaanTruckingDetail extends MyModel
             }
         }
     }
+    
     public function sort($query)
     {
         if ($this->params['sortIndex'] == 'supir_id') {
