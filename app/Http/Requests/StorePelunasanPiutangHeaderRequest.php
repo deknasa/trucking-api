@@ -64,7 +64,9 @@ class StorePelunasanPiutangHeaderRequest extends FormRequest
     public function messages()
     {
         return [
-            'bayar.*.gt' => 'Nominal Tidak Boleh Kosong dan Harus Lebih Besar Dari 0',
+            'piutang_id.required' => 'PIUTANG '.app(ErrorController::class)->geterror('WP')->keterangan,
+            'sisa.*.min' => 'SISA '.app(ErrorController::class)->geterror('NTM')->keterangan,
+            'bayar.*.gt' => app(ErrorController::class)->geterror('GT-ANGKA-0')->keterangan,
             'bayar.*.numeric' => 'nominal harus '.app(ErrorController::class)->geterror('BTSANGKA')->keterangan,
             'tglbukti.date_format' => app(ErrorController::class)->geterror('DF')->keterangan
         ];

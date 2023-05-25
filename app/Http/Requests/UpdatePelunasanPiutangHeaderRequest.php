@@ -64,6 +64,7 @@ class UpdatePelunasanPiutangHeaderRequest extends FormRequest
     public function messages() 
     {
         return [
+            'piutang_id.required' => 'PIUTANG '.app(ErrorController::class)->geterror('WP')->keterangan,
             'bayar.*.gt' => 'Nominal Tidak Boleh Kosong dan Harus Lebih Besar Dari 0',
             'bayar.*.numeric' => 'nominal harus '.app(ErrorController::class)->geterror('BTSANGKA')->keterangan,
             'tglbukti.date_format' => app(ErrorController::class)->geterror('DF')->keterangan,

@@ -60,9 +60,11 @@ class UpdateHutangBayarHeaderRequest extends FormRequest
     public function messages()
     {
         return [
-            'bayar.*.gt' => 'bayar wajib di isi & harus lebih besar dari 0', 
+            'hutang_id.required' => 'HUTANG '.app(ErrorController::class)->geterror('WP')->keterangan,
+            'sisa.*.min' => 'SISA '.app(ErrorController::class)->geterror('NTM')->keterangan,
             'bayar.*.numeric' => 'nominal harus '.app(ErrorController::class)->geterror('BTSANGKA')->keterangan,
-            'tglbukti.date_format' => app(ErrorController::class)->geterror('DF')->keterangan, 
+            'bayar.*.gt' =>  app(ErrorController::class)->geterror('GT-ANGKA-0')->keterangan,
+            'tglbukti.date_format' => app(ErrorController::class)->geterror('DF')->keterangan,
             'tglcair.date_format' => app(ErrorController::class)->geterror('DF')->keterangan,
         ];
     }

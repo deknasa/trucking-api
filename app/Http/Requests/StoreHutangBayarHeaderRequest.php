@@ -31,7 +31,7 @@ class StoreHutangBayarHeaderRequest extends FormRequest
                 new DateTutupBuku()
             ],
             'bank' => 'required',
-            'tglcair' => 'required',
+            'tglcair' => 'required|date_format:d-m-Y',
             'alatbayar' => 'required',
             'supplier' => 'required'
         ];
@@ -68,9 +68,12 @@ class StoreHutangBayarHeaderRequest extends FormRequest
     public function messages()
     {
         return [
+            'hutang_id.required' => 'HUTANG '.app(ErrorController::class)->geterror('WP')->keterangan,
+            'sisa.*.min' => 'SISA '.app(ErrorController::class)->geterror('NTM')->keterangan,
             'bayar.*.numeric' => 'nominal harus '.app(ErrorController::class)->geterror('BTSANGKA')->keterangan,
-            'bayar.*.gt' => 'Nominal Tidak Boleh Kosong dan Harus Lebih Besar Dari 0',
-            'tglbukti.date_format' => app(ErrorController::class)->geterror('DF')->keterangan
+            'bayar.*.gt' =>  app(ErrorController::class)->geterror('GT-ANGKA-0')->keterangan,
+            'tglbukti.date_format' => app(ErrorController::class)->geterror('DF')->keterangan,
+            'tglcair.date_format' => app(ErrorController::class)->geterror('DF')->keterangan,
         ];
     }
 }

@@ -29,12 +29,13 @@ class StoreHutangBayarDetailRequest extends FormRequest
             'keterangan.*' => 'required',
             'bayar' => 'required|array',
             'bayar.*' => 'required|numeric|gt:0',
+            'sisa' => 'required|array',
+            'sisa.*' => 'required|numeric|min:0',
         ];
     }
     
     public function attributes() {
         return [
-            'hutang_id' => 'Pilih Hutang',
             'keterangan.*' => 'keterangan detail'
         ];
     }
