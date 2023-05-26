@@ -3,6 +3,7 @@
 namespace App\Http\Requests;
 use App\Http\Controllers\Api\ParameterController;
 use App\Http\Controllers\Api\ErrorController;
+use Illuminate\Validation\Rule;
 
 use Illuminate\Foundation\Http\FormRequest;
 
@@ -26,13 +27,13 @@ class UpdateUpahSupirRequest extends FormRequest
     public function rules()
     {
         $rules =  [
-            'kotadari' => 'required',
-            'kotasampai' => 'required',
+            'kotadari' => ['required',Rule::unique('upahsupir')->whereNotIn('id', [$this->id])],
+            'kotasampai' => ['required',Rule::unique('upahsupir')->whereNotIn('id', [$this->id])],
             // 'zona' => 'required',
             'jarak' => ['required','numeric','gt:0','min:0','max:'. (new ParameterController)->getparamid('BATAS KM UPAH SUPIR','BATAS KM UPAH SUPIR')->text],
             'statusaktif' => 'required',
             'statusluarkota' => 'required',
-            'tglmulaiberlaku' => 'required',
+            'tglmulaiberlaku' => ['required','date_format:d-m-Y'],
             // 'tglakhirberlaku' => 'required',
         ];
         $relatedRequests = [
