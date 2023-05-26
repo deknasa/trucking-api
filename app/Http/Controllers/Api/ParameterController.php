@@ -36,7 +36,14 @@ class ParameterController extends Controller
         ]);
     }
 
-
+    public function default()
+    {
+        $parameter = new Parameter();
+        return response([
+            'status' => true,
+            'data' => $parameter->default()
+        ]);
+    }
 
     /**
      * @ClassName
