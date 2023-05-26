@@ -36,8 +36,10 @@ class GudangController extends Controller
     }
 
     public function cekValidasi($id) {
+        
         $gudang= new Gudang();
         $cekdata=$gudang->cekvalidasihapus($id);
+        
         if ($cekdata['kondisi']==true) {
             $query = DB::table('error')
             ->select(
@@ -67,6 +69,7 @@ class GudangController extends Controller
             return response($data); 
         }
     }
+
     public function default()
     {
         $gudang = new Gudang();

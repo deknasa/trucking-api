@@ -25,7 +25,6 @@ class Gudang extends MyModel
     // ]; 
     public function cekvalidasihapus($id)
     {
-
         $penerimaanStok = DB::table('penerimaanstokheader')
             ->from(
                 DB::raw("penerimaanstokheader as a with (readuncommitted)")
@@ -35,6 +34,7 @@ class Gudang extends MyModel
             )
             ->where('a.gudang_id', '=', $id)
             ->first();
+            
         if (isset($penerimaanStok)) {
             $data = [
                 'kondisi' => true,
@@ -44,7 +44,7 @@ class Gudang extends MyModel
 
             goto selesai;
         }
-
+        
         $pengeluaranStok = DB::table('pengeluaranstokheader')
             ->from(
                 DB::raw("pengeluaranstokheader as a with (readuncommitted)")
@@ -59,26 +59,6 @@ class Gudang extends MyModel
                 'kondisi' => true,
                 'keterangan' => 'Pengeluaran Stok',
             ];
-
-
-            goto selesai;
-        }
-        $stok = DB::table('stok')
-            ->from(
-                DB::raw("stok as a with (readuncommitted)")
-            )
-            ->select(
-                'a.gudang_id'
-            )
-            ->where('a.gudang_id', '=', $id)
-            ->first();
-        if (isset($stok)) {
-            $data = [
-                'kondisi' => true,
-                'keterangan' => 'Stok',
-            ];
-
-
             goto selesai;
         }
         $data = [
@@ -88,6 +68,7 @@ class Gudang extends MyModel
 
         selesai:
         return $data;
+        
     }
     public function get()
     {
