@@ -95,7 +95,6 @@ class Parameter extends MyModel
             ->where('subgrp', '=', 'STATUS DEFAULT PARAMETER')
             ->where('default', '=', 'YA')
             ->first();
-
         $iddefault = $status->id ?? 0;
 
         DB::table($tempdefault)->insert(
@@ -111,7 +110,7 @@ class Parameter extends MyModel
                 'default',
             );
 
-        $data = $status->first();
+        $data = $query->first();
         return $data;
     }
 
