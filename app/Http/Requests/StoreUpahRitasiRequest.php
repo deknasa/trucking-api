@@ -4,7 +4,8 @@ namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
 use App\Http\Controllers\Api\ParameterController;
-use App\Rules\NullToNumeric;
+use App\Http\Controllers\Api\ErrorController;
+use Illuminate\Validation\Rule;
 
 class StoreUpahRitasiRequest extends FormRequest
 {
@@ -30,31 +31,46 @@ class StoreUpahRitasiRequest extends FormRequest
         $kotadari_id = $this->kotadari_id ?? 0;
         $kotasampai_id = $this->kotasampai_id ?? 0;
 
-        if ($kotadari_id == 0 or $this->kotadari<>'') {
+        if ($kotadari_id == 0 and $this->kotadari <> '') {
+            $ruleskotadari_id =  [
+                'kotadari_id' => ['required'],
+            ];
+        } else  if ($kotadari_id == 0) {
             $ruleskotadari_id =  [
                 'kotadari' => ['required',],
             ];
-        }
-        else  if ($kotadari_id == 0) {
+        } else if ($kotadari_id <> 0) {
             $ruleskotadari_id =  [
-                'kotadari' => ['required',],
-            ];
-        } else if ($kotadari_id <> 0){
-            $ruleskotadari_id =  [
-               'kotadari_id' => ['numeric','min:1','unique:upahritasi'],
+                'kotadari_id' => [
+                    'numeric', 'min:1', Rule::unique('upahritasi')
+                        ->where('kotadari_id', [$this->kotadari_id])
+                        ->where('kotasampai_id', [$this->kotasampai_id])
+                ],
             ];
         }
-        if ($kotasampai_id == 0) {
+
+
+        if ($kotasampai_id == 0 and $this->kotasampai_id <> '') {
+            $ruleskotasampai_id =  [
+                'kotasampai_id' => ['required'],
+            ];
+        } else  if ($kotasampai_id == 0) {
             $ruleskotasampai_id =  [
                 'kotasampai' => ['required',],
             ];
-        } else if ($kotasampai_id <> 0){
+        } else if ($kotasampai_id <> 0) {
             $ruleskotasampai_id =  [
-               'kotasampai_id' => ['numeric','min:1','unique:upahritasi'],
+                'kotaampai_id' => [
+                    'numeric', 'min:1', Rule::unique('upahritasi')
+                        ->where('kotadari_id', [$this->kotadari_id])
+                        ->where('kotasampai_id', [$this->kotasampai_id])
+                ],
             ];
         }
+
+
         $rules =  [
-           
+
             'jarak' => ['required', 'numeric', 'min:0', 'max:' . (new ParameterController)->getparamid('BATAS NILAI JARAK', 'BATAS NILAI JARAK')->text],
             'statusaktif' => 'required',
             'tglmulaiberlaku' => ['required', 'date_format:d-m-Y'],
@@ -79,12 +95,26 @@ class StoreUpahRitasiRequest extends FormRequest
     public function attributes()
     {
         return [
-            'kotadari' => 'kota dari',
-            'kotasampai' => 'kota sampai',
+            'kotadari' => 'dari',
+            'kotasampai' => 'tujuan',
+            'kotadari_id' => 'dari',
+            'kotasampai_id' => 'tujuan',
             'statusaktif' => 'status aktif',
             'tglmulaiberlaku' => 'tanggal mulai berlaku',
             'container.*' => 'container',
             'nominalsupir.*' => 'nominal supir',
+        ];
+    }
+
+    public function messages()
+    {
+        $controller = new ErrorController;
+
+        return [
+            'kotadari_id.required' => ':attribute ' . $controller->geterror('HPDL')->keterangan,
+            'kotasampai_id.required' => ':attribute ' . $controller->geterror('HPDL')->keterangan,
+            'kotadari_id.unique' => 'DARI DAN TUJUAN ' . $controller->geterror('SPI')->keterangan,
+            'kotasampai_id.unique' => 'DARI DAN TUJUAN ' . $controller->geterror('SPI')->keterangan,
         ];
     }
 }
