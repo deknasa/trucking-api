@@ -29,6 +29,8 @@ class UpdateHutangBayarDetailRequest extends FormRequest
             'keterangan.*' => 'required',
             'bayar' => 'required|array',
             'bayar.*' => 'required|numeric|gt:0',
+            'sisa' => 'required|array',
+            'sisa.*' => 'required|numeric|min:0',
         ];
     }
 }
