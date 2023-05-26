@@ -233,6 +233,22 @@ class SubKelompokController extends Controller
         $decodedResponse = json_decode($response->content(), true);
         $subKelompoks = $decodedResponse['data'];
 
+        $i = 0;
+        foreach ($subKelompoks as $index => $params) {
+
+            $statusaktif = $params['statusaktif'];
+
+            $result = json_decode($statusaktif, true);
+
+            $statusaktif = $result['MEMO'];
+
+
+            $subKelompoks[$i]['statusaktif'] = $statusaktif;
+
+
+            $i++;
+        }
+
         $columns = [
             [
                 'label' => 'No',
