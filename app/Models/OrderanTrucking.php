@@ -133,9 +133,14 @@ class OrderanTrucking extends MyModel
         $data = DB::table('agen')
             ->from(DB::raw("agen with (readuncommitted)"))
             ->select(
-                DB::raw("(case when jenisemkl.kodejenisemkl='TAS' then 1 else 0 end)  as statustas")
+                // DB::raw("(case when jenisemkl.kodejenisemkl='TAS' then 1 else 0 end)  as statustas")
+                DB::raw("(case when parameter.text='TAS' then 1 else 0 end)  as statustas"),
+                'parameter.text as text',
+
             )
-            ->join('jenisemkl', 'jenisemkl.id', 'agen.jenisemkl')
+            // ->join('jenisemkl', 'jenisemkl.id', 'agen.jenisemkl')
+            ->join(DB::raw("parameter with (readuncommitted)"), 'agen.statustas', '=', 'parameter.id')
+
             ->where('agen.id', $id)
             ->first();
 
