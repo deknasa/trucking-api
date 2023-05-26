@@ -78,6 +78,42 @@ class Parameter extends MyModel
         return $data;
     }
 
+    public function default()
+    {
+        $tempdefault = '##tempdefault' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+        Schema::create($tempdefault, function ($table) {
+            $table->unsignedBigInteger('default')->nullable();
+        });
+
+        $status = Parameter::from(
+            db::Raw("parameter with (readuncommitted)")
+        )
+            ->select(
+                'id'
+            )
+            ->where('grp', '=', 'STATUS DEFAULT PARAMETER')
+            ->where('subgrp', '=', 'STATUS DEFAULT PARAMETER')
+            ->where('default', '=', 'YA')
+            ->first();
+        $iddefault = $status->id ?? 0;
+
+        DB::table($tempdefault)->insert(
+            [
+                "default" => $iddefault,
+            ]
+        );
+
+        $query = DB::table($tempdefault)->from(
+            DB::raw($tempdefault)
+        )
+            ->select(
+                'default',
+            );
+
+        $data = $query->first();
+        return $data;
+    }
+
     public function getcoa($filter)
     {
         $getcoa = Parameter::from(DB::raw("parameter with (readuncommitted)"))
@@ -97,6 +133,7 @@ class Parameter extends MyModel
          
         return $jurnal;
     }
+
     public function findAll($id)
     {
         $query = DB::table('parameter as A')->from(

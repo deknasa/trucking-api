@@ -363,6 +363,7 @@ route::middleware(['auth:api'])->group(function () {
 
     Route::get('parameter/export', [ParameterController::class, 'export']);
     Route::get('parameter/detail', [ParameterController::class, 'detail']);
+    Route::get('parameter/default', [ParameterController::class, 'default']);
     Route::get('parameter/field_length', [ParameterController::class, 'fieldLength']);
     Route::get('parameter/combo', [ParameterController::class, 'combo']);
     Route::get('parameter/comboapproval', [ParameterController::class, 'comboapproval']);

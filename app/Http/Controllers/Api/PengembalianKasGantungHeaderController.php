@@ -750,23 +750,23 @@ class PengembalianKasGantungHeaderController extends Controller
         ]);
 
 
-        $pengembalian = new PengembalianKasGantungHeader();
-        $currentURL = url()->current();
-        $previousURL = url()->previous();
+        // $pengembalian = new PengembalianKasGantungHeader();
+        // $currentURL = url()->current();
+        // $previousURL = url()->previous();
 
-        $dari = date('Y-m-d', strtotime($request->tgldari));
-        $sampai = date('Y-m-d', strtotime($request->tglsampai));
-        dd($sampai);
+        // $dari = date('Y-m-d', strtotime($request->tgldari));
+        // $sampai = date('Y-m-d', strtotime($request->tglsampai));
+        // dd($sampai);
 
-        return response([
-            'data' => $pengembalian->getPengembalian($id),
-            'currentURL' => $currentURL,
-            'previousURL' => $previousURL,
-            'attributes' => [
-                'totalRows' => $pengembalian->totalRows,
-                'totalPages' => $pengembalian->totalPages
-            ]
-        ]);
+        // return response([
+        //     'data' => $pengembalian->getPengembalian($id),
+        //     'currentURL' => $currentURL,
+        //     'previousURL' => $previousURL,
+        //     'attributes' => [
+        //         'totalRows' => $pengembalian->totalRows,
+        //         'totalPages' => $pengembalian->totalPages
+        //     ]
+        // ]);
         // if ($aksi == 'edit') {
         //     $data = $pengembalian->getPengembalian($id);
         // } else {

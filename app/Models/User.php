@@ -105,6 +105,7 @@ class User extends Authenticatable
 
         return $data;
     }
+    
     public function default()
     {
 
@@ -157,6 +158,7 @@ class User extends Authenticatable
         
         return $data;
     }
+
     public function selectColumns($query)
     {
         return $query->select(
