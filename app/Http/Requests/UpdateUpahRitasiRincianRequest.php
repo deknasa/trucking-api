@@ -3,6 +3,7 @@
 namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
+use App\Http\Controllers\Api\ParameterController;
 
 class UpdateUpahRitasiRincianRequest extends FormRequest
 {
@@ -24,8 +25,17 @@ class UpdateUpahRitasiRincianRequest extends FormRequest
     public function rules()
     {
         return [
-            'container' => 'required|array',
             'container.*' => 'required',
+            'nominalsupir.*' => ['required','numeric','min:0','max:'. (new ParameterController)->getparamid('BATAS NILAI UPAH','BATAS NILAI UPAH')->text],
+            'liter.*' => ['required','numeric','min:0','max:'. (new ParameterController)->getparamid('BATAS NILAI LITER','BATAS NILAI LITER')->text],
+        ];
+    }
+
+    public function attributes()
+    {
+        return [
+            'nominalsupir.*' => 'nominal supir',
+            'liter.*' => 'liter',
         ];
     }
 }
