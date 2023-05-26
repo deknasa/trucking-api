@@ -242,4 +242,45 @@ class KelompokController extends Controller
             'data' => $data
         ]);
     }
+    public function export()
+    {
+        $response = $this->index();
+        $decodedResponse = json_decode($response->content(), true);
+        $kelompoks = $decodedResponse['data'];
+
+        $i = 0;
+        foreach ($kelompoks as $index => $params) {
+
+            $statusaktif = $params['statusaktif'];
+
+            $result = json_decode($statusaktif, true);
+
+            $statusaktif = $result['MEMO'];
+
+
+            $kelompoks[$i]['statusaktif'] = $statusaktif;
+
+
+            $i++;
+        }
+        $columns = [
+            [
+                'label' => 'No',
+            ],
+            [
+                'label' => 'Kode kelompok',
+                'index' => 'kodekelompok',
+            ],
+            [
+                'label' => 'Keterangan',
+                'index' => 'keterangan',
+            ],
+            [
+                'label' => 'Status Aktif',
+                'index' => 'statusaktif',
+            ],
+        ];
+
+        $this->toExcel('Kelompok', $kelompoks, $columns);
+    }
 }

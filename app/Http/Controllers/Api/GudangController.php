@@ -36,8 +36,10 @@ class GudangController extends Controller
     }
 
     public function cekValidasi($id) {
+        
         $gudang= new Gudang();
         $cekdata=$gudang->cekvalidasihapus($id);
+        
         if ($cekdata['kondisi']==true) {
             $query = DB::table('error')
             ->select(
@@ -67,6 +69,7 @@ class GudangController extends Controller
             return response($data); 
         }
     }
+
     public function default()
     {
         $gudang = new Gudang();
@@ -502,5 +505,45 @@ class GudangController extends Controller
         return response([
             'data' => $data
         ]);
+    }
+
+    public function export()
+    {
+        $response = $this->index();
+        $decodedResponse = json_decode($response->content(), true);
+        $gudangs = $decodedResponse['data'];
+
+        $i = 0;
+        foreach ($gudangs as $index => $params) {
+
+            $statusaktif = $params['statusaktif'];
+
+            $result = json_decode($statusaktif, true);
+
+            $statusaktif = $result['MEMO'];
+
+
+            $gudangs[$i]['statusaktif'] = $statusaktif;
+
+        
+            $i++;
+
+
+        }
+        $columns = [
+            [
+                'label' => 'No',
+            ],
+            [
+                'label' => 'Gudang',
+                'index' => 'gudang',
+            ],
+            [
+                'label' => 'Status Aktif',
+                'index' => 'statusaktif',
+            ],
+        ];
+
+        $this->toExcel('Gudang', $gudangs, $columns);
     }
 }

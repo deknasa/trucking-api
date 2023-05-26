@@ -296,4 +296,78 @@ class StokController extends Controller
             return response()->file(storage_path("app/stok/$filename"));
         }
     }
+    public function export()
+    {
+        header('Access-Control-Allow-Origin: *');
+
+        $response = $this->index();
+        $decodedResponse = json_decode($response->content(), true);
+        $stoks = $decodedResponse['data'];
+
+        $i = 0;
+        foreach ($stoks as $index => $params) {
+
+            $statusaktif = $params['statusaktif'];
+
+            $result = json_decode($statusaktif, true);
+
+            $statusaktif = $result['MEMO'];
+
+
+            $stoks[$i]['statusaktif'] = $statusaktif;
+
+
+            $i++;
+        }
+        $columns = [
+            [
+                'label' => 'No',
+            ],
+            [
+                'label' => 'Nama Stok',
+                'index' => 'namastok',
+            ],
+            [
+                'label' => 'Qty Min',
+                'index' => 'qtymin',
+            ],
+            [
+                'label' => 'Qty Max',
+                'index' => 'qtymax',
+            ],
+            [
+                'label' => 'Keterangan',
+                'index' => 'keterangan',
+            ],
+            [
+                'label' => 'Nama Terpusat',
+                'index' => 'namaterpusat',
+            ],
+            [
+                'label' => 'Jenis Trado',
+                'index' => 'jenistrado',
+            ],
+            [
+                'label' => 'Kelompok',
+                'index' => 'kelompok',
+            ],
+            [
+                'label' => 'Sub Kelompok',
+                'index' => 'subkelompok',
+            ],
+            [
+                'label' => 'Kategori',
+                'index' => 'kategori',
+            ],
+            [
+                'label' => 'Merk',
+                'index' => 'merk',
+            ],
+            [
+                'label' => 'Status Aktif',
+                'index' => 'statusaktif',
+            ],
+        ];
+        $this->toExcel('Stok', $stoks, $columns);
+    }
 }
