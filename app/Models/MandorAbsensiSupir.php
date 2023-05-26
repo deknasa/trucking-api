@@ -19,47 +19,6 @@ class MandorAbsensiSupir extends MyModel
     public function get()
     {
         $this->setRequestParameters();
-        $statusNonAktif = DB::table('parameter')->where('grp', 'STATUS AKTIF')->where('subgrp', 'STATUS AKTIF')->where('text', 'NON AKTIF')->first();
-        $now = date('Y-m-d');
-        $cekApprovalTrado = DB::table("approvaltradogambar")->from(DB::raw("approvaltradogambar with (readuncommitted)"))
-            ->whereRaw("kodetrado in (select kodetrado from trado)")
-            ->where('tglbatas', '<', "$now")
-            ->get();
-        foreach ($cekApprovalTrado as $cekApproval) {
-            $cekGambar = DB::table("trado")->from(DB::raw("trado with (readuncommitted)"))->where('kodetrado', $cekApproval->kodetrado)->first();
-            if ($cekGambar->photostnk == '' || $cekGambar->phototrado == '' || $cekGambar->photobpkb == '') {
-                DB::table('trado')->where('kodetrado', $cekApproval->kodetrado)->update([
-                    'statusaktif' => $statusNonAktif->id,
-                ]);
-                goto selesai;
-            } else {
-                foreach (json_decode($cekGambar->photobpkb) as $value) {
-                    if (!Storage::exists("trado/bpkb/$value")) {
-                        DB::table('trado')->where('kodetrado', $cekApproval->kodetrado)->update([
-                            'statusaktif' => $statusNonAktif->id,
-                        ]);
-                        goto selesai;
-                    }
-                }
-                foreach (json_decode($cekGambar->photostnk) as $value) {
-                    if (!Storage::exists("trado/stnk/$value")) {
-                        DB::table('trado')->where('kodetrado', $cekApproval->kodetrado)->update([
-                            'statusaktif' => $statusNonAktif->id,
-                        ]);
-                        goto selesai;
-                    }
-                }
-                foreach (json_decode($cekGambar->phototrado) as $value) {
-                    if (!Storage::exists("trado/trado/$value")) {
-                        DB::table('trado')->where('kodetrado', $cekApproval->kodetrado)->update([
-                            'statusaktif' => $statusNonAktif->id,
-                        ]);
-                        goto selesai;
-                    }
-                }
-            }
-            selesai:
-        }
         
         $statusaktif = DB::table('parameter')->where('grp', 'STATUS AKTIF')->where('subgrp', 'STATUS AKTIF')->where('text', 'AKTIF')->first();
         $trado = DB::table('trado')
