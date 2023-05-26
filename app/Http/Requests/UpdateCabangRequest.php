@@ -4,7 +4,9 @@ namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
 use App\Http\Controllers\Api\ErrorController;
+use App\Models\Parameter;
 use Illuminate\Validation\Rule;
+
 
 class UpdateCabangRequest extends FormRequest
 {
@@ -25,10 +27,18 @@ class UpdateCabangRequest extends FormRequest
      */
     public function rules()
     {
+
+        $parameter = new Parameter();
+        $data = $parameter->getcombodata('STATUS AKTIF', 'STATUS AKTIF');
+        $data = json_decode($data, true);
+        foreach ($data as $item) {
+            $status[] = $item['id'];
+        }
+
         return [
             'kodecabang' => ['required',Rule::unique('cabang')->whereNotIn('id', [$this->id])],
             'namacabang' => ['required',Rule::unique('cabang')->whereNotIn('id', [$this->id])],
-            'statusaktif' => 'required',
+            'statusaktif' => ['required', Rule::in($status)]
         ];
     }
 
@@ -41,14 +51,5 @@ class UpdateCabangRequest extends FormRequest
         ];
     }
 
-    public function messages()
-    {
-        $controller = new ErrorController;
-        return [
-            'kodecabang.required' => ':attribute'.' '. $controller->geterror('WI')->keterangan,
-            'namacabang.required' => ':attribute'.' '. $controller->geterror('WI')->keterangan,
-            'statusaktif.required' => ':attribute'.' '. $controller->geterror('WI')->keterangan,
-
-        ];
-    }
+  
 }

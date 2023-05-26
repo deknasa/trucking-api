@@ -273,4 +273,22 @@ class Parameter extends MyModel
     {
         return $query->skip($this->params['offset'])->take($this->params['limit']);
     }
+
+    public function getcombodata($grp,$subgrp) {
+
+
+        $query=DB::table('parameter')
+            ->from (
+                DB::raw("parameter with (readuncommitted)")
+            )
+            ->select (
+                'id'
+            )
+            ->Where('grp','=',$grp)
+            ->Where('subgrp','=',$subgrp)
+            ->get();
+
+                        return $query;
+
+    }
 }

@@ -3,7 +3,10 @@
 namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
-use App\Http\Controllers\Api\ErrorController;
+use App\Http\Controllers\Api\ParameterController;
+use App\Models\Parameter;
+use Illuminate\Validation\Rule;
+
 
 class StoreCabangRequest extends FormRequest
 {
@@ -24,11 +27,20 @@ class StoreCabangRequest extends FormRequest
      */
     public function rules()
     {
-        return [
-            'kodecabang' => ['required','unique:cabang'],
-            'namacabang' => ['required','unique:cabang'],
-            'statusaktif' => 'required',
+
+        $parameter = new Parameter();
+        $data = $parameter->getcombodata('STATUS AKTIF', 'STATUS AKTIF');
+        $data = json_decode($data, true);
+        foreach ($data as $item) {
+            $status[] = $item['id'];
+        }
+
+        $rules = [
+            'kodecabang' => ['required', 'unique:cabang'],
+            'namacabang' => ['required', 'unique:cabang'],
+            'statusaktif' => ['required', Rule::in($status)]
         ];
+        return $rules;
     }
 
     public function attributes()
@@ -36,9 +48,7 @@ class StoreCabangRequest extends FormRequest
         return [
             'kodecabang' => 'kode cabang',
             'namacabang' => 'nama cabang',
-            'statusaktif' => 'status aktif',
+            'statusaktif' => 'status',
         ];
     }
-
- 
 }
