@@ -484,7 +484,7 @@ class PengeluaranTruckingHeaderController extends Controller
                 $pengeluarantruckingheader->periodedari = date('Y-m-d', strtotime($request->tgldari)) ?? null;
                 $pengeluarantruckingheader->periodesampai = date('Y-m-d', strtotime($request->tglsampai)) ?? null;
                 $pengeluarantruckingheader->modifiedby = auth('api')->user()->name;
-                $pengeluarantruckingheader->statusposting =  ($request->statusposting) ? $request->statusposting: $statusPosting->id ;
+                // $pengeluarantruckingheader->statusposting =  ($request->statusposting) ? $request->statusposting: $statusPosting->id ;
 
                 $pengeluarantruckingheader->save();
             }
