@@ -242,6 +242,7 @@ class Bank extends MyModel
         $tipe = request()->tipe ?? '';
         $bankId = request()->bankId ?? 0;
         $bankExclude = request()->bankExclude ?? 0;
+        $alatBayar = request()->alatbayar ?? 0;
 
         $query = DB::table($this->table)->from(
             DB::raw($this->table . " with (readuncommitted)")
@@ -282,11 +283,18 @@ class Bank extends MyModel
 
             $query->where('bank.statusaktif', '=', $statusaktif->id);
         }
+        if ($alatBayar) {
+            $getTipe = DB::table($this->table)->from(
+                DB::raw($this->table . " with (readuncommitted)")
+            )->where('bank.id', '=', $alatBayar)->first();
+            $tipe = $getTipe->tipe;
+        }
         if ($tipe == 'KAS') {
             $query->where('bank.tipe', '=', 'KAS');
         }
         if ($tipe == 'BANK') {
             $query->where('bank.tipe', '=', 'BANK');
+            // return $query->get();
         }
         if ($bankId != 0) {
             $query->where('bank.id', '=', $bankId);
