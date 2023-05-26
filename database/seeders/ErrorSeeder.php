@@ -67,5 +67,6 @@ class ErrorSeeder extends Seeder
         error::create([ 'kodeerror' => 'NTLB', 'keterangan' => 'NILAI TIDAK BOLEH > DARI', 'modifiedby' => 'ADMIN',]);
         error::create([ 'kodeerror' => 'HPDL', 'keterangan' => 'HARAP PILIH DARI LIST', 'modifiedby' => 'ADMIN',]);
         error::create([ 'kodeerror' => 'FTTS', 'keterangan' => 'FORMAT TANGGAL TIDAK SESUAI DENGAN', 'modifiedby' => 'ADMIN',]);
+        error::create([ 'kodeerror' => 'TVD', 'keterangan' => 'DATA YANG DIMASUKAN TIDAK VALID', 'modifiedby' => 'ADMIN',]);
     }
 }
