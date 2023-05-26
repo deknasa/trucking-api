@@ -48,7 +48,6 @@ class PengembalianKasGantungDetail extends MyModel
                 "$this->table.keterangan",
                 "akunpusat.keterangancoa as coa",
             )
-            // ->leftJoin("pengeluaranstok","pengeluaranstokheader.pengeluaranstok_id","pengeluaranstok.id")
             ->leftJoin("akunpusat", "$this->table.coa", "akunpusat.coa");
             $query->where($this->table . '.pengembaliankasgantung_id', '=', request()->pengembaliankasgantung_id);
 

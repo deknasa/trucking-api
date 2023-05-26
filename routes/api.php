@@ -288,6 +288,8 @@ route::middleware(['auth:api'])->group(function () {
     Route::get('zona/field_length', [ZonaController::class, 'fieldLength']);
     Route::get('zona/default', [ZonaController::class, 'default']);
     Route::post('zona/{id}/cekValidasi', [ZonaController::class, 'cekValidasi'])->name('zona.cekValidasi');
+    Route::get('zona/export', [ZonaController::class, 'export']);
+    Route::get('zona/report', [ZonaController::class, 'report']);
     Route::resource('zona', ZonaController::class);
 
 
@@ -436,6 +438,8 @@ route::middleware(['auth:api'])->group(function () {
     Route::get('kota/field_length', [KotaController::class, 'fieldLength']);
     Route::get('kota/default', [KotaController::class, 'default']);
     Route::post('kota/{id}/cekValidasi', [KotaController::class, 'cekValidasi'])->name('kota.cekValidasi');
+    Route::get('kota/export', [KotaController::class, 'export']);
+    Route::get('kota/report', [KotaController::class, 'report']);
     Route::resource('kota', KotaController::class);
 
     Route::get('logtrail/detail', [LogTrailController::class, 'detail']);
@@ -454,6 +458,8 @@ route::middleware(['auth:api'])->group(function () {
     Route::get('absentrado/field_length', [AbsenTradoController::class, 'fieldLength']);
     Route::get('absentrado/default', [AbsenTradoController::class, 'default']);
     Route::post('absentrado/{id}/cekValidasi', [AbsenTradoController::class, 'cekValidasi'])->name('absentrado.cekValidasi');
+    Route::get('absentrado/export', [AbsenTradoController::class, 'export']);
+    Route::get('absentrado/report', [AbsenTradoController::class, 'report']);
     Route::resource('absentrado', AbsenTradoController::class);
     Route::get('absentrado/detail', [AbsenTradoController::class, 'detail']);
 
@@ -488,12 +494,16 @@ route::middleware(['auth:api'])->group(function () {
     Route::get('jenisemkl/field_length', [JenisEmklController::class, 'fieldLength']);
     Route::get('jenisemkl/default', [JenisEmklController::class, 'default']);
     Route::post('jenisemkl/{id}/cekValidasi', [JenisEmklController::class, 'cekValidasi'])->name('jenisemkl.cekValidasi');
+    Route::get('jenisemkl/export', [JenisEmklController::class, 'export']);
+    Route::get('jenisemkl/report', [JenisEmklController::class, 'report']);
     Route::resource('jenisemkl', JenisEmklController::class);
 
     Route::get('jenisorder/combo', [JenisOrderController::class, 'combo']);
     Route::get('jenisorder/field_length', [JenisOrderController::class, 'fieldLength']);
     Route::get('jenisorder/default', [JenisOrderController::class, 'default']);
     Route::post('jenisorder/{id}/cekValidasi', [JenisOrderController::class, 'cekValidasi'])->name('jenisorder.cekValidasi');
+    Route::get('jenisorder/export', [JenisOrderController::class, 'export']);
+    Route::get('jenisorder/report', [JenisOrderController::class, 'report']);
     Route::resource('jenisorder', JenisOrderController::class);
 
     Route::get('jenistrado/combo', [JenisTradoController::class, 'combo']);
@@ -633,11 +643,15 @@ route::middleware(['auth:api'])->group(function () {
     Route::get('penerimaantrucking/export', [PenerimaanTruckingController::class, 'export']);
     Route::get('penerimaantrucking/field_length', [PenerimaanTruckingController::class, 'fieldLength']);
     Route::post('penerimaantrucking/{id}/cekValidasi', [PenerimaanTruckingController::class, 'cekValidasi'])->name('penerimaantrucking.cekValidasi');
+    Route::get('penerimaantrucking/export', [PenerimaanTruckingController::class, 'export']);
+    Route::get('penerimaantrucking/report', [PenerimaanTruckingController::class, 'report']);
     Route::resource('penerimaantrucking', PenerimaanTruckingController::class)->parameters(['penerimaantrucking' => 'penerimaanTrucking']);
 
     Route::get('pengeluarantrucking/export', [PengeluaranTruckingController::class, 'export']);
     Route::get('pengeluarantrucking/field_length', [PengeluaranTruckingController::class, 'fieldLength']);
     Route::post('pengeluarantrucking/{id}/cekValidasi', [PengeluaranTruckingController::class, 'cekValidasi'])->name('pengeluarantrucking.cekValidasi');
+    Route::get('pengeluarantrucking/export', [PengeluaranTruckingController::class, 'export']);
+    Route::get('pengeluarantrucking/report', [PengeluaranTruckingController::class, 'report']);
     Route::resource('pengeluarantrucking', PengeluaranTruckingController::class)->parameters(['pengeluarantrucking' => 'pengeluaranTrucking']);
 
 
@@ -865,7 +879,7 @@ route::middleware(['auth:api'])->group(function () {
 
     Route::get('pengembaliankasgantungheader/field_length', [PengembalianKasGantungHeaderController::class, 'fieldLength']);
     Route::get('pengembaliankasgantungheader/getkasgantung', [PengembalianKasGantungHeaderController::class, 'getKasGantung']);
-    Route::get('pengembaliankasgantungheader/getpengembalian/{id}', [PengembalianKasGantungHeaderController::class, 'getPengembalian']);
+    Route::get('pengembaliankasgantungheader/{id}/{aksi}/getpengembalian', [PengembalianKasGantungHeaderController::class, 'getPengembalian']);
     Route::get('pengembaliankasgantungheader/default', [PengembalianKasGantungHeaderController::class, 'default']);
     Route::post('pengembaliankasgantungheader/{id}/cekValidasiAksi', [PengembalianKasGantungHeaderController::class, 'cekValidasiAksi'])->name('pengembaliankasgantungheader.cekValidasiAksi');
     Route::post('pengembaliankasgantungheader/{id}/cekvalidasi', [PengembalianKasGantungHeaderController::class, 'cekvalidasi'])->name('pengembaliankasgantungheader.cekvalidasi');
@@ -1165,6 +1179,7 @@ route::middleware(['auth:api'])->group(function () {
     Route::resource('exportlaporanstok', ExportLaporanStokController::class);
     Route::get('laporanritasitrado/export', [LaporanRitasiTradoController::class, 'export'])->name('laporanritasitrado.export');
     Route::resource('laporanritasitrado', LaporanRitasiTradoController::class);
+    Route::get('laporanritasigandengan/header', [LaporanRitasiGandenganController::class, 'header'])->name('laporanritasigandengan.header');
     Route::get('laporanritasigandengan/export', [LaporanRitasiGandenganController::class, 'export'])->name('laporanritasigandengan.export');
     Route::resource('laporanritasigandengan', LaporanRitasiGandenganController::class);
     Route::get('laporanhistorypinjaman/export', [LaporanHistoryPinjamanController::class, 'export'])->name('laporanhistorypinjaman.export');

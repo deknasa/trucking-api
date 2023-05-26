@@ -53,17 +53,6 @@ class PengembalianKasGantungDetailController extends Controller
         DB::beginTransaction();
        
         try {
-
-            // if (stripos(strtolower($request->keterangandetail),'input type=')) {
-            //     $request['keterangandetail']='';
-            // }
-            // if (stripos(strtolower($request->coadetail),'input-group')) {
-            //     $request['coadetail']='';
-            // }
-            // return [
-            //     'error' => true,
-            //     'id' => $request->all(),
-            // ];
             
             $pengembalianKasGantungDetail = new PengembalianKasGantungDetail();
             $pengembalianKasGantungDetail->pengembaliankasgantung_id = $request->pengembaliankasgantung_id;

@@ -24,7 +24,6 @@ class PengembalianKasGantungHeader extends MyModel
         'updated_at',
     ];
 
-
     public function cekvalidasiaksi($nobukti)
     {
 
@@ -101,7 +100,6 @@ class PengembalianKasGantungHeader extends MyModel
             'pengembaliankasgantungheader.id',
             'pengembaliankasgantungheader.nobukti',
             'pengembaliankasgantungheader.tglbukti',
-            'pelanggan.namapelanggan as pelanggan',
             'pengembaliankasgantungheader.keterangan',
             'bank.namabank as bank',
             DB::raw('(case when (year(pengembaliankasgantungheader.tgldari) <= 2000) then null else pengembaliankasgantungheader.tgldari end ) as tgldari'),
@@ -122,7 +120,6 @@ class PengembalianKasGantungHeader extends MyModel
             ->whereBetween('pengembaliankasgantungheader.tglbukti', [date('Y-m-d', strtotime(request()->tgldari)), date('Y-m-d', strtotime(request()->tglsampai))])
 
             ->leftJoin('akunpusat', 'pengembaliankasgantungheader.coakasmasuk', 'akunpusat.coa')
-            ->leftJoin('pelanggan', 'pengembaliankasgantungheader.pelanggan_id', 'pelanggan.id')
             ->leftJoin('bank', 'pengembaliankasgantungheader.bank_id', 'bank.id')
             ->leftJoin('parameter as statuscetak', 'pengembaliankasgantungheader.statuscetak', 'statuscetak.id');
 
@@ -140,7 +137,6 @@ class PengembalianKasGantungHeader extends MyModel
         return $data;
     }
 
-
     public function createTemp(string $modelTable)
     {
         $this->setRequestParameters();
@@ -151,7 +147,6 @@ class PengembalianKasGantungHeader extends MyModel
             $table->bigInteger('id')->nullable();
             $table->string('nobukti', 50)->unique();
             $table->date('tglbukti')->nullable();
-            $table->string('pelanggan_id', 1000)->nullable();
             $table->longText('keterangan')->nullable();
             $table->string('bank_id', 1000)->nullable();
             $table->date('tgldari')->nullable();
@@ -176,7 +171,6 @@ class PengembalianKasGantungHeader extends MyModel
             "id",
             "nobukti",
             "tglbukti",
-            "pelanggan_id",
             "keterangan",
             "bank_id",
             "tgldari",
@@ -201,7 +195,6 @@ class PengembalianKasGantungHeader extends MyModel
             "id",
             "nobukti",
             "tglbukti",
-            "pelanggan_id",
             "keterangan",
             "bank_id",
             "tgldari",
@@ -226,7 +219,6 @@ class PengembalianKasGantungHeader extends MyModel
             "$this->table.id",
             "$this->table.nobukti",
             "$this->table.tglbukti",
-            "$this->table.pelanggan_id",
             "$this->table.keterangan",
             "$this->table.bank_id",
             "$this->table.tgldari",
@@ -241,53 +233,102 @@ class PengembalianKasGantungHeader extends MyModel
             "$this->table.tglbukacetak",
             "$this->table.jumlahcetak",
             "$this->table.modifiedby",
-            "pelanggan.namapelanggan as pelanggan",
             "bank.namabank as bank",
             "akunpusat.coa as coa",
         );
     }
 
-
-    public function getPengembalian($id)
+    public function getPengembalian($id, $dari, $sampai)
     {
-        $this->setRequestParameters();
+        $tempPribadi = $this->createTempPengembalianKasGantung($id, $dari, $sampai);
+        $tempAll = $this->createTempPengembalian($id, $dari, $sampai);
         
-        $query = DB::table('kasgantungheader')
-            ->select(DB::raw("kasgantungheader.id as detail_id, sum(kasgantungdetail.nominal) as nominal,  kasgantungheader.id, kasgantungheader.nobukti, kasgantungheader.tglbukti, pengembaliankasgantungdetail.coa as coadetail, pengembaliankasgantungdetail.keterangan as keterangandetail, pengembaliankasgantungheader.id as pengembaliankasgantungheader_id"))
-            ->whereRaw(" EXISTS (
-                SELECT pengembaliankasgantungdetail.kasgantung_nobukti 
-                FROM pengembaliankasgantungdetail with (readuncommitted)
-                WHERE pengembaliankasgantungdetail.kasgantung_nobukti = kasgantungheader.nobukti
-                
-                and pengembaliankasgantungdetail.pengembaliankasgantung_id = " . $id . "
-          )")
-            ->whereRaw('pengembaliankasgantungdetail.kasgantung_nobukti = kasgantungheader.nobukti')
-            // ->whereRaw('pengembaliankasgantungdetail.nominal = kasgantungheader.nominal')
-            ->whereRaw('pengembaliankasgantungdetail.pengembaliankasgantung_id = ' . $id)
-            ->leftJoin('kasgantungdetail', 'kasgantungdetail.kasgantung_id', 'kasgantungheader.id')
-            ->leftJoin('pengembaliankasgantungdetail', 'kasgantungheader.nobukti', 'pengembaliankasgantungdetail.kasgantung_nobukti')
-            ->leftJoin('pengembaliankasgantungheader', 'pengembaliankasgantungdetail.pengembaliankasgantung_id', 'pengembaliankasgantungheader.id')
-            ->groupBy(
-                'kasgantungheader.id',
-                'kasgantungheader.nobukti',
-                'kasgantungheader.tglbukti',
-                'pengembaliankasgantungdetail.coa',
-                'pengembaliankasgantungdetail.keterangan',
-                'pengembaliankasgantungheader.id',
-            );
-        $this->totalRows = $query->count();
-        $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;
+        $temp = '##tempGet' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+        $pengembalian = DB::table($tempPribadi)->from(DB::raw("$tempPribadi with (readuncommitted)"))
+            ->select(DB::raw("pengembaliankasgantungheader_id,nobukti,sisa,bayar"));
 
-        $this->sort($query);
-        $this->filter($query);
-        $this->paginate($query);
+        Schema::create($temp, function ($table) {
+            $table->bigInteger('pengembaliankasgantungheader_id')->nullable();
+            $table->string('nobukti');
+            $table->bigInteger('sisa')->nullable();
+            $table->bigInteger('bayar')->nullable();
+        });
 
-        $data = $query->get();
+        DB::table($temp)->insertUsing(['pengembaliankasgantungheader_id', 'nobukti','sisa','bayar'], $pengembalian);
+
+        $pinjaman = DB::table($tempAll)->from(DB::raw("$tempAll with (readuncommitted)"))
+        ->select(DB::raw("null as pengembaliankasgantungheader_id,nobukti,sisa, 0 as bayar"));
+        DB::table($temp)->insertUsing(['pengembaliankasgantungheader_id', 'nobukti','sisa','bayar'], $pinjaman);
+
+        $data = DB::table($temp)->from(DB::raw("$temp with (readuncommitted)"))
+            ->select(DB::raw("row_number() Over(Order By $temp.nobukti) as id,pengembaliankasgantungheader_id,nobukti,sisa,bayar as nominal"))
+            ->get();
 
         return $data;
     }
 
+    public function createTempPengembalianKasGantung($id, $dari, $sampai)
+    {
+        $temp = '##tempPengembalian' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
 
+        $fetch = DB::table('kasgantungdetail')
+            ->from(
+                DB::raw("kasgantungdetail with (readuncommitted)")
+            )
+            ->select(DB::raw("pengembaliankasgantungdetail.pengembaliankasgantung_id,kasgantungdetail.nobukti, pengembaliankasgantungdetail.nominal as bayar ,
+                (SELECT (kasgantungdetail.nominal - coalesce(SUM(pengembaliankasgantungdetail.nominal),0)) 
+                FROM pengembaliankasgantungdetail WHERE pengembaliankasgantungdetail.kasgantung_nobukti= kasgantungdetail.nobukti) AS sisa "))
+            ->leftJoin(DB::raw("kasgantungheader with (readuncommitted)"), 'kasgantungheader.nobukti', 'kasgantungdetail.nobukti')
+            ->leftJoin(DB::raw("pengembaliankasgantungdetail with (readuncommitted)"), 'pengembaliankasgantungdetail.kasgantung_nobukti', 'kasgantungdetail.nobukti')
+            ->whereBetween('kasgantungheader.tglbukti', [$dari, $sampai])       
+            ->where("pengembaliankasgantungdetail.pengembaliankasgantung_id", $id);
+
+            Schema::create($temp, function ($table) {
+                $table->bigInteger('pengembaliankasgantungheader_id')->nullable();
+                $table->string('nobukti');
+                $table->bigInteger('bayar')->nullable();
+                $table->bigInteger('sisa')->nullable();
+            });
+            $tes = DB::table($temp)->insertUsing(['pengembaliankasgantungheader_id','nobukti','bayar', 'sisa'], $fetch);
+            return $temp;
+    }
+
+    public function createTempPengembalian($id, $dari, $sampai)
+    {
+        $temp = '##temp' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+        $fetch = DB::table('kasgantungdetail')
+        ->from(
+            DB::raw("kasgantungdetail with (readuncommitted)")
+        )
+        ->select(DB::raw("kasgantungdetail.nobukti,
+            (SELECT (sum(kasgantungdetail.nominal) - coalesce(SUM(pengembaliankasgantungdetail.nominal),0)) 
+            FROM pengembaliankasgantungdetail WHERE pengembaliankasgantungdetail.kasgantung_nobukti= kasgantungdetail.nobukti) AS sisa "))
+        ->leftJoin(DB::raw("kasgantungheader with (readuncommitted)"), 'kasgantungheader.nobukti', 'kasgantungdetail.nobukti')
+        ->leftJoin(DB::raw("pengembaliankasgantungdetail with (readuncommitted)"), 'pengembaliankasgantungdetail.kasgantung_nobukti', 'kasgantungdetail.nobukti')
+        ->whereRaw("kasgantungheader.nobukti not in (select kasgantung_nobukti from pengembaliankasgantungdetail where pengembaliankasgantung_id=$id)")
+        ->whereBetween('kasgantungheader.tglbukti', [$dari, $sampai])   
+        ->where("pengembaliankasgantungdetail.pengembaliankasgantung_id", $id) 
+        ->groupBy('kasgantungdetail.nobukti');
+        
+
+        Schema::create($temp, function ($table) {
+            $table->string('nobukti');
+            $table->bigInteger('sisa')->nullable();
+        });
+        $tes = DB::table($temp)->insertUsing(['nobukti','sisa'], $fetch);
+        return $temp;
+    }
+
+    public function getDeletePengembalian($id, $dari, $sampai)
+    {
+        $tempPribadi = $this->createTempPengembalianKasGantung($id, $dari, $sampai);
+       
+        $data = DB::table($tempPribadi)->from(DB::raw("$tempPribadi with (readuncommitted)"))
+            ->select(DB::raw("row_number() Over(Order By $tempPribadi.nobukti) as id,pengembaliankasgantungheader_id,nobukti,sisa,bayar as nominal"))
+            ->get();
+
+        return $data;
+    }
 
     public function sort($query)
     {
@@ -304,10 +345,7 @@ class PengembalianKasGantungHeader extends MyModel
                 ->orderBy($this->table . '.grp', $this->params['sortOrder'])
                 ->orderBy($this->table . '.id', $this->params['sortOrder']);
         }
-
-        if ($this->params['sortIndex'] == 'pelanggan') {
-            return $query->orderBy('pelanggan.namapelanggan', $this->params['sortOrder']);
-        } else if ($this->params['sortIndex'] == 'bank') {
+        if ($this->params['sortIndex'] == 'bank') {
             return $query->orderBy('bank.namabank', $this->params['sortOrder']);
         } else if ($this->params['sortIndex'] == 'coa') {
             return $query->orderBy('akunpusat.keterangancoa', $this->params['sortOrder']);
@@ -323,9 +361,8 @@ class PengembalianKasGantungHeader extends MyModel
                     foreach ($this->params['filters']['rules'] as $index => $filters) {
                         if ($filters['field'] == 'statuscetak') {
                             $query = $query->where('statuscetak.text', '=', $filters['data']);
-                        } else if ($filters['field'] == 'pelanggan') {
-                            $query = $query->where('pelanggan.namapelanggan', 'LIKE', "%$filters[data]%");
-                        } else if ($filters['field'] == 'bank') {
+                        } 
+                        else if ($filters['field'] == 'bank') {
                             $query = $query->where('bank.namabank', 'LIKE', "%$filters[data]%");
                         } else if ($filters['field'] == 'coa') {
                             $query = $query->where('akunpusat.keterangancoa', 'LIKE', "%$filters[data]%");
@@ -344,9 +381,8 @@ class PengembalianKasGantungHeader extends MyModel
                         foreach ($this->params['filters']['rules'] as $index => $filters) {
                             if ($filters['field'] == 'statuscetak') {
                                 $query = $query->orWhere('statuscetak.text', '=', $filters['data']);
-                            } else if ($filters['field'] == 'pelanggan') {
-                                $query = $query->orWhere('pelanggan.namapelanggan', 'LIKE', "%$filters[data]%");
-                            } else if ($filters['field'] == 'bank') {
+                            } 
+                            else if ($filters['field'] == 'bank') {
                                 $query = $query->orWhere('bank.namabank', 'LIKE', "%$filters[data]%");
                             } else if ($filters['field'] == 'coa') {
                                 $query = $query->orWhere('akunpusat.keterangancoa', 'LIKE', "%$filters[data]%");
@@ -377,13 +413,13 @@ class PengembalianKasGantungHeader extends MyModel
         }
         return $query;
     }
+
     public function findAll($id)
     {
         $this->setRequestParameters();
 
         $query = PengembalianKasGantungHeader::from(DB::raw("pengembaliankasgantungheader with (readuncommitted)"));
         $query = $this->selectColumns($query)
-            ->leftJoin('pelanggan', 'pengembaliankasgantungheader.pelanggan_id', 'pelanggan.id')
             ->leftJoin('bank', 'pengembaliankasgantungheader.bank_id', 'bank.id')
             ->leftJoin('penerimaanheader', 'pengembaliankasgantungheader.penerimaan_nobukti', 'penerimaanheader.nobukti')
             ->leftJoin('akunpusat', 'pengembaliankasgantungheader.coakasmasuk', 'akunpusat.coa');
@@ -391,6 +427,7 @@ class PengembalianKasGantungHeader extends MyModel
         $data = $query->where("$this->table.id", $id)->first();
         return $data;
     }
+
     public function paginate($query)
     {
         return $query->skip($this->params['offset'])->take($this->params['limit']);

@@ -89,8 +89,6 @@ class BankPelanggan extends MyModel
             )
             ->leftJoin(DB::raw("parameter with (readuncommitted)"), 'bankpelanggan.statusaktif', '=', 'parameter.id');
 
-
-
         $this->filter($query);
         if ($aktif == 'AKTIF') {
             $statusaktif = Parameter::from(
@@ -116,7 +114,6 @@ class BankPelanggan extends MyModel
 
     public function default()
     {
-
         $tempdefault = '##tempdefault' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
         Schema::create($tempdefault, function ($table) {
             $table->unsignedBigInteger('statusaktif')->nullable();
@@ -143,9 +140,9 @@ class BankPelanggan extends MyModel
             );
 
         $data = $query->first();
-        // dd($data);
         return $data;
     }
+
     public function selectColumns($query)
     {
         return $query->from(

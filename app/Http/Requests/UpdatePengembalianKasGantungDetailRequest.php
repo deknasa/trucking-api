@@ -24,11 +24,15 @@ class UpdatePengembalianKasGantungDetailRequest extends FormRequest
     public function rules()
     {
         return [
-            
+            'kasgantungdetail_id' => 'required',
+            'nominal' => 'required|array',
+            'nominal.*' => 'required|numeric|gt:0',
             'keterangandetail' => 'required|array',
             'keterangandetail.*' => 'required',
             'coadetail' => 'required|array',
             'coadetail.*' => 'required',
+            'sisa' => 'required|array',
+            'sisa.*' => 'required|numeric|min:0',
         ];
     }
 }

@@ -260,35 +260,52 @@ class KasGantungHeader extends MyModel
         return  $temp;
     }
 
+    
+
 
     public function getKasGantung($dari, $sampai)
     {
-        $this->setRequestParameters();
-        $query = DB::table('kasgantungheader')->from(DB::raw("kasgantungheader with (readuncommitted)"))
-            ->select(DB::raw("kasgantungheader.id as detail_id, sum(kasgantungdetail.nominal) as nominal,  kasgantungheader.id,kasgantungheader.nobukti, kasgantungheader.tglbukti "))
-            ->whereBetween('tglbukti', [$dari, $sampai])
-            ->whereRaw(" NOT EXISTS (
-            SELECT pengembaliankasgantungdetail.kasgantung_nobukti 
-            FROM pengembaliankasgantungdetail with (readuncommitted)
-            WHERE pengembaliankasgantungdetail.kasgantung_nobukti = kasgantungheader.nobukti
-            
-          )")
-          ->leftJoin('kasgantungdetail', 'kasgantungdetail.kasgantung_id', 'kasgantungheader.id')
-          ->groupBy(
-              'kasgantungheader.id',
-              'kasgantungheader.nobukti',
-              'kasgantungheader.tglbukti',
-          );
-        $this->totalRows = $query->count();
-        $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;
+        $tempPribadi = $this->createTempKasGantung($dari, $sampai);
+        $query = KasGantungDetail::from(DB::raw("kasgantungdetail with (readuncommitted)"))
+            ->select(DB::raw("row_number() Over(Order By kasgantungdetail.nobukti) as id,kasgantungheader.tglbukti,kasgantungdetail.nobukti,kasgantungdetail.keterangan," . $tempPribadi . ".sisa"))
+            ->leftJoin(DB::raw("$tempPribadi with (readuncommitted)"), 'kasgantungdetail.nobukti', $tempPribadi . ".nobukti")
+            ->leftJoin(DB::raw("kasgantungheader with (readuncommitted)"), 'kasgantungdetail.nobukti', "kasgantungheader.nobukti")
+            ->whereBetween('kasgantungheader.tglbukti', [$dari, $sampai])   
+            ->whereRaw("kasgantungdetail.nobukti = $tempPribadi.nobukti")
+            ->where(function ($query) use ($tempPribadi) {
+                $query->whereRaw("$tempPribadi.sisa != 0")
+                    ->orWhereRaw("$tempPribadi.sisa is null");
+            })
+            ->orderBy('kasgantungheader.tglbukti', 'asc')
+            ->orderBy('kasgantungdetail.nobukti', 'asc');
+            //dd($query->get());
 
-        $this->sort($query);
-        $this->filter($query);
-        $this->paginate($query);
+        return $query->get();
+    }
 
-        $data = $query->get();
+    public function createTempKasGantung($dari, $sampai)
+    {
+        $temp = '##temp' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
 
-        return $data;
+        $fetch = DB::table('kasgantungdetail')
+            ->from(
+                DB::raw("kasgantungdetail with (readuncommitted)")
+            )
+            ->select(DB::raw("kasgantungdetail.nobukti, (SELECT (sum(kasgantungdetail.nominal) - coalesce(SUM(pengembaliankasgantungdetail
+            .nominal),0)) FROM pengembaliankasgantungdetail WHERE pengembaliankasgantungdetail.kasgantung_nobukti= kasgantungdetail.nobukti) AS sisa")) 
+            ->leftJoin('kasgantungheader', 'kasgantungheader.id', 'kasgantungdetail.kasgantung_id')
+            ->whereBetween('kasgantungheader.tglbukti', [$dari, $sampai])                                                                                     
+            ->groupBy('kasgantungdetail.nobukti');
+        //dd($fetch->toSql());
+        
+        Schema::create($temp, function ($table) {
+            $table->string('nobukti');
+            $table->bigInteger('sisa')->nullable();
+        });
+
+        $tes = DB::table($temp)->insertUsing(['nobukti', 'sisa'], $fetch); 
+        //dd($tes);
+        return $temp;
     }
 
     public function sort($query)

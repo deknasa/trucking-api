@@ -27,7 +27,7 @@ class StoreErrorRequest extends FormRequest
     {
         return [
             'kodeerror' => 'required|unique:error',            
-            'keterangan' => 'required|unique:error',
+            'keterangan' => 'unique:error',
         ];
     }
 

@@ -29,10 +29,21 @@ class LaporanRitasiGandenganController extends Controller
     public function export(Request $request)
     {
         $periode = $request->periode;
-
-        $report = LaporanRitasiGandengan::getExport($periode);
+        
+        $export = new LaporanRitasiGandengan ();
         return response([
-            'data' => $report
+            'data' => $export->getData($periode)
         ]);
     }
+
+    public function header(Request $request)
+    {
+        $periode = $request->periode;
+        
+        $export = new LaporanRitasiGandengan ();
+        return response([
+            'header' => $export->getHeader($periode)
+        ]);
+    }
+
 }

@@ -59,11 +59,16 @@ class StorePengembalianKasGantungHeaderRequest extends FormRequest
         return [
             'keterangandetail.*' => 'keterangan',
             'coadetail.*' => 'kode perkiraan',
+            'nominal.*' => 'Nominal',
         ];
     }
     public function messages()
     {
         return [
+            'kasgantungdetail_id.required' => 'KASGANTUNG '.app(ErrorController::class)->geterror('WP')->keterangan,
+            'sisa.*.min' => 'SISA '.app(ErrorController::class)->geterror('NTM')->keterangan,
+            'nominal.*.numeric' => 'nominal harus '.app(ErrorController::class)->geterror('BTSANGKA')->keterangan,
+            'nominal.*.gt' => ':attribute ' .  app(ErrorController::class)->geterror('GT-ANGKA-0')->keterangan,
             'tglbukti.date_format' => app(ErrorController::class)->geterror('DF')->keterangan,
             'tgldari.date_format' => app(ErrorController::class)->geterror('DF')->keterangan,
             'tglsampai.date_format' => app(ErrorController::class)->geterror('DF')->keterangan

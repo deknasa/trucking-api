@@ -20,7 +20,6 @@ class CreatePengembaliankasgantungheaderTable extends Migration
             $table->id();
             $table->string('nobukti',50)->unique();
             $table->date('tglbukti')->nullable();
-            $table->unsignedBigInteger('pelanggan_id')->nullable();
             $table->longText('keterangan')->nullable();
             $table->unsignedBigInteger('bank_id')->nullable();
             $table->date('tgldari')->nullable();
@@ -37,16 +36,12 @@ class CreatePengembaliankasgantungheaderTable extends Migration
             $table->string('modifiedby',50)->nullable();
             $table->timestamps();
 
-
-            $table->foreign('pelanggan_id', 'pengembaliankasgantungheader_pelanggan_pelanggan_id_foreign')->references('id')->on('pelanggan');    
             $table->foreign('bank_id', 'pengembaliankasgantungheader_bank_bank_id_foreign')->references('id')->on('bank');    
             $table->foreign('penerimaan_nobukti', 'pengembaliankasgantungheader_penerimaanheader_penerimaan_nobukti_foreign')->references('nobukti')->on('penerimaanheader');    
             $table->foreign('coakasmasuk', 'pengembaliankasgantungheader_akunpusat_coakasmasuk_foreign')->references('coa')->on('akunpusat');    
 
         });
 
-        
-        DB::statement("ALTER TABLE pengembaliankasgantungheader NOCHECK CONSTRAINT pengembaliankasgantungheader_pelanggan_pelanggan_id_foreign");
         DB::statement("ALTER TABLE pengembaliankasgantungheader NOCHECK CONSTRAINT pengembaliankasgantungheader_bank_bank_id_foreign");
         DB::statement("ALTER TABLE pengembaliankasgantungheader NOCHECK CONSTRAINT pengembaliankasgantungheader_penerimaanheader_penerimaan_nobukti_foreign");
         DB::statement("ALTER TABLE pengembaliankasgantungheader NOCHECK CONSTRAINT pengembaliankasgantungheader_akunpusat_coakasmasuk_foreign");
