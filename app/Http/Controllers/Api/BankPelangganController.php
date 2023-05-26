@@ -248,4 +248,47 @@ class BankPelangganController extends Controller
             'data' => $data
         ]);
     }
+    public function export()
+    {
+        $response = $this->index();
+        $decodedResponse = json_decode($response->content(), true);
+        $bankpelanggans = $decodedResponse['data'];
+
+        $i = 0;
+        foreach ($bankpelanggans as $index => $params) {
+
+            $statusaktif = $params['statusaktif'];
+
+            $result = json_decode($statusaktif, true);
+
+            $statusaktif = $result['MEMO'];
+
+            $bankpelanggans[$i]['statusaktif'] = $statusaktif;
+            $i++;
+        }
+
+        $columns = [
+            [
+                'label' => 'No',
+            ],
+            [
+                'label' => 'Kode Bank',
+                'index' => 'kodebank',
+            ],
+            [
+                'label' => 'Nama Bank',
+                'index' => 'namabank',
+            ],
+            [
+                'label' => 'Keterangan',
+                'index' => 'keterangan',
+            ],
+            [
+                'label' => 'Status AKtif',
+                'index' => 'statusaktif',
+            ],
+        ];
+
+        $this->toExcel('Bank Pelanggan', $bankpelanggans, $columns);
+    }
 }

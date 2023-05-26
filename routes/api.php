@@ -422,6 +422,8 @@ route::middleware(['auth:api'])->group(function () {
     Route::get('agen/default', [AgenController::class, 'default']);
     Route::post('agen/{agen}/approval', [AgenController::class, 'approval'])->name('agen.approval');
     Route::post('agen/{id}/cekValidasi', [AgenController::class, 'cekValidasi'])->name('agen.cekValidasi');
+    Route::get('agen/export', [AgenController::class, 'export']);
+    Route::get('agen/report', [AgenController::class, 'report']);
     Route::resource('agen', AgenController::class);
 
     Route::get('cabang/field_length', [CabangController::class, 'fieldLength']);
@@ -487,18 +489,24 @@ route::middleware(['auth:api'])->group(function () {
     Route::get('bank/field_length', [BankController::class, 'fieldLength']);
     Route::get('bank/default', [BankController::class, 'default']);
     Route::post('bank/{id}/cekValidasi', [BankController::class, 'cekValidasi'])->name('bank.cekValidasi');
+    Route::get('bank/export', [BankController::class, 'export']);
+    Route::get('bank/report', [BankController::class, 'report']);
     Route::resource('bank', BankController::class);
 
     Route::get('alatbayar/combo', [AlatBayarController::class, 'combo']);
     Route::get('alatbayar/field_length', [AlatBayarController::class, 'fieldLength']);
     Route::get('alatbayar/default', [AlatBayarController::class, 'default']);
     Route::post('alatbayar/{id}/cekValidasi', [AlatBayarController::class, 'cekValidasi'])->name('alatbayar.cekValidasi');
+    Route::get('alatbayar/export', [AlatBayarController::class, 'export']);
+    Route::get('alatbayar/report', [AlatBayarController::class, 'report']);
     Route::resource('alatbayar', AlatBayarController::class);
 
     Route::get('bankpelanggan/combo', [BankPelangganController::class, 'combo']);
     Route::get('bankpelanggan/field_length', [BankPelangganController::class, 'fieldLength']);
     Route::get('bankpelanggan/default', [BankPelangganController::class, 'default']);
     Route::post('bankpelanggan/{id}/cekValidasi', [BankPelangganController::class, 'cekValidasi'])->name('bankpelanggan.cekValidasi');
+    Route::get('bankpelanggan/export', [BankPelangganController::class, 'export']);
+    Route::get('bankpelanggan/report', [BankPelangganController::class, 'report']);
     Route::resource('bankpelanggan', BankPelangganController::class);
 
     Route::get('jenisemkl/combo', [JenisEmklController::class, 'combo']);
@@ -527,6 +535,8 @@ route::middleware(['auth:api'])->group(function () {
 
     Route::get('akunpusat/field_length', [AkunPusatController::class, 'fieldLength']);
     Route::get('akunpusat/default', [AkunPusatController::class, 'default']);
+    Route::get('akunpusat/export', [AkunPusatController::class, 'export']);
+    Route::get('akunpusat/report', [AkunPusatController::class, 'report']);
     Route::resource('akunpusat', AkunPusatController::class)->parameters(['akunpusat' => 'akunPusat']);
 
     Route::get('error/field_length', [ErrorController::class, 'fieldLength']);
@@ -624,6 +634,8 @@ route::middleware(['auth:api'])->group(function () {
     Route::get('supplier/field_length', [SupplierController::class, 'fieldLength']);
     Route::get('supplier/default', [SupplierController::class, 'default']);
     Route::post('supplier/{id}/cekValidasi', [SupplierController::class, 'cekValidasi'])->name('supplier.cekValidasi');
+    Route::get('supplier/export', [SupplierController::class, 'export']);
+    Route::get('supplier/report', [SupplierController::class, 'report']);
     Route::resource('supplier', SupplierController::class);
 
     Route::get('stok/default', [StokController::class, 'default']);
