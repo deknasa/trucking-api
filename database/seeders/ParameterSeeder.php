@@ -326,6 +326,11 @@ class ParameterSeeder extends Seeder
         parameter::create(['grp' => 'BATAS NILAI TOL', 'subgrp' => 'BATAS NILAI TOL', 'kelompok' => '', 'text' => '10000', 'memo' => '{"MEMO":"10000","SINGKATAN":"UC","WARNA":"#28A745"}', 'type' => '0', 'modifiedby' => 'ADMIN', 'default' => 'YA',]);
         parameter::create(['grp' => 'BATAS NILAI LITER', 'subgrp' => 'BATAS NILAI LITER', 'kelompok' => '', 'text' => '10000', 'memo' => '{"MEMO":"10000","SINGKATAN":"UC","WARNA":"#28A745"}', 'type' => '0', 'modifiedby' => 'ADMIN', 'default' => 'YA',]);
         parameter::create(['grp' => 'BATAS NILAI JARAK', 'subgrp' => 'BATAS NILAI JARAK', 'kelompok' => '', 'text' => '10000', 'memo' => '{"MEMO":"10000","SINGKATAN":"UC","WARNA":"#28A745"}', 'type' => '0', 'modifiedby' => 'ADMIN', 'default' => 'YA',]);
+        parameter::create(['grp' => 'MINIMAL USIA SUPIR', 'subgrp' => 'MINIMAL USIA SUPIR', 'kelompok' => '', 'text' => '17', 'memo' => '{"MEMO":"17","SINGKATAN":"UC","WARNA":"#28A745"}', 'type' => '0', 'modifiedby' => 'ADMIN', 'default' => 'YA',]);
+        parameter::create(['grp' => 'MAXIMAL USIA SUPIR', 'subgrp' => 'MAXIMAL USIA SUPIR', 'kelompok' => '', 'text' => '60', 'memo' => '{"MEMO":"60","SINGKATAN":"UC","WARNA":"#28A745"}', 'type' => '0', 'modifiedby' => 'ADMIN', 'default' => 'YA',]);
+        parameter::create(['grp' => 'MAXIMAL KTP', 'subgrp' => 'MAXIMAL KTP', 'kelompok' => '', 'text' => '16', 'memo' => '{"MEMO":"16","SINGKATAN":"UC","WARNA":"#28A745"}', 'type' => '0', 'modifiedby' => 'ADMIN', 'default' => 'YA',]);
+        parameter::create(['grp' => 'MAXIMAL KK', 'subgrp' => 'MAXIMAL KK', 'kelompok' => '', 'text' => '16', 'memo' => '{"MEMO":"16","SINGKATAN":"UC","WARNA":"#28A745"}', 'type' => '0', 'modifiedby' => 'ADMIN', 'default' => 'YA',]);
+        parameter::create(['grp' => 'MAXIMAL SIM', 'subgrp' => 'MAXIMAL SIM', 'kelompok' => '', 'text' => '12', 'memo' => '{"MEMO":"12","SINGKATAN":"UC","WARNA":"#28A745"}', 'type' => '0', 'modifiedby' => 'ADMIN', 'default' => 'YA',]);
         
     }
 }
