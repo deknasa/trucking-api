@@ -30,18 +30,19 @@ class PengeluaranStokController extends Controller
         ]);
     }
 
-    
-    public function cekValidasi($id) {
-        $pengeluaranStok= new PengeluaranStok();
-        $cekdata=$pengeluaranStok->cekvalidasihapus($id);
-        if ($cekdata['kondisi']==true) {
+
+    public function cekValidasi($id)
+    {
+        $pengeluaranStok = new PengeluaranStok();
+        $cekdata = $pengeluaranStok->cekvalidasihapus($id);
+        if ($cekdata['kondisi'] == true) {
             $query = DB::table('error')
-            ->select(
-                DB::raw("ltrim(rtrim(keterangan))+' (".$cekdata['keterangan'].")' as keterangan")
+                ->select(
+                    DB::raw("ltrim(rtrim(keterangan))+' (" . $cekdata['keterangan'] . ")' as keterangan")
                 )
-            ->where('kodeerror', '=', 'SATL')
-            ->get();
-        $keterangan = $query['0'];
+                ->where('kodeerror', '=', 'SATL')
+                ->get();
+            $keterangan = $query['0'];
 
             $data = [
                 'status' => false,
@@ -51,7 +52,6 @@ class PengeluaranStokController extends Controller
             ];
 
             return response($data);
-         
         } else {
             $data = [
                 'status' => false,
@@ -60,7 +60,7 @@ class PengeluaranStokController extends Controller
                 'kondisi' => $cekdata['kondisi'],
             ];
 
-            return response($data); 
+            return response($data);
         }
     }
 
@@ -128,8 +128,8 @@ class PengeluaranStokController extends Controller
         }
     }
 
-    
-    public function show(PengeluaranStok $pengeluaranStok,$id)
+
+    public function show(PengeluaranStok $pengeluaranStok, $id)
     {
         $pengeluaranStok = new PengeluaranStok();
         return response([
@@ -144,11 +144,11 @@ class PengeluaranStokController extends Controller
     /**
      * @ClassName 
      */
-    public function update(UpdatePengeluaranStokRequest $request, PengeluaranStok $pengeluaranStok,$id)
+    public function update(UpdatePengeluaranStokRequest $request, PengeluaranStok $pengeluaranStok, $id)
     {
         DB::beginTransaction();
         try {
-            $pengeluaranStok = PengeluaranStok::lockForUpdate()->where('id',$id)->first();
+            $pengeluaranStok = PengeluaranStok::lockForUpdate()->where('id', $id)->first();
             $pengeluaranStok->kodepengeluaran = $request->kodepengeluaran;
             $pengeluaranStok->keterangan = $request->keterangan ?? '';
             $pengeluaranStok->coa = $request->coa;
@@ -260,17 +260,33 @@ class PengeluaranStokController extends Controller
 
         $response = $this->index();
         $decodedResponse = json_decode($response->content(), true);
-        $pengeluaran = $decodedResponse['data'];
+        $pengeluarans = $decodedResponse['data'];
+
+        $i = 0;
+        foreach ($pengeluarans as $index => $params) {
+
+            $format = $params['format'];
+            $statusHitungStok = $params['statushitungstok'];
+
+            $result = json_decode($format, true);
+            $resultHitungStok = json_decode($statusHitungStok, true);
+
+            $format = $result['MEMO'];
+            $statusHitungStok = $resultHitungStok['MEMO'];
+
+
+            $pengeluarans[$i]['format'] = $format;
+            $pengeluarans[$i]['statushitungstok'] = $statusHitungStok;
+
+
+            $i++;
+        }
         $columns = [
             [
                 'label' => 'No',
             ],
             [
-                'label' => 'id',
-                'index' => 'id',
-            ],
-            [
-                'label' => 'kode pengeluaran',
+                'label' => 'Kode Pengeluaran',
                 'index' => 'kodepengeluaran',
             ],
             [
@@ -289,11 +305,7 @@ class PengeluaranStokController extends Controller
                 'label' => 'status hitung stok',
                 'index' => 'statushitungstok',
             ],
-            [
-                'label' => 'modifiedby',
-                'index' => 'modifiedby',
-            ],
         ];
-        $this->toExcel('Parameter', $pengeluaran, $columns);
+        $this->toExcel('Pengeluaran Stok', $pengeluarans, $columns);
     }
 }

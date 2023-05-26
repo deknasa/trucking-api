@@ -506,4 +506,44 @@ class GudangController extends Controller
             'data' => $data
         ]);
     }
+
+    public function export()
+    {
+        $response = $this->index();
+        $decodedResponse = json_decode($response->content(), true);
+        $gudangs = $decodedResponse['data'];
+
+        $i = 0;
+        foreach ($gudangs as $index => $params) {
+
+            $statusaktif = $params['statusaktif'];
+
+            $result = json_decode($statusaktif, true);
+
+            $statusaktif = $result['MEMO'];
+
+
+            $gudangs[$i]['statusaktif'] = $statusaktif;
+
+        
+            $i++;
+
+
+        }
+        $columns = [
+            [
+                'label' => 'No',
+            ],
+            [
+                'label' => 'Gudang',
+                'index' => 'gudang',
+            ],
+            [
+                'label' => 'Status Aktif',
+                'index' => 'statusaktif',
+            ],
+        ];
+
+        $this->toExcel('Gudang', $gudangs, $columns);
+    }
 }
