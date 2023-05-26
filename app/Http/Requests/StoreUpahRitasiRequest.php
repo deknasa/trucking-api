@@ -44,12 +44,7 @@ class StoreUpahRitasiRequest extends FormRequest
                'kotadari_id' => ['numeric','min:1','unique:upahritasi'],
             ];
         }
-        if ($kotasampai_id == 0 or $this->kotasampai<>'') {
-            $ruleskotasampai_id =  [
-                'kotasampai' => ['required',],
-            ];
-        }
-        else  if ($kotasampai_id == 0) {
+        if ($kotasampai_id == 0) {
             $ruleskotasampai_id =  [
                 'kotasampai' => ['required',],
             ];
