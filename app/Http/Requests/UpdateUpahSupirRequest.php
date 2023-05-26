@@ -27,8 +27,8 @@ class UpdateUpahSupirRequest extends FormRequest
     public function rules()
     {
         $rules =  [
-            'kotadari' => ['required',Rule::unique('upahsupir')->whereNotIn('id', [$this->id])],
-            'kotasampai' => ['required',Rule::unique('upahsupir')->whereNotIn('id', [$this->id])],
+            // 'kotadari' => ['required',Rule::unique('upahsupir')->whereNotIn('id', [$this->id])],
+            // 'kotasampai' => ['required',Rule::unique('upahsupir')->whereNotIn('id', [$this->id])],
             // 'zona' => 'required',
             'jarak' => ['required','numeric','gt:0','min:0','max:'. (new ParameterController)->getparamid('BATAS KM UPAH SUPIR','BATAS KM UPAH SUPIR')->text],
             'statusaktif' => 'required',

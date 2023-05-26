@@ -26,8 +26,8 @@ class StoreUpahSupirRequest extends FormRequest
     public function rules()
     {
         $rules =  [
-            'kotadari' => ['required','unique:upahsupir'],
-            'kotasampai' => ['required','unique:upahsupir'],
+            // 'kotadari' => ['required','unique:upahsupir'],
+            // 'kotasampai' => ['required','unique:upahsupir'],
             // 'zona' => 'required',
             'jarak' => ['required','numeric','min:0','max:'. (new ParameterController)->getparamid('BATAS KM UPAH SUPIR','BATAS KM UPAH SUPIR')->text],
             'statusaktif' => 'required',
