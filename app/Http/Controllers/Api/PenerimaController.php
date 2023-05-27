@@ -255,6 +255,23 @@ class PenerimaController extends Controller
         $decodedResponse = json_decode($response->content(), true);
         $penerimas = $decodedResponse['data'];
 
+        $i = 0;
+        foreach ($penerimas as $index => $params) {
+
+            $statusaktif = $params['statusaktif'];
+            $statusKaryawan = $params['statuskaryawan'];
+
+            $result = json_decode($statusaktif, true);
+            $resultKaryawan = json_decode($statusKaryawan, true);
+
+            $statusaktif = $result['MEMO'];
+            $statusKaryawan = $resultKaryawan['MEMO'];
+
+            $penerimas[$i]['statusaktif'] = $statusaktif;
+            $penerimas[$i]['statuskaryawan'] = $statusKaryawan;
+            $i++;
+        }
+
         $columns = [
             [
                 'label' => 'No',
