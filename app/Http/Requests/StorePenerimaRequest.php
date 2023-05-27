@@ -33,13 +33,19 @@ class StorePenerimaRequest extends FormRequest
         foreach ($data as $item) {
             $status[] = $item['id'];
         }
+
+        $data1 = $parameter->getcombodata('STATUS KARYAWAN', 'STATUS KARYAWAN');
+        $data1 = json_decode($data1, true);
+        foreach ($data1 as $item1) {
+            $statusKaryawan[] = $item1['id'];
+        }
         
         return [
             'namapenerima' => 'required',
-            'npwp' => ['required',new NotInKarakter_()],
-            'noktp' => ['required',new NotInKarakter_()],
+            'npwp' => ['required',new NotInKarakter_(),'unique:penerima'],
+            'noktp' => ['required',new NotInKarakter_(),'unique:penerima'],
             'statusaktif' => ['required', Rule::in($status)],
-            'statuskaryawan' => ['required', Rule::in($status)],
+            'statuskaryawan' => ['required', Rule::in($statusKaryawan)],
         ];
     }
 
