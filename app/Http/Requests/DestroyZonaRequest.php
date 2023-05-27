@@ -5,7 +5,7 @@ namespace App\Http\Requests;
 use Illuminate\Foundation\Http\FormRequest;
 use App\Http\Controllers\Api\ErrorController;
 
-class DestroyKotaRequest extends FormRequest
+class DestroyZonaRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
@@ -25,9 +25,7 @@ class DestroyKotaRequest extends FormRequest
     public function rules()
     {
         return [
-            'kodekota' => 'required',
-            'keterangan' => 'required',
-            'zona' => 'zona',
+            'zona' => 'required',
             'statusaktif' => 'required',
             'modifiedby' => 'required'
         ];
@@ -36,11 +34,9 @@ class DestroyKotaRequest extends FormRequest
     public function attributes()
     {
         return [
-            'kodekota' => 'kode kota',
-            'keterangan' => 'keterangan',
             'zona' => 'zona',
             'statusaktif' => 'status aktif',
-            'modifiedby' => 'modified by'
+            'modifiedby' => 'modified by',
         ];
     }
 
@@ -48,8 +44,6 @@ class DestroyKotaRequest extends FormRequest
     {
         $controller = new ErrorController;
         return [
-            'kodekota.required' => ':attribute'.' '. $controller->geterror('WI')->keterangan,
-            'keterangan.required' => ':attribute'.' '. $controller->geterror('WI')->keterangan,
             'zona.required' => ':attribute'.' '. $controller->geterror('WI')->keterangan,
             'statusaktif.required' => ':attribute'.' '. $controller->geterror('WI')->keterangan,
             'modifiedby.required' => ':attribute'.' '. $controller->geterror('WI')->keterangan,
