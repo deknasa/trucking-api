@@ -212,7 +212,7 @@ class CabangController extends Controller
         $decodedResponse = json_decode($response->content(), true);
         $cabangs = $decodedResponse['data'];
 
-        
+        //dd($cabangs);
         $i = 0;
         foreach ($cabangs as $index => $params) {
 
