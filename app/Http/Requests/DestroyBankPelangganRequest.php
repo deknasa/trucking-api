@@ -7,7 +7,7 @@ use App\Http\Controllers\Api\ErrorController;
 use App\Models\Parameter;
 use Illuminate\Validation\Rule;
 
-class StoreBankPelangganRequest extends FormRequest
+class DestroyBankPelangganRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
@@ -24,6 +24,7 @@ class StoreBankPelangganRequest extends FormRequest
      *
      * @return array
      */
+
     public function rules()
     {
         $parameter = new Parameter();
@@ -33,14 +34,16 @@ class StoreBankPelangganRequest extends FormRequest
             $status[] = $item['id'];
         }
         
-        return [
-            'kodebank' => ['required', 'unique:bankpelanggan'],
-            'namabank' => ['required', 'unique:bankpelanggan'],
+        $rules = [
+            'kodebank' => ['required',Rule::unique('bankpelanggan')->whereNotIn('id', [$this->id])],
+            'namabank' => ['required',Rule::unique('bankpelanggan')->whereNotIn('id', [$this->id])],
             'statusaktif' => ['required', Rule::in($status)],
         ];
+
+        return $rules;
     }
 
-    
+
     public function attributes()
     {
         return [
@@ -51,15 +54,16 @@ class StoreBankPelangganRequest extends FormRequest
         ];
     }
 
-    // public function messages()
-    // {
-    //     $controller = new ErrorController;
+    public function messages()
+    {
+        $controller = new ErrorController;
 
-    //     return [
-    //         'kodebank.required' => ':attribute' . ' ' . $controller->geterror('WI')->keterangan,
-    //         'namabank.required' => ':attribute' . ' ' . $controller->geterror('WI')->keterangan,
-    //         'statusaktif.required' => ':attribute' . ' ' . $controller->geterror('WI')->keterangan,
-            
-    //     ];
-    // }
+        return [
+            'kodebank.required' => ':attribute' . ' ' . $controller->geterror('WI')->keterangan,
+            'namabank.required' => ':attribute' . ' ' . $controller->geterror('WI')->keterangan,
+            'statusaktif.required' => ':attribute' . ' ' . $controller->geterror('WI')->keterangan,
+            'keterangan.required' => ':attribute' . ' ' . $controller->geterror('WI')->keterangan,
+
+        ];
+    }
 }

@@ -273,15 +273,13 @@ class PengembalianKasGantungHeader extends MyModel
 
         $fetch = DB::table('kasgantungdetail')
             ->from(
-                DB::raw("kasgantungdetail with (readuncommitted)")
+                DB::raw("pengembaliankasgantungdetail with (readuncommitted)")
             )
-            ->select(DB::raw("pengembaliankasgantungdetail.pengembaliankasgantung_id,kasgantungdetail.nobukti, pengembaliankasgantungdetail.nominal as bayar ,
-                (SELECT (kasgantungdetail.nominal - coalesce(SUM(pengembaliankasgantungdetail.nominal),0)) 
-                FROM pengembaliankasgantungdetail WHERE pengembaliankasgantungdetail.kasgantung_nobukti= kasgantungdetail.nobukti) AS sisa "))
-            ->leftJoin(DB::raw("kasgantungheader with (readuncommitted)"), 'kasgantungheader.nobukti', 'kasgantungdetail.nobukti')
-            ->leftJoin(DB::raw("pengembaliankasgantungdetail with (readuncommitted)"), 'pengembaliankasgantungdetail.kasgantung_nobukti', 'kasgantungdetail.nobukti')
-            ->whereBetween('kasgantungheader.tglbukti', [$dari, $sampai])       
-            ->where("pengembaliankasgantungdetail.pengembaliankasgantung_id", $id);
+            ->select(DB::raw("pengembaliankasgantungdetail.pengembaliankasgantung_id,pengembaliankasgantungdetail.kasgantung_nobukti, pengembaliankasgantungdetail.nominal as bayar ,
+                (SELECT (pengembaliankasgantungdetail.nominal - coalesce(SUM(kasgantungdetail.nominal),0)) 
+                FROM kasgantungdetail WHERE pengembaliankasgantungdetail.kasgantung_nobukti= kasgantungdetail.nobukti) AS sisa"));
+            
+        //dd($fetch->toSQL());
 
             Schema::create($temp, function ($table) {
                 $table->bigInteger('pengembaliankasgantungheader_id')->nullable();
@@ -304,12 +302,10 @@ class PengembalianKasGantungHeader extends MyModel
             (SELECT (sum(kasgantungdetail.nominal) - coalesce(SUM(pengembaliankasgantungdetail.nominal),0)) 
             FROM pengembaliankasgantungdetail WHERE pengembaliankasgantungdetail.kasgantung_nobukti= kasgantungdetail.nobukti) AS sisa "))
         ->leftJoin(DB::raw("kasgantungheader with (readuncommitted)"), 'kasgantungheader.nobukti', 'kasgantungdetail.nobukti')
-        ->leftJoin(DB::raw("pengembaliankasgantungdetail with (readuncommitted)"), 'pengembaliankasgantungdetail.kasgantung_nobukti', 'kasgantungdetail.nobukti')
-        ->whereRaw("kasgantungheader.nobukti not in (select kasgantung_nobukti from pengembaliankasgantungdetail where pengembaliankasgantung_id=$id)")
+        ->whereRaw("kasgantungheader.nobukti not in (select kasgantung_nobukti from pengembaliankasgantungdetail)")
         ->whereBetween('kasgantungheader.tglbukti', [$dari, $sampai])   
-        ->where("pengembaliankasgantungdetail.pengembaliankasgantung_id", $id) 
         ->groupBy('kasgantungdetail.nobukti');
-        
+        //dd($fetch->toSQL());
 
         Schema::create($temp, function ($table) {
             $table->string('nobukti');

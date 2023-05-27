@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests;
 
+use App\Http\Controllers\Api\ErrorController;
 use App\Rules\NotDecimal;
 use App\Rules\ValidasiGambarTrado;
 use Illuminate\Foundation\Http\FormRequest;
@@ -44,6 +45,7 @@ class StoreTradoRequest extends FormRequest
                     if (date('Y-m-d') > $cekValidasi->tglbatas) {
                         return true;
                     }
+                    return false;
                 }
             }
             return true;
@@ -108,6 +110,14 @@ class StoreTradoRequest extends FormRequest
             'nobpkb' => 'No BPKB',
             'jumlahbanserap' => 'Jumlah Ban Serap',
             'statusgerobak' => 'Status Gerobak'
+        ];
+    }
+    public function messages()
+    {
+        return[
+            'photobpkb.*.image' => app(ErrorController::class)->geterror('WG')->keterangan,
+            'photostnk.*.image' => app(ErrorController::class)->geterror('WG')->keterangan,
+            'phototrado.*.image' => app(ErrorController::class)->geterror('WG')->keterangan
         ];
     }
 }

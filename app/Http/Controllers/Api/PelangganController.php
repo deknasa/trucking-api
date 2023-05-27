@@ -257,6 +257,19 @@ class PelangganController extends Controller
         $decodedResponse = json_decode($response->content(), true);
         $pelanggans = $decodedResponse['data'];
 
+        $i = 0;
+        foreach ($pelanggans as $index => $params) {
+
+            $statusaktif = $params['statusaktif'];
+
+            $result = json_decode($statusaktif, true);
+
+            $statusaktif = $result['MEMO'];
+
+            $pelanggans[$i]['statusaktif'] = $statusaktif;
+            $i++;
+        }
+
         $columns = [
             [
                 'label' => 'No',

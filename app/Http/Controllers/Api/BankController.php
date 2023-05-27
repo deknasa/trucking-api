@@ -9,6 +9,7 @@ use App\Http\Requests\UpdateBankRequest;
 use App\Http\Requests\StoreLogTrailRequest;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\DestroyBankRequest;
 use App\Models\LogTrail;
 use App\Models\Parameter;
 
@@ -141,7 +142,7 @@ class BankController extends Controller
     /**
      * @ClassName 
      */
-    public function update(StoreBankRequest $request, Bank $bank)
+    public function update(UpdateBankRequest $request, Bank $bank)
     {
         DB::beginTransaction();
         try {
@@ -187,7 +188,7 @@ class BankController extends Controller
     /**
      * @ClassName 
      */
-    public function destroy(Request $request, $id)
+    public function destroy(DestroyBankRequest $request, $id)
     {
         DB::beginTransaction();
 
@@ -257,5 +258,79 @@ class BankController extends Controller
         return response([
             'data' => $data
         ]);
+    }
+    public function export()
+    {
+        $response = $this->index();
+        $decodedResponse = json_decode($response->content(), true);
+        $banks = $decodedResponse['data'];
+
+
+        $i = 0;
+        foreach ($banks as $index => $params) {
+
+            $statusaktif = $params['statusaktif'];
+            $statusDefault = $params['statusdefault'];
+            $formatPenerimaan = $params['formatpenerimaan'];
+            $formatPengeluaran = $params['formatpengeluaran'];
+
+            $result = json_decode($statusaktif, true);
+            $resultDefault = json_decode($statusDefault, true);
+            $resultPengeluaran = json_decode($formatPengeluaran, true);
+            $resultPenerimaan = json_decode($formatPenerimaan, true);
+
+            $statusaktif = $result['MEMO'];
+            $statusDefault = $resultDefault['MEMO'];
+            $formatPenerimaan = $resultPengeluaran['MEMO'];
+            $formatPengeluaran = $resultPenerimaan['MEMO'];
+
+
+            $banks[$i]['statusaktif'] = $statusaktif;
+            $banks[$i]['statusdefault'] = $statusDefault;
+            $banks[$i]['formatpenerimaan'] = $formatPenerimaan;
+            $banks[$i]['formatpengeluaran'] = $formatPengeluaran;
+
+
+            $i++;
+        }
+        $columns = [
+            [
+                'label' => 'No',
+            ],
+            [
+                'label' => 'Kode Bank',
+                'index' => 'kodebank',
+            ],
+            [
+                'label' => 'Nama Bank',
+                'index' => 'namabank',
+            ],
+            [
+                'label' => 'COA',
+                'index' => 'coa',
+            ],
+            [
+                'label' => 'Tipe',
+                'index' => 'tipe',
+            ],
+            [
+                'label' => 'Status Default',
+                'index' => 'statusdefault',
+            ],
+            [
+                'label' => 'Format Penerimaan',
+                'index' => 'formatpenerimaan',
+            ],
+            [
+                'label' => 'Format Pengeluaran',
+                'index' => 'formatpengeluaran',
+            ],
+            [
+                'label' => 'Status AKtif',
+                'index' => 'statusaktif',
+            ],
+        ];
+
+        $this->toExcel('Bank', $banks, $columns);
     }
 }

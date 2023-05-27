@@ -6,6 +6,8 @@ use App\Http\Controllers\Api\ErrorController;
 use Illuminate\Foundation\Http\FormRequest;
 use App\Rules\DateAllowedAbsen;
 use App\Rules\DateTutupBuku;
+use Illuminate\Validation\Rule;
+use Illuminate\Support\Facades\DB;
 
 class StoreAbsensiSupirHeaderRequest extends FormRequest
 {
@@ -30,6 +32,18 @@ class StoreAbsensiSupirHeaderRequest extends FormRequest
             'tglbukti' => [
                 'required',
                 'date_format:d-m-Y',
+                function ($attribute, $value, $fail) {
+                    // Ubah format tanggal dari input menjadi format yang ada di database
+                    // $formattedDate = \Carbon\Carbon::createFromFormat('d/m/Y', $value)->format('Y-m-d');
+                    $formattedDate = date('Y-m-d', strtotime($value));
+                    
+                    // Cek apakah ada data dengan tanggal yang sama dalam database
+                    $existingRecord = DB::table('absensisupirheader')->from(DB::raw("absensisupirheader with (readuncommitted)"))->where('tglbukti', $formattedDate)->first();
+                    
+                    if ($existingRecord) {
+                        $fail(app(ErrorController::class)->geterror('TSTB')->keterangan);
+                    }	
+                },
                 new DateAllowedAbsen(),
                 new DateTutupBuku(),
             ],

@@ -307,4 +307,70 @@ class AlatBayarController extends Controller
             'data' => $data
         ]);
     }
+    public function export()
+    {
+        $response = $this->index();
+        $decodedResponse = json_decode($response->content(), true);
+        $alatbayars = $decodedResponse['data'];
+
+        $i = 0;
+        foreach ($alatbayars as $index => $params) {
+
+            $statusaktif = $params['statusaktif'];
+            $statusLangsungCair = $params['statuslangsungcair'];
+            $statusDefault = $params['statusdefault'];
+
+            $result = json_decode($statusaktif, true);
+            $resultLangsungCair = json_decode($statusLangsungCair, true);
+            $resultDefault = json_decode($statusDefault, true);
+
+            $statusaktif = $result['MEMO'];
+            $statusLangsungCair = $resultLangsungCair['MEMO'];
+            $statusDefault = $resultDefault['MEMO'];
+
+
+            $alatbayars[$i]['statusaktif'] = $statusaktif;
+            $alatbayars[$i]['statuslangsungcair'] = $statusLangsungCair;
+            $alatbayars[$i]['statusdefault'] = $statusDefault;
+
+
+            $i++;
+        }
+
+        $columns = [
+            [
+                'label' => 'No',
+            ],
+            [
+                'label' => 'Kode Alat Bayar',
+                'index' => 'kodealatbayar',
+            ],
+            [
+                'label' => 'Nama Alat Bayar',
+                'index' => 'namaalatbayar',
+            ],
+            [
+                'label' => 'Keterangan',
+                'index' => 'keterangan',
+            ],
+            [
+                'label' => 'Status Langsung Cair',
+                'index' => 'statuslangsungcair',
+            ],
+            [
+                'label' => 'Status Default',
+                'index' => 'statusdefault',
+            ],
+            [
+                'label' => 'Bank',
+                'index' => 'bank',
+            ],
+            [
+                'label' => 'Status AKtif',
+                'index' => 'statusaktif',
+            ],
+        ];
+
+        $this->toExcel('Alat Bayar', $alatbayars, $columns);
+    }
 }

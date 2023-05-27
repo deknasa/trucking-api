@@ -8,6 +8,7 @@ use App\Http\Requests\UpdateBankPelangganRequest;
 use App\Http\Requests\StoreLogTrailRequest;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\DestroyBankPelangganRequest;
 use App\Models\LogTrail;
 use App\Models\Parameter;
 
@@ -136,7 +137,7 @@ class BankPelangganController extends Controller
     /**
      * @ClassName 
      */
-    public function update(StoreBankPelangganRequest $request, BankPelanggan $bankpelanggan)
+    public function update(UpdateBankPelangganRequest $request, BankPelanggan $bankpelanggan)
     {
         DB::beginTransaction();
         try {
@@ -182,7 +183,7 @@ class BankPelangganController extends Controller
     /**
      * @ClassName 
      */
-    public function destroy(Request $request, $id)
+    public function destroy(DestroyBankPelangganRequest $request, $id)
     {
         DB::beginTransaction();
 
@@ -247,5 +248,48 @@ class BankPelangganController extends Controller
         return response([
             'data' => $data
         ]);
+    }
+    public function export()
+    {
+        $response = $this->index();
+        $decodedResponse = json_decode($response->content(), true);
+        $bankpelanggans = $decodedResponse['data'];
+
+        $i = 0;
+        foreach ($bankpelanggans as $index => $params) {
+
+            $statusaktif = $params['statusaktif'];
+
+            $result = json_decode($statusaktif, true);
+
+            $statusaktif = $result['MEMO'];
+
+            $bankpelanggans[$i]['statusaktif'] = $statusaktif;
+            $i++;
+        }
+
+        $columns = [
+            [
+                'label' => 'No',
+            ],
+            [
+                'label' => 'Kode Bank',
+                'index' => 'kodebank',
+            ],
+            [
+                'label' => 'Nama Bank',
+                'index' => 'namabank',
+            ],
+            [
+                'label' => 'Keterangan',
+                'index' => 'keterangan',
+            ],
+            [
+                'label' => 'Status AKtif',
+                'index' => 'statusaktif',
+            ],
+        ];
+
+        $this->toExcel('Bank Pelanggan', $bankpelanggans, $columns);
     }
 }

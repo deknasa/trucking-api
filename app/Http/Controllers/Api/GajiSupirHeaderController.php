@@ -582,17 +582,21 @@ class GajiSupirHeaderController extends Controller
 
 
     public function show($id)
-    {
+    { 
+        $gajisupir = new GajiSupirHeader();
         $gajisupirpinjaman = new GajiSupirPelunasanPinjaman();
         $data = GajiSupirHeader::findAll($id);
         $deposito = GajiSupirDeposito::findAll($data->nobukti);
         $BBM = GajiSupirBBM::findAll($data->nobukti);
-
+        $getTrip = $gajisupir->getEditTrip($id);
+        $getUangjalan = $gajisupir->getEditAbsensi($id);
         return response([
             'status' => true,
             'data' => $data,
             'deposito' => $deposito,
-            'bbm' => $BBM
+            'bbm' => $BBM,
+            'getTrip' => $getTrip,
+            'getUangjalan' => $getUangjalan
         ]);
     }
 

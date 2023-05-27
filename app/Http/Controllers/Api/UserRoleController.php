@@ -28,15 +28,15 @@ class UserRoleController extends Controller
     /**
      * @ClassName 
      */
-    public function index(Role $role): JsonResponse
+    public function index(User $user): JsonResponse
     {
-        $userRole = new UserRole();
+        $userRoles = new UserRole();
 
         return response()->json([
-            'data' => $userRole->get($role->acls()),
+            'data' => $userRoles->get($user->roles()),
             'attributes' => [
-                'totalRows' => $userRole->totalRows,
-                'totalPages' => $userRole->totalPages
+                'totalRows' => $userRoles->totalRows,
+                'totalPages' => $userRoles->totalPages
             ]
         ]);
     }

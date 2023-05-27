@@ -17,6 +17,7 @@ use App\Models\PengembalianKasGantungDetail;
 use App\Models\Bank;
 use App\Http\Requests\StorePengembalianKasGantungHeaderRequest;
 use App\Http\Requests\UpdatePengembalianKasGantungHeaderRequest;
+use App\Http\Requests\GetPengembalianKasGantungHeaderRequest;
 
 use App\Http\Requests\StorePenerimaanHeaderRequest;
 // use App\Http\Controllers\ParameterController;
@@ -35,7 +36,7 @@ class PengembalianKasGantungHeaderController extends Controller
     /**
      * @ClassName 
      */
-    public function index()
+    public function index(GetPengembalianKasGantungHeaderRequest $request)
     {
         $pengembalianKasGantungHeader = new PengembalianKasGantungHeader();
         return response([
@@ -168,19 +169,18 @@ class PengembalianKasGantungHeaderController extends Controller
                             ->where('grp', 'JURNAL KAS GANTUNG')->where('subgrp', 'DEBET')->first();
                         $coakreditmemo = json_decode($coakredit->memo, true);
                     } else {
-                       
+
                         $kasgantungnobukti = $request->kasgantung_nobukti[$i];
                     }
-                    if (stripos(strtolower($request->keterangandetail[$i]),'input type=')) {
-                        $keterangandetail=null;
+                    if (stripos(strtolower($request->keterangandetail[$i]), 'input type=')) {
+                        $keterangandetail = null;
                     } else {
-                        $keterangandetail=$request->keterangandetail[$i];
-
+                        $keterangandetail = $request->keterangandetail[$i];
                     }
-                    if (stripos(strtolower($request->coadetail[$i]),'input-group')) {
-                        $coadetail= null;
+                    if (stripos(strtolower($request->coadetail[$i]), 'input-group')) {
+                        $coadetail = null;
                     } else {
-                       $coadetail= $request->coadetail[$i];
+                        $coadetail = $request->coadetail[$i];
                     }
                     // dd($request['coadetail']);
                     // dd($request->coadetail[$i]);
@@ -430,7 +430,6 @@ class PengembalianKasGantungHeaderController extends Controller
                 $counter = $request->datadetail;
             } else {
                 $counter = $request->kasgantungdetail_id;
-                
             }
 
             for ($i = 0; $i < count($counter); $i++) {
@@ -455,7 +454,7 @@ class PengembalianKasGantungHeaderController extends Controller
                 $detaillog[] = $datadetail;
                 $data = new StorePengembalianKasGantungDetailRequest($datadetail);
                 $pengembalianKasGantungDetail = app(PengembalianKasGantungDetailController::class)->store($data);
-                
+
                 if ($pengembalianKasGantungDetail['error']) {
                     return response($pengembalianKasGantungDetail, 422);
                 } else {
@@ -709,24 +708,29 @@ class PengembalianKasGantungHeaderController extends Controller
     }
 
     //untuk create
-    public function getKasGantung(Request $request)
+    public function getKasGantung(GetPengembalianKasGantungHeaderRequest $request)
     {
-        $KasGantung = new KasGantungHeader();
-        $currentURL = url()->current();
-        $previousURL = url()->previous();
+        try {
+            $KasGantung = new KasGantungHeader();
+            $currentURL = url()->current();
+            $previousURL = url()->previous();
 
-        $dari = date('Y-m-d', strtotime($request->tgldari));
-        $sampai = date('Y-m-d', strtotime($request->tglsampai));
+            $dari = date('Y-m-d', strtotime($request->tgldari));
+            $sampai = date('Y-m-d', strtotime($request->tglsampai));
 
-        return response([
-            'data' => $KasGantung->getKasGantung($dari, $sampai),
-            'currentURL' => $currentURL,
-            'previousURL' => $previousURL,
-            'attributes' => [
-                'totalRows' => $KasGantung->totalRows,
-                'totalPages' => $KasGantung->totalPages
-            ]
-        ]);
+            return response([
+                'data' => $KasGantung->getKasGantung($dari, $sampai),
+                'currentURL' => $currentURL,
+                'previousURL' => $previousURL,
+                'attributes' => [
+                    'totalRows' => $KasGantung->totalRows,
+                    'totalPages' => $KasGantung->totalPages
+                ]
+            ]);
+        } catch (\Throwable $th) {
+            DB::rollBack();
+            throw $th;
+        }
     }
 
     public function getPengembalian(Request $request, $id, $aksi)
@@ -746,23 +750,23 @@ class PengembalianKasGantungHeaderController extends Controller
         ]);
 
 
-        $pengembalian = new PengembalianKasGantungHeader();
-        $currentURL = url()->current();
-        $previousURL = url()->previous();
+        // $pengembalian = new PengembalianKasGantungHeader();
+        // $currentURL = url()->current();
+        // $previousURL = url()->previous();
 
-        $dari = date('Y-m-d', strtotime($request->tgldari));
-        $sampai = date('Y-m-d', strtotime($request->tglsampai));
-        dd($sampai);
+        // $dari = date('Y-m-d', strtotime($request->tgldari));
+        // $sampai = date('Y-m-d', strtotime($request->tglsampai));
+        // dd($sampai);
 
-        return response([
-            'data' => $pengembalian->getPengembalian($id),
-            'currentURL' => $currentURL,
-            'previousURL' => $previousURL,
-            'attributes' => [
-                'totalRows' => $pengembalian->totalRows,
-                'totalPages' => $pengembalian->totalPages
-            ]
-        ]);
+        // return response([
+        //     'data' => $pengembalian->getPengembalian($id),
+        //     'currentURL' => $currentURL,
+        //     'previousURL' => $previousURL,
+        //     'attributes' => [
+        //         'totalRows' => $pengembalian->totalRows,
+        //         'totalPages' => $pengembalian->totalPages
+        //     ]
+        // ]);
         // if ($aksi == 'edit') {
         //     $data = $pengembalian->getPengembalian($id);
         // } else {

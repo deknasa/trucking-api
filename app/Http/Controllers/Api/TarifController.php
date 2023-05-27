@@ -473,9 +473,10 @@ class TarifController extends Controller
         $decodedResponse = json_decode($response->content(), true);
         $tarifs = $decodedResponse['data'];
 
-
         $i = 0;
         foreach ($tarifs as $index => $params) {
+
+            // $tarifRincian = new TarifRincian();
 
             $statusaktif = $params['statusaktif'];
             $statusSistemTon = $params['statussistemton'];
@@ -494,10 +495,15 @@ class TarifController extends Controller
             $tarifs[$i]['statussistemton'] = $statusSistemTon;
             $tarifs[$i]['statuspenyesuaianharga'] = $statusPenyesuaianHarga;
 
+            // $tarifs[$i]['rincian'] = json_decode($tarifRincian->getAll($tarifs[$i]['id']), true);
+
         
             $i++;
 
         }
+
+
+       
 
         $columns = [
             [
@@ -543,6 +549,7 @@ class TarifController extends Controller
                 'label' => 'Keterangan',
                 'index' => 'keterangan',
             ],
+           
         ];
 
         $this->toExcel('Tarif', $tarifs, $columns);

@@ -36,6 +36,14 @@ class ParameterController extends Controller
         ]);
     }
 
+    public function default()
+    {
+        $parameter = new Parameter();
+        return response([
+            'status' => true,
+            'data' => $parameter->default()
+        ]);
+    }
 
 
     /**
@@ -246,24 +254,26 @@ class ParameterController extends Controller
             'data' => $data
         ]);
     }
+
     public function detail()
     {
         $query = Parameter::select('memo')->where('id', request()->id)->first();
 
-        $memo = json_decode($query->memo);
-
         $array = [];
-        if ($memo != '') {
+        if (request()->id != 0) 
+        {
+            $memo = json_decode($query->memo);
+            if ($memo != '') {
+                $i = 0;
+                foreach ($memo as $index => $value) {
+                    $array[$i]['key'] = $index;
+                    $array[$i]['value'] = $value;
 
-            $i = 0;
-            foreach ($memo as $index => $value) {
-                $array[$i]['key'] = $index;
-                $array[$i]['value'] = $value;
-
-                $i++;
+                    $i++;
+                }
             }
         }
-
+        
         return response([
             'data' => $array
         ]);
@@ -306,7 +316,15 @@ class ParameterController extends Controller
         $response = $this->index();
         $decodedResponse = json_decode($response->content(), true);
         $parameters = $decodedResponse['data'];
-       
+        
+        $i = 0;
+        foreach ($parameters as $index => $params) {
+            $memo = $params['memo'];
+            $result = json_decode($memo, true);
+            $memo = $result['MEMO'];
+            $parameters[$i]['memo'] = $memo;
+            $i++;
+        }
 
         $columns = [
             [

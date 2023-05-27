@@ -3,6 +3,8 @@
 namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
+use App\Models\Parameter;
+use Illuminate\Validation\Rule;
 
 class StoreZonaRequest extends FormRequest
 {
@@ -23,9 +25,26 @@ class StoreZonaRequest extends FormRequest
      */
     public function rules()
     {
-        return [
+        $parameter = new Parameter();
+        $data = $parameter->getcombodata('STATUS AKTIF', 'STATUS AKTIF');
+        $data = json_decode($data, true);
+        foreach ($data as $item) {
+            $status[] = $item['id'];
+        }
+
+        $rules = [
             'zona' => 'required',
-            'statusaktif' => 'required',
+            'statusaktif' => ['required', Rule::in($status)]
+        ];
+
+        return $rules;
+    }
+
+    public function attributes()
+    {
+        return [
+            'zona' => 'kode cabang',
+            'statusaktif' => 'status',
         ];
     }
 }

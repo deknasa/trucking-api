@@ -10,7 +10,7 @@ use Illuminate\Validation\Rule;
 
 class UpdateCabangRequest extends FormRequest
 {
-    /**
+     /**
      * Determine if the user is authorized to make this request.
      *
      * @return bool
@@ -36,8 +36,7 @@ class UpdateCabangRequest extends FormRequest
         }
 
         return [
-            'kodecabang' => ['required',Rule::unique('cabang')->whereNotIn('id', [$this->id])],
-            'namacabang' => ['required',Rule::unique('cabang')->whereNotIn('id', [$this->id])],
+            'zona' => ['required',Rule::unique('zona')->whereNotIn('id', [$this->id])],
             'statusaktif' => ['required', Rule::in($status)]
         ];
     }
@@ -45,11 +44,8 @@ class UpdateCabangRequest extends FormRequest
     public function attributes()
     {
         return [
-            'kodecabang' => 'kode cabang',
-            'namacabang' => 'nama cabang',
+            'zona' => 'kode cabang',
             'statusaktif' => 'status',
         ];
     }
-
-  
 }

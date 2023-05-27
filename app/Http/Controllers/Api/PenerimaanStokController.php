@@ -263,17 +263,35 @@ class PenerimaanStokController extends Controller
 
         $response = $this->index();
         $decodedResponse = json_decode($response->content(), true);
-        $penerimaan = $decodedResponse['data'];
+        $penerimaans = $decodedResponse['data'];
+
+      
+        
+        $i = 0;
+        foreach ($penerimaans as $index => $params) {
+
+            $format = $params['format'];
+            $statusHitungStok = $params['statushitungstok'];
+
+            $result = json_decode($format, true);
+            $resultHitungStok = json_decode($statusHitungStok, true);
+
+            $format = $result['MEMO'];
+            $statusHitungStok = $resultHitungStok['MEMO'];
+
+
+            $penerimaans[$i]['format'] = $format;
+            $penerimaans[$i]['statushitungstok'] = $statusHitungStok;
+
+
+            $i++;
+        }
         $columns = [
             [
                 'label' => 'No',
             ],
             [
-                'label' => 'id',
-                'index' => 'id',
-            ],
-            [
-                'label' => 'kode penerimaan',
+                'label' => 'Kode Penerimaan',
                 'index' => 'kodepenerimaan',
             ],
             [
@@ -292,11 +310,8 @@ class PenerimaanStokController extends Controller
                 'label' => 'status hitung stok',
                 'index' => 'statushitungstok',
             ],
-            [
-                'label' => 'modifiedby',
-                'index' => 'modifiedby',
-            ],
+           
         ];
-        $this->toExcel('Parameter', $penerimaan, $columns);
+        $this->toExcel('Penerimaan Stok', $penerimaans, $columns);
     }
 }

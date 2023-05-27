@@ -288,7 +288,24 @@ class SupplierController extends Controller
     {
         $response = $this->index();
         $decodedResponse = json_decode($response->content(), true);
-        $parameters = $decodedResponse['data'];
+        $suppliers = $decodedResponse['data'];
+
+        $i = 0;
+        foreach ($suppliers as $index => $params) {
+
+            $statusaktif = $params['statusaktif'];
+            $statusDaftarHarga = $params['statusdaftarharga'];
+
+            $result = json_decode($statusaktif, true);
+            $resultDaftarHarga = json_decode($statusDaftarHarga, true);
+
+            $statusaktif = $result['MEMO'];
+            $statusDaftarHarga = $resultDaftarHarga['MEMO'];
+
+            $suppliers[$i]['statusaktif'] = $statusaktif;
+            $suppliers[$i]['statusdaftarharga'] = $statusDaftarHarga;
+            $i++;
+        }
 
         $columns = [
             [
@@ -377,6 +394,6 @@ class SupplierController extends Controller
 
         ];
 
-        $this->toExcel('Parameter', $parameters, $columns);
+        $this->toExcel('Supplier', $suppliers, $columns);
     }
 }

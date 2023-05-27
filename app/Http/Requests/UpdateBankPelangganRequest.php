@@ -4,6 +4,8 @@ namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
 use App\Http\Controllers\Api\ErrorController;
+use App\Models\Parameter;
+use Illuminate\Validation\Rule;
 
 class UpdateBankPelangganRequest extends FormRequest
 {
@@ -14,7 +16,7 @@ class UpdateBankPelangganRequest extends FormRequest
      */
     public function authorize()
     {
-        return false;
+        return true;
     }
 
     /**
@@ -22,21 +24,23 @@ class UpdateBankPelangganRequest extends FormRequest
      *
      * @return array
      */
-    public function rules()
-    {
-        return [
-            //
-        ];
-    }
 
     public function rules()
     {
-        return [
-            'kodebank' => 'required',
-            'namabank' => 'required',
-            'keterangan' => 'required',
-            'statusaktif' => 'required',
+        $parameter = new Parameter();
+        $data = $parameter->getcombodata('STATUS AKTIF', 'STATUS AKTIF');
+        $data = json_decode($data, true);
+        foreach ($data as $item) {
+            $status[] = $item['id'];
+        }
+        
+        $rules = [
+            'kodebank' => ['required',Rule::unique('bankpelanggan')->whereNotIn('id', [$this->id])],
+            'namabank' => ['required',Rule::unique('bankpelanggan')->whereNotIn('id', [$this->id])],
+            'statusaktif' => ['required', Rule::in($status)],
         ];
+
+        return $rules;
     }
 
 
@@ -50,16 +54,16 @@ class UpdateBankPelangganRequest extends FormRequest
         ];
     }
 
-    public function messages()
-    {
-        $controller = new ErrorController;
+    // public function messages()
+    // {
+    //     $controller = new ErrorController;
 
-        return [
-            'kodebank.required' => ':attribute' . ' ' . $controller->geterror('WI')->keterangan,
-            'namabank.required' => ':attribute' . ' ' . $controller->geterror('WI')->keterangan,
-            'statusaktif.required' => ':attribute' . ' ' . $controller->geterror('WI')->keterangan,
-            'keterangan.required' => ':attribute' . ' ' . $controller->geterror('WI')->keterangan,
+    //     return [
+    //         'kodebank.required' => ':attribute' . ' ' . $controller->geterror('WI')->keterangan,
+    //         'namabank.required' => ':attribute' . ' ' . $controller->geterror('WI')->keterangan,
+    //         'statusaktif.required' => ':attribute' . ' ' . $controller->geterror('WI')->keterangan,
+    //         'keterangan.required' => ':attribute' . ' ' . $controller->geterror('WI')->keterangan,
 
-        ];
-    }
+    //     ];
+    // }
 }

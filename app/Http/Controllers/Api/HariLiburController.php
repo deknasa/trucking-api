@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\StoreHariLiburRequest;
+use App\Http\Requests\UpdateHariLiburRequest;
 use App\Http\Requests\StoreLogTrailRequest;
 use App\Models\HariLibur;
 use Illuminate\Http\Request;
@@ -17,7 +18,6 @@ class HariLiburController extends Controller
     public function index()
     {
         $hariLibur = new HariLibur();
-
         return response([
             'data' => $hariLibur->get(),
             'attributes' => [
@@ -95,10 +95,10 @@ class HariLiburController extends Controller
     /**
      * @ClassName 
      */
-    public function update(StoreHariLiburRequest $request, HariLibur $harilibur)
+    public function update(UpdateHariLiburRequest $request, HariLibur $harilibur)
     {
         DB::beginTransaction();
-
+        
         try {
             $harilibur->tgl = date('Y-m-d', strtotime($request->tgl));
             $harilibur->keterangan = $request->keterangan ?? '';

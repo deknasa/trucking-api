@@ -28,6 +28,7 @@ class ParameterRequest extends FormRequest
             'grp' => 'required',
             'subgrp' => 'required',
             'text' => 'required',
+            'default' => 'required',
             'key' => 'required|array',
             'key.*' => 'required',
             'value' => 'required|array',
@@ -41,6 +42,7 @@ class ParameterRequest extends FormRequest
             'grp' => 'group',
             'subgrp' => 'subgroup',
             'text' => 'name',
+            'default' => 'default',
             'key.*' => 'key',
             'value.*' => 'value'
         ];

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\GetIndexRangeRequest;
 use App\Http\Requests\StoreJurnalUmumDetailRequest;
 use App\Models\JurnalUmumHeader;
 use App\Models\JurnalUmumDetail;
@@ -30,7 +31,7 @@ class JurnalUmumHeaderController extends Controller
     /**
      * @ClassName
      */
-    public function index()
+    public function index(GetIndexRangeRequest $request)
     {
         $jurnalumum = new JurnalUmumHeader();
 

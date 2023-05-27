@@ -67,9 +67,10 @@ class UpahSupir extends MyModel
                 'zona.keterangan as zona_id',
                 'parameter.memo as statusaktif',
                 'upahsupir.tglmulaiberlaku',
-                'upahsupir.keterangan',
+                // 'upahsupir.tglakhirberlaku',
                 'statusluarkota.memo as statusluarkota',
                 'upahsupir.gambar',
+                'upahsupir.keterangan',
                 'upahsupir.created_at',
                 'upahsupir.modifiedby',
                 'upahsupir.updated_at'
@@ -115,12 +116,13 @@ class UpahSupir extends MyModel
             'tarif.tujuan as tarif',
             'upahsupir.kotadari_id',
             'kotadari.keterangan as kotadari',
+            'upahsupir.keterangan',
             'upahsupir.kotasampai_id',
             'kotasampai.keterangan as kotasampai',
             'upahsupir.jarak',
             'upahsupir.zona_id',
             'zona.keterangan as zona',
-             'upahsupir.keterangan',
+
             'upahsupir.statusaktif',
 
             'upahsupir.tglmulaiberlaku',
@@ -214,6 +216,7 @@ class UpahSupir extends MyModel
                 $this->table.statusaktif,
                 $this->table.tglmulaiberlaku,
                 $this->table.statusluarkota,
+
                  $this->table.modifiedby,
                  $this->table.created_at,
                  $this->table.updated_at"
@@ -222,13 +225,12 @@ class UpahSupir extends MyModel
         )
             ->leftJoin(DB::raw("kota as kotadari with (readuncommitted)"), 'kotadari.id', '=', 'upahsupir.kotadari_id')
             ->leftJoin(DB::raw("kota as kotasampai with (readuncommitted)"), 'kotasampai.id', '=', 'upahsupir.kotasampai_id')
-            ->leftJoin(DB::raw("parameter with (readuncommitted)"), 'upahsupir.statusaktif', 'parameter.id')
-            ->leftJoin(DB::raw("parameter as statusluarkota with (readuncommitted)"), 'upahsupir.statusluarkota', 'statusluarkota.id')
             ->leftJoin(DB::raw("zona with (readuncommitted)"), 'upahsupir.zona_id', 'zona.id');
     }
 
     public function createTemp(string $modelTable)
     {
+
         $temp = '##temp' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
         Schema::create($temp, function ($table) {
             $table->bigInteger('id')->nullable();
@@ -239,6 +241,7 @@ class UpahSupir extends MyModel
             $table->double('jarak', 15, 2)->nullable();
             $table->integer('statusaktif')->length(11)->nullable();
             $table->date('tglmulaiberlaku')->nullable();
+            // $table->date('tglakhirberlaku')->nullable();
             $table->integer('statusluarkota')->length(11)->nullable();
             $table->string('modifiedby', 50)->nullable();
             $table->dateTime('created_at')->nullable();
@@ -277,6 +280,8 @@ class UpahSupir extends MyModel
                     foreach ($this->params['filters']['rules'] as $index => $filters) {
                         if ($filters['field'] == 'statusaktif') {
                             $query = $query->where('parameter.text', '=', $filters['data']);
+                        } elseif ($filters['field'] == 'parent_id') {
+                            $query = $query->where('parent.keterangan', '=', $filters['data']);
                         } elseif ($filters['field'] == 'statusluarkota') {
                             $query = $query->where('statusluarkota.text', '=', $filters['data']);
                         } else if ($filters['field'] == 'kotadari_id') {
@@ -302,11 +307,14 @@ class UpahSupir extends MyModel
                         foreach ($this->params['filters']['rules'] as $index => $filters) {
                             if ($filters['field'] == 'statusaktif') {
                                 $query = $query->orWhere('parameter.text', '=', $filters['data']);
-                            } elseif ($filters['field'] == 'statusluarkota') {
+                            }
+                             elseif ($filters['field'] == 'statusluarkota') {
                                 $query = $query->orWhere('statusluarkota.text', '=', $filters['data']);
                             } else if ($filters['field'] == 'kotadari_id') {
                                 $query = $query->orWhere('kotadari.keterangan', 'LIKE', "%$filters[data]%");
-                            } else if ($filters['field'] == 'kotasampai_id') {
+                            } else if ($filters['field'] == 'parent_id') {
+                                $query = $query->orWhere('parent.keterangan', 'LIKE', "%$filters[data]%");
+                            }else if ($filters['field'] == 'kotasampai_id') {
                                 $query = $query->orWhere('kotasampai.keterangan', 'LIKE', "%$filters[data]%");
                             } else if ($filters['field'] == 'zona_id') {
                                 $query = $query->orWhere('zona.keterangan', 'LIKE', "%$filters[data]%");

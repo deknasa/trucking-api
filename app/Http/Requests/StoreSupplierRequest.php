@@ -31,7 +31,6 @@ class StoreSupplierRequest extends FormRequest
             'kota' => 'required',
             'kodepos' => 'required',
             'notelp1' => 'required',
-            'web' => 'required',
             'email' => 'required|email',
             'statusaktif' => 'required|numeric',
             'namapemilik' => 'required',

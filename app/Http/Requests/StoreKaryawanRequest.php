@@ -3,6 +3,8 @@
 namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
+use App\Models\Parameter;
+use Illuminate\Validation\Rule;
 
 class StoreKaryawanRequest extends FormRequest
 {
@@ -23,18 +25,36 @@ class StoreKaryawanRequest extends FormRequest
      */
     public function rules()
     {
-        return [
-            'namakaryawan' => 'required',
-            'statusaktif' => 'required',
-            'statusstaff' => 'required'
+
+        $parameter = new Parameter();
+        $data = $parameter->getcombodata('STATUS AKTIF', 'STATUS AKTIF');
+        $data = json_decode($data, true);
+        foreach ($data as $item) {
+            $status[] = $item['id'];
+        }
+
+        $data = $parameter->getcombodata('STATUS STAFF', 'STATUS STAFF');
+        $data = json_decode($data, true);
+        foreach ($data as $item) {
+            $statusstaff[] = $item['id'];
+        }
+
+        $rules = [
+            'namakaryawan' => ['required','unique:karyawan'],
+            'statusaktif' => ['required', Rule::in($status)],
+            'statusstaff' => ['required', Rule::in($statusstaff)]
         ];
+
+        return $rules;
+
+    
     }
 
     public function attributes()
     {
         return [
           'namakaryawan' => 'Nama Karyawan',
-          'statusaktif' => 'status aktif',
+          'statusaktif' => 'status',
           'statusstaff' => 'status staff'
         ];
     }
