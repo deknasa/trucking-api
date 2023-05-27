@@ -197,8 +197,11 @@ class ProsesGajiSupirHeader extends MyModel
             );
         $this->totalRows = $query->count();
         $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;
-
-        $query->orderBy($tempRIC . '.' . $this->params['sortIndex'], $this->params['sortOrder']);
+        if ($this->params['sortIndex'] == 'id') {
+            $query->orderBy($tempRIC . '.nobuktiric', $this->params['sortOrder']);
+        } else {
+            $query->orderBy($tempRIC . '.' . $this->params['sortIndex'], $this->params['sortOrder']);
+        }
         $this->filterTrip($query, $tempRIC);
         $this->paginate($query);
         $data = $query->get();

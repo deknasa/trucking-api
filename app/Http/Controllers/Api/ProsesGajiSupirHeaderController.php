@@ -829,6 +829,7 @@ class ProsesGajiSupirHeaderController extends Controller
         $deposito = $proses->showDeposito($id);
         $bbm = $proses->showBBM($id);
         $Uangjalan = $proses->showUangjalan($id);
+        $getTrip = $proses->getEdit($id, '');
 
         return response([
             'status' => true,
@@ -837,7 +838,8 @@ class ProsesGajiSupirHeaderController extends Controller
             'potpribadi' => $pribadi,
             'deposito' => $deposito,
             'bbm' => $bbm,
-            'uangjalan' => $Uangjalan
+            'uangjalan' => $Uangjalan,
+            'getTrip' => $getTrip
         ]);
     }
 
