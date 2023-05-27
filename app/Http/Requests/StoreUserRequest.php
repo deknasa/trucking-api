@@ -24,14 +24,13 @@ class StoreUserRequest extends FormRequest
      */
     public function rules()
     {
-
         return [
-            'user' => 'required',
+            'user' => ['required', 'unique:user,user'],
             'name' => 'required',
             'password' => 'required',
             'karyawan_id' => 'required',
             'dashboard' => 'required',
-            'statusaktif' => 'required',
+            'statusaktif' => ['required', 'int', 'exists:parameter,id'],
         ];
     }
 

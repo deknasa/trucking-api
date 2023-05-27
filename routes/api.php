@@ -566,11 +566,11 @@ route::middleware(['auth:api'])->group(function () {
     Route::get('user/combocabang', [UserController::class, 'combocabang']);
     Route::get('user/getuserid', [UserController::class, 'getuserid']);
     Route::get('user/default', [UserController::class, 'default']);
-    Route::get('user/{user}/role', [RoleController::class, 'index']);
-    Route::post('user/{user}/role', [UserController::class, 'storeRoles']);
+    Route::get('user/{user}/role', [UserRoleController::class, 'index'])->whereNumber('user');
+    Route::post('user/{user}/role', [UserController::class, 'storeRoles'])->whereNumber('user');
     Route::get('user/{user}/acl', [UserAclController::class, 'index']);
     Route::post('user/{user}/acl', [UserAclController::class, 'store']);
-    Route::resource('user', UserController::class);
+    Route::resource('user', UserController::class)->whereNumber('user');
 
     Route::get('menu/field_length', [MenuController::class, 'fieldLength']);
     Route::get('menu/combomenuparent', [MenuController::class, 'combomenuparent']);
