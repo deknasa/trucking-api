@@ -37,13 +37,13 @@ class UpdatePengeluaranTruckingHeaderRequest extends FormRequest
             }
             return false;
         });
-
         $rules = [
             "tglbukti" => [
                 "required",'date_format:d-m-Y',
                 new DateTutupBuku()
             ],
             'pengeluarantrucking' => 'required',
+            'statusposting' => 'required',
             'bank' => [$ruleBank],
             // 'keterangancoa' => 'required',
         ];
@@ -63,19 +63,44 @@ class UpdatePengeluaranTruckingHeaderRequest extends FormRequest
 
     public function attributes()
     {
-        return [
+        $attributes = [
             
             'tglbukti' => 'Tgl Bukti',
-            'keterangancoa' => 'namaperkiraan',
+            'keterangancoa' => 'nama perkiraan',
             'pengeluarantrucking' => 'Kode Pengeluaran',
             'keterangan.*' => 'keterangan'
         ];
+        $relatedRequests = [
+            UpdatePengeluaranTruckingDetailRequest::class
+        ];
+
+        foreach ($relatedRequests as $relatedRequest) {
+            $attributes = array_merge(
+                $attributes,
+                (new $relatedRequest)->attributes()
+            );
+        }
+
+        return $attributes;
     }
     
     public function messages() 
     {
-        return [
+        $messages = [
             'tglbukti.date_format' => app(ErrorController::class)->geterror('DF')->keterangan,
         ];
+        
+        $relatedRequests = [
+            UpdatePengeluaranTruckingDetailRequest::class
+        ];
+
+        foreach ($relatedRequests as $relatedRequest) {
+            $messages = array_merge(
+                $messages,
+                (new $relatedRequest)->messages()
+            );
+        }
+
+        return $messages;
     }
 }

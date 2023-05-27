@@ -26,41 +26,55 @@ class UpdatePenerimaanTruckingDetailRequest extends FormRequest
      */
     public function rules()
     {
+
         $requiredKeterangan = Rule::requiredIf(function () {
             $idpenerimaan = request()->penerimaantrucking_id;
-            $fetchFormat =  DB::table('penerimaantrucking')
-                ->where('id', $idpenerimaan)
-                ->first();
-            if ($fetchFormat->kodepenerimaan == 'PJP') {
-                return false;
-            } else {
-                return true;
+            if ($idpenerimaan != '') {
+                $fetchFormat =  DB::table('penerimaantrucking')
+                    ->where('id', $idpenerimaan)
+                    ->first();
+                if ($fetchFormat->kodepenerimaan == 'PJP') {
+                    return false;
+                } else {
+                    return true;
+                }
             }
+            return true;
         });
+
         $requiredPJP = Rule::requiredIf(function () {
+            $idpenerimaan = request()->penerimaantrucking_id;
+            if ($idpenerimaan != '') {
+                $fetchFormat =  DB::table('penerimaantrucking')
+                    ->where('id', $idpenerimaan)
+                    ->first();
+                if ($fetchFormat->kodepenerimaan == 'PJP') {
+                    return true;
+                } else {
+                    return false;
+                }
+            }
+            return false;
+        });
+        $sisaNominus = '';
+        if (request()->pengeluarantrucking != '') {
             $idpenerimaan = request()->penerimaantrucking_id;
             $fetchFormat =  DB::table('penerimaantrucking')
                 ->where('id', $idpenerimaan)
                 ->first();
-            if ($fetchFormat->kodepenerimaan == 'PJP') {
-                return true;
-            } else {
-                return false;
-            }
-        });
+            $sisaNominus = Rule::when((($fetchFormat->kodepengeluaran == 'PJP')), 'numeric|min:0');
+        }
         $idpenerimaan = request()->penerimaantrucking_id;
         $fetchFormat =  DB::table('penerimaantrucking')
             ->where('id', $idpenerimaan)
             ->first();
-
         return [
-            'pjp_id' => [$requiredPJP,'array'],
+            'pjp_id' => [$requiredPJP, 'array'],
             'pjp_id.*' => $requiredPJP,
-            'sisa' => [$requiredPJP,Rule::when(($fetchFormat->kodepenerimaan == 'PJP'),'array')],
-            'sisa.*' => [$requiredPJP,Rule::when(($fetchFormat->kodepenerimaan == 'PJP'),'numeric|gt:0')],
+            'sisa.*' => [$requiredPJP, $sisaNominus],
             'nominal' => 'required|array',
-            'nominal.*' => ['required','numeric','gt:0'],
-            'keterangan' => [$requiredKeterangan,'array'],
+            'nominal.*' => ['required', 'numeric', 'gt:0'],
+            'keterangan' => [$requiredKeterangan, 'array'],
             'keterangan.*' => $requiredKeterangan
         ];
     }
@@ -77,7 +91,7 @@ class UpdatePenerimaanTruckingDetailRequest extends FormRequest
        return [
         'pjp_id.required' => 'PJT '.app(ErrorController::class)->geterror('WP')->keterangan,
         'nominal.*.gt' => app(ErrorController::class)->geterror('GT-ANGKA-0')->keterangan,
-        'sisa.*.gt' => 'SISA '.app(ErrorController::class)->geterror('NTM')->keterangan,
+        'sisa.*.min' => 'SISA '.app(ErrorController::class)->geterror('NTM')->keterangan,
        ];
     }
 }

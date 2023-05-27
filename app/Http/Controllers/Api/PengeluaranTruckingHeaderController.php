@@ -57,113 +57,18 @@ class PengeluaranTruckingHeaderController extends Controller
     {
         DB::beginTransaction();
         try {
-            // return response($request->all(),422);
 
             $tanpaprosesnobukti = $request->tanpaprosesnobukti ?? 0;
 
             if ($tanpaprosesnobukti == 0) {
-
                 $idpengeluaran = $request->pengeluarantrucking_id;
                 $fetchFormat =  DB::table('pengeluarantrucking')
                     ->where('id', $idpengeluaran)
                     ->first();
-
+                    
                 if ($fetchFormat->kodepengeluaran != 'BLS') {
                     $request['coa'] = $fetchFormat->coapostingdebet;
                 }
-                if ($fetchFormat->kodepengeluaran == 'TDE') {
-                    if ($request->tde_id != '') {
-
-                        for ($i = 0; $i < count($request->tde_id); $i++) {
-                            if ($request->sisa[$i] < 0) {
-
-                                $query =  Error::from(DB::raw("error with (readuncommitted)"))->select('keterangan')->where('kodeerror', '=', 'STM')
-                                    ->first();
-                                return response([
-                                    'errors' => [
-                                        "nominal.$i" => ["$query->keterangan"]
-                                    ],
-                                    'message' => "sisa",
-                                ], 422);
-                            }
-                        }
-                        $request->validate([
-                            'nominal' => 'required|array',
-                            'nominal.*' => 'required|numeric|gt:0'
-                        ], [
-                            'nominal.*.numeric' => 'nominal harus ' . app(ErrorController::class)->geterror('BTSANGKA')->keterangan,
-                            'nominal.*.gt' => 'Nominal Tidak Boleh Kosong dan Harus Lebih Besar Dari 0'
-                        ]);
-                    } else {
-                        $query = DB::table('error')->select('keterangan')->where('kodeerror', '=', 'WP')
-                            ->first();
-                        return response([
-                            'errors' => [
-                                'tde' => "PENARIKAN DEPOSITO $query->keterangan"
-                            ],
-                            'message' => "PENARIKAN DEPOSITO $query->keterangan",
-                        ], 422);
-                    }
-                } else if ($fetchFormat->kodepengeluaran == 'KBBM') {
-                    if ($request->kbbm_id != '') {
-                        for ($i = 0; $i < count($request->kbbm_id); $i++) {
-                            if ($request->sisa[$i] < 0) {
-
-                                $query =  Error::from(DB::raw("error with (readuncommitted)"))->select('keterangan')->where('kodeerror', '=', 'STM')
-                                    ->first();
-                                return response([
-                                    'errors' => [
-                                        "nominal.$i" => ["$query->keterangan"]
-                                    ],
-                                    'message' => "sisa",
-                                ], 422);
-                            }
-                        }
-                        $request->validate([
-                            'nominal' => 'required|array',
-                            'nominal.*' => 'required|numeric|gt:0'
-                        ], [
-                            'nominal.*.numeric' => 'nominal harus ' . app(ErrorController::class)->geterror('BTSANGKA')->keterangan,
-                            'nominal.*.gt' => 'Nominal Tidak Boleh Kosong dan Harus Lebih Besar Dari 0'
-                        ]);
-                    } else {
-                        $query = DB::table('error')->select('keterangan')->where('kodeerror', '=', 'WP')
-                            ->first();
-                        return response([
-                            'errors' => [
-                                'tde' => "PELUNASAN HUTANG BBM $query->keterangan"
-                            ],
-                            'message' => "PELUNASAN HUTANG BBM $query->keterangan",
-                        ], 422);
-                    }
-                } else if ($fetchFormat->kodepengeluaran == 'PJT') {
-                    $request->validate([
-                        'supir' => 'required|array',
-                        'supir.*' => 'required',
-                        'supir_id' => 'required|array',
-                        'supir_id.*' => 'required',
-                        'nominal' => 'required|array',
-                        'nominal.*' => 'required|numeric|gt:0'
-                    ], [
-                        'nominal.*.numeric' => 'nominal harus ' . app(ErrorController::class)->geterror('BTSANGKA')->keterangan,
-                        'nominal.*.gt' => 'Nominal Tidak Boleh Kosong dan Harus Lebih Besar Dari 0'
-                    ],[
-                        "supir_id"=>"SUPIR"
-                    ]);
-                } else {
-                    $request->validate([
-                        'nominal' => 'required|array',
-                        'nominal.*' => 'required|numeric|gt:0'
-                    ], [
-                        'nominal.*.gt' => 'Nominal Tidak Boleh Kosong dan Harus Lebih Besar Dari 0'
-                    ]);
-                }
-
-
-                $idpengeluaran = $request->pengeluarantrucking_id;
-                $fetchFormat =  DB::table('pengeluarantrucking')
-                    ->where('id', $idpengeluaran)
-                    ->first();
                 $statusformat = $fetchFormat->format;
                 $fetchGrp = Parameter::where('id', $statusformat)->first();
                 
@@ -435,47 +340,6 @@ class PengeluaranTruckingHeaderController extends Controller
                     ->first();
                 if ($fetchFormat->kodepengeluaran != 'BLS') {
                     $request['coa'] = $fetchFormat->coapostingdebet;
-                }
-                if ($fetchFormat->kodepengeluaran == 'TDE') {
-                    if ($request->tde_id != '') {
-
-                        for ($i = 0; $i < count($request->tde_id); $i++) {
-                            if ($request->sisa[$i] < 0) {
-
-                                $query =  Error::from(DB::raw("error with (readuncommitted)"))->select('keterangan')->where('kodeerror', '=', 'STM')
-                                    ->first();
-                                return response([
-                                    'errors' => [
-                                        "nominal.$i" => ["$query->keterangan"]
-                                    ],
-                                    'message' => "sisa",
-                                ], 422);
-                            }
-                        }
-                        $request->validate([
-                            'nominal' => 'required|array',
-                            'nominal.*' => 'required|numeric|gt:0'
-                        ], [
-                            'nominal.*.numeric' => 'nominal harus ' . app(ErrorController::class)->geterror('BTSANGKA')->keterangan,
-                            'nominal.*.gt' => 'Nominal Tidak Boleh Kosong dan Harus Lebih Besar Dari 0'
-                        ]);
-                    } else {
-                        $query = DB::table('error')->select('keterangan')->where('kodeerror', '=', 'WP')
-                            ->first();
-                        return response([
-                            'errors' => [
-                                'tde' => "PENARIKAN DEPOSITO $query->keterangan"
-                            ],
-                            'message' => "PENARIKAN DEPOSITO $query->keterangan",
-                        ], 422);
-                    }
-                } else {
-                    $request->validate([
-                        'nominal' => 'required|array',
-                        'nominal.*' => 'required|numeric|gt:0'
-                    ], [
-                        'nominal.*.gt' => 'Nominal Tidak Boleh Kosong dan Harus Lebih Besar Dari 0'
-                    ]);
                 }
 
                 $pengeluarantruckingheader->tglbukti = date('Y-m-d', strtotime($request->tglbukti));
