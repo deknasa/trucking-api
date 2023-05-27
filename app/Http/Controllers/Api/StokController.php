@@ -296,6 +296,21 @@ class StokController extends Controller
             return response()->file(storage_path("app/stok/$filename"));
         }
     }
+
+    public function fieldLength(Type $var = null)
+    {
+        $data = [];
+        $columns = DB::connection()->getDoctrineSchemaManager()->listTableDetails('stok')->getColumns();
+
+        foreach ($columns as $index => $column) {
+            $data[$index] = $column->getLength();
+        }
+
+        return response([
+            'data' => $data
+        ]);
+    }
+
     public function export()
     {
         header('Access-Control-Allow-Origin: *');

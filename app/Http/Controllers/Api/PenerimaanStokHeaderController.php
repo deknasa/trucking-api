@@ -828,7 +828,9 @@ class PenerimaanStokHeaderController extends Controller
 
     public function cekvalidasi($id)
     {
-        $pengeluaran = PenerimaanStokHeader::findOrFail($id);
+        $penerimaanStokHeader  = new PenerimaanStokHeader();
+
+        $pengeluaran = $penerimaanStokHeader->findOrFail($id);
         $status = $pengeluaran->statusapproval;
         $statusApproval = Parameter::from(DB::raw("parameter with (readuncommitted)"))
             ->where('grp', 'STATUS APPROVAL')->where('text', 'APPROVAL')->first();
@@ -849,6 +851,19 @@ class PenerimaanStokHeaderController extends Controller
                 'kodenobukti' => '1'
             ];
 
+            return response($data);
+        } else if ($penerimaanStokHeader->isPOUsed($id)) {
+            $query = Error::from(DB::raw("error with (readuncommitted)"))
+                ->select('keterangan')
+                ->whereRaw("kodeerror = 'SATL'")
+                ->get();
+            $keterangan = $query['0'];
+            $data = [
+                'message' => $keterangan,
+                'errors' => 'sudah approve',
+                'kodestatus' => '1',
+                'kodenobukti' => '1'
+            ];
             return response($data);
         } else if ($statusdatacetak == $statusCetak->id) {
             $query = Error::from(DB::raw("error with (readuncommitted)"))
