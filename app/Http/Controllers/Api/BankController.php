@@ -9,6 +9,7 @@ use App\Http\Requests\UpdateBankRequest;
 use App\Http\Requests\StoreLogTrailRequest;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\DestroyBankRequest;
 use App\Models\LogTrail;
 use App\Models\Parameter;
 
@@ -141,7 +142,7 @@ class BankController extends Controller
     /**
      * @ClassName 
      */
-    public function update(StoreBankRequest $request, Bank $bank)
+    public function update(UpdateBankRequest $request, Bank $bank)
     {
         DB::beginTransaction();
         try {
@@ -187,7 +188,7 @@ class BankController extends Controller
     /**
      * @ClassName 
      */
-    public function destroy(Request $request, $id)
+    public function destroy(DestroyBankRequest $request, $id)
     {
         DB::beginTransaction();
 
