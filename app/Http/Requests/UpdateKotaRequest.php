@@ -4,6 +4,7 @@ namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
+use App\Models\Parameter;
 
 class UpdateKotaRequest extends FormRequest
 {
@@ -24,12 +25,18 @@ class UpdateKotaRequest extends FormRequest
      */
     public function rules()
     {
-        //  dd($this->id);
-        return [
+        $parameter = new Parameter();
+        $data = $parameter->getcombodata('STATUS AKTIF', 'STATUS AKTIF');
+        $data = json_decode($data, true);
+        foreach ($data as $item) {
+            $status[] = $item['id'];
+        } 
+
+        return  [
             'kodekota' => ['required',Rule::unique('kota')->whereNotIn('id', [$this->id])],
             'keterangan' => ['nullable',Rule::unique('kota')->whereNotIn('id', [$this->id])],
             'zona' => 'required',
-            'statusaktif' => 'required'
+            'statusaktif' => ['required', Rule::in($status)]
         ];
     }
 
