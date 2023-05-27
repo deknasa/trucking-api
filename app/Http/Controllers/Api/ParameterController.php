@@ -36,6 +36,14 @@ class ParameterController extends Controller
         ]);
     }
 
+    public function default()
+    {
+        $parameter = new Parameter();
+        return response([
+            'status' => true,
+            'data' => $parameter->default()
+        ]);
+    }
 
 
     /**
@@ -308,7 +316,15 @@ class ParameterController extends Controller
         $response = $this->index();
         $decodedResponse = json_decode($response->content(), true);
         $parameters = $decodedResponse['data'];
-       
+        
+        $i = 0;
+        foreach ($parameters as $index => $params) {
+            $memo = $params['memo'];
+            $result = json_decode($memo, true);
+            $memo = $result['MEMO'];
+            $parameters[$i]['memo'] = $memo;
+            $i++;
+        }
 
         $columns = [
             [
