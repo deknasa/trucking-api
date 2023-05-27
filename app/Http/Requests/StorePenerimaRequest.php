@@ -4,7 +4,9 @@ namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
 use App\Http\Controllers\Api\ErrorController;
+use App\Models\Parameter;
 use App\Rules\NotInKarakter_;
+use Illuminate\Validation\Rule;
 
 class StorePenerimaRequest extends FormRequest
 {
@@ -25,13 +27,19 @@ class StorePenerimaRequest extends FormRequest
      */
     public function rules()
     {
+        $parameter = new Parameter();
+        $data = $parameter->getcombodata('STATUS AKTIF', 'STATUS AKTIF');
+        $data = json_decode($data, true);
+        foreach ($data as $item) {
+            $status[] = $item['id'];
+        }
         
         return [
             'namapenerima' => 'required',
             'npwp' => ['required',new NotInKarakter_()],
             'noktp' => ['required',new NotInKarakter_()],
-            'statusaktif' => 'required|int',
-            'statuskaryawan' => 'required|int',
+            'statusaktif' => ['required', Rule::in($status)],
+            'statuskaryawan' => ['required', Rule::in($status)],
         ];
     }
 
