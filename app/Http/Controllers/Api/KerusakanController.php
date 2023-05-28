@@ -5,7 +5,9 @@ namespace App\Http\Controllers\Api;
 use App\Models\Kerusakan;
 use App\Http\Requests\StoreKerusakanRequest;
 use App\Http\Requests\UpdateKerusakanRequest;
+use App\Http\Requests\DestroyKerusakanRequest;
 use App\Http\Requests\StoreLogTrailRequest;
+
 use App\Models\Parameter;
 
 use App\Http\Controllers\Controller;
@@ -180,7 +182,7 @@ class KerusakanController extends Controller
     /**
      * @ClassName 
      */
-    public function destroy(Request $request, $id)
+    public function destroy(DestroyKerusakanRequest $request, $id)
     {
         DB::beginTransaction();
 
