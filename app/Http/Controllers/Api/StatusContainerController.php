@@ -9,6 +9,7 @@ use App\Http\Requests\StoreStatusContainerRequest;
 use App\Http\Requests\UpdateStatusContainerRequest;
 use Illuminate\Database\QueryException;
 use Illuminate\Http\Request;
+use App\Http\Requests\DestroyStatusContainerRequest;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 
@@ -176,7 +177,7 @@ class StatusContainerController extends Controller
     /**
      * @ClassName 
      */
-    public function destroy(Request $request, $id)
+    public function destroy(DestroyStatusContainerRequest $request, $id)
     {
 
         DB::beginTransaction();

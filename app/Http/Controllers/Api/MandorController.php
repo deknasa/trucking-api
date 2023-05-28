@@ -136,7 +136,7 @@ class MandorController extends Controller
     /**
      * @ClassName 
      */
-    public function update(StoreMandorRequest $request, Mandor $mandor)
+    public function update(UpdateMandorRequest $request, Mandor $mandor)
     {
         DB::beginTransaction();
         try {

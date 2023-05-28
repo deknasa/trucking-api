@@ -4,7 +4,8 @@ namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
 use App\Http\Controllers\Api\ErrorController;
-
+use App\Models\Parameter;
+use Illuminate\Validation\Rule;
 class StoreContainerRequest extends FormRequest
 {
     /**
@@ -24,9 +25,18 @@ class StoreContainerRequest extends FormRequest
      */
     public function rules()
     {
+        $parameter = new Parameter();
+        $data = $parameter->getcombodata('STATUS AKTIF', 'STATUS AKTIF');
+        $data = json_decode($data, true);
+        foreach ($data as $item) {
+            $status[] = $item['id'];
+        }
         return [
-            'kodecontainer' => 'required',
-            'statusaktif' => 'required'
+           
+            'kodecontainer' => 'required|unique:container',
+            'nominalsumbangan' => 'required',
+            'statusaktif' => ['required', Rule::in($status)],
+            
         ];
     }
 
@@ -35,7 +45,8 @@ class StoreContainerRequest extends FormRequest
         return [
             'kodecontainer' => 'Kode Container',
             'keterangan' => 'Keterangan',
-            'statusaktif' => 'Status Aktif'
+            'statusaktif' => 'Status Aktif',
+            'nominalsumbangan' => 'Kode Container',
         ];
     }
 
@@ -46,6 +57,8 @@ class StoreContainerRequest extends FormRequest
         return [
             'kodecontainer.required' => ':attribute '. $controller->geterror('WI')->keterangan,
             'statusaktif.required' => ':attribute '. $controller->geterror('WI')->keterangan,
+            'nominalsumbangan.required' => ':attribute '. $controller->geterror('WI')->keterangan
+          
         ];
     }
 }
