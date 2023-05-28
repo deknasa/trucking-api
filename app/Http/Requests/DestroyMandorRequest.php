@@ -8,7 +8,7 @@ use App\Models\Parameter;
 use Illuminate\Validation\Rule;
 
 
-class StoreMandorRequest extends FormRequest
+class DestroyMandorRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
@@ -35,7 +35,7 @@ class StoreMandorRequest extends FormRequest
         }
 
         return [
-            'namamandor' => 'required|unique:mandor',
+            'namamandor' => ['required',Rule::unique('mandor')->whereNotIn('id', [$this->id])],
             'statusaktif' => ['required', Rule::in($status)],
         ];
     }

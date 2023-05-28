@@ -3,9 +3,8 @@
 namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
-use App\Http\Controllers\Api\ErrorController;
 
-class StoreRoleRequest extends FormRequest
+class UpdateKerusakanRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
@@ -25,14 +24,7 @@ class StoreRoleRequest extends FormRequest
     public function rules()
     {
         return [
-            'rolename' => 'required|unique:role',
-        ];
-    }
-
-    public function attributes()
-    {
-        return [
-            'rolename' => 'rolename',
+            'statusaktif' => 'required'
         ];
     }
 }
