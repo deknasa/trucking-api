@@ -24,11 +24,15 @@ class UpdateErrorRequest extends FormRequest
      * @return array
      */
     public function rules()
-    {
-        return [
-            'kodeerror' => 'required',
-        ];
-    }
+{
+    $errorId = $this->error->id;
+
+    return [
+        'kodeerror' => 'required|unique:error,kodeerror,' . $errorId,
+        'keterangan' => 'unique:error,keterangan,' . $errorId,
+    ];
+}
+
 
     public function attributes()
     {

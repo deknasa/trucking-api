@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\DestroyPenerimaRequest;
 use App\Http\Requests\StoreLogTrailRequest;
 use App\Models\Penerima;
 use App\Http\Requests\StorePenerimaRequest;
@@ -184,7 +185,7 @@ class PenerimaController extends Controller
     /**
      * @ClassName 
      */
-    public function destroy(Request $request, $id)
+    public function destroy(DestroyPenerimaRequest $request, $id)
     {
         DB::beginTransaction();
 

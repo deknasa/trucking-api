@@ -3,6 +3,8 @@
 namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
+use App\Models\Parameter;
+use Illuminate\Validation\Rule;
 
 class StoreKotaRequest extends FormRequest
 {
@@ -23,12 +25,20 @@ class StoreKotaRequest extends FormRequest
      */
     public function rules()
     {
-        return [
+        $parameter = new Parameter();
+        $data = $parameter->getcombodata('STATUS AKTIF', 'STATUS AKTIF');
+        $data = json_decode($data, true);
+        foreach ($data as $item) {
+            $status[] = $item['id'];
+        }
+
+        $rules = [
             'kodekota' => ['required','unique:kota'],
             'keterangan' => ['nullable','unique:kota'],
             'zona' => 'required',
-            'statusaktif' => 'required'
+            'statusaktif' => ['required', Rule::in($status)]
         ];
+        return $rules;
     }
     
     public function attributes()

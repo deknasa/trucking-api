@@ -8,7 +8,7 @@ use App\Http\Controllers\Api\ErrorController;
 use App\Models\Parameter;
 use Illuminate\Validation\Rule;
 
-class UpdatePenerimaRequest extends FormRequest
+class DestroyPenerimaRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
