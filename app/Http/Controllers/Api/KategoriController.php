@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Models\Kategori;
 use App\Http\Requests\StoreKategoriRequest;
 use App\Http\Requests\UpdateKategoriRequest;
+use App\Http\Requests\DestroyKategoriRequest;
 use App\Http\Requests\StoreLogTrailRequest;
 use App\Models\Parameter;
 use App\Models\SubKelompok;
@@ -187,7 +188,7 @@ class KategoriController extends Controller
     /**
      * @ClassName 
      */
-    public function destroy(Request $request, $id)
+    public function destroy(DestroyKategoriRequest $request, $id)
     {
         DB::beginTransaction();
 

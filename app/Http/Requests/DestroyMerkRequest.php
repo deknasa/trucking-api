@@ -2,10 +2,11 @@
 
 namespace App\Http\Requests;
 
-use Illuminate\Foundation\Http\FormRequest;
-use App\Rules\ValidasiDestroyZona;
 
-class DestroyZonaRequest extends FormRequest
+use App\Rules\ValidasiDestroyMerk;
+use Illuminate\Foundation\Http\FormRequest;
+
+class DestroyMerkRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
@@ -25,7 +26,7 @@ class DestroyZonaRequest extends FormRequest
     public function rules()
     {
         return [
-            'id' => new ValidasiDestroyZona()
+            'id' => new ValidasiDestroyMerk()
         ];
     }
 }

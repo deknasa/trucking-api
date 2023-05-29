@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Models\Gudang;
 use App\Http\Requests\StoreGudangRequest;
 use App\Http\Requests\UpdateGudangRequest;
+use App\Http\Requests\DestroyGudangRequest;
 use App\Http\Requests\StoreLogTrailRequest;
 use App\Models\Parameter;
 use App\Models\Stok;
@@ -266,7 +267,7 @@ class GudangController extends Controller
     /**
      * @ClassName 
      */
-    public function update(StoreGudangRequest $request, Gudang $gudang)
+    public function update(UpdateGudangRequest $request, Gudang $gudang)
     {
         DB::beginTransaction();
         try {
@@ -439,7 +440,7 @@ class GudangController extends Controller
     /**
      * @ClassName 
      */
-    public function destroy(Request $request, $id)
+    public function destroy(DestroyGudangRequest $request, $id)
     {
         DB::beginTransaction();
 

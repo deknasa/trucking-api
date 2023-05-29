@@ -7,6 +7,7 @@ use App\Http\Requests\StoreLogTrailRequest;
 use App\Models\SubKelompok;
 use App\Http\Requests\StoreSubKelompokRequest;
 use App\Http\Requests\UpdateSubKelompokRequest;
+use App\Http\Requests\DestroySubKelompokRequest;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
@@ -182,7 +183,7 @@ class SubKelompokController extends Controller
     /**
      * @ClassName 
      */
-    public function destroy(Request $request, $id)
+    public function destroy(DestroySubKelompokRequest $request, $id)
     {
         $cekvalidasi = $this->cekValidasi($id);
          if ($cekvalidasi->original['kondisi']==false) {

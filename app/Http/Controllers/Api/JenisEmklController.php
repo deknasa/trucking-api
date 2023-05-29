@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Models\JenisEmkl;
 use App\Http\Requests\StoreJenisEmklRequest;
 use App\Http\Requests\UpdateJenisEmklRequest;
+use App\Http\Requests\DestroyJenisEmklRequest;
 use App\Http\Requests\StoreLogTrailRequest;
 
 use App\Http\Controllers\Controller;
@@ -176,7 +177,7 @@ class JenisEmklController extends Controller
     /**
      * @ClassName 
      */
-    public function destroy(Request $request, $id)
+    public function destroy(DestroyJenisEmklRequest $request, $id)
     {
         DB::beginTransaction();
 

@@ -4,6 +4,8 @@ namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
 use App\Http\Controllers\Api\ErrorController;
+use App\Models\Parameter;
+use Illuminate\Validation\Rule;
 
 class UpdateSubKelompokRequest extends FormRequest
 {
@@ -24,18 +26,52 @@ class UpdateSubKelompokRequest extends FormRequest
      */
     public function rules()
     {
-        return [
-            'kodesubkelompok' => 'required',
+        $parameter = new Parameter();
+        $data = $parameter->getcombodata('STATUS AKTIF', 'STATUS AKTIF');
+        $data = json_decode($data, true);
+        foreach ($data as $item) {
+            $status[] = $item['id'];
+        }
+
+        $kelompok_id = $this->kelompok_id;
+        $rulesKelompok_id = [];
+        if ($kelompok_id != null) {
+            if ($kelompok_id == 0) {
+                $rulesKelompok_id = [
+                    'kelompok_id' => ['required', 'numeric', 'min:1']
+                ];
+            } else {
+                if ($this->kelompok == '') {
+                    $rulesKelompok_id = [
+                        'kelompok' => ['required']
+                    ];
+                }
+            }
+        } else if ($kelompok_id == null && $this->kelompok != '') {
+            $rulesKelompok_id = [
+                'kelompok_id' => ['required', 'numeric', 'min:1']
+            ];
+        }
+
+        $rules = [
+            'kodesubkelompok' => ['required',Rule::unique('subkelompok')->whereNotIn('id', [$this->id])],
+            'keterangan' => 'nullable',
             'kelompok' => 'required',
-            'statusaktif' => 'required|numeric',
+            'statusaktif' => ['required', Rule::in($status)]
         ];
+
+        $rule = array_merge(
+            $rules,
+            $rulesKelompok_id
+        );
+        
+        return $rule;
     }
 
     public function attributes()
     {
         return [
             'kodesubkelompok' => 'kode subkelompok',
-            'kelompok' => 'kelompok',
             'keterangan' => 'keterangan',
             'statusaktif' => 'status aktif',
         ];
@@ -47,7 +83,6 @@ class UpdateSubKelompokRequest extends FormRequest
 
         return [
             'kodesubkelompok.required' => ':attribute' . ' ' . $controller->geterror('WI')->keterangan,
-            'kelompok.required' => ':attribute' . ' ' . $controller->geterror('WI')->keterangan,
             'statusaktif.required' => ':attribute' . ' ' . $controller->geterror('WI')->keterangan,
         ];
     }  
