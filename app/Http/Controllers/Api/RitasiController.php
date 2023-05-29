@@ -15,6 +15,7 @@ use App\Models\UpahRitasi;
 use App\Models\UpahRitasiRincian;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\GetIndexRangeRequest;
 use Carbon\Carbon;
 use Illuminate\Database\QueryException;
 use Illuminate\Http\Request;
@@ -27,7 +28,7 @@ class RitasiController extends Controller
     /**
      * @ClassName 
      */
-    public function index()
+    public function index(GetIndexRangeRequest $request)
     {
         $ritasi = new Ritasi();
         return response([
@@ -150,7 +151,7 @@ class RitasiController extends Controller
     /**
      * @ClassName 
      */
-    public function update(StoreRitasiRequest $request, Ritasi $ritasi)
+    public function update(UpdateRitasiRequest $request, Ritasi $ritasi)
     {
         DB::beginTransaction();
         try {

@@ -22,6 +22,7 @@ use App\Http\Requests\UpdateSuratPengantarRequest;
 use App\Http\Requests\StoreLogTrailRequest;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\GetIndexRangeRequest;
 use App\Models\OrderanTrucking;
 use Carbon\Carbon;
 use Illuminate\Database\QueryException;
@@ -35,7 +36,7 @@ class SuratPengantarController extends Controller
     /**
      * @ClassName 
      */
-    public function index()
+    public function index(GetIndexRangeRequest $request)
     {
         $suratPengantar = new SuratPengantar();
 
