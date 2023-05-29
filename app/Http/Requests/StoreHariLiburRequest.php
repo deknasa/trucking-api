@@ -41,7 +41,7 @@ class StoreHariLiburRequest extends FormRequest
         // $tglbatasakhir = date('Y-m-d', strtotime('-' . (new ParameterController)->getparamid('MINIMAL USIA SUPIR', 'MINIMAL USIA SUPIR')->text . ' years', strtotime( date('Y-m-d'))));
 
         $rules = [
-            'keterangan' => ['required'],
+            'keterangan' => ['required', 'unique:harilibur'],
             'tgl' => [
                 'required', 'date_format:d-m-Y', 
                 'after_or_equal:' . $tglbatasawal, 
