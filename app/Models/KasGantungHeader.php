@@ -171,7 +171,7 @@ class KasGantungHeader extends MyModel
                 'kasgantungheader.id',
                 'kasgantungheader.nobukti',
                 'kasgantungheader.tglbukti',
-                'kasgantungheader.penerima_id',
+                DB::raw("(case when kasgantungheader.penerima_id=0 then null else kasgantungheader.penerima_id end) as penerima_id"),
                 'penerima.namapenerima as penerima',
                 'kasgantungheader.bank_id',
                 'bank.namabank as bank',
