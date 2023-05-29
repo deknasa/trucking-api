@@ -273,16 +273,16 @@ class Tarif extends MyModel
         $query = Tarif::from(DB::raw("tarif with (readuncommitted)"))
             ->select(
                 'tarif.id',
-                'tarif.parent_id',
+                DB::raw("(case when tarif.parent_id=0 then null else tarif.parent_id end) as parent_id"),
                 'parent.tujuan as parent',
-                'tarif.upahsupir_id',
+                DB::raw("(case when tarif.upahsupir_id=0 then null else tarif.upahsupir_id end) as upahsupir_id"),
                 "$tempUpahsupir.kotasampai_id as upahsupir",
                 'tarif.tujuan',
                 'tarif.statusaktif',
                 'tarif.statussistemton',
-                'tarif.kota_id',
+                DB::raw("(case when tarif.kota_id=0 then null else tarif.kota_id end) as kota_id"),
                 'kota.keterangan as kota',
-                'tarif.zona_id',
+                DB::raw("(case when tarif.zona_id=0 then null else tarif.zona_id end) as zona_id"),
                 'zona.keterangan as zona',
                 'tarif.tglmulaiberlaku',
                 'tarif.statuspenyesuaianharga',
@@ -394,5 +394,34 @@ class Tarif extends MyModel
     public function paginate($query)
     {
         return $query->skip($this->params['offset'])->take($this->params['limit']);
+    }
+    
+    public function cekValidasi($id)
+    {
+        $rekap = DB::table('upahsupir')
+            ->from(
+                DB::raw("upahsupir as a with (readuncommitted)")
+            )
+            ->select(
+                'a.tarif_id'
+            )
+            ->where('a.id', '=', $id)
+            ->first();
+        if (isset($rekap)) {
+            $data = [
+                'kondisi' => true,
+                'keterangan' => 'upahsupir',
+                'kodeerror' => 'SATL'
+            ];
+            goto selesai;
+        }
+
+
+        $data = [
+            'kondisi' => false,
+            'keterangan' => '',
+        ];
+        selesai:
+        return $data;
     }
 }

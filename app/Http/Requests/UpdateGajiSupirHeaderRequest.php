@@ -3,8 +3,11 @@
 namespace App\Http\Requests;
 
 use App\Http\Controllers\Api\ErrorController;
+use App\Models\GajiSupirHeader;
+use App\Models\Parameter;
 use Illuminate\Foundation\Http\FormRequest;
 use App\Rules\DateTutupBuku;
+use Illuminate\Validation\Rule;
 
 class UpdateGajiSupirHeaderRequest extends FormRequest
 {
@@ -25,30 +28,82 @@ class UpdateGajiSupirHeaderRequest extends FormRequest
      */
     public function rules()
     {
-        return [
+        $gajiSupir = new GajiSupirHeader();
+        $getGajisupir = $gajiSupir->findAll(request()->id);
+        $supir_id = $this->supir_id;
+        $rulesSupir_id = [];
+        if ($supir_id != null) {
+            if ($supir_id == 0) {
+                $rulesSupir_id = [
+                    'supir_id' => ['required', 'numeric', 'min:1', Rule::in($getGajisupir->supir_id)]
+                ];
+            }else{
+                $rulesSupir_id = [
+                    'supir_id' => ['required', 'numeric', 'min:1', Rule::in($getGajisupir->supir_id)]
+                ];
+            }
+        } else if ($supir_id == null && $this->supir != '') {
+            $rulesSupir_id = [
+                'supir_id' => ['required', 'numeric', 'min:1', Rule::in($getGajisupir->supir_id)]
+            ];
+        }
+        $parameter = new Parameter();
+        $getBatas = $parameter->getBatasAwalTahun();
+        $tglbatasawal = $getBatas->text;
+        $tglbatasakhir = (date('Y') + 1) . '-01-01';
+
+        $rules = [
             //
             'supir' => 'required',
-            'tgldari' => 'required',
-            'tglsampai' => 'required',
-            "tglbukti" => [
-                "required",'date_format:d-m-Y',
+            'tgldari' => [
+                'required', 'date_format:d-m-Y',
+                'before:'.$tglbatasakhir,
+                'after_or_equal:'.$tglbatasawal,
+            ],
+            'tglsampai' => [
+                'required', 'date_format:d-m-Y',
+                'before:'.$tglbatasakhir,
+                'after_or_equal:'.$this->tgldari 
+            ],
+            'tglbukti' => [
+                'required', 'date_format:d-m-Y',
+                'date_equals:'.date('d-m-Y'),
                 new DateTutupBuku()
             ],
         ];
+        $relatedRequests = [
+            UpdateGajiSupirDetailRequest::class
+        ];
+
+        foreach ($relatedRequests as $relatedRequest) {
+            $rules = array_merge(
+                $rules,
+                (new $relatedRequest)->rules(),
+                $rulesSupir_id
+            );
+        }
+        return $rules;
     }
 
-    public function attributes() {
+    public function attributes()
+    {
         return [
             'tgldari' => 'Tanggal Dari',
             'tglsampai' => 'Tanggal Sampai',
-            'tglbukti' => 'Tanggal Bukti'
+            'tglbukti' => 'Tanggal Bukti',
+            'rincianId' => 'trip',
+            'nominalPS.*' => 'nominal pinjaman semua',
+            'nominalPP.*' => 'nominal pinjaman pribadi',
         ];
     }
-    
     public function messages()
     {
+        $tglbatasakhir = (date('Y') + 1) . '-01-01';
         return [
+            'rincianId' => app(ErrorController::class)->geterror('WP')->keterangan,
             'tglbukti.date_format' => app(ErrorController::class)->geterror('DF')->keterangan,
+            'tgldari.before' => app(ErrorController::class)->geterror('NTLB')->keterangan. ' '.$tglbatasakhir,
+            'tglsampai.before' => app(ErrorController::class)->geterror('NTLB')->keterangan. ' '.$tglbatasakhir,
         ];
     }
 }

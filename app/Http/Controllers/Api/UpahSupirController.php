@@ -16,6 +16,7 @@ use App\Http\Requests\UpdateUpahSupirRincianRequest;
 use App\Http\Requests\StoreLogTrailRequest;
 
 use App\Helpers\App;
+use App\Http\Requests\DestroyUpahSupirRequest;
 use Illuminate\Support\Facades\Storage;
 use App\Models\LogTrail;
 use App\Models\Parameter;
@@ -287,7 +288,7 @@ class UpahSupirController extends Controller
     /**
      * @ClassName 
      */
-    public function destroy(Request $request, $id)
+    public function destroy(DestroyUpahSupirRequest $request, $id)
     {
 
         DB::beginTransaction();
@@ -508,5 +509,39 @@ class UpahSupirController extends Controller
         ];
 
         $this->toExcel('Tarif', $tarifs, $columns);
+    }
+
+    public function cekValidasi($id)
+    {
+        $upahSupir = new UpahSupir();
+        $cekdata = $upahSupir->cekValidasi($id);
+        if ($cekdata['kondisi'] == true) {
+            $query = DB::table('error')
+                ->select(
+                    DB::raw("ltrim(rtrim(keterangan))+' (" . $cekdata['keterangan'] . ")' as keterangan")
+                )
+                ->where('kodeerror', '=', $cekdata['kodeerror'])
+                ->get();
+            $keterangan = $query['0'];
+
+            $data = [
+                'status' => false,
+                'message' => $keterangan,
+                'errors' => '',
+                'kondisi' => $cekdata['kondisi'],
+            ];
+
+            return response($data);
+        } else {
+
+            $data = [
+                'status' => false,
+                'message' => '',
+                'errors' => '',
+                'kondisi' => $cekdata['kondisi'],
+            ];
+
+            return response($data);
+        }
     }
 }

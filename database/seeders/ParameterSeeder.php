@@ -331,6 +331,7 @@ class ParameterSeeder extends Seeder
         parameter::create(['grp' => 'MAXIMAL KTP', 'subgrp' => 'MAXIMAL KTP', 'kelompok' => '', 'text' => '16', 'memo' => '{"MEMO":"16","SINGKATAN":"UC","WARNA":"#28A745"}', 'type' => '0', 'modifiedby' => 'ADMIN', 'default' => 'YA',]);
         parameter::create(['grp' => 'MAXIMAL KK', 'subgrp' => 'MAXIMAL KK', 'kelompok' => '', 'text' => '16', 'memo' => '{"MEMO":"16","SINGKATAN":"UC","WARNA":"#28A745"}', 'type' => '0', 'modifiedby' => 'ADMIN', 'default' => 'YA',]);
         parameter::create(['grp' => 'MAXIMAL SIM', 'subgrp' => 'MAXIMAL SIM', 'kelompok' => '', 'text' => '12', 'memo' => '{"MEMO":"12","SINGKATAN":"UC","WARNA":"#28A745"}', 'type' => '0', 'modifiedby' => 'ADMIN', 'default' => 'YA',]);
+        parameter::create(['grp' => 'BATAS AWAL TAHUN', 'subgrp' => 'BATAS AWAL TAHUN', 'kelompok' => '', 'text' => '01-01-2004', 'memo' => '{"MEMO":"01-01-2004","SINGKATAN":"BAT","WARNA":"#28A745"}', 'type' => '0', 'modifiedby' => 'ADMIN', 'default' => 'YA',]);
         
     }
 }

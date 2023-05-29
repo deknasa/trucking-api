@@ -14,6 +14,7 @@ use App\Models\Kota;
 use App\Models\Zona;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\DestroyTarifRequest;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -312,7 +313,7 @@ class TarifController extends Controller
     /**
      * @ClassName
      */
-    public function destroy(Request $request, $id)
+    public function destroy(DestroyTarifRequest $request, $id)
     {
 
         DB::beginTransaction();

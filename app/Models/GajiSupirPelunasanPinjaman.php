@@ -56,7 +56,7 @@ class GajiSupirPelunasanPinjaman extends MyModel
         DB::table($temp)->insertUsing(['tglbukti', 'nobukti', 'sisaawal', 'keterangan', 'gajisupir_id', 'nominal', 'sisa'], $fetchPengeluaran);
 
         $data = DB::table($temp)
-            ->select(DB::raw("row_number() Over(Order By $temp.nobukti) as pinjPribadi_id,tglbukti,nobukti as pinjPribadi_nobukti,sisaawal,keterangan as pinjPribadi_keterangan,
+            ->select(DB::raw("row_number() Over(Order By $temp.tglbukti asc,$temp.nobukti) as pinjPribadi_id,tglbukti,nobukti as pinjPribadi_nobukti,sisaawal,keterangan as pinjPribadi_keterangan,
             (case when nominal IS NULL then 0 else nominal end) as nominalPP ,gajisupir_id,sisa as pinjPribadi_sisa"))
             ->orderBy("$temp.tglbukti", 'asc')
             ->orderBy("$temp.nobukti", 'asc')
