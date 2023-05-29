@@ -4,6 +4,8 @@ namespace App\Http\Controllers\Api;
 
 use App\Helpers\App;
 use App\Http\Controllers\Controller;
+use App\Http\Requests\DestroyKasGantungHeaderRequest;
+use App\Http\Requests\GetIndexRangeRequest;
 use App\Models\KasGantungDetail;
 use App\Models\KasGantungHeader;
 use App\Models\JurnalUmumDetail;
@@ -34,7 +36,7 @@ class KasGantungHeaderController extends Controller
     /**
      * @ClassName 
      */
-    public function index(Request $request)
+    public function index(GetIndexRangeRequest $request)
     {
         $kasgantungHeader = new KasGantungHeader();
 
@@ -565,7 +567,7 @@ class KasGantungHeaderController extends Controller
     /**
      * @ClassName 
      */
-    public function destroy(Request $request, $id)
+    public function destroy(DestroyKasGantungHeaderRequest $request, $id)
     {
         DB::beginTransaction();
 

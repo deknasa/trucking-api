@@ -3,11 +3,11 @@
 namespace App\Rules;
 
 use App\Http\Controllers\Api\ErrorController;
-use App\Models\GajiSupirHeader;
+use App\Models\KasGantungHeader;
 use Illuminate\Contracts\Validation\Rule;
 use Illuminate\Support\Facades\DB;
 
-class DestroyGajiSupirNobukti implements Rule
+class DestroyKasGantung implements Rule
 {
     /**
      * Create a new rule instance.
@@ -28,12 +28,13 @@ class DestroyGajiSupirNobukti implements Rule
      */
     public function passes($attribute, $value)
     {
-        $gajisupir = new GajiSupirHeader();
-        $nobukti = GajiSupirHeader::from(DB::raw("gajisupirheader"))->where('id', request()->id)->first();
+        $gajisupir = new KasGantungHeader();
+        $nobukti = KasGantungHeader::from(DB::raw("kasgantungheader"))->where('id', request()->id)->first();
         $cekdata = $gajisupir->cekvalidasiaksi($nobukti->nobukti);
         if($cekdata['kondisi']){
           return false;
         }
+
         return true;
     }
 
