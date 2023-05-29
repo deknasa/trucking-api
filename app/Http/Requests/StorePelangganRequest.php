@@ -3,7 +3,9 @@
 namespace App\Http\Requests;
 
 use App\Http\Controllers\Api\ErrorController;
+use App\Models\Parameter;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
 class StorePelangganRequest extends FormRequest
 {
@@ -24,14 +26,21 @@ class StorePelangganRequest extends FormRequest
      */
     public function rules()
     {
+        $parameter = new Parameter();
+        $data = $parameter->getcombodata('STATUS AKTIF', 'STATUS AKTIF');
+        $data = json_decode($data, true);
+        foreach ($data as $item) {
+            $status[] = $item['id'];
+        }
+
         return [
-            'kodepelanggan' => 'required',
+            'kodepelanggan' => ['required', 'unique:pelanggan'],
             'namapelanggan' => 'required',
             'telp' => 'required|min:12|max:13',
             'alamat' => 'required',
             'kota' => 'required',
             'kodepos' => 'required|min:5|max:5',
-            'statusaktif' => 'required',
+            'statusaktif' => ['required', Rule::in($status),'numeric', 'min:1'],
             
         ];
     }

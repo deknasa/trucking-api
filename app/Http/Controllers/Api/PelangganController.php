@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\DestroyPelangganRequest;
 use App\Http\Requests\StoreLogTrailRequest;
 use App\Models\Pelanggan;
 use App\Http\Requests\StorePelangganRequest;
@@ -193,7 +194,7 @@ class PelangganController extends Controller
     /**
      * @ClassName 
      */
-    public function destroy(Request $request, $id)
+    public function destroy(DestroyPelangganRequest $request, $id)
     {
         DB::beginTransaction();
 
@@ -250,6 +251,8 @@ class PelangganController extends Controller
             'data' => $data
         ]);
     }
+
+    
 
     public function export()
     {
