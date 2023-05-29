@@ -2,6 +2,8 @@
 
 namespace App\Http\Requests;
 
+use App\Http\Controllers\Api\ErrorController;
+use App\Models\Parameter;
 use Illuminate\Foundation\Http\FormRequest;
 use App\Rules\DateTutupBuku;
 
@@ -24,15 +26,31 @@ class UpdatePendapatanSupirHeaderRequest extends FormRequest
      */
     public function rules()
     {
+        $parameter = new Parameter();
+        $getBatas = $parameter->getBatasAwalTahun();
+        $tglbatasawal = $getBatas->text;
+        $tglbatasakhir = (date('Y') + 1) . '-01-01';
+        
         $rules = [
             "tglbukti" => [
                 "required",
                 new DateTutupBuku()
             ],
             'bank' => 'required',
-            'tgldari' => 'required',
-            'tglsampai' => 'required',
-            'periode' => 'required'
+            'tgldari' => [
+                'required', 'date_format:d-m-Y',
+                'before:'.$tglbatasakhir,
+                'after_or_equal:'.$tglbatasawal,
+            ],
+            'tglsampai' => [
+                'required', 'date_format:d-m-Y',
+                'before:'.$tglbatasakhir,
+                'after_or_equal:'.$this->tgldari 
+            ],
+            'periode' => [
+                'required', 'date_format:d-m-Y',
+                'before:'.$tglbatasakhir,
+            ],
         ];
         $relatedRequests = [
             UpdatePendapatanSupirDetailRequest::class
@@ -62,8 +80,13 @@ class UpdatePendapatanSupirHeaderRequest extends FormRequest
 
     public function messages()
     {
+        $tglbatasakhir = (date('Y') + 1) . '-01-01';
         return [
-            'nominal.*.gt' => 'tidak boleh kosong'
+            'nominal.*.gt' => 'tidak boleh kosong',
+            'tglbukti.date_format' => app(ErrorController::class)->geterror('DF')->keterangan,
+            'tgldari.before' => app(ErrorController::class)->geterror('NTLB')->keterangan. ' '.$tglbatasakhir,
+            'tglsampai.before' => app(ErrorController::class)->geterror('NTLB')->keterangan. ' '.$tglbatasakhir,
+            'periode.before' => app(ErrorController::class)->geterror('NTLB')->keterangan. ' '.$tglbatasakhir,
         ];
     }
 }
