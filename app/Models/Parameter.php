@@ -291,4 +291,13 @@ class Parameter extends MyModel
                         return $query;
 
     }
+    public function getBatasAwalTahun(){
+        $query = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))
+        ->select('text')
+        ->where('grp', 'BATAS AWAL TAHUN')
+        ->where('subgrp', 'BATAS AWAL TAHUN')
+        ->first();
+
+        return $query;
+    }
 }

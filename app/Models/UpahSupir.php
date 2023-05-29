@@ -42,12 +42,12 @@ class UpahSupir extends MyModel
 
         $aktif = request()->aktif ?? '';
         $tempParent = DB::table($this->table)->from(DB::raw("upahsupir with (readuncommitted)"))
-        ->select(
-            'upahsupir.id',
-            'upahsupir.parent_id',
-            'kota.keterangan'
-        )
-        ->leftJoin(DB::raw("kota with (readuncommitted)"), 'kota.id','upahsupir.kotasampai_id');
+            ->select(
+                'upahsupir.id',
+                'upahsupir.parent_id',
+                'kota.keterangan'
+            )
+            ->leftJoin(DB::raw("kota with (readuncommitted)"), 'kota.id', 'upahsupir.kotasampai_id');
 
         $temp = '##temp' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
         Schema::create($temp, function ($table) {
@@ -55,8 +55,8 @@ class UpahSupir extends MyModel
             $table->unsignedBigInteger('parent_id')->nullable();
             $table->string('keterangan')->nullable();
         });
-        DB::table($temp)->insertUsing(["id",'parent_id','keterangan'], $tempParent);
-        
+        DB::table($temp)->insertUsing(["id", 'parent_id', 'keterangan'], $tempParent);
+
         $query = DB::table($this->table)->from(DB::raw("upahsupir with (readuncommitted)"))
             ->select(
                 'upahsupir.id',
@@ -307,14 +307,13 @@ class UpahSupir extends MyModel
                         foreach ($this->params['filters']['rules'] as $index => $filters) {
                             if ($filters['field'] == 'statusaktif') {
                                 $query = $query->orWhere('parameter.text', '=', $filters['data']);
-                            }
-                             elseif ($filters['field'] == 'statusluarkota') {
+                            } elseif ($filters['field'] == 'statusluarkota') {
                                 $query = $query->orWhere('statusluarkota.text', '=', $filters['data']);
                             } else if ($filters['field'] == 'kotadari_id') {
                                 $query = $query->orWhere('kotadari.keterangan', 'LIKE', "%$filters[data]%");
                             } else if ($filters['field'] == 'parent_id') {
                                 $query = $query->orWhere('parent.keterangan', 'LIKE', "%$filters[data]%");
-                            }else if ($filters['field'] == 'kotasampai_id') {
+                            } else if ($filters['field'] == 'kotasampai_id') {
                                 $query = $query->orWhere('kotasampai.keterangan', 'LIKE', "%$filters[data]%");
                             } else if ($filters['field'] == 'zona_id') {
                                 $query = $query->orWhere('zona.keterangan', 'LIKE', "%$filters[data]%");
@@ -345,5 +344,34 @@ class UpahSupir extends MyModel
     public function paginate($query)
     {
         return $query->skip($this->params['offset'])->take($this->params['limit']);
+    }
+
+    public function cekValidasi($id)
+    {
+        $rekap = DB::table('tarif')
+            ->from(
+                DB::raw("tarif as a with (readuncommitted)")
+            )
+            ->select(
+                'a.upahsupir_id'
+            )
+            ->where('a.id', '=', $id)
+            ->first();
+        if (isset($rekap)) {
+            $data = [
+                'kondisi' => true,
+                'keterangan' => 'tarif',
+                'kodeerror' => 'SATL'
+            ];
+            goto selesai;
+        }
+
+
+        $data = [
+            'kondisi' => false,
+            'keterangan' => '',
+        ];
+        selesai:
+        return $data;
     }
 }

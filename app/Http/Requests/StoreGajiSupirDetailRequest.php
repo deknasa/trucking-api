@@ -23,13 +23,52 @@ class StoreGajiSupirDetailRequest extends FormRequest
      */
     public function rules()
     {
-        return [
-            'sp_id' => 'required',
+        $rulesPinjSemua = [];
+        if(request()->pinjSemua) {
+            $rulesPinjSemua  = [
+                'nominalPS.*' => ['required','numeric','gt:0'],
+                'pinjSemua_sisa.*' => ['numeric','min:0']
+            ];
+        }
+
+        $rulesPinjPribadi = [];
+        
+        if(request()->pinjPribadi) {
+            $rulesPinjPribadi = [
+                'nominalPP.*' => ['required','numeric','gt:0'],
+                'pinjPribadi_sisa.*' => ['numeric','min:0']
+            ];
+        }
+
+        $rulesDeposito = [];
+        if(request()->nomDeposito > 0 || request()->ketDeposito != ''){
+            $rulesDeposito = [
+                'nomDeposito' => ['required','numeric','gt:0'],
+                'ketDeposito' => 'required'
+            ];
+        }
+
+        $rulesBBM = [];
+        if(request()->nomBBM > 0 || request()->ketBBM != '') {
+            $rulesBBM = [
+                'nomBBM' => ['required','numeric','gt:0'],
+                'ketBBM' => 'required'
+            ];
+        }
+        
+        $rules = [
+            'rincianId' => 'required'
         ];
+
+        $rules = array_merge(
+            $rules,
+            $rulesPinjSemua,
+            $rulesPinjPribadi,
+            $rulesDeposito,
+            $rulesBBM
+        );
+
+        return $rules;
     }
-    public function attributes() {
-        return [
-            'sp_id' => 'SP',
-        ];
-    }
+    
 }

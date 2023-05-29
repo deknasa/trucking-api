@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Api\ProsesGajiSupirDetailController as ApiProsesGajiSupirDetailController;
 use App\Http\Controllers\Controller;
 use App\Http\Controllers\ProsesGajiSupirDetailController;
+use App\Http\Requests\GetIndexRangeRequest;
 use App\Http\Requests\StoreJurnalUmumDetailRequest;
 use App\Http\Requests\StoreJurnalUmumHeaderRequest;
 use App\Http\Requests\StoreLogTrailRequest;
@@ -53,7 +54,7 @@ class ProsesGajiSupirHeaderController extends Controller
     /**
      * @ClassName 
      */
-    public function index()
+    public function index(GetIndexRangeRequest $request)
     {
         $prosesGajiSupirHeader = new ProsesGajiSupirHeader();
         return response([
