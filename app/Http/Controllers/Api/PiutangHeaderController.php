@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\DestroyPiutangHeaderRequest;
+use App\Http\Requests\GetIndexRangeRequest;
 use App\Models\PiutangHeader;
 use App\Http\Requests\StorePiutangHeaderRequest;
 use App\Http\Requests\UpdatePiutangHeaderRequest;
@@ -36,7 +37,7 @@ class PiutangHeaderController extends Controller
     /**
      * @ClassName
      */
-    public function index()
+    public function index(GetIndexRangeRequest $request)
     {
         $piutang = new PiutangHeader();
 
