@@ -29,6 +29,9 @@ class StorePengeluaranStokHeaderRequest extends FormRequest
                 "required",
                 new DateTutupBuku()
             ],
+            'trado' => 'required_without_all:gandengan,gudang',
+            'gandengan' => 'required_without_all:trado,gudang',
+            'gudang' => 'required_without_all:trado,gandengan',
             "pengeluaranstok" => "required",
             "pengeluaranstok_id" => "required",
             "modifiedby"=> "string", 
