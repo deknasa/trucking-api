@@ -3,7 +3,10 @@
 namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
+use App\Models\Parameter;
+use Illuminate\Validation\Rule;
 use App\Http\Controllers\Api\ErrorController;
+use App\Http\Controllers\Api\ParameterController;
 
 class DestroyUserRequest extends FormRequest
 {
@@ -24,14 +27,21 @@ class DestroyUserRequest extends FormRequest
      */
     public function rules()
     {
-
+        $parameter = new Parameter();
+        $data = $parameter->getcombodata('STATUS AKTIF', 'STATUS AKTIF');
+        $data = json_decode($data, true);
+        foreach ($data as $item) {
+            $status[] = $item['id'];
+        }
         return [
             'user' => 'required',
             'name' => 'required',
-            'cabang_id' => 'required',
+            // 'password' => 'required',
             'karyawan_id' => 'required',
-            'statusaktif' => 'required',
-            'modifiedby' => 'required'
+            'cabang_id' => 'required',
+            // 'dashboard' => 'required',
+            // 'statusaktif' => ['required', 'int', 'exists:parameter,id'],
+            'statusaktif' => ['required', Rule::in($status)]
         ];
     }
 
@@ -41,26 +51,10 @@ class DestroyUserRequest extends FormRequest
             'user' => 'user',
             'name' => 'nama user',
             'password' => 'password',
-            'cabang_id' => 'cabang',
             'karyawan_id' => 'karyawan',
+            'cabang_id' => 'cabang',
             'dashboard' => 'dashboard',
             'statusaktif' => 'status',
-            'modifiedby' => 'modified by'
-        ];
-    }
-
-    public function messages()
-    {
-        $controller = new ErrorController;
-        return [
-            'user.required' => ':attribute'.' '. $controller->geterror('WI')->keterangan,
-            'name.required' => ':attribute'.' '. $controller->geterror('WI')->keterangan,
-            'cabang_id.required' => ':attribute'.' '. $controller->geterror('WI')->keterangan,
-            'karyawan_id.required' => ':attribute'.' '. $controller->geterror('WI')->keterangan,
-            'statusaktif.required' => ':attribute'.' '. $controller->geterror('WI')->keterangan,
-            'modifiedby.required' => ':attribute'.' '. $controller->geterror('WI')->keterangan,
-
-
         ];
     }
 }
