@@ -134,7 +134,7 @@ class JenisOrderController extends Controller
     /**
      * @ClassName 
      */
-    public function update(StoreJenisOrderRequest $request, JenisOrder $jenisorder)
+    public function update(UpdateJenisOrderRequest $request, JenisOrder $jenisorder)
     {
         DB::beginTransaction();
         try {

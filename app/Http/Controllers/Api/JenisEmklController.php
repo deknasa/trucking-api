@@ -133,7 +133,7 @@ class JenisEmklController extends Controller
     /**
      * @ClassName 
      */
-    public function update(StoreJenisEmklRequest $request, JenisEmkl $jenisemkl)
+    public function update(UpdateJenisEmklRequest $request, JenisEmkl $jenisemkl)
     {
         DB::beginTransaction();
         try {
