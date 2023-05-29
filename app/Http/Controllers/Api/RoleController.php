@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Requests\StoreRoleRequest;
 use App\Http\Requests\UpdateRoleRequest;
+use App\Http\Requests\DestroyRoleRequest;
 use App\Http\Requests\StoreLogTrailRequest;
 use App\Models\Role;
 use Illuminate\Http\Request;
@@ -149,7 +150,7 @@ class RoleController extends Controller
     /**
      * @ClassName 
      */
-    public function destroy(Request $request, $id)
+    public function destroy(DestroyRoleRequest $request, $id)
     {
         DB::beginTransaction();
 
