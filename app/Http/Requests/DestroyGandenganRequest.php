@@ -3,12 +3,11 @@
 namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
-use App\Http\Controllers\Api\ErrorController;
-use App\Http\Controllers\Api\ParameterController;
-use App\Models\Parameter;
+use App\Models\Gandengan;
 use Illuminate\Validation\Rule;
+use App\Rules\ValidasiDestroyGandengan ;
 
-class StoreGandenganRequest extends FormRequest
+class DestroyGandenganRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
@@ -28,27 +27,20 @@ class StoreGandenganRequest extends FormRequest
     public function rules()
     {
 
-        $parameter = new Parameter();
-        $data = $parameter->getcombodata('STATUS AKTIF', 'STATUS AKTIF');
-        $data = json_decode($data, true);
-        foreach ($data as $item) {
-            $status[] = $item['id'];
-        }
-
-        $rules = [
-            'kodegandengan' => ['required', 'unique:gandengan'],
-            'statusaktif' => ['required', Rule::in($status)]
+        $gandengan = new Gandengan();
+        $cekdata = $gandengan->cekValidasihapus($this->id);
+    
+        return [
+            'id' => [ new ValidasiDestroyGandengan($cekdata['kondisi'])],
         ];
-        return $rules;
-
     }
 
     public function attributes()
     {
         return [
             'kodegandengan' => 'kode gandengan',
+            'keterangan' => 'keterangan',
             'statusaktif' => 'status',
         ];
     }
-
 }

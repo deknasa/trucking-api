@@ -4,6 +4,8 @@ namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
 use App\Http\Controllers\Api\ErrorController;
+use App\Models\Parameter;
+use Illuminate\Validation\Rule;
 
 class UpdateGandenganRequest extends FormRequest
 {
@@ -24,10 +26,20 @@ class UpdateGandenganRequest extends FormRequest
      */
     public function rules()
     {
+
+        $parameter = new Parameter();
+        $data = $parameter->getcombodata('STATUS AKTIF', 'STATUS AKTIF');
+        $data = json_decode($data, true);
+        foreach ($data as $item) {
+            $status[] = $item['id'];
+        }
+
         return [
-            'kodegandengan' => 'required',
-            'statusaktif' => 'required',
+            'kodegandengan' => ['required',Rule::unique('gandengan')->whereNotIn('id', [$this->id])],
+            'statusaktif' => ['required', Rule::in($status)]
         ];
+
+       
     }
 
     public function attributes()
@@ -39,13 +51,4 @@ class UpdateGandenganRequest extends FormRequest
         ];
     }
 
-    public function messages()
-    {
-        $controller = new ErrorController;
-        return [
-            'kodegandengan.required' => ':attribute'.' '. $controller->geterror('WI')->keterangan,
-            'statusaktif.required' => ':attribute'.' '. $controller->geterror('WI')->keterangan,
-
-        ];
-    }    
 }
