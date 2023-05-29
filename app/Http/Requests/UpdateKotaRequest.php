@@ -33,12 +33,39 @@ class UpdateKotaRequest extends FormRequest
             $status[] = $item['id'];
         } 
 
-        return  [
+        $zona_id = $this->zona_id;
+        $rulesZona_id = [];
+        if ($zona_id != null) {
+            if ($zona_id == 0) {
+                $rulesZona_id = [
+                    'zona_id' => ['required', 'numeric', 'min:1']
+                ];
+            } else {
+                if ($this->zona == '') {
+                    $rulesZona_id = [
+                        'zona' => ['required']
+                    ];
+                }
+            }
+        } else if ($zona_id == null && $this->zona != '') {
+            $rulesZona_id = [
+                'zona_id' => ['required', 'numeric', 'min:1']
+            ];
+        }
+
+        $rules =  [
             'kodekota' => ['required',Rule::unique('kota')->whereNotIn('id', [$this->id])],
-            'keterangan' => ['nullable',Rule::unique('kota')->whereNotIn('id', [$this->id])],
+            'keterangan' => 'nullable',
             'zona' => 'required',
             'statusaktif' => ['required', Rule::in($status)]
         ];
+
+        $rule = array_merge(
+            $rules,
+            $rulesZona_id
+        );
+
+        return $rule;
     }
 
     public function attributes()

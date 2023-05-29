@@ -33,20 +33,44 @@ class StoreKategoriRequest extends FormRequest
             $status[] = $item['id'];
         }
 
+        $subkelompok_id = $this->subkelompok_id;
+        $rulesSubKelompok_id = [];
+        if ($subkelompok_id != null) {
+            if ($subkelompok_id == 0) {
+                $rulesSubKelompok_id = [
+                    'subkelompok_id' => ['required', 'numeric', 'min:1']
+                ];
+            } else {
+                if ($this->zona == '') {
+                    $rulesSubKelompok_id = [
+                        'zona' => ['required']
+                    ];
+                }
+            }
+        } else if ($subkelompok_id == null && $this->zona != '') {
+            $rulesSubKelompok_id = [
+                'subkelompok_id' => ['required', 'numeric', 'min:1']
+            ];
+        }
+
         $rules = [
             'kodekategori' => ['required', 'unique:kategori'],
             'subkelompok' => 'required',
             'statusaktif' => ['required', Rule::in($status)]
         ];
 
-        return $rules;
+        $rule = array_merge(
+            $rules,
+            $rulesSubKelompok_id
+        );
+
+        return $rule;
     }
     
     public function attributes()
     {
         return[
             'kodekategori' => 'kode kategori',
-            'subkelompok' => 'sub kelompok',
             'keterangan' => 'keterangan',
             'statusaktif' => 'status aktif'
         ];
@@ -59,7 +83,6 @@ class StoreKategoriRequest extends FormRequest
 
         return [
             'kodekategori.required' => ':attribute' . ' ' . $controller->geterror('WI')->keterangan,
-            'subkelompok.required' => ':attribute' . ' ' . $controller->geterror('WI')->keterangan,
             'statusaktif.required' => ':attribute' . ' ' . $controller->geterror('WI')->keterangan,
         ];
     }    

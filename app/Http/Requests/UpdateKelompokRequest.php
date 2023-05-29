@@ -35,7 +35,7 @@ class UpdateKelompokRequest extends FormRequest
 
         $rules =  [
             'kodekelompok' => ['required',Rule::unique('kelompok')->whereNotIn('id', [$this->id])],
-            'statusaktif' => ['required', Rule::in($status)]
+            'statusaktif' => 'required'
         ];
 
         return $rules;

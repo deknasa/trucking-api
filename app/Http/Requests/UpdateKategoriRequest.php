@@ -33,11 +33,38 @@ class UpdateKategoriRequest extends FormRequest
             $status[] = $item['id'];
         }
 
-        return [
+        $subkelompok_id = $this->subkelompok_id;
+        $rulesSubKelompok_id = [];
+        if ($subkelompok_id != null) {
+            if ($subkelompok_id == 0) {
+                $rulesSubKelompok_id = [
+                    'subkelompok_id' => ['required', 'numeric', 'min:1']
+                ];
+            } else {
+                if ($this->zona == '') {
+                    $rulesSubKelompok_id = [
+                        'zona' => ['required']
+                    ];
+                }
+            }
+        } else if ($subkelompok_id == null && $this->zona != '') {
+            $rulesSubKelompok_id = [
+                'subkelompok_id' => ['required', 'numeric', 'min:1']
+            ];
+        }
+
+        $rules = [
             'kodekategori' => ['required',Rule::unique('kategori')->whereNotIn('id', [$this->id])],
             'subkelompok' => 'required',
             'statusaktif' => ['required', Rule::in($status)]
         ];
+
+        $rule = array_merge(
+            $rules,
+            $rulesSubKelompok_id
+        );
+
+        return $rule;
     }
     
     public function attributes()

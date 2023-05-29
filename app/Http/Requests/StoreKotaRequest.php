@@ -55,7 +55,7 @@ class StoreKotaRequest extends FormRequest
 
         $rules = [
             'kodekota' => ['required','unique:kota'],
-            'keterangan' => ['nullable','unique:kota'],
+            'keterangan' => ['nullable'],
             'zona' => ['required'],
             'statusaktif' => ['required', Rule::in($status)]
         ];
