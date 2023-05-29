@@ -3,7 +3,10 @@
 namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
+use App\Models\Parameter;
+use Illuminate\Validation\Rule;
 use App\Http\Controllers\Api\ErrorController;
+use App\Http\Controllers\Api\ParameterController;
 
 class StoreUserRequest extends FormRequest
 {
@@ -24,13 +27,21 @@ class StoreUserRequest extends FormRequest
      */
     public function rules()
     {
+        $parameter = new Parameter();
+        $data = $parameter->getcombodata('STATUS AKTIF', 'STATUS AKTIF');
+        $data = json_decode($data, true);
+        foreach ($data as $item) {
+            $status[] = $item['id'];
+        }
         return [
             'user' => ['required', 'unique:user,user'],
-            'name' => 'required',
+            'name' => 'required|unique:user',
             'password' => 'required',
             'karyawan_id' => 'required',
-            'dashboard' => 'required',
-            'statusaktif' => ['required', 'int', 'exists:parameter,id'],
+            'cabang_id' => 'required',
+            // 'dashboard' => 'required',
+            // 'statusaktif' => ['required', 'int', 'exists:parameter,id'],
+            'statusaktif' => ['required', Rule::in($status)]
         ];
     }
 
