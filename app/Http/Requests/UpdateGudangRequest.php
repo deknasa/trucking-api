@@ -48,13 +48,13 @@ class UpdateGudangRequest extends FormRequest
         ];
     }
 
-    // public function messages()
-    // {
-    //     $controller = new ErrorController;
+    public function messages()
+    {
+        $controller = new ErrorController;
 
-    //     return [
-    //         'gudang.required' => ':attribute' . ' ' . $controller->geterror('WI')->keterangan,
-    //         'statusaktif.required' => ':attribute' . ' ' . $controller->geterror('WI')->keterangan,
-    //     ];
-    // }
+        return [
+            'gudang.required' => ':attribute' . ' ' . $controller->geterror('WI')->keterangan,
+            'statusaktif.required' => ':attribute' . ' ' . $controller->geterror('WI')->keterangan,
+        ];
+    }
 }

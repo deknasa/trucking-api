@@ -4,6 +4,8 @@ namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
 use App\Http\Controllers\Api\ErrorController;
+use App\Models\Parameter;
+use Illuminate\Validation\Rule;
 
 class StoreMerkRequest extends FormRequest
 {
@@ -24,10 +26,19 @@ class StoreMerkRequest extends FormRequest
      */
     public function rules()
     {
-        return [
-            'kodemerk' => 'required',
-            'statusaktif' => 'required'
+        $parameter = new Parameter();
+        $data = $parameter->getcombodata('STATUS AKTIF', 'STATUS AKTIF');
+        $data = json_decode($data, true);
+        foreach ($data as $item) {
+            $status[] = $item['id'];
+        }
+        
+        $rules = [
+            'kodemerk' => ['required', 'unique:merk'],
+            'statusaktif' => ['required', Rule::in($status)]
         ];
+
+        return $rules;
     }
     
     public function attributes()

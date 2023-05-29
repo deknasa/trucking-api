@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests;
 
+use App\Http\Controllers\Api\ErrorController;
 use Illuminate\Foundation\Http\FormRequest;
 use App\Models\Parameter;
 use Illuminate\Validation\Rule;
@@ -32,13 +33,39 @@ class StoreKotaRequest extends FormRequest
             $status[] = $item['id'];
         }
 
+        $zona_id = $this->zona_id;
+        $rulesZona_id = [];
+        if ($zona_id != null) {
+            if ($zona_id == 0) {
+                $rulesZona_id = [
+                    'zona_id' => ['required', 'numeric', 'min:1']
+                ];
+            } else {
+                if ($this->zona == '') {
+                    $rulesZona_id = [
+                        'zona' => ['required']
+                    ];
+                }
+            }
+        } else if ($zona_id == null && $this->zona != '') {
+            $rulesZona_id = [
+                'zona_id' => ['required', 'numeric', 'min:1']
+            ];
+        }
+
         $rules = [
             'kodekota' => ['required','unique:kota'],
             'keterangan' => ['nullable','unique:kota'],
-            'zona' => 'required',
+            'zona' => ['required'],
             'statusaktif' => ['required', Rule::in($status)]
         ];
-        return $rules;
+
+        $rule = array_merge(
+            $rules,
+            $rulesZona_id
+        );
+        
+        return $rule;
     }
     
     public function attributes()
@@ -46,6 +73,16 @@ class StoreKotaRequest extends FormRequest
         return [
             'kodekota' => 'kode kota',
             'statusaktif' => 'statusaktif'
+        ];
+    }
+
+    public function messages()
+    {
+        $controller = new ErrorController;
+
+        return [
+            'kodekota.required' => ':attribute' . ' ' . $controller->geterror('WI')->keterangan,
+            'statusaktif.required' => ':attribute' . ' ' . $controller->geterror('WI')->keterangan,
         ];
     }
 }

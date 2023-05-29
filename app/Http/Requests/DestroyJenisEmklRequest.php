@@ -3,7 +3,7 @@
 namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
-use App\Http\Controllers\Api\ErrorController;
+use App\Rules\ValidasiDestroyJenisEmkl;
 
 class DestroyJenisEmklRequest extends FormRequest
 {
@@ -25,29 +25,7 @@ class DestroyJenisEmklRequest extends FormRequest
     public function rules()
     {
         return [
-            'kodejenisemkl' => 'required',
-            'statusaktif' => 'required',
-            'modifiedby' => 'required'
-        ];
-    }
-
-    public function attributes()
-    {
-        return [
-            'kodejenisemkl' => 'kode jenis emkl',
-            'statusaktif' => 'status aktif',
-            'modifiedby' => 'modified by',
-        ];
-    }
-
-    public function messages()
-    {
-        $controller = new ErrorController;
-        return [
-            'kodejenisemkl.required' => ':attribute'.' '. $controller->geterror('WI')->keterangan,
-            'statusaktif.required' => ':attribute'.' '. $controller->geterror('WI')->keterangan,
-            'modifiedby.required' => ':attribute'.' '. $controller->geterror('WI')->keterangan,
-
+            'id' => new ValidasiDestroyJenisEmkl()
         ];
     }
 }

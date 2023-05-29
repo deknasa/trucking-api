@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests;
 
+use App\Http\Controllers\Api\ErrorController;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 use App\Models\Parameter;
@@ -45,6 +46,16 @@ class UpdateKotaRequest extends FormRequest
         return [
             'kodekota' => 'kode kota',
             'statusaktif' => 'statusaktif'
+        ];
+    }
+
+    public function messages()
+    {
+        $controller = new ErrorController;
+
+        return [
+            'kodekota.required' => ':attribute' . ' ' . $controller->geterror('WI')->keterangan,
+            'statusaktif.required' => ':attribute' . ' ' . $controller->geterror('WI')->keterangan,
         ];
     }
 }

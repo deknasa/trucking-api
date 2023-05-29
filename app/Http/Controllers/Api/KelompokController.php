@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Models\Kelompok;
 use App\Http\Requests\StoreKelompokRequest;
 use App\Http\Requests\UpdateKelompokRequest;
+use App\Http\Requests\DestroyKelompokRequest;
 use App\Http\Requests\StoreLogTrailRequest;
 use App\Models\Parameter;
 
@@ -33,6 +34,7 @@ class KelompokController extends Controller
             ]
         ]);
     }
+
     public function cekValidasi($id) {
         $kelompok= new Kelompok();
         $cekdata=$kelompok->cekvalidasihapus($id);
@@ -175,7 +177,7 @@ class KelompokController extends Controller
     /**
      * @ClassName 
      */
-    public function destroy(Request $request, $id)
+    public function destroy(DestroyKelompokRequest $request, $id)
     {
         DB::beginTransaction();
 

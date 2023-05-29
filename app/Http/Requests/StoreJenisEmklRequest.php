@@ -3,6 +3,7 @@
 namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
+use App\Http\Controllers\Api\ErrorController;
 use App\Models\Parameter;
 use Illuminate\Validation\Rule;
 
@@ -44,6 +45,16 @@ class StoreJenisEmklRequest extends FormRequest
         return [
             'kodejenisemkl' => 'kode jenis emkl',
             'statusaktif' => 'status',
+        ];
+    }
+
+    public function messages()
+    {
+        $controller = new ErrorController;
+
+        return [
+            'kodejenisemkl.required' => ':attribute' . ' ' . $controller->geterror('WI')->keterangan,
+            'statusaktif.required' => ':attribute' . ' ' . $controller->geterror('WI')->keterangan,
         ];
     }
 }

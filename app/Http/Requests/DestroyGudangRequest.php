@@ -3,7 +3,7 @@
 namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
-use App\Http\Controllers\Api\ErrorController;
+use App\Rules\ValidasiDestroyGudang;
 
 class DestroyGudangRequest extends FormRequest
 {
@@ -25,29 +25,7 @@ class DestroyGudangRequest extends FormRequest
     public function rules()
     {
         return [
-            'gudang' => 'required',
-            'statusaktif' => 'required',
-            'modifiedby' => 'required'
-        ];
-    }
-
-    public function attributes()
-    {
-        return [
-            'gudang' => 'gudang',
-            'statusaktif' => 'status aktif',
-            'modifiedby' => 'modified by',
-        ];
-    }
-
-    public function messages()
-    {
-        $controller = new ErrorController;
-        return [
-            'gudang.required' => ':attribute'.' '. $controller->geterror('WI')->keterangan,
-            'statusaktif.required' => ':attribute'.' '. $controller->geterror('WI')->keterangan,
-            'modifiedby.required' => ':attribute'.' '. $controller->geterror('WI')->keterangan,
-
+            'id' => new ValidasiDestroyGudang()
         ];
     }
 }

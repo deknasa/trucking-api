@@ -5,7 +5,9 @@ namespace App\Http\Controllers\Api;
 use App\Models\Zona;
 use App\Http\Requests\StoreZonaRequest;
 use App\Http\Requests\UpdateZonaRequest;
+use App\Http\Requests\DestroyZonaRequest;
 use App\Http\Requests\StoreLogTrailRequest;
+
 use App\Models\Parameter;
 
 use App\Http\Controllers\Controller;
@@ -136,7 +138,7 @@ class ZonaController extends Controller
     /**
      * @ClassName 
      */
-    public function update(StoreZonaRequest $request, Zona $zona)
+    public function update(UpdateZonaRequest $request, Zona $zona)
     {
         DB::beginTransaction();
         try {
@@ -179,7 +181,7 @@ class ZonaController extends Controller
     /**
      * @ClassName 
      */
-    public function destroy(Request $request, $id)
+    public function destroy(DestroyZonaRequest $request, $id)
     {
         DB::beginTransaction();
 
