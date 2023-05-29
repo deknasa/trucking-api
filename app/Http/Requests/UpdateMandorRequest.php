@@ -7,7 +7,7 @@ use App\Http\Controllers\Api\ErrorController;
 use App\Models\Parameter;
 use Illuminate\Validation\Rule;
 
-class UpdateStatusContainerRequest extends FormRequest
+class UpdateMandorRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
@@ -32,8 +32,9 @@ class UpdateStatusContainerRequest extends FormRequest
         foreach ($data as $item) {
             $status[] = $item['id'];
         }
+
         return [
-            'kodestatuscontainer' => ['required',Rule::unique('statuscontainer')->whereNotIn('id', [$this->id])],
+            'namamandor' => ['required',Rule::unique('mandor')->whereNotIn('id', [$this->id])],
             'statusaktif' => ['required', Rule::in($status)],
         ];
     }
@@ -41,9 +42,9 @@ class UpdateStatusContainerRequest extends FormRequest
     public function attributes()
     {
         return [
-
-            'kodestatuscontainer' => 'kode status container',
-            'statusaktif' => 'status aktif',
+            'namamandor' => 'nama mandor',
+            'statusaktif' => 'statusaktif',
         ];
+        
     }
 }

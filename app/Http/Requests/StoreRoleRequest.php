@@ -25,7 +25,7 @@ class StoreRoleRequest extends FormRequest
     public function rules()
     {
         return [
-            'rolename' => 'required',
+            'rolename' => 'required|unique:role',
         ];
     }
 

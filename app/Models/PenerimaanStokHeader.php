@@ -108,7 +108,18 @@ class PenerimaanStokHeader extends MyModel
         return $data;
     }
 
-    
+    public function isPOUsed($id)
+    {
+        $query = DB::table($this->table)->from($this->table)
+        ->where('penerimaanstokheader.id',$id)
+        ->leftJoin('penerimaanstokheader as nobuktispb','penerimaanstokheader.nobukti','nobuktispb.penerimaanstok_nobukti');
+        $data = $query->first();
+        if ($data->id) {
+            # code...
+            return true;
+        }
+        return false;
+    }
     public function selectColumns($query)
     {
         $po = Parameter::where('grp', 'PO STOK')->where('subgrp', 'PO STOK')->first();
