@@ -3,6 +3,8 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\DestroyPenerimaanTruckingHeaderRequest;
+use App\Http\Requests\GetIndexRangeRequest;
 use App\Models\PenerimaanTruckingHeader;
 use App\Models\PenerimaanTruckingTruckingHeader;
 use App\Http\Requests\StorePenerimaanTruckingHeaderRequest;
@@ -35,7 +37,7 @@ class PenerimaanTruckingHeaderController extends Controller
     /**
      * @ClassName
      */
-    public function index()
+    public function index(GetIndexRangeRequest $request)
     {
         $penerimaantruckingheader = new PenerimaanTruckingHeader();
         return response([

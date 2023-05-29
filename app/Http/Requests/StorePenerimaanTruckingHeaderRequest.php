@@ -28,10 +28,11 @@ class StorePenerimaanTruckingHeaderRequest extends FormRequest
         $rules = [
             'tglbukti' => [
                 'required', 'date_format:d-m-Y',
+                'date_equals:'.date('d-m-Y'),
                 new DateTutupBuku()
             ],
-            'penerimaantrucking' => 'required',
-            'bank' => 'required',
+            'penerimaantrucking' => 'required','numeric', 'min:1',
+            'bank' => 'required','numeric', 'min:1',
             // 'keterangancoa' => 'required'
         ];
         $relatedRequests = [
