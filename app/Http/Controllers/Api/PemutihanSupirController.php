@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\GetIndexRangeRequest;
 use App\Http\Requests\StoreLogTrailRequest;
 use App\Http\Requests\StorepemutihansupirdetailRequest;
 use App\Models\PemutihanSupir;
@@ -26,7 +27,7 @@ class PemutihanSupirController extends Controller
     /**
      * @ClassName
      */
-    public function index()
+    public function index(GetIndexRangeRequest $request)
     {
         $pemutihanSupir = new PemutihanSupir();
         return response([

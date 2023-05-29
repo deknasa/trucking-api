@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\DestroyPendapatanSupirHeaderRequest;
+use App\Http\Requests\GetIndexRangeRequest;
 use App\Http\Requests\StoreLogTrailRequest;
 use App\Http\Requests\StorePendapatanSupirDetailRequest;
 use App\Models\PendapatanSupirHeader;
@@ -19,7 +20,7 @@ class PendapatanSupirHeaderController extends Controller
     /**
      * @ClassName 
      */
-    public function index()
+    public function index(GetIndexRangeRequest $request)
     {
         $pendapatanSupir = new PendapatanSupirHeader();
 
