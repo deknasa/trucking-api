@@ -5,6 +5,8 @@ namespace App\Http\Requests;
 use Illuminate\Foundation\Http\FormRequest;
 use App\Http\Controllers\Api\ErrorController;
 use App\Models\Parameter;
+use App\Rules\DestroyBank;
+use App\Rules\DestroyBankPelanggan;
 use Illuminate\Validation\Rule;
 
 class DestroyBankPelangganRequest extends FormRequest
@@ -24,46 +26,16 @@ class DestroyBankPelangganRequest extends FormRequest
      *
      * @return array
      */
-
     public function rules()
     {
-        $parameter = new Parameter();
-        $data = $parameter->getcombodata('STATUS AKTIF', 'STATUS AKTIF');
-        $data = json_decode($data, true);
-        foreach ($data as $item) {
-            $status[] = $item['id'];
-        }
-        
-        $rules = [
-            'kodebank' => ['required',Rule::unique('bankpelanggan')->whereNotIn('id', [$this->id])],
-            'namabank' => ['required',Rule::unique('bankpelanggan')->whereNotIn('id', [$this->id])],
-            'statusaktif' => ['required', Rule::in($status)],
-        ];
-
-        return $rules;
-    }
-
-
-    public function attributes()
-    {
+      
         return [
-            'kodebank' => 'kode bank',
-            'namabank' => 'nama bank',
-            'statusaktif' => 'status aktif',
-            'keterangan' => 'keterangan',
+            'bank_id' => new DestroyBankPelanggan(),
         ];
+      
     }
 
-    public function messages()
-    {
-        $controller = new ErrorController;
-
-        return [
-            'kodebank.required' => ':attribute' . ' ' . $controller->geterror('WI')->keterangan,
-            'namabank.required' => ':attribute' . ' ' . $controller->geterror('WI')->keterangan,
-            'statusaktif.required' => ':attribute' . ' ' . $controller->geterror('WI')->keterangan,
-            'keterangan.required' => ':attribute' . ' ' . $controller->geterror('WI')->keterangan,
-
-        ];
-    }
+    // public function messages()
+   
+    // }
 }
