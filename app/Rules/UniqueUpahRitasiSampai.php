@@ -6,7 +6,7 @@ use App\Http\Controllers\Api\ErrorController;
 use Illuminate\Contracts\Validation\Rule;
 use Illuminate\Support\Facades\DB;
 
-class UniqueUpahSupirSampai implements Rule
+class UniqueUpahRitasiSampai implements Rule
 {
     /**
      * Create a new rule instance.
@@ -27,9 +27,9 @@ class UniqueUpahSupirSampai implements Rule
      */
     public function passes($attribute, $value)
     {
-        $query = DB::table('upahsupir')
+        $query = DB::table('upahritasi')
             ->from(
-                DB::raw("upahsupir as a with (readuncommitted)")
+                DB::raw("upahritasi as a with (readuncommitted)")
             )
             ->select(
                 'a.id'

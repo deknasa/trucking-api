@@ -171,6 +171,10 @@ class StoreTarifRequest extends FormRequest
         $tglbatasawal = (date('Y-m-d'));
         $tglbatasakhir = (date('Y') - 1) . '-01-01';
         return [
+            'parent_id.required' => ':attribute ' . $controller->geterror('HPDL')->keterangan,
+            'upahsupir_id.required' => ':attribute ' . $controller->geterror('HPDL')->keterangan,
+            'kota_id.required' => ':attribute ' . $controller->geterror('HPDL')->keterangan,
+            'zona_id.required' => ':attribute ' . $controller->geterror('HPDL')->keterangan,
             'tgl.after_or_equal' => ':attribute ' . $controller->geterror('NTLK')->keterangan . ' ' . date('d-m-Y', strtotime($tglbatasawal)) . ' dan ' . $controller->geterror('NTLB')->keterangan . ' ' . date('d-m-Y', strtotime($tglbatasakhir)),
             'tgl.before' => ':attribute ' . $controller->geterror('NTLK')->keterangan . ' ' . date('d-m-Y', strtotime($tglbatasawal)) . ' dan ' . $controller->geterror('NTLB')->keterangan . ' ' . date('d-m-Y', strtotime($tglbatasakhir)),
 
