@@ -4,6 +4,8 @@ namespace App\Http\Controllers\Api;
 
 use App\Models\Mandor;
 use App\Http\Requests\StoreMandorRequest;
+use App\Http\Requests\UpdateMandorRequest;
+use App\Http\Requests\DestroyMandorRequest;
 use App\Http\Requests\StoreLogTrailRequest;
 use App\Models\Parameter;
 
@@ -180,7 +182,7 @@ class MandorController extends Controller
     /**
      * @ClassName 
      */
-    public function destroy(Request $request, $id)
+    public function destroy(DestroyMandorRequest $request, $id)
     {
         DB::beginTransaction();
 

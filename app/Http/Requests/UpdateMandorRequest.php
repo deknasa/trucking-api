@@ -3,8 +3,10 @@
 namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
-use Illuminate\Validation\Rule;
+use App\Http\Controllers\Api\ErrorController;
 use App\Models\Parameter;
+use Illuminate\Validation\Rule;
+
 class UpdateMandorRequest extends FormRequest
 {
     /**
@@ -29,10 +31,11 @@ class UpdateMandorRequest extends FormRequest
         $data = json_decode($data, true);
         foreach ($data as $item) {
             $status[] = $item['id'];
-        } 
+        }
+
         return [
-            'namamandor' => 'required',
-            'statusaktif' => 'required',
+            'namamandor' => ['required',Rule::unique('mandor')->whereNotIn('id', [$this->id])],
+            'statusaktif' => ['required', Rule::in($status)],
         ];
     }
 
