@@ -3,6 +3,8 @@
 namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
+use App\Models\Parameter;
+use Illuminate\Validation\Rule;
 
 class UpdateJenisOrderRequest extends FormRequest
 {
@@ -13,7 +15,7 @@ class UpdateJenisOrderRequest extends FormRequest
      */
     public function authorize()
     {
-        return false;
+        return true;
     }
 
     /**
@@ -23,8 +25,24 @@ class UpdateJenisOrderRequest extends FormRequest
      */
     public function rules()
     {
+        $parameter = new Parameter();
+        $data = $parameter->getcombodata('STATUS AKTIF', 'STATUS AKTIF');
+        $data = json_decode($data, true);
+        foreach ($data as $item) {
+            $status[] = $item['id'];
+        }
+
         return [
-            //
+            'kodejenisorder' => ['required',Rule::unique('jenisorder')->whereNotIn('id', [$this->id])],
+            'statusaktif' => ['required', Rule::in($status)]
+        ];
+    }
+
+    public function attributes()
+    {
+        return [
+            'kodejenisorder' => 'kode jenis order',
+            'statusaktif' => 'status',
         ];
     }
 }

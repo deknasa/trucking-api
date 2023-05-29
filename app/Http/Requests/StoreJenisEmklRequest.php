@@ -3,6 +3,8 @@
 namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
+use App\Models\Parameter;
+use Illuminate\Validation\Rule;
 
 class StoreJenisEmklRequest extends FormRequest
 {
@@ -23,9 +25,25 @@ class StoreJenisEmklRequest extends FormRequest
      */
     public function rules()
     {
+        $parameter = new Parameter();
+        $data = $parameter->getcombodata('STATUS AKTIF', 'STATUS AKTIF');
+        $data = json_decode($data, true);
+        foreach ($data as $item) {
+            $status[] = $item['id'];
+        }
+
+        $rules = [
+            'kodejenisemkl' => ['required', 'unique:jenisemkl'],
+            'statusaktif' => ['required', Rule::in($status)]
+        ];
+        return $rules;
+    }
+
+    public function attributes()
+    {
         return [
-            'kodejenisemkl' => 'required',
-           
+            'kodejenisemkl' => 'kode jenis emkl',
+            'statusaktif' => 'status',
         ];
     }
 }
