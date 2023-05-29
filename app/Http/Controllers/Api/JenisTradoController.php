@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Models\JenisTrado;
 use App\Http\Requests\StoreJenisTradoRequest;
 use App\Http\Requests\UpdateJenisTradoRequest;
+use App\Http\Requests\DestroyJenisTradoRequest;
 use App\Http\Requests\StoreLogTrailRequest;
 use App\Models\Parameter;
 
@@ -138,7 +139,7 @@ class JenisTradoController extends Controller
     /**
      * @ClassName 
      */
-    public function update(StoreJenisTradoRequest $request, JenisTrado $jenistrado)
+    public function update(UpdateJenisTradoRequest $request, JenisTrado $jenistrado)
     {
         DB::beginTransaction();
         try {
@@ -183,7 +184,7 @@ class JenisTradoController extends Controller
     /**
      * @ClassName 
      */
-    public function destroy(Request $request, $id)
+    public function destroy(DestroyJenisTradoRequest $request, $id)
     {
         DB::beginTransaction();
 
