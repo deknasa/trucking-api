@@ -28,6 +28,7 @@ class StoreJurnalUmumHeaderRequest extends FormRequest
         $rules = [
             'tglbukti' => [
                 'required','date_format:d-m-Y',
+                'date_equals:'.date('d-m-Y'),
                 new DateTutupBuku()
             ],
         ];

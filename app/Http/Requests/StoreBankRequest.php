@@ -40,9 +40,9 @@ class StoreBankRequest extends FormRequest
             'namabank' => ['required', 'unique:bank'],
             'coa' => ['required', 'unique:bank'],
             'tipe' => 'required',
-            'statusaktif' => ['required', Rule::in($status)],
-            'formatpenerimaan' => 'required',
-            'formatpengeluaran' => 'required',
+            'statusaktif' => ['required', Rule::in($status),'numeric', 'min:1'],
+            'formatpenerimaan' => 'required','numeric', 'min:1',
+            'formatpengeluaran' => 'required','numeric', 'min:1',
         ];
 
         return $rules;

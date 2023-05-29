@@ -36,7 +36,7 @@ class StoreBankPelangganRequest extends FormRequest
         return [
             'kodebank' => ['required', 'unique:bankpelanggan'],
             'namabank' => ['required', 'unique:bankpelanggan'],
-            'statusaktif' => ['required', Rule::in($status)],
+            'statusaktif' => ['required', Rule::in($status),'numeric', 'min:1'],
         ];
     }
 

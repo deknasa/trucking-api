@@ -37,7 +37,7 @@ class UpdateBankPelangganRequest extends FormRequest
         $rules = [
             'kodebank' => ['required',Rule::unique('bankpelanggan')->whereNotIn('id', [$this->id])],
             'namabank' => ['required',Rule::unique('bankpelanggan')->whereNotIn('id', [$this->id])],
-            'statusaktif' => ['required', Rule::in($status)],
+            'statusaktif' => ['required', Rule::in($status),'numeric', 'min:1'],
         ];
 
         return $rules;
