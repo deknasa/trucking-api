@@ -7,7 +7,7 @@ use App\Models\Parameter;
 use Illuminate\Foundation\Http\FormRequest;
 use App\Rules\DateTutupBuku;
 
-class StorePendapatanSupirHeaderRequest extends FormRequest
+class DestroyPendapatanSupirHeaderRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
@@ -30,12 +30,10 @@ class StorePendapatanSupirHeaderRequest extends FormRequest
         $getBatas = $parameter->getBatasAwalTahun();
         $tglbatasawal = $getBatas->text;
         $tglbatasakhir = (date('Y') + 1) . '-01-01';
-
         
         $rules = [
-            'tglbukti' => [
-                'required',
-                'date_equals:'.date('d-m-Y'),
+            "tglbukti" => [
+                "required",
                 new DateTutupBuku()
             ],
             'bank' => 'required',
@@ -55,7 +53,7 @@ class StorePendapatanSupirHeaderRequest extends FormRequest
             ],
         ];
         $relatedRequests = [
-            StorePendapatanSupirDetailRequest::class
+            UpdatePendapatanSupirDetailRequest::class
         ];
 
         foreach ($relatedRequests as $relatedRequest) {
