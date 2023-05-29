@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\DestroyJurnalUmumRequest;
 use App\Http\Requests\GetIndexRangeRequest;
 use App\Http\Requests\StoreJurnalUmumDetailRequest;
 use App\Models\JurnalUmumHeader;
@@ -362,7 +363,7 @@ class JurnalUmumHeaderController extends Controller
     /**
      * @ClassName
      */
-    public function destroy(Request $request, $id)
+    public function destroy(DestroyJurnalUmumRequest $request, $id)
     {
         DB::beginTransaction();
 
@@ -419,6 +420,40 @@ class JurnalUmumHeaderController extends Controller
                 'status' => false,
                 'message' => 'Gagal dihapus'
             ]);
+        }
+    }
+
+    public function cekValidasiAksi($id)
+    {
+        $jurnalumumHeader = new JurnalUmumHeader();
+        $nobukti = JurnalUmumHeader::from(DB::raw("jurnalumumheader"))->where('id', $id)->first();
+        $cekdata = $jurnalumumHeader->cekvalidasiaksi($nobukti->nobukti);
+        if ($cekdata['kondisi'] == true) {
+            $query = DB::table('error')
+                ->select(
+                    DB::raw("ltrim(rtrim(keterangan))+' (" . $cekdata['keterangan'] . ")' as keterangan")
+                )
+                ->where('kodeerror', '=', $cekdata['kodeerror'])
+                ->get();
+            $keterangan = $query['0'];
+
+            $data = [
+                'status' => false,
+                'message' => $keterangan,
+                'errors' => '',
+                'kondisi' => $cekdata['kondisi'],
+            ];
+
+            return response($data);
+        } else {
+            $data = [
+                'status' => false,
+                'message' => '',
+                'errors' => '',
+                'kondisi' => $cekdata['kondisi'],
+            ];
+
+            return response($data);
         }
     }
 
@@ -737,44 +772,28 @@ class JurnalUmumHeaderController extends Controller
     public function cekapproval($id)
     {
         $jurnalumum = JurnalUmumHeader::find($id);
-        $statusformat = $jurnalumum->statusformat;
         $status = $jurnalumum->statusapproval;
 
-        if ($statusformat != 0) {
-            if ($status == '3') {
-                $query = DB::table('error')
-                    ->select('keterangan')
-                    ->where('kodeerror', '=', 'SAP')
-                    ->get();
-                $keterangan = $query['0'];
-                $data = [
-                    'message' => $keterangan,
-                    'errors' => 'sudah approve',
-                    'kodestatus' => '1',
-                    'kodenobukti' => '1'
-                ];
-
-                return response($data);
-            } else {
-                $data = [
-                    'message' => '',
-                    'errors' => 'belum approve',
-                    'kodestatus' => '0',
-                    'kodenobukti' => '1'
-                ];
-
-                return response($data);
-            }
-        } else {
+        if ($status == '3') {
             $query = DB::table('error')
                 ->select('keterangan')
-                ->where('kodeerror', '=', 'BADJ')
+                ->where('kodeerror', '=', 'SAP')
                 ->get();
             $keterangan = $query['0'];
             $data = [
                 'message' => $keterangan,
-                'errors' => 'bukan adj',
-                'kodenobukti' => '0'
+                'errors' => 'sudah approve',
+                'kodestatus' => '1',
+                'kodenobukti' => '1'
+            ];
+
+            return response($data);
+        } else {
+            $data = [
+                'message' => '',
+                'errors' => 'belum approve',
+                'kodestatus' => '0',
+                'kodenobukti' => '1'
             ];
 
             return response($data);

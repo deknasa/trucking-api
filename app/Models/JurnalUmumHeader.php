@@ -219,6 +219,119 @@ class JurnalUmumHeader extends MyModel
 
         return $query;
     }
+    public function cekvalidasiaksi($nobukti)
+    {
+        $pengeluaran = DB::table('pengeluaranheader')
+            ->from(
+                DB::raw("pengeluaranheader as a with (readuncommitted)")
+            )
+            ->select(
+                'a.nobukti'
+            )
+            ->where('a.nobukti', '=', $nobukti)
+            ->first();
+        if (isset($pengeluaran)) {
+            $data = [
+                'kondisi' => true,
+                'keterangan' => 'Pengeluaran',
+                'kodeerror' => 'TDT'
+            ];
+            goto selesai;
+        }
+        $penerimaan = DB::table('penerimaanheader')
+            ->from(
+                DB::raw("penerimaanheader as a with (readuncommitted)")
+            )
+            ->select(
+                'a.nobukti'
+            )
+            ->where('a.nobukti', '=', $nobukti)
+            ->first();
+        if (isset($penerimaan)) {
+            $data = [
+                'kondisi' => true,
+                'keterangan' => 'Penerimaan',
+                'kodeerror' => 'TDT'
+            ];
+            goto selesai;
+        }
+        $hutang = DB::table('hutangheader')
+            ->from(
+                DB::raw("hutangheader as a with (readuncommitted)")
+            )
+            ->select(
+                'a.nobukti'
+            )
+            ->where('a.nobukti', '=', $nobukti)
+            ->first();
+        if (isset($hutang)) {
+            $data = [
+                'kondisi' => true,
+                'keterangan' => 'Hutang',
+                'kodeerror' => 'TDT'
+            ];
+            goto selesai;
+        }
+        $piutang = DB::table('piutangheader')
+            ->from(
+                DB::raw("piutangheader as a with (readuncommitted)")
+            )
+            ->select(
+                'a.nobukti'
+            )
+            ->where('a.nobukti', '=', $nobukti)
+            ->first();
+        if (isset($piutang)) {
+            $data = [
+                'kondisi' => true,
+                'keterangan' => 'Piutang',
+                'kodeerror' => 'TDT'
+            ];
+            goto selesai;
+        }
+        $penerimaanGiro = DB::table('penerimaangiroheader')
+            ->from(
+                DB::raw("penerimaangiroheader as a with (readuncommitted)")
+            )
+            ->select(
+                'a.nobukti'
+            )
+            ->where('a.nobukti', '=', $nobukti)
+            ->first();
+        if (isset($penerimaanGiro)) {
+            $data = [
+                'kondisi' => true,
+                'keterangan' => 'Penerimaan Giro',
+                'kodeerror' => 'TDT'
+            ];
+            goto selesai;
+        }
+        $prosesGajiSupir = DB::table('prosesgajisupirheader')
+            ->from(
+                DB::raw("prosesgajisupirheader as a with (readuncommitted)")
+            )
+            ->select(
+                'a.nobukti'
+            )
+            ->where('a.nobukti', '=', $nobukti)
+            ->first();
+        if (isset($prosesGajiSupir)) {
+            $data = [
+                'kondisi' => true,
+                'keterangan' => 'Proses Gaji Supir',
+                'kodeerror' => 'TDT'
+            ];
+            goto selesai;
+        }
+
+
+        $data = [
+            'kondisi' => false,
+            'keterangan' => '',
+        ];
+        selesai:
+        return $data;
+    }
 
     public function paginate($query)
     {
