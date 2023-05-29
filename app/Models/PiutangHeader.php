@@ -106,6 +106,23 @@ class PiutangHeader extends MyModel
             ];
             goto selesai;
         }
+        $invoice = DB::table('invoiceheader')
+            ->from(
+                DB::raw("invoiceheader as a with (readuncommitted)")
+            )
+            ->select(
+                'a.piutang_nobukti'
+            )
+            ->where('a.piutang_nobukti', '=', $nobukti)
+            ->first();
+        if (isset($invoice)) {
+            $data = [
+                'kondisi' => true,
+                'keterangan' => 'Invoice',
+                'kodeerror' => 'TDT'
+            ];
+            goto selesai;
+        }
 
 
         $data = [
