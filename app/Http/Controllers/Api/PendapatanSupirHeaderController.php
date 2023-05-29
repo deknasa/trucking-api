@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\DestroyPendapatanSupirHeaderRequest;
 use App\Http\Requests\StoreLogTrailRequest;
 use App\Http\Requests\StorePendapatanSupirDetailRequest;
 use App\Models\PendapatanSupirHeader;
