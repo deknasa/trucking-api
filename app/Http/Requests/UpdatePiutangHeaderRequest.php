@@ -79,6 +79,7 @@ class UpdatePiutangHeaderRequest extends FormRequest
     {
         return [
             'nominal_detail.*.gt' => 'Nominal Tidak Boleh Kosong dan Harus Lebih Besar Dari 0',
+            'agen_id.required' => ':attribute ' . app(ErrorController::class)->geterror('HPDL')->keterangan,
             'tglbukti.date_format' => app(ErrorController::class)->geterror('DF')->keterangan,
         ];
     }

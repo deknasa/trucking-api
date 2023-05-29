@@ -2,6 +2,7 @@
 
 namespace App\Rules;
 
+use App\Http\Controllers\Api\ErrorController;
 use Illuminate\Contracts\Validation\Rule;
 use Illuminate\Support\Facades\DB;
 
@@ -55,6 +56,7 @@ class UniqueUpahSupirSampaiEdit implements Rule
      */
     public function message()
     {
-        return 'The validation error message.';
+        $controller = new ErrorController;
+        return 'KOTA SAMPAI ' . $controller->geterror('SPI')->keterangan;
     }
 }

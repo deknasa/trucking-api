@@ -94,6 +94,7 @@ class StoreGajiSupirHeaderRequest extends FormRequest
     {
         $tglbatasakhir = (date('Y') + 1) . '-01-01';
         return [
+            'supir_id.required' => ':attribute ' . app(ErrorController::class)->geterror('HPDL')->keterangan,
             'rincianId' => app(ErrorController::class)->geterror('WP')->keterangan,
             'tglbukti.date_format' => app(ErrorController::class)->geterror('DF')->keterangan,
             'tgldari.before' => app(ErrorController::class)->geterror('NTLB')->keterangan. ' '.$tglbatasakhir,
