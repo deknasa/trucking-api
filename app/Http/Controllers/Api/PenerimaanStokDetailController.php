@@ -93,6 +93,7 @@ class PenerimaanStokDetailController extends Controller
             [
                 'stok_id' => 'stok',
                 'persentasediscount' => 'persentase discount',
+                'detail_keterangan' => 'detail keterangan',
             ],
         );
         if (!$validator->passes()) {

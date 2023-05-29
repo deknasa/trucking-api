@@ -639,6 +639,7 @@ route::middleware(['auth:api'])->group(function () {
     Route::resource('supplier', SupplierController::class);
 
     Route::get('stok/default', [StokController::class, 'default']);
+    Route::get('stok/field_length', [StokController::class, 'fieldLength']);
     Route::post('stok/{id}/cekValidasi', [StokController::class, 'cekValidasi'])->name('stok.cekValidasi');
     Route::get('stok/export', [StokController::class, 'export']);
     Route::get('stok/report', [StokController::class, 'report']);
