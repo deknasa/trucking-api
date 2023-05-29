@@ -15,7 +15,7 @@ class UpdateJenisTradoRequest extends FormRequest
      */
     public function authorize()
     {
-        return false;
+        return true;
     }
 
     /**
@@ -33,7 +33,7 @@ class UpdateJenisTradoRequest extends FormRequest
         }
 
         return [
-            'kodejenisorder' => ['required',Rule::unique('jenisorder')->whereNotIn('id', [$this->id])],
+            'kodejenistrado' => ['required',Rule::unique('jenistrado')->whereNotIn('id', [$this->id])],
             'statusaktif' => ['required', Rule::in($status)]
         ];
     }
@@ -41,8 +41,9 @@ class UpdateJenisTradoRequest extends FormRequest
     public function attributes()
     {
         return [
-            'kodejenisorder' => 'kode jenis order',
+            'kodejenistrado' => 'kode jenis trado',
             'statusaktif' => 'status',
         ];
     }
+    
 }

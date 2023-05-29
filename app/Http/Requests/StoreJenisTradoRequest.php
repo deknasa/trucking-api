@@ -3,6 +3,10 @@
 namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
+use App\Http\Controllers\Api\ParameterController;
+use App\Models\Parameter;
+use Illuminate\Validation\Rule;
+
 
 class StoreJenisTradoRequest extends FormRequest
 {
@@ -23,9 +27,26 @@ class StoreJenisTradoRequest extends FormRequest
      */
     public function rules()
     {
+
+        $parameter = new Parameter();
+        $data = $parameter->getcombodata('STATUS AKTIF', 'STATUS AKTIF');
+        $data = json_decode($data, true);
+        foreach ($data as $item) {
+            $status[] = $item['id'];
+        }
+
+        $rules = [
+            'kodejenistrado' => ['required', 'unique:jenistrado'],
+            'statusaktif' => ['required', Rule::in($status)]
+        ];
+        return $rules;
+    }
+
+    public function attributes()
+    {
         return [
-            'kodejenistrado' => 'required',
-            'statusaktif' => 'required',
+            'kodejenistrado' => 'kode jenis trado',
+            'statusaktif' => 'status',
         ];
     }
 }
