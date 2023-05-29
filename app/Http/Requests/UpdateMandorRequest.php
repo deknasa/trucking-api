@@ -7,7 +7,6 @@ use App\Http\Controllers\Api\ErrorController;
 use App\Models\Parameter;
 use Illuminate\Validation\Rule;
 
-
 class UpdateMandorRequest extends FormRequest
 {
     /**

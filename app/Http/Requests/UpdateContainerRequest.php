@@ -3,7 +3,9 @@
 namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
-use App\Http\Controllers\Api\ErrorController;
+use Illuminate\Validation\Rule;
+use App\Models\Parameter;
+
 
 class UpdateContainerRequest extends FormRequest
 {
@@ -24,8 +26,14 @@ class UpdateContainerRequest extends FormRequest
      */
     public function rules()
     {
+        $parameter = new Parameter();
+        $data = $parameter->getcombodata('STATUS AKTIF', 'STATUS AKTIF');
+        $data = json_decode($data, true);
+        foreach ($data as $item) {
+            $status[] = $item['id'];
+        } 
         return [
-            'statusaktif' => 'required'
+            'statusaktif' => ['required', Rule::in($status)]
         ];
     }
 
@@ -37,12 +45,12 @@ class UpdateContainerRequest extends FormRequest
         ];
     }
 
-    public function messages()
-    {
-        $controller = new ErrorController;
+    // public function messages()
+    // {
+    //     $controller = new ContainerController;
         
-        return [
-            'statusaktif.required' => ':attribute '. $controller->geterror('WI')->keterangan,
-        ];
-    }
+    //     return [
+    //         'statusaktif.required' => ':attribute '. $controller->geterror('WI')->keterangan,
+    //     ];
+    // }
 }

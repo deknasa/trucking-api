@@ -32,8 +32,7 @@ class StoreMandorRequest extends FormRequest
         $data = json_decode($data, true);
         foreach ($data as $item) {
             $status[] = $item['id'];
-        }
-
+        } 
         return [
             'namamandor' => 'required|unique:mandor',
             'statusaktif' => ['required', Rule::in($status)],

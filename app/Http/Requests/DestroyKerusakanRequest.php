@@ -4,7 +4,11 @@ namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
 
-class UpdateKerusakanRequest extends FormRequest
+use App\Http\Controllers\Api\ErrorController;
+use App\Models\Parameter;
+use Illuminate\Validation\Rule;
+
+class DestroyKerusakanRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
@@ -23,8 +27,17 @@ class UpdateKerusakanRequest extends FormRequest
      */
     public function rules()
     {
+
+        $parameter = new Parameter();
+        $data = $parameter->getcombodata('STATUS AKTIF', 'STATUS AKTIF');
+        $data = json_decode($data, true);
+        foreach ($data as $item) {
+            $status[] = $item['id'];
+        }
+
         return [
-            'statusaktif' => 'required'
+            'keterangan' => ['required',Rule::unique('kerusakan')->whereNotIn('id', [$this->id])],
+            'statusaktif' => ['required', Rule::in($status)],
         ];
     }
 }

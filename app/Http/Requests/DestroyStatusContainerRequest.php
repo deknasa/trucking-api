@@ -7,7 +7,7 @@ use App\Http\Controllers\Api\ErrorController;
 use App\Models\Parameter;
 use Illuminate\Validation\Rule;
 
-class UpdateStatusContainerRequest extends FormRequest
+class DestroyStatusContainerRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
@@ -41,7 +41,6 @@ class UpdateStatusContainerRequest extends FormRequest
     public function attributes()
     {
         return [
-
             'kodestatuscontainer' => 'kode status container',
             'statusaktif' => 'status aktif',
         ];
