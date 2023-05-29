@@ -5,6 +5,8 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\StoreHariLiburRequest;
 use App\Http\Requests\UpdateHariLiburRequest;
+use App\Http\Requests\DestroyHariLiburRequest;
+
 use App\Http\Requests\StoreLogTrailRequest;
 use App\Models\HariLibur;
 use Illuminate\Http\Request;
@@ -139,7 +141,7 @@ class HariLiburController extends Controller
     /**
      * @ClassName 
      */
-    public function destroy(Request $request, $id)
+    public function destroy(DestroyHariLiburRequest $request, $id)
     {
         DB::beginTransaction();
 
