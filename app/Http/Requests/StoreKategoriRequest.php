@@ -41,13 +41,13 @@ class StoreKategoriRequest extends FormRequest
                     'subkelompok_id' => ['required', 'numeric', 'min:1']
                 ];
             } else {
-                if ($this->zona == '') {
+                if ($this->subkelompok == '') {
                     $rulesSubKelompok_id = [
-                        'zona' => ['required']
+                        'subkelompok' => ['required']
                     ];
                 }
             }
-        } else if ($subkelompok_id == null && $this->zona != '') {
+        } else if ($subkelompok_id == null && $this->subkelompok != '') {
             $rulesSubKelompok_id = [
                 'subkelompok_id' => ['required', 'numeric', 'min:1']
             ];
