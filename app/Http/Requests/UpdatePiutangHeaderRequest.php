@@ -26,6 +26,20 @@ class UpdatePiutangHeaderRequest extends FormRequest
      */
     public function rules()
     {
+        $agen_id = $this->agen_id;
+        $rulesAgen_id = [];
+        if ($agen_id != null) {
+            if ($agen_id == 0) {
+                $rulesAgen_id = [
+                    'agen_id' => ['required', 'numeric', 'min:1']
+                ];
+            }
+        } else if ($agen_id == null && $this->agen != '') {
+            $rulesAgen_id = [
+                'agen_id' => ['required', 'numeric', 'min:1']
+            ];
+        }
+
         $rules = [
             'tglbukti' => [
                 'required','date_format:d-m-Y',
@@ -42,7 +56,8 @@ class UpdatePiutangHeaderRequest extends FormRequest
         foreach ($relatedRequests as $relatedRequest) {
             $rules = array_merge(
                 $rules,
-                (new $relatedRequest)->rules()
+                (new $relatedRequest)->rules(),
+                $rulesAgen_id
             );
         }
         

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\DestroyPiutangHeaderRequest;
 use App\Models\PiutangHeader;
 use App\Http\Requests\StorePiutangHeaderRequest;
 use App\Http\Requests\UpdatePiutangHeaderRequest;
@@ -277,7 +278,6 @@ class PiutangHeaderController extends Controller
             $proseslain = $request->proseslain ?? 0;
             $getCoa = Agen::from(DB::raw("agen with (readuncommitted)"))->where('id', $request->agen_id)->first();
 
-            $piutangHeader->tglbukti = date('Y-m-d', strtotime($request->tglbukti));
             $piutangHeader->modifiedby = auth('api')->user()->name;
             $piutangHeader->agen_id = $request->agen_id;
             $piutangHeader->coadebet = $getCoa->coa;
@@ -415,7 +415,7 @@ class PiutangHeaderController extends Controller
     /**
      * @ClassName
      */
-    public function destroy(Request $request, $id)
+    public function destroy(DestroyPiutangHeaderRequest $request, $id)
     {
         DB::beginTransaction();
 
@@ -606,7 +606,7 @@ class PiutangHeaderController extends Controller
                 ->select(
                     DB::raw("ltrim(rtrim(keterangan))+' (" . $cekdata['keterangan'] . ")' as keterangan")
                 )
-                ->where('kodeerror', '=', 'SATL')
+                ->where('kodeerror', '=', $cekdata['kodeerror'])
                 ->get();
             $keterangan = $query['0'];
 
@@ -619,31 +619,12 @@ class PiutangHeaderController extends Controller
 
             return response($data);
         } else {
-            $invoice = $nobukti->invoice_nobukti ?? false;
-            if ($invoice) {
-                $query = DB::table('error')
-                    ->select(
-                        DB::raw("ltrim(rtrim(keterangan))+' (" . $nobukti['postingdari'] . ")' as keterangan")
-                    )
-                    ->where('kodeerror', '=', 'TDT')
-                    ->get();
-                $keterangan = $query['0'];
-
-                $data = [
-                    'status' => false,
-                    'message' => $keterangan,
-                    'errors' => '',
-                    'kondisi' => true,
-                ];
-            } else {
-
-                $data = [
-                    'status' => false,
-                    'message' => '',
-                    'errors' => '',
-                    'kondisi' => $cekdata['kondisi'],
-                ];
-            }
+            $data = [
+                'status' => false,
+                'message' => '',
+                'errors' => '',
+                'kondisi' => $cekdata['kondisi'],
+            ];
 
             return response($data);
         }
