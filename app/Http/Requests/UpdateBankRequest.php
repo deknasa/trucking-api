@@ -38,9 +38,9 @@ class UpdateBankRequest extends FormRequest
             'namabank' => ['required',Rule::unique('bank')->whereNotIn('id', [$this->id])],
             'coa' => ['required',Rule::unique('bank')->whereNotIn('id', [$this->id])],
             'tipe' => 'required',
-            'statusaktif' => ['required', Rule::in($status)],
-            'formatpenerimaan' => 'required',
-            'formatpengeluaran' => 'required',
+            'statusaktif' => ['required', Rule::in($status),'numeric', 'min:1'],
+            'formatpenerimaan' => 'required','numeric', 'min:1',
+            'formatpengeluaran' => 'required',,'numeric', 'min:1',
         ];
         return $rules;
     }
