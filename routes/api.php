@@ -688,6 +688,7 @@ route::middleware(['auth:api'])->group(function () {
     Route::post('jurnalumumheader/{id}/cekapproval', [JurnalUmumHeaderController::class, 'cekapproval'])->name('jurnalumumheader.cekapproval');
     Route::get('jurnalumumheader/grid', [JurnalUmumHeaderController::class, 'grid']);
     Route::post('jurnalumumheader/approval', [JurnalUmumHeaderController::class, 'approval']);
+    Route::post('jurnalumumheader/{id}/cekvalidasiaksi', [JurnalUmumHeaderController::class, 'cekvalidasiaksi']);
     Route::post('jurnalumumheader/copy', [JurnalUmumHeaderController::class, 'copy']);
     Route::get('jurnalumumheader/field_length', [JurnalUmumHeaderController::class, 'fieldLength']);
     Route::resource('jurnalumumheader', JurnalUmumHeaderController::class);
