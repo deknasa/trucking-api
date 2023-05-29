@@ -3,11 +3,9 @@
 namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
-use App\Http\Controllers\Api\ErrorController;
-use App\Models\Parameter;
 use Illuminate\Validation\Rule;
-
-class UpdateStatusContainerRequest extends FormRequest
+use App\Models\Parameter;
+class UpdateMandorRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
@@ -31,19 +29,19 @@ class UpdateStatusContainerRequest extends FormRequest
         $data = json_decode($data, true);
         foreach ($data as $item) {
             $status[] = $item['id'];
-        }
+        } 
         return [
-            'kodestatuscontainer' => ['required',Rule::unique('statuscontainer')->whereNotIn('id', [$this->id])],
-            'statusaktif' => ['required', Rule::in($status)],
+            'namamandor' => 'required',
+            'statusaktif' => 'required',
         ];
     }
 
     public function attributes()
     {
         return [
-
-            'kodestatuscontainer' => 'kode status container',
-            'statusaktif' => 'status aktif',
+            'namamandor' => 'nama mandor',
+            'statusaktif' => 'statusaktif',
         ];
+        
     }
 }

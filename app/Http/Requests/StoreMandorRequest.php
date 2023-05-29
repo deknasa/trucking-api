@@ -23,6 +23,12 @@ class StoreMandorRequest extends FormRequest
      */
     public function rules()
     {
+        $parameter = new Parameter();
+        $data = $parameter->getcombodata('STATUS AKTIF', 'STATUS AKTIF');
+        $data = json_decode($data, true);
+        foreach ($data as $item) {
+            $status[] = $item['id'];
+        } 
         return [
             'namamandor' => 'required',
             'statusaktif' => 'required',
