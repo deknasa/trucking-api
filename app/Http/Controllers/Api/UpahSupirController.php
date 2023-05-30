@@ -71,7 +71,7 @@ class UpahSupirController extends Controller
             $upahsupir->parent_id = $request->parent_id ?? 0;
             $upahsupir->tarif_id = $request->tarif_id ?? 0;
             $upahsupir->kotasampai_id = $request->kotasampai_id;
-            $upahsupir->jarak = str_replace(',', '', str_replace('.', '', $request->jarak));
+            $upahsupir->jarak = $request->jarak;
             $upahsupir->zona_id = ($request->zona_id == null) ? 0 : $request->zona_id ?? 0;
             $upahsupir->statusaktif = $request->statusaktif;
             $upahsupir->tglmulaiberlaku = date('Y-m-d', strtotime($request->tglmulaiberlaku));
@@ -192,7 +192,7 @@ class UpahSupirController extends Controller
             $upahsupir->parent_id = $request->parent_id ?? 0;
             $upahsupir->tarif_id = $request->tarif_id ?? 0;
             $upahsupir->kotasampai_id = $request->kotasampai_id;
-            $upahsupir->jarak = str_replace(',', '', str_replace('.', '', $request->jarak));
+            $upahsupir->jarak = $request->jarak;
             $upahsupir->zona_id = ($request->zona_id == null) ? 0 : $request->zona_id ?? 0;
             $upahsupir->statusaktif = $request->statusaktif;
             $upahsupir->tglmulaiberlaku = date('Y-m-d', strtotime($request->tglmulaiberlaku));

@@ -107,12 +107,12 @@ class StoreUpahSupirRequest extends FormRequest
         if ($kotadari_id != null) {
             if ($kotadari_id == 0) {
                 $rulesKotaDari_id = [
-                    'kotadari_id' => ['required', 'numeric', 'min:1', new UniqueUpahSupirDari()]
+                    'kotadari_id' => ['required', 'numeric', 'min:1']
                 ];
             } 
         } else if ($kotadari_id == null && $this->kotadari != '') {
             $rulesKotaDari_id = [
-                'kotadari_id' => ['required', 'numeric', 'min:1', new UniqueUpahSupirDari()]
+                'kotadari_id' => ['required', 'numeric', 'min:1']
             ];
         }
 
@@ -124,7 +124,7 @@ class StoreUpahSupirRequest extends FormRequest
                     'kotasampai_id' => ['required', 'numeric', 'min:1', new UniqueUpahSupirSampai()]
                 ];
             } 
-        } else if ($kotasampai_id == null && $this->kotadari != '') {
+        } else if ($kotasampai_id == null && $this->kotasampai != '') {
             $rulesKotaSampai_id = [
                 'kotasampai_id' => ['required', 'numeric', 'min:1', new UniqueUpahSupirSampai()]
             ];
@@ -136,8 +136,8 @@ class StoreUpahSupirRequest extends FormRequest
         $tglBatasAkhir = (date('Y') + 1) . '-01-01';
         $rules =  [
             'kotadari' => ['required'],
-            'kotasampai' => ['required'],
-            'jarak' => ['required','numeric','min:0','max:'. (new ParameterController)->getparamid('BATAS KM UPAH SUPIR','BATAS KM UPAH SUPIR')->text],
+            'kotasampai' => ['required',new UniqueUpahSupirSampai()],
+            'jarak' => ['required','numeric','gt:0','max:'. (new ParameterController)->getparamid('BATAS KM UPAH SUPIR','BATAS KM UPAH SUPIR')->text],
             'statusaktif' => ['required', Rule::in($statusAktif)],
             'statusluarkota' => ['required', Rule::in($statusLuarKota)],
             'tglmulaiberlaku' => ['required','date_format:d-m-Y',
@@ -179,5 +179,18 @@ class StoreUpahSupirRequest extends FormRequest
         ];
     }
 
+    public function messages()
+    {
+        $controller = new ErrorController;
+        return [
+            'jarak.max' => ':attribute ' . 'maximal jarak '. (new ParameterController)->getparamid('BATAS KM UPAH SUPIR','BATAS KM UPAH SUPIR')->text,
+            'jarak.gt' => ':attribute ' . (new ErrorController)->geterror('GT-ANGKA-0')->keterangan,
+            'kotadari_id.required' => ':attribute ' . $controller->geterror('HPDL')->keterangan,
+            'kotasampai_id.required' => ':attribute ' . $controller->geterror('HPDL')->keterangan,
+            'parent_id.required' => ':attribute ' . $controller->geterror('HPDL')->keterangan,
+            'tarif_id.required' => ':attribute ' . $controller->geterror('HPDL')->keterangan,
+            'zona_id.required' => ':attribute ' . $controller->geterror('HPDL')->keterangan,
+        ];
+    }
 
 }

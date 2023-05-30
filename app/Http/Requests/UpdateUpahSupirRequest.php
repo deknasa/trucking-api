@@ -4,6 +4,7 @@ namespace App\Http\Requests;
 use App\Http\Controllers\Api\ParameterController;
 use App\Http\Controllers\Api\ErrorController;
 use App\Models\Parameter;
+use App\Models\UpahSupir;
 use App\Rules\UniqueUpahSupirSampaiEdit;
 use Illuminate\Validation\Rule;
 
@@ -123,11 +124,14 @@ class UpdateUpahSupirRequest extends FormRequest
                     'kotasampai_id' => ['required', 'numeric', 'min:1', new UniqueUpahSupirSampaiEdit()]
                 ];
             } 
-        } else if ($kotasampai_id == null && $this->kotadari != '') {
+        } else if ($kotasampai_id == null && $this->kotasampai != '') {
             $rulesKotaSampai_id = [
                 'kotasampai_id' => ['required', 'numeric', 'min:1', new UniqueUpahSupirSampaiEdit()]
             ];
         }
+
+        $upahSupir = new UpahSupir();
+        $getTglMulaiBerlaku = $upahSupir->findAll(request()->id);
 
         $parameter = new Parameter();
         $getBatas = $parameter->getBatasAwalTahun();
@@ -135,13 +139,13 @@ class UpdateUpahSupirRequest extends FormRequest
         $tglBatasAkhir = (date('Y') + 1) . '-01-01';
         $rules =  [
             'kotadari' => ['required'],
-            'kotasampai' => ['required'],
-            'jarak' => ['required','numeric','gt:0','min:0','max:'. (new ParameterController)->getparamid('BATAS KM UPAH SUPIR','BATAS KM UPAH SUPIR')->text],
+            'kotasampai' => ['required',new UniqueUpahSupirSampaiEdit()],
+            'jarak' => ['required','numeric','gt:0','max:'. (new ParameterController)->getparamid('BATAS KM UPAH SUPIR','BATAS KM UPAH SUPIR')->text],
             'statusaktif' => ['required', Rule::in($statusAktif)],
             'statusluarkota' => ['required', Rule::in($statusLuarKota)],
             'tglmulaiberlaku' => ['required','date_format:d-m-Y',
                 'before:'.$tglBatasAkhir,
-                'after_or_equal:'.$tglbatasawal],
+                'after_or_equal:'.date('d-m-Y', strtotime($getTglMulaiBerlaku->tglmulaiberlaku))],
             'gambar.*' => 'image'
         ];
         $relatedRequests = [
@@ -180,10 +184,16 @@ class UpdateUpahSupirRequest extends FormRequest
 
     public function messages()
     {
+        $controller = new ErrorController;
         return [
             'jarak.max' => ':attribute ' . 'maximal jarak '. (new ParameterController)->getparamid('BATAS KM UPAH SUPIR','BATAS KM UPAH SUPIR')->text,
-            'jarak.min' => ':attribute ' . (new ErrorController)->geterror('TBMINUS')->keterangan,
+            'jarak.gt' => ':attribute ' . (new ErrorController)->geterror('GT-ANGKA-0')->keterangan,
             'nominalsupir.*.gt' => ':attribute ' . (new ErrorController)->geterror('WI')->keterangan,
+            'kotadari_id.required' => ':attribute ' . $controller->geterror('HPDL')->keterangan,
+            'kotasampai_id.required' => ':attribute ' . $controller->geterror('HPDL')->keterangan,
+            'parent_id.required' => ':attribute ' . $controller->geterror('HPDL')->keterangan,
+            'tarif_id.required' => ':attribute ' . $controller->geterror('HPDL')->keterangan,
+            'zona_id.required' => ':attribute ' . $controller->geterror('HPDL')->keterangan,
         ];
     }
 }

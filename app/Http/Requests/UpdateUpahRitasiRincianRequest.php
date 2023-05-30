@@ -26,6 +26,7 @@ class UpdateUpahRitasiRincianRequest extends FormRequest
     {
         return [
             'container.*' => 'required',
+            'container_id.*' => 'required',
             'nominalsupir.*' => ['required','numeric','min:0','max:'. (new ParameterController)->getparamid('BATAS NILAI UPAH','BATAS NILAI UPAH')->text],
             'liter.*' => ['required','numeric','min:0','max:'. (new ParameterController)->getparamid('BATAS NILAI LITER','BATAS NILAI LITER')->text],
         ];

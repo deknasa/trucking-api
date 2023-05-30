@@ -5,6 +5,8 @@ namespace App\Http\Requests;
 use Illuminate\Foundation\Http\FormRequest;
 use App\Http\Controllers\Api\ParameterController;
 use App\Http\Controllers\Api\ErrorController;
+use App\Models\Parameter;
+use App\Rules\UniqueUpahRitasiSampai;
 use Illuminate\Validation\Rule;
 
 class StoreUpahRitasiRequest extends FormRequest
@@ -26,54 +28,51 @@ class StoreUpahRitasiRequest extends FormRequest
      */
     public function rules()
     {
-        // dd(request()->kotadari_id);
-
-        $kotadari_id = $this->kotadari_id ?? 0;
-        $kotasampai_id = $this->kotasampai_id ?? 0;
-
-        if ($kotadari_id == 0 and $this->kotadari <> '') {
-            $ruleskotadari_id =  [
-                'kotadari_id' => ['required'],
-            ];
-        } else  if ($kotadari_id == 0) {
-            $ruleskotadari_id =  [
-                'kotadari' => ['required',],
-            ];
-        } else if ($kotadari_id <> 0) {
-            $ruleskotadari_id =  [
-                'kotadari_id' => [
-                    'numeric', 'min:1', Rule::unique('upahritasi')
-                        ->where('kotadari_id', [$this->kotadari_id])
-                        ->where('kotasampai_id', [$this->kotasampai_id])
-                ],
+        $kotadari_id = $this->kotadari_id;
+        $rulesKotaDari_id = [];
+        if ($kotadari_id != null) {
+            if ($kotadari_id == 0) {
+                $rulesKotaDari_id = [
+                    'kotadari_id' => ['required', 'numeric', 'min:1']
+                ];
+            } 
+        } else if ($kotadari_id == null && $this->kotadari != '') {
+            $rulesKotaDari_id = [
+                'kotadari_id' => ['required', 'numeric', 'min:1']
             ];
         }
 
-
-        if ($kotasampai_id == 0 and $this->kotasampai_id <> '') {
-            $ruleskotasampai_id =  [
-                'kotasampai_id' => ['required'],
-            ];
-        } else  if ($kotasampai_id == 0) {
-            $ruleskotasampai_id =  [
-                'kotasampai' => ['required',],
-            ];
-        } else if ($kotasampai_id <> 0) {
-            $ruleskotasampai_id =  [
-                'kotaampai_id' => [
-                    'numeric', 'min:1', Rule::unique('upahritasi')
-                        ->where('kotadari_id', [$this->kotadari_id])
-                        ->where('kotasampai_id', [$this->kotasampai_id])
-                ],
+        $kotasampai_id = $this->kotasampai_id;
+        $rulesKotaSampai_id = [];
+        if ($kotasampai_id != null) {
+            if ($kotasampai_id == 0) {
+                $rulesKotaSampai_id = [
+                    'kotasampai_id' => ['required', 'numeric', 'min:1', new UniqueUpahRitasiSampai()]
+                ];
+            } 
+        } else if ($kotasampai_id == null && $this->kotasampai != '') {
+            $rulesKotaSampai_id = [
+                'kotasampai_id' => ['required', 'numeric', 'min:1', new UniqueUpahRitasiSampai()]
             ];
         }
 
+        $parameter = new Parameter();
+        $dataAktif = $parameter->getcombodata('STATUS AKTIF', 'STATUS AKTIF');
+        $dataAktif = json_decode($dataAktif, true);
+        foreach ($dataAktif as $item) {
+            $statusAktif[] = $item['id'];
+        }
 
+        $tglBatasAkhir = (date('Y') + 1) . '-01-01';
         $rules =  [
-
-            'jarak' => ['required', 'numeric', 'min:0', 'max:' . (new ParameterController)->getparamid('BATAS NILAI JARAK', 'BATAS NILAI JARAK')->text],
-            'statusaktif' => 'required',
-            'tglmulaiberlaku' => ['required', 'date_format:d-m-Y'],
+            'kotadari' => 'required',
+            'kotasampai' => ['required', new UniqueUpahRitasiSampai()],
+            'jarak' => ['required', 'numeric', 'gt:0', 'max:' . (new ParameterController)->getparamid('BATAS NILAI JARAK', 'BATAS NILAI JARAK')->text],
+            'statusaktif' => ['required', Rule::in($statusAktif)],
+            'tglmulaiberlaku' => ['required', 'date_format:d-m-Y',
+                'before:'.$tglBatasAkhir,
+                'after_or_equal:'.date('d-m-Y')
+            ],
         ];
 
         $relatedRequests = [
@@ -84,8 +83,8 @@ class StoreUpahRitasiRequest extends FormRequest
             $rules = array_merge(
                 $rules,
                 (new $relatedRequest)->rules(),
-                $ruleskotadari_id,
-                $ruleskotasampai_id
+                $rulesKotaDari_id,
+                $rulesKotaSampai_id
             );
         }
 
@@ -111,10 +110,10 @@ class StoreUpahRitasiRequest extends FormRequest
         $controller = new ErrorController;
 
         return [
+            'jarak.max' => ':attribute ' . 'maximal jarak '. (new ParameterController)->getparamid('BATAS NILAI JARAK','BATAS NILAI JARAK')->text,
+            'jarak.gt' => ':attribute ' . (new ErrorController)->geterror('GT-ANGKA-0')->keterangan,
             'kotadari_id.required' => ':attribute ' . $controller->geterror('HPDL')->keterangan,
             'kotasampai_id.required' => ':attribute ' . $controller->geterror('HPDL')->keterangan,
-            'kotadari_id.unique' => 'DARI DAN TUJUAN ' . $controller->geterror('SPI')->keterangan,
-            'kotasampai_id.unique' => 'DARI DAN TUJUAN ' . $controller->geterror('SPI')->keterangan,
         ];
     }
 }

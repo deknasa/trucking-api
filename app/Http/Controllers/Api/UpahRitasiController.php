@@ -74,10 +74,10 @@ class UpahRitasiController extends Controller
             $upahritasi = new UpahRitasi();
 
             $upahritasi->parent_id = $request->parent_id ?? 0;
-            $upahritasi->kotadari_id = $request->kotadari_id ?? 0;
-            $upahritasi->kotasampai_id = $request->kotasampai_id ?? 0;
-            $upahritasi->jarak = str_replace(',', '', str_replace('.', '', $request->jarak));
-            $upahritasi->statusaktif = $request->statusaktif ?? 0;
+            $upahritasi->kotadari_id = $request->kotadari_id;
+            $upahritasi->kotasampai_id = $request->kotasampai_id;
+            $upahritasi->jarak = $request->jarak;
+            $upahritasi->statusaktif = $request->statusaktif;
             $upahritasi->tglmulaiberlaku = date('Y-m-d', strtotime($request->tglmulaiberlaku));
 
             $upahritasi->modifiedby = auth('api')->user()->name;
@@ -180,7 +180,7 @@ class UpahRitasiController extends Controller
             $upahritasi->parent_id = $request->parent_id ?? 0;
             $upahritasi->kotadari_id = $request->kotadari_id;
             $upahritasi->kotasampai_id = $request->kotasampai_id;
-            $upahritasi->jarak = str_replace(',', '', str_replace('.', '', $request->jarak));
+            $upahritasi->jarak = $request->jarak;
             $upahritasi->statusaktif = $request->statusaktif;
             $upahritasi->tglmulaiberlaku = date('Y-m-d', strtotime($request->tglmulaiberlaku));
 
