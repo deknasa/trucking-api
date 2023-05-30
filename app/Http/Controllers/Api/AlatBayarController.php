@@ -6,6 +6,7 @@ use App\Models\AlatBayar;
 use App\Models\Bank;
 use App\Http\Requests\StoreAlatBayarRequest;
 use App\Http\Requests\UpdateAlatBayarRequest;
+use App\Http\Requests\DestroyAlatBayarRequest;
 use App\Http\Requests\StoreLogTrailRequest;
 
 use App\Http\Controllers\Controller;
@@ -236,7 +237,7 @@ class AlatBayarController extends Controller
     /**
      * @ClassName 
      */
-    public function destroy(Request $request, $id)
+    public function destroy(DestroyAlatBayarRequest $request, $id)
     {
         DB::beginTransaction();
 

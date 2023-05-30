@@ -7,6 +7,7 @@ use App\Models\PengeluaranTrucking;
 use App\Http\Requests\StoreLogTrailRequest;
 use App\Http\Requests\StorePengeluaranTruckingRequest;
 use App\Http\Requests\UpdatePengeluaranTruckingRequest;
+use App\Http\Requests\DestroyPengeluaranTruckingRequest;
 use Illuminate\Database\QueryException;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -130,7 +131,7 @@ class PengeluaranTruckingController extends Controller
     /**
      * @ClassName 
      */
-    public function update(StorePengeluaranTruckingRequest $request, PengeluaranTrucking $pengeluaranTrucking)
+    public function update(UpdatePengeluaranTruckingRequest $request, PengeluaranTrucking $pengeluaranTrucking)
     {
         DB::beginTransaction();
         try {
@@ -180,7 +181,7 @@ class PengeluaranTruckingController extends Controller
     /**
      * @ClassName 
      */
-    public function destroy(Request $request, $id)
+    public function destroy(DestroyPengeluaranTruckingRequest $request, $id)
     {
         DB::beginTransaction();
         $pengeluaranTrucking = new PengeluaranTrucking();

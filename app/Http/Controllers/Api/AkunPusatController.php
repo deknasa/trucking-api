@@ -7,6 +7,7 @@ use App\Models\AkunPusat;
 use App\Http\Requests\StoreAkunPusatRequest;
 use App\Http\Requests\StoreLogTrailRequest;
 use App\Http\Requests\UpdateAkunPusatRequest;
+use App\Http\Requests\DestroyAkunPusatRequest;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
@@ -161,7 +162,7 @@ class AkunPusatController extends Controller
     /**
      * @ClassName 
      */
-    public function destroy(Request $request, $id)
+    public function destroy(DestroyAkunPusatRequest $request, $id)
     {
         DB::beginTransaction();
 

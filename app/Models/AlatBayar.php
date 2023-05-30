@@ -272,9 +272,11 @@ class AlatBayar extends MyModel
                 'alatbayar.statusaktif',
                 'alatbayar.bank_id',
                 'bank.namabank as bank',
-                'alatbayar.coa'
+                'alatbayar.coa',
+                'akunpusat.keterangancoa'
             )
             ->leftJoin(DB::raw("bank with (readuncommitted)"), 'alatbayar.bank_id', 'bank.id')
+            ->leftJoin(DB::raw("akunpusat with (readuncommitted)"), 'alatbayar.coa', 'akunpusat.coa')
             ->where('alatbayar.id', $id);
 
         $data = $query->first();

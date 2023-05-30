@@ -4,6 +4,8 @@ namespace App\Http\Requests;
 
 use App\Http\Controllers\Api\ErrorController;
 use Illuminate\Foundation\Http\FormRequest;
+use App\Models\Parameter;
+use Illuminate\Validation\Rule;
 
 class UpdateAbsenTradoRequest extends FormRequest
 {
@@ -25,10 +27,19 @@ class UpdateAbsenTradoRequest extends FormRequest
 
     public function rules()
     {
-        return [
-            'kodeabsen' => 'required',
-            'statusaktif' => 'required'
+        $parameter = new Parameter();
+        $dataAktif = $parameter->getcombodata('STATUS AKTIF', 'STATUS AKTIF');
+        $dataAktif = json_decode($dataAktif, true);
+        foreach ($dataAktif as $item) {
+            $statusAktif[] = $item['id'];
+        }
+
+        $rules = [
+            "kodeabsen" => ['required',Rule::unique('absentrado')->whereNotIn('id', [$this->id])],
+            "statusaktif" => ['required', Rule::in($statusAktif)],
         ];
+
+        return $rules;
     }
 
     public function attributes()

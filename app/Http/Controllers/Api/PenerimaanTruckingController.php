@@ -8,6 +8,7 @@ use App\Models\PenerimaanTrucking;
 use App\Http\Requests\StoreLogTrailRequest;
 use App\Http\Requests\StorePenerimaanTruckingRequest;
 use App\Http\Requests\UpdatePenerimaanTruckingRequest;
+use App\Http\Requests\DestroyPenerimaanTruckingRequest;
 use Illuminate\Database\QueryException;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -182,7 +183,7 @@ class PenerimaanTruckingController extends Controller
     /**
      * @ClassName 
      */
-    public function destroy(Request $request, $id)
+    public function destroy(DestroyPenerimaanTruckingRequest $request, $id)
     {
 
         DB::beginTransaction();

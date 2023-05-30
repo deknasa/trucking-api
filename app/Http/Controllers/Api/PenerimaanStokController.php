@@ -7,6 +7,7 @@ use App\Http\Controllers\Controller;
 use App\Models\PenerimaanStok;
 use App\Http\Requests\StorePenerimaanStokRequest;
 use App\Http\Requests\UpdatePenerimaanStokRequest;
+use App\Http\Requests\DestroyPenerimaanStokRequest;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
@@ -215,7 +216,7 @@ class PenerimaanStokController extends Controller
     /**
      * @ClassName 
      */
-    public function destroy(Request $request,$id)
+    public function destroy(DestroyPenerimaanStokRequest $request,$id)
     {
         DB::beginTransaction();
 
