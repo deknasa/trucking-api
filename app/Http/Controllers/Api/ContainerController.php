@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Models\Container;
 use App\Http\Requests\StoreContainerRequest;
 use App\Http\Requests\UpdateContainerRequest;
+use App\Http\Requests\DestroyContainerRequest;
 use App\Http\Requests\StoreLogTrailRequest;
 
 use App\Models\LogTrail;
@@ -187,7 +188,7 @@ class ContainerController extends Controller
     /**
      * @ClassName 
      */
-    public function destroy(Request $request, $id)
+    public function destroy(DestroyContainerRequest $request, $id)
     {
         DB::beginTransaction();
         $container = new Container();

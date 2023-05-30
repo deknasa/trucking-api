@@ -7,8 +7,10 @@ use App\Http\Controllers\Api\ErrorController;
 use Illuminate\Validation\Rule;
 use App\Models\Parameter;
 
+use App\Models\Container;
+use App\Rules\ValidasiDestroyContainer ;
 
-class UpdateContainerRequest extends FormRequest
+class DestroyContainerRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
@@ -27,16 +29,8 @@ class UpdateContainerRequest extends FormRequest
      */
     public function rules()
     {
-        $parameter = new Parameter();
-        $data = $parameter->getcombodata('STATUS AKTIF', 'STATUS AKTIF');
-        $data = json_decode($data, true);
-        foreach ($data as $item) {
-            $status[] = $item['id'];
-        } 
         return [
-            'kodecontainer' => ['required',Rule::unique('container')->whereNotIn('id', [$this->id])],
-            'nominalsumbangan' => 'required|integer|gt:0',
-            'statusaktif' => ['required', Rule::in($status)]
+            'kodecontainer' => new ValidasiDestroyContainer(),
         ];
     }
 
