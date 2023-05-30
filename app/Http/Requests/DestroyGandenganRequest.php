@@ -8,7 +8,7 @@ use App\Models\Parameter;
 use Illuminate\Validation\Rule;
 use App\Http\Controllers\Api\ParameterController;
 
-class UpdateGandenganRequest extends FormRequest
+class DestroyGandenganRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
@@ -35,7 +35,7 @@ class UpdateGandenganRequest extends FormRequest
         }
 
         return [
-            'kodegandengan' => ['required',Rule::unique('gandengan')->whereNotIn('id', [$this->id])],
+            'kodegandengan' => 'required',
             'keterangan' => 'required',
             'statusaktif' => ['required', Rule::in($status)]
         ];
@@ -46,17 +46,17 @@ class UpdateGandenganRequest extends FormRequest
         return [
             'kodegandengan' => 'kode gandengan',
             'keterangan' => 'keterangan',
-            'statusaktif' => 'status',
+            'statusaktif' => 'status aktif',
         ];
     }
 
     public function messages()
     {
         $controller = new ErrorController;
-        return [
-            'kodegandengan.required' => ':attribute'.' '. $controller->geterror('WI')->keterangan,
-            'statusaktif.required' => ':attribute'.' '. $controller->geterror('WI')->keterangan,
 
+        return [
+            'kodegandengan.required' => ':attribute' . ' ' . $controller->geterror('WI')->keterangan,
+            'statusaktif.required' => ':attribute' . ' ' . $controller->geterror('WI')->keterangan,
         ];
-    }    
+    }
 }

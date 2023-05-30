@@ -4,6 +4,9 @@ namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
 use App\Http\Controllers\Api\ErrorController;
+use App\Models\Parameter;
+use Illuminate\Validation\Rule;
+use App\Http\Controllers\Api\ParameterController;
 
 class StoreGandenganRequest extends FormRequest
 {
@@ -24,9 +27,17 @@ class StoreGandenganRequest extends FormRequest
      */
     public function rules()
     {
+        $parameter = new Parameter();
+        $data = $parameter->getcombodata('STATUS AKTIF', 'STATUS AKTIF');
+        $data = json_decode($data, true);
+        foreach ($data as $item) {
+            $status[] = $item['id'];
+        }
+
         return [
-            'kodegandengan' => 'required',
-            'statusaktif' => 'required',
+            'kodegandengan' => 'required|unique:gandengan',
+            'keterangan' => 'required',
+            'statusaktif' => ['required', Rule::in($status)]
         ];
     }
 

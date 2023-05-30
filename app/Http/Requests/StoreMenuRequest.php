@@ -25,9 +25,8 @@ class StoreMenuRequest extends FormRequest
     public function rules()
     {
         return [
-            'menuname' => 'required',
-            'menuseq' => 'required|int',
-            'menuicon' => 'required',
+            'menuname' => 'required|unique:menu',
+            'controller' => 'required',
         ];
     }
 
@@ -42,6 +41,7 @@ class StoreMenuRequest extends FormRequest
             'link' => 'link',
             'menuexe' => 'menuexe',
             'menukode' => 'menukode',
+            'controller' => 'controller',
         ];
     }
 }
