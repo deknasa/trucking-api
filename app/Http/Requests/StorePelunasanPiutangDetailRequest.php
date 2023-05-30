@@ -2,8 +2,14 @@
 
 namespace App\Http\Requests;
 
+use App\Rules\CekMaxBayarPelunasanPiutang;
+use App\Rules\CekMinusSisaPelunasanPiutang;
+use App\Rules\RequiredCoaPotonganPelunasanPiutang;
+use App\Rules\RequiredKetPotonganPelunasanPiutang;
+use App\Rules\RequiredPotonganPelunasanPiutang;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
 
 class StorePelunasanPiutangDetailRequest extends FormRequest
 {
@@ -24,18 +30,15 @@ class StorePelunasanPiutangDetailRequest extends FormRequest
      */
     public function rules()
     {
-        
-            return [
-                'piutang_id' => 'required',
-                'bayar' => 'required|array',
-                'bayar.*' => 'required|numeric|gt:0',
-                'keterangan' => 'required|array',
-                'keterangan.*' => 'required',
-                'sisa' => 'required|array',
-                'sisa.*' => 'required|numeric|min:0',
-                
-            ];
-       
+        return [
+            'piutang_id' => 'required',
+            'bayar.*' => ['required', 'numeric', 'gt:0', new CekMaxBayarPelunasanPiutang()],
+            'keterangan.*' => 'required',
+            'sisa.*' => ['required', 'numeric', 'min:0', new CekMinusSisaPelunasanPiutang()],
+            'potongan.*' => ['numeric', 'min:0', new RequiredPotonganPelunasanPiutang()],
+            'nominallebihbayar.*' => ['numeric', 'min:0'],
+            'keteranganpotongan.*' => new RequiredKetPotonganPelunasanPiutang(),
+            'coapotongan.*' => new RequiredCoaPotonganPelunasanPiutang()
+        ];
     }
-   
 }

@@ -3,6 +3,8 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\DestroyPelunasanPiutangHeaderRequest;
+use App\Http\Requests\GetIndexRangeRequest;
 use App\Models\PelunasanPiutangHeader;
 use App\Models\PelunasanPiutangDetail;
 use App\Models\PiutangHeader;
@@ -48,7 +50,7 @@ class PelunasanPiutangHeaderController extends Controller
     /**
      * @ClassName
      */
-    public function index()
+    public function index(GetIndexRangeRequest $request)
     {
         $pengeluarantruckingheader = new PelunasanPiutangHeader();
         return response([
@@ -82,40 +84,40 @@ class PelunasanPiutangHeaderController extends Controller
 
                 $cekSisa = PiutangHeader::from(DB::raw("piutangheader with (readuncommitted)"))->select('nominal')->where('nobukti', $request->piutang_nobukti[$i])->first();
 
-                if ($request->bayar[$i] > $cekSisa->nominal) {
-                    if ($request->nominallebihbayar[$i] == 0) {
+                // if ($request->bayar[$i] > $cekSisa->nominal) {
+                //     if ($request->nominallebihbayar[$i] == 0) {
 
-                        $query =  Error::from(DB::raw("error with (readuncommitted)"))->select('keterangan')->where('kodeerror', '=', 'WI')
-                            ->first();
-                        return response([
-                            'errors' => [
-                                "nominallebihbayar" => "sisa bayar minus. nominal lebih bayar $query->keterangan"
-                            ],
-                            'message' => "The given data was invalid.",
-                        ], 422);
-                    } else {
-                        $query =  Error::from(DB::raw("error with (readuncommitted)"))->select('keterangan')->where('kodeerror', '=', 'STM')
-                            ->first();
-                        return response([
-                            'errors' => [
-                                "bayar" => "$query->keterangan"
-                            ],
-                            'message' => "The given data was invalid.",
-                        ], 422);
-                    }
-                }
+                //         $query =  Error::from(DB::raw("error with (readuncommitted)"))->select('keterangan')->where('kodeerror', '=', 'WI')
+                //             ->first();
+                //         return response([
+                //             'errors' => [
+                //                 "nominallebihbayar" => "sisa bayar minus. nominal lebih bayar $query->keterangan"
+                //             ],
+                //             'message' => "The given data was invalid.",
+                //         ], 422);
+                //     } else {
+                //         $query =  Error::from(DB::raw("error with (readuncommitted)"))->select('keterangan')->where('kodeerror', '=', 'STM')
+                //             ->first();
+                //         return response([
+                //             'errors' => [
+                //                 "bayar" => "$query->keterangan"
+                //             ],
+                //             'message' => "The given data was invalid.",
+                //         ], 422);
+                //     }
+                // }
 
-                $byrPotongan = $request->bayar[$i] + $request->potongan[$i];
-                if ($byrPotongan > $cekSisa->nominal) {
-                    $query =  Error::from(DB::raw("error with (readuncommitted)"))->select('keterangan')->where('kodeerror', '=', 'STM')
-                        ->first();
-                    return response([
-                        'errors' => [
-                            "bayar" => "$query->keterangan"
-                        ],
-                        'message' => "The given data was invalid.",
-                    ], 422);
-                }
+                // $byrPotongan = $request->bayar[$i] + $request->potongan[$i];
+                // if ($byrPotongan > $cekSisa->nominal) {
+                //     $query =  Error::from(DB::raw("error with (readuncommitted)"))->select('keterangan')->where('kodeerror', '=', 'STM')
+                //         ->first();
+                //     return response([
+                //         'errors' => [
+                //             "bayar" => "$query->keterangan"
+                //         ],
+                //         'message' => "The given data was invalid.",
+                //     ], 422);
+                // }
             }
 
 
@@ -487,70 +489,6 @@ class PelunasanPiutangHeaderController extends Controller
 
         try {
 
-            for ($i = 0; $i < count($request->piutang_id); $i++) {
-
-                $cekSisa = PiutangHeader::from(DB::raw("piutangheader with (readuncommitted)"))->select('nominal')->where('nobukti', $request->piutang_nobukti[$i])->first();
-
-                if ($request->bayar[$i] > $cekSisa->nominal) {
-                    if ($request->nominallebihbayar[$i] == 0) {
-
-                        $query =  Error::from(DB::raw("error with (readuncommitted)"))->select('keterangan')->where('kodeerror', '=', 'WI')
-                            ->first();
-                        return response([
-                            'errors' => [
-                                "nominallebihbayar.$i" =>
-                                [$i => "nominal lebih bayar $query->keterangan"]
-                            ],
-                            'message' => "The given data was invalid.",
-                        ], 422);
-                    } else {
-                        $query =  Error::from(DB::raw("error with (readuncommitted)"))->select('keterangan')->where('kodeerror', '=', 'STM')
-                            ->first();
-                        return response([
-                            'errors' => [
-                                "bayar.$i" =>
-                                [$i => "$query->keterangan"]
-                            ],
-                            'message' => "The given data was invalid.",
-                        ], 422);
-                    }
-                }
-                $byrPotongan = $request->bayar[$i] + $request->potongan[$i];
-                if ($byrPotongan > $cekSisa->nominal) {
-                    $query =  Error::from(DB::raw("error with (readuncommitted)"))->select('keterangan')->where('kodeerror', '=', 'STM')
-                        ->first();
-                    return response([
-                        'errors' => [
-                            "bayar.$i" =>
-                            [$i => "$query->keterangan"]
-                        ],
-                        'message' => "The given data was invalid. ok",
-                    ], 422);
-                }
-
-                if ($request->potongan[$i] > 0) {
-                    $query =  Error::from(DB::raw("error with (readuncommitted)"))->select('keterangan')->where('kodeerror', '=', 'WI')
-                        ->first();
-                    if ($request->coapotongan[$i] == '') {
-                        return response([
-                            'errors' => [
-                                "coapotongan.$i" =>
-                                [$i => "coa potongan $query->keterangan"]
-                            ],
-                            'message' => "The given data was invalid.",
-                        ], 422);
-                    }
-                    if ($request->keteranganpotongan[$i] == '') {
-                        return response([
-                            'errors' => [
-                                "keteranganpotongan.$i" =>
-                                [$i => "keterangan potongan $query->keterangan"]
-                            ],
-                            'message' => "The given data was invalid.",
-                        ], 422);
-                    }
-                }
-            }
             $pelunasanpiutangheader->agen_id = $request->agen_id;
 
             $pelunasanpiutangheader->save();
@@ -622,7 +560,7 @@ class PelunasanPiutangHeaderController extends Controller
             }
 
 
-            if ($request->penerimaan_nobukti != '-') {
+            if ($pelunasanpiutangheader->penerimaan_nobukti != '-') {
                 $get = PenerimaanHeader::from(DB::raw("penerimaanheader with (readuncommitted)"))
                     ->select('penerimaanheader.id', 'penerimaanheader.tglbukti', 'penerimaanheader.bank_id', 'penerimaandetail.coadebet')
                     ->leftJoin(DB::raw('penerimaandetail with (readuncommitted)'), 'penerimaanheader.nobukti', 'penerimaandetail.nobukti')
@@ -647,7 +585,7 @@ class PelunasanPiutangHeaderController extends Controller
                 app(PenerimaanHeaderController::class)->update($penerimaan, $newPenerimaan);
             }
 
-            if ($request->penerimaangiro_nobukti != '-') {
+            if ($pelunasanpiutangheader->penerimaangiro_nobukti != '-') {
 
                 $get = PenerimaanGiroHeader::from(DB::raw("penerimaangiroheader with (readuncommitted)"))
                     ->select('id')
@@ -686,13 +624,13 @@ class PelunasanPiutangHeaderController extends Controller
             }
 
 
-            if ($request->notakredit_nobukti != '-') {
+            if ($pelunasanpiutangheader->notakredit_nobukti != '-') {
 
                 if ($notakredit) {
 
                     $get = NotaKreditHeader::from(DB::raw("notakreditheader with (readuncommitted)"))
                         ->select('id')
-                        ->where('nobukti', $request->notakredit_nobukti)->first();
+                        ->where('nobukti', $pelunasanpiutangheader->notakredit_nobukti)->first();
                     $notaKreditHeader = [
                         'isUpdate' => 1,
                         'agen_id' => $request->agen_id,
@@ -749,11 +687,11 @@ class PelunasanPiutangHeaderController extends Controller
                     $tes = app(NotaKreditHeaderController::class)->store($notaKredit);
                 }
             }
-            if ($request->notadebet_nobukti != '-') {
+            if ($pelunasanpiutangheader->notadebet_nobukti != '-') {
                 if ($notadebet) {
                     $get = NotaDebetHeader::from(DB::raw("notadebetheader with (readuncommitted)"))
                         ->select('id')
-                        ->where('nobukti', $request->notadebet_nobukti)->first();
+                        ->where('nobukti', $pelunasanpiutangheader->notadebet_nobukti)->first();
                     $notaDebetHeader = [
                         'isUpdate' => 1,
                         'agen_id' => $request->agen_id,
@@ -863,7 +801,7 @@ class PelunasanPiutangHeaderController extends Controller
     /**
      * @ClassName
      */
-    public function destroy(Request $request, $id)
+    public function destroy(DestroyPelunasanPiutangHeaderRequest $request, $id)
     {
         DB::beginTransaction();
 

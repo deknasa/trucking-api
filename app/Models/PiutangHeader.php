@@ -376,4 +376,21 @@ class PiutangHeader extends MyModel
     {
         return $this->hasMany(PiutangDetail::class, 'piutang_id');
     }
+
+    public function getSisaPiutang($nobukti, $agen_id){
+     
+
+        $query = DB::table('piutangheader')
+            ->from(
+                DB::raw("piutangheader with (readuncommitted)")
+            )
+            ->select(DB::raw("piutangheader.nobukti, (SELECT (piutangheader.nominal - coalesce(SUM(pelunasanpiutangdetail.nominal),0)) FROM pelunasanpiutangdetail WHERE pelunasanpiutangdetail.piutang_nobukti= piutangheader.nobukti) AS sisa"))
+            ->leftJoin(DB::raw("pelunasanpiutangdetail with (readuncommitted)"), 'pelunasanpiutangdetail.piutang_nobukti', 'piutangheader.nobukti')
+            ->whereRaw("piutangheader.agen_id = $agen_id")
+            ->whereRaw("piutangheader.nobukti = '$nobukti'")
+            ->groupBy('piutangheader.nobukti','piutangheader.nominal')
+            ->first();
+
+        return $query;
+    }
 }

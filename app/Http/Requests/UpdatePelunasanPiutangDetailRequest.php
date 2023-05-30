@@ -2,6 +2,11 @@
 
 namespace App\Http\Requests;
 
+use App\Rules\CekMaxBayarPelunasanPiutang;
+use App\Rules\CekMinusSisaPelunasanPiutang;
+use App\Rules\RequiredCoaPotonganPelunasanPiutang;
+use App\Rules\RequiredKetPotonganPelunasanPiutang;
+use App\Rules\RequiredPotonganPelunasanPiutang;
 use Illuminate\Foundation\Http\FormRequest;
 
 class UpdatePelunasanPiutangDetailRequest extends FormRequest
@@ -25,10 +30,13 @@ class UpdatePelunasanPiutangDetailRequest extends FormRequest
     {
         return [
             'piutang_id' => 'required',
-            'bayar' => 'required|array',
-            'bayar.*' => 'required|numeric|gt:0',
-            'keterangan' => 'required|array',
-            'keterangan.*' => 'required'
+            'bayar.*' => ['required', 'numeric', 'gt:0', new CekMaxBayarPelunasanPiutang()],
+            'keterangan.*' => 'required',
+            'sisa.*' => ['required', 'numeric', 'min:0', new CekMinusSisaPelunasanPiutang()],
+            'potongan.*' => ['numeric', 'min:0', new RequiredPotonganPelunasanPiutang()],
+            'nominallebihbayar.*' => ['numeric', 'min:0'],
+            'keteranganpotongan.*' => new RequiredKetPotonganPelunasanPiutang(),
+            'coapotongan.*' => new RequiredCoaPotonganPelunasanPiutang()
         ];
     }
 }
