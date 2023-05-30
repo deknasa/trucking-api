@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\StoreAbsenTradoRequest;
 use App\Http\Requests\StoreLogTrailRequest;
 use App\Http\Requests\UpdateAbsenTradoRequest;
+use App\Http\Requests\DestroyAbsenTradoRequest;
 use App\Models\AbsenTrado;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -195,7 +196,7 @@ class AbsenTradoController extends Controller
     /**
      * @ClassName 
      */
-    public function destroy(Request $request, $id)
+    public function destroy(DestroyAbsenTradoRequest $request, $id)
     {
         DB::beginTransaction();
 

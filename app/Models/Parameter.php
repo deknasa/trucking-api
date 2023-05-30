@@ -300,4 +300,19 @@ class Parameter extends MyModel
 
         return $query;
     }
+
+    public function getComboByGroup($grp) 
+    {
+        $query=DB::table('parameter')
+            ->from (
+                DB::raw("parameter with (readuncommitted)")
+            )
+            ->select (
+                'id'
+            )
+            ->Where('grp','=',$grp)
+            ->get();
+
+            return $query;
+    }
 }

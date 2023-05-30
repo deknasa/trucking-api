@@ -3,10 +3,10 @@
 namespace App\Rules;
 
 use Illuminate\Contracts\Validation\Rule;
-use App\Models\AlatBayar;
+use App\Models\PenerimaanStok;
 use App\Http\Controllers\Api\ErrorController;
 
-class ValidasiDestroyAlatBayar implements Rule
+class ValidasiDestroyPenerimaanStok implements Rule
 {
     /**
      * Create a new rule instance.
@@ -27,8 +27,8 @@ class ValidasiDestroyAlatBayar implements Rule
      */
     public function passes($attribute, $value)
     {
-        $alatBayar = new AlatBayar();
-        $cekdata = $alatBayar->cekvalidasihapus(request()->id);
+        $penerimaanStok = new PenerimaanStok();
+        $cekdata = $penerimaanStok->cekvalidasihapus(request()->id);
         if($cekdata['kondisi']){
           return false;
         }

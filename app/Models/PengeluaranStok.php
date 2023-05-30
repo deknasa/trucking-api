@@ -226,9 +226,24 @@ class PengeluaranStok extends MyModel
     public function find($id)
     {
         $this->setRequestParameters();
-
-        $query = DB::table($this->table);
-        $query = $this->selectColumns($query);
+        
+        $query = DB::table($this->table)
+        ->from(
+            DB::raw($this->table . " with (readuncommitted)")
+        )
+            ->select(
+                "$this->table.id",
+                "$this->table.kodepengeluaran",
+                "$this->table.keterangan",
+                "$this->table.coa",
+                "$this->table.format",
+                "$this->table.statushitungstok",
+                "$this->table.modifiedby",
+                "$this->table.created_at",
+                "$this->table.updated_at",
+                "akunpusat.keterangancoa",
+            )
+            ->leftJoin(DB::raw("akunpusat with (readuncommitted)"), 'pengeluaranstok.coa', 'akunpusat.coa');
         $data = $query->where("$this->table.id",$id)->first();
         return $data;
     }

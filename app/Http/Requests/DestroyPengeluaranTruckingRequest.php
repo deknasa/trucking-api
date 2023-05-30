@@ -2,10 +2,10 @@
 
 namespace App\Http\Requests;
 
-use App\Rules\ValidasiDestroyAlatBayar;
 use Illuminate\Foundation\Http\FormRequest;
+use App\Rules\ValidasiDestroyPengeluaranTrucking;
 
-class DestroyAlatBayarRequest extends FormRequest
+class DestroyPengeluaranTruckingRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
@@ -25,7 +25,7 @@ class DestroyAlatBayarRequest extends FormRequest
     public function rules()
     {
         return [
-            'id' => new ValidasiDestroyAlatBayar()
+            'id' => new ValidasiDestroyPengeluaranTrucking()
         ];
     }
 }

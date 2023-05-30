@@ -2,11 +2,11 @@
 
 namespace App\Rules;
 
-use Illuminate\Contracts\Validation\Rule;
-use App\Models\AlatBayar;
 use App\Http\Controllers\Api\ErrorController;
+use Illuminate\Contracts\Validation\Rule;
+use App\Models\PengeluaranTrucking;
 
-class ValidasiDestroyAlatBayar implements Rule
+class ValidasiDestroyPengeluaranTrucking implements Rule
 {
     /**
      * Create a new rule instance.
@@ -27,8 +27,8 @@ class ValidasiDestroyAlatBayar implements Rule
      */
     public function passes($attribute, $value)
     {
-        $alatBayar = new AlatBayar();
-        $cekdata = $alatBayar->cekvalidasihapus(request()->id);
+        $pengeluaranTrucking = new PengeluaranTrucking();
+        $cekdata = $pengeluaranTrucking->cekvalidasihapus(request()->id);
         if($cekdata['kondisi']){
           return false;
         }
