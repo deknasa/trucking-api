@@ -3,7 +3,9 @@
 namespace App\Http\Requests;
 
 use App\Rules\CekMaxBayarPelunasanPiutang;
+use App\Rules\CekMaxBayarPelunasanPiutangEdit;
 use App\Rules\CekMinusSisaPelunasanPiutang;
+use App\Rules\CekMinusSisaPelunasanPiutangEdit;
 use App\Rules\RequiredCoaPotonganPelunasanPiutang;
 use App\Rules\RequiredKetPotonganPelunasanPiutang;
 use App\Rules\RequiredPotonganPelunasanPiutang;
@@ -30,9 +32,9 @@ class UpdatePelunasanPiutangDetailRequest extends FormRequest
     {
         return [
             'piutang_id' => 'required',
-            'bayar.*' => ['required', 'numeric', 'gt:0', new CekMaxBayarPelunasanPiutang()],
+            'bayar.*' => ['required', 'numeric', 'gt:0', new CekMaxBayarPelunasanPiutangEdit()],
             'keterangan.*' => 'required',
-            'sisa.*' => ['required', 'numeric', 'min:0', new CekMinusSisaPelunasanPiutang()],
+            'sisa.*' => ['required', 'numeric', 'min:0', new CekMinusSisaPelunasanPiutangEdit()],
             'potongan.*' => ['numeric', 'min:0', new RequiredPotonganPelunasanPiutang()],
             'nominallebihbayar.*' => ['numeric', 'min:0'],
             'keteranganpotongan.*' => new RequiredKetPotonganPelunasanPiutang(),

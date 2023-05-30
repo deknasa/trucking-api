@@ -5,6 +5,8 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Models\Parameter;
 use App\Http\Requests\ParameterRequest;
+use App\Http\Requests\UpdateParameterRequest;
+
 use App\Http\Requests\StoreLogTrailRequest;
 use App\Http\Resources\Parameter as ResourcesParameter;
 use App\Http\Resources\ParameterResource;
@@ -123,7 +125,7 @@ class ParameterController extends Controller
     /**
      * @ClassName
      */
-    public function update(ParameterRequest $request, Parameter $parameter)
+    public function update(UpdateParameterRequest $request, Parameter $parameter)
     {
         DB::beginTransaction();
 
