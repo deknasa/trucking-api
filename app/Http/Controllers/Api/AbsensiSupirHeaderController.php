@@ -571,7 +571,36 @@ class AbsensiSupirHeaderController extends Controller
     {
         return $id;
     }
+    public function cekvalidasidelete($id)
+    {
+        $absensisupir = AbsensiSupirHeader::findOrFail($id);
 
+        $passes = true;
+        $keterangan = [];
+        //validasi sudah dipakai di orderantrucking / sp
+        $isUsedTrip = AbsensiSupirHeader::isUsedTrip($absensisupir->id);
+        if ($isUsedTrip) {
+            $query = DB::table('error')->select('keterangan')->where('kodeerror', '=', 'SATL')->get();
+            // $keterangan = $query['0'];
+            $keterangan = ['keterangan' => $query['0']->keterangan]; //$query['0'];
+            $data = [
+                'message' => $keterangan,
+                'errors' => 'Tidak bisa edit di hari yang berbeda',
+                'kodestatus' => '1',
+                'kodenobukti' => '1'
+            ];
+            $passes = false;
+            return response($data);
+        }
+        $data = [
+            'message' => '',
+            'errors' => 'success',
+            'kodestatus' => '0',
+            'kodenobukti' => '1'
+        ];
+        
+        return response($data);
+    }
 
     public function cekvalidasi($id)
     {
