@@ -6,6 +6,7 @@ use App\Models\Kota;
 use App\Http\Requests\StoreKotaRequest;
 use App\Http\Requests\UpdateKotaRequest;
 use App\Http\Requests\StoreLogTrailRequest;
+use App\Http\Requests\DestroyKotaRequest;
 use App\Models\Parameter;
 use App\Models\Zona;
 
@@ -192,7 +193,7 @@ class KotaController extends Controller
     /**
      * @ClassName 
      */
-    public function destroy(Request $request, $id)
+    public function destroy(DestroyKotaRequest $request, $id)
     {
         DB::beginTransaction();
 

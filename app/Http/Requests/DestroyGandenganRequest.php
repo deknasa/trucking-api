@@ -5,8 +5,10 @@ namespace App\Http\Requests;
 use Illuminate\Foundation\Http\FormRequest;
 use App\Http\Controllers\Api\ErrorController;
 use App\Models\Parameter;
-use Illuminate\Validation\Rule;
 use App\Http\Controllers\Api\ParameterController;
+use App\Models\Gandengan;
+use Illuminate\Validation\Rule;
+use App\Rules\ValidasiDestroyGandengan ;
 
 class DestroyGandenganRequest extends FormRequest
 {
@@ -27,17 +29,13 @@ class DestroyGandenganRequest extends FormRequest
      */
     public function rules()
     {
-        $parameter = new Parameter();
-        $data = $parameter->getcombodata('STATUS AKTIF', 'STATUS AKTIF');
-        $data = json_decode($data, true);
-        foreach ($data as $item) {
-            $status[] = $item['id'];
-        }
 
+
+        $gandengan = new Gandengan();
+        $cekdata = $gandengan->cekValidasihapus($this->id);
+    
         return [
-            'kodegandengan' => 'required',
-            'keterangan' => 'required',
-            'statusaktif' => ['required', Rule::in($status)]
+            'id' => [ new ValidasiDestroyGandengan($cekdata['kondisi'])],
         ];
     }
 
@@ -57,6 +55,7 @@ class DestroyGandenganRequest extends FormRequest
         return [
             'kodegandengan.required' => ':attribute' . ' ' . $controller->geterror('WI')->keterangan,
             'statusaktif.required' => ':attribute' . ' ' . $controller->geterror('WI')->keterangan,
+            'statusaktif' => 'status',
         ];
     }
 }

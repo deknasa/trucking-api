@@ -8,6 +8,8 @@ use App\Models\Parameter;
 use Illuminate\Validation\Rule;
 use App\Http\Controllers\Api\ParameterController;
 
+
+
 class StoreGandenganRequest extends FormRequest
 {
     /**
@@ -27,6 +29,7 @@ class StoreGandenganRequest extends FormRequest
      */
     public function rules()
     {
+
         $parameter = new Parameter();
         $data = $parameter->getcombodata('STATUS AKTIF', 'STATUS AKTIF');
         $data = json_decode($data, true);
@@ -34,29 +37,21 @@ class StoreGandenganRequest extends FormRequest
             $status[] = $item['id'];
         }
 
-        return [
-            'kodegandengan' => 'required|unique:gandengan',
-            'keterangan' => 'required',
+
+        $rules = [
+            'kodegandengan' => ['required', 'unique:gandengan'],
             'statusaktif' => ['required', Rule::in($status)]
         ];
+        return $rules;
+
     }
 
     public function attributes()
     {
         return [
             'kodegandengan' => 'kode gandengan',
-            'keterangan' => 'keterangan',
-            'statusaktif' => 'status aktif',
+            'statusaktif' => 'status',
         ];
     }
 
-    public function messages()
-    {
-        $controller = new ErrorController;
-
-        return [
-            'kodegandengan.required' => ':attribute' . ' ' . $controller->geterror('WI')->keterangan,
-            'statusaktif.required' => ':attribute' . ' ' . $controller->geterror('WI')->keterangan,
-        ];
-    }
 }

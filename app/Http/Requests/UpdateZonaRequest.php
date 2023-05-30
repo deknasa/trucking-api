@@ -8,7 +8,7 @@ use App\Models\Parameter;
 use Illuminate\Validation\Rule;
 
 
-class UpdateCabangRequest extends FormRequest
+class UpdateZonaRequest extends FormRequest
 {
      /**
      * Determine if the user is authorized to make this request.
@@ -46,6 +46,16 @@ class UpdateCabangRequest extends FormRequest
         return [
             'zona' => 'kode cabang',
             'statusaktif' => 'status',
+        ];
+    }
+
+    public function messages()
+    {
+        $controller = new ErrorController;
+
+        return [
+            'zona.required' => ':attribute' . ' ' . $controller->geterror('WI')->keterangan,
+            'statusaktif.required' => ':attribute' . ' ' . $controller->geterror('WI')->keterangan,
         ];
     }
 }

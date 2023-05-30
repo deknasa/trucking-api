@@ -26,13 +26,14 @@ class UpdatePenerimaanTruckingHeaderRequest extends FormRequest
     public function rules()
     {
         $rules = [
-            "tglbukti" => [
-                "required",'date_format:d-m-Y',
+            'tglbukti' => [
+                'required', 'date_format:d-m-Y',
+                'date_equals:'.date('d-m-Y'),
                 new DateTutupBuku()
             ],
-            'penerimaantrucking' => 'required',
-            'bank' => 'required',
-            // 'keterangancoa' => 'required',
+            'penerimaantrucking' => 'required','numeric', 'min:1',
+            'bank' => 'required','numeric', 'min:1',
+            // 'keterangancoa' => 'required'
         ];
         $relatedRequests = [
             UpdatePenerimaanTruckingDetailRequest::class

@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Models\Merk;
 use App\Http\Requests\StoreMerkRequest;
 use App\Http\Requests\UpdateMerkRequest;
+use App\Http\Requests\DestroyMerkRequest;
 use App\Http\Requests\StoreLogTrailRequest;
 use App\Models\Parameter;
 
@@ -180,7 +181,7 @@ class MerkController extends Controller
     /**
      * @ClassName 
      */
-    public function destroy(Request $request, $id)
+    public function destroy(DestroyMerkRequest $request, $id)
     {
         DB::beginTransaction();
 

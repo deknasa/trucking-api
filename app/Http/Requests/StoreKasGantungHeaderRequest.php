@@ -97,7 +97,9 @@ class StoreKasGantungHeaderRequest extends FormRequest
 
     public function messages() 
     {
-        return [
+        return [            
+            'bank_id.required' => ':attribute ' . app(ErrorController::class)->geterror('HPDL')->keterangan,
+            'penerima_id.required' => ':attribute ' . app(ErrorController::class)->geterror('HPDL')->keterangan,
             'nominal.*.gt' => 'Nominal Tidak Boleh Kosong dan Harus Lebih Besar Dari 0',
             'tglbukti.date_format' => app(ErrorController::class)->geterror('DF')->keterangan
         ];

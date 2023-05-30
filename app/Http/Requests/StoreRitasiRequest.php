@@ -28,14 +28,15 @@ class StoreRitasiRequest extends FormRequest
         return [
             "tglbukti" => [
                 "required",'date_format:d-m-Y',
+                'date_equals:'.date('d-m-Y'),
                 new DateTutupBuku()
             ],
-            'statusritasi' => 'required',
+            'statusritasi' => 'required','numeric', 'min:1',
             'suratpengantar_nobukti' => 'required',
-            'dari' => 'required',
-            'sampai' => 'required',
-            'trado' => 'required',
-            'supir' => 'required',
+            'dari' => 'required','numeric', 'min:1',
+            'sampai' => 'required','numeric', 'min:1',
+            'trado' => 'required','numeric', 'min:1',
+            'supir' => 'required','numeric', 'min:1',
         ];
     }
     public function attributes()

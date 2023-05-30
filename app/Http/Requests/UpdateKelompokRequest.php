@@ -4,6 +4,8 @@ namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
 use App\Http\Controllers\Api\ErrorController;
+use App\Models\Parameter;
+use Illuminate\Validation\Rule;
 
 class UpdateKelompokRequest extends FormRequest
 {
@@ -24,10 +26,19 @@ class UpdateKelompokRequest extends FormRequest
      */
     public function rules()
     {
-        return [
-            'kodekelompok' => 'required',
+        $parameter = new Parameter();
+        $data = $parameter->getcombodata('STATUS AKTIF', 'STATUS AKTIF');
+        $data = json_decode($data, true);
+        foreach ($data as $item) {
+            $status[] = $item['id'];
+        }
+
+        $rules =  [
+            'kodekelompok' => ['required',Rule::unique('kelompok')->whereNotIn('id', [$this->id])],
             'statusaktif' => 'required'
         ];
+
+        return $rules;
     }
     
     public function attributes()

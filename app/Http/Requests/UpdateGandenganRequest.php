@@ -8,6 +8,7 @@ use App\Models\Parameter;
 use Illuminate\Validation\Rule;
 use App\Http\Controllers\Api\ParameterController;
 
+
 class UpdateGandenganRequest extends FormRequest
 {
     /**
@@ -36,9 +37,13 @@ class UpdateGandenganRequest extends FormRequest
 
         return [
             'kodegandengan' => ['required',Rule::unique('gandengan')->whereNotIn('id', [$this->id])],
+
             'keterangan' => 'required',
+
             'statusaktif' => ['required', Rule::in($status)]
         ];
+
+       
     }
 
     public function attributes()
@@ -50,13 +55,4 @@ class UpdateGandenganRequest extends FormRequest
         ];
     }
 
-    public function messages()
-    {
-        $controller = new ErrorController;
-        return [
-            'kodegandengan.required' => ':attribute'.' '. $controller->geterror('WI')->keterangan,
-            'statusaktif.required' => ':attribute'.' '. $controller->geterror('WI')->keterangan,
-
-        ];
-    }    
 }

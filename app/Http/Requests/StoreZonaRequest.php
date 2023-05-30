@@ -3,6 +3,7 @@
 namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
+use App\Http\Controllers\Api\ErrorController;
 use App\Models\Parameter;
 use Illuminate\Validation\Rule;
 
@@ -33,7 +34,7 @@ class StoreZonaRequest extends FormRequest
         }
 
         $rules = [
-            'zona' => 'required',
+            'zona' => ['required', 'unique:zona'],
             'statusaktif' => ['required', Rule::in($status)]
         ];
 
@@ -45,6 +46,16 @@ class StoreZonaRequest extends FormRequest
         return [
             'zona' => 'kode cabang',
             'statusaktif' => 'status',
+        ];
+    }
+
+    public function messages()
+    {
+        $controller = new ErrorController;
+
+        return [
+            'zona.required' => ':attribute' . ' ' . $controller->geterror('WI')->keterangan,
+            'statusaktif.required' => ':attribute' . ' ' . $controller->geterror('WI')->keterangan,
         ];
     }
 }

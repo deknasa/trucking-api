@@ -2,6 +2,7 @@
 
 namespace App\Rules;
 
+use App\Http\Controllers\Api\ErrorController;
 use Illuminate\Contracts\Validation\Rule;
 use Illuminate\Support\Facades\DB;
 
@@ -27,24 +28,24 @@ class UniqueUpahSupirSampai implements Rule
     public function passes($attribute, $value)
     {
         $query = DB::table('upahsupir')
-        ->from(
-            DB::raw("upahsupir as a with (readuncommitted)")
-        )
-        ->select(
-            'a.id'
-        )
-         ->where('a.kotasampai_id', '=', (request()->kotasampai_id))
-        ->first();
+            ->from(
+                DB::raw("upahsupir as a with (readuncommitted)")
+            )
+            ->select(
+                'a.id'
+            )
+            ->where('a.kotasampai_id', '=', (request()->kotasampai_id))
+            ->first();
 
 
-     
-    if (isset($query))  {
-        $nilai = false;
-    } else {
-        $nilai = true;
-    }
 
-    return $nilai;
+        if (isset($query)) {
+            $nilai = false;
+        } else {
+            $nilai = true;
+        }
+
+        return $nilai;
     }
 
     /**
@@ -54,6 +55,7 @@ class UniqueUpahSupirSampai implements Rule
      */
     public function message()
     {
-        return 'The validation error message.';
+        $controller = new ErrorController;
+        return 'KOTA SAMPAI ' . $controller->geterror('SPI')->keterangan;
     }
 }
