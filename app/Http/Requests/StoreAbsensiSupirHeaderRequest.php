@@ -79,9 +79,21 @@ class StoreAbsensiSupirHeaderRequest extends FormRequest
 
     public function messages() 
     {
-        return [
+        $messages = [
             'uangjalan.*.gt' => 'Nominal Tidak Boleh Kosong dan Harus Lebih Besar Dari 0',
             'tglbukti.date_format' => app(ErrorController::class)->geterror('DF')->keterangan
         ];
+        $relatedRequests = [
+            StoreAbsensiSupirDetailRequest::class
+        ];
+
+        foreach ($relatedRequests as $relatedRequest) {
+            $messages = array_merge(
+                $messages,
+                (new $relatedRequest)->messages()
+            );
+        }
+
+        return $messages;
     }
 }

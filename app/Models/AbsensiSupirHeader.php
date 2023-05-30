@@ -335,6 +335,21 @@ class AbsensiSupirHeader extends MyModel
         if ($query->statusedit != $tidakBolehEdit->id) return true;
         return false;
     }
+    public function isUsedTrip($id)
+    {
+        $absensisupirheader = DB::table('absensisupirheader')->from(DB::raw("absensisupirheader with (readuncommitted)"))->where('id', $id)->first();
+        $tglabsensi = $absensisupirheader->tglbukti;
+        $suratpengantar = DB::table('absensisupirheader')->from(DB::raw("suratpengantar with (readuncommitted)"))->where('tglbukti', $tglabsensi)->first();
+        
+        // $query = DB::table('absensisupirheader')->from(DB::raw("absensisupirheader with (readuncommitted)"))
+        //     ->select('statusapprovaleditabsensi as statusedit')
+        //     ->where('id', $id)
+        //     ->first();
+
+        if (isset($suratpengantar)) return true;
+        return false;
+
+    }
 
     public function printValidation($id)
     {
