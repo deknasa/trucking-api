@@ -489,8 +489,6 @@ class PelunasanPiutangHeaderController extends Controller
 
         try {
 
-            $pelunasanpiutangheader->agen_id = $request->agen_id;
-
             $pelunasanpiutangheader->save();
             PelunasanPiutangDetail::where('pelunasanpiutang_id', $pelunasanpiutangheader->id)->delete();
 
@@ -592,7 +590,7 @@ class PelunasanPiutangHeaderController extends Controller
                     ->where('nobukti', $request->penerimaangiro_nobukti)->first();
                 $penerimaanGiroHeader = [
                     'isUpdate' => 1,
-                    'agen_id' => $request->agen_id,
+                    'agen_id' => $pelunasanpiutangheader->agen_id,
                     'postingdari' => 'EDIT PELUNASAN PIUTANG',
                     'datadetail' => $detaillog,
                     'nowarkat' => $pelunasanpiutangheader->nowarkat,
@@ -633,7 +631,7 @@ class PelunasanPiutangHeaderController extends Controller
                         ->where('nobukti', $pelunasanpiutangheader->notakredit_nobukti)->first();
                     $notaKreditHeader = [
                         'isUpdate' => 1,
-                        'agen_id' => $request->agen_id,
+                        'agen_id' => $pelunasanpiutangheader->agen_id,
                         'postingdari' => 'EDIT PELUNASAN PIUTANG',
                         'datadetail' => $detailNotaKredit
 
@@ -676,7 +674,7 @@ class PelunasanPiutangHeaderController extends Controller
                         'pelunasanpiutang_nobukti' => $pelunasanpiutangheader->nobukti,
                         'postingdari' => 'EDIT PELUNASAN PIUTANG',
                         'tgllunas' => $pelunasanpiutangheader->tglbukti,
-                        'agen_id' => $request->agen_id,
+                        'agen_id' => $pelunasanpiutangheader->agen_id,
                         'statusformat' => $formatNota->id,
                         'modifiedby' => auth('api')->user()->name,
                         'datadetail' => $detailNotaKredit
@@ -694,7 +692,7 @@ class PelunasanPiutangHeaderController extends Controller
                         ->where('nobukti', $pelunasanpiutangheader->notadebet_nobukti)->first();
                     $notaDebetHeader = [
                         'isUpdate' => 1,
-                        'agen_id' => $request->agen_id,
+                        'agen_id' => $pelunasanpiutangheader->agen_id,
                         'postingdari' => 'EDIT PELUNASAN PIUTANG',
                         'datadetail' => $detailNotaDebet
 
@@ -737,7 +735,7 @@ class PelunasanPiutangHeaderController extends Controller
                         'pelunasanpiutang_nobukti' => $pelunasanpiutangheader->nobukti,
                         'postingdari' => 'EDIT PELUNASAN PIUTANG',
                         'tgllunas' => $pelunasanpiutangheader->tglbukti,
-                        'agen_id' => $request->agen_id,
+                        'agen_id' => $pelunasanpiutangheader->agen_id,
                         'statusformat' => $formatNota->id,
                         'modifiedby' => auth('api')->user()->name,
                         'datadetail' => $detailNotaDebet

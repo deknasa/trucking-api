@@ -28,17 +28,21 @@ class UpdatePelunasanPiutangHeaderRequest extends FormRequest
      */
     public function rules()
     {
+        
+        $pelunasanPiutang = new PelunasanPiutangHeader();
+        $getDataPelunasan = $pelunasanPiutang->findAll(request()->id);
+
         $bank_id = $this->bank_id;
         $rulesBank_id = [];
         if ($bank_id != null) {
             if ($bank_id == 0) {
                 $rulesBank_id = [
-                    'bank_id' => ['required', 'numeric', 'min:1']
+                    'bank_id' => ['required', 'numeric', 'min:1',Rule::in($getDataPelunasan->bank_id)]
                 ];
             }
         } else if ($bank_id == null && $this->bank != '') {
             $rulesBank_id = [
-                'bank_id' => ['required', 'numeric', 'min:1']
+                'bank_id' => ['required', 'numeric', 'min:1',Rule::in($getDataPelunasan->bank_id)]
             ];
         }
         $agen_id = $this->agen_id;
@@ -46,12 +50,12 @@ class UpdatePelunasanPiutangHeaderRequest extends FormRequest
         if ($agen_id != null) {
             if ($agen_id == 0) {
                 $rulesAgen_id = [
-                    'agen_id' => ['required', 'numeric', 'min:1']
+                    'agen_id' => ['required', 'numeric', 'min:1', Rule::in($getDataPelunasan->agen_id)]
                 ];
             }
         } else if ($agen_id == null && $this->agen != '') {
             $rulesAgen_id = [
-                'agen_id' => ['required', 'numeric', 'min:1']
+                'agen_id' => ['required', 'numeric', 'min:1', Rule::in($getDataPelunasan->agen_id)]
             ];
         }
         $alatBayar = new AlatBayar();
@@ -70,16 +74,15 @@ class UpdatePelunasanPiutangHeaderRequest extends FormRequest
         if ($alatbayar_id != null && $bank_id != 0) {
             if ($alatbayar_id == 0) {
                 $rulesAlatBayar_id = [
-                    'alatbayar_id' => ['required', 'numeric', 'min:1']
+                    'alatbayar_id' => ['required', 'numeric', 'min:1', Rule::in($getDataPelunasan->alatbayar_id)]
                 ];
             }
         } else if ($alatbayar_id == null && $this->alatbayar != '') {
             $rulesAlatBayar_id = [
-                'alatbayar_id' => ['required', 'numeric', 'min:1']
+                'alatbayar_id' => ['required', 'numeric', 'min:1', Rule::in($getDataPelunasan->alatbayar_id)]
             ];
         }
-        $pelunasanPiutang = new PelunasanPiutangHeader();
-        $getDataPelunasan = $pelunasanPiutang->findAll(request()->id);
+
         $rules = [
             'nobukti' => [Rule::in($getDataPelunasan->nobukti)],
             "tglbukti" => [
