@@ -28,8 +28,10 @@ class UpdateUpahSupirRincianRequest extends FormRequest
         return [
             'container' => 'required|array',
             'container.*' => 'required',
+            'container_id.*' => 'required',
             'statuscontainer' => 'required|array',
             'statuscontainer.*' => 'required',
+            'statuscontainer_id.*' => 'required',
             'nominalsupir.*' => ['required','numeric','min:0','max:'. (new ParameterController)->getparamid('BATAS NILAI UPAH','BATAS NILAI UPAH')->text],
             'nominalkenek.*' => ['required','numeric','min:0','max:'. (new ParameterController)->getparamid('BATAS NILAI UPAH KERNEK','BATAS NILAI UPAH KERNEK')->text],
             'nominalkomisi.*' => ['required','numeric','min:0','max:'. (new ParameterController)->getparamid('BATAS NILAI UPAH KOMISI','BATAS NILAI UPAH KOMISI')->text],
