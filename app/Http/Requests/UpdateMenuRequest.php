@@ -4,6 +4,9 @@ namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
 use App\Http\Controllers\Api\ErrorController;
+use App\Models\Parameter;
+use Illuminate\Validation\Rule;
+use App\Http\Controllers\Api\ParameterController;
 
 class UpdateMenuRequest extends FormRequest
 {
@@ -25,9 +28,7 @@ class UpdateMenuRequest extends FormRequest
     public function rules()
     {
         return [
-            'menuname' => 'required',
-            'menuseq' => 'required',
-            'menuicon' => 'required',
+            'menuname' => ['required',Rule::unique('menu')->whereNotIn('id', [$this->id])],
         ];
     }
 

@@ -6,6 +6,8 @@ use Illuminate\Foundation\Http\FormRequest;
 use App\Http\Controllers\Api\ErrorController;
 use App\Models\Parameter;
 use Illuminate\Validation\Rule;
+use App\Http\Controllers\Api\ParameterController;
+
 
 class UpdateGandenganRequest extends FormRequest
 {
@@ -26,7 +28,6 @@ class UpdateGandenganRequest extends FormRequest
      */
     public function rules()
     {
-
         $parameter = new Parameter();
         $data = $parameter->getcombodata('STATUS AKTIF', 'STATUS AKTIF');
         $data = json_decode($data, true);
@@ -36,6 +37,9 @@ class UpdateGandenganRequest extends FormRequest
 
         return [
             'kodegandengan' => ['required',Rule::unique('gandengan')->whereNotIn('id', [$this->id])],
+
+            'keterangan' => 'required',
+
             'statusaktif' => ['required', Rule::in($status)]
         ];
 

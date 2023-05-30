@@ -339,7 +339,7 @@ class MenuController extends Controller
     /**
      * @ClassName 
      */
-    public function destroy(Request $request, $id)
+    public function destroy(DestroyMenuRequest $request, $id)
     {
         DB::beginTransaction();
 
