@@ -239,8 +239,23 @@ class PenerimaanStok extends MyModel
     {
         $this->setRequestParameters();
 
-        $query = DB::table($this->table);
-        $query = $this->selectColumns($query);
+        $query = DB::table($this->table)
+        ->from(
+            DB::raw($this->table . " with (readuncommitted)")
+        )
+            ->select(
+                "$this->table.id",
+                "$this->table.kodepenerimaan",
+                "$this->table.keterangan",
+                "$this->table.coa",
+                "$this->table.format",
+                "$this->table.statushitungstok",
+                "$this->table.modifiedby",
+                "$this->table.created_at",
+                "$this->table.updated_at",
+                "akunpusat.keterangancoa",
+            )
+            ->leftJoin(DB::raw("akunpusat with (readuncommitted)"), 'penerimaanstok.coa', 'akunpusat.coa');
         $data = $query->where("$this->table.id", $id)->first();
         return $data;
     }

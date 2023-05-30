@@ -4,6 +4,8 @@ namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
 use App\Http\Controllers\Api\ErrorController;
+use App\Models\Parameter;
+use Illuminate\Validation\Rule;
 
 class StoreAkunPusatRequest extends FormRequest
 {
@@ -24,28 +26,66 @@ class StoreAkunPusatRequest extends FormRequest
      */
     public function rules()
     {
-        return [
-            'coa' => 'required|unique:akunpusat,coa',
-            'keterangancoa' => 'required',
-            'type' => 'required',
-            'level' => 'required|int',
-            'parent' => 'required',
-            'statuscoa' => 'required|int',
-            'statusaccountpayable' => 'required|int',
-            'statusneraca' => 'required|int',
-            'statuslabarugi' => 'required|int',
-            'coamain' => 'required',
-            'statusaktif' => 'required|int',
+        $parameter = new Parameter();
+        $data = $parameter->getcombodata('STATUS AKTIF', 'STATUS AKTIF');
+        $data = json_decode($data, true);
+        foreach ($data as $item) {
+            $statusAktif[] = $item['id'];
+        }
+
+        $parameter = new Parameter();
+        $dataCoa = $parameter->getcombodata('STATUS COA', 'STATUS COA');
+        $dataCoa = json_decode($dataCoa, true);
+        foreach ($dataCoa as $item) {
+            $statusCoa[] = $item['id'];
+        }
+
+        $parameter = new Parameter();
+        $dataAccount = $parameter->getcombodata('STATUS ACCOUNT PAYABLE', 'STATUS ACCOUNT PAYABLE');
+        $dataAccount = json_decode($dataAccount, true);
+        foreach ($dataAccount as $item) {
+            $statusAccount[] = $item['id'];
+        }
+
+        $parameter = new Parameter();
+        $dataNeraca = $parameter->getcombodata('STATUS NERACA', 'STATUS NERACA');
+        $dataNeraca = json_decode($dataNeraca, true);
+        foreach ($dataNeraca as $item) {
+            $statusNeraca[] = $item['id'];
+        }
+
+        $parameter = new Parameter();
+        $dataLabaRugi = $parameter->getcombodata('STATUS LABA RUGI', 'STATUS LABA RUGI');
+        $dataLabaRugi = json_decode($dataLabaRugi, true);
+        foreach ($dataLabaRugi as $item) {
+            $statusLabaRugi[] = $item['id'];
+        }
+
+
+        $rules = [
+            'coa' => ['required','unique:akunpusat'],
+            'keterangancoa' => ['required','unique:akunpusat'],
+            'type' => ['required'],
+            'level' => ['required'],
+            'parent' => ['required'],
+            'statuscoa' => ['required', Rule::in($statusCoa)],
+            'statusaccountpayable' => ['required', Rule::in($statusAccount)],
+            'statusneraca' => ['required', Rule::in($statusNeraca)],
+            'statuslabarugi' => ['required', Rule::in($statusLabaRugi)],
+            'coamain' => ['required'],
+            'statusaktif' => ['required', Rule::in($statusAktif)],
         ];
+
+        return $rules;
     }
 
     public function attributes()
     {
         return [
-            'coa' => 'kode cabang',
-            'keterangancoa' => 'keteragn coa',
+            'coa' => 'kode coa',
+            'keterangancoa' => 'keterangan coa',
             'type' => 'type',
-            'level' => 'status aktif',
+            'level' => 'level',
             'parent' => 'parent',
             'statuscoa' => 'status coa',
             'statusaccountpayable' => 'status account payable',
