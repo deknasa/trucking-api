@@ -7,6 +7,7 @@ use App\Models\GajiSupirHeader;
 use App\Models\Parameter;
 use Illuminate\Foundation\Http\FormRequest;
 use App\Rules\DateTutupBuku;
+use App\Rules\DestroyGajiSupirNobukti;
 use Illuminate\Validation\Rule;
 
 class UpdateGajiSupirHeaderRequest extends FormRequest
@@ -52,8 +53,11 @@ class UpdateGajiSupirHeaderRequest extends FormRequest
         $tglbatasawal = $getBatas->text;
         $tglbatasakhir = (date('Y') + 1) . '-01-01';
 
+        $gajiSupir = new GajiSupirHeader();
+        $getDataGajiSupir = $gajiSupir->findAll(request()->id);
+
         $rules = [
-            //
+            'nobukti' => [Rule::in($getDataGajiSupir), new DestroyGajiSupirNobukti()],
             'supir' => 'required',
             'tgldari' => [
                 'required', 'date_format:d-m-Y',
@@ -67,6 +71,7 @@ class UpdateGajiSupirHeaderRequest extends FormRequest
             ],
             'tglbukti' => [
                 'required', 'date_format:d-m-Y',
+                'date_equals:' . date('d-m-Y', strtotime($getDataGajiSupir->tglbukti)),
                 new DateTutupBuku()
             ],
         ];
