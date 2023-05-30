@@ -301,6 +301,16 @@ class Parameter extends MyModel
         return $query;
     }
 
+    public function getTutupBuku(){
+        $query = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))
+        ->select('text')
+        ->where('grp', 'TUTUP BUKU')
+        ->where('subgrp', 'TUTUP BUKU')
+        ->first();
+
+        return $query;
+    }
+
     public function getComboByGroup($grp) 
     {
         $query=DB::table('parameter')

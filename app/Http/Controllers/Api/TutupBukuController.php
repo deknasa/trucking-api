@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Http\Requests\StoreLogTrailRequest;
+use App\Http\Requests\StoreTutupBukuRequest;
 
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -30,7 +31,7 @@ class TutupBukuController extends Controller
     /**
      * @ClassName
      */
-    public function store(Request $request)
+    public function store(StoreTutupBukuRequest $request)
     {
         DB::beginTransaction();
 
