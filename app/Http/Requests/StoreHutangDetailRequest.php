@@ -3,6 +3,7 @@
 namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
+use App\Rules\DateTutupBuku;
 
 class StoreHutangDetailRequest extends FormRequest
 {
@@ -24,11 +25,13 @@ class StoreHutangDetailRequest extends FormRequest
     public function rules()
     {
         return [
-            'tgljatuhtempo' => 'required|array',
-            'tgljatuhtempo.*' => 'required',
-            'total_detail' => 'required|array',
+            'tgljatuhtempo.*' => [
+                'required', 'date_format:d-m-Y',
+                new DateTutupBuku(),
+                'before_or_equal:' . date('d-m-Y'),
+
+            ],
             'total_detail.*' => 'required|numeric|gt:0',
-            'keterangan_detail' => 'required|array',
             'keterangan_detail.*' => 'required',
 
         ];

@@ -71,5 +71,6 @@ class ErrorSeeder extends Seeder
         error::create([ 'kodeerror' => 'TTLK', 'keterangan' => 'TANGGAL TIDAK BOLEH < DARI', 'modifiedby' => 'ADMIN',]);
         error::create([ 'kodeerror' => 'HSD', 'keterangan' => 'HARUS SAMA DENGAN', 'modifiedby' => 'ADMIN',]);
         error::create([ 'kodeerror' => 'HDSD', 'keterangan' => 'HARUS DIATAS ATAU SAMA DENGAN', 'modifiedby' => 'ADMIN',]);
+        error::create([ 'kodeerror' => 'HBSD', 'keterangan' => 'HARUS DIBAWAH ATAU SAMA DENGAN', 'modifiedby' => 'ADMIN',]);
     }
 }
