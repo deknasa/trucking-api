@@ -5,6 +5,9 @@ namespace App\Http\Requests;
 use App\Http\Controllers\Api\ErrorController;
 use App\Models\AlatBayar;
 use App\Rules\DateTutupBuku;
+use App\Rules\ExistAgen;
+use App\Rules\ExistAlatBayar;
+use App\Rules\ExistBank;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
@@ -31,27 +34,23 @@ class StorePelunasanPiutangHeaderRequest extends FormRequest
         $bank_id = $this->bank_id;
         $rulesBank_id = [];
         if ($bank_id != null) {
-            if ($bank_id == 0) {
-                $rulesBank_id = [
-                    'bank_id' => ['required', 'numeric', 'min:1']
-                ];
-            }
+            $rulesBank_id = [
+                'bank_id' => ['required', 'numeric', 'min:1', new ExistBank()]
+            ];
         } else if ($bank_id == null && $this->bank != '') {
             $rulesBank_id = [
-                'bank_id' => ['required', 'numeric', 'min:1']
+                'bank_id' => ['required', 'numeric', 'min:1', new ExistBank()]
             ];
         }
         $agen_id = $this->agen_id;
         $rulesAgen_id = [];
         if ($agen_id != null) {
-            if ($agen_id == 0) {
-                $rulesAgen_id = [
-                    'agen_id' => ['required', 'numeric', 'min:1']
-                ];
-            }
+            $rulesAgen_id = [
+                'agen_id' => ['required', 'numeric', 'min:1', new ExistAgen()]
+            ];
         } else if ($agen_id == null && $this->agen != '') {
             $rulesAgen_id = [
-                'agen_id' => ['required', 'numeric', 'min:1']
+                'agen_id' => ['required', 'numeric', 'min:1', new ExistAgen()]
             ];
         }
 
@@ -69,22 +68,20 @@ class StorePelunasanPiutangHeaderRequest extends FormRequest
         $alatbayar_id = $this->alatbayar_id;
         $rulesAlatBayar_id = [];
         if ($alatbayar_id != null) {
-            if ($alatbayar_id == 0) {
-                $rulesAlatBayar_id = [
-                    'alatbayar_id' => ['required', 'numeric', 'min:1',Rule::in($rulesAlatBayar_id)]
-                ];
-            }
+            $rulesAlatBayar_id = [
+                'alatbayar_id' => ['required', 'numeric', 'min:1', Rule::in($rulesAlatBayar_id), new ExistAlatBayar()]
+            ];
         } else if ($alatbayar_id == null && $this->alatbayar != '') {
             $rulesAlatBayar_id = [
-                'alatbayar_id' => ['required', 'numeric', 'min:1',Rule::in($rulesAlatBayar_id)]
+                'alatbayar_id' => ['required', 'numeric', 'min:1', Rule::in($rulesAlatBayar_id), new ExistAlatBayar()]
             ];
         }
 
         $rules = [
             'tglbukti' => [
                 'required', 'date_format:d-m-Y',
-                'date_equals:' . date('d-m-Y'),
-                new DateTutupBuku()
+                new DateTutupBuku(),
+                'before_or_equal:' . date('d-m-Y')
             ],
             'bank' => 'required',
             'agen' => 'required',

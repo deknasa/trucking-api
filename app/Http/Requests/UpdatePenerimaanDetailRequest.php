@@ -2,6 +2,11 @@
 
 namespace App\Http\Requests;
 
+use App\Rules\AkunPusatPenerimaanDetail;
+use App\Rules\BankPelangganIdPenerimaanDetail;
+use App\Rules\BankPelangganPenerimaanDetail;
+use App\Rules\CoaKreditPenerimaanDetail;
+use App\Rules\ExistBankPelangganPenerimaanDetail;
 use Illuminate\Foundation\Http\FormRequest;
 
 class UpdatePenerimaanDetailRequest extends FormRequest
@@ -23,15 +28,16 @@ class UpdatePenerimaanDetailRequest extends FormRequest
      */
     public function rules()
     {
-        return [
-            'ketcoakredit' => 'required|array',
+        $rules = [
             'ketcoakredit.*' => 'required',
-            'tgljatuhtempo' => 'required|array',
-            'tgljatuhtempo.*' => 'required|date_format:d-m-Y',
-            'nominal_detail' => 'required|array',
+            'coakredit.*' =>  [new CoaKreditPenerimaanDetail, new AkunPusatPenerimaanDetail()],
+            'tgljatuhtempo.*' => ['required','date_format:d-m-Y','date_equals:'.request()->tglbukti],
             'nominal_detail.*' => 'required|numeric|gt:0',
-            'keterangan_detail' => 'required|array',
-            'keterangan_detail.*' => 'required'
+            'keterangan_detail.*' => 'required',
+            'bankpelanggan.*' => [new BankPelangganPenerimaanDetail()],
+            'bankpelanggan_id.*' => [new BankPelangganIdPenerimaanDetail(), new ExistBankPelangganPenerimaanDetail()]
         ];
+
+        return $rules;
     }
 }

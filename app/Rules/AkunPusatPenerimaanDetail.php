@@ -4,8 +4,9 @@ namespace App\Rules;
 
 use App\Http\Controllers\Api\ErrorController;
 use Illuminate\Contracts\Validation\Rule;
+use Illuminate\Support\Facades\DB;
 
-class CoaKreditPenerimaanDetail implements Rule
+class AkunPusatPenerimaanDetail implements Rule
 {
     /**
      * Create a new rule instance.
@@ -26,15 +27,20 @@ class CoaKreditPenerimaanDetail implements Rule
      */
     public function passes($attribute, $value)
     {
-        $attribute = substr($attribute,10);
+        $attribute = substr($attribute, 10);
         $ketCoaKredit = request()->ketcoakredit[$attribute];
-
-        if($ketCoaKredit != null && $value == null){
-            return false;
+        if ($ketCoaKredit != '') {
+            $akunPusat = DB::table("akunpusat")->from(DB::raw("akunpusat with (readuncommitted)"))
+                ->where('coa', $value)
+                ->first();
+            if ($akunPusat == null) {
+                return false;
+            } else {
+                return true;
+            }
         }else{
             return true;
         }
-
     }
 
     /**
@@ -44,6 +50,6 @@ class CoaKreditPenerimaanDetail implements Rule
      */
     public function message()
     {
-        return app(ErrorController::class)->geterror('HPDL')->keterangan;
+        return app(ErrorController::class)->geterror('TVD')->keterangan;
     }
 }

@@ -21,20 +21,20 @@ class BukaAbsensi extends MyModel
         'updated_at',
     ];
     protected $table = 'bukaabsensi';
-    
+
     public function get()
     {
         $this->setRequestParameters();
-        
-        $query = BukaAbsensi::from(
+
+        $query = DB::table("bukaabsensi")->from(
             DB::raw($this->table . " with (readuncommitted)")
         )->select(
-                "bukaabsensi.id",
-                "bukaabsensi.tglabsensi",
-                "bukaabsensi.modifiedby",
-                "bukaabsensi.created_at",
-                "bukaabsensi.updated_at",
-            );
+            "bukaabsensi.id",
+            "bukaabsensi.tglabsensi",
+            "bukaabsensi.modifiedby",
+            "bukaabsensi.created_at",
+            "bukaabsensi.updated_at",
+        );
 
         $this->totalRows = $query->count();
         $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;
@@ -105,12 +105,12 @@ class BukaAbsensi extends MyModel
         $query = BukaAbsensi::from(
             DB::raw($this->table . " with (readuncommitted)")
         )->select(
-                "bukaabsensi.id",
-                "bukaabsensi.tglabsensi",
-                "bukaabsensi.modifiedby",
-                "bukaabsensi.created_at",
-                "bukaabsensi.updated_at",
-            );
+            "bukaabsensi.id",
+            "bukaabsensi.tglabsensi",
+            "bukaabsensi.modifiedby",
+            "bukaabsensi.created_at",
+            "bukaabsensi.updated_at",
+        );
 
         $query = $this->sort($query);
         $models = $this->filter($query);

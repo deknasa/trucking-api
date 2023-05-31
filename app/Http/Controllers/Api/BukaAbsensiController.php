@@ -2,13 +2,14 @@
 
 namespace App\Http\Controllers\Api;
 
-use App\Models\BukaAbsensi;
 use App\Http\Controllers\Controller;
+use App\Models\BukaAbsensi;
 use App\Http\Requests\StoreBukaAbsensiRequest;
 use App\Http\Requests\StoreLogTrailRequest;
 
 use App\Http\Requests\UpdateBukaAbsensiRequest;
-use DB;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class BukaAbsensiController extends Controller
 {
@@ -87,9 +88,7 @@ class BukaAbsensiController extends Controller
         ]);
     }
 
-    /**
-     * @ClassName
-     */
+    
     public function update(UpdateBukaAbsensiRequest $request, BukaAbsensi $bukaAbsensi,$id)
     {
         DB::beginTransaction();
@@ -134,29 +133,26 @@ class BukaAbsensiController extends Controller
     /**
      * @ClassName
      */
-    public function destroy(BukaAbsensi $bukaAbsensi,$id)
+    public function destroy(Request $request, $id)
     {
         DB::beginTransaction();
-        try {
-            $bukaAbsensi = new BukaAbsensi;
-            $bukaAbsensi = $bukaAbsensi->lockAndDestroy($id);
-            
-            if ($bukaAbsensi) {
-                $logTrail = [
-                    'namatabel' => strtoupper($bukaAbsensi->getTable()),
-                    'postingdari' => 'DELETE BUKA ABSENSI',
-                    'idtrans' => $bukaAbsensi->id,
-                    'nobuktitrans' => $bukaAbsensi->id,
-                    'aksi' => 'ENTRY',
-                    'datajson' => $bukaAbsensi->toArray(),
-                    'modifiedby' => $bukaAbsensi->modifiedby
-                ];
+        $bukaAbsensi = new BukaAbsensi;
+        $bukaAbsensi = $bukaAbsensi->lockAndDestroy($id);
+        
+        if ($bukaAbsensi) {
+            $logTrail = [
+                'namatabel' => strtoupper($bukaAbsensi->getTable()),
+                'postingdari' => 'DELETE BUKA ABSENSI',
+                'idtrans' => $bukaAbsensi->id,
+                'nobuktitrans' => $bukaAbsensi->id,
+                'aksi' => 'ENTRY',
+                'datajson' => $bukaAbsensi->toArray(),
+                'modifiedby' => $bukaAbsensi->modifiedby
+            ];
 
-                $validatedLogTrail = new StoreLogTrailRequest($logTrail);
-                app(LogTrailController::class)->store($validatedLogTrail);
-
-                DB::commit();
-            }
+            $validatedLogTrail = new StoreLogTrailRequest($logTrail);
+            app(LogTrailController::class)->store($validatedLogTrail);
+            DB::commit();
             $selected = $this->getPosition($bukaAbsensi, $bukaAbsensi->getTable());
             $bukaAbsensi->position = $selected->position;
             $bukaAbsensi->page = ceil($bukaAbsensi->position / ($request->limit ?? 10));
@@ -167,9 +163,13 @@ class BukaAbsensiController extends Controller
                 'message' => 'Berhasil disimpan',
                 'data' => $bukaAbsensi,
             ], 201);
-        } catch (\Throwable $th) {
+            
+        }else {
             DB::rollBack();
-            return response($th->getMessage());
+            return response([
+                'status' => false,
+                'message' => 'Gagal dihapus'
+            ]);
         }
     }
 }

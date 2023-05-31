@@ -7,6 +7,7 @@ use App\Models\Parameter;
 use App\Rules\BeforeTglSampaiGajiSupir;
 use Illuminate\Foundation\Http\FormRequest;
 use App\Rules\DateTutupBuku;
+use App\Rules\ExistSupir;
 
 class StoreGajiSupirHeaderRequest extends FormRequest
 {
@@ -30,14 +31,12 @@ class StoreGajiSupirHeaderRequest extends FormRequest
         $supir_id = $this->supir_id;
         $rulesSupir_id = [];
         if ($supir_id != null) {
-            if ($supir_id == 0) {
-                $rulesSupir_id = [
-                    'supir_id' => ['required', 'numeric', 'min:1']
-                ];
-            }
+            $rulesSupir_id = [
+                'supir_id' => ['required', 'numeric', 'min:1', new ExistSupir()]
+            ];
         } else if ($supir_id == null && $this->supir != '') {
             $rulesSupir_id = [
-                'supir_id' => ['required', 'numeric', 'min:1']
+                'supir_id' => ['required', 'numeric', 'min:1', new ExistSupir()]
             ];
         }
         $parameter = new Parameter();
@@ -50,18 +49,18 @@ class StoreGajiSupirHeaderRequest extends FormRequest
             'supir' => 'required',
             'tgldari' => [
                 'required', 'date_format:d-m-Y',
-                'before:'.$tglbatasakhir,
-                'after_or_equal:'.$tglbatasawal,
+                'before:' . $tglbatasakhir,
+                'after_or_equal:' . $tglbatasawal,
             ],
             'tglsampai' => [
                 'required', 'date_format:d-m-Y',
-                'before:'.$tglbatasakhir,
-                'after_or_equal:'.$this->tgldari 
+                'before:' . $tglbatasakhir,
+                'after_or_equal:' . $this->tgldari
             ],
             'tglbukti' => [
                 'required', 'date_format:d-m-Y',
-                'date_equals:'.date('d-m-Y'),
-                new DateTutupBuku()
+                new DateTutupBuku(),
+                'before_or_equal:' . date('d-m-Y')
             ],
         ];
         $relatedRequests = [
@@ -75,7 +74,7 @@ class StoreGajiSupirHeaderRequest extends FormRequest
                 $rulesSupir_id
             );
         }
-        
+
         return $rules;
     }
 
@@ -97,8 +96,8 @@ class StoreGajiSupirHeaderRequest extends FormRequest
             'supir_id.required' => ':attribute ' . app(ErrorController::class)->geterror('HPDL')->keterangan,
             'rincianId' => app(ErrorController::class)->geterror('WP')->keterangan,
             'tglbukti.date_format' => app(ErrorController::class)->geterror('DF')->keterangan,
-            'tgldari.before' => app(ErrorController::class)->geterror('NTLB')->keterangan. ' '.$tglbatasakhir,
-            'tglsampai.before' => app(ErrorController::class)->geterror('NTLB')->keterangan. ' '.$tglbatasakhir,
+            'tgldari.before' => app(ErrorController::class)->geterror('NTLB')->keterangan . ' ' . $tglbatasakhir,
+            'tglsampai.before' => app(ErrorController::class)->geterror('NTLB')->keterangan . ' ' . $tglbatasakhir,
         ];
     }
 }

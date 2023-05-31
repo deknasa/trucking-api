@@ -9,6 +9,8 @@ use App\Models\NotaKreditHeader;
 use App\Models\NotaKreditDetail;
 use Illuminate\Support\Facades\DB;
 use App\Http\Controllers\Controller;
+use App\Http\Requests\ApprovalNotaKreditRequest;
+use App\Http\Requests\GetIndexRangeRequest;
 use App\Models\PelunasanPiutangHeader;
 use Illuminate\Support\Facades\Schema;
 use App\Http\Requests\StoreLogTrailRequest;
@@ -21,7 +23,7 @@ class NotaKreditHeaderController extends Controller
     /**
      * @ClassName 
      */
-    public function index()
+    public function index(GetIndexRangeRequest $request)
     {
         $notaKreditHeader = new NotaKreditHeader();
         return response([
@@ -336,64 +338,53 @@ class NotaKreditHeaderController extends Controller
             'data' => $data
         ]);
     }
- 
+
     /**
      * @ClassName
      */
-    public function approval(Request $request)
+    public function approval(ApprovalNotaKreditRequest $request)
     {
         DB::beginTransaction();
 
         try {
-            if ($request->kreditId != '') {
 
-                $statusApproval = Parameter::from(DB::raw("parameter with (readuncommitted)"))
-                    ->where('grp', '=', 'STATUS APPROVAL')->where('text', '=', 'APPROVAL')->first();
-                $statusNonApproval = Parameter::from(DB::raw("parameter with (readuncommitted)"))
-                    ->where('grp', '=', 'STATUS APPROVAL')->where('text', '=', 'NON APPROVAL')->first();
+            $statusApproval = Parameter::from(DB::raw("parameter with (readuncommitted)"))
+                ->where('grp', '=', 'STATUS APPROVAL')->where('text', '=', 'APPROVAL')->first();
+            $statusNonApproval = Parameter::from(DB::raw("parameter with (readuncommitted)"))
+                ->where('grp', '=', 'STATUS APPROVAL')->where('text', '=', 'NON APPROVAL')->first();
 
-                for ($i = 0; $i < count($request->kreditId); $i++) {
-                    $notaKredit = NotaKreditHeader::find($request->kreditId[$i]);
-                    if ($notaKredit->statusapproval == $statusApproval->id) {
-                        $notaKredit->statusapproval = $statusNonApproval->id;
-                        $aksi = $statusNonApproval->text;
-                    } else {
-                        $notaKredit->statusapproval = $statusApproval->id;
-                        $aksi = $statusApproval->text;
-                    }
-
-                    $notaKredit->tglapproval = date('Y-m-d', time());
-                    $notaKredit->userapproval = auth('api')->user()->name;
-
-                    if ($notaKredit->save()) {
-                        $logTrail = [
-                            'namatabel' => strtoupper($notaKredit->getTable()),
-                            'postingdari' => 'APPROVAL NOTA KREDIT',
-                            'idtrans' => $notaKredit->id,
-                            'nobuktitrans' => $notaKredit->nobukti,
-                            'aksi' => $aksi,
-                            'datajson' => $notaKredit->toArray(),
-                            'modifiedby' => auth('api')->user()->name
-                        ];
-
-                        $validatedLogTrail = new StoreLogTrailRequest($logTrail);
-                        $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
-                    }
+            for ($i = 0; $i < count($request->kreditId); $i++) {
+                $notaKredit = NotaKreditHeader::find($request->kreditId[$i]);
+                if ($notaKredit->statusapproval == $statusApproval->id) {
+                    $notaKredit->statusapproval = $statusNonApproval->id;
+                    $aksi = $statusNonApproval->text;
+                } else {
+                    $notaKredit->statusapproval = $statusApproval->id;
+                    $aksi = $statusApproval->text;
                 }
-                DB::commit();
-                return response([
-                    'message' => 'Berhasil'
-                ]);
-            } else {
-                $query = DB::table('error')->select('keterangan')->where('kodeerror', '=', 'WP')
-                    ->first();
-                return response([
-                    'errors' => [
-                        'penerimaan' => "NOTA KREDIT $query->keterangan"
-                    ],
-                    'message' => "NOTA KREDIT $query->keterangan",
-                ], 422);
+
+                $notaKredit->tglapproval = date('Y-m-d', time());
+                $notaKredit->userapproval = auth('api')->user()->name;
+
+                if ($notaKredit->save()) {
+                    $logTrail = [
+                        'namatabel' => strtoupper($notaKredit->getTable()),
+                        'postingdari' => 'APPROVAL NOTA KREDIT',
+                        'idtrans' => $notaKredit->id,
+                        'nobuktitrans' => $notaKredit->nobukti,
+                        'aksi' => $aksi,
+                        'datajson' => $notaKredit->toArray(),
+                        'modifiedby' => auth('api')->user()->name
+                    ];
+
+                    $validatedLogTrail = new StoreLogTrailRequest($logTrail);
+                    $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
+                }
             }
+            DB::commit();
+            return response([
+                'message' => 'Berhasil'
+            ]);
         } catch (\Throwable $th) {
             throw $th;
         }

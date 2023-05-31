@@ -2,10 +2,10 @@
 
 namespace App\Http\Requests;
 
-use App\Rules\UniqueTglBukaAbsensi;
+use App\Http\Controllers\Api\ErrorController;
 use Illuminate\Foundation\Http\FormRequest;
 
-class StoreBukaAbsensiRequest extends FormRequest
+class ApprovalPenerimaanHeaderRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
@@ -25,12 +25,13 @@ class StoreBukaAbsensiRequest extends FormRequest
     public function rules()
     {
         return [
-            "tglabsensi"=> [
-                
-                'required', 'date_format:d-m-Y', 
-                'before_or_equal:' . date('d-m-Y'),
-                new UniqueTglBukaAbsensi
-            ]
+            'penerimaanId' => 'required'
+        ];
+    }
+    public function messages()
+    {
+        return [
+            'penerimaanId.required' => 'PENERIMAAN '.app(ErrorController::class)->geterror('WP')->keterangan,
         ];
     }
 }
