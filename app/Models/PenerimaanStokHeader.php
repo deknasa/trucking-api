@@ -163,6 +163,7 @@ class PenerimaanStokHeader extends MyModel
             "penerimaanstokheader.gandengandari_id",
             "penerimaanstokheader.gandengan_id",
             "penerimaanstokheader.supplier_id",
+            "penerimaanstokheader.jumlahcetak",
             "statuscetak.memo as  statuscetak",
             "nobuktipenerimaanstok.tglbukti as parrenttglbukti",
             "statuscetak.id as  statuscetak_id",
