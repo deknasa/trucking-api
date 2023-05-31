@@ -32,8 +32,7 @@ class KartuStok extends MyModel
     public function get()
     {
         $this->setRequestParameters();
-        // dd('test');
-
+       
         $tgldari = date('Y-m-d', strtotime(request()->dari));
         $tglsampai = date('Y-m-d', strtotime(request()->sampai));
 
@@ -46,17 +45,14 @@ class KartuStok extends MyModel
             // dd('test');
             $query = $this->getlaporan($tgldari, $tglsampai, request()->stokdari_id, request()->stoksampai_id, request()->datafilter, 0, 0, $filter->text);
 
-
-
-            if (request()->filter && request()->datafilter && request()->stokdari_id && request()->stoksampai_id) {
-
                 $this->totalRows = $query->count();
                 $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;
                 $this->filter($query);
                 $this->paginate($query);
 
                 $data = $query->get();
-            }
+              
+          
         } else {
             $data = [];
         }

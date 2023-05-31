@@ -4,8 +4,11 @@ namespace App\Http\Requests;
 
 use App\Http\Controllers\Api\ErrorController;
 use App\Models\Parameter;
+use App\Models\PendapatanSupirHeader;
 use Illuminate\Foundation\Http\FormRequest;
 use App\Rules\DateTutupBuku;
+use Illuminate\Validation\Rule;
+use Illuminate\Support\Facades\DB;
 
 class UpdatePendapatanSupirHeaderRequest extends FormRequest
 {
@@ -31,25 +34,30 @@ class UpdatePendapatanSupirHeaderRequest extends FormRequest
         $tglbatasawal = $getBatas->text;
         $tglbatasakhir = (date('Y') + 1) . '-01-01';
         
+        $pendapatanSupir = new PendapatanSupirHeader();
+        $getData= $pendapatanSupir->findUpdate(request()->id);
+
+
         $rules = [
+            'nobukti' => [Rule::in($getData->nobukti)],
             "tglbukti" => [
-                "required",
+                "required", 
+                'date_format:d-m-Y',
+                'date_equals:' . date('d-m-Y', strtotime($getData->tglbukti)),
                 new DateTutupBuku()
             ],
             'bank' => 'required',
             'tgldari' => [
                 'required', 'date_format:d-m-Y',
-                'before:'.$tglbatasakhir,
-                'after_or_equal:'.$tglbatasawal,
+                'date_equals:' . date('d-m-Y', strtotime($getData->tgldari)),
             ],
             'tglsampai' => [
                 'required', 'date_format:d-m-Y',
-                'before:'.$tglbatasakhir,
-                'after_or_equal:'.$this->tgldari 
+                'date_equals:' . date('d-m-Y', strtotime($getData->tglsampai)),
             ],
             'periode' => [
                 'required', 'date_format:d-m-Y',
-                'before:'.$tglbatasakhir,
+                'date_equals:' . date('d-m-Y', strtotime($getData->periode)),
             ],
         ];
         $relatedRequests = [
