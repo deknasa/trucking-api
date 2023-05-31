@@ -3,7 +3,9 @@
 namespace App\Http\Requests;
 
 use App\Http\Controllers\Api\ErrorController;
+use App\Models\Parameter;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
 class StoreAgenRequest extends FormRequest
 {
@@ -24,17 +26,31 @@ class StoreAgenRequest extends FormRequest
      */
     public function rules()
     {
+        $parameter = new Parameter();
+        $data = $parameter->getcombodata('STATUS AKTIF', 'STATUS AKTIF');
+        $data = json_decode($data, true);
+        foreach ($data as $item) {
+            $status[] = $item['id'];
+        }
+
+        $dataTas = $parameter->getcombodata('STATUS TAS', 'STATUS TAS');
+        $dataTas = json_decode($dataTas, true);
+        foreach ($dataTas as $item) {
+            $statusTas[] = $item['id'];
+        }
+
+
         return [
             "kodeagen" => "required|unique:agen",
             "namaagen" => "required|unique:agen",
-            "statusaktif" => "required",
+            "statusaktif" => ['required', Rule::in($status),'numeric', 'min:1'],
             "namaperusahaan" => "required",
             "alamat" => "required",
-            "notelp" => "required|unique:agen",
-            "nohp" => "required",
+            "notelp" => "required|unique:agen|min:11|max:13",
+            "nohp" => "required|unique:agen|min:11|max:13",
             "contactperson" => "required",
-            "top" => "required|numeric|gt:0",
-            "statustas" => "required",
+            "top" => "required|numeric|gt:0|max:999",
+            "statustas" => ["required",Rule::in($statusTas),'numeric','min:1'],
             // "keteranganjenisemkl" => "required",
         ];
     }
@@ -78,6 +94,10 @@ class StoreAgenRequest extends FormRequest
             'kodeagen.unique' => ':attribute' . ' ' . $controller->geterror('SPI')->keterangan,
             'namaagen.unique' => ':attribute' . ' ' . $controller->geterror('SPI')->keterangan,
             'notelp.unique' => ':attribute' . ' ' . $controller->geterror('SPI')->keterangan,
+            'notelp.min' => 'Min 11 Karakter',
+            'notelp.max' => 'Max 13 Karakter',
+            'nohp.min' => 'Min 11 Karakter',
+            'nohp.max' => 'Max 13 Karakter',
         ];
     }    
 }

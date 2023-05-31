@@ -207,7 +207,7 @@ class AgenController extends Controller
     /**
      * @ClassName 
      */
-    public function destroy(Request $request, $id)
+    public function destroy(DestroyAgenRequest $request, $id)
     {
         DB::beginTransaction();
 

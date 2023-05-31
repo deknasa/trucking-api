@@ -4,6 +4,8 @@ namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
 use App\Http\Controllers\Api\ErrorController;
+use App\Models\Parameter;
+use Illuminate\Validation\Rule;
 
 class UpdateAgenRequest extends FormRequest
 {
@@ -24,19 +26,32 @@ class UpdateAgenRequest extends FormRequest
      */
     public function rules()
     {
+        $parameter = new Parameter();
+        $data = $parameter->getcombodata('STATUS AKTIF', 'STATUS AKTIF');
+        $data = json_decode($data, true);
+        foreach ($data as $item) {
+            $status[] = $item['id'];
+        }
+
+        $dataTas = $parameter->getcombodata('STATUS TAS', 'STATUS TAS');
+        $dataTas = json_decode($dataTas, true);
+        foreach ($dataTas as $item) {
+            $statusTas[] = $item['id'];
+        }
+
+        
         return [
-            "kodeagen" => "required|unique:agen,kodeagen,".$this->agen->id,
-            "namaagen" => "required|unique:agen,namaagen,".$this->agen->id,
-            "statusaktif" => "required",
+            "kodeagen" => ["required",Rule::unique('agen')->whereNotIn('id', [$this->id])],
+            "namaagen" => ["required",Rule::unique('agen')->whereNotIn('id', [$this->id])],
+            "statusaktif" => ['required', Rule::in($status),'numeric', 'min:1'],
             "namaperusahaan" => "required",
             "alamat" => "required",
-            "notelp" => "required|unique:agen,notelp,".$this->agen->id,
-            "nohp" => "required",
+            "notelp" => ["required",Rule::unique('agen')->whereNotIn('id', [$this->id]),"min:11","max:13"],
+            "nohp" => ["required",Rule::unique('agen')->whereNotIn('id', [$this->id]),"min:11","max:13"],
             "contactperson" => "required",
-            "top" => "required|numeric|gt:0",
-            "statustas" => "required",
+            "top" => "required|numeric|gt:0|max:999",
+            "statustas" => ["required",Rule::in($statusTas),'numeric','min:1'],
             // "keteranganjenisemkl" => "required",
-
         ];
     }
 
