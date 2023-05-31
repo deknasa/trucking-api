@@ -282,7 +282,8 @@ class Parameter extends MyModel
                 DB::raw("parameter with (readuncommitted)")
             )
             ->select (
-                'id'
+                'id',
+                'text'
             )
             ->Where('grp','=',$grp)
             ->Where('subgrp','=',$subgrp)

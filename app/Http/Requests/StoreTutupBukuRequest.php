@@ -4,8 +4,8 @@ namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
 use App\Models\Parameter;
+use App\Rules\DateTutupBuku;
 use App\Http\Controllers\Api\ErrorController;
-use Illuminate\Validation\Rule;
 
 class StoreTutupBukuRequest extends FormRequest
 {
@@ -29,10 +29,33 @@ class StoreTutupBukuRequest extends FormRequest
         $parameter = new Parameter();
         $getBatas = $parameter->getTutupBuku();
         $tglbatasawal = $getBatas->text;
-        
-        $tglBatasAkhir = (date('Y') + 1) . '-01-01';
+
+        $rules = [
+            'tgltutupbuku' => [
+                'required', 'date_format:d-m-Y',
+                new DateTutupBuku(),
+                'after:'.$tglbatasawal,
+                'before_or_equal:' . date('d-m-Y'),
+
+            ]
+        ];
+
+        return $rules;
+    }
+
+    public function attributes()
+    {
+        $attributes = [
+            'tgltutupbuku' => 'Tanggal Tutup Buku',
+        ];
+
+        return $attributes;
+    }
+
+    public function messages()
+    {
         return [
-            //
+            'tgltutupbuku.date_format' => app(ErrorController::class)->geterror('DF')->keterangan
         ];
     }
 }

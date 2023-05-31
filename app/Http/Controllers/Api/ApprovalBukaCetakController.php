@@ -5,10 +5,12 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\Parameter;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\Rule;
 use App\Http\Requests\StoreLogTrailRequest;
 use App\Models\PenerimaanHeader;
 use App\Models\PengeluaranHeader;
 use App\Http\Requests\StoreApprovalBukuCetakHeaderRequest;
+use App\Rules\ApprovalBukaCetak;
 
 class ApprovalBukaCetakController extends Controller
 {
@@ -17,6 +19,24 @@ class ApprovalBukaCetakController extends Controller
      */
     public function index(Request $request)
     {
+        $parameter = new Parameter();
+        $dataCetak = $parameter->getcombodata('STATUSCETAK', 'STATUSCETAK');
+        $dataCetak = json_decode($dataCetak, true);
+        foreach ($dataCetak as $item) {
+            $statusCetak[] = $item['id'];
+        }
+
+        $dataCetakUlang = $parameter->getcombodata('CETAKULANG', 'CETAKULANG');
+        $dataCetakUlang = json_decode($dataCetakUlang, true);
+        foreach ($dataCetakUlang as $item) {
+            $statusCetakUlang[] = $item['text'];
+        }
+
+        $this->validate($request, [
+            'cetak' => ['required', Rule::in($statusCetak)],
+            'table' => ['required', Rule::in($statusCetakUlang)],
+            'periode' => ['required',new ApprovalBukaCetak()],
+        ]);
         
         if($request->periode){
             $periode = explode("-",$request->periode);
@@ -25,7 +45,7 @@ class ApprovalBukaCetakController extends Controller
                 'month'=> $periode[0]
             ]);
         }
-        if ($request->table && $request->cetak){
+        if ($request->table && $request->cetak && $request->periode){
             $table = Parameter::where('text',$request->table)->first();
             $backSlash = " \ ";
             $model = 'App\Models'.trim($backSlash).$table->text;
