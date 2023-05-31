@@ -108,11 +108,26 @@ class UpahSupir extends MyModel
     public function findAll($id)
     {
 
+        $tempParent = DB::table('upahsupir')->from(DB::raw("upahsupir with (readuncommitted)"))
+            ->select(
+                'upahsupir.id',
+                'upahsupir.parent_id',
+                'kota.keterangan'
+            )
+            ->leftJoin(DB::raw("kota with (readuncommitted)"), 'kota.id', 'upahsupir.kotasampai_id');
+        $temp = '##temp' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+        Schema::create($temp, function ($table) {
+            $table->unsignedBigInteger('id')->nullable();
+            $table->unsignedBigInteger('parent_id')->nullable();
+            $table->string('keterangan')->nullable();
+        });
+        DB::table($temp)->insertUsing(["id", 'parent_id', 'keterangan'], $tempParent);
+
         $query = DB::table('upahsupir')->select(
             'upahsupir.id',
-            'upahsupir.parent_id',
-            'kotasampai.keterangan as parent',
-            'upahsupir.tarif_id',
+            DB::raw("(case when upahsupir.parent_id=0 then null else upahsupir.parent_id end) as parent_id"),
+            'parent.keterangan as parent',
+            DB::raw("(case when upahsupir.tarif_id=0 then null else upahsupir.tarif_id end) as tarif_id"),
             'tarif.tujuan as tarif',
             'upahsupir.kotadari_id',
             'kotadari.keterangan as kotadari',
@@ -134,6 +149,7 @@ class UpahSupir extends MyModel
             'upahsupir.modifiedby',
             'upahsupir.updated_at'
         )
+            ->leftJoin(DB::raw("$temp as parent with (readuncommitted)"), 'parent.id', '=', 'upahsupir.parent_id')
             ->leftJoin(DB::raw("kota as kotadari with (readuncommitted)"), 'kotadari.id', '=', 'upahsupir.kotadari_id')
             ->leftJoin(DB::raw("kota as kotasampai with (readuncommitted)"), 'kotasampai.id', '=', 'upahsupir.kotasampai_id')
             ->leftJoin(DB::raw("zona with (readuncommitted)"), 'upahsupir.zona_id', 'zona.id')

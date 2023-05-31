@@ -32,11 +32,9 @@ class StoreContainerRequest extends FormRequest
             $status[] = $item['id'];
         }
         return [
-           
             'kodecontainer' => 'required|unique:container',
-            'nominalsumbangan' => 'required',
+            'nominalsumbangan' => 'required|integer|gt:0',
             'statusaktif' => ['required', Rule::in($status)],
-            
         ];
     }
 
@@ -46,7 +44,7 @@ class StoreContainerRequest extends FormRequest
             'kodecontainer' => 'Kode Container',
             'keterangan' => 'Keterangan',
             'statusaktif' => 'Status Aktif',
-            'nominalsumbangan' => 'Kode Container',
+            'nominalsumbangan' => 'Nominal Sumbangan',
         ];
     }
 

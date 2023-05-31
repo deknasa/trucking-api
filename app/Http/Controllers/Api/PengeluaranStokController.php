@@ -8,6 +8,7 @@ use App\Models\PengeluaranStok;
 
 use App\Http\Requests\StorePengeluaranStokRequest;
 use App\Http\Requests\UpdatePengeluaranStokRequest;
+use App\Http\Requests\DestroyPengeluaranStokRequest;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
@@ -211,7 +212,7 @@ class PengeluaranStokController extends Controller
     /**
      * @ClassName 
      */
-    public function destroy(Request $request, $id)
+    public function destroy(DestroyPengeluaranStokRequest $request, $id)
     {
         DB::beginTransaction();
 

@@ -4,9 +4,11 @@ namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
 use App\Http\Controllers\Api\ErrorController;
-use App\Http\Controllers\Api\ParameterController;
 use App\Models\Parameter;
 use Illuminate\Validation\Rule;
+use App\Http\Controllers\Api\ParameterController;
+
+
 
 class StoreGandenganRequest extends FormRequest
 {
@@ -34,6 +36,7 @@ class StoreGandenganRequest extends FormRequest
         foreach ($data as $item) {
             $status[] = $item['id'];
         }
+
 
         $rules = [
             'kodegandengan' => ['required', 'unique:gandengan'],

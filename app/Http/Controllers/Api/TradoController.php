@@ -115,7 +115,7 @@ class TradoController extends Controller
             $trado->statusvalidasikendaraan = $statusValidasi->id;
             $trado->tipe = $request->tipe;
             $trado->jenis = $request->jenis;
-            $trado->isisilinder =  str_replace(',', '', $request->isisilinder);
+            $trado->isisilinder = $request->isisilinder;
             $trado->warna = $request->warna;
             $trado->jenisbahanbakar = $request->jenisbahanbakar;
             $trado->jumlahsumbu = $request->jumlahsumbu;

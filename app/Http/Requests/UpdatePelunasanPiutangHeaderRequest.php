@@ -3,8 +3,11 @@
 namespace App\Http\Requests;
 
 use App\Http\Controllers\Api\ErrorController;
+use App\Models\AlatBayar;
+use App\Models\PelunasanPiutangHeader;
 use Illuminate\Foundation\Http\FormRequest;
 use App\Rules\DateTutupBuku;
+use Illuminate\Validation\Rule;
 
 class UpdatePelunasanPiutangHeaderRequest extends FormRequest
 {
@@ -25,14 +28,71 @@ class UpdatePelunasanPiutangHeaderRequest extends FormRequest
      */
     public function rules()
     {
+        
+        $pelunasanPiutang = new PelunasanPiutangHeader();
+        $getDataPelunasan = $pelunasanPiutang->findAll(request()->id);
+
+        $bank_id = $this->bank_id;
+        $rulesBank_id = [];
+        if ($bank_id != null) {
+            if ($bank_id == 0) {
+                $rulesBank_id = [
+                    'bank_id' => ['required', 'numeric', 'min:1',Rule::in($getDataPelunasan->bank_id)]
+                ];
+            }
+        } else if ($bank_id == null && $this->bank != '') {
+            $rulesBank_id = [
+                'bank_id' => ['required', 'numeric', 'min:1',Rule::in($getDataPelunasan->bank_id)]
+            ];
+        }
+        $agen_id = $this->agen_id;
+        $rulesAgen_id = [];
+        if ($agen_id != null) {
+            if ($agen_id == 0) {
+                $rulesAgen_id = [
+                    'agen_id' => ['required', 'numeric', 'min:1', Rule::in($getDataPelunasan->agen_id)]
+                ];
+            }
+        } else if ($agen_id == null && $this->agen != '') {
+            $rulesAgen_id = [
+                'agen_id' => ['required', 'numeric', 'min:1', Rule::in($getDataPelunasan->agen_id)]
+            ];
+        }
+        $alatBayar = new AlatBayar();
+        $dataAlatBayar = [];
+        $dataKodeAlatBayar = [];
+        if ($bank_id != null && $bank_id != 0) {
+            $getAlatBayar = $alatBayar->validateBankWithAlatbayar(request()->bank_id);
+            $getAlatBayar = json_decode($getAlatBayar, true);
+            foreach ($getAlatBayar as $item) {
+                $dataAlatBayar[] = $item['id'];
+                $dataKodeAlatBayar[] = $item['kodealatbayar'];
+            }
+        }
+        $alatbayar_id = $this->alatbayar_id;
+        $rulesAlatBayar_id = [];
+        if ($alatbayar_id != null && $bank_id != 0) {
+            if ($alatbayar_id == 0) {
+                $rulesAlatBayar_id = [
+                    'alatbayar_id' => ['required', 'numeric', 'min:1', Rule::in($getDataPelunasan->alatbayar_id)]
+                ];
+            }
+        } else if ($alatbayar_id == null && $this->alatbayar != '') {
+            $rulesAlatBayar_id = [
+                'alatbayar_id' => ['required', 'numeric', 'min:1', Rule::in($getDataPelunasan->alatbayar_id)]
+            ];
+        }
+
         $rules = [
+            'nobukti' => [Rule::in($getDataPelunasan->nobukti)],
             "tglbukti" => [
                 "required",'date_format:d-m-Y',
+                'date_equals:'.date('d-m-Y', strtotime($getDataPelunasan->tglbukti)),
                 new DateTutupBuku()
             ],
             'bank' => 'required',
             'agen' => 'required',
-            'alatbayar' => 'required',
+            'alatbayar' => ['required', Rule::in($dataKodeAlatBayar)],
         ];
 
         $relatedRequests = [
@@ -42,7 +102,10 @@ class UpdatePelunasanPiutangHeaderRequest extends FormRequest
         foreach ($relatedRequests as $relatedRequest) {
             $rules = array_merge(
                 $rules,
-                (new $relatedRequest)->rules()
+                (new $relatedRequest)->rules(),
+                $rulesBank_id,
+                $rulesAgen_id,
+                $rulesAlatBayar_id
             );
         }
         

@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests;
 
+use App\Rules\DateTutupBuku;
 use Illuminate\Foundation\Http\FormRequest;
 
 class DestroyPelunasanPiutangHeaderRequest extends FormRequest
@@ -24,7 +25,10 @@ class DestroyPelunasanPiutangHeaderRequest extends FormRequest
     public function rules()
     {
         return [
-            //
+            'tglbukti' => [
+                'required','date_format:d-m-Y',
+                new DateTutupBuku()
+            ],
         ];
     }
 }

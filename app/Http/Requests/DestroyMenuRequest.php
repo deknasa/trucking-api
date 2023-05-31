@@ -4,6 +4,9 @@ namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
 use App\Http\Controllers\Api\ErrorController;
+use App\Models\Parameter;
+use Illuminate\Validation\Rule;
+use App\Http\Controllers\Api\ParameterController;
 
 class DestroyMenuRequest extends FormRequest
 {
@@ -26,9 +29,9 @@ class DestroyMenuRequest extends FormRequest
     {
         return [
             'menuname' => 'required',
-            'menuseq' => 'required',
-            'menuicon' => 'required',
-            'modifiedby' => 'required'
+            // 'menuseq' => 'required',
+            // 'menuicon' => 'required',
+            // 'modifiedby' => 'required'
             
         ];
     }

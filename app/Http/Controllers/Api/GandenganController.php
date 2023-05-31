@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Http\Requests\StoreGandenganRequest;
 use App\Http\Requests\UpdateGandenganRequest;
 use App\Http\Requests\DestroyGandenganRequest;
+
 use App\Http\Requests\StoreLogTrailRequest;
 
 use App\Models\Gandengan;
