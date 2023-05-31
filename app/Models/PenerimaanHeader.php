@@ -256,8 +256,8 @@ class PenerimaanHeader extends MyModel
         $this->sort($query);
         $this->filter($query);
         $this->paginate($query);
-
         $data = $query->get();
+        
 
         return $data;
     }

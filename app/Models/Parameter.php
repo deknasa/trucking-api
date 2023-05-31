@@ -282,7 +282,8 @@ class Parameter extends MyModel
                 DB::raw("parameter with (readuncommitted)")
             )
             ->select (
-                'id'
+                'id',
+                'text'
             )
             ->Where('grp','=',$grp)
             ->Where('subgrp','=',$subgrp)
@@ -296,6 +297,16 @@ class Parameter extends MyModel
         ->select('text')
         ->where('grp', 'BATAS AWAL TAHUN')
         ->where('subgrp', 'BATAS AWAL TAHUN')
+        ->first();
+
+        return $query;
+    }
+
+    public function getTutupBuku(){
+        $query = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))
+        ->select('text')
+        ->where('grp', 'TUTUP BUKU')
+        ->where('subgrp', 'TUTUP BUKU')
         ->first();
 
         return $query;
