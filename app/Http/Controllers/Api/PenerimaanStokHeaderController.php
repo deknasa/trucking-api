@@ -57,9 +57,7 @@ class PenerimaanStokHeaderController extends Controller
         DB::beginTransaction();
 
         try {
-            $request->validate([
-                "supplier" => Rule::requiredIf($request->penerimaanstok_id == '3')
-            ]);
+            
 
             $idpenerimaan = $request->penerimaanstok_id;
             $fetchFormat =  Penerimaanstok::where('id', $idpenerimaan)->first();
