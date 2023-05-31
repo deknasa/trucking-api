@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests;
 
+use App\Http\Controllers\Api\ErrorController;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
@@ -25,6 +26,7 @@ class UpdatePengeluaranTruckingDetailRequest extends FormRequest
      */
     public function rules()
     {
+        
         $requiredKeterangan = Rule::requiredIf(function () {
             $idpengeluaran = request()->pengeluarantrucking_id;
             if ($idpengeluaran != '') {
@@ -95,6 +97,7 @@ class UpdatePengeluaranTruckingDetailRequest extends FormRequest
             }
             return true;
         });
+        
         $sisaNominus = '';
         if (request()->pengeluarantrucking != '') {
             $idpengeluaran = request()->pengeluarantrucking_id;

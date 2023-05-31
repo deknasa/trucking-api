@@ -8,7 +8,7 @@ use App\Http\Controllers\Api\ErrorController;
 use App\Models\Parameter;
 use Illuminate\Validation\Rule;
 
-class GetIndexRangeRequest extends FormRequest
+class GetPengeluaranRangeRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
@@ -42,6 +42,9 @@ class GetIndexRangeRequest extends FormRequest
                 'before:'.$tglbatasakhir,
                 'after_or_equal:'.date('Y-m-d', strtotime($this->tgldari))
             ],
+            'pengeluaranheader_id' => [
+                'required'
+            ]
             
         ];
 
@@ -62,6 +65,8 @@ class GetIndexRangeRequest extends FormRequest
 
         return [
             'tglsampai.after_or_equal' => ':attribute ' . $controller->geterror('NTLK')->keterangan.' '. $this->tgldari,
+            'tglsampai.after_or_equal' => ':attribute ' . $controller->geterror('NTLK')->keterangan.' '. $this->tgldari,
+            'pengeluaranheader_id.required' => ':attribute ' . $controller->geterror('WI')->keterangan,
         ];
     }    
 

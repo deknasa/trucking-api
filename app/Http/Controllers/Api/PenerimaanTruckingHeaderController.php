@@ -488,7 +488,7 @@ class PenerimaanTruckingHeaderController extends Controller
     /**
      * @ClassName
      */
-    public function destroy(Request $request, $id)
+    public function destroy(DestroyPenerimaanTruckingHeaderRequest $request, $id)
     {
         DB::beginTransaction();
 
