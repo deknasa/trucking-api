@@ -58,7 +58,7 @@ class StoreSupirRequest extends FormRequest
             'alamat' => 'required',
             'namaalias' => 'required',
             'kota' => 'required',
-            'telp' => 'required|unique:supir|min:13|max:13',
+            'telp' => 'required|unique:supir|min:11|max:13',
             'statusaktif' => 'required|int|exists:parameter,id',
             'tglmasuk' => 'required',
             'tglexpsim' => 'required',
@@ -114,7 +114,6 @@ class StoreSupirRequest extends FormRequest
         $tglbatasakhir = date('Y-m-d', strtotime('-' . (new ParameterController)->getparamid('MINIMAL USIA SUPIR', 'MINIMAL USIA SUPIR')->text . ' years', strtotime( date('Y-m-d'))));
         $tglbatasawal = date('Y-m-d', strtotime('-' . (new ParameterController)->getparamid('MAXIMAL USIA SUPIR', 'MAXIMAL USIA SUPIR')->text . ' years', strtotime(date('Y-m-d'))));
 
-        
         return [
             'telp.min' => 'Min. 11 karakter',
             'telp.max' => 'Max. 13 karakter',
