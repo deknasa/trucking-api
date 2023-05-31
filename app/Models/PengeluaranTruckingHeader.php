@@ -465,6 +465,7 @@ class PengeluaranTruckingHeader extends MyModel
             ->leftJoin(DB::raw("orderantrucking as ot with (readuncommitted)"), 'pengeluarantruckingdetail.orderantrucking_nobukti', 'ot.nobukti')
             ->leftJoin(DB::raw("container with (readuncommitted)"), 'ot.container_id', 'container.id')
             ->where('pengeluarantruckingdetail.pengeluarantruckingheader_id', '=', $id);
+            
 
         Schema::create($temp, function ($table) {
             $table->bigInteger('pengeluarantrucking_id')->nullable();
