@@ -6,6 +6,8 @@ use App\Http\Controllers\Api\ErrorController;
 use App\Models\Penerima;
 use Illuminate\Foundation\Http\FormRequest;
 use App\Rules\DateTutupBuku;
+use App\Rules\ExistBank;
+use App\Rules\ExistPenerima;
 
 class StoreKasGantungHeaderRequest extends FormRequest
 {
@@ -29,42 +31,34 @@ class StoreKasGantungHeaderRequest extends FormRequest
         $bank_id = $this->bank_id;
         $rulesBank_id = [];
         if ($bank_id != null) {
-            if ($bank_id == 0) {
-                $rulesBank_id = [
-                    'bank_id' => ['required', 'numeric', 'min:1']
-                ];
-            }
+            $rulesBank_id = [
+                'bank_id' => ['required', 'numeric', 'min:1', new ExistBank()]
+            ];
         } else if ($bank_id == null && $this->bank != '') {
             $rulesBank_id = [
-                'bank_id' => ['required', 'numeric', 'min:1']
-            ];  
+                'bank_id' => ['required', 'numeric', 'min:1', new ExistBank()]
+            ];
         }
 
         $penerima_id = $this->penerima_id;
         $rulesPenerima_id = [];
         if ($penerima_id != null) {
-            if ($penerima_id == 0) {
-                $rulesPenerima_id = [
-                    'penerima_id' => ['required', 'numeric', 'min:1']
-                ];
-            } else {
-                if ($this->penerima == '') {
-                    $rulesPenerima_id = [
-                        'penerima' => ['required']
-                    ];
-                }
-            }
+
+            $rulesPenerima_id = [
+                'penerima' => ['required'],
+                'penerima_id' => ['required', 'numeric', 'min:1', new ExistPenerima()]
+            ];
         } else if ($penerima_id == null && $this->penerima != '') {
             $rulesPenerima_id = [
-                'penerima_id' => ['required', 'numeric', 'min:1']
+                'penerima_id' => ['required', 'numeric', 'min:1', new ExistPenerima()]
             ];
         }
 
         $rules = [
             'tglbukti' => [
-                'required','date_format:d-m-Y',
-                'date_equals:'.date('d-m-Y'),
-                new DateTutupBuku()
+                'required', 'date_format:d-m-Y',
+                new DateTutupBuku(),
+                'before_or_equal:' . date('d-m-Y')
             ],
             'bank' => 'required',
         ];
@@ -80,7 +74,7 @@ class StoreKasGantungHeaderRequest extends FormRequest
                 $rulesPenerima_id
             );
         }
-        
+
         return $rules;
     }
 
@@ -91,13 +85,13 @@ class StoreKasGantungHeaderRequest extends FormRequest
             'nominal.*' => 'Nominal',
             'keterangan_detail.*' => 'Keterangan',
         ];
-        
+
         return $attributes;
     }
 
-    public function messages() 
+    public function messages()
     {
-        return [            
+        return [
             'bank_id.required' => ':attribute ' . app(ErrorController::class)->geterror('HPDL')->keterangan,
             'penerima_id.required' => ':attribute ' . app(ErrorController::class)->geterror('HPDL')->keterangan,
             'nominal.*.gt' => 'Nominal Tidak Boleh Kosong dan Harus Lebih Besar Dari 0',

@@ -3,8 +3,12 @@
 namespace App\Http\Requests;
 
 use App\Http\Controllers\Api\ErrorController;
+use App\Models\PenerimaanHeader;
 use Illuminate\Foundation\Http\FormRequest;
 use App\Rules\DateTutupBuku;
+use App\Rules\DestroyPenerimaan;
+use App\Rules\ExistPelanggan;
+use Illuminate\Validation\Rule;
 
 class UpdatePenerimaanHeaderRequest extends FormRequest
 {
@@ -25,17 +29,32 @@ class UpdatePenerimaanHeaderRequest extends FormRequest
      */
     public function rules()
     {
+        $penerimaanHeader = new PenerimaanHeader();
+        $getDataPenerimaan = $penerimaanHeader->findAll(request()->id);
+
+        $pelanggan_id = $this->pelanggan_id;
+        $rulesPelanggan_id = [];
+        if ($pelanggan_id != null) {
+
+            $rulesPelanggan_id = [
+                'pelanggan' => ['required'],
+                'pelanggan_id' => ['required', 'numeric', 'min:1', new ExistPelanggan()]
+            ];
+        } else if ($pelanggan_id == null && $this->pelanggan != '') {
+            $rulesPelanggan_id = [
+                'pelanggan_id' => ['required', 'numeric', 'min:1', new ExistPelanggan()]
+            ];
+        }
         $rules = [
+            'nobukti' => [Rule::in($getDataPenerimaan->nobukti), new DestroyPenerimaan()],
             'tglbukti' => [
                 'required','date_format:d-m-Y',
+                'date_equals:'.date('d-m-Y', strtotime($getDataPenerimaan->tglbukti)),
                 new DateTutupBuku()
             ],
-            // 'pelanggan' => 'required',
-            'tgllunas'  => 'required',
-            // 'cabang' => 'required',
-            // 'statuskas' => 'required',
+            'tgllunas'  => ['required','date_equals:'.date('d-m-Y', strtotime($getDataPenerimaan->tgllunas)),],
             'bank'   => 'required',
-            // 'noresi' => 'required'
+            'bank_id' => ['required', Rule::in($getDataPenerimaan->bank_id)]
         ];
         $relatedRequests = [
             UpdatePenerimaanDetailRequest::class
@@ -44,7 +63,8 @@ class UpdatePenerimaanHeaderRequest extends FormRequest
         foreach ($relatedRequests as $relatedRequest) {
             $rules = array_merge(
                 $rules,
-                (new $relatedRequest)->rules()
+                (new $relatedRequest)->rules(),
+                $rulesPelanggan_id
             );
         }
 

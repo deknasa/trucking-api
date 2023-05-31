@@ -5,6 +5,7 @@ namespace App\Http\Requests;
 use App\Http\Controllers\Api\ErrorController;
 use App\Rules\DateAllowedAbsen;
 use App\Rules\DateTutupBuku;
+use App\Rules\ExistAgen;
 use Illuminate\Foundation\Http\FormRequest;
 
 class StorePiutangHeaderRequest extends FormRequest
@@ -29,22 +30,20 @@ class StorePiutangHeaderRequest extends FormRequest
         $agen_id = $this->agen_id;
         $rulesAgen_id = [];
         if ($agen_id != null) {
-            if ($agen_id == 0) {
-                $rulesAgen_id = [
-                    'agen_id' => ['required', 'numeric', 'min:1']
-                ];
-            }
+            $rulesAgen_id = [
+                'agen_id' => ['required', 'numeric', 'min:1', new ExistAgen()]
+            ];
         } else if ($agen_id == null && $this->agen != '') {
             $rulesAgen_id = [
-                'agen_id' => ['required', 'numeric', 'min:1']
+                'agen_id' => ['required', 'numeric', 'min:1', new ExistAgen()]
             ];
         }
         $rules = [
             'tglbukti' => [
-                'required','date_format:d-m-Y',
-                'date_equals:'.date('d-m-Y'),
+                'required', 'date_format:d-m-Y',
                 new DateAllowedAbsen(),
-                new DateTutupBuku()
+                new DateTutupBuku(),
+                'before_or_equal:' . date('d-m-Y')
             ],
             'agen' => 'required',
         ];
@@ -60,7 +59,7 @@ class StorePiutangHeaderRequest extends FormRequest
                 $rulesAgen_id
             );
         }
-        
+
         return $rules;
     }
     public function attributes()
@@ -71,11 +70,11 @@ class StorePiutangHeaderRequest extends FormRequest
             'nominal_detail.*' => 'Nominal',
             'keterangan_detail.*' => 'Keterangan',
         ];
-        
+
         return $attributes;
     }
 
-    public function messages() 
+    public function messages()
     {
         return [
             'nominal_detail.*.gt' => 'Nominal Tidak Boleh Kosong dan Harus Lebih Besar Dari 0',

@@ -5,6 +5,8 @@ namespace App\Http\Requests;
 use App\Http\Controllers\Api\ErrorController;
 use Illuminate\Foundation\Http\FormRequest;
 use App\Rules\DateTutupBuku;
+use App\Rules\ExistBank;
+use App\Rules\ExistPelanggan;
 
 class StorePenerimaanHeaderRequest extends FormRequest
 {
@@ -25,13 +27,44 @@ class StorePenerimaanHeaderRequest extends FormRequest
      */
     public function rules()
     {
+        
+        $bank_id = $this->bank_id;
+        $rulesBank_id = [];
+        if ($bank_id != null) {
+            $rulesBank_id = [
+                'bank_id' => ['required', 'numeric', 'min:1', new ExistBank()]
+            ];
+        } else if ($bank_id == null && $this->bank != '') {
+            $rulesBank_id = [
+                'bank_id' => ['required', 'numeric', 'min:1', new ExistBank()]
+            ];
+        }
+        
+        $pelanggan_id = $this->pelanggan_id;
+        $rulesPelanggan_id = [];
+        if ($pelanggan_id != null) {
+
+            $rulesPelanggan_id = [
+                'pelanggan' => ['required'],
+                'pelanggan_id' => ['required', 'numeric', 'min:1', new ExistPelanggan()]
+            ];
+        } else if ($pelanggan_id == null && $this->pelanggan != '') {
+            $rulesPelanggan_id = [
+                'pelanggan_id' => ['required', 'numeric', 'min:1', new ExistPelanggan()]
+            ];
+        }
+
         $rules = [
             'tglbukti' => [
-                'required','date_format:d-m-Y',
-                new DateTutupBuku()
+                'required', 'date_format:d-m-Y',
+                new DateTutupBuku(),
+                'before_or_equal:' . date('d-m-Y')
             ],
-           
-            'tgllunas'  => 'required|date_format:d-m-Y',
+
+            'tgllunas'  => [
+                'required', 'date_format:d-m-Y',
+                'before_or_equal:' . date('d-m-Y')
+            ],
             // 'cabang' => 'required',
             // 'statuskas' => 'required',
             'bank'   => 'required',
@@ -40,16 +73,17 @@ class StorePenerimaanHeaderRequest extends FormRequest
         $relatedRequests = [
             StorePenerimaanDetailRequest::class
         ];
-        
+
         foreach ($relatedRequests as $relatedRequest) {
             $rules = array_merge(
                 $rules,
-                (new $relatedRequest)->rules()
+                (new $relatedRequest)->rules(),
+                $rulesBank_id,
+                $rulesPelanggan_id
             );
         }
 
         return $rules;
-
     }
     public function attributes()
     {
@@ -60,7 +94,7 @@ class StorePenerimaanHeaderRequest extends FormRequest
             'tgljatuhtempo.*' => 'tanggal jatuh tempo',
             'nominal_detail.*' => 'nominal',
             'keterangan_detail.*' => 'keterangan detail',
-            'ketcoakredit.*' => 'nama perkiraan'
+            'ketcoakredit.*' => 'nama perkiraan',
         ];
     }
     public function messages()

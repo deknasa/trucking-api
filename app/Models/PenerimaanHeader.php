@@ -183,6 +183,24 @@ class PenerimaanHeader extends MyModel
             ];
             goto selesai;
         }
+        
+        $pemutihanSupir = DB::table('pemutihansupirheader')
+            ->from(
+                DB::raw("pemutihansupirheader as a with (readuncommitted)")
+            )
+            ->select(
+                'a.penerimaan_nobukti'
+            )
+            ->where('a.penerimaan_nobukti', '=', $nobukti)
+            ->first();
+        if (isset($pemutihanSupir)) {
+            $data = [
+                'kondisi' => true,
+                'keterangan' => 'pemutihan supir',
+                'kodeerror' => 'TDT'
+            ];
+            goto selesai;
+        }
 
 
         $data = [
@@ -375,7 +393,7 @@ class PenerimaanHeader extends MyModel
                 'penerimaanheader.id',
                 'penerimaanheader.nobukti',
                 'penerimaanheader.tglbukti',
-                'penerimaanheader.pelanggan_id',
+                DB::raw("(case when penerimaanheader.pelanggan_id=0 then null else penerimaanheader.pelanggan_id end) as pelanggan_id"),
                 'pelanggan.namapelanggan as pelanggan',
                 'penerimaanheader.statuscetak',
                 'penerimaanheader.diterimadari',

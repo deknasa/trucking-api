@@ -3,9 +3,11 @@
 namespace App\Rules;
 
 use App\Http\Controllers\Api\ErrorController;
+use App\Models\PenerimaanHeader;
 use Illuminate\Contracts\Validation\Rule;
+use Illuminate\Support\Facades\DB;
 
-class CoaKreditPenerimaanDetail implements Rule
+class DestroyPenerimaan implements Rule
 {
     /**
      * Create a new rule instance.
@@ -26,15 +28,14 @@ class CoaKreditPenerimaanDetail implements Rule
      */
     public function passes($attribute, $value)
     {
-        $attribute = substr($attribute,10);
-        $ketCoaKredit = request()->ketcoakredit[$attribute];
-
-        if($ketCoaKredit != null && $value == null){
-            return false;
-        }else{
-            return true;
+        $penerimaan = new PenerimaanHeader();
+        $nobukti = PenerimaanHeader::from(DB::raw("penerimaanheader"))->where('id', request()->id)->first();
+        $cekdata = $penerimaan->cekvalidasiaksi($nobukti->nobukti);
+        if($cekdata['kondisi']){
+          return false;
         }
 
+        return true;
     }
 
     /**
@@ -44,6 +45,6 @@ class CoaKreditPenerimaanDetail implements Rule
      */
     public function message()
     {
-        return app(ErrorController::class)->geterror('HPDL')->keterangan;
+        return app(ErrorController::class)->geterror('TDT')->keterangan;
     }
 }

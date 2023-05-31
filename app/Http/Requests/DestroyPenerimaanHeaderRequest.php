@@ -2,10 +2,11 @@
 
 namespace App\Http\Requests;
 
-use App\Rules\UniqueTglBukaAbsensi;
+use App\Rules\DateTutupBuku;
+use App\Rules\DestroyPenerimaan;
 use Illuminate\Foundation\Http\FormRequest;
 
-class StoreBukaAbsensiRequest extends FormRequest
+class DestroyPenerimaanHeaderRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
@@ -25,12 +26,11 @@ class StoreBukaAbsensiRequest extends FormRequest
     public function rules()
     {
         return [
-            "tglabsensi"=> [
-                
-                'required', 'date_format:d-m-Y', 
-                'before_or_equal:' . date('d-m-Y'),
-                new UniqueTglBukaAbsensi
-            ]
+            'nobukti' => new DestroyPenerimaan(),
+            'tglbukti' => [
+                'required','date_format:d-m-Y',
+                new DateTutupBuku()
+            ],
         ];
     }
 }

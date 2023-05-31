@@ -97,7 +97,7 @@ class PenerimaanDetail extends MyModel
                 'akunpusat.keterangancoa as ketcoakredit',
                 'penerimaandetail.tgljatuhtempo',
                 'penerimaandetail.nowarkat',
-                'penerimaandetail.bankpelanggan_id',
+                DB::raw("(case when penerimaandetail.bankpelanggan_id=0 then null else penerimaandetail.bankpelanggan_id end) as bankpelanggan_id"),
                 'bankpelanggan.namabank as bankpelanggan',
                 'penerimaandetail.keterangan',
                 'penerimaandetail.nominal',

@@ -5,7 +5,7 @@ namespace App\Rules;
 use App\Http\Controllers\Api\ErrorController;
 use Illuminate\Contracts\Validation\Rule;
 
-class CoaKreditPenerimaanDetail implements Rule
+class BankPelangganIdPenerimaanDetail implements Rule
 {
     /**
      * Create a new rule instance.
@@ -26,15 +26,13 @@ class CoaKreditPenerimaanDetail implements Rule
      */
     public function passes($attribute, $value)
     {
-        $attribute = substr($attribute,10);
-        $ketCoaKredit = request()->ketcoakredit[$attribute];
-
-        if($ketCoaKredit != null && $value == null){
+        $attribute = substr($attribute,17);
+        $bankpelanggan = request()->bankpelanggan[$attribute];
+        if($bankpelanggan != null && ($value == null || $value == 0)){
             return false;
         }else{
             return true;
         }
-
     }
 
     /**

@@ -2,6 +2,8 @@
 
 namespace App\Http\Requests;
 
+use App\Models\BukaAbsensi;
+use App\Rules\UniqueTglBukaAbsensiEdit;
 use Illuminate\Foundation\Http\FormRequest;
 
 class UpdateBukaAbsensiRequest extends FormRequest
@@ -23,8 +25,13 @@ class UpdateBukaAbsensiRequest extends FormRequest
      */
     public function rules()
     {
+        $bukaAbsensi = BukaAbsensi::find(request()->id);
         return [
-            "tglabsensi"=> "required"
+            "tglabsensi"=> [
+                'required', 'date_format:d-m-Y', 
+                'before_or_equal:' . date('d-m-Y', strtotime($bukaAbsensi->tglabsensi)),
+                new UniqueTglBukaAbsensiEdit
+            ]
         ];
     }
 }
