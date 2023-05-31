@@ -2,10 +2,12 @@
 
 namespace App\Http\Requests;
 
-use App\Http\Controllers\Api\ErrorController;
 use Illuminate\Foundation\Http\FormRequest;
+use App\Http\Controllers\Api\ErrorController;
+use Illuminate\Validation\Rule;
+use App\Models\Parameter;
 
-class ParameterRequest extends FormRequest
+class UpdateParameterRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
@@ -24,6 +26,7 @@ class ParameterRequest extends FormRequest
      */
     public function rules()
     {
+        
         return [
             'grp' => 'required',
             'subgrp' => 'required',
