@@ -2,8 +2,8 @@
 
 namespace App\Rules;
 
-use App\Http\Controllers\Api\ErrorController;
 use Illuminate\Contracts\Validation\Rule;
+use App\Http\Controllers\Api\ErrorController;
 use Illuminate\Support\Facades\DB;
 
 class ExistPelanggan implements Rule
@@ -44,6 +44,67 @@ class ExistPelanggan implements Rule
      */
     public function message()
     {
-        return app(ErrorController::class)->geterror('TVD')->keterangan;
+        $controller = new ErrorController;
+        return ':attribute' . ' ' . $controller->geterror('TVD')->keterangan;
     }
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

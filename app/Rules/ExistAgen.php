@@ -44,6 +44,7 @@ class ExistAgen implements Rule
      */
     public function message()
     {
-        return app(ErrorController::class)->geterror('TVD')->keterangan;
+        $controller = new ErrorController;
+        return ':attribute' . ' ' . $controller->geterror('TVD')->keterangan;
     }
 }
