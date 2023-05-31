@@ -6,6 +6,8 @@ use App\Http\Controllers\Api\ErrorController;
 use App\Models\KasGantungHeader;
 use Illuminate\Foundation\Http\FormRequest;
 use App\Rules\DateTutupBuku;
+use App\Rules\DestroyKasGantung;
+use Illuminate\Validation\Rule;
 
 class UpdateKasGantungHeaderRequest extends FormRequest
 {
@@ -60,9 +62,13 @@ class UpdateKasGantungHeaderRequest extends FormRequest
             ];
         }
 
+        $kasGantung = new KasGantungHeader();
+        $getDataKasgantung = $kasGantung->findUpdate(request()->id);
         $rules = [
+            'nobukti' => [Rule::in($getDataKasgantung), new DestroyKasGantung()],
             "tglbukti" => [
-                "required",'date_format:d-m-Y',
+                "required", 'date_format:d-m-Y',
+                'date_equals:' . date('d-m-Y', strtotime($getDataKasgantung->tglbukti)),
                 new DateTutupBuku()
             ],
             'bank' => 'required'
@@ -79,7 +85,7 @@ class UpdateKasGantungHeaderRequest extends FormRequest
                 $rulesPenerima_id
             );
         }
-        
+
         return $rules;
     }
 
@@ -90,17 +96,17 @@ class UpdateKasGantungHeaderRequest extends FormRequest
             'nominal.*' => 'Nominal',
             'keterangan_detail.*' => 'Keterangan',
         ];
-        
+
         return $attributes;
     }
 
-    public function messages() 
+    public function messages()
     {
         return [
             'bank_id.required' => ':attribute ' . app(ErrorController::class)->geterror('HPDL')->keterangan,
             'penerima_id.required' => ':attribute ' . app(ErrorController::class)->geterror('HPDL')->keterangan,
             'nominal.*.gt' => 'Nominal Tidak Boleh Kosong dan Harus Lebih Besar Dari 0',
-            'tglbukti.date_format' => app(ErrorController::class)->geterror('DF')->keterangan, 
+            'tglbukti.date_format' => app(ErrorController::class)->geterror('DF')->keterangan,
         ];
     }
 }

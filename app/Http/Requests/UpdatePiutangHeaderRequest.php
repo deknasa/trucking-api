@@ -3,9 +3,12 @@
 namespace App\Http\Requests;
 
 use App\Http\Controllers\Api\ErrorController;
+use App\Models\PiutangHeader;
 use App\Rules\NotOffDay;
 use App\Rules\DateTutupBuku;
+use App\Rules\DestroyPiutang;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
 class UpdatePiutangHeaderRequest extends FormRequest
 {
@@ -40,9 +43,13 @@ class UpdatePiutangHeaderRequest extends FormRequest
             ];
         }
 
+        $piutangHeader = new PiutangHeader();
+        $getDataPiutang = $piutangHeader->findUpdate(request()->id);
         $rules = [
+            'nobukti' => [Rule::in($getDataPiutang->nobukti), new DestroyPiutang()],
             'tglbukti' => [
                 'required','date_format:d-m-Y',
+                'date_equals:'.date('d-m-Y', strtotime($getDataPiutang->tglbukti)),
                 new NotOffDay(),
                 new DateTutupBuku()
             ],

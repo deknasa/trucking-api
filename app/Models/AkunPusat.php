@@ -19,6 +19,33 @@ class AkunPusat extends MyModel
         'updated_at',
     ];
 
+    public function cekvalidasihapus($id)
+    {
+        $jurnalUmumDetail = DB::table('jurnalumumdetail')
+            ->from(
+                DB::raw("jurnalumumdetail as a with (readuncommitted)")
+            )
+            ->select(
+                'a.coa'
+            )
+            ->where('a.coa', '=', $id)
+            ->first();
+        if (isset($jurnalUmumDetail)) {
+            $data = [
+                'kondisi' => true,
+                'keterangan' => 'COA',
+            ];
+            goto selesai;
+        }
+        
+        $data = [
+            'kondisi' => false,
+            'keterangan' => '',
+        ];
+        selesai:
+        return $data;
+    }
+
     public function get()
     {
         $this->setRequestParameters();

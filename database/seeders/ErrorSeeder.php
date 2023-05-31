@@ -73,6 +73,6 @@ class ErrorSeeder extends Seeder
         error::create([ 'kodeerror' => 'HDSD', 'keterangan' => 'HARUS DIATAS ATAU SAMA DENGAN', 'modifiedby' => 'ADMIN',]);
         error::create([ 'kodeerror' => 'STGG', 'keterangan' => 'SALAHSATU DARI TRADO, GUDANG ATAU GANDENGAN WAJIB ISI', 'modifiedby' => 'ADMIN',]);
         error::create([ 'kodeerror' => 'STGGD', 'keterangan' => 'SALAHSATU TRADO DARI, GUDANG DARI ATAU GANDENGAN DARI WAJIB ISI', 'modifiedby' => 'ADMIN',]);
-        error::create([ 'kodeerror' => 'STGGK', 'keterangan' => 'SALAHSATU TRADO KE, GUDANG KE ATAU GANDENGAN KE WAJIB ISI', 'modifiedby' => 'ADMIN',]);
+        error::create([ 'kodeerror' => 'STGGK', 'keterangan' => 'SALAHSATU TRADO KE, GUDANG KE ATAU GANDENGAN KE WAJIB ISI', 'modifiedby' => 'ADMIN',]);        error::create([ 'kodeerror' => 'HBSD', 'keterangan' => 'HARUS DIBAWAH ATAU SAMA DENGAN', 'modifiedby' => 'ADMIN',]);
     }
 }

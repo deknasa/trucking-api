@@ -42,6 +42,7 @@ class GetIndexRangeRequest extends FormRequest
                 'before:'.$tglbatasakhir,
                 'after_or_equal:'.date('Y-m-d', strtotime($this->tgldari))
             ],
+            
         ];
 
         return $rules;

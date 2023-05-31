@@ -3,8 +3,10 @@
 namespace App\Rules;
 
 use Illuminate\Contracts\Validation\Rule;
+use App\Models\AbsenTrado;
+use App\Http\Controllers\Api\ErrorController;
 
-class CekMinusPelunasanPiutang implements Rule
+class ValidasiDestroyAbsenTrado implements Rule
 {
     /**
      * Create a new rule instance.
@@ -25,7 +27,12 @@ class CekMinusPelunasanPiutang implements Rule
      */
     public function passes($attribute, $value)
     {
-        dd($value,request()->bayar);
+        $absenTrado = new AbsenTrado();
+        $cekdata = $absenTrado->cekvalidasihapus(request()->id);
+        if($cekdata['kondisi']){
+          return false;
+        }
+        return true;
     }
 
     /**
@@ -35,6 +42,6 @@ class CekMinusPelunasanPiutang implements Rule
      */
     public function message()
     {
-        return 'The validation error message.';
+        return app(ErrorController::class)->geterror('SATL')->keterangan;
     }
 }

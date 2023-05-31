@@ -272,9 +272,11 @@ class AlatBayar extends MyModel
                 'alatbayar.statusaktif',
                 'alatbayar.bank_id',
                 'bank.namabank as bank',
-                'alatbayar.coa'
+                'alatbayar.coa',
+                'akunpusat.keterangancoa'
             )
             ->leftJoin(DB::raw("bank with (readuncommitted)"), 'alatbayar.bank_id', 'bank.id')
+            ->leftJoin(DB::raw("akunpusat with (readuncommitted)"), 'alatbayar.coa', 'akunpusat.coa')
             ->where('alatbayar.id', $id);
 
         $data = $query->first();
@@ -361,7 +363,7 @@ class AlatBayar extends MyModel
                         } else if ($filters['field'] == 'bank') {
                             $query = $query->where('bank.namabank', 'LIKE', "%$filters[data]%");
                         } else if ($filters['field'] == 'created_at' || $filters['field'] == 'updated_at') {
-                            $query = $query->whereRaw("format(".$this->table . "." . $filters['field'].", 'dd-MM-yyyy HH:mm:ss') LIKE '%$filters[data]%'");
+                            $query = $query->whereRaw("format(" . $this->table . "." . $filters['field'] . ", 'dd-MM-yyyy HH:mm:ss') LIKE '%$filters[data]%'");
                         } else {
                             $query = $query->where($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
                         }
@@ -380,7 +382,7 @@ class AlatBayar extends MyModel
                             } else if ($filters['field'] == 'bank') {
                                 $query = $query->orWhere('bank.namabank', 'LIKE', "%$filters[data]%");
                             } else if ($filters['field'] == 'created_at' || $filters['field'] == 'updated_at') {
-                                $query = $query->orWhereRaw("format(".$this->table . "." . $filters['field'].", 'dd-MM-yyyy HH:mm:ss') LIKE '%$filters[data]%'");
+                                $query = $query->orWhereRaw("format(" . $this->table . "." . $filters['field'] . ", 'dd-MM-yyyy HH:mm:ss') LIKE '%$filters[data]%'");
                             } else {
                                 $query = $query->orWhere($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
                             }
@@ -403,5 +405,34 @@ class AlatBayar extends MyModel
     public function paginate($query)
     {
         return $query->skip($this->params['offset'])->take($this->params['limit']);
+    }
+
+    public function validateBankWithAlatbayar($bank_id)
+    {
+        $bank = Bank::from(
+            db::Raw("bank with (readuncommitted)")
+        )
+            ->select(
+                'tipe'
+            )
+            ->where('id', '=', $bank_id)
+            ->first();
+
+        $query = DB::table($this->table)->from(
+            DB::raw($this->table . " with (readuncommitted)")
+        )
+            ->select(
+                'alatbayar.id',
+                'alatbayar.kodealatbayar',
+                'alatbayar.bank_id',
+                'bank.namabank as bank',
+            )
+            ->leftJoin(DB::raw("bank with (readuncommitted)"), 'alatbayar.bank_id', 'bank.id')
+            ->leftJoin(DB::raw("parameter with (readuncommitted)"), 'alatbayar.statusaktif', 'parameter.id')
+            ->where('bank.tipe', $bank->tipe)
+            ->get();
+
+
+        return $query;
     }
 }

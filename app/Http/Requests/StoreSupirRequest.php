@@ -7,6 +7,8 @@ use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
+use App\Http\Controllers\Api\ParameterController;
+use App\Http\Controllers\Api\ErrorController;
 
 class StoreSupirRequest extends FormRequest
 {
@@ -48,19 +50,26 @@ class StoreSupirRequest extends FormRequest
             }
             return true;
         });
+        $tglbatasakhir = date('Y-m-d', strtotime('-' . (new ParameterController)->getparamid('MINIMAL USIA SUPIR', 'MINIMAL USIA SUPIR')->text . ' years', strtotime( date('Y-m-d'))));
+        $tglbatasawal = date('Y-m-d', strtotime('-' . (new ParameterController)->getparamid('MAXIMAL USIA SUPIR', 'MAXIMAL USIA SUPIR')->text . ' years', strtotime(date('Y-m-d'))));
+
         return [
             'namasupir' => 'required',
             'alamat' => 'required',
             'namaalias' => 'required',
             'kota' => 'required',
-            'telp' => 'required',
+            'telp' => 'required|unique:supir|min:13|max:13',
             'statusaktif' => 'required|int|exists:parameter,id',
             'tglmasuk' => 'required',
             'tglexpsim' => 'required',
             'nosim' => 'required|unique:supir|min:12|max:12',
             'noktp' => 'required|unique:supir|min:16|max:16',
             'nokk' => 'required|min:16|max:16',
-            'tgllahir' => 'required',
+            'tgllahir' => [
+                'required', 'date_format:d-m-Y', 
+                'after_or_equal:' . $tglbatasawal, 
+                'before_or_equal:' . $tglbatasakhir,
+            ],
             'tglterbitsim' => 'required',
             'photosupir' => [$ruleGambar,'array'],
             'photosupir.*' => [$ruleGambar,'image'],
@@ -101,7 +110,14 @@ class StoreSupirRequest extends FormRequest
     }
     public function messages() 
     {
+        $controller = new ErrorController;
+        $tglbatasakhir = date('Y-m-d', strtotime('-' . (new ParameterController)->getparamid('MINIMAL USIA SUPIR', 'MINIMAL USIA SUPIR')->text . ' years', strtotime( date('Y-m-d'))));
+        $tglbatasawal = date('Y-m-d', strtotime('-' . (new ParameterController)->getparamid('MAXIMAL USIA SUPIR', 'MAXIMAL USIA SUPIR')->text . ' years', strtotime(date('Y-m-d'))));
+
+        
         return [
+            'telp.min' => 'Min. 11 karakter',
+            'telp.max' => 'Max. 13 karakter',
             'noktp.max' => 'Max. 16 karakter',
             'noktp.min' => 'Min. 16 karakter',
             'nokk.max' => 'Max. 16 karakter',
@@ -110,6 +126,8 @@ class StoreSupirRequest extends FormRequest
             'nosim.min' => 'Min. 12 karakter',
             'nosim.unique' => ':attribute Sudah digunakan',
             'noktp.unique' => ':attribute Sudah digunakan',
+            'tgllahir.after_or_equal' => ':attribute ' . $controller->geterror('NTLK')->keterangan.' '. date('d-m-Y', strtotime($tglbatasawal)). ' dan '. $controller->geterror('NTLB')->keterangan.' '. date('d-m-Y', strtotime($tglbatasakhir)),            
+            'tgllahir.before_or_equal' => ':attribute ' . $controller->geterror('NTLK')->keterangan.' '. date('d-m-Y', strtotime($tglbatasawal)). ' dan '. $controller->geterror('NTLB')->keterangan.' '. date('d-m-Y', strtotime($tglbatasakhir)),  
         ];
     }
 }

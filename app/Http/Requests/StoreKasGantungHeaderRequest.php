@@ -37,7 +37,7 @@ class StoreKasGantungHeaderRequest extends FormRequest
         } else if ($bank_id == null && $this->bank != '') {
             $rulesBank_id = [
                 'bank_id' => ['required', 'numeric', 'min:1']
-            ];
+            ];  
         }
 
         $penerima_id = $this->penerima_id;

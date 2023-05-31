@@ -3,6 +3,10 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\DestroyPengeluaranTruckingHeaderRequest;
+use App\Http\Requests\GetIndexRangeRequest;
+use App\Http\Requests\GetInvoiceRequest;
+use App\Http\Requests\GetPengeluaranRangeRequest;
 use App\Models\PengeluaranTruckingHeader;
 use App\Models\AlatBayar;
 use App\Http\Requests\StorePengeluaranTruckingHeaderRequest;
@@ -37,7 +41,7 @@ class PengeluaranTruckingHeaderController extends Controller
     /**
      * @ClassName
      */
-    public function index()
+    public function index(GetPengeluaranRangeRequest $request)
     {
         $pengeluarantruckingheader = new PengeluaranTruckingHeader();
         return response([
@@ -491,7 +495,7 @@ class PengeluaranTruckingHeaderController extends Controller
     /**
      * @ClassName
      */
-    public function destroy(Request $request, $id)
+    public function destroy(DestroyPengeluaranTruckingHeaderRequest $request, $id)
     {
         DB::beginTransaction();
 
@@ -740,7 +744,7 @@ class PengeluaranTruckingHeaderController extends Controller
         // return $pengeluaranTrucking->getTarikDeposito($id);
     }
 
-    public function getInvoice(Request $request)
+    public function getInvoice(GetInvoiceRequest $request)
     {
         $tgldari = $request->tgldari;
         $tglsampai = $request->tglsampai;

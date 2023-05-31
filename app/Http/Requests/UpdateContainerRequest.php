@@ -3,6 +3,7 @@
 namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
+use App\Http\Controllers\Api\ErrorController;
 use Illuminate\Validation\Rule;
 use App\Models\Parameter;
 
@@ -33,6 +34,8 @@ class UpdateContainerRequest extends FormRequest
             $status[] = $item['id'];
         } 
         return [
+            'kodecontainer' => ['required',Rule::unique('container')->whereNotIn('id', [$this->id])],
+            'nominalsumbangan' => 'required|integer|gt:0',
             'statusaktif' => ['required', Rule::in($status)]
         ];
     }
@@ -41,6 +44,7 @@ class UpdateContainerRequest extends FormRequest
     {
         return [
             'keterangan' => 'Keterangan',
+            'nominalsumbangan' => 'Nominal Sumbangan',
             'statusaktif' => 'Status Aktif'
         ];
     }
