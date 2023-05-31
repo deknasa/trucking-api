@@ -15,6 +15,7 @@ use App\Models\UpahRitasi;
 use App\Models\UpahRitasiRincian;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\DestroyRitasiRequest;
 use App\Http\Requests\GetIndexRangeRequest;
 use Carbon\Carbon;
 use Illuminate\Database\QueryException;
@@ -221,7 +222,7 @@ class RitasiController extends Controller
     /**
      * @ClassName 
      */
-    public function destroy(Request $request, $id)
+    public function destroy(DestroyRitasiRequest $request, $id)
     {
         DB::beginTransaction();
 

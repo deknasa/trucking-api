@@ -227,7 +227,7 @@ class SupplierController extends Controller
     /**
      * @ClassName 
      */
-    public function destroy(Request $request, $id)
+    public function destroy(DestorySupplierRequest $request, $id)
     {
         DB::beginTransaction();
 

@@ -3,8 +3,11 @@
 namespace App\Http\Requests;
 
 use App\Http\Controllers\Api\ErrorController;
+use App\Models\Ritasi;
 use Illuminate\Foundation\Http\FormRequest;
 use App\Rules\DateTutupBuku;
+use Illuminate\Validation\Rule;
+use Illuminate\Support\Facades\DB;
 
 class UpdateRitasiRequest extends FormRequest
 {
@@ -25,10 +28,26 @@ class UpdateRitasiRequest extends FormRequest
      */
     public function rules()
     {
+        $ritasiQuery = DB::table('ritasi')->from(DB::raw('ritasi with (readuncommitted)'))->select('ritasi.id');
+        $ritasiResults = $ritasiQuery->get();
+
+        $ritasiName = [];
+        foreach ($ritasiResults as $ritasi) {
+            $ritasiName[] = $ritasi->id;
+        }
+
+        $ritasi = Rule::in($ritasiName);
+
+
+        $ritasi = new Ritasi();
+        $getData = $ritasi->find(request()->id);
+       
+
         return [
+            'nobukti' => [Rule::in($getData->nobukti)],
             "tglbukti" => [
                 "required",'date_format:d-m-Y',
-                'date_equals:'.date('d-m-Y'),
+                'date_equals:'.date('d-m-Y', strtotime($getData->tglbukti)),
                 new DateTutupBuku()
             ],
             'statusritasi' => 'required','numeric', 'min:1',

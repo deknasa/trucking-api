@@ -3,8 +3,10 @@
 namespace App\Http\Requests;
 
 use App\Http\Controllers\Api\ErrorController;
+use App\Models\JurnalUmumHeader;
 use Illuminate\Foundation\Http\FormRequest;
 use App\Rules\DateTutupBuku;
+use Illuminate\Validation\Rule;
 
 class UpdateJurnalUmumHeaderRequest extends FormRequest
 {
@@ -25,10 +27,14 @@ class UpdateJurnalUmumHeaderRequest extends FormRequest
      */
     public function rules()
     {
+        $jurnalumum = new JurnalUmumHeader();
+        $getData = $jurnalumum->findAll(request()->id);
+
         $rules = [
+            'nobukti' => [Rule::in($getData->nobukti)],
             "tglbukti" => [
                 "required",'date_format:d-m-Y',
-                'date_equals:'.date('d-m-Y'),
+                'date_equals:'.date('d-m-Y', strtotime($getData->tglbukti)),
                 new DateTutupBuku()
             ],
         ];

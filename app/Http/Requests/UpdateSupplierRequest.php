@@ -4,6 +4,9 @@ namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
 use App\Http\Controllers\Api\ErrorController;
+use App\Models\Parameter;
+use Illuminate\Validation\Rule;
+use Illuminate\Support\Facades\DB;
 
 class UpdateSupplierRequest extends FormRequest
 {
@@ -24,25 +27,57 @@ class UpdateSupplierRequest extends FormRequest
      */
     public function rules()
     {
-        return [
+        $coaQuery = DB::table('akunpusat')->from(DB::raw('akunpusat with (readuncommitted)'))->select('akunpusat.coa');
+        $coaResults = $coaQuery->get();
+
+        $coaName = [];
+        foreach ($coaResults as $coa) {
+            $coaName[] = $coa->coa;
+        }
+
+        $coa = Rule::in($coaName);
+
+      
+
+
+        $parameter = new Parameter();
+        $data = $parameter->getcombodata('STATUS AKTIF', 'STATUS AKTIF');
+        $data = json_decode($data, true);
+        foreach ($data as $item) {
+            $status[] = $item['id'];
+        }
+        $daftarharga = $parameter->getcombodata('STATUS DAFTAR HARGA', 'STATUS DAFTAR HARGA');
+        $daftarharga = json_decode($daftarharga, true);
+        foreach ($daftarharga as $item) {
+            $statusDaftarHarga[] = $item['id'];
+        }
+
+
+       $rules = [
             'namasupplier' => 'required',
             'namakontak' => 'required',
             'alamat' => 'required',
             'kota' => 'required',
-            'kodepos' => 'required',
-            'notelp1' => 'required',
-            'email' => 'required|email',
-            'statusaktif' => 'required|numeric',
-            'web' => 'required',
+            'kodepos' => 'required|min:3|max:5',
+            'notelp1' => ['required','min:11','max:13'],
+            'email' => ['required','email:rfc,dns'],
+            'statusaktif' => ['required',Rule::in($status),'numeric','min:1'],
             'namapemilik' => 'required',
             'jenisusaha' => 'required',
-            'bank' => 'required',
-            'rekeningbank' => 'required',
-            'namarekening' => 'required',
+            'bank' => ['required'],
+            'coa' => ['required',$coa],
+            'rekeningbank' => ['required','max:25','min:3'],
+            'namarekening' => ['required'],
             'jabatan' => 'required',
-            'statusdaftarharga' => 'required|numeric',
+            'statusdaftarharga' => ['required','numeric',Rule::in($statusDaftarHarga)],
             'kategoriusaha' => 'required',
         ];
+
+     
+
+      
+
+        return $rules;
     }
 
     
@@ -92,6 +127,12 @@ class UpdateSupplierRequest extends FormRequest
             'statusdaftarharga.required' => ':attribute' . ' ' . $controller->geterror('WI')->keterangan,
             'kategoriusaha.required' => ':attribute' . ' ' . $controller->geterror('WI')->keterangan,
             'email.email' => ':attribute' . ' ' . $controller->geterror('EMAIL')->keterangan,
+            'kodepos.max' => 'max 5 karakter',
+            'kodepos.min' => 'min 3 karakter',
+            'notelp1.max' => 'max 13 karakter',
+            'notelp1.min' => 'min 11 karakter',
+            'rekeningbank.max' => 'max 25 karakter',
+            'rekeningbank.min' => 'min 3 karakter',
         ];
     }
 }
