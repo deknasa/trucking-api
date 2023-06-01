@@ -28,7 +28,7 @@ class ExistAlatBayar implements Rule
     public function passes($attribute, $value)
     {
         $alatbayar = DB::table("alatbayar")->from(DB::raw("alatbayar with (readuncommitted)"))
-            ->where('id', $value)
+            ->where('id', request()->alatabayar_id)
             ->first();
         if($alatbayar == null){
             return false;

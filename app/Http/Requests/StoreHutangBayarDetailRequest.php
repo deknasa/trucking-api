@@ -3,6 +3,9 @@
 namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
+use App\Rules\DateTutupBuku;
+use App\Http\Controllers\Api\ParameterController;
+use App\Rules\ExistHutangNoBukti;
 
 class StoreHutangBayarDetailRequest extends FormRequest
 {
@@ -23,18 +26,37 @@ class StoreHutangBayarDetailRequest extends FormRequest
      */
     public function rules()
     {
-        return [
+
+        // $rules=[
+        //     'hutang_nobukti.*' => [
+        //         new ExistHutangNoBukti(),
+        //         'required',
+        //     ],
+
+        //  ];
+        //  return $rules;
+
+        // return [
+        $rules = [
+            'hutang_nobukti.*' => [
+                new ExistHutangNoBukti(),
+                'required',
+            ],
             'hutang_id' => 'required',
-            'keterangan' => 'required|array',
             'keterangan.*' => 'required',
-            'bayar' => 'required|array',
             'bayar.*' => 'required|numeric|gt:0',
-            'sisa' => 'required|array',
             'sisa.*' => 'required|numeric|min:0',
+
+            'keterangan' => 'required|array',
+            'bayar' => 'required|array',
+            'sisa' => 'required|array',
+
         ];
+        return $rules;
     }
-    
-    public function attributes() {
+
+    public function attributes()
+    {
         return [
             'keterangan.*' => 'keterangan detail'
         ];

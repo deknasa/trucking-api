@@ -7,6 +7,7 @@ use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\DB;
 
 use App\Http\Requests\StoreHutangBayarHeaderRequest;
+use App\Http\Requests\DestroyHutangBayarHeaderRequest;
 use App\Http\Requests\StoreHutangBayarDetailRequest;
 use App\Http\Requests\StoreJurnalUmumDetailRequest;
 use App\Http\Requests\StoreJurnalUmumHeaderRequest;
@@ -56,9 +57,7 @@ class HutangBayarHeaderController extends Controller
      */
     public function store(StoreHutangBayarHeaderRequest $request)
     {
-        // dd($request->all());
         DB::beginTransaction();
-
         try {
             /* Store header */
 
@@ -509,7 +508,7 @@ class HutangBayarHeaderController extends Controller
     /**
      * @ClassName destroy
      */
-    public function destroy(Request $request, $id)
+    public function destroy(DestroyHutangBayarHeaderRequest $request, $id)
     {
         DB::beginTransaction();
 

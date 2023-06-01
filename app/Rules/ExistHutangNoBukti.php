@@ -2,11 +2,11 @@
 
 namespace App\Rules;
 
-use App\Http\Controllers\Api\ErrorController;
 use Illuminate\Contracts\Validation\Rule;
+use App\Http\Controllers\Api\ErrorController;
 use Illuminate\Support\Facades\DB;
 
-class ExistBank implements Rule
+class ExistHutangNoBukti implements Rule
 {
     /**
      * Create a new rule instance.
@@ -27,14 +27,14 @@ class ExistBank implements Rule
      */
     public function passes($attribute, $value)
     {
-        $bank = DB::table("bank")->from(DB::raw("bank with (readuncommitted)"))
-            ->where('id', request()->bank_id)
-            ->first();
-        if($bank == null){
-            return false;
-        }else{
-            return true;
-        }
+        $hutangheader = DB::table("hutangheader")->from(DB::raw("hutangheader with (readuncommitted)"))
+        ->where('nobukti', request()->hutang_nobukti)
+        ->first();
+    if ($hutangheader == null) {
+        return false;
+    } else {
+        return true;
+    }
     }
 
     /**

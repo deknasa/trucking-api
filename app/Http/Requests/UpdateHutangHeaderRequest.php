@@ -57,7 +57,44 @@ class UpdateHutangHeaderRequest extends FormRequest
             );
         }
 
-        return $rules;
+  $supplier_id = $this->supplier_id;
+        $rulessupplier_id = [];
+        if ($supplier_id != null) {
+            if ($supplier_id == 0) {
+                $rulessupplier_id = [
+                    'supplier_id' => ['required', 
+                    'numeric', 
+                    'min:1',
+                    new ExistSupplier(),
+                    ]
+                    
+                ];
+            } else {
+                if ($this->supplier == '') {
+                    $rulessupplier_id = [
+                        'supplier' => [
+                            'required',
+                            new ExistSupplier(),
+                        ]                    ];
+                }
+            }
+        } else if ($supplier_id == null && $this->supplier != '') {
+            $rulessupplier_id = [
+                'supplier_id' => ['required', 
+                'numeric', 
+                'min:1',
+                new ExistSupplier(),
+                ]
+            ];
+        }
+
+        $rule = array_merge(
+            $rules,
+            $rulessupplier_id
+        );
+
+        return $rule;
+      
     }
     public function attributes()
     {
