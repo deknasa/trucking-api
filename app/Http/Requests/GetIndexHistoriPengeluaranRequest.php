@@ -9,7 +9,7 @@ use App\Models\Parameter;
 use Illuminate\Validation\Rule;
 use Illuminate\Support\Facades\DB;
 
-class GetIndexHistoriPenerimaanRequest extends FormRequest
+class GetIndexHistoriPengeluaranRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
@@ -42,7 +42,7 @@ class GetIndexHistoriPenerimaanRequest extends FormRequest
         }
         $stokNamaRule = Rule::in($stoks);
 
-        $filterQuery = DB::table('penerimaanstok')->select('penerimaanstok.id')->get();
+        $filterQuery = DB::table('pengeluaranstok')->select('pengeluaranstok.id')->get();
         $filters = [];
         foreach ($filterQuery as $filter) {
             $filters[] = $filter->id;
