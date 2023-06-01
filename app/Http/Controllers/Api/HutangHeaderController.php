@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Models\HutangHeader;
 use App\Models\HutangDetail;
 use App\Http\Requests\StoreHutangHeaderRequest;
+use App\Http\Requests\DestroyHutangHeaderRequest;
 use App\Http\Requests\StoreHutangDetailRequest;
 use App\Http\Requests\UpdateHutangDetailRequest;
 use App\Http\Controllers\Controller;
@@ -596,7 +597,7 @@ class HutangHeaderController extends Controller
     /**
      * @ClassName
      */
-    public function destroy(Request $request, $id)
+    public function destroy(DestroyHutangHeaderRequest $request, $id)
     {
         DB::beginTransaction();
 
@@ -788,8 +789,11 @@ class HutangHeaderController extends Controller
             $query = DB::table('error')
                 ->select('keterangan')
                 ->where('kodeerror', '=', 'SDC')
-                ->get();
-            $keterangan = $query['0'];
+                ->first();
+                $keterangan = [
+                    'keterangan' => 'No Bukti '.$hutang->nobukti.' '.$query->keterangan
+                ];
+                
             $data = [
                 'message' => $keterangan,
                 'errors' => 'sudah cetak',

@@ -4,6 +4,7 @@ namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
 use App\Rules\DateTutupBuku;
+use App\Http\Controllers\Api\ParameterController;
 
 class StoreHutangDetailRequest extends FormRequest
 {
@@ -24,16 +25,22 @@ class StoreHutangDetailRequest extends FormRequest
      */
     public function rules()
     {
-        return [
+
+        $rules=[
             'tgljatuhtempo.*' => [
                 'required', 'date_format:d-m-Y',
                 new DateTutupBuku(),
                 'before_or_equal:' . date('d-m-Y'),
 
             ],
-            'total_detail.*' => 'required|numeric|gt:0',
+            'total_detail.*' => [
+                'required','numeric','gt:0','max:'. (new ParameterController)->getparamid('MAXIMAL HUTANG','MAXIMAL HUTANG')->text
+            ],
             'keterangan_detail.*' => 'required',
 
         ];
+        return $rules;
     }
+
+
 }

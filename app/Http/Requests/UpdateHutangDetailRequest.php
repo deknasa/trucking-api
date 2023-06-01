@@ -3,6 +3,8 @@
 namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
+use App\Rules\DateTutupBuku;
+use App\Http\Controllers\Api\ParameterController;
 
 class UpdateHutangDetailRequest extends FormRequest
 {
@@ -23,14 +25,20 @@ class UpdateHutangDetailRequest extends FormRequest
      */
     public function rules()
     {
-        return [
-            'tgljatuhtempo' => 'required|array',
-            'tgljatuhtempo.*' => 'required',
-            'total_detail' => 'required|array',
-            'total_detail.*' => 'required|numeric|gt:0',
-            'keterangan_detail' => 'required|array',
+        
+        $rules=[
+            'tgljatuhtempo.*' => [
+                'required', 'date_format:d-m-Y',
+                new DateTutupBuku(),
+                'before_or_equal:' . date('d-m-Y'),
+
+            ],
+            'total_detail.*' => [
+                'required','numeric','gt:0','max:'. (new ParameterController)->getparamid('MAXIMAL HUTANG','MAXIMAL HUTANG')->text
+            ],
             'keterangan_detail.*' => 'required',
 
         ];
+        return $rules;
     }
 }

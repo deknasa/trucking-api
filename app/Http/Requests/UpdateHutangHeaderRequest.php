@@ -5,6 +5,9 @@ namespace App\Http\Requests;
 use App\Http\Controllers\Api\ErrorController;
 use Illuminate\Foundation\Http\FormRequest;
 use App\Rules\DateTutupBuku;
+use App\Rules\ExistSupplier;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\Rule;
 
 class UpdateHutangHeaderRequest extends FormRequest
 {
@@ -25,12 +28,23 @@ class UpdateHutangHeaderRequest extends FormRequest
      */
     public function rules()
     {
+        $query = DB::table('hutangheader')->from(DB::raw("hutangheader with (readuncommitted)"))
+            ->select(
+                'tglbukti'
+            )
+            ->where('id', $this->id)
+            ->first();
         $rules = [
-            "tglbukti" => [
-                "required",'date_format:d-m-Y',
-                new DateTutupBuku()
+            'tglbukti' => [
+                'required', 'date_format:d-m-Y',
+                new DateTutupBuku(),
+                'before_or_equal:' . date('d-m-Y'),
+                Rule::in(date('d-m-Y', strtotime($query->tglbukti))),
             ],
-            'supplier' => 'required'
+            'supplier' => [
+                'required',
+                new ExistSupplier(),
+            ]
         ];
         $relatedRequests = [
             UpdateHutangDetailRequest::class
@@ -42,7 +56,7 @@ class UpdateHutangHeaderRequest extends FormRequest
                 (new $relatedRequest)->rules()
             );
         }
-        
+
         return $rules;
     }
     public function attributes()
@@ -56,7 +70,7 @@ class UpdateHutangHeaderRequest extends FormRequest
 
         return $attributes;
     }
-    public function messages() 
+    public function messages()
     {
         return [
             'total_detail.*.gt' => 'Total Tidak Boleh Kosong dan Harus Lebih Besar Dari 0',
