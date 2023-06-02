@@ -15,6 +15,7 @@ use App\Models\AkunPusat;
 use App\Models\LogTrail;
 
 use App\Http\Requests\StorePengeluaranHeaderRequest;
+use App\Http\Requests\DestroyPengeluaranHeaderRequest;
 use App\Http\Requests\StorePengeluaranDetailRequest;
 
 use App\Http\Requests\UpdatePengeluaranHeaderRequest;
@@ -507,7 +508,7 @@ class PengeluaranHeaderController extends Controller
     /**
      * @ClassName
      */
-    public function destroy(Request $request, $id)
+    public function destroy(DestroyPengeluaranHeaderRequest $request, $id)
     {
         DB::beginTransaction();
 
