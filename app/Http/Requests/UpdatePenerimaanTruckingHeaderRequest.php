@@ -119,7 +119,7 @@ class UpdatePenerimaanTruckingHeaderRequest extends FormRequest
                 'penerimaantrucking' => ['required',Rule::in($getDataPenerimaan->penerimaantrucking)],
                 'penerimaantrucking_id' => ['required', 'numeric', 'min:1',Rule::in($getDataPenerimaan->penerimaantrucking_id)],
                 'bank' => [$ruleBank, Rule::in($getDataPenerimaan->bank), 'required'],
-                'bank_id' => [Rule::in($getDataPenerimaan->bank_id), 'required', 'min:1'],
+                'bank_id' => [Rule::in($getDataPenerimaan->bank_id), 'required', 'min:1','numeric'],
                 'supir' => ['required', Rule::in($getDataPenerimaan->supir)],
                 'supirheader_id' => ['required', Rule::in($getDataPenerimaan->supirheader_id), 'numeric','min:1'],
                 // 'keterangancoa' => 'required'

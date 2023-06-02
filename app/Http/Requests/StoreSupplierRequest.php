@@ -56,7 +56,7 @@ class StoreSupplierRequest extends FormRequest
             'namakontak' => 'required',
             'alamat' => 'required',
             'kota' => 'required',
-            'kodepos' => 'required|min:1|max:5',
+            'kodepos' => 'required|max:5|nullable',
             'notelp1' => 'required|min:11|max:13',
             'email' => 'required|email:rfc,dns',
             'statusaktif' => ['required',Rule::in($status),'numeric','min:1'],
