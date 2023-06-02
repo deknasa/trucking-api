@@ -5,6 +5,8 @@ namespace App\Http\Requests;
 use App\Http\Controllers\Api\ErrorController;
 use Illuminate\Foundation\Http\FormRequest;
 use App\Rules\DateTutupBuku;
+use Illuminate\Validation\Rule;
+use Illuminate\Support\Facades\DB;
 
 class StoreRekapPenerimaanHeaderRequest extends FormRequest
 {
@@ -25,7 +27,7 @@ class StoreRekapPenerimaanHeaderRequest extends FormRequest
      */
     public function rules()
     {
-        return [
+        $rules = [
             "tglbukti" => [
                 "required",'date_format:d-m-Y',
                 new DateTutupBuku()
@@ -33,12 +35,57 @@ class StoreRekapPenerimaanHeaderRequest extends FormRequest
             "tgltransaksi"=>"required|date_format:d-m-Y",
             "bank"=>"required",
         ];
+        $relatedRequests = [
+            StoreRekapPenerimaanDetailRequest::class
+        ];
+
+        foreach ($relatedRequests as $relatedRequest) {
+            $rules = array_merge(
+                $rules,
+                (new $relatedRequest)->rules()
+            );
+        }
+        return $rules;
+    }
+
+    public function attributes()
+    {
+        $attributes = [
+            "rekappenerimaan_id" =>"rekappenerimaan ",
+            "keterangan_detail" =>"keterangan detail",
+            "tgltransaksi_detail" =>"tgl transaksi detail",
+            "penerimaan_nobukti" =>"penerimaan nobukti",
+            "nominal" =>"nominal"
+        ];
+        $relatedRequests = [
+            StoreRekapPenerimaanDetailRequest::class
+        ];
+        foreach ($relatedRequests as $relatedRequest) {
+            $attributes = array_merge(
+                $attributes,
+                (new $relatedRequest)->attributes()
+            );
+        }
+        return $attributes;
     }
     public function messages()
     {
-        return [
+        $messages= [
             'tglbukti.date_format' => app(ErrorController::class)->geterror('DF')->keterangan,
             'tgltransaksi.date_format' => app(ErrorController::class)->geterror('DF')->keterangan,
         ];
+        $relatedRequests = [
+            StoreRekapPenerimaanDetailRequest::class
+        ];
+    
+        foreach ($relatedRequests as $relatedRequest) {
+            $messages = array_merge(
+                $messages,
+                (new $relatedRequest)->messages()
+            );
+        }
+    
+        return $messages;
     }
+    
 }

@@ -617,6 +617,10 @@ class PenerimaanHeader extends MyModel
               )")
             ->leftJoin(DB::raw("penerimaandetail with (readuncommitted)"), 'penerimaanheader.id', 'penerimaandetail.penerimaan_id')
             ->groupBy('penerimaanheader.nobukti', 'penerimaanheader.id', 'penerimaanheader.tglbukti', 'penerimaandetail.keterangan');
+
+            $this->totalRows = $query->count();
+            $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;
+            
         $data = $query->get();
 
         return $data;

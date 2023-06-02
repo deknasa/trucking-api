@@ -158,7 +158,7 @@ class StorePenerimaanStokHeaderRequest extends FormRequest
         ];
 
         $relatedRequests = [
-            StorePenerimaanTruckingDetailRequest::class
+            StorePenerimaanStokDetailRequest::class
         ];
 
         foreach ($relatedRequests as $relatedRequest) {
