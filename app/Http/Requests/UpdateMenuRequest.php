@@ -37,7 +37,7 @@ class UpdateMenuRequest extends FormRequest
     {
         return [
             'menuname' => 'nama menu',
-            'menuseq' => 'menuseq',
+            'menuseq' => 'Pengurutan',
             'menuparent' => 'menuparent',
             'menuicon' => 'icon menu',
             'aco_id' => 'aco_id',
