@@ -42,7 +42,7 @@ class StoreHutangBayarDetailRequest extends FormRequest
                 new ExistHutangNoBukti(),
                 'required',
             ],
-            'hutang_id' => 'required',
+            // 'hutang_id' => 'required',
             'keterangan.*' => 'required',
             'bayar.*' => 'required|numeric|gt:0',
             'sisa.*' => 'required|numeric|min:0',
