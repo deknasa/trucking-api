@@ -39,33 +39,8 @@ class RekapPenerimaanDetailController extends Controller
     public function store(StoreRekapPenerimaanDetailRequest $request)
     {
         DB::beginTransaction();
-        $validator = Validator::make($request->all(), [
-            "rekappenerimaan_id" => 'required',
-            "nobukti" => 'required',
-            "tgltransaksi" => 'required',
-            "penerimaan_nobukti" => 'required',
-            "nominal" => 'required',
-            // "keterangandetail" => 'required',
-            "modifiedby" => 'required',
-         ], [
-             "rekappenerimaan_id.required" => ':attribute' . ' ' . app(ErrorController::class)->geterror('WI')->keterangan,
-             "nobukti.required" => ':attribute' . ' ' . app(ErrorController::class)->geterror('WI')->keterangan,
-             "tgltransaksi.required" => ':attribute' . ' ' . app(ErrorController::class)->geterror('WI')->keterangan,
-             "penerimaan_nobukti.required" => ':attribute' . ' ' . app(ErrorController::class)->geterror('WI')->keterangan,
-             "nominal.required" => ':attribute' . ' ' . app(ErrorController::class)->geterror('WI')->keterangan,
-            //  "keterangandetail.required" => ':attribute' . ' ' . app(ErrorController::class)->geterror('WI')->keterangan,
-             "modifiedby.required" => ':attribute' . ' ' . app(ErrorController::class)->geterror('WI')->keterangan,
-         ], [
-            //  'keterangandetail' => 'keterangan Detail',
-            ],
-         );
-         if (!$validator->passes()) {
-             return [
-                 'error' => true,
-                 'errors' => $validator->messages()
-             ];
-         }
-         try {
+        try {
+             
 
             $rekeapPenerimaanDetail = new RekapPenerimaanDetail();
             $rekeapPenerimaanDetail->rekappenerimaan_id = $request->rekappenerimaan_id;
@@ -76,15 +51,15 @@ class RekapPenerimaanDetailController extends Controller
             $rekeapPenerimaanDetail->keterangan = $request->keterangandetail;
             $rekeapPenerimaanDetail->modifiedby = $request->modifiedby;
             
+            $rekeapPenerimaanDetail->save();
             DB::commit();
-            if ($rekeapPenerimaanDetail->save()) {
                 return [
                     'error' => false,
                     'id' => $rekeapPenerimaanDetail->id,
                     'data' => $rekeapPenerimaanDetail,
                     'tabel' => $rekeapPenerimaanDetail->getTable(),
                 ];
-            }
+            
         } catch (\Throwable $th) {
             throw $th;
             DB::rollBack();
