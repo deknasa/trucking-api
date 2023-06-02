@@ -3,6 +3,7 @@
 namespace App\Rules;
 
 use Illuminate\Contracts\Validation\Rule;
+use App\Http\Controllers\Api\ErrorController;
 
 class ValidasiDestroyHutangHeader implements Rule
 {
@@ -27,6 +28,7 @@ class ValidasiDestroyHutangHeader implements Rule
      */
     public function passes($attribute, $value)
     {
+        // dd($this->kondisicetak);
         if ($this->kondisi == true) {
             return false;
         } else if ($this->kondisicetak == true) {

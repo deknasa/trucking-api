@@ -32,7 +32,6 @@ class DestroyHutangHeaderRequest extends FormRequest
         $hutangheader = new HutangHeader();
         $cekdata = $hutangheader->cekvalidasiaksi($this->nobukti);
         $cekdatacetak = $controller->cekvalidasi($this->id);
-        dd($cekdatacetak);
         if ($cekdatacetak->original['kodestatus']=='1') {
                 $cekdtcetak=true;
         } else {
