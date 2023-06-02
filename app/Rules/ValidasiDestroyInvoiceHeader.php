@@ -5,7 +5,7 @@ namespace App\Rules;
 use Illuminate\Contracts\Validation\Rule;
 use App\Http\Controllers\Api\ErrorController;
 
-class ValidasiDestroyHutangBayarHeader implements Rule
+class ValidasiDestroyInvoiceHeader implements Rule
 {
     /**
      * Create a new rule instance.
@@ -17,9 +17,9 @@ class ValidasiDestroyHutangBayarHeader implements Rule
         $this->kondisi = $param;
         $this->kondisicetak = $paramcetak;
     }
+
     public $kondisi;
     public $kondisicetak;
-
     /**
      * Determine if the validation rule passes.
      *
@@ -53,5 +53,6 @@ class ValidasiDestroyHutangBayarHeader implements Rule
         } else {
             return app(ErrorController::class)->geterror('SDC')->keterangan;
         }
+        
     }
 }
