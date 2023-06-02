@@ -286,6 +286,7 @@ class UserController extends Controller
             [
                 'label' => 'Karyawan id',
                 'index' => 'karyawan_id',
+                
             ],
             [
                 'label' => 'Dashboard',
