@@ -189,7 +189,7 @@ class LogTrailController extends Controller
             $datajson = $data->datajson ?? [];
             $table_name = strtolower($data->namatabel);
 
-            $temp = '##temp' . rand(1, 10000);
+            $temp = '##temp' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
 
             $fields = [];
             $columns = DB::connection()->getDoctrineSchemaManager()->listTableDetails($table_name)->getColumns();
@@ -317,7 +317,7 @@ class LogTrailController extends Controller
         if (isset($data)) {
             $datajson = $data->datajson;
             $table_name = strtolower($data->namatabel);
-            $temp = '##temp' . rand(1, 10000);
+            $temp = '##temp' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
             $fields = [];
             $columns = DB::connection()->getDoctrineSchemaManager()->listTableDetails($table_name)->getColumns();
 

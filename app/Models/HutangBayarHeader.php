@@ -229,7 +229,7 @@ class HutangBayarHeader extends MyModel
 
     public function createTempHutang($supplierId)
     {
-        $temp = '##tempHutang' . rand(1, 10000);
+        $temp = '##tempHutang' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
 
 
         $fetch = DB::table('hutangheader')->from(DB::raw("hutangheader with (readuncommitted)"))
