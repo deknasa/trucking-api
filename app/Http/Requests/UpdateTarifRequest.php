@@ -132,8 +132,7 @@ class UpdateTarifRequest extends FormRequest
             'statussistemton' => ['required', Rule::in($statusTon)],
             'tglmulaiberlaku' => [
                 'required', 'date_format:d-m-Y',
-                'after_or_equal:' . $tglbatasawal,
-                'before:' . $tglbatasakhir,
+                'before_or_equal:' . date('d-m-Y'),
             ],
             'statuspenyesuaianharga' => ['required', Rule::in($statusPenyesuaian)],
         ];
