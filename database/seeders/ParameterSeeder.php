@@ -333,6 +333,8 @@ class ParameterSeeder extends Seeder
         parameter::create(['grp' => 'MAXIMAL SIM', 'subgrp' => 'MAXIMAL SIM', 'kelompok' => '', 'text' => '12', 'memo' => '{"MEMO":"12","SINGKATAN":"UC","WARNA":"#28A745"}', 'type' => '0', 'modifiedby' => 'ADMIN', 'default' => 'YA',]);
         parameter::create(['grp' => 'BATAS AWAL TAHUN', 'subgrp' => 'BATAS AWAL TAHUN', 'kelompok' => '', 'text' => '01-01-2004', 'memo' => '{"MEMO":"01-01-2004","SINGKATAN":"BAT","WARNA":"#28A745"}', 'type' => '0', 'modifiedby' => 'ADMIN', 'default' => 'YA',]);
         parameter::create(['grp' => 'MAXIMAL HUTANG', 'subgrp' => 'MAXIMAL HUTANG', 'kelompok' => '', 'text' => '1000000000', 'memo' => '{"MEMO":"1.000.000.000","SINGKATAN":"","WARNA":"#28A745"}', 'type' => '0', 'modifiedby' => 'ADMIN', 'default' => 'YA',]);
+        parameter::create(['grp' => 'STATUS SIMPAN KANDANG', 'subgrp' => 'STATUS SIMPAN KANDANG', 'kelompok' => '', 'text' => 'SIMPAN KANDANG', 'memo' => '{"MEMO":"SIMPAN KANDANG","SINGKATAN":"SK","WARNA":"#28A745"}', 'type' => '0', 'modifiedby' => 'ADMIN', 'default' => '',]);
+        parameter::create(['grp' => 'STATUS SIMPAN KANDANG', 'subgrp' => 'STATUS SIMPAN KANDANG', 'kelompok' => '', 'text' => 'TIDAK SIMPAN KANDANG', 'memo' => '{"MEMO":"TIDAK SIMPAN KANDANG","SINGKATAN":"TSK","WARNA":"#6C757D"}', 'type' => '0', 'modifiedby' => 'ADMIN', 'default' => 'YA',]);
         
     }
 }
