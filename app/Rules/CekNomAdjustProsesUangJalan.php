@@ -29,8 +29,12 @@ class CekNomAdjustProsesUangJalan implements Rule
     {
         $prosesUang = new ProsesUangJalanSupirHeader();
         $getNominal = $prosesUang->getNominalAbsensi(request()->absensisupir);
-        if((float)$getNominal->nominal != (float)$value){
-            return false;
+        if ($getNominal != null) {
+            if ((float)$getNominal->nominal != (float)$value) {
+                return false;
+            } else {
+                return true;
+            }
         }else{
             return true;
         }

@@ -4,9 +4,8 @@ namespace App\Rules;
 
 use App\Http\Controllers\Api\ErrorController;
 use Illuminate\Contracts\Validation\Rule;
-use Illuminate\Support\Facades\DB;
 
-class ExistAgen implements Rule
+class CekBankTransferProsesUangJalan implements Rule
 {
     /**
      * Create a new rule instance.
@@ -27,10 +26,10 @@ class ExistAgen implements Rule
      */
     public function passes($attribute, $value)
     {
-        $agen = DB::table("agen")->from(DB::raw("agen with (readuncommitted)"))
-            ->where('id', request()->agen_id)
-            ->first();
-        if($agen == null){
+        $attribute = substr($attribute,16);
+        $banktransfer = request()->banktransfer[$attribute];
+        if($banktransfer != null && ($value == null || $value == 0)){
+            dd('here');
             return false;
         }else{
             return true;
@@ -44,7 +43,6 @@ class ExistAgen implements Rule
      */
     public function message()
     {
-        $controller = new ErrorController;
-        return ':attribute' . ' ' . $controller->geterror('TVD')->keterangan;
+        return app(ErrorController::class)->geterror('HPDL')->keterangan;
     }
 }

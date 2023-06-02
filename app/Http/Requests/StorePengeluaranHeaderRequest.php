@@ -5,6 +5,10 @@ namespace App\Http\Requests;
 use App\Http\Controllers\Api\ErrorController;
 use App\Rules\DateTutupBuku;
 use Illuminate\Foundation\Http\FormRequest;
+use App\Rules\ExistBank;
+use App\Rules\ExistAlatBayar;
+use App\Rules\ValidasiBankList;
+use App\Models\AlatBayar;
 
 class StorePengeluaranHeaderRequest extends FormRequest
 {
@@ -28,10 +32,9 @@ class StorePengeluaranHeaderRequest extends FormRequest
         $rules = [
             'tglbukti' => [
                 'required','date_format:d-m-Y',
-                new DateTutupBuku()
+                new DateTutupBuku(),
+                'before_or_equal:' . date('d-m-Y'),
             ],
-            'alatbayar' => 'required',
-            'bank' => 'required',
         ];
         $relatedRequests = [
             StorePengeluaranDetailRequest::class
@@ -44,7 +47,128 @@ class StorePengeluaranHeaderRequest extends FormRequest
             );
         }
 
-        return $rules;
+        $bank_id = $this->bank_id;
+        $alatBayar = new AlatBayar();
+        if ($bank_id != null && $bank_id != 0) {
+            $getAlatBayar = $alatBayar->validateBankWithAlatbayar(request()->bank_id);
+            $getAlatBayar = json_decode($getAlatBayar, true);
+            $kondisialatbayar = true;
+            // dd($getAlatBayar);
+            foreach ($getAlatBayar as $item) {
+                if ($this->alatbayar_id == $item['id']) {
+                    $kondisialatbayar = false;
+                }
+            }
+        }
+        // dd($kondisialatbayar);
+        $rulesbank_id = [];
+        if ($bank_id != '' && $this->bank != '') {
+            // dd($kondisialatbayar);
+            $rulesbank_id = [
+                'bank' => [
+                    new ExistBank(),
+                    new ValidasiBankList($kondisialatbayar),
+                ]
+            ];
+        } else if ($bank_id != null) {
+            if ($bank_id == 0) {
+                $rulesbank_id = [
+                    'bank_id' => [
+                        'required',
+                        'numeric',
+                        'min:1',
+                        new ExistBank(),
+
+                    ]
+
+                ];
+            } else {
+                if ($this->bank == '') {
+                    $rulesbank_id = [
+                        'bank' => [
+                            'required',
+                            new ExistBank(),
+                        ]
+                    ];
+                }
+            }
+        } else if ($bank_id == null && $this->bank != '') {
+            $rulesbank_id = [
+                'bank_id' => [
+                    'required',
+                    'numeric',
+                    'min:1',
+                    new ExistBank(),
+                ]
+            ];
+        } else {
+            $rulesbank_id = [
+                'bank' => [
+                    'required',
+                    'numeric',
+                    'min:1',
+                    new ExistBank(),
+                ]
+            ];
+        }
+
+        $alatbayar_id = $this->alatbayar_id;
+        $rulesalatbayar_id = [];
+        if ($alatbayar_id != '' && $this->alatbayar != '') {
+            // dd($kondisialatbayar);
+            $rulesalatbayar_id = [
+                'alatbayar' => [
+                    new ExistAlatBayar(),
+                ]
+            ];
+        } else if ($alatbayar_id != null) {
+            if ($alatbayar_id == 0) {
+                $rulesalatbayar_id = [
+                    'alatbayar_id' => [
+                        'required',
+                        'numeric',
+                        'min:1',
+                        new ExistAlatBayar(),
+                    ]
+
+                ];
+            } else {
+                if ($this->alatbayar == '') {
+                    $rulesalatbayar_id = [
+                        'alatbayar' => [
+                            'required',
+                            new ExistAlatBayar(),
+                        ]
+                    ];
+                }
+            }
+        } else if ($alatbayar_id == null && $this->alatbayar != '') {
+            $rulesalatbayar_id = [
+                'alatbayar_id' => [
+                    'required',
+                    'numeric',
+                    'min:1',
+                    new ExistAlatBayar(),
+                ]
+            ];
+        } else {
+            $rulesalatbayar_id = [
+                'alatbayar' => [
+                    'required',
+                    new ExistAlatBayar(),
+                ]
+            ];
+        }
+
+        $rule = array_merge(
+            $rules,
+            $rulesbank_id,
+            $rulesalatbayar_id,
+        );
+
+        return $rule;
+
+        
 
     }
 

@@ -2,22 +2,21 @@
 
 namespace App\Rules;
 
-use App\Http\Controllers\Api\ErrorController;
 use Illuminate\Contracts\Validation\Rule;
-use Illuminate\Support\Facades\DB;
+use App\Http\Controllers\Api\ErrorController;
 
-class ExistAgen implements Rule
+class ValidasiDetail implements Rule
 {
     /**
      * Create a new rule instance.
      *
      * @return void
      */
-    public function __construct()
+    public function __construct($param)
     {
-        //
+        $this->jumlahdetail = $param;
     }
-
+    public $jumlahdetail;
     /**
      * Determine if the validation rule passes.
      *
@@ -27,14 +26,10 @@ class ExistAgen implements Rule
      */
     public function passes($attribute, $value)
     {
-        $agen = DB::table("agen")->from(DB::raw("agen with (readuncommitted)"))
-            ->where('id', request()->agen_id)
-            ->first();
-        if($agen == null){
+        if($this->jumlahdetail==0){
             return false;
-        }else{
-            return true;
-        }
+          }
+          return true;
     }
 
     /**
@@ -44,7 +39,6 @@ class ExistAgen implements Rule
      */
     public function message()
     {
-        $controller = new ErrorController;
-        return ':attribute' . ' ' . $controller->geterror('TVD')->keterangan;
+        return app(ErrorController::class)->geterror('DDTA')->keterangan;
     }
 }

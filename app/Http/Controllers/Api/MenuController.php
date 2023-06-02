@@ -466,7 +466,7 @@ class MenuController extends Controller
         $params = [
             'status' => $request->status ?? '',
         ];
-        $temp = '##temp' . rand(1, 10000);
+        $temp = '##temp' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
 
         Schema::create($temp, function ($table) {
             $table->string('id', 10)->nullable();

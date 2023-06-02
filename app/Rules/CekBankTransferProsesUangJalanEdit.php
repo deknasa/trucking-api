@@ -3,10 +3,10 @@
 namespace App\Rules;
 
 use App\Http\Controllers\Api\ErrorController;
+use App\Models\ProsesUangJalanSupirDetail;
 use Illuminate\Contracts\Validation\Rule;
-use Illuminate\Support\Facades\DB;
 
-class ExistAgen implements Rule
+class CekBankTransferProsesUangJalanEdit implements Rule
 {
     /**
      * Create a new rule instance.
@@ -27,10 +27,15 @@ class ExistAgen implements Rule
      */
     public function passes($attribute, $value)
     {
-        $agen = DB::table("agen")->from(DB::raw("agen with (readuncommitted)"))
-            ->where('id', request()->agen_id)
-            ->first();
-        if($agen == null){
+        $attribute = substr($attribute,16);
+        $prosesUangJalanDetail = new ProsesUangJalanSupirDetail();
+        $getTransfer = $prosesUangJalanDetail->findTransfer(request()->id);        
+        $data = json_decode($getTransfer, true);
+        foreach ($data as $item) {
+            $status[] = $item['pengeluarantrucking_bank_id'];
+        }
+
+        if($status[$attribute] != $value){
             return false;
         }else{
             return true;
@@ -44,7 +49,6 @@ class ExistAgen implements Rule
      */
     public function message()
     {
-        $controller = new ErrorController;
-        return ':attribute' . ' ' . $controller->geterror('TVD')->keterangan;
+        return app(ErrorController::class)->geterror('TVD')->keterangan;
     }
 }

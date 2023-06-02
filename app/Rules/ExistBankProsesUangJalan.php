@@ -6,7 +6,7 @@ use App\Http\Controllers\Api\ErrorController;
 use Illuminate\Contracts\Validation\Rule;
 use Illuminate\Support\Facades\DB;
 
-class ExistAgen implements Rule
+class ExistBankProsesUangJalan implements Rule
 {
     /**
      * Create a new rule instance.
@@ -27,12 +27,12 @@ class ExistAgen implements Rule
      */
     public function passes($attribute, $value)
     {
-        $agen = DB::table("agen")->from(DB::raw("agen with (readuncommitted)"))
-            ->where('id', request()->agen_id)
+        $bank = DB::table("bank")->from(DB::raw("bank with (readuncommitted)"))
+            ->where('id', $value)
             ->first();
-        if($agen == null){
+        if ($bank == null) {
             return false;
-        }else{
+        } else {
             return true;
         }
     }

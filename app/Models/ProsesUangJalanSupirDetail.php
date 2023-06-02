@@ -92,10 +92,7 @@ class ProsesUangJalanSupirDetail extends MyModel
         ->where('prosesuangjalansupirdetail.statusprosesuangjalan', $status->id)
         ->first();
 
-        $datapengembalian = [
-            'bank' => $bank
-        ];
-        return $datapengembalian;
+        return $bank;
     }
     public function createTempPenerimaanTrucking($id, $statusId)
     {

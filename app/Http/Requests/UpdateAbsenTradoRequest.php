@@ -37,6 +37,10 @@ class UpdateAbsenTradoRequest extends FormRequest
         $rules = [
             "kodeabsen" => ['required',Rule::unique('absentrado')->whereNotIn('id', [$this->id])],
             "statusaktif" => ['required', Rule::in($statusAktif)],
+            'key' => 'required',
+            'value' => 'required',
+            'key.*' => ['required'],
+            'value.*' => ['required']
         ];
 
         return $rules;
@@ -46,7 +50,11 @@ class UpdateAbsenTradoRequest extends FormRequest
     {
         return [
             'kodeabsen' => 'kode absen',
-            'statusaktif' => 'status'
+            'statusaktif' => 'status',
+            'key' => 'judul',
+            'value' => 'keterangan',
+            'key.*' => 'judul',
+            'value.*' => 'keterangan',
         ];
     }
 

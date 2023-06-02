@@ -7,6 +7,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Controllers\ProsesGajiSupirDetailController;
 use App\Http\Requests\DestroyJurnalUmumRequest;
 use App\Http\Requests\DestroyPenerimaanHeaderRequest;
+use App\Http\Requests\DestroyPengeluaranHeaderRequest;
 use App\Http\Requests\DestroyPengembalianKasGantungHeaderRequest;
 use App\Http\Requests\DestroyProsesGajiSupirHeaderRequest;
 use App\Http\Requests\GetIndexRangeRequest;
@@ -1464,6 +1465,8 @@ class ProsesGajiSupirHeaderController extends Controller
         $newRequestPenerimaan->postingdari = 'PROSES GAJI SUPIR';
         $newRequestPengembalian = new DestroyPengembalianKasGantungHeaderRequest();
         $newRequestPengembalian->postingdari = 'PROSES GAJI SUPIR';
+        $newRequestPengeluaran = new DestroyPengeluaranHeaderRequest();
+        $newRequestPengeluaran->postingdari = 'PROSES GAJI SUPIR';
 
         $prosesGajiSupirHeader = new ProsesGajiSupirHeader();
         $prosesGajiSupirHeader = $prosesGajiSupirHeader->lockAndDestroy($id);
@@ -1496,7 +1499,7 @@ class ProsesGajiSupirHeaderController extends Controller
             app(LogTrailController::class)->store($validatedLogTrailProsesGajiSupirDetail);
 
             $getPengeluaran = PengeluaranHeader::from(DB::raw("pengeluaranheader with (readuncommitted)"))->where('nobukti', $prosesGajiSupirHeader->pengeluaran_nobukti)->first();
-            app(PengeluaranHeaderController::class)->destroy($request, $getPengeluaran->id);
+            app(PengeluaranHeaderController::class)->destroy($newRequestPengeluaran, $getPengeluaran->id);
 
             $getJurnal = JurnalUmumHeader::from(DB::raw("jurnalumumheader with (readuncommitted)"))->where('nobukti', $prosesGajiSupirHeader->nobukti)->first();
             app(JurnalUmumHeaderController::class)->destroy($newRequest, $getJurnal->id);

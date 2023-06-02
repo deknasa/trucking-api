@@ -5,7 +5,7 @@ namespace App\Rules;
 use Illuminate\Contracts\Validation\Rule;
 use App\Http\Controllers\Api\ErrorController;
 
-class ValidasiDestroyHutangBayarHeader implements Rule
+class ValidasiDestroyPengeluaranHeader implements Rule
 {
     /**
      * Create a new rule instance.
@@ -19,7 +19,6 @@ class ValidasiDestroyHutangBayarHeader implements Rule
     }
     public $kondisi;
     public $kondisicetak;
-
     /**
      * Determine if the validation rule passes.
      *

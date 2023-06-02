@@ -326,4 +326,20 @@ class Parameter extends MyModel
 
             return $query;
     }
+
+    public function getComboByGroupAndText($grp, $text) 
+    {
+        $query=DB::table('parameter')
+            ->from (
+                DB::raw("parameter with (readuncommitted)")
+            )
+            ->select (
+                'id'
+            )
+            ->Where('grp','=',$grp)
+            ->Where('text','=',$text)
+            ->first();
+
+            return $query;
+    }
 }

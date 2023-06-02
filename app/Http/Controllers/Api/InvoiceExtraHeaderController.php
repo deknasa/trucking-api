@@ -15,6 +15,7 @@ use App\Models\Error;
 use App\Models\PiutangDetail;
 use App\Http\Requests\StoreInvoiceExtraHeaderRequest;
 use App\Http\Requests\UpdateInvoiceExtraHeaderRequest;
+use App\Http\Requests\DestroyInvoiceExtraHeaderRequest;
 
 use App\Models\InvoiceExtraDetail;
 use Illuminate\Support\Facades\Schema;
@@ -375,7 +376,7 @@ class InvoiceExtraHeaderController extends Controller
     /**
      * @ClassName 
      */
-    public function destroy(Request $request, $id)
+    public function destroy(DestroyInvoiceExtraHeaderRequest $request, $id)
     {
         DB::beginTransaction();
 

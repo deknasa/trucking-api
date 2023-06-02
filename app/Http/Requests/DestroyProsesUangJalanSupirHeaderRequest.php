@@ -2,9 +2,10 @@
 
 namespace App\Http\Requests;
 
+use App\Rules\DateTutupBuku;
 use Illuminate\Foundation\Http\FormRequest;
 
-class StoreInvoiceDetailRequest extends FormRequest
+class DestroyProsesUangJalanSupirHeaderRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
@@ -24,8 +25,10 @@ class StoreInvoiceDetailRequest extends FormRequest
     public function rules()
     {
         return [
-            // 'sp_id' => 'required',
-            // 'nominalretribusi.*' => 'numeric|min:0'
+            'tglbukti' => [
+                'required','date_format:d-m-Y',
+                new DateTutupBuku()
+            ],
         ];
     }
 }

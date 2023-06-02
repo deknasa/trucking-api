@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\DestroyPenerimaanHeaderRequest;
 use App\Http\Requests\DestroyPengembalianKasGantungHeaderRequest;
+use App\Http\Requests\GetIndexRangeRequest;
 use App\Http\Requests\StoreLogTrailRequest;
 use App\Http\Requests\StorePengembalianKasGantungDetailRequest;
 use App\Models\KasGantungHeader;
@@ -38,7 +39,7 @@ class PengembalianKasGantungHeaderController extends Controller
     /**
      * @ClassName 
      */
-    public function index(GetPengembalianKasGantungHeaderRequest $request)
+    public function index(GetIndexRangeRequest $request)
     {
         $pengembalianKasGantungHeader = new PengembalianKasGantungHeader();
         return response([

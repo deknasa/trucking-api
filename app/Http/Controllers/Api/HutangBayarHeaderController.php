@@ -16,6 +16,7 @@ use App\Http\Requests\StorePengeluaranDetailRequest;
 use App\Http\Requests\StorePengeluaranHeaderRequest;
 use App\Http\Requests\UpdateHutangBayarHeaderRequest;
 use App\Http\Requests\UpdatePengeluaranHeaderRequest;
+use App\Http\Requests\DestroyPengeluaranHeaderRequest;
 use App\Models\AlatBayar;
 use App\Models\Bank;
 use App\Models\AkunPusat;
@@ -546,8 +547,10 @@ class HutangBayarHeaderController extends Controller
             $validatedLogTrailHutangBayarDetail = new StoreLogTrailRequest($logTrailHutangBayarDetail);
             app(LogTrailController::class)->store($validatedLogTrailHutangBayarDetail);
 
+            $requesthapuspengeluaran = new DestroyPengeluaranHeaderRequest();
+            $requesthapuspengeluaran['postingdari'] = "DELETE HUTANG BAYAR";
             $getPengeluaran = PengeluaranHeader::from(DB::raw("pengeluaranheader with (readuncommitted)"))->where('nobukti', $hutangbayarheader->pengeluaran_nobukti)->first();
-            app(PengeluaranHeaderController::class)->destroy($request, $getPengeluaran->id);
+            app(PengeluaranHeaderController::class)->destroy($requesthapuspengeluaran, $getPengeluaran->id);
 
             DB::commit();
 
@@ -794,7 +797,7 @@ class HutangBayarHeaderController extends Controller
             'grp' => $request->grp ?? '',
             'subgrp' => $request->subgrp ?? '',
         ];
-        $temp = '##temp' . rand(1, 10000);
+        $temp = '##temp' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
         if ($params['status'] == 'entry') {
             $query = Parameter::select('id', 'text as keterangan')
                 ->where('grp', "=", $params['grp'])

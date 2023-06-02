@@ -251,7 +251,7 @@ class ContainerController extends Controller
             'subgrp' => $request->subgrp ?? '',
         ];
 
-        $temp = '##temp' . rand(1, 10000);
+        $temp = '##temp' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
         if ($params['status'] == 'entry') {
             $query = Parameter::select('id', 'text as keterangan')
                 ->where('grp', "=", $params['grp'])

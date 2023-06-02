@@ -28,7 +28,7 @@ class ExistJenisOrder implements Rule
     public function passes($attribute, $value)
     {
         $jenisorder = DB::table("jenisorder")->from(DB::raw("jenisorder with (readuncommitted)"))
-        ->where('id', $value)
+        ->where('id', request()->jenisorder_id)
         ->first();
     if ($jenisorder == null) {
         return false;

@@ -36,6 +36,10 @@ class StoreAbsenTradoRequest extends FormRequest
         $rules = [
             "kodeabsen" => ['required','unique:absentrado'],
             "statusaktif" => ['required', Rule::in($statusAktif)],
+            'key' => 'required',
+            'value' => 'required',
+            'key.*' => ['required'],
+            'value.*' => ['required']
         ];
 
         return $rules;
@@ -46,6 +50,10 @@ class StoreAbsenTradoRequest extends FormRequest
         return [
             'kodeabsen' => 'kode absen',
             'statusaktif' => 'status',
+            'key' => 'judul',
+            'value' => 'keterangan',
+            'key.*' => 'judul',
+            'value.*' => 'keterangan',
         ];
     }
 

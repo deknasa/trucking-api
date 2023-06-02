@@ -322,7 +322,7 @@ class PengeluaranTruckingController extends Controller
             'sortname' => $request->sortname ?? 'id',
             'sortorder' => $request->sortorder ?? 'asc',
         ];
-        $temp = '##temp' . rand(1, 10000);
+        $temp = '##temp' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
         Schema::create($temp, function ($table) {
             $table->id();
             $table->bigInteger('id_')->nullable();
