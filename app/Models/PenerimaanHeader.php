@@ -30,6 +30,8 @@ class PenerimaanHeader extends MyModel
     public function default()
     {
 
+        $bankId = request()->bank_id;
+
         $tempdefault = '##tempdefault' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
         Schema::create($tempdefault, function ($table) {
             $table->unsignedBigInteger('bank_id')->nullable();
@@ -45,7 +47,7 @@ class PenerimaanHeader extends MyModel
                 'namabank as bank',
 
             )
-            ->where('tipe', '=', 'KAS')
+            ->where('id', '=', $bankId)
             ->first();
 
 
