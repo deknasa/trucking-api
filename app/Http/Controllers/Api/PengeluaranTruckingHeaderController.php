@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\DestroyPengeluaranHeaderRequest;
 use App\Http\Requests\DestroyPengeluaranTruckingHeaderRequest;
 use App\Http\Requests\GetIndexRangeRequest;
 use App\Http\Requests\GetInvoiceRequest;
@@ -506,6 +507,10 @@ class PengeluaranTruckingHeaderController extends Controller
         $request['postingdari'] =  $request->postingdari ?? "DELETE PENGELUARAN TRUCKING";
         $pengeluaranTrucking = new PengeluaranTruckingHeader();
         $pengeluaranTrucking = $pengeluaranTrucking->lockAndDestroy($id);
+        
+        $newRequestPengeluaran = new DestroyPengeluaranHeaderRequest();
+        $newRequestPengeluaran->postingdari = $request->postingdari ?? "DELETE PENGELUARAN TRUCKING";
+
         if ($pengeluaranTrucking) {
             $logTrail = [
                 'namatabel' => strtoupper($pengeluaranTrucking->getTable()),
@@ -536,7 +541,7 @@ class PengeluaranTruckingHeaderController extends Controller
 
             if ($gajiSupir == 0) {
                 $getPengeluaran = PengeluaranHeader::from(DB::raw("pengeluaranheader with (readuncommitted)"))->where('nobukti', $pengeluaranTrucking->pengeluaran_nobukti)->first();
-                app(PengeluaranHeaderController::class)->destroy($request, $getPengeluaran->id);
+                app(PengeluaranHeaderController::class)->destroy($newRequestPengeluaran, $getPengeluaran->id);
             }
             DB::commit();
 

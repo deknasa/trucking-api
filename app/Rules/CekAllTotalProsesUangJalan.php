@@ -33,10 +33,13 @@ class CekAllTotalProsesUangJalan implements Rule
 
         $total = $nilaiTransfer - $nilaiDeposit - $nilaiPinjaman;
         $prosesUang = new ProsesUangJalanSupirHeader();
-        $getNominal = $prosesUang->getNominalAbsensi(request()->absensisupir_nobukti);
-
-        if ($getNominal->nominal != $total) {
-            return false;
+        $getNominal = $prosesUang->getNominalAbsensi(request()->absensisupir);
+        if ($getNominal != null) {
+            if ($getNominal->nominal != $total) {
+                return false;
+            } else {
+                return true;
+            }
         }else{
             return true;
         }
@@ -49,6 +52,6 @@ class CekAllTotalProsesUangJalan implements Rule
      */
     public function message()
     {
-        return app(ErrorController::class)->geterror('NTC')->keterangan;
+        return app(ErrorController::class)->geterror('NTC')->keterangan . ' (adjust dengan transfer)';
     }
 }
