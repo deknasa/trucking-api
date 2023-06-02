@@ -7,6 +7,7 @@ use App\Http\Requests\StoreLogTrailRequest;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\StoreTradoRequest;
+use App\Http\Requests\DestroyTradoRequest;
 use App\Http\Requests\TradoRequest;
 use App\Http\Requests\UpdateTradoRequest;
 use App\Models\Trado;
@@ -361,7 +362,7 @@ class TradoController extends Controller
     /**
      * @ClassName 
      */
-    public function destroy(Request $request, $id)
+    public function destroy(DestroyTradoRequest $request, $id)
     {
 
 
