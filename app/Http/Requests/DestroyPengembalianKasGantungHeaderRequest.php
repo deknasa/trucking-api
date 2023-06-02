@@ -2,13 +2,11 @@
 
 namespace App\Http\Requests;
 
-use App\Models\GajiSupirHeader;
 use App\Rules\DateTutupBuku;
-use App\Rules\DestroyGajiSupirNobukti;
+use App\Rules\DestroyPengembalianKasGantung;
 use Illuminate\Foundation\Http\FormRequest;
-use Illuminate\Support\Facades\DB;
 
-class DestroyGajiSupirHeaderRequest extends FormRequest
+class DestroyPengembalianKasGantungHeaderRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
@@ -27,9 +25,8 @@ class DestroyGajiSupirHeaderRequest extends FormRequest
      */
     public function rules()
     {
-       
         return [
-            'nobukti' => new DestroyGajiSupirNobukti(),
+            'nobukti' => new DestroyPengembalianKasGantung(),
             'tglbukti' => [
                 'required','date_format:d-m-Y',
                 new DateTutupBuku()

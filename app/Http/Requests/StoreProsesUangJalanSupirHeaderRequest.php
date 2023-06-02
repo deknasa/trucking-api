@@ -5,6 +5,9 @@ namespace App\Http\Requests;
 use App\Http\Controllers\Api\ErrorController;
 use Illuminate\Foundation\Http\FormRequest;
 use App\Rules\DateTutupBuku;
+use App\Rules\ExistAbsensiSupirHeader;
+use App\Rules\ExistSupir;
+use App\Rules\ExistTrado;
 
 class StoreProsesUangJalanSupirHeaderRequest extends FormRequest
 {
@@ -25,24 +28,54 @@ class StoreProsesUangJalanSupirHeaderRequest extends FormRequest
      */
     public function rules()
     {
-        return [
+        $supir_id = $this->supir_id;
+        $rulesSupir_id = [];
+        if ($supir_id != null) {
+            $rulesSupir_id = [
+                'supir_id' => ['required', 'numeric', 'min:1', new ExistSupir()]
+            ];
+        } else if ($supir_id == null && $this->supir != '') {
+            $rulesSupir_id = [
+                'supir_id' => ['required', 'numeric', 'min:1', new ExistSupir()]
+            ];
+        }
+
+        $trado_id = $this->trado_id;
+        $rulesTrado_id = [];
+        if ($trado_id != null) {
+            $rulesTrado_id = [
+                'trado_id' => ['required', 'numeric', 'min:1', new ExistTrado()]
+            ];
+        } else if ($trado_id == null && $this->trado != '') {
+            $rulesTrado_id = [
+                'trado_id' => ['required', 'numeric', 'min:1', new ExistTrado()]
+            ];
+        }
+
+        $rules = [
             "tglbukti" => [
                 "required",'date_format:d-m-Y',
-                new DateTutupBuku()
+                new DateTutupBuku(),
+                'before_or_equal:' . date('d-m-Y')
             ],
-            'absensisupir' => 'required',
+            'absensisupir' => ['required', new ExistAbsensiSupirHeader()],
             'supir' => 'required',
             'trado'=> 'required',
-            'keterangantransfer' => 'required|array',
-            'keterangantransfer.*' => 'required',
-            'nilaitransfer' => 'required|array',
-            'nilaitransfer.*' => 'required|gt:0|numeric',
-            'banktransfer' => 'required|array',
-            'banktransfer.*' => 'required',
-            'nilaiadjust' => 'required|gt:0|numeric',
-            'keteranganadjust' => 'required',
-            'bankadjust' => 'required',
         ];
+        $relatedRequests = [
+            StoreProsesUangJalanSupirDetailRequest::class
+        ];
+
+        foreach ($relatedRequests as $relatedRequest) {
+            $rules = array_merge(
+                $rules,
+                (new $relatedRequest)->rules(),
+                $rulesSupir_id,
+                $rulesTrado_id
+            );
+        }
+
+        return $rules;
     }
     public function attributes()
     {

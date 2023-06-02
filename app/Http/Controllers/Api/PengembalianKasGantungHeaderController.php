@@ -3,6 +3,8 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\DestroyPenerimaanHeaderRequest;
+use App\Http\Requests\DestroyPengembalianKasGantungHeaderRequest;
 use App\Http\Requests\StoreLogTrailRequest;
 use App\Http\Requests\StorePengembalianKasGantungDetailRequest;
 use App\Models\KasGantungHeader;
@@ -376,7 +378,6 @@ class PengembalianKasGantungHeaderController extends Controller
                 $coaKasMasuk = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))->select('memo')->where('grp', 'JURNAL PENGEMBALIAN KAS GANTUNG')->where('subgrp', 'KREDIT')->first();
                 $memo = json_decode($coaKasMasuk->memo, true);
 
-                $pengembaliankasgantungheader->tglbukti = date('Y-m-d', strtotime($request->tglbukti));
                 //$pengembaliankasgantungheader->pelanggan_id = $request->pelanggan_id;
                 $pengembaliankasgantungheader->bank_id = $request->bank_id;
                 $pengembaliankasgantungheader->tgldari = date('Y-m-d', strtotime($request->tgldari));
@@ -544,13 +545,17 @@ class PengembalianKasGantungHeaderController extends Controller
     /**
      * @ClassName 
      */
-    public function destroy(Request $request, $id)
+    public function destroy(DestroyPengembalianKasGantungHeaderRequest $request, $id)
     {
         DB::beginTransaction();
         $getDetail = PengembalianKasGantungDetail::lockForUpdate()->where('pengembaliankasgantung_id', $id)->get();
 
         $pengembalianKasGantungHeader = new PengembalianKasGantungHeader();
         $pengembalianKasGantungHeader = $pengembalianKasGantungHeader->lockAndDestroy($id);
+        
+        $newRequestPenerimaan = new DestroyPenerimaanHeaderRequest();
+        $newRequestPenerimaan->postingdari = $request->postingdari ?? "DELETE PENGEMBALIAN KAS GANTUNG HEADER";
+
         $request['postingdari'] =  $request->postingdari ?? "DELETE PENGEMBALIAN KAS GANTUNG HEADER";
         if ($pengembalianKasGantungHeader) {
             $logTrail = [
@@ -583,7 +588,7 @@ class PengembalianKasGantungHeaderController extends Controller
             $getPenerimaan = PenerimaanHeader::from(DB::raw("penerimaanheader with (readuncommitted)"))->where('nobukti', $pengembalianKasGantungHeader->penerimaan_nobukti)->first();
             if ($getPenerimaan != null) {
 
-                app(PenerimaanHeaderController::class)->destroy($request, $getPenerimaan->id);
+                app(PenerimaanHeaderController::class)->destroy($newRequestPenerimaan, $getPenerimaan->id);
             }
             DB::commit();
 

@@ -2,13 +2,9 @@
 
 namespace App\Http\Requests;
 
-use App\Models\GajiSupirHeader;
-use App\Rules\DateTutupBuku;
-use App\Rules\DestroyGajiSupirNobukti;
 use Illuminate\Foundation\Http\FormRequest;
-use Illuminate\Support\Facades\DB;
 
-class DestroyGajiSupirHeaderRequest extends FormRequest
+class GetRicRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
@@ -27,13 +23,13 @@ class DestroyGajiSupirHeaderRequest extends FormRequest
      */
     public function rules()
     {
-       
+        
+        // First day of the month.
+        $awalPeriode = date('Y-m-01');
         return [
-            'nobukti' => new DestroyGajiSupirNobukti(),
-            'tglbukti' => [
-                'required','date_format:d-m-Y',
-                new DateTutupBuku()
-            ],
+            'tgldari' => ['required', 'date_format:d-m-Y', 'before_or_equal:' . date('Y-m-d'), 'after_or_equal:' . $awalPeriode],
+            'tglsampai' => ['required', 'date_format:d-m-Y', 'before_or_equal:' . date('Y-m-d'), 'after_or_equal:' . date('Y-m-d', strtotime($this->tgldari))],
+
         ];
     }
 }

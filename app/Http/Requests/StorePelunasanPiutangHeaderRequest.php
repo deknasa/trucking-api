@@ -69,11 +69,11 @@ class StorePelunasanPiutangHeaderRequest extends FormRequest
         $rulesAlatBayar_id = [];
         if ($alatbayar_id != null) {
             $rulesAlatBayar_id = [
-                'alatbayar_id' => ['required', 'numeric', 'min:1', Rule::in($rulesAlatBayar_id), new ExistAlatBayar()]
+                'alatbayar_id' => ['required', 'numeric', 'min:1', Rule::in($dataAlatBayar), new ExistAlatBayar()]
             ];
         } else if ($alatbayar_id == null && $this->alatbayar != '') {
             $rulesAlatBayar_id = [
-                'alatbayar_id' => ['required', 'numeric', 'min:1', Rule::in($rulesAlatBayar_id), new ExistAlatBayar()]
+                'alatbayar_id' => ['required', 'numeric', 'min:1', Rule::in($dataAlatBayar), new ExistAlatBayar()]
             ];
         }
 

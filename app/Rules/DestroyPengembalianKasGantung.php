@@ -2,11 +2,12 @@
 
 namespace App\Rules;
 
-use Illuminate\Contracts\Validation\Rule;
 use App\Http\Controllers\Api\ErrorController;
+use App\Models\PengembalianKasGantungHeader;
+use Illuminate\Contracts\Validation\Rule;
 use Illuminate\Support\Facades\DB;
 
-class ExistAbsensiSupirHeader implements Rule
+class DestroyPengembalianKasGantung implements Rule
 {
     /**
      * Create a new rule instance.
@@ -27,14 +28,14 @@ class ExistAbsensiSupirHeader implements Rule
      */
     public function passes($attribute, $value)
     {
-        $absensisupirheader = DB::table("absensisupirheader")->from(DB::raw("absensisupirheader with (readuncommitted)"))
-        ->where('nobukti', $value)
-        ->first();
-    if ($absensisupirheader == null) {
-        return false;
-    } else {
+        $pengembalian = new PengembalianKasGantungHeader();
+        $nobukti = PengembalianKasGantungHeader::from(DB::raw("pengembaliankasgantungheader"))->where('id', request()->id)->first();
+        $cekdata = $pengembalian->cekvalidasiaksi($nobukti->nobukti);
+        if($cekdata['kondisi']){
+          return false;
+        }
+
         return true;
-    }
     }
 
     /**
@@ -44,7 +45,6 @@ class ExistAbsensiSupirHeader implements Rule
      */
     public function message()
     {
-        $controller = new ErrorController;
-        return ':attribute' . ' ' . $controller->geterror('TVD')->keterangan;
+        return app(ErrorController::class)->geterror('TDT')->keterangan;
     }
 }

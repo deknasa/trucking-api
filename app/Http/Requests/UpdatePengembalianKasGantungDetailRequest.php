@@ -2,6 +2,8 @@
 
 namespace App\Http\Requests;
 
+use App\Rules\CekMaxBayarPengembalianKasGantungEdit;
+use App\Rules\CekMinusPengembalianKasGantungEdit;
 use Illuminate\Foundation\Http\FormRequest;
 
 class UpdatePengembalianKasGantungDetailRequest extends FormRequest
@@ -25,14 +27,10 @@ class UpdatePengembalianKasGantungDetailRequest extends FormRequest
     {
         return [
             'kasgantungdetail_id' => 'required',
-            'nominal' => 'required|array',
-            'nominal.*' => 'required|numeric|gt:0',
-            'keterangandetail' => 'required|array',
+            'nominal.*' => ['required','numeric','gt:0', new CekMaxBayarPengembalianKasGantungEdit()],
             'keterangandetail.*' => 'required',
-            'coadetail' => 'required|array',
             'coadetail.*' => 'required',
-            'sisa' => 'required|array',
-            'sisa.*' => 'required|numeric|min:0',
+            'sisa.*' => ['required','numeric','gt:0', new CekMinusPengembalianKasGantungEdit()],
         ];
     }
 }

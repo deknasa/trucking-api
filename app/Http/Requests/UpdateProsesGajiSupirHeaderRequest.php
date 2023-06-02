@@ -3,8 +3,10 @@
 namespace App\Http\Requests;
 
 use App\Http\Controllers\Api\ErrorController;
+use App\Models\ProsesGajiSupirHeader;
 use Illuminate\Foundation\Http\FormRequest;
 use App\Rules\DateTutupBuku;
+use Illuminate\Validation\Rule;
 
 class UpdateProsesGajiSupirHeaderRequest extends FormRequest
 {
@@ -24,17 +26,50 @@ class UpdateProsesGajiSupirHeaderRequest extends FormRequest
      * @return array
      */
     public function rules()
-    {
-        return [
-            //
-            'periode' => 'required|date_format:d-m-Y',
-            'tgldari' => 'required|date_format:d-m-Y',
-            'tglsampai' => 'required|date_format:d-m-Y',
-            "tglbukti" => [
-                "required",'date_format:d-m-Y',
+    {        
+        $prosesGaji = new ProsesGajiSupirHeader();
+        $getDataProsesGaji = $prosesGaji->findAll(request()->id);
+
+        $tglbatasawal = date('Y-m-01');
+        $tglbataseedit = date('Y-m-01', strtotime($getDataProsesGaji->tgldari));
+        $tglbatasakhir = (date('Y') + 1) . '-01-01';
+        // First day of the month.
+        $awalPeriode = date('Y-m-01', strtotime(request()->tgldari));
+        $rules = [
+            'nobukti' => [Rule::in($getDataProsesGaji->nobukti)],
+            'periode' => [
+                'required', 'date_format:d-m-Y',
+                'before_or_equal:' . date('Y-m-d'),
+                'after_or_equal:'.$awalPeriode,
+            ],  
+            'tgldari' => [
+                'required', 'date_format:d-m-Y',
+                'before_or_equal:' .$tglbatasakhir,
+                'after_or_equal:'.$tglbataseedit,
+            ],
+            'tglsampai' => [
+                'required', 'date_format:d-m-Y',
+                'before_or_equal:' . date('Y-m-d'),
+                'after_or_equal:'.$this->tgldari 
+            ],
+            'tglbukti' => [
+                'required', 'date_format:d-m-Y',
+                'date_equals:' . date('d-m-Y', strtotime($getDataProsesGaji->tglbukti)),
                 new DateTutupBuku()
             ],
         ];
+        $relatedRequests = [
+            UpdateProsesGajiSupirDetailRequest::class
+        ];
+
+        foreach ($relatedRequests as $relatedRequest) {
+            $rules = array_merge(
+                $rules,
+                (new $relatedRequest)->rules(),
+            );
+        }
+        return $rules;
+
     }
 
     public function attributes() {
