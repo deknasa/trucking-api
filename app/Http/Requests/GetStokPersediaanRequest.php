@@ -9,7 +9,7 @@ use App\Models\Parameter;
 use Illuminate\Validation\Rule;
 use Illuminate\Support\Facades\DB;
 
-class GetKartuStokRequest extends FormRequest
+class GetStokPersediaanRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
@@ -28,20 +28,7 @@ class GetKartuStokRequest extends FormRequest
      */
     public function rules()
     {
-        $stokQuery = DB::table('stok')->select('stok.id')->get();
-        $stokIds = [];
-        foreach ($stokQuery as $stok) {
-            $stokIds[] = $stok->id;
-        }
-        $stokIdRule = Rule::in($stokIds);
-        
-        $stokQuery2 = DB::table('stok')->select('stok.namastok')->get();
-        $stoks = [];
-        foreach ($stokQuery2 as $stok2) {
-            $stoks[] = $stok2->namastok;
-        }
-        $stokNamaRule = Rule::in($stoks);
-        
+       
         $gudangQuery = DB::table('gudang')->select('gudang.id')->get();
         $gudangIds = [];
         foreach ($gudangQuery as $gudang) {
@@ -69,40 +56,9 @@ class GetKartuStokRequest extends FormRequest
             $status[] = $item['id'];
         }
 
+
         
         $rules =  [
-            'dari' => [
-                'required',
-                'date_format:d-m-Y',
-                'before:'.$tglbatasakhir,
-                'after_or_equal:'.$tglbatasawal,
-            ],
-            'sampai' => [
-                'required',
-                'date_format:d-m-Y',
-                'before:'.$tglbatasakhir,
-                'after_or_equal:'.date('Y-m-d', strtotime($this->tgldari))
-            ],
-            'stokdari_id' => [
-                'required',
-                $stokIdRule,
-                'numeric',
-                'min:1'
-            ],
-            'stoksampai_id' => [
-                'required',
-                $stokIdRule,
-                'numeric',
-                'min:1'
-            ],
-            'stokdari' => [
-                'required',
-                $stokNamaRule
-            ],
-            'stoksampai' => [
-                'required',
-                $stokNamaRule
-            ],
             'filter' => [
                 'required',
                 Rule::in($status),
@@ -111,7 +67,8 @@ class GetKartuStokRequest extends FormRequest
             ],
             'gudang' => [
                 'required',
-                $gudangRule
+                $gudangRule,
+                'min:1'
             ],
             'gudang_id' => [
                 'required',
@@ -140,6 +97,7 @@ class GetKartuStokRequest extends FormRequest
 
         return [
             'sampai.after_or_equal' => ':attribute ' . $controller->geterror('NTLK')->keterangan.' '. $this->tgldari,
+            
             
         ];
     }    

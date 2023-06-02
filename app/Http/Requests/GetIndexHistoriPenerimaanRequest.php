@@ -9,7 +9,7 @@ use App\Models\Parameter;
 use Illuminate\Validation\Rule;
 use Illuminate\Support\Facades\DB;
 
-class GetKartuStokRequest extends FormRequest
+class GetIndexHistoriPenerimaanRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
@@ -41,34 +41,19 @@ class GetKartuStokRequest extends FormRequest
             $stoks[] = $stok2->namastok;
         }
         $stokNamaRule = Rule::in($stoks);
-        
-        $gudangQuery = DB::table('gudang')->select('gudang.id')->get();
-        $gudangIds = [];
-        foreach ($gudangQuery as $gudang) {
-            $gudangIds[] = $gudang->id;
+
+        $filterQuery = DB::table('penerimaanstok')->select('penerimaanstok.id')->get();
+        $filters = [];
+        foreach ($filterQuery as $filter) {
+            $filters[] = $filter->id;
         }
-        $gudangRuleId = Rule::in($gudangIds);
-        
-        $gudangQuery2 = DB::table('gudang')->select('gudang.gudang')->get();
-        $gudangs = [];
-        foreach ($gudangQuery2 as $gudang) {
-            $gudangs[] = $gudang->gudang;
-        }
-        $gudangRule = Rule::in($gudangs);
+        $filterRule = Rule::in($filters);
         
         $parameter = new Parameter();
 
         $getBatas = $parameter->getBatasAwalTahun();
         $tglbatasawal = $getBatas->text;
         $tglbatasakhir = (date('Y') + 1) . '-01-01';
-
-        $dataFilter = $parameter->getcombodata('STOK PERSEDIAAN', 'STOK PERSEDIAAN');
-        $dataFilter = json_decode($dataFilter, true);
-        $status = [];
-        foreach ($dataFilter as $item) {
-            $status[] = $item['id'];
-        }
-
         
         $rules =  [
             'dari' => [
@@ -105,20 +90,13 @@ class GetKartuStokRequest extends FormRequest
             ],
             'filter' => [
                 'required',
-                Rule::in($status),
-                'numeric',
-                'min:1'
+                $filterRule
             ],
-            'gudang' => [
-                'required',
-                $gudangRule
-            ],
-            'gudang_id' => [
-                'required',
-                $gudangRuleId,
-                'numeric',
-                'min:1'
-            ]
+            // 'stoksampai' => [
+            //     'required',
+            //     $stokNamaRule
+            // ],
+            
         ];
         
         return $rules;

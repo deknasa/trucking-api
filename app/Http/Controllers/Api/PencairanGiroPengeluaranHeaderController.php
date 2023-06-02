@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\GetIndexPencairanGiroRequest;
 use App\Http\Requests\StoreJurnalUmumDetailRequest;
 use App\Http\Requests\StoreJurnalUmumHeaderRequest;
 use App\Http\Requests\StoreLogTrailRequest;
@@ -16,6 +17,8 @@ use App\Models\Parameter;
 use App\Models\PencairanGiroPengeluaranDetail;
 use App\Models\PengeluaranDetail;
 use App\Models\PengeluaranHeader;
+use App\Rules\ApprovalBukaCetak;
+use App\Rules\PencairanGiro;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
@@ -24,17 +27,33 @@ class PencairanGiroPengeluaranHeaderController extends Controller
     /**
      * @ClassName
      */
-    public function index()
+    public function index(Request $request)
     {
         $pencairanGiro = new PencairanGiroPengeluaranHeader();
 
-        return response([
-            'data' => $pencairanGiro->get(),
-            'attributes' => [
-                'totalRows' => $pencairanGiro->totalRows,
-                'totalPages' => $pencairanGiro->totalPages
-            ]
+        $this->validate($request, [
+            'periode' => ['required',new PencairanGiro()],
         ]);
+        
+        if($request->periode){
+            $periode = explode("-",$request->periode);
+            $request->merge([
+                'year' => $periode[1],
+                'month'=> $periode[0]
+            ]);
+        }
+
+        if ($request->periode){
+            return response([
+                'data' => $pencairanGiro->get(),
+                'attributes' => [
+                    'totalRows' => $pencairanGiro->totalRows,
+                    'totalPages' => $pencairanGiro->totalPages
+                ]
+            ]);
+        }
+
+        
     }
 
     /**
