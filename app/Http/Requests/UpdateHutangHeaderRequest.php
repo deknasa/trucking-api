@@ -86,6 +86,14 @@ class UpdateHutangHeaderRequest extends FormRequest
                 new ExistSupplier(),
                 ]
             ];
+        } else {
+            $rulessupplier_id = [
+                'supplier' => ['required', 
+                'numeric', 
+                'min:1',
+                new ExistSupplier(),
+                ]
+            ]; 
         }
 
         $rule = array_merge(
