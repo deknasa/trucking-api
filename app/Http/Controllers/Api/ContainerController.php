@@ -302,7 +302,9 @@ class ContainerController extends Controller
 
 
             $containers[$i]['statusaktif'] = $statusaktif;
-
+            
+            $nominalsumbangan = number_format($params['nominalsumbangan'], 2, ',', '.');
+            $containers[$i]['nominalsumbangan'] = $nominalsumbangan;
         
             $i++;
 
