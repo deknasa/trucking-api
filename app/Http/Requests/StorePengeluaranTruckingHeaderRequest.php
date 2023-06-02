@@ -6,6 +6,7 @@ use App\Http\Controllers\Api\ErrorController;
 use App\Models\Parameter;
 use Illuminate\Foundation\Http\FormRequest;
 use App\Rules\DateTutupBuku;
+use App\Rules\ExistBank;
 use Illuminate\Validation\Rule;
 use Illuminate\Support\Facades\DB;
 
@@ -63,6 +64,19 @@ class StorePengeluaranTruckingHeaderRequest extends FormRequest
             $bankIds[] = $bankId->id;
         }
 
+        $bank_id = $this->bank_id;
+
+        $rulesBank_id = [];
+        if ($bank_id != null) {
+            $rulesBank_id = [
+                'bank_id' => ['required', 'numeric', 'min:1', new ExistBank()]
+            ];
+        } else if ($bank_id == null && $this->bank != '') {
+            $rulesBank_id = [
+                'bank_id' => ['required', 'numeric', 'min:1', new ExistBank()]
+            ];
+        }
+
         $rules = [
             "tglbukti" => [
                 "required", 'date_format:d-m-Y',
@@ -71,8 +85,7 @@ class StorePengeluaranTruckingHeaderRequest extends FormRequest
             ],
             'pengeluarantrucking' => 'required','numeric', 'min:1',
             'statusposting' => 'required',
-            'bank' => [$ruleBank,$bank, 'required'],
-            'bank_id' => [Rule::in($bankIds),'required', 'min:1'],
+            'bank' => [$ruleBank],
             'tgldari' => [
                 'required', 'date_format:d-m-Y',
                 'before:'.$tglbatasakhir,
@@ -92,7 +105,8 @@ class StorePengeluaranTruckingHeaderRequest extends FormRequest
         foreach ($relatedRequests as $relatedRequest) {
             $rules = array_merge(
                 $rules,
-                (new $relatedRequest)->rules()
+                (new $relatedRequest)->rules(),
+                $rulesBank_id
             );
         }
 
