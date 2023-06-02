@@ -116,7 +116,7 @@ class StorePenerimaanTruckingHeaderRequest extends FormRequest
                 'penerimaantrucking' => ['required',Rule::in($penerimaanName)],
                 'penerimaantrucking_id' => ['required', 'numeric', 'min:1',Rule::in($penerimaanId)],
                 'bank' => [$ruleBank, $bank, 'required'],
-                'bank_id' => [Rule::in($bankIds), 'required', 'min:1'],
+                'bank_id' => [Rule::in($bankIds), 'required', 'min:1','numeric'],
                 'supir' => ['required', $supir],
                 'supirheader_id' => ['required', $supirId, 'numeric','min:1'],
                 // 'keterangancoa' => 'required'
