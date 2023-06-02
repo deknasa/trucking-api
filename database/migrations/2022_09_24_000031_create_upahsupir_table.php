@@ -29,6 +29,7 @@ class CreateUpahsupirTable extends Migration
             $table->date('tglmulaiberlaku')->nullable();
             $table->integer('statusluarkota')->length(11)->nullable();
             $table->integer('statusupahzona')->length(11)->nullable();
+            $table->integer('statussimpankandang')->length(11)->nullable();
             $table->longText('keterangan')->nullable();
             $table->longText('gambar')->nullable();
             $table->string('modifiedby',50)->nullable();            
