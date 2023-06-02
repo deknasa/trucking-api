@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\StoreLogTrailRequest;
 use App\Models\Supplier;
 use App\Http\Requests\StoreSupplierRequest;
+use App\Http\Requests\DestroySupplierRequest;
 use App\Http\Requests\UpdateSupirRequest;
 use App\Http\Requests\UpdateSupplierRequest;
 use Illuminate\Http\Request;
@@ -227,7 +228,7 @@ class SupplierController extends Controller
     /**
      * @ClassName 
      */
-    public function destroy(DestorySupplierRequest $request, $id)
+    public function destroy(DestroySupplierRequest $request, $id)
     {
         DB::beginTransaction();
 
