@@ -10,6 +10,7 @@ use App\Http\Controllers\Controller;
 use App\Models\RekapPengeluaranHeader;
 use App\Http\Requests\StoreRekapPengeluaranHeaderRequest;
 use App\Http\Requests\UpdateRekapPengeluaranHeaderRequest;
+use App\Http\Requests\DestroyRekapPengeluaranHeaderRequest;
 
 use App\Models\RekapPengeluaranDetail;
 use App\Models\PengeluaranHeader;
@@ -255,7 +256,7 @@ class RekapPengeluaranHeaderController extends Controller
     /**
      * @ClassName 
      */
-    public function destroy(Request $request, $id)
+    public function destroy(DestroyRekapPengeluaranHeaderRequest $request, $id)
     {
         DB::beginTransaction();
         $getDetail = RekapPengeluaranDetail::lockForUpdate()->where('rekappengeluaran_id', $id)->get();
