@@ -3,6 +3,10 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\DestroyPenerimaanTruckingHeaderRequest;
+use App\Http\Requests\DestroyPengeluaranTruckingHeaderRequest;
+use App\Http\Requests\DestroyPengembalianKasGantungHeaderRequest;
+use App\Http\Requests\DestroyProsesUangJalanSupirHeaderRequest;
 use App\Http\Requests\GetIndexRangeRequest;
 use App\Http\Requests\StoreLogTrailRequest;
 use App\Http\Requests\StorePenerimaanHeaderRequest;
@@ -486,7 +490,6 @@ class ProsesUangJalanSupirHeaderController extends Controller
         DB::beginTransaction();
 
         try {
-            $prosesuangjalansupirheader->tglbukti = date('Y-m-d', strtotime($request->tglbukti));
             $prosesuangjalansupirheader->modifiedby = auth('api')->user()->name;
             $prosesuangjalansupirheader->save();
 
@@ -648,7 +651,7 @@ class ProsesUangJalanSupirHeaderController extends Controller
     /**
      * @ClassName
      */
-    public function destroy(Request $request, $id)
+    public function destroy(DestroyProsesUangJalanSupirHeaderRequest $request, $id)
     {
         DB::beginTransaction();
 
@@ -657,6 +660,13 @@ class ProsesUangJalanSupirHeaderController extends Controller
         $request['postingdari'] = "DELETE PROSES UANG JALAN SUPIR";
         $prosesuangjalansupir = new ProsesUangJalanSupirHeader();
         $prosesuangjalansupir = $prosesuangjalansupir->lockAndDestroy($id);
+
+        $newRequestPengembalian = new DestroyPengembalianKasGantungHeaderRequest();
+        $newRequestPengembalian->postingdari = "DELETE PROSES UANG JALAN SUPIR";
+        $newRequestPenerimaan = new DestroyPenerimaanTruckingHeaderRequest();
+        $newRequestPenerimaan->postingdari = "DELETE PROSES UANG JALAN SUPIR";
+        $newRequestPengeluaran = new DestroyPengeluaranTruckingHeaderRequest();
+        $newRequestPengeluaran->postingdari = "DELETE PROSES UANG JALAN SUPIR";
 
         if ($prosesuangjalansupir) {
             $datalogtrail = [
@@ -696,14 +706,14 @@ class ProsesUangJalanSupirHeaderController extends Controller
 
                     $getPengeluaranTrucking = PengeluaranTruckingHeader::from(DB::raw("pengeluarantruckingheader with (readuncommitted)"))->where('pengeluaran_nobukti', $key->pengeluarantrucking_nobukti)->first();
                     if ($getPengeluaranTrucking != null) {
-                        app(PengeluaranTruckingHeaderController::class)->destroy($request, $getPengeluaranTrucking->id);
+                        app(PengeluaranTruckingHeaderController::class)->destroy($newRequestPengeluaran, $getPengeluaranTrucking->id);
                     }
                 } else if ($key->statusprosesuangjalan == $adjust->id) {
                     if ($key->pengembaliankasgantung_nobukti != '') {
 
                         $getPengembalianKasgantung = PengembalianKasGantungHeader::from(DB::raw("pengembaliankasgantungheader with (readuncommitted)"))->where('nobukti', $key->pengembaliankasgantung_nobukti)->first();
                         if ($getPengembalianKasgantung != null) {
-                            app(PengembalianKasGantungHeaderController::class)->destroy($request, $getPengembalianKasgantung->id);
+                            app(PengembalianKasGantungHeaderController::class)->destroy($newRequestPengembalian, $getPengembalianKasgantung->id);
                         }
                     }
                 } else if ($key->statusprosesuangjalan == $pengembalian->id) {
@@ -711,14 +721,14 @@ class ProsesUangJalanSupirHeaderController extends Controller
                     if ($key->penerimaantrucking_nobukti != '') {
                         $getPenerimaanTrucking = PenerimaanTruckingHeader::from(DB::raw("penerimaantruckingheader with (readuncommitted)"))->where('penerimaan_nobukti', $key->penerimaantrucking_nobukti)->first();
                         if ($getPenerimaanTrucking != null) {
-                            app(PenerimaanTruckingHeaderController::class)->destroy($request, $getPenerimaanTrucking->id);
+                            app(PenerimaanTruckingHeaderController::class)->destroy($newRequestPenerimaan, $getPenerimaanTrucking->id);
                         }
                     }
                 } else if ($key->statusprosesuangjalan == $deposito->id) {
                     if ($key->penerimaantrucking_nobukti != '') {
                         $getPenerimaanTrucking = PenerimaanTruckingHeader::from(DB::raw("penerimaantruckingheader with (readuncommitted)"))->where('penerimaan_nobukti', $key->penerimaantrucking_nobukti)->first();
                         if ($getPenerimaanTrucking != null) {
-                            app(PenerimaanTruckingHeaderController::class)->destroy($request, $getPenerimaanTrucking->id);
+                            app(PenerimaanTruckingHeaderController::class)->destroy($newRequestPenerimaan, $getPenerimaanTrucking->id);
                         }
                     }
                 }

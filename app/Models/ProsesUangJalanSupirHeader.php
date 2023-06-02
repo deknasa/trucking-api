@@ -68,7 +68,7 @@ class ProsesUangJalanSupirHeader extends MyModel
         $tempPribadi = $this->createTempPinjaman($supirId);
 
         $query = PengeluaranTruckingDetail::from(DB::raw("pengeluarantruckingdetail with (readuncommitted)"))
-            ->select(DB::raw("row_number() Over(Order By pengeluarantruckingdetail.nobukti) as id,pengeluarantruckingheader.tglbukti,pengeluarantruckingdetail.nobukti,pengeluarantruckingdetail.keterangan as keteranganpinjaman," . $tempPribadi . ".sisa"))
+            ->select(DB::raw("row_number() Over(Order By pengeluarantruckingdetail.nobukti) as id,pengeluarantruckingheader.tglbukti,pengeluarantruckingdetail.nobukti as nobuktipengeluaran,pengeluarantruckingdetail.keterangan as keteranganpinjaman," . $tempPribadi . ".sisa"))
             ->leftJoin(DB::raw("$tempPribadi with (readuncommitted)"), 'pengeluarantruckingdetail.nobukti', $tempPribadi . ".nobukti")
             ->leftJoin(DB::raw("pengeluarantruckingheader with (readuncommitted)"), 'pengeluarantruckingdetail.nobukti', "pengeluarantruckingheader.nobukti")
             ->whereRaw("pengeluarantruckingdetail.supir_id = $supirId")
@@ -123,7 +123,7 @@ class ProsesUangJalanSupirHeader extends MyModel
             ->from(
                 DB::raw("pengeluarantruckingdetail with (readuncommitted)")
             )
-            ->select(DB::raw("penerimaantruckingdetail.penerimaantruckingheader_id as id,pengeluarantruckingdetail.nobukti,pengeluarantruckingdetail.keterangan as keteranganpinjaman, 
+            ->select(DB::raw("penerimaantruckingdetail.penerimaantruckingheader_id as id,pengeluarantruckingdetail.nobukti as nobuktipengeluaran,pengeluarantruckingdetail.keterangan as keteranganpinjaman, 
             penerimaantruckingdetail.nominal as nombayar,
             (SELECT (pengeluarantruckingdetail.nominal - coalesce(SUM(penerimaantruckingdetail.nominal),0)) 
             FROM penerimaantruckingdetail WHERE penerimaantruckingdetail.pengeluarantruckingheader_nobukti= pengeluarantruckingdetail.nobukti) AS sisa"))

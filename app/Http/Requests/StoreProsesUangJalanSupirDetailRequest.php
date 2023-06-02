@@ -4,10 +4,13 @@ namespace App\Http\Requests;
 
 use App\Models\ProsesUangJalanSupirHeader;
 use App\Rules\CekAllTotalProsesUangJalan;
+use App\Rules\CekBankTransferProsesUangJalan;
 use App\Rules\CekMinusSisaPinjamanProsesUangJalan;
 use App\Rules\CekNomAdjustProsesUangJalan;
 use App\Rules\CekNomPinjamanProsesUangJalan;
 use App\Rules\ExistBank;
+use App\Rules\ExistBankProsesUangJalan;
+use App\Rules\ExistBankTransferProsesUangJalan;
 use Illuminate\Foundation\Http\FormRequest;
 
 class StoreProsesUangJalanSupirDetailRequest extends FormRequest
@@ -33,11 +36,11 @@ class StoreProsesUangJalanSupirDetailRequest extends FormRequest
         $rulesBankAdjust_id = [];
         if ($bankadjust_id != null) {
             $rulesBankAdjust_id = [
-                'bankadjust_id' => ['required', 'numeric', 'min:1', new ExistBank()]
+                'bankadjust_id' => ['required', 'numeric', 'min:1', new ExistBankProsesUangJalan()]
             ];
         } else if ($bankadjust_id == null && $this->bankadjust != '') {
             $rulesBankAdjust_id = [
-                'bankadjust_id' => ['required', 'numeric', 'min:1', new ExistBank()]
+                'bankadjust_id' => ['required', 'numeric', 'min:1', new ExistBankProsesUangJalan()]
             ];
         }
         $rulesDeposito = [];
@@ -53,7 +56,7 @@ class StoreProsesUangJalanSupirDetailRequest extends FormRequest
         $rulesBankIdDeposit = [];
         if ($bank_iddeposit == null && $this->bankdeposit != '') {
             $rulesBankIdDeposit = [
-                'bank_iddeposit' => ['required', 'numeric', 'min:1', new ExistBank()]
+                'bank_iddeposit' => ['required', 'numeric', 'min:1', new ExistBankProsesUangJalan()]
             ];
         }
 
@@ -70,19 +73,18 @@ class StoreProsesUangJalanSupirDetailRequest extends FormRequest
         $rulesBankIdPengembalian = [];
         if ($bank_idpengembalian == null && $this->bankpengembalian != '') {
             $rulesBankIdPengembalian = [
-                'bank_idpengembalian' => ['required', 'numeric', 'min:1', new ExistBank()]
+                'bank_idpengembalian' => ['required', 'numeric', 'min:1', new ExistBankProsesUangJalan()]
             ];
         }
 
         $totalValidasi = [
             'totalAll' => new CekAllTotalProsesUangJalan()
         ];
-
         $rules = [
             'keterangantransfer.*' => 'required',
             'nilaitransfer.*' => ['required', 'gt:0', 'numeric'],
             'banktransfer.*' => 'required',
-            'banktransfer_id.*' => ['required', 'numeric', 'min:1', new ExistBank()],
+            'bank_idtransfer.*' => [new CekBankTransferProsesUangJalan(), new ExistBankTransferProsesUangJalan()],
             'nilaiadjust' => ['required', 'gt:0', 'numeric', new CekNomAdjustProsesUangJalan()],
             'keteranganadjust' => 'required',
             'bankadjust' => 'required',

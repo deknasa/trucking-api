@@ -3,10 +3,10 @@
 namespace App\Rules;
 
 use App\Http\Controllers\Api\ErrorController;
-use App\Models\ProsesUangJalanSupirHeader;
 use Illuminate\Contracts\Validation\Rule;
+use Illuminate\Support\Facades\DB;
 
-class CekNomAdjustProsesUangJalan implements Rule
+class ExistBankProsesUangJalan implements Rule
 {
     /**
      * Create a new rule instance.
@@ -27,15 +27,12 @@ class CekNomAdjustProsesUangJalan implements Rule
      */
     public function passes($attribute, $value)
     {
-        $prosesUang = new ProsesUangJalanSupirHeader();
-        $getNominal = $prosesUang->getNominalAbsensi(request()->absensisupir);
-        if ($getNominal != null) {
-            if ((float)$getNominal->nominal != (float)$value) {
-                return false;
-            } else {
-                return true;
-            }
-        }else{
+        $bank = DB::table("bank")->from(DB::raw("bank with (readuncommitted)"))
+            ->where('id', $value)
+            ->first();
+        if ($bank == null) {
+            return false;
+        } else {
             return true;
         }
     }
@@ -47,6 +44,7 @@ class CekNomAdjustProsesUangJalan implements Rule
      */
     public function message()
     {
-        return  app(ErrorController::class)->geterror('TVD')->keterangan;
+        $controller = new ErrorController;
+        return ':attribute' . ' ' . $controller->geterror('TVD')->keterangan;
     }
 }

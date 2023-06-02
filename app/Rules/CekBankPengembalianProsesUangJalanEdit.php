@@ -3,10 +3,10 @@
 namespace App\Rules;
 
 use App\Http\Controllers\Api\ErrorController;
-use App\Models\ProsesUangJalanSupirHeader;
+use App\Models\ProsesUangJalanSupirDetail;
 use Illuminate\Contracts\Validation\Rule;
 
-class CekNomAdjustProsesUangJalan implements Rule
+class CekBankPengembalianProsesUangJalanEdit implements Rule
 {
     /**
      * Create a new rule instance.
@@ -27,14 +27,11 @@ class CekNomAdjustProsesUangJalan implements Rule
      */
     public function passes($attribute, $value)
     {
-        $prosesUang = new ProsesUangJalanSupirHeader();
-        $getNominal = $prosesUang->getNominalAbsensi(request()->absensisupir);
-        if ($getNominal != null) {
-            if ((float)$getNominal->nominal != (float)$value) {
-                return false;
-            } else {
-                return true;
-            }
+        $attribute = substr($attribute,19);
+        $prosesUangJalanDetail = new ProsesUangJalanSupirDetail();
+        $getTransfer = $prosesUangJalanDetail->pengembalian(request()->id);      
+        if($getTransfer->bank_idpengembalian != $value){
+            return false;
         }else{
             return true;
         }
@@ -47,6 +44,6 @@ class CekNomAdjustProsesUangJalan implements Rule
      */
     public function message()
     {
-        return  app(ErrorController::class)->geterror('TVD')->keterangan;
+        return app(ErrorController::class)->geterror('HPDL')->keterangan;
     }
 }
