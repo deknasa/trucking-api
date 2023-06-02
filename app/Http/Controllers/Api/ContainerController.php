@@ -188,7 +188,7 @@ class ContainerController extends Controller
     /**
      * @ClassName 
      */
-    public function destroy(DestroyContainerRequest $request, $id)
+    public function destroy(Request $request, $id)
     {
         DB::beginTransaction();
         $container = new Container();
