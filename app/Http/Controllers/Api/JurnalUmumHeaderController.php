@@ -366,7 +366,6 @@ class JurnalUmumHeaderController extends Controller
     public function destroy(DestroyJurnalUmumRequest $request, $id)
     {
         DB::beginTransaction();
-
         $getDetail = JurnalUmumDetail::lockForUpdate()->where('jurnalumum_id', $id)->get();
 
         $jurnalumumheader = new JurnalUmumHeader();

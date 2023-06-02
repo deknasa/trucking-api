@@ -5,6 +5,7 @@ namespace App\Http\Requests;
 use App\Http\Controllers\Api\ErrorController;
 use Illuminate\Foundation\Http\FormRequest;
 use App\Rules\DateTutupBuku;
+use App\Rules\ExistBank;
 use App\Rules\PreventInputType;
 
 class StorePengembalianKasGantungHeaderRequest extends FormRequest
@@ -26,18 +27,35 @@ class StorePengembalianKasGantungHeaderRequest extends FormRequest
      */
     public function rules()
     {
+        $bank_id = $this->bank_id;
+        $rulesBank_id = [];
+        if ($bank_id != null) {
+            $rulesBank_id = [
+                'bank_id' => ['required', 'numeric', 'min:1', new ExistBank()]
+            ];
+        } else if ($bank_id == null && $this->bank != '') {
+            $rulesBank_id = [
+                'bank_id' => ['required', 'numeric', 'min:1', new ExistBank()]
+            ];
+        }
+        
+        $tglbatasakhir = (date('Y') + 1) . '-01-01';
+
         $rules = [
             'tglbukti' => [
                 'required', 'date_format:d-m-Y',
-                new DateTutupBuku()
+                new DateTutupBuku(),
+                'before_or_equal:' . date('d-m-Y')
             ],
 
             "bank" => "required",
             "tgldari" => [
-                'required', 'date_format:d-m-Y'
+                'required', 'date_format:d-m-Y',
+                'before:' . $tglbatasakhir,
             ],
             "tglsampai" => [
-                'required', 'date_format:d-m-Y'
+                'required', 'date_format:d-m-Y',
+                'before:' . $tglbatasakhir,'after_or_equal:'.date('Y-m-d', strtotime($this->tgldari))
             ],
         ];
         $relatedRequests = [
@@ -47,7 +65,8 @@ class StorePengembalianKasGantungHeaderRequest extends FormRequest
         foreach ($relatedRequests as $relatedRequest) {
             $rules = array_merge(
                 $rules,
-                (new $relatedRequest)->rules()
+                (new $relatedRequest)->rules(),
+                $rulesBank_id
             );
         }
 

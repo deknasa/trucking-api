@@ -2,11 +2,11 @@
 
 namespace App\Rules;
 
-use Illuminate\Contracts\Validation\Rule;
 use App\Http\Controllers\Api\ErrorController;
-use Illuminate\Support\Facades\DB;
+use App\Models\ProsesUangJalanSupirHeader;
+use Illuminate\Contracts\Validation\Rule;
 
-class ExistAbsensiSupirHeader implements Rule
+class CekNomAdjustProsesUangJalan implements Rule
 {
     /**
      * Create a new rule instance.
@@ -27,14 +27,13 @@ class ExistAbsensiSupirHeader implements Rule
      */
     public function passes($attribute, $value)
     {
-        $absensisupirheader = DB::table("absensisupirheader")->from(DB::raw("absensisupirheader with (readuncommitted)"))
-        ->where('nobukti', $value)
-        ->first();
-    if ($absensisupirheader == null) {
-        return false;
-    } else {
-        return true;
-    }
+        $prosesUang = new ProsesUangJalanSupirHeader();
+        $getNominal = $prosesUang->getNominalAbsensi(request()->absensisupir);
+        if((float)$getNominal->nominal != (float)$value){
+            return false;
+        }else{
+            return true;
+        }
     }
 
     /**
@@ -44,7 +43,6 @@ class ExistAbsensiSupirHeader implements Rule
      */
     public function message()
     {
-        $controller = new ErrorController;
-        return ':attribute' . ' ' . $controller->geterror('TVD')->keterangan;
+        return  app(ErrorController::class)->geterror('TVD')->keterangan;
     }
 }

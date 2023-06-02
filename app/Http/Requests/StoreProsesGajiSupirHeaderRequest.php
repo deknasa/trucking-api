@@ -26,9 +26,7 @@ class StoreProsesGajiSupirHeaderRequest extends FormRequest
      */
     public function rules()
     {
-        $parameter = new Parameter();
-        $getBatas = $parameter->getBatasAwalTahun();
-        $tglbatasawal = $getBatas->text;
+        $tglbatasawal = date('Y-m-01');
         $tglbatasakhir = (date('Y') + 1) . '-01-01';
 
         // First day of the month.
@@ -36,22 +34,22 @@ class StoreProsesGajiSupirHeaderRequest extends FormRequest
         $rules = [
             'periode' => [
                 'required', 'date_format:d-m-Y',
-                'before:'.$tglbatasakhir,
+                'before_or_equal:' . date('Y-m-d'),
                 'after_or_equal:'.$awalPeriode,
             ],
             'tgldari' => [
                 'required', 'date_format:d-m-Y',
-                'before:'.$tglbatasakhir,
+                'before_or_equal:' . date('Y-m-d'),
                 'after_or_equal:'.$tglbatasawal,
             ],
             'tglsampai' => [
                 'required', 'date_format:d-m-Y',
-                'before:'.$tglbatasakhir,
+                'before_or_equal:' . date('Y-m-d'),
                 'after_or_equal:'.$this->tgldari 
             ],
             'tglbukti' => [
                 'required', 'date_format:d-m-Y',
-                'date_equals:'.date('d-m-Y'),
+                'before_or_equal:' . date('d-m-Y'),
                 new DateTutupBuku()
             ],
         ];

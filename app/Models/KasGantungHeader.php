@@ -266,20 +266,12 @@ class KasGantungHeader extends MyModel
     public function getKasGantung($dari, $sampai)
     {
         $tempPribadi = $this->createTempKasGantung($dari, $sampai);
-        $query = KasGantungDetail::from(DB::raw("kasgantungdetail with (readuncommitted)"))
-            ->select(DB::raw("row_number() Over(Order By kasgantungdetail.nobukti) as id,kasgantungheader.tglbukti,kasgantungdetail.nobukti,kasgantungdetail.keterangan," . $tempPribadi . ".sisa"))
-            ->leftJoin(DB::raw("$tempPribadi with (readuncommitted)"), 'kasgantungdetail.nobukti', $tempPribadi . ".nobukti")
-            ->leftJoin(DB::raw("kasgantungheader with (readuncommitted)"), 'kasgantungdetail.nobukti', "kasgantungheader.nobukti")
-            ->whereBetween('kasgantungheader.tglbukti', [$dari, $sampai])   
-            ->whereRaw("kasgantungdetail.nobukti = $tempPribadi.nobukti")
-            ->where(function ($query) use ($tempPribadi) {
-                $query->whereRaw("$tempPribadi.sisa != 0")
-                    ->orWhereRaw("$tempPribadi.sisa is null");
-            })
-            ->orderBy('kasgantungheader.tglbukti', 'asc')
-            ->orderBy('kasgantungdetail.nobukti', 'asc');
-            //dd($query->get());
-
+        $query = DB::table($tempPribadi)->from(DB::raw("$tempPribadi with (readuncommitted)"))
+        ->select(DB::raw("row_number() Over(Order By $tempPribadi.nobukti) as id,$tempPribadi.tglbukti,$tempPribadi.nobukti,$tempPribadi.sisa "))
+        ->where(function ($query) use ($tempPribadi) {
+            $query->whereRaw("$tempPribadi.sisa != 0")
+                ->orWhereRaw("$tempPribadi.sisa is null");
+        });
         return $query->get();
     }
 
@@ -291,19 +283,20 @@ class KasGantungHeader extends MyModel
             ->from(
                 DB::raw("kasgantungdetail with (readuncommitted)")
             )
-            ->select(DB::raw("kasgantungdetail.nobukti, (SELECT (sum(kasgantungdetail.nominal) - coalesce(SUM(pengembaliankasgantungdetail
-            .nominal),0)) FROM pengembaliankasgantungdetail WHERE pengembaliankasgantungdetail.kasgantung_nobukti= kasgantungdetail.nobukti) AS sisa")) 
+            ->select(DB::raw("kasgantungdetail.nobukti,kasgantungheader.tglbukti,(SELECT (sum(kasgantungdetail.nominal) - coalesce(SUM(pengembaliankasgantungdetail.nominal),0)) FROM pengembaliankasgantungdetail WHERE pengembaliankasgantungdetail.kasgantung_nobukti= kasgantungdetail.nobukti) AS sisa")) 
             ->leftJoin('kasgantungheader', 'kasgantungheader.id', 'kasgantungdetail.kasgantung_id')
             ->whereBetween('kasgantungheader.tglbukti', [$dari, $sampai])                                                                                     
-            ->groupBy('kasgantungdetail.nobukti');
-        //dd($fetch->toSql());
-        
+            ->groupBy('kasgantungdetail.nobukti','kasgantungdetail.keterangan','kasgantungheader.tglbukti')
+            ->orderBy('kasgantungheader.tglbukti', 'asc')
+            ->orderBy('kasgantungdetail.nobukti', 'asc');
+
         Schema::create($temp, function ($table) {
             $table->string('nobukti');
+            $table->date('tglbukti');
             $table->bigInteger('sisa')->nullable();
         });
 
-        $tes = DB::table($temp)->insertUsing(['nobukti', 'sisa'], $fetch); 
+        $tes = DB::table($temp)->insertUsing(['nobukti','keterangan','tglbukti', 'sisa'], $fetch); 
         //dd($tes);
         return $temp;
     }
@@ -380,5 +373,20 @@ class KasGantungHeader extends MyModel
     public function paginate($query)
     {
         return $query->skip($this->params['offset'])->take($this->params['limit']);
+    }
+
+    public function getSisaPengembalianForValidasi($nobukti){
+        
+        $fetch = DB::table('kasgantungdetail')
+            ->from(
+                DB::raw("kasgantungdetail with (readuncommitted)")
+            )
+            ->select(DB::raw("kasgantungdetail.nobukti,(SELECT (sum(kasgantungdetail.nominal) - coalesce(SUM(pengembaliankasgantungdetail.nominal),0)) FROM pengembaliankasgantungdetail WHERE pengembaliankasgantungdetail.kasgantung_nobukti= kasgantungdetail.nobukti) AS sisa")) 
+            ->whereRaw("kasgantungdetail.nobukti = '$nobukti'")
+            ->groupBy('kasgantungdetail.nobukti');
+            // ->first();
+        
+            return $fetch->first();
+            
     }
 }

@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\DestroyPelunasanPiutangHeaderRequest;
+use App\Http\Requests\DestroyPenerimaanHeaderRequest;
 use App\Http\Requests\GetIndexRangeRequest;
 use App\Models\PelunasanPiutangHeader;
 use App\Models\PelunasanPiutangDetail;
@@ -808,7 +809,9 @@ class PelunasanPiutangHeaderController extends Controller
         $request['postingdari'] = "DELETE PELUNASAN PIUTANG";
         $pelunasanpiutangheader = new PelunasanPiutangHeader();
         $pelunasanpiutangheader = $pelunasanpiutangheader->lockAndDestroy($id);
-
+ 
+        $newRequestPenerimaan = new DestroyPenerimaanHeaderRequest();
+        $newRequestPenerimaan->postingdari = "DELETE PELUNASAN PIUTANG HEADER";
         if ($pelunasanpiutangheader) {
             $logTrail = [
                 'namatabel' => strtoupper($pelunasanpiutangheader->getTable()),
@@ -840,7 +843,7 @@ class PelunasanPiutangHeaderController extends Controller
 
             if ($pelunasanpiutangheader->penerimaan_nobukti != '-') {
                 $getPenerimaan = PenerimaanHeader::from(DB::raw("penerimaanheader with (readuncommitted)"))->where('nobukti', $pelunasanpiutangheader->penerimaan_nobukti)->first();
-                app(PenerimaanHeaderController::class)->destroy($request, $getPenerimaan->id);
+                app(PenerimaanHeaderController::class)->destroy($newRequestPenerimaan, $getPenerimaan->id);
             }
             if ($pelunasanpiutangheader->penerimaangiro_nobukti != '-') {
                 $getGiro = PenerimaanGiroHeader::from(DB::raw("penerimaangiroheader with (readuncommitted)"))->where('nobukti', $pelunasanpiutangheader->penerimaangiro_nobukti)->first();
