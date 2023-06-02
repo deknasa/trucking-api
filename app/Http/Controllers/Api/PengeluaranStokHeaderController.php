@@ -177,6 +177,8 @@ class PengeluaranStokHeaderController extends Controller
                         }
                         // dd('test');
                     }
+
+                    // return response($pengeluaranStokDetailFifo, 422);
                     $datalogtrail = [
                         'namatabel' => strtoupper($tabeldetail),
                         'postingdari' => 'ENTRY PENGELUARAN STOK DETAIL',

@@ -41,7 +41,7 @@ class PengeluaranStokHeader extends MyModel
             ->leftJoin('penerimaanheader', 'pengeluaranstokheader.penerimaan_nobukti', 'penerimaanheader.nobukti')
             ->leftJoin('hutangbayarheader', 'pengeluaranstokheader.hutangbayar_nobukti', 'hutangbayarheader.nobukti')
             ->leftJoin('pengeluaranstokheader as pengeluaran', 'pengeluaranstokheader.pengeluaranstok_nobukti', 'pengeluaran.nobukti')
-            // ->leftJoin('servicein','pengeluaranstokheader.servicein_nobukti','servicein.nobukti')
+            ->leftJoin('serviceinheader','pengeluaranstokheader.servicein_nobukti','serviceinheader.nobukti')
             ->leftJoin('supir', 'pengeluaranstokheader.supir_id', 'supir.id');
         if (request()->tgldari) {
             $query->whereBetween('pengeluaranstokheader.tglbukti', [date('Y-m-d', strtotime(request()->tgldari)), date('Y-m-d', strtotime(request()->tglsampai))]);
@@ -295,6 +295,7 @@ class PengeluaranStokHeader extends MyModel
             "$this->table.modifiedby",
             "$this->table.created_at",
             "$this->table.updated_at",
+            "$this->table.jumlahcetak",
             "kerusakan.keterangan as kerusakan",
             "bank.namabank as bank",
             "pengeluaranstok.kodepengeluaran as pengeluaranstok",
@@ -323,7 +324,7 @@ class PengeluaranStokHeader extends MyModel
             ->leftJoin('penerimaanheader', 'pengeluaranstokheader.penerimaan_nobukti', 'penerimaanheader.nobukti')
             ->leftJoin('hutangbayarheader', 'pengeluaranstokheader.hutangbayar_nobukti', 'hutangbayarheader.nobukti')
             ->leftJoin('pengeluaranstokheader as pengeluaran', 'pengeluaranstokheader.pengeluaranstok_nobukti', 'pengeluaran.nobukti')
-            // ->leftJoin('servicein','pengeluaranstokheader.servicein_nobukti','servicein.nobukti')
+            ->leftJoin('serviceinheader','pengeluaranstokheader.servicein_nobukti','serviceinheader.nobukti')
             ->leftJoin('supir', 'pengeluaranstokheader.supir_id', 'supir.id');
 
         $data = $query->where("$this->table.id", $id)->first();
