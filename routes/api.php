@@ -355,6 +355,7 @@ route::middleware(['auth:api'])->group(function () {
     Route::get('upahsupir/combo', [UpahSupirController::class, 'combo']);
     Route::get('upahsupir/field_length', [UpahSupirController::class, 'fieldLength']);
     Route::get('upahsupir/default', [UpahSupirController::class, 'default']);
+    Route::get('upahsupir/listpivot', [UpahSupirController::class, 'listpivot']);
     Route::resource('upahsupir', UpahSupirController::class);
 
     Route::get('upahsupirrincian/setuprow', [UpahSupirRincianController::class, 'setUpRow']);
