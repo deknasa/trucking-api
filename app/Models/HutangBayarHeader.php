@@ -73,6 +73,38 @@ class HutangBayarHeader extends MyModel
         return $data;
     }
 
+    
+    public function cekvalidasiaksi($nobukti)
+    {
+        $hutangBayar = DB::table('hutangbayarheader')
+            ->from(
+                DB::raw("hutangbayarheader as a with (readuncommitted)")
+            )
+            ->select(
+                'a.nobukti'
+            )
+            ->join(DB::raw("jurnalumumpusatheader b with (readuncommitted)"),'a.pengeluaran_nobukti','b.nobukti')
+            ->where('a.nobukti', '=', $nobukti)
+            ->first();
+        if (isset($hutangBayar)) {
+            $data = [
+                'kondisi' => true,
+                'keterangan' => 'Approval Jurnal',
+                'kodeerror' => 'SATL'
+            ];
+            goto selesai;
+        }
+
+        
+
+        $data = [
+            'kondisi' => false,
+            'keterangan' => '',
+        ];
+        selesai:
+        return $data;
+    }
+
     public function findAll($id)
     {
 
@@ -197,7 +229,7 @@ class HutangBayarHeader extends MyModel
 
     public function createTempHutang($supplierId)
     {
-        $temp = '##tempHutang' . rand(1, 10000);
+        $temp = '##tempHutang' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
 
 
         $fetch = DB::table('hutangheader')->from(DB::raw("hutangheader with (readuncommitted)"))

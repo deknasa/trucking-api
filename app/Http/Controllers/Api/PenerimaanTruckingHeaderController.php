@@ -3,8 +3,10 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\DestroyPenerimaanHeaderRequest;
 use App\Http\Requests\DestroyPenerimaanTruckingHeaderRequest;
 use App\Http\Requests\GetIndexRangeRequest;
+use App\Http\Requests\GetPenerimaanTruckingHeaderRequest;
 use App\Models\PenerimaanTruckingHeader;
 use App\Models\PenerimaanTruckingTruckingHeader;
 use App\Http\Requests\StorePenerimaanTruckingHeaderRequest;
@@ -37,7 +39,7 @@ class PenerimaanTruckingHeaderController extends Controller
     /**
      * @ClassName
      */
-    public function index(GetIndexRangeRequest $request)
+    public function index(GetPenerimaanTruckingHeaderRequest $request)
     {
         $penerimaantruckingheader = new PenerimaanTruckingHeader();
         return response([
@@ -499,6 +501,8 @@ class PenerimaanTruckingHeaderController extends Controller
         $penerimaanTrucking = new PenerimaanTruckingHeader();
         $penerimaanTrucking = $penerimaanTrucking->lockAndDestroy($id);
 
+        $newRequestPenerimaan = new DestroyPenerimaanHeaderRequest();
+        $newRequestPenerimaan->postingdari =  $request->postingdari ?? "DELETE PENERIMAAN TRUCKING";
         if ($penerimaanTrucking) {
             $logTrail = [
                 'namatabel' => strtoupper($penerimaanTrucking->getTable()),
@@ -529,7 +533,7 @@ class PenerimaanTruckingHeaderController extends Controller
 
             if ($gajiSupir == 0) {
                 $getPenerimaan = PenerimaanHeader::from(DB::raw("penerimaanheader with (readuncommitted)"))->where('nobukti', $penerimaanTrucking->penerimaan_nobukti)->first();
-                app(PenerimaanHeaderController::class)->destroy($request, $getPenerimaan->id);
+                app(PenerimaanHeaderController::class)->destroy($newRequestPenerimaan, $getPenerimaan->id);
             }
 
             DB::commit();

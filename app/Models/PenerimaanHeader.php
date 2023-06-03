@@ -30,6 +30,8 @@ class PenerimaanHeader extends MyModel
     public function default()
     {
 
+        $bankId = request()->bank_id;
+
         $tempdefault = '##tempdefault' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
         Schema::create($tempdefault, function ($table) {
             $table->unsignedBigInteger('bank_id')->nullable();
@@ -45,7 +47,7 @@ class PenerimaanHeader extends MyModel
                 'namabank as bank',
 
             )
-            ->where('tipe', '=', 'KAS')
+            ->where('id', '=', $bankId)
             ->first();
 
 
@@ -256,8 +258,8 @@ class PenerimaanHeader extends MyModel
         $this->sort($query);
         $this->filter($query);
         $this->paginate($query);
-
         $data = $query->get();
+        
 
         return $data;
     }
@@ -617,6 +619,10 @@ class PenerimaanHeader extends MyModel
               )")
             ->leftJoin(DB::raw("penerimaandetail with (readuncommitted)"), 'penerimaanheader.id', 'penerimaandetail.penerimaan_id')
             ->groupBy('penerimaanheader.nobukti', 'penerimaanheader.id', 'penerimaanheader.tglbukti', 'penerimaandetail.keterangan');
+
+            $this->totalRows = $query->count();
+            $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;
+            
         $data = $query->get();
 
         return $data;

@@ -28,7 +28,7 @@ class ExistAgen implements Rule
     public function passes($attribute, $value)
     {
         $agen = DB::table("agen")->from(DB::raw("agen with (readuncommitted)"))
-            ->where('id', $value)
+            ->where('id', request()->agen_id)
             ->first();
         if($agen == null){
             return false;

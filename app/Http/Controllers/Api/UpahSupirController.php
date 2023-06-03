@@ -48,15 +48,17 @@ class UpahSupirController extends Controller
      */
 
     
-     public function listpivot()
+     public function listpivot(Request $request)
      {
+        $dari = date('Y-m-d', strtotime($request->dari));
+        $sampai = date('Y-m-d', strtotime($request->sampai));
+        $upahsupirrincian = new UpahSupirRincian();
 
- 
-         $upahsupirrincian = new UpahSupirRincian();
+       
  
          return response([
              'status' => true,
-             'data' => $upahsupirrincian->listpivot(),
+             'data' => $upahsupirrincian->listpivot($dari,$sampai),
          ]);
      }
     public function store(StoreUpahSupirRequest $request)

@@ -3,15 +3,10 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
 use App\Http\Requests\StoreLogTrailRequest;
-
-use Illuminate\Support\Facades\Auth;
+use App\Http\Requests\StoreTutupBukuRequest;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Schema;
 use App\Models\Parameter;
-use Illuminate\Support\Facades\Validator;
-use Illuminate\Validation\Rule;
 
 class TutupBukuController extends Controller
 {
@@ -30,7 +25,7 @@ class TutupBukuController extends Controller
     /**
      * @ClassName
      */
-    public function store(Request $request)
+    public function store(StoreTutupBukuRequest $request)
     {
         DB::beginTransaction();
 
@@ -60,6 +55,7 @@ class TutupBukuController extends Controller
             return response([
                 'status' => true,
                 'message' => 'Proses Tutup Buku Berhasil',
+                'data' => $parameter
             ]);
         } catch (\Throwable $th) {
             DB::rollBack();

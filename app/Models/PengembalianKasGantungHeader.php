@@ -242,26 +242,28 @@ class PengembalianKasGantungHeader extends MyModel
     {
         $tempPribadi = $this->createTempPengembalianKasGantung($id, $dari, $sampai);
         $tempAll = $this->createTempPengembalian($id, $dari, $sampai);
-        
         $temp = '##tempGet' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
         $pengembalian = DB::table($tempPribadi)->from(DB::raw("$tempPribadi with (readuncommitted)"))
-            ->select(DB::raw("pengembaliankasgantungheader_id,nobukti,sisa,bayar"));
+            ->select(DB::raw("pengembaliankasgantungheader_id,nobukti,tglbukti,keterangan,coa,sisa,bayar"));
 
         Schema::create($temp, function ($table) {
             $table->bigInteger('pengembaliankasgantungheader_id')->nullable();
             $table->string('nobukti');
+            $table->date('tglbukti');
+            $table->string('keterangan')->nullable();
+            $table->string('coa')->nullable();
             $table->bigInteger('sisa')->nullable();
             $table->bigInteger('bayar')->nullable();
         });
 
-        DB::table($temp)->insertUsing(['pengembaliankasgantungheader_id', 'nobukti','sisa','bayar'], $pengembalian);
+        DB::table($temp)->insertUsing(['pengembaliankasgantungheader_id', 'nobukti','tglbukti','keterangan','coa', 'sisa', 'bayar'], $pengembalian);
 
         $pinjaman = DB::table($tempAll)->from(DB::raw("$tempAll with (readuncommitted)"))
-        ->select(DB::raw("null as pengembaliankasgantungheader_id,nobukti,sisa, 0 as bayar"));
-        DB::table($temp)->insertUsing(['pengembaliankasgantungheader_id', 'nobukti','sisa','bayar'], $pinjaman);
+            ->select(DB::raw("null as pengembaliankasgantungheader_id,nobukti,tglbukti,null as keterangan, null as coa,sisa, 0 as bayar"));
+        DB::table($temp)->insertUsing(['pengembaliankasgantungheader_id', 'nobukti','tglbukti','keterangan','coa', 'sisa', 'bayar'], $pinjaman);
 
         $data = DB::table($temp)->from(DB::raw("$temp with (readuncommitted)"))
-            ->select(DB::raw("row_number() Over(Order By $temp.nobukti) as id,pengembaliankasgantungheader_id,nobukti,sisa,bayar as nominal"))
+            ->select(DB::raw("row_number() Over(Order By $temp.nobukti) as id,pengembaliankasgantungheader_id,nobukti,tglbukti,keterangan as keterangandetail,coa as coadetail,sisa,bayar as nominal"))
             ->get();
 
         return $data;
@@ -273,52 +275,59 @@ class PengembalianKasGantungHeader extends MyModel
 
         $fetch = DB::table('kasgantungdetail')
             ->from(
-                DB::raw("pengembaliankasgantungdetail with (readuncommitted)")
+                DB::raw("kasgantungdetail with (readuncommitted)")
             )
-            ->select(DB::raw("pengembaliankasgantungdetail.pengembaliankasgantung_id,pengembaliankasgantungdetail.kasgantung_nobukti, pengembaliankasgantungdetail.nominal as bayar ,
-                (SELECT (pengembaliankasgantungdetail.nominal - coalesce(SUM(kasgantungdetail.nominal),0)) 
-                FROM kasgantungdetail WHERE pengembaliankasgantungdetail.kasgantung_nobukti= kasgantungdetail.nobukti) AS sisa"));
-            
-        //dd($fetch->toSQL());
+            ->select(DB::raw("pengembaliankasgantungdetail.pengembaliankasgantung_id,kasgantungdetail.nobukti,kasgantungheader.tglbukti,
+            pengembaliankasgantungdetail.nominal as bayar,pengembaliankasgantungdetail.keterangan, pengembaliankasgantungdetail.coa,
+            (SELECT (sum(kasgantungdetail.nominal) - coalesce(SUM(pengembaliankasgantungdetail.nominal),0)) 
+            FROM pengembaliankasgantungdetail WHERE pengembaliankasgantungdetail.kasgantung_nobukti= kasgantungdetail.nobukti) AS sisa"))
+            ->leftJoin(DB::raw("kasgantungheader with (readuncommitted)"), 'kasgantungheader.nobukti', 'kasgantungdetail.nobukti')
+            ->leftJoin(DB::raw("pengembaliankasgantungdetail with (readuncommitted)"), 'pengembaliankasgantungdetail.kasgantung_nobukti', 'kasgantungdetail.nobukti')
+            ->where("pengembaliankasgantungdetail.pengembaliankasgantung_id", $id)
+            ->groupBy('pengembaliankasgantungdetail.pengembaliankasgantung_id', 'kasgantungdetail.nobukti','kasgantungheader.tglbukti', 'pengembaliankasgantungdetail.nominal', 'pengembaliankasgantungdetail.keterangan', 'pengembaliankasgantungdetail.coa');
 
-            Schema::create($temp, function ($table) {
-                $table->bigInteger('pengembaliankasgantungheader_id')->nullable();
-                $table->string('nobukti');
-                $table->bigInteger('bayar')->nullable();
-                $table->bigInteger('sisa')->nullable();
-            });
-            $tes = DB::table($temp)->insertUsing(['pengembaliankasgantungheader_id','nobukti','bayar', 'sisa'], $fetch);
-            return $temp;
+
+        Schema::create($temp, function ($table) {
+            $table->bigInteger('pengembaliankasgantungheader_id')->nullable();
+            $table->string('nobukti');
+            $table->date('tglbukti');
+            $table->bigInteger('bayar')->nullable();
+            $table->string('keterangan');
+            $table->string('coa');
+            $table->bigInteger('sisa')->nullable();
+        });
+        $tes = DB::table($temp)->insertUsing(['pengembaliankasgantungheader_id', 'nobukti','tglbukti', 'bayar', 'keterangan', 'coa', 'sisa'], $fetch);
+
+        return $temp;
     }
 
     public function createTempPengembalian($id, $dari, $sampai)
     {
         $temp = '##temp' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
         $fetch = DB::table('kasgantungdetail')
-        ->from(
-            DB::raw("kasgantungdetail with (readuncommitted)")
-        )
-        ->select(DB::raw("kasgantungdetail.nobukti,
-            (SELECT (sum(kasgantungdetail.nominal) - coalesce(SUM(pengembaliankasgantungdetail.nominal),0)) 
-            FROM pengembaliankasgantungdetail WHERE pengembaliankasgantungdetail.kasgantung_nobukti= kasgantungdetail.nobukti) AS sisa "))
-        ->leftJoin(DB::raw("kasgantungheader with (readuncommitted)"), 'kasgantungheader.nobukti', 'kasgantungdetail.nobukti')
-        ->whereRaw("kasgantungheader.nobukti not in (select kasgantung_nobukti from pengembaliankasgantungdetail)")
-        ->whereBetween('kasgantungheader.tglbukti', [$dari, $sampai])   
-        ->groupBy('kasgantungdetail.nobukti');
+            ->from(
+                DB::raw("kasgantungdetail with (readuncommitted)")
+            )
+            ->select(DB::raw("kasgantungdetail.nobukti,kasgantungheader.tglbukti,(SELECT (sum(kasgantungdetail.nominal) - coalesce(SUM(pengembaliankasgantungdetail.nominal),0)) FROM pengembaliankasgantungdetail WHERE pengembaliankasgantungdetail.kasgantung_nobukti= kasgantungdetail.nobukti) AS sisa"))
+            ->leftJoin(DB::raw("kasgantungheader with (readuncommitted)"), 'kasgantungheader.nobukti', 'kasgantungdetail.nobukti')
+            ->whereRaw("kasgantungheader.nobukti not in (select kasgantung_nobukti from pengembaliankasgantungdetail where pengembaliankasgantung_id=$id)")
+            ->whereBetween('kasgantungheader.tglbukti', [$dari, $sampai])
+            ->groupBy('kasgantungdetail.nobukti','kasgantungheader.tglbukti');
         //dd($fetch->toSQL());
 
         Schema::create($temp, function ($table) {
             $table->string('nobukti');
+            $table->date('tglbukti');
             $table->bigInteger('sisa')->nullable();
         });
-        $tes = DB::table($temp)->insertUsing(['nobukti','sisa'], $fetch);
+        $tes = DB::table($temp)->insertUsing(['nobukti','tglbukti', 'sisa'], $fetch);
         return $temp;
     }
 
     public function getDeletePengembalian($id, $dari, $sampai)
     {
         $tempPribadi = $this->createTempPengembalianKasGantung($id, $dari, $sampai);
-       
+
         $data = DB::table($tempPribadi)->from(DB::raw("$tempPribadi with (readuncommitted)"))
             ->select(DB::raw("row_number() Over(Order By $tempPribadi.nobukti) as id,pengembaliankasgantungheader_id,nobukti,sisa,bayar as nominal"))
             ->get();
@@ -357,15 +366,14 @@ class PengembalianKasGantungHeader extends MyModel
                     foreach ($this->params['filters']['rules'] as $index => $filters) {
                         if ($filters['field'] == 'statuscetak') {
                             $query = $query->where('statuscetak.text', '=', $filters['data']);
-                        } 
-                        else if ($filters['field'] == 'bank') {
+                        } else if ($filters['field'] == 'bank') {
                             $query = $query->where('bank.namabank', 'LIKE', "%$filters[data]%");
                         } else if ($filters['field'] == 'coa') {
                             $query = $query->where('akunpusat.keterangancoa', 'LIKE', "%$filters[data]%");
                         } else if ($filters['field'] == 'tglbukti' || $filters['field'] == 'tglkasmasuk' || $filters['field'] == 'tgldari' || $filters['field'] == 'tglsampai' || $filters['field'] == 'tglbukacetak') {
-                            $query = $query->whereRaw("format(".$this->table . "." . $filters['field'].", 'dd-MM-yyyy') LIKE '%$filters[data]%'");
+                            $query = $query->whereRaw("format(" . $this->table . "." . $filters['field'] . ", 'dd-MM-yyyy') LIKE '%$filters[data]%'");
                         } else if ($filters['field'] == 'created_at' || $filters['field'] == 'updated_at') {
-                            $query = $query->whereRaw("format(".$this->table . "." . $filters['field'].", 'dd-MM-yyyy HH:mm:ss') LIKE '%$filters[data]%'");
+                            $query = $query->whereRaw("format(" . $this->table . "." . $filters['field'] . ", 'dd-MM-yyyy HH:mm:ss') LIKE '%$filters[data]%'");
                         } else {
                             $query = $query->where($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
                         }
@@ -377,15 +385,14 @@ class PengembalianKasGantungHeader extends MyModel
                         foreach ($this->params['filters']['rules'] as $index => $filters) {
                             if ($filters['field'] == 'statuscetak') {
                                 $query = $query->orWhere('statuscetak.text', '=', $filters['data']);
-                            } 
-                            else if ($filters['field'] == 'bank') {
+                            } else if ($filters['field'] == 'bank') {
                                 $query = $query->orWhere('bank.namabank', 'LIKE', "%$filters[data]%");
                             } else if ($filters['field'] == 'coa') {
                                 $query = $query->orWhere('akunpusat.keterangancoa', 'LIKE', "%$filters[data]%");
                             } else if ($filters['field'] == 'tglbukti' || $filters['field'] == 'tglkasmasuk' || $filters['field'] == 'tgldari' || $filters['field'] == 'tglsampai' || $filters['field'] == 'tglbukacetak') {
-                                $query = $query->orWhereRaw("format(".$this->table . "." . $filters['field'].", 'dd-MM-yyyy') LIKE '%$filters[data]%'");
+                                $query = $query->orWhereRaw("format(" . $this->table . "." . $filters['field'] . ", 'dd-MM-yyyy') LIKE '%$filters[data]%'");
                             } else if ($filters['field'] == 'created_at' || $filters['field'] == 'updated_at') {
-                                $query = $query->orWhereRaw("format(".$this->table . "." . $filters['field'].", 'dd-MM-yyyy HH:mm:ss') LIKE '%$filters[data]%'");
+                                $query = $query->orWhereRaw("format(" . $this->table . "." . $filters['field'] . ", 'dd-MM-yyyy HH:mm:ss') LIKE '%$filters[data]%'");
                             } else {
                                 $query = $query->orWhere($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
                             }
@@ -427,5 +434,21 @@ class PengembalianKasGantungHeader extends MyModel
     public function paginate($query)
     {
         return $query->skip($this->params['offset'])->take($this->params['limit']);
+    }
+
+    public function getSisaEditPengembalianKasGantung($id,$nobukti){
+        $fetch = DB::table('kasgantungdetail')
+        ->from(
+            DB::raw("kasgantungdetail with (readuncommitted)")
+        )
+        ->select(DB::raw("kasgantungdetail.nobukti,
+        (SELECT (sum(kasgantungdetail.nominal) - coalesce(SUM(pengembaliankasgantungdetail.nominal),0)) 
+        FROM pengembaliankasgantungdetail WHERE pengembaliankasgantungdetail.kasgantung_nobukti= kasgantungdetail.nobukti) AS sisa"))
+        ->leftJoin(DB::raw("pengembaliankasgantungdetail with (readuncommitted)"), 'pengembaliankasgantungdetail.kasgantung_nobukti', 'kasgantungdetail.nobukti')
+        ->where("pengembaliankasgantungdetail.pengembaliankasgantung_id", $id)
+        ->where("kasgantungdetail.nobukti", $nobukti)
+        ->groupBy('kasgantungdetail.nobukti');
+
+        return $fetch->first();
     }
 }

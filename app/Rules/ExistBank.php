@@ -28,7 +28,7 @@ class ExistBank implements Rule
     public function passes($attribute, $value)
     {
         $bank = DB::table("bank")->from(DB::raw("bank with (readuncommitted)"))
-            ->where('id', $value)
+            ->where('id', request()->bank_id)
             ->first();
         if($bank == null){
             return false;

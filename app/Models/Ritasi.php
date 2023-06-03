@@ -276,6 +276,34 @@ class Ritasi extends MyModel
     {
         return $query->skip($this->params['offset'])->take($this->params['limit']);
     }
+    public function cekvalidasiaksi($nobukti)
+    {
+        $suratPengantar = DB::table('suratpengantar')
+            ->from(
+                DB::raw("suratpengantar as a with (readuncommitted)")
+            )
+            ->select(
+                'a.nobukti'
+            )
+            ->where('a.nobukti', '=', $nobukti)
+            ->first();
+        if (isset($suratPengantar)) {
+            $data = [
+                'kondisi' => true,
+                'keterangan' => 'Surat Pengantar',
+                'kodeerror' => 'TDT'
+            ];
+            goto selesai;
+        }
+       
+
+        $data = [
+            'kondisi' => false,
+            'keterangan' => '',
+        ];
+        selesai:
+        return $data;
+    }
 
 
 }

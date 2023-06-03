@@ -64,7 +64,7 @@ class UpdatePengeluaranTruckingHeaderRequest extends FormRequest
                 ->first();
 
 
-        $kodepengeluaran = $pengeluaranTrucking->kodepengeluaran;
+        $kodepengeluaran    = $pengeluaranTrucking->kodepengeluaran;
 
         $bankQueryId = DB::table('bank')->from(DB::raw('bank with (readuncommitted)'))->select('bank.id');
         $bankResults1 = $bankQueryId->get();

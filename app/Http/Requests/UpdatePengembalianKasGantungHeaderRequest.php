@@ -3,8 +3,11 @@
 namespace App\Http\Requests;
 
 use App\Http\Controllers\Api\ErrorController;
+use App\Models\PengembalianKasGantungHeader;
 use Illuminate\Foundation\Http\FormRequest;
 use App\Rules\DateTutupBuku;
+use App\Rules\DestroyPengembalianKasGantung;
+use Illuminate\Validation\Rule;
 
 class UpdatePengembalianKasGantungHeaderRequest extends FormRequest
 {
@@ -25,15 +28,45 @@ class UpdatePengembalianKasGantungHeaderRequest extends FormRequest
      */
     public function rules()
     {
+
+        $pengembalian = new PengembalianKasGantungHeader();
+        $getDataPengembalian = $pengembalian->findAll(request()->id);
+
+        $bank_id = $this->bank_id;
+        $rulesBank_id = [];
+        if ($bank_id != null) {
+            if ($bank_id == 0) {
+                $rulesBank_id = [
+                    'bank_id' => ['required', 'numeric', 'min:1', Rule::in($getDataPengembalian->bank_id)]
+                ];
+            }
+        } else if ($bank_id == null && $this->bank != '') {
+            $rulesBank_id = [
+                'bank_id' => ['required', 'numeric', 'min:1', Rule::in($getDataPengembalian->bank_id)]
+            ];
+        }
+
+        $tglbataseedit = date('Y-m-01', strtotime($getDataPengembalian->tgldari));
+        $tglbatasakhir = (date('Y') + 1) . '-01-01';
         $rules = [
+            'nobukti' => [Rule::in($getDataPengembalian), new DestroyPengembalianKasGantung()],
             'tglbukti' => [
-                'required','date_format:d-m-Y',
+                'required', 'date_format:d-m-Y',
+                'date_equals:' . date('d-m-Y', strtotime($getDataPengembalian->tglbukti)),
                 new DateTutupBuku()
             ],
-           
+
             "bank" => "required",
-            "tgldari" => "required",
-            "tglsampai" => "required",
+            'tgldari' => [
+                'required', 'date_format:d-m-Y',
+                'before_or_equal:' .$tglbatasakhir,
+                'after_or_equal:'.$tglbataseedit,
+            ],
+            "tglsampai" => [
+                "required", 'date_format:d-m-Y',
+                'before_or_equal:' . date('Y-m-d'),
+                'after_or_equal:' . $this->tgldari
+            ],
         ];
         $relatedRequests = [
             UpdatePengembalianKasGantungDetailRequest::class
@@ -42,22 +75,23 @@ class UpdatePengembalianKasGantungHeaderRequest extends FormRequest
         foreach ($relatedRequests as $relatedRequest) {
             $rules = array_merge(
                 $rules,
-                (new $relatedRequest)->rules()
+                (new $relatedRequest)->rules(),
+                $rulesBank_id
             );
         }
-        
+
         return $rules;
     }
-    public function messages() 
+    public function messages()
     {
         return [
-                'kasgantungdetail_id.required' => 'KASGANTUNG '.app(ErrorController::class)->geterror('WP')->keterangan,
-                'sisa.*.min' => 'SISA '.app(ErrorController::class)->geterror('NTM')->keterangan,
-                'nominal.*.numeric' => 'nominal harus '.app(ErrorController::class)->geterror('BTSANGKA')->keterangan,
-                'nominal.*.gt' => ':attribute ' .  app(ErrorController::class)->geterror('GT-ANGKA-0')->keterangan,
-                'tglbukti.date_format' => app(ErrorController::class)->geterror('DF')->keterangan,
-                'tgldari.date_format' => app(ErrorController::class)->geterror('DF')->keterangan,
-                'tglsampai.date_format' => app(ErrorController::class)->geterror('DF')->keterangan
+            'kasgantungdetail_id.required' => 'KASGANTUNG ' . app(ErrorController::class)->geterror('WP')->keterangan,
+            'sisa.*.min' => 'SISA ' . app(ErrorController::class)->geterror('NTM')->keterangan,
+            'nominal.*.numeric' => 'nominal harus ' . app(ErrorController::class)->geterror('BTSANGKA')->keterangan,
+            'nominal.*.gt' => ':attribute ' .  app(ErrorController::class)->geterror('GT-ANGKA-0')->keterangan,
+            'tglbukti.date_format' => app(ErrorController::class)->geterror('DF')->keterangan,
+            'tgldari.date_format' => app(ErrorController::class)->geterror('DF')->keterangan,
+            'tglsampai.date_format' => app(ErrorController::class)->geterror('DF')->keterangan
         ];
     }
 }

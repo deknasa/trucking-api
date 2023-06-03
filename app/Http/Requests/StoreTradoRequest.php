@@ -3,11 +3,15 @@
 namespace App\Http\Requests;
 
 use App\Http\Controllers\Api\ErrorController;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Storage;
 use App\Rules\NotDecimal;
 use App\Rules\ValidasiGambarTrado;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
+use App\Models\Parameter;
+use App\Http\Controllers\Api\ParameterController;
 
 class StoreTradoRequest extends FormRequest
 {
@@ -52,15 +56,22 @@ class StoreTradoRequest extends FormRequest
 
         });
 
+        $parameter = new Parameter();
+        $data = $parameter->getcombodata('STATUS AKTIF', 'STATUS AKTIF');
+        $data = json_decode($data, true);
+        foreach ($data as $item) {
+            $status[] = $item['id'];
+        } 
+
         return [
-            'kodetrado' => 'required',
-            'statusaktif' => 'required',
-            'tahun' => 'required',
+            'kodetrado' => 'required|unique:trado',
+            'statusaktif' => ['required', Rule::in($status)],
+            'tahun' => 'required|min:4|max:4',
             'merek' => 'required',
-            'norangka' => 'required',
-            'nomesin' => 'required',
+            'norangka' => 'required|unique:trado|max:20',
+            'nomesin' => 'required|unique:trado|max:20',
             'nama' => 'required',
-            'nostnk' => 'required',
+            'nostnk' => 'required|unique:trado|max:12',
             'alamatstnk' => 'required',
             'statusjenisplat' => 'required',
             'tglpajakstnk' => 'required',
@@ -70,10 +81,10 @@ class StoreTradoRequest extends FormRequest
             'warna' => 'required',
             'jenisbahanbakar' => 'required',
             'jumlahsumbu' => 'required',
-            'jumlahroda' => 'required',
+            'jumlahroda' => 'required|min:1|max:2',
             'model' => 'required',
-            'nobpkb' => 'required',
-            'jumlahbanserap' => 'required',
+            'nobpkb' => 'required|unique:trado|max:15',
+            'jumlahbanserap' => 'required|min:1|max:2',
             'statusgerobak' => 'required',
             'nominalplusborongan' => [new NotDecimal()],
             'phototrado' => [$ruleGambar, 'array'],
@@ -115,6 +126,30 @@ class StoreTradoRequest extends FormRequest
     public function messages()
     {
         return[
+            'tahun.min' => 'Min. 4 karakter',
+            'tahun.max' => 'Max. 4 karakter',
+
+            'norangka.min' => 'Min. 8 karakter',
+            'norangka.max' => 'Max. 20 karakter',
+
+            'nomesin.min' => 'Min. 8 karakter',
+            'nomesin.max' => 'Max. 20 karakter',
+
+            'kodetrado.min' => 'Min. 8 karakter',
+            'kodetrado.max' => 'Max. 12 karakter',
+
+            'nostnk.min' => 'Min. 8 karakter',
+            'nostnk.max' => 'Max. 12 karakter',
+            
+            'nobpkb.min' => 'Min. 8 karakter',
+            'nobpkb.max' => 'Max. 15 karakter',
+
+            'jumlahbanserap.min' => 'Min. 1 karakter',
+            'jumlahbanserap.max' => 'Max. 2 karakter',
+
+            'jumlahroda.min' => 'Min. 1 karakter',
+            'jumlahroda.max' => 'Max. 2 karakter',
+
             'photobpkb.*.image' => app(ErrorController::class)->geterror('WG')->keterangan,
             'photostnk.*.image' => app(ErrorController::class)->geterror('WG')->keterangan,
             'phototrado.*.image' => app(ErrorController::class)->geterror('WG')->keterangan

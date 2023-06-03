@@ -37,7 +37,7 @@ class DestroyUserRequest extends FormRequest
             'user' => 'required',
             'name' => 'required',
             // 'password' => 'required',
-            'karyawan_id' => 'required',
+            // 'karyawan_id' => 'required',
             'cabang_id' => 'required',
             // 'dashboard' => 'required',
             // 'statusaktif' => ['required', 'int', 'exists:parameter,id'],

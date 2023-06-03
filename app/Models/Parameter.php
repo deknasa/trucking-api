@@ -282,7 +282,8 @@ class Parameter extends MyModel
                 DB::raw("parameter with (readuncommitted)")
             )
             ->select (
-                'id'
+                'id',
+                'text'
             )
             ->Where('grp','=',$grp)
             ->Where('subgrp','=',$subgrp)
@@ -301,6 +302,16 @@ class Parameter extends MyModel
         return $query;
     }
 
+    public function getTutupBuku(){
+        $query = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))
+        ->select('text')
+        ->where('grp', 'TUTUP BUKU')
+        ->where('subgrp', 'TUTUP BUKU')
+        ->first();
+
+        return $query;
+    }
+
     public function getComboByGroup($grp) 
     {
         $query=DB::table('parameter')
@@ -312,6 +323,22 @@ class Parameter extends MyModel
             )
             ->Where('grp','=',$grp)
             ->get();
+
+            return $query;
+    }
+
+    public function getComboByGroupAndText($grp, $text) 
+    {
+        $query=DB::table('parameter')
+            ->from (
+                DB::raw("parameter with (readuncommitted)")
+            )
+            ->select (
+                'id'
+            )
+            ->Where('grp','=',$grp)
+            ->Where('text','=',$text)
+            ->first();
 
             return $query;
     }

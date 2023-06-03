@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\GetIndexHistoriPengeluaranRequest;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
@@ -16,7 +17,7 @@ class HistoriPengeluaranStokController extends Controller
      /**
      * @ClassName
      */
-    public function index(Request $request)
+    public function index(GetIndexHistoriPengeluaranRequest $request)
     {
             $HistoriPengeluaranStok = new HistoriPengeluaranStok();
 

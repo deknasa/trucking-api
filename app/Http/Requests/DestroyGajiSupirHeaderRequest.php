@@ -30,7 +30,10 @@ class DestroyGajiSupirHeaderRequest extends FormRequest
        
         return [
             'nobukti' => new DestroyGajiSupirNobukti(),
-            'tglbukti' => new DateTutupBuku()
+            'tglbukti' => [
+                'required','date_format:d-m-Y',
+                new DateTutupBuku()
+            ],
         ];
     }
 }

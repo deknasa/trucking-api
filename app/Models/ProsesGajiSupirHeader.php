@@ -1054,4 +1054,20 @@ class ProsesGajiSupirHeader extends MyModel
     {
         return $query->skip($this->params['offset'])->take($this->params['limit']);
     }
+
+    public function getSumBoronganForValidation($nobukti)
+    {
+        $bukti = "";
+        foreach ($nobukti as $key => $value) {
+            if ($key == 0) {
+                $bukti = $bukti . "'$value'";
+            } else {
+                $bukti = $bukti . ',' . "'$value'";
+            }
+        }
+        $fetch = GajiSupirHeader::from(DB::raw("gajisupirheader with (readuncommitted)"))
+            ->select(DB::raw("(SUM(uangmakanharian) + SUM(total)) as borongan, SUM(potonganpinjaman) as pinjamanpribadi, SUM(potonganpinjamansemua) as pinjamansemua, SUM(deposito) as deposito, SUM(bbm) as bbm, SUM(uangjalan) as uangjalan"))
+        ->whereRaw("gajisupirheader.nobukti in($bukti)");
+        return $fetch->first();
+    }
 }

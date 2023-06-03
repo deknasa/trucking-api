@@ -218,7 +218,7 @@ class ErrorController extends Controller
     {
         // dd($request->aco_id);
 
-        $temp = '##temp' . rand(1, 10000);
+        $temp = '##temp' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
         Schema::create($temp, function ($table) {
             $table->id();
             $table->string('keterangan', 50)->nullable();

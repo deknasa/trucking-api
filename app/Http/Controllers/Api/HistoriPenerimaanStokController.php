@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\GetIndexHistoriPenerimaanRequest;
 use Illuminate\Http\Request;
 
 
@@ -20,7 +21,7 @@ class HistoriPenerimaanStokController extends Controller
     /**
      * @ClassName
      */
-    public function index(Request $request)
+    public function index(GetIndexHistoriPenerimaanRequest $request)
     {
             $HistoriPenerimaanStok = new HistoriPenerimaanStok();
 

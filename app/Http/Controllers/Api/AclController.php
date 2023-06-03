@@ -433,7 +433,7 @@ class AclController extends Controller
             'sortorder' => $request->sortorder ?? 'asc',
         ];
 
-        $temp = '##temp' . rand(1, 10000);
+        $temp = '##temp' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
         Schema::create($temp, function ($table) {
             $table->id();
             $table->bigInteger('role_id')->nullable();
@@ -485,7 +485,7 @@ class AclController extends Controller
                 ->orderBy($temp . '.' . $params['sortname'],  $params['sortorder']);
         }
         // 
-        $temp = '##temp' . rand(1, 10000);
+        $temp = '##temp' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
         Schema::create($temp, function ($table) {
             $table->id();
             $table->bigInteger('role_id')->nullable();
@@ -584,7 +584,7 @@ class AclController extends Controller
             'grp' => $request->grp ?? '',
             'subgrp' => $request->subgrp ?? '',
         ];
-        $temp = '##temp' . rand(1, 10000);
+        $temp = '##temp' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
         if ($params['status'] == 'entry') {
             $query = Parameter::select('id', 'text as keterangan')
                 ->where('grp', "=", $params['grp'])

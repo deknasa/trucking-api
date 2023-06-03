@@ -28,17 +28,21 @@ class UpdateKasGantungHeaderRequest extends FormRequest
      */
     public function rules()
     {
+        
+        $kasGantung = new KasGantungHeader();
+        $getDataKasgantung = $kasGantung->findUpdate(request()->id);
+
         $bank_id = $this->bank_id;
         $rulesBank_id = [];
         if ($bank_id != null) {
             if ($bank_id == 0) {
                 $rulesBank_id = [
-                    'bank_id' => ['required', 'numeric', 'min:1']
+                    'bank_id' => ['required', 'numeric', 'min:1',Rule::in($getDataKasgantung->bank_id)]
                 ];
             }
         } else if ($bank_id == null && $this->bank != '') {
             $rulesBank_id = [
-                'bank_id' => ['required', 'numeric', 'min:1']
+                'bank_id' => ['required', 'numeric', 'min:1',Rule::in($getDataKasgantung->bank_id)]
             ];
         }
 
@@ -62,8 +66,6 @@ class UpdateKasGantungHeaderRequest extends FormRequest
             ];
         }
 
-        $kasGantung = new KasGantungHeader();
-        $getDataKasgantung = $kasGantung->findUpdate(request()->id);
         $rules = [
             'nobukti' => [Rule::in($getDataKasgantung), new DestroyKasGantung()],
             "tglbukti" => [

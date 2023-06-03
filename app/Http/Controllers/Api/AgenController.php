@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Exceptions\NotDeletableModel;
 use App\Http\Controllers\Controller;
+use App\Http\Requests\DestroyAgenRequest;
 use App\Models\Agen;
 use App\Http\Requests\StoreAgenRequest;
 use App\Http\Requests\StoreLogTrailRequest;

@@ -28,13 +28,13 @@ class ExistHutangHeader implements Rule
     public function passes($attribute, $value)
     {
         $hutangheader = DB::table("hutangheader")->from(DB::raw("hutangheader with (readuncommitted)"))
-        ->where('id', $value)
-        ->first();
-    if ($hutangheader == null) {
-        return false;
-    } else {
-        return true;
-    }
+            ->where('id', $value)
+            ->first();
+        if ($hutangheader == null) {
+            return false;
+        } else {
+            return true;
+        }
     }
 
     /**

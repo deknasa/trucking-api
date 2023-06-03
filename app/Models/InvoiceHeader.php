@@ -70,6 +70,38 @@ class InvoiceHeader extends MyModel
         return $data;
     }
 
+    
+    public function cekvalidasiaksi($nobukti)
+    {
+        $hutangBayar = DB::table('invoiceheader')
+            ->from(
+                DB::raw("invoiceheader as a with (readuncommitted)")
+            )
+            ->select(
+                'a.nobukti'
+            )
+            ->join(DB::raw("jurnalumumpusatheader b with (readuncommitted)"),'a.piutang_nobukti','b.nobukti')
+            ->where('a.nobukti', '=', $nobukti)
+            ->first();
+        if (isset($hutangBayar)) {
+            $data = [
+                'kondisi' => true,
+                'keterangan' => 'Approval Jurnal',
+                'kodeerror' => 'SATL'
+            ];
+            goto selesai;
+        }
+
+        
+
+        $data = [
+            'kondisi' => false,
+            'keterangan' => '',
+        ];
+        selesai:
+        return $data;
+    }
+
     public function findAll($id)
     {
         $query = InvoiceHeader::from(DB::raw("invoiceheader with (readuncommitted)"))

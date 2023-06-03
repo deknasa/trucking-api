@@ -37,7 +37,7 @@ class StoreUserRequest extends FormRequest
             'user' => ['required', 'unique:user,user'],
             'name' => 'required|unique:user',
             'password' => 'required',
-            'karyawan_id' => 'required',
+            // 'karyawan_id' => 'required',
             'cabang_id' => 'required',
             // 'dashboard' => 'required',
             // 'statusaktif' => ['required', 'int', 'exists:parameter,id'],

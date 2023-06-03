@@ -3,6 +3,8 @@
 namespace App\Http\Requests;
 
 use App\Http\Controllers\Api\ErrorController;
+use App\Rules\CekMaxBayarPengembalianKasgantung;
+use App\Rules\CekMinusSisaPengembalianKasgantung;
 use App\Rules\KeteranganInput;
 use App\Rules\PreventInputType;
 use Illuminate\Foundation\Http\FormRequest;
@@ -28,14 +30,10 @@ class StorePengembalianKasGantungDetailRequest extends FormRequest
     {
         return [
             'kasgantungdetail_id' => 'required',
-            'nominal' => 'required|array',
-            'nominal.*' => 'required|numeric|gt:0',
-            'keterangandetail' => 'required|array',
+            'nominal.*' => ['required','numeric','gt:0', new CekMaxBayarPengembalianKasgantung()],
             'keterangandetail.*' => 'required',
-            'coadetail' => 'required|array',
             'coadetail.*' => 'required',
-            'sisa' => 'required|array',
-            'sisa.*' => 'required|numeric|min:0',
+            'sisa.*' => ['required','numeric','min:0', new CekMinusSisaPengembalianKasgantung()],
         ];
     }
 

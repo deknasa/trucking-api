@@ -5,6 +5,8 @@ namespace App\Http\Requests;
 use App\Http\Controllers\Api\ErrorController;
 use Illuminate\Foundation\Http\FormRequest;
 use App\Rules\DateTutupBuku;
+use App\Rules\ExistAgen;
+use App\Rules\ValidasiDetail;
 
 class StoreInvoiceExtraHeaderRequest extends FormRequest
 {
@@ -26,14 +28,14 @@ class StoreInvoiceExtraHeaderRequest extends FormRequest
     public function rules()
     {
         $rules = [
-            "agen"=>"required",
-            // "pelanggan"=>"required",
             'tglbukti' => [
-                'required','date_format:d-m-Y',
-                new DateTutupBuku()
+                'required', 'date_format:d-m-Y',
+                new DateTutupBuku(),
+                'before_or_equal:' . date('d-m-Y'),
+
             ],
+
         ];
-        
         $relatedRequests = [
             StoreInvoiceExtraDetailRequest::class
         ];
@@ -44,26 +46,85 @@ class StoreInvoiceExtraHeaderRequest extends FormRequest
                 (new $relatedRequest)->rules()
             );
         }
-        
-        return $rules;
+
+        $agen_id = $this->agen_id;
+        $rulesagen_id = [];
+        if ($agen_id != '' && $this->agen != '') {
+            $rulesagen_id = [
+                'agen' => [
+                    new ExistAgen(),
+                ]
+            ];
+        } else if ($agen_id != null) {
+            if ($agen_id == 0) {
+
+                $rulesagen_id = [
+                    'agen_id' => [
+                        'required',
+                        'numeric',
+                        'min:1',
+                        new ExistAgen(),
+
+                    ]
+
+                ];
+            } else {
+                if ($this->agen == '') {
+
+                    $rulesagen_id = [
+                        'agen' => [
+                            'required',
+                            new ExistAgen(),
+                        ]
+                    ];
+                }
+            }
+        } else if ($agen_id == null && $this->agen != '') {
+
+            $rulesagen_id = [
+                'agen_id' => [
+                    'required',
+                    'numeric',
+                    'min:1',
+                    new ExistAgen(),
+                ]
+            ];
+        } else {
+            $rulesagen_id = [
+                'agen' => [
+                    'required',
+                    'numeric',
+                    'min:1',
+                    new ExistAgen(),
+                ]
+            ];
+        }
+
+
+        $rule = array_merge(
+            $rules,
+            $rulesagen_id
+        );
+
+        return $rule;
     }
-    
+
     public function attributes()
     {
         $attributes = [
+            'tglbukti' => 'Tanggal Bukti',
             'nominal_detail.*' => 'Harga',
             'keterangan_detail.*' => 'Keterangan',
         ];
-        
+
         return $attributes;
     }
 
-    public function messages() 
+    public function messages()
     {
         return [
             'nominal_detail.*.gt' => 'Harga Tidak Boleh Kosong dan Harus Lebih Besar Dari 0',
             'tglbukti.date_format' => app(ErrorController::class)->geterror('DF')->keterangan,
         ];
     }
-
 }

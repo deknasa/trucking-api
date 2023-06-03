@@ -28,7 +28,7 @@ class ExistAbsensiSupirHeader implements Rule
     public function passes($attribute, $value)
     {
         $absensisupirheader = DB::table("absensisupirheader")->from(DB::raw("absensisupirheader with (readuncommitted)"))
-        ->where('id', $value)
+        ->where('nobukti', $value)
         ->first();
     if ($absensisupirheader == null) {
         return false;

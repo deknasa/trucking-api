@@ -11,6 +11,7 @@ use App\Http\Requests\StoreInvoiceHeaderRequest;
 use App\Http\Requests\StoreJurnalUmumDetailRequest;
 use App\Http\Requests\StoreJurnalUmumHeaderRequest;
 use App\Http\Requests\UpdateInvoiceHeaderRequest;
+use App\Http\Requests\DestroyInvoiceHeaderRequest;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -59,15 +60,15 @@ class InvoiceHeaderController extends Controller
 
         try {
 
-            if ($request->nominalretribusi != '') {
-                $request->validate([
-                    'nominalretribusi' => 'required|array',
-                    'nominalretribusi.*' => 'required|numeric|gt:0'
-                ], [
-                    'nominalretribusi.*.numeric' => 'nominal retribusi harus ' . app(ErrorController::class)->geterror('BTSANGKA')->keterangan,
-                    'nominalretribusi.*.gt' => 'nominal retribusi Tidak Boleh Kosong dan Harus Lebih Besar Dari 0'
-                ]);
-            }
+            // if ($request->nominalretribusi != '') {
+            //     $request->validate([
+            //         'nominalretribusi' => 'required|array',
+            //         'nominalretribusi.*' => 'required|numeric|gt:0'
+            //     ], [
+            //         'nominalretribusi.*.numeric' => 'nominal retribusi harus ' . app(ErrorController::class)->geterror('BTSANGKA')->keterangan,
+            //         'nominalretribusi.*.gt' => 'nominal retribusi Tidak Boleh Kosong dan Harus Lebih Besar Dari 0'
+            //     ]);
+            // }
             $group = 'INVOICE BUKTI';
             $subgroup = 'INVOICE BUKTI';
 
@@ -459,7 +460,7 @@ class InvoiceHeaderController extends Controller
     /**
      * @ClassName
      */
-    public function destroy(Request $request, $id)
+    public function destroy(DestroyInvoiceHeaderRequest $request, $id)
     {
         DB::beginTransaction();
 
@@ -590,7 +591,7 @@ class InvoiceHeaderController extends Controller
             'grp' => $request->grp ?? '',
             'subgrp' => $request->subgrp ?? '',
         ];
-        $temp = '##temp' . rand(1, 10000);
+        $temp = '##temp' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
         if ($params['status'] == 'entry') {
             $query = Parameter::select('id', 'text as keterangan')
                 ->where('grp', "=", $params['grp'])
@@ -806,8 +807,11 @@ class InvoiceHeaderController extends Controller
             $query = Error::from(DB::raw("error with (readuncommitted)"))
                 ->select('keterangan')
                 ->whereRaw("kodeerror = 'SAP'")
-                ->get();
-            $keterangan = $query['0'];
+                ->first();
+            // $keterangan = $query['0'];
+            $keterangan = [
+                'keterangan' => 'No Bukti '.$pengeluaran->nobukti.' '.$query->keterangan
+            ];
             $data = [
                 'message' => $keterangan,
                 'errors' => 'sudah approve',
@@ -820,8 +824,12 @@ class InvoiceHeaderController extends Controller
             $query = Error::from(DB::raw("error with (readuncommitted)"))
                 ->select('keterangan')
                 ->whereRaw("kodeerror = 'SDC'")
-                ->get();
-            $keterangan = $query['0'];
+                ->first();
+            // $keterangan = $query['0'];
+            //  dd($query->keterangan);
+            $keterangan = [
+                'keterangan' => 'No Bukti '.$pengeluaran->nobukti.' '.$query->keterangan
+            ];
             $data = [
                 'message' => $keterangan,
                 'errors' => 'sudah cetak',

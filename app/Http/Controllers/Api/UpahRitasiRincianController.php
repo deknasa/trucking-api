@@ -16,6 +16,7 @@ class UpahRitasiRincianController extends Controller
 
     public function index(Request $request)
     {
+        
         $params = [
             'id' => $request->id,
             'upahritasi_id' => $request->upahritasi_id,
@@ -46,30 +47,25 @@ class UpahRitasiRincianController extends Controller
             }
 
             if ($params['forReport']) {
+              
                 $query->select(
                     'kotadari.keterangan as kotadari',
                     'kotasampai.keterangan as kotasampai',
                     'header.jarak',
                     'zona.keterangan as zona',
-                    'header.tglmulaiberlaku',
-                    'header.tglakhirberlaku',
-                    'statusluarkota.text as statusluarkota',
                     'container.keterangan as container_id',
                     'detail.nominalsupir',
-                    'detail.nominalkenek',
-                    'detail.nominalkomisi',
-                    'detail.nominaltol',
                     'detail.liter',
                 )
                     ->leftJoin(DB::raw("upahritasi as header with (readuncommitted)"), 'header.id', 'detail.upahritasi_id') 
                     ->leftJoin(DB::raw("kota as kotadari with (readuncommitted)"), 'kotadari.id', '=', 'header.kotadari_id')
                     ->leftJoin(DB::raw("kota as kotasampai with (readuncommitted)"), 'kotasampai.id', '=', 'header.kotasampai_id')
                     ->leftJoin(DB::raw("zona with (readuncommitted)"), 'header.zona_id', 'zona.id')
-                    ->leftJoin(DB::raw("parameter as statusluarkota with (readuncommitted)"), 'header.statusluarkota', 'statusluarkota.id')
                     ->leftJoin(DB::raw("container with (readuncommitted)"), 'container.id', 'detail.container_id');
 
                 $upahritasi = $query->get();
             } else {
+                dd($request->forReport);
                 $query->select(
                     'container.keterangan as container_id',
                     'detail.nominalsupir',

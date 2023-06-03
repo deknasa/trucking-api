@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\GetKartuStokRequest;
 use App\Models\Gandengan;
 use App\Models\Gudang;
 use App\Models\KartuStok;
@@ -17,10 +18,11 @@ class KartuStokController extends Controller
     /**
      * @ClassName
      */
-    public function index(Request $request)
+    public function index(GetKartuStokRequest $request)
     {
-        // dd('test');
             $kartuStok = new KartuStok();
+
+           
 
             
             return response([

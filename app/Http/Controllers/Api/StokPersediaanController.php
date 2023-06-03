@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\GetStokPersediaanRequest;
 use App\Models\StokPersediaan;
 use App\Http\Requests\StoreStokPersediaanRequest;
 use App\Http\Requests\UpdateStokPersediaanRequest;
@@ -14,7 +15,7 @@ class StokPersediaanController extends Controller
     /**
      * @ClassName
      */
-    public function index(Request $request)
+    public function index(GetStokPersediaanRequest $request)
     {
             $stokPersediaan = new StokPersediaan();
             

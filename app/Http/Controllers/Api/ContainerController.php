@@ -188,7 +188,7 @@ class ContainerController extends Controller
     /**
      * @ClassName 
      */
-    public function destroy(DestroyContainerRequest $request, $id)
+    public function destroy(Request $request, $id)
     {
         DB::beginTransaction();
         $container = new Container();
@@ -251,7 +251,7 @@ class ContainerController extends Controller
             'subgrp' => $request->subgrp ?? '',
         ];
 
-        $temp = '##temp' . rand(1, 10000);
+        $temp = '##temp' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
         if ($params['status'] == 'entry') {
             $query = Parameter::select('id', 'text as keterangan')
                 ->where('grp', "=", $params['grp'])
@@ -302,7 +302,9 @@ class ContainerController extends Controller
 
 
             $containers[$i]['statusaktif'] = $statusaktif;
-
+            
+            $nominalsumbangan = number_format($params['nominalsumbangan'], 2, ',', '.');
+            $containers[$i]['nominalsumbangan'] = $nominalsumbangan;
         
             $i++;
 
