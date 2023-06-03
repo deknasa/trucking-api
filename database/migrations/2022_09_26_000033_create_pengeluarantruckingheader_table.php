@@ -24,11 +24,13 @@ class CreatePengeluarantruckingheaderTable extends Migration
             $table->unsignedBigInteger('pengeluarantrucking_id')->nullable();
             $table->unsignedBigInteger('bank_id')->nullable();
             $table->unsignedBigInteger('supir_id')->nullable();
+            $table->unsignedBigInteger('trado_id')->nullable();
             $table->integer('statusposting')->length(11)->nullable();
             $table->date('periodedari')->nullable();            
             $table->date('periodesampai')->nullable();            
             $table->string('coa',50)->nullable();
             $table->string('pengeluaran_nobukti',50)->nullable();
+            $table->string('pengeluarantrucking_nobukti',50)->nullable();
             $table->unsignedBigInteger('statusformat')->nullable();            
             $table->integer('statuscetak')->Length(11)->nullable();
             $table->string('userbukacetak',50)->nullable();
