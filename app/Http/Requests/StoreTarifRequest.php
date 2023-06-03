@@ -5,8 +5,14 @@ namespace App\Http\Requests;
 use App\Http\Controllers\Api\ErrorController;
 use App\Models\Parameter;
 use App\Rules\UniqueTarif;
+use App\Rules\ExistKota;
+use App\Rules\ExistTarif;
+use App\Rules\ExistUpahSupir;
+use App\Rules\ExistZona;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
+use App\Rules\UniqueTarifEdit;
+use App\Rules\ValidasiTujuanTarifDariUpahSupir;
 
 class StoreTarifRequest extends FormRequest
 {
@@ -50,20 +56,12 @@ class StoreTarifRequest extends FormRequest
         $kota_id = $this->kota_id;
         $rulesKota_id = [];
         if ($kota_id != null) {
-            if ($kota_id == 0) {
-                $rulesKota_id = [
-                    'kota_id' => 'required|numeric|min:1'
-                ];
-            } else {
-                if ($this->kota == '') {
-                    $rulesKota_id = [
-                        'kota' => 'required',
-                    ];
-                }
-            }
+            $rulesKota_id = [
+                'kota_id' => ['required', 'numeric', 'min:1', new ExistKota()],
+            ];
         } else if ($kota_id == null && $this->kota != '') {
             $rulesKota_id = [
-                'kota_id' => ['required', 'numeric', 'min:1'],
+                'kota_id' => ['required', 'numeric', 'min:1', new ExistKota()],
             ];
         }
 
@@ -72,7 +70,7 @@ class StoreTarifRequest extends FormRequest
         if ($parent_id != null) {
             if ($parent_id == 0) {
                 $rulesParent_id = [
-                    'parent_id' => ['required', 'numeric', 'min:1']
+                    'parent_id' => ['required', 'numeric', 'min:1', new ExistTarif()]
                 ];
             } else {
                 if ($this->parent == '') {
@@ -83,7 +81,7 @@ class StoreTarifRequest extends FormRequest
             }
         } else if ($parent_id == null && $this->parent != '') {
             $rulesParent_id = [
-                'parent_id' => ['required', 'numeric', 'min:1']
+                'parent_id' => ['required', 'numeric', 'min:1', new ExistTarif()]
             ];
         }
 
@@ -92,7 +90,7 @@ class StoreTarifRequest extends FormRequest
         if ($upahsupir_id != null) {
             if ($upahsupir_id == 0) {
                 $rulesUpahSupir_id = [
-                    'upahsupir_id' => ['required', 'numeric', 'min:1']
+                    'upahsupir_id' => ['required', 'numeric', 'min:1', new ExistUpahSupir()]
                 ];
             } else {
                 if ($this->upahsupir == '') {
@@ -103,7 +101,7 @@ class StoreTarifRequest extends FormRequest
             }
         } else if ($upahsupir_id == null && $this->upahsupir != '') {
             $rulesUpahSupir_id = [
-                'upahsupir_id' => ['required', 'numeric', 'min:1']
+                'upahsupir_id' => ['required', 'numeric', 'min:1', new ExistUpahSupir()]
             ];
         }
 
@@ -112,7 +110,7 @@ class StoreTarifRequest extends FormRequest
         if ($zona_id != null) {
             if ($zona_id == 0) {
                 $rulesZona_id = [
-                    'zona_id' => ['required', 'numeric', 'min:1']
+                    'zona_id' => ['required', 'numeric', 'min:1', new ExistZona()]
                 ];
             } else {
                 if ($this->zona == '') {
@@ -123,12 +121,12 @@ class StoreTarifRequest extends FormRequest
             }
         } else if ($zona_id == null && $this->zona != '') {
             $rulesZona_id = [
-                'zona_id' => ['required', 'numeric', 'min:1']
+                'zona_id' => ['required', 'numeric', 'min:1', new ExistZona()]
             ];
         }
 
         $rules = [
-            'tujuan' => ['required', new UniqueTarif()],
+            'tujuan' =>  ['required', new UniqueTarifEdit(), new ValidasiTujuanTarifDariUpahSupir()],
             'statusaktif' => ['required', Rule::in($statusAktif)],
             'statussistemton' => ['required', Rule::in($statusTon)],
             'tglmulaiberlaku' => [
@@ -136,6 +134,7 @@ class StoreTarifRequest extends FormRequest
                 'after_or_equal:' . $tglbatasawal,
                 'before:' . $tglbatasakhir,
             ],
+            'kota' => 'required',
             'statuspenyesuaianharga' => ['required', Rule::in($statusPenyesuaian)],
         ];
 

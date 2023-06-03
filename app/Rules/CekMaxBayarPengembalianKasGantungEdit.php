@@ -29,9 +29,13 @@ class CekMaxBayarPengembalianKasGantungEdit implements Rule
     {
         $attribute = substr($attribute,8);
         $nobukti = request()->kasgantung_nobukti[$attribute];
+
         $kasgantung = new PengembalianKasGantungHeader();
         $getKasgantung = $kasgantung->getSisaEditPengembalianKasGantung(request()->id,$nobukti);
-        if($value > $getKasgantung->sisa){
+
+        $totalAwal = $getKasgantung->sisa + $value;
+        //dd($totalAwal, $getKasgantung->sisa, $value);
+        if((float)$value > (float)$totalAwal){
             return false;
         }else{
             return true;

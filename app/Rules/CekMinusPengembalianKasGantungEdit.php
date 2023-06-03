@@ -29,9 +29,17 @@ class CekMinusPengembalianKasGantungEdit implements Rule
     {
         $attribute = substr($attribute,5);
         $nobukti = request()->kasgantung_nobukti[$attribute];
+        $bayar = (request()->nominal[$attribute] == 0)? 0 : request()->nominal[$attribute];
+        
         $kasgantung = new PengembalianKasGantungHeader();
-        $getKasgantung = $kasgantung->getSisaEditPengembalianKasGantung(request()->id,$nobukti);
-        if($value > $getKasgantung->sisa){
+        
+        $getKasgantung = $kasgantung->getMinusSisaPengembalian($nobukti);
+        //dd($nobukti, $bayar, $getKasgantung->nominal);
+
+        $totalAwal = $getKasgantung->nominal - $bayar;
+        //dd($totalAwal);
+
+        if($totalAwal < 0){
             return false;
         }else{
             return true;

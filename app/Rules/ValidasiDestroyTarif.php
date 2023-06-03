@@ -29,9 +29,9 @@ class ValidasiDestroyTarif implements Rule
         $tarif = new Tarif();
         $cekdata = $tarif->cekValidasi(request()->id);
         if($cekdata['kondisi']){
-          return true;
+          return false;
         }
-        return false;
+        return true;
     }
 
     /**

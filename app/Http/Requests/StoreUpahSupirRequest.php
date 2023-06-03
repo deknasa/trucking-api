@@ -6,6 +6,10 @@ use Illuminate\Foundation\Http\FormRequest;
 use App\Http\Controllers\Api\ParameterController;
 use App\Http\Controllers\Api\ErrorController;
 use App\Models\Parameter;
+use App\Rules\ExistKota;
+use App\Rules\ExistTarif;
+use App\Rules\ExistUpahSupir;
+use App\Rules\ExistZona;
 use App\Rules\UniqueUpahSupir;
 use App\Rules\UniqueUpahSupirDari;
 use App\Rules\UniqueUpahSupirSampai;
@@ -41,13 +45,18 @@ class StoreUpahSupirRequest extends FormRequest
         foreach ($dataLuarKota as $item) {
             $statusLuarKota[] = $item['id'];
         }
+        $dataSimpanKandang = $parameter->getcombodata('STATUS SIMPAN KANDANG', 'STATUS SIMPAN KANDANG');
+        $dataSimpanKandang = json_decode($dataSimpanKandang, true);
+        foreach ($dataSimpanKandang as $item) {
+            $statusSimpanKandang[] = $item['id'];
+        }
 
         $parent_id = $this->parent_id;
         $rulesParent_id = [];
         if ($parent_id != null) {
             if ($parent_id == 0) {
                 $rulesParent_id = [
-                    'parent_id' => ['required', 'numeric', 'min:1']
+                    'parent_id' => ['required', 'numeric', 'min:1', new ExistUpahSupir()]
                 ];
             } else {
                 if ($this->parent == '') {
@@ -58,7 +67,7 @@ class StoreUpahSupirRequest extends FormRequest
             }
         } else if ($parent_id == null && $this->parent != '') {
             $rulesParent_id = [
-                'parent_id' => ['required', 'numeric', 'min:1']
+                'parent_id' => ['required', 'numeric', 'min:1', new ExistUpahSupir()]
             ];
         }
 
@@ -67,7 +76,7 @@ class StoreUpahSupirRequest extends FormRequest
         if ($tarif_id != null) {
             if ($tarif_id == 0) {
                 $rulesTarif_id = [
-                    'tarif_id' => ['required', 'numeric', 'min:1']
+                    'tarif_id' => ['required', 'numeric', 'min:1', new ExistTarif()]
                 ];
             } else {
                 if ($this->tarif == '') {
@@ -78,7 +87,7 @@ class StoreUpahSupirRequest extends FormRequest
             }
         } else if ($tarif_id == null && $this->tarif != '') {
             $rulesTarif_id = [
-                'tarif_id' => ['required', 'numeric', 'min:1']
+                'tarif_id' => ['required', 'numeric', 'min:1', new ExistTarif()]
             ];
         }
 
@@ -87,7 +96,7 @@ class StoreUpahSupirRequest extends FormRequest
         if ($zona_id != null) {
             if ($zona_id == 0) {
                 $rulesZona_id = [
-                    'zona_id' => ['required', 'numeric', 'min:1']
+                    'zona_id' => ['required', 'numeric', 'min:1', new ExistZona()]
                 ];
             } else {
                 if ($this->zona == '') {
@@ -98,7 +107,7 @@ class StoreUpahSupirRequest extends FormRequest
             }
         } else if ($zona_id == null && $this->zona != '') {
             $rulesZona_id = [
-                'zona_id' => ['required', 'numeric', 'min:1']
+                'zona_id' => ['required', 'numeric', 'min:1', new ExistZona()]
             ];
         }
         
@@ -107,12 +116,12 @@ class StoreUpahSupirRequest extends FormRequest
         if ($kotadari_id != null) {
             if ($kotadari_id == 0) {
                 $rulesKotaDari_id = [
-                    'kotadari_id' => ['required', 'numeric', 'min:1']
+                    'kotadari_id' => ['required', 'numeric', 'min:1', new ExistKota()]
                 ];
             } 
         } else if ($kotadari_id == null && $this->kotadari != '') {
             $rulesKotaDari_id = [
-                'kotadari_id' => ['required', 'numeric', 'min:1']
+                'kotadari_id' => ['required', 'numeric', 'min:1', new ExistKota()]
             ];
         }
 
@@ -121,12 +130,12 @@ class StoreUpahSupirRequest extends FormRequest
         if ($kotasampai_id != null) {
             if ($kotasampai_id == 0) {
                 $rulesKotaSampai_id = [
-                    'kotasampai_id' => ['required', 'numeric', 'min:1', new UniqueUpahSupirSampai()]
+                    'kotasampai_id' => ['required', 'numeric', 'min:1', new UniqueUpahSupirSampai(), new ExistKota()]
                 ];
             } 
         } else if ($kotasampai_id == null && $this->kotasampai != '') {
             $rulesKotaSampai_id = [
-                'kotasampai_id' => ['required', 'numeric', 'min:1', new UniqueUpahSupirSampai()]
+                'kotasampai_id' => ['required', 'numeric', 'min:1', new UniqueUpahSupirSampai(), new ExistKota()]
             ];
         }
 
@@ -140,6 +149,7 @@ class StoreUpahSupirRequest extends FormRequest
             'jarak' => ['required','numeric','gt:0','max:'. (new ParameterController)->getparamid('BATAS KM UPAH SUPIR','BATAS KM UPAH SUPIR')->text],
             'statusaktif' => ['required', Rule::in($statusAktif)],
             'statusluarkota' => ['required', Rule::in($statusLuarKota)],
+            'statussimpankandang' => ['required', Rule::in($statusSimpanKandang)],
             'tglmulaiberlaku' => ['required','date_format:d-m-Y',
                 'before:'.$tglBatasAkhir,
                 'after_or_equal:'.$tglbatasawal],

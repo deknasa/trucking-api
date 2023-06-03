@@ -30,10 +30,14 @@ class CekMinusSisaPelunasanPiutangEdit implements Rule
     {
         $attribute = substr($attribute,5);
         $nobukti = request()->piutang_nobukti[$attribute];
+        $bayar = (request()->bayar[$attribute] == '') ? 0 : request()->bayar[$attribute];
+        $potongan = (request()->potongan[$attribute] == '') ? 0 : request()->potongan[$attribute];
+        // 
         $piutang = new PelunasanPiutangHeader();
-        $getPiutang = $piutang->getSisaEditPelunasanValidasi(request()->id, $nobukti);
-        $totalAwal = $getPiutang->sisa + $getPiutang->nominal + $getPiutang->potongan;
-        if($value > $totalAwal){
+        $getPiutang = $piutang->getMinusSisaPelunasan($nobukti);
+        
+        $totalAwal = $getPiutang->nominal - $bayar - $potongan;
+        if($totalAwal < 0){
             return false;
         }else{
             return true;

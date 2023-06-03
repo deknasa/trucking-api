@@ -259,7 +259,11 @@ class PengembalianKasGantungHeader extends MyModel
         DB::table($temp)->insertUsing(['pengembaliankasgantungheader_id', 'nobukti','tglbukti','keterangan','coa', 'sisa', 'bayar'], $pengembalian);
 
         $pinjaman = DB::table($tempAll)->from(DB::raw("$tempAll with (readuncommitted)"))
-            ->select(DB::raw("null as pengembaliankasgantungheader_id,nobukti,tglbukti,null as keterangan, null as coa,sisa, 0 as bayar"));
+            ->select(DB::raw("null as pengembaliankasgantungheader_id,nobukti,tglbukti,null as keterangan, null as coa,sisa, 0 as bayar"))
+            ->where(function ($query) use ($tempAll) {
+                $query->whereRaw("$tempAll.sisa != 0")
+                    ->orWhereRaw("$tempAll.sisa is null");
+            });
         DB::table($temp)->insertUsing(['pengembaliankasgantungheader_id', 'nobukti','tglbukti','keterangan','coa', 'sisa', 'bayar'], $pinjaman);
 
         $data = DB::table($temp)->from(DB::raw("$temp with (readuncommitted)"))
@@ -435,7 +439,7 @@ class PengembalianKasGantungHeader extends MyModel
     {
         return $query->skip($this->params['offset'])->take($this->params['limit']);
     }
-
+    
     public function getSisaEditPengembalianKasGantung($id,$nobukti){
         $fetch = DB::table('kasgantungdetail')
         ->from(
@@ -443,12 +447,20 @@ class PengembalianKasGantungHeader extends MyModel
         )
         ->select(DB::raw("kasgantungdetail.nobukti,
         (SELECT (sum(kasgantungdetail.nominal) - coalesce(SUM(pengembaliankasgantungdetail.nominal),0)) 
-        FROM pengembaliankasgantungdetail WHERE pengembaliankasgantungdetail.kasgantung_nobukti= kasgantungdetail.nobukti) AS sisa"))
-        ->leftJoin(DB::raw("pengembaliankasgantungdetail with (readuncommitted)"), 'pengembaliankasgantungdetail.kasgantung_nobukti', 'kasgantungdetail.nobukti')
-        ->where("pengembaliankasgantungdetail.pengembaliankasgantung_id", $id)
+        FROM pengembaliankasgantungdetail
+        WHERE pengembaliankasgantungdetail.kasgantung_nobukti= kasgantungdetail.nobukti) AS sisa"))
         ->where("kasgantungdetail.nobukti", $nobukti)
         ->groupBy('kasgantungdetail.nobukti');
-
+        
         return $fetch->first();
+    }
+
+    public function getMinusSisaPengembalian($nobukti){
+        $query = DB::table("kasgantungdetail")->from(DB::raw("kasgantungdetail with (readuncommitted)"))
+        ->select(DB::raw("SUM(nominal) as nominal"))
+        ->where('nobukti', $nobukti)
+        ->first($nobukti);
+
+        return $query;
     }
 }
