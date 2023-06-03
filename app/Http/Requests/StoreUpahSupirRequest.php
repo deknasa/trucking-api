@@ -13,6 +13,7 @@ use App\Rules\ExistZona;
 use App\Rules\UniqueUpahSupir;
 use App\Rules\UniqueUpahSupirDari;
 use App\Rules\UniqueUpahSupirSampai;
+use App\Rules\ValidasiDariSimpanKandangUpahSupir;
 use Illuminate\Validation\Rule;
 
 class StoreUpahSupirRequest extends FormRequest
@@ -144,7 +145,7 @@ class StoreUpahSupirRequest extends FormRequest
         $tglbatasawal = $getBatas->text;
         $tglBatasAkhir = (date('Y') + 1) . '-01-01';
         $rules =  [
-            'kotadari' => ['required'],
+            'kotadari' => ['required', new ValidasiDariSimpanKandangUpahSupir()],
             'kotasampai' => ['required',new UniqueUpahSupirSampai()],
             'jarak' => ['required','numeric','gt:0','max:'. (new ParameterController)->getparamid('BATAS KM UPAH SUPIR','BATAS KM UPAH SUPIR')->text],
             'statusaktif' => ['required', Rule::in($statusAktif)],
