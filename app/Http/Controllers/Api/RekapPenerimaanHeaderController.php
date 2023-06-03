@@ -7,6 +7,8 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\DestroyRekapPenerimaanHeaderRequest;
+use App\Http\Requests\GetIndexRangeRequest;
 use App\Models\RekapPenerimaanHeader;
 use App\Http\Requests\StoreRekapPenerimaanHeaderRequest;
 use App\Http\Requests\UpdateRekapPenerimaanHeaderRequest;
@@ -23,7 +25,7 @@ class RekapPenerimaanHeaderController extends Controller
     /**
      * @ClassName 
      */
-    public function index()
+    public function index(GetIndexRangeRequest $request)
     {
         $rekapPenerimaanHeader = new RekapPenerimaanHeader();
         return response([
@@ -261,7 +263,7 @@ class RekapPenerimaanHeaderController extends Controller
     /**
      * @ClassName 
      */
-    public function destroy(Request $request, $id)
+    public function destroy(DestroyRekapPenerimaanHeaderRequest $request, $id)
     {
         DB::beginTransaction();
         $getDetail = RekapPenerimaanDetail::lockForUpdate()->where('rekappenerimaan_id', $id)->get();

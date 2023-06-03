@@ -47,6 +47,37 @@ class RekapPenerimaanHeader extends MyModel
 
         return $data;
     }
+
+    public function cekvalidasiaksi($nobukti)
+    {
+        $hutangBayar = DB::table('rekappenerimaanheader')
+            ->from(
+                DB::raw("rekappenerimaanheader as a with (readuncommitted)")
+            )
+            ->select(
+                'a.nobukti'
+            )
+            ->join(DB::raw("jurnalumumpusatheader b with (readuncommitted)"),'a.penerimaan_nobukti','b.nobukti')
+            ->where('a.nobukti', '=', $nobukti)
+            ->first();
+        if (isset($hutangBayar)) {
+            $data = [
+                'kondisi' => true,
+                'keterangan' => 'Approval Jurnal',
+                'kodeerror' => 'SATL'
+            ];
+            goto selesai;
+        }
+
+        
+
+        $data = [
+            'kondisi' => false,
+            'keterangan' => '',
+        ];
+        selesai:
+        return $data;
+    }
     
     public function sort($query)
     {
