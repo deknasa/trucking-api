@@ -32,7 +32,7 @@ class CekMinusSisaPelunasanPiutangEdit implements Rule
         $nobukti = request()->piutang_nobukti[$attribute];
         $bayar = (request()->bayar[$attribute] == '') ? 0 : request()->bayar[$attribute];
         $potongan = (request()->potongan[$attribute] == '') ? 0 : request()->potongan[$attribute];
-        
+        // 
         $piutang = new PelunasanPiutangHeader();
         $getPiutang = $piutang->getMinusSisaPelunasan($nobukti);
         

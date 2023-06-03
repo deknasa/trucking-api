@@ -469,6 +469,7 @@ class PelunasanPiutangHeader extends MyModel
         
         return $fetch->first();
     }
+    // 
     public function getEditPelunasan($nobukti,$agenId){
        $query = DB::table('piutangheader')->from(DB::raw("piutangheader with (readuncommitted)"))
         ->select(DB::raw("piutangheader.nobukti,piutangheader.tglbukti,piutangheader.nominal as nominalpiutang,piutangheader.invoice_nobukti, (SELECT (piutangheader.nominal - COALESCE(SUM(pelunasanpiutangdetail.nominal),0) - COALESCE(SUM(pelunasanpiutangdetail.potongan),0)) FROM pelunasanpiutangdetail WHERE pelunasanpiutangdetail.piutang_nobukti= piutangheader.nobukti) AS sisa"))

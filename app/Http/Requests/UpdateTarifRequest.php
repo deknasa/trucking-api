@@ -125,7 +125,7 @@ class UpdateTarifRequest extends FormRequest
                 'zona_id' => ['required', 'numeric', 'min:1']
             ];
         }
-
+// 
         $rules = [
             'tujuan' =>  ['required', new UniqueTarifEdit()],
             'statusaktif' => ['required', Rule::in($statusAktif)],
