@@ -51,8 +51,6 @@ class UpahSupirRincianController extends Controller
                     'kotasampai.keterangan as kotasampai',
                     'header.jarak',
                     'zona.keterangan as zona',
-                    'header.tglmulaiberlaku',
-                    'header.tglakhirberlaku',
                     'statusluarkota.text as statusluarkota',
                     'container.keterangan as container_id',
                     'statuscontainer.keterangan as statuscontainer_id',
