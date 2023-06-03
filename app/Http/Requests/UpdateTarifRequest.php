@@ -125,15 +125,14 @@ class UpdateTarifRequest extends FormRequest
                 'zona_id' => ['required', 'numeric', 'min:1']
             ];
         }
-
+// 
         $rules = [
             'tujuan' =>  ['required', new UniqueTarifEdit()],
             'statusaktif' => ['required', Rule::in($statusAktif)],
             'statussistemton' => ['required', Rule::in($statusTon)],
             'tglmulaiberlaku' => [
                 'required', 'date_format:d-m-Y',
-                'after_or_equal:' . $tglbatasawal,
-                'before:' . $tglbatasakhir,
+                'before_or_equal:' . date('d-m-Y'),
             ],
             'statuspenyesuaianharga' => ['required', Rule::in($statusPenyesuaian)],
         ];
