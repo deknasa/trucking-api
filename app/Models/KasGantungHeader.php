@@ -265,6 +265,7 @@ class KasGantungHeader extends MyModel
 
     public function getKasGantung($dari, $sampai)
     {
+        
         $tempPribadi = $this->createTempKasGantung($dari, $sampai);
         $query = DB::table($tempPribadi)->from(DB::raw("$tempPribadi with (readuncommitted)"))
         ->select(DB::raw("row_number() Over(Order By $tempPribadi.nobukti) as id,$tempPribadi.tglbukti,$tempPribadi.nobukti,$tempPribadi.sisa "))
@@ -277,6 +278,7 @@ class KasGantungHeader extends MyModel
 
     public function createTempKasGantung($dari, $sampai)
     {
+        
         $temp = '##temp' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
 
         $fetch = DB::table('kasgantungdetail')
@@ -286,7 +288,7 @@ class KasGantungHeader extends MyModel
             ->select(DB::raw("kasgantungdetail.nobukti,kasgantungheader.tglbukti,(SELECT (sum(kasgantungdetail.nominal) - coalesce(SUM(pengembaliankasgantungdetail.nominal),0)) FROM pengembaliankasgantungdetail WHERE pengembaliankasgantungdetail.kasgantung_nobukti= kasgantungdetail.nobukti) AS sisa")) 
             ->leftJoin('kasgantungheader', 'kasgantungheader.id', 'kasgantungdetail.kasgantung_id')
             ->whereBetween('kasgantungheader.tglbukti', [$dari, $sampai])                                                                                     
-            ->groupBy('kasgantungdetail.nobukti','kasgantungdetail.keterangan','kasgantungheader.tglbukti')
+            ->groupBy('kasgantungdetail.nobukti','kasgantungheader.tglbukti')
             ->orderBy('kasgantungheader.tglbukti', 'asc')
             ->orderBy('kasgantungdetail.nobukti', 'asc');
 
@@ -296,7 +298,7 @@ class KasGantungHeader extends MyModel
             $table->bigInteger('sisa')->nullable();
         });
 
-        $tes = DB::table($temp)->insertUsing(['nobukti','keterangan','tglbukti', 'sisa'], $fetch); 
+        $tes = DB::table($temp)->insertUsing(['nobukti','tglbukti', 'sisa'], $fetch); 
         //dd($tes);
         return $temp;
     }
