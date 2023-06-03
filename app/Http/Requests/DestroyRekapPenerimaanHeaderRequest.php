@@ -2,15 +2,17 @@
 
 namespace App\Http\Requests;
 
-use App\Http\Controllers\Api\ErrorController;
 use App\Http\Controllers\Api\RekapPenerimaanHeaderController;
-use App\Models\RekapPenerimaanHeader;
 use Illuminate\Foundation\Http\FormRequest;
-use App\Rules\DateTutupBuku;
-use App\Rules\ValidasiDestroyRekapPenerimaanHeader;
-use App\Rules\ValidasiUpdateRekapPenerimaanHeader;
 
-class UpdateRekapPenerimaanHeaderRequest extends FormRequest
+use App\Models\RekapPengeluaranheader;
+use Illuminate\Validation\Rule;
+use App\Rules\ValidasiDestroyRekapPengeluaranHeader ;
+use App\Http\Controllers\Api\RekapPengeluaranHeaderController;
+use App\Models\RekapPenerimaanHeader;
+use App\Rules\ValidasiDestroyRekapPenerimaanHeader;
+
+class DestroyRekapPenerimaanHeaderRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
@@ -19,7 +21,7 @@ class UpdateRekapPenerimaanHeaderRequest extends FormRequest
      */
     public function authorize()
     {
-        return true;
+        return false;
     }
 
     /**
@@ -38,22 +40,12 @@ class UpdateRekapPenerimaanHeaderRequest extends FormRequest
         } else {
             $cekdtcetak=false;
         }
+        
 
+         
+    
         return [
-            'id' => [ new ValidasiUpdateRekapPenerimaanHeader($cekdata['kondisi'],$cekdtcetak)],
-            "tglbukti" => [
-                "required",'date_format:d-m-Y',
-                new DateTutupBuku()
-            ],
-            "tgltransaksi"=>"required|date_format:d-m-Y",
-            "bank"=>"required",
-        ];
-    }
-    public function messages()
-    {
-        return [
-            'tglbukti.date_format' => app(ErrorController::class)->geterror('DF')->keterangan,
-            'tgltransaksi.date_format' => app(ErrorController::class)->geterror('DF')->keterangan,
+            'id' => [ new ValidasiDestroyRekapPenerimaanHeader($cekdata['kondisi'],$cekdtcetak)],
         ];
     }
 }

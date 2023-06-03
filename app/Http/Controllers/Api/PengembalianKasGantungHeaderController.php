@@ -553,7 +553,7 @@ class PengembalianKasGantungHeaderController extends Controller
 
         $pengembalianKasGantungHeader = new PengembalianKasGantungHeader();
         $pengembalianKasGantungHeader = $pengembalianKasGantungHeader->lockAndDestroy($id);
-        
+
         $newRequestPenerimaan = new DestroyPenerimaanHeaderRequest();
         $newRequestPenerimaan->postingdari = $request->postingdari ?? "DELETE PENGEMBALIAN KAS GANTUNG HEADER";
 
@@ -716,6 +716,7 @@ class PengembalianKasGantungHeaderController extends Controller
     //untuk create
     public function getKasGantung(GetPengembalianKasGantungHeaderRequest $request)
     {
+
         try {
             $KasGantung = new KasGantungHeader();
             $currentURL = url()->current();
@@ -742,8 +743,8 @@ class PengembalianKasGantungHeaderController extends Controller
     public function getPengembalian(Request $request, $id, $aksi)
     {
         $pengembalianKasGantung = new PengembalianKasGantungHeader();
-        $dari = $request->tgldari;
-        $sampai = $request->tglsampai;
+        $dari = date('Y-m-d', strtotime($request->tgldari));
+        $sampai = date('Y-m-d', strtotime($request->tglsampai));
 
         if ($aksi == 'edit') {
             $data = $pengembalianKasGantung->getPengembalian($id, $dari, $sampai);
