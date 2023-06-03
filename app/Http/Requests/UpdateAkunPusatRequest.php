@@ -62,7 +62,7 @@ class UpdateAkunPusatRequest extends FormRequest
         }
 
         $rules = [
-            'coa' => ['required',Rule::unique('akunpusat')->whereNotIn('id', [$this->id])],
+            'coa' => ['required',Rule::unique('akunpusat')->whereNotIn('id', [$this->id]),'numeric'],
             'keterangancoa' => ['required',Rule::unique('akunpusat')->whereNotIn('id', [$this->id])],
             'type' => ['required'],
             'level' => ['required'],

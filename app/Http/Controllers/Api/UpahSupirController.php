@@ -54,13 +54,25 @@ class UpahSupirController extends Controller
         $sampai = date('Y-m-d', strtotime($request->sampai));
         $upahsupirrincian = new UpahSupirRincian();
 
+        $cekData = DB::table("upahsupir")->from(DB::raw("upahsupir with (readuncommitted)"))
+        ->whereBetween('tglmulaiberlaku', [$dari, $sampai])
+        ->first();
 
+        if($cekData != null){  
+            return response([
+                'status' => true,
+                'data' => $upahsupirrincian->listpivot($dari,$sampai),
+            ]);
+        }else{
+            return response([
+                'errors' => [
+                    "export" => "tidak ada data"
+                ],
+                'message' => "The given data was invalid.",
+            ], 422);
+        }
+     }
 
-        return response([
-            'status' => true,
-            'data' => $upahsupirrincian->listpivot($dari, $sampai),
-        ]);
-    }
     public function store(StoreUpahSupirRequest $request)
     {
 
