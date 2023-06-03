@@ -6,6 +6,7 @@ use Illuminate\Foundation\Http\FormRequest;
 use App\Http\Controllers\Api\ParameterController;
 use App\Http\Controllers\Api\ErrorController;
 use App\Models\Parameter;
+use App\Rules\ExistKota;
 use App\Rules\UniqueUpahRitasiSampai;
 use Illuminate\Validation\Rule;
 
@@ -33,12 +34,12 @@ class StoreUpahRitasiRequest extends FormRequest
         if ($kotadari_id != null) {
             if ($kotadari_id == 0) {
                 $rulesKotaDari_id = [
-                    'kotadari_id' => ['required', 'numeric', 'min:1']
+                    'kotadari_id' => ['required', 'numeric', 'min:1', new ExistKota()]
                 ];
             } 
         } else if ($kotadari_id == null && $this->kotadari != '') {
             $rulesKotaDari_id = [
-                'kotadari_id' => ['required', 'numeric', 'min:1']
+                'kotadari_id' => ['required', 'numeric', 'min:1', new ExistKota()]
             ];
         }
 
@@ -47,12 +48,12 @@ class StoreUpahRitasiRequest extends FormRequest
         if ($kotasampai_id != null) {
             if ($kotasampai_id == 0) {
                 $rulesKotaSampai_id = [
-                    'kotasampai_id' => ['required', 'numeric', 'min:1', new UniqueUpahRitasiSampai()]
+                    'kotasampai_id' => ['required', 'numeric', 'min:1', new UniqueUpahRitasiSampai(), new ExistKota()]
                 ];
             } 
         } else if ($kotasampai_id == null && $this->kotasampai != '') {
             $rulesKotaSampai_id = [
-                'kotasampai_id' => ['required', 'numeric', 'min:1', new UniqueUpahRitasiSampai()]
+                'kotasampai_id' => ['required', 'numeric', 'min:1', new UniqueUpahRitasiSampai(), new ExistKota()]
             ];
         }
 

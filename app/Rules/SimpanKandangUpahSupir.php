@@ -7,7 +7,7 @@ use App\Models\UpahSupir;
 use Illuminate\Contracts\Validation\Rule;
 use Illuminate\Support\Facades\DB;
 
-class ValidasiDestroyUpahSupir implements Rule
+class SimpanKandangUpahSupir implements Rule
 {
     /**
      * Create a new rule instance.
@@ -28,12 +28,18 @@ class ValidasiDestroyUpahSupir implements Rule
      */
     public function passes($attribute, $value)
     {
-        $upahSupir = new UpahSupir();
-        $cekdata = $upahSupir->cekValidasi(request()->id);
-        if($cekdata['kondisi']){
-          return false;
+        if($value != null || $value != 0){
+            $upahSupir = DB::table("upahsupir")->from(DB::raw("upahsupir with (readuncommitted)"))->where('id', request()->id)->first();
+            if($upahSupir->statussimpankandang != null){
+                if($value != $upahSupir->statussimpankandang){
+                    return false;
+                }else{
+                    return true;
+                }
+            }
+        }else{
+            return true;
         }
-        return true;
     }
 
     /**
@@ -43,6 +49,7 @@ class ValidasiDestroyUpahSupir implements Rule
      */
     public function message()
     {
-        return app(ErrorController::class)->geterror('SATL')->keterangan;
+        $controller = new ErrorController;
+        return ':attribute' . ' ' . $controller->geterror('TVD')->keterangan;
     }
 }
