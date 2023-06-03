@@ -5,6 +5,7 @@ namespace App\Http\Requests;
 use App\Http\Controllers\Api\ErrorController;
 use App\Models\Parameter;
 use App\Rules\UniqueTarifEdit;
+use App\Rules\ValidasiTujuanTarifDariUpahSupir;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
@@ -49,17 +50,9 @@ class UpdateTarifRequest extends FormRequest
         $kota_id = $this->kota_id;
         $rulesKota_id = [];
         if ($kota_id != null) {
-            if ($kota_id == 0) {
-                $rulesKota_id = [
-                    'kota_id' => 'required|numeric|min:1'
-                ];
-            } else {
-                if ($this->kota == '') {
-                    $rulesKota_id = [
-                        'kota' => 'required',
-                    ];
-                }
-            }
+            $rulesKota_id = [
+                'kota_id' => 'required|numeric|min:1'
+            ];
         } else if ($kota_id == null && $this->kota != '') {
             $rulesKota_id = [
                 'kota_id' => ['required', 'numeric', 'min:1'],
@@ -125,15 +118,16 @@ class UpdateTarifRequest extends FormRequest
                 'zona_id' => ['required', 'numeric', 'min:1']
             ];
         }
-// 
+
         $rules = [
-            'tujuan' =>  ['required', new UniqueTarifEdit()],
+            'tujuan' =>  ['required', new UniqueTarifEdit(), new ValidasiTujuanTarifDariUpahSupir()],
             'statusaktif' => ['required', Rule::in($statusAktif)],
             'statussistemton' => ['required', Rule::in($statusTon)],
             'tglmulaiberlaku' => [
                 'required', 'date_format:d-m-Y',
                 'before_or_equal:' . date('d-m-Y'),
             ],
+            'kota' => 'required',
             'statuspenyesuaianharga' => ['required', Rule::in($statusPenyesuaian)],
         ];
 
