@@ -63,7 +63,7 @@ class StoreAkunPusatRequest extends FormRequest
 
 
         $rules = [
-            'coa' => ['required','unique:akunpusat','numeric'],
+            'coa' => ['required','unique:akunpusat'],
             'keterangancoa' => ['required','unique:akunpusat'],
             'type' => ['required'],
             'level' => ['required'],

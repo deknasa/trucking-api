@@ -77,27 +77,84 @@ class StorePengeluaranTruckingHeaderRequest extends FormRequest
             ];
         }
 
-        $rules = [
-            "tglbukti" => [
-                "required", 'date_format:d-m-Y',
-                'date_equals:'.date('d-m-Y'),
-                new DateTutupBuku()
-            ],
-            'pengeluarantrucking' => 'required','numeric', 'min:1',
-            'statusposting' => 'required',
-            'bank' => [$ruleBank],
-            'tgldari' => [
-                'required', 'date_format:d-m-Y',
-                'before:'.$tglbatasakhir,
-                'after_or_equal:'.$tglbatasawal,
-            ],
-            'tglsampai' => [
-                'required', 'date_format:d-m-Y',
-                'before:'.$tglbatasakhir,
-                'after_or_equal:'.date('Y-m-d', strtotime($this->tgldari))
-            ],
-            // 'keterangancoa' => 'required',
-        ];
+        $pengeluarantrucking_id = $this->pengeluarantrucking_id;
+        $rulespengeluaran_id = [];
+
+        $pengeluaranTrucking = DB::table('pengeluarantrucking')->from(DB::raw("pengeluarantrucking with (readuncommitted)"))
+                ->whereRaw("id = ".$pengeluarantrucking_id)
+                ->first();
+
+        $kodepengeluaran    = $pengeluaranTrucking->kodepengeluaran;
+
+        if($kodepengeluaran == 'KBBM' ){
+            $rules = [
+                "tglbukti" => [
+                    "required", 'date_format:d-m-Y',
+                    'date_equals:'.date('d-m-Y'),
+                    new DateTutupBuku()
+                ],
+                'pengeluarantrucking' => 'required','numeric', 'min:1',
+                'statusposting' => 'required',
+                'bank' => [$ruleBank],
+                'tgldari' => [
+                    'required', 'date_format:d-m-Y',
+                    'before:'.$tglbatasakhir,
+                    'after_or_equal:'.$tglbatasawal,
+                ],
+                'tglsampai' => [
+                    'required', 'date_format:d-m-Y',
+                    'before:'.$tglbatasakhir,
+                    'after_or_equal:'.date('Y-m-d', strtotime($this->tgldari))
+                ],
+                // 'keterangancoa' => 'required',
+            ];
+        }elseif($kodepengeluaran == 'BST'){
+            $rules = [
+                "tglbukti" => [
+                    "required", 'date_format:d-m-Y',
+                    'date_equals:'.date('d-m-Y'),
+                    new DateTutupBuku()
+                ],
+                'pengeluarantrucking' => 'required','numeric', 'min:1',
+                'statusposting' => 'required',
+                'bank' => [$ruleBank],
+                'tgldari' => [
+                    'required', 'date_format:d-m-Y',
+                    'before:'.$tglbatasakhir,
+                    'after_or_equal:'.$tglbatasawal,
+                ],
+                'tglsampai' => [
+                    'required', 'date_format:d-m-Y',
+                    'before:'.$tglbatasakhir,
+                    'after_or_equal:'.date('Y-m-d', strtotime($this->tgldari))
+                ],
+                // 'keterangancoa' => 'required',
+            ];
+        }else{
+            $rules = [
+                "tglbukti" => [
+                    "required", 'date_format:d-m-Y',
+                    'date_equals:'.date('d-m-Y'),
+                    new DateTutupBuku()
+                ],
+                'pengeluarantrucking' => 'required','numeric', 'min:1',
+                'statusposting' => 'required',
+                'bank' => [$ruleBank],
+                // 'tgldari' => [
+                //     'required', 'date_format:d-m-Y',
+                //     'before:'.$tglbatasakhir,
+                //     'after_or_equal:'.$tglbatasawal,
+                // ],
+                // 'tglsampai' => [
+                //     'required', 'date_format:d-m-Y',
+                //     'before:'.$tglbatasakhir,
+                //     'after_or_equal:'.date('Y-m-d', strtotime($this->tgldari))
+                // ],
+                // 'keterangancoa' => 'required',
+            ];
+        }
+
+       
         $relatedRequests = [
             StorePengeluaranTruckingDetailRequest::class
         ];
