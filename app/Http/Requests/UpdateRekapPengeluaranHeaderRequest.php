@@ -3,12 +3,15 @@
 namespace App\Http\Requests;
 
 use App\Http\Controllers\Api\ErrorController;
+use App\Models\RekapPengeluaranheader;
 use Illuminate\Foundation\Http\FormRequest;
 use App\Rules\DateTutupBuku;
 use App\Rules\ExistBank;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Validation\Rule;
+use App\Rules\ValidasiDestroyRekapPengeluaranHeader ;
+use App\Http\Controllers\Api\RekapPengeluaranHeaderController;
 
 class UpdateRekapPengeluaranHeaderRequest extends FormRequest
 {
@@ -30,6 +33,18 @@ class UpdateRekapPengeluaranHeaderRequest extends FormRequest
     public function rules()
     {
 
+        $controller = new RekapPengeluaranHeaderController;
+        $rekappengeluaranheader = new RekapPengeluaranHeader();
+        $cekdata = $rekappengeluaranheader->cekvalidasiaksi($this->nobukti);
+        $cekdatacetak = $controller->cekvalidasi($this->id);
+        if ($cekdatacetak->original['kodestatus']=='1') {
+                $cekdtcetak=true;
+        } else {
+            $cekdtcetak=false;
+        }
+        
+
+
         $query=DB::table('rekappengeluaranheader')->from(
             DB::raw('rekappengeluaranheader a with (readuncommitted)')
         )
@@ -45,6 +60,7 @@ class UpdateRekapPengeluaranHeaderRequest extends FormRequest
 
 
         $rules = [
+            'id' => [ new ValidasiDestroyRekapPengeluaranHeader($cekdata['kondisi'],$cekdtcetak)],
             'tglbukti' => [
                 'required', 'date_format:d-m-Y',
                 new DateTutupBuku(),
