@@ -175,13 +175,14 @@ class UpahSupirController extends Controller
                 $getRincianBelawanKandang = DB::table("upahsupirrincian")->from(DB::raw("upahsupirrincian with (readuncommitted)"))
                 ->where('upahsupir_id', $getBelawanKandang->id)
                 ->get();
+                $jarakKandang = $request->jarak - $getBelawanKandang->jarak;
 
                 $upahsupirKandang = new UpahSupir();
                 $upahsupirKandang->kotadari_id = $kandang->id;
                 $upahsupirKandang->parent_id = $request->parent_id ?? 0;
                 $upahsupirKandang->tarif_id = $request->tarif_id ?? 0;
                 $upahsupirKandang->kotasampai_id = $request->kotasampai_id;
-                $upahsupirKandang->jarak = $request->jarak - $getBelawanKandang->jarak;
+                $upahsupirKandang->jarak = ($jarakKandang < 0) ? 0 : $jarakKandang;
                 $upahsupirKandang->zona_id = ($request->zona_id == null) ? 0 : $request->zona_id ?? 0;
                 $upahsupirKandang->statusaktif = $request->statusaktif;
                 $upahsupirKandang->tglmulaiberlaku = date('Y-m-d', strtotime($request->tglmulaiberlaku));
@@ -212,15 +213,21 @@ class UpahSupirController extends Controller
                 /* Store detail */
                 $detaillog = [];
                 for ($i = 0; $i < count($request->nominalsupir); $i++) {
+                    $nomSupir = ($request->nominalsupir[$i] == 0) ? 0 : $request->nominalsupir[$i]-$getRincianBelawanKandang[$i]->nominalsupir;
+                    $nomKenek = ($request->nominalkenek[$i] == 0) ? 0 : $request->nominalkenek[$i]-$getRincianBelawanKandang[$i]->nominalkenek;
+                    $nomKomisi = ($request->nominalkomisi[$i] == 0) ? 0 : $request->nominalkomisi[$i]-$getRincianBelawanKandang[$i]->nominalkomisi;
+                    $nomTol = ($request->nominaltol[$i] == 0) ? 0 : $request->nominaltol[$i]-$getRincianBelawanKandang[$i]->nominaltol;
+                    $liter = ($request->liter[$i] == 0) ? 0 : $request->liter[$i]-$getRincianBelawanKandang[$i]->liter;
+                    
                     $datadetail = [
                         'upahsupir_id' => $upahsupirKandang->id,
                         'container_id' => $request->container_id[$i],
                         'statuscontainer_id' => $request->statuscontainer_id[$i],
-                        'nominalsupir' => ($request->nominalsupir[$i] == 0) ? 0 : $request->nominalsupir[$i]-$getRincianBelawanKandang[$i]->nominalsupir,
-                        'nominalkenek' => ($request->nominalkenek[$i] == 0) ? 0 : $request->nominalkenek[$i]-$getRincianBelawanKandang[$i]->nominalkenek,
-                        'nominalkomisi' => ($request->nominalkomisi[$i] == 0) ? 0 : $request->nominalkomisi[$i]-$getRincianBelawanKandang[$i]->nominalkomisi,
-                        'nominaltol' =>  ($request->nominaltol[$i] == 0) ? 0 : $request->nominaltol[$i]-$getRincianBelawanKandang[$i]->nominaltol,
-                        'liter' => ($request->liter[$i] == 0) ? 0 : $request->liter[$i]-$getRincianBelawanKandang[$i]->liter,
+                        'nominalsupir' => ($nomSupir < 0) ? 0 : $nomSupir,
+                        'nominalkenek' => ($nomKenek < 0) ? 0 : $nomKenek,
+                        'nominalkomisi' => ($nomKomisi < 0) ? 0 : $nomKomisi,
+                        'nominaltol' =>  ($nomTol < 0) ? 0 : $nomTol,
+                        'liter' => ($liter < 0) ? 0 : $liter,
                         'modifiedby' => auth('api')->user()->name,
                     ];
                     
