@@ -134,7 +134,9 @@ class MandorAbsensiSupir extends MyModel
                                 $query = $query->where('absentrado.keterangan ', 'LIKE', "%$filters[data]%");
                                 break;
                             default:
-                                $query = $query->where($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
+                                // $query = $query->where($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
+                                $query = $query->whereRaw($this->table . "." .  $filters['field'] . " LIKE '%" . escapeLike($filters['data']) . "%' escape '|'");
+
                                 break;
                         }
                     }
@@ -155,7 +157,9 @@ class MandorAbsensiSupir extends MyModel
                                     $query = $query->orWhere('absentrado.keterangan ', 'LIKE', "%$filters[data]%");
                                     break;
                                 default:
-                                    $query = $query->orWhere($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
+                                    // $query = $query->orWhere($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
+                                    $query = $query->OrwhereRaw($this->table . "." .  $filters['field'] . " LIKE '%" . escapeLike($filters['data']) . "%' escape '|'");
+
                                     break;
                             }
                         }

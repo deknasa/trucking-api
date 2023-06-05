@@ -220,7 +220,9 @@ class JobTrucking extends MyModel
                         } elseif ($filters['field'] == 'nobukti') {
                             $query = $query->where('a.nobukti', 'LIKE', "%$filters[data]%");
                         } else {
-                            $query = $query->where($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
+                            // $query = $query->where($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
+                            $query = $query->whereRaw($this->table . "." .  $filters['field'] . " LIKE '%" . escapeLike($filters['data']) . "%' escape '|'");
+
                         }
                     }
 
@@ -242,7 +244,9 @@ class JobTrucking extends MyModel
                         } elseif ($filters['field'] == 'nobukti') {
                             $query = $query->OrwhereRaw("a.nobukti LIKE '%$filters[data]%')");
                         } else {
-                            $query = $query->Orwhere($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
+                            // $query = $query->Orwhere($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
+                            $query = $query->OrwhereRaw($this->table . "." .  $filters['field'] . " LIKE '%" . escapeLike($filters['data']) . "%' escape '|'");
+
                         }
                     }
 
