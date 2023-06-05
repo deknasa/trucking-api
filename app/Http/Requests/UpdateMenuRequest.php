@@ -7,6 +7,7 @@ use App\Http\Controllers\Api\ErrorController;
 use App\Models\Parameter;
 use Illuminate\Validation\Rule;
 use App\Http\Controllers\Api\ParameterController;
+use App\Rules\validasiNonController;
 
 class UpdateMenuRequest extends FormRequest
 {
@@ -28,7 +29,7 @@ class UpdateMenuRequest extends FormRequest
     public function rules()
     {
         return [
-            'menuname' => ['required',Rule::unique('menu')->whereNotIn('id', [$this->id])],
+            'menuname' => ['required',Rule::unique('menu')->whereNotIn('id', [$this->id]), new validasiNonController()],
             'menuseq' => 'numeric|nullable',
         ];
     }

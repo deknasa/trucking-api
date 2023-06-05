@@ -150,4 +150,18 @@ class Menu extends MyModel
     {
         return $query->skip($this->params['offset'])->take($this->params['limit']);
     }
+
+    public function validasiNonController($menuname){
+        $validasiQuery = DB::table('menu')
+        ->from(
+            DB::raw("menu as a with (readuncommitted)")
+        )
+        ->select(
+            'a.aco_id'
+        )
+        ->where('a.menuname', '=', $menuname)
+        ->first();
+
+        return $validasiQuery;
+    }
 }
