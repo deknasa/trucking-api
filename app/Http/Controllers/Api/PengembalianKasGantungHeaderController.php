@@ -42,6 +42,7 @@ class PengembalianKasGantungHeaderController extends Controller
     public function index(GetIndexRangeRequest $request)
     {
         $pengembalianKasGantungHeader = new PengembalianKasGantungHeader();
+        //dd($pengembalianKasGantungHeader->get());
         return response([
             'data' => $pengembalianKasGantungHeader->get(),
             'attributes' => [
@@ -49,6 +50,7 @@ class PengembalianKasGantungHeaderController extends Controller
                 'totalPages' => $pengembalianKasGantungHeader->totalPages
             ]
         ]);
+
     }
 
     public function default()
