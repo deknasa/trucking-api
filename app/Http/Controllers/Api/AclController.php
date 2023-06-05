@@ -20,6 +20,7 @@ use App\Models\Acos;
 
 use App\Http\Controllers\Api\ParameterController;
 use App\Http\Controllers\Controller;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Log;
 
 class AclController extends Controller
@@ -43,6 +44,18 @@ class AclController extends Controller
             'attributes' => [
                 'totalRows' => $acl->totalRows,
                 'totalPages' => $acl->totalPages
+            ]
+        ]);
+    }
+    public function RoleAcl(Role $role): JsonResponse
+    {
+        $roleAcl = new Acl();
+
+        return response()->json([
+            'data' => $roleAcl->getAclRole($role->acls()),
+            'attributes' => [
+                'totalRows' => $roleAcl->totalRows,
+                'totalPages' => $roleAcl->totalPages
             ]
         ]);
     }
