@@ -17,6 +17,8 @@ use App\Http\Requests\StoreLogTrailRequest;
 
 use App\Helpers\App;
 use App\Http\Requests\DestroyUpahSupirRequest;
+use App\Http\Requests\GetIndexRangeRequest;
+use App\Http\Requests\GetUpahSupirRangeRequest;
 use Illuminate\Support\Facades\Storage;
 use App\Models\LogTrail;
 use App\Models\Parameter;
@@ -48,7 +50,7 @@ class UpahSupirController extends Controller
      */
 
 
-    public function listpivot(Request $request)
+    public function listpivot(GetUpahSupirRangeRequest $request)
     {
         $dari = date('Y-m-d', strtotime($request->dari));
         $sampai = date('Y-m-d', strtotime($request->sampai));
