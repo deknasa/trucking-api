@@ -6,6 +6,7 @@ use App\Models\OrderanTrucking;
 use App\Http\Requests\StoreOrderanTruckingRequest;
 use App\Http\Requests\UpdateOrderanTruckingRequest;
 use App\Http\Requests\DestroyOrderanTruckingRequest;
+use App\Http\Requests\GetIndexRangeRequest;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -29,7 +30,7 @@ class OrderanTruckingController extends Controller
     /**
      * @ClassName 
      */
-    public function index()
+    public function index(GetIndexRangeRequest $request)
     {
 
         $orderanTrucking = new OrderanTrucking();

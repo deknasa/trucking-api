@@ -18,6 +18,7 @@ use App\Models\LogTrail;
 use App\Models\ServiceInHeader;
 use App\Models\ServiceOutDetail;
 use Illuminate\Database\QueryException;
+use App\Http\Requests\GetIndexRangeRequest;
 
 class ServiceOutHeaderController extends Controller
 {
@@ -25,7 +26,7 @@ class ServiceOutHeaderController extends Controller
     /**
      * @ClassName
      */
-    public function index()
+    public function index(GetIndexRangeRequest $request)
     {
         $serviceout = new ServiceOutHeader();
 

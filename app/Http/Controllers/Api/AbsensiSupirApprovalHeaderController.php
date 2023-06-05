@@ -21,6 +21,7 @@ use App\Http\Requests\StoreJurnalUmumDetailRequest;
 use App\Http\Requests\StoreJurnalUmumHeaderRequest;
 use App\Http\Requests\StoreKasGantungHeaderRequest;
 use App\Http\Requests\UpdateKasGantungHeaderRequest;
+use App\Http\Requests\GetIndexRangeRequest;
 use App\Http\Requests\StoreLogTrailRequest;
 
 use Illuminate\Http\Request;
@@ -33,7 +34,7 @@ class AbsensiSupirApprovalHeaderController extends Controller
     /**
      * @ClassName 
      */
-    public function index()
+    public function index(GetIndexRangeRequest $request)
     {
         $absensiSupirApprovalHeader = new AbsensiSupirApprovalHeader();
 

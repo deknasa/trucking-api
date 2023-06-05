@@ -17,6 +17,7 @@ use App\Models\LogTrail;
 use App\Http\Requests\StorePengeluaranHeaderRequest;
 use App\Http\Requests\DestroyPengeluaranHeaderRequest;
 use App\Http\Requests\StorePengeluaranDetailRequest;
+use App\Http\Requests\GetIndexRangeRequest;
 
 use App\Http\Requests\UpdatePengeluaranHeaderRequest;
 use Illuminate\Http\Request;
@@ -38,7 +39,7 @@ class PengeluaranHeaderController extends Controller
     /**
      * @ClassName
      */
-    public function index()
+    public function index(GetIndexRangeRequest $request)
     {
         $pengeluaran = new PengeluaranHeader();
 

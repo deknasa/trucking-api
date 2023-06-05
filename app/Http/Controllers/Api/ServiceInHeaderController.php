@@ -17,6 +17,7 @@ use App\Http\Requests\UpdateServiceInHeaderRequest;
 use App\Models\LogTrail;
 use App\Models\ServiceInDetail;
 use Illuminate\Database\QueryException;
+use App\Http\Requests\GetIndexRangeRequest;
 
 class ServiceInHeaderController extends Controller
 {
@@ -24,7 +25,7 @@ class ServiceInHeaderController extends Controller
     /**
      * @ClassName index
      */
-    public function index()
+    public function index(GetIndexRangeRequest $request)
     {
         $servicein = new ServiceInHeader();
         return response([

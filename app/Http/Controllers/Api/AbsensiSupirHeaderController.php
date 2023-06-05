@@ -14,6 +14,7 @@ use Illuminate\Support\Facades\DB;
 use App\Http\Requests\StoreLogTrailRequest;
 use App\Http\Requests\UpdateAbsensiSupirHeaderRequest;
 use App\Http\Requests\UpdateKasGantungHeaderRequest;
+use App\Http\Requests\GetIndexRangeRequest;
 use App\Models\AbsensiSupirDetail;
 use App\Models\KasGantungDetail;
 use App\Models\KasGantungHeader;
@@ -27,7 +28,7 @@ class AbsensiSupirHeaderController extends Controller
     /**
      * @ClassName 
      */
-    public function index()
+    public function index(GetIndexRangeRequest $request)
     {
         $absensiSupirHeader = new AbsensiSupirHeader();
 
