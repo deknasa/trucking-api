@@ -336,6 +336,7 @@ class ParameterSeeder extends Seeder
         parameter::create(['grp' => 'STATUS SIMPAN KANDANG', 'subgrp' => 'STATUS SIMPAN KANDANG', 'kelompok' => '', 'text' => 'SIMPAN KANDANG', 'memo' => '{"MEMO":"SIMPAN KANDANG","SINGKATAN":"SK","WARNA":"#28A745"}', 'type' => '0', 'modifiedby' => 'ADMIN', 'default' => '',]);
         parameter::create(['grp' => 'STATUS SIMPAN KANDANG', 'subgrp' => 'STATUS SIMPAN KANDANG', 'kelompok' => '', 'text' => 'TIDAK SIMPAN KANDANG', 'memo' => '{"MEMO":"TIDAK SIMPAN KANDANG","SINGKATAN":"TSK","WARNA":"#6C757D"}', 'type' => '0', 'modifiedby' => 'ADMIN', 'default' => 'YA',]);
         parameter::create(['grp' => 'KLAIM SUPIR', 'subgrp' => 'KLAIM SUPIR', 'kelompok' => '', 'text' => '#KLAIM #9999#/#R#/#Y', 'memo' => '{"MEMO":"KLAIM SUPIR","SINGKATAN":"#KLAIM #9999#/#R#/#Y","WARNA":"#28A745"}', 'type' => '118', 'modifiedby' => 'ADMIN', 'default' => '',]);
+        parameter::create(['grp' => 'JENIS ORDERAN IMPORT', 'subgrp' => 'JENIS ORDERAN IMPORT', 'kelompok' => '', 'text' => '3', 'memo' => '{"MEMO":"JENIS ORDERAN IMPORT","SINGKATAN":"3","WARNA":"#28A745"}', 'type' => '118', 'modifiedby' => 'ADMIN', 'default' => '',]);
         
     }
 }

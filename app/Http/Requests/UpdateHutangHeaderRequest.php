@@ -30,7 +30,8 @@ class UpdateHutangHeaderRequest extends FormRequest
     {
         $query = DB::table('hutangheader')->from(DB::raw("hutangheader with (readuncommitted)"))
             ->select(
-                'tglbukti'
+                'tglbukti',
+                'nobukti'
             )
             ->where('id', $this->id)
             ->first();
@@ -40,6 +41,9 @@ class UpdateHutangHeaderRequest extends FormRequest
                 new DateTutupBuku(),
                 'before_or_equal:' . date('d-m-Y'),
                 Rule::in(date('d-m-Y', strtotime($query->tglbukti))),
+            ],
+            'nobukti' => [
+                Rule::in($query->nobukti),
             ],
             'supplier' => [
                 'required',
