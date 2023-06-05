@@ -404,6 +404,7 @@ class StoreOrderanTruckingRequest extends FormRequest
             'statuslangsir' => 'status langsir',
             'statusperalihan' => 'status peralihan',
             'jenisorder' => 'jenis order',
+            'tarifrincian' => 'tujuan',
         ];
     }
 

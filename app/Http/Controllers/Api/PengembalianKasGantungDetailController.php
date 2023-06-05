@@ -8,7 +8,7 @@ use App\Http\Requests\StoreLogTrailRequest;
 use App\Models\PengembalianKasGantungDetail;
 use App\Http\Requests\StorePengembalianKasGantungDetailRequest;
 use App\Http\Requests\UpdatePengembalianKasGantungDetailRequest;
-
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
@@ -21,8 +21,15 @@ class PengembalianKasGantungDetailController extends Controller
     public function index(Request $request)
     {
             $pengembalianKasGantungDetail = new PengembalianKasGantungDetail();
+
+            $idUser = auth('api')->user()->id;
+            $getuser = User::select('name', 'cabang.id as cabang_id', 'cabang.namacabang as nama_cabang')
+                ->where('user.id', $idUser)->join('cabang', 'user.cabang_id', 'cabang.id')->first();
+
+            //dd($pengembalianKasGantungDetail->get());
             return response([
                 'data' => $pengembalianKasGantungDetail->get(),
+                'user' => $getuser,
                 'attributes' => [
                     'totalRows' => $pengembalianKasGantungDetail->totalRows,
                     'totalPages' => $pengembalianKasGantungDetail->totalPages,

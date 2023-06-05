@@ -29,17 +29,35 @@ class PengembalianKasGantungDetail extends MyModel
 
         $query = DB::table($this->table)->from(DB::raw("$this->table with (readuncommitted)"));
 
+        if (isset(request()->id)) {
+            $query->where("$this->table.id", request()->id);
+        }
+        if (isset(request()->pengembaliankasgantung_id)) {
+            $query->where("$this->table.pengembaliankasgantung_id", request()->pengembaliankasgantung_id);
+        }
         if (isset(request()->forReport) && request()->forReport) {
             $query->select(
+                "header.id",
+                "header.nobukti",
+                "header.tglbukti",
+                "header.coakasmasuk",
+                "akunpusat.keterangancoa as keterangan_coa",
+                "header.tgldari",
+                "header.tglsampai",
+                "header.penerimaan_nobukti",
+                "header.postingdari",
+                "header.tglkasmasuk",
+                "bank.namabank as bank",
                 "$this->table.pengembaliankasgantung_id",
                 "$this->table.nobukti",
                 "$this->table.nominal",
                 "$this->table.keterangan",
                 "$this->table.coa",
-            );
-            $query->where($this->table . '.pengembaliankasgantung_id', '=', request()->pengembaliankasgantung_id);
+            )
+                ->leftJoin(DB::raw("pengembaliankasgantungheader as header with (readuncommitted)"), "header.id", "$this->table.pengembaliankasgantung_id")
+                ->leftJoin(DB::raw("bank with (readuncommitted)"), "header.bank_id", "bank.id");
 
-        }else {
+        } else {
             $query->select(
                 "$this->table.pengembaliankasgantung_id",
                 "$this->table.nobukti",
