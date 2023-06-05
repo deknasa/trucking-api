@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\GetUpahSupirRangeRequest;
 use App\Models\UpahRitasi;
 use App\Models\UpahRitasiRincian;
 use App\Models\Kota;
@@ -51,7 +52,7 @@ class UpahRitasiController extends Controller
         ]);
     }
 
-    public function listpivot(Request $request)
+    public function listpivot(GetUpahSupirRangeRequest $request)
     {
         $dari = date('Y-m-d', strtotime($request->dari));
         $sampai = date('Y-m-d', strtotime($request->sampai));
