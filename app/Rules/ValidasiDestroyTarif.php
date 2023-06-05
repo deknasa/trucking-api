@@ -2,6 +2,7 @@
 
 namespace App\Rules;
 
+use App\Http\Controllers\Api\ErrorController;
 use App\Models\Tarif;
 use Illuminate\Contracts\Validation\Rule;
 
@@ -41,6 +42,6 @@ class ValidasiDestroyTarif implements Rule
      */
     public function message()
     {
-        return 'The validation error message.';
+        return app(ErrorController::class)->geterror('SATL')->keterangan;
     }
 }

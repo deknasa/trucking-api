@@ -409,4 +409,16 @@ class UpahSupir extends MyModel
         selesai:
         return $data;
     }
+    public function validasiUpahSupirInputTrip($dari, $sampai, $container,$statusContainer){
+        $query = DB::table("upahsupir")->from(DB::raw("upahsupir with (readuncommitted)"))
+        ->join(DB::raw("upahsupirrincian with (readuncommitted)"), 'upahsupir.id','upahsupirrincian.upahsupir_id')
+        ->where('upahsupir.kotadari_id', $dari)
+        ->where('upahsupir.kotasampai_id', $sampai)
+        ->where('upahsupirrincian.container_id', $container)
+        ->where('upahsupirrincian.statuscontainer_id', $statusContainer)
+        ->where('upahsupirrincian.nominalsupir','!=','0')
+        ->first();
+
+        return $query;
+    }
 }

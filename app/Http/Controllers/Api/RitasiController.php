@@ -94,7 +94,9 @@ class RitasiController extends Controller
                 ], 422);
             } else {
                 $upahRitasiId = $upahRitasi->id;
-                $upahRitasiRincian = DB::table('upahritasirincian')->where('upahritasi_id', $upahRitasiId)->first();
+                $getSP = DB::table("suratpengantar")->from(DB::raw("suratpengantar with (readuncommitted)"))->select('container_id')->where('nobukti', $request->suratpengantar_nobukti)->first();
+
+                $upahRitasiRincian = DB::table('upahritasirincian')->where('upahritasi_id', $upahRitasiId)->where('container_id', $getSP->container_id)->first();
                 // $ritasi->jarak = $upahRitasi->upahritasiRincian()->first()->liter;
                 // $ritasi->gaji = $upahRitasi->upahritasiRincian()->first()->nominalsupir;
 

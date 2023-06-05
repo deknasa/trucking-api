@@ -12,7 +12,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use App\Http\Requests\StoreMandorTripRequest;
 use App\Http\Requests\StoreOrderantruckingRequest;
-
+use App\Http\Requests\StoreRitasiRequest;
 
 class InputTripController extends Controller
 {
@@ -108,7 +108,7 @@ class InputTripController extends Controller
                 ->where('a.text', '=', 'BUKAN BATAL MUAT')
                 ->first();
 
-                $tarifrincian = TarifRincian::find($request->tarifrincian_id);
+            $tarifrincian = TarifRincian::find($request->tarifrincian_id);
 
             $suratPengantar = new SuratPengantar();
 
@@ -166,15 +166,6 @@ class InputTripController extends Controller
 
             $suratPengantar->save();
 
-
-
-            
-
-
-
-
-
-
             if ($jobtrucking == '') {
                 $orderan = [
                     'tglbukti' => $tglbukti,
@@ -200,6 +191,30 @@ class InputTripController extends Controller
                 // dd($orderan);
                 $orderanTrucking = new StoreOrderanTruckingRequest($orderan);
                 app(OrderanTruckingController::class)->store($orderanTrucking);
+            }
+
+            $jenisRitasi = false;
+            foreach (request()->jenisritasi as $value) {
+                if ($value != null) {
+                    $jenisRitasi = true;
+                    break;
+                }
+            }
+            if ($jenisRitasi) {
+                for ($i = 0; $i < count($request->jenisritasi); $i++) {
+                    $ritasi = [
+                        'tglbukti' => $tglbukti,
+                        'statusritasi' => $request->jenisritasi[$i],
+                        'suratpengantar_nobukti' => $nobukti,
+                        'supir_id' => $request->supir_id,
+                        'trado_id' => $request->trado_id,
+                        'dari_id' => $request->ritasidari_id[$i],
+                        'sampai_id' => $request->ritasike_id[$i]
+                    ];
+
+                    $storeRitasi = new StoreRitasiRequest($ritasi);
+                    $storeRitasi = app(RitasiController::class)->store($storeRitasi);
+                }
             }
             DB::commit();
             return response([
