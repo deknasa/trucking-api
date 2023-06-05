@@ -223,7 +223,9 @@ class Penerima extends MyModel
                         } else if ($filters['field'] == 'created_at' || $filters['field'] == 'updated_at') {
                             $query = $query->whereRaw("format(".$this->table . "." . $filters['field'].", 'dd-MM-yyyy HH:mm:ss') LIKE '%$filters[data]%'");
                         } else {
-                            $query = $query->where($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
+                            // $query = $query->where($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
+                            $query = $query->whereRaw($this->table . "." .  $filters['field'] . " LIKE '%" . escapeLike($filters['data']) . "%' escape '|'");
+
                         }
                     }
 
@@ -238,7 +240,9 @@ class Penerima extends MyModel
                             } else if ($filters['field'] == 'statuskaryawan') {
                                 $query = $query->where('parameter_statuskaryawan.text', '=', "$filters[data]");
                             } else {
-                                $query = $query->orWhere($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
+                                // $query = $query->orWhere($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
+                                $query = $query->OrwhereRaw($this->table . "." .  $filters['field'] . " LIKE '%" . escapeLike($filters['data']) . "%' escape '|'");
+
                             }
                         }
                     });

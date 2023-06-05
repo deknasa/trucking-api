@@ -286,7 +286,9 @@ class HistoriPengeluaranStok extends MyModel
                         } else if ($filters['field'] == 'tglbukti') {
                             $query = $query->whereRaw("format(a.tglbukti, 'dd-MM-yyyy') LIKE '%$filters[data]%'");
                         } else {
-                            $query = $query->where('a.' . $filters['field'], 'LIKE', "%$filters[data]%");
+                            // $query = $query->where('a.' . $filters['field'], 'LIKE', "%$filters[data]%");
+                            $query = $query->whereRaw('a' . "." .  $filters['field'] . " LIKE '%" . escapeLike($filters['data']) . "%' escape '|'");
+
                         }
                     }
 
@@ -310,7 +312,9 @@ class HistoriPengeluaranStok extends MyModel
                             } else if ($filters['field'] == 'tglbukti') {
                                 $query = $query->orWhereRaw("format(a.tglbukti, 'dd-MM-yyyy') LIKE '%$filters[data]%'");
                             } else {
-                                $query->orWhere('a.' . $filters['field'], 'LIKE', "%$filters[data]%");
+                                // $query->orWhere('a.' . $filters['field'], 'LIKE', "%$filters[data]%");
+                                $query = $query->OrwhereRaw('a' . "." .  $filters['field'] . " LIKE '%" . escapeLike($filters['data']) . "%' escape '|'");
+
                             }
                         }
                     });

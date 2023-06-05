@@ -505,7 +505,9 @@ class ProsesGajiSupirHeader extends MyModel
                 case "AND":
                     foreach ($this->params['filters']['rules'] as $index => $filters) {
                         if ($filters['field'] != '') {
-                            $query = $query->where($table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
+                            // $query = $query->where($table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
+                            $query = $query->whereRaw($table . "." .  $filters['field'] . " LIKE '%" . escapeLike($filters['data']) . "%' escape '|'");
+
                         }
                     }
 
@@ -513,7 +515,9 @@ class ProsesGajiSupirHeader extends MyModel
                 case "OR":
                     foreach ($this->params['filters']['rules'] as $index => $filters) {
                         if ($filters['field'] != '') {
-                            $query = $query->orWhere($table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
+                            // $query = $query->orWhere($table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
+                            $query = $query->OrwhereRaw($table . "." .  $filters['field'] . " LIKE '%" . escapeLike($filters['data']) . "%' escape '|'");
+
                         }
                     }
 

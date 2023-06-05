@@ -201,7 +201,9 @@ class Zona extends MyModel
                         } else if ($filters['field'] == 'created_at' || $filters['field'] == 'updated_at') {
                             $query = $query->whereRaw("format(".$this->table . "." . $filters['field'].", 'dd-MM-yyyy HH:mm:ss') LIKE '%$filters[data]%'");
                         } else {
-                            $query = $query->where('zona.' . $filters['field'], 'LIKE', "%$filters[data]%");
+                            // $query = $query->where('zona.' . $filters['field'], 'LIKE', "%$filters[data]%");
+                            $query = $query->whereRaw('zona' . "." .  $filters['field'] . " LIKE '%" . escapeLike($filters['data']) . "%' escape '|'");
+
                         }
                     }
 
@@ -214,7 +216,9 @@ class Zona extends MyModel
                             } else if ($filters['field'] == 'created_at' || $filters['field'] == 'updated_at') {
                                 $query = $query->orWhereRaw("format(".$this->table . "." . $filters['field'].", 'dd-MM-yyyy HH:mm:ss') LIKE '%$filters[data]%'");
                             } else {
-                                $query = $query->orWhere('zona.' . $filters['field'], 'LIKE', "%$filters[data]%");
+                                // $query = $query->orWhere('zona.' . $filters['field'], 'LIKE', "%$filters[data]%");
+                                $query = $query->OrwhereRaw('zona' . "." .  $filters['field'] . " LIKE '%" . escapeLike($filters['data']) . "%' escape '|'");
+
                             }
                         }
                     });

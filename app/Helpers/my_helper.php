@@ -29,4 +29,16 @@ function UTCToTimezone($timezone)
         'UTC-11:00' => 'Pacific/Midway',
     );
     return isset($map[$timezone]) ? $map[$timezone] : '';
+
+
+}
+
+if (!function_exists('escapeLike')) {
+    function escapeLike(string $string)
+    {
+        $search = ['%', '_', '[', "'"];
+        $replace = ['|%', '|_', '|[',"''"];
+
+        return str_replace($search, $replace, $string);
+    }
 }
