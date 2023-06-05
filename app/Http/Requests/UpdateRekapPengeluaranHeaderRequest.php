@@ -13,7 +13,6 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Validation\Rule;
 use App\Rules\ValidasiDestroyRekapPengeluaranHeader ;
-use App\Http\Controllers\Api\RekapPengeluaranHeaderController;
 
 class UpdateRekapPengeluaranHeaderRequest extends FormRequest
 {
