@@ -13,11 +13,11 @@ class OrderanTruckingValidasinoseal2x20 implements Rule
      *
      * @return void
      */
-    public function __construct()
+    public function __construct($param)
     {
-        //
+        $this->kondisi = $param;
     }
-
+    public $kondisi;
     /**
      * Determine if the validation rule passes.
      *
@@ -56,7 +56,16 @@ class OrderanTruckingValidasinoseal2x20 implements Rule
         if ($noseal == '' and  request()->container_id==$container2x20->text  )  {
             $nilai = false;
         } else {
-            $nilai = true;
+
+            if ($this->kondisi == true) {
+                // dd('1');
+                $nilai = false;
+            } else {
+                // dd('3');
+                $nilai = true;
+            }
+
+            
         }
 
         return $nilai;

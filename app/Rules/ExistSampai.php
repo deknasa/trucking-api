@@ -6,7 +6,7 @@ use Illuminate\Contracts\Validation\Rule;
 use App\Http\Controllers\Api\ErrorController;
 use Illuminate\Support\Facades\DB;
 
-class ExistTrado implements Rule
+class ExistSampai implements Rule
 {
     /**
      * Create a new rule instance.
@@ -27,14 +27,14 @@ class ExistTrado implements Rule
      */
     public function passes($attribute, $value)
     {
-        $trado = DB::table("trado")->from(DB::raw("trado with (readuncommitted)"))
-        ->where('id', request()->trado_id)
-        ->first();
-    if ($trado == null) {
-        return false;
-    } else {
-        return true;
-    }
+        $kota = DB::table("kota")->from(DB::raw("kota with (readuncommitted)"))
+            ->where('id', request()->sampai_id)
+            ->first();
+        if ($kota == null) {
+            return false;
+        } else {
+            return true;
+        }
     }
 
     /**

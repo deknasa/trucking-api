@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Models\OrderanTrucking;
 use App\Http\Requests\StoreOrderanTruckingRequest;
 use App\Http\Requests\UpdateOrderanTruckingRequest;
+use App\Http\Requests\DestroyOrderanTruckingRequest;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -203,7 +204,7 @@ class OrderanTruckingController extends Controller
     /**
      * @ClassName 
      */
-    public function update(StoreOrderanTruckingRequest $request, OrderanTrucking $orderantrucking)
+    public function update(UpdateOrderanTruckingRequest $request, OrderanTrucking $orderantrucking)
     {
         DB::beginTransaction();
         try {
@@ -298,7 +299,7 @@ class OrderanTruckingController extends Controller
     /**
      * @ClassName 
      */
-    public function destroy(Request $request, $id)
+    public function destroy(DestroyOrderanTruckingRequest $request, $id)
     {
         DB::beginTransaction();
 

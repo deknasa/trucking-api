@@ -28,7 +28,7 @@ class ExistGandengan implements Rule
     public function passes($attribute, $value)
     {
         $gandengan = DB::table("gandengan")->from(DB::raw("gandengan with (readuncommitted)"))
-        ->where('id', $value)
+        ->where('id', request()->gandengan_id)
         ->first();
     if ($gandengan == null) {
         return false;
