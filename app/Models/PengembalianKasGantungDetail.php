@@ -41,7 +41,6 @@ class PengembalianKasGantungDetail extends MyModel
                 "header.nobukti",
                 "header.tglbukti",
                 "header.coakasmasuk",
-                "akunpusat.keterangancoa as keterangan_coa",
                 "header.tgldari",
                 "header.tglsampai",
                 "header.penerimaan_nobukti",
