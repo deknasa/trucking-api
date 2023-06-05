@@ -33,16 +33,14 @@ class GetUpahSupirRangeRequest extends FormRequest
         $tglbatasakhir = (date('Y') + 1) . '-01-01';
         $rules =  [
             'dari' => [
-                'required',
-                'date_format:d-m-Y',
+                'required', 'date_format:d-m-Y',
                 'before:'.$tglbatasakhir,
                 'after_or_equal:'.$tglbatasawal,
             ],
             'sampai' => [
-                'required',
-                'date_format:d-m-Y',
+                'required', 'date_format:d-m-Y',
                 'before:'.$tglbatasakhir,
-                'after_or_equal:'.date('Y-m-d', strtotime($this->tgldari))
+                'after_or_equal:'.date('Y-m-d', strtotime($this->dari))
             ],
             
         ];
@@ -63,7 +61,7 @@ class GetUpahSupirRangeRequest extends FormRequest
         $controller = new ErrorController;
 
         return [
-            'sampai.after_or_equal' => ':attribute ' . $controller->geterror('NTLK')->keterangan.' '. $this->tgldari,
+            'sampai.after_or_equal' => ':attribute ' . $controller->geterror('NTLK')->keterangan.' '. $this->dari,
         ];
     }    
 
