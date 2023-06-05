@@ -549,7 +549,7 @@ route::middleware(['auth:api'])->group(function () {
     Route::get('role/getroleid', [RoleController::class, 'getroleid']);
     Route::get('role/field_length', [RoleController::class, 'fieldLength']);
     Route::get('role/export', [RoleController::class, 'export'])->name('role.export');
-    Route::get('role/{role}/acl', [UserRoleController::class, 'index']);
+    Route::get('role/{role}/acl', [AclController::class, 'RoleAcl']);
     Route::post('role/{role}/acl', [UserRoleController::class, 'store']);
     Route::resource('role', RoleController::class);
 
