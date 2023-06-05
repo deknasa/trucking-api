@@ -12,6 +12,7 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use App\Http\Requests\StoreLogTrailRequest;
+use App\Http\Requests\GetIndexRangeRequest;
 use App\Models\LogTrail;
 use App\Models\AkunPusat;
 use App\Models\Supplier;
@@ -33,7 +34,7 @@ class HutangHeaderController extends Controller
     /**
      * @ClassName
      */
-    public function index()
+    public function index(GetIndexRangeRequest $request)
     {
         $hutang = new HutangHeader();
 

@@ -13,6 +13,7 @@ use App\Http\Requests\StoreLogTrailRequest;
 use App\Http\Requests\UpdateInvoiceChargeGandenganHeaderRequest;
 use Illuminate\Support\Facades\DB;
 use App\Http\Requests\StoreInvoiceChargeGandenganDetailRequest;
+use App\Http\Requests\GetIndexRangeRequest;
 
 
 class InvoiceChargeGandenganHeaderController extends Controller
@@ -20,7 +21,7 @@ class InvoiceChargeGandenganHeaderController extends Controller
     /**
      * @ClassName 
      */
-    public function index()
+    public function index(GetIndexRangeRequest $request)
     {
         $invoice = new InvoiceChargeGandenganHeader();
 

@@ -16,6 +16,7 @@ use App\Http\Requests\UpdatePenerimaanStokHeaderRequest;
 use App\Http\Requests\StoreHutangHeaderRequest;
 use App\Http\Requests\UpdateHutangHeaderRequest;
 use App\Http\Requests\StoreHutangDetailRequest;
+use App\Http\Requests\GetIndexRangeRequest;
 
 use App\Models\Parameter;
 use App\Models\Error;
@@ -34,7 +35,7 @@ class PenerimaanStokHeaderController extends Controller
     /**
      * @ClassName 
      */
-    public function index()
+    public function index(GetIndexRangeRequest $request)
     {
         $penerimaanStokHeader = new PenerimaanStokHeader();
         return response([
