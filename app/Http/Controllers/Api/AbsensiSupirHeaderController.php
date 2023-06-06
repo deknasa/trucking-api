@@ -18,8 +18,6 @@ use App\Models\KasGantungDetail;
 use App\Models\KasGantungHeader;
 use App\Models\Parameter;
 
-use App\Http\Requests\StoreAbsensiSupirHeaderRequest;
-use App\Http\Requests\UpdateAbsensiSupirHeaderRequest;
 use App\Http\Requests\AbsensiSupirHeaderRequest;
 
 

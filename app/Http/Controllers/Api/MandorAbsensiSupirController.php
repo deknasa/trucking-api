@@ -9,7 +9,6 @@ use App\Models\AbsensiSupirHeader;
 use App\Models\AbsensiSupirDetail;
 use App\Models\Trado;
 use App\Models\Parameter;
-use App\Http\Requests\StoreAbsensiSupirHeaderRequest;
 use App\Http\Requests\StoreAbsensiSupirDetailRequest;
 use App\Http\Requests\StoreKasGantungDetailRequest;
 use App\Http\Requests\StoreKasGantungHeaderRequest;
