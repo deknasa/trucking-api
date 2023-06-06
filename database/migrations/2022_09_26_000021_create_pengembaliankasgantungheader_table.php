@@ -22,6 +22,7 @@ class CreatePengembaliankasgantungheaderTable extends Migration
             $table->date('tglbukti')->nullable();
             $table->longText('keterangan')->nullable();
             $table->unsignedBigInteger('bank_id')->nullable();
+            $table->unsignedBigInteger('pelanggan_id')->nullable();
             $table->date('tgldari')->nullable();
             $table->date('tglsampai')->nullable();
             $table->string('penerimaan_nobukti',50)->nullable();

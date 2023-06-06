@@ -58,7 +58,7 @@ class HutangDetailController extends Controller
 
     public function store(StoreHutangDetailRequest $request)
     {
-        DB::beginTransaction();
+        // DB::beginTransaction();
 
         
         try {
@@ -74,7 +74,7 @@ class HutangDetailController extends Controller
            
             $hutangdetail->save();
            
-            DB::commit();
+            // DB::commit();
             return [
                 'error' => false,
                 'detail' => $hutangdetail,
@@ -82,7 +82,7 @@ class HutangDetailController extends Controller
                 'tabel' => $hutangdetail->getTable(),
             ];
         } catch (\Throwable $th) {
-            DB::rollBack();
+            // DB::rollBack();
             throw $th;
         }        
     }
