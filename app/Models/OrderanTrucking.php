@@ -150,10 +150,19 @@ class OrderanTrucking extends MyModel
 
     public function getcont($id)
     {
+
+        $queryukuran = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))
+        ->select(
+            'text',
+        )
+        ->where('grp', 'UKURANCONTAINER2X20')
+        ->where('subgrp', 'UKURANCONTAINER2X20')
+        ->first();
+
         $data = DB::table('container')
             ->from(DB::raw("container with (readuncommitted)"))
             ->select(
-                DB::raw("(case when kodecontainer='2X20`' then 1 else 0 end)  as kodecontainer")
+                DB::raw("(case when id=". $queryukuran->text ." then 1 else 0 end)  as kodecontainer")
             )
             ->where('container.id', $id)
             ->first();
@@ -437,7 +446,7 @@ class OrderanTrucking extends MyModel
                             $query = $query->whereRaw("format(".$this->table . "." . $filters['field'].", 'dd-MM-yyyy HH:mm:ss') LIKE '%$filters[data]%'");
                         } else {
                             // $query = $query->where($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
-                            $query = $query->whereRaw($this->table . "." .  $filters['field'] . " LIKE '%" . escapeLike($filters['data']) . "%' escape '|'");
+                            $query = $query->whereRaw($this->table . ".[" .  $filters['field'] . "] LIKE '%" . escapeLike($filters['data']) . "%' escape '|'");
 
                         }
                     }
@@ -467,7 +476,7 @@ class OrderanTrucking extends MyModel
                             $query = $query->orWhereRaw("format(".$this->table . "." . $filters['field'].", 'dd-MM-yyyy HH:mm:ss') LIKE '%$filters[data]%'");
                         } else {
                             // $query = $query->orWhere($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
-                            $query = $query->OrwhereRaw($this->table . "." .  $filters['field'] . " LIKE '%" . escapeLike($filters['data']) . "%' escape '|'");
+                            $query = $query->OrwhereRaw($this->table . ".[" .  $filters['field'] . "] LIKE '%" . escapeLike($filters['data']) . "%' escape '|'");
 
                         }
                     }

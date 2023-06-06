@@ -13,11 +13,13 @@ class OrderanTruckingValidasinoseal2x20 implements Rule
      *
      * @return void
      */
-    public function __construct($param)
+    public function __construct($param,$paramukuran)
     {
         $this->kondisi = $param;
+        $this->ukuran = $paramukuran;
     }
     public $kondisi;
+    public $ukuran;
     /**
      * Determine if the validation rule passes.
      *
@@ -57,13 +59,14 @@ class OrderanTruckingValidasinoseal2x20 implements Rule
             $nilai = false;
         } else {
 
-            if ($this->kondisi == true) {
-                // dd('1');
-                $nilai = false;
-            } else {
-                // dd('3');
-                $nilai = true;
-            }
+            $nilai = true;
+            // if ($this->kondisi == true && $this->ukuran==true) {
+            //     // dd('1');
+            //     $nilai = false;
+            // } else {
+            //     // dd('3');
+            //     $nilai = true;
+            // }
 
             
         }

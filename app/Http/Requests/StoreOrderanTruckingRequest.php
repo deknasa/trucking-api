@@ -49,6 +49,13 @@ class StoreOrderanTruckingRequest extends FormRequest
             ->where('subgrp', 'JENIS ORDERAN IMPORT')
             ->first();
 
+        $queryukuran = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))
+            ->select(
+                'text',
+            )
+            ->where('grp', 'UKURANCONTAINER2X20')
+            ->where('subgrp', 'UKURANCONTAINER2X20')
+            ->first();
 
         if ($this->jenisorder_id == $queryimport->text) {
             $queryjenisimport = DB::table('jenisorder')->from(DB::raw("jenisorder with (readuncommitted)"))
@@ -68,7 +75,17 @@ class StoreOrderanTruckingRequest extends FormRequest
             $kondisi = true;
         }
 
+   
 
+        if ($this->container_id == $queryukuran->text) {
+            $kondisiukuran = true;
+        } else {
+            $kondisiukuran = false;
+        }
+
+
+
+// dd($kondisiukuran);
 
         $parameter = new Parameter();
         $data = $parameter->getcombodata('STATUS LANGSIR', 'STATUS LANGSIR');
@@ -96,7 +113,7 @@ class StoreOrderanTruckingRequest extends FormRequest
             'nocont' => 'required',
             'noseal' => [new OrderanTruckingNoSeal($kondisi)],
             'nocont2' => [new OrderanTruckingValidasinocont2x20()],
-            'noseal2' => [new OrderanTruckingValidasinoseal2x20($kondisi)],
+            'noseal2' => [new OrderanTruckingValidasinoseal2x20($kondisi,$kondisiukuran)],
         ];
 
 
