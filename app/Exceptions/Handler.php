@@ -39,13 +39,15 @@ class Handler extends ExceptionHandler
     public function register()
     {
         $this->reportable(function (Throwable $e) {
+            $user = auth('api')->user();
+            $userName = null;
+
+            if ($user) $userName = $user->name;
+
             do {
-                Log::error('[' . $e->getCode() . '] "' . $e->getMessage() . '" on line ' . $e->getTrace()[0]['line'] . ' of file ' . $e->getTrace()[0]['file'], [
-                    'user' => auth('api')->user(),
-                    'request' => request(),
-                ]);
+                Log::error("\nuser = " . $userName . "\nerror = [" . $e->getCode() . '] "' . $e->getMessage() . '" on line ' . $e->getTrace()[0]['line'] . ' of file ' . $e->getTrace()[0]['file'] . "\nrequest = " . request()->__toString() . "\n");
             } while ($e = $e->getPrevious());
-        })->stop();
+        });
     }
 
     public function render($request, Throwable $e)
