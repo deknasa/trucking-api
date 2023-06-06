@@ -42,7 +42,6 @@ class PengembalianKasGantungHeaderController extends Controller
     public function index(GetIndexRangeRequest $request)
     {
         $pengembalianKasGantungHeader = new PengembalianKasGantungHeader();
-        //dd($pengembalianKasGantungHeader->get());
         return response([
             'data' => $pengembalianKasGantungHeader->get(),
             'attributes' => [
@@ -387,7 +386,7 @@ class PengembalianKasGantungHeaderController extends Controller
                 $pengembaliankasgantungheader->tglsampai = date('Y-m-d', strtotime($request->tglsampai));
                 // $pengembaliankasgantungheader->penerimaan_nobukti = $request->penerimaan_nobukti;
                 $pengembaliankasgantungheader->coakasmasuk = $querysubgrppenerimaan->coa;
-                $pengembaliankasgantungheader->postingdari = $request->postingdari ?? '';
+                $pengembaliankasgantungheader->postingdari = $request->postingdari ?? 'PENGEMBALIAN KAS GANTUNG';
                 $pengembaliankasgantungheader->statuscetak = $statusCetak->id ?? 0;
                 $pengembaliankasgantungheader->modifiedby = auth('api')->user()->name;
                 $pengembaliankasgantungheader->tglkasmasuk = date('Y-m-d', strtotime($request->tglbukti));
@@ -855,5 +854,14 @@ class PengembalianKasGantungHeaderController extends Controller
 
             return response($data);
         }
+    }
+
+    public function export($id)
+    {
+        
+        $pengembalianKasGantungHeader = new PengembalianKasGantungHeader();
+        return response([
+            'data' => $pengembalianKasGantungHeader->getExport($id)
+        ]);
     }
 }
