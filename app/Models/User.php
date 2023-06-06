@@ -91,12 +91,25 @@ class User extends Authenticatable
     {
         $this->setRequestParameters();
 
-        $query = DB::table($this->table);
+        $query = DB::table($this->table)
+        ->select(
+            "$this->table.id",
+            "$this->table.user",
+            "$this->table.name",
+            "cabang.namacabang as cabang_id",
+            "$this->table.karyawan_id",
+            "$this->table.dashboard",
+            "parameter.memo as statusaktif",
+            "$this->table.modifiedby",
+            "$this->table.created_at",
+            "$this->table.updated_at"
+        )
+            ->leftJoin('parameter', 'user.statusaktif', '=', 'parameter.id')
+            ->leftJoin('cabang', 'user.cabang_id', '=', 'cabang.id');
 
         $this->totalRows = $query->count();
         $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;
-
-        $this->selectColumns($query);
+        
         $this->sort($query);
         $this->filter($query);
         $this->paginate($query);
