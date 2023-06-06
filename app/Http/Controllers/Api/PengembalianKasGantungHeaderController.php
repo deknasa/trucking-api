@@ -864,4 +864,46 @@ class PengembalianKasGantungHeaderController extends Controller
             'data' => $pengembalianKasGantungHeader->getExport($id)
         ]);
     }
+
+    public function printReport($id)
+    {
+        DB::beginTransaction();
+
+        try {
+            $pengembalianKgt = PengembalianKasGantungHeader::lockForUpdate()->findOrFail($id);
+            $statusSudahCetak = Parameter::from(DB::raw("parameter with (readuncommitted)"))
+                ->where('grp', '=', 'STATUSCETAK')->where('text', '=', 'CETAK')->first();
+            $statusBelumCetak = Parameter::from(DB::raw("parameter with (readuncommitted)"))
+                ->where('grp', '=', 'STATUSCETAK')->where('text', '=', 'BELUM CETAK')->first();
+
+            if ($pengembalianKgt->statuscetak != $statusSudahCetak->id) {
+                $pengembalianKgt->statuscetak = $statusSudahCetak->id;
+                $pengembalianKgt->tglbukacetak = date('Y-m-d H:i:s');
+                $pengembalianKgt->userbukacetak = auth('api')->user()->name;
+                $pengembalianKgt->jumlahcetak = $pengembalianKgt->jumlahcetak + 1;
+
+                if ($pengembalianKgt->save()) {
+                    $logTrail = [
+                        'namatabel' => strtoupper($pengembalianKgt->getTable()),
+                        'postingdari' => 'PRINT PENERIMAAN TRUCKING HEADER',
+                        'idtrans' => $pengembalianKgt->id,
+                        'nobuktitrans' => $pengembalianKgt->nobukti,
+                        'aksi' => 'PRINT',
+                        'datajson' => $pengembalianKgt->toArray(),
+                        'modifiedby' => auth('api')->user()->name,
+                    ];
+
+                    $validatedLogTrail = new StoreLogTrailRequest($logTrail);
+                    $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
+
+                    DB::commit();
+                }
+            }
+            return response([
+                'message' => 'Berhasil'
+            ]);
+        } catch (\Throwable $th) {
+            throw $th;
+        }
+    }
 }
