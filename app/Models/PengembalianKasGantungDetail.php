@@ -40,7 +40,7 @@ class PengembalianKasGantungDetail extends MyModel
                 "header.id",
                 "header.nobukti",
                 "header.tglbukti",
-                "header.coakasmasuk",
+                "coaheader.keterangancoa as coakasmasuk",
                 "header.tgldari",
                 "header.tglsampai",
                 "header.penerimaan_nobukti",
@@ -51,11 +51,12 @@ class PengembalianKasGantungDetail extends MyModel
                 "$this->table.nobukti",
                 "$this->table.nominal",
                 "$this->table.keterangan",
-                "$this->table.coa",
+                "akunpusat.keterangancoa as coa",
             )
                 ->leftJoin(DB::raw("pengembaliankasgantungheader as header with (readuncommitted)"), "header.id", "$this->table.pengembaliankasgantung_id")
-                ->leftJoin(DB::raw("bank with (readuncommitted)"), "header.bank_id", "bank.id");
-
+                ->leftJoin(DB::raw("bank with (readuncommitted)"), "header.bank_id", "bank.id")
+                ->leftJoin("akunpusat as coaheader", "header.coakasmasuk", "coaheader.coa")
+                ->leftJoin("akunpusat", "$this->table.coa", "akunpusat.coa");
         } else {
             $query->select(
                 "$this->table.pengembaliankasgantung_id",
@@ -66,7 +67,8 @@ class PengembalianKasGantungDetail extends MyModel
                 "akunpusat.keterangancoa as coa",
             )
             ->leftJoin("akunpusat", "$this->table.coa", "akunpusat.coa");
-            $query->where($this->table . '.pengembaliankasgantung_id', '=', request()->pengembaliankasgantung_id);
+            // $query->where($this->table . '.pengembaliankasgantung_id', '=', request()->pengembaliankasgantung_id);
+            // dd($query->toSql());
 
             $this->totalRows = $query->count();
             $this->totalNominal = $query->sum('nominal');

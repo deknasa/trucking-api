@@ -467,4 +467,28 @@ class PengembalianKasGantungHeader extends MyModel
 
         return $query;
     }
+
+    public function getExport($id)
+    {
+        $this->setRequestParameters();
+
+        $query = DB::table($this->table)->select(
+            "$this->table.id",
+            "$this->table.nobukti",
+            "$this->table.tglbukti",
+            "akunpusat.keterangancoa as coakasmasuk",
+            "$this->table.tgldari",
+            "$this->table.tglsampai",
+            "$this->table.penerimaan_nobukti",
+            "$this->table.postingdari",
+            "$this->table.tglkasmasuk",
+            "bank.namabank as bank",
+        )
+            ->leftJoin(DB::raw("bank with (readuncommitted)"), "$this->table.bank_id", "bank.id")
+            ->leftJoin("akunpusat", "$this->table.coakasmasuk", "akunpusat.coa")
+            ->where("$this->table.id", $id);
+
+        $data = $query->first();
+        return $data;
+    }
 }

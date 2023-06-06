@@ -26,7 +26,7 @@ class PengembalianKasGantungDetailController extends Controller
             $getuser = User::select('name', 'cabang.id as cabang_id', 'cabang.namacabang as nama_cabang')
                 ->where('user.id', $idUser)->join('cabang', 'user.cabang_id', 'cabang.id')->first();
 
-            //dd($pengembalianKasGantungDetail->get());
+            
             return response([
                 'data' => $pengembalianKasGantungDetail->get(),
                 'user' => $getuser,
