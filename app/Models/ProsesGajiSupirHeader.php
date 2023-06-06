@@ -639,8 +639,10 @@ class ProsesGajiSupirHeader extends MyModel
                 'prosesgajisupirheader.nobukti',
                 'prosesgajisupirheader.tglbukti',
                 'prosesgajisupirheader.periode',
+                'prosesgajisupirheader.keterangan',
                 'prosesgajisupirheader.tgldari',
                 'prosesgajisupirheader.tglsampai',
+                'prosesgajisupirheader.statuscetak',
                 'prosesgajisupirheader.bank_id as bank_idPR',
                 'prosesgajisupirheader.pengeluaran_nobukti as nobuktiPR',
                 'bank.namabank as bankPR'

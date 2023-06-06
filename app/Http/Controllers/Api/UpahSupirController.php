@@ -57,15 +57,15 @@ class UpahSupirController extends Controller
         $upahsupirrincian = new UpahSupirRincian();
 
         $cekData = DB::table("upahsupir")->from(DB::raw("upahsupir with (readuncommitted)"))
-        ->whereBetween('tglmulaiberlaku', [$dari, $sampai])
-        ->first();
+            ->whereBetween('tglmulaiberlaku', [$dari, $sampai])
+            ->first();
 
-        if($cekData != null){  
+        if ($cekData != null) {
             return response([
                 'status' => true,
-                'data' => $upahsupirrincian->listpivot($dari,$sampai),
+                'data' => $upahsupirrincian->listpivot($dari, $sampai),
             ]);
-        }else{
+        } else {
             return response([
                 'errors' => [
                     "export" => "tidak ada data"
@@ -73,7 +73,7 @@ class UpahSupirController extends Controller
                 'message' => "The given data was invalid.",
             ], 422);
         }
-     }
+    }
 
     public function store(StoreUpahSupirRequest $request)
     {
@@ -126,7 +126,7 @@ class UpahSupirController extends Controller
             ];
             $validatedLogTrail = new StoreLogTrailRequest($logTrail);
             $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
-            
+
             /* Store detail */
             $detaillog = [];
             for ($i = 0; $i < count($request->nominalsupir); $i++) {
@@ -169,14 +169,14 @@ class UpahSupirController extends Controller
 
             if ($request->statussimpankandang == $statusSimpanKandang->id) {
                 $getBelawanKandang = DB::table("upahsupir")->from(DB::raw("upahsupir with (readuncommitted)"))
-                    ->select('id','jarak')
+                    ->select('id', 'jarak')
                     ->where('kotadari_id', $belawan->id)
                     ->where('kotasampai_id', $kandang->id)
                     ->first();
 
                 $getRincianBelawanKandang = DB::table("upahsupirrincian")->from(DB::raw("upahsupirrincian with (readuncommitted)"))
-                ->where('upahsupir_id', $getBelawanKandang->id)
-                ->get();
+                    ->where('upahsupir_id', $getBelawanKandang->id)
+                    ->get();
                 $jarakKandang = $request->jarak - $getBelawanKandang->jarak;
 
                 $upahsupirKandang = new UpahSupir();
@@ -215,12 +215,12 @@ class UpahSupirController extends Controller
                 /* Store detail */
                 $detaillog = [];
                 for ($i = 0; $i < count($request->nominalsupir); $i++) {
-                    $nomSupir = ($request->nominalsupir[$i] == 0) ? 0 : $request->nominalsupir[$i]-$getRincianBelawanKandang[$i]->nominalsupir;
-                    $nomKenek = ($request->nominalkenek[$i] == 0) ? 0 : $request->nominalkenek[$i]-$getRincianBelawanKandang[$i]->nominalkenek;
-                    $nomKomisi = ($request->nominalkomisi[$i] == 0) ? 0 : $request->nominalkomisi[$i]-$getRincianBelawanKandang[$i]->nominalkomisi;
-                    $nomTol = ($request->nominaltol[$i] == 0) ? 0 : $request->nominaltol[$i]-$getRincianBelawanKandang[$i]->nominaltol;
-                    $liter = ($request->liter[$i] == 0) ? 0 : $request->liter[$i]-$getRincianBelawanKandang[$i]->liter;
-                    
+                    $nomSupir = ($request->nominalsupir[$i] == 0) ? 0 : $request->nominalsupir[$i] - $getRincianBelawanKandang[$i]->nominalsupir;
+                    $nomKenek = ($request->nominalkenek[$i] == 0) ? 0 : $request->nominalkenek[$i] - $getRincianBelawanKandang[$i]->nominalkenek;
+                    $nomKomisi = ($request->nominalkomisi[$i] == 0) ? 0 : $request->nominalkomisi[$i] - $getRincianBelawanKandang[$i]->nominalkomisi;
+                    $nomTol = ($request->nominaltol[$i] == 0) ? 0 : $request->nominaltol[$i] - $getRincianBelawanKandang[$i]->nominaltol;
+                    $liter = ($request->liter[$i] == 0) ? 0 : $request->liter[$i] - $getRincianBelawanKandang[$i]->liter;
+
                     $datadetail = [
                         'upahsupir_id' => $upahsupirKandang->id,
                         'container_id' => $request->container_id[$i],
@@ -228,11 +228,11 @@ class UpahSupirController extends Controller
                         'nominalsupir' => ($nomSupir < 0) ? 0 : $nomSupir,
                         'nominalkenek' => ($nomKenek < 0) ? 0 : $nomKenek,
                         'nominalkomisi' => ($nomKomisi < 0) ? 0 : $nomKomisi,
-                        'nominaltol' =>  ($nomTol < 0) ? 0 : $nomTol,
+                        'nominaltol' => ($nomTol < 0) ? 0 : $nomTol,
                         'liter' => ($liter < 0) ? 0 : $liter,
                         'modifiedby' => auth('api')->user()->name,
                     ];
-                    
+
                     $data = new StoreUpahSupirRincianRequest($datadetail);
                     $datadetails = app(UpahSupirRincianController::class)->store($data);
                     if ($datadetails['error']) {
@@ -289,13 +289,22 @@ class UpahSupirController extends Controller
 
         $data = upahSupir::findAll($id);
         $detail = UpahSupirRincian::getAll($id);
+        $gambar = json_decode($data->gambar);
 
-
+        $countGambar = 0;
+        if ($gambar != null) {
+            foreach ($gambar as $g) {
+                if (Storage::exists("upahsupir/$g")) {
+                    $countGambar++;
+                }
+            }
+        }
 
         return response([
             'status' => true,
             'data' => $data,
-            'detail' => $detail
+            'detail' => $detail,
+            'count' => $countGambar
         ]);
     }
 
@@ -546,7 +555,11 @@ class UpahSupirController extends Controller
         if (Storage::exists("upahsupir/$type" . '_' . "$filename")) {
             return response()->file(storage_path("app/upahsupir/$type" . '_' . "$filename"));
         } else {
-            return response()->file(storage_path("app/upahsupir/$filename"));
+            if (Storage::exists("upahsupir/$filename")) {
+                return response()->file(storage_path("app/upahsupir/$filename"));
+            } else {
+                return response('no-image');
+            }
         }
     }
     public function export()

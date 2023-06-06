@@ -32,6 +32,8 @@ class ProsesGajiSupirDetail extends MyModel
             $query->select(
                 'header.nobukti',
                 'header.tglbukti',
+                'header.tgldari',
+                'header.tglsampai',
                 'supir.namasupir as supir_id',
                 'trado.kodetrado as trado_id',
                 $this->table . '.gajisupir_nobukti',
