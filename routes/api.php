@@ -339,6 +339,7 @@ route::middleware(['auth:api'])->group(function () {
     Route::get('mandorabsensisupir/{tradoId}/cekvalidasiadd', [MandorAbsensiSupirController::class, 'cekValidasiAdd']);
     Route::patch('mandorabsensisupir/{id}/update', [MandorAbsensiSupirController::class, 'update']);
     Route::delete('mandorabsensisupir/{id}/delete', [MandorAbsensiSupirController::class, 'destroy']);
+    Route::get('mandorabsensisupir/{id}/getabsentrado', [MandorAbsensiSupirController::class, 'getabsentrado']);
     Route::resource('mandorabsensisupir', MandorAbsensiSupirController::class);
 
     Route::get('historytrip', [HistoryTripController::class, 'index']);

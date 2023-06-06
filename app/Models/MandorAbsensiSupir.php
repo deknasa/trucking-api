@@ -100,6 +100,30 @@ class MandorAbsensiSupir extends MyModel
         return $data;
     }
 
+    public function getabsentrado($id)
+    {
+
+        $queryabsen = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))
+        ->select(
+            'text',
+        )
+        ->where('grp', 'TIDAK ADA SUPIR')
+        ->where('subgrp', 'TIDAK ADA SUPIR')
+        ->first();
+
+        $data = DB::table('absentrado')
+            ->from(DB::raw("absentrado with (readuncommitted)"))
+            ->select(
+                DB::raw("(case when id=". $queryabsen->text ." then 1 else 0 end)  as kodeabsen")
+            )
+            ->where('absentrado.id', $id)
+            ->first();
+
+
+        return $data;
+    }
+
+
     public function isAbsen($id)
     {
         $absensisupirdetail = DB::table('absensisupirdetail')

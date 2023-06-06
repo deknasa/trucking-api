@@ -385,5 +385,16 @@ class MandorAbsensiSupirController extends Controller
                 'errors' => false,
             ]);
         }
+        
     }
+
+    public function getabsentrado($id)
+    {
+
+        $mandorabsensisupir = new MandorAbsensiSupir();
+        return response([
+            "data" => $mandorabsensisupir->getabsentrado($id)
+        ]);
+    }
+
 }

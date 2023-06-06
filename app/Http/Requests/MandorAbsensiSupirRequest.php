@@ -52,6 +52,7 @@ class MandorAbsensiSupirRequest extends FormRequest
                     return empty($this->input('absen'));
                 }), Rule::when(empty($this->input('absen')), 'date_format:H:i')]
             ];
+            $rulesBeda = [];
         } else {
             $rules = [
                 'trado_id' => 'required',
