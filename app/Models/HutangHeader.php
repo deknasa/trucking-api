@@ -171,10 +171,19 @@ class HutangHeader extends MyModel
 
         $temp = $this->createTempHutang($id);
 
+        $approval = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))
+        ->where('grp', 'STATUS APPROVAL')
+        ->where('subgrp', 'STATUS APPROVAL')
+        ->where('text', 'APPROVAL')
+        ->first();
+
+        $approvalId = $approval->id;
+
         $query = DB::table('hutangheader')->from(DB::raw("hutangheader with (readuncommitted)"))
             ->select(DB::raw("row_number() Over(Order By hutangheader.id) as id,hutangheader.nobukti as nobukti,hutangheader.tglbukti, hutangheader.total as nominal," . $temp . ".sisa, 0 as total"))
             ->join(DB::raw("$temp with (readuncommitted)"), 'hutangheader.nobukti', $temp . ".nobukti")
             ->whereRaw("hutangheader.nobukti = $temp.nobukti")
+            ->whereRaw("hutangheader.statusapproval = $approvalId")
             ->where(function ($query) use ($temp) {
                 $query->whereRaw("$temp.sisa != 0")
                     ->orWhereRaw("$temp.sisa is null");
