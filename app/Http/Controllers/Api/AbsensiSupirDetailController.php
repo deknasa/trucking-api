@@ -41,35 +41,27 @@ class AbsensiSupirDetailController extends Controller
    
     public function store(StoreAbsensiSupirDetailRequest $request)
     {
-        DB::beginTransaction();
+        $absensiSupirDetail = new AbsensiSupirDetail();
+        $absensiSupirDetail->absensi_id = $request->absensi_id ?? '';
+        $absensiSupirDetail->nobukti = $request->nobukti ?? '';
+        $absensiSupirDetail->trado_id = $request->trado_id ?? '';
+        $absensiSupirDetail->absen_id = $request->absen_id ?? '';
+        $absensiSupirDetail->supir_id = $request->supir_id ?? '';
+        $absensiSupirDetail->jam = $request->jam ?? '';
+        $absensiSupirDetail->uangjalan = $request->uangjalan ?? '';
+        $absensiSupirDetail->keterangan = $request->keterangan ?? '';
+        $absensiSupirDetail->modifiedby = $request->modifiedby ?? '';
 
-        try {
-            $AbsensiSupirDetail = new AbsensiSupirDetail();
-
-            $AbsensiSupirDetail->absensi_id = $request->absensi_id ?? '';
-            $AbsensiSupirDetail->nobukti = $request->nobukti ?? '';
-            $AbsensiSupirDetail->trado_id = $request->trado_id ?? '';
-            $AbsensiSupirDetail->absen_id = $request->absen_id ?? '';
-            $AbsensiSupirDetail->supir_id = $request->supir_id ?? '';
-            $AbsensiSupirDetail->jam = $request->jam ?? '';
-            $AbsensiSupirDetail->uangjalan = $request->uangjalan ?? '';
-            $AbsensiSupirDetail->keterangan = $request->keterangan ?? '';
-            $AbsensiSupirDetail->modifiedby = $request->modifiedby ?? '';
-
-            $AbsensiSupirDetail->save();
-
-
-            DB::commit();
-            return [
-                'error' => false,
-                'detail' => $AbsensiSupirDetail,
-                'id' => $AbsensiSupirDetail->id,
-                'tabel' => $AbsensiSupirDetail->getTable(),
-            ];
-        } catch (\Throwable $th) {
-            DB::rollBack();
-            return response($th->getMessage());
+        if (!$absensiSupirDetail->save()) {
+            throw new \Exception("Gagal menyimpan absensi supir detail.", 1);
         }
+
+        return [
+            'error' => false,
+            'detail' => $absensiSupirDetail,
+            'id' => $absensiSupirDetail->id,
+            'tabel' => $absensiSupirDetail->getTable(),
+        ];
     }
 
 
