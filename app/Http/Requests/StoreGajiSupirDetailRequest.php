@@ -31,7 +31,7 @@ class StoreGajiSupirDetailRequest extends FormRequest
         if(request()->pinjSemua) {
             $rulesPinjSemua  = [
                 'nominalPS.*' => ['required','numeric','gt:0', new CekMaxNominalPSGajiSupir()],
-                'pinjSemua_sisa.*' => ['numeric','min:0', new CekMaxSisaPSGajiSupir()]
+                'pinjSemua_sisa.*' => ['numeric','min:0']
             ];
         }
 
@@ -40,7 +40,7 @@ class StoreGajiSupirDetailRequest extends FormRequest
         if(request()->pinjPribadi) {
             $rulesPinjPribadi = [
                 'nominalPP.*' => ['required','numeric','gt:0', new CekMaxNominalPPGajiSupir()],
-                'pinjPribadi_sisa.*' => ['numeric','min:0', new CekMaxSisaPPGajiSupir()]
+                'pinjPribadi_sisa.*' => ['numeric','min:0']
             ];
         }
 
