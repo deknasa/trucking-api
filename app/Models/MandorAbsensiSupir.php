@@ -67,6 +67,39 @@ class MandorAbsensiSupir extends MyModel
     {
         return $id;
     }
+
+    public function cekvalidasihapus($trado_id,$supir_id,$tglbukti)
+    {
+        $suratpengantar = DB::table('suratpengantar')
+            ->from(
+                DB::raw("suratpengantar as a with (readuncommitted)")
+            )
+            ->select(
+                'a.nobukti'
+            )
+            ->where('a.trado_id', '=', $trado_id)
+            ->where('a.supir_id', '=', $supir_id)
+            ->where('a.tglbukti', '=', $tglbukti)
+            ->first();
+        if (isset($suratpengantar)) {
+            $data = [
+                'kondisi' => true,
+                'keterangan' => 'Surat Pengantar',
+                'kodeerror' => 'SATL'
+            ];
+            goto selesai;
+        }
+
+      
+
+        $data = [
+            'kondisi' => false,
+            'keterangan' => '',
+        ];
+        selesai:
+        return $data;
+    }
+
     public function isAbsen($id)
     {
         $absensisupirdetail = DB::table('absensisupirdetail')
