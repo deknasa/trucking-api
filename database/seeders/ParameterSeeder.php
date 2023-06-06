@@ -338,6 +338,7 @@ class ParameterSeeder extends Seeder
         parameter::create(['grp' => 'KLAIM SUPIR', 'subgrp' => 'KLAIM SUPIR', 'kelompok' => '', 'text' => '#KLAIM #9999#/#R#/#Y', 'memo' => '{"MEMO":"KLAIM SUPIR","SINGKATAN":"#KLAIM #9999#/#R#/#Y","WARNA":"#28A745"}', 'type' => '118', 'modifiedby' => 'ADMIN', 'default' => '',]);
         parameter::create(['grp' => 'JENIS ORDERAN IMPORT', 'subgrp' => 'JENIS ORDERAN IMPORT', 'kelompok' => '', 'text' => '3', 'memo' => '{"MEMO":"JENIS ORDERAN IMPORT","SINGKATAN":"3","WARNA":"#28A745"}', 'type' => '118', 'modifiedby' => 'ADMIN', 'default' => '',]);
         parameter::create(['grp' => 'TIDAK ADA SUPIR', 'subgrp' => 'TIDAK ADA SUPIR', 'kelompok' => '', 'text' => '2', 'memo' => '{"MEMO":"TIDAK ADA SUPIR","SINGKATAN":"3","WARNA":"#28A745"}', 'type' => '118', 'modifiedby' => 'ADMIN', 'default' => '',]);
+        parameter::create(['grp' => 'BATAS JAM EDIT ABSENSI', 'subgrp' => 'BATAS JAM EDIT ABSENSI', 'kelompok' => '', 'text' => '11:59', 'memo' => '{"MEMO":"BATAS JAM EDIT ABSENSI","SINGKATAN":"BJE","WARNA":"#28A745"}', 'type' => '118', 'modifiedby' => 'ADMIN', 'default' => '',]);
         
     }
 }
