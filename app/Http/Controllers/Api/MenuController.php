@@ -94,22 +94,24 @@ class MenuController extends Controller
             ) {
 
                 if ($request->menuparent == 0) {
+
                     $list = Menu::select('menukode')
                         ->where('menuparent', '=', '0')
                         ->where(DB::raw('right(menukode,1)'), '<>', '9')
+                        ->where(DB::raw('left(menukode,1)'), '<>', 'Z')
                         ->orderBy('menukode', 'desc')
                         ->first();
                     // dd('test1');
-                    $menukode = $list->menukode + 1;
+                    $menukode = chr(ord($list->menukode) + 1);
                 } else {
 
-                   
+
                     if (Menu::select('menukode')
                         ->where('menuparent', '=', $request->menuparent)
                         ->where(DB::raw('right(menukode,1)'), '<>', 'Z')
                         ->exists()
                     ) {
-                   
+
                         $list = Menu::select('menukode')
                             ->where('menuparent', '=', $request->menuparent)
                             ->where(DB::raw('right(menukode,1)'), '<>', 'Z')
@@ -121,16 +123,15 @@ class MenuController extends Controller
                         if (in_array($kodeakhir, $arrayangka)) {
 
                             $menukode = $list->menukode + 1;
-                   
                         } else if ($kodeakhir == '9') {
                             $kodeawal = substr($list->menukode, 0, strlen($list->menukode) - 1);
-                            $menukode = $kodeawal .'A';
+                            $menukode = $kodeawal . 'A';
                         } else {
                             $kodeawal = substr($list->menukode, 0, strlen($list->menukode) - 1);
                             $menukode = $kodeawal . chr((ord($kodeakhir) + 1));
                         }
                     } else {
-                   
+
                         $list = Menu::select('menukode')
                             ->where('id', '=', $request->menuparent)
                             ->where(DB::raw('right(menukode,1)'), '<>', '9')
@@ -168,7 +169,6 @@ class MenuController extends Controller
                     } else {
                         $menukode = chr((ord($kodeakhir) + 1));
                     }
-                    
                 } else {
                     $list = Menu::select('menukode')
                         ->where('id', '=', $request->menuparent)
@@ -242,6 +242,7 @@ class MenuController extends Controller
     public function update(UpdateMenuRequest $request, Menu $menu)
     {
 
+
         $query = DB::table('menu')
             ->from(
                 DB::raw("menu a with (readuncommitted)")
@@ -252,50 +253,56 @@ class MenuController extends Controller
             ->join(DB::raw("acos b with(readuncommitted)"), 'a.aco_id', 'b.id')
             ->where('a.id', '=', $request->id)
             ->first();
-        $controller = $query->controller;
+
+        if ($query != null) {
+            $controller = $query->controller;
+        }
+
         DB::beginTransaction();
 
         try {
-            $class = $this->listFolderFiles($controller);
-            if ($class <> '') {
+            if ($query != null) {
+                $class = $this->listFolderFiles($controller);
+                if ($class <> '') {
 
-                foreach ($class as $value) {
-                    $namaclass = str_replace('controller', '', strtolower($value['class']));
-                    $queryacos = DB::table('acos')
-                        ->from(
-                            db::raw("acos a with(readuncommitted)")
-                        )
-                        ->select(
-                            'a.id'
-                        )
-                        ->where('a.class', '=', $namaclass)
-                        ->where('a.method', '=', $value['method'])
-                        ->where('a.nama', '=', $value['name'])
-                        ->first();
+                    foreach ($class as $value) {
+                        $namaclass = str_replace('controller', '', strtolower($value['class']));
+                        $queryacos = DB::table('acos')
+                            ->from(
+                                db::raw("acos a with(readuncommitted)")
+                            )
+                            ->select(
+                                'a.id'
+                            )
+                            ->where('a.class', '=', $namaclass)
+                            ->where('a.method', '=', $value['method'])
+                            ->where('a.nama', '=', $value['name'])
+                            ->first();
 
-                    if (!isset($queryacos)) {
-                        if (Acos::select('id')
-                            ->where('class', '=', $namaclass)
-                            ->exists()
-                        ) {
-                            $dataacos = [
-                                'class' => $namaclass,
-                                'method' => $value['method'],
-                                'nama' => $value['name'],
-                                'modifiedby' => auth('api')->user()->name,
-                            ];
+                        if (!isset($queryacos)) {
+                            if (Acos::select('id')
+                                ->where('class', '=', $namaclass)
+                                ->exists()
+                            ) {
+                                $dataacos = [
+                                    'class' => $namaclass,
+                                    'method' => $value['method'],
+                                    'nama' => $value['name'],
+                                    'modifiedby' => auth('api')->user()->name,
+                                ];
 
-                            $data = new StoreAcosRequest($dataacos);
-                            $dataaco = app(AcosController::class)->store($data);
+                                $data = new StoreAcosRequest($dataacos);
+                                $dataaco = app(AcosController::class)->store($data);
 
-                            if ($dataaco['error']) {
-                                return response($dataaco, 422);
+                                if ($dataaco['error']) {
+                                    return response($dataaco, 422);
+                                }
                             }
                         }
                     }
                 }
             }
-
+            
             $menu = new Menu();
             $menu = Menu::lockForUpdate()->findOrFail($request->id);
             $menu->menuname = ucwords(strtolower($request->menuname));

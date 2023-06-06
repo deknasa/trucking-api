@@ -28,11 +28,17 @@ class validasiNonController implements Rule
     {
         $menu = new Menu();
         $cekdata = $menu->validasiNonController($value);
-        if($cekdata->aco_id == 0){
-          return false;
+        if ($cekdata == null) {
+            return false;
+        } else {
+            if ($cekdata->aco_id == 0) {
+                return false;
+            } else {
+                return true;
+            }
         }
 
-        return true;
+        // return true;
     }
 
     /**
