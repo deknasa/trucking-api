@@ -12,11 +12,11 @@ class DateAllowedAbsen implements Rule
      *
      * @return void
      */
-    public function __construct()
+    public function __construct($param)
     {
-        //
+        $this->kondisi = $param;
     }
-
+    public $kondisi;
     /**
      * Determine if the validation rule passes.
      *
@@ -35,8 +35,15 @@ class DateAllowedAbsen implements Rule
         if($date == $today){
             $allowed = true;
         }
-        if ($bukaAbsensi){
+        else if ($bukaAbsensi){
             $allowed = true;
+        }
+
+        else if  ($this->kondisi==true) {
+            $allowed = true;
+        }
+        else {
+            $allowed = false ;   
         }
         
         return $allowed ;
