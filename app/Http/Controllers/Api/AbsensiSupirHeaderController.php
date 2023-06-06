@@ -4,7 +4,6 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\StoreAbsensiSupirDetailRequest;
-use App\Http\Requests\StoreAbsensiSupirHeaderRequest;
 use App\Http\Requests\StoreKasGantungDetailRequest;
 use App\Http\Requests\StoreKasGantungHeaderRequest;
 use App\Models\AbsensiSupirHeader;
@@ -12,13 +11,17 @@ use App\Models\AbsensiSupirApprovalHeader;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use App\Http\Requests\StoreLogTrailRequest;
-use App\Http\Requests\UpdateAbsensiSupirHeaderRequest;
 use App\Http\Requests\UpdateKasGantungHeaderRequest;
 use App\Http\Requests\GetIndexRangeRequest;
 use App\Models\AbsensiSupirDetail;
 use App\Models\KasGantungDetail;
 use App\Models\KasGantungHeader;
 use App\Models\Parameter;
+
+use App\Http\Requests\StoreAbsensiSupirHeaderRequest;
+use App\Http\Requests\UpdateAbsensiSupirHeaderRequest;
+use App\Http\Requests\AbsensiSupirHeaderRequest;
+
 
 
 use Illuminate\Database\QueryException;
@@ -125,7 +128,7 @@ class AbsensiSupirHeaderController extends Controller
     /**
      * @ClassName 
      */
-    public function store(StoreAbsensiSupirHeaderRequest $request)
+    public function store(AbsensiSupirHeaderRequest $request)
     {
 
         DB::beginTransaction();
@@ -306,7 +309,7 @@ class AbsensiSupirHeaderController extends Controller
     /**
      * @ClassName 
      */
-    public function update(UpdateAbsensiSupirHeaderRequest $request, AbsensiSupirHeader $absensiSupirHeader)
+    public function update(AbsensiSupirHeaderRequest $request, AbsensiSupirHeader $absensiSupirHeader)
     {
         DB::beginTransaction();
 
@@ -436,7 +439,7 @@ class AbsensiSupirHeaderController extends Controller
     /**
      * @ClassName 
      */
-    public function destroy(Request $request, $id)
+    public function destroy(AbsensiSupirHeaderRequest $request, $id)
     {
         DB::beginTransaction();
 
