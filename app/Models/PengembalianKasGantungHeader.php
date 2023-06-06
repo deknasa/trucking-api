@@ -333,7 +333,7 @@ class PengembalianKasGantungHeader extends MyModel
         $tempPribadi = $this->createTempPengembalianKasGantung($id, $dari, $sampai);
 
         $data = DB::table($tempPribadi)->from(DB::raw("$tempPribadi with (readuncommitted)"))
-            ->select(DB::raw("row_number() Over(Order By $tempPribadi.nobukti) as id,pengembaliankasgantungheader_id,nobukti,sisa,bayar as nominal"))
+            ->select(DB::raw("row_number() Over(Order By $tempPribadi.nobukti) as id,pengembaliankasgantungheader_id,nobukti,sisa,bayar as nominal,keterangan as keterangandetail,coa as coadetail, tglbukti"))
             ->get();
 
         return $data;

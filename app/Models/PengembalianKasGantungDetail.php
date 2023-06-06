@@ -48,6 +48,7 @@ class PengembalianKasGantungDetail extends MyModel
                 "header.tglkasmasuk",
                 "bank.namabank as bank",
                 "$this->table.pengembaliankasgantung_id",
+                "$this->table.kasgantung_nobukti",
                 "$this->table.nobukti",
                 "$this->table.nominal",
                 "$this->table.keterangan",
