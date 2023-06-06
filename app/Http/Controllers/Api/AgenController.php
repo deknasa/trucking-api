@@ -337,10 +337,10 @@ class AgenController extends Controller
                 'label' => 'Status Tas',
                 'index' => 'statustas',
             ],
-            [
-                'label' => 'Jenis Emkl',
-                'index' => 'jenisemkl',
-            ],
+            // [
+            //     'label' => 'Jenis Emkl',
+            //     'index' => 'jenisemkl',
+            // ],
         ];
 
         $this->toExcel('Agen', $agens, $columns);
