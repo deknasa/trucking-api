@@ -77,14 +77,14 @@ class UpdateTradoRequest extends FormRequest
             'tglpajakstnk' => 'required',
             'tipe' => 'required',
             'jenis' => 'required',
-            'isisilinder' => 'required',
+            'isisilinder' => 'required|numeric|min:1|max:2',
             'warna' => 'required',
             'jenisbahanbakar' => 'required',
-            'jumlahsumbu' => 'required',
-            'jumlahroda' =>  'required|min:1|max:2',
+            'jumlahsumbu' => 'required|numeric|min:1|max:2',
+            'jumlahroda' => 'required|numeric|min:1|max:2',
             'model' => 'required',
             'nobpkb' => ['required', 'max:15', Rule::unique('trado')->whereNotIn('id', [$this->id])],
-            'jumlahbanserap' => 'required|min:1|max:2',
+            'jumlahbanserap' => 'required|numeric|min:1|max:2',
             'statusgerobak' => 'required',
             'nominalplusborongan' => [new NotDecimal()],
             'phototrado' => [$ruleGambar, 'array'],
@@ -150,7 +150,11 @@ class UpdateTradoRequest extends FormRequest
 
             'jumlahroda.min' => 'Min. 1 karakter',
             'jumlahroda.max' => 'Max. 2 karakter',
-
+            'isisilinder.min' => 'Min. 1 karakter',
+            'isisilinder.max' => 'Max. 2 karakter',
+            'jumlahsumbu.min' => 'Min. 1 karakter',
+            'jumlahsumbu.max' => 'Max. 2 karakter',
+            
             'photobpkb.*.image' => app(ErrorController::class)->geterror('WG')->keterangan,
             'photostnk.*.image' => app(ErrorController::class)->geterror('WG')->keterangan,
             'phototrado.*.image' => app(ErrorController::class)->geterror('WG')->keterangan
