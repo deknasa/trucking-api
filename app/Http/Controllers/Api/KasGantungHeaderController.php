@@ -30,6 +30,8 @@ use App\Http\Requests\StorePengeluaranDetailRequest;
 use App\Http\Requests\UpdatePengeluaranHeaderRequest;
 use App\Models\AlatBayar;
 use Illuminate\Database\QueryException;
+use App\Http\Requests\DestroyPengeluaranHeaderRequest;
+
 
 class KasGantungHeaderController extends Controller
 {
@@ -121,6 +123,7 @@ class KasGantungHeaderController extends Controller
 
             $kasgantungHeader->tglbukti = date('Y-m-d', strtotime($request->tglbukti)) ?? '1900/1/1';
             $kasgantungHeader->penerima_id = $request->penerima_id ?? '';
+            $kasgantungHeader->penerima = $request->penerima ?? '';
             $kasgantungHeader->bank_id = $request->bank_id ?? 0;
             $kasgantungHeader->pengeluaran_nobukti = $request->pengeluaran_nobukti ?? $nobuktikaskeluar;
             $kasgantungHeader->coakaskeluar = $bank->coa ?? '';
@@ -339,6 +342,8 @@ class KasGantungHeaderController extends Controller
                 /* Edit header */
 
                 $kasgantungheader->penerima_id = $request->penerima_id ?? '';
+                $kasgantungheader->penerima = $request->penerima ?? '';
+
             }
             $kasgantungheader->postingdari = $request->postingdari ?? 'EDIT KAS GANTUNG';
             $kasgantungheader->modifiedby = auth('api')->user()->name;
@@ -607,8 +612,12 @@ class KasGantungHeaderController extends Controller
                 $validatedLogTrailKasgantungDetail = new StoreLogTrailRequest($logTrailKasgantungDetail);
                 app(LogTrailController::class)->store($validatedLogTrailKasgantungDetail);
 
+                $requesthapuspengeluaran = new DestroyPengeluaranHeaderRequest();
+                $requesthapuspengeluaran['postingdari'] = "DELETE KAS GANTUNG";
+
+
                 $getPengeluaran = PengeluaranHeader::from(DB::raw("pengeluaranheader with (readuncommitted)"))->where('nobukti', $kasgantungheader->pengeluaran_nobukti)->first();
-                app(PengeluaranHeaderController::class)->destroy($request, $getPengeluaran->id);
+                app(PengeluaranHeaderController::class)->destroy($requesthapuspengeluaran, $getPengeluaran->id);
 
                 DB::commit();
 
