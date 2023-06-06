@@ -783,6 +783,7 @@ route::middleware(['auth:api'])->group(function () {
     Route::get('hutangheader/{id}/printreport', [HutangHeaderController::class, 'printReport']);
     Route::post('hutangheader/{id}/cekvalidasi', [HutangHeaderController::class, 'cekvalidasi'])->name('hutangheader.cekvalidasi');
     Route::get('hutangheader/no_bukti', [HutangHeaderController::class, 'getNoBukti']);
+    Route::post('hutangheader/approval', [HutangHeaderController::class, 'approval']);
     Route::get('hutangheader/combo', [HutangHeaderController::class, 'combo']);
     Route::get('hutangheader/grid', [HutangHeaderController::class, 'grid']);
     Route::post('hutangheader/{id}/cekValidasiAksi', [HutangHeaderController::class, 'cekValidasiAksi'])->name('hutangheader.cekValidasiAksi');

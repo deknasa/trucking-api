@@ -136,7 +136,14 @@ class Controller extends BaseController
                 $alphabets[] = $i . $j;
             }
         }
-       
+        $styleArray = array(
+            'borders' => array(
+                'allBorders' => array(
+                    'borderStyle' => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN,
+                ),
+            ),
+        );
+
 
 
         $spreadsheet = new Spreadsheet();
@@ -145,14 +152,13 @@ class Controller extends BaseController
         $sheet->getStyle("A1")->getFont()->setSize(20);
         $sheet->getStyle('A1')->getAlignment()->setHorizontal('center');
         $sheet->mergeCells('A1:' . $alphabets[count($columns) - 1] . '1');
-       
+
 
         /* Set the table header */
         foreach ($columns as $columnsIndex => $column) {
             $sheet->setCellValue($alphabets[$columnsIndex] . $tableHeaderRow, $column['label'] ?? $columnsIndex + 1);
 
             $sheet->getColumnDimension($alphabets[$columnsIndex])->setAutoSize(true);
-            
         }
 
         /* Set the table header style */
@@ -161,8 +167,11 @@ class Controller extends BaseController
             ->getFill()
             ->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID)
             ->getStartColor()
-            ->setARGB('FF02c4f5');
-            
+            ->applyFromArray($styleArray);
+
+        // ->setARGB('FF02c4f5');
+
+
 
         $totalRows = count($data);
 
@@ -177,6 +186,11 @@ class Controller extends BaseController
 
             $startRow++;
         }
+
+        /* Set border for all cells */
+        $sheet
+            ->getStyle("A$tableHeaderRow:" . $alphabets[count($columns) - 1] . ($startRow - 1))
+            ->applyFromArray($styleArray);
 
         /* Write to excel, then download the file */
         $writer = new Xlsx($spreadsheet);
@@ -201,7 +215,7 @@ class Controller extends BaseController
     function getPosition(Model $model, string $modelTable, bool $isDeleting = false)
     {
         $data = new stdClass();
-        
+
         $indexRow = request()->indexRow ?? 1;
         $limit = request()->limit ?? 10;
         $page = request()->page ?? 1;
@@ -225,7 +239,6 @@ class Controller extends BaseController
                 ->select('position', 'id')
                 ->where('position', '=', $position)
                 ->orderBy('position');
-
         } else {
             if ($modelTable == 'acl') {
                 $query = DB::table($temporaryTable)->select('position')->where('id', $model->role_id)->orderBy('position');
