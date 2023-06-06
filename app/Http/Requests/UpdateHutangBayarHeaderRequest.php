@@ -14,6 +14,9 @@ use App\Models\AlatBayar;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Validation\Rule;
+use App\Rules\ValidasiDestroyHutangBayarHeader ;
+use App\Http\Controllers\Api\HutangBayarHeaderController;
+use App\Models\Hutangbayarheader;
 
 class UpdateHutangBayarHeaderRequest extends FormRequest
 {
@@ -34,6 +37,21 @@ class UpdateHutangBayarHeaderRequest extends FormRequest
      */
     public function rules()
     {
+
+        $controller = new HutangBayarHeaderController;
+        $hutangbayarheader = new HutangBayarHeader();
+        $cekdata = $hutangbayarheader->cekvalidasiaksi($this->nobukti);
+        $cekdatacetak = $controller->cekvalidasi($this->id);
+        if ($cekdatacetak->original['kodestatus']=='1') {
+                $cekdtcetak=true;
+        } else {
+            $cekdtcetak=false;
+        }
+        
+
+         
+    
+
         $jumlahdetail = $this->jumlahdetail ?? 0;
 
         $query=DB::table('hutangbayarheader')->from(
@@ -53,6 +71,7 @@ class UpdateHutangBayarHeaderRequest extends FormRequest
 
 
         $rules = [
+            'id' => [ new ValidasiDestroyHutangBayarHeader($cekdata['kondisi'],$cekdtcetak)],
             'tglbukti' => [
                 'required', 'date_format:d-m-Y',
                 new DateTutupBuku(),

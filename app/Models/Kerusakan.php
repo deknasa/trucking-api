@@ -184,7 +184,7 @@ class Kerusakan extends MyModel
                             $query = $query->whereRaw("format(".$this->table . "." . $filters['field'].", 'dd-MM-yyyy HH:mm:ss') LIKE '%$filters[data]%'");
                         } else {
                             // $query = $query->where('kerusakan.' . $filters['field'], 'LIKE', "%$filters[data]%");
-                            $query = $query->whereRaw('kerusakan' . "." .  $filters['field'] . " LIKE '%" . escapeLike($filters['data']) . "%' escape '|'");
+                            $query = $query->whereRaw('kerusakan' . ".[" .  $filters['field'] . "] LIKE '%" . escapeLike($filters['data']) . "%' escape '|'");
 
                         }
                     }
@@ -199,7 +199,7 @@ class Kerusakan extends MyModel
                                 $query = $query->orWhereRaw("format(".$this->table . "." . $filters['field'].", 'dd-MM-yyyy HH:mm:ss') LIKE '%$filters[data]%'");
                             } else {
                                 // $query = $query->orWhere('kerusakan.' . $filters['field'], 'LIKE', "%$filters[data]%");
-                                $query = $query->OrwhereRaw('kerusakan' . "." .  $filters['field'] . " LIKE '%" . escapeLike($filters['data']) . "%' escape '|'");
+                                $query = $query->OrwhereRaw('kerusakan' . ".[" .  $filters['field'] . "] LIKE '%" . escapeLike($filters['data']) . "%' escape '|'");
 
                             }
                         }

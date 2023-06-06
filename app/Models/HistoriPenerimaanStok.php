@@ -288,7 +288,7 @@ class HistoriPenerimaanStok extends MyModel
                             $query = $query->whereRaw("format(a.tglbukti, 'dd-MM-yyyy') LIKE '%$filters[data]%'");
                         } else {
                             // $query = $query->where('a.' . $filters['field'], 'LIKE', "%$filters[data]%");
-                            $query = $query->whereRaw('a' . "." .  $filters['field'] . " LIKE '%" . escapeLike($filters['data']) . "%' escape '|'");
+                            $query = $query->whereRaw('a' . ".[" .  $filters['field'] . "] LIKE '%" . escapeLike($filters['data']) . "%' escape '|'");
 
                         }
                     }
@@ -314,7 +314,7 @@ class HistoriPenerimaanStok extends MyModel
                                 $query = $query->orWhereRaw("format(a.tglbukti, 'dd-MM-yyyy') LIKE '%$filters[data]%'");
                             } else {
                                 // $query->orWhere('a.' . $filters['field'], 'LIKE', "%$filters[data]%");
-                                $query = $query->OrwhereRaw('a' . "." .  $filters['field'] . " LIKE '%" . escapeLike($filters['data']) . "%' escape '|'");
+                                $query = $query->OrwhereRaw('a' . ".[" .  $filters['field'] . "] LIKE '%" . escapeLike($filters['data']) . "%' escape '|'");
 
                             }
                         }

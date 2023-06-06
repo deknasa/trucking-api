@@ -260,7 +260,7 @@ class Kota extends MyModel
                             $query = $query->whereRaw("format(".$this->table . "." . $filters['field'].", 'dd-MM-yyyy HH:mm:ss') LIKE '%$filters[data]%'");
                         } else {
                             // $query = $query->where('kota.' . $filters['field'], 'LIKE', "%$filters[data]%");
-                            $query = $query->whereRaw('kota' . "." .  $filters['field'] . " LIKE '%" . escapeLike($filters['data']) . "%' escape '|'");
+                            $query = $query->whereRaw('kota' . ".[" .  $filters['field'] . "] LIKE '%" . escapeLike($filters['data']) . "%' escape '|'");
 
                         }
                     }
@@ -277,7 +277,7 @@ class Kota extends MyModel
                                 $query = $query->orWhere('zona.zona', 'LIKE', "%$filters[data]%");
                             } else {
                                 // $query = $query->orWhere('kota.' . $filters['field'], 'LIKE', "%$filters[data]%");
-                                $query = $query->OrwhereRaw('kota' . "." .  $filters['field'] . " LIKE '%" . escapeLike($filters['data']) . "%' escape '|'");
+                                $query = $query->OrwhereRaw('kota' . ".[" .  $filters['field'] . "] LIKE '%" . escapeLike($filters['data']) . "%' escape '|'");
 
                             }
                         }
