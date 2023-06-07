@@ -28,20 +28,22 @@ class UpahSupirRincian extends MyModel
     public function getAll($id)
     {
         $query = DB::table('upahsupirrincian')->from(DB::raw("upahsupirrincian with (readuncommitted)"))
-        ->select(
-            'upahsupirrincian.container_id',
-            'container.keterangan as container',
-            'upahsupirrincian.statuscontainer_id',
-            'statuscontainer.keterangan as statuscontainer',
-            'upahsupirrincian.nominalsupir',
-            'upahsupirrincian.nominalkenek',
-            'upahsupirrincian.nominalkomisi',
-            'upahsupirrincian.nominaltol',
-            'upahsupirrincian.liter',
-        )
+            ->select(
+                'upahsupirrincian.container_id',
+                'container.keterangan as container',
+                'upahsupirrincian.statuscontainer_id',
+                'statuscontainer.keterangan as statuscontainer',
+                'upahsupirrincian.nominalsupir',
+                'upahsupirrincian.nominalkenek',
+                'upahsupirrincian.nominalkomisi',
+                'upahsupirrincian.nominaltol',
+                'upahsupirrincian.liter',
+            )
             ->leftJoin('container', 'container.id', 'upahsupirrincian.container_id')
             ->leftJoin('statuscontainer', 'statuscontainer.id', 'upahsupirrincian.statuscontainer_id')
-            ->where('upahsupir_id', '=', $id);
+            ->where('upahsupir_id', '=', $id)            
+            ->orderBy('container.id', 'asc')
+            ->orderBy('statuscontainer.keterangan', 'desc');
 
 
         $data = $query->get();
@@ -63,7 +65,9 @@ class UpahSupirRincian extends MyModel
             db::Raw("0 as nominaltol"),
             db::Raw("0 as liter")
         )
-        ->crossJoin('container');
+            ->crossJoin('container')
+            ->orderBy('container.id', 'asc')
+            ->orderBy('statuscontainer.keterangan', 'desc');
 
         return $query->get();
     }
@@ -95,17 +99,17 @@ class UpahSupirRincian extends MyModel
         $except = DB::table($temp)->select(
             "$temp.id",
         );
-        for ($i=0; $i < count($rincian); $i++) { 
+        for ($i = 0; $i < count($rincian); $i++) {
             $except->orWhere(function ($query) use ($rincian, $i) {
                 $query->where('containerId', $rincian[$i]['container_id'])
                     ->where('statuscontainerId', $rincian[$i]['statuscontainer_id']);
             });
         }
-        
+
         foreach ($except->get() as $e) {
             $arr[] = $e->id;
         }
-        
+
         //select semua keluali
         $query = DB::table($temp)->select(
             "$temp.id",
@@ -113,7 +117,7 @@ class UpahSupirRincian extends MyModel
             "$temp.statuscontainerId as statuscontainer_id",
             "$temp.container",
             "$temp.containerId as container_id"
-        )->whereNotIn('id',$arr);
+        )->whereNotIn('id', $arr);
 
         // ->whereRaw(" NOT EXIST  ( select $temp.statuscontainer, $temp.container from   [$temp]  WHERE (statuscontainer = 'empty' and container = '20`') or (statuscontainer = 'FULL' and container = '40`') ) ");
         // ->whereRaw("(statuscontainer = 'FULL' and container = '40`')");
@@ -121,8 +125,8 @@ class UpahSupirRincian extends MyModel
         return $query->get();
     }
     public function listpivot($dari, $sampai)
-    { 
-     
+    {
+
         $tempdata = '##tempdata' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
         Schema::create($tempdata, function ($table) {
             $table->unsignedBigInteger('id')->nullable();
@@ -158,7 +162,7 @@ class UpahSupirRincian extends MyModel
 
         $id = DB::table($tempdata)->first();
 
-       
+
 
         if ($id == null) {
             return null;
@@ -273,4 +277,3 @@ class UpahSupirRincian extends MyModel
         }
     }
 }
-
