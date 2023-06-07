@@ -19,6 +19,7 @@ use App\Models\Kota;
 use App\Models\Parameter;
 use App\Http\Requests\StoreSuratPengantarRequest;
 use App\Http\Requests\UpdateSuratPengantarRequest;
+use App\Http\Requests\DestroySuratPengantarRequest;
 use App\Http\Requests\StoreLogTrailRequest;
 
 use App\Http\Controllers\Controller;
@@ -648,6 +649,8 @@ class SuratPengantarController extends Controller
 
     public function getGaji($dari, $sampai, $container, $statuscontainer)
     {
+
+
         $data = DB::table('upahsupir')
             ->select('upahsupirrincian.nominalsupir', 'upahsupirrincian.nominalkenek', 'upahsupirrincian.nominalkomisi')
             ->join('upahsupirrincian', 'upahsupir.id', 'upahsupirrincian.upahsupir_id')
@@ -656,8 +659,10 @@ class SuratPengantarController extends Controller
             ->where('upahsupirrincian.container_id', $container)
             ->where('upahsupirrincian.statuscontainer_id', $statuscontainer)
 
-            // dd($data->toSql());
+            //  dd($data->toSql());
             ->first();
+
+            // dd($data);
         if ($data != null) {
             return response([
                 'data' => $data

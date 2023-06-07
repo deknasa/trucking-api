@@ -67,6 +67,63 @@ class MandorAbsensiSupir extends MyModel
     {
         return $id;
     }
+
+    public function cekvalidasihapus($trado_id,$supir_id,$tglbukti)
+    {
+        $suratpengantar = DB::table('suratpengantar')
+            ->from(
+                DB::raw("suratpengantar as a with (readuncommitted)")
+            )
+            ->select(
+                'a.nobukti'
+            )
+            ->where('a.trado_id', '=', $trado_id)
+            ->where('a.supir_id', '=', $supir_id)
+            ->where('a.tglbukti', '=', $tglbukti)
+            ->first();
+        if (isset($suratpengantar)) {
+            $data = [
+                'kondisi' => true,
+                'keterangan' => 'Surat Pengantar',
+                'kodeerror' => 'SATL'
+            ];
+            goto selesai;
+        }
+
+      
+
+        $data = [
+            'kondisi' => false,
+            'keterangan' => '',
+        ];
+        selesai:
+        return $data;
+    }
+
+    public function getabsentrado($id)
+    {
+
+        $queryabsen = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))
+        ->select(
+            'text',
+        )
+        ->where('grp', 'TIDAK ADA SUPIR')
+        ->where('subgrp', 'TIDAK ADA SUPIR')
+        ->first();
+
+        $data = DB::table('absentrado')
+            ->from(DB::raw("absentrado with (readuncommitted)"))
+            ->select(
+                DB::raw("(case when id=". $queryabsen->text ." then 1 else 0 end)  as kodeabsen")
+            )
+            ->where('absentrado.id', $id)
+            ->first();
+
+
+        return $data;
+    }
+
+
     public function isAbsen($id)
     {
         $absensisupirdetail = DB::table('absensisupirdetail')
@@ -134,7 +191,9 @@ class MandorAbsensiSupir extends MyModel
                                 $query = $query->where('absentrado.keterangan ', 'LIKE', "%$filters[data]%");
                                 break;
                             default:
-                                $query = $query->where($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
+                                // $query = $query->where($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
+                                $query = $query->whereRaw($this->table . ".[" .  $filters['field'] . "] LIKE '%" . escapeLike($filters['data']) . "%' escape '|'");
+
                                 break;
                         }
                     }
@@ -155,7 +214,9 @@ class MandorAbsensiSupir extends MyModel
                                     $query = $query->orWhere('absentrado.keterangan ', 'LIKE', "%$filters[data]%");
                                     break;
                                 default:
-                                    $query = $query->orWhere($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
+                                    // $query = $query->orWhere($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
+                                    $query = $query->OrwhereRaw($this->table . ".[" .  $filters['field'] . "] LIKE '%" . escapeLike($filters['data']) . "%' escape '|'");
+
                                     break;
                             }
                         }

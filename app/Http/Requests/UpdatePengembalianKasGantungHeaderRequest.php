@@ -60,7 +60,6 @@ class UpdatePengembalianKasGantungHeaderRequest extends FormRequest
             'tgldari' => [
                 'required', 'date_format:d-m-Y',
                 'before_or_equal:' .$tglbatasakhir,
-                'after_or_equal:'.$tglbataseedit,
             ],
             "tglsampai" => [
                 "required", 'date_format:d-m-Y',
@@ -82,6 +81,17 @@ class UpdatePengembalianKasGantungHeaderRequest extends FormRequest
 
         return $rules;
     }
+
+    public function attributes()
+    {
+        return [
+            'tglbukti' => 'tanggal bukti',
+            'tgldari' => 'tanggal dari',
+            'tglsampai' => 'tanggal sampai',
+        ];
+        
+    }
+
     public function messages()
     {
         return [

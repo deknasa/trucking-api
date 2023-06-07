@@ -135,9 +135,8 @@ class UpahSupir extends MyModel
             'upahsupir.kotasampai_id',
             'kotasampai.keterangan as kotasampai',
             'upahsupir.jarak',
-            'upahsupir.zona_id',
             'zona.keterangan as zona',
-
+            DB::raw("(case when upahsupir.zona_id=0 then null else upahsupir.zona_id end) as zona_id"),
             'upahsupir.statusaktif',
 
             'upahsupir.tglmulaiberlaku',
@@ -172,6 +171,7 @@ class UpahSupir extends MyModel
         Schema::create($tempdefault, function ($table) {
             $table->unsignedBigInteger('statusaktif')->nullable();
             $table->unsignedBigInteger('statusluarkota')->nullable();
+            $table->unsignedBigInteger('statussimpankandang')->nullable();
         });
 
         $status = Parameter::from(
@@ -201,8 +201,22 @@ class UpahSupir extends MyModel
         $iddefaultstatusluarkota = $status->id ?? 0;
 
         $iddefaultstatusluarkota =  $status->id;
+        
+        $status = Parameter::from(
+            db::Raw("parameter with (readuncommitted)")
+        )
+            ->select(
+                'id'
+            )
+            ->where('grp', '=', 'STATUS SIMPAN KANDANG')
+            ->where('subgrp', '=', 'STATUS SIMPAN KANDANG')
+            ->where('default', '=', 'YA')
+            ->first();
+
+        $iddefaultstatusSimpanKandang = $status->id ?? 0;
+
         DB::table($tempdefault)->insert(
-            ["statusaktif" => $iddefaultstatusaktif, "statusluarkota" => $iddefaultstatusluarkota]
+            ["statusaktif" => $iddefaultstatusaktif, "statusluarkota" => $iddefaultstatusluarkota, "statussimpankandang" => $iddefaultstatusSimpanKandang]
         );
 
         $query = DB::table($tempdefault)->from(
@@ -211,6 +225,7 @@ class UpahSupir extends MyModel
             ->select(
                 'statusaktif',
                 'statusluarkota',
+                'statussimpankandang'
             );
 
         $data = $query->first();
@@ -313,7 +328,9 @@ class UpahSupir extends MyModel
                         } else if ($filters['field'] == 'created_at' || $filters['field'] == 'updated_at') {
                             $query = $query->whereRaw("format(" . $this->table . "." . $filters['field'] . ", 'dd-MM-yyyy HH:mm:ss') LIKE '%$filters[data]%'");
                         } else {
-                            $query = $query->where($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
+                            // $query = $query->where($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
+                            $query = $query->whereRaw($this->table . ".[" .  $filters['field'] . "] LIKE '%" . escapeLike($filters['data']) . "%' escape '|'");
+
                         }
                     }
 
@@ -340,7 +357,9 @@ class UpahSupir extends MyModel
                             } else if ($filters['field'] == 'created_at' || $filters['field'] == 'updated_at') {
                                 $query = $query->orWhereRaw("format(" . $this->table . "." . $filters['field'] . ", 'dd-MM-yyyy HH:mm:ss') LIKE '%$filters[data]%'");
                             } else {
-                                $query = $query->orWhere($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
+                                // $query = $query->orWhere($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
+                                $query = $query->OrwhereRaw($this->table . ".[" .  $filters['field'] . "] LIKE '%" . escapeLike($filters['data']) . "%' escape '|'");
+
                             }
                         }
                     });
@@ -389,5 +408,17 @@ class UpahSupir extends MyModel
         ];
         selesai:
         return $data;
+    }
+    public function validasiUpahSupirInputTrip($dari, $sampai, $container,$statusContainer){
+        $query = DB::table("upahsupir")->from(DB::raw("upahsupir with (readuncommitted)"))
+        ->join(DB::raw("upahsupirrincian with (readuncommitted)"), 'upahsupir.id','upahsupirrincian.upahsupir_id')
+        ->where('upahsupir.kotadari_id', $dari)
+        ->where('upahsupir.kotasampai_id', $sampai)
+        ->where('upahsupirrincian.container_id', $container)
+        ->where('upahsupirrincian.statuscontainer_id', $statusContainer)
+        ->where('upahsupirrincian.nominalsupir','!=','0')
+        ->first();
+
+        return $query;
     }
 }

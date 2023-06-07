@@ -2,6 +2,10 @@
 
 namespace App\Http\Requests;
 
+use App\Rules\CekMaxNominalPPGajiSupir;
+use App\Rules\CekMaxNominalPSGajiSupir;
+use App\Rules\CekMaxSisaPPGajiSupir;
+use App\Rules\CekMaxSisaPSGajiSupir;
 use Illuminate\Foundation\Http\FormRequest;
 
 class StoreGajiSupirDetailRequest extends FormRequest
@@ -26,7 +30,7 @@ class StoreGajiSupirDetailRequest extends FormRequest
         $rulesPinjSemua = [];
         if(request()->pinjSemua) {
             $rulesPinjSemua  = [
-                'nominalPS.*' => ['required','numeric','gt:0'],
+                'nominalPS.*' => ['required','numeric','gt:0', new CekMaxNominalPSGajiSupir()],
                 'pinjSemua_sisa.*' => ['numeric','min:0']
             ];
         }
@@ -35,7 +39,7 @@ class StoreGajiSupirDetailRequest extends FormRequest
         
         if(request()->pinjPribadi) {
             $rulesPinjPribadi = [
-                'nominalPP.*' => ['required','numeric','gt:0'],
+                'nominalPP.*' => ['required','numeric','gt:0', new CekMaxNominalPPGajiSupir()],
                 'pinjPribadi_sisa.*' => ['numeric','min:0']
             ];
         }

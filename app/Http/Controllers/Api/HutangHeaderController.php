@@ -9,9 +9,11 @@ use App\Http\Requests\DestroyHutangHeaderRequest;
 use App\Http\Requests\StoreHutangDetailRequest;
 use App\Http\Requests\UpdateHutangDetailRequest;
 use App\Http\Controllers\Controller;
+use App\Http\Requests\ApprovalHutangHeaderRequest;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use App\Http\Requests\StoreLogTrailRequest;
+use App\Http\Requests\GetIndexRangeRequest;
 use App\Models\LogTrail;
 use App\Models\AkunPusat;
 use App\Models\Supplier;
@@ -33,7 +35,7 @@ class HutangHeaderController extends Controller
     /**
      * @ClassName
      */
-    public function index()
+    public function index(GetIndexRangeRequest $request)
     {
         $hutang = new HutangHeader();
 
@@ -87,6 +89,10 @@ class HutangHeaderController extends Controller
                 ->where('grp', 'JURNAL HUTANG MANUAL')->where('subgrp', 'DEBET')->first();
             $memo = json_decode($getCoaDebet->memo, true);
 
+            $statusApproval = Parameter::from(DB::raw("parameter with (readuncommitted)"))
+                ->where('grp', 'STATUS APPROVAL')->where('text', 'NON APPROVAL')->first();
+
+
             if ($proseslain == "") {
                 // if ($request->supplier == '' && $request->pelanggan == '') {
                 //     $query = Error::from(DB::raw("error with (readuncommitted)"))
@@ -123,6 +129,7 @@ class HutangHeaderController extends Controller
             $hutangHeader->postingdari = $request->postingdari ?? 'ENTRY HUTANG';
             $hutangHeader->statusformat = $format->id;
             $hutangHeader->statuscetak = $statusCetak->id;
+            $hutangHeader->statusapproval = $statusApproval->id;
             $hutangHeader->total = $total;
             $hutangHeader->modifiedby = auth('api')->user()->name;
             $hutangHeader->nobukti = $nobukti;
@@ -310,6 +317,55 @@ class HutangHeaderController extends Controller
         }
     }
 
+    public function approval(ApprovalHutangHeaderRequest $request)
+    {
+        DB::beginTransaction();
+
+        try {
+
+            $statusApproval = Parameter::from(DB::raw("parameter with (readuncommitted)"))
+                ->where('grp', '=', 'STATUS APPROVAL')->where('text', '=', 'APPROVAL')->first();
+            $statusNonApproval = Parameter::from(DB::raw("parameter with (readuncommitted)"))
+                ->where('grp', '=', 'STATUS APPROVAL')->where('text', '=', 'NON APPROVAL')->first();
+
+            for ($i = 0; $i < count($request->hutangId); $i++) {
+                $hutangHeader = HutangHeader::find($request->hutangId[$i]);
+
+                if ($hutangHeader->statusapproval == $statusApproval->id) {
+                    $hutangHeader->statusapproval = $statusNonApproval->id;
+                    $aksi = $statusNonApproval->text;
+                } else {
+                    $hutangHeader->statusapproval = $statusApproval->id;
+                    $aksi = $statusApproval->text;
+                }
+
+                $hutangHeader->tglapproval = date('Y-m-d', time());
+                $hutangHeader->userapproval = auth('api')->user()->name;
+
+                if ($hutangHeader->save()) {
+                    $logTrail = [
+                        'namatabel' => strtoupper($hutangHeader->getTable()),
+                        'postingdari' => 'APPROVAL PENERIMAAN KAS/BANK',
+                        'idtrans' => $hutangHeader->id,
+                        'nobuktitrans' => $hutangHeader->nobukti,
+                        'aksi' => $aksi,
+                        'datajson' => $hutangHeader->toArray(),
+                        'modifiedby' => auth('api')->user()->name
+                    ];
+
+                    $validatedLogTrail = new StoreLogTrailRequest($logTrail);
+                    $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
+                }
+            }
+            DB::commit();
+            return response([
+                'message' => 'Berhasil'
+            ]);
+        } catch (\Throwable $th) {
+            throw $th;
+        }
+    }
+
     public function show($id)
     {
 
@@ -411,7 +467,7 @@ class HutangHeaderController extends Controller
 
             $hutangheader = Hutangheader::lockForUpdate()->findOrFail($hutangheader->id);
             $hutangheader->tglbukti = date('Y-m-d', strtotime($request->tglbukti));
-            $hutangheader->coa =$coa;
+            $hutangheader->coa = $coa;
             $hutangheader->supplier_id = $request->supplier_id;
             $hutangheader->total = array_sum($request->total_detail);
             $hutangheader->modifiedby = auth('api')->user()->name;
@@ -676,7 +732,7 @@ class HutangHeaderController extends Controller
             $hutangheader->position = $selected->position;
             $hutangheader->id = $selected->id;
             $hutangheader->page = ceil($hutangheader->position / ($request->limit ?? 10));
-            
+
             return response([
                 'status' => true,
                 'message' => 'Berhasil dihapus',
@@ -782,7 +838,7 @@ class HutangHeaderController extends Controller
     public function cekvalidasi($id)
     {
         $hutang = HutangHeader::find($id);
-       
+
         $statusdatacetak = $hutang->statuscetak;
         $statusCetak = Parameter::from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUSCETAK')->where('text', 'CETAK')->first();
         if ($statusdatacetak == $statusCetak->id) {
@@ -790,10 +846,10 @@ class HutangHeaderController extends Controller
                 ->select('keterangan')
                 ->where('kodeerror', '=', 'SDC')
                 ->first();
-                $keterangan = [
-                    'keterangan' => 'No Bukti '.$hutang->nobukti.' '.$query->keterangan
-                ];
-                
+            $keterangan = [
+                'keterangan' => 'No Bukti ' . $hutang->nobukti . ' ' . $query->keterangan
+            ];
+
             $data = [
                 'message' => $keterangan,
                 'errors' => 'sudah cetak',
@@ -838,12 +894,12 @@ class HutangHeaderController extends Controller
             return response($data);
         } else {
 
-                $data = [
-                    'status' => false,
-                    'message' => '',
-                    'errors' => '',
-                    'kondisi' => $cekdata['kondisi'],
-                ];
+            $data = [
+                'status' => false,
+                'message' => '',
+                'errors' => '',
+                'kondisi' => $cekdata['kondisi'],
+            ];
 
             return response($data);
         }

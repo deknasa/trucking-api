@@ -66,7 +66,7 @@ return [
     'image' => (new ErrorController)->geterror('WG')->keterangan,
     'in' => ':attribute ' . (new ErrorController)->geterror('TVD')->keterangan,
     'in_array' => 'The :attribute field does not exist in :other.',
-    'integer' => 'The :attribute must be an integer.',
+    'integer' => ' :attribute tidak boleh desimal',
     'ip' => 'The :attribute must be a valid IP address.',
     'ipv4' => 'The :attribute must be a valid IPv4 address.',
     'ipv6' => 'The :attribute must be a valid IPv6 address.',

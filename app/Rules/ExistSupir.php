@@ -29,7 +29,7 @@ class ExistSupir implements Rule
     {
         $supir = DB::table("supir")->from(DB::raw("supir with (readuncommitted)"))
             ->select('id')
-            ->where('id', $value)
+            ->where('id', request()->supir_id)
             ->first();
         if ($supir == null) {
             return false;

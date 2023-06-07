@@ -40,19 +40,19 @@ class StoreKasGantungHeaderRequest extends FormRequest
             ];
         }
 
-        $penerima_id = $this->penerima_id;
-        $rulesPenerima_id = [];
-        if ($penerima_id != null) {
+        // $penerima_id = $this->penerima_id;
+        // $rulesPenerima_id = [];
+        // if ($penerima_id != null) {
 
-            $rulesPenerima_id = [
-                'penerima' => ['required'],
-                'penerima_id' => ['required', 'numeric', 'min:1', new ExistPenerima()]
-            ];
-        } else if ($penerima_id == null && $this->penerima != '') {
-            $rulesPenerima_id = [
-                'penerima_id' => ['required', 'numeric', 'min:1', new ExistPenerima()]
-            ];
-        }
+        //     $rulesPenerima_id = [
+        //         'penerima' => ['required'],
+        //         'penerima_id' => ['required', 'numeric', 'min:1', new ExistPenerima()]
+        //     ];
+        // } else if ($penerima_id == null && $this->penerima != '') {
+        //     $rulesPenerima_id = [
+        //         'penerima_id' => ['required', 'numeric', 'min:1', new ExistPenerima()]
+        //     ];
+        // }
 
         $rules = [
             'tglbukti' => [
@@ -71,7 +71,7 @@ class StoreKasGantungHeaderRequest extends FormRequest
                 $rules,
                 (new $relatedRequest)->rules(),
                 $rulesBank_id,
-                $rulesPenerima_id
+                // $rulesPenerima_id
             );
         }
 

@@ -28,7 +28,7 @@ class ExistTrado implements Rule
     public function passes($attribute, $value)
     {
         $trado = DB::table("trado")->from(DB::raw("trado with (readuncommitted)"))
-        ->where('id', $value)
+        ->where('id', request()->trado_id)
         ->first();
     if ($trado == null) {
         return false;

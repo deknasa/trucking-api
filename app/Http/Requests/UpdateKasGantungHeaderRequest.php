@@ -46,25 +46,25 @@ class UpdateKasGantungHeaderRequest extends FormRequest
             ];
         }
 
-        $penerima_id = $this->penerima_id;
-        $rulesPenerima_id = [];
-        if ($penerima_id != null) {
-            if ($penerima_id == 0) {
-                $rulesPenerima_id = [
-                    'penerima_id' => ['required', 'numeric', 'min:1']
-                ];
-            } else {
-                if ($this->penerima == '') {
-                    $rulesPenerima_id = [
-                        'penerima' => ['required']
-                    ];
-                }
-            }
-        } else if ($penerima_id == null && $this->penerima != '') {
-            $rulesPenerima_id = [
-                'penerima_id' => ['required', 'numeric', 'min:1']
-            ];
-        }
+        // $penerima_id = $this->penerima_id;
+        // $rulesPenerima_id = [];
+        // if ($penerima_id != null) {
+        //     if ($penerima_id == 0) {
+        //         $rulesPenerima_id = [
+        //             'penerima_id' => ['required', 'numeric', 'min:1']
+        //         ];
+        //     } else {
+        //         if ($this->penerima == '') {
+        //             $rulesPenerima_id = [
+        //                 'penerima' => ['required']
+        //             ];
+        //         }
+        //     }
+        // } else if ($penerima_id == null && $this->penerima != '') {
+        //     $rulesPenerima_id = [
+        //         'penerima_id' => ['required', 'numeric', 'min:1']
+        //     ];
+        // }
 
         $rules = [
             'nobukti' => [Rule::in($getDataKasgantung), new DestroyKasGantung()],
@@ -84,7 +84,7 @@ class UpdateKasGantungHeaderRequest extends FormRequest
                 $rules,
                 (new $relatedRequest)->rules(),
                 $rulesBank_id,
-                $rulesPenerima_id
+                // $rulesPenerima_id
             );
         }
 

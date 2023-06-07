@@ -66,7 +66,7 @@ class UpdateSupplierRequest extends FormRequest
             'jenisusaha' => 'required',
             'bank' => ['required'],
             'coa' => ['required',$coa],
-            'rekeningbank' => ['required','max:25','min:1','numeric'],
+            'rekeningbank' => ['required','max:25','min:1'],
             'namarekening' => ['required'],
             'jabatan' => 'required',
             'statusdaftarharga' => ['required','numeric',Rule::in($statusDaftarHarga)],

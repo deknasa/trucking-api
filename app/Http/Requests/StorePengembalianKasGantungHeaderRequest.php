@@ -55,7 +55,8 @@ class StorePengembalianKasGantungHeaderRequest extends FormRequest
             ],
             "tglsampai" => [
                 'required', 'date_format:d-m-Y',
-                'before:' . $tglbatasakhir,'after_or_equal:'.date('Y-m-d', strtotime($this->tgldari))
+                'before:' . $tglbatasakhir,
+                'after_or_equal:'.date('Y-m-d', strtotime($this->tgldari))
             ],
         ];
         $relatedRequests = [
@@ -79,6 +80,9 @@ class StorePengembalianKasGantungHeaderRequest extends FormRequest
             'keterangandetail.*' => 'keterangan',
             'coadetail.*' => 'kode perkiraan',
             'nominal.*' => 'Nominal',
+            'tgldari' => 'tanggal dari',
+            'tglsampai' => 'tanggal sampai',
+            'tglbukti' => 'tanggal bukti'
         ];
     }
     public function messages()

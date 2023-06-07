@@ -22,6 +22,7 @@ class CreateKasgantungheaderTable extends Migration
             $table->string('nobukti',50)->unique();
             $table->date('tglbukti')->nullable();
             $table->longText('keterangan')->nullable();            
+            $table->longText('penerima')->nullable();            
             $table->unsignedBigInteger('penerima_id')->nullable();
             $table->unsignedBigInteger('bank_id')->nullable();
             $table->string('pengeluaran_nobukti',50)->nullable();

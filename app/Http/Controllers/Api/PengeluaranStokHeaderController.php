@@ -19,6 +19,7 @@ use App\Models\Stok;
 use App\Models\Bank;
 use App\Models\Error;
 use Illuminate\Support\Facades\Validator;
+use App\Http\Requests\GetIndexRangeRequest;
 
 use Illuminate\Support\Facades\Schema;
 use App\Http\Requests\StoreLogTrailRequest;
@@ -43,7 +44,7 @@ class PengeluaranStokHeaderController extends Controller
     /**
      * @ClassName 
      */
-    public function index()
+    public function index(GetIndexRangeRequest $request)
     {
         $pengeluaranStokHeader = new PengeluaranStokHeader();
         return response([

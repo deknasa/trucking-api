@@ -11,6 +11,7 @@ use App\Models\RekapPengeluaranHeader;
 use App\Http\Requests\StoreRekapPengeluaranHeaderRequest;
 use App\Http\Requests\UpdateRekapPengeluaranHeaderRequest;
 use App\Http\Requests\DestroyRekapPengeluaranHeaderRequest;
+use App\Http\Requests\GetIndexRangeRequest;
 
 use App\Models\RekapPengeluaranDetail;
 use App\Models\PengeluaranHeader;
@@ -25,7 +26,7 @@ class RekapPengeluaranHeaderController extends Controller
     /**
      * @ClassName 
      */
-    public function index()
+    public function index(GetIndexRangeRequest $request)
     {
         $rekapPengeluaranHeader = new RekapPengeluaranHeader();
         return response([

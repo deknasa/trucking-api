@@ -3,8 +3,12 @@
 namespace App\Http\Requests;
 
 use App\Http\Controllers\Api\ErrorController;
+use App\Http\Controllers\Api\RekapPenerimaanHeaderController;
+use App\Models\RekapPenerimaanHeader;
 use Illuminate\Foundation\Http\FormRequest;
 use App\Rules\DateTutupBuku;
+use App\Rules\ValidasiDestroyRekapPenerimaanHeader;
+use App\Rules\ValidasiUpdateRekapPenerimaanHeader;
 
 class UpdateRekapPenerimaanHeaderRequest extends FormRequest
 {
@@ -25,7 +29,18 @@ class UpdateRekapPenerimaanHeaderRequest extends FormRequest
      */
     public function rules()
     {
+        $controller = new RekapPenerimaanHeaderController;
+        $rekappenerimaanheader = new RekapPenerimaanHeader();
+        $cekdata = $rekappenerimaanheader->cekvalidasiaksi($this->nobukti);
+        $cekdatacetak = $controller->cekvalidasi($this->id);
+        if ($cekdatacetak->original['kodestatus']=='1') {
+                $cekdtcetak=true;
+        } else {
+            $cekdtcetak=false;
+        }
+
         return [
+            'id' => [ new ValidasiUpdateRekapPenerimaanHeader($cekdata['kondisi'],$cekdtcetak)],
             "tglbukti" => [
                 "required",'date_format:d-m-Y',
                 new DateTutupBuku()

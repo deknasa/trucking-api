@@ -418,7 +418,9 @@ class PelunasanPiutangHeader extends MyModel
                         } else if ($filters['field'] == 'created_at' || $filters['field'] == 'updated_at') {
                             $query = $query->whereRaw("format(".$this->table . "." . $filters['field'].", 'dd-MM-yyyy HH:mm:ss') LIKE '%$filters[data]%'");
                         } else {
-                            $query = $query->where($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
+                            // $query = $query->where($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
+                            $query = $query->whereRaw($this->table . ".[" .  $filters['field'] . "] LIKE '%" . escapeLike($filters['data']) . "%' escape '|'");
+
                         }
                     }
 
@@ -437,7 +439,9 @@ class PelunasanPiutangHeader extends MyModel
                             } else if ($filters['field'] == 'created_at' || $filters['field'] == 'updated_at') {
                                 $query = $query->orWhereRaw("format(".$this->table . "." . $filters['field'].", 'dd-MM-yyyy HH:mm:ss') LIKE '%$filters[data]%'");
                             } else {
-                                $query = $query->orWhere($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
+                                // $query = $query->orWhere($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
+                                $query = $query->OrwhereRaw($this->table . ".[" .  $filters['field'] . "] LIKE '%" . escapeLike($filters['data']) . "%' escape '|'");
+
                             }
                         }
                     });
@@ -468,5 +472,22 @@ class PelunasanPiutangHeader extends MyModel
         ->whereRaw("ppd.piutang_nobukti = '$nobukti'");
         
         return $fetch->first();
+    }
+    // 
+    public function getEditPelunasan($nobukti,$agenId){
+       $query = DB::table('piutangheader')->from(DB::raw("piutangheader with (readuncommitted)"))
+        ->select(DB::raw("piutangheader.nobukti,piutangheader.tglbukti,piutangheader.nominal as nominalpiutang,piutangheader.invoice_nobukti, (SELECT (piutangheader.nominal - COALESCE(SUM(pelunasanpiutangdetail.nominal),0) - COALESCE(SUM(pelunasanpiutangdetail.potongan),0)) FROM pelunasanpiutangdetail WHERE pelunasanpiutangdetail.piutang_nobukti= piutangheader.nobukti) AS sisa"))
+        ->whereRaw("piutangheader.agen_id = $agenId")
+        ->whereRaw("piutangheader.nobukti = '$nobukti'")
+        ->groupBy('piutangheader.id', 'piutangheader.nobukti', 'piutangheader.agen_id', 'piutangheader.nominal', 'piutangheader.tglbukti', 'piutangheader.invoice_nobukti');
+       return $query->first();
+    }
+    public function getMinusSisaPelunasan($nobukti){
+        $query = DB::table("piutangheader")->from(DB::raw("piutangheader with (readuncommitted)"))
+        ->select('nominal')
+        ->where('nobukti', $nobukti)
+        ->first($nobukti);
+
+        return $query;
     }
 }

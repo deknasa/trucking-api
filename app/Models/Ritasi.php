@@ -23,37 +23,37 @@ class Ritasi extends MyModel
         'tglbukti' => 'date:d-m-Y',
         'created_at' => 'date:d-m-Y H:i:s',
         'updated_at' => 'date:d-m-Y H:i:s'
-    ];    
-    
+    ];
+
     public function get()
     {
         $this->setRequestParameters();
 
         $query = DB::table($this->table)
-        ->select(
-            'ritasi.id',
-            'ritasi.nobukti',
-            'ritasi.tglbukti',
-            'parameter.text as statusritasi',
-            'suratpengantar.nobukti as suratpengantar_nobukti',
-            'supir.namasupir as supir_id',
-            'trado.kodetrado as trado_id',
-            'ritasi.jarak',
-            'ritasi.gaji',
-            'dari.keterangan as dari_id',
-            'sampai.keterangan as sampai_id',
-            'ritasi.modifiedby',
-            'ritasi.created_at',
-            'ritasi.updated_at'
-        )
-        ->leftJoin('parameter', 'ritasi.statusritasi', '=', 'parameter.id')
-        ->leftJoin('suratpengantar', 'ritasi.suratpengantar_nobukti', '=', 'suratpengantar.nobukti')
-        ->leftJoin('supir', 'ritasi.supir_id', '=', 'supir.id')
-        ->leftJoin('trado', 'ritasi.trado_id', '=', 'trado.id')
-        ->leftJoin('kota as dari', 'ritasi.dari_id', '=', 'dari.id')
-        ->leftJoin('kota as sampai', 'ritasi.sampai_id', '=', 'sampai.id');
+            ->select(
+                'ritasi.id',
+                'ritasi.nobukti',
+                'ritasi.tglbukti',
+                'parameter.text as statusritasi',
+                'suratpengantar.nobukti as suratpengantar_nobukti',
+                'supir.namasupir as supir_id',
+                'trado.kodetrado as trado_id',
+                'ritasi.jarak',
+                'ritasi.gaji',
+                'dari.keterangan as dari_id',
+                'sampai.keterangan as sampai_id',
+                'ritasi.modifiedby',
+                'ritasi.created_at',
+                'ritasi.updated_at'
+            )
+            ->leftJoin('parameter', 'ritasi.statusritasi', '=', 'parameter.id')
+            ->leftJoin('suratpengantar', 'ritasi.suratpengantar_nobukti', '=', 'suratpengantar.nobukti')
+            ->leftJoin('supir', 'ritasi.supir_id', '=', 'supir.id')
+            ->leftJoin('trado', 'ritasi.trado_id', '=', 'trado.id')
+            ->leftJoin('kota as dari', 'ritasi.dari_id', '=', 'dari.id')
+            ->leftJoin('kota as sampai', 'ritasi.sampai_id', '=', 'sampai.id');
         if (request()->tgldari) {
-            $query->whereBetween('ritasi.tglbukti', [date('Y-m-d',strtotime(request()->tgldari )), date('Y-m-d',strtotime(request()->tglsampai ))]);
+            $query->whereBetween('ritasi.tglbukti', [date('Y-m-d', strtotime(request()->tgldari)), date('Y-m-d', strtotime(request()->tglsampai))]);
         }
         $this->totalRows = $query->count();
         $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;
@@ -71,29 +71,30 @@ class Ritasi extends MyModel
 
     public function default()
     {
-        
+
         $tempdefault = '##tempdefault' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
         Schema::create($tempdefault, function ($table) {
             $table->unsignedBigInteger('statusritasi')->nullable();
         });
 
-        $statusritasi=Parameter::from (
+        $statusritasi = Parameter::from(
             db::Raw("parameter with (readuncommitted)")
         )
-        ->select (
-            'id'
-        )
-        ->where('grp','=','STATUS RITASI')
-        ->where('subgrp','=','STATUS RITASI')
-        ->where('default', '=', 'YA')
-        ->first();
+            ->select(
+                'id'
+            )
+            ->where('grp', '=', 'STATUS RITASI')
+            ->where('subgrp', '=', 'STATUS RITASI')
+            ->where('default', '=', 'YA')
+            ->first();
         DB::table($tempdefault)->insert(["statusritasi" => $statusritasi->id]);
-        
-        $query=DB::table($tempdefault)->from(
-            DB::raw($tempdefault )
+
+        $query = DB::table($tempdefault)->from(
+            DB::raw($tempdefault)
         )
             ->select(
-                'statusritasi');
+                'statusritasi'
+            );
 
         $data = $query->first();
         // dd($data);
@@ -117,11 +118,11 @@ class Ritasi extends MyModel
             'ritasi.supir_id',
             'supir.namasupir as supir'
         )
-        ->leftJoin('supir', 'ritasi.supir_id', '=', 'supir.id')
-        ->leftJoin('trado', 'ritasi.trado_id', '=', 'trado.id')
-        ->leftJoin('kota as dari', 'ritasi.dari_id', '=', 'dari.id')
-        ->leftJoin('kota as sampai', 'ritasi.sampai_id', '=', 'sampai.id')
-        ->where('ritasi.id',$id);
+            ->leftJoin('supir', 'ritasi.supir_id', '=', 'supir.id')
+            ->leftJoin('trado', 'ritasi.trado_id', '=', 'trado.id')
+            ->leftJoin('kota as dari', 'ritasi.dari_id', '=', 'dari.id')
+            ->leftJoin('kota as sampai', 'ritasi.sampai_id', '=', 'sampai.id')
+            ->where('ritasi.id', $id);
 
         $data = $query->first();
         return $data;
@@ -130,7 +131,7 @@ class Ritasi extends MyModel
     {
         return $query->select(
             DB::raw(
-            "$this->table.id,
+                "$this->table.id,
             $this->table.nobukti,
             $this->table.tglbukti,
             'parameter.text as statusritasi',
@@ -146,12 +147,12 @@ class Ritasi extends MyModel
             $this->table.updated_at"
             )
         )
-        ->leftJoin('parameter', 'ritasi.statusritasi', '=', 'parameter.id')
-        ->leftJoin('suratpengantar', 'ritasi.suratpengantar_nobukti', '=', 'suratpengantar.nobukti')
-        ->leftJoin('supir', 'ritasi.supir_id', '=', 'supir.id')
-        ->leftJoin('trado', 'ritasi.trado_id', '=', 'trado.id')
-        ->leftJoin('kota as dari', 'ritasi.dari_id', '=', 'dari.id')
-        ->leftJoin('kota as sampai', 'ritasi.sampai_id', '=', 'sampai.id');
+            ->leftJoin('parameter', 'ritasi.statusritasi', '=', 'parameter.id')
+            ->leftJoin('suratpengantar', 'ritasi.suratpengantar_nobukti', '=', 'suratpengantar.nobukti')
+            ->leftJoin('supir', 'ritasi.supir_id', '=', 'supir.id')
+            ->leftJoin('trado', 'ritasi.trado_id', '=', 'trado.id')
+            ->leftJoin('kota as dari', 'ritasi.dari_id', '=', 'dari.id')
+            ->leftJoin('kota as sampai', 'ritasi.sampai_id', '=', 'sampai.id');
     }
 
     public function createTemp(string $modelTable)
@@ -179,29 +180,28 @@ class Ritasi extends MyModel
         $query = DB::table($modelTable);
         $query = $this->selectColumns($query);
         if (request()->tgldari) {
-            $query->whereBetween('tglbukti', [date('Y-m-d',strtotime(request()->tgldari )), date('Y-m-d',strtotime(request()->tglsampai ))]);
+            $query->whereBetween('tglbukti', [date('Y-m-d', strtotime(request()->tgldari)), date('Y-m-d', strtotime(request()->tglsampai))]);
         }
         $this->sort($query);
         $models = $this->filter($query);
-        DB::table($temp)->insertUsing(['id','nobukti','tglbukti','statusritasi','suratpengantar_nobukti','supir_id','trado_id','jarak','gaji','dari_id','sampai_id','modifiedby','created_at','updated_at'],$models);
+        DB::table($temp)->insertUsing(['id', 'nobukti', 'tglbukti', 'statusritasi', 'suratpengantar_nobukti', 'supir_id', 'trado_id', 'jarak', 'gaji', 'dari_id', 'sampai_id', 'modifiedby', 'created_at', 'updated_at'], $models);
 
 
-        return  $temp;         
-
+        return  $temp;
     }
     public function sort($query)
     {
-        if($this->params['sortIndex'] == 'dari_id'){
+        if ($this->params['sortIndex'] == 'dari_id') {
             return $query->orderBy('dari.keterangan', $this->params['sortOrder']);
-        } else if($this->params['sortIndex'] == 'sampai_id'){
+        } else if ($this->params['sortIndex'] == 'sampai_id') {
             return $query->orderBy('sampai.keterangan', $this->params['sortOrder']);
-        } else if($this->params['sortIndex'] == 'supir_id'){
+        } else if ($this->params['sortIndex'] == 'supir_id') {
             return $query->orderBy('supir.namasupir', $this->params['sortOrder']);
-        } else if($this->params['sortIndex'] == 'trado_id'){
+        } else if ($this->params['sortIndex'] == 'trado_id') {
             return $query->orderBy('trado.kodetrado', $this->params['sortOrder']);
-        } else if($this->params['sortIndex'] == 'statusritasi'){
+        } else if ($this->params['sortIndex'] == 'statusritasi') {
             return $query->orderBy('parameter.text', $this->params['sortOrder']);
-        } else{
+        } else {
             return $query->orderBy($this->table . '.' . $this->params['sortIndex'], $this->params['sortOrder']);
         }
     }
@@ -223,13 +223,15 @@ class Ritasi extends MyModel
                         } elseif ($filters['field'] == 'sampai_id') {
                             $query = $query->where('sampai.keterangan', 'LIKE', "%$filters[data]%");
                         } else if ($filters['field'] == 'jarak' || $filters['field'] == 'gaji') {
-                            $query = $query->whereRaw("format(".$this->table . "." . $filters['field'].", '#,#0.00') LIKE '%$filters[data]%'");
+                            $query = $query->whereRaw("format(" . $this->table . "." . $filters['field'] . ", '#,#0.00') LIKE '%$filters[data]%'");
                         } else if ($filters['field'] == 'tglbukti') {
-                            $query = $query->whereRaw("format(".$this->table . "." . $filters['field'].", 'dd-MM-yyyy') LIKE '%$filters[data]%'");
+                            $query = $query->whereRaw("format(" . $this->table . "." . $filters['field'] . ", 'dd-MM-yyyy') LIKE '%$filters[data]%'");
                         } else if ($filters['field'] == 'created_at' || $filters['field'] == 'updated_at') {
-                            $query = $query->whereRaw("format(".$this->table . "." . $filters['field'].", 'dd-MM-yyyy HH:mm:ss') LIKE '%$filters[data]%'");
+                            $query = $query->whereRaw("format(" . $this->table . "." . $filters['field'] . ", 'dd-MM-yyyy HH:mm:ss') LIKE '%$filters[data]%'");
                         } else {
-                            $query = $query->where($this->table . '.' .$filters['field'], 'LIKE', "%$filters[data]%");
+                            // $query = $query->where($this->table . '.' .$filters['field'], 'LIKE', "%$filters[data]%");
+                            $query = $query->whereRaw($this->table . ".[" .  $filters['field'] . "] LIKE '%" . escapeLike($filters['data']) . "%' escape '|'");
+
                         }
                     }
 
@@ -248,13 +250,15 @@ class Ritasi extends MyModel
                             } elseif ($filters['field'] == 'sampai_id') {
                                 $query = $query->where('sampai.keterangan', 'LIKE', "%$filters[data]%");
                             } else if ($filters['field'] == 'jarak' || $filters['field'] == 'gaji') {
-                                $query = $query->orWhereRaw("format(".$this->table . "." . $filters['field'].", '#,#0.00') LIKE '%$filters[data]%'");
+                                $query = $query->orWhereRaw("format(" . $this->table . "." . $filters['field'] . ", '#,#0.00') LIKE '%$filters[data]%'");
                             } else if ($filters['field'] == 'tglbukti') {
-                                $query = $query->orWhereRaw("format(".$this->table . "." . $filters['field'].", 'dd-MM-yyyy') LIKE '%$filters[data]%'");
+                                $query = $query->orWhereRaw("format(" . $this->table . "." . $filters['field'] . ", 'dd-MM-yyyy') LIKE '%$filters[data]%'");
                             } else if ($filters['field'] == 'created_at' || $filters['field'] == 'updated_at') {
-                                $query = $query->orWhereRaw("format(".$this->table . "." . $filters['field'].", 'dd-MM-yyyy HH:mm:ss') LIKE '%$filters[data]%'");
+                                $query = $query->orWhereRaw("format(" . $this->table . "." . $filters['field'] . ", 'dd-MM-yyyy HH:mm:ss') LIKE '%$filters[data]%'");
                             } else {
-                                $query = $query->orWhere($this->table . '.' .$filters['field'], 'LIKE', "%$filters[data]%");
+                                // $query = $query->orWhere($this->table . '.' .$filters['field'], 'LIKE', "%$filters[data]%");
+                                $query = $query->OrwhereRaw($this->table . ".[" .  $filters['field'] . "] LIKE '%" . escapeLike($filters['data']) . "%' escape '|'");
+
                             }
                         }
                     });
@@ -295,7 +299,7 @@ class Ritasi extends MyModel
             ];
             goto selesai;
         }
-       
+
 
         $data = [
             'kondisi' => false,
@@ -305,5 +309,17 @@ class Ritasi extends MyModel
         return $data;
     }
 
+    public function cekUpahRitasi($dari, $sampai, $container)
+    {
+        $query = DB::table("upahritasi")->from(DB::raw("upahritasi with (readuncommitted)"))
+            ->select(DB::raw("upahritasirincian.nominalsupir, upahritasirincian.liter"))
+            ->join(DB::raw("upahritasirincian with (readuncommitted)"), 'upahritasi.id', 'upahritasirincian.upahritasi_id')
+            ->where('upahritasi.kotadari_id', $dari)
+            ->where('upahritasi.kotasampai_id', $sampai)
+            ->where('upahritasirincian.container_id', $container)
+            ->whereRaw("upahritasirincian.nominalsupir != 0")
+            ->first();
 
+        return $query;
+    }
 }

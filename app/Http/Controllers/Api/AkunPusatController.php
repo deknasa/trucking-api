@@ -113,6 +113,7 @@ class AkunPusatController extends Controller
         DB::beginTransaction();
 
         try {
+            $akunPusat->coa = $request->coa;
             $akunPusat->keterangancoa = $request->keterangancoa;
             $akunPusat->type = $request->type;
             $akunPusat->level = $request->level;
