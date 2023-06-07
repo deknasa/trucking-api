@@ -27,6 +27,7 @@ class ValidasiDestroyTarif implements Rule
      */
     public function passes($attribute, $value)
     {
+        
         $tarif = new Tarif();
         $cekdata = $tarif->cekValidasi(request()->id);
         if($cekdata['kondisi']){
