@@ -64,7 +64,7 @@ class UpdateSupirRequest extends FormRequest
             'alamat' => 'required',
             'namaalias' => 'required',
             'kota' => 'required',
-            'telp' => 'required|min:11|max:13|unique:supir,telp,' . $this->supir->id,
+            'telp' => 'required|min:8|max:50|unique:supir,telp,' . $this->supir->id,
             'statusaktif' => 'required|int|exists:parameter,id',
             'tglmasuk' => 'required',
             'tglexpsim' => 'required',
@@ -124,8 +124,8 @@ class UpdateSupirRequest extends FormRequest
         $tglbatasawal = date('Y-m-d', strtotime('-' . (new ParameterController)->getparamid('MAXIMAL USIA SUPIR', 'MAXIMAL USIA SUPIR')->text . ' years', strtotime(date('Y-m-d'))));
 
         return [
-            'telp.min' => 'Min. 11 karakter',
-            'telp.max' => 'Max. 13 karakter',
+            'telp.min' => 'Min. 8 karakter',
+            'telp.max' => 'Max. 50 karakter',
             'noktp.max' => 'Max. 16 karakter',
             'noktp.min' => 'Min. 16 karakter',
             'nokk.max' => 'Max. 16 karakter',
