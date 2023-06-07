@@ -41,7 +41,6 @@ class StorePiutangHeaderRequest extends FormRequest
         $rules = [
             'tglbukti' => [
                 'required', 'date_format:d-m-Y',
-                new DateAllowedAbsen(),
                 new DateTutupBuku(),
                 'before_or_equal:' . date('d-m-Y')
             ],

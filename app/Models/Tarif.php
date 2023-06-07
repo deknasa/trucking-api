@@ -414,6 +414,10 @@ class Tarif extends MyModel
             ->first();
 
         if (isset($rekap)) {
+            ->where('a.tarif_id', '=', $id)
+            ->first();
+
+            if (isset($rekap)) {
             $data = [
                 'kondisi' => true,
                 'keterangan' => 'surat pengantar',
