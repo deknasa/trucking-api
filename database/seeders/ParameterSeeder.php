@@ -262,7 +262,7 @@ class ParameterSeeder extends Seeder
         parameter::create(['grp' => 'STATUS KEMBALI', 'subgrp' => 'STATUS KEMBALI', 'kelompok' => '', 'text' => 'BELUM DIKEMBALIKAN', 'memo' => '{"MEMO":"BELUM DIKEMBALIKAN","SINGKATAN":"BD","WARNA":"#6C757D"}', 'type' => '0', 'modifiedby' => 'ADMIN', 'default' => '',]);
         parameter::create(['grp' => 'STATUS KEMBALI', 'subgrp' => 'STATUS KEMBALI', 'kelompok' => '', 'text' => 'SEMUA', 'memo' => '{"MEMO":"SEMUA","SINGKATAN":"S","WARNA":"#6C757D"}', 'type' => '0', 'modifiedby' => 'ADMIN', 'default' => '',]);
         parameter::create(['grp' => 'TYPE PEMOTONGAN', 'subgrp' => 'TYPE PEMOTONGAN', 'kelompok' => '', 'text' => 'DEPOSITO', 'memo' => '{"MEMO":"DEPOSITO","SINGKATAN":"D","WARNA":"#28A745"}', 'type' => '0', 'modifiedby' => 'ADMIN', 'default' => 'YA',]);
-        parameter::create(['grp' => 'TYPE PEMOTONGAN', 'subgrp' => 'TYPE PEMOTONGAN', 'kelompok' => '', 'text' => 'PINJAMAN', 'memo' => '{"MEMO":"PINJAMAN","SINGKATAN":P","WARNA":"#6C757D"}', 'type' => '0', 'modifiedby' => 'ADMIN', 'default' => '',]);
+        parameter::create(['grp' => 'TYPE PEMOTONGAN', 'subgrp' => 'TYPE PEMOTONGAN', 'kelompok' => '', 'text' => 'PINJAMAN', 'memo' => '{"MEMO":"PINJAMAN","SINGKATAN":"P","WARNA":"#6C757D"}', 'type' => '0', 'modifiedby' => 'ADMIN', 'default' => '',]);
         parameter::create(['grp' => 'STATUS GEROBAK', 'subgrp' => 'STATUS GEROBAK', 'kelompok' => '', 'text' => 'GEROBAK', 'memo' => '{"MEMO":"GEROBAK","SINGKATAN":"G","WARNA":"#28A745"}', 'type' => '0', 'modifiedby' => 'ADMIN', 'default' => '',]);
         parameter::create(['grp' => 'STATUS GEROBAK', 'subgrp' => 'STATUS GEROBAK', 'kelompok' => '', 'text' => 'BUKAN GEROBAK', 'memo' => '{"MEMO":"BUKAN GEROBAK","SINGKATAN":"BG","WARNA":"#6C757D"}', 'type' => '0', 'modifiedby' => 'ADMIN', 'default' => 'YA',]);
         parameter::create(['grp' => 'STATUS EDIT ABSENSI', 'subgrp' => 'STATUS EDIT ABSENSI', 'kelompok' => '', 'text' => 'BOLEH EDIT ABSENSI', 'memo' => '{"MEMO":"BOLEH EDIT ABSENSI","SINGKATAN":"BEA","WARNA":"#28A745"}', 'type' => '0', 'modifiedby' => 'ADMIN', 'default' => '',]);
@@ -340,6 +340,8 @@ class ParameterSeeder extends Seeder
         parameter::create(['grp' => 'TIDAK ADA SUPIR', 'subgrp' => 'TIDAK ADA SUPIR', 'kelompok' => '', 'text' => '2', 'memo' => '{"MEMO":"TIDAK ADA SUPIR","SINGKATAN":"3","WARNA":"#28A745"}', 'type' => '118', 'modifiedby' => 'ADMIN', 'default' => '',]);
         parameter::create(['grp' => 'BATAS JAM EDIT ABSENSI', 'subgrp' => 'BATAS JAM EDIT ABSENSI', 'kelompok' => '', 'text' => '11:59', 'memo' => '{"MEMO":"BATAS JAM EDIT ABSENSI","SINGKATAN":"BJE","WARNA":"#28A745"}', 'type' => '118', 'modifiedby' => 'ADMIN', 'default' => '',]);
         parameter::create(['grp' => 'JUDULAN LAPORAN', 'subgrp' => 'JUDULAN LAPORAN', 'kelompok' => '', 'text' => 'PT. TRANSPORINDO AGUNG SEJAHTERA', 'memo' => '{"MEMO":"PT. TRANSPORINDO AGUNG SEJAHTERA":"BJE","WARNA":"#28A745"}', 'type' => '118', 'modifiedby' => 'ADMIN', 'default' => '',]);
+        parameter::create(['grp' => 'TIPE KAS/BANK', 'subgrp' => 'TIPE KAS/BANK', 'kelompok' => '', 'text' => 'KAS', 'memo' => '{"MEMO":"KAS","SINGKATAN":"K","WARNA":"#28A745"}', 'type' => '0', 'modifiedby' => 'ADMIN', 'default' => '',]);
+        parameter::create(['grp' => 'TIPE KAS/BANK', 'subgrp' => 'TIPE KAS/BANK', 'kelompok' => '', 'text' => 'BANK', 'memo' => '{"MEMO":"BANK","SINGKATAN":"B","WARNA":"#6C757D"}', 'type' => '0', 'modifiedby' => 'ADMIN', 'default' => 'YA',]);
         
     }
 }
