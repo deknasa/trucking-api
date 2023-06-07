@@ -26,6 +26,8 @@ class CreateRitasiTable extends Migration
             $table->unsignedBigInteger('supir_id')->nullable();
             $table->unsignedBigInteger('trado_id')->nullable();
             $table->double('jarak',15,2)->nullable();
+            $table->double('upah',15,2)->nullable();
+            $table->double('extra',15,2)->nullable();
             $table->double('gaji',15,2)->nullable();
             $table->unsignedBigInteger('dari_id')->nullable();
             $table->unsignedBigInteger('sampai_id')->nullable();

@@ -182,7 +182,6 @@ class Tarif extends MyModel
             $table->dateTime('created_at')->nullable();
             $table->dateTime('updated_at')->nullable();
             $table->increments('position');
-            
         });
 
         $this->setRequestParameters();
@@ -325,13 +324,13 @@ class Tarif extends MyModel
                             $query = $query->where('parameter.text', '=', "$filters[data]");
                         } elseif ($filters['field'] == 'container_id') {
                             $query = $query->where('container.keterangan', 'LIKE', "%$filters[data]%");
-                        }elseif ($filters['field'] == 'parent_id') {
+                        } elseif ($filters['field'] == 'parent_id') {
                             $query = $query->where('parent.tujuan', 'LIKE', "%$filters[data]%");
                         } elseif ($filters['field'] == 'upahsupir_id') {
                             $query = $query->where('B.kotasampai_id', 'LIKE', "%$filters[data]%");
                         } elseif ($filters['field'] == 'kota_id') {
                             $query = $query->where('kota.keterangan', 'LIKE', "%$filters[data]%");
-                        }elseif ($filters['field'] == 'keterangan_id') {
+                        } elseif ($filters['field'] == 'keterangan_id') {
                             $query = $query->where('keterangan.keterangan', 'LIKE', "%$filters[data]%");
                         } elseif ($filters['field'] == 'zona_id') {
                             $query = $query->where('zona.keterangan', 'LIKE', "%$filters[data]%");
@@ -340,13 +339,12 @@ class Tarif extends MyModel
                         } elseif ($filters['field'] == 'statussistemton') {
                             $query = $query->where('sistemton.text', '=', "$filters[data]");
                         } else if ($filters['field'] == 'tglmulaiberlaku') {
-                            $query = $query->whereRaw("format(".$this->table . "." . $filters['field'].", 'dd-MM-yyyy') LIKE '%$filters[data]%'");
+                            $query = $query->whereRaw("format(" . $this->table . "." . $filters['field'] . ", 'dd-MM-yyyy') LIKE '%$filters[data]%'");
                         } else if ($filters['field'] == 'created_at' || $filters['field'] == 'updated_at') {
-                            $query = $query->whereRaw("format(".$this->table . "." . $filters['field'].", 'dd-MM-yyyy HH:mm:ss') LIKE '%$filters[data]%'");
+                            $query = $query->whereRaw("format(" . $this->table . "." . $filters['field'] . ", 'dd-MM-yyyy HH:mm:ss') LIKE '%$filters[data]%'");
                         } else {
                             // $query = $query->where('tarif.' . $filters['field'], 'LIKE', "%$filters[data]%");
                             $query = $query->whereRaw('tarif' . ".[" .  $filters['field'] . "] LIKE '%" . escapeLike($filters['data']) . "%' escape '|'");
-
                         }
                     }
 
@@ -371,13 +369,12 @@ class Tarif extends MyModel
                             } elseif ($filters['field'] == 'statussistemton') {
                                 $query = $query->orWhere('sistemton.text', '=', "$filters[data]");
                             } else if ($filters['field'] == 'tglmulaiberlaku') {
-                                $query = $query->orWhereRaw("format(".$this->table . "." . $filters['field'].", 'dd-MM-yyyy') LIKE '%$filters[data]%'");
+                                $query = $query->orWhereRaw("format(" . $this->table . "." . $filters['field'] . ", 'dd-MM-yyyy') LIKE '%$filters[data]%'");
                             } else if ($filters['field'] == 'created_at' || $filters['field'] == 'updated_at') {
-                                $query = $query->orWhereRaw("format(".$this->table . "." . $filters['field'].", 'dd-MM-yyyy HH:mm:ss') LIKE '%$filters[data]%'");
+                                $query = $query->orWhereRaw("format(" . $this->table . "." . $filters['field'] . ", 'dd-MM-yyyy HH:mm:ss') LIKE '%$filters[data]%'");
                             } else {
                                 // $query = $query->orWhere('tarif.' . $filters['field'], 'LIKE', "%$filters[data]%");
                                 $query = $query->OrwhereRaw('tarif' . ".[" .  $filters['field'] . "] LIKE '%" . escapeLike($filters['data']) . "%' escape '|'");
-
                             }
                         }
                     });
@@ -399,7 +396,7 @@ class Tarif extends MyModel
     {
         return $query->skip($this->params['offset'])->take($this->params['limit']);
     }
-    
+
     public function cekValidasi($id)
     {
         $rekap = DB::table('suratpengantar')
@@ -413,11 +410,8 @@ class Tarif extends MyModel
             ->where('b.tarif_id', '=', $id)
             ->first();
 
-        if (isset($rekap)) {
-            ->where('a.tarif_id', '=', $id)
-            ->first();
 
-            if (isset($rekap)) {
+        if (isset($rekap)) {
             $data = [
                 'kondisi' => true,
                 'keterangan' => 'surat pengantar',
