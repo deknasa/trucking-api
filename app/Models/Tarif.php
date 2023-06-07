@@ -6,7 +6,6 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 
-
 class Tarif extends MyModel
 {
     use HasFactory;
@@ -403,20 +402,25 @@ class Tarif extends MyModel
     
     public function cekValidasi($id)
     {
-        $rekap = DB::table('upahsupir')
+        $rekap = DB::table('suratpengantar')
             ->from(
-                DB::raw("upahsupir as a with (readuncommitted)")
+                DB::raw("suratpengantar as a with (readuncommitted)")
             )
             ->select(
                 'a.tarif_id'
             )
+            ->leftJoin(DB::raw("tarifrincian b with (readuncommitted)"), 'a.tarif_id', '=', 'b.id')
+            ->where('b.tarif_id', '=', $id)
+            ->first();
+
+        if (isset($rekap)) {
             ->where('a.tarif_id', '=', $id)
             ->first();
 
             if (isset($rekap)) {
             $data = [
                 'kondisi' => true,
-                'keterangan' => 'upahsupir',
+                'keterangan' => 'surat pengantar',
                 'kodeerror' => 'SATL'
             ];
             goto selesai;
