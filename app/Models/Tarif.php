@@ -84,6 +84,7 @@ class Tarif extends MyModel
                 'parameter.memo as statusaktif',
                 'sistemton.memo as statussistemton',
                 'kota.kodekota as kota_id',
+                'tarif.kota_id as kotaId',
                 'zona.zona as zona_id',
                 'tarif.tglmulaiberlaku',
                 'p.memo as statuspenyesuaianharga',
