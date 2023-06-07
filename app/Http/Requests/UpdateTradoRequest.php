@@ -77,7 +77,7 @@ class UpdateTradoRequest extends FormRequest
             'tglpajakstnk' => 'required',
             'tipe' => 'required',
             'jenis' => 'required',
-            'isisilinder' => 'required|numeric|min:1|digits_between:1,2',
+            'isisilinder' => 'required|numeric|min:1|digits_between:1,5',
             'warna' => 'required',
             'jenisbahanbakar' => 'required',
             'jumlahsumbu' => 'required|numeric|min:1|digits_between:1,2',
@@ -151,7 +151,7 @@ class UpdateTradoRequest extends FormRequest
             'jumlahroda.min' => 'Min. 1 karakter',
             'jumlahroda.digits_between' => 'Max. 2 karakter',
             'isisilinder.min' => 'Min. 1 karakter',
-            'isisilinder.digits_between' => 'Max. 2 karakter',
+            'isisilinder.digits_between' => 'Max. 5 karakter',
             'jumlahsumbu.min' => 'Min. 1 karakter',
             'jumlahsumbu.digits_between' => 'Max. 2 karakter',
             
