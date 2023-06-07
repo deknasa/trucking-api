@@ -71,7 +71,7 @@ class StoreTradoRequest extends FormRequest
             'norangka' => 'required|unique:trado|max:20',
             'nomesin' => 'required|unique:trado|max:20',
             'nama' => 'required',
-            'nostnk' => 'required|unique:trado|max:12',
+            'nostnk' => 'required|unique:trado|max:50',
             'alamatstnk' => 'required',
             'statusjenisplat' => 'required',
             'tglpajakstnk' => 'required',

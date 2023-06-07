@@ -71,7 +71,7 @@ class UpdateTradoRequest extends FormRequest
             'norangka' => ['required', 'max:20', Rule::unique('trado')->whereNotIn('id', [$this->id])],
             'nomesin' =>  ['required','max:20', Rule::unique('trado')->whereNotIn('id', [$this->id])],
             'nama' => 'required',
-            'nostnk' =>  ['required', 'max:12', Rule::unique('trado')->whereNotIn('id', [$this->id])],
+            'nostnk' =>  ['required', 'max:50', Rule::unique('trado')->whereNotIn('id', [$this->id])],
             'alamatstnk' => 'required',
             'statusjenisplat' => 'required',
             'tglpajakstnk' => 'required',
