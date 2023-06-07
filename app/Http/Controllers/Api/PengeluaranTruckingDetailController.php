@@ -41,7 +41,12 @@ class PengeluaranTruckingDetailController extends Controller
             $pengeluarantruckingDetail->pengeluarantruckingheader_id = $request->pengeluarantruckingheader_id;
             $pengeluarantruckingDetail->nobukti = $request->nobukti;
             $pengeluarantruckingDetail->supir_id = $request->supir_id;
-            $pengeluarantruckingDetail->penerimaantruckingheader_nobukti = $request->penerimaantruckingheader_nobukti;
+            $pengeluarantruckingDetail->penerimaantruckingheader_nobukti = $request->penerimaantruckingheader_nobukti??"";
+            $pengeluarantruckingDetail->stok_id = $request->stok_id ?? 0;
+            $pengeluarantruckingDetail->pengeluaranstok_nobukti = $request->pengeluaranstok_nobukti ?? "";
+            $pengeluarantruckingDetail->qty = $request->qty ?? 0;
+            $pengeluarantruckingDetail->harga = $request->harga ?? 0;
+            $pengeluarantruckingDetail->trado_id = $request->trado_id ?? 0;
             $pengeluarantruckingDetail->keterangan = $request->keterangan;
             $pengeluarantruckingDetail->invoice_nobukti = $request->invoice_nobukti;
             $pengeluarantruckingDetail->orderantrucking_nobukti = $request->orderantrucking_nobukti;
@@ -49,7 +54,6 @@ class PengeluaranTruckingDetailController extends Controller
             $pengeluarantruckingDetail->modifiedby = auth('api')->user()->name;
             
             $pengeluarantruckingDetail->save();
-           
             DB::commit();
             return [
                 'error' => false,
@@ -58,8 +62,9 @@ class PengeluaranTruckingDetailController extends Controller
                 'tabel' => $pengeluarantruckingDetail->getTable(),
             ];
         } catch (\Throwable $th) {
-            throw $th;
+            // dd($th);
             DB::rollBack();
+            throw $th;
         }        
     }
 

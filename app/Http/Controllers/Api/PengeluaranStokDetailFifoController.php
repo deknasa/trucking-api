@@ -593,15 +593,15 @@ class PengeluaranStokDetailFifoController extends Controller
                 $penerimaanstokdetail->save();
             }
             
-            if ($request->pengeluaranstok_id == $spk->text) {
-                // dump($jurnalHeader);
-// dd($jurnaldetail);
-                $jurnal = $this->storeJurnal($jurnalHeader, $jurnaldetail);
-                // dd($jurnal);
-                if (!$jurnal['status']) {
-                    throw new \Throwable($jurnal['message']);
-                }
-            }
+//             if ($request->pengeluaranstok_id == $spk->text) {
+//                 // dump($jurnalHeader);
+// // dd($jurnaldetail);
+//                 // $jurnal = $this->storeJurnal($jurnalHeader, $jurnaldetail);
+//                 // dd($jurnal);
+//                 if (!$jurnal['status']) {
+//                     throw new \Throwable($jurnal['message']);
+//                 }
+//             }
 
 
 

@@ -29,9 +29,11 @@ class UpdatePengeluaranStokHeaderRequest extends FormRequest
                 "required",
                 new DateTutupBuku()
             ],
-            "pengeluaranstok" => "required",
-            "pengeluaranstok_id" => "required",
-            "modifiedby"=> "string", 
+            // "pengeluaranstok" => "required",
+            // "pengeluaranstok_id" => "required",
+            'trado' => 'required_without_all:gandengan,gudang',
+            'gandengan' => 'required_without_all:trado,gudang',
+            'gudang' => 'required_without_all:trado,gandengan',
         ];
     }
 }

@@ -30,6 +30,9 @@ use App\Http\Requests\StorePengeluaranStokDetailFifoRequest;
 use App\Http\Requests\StoreHutangBayarHeaderRequest;
 use App\Http\Requests\StorePenerimaanHeaderRequest;
 use App\Http\Requests\StorePenerimaanDetailRequest;
+use App\Http\Requests\StoreJurnalUmumHeaderRequest;
+use App\Http\Requests\StoreJurnalUmumDetailRequest;
+use App\Http\Requests\UpdateJurnalUmumHeaderRequest;
 use App\Models\PenerimaanHeader;
 use App\Models\PenerimaanDetail;
 use App\Models\JurnalUmumDetail;
@@ -123,7 +126,23 @@ class PengeluaranStokHeaderController extends Controller
 
                 $validatedLogTrail = new StoreLogTrailRequest($logTrail);
                 $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
-
+                
+                
+                $statusApp = Parameter::from(db::Raw("parameter with (readuncommitted)"))->where('grp', 'STATUS APPROVAL')->where('subgrp', 'STATUS APPROVAL')->where('text', 'NON APPROVAL')->first();
+    
+                $jurnalHeader = [
+                    'tanpaprosesnobukti' => 1,
+                    'nobukti' => $nobukti,
+                    'tglbukti' => date('Y-m-d', strtotime($request->tglbukti)),
+                    'keterangan' => $request->keterangan ?? '',
+                    'postingdari' => "ENTRY HUTANG",
+                    'statusapproval' => $statusApp->id,
+                    'userapproval' => "",
+                    'tglapproval' => "",
+                    'modifiedby' => auth('api')->user()->name,
+                    'statusformat' => "0",
+                ];
+                $jurnaldetail=[];
                 if ($request->detail_harga) {
 
                     /* Store detail */
@@ -176,7 +195,40 @@ class PengeluaranStokHeaderController extends Controller
                         if ($pengeluaranStokDetailFifo['error']) {
                             return response($pengeluaranStokDetailFifo, 422);
                         }
-                        // dd('test');
+                        
+                        $detail = PengeluaranStokDetail::where('id',$iddetail)->first();
+                        $total = $detail->harga * $detail->qty;
+                        // if ($request->pengeluaranstok_id == $spk->text) {
+                            $getCoaDebet = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))
+                                ->where('grp', 'JURNAL PEMAKAIAN STOK')->where('subgrp', 'DEBET')->first();
+                            $memo = json_decode($getCoaDebet->memo, true);
+                            $getCoaKredit = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))
+                                ->where('grp', 'JURNAL PEMAKAIAN STOK')->where('subgrp', 'KREDIT')->first();
+                            $memokredit = json_decode($getCoaKredit->memo, true);
+    
+                            $jurnaldetail[] = [
+                                    'nobukti' => $nobukti,
+                                    'tglbukti' => date('Y-m-d', strtotime($request->tglbukti)),
+                                    'coa' =>  $memo['JURNAL'],
+                                    'nominal' => $total,
+                                    'keterangan' => $request->detail_keterangan[$i],
+                                    'modifiedby' => auth('api')->user()->name,
+                                    'baris' => 0,
+                            ];
+    
+                            $jurnaldetail []= 
+                                [
+                                    'nobukti' => $nobukti,
+                                    'tglbukti' => date('Y-m-d', strtotime($request->tglbukti)),
+                                    'coa' =>  $memokredit['JURNAL'],
+                                    'nominal' => ($total * -1),
+                                    'keterangan' => $request->detail_keterangan[$i],
+                                    'modifiedby' => auth('api')->user()->name,
+                                    'baris' => 0,
+                                ]
+                            ;
+    
+                        // }
                     }
                     $datalogtrail = [
                         'namatabel' => strtoupper($tabeldetail),
@@ -193,7 +245,11 @@ class PengeluaranStokHeaderController extends Controller
                 }
 
                 
+                $jurnal = $this->storeJurnal($jurnalHeader, $jurnaldetail);
 
+                if (!$jurnal['status']) {
+                    throw new \Throwable($jurnal['message']);
+                }
                 $rbt = Parameter::where('grp', 'PENGELUARAN STOK')->where('subgrp', 'RETUR BELI BUKTI')->first();
                 $pengeluaranstok = PengeluaranStok::where('id',$request->pengeluaranstok_id)->first();
                 $statusformat = Parameter::where('id', $pengeluaranstok->format)->first();
@@ -403,7 +459,7 @@ class PengeluaranStokHeaderController extends Controller
 
             $pengeluaranStokHeader = PengeluaranStokHeader::where('id', $id)->first();
 
-            $idpenerimaan = $request->pengeluaranstok_id;
+            $idpenerimaan = $pengeluaranStokHeader->pengeluaranstok_id;
             $fetchFormat =  Pengeluaranstok::where('id', $idpenerimaan)->first();
             // dd($fetchFormat);
             $statusformat = $fetchFormat->format;
@@ -443,7 +499,6 @@ class PengeluaranStokHeaderController extends Controller
             $pengeluaranStokHeader = PengeluaranStokHeader::lockForUpdate()->findOrFail($id);
 
             $pengeluaranStokHeader->tglbukti          = date('Y-m-d', strtotime($request->tglbukti));
-            $pengeluaranStokHeader->pengeluaranstok_id = ($request->pengeluaranstok_id == null) ? "" : $request->pengeluaranstok_id;
             $pengeluaranStokHeader->trado_id          = ($request->trado_id == null) ? "" : $request->trado_id;
             $pengeluaranStokHeader->gandengan_id          = ($request->gandengan_id == null) ? "" : $request->gandengan_id;
             $pengeluaranStokHeader->gudang_id         = ($request->gudang_id == null) ? "" : $request->gudang_id;
@@ -481,7 +536,7 @@ class PengeluaranStokHeaderController extends Controller
                     /*Update  di stok persediaan*/
 
                     $spk = Parameter::where('grp', 'SPK STOK')->where('subgrp', 'SPK STOK')
-                        ->where('text', '=', $request->pengeluaranstok_id)
+                        ->where('text', '=', $idpenerimaan)
                         ->first();
 
                     if (isset($spk)) {
@@ -489,7 +544,7 @@ class PengeluaranStokHeaderController extends Controller
                     }
 
                     $spk = Parameter::where('grp', 'KOR MINUS STOK')->where('subgrp', 'KOR MINUS STOK')
-                        ->where('text', '=', $request->pengeluaranstok_id)
+                        ->where('text', '=',  $idpenerimaan)
                         ->first();
 
                     if (isset($spk)) {
@@ -497,7 +552,7 @@ class PengeluaranStokHeaderController extends Controller
                     }
 
                     $spk = Parameter::where('grp', 'RETUR STOK')->where('subgrp', 'RETUR STOK')
-                        ->where('text', '=', $request->pengeluaranstok_id)
+                        ->where('text', '=', $idpenerimaan)
                         ->first();
 
                     if (isset($spk)) {
@@ -505,7 +560,7 @@ class PengeluaranStokHeaderController extends Controller
                     }
 
                     stokpersediaan:;
-                    if ($request->pengeluaranstok_id == $spk->text) {
+                    if ($idpenerimaan == $spk->text) {
 
                         $datadetail = PengeluaranStokDetail::select('stok_id', 'qty')
                             ->where('pengeluaranstokheader_id', '=', $id)
@@ -527,6 +582,20 @@ class PengeluaranStokHeaderController extends Controller
 
                     /* Delete existing detail */
                     $pengeluaranStokDetail = PengeluaranStokDetail::where('pengeluaranstokheader_id', $id)->lockForUpdate()->delete();
+                    $pengeluaranStokDetailFifo = PengeluaranStokDetailFifo::where('nobukti', $pengeluaranStokHeader->nobukti)->lockForUpdate()->delete();
+                    /* Delete existing Jurnal */
+                    $potongKas = Parameter::where('grp', 'STATUS POTONG RETUR')->where('text', 'POSTING KE KAS/BANK')->first();
+                    $potongHutang = Parameter::where('grp', 'STATUS POTONG RETUR')->where('text', 'POTONG HUTANG')->first();
+                    if ($pengeluaranStokHeader->statuspotongretur == $potongKas->id) {
+                        PenerimaanDetail::where('penerimaan_nobukti', $pengeluaranStokHeader->penerimaan_nobukti)->delete();
+                        PenerimaanHeader::where('penerimaan_nobukti', $pengeluaranStokHeader->penerimaan_nobukti)->delete();
+                    } else if ($pengeluaranStokHeader->statuspotongretur == $potongHutang->id) {
+                        HutangBayarDetail::where('hutangbayar_nobukti', $pengeluaranStokHeader->penerimaan_nobukti)->delete();
+                        HutangBayarHeader::where('hutangbayar_nobukti', $pengeluaranStokHeader->penerimaan_nobukti)->delete();
+                    }
+                    JurnalUmumDetail::where('nobukti', $pengeluaranStokHeader->nobukti)->delete();
+                    JurnalUmumHeader::where('nobukti', $pengeluaranStokHeader->nobukti)->delete();
+                    
                     /* Store detail */
                     $detaillog = [];
 
@@ -555,17 +624,19 @@ class PengeluaranStokHeaderController extends Controller
                             $tabeldetail = $pengeluaranStokDetail['tabel'];
                         }
                         $detaillog[] = $pengeluaranStokDetail['detail']->toArray();
-
                         $datadetailfifo = [
                             "pengeluaranstokheader_id" => $pengeluaranStokHeader->id,
+                            "pengeluaranstok_id" => $pengeluaranStokHeader->pengeluaranstok_id,
                             "nobukti" => $pengeluaranStokHeader->nobukti,
                             "stok_id" => $request->detail_stok_id[$i],
                             "gudang_id" => $request->gudang_id,
                             "tglbukti" => $request->tglbukti,
                             "qty" => $request->detail_qty[$i],
                             "modifiedby" => auth('api')->user()->name,
+                            "keterangan" => $request->keterangan ?? '',
+                            "detail_keterangan" => $request->detail_keterangan[$i] ?? '',
                         ];
-
+                        
                         $datafifo = new StorePengeluaranStokDetailFifoRequest($datadetailfifo);
                         $pengeluaranStokDetailFifo = app(PengeluaranStokDetailFifoController::class)->store($datafifo);
                         // return response([$pengeluaranStokDetailFifo],422);
@@ -595,14 +666,11 @@ class PengeluaranStokHeaderController extends Controller
                     $data = new StoreLogTrailRequest($datalogtrail);
                     app(LogTrailController::class)->store($data);
 
-                    /* Delete existing Jurnal */
-                    JurnalUmumDetail::where('nobukti', $pengeluaranStokHeader->penerimaan_nobukti)->delete();
-                    JurnalUmumHeader::where('nobukti', $pengeluaranStokHeader->penerimaan_nobukti)->delete();
-                    PenerimaanDetail::where('nobukti', $pengeluaranStokHeader->penerimaan_nobukti)->delete();
-                    PenerimaanHeader::where('nobukti', $pengeluaranStokHeader->penerimaan_nobukti)->delete();
+                    
+                    
 
                      $rbt = Parameter::where('grp', 'PENGELUARAN STOK')->where('subgrp', 'RETUR BELI BUKTI')->first();
-                     $pengeluaranstok = PengeluaranStok::where('id',$request->pengeluaranstok_id)->first();
+                     $pengeluaranstok = PengeluaranStok::where('id', $idpenerimaan)->first();
                      $statusformat = Parameter::where('id', $pengeluaranstok->format)->first();
                     //  return response($statusformat,422);
                 if ($statusformat->id == $rbt->id) {
@@ -794,7 +862,7 @@ class PengeluaranStokHeaderController extends Controller
         /*Update  di stok persediaan*/
 
         $spk = Parameter::where('grp', 'SPK STOK')->where('subgrp', 'SPK STOK')
-            ->where('text', '=', $request->pengeluaranstok_id)
+            ->where('text', '=',  $idpenerimaan)
             ->first();
 
         if (isset($spk)) {
@@ -802,7 +870,7 @@ class PengeluaranStokHeaderController extends Controller
         }
 
         $spk = Parameter::where('grp', 'KOR MINUS STOK')->where('subgrp', 'KOR MINUS STOK')
-            ->where('text', '=', $request->pengeluaranstok_id)
+            ->where('text', '=',  $idpenerimaan)
             ->first();
 
         if (isset($spk)) {
@@ -810,7 +878,7 @@ class PengeluaranStokHeaderController extends Controller
         }
 
         $spk = Parameter::where('grp', 'RETUR STOK')->where('subgrp', 'RETUR STOK')
-            ->where('text', '=', $request->pengeluaranstok_id)
+            ->where('text', '=',  $idpenerimaan)
             ->first();
 
         if (isset($spk)) {
@@ -1232,7 +1300,53 @@ class PengeluaranStokHeaderController extends Controller
             throw $th;
         }
     }
+    private function storeJurnal($header, $detail)
+    {
+        DB::beginTransaction();
 
+        try {
+
+            $jurnal = new StoreJurnalUmumHeaderRequest($header);
+            $jurnals = app(JurnalUmumHeaderController::class)->store($jurnal);
+
+            $detailLog = [];
+
+            foreach ($detail as $value) {
+                $value['jurnalumum_id'] = $jurnals->original['data']['id'];
+                $detail = new StoreJurnalUmumDetailRequest($value);
+                $datadetails = app(JurnalUmumDetailController::class)->store($detail);
+                if ($datadetails['error']) {
+                    return response($datadetails, 422);
+                } else {
+                    $iddetail = $datadetails['id'];
+                    $tabeldetail = $datadetails['tabel'];
+                }
+                
+                $detailLog[] = $datadetails['detail']->toArray();
+            }
+            // dd($detail);
+            $datalogtrail = [
+                'namatabel' => strtoupper($tabeldetail),
+                'postingdari' => 'ENTRY HUTANG',
+                'idtrans' => $jurnals->original['idlogtrail'],
+                'nobuktitrans' => $header['nobukti'],
+                'aksi' => 'ENTRY',
+                'datajson' => $detailLog,
+                'modifiedby' => auth('api')->user()->name,
+            ];
+
+            $data = new StoreLogTrailRequest($datalogtrail);
+            app(LogTrailController::class)->store($data);
+
+            DB::commit();
+            return [
+                'status' => true,
+            ];
+        } catch (\Throwable $th) {
+            DB::rollBack();
+            throw $th;
+        }
+    }
     public function printReport($id)
     {
         DB::beginTransaction();
