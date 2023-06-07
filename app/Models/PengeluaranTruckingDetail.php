@@ -54,6 +54,12 @@ class PengeluaranTruckingDetail extends MyModel
                 $this->table . '.nominal',
                 $this->table . '.keterangan',
                 $this->table . '.invoice_nobukti',
+                $this->table . '.pengeluaranstok_nobukti',
+                $this->table . '.stok_id',
+                'stok.namastok as stok',
+                $this->table . '.qty',
+                $this->table . '.harga',
+                // 'pengeluaranstokheader.id as pengeluaranstokheader_id',
                 $this->table . '.orderantrucking_nobukti',
                 DB::raw("container.keterangan as container"),
                 'supir.namasupir as supir_id',
@@ -61,6 +67,8 @@ class PengeluaranTruckingDetail extends MyModel
             )
                 ->leftJoin(DB::raw("supir with (readuncommitted)"), $this->table . '.supir_id', 'supir.id')
                 ->leftJoin(DB::raw("orderantrucking as ot with (readuncommitted)"), 'pengeluarantruckingdetail.orderantrucking_nobukti', 'ot.nobukti')
+                ->leftJoin(DB::raw("stok with (readuncommitted)"), 'pengeluarantruckingdetail.stok_id', 'stok.id')
+
                 ->leftJoin(DB::raw("container with (readuncommitted)"), 'ot.container_id', 'container.id');
 
     
@@ -89,11 +97,23 @@ class PengeluaranTruckingDetail extends MyModel
                 'pengeluarantruckingdetail.nominal',
                 'pengeluarantruckingdetail.keterangan',
                 'pengeluarantruckingdetail.penerimaantruckingheader_nobukti',
+                'pengeluarantruckingdetail.pengeluaranstok_nobukti',
+                'pengeluarantruckingdetail.stok_id',
+                'stok.namastok as stok',
+                'pengeluarantruckingdetail.qty',
+                'pengeluarantruckingdetail.harga',
+                'pengeluaranstokheader.id as pengeluaranstokheader_id',
                 DB::raw("pengeluarantruckingdetail.id as id_detail"),
                 DB::raw("pengeluarantruckingdetail.invoice_nobukti as noinvoice_detail"),
                 DB::raw("pengeluarantruckingdetail.orderantrucking_nobukti as nojobtrucking_detail"),
                 DB::raw("container.keterangan as container_detail"),
                 DB::raw("pengeluarantruckingdetail.nominal as nominal_detail"),
+                DB::raw("
+                    (SELECT MAX(qty)
+                    FROM pengeluaranstokdetail
+                    WHERE stok_id = [pengeluarantruckingdetail].[stok_id]
+                    ) AS maxqty
+                "),
                                
                 'supir.namasupir as supir',
                 'supir.id as supir_id'
@@ -101,6 +121,8 @@ class PengeluaranTruckingDetail extends MyModel
             ->leftJoin(DB::raw("orderantrucking as ot with (readuncommitted)"), 'pengeluarantruckingdetail.orderantrucking_nobukti', 'ot.nobukti')
             ->leftJoin(DB::raw("container with (readuncommitted)"), 'ot.container_id', 'container.id')    
             ->leftJoin(DB::raw("supir with (readuncommitted)"), 'pengeluarantruckingdetail.supir_id', 'supir.id')
+            ->leftJoin(DB::raw("stok with (readuncommitted)"), 'pengeluarantruckingdetail.stok_id', 'stok.id')
+            ->leftJoin(DB::raw("pengeluaranstokheader with (readuncommitted)"), 'pengeluaranstokheader.nobukti', 'pengeluarantruckingdetail.pengeluaranstok_nobukti')
             ->where('pengeluarantruckingdetail.pengeluarantruckingheader_id', '=', $id);
 
 

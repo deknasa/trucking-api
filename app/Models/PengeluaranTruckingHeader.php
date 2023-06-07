@@ -27,6 +27,9 @@ class PengeluaranTruckingHeader extends MyModel
     public function cekvalidasiaksi($nobukti)
     {
 
+        $PengeluaranTruckingHeader = PengeluaranTruckingHeader::from(DB::raw("pengeluarantruckingheader"))->where('nobukti', $nobukti)->first();
+        $nobukti = $PengeluaranTruckingHeader->nobukti;
+
         $prosesUangJalan = DB::table('prosesuangjalansupirdetail')
             ->from(
                 DB::raw("prosesuangjalansupirdetail as a with (readuncommitted)")
@@ -46,6 +49,24 @@ class PengeluaranTruckingHeader extends MyModel
         }
 
 
+        $pengeluaran = DB::table('pengeluarantruckingheader')
+            ->from(
+                DB::raw("pengeluarantruckingheader as a with (readuncommitted)")
+            )
+            ->select(
+                'a.pengeluarantrucking_nobukti'
+            )
+            ->where('a.pengeluarantrucking_nobukti', '=', $PengeluaranTruckingHeader->nobukti)
+            ->first();
+        if (isset($pengeluaran)) {
+            
+            $data = [
+                'kondisi' => true,
+                'keterangan' => 'pengeluaran Trucking',
+                'kodeerror' => 'SATL'
+            ];
+            goto selesai;
+        }
         $penerimaanTrucking = DB::table('penerimaantruckingdetail')
             ->from(
                 DB::raw("penerimaantruckingdetail as a with (readuncommitted)")
@@ -72,6 +93,36 @@ class PengeluaranTruckingHeader extends MyModel
         return $data;
     }
 
+    public function cekvalidasiklaim($id)
+    {
+        $pengeluaranTruckingHeader = PengeluaranTruckingHeader::from(DB::raw("pengeluarantruckingheader"))->where('id', $id)->first();
+        
+        $nobuktiPjt = $pengeluaranTruckingHeader->pengeluarantrucking_nobukti;
+        $penerimaanTrucking = DB::table('penerimaantruckingdetail')
+        ->from(
+            DB::raw("penerimaantruckingdetail as a with (readuncommitted)")
+        )
+        ->select(
+            'a.pengeluarantruckingheader_nobukti'
+        )
+        ->where('a.pengeluarantruckingheader_nobukti', '=', $nobuktiPjt)
+        ->first();
+        if (isset($penerimaanTrucking)) {
+            $data = [
+                'kondisi' => true,
+                'keterangan' => 'Penerimaan Trucking',
+                'kodeerror' => 'MAX'
+            ];
+            goto selesai;
+        }
+        $data = [
+            'kondisi' => false,
+            'keterangan' => '',
+        ];
+        selesai:
+        return $data;
+    }
+
     public function get()
     {
         $this->setRequestParameters();
@@ -87,6 +138,12 @@ class PengeluaranTruckingHeader extends MyModel
                 'pengeluarantruckingheader.pengeluaran_nobukti',
                 'pengeluarantrucking.keterangan as pengeluarantrucking_id',
                 'bank.namabank as bank_id',
+                'pengeluarantruckingheader.trado_id',
+                'trado.keterangan as trado',
+                'pengeluarantruckingheader.trado_id as tradoheader_id',
+                'supir.namasupir as supirheader',
+                'supir.namasupir as supir',
+                'pengeluarantruckingheader.pengeluarantrucking_nobukti',
                 DB::raw('(case when (year(pengeluarantruckingheader.tglbukacetak) <= 2000) then null else pengeluarantruckingheader.tglbukacetak end ) as tglbukacetak'),
                 'statuscetak.memo as statuscetak',
                 'pengeluarantruckingheader.userbukacetak',
@@ -97,6 +154,9 @@ class PengeluaranTruckingHeader extends MyModel
             ->leftJoin(DB::raw("pengeluarantrucking with (readuncommitted)"), 'pengeluarantruckingheader.pengeluarantrucking_id', 'pengeluarantrucking.id')
             ->leftJoin(DB::raw("bank with (readuncommitted)"), 'pengeluarantruckingheader.bank_id', 'bank.id')
             ->leftJoin(DB::raw("akunpusat with (readuncommitted)"), 'pengeluarantruckingheader.coa', 'akunpusat.coa')
+            ->leftJoin(DB::raw("trado with (readuncommitted)"), 'pengeluarantruckingheader.trado_id', 'trado.id')
+            ->leftJoin(DB::raw("supir with (readuncommitted)"), 'pengeluarantruckingheader.supir_id', 'supir.id')
+
             ->leftJoin(DB::raw("parameter as statuscetak with (readuncommitted)"), 'pengeluarantruckingheader.statuscetak', 'statuscetak.id')
             ->leftJoin(DB::raw("parameter as statusposting with (readuncommitted)"), 'pengeluarantruckingheader.statusposting', 'statusposting.id');
 
@@ -133,7 +193,12 @@ class PengeluaranTruckingHeader extends MyModel
                 'bank.namabank as bank',
                 'pengeluarantruckingheader.supir_id',
                 'pengeluarantruckingheader.supir_id as supirheader_id',
+                'pengeluarantruckingheader.trado_id',
+                'trado.keterangan as trado',
+                'pengeluarantruckingheader.trado_id as tradoheader_id',
+                'supir.namasupir as supirheader',
                 'supir.namasupir as supir',
+                'pengeluarantruckingheader.pengeluarantrucking_nobukti',
                 'pengeluarantruckingheader.statusposting',
                 'pengeluarantruckingheader.coa',
                 'pengeluarantruckingheader.periodedari',
@@ -144,6 +209,7 @@ class PengeluaranTruckingHeader extends MyModel
             ->leftJoin(DB::raw("pengeluarantrucking with (readuncommitted)"), 'pengeluarantruckingheader.pengeluarantrucking_id', 'pengeluarantrucking.id')
             ->leftJoin(DB::raw("bank with (readuncommitted)"), 'pengeluarantruckingheader.bank_id', 'bank.id')
             ->leftJoin(DB::raw("supir with (readuncommitted)"), 'pengeluarantruckingheader.supir_id', 'supir.id')
+            ->leftJoin(DB::raw("trado with (readuncommitted)"), 'pengeluarantruckingheader.trado_id', 'trado.id')
             ->leftJoin(DB::raw("akunpusat with (readuncommitted)"), 'pengeluarantruckingheader.coa', 'akunpusat.coa')
             ->where('pengeluarantruckingheader.id', '=', $id);
 
