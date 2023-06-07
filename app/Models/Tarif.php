@@ -410,9 +410,10 @@ class Tarif extends MyModel
             ->select(
                 'a.tarif_id'
             )
-            ->where('a.id', '=', $id)
+            ->where('a.tarif_id', '=', $id)
             ->first();
-        if (isset($rekap)) {
+
+            if (isset($rekap)) {
             $data = [
                 'kondisi' => true,
                 'keterangan' => 'upahsupir',
