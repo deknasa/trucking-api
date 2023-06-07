@@ -139,10 +139,20 @@ class StokController extends Controller
     public function show($id)
     {
         $stok = Stok::findAll($id);
+        $gambar = json_decode($stok->gambar);
 
+        $countGambar = 0;
+        if ($gambar != null) {
+            foreach ($gambar as $g) {
+                if (Storage::exists("stok/$g")) {
+                    $countGambar++;
+                }
+            }
+        }
         return response([
             'status' => true,
-            'data' => $stok
+            'data' => $stok,
+            'count' => $countGambar
         ]);
     }
 
