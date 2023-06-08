@@ -53,6 +53,20 @@ class Acl extends MyModel
 
         return $data;
     }
+    
+    public function getAclRole($query)
+    {
+        $this->setRequestParameters();
+
+        $this->totalRows = $query->count();
+        $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;
+
+        $this->sort($query);
+        $this->filter($query);
+        $this->paginate($query);
+
+        return $query->get();
+    }
 
     public function createTemp(string $modelTable)
     {

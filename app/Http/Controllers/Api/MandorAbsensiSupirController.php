@@ -9,13 +9,13 @@ use App\Models\AbsensiSupirHeader;
 use App\Models\AbsensiSupirDetail;
 use App\Models\Trado;
 use App\Models\Parameter;
-use App\Http\Requests\StoreMandorAbsensiSupirRequest;
-use App\Http\Requests\StoreAbsensiSupirHeaderRequest;
 use App\Http\Requests\StoreAbsensiSupirDetailRequest;
 use App\Http\Requests\StoreKasGantungDetailRequest;
 use App\Http\Requests\StoreKasGantungHeaderRequest;
 use App\Http\Requests\StoreLogTrailRequest;
-use App\Http\Requests\UpdateMandorAbsensiSupirRequest;
+use App\Http\Requests\MandorAbsensiSupirRequest;
+
+
 use App\Models\Error;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -40,7 +40,7 @@ class MandorAbsensiSupirController extends Controller
     /**
      * @ClassName 
      */
-    public function store(StoreMandorAbsensiSupirRequest $request)
+    public function store(MandorAbsensiSupirRequest $request)
     {
         DB::beginTransaction();
         try {
@@ -237,7 +237,7 @@ class MandorAbsensiSupirController extends Controller
     /**
      * @ClassName 
      */
-    public function update(UpdateMandorAbsensiSupirRequest $request, $id)
+    public function update(MandorAbsensiSupirRequest $request, $id)
     {
         DB::beginTransaction();
 
@@ -295,7 +295,7 @@ class MandorAbsensiSupirController extends Controller
     /**
      * @ClassName 
      */
-    public function destroy(Request $request, $id)
+    public function destroy(MandorAbsensiSupirRequest $request, $id)
     {
         DB::beginTransaction();
         $getDetail = AbsensiSupirDetail::lockForUpdate()->where('id', $id)->first();
@@ -384,5 +384,16 @@ class MandorAbsensiSupirController extends Controller
                 'errors' => false,
             ]);
         }
+        
     }
+
+    public function getabsentrado($id)
+    {
+
+        $mandorabsensisupir = new MandorAbsensiSupir();
+        return response([
+            "data" => $mandorabsensisupir->getabsentrado($id)
+        ]);
+    }
+
 }

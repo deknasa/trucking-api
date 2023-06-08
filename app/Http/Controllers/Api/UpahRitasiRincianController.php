@@ -65,7 +65,6 @@ class UpahRitasiRincianController extends Controller
 
                 $upahritasi = $query->get();
             } else {
-                dd($request->forReport);
                 $query->select(
                     'container.keterangan as container_id',
                     'detail.nominalsupir',

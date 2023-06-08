@@ -186,7 +186,9 @@ class JurnalUmumPusatHeader extends MyModel
                         } else if ($filters['field'] == 'nominalkredit') {
                             $query = $query->where('c.nominalkredit', 'LIKE', "%$filters[data]%");
                         } else {
-                            $query = $query->where($this->anothertable . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
+                            // $query = $query->where($this->anothertable . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
+                            $query = $query->whereRaw($this->anothertable . ".[" .  $filters['field'] . "] LIKE '%" . escapeLike($filters['data']) . "%' escape '|'");
+
                         }
                     }
 
@@ -202,7 +204,9 @@ class JurnalUmumPusatHeader extends MyModel
                             } else if ($filters['field'] == 'nominalkredit') {
                                 $query = $query->orWhere('c.nominalkredit', 'LIKE', "%$filters[data]%");
                             } else {
-                                $query = $query->orWhere($this->anothertable . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
+                                // $query = $query->orWhere($this->anothertable . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
+                                $query = $query->OrwhereRaw($this->anothertable . ".[" .  $filters['field'] . "] LIKE '%" . escapeLike($filters['data']) . "%' escape '|'");
+
                             }
                         }
                     });

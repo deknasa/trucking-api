@@ -2,6 +2,7 @@
 
 namespace App\Rules;
 
+use App\Http\Controllers\Api\ErrorController;
 use App\Models\UpahSupir;
 use Illuminate\Contracts\Validation\Rule;
 use Illuminate\Support\Facades\DB;
@@ -30,9 +31,9 @@ class ValidasiDestroyUpahSupir implements Rule
         $upahSupir = new UpahSupir();
         $cekdata = $upahSupir->cekValidasi(request()->id);
         if($cekdata['kondisi']){
-          return true;
+          return false;
         }
-        return false;
+        return true;
     }
 
     /**

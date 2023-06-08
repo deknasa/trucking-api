@@ -104,9 +104,23 @@ class StorePengeluaranTruckingDetailRequest extends FormRequest
                 ->first();
             $sisaNominus = Rule::when((($fetchFormat->kodepengeluaran == 'TDE' || $fetchFormat->kodepengeluaran == 'KBBM')), 'numeric|min:0');
         }
+        $rulseKlaim=[];
+        if ($this->pengeluarantrucking_id) {
+            $klaim = DB::table('pengeluarantrucking')->from(DB::raw("pengeluarantrucking with (readuncommitted)"))
+                    ->where('id',request()->pengeluarantrucking_id)
+                    ->where('keterangan','LIKE', "%klaim%")
+                    ->first();
+            if ($klaim->id ==  $this->pengeluarantrucking_id) {
+                $rulseKlaim =[
+                    "stok_id.*"  => ["required", ],
+                    "pengeluaranstok_nobukti.*"  => ["required", ],
+                    "qty.*"  => ["required", ],
+                    "harga.*"  => ["required", ],
+                ];    
+            }
+        }
 
-
-        return [
+        $rules = [
             'tde_id' => [$requiredTDE, 'array'],
             'tde_id.*' => $requiredTDE,
             'kbbm_id' => [$requiredKBBM, 'array'],
@@ -115,11 +129,19 @@ class StorePengeluaranTruckingDetailRequest extends FormRequest
             'id_detail.*' => $requiredBST,
             'sisa.*' => [$requiredTDE, $requiredKBBM, $sisaNominus],
             'supir.*' => $requiredPJT,
-            'nominal' => 'required|array',
+            // 'nominal' => ['array','required', 'numeric', 'gt:0'],
             'nominal.*' => ['required', 'numeric', 'gt:0'],
             'keterangan' => [$requiredKeterangan, 'array'],
             'keterangan.*' => $requiredKeterangan
         ];
+
+            $rules = array_merge(
+                $rules,
+                $rulseKlaim
+            );
+
+        // dd($rules);
+        return $rules;
     }
 
     public function attributes()

@@ -21,8 +21,14 @@ class JurnalUmumDetailController extends Controller
     {
         $jurnalumumDetail = new JurnalUmumDetail();
 
+        $idUser = auth('api')->user()->id;
+        $getuser = User::select('name', 'cabang.id as cabang_id', 'cabang.namacabang as nama_cabang')
+            ->where('user.id', $idUser)->join('cabang', 'user.cabang_id', 'cabang.id')->first();
+
+
         return response()->json([
             'data' => $jurnalumumDetail->get(),
+            'user' => $getuser,
             'attributes' => [
                 'totalRows' => $jurnalumumDetail->totalRows,
                 'totalPages' => $jurnalumumDetail->totalPages,

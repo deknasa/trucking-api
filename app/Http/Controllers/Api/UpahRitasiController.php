@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\GetUpahSupirRangeRequest;
 use App\Models\UpahRitasi;
 use App\Models\UpahRitasiRincian;
 use App\Models\Kota;
@@ -51,16 +52,31 @@ class UpahRitasiController extends Controller
         ]);
     }
 
-    public function listpivot(Request $request)
+    public function listpivot(GetUpahSupirRangeRequest $request)
     {
         $dari = date('Y-m-d', strtotime($request->dari));
         $sampai = date('Y-m-d', strtotime($request->sampai));
-        $upahritasirincian = new UpahRitasiRincian();
 
-        return response([
-            'status' => true,
-            'data' => $upahritasirincian->listpivot($dari, $sampai)
-        ]);
+        $cekData = DB::table("upahritasi")->from(DB::raw("upahritasi with (readuncommitted)"))
+        ->whereBetween('tglmulaiberlaku', [$dari, $sampai])
+        ->first();
+
+        if($cekData != null){
+
+            $upahritasirincian = new UpahRitasiRincian();
+
+            return response([
+                'status' => true,
+                'data' => $upahritasirincian->listpivot($dari, $sampai)
+            ]);
+        }else{
+            return response([
+                'errors' => [
+                    "export" => "tidak ada data"
+                ],
+                'message' => "The given data was invalid.",
+            ], 422);
+        }
     }
 
     /**

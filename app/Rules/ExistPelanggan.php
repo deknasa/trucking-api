@@ -28,7 +28,7 @@ class ExistPelanggan implements Rule
     public function passes($attribute, $value)
     {
         $pelanggan = DB::table("pelanggan")->from(DB::raw("pelanggan with (readuncommitted)"))
-            ->where('id', $value)
+            ->where('id', request()->pelanggan_id)
             ->first();
         if ($pelanggan == null) {
             return false;

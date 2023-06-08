@@ -28,7 +28,7 @@ class ExistContainer implements Rule
     public function passes($attribute, $value)
     {
         $container = DB::table("container")->from(DB::raw("container with (readuncommitted)"))
-        ->where('id', $value)
+        ->where('id',  request()->container_id)
         ->first();
     if ($container == null) {
         return false;

@@ -30,7 +30,7 @@ class UpdatePengembalianKasGantungDetailRequest extends FormRequest
             'nominal.*' => ['required','numeric','gt:0', new CekMaxBayarPengembalianKasGantungEdit()],
             'keterangandetail.*' => 'required',
             'coadetail.*' => 'required',
-            'sisa.*' => ['required','numeric','gt:0', new CekMinusPengembalianKasGantungEdit()],
+            'sisa.*' => ['required','numeric','min:0', new CekMinusPengembalianKasGantungEdit()],
         ];
     }
 }

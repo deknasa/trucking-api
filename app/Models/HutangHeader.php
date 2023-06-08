@@ -110,6 +110,7 @@ class HutangHeader extends MyModel
                 DB::raw("hutangheader.total-isnull(c.nominal,0) as sisahutang"),
 
                 'parameter.memo as statuscetak',
+                'statusapproval.memo as statusapproval',
                 'hutangheader.userbukacetak',
                 'hutangheader.jumlahcetak',
                 DB::raw('(case when (year(hutangheader.tglbukacetak) <= 2000) then null else hutangheader.tglbukacetak end ) as tglbukacetak'),
@@ -120,6 +121,7 @@ class HutangHeader extends MyModel
             )
             ->whereBetween($this->table . '.tglbukti', [date('Y-m-d', strtotime(request()->tgldari)), date('Y-m-d', strtotime(request()->tglsampai))])
             ->leftJoin(DB::raw("parameter with (readuncommitted)"), 'hutangheader.statuscetak', 'parameter.id')
+            ->leftJoin(DB::raw("parameter as statusapproval with (readuncommitted)"), 'hutangheader.statusapproval', 'statusapproval.id')
             ->leftJoin(DB::raw("akunpusat with (readuncommitted)"), 'hutangheader.coa', 'akunpusat.coa')
             ->leftJoin(DB::raw("supplier with (readuncommitted)"), 'hutangheader.supplier_id', 'supplier.id')
             ->leftJoin(DB::raw($tempbayar . " as c"), 'hutangheader.nobukti', 'c.hutang_nobukti');
@@ -147,12 +149,14 @@ class HutangHeader extends MyModel
                 'supplier.namasupplier as supplier',
                 'supplier.id as supplier_id',
                 'hutangheader.statuscetak',
+                'hutangheader.statusapproval',
                 'hutangheader.total',
 
                 'hutangheader.modifiedby',
                 'hutangheader.updated_at'
             )
             ->leftJoin(DB::raw("parameter with (readuncommitted)"), 'hutangheader.statuscetak', 'parameter.id')
+            ->leftJoin(DB::raw("parameter as statusapproval with (readuncommitted)"), 'hutangheader.statusapproval', 'statusapproval.id')
             ->leftJoin(DB::raw("supplier with (readuncommitted)"), 'hutangheader.supplier_id', 'supplier.id')
 
             ->where('hutangheader.id', $id);
@@ -167,10 +171,19 @@ class HutangHeader extends MyModel
 
         $temp = $this->createTempHutang($id);
 
+        $approval = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))
+        ->where('grp', 'STATUS APPROVAL')
+        ->where('subgrp', 'STATUS APPROVAL')
+        ->where('text', 'APPROVAL')
+        ->first();
+
+        $approvalId = $approval->id;
+
         $query = DB::table('hutangheader')->from(DB::raw("hutangheader with (readuncommitted)"))
             ->select(DB::raw("row_number() Over(Order By hutangheader.id) as id,hutangheader.nobukti as nobukti,hutangheader.tglbukti, hutangheader.total as nominal," . $temp . ".sisa, 0 as total"))
             ->join(DB::raw("$temp with (readuncommitted)"), 'hutangheader.nobukti', $temp . ".nobukti")
             ->whereRaw("hutangheader.nobukti = $temp.nobukti")
+            ->whereRaw("hutangheader.statusapproval = $approvalId")
             ->where(function ($query) use ($temp) {
                 $query->whereRaw("$temp.sisa != 0")
                     ->orWhereRaw("$temp.sisa is null");
@@ -243,6 +256,7 @@ class HutangHeader extends MyModel
                  isnull(c.nominal,0) as nominalbayar,
                 hutangheader.total-isnull(c.nominal,0) as sisahutang,
                  'parameter.text as statuscetak',
+                 'statusapproval.text as statusapproval',
                  $this->table.userbukacetak,
                  $this->table.tglbukacetak,
                  $this->table.jumlahcetak,
@@ -254,6 +268,7 @@ class HutangHeader extends MyModel
 
             )
             ->leftJoin(DB::raw("parameter with (readuncommitted)"), 'hutangheader.statuscetak', 'parameter.id')
+            ->leftJoin(DB::raw("parameter as statusapproval with (readuncommitted)"), 'hutangheader.statusapproval', 'statusapproval.id')
             ->leftJoin(DB::raw("supplier with (readuncommitted)"), 'hutangheader.supplier_id', 'supplier.id')
             ->leftJoin(DB::raw($tempbayar . " as c"), 'hutangheader.nobukti', 'c.hutang_nobukti');
     }
@@ -271,6 +286,7 @@ class HutangHeader extends MyModel
             $table->double('nominalbayar', 15, 2)->nullable();
             $table->double('sisahutang', 15, 2)->nullable();
             $table->string('statuscetak', 1000)->nullable();
+            $table->string('statusapproval', 1000)->nullable();
             $table->string('userbukacetak', 50)->nullable();
             $table->date('tglbukacetak')->nullable();
             $table->integer('jumlahcetak')->Length(11)->nullable();
@@ -289,7 +305,7 @@ class HutangHeader extends MyModel
         $models = $query
             ->whereBetween($this->table . '.tglbukti', [date('Y-m-d', strtotime(request()->tgldariheader)), date('Y-m-d', strtotime(request()->tglsampaiheader))]);
 
-        DB::table($temp)->insertUsing(['id', 'nobukti', 'tglbukti', 'coa', 'supplier_id', 'total','nominalbayar','sisahutang', 'statuscetak', 'userbukacetak', 'tglbukacetak', 'jumlahcetak', 'modifiedby', 'created_at', 'updated_at', 'statusformat'], $models);
+        DB::table($temp)->insertUsing(['id', 'nobukti', 'tglbukti', 'coa', 'supplier_id', 'total', 'nominalbayar', 'sisahutang', 'statuscetak', 'statusapproval', 'userbukacetak', 'tglbukacetak', 'jumlahcetak', 'modifiedby', 'created_at', 'updated_at', 'statusformat'], $models);
 
         return $temp;
     }
@@ -315,24 +331,29 @@ class HutangHeader extends MyModel
             switch ($this->params['filters']['groupOp']) {
                 case "AND":
                     foreach ($this->params['filters']['rules'] as $index => $filters) {
-                        if ($filters['field'] == 'statuscetak') {
-                            $query->where('parameter.text', '=', "$filters[data]");
-                        } else if ($filters['field'] == 'supplier_id') {
-                            $query->where('supplier.namasupplier', 'LIKE', "%$filters[data]%");
-                        } else if ($filters['field'] == 'coa') {
-                            $query->where('akunpusat.keterangancoa', 'LIKE', "%$filters[data]%");
-                        } else if ($filters['field'] == 'total') {
-                            $query = $query->whereRaw("format(hutangheader.total, '#,#0.00') LIKE '%$filters[data]%'");
-                        } else if ($filters['field'] == 'tglbukti') {
-                            $query = $query->whereRaw("format(".$this->table . "." . $filters['field'].", 'dd-MM-yyyy') LIKE '%$filters[data]%'");
-                        } else if ($filters['field'] == 'nominalbayar') {                         
-                            $query = $query->whereRaw("format(c.nominal, '#,#0.00') LIKE '%$filters[data]%'");
-                        } else if ($filters['field'] == 'sisahutang') {
-                            $query = $query->whereRaw("format((hutangheader.total - isnull(c.nominal,0)), '#,#0.00') LIKE '%$filters[data]%'");
-                        } else if ($filters['field'] == 'created_at' || $filters['field'] == 'updated_at') {
-                            $query = $query->whereRaw("format(".$this->table . "." . $filters['field'].", 'dd-MM-yyyy HH:mm:ss') LIKE '%$filters[data]%'");
-                        } else {
-                            $query->where($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
+                        if ($filters['field'] != '') {
+                            if ($filters['field'] == 'statuscetak') {
+                                $query->where('parameter.text', '=', "$filters[data]");
+                            } else if ($filters['field'] == 'statusapproval') {
+                                $query->where('statusapproval.text', '=', "$filters[data]");
+                            } else if ($filters['field'] == 'supplier_id') {
+                                $query->where('supplier.namasupplier', 'LIKE', "%$filters[data]%");
+                            } else if ($filters['field'] == 'coa') {
+                                $query->where('akunpusat.keterangancoa', 'LIKE', "%$filters[data]%");
+                            } else if ($filters['field'] == 'total') {
+                                $query = $query->whereRaw("format(hutangheader.total, '#,#0.00') LIKE '%$filters[data]%'");
+                            } else if ($filters['field'] == 'tglbukti') {
+                                $query = $query->whereRaw("format(" . $this->table . "." . $filters['field'] . ", 'dd-MM-yyyy') LIKE '%$filters[data]%'");
+                            } else if ($filters['field'] == 'nominalbayar') {
+                                $query = $query->whereRaw("format(c.nominal, '#,#0.00') LIKE '%$filters[data]%'");
+                            } else if ($filters['field'] == 'sisahutang') {
+                                $query = $query->whereRaw("format((hutangheader.total - isnull(c.nominal,0)), '#,#0.00') LIKE '%$filters[data]%'");
+                            } else if ($filters['field'] == 'created_at' || $filters['field'] == 'updated_at') {
+                                $query = $query->whereRaw("format(" . $this->table . "." . $filters['field'] . ", 'dd-MM-yyyy HH:mm:ss') LIKE '%$filters[data]%'");
+                            } else {
+                                // $query->where($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
+                                $query = $query->whereRaw($this->table . ".[" .  $filters['field'] . "] LIKE '%" . escapeLike($filters['data']) . "%' escape '|'");
+                            }
                         }
                     }
 
@@ -340,24 +361,29 @@ class HutangHeader extends MyModel
                 case "OR":
                     $query = $query->where(function ($query) {
                         foreach ($this->params['filters']['rules'] as $index => $filters) {
-                            if ($filters['field'] == 'statuscetak') {
-                                $query->orWhere('parameter.text', '=', "$filters[data]");
-                            } else if ($filters['field'] == 'supplier_id') {
-                                $query->orWhere('supplier.namasupplier', 'LIKE', "%$filters[data]%");
-                            } else if ($filters['field'] == 'coa') {
-                                $query->orWhere('akunpusat.keterangancoa', 'LIKE', "%$filters[data]%");
-                            } else if ($filters['field'] == 'tglbukti') {
-                                $query = $query->orWhereRaw("format(".$this->table . "." . $filters['field'].", 'dd-MM-yyyy') LIKE '%$filters[data]%'");
-                            } else if ($filters['field'] == 'total') {
-                                $query = $query->orWhereRaw("format(hutangheader.total, '#,#0.00') LIKE '%$filters[data]%'");
-                            } else if ($filters['field'] == 'nominalbayar') {
-                                $query = $query->orWhereRaw("format(c.nominal, '#,#0.00') LIKE '%$filters[data]%'");
-                            } else if ($filters['field'] == 'sisahutang') {
-                                $query = $query->orWhereRaw("format((hutangheader.total - isnull(c.nominal,0)), '#,#0.00') LIKE '%$filters[data]%'");
-                            } else if ($filters['field'] == 'created_at' || $filters['field'] == 'updated_at') {
-                                $query = $query->orWhereRaw("format(".$this->table . "." . $filters['field'].", 'dd-MM-yyyy HH:mm:ss') LIKE '%$filters[data]%'");
-                            } else {
-                                $query->orWhere($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
+                            if ($filters['field'] != '') {
+                                if ($filters['field'] == 'statuscetak') {
+                                    $query->orWhere('parameter.text', '=', "$filters[data]");
+                                } else if ($filters['field'] == 'statusapproval') {
+                                    $query->orWhere('statusapproval.text', '=', "$filters[data]");
+                                } else if ($filters['field'] == 'supplier_id') {
+                                    $query->orWhere('supplier.namasupplier', 'LIKE', "%$filters[data]%");
+                                } else if ($filters['field'] == 'coa') {
+                                    $query->orWhere('akunpusat.keterangancoa', 'LIKE', "%$filters[data]%");
+                                } else if ($filters['field'] == 'tglbukti') {
+                                    $query = $query->orWhereRaw("format(" . $this->table . "." . $filters['field'] . ", 'dd-MM-yyyy') LIKE '%$filters[data]%'");
+                                } else if ($filters['field'] == 'total') {
+                                    $query = $query->orWhereRaw("format(hutangheader.total, '#,#0.00') LIKE '%$filters[data]%'");
+                                } else if ($filters['field'] == 'nominalbayar') {
+                                    $query = $query->orWhereRaw("format(c.nominal, '#,#0.00') LIKE '%$filters[data]%'");
+                                } else if ($filters['field'] == 'sisahutang') {
+                                    $query = $query->orWhereRaw("format((hutangheader.total - isnull(c.nominal,0)), '#,#0.00') LIKE '%$filters[data]%'");
+                                } else if ($filters['field'] == 'created_at' || $filters['field'] == 'updated_at') {
+                                    $query = $query->orWhereRaw("format(" . $this->table . "." . $filters['field'] . ", 'dd-MM-yyyy HH:mm:ss') LIKE '%$filters[data]%'");
+                                } else {
+                                    // $query->orWhere($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
+                                    $query = $query->OrwhereRaw($this->table . ".[" .  $filters['field'] . "] LIKE '%" . escapeLike($filters['data']) . "%' escape '|'");
+                                }
                             }
                         }
                     });

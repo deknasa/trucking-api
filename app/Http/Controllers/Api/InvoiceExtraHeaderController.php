@@ -16,6 +16,7 @@ use App\Models\PiutangDetail;
 use App\Http\Requests\StoreInvoiceExtraHeaderRequest;
 use App\Http\Requests\UpdateInvoiceExtraHeaderRequest;
 use App\Http\Requests\DestroyInvoiceExtraHeaderRequest;
+use App\Http\Requests\GetIndexRangeRequest;
 
 use App\Models\InvoiceExtraDetail;
 use Illuminate\Support\Facades\Schema;
@@ -30,7 +31,7 @@ class InvoiceExtraHeaderController extends Controller
     /**
      * @ClassName 
      */
-    public function index()
+    public function index(GetIndexRangeRequest $request)
     {
         $invoice = new InvoiceExtraHeader();
 

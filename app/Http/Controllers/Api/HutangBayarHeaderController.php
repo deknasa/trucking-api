@@ -17,6 +17,7 @@ use App\Http\Requests\StorePengeluaranHeaderRequest;
 use App\Http\Requests\UpdateHutangBayarHeaderRequest;
 use App\Http\Requests\UpdatePengeluaranHeaderRequest;
 use App\Http\Requests\DestroyPengeluaranHeaderRequest;
+use App\Http\Requests\GetIndexRangeRequest;
 use App\Models\AlatBayar;
 use App\Models\Bank;
 use App\Models\AkunPusat;
@@ -41,7 +42,7 @@ class HutangBayarHeaderController extends Controller
     /**
      * @ClassName index
      */
-    public function index()
+    public function index(GetIndexRangeRequest $request)
     {
         $hutangbayarheader = new HutangBayarHeader();
         return response([

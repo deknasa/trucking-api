@@ -6,6 +6,7 @@ use App\Http\Controllers\Api\InvoiceDetailController as ApiInvoiceDetailControll
 use App\Http\Controllers\Controller;
 use App\Http\Controllers\InvoiceDetailController;
 use App\Http\Requests\StoreInvoiceDetailRequest;
+use App\Http\Requests\GetIndexRangeRequest;
 use App\Models\InvoiceHeader;
 use App\Http\Requests\StoreInvoiceHeaderRequest;
 use App\Http\Requests\StoreJurnalUmumDetailRequest;
@@ -38,7 +39,7 @@ class InvoiceHeaderController extends Controller
     /**
      * @ClassName
      */
-    public function index()
+    public function index(GetIndexRangeRequest $request)
     {
         $invoice = new InvoiceHeader();
 

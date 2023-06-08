@@ -7,6 +7,7 @@ use App\Http\Controllers\Api\ErrorController;
 use App\Models\Parameter;
 use Illuminate\Validation\Rule;
 use App\Http\Controllers\Api\ParameterController;
+use App\Rules\validasiNonController;
 
 class UpdateMenuRequest extends FormRequest
 {

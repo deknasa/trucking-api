@@ -66,7 +66,7 @@ class GetIndexHistoriPengeluaranRequest extends FormRequest
                 'required',
                 'date_format:d-m-Y',
                 'before:'.$tglbatasakhir,
-                'after_or_equal:'.date('Y-m-d', strtotime($this->tgldari))
+                'after_or_equal:'.date('Y-m-d', strtotime($this->dari))
             ],
             'stokdari_id' => [
                 'required',
@@ -117,7 +117,7 @@ class GetIndexHistoriPengeluaranRequest extends FormRequest
         $controller = new ErrorController;
 
         return [
-            'sampai.after_or_equal' => ':attribute ' . $controller->geterror('NTLK')->keterangan.' '. $this->tgldari,
+            'sampai.after_or_equal' => ':attribute ' . $controller->geterror('NTLK')->keterangan.' '. $this->dari,
             
         ];
     }    

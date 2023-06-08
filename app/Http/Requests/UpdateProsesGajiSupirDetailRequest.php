@@ -4,6 +4,7 @@ namespace App\Http\Requests;
 
 use App\Models\ProsesGajiSupirHeader;
 use App\Rules\ExistBank;
+use App\Rules\ExistBankProsesUangJalan;
 use App\Rules\GetBbmEBS;
 use App\Rules\GetBoronganEBS;
 use App\Rules\GetDepositoEBS;
@@ -44,11 +45,11 @@ class UpdateProsesGajiSupirDetailRequest extends FormRequest
         $bank_idPR = request()->bank_idPR;
         if ($bank_idPR != null) {
             $rulesPostingRincian = [
-                'bank_idPR' => ['required', 'numeric', 'min:1',new RuleBankEBSEdit(), new ExistBank()]
+                'bank_idPR' => ['required', 'numeric', 'min:1',new RuleBankEBSEdit(), new ExistBankProsesUangJalan()]
             ];
         } else if ($bank_idPR == null && $this->bankPR != '') {
             $rulesPostingRincian = [
-                'bank_idPR' => ['required', 'numeric', 'min:1',new RuleBankEBSEdit(), new ExistBank()]
+                'bank_idPR' => ['required', 'numeric', 'min:1',new RuleBankEBSEdit(), new ExistBankProsesUangJalan()]
             ];
         }
 
@@ -58,11 +59,11 @@ class UpdateProsesGajiSupirDetailRequest extends FormRequest
             if ($bank_idPP != null) {
                 $rulesPostingRincianBankIdPP = [
                     'bankPP' => 'required',
-                    'bank_idPP' => ['required', 'numeric', 'min:1', new RuleBankPotPribadiEBSEdit(), new ExistBank()]
+                    'bank_idPP' => ['required', 'numeric', 'min:1', new RuleBankPotPribadiEBSEdit(), new ExistBankProsesUangJalan()]
                 ];
             } else if ($bank_idPP == null && $this->bankPP != '') {
                 $rulesPostingRincianBankIdPP = [
-                    'bank_idPP' => ['required', 'numeric', 'min:1', new RuleBankPotPribadiEBSEdit(), new ExistBank()]
+                    'bank_idPP' => ['required', 'numeric', 'min:1', new RuleBankPotPribadiEBSEdit(), new ExistBankProsesUangJalan()]
                 ];
             }
         }
@@ -72,11 +73,11 @@ class UpdateProsesGajiSupirDetailRequest extends FormRequest
             if ($bank_idPS != null) {
                 $rulesPostingRincianBankIdPS = [
                     'bankPS' => 'required',
-                    'bank_idPS' => ['required', 'numeric', 'min:1',new RuleBankPotSemuaEBSEdit, new ExistBank()]
+                    'bank_idPS' => ['required', 'numeric', 'min:1',new RuleBankPotSemuaEBSEdit, new ExistBankProsesUangJalan()]
                 ];
             } else if ($bank_idPS == null && $this->bankPS != '') {
                 $rulesPostingRincianBankIdPS = [
-                    'bank_idPS' => ['required', 'numeric', 'min:1',new RuleBankPotSemuaEBSEdit, new ExistBank()]
+                    'bank_idPS' => ['required', 'numeric', 'min:1',new RuleBankPotSemuaEBSEdit, new ExistBankProsesUangJalan()]
                 ];
             }
         }
@@ -86,11 +87,11 @@ class UpdateProsesGajiSupirDetailRequest extends FormRequest
             if ($bank_idDeposito != null) {
                 $rulesPostingRincianBankIdDeposito = [
                     'bankDeposito' => 'required',
-                    'bank_idDeposito' => ['required', 'numeric', 'min:1', new RuleBankDepositoEBSEdit(), new ExistBank()]
+                    'bank_idDeposito' => ['required', 'numeric', 'min:1', new RuleBankDepositoEBSEdit(), new ExistBankProsesUangJalan()]
                 ];
             } else if ($bank_idDeposito == null && $this->bankDeposito != '') {
                 $rulesPostingRincianBankIdDeposito = [
-                    'bank_idDeposito' => ['required', 'numeric', 'min:1', new RuleBankDepositoEBSEdit(), new ExistBank()]
+                    'bank_idDeposito' => ['required', 'numeric', 'min:1', new RuleBankDepositoEBSEdit(), new ExistBankProsesUangJalan()]
                 ];
             }
         }
@@ -100,11 +101,11 @@ class UpdateProsesGajiSupirDetailRequest extends FormRequest
             if ($bank_idBBM != null) {
                 $rulesPostingRincianBankIdBBM = [
                     'bankBBM' => 'required',
-                    'bank_idBBM' => ['required', 'numeric', 'min:1', new RuleBankBbmEBSEdit(), new ExistBank()]
+                    'bank_idBBM' => ['required', 'numeric', 'min:1', new RuleBankBbmEBSEdit(), new ExistBankProsesUangJalan()]
                 ];
             } else if ($bank_idBBM == null && $this->bankBBM != '') {
                 $rulesPostingRincianBankIdBBM = [
-                    'bank_idBBM' => ['required', 'numeric', 'min:1', new RuleBankBbmEBSEdit(), new ExistBank()]
+                    'bank_idBBM' => ['required', 'numeric', 'min:1', new RuleBankBbmEBSEdit(), new ExistBankProsesUangJalan()]
                 ];
             }
         }
@@ -114,11 +115,11 @@ class UpdateProsesGajiSupirDetailRequest extends FormRequest
             if ($bank_idUangjalan != null) {
                 $rulesPostingRincianBankIdUangjalan = [
                     'bankUangjalan' => 'required',
-                    'bank_idUangjalan' => ['required', 'numeric', 'min:1', new RuleBankUangjalanEBSEdit(), new ExistBank()]
+                    'bank_idUangjalan' => ['required', 'numeric', 'min:1', new RuleBankUangjalanEBSEdit(), new ExistBankProsesUangJalan()]
                 ];
             } else if ($bank_idUangjalan == null && $this->bankUangjalan != '') {
                 $rulesPostingRincianBankIdUangjalan = [
-                    'bank_idUangjalan' => ['required', 'numeric', 'min:1', new RuleBankUangjalanEBSEdit(), new ExistBank()]
+                    'bank_idUangjalan' => ['required', 'numeric', 'min:1', new RuleBankUangjalanEBSEdit(), new ExistBankProsesUangJalan()]
                 ];
             }
         }

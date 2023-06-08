@@ -26,6 +26,7 @@ class CreatePengeluarantruckingdetailTable extends Migration
             $table->string('pengeluaranstok_nobukti',50)->nullable();
             $table->double('qty', 15,2)->nullable();
             $table->double('harga', 15,2)->nullable();
+            $table->double('total', 15,2)->nullable();
             $table->string('penerimaantruckingheader_nobukti',50)->nullable();
             $table->string('invoice_nobukti',50)->nullable();
             $table->string('orderantrucking_nobukti', 50)->nullable();

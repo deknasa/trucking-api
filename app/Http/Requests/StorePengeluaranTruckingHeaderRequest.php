@@ -34,7 +34,20 @@ class StorePengeluaranTruckingHeaderRequest extends FormRequest
         $tglbatasawal = $getBatas->text;
         $tglbatasakhir = (date('Y') + 1) . '-01-01';
 
-        
+        $requiredTglPriode = Rule::requiredIf(function () {
+            
+            $bst = DB::table('pengeluarantrucking')->from(DB::raw("pengeluarantrucking with (readuncommitted)"))
+                ->where('kodepengeluaran',"BST")
+                ->first();
+            $kbbm = DB::table('pengeluarantrucking')->from(DB::raw("pengeluarantrucking with (readuncommitted)"))
+                ->where('kodepengeluaran',"KBBM")
+                ->first();
+                
+            if (($bst->id ==request()->pengeluarantrucking_id)|| ($kbbm->id ==request()->pengeluarantrucking_id)) {
+                return true;
+            }
+            return false;
+        });
         $ruleBank = Rule::requiredIf(function () {
             $postingParameter = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))
                 ->whereRaw("grp = 'STATUS POSTING'")
@@ -63,8 +76,43 @@ class StorePengeluaranTruckingHeaderRequest extends FormRequest
         foreach ($bankResults1 as $bankId) {
             $bankIds[] = $bankId->id;
         }
-
+        $ruleStatusPosting = Rule::requiredIf(function () {
+            $klaim = DB::table('pengeluarantrucking')->from(DB::raw("pengeluarantrucking with (readuncommitted)"))
+                // ->where('id',$this->pengeluarantrucking_id)
+                ->where('kodepengeluaran', "KLAIM")
+                ->first();
+                
+                if ($this->pengeluarantrucking_id) {
+                    if ($klaim) {
+                        if ($klaim->id ==  $this->pengeluarantrucking_id) {
+                            return false;
+                        }
+                    }
+                }
+            return true;
+        });
         $bank_id = $this->bank_id;
+
+
+        $rulseKlaim=[];
+        
+        if ($this->pengeluarantrucking_id) {
+            $klaim = DB::table('pengeluarantrucking')->from(DB::raw("pengeluarantrucking with (readuncommitted)"))
+                    // ->where('id',$this->pengeluarantrucking_id)
+                    ->where('keterangan','LIKE', "%klaim%")
+                    ->first();
+            if ($klaim) {
+                if ($klaim->id ==  $this->pengeluarantrucking_id) {
+                    $rulseKlaim =[
+                        "supirheader_id" =>"required",
+                        "supirheader" =>"required",
+                        "tradoheader_id" =>"required",
+                        "trado" =>"required",
+                        "postingpinjaman" =>"required",
+                    ];    
+                }
+            }
+        }
 
         $rulesBank_id = [];
         if ($bank_id != null) {
@@ -84,20 +132,98 @@ class StorePengeluaranTruckingHeaderRequest extends FormRequest
                 new DateTutupBuku()
             ],
             'pengeluarantrucking' => 'required','numeric', 'min:1',
-            'statusposting' => 'required',
+            'statusposting' => [$ruleStatusPosting],
             'bank' => [$ruleBank],
             'tgldari' => [
-                'required', 'date_format:d-m-Y',
+                $requiredTglPriode, 'date_format:d-m-Y',
                 'before:'.$tglbatasakhir,
                 'after_or_equal:'.$tglbatasawal,
             ],
             'tglsampai' => [
-                'required', 'date_format:d-m-Y',
+                $requiredTglPriode, 'date_format:d-m-Y',
                 'before:'.$tglbatasakhir,
                 'after_or_equal:'.date('Y-m-d', strtotime($this->tgldari))
             ],
             // 'keterangancoa' => 'required',
         ];
+        $pengeluarantrucking_id = $this->pengeluarantrucking_id;
+        $rulespengeluaran_id = [];
+
+        $pengeluaranTrucking = DB::table('pengeluarantrucking')->from(DB::raw("pengeluarantrucking with (readuncommitted)"))
+                ->whereRaw("id = ".$pengeluarantrucking_id)
+                ->first();
+
+        $kodepengeluaran    = $pengeluaranTrucking->kodepengeluaran;
+
+        if($kodepengeluaran == 'KBBM' ){
+            $rules = [
+                "tglbukti" => [
+                    "required", 'date_format:d-m-Y',
+                    'date_equals:'.date('d-m-Y'),
+                    new DateTutupBuku()
+                ],
+                'pengeluarantrucking' => 'required','numeric', 'min:1',
+                'statusposting' => 'required',
+                'bank' => [$ruleBank],
+                'tgldari' => [
+                    'required', 'date_format:d-m-Y',
+                    'before:'.$tglbatasakhir,
+                    'after_or_equal:'.$tglbatasawal,
+                ],
+                'tglsampai' => [
+                    'required', 'date_format:d-m-Y',
+                    'before:'.$tglbatasakhir,
+                    'after_or_equal:'.date('Y-m-d', strtotime($this->tgldari))
+                ],
+                // 'keterangancoa' => 'required',
+            ];
+        }elseif($kodepengeluaran == 'BST'){
+            $rules = [
+                "tglbukti" => [
+                    "required", 'date_format:d-m-Y',
+                    'date_equals:'.date('d-m-Y'),
+                    new DateTutupBuku()
+                ],
+                'pengeluarantrucking' => 'required','numeric', 'min:1',
+                'statusposting' => 'required',
+                'bank' => [$ruleBank],
+                'tgldari' => [
+                    'required', 'date_format:d-m-Y',
+                    'before:'.$tglbatasakhir,
+                    'after_or_equal:'.$tglbatasawal,
+                ],
+                'tglsampai' => [
+                    'required', 'date_format:d-m-Y',
+                    'before:'.$tglbatasakhir,
+                    'after_or_equal:'.date('Y-m-d', strtotime($this->tgldari))
+                ],
+                // 'keterangancoa' => 'required',
+            ];
+        }else{
+            $rules = [
+                "tglbukti" => [
+                    "required", 'date_format:d-m-Y',
+                    'date_equals:'.date('d-m-Y'),
+                    new DateTutupBuku()
+                ],
+                'pengeluarantrucking' => 'required','numeric', 'min:1',
+                'statusposting' => 'required',
+                'bank' => [$ruleBank],
+                // 'tgldari' => [
+                //     'required', 'date_format:d-m-Y',
+                //     'before:'.$tglbatasakhir,
+                //     'after_or_equal:'.$tglbatasawal,
+                // ],
+                // 'tglsampai' => [
+                //     'required', 'date_format:d-m-Y',
+                //     'before:'.$tglbatasakhir,
+                //     'after_or_equal:'.date('Y-m-d', strtotime($this->tgldari))
+                // ],
+                // 'keterangancoa' => 'required',
+            ];
+        }
+
+       
         $relatedRequests = [
             StorePengeluaranTruckingDetailRequest::class
         ];
@@ -106,10 +232,12 @@ class StorePengeluaranTruckingHeaderRequest extends FormRequest
             $rules = array_merge(
                 $rules,
                 (new $relatedRequest)->rules(),
-                $rulesBank_id
+                $rulesBank_id,
+                $rulseKlaim
             );
         }
 
+        // dd($rules);
         return $rules;
     }
 
@@ -120,6 +248,11 @@ class StorePengeluaranTruckingHeaderRequest extends FormRequest
             'tglbukti' => 'Tgl Bukti',
             'keterangancoa' => 'nama perkiraan',
             'pengeluarantrucking' => 'Kode Pengeluaran',
+            'supirhaeader' => 'supir',
+            'supirhaeader_id' => 'supir',
+            'trado' => 'trado',
+            'tradoheader_id' => 'trado',
+            'postingpinjaman' => 'posting pinjaman',
             'keterangan.*' => 'keterangan'
         ];
         $relatedRequests = [

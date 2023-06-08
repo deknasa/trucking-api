@@ -337,8 +337,9 @@ route::middleware(['auth:api'])->group(function () {
 
     Route::get('mandorabsensisupir/{tradoId}/cekvalidasi', [MandorAbsensiSupirController::class, 'cekValidasi']);
     Route::get('mandorabsensisupir/{tradoId}/cekvalidasiadd', [MandorAbsensiSupirController::class, 'cekValidasiAdd']);
-    Route::post('mandorabsensisupir/{id}/update', [MandorAbsensiSupirController::class, 'update']);
-    Route::post('mandorabsensisupir/{id}/delete', [MandorAbsensiSupirController::class, 'destroy']);
+    Route::patch('mandorabsensisupir/{id}/update', [MandorAbsensiSupirController::class, 'update']);
+    Route::delete('mandorabsensisupir/{id}/delete', [MandorAbsensiSupirController::class, 'destroy']);
+    Route::get('mandorabsensisupir/{id}/getabsentrado', [MandorAbsensiSupirController::class, 'getabsentrado']);
     Route::resource('mandorabsensisupir', MandorAbsensiSupirController::class);
 
     Route::get('historytrip', [HistoryTripController::class, 'index']);
@@ -549,8 +550,12 @@ route::middleware(['auth:api'])->group(function () {
     Route::get('role/getroleid', [RoleController::class, 'getroleid']);
     Route::get('role/field_length', [RoleController::class, 'fieldLength']);
     Route::get('role/export', [RoleController::class, 'export'])->name('role.export');
-    Route::get('role/{role}/acl', [UserRoleController::class, 'index']);
+    Route::get('role/{role}/acl', [AclController::class, 'RoleAcl']);
+
     Route::post('role/{role}/acl', [UserRoleController::class, 'store']);
+
+    
+    
     Route::resource('role', RoleController::class);
 
     Route::get('cabang/field_length', [CabangController::class, 'fieldLength']);
@@ -778,6 +783,7 @@ route::middleware(['auth:api'])->group(function () {
     Route::get('hutangheader/{id}/printreport', [HutangHeaderController::class, 'printReport']);
     Route::post('hutangheader/{id}/cekvalidasi', [HutangHeaderController::class, 'cekvalidasi'])->name('hutangheader.cekvalidasi');
     Route::get('hutangheader/no_bukti', [HutangHeaderController::class, 'getNoBukti']);
+    Route::post('hutangheader/approval', [HutangHeaderController::class, 'approval']);
     Route::get('hutangheader/combo', [HutangHeaderController::class, 'combo']);
     Route::get('hutangheader/grid', [HutangHeaderController::class, 'grid']);
     Route::post('hutangheader/{id}/cekValidasiAksi', [HutangHeaderController::class, 'cekValidasiAksi'])->name('hutangheader.cekValidasiAksi');
@@ -910,8 +916,10 @@ route::middleware(['auth:api'])->group(function () {
     Route::get('pengembaliankasgantungheader/getkasgantung', [PengembalianKasGantungHeaderController::class, 'getKasGantung']);
     Route::get('pengembaliankasgantungheader/{id}/{aksi}/getpengembalian', [PengembalianKasGantungHeaderController::class, 'getPengembalian']);
     Route::get('pengembaliankasgantungheader/default', [PengembalianKasGantungHeaderController::class, 'default']);
+    Route::get('pengembaliankasgantungheader/{id}/printreport', [PengembalianKasGantungHeaderController::class, 'printReport']);
     Route::post('pengembaliankasgantungheader/{id}/cekValidasiAksi', [PengembalianKasGantungHeaderController::class, 'cekValidasiAksi'])->name('pengembaliankasgantungheader.cekValidasiAksi');
     Route::post('pengembaliankasgantungheader/{id}/cekvalidasi', [PengembalianKasGantungHeaderController::class, 'cekvalidasi'])->name('pengembaliankasgantungheader.cekvalidasi');
+    Route::get('pengembaliankasgantungheader/{id}/export', [PengembalianKasGantungHeaderController::class, 'export'])->name('pengembaliankasgantungheader.export');
     Route::resource('pengembaliankasgantungheader', PengembalianKasGantungHeaderController::class);
 
     Route::resource('pengembaliankasgantung_detail', PengembalianKasGantungDetailController::class);

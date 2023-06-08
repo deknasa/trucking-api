@@ -49,6 +49,7 @@ class PengembalianKasGantungHeaderController extends Controller
                 'totalPages' => $pengembalianKasGantungHeader->totalPages
             ]
         ]);
+
     }
 
     public function default()
@@ -385,7 +386,7 @@ class PengembalianKasGantungHeaderController extends Controller
                 $pengembaliankasgantungheader->tglsampai = date('Y-m-d', strtotime($request->tglsampai));
                 // $pengembaliankasgantungheader->penerimaan_nobukti = $request->penerimaan_nobukti;
                 $pengembaliankasgantungheader->coakasmasuk = $querysubgrppenerimaan->coa;
-                $pengembaliankasgantungheader->postingdari = $request->postingdari ?? '';
+                $pengembaliankasgantungheader->postingdari = $request->postingdari ?? 'PENGEMBALIAN KAS GANTUNG';
                 $pengembaliankasgantungheader->statuscetak = $statusCetak->id ?? 0;
                 $pengembaliankasgantungheader->modifiedby = auth('api')->user()->name;
                 $pengembaliankasgantungheader->tglkasmasuk = date('Y-m-d', strtotime($request->tglbukti));
@@ -553,7 +554,7 @@ class PengembalianKasGantungHeaderController extends Controller
 
         $pengembalianKasGantungHeader = new PengembalianKasGantungHeader();
         $pengembalianKasGantungHeader = $pengembalianKasGantungHeader->lockAndDestroy($id);
-        
+
         $newRequestPenerimaan = new DestroyPenerimaanHeaderRequest();
         $newRequestPenerimaan->postingdari = $request->postingdari ?? "DELETE PENGEMBALIAN KAS GANTUNG HEADER";
 
@@ -716,6 +717,7 @@ class PengembalianKasGantungHeaderController extends Controller
     //untuk create
     public function getKasGantung(GetPengembalianKasGantungHeaderRequest $request)
     {
+
         try {
             $KasGantung = new KasGantungHeader();
             $currentURL = url()->current();
@@ -742,8 +744,8 @@ class PengembalianKasGantungHeaderController extends Controller
     public function getPengembalian(Request $request, $id, $aksi)
     {
         $pengembalianKasGantung = new PengembalianKasGantungHeader();
-        $dari = $request->tgldari;
-        $sampai = $request->tglsampai;
+        $dari = date('Y-m-d', strtotime($request->tgldari));
+        $sampai = date('Y-m-d', strtotime($request->tglsampai));
 
         if ($aksi == 'edit') {
             $data = $pengembalianKasGantung->getPengembalian($id, $dari, $sampai);
@@ -851,6 +853,57 @@ class PengembalianKasGantungHeaderController extends Controller
             ];
 
             return response($data);
+        }
+    }
+
+    public function export($id)
+    {
+        
+        $pengembalianKasGantungHeader = new PengembalianKasGantungHeader();
+        return response([
+            'data' => $pengembalianKasGantungHeader->getExport($id)
+        ]);
+    }
+
+    public function printReport($id)
+    {
+        DB::beginTransaction();
+
+        try {
+            $pengembalianKgt = PengembalianKasGantungHeader::lockForUpdate()->findOrFail($id);
+            $statusSudahCetak = Parameter::from(DB::raw("parameter with (readuncommitted)"))
+                ->where('grp', '=', 'STATUSCETAK')->where('text', '=', 'CETAK')->first();
+            $statusBelumCetak = Parameter::from(DB::raw("parameter with (readuncommitted)"))
+                ->where('grp', '=', 'STATUSCETAK')->where('text', '=', 'BELUM CETAK')->first();
+
+            if ($pengembalianKgt->statuscetak != $statusSudahCetak->id) {
+                $pengembalianKgt->statuscetak = $statusSudahCetak->id;
+                $pengembalianKgt->tglbukacetak = date('Y-m-d H:i:s');
+                $pengembalianKgt->userbukacetak = auth('api')->user()->name;
+                $pengembalianKgt->jumlahcetak = $pengembalianKgt->jumlahcetak + 1;
+
+                if ($pengembalianKgt->save()) {
+                    $logTrail = [
+                        'namatabel' => strtoupper($pengembalianKgt->getTable()),
+                        'postingdari' => 'PRINT PENERIMAAN TRUCKING HEADER',
+                        'idtrans' => $pengembalianKgt->id,
+                        'nobuktitrans' => $pengembalianKgt->nobukti,
+                        'aksi' => 'PRINT',
+                        'datajson' => $pengembalianKgt->toArray(),
+                        'modifiedby' => auth('api')->user()->name,
+                    ];
+
+                    $validatedLogTrail = new StoreLogTrailRequest($logTrail);
+                    $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
+
+                    DB::commit();
+                }
+            }
+            return response([
+                'message' => 'Berhasil'
+            ]);
+        } catch (\Throwable $th) {
+            throw $th;
         }
     }
 }

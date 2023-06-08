@@ -25,12 +25,11 @@ class GetPengembalianKasGantungHeaderRequest extends FormRequest
      * @return array
      */
     public function rules()
-    {
-
+    { 
         //  dd(date('Y-m-d', strtotime($this->tgldari)));
         $rules =  [
-            'tgldari' => ['required', 'date_format:d-m-Y' ],
-            'tglsampai' => ['required', 'date_format:d-m-Y','after_or_equal:'.date('Y-m-d', strtotime($this->tgldari))  ],
+            'tgldari' => ['required', 'date_format:d-m-Y','before_or_equal:' . date('d-m-Y') ],
+            'tglsampai' => ['required', 'date_format:d-m-Y','before_or_equal:' . date('d-m-Y'),'after_or_equal:'.date('Y-m-d', strtotime($this->tgldari))],
         ];
 
         return $rules;

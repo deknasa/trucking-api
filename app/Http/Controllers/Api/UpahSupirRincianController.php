@@ -67,7 +67,7 @@ class UpahSupirRincianController extends Controller
                     ->leftJoin(DB::raw("parameter as statusluarkota with (readuncommitted)"), 'header.statusluarkota', 'statusluarkota.id')
                     ->leftJoin(DB::raw("container with (readuncommitted)"), 'container.id', 'detail.container_id')
                     ->leftJoin(DB::raw("statuscontainer with (readuncommitted)"), 'statuscontainer.id', 'detail.statuscontainer_id');
-
+                
                 $upahsupir = $query->get();
             } else {
                 $query->select(
@@ -80,7 +80,9 @@ class UpahSupirRincianController extends Controller
                     'detail.liter',
                 )
                     ->leftJoin(DB::raw("container with (readuncommitted)"), 'container.id', 'detail.container_id')
-                    ->leftJoin(DB::raw("statuscontainer with (readuncommitted)"), 'statuscontainer.id', 'detail.statuscontainer_id');
+                    ->leftJoin(DB::raw("statuscontainer with (readuncommitted)"), 'statuscontainer.id', 'detail.statuscontainer_id')
+                    ->orderBy('container.id', 'asc')
+                    ->orderBy('statuscontainer.keterangan', 'desc');
                 $upahsupir = $query->get();
             }
 

@@ -11,6 +11,7 @@ use App\Models\PenerimaanGiroHeader;
 use App\Http\Requests\StorePenerimaanGiroHeaderRequest;
 use App\Http\Requests\UpdateJurnalUmumHeaderRequest;
 use App\Http\Requests\UpdatePenerimaanGiroHeaderRequest;
+use App\Http\Requests\GetIndexRangeRequest;
 use App\Models\JurnalUmumDetail;
 use App\Models\JurnalUmumHeader;
 use App\Models\Parameter;
@@ -25,7 +26,7 @@ class PenerimaanGiroHeaderController extends Controller
     /**
      * @ClassName
      */
-    public function index()
+    public function index(GetIndexRangeRequest $request)
     {
         $penerimaanGiro = new PenerimaanGiroHeader();
 
