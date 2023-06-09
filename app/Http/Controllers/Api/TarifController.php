@@ -112,6 +112,7 @@ class TarifController extends Controller
             $tarif->parent_id = $request->parent_id ?? '';
             $tarif->upahsupir_id = $request->upahsupir_id ?? '';
             $tarif->tujuan = $request->tujuan;
+            $tarif->penyesuaian = $request->penyesuaian;
             $tarif->statusaktif = $request->statusaktif;
             $tarif->statussistemton = $request->statussistemton;
             $tarif->kota_id = $request->kota_id;
@@ -225,6 +226,7 @@ class TarifController extends Controller
             $tarif->parent_id = $request->parent_id ?? '';
             $tarif->upahsupir_id = $request->upahsupir_id ?? '';
             $tarif->tujuan = $request->tujuan;
+            $tarif->penyesuaian = $request->penyesuaian;
             $tarif->statusaktif = $request->statusaktif;
             $tarif->statussistemton = $request->statussistemton;
             $tarif->kota_id = $request->kota_id;

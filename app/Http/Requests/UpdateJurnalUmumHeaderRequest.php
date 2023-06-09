@@ -28,7 +28,7 @@ class UpdateJurnalUmumHeaderRequest extends FormRequest
     public function rules()
     {
         $jurnalumum = new JurnalUmumHeader();
-        $getData = $jurnalumum->findAll(request()->id);
+        $getData = $jurnalumum->find(request()->id);
 
         $rules = [
             'nobukti' => [Rule::in($getData->nobukti)],

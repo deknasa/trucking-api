@@ -633,6 +633,7 @@ class ProsesGajiSupirHeader extends MyModel
 
     public function findAll($id)
     {
+        $parameter = Parameter::from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'JUDULAN LAPORAN')->where('subgrp', 'JUDULAN LAPORAN')->first();
         $query = ProsesGajiSupirHeader::from(DB::raw("prosesgajisupirheader with (readuncommitted)"))
             ->select(
                 'prosesgajisupirheader.id',
@@ -645,7 +646,9 @@ class ProsesGajiSupirHeader extends MyModel
                 'prosesgajisupirheader.statuscetak',
                 'prosesgajisupirheader.bank_id as bank_idPR',
                 'prosesgajisupirheader.pengeluaran_nobukti as nobuktiPR',
-                'bank.namabank as bankPR'
+                'bank.namabank as bankPR',
+                DB::raw("'$parameter->text' as judul"),
+                DB::raw("'Laporan Proses Gaji Supir' as judulLaporan"),
             )->leftJoin(DB::raw("bank with (readuncommitted)"), 'prosesgajisupirheader.bank_id', 'bank.id')
             ->where('prosesgajisupirheader.id', $id)
             ->first();

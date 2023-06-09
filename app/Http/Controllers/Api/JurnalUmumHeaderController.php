@@ -74,7 +74,7 @@ class JurnalUmumHeaderController extends Controller
             $jurnalumum = new JurnalUmumHeader();
             $statusApproval = Parameter::from(
                 DB::raw("parameter with (readuncommitted)")
-            )->where('grp', 'STATUS APPROVAL')->where('text', 'NON APPROVAL')->first();
+            )->where('grp', 'STATUS APPROVAL')->where('text', 'APPROVAL')->first();
 
             if ($tanpaprosesnobukti == 1) {
                 $jurnalumum->nobukti = $request->nobukti;
@@ -82,9 +82,9 @@ class JurnalUmumHeaderController extends Controller
 
             $jurnalumum->tglbukti = date('Y-m-d', strtotime($request->tglbukti));
             $jurnalumum->postingdari = $request->postingdari ?? 'ENTRY JURNAL UMUM';
-            $jurnalumum->statusapproval = $statusApproval->id ?? $request->statusapproval;
-            $jurnalumum->userapproval = '';
-            $jurnalumum->tglapproval = '';
+            $jurnalumum->statusapproval = $request->statusapproval ?? $statusApproval->id;
+            $jurnalumum->userapproval = ($tanpaprosesnobukti == 1) ? '' : auth('api')->user()->name;
+            $jurnalumum->tglapproval = ($tanpaprosesnobukti == 1) ? '' : date('Y-m-d H:i:s');
             $jurnalumum->statusformat = $request->statusformat ?? $format->id;
             $jurnalumum->modifiedby = auth('api')->user()->name;
 
@@ -225,7 +225,6 @@ class JurnalUmumHeaderController extends Controller
         try {
             $isUpdate = $request->isUpdate ?? 0;
             $jurnalumumheader->modifiedby = auth('api')->user()->name;
-
 
             if ($jurnalumumheader->save()) {
 

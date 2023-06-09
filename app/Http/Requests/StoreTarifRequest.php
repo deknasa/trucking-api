@@ -126,7 +126,8 @@ class StoreTarifRequest extends FormRequest
         }
 
         $rules = [
-            'tujuan' =>  ['required', new UniqueTarifEdit(), new ValidasiTujuanTarifDariUpahSupir()],
+            'tujuan' =>  ['required', new ValidasiTujuanTarifDariUpahSupir()],
+            'penyesuaian' => [new UniqueTarif()],
             'statusaktif' => ['required', Rule::in($statusAktif)],
             'statussistemton' => ['required', Rule::in($statusTon)],
             'tglmulaiberlaku' => [

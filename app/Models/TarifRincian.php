@@ -45,7 +45,6 @@ class TarifRincian extends MyModel
                     ->where('tarifrincian.tarif_id', '=', $id);
             });
 
-
         $data = $query->get();
 
 

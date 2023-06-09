@@ -99,6 +99,7 @@ class UpahSupirController extends Controller
             $upahsupir->parent_id = $request->parent_id ?? 0;
             $upahsupir->tarif_id = $request->tarif_id ?? 0;
             $upahsupir->kotasampai_id = $request->kotasampai_id;
+            $upahsupir->penyesuaian = $request->penyesuaian;
             $upahsupir->jarak = $request->jarak;
             $upahsupir->zona_id = ($request->zona_id == null) ? 0 : $request->zona_id ?? 0;
             $upahsupir->statusaktif = $request->statusaktif;
@@ -184,12 +185,12 @@ class UpahSupirController extends Controller
                 $upahsupirKandang->parent_id = $request->parent_id ?? 0;
                 $upahsupirKandang->tarif_id = $request->tarif_id ?? 0;
                 $upahsupirKandang->kotasampai_id = $request->kotasampai_id;
+                $upahsupirKandang->penyesuaian = $request->penyesuaian;
                 $upahsupirKandang->jarak = ($jarakKandang < 0) ? 0 : $jarakKandang;
                 $upahsupirKandang->zona_id = ($request->zona_id == null) ? 0 : $request->zona_id ?? 0;
                 $upahsupirKandang->statusaktif = $request->statusaktif;
                 $upahsupirKandang->tglmulaiberlaku = date('Y-m-d', strtotime($request->tglmulaiberlaku));
                 $upahsupirKandang->statussimpankandang = $request->statussimpankandang;
-                $upahsupirKandang->statusluarkota = $request->statusluarkota;
                 $upahsupirKandang->keterangan = $request->keterangan;
                 $upahsupirKandang->modifiedby = auth('api')->user()->name;
                 $this->deleteFiles($upahsupirKandang);
@@ -322,12 +323,12 @@ class UpahSupirController extends Controller
             $upahsupir->parent_id = $request->parent_id ?? 0;
             $upahsupir->tarif_id = $request->tarif_id ?? 0;
             $upahsupir->kotasampai_id = $request->kotasampai_id;
+            $upahsupir->penyesuaian = $request->penyesuaian;
             $upahsupir->jarak = $request->jarak;
             $upahsupir->zona_id = ($request->zona_id == null) ? 0 : $request->zona_id ?? 0;
             $upahsupir->statusaktif = $request->statusaktif;
             $upahsupir->tglmulaiberlaku = date('Y-m-d', strtotime($request->tglmulaiberlaku));
             // $upahsupir->tglakhirberlaku = ($request->tglakhirberlaku == null) ? "" : date('Y-m-d', strtotime($request->tglakhirberlaku));
-            $upahsupir->statusluarkota = $request->statusluarkota;
             $upahsupir->keterangan = $request->keterangan;
             $upahsupir->modifiedby = auth('api')->user()->name;
 

@@ -80,6 +80,7 @@ class Tarif extends MyModel
                 'parent.tujuan as parent_id',
                 "B.kotasampai_id as upahsupir_id",
                 'tarif.tujuan',
+                'tarif.penyesuaian',
                 'parameter.memo as statusaktif',
                 'sistemton.memo as statussistemton',
                 'kota.kodekota as kota_id',
@@ -147,6 +148,7 @@ class Tarif extends MyModel
             DB::raw(
                 "$this->table.id,
              $this->table.tujuan,
+             $this->table.penyesuaian,
              parameter.text as statusaktif,
              $this->table.statussistemton,
              kota.kodekota as kota_id,
@@ -171,6 +173,7 @@ class Tarif extends MyModel
         Schema::create($temp, function ($table) {
             $table->bigInteger('id')->nullable();
             $table->string('tujuan', 200)->nullable();
+            $table->string('penyesuaian', 200)->nullable();
             $table->string('statusaktif')->nullable();
             $table->integer('statussistemton')->length(11)->nullable();
             $table->string('kota_id')->nullable()->nullable();
@@ -189,7 +192,7 @@ class Tarif extends MyModel
         $query = $this->selectColumns($query);
         $this->sort($query);
         $models = $this->filter($query);
-        DB::table($temp)->insertUsing(['id', 'tujuan',  'statusaktif',  'statussistemton', 'kota_id', 'zona_id',  'tglmulaiberlaku', 'statuspenyesuaianharga', 'keterangan', 'modifiedby', 'created_at', 'updated_at'], $models);
+        DB::table($temp)->insertUsing(['id', 'tujuan', 'penyesuaian',  'statusaktif',  'statussistemton', 'kota_id', 'zona_id',  'tglmulaiberlaku', 'statuspenyesuaianharga', 'keterangan', 'modifiedby', 'created_at', 'updated_at'], $models);
 
 
         return  $temp;
@@ -277,6 +280,7 @@ class Tarif extends MyModel
                 DB::raw("(case when tarif.upahsupir_id=0 then null else tarif.upahsupir_id end) as upahsupir_id"),
                 "$tempUpahsupir.kotasampai_id as upahsupir",
                 'tarif.tujuan',
+                'tarif.penyesuaian',
                 'tarif.statusaktif',
                 'tarif.statussistemton',
                 DB::raw("(case when tarif.kota_id=0 then null else tarif.kota_id end) as kota_id"),
