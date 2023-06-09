@@ -60,7 +60,7 @@ class Acl extends MyModel
 
         $this->totalRows = $query->count();
         $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;
-
+        
         $this->sort($query);
         $this->filter($query);
         $this->paginate($query);
@@ -109,17 +109,29 @@ class Acl extends MyModel
                     foreach ($this->params['filters']['rules'] as $index => $filters) {
                         if ($filters['field'] == 'rolename') {
                             $query = $query->where('role.rolename', 'LIKE', "%$filters[data]%");
-                        } else {
+                        } else if ($filters['field'] == 'class') {
+                            $query = $query->where('acos.class', 'LIKE', "%$filters[data]%");
+                        } else if ($filters['field'] == 'method') {
+                            $query = $query->where('acos.method', 'LIKE', "%$filters[data]%");
+                        } else if ($filters['field'] == 'created_at') {
+                            $query = $query->where('acos.created_at', 'LIKE', "%$filters[data]%");
+                        }else {
                             $query = $query->where($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
                         }
                     }
-
+                    
                     break;
                 case "OR":
                     foreach ($this->params['filters']['rules'] as $index => $filters) {
                         if ($filters['field'] == 'rolename') {
                             $query = $query->orWhere('role.rolename', 'LIKE', "%$filters[data]%");
-                        } else {
+                        } elseif ($filters['field'] == 'class') {
+                            $query = $query->orWhere('acos.class', 'LIKE', "%$filters[data]%");
+                        }  elseif ($filters['field'] == 'method') {
+                            $query = $query->orWhere('acos.method', 'LIKE', "%$filters[data]%");
+                        } elseif ($filters['field'] == 'created_at') {
+                            $query = $query->orWhere('acos.created_at', 'LIKE', "%$filters[data]%");
+                        }else {
                             $query = $query->orWhere($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
                         }
                     }

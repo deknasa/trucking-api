@@ -7,6 +7,7 @@ use App\Models\Parameter;
 use Illuminate\Validation\Rule;
 use App\Http\Controllers\Api\ErrorController;
 use App\Http\Controllers\Api\ParameterController;
+use Illuminate\Support\Facades\DB;
 
 class StoreUserRequest extends FormRequest
 {
@@ -34,6 +35,7 @@ class StoreUserRequest extends FormRequest
             $status[] = $item['id'];
         }
         return [
+         
             'user' => ['required', 'unique:user,user'],
             'name' => 'required|unique:user',
             'password' => 'required',
@@ -43,6 +45,7 @@ class StoreUserRequest extends FormRequest
             // 'statusaktif' => ['required', 'int', 'exists:parameter,id'],
             'statusaktif' => ['required', Rule::in($status)]
         ];
+        
     }
 
     public function attributes()
