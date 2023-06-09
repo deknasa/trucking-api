@@ -30,9 +30,9 @@ class UpahSupirRincian extends MyModel
         $query = DB::table('upahsupirrincian')->from(DB::raw("upahsupirrincian with (readuncommitted)"))
             ->select(
                 'upahsupirrincian.container_id',
-                'container.keterangan as container',
+                'container.kodecontainer as container',
                 'upahsupirrincian.statuscontainer_id',
-                'statuscontainer.keterangan as statuscontainer',
+                'statuscontainer.kodestatuscontainer as statuscontainer',
                 'upahsupirrincian.nominalsupir',
                 'upahsupirrincian.nominalkenek',
                 'upahsupirrincian.nominalkomisi',
@@ -43,7 +43,7 @@ class UpahSupirRincian extends MyModel
             ->leftJoin('statuscontainer', 'statuscontainer.id', 'upahsupirrincian.statuscontainer_id')
             ->where('upahsupir_id', '=', $id)            
             ->orderBy('container.id', 'asc')
-            ->orderBy('statuscontainer.keterangan', 'desc');
+            ->orderBy('statuscontainer.kodestatuscontainer', 'desc');
 
 
         $data = $query->get();
@@ -55,9 +55,9 @@ class UpahSupirRincian extends MyModel
     public function setUpRow()
     {
         $query = DB::table('statuscontainer')->select(
-            'statuscontainer.keterangan as statuscontainer',
+            'statuscontainer.kodestatuscontainer as statuscontainer',
             'statuscontainer.id as statuscontainer_id',
-            'container.keterangan as container',
+            'container.kodecontainer as container',
             'container.id as container_id',
             db::Raw("0 as nominalsupir"),
             db::Raw("0 as nominalkenek"),
@@ -67,7 +67,7 @@ class UpahSupirRincian extends MyModel
         )
             ->crossJoin('container')
             ->orderBy('container.id', 'asc')
-            ->orderBy('statuscontainer.keterangan', 'desc');
+            ->orderBy('statuscontainer.kodestatuscontainer', 'desc');
 
         return $query->get();
     }

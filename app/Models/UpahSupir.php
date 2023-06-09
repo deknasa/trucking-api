@@ -63,6 +63,7 @@ class UpahSupir extends MyModel
                 'parent.keterangan as parent_id',
                 'kotadari.keterangan as kotadari_id',
                 'kotasampai.keterangan as kotasampai_id',
+                'upahsupir.penyesuaian',
                 DB::raw("CONCAT(upahsupir.jarak, ' KM') as jarak"),
                 'zona.keterangan as zona_id',
                 'parameter.memo as statusaktif',
@@ -132,6 +133,7 @@ class UpahSupir extends MyModel
             'upahsupir.kotadari_id',
             'kotadari.keterangan as kotadari',
             'upahsupir.keterangan',
+            'upahsupir.penyesuaian',
             'upahsupir.kotasampai_id',
             'kotasampai.keterangan as kotasampai',
             'upahsupir.jarak',
@@ -242,6 +244,7 @@ class UpahSupir extends MyModel
                 '$this->table.parent_id',
                 kotadari.keterangan as kotadari_id,
                 kotasampai.keterangan as kotasampai_id,
+                '$this->table.penyesuaian',
                 zona.keterangan as zona_id,
                 $this->table.jarak,
                 $this->table.statusaktif,
@@ -268,6 +271,7 @@ class UpahSupir extends MyModel
             $table->string('parent_id')->nullable();
             $table->string('kotadari_id')->nullable();
             $table->string('kotasampai_id')->nullable();
+            $table->string('penyesuaian')->nullable();
             $table->string('zona_id')->nullable()->nullable();
             $table->double('jarak', 15, 2)->nullable();
             $table->integer('statusaktif')->length(11)->nullable();
@@ -285,7 +289,7 @@ class UpahSupir extends MyModel
         $query = $this->selectColumns($query);
         $this->sort($query);
         $models = $this->filter($query);
-        DB::table($temp)->insertUsing(['id', 'parent_id', 'kotadari_id', 'kotasampai_id', 'zona_id', 'jarak', 'statusaktif', 'tglmulaiberlaku', 'statusluarkota', 'modifiedby', 'created_at', 'updated_at'], $models);
+        DB::table($temp)->insertUsing(['id', 'parent_id', 'kotadari_id', 'kotasampai_id','penyesuaian', 'zona_id', 'jarak', 'statusaktif', 'tglmulaiberlaku', 'statusluarkota', 'modifiedby', 'created_at', 'updated_at'], $models);
 
         return $temp;
     }

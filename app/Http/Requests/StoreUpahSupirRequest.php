@@ -146,10 +146,10 @@ class StoreUpahSupirRequest extends FormRequest
         $tglBatasAkhir = (date('Y') + 1) . '-01-01';
         $rules =  [
             'kotadari' => ['required', new ValidasiDariSimpanKandangUpahSupir()],
-            'kotasampai' => ['required',new UniqueUpahSupirSampai()],
+            'kotasampai' => ['required'],
+            'penyesuaian' => ['required',new UniqueUpahSupirSampai()],
             'jarak' => ['required','numeric','gt:0','max:'. (new ParameterController)->getparamid('BATAS KM UPAH SUPIR','BATAS KM UPAH SUPIR')->text],
             'statusaktif' => ['required', Rule::in($statusAktif)],
-            'statusluarkota' => ['required', Rule::in($statusLuarKota)],
             'statussimpankandang' => ['required', Rule::in($statusSimpanKandang)],
             'tglmulaiberlaku' => ['required','date_format:d-m-Y',
                 'before:'.$tglBatasAkhir,

@@ -37,6 +37,7 @@ class UniqueTarif implements Rule
                 'a.id'
             )
              ->where('a.tujuan', '=', (request()->tujuan))
+             ->where('a.penyesuaian', '=', (request()->penyesuaian))
             ->first();
 
 

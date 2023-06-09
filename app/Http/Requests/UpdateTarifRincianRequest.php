@@ -26,18 +26,16 @@ class UpdateTarifRincianRequest extends FormRequest
     public function rules()
     {
         $rulesDetailId = [];
-        if (request()->parent_id) {
-            $tarifRincian = new TarifRincian();
-            $getTarifRincian = $tarifRincian->getAll(request()->parent_id);
-            $dataRincian = json_decode($getTarifRincian, true);
-            
-            foreach ($dataRincian as $item) {
-                $rincianId[] = $item['id'];
-            }
-            $rulesDetailId = [
-                'detail_id.*' => ['required', 'numeric', 'min:1',Rule::in($rincianId)]
-            ];
+        $tarifRincian = new TarifRincian();
+        $getTarifRincian = $tarifRincian->getAll(request()->id);
+        $dataRincian = json_decode($getTarifRincian, true);
+
+        foreach ($dataRincian as $item) {
+            $rincianId[] = $item['id'];
         }
+        $rulesDetailId = [
+            'detail_id.*' => ['required', 'numeric', 'min:1', Rule::in($rincianId)]
+        ];
         $rules = [
             'container' => 'required|array',
             'container.*' => 'required',

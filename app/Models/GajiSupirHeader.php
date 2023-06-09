@@ -99,6 +99,7 @@ class GajiSupirHeader extends MyModel
     public function findAll($id)
     {
 
+        $parameter = Parameter::from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'JUDULAN LAPORAN')->where('subgrp', 'JUDULAN LAPORAN')->first();
         $query = DB::table('gajisupirheader')->from(DB::raw("gajisupirheader with (readuncommitted)"))
             ->select(
                 'gajisupirheader.*',
@@ -115,7 +116,9 @@ class GajiSupirHeader extends MyModel
                 'gajisupirheader.deposito',
                 'gajisupirheader.bbm',
                 'gajisupirheader.potonganpinjaman',
-                'gajisupirheader.potonganpinjamansemua'
+                'gajisupirheader.potonganpinjamansemua',
+                DB::raw("'$parameter->text' as judul"),
+                DB::raw("'Laporan Gaji Supir' as judulLaporan"),
 
             )
             ->leftJoin(DB::raw("supir with (readuncommitted)"), 'gajisupirheader.supir_id', 'supir.id')

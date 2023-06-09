@@ -33,6 +33,8 @@ class GajiSupirDetail extends MyModel
         $query = DB::table($this->table)->from(DB::raw("$this->table with (readuncommitted)"));
 
         if (isset(request()->forReport) && request()->forReport) {
+            
+            $parameter = Parameter::from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'JUDULAN LAPORAN')->where('subgrp', 'JUDULAN LAPORAN')->first();
             $query->select(
                 'header.id',
                 'header.nobukti',
@@ -45,6 +47,8 @@ class GajiSupirDetail extends MyModel
                 'suratpengantar.nocont',
                 'sampai.keterangan as sampai',
                 'dari.keterangan as dari',
+                DB::raw("'$parameter->text' as judul"),
+                DB::raw("'Laporan Gaji Supir' as judulLaporan"),
                 $this->table . '.gajisupir',
                 $this->table . '.gajikenek',
 

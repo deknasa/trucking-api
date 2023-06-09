@@ -36,6 +36,7 @@ class UniqueUpahSupirSampai implements Rule
             )
             ->where('a.kotasampai_id', '=', (request()->kotasampai_id))
             ->where('a.kotadari_id','=', request()->kotadari_id)
+            ->where('a.penyesuaian','=', request()->penyesuaian)
             ->first();
 
 

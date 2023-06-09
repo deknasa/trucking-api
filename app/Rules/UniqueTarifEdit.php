@@ -37,6 +37,7 @@ class UniqueTarifEdit implements Rule
                 'a.id'
             )
             ->where('a.tujuan', '=', request()->tujuan)
+            ->where('a.penyesuaian', '=', request()->penyesuaian)
             ->where('a.id', '<>', request()->id)
             ->first();
 
