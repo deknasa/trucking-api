@@ -91,6 +91,12 @@ class User extends Authenticatable
     {
         $this->setRequestParameters();
 
+        $getJudul = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))
+        ->select('text')
+        ->where('grp', 'JUDULAN LAPORAN')
+        ->where('subgrp', 'JUDULAN LAPORAN')
+        ->first();
+
         $query = DB::table($this->table)
         ->select(
             "$this->table.id",
@@ -102,7 +108,9 @@ class User extends Authenticatable
             "parameter.memo as statusaktif",
             "$this->table.modifiedby",
             "$this->table.created_at",
-            "$this->table.updated_at"
+            "$this->table.updated_at",
+            DB::raw("'Laporan User' as judulLaporan "),
+            DB::raw("'".$getJudul->text ."' as judul ")
         )
             ->leftJoin('parameter', 'user.statusaktif', '=', 'parameter.id')
             ->leftJoin('cabang', 'user.cabang_id', '=', 'cabang.id');

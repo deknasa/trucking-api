@@ -247,13 +247,11 @@ class RoleController extends Controller
         $decodedResponse = json_decode($response->content(), true);
         $roles = $decodedResponse['data'];
 
+        $judulLaporan = $roles[0]['judulLaporan'];
+
         $columns = [
             [
                 'label' => 'No',
-            ],
-            [
-                'label' => 'ID',
-                'index' => 'id',
             ],
             [
                 'label' => 'Role Name',
@@ -261,7 +259,7 @@ class RoleController extends Controller
             ],
         ];
 
-        $this->toExcel('Role', $roles, $columns);
+        $this->toExcel($judulLaporan, $roles, $columns);
     }
 
     public function fieldLength()

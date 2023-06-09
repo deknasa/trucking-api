@@ -318,7 +318,9 @@ class ParameterController extends Controller
         $response = $this->index();
         $decodedResponse = json_decode($response->content(), true);
         $parameters = $decodedResponse['data'];
-        
+
+        $judulLaporan = $parameters[0]['judulLaporan'];
+
         $i = 0;
         foreach ($parameters as $index => $params) {
             $memo = $params['memo'];
@@ -331,10 +333,6 @@ class ParameterController extends Controller
         $columns = [
             [
                 'label' => 'No',
-            ],
-            [
-                'label' => 'ID',
-                'index' => 'id',
             ],
             [
                 'label' => 'Group',
@@ -358,7 +356,7 @@ class ParameterController extends Controller
             ],
         ];
 
-        $this->toExcel('Parameter', $parameters, $columns);
+        $this->toExcel($judulLaporan, $parameters, $columns);
     }
 
     public function combo(Request $request)

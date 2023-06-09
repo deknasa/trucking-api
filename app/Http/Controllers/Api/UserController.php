@@ -27,7 +27,6 @@ class UserController extends Controller
     public function index()
     {
         $user = new User();
-
         return response([
             'data' => $user->get(),
             'attributes' => [
@@ -262,14 +261,31 @@ class UserController extends Controller
         $decodedResponse = json_decode($response->content(), true);
         $users = $decodedResponse['data'];
 
+      
+        $judulLaporan = $users[0]['judulLaporan'];
+
+        // $judulLaporan = $users[0]['judulLaporan'];
+
+        $i = 0;
+        foreach ($users as $index => $params) {
+
+            $statusaktif = $params['statusaktif'];
+
+            $result = json_decode($statusaktif, true);
+
+            $statusaktif = $result['MEMO'];
+
+            $users[$i]['statusaktif'] = $statusaktif;
+        
+            $i++;
+
+
+        }
+
 
         $columns = [
             [
                 'label' => 'No',
-            ],
-            [
-                'label' => 'ID',
-                'index' => 'id',
             ],
             [
                 'label' => 'User',
@@ -280,13 +296,8 @@ class UserController extends Controller
                 'index' => 'name',
             ],
             [
-                'label' => 'Cabang id',
+                'label' => 'Cabang',
                 'index' => 'cabang_id',
-            ],
-            [
-                'label' => 'Karyawan id',
-                'index' => 'karyawan_id',
-                
             ],
             [
                 'label' => 'Dashboard',
@@ -298,7 +309,7 @@ class UserController extends Controller
             ],
         ];
 
-        $this->toExcel('User', $users, $columns);
+        $this->toExcel($judulLaporan, $users, $columns);
     }
 
     public function fieldLength()

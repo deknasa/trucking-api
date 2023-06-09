@@ -207,6 +207,8 @@ class HariLiburController extends Controller
         $decodedResponse = json_decode($response->content(), true);
         $hariLiburs = $decodedResponse['data'];
 
+        $judulLaporan = $hariLiburs[0]['judulLaporan'];
+
         $i = 0;
         foreach ($hariLiburs as $index => $params) {
 
@@ -226,10 +228,7 @@ class HariLiburController extends Controller
         $columns = [
             [
                 'label' => 'No',
-            ],
-            [
-                'label' => 'ID',
-                'index' => 'id',
+            
             ],
             [
                 'label' => 'Tanggal',
@@ -245,6 +244,6 @@ class HariLiburController extends Controller
             ],
         ];
 
-        $this->toExcel('Hari Libur', $hariLiburs, $columns);
+        $this->toExcel($judulLaporan, $hariLiburs, $columns);
     }
 }

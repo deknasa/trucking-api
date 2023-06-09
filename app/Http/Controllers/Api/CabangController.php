@@ -212,7 +212,9 @@ class CabangController extends Controller
         $decodedResponse = json_decode($response->content(), true);
         $cabangs = $decodedResponse['data'];
 
-        //dd($cabangs);
+        $judulLaporan = $cabangs[0]['judulLaporan'];
+
+      
         $i = 0;
         foreach ($cabangs as $index => $params) {
 
@@ -234,10 +236,6 @@ class CabangController extends Controller
                 'label' => 'No',
             ],
             [
-                'label' => 'ID',
-                'index' => 'id',
-            ],
-            [
                 'label' => 'Kode Cabang',
                 'index' => 'kodecabang',
             ],
@@ -251,7 +249,7 @@ class CabangController extends Controller
             ],
         ];
 
-        $this->toExcel('Cabang', $cabangs, $columns);
+        $this->toExcel($judulLaporan, $cabangs, $columns);
     }
 
     public function fieldLength()

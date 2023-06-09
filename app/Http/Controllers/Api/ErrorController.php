@@ -179,13 +179,11 @@ class ErrorController extends Controller
         $decodedResponse = json_decode($response->content(), true);
         $errors = $decodedResponse['data'];
 
+        $judulLaporan = $errors[0]['judulLaporan'];
+
         $columns = [
             [
                 'label' => 'No',
-            ],
-            [
-                'label' => 'ID',
-                'index' => 'id',
             ],
             [
                 'label' => 'Kode Error',
@@ -197,7 +195,7 @@ class ErrorController extends Controller
             ],
         ];
 
-        $this->toExcel('Error', $errors, $columns);
+        $this->toExcel($judulLaporan, $errors, $columns);
     }
 
     public function fieldLength()

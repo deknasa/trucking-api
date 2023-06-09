@@ -524,6 +524,8 @@ class TradoController extends Controller
         $decodedResponse = json_decode($response->content(), true);
         $trados = $decodedResponse['data'];
 
+        $judulLaporan = $trados[0]['judulLaporan'];
+
         $i = 0;
         foreach ($trados as $index => $params) {
 
@@ -734,6 +736,6 @@ class TradoController extends Controller
         //     $columns[$index + 4]['index'] = $statusaktif;
         // }
 
-        $this->toExcel('Trado', $trados, $columns);
+        $this->toExcel($judulLaporan, $trados, $columns);
     }
 }

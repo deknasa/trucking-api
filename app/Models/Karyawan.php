@@ -29,6 +29,12 @@ class Karyawan extends MyModel
         $aktif = request()->aktif ?? '';
         $staff = request()->staff ?? '';
 
+        $getJudul = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))
+        ->select('text')
+        ->where('grp', 'JUDULAN LAPORAN')
+        ->where('subgrp', 'JUDULAN LAPORAN')
+        ->first();
+
         $query = DB::table($this->table)->from(DB::raw("karyawan with (readuncommitted)"))
             ->select(
                 'karyawan.id',
@@ -38,7 +44,9 @@ class Karyawan extends MyModel
                 'statusstaff.memo as statusstaff',
                 'karyawan.modifiedby',
                 'karyawan.created_at',
-                'karyawan.updated_at'
+                'karyawan.updated_at',
+                DB::raw("'Laporan Karyawan' as judulLaporan "),
+                DB::raw("'".$getJudul->text ."' as judul ")
             )
             ->leftJoin(DB::raw("parameter as statusaktif with (readuncommitted)"), 'karyawan.statusaktif', 'statusaktif.id')
             ->leftJoin(DB::raw("parameter as statusstaff with (readuncommitted)"), 'karyawan.statusstaff', 'statusstaff.id');

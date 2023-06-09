@@ -28,14 +28,30 @@ class Error extends MyModel
     {
         $this->setRequestParameters();
 
+        $getJudul = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))
+        ->select('text')
+        ->where('grp', 'JUDULAN LAPORAN')
+        ->where('subgrp', 'JUDULAN LAPORAN')
+        ->first();
+
         $query = DB::table($this->table)->from(
             DB::raw($this->table . " with (readuncommitted)")
+        )
+        ->select(
+            'id',
+            'kodeerror',
+            'keterangan',
+            'modifiedby',
+            'created_at',
+            'updated_at',
+            DB::raw("'Laporan Error' as judulLaporan"),
+            DB::raw("'" . $getJudul->text . "' as judul")
         );
 
         $this->totalRows = $query->count();
         $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;
 
-        $this->selectColumns($query);
+        // $this->selectColumns($query);
         $this->sort($query);
         $this->filter($query);
         $this->paginate($query);

@@ -27,6 +27,14 @@ class HariLibur extends MyModel
     public function get()
     {
         $this->setRequestParameters();
+
+        $getJudul = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))
+            ->select('text')
+            ->where('grp', 'JUDULAN LAPORAN')
+            ->where('subgrp', 'JUDULAN LAPORAN')
+            ->first();
+
+
         $aktif = request()->aktif ?? '';
         $query = DB::table($this->table)->from(DB::raw("$this->table with (readuncommitted)"))
             ->select(
@@ -37,6 +45,8 @@ class HariLibur extends MyModel
                 "$this->table.modifiedby",
                 "$this->table.created_at",
                 "$this->table.updated_at",
+                DB::raw("'Laporan Hari Libur' as judulLaporan"),
+                DB::raw("'" . $getJudul->text . "' as judul")
             )->leftJoin(DB::raw("parameter with (readuncommitted)"), 'harilibur.statusaktif', 'parameter.id');
 
 
@@ -156,7 +166,6 @@ class HariLibur extends MyModel
                         } else {
                             // $query = $query->where($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
                             $query = $query->whereRaw($this->table . ".[" .  $filters['field'] . "] LIKE '%" . escapeLike($filters['data']) . "%' escape '|'");
-
                         }
                     }
 
@@ -171,7 +180,6 @@ class HariLibur extends MyModel
                             } else {
                                 // $query = $query->orWhere($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
                                 $query = $query->OrwhereRaw($this->table . ".[" .  $filters['field'] . "] LIKE '%" . escapeLike($filters['data']) . "%' escape '|'");
-
                             }
                         }
                     });

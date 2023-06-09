@@ -24,12 +24,35 @@ class Menu extends MyModel
     {
         $this->setRequestParameters();
 
-        $query = DB::table($this->table);
+        $getJudul = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))
+            ->select('text')
+            ->where('grp', 'JUDULAN LAPORAN')
+            ->where('subgrp', 'JUDULAN LAPORAN')
+            ->first();
+
+        $query = DB::table($this->table)
+            ->from(DB::raw($this->table . " with (readuncommitted)"))
+            ->select(
+                'id',
+                'menuname',
+                'menuseq',
+                'menuparent',
+                'menuicon',
+                'aco_id',
+                'link',
+                'menuexe',
+                'menukode',
+                'modifiedby',
+                'created_at',
+                'updated_at',
+                DB::raw("'Laporan Menu' as judulLaporan"),
+                DB::raw("'" . $getJudul->text . "' as judul")
+            );
 
         $this->totalRows = $query->count();
         $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;
 
-        $this->selectColumns($query);
+        // $this->selectColumns($query);
         $this->sort($query);
         $this->filter($query);
         $this->paginate($query);
@@ -111,11 +134,10 @@ class Menu extends MyModel
                         } else if ($filters['field'] == 'aco_id') {
                             $query = $query->where('acos.nama', 'LIKE', "%$filters[data]%");
                         } else if ($filters['field'] == 'created_at' || $filters['field'] == 'updated_at') {
-                            $query = $query->whereRaw("format(".$this->table . "." . $filters['field'].", 'dd-MM-yyyy HH:mm:ss') LIKE '%$filters[data]%'");
+                            $query = $query->whereRaw("format(" . $this->table . "." . $filters['field'] . ", 'dd-MM-yyyy HH:mm:ss') LIKE '%$filters[data]%'");
                         } else {
                             // $query = $query->where($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
                             $query = $query->whereRaw($this->table . ".[" .  $filters['field'] . "] LIKE '%" . escapeLike($filters['data']) . "%' escape '|'");
-
                         }
                     }
 
@@ -129,11 +151,10 @@ class Menu extends MyModel
                         } else if ($filters['field'] == 'aco_id') {
                             $query = $query->orWhere('acos.nama', 'LIKE', "%$filters[data]%");
                         } else if ($filters['field'] == 'created_at' || $filters['field'] == 'updated_at') {
-                            $query = $query->orWhereRaw("format(".$this->table . "." . $filters['field'].", 'dd-MM-yyyy HH:mm:ss') LIKE '%$filters[data]%'");
+                            $query = $query->orWhereRaw("format(" . $this->table . "." . $filters['field'] . ", 'dd-MM-yyyy HH:mm:ss') LIKE '%$filters[data]%'");
                         } else {
                             // $query = $query->orWhere($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
                             $query = $query->OrwhereRaw($this->table . ".[" .  $filters['field'] . "] LIKE '%" . escapeLike($filters['data']) . "%' escape '|'");
-
                         }
                     }
 
@@ -155,16 +176,17 @@ class Menu extends MyModel
         return $query->skip($this->params['offset'])->take($this->params['limit']);
     }
 
-    public function validasiNonController($menuname){
+    public function validasiNonController($menuname)
+    {
         $validasiQuery = DB::table('menu')
-        ->from(
-            DB::raw("menu as a with (readuncommitted)")
-        )
-        ->select(
-            'a.aco_id'
-        )
-        ->where('a.menuname', '=', $menuname)
-        ->first();
+            ->from(
+                DB::raw("menu as a with (readuncommitted)")
+            )
+            ->select(
+                'a.aco_id'
+            )
+            ->where('a.menuname', '=', $menuname)
+            ->first();
 
         return $validasiQuery;
     }

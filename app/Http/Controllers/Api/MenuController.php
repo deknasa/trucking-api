@@ -30,6 +30,8 @@ class MenuController extends Controller
     {
         $menu = new Menu();
 
+       
+
         return response([
             'data' => $menu->get(),
             'attributes' => [
@@ -411,13 +413,11 @@ class MenuController extends Controller
         $decodedResponse = json_decode($response->content(), true);
         $menus = $decodedResponse['data'];
 
+        $judulLaporan = $menus[0]['judulLaporan'];
+
         $columns = [
             [
                 'label' => 'No',
-            ],
-            [
-                'label' => 'ID',
-                'index' => 'id',
             ],
             [
                 'label' => 'Menu Name',
@@ -449,7 +449,7 @@ class MenuController extends Controller
             ],
         ];
 
-        $this->toExcel('Menu', $menus, $columns);
+        $this->toExcel($judulLaporan, $menus, $columns);
     }
 
 

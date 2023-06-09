@@ -241,6 +241,8 @@ class KaryawanController extends Controller
         $decodedResponse = json_decode($response->content(), true);
         $karyawans = $decodedResponse['data'];
 
+        $judulLaporan = $karyawans[0]['judulLaporan'];
+
         $i = 0;
         foreach ($karyawans as $index => $params) {
 
@@ -270,10 +272,6 @@ class KaryawanController extends Controller
                 'label' => 'No',
             ],
             [
-                'label' => 'ID',
-                'index' => 'id',
-            ],
-            [
                 'label' => 'Nama Karyawan',
                 'index' => 'namakaryawan',
             ],
@@ -291,6 +289,6 @@ class KaryawanController extends Controller
             ],
         ];
 
-        $this->toExcel('Karyawan', $karyawans, $columns);
+        $this->toExcel($judulLaporan, $karyawans, $columns);
     }
 }
