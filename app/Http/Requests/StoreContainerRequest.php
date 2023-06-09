@@ -33,7 +33,7 @@ class StoreContainerRequest extends FormRequest
         }
         return [
             'kodecontainer' => 'required|unique:container',
-            'nominalsumbangan' => 'required|integer|gt:0|numeric',
+            'nominalsumbangan' => 'required|gt:0|numeric',
             'statusaktif' => ['required', Rule::in($status)],
         ];
     }

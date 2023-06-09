@@ -35,7 +35,7 @@ class UpdateContainerRequest extends FormRequest
         } 
         return [
             'kodecontainer' => ['required',Rule::unique('container')->whereNotIn('id', [$this->id])],
-            'nominalsumbangan' => 'required|integer|gt:0',
+            'nominalsumbangan' => 'required|gt:0|numeric',
             'statusaktif' => ['required', Rule::in($status)]
         ];
     }

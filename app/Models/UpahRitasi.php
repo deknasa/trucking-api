@@ -46,7 +46,7 @@ class UpahRitasi extends MyModel
                 DB::raw("CONCAT(upahritasi.jarak, ' KM') as jarak"),
                 'upahritasi.parent_id',
                 // 'zona.keterangan as zona_id',
-                'parameter.text as statusaktif',
+                'parameter.memo as statusaktif',
                 'upahritasi.tglmulaiberlaku',
                 // 'upahritasi.tglakhirberlaku',
                 // 'statusluarkota.text as statusluarkota',
