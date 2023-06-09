@@ -22,6 +22,12 @@ class Mandor extends MyModel
     {
         $this->setRequestParameters();
 
+        $getJudul = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))
+            ->select('text')
+            ->where('grp', 'JUDULAN LAPORAN')
+            ->where('subgrp', 'JUDULAN LAPORAN')
+            ->first();
+
         $aktif = request()->aktif ?? '';
 
         $query = DB::table($this->table)->from(DB::raw("mandor with (readuncommitted)"))
@@ -32,7 +38,9 @@ class Mandor extends MyModel
                 'parameter.memo as statusaktif',
                 'mandor.modifiedby',
                 'mandor.created_at',
-                'mandor.updated_at'
+                'mandor.updated_at',
+                DB::raw("'Laporan Mandor' as judulLaporan"),
+                DB::raw("'" . $getJudul->text . "' as judul")
             )
             ->leftJoin(DB::raw("parameter with (readuncommitted)"), 'mandor.statusaktif', '=', 'parameter.id');
 
@@ -185,7 +193,6 @@ class Mandor extends MyModel
                         } else {
                             // $query = $query->where('mandor.' . $filters['field'], 'LIKE', "%$filters[data]%");
                             $query = $query->whereRaw('mandor' . ".[" .  $filters['field'] . "] LIKE '%" . escapeLike($filters['data']) . "%' escape '|'");
-
                         }
                     }
 
@@ -200,7 +207,6 @@ class Mandor extends MyModel
                             } else {
                                 // $query = $query->orWhere('mandor.' . $filters['field'], 'LIKE', "%$filters[data]%");
                                 $query = $query->OrwhereRaw('mandor' . ".[" .  $filters['field'] . "] LIKE '%" . escapeLike($filters['data']) . "%' escape '|'");
-
                             }
                         }
                     });

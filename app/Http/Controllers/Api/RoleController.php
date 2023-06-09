@@ -10,6 +10,7 @@ use App\Models\Role;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use App\Http\Controllers\Controller;
+use App\Http\Requests\RangeExportReportRequest;
 use App\Http\Requests\StoreAclRequest;
 use Illuminate\Database\QueryException;
 use Illuminate\Http\JsonResponse;
@@ -194,7 +195,7 @@ class RoleController extends Controller
         }
     }
 
-    
+
     public function getAcls(Role $role): JsonResponse
     {
         return response()->json([
@@ -241,25 +242,31 @@ class RoleController extends Controller
         }
     }
 
-    public function export()
+    public function export(RangeExportReportRequest $request)
     {
-        $response = $this->index();
-        $decodedResponse = json_decode($response->content(), true);
-        $roles = $decodedResponse['data'];
+        if (request()->cekExport) {
+            return response([
+                'status' => true,
+            ]);
+        } else {
+            $response = $this->index();
+            $decodedResponse = json_decode($response->content(), true);
+            $roles = $decodedResponse['data'];
 
-        $judulLaporan = $roles[0]['judulLaporan'];
+            $judulLaporan = $roles[0]['judulLaporan'];
 
-        $columns = [
-            [
-                'label' => 'No',
-            ],
-            [
-                'label' => 'Role Name',
-                'index' => 'rolename',
-            ],
-        ];
+            $columns = [
+                [
+                    'label' => 'No',
+                ],
+                [
+                    'label' => 'Role Name',
+                    'index' => 'rolename',
+                ],
+            ];
 
-        $this->toExcel($judulLaporan, $roles, $columns);
+            $this->toExcel($judulLaporan, $roles, $columns);
+        }
     }
 
     public function fieldLength()

@@ -10,6 +10,7 @@ use App\Http\Requests\StoreLogTrailRequest;
 use App\Models\Parameter;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\RangeExportReportRequest;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -33,19 +34,20 @@ class JenisTradoController extends Controller
                 'totalPages' => $jenistrado->totalPages
             ]
         ]);
-    }  
-    
-    public function cekValidasi($id) {
-        $jenisTrado= new JenisTrado();
-        $cekdata=$jenisTrado->cekvalidasihapus($id);
-        if ($cekdata['kondisi']==true) {
+    }
+
+    public function cekValidasi($id)
+    {
+        $jenisTrado = new JenisTrado();
+        $cekdata = $jenisTrado->cekvalidasihapus($id);
+        if ($cekdata['kondisi'] == true) {
             $query = DB::table('error')
-            ->select(
-                DB::raw("ltrim(rtrim(keterangan))+' (".$cekdata['keterangan'].")' as keterangan")
+                ->select(
+                    DB::raw("ltrim(rtrim(keterangan))+' (" . $cekdata['keterangan'] . ")' as keterangan")
                 )
-            ->where('kodeerror', '=', 'SATL')
-            ->get();
-        $keterangan = $query['0'];
+                ->where('kodeerror', '=', 'SATL')
+                ->get();
+            $keterangan = $query['0'];
 
             $data = [
                 'status' => false,
@@ -55,7 +57,6 @@ class JenisTradoController extends Controller
             ];
 
             return response($data);
-         
         } else {
             $data = [
                 'status' => false,
@@ -64,10 +65,10 @@ class JenisTradoController extends Controller
                 'kondisi' => $cekdata['kondisi'],
             ];
 
-            return response($data); 
+            return response($data);
         }
     }
-    
+
     public function default()
     {
 
@@ -250,47 +251,54 @@ class JenisTradoController extends Controller
             'data' => $data
         ]);
     }
-    public function export()
+    public function export(RangeExportReportRequest $request)
     {
-        $response = $this->index();
-        $decodedResponse = json_decode($response->content(), true);
-        $jenisTrados = $decodedResponse['data'];
+        if (request()->cekExport) {
+            return response([
+                'status' => true,
+            ]);
+        } else {
 
-        $i = 0;
-        foreach ($jenisTrados as $index => $params) {
+            $response = $this->index();
+            $decodedResponse = json_decode($response->content(), true);
+            $jenisTrados = $decodedResponse['data'];
 
-            $statusaktif = $params['statusaktif'];
+            $judulLaporan = $jenisTrados[0]['judulLaporan'];
 
-            $result = json_decode($statusaktif, true);
+            $i = 0;
+            foreach ($jenisTrados as $index => $params) {
 
-            $statusaktif = $result['MEMO'];
+                $statusaktif = $params['statusaktif'];
+
+                $result = json_decode($statusaktif, true);
+
+                $statusaktif = $result['MEMO'];
 
 
-            $jenisTrados[$i]['statusaktif'] = $statusaktif;
-
-        
-            $i++;
+                $jenisTrados[$i]['statusaktif'] = $statusaktif;
 
 
+                $i++;
+            }
+            $columns = [
+                [
+                    'label' => 'No',
+                ],
+                [
+                    'label' => 'Kode Jenis Trado',
+                    'index' => 'kodejenistrado',
+                ],
+                [
+                    'label' => 'Keterangan',
+                    'index' => 'keterangan',
+                ],
+                [
+                    'label' => 'Status Aktif',
+                    'index' => 'statusaktif',
+                ],
+            ];
+
+            $this->toExcel($judulLaporan, $jenisTrados, $columns);
         }
-        $columns = [
-            [
-                'label' => 'No',
-            ],
-            [
-                'label' => 'Kode Jenis Trado',
-                'index' => 'kodejenistrado',
-            ],
-            [
-                'label' => 'Keterangan',
-                'index' => 'keterangan',
-            ],
-            [
-                'label' => 'Status Aktif',
-                'index' => 'statusaktif',
-            ],
-        ];
-
-        $this->toExcel('Jenis Trado', $jenisTrados, $columns);
     }
 }

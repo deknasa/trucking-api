@@ -10,6 +10,7 @@ use App\Http\Requests\StoreLogTrailRequest;
 use App\Models\Parameter;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\RangeExportReportRequest;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -248,11 +249,19 @@ class MandorController extends Controller
             'data' => $data
         ]);
     }
-    public function export()
+    public function export(RangeExportReportRequest $request)
     {
+        if (request()->cekExport) {
+            return response([
+                'status' => true,
+            ]);
+        } else {
+
         $response = $this->index();
         $decodedResponse = json_decode($response->content(), true);
         $mandors = $decodedResponse['data'];
+
+        $judulLaporan = $mandors[0]['judulLaporan'];
 
 
         $i = 0;
@@ -290,6 +299,7 @@ class MandorController extends Controller
             ],
         ];
 
-        $this->toExcel('Mandor', $mandors, $columns);
+        $this->toExcel($judulLaporan, $mandors, $columns);
+    }
     }
 }

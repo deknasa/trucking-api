@@ -7,6 +7,7 @@ use App\Http\Requests\UpdateUserRequest;
 use App\Http\Requests\DestroyUserRequest;
 use App\Http\Requests\StoreLogTrailRequest;
 use App\Http\Controllers\Controller;
+use App\Http\Requests\RangeExportReportRequest;
 use App\Http\Requests\StoreAclRequest;
 use App\Http\Requests\StoreUserRoleRequest;
 use App\Models\User;
@@ -255,61 +256,66 @@ class UserController extends Controller
         }
     }
 
-    public function export()
+    public function export(RangeExportReportRequest $request)
     {
-        $response = $this->index();
-        $decodedResponse = json_decode($response->content(), true);
-        $users = $decodedResponse['data'];
+        if (request()->cekExport) {
+            return response([
+                'status' => true,
+            ]);
+        } else {
 
-      
-        $judulLaporan = $users[0]['judulLaporan'];
-
-        // $judulLaporan = $users[0]['judulLaporan'];
-
-        $i = 0;
-        foreach ($users as $index => $params) {
-
-            $statusaktif = $params['statusaktif'];
-
-            $result = json_decode($statusaktif, true);
-
-            $statusaktif = $result['MEMO'];
-
-            $users[$i]['statusaktif'] = $statusaktif;
-        
-            $i++;
+            $response = $this->index();
+            $decodedResponse = json_decode($response->content(), true);
+            $users = $decodedResponse['data'];
 
 
+            $judulLaporan = $users[0]['judulLaporan'];
+
+            // $judulLaporan = $users[0]['judulLaporan'];
+
+            $i = 0;
+            foreach ($users as $index => $params) {
+
+                $statusaktif = $params['statusaktif'];
+
+                $result = json_decode($statusaktif, true);
+
+                $statusaktif = $result['MEMO'];
+
+                $users[$i]['statusaktif'] = $statusaktif;
+
+                $i++;
+            }
+
+
+            $columns = [
+                [
+                    'label' => 'No',
+                ],
+                [
+                    'label' => 'User',
+                    'index' => 'user',
+                ],
+                [
+                    'label' => 'Name',
+                    'index' => 'name',
+                ],
+                [
+                    'label' => 'Cabang',
+                    'index' => 'cabang_id',
+                ],
+                [
+                    'label' => 'Dashboard',
+                    'index' => 'dashboard',
+                ],
+                [
+                    'label' => 'Statusaktif',
+                    'index' => 'statusaktif',
+                ],
+            ];
+
+            $this->toExcel($judulLaporan, $users, $columns);
         }
-
-
-        $columns = [
-            [
-                'label' => 'No',
-            ],
-            [
-                'label' => 'User',
-                'index' => 'user',
-            ],
-            [
-                'label' => 'Name',
-                'index' => 'name',
-            ],
-            [
-                'label' => 'Cabang',
-                'index' => 'cabang_id',
-            ],
-            [
-                'label' => 'Dashboard',
-                'index' => 'dashboard',
-            ],
-            [
-                'label' => 'Statusaktif',
-                'index' => 'statusaktif',
-            ],
-        ];
-
-        $this->toExcel($judulLaporan, $users, $columns);
     }
 
     public function fieldLength()

@@ -58,6 +58,12 @@ class JenisTrado extends MyModel
     {
         $this->setRequestParameters();
 
+        $getJudul = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))
+        ->select('text')
+        ->where('grp', 'JUDULAN LAPORAN')
+        ->where('subgrp', 'JUDULAN LAPORAN')
+        ->first();
+
         $aktif = request()->aktif ?? '';
 
         $query = DB::table($this->table)->from(DB::raw("$this->table with (readuncommitted)"))
@@ -68,7 +74,9 @@ class JenisTrado extends MyModel
                 'parameter.memo as statusaktif',
                 'jenistrado.modifiedby',
                 'jenistrado.created_at',
-                'jenistrado.updated_at'
+                'jenistrado.updated_at',
+                DB::raw("'Laporan Jenis Trado' as judulLaporan"),
+                DB::raw("'" . $getJudul->text . "' as judul")
             )
             ->leftJoin(DB::raw("parameter with (readuncommitted)"), 'jenistrado.statusaktif', '=', 'parameter.id');
 

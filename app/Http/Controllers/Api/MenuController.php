@@ -19,6 +19,7 @@ use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\RangeExportReportRequest;
 use Illuminate\Database\QueryException;
 
 class MenuController extends Controller
@@ -407,8 +408,13 @@ class MenuController extends Controller
         }
     }
 
-    public function export()
+    public function export(RangeExportReportRequest $request)
     {
+        if (request()->cekExport) {
+            return response([
+                'status' => true,
+            ]);
+        } else {
         $response = $this->index();
         $decodedResponse = json_decode($response->content(), true);
         $menus = $decodedResponse['data'];
@@ -450,6 +456,7 @@ class MenuController extends Controller
         ];
 
         $this->toExcel($judulLaporan, $menus, $columns);
+    }
     }
 
 
