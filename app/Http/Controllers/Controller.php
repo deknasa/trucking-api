@@ -194,7 +194,12 @@ class Controller extends BaseController
                     isset($column['index']) && $column['index'] == 'tgl' ||
                     isset($column['index']) && $column['index'] == 'tglasuransimati' ||
                     isset($column['index']) && $column['index'] == 'tglserviceopname' || isset($column['index']) && $column['index'] == 'tglpajakstnk' ||
-                    isset($column['index']) && $column['index'] == 'tglgantiakiterakhir'
+                    isset($column['index']) && $column['index'] == 'tglserviceopname' || isset($column['index']) && $column['index'] == 'tglmasuk' ||
+                    isset($column['index']) && $column['index'] == 'tglexpsim' ||
+                    isset($column['index']) && $column['index'] == 'tglberhentisupir' ||
+                    isset($column['index']) && $column['index'] == 'tgllahir' ||
+                    isset($column['index']) && $column['index'] == 'tglterbitsim'
+                    
                 ) {
                     if (isset($row[$column['index']])) {
                         // dd(substr($row[$column['index']],0,4));
@@ -219,13 +224,16 @@ class Controller extends BaseController
                     isset($column['index']) && $column['index'] == 'isisilinder' ||
                     isset($column['index']) && $column['index'] == 'jumlahsumbu' ||
                     isset($column['index']) && $column['index'] == 'jumlahroda' ||
-                    isset($column['index']) && $column['index'] == 'jumlahbanserap'
-
+                    isset($column['index']) && $column['index'] == 'jumlahbanserap' ||
+                    isset($column['index']) && $column['index'] == 'nominaldepositsa'||
+                    isset($column['index']) && $column['index'] == 'depositke' ||
+                    isset($column['index']) && $column['index'] == 'nominalpinjamansaldoawal' ||
+                    isset($column['index']) && $column['index'] == 'supirrold_id' 
 
                 ) {
                     $sheet->setCellValue($alphabets[$columnsIndex] . $startRow, isset($column['index']) ? $row[$column['index']] : $dataIndex + 1);
                     $sheet->getStyle($alphabets[$columnsIndex] . $startRow)->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_RIGHT);
-                } else {
+                }else {
                     // $sheet->setCellValue($alphabets[$columnsIndex] . $tableHeaderRow, $column['label'] ?? $columnsIndex + 1);
                     $sheet->setCellValue($alphabets[$columnsIndex] . $startRow, isset($column['index']) ? $row[$column['index']] : $dataIndex + 1);
                     $sheet->getStyle($alphabets[$columnsIndex] . $startRow)->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_LEFT);
