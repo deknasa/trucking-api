@@ -21,6 +21,7 @@ class AkunPusatSeeder extends Seeder
         DB::statement("DBCC CHECKIDENT ('Akunpusat', RESEED, 1);");
 
 
+
         Akunpusat::create(['coa' => '01.01.00.00', 'keterangancoa' => 'KAS', 'type' => 'KAS', 'level' => '1', 'statusaktif' => '1', 'parent' => '01.01.00.00', 'statuscoa' => '63', 'statusaccountpayable' => '34', 'statusneraca' => '36', 'statuslabarugi' => '38', 'coamain' => '01.01.00.00', 'modifiedby' => 'RYAN',]);
         Akunpusat::create(['coa' => '01.01.01.00', 'keterangancoa' => 'KAS FISIK', 'type' => 'KAS', 'level' => '2', 'statusaktif' => '1', 'parent' => '01.01.00.00', 'statuscoa' => '63', 'statusaccountpayable' => '34', 'statusneraca' => '36', 'statuslabarugi' => '38', 'coamain' => '01.01.01.00', 'modifiedby' => 'RYAN',]);
         Akunpusat::create(['coa' => '01.01.01.02', 'keterangancoa' => 'KAS - FISIK MEDAN', 'type' => 'KAS', 'level' => '3', 'statusaktif' => '1', 'parent' => '01.01.01.00', 'statuscoa' => '63', 'statusaccountpayable' => '34', 'statusneraca' => '36', 'statuslabarugi' => '38', 'coamain' => '01.01.01.02', 'modifiedby' => 'RYAN',]);
