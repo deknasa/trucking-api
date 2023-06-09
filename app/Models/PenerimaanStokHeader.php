@@ -33,7 +33,9 @@ class PenerimaanStokHeader extends MyModel
         $po = Parameter::where('grp', 'PO STOK')->where('subgrp', 'PO STOK')->first();
         $spbs = Parameter::where('grp', 'REUSE STOK')->where('subgrp', 'REUSE STOK')->first();
         $do = Parameter::where('grp', 'DO STOK')->where('subgrp', 'DO STOK')->first();
+        $pg = Parameter::where('grp', 'PG STOK')->where('subgrp', 'PG STOK')->first();
         $rtb = Parameter::where('grp', 'RETUR STOK')->where('subgrp', 'RETUR STOK')->first();
+        $spk = Parameter::where('grp', 'SPK STOK')->where('subgrp', 'SPK STOK')->first();
 
         $query = DB::table($this->table);
         $query = $this->selectColumns($query)
@@ -88,6 +90,10 @@ class PenerimaanStokHeader extends MyModel
         if (request()->pengeluaranstok_id == $rtb->text) {
             //jika retur cari penerimaan hanya
             $query->where('penerimaanstokheader.penerimaanstok_id','=',$spb->text);
+        }
+        if (request()->pengeluaranstok_id == $spk->text) {
+            //jika retur cari penerimaan hanya
+            $query->where('penerimaanstokheader.penerimaanstok_id','=',$pg->text);
         }
         if (request()->tgldari) {
             $query->whereBetween('penerimaanstokheader.tglbukti', [date('Y-m-d',strtotime(request()->tgldari)), date('Y-m-d',strtotime(request()->tglsampai))]);

@@ -109,27 +109,36 @@ class PengeluaranStokDetailController extends Controller
             $spk = Parameter::where('grp', 'SPK STOK')->where('subgrp', 'SPK STOK')->first();
             $kor = Parameter::where('grp', 'KOR MINUS STOK')->where('subgrp', 'KOR MINUS STOK')->first();
             $rtr = Parameter::where('grp', 'RETUR STOK')->where('subgrp', 'RETUR STOK')->first();
+            $gudangkantor = Parameter::where('grp', 'GUDANG KANTOR')->where('subgrp', 'GUDANG KANTOR')->first();
 
             if ($datahitungstok->statushitungstok_id == $statushitungstok->id) {
-                if (($pengeluaranstokheader->pengeluaranstok_id == $spk->text)) {
-                    $dari = $this->persediaanDari($request->stok_id,'gudang_id',$request->gudang_id,$request->qty);
-                    if ($reuse) {
-                        $persediaan = $this->persediaan(null,$pengeluaranstokheader->trado_id,$pengeluaranstokheader->gandengan_id);
-                        $ke = $this->persediaanKe($request->stok_id,$persediaan['column'].'_id',$persediaan['value'],$request->qty);
-                    }
-                }
-                if (($pengeluaranstokheader->pengeluaranstok_id == $kor->text)||($pengeluaranstokheader->pengeluaranstok_id == $rtr->text)) {
+                if ($pengeluaranstokheader->pengeluaranstok_id == $kor->text) {
                     $persediaan = $this->persediaan($pengeluaranstokheader->gudang_id,$pengeluaranstokheader->trado_id,$pengeluaranstokheader->gandengan_id);
                     $dari = $this->persediaanDari($request->stok_id,$persediaan['column'].'_id',$persediaan['value'],$request->qty);
-
-                    if (!$dari) {
+                }else {
+                    $dari = $this->persediaanDari($request->stok_id,'gudang_id', $gudangkantor->text,$request->qty);
+                }
+                if (!$dari) {
+                    return [
+                        'error' => true,
+                        'errors' => [
+                            "qty"=>"qty tidak cukup",
+                            ] ,
+                    ];
+                }
+                if (($pengeluaranstokheader->pengeluaranstok_id != $spk->text)) {
+                    if (!$reuse) {
                         return [
                             'error' => true,
                             'errors' => [
-                                "qty"=>"qty tidak cukup",
+                                "stok"=>"bukan stok reuse",
                                 ] ,
                         ];
                     }
+                }
+                if ($pengeluaranstokheader->pengeluaranstok_id != ($kor->text || $rtr->text )) {
+                    $persediaan = $this->persediaan($pengeluaranstokheader->gudang_id,$pengeluaranstokheader->trado_id,$pengeluaranstokheader->gandengan_id);
+                    $ke = $this->persediaanKe($request->stok_id,$column,$value,$request->qty);
                 }
             }
             $pengeluaranStokDetail = new PengeluaranStokDetail();

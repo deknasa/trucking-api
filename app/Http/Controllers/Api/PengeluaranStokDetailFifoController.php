@@ -183,9 +183,9 @@ class PengeluaranStokDetailFifoController extends Controller
                 'PengeluaranStokDetail.id'
             )
                 ->join('pengeluaranstokheader as B', 'B.id', 'pengeluaranstokdetail.pengeluaranstokheader_id')
-                ->join('gudang as C', 'C.id', 'B.gudang_id')
+                // ->join('gudang as C', 'C.id', 'B.gudang_id')
                 ->join('stok as D', 'D.id', 'pengeluaranstokdetail.stok_id')
-                ->where('B.gudang_id', '=',  $request->gudang_id)
+                // ->where('B.gudang_id', '=',  $request->gudang_id)
                 ->where('pengeluaranstokdetail.stok_id', '=',  $request->stok_id)
                 ->where('pengeluaranstokdetail.nobukti', '=',  $request->nobukti)
                 ->orderBy('B.tglbukti', 'Asc')
