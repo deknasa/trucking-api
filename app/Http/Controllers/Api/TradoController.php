@@ -34,9 +34,11 @@ class TradoController extends Controller
     public function index()
     {
         $trado = new Trado();
-
+     
 
         return response([
+
+           
             'data' => $trado->get(),
             'attributes' => [
                 'totalRows' => $trado->totalRows,
