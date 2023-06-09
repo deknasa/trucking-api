@@ -7,6 +7,7 @@ use App\Http\Requests\StoreLogTrailRequest;
 use App\Http\Requests\StoreSupirRequest;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\RangeExportReportRequest;
 use App\Http\Requests\UpdateSupirRequest;
 use App\Models\Supir;
 use App\Models\LogTrail;
@@ -42,18 +43,18 @@ class SupirController extends Controller
         ]);
     }
 
-     /**
+    /**
      * @ClassName 
      */
     public function approvalBlackListSupir($id)
     {
-        
+
         DB::beginTransaction();
-        try{
+        try {
             $supir = Supir::lockForUpdate()->findOrFail($id);
             $statusBlackList = Parameter::from(DB::raw("parameter with (readuncommitted)"))->where('grp', '=', 'BLACKLIST SUPIR')->where('text', '=', 'SUPIR BLACKLIST')->first();
             $statusBukanBlackList = Parameter::from(DB::raw("parameter with (readuncommitted)"))->where('grp', '=', 'BLACKLIST SUPIR')->where('text', '=', 'BUKAN SUPIR BLACKLIST')->first();
-            
+
             if ($supir->statusblacklist == $statusBlackList->id) {
                 $supir->statusblacklist = $statusBukanBlackList->id;
                 $aksi = $statusBukanBlackList->text;
@@ -61,7 +62,7 @@ class SupirController extends Controller
                 $supir->statusblacklist = $statusBlackList->id;
                 $aksi = $statusBlackList->text;
             }
-    
+
             if ($supir->save()) {
                 $logTrail = [
                     'namatabel' => strtoupper($supir->getTable()),
@@ -72,35 +73,34 @@ class SupirController extends Controller
                     'datajson' => $supir->toArray(),
                     'modifiedby' => auth('api')->user()->name
                 ];
-    
+
                 $validatedLogTrail = new StoreLogTrailRequest($logTrail);
                 $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
-    
+
                 DB::commit();
             }
 
             return response([
                 'message' => 'Berhasil'
             ]);
-
-        }catch (\Throwable $th) {
+        } catch (\Throwable $th) {
             DB::rollBack();
             throw $th;
         }
     }
 
 
-     /**
+    /**
      * @ClassName 
      */
     public function approvalSupirLuarKota($id)
     {
         DB::beginTransaction();
-        try{
+        try {
             $supir = Supir::lockForUpdate()->findOrFail($id);
             $statusLuarKota = Parameter::from(DB::raw("parameter with (readuncommitted)"))->where('grp', '=', 'STATUS LUAR KOTA')->where('text', '=', 'BOLEH LUAR KOTA')->first();
             $statusBukanLuarKota = Parameter::from(DB::raw("parameter with (readuncommitted)"))->where('grp', '=', 'STATUS LUAR KOTA')->where('text', '=', 'TIDAK BOLEH LUAR KOTA')->first();
-            
+
             if ($supir->statusluarkota == $statusLuarKota->id) {
                 $supir->statusluarkota = $statusBukanLuarKota->id;
                 $aksi = $statusBukanLuarKota->text;
@@ -108,7 +108,7 @@ class SupirController extends Controller
                 $supir->statusluarkota = $statusLuarKota->id;
                 $aksi = $statusLuarKota->text;
             }
-    
+
             if ($supir->save()) {
                 $logTrail = [
                     'namatabel' => strtoupper($supir->getTable()),
@@ -119,47 +119,44 @@ class SupirController extends Controller
                     'datajson' => $supir->toArray(),
                     'modifiedby' => auth('api')->user()->name
                 ];
-    
+
                 $validatedLogTrail = new StoreLogTrailRequest($logTrail);
                 $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
-    
+
                 DB::commit();
             }
 
             return response([
                 'message' => 'Berhasil'
             ]);
-
-        }catch (\Throwable $th) {
+        } catch (\Throwable $th) {
             DB::rollBack();
             throw $th;
         }
     }
 
-     /**
+    /**
      * @ClassName 
      */
-    public function approvalSupirResign(Request $request,$id)
+    public function approvalSupirResign(Request $request, $id)
     {
         DB::beginTransaction();
-        try{
+        try {
             $supir = Supir::lockForUpdate()->findOrFail($id);
-           
-            if ($request->action =="approve") {
+
+            if ($request->action == "approve") {
                 $supir->tglberhentisupir = date('Y-m-d', strtotime($request->tglberhentisupir));
                 $aksi = "APPROVED SUPIR RESIGN";
                 // $supir->keteranganberhentisupir = ($request->keteranganberhentisupir == null) ? "" : $request->keteranganberhentisupir;
-                $supir->keteranganberhentisupir = $request->keteranganberhentisupir ;
-
-            }else if($request->action =="unapprove"){
+                $supir->keteranganberhentisupir = $request->keteranganberhentisupir;
+            } else if ($request->action == "unapprove") {
                 $supir->tglberhentisupir = date('Y-m-d', strtotime("1900-01-01"));
                 $aksi = "UNAPPROVED SUPIR RESIGN";
-                $supir->keteranganberhentisupir = null ;
-
+                $supir->keteranganberhentisupir = null;
             }
-            
+
             // $supir->tglberhentisupir = $tanggalberhenti;
-    // return response([$supir],422);
+            // return response([$supir],422);
             if ($supir->save()) {
                 $logTrail = [
                     'namatabel' => strtoupper($supir->getTable()),
@@ -170,38 +167,38 @@ class SupirController extends Controller
                     'datajson' => $supir->toArray(),
                     'modifiedby' => auth('api')->user()->name
                 ];
-    
+
                 $validatedLogTrail = new StoreLogTrailRequest($logTrail);
                 $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
-    
+
                 DB::commit();
             }
 
             return response([
-                "data"=>[
-                    "id"=>$supir->id
+                "data" => [
+                    "id" => $supir->id
                 ],
                 'message' => 'Berhasil'
             ]);
-
-        }catch (\Throwable $th) {
+        } catch (\Throwable $th) {
             DB::rollBack();
             throw $th;
         }
     }
 
-    
-    public function cekValidasi($id) {
-        $supir= new Supir();
-        $cekdata=$supir->cekvalidasihapus($id);
-        if ($cekdata['kondisi']==true) {
+
+    public function cekValidasi($id)
+    {
+        $supir = new Supir();
+        $cekdata = $supir->cekvalidasihapus($id);
+        if ($cekdata['kondisi'] == true) {
             $query = DB::table('error')
-            ->select(
-                DB::raw("ltrim(rtrim(keterangan))+' (".$cekdata['keterangan'].")' as keterangan")
+                ->select(
+                    DB::raw("ltrim(rtrim(keterangan))+' (" . $cekdata['keterangan'] . ")' as keterangan")
                 )
-            ->where('kodeerror', '=', 'SATL')
-            ->get();
-        $keterangan = $query['0'];
+                ->where('kodeerror', '=', 'SATL')
+                ->get();
+            $keterangan = $query['0'];
 
             $data = [
                 'status' => false,
@@ -211,7 +208,6 @@ class SupirController extends Controller
             ];
 
             return response($data);
-         
         } else {
             $data = [
                 'status' => false,
@@ -220,7 +216,7 @@ class SupirController extends Controller
                 'kondisi' => $cekdata['kondisi'],
             ];
 
-            return response($data); 
+            return response($data);
         }
     }
 
@@ -258,11 +254,11 @@ class SupirController extends Controller
             $supir = new Supir();
             $status = $supir->cekPemutihan($request->noktp);
 
-            if($status == true){
+            if ($status == true) {
                 $request->validate([
                     'pemutihansupir_nobukti' => 'required'
-                ],[
-                    'pemutihansupir_nobukti.required' =>'nobukti pemutihan supir ' . app(ErrorController::class)->geterror('WI')->keterangan,
+                ], [
+                    'pemutihansupir_nobukti.required' => 'nobukti pemutihan supir ' . app(ErrorController::class)->geterror('WI')->keterangan,
                 ]);
             }
 
@@ -355,11 +351,11 @@ class SupirController extends Controller
             $supirNew = new Supir();
             $status = $supirNew->cekPemutihan($request->noktp);
 
-            if($status == true){
+            if ($status == true) {
                 $request->validate([
                     'pemutihansupir_nobukti' => 'required'
-                ],[
-                    'pemutihansupir_nobukti.required' =>'nobukti pemutihan supir ' . app(ErrorController::class)->geterror('WI')->keterangan,
+                ], [
+                    'pemutihansupir_nobukti.required' => 'nobukti pemutihan supir ' . app(ErrorController::class)->geterror('WI')->keterangan,
                 ]);
             }
             $depositke = str_replace(',', '', $request->depositke);
@@ -515,7 +511,7 @@ class SupirController extends Controller
 
     public function getImage(string $field, string $filename, string $type, string $aksi)
     {
-        if($field == 'supir') {
+        if ($field == 'supir') {
             $field = 'profil';
         }
         if (Storage::exists("supir/$field/$type" . '_' . "$filename")) {
@@ -523,10 +519,10 @@ class SupirController extends Controller
         } else {
             if (Storage::exists("supir/$field/$filename")) {
                 return response()->file(storage_path("app/supir/$field/$filename"));
-            }else{
+            } else {
                 if ($aksi == 'show') {
                     return response()->file(storage_path("app/no-image.jpg"));
-                }else{
+                } else {
                     return response('no-image');
                 }
             }
@@ -536,20 +532,20 @@ class SupirController extends Controller
     {
         if (Storage::exists("supir/$field/$filename")) {
             return response()->file(storage_path("app/supir/$field/$filename"));
-        }else{
-            return response(['data'=>'']);
+        } else {
+            return response(['data' => '']);
         }
     }
 
     private function storeFiles(array $files, string $destinationFolder): string
     {
         $storedFiles = [];
-        if($destinationFolder == 'supir') {
+        if ($destinationFolder == 'supir') {
             $destinationFolder = 'profil';
         }
         foreach ($files as $file) {
-            $originalFileName = "$destinationFolder-".$file->hashName();
-            $storedFile = Storage::putFileAs('supir/'. $destinationFolder, $file,$originalFileName);
+            $originalFileName = "$destinationFolder-" . $file->hashName();
+            $storedFile = Storage::putFileAs('supir/' . $destinationFolder, $file, $originalFileName);
             $resizedFiles = App::imageResize(storage_path("app/supir/$destinationFolder/"), storage_path("app/$storedFile"), $originalFileName);
 
             $storedFiles[] = $originalFileName;
@@ -562,8 +558,8 @@ class SupirController extends Controller
         $storedFiles = [];
 
         foreach ($files as $file) {
-            $originalFileName = "SURAT-".$file->hashName();
-            $storedFile = Storage::putFileAs('supir/'.$destinationFolder, $file, $originalFileName);
+            $originalFileName = "SURAT-" . $file->hashName();
+            $storedFile = Storage::putFileAs('supir/' . $destinationFolder, $file, $originalFileName);
             $storedFiles[] = $originalFileName;
         }
 
@@ -660,154 +656,143 @@ class SupirController extends Controller
             Storage::delete($relatedPdfSuratPerjanjian);
         }
     }
-    public function export()
+    public function export(RangeExportReportRequest $request)
     {
-        $response = $this->index();
-        $decodedResponse = json_decode($response->content(), true);
-        $supirs = $decodedResponse['data'];
+        if (request()->cekExport) {
+            return response([
+                'status' => true,
+            ]);
+        } else {
+            $response = $this->index();
+            $decodedResponse = json_decode($response->content(), true);
+            $supirs = $decodedResponse['data'];
+
+            $judulLaporan = $supirs[0]['judulLaporan'];
+
+            $i = 0;
+            foreach ($supirs as $index => $params) {
+
+                $statusaktif = $params['statusaktif'];
+                $statusLuarKota = $params['statusluarkota'];
+                $statusZonaTertentu = $params['statuszonatertentu'];
+                $statusBlacklist = $params['statusblacklist'];
+                $statusUpdateGambar = $params['statusadaupdategambar'];
+
+                $result = json_decode($statusaktif, true);
+                $resultLuarKota = json_decode($statusLuarKota, true);
+                $resultZonaTertentu = json_decode($statusZonaTertentu, true);
+                $resultBlacklist = json_decode($statusBlacklist, true);
+                $resultUpdateGambar = json_decode($statusUpdateGambar, true);
+
+                $statusaktif = $result['MEMO'];
+                $statusLuarKota = $resultLuarKota['MEMO'];
+                $statusZonaTertentu = $resultZonaTertentu['MEMO'];
+                $statusBlacklist = $resultBlacklist['MEMO'];
+                $statusUpdateGambar = $resultUpdateGambar['MEMO'];
 
 
-        $i = 0;
-        foreach ($supirs as $index => $params) {
-
-            $statusaktif = $params['statusaktif'];
-            $statusLuarKota = $params['statusluarkota'];
-            $statusZonaTertentu = $params['statuszonatertentu'];
-            $statusBlacklist = $params['statusblacklist'];
-            $statusUpdateGambar = $params['statusadaupdategambar'];
-
-            $result = json_decode($statusaktif, true);
-            $resultLuarKota = json_decode($statusLuarKota, true);
-            $resultZonaTertentu = json_decode($statusZonaTertentu, true);
-            $resultBlacklist = json_decode($statusBlacklist, true);
-            $resultUpdateGambar = json_decode($statusUpdateGambar, true);
-
-            $statusaktif = $result['MEMO'];
-            $statusLuarKota = $resultLuarKota['MEMO'];
-            $statusZonaTertentu = $resultZonaTertentu['MEMO'];
-            $statusBlacklist = $resultBlacklist['MEMO'];
-            $statusUpdateGambar = $resultUpdateGambar['MEMO'];
+                $supirs[$i]['statusaktif'] = $statusaktif;
+                $supirs[$i]['statusluarkota'] = $statusLuarKota;
+                $supirs[$i]['statuszonatertentu'] = $statusZonaTertentu;
+                $supirs[$i]['statusblacklist'] = $statusBlacklist;
+                $supirs[$i]['statusadaupdategambar'] = $statusUpdateGambar;
 
 
-            $supirs[$i]['statusaktif'] = $statusaktif;
-            $supirs[$i]['statusluarkota'] = $statusLuarKota;
-            $supirs[$i]['statuszonatertentu'] = $statusZonaTertentu;
-            $supirs[$i]['statusblacklist'] = $statusBlacklist;
-            $supirs[$i]['statusadaupdategambar'] = $statusUpdateGambar;
+                $i++;
+            }
 
-        
-            $i++;
+            $columns = [
+                [
+                    'label' => 'No',
+                ],
+                [
+                    'label' => 'Nama Supir',
+                    'index' => 'namasupir',
+                ],
+                [
+                    'label' => 'Nama Alias',
+                    'index' => 'namaalias',
+                ],
+                [
+                    'label' => 'Tgl Lahir',
+                    'index' => 'tgllahir',
+                ],
+                [
+                    'label' => 'Alamat',
+                    'index' => 'alamat',
+                ],
+                [
+                    'label' => 'Kota',
+                    'index' => 'kota',
+                ],
+                [
+                    'label' => 'Telepon',
+                    'index' => 'telp',
+                ],
+                [
+                    'label' => 'Pemutihan Supir No Bukti',
+                    'index' => 'pemutihansupir_nobukti',
+                ],
+                [
+                    'label' => 'Status Aktif',
+                    'index' => 'statusaktif',
+                ],
+                [
+                    'label' => 'Supir Rold',
+                    'index' => 'supirold_id',
+                ],
+                [
+                    'label' => 'No Sim',
+                    'index' => 'nosim',
+                ],
+                [
+                    'label' => 'Tgl Terbit Sim',
+                    'index' => 'tglterbitsim',
+                ],
+                [
+                    'label' => 'Tgl Exp Sim',
+                    'index' => 'tglexpsim',
+                ],
+                [
+                    'label' => 'Keterangan',
+                    'index' => 'keterangan',
+                ],
+                [
+                    'label' => 'No KTP',
+                    'index' => 'noktp',
+                ],
+                [
+                    'label' => 'No KK',
+                    'index' => 'nokk',
+                ],
+                [
+                    'label' => 'Status Ada Update Gambar',
+                    'index' => 'statusadaupdategambar',
+                ],
+                [
+                    'label' => 'Status Luar Kota',
+                    'index' => 'statusluarkota',
+                ],
+                [
+                    'label' => 'Status Zona Tertentu',
+                    'index' => 'statuszonatertentu',
+                ],
+                [
+                    'label' => 'Keterangan Resign',
+                    'index' => 'keteranganresign',
+                ],
+                [
+                    'label' => 'Status Blacklist',
+                    'index' => 'statusblacklist',
+                ],
+                [
+                    'label' => 'Tgl Berhenti Supir',
+                    'index' => 'tglberhentisupir',
+                ],
 
+            ];
 
+            $this->toExcel($judulLaporan, $supirs, $columns);
         }
-      
-        $columns = [
-            [
-                'label' => 'No',
-            ],
-            [
-                'label' => 'Nama Supir',
-                'index' => 'namasupir',
-            ],
-            [
-                'label' => 'Nama Alias',
-                'index' => 'namaalias',
-            ],
-            [
-                'label' => 'Tgl Lahir',
-                'index' => 'tgllahir',
-            ],
-            [
-                'label' => 'Alamat',
-                'index' => 'alamat',
-            ],
-            [
-                'label' => 'Kota',
-                'index' => 'kota',
-            ],
-            [
-                'label' => 'Telepon',
-                'index' => 'telp',
-            ],
-            [
-                'label' => 'Pemutihan Supir No Bukti',
-                'index' => 'pemutihansupir_nobukti',
-            ],
-            [
-                'label' => 'Status Aktif',
-                'index' => 'statusaktif',
-            ],
-            [
-                'label' => 'Nominal Deposit SA',
-                'index' => 'nominaldepositsa',
-            ],
-            [
-                'label' => 'Deposit Ke',
-                'index' => 'depositke',
-            ],
-            [
-                'label' => 'Nominal Pinjaman Saldo Awal',
-                'index' => 'nominalpinjamansaldoawal',
-            ],
-            [
-                'label' => 'Supir Rold',
-                'index' => 'supirold_id',
-            ],
-            [
-                'label' => 'No Sim',
-                'index' => 'nosim',
-            ],
-            [
-                'label' => 'Tgl Terbit Sim',
-                'index' => 'tglterbitsim',
-            ],
-            [
-                'label' => 'Tgl Exp Sim',
-                'index' => 'tglexpsim',
-            ],
-            [
-                'label' => 'Keterangan',
-                'index' => 'keterangan',
-            ],
-            [
-                'label' => 'No KTP',
-                'index' => 'noktp',
-            ],
-            [
-                'label' => 'No KK',
-                'index' => 'nokk',
-            ],
-            [
-                'label' => 'Status Ada Update Gambar',
-                'index' => 'statusadaupdategambar',
-            ],
-            [
-                'label' => 'Status Luar Kota',
-                'index' => 'statusluarkota',
-            ],
-            [
-                'label' => 'Status Zona Tertentu',
-                'index' => 'statuszonatertentu',
-            ],
-            [
-                'label' => 'Zona',
-                'index' => 'zona_id',
-            ],
-            [
-                'label' => 'Keterangan Resign',
-                'index' => 'keteranganresign',
-            ],
-            [
-                'label' => 'Status Blacklist',
-                'index' => 'statusblacklist',
-            ],
-            [
-                'label' => 'Tgl Berhenti Supir',
-                'index' => 'tglberhentisupir',
-            ],
-           
-        ];
-
-        $this->toExcel('Supir', $supirs, $columns);
     }
 }
