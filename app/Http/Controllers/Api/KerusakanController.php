@@ -11,6 +11,7 @@ use App\Http\Requests\StoreLogTrailRequest;
 use App\Models\Parameter;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\RangeExportReportRequest;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -35,19 +36,20 @@ class KerusakanController extends Controller
                 'totalPages' => $kerusakan->totalPages
             ]
         ]);
-    }  
+    }
 
-    public function cekValidasi($id) {
-        $kerusakan= new Kerusakan();
-        $cekdata=$kerusakan->cekvalidasihapus($id);
-        if ($cekdata['kondisi']==true) {
+    public function cekValidasi($id)
+    {
+        $kerusakan = new Kerusakan();
+        $cekdata = $kerusakan->cekvalidasihapus($id);
+        if ($cekdata['kondisi'] == true) {
             $query = DB::table('error')
-            ->select(
-                DB::raw("ltrim(rtrim(keterangan))+' (".$cekdata['keterangan'].")' as keterangan")
+                ->select(
+                    DB::raw("ltrim(rtrim(keterangan))+' (" . $cekdata['keterangan'] . ")' as keterangan")
                 )
-            ->where('kodeerror', '=', 'SATL')
-            ->get();
-        $keterangan = $query['0'];
+                ->where('kodeerror', '=', 'SATL')
+                ->get();
+            $keterangan = $query['0'];
 
             $data = [
                 'status' => false,
@@ -57,7 +59,6 @@ class KerusakanController extends Controller
             ];
 
             return response($data);
-         
         } else {
             $data = [
                 'status' => false,
@@ -66,10 +67,10 @@ class KerusakanController extends Controller
                 'kondisi' => $cekdata['kondisi'],
             ];
 
-            return response($data); 
+            return response($data);
         }
     }
-    
+
 
     public function default()
     {
@@ -248,44 +249,51 @@ class KerusakanController extends Controller
             'data' => $data
         ]);
     }
-    public function export()
+    public function export(RangeExportReportRequest $request)
     {
-        $response = $this->index();
-        $decodedResponse = json_decode($response->content(), true);
-        $kerusakans = $decodedResponse['data'];
+        if (request()->cekExport) {
+            return response([
+                'status' => true,
+            ]);
+        } else {
+
+            $response = $this->index();
+            $decodedResponse = json_decode($response->content(), true);
+            $kerusakans = $decodedResponse['data'];
+
+            $judulLaporan = $kerusakans[0]['judulLaporan'];
 
 
-        $i = 0;
-        foreach ($kerusakans as $index => $params) {
+            $i = 0;
+            foreach ($kerusakans as $index => $params) {
 
-            $statusaktif = $params['statusaktif'];
+                $statusaktif = $params['statusaktif'];
 
-            $result = json_decode($statusaktif, true);
+                $result = json_decode($statusaktif, true);
 
-            $statusaktif = $result['MEMO'];
-
-
-            $kerusakans[$i]['statusaktif'] = $statusaktif;
-
-        
-            $i++;
+                $statusaktif = $result['MEMO'];
 
 
+                $kerusakans[$i]['statusaktif'] = $statusaktif;
+
+
+                $i++;
+            }
+            $columns = [
+                [
+                    'label' => 'No',
+                ],
+                [
+                    'label' => 'Keterangan',
+                    'index' => 'keterangan',
+                ],
+                [
+                    'label' => 'Status Aktif',
+                    'index' => 'statusaktif',
+                ],
+            ];
+
+            $this->toExcel($judulLaporan, $kerusakans, $columns);
         }
-        $columns = [
-            [
-                'label' => 'No',
-            ],
-            [
-                'label' => 'Keterangan',
-                'index' => 'keterangan',
-            ],
-            [
-                'label' => 'Status Aktif',
-                'index' => 'statusaktif',
-            ],
-        ];
-
-        $this->toExcel('Kerusakan', $kerusakans, $columns);
     }
 }
