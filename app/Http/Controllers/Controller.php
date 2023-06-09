@@ -197,19 +197,22 @@ class Controller extends BaseController
                     isset($column['index']) && $column['index'] == 'tglgantiakiterakhir'
                 ) {
                     if (isset($row[$column['index']])) {
-                        if (!$row[$column['index']]) {
+                        // dd(substr($row[$column['index']],0,4));
+                        if (substr($row[$column['index']],0,4) == '1900') {
                             $value = '';
+                            $sheet->setCellValue($alphabets[$columnsIndex] . $startRow, $value);
                         } else {
                             $value = date('d-m-Y', strtotime($row[$column['index']]));
+                            
+                            $sheet->setCellValue($alphabets[$columnsIndex] . $startRow, $value);
+                            $sheet->getStyle($alphabets[$columnsIndex] . $startRow)->getNumberFormat()->setFormatCode('dd-mm-yyyy');
                         }
                     } else {
                         $value = $dataIndex + 1;
                     }
 
-                    $sheet->setCellValue($alphabets[$columnsIndex] . $startRow, $value);
-
-                    $sheet->getStyle($alphabets[$columnsIndex] . $startRow)->getNumberFormat()->setFormatCode('dd-mm-yyyy');
-                } elseif(
+                   
+                } elseif (
                     isset($column['index']) && $column['index'] == 'kmawal' ||
                     isset($column['index']) && $column['index'] == 'kmakhirgantioli' ||
                     isset($column['index']) && $column['index'] == 'tahun' ||
@@ -219,12 +222,10 @@ class Controller extends BaseController
                     isset($column['index']) && $column['index'] == 'jumlahbanserap'
 
 
-                ){
+                ) {
                     $sheet->setCellValue($alphabets[$columnsIndex] . $startRow, isset($column['index']) ? $row[$column['index']] : $dataIndex + 1);
                     $sheet->getStyle($alphabets[$columnsIndex] . $startRow)->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_RIGHT);
-                    
-                    
-                }else {
+                } else {
                     // $sheet->setCellValue($alphabets[$columnsIndex] . $tableHeaderRow, $column['label'] ?? $columnsIndex + 1);
                     $sheet->setCellValue($alphabets[$columnsIndex] . $startRow, isset($column['index']) ? $row[$column['index']] : $dataIndex + 1);
                     $sheet->getStyle($alphabets[$columnsIndex] . $startRow)->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_LEFT);

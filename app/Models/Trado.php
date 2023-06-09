@@ -173,7 +173,7 @@ class Trado extends MyModel
                 'trado.kodetrado',
                 'trado.kmawal',
                 'trado.kmakhirgantioli',
-                DB::raw("(case when year(isnull(trado.tglasuransimati,'1900/1/1'))=1900 then null else trado.tglasuransimati end) as tglasuransimati"),
+                DB::raw("(case when year(isnull(trado.tglasuransimati,'1900/1/1'))=1900 then null  else trado.tglasuransimati end) as tglasuransimati"),
                 'trado.merek',
                 'trado.norangka',
                 'trado.nomesin',
@@ -224,8 +224,9 @@ class Trado extends MyModel
             ->leftJoin(DB::raw("parameter as parameter_statuslewatvalidasi with (readuncommitted)"), 'trado.statuslewatvalidasi', 'parameter_statuslewatvalidasi.id')
             ->leftJoin(DB::raw("mandor with (readuncommitted)"), 'trado.mandor_id', 'mandor.id')
             ->leftJoin(DB::raw("supir with (readuncommitted)"), 'trado.supir_id', 'supir.id');
+            // ->where("trado.id" ,"=","37");
 
-
+      
 
         $this->filter($query);
         if ($aktif == 'AKTIF') {
