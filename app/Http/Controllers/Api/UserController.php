@@ -59,11 +59,14 @@ class UserController extends Controller
         try {
             $user->roles()->detach();
 
+            if (is_array($request->role_ids)) {
             foreach ($request->role_ids as $role_id) {
-                $user->roles()->attach($role_id, [
-                    'modifiedby' => auth('api')->user()->name
-                ]);
+                            $user->roles()->attach($role_id, [
+                                'modifiedby' => auth('api')->user()->name
+                            ]);
+                        }
             }
+            
 
             $logTrail = [
                 'namatabel' => strtoupper($user->getTable()),
