@@ -47,7 +47,16 @@ class Parameter extends MyModel
 
     public function get()
     {
+
         $this->setRequestParameters();
+
+        $getJudul = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))
+        ->select('text')
+        ->where('grp', 'JUDULAN LAPORAN')
+        ->where('subgrp', 'JUDULAN LAPORAN')
+        ->first();
+
+
         $query = DB::table('parameter')->from(
             DB::raw("parameter with (readuncommitted)")
         )
@@ -63,8 +72,11 @@ class Parameter extends MyModel
                 'parameter.created_at',
                 'parameter.updated_at',
                 DB::raw("case when parameter.type = 0 then '' else B.grp end as type"),
+                DB::raw("'Laporan Parameter' as judulLaporan "),
+                DB::raw("'".$getJudul->text ."' as judul ")
             )
             ->leftJoin(DB::raw("parameter as B with (readuncommitted)"), 'parameter.type', 'B.id');
+
 
         $this->totalRows = $query->count();
         $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;

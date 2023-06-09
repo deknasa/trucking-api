@@ -23,12 +23,28 @@ class Role extends MyModel
     {
         $this->setRequestParameters();
 
-        $query = DB::table($this->table);
+        $getJudul = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))
+            ->select('text')
+            ->where('grp', 'JUDULAN LAPORAN')
+            ->where('subgrp', 'JUDULAN LAPORAN')
+            ->first();
+
+            $query = DB::table($this->table)
+            ->from(DB::raw($this->table . " with (readuncommitted)"))
+            ->select(
+                'id',
+                'rolename',
+                'modifiedby',
+                'created_at',
+                'updated_at',
+                DB::raw("'Laporan Role' as judulLaporan"),
+                DB::raw("'" . $getJudul->text . "' as judul")
+            );
 
         $this->totalRows = $query->count();
         $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;
 
-        $this->selectColumns($query);
+        // $this->selectColumns($query);
         $this->sort($query);
         $this->filter($query);
         $this->paginate($query);
@@ -92,11 +108,10 @@ class Role extends MyModel
                 case "AND":
                     foreach ($this->params['filters']['rules'] as $index => $filters) {
                         if ($filters['field'] == 'created_at' || $filters['field'] == 'updated_at') {
-                            $query = $query->whereRaw("format(".$this->table . "." . $filters['field'].", 'dd-MM-yyyy HH:mm:ss') LIKE '%$filters[data]%'");
-                        } else{
+                            $query = $query->whereRaw("format(" . $this->table . "." . $filters['field'] . ", 'dd-MM-yyyy HH:mm:ss') LIKE '%$filters[data]%'");
+                        } else {
                             // $query = $query->where($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
                             $query = $query->whereRaw($this->table . ".[" .  $filters['field'] . "] LIKE '%" . escapeLike($filters['data']) . "%' escape '|'");
-
                         }
                     }
 
@@ -104,12 +119,11 @@ class Role extends MyModel
                 case "OR":
                     foreach ($this->params['filters']['rules'] as $index => $filters) {
                         if ($filters['field'] == 'created_at' || $filters['field'] == 'updated_at') {
-                            $query = $query->orWhereRaw("format(".$this->table . "." . $filters['field'].", 'dd-MM-yyyy HH:mm:ss') LIKE '%$filters[data]%'");
+                            $query = $query->orWhereRaw("format(" . $this->table . "." . $filters['field'] . ", 'dd-MM-yyyy HH:mm:ss') LIKE '%$filters[data]%'");
                         } else {
                             // $query = $query->orWhere($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
                             $query = $query->OrwhereRaw($this->table . ".[" .  $filters['field'] . "] LIKE '%" . escapeLike($filters['data']) . "%' escape '|'");
-
-                        } 
+                        }
                     }
 
                     break;
@@ -134,20 +148,19 @@ class Role extends MyModel
     {
         return $this->belongsToMany(User::class);
     }
-    
+
     public function acls()
     {
         return $this->belongsToMany(Aco::class, 'acl')
-        ->withTimestamps()
-        ->select(
-            'acos.id',
-            'acos.class',
-            'acos.method',
-            'acos.nama',
-            'acos.modifiedby',
-            'acl.created_at',
-            'acl.updated_at'
-        );
-        
+            ->withTimestamps()
+            ->select(
+                'acos.id',
+                'acos.class',
+                'acos.method',
+                'acos.nama',
+                'acos.modifiedby',
+                'acl.created_at',
+                'acl.updated_at'
+            );
     }
 }

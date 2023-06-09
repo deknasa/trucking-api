@@ -160,6 +160,12 @@ class Trado extends MyModel
 
         $aktif = request()->aktif ?? '';
 
+        $getJudul = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))
+            ->select('text')
+            ->where('grp', 'JUDULAN LAPORAN')
+            ->where('subgrp', 'JUDULAN LAPORAN')
+            ->first();
+
         $query = DB::table($this->table)->from(DB::raw("$this->table with (readuncommitted)"))
             ->select(
                 'trado.id',
@@ -205,6 +211,8 @@ class Trado extends MyModel
                 'mandor.namamandor as mandor_id',
                 'supir.namasupir as supir_id',
                 'trado.updated_at',
+                DB::raw("'Laporan Trado' as judulLaporan"),
+                DB::raw("'" . $getJudul->text . "' as judul")
             )
             ->leftJoin(DB::raw("parameter as parameter_statusaktif with (readuncommitted)"), 'trado.statusaktif', 'parameter_statusaktif.id')
             ->leftJoin(DB::raw("parameter as parameter_statusjenisplat with (readuncommitted)"), 'trado.statusjenisplat', 'parameter_statusjenisplat.id')
@@ -506,13 +514,12 @@ class Trado extends MyModel
                         } else if ($filters['field'] == 'supir_id') {
                             $query = $query->where('supir.namasupir', 'LIKE', "%$filters[data]%");
                         } else if ($filters['field'] == 'created_at' || $filters['field'] == 'updated_at') {
-                            $query = $query->whereRaw("format(".$this->table . "." . $filters['field'].", 'dd-MM-yyyy HH:mm:ss') LIKE '%$filters[data]%'");
+                            $query = $query->whereRaw("format(" . $this->table . "." . $filters['field'] . ", 'dd-MM-yyyy HH:mm:ss') LIKE '%$filters[data]%'");
                         } else if ($filters['field'] == 'tglasuransimati' || $filters['field'] == 'tglserviceopname' || $filters['field'] == 'tglpajakstnk' || $filters['field'] == 'tglgantiakiterakhir') {
-                            $query = $query->whereRaw("format((case when year(isnull($this->table.".$filters['field'].",'1900/1/1'))<2000 then null else trado.".$filters['field']." end), 'dd-MM-yyyy') LIKE '%$filters[data]%'");
+                            $query = $query->whereRaw("format((case when year(isnull($this->table." . $filters['field'] . ",'1900/1/1'))<2000 then null else trado." . $filters['field'] . " end), 'dd-MM-yyyy') LIKE '%$filters[data]%'");
                         } else {
                             // $query = $query->where($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
                             $query = $query->whereRaw($this->table . ".[" .  $filters['field'] . "] LIKE '%" . escapeLike($filters['data']) . "%' escape '|'");
-
                         }
                     }
 
@@ -523,7 +530,7 @@ class Trado extends MyModel
                             if ($filters['field'] == 'statusaktif') {
                                 $query = $query->orWhere('parameter_statusaktif.text', '=', $filters['data']);
                             } else if ($filters['field'] == 'created_at' || $filters['field'] == 'updated_at') {
-                                $query = $query->orWhereRaw("format(".$this->table . "." . $filters['field'].", 'dd-MM-yyyy HH:mm:ss') LIKE '%$filters[data]%'");
+                                $query = $query->orWhereRaw("format(" . $this->table . "." . $filters['field'] . ", 'dd-MM-yyyy HH:mm:ss') LIKE '%$filters[data]%'");
                             } else if ($filters['field'] == 'statusstandarisasi') {
                                 $query = $query->orWhere('parameter_statusstandarisasi.text', '=', $filters['data']);
                             } else if ($filters['field'] == 'statusjenisplat') {
@@ -543,11 +550,10 @@ class Trado extends MyModel
                             } else if ($filters['field'] == 'supir_id') {
                                 $query = $query->orWhere('supir.namasupir', 'LIKE', "%$filters[data]%");
                             } else if ($filters['field'] == 'tglasuransimati' || $filters['field'] == 'tglserviceopname' || $filters['field'] == 'tglpajakstnk' || $filters['field'] == 'tglgantiakiterakhir') {
-                                $query = $query->orWhereRaw("format((case when year(isnull($this->table.".$filters['field'].",'1900/1/1'))<2000 then null else trado.".$filters['field']." end), 'dd-MM-yyyy') LIKE '%$filters[data]%'");
+                                $query = $query->orWhereRaw("format((case when year(isnull($this->table." . $filters['field'] . ",'1900/1/1'))<2000 then null else trado." . $filters['field'] . " end), 'dd-MM-yyyy') LIKE '%$filters[data]%'");
                             } else {
                                 // $query = $query->orWhere($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
                                 $query = $query->OrwhereRaw($this->table . ".[" .  $filters['field'] . "] LIKE '%" . escapeLike($filters['data']) . "%' escape '|'");
-
                             }
                         }
                     });

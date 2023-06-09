@@ -123,11 +123,13 @@ class Controller extends BaseController
     }
 
     /* Compatible for single table */
-    public function toExcel(string $title, array $data, array $columns)
+    public function toExcel(string $Laporan, array $data, array $columns)
     {
         header('Access-Control-Allow-Origin: *');
 
-        $tableHeaderRow = 2;
+
+
+        $tableHeaderRow = 4;
         $startRow = $tableHeaderRow + 1;
         $alphabets = range('A', 'Z');
 
@@ -148,10 +150,14 @@ class Controller extends BaseController
 
         $spreadsheet = new Spreadsheet();
         $sheet = $spreadsheet->getActiveSheet();
-        $sheet->setCellValue('A1', 'Laporan ' . $title);
-        $sheet->getStyle("A1")->getFont()->setSize(20);
+        $sheet->setCellValue('A1', $data[0]['judul']);
+        $sheet->getStyle("A1")->getFont()->setSize(14);
         $sheet->getStyle('A1')->getAlignment()->setHorizontal('center');
         $sheet->mergeCells('A1:' . $alphabets[count($columns) - 1] . '1');
+
+        $sheet->setCellValue('A2', $Laporan);
+        $sheet->getStyle("A2")->getFont()->setSize(12);
+        $sheet->mergeCells('A2:' . $alphabets[count($columns) - 1] . '2');
 
 
         /* Set the table header */
@@ -181,7 +187,32 @@ class Controller extends BaseController
             event(new UpdateExportProgress($progress));
 
             foreach ($columns as $columnsIndex => $column) {
-                $sheet->setCellValue($alphabets[$columnsIndex] . $startRow, isset($column['index']) ? $row[$column['index']] : $dataIndex + 1);
+
+                $sheet->setCellValue($alphabets[$columnsIndex] . $tableHeaderRow, $column['label'] ?? $columnsIndex + 1);
+
+                if (
+                    isset($column['index']) && $column['index'] == 'tgl' ||
+                    isset($column['index']) && $column['index'] == 'tglasuransimati' ||
+                    isset($column['index']) && $column['index'] == 'tglserviceopname' || isset($column['index']) && $column['index'] == 'tglpajakstnk' ||
+                    isset($column['index']) && $column['index'] == 'tglgantiakiterakhir'
+                ) {
+                    if (isset($row[$column['index']])) {
+                        if (!$row[$column['index']]) {
+                            $value = '';
+                        } else {
+                            $value = date('d-m-Y', strtotime($row[$column['index']]));
+                        }
+                    } else {
+                        $value = $dataIndex + 1;
+                    }
+
+                    $sheet->setCellValue($alphabets[$columnsIndex] . $startRow, $value);
+
+                    $sheet->getStyle($alphabets[$columnsIndex] . $startRow)->getNumberFormat()->setFormatCode('dd-mm-yyyy');
+                } else {
+                    // $sheet->setCellValue($alphabets[$columnsIndex] . $tableHeaderRow, $column['label'] ?? $columnsIndex + 1);
+                    $sheet->setCellValue($alphabets[$columnsIndex] . $startRow, isset($column['index']) ? $row[$column['index']] : $dataIndex + 1);
+                }
             }
 
             $startRow++;
@@ -194,7 +225,7 @@ class Controller extends BaseController
 
         /* Write to excel, then download the file */
         $writer = new Xlsx($spreadsheet);
-        $filename = 'laporan' . $title . date('dmYHis');
+        $filename = $Laporan . date('dmYHis');
 
         header('Content-Type: application/vnd.ms-excel');
         header('Content-Disposition: attachment;filename="' . $filename . '.xlsx"');

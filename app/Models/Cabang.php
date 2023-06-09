@@ -25,6 +25,12 @@ class Cabang extends MyModel
 
         $aktif = request()->aktif ?? '';
 
+        $getJudul = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))
+        ->select('text')
+        ->where('grp', 'JUDULAN LAPORAN')
+        ->where('subgrp', 'JUDULAN LAPORAN')
+        ->first();
+
         $query = DB::table($this->table)->from(DB::raw("$this->table with (readuncommitted)"))
             ->select(
                 'cabang.id',
@@ -33,7 +39,9 @@ class Cabang extends MyModel
                 'parameter.memo as statusaktif',
                 'cabang.modifiedby',
                 'cabang.created_at',
-                'cabang.updated_at'
+                'cabang.updated_at',
+                DB::raw("'Laporan Cabang' as judulLaporan"),
+                DB::raw("'" . $getJudul->text . "' as judul")
             )
             ->leftJoin(DB::raw("parameter with (readuncommitted)"), 'cabang.statusaktif', 'parameter.id');
 
