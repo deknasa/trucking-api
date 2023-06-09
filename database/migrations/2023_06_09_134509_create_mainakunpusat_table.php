@@ -3,9 +3,8 @@
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
-use Illuminate\Support\Facades\DB;
 
-class CreateakunpusatTable extends Migration
+class CreateMainakunpusatTable extends Migration
 {
     /**
      * Run the migrations.
@@ -14,9 +13,7 @@ class CreateakunpusatTable extends Migration
      */
     public function up()
     {
-        Schema::dropIfExists('akunpusat');
-
-        Schema::create('akunpusat', function (Blueprint $table) {
+        Schema::create('mainakunpusat', function (Blueprint $table) {
             $table->id();
             $table->string('coa', 50)->unique();
             $table->longText('keterangancoa')->nullable();
@@ -31,9 +28,8 @@ class CreateakunpusatTable extends Migration
             $table->integer('statusneraca')->length(11)->nullable();
             $table->integer('statuslabarugi')->length(11)->nullable();
             $table->string('coamain', 30)->nullable();
-            $table->string('modifiedby', 30)->nullable();
+            $table->string('modifiedby', 30)->nullable();            
             $table->timestamps();
-            
         });
     }
 
@@ -44,6 +40,6 @@ class CreateakunpusatTable extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('akunpusat');
+        Schema::dropIfExists('mainakunpusat');
     }
 }
