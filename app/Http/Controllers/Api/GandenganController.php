@@ -21,6 +21,7 @@ use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\RangeExportReportRequest;
 use Illuminate\Database\QueryException;
 
 class GandenganController extends Controller
@@ -40,23 +41,24 @@ class GandenganController extends Controller
         ]);
     }
 
-       /**
+    /**
      * @ClassName 
      */
     public function report()
     {
     }
-    public function cekValidasi($id) {
-        $gandengan= new Gandengan();
-        $cekdata=$gandengan->cekvalidasihapus($id);
-        if ($cekdata['kondisi']==true) {
+    public function cekValidasi($id)
+    {
+        $gandengan = new Gandengan();
+        $cekdata = $gandengan->cekvalidasihapus($id);
+        if ($cekdata['kondisi'] == true) {
             $query = DB::table('error')
-            ->select(
-                DB::raw("ltrim(rtrim(keterangan))+' (".$cekdata['keterangan'].")' as keterangan")
+                ->select(
+                    DB::raw("ltrim(rtrim(keterangan))+' (" . $cekdata['keterangan'] . ")' as keterangan")
                 )
-            ->where('kodeerror', '=', 'SATL')
-            ->get();
-        $keterangan = $query['0'];
+                ->where('kodeerror', '=', 'SATL')
+                ->get();
+            $keterangan = $query['0'];
 
             $data = [
                 'status' => false,
@@ -66,7 +68,6 @@ class GandenganController extends Controller
             ];
 
             return response($data);
-         
         } else {
             $data = [
                 'status' => false,
@@ -75,7 +76,7 @@ class GandenganController extends Controller
                 'kondisi' => $cekdata['kondisi'],
             ];
 
-            return response($data); 
+            return response($data);
         }
     }
     public function default()
@@ -352,56 +353,59 @@ class GandenganController extends Controller
         }
     }
 
-   /**
+    /**
      * @ClassName 
      */
-    public function export()
+    public function export(RangeExportReportRequest $request)
     {
-        $response = $this->index();
-        $decodedResponse = json_decode($response->content(), true);
-        $gandengans = $decodedResponse['data'];
+        if (request()->cekExport) {
+            return response([
+                'status' => true,
+            ]);
+        } else {
 
-        $i = 0;
-        foreach ($gandengans as $index => $params) {
+            $response = $this->index();
+            $decodedResponse = json_decode($response->content(), true);
+            $gandengans = $decodedResponse['data'];
 
-            $statusaktif = $params['statusaktif'];
+            $judulLaporan = $gandengans[0]['judulLaporan'];
 
-            $result = json_decode($statusaktif, true);
+            $i = 0;
+            foreach ($gandengans as $index => $params) {
 
-            $statusaktif = $result['MEMO'];
+                $statusaktif = $params['statusaktif'];
+
+                $result = json_decode($statusaktif, true);
+
+                $statusaktif = $result['MEMO'];
 
 
-            $gandengans[$i]['statusaktif'] = $statusaktif;
-
-        
-            $i++;
+                $gandengans[$i]['statusaktif'] = $statusaktif;
 
 
+                $i++;
+            }
+
+            $columns = [
+                [
+                    'label' => 'No',
+                ],
+                [
+                    'label' => 'Kode Gandengan',
+                    'index' => 'kodegandengan',
+                ],
+                [
+                    'label' => 'Keterangan',
+                    'index' => 'keterangan',
+                ],
+                [
+                    'label' => 'Status Aktif',
+                    'index' => 'statusaktif',
+                ],
+            ];
+
+            $this->toExcel($judulLaporan, $gandengans, $columns);
         }
-
-        $columns = [
-            [
-                'label' => 'No',
-            ],
-            [
-                'label' => 'ID',
-                'index' => 'id',
-            ],
-            [
-                'label' => 'Kode Gandengan',
-                'index' => 'kodegandengan',
-            ],
-            [
-                'label' => 'Keterangan',
-                'index' => 'keterangan',
-            ],
-            [
-                'label' => 'Status Aktif',
-                'index' => 'statusaktif',
-            ],
-        ];
-
-        $this->toExcel('Gandengan', $gandengans, $columns);
     }
 
     public function fieldLength()

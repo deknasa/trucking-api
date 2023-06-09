@@ -6,7 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\StoreHariLiburRequest;
 use App\Http\Requests\UpdateHariLiburRequest;
 use App\Http\Requests\DestroyHariLiburRequest;
-
+use App\Http\Requests\RangeExportReportRequest;
 use App\Http\Requests\StoreLogTrailRequest;
 use App\Models\HariLibur;
 use Illuminate\Http\Request;
@@ -28,7 +28,7 @@ class HariLiburController extends Controller
             ]
         ]);
     }
-    
+
     public function default()
     {
         $hariLibur = new HariLibur();
@@ -100,7 +100,7 @@ class HariLiburController extends Controller
     public function update(UpdateHariLiburRequest $request, HariLibur $harilibur)
     {
         DB::beginTransaction();
-        
+
         try {
             $harilibur->tgl = date('Y-m-d', strtotime($request->tgl));
             $harilibur->keterangan = $request->keterangan ?? '';
@@ -198,52 +198,58 @@ class HariLiburController extends Controller
             'data' => $data
         ]);
     }
-    public function export()
+    public function export(RangeExportReportRequest $request)
     {
-     
-        header('Access-Control-Allow-Origin: *');
+        if (request()->cekExport) {
+            return response([
+                'status' => true,
+            ]);
+        } else {
 
-        $response = $this->index();
-        $decodedResponse = json_decode($response->content(), true);
-        $hariLiburs = $decodedResponse['data'];
+            header('Access-Control-Allow-Origin: *');
 
-        $judulLaporan = $hariLiburs[0]['judulLaporan'];
+            $response = $this->index();
+            $decodedResponse = json_decode($response->content(), true);
+            $hariLiburs = $decodedResponse['data'];
 
-        $i = 0;
-        foreach ($hariLiburs as $index => $params) {
+            $judulLaporan = $hariLiburs[0]['judulLaporan'];
 
-
-            $statusaktif = $params['statusaktif'];
-
-
-            $result = json_decode($statusaktif, true);
-
-            $statusaktif = $result['MEMO'];
+            $i = 0;
+            foreach ($hariLiburs as $index => $params) {
 
 
-            $hariLiburs[$i]['statusaktif'] = $statusaktif;
-            $i++;
+                $statusaktif = $params['statusaktif'];
+
+
+                $result = json_decode($statusaktif, true);
+
+                $statusaktif = $result['MEMO'];
+
+
+                $hariLiburs[$i]['statusaktif'] = $statusaktif;
+                $i++;
+            }
+
+            $columns = [
+                [
+                    'label' => 'No',
+
+                ],
+                [
+                    'label' => 'Tanggal',
+                    'index' => 'tgl',
+                ],
+                [
+                    'label' => 'Keterangan',
+                    'index' => 'keterangan',
+                ],
+                [
+                    'label' => 'Status',
+                    'index' => 'statusaktif',
+                ],
+            ];
+
+            $this->toExcel($judulLaporan, $hariLiburs, $columns);
         }
-
-        $columns = [
-            [
-                'label' => 'No',
-            
-            ],
-            [
-                'label' => 'Tanggal',
-                'index' => 'tgl',
-            ],
-            [
-                'label' => 'Keterangan',
-                'index' => 'keterangan',
-            ],
-            [
-                'label' => 'Status',
-                'index' => 'statusaktif',
-            ],
-        ];
-
-        $this->toExcel($judulLaporan, $hariLiburs, $columns);
     }
 }

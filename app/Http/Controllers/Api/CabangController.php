@@ -17,6 +17,7 @@ use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\RangeExportReportRequest;
 use Illuminate\Database\QueryException;
 
 class CabangController extends Controller
@@ -36,12 +37,11 @@ class CabangController extends Controller
         ]);
     }
 
-      /**
+    /**
      * @ClassName 
      */
     public function report()
     {
-        
     }
 
     public function default()
@@ -206,50 +206,55 @@ class CabangController extends Controller
     /**
      * @ClassName 
      */
-    public function export()
+    public function export(RangeExportReportRequest $request)
     {
-        $response = $this->index();
-        $decodedResponse = json_decode($response->content(), true);
-        $cabangs = $decodedResponse['data'];
+        if (request()->cekExport) {
+            return response([
+                'status' => true,
+            ]);
+        } else {
+            $response = $this->index();
+            $decodedResponse = json_decode($response->content(), true);
+            $cabangs = $decodedResponse['data'];
 
-        $judulLaporan = $cabangs[0]['judulLaporan'];
+            $judulLaporan = $cabangs[0]['judulLaporan'];
 
-      
-        $i = 0;
-        foreach ($cabangs as $index => $params) {
-
-
-            $statusaktif = $params['statusaktif'];
-
-
-            $result = json_decode($statusaktif, true);
-
-            $statusaktif = $result['MEMO'];
+            $i = 0;
+            foreach ($cabangs as $index => $params) {
 
 
-            $cabangs[$i]['statusaktif'] = $statusaktif;
-            $i++;
+                $statusaktif = $params['statusaktif'];
+
+
+                $result = json_decode($statusaktif, true);
+
+                $statusaktif = $result['MEMO'];
+
+
+                $cabangs[$i]['statusaktif'] = $statusaktif;
+                $i++;
+            }
+
+            $columns = [
+                [
+                    'label' => 'No',
+                ],
+                [
+                    'label' => 'Kode Cabang',
+                    'index' => 'kodecabang',
+                ],
+                [
+                    'label' => 'Nama Cabang',
+                    'index' => 'namacabang',
+                ],
+                [
+                    'label' => 'Status Aktif',
+                    'index' => 'statusaktif',
+                ],
+            ];
+
+            $this->toExcel($judulLaporan, $cabangs, $columns);
         }
-
-        $columns = [
-            [
-                'label' => 'No',
-            ],
-            [
-                'label' => 'Kode Cabang',
-                'index' => 'kodecabang',
-            ],
-            [
-                'label' => 'Nama Cabang',
-                'index' => 'namacabang',
-            ],
-            [
-                'label' => 'Status Aktif',
-                'index' => 'statusaktif',
-            ],
-        ];
-
-        $this->toExcel($judulLaporan, $cabangs, $columns);
     }
 
     public function fieldLength()

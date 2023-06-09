@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Models\Parameter;
 use App\Http\Requests\ParameterRequest;
+use App\Http\Requests\RangeExportReportRequest;
 use App\Http\Requests\UpdateParameterRequest;
 
 use App\Http\Requests\StoreLogTrailRequest;
@@ -236,7 +237,7 @@ class ParameterController extends Controller
 
     public function getcoa(Request $request)
     {
-        
+
         $parameter = new Parameter();
         return response([
             'data' => $parameter->getcoa($request->filter)
@@ -262,8 +263,7 @@ class ParameterController extends Controller
         $query = Parameter::select('memo')->where('id', request()->id)->first();
 
         $array = [];
-        if (request()->id != 0) 
-        {
+        if (request()->id != 0) {
             $memo = json_decode($query->memo);
             if ($memo != '') {
                 $i = 0;
@@ -275,7 +275,7 @@ class ParameterController extends Controller
                 }
             }
         }
-        
+
         return response([
             'data' => $array
         ]);
@@ -295,7 +295,7 @@ class ParameterController extends Controller
         return $data;
     }
 
-    
+
     public function getparamid($grp, $subgrp)
     {
 
@@ -311,52 +311,58 @@ class ParameterController extends Controller
     /**
      * @ClassName
      */
-    public function export()
+    public function export(RangeExportReportRequest $request)
     {
-        header('Access-Control-Allow-Origin: *');
+        if (request()->cekExport) {
+            return response([
+                'status' => true,
+            ]);
+        } else {
+            header('Access-Control-Allow-Origin: *');
 
-        $response = $this->index();
-        $decodedResponse = json_decode($response->content(), true);
-        $parameters = $decodedResponse['data'];
+            $response = $this->index();
+            $decodedResponse = json_decode($response->content(), true);
+            $parameters = $decodedResponse['data'];
 
-        $judulLaporan = $parameters[0]['judulLaporan'];
+            $judulLaporan = $parameters[0]['judulLaporan'];
 
-        $i = 0;
-        foreach ($parameters as $index => $params) {
-            $memo = $params['memo'];
-            $result = json_decode($memo, true);
-            $memo = $result['MEMO'];
-            $parameters[$i]['memo'] = $memo;
-            $i++;
+            $i = 0;
+            foreach ($parameters as $index => $params) {
+                $memo = $params['memo'];
+                $result = json_decode($memo, true);
+                $memo = $result['MEMO'];
+                $parameters[$i]['memo'] = $memo;
+                $i++;
+            }
+
+            $columns = [
+                [
+                    'label' => 'No',
+                ],
+                [
+                    'label' => 'Group',
+                    'index' => 'grp',
+                ],
+                [
+                    'label' => 'Subgroup',
+                    'index' => 'subgrp',
+                ],
+                [
+                    'label' => 'Text',
+                    'index' => 'text',
+                ],
+                [
+                    'label' => 'Type',
+                    'index' => 'type',
+                ],
+                [
+                    'label' => 'Memo',
+                    'index' => 'memo',
+                ],
+            ];
+
+            $this->toExcel($judulLaporan, $parameters, $columns);
         }
-
-        $columns = [
-            [
-                'label' => 'No',
-            ],
-            [
-                'label' => 'Group',
-                'index' => 'grp',
-            ],
-            [
-                'label' => 'Subgroup',
-                'index' => 'subgrp',
-            ],
-            [
-                'label' => 'Text',
-                'index' => 'text',
-            ],
-            [
-                'label' => 'Type',
-                'index' => 'type',
-            ],
-            [
-                'label' => 'Memo',
-                'index' => 'memo',
-            ],
-        ];
-
-        $this->toExcel($judulLaporan, $parameters, $columns);
     }
 
     public function combo(Request $request)

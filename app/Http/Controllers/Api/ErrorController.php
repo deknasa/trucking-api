@@ -7,6 +7,7 @@ use App\Http\Requests\UpdateErrorRequest;
 use App\Http\Requests\StoreLogTrailRequest;
 use App\Http\Controllers\Controller;
 use App\Http\Controllers\Api\LogTrailController;
+use App\Http\Requests\RangeExportReportRequest;
 use App\Models\Error;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Http\Request;
@@ -173,29 +174,35 @@ class ErrorController extends Controller
         }
     }
 
-    public function export()
+    public function export(RangeExportReportRequest $request)
     {
-        $response = $this->index();
-        $decodedResponse = json_decode($response->content(), true);
-        $errors = $decodedResponse['data'];
+        if (request()->cekExport) {
+            return response([
+                'status' => true,
+            ]);
+        } else {
+            $response = $this->index();
+            $decodedResponse = json_decode($response->content(), true);
+            $errors = $decodedResponse['data'];
 
-        $judulLaporan = $errors[0]['judulLaporan'];
+            $judulLaporan = $errors[0]['judulLaporan'];
 
-        $columns = [
-            [
-                'label' => 'No',
-            ],
-            [
-                'label' => 'Kode Error',
-                'index' => 'kodeerror',
-            ],
-            [
-                'label' => 'Keterangan',
-                'index' => 'keterangan',
-            ],
-        ];
+            $columns = [
+                [
+                    'label' => 'No',
+                ],
+                [
+                    'label' => 'Kode Error',
+                    'index' => 'kodeerror',
+                ],
+                [
+                    'label' => 'Keterangan',
+                    'index' => 'keterangan',
+                ],
+            ];
 
-        $this->toExcel($judulLaporan, $errors, $columns);
+            $this->toExcel($judulLaporan, $errors, $columns);
+        }
     }
 
     public function fieldLength()

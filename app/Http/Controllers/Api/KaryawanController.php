@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\RangeExportReportRequest;
 use App\Models\Karyawan;
 use App\Http\Requests\StoreKaryawanRequest;
 use App\Http\Requests\StoreLogTrailRequest;
@@ -231,9 +232,13 @@ class KaryawanController extends Controller
             'data' => $data
         ]);
     }
-    public function export()
+    public function export(RangeExportReportRequest $request)
     {
-     
+        if (request()->cekExport) {
+            return response([
+                'status' => true,
+            ]);
+        } else {
       
         header('Access-Control-Allow-Origin: *');
 
@@ -290,5 +295,6 @@ class KaryawanController extends Controller
         ];
 
         $this->toExcel($judulLaporan, $karyawans, $columns);
+    }
     }
 }
