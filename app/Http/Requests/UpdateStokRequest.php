@@ -43,8 +43,8 @@ class UpdateStokRequest extends FormRequest
             "kategori"=>'required',
             'statusaktif' => ['required', Rule::in($status)],
             // "namaterpusat"=>'required',
-            "qtymin"=> [new NotDecimal(), new MinNull()],
-            "qtymax"=> [new NotDecimal(), new NumberMax()],
+            "qtymin"=> [new NotDecimal(), new MinNull(),'numeric','max:10000'],
+            "qtymax"=> [new NotDecimal(), new NumberMax(),'numeric','max:10000'],
             'gambar' => 'array',
             'gambar.*' => 'image'
         ];
