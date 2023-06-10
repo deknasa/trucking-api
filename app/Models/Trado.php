@@ -428,8 +428,8 @@ class Trado extends MyModel
             $table->string('norangka', 40)->nullable();
             $table->string('nomesin', 40)->nullable();
             $table->string('nama', 40)->nullable();
-            $table->string('nostnk', 30)->nullable();
-            $table->string('alamatstnk', 30)->nullable();
+            $table->string('nostnk', 50)->nullable();
+            $table->longText('alamatstnk')->nullable();
             $table->date('tglstandarisasi')->nullable();
             $table->date('tglserviceopname')->nullable();
             $table->string('statusstandarisasi')->nullable();
