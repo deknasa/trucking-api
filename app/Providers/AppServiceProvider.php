@@ -28,14 +28,8 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot()
     {
-        DB::listen(function($query) {
-            Log::info(
-                $query->sql,
-                [
-                    'bindings' => $query->bindings,
-                    'time' => $query->time
-                ]
-            );
+        Builder::macro('sort', function(callable $handler) {
+            return $handler();
         });
     }
 }
