@@ -96,7 +96,7 @@ class UserController extends Controller
 
     /**
      * @ClassName 
-     */   
+     */
     public function store(StoreUserRequest $request)
     {
         DB::beginTransaction();
