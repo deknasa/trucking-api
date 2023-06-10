@@ -7,7 +7,7 @@ use App\Http\Requests\StoreContainerRequest;
 use App\Http\Requests\UpdateContainerRequest;
 use App\Http\Requests\DestroyContainerRequest;
 use App\Http\Requests\StoreLogTrailRequest;
-
+use App\Http\Requests\RangeExportReportRequest;
 use App\Models\LogTrail;
 use App\Models\Parameter;
 
@@ -285,53 +285,63 @@ class ContainerController extends Controller
             'data' => $data
         ]);
     }
-    public function export()
+    public function export(RangeExportReportRequest $request)
     {
-        $response = $this->index();
-        $decodedResponse = json_decode($response->content(), true);
-        $containers = $decodedResponse['data'];
 
-        $i = 0;
-        foreach ($containers as $index => $params) {
-
-            $statusaktif = $params['statusaktif'];
-
-            $result = json_decode($statusaktif, true);
-
-            $statusaktif = $result['MEMO'];
-
-
-            $containers[$i]['statusaktif'] = $statusaktif;
+        if (request()->cekExport) {
+            return response([
+                'status' => true,
+            ]);
+        }else {
+            header('Access-Control-Allow-Origin: *');
+            $response = $this->index();
+            $decodedResponse = json_decode($response->content(), true);
+            $containers = $decodedResponse['data'];
+    
+            $judulLaporan = $containers[0]['judulLaporan'];
+            $i = 0;
+            foreach ($containers as $index => $params) {
+    
+                $statusaktif = $params['statusaktif'];
+    
+                $result = json_decode($statusaktif, true);
+    
+                $statusaktif = $result['MEMO'];
+    
+    
+                $containers[$i]['statusaktif'] = $statusaktif;
+                
+                $nominalsumbangan = number_format($params['nominalsumbangan'], 2, ',', '.');
+                $containers[$i]['nominalsumbangan'] = $nominalsumbangan;
             
-            $nominalsumbangan = number_format($params['nominalsumbangan'], 2, ',', '.');
-            $containers[$i]['nominalsumbangan'] = $nominalsumbangan;
-        
-            $i++;
-
-
+                $i++;
+    
+    
+            }
+            $columns = [
+                [
+                    'label' => 'No',
+                ],
+                [
+                    'label' => 'Kode Container',
+                    'index' => 'kodecontainer',
+                ],
+                [
+                    'label' => 'Keterangan',
+                    'index' => 'keterangan',
+                ],
+                [
+                    'label' => 'Nominal Sumbangan',
+                    'index' => 'nominalsumbangan',
+                ],
+                [
+                    'label' => 'Status Aktif',
+                    'index' => 'statusaktif',
+                ],
+            ];
+    
+            $this->toExcel($judulLaporan, $containers, $columns);
         }
-        $columns = [
-            [
-                'label' => 'No',
-            ],
-            [
-                'label' => 'Kode Container',
-                'index' => 'kodecontainer',
-            ],
-            [
-                'label' => 'Keterangan',
-                'index' => 'keterangan',
-            ],
-            [
-                'label' => 'Nominal Sumbangan',
-                'index' => 'nominalsumbangan',
-            ],
-            [
-                'label' => 'Status Aktif',
-                'index' => 'statusaktif',
-            ],
-        ];
-
-        $this->toExcel('Container', $containers, $columns);
+        
     }
 }
