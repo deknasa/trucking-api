@@ -78,7 +78,10 @@ class UpahSupirRincian extends MyModel
             'statuscontainer.id as statuscontainer_id',
             'container.kodecontainer as container',
             'container.id as container_id'
-        )->crossJoin('container');
+        )->crossJoin('container')
+        ->orderBy('container.id', 'asc')
+        ->orderBy('statuscontainer.kodestatuscontainer', 'desc');
+        
         $temp = '##tempcrossjoin' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
         Schema::create($temp, function ($table) {
             $table->increments('id');
