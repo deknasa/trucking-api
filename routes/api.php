@@ -818,7 +818,7 @@ route::middleware(['auth:api'])->group(function () {
     Route::get('serviceinheader/grid', [ServiceInHeaderController::class, 'grid']);
     Route::get('serviceinheader/field_length', [ServiceInHeaderController::class, 'fieldLength']);
     Route::post('serviceinheader/{id}/cekvalidasi', [ServiceInHeaderController::class, 'cekvalidasi'])->name('serviceinheader.cekvalidasi')->whereNumber('id');
-    Route::resource('serviceinheader', ServiceInHeaderController::class)->whereNumber('serviceinheader');
+    Route::resource('serviceinheader', ServiceInHeaderController::class)->parameter('serviceinheader', 'serviceInHeader')->whereNumber('serviceinheader');
     Route::resource('serviceindetail', ServiceInDetailController::class)->whereNumber('serviceindetail');
 
 

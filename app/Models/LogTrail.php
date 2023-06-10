@@ -20,4 +20,22 @@ class LogTrail extends MyModel
         'created_at',
         'updated_at',
     ];
+
+    public function processStore(array $data): LogTrail
+    {
+        $logTrail = new LogTrail();
+        $logTrail->namatabel = strtoupper($data['namatabel']);
+        $logTrail->postingdari = $data['postingdari'];
+        $logTrail->idtrans = $data['idtrans'];
+        $logTrail->nobuktitrans = $data['nobuktitrans'];
+        $logTrail->aksi = $data['aksi'];
+        $logTrail->datajson = $data['datajson'];
+        $logTrail->modifiedby = auth('api')->user()->user;
+
+        if (!$logTrail->save()) {
+            throw new \Exception("Error storing log trail.");
+        }
+        
+        return $logTrail;
+    }
 }

@@ -133,4 +133,20 @@ class ServiceInDetail extends MyModel
     {
         return $query->skip($this->params['offset'])->take($this->params['limit']);
     }
+
+    public function processStore(ServiceInHeader $serviceInHeader, array $data): ServiceInDetail
+    {
+        $serviceInDetail = new ServiceInDetail();
+        $serviceInDetail->servicein_id = $serviceInHeader->id;
+        $serviceInDetail->nobukti = $serviceInHeader->nobukti;
+        $serviceInDetail->karyawan_id =  $data['karyawan_id'];
+        $serviceInDetail->keterangan = $data['keterangan'];
+        $serviceInDetail->modifiedby = auth('api')->user()->name;
+        
+        if (!$serviceInDetail->save()) {
+            throw new \Exception("Error storing service in detail.");
+        }
+
+        return $serviceInDetail;
+    }
 }
