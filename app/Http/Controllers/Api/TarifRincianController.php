@@ -116,70 +116,47 @@ class TarifRincianController extends Controller
      */
     public function store(StoreTarifRincianRequest $request)
     {
-        DB::beginTransaction();
-       
-        try {
-            $tarifRincian = new TarifRincian();
+        $tarifRincian = new TarifRincian();
 
-            $tarifRincian->tarif_id = $request->tarif_id;
-            $tarifRincian->container_id = $request->container_id;
-            $tarifRincian->nominal = $request->nominal;
-            $tarifRincian->modifiedby = auth('api')->user()->name;
+        $tarifRincian->tarif_id = $request->tarif_id;
+        $tarifRincian->container_id = $request->container_id;
+        $tarifRincian->nominal = $request->nominal;
+        $tarifRincian->modifiedby = auth('api')->user()->name;
 
-            
-            $tarifRincian->save();
-            // dd('test');
-            DB::commit();
-           
-            return [
-                'error' => false,
-                'detail' => $tarifRincian,
-                'id' => $tarifRincian->id,
-                'tabel' => $tarifRincian->getTable(),
-            ];
-        } catch (\Throwable $th) {
-            // dd('test2');
-            DB::rollBack();
-            
-            throw $th;
+        
+        if (!$tarifRincian->save()) {
+            throw new \Exception("Gagal menyimpan tarif detail.");
         }
+        
+        return [
+            'error' => false,
+            'detail' => $tarifRincian,
+            'id' => $tarifRincian->id,
+            'tabel' => $tarifRincian->getTable(),
+        ];
     }
 
     public function update(StoreTarifRincianRequest $request)
     {
-        DB::beginTransaction();
-       
-        try {
-            $tarifRincian = new TarifRincian();
-            if ($request->detail_id !== "null") {
-                $tarifRincian = TarifRincian::find($request->detail_id);
-            }
-            $tarifRincian->tarif_id = $request->tarif_id;
-            $tarifRincian->container_id = $request->container_id;
-            $tarifRincian->nominal = $request->nominal;
-            $tarifRincian->modifiedby = auth('api')->user()->name;
-
-            // return [
-            //     'error' => true,
-            //     'asd' => $tarifRincian
-                
-            // ];
-            $tarifRincian->save();
-            // dd('test');
-            DB::commit();
-           
-            return [
-                'error' => false,
-                'detail' => $tarifRincian,
-                'id' => $tarifRincian->id,
-                'tabel' => $tarifRincian->getTable(),
-            ];
-        } catch (\Throwable $th) {
-            // dd('test2');
-            DB::rollBack();
-            
-            throw $th;
+        $tarifRincian = new TarifRincian();
+        if ($request->detail_id !== "null") {
+            $tarifRincian = TarifRincian::find($request->detail_id);
         }
+        $tarifRincian->tarif_id = $request->tarif_id;
+        $tarifRincian->container_id = $request->container_id;
+        $tarifRincian->nominal = $request->nominal;
+        $tarifRincian->modifiedby = auth('api')->user()->name;
+
+        if (!$tarifRincian->save()) {
+            throw new \Exception("Gagal mengedit tarif detail.", 1);
+        }
+        
+        return [
+            'error' => false,
+            'detail' => $tarifRincian,
+            'id' => $tarifRincian->id,
+            'tabel' => $tarifRincian->getTable(),
+        ];
     }
 
     /**

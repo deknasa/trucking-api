@@ -53,7 +53,7 @@ class AbsensiSupirDetailController extends Controller
         $absensiSupirDetail->modifiedby = $request->modifiedby ?? '';
 
         if (!$absensiSupirDetail->save()) {
-            throw new \Exception("Gagal menyimpan absensi supir detail.", 1);
+            throw new \Exception("Gagal menyimpan absensi supir detail.");
         }
 
         return [

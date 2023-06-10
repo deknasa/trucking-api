@@ -142,29 +142,26 @@ class LogTrailController extends Controller
      */
     public function store(StoreLogTrailRequest $request)
     {
-        DB::beginTransaction();
+        $LogTrail = new LogTrail();
 
-        try {
-            $LogTrail = new LogTrail();
+        $LogTrail->namatabel = $request->namatabel;
+        $LogTrail->postingdari = $request->postingdari;
+        $LogTrail->idtrans = $request->idtrans;
+        $LogTrail->nobuktitrans = $request->nobuktitrans;
+        $LogTrail->aksi = $request->aksi;
+        $LogTrail->datajson = $request->datajson;
+        $LogTrail->modifiedby = auth('api')->user()->name;
 
-            $LogTrail->namatabel = $request->namatabel;
-            $LogTrail->postingdari = $request->postingdari;
-            $LogTrail->idtrans = $request->idtrans;
-            $LogTrail->nobuktitrans = $request->nobuktitrans;
-            $LogTrail->aksi = $request->aksi;
-            $LogTrail->datajson = $request->datajson;
-            $LogTrail->modifiedby = auth('api')->user()->name;
+        if (!$LogTrail->save()) {
+            throw new \Exception("Gagal menyimpan logtrail.", 1);
+        }
 
-            if ($LogTrail->save()) {
-                DB::commit();
-                return [
-                    'error' => false,
-                    'id' => $LogTrail->id
-                ];
-            }
-        } catch (\Throwable $th) {
-            DB::rollBack();
-            throw $th;
+        if ($LogTrail->save()) {
+            DB::commit();
+            return [
+                'error' => false,
+                'id' => $LogTrail->id
+            ];
         }
     }
 
