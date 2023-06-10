@@ -22,6 +22,7 @@ class CreateJurnalumumpusatdetailTable extends Migration
             $table->string('nobukti',50)->nullable();
             $table->date('tglbukti')->nullable();
             $table->string('coa',50)->nullable();
+            $table->string('coamain',50)->nullable();
             $table->double('nominal',15,2)->nullable();
             $table->longText('keterangan')->nullable();
             $table->integer('baris')->length(11)->nullable();
