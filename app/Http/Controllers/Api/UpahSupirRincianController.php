@@ -106,35 +106,28 @@ class UpahSupirRincianController extends Controller
 
     public function store(StoreUpahSupirRincianRequest $request)
     {
-        DB::beginTransaction();
-       
-        try {
-            $upahSupirRincian = new UpahSupirRincian();
+        $upahSupirRincian = new UpahSupirRincian();
 
-            $upahSupirRincian->upahsupir_id = $request->upahsupir_id;
-            $upahSupirRincian->container_id = $request->container_id;
-            $upahSupirRincian->statuscontainer_id = $request->statuscontainer_id;
-            $upahSupirRincian->nominalsupir = $request->nominalsupir;
-            $upahSupirRincian->nominalkenek = $request->nominalkenek;
-            $upahSupirRincian->nominalkomisi = $request->nominalkomisi;
-            $upahSupirRincian->nominaltol = $request->nominaltol;
-            $upahSupirRincian->liter = $request->liter;
-            $upahSupirRincian->modifiedby = auth('api')->user()->name;
-            
-            $upahSupirRincian->save();
-            
-            DB::commit();
-           
-            return [
-                'error' => false,
-                'detail' => $upahSupirRincian,
-                'id' => $upahSupirRincian->id,
-                'tabel' => $upahSupirRincian->getTable(),
-            ];
-        } catch (\Throwable $th) {
-            DB::rollBack();
-            return response($th->getMessage());
+        $upahSupirRincian->upahsupir_id = $request->upahsupir_id;
+        $upahSupirRincian->container_id = $request->container_id;
+        $upahSupirRincian->statuscontainer_id = $request->statuscontainer_id;
+        $upahSupirRincian->nominalsupir = $request->nominalsupir;
+        $upahSupirRincian->nominalkenek = $request->nominalkenek;
+        $upahSupirRincian->nominalkomisi = $request->nominalkomisi;
+        $upahSupirRincian->nominaltol = $request->nominaltol;
+        $upahSupirRincian->liter = $request->liter;
+        $upahSupirRincian->modifiedby = auth('api')->user()->name;
+        
+        if (!$upahSupirRincian->save()) {
+            throw new \Exception("Gagal menyimpan upah supir detail.");
         }
+        
+        return [
+            'error' => false,
+            'detail' => $upahSupirRincian,
+            'id' => $upahSupirRincian->id,
+            'tabel' => $upahSupirRincian->getTable(),
+        ];
     }
 
     public function setUpRow()

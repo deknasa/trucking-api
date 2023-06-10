@@ -96,31 +96,24 @@ class UpahRitasiRincianController extends Controller
 
     public function store(StoreUpahRitasiRincianRequest $request)
     {
-        DB::beginTransaction();
-       
-        try {
-            $upahritasirincian = new UpahRitasiRincian();
+        $upahritasirincian = new UpahRitasiRincian();
 
-            $upahritasirincian->upahritasi_id = $request->upahritasi_id;
-            $upahritasirincian->container_id = $request->container_id;
-            $upahritasirincian->nominalsupir = $request->nominalsupir;
-            $upahritasirincian->liter = $request->liter;
-            $upahritasirincian->modifiedby = auth('api')->user()->name;
-            
-            $upahritasirincian->save();
-            
-            DB::commit();
-           
-            return [
-                'error' => false,
-                'detail' => $upahritasirincian,
-                'id' => $upahritasirincian->id,
-                'tabel' => $upahritasirincian->getTable(),
-            ];
-        } catch (\Throwable $th) {
-            DB::rollBack();
-            return response($th->getMessage());
-        }        
+        $upahritasirincian->upahritasi_id = $request->upahritasi_id;
+        $upahritasirincian->container_id = $request->container_id;
+        $upahritasirincian->nominalsupir = $request->nominalsupir;
+        $upahritasirincian->liter = $request->liter;
+        $upahritasirincian->modifiedby = auth('api')->user()->name;
+        
+        if (!$upahritasirincian->save()) {
+            throw new \Exception("Gagal menyimpan upah ritasi detail.");
+        }
+        
+        return [
+            'error' => false,
+            'detail' => $upahritasirincian,
+            'id' => $upahritasirincian->id,
+            'tabel' => $upahritasirincian->getTable(),
+        ];       
     }
 
     public function setUpRow()

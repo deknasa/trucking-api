@@ -32,27 +32,22 @@ class AbsensiSupirApprovalDetailController extends Controller
 
     public function store(StoreAbsensiSupirApprovalDetailRequest $request)
     {
-        DB::beginTransaction();
+        $absensiSupirApprovalDetail = new AbsensiSupirApprovalDetail();
+        $absensiSupirApprovalDetail->absensisupirapproval_id = $request->absensisupirapproval_id;
+        $absensiSupirApprovalDetail->nobukti = $request->nobukti;
+        $absensiSupirApprovalDetail->trado_id = $request->trado_id;
+        $absensiSupirApprovalDetail->supir_id = $request->supir_id ?? '';
+        $absensiSupirApprovalDetail->modifiedby = $request->modifiedby;
 
-        try {
-            $absensiSupirApprovalDetail = new AbsensiSupirApprovalDetail();
-            $absensiSupirApprovalDetail->absensisupirapproval_id = $request->absensisupirapproval_id;
-            $absensiSupirApprovalDetail->nobukti = $request->nobukti;
-            $absensiSupirApprovalDetail->trado_id = $request->trado_id;
-            $absensiSupirApprovalDetail->supir_id = $request->supir_id ?? '';
-            $absensiSupirApprovalDetail->modifiedby = $request->modifiedby;
-
-            $absensiSupirApprovalDetail->save();
-            DB::commit();
-            return [
-                'error' => false,
-                'id' => $absensiSupirApprovalDetail->id,
-                'tabel' => $absensiSupirApprovalDetail->getTable(),
-            ];
-        } catch (\Throwable $th) {
-            throw $th;
-            DB::rollBack();
+        if (!$absensiSupirApprovalDetail->save()) {
+            throw new \Exception("Gagal menyimpan absensi supir detail.");
         }
+
+        return [
+            'error' => false,
+            'id' => $absensiSupirApprovalDetail->id,
+            'tabel' => $absensiSupirApprovalDetail->getTable(),
+        ];
     }
 
     /**

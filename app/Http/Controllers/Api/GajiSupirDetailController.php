@@ -169,45 +169,37 @@ class GajiSupirDetailController extends Controller
     }
     public function store(StoreGajiSupirDetailRequest $request)
     {
-        DB::beginTransaction();
-
+        $gajisupirdetail = new GajiSupirDetail();
         
-        try {
-            $gajisupirdetail = new GajiSupirDetail();
-            
-            $gajisupirdetail->gajisupir_id = $request->gajisupir_id;
-            $gajisupirdetail->nobukti = $request->nobukti;
-            $gajisupirdetail->nominaldeposito = $request->nominaldeposito;
-            $gajisupirdetail->nourut = $request->nourut;
-            $gajisupirdetail->suratpengantar_nobukti = $request->suratpengantar_nobukti;
-            $gajisupirdetail->ritasi_nobukti = $request->ritasi_nobukti;
-            $gajisupirdetail->komisisupir = $request->komisisupir;
-            $gajisupirdetail->tolsupir = $request->tolsupir;
-            $gajisupirdetail->voucher = $request->voucher;
-            $gajisupirdetail->novoucher = $request->novoucher;
-            $gajisupirdetail->gajisupir = $request->gajisupir;
-            $gajisupirdetail->gajikenek = $request->gajikenek;
-            $gajisupirdetail->gajiritasi = $request->gajiritasi;
-            $gajisupirdetail->biayatambahan = $request->biayatambahan;
-            $gajisupirdetail->keteranganbiayatambahan = $request->keteranganbiayatambahan;
-            $gajisupirdetail->nominalpengembalianpinjaman = $request->nominalpengembalianpinjaman;
-            
-            $gajisupirdetail->modifiedby = auth('api')->user()->name;
-            
-            $gajisupirdetail->save();
-           
-            DB::commit();
-           
-            return [
-                'error' => false,
-                'detail' => $gajisupirdetail,
-                'id' => $gajisupirdetail->id,
-                'tabel' => $gajisupirdetail->getTable(),
-            ];
-        } catch (\Throwable $th) {
-            throw $th;
-            DB::rollBack();
-        }        
+        $gajisupirdetail->gajisupir_id = $request->gajisupir_id;
+        $gajisupirdetail->nobukti = $request->nobukti;
+        $gajisupirdetail->nominaldeposito = $request->nominaldeposito;
+        $gajisupirdetail->nourut = $request->nourut;
+        $gajisupirdetail->suratpengantar_nobukti = $request->suratpengantar_nobukti;
+        $gajisupirdetail->ritasi_nobukti = $request->ritasi_nobukti;
+        $gajisupirdetail->komisisupir = $request->komisisupir;
+        $gajisupirdetail->tolsupir = $request->tolsupir;
+        $gajisupirdetail->voucher = $request->voucher;
+        $gajisupirdetail->novoucher = $request->novoucher;
+        $gajisupirdetail->gajisupir = $request->gajisupir;
+        $gajisupirdetail->gajikenek = $request->gajikenek;
+        $gajisupirdetail->gajiritasi = $request->gajiritasi;
+        $gajisupirdetail->biayatambahan = $request->biayatambahan;
+        $gajisupirdetail->keteranganbiayatambahan = $request->keteranganbiayatambahan;
+        $gajisupirdetail->nominalpengembalianpinjaman = $request->nominalpengembalianpinjaman;
+        
+        $gajisupirdetail->modifiedby = auth('api')->user()->name;
+        
+        if (!$gajisupirdetail->save()) {
+            throw new \Exception("Gagal menyimpan gaji supir detail.");
+        }
+        
+        return [
+            'error' => false,
+            'detail' => $gajisupirdetail,
+            'id' => $gajisupirdetail->id,
+            'tabel' => $gajisupirdetail->getTable(),
+        ];       
     }
 
 
