@@ -260,7 +260,9 @@ class User extends Authenticatable
                             $query = $query->where('parameter.text', '=', $filters['data']);
                         } else if ($filters['field'] == 'menuparent') {
                             $query = $query->where('menu2.menuname', 'LIKE', "%$filters[data]%");
-                        } else if ($filters['field'] == 'aco_id') {
+                        } else if ($filters['field'] == 'cabang_id') {
+                            $query = $query->where('cabang.namacabang', '=', $filters['data']);
+                        }else if ($filters['field'] == 'aco_id') {
                             $query = $query->where('acos.nama', 'LIKE', "%$filters[data]%");
                         } else if ($filters['field'] == 'created_at' || $filters['field'] == 'updated_at') {
                             $query = $query->whereRaw("format([user].".$filters['field'].", 'dd-MM-yyyy HH:mm:ss') LIKE '%$filters[data]%'");
@@ -278,7 +280,9 @@ class User extends Authenticatable
                             $query = $query->orWhere('parameter.text', '=', $filters['data']);
                         } else if ($filters['field'] == 'menuparent') {
                             $query = $query->orWhere('menu2.menuname', 'LIKE', "%$filters[data]%");
-                        } else if ($filters['field'] == 'aco_id') {
+                        } else if ($filters['field'] == 'cabang.namacabang') {
+                            $query = $query->orWhere('cabang_id', 'LIKE', "%$filters[data]%");
+                        }else if ($filters['field'] == 'aco_id') {
                             $query = $query->orWhere('acos.nama', 'LIKE', "%$filters[data]%");
                         } else if ($filters['field'] == 'created_at' || $filters['field'] == 'updated_at') {
                             $query = $query->orWhereRaw("format([user].".$filters['field'].", 'dd-MM-yyyy HH:mm:ss') LIKE '%$filters[data]%'");
