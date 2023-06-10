@@ -35,7 +35,7 @@ class CreateTradoTable extends Migration
             $table->string('nomesin', 40)->nullable();
             $table->string('nama', 40)->nullable();
             $table->string('nostnk', 50)->nullable();
-            $table->string('alamatstnk', 30)->nullable();
+            $table->longText('alamatstnk')->nullable();
             $table->date('tglstandarisasi')->nullable();
             $table->date('tglserviceopname')->nullable();
             $table->integer('statusstandarisasi')->length(11)->nullable();
