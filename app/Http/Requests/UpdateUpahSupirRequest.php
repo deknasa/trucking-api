@@ -145,7 +145,7 @@ class UpdateUpahSupirRequest extends FormRequest
         $rules =  [
             'kotadari' => ['required',Rule::in($dataUpahSupir->kotadari)],
             'kotasampai' => ['required',Rule::in($dataUpahSupir->kotasampai)],
-            'penyesuaian' => ['required',Rule::in($dataUpahSupir->penyesuaian),new UniqueUpahSupirSampaiEdit()],
+            'penyesuaian' => [Rule::in($dataUpahSupir->penyesuaian),new UniqueUpahSupirSampaiEdit()],
             'jarak' => ['required','numeric','gt:0','max:'. (new ParameterController)->getparamid('BATAS KM UPAH SUPIR','BATAS KM UPAH SUPIR')->text],
             'statusaktif' => ['required', Rule::in($statusAktif)],
             'statussimpankandang' => [new SimpanKandangUpahSupir()],
