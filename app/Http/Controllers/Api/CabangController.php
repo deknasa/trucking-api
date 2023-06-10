@@ -4,21 +4,15 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Requests\StoreCabangRequest;
 use App\Http\Requests\UpdateCabangRequest;
-use App\Http\Requests\DestroyCabangRequest;
-use App\Http\Requests\StoreLogTrailRequest;
-
 use App\Models\Cabang;
-use App\Models\LogTrail;
 use App\Models\Parameter;
-
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
-
 use App\Http\Controllers\Controller;
 use App\Http\Requests\RangeExportReportRequest;
 use Illuminate\Database\QueryException;
+use Illuminate\Http\JsonResponse;
 
 class CabangController extends Controller
 {
@@ -57,41 +51,20 @@ class CabangController extends Controller
     /**
      * @ClassName 
      */
-    public function store(StoreCabangRequest $request)
+    public function store(StoreCabangRequest $request): JsonResponse
     {
         DB::beginTransaction();
+
         try {
-            $cabang = new Cabang();
-            $cabang->kodecabang = $request->kodecabang;
-            $cabang->namacabang = $request->namacabang;
-            $cabang->statusaktif = $request->statusaktif;
-            $cabang->modifiedby = auth('api')->user()->name;
-
-            if ($cabang->save()) {
-                $logTrail = [
-                    'namatabel' => strtoupper($cabang->getTable()),
-                    'postingdari' => 'ENTRY CABANG',
-                    'idtrans' => $cabang->id,
-                    'nobuktitrans' => $cabang->id,
-                    'aksi' => 'ENTRY',
-                    'datajson' => $cabang->toArray(),
-                    'modifiedby' => $cabang->modifiedby
-                ];
-
-                $validatedLogTrail = new StoreLogTrailRequest($logTrail);
-                $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
-
-                DB::commit();
-            }
-
-            /* Set position and page */
-            $selected = $this->getPosition($cabang, $cabang->getTable());
-            $cabang->position = $selected->position;
+            $cabang = (new Cabang())->processStore($request->all());
+            $cabang->position = $this->getPosition($cabang, $cabang->getTable())->position;
             $cabang->page = ceil($cabang->position / ($request->limit ?? 10));
 
-            return response([
+            DB::commit();
+
+            return response()->json([
                 'status' => true,
-                'message' => 'Berhasil disimpan',
+                'message' => 'Berhasil disimpan.',
                 'data' => $cabang
             ], 201);
         } catch (\Throwable $th) {
@@ -103,7 +76,6 @@ class CabangController extends Controller
 
     public function show(Cabang $cabang)
     {
-        // dd($cabang);
         return response([
             'status' => true,
             'data' => $cabang
@@ -113,40 +85,20 @@ class CabangController extends Controller
     /**
      * @ClassName 
      */
-    public function update(UpdateCabangRequest $request, Cabang $cabang)
+    public function update(UpdateCabangRequest $request, Cabang $cabang): JsonResponse
     {
         DB::beginTransaction();
+
         try {
-            $cabang->kodecabang = $request->kodecabang;
-            $cabang->namacabang = $request->namacabang;
-            $cabang->statusaktif = $request->statusaktif;
-            $cabang->modifiedby = auth('api')->user()->name;
-
-            if ($cabang->save()) {
-                $logTrail = [
-                    'namatabel' => strtoupper($cabang->getTable()),
-                    'postingdari' => 'EDIT CABANG',
-                    'idtrans' => $cabang->id,
-                    'nobuktitrans' => $cabang->id,
-                    'aksi' => 'EDIT',
-                    'datajson' => $cabang->toArray(),
-                    'modifiedby' => $cabang->modifiedby
-                ];
-
-                $validatedLogTrail = new StoreLogTrailRequest($logTrail);
-                $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
-
-                DB::commit();
-            }
-
-            /* Set position and page */
-            $selected = $this->getPosition($cabang, $cabang->getTable());
-            $cabang->position = $selected->position;
+            $cabang = (new Cabang())->processUpdate($cabang, $request->all());
+            $cabang->position = $this->getPosition($cabang, $cabang->getTable())->position;
             $cabang->page = ceil($cabang->position / ($request->limit ?? 10));
 
-            return response([
+            DB::commit();
+
+            return response()->json([
                 'status' => true,
-                'message' => 'Berhasil diubah',
+                'message' => 'Berhasil diubah.',
                 'data' => $cabang
             ]);
         } catch (\Throwable $th) {
@@ -163,43 +115,23 @@ class CabangController extends Controller
     {
         DB::beginTransaction();
 
-        $cabang = new Cabang();
-        $cabang = $cabang->lockAndDestroy($id);
-        if ($cabang) {
-            $logTrail = [
-                'namatabel' => strtoupper($cabang->getTable()),
-                'postingdari' => 'DELETE CABANG',
-                'idtrans' => $cabang->id,
-                'nobuktitrans' => $cabang->id,
-                'aksi' => 'DELETE',
-                'datajson' => $cabang->toArray(),
-                'modifiedby' => auth('api')->user()->name
-            ];
-
-            $validatedLogTrail = new StoreLogTrailRequest($logTrail);
-            $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
-
-            DB::commit();
-
-
-            /* Set position and page */
+        try {
+            $cabang = (new Cabang())->processDestroy($id);
             $selected = $this->getPosition($cabang, $cabang->getTable(), true);
             $cabang->position = $selected->position;
             $cabang->id = $selected->id;
             $cabang->page = ceil($cabang->position / ($request->limit ?? 10));
 
-            return response([
-                'status' => true,
+            DB::commit();
+
+            return response()->json([
                 'message' => 'Berhasil dihapus',
                 'data' => $cabang
             ]);
-        } else {
+        } catch (\Throwable $th) {
             DB::rollBack();
 
-            return response([
-                'status' => false,
-                'message' => 'Gagal dihapus'
-            ]);
+            throw $th;
         }
     }
 

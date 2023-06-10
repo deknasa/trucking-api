@@ -26,10 +26,10 @@ class Cabang extends MyModel
         $aktif = request()->aktif ?? '';
 
         $getJudul = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))
-        ->select('text')
-        ->where('grp', 'JUDULAN LAPORAN')
-        ->where('subgrp', 'JUDULAN LAPORAN')
-        ->first();
+            ->select('text')
+            ->where('grp', 'JUDULAN LAPORAN')
+            ->where('subgrp', 'JUDULAN LAPORAN')
+            ->first();
 
         $query = DB::table($this->table)->from(DB::raw("$this->table with (readuncommitted)"))
             ->select(
@@ -237,5 +237,69 @@ class Cabang extends MyModel
     public function paginate($query)
     {
         return $query->skip($this->params['offset'])->take($this->params['limit']);
+    }
+
+    public function processStore(array $data): Cabang
+    {
+        $cabang = new Cabang();
+        $cabang->kodecabang = $data['kodecabang'];
+        $cabang->namacabang = $data['namacabang'];
+        $cabang->statusaktif = $data['statusaktif'];
+        $cabang->modifiedby = auth('api')->user()->user;
+
+        if (!$cabang->save()) {
+            throw new \Exception('Error storing cabang.');
+        }
+
+        (new LogTrail())->processStore([
+            'namatabel' => $cabang->getTable(),
+            'postingdari' => 'ENTRY CABANG',
+            'idtrans' => $cabang->id,
+            'nobuktitrans' => $cabang->id,
+            'aksi' => 'ENTRY',
+            'datajson' => $cabang->toArray(),
+        ]);
+
+        return $cabang;
+    }
+
+    public function processUpdate(Cabang $cabang, array $data): Cabang
+    {
+        $cabang->kodecabang = $data['kodecabang'];
+        $cabang->namacabang = $data['namacabang'];
+        $cabang->statusaktif = $data['statusaktif'];
+        $cabang->modifiedby = auth('api')->user()->user;
+
+        if (!$cabang->save()) {
+            throw new \Exception('Error updating cabang.');
+        }
+
+        (new LogTrail())->processStore([
+            'namatabel' => $cabang->getTable(),
+            'postingdari' => 'EDIT CABANG',
+            'idtrans' => $cabang->id,
+            'nobuktitrans' => $cabang->id,
+            'aksi' => 'EDIT',
+            'datajson' => $cabang->toArray(),
+        ]);
+
+        return $cabang;
+    }
+
+    public function processDestroy($id): Cabang
+    {
+        $cabang = new Cabang();
+        $cabang = $cabang->lockAndDestroy($id);
+
+        (new LogTrail())->processStore([
+            'namatabel' => strtoupper($cabang->getTable()),
+            'postingdari' => 'DELETE CABANG',
+            'idtrans' => $cabang->id,
+            'nobuktitrans' => $cabang->id,
+            'aksi' => 'DELETE',
+            'datajson' => $cabang->toArray(),
+        ]);
+
+        return $cabang;
     }
 }

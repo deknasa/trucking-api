@@ -36,8 +36,8 @@ class StoreCabangRequest extends FormRequest
         }
 
         $rules = [
-            'kodecabang' => ['required', 'unique:cabang'],
-            'namacabang' => ['required', 'unique:cabang'],
+            'kodecabang' => ['required', 'string', 'unique:cabang'],
+            'namacabang' => ['required', 'string', 'unique:cabang'],
             'statusaktif' => ['required', Rule::in($status)]
         ];
         return $rules;
