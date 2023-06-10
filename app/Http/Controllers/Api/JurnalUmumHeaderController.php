@@ -478,14 +478,16 @@ class JurnalUmumHeaderController extends Controller
 
                     if ($jurnalumum->statusapproval == $statusApproval->id) {
                         $jurnalumum->statusapproval = $statusNonApproval->id;
+                        $jurnalumum->tglapproval = date('Y-m-d', strtotime("1900-01-01"));
+                        $jurnalumum->userapproval = '';
                         $aksi = $statusNonApproval->text;
                     } else {
                         $jurnalumum->statusapproval = $statusApproval->id;
                         $aksi = $statusApproval->text;
+                        $jurnalumum->tglapproval = date('Y-m-d H:i:s');
+                        $jurnalumum->userapproval = auth('api')->user()->name;
                     }
 
-                    $jurnalumum->tglapproval = date('Y-m-d H:i:s');
-                    $jurnalumum->userapproval = auth('api')->user()->name;
 
                     $jurnalumum->save();
                     $logTrail = [
@@ -650,24 +652,24 @@ class JurnalUmumHeaderController extends Controller
             $jurnalumum = new JurnalUmumHeader();
             $statusApproval = Parameter::from(
                 DB::raw("parameter with (readuncommitted)")
-            )->where('grp', 'STATUS APPROVAL')->where('text', 'NON APPROVAL')->first();
+            )->where('grp', 'STATUS APPROVAL')->where('text', 'APPROVAL')->first();
 
             $nobukti = app(Controller::class)->getRunningNumber($content)->original['data'];
 
             $jurnalumum->nobukti = $nobukti;
             $jurnalumum->tglbukti = date('Y-m-d', strtotime($request->tglbukti));
-            $jurnalumum->postingdari = $request->postingdari ?? 'ENTRY JURNAL UMUM';
-            $jurnalumum->statusapproval = $statusApproval->id ?? $request->statusapproval;
-            $jurnalumum->userapproval = '';
-            $jurnalumum->tglapproval = '';
-            $jurnalumum->statusformat = $request->statusformat ?? $format->id;
+            $jurnalumum->postingdari = 'ENTRY JURNAL UMUM';
+            $jurnalumum->statusapproval = $statusApproval->id;
+            $jurnalumum->userapproval = auth('api')->user()->name;
+            $jurnalumum->tglapproval = date('Y-m-d H:i:s');
+            $jurnalumum->statusformat = $format->id;
             $jurnalumum->modifiedby = auth('api')->user()->name;
             $jurnalumum->save();
 
 
             $logTrail = [
                 'namatabel' => strtoupper($jurnalumum->getTable()),
-                'postingdari' => $request->postingdari ?? 'ENTRY JURNAL UMUM HEADER',
+                'postingdari' => 'ENTRY JURNAL UMUM HEADER',
                 'idtrans' => $jurnalumum->id,
                 'nobuktitrans' => $jurnalumum->nobukti,
                 'aksi' => 'ENTRY',
