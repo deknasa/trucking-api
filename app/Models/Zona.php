@@ -68,6 +68,12 @@ class Zona extends MyModel
     {
         $this->setRequestParameters();
 
+        $getJudul = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))
+        ->select('text')
+        ->where('grp', 'JUDULAN LAPORAN')
+        ->where('subgrp', 'JUDULAN LAPORAN')
+        ->first();
+
         $aktif = request()->aktif ?? '';
 
         $query = DB::table($this->table)->from(DB::raw("$this->table with (readuncommitted)"))
@@ -78,7 +84,9 @@ class Zona extends MyModel
                 'parameter.memo as statusaktif',
                 'zona.modifiedby',
                 'zona.created_at',
-                'zona.updated_at'
+                'zona.updated_at',
+                DB::raw("'Laporan Zona' as judulLaporan"),
+                DB::raw("'" . $getJudul->text . "' as judul")
             )
             ->leftJoin(DB::raw("parameter with (readuncommitted)"), 'zona.statusaktif', '=', 'parameter.id');
 
