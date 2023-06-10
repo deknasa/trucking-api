@@ -356,10 +356,10 @@ class TradoController extends Controller
 
     public function show($id)
     {
-        $trado = Trado::findAll($id);
+        $dataTrado = Trado::findAll($id);
         return response([
             'status' => true,
-            'data' => $trado
+            'data' => $dataTrado
         ]);
     }
     /**

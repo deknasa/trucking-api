@@ -74,9 +74,9 @@ class UpahSupirRincian extends MyModel
     public function setUpRowExcept($rincian)
     {
         $data = DB::table('statuscontainer')->select(
-            'statuscontainer.keterangan as statuscontainer',
+            'statuscontainer.kodestatuscontainer as statuscontainer',
             'statuscontainer.id as statuscontainer_id',
-            'container.keterangan as container',
+            'container.kodecontainer as container',
             'container.id as container_id'
         )->crossJoin('container');
         $temp = '##tempcrossjoin' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));

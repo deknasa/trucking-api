@@ -288,22 +288,11 @@ class UpahSupirController extends Controller
 
         $data = upahSupir::findAll($id);
         $detail = UpahSupirRincian::getAll($id);
-        $gambar = json_decode($data->gambar);
-
-        $countGambar = 0;
-        if ($gambar != null) {
-            foreach ($gambar as $g) {
-                if (Storage::exists("upahsupir/$g")) {
-                    $countGambar++;
-                }
-            }
-        }
 
         return response([
             'status' => true,
             'data' => $data,
-            'detail' => $detail,
-            'count' => $countGambar
+            'detail' => $detail
         ]);
     }
 

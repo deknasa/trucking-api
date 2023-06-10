@@ -37,7 +37,7 @@ class TarifRincian extends MyModel
             ->select(
                 'tarifrincian.id as id',
                 'container.id as container_id',
-                'container.keterangan as container',
+                'container.kodecontainer as container',
                 DB::raw("isnull(tarifrincian.nominal,0) as nominal"),
             )
             ->leftJoin('tarifrincian', function ($join)  use ($id) {
@@ -484,7 +484,7 @@ class TarifRincian extends MyModel
     public function setUpRow()
     {
         $query = DB::table('container')->select(
-            'container.keterangan as container',
+            'container.kodecontainer as container',
             'container.id as container_id'
         );
 
@@ -493,7 +493,7 @@ class TarifRincian extends MyModel
     public function setUpRowExcept($rincian)
     {
         $data = DB::table('container')->select(
-            'container.keterangan as container',
+            'container.kodecontainer as container',
             'container.id as container_id'
         );
         $temp = '##tempcrossjoin' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
