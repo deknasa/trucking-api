@@ -138,6 +138,25 @@ class PenerimaanStokHeader extends MyModel
         }
         return false;
     }
+    public function isEhtUsed($id)
+    {
+        $query = DB::table($this->table)->from($this->table)
+        ->where('penerimaanstokheader.id',$id)
+        ->leftJoin('hutangheader','penerimaanstokheader.hutang_nobukti','hutangheader.nobukti');
+        $data = $query->get();
+        $statusApproval = DB::table('parameter')->where('grp', 'STATUS APPROVAL')->where('text', 'APPROVAL')->first();
+
+        foreach ($data as $penerimaanstok) {
+            if($statusApproval->id == $penerimaanstok->statusapproval){
+                $test[] = $penerimaanstok->statusapproval;
+                dd($test);
+                return true;
+            }
+        }
+
+        
+        return false;
+    }
     public function selectColumns($query)
     {
         $po = Parameter::where('grp', 'PO STOK')->where('subgrp', 'PO STOK')->first();

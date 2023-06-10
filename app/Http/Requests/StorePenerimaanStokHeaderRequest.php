@@ -7,6 +7,8 @@ use App\Rules\DateTutupBuku;
 use App\Http\Controllers\Api\ParameterController;
 use App\Http\Controllers\Api\ErrorController;
 use Illuminate\Validation\Rule;
+use App\Models\PenerimaanStok;
+
 use Illuminate\Support\Facades\DB;
 
 class StorePenerimaanStokHeaderRequest extends FormRequest
@@ -56,7 +58,13 @@ class StorePenerimaanStokHeaderRequest extends FormRequest
             return false;
         });
 
-
+        $penerimaanStok = DB::table('PenerimaanStok')->select('id','kodepenerimaan')->get();
+        
+        $data = json_decode($penerimaanStok, true);
+        foreach ($data as $item) {
+            $kode[] = $item['id'];
+            $kodepenerimaan[] = $item['kodepenerimaan'];
+        }
         
         // dd( [$requiredSupplier,$spb->text,$po->text,request()->penerimaanstok_id]);
         //     $idpengeluaran = request()->pengeluarantrucking_id;
@@ -80,8 +88,8 @@ class StorePenerimaanStokHeaderRequest extends FormRequest
             ],
             "supplier" => $requiredSupplier,
             // "keterangan"=> "required", 
-            "penerimaanstok" => "required",
-            "penerimaanstok_id" => "required",
+            "penerimaanstok" => ["required",Rule::in($kodepenerimaan)],
+            "penerimaanstok_id" => ["required",Rule::in($kode)],
             // "penerimaanstok_nobukti" => $requiredPenerimaanStokNobukti,
             'trado' => $salahsatu,
             'gandengan' => $salahsatu,
