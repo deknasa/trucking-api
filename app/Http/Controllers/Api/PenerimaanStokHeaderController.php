@@ -829,14 +829,31 @@ class PenerimaanStokHeaderController extends Controller
     {
         $penerimaanStokHeader  = new PenerimaanStokHeader();
 
-        $pengeluaran = $penerimaanStokHeader->findOrFail($id);
-        $status = $pengeluaran->statusapproval;
+        $peneimaan = $penerimaanStokHeader->findOrFail($id);
+        $status = $peneimaan->statusapproval;
         $statusApproval = Parameter::from(DB::raw("parameter with (readuncommitted)"))
             ->where('grp', 'STATUS APPROVAL')->where('text', 'APPROVAL')->first();
-        $statusdatacetak = $pengeluaran->statuscetak;
+        $statusdatacetak = $peneimaan->statuscetak;
         $statusCetak = Parameter::from(DB::raw("parameter with (readuncommitted)"))
             ->where('grp', 'STATUSCETAK')->where('text', 'CETAK')->first();
+        $spb = Parameter::where('grp', 'SPB STOK')->where('subgrp', 'SPB STOK')->first();
 
+        // dd($penerimaanStokHeader->isOutUsed($id));
+        
+        if ($penerimaanStokHeader->isOutUsed($id)) {
+            $query = Error::from(DB::raw("error with (readuncommitted)"))
+                ->select('keterangan')
+                ->whereRaw("kodeerror = 'SATL'")
+                ->get();
+            $keterangan = $query['0'];
+            $data = [
+                'message' => $keterangan,
+                'errors' => 'Pengeluaran stok',
+                'kodestatus' => '1',
+                'kodenobukti' => '1'
+            ];
+            return response($data);
+        }
         if ($status == $statusApproval->id) {
             $query = Error::from(DB::raw("error with (readuncommitted)"))
                 ->select('keterangan')

@@ -12,6 +12,8 @@ use App\Models\PengeluaranStokHeader;
 use App\Models\PengeluaranStokDetail;
 use App\Models\PenerimaanStokDetail;
 use App\Models\PenerimaanStokHeader;
+use App\Models\PengeluaranDetail;
+use App\Models\PengeluaranHeader;
 use App\Models\HutangHeader;
 use App\Models\PengeluaranStokDetailFifo;
 use App\Models\StokPersediaan;
@@ -35,6 +37,8 @@ use App\Http\Requests\StoreJurnalUmumDetailRequest;
 use App\Http\Requests\UpdateJurnalUmumHeaderRequest;
 use App\Models\PenerimaanHeader;
 use App\Models\PenerimaanDetail;
+use App\Models\HutangBayarHeader;
+use App\Models\HutangBayarDetail;
 use App\Models\JurnalUmumDetail;
 use App\Models\JurnalUmumHeader;
 
@@ -358,7 +362,7 @@ class PengeluaranStokHeaderController extends Controller
                             $penerimaanHeader['coadebet'][] = $bank->coa;
                             $penerimaanHeader['coakredit'][] = $memo['JURNAL'];
                             $penerimaanHeader['keterangan_detail'][] = $request->detail_keterangan[$i];
-                            $penerimaanHeader["nominal_detail"][] = $detaillog[$i]['harga'];
+                            $penerimaanHeader["nominal_detail"][] = ($detaillog[$i]['harga'] * $detaillog[$i]['qty']);
                             $penerimaanHeader['invoice_nobukti'][] = '';
                             $penerimaanHeader['bankpelanggan_id'][] = 0;
                             $penerimaanHeader['jenisbiaya'][] = '';
@@ -509,37 +513,14 @@ class PengeluaranStokHeaderController extends Controller
                 $validatedLogTrail = new StoreLogTrailRequest($logTrail);
                 $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
 
-                if ($request->detail_harga) {
+                // $pengeluaranStokHeader = PengeluaranStokHeader::find($id);
+                $spk = Parameter::where('grp', 'SPK STOK')->where('subgrp', 'SPK STOK')->first();
+                $kor = Parameter::where('grp', 'KOR MINUS STOK')->where('subgrp', 'KOR MINUS STOK')->first();
+                $rtr = Parameter::where('grp', 'RETUR STOK')->where('subgrp', 'RETUR STOK')->first();
+                $gudangkantor = Parameter::where('grp', 'GUDANG KANTOR')->where('subgrp', 'GUDANG KANTOR')->first();
 
-                    $spk = Parameter::where('grp', 'SPK STOK')->where('subgrp', 'SPK STOK')->first();
-                    $kor = Parameter::where('grp', 'KOR MINUS STOK')->where('subgrp', 'KOR MINUS STOK')->first();
-                    $rtr = Parameter::where('grp', 'RETUR STOK')->where('subgrp', 'RETUR STOK')->first();
-                    $gudangkantor = Parameter::where('grp', 'GUDANG KANTOR')->where('subgrp', 'GUDANG KANTOR')->first();
-                    $pengeluaranStokDetail = PengeluaranStokDetail::where('pengeluaranstokheader_id', $id)->get();
-                    foreach ($pengeluaranStokDetail as $detail) {
-                        /*Update  di stok persediaan*/
-                        $dari = true;
-                        if ($pengeluaranStokHeader->pengeluaranstok_id != ($kor->text || $rtr->text )) {
-                            $persediaan = $this->persediaan($pengeluaranStokHeader->gudang_id,$pengeluaranStokHeader->trado_id,$pengeluaranStokHeader->gandengan_id);
-                            $dari = $this->persediaanDari($detail->stok_id,$column,$value,$detail->qty);
-                        }
-                        
-                        if (!$dari) {
-                            return [
-                                'error' => true,
-                                'errors' => [
-                                    "qty"=>"qty tidak cukup",
-                                    ] ,
-                            ];
-                        }
-                        if ($pengeluaranStokHeader->pengeluaranstok_id == $kor->text) {
-                            $persediaan = $this->persediaan($pengeluaranStokHeader->gudang_id,$pengeluaranStokHeader->trado_id,$pengeluaranStokHeader->gandengan_id);
-                            $ke = $this->persediaanKe($detail->stok_id,$persediaan['column'].'_id',$persediaan['value'],$detail->qty);
-                        }else {
-                            $ke = $this->persediaanKe($detail->stok_id,'gudang_id', $gudangkantor->text,$detail->qty);
-                        }
-                        
-                    }
+                if ($request->detail_harga) {
+                    app(PengeluaranStokDetailController::class)->resetQtyPenerimaan($id);
                     /* Delete existing detail */
                     $pengeluaranStokDetail = PengeluaranStokDetail::where('pengeluaranstokheader_id', $id)->lockForUpdate()->delete();
                     $pengeluaranStokDetailFifo = PengeluaranStokDetailFifo::where('nobukti', $pengeluaranStokHeader->nobukti)->lockForUpdate()->delete();
@@ -547,18 +528,45 @@ class PengeluaranStokHeaderController extends Controller
                     $potongKas = Parameter::where('grp', 'STATUS POTONG RETUR')->where('text', 'POSTING KE KAS/BANK')->first();
                     $potongHutang = Parameter::where('grp', 'STATUS POTONG RETUR')->where('text', 'POTONG HUTANG')->first();
                     if ($pengeluaranStokHeader->statuspotongretur == $potongKas->id) {
-                        PenerimaanDetail::where('penerimaan_nobukti', $pengeluaranStokHeader->penerimaan_nobukti)->delete();
-                        PenerimaanHeader::where('penerimaan_nobukti', $pengeluaranStokHeader->penerimaan_nobukti)->delete();
+                        $hutangKasbank = PenerimaanHeader::where('nobukti', $pengeluaranStokHeader->penerimaan_nobukti)->first();
+                        if ($hutangKasbank) {
+                            JurnalUmumDetail::where('nobukti', $hutangKasbank->nobukti)->delete();
+                            JurnalUmumHeader::where('nobukti', $hutangKasbank->nobukti)->delete();
+                        }
+                        PenerimaanDetail::where('nobukti', $pengeluaranStokHeader->penerimaan_nobukti)->delete();
+                        PenerimaanHeader::where('nobukti', $pengeluaranStokHeader->penerimaan_nobukti)->delete();
                     } else if ($pengeluaranStokHeader->statuspotongretur == $potongHutang->id) {
-                        HutangBayarDetail::where('hutangbayar_nobukti', $pengeluaranStokHeader->penerimaan_nobukti)->delete();
-                        HutangBayarHeader::where('hutangbayar_nobukti', $pengeluaranStokHeader->penerimaan_nobukti)->delete();
+                        $hutangKasbank = HutangBayarHeader::where('nobukti', $pengeluaranStokHeader->hutangbayar_nobukti)->first();
+                        if ($hutangKasbank) {
+                            PengeluaranDetail::where('nobukti', $hutangKasbank->pengeluaran_nobukti)->delete();
+                            PengeluaranHeader::where('nobukti', $hutangKasbank->pengeluaran_nobukti)->delete();
+                            JurnalUmumDetail::where('nobukti', $hutangKasbank->pengeluaran_nobukti)->delete();
+                            JurnalUmumHeader::where('nobukti', $hutangKasbank->pengeluaran_nobukti)->delete();
+                        }
+                        HutangBayarDetail::where('nobukti', $pengeluaranStokHeader->hutangbayar_nobukti)->delete();
+                        HutangBayarHeader::where('nobukti', $pengeluaranStokHeader->hutangbayar_nobukti)->delete();
                     }
+                    // dd($hutangKasbank);
                     JurnalUmumDetail::where('nobukti', $pengeluaranStokHeader->nobukti)->delete();
                     JurnalUmumHeader::where('nobukti', $pengeluaranStokHeader->nobukti)->delete();
-                    
+                    $statusApp = DB::table('parameter')
+                            ->where('grp', 'STATUS APPROVAL')
+                            ->where('text', 'NON APPROVAL')
+                            ->first();
                     /* Store detail */
                     $detaillog = [];
-
+                    $jurnalHeader = [
+                        'tanpaprosesnobukti' => 1,
+                        'nobukti' => $pengeluaranStokHeader->nobukti,
+                        'tglbukti' => date('Y-m-d', strtotime($request->tglbukti)),
+                        'keterangan' => $request->keterangan ?? '',
+                        'postingdari' => "ENTRY HUTANG",
+                        'statusapproval' => $statusApp->id,
+                        'userapproval' => "",
+                        'tglapproval' => "",
+                        'modifiedby' => auth('api')->user()->name,
+                        'statusformat' => "0",
+                    ];
                     for ($i = 0; $i < count($request->detail_harga); $i++) {
                         $datadetail = [
                             "pengeluaranstokheader_id" => $pengeluaranStokHeader->id,
@@ -609,6 +617,40 @@ class PengeluaranStokHeaderController extends Controller
                                 return response($pengeluaranStokDetailFifo, 422);
                             }
                         }
+
+                        $detail = PengeluaranStokDetail::where('id',$iddetail)->first();
+                        $total = $detail->harga * $detail->qty;
+                        // if ($request->pengeluaranstok_id == $spk->text) {
+                            $getCoaDebet = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))
+                                ->where('grp', 'JURNAL PEMAKAIAN STOK')->where('subgrp', 'DEBET')->first();
+                            $memo = json_decode($getCoaDebet->memo, true);
+                            $getCoaKredit = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))
+                                ->where('grp', 'JURNAL PEMAKAIAN STOK')->where('subgrp', 'KREDIT')->first();
+                            $memokredit = json_decode($getCoaKredit->memo, true);
+    
+                            $jurnaldetail[] = [
+                                    'nobukti' => $pengeluaranStokHeader->nobukti,
+                                    'tglbukti' => date('Y-m-d', strtotime($request->tglbukti)),
+                                    'coa' =>  $memo['JURNAL'],
+                                    'nominal' => $total,
+                                    'keterangan' => $request->detail_keterangan[$i],
+                                    'modifiedby' => auth('api')->user()->name,
+                                    'baris' => 0,
+                            ];
+    
+                            $jurnaldetail []= 
+                                [
+                                    'nobukti' => $pengeluaranStokHeader->nobukti,
+                                    'tglbukti' => date('Y-m-d', strtotime($request->tglbukti)),
+                                    'coa' =>  $memokredit['JURNAL'],
+                                    'nominal' => ($total * -1),
+                                    'keterangan' => $request->detail_keterangan[$i],
+                                    'modifiedby' => auth('api')->user()->name,
+                                    'baris' => 0,
+                                ]
+                            ;
+    
+                        // }
                         
                     }
                     $datalogtrail = [
@@ -624,18 +666,36 @@ class PengeluaranStokHeaderController extends Controller
                     $data = new StoreLogTrailRequest($datalogtrail);
                     app(LogTrailController::class)->store($data);
 
+                    $jurnal = $this->storeJurnal($jurnalHeader, $jurnaldetail);
                     
-                    
+                    if (!$jurnal['status']) {
+                        throw new \Throwable($jurnal['message']);
+                    }
 
-                     $rbt = Parameter::where('grp', 'PENGELUARAN STOK')->where('subgrp', 'RETUR BELI BUKTI')->first();
-                     $pengeluaranstok = PengeluaranStok::where('id', $idpenerimaan)->first();
-                     $statusformat = Parameter::where('id', $pengeluaranstok->format)->first();
-                    //  return response($statusformat,422);
-                if ($statusformat->id == $rbt->id) {
-
+                    $rbt = Parameter::where('grp', 'PENGELUARAN STOK')->where('subgrp', 'RETUR BELI BUKTI')->first();
+                    $pengeluaranstok = PengeluaranStok::where('id',$pengeluaranStokHeader->pengeluaranstok_id)->first();
+                    $statusformat = Parameter::where('id', $pengeluaranstok->format)->first();
+    
+                    if ($statusformat->id == $rbt->id) {
+                        $validator = Validator::make(
+                            $request->all(),
+                            [
+                                'statuspotongretur' => 'required',
+                                'bank_id' => 'required',
+                            ],
+                            [
+                                'statuspotongretur.required' => ':attribute' . ' ' . app(ErrorController::class)->geterror('WI')->keterangan,
+                                'bank_id.required' => ':attribute' . ' ' . app(ErrorController::class)->geterror('WI')->keterangan,
+                            
+                            ],
+                            [
+                                'statuspotongretur' => 'status potong retur',
+                                'bank_id' => 'bank',
+                            ],
+                        )->validate();
                         $potongKas = Parameter::where('grp', 'STATUS POTONG RETUR')->where('text', 'POSTING KE KAS/BANK')->first();
                         $potongHutang = Parameter::where('grp', 'STATUS POTONG RETUR')->where('text', 'POTONG HUTANG')->first();
-
+                        // return response([$pengeluaranStokHeader->statuspotongretur],422);
                         if ($pengeluaranStokHeader->statuspotongretur == $potongKas->id) {
 
                             $statusApproval = DB::table('parameter')
@@ -714,7 +774,7 @@ class PengeluaranStokHeaderController extends Controller
                                 $penerimaanHeader['coadebet'][] = $bank->coa;
                                 $penerimaanHeader['coakredit'][] = $memo['JURNAL'];
                                 $penerimaanHeader['keterangan_detail'][] = $request->detail_keterangan[$i];
-                                $penerimaanHeader["nominal_detail"][] = $detaillog[$i]['harga'];
+                                $penerimaanHeader["nominal_detail"][] = ($detaillog[$i]['harga'] * $detaillog[$i]['qty']);
                                 $penerimaanHeader['invoice_nobukti'][] = '';
                                 $penerimaanHeader['bankpelanggan_id'][] = 0;
                                 $penerimaanHeader['jenisbiaya'][] = '';
@@ -726,20 +786,52 @@ class PengeluaranStokHeaderController extends Controller
                             $pengeluaranStokHeader->penerimaan_nobukti = $penerimaan['data']['nobukti'];
                             $pengeluaranStokHeader->save();
                         } else if ($pengeluaranStokHeader->statuspotongretur == $potongHutang->id) {
+                            $validator = Validator::make(
+                                $request->all(),
+                                [
+                                    'bank_id' => 'required',
+                                ],
+                                [
+                                    'bank_id.required' => ':attribute' . ' ' . app(ErrorController::class)->geterror('WI')->keterangan,
+                                
+                                ],
+                                [
+                                    'bank_id' => 'bank',
+                                ],
+                            )->validate();
+                            
+                            // if (!$validator->passes()) {
+                            //     return [
+                            //         'error' => true,
+                            //         'errors' => $validator->messages()
+                            //     ];
+                            // }
+                            $penerimaanstok = Penerimaanstokheader::where('nobukti',$request->penerimaanstok_nobukti)->first();
+                            $hutang = HutangHeader::where('nobukti',$penerimaanstok->hutang_nobukti)->first();
+                            $totalItem = 0;
+                            for ($i = 0; $i < count($request->detail_stok); $i++) {
+                                $totalItem += ($request->detail_harga[0]*$request->detail_qty[$i]);
+                            }
                             $hutangHeader = [
                                 "tglbukti" => $request->tglbukti,
                                 "bank_id" => $request->bank_id,
                                 "supplier_id" => $request->supplier_id,
                                 "alatbayar_id" => 0,
-                                "tglcair" => $request->tglcair,
+                                "tglcair" => $request->tglbukti,
+                            // ];
+
+                            // $hutangDetail = [
+                                "hutang_id"=> [$hutang->id],
+                                "hutang_nobukti"=> [$hutang->nobukti],
+                                "bayar"=> [$totalItem],
+                                "potongan"=> [0],
+                                "keterangan"=> ["PENGELUARAN STOK RETUR"]
                             ];
-                            // for ($i = 0; $i < count($request->detail_stok); $i++) {
-                            //     $hutangHeader['keterangandetail'][] = $request->keterangandetail[$i];
-                            //     $hutangHeader['bayar'][] = $request->bayar[$i];
-                            //     $hutangHeader['hutang_id'][] = $request->hutang_id[$i];
-                            //     $hutangHeader['total'][] = $request->total[$i];
-                            //     $hutangHeader['potongan'][] = $request->potongan[$i];
-                            // }
+                            // return response([$hutangHeader],422);
+                            $pembayaranHutang = $this->storePembayaranHutang($hutangHeader);
+                            $pengeluaranStokHeader->hutangbayar_nobukti = $pembayaranHutang['data']['nobukti'];
+                            $pengeluaranStokHeader->save();
+                            
                         }
                     }
                 }
@@ -784,30 +876,7 @@ class PengeluaranStokHeaderController extends Controller
         /*Update  di stok persediaan*/
        
         $gudangkantor = Parameter::where('grp', 'GUDANG KANTOR')->where('subgrp', 'GUDANG KANTOR')->first();
-        foreach ($getDetail as $detail) {
-            /*Update  di stok persediaan*/
-            $dari = true;
-            if ($pengeluaranStokHeader->pengeluaranstok_id != ($kor->text || $rtr->text )) {
-                $persediaan = $this->persediaan($pengeluaranStokHeader->gudang_id,$pengeluaranStokHeader->trado_id,$pengeluaranStokHeader->gandengan_id);
-                $dari = $this->persediaanDari($detail->stok_id,$column,$value,$detail->qty);
-            }
-            
-            if (!$dari) {
-                return [
-                    'error' => true,
-                    'errors' => [
-                        "qty"=>"qty tidak cukup",
-                        ] ,
-                ];
-            }
-            if ($pengeluaranStokHeader->pengeluaranstok_id == $kor->text) {
-                $persediaan = $this->persediaan($pengeluaranStokHeader->gudang_id,$pengeluaranStokHeader->trado_id,$pengeluaranStokHeader->gandengan_id);
-                $ke = $this->persediaanKe($detail->stok_id,$persediaan['column'].'_id',$persediaan['value'],$detail->qty);
-            }else {
-                $ke = $this->persediaanKe($detail->stok_id,'gudang_id', $gudangkantor->text,$detail->qty);
-            }
-            
-        }
+        app(PengeluaranStokDetailController::class)->resetQtyPenerimaan($id);
         
         $pengeluaranStok = new PengeluaranStokHeader();
         $pengeluaranStok = $pengeluaranStok->lockAndDestroy($id);
@@ -823,24 +892,38 @@ class PengeluaranStokHeaderController extends Controller
                 $JurnalUmumHeader = JurnalUmumHeader::where('nobukti', $pengeluaranStok->nobukti)->delete();                break;
             case $rtr->text:
                 if ($pengeluaranStok->penerimaan_nobukti) {
+                    
+                        $hutangKasbank = PenerimaanHeader::where('nobukti', $pengeluaranStokHeader->penerimaan_nobukti)->first();
+                        if ($hutangKasbank->nobukti) {
+                            JurnalUmumDetail::where('nobukti', $hutangKasbank)->delete();
+                            JurnalUmumHeader::where('nobukti', $hutangKasbank)->delete();
+                        }
                     $PenerimaanDetail = PenerimaanDetail::where('nobukti', $pengeluaranStok->penerimaan_nobukti)->delete();
                     $PenerimaanHeader = PenerimaanHeader::where('nobukti', $pengeluaranStok->penerimaan_nobukti)->delete();
                     $JurnalUmumDetail = JurnalUmumDetail::where('nobukti', $pengeluaranStok->penerimaan_nobukti)->delete();
                     $JurnalUmumHeader = JurnalUmumHeader::where('nobukti', $pengeluaranStok->penerimaan_nobukti)->delete();
                 }
                 if ($pengeluaranStok->hutangbayar_nobukti) {
-                    $PenerimaanDetail = PenerimaanDetail::where('nobukti', $pengeluaranStok->hutangbayar_nobukti)->delete();
-                    $PenerimaanHeader = PenerimaanHeader::where('nobukti', $pengeluaranStok->hutangbayar_nobukti)->delete();
+                    
+                        $hutangKasbank = HutangBayarHeader::where('nobukti', $pengeluaranStokHeader->hutangbayar_nobukti)->first();
+                        if ($hutangKasbank) {
+                            PengeluaranDetail::where('nobukti', $hutangKasbank->pengeluaran_nobukti)->delete();
+                            PengeluaranHeader::where('nobukti', $hutangKasbank->pengeluaran_nobukti)->delete();
+                            JurnalUmumDetail::where('nobukti', $hutangKasbank->pengeluaran_nobukti)->delete();
+                            JurnalUmumHeader::where('nobukti', $hutangKasbank->pengeluaran_nobukti)->delete();
+                        }
+                    $HutangBayarDetail = HutangBayarDetail::where('nobukti', $pengeluaranStok->hutangbayar_nobukti)->delete();
+                    $HutangBayarHeader = HutangBayarHeader::where('nobukti', $pengeluaranStok->hutangbayar_nobukti)->delete();
                     $JurnalUmumDetail = JurnalUmumDetail::where('nobukti', $pengeluaranStok->hutangbayar_nobukti)->delete();
                     $JurnalUmumHeader = JurnalUmumHeader::where('nobukti', $pengeluaranStok->hutangbayar_nobukti)->delete();
                 }
                 break;
-            
             default:
                 # code...
                 break;
         }
-       
+        $JurnalUmumDetail = JurnalUmumDetail::where('nobukti', $pengeluaranStok->nobukti)->delete();
+        $JurnalUmumHeader = JurnalUmumHeader::where('nobukti', $pengeluaranStok->nobukti)->delete();
 
         if ($pengeluaranStok) {
             $logTrail = [

@@ -7,9 +7,11 @@ use App\Http\Controllers\Controller;
 
 use App\Models\PengeluaranStok;
 use App\Models\PengeluaranStokDetail;
+use App\Models\PenerimaanStokDetail;
 use App\Models\PengeluaranStokHeader;
 use App\Models\Parameter;
 use App\Models\StokPersediaan;
+use App\Models\PengeluaranStokDetailFifo;
 use App\Models\Stok;
 
 use App\Http\Requests\StorePengeluaranStokDetailRequest;
@@ -220,5 +222,52 @@ class PengeluaranStokDetailController extends Controller
     {
         $result = StokPersediaan::lockForUpdate()->where("stok_id", $stokId)->where("$persediaan", $persediaanId)->first();
         return (!$result) ? false :$result;
+    }
+
+
+    public function resetQtyPenerimaan($id)
+    {
+        $pengeluaranStokHeader = PengeluaranStokHeader::findOrFail($id);
+
+        // $pengeluaranStokHeader = PengeluaranStokHeader::find($id);
+        $spk = Parameter::where('grp', 'SPK STOK')->where('subgrp', 'SPK STOK')->first();
+        $kor = Parameter::where('grp', 'KOR MINUS STOK')->where('subgrp', 'KOR MINUS STOK')->first();
+        $rtr = Parameter::where('grp', 'RETUR STOK')->where('subgrp', 'RETUR STOK')->first();
+        $gudangkantor = Parameter::where('grp', 'GUDANG KANTOR')->where('subgrp', 'GUDANG KANTOR')->first();
+        $pengeluaranStokDetail = PengeluaranStokDetail::where('pengeluaranstokheader_id', $id)->get();
+        
+        foreach ($pengeluaranStokDetail as $detail) {
+            /*Update  di stok persediaan*/
+            $dari = true;
+            if ($pengeluaranStokHeader->pengeluaranstok_id != ($kor->text || $rtr->text )) {
+                $persediaan = $this->persediaan($pengeluaranStokHeader->gudang_id,$pengeluaranStokHeader->trado_id,$pengeluaranStokHeader->gandengan_id);
+                $dari = $this->persediaanDari($detail->stok_id,$column,$value,$detail->qty);
+            }
+            
+            if (!$dari) {
+                return [
+                    'error' => true,
+                    'errors' => [
+                        "qty"=>"qty tidak cukup",
+                        ] ,
+                ];
+            }
+            if ($pengeluaranStokHeader->pengeluaranstok_id == $kor->text) {
+                $persediaan = $this->persediaan($pengeluaranStokHeader->gudang_id,$pengeluaranStokHeader->trado_id,$pengeluaranStokHeader->gandengan_id);
+                $ke = $this->persediaanKe($detail->stok_id,$persediaan['column'].'_id',$persediaan['value'],$detail->qty);
+            }else {
+                $ke = $this->persediaanKe($detail->stok_id,'gudang_id', $gudangkantor->text,$detail->qty);
+            }
+
+            
+        }
+
+        $pengeluaranStokDetailFifo = PengeluaranStokDetailFifo::where('nobukti', $pengeluaranStokHeader->nobukti)->get();
+        foreach ($pengeluaranStokDetailFifo as $fifo) {
+            $penerimaanStok = PenerimaanStokDetail::where('nobukti',$fifo->penerimaanstokheader_nobukti)->where('stok_id',$fifo->stok_id)->first();
+            $penerimaanStok->qtykeluar -= $fifo->qty;
+            $penerimaanStok->save();
+        }
+
     }
 }
