@@ -147,7 +147,7 @@ class StoreUpahSupirRequest extends FormRequest
         $rules =  [
             'kotadari' => ['required', new ValidasiDariSimpanKandangUpahSupir()],
             'kotasampai' => ['required'],
-            'penyesuaian' => ['required',new UniqueUpahSupirSampai()],
+            'penyesuaian' => [new UniqueUpahSupirSampai()],
             'jarak' => ['required','numeric','gt:0','max:'. (new ParameterController)->getparamid('BATAS KM UPAH SUPIR','BATAS KM UPAH SUPIR')->text],
             'statusaktif' => ['required', Rule::in($statusAktif)],
             'statussimpankandang' => ['required', Rule::in($statusSimpanKandang)],
