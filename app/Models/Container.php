@@ -157,7 +157,7 @@ class Container extends MyModel
                 'container.modifiedby',
                 'container.created_at',
                 'container.updated_at',
-                DB::raw("'Laporan Mandor' as judulLaporan"),
+                DB::raw("'Laporan Container' as judulLaporan"),
                 DB::raw("'" . $getJudul->text . "' as judul")
             )
             ->leftJoin(DB::raw("parameter with (readuncommitted)"), 'container.statusaktif', '=', 'parameter.id');
