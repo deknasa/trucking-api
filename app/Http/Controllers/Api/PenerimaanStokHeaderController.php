@@ -14,6 +14,7 @@ use App\Http\Requests\StoreLogTrailRequest;
 use App\Http\Requests\StorePenerimaanStokHeaderRequest;
 use App\Http\Requests\UpdatePenerimaanStokHeaderRequest;
 use App\Http\Requests\StoreHutangHeaderRequest;
+use App\Http\Requests\DestroyHutangHeaderRequest;
 use App\Http\Requests\UpdateHutangHeaderRequest;
 use App\Http\Requests\StoreHutangDetailRequest;
 use App\Http\Requests\GetIndexRangeRequest;
@@ -713,7 +714,7 @@ class PenerimaanStokHeaderController extends Controller
             $hutangRequest = [
                 'proseslain' => 'PEMBELIAN STOK',
             ];
-            $hutang = new StoreHutangHeaderRequest($hutangRequest);
+            $hutang = new DestroyHutangHeaderRequest($hutangRequest);
             app(HutangHeaderController::class)->destroy($hutang, $idhutang->id);
         }
 

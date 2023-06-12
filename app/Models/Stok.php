@@ -80,6 +80,8 @@ class Stok extends MyModel
         $this->setRequestParameters();
 
         $aktif = request()->aktif ?? '';
+        $penerimaanstok_id = request()->penerimaanstok_id ?? '';
+        $penerimaanstokheader_nobukti = request()->penerimaanstokheader_nobukti ?? '';
 
 
         $query = DB::table($this->table)->select(
@@ -121,6 +123,15 @@ class Stok extends MyModel
 
             $query->where('stok.statusaktif', '=', $statusaktif->id);
         }
+
+        if ($penerimaanstok_id) {
+            $spb = Parameter::where('grp', 'SPB STOK')->where('subgrp', 'SPB STOK')->first();
+            if ($spb->text == $penerimaanstok_id) {
+                $query->leftJoin('penerimaanstokdetail', 'stok.id', 'penerimaanstokdetail.stok_id')
+                      ->where('penerimaanstokdetail.nobukti' , $penerimaanstokheader_nobukti);
+            }
+        }
+
         $this->totalRows = $query->count();
         $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;
 

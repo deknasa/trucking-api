@@ -149,7 +149,7 @@ class PenerimaanStokHeader extends MyModel
         foreach ($data as $penerimaanstok) {
             if($statusApproval->id == $penerimaanstok->statusapproval){
                 $test[] = $penerimaanstok->statusapproval;
-                dd($test);
+                // dd($test);
                 return true;
             }
         }
