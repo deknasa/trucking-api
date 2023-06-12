@@ -39,6 +39,12 @@ class UpahSupir extends MyModel
     {
         $this->setRequestParameters();
 
+        $getJudul = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))
+            ->select('text')
+            ->where('grp', 'JUDULAN LAPORAN')
+            ->where('subgrp', 'JUDULAN LAPORAN')
+            ->first();
+
 
         $aktif = request()->aktif ?? '';
         $tempParent = DB::table($this->table)->from(DB::raw("upahsupir with (readuncommitted)"))
@@ -74,7 +80,9 @@ class UpahSupir extends MyModel
                 'upahsupir.keterangan',
                 'upahsupir.created_at',
                 'upahsupir.modifiedby',
-                'upahsupir.updated_at'
+                'upahsupir.updated_at',
+                DB::raw("'Laporan Upah Supir' as judulLaporan"),
+                DB::raw("'" . $getJudul->text . "' as judul")
             )
             ->leftJoin(DB::raw("$temp as parent with (readuncommitted)"), 'parent.id', '=', 'upahsupir.parent_id')
             ->leftJoin(DB::raw("kota as kotadari with (readuncommitted)"), 'kotadari.id', '=', 'upahsupir.kotadari_id')
@@ -203,7 +211,7 @@ class UpahSupir extends MyModel
         $iddefaultstatusluarkota = $status->id ?? 0;
 
         $iddefaultstatusluarkota =  $status->id;
-        
+
         $status = Parameter::from(
             db::Raw("parameter with (readuncommitted)")
         )
@@ -289,7 +297,7 @@ class UpahSupir extends MyModel
         $query = $this->selectColumns($query);
         $this->sort($query);
         $models = $this->filter($query);
-        DB::table($temp)->insertUsing(['id', 'parent_id', 'kotadari_id', 'kotasampai_id','penyesuaian', 'zona_id', 'jarak', 'statusaktif', 'tglmulaiberlaku', 'statusluarkota', 'modifiedby', 'created_at', 'updated_at'], $models);
+        DB::table($temp)->insertUsing(['id', 'parent_id', 'kotadari_id', 'kotasampai_id', 'penyesuaian', 'zona_id', 'jarak', 'statusaktif', 'tglmulaiberlaku', 'statusluarkota', 'modifiedby', 'created_at', 'updated_at'], $models);
 
         return $temp;
     }
@@ -334,7 +342,6 @@ class UpahSupir extends MyModel
                         } else {
                             // $query = $query->where($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
                             $query = $query->whereRaw($this->table . ".[" .  $filters['field'] . "] LIKE '%" . escapeLike($filters['data']) . "%' escape '|'");
-
                         }
                     }
 
@@ -363,7 +370,6 @@ class UpahSupir extends MyModel
                             } else {
                                 // $query = $query->orWhere($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
                                 $query = $query->OrwhereRaw($this->table . ".[" .  $filters['field'] . "] LIKE '%" . escapeLike($filters['data']) . "%' escape '|'");
-
                             }
                         }
                     });
@@ -413,15 +419,16 @@ class UpahSupir extends MyModel
         selesai:
         return $data;
     }
-    public function validasiUpahSupirInputTrip($dari, $sampai, $container,$statusContainer){
+    public function validasiUpahSupirInputTrip($dari, $sampai, $container, $statusContainer)
+    {
         $query = DB::table("upahsupir")->from(DB::raw("upahsupir with (readuncommitted)"))
-        ->join(DB::raw("upahsupirrincian with (readuncommitted)"), 'upahsupir.id','upahsupirrincian.upahsupir_id')
-        ->where('upahsupir.kotadari_id', $dari)
-        ->where('upahsupir.kotasampai_id', $sampai)
-        ->where('upahsupirrincian.container_id', $container)
-        ->where('upahsupirrincian.statuscontainer_id', $statusContainer)
-        ->where('upahsupirrincian.nominalsupir','!=','0')
-        ->first();
+            ->join(DB::raw("upahsupirrincian with (readuncommitted)"), 'upahsupir.id', 'upahsupirrincian.upahsupir_id')
+            ->where('upahsupir.kotadari_id', $dari)
+            ->where('upahsupir.kotasampai_id', $sampai)
+            ->where('upahsupirrincian.container_id', $container)
+            ->where('upahsupirrincian.statuscontainer_id', $statusContainer)
+            ->where('upahsupirrincian.nominalsupir', '!=', '0')
+            ->first();
 
         return $query;
     }

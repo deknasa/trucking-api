@@ -16,7 +16,7 @@ class UpahRitasiRincianController extends Controller
 
     public function index(Request $request)
     {
-        
+
         $params = [
             'id' => $request->id,
             'upahritasi_id' => $request->upahritasi_id,
@@ -46,8 +46,15 @@ class UpahRitasiRincianController extends Controller
                 $query->whereIn('upahritasi_id', $params['whereIn']);
             }
 
+            $getJudul = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))
+                ->select('text')
+                ->where('grp', 'JUDULAN LAPORAN')
+                ->where('subgrp', 'JUDULAN LAPORAN')
+                ->first();
+
+
             if ($params['forReport']) {
-              
+
                 $query->select(
                     'kotadari.keterangan as kotadari',
                     'kotasampai.keterangan as kotasampai',
@@ -56,8 +63,10 @@ class UpahRitasiRincianController extends Controller
                     'container.keterangan as container_id',
                     'detail.nominalsupir',
                     'detail.liter',
+                    DB::raw("'Laporan Upah Ritasi' as judulLaporan"),
+                    DB::raw("'" . $getJudul->text . "' as judul")
                 )
-                    ->leftJoin(DB::raw("upahritasi as header with (readuncommitted)"), 'header.id', 'detail.upahritasi_id') 
+                    ->leftJoin(DB::raw("upahritasi as header with (readuncommitted)"), 'header.id', 'detail.upahritasi_id')
                     ->leftJoin(DB::raw("kota as kotadari with (readuncommitted)"), 'kotadari.id', '=', 'header.kotadari_id')
                     ->leftJoin(DB::raw("kota as kotasampai with (readuncommitted)"), 'kotasampai.id', '=', 'header.kotasampai_id')
                     ->leftJoin(DB::raw("zona with (readuncommitted)"), 'header.zona_id', 'zona.id')
@@ -79,13 +88,13 @@ class UpahRitasiRincianController extends Controller
             }
 
             $idUser = auth('api')->user()->id;
-            $getuser = User::select('name','cabang.namacabang as cabang_id')
-            ->where('user.id',$idUser)->join('cabang','user.cabang_id','cabang.id')->first();
-           
+            $getuser = User::select('name', 'cabang.namacabang as cabang_id')
+                ->where('user.id', $idUser)->join('cabang', 'user.cabang_id', 'cabang.id')->first();
+
             return response([
                 'data' => $upahritasi,
                 'user' => $getuser,
-                
+
             ]);
         } catch (\Throwable $th) {
             return response([
@@ -103,17 +112,17 @@ class UpahRitasiRincianController extends Controller
         $upahritasirincian->nominalsupir = $request->nominalsupir;
         $upahritasirincian->liter = $request->liter;
         $upahritasirincian->modifiedby = auth('api')->user()->name;
-        
+
         if (!$upahritasirincian->save()) {
             throw new \Exception("Gagal menyimpan upah ritasi detail.");
         }
-        
+
         return [
             'error' => false,
             'detail' => $upahritasirincian,
             'id' => $upahritasirincian->id,
             'tabel' => $upahritasirincian->getTable(),
-        ];       
+        ];
     }
 
     public function setUpRow()
@@ -123,23 +132,22 @@ class UpahRitasiRincianController extends Controller
         return response([
             'status' => true,
             'detail' => $upahRitasiRincian->setUpRow()
-        ]);        
+        ]);
     }
     public function setUpRowExcept($id)
     {
         $upahRitasiRincian = new UpahRitasiRincian();
-        $rincian = $upahRitasiRincian->where('upahritasi_id',$id)->get();
+        $rincian = $upahRitasiRincian->where('upahritasi_id', $id)->get();
         foreach ($rincian as $e) {
             $data[] = [
-                 "container_id" => $e->container_id,
-                 "statuscontainer_id"=>$e->statuscontainer_id
-                ];
+                "container_id" => $e->container_id,
+                "statuscontainer_id" => $e->statuscontainer_id
+            ];
         }
         // return $data;
         return response([
             'status' => true,
             'detail' => $upahRitasiRincian->setUpRowExcept($data)
-        ]);        
+        ]);
     }
-    
 }
