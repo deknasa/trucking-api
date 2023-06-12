@@ -124,7 +124,7 @@ class Stok extends MyModel
             $query->where('stok.statusaktif', '=', $statusaktif->id);
         }
 
-        if ($penerimaanstok_id) {
+        if ($penerimaanstokheader_nobukti) {
             $spb = Parameter::where('grp', 'SPB STOK')->where('subgrp', 'SPB STOK')->first();
             if ($spb->text == $penerimaanstok_id) {
                 $query->leftJoin('penerimaanstokdetail', 'stok.id', 'penerimaanstokdetail.stok_id')
