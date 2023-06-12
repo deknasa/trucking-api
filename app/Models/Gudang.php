@@ -34,7 +34,7 @@ class Gudang extends MyModel
             )
             ->where('a.gudang_id', '=', $id)
             ->first();
-            
+
         if (isset($penerimaanStok)) {
             $data = [
                 'kondisi' => true,
@@ -44,7 +44,7 @@ class Gudang extends MyModel
 
             goto selesai;
         }
-        
+
         $pengeluaranStok = DB::table('pengeluaranstokheader')
             ->from(
                 DB::raw("pengeluaranstokheader as a with (readuncommitted)")
@@ -68,11 +68,16 @@ class Gudang extends MyModel
 
         selesai:
         return $data;
-        
     }
     public function get()
     {
         $this->setRequestParameters();
+
+        $getJudul = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))
+            ->select('text')
+            ->where('grp', 'JUDULAN LAPORAN')
+            ->where('subgrp', 'JUDULAN LAPORAN')
+            ->first();
 
         $aktif = request()->aktif ?? '';
 
@@ -83,7 +88,9 @@ class Gudang extends MyModel
                 'parameter.memo as statusaktif',
                 'gudang.modifiedby',
                 'gudang.created_at',
-                'gudang.updated_at'
+                'gudang.updated_at',
+                DB::raw("'Laporan Gudang' as judulLaporan"),
+                DB::raw("'" . $getJudul->text . "' as judul")
             )
             ->leftJoin(DB::raw("parameter with (readuncommitted)"), 'gudang.statusaktif', '=', 'parameter.id');
 
@@ -208,7 +215,6 @@ class Gudang extends MyModel
                         } else {
                             // $query = $query->where('gudang.' . $filters['field'], 'LIKE', "%$filters[data]%");
                             $query = $query->whereRaw('gudang' . ".[" .  $filters['field'] . "] LIKE '%" . escapeLike($filters['data']) . "%' escape '|'");
-
                         }
                     }
 
@@ -223,7 +229,6 @@ class Gudang extends MyModel
                             } else {
                                 // $query = $query->orWhere('gudang.' . $filters['field'], 'LIKE', "%$filters[data]%");
                                 $query = $query->OrwhereRaw('gudang' . ".[" .  $filters['field'] . "] LIKE '%" . escapeLike($filters['data']) . "%' escape '|'");
-
                             }
                         }
                     });
