@@ -27,6 +27,12 @@ class Satuan extends MyModel
     {
         $this->setRequestParameters();
 
+        $getJudul = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))
+            ->select('text')
+            ->where('grp', 'JUDULAN LAPORAN')
+            ->where('subgrp', 'JUDULAN LAPORAN')
+            ->first();
+
         $aktif = request()->aktif ?? '';
 
         $query = DB::table($this->table)->select(
@@ -35,7 +41,9 @@ class Satuan extends MyModel
             'parameter.memo as statusaktif',
             'satuan.modifiedby',
             'satuan.created_at',
-            'satuan.updated_at'
+            'satuan.updated_at',
+            DB::raw("'Laporan Satuan' as judulLaporan"),
+            DB::raw("'" . $getJudul->text . "' as judul")
         )
             ->leftJoin('parameter', 'satuan.statusaktif', '=', 'parameter.id');
 
@@ -158,7 +166,6 @@ class Satuan extends MyModel
                         } else {
                             // $query = $query->where('satuan.' . $filters['field'], 'LIKE', "%$filters[data]%");
                             $query = $query->whereRaw('satuan' . ".[" .  $filters['field'] . "] LIKE '%" . escapeLike($filters['data']) . "%' escape '|'");
-
                         }
                     }
 
@@ -173,7 +180,6 @@ class Satuan extends MyModel
                             } else {
                                 // $query = $query->orWhere('satuan.' . $filters['field'], 'LIKE', "%$filters[data]%");
                                 $query = $query->OrwhereRaw('satuan' . ".[" .  $filters['field'] . "] LIKE '%" . escapeLike($filters['data']) . "%' escape '|'");
-
                             }
                         }
                     });

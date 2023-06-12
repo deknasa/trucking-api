@@ -8,6 +8,7 @@ use App\Models\SubKelompok;
 use App\Http\Requests\StoreSubKelompokRequest;
 use App\Http\Requests\UpdateSubKelompokRequest;
 use App\Http\Requests\DestroySubKelompokRequest;
+use App\Http\Requests\RangeExportReportRequest;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
@@ -186,7 +187,7 @@ class SubKelompokController extends Controller
     public function destroy(DestroySubKelompokRequest $request, $id)
     {
         $cekvalidasi = $this->cekValidasi($id);
-         if ($cekvalidasi->original['kondisi']==false) {
+        if ($cekvalidasi->original['kondisi'] == false) {
             DB::beginTransaction();
 
             $subKelompok = new SubKelompok();
@@ -225,67 +226,73 @@ class SubKelompokController extends Controller
                     'message' => 'Gagal dihapus'
                 ]);
             }
-         } else {
+        } else {
             return response([
                 'status' => false,
                 'message' => $cekvalidasi->original['message']
             ]);
-         }
+        }
     }
 
-   
+
     /**
      * @ClassName
      */
-    public function export()
+    public function export(RangeExportReportRequest $request)
     {
-        $response = $this->index();
-        $decodedResponse = json_decode($response->content(), true);
-        $subKelompoks = $decodedResponse['data'];
 
-        $i = 0;
-        foreach ($subKelompoks as $index => $params) {
+        if (request()->cekExport) {
+            return response([
+                'status' => true,
+            ]);
+        } else {
 
-            $statusaktif = $params['statusaktif'];
+            $response = $this->index();
+            $decodedResponse = json_decode($response->content(), true);
+            $subKelompoks = $decodedResponse['data'];
 
-            $result = json_decode($statusaktif, true);
+            $judulLaporan = $subKelompoks[0]['judulLaporan'];
 
-            $statusaktif = $result['MEMO'];
+            $i = 0;
+            foreach ($subKelompoks as $index => $params) {
+
+                $statusaktif = $params['statusaktif'];
+
+                $result = json_decode($statusaktif, true);
+
+                $statusaktif = $result['MEMO'];
 
 
-            $subKelompoks[$i]['statusaktif'] = $statusaktif;
+                $subKelompoks[$i]['statusaktif'] = $statusaktif;
 
 
-            $i++;
+                $i++;
+            }
+
+            $columns = [
+                [
+                    'label' => 'No',
+                ],
+                [
+                    'label' => 'Kode Subkelompok',
+                    'index' => 'kodesubkelompok',
+                ],
+                [
+                    'label' => 'Keterangan',
+                    'index' => 'keterangan',
+                ],
+                [
+                    'label' => 'Kelompok',
+                    'index' => 'kelompok_id',
+                ],
+                [
+                    'label' => 'Status Aktif',
+                    'index' => 'statusaktif',
+                ],
+            ];
+
+            $this->toExcel($judulLaporan, $subKelompoks, $columns);
         }
-
-        $columns = [
-            [
-                'label' => 'No',
-            ],
-            [
-                'label' => 'ID',
-                'index' => 'id',
-            ],
-            [
-                'label' => 'Kode Subkelompok',
-                'index' => 'kodesubkelompok',
-            ],
-            [
-                'label' => 'Keterangan',
-                'index' => 'keterangan',
-            ],
-            [
-                'label' => 'Kelompok',
-                'index' => 'kelompok_id',
-            ],
-            [
-                'label' => 'Status Aktif',
-                'index' => 'statusaktif',
-            ],
-        ];
-
-        $this->toExcel('Sub Kelompok', $subKelompoks, $columns);
     }
 
     public function fieldLength()
@@ -301,6 +308,4 @@ class SubKelompokController extends Controller
             'data' => $data
         ]);
     }
-
-    
 }

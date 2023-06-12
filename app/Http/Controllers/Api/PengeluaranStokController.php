@@ -9,6 +9,7 @@ use App\Models\PengeluaranStok;
 use App\Http\Requests\StorePengeluaranStokRequest;
 use App\Http\Requests\UpdatePengeluaranStokRequest;
 use App\Http\Requests\DestroyPengeluaranStokRequest;
+use App\Http\Requests\RangeExportReportRequest;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
@@ -255,58 +256,67 @@ class PengeluaranStokController extends Controller
         }
     }
 
-    public function export()
+    public function export(RangeExportReportRequest $request)
     {
-        header('Access-Control-Allow-Origin: *');
+        if (request()->cekExport) {
+            return response([
+                'status' => true,
+            ]);
+        } else {
 
-        $response = $this->index();
-        $decodedResponse = json_decode($response->content(), true);
-        $pengeluarans = $decodedResponse['data'];
+            header('Access-Control-Allow-Origin: *');
 
-        $i = 0;
-        foreach ($pengeluarans as $index => $params) {
+            $response = $this->index();
+            $decodedResponse = json_decode($response->content(), true);
+            $pengeluarans = $decodedResponse['data'];
 
-            $format = $params['format'];
-            $statusHitungStok = $params['statushitungstok'];
+            $judulLaporan = $pengeluarans[0]['judulLaporan'];
 
-            $result = json_decode($format, true);
-            $resultHitungStok = json_decode($statusHitungStok, true);
+            $i = 0;
+            foreach ($pengeluarans as $index => $params) {
 
-            $format = $result['MEMO'];
-            $statusHitungStok = $resultHitungStok['MEMO'];
+                $format = $params['format'];
+                $statusHitungStok = $params['statushitungstok'];
+
+                $result = json_decode($format, true);
+                $resultHitungStok = json_decode($statusHitungStok, true);
+
+                $format = $result['MEMO'];
+                $statusHitungStok = $resultHitungStok['MEMO'];
 
 
-            $pengeluarans[$i]['format'] = $format;
-            $pengeluarans[$i]['statushitungstok'] = $statusHitungStok;
+                $pengeluarans[$i]['format'] = $format;
+                $pengeluarans[$i]['statushitungstok'] = $statusHitungStok;
 
 
-            $i++;
+                $i++;
+            }
+            $columns = [
+                [
+                    'label' => 'No',
+                ],
+                [
+                    'label' => 'Kode Pengeluaran',
+                    'index' => 'kodepengeluaran',
+                ],
+                [
+                    'label' => 'keterangan',
+                    'index' => 'keterangan',
+                ],
+                [
+                    'label' => 'coa',
+                    'index' => 'coa',
+                ],
+                [
+                    'label' => 'status format',
+                    'index' => 'format',
+                ],
+                [
+                    'label' => 'status hitung stok',
+                    'index' => 'statushitungstok',
+                ],
+            ];
+            $this->toExcel($judulLaporan, $pengeluarans, $columns);
         }
-        $columns = [
-            [
-                'label' => 'No',
-            ],
-            [
-                'label' => 'Kode Pengeluaran',
-                'index' => 'kodepengeluaran',
-            ],
-            [
-                'label' => 'keterangan',
-                'index' => 'keterangan',
-            ],
-            [
-                'label' => 'coa',
-                'index' => 'coa',
-            ],
-            [
-                'label' => 'status format',
-                'index' => 'format',
-            ],
-            [
-                'label' => 'status hitung stok',
-                'index' => 'statushitungstok',
-            ],
-        ];
-        $this->toExcel('Pengeluaran Stok', $pengeluarans, $columns);
     }
 }

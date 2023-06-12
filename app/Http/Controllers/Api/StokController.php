@@ -6,6 +6,7 @@ use App\Helpers\App;
 use App\Http\Requests\StoreLogTrailRequest;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\RangeExportReportRequest;
 use App\Models\Stok;
 use App\Http\Requests\StoreStokRequest;
 use App\Http\Requests\UpdateStokRequest;
@@ -34,17 +35,18 @@ class StokController extends Controller
         ]);
     }
 
-    public function cekValidasi($id) {
-        $stok= new Stok();
-        $cekdata=$stok->cekvalidasihapus($id);
-        if ($cekdata['kondisi']==true) {
+    public function cekValidasi($id)
+    {
+        $stok = new Stok();
+        $cekdata = $stok->cekvalidasihapus($id);
+        if ($cekdata['kondisi'] == true) {
             $query = DB::table('error')
-            ->select(
-                DB::raw("ltrim(rtrim(keterangan))+' (".$cekdata['keterangan'].")' as keterangan")
+                ->select(
+                    DB::raw("ltrim(rtrim(keterangan))+' (" . $cekdata['keterangan'] . ")' as keterangan")
                 )
-            ->where('kodeerror', '=', 'SATL')
-            ->get();
-        $keterangan = $query['0'];
+                ->where('kodeerror', '=', 'SATL')
+                ->get();
+            $keterangan = $query['0'];
 
             $data = [
                 'status' => false,
@@ -54,7 +56,6 @@ class StokController extends Controller
             ];
 
             return response($data);
-         
         } else {
             $data = [
                 'status' => false,
@@ -63,7 +64,7 @@ class StokController extends Controller
                 'kondisi' => $cekdata['kondisi'],
             ];
 
-            return response($data); 
+            return response($data);
         }
     }
 
@@ -300,9 +301,9 @@ class StokController extends Controller
 
     public function getImage(string $filename, string $type)
     {
-        if(Storage::exists("stok/$type" . '_' . "$filename")){
+        if (Storage::exists("stok/$type" . '_' . "$filename")) {
             return response()->file(storage_path("app/stok/$type" . '_' . "$filename"));
-        }else{
+        } else {
             return response()->file(storage_path("app/stok/$filename"));
         }
     }
@@ -321,78 +322,88 @@ class StokController extends Controller
         ]);
     }
 
-    public function export()
+    public function export(RangeExportReportRequest $request)
     {
-        header('Access-Control-Allow-Origin: *');
 
-        $response = $this->index();
-        $decodedResponse = json_decode($response->content(), true);
-        $stoks = $decodedResponse['data'];
+        if (request()->cekExport) {
+            return response([
+                'status' => true,
+            ]);
+        } else {
 
-        $i = 0;
-        foreach ($stoks as $index => $params) {
+            header('Access-Control-Allow-Origin: *');
 
-            $statusaktif = $params['statusaktif'];
+            $response = $this->index();
+            $decodedResponse = json_decode($response->content(), true);
+            $stoks = $decodedResponse['data'];
 
-            $result = json_decode($statusaktif, true);
+            $judulLaporan = $stoks[0]['judulLaporan'];
 
-            $statusaktif = $result['MEMO'];
+            $i = 0;
+            foreach ($stoks as $index => $params) {
+
+                $statusaktif = $params['statusaktif'];
+
+                $result = json_decode($statusaktif, true);
+
+                $statusaktif = $result['MEMO'];
 
 
-            $stoks[$i]['statusaktif'] = $statusaktif;
+                $stoks[$i]['statusaktif'] = $statusaktif;
 
 
-            $i++;
+                $i++;
+            }
+            $columns = [
+                [
+                    'label' => 'No',
+                ],
+                [
+                    'label' => 'Nama Stok',
+                    'index' => 'namastok',
+                ],
+                [
+                    'label' => 'Qty Min',
+                    'index' => 'qtymin',
+                ],
+                [
+                    'label' => 'Qty Max',
+                    'index' => 'qtymax',
+                ],
+                [
+                    'label' => 'Keterangan',
+                    'index' => 'keterangan',
+                ],
+                [
+                    'label' => 'Nama Terpusat',
+                    'index' => 'namaterpusat',
+                ],
+                [
+                    'label' => 'Jenis Trado',
+                    'index' => 'jenistrado',
+                ],
+                [
+                    'label' => 'Kelompok',
+                    'index' => 'kelompok',
+                ],
+                [
+                    'label' => 'Sub Kelompok',
+                    'index' => 'subkelompok',
+                ],
+                [
+                    'label' => 'Kategori',
+                    'index' => 'kategori',
+                ],
+                [
+                    'label' => 'Merk',
+                    'index' => 'merk',
+                ],
+                [
+                    'label' => 'Status Aktif',
+                    'index' => 'statusaktif',
+                ],
+            ];
+            $this->toExcel($judulLaporan, $stoks, $columns);
         }
-        $columns = [
-            [
-                'label' => 'No',
-            ],
-            [
-                'label' => 'Nama Stok',
-                'index' => 'namastok',
-            ],
-            [
-                'label' => 'Qty Min',
-                'index' => 'qtymin',
-            ],
-            [
-                'label' => 'Qty Max',
-                'index' => 'qtymax',
-            ],
-            [
-                'label' => 'Keterangan',
-                'index' => 'keterangan',
-            ],
-            [
-                'label' => 'Nama Terpusat',
-                'index' => 'namaterpusat',
-            ],
-            [
-                'label' => 'Jenis Trado',
-                'index' => 'jenistrado',
-            ],
-            [
-                'label' => 'Kelompok',
-                'index' => 'kelompok',
-            ],
-            [
-                'label' => 'Sub Kelompok',
-                'index' => 'subkelompok',
-            ],
-            [
-                'label' => 'Kategori',
-                'index' => 'kategori',
-            ],
-            [
-                'label' => 'Merk',
-                'index' => 'merk',
-            ],
-            [
-                'label' => 'Status Aktif',
-                'index' => 'statusaktif',
-            ],
-        ];
-        $this->toExcel('Stok', $stoks, $columns);
     }
 }

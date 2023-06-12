@@ -79,6 +79,12 @@ class SubKelompok extends MyModel
     {
         $this->setRequestParameters();
 
+        $getJudul = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))
+        ->select('text')
+        ->where('grp', 'JUDULAN LAPORAN')
+        ->where('subgrp', 'JUDULAN LAPORAN')
+        ->first();
+
         $query = DB::table($this->table)->select(
             'subkelompok.id',
             'subkelompok.kodesubkelompok',
@@ -87,7 +93,9 @@ class SubKelompok extends MyModel
             'parameter.memo as statusaktif',
             'subkelompok.modifiedby',
             'subkelompok.created_at',
-            'subkelompok.updated_at'
+            'subkelompok.updated_at',
+            DB::raw("'Laporan Sub Kelompok' as judulLaporan"),
+            DB::raw("'" . $getJudul->text . "' as judul")
         )
             ->leftJoin('kelompok', 'subkelompok.kelompok_id', '=', 'kelompok.id')
             ->leftJoin('parameter', 'subkelompok.statusaktif', '=', 'parameter.id');

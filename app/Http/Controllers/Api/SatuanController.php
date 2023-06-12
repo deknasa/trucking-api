@@ -9,6 +9,7 @@ use App\Http\Requests\StoreLogTrailRequest;
 use App\Models\Parameter;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\RangeExportReportRequest;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -211,42 +212,52 @@ class SatuanController extends Controller
             'data' => $data
         ]);
     }
-    public function export()
+    public function export(RangeExportReportRequest $request)
     {
-        $response = $this->index();
-        $decodedResponse = json_decode($response->content(), true);
-        $satuans = $decodedResponse['data'];
+
+        if (request()->cekExport) {
+            return response([
+                'status' => true,
+            ]);
+        } else {
+
+            $response = $this->index();
+            $decodedResponse = json_decode($response->content(), true);
+            $satuans = $decodedResponse['data'];
+
+            $judulLaporan = $satuans[0]['judulLaporan'];
 
 
-        $i = 0;
-        foreach ($satuans as $index => $params) {
+            $i = 0;
+            foreach ($satuans as $index => $params) {
 
-            $statusaktif = $params['statusaktif'];
+                $statusaktif = $params['statusaktif'];
 
-            $result = json_decode($statusaktif, true);
+                $result = json_decode($statusaktif, true);
 
-            $statusaktif = $result['MEMO'];
-
-
-            $satuans[$i]['statusaktif'] = $statusaktif;
+                $statusaktif = $result['MEMO'];
 
 
-            $i++;
+                $satuans[$i]['statusaktif'] = $statusaktif;
+
+
+                $i++;
+            }
+            $columns = [
+                [
+                    'label' => 'No',
+                ],
+                [
+                    'label' => 'Satuan',
+                    'index' => 'satuan',
+                ],
+                [
+                    'label' => 'Status Aktif',
+                    'index' => 'statusaktif',
+                ],
+            ];
+
+            $this->toExcel($judulLaporan, $satuans, $columns);
         }
-        $columns = [
-            [
-                'label' => 'No',
-            ],
-            [
-                'label' => 'Satuan',
-                'index' => 'satuan',
-            ],
-            [
-                'label' => 'Status Aktif',
-                'index' => 'statusaktif',
-            ],
-        ];
-
-        $this->toExcel('Satuan', $satuans, $columns);
     }
 }
