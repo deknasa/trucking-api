@@ -11,6 +11,7 @@ use App\Http\Requests\UpdateSupirRequest;
 use App\Http\Requests\UpdateSupplierRequest;
 use Illuminate\Http\Request;
 use App\Models\Parameter;
+use App\Http\Requests\RangeExportReportRequest;
 
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
@@ -285,116 +286,127 @@ class SupplierController extends Controller
         ]);
     }
 
-    public function export()
+    public function export(RangeExportReportRequest $request)
     {
-        $response = $this->index();
-        $decodedResponse = json_decode($response->content(), true);
-        $suppliers = $decodedResponse['data'];
+        if (request()->cekExport) {
+            return response([
+                'status' => true,
+            ]);
+        }else {
 
-        $i = 0;
-        foreach ($suppliers as $index => $params) {
+            $response = $this->index();
+            $decodedResponse = json_decode($response->content(), true);
+            $suppliers = $decodedResponse['data'];
 
-            $statusaktif = $params['statusaktif'];
-            $statusDaftarHarga = $params['statusdaftarharga'];
+            $judulLaporan = $suppliers[0]['judulLaporan'];
+            $i = 0;
+            foreach ($suppliers as $index => $params) {
+    
+                $statusaktif = $params['statusaktif'];
+                $statusDaftarHarga = $params['statusdaftarharga'];
+    
+                $result = json_decode($statusaktif, true);
+                $resultDaftarHarga = json_decode($statusDaftarHarga, true);
+    
+                $statusaktif = $result['MEMO'];
+                $statusDaftarHarga = $resultDaftarHarga['MEMO'];
+    
+                $suppliers[$i]['statusaktif'] = $statusaktif;
+                $suppliers[$i]['statusdaftarharga'] = $statusDaftarHarga;
+                $i++;
+            }
+    
+            $columns = [
+                [
+                    'label' => 'No',
+                ],
+                [
+                    'label' => 'ID',
+                    'index' => 'id',
+                ],
+                [
+                    'label' => 'Nama Supplier',
+                    'index' => 'namasupplier',
+                ],
+                [
+                    'label' => 'Nama Kontak',
+                    'index' => 'namakontak',
+                ],
+                [
+                    'label' => 'Alamat',
+                    'index' => 'alamat',
+                ],
+                [
+                    'label' => 'Kota',
+                    'index' => 'kota',
+                ],
+                [
+                    'label' => 'Kode Pos',
+                    'index' => 'kodepos',
+                ],
+                [
+                    'label' => 'No Telp 1',
+                    'index' => 'notelp1',
+                ],
+                [
+                    'label' => 'No Telp 2',
+                    'index' => 'notelp2',
+                ],
+                [
+                    'label' => 'Email',
+                    'index' => 'email',
+                ],
+                [
+                    'label' => 'Status Aktif',
+                    'index' => 'statusaktif',
+                ],
+                [
+                    'label' => 'Web',
+                    'index' => 'web',
+                ],
+                [
+                    'label' => 'Nama Pemilik',
+                    'index' => 'namapemilik',
+                ],
+                [
+                    'label' => 'Jenis Usaha',
+                    'index' => 'jenisusaha',
+                ],
+                // [
+                //     'label' => 'TOP',
+                //     'index' => 'top',
+                // ],
+                [
+                    'label' => 'Bank',
+                    'index' => 'bank',
+                ],
+                [
+                    'label' => 'Rekening Bank',
+                    'index' => 'rekeningbank',
+                ],
+                [
+                    'label' => 'Nama Rekening',
+                    'index' => 'namarekening',
+                ],
+                [
+                    'label' => 'Jabatan',
+                    'index' => 'jabatan',
+                ],
+                [
+                    'label' => 'Status Daftar Harga',
+                    'index' => 'statusdaftarharga',
+                ],
+                [
+                    'label' => 'Kategori Usaha',
+                    'index' => 'kategoriusaha',
+                ],
+    
+            ];
+    
+            $this->toExcel($judulLaporan, $suppliers, $columns);
 
-            $result = json_decode($statusaktif, true);
-            $resultDaftarHarga = json_decode($statusDaftarHarga, true);
 
-            $statusaktif = $result['MEMO'];
-            $statusDaftarHarga = $resultDaftarHarga['MEMO'];
-
-            $suppliers[$i]['statusaktif'] = $statusaktif;
-            $suppliers[$i]['statusdaftarharga'] = $statusDaftarHarga;
-            $i++;
         }
-
-        $columns = [
-            [
-                'label' => 'No',
-            ],
-            [
-                'label' => 'ID',
-                'index' => 'id',
-            ],
-            [
-                'label' => 'Nama Supplier',
-                'index' => 'namasupplier',
-            ],
-            [
-                'label' => 'Nama Kontak',
-                'index' => 'namakontak',
-            ],
-            [
-                'label' => 'Alamat',
-                'index' => 'alamat',
-            ],
-            [
-                'label' => 'Kota',
-                'index' => 'kota',
-            ],
-            [
-                'label' => 'Kode Pos',
-                'index' => 'kodepos',
-            ],
-            [
-                'label' => 'No Telp 1',
-                'index' => 'notelp1',
-            ],
-            [
-                'label' => 'No Telp 2',
-                'index' => 'notelp2',
-            ],
-            [
-                'label' => 'Email',
-                'index' => 'email',
-            ],
-            [
-                'label' => 'Status Aktif',
-                'index' => 'statusaktif',
-            ],
-            [
-                'label' => 'Web',
-                'index' => 'web',
-            ],
-            [
-                'label' => 'Nama Pemilik',
-                'index' => 'namapemilik',
-            ],
-            [
-                'label' => 'Jenis Usaha',
-                'index' => 'jenisusaha',
-            ],
-            // [
-            //     'label' => 'TOP',
-            //     'index' => 'top',
-            // ],
-            [
-                'label' => 'Bank',
-                'index' => 'bank',
-            ],
-            [
-                'label' => 'Rekening Bank',
-                'index' => 'rekeningbank',
-            ],
-            [
-                'label' => 'Nama Rekening',
-                'index' => 'namarekening',
-            ],
-            [
-                'label' => 'Jabatan',
-                'index' => 'jabatan',
-            ],
-            [
-                'label' => 'Status Daftar Harga',
-                'index' => 'statusdaftarharga',
-            ],
-            [
-                'label' => 'Kategori Usaha',
-                'index' => 'kategoriusaha',
-            ],
-
-        ];
-
-        $this->toExcel('Supplier', $suppliers, $columns);
+        
     }
 }
