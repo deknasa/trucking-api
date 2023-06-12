@@ -9,6 +9,7 @@ use App\Http\Requests\StoreLogTrailRequest;
 use App\Models\Parameter;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\RangeExportReportRequest;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -245,11 +246,20 @@ class JenisOrderController extends Controller
             'data' => $data
         ]);
     }
-    public function export()
+    public function export(RangeExportReportRequest $request)
     {
+
+        if (request()->cekExport) {
+            return response([
+                'status' => true,
+            ]);
+        } else {
+
         $response = $this->index();
         $decodedResponse = json_decode($response->content(), true);
         $jenisorders = $decodedResponse['data'];
+
+        $judulLaporan = $jenisorders[0]['judulLaporan'];
 
         $i = 0;
         foreach ($jenisorders as $index => $params) {
@@ -284,6 +294,7 @@ class JenisOrderController extends Controller
             ],
         ];
 
-        $this->toExcel('Jenis Order', $jenisorders, $columns);
+        $this->toExcel($judulLaporan, $jenisorders, $columns);
+    }
     }
 }

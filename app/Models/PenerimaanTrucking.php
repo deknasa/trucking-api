@@ -60,6 +60,12 @@ class PenerimaanTrucking extends MyModel
     {
         $this->setRequestParameters();
 
+        $getJudul = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))
+        ->select('text')
+        ->where('grp', 'JUDULAN LAPORAN')
+        ->where('subgrp', 'JUDULAN LAPORAN')
+        ->first();
+
         $query = DB::table($this->table)->from(DB::raw("$this->table with (readuncommitted)"))
             ->select(
                 'penerimaantrucking.id',
@@ -76,7 +82,9 @@ class PenerimaanTrucking extends MyModel
                 'parameter.memo as format',
                 'penerimaantrucking.created_at',
                 'penerimaantrucking.modifiedby',
-                'penerimaantrucking.updated_at'
+                'penerimaantrucking.updated_at',
+                DB::raw("'Laporan Penerimaan Trucking' as judulLaporan"),
+                DB::raw("'" . $getJudul->text . "' as judul")
             )
             ->leftJoin(DB::raw("akunpusat as debet  with (readuncommitted)"), "penerimaantrucking.coadebet", "debet.coa")
             ->leftJoin(DB::raw("akunpusat as kredit  with (readuncommitted)"), "penerimaantrucking.coakredit", "kredit.coa")

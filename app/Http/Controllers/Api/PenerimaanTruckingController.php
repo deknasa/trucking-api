@@ -9,6 +9,7 @@ use App\Http\Requests\StoreLogTrailRequest;
 use App\Http\Requests\StorePenerimaanTruckingRequest;
 use App\Http\Requests\UpdatePenerimaanTruckingRequest;
 use App\Http\Requests\DestroyPenerimaanTruckingRequest;
+use App\Http\Requests\RangeExportReportRequest;
 use Illuminate\Database\QueryException;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -31,17 +32,18 @@ class PenerimaanTruckingController extends Controller
             ]
         ]);
     }
-    public function cekValidasi($id) {
-        $penerimaanTrucking= new PenerimaanTrucking();
-        $cekdata=$penerimaanTrucking->cekvalidasihapus($id);
-        if ($cekdata['kondisi']==true) {
+    public function cekValidasi($id)
+    {
+        $penerimaanTrucking = new PenerimaanTrucking();
+        $cekdata = $penerimaanTrucking->cekvalidasihapus($id);
+        if ($cekdata['kondisi'] == true) {
             $query = DB::table('error')
-            ->select(
-                DB::raw("ltrim(rtrim(keterangan))+' (".$cekdata['keterangan'].")' as keterangan")
+                ->select(
+                    DB::raw("ltrim(rtrim(keterangan))+' (" . $cekdata['keterangan'] . ")' as keterangan")
                 )
-            ->where('kodeerror', '=', 'SATL')
-            ->get();
-        $keterangan = $query['0'];
+                ->where('kodeerror', '=', 'SATL')
+                ->get();
+            $keterangan = $query['0'];
 
             $data = [
                 'status' => false,
@@ -51,7 +53,6 @@ class PenerimaanTruckingController extends Controller
             ];
 
             return response($data);
-         
         } else {
             $data = [
                 'status' => false,
@@ -60,10 +61,10 @@ class PenerimaanTruckingController extends Controller
                 'kondisi' => $cekdata['kondisi'],
             ];
 
-            return response($data); 
+            return response($data);
         }
     }
-    
+
     /**
      * @ClassName 
      */
@@ -225,81 +226,88 @@ class PenerimaanTruckingController extends Controller
         }
     }
 
-    public function export()
+    public function export(RangeExportReportRequest $request)
     {
-        $response = $this->index();
-        $decodedResponse = json_decode($response->content(), true);
-        $penerimaanTruckings = $decodedResponse['data'];
 
-        $i = 0;
-        foreach ($penerimaanTruckings as $index => $params) {
+        if (request()->cekExport) {
+            return response([
+                'status' => true,
+            ]);
+        } else {
+            $response = $this->index();
+            $decodedResponse = json_decode($response->content(), true);
+            $penerimaanTruckings = $decodedResponse['data'];
 
-            $statusaktif = $params['format'];
+            $judulLaporan = $penerimaanTruckings[0]['judulLaporan'];
 
-            $result = json_decode($statusaktif, true);
+            $i = 0;
+            foreach ($penerimaanTruckings as $index => $params) {
 
-            $statusaktif = $result['MEMO'];
+                $statusaktif = $params['format'];
+
+                $result = json_decode($statusaktif, true);
+
+                $statusaktif = $result['MEMO'];
 
 
-            $penerimaanTruckings[$i]['format'] = $statusaktif;
-
-        
-            $i++;
+                $penerimaanTruckings[$i]['format'] = $statusaktif;
 
 
+                $i++;
+            }
+
+            $columns = [
+                [
+                    'label' => 'No',
+                ],
+                [
+                    'label' => 'Kode Penerimaan',
+                    'index' => 'kodepenerimaan',
+                ],
+                [
+                    'label' => 'Keterangan',
+                    'index' => 'keterangan',
+                ],
+                [
+                    'label' => 'COA Debet',
+                    'index' => 'coadebet',
+                ],
+                [
+                    'label' => 'COA Kredit',
+                    'index' => 'coakredit',
+                ],
+                [
+                    'label' => 'COA Posting Debet',
+                    'index' => 'coapostingdebet',
+                ],
+                [
+                    'label' => 'COA Posting Kredit',
+                    'index' => 'coapostingkredit',
+                ],
+                [
+                    'label' => 'COA Debet Keterangan',
+                    'index' => 'coadebet_keterangan',
+                ],
+                [
+                    'label' => 'COA Kredit Keterangan',
+                    'index' => 'coakredit_keterangan',
+                ],
+                [
+                    'label' => 'COA Posting Debet Keterangan',
+                    'index' => 'coapostingdebet_keterangan',
+                ],
+                [
+                    'label' => 'COA Posting Kredit Keterangan',
+                    'index' => 'coapostingkredit_keterangan',
+                ],
+                [
+                    'label' => 'Format Bukti',
+                    'index' => 'format',
+                ],
+            ];
+
+            $this->toExcel($judulLaporan, $penerimaanTruckings, $columns);
         }
-
-        $columns = [
-            [
-                'label' => 'No',
-            ],
-            [
-                'label' => 'Kode Penerimaan',
-                'index' => 'kodepenerimaan',
-            ],
-            [
-                'label' => 'Keterangan',
-                'index' => 'keterangan',
-            ],
-            [
-                'label' => 'COA Debet',
-                'index' => 'coadebet',
-            ],
-            [
-                'label' => 'COA Kredit',
-                'index' => 'coakredit',
-            ],
-            [
-                'label' => 'COA Posting Debet',
-                'index' => 'coapostingdebet',
-            ],
-            [
-                'label' => 'COA Posting Kredit',
-                'index' => 'coapostingkredit',
-            ],
-            [
-                'label' => 'COA Debet Keterangan',
-                'index' => 'coadebet_keterangan',
-            ],
-            [
-                'label' => 'COA Kredit Keterangan',
-                'index' => 'coakredit_keterangan',
-            ],
-            [
-                'label' => 'COA Posting Debet Keterangan',
-                'index' => 'coapostingdebet_keterangan',
-            ],
-            [
-                'label' => 'COA Posting Kredit Keterangan',
-                'index' => 'coapostingkredit_keterangan',
-            ],
-            [
-                'label' => 'Format Bukti',
-                'index' => 'format',
-            ],
-        ];
-
-        $this->toExcel('Penerimaan Trucking', $penerimaanTruckings, $columns);
     }
 
     public function fieldLength()
@@ -335,7 +343,7 @@ class PenerimaanTruckingController extends Controller
             $table->string('coakredit', 300)->nullable();
             $table->string('coapostingdebet', 300)->nullable();
             $table->string('coapostingkredit', 300)->nullable();
-            
+
             $table->string('format', 300)->nullable();
             $table->string('modifiedby', 30)->nullable();
             $table->dateTime('created_at')->nullable();
