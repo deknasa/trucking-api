@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\DestroyPenerimaRequest;
+use App\Http\Requests\RangeExportReportRequest;
 use App\Http\Requests\StoreLogTrailRequest;
 use App\Models\Penerima;
 use App\Http\Requests\StorePenerimaRequest;
@@ -250,11 +251,20 @@ class PenerimaController extends Controller
         ]);
     }
 
-    public function export()
+    public function export(RangeExportReportRequest $request)
     {
+
+        if (request()->cekExport) {
+            return response([
+                'status' => true,
+            ]);
+        } else {
+
         $response = $this->index();
         $decodedResponse = json_decode($response->content(), true);
         $penerimas = $decodedResponse['data'];
+
+        $judulLaporan = $penerimas[0]['judulLaporan'];
 
         $i = 0;
         foreach ($penerimas as $index => $params) {
@@ -278,10 +288,6 @@ class PenerimaController extends Controller
                 'label' => 'No',
             ],
             [
-                'label' => 'ID',
-                'index' => 'id',
-            ],
-            [
                 'label' => 'Nama Penerima',
                 'index' => 'namapenerima',
             ],
@@ -303,6 +309,7 @@ class PenerimaController extends Controller
             ],
         ];
 
-        $this->toExcel('Penerima', $penerimas, $columns);
+        $this->toExcel($judulLaporan, $penerimas, $columns);
+    }
     }
 }

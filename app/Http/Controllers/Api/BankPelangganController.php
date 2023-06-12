@@ -9,6 +9,7 @@ use App\Http\Requests\StoreLogTrailRequest;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\DestroyBankPelangganRequest;
+use App\Http\Requests\RangeExportReportRequest;
 use App\Models\LogTrail;
 use App\Models\Parameter;
 
@@ -249,11 +250,19 @@ class BankPelangganController extends Controller
             'data' => $data
         ]);
     }
-    public function export()
+    public function export(RangeExportReportRequest $request)
     {
+        if (request()->cekExport) {
+            return response([
+                'status' => true,
+            ]);
+        } else {
+
         $response = $this->index();
         $decodedResponse = json_decode($response->content(), true);
         $bankpelanggans = $decodedResponse['data'];
+
+        $judulLaporan = $bankpelanggans[0]['judulLaporan'];
 
         $i = 0;
         foreach ($bankpelanggans as $index => $params) {
@@ -290,6 +299,7 @@ class BankPelangganController extends Controller
             ],
         ];
 
-        $this->toExcel('Bank Pelanggan', $bankpelanggans, $columns);
+        $this->toExcel($judulLaporan, $bankpelanggans, $columns);
+    }
     }
 }
