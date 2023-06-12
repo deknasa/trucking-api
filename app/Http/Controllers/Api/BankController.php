@@ -10,6 +10,7 @@ use App\Http\Requests\StoreLogTrailRequest;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\DestroyBankRequest;
+use App\Http\Requests\RangeExportReportRequest;
 use App\Models\LogTrail;
 use App\Models\Parameter;
 
@@ -36,17 +37,18 @@ class BankController extends Controller
         ]);
     }
 
-    public function cekValidasi($id) {
-        $bank= new Bank();
-        $cekdata=$bank->cekvalidasihapus($id);
-        if ($cekdata['kondisi']==true) {
+    public function cekValidasi($id)
+    {
+        $bank = new Bank();
+        $cekdata = $bank->cekvalidasihapus($id);
+        if ($cekdata['kondisi'] == true) {
             $query = DB::table('error')
-            ->select(
-                DB::raw("ltrim(rtrim(keterangan))+' (".$cekdata['keterangan'].")' as keterangan")
+                ->select(
+                    DB::raw("ltrim(rtrim(keterangan))+' (" . $cekdata['keterangan'] . ")' as keterangan")
                 )
-            ->where('kodeerror', '=', 'SATL')
-            ->get();
-        $keterangan = $query['0'];
+                ->where('kodeerror', '=', 'SATL')
+                ->get();
+            $keterangan = $query['0'];
 
             $data = [
                 'status' => false,
@@ -56,7 +58,6 @@ class BankController extends Controller
             ];
 
             return response($data);
-         
         } else {
             $data = [
                 'status' => false,
@@ -65,7 +66,7 @@ class BankController extends Controller
                 'kondisi' => $cekdata['kondisi'],
             ];
 
-            return response($data); 
+            return response($data);
         }
     }
     public function default()
@@ -194,7 +195,7 @@ class BankController extends Controller
 
         $bank = new Bank();
         $bank = $bank->lockAndDestroy($id);
-        
+
         if ($bank) {
             $logTrail = [
                 'namatabel' => strtoupper($bank->getTable()),
@@ -236,7 +237,7 @@ class BankController extends Controller
     {
         $data = [
             'status' => Parameter::where(['grp' => 'status aktif'])->get(),
-   
+
         ];
 
         return response([
@@ -259,78 +260,86 @@ class BankController extends Controller
             'data' => $data
         ]);
     }
-    public function export()
+    public function export(RangeExportReportRequest $request)
     {
-        $response = $this->index();
-        $decodedResponse = json_decode($response->content(), true);
-        $banks = $decodedResponse['data'];
+        if (request()->cekExport) {
+            return response([
+                'status' => true,
+            ]);
+        } else {
+
+            $response = $this->index();
+            $decodedResponse = json_decode($response->content(), true);
+            $banks = $decodedResponse['data'];
+
+            $judulLaporan = $banks[0]['judulLaporan'];
+
+            $i = 0;
+            foreach ($banks as $index => $params) {
+
+                $statusaktif = $params['statusaktif'];
+                $statusDefault = $params['statusdefault'];
+                $formatPenerimaan = $params['formatpenerimaan'];
+                $formatPengeluaran = $params['formatpengeluaran'];
+
+                $result = json_decode($statusaktif, true);
+                $resultDefault = json_decode($statusDefault, true);
+                $resultPengeluaran = json_decode($formatPengeluaran, true);
+                $resultPenerimaan = json_decode($formatPenerimaan, true);
+
+                $statusaktif = $result['MEMO'];
+                $statusDefault = $resultDefault['MEMO'];
+                $formatPenerimaan = $resultPengeluaran['MEMO'];
+                $formatPengeluaran = $resultPenerimaan['MEMO'];
 
 
-        $i = 0;
-        foreach ($banks as $index => $params) {
-
-            $statusaktif = $params['statusaktif'];
-            $statusDefault = $params['statusdefault'];
-            $formatPenerimaan = $params['formatpenerimaan'];
-            $formatPengeluaran = $params['formatpengeluaran'];
-
-            $result = json_decode($statusaktif, true);
-            $resultDefault = json_decode($statusDefault, true);
-            $resultPengeluaran = json_decode($formatPengeluaran, true);
-            $resultPenerimaan = json_decode($formatPenerimaan, true);
-
-            $statusaktif = $result['MEMO'];
-            $statusDefault = $resultDefault['MEMO'];
-            $formatPenerimaan = $resultPengeluaran['MEMO'];
-            $formatPengeluaran = $resultPenerimaan['MEMO'];
+                $banks[$i]['statusaktif'] = $statusaktif;
+                $banks[$i]['statusdefault'] = $statusDefault;
+                $banks[$i]['formatpenerimaan'] = $formatPenerimaan;
+                $banks[$i]['formatpengeluaran'] = $formatPengeluaran;
 
 
-            $banks[$i]['statusaktif'] = $statusaktif;
-            $banks[$i]['statusdefault'] = $statusDefault;
-            $banks[$i]['formatpenerimaan'] = $formatPenerimaan;
-            $banks[$i]['formatpengeluaran'] = $formatPengeluaran;
+                $i++;
+            }
+            $columns = [
+                [
+                    'label' => 'No',
+                ],
+                [
+                    'label' => 'Kode Bank',
+                    'index' => 'kodebank',
+                ],
+                [
+                    'label' => 'Nama Bank',
+                    'index' => 'namabank',
+                ],
+                [
+                    'label' => 'COA',
+                    'index' => 'coa',
+                ],
+                [
+                    'label' => 'Tipe',
+                    'index' => 'tipe',
+                ],
+                [
+                    'label' => 'Status Default',
+                    'index' => 'statusdefault',
+                ],
+                [
+                    'label' => 'Format Penerimaan',
+                    'index' => 'formatpenerimaan',
+                ],
+                [
+                    'label' => 'Format Pengeluaran',
+                    'index' => 'formatpengeluaran',
+                ],
+                [
+                    'label' => 'Status AKtif',
+                    'index' => 'statusaktif',
+                ],
+            ];
 
-
-            $i++;
+            $this->toExcel($judulLaporan, $banks, $columns);
         }
-        $columns = [
-            [
-                'label' => 'No',
-            ],
-            [
-                'label' => 'Kode Bank',
-                'index' => 'kodebank',
-            ],
-            [
-                'label' => 'Nama Bank',
-                'index' => 'namabank',
-            ],
-            [
-                'label' => 'COA',
-                'index' => 'coa',
-            ],
-            [
-                'label' => 'Tipe',
-                'index' => 'tipe',
-            ],
-            [
-                'label' => 'Status Default',
-                'index' => 'statusdefault',
-            ],
-            [
-                'label' => 'Format Penerimaan',
-                'index' => 'formatpenerimaan',
-            ],
-            [
-                'label' => 'Format Pengeluaran',
-                'index' => 'formatpengeluaran',
-            ],
-            [
-                'label' => 'Status AKtif',
-                'index' => 'statusaktif',
-            ],
-        ];
-
-        $this->toExcel('Bank', $banks, $columns);
     }
 }
