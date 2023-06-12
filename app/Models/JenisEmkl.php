@@ -58,6 +58,12 @@ class JenisEmkl extends MyModel
     {
         $this->setRequestParameters();
 
+        $getJudul = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))
+            ->select('text')
+            ->where('grp', 'JUDULAN LAPORAN')
+            ->where('subgrp', 'JUDULAN LAPORAN')
+            ->first();
+
         $aktif = request()->aktif ?? '';
 
         $query = DB::table($this->table)->from(DB::raw("$this->table with (readuncommitted)"))
@@ -68,7 +74,9 @@ class JenisEmkl extends MyModel
                 'parameter.memo as statusaktif',
                 'jenisemkl.modifiedby',
                 'jenisemkl.created_at',
-                'jenisemkl.updated_at'
+                'jenisemkl.updated_at',
+                DB::raw("'Laporan Jenis EMKL' as judulLaporan"),
+                DB::raw("'" . $getJudul->text . "' as judul")
             )
             ->leftJoin(DB::raw("parameter with (readuncommitted)"), 'jenisemkl.statusaktif', '=', 'parameter.id');
 
@@ -202,7 +210,6 @@ class JenisEmkl extends MyModel
                         } else {
                             // $query = $query->where($filters['field'], 'LIKE', "%$filters[data]%");
                             $query = $query->whereRaw($this->table . ".[" .  $filters['field'] . "] LIKE '%" . escapeLike($filters['data']) . "%' escape '|'");
-
                         }
                     }
 
@@ -221,7 +228,6 @@ class JenisEmkl extends MyModel
                             } else {
                                 // $query = $query->orWhere($filters['field'], 'LIKE', "%$filters[data]%");
                                 $query = $query->OrwhereRaw($this->table . ".[" .  $filters['field'] . "] LIKE '%" . escapeLike($filters['data']) . "%' escape '|'");
-
                             }
                         }
                     });

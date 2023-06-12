@@ -60,6 +60,12 @@ class PengeluaranTrucking extends MyModel
     {
         $this->setRequestParameters();
 
+        $getJudul = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))
+            ->select('text')
+            ->where('grp', 'JUDULAN LAPORAN')
+            ->where('subgrp', 'JUDULAN LAPORAN')
+            ->first();
+
         $query = DB::table($this->table)->from(DB::raw("$this->table with (readuncommitted)"))
             ->select(
                 'pengeluarantrucking.id',
@@ -76,7 +82,9 @@ class PengeluaranTrucking extends MyModel
                 'parameter.memo as format',
                 'pengeluarantrucking.created_at',
                 'pengeluarantrucking.modifiedby',
-                'pengeluarantrucking.updated_at'
+                'pengeluarantrucking.updated_at',
+                DB::raw("'Laporan Pengeluaran Trucking' as judulLaporan"),
+                DB::raw("'" . $getJudul->text . "' as judul")
             )
 
             ->leftJoin(DB::raw("akunpusat as debet  with (readuncommitted)"), "pengeluarantrucking.coadebet", "debet.coa")
@@ -179,7 +187,7 @@ class PengeluaranTrucking extends MyModel
             return $query->orderBy('postingdebet.keterangancoa', $this->params['sortOrder']);
         } else if ($this->params['sortIndex'] == 'coapostingkredit_keterangan') {
             return $query->orderBy('postingkredit.keterangancoa', $this->params['sortOrder']);
-        }else{
+        } else {
             return $query->orderBy($this->table . '.' . $this->params['sortIndex'], $this->params['sortOrder']);
         }
     }
@@ -206,7 +214,6 @@ class PengeluaranTrucking extends MyModel
                         } else {
                             // $query = $query->where($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
                             $query = $query->whereRaw($this->table . ".[" .  $filters['field'] . "] LIKE '%" . escapeLike($filters['data']) . "%' escape '|'");
-
                         }
                     }
 
@@ -229,7 +236,6 @@ class PengeluaranTrucking extends MyModel
                             } else {
                                 // $query->orWhere($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
                                 $query = $query->OrwhereRaw($this->table . ".[" .  $filters['field'] . "] LIKE '%" . escapeLike($filters['data']) . "%' escape '|'");
-
                             }
                         }
                     });

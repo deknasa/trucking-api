@@ -91,6 +91,12 @@ class JenisOrder extends MyModel
     {
         $this->setRequestParameters();
 
+        $getJudul = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))
+        ->select('text')
+        ->where('grp', 'JUDULAN LAPORAN')
+        ->where('subgrp', 'JUDULAN LAPORAN')
+        ->first();
+
         $aktif = request()->aktif ?? '';
 
         $query = DB::table($this->table)->from(DB::raw("$this->table with (readuncommitted)"))
@@ -101,7 +107,9 @@ class JenisOrder extends MyModel
                 'parameter.memo as statusaktif',
                 'jenisorder.modifiedby',
                 'jenisorder.created_at',
-                'jenisorder.updated_at'
+                'jenisorder.updated_at',
+                DB::raw("'Laporan Jenis Order' as judulLaporan"),
+                DB::raw("'" . $getJudul->text . "' as judul")
             )
             ->leftJoin(DB::raw("parameter with (readuncommitted)"), 'jenisorder.statusaktif', '=', 'parameter.id');
 

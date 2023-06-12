@@ -10,6 +10,7 @@ use App\Http\Requests\UpdateStatusContainerRequest;
 use Illuminate\Database\QueryException;
 use Illuminate\Http\Request;
 use App\Http\Requests\DestroyStatusContainerRequest;
+use App\Http\Requests\RangeExportReportRequest;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 
@@ -31,17 +32,18 @@ class StatusContainerController extends Controller
         ]);
     }
 
-    public function cekValidasi($id) {
-        $statusContainer= new StatusContainer();
-        $cekdata=$statusContainer->cekvalidasihapus($id);
-        if ($cekdata['kondisi']==true) {
+    public function cekValidasi($id)
+    {
+        $statusContainer = new StatusContainer();
+        $cekdata = $statusContainer->cekvalidasihapus($id);
+        if ($cekdata['kondisi'] == true) {
             $query = DB::table('error')
-            ->select(
-                DB::raw("ltrim(rtrim(keterangan))+' (".$cekdata['keterangan'].")' as keterangan")
+                ->select(
+                    DB::raw("ltrim(rtrim(keterangan))+' (" . $cekdata['keterangan'] . ")' as keterangan")
                 )
-            ->where('kodeerror', '=', 'SATL')
-            ->get();
-        $keterangan = $query['0'];
+                ->where('kodeerror', '=', 'SATL')
+                ->get();
+            $keterangan = $query['0'];
 
             $data = [
                 'status' => false,
@@ -51,7 +53,6 @@ class StatusContainerController extends Controller
             ];
 
             return response($data);
-         
         } else {
             $data = [
                 'status' => false,
@@ -60,10 +61,10 @@ class StatusContainerController extends Controller
                 'kondisi' => $cekdata['kondisi'],
             ];
 
-            return response($data); 
+            return response($data);
         }
     }
-    
+
     public function default()
     {
 
@@ -239,48 +240,55 @@ class StatusContainerController extends Controller
     /**
      * @ClassName
      */
-    public function export()
+    public function export(RangeExportReportRequest $request)
     {
-        $response = $this->index();
-        $decodedResponse = json_decode($response->content(), true);
-        $statusContainers = $decodedResponse['data'];
 
-        $i = 0;
-        foreach ($statusContainers as $index => $params) {
+        if (request()->cekExport) {
+            return response([
+                'status' => true,
+            ]);
+        } else {
+            $response = $this->index();
+            $decodedResponse = json_decode($response->content(), true);
+            $statusContainers = $decodedResponse['data'];
 
-            $statusaktif = $params['statusaktif'];
+            $judulLaporan = $statusContainers[0]['judulLaporan'];
 
-            $result = json_decode($statusaktif, true);
+            $i = 0;
+            foreach ($statusContainers as $index => $params) {
 
-            $statusaktif = $result['MEMO'];
+                $statusaktif = $params['statusaktif'];
+
+                $result = json_decode($statusaktif, true);
+
+                $statusaktif = $result['MEMO'];
 
 
-            $statusContainers[$i]['statusaktif'] = $statusaktif;
-
-        
-            $i++;
+                $statusContainers[$i]['statusaktif'] = $statusaktif;
 
 
+                $i++;
+            }
+
+            $columns = [
+                [
+                    'label' => 'No',
+                ],
+                [
+                    'label' => 'Kode Status Container',
+                    'index' => 'kodestatuscontainer',
+                ],
+                [
+                    'label' => 'Keterangan',
+                    'index' => 'keterangan',
+                ],
+                [
+                    'label' => 'Status Aktif',
+                    'index' => 'statusaktif',
+                ],
+            ];
+
+            $this->toExcel($judulLaporan, $statusContainers, $columns);
         }
-
-        $columns = [
-            [
-                'label' => 'No',
-            ],
-            [
-                'label' => 'Kode Status Container',
-                'index' => 'kodestatuscontainer',
-            ],
-            [
-                'label' => 'Keterangan',
-                'index' => 'keterangan',
-            ],
-            [
-                'label' => 'Status Aktif',
-                'index' => 'statusaktif',
-            ],
-        ];
-
-        $this->toExcel('Status Container', $statusContainers, $columns);
     }
 }
