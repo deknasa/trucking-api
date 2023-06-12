@@ -7,6 +7,7 @@ use App\Http\Requests\StoreAbsenTradoRequest;
 use App\Http\Requests\StoreLogTrailRequest;
 use App\Http\Requests\UpdateAbsenTradoRequest;
 use App\Http\Requests\DestroyAbsenTradoRequest;
+use App\Http\Requests\RangeExportReportRequest;
 use App\Models\AbsenTrado;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -29,7 +30,7 @@ class AbsenTradoController extends Controller
             ]
         ]);
     }
-    
+
     public function default()
     {
         $absenTrado = new AbsenTrado();
@@ -39,17 +40,18 @@ class AbsenTradoController extends Controller
         ]);
     }
 
-    public function cekValidasi($id) {
-        $absenTrado= new AbsenTrado();
-        $cekdata=$absenTrado->cekvalidasihapus($id);
-        if ($cekdata['kondisi']==true) {
+    public function cekValidasi($id)
+    {
+        $absenTrado = new AbsenTrado();
+        $cekdata = $absenTrado->cekvalidasihapus($id);
+        if ($cekdata['kondisi'] == true) {
             $query = DB::table('error')
-            ->select(
-                DB::raw("ltrim(rtrim(keterangan))+' (".$cekdata['keterangan'].")' as keterangan")
+                ->select(
+                    DB::raw("ltrim(rtrim(keterangan))+' (" . $cekdata['keterangan'] . ")' as keterangan")
                 )
-            ->where('kodeerror', '=', 'SATL')
-            ->get();
-        $keterangan = $query['0'];
+                ->where('kodeerror', '=', 'SATL')
+                ->get();
+            $keterangan = $query['0'];
 
             $data = [
                 'status' => false,
@@ -59,7 +61,6 @@ class AbsenTradoController extends Controller
             ];
 
             return response($data);
-         
         } else {
             $data = [
                 'status' => false,
@@ -68,10 +69,10 @@ class AbsenTradoController extends Controller
                 'kondisi' => $cekdata['kondisi'],
             ];
 
-            return response($data); 
+            return response($data);
         }
     }
-    
+
 
     /**
      * @ClassName 
@@ -273,45 +274,55 @@ class AbsenTradoController extends Controller
             'data' => $data
         ]);
     }
-    public function export()
+    public function export(RangeExportReportRequest $request)
     {
-        $response = $this->index();
-        $decodedResponse = json_decode($response->content(), true);
-        $absentrados = $decodedResponse['data'];
 
-        $i = 0;
-        foreach ($absentrados as $index => $params) {
+        if (request()->cekExport) {
+            return response([
+                'status' => true,
+            ]);
+        } else {
 
-            $statusaktif = $params['statusaktif'];
+            $response = $this->index();
+            $decodedResponse = json_decode($response->content(), true);
+            $absentrados = $decodedResponse['data'];
 
-            $result = json_decode($statusaktif, true);
+            $judulLaporan = $absentrados[0]['judulLaporan'];
 
-            $statusaktif = $result['MEMO'];
+            $i = 0;
+            foreach ($absentrados as $index => $params) {
+
+                $statusaktif = $params['statusaktif'];
+
+                $result = json_decode($statusaktif, true);
+
+                $statusaktif = $result['MEMO'];
 
 
-            $absentrados[$i]['statusaktif'] = $statusaktif;
+                $absentrados[$i]['statusaktif'] = $statusaktif;
 
 
-            $i++;
+                $i++;
+            }
+            $columns = [
+                [
+                    'label' => 'No',
+                ],
+                [
+                    'label' => 'Kode Absen',
+                    'index' => 'kodeabsen',
+                ],
+                [
+                    'label' => 'Keterangan',
+                    'index' => 'keterangan',
+                ],
+                [
+                    'label' => 'Status Aktif',
+                    'index' => 'statusaktif',
+                ],
+            ];
+
+            $this->toExcel($judulLaporan, $absentrados, $columns);
         }
-        $columns = [
-            [
-                'label' => 'No',
-            ],
-            [
-                'label' => 'Kode Absen',
-                'index' => 'kodeabsen',
-            ],
-            [
-                'label' => 'Keterangan',
-                'index' => 'keterangan',
-            ],
-            [
-                'label' => 'Status Aktif',
-                'index' => 'statusaktif',
-            ],
-        ];
-
-        $this->toExcel('Absen Trado', $absentrados, $columns);
     }
 }
