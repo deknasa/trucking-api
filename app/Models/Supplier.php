@@ -106,6 +106,12 @@ class Supplier extends MyModel
     {
         $this->setRequestParameters();
 
+        $getJudul = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))
+        ->select('text')
+        ->where('grp', 'JUDULAN LAPORAN')
+        ->where('subgrp', 'JUDULAN LAPORAN')
+        ->first();
+
         $aktif = request()->aktif ?? '';
 
         $query = DB::table($this->table)->select(
@@ -136,7 +142,9 @@ class Supplier extends MyModel
 
             'supplier.modifiedby',
             'supplier.created_at',
-            'supplier.updated_at'
+            'supplier.updated_at',
+            DB::raw("'Laporan Supplier' as judulLaporan"),
+            DB::raw("'" . $getJudul->text . "' as judul")
 
         )
             ->leftJoin('parameter as parameter_statusaktif', "supplier.statusaktif", '=', 'parameter_statusaktif.id')
