@@ -23,9 +23,9 @@ class PengeluaranStok extends MyModel
         'created_at',
         'updated_at',
     ];
-    
+
     public function cekvalidasihapus($id)
-    {     
+    {
 
         $pengeluaranStok = DB::table('pengeluaranstokheader')
             ->from(
@@ -42,7 +42,7 @@ class PengeluaranStok extends MyModel
                 'keterangan' => 'Pengeluaran Stok',
             ];
 
-            
+
             goto selesai;
         }
 
@@ -51,7 +51,7 @@ class PengeluaranStok extends MyModel
             'kondisi' => false,
             'keterangan' => '',
         ];
- 
+
         selesai:
         return $data;
     }
@@ -59,6 +59,12 @@ class PengeluaranStok extends MyModel
     public function get()
     {
         $this->setRequestParameters();
+
+        $getJudul = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))
+            ->select('text')
+            ->where('grp', 'JUDULAN LAPORAN')
+            ->where('subgrp', 'JUDULAN LAPORAN')
+            ->first();
 
         // $query = DB::table($this->table); 
         // $query = $this->selectColumns($query);
@@ -73,13 +79,15 @@ class PengeluaranStok extends MyModel
             'parameterformat.id as formatid',
             'parameterstatushitungstok.memo as statushitungstok',
             'parameterstatushitungstok.text as statushitungstoktext',
-            'parameterstatushitungstok.id as statushitungstokid',            
+            'parameterstatushitungstok.id as statushitungstokid',
             'pengeluaranstok.modifiedby',
             'pengeluaranstok.created_at',
-            'pengeluaranstok.updated_at'
+            'pengeluaranstok.updated_at',
+            DB::raw("'Laporan Pengeluaran Stok' as judulLaporan"),
+            DB::raw("'" . $getJudul->text . "' as judul")
         )
-        ->leftJoin('parameter as parameterformat', 'pengeluaranstok.format', '=', 'parameterformat.id')
-        ->leftJoin('parameter as parameterstatushitungstok', 'pengeluaranstok.statushitungstok', '=', 'parameterstatushitungstok.id');
+            ->leftJoin('parameter as parameterformat', 'pengeluaranstok.format', '=', 'parameterformat.id')
+            ->leftJoin('parameter as parameterstatushitungstok', 'pengeluaranstok.statushitungstok', '=', 'parameterstatushitungstok.id');
 
         $this->totalRows = $query->count();
         $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;
@@ -95,29 +103,30 @@ class PengeluaranStok extends MyModel
 
     public function default()
     {
-        
+
         $tempdefault = '##tempdefault' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
         Schema::create($tempdefault, function ($table) {
             $table->unsignedBigInteger('statushitungstok')->nullable();
         });
 
-        $statusaktif=Parameter::from (
+        $statusaktif = Parameter::from(
             db::Raw("parameter with (readuncommitted)")
         )
-        ->select (
-            'id'
-        )
-        ->where('grp','=','STATUS HITUNG STOK')
-        ->where('subgrp','=','STATUS HITUNG STOK')
-        ->where('default','=','YA')
-        ->first();
+            ->select(
+                'id'
+            )
+            ->where('grp', '=', 'STATUS HITUNG STOK')
+            ->where('subgrp', '=', 'STATUS HITUNG STOK')
+            ->where('default', '=', 'YA')
+            ->first();
         DB::table($tempdefault)->insert(["statushitungstok" => $statusaktif->id]);
-        
-        $query=DB::table($tempdefault)->from(
-            DB::raw($tempdefault )
+
+        $query = DB::table($tempdefault)->from(
+            DB::raw($tempdefault)
         )
             ->select(
-                'statushitungstok');
+                'statushitungstok'
+            );
 
         $data = $query->first();
         // dd($data);
@@ -127,13 +136,13 @@ class PengeluaranStok extends MyModel
     {
         $this->setRequestParameters();
 
-        $temp = '##temp'. rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+        $temp = '##temp' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
 
         Schema::create($temp, function ($table) {
             $table->bigInteger('id')->nullable();
             $table->longText('kodepengeluaran')->nullable();
             $table->longText('keterangan')->nullable();
-            $table->string('coa',50)->nullable();
+            $table->string('coa', 50)->nullable();
             $table->unsignedBigInteger('format')->nullable();
             $table->integer('statushitungstok')->length(11)->nullable();
             $table->string('modifiedby', 50)->nullable();
@@ -141,13 +150,13 @@ class PengeluaranStok extends MyModel
             $table->dateTime('created_at')->nullable();
             $table->dateTime('updated_at')->nullable();
         });
-        
+
         $query = DB::table($modelTable);
         $query = $this->selectColumns($query);
 
         $query = $this->sort($query);
         $models = $this->filter($query);
-        
+
         DB::table($temp)->insertUsing([
             'id',
             'kodepengeluaran',
@@ -191,12 +200,11 @@ class PengeluaranStok extends MyModel
                     foreach ($this->params['filters']['rules'] as $index => $filters) {
                         if ($filters['field'] == 'statushitungstok') {
                             $query = $query->where('parameterstatushitungstok.text', '=', "$filters[data]");
-                        }else if ($filters['field'] == 'created_at' || $filters['field'] == 'updated_at') {
-                            $query = $query->whereRaw("format(".$this->table . "." . $filters['field'].", 'dd-MM-yyyy HH:mm:ss') LIKE '%$filters[data]%'");
-                        } else{
+                        } else if ($filters['field'] == 'created_at' || $filters['field'] == 'updated_at') {
+                            $query = $query->whereRaw("format(" . $this->table . "." . $filters['field'] . ", 'dd-MM-yyyy HH:mm:ss') LIKE '%$filters[data]%'");
+                        } else {
                             // $query = $query->where($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");                         
                             $query = $query->whereRaw($this->table . ".[" .  $filters['field'] . "] LIKE '%" . escapeLike($filters['data']) . "%' escape '|'");
-
                         }
                     }
 
@@ -205,12 +213,11 @@ class PengeluaranStok extends MyModel
                     foreach ($this->params['filters']['rules'] as $index => $filters) {
                         if ($filters['field'] == 'statushitungstok') {
                             $query = $query->orWhere('parameterstatushitungstok.text', '=', "$filters[data]");
-                        }else if ($filters['field'] == 'created_at' || $filters['field'] == 'updated_at') {
-                            $query = $query->orWhereRaw("format(".$this->table . "." . $filters['field'].", 'dd-MM-yyyy HH:mm:ss') LIKE '%$filters[data]%'");
-                        } else{
+                        } else if ($filters['field'] == 'created_at' || $filters['field'] == 'updated_at') {
+                            $query = $query->orWhereRaw("format(" . $this->table . "." . $filters['field'] . ", 'dd-MM-yyyy HH:mm:ss') LIKE '%$filters[data]%'");
+                        } else {
                             // $query = $query->orWhere($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
                             $query = $query->OrwhereRaw($this->table . ".[" .  $filters['field'] . "] LIKE '%" . escapeLike($filters['data']) . "%' escape '|'");
-
                         }
                     }
 
@@ -230,11 +237,11 @@ class PengeluaranStok extends MyModel
     public function find($id)
     {
         $this->setRequestParameters();
-        
+
         $query = DB::table($this->table)
-        ->from(
-            DB::raw($this->table . " with (readuncommitted)")
-        )
+            ->from(
+                DB::raw($this->table . " with (readuncommitted)")
+            )
             ->select(
                 "$this->table.id",
                 "$this->table.kodepengeluaran",
@@ -248,7 +255,7 @@ class PengeluaranStok extends MyModel
                 "akunpusat.keterangancoa",
             )
             ->leftJoin(DB::raw("akunpusat with (readuncommitted)"), 'pengeluaranstok.coa', 'akunpusat.coa');
-        $data = $query->where("$this->table.id",$id)->first();
+        $data = $query->where("$this->table.id", $id)->first();
         return $data;
     }
 

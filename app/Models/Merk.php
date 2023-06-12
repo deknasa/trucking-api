@@ -58,6 +58,12 @@ class Merk extends MyModel
     {
         $this->setRequestParameters();
 
+        $getJudul = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))
+        ->select('text')
+        ->where('grp', 'JUDULAN LAPORAN')
+        ->where('subgrp', 'JUDULAN LAPORAN')
+        ->first();
+
         $aktif = request()->aktif ?? '';
 
         $query = DB::table($this->table)->from(
@@ -69,7 +75,9 @@ class Merk extends MyModel
             'parameter.memo as statusaktif',
             'merk.modifiedby',
             'merk.created_at',
-            'merk.updated_at'
+            'merk.updated_at',
+            DB::raw("'Laporan Merk' as judulLaporan"),
+            DB::raw("'" . $getJudul->text . "' as judul")
         )
             ->leftJoin(DB::raw("parameter with (readuncommitted)"), 'merk.statusaktif', '=', 'parameter.id');
 

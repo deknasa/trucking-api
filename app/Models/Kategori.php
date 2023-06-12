@@ -58,6 +58,12 @@ class Kategori extends MyModel
     {
         $this->setRequestParameters();
 
+        $getJudul = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))
+            ->select('text')
+            ->where('grp', 'JUDULAN LAPORAN')
+            ->where('subgrp', 'JUDULAN LAPORAN')
+            ->first();
+
         $aktif = request()->aktif ?? '';
 
         $query = DB::table($this->table)->from(DB::raw("$this->table with (readuncommitted)"))
@@ -69,7 +75,9 @@ class Kategori extends MyModel
                 'p.keterangan as subkelompok',
                 'kategori.modifiedby',
                 'kategori.created_at',
-                'kategori.updated_at'
+                'kategori.updated_at',
+                DB::raw("'Laporan Kategori' as judulLaporan"),
+                DB::raw("'" . $getJudul->text . "' as judul")
             )
             ->leftJoin(DB::raw("parameter with (readuncommitted)"), 'kategori.statusaktif', '=', 'parameter.id')
             ->leftJoin(DB::raw("subkelompok AS p with (readuncommitted)"), 'kategori.subkelompok_id', '=', 'p.id');
@@ -226,7 +234,6 @@ class Kategori extends MyModel
                         } else {
                             // $query = $query->where('kategori.' . $filters['field'], 'LIKE', "%$filters[data]%");
                             $query = $query->whereRaw('kategori' . ".[" .  $filters['field'] . "] LIKE '%" . escapeLike($filters['data']) . "%' escape '|'");
-
                         }
                     }
 
@@ -243,7 +250,6 @@ class Kategori extends MyModel
                             } else {
                                 // $query = $query->orWhere('kategori.' . $filters['field'], 'LIKE', "%$filters[data]%");
                                 $query = $query->OrwhereRaw('kategori' . ".[" .  $filters['field'] . "] LIKE '%" . escapeLike($filters['data']) . "%' escape '|'");
-
                             }
                         }
                     });

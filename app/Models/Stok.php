@@ -79,6 +79,12 @@ class Stok extends MyModel
     {
         $this->setRequestParameters();
 
+        $getJudul = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))
+        ->select('text')
+        ->where('grp', 'JUDULAN LAPORAN')
+        ->where('subgrp', 'JUDULAN LAPORAN')
+        ->first();
+
         $aktif = request()->aktif ?? '';
         $penerimaanstok_id = request()->penerimaanstok_id ?? '';
         $penerimaanstokheader_nobukti = request()->penerimaanstokheader_nobukti ?? '';
@@ -101,6 +107,8 @@ class Stok extends MyModel
             'merk.keterangan as merk',
             'stok.created_at',
             'stok.updated_at',
+            DB::raw("'Laporan Stok' as judulLaporan"),
+            DB::raw("'" . $getJudul->text . "' as judul")
         )
             ->leftJoin('jenistrado', 'stok.jenistrado_id', 'jenistrado.id')
             ->leftJoin('kelompok', 'stok.kelompok_id', 'kelompok.id')

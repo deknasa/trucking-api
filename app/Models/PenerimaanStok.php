@@ -24,7 +24,7 @@ class PenerimaanStok extends MyModel
         'updated_at',
     ];
     public function cekvalidasihapus($id)
-    {     
+    {
 
         $penerimaanStok = DB::table('penerimaanstokheader')
             ->from(
@@ -41,7 +41,7 @@ class PenerimaanStok extends MyModel
                 'keterangan' => 'Penerimaan Stok',
             ];
 
-            
+
             goto selesai;
         }
 
@@ -50,13 +50,19 @@ class PenerimaanStok extends MyModel
             'kondisi' => false,
             'keterangan' => '',
         ];
- 
+
         selesai:
         return $data;
     }
     public function get()
     {
         $this->setRequestParameters();
+
+        $getJudul = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))
+            ->select('text')
+            ->where('grp', 'JUDULAN LAPORAN')
+            ->where('subgrp', 'JUDULAN LAPORAN')
+            ->first();
 
         // $query = DB::table($this->table); 
 
@@ -75,7 +81,9 @@ class PenerimaanStok extends MyModel
             'parameterstatushitungstok.id as statushitungstokid',
             'penerimaanstok.modifiedby',
             'penerimaanstok.created_at',
-            'penerimaanstok.updated_at'
+            'penerimaanstok.updated_at',
+            DB::raw("'Laporan Penerimaan Stok' as judulLaporan"),
+            DB::raw("'" . $getJudul->text . "' as judul")
         )
             ->leftJoin(DB::raw("parameter as parameterformat with (readuncommitted)"), 'penerimaanstok.format', '=', 'parameterformat.id')
             ->leftJoin(DB::raw("parameter as parameterstatushitungstok with (readuncommitted)"), 'penerimaanstok.statushitungstok', '=', 'parameterstatushitungstok.id');
@@ -96,30 +104,31 @@ class PenerimaanStok extends MyModel
 
     public function default()
     {
-        
+
         $tempdefault = '##tempdefault' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
         Schema::create($tempdefault, function ($table) {
             $table->unsignedBigInteger('statushitungstok')->nullable();
         });
 
-        $statusaktif=Parameter::from (
+        $statusaktif = Parameter::from(
             db::Raw("parameter with (readuncommitted)")
         )
-        ->select (
-            'id'
-        )
-        ->where('grp','=','STATUS HITUNG STOK')
-        ->where('subgrp','=','STATUS HITUNG STOK')
-        ->where('default','=','YA')
-        ->first();
-        
+            ->select(
+                'id'
+            )
+            ->where('grp', '=', 'STATUS HITUNG STOK')
+            ->where('subgrp', '=', 'STATUS HITUNG STOK')
+            ->where('default', '=', 'YA')
+            ->first();
+
         DB::table($tempdefault)->insert(["statushitungstok" => $statusaktif->id]);
-        
-        $query=DB::table($tempdefault)->from(
-            DB::raw($tempdefault )
+
+        $query = DB::table($tempdefault)->from(
+            DB::raw($tempdefault)
         )
             ->select(
-                'statushitungstok');
+                'statushitungstok'
+            );
 
         $data = $query->first();
         // dd($data);
@@ -200,11 +209,10 @@ class PenerimaanStok extends MyModel
                         } else if ($filters['field'] == 'formatid') {
                             $query = $query->where('parameterformat.id', 'LIKE', "%$filters[data]%");
                         } else if ($filters['field'] == 'created_at' || $filters['field'] == 'updated_at') {
-                            $query = $query->whereRaw("format(".$this->table . "." . $filters['field'].", 'dd-MM-yyyy HH:mm:ss') LIKE '%$filters[data]%'");
+                            $query = $query->whereRaw("format(" . $this->table . "." . $filters['field'] . ", 'dd-MM-yyyy HH:mm:ss') LIKE '%$filters[data]%'");
                         } else {
                             // $query = $query->where($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
                             $query = $query->whereRaw($this->table . ".[" .  $filters['field'] . "] LIKE '%" . escapeLike($filters['data']) . "%' escape '|'");
-
                         }
                     }
 
@@ -218,11 +226,10 @@ class PenerimaanStok extends MyModel
                         } else if ($filters['field'] == 'formatid') {
                             $query = $query->orWhere('parameterformat.id', 'LIKE', "%$filters[data]%");
                         } else if ($filters['field'] == 'created_at' || $filters['field'] == 'updated_at') {
-                            $query = $query->orWhereRaw("format(".$this->table . "." . $filters['field'].", 'dd-MM-yyyy HH:mm:ss') LIKE '%$filters[data]%'");
+                            $query = $query->orWhereRaw("format(" . $this->table . "." . $filters['field'] . ", 'dd-MM-yyyy HH:mm:ss') LIKE '%$filters[data]%'");
                         } else {
                             // $query = $query->orWhere($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
                             $query = $query->OrwhereRaw($this->table . ".[" .  $filters['field'] . "] LIKE '%" . escapeLike($filters['data']) . "%' escape '|'");
-
                         }
                     }
 
@@ -244,9 +251,9 @@ class PenerimaanStok extends MyModel
         $this->setRequestParameters();
 
         $query = DB::table($this->table)
-        ->from(
-            DB::raw($this->table . " with (readuncommitted)")
-        )
+            ->from(
+                DB::raw($this->table . " with (readuncommitted)")
+            )
             ->select(
                 "$this->table.id",
                 "$this->table.kodepenerimaan",

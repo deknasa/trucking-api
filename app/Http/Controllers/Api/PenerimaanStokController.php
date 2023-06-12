@@ -8,6 +8,7 @@ use App\Models\PenerimaanStok;
 use App\Http\Requests\StorePenerimaanStokRequest;
 use App\Http\Requests\UpdatePenerimaanStokRequest;
 use App\Http\Requests\DestroyPenerimaanStokRequest;
+use App\Http\Requests\RangeExportReportRequest;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
@@ -29,17 +30,18 @@ class PenerimaanStokController extends Controller
             ]
         ]);
     }
-    public function cekValidasi($id) {
-        $penerimaanStok= new PenerimaanStok();
-        $cekdata=$penerimaanStok->cekvalidasihapus($id);
-        if ($cekdata['kondisi']==true) {
+    public function cekValidasi($id)
+    {
+        $penerimaanStok = new PenerimaanStok();
+        $cekdata = $penerimaanStok->cekvalidasihapus($id);
+        if ($cekdata['kondisi'] == true) {
             $query = DB::table('error')
-            ->select(
-                DB::raw("ltrim(rtrim(keterangan))+' (".$cekdata['keterangan'].")' as keterangan")
+                ->select(
+                    DB::raw("ltrim(rtrim(keterangan))+' (" . $cekdata['keterangan'] . ")' as keterangan")
                 )
-            ->where('kodeerror', '=', 'SATL')
-            ->get();
-        $keterangan = $query['0'];
+                ->where('kodeerror', '=', 'SATL')
+                ->get();
+            $keterangan = $query['0'];
 
             $data = [
                 'status' => false,
@@ -49,7 +51,6 @@ class PenerimaanStokController extends Controller
             ];
 
             return response($data);
-         
         } else {
             $data = [
                 'status' => false,
@@ -58,7 +59,7 @@ class PenerimaanStokController extends Controller
                 'kondisi' => $cekdata['kondisi'],
             ];
 
-            return response($data); 
+            return response($data);
         }
     }
     public function default()
@@ -134,7 +135,7 @@ class PenerimaanStokController extends Controller
         }
     }
 
-    public function show(PenerimaanStok $penerimaanStok,$id)
+    public function show(PenerimaanStok $penerimaanStok, $id)
     {
         $penerimaanStok = new PenerimaanStok();
         return response([
@@ -149,11 +150,11 @@ class PenerimaanStokController extends Controller
     /**
      * @ClassName 
      */
-    public function update(UpdatePenerimaanStokRequest $request, PenerimaanStok $penerimaanStok,$id)
+    public function update(UpdatePenerimaanStokRequest $request, PenerimaanStok $penerimaanStok, $id)
     {
         DB::beginTransaction();
         try {
-            $penerimaanStok = PenerimaanStok::where('id',$id)->first();
+            $penerimaanStok = PenerimaanStok::where('id', $id)->first();
             $penerimaanStok->kodepenerimaan = $request->kodepenerimaan;
             $penerimaanStok->keterangan = $request->keterangan ?? '';
             $penerimaanStok->coa = $request->coa;
@@ -216,7 +217,7 @@ class PenerimaanStokController extends Controller
     /**
      * @ClassName 
      */
-    public function destroy(DestroyPenerimaanStokRequest $request,$id)
+    public function destroy(DestroyPenerimaanStokRequest $request, $id)
     {
         DB::beginTransaction();
 
@@ -258,61 +259,68 @@ class PenerimaanStokController extends Controller
         }
     }
 
-    public function export()
+    public function export(RangeExportReportRequest $request)
     {
-        header('Access-Control-Allow-Origin: *');
+        if (request()->cekExport) {
+            return response([
+                'status' => true,
+            ]);
+        } else {
 
-        $response = $this->index();
-        $decodedResponse = json_decode($response->content(), true);
-        $penerimaans = $decodedResponse['data'];
+            header('Access-Control-Allow-Origin: *');
 
-      
-        
-        $i = 0;
-        foreach ($penerimaans as $index => $params) {
+            $response = $this->index();
+            $decodedResponse = json_decode($response->content(), true);
+            $penerimaans = $decodedResponse['data'];
 
-            $format = $params['format'];
-            $statusHitungStok = $params['statushitungstok'];
+            $judulLaporan = $penerimaans[0]['judulLaporan'];
 
-            $result = json_decode($format, true);
-            $resultHitungStok = json_decode($statusHitungStok, true);
+            $i = 0;
+            foreach ($penerimaans as $index => $params) {
 
-            $format = $result['MEMO'];
-            $statusHitungStok = $resultHitungStok['MEMO'];
+                $format = $params['format'];
+                $statusHitungStok = $params['statushitungstok'];
 
+                $result = json_decode($format, true);
+                $resultHitungStok = json_decode($statusHitungStok, true);
 
-            $penerimaans[$i]['format'] = $format;
-            $penerimaans[$i]['statushitungstok'] = $statusHitungStok;
+                $format = $result['MEMO'];
+                $statusHitungStok = $resultHitungStok['MEMO'];
 
 
-            $i++;
+                $penerimaans[$i]['format'] = $format;
+                $penerimaans[$i]['statushitungstok'] = $statusHitungStok;
+
+
+                $i++;
+            }
+            $columns = [
+                [
+                    'label' => 'No',
+                ],
+                [
+                    'label' => 'Kode Penerimaan',
+                    'index' => 'kodepenerimaan',
+                ],
+                [
+                    'label' => 'keterangan',
+                    'index' => 'keterangan',
+                ],
+                [
+                    'label' => 'coa',
+                    'index' => 'coa',
+                ],
+                [
+                    'label' => 'status format',
+                    'index' => 'format',
+                ],
+                [
+                    'label' => 'status hitung stok',
+                    'index' => 'statushitungstok',
+                ],
+
+            ];
+            $this->toExcel($judulLaporan, $penerimaans, $columns);
         }
-        $columns = [
-            [
-                'label' => 'No',
-            ],
-            [
-                'label' => 'Kode Penerimaan',
-                'index' => 'kodepenerimaan',
-            ],
-            [
-                'label' => 'keterangan',
-                'index' => 'keterangan',
-            ],
-            [
-                'label' => 'coa',
-                'index' => 'coa',
-            ],
-            [
-                'label' => 'status format',
-                'index' => 'format',
-            ],
-            [
-                'label' => 'status hitung stok',
-                'index' => 'statushitungstok',
-            ],
-           
-        ];
-        $this->toExcel('Penerimaan Stok', $penerimaans, $columns);
     }
 }
