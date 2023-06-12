@@ -8,6 +8,7 @@ use App\Http\Requests\StoreAkunPusatRequest;
 use App\Http\Requests\StoreLogTrailRequest;
 use App\Http\Requests\UpdateAkunPusatRequest;
 use App\Http\Requests\DestroyAkunPusatRequest;
+use App\Http\Requests\RangeExportReportRequest;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
@@ -220,92 +221,101 @@ class AkunPusatController extends Controller
             'data' => $data
         ]);
     }
-    public function export()
+    public function export(RangeExportReportRequest $request)
     {
-        header('Access-Control-Allow-Origin: *');
 
-        $response = $this->index();
-        $decodedResponse = json_decode($response->content(), true);
-        $akunpusats = $decodedResponse['data'];
+        if (request()->cekExport) {
+            return response([
+                'status' => true,
+            ]);
+        } else {
+            header('Access-Control-Allow-Origin: *');
 
+            $response = $this->index();
+            $decodedResponse = json_decode($response->content(), true);
+            $akunpusats = $decodedResponse['data'];
 
-        $i = 0;
-        foreach ($akunpusats as $index => $params) {
-
-            $statusaktif = $params['statusaktif'];
-            $statuscoa = $params['statuscoa'];
-            $statusAkunPayable = $params['statusaccountpayable'];
-            $statusNeraca = $params['statusneraca'];
-            $statusLabaRugi = $params['statuslabarugi'];
-
-            $result = json_decode($statusaktif, true);
-            $resultStatuscoa = json_decode($statuscoa, true);
-            $resultAkunPayable = json_decode($statusAkunPayable, true);
-            $resultNeraca = json_decode($statusNeraca, true);
-            $resultLabaRugi = json_decode($statusLabaRugi, true);
-
-            $format = $result['MEMO'];
-            $statusStatuscoa = $resultStatuscoa['MEMO'];
-            $statusAkunPayable = $resultAkunPayable['MEMO'];
-            $statusNeraca = $resultNeraca['MEMO'];
-            $statusLabaRugi = $resultLabaRugi['MEMO'];
+            $judulLaporan = $akunpusats[0]['judulLaporan'];
 
 
-            $akunpusats[$i]['statusaktif'] = $format;
-            $akunpusats[$i]['statuscoa'] = $statusStatuscoa;
-            $akunpusats[$i]['statusaccountpayable'] = $statusAkunPayable;
-            $akunpusats[$i]['statusneraca'] = $statusNeraca;
-            $akunpusats[$i]['statuslabarugi'] = $statusLabaRugi;
+            $i = 0;
+            foreach ($akunpusats as $index => $params) {
+
+                $statusaktif = $params['statusaktif'];
+                $statuscoa = $params['statuscoa'];
+                $statusAkunPayable = $params['statusaccountpayable'];
+                $statusNeraca = $params['statusneraca'];
+                $statusLabaRugi = $params['statuslabarugi'];
+
+                $result = json_decode($statusaktif, true);
+                $resultStatuscoa = json_decode($statuscoa, true);
+                $resultAkunPayable = json_decode($statusAkunPayable, true);
+                $resultNeraca = json_decode($statusNeraca, true);
+                $resultLabaRugi = json_decode($statusLabaRugi, true);
+
+                $format = $result['MEMO'];
+                $statusStatuscoa = $resultStatuscoa['MEMO'];
+                $statusAkunPayable = $resultAkunPayable['MEMO'];
+                $statusNeraca = $resultNeraca['MEMO'];
+                $statusLabaRugi = $resultLabaRugi['MEMO'];
 
 
-            $i++;
+                $akunpusats[$i]['statusaktif'] = $format;
+                $akunpusats[$i]['statuscoa'] = $statusStatuscoa;
+                $akunpusats[$i]['statusaccountpayable'] = $statusAkunPayable;
+                $akunpusats[$i]['statusneraca'] = $statusNeraca;
+                $akunpusats[$i]['statuslabarugi'] = $statusLabaRugi;
+
+
+                $i++;
+            }
+            $columns = [
+                [
+                    'label' => 'No',
+                ],
+                [
+                    'label' => 'COA',
+                    'index' => 'coa',
+                ],
+                [
+                    'label' => 'Keterangan COA',
+                    'index' => 'keterangancoa',
+                ],
+                [
+                    'label' => 'Type',
+                    'index' => 'type',
+                ],
+                [
+                    'label' => 'Parent',
+                    'index' => 'parent',
+                ],
+                [
+                    'label' => 'COA Main',
+                    'index' => 'coamain',
+                ],
+                [
+                    'label' => 'Status COA',
+                    'index' => 'statuscoa',
+                ],
+                [
+                    'label' => 'Status Account Payable',
+                    'index' => 'statusaccountpayable',
+                ],
+                [
+                    'label' => 'Status Neraca',
+                    'index' => 'statusneraca',
+                ],
+                [
+                    'label' => 'Status Laba Rugi',
+                    'index' => 'statuslabarugi',
+                ],
+                [
+                    'label' => 'Status Aktif',
+                    'index' => 'statusaktif',
+                ],
+
+            ];
+            $this->toExcel($judulLaporan, $akunpusats, $columns);
         }
-        $columns = [
-            [
-                'label' => 'No',
-            ],
-            [
-                'label' => 'COA',
-                'index' => 'coa',
-            ],
-            [
-                'label' => 'Keterangan COA',
-                'index' => 'keterangancoa',
-            ],
-            [
-                'label' => 'Type',
-                'index' => 'type',
-            ],
-            [
-                'label' => 'Parent',
-                'index' => 'parent',
-            ],
-            [
-                'label' => 'COA Main',
-                'index' => 'coamain',
-            ],
-            [
-                'label' => 'Status COA',
-                'index' => 'statuscoa',
-            ],
-            [
-                'label' => 'Status Account Payable',
-                'index' => 'statusaccountpayable',
-            ],
-            [
-                'label' => 'Status Neraca',
-                'index' => 'statusneraca',
-            ],
-            [
-                'label' => 'Status Laba Rugi',
-                'index' => 'statuslabarugi',
-            ],
-            [
-                'label' => 'Status Aktif',
-                'index' => 'statusaktif',
-            ],
-           
-        ];
-        $this->toExcel('COA', $akunpusats, $columns);
     }
 }

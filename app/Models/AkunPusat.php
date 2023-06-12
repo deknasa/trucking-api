@@ -37,7 +37,7 @@ class AkunPusat extends MyModel
             ];
             goto selesai;
         }
-        
+
         $data = [
             'kondisi' => false,
             'keterangan' => '',
@@ -49,6 +49,12 @@ class AkunPusat extends MyModel
     public function get()
     {
         $this->setRequestParameters();
+
+        $getJudul = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))
+            ->select('text')
+            ->where('grp', 'JUDULAN LAPORAN')
+            ->where('subgrp', 'JUDULAN LAPORAN')
+            ->first();
 
         // dd(request()->offset);
         $level = request()->level ?? '';
@@ -77,6 +83,8 @@ class AkunPusat extends MyModel
                 'akunpusat.modifiedby',
                 'akunpusat.created_at',
                 'akunpusat.updated_at',
+                DB::raw("'Laporan Kode Perkiraan' as judulLaporan"),
+                DB::raw("'" . $getJudul->text . "' as judul")
             )
 
             ->leftJoin(DB::raw("parameter as parameter_statusaktif with (readuncommitted)"), 'akunpusat.statusaktif', '=', 'parameter_statusaktif.id')
@@ -323,11 +331,10 @@ class AkunPusat extends MyModel
                         } else if ($filters['field'] == 'statuslabarugi') {
                             $query = $query->where('parameter_statuslabarugi.text', '=', "$filters[data]");
                         } else if ($filters['field'] == 'created_at' || $filters['field'] == 'updated_at') {
-                            $query = $query->whereRaw("format(".$this->table . "." . $filters['field'].", 'dd-MM-yyyy HH:mm:ss') LIKE '%$filters[data]%'");
+                            $query = $query->whereRaw("format(" . $this->table . "." . $filters['field'] . ", 'dd-MM-yyyy HH:mm:ss') LIKE '%$filters[data]%'");
                         } else {
                             // $query = $query->where($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
                             $query = $query->whereRaw($this->table . ".[" .  $filters['field'] . "] LIKE '%" . escapeLike($filters['data']) . "%' escape '|'");
-
                         }
                     }
 
@@ -338,7 +345,7 @@ class AkunPusat extends MyModel
                             if ($filters['field'] == 'statusaktif') {
                                 $query = $query->orWhere('parameter_statusaktif.text', '=', $filters['data']);
                             } else if ($filters['field'] == 'created_at' || $filters['field'] == 'updated_at') {
-                                $query = $query->orWhereRaw("format(".$this->table . "." . $filters['field'].", 'dd-MM-yyyy HH:mm:ss') LIKE '%$filters[data]%'");
+                                $query = $query->orWhereRaw("format(" . $this->table . "." . $filters['field'] . ", 'dd-MM-yyyy HH:mm:ss') LIKE '%$filters[data]%'");
                             } else if ($filters['field'] == 'statuscoa') {
                                 $query = $query->orWhere('parameter_statuscoa.text', '=', "$filters[data]");
                             } else if ($filters['field'] == 'statusaccountpayable') {
@@ -350,7 +357,6 @@ class AkunPusat extends MyModel
                             } else {
                                 // $query = $query->orWhere($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
                                 $query = $query->OrwhereRaw($this->table . ".[" .  $filters['field'] . "] LIKE '%" . escapeLike($filters['data']) . "%' escape '|'");
-
                             }
                         }
                     });
