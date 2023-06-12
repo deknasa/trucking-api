@@ -77,6 +77,12 @@ class Kelompok extends MyModel
     {
         $this->setRequestParameters();
 
+        $getJudul = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))
+        ->select('text')
+        ->where('grp', 'JUDULAN LAPORAN')
+        ->where('subgrp', 'JUDULAN LAPORAN')
+        ->first();
+
         $aktif = request()->aktif ?? '';
 
         $query = DB::table($this->table)->from(DB::raw("$this->table with (readuncommitted)"))
@@ -87,7 +93,9 @@ class Kelompok extends MyModel
                 'parameter.memo as statusaktif',
                 'kelompok.modifiedby',
                 'kelompok.created_at',
-                'kelompok.updated_at'
+                'kelompok.updated_at',
+                DB::raw("'Laporan Kelompok' as judulLaporan"),
+                DB::raw("'" . $getJudul->text . "' as judul")
             )
             ->leftJoin(DB::raw("parameter with (readuncommitted)"), 'kelompok.statusaktif', '=', 'parameter.id');
 

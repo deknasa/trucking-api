@@ -12,6 +12,7 @@ use App\Models\Stok;
 use App\Models\StokPersediaan;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\RangeExportReportRequest;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -508,11 +509,19 @@ class GudangController extends Controller
         ]);
     }
 
-    public function export()
+    public function export(RangeExportReportRequest $request)
     {
+        if (request()->cekExport) {
+            return response([
+                'status' => true,
+            ]);
+        } else {
+
         $response = $this->index();
         $decodedResponse = json_decode($response->content(), true);
         $gudangs = $decodedResponse['data'];
+
+        $judulLaporan = $gudangs[0]['judulLaporan'];
 
         $i = 0;
         foreach ($gudangs as $index => $params) {
@@ -545,6 +554,7 @@ class GudangController extends Controller
             ],
         ];
 
-        $this->toExcel('Gudang', $gudangs, $columns);
+        $this->toExcel($judulLaporan, $gudangs, $columns);
     }
+}
 }

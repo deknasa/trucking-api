@@ -10,6 +10,7 @@ use App\Http\Requests\StoreLogTrailRequest;
 use App\Models\Parameter;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\RangeExportReportRequest;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -35,17 +36,18 @@ class KelompokController extends Controller
         ]);
     }
 
-    public function cekValidasi($id) {
-        $kelompok= new Kelompok();
-        $cekdata=$kelompok->cekvalidasihapus($id);
-        if ($cekdata['kondisi']==true) {
+    public function cekValidasi($id)
+    {
+        $kelompok = new Kelompok();
+        $cekdata = $kelompok->cekvalidasihapus($id);
+        if ($cekdata['kondisi'] == true) {
             $query = DB::table('error')
-            ->select(
-                DB::raw("ltrim(rtrim(keterangan))+' (".$cekdata['keterangan'].")' as keterangan")
+                ->select(
+                    DB::raw("ltrim(rtrim(keterangan))+' (" . $cekdata['keterangan'] . ")' as keterangan")
                 )
-            ->where('kodeerror', '=', 'SATL')
-            ->get();
-        $keterangan = $query['0'];
+                ->where('kodeerror', '=', 'SATL')
+                ->get();
+            $keterangan = $query['0'];
 
             $data = [
                 'status' => false,
@@ -55,7 +57,6 @@ class KelompokController extends Controller
             ];
 
             return response($data);
-         
         } else {
             $data = [
                 'status' => false,
@@ -64,7 +65,7 @@ class KelompokController extends Controller
                 'kondisi' => $cekdata['kondisi'],
             ];
 
-            return response($data); 
+            return response($data);
         }
     }
     public function default()
@@ -244,45 +245,55 @@ class KelompokController extends Controller
             'data' => $data
         ]);
     }
-    public function export()
+    public function export(RangeExportReportRequest $request)
     {
-        $response = $this->index();
-        $decodedResponse = json_decode($response->content(), true);
-        $kelompoks = $decodedResponse['data'];
 
-        $i = 0;
-        foreach ($kelompoks as $index => $params) {
+        if (request()->cekExport) {
+            return response([
+                'status' => true,
+            ]);
+        } else {
 
-            $statusaktif = $params['statusaktif'];
+            $response = $this->index();
+            $decodedResponse = json_decode($response->content(), true);
+            $kelompoks = $decodedResponse['data'];
 
-            $result = json_decode($statusaktif, true);
+            $judulLaporan = $kelompoks[0]['judulLaporan'];
 
-            $statusaktif = $result['MEMO'];
+            $i = 0;
+            foreach ($kelompoks as $index => $params) {
+
+                $statusaktif = $params['statusaktif'];
+
+                $result = json_decode($statusaktif, true);
+
+                $statusaktif = $result['MEMO'];
 
 
-            $kelompoks[$i]['statusaktif'] = $statusaktif;
+                $kelompoks[$i]['statusaktif'] = $statusaktif;
 
 
-            $i++;
+                $i++;
+            }
+            $columns = [
+                [
+                    'label' => 'No',
+                ],
+                [
+                    'label' => 'Kode kelompok',
+                    'index' => 'kodekelompok',
+                ],
+                [
+                    'label' => 'Keterangan',
+                    'index' => 'keterangan',
+                ],
+                [
+                    'label' => 'Status Aktif',
+                    'index' => 'statusaktif',
+                ],
+            ];
+
+            $this->toExcel($judulLaporan, $kelompoks, $columns);
         }
-        $columns = [
-            [
-                'label' => 'No',
-            ],
-            [
-                'label' => 'Kode kelompok',
-                'index' => 'kodekelompok',
-            ],
-            [
-                'label' => 'Keterangan',
-                'index' => 'keterangan',
-            ],
-            [
-                'label' => 'Status Aktif',
-                'index' => 'statusaktif',
-            ],
-        ];
-
-        $this->toExcel('Kelompok', $kelompoks, $columns);
     }
 }
