@@ -287,7 +287,6 @@ class ContainerController extends Controller
     }
     public function export(RangeExportReportRequest $request)
     {
-
         if (request()->cekExport) {
             return response([
                 'status' => true,

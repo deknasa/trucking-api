@@ -48,6 +48,7 @@ use App\Http\Controllers\Api\ApprovalNotaHeaderController;
 use App\Http\Controllers\Api\ApprovalPendapatanSupirController;
 use App\Http\Controllers\Api\ApprovalTradoGambarController;
 use App\Http\Controllers\Api\BankPelangganController;
+use App\Http\Controllers\Api\DataRitasiController;
 use App\Http\Controllers\Api\ExportLaporanKasGantungController;
 use App\Http\Controllers\Api\ExportLaporanKasHarianController;
 use App\Http\Controllers\Api\ExportLaporanStokController;
@@ -212,6 +213,7 @@ use App\Http\Controllers\Api\LaporanNeracaController;
 use App\Http\Controllers\Api\LaporanPenyesuaianBarangController;
 use App\Http\Controllers\Api\LaporanPemakaianBanController;
 use App\Http\Controllers\Api\LaporanTransaksiHarianController;
+
 
 /*
     |--------------------------------------------------------------------------
@@ -1240,6 +1242,23 @@ route::middleware(['auth:api'])->group(function () {
     Route::get('karyawan/report', [KaryawanController::class, 'report']);
     Route::resource('karyawan', KaryawanController::class)->whereNumber('karyawan');
 
+    Route::get('cabang/field_length', [CabangController::class, 'fieldLength']);
+    Route::get('cabang/combostatus', [CabangController::class, 'combostatus']);
+    Route::get('cabang/default', [CabangController::class, 'default']);
+    Route::get('cabang/report', [CabangController::class, 'report']);
+    Route::get('cabang/export', [CabangController::class, 'export']);
+    Route::get('cabang/getPosition2', [CabangController::class, 'getPosition2']);
+    Route::resource('cabang', CabangController::class)->whereNumber('cabang');
+
+
+    Route::get('dataritasi/field_length', [DataRitasiController::class, 'fieldLength']);
+    Route::get('dataritasi/combostatus', [DataRitasiController::class, 'combostatus']);
+    Route::get('dataritasi/default', [DataRitasiController::class, 'default']);
+    Route::get('dataritasi/report', [DataRitasiController::class, 'report']);
+    Route::get('dataritasi/export', [DataRitasiController::class, 'export']);
+    Route::get('dataritasi/getPosition2', [DataRitasiController::class, 'getPosition2']);
+    Route::resource('dataritasi', DataRitasiController::class)->whereNumber('dataritasi');
+    
     Route::get('approvaltradogambar/field_length', [ApprovalTradoGambarController::class, 'fieldLength']);
     Route::resource('approvaltradogambar', ApprovalTradoGambarController::class)->whereNumber('approvaltradogambar');
 });
