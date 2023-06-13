@@ -443,10 +443,11 @@ class GudangController extends Controller
      */
     public function destroy(DestroyGudangRequest $request, $id)
     {
+
         DB::beginTransaction();
 
         $gudang = new Gudang();
-        $gudang = $gudang->lockAndDestroy($id);
+        $gudang = $gudang->lockAndDestroy($request->id);
         if ($gudang) {
             $logTrail = [
                 'namatabel' => strtoupper($gudang->getTable()),

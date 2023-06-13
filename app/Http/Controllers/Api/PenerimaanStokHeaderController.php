@@ -13,6 +13,7 @@ use App\Models\HutangDetail;
 use App\Http\Requests\StoreLogTrailRequest;
 use App\Http\Requests\StorePenerimaanStokHeaderRequest;
 use App\Http\Requests\UpdatePenerimaanStokHeaderRequest;
+use App\Http\Requests\DestroyPenerimaanStokHeaderRequest;
 use App\Http\Requests\StoreHutangHeaderRequest;
 use App\Http\Requests\DestroyHutangHeaderRequest;
 use App\Http\Requests\UpdateHutangHeaderRequest;
@@ -669,7 +670,7 @@ class PenerimaanStokHeaderController extends Controller
     /**
      * @ClassName 
      */
-    public function destroy(Request $request, $id)
+    public function destroy(DestroyPenerimaanStokHeaderRequest $request, $id)
     {
         DB::beginTransaction();
 
