@@ -410,10 +410,6 @@ class TarifController extends Controller
     public function import(Request $request)
     {
 
-
-
-
-
         $request->validate(
             [
                 'fileImport' => 'required|file|mimes:xls,xlsx'
@@ -429,28 +425,36 @@ class TarifController extends Controller
             $sheet        = $spreadsheet->getActiveSheet();
             $row_limit    = $sheet->getHighestDataRow();
             $column_limit = $sheet->getHighestDataColumn();
-            $row_range    = range(2, $row_limit);
+            $row_range    = range(4, $row_limit);
             $column_range = range('A', $column_limit);
-            $startcount = 2;
+            $startcount = 4;
             $data = array();
 
             $a = 0;
             foreach ($row_range as $row) {
-
                 $data[] = [
                     'tujuan' => $sheet->getCell($this->kolomexcel(1) . $row)->getValue(),
-                    'tglmulaiberlaku' => date('Y-m-d', strtotime($sheet->getCell($this->kolomexcel(2) . $row)->getFormattedValue())),
-                    'kota' => $sheet->getCell($this->kolomexcel(3) . $row)->getValue(),
-                    'kolom1' => $sheet->getCell($this->kolomexcel(4)  . $row)->getValue(),
-                    'kolom2' => $sheet->getCell($this->kolomexcel(5)  . $row)->getValue(),
+                    'penyesuaian' => $sheet->getCell($this->kolomexcel(2) . $row)->getValue(),
+                    'tglmulaiberlaku' => date('Y-m-d', strtotime($sheet->getCell($this->kolomexcel(3) . $row)->getFormattedValue())),
+                    'kota' => $sheet->getCell($this->kolomexcel(4) . $row)->getValue(),
+                    'kolom1' => $sheet->getCell($this->kolomexcel(5)  . $row)->getValue(),
+                    'kolom2' => $sheet->getCell($this->kolomexcel(6)  . $row)->getValue(),
+                    'kolom3' => $sheet->getCell($this->kolomexcel(7)  . $row)->getValue(),
                     'modifiedby' => auth('api')->user()->name
                 ];
+
+             
                 $startcount++;
+
+               
+
             }
 
             $tarifrincian = new TarifRincian();
 
             $cekdata = $tarifrincian->cekupdateharga($data);
+
+           
             if ($cekdata == true) {
                 $query = DB::table('error')
                     ->select('keterangan')
@@ -468,6 +472,7 @@ class TarifController extends Controller
             } else {
                 return response([
                     'status' => true,
+                    'keterangan' => 'data berhasil di update',
                     'data' => $tarifrincian->updateharga($data),
                     'kondisi' => $cekdata
                 ]);
