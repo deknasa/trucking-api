@@ -11,6 +11,7 @@ use App\Http\Requests\UpdatePenerimaanTruckingRequest;
 use App\Http\Requests\DestroyPenerimaanTruckingRequest;
 use App\Http\Requests\RangeExportReportRequest;
 use Illuminate\Database\QueryException;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
@@ -68,46 +69,18 @@ class PenerimaanTruckingController extends Controller
     /**
      * @ClassName 
      */
-    public function store(StorePenerimaanTruckingRequest $request)
+    public function store(StorePenerimaanTruckingRequest $request): JsonResponse
     {
         DB::beginTransaction();
 
         try {
-            $penerimaanTrucking = new PenerimaanTrucking();
-            $penerimaanTrucking->kodepenerimaan = $request->kodepenerimaan;
-            $penerimaanTrucking->keterangan = $request->keterangan ?? '';
-            $penerimaanTrucking->coadebet = $request->coadebet ?? '';
-            $penerimaanTrucking->coakredit = $request->coakredit ?? '';
-            $penerimaanTrucking->coapostingdebet = $request->coapostingdebet ?? '';
-            $penerimaanTrucking->coapostingkredit = $request->coapostingkredit ?? '';
-            $penerimaanTrucking->format = $request->format;
-            $penerimaanTrucking->modifiedby = auth('api')->user()->name;
-
-            if ($penerimaanTrucking->save()) {
-                $logTrail = [
-                    'namatabel' => strtoupper($penerimaanTrucking->getTable()),
-                    'postingdari' => 'ENTRY PENERIMAAN TRUCKING',
-                    'idtrans' => $penerimaanTrucking->id,
-                    'nobuktitrans' => $penerimaanTrucking->id,
-                    'aksi' => 'ENTRY',
-                    'datajson' => $penerimaanTrucking->toArray(),
-                    'modifiedby' => $penerimaanTrucking->modifiedby
-                ];
-
-                $validatedLogTrail = new StoreLogTrailRequest($logTrail);
-                $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
-            }
-
-            $request->sortname = $request->sortname ?? 'id';
-            $request->sortorder = $request->sortorder ?? 'asc';
-            DB::commit();
-            /* Set position and page */
-
-            $selected = $this->getPosition($penerimaanTrucking, $penerimaanTrucking->getTable());
-            $penerimaanTrucking->position = $selected->position;
+            $penerimaanTrucking = (new PenerimaanTrucking())->processStore($request->all());
+            $penerimaanTrucking->position = $this->getPosition($penerimaanTrucking, $penerimaanTrucking->getTable())->position;
             $penerimaanTrucking->page = ceil($penerimaanTrucking->position / ($request->limit ?? 10));
 
-            return response([
+            DB::commit();
+
+            return response()->json([
                 'status' => true,
                 'message' => 'Berhasil disimpan',
                 'data' => $penerimaanTrucking
@@ -115,7 +88,6 @@ class PenerimaanTruckingController extends Controller
         } catch (\Throwable $th) {
             DB::rollBack();
             throw $th;
-            return response($th->getMessage());
         }
     }
 
@@ -131,53 +103,26 @@ class PenerimaanTruckingController extends Controller
     /**
      * @ClassName 
      */
-    public function update(UpdatePenerimaanTruckingRequest $request, PenerimaanTrucking $penerimaanTrucking)
+    public function update(UpdatePenerimaanTruckingRequest $request, PenerimaanTrucking $penerimaanTrucking): JsonResponse
     {
         DB::beginTransaction();
 
         try {
-            $penerimaanTrucking->kodepenerimaan = $request->kodepenerimaan;
-            $penerimaanTrucking->keterangan = $request->keterangan ?? '';
-            $penerimaanTrucking->coadebet = $request->coadebet ?? '';
-            $penerimaanTrucking->coakredit = $request->coakredit ?? '';
-            $penerimaanTrucking->coapostingdebet = $request->coapostingdebet ?? '';
-            $penerimaanTrucking->coapostingkredit = $request->coapostingkredit ?? '';
-            $penerimaanTrucking->format = $request->format;
-            $penerimaanTrucking->modifiedby = auth('api')->user()->name;
-
-            if ($penerimaanTrucking->save()) {
-                $logTrail = [
-                    'namatabel' => strtoupper($penerimaanTrucking->getTable()),
-                    'postingdari' => 'EDIT PENERIMAAN TRUCKING',
-                    'idtrans' => $penerimaanTrucking->id,
-                    'nobuktitrans' => $penerimaanTrucking->id,
-                    'aksi' => 'EDIT',
-                    'datajson' => $penerimaanTrucking->toArray(),
-                    'modifiedby' => $penerimaanTrucking->modifiedby
-                ];
-
-                $validatedLogTrail = new StoreLogTrailRequest($logTrail);
-                app(LogTrailController::class)->store($validatedLogTrail);
-            }
-
-            $request->sortname = $request->sortname ?? 'id';
-            $request->sortorder = $request->sortorder ?? 'asc';
-
-            DB::commit();
-            /* Set position and page */
-            $selected = $this->getPosition($penerimaanTrucking, $penerimaanTrucking->getTable());
-            $penerimaanTrucking->position = $selected->position;
+            $penerimaanTrucking = (new PenerimaanTrucking())->processUpdate($penerimaanTrucking, $request->all());
+            $penerimaanTrucking->position = $this->getPosition($penerimaanTrucking, $penerimaanTrucking->getTable())->position;
             $penerimaanTrucking->page = ceil($penerimaanTrucking->position / ($request->limit ?? 10));
 
-            return response([
+            DB::commit();
+
+            return response()->json([
                 'status' => true,
                 'message' => 'Berhasil diubah',
                 'data' => $penerimaanTrucking
             ]);
         } catch (\Throwable $th) {
             DB::rollBack();
+
             throw $th;
-            return response($th->getMessage());
         }
     }
 
@@ -189,40 +134,23 @@ class PenerimaanTruckingController extends Controller
 
         DB::beginTransaction();
 
-        $penerimaanTrucking = new PenerimaanTrucking();
-        $penerimaanTrucking = $penerimaanTrucking->lockAndDestroy($id);
-        if ($penerimaanTrucking) {
-            $logTrail = [
-                'namatabel' => strtoupper($penerimaanTrucking->getTable()),
-                'postingdari' => 'DELETE PENERIMAAN TRUCKING',
-                'idtrans' => $penerimaanTrucking->id,
-                'nobuktitrans' => $penerimaanTrucking->id,
-                'aksi' => 'DELETE',
-                'datajson' => $penerimaanTrucking->toArray(),
-                'modifiedby' => auth('api')->user()->name
-            ];
-
-            $validatedLogTrail = new StoreLogTrailRequest($logTrail);
-            app(LogTrailController::class)->store($validatedLogTrail);
-
-            DB::commit();
-
+        try {
+            $penerimaanTrucking = (new PenerimaanTrucking())->processDestroy($id);
             $selected = $this->getPosition($penerimaanTrucking, $penerimaanTrucking->getTable(), true);
             $penerimaanTrucking->position = $selected->position;
             $penerimaanTrucking->id = $selected->id;
             $penerimaanTrucking->page = ceil($penerimaanTrucking->position / ($request->limit ?? 10));
-            return response([
-                'status' => true,
+
+            DB::commit();
+
+            return response()->json([
                 'message' => 'Berhasil dihapus',
                 'data' => $penerimaanTrucking
             ]);
-        } else {
+        } catch (\Throwable $th) {
             DB::rollBack();
 
-            return response([
-                'status' => false,
-                'message' => 'Gagal dihapus'
-            ]);
+            throw $th;
         }
     }
 
