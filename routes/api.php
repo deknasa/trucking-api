@@ -544,6 +544,8 @@ route::middleware(['auth:api'])->group(function () {
     Route::resource('akunpusat', AkunPusatController::class)->parameters(['akunpusat' => 'akunPusat'])->whereNumber('akunpusat');
 
     Route::get('error/field_length', [ErrorController::class, 'fieldLength']);
+    Route::get('error/geterrors', [ErrorController::class, 'errorUrl']);
+
     Route::get('error/geterror', [ErrorController::class, 'geterror']);
     Route::get('error/export', [ErrorController::class, 'export'])->name('error.export');
     Route::resource('error', ErrorController::class)->whereNumber('error');
