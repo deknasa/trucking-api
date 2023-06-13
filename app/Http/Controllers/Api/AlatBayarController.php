@@ -10,6 +10,7 @@ use App\Http\Requests\DestroyAlatBayarRequest;
 use App\Http\Requests\StoreLogTrailRequest;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\RangeExportReportRequest;
 use App\Models\Error;
 use App\Models\LogTrail;
 use App\Models\Parameter;
@@ -39,17 +40,18 @@ class AlatBayarController extends Controller
         ]);
     }
 
-    public function cekValidasi($id) {
-        $alatBayar= new AlatBayar();
-        $cekdata=$alatBayar->cekvalidasihapus($id);
-        if ($cekdata['kondisi']==true) {
+    public function cekValidasi($id)
+    {
+        $alatBayar = new AlatBayar();
+        $cekdata = $alatBayar->cekvalidasihapus($id);
+        if ($cekdata['kondisi'] == true) {
             $query = DB::table('error')
-            ->select(
-                DB::raw("ltrim(rtrim(keterangan))+' (".$cekdata['keterangan'].")' as keterangan")
+                ->select(
+                    DB::raw("ltrim(rtrim(keterangan))+' (" . $cekdata['keterangan'] . ")' as keterangan")
                 )
-            ->where('kodeerror', '=', 'SATL')
-            ->get();
-        $keterangan = $query['0'];
+                ->where('kodeerror', '=', 'SATL')
+                ->get();
+            $keterangan = $query['0'];
 
             $data = [
                 'status' => false,
@@ -59,7 +61,6 @@ class AlatBayarController extends Controller
             ];
 
             return response($data);
-         
         } else {
             $data = [
                 'status' => false,
@@ -68,7 +69,7 @@ class AlatBayarController extends Controller
                 'kondisi' => $cekdata['kondisi'],
             ];
 
-            return response($data); 
+            return response($data);
         }
     }
 
@@ -308,70 +309,79 @@ class AlatBayarController extends Controller
             'data' => $data
         ]);
     }
-    public function export()
+    public function export(RangeExportReportRequest $request)
     {
-        $response = $this->index();
-        $decodedResponse = json_decode($response->content(), true);
-        $alatbayars = $decodedResponse['data'];
+        if (request()->cekExport) {
+            return response([
+                'status' => true,
+            ]);
+        } else {
 
-        $i = 0;
-        foreach ($alatbayars as $index => $params) {
+            $response = $this->index();
+            $decodedResponse = json_decode($response->content(), true);
+            $alatbayars = $decodedResponse['data'];
 
-            $statusaktif = $params['statusaktif'];
-            $statusLangsungCair = $params['statuslangsungcair'];
-            $statusDefault = $params['statusdefault'];
+            $judulLaporan = $alatbayars[0]['judulLaporan'];
 
-            $result = json_decode($statusaktif, true);
-            $resultLangsungCair = json_decode($statusLangsungCair, true);
-            $resultDefault = json_decode($statusDefault, true);
+            $i = 0;
+            foreach ($alatbayars as $index => $params) {
 
-            $statusaktif = $result['MEMO'];
-            $statusLangsungCair = $resultLangsungCair['MEMO'];
-            $statusDefault = $resultDefault['MEMO'];
+                $statusaktif = $params['statusaktif'];
+                $statusLangsungCair = $params['statuslangsungcair'];
+                $statusDefault = $params['statusdefault'];
+
+                $result = json_decode($statusaktif, true);
+                $resultLangsungCair = json_decode($statusLangsungCair, true);
+                $resultDefault = json_decode($statusDefault, true);
+
+                $statusaktif = $result['MEMO'];
+                $statusLangsungCair = $resultLangsungCair['MEMO'];
+                $statusDefault = $resultDefault['MEMO'];
 
 
-            $alatbayars[$i]['statusaktif'] = $statusaktif;
-            $alatbayars[$i]['statuslangsungcair'] = $statusLangsungCair;
-            $alatbayars[$i]['statusdefault'] = $statusDefault;
+                $alatbayars[$i]['statusaktif'] = $statusaktif;
+                $alatbayars[$i]['statuslangsungcair'] = $statusLangsungCair;
+                $alatbayars[$i]['statusdefault'] = $statusDefault;
 
 
-            $i++;
+                $i++;
+            }
+
+            $columns = [
+                [
+                    'label' => 'No',
+                ],
+                [
+                    'label' => 'Kode Alat Bayar',
+                    'index' => 'kodealatbayar',
+                ],
+                [
+                    'label' => 'Nama Alat Bayar',
+                    'index' => 'namaalatbayar',
+                ],
+                [
+                    'label' => 'Keterangan',
+                    'index' => 'keterangan',
+                ],
+                [
+                    'label' => 'Status Langsung Cair',
+                    'index' => 'statuslangsungcair',
+                ],
+                [
+                    'label' => 'Status Default',
+                    'index' => 'statusdefault',
+                ],
+                [
+                    'label' => 'Bank',
+                    'index' => 'bank',
+                ],
+                [
+                    'label' => 'Status AKtif',
+                    'index' => 'statusaktif',
+                ],
+            ];
+
+            $this->toExcel($judulLaporan, $alatbayars, $columns);
         }
-
-        $columns = [
-            [
-                'label' => 'No',
-            ],
-            [
-                'label' => 'Kode Alat Bayar',
-                'index' => 'kodealatbayar',
-            ],
-            [
-                'label' => 'Nama Alat Bayar',
-                'index' => 'namaalatbayar',
-            ],
-            [
-                'label' => 'Keterangan',
-                'index' => 'keterangan',
-            ],
-            [
-                'label' => 'Status Langsung Cair',
-                'index' => 'statuslangsungcair',
-            ],
-            [
-                'label' => 'Status Default',
-                'index' => 'statusdefault',
-            ],
-            [
-                'label' => 'Bank',
-                'index' => 'bank',
-            ],
-            [
-                'label' => 'Status AKtif',
-                'index' => 'statusaktif',
-            ],
-        ];
-
-        $this->toExcel('Alat Bayar', $alatbayars, $columns);
     }
 }

@@ -7,6 +7,7 @@ use App\Http\Requests\StoreLogTrailRequest;
 use App\Models\Supplier;
 use App\Http\Requests\StoreSupplierRequest;
 use App\Http\Requests\DestroySupplierRequest;
+use App\Http\Requests\RangeExportReportRequest;
 use App\Http\Requests\UpdateSupirRequest;
 use App\Http\Requests\UpdateSupplierRequest;
 use Illuminate\Http\Request;
@@ -40,17 +41,18 @@ class SupplierController extends Controller
         ]);
     }
 
-    public function cekValidasi($id) {
-        $supplier= new Supplier();
-        $cekdata=$supplier->cekvalidasihapus($id);
-        if ($cekdata['kondisi']==true) {
+    public function cekValidasi($id)
+    {
+        $supplier = new Supplier();
+        $cekdata = $supplier->cekvalidasihapus($id);
+        if ($cekdata['kondisi'] == true) {
             $query = DB::table('error')
-            ->select(
-                DB::raw("ltrim(rtrim(keterangan))+' (".$cekdata['keterangan'].")' as keterangan")
+                ->select(
+                    DB::raw("ltrim(rtrim(keterangan))+' (" . $cekdata['keterangan'] . ")' as keterangan")
                 )
-            ->where('kodeerror', '=', 'SATL')
-            ->get();
-        $keterangan = $query['0'];
+                ->where('kodeerror', '=', 'SATL')
+                ->get();
+            $keterangan = $query['0'];
 
             $data = [
                 'status' => false,
@@ -60,7 +62,6 @@ class SupplierController extends Controller
             ];
 
             return response($data);
-         
         } else {
             $data = [
                 'status' => false,
@@ -69,7 +70,7 @@ class SupplierController extends Controller
                 'kondisi' => $cekdata['kondisi'],
             ];
 
-            return response($data); 
+            return response($data);
         }
     }
     public function default()
@@ -80,7 +81,7 @@ class SupplierController extends Controller
             'data' => $supplier->default()
         ]);
     }
-    
+
     public function show($id)
     {
 
@@ -292,30 +293,32 @@ class SupplierController extends Controller
             return response([
                 'status' => true,
             ]);
-        }else {
+
+        } else {
 
             $response = $this->index();
             $decodedResponse = json_decode($response->content(), true);
             $suppliers = $decodedResponse['data'];
 
             $judulLaporan = $suppliers[0]['judulLaporan'];
+
             $i = 0;
             foreach ($suppliers as $index => $params) {
-    
+
                 $statusaktif = $params['statusaktif'];
                 $statusDaftarHarga = $params['statusdaftarharga'];
-    
+
                 $result = json_decode($statusaktif, true);
                 $resultDaftarHarga = json_decode($statusDaftarHarga, true);
-    
+
                 $statusaktif = $result['MEMO'];
                 $statusDaftarHarga = $resultDaftarHarga['MEMO'];
-    
+
                 $suppliers[$i]['statusaktif'] = $statusaktif;
                 $suppliers[$i]['statusdaftarharga'] = $statusDaftarHarga;
                 $i++;
             }
-    
+
             $columns = [
                 [
                     'label' => 'No',
@@ -400,13 +403,11 @@ class SupplierController extends Controller
                     'label' => 'Kategori Usaha',
                     'index' => 'kategoriusaha',
                 ],
-    
+
             ];
-    
+
             $this->toExcel($judulLaporan, $suppliers, $columns);
-
-
         }
-        
+
     }
 }

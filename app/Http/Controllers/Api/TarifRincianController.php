@@ -48,11 +48,19 @@ class TarifRincianController extends Controller
                 $query->whereIn('tarif_id', $params['whereIn']);
             }
 
+            $getJudul = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))
+            ->select('text')
+            ->where('grp', 'JUDULAN LAPORAN')
+            ->where('subgrp', 'JUDULAN LAPORAN')
+            ->first();
+
             if ($params['forReport']) {
                 $query->select(
                     'header.tujuan',
                     'container.keterangan as container_id',
                     'detail.nominal',
+                    DB::raw("'Laporan Tarif' as judulLaporan"),
+                    DB::raw("'" . $getJudul->text . "' as judul")
                 )
                     ->leftJoin(DB::raw("container with (readuncommitted)"), 'container.id', 'detail.container_id');
 
@@ -61,6 +69,8 @@ class TarifRincianController extends Controller
                 $query->select(
                     'container.keterangan as container_id',
                     'detail.nominal',
+                    B::raw("'Laporan Tarif' as judulLaporan"),
+                    DB::raw("'" . $getJudul->text . "' as judul")
                 )
                     ->leftJoin(DB::raw("container with (readuncommitted)"), 'container.id', 'detail.container_id');
                 $tarif = $query->get();

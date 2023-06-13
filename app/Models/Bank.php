@@ -238,6 +238,12 @@ class Bank extends MyModel
     {
         $this->setRequestParameters();
 
+        $getJudul = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))
+            ->select('text')
+            ->where('grp', 'JUDULAN LAPORAN')
+            ->where('subgrp', 'JUDULAN LAPORAN')
+            ->first();
+
         $aktif = request()->aktif ?? '';
         $tipe = request()->tipe ?? '';
         $bankId = request()->bankId ?? 0;
@@ -261,7 +267,9 @@ class Bank extends MyModel
                 'formatpengeluaran.memo as formatpengeluaran',
                 'bank.modifiedby',
                 'bank.created_at',
-                'bank.updated_at'
+                'bank.updated_at',
+                DB::raw("'Laporan Bank' as judulLaporan"),
+                DB::raw("'" . $getJudul->text . "' as judul")
             )
             ->leftJoin(DB::raw("akunpusat with (readuncommitted)"), 'bank.coa', '=', 'akunpusat.coa')
             ->leftJoin(DB::raw("parameter with (readuncommitted)"), 'bank.statusaktif', '=', 'parameter.id')
@@ -450,7 +458,6 @@ class Bank extends MyModel
                         } else {
                             // $query = $query->where($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
                             $query = $query->whereRaw($this->table . ".[" .  $filters['field'] . "] LIKE '%" . escapeLike($filters['data']) . "%' escape '|'");
-
                         }
                     }
 
@@ -471,7 +478,6 @@ class Bank extends MyModel
                             } else {
                                 // $query = $query->orWhere($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
                                 $query = $query->OrwhereRaw($this->table . ".[" .  $filters['field'] . "] LIKE '%" . escapeLike($filters['data']) . "%' escape '|'");
-
                             }
                         }
                     });

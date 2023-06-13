@@ -164,6 +164,11 @@ class Agen extends MyModel
     public function get()
     {
         $this->setRequestParameters();
+        $getJudul = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))
+            ->select('text')
+            ->where('grp', 'JUDULAN LAPORAN')
+            ->where('subgrp', 'JUDULAN LAPORAN')
+            ->first();
 
         $aktif = request()->aktif ?? '';
 
@@ -187,7 +192,9 @@ class Agen extends MyModel
                 'agen.jenisemkl',
                 'agen.created_at',
                 'agen.modifiedby',
-                'agen.updated_at'
+                'agen.updated_at',
+                DB::raw("'Laporan Agen' as judulLaporan"),
+                DB::raw("'" . $getJudul->text . "' as judul")
             )
             ->leftJoin(DB::raw("parameter with (readuncommitted)"), 'agen.statusaktif', 'parameter.id')
             ->leftJoin(DB::raw("parameter as statusapproval with (readuncommitted)"), 'agen.statusapproval', 'statusapproval.id')
@@ -403,11 +410,10 @@ class Agen extends MyModel
                         } else if ($filters['field'] == 'statustas') {
                             $query = $query->where('statustas.text', '=', $filters['data']);
                         } else if ($filters['field'] == 'created_at' || $filters['field'] == 'updated_at') {
-                            $query = $query->whereRaw("format(".$this->table . "." . $filters['field'].", 'dd-MM-yyyy HH:mm:ss') LIKE '%$filters[data]%'");
+                            $query = $query->whereRaw("format(" . $this->table . "." . $filters['field'] . ", 'dd-MM-yyyy HH:mm:ss') LIKE '%$filters[data]%'");
                         } else {
                             // $query = $query->where($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
                             $query = $query->whereRaw($this->table . ".[" .  $filters['field'] . "] LIKE '%" . escapeLike($filters['data']) . "%' escape '|'");
-
                         }
                     }
 
@@ -422,11 +428,10 @@ class Agen extends MyModel
                             } else if ($filters['field'] == 'statustas') {
                                 $query = $query->orWhere('statustas.text', '=', $filters['data']);
                             } else if ($filters['field'] == 'created_at' || $filters['field'] == 'updated_at') {
-                                $query = $query->orWhereRaw("format(".$this->table . "." . $filters['field'].", 'dd-MM-yyyy HH:mm:ss') LIKE '%$filters[data]%'");
+                                $query = $query->orWhereRaw("format(" . $this->table . "." . $filters['field'] . ", 'dd-MM-yyyy HH:mm:ss') LIKE '%$filters[data]%'");
                             } else {
                                 // $query = $query->orWhere($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
                                 $query = $query->OrwhereRaw($this->table . ".[" .  $filters['field'] . "] LIKE '%" . escapeLike($filters['data']) . "%' escape '|'");
-
                             }
                         }
                     });

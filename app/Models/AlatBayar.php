@@ -104,6 +104,13 @@ class AlatBayar extends MyModel
     public function get()
     {
         $this->setRequestParameters();
+
+        $getJudul = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))
+            ->select('text')
+            ->where('grp', 'JUDULAN LAPORAN')
+            ->where('subgrp', 'JUDULAN LAPORAN')
+            ->first();
+
         $aktif = request()->aktif ?? '';
         // dd(request()->all());
         $bank_id = request()->bank_id ?? 0;
@@ -146,7 +153,9 @@ class AlatBayar extends MyModel
                 'bank.namabank as bank',
                 'alatbayar.modifiedby',
                 'alatbayar.created_at',
-                'alatbayar.updated_at'
+                'alatbayar.updated_at',
+                DB::raw("'Laporan Alat Bayar' as judulLaporan"),
+                DB::raw("'" . $getJudul->text . "' as judul")
             )
             ->leftJoin(DB::raw("bank with (readuncommitted)"), 'alatbayar.bank_id', 'bank.id')
             ->leftJoin(DB::raw("parameter as parameter_statuslangsungcair with (readuncommitted)"), 'alatbayar.statuslangsungcair', 'parameter_statuslangsungcair.id')
@@ -367,7 +376,6 @@ class AlatBayar extends MyModel
                         } else {
                             // $query = $query->where($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
                             $query = $query->whereRaw($this->table . ".[" .  $filters['field'] . "] LIKE '%" . escapeLike($filters['data']) . "%' escape '|'");
-
                         }
                     }
 
@@ -388,7 +396,6 @@ class AlatBayar extends MyModel
                             } else {
                                 // $query = $query->orWhere($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
                                 $query = $query->OrwhereRaw($this->table . ".[" .  $filters['field'] . "] LIKE '%" . escapeLike($filters['data']) . "%' escape '|'");
-
                             }
                         }
                     });

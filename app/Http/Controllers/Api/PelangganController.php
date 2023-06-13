@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\DestroyPelangganRequest;
+use App\Http\Requests\RangeExportReportRequest;
 use App\Http\Requests\StoreLogTrailRequest;
 use App\Models\Pelanggan;
 use App\Http\Requests\StorePelangganRequest;
@@ -32,17 +33,18 @@ class PelangganController extends Controller
         ]);
     }
 
-    public function cekValidasi($id) {
-        $pelanggan= new Pelanggan();
-        $cekdata=$pelanggan->cekvalidasihapus($id);
-        if ($cekdata['kondisi']==true) {
+    public function cekValidasi($id)
+    {
+        $pelanggan = new Pelanggan();
+        $cekdata = $pelanggan->cekvalidasihapus($id);
+        if ($cekdata['kondisi'] == true) {
             $query = DB::table('error')
-            ->select(
-                DB::raw("ltrim(rtrim(keterangan))+' (".$cekdata['keterangan'].")' as keterangan")
+                ->select(
+                    DB::raw("ltrim(rtrim(keterangan))+' (" . $cekdata['keterangan'] . ")' as keterangan")
                 )
-            ->where('kodeerror', '=', 'SATL')
-            ->get();
-        $keterangan = $query['0'];
+                ->where('kodeerror', '=', 'SATL')
+                ->get();
+            $keterangan = $query['0'];
 
             $data = [
                 'status' => false,
@@ -52,7 +54,6 @@ class PelangganController extends Controller
             ];
 
             return response($data);
-         
         } else {
             $data = [
                 'status' => false,
@@ -61,7 +62,7 @@ class PelangganController extends Controller
                 'kondisi' => $cekdata['kondisi'],
             ];
 
-            return response($data); 
+            return response($data);
         }
     }
 
@@ -155,7 +156,7 @@ class PelangganController extends Controller
             $pelanggan->kota = $request->kota;
             $pelanggan->kodepos = $request->kodepos;
             $pelanggan->keterangan = $request->keterangan ?? '';
-            $pelanggan->statusaktif = $request->statusaktif;            
+            $pelanggan->statusaktif = $request->statusaktif;
             $pelanggan->modifiedby = auth('api')->user()->name;
 
             if ($pelanggan->save()) {
@@ -200,7 +201,7 @@ class PelangganController extends Controller
 
         $pelanggan = new Pelanggan();
         $pelanggan = $pelanggan->lockAndDestroy($id);
-        
+
         if ($pelanggan) {
             $logTrail = [
                 'namatabel' => strtoupper($pelanggan->getTable()),
@@ -252,77 +253,87 @@ class PelangganController extends Controller
         ]);
     }
 
-    
 
-    public function export()
+
+    public function export(RangeExportReportRequest $request)
     {
-        $response = $this->index();
-        $decodedResponse = json_decode($response->content(), true);
-        $pelanggans = $decodedResponse['data'];
 
-        $i = 0;
-        foreach ($pelanggans as $index => $params) {
+        if (request()->cekExport) {
+            return response([
+                'status' => true,
+            ]);
+        } else {
 
-            $statusaktif = $params['statusaktif'];
+            $response = $this->index();
+            $decodedResponse = json_decode($response->content(), true);
+            $pelanggans = $decodedResponse['data'];
 
-            $result = json_decode($statusaktif, true);
+            $judulLaporan = $pelanggans[0]['judulLaporan'];
 
-            $statusaktif = $result['MEMO'];
+            $i = 0;
+            foreach ($pelanggans as $index => $params) {
 
-            $pelanggans[$i]['statusaktif'] = $statusaktif;
-            $i++;
+                $statusaktif = $params['statusaktif'];
+
+                $result = json_decode($statusaktif, true);
+
+                $statusaktif = $result['MEMO'];
+
+                $pelanggans[$i]['statusaktif'] = $statusaktif;
+                $i++;
+            }
+
+            $columns = [
+                [
+                    'label' => 'No',
+                ],
+                [
+                    'label' => 'ID',
+                    'index' => 'id',
+                ],
+                [
+                    'label' => 'Kode Pelanggan',
+                    'index' => 'kodepelanggan',
+                ],
+                [
+                    'label' => 'Nama Pelanggan',
+                    'index' => 'namapelanggan',
+                ],
+                [
+                    'label' => 'Status Aktif',
+                    'index' => 'statusaktif',
+                ],
+                [
+                    'label' => 'Telp',
+                    'index' => 'telp',
+                ],
+                [
+                    'label' => 'Alamat',
+                    'index' => 'alamat',
+                ],
+                [
+                    'label' => 'Alamat2',
+                    'index' => 'alamat2',
+                ],
+                [
+                    'label' => 'Kota',
+                    'index' => 'kota',
+                ],
+                [
+                    'label' => 'Kode Pos',
+                    'index' => 'kodepos',
+                ],
+                [
+                    'label' => 'Keterangan',
+                    'index' => 'keterangan',
+                ],
+            ];
+
+            $this->toExcel($judulLaporan, $pelanggans, $columns);
         }
-
-        $columns = [
-            [
-                'label' => 'No',
-            ],
-            [
-                'label' => 'ID',
-                'index' => 'id',
-            ],
-            [
-                'label' => 'Kode Pelanggan',
-                'index' => 'kodepelanggan',
-            ],
-            [
-                'label' => 'Nama Pelanggan',
-                'index' => 'namapelanggan',
-            ],
-            [
-                'label' => 'Status Aktif',
-                'index' => 'statusaktif',
-            ],
-            [
-                'label' => 'Telp',
-                'index' => 'telp',
-            ],
-            [
-                'label' => 'Alamat',
-                'index' => 'alamat',
-            ],
-            [
-                'label' => 'Alamat2',
-                'index' => 'alamat2',
-            ],
-            [
-                'label' => 'Kota',
-                'index' => 'kota',
-            ],
-            [
-                'label' => 'Kode Pos',
-                'index' => 'kodepos',
-            ],
-            [
-                'label' => 'Keterangan',
-                'index' => 'keterangan',
-            ],
-        ];
-
-        $this->toExcel('Pelanggan', $pelanggans, $columns);
     }
 
-    
+
     public function combostatus(Request $request)
     {
 

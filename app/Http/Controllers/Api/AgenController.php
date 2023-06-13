@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Exceptions\NotDeletableModel;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\DestroyAgenRequest;
+use App\Http\Requests\RangeExportReportRequest;
 use App\Models\Agen;
 use App\Http\Requests\StoreAgenRequest;
 use App\Http\Requests\StoreLogTrailRequest;
@@ -32,17 +33,18 @@ class AgenController extends Controller
         ]);
     }
 
-    public function cekValidasi($id) {
-        $agen= new Agen();
-        $cekdata=$agen->cekvalidasihapus($id);
-        if ($cekdata['kondisi']==true) {
+    public function cekValidasi($id)
+    {
+        $agen = new Agen();
+        $cekdata = $agen->cekvalidasihapus($id);
+        if ($cekdata['kondisi'] == true) {
             $query = DB::table('error')
-            ->select(
-                DB::raw("ltrim(rtrim(keterangan))+' (".$cekdata['keterangan'].")' as keterangan")
+                ->select(
+                    DB::raw("ltrim(rtrim(keterangan))+' (" . $cekdata['keterangan'] . ")' as keterangan")
                 )
-            ->where('kodeerror', '=', 'SATL')
-            ->get();
-        $keterangan = $query['0'];
+                ->where('kodeerror', '=', 'SATL')
+                ->get();
+            $keterangan = $query['0'];
 
             $data = [
                 'status' => false,
@@ -52,7 +54,6 @@ class AgenController extends Controller
             ];
 
             return response($data);
-         
         } else {
             $data = [
                 'status' => false,
@@ -61,7 +62,7 @@ class AgenController extends Controller
                 'kondisi' => $cekdata['kondisi'],
             ];
 
-            return response($data); 
+            return response($data);
         }
     }
     public function default()
@@ -250,100 +251,110 @@ class AgenController extends Controller
         }
     }
 
-    public function export()
+    public function export(RangeExportReportRequest $request)
     {
-        $response = $this->index();
-        $decodedResponse = json_decode($response->content(), true);
-        $agens = $decodedResponse['data'];
 
-        $i = 0;
-        foreach ($agens as $index => $params) {
+        if (request()->cekExport) {
+            return response([
+                'status' => true,
+            ]);
+        } else {
 
-            $statusaktif = $params['statusaktif'];
-            $statusApproval = $params['statusapproval'];
-            $statusTas = $params['statustas'];
+            $response = $this->index();
+            $decodedResponse = json_decode($response->content(), true);
+            $agens = $decodedResponse['data'];
 
-            $result = json_decode($statusaktif, true);
-            $resultApproval = json_decode($statusApproval, true);
-            $resultTas = json_decode($statusTas, true);
+            $judulLaporan = $agens[0]['judulLaporan'];
 
-            $statusaktif = $result['MEMO'];
-            $statusApproval = $resultApproval['MEMO'];
-            $statusTas = $resultTas['MEMO'];
+            $i = 0;
+            foreach ($agens as $index => $params) {
 
-            $agens[$i]['statusaktif'] = $statusaktif;
-            $agens[$i]['statusapproval'] = $statusApproval;
-            $agens[$i]['statustas'] = $statusTas;
-            $i++;
+                $statusaktif = $params['statusaktif'];
+                $statusApproval = $params['statusapproval'];
+                $statusTas = $params['statustas'];
+
+                $result = json_decode($statusaktif, true);
+                $resultApproval = json_decode($statusApproval, true);
+                $resultTas = json_decode($statusTas, true);
+
+                $statusaktif = $result['MEMO'];
+                $statusApproval = $resultApproval['MEMO'];
+                $statusTas = $resultTas['MEMO'];
+
+                $agens[$i]['statusaktif'] = $statusaktif;
+                $agens[$i]['statusapproval'] = $statusApproval;
+                $agens[$i]['statustas'] = $statusTas;
+                $i++;
+            }
+
+            $columns = [
+                [
+                    'label' => 'No',
+                ],
+                [
+                    'label' => 'Kode Agen',
+                    'index' => 'kodeagen',
+                ],
+                [
+                    'label' => 'Nama Agen',
+                    'index' => 'namaagen',
+                ],
+                [
+                    'label' => 'Keterangan',
+                    'index' => 'keterangan',
+                ],
+                [
+                    'label' => 'Status Aktif',
+                    'index' => 'statusaktif',
+                ],
+                [
+                    'label' => 'Nama Perusahaan',
+                    'index' => 'namaperusahaan',
+                ],
+                [
+                    'label' => 'Alamat',
+                    'index' => 'alamat',
+                ],
+                [
+                    'label' => 'No Telp',
+                    'index' => 'notelp',
+                ],
+                [
+                    'label' => 'No Hp',
+                    'index' => 'nohp',
+                ],
+                [
+                    'label' => 'Contact Person',
+                    'index' => 'contactperson',
+                ],
+                [
+                    'label' => 'TOP',
+                    'index' => 'top',
+                ],
+                [
+                    'label' => 'Status Approval',
+                    'index' => 'statusapproval',
+                ],
+                [
+                    'label' => 'User approval',
+                    'index' => 'userapproval',
+                ],
+                [
+                    'label' => 'Tgl Approval',
+                    'index' => 'tglapproval',
+                ],
+                [
+                    'label' => 'Status Tas',
+                    'index' => 'statustas',
+                ],
+                // [
+                //     'label' => 'Jenis Emkl',
+                //     'index' => 'jenisemkl',
+                // ],
+            ];
+
+            $this->toExcel($judulLaporan, $agens, $columns);
         }
-
-        $columns = [
-            [
-                'label' => 'No',
-            ],
-            [
-                'label' => 'Kode Agen',
-                'index' => 'kodeagen',
-            ],
-            [
-                'label' => 'Nama Agen',
-                'index' => 'namaagen',
-            ],
-            [
-                'label' => 'Keterangan',
-                'index' => 'keterangan',
-            ],
-            [
-                'label' => 'Status Aktif',
-                'index' => 'statusaktif',
-            ],
-            [
-                'label' => 'Nama Perusahaan',
-                'index' => 'namaperusahaan',
-            ],
-            [
-                'label' => 'Alamat',
-                'index' => 'alamat',
-            ],
-            [
-                'label' => 'No Telp',
-                'index' => 'notelp',
-            ],
-            [
-                'label' => 'No Hp',
-                'index' => 'nohp',
-            ],
-            [
-                'label' => 'Contact Person',
-                'index' => 'contactperson',
-            ],
-            [
-                'label' => 'TOP',
-                'index' => 'top',
-            ],
-            [
-                'label' => 'Status Approval',
-                'index' => 'statusapproval',
-            ],
-            [
-                'label' => 'User approval',
-                'index' => 'userapproval',
-            ],
-            [
-                'label' => 'Tgl Approval',
-                'index' => 'tglapproval',
-            ],
-            [
-                'label' => 'Status Tas',
-                'index' => 'statustas',
-            ],
-            // [
-            //     'label' => 'Jenis Emkl',
-            //     'index' => 'jenisemkl',
-            // ],
-        ];
-
-        $this->toExcel('Agen', $agens, $columns);
     }
 
     public function fieldLength()
