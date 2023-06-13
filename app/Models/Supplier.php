@@ -112,6 +112,7 @@ class Supplier extends MyModel
             ->where('subgrp', 'JUDULAN LAPORAN')
             ->first();
 
+
         $aktif = request()->aktif ?? '';
 
         $query = DB::table($this->table)->select(

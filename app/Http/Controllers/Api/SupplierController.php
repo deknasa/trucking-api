@@ -12,6 +12,7 @@ use App\Http\Requests\UpdateSupirRequest;
 use App\Http\Requests\UpdateSupplierRequest;
 use Illuminate\Http\Request;
 use App\Models\Parameter;
+use App\Http\Requests\RangeExportReportRequest;
 
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
@@ -292,6 +293,7 @@ class SupplierController extends Controller
             return response([
                 'status' => true,
             ]);
+
         } else {
 
             $response = $this->index();
@@ -406,5 +408,6 @@ class SupplierController extends Controller
 
             $this->toExcel($judulLaporan, $suppliers, $columns);
         }
+
     }
 }
