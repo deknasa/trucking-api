@@ -158,18 +158,23 @@ class UpahRitasiRincian extends MyModel
             $tempupah = '##tempupah' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
             Schema::create($tempupah, function ($table) {
                 $table->unsignedBigInteger('id')->nullable();
+                $table->string('dari')->nullable();
                 $table->string('tujuan')->nullable();
             });
 
             $querytempupah = DB::table('upahritasi')->from(DB::raw("upahritasi with (readuncommitted)"))
                 ->select(
                     'upahritasi.id as id',
+                    'dari.keterangan as dari',
                     'kota.keterangan as tujuan',
                 )
-                ->leftJoin(DB::raw("kota with (readuncommitted)"), 'upahritasi.kotasampai_id', '=', 'kota.id');
+                ->leftJoin(DB::raw("kota with (readuncommitted)"), 'upahritasi.kotasampai_id', '=', 'kota.id')
+                ->leftJoin(DB::raw("kota as dari with (readuncommitted)"), 'upahritasi.kotadari_id', '=', 'dari.id');
+
 
             DB::table($tempupah)->insertUsing([
                 'id',
+                'dari',
                 'tujuan',
             ], $querytempupah);
 
@@ -227,7 +232,7 @@ class UpahRitasiRincian extends MyModel
                 $a = $a + 1;
             }
 
-            $statement = ' select b.tujuan,A.* from (select id,' . $columnid . ' from 
+            $statement = ' select b.dari,b.tujuan,A.* from (select id,' . $columnid . ' from 
                 (select A.id,A.container,A.nominal
                     from ' . $tempdata . ' A) as SourceTable
             

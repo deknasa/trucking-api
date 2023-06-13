@@ -54,6 +54,7 @@ class UpahSupirController extends Controller
     {
         $dari = date('Y-m-d', strtotime($request->dari));
         $sampai = date('Y-m-d', strtotime($request->sampai));
+      
         $upahsupirrincian = new UpahSupirRincian();
 
         $cekData = DB::table("upahsupir")->from(DB::raw("upahsupir with (readuncommitted)"))
