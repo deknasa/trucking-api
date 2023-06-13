@@ -292,6 +292,7 @@ class SupplierController extends Controller
             return response([
                 'status' => true,
             ]);
+
         } else {
 
             $response = $this->index();
@@ -406,5 +407,6 @@ class SupplierController extends Controller
 
             $this->toExcel($judulLaporan, $suppliers, $columns);
         }
+
     }
 }

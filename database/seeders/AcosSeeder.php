@@ -460,5 +460,10 @@ class AcosSeeder extends Seeder
         acos::create(['class' => 'notadebetheader', 'method' => 'approval', 'nama' => 'approval NotaDebetHeaderController', 'modifiedby' => 'ADMIN',]);
         acos::create(['class' => 'approvalbukacetak', 'method' => 'index', 'nama' => 'index ApprovalBukaCetakController', 'modifiedby' => 'ADMIN',]);
         acos::create(['class' => 'approvalbukacetak', 'method' => 'store', 'nama' => 'store ApprovalBukaCetakController', 'modifiedby' => 'ADMIN',]);
+        acos::create(['class' => 'dataritasi', 'method' => 'index', 'nama' => 'index DataRitasiController', 'modifiedby' => 'ADMIN',]);
+        acos::create(['class' => 'dataritasi', 'method' => 'report', 'nama' => 'report DataRitasiController', 'modifiedby' => 'ADMIN',]);
+        acos::create(['class' => 'dataritasi', 'method' => 'store', 'nama' => 'store DataRitasiController', 'modifiedby' => 'ADMIN',]);
+        acos::create(['class' => 'dataritasi', 'method' => 'update', 'nama' => 'update DataRitasiController', 'modifiedby' => 'ADMIN',]);
+        acos::create(['class' => 'dataritasi', 'method' => 'destroy', 'nama' => 'destroy DataRitasiController', 'modifiedby' => 'ADMIN',]);
     }
 }
