@@ -32,8 +32,8 @@ class StoreDataRitasiRequest extends FormRequest
             $status[] = $item['id'];
         }
         return [
-            'statusritasi' => 'unique:dataritasi',
-           
+            'statusritasi' => 'required|unique:dataritasi',
+            'nominal' => ['required', 'numeric', 'max:1000000'], 
             'statusaktif' => ['required', Rule::in($status)],
         ];
     }
