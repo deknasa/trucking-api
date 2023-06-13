@@ -161,7 +161,6 @@ class Supplier extends MyModel
 
             $query->where('supplier.statusaktif', '=', $statusaktif->id);
         }
-
         $this->totalRows = $query->count();
         $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;
 
