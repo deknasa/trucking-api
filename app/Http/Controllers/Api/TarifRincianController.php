@@ -28,7 +28,6 @@ class TarifRincianController extends Controller
             'sortIndex' => $request->sortOrder ?? 'id',
             'sortOrder' => $request->sortOrder ?? 'asc',
         ];
-
         try {
             $query = TarifRincian::from(DB::raw("tarifrincian as detail with (readuncommitted)"));
 
@@ -53,7 +52,7 @@ class TarifRincianController extends Controller
             ->where('grp', 'JUDULAN LAPORAN')
             ->where('subgrp', 'JUDULAN LAPORAN')
             ->first();
-
+            
             if ($params['forReport']) {
                 $query->select(
                     'header.tujuan',
@@ -69,13 +68,12 @@ class TarifRincianController extends Controller
                 $query->select(
                     'container.keterangan as container_id',
                     'detail.nominal',
-                    B::raw("'Laporan Tarif' as judulLaporan"),
+                    DB::raw("'Laporan Tarif' as judulLaporan"),
                     DB::raw("'" . $getJudul->text . "' as judul")
                 )
                     ->leftJoin(DB::raw("container with (readuncommitted)"), 'container.id', 'detail.container_id');
                 $tarif = $query->get();
             }
-
 
             $idUser = auth('api')->user()->id;
             $getuser = User::select('name','cabang.namacabang as cabang_id')
