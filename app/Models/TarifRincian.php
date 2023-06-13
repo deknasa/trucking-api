@@ -60,10 +60,6 @@ class TarifRincian extends MyModel
             $table->string('kota', 1000)->nullable();
         });
 
-
-
-
-
         foreach ($data as $item) {
             $values = array(
                 'tujuan' => $item['tujuan'],
@@ -108,9 +104,7 @@ class TarifRincian extends MyModel
     public function updateharga($data)
     {
 
-
-
-
+      
         // dd($datadetail);
         foreach ($data as $item) {
 
@@ -181,13 +175,13 @@ class TarifRincian extends MyModel
             app(TarifController::class)->store($tarif);
         }
 
-
-
-
         return $data;
+     
+
+
     }
 
-    public function listpivot()
+    public function listpivot($dari, $sampai)
     {
         $tempdata = '##tempdata' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
         Schema::create($tempdata, function ($table) {
@@ -205,7 +199,9 @@ class TarifRincian extends MyModel
                 DB::raw("isnull(tarifrincian.nominal,0) as nominal"),
             )
             ->leftJoin(DB::raw("tarifrincian with (readuncommitted)"), 'container.id', '=', 'tarifrincian.container_id')
-            ->leftJoin(DB::raw("tarif with (readuncommitted)"), 'tarif.id', '=', 'tarifrincian.tarif_id');
+            ->leftJoin(DB::raw("tarif with (readuncommitted)"), 'tarif.id', '=', 'tarifrincian.tarif_id')
+            ->whereRaw("tarif.tglmulaiberlaku >= '$dari'")
+            ->whereRaw("tarif.tglmulaiberlaku <= '$sampai'");
 
 
         DB::table($tempdata)->insertUsing([
@@ -258,7 +254,7 @@ class TarifRincian extends MyModel
 
 
         $statement = " select b.tujuan as 
-        [Tujuan],cast(format(isnull(b.tglmulaiberlaku,'1900/1/1'),'yyyy/MM/dd') 
+        [Tujuan],isnull(b.penyesuaian,'') as [Penyesuaian],cast(format(isnull(b.tglmulaiberlaku,'1900/1/1'),'yyyy/MM/dd') 
         as date) as [Tgl Mulai Berlaku],isnull(C.kodekota,'') 
         as [Kota],A.* from (select " . $columnid . ",id from 
          (
@@ -273,7 +269,7 @@ class TarifRincian extends MyModel
         ";
 
         $data = DB::select(DB::raw($statement));
-
+        
         return $data;
     }
 
