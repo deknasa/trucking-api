@@ -472,7 +472,7 @@ class TarifController extends Controller
             } else {
                 return response([
                     'status' => true,
-                    'keterangan' => 'data berhasil di update',
+                    'keterangan' => 'harga berhasil di update',
                     'data' => $tarifrincian->updateharga($data),
                     'kondisi' => $cekdata
                 ]);
