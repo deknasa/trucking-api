@@ -59,6 +59,7 @@ class UpahSupirRincianController extends Controller
                     'statusluarkota.text as statusluarkota',
                     'container.keterangan as container_id',
                     'statuscontainer.keterangan as statuscontainer_id',
+                    'header.tglmulaiberlaku',
                     'detail.nominalsupir',
                     'detail.nominalkenek',
                     'detail.nominalkomisi',
