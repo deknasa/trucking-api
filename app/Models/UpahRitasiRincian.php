@@ -46,13 +46,63 @@ class UpahRitasiRincian extends MyModel
         return $data;
     }
 
+
+    public function cekupdateharga($data)
+    {
+        $tempdata = '##tempdata' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+        Schema::create($tempdata, function ($table) {
+            $table->string('kotadari', 1000)->nullable();
+            $table->string('kotasampai', 1000)->nullable();
+            $table->integer('jarak')->nullable();
+            $table->date('tglmulaiberlaku')->nullable();
+           
+        });
+
+        foreach ($data as $item) {
+            $values = array(
+                'kotadari' => $item['kotadari'],
+                'kotasampai' => $item['kotasampai'],
+                'jarak' => $item['jarak'],
+                'tglmulaiberlaku' => $item['tglmulaiberlaku'],
+            );
+            DB::table($tempdata)->insert($values);
+        }
+
+        $temptgl = '##temptgl' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+        Schema::create($temptgl, function ($table) {
+            $table->date('tglmulaiberlaku')->nullable();
+        });
+
+        $querytgl = DB::table('upahritasi')
+            ->from(DB::raw("upahritasi with (readuncommitted)"))
+            ->select(
+                'tglmulaiberlaku'
+            )
+            ->groupBy('tglmulaiberlaku');
+
+        DB::table($temptgl)->insertUsing(['tglmulaiberlaku'], $querytgl);
+
+
+        $query = DB::table($tempdata)
+            ->from(DB::raw($tempdata . " as a"))
+            ->select(
+                'a.tglmulaiberlaku'
+            )
+            ->join(DB::raw($temptgl . " as b"), 'a.tglmulaiberlaku', 'b.tglmulaiberlaku')
+            ->first();
+
+
+        if (isset($query)) {
+            $kondisi = true;
+        } else {
+            $kondisi = false;
+        }
+
+        return $kondisi;
+    }
+
     public function updateharga($data)
     {
-
-
-
-
-
 
         // dd($datadetail);
         foreach ($data as $item) {
@@ -160,6 +210,8 @@ class UpahRitasiRincian extends MyModel
                 $table->unsignedBigInteger('id')->nullable();
                 $table->string('dari')->nullable();
                 $table->string('tujuan')->nullable();
+                $table->string('jarak')->nullable();
+                $table->string('tglmulaiberlaku')->nullable();
             });
 
             $querytempupah = DB::table('upahritasi')->from(DB::raw("upahritasi with (readuncommitted)"))
@@ -167,6 +219,9 @@ class UpahRitasiRincian extends MyModel
                     'upahritasi.id as id',
                     'dari.keterangan as dari',
                     'kota.keterangan as tujuan',
+                    'upahritasi.jarak',
+                    'upahritasi.tglmulaiberlaku',
+                    
                 )
                 ->leftJoin(DB::raw("kota with (readuncommitted)"), 'upahritasi.kotasampai_id', '=', 'kota.id')
                 ->leftJoin(DB::raw("kota as dari with (readuncommitted)"), 'upahritasi.kotadari_id', '=', 'dari.id');
@@ -176,6 +231,9 @@ class UpahRitasiRincian extends MyModel
                 'id',
                 'dari',
                 'tujuan',
+                'jarak',
+                'tglmulaiberlaku',
+                
             ], $querytempupah);
 
 
@@ -232,7 +290,7 @@ class UpahRitasiRincian extends MyModel
                 $a = $a + 1;
             }
 
-            $statement = ' select b.dari,b.tujuan,A.* from (select id,' . $columnid . ' from 
+            $statement = ' select b.dari as [Dari],b.tujuan as [Tujuan],b.jarak as [Jarak],b.tglmulaiberlaku as [Tgl Mulai Berlaku],A.* from (select id,' . $columnid . ' from 
                 (select A.id,A.container,A.nominal
                     from ' . $tempdata . ' A) as SourceTable
             
@@ -241,9 +299,11 @@ class UpahRitasiRincian extends MyModel
                     for container in (' . $columnid . ')
                     ) as PivotTable)A
                 inner join ' . $tempupah . ' b with (readuncommitted) on A.id=B.id
+                
+
             ';
 
-            $statement2 = 'select b.tujuan,A.* from (select id,' . $columnliterid . ' from 
+            $statement2 = 'select b.tujuan as [Tujuan],A.* from (select id,' . $columnliterid . ' from 
                 (select A.id,A.litercontainer,A.liter
                     from ' . $tempdata . ' A) as SourceTable
             

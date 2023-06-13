@@ -425,33 +425,57 @@ class UpahRitasiController extends Controller
             $sheet        = $spreadsheet->getActiveSheet();
             $row_limit    = $sheet->getHighestDataRow();
             $column_limit = $sheet->getHighestDataColumn();
-            $row_range    = range(2, $row_limit);
+            $row_range    = range(4, $row_limit);
             $column_range = range('A', $column_limit);
-            $startcount = 2;
+            $startcount = 4;
             $data = array();
             
             $a=0;
             foreach ($row_range as $row) {
+
                 $data[] = [
-                    'kotadari' => $sheet->getCell('A' . $row)->getValue(),
-                    'kotasampai' => $sheet->getCell('B' . $row)->getValue(),
-                    'jarak' => $sheet->getCell('C' . $row)->getValue(),
+                    'kotadari' => $sheet->getCell($this->kolomexcel(1) . $row)->getValue(),
+                    'kotasampai' => $sheet->getCell($this->kolomexcel(2) . $row)->getValue(),
+                    'jarak' => $sheet->getCell($this->kolomexcel(3) . $row)->getValue(),
                     'tglmulaiberlaku' => date('Y-m-d',strtotime($sheet->getCell($this->kolomexcel(4) . $row)->getFormattedValue())),
                     'kolom1' => $sheet->getCell($this->kolomexcel(5)  . $row)->getValue(),
                     'kolom2' => $sheet->getCell($this->kolomexcel(6)  . $row)->getValue(),
-                    'liter1' => $sheet->getCell($this->kolomexcel(7)  . $row)->getValue(),
-                    'liter2' => $sheet->getCell($this->kolomexcel(8)  . $row)->getValue(),
+                    'kolom3' => $sheet->getCell($this->kolomexcel(7)  . $row)->getValue(),
+                    'liter1' => $sheet->getCell($this->kolomexcel(8)  . $row)->getValue(),
+                    'liter2' => $sheet->getCell($this->kolomexcel(9)  . $row)->getValue(),
+                    'liter3' => $sheet->getCell($this->kolomexcel(10)  . $row)->getValue(),
                     'modifiedby' => auth('api')->user()->name
                 ];
+
+            
                 $startcount++;
             }
  
             $upahRitasiRincian = new UpahRitasiRincian();
+            $cekdata = $upahRitasiRincian->cekupdateharga($data);
+           
+            if ($cekdata == true) {
+                $query = DB::table('error')
+                    ->select('keterangan')
+                    ->where('kodeerror', '=', 'SPI')
+                    ->get();
+                $keterangan = $query['0'];
 
-            return response([
-                'status' => true,
-                'data' => $upahRitasiRincian->updateharga($data),
-            ]);
+                $data = [
+                    'message' => $keterangan,
+                    'errors' => '',
+                    'kondisi' => $cekdata
+                ];
+
+                return response($data);
+            } else {
+                return response([
+                    'status' => true,
+                    'keterangan' => 'harga berhasil di update',
+                    'data' => $upahRitasiRincian->updateharga($data),
+                    'kondisi' => $cekdata
+                ]);
+            }
         } catch (\Throwable $th) {
             DB::rollBack();
             throw $th;
