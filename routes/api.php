@@ -371,6 +371,7 @@ route::middleware(['auth:api'])->group(function () {
 
     Route::get('upahsupirrincian/setuprow', [UpahSupirRincianController::class, 'setUpRow']);
     Route::get('upahsupirrincian/setuprowshow/{id}', [UpahSupirRincianController::class, 'setUpRowExcept'])->whereNumber('id');
+    Route::get('upahsupirrincian/get', [UpahSupirRincianController::class, 'get']);
     Route::resource('upahsupirrincian', UpahSupirRincianController::class)->whereNumber('upahsupirrincian');
 
     Route::get('parameter/export', [ParameterController::class, 'export']);

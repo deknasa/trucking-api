@@ -52,6 +52,121 @@ class UpahSupirRincian extends MyModel
         return $data;
     }
 
+    public function get(){
+        $this->setRequestParameters();
+
+        $aktif = request()->aktif ?? '';
+
+        $container_id = request()->container_id ?? 0;
+        $statuscontainer_id = request()->statuscontainer_id ?? 0;
+        $query = DB::table("upahsupirrincian")->from(DB::raw("upahsupirrincian with (readuncommitted)"))
+        ->select(
+            'upahsupir.id',
+            'upahsupir.kotadari_id',
+            'upahsupir.kotasampai_id',
+            'kotadari.kodekota as kotadari',
+            'kotasampai.kodekota as kotasampai',
+            'upahsupir.penyesuaian',
+            'upahsupir.jarak',
+            'parameter.memo as statusaktif',
+            'container.kodecontainer as container',
+            'statuscontainer.kodestatuscontainer as statuscontainer',
+            'upahsupirrincian.nominalsupir',
+            'upahsupir.tglmulaiberlaku',
+            'upahsupir.modifiedby',
+            'upahsupir.created_at',
+            'upahsupir.updated_at'
+        )
+        ->leftJoin(DB::raw("upahsupir with (readuncommitted)"), 'upahsupir.id', 'upahsupirrincian.upahsupir_id')
+        ->leftJoin(DB::raw("parameter with (readuncommitted)"), 'upahsupir.statusaktif', '=', 'parameter.id')
+        ->leftJoin(DB::raw("kota as kotadari with (readuncommitted)"), 'upahsupir.kotadari_id', 'kotadari.id')
+        ->leftJoin(DB::raw("kota as kotasampai with (readuncommitted)"), 'upahsupir.kotasampai_id', 'kotasampai.id')
+        ->leftJoin(DB::raw("container with (readuncommitted)"), 'upahsupirrincian.container_id', 'container.id')
+        ->leftJoin(DB::raw("statuscontainer with (readuncommitted)"), 'upahsupirrincian.statuscontainer_id', 'statuscontainer.id');
+
+        
+        $this->sort($query);
+
+        $this->filter($query);
+
+        if (($aktif == 'AKTIF')) {
+            $statusaktif = Parameter::from(
+                DB::raw("parameter with (readuncommitted)")
+            )
+                ->where('grp', '=', 'STATUS AKTIF')
+                ->where('text', '=', 'AKTIF')
+                ->first();
+
+            $query->where('upahsupir.statusaktif', '=', $statusaktif->id);
+        }
+        if ($container_id > 0) {
+            $query->where('upahsupirrincian.container_id', '=', $container_id);
+        }
+        if ($statuscontainer_id > 0) {
+            $query->where('upahsupirrincian.statuscontainer_id', '=', $statuscontainer_id);
+        }
+
+        $this->totalRows = $query->count();
+        $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;
+
+        $this->paginate($query);
+
+        $data = $query->get();
+
+        return $data;
+    }
+
+    public function getValidasiUpahsupir($container_id,$statuscontainer_id, $id)
+    {
+        $statusaktif = Parameter::from(
+            DB::raw("parameter with (readuncommitted)")
+        )
+            ->where('grp', '=', 'STATUS AKTIF')
+            ->where('text', '=', 'AKTIF')
+            ->first();
+
+        $query = UpahSupir::from(DB::raw("upahsupir with (readuncommitted)"))
+            ->select(
+                'upahsupir.id',
+            )
+            ->leftJoin(DB::raw("upahsupirrincian with (readuncommitted)"), 'upahsupir.id', '=', 'upahsupirrincian.upahsupir_id')
+            ->whereRaw("upahsupir.id in ($id)")
+            ->where('upahsupirrincian.container_id', '=', $container_id)
+            ->where('upahsupirrincian.statuscontainer_id', '=', $statuscontainer_id)
+            ->where('upahsupir.statusaktif', '=', $statusaktif->id);
+        
+        $data = $query->first();
+
+
+        return $data;
+    }
+    public function getValidasiKota($kota_id, $id)
+    {
+        $statusaktif = Parameter::from(
+            DB::raw("parameter with (readuncommitted)")
+        )
+            ->where('grp', '=', 'STATUS AKTIF')
+            ->where('text', '=', 'AKTIF')
+            ->first();
+
+        $query = UpahSupir::from(DB::raw("upahsupir with (readuncommitted)"))
+            ->select(
+                'upahsupir.id',
+            )
+            ->whereRaw("upahsupir.id in ($id)")
+            ->where(function ($query) use($kota_id) {
+                $query->whereRaw("upahsupir.kotadari_id = $kota_id")
+                    ->orWhereRaw("upahsupir.kotasampai_id = $kota_id");
+            })
+            ->where('upahsupir.statusaktif', '=', $statusaktif->id);
+            
+        $data = $query->first();
+
+
+        return $data;
+    }
+
+
     public function setUpRow()
     {
         $query = DB::table('statuscontainer')->select(
@@ -281,5 +396,98 @@ class UpahSupirRincian extends MyModel
 
             return $merger;
         }
+    }
+
+    
+    public function sort($query)
+    {
+        if ($this->params['sortIndex'] == 'penyesuaian' || $this->params['sortIndex'] == 'jarak' || $this->params['sortIndex'] == 'tglmulaiberlaku' || $this->params['sortIndex'] == 'modifiedby' || $this->params['sortIndex'] == 'created_at' || $this->params['sortIndex'] == 'updated_at' || $this->params['sortIndex'] == 'statusaktif') {
+            return $query->orderBy('upahsupir.' . $this->params['sortIndex'], $this->params['sortOrder']);
+        } else if ($this->params['sortIndex'] == 'container') {
+            return $query->orderBy('container.kodecontainer', $this->params['sortOrder']);
+        } else if ($this->params['sortIndex'] == 'statuscontainer') {
+            return $query->orderBy('statuscontainer.kodestatuscontainer', $this->params['sortOrder']);
+        } else if ($this->params['sortIndex'] == 'kotadari') {
+            return $query->orderBy('kotadari.kodekota', $this->params['sortOrder']);
+        } else if ($this->params['sortIndex'] == 'kotasampai') {
+            return $query->orderBy('kotasampai.kodekota', $this->params['sortOrder']);
+        } else {
+            return $query->orderBy($this->table . '.' . $this->params['sortIndex'], $this->params['sortOrder']);
+        }
+    }
+
+    public function filter($query, $relationFields = [])
+    {
+
+        if (count($this->params['filters']) > 0 && @$this->params['filters']['rules'][0]['data'] != '') {
+
+            switch ($this->params['filters']['groupOp']) {
+                case "AND":
+                    foreach ($this->params['filters']['rules'] as $index => $filters) {
+
+                        if ($filters['field'] == 'statusaktif') {
+                            $query = $query->where('parameter.text', '=', "$filters[data]");
+                        } elseif ($filters['field'] == 'container') {
+                            $query = $query->where('container.kodecontainer', 'LIKE', "%$filters[data]%");
+                        } elseif ($filters['field'] == 'statuscontainer') {
+                            $query = $query->where('statuscontainer.kodestatuscontainer', 'LIKE', "%$filters[data]%");
+                        } elseif ($filters['field'] == 'kotadari') {
+                            $query = $query->where('kotadari.kodekota', 'LIKE', "%$filters[data]%");
+                        } elseif ($filters['field'] == 'kotasampai') {
+                            $query = $query->where('kotasampai.kodekota', 'LIKE', "%$filters[data]%");
+                        } elseif ($filters['field'] == 'tglmulaiberlaku') {
+                            $query = $query->WhereRaw("format(upahsupir.tglmulaiberlaku,'dd-MM-yyyy') like '%$filters[data]%'");
+                        } else if ($filters['field'] == 'created_at' || $filters['field'] == 'updated_at') {
+                            $query = $query->whereRaw("format(upahsupir." . $filters['field'].", 'dd-MM-yyyy HH:mm:ss') LIKE '%$filters[data]%'");
+                        } elseif ($filters['field'] == 'nominalsupir') {
+                            $query = $query->whereRaw("format(upahsupirrincian.nominalsupir, '#,#0.00') LIKE '%$filters[data]%'");
+                        } else {
+                            $query = $query->where('upahsupir.' . $filters['field'], 'LIKE', "%$filters[data]%");
+                        }
+                    }
+
+                    break;
+                case "OR":
+                    $query->where(function ($query) {
+                        foreach ($this->params['filters']['rules'] as $index => $filters) {
+
+                            if ($filters['field'] == 'statusaktif') {
+                                $query = $query->orWhere('parameter.text', '=', "$filters[data]");
+                            } elseif ($filters['field'] == 'container') {
+                                $query = $query->orWhere('container.kodecontainer', 'LIKE', "%$filters[data]%");
+                            } elseif ($filters['field'] == 'statuscontainer') {
+                                $query = $query->orWhere('statuscontainer.kodestatuscontainer', 'LIKE', "%$filters[data]%");
+                            } elseif ($filters['field'] == 'kotadari') {
+                                $query = $query->orWhere('kotadari.kodekota', 'LIKE', "%$filters[data]%");
+                            } elseif ($filters['field'] == 'kotasampai') {
+                                $query = $query->orWhere('kotasampai.kodekota', 'LIKE', "%$filters[data]%");
+                            } elseif ($filters['field'] == 'tglmulaiberlaku') {
+                                $query = $query->orWhereRaw("format(upahsupir.tglmulaiberlaku,'dd-MM-yyyy') like '%$filters[data]%'");
+                            } else if ($filters['field'] == 'created_at' || $filters['field'] == 'updated_at') {
+                                $query = $query->orWhereRaw("format(upahsupir." . $filters['field'].", 'dd-MM-yyyy HH:mm:ss') LIKE '%$filters[data]%'");
+                            } elseif ($filters['field'] == 'nominalsupir') {
+                                $query = $query->orWhereRaw("format(upahsupirrincian.nominalsupir, '#,#0.00') LIKE '%$filters[data]%'");
+                            } else {
+                                $query = $query->orWhere('upahsupir.' . $filters['field'], 'LIKE', "%$filters[data]%");
+                            }
+                        }
+                    });
+
+                    break;
+                default:
+
+                    break;
+            }
+
+            $this->totalRows = $query->count();
+            $this->totalPages = $this->params['limit'] > 0 ? ceil($this->totalRows / $this->params['limit']) : 1;
+        }
+
+        return $query;
+    }
+
+    public function paginate($query)
+    {
+        return $query->skip($this->params['offset'])->take($this->params['limit']);
     }
 }

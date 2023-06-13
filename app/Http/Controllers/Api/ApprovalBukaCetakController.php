@@ -20,11 +20,7 @@ class ApprovalBukaCetakController extends Controller
     public function index(Request $request)
     {
         $parameter = new Parameter();
-        $dataCetak = $parameter->getcombodata('STATUSCETAK', 'STATUSCETAK');
-        $dataCetak = json_decode($dataCetak, true);
-        foreach ($dataCetak as $item) {
-            $statusCetak[] = $item['id'];
-        }
+        $dataCetak = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUSCETAK')->where('text', 'CETAK')->first();
 
         $dataCetakUlang = $parameter->getcombodata('CETAKULANG', 'CETAKULANG');
         $dataCetakUlang = json_decode($dataCetakUlang, true);
@@ -32,8 +28,8 @@ class ApprovalBukaCetakController extends Controller
             $statusCetakUlang[] = $item['text'];
         }
 
+        $request['statuscetak'] = $dataCetak->id;
         $this->validate($request, [
-            'cetak' => ['required', Rule::in($statusCetak)],
             'table' => ['required', Rule::in($statusCetakUlang)],
             'periode' => ['required',new ApprovalBukaCetak()],
         ]);
@@ -45,13 +41,13 @@ class ApprovalBukaCetakController extends Controller
                 'month'=> $periode[0]
             ]);
         }
-        if ($request->table && $request->cetak && $request->periode){
+        if ($request->table && $request->periode){
             $table = Parameter::where('text',$request->table)->first();
             $backSlash = " \ ";
             $model = 'App\Models'.trim($backSlash).$table->text;
             $data = app($model);
             return response([
-                'data' => $data->get(),
+                'data' => $data->get($request->periode, $request->statuscetak),
                 'attributes' => [
                     'totalRows' => $data->totalRows,
                     'totalPages' => $data->totalPages
