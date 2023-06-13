@@ -59,12 +59,7 @@ class GetStokPersediaanRequest extends FormRequest
 
         
         $rules =  [
-            'filter' => [
-                'required',
-                Rule::in($status),
-                'numeric',
-                'min:1'
-            ],
+            
             'gudang' => [
                 'required',
                 $gudangRule,

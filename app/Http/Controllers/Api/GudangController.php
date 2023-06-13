@@ -446,7 +446,7 @@ class GudangController extends Controller
         DB::beginTransaction();
 
         $gudang = new Gudang();
-        $gudang = $gudang->lockAndDestroy($request->id);
+        $gudang = $gudang->lockAndDestroy($id);
         if ($gudang) {
             $logTrail = [
                 'namatabel' => strtoupper($gudang->getTable()),
