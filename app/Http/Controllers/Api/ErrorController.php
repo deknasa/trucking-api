@@ -250,4 +250,9 @@ class ErrorController extends Controller
 
         return $data;
     }
+
+    public function errorUrl(Request $request)
+    {
+        return $this->geterror($request->all());
+    }
 }

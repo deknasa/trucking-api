@@ -77,5 +77,6 @@ class ErrorSeeder extends Seeder
         error::create(['kodeerror' => 'HBSD', 'keterangan' => 'HARUS DIBAWAH ATAU SAMA DENGAN', 'modifiedby' => 'ADMIN',]);
         error::create(['kodeerror' => 'DDTA', 'keterangan' => 'DATA DETAIL TIDAK ADA', 'modifiedby' => 'ADMIN',]);
         error::create(['kodeerror' => 'URBA', 'keterangan' => 'UPAH RITASI BELUM ADA', 'modifiedby' => 'ADMIN',]);
+        error::create(['kodeerror' => 'PSB', 'keterangan' => 'HARAP PILIH SALAH SATU BARIS	', 'modifiedby' => 'ADMIN',]);
     }
 }
