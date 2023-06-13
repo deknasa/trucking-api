@@ -18,7 +18,7 @@ class PenerimaanStokSeeder extends Seeder
         DB::statement("delete PenerimaanStok");
         DB::statement("DBCC CHECKIDENT ('PenerimaanStok', RESEED, 1);");
 
-        PenerimaanStok::create(['kodepenerimaan' => 'PGDO', 'keterangan' => 'PGDO', 'coa' => '', 'format' => '132', 'statushitungstok' => '178', 'modifiedby' => 'ADMIN',]);
+        PenerimaanStok::create(['kodepenerimaan' => 'PGDO', 'keterangan' => 'PGDO', 'coa' => '', 'format' => '132', 'statushitungstok' => '177', 'modifiedby' => 'ADMIN',]);
         PenerimaanStok::create(['kodepenerimaan' => 'PO', 'keterangan' => 'PO STOK', 'coa' => '', 'format' => '133', 'statushitungstok' => '178', 'modifiedby' => 'ADMIN',]);
         PenerimaanStok::create(['kodepenerimaan' => 'SPB', 'keterangan' => 'BELI STOK', 'coa' => '', 'format' => '134', 'statushitungstok' => '177', 'modifiedby' => 'ADMIN',]);
         PenerimaanStok::create(['kodepenerimaan' => 'KOR', 'keterangan' => 'KOREKSI STOK', 'coa' => '', 'format' => '136', 'statushitungstok' => '177', 'modifiedby' => 'ADMIN',]);
