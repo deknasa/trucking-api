@@ -125,7 +125,7 @@ class PenerimaanStokDetailController extends Controller
             $kor = Parameter::where('grp', 'KOR STOK')->where('subgrp', 'KOR STOK')->first();
             $spbs = Parameter::where('grp', 'REUSE STOK')->where('subgrp', 'REUSE STOK')->first();
             $pg = Parameter::where('grp', 'PG STOK')->where('subgrp', 'PG STOK')->first();
-            dd($datahitungstok->statushitungstok_id);
+            // dd($datahitungstok->statushitungstok_id);
             if ($datahitungstok->statushitungstok_id == $statushitungstok->id) {
                 if (($penerimaanstokheader->penerimaanstok_id == $spb->text)||$penerimaanstokheader->penerimaanstok_id == $kor->text) {
                     $persediaan = $this->persediaan($penerimaanstokheader->gudang_id,$penerimaanstokheader->trado_id,$penerimaanstokheader->gandengan_id);
