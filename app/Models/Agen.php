@@ -453,4 +453,98 @@ class Agen extends MyModel
     {
         return $query->skip($this->params['offset'])->take($this->params['limit']);
     }
+
+    public function processStore(array $data): Agen
+    {
+        $statusNonApproval = Parameter::from(DB::raw("parameter with (readuncommitted)"))
+            ->where('grp', '=', 'STATUS APPROVAL')->where('text', '=', 'NON APPROVAL')->first();
+
+        $agen = new Agen();
+        $agen->kodeagen = $data['kodeagen'];
+        $agen->namaagen = $data['namaagen'];
+        $agen->keterangan = $data['keterangan'] ?? '';
+        $agen->statusaktif = $data['statusaktif'];
+        $agen->namaperusahaan = $data['namaperusahaan'];
+        $agen->alamat = $data['alamat'];
+        $agen->notelp = $data['notelp'];
+        $agen->nohp = $data['nohp'];
+        $agen->contactperson = $data['contactperson'];
+        $agen->top = $data['top'];
+        $agen->statusapproval = $statusNonApproval->id;
+        $agen->statustas = $data['statustas'];
+        // $agen->jenisemkl = $request->jenisemkl;
+        $agen->tglapproval = '';
+        $agen->modifiedby = auth('api')->user()->name;
+        // $request->sortname = $request->sortname ?? 'id';
+        // $request->sortorder = $request->sortorder ?? 'asc';
+
+        if (!$agen->save()) {
+            throw new \Exception("Error storing service in header.");
+        }
+
+        (new LogTrail())->processStore([
+            'namatabel' => strtoupper($agen->getTable()),
+            'postingdari' => 'ENTRY AGEN',
+            'idtrans' => $agen->id,
+            'nobuktitrans' => $agen->id,
+            'aksi' => 'ENTRY',
+            'datajson' => $agen->toArray(),
+            'modifiedby' => $agen->modifiedby
+        ]);
+
+        return $agen;
+    }
+
+    public function processUpdate(Agen $agen, array $data): Agen
+    {
+        $agen->kodeagen = $data['kodeagen'];
+        $agen->namaagen = $data['namaagen'];
+        $agen->keterangan = $data['keterangan'] ?? '';
+        $agen->statusaktif = $data['statusaktif'];
+        $agen->namaperusahaan = $data['namaperusahaan'];
+        $agen->alamat = $data['alamat'];
+        $agen->notelp = $data['notelp'];
+        $agen->nohp = $data['nohp'];
+        $agen->contactperson = $data['contactperson'];
+        $agen->top = $data['top'];
+        $agen->statustas = $data['statustas'];
+        // $agen->jenisemkl = $request->jenisemkl;
+        $agen->modifiedby = auth('api')->user()->name;
+        // $request->sortname = $request->sortname ?? 'id';
+        // $request->sortorder = $request->sortorder ?? 'asc';
+
+        if (!$agen->save()) {
+            throw new \Exception("Error update service in header.");
+        }
+
+        (new LogTrail())->processStore([
+            'namatabel' => strtoupper($agen->getTable()),
+            'postingdari' => 'EDIT AGEN',
+            'idtrans' => $agen->id,
+            'nobuktitrans' => $agen->id,
+            'aksi' => 'EDIT',
+            'datajson' => $agen->toArray(),
+            'modifiedby' => $agen->modifiedby
+        ]);
+
+        return $agen;
+    }
+
+    public function processDestroy($id): Agen
+    {
+        $agen = new Agen();
+        $agen = $agen->lockAndDestroy($id);
+
+        (new LogTrail())->processStore([
+            'namatabel' => strtoupper($agen->getTable()),
+            'postingdari' => 'DELETE AGEN',
+            'idtrans' => $agen->id,
+            'nobuktitrans' => $agen->id,
+            'aksi' => 'DELETE',
+            'datajson' => $agen->toArray(),
+            'modifiedby' => auth('api')->user()->name
+        ]);
+
+        return $agen;
+    }
 }
