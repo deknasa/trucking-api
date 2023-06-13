@@ -14,6 +14,7 @@ use App\Models\Parameter;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Database\QueryException;
+use Illuminate\Http\JsonResponse;
 
 class AgenController extends Controller
 {
@@ -78,56 +79,18 @@ class AgenController extends Controller
     /**
      * @ClassName 
      */
-    public function store(StoreAgenRequest $request)
+    public function store(StoreAgenRequest $request) : JsonResponse
     {
         DB::beginTransaction();
 
         try {
-            $statusNonApproval = Parameter::from(DB::raw("parameter with (readuncommitted)"))
-                ->where('grp', '=', 'STATUS APPROVAL')->where('text', '=', 'NON APPROVAL')->first();
-
-            $agen = new Agen();
-            $agen->kodeagen = $request->kodeagen;
-            $agen->namaagen = $request->namaagen;
-            $agen->keterangan = $request->keterangan ?? '';
-            $agen->statusaktif = $request->statusaktif;
-            $agen->namaperusahaan = $request->namaperusahaan;
-            $agen->alamat = $request->alamat;
-            $agen->notelp = $request->notelp;
-            $agen->nohp = $request->nohp;
-            $agen->contactperson = $request->contactperson;
-            $agen->top = $request->top;
-            $agen->statusapproval = $statusNonApproval->id;
-            $agen->statustas = $request->statustas;
-            // $agen->jenisemkl = $request->jenisemkl;
-            $agen->tglapproval = '';
-            $agen->modifiedby = auth('api')->user()->name;
-            $request->sortname = $request->sortname ?? 'id';
-            $request->sortorder = $request->sortorder ?? 'asc';
-
-            if ($agen->save()) {
-                $logTrail = [
-                    'namatabel' => strtoupper($agen->getTable()),
-                    'postingdari' => 'ENTRY AGEN',
-                    'idtrans' => $agen->id,
-                    'nobuktitrans' => $agen->id,
-                    'aksi' => 'ENTRY',
-                    'datajson' => $agen->toArray(),
-                    'modifiedby' => $agen->modifiedby
-                ];
-
-                $validatedLogTrail = new StoreLogTrailRequest($logTrail);
-                $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
-
-                DB::commit();
-            }
-
-            /* Set position and page */
-            $selected = $this->getPosition($agen, $agen->getTable());
-            $agen->position = $selected->position;
+            $agen = (new Agen())->processStore($request->all());
+            $agen->position = $this->getPosition($agen, $agen->getTable())->position;
             $agen->page = ceil($agen->position / ($request->limit ?? 10));
 
-            return response([
+            DB::commit();   
+
+            return response()->json([
                 'status' => true,
                 'message' => 'Berhasil disimpan',
                 'data' => $agen
@@ -150,55 +113,23 @@ class AgenController extends Controller
     /**
      * @ClassName 
      */
-    public function update(UpdateAgenRequest $request, Agen $agen)
+    public function update(UpdateAgenRequest $request, Agen $agen) : JsonResponse
     {
         DB::beginTransaction();
 
         try {
-            $agen->kodeagen = $request->kodeagen;
-            $agen->namaagen = $request->namaagen;
-            $agen->keterangan = $request->keterangan ?? '';
-            $agen->statusaktif = $request->statusaktif;
-            $agen->namaperusahaan = $request->namaperusahaan;
-            $agen->alamat = $request->alamat;
-            $agen->notelp = $request->notelp;
-            $agen->nohp = $request->nohp;
-            $agen->contactperson = $request->contactperson;
-            $agen->top = $request->top;
-            $agen->statustas = $request->statustas;
-            // $agen->jenisemkl = $request->jenisemkl;
-            $agen->modifiedby = auth('api')->user()->name;
-            $request->sortname = $request->sortname ?? 'id';
-            $request->sortorder = $request->sortorder ?? 'asc';
-
-            if ($agen->save()) {
-                $logTrail = [
-                    'namatabel' => strtoupper($agen->getTable()),
-                    'postingdari' => 'EDIT AGEN',
-                    'idtrans' => $agen->id,
-                    'nobuktitrans' => $agen->id,
-                    'aksi' => 'EDIT',
-                    'datajson' => $agen->toArray(),
-                    'modifiedby' => $agen->modifiedby
-                ];
-
-                $validatedLogTrail = new StoreLogTrailRequest($logTrail);
-                app(LogTrailController::class)->store($validatedLogTrail);
+            $agen = (new Agen())->processUpdate($agen, $request->all());
+            $agen->position = $this->getPosition($agen, $agen->getTable())->position;
+            $agen->page = ceil($agen->position / ($request->limit ?? 10));
 
 
-                DB::commit();
+            DB::commit();
 
-                /* Set position and page */
-                $selected = $this->getPosition($agen, $agen->getTable());
-                $agen->position = $selected->position;
-                $agen->page = ceil($agen->position / ($request->limit ?? 10));
-
-                return response([
+                return response()->json([
                     'status' => true,
                     'message' => 'Berhasil diubah',
                     'data' => $agen
                 ]);
-            }
         } catch (\Throwable $th) {
             DB::rollBack();
 
@@ -213,41 +144,23 @@ class AgenController extends Controller
     {
         DB::beginTransaction();
 
-        $agen = new Agen();
-        $agen = $agen->lockAndDestroy($id);
-        if ($agen) {
-            $logTrail = [
-                'namatabel' => strtoupper($agen->getTable()),
-                'postingdari' => 'DELETE AGEN',
-                'idtrans' => $agen->id,
-                'nobuktitrans' => $agen->id,
-                'aksi' => 'DELETE',
-                'datajson' => $agen->toArray(),
-                'modifiedby' => auth('api')->user()->name
-            ];
-
-            $validatedLogTrail = new StoreLogTrailRequest($logTrail);
-            app(LogTrailController::class)->store($validatedLogTrail);
-
-            DB::commit();
-
+        try {
+            $agen = (new Agen())->processDestroy($id);
             $selected = $this->getPosition($agen, $agen->getTable(), true);
             $agen->position = $selected->position;
             $agen->id = $selected->id;
             $agen->page = ceil($agen->position / ($request->limit ?? 10));
 
-            return response([
-                'status' => true,
+            DB::commit();
+
+            return response()->json([
                 'message' => 'Berhasil dihapus',
                 'data' => $agen
             ]);
-        } else {
+        } catch (\Throwable $th) {
             DB::rollBack();
 
-            return response([
-                'status' => false,
-                'message' => 'Gagal dihapus'
-            ]);
+            throw $th;
         }
     }
 
