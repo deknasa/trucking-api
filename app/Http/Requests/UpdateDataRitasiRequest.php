@@ -6,6 +6,7 @@ use Illuminate\Foundation\Http\FormRequest;
 use App\Http\Controllers\Api\ErrorController;
 use App\Models\Parameter;
 use Illuminate\Validation\Rule;
+
 class UpdateDataRitasiRequest extends FormRequest
 {
     /**
@@ -32,7 +33,8 @@ class UpdateDataRitasiRequest extends FormRequest
             $status[] = $item['id'];
         }
         return [
-            'statusritasi' => [Rule::unique('dataritasi')->whereNotIn('id', [$this->id])],
+            'statusritasi' => ['required', Rule::unique('dataritasi')->whereNotIn('id', [$this->id])],
+            'nominal' => ['required', 'numeric', 'max:1000000'], 
             'statusaktif' => ['required', Rule::in($status)],
         ];
     }
