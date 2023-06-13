@@ -56,12 +56,24 @@ class TarifRincianController extends Controller
             if ($params['forReport']) {
                 $query->select(
                     'header.tujuan',
+                    'kota.keterangan as kota',
+                    'zona.keterangan as zona',
+                    'header.penyesuaian',
+                    'header.tglmulaiberlaku',
+                    'parameter.text',
                     'container.keterangan as container_id',
                     'detail.nominal',
+                    'header.keterangan',
                     DB::raw("'Laporan Tarif' as judulLaporan"),
                     DB::raw("'" . $getJudul->text . "' as judul")
                 )
-                    ->leftJoin(DB::raw("container with (readuncommitted)"), 'container.id', 'detail.container_id');
+                    ->leftJoin(DB::raw("tarif as header with (readuncommitted)"), 'header.id', 'detail.tarif_id')
+                    ->leftJoin(DB::raw("container with (readuncommitted)"), 'container.id', 'detail.container_id')
+                    ->leftJoin(DB::raw("kota as tujuan with (readuncommitted)"), 'tujuan.id', '=', 'header.kota_id')
+                    ->leftJoin(DB::raw("zona with (readuncommitted)"), 'header.zona_id', 'zona.id')
+                    ->leftJoin(DB::raw("parameter with (readuncommitted)"), 'header.statussistemton', 'parameter.id')
+                    ->leftJoin(DB::raw("kota with (readuncommitted)"), 'kota.id', '=', 'header.kota_id');
+
 
                 $tarif = $query->get();
             } else {

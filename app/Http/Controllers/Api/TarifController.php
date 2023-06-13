@@ -22,6 +22,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Database\QueryException;
 use PhpOffice\PhpSpreadsheet\IOFactory;
+use App\Http\Requests\GetUpahSupirRangeRequest;
 
 class TarifController extends Controller
 {
@@ -41,17 +42,18 @@ class TarifController extends Controller
             ]
         ]);
     }
-    public function cekValidasi($id) {
-        $tarif= new Tarif();
-        $cekdata=$tarif->cekvalidasihapus($id);
-        if ($cekdata['kondisi']==true) {
+    public function cekValidasi($id)
+    {
+        $tarif = new Tarif();
+        $cekdata = $tarif->cekvalidasihapus($id);
+        if ($cekdata['kondisi'] == true) {
             $query = DB::table('error')
-            ->select(
-                DB::raw("ltrim(rtrim(keterangan))+' (".$cekdata['keterangan'].")' as keterangan")
+                ->select(
+                    DB::raw("ltrim(rtrim(keterangan))+' (" . $cekdata['keterangan'] . ")' as keterangan")
                 )
-            ->where('kodeerror', '=', 'SATL')
-            ->get();
-        $keterangan = $query['0'];
+                ->where('kodeerror', '=', 'SATL')
+                ->get();
+            $keterangan = $query['0'];
 
             $data = [
                 'status' => false,
@@ -61,7 +63,6 @@ class TarifController extends Controller
             ];
 
             return response($data);
-         
         } else {
             $data = [
                 'status' => false,
@@ -70,10 +71,10 @@ class TarifController extends Controller
                 'kondisi' => $cekdata['kondisi'],
             ];
 
-            return response($data); 
+            return response($data);
         }
     }
-    
+
     public function default()
     {
 
@@ -87,15 +88,34 @@ class TarifController extends Controller
         ]);
     }
 
-    public function listpivot()
+    public function listpivot(GetUpahSupirRangeRequest $request)
     {
+
+        $dari = date('Y-m-d', strtotime($request->dari));
+        $sampai = date('Y-m-d', strtotime($request->sampai));
 
         $tarifrincian = new TarifRincian();
 
-        return response([
-            'status' => true,
-            'data' => $tarifrincian->listpivot(),
-        ]);
+        $cekData = DB::table("tarif")->from(DB::raw("tarif with (readuncommitted)"))
+            ->whereBetween('tglmulaiberlaku', [$dari, $sampai])
+            ->first();
+
+        if ($cekData != null) {
+
+            $tarifrincian = new TarifRincian();
+
+            return response([
+                'status' => true,
+                'data' => $tarifrincian->listpivot($dari, $sampai)
+            ]);
+        } else {
+            return response([
+                'errors' => [
+                    "export" => "tidak ada data"
+                ],
+                'message' => "The given data was invalid.",
+            ], 422);
+        }
     }
 
 
@@ -123,7 +143,7 @@ class TarifController extends Controller
             $tarif->modifiedby = auth('api')->user()->name;
             if ($tarif->save()) {
 
-              
+
                 $logTrail = [
                     'namatabel' => strtoupper($tarif->getTable()),
                     'postingdari' => 'ENTRY TARIF',
@@ -133,10 +153,10 @@ class TarifController extends Controller
                     'datajson' => $tarif->toArray(),
                     'modifiedby' => $tarif->modifiedby
                 ];
-               
+
                 $validatedLogTrail = new StoreLogTrailRequest($logTrail);
                 $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
-            
+
                 // dd(count($request->container_id));
                 $detaillog = [];
                 for ($i = 0; $i < count($request->container_id); $i++) {
@@ -180,12 +200,12 @@ class TarifController extends Controller
                 DB::commit();
             }
 
-            
+
             /* Set position and page */
             $selected = $this->getPosition($tarif, $tarif->getTable());
             $tarif->position = $selected->position;
             $tarif->page = ceil($tarif->position / ($request->limit ?? 10));
-            
+
             return response([
                 'status' => true,
                 'message' => 'Berhasil disimpan',
@@ -413,13 +433,13 @@ class TarifController extends Controller
             $column_range = range('A', $column_limit);
             $startcount = 2;
             $data = array();
-            
-            $a=0;
+
+            $a = 0;
             foreach ($row_range as $row) {
-              
+
                 $data[] = [
                     'tujuan' => $sheet->getCell($this->kolomexcel(1) . $row)->getValue(),
-                    'tglmulaiberlaku' => date('Y-m-d',strtotime($sheet->getCell($this->kolomexcel(2) . $row)->getFormattedValue())),
+                    'tglmulaiberlaku' => date('Y-m-d', strtotime($sheet->getCell($this->kolomexcel(2) . $row)->getFormattedValue())),
                     'kota' => $sheet->getCell($this->kolomexcel(3) . $row)->getValue(),
                     'kolom1' => $sheet->getCell($this->kolomexcel(4)  . $row)->getValue(),
                     'kolom2' => $sheet->getCell($this->kolomexcel(5)  . $row)->getValue(),
@@ -430,20 +450,20 @@ class TarifController extends Controller
 
             $tarifrincian = new TarifRincian();
 
-            $cekdata=$tarifrincian->cekupdateharga($data);
-            if ($cekdata==true) {
+            $cekdata = $tarifrincian->cekupdateharga($data);
+            if ($cekdata == true) {
                 $query = DB::table('error')
-                ->select('keterangan')
-                ->where('kodeerror', '=', 'SPI')
-                ->get();
-            $keterangan = $query['0'];
+                    ->select('keterangan')
+                    ->where('kodeerror', '=', 'SPI')
+                    ->get();
+                $keterangan = $query['0'];
 
                 $data = [
                     'message' => $keterangan,
                     'errors' => '',
                     'kondisi' => $cekdata
                 ];
-    
+
                 return response($data);
             } else {
                 return response([
@@ -451,9 +471,7 @@ class TarifController extends Controller
                     'data' => $tarifrincian->updateharga($data),
                     'kondisi' => $cekdata
                 ]);
-    
             }
-
         } catch (\Throwable $th) {
             DB::rollBack();
             throw $th;
@@ -462,10 +480,10 @@ class TarifController extends Controller
 
     private function kolomexcel($kolom)
     {
-        if ($kolom>=27 and $kolom<=52) {
-            $hasil='A'.chr(38+$kolom);
-        } else  {
-            $hasil=chr(64+$kolom);
+        if ($kolom >= 27 and $kolom <= 52) {
+            $hasil = 'A' . chr(38 + $kolom);
+        } else {
+            $hasil = chr(64 + $kolom);
         }
         return $hasil;
     }
@@ -500,13 +518,12 @@ class TarifController extends Controller
 
             // $tarifs[$i]['rincian'] = json_decode($tarifRincian->getAll($tarifs[$i]['id']), true);
 
-        
-            $i++;
 
+            $i++;
         }
 
 
-       
+
 
         $columns = [
             [
@@ -552,7 +569,7 @@ class TarifController extends Controller
                 'label' => 'Keterangan',
                 'index' => 'keterangan',
             ],
-           
+
         ];
 
         $this->toExcel('Tarif', $tarifs, $columns);
