@@ -282,8 +282,8 @@ class TarifRincian extends MyModel
         $this->setRequestParameters();
 
         $aktif = request()->aktif ?? '';
+        $container_id = request()->containerId ?? 0;
 
-        $container_id = request()->container_id ?? 0;
         $query = TarifRincian::from(DB::raw("$this->table with (readuncommitted)"))
             ->select(
                 'tarif.id',
@@ -291,6 +291,7 @@ class TarifRincian extends MyModel
                 'container.kodecontainer as container_id',
                 'tarifrincian.nominal as nominal',
                 'tarif.tujuan',
+                'tarif.penyesuaian',
                 'parameter.memo as statusaktif',
                 'sistemton.memo as statussistemton',
                 'kota.kodekota as kota_id',
@@ -308,13 +309,6 @@ class TarifRincian extends MyModel
             ->leftJoin(DB::raw("container with (readuncommitted)"), 'container.id', '=', "tarifrincian.container_id")
             ->leftJoin(DB::raw("parameter AS p with (readuncommitted)"), 'tarif.statuspenyesuaianharga', '=', 'p.id')
             ->leftJoin(DB::raw("parameter AS sistemton with (readuncommitted)"), 'tarif.statussistemton', '=', 'sistemton.id');
-
-
-
-
-
-        $this->totalRows = $query->count();
-        $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;
 
         $this->sort($query);
 
@@ -334,10 +328,11 @@ class TarifRincian extends MyModel
             $query->where('tarifrincian.container_id', '=', $container_id);
         }
 
+        $this->totalRows = $query->count();
+        $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;
 
-        // dd($query->toSql());
         $this->paginate($query);
-
+        
         $data = $query->get();
 
 
@@ -377,6 +372,29 @@ class TarifRincian extends MyModel
             ->leftJoin(DB::raw("parameter AS sistemton with (readuncommitted)"), 'tarif.statussistemton', '=', 'sistemton.id')
             ->where('tarifrincian.id', '=', $id);
 
+        $data = $query->first();
+
+
+        return $data;
+    } 
+    public function getValidasiTarif($container_id, $id)
+    {
+        $statusaktif = Parameter::from(
+            DB::raw("parameter with (readuncommitted)")
+        )
+            ->where('grp', '=', 'STATUS AKTIF')
+            ->where('text', '=', 'AKTIF')
+            ->first();
+
+        $query = Tarif::from(DB::raw("tarif with (readuncommitted)"))
+            ->select(
+                'tarif.id',
+            )
+            ->leftJoin(DB::raw("tarifrincian with (readuncommitted)"), 'tarif.id', '=', 'tarifrincian.tarif_id')
+            ->whereRaw("tarif.id in ($id)")
+            ->where('tarifrincian.container_id', '=', $container_id)
+            ->where('tarif.statusaktif', '=', $statusaktif->id);
+            
         $data = $query->first();
 
 
@@ -425,6 +443,8 @@ class TarifRincian extends MyModel
                             $query = $query->where('sistemton.text', '=', "$filters[data]");
                         } elseif ($filters['field'] == 'tujuan') {
                             $query = $query->Where('tarif.tujuan', 'LIKE', "%$filters[data]%");
+                        } elseif ($filters['field'] == 'penyesuaian') {
+                            $query = $query->Where('tarif.penyesuaian', 'LIKE', "%$filters[data]%");
                         } elseif ($filters['field'] == 'tglmulaiberlaku') {
                             $query = $query->WhereRaw("format(tarif.tglmulaiberlaku,'dd-MM-yyyy') like '%$filters[data]%'");
                         } else if ($filters['field'] == 'created_at' || $filters['field'] == 'updated_at') {
@@ -455,6 +475,8 @@ class TarifRincian extends MyModel
                                 $query = $query->orWhere('sistemton.text', '=', "$filters[data]");
                             } elseif ($filters['field'] == 'tujuan') {
                                 $query = $query->orWhere('tarif.tujuan', 'LIKE', "%$filters[data]%");
+                            } elseif ($filters['field'] == 'penyesuaian') {
+                                $query = $query->orWhere('tarif.penyesuaian', 'LIKE', "%$filters[data]%");
                             } elseif ($filters['field'] == 'tglmulaiberlaku') {
                                 $query = $query->orWhereRaw("format(tarif.tglmulaiberlaku,'dd-MM-yyyy') like '%$filters[data]%'");
                             } else {

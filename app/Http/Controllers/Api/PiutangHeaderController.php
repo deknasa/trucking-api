@@ -30,6 +30,7 @@ use App\Models\Agen;
 use App\Models\Parameter;
 use Exception;
 use Illuminate\Database\QueryException;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Log;
 
 class PiutangHeaderController extends Controller
@@ -53,205 +54,22 @@ class PiutangHeaderController extends Controller
     /**
      * @ClassName
      */
-    public function store(StorePiutangHeaderRequest $request)
+    public function store(StorePiutangHeaderRequest $request): JsonResponse
     {
         DB::beginTransaction();
 
         try {
-
-            $tanpaprosesnobukti = $request->tanpaprosesnobukti ?? 0;
-
-            if ($tanpaprosesnobukti == 0) {
-                $group = 'PIUTANG BUKTI';
-                $subgroup = 'PIUTANG BUKTI';
-
-                $format = DB::table('parameter')
-                    ->where('grp', $group)
-                    ->where('subgrp', $subgroup)
-                    ->first();
-
-                $content = new Request();
-                $content['group'] = $group;
-                $content['subgroup'] = $subgroup;
-                $content['table'] = 'piutangheader';
-                $content['tgl'] = date('Y-m-d', strtotime($request->tglbukti));
-            }
-
-            $piutang = new PiutangHeader();
-
-            if ($tanpaprosesnobukti == 1) {
-                $piutang->nobukti = $request->nobukti;
-            }
-            $getCoa = Agen::from(DB::raw("agen with (readuncommitted)"))->where('id', $request->agen_id)->first();
-
-            $statusCetak = Parameter::from(
-                DB::raw("parameter with (readuncommitted)")
-            )->where('grp', 'STATUSCETAK')->where('text', 'BELUM CETAK')->first();
-
-            $piutang->tglbukti = date('Y-m-d', strtotime($request->tglbukti));
-            $piutang->postingdari = $request->postingdari ?? 'ENTRY PIUTANG';
-            $piutang->invoice_nobukti = $request->invoice_nobukti ?? '';
-            $piutang->modifiedby = auth('api')->user()->name;
-            $piutang->statusformat = $request->statusformat ?? $format->id;
-            $piutang->agen_id = $request->agen_id;
-            $piutang->coadebet = $getCoa->coa;
-            $piutang->coakredit = $getCoa->coapendapatan;
-            $piutang->statuscetak = $statusCetak->id;
-            $piutang->userbukacetak = '';
-            $piutang->tglbukacetak = '';
-            $piutang->nominal = ($tanpaprosesnobukti == 0) ? array_sum($request->nominal_detail) : $request->nominal;
-
-            if ($tanpaprosesnobukti == 0) {
-                $nobukti = app(Controller::class)->getRunningNumber($content)->original['data'];
-                $piutang->nobukti = $nobukti;
-            }
-            $piutang->save();
-
-
-            $logTrail = [
-                'namatabel' => strtoupper($piutang->getTable()),
-                'postingdari' => $request->postingdari ?? 'ENTRY PIUTANG HEADER',
-                'idtrans' => $piutang->id,
-                'nobuktitrans' => $piutang->nobukti,
-                'aksi' => 'ENTRY',
-                'datajson' => $piutang->toArray(),
-                'modifiedby' => $piutang->modifiedby
-            ];
-
-            $validatedLogTrail = new StoreLogTrailRequest($logTrail);
-            $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
-
-            $idLogTrail = $storedLogTrail['id'];
-
-
-            /* Store detail */
-            $detaillog = [];
-            if ($request->datadetail != '') {
-                $counter = $request->datadetail;
-            } else {
-                $counter = $request->nominal_detail;
-            }
-            for ($i = 0; $i < count($counter); $i++) {
-                $datadetail = [
-                    'piutang_id' => $piutang->id,
-                    'nobukti' => $piutang->nobukti,
-                    'nominal' => ($request->datadetail != '') ? $request->datadetail[$i]['nominal'] : $request->nominal_detail[$i],
-                    'keterangan' => ($request->datadetail != '') ? $request->datadetail[$i]['keterangan'] : $request->keterangan_detail[$i],
-                    'invoice_nobukti' => ($request->datadetail != '') ? $request->datadetail[$i]['invoice_nobukti'] : '',
-                    'modifiedby' => $piutang->modifiedby,
-                ];
-
-                // STORE 
-                $data = new StorePiutangDetailRequest($datadetail);
-
-                $datadetails = app(PiutangDetailController::class)->store($data);
-
-                if ($datadetails['error']) {
-                    return response($datadetails, 422);
-                } else {
-                    $iddetail = $datadetails['id'];
-                    $tabeldetail = $datadetails['tabel'];
-                }
-
-                $detaillog[] = $datadetails['detail']->toArray();
-            }
-
-            $datalogtrail = [
-                'namatabel' => strtoupper($tabeldetail),
-                'postingdari' => $request->postingdari ?? 'ENTRY PIUTANG DETAIL',
-                'idtrans' =>  $storedLogTrail['id'],
-                'nobuktitrans' => $piutang->nobukti,
-                'aksi' => 'ENTRY',
-                'datajson' => $detaillog,
-                'modifiedby' => $piutang->modifiedby,
-            ];
-
-            $data = new StoreLogTrailRequest($datalogtrail);
-            app(LogTrailController::class)->store($data);
-
-            $request->sortname = $request->sortname ?? 'id';
-            $request->sortorder = $request->sortorder ?? 'asc';
-
-            $parameterController = new ParameterController;
-            $statusApp = $parameterController->getparameterid('STATUS APPROVAL', 'STATUS APPROVAL', 'NON APPROVAL');
-
-            $jenisinvoice = $request->jenisinvoice ?? '';
-
-            // if ($jenisinvoice == 'UTAMA') {
-            //     $coapiutang = DB::table('parameter')->from(
-            //         DB::raw("parameter with (readuncommitted)")
-            //     )->where('grp', 'JURNAL PIUTANG INVOICE UTAMA')->get();
-            // } else if ($jenisinvoice == 'TAMBAHAN') {
-            //     $coapiutang = DB::table('parameter')->from(
-            //         DB::raw("parameter with (readuncommitted)")
-            //     )->where('grp', 'JURNAL PIUTANG INVOICE TAMBAHAN')->get();
-            // } else {
-            //     $coapiutang = DB::table('parameter')->from(
-            //         DB::raw("parameter with (readuncommitted)")
-            //     )->where('grp', 'JURNAL PIUTANG MANUAL')->get();
-            // }
-
-            $jurnalHeader = [
-                'tanpaprosesnobukti' => 1,
-                'nobukti' => $piutang->nobukti,
-                'tglbukti' => date('Y-m-d', strtotime($piutang->tglbukti)),
-                'postingdari' => $request->postingdari ?? "ENTRY PIUTANG",
-                'statusapproval' => $statusApp->id,
-                'userapproval' => "",
-                'tglapproval' => "",
-                'modifiedby' => auth('api')->user()->name,
-                'statusformat' => "0",
-            ];
-
-            $jurnaldetail = [];
-
-            for ($i = 0; $i < count($counter); $i++) {
-
-                $jurnalDetail = [
-                    [
-                        'nobukti' => $piutang->nobukti,
-                        'tglbukti' => date('Y-m-d', strtotime($piutang->tglbukti)),
-                        'coa' =>  $getCoa->coa,
-                        'nominal' => ($request->datadetail != '') ? $request->datadetail[$i]['nominal'] : $request->nominal_detail[$i],
-                        'keterangan' => ($request->datadetail != '') ? $request->datadetail[$i]['keterangan'] : $request->keterangan_detail[$i],
-                        'modifiedby' => auth('api')->user()->name,
-                        'baris' => $i,
-                    ],
-                    [
-                        'nobukti' => $piutang->nobukti,
-                        'tglbukti' => date('Y-m-d', strtotime($piutang->tglbukti)),
-                        'coa' => $getCoa->coapendapatan,
-                        'nominal' => ($request->datadetail != '') ? '-' . $request->datadetail[$i]['nominal'] : '-' . $request->nominal_detail[$i],
-                        'keterangan' => ($request->datadetail != '') ? $request->datadetail[$i]['keterangan'] : $request->keterangan_detail[$i],
-                        'modifiedby' => auth('api')->user()->name,
-                        'baris' => $i,
-                    ]
-                ];
-                $jurnaldetail = array_merge($jurnaldetail, $jurnalDetail);
-            }
-
-            $jurnal = $this->storeJurnal($jurnalHeader, $jurnaldetail);
-
-            if (!$jurnal['status']) {
-                throw new \Throwable($jurnal['message']);
-            }
-
-
+            $piutangHeader = (new PiutangHeader())->processStore($request->all());
+            $piutangHeader->position = $this->getPosition($piutangHeader, $piutangHeader->getTable())->position;
+            $piutangHeader->page = ceil($piutangHeader->position / ($request->limit ?? 10));
+            
             DB::commit();
 
-            /* Set position and page */
-            $selected = $this->getPosition($piutang, $piutang->getTable());
-            $piutang->position = $selected->position;
-            $piutang->page = ceil($piutang->position / ($request->limit ?? 10));
-
-
-
-            return response([
-                'status' => true,
-                'idlogtrail' => $idLogTrail,
+            return response()->json([
                 'message' => 'Berhasil disimpan',
-                'data' => $piutang
-            ], 201);
+                'data' => $piutangHeader
+            ], 201);      
+            
         } catch (\Throwable $th) {
             DB::rollBack();
 
@@ -276,136 +94,17 @@ class PiutangHeaderController extends Controller
 
         try {
 
-            $proseslain = $request->proseslain ?? 0;
-            $getCoa = Agen::from(DB::raw("agen with (readuncommitted)"))->where('id', $request->agen_id)->first();
-
-            $piutangHeader->modifiedby = auth('api')->user()->name;
-            $piutangHeader->agen_id = $request->agen_id;
-            $piutangHeader->coadebet = $getCoa->coa;
-            $piutangHeader->coakredit = $getCoa->coapendapatan;
-            $piutangHeader->nominal = ($proseslain != 0) ? $request->nominal : array_sum($request->nominal_detail);
-
-            if ($piutangHeader->save()) {
-                $logTrail = [
-                    'namatabel' => strtoupper($piutangHeader->getTable()),
-                    'postingdari' => $request->postingdari ?? 'EDIT PIUTANG HEADER',
-                    'idtrans' => $piutangHeader->id,
-                    'nobuktitrans' => $piutangHeader->nobukti,
-                    'aksi' => 'EDIT',
-                    'datajson' => $piutangHeader->toArray(),
-                    'modifiedby' => $piutangHeader->modifiedby
-                ];
-                $validatedLogTrail = new StoreLogTrailRequest($logTrail);
-                $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
-
-                PiutangDetail::where('piutang_id', $piutangHeader->id)->delete();
-
-                /* Store detail */
-
-                $detaillog = [];
-                if ($request->datadetail != '') {
-                    $counter = $request->datadetail;
-                } else {
-                    $counter = $request->nominal_detail;
-                }
-                for ($i = 0; $i < count($counter); $i++) {
-                    $datadetail = [
-                        'piutang_id' => $piutangHeader->id,
-                        'nobukti' => $piutangHeader->nobukti,
-                        'nominal' => ($request->datadetail != '') ? $request->datadetail[$i]['nominal'] : $request->nominal_detail[$i],
-                        'keterangan' => ($request->datadetail != '') ? $request->datadetail[$i]['keterangan'] : $request->keterangan_detail[$i],
-                        'invoice_nobukti' => ($request->datadetail != '') ? $request->datadetail[$i]['invoice_nobukti'] : '',
-                        'modifiedby' => $piutangHeader->modifiedby,
-                    ];
-
-
-                    //STORE
-
-                    $data = new StorePiutangDetailRequest($datadetail);
-                    $datadetails = app(PiutangDetailController::class)->store($data);
-
-                    if ($datadetails['error']) {
-                        return response($datadetails, 422);
-                    } else {
-                        $iddetail = $datadetails['id'];
-                        $tabeldetail = $datadetails['tabel'];
-                    }
-
-                    $detaillog[] = $datadetails['detail']->toArray();
-                }
-
-                $datalogtrail = [
-                    'namatabel' => strtoupper($tabeldetail),
-                    'postingdari' => $request->postingdari ?? 'EDIT PIUTANG DETAIL',
-                    'idtrans' =>  $storedLogTrail['id'],
-                    'nobuktitrans' => $piutangHeader->nobukti,
-                    'aksi' => 'EDIT',
-                    'datajson' => $detaillog,
-                    'modifiedby' => $request->modifiedby,
-                ];
-
-                $data = new StoreLogTrailRequest($datalogtrail);
-
-                app(LogTrailController::class)->store($data);
-            }
-
-            $request->sortname = $request->sortname ?? 'id';
-            $request->sortorder = $request->sortorder ?? 'asc';
-
-
-            $jurnalDetail = [];
-
-            for ($i = 0; $i < count($counter); $i++) {
-                $detail = [];
-
-                $jurnaldetail = [
-                    [
-                        'nobukti' => $piutangHeader->nobukti,
-                        'tglbukti' => date('Y-m-d', strtotime($piutangHeader->tglbukti)),
-                        'coa' => $getCoa->coa,
-                        'nominal' => ($request->datadetail != '') ? $request->datadetail[$i]['nominal'] : $request->nominal_detail[$i],
-                        'keterangan' => ($request->datadetail != '') ? $request->datadetail[$i]['keterangan'] : $request->keterangan_detail[$i],
-                        'modifiedby' => auth('api')->user()->name,
-                        'baris' => $i,
-                    ],
-                    [
-                        'nobukti' => $piutangHeader->nobukti,
-                        'tglbukti' => date('Y-m-d', strtotime($piutangHeader->tglbukti)),
-                        'coa' => $getCoa->coapendapatan,
-                        'nominal' => ($request->datadetail != '') ? -$request->datadetail[$i]['nominal'] : -$request->nominal_detail[$i],
-                        'keterangan' => ($request->datadetail != '') ? $request->datadetail[$i]['keterangan'] : $request->keterangan_detail[$i],
-                        'modifiedby' => auth('api')->user()->name,
-                        'baris' => $i,
-                    ]
-                ];
-                $jurnalDetail = array_merge($jurnalDetail, $jurnaldetail);
-            }
-
-            $jurnalHeader = [
-                'isUpdate' => 1,
-                'postingdari' => $request->postingdari ?? "EDIT PENGELUARAN KAS/BANK",
-                'modifiedby' => auth('api')->user()->name,
-                'datadetail' => $jurnalDetail
-            ];
-
-            $getJurnal = JurnalUmumHeader::from(DB::raw("jurnalumumheader with (readuncommitted)"))->where('nobukti', $piutangHeader->nobukti)->first();
-            $newJurnal = new JurnalUmumHeader();
-            $newJurnal = $newJurnal->find($getJurnal->id);
-            $jurnal = new UpdateJurnalUmumHeaderRequest($jurnalHeader);
-            app(JurnalUmumHeaderController::class)->update($jurnal, $newJurnal);
+            $piutang = (new PiutangHeader())->processUpdate($piutangHeader, $request->all());
+            $piutang->position = $this->getPosition($piutang, $piutang->getTable())->position;
+            $piutang->page = ceil($piutang->position / ($request->limit ?? 10));
 
             DB::commit();
 
-            /* Set position and page */
-            $selected = $this->getPosition($piutangHeader, $piutangHeader->getTable());
-            $piutangHeader->position = $selected->position;
-            $piutangHeader->page = ceil($piutangHeader->position / ($request->limit ?? 10));
-
-            return response([
-                'status' => true,
-                'message' => 'Berhasil disimpan',
-                'data' => $piutangHeader
+            return response()->json([
+                'message' => 'Berhasil diubah',
+                'data' => $piutang
             ]);
+
         } catch (\Throwable $th) {
             DB::rollBack();
 
@@ -416,96 +115,27 @@ class PiutangHeaderController extends Controller
     /**
      * @ClassName
      */
-    public function destroy(DestroyPiutangHeaderRequest $request, $id)
+    public function destroy(DestroyPiutangHeaderRequest $request, $id): JsonResponse
     {
         DB::beginTransaction();
 
-        $getDetail = PiutangDetail::lockForUpdate()->where('piutang_id', $id)->get();
-
-        $piutangHeader = new PiutangHeader();
-        $piutangHeader = $piutangHeader->lockAndDestroy($id);
-        $getJurnalHeader = JurnalUmumHeader::lockForUpdate()->where('nobukti', $piutangHeader->nobukti)->first();
-
-        $getJurnalDetail = JurnalUmumDetail::lockForUpdate()->where('nobukti', $piutangHeader->nobukti)->get();
-        JurnalUmumHeader::where('nobukti', $piutangHeader->nobukti)->delete();
-
-        if ($piutangHeader) {
-            // DELETE PIUTANG HEADER
-            $logTrail = [
-                'namatabel' => strtoupper($piutangHeader->getTable()),
-                'postingdari' => $request->postingdari ?? 'DELETE PIUTANG HEADER',
-                'idtrans' => $piutangHeader->id,
-                'nobuktitrans' => $piutangHeader->nobukti,
-                'aksi' => 'DELETE',
-                'datajson' => $piutangHeader->toArray(),
-                'modifiedby' => auth('api')->user()->name
-            ];
-
-            $validatedLogTrail = new StoreLogTrailRequest($logTrail);
-            $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
-
-            // DELETE PIUTANG DETAIL
-            $logTrailPiutangDetail = [
-                'namatabel' => 'PIUTANGDETAIL',
-                'postingdari' => $request->postingdari ?? 'DELETE PIUTANG DETAIL',
-                'idtrans' => $storedLogTrail['id'],
-                'nobuktitrans' => $piutangHeader->nobukti,
-                'aksi' => 'DELETE',
-                'datajson' => $getDetail->toArray(),
-                'modifiedby' => auth('api')->user()->name
-            ];
-
-            $validatedLogTrailPiutangDetail = new StoreLogTrailRequest($logTrailPiutangDetail);
-            app(LogTrailController::class)->store($validatedLogTrailPiutangDetail);
-
-            // DELETE JURNAL HEADER
-            $logTrailJurnalHeader = [
-                'namatabel' => 'JURNALUMUMHEADER',
-                'postingdari' => $request->postingdari ?? 'DELETE JURNAL UMUM HEADER DARI PIUTANG',
-                'idtrans' => $getJurnalHeader->id,
-                'nobuktitrans' => $getJurnalHeader->nobukti,
-                'aksi' => 'DELETE',
-                'datajson' => $getJurnalHeader->toArray(),
-                'modifiedby' => auth('api')->user()->name
-            ];
-
-            $validatedLogTrailJurnalHeader = new StoreLogTrailRequest($logTrailJurnalHeader);
-            $storedLogTrailJurnal = app(LogTrailController::class)->store($validatedLogTrailJurnalHeader);
-
-
-            // DELETE JURNAL DETAIL
-            $logTrailJurnalDetail = [
-                'namatabel' => 'JURNALUMUMDETAIL',
-                'postingdari' => $request->postingdari ?? 'DELETE JURNAL UMUM DETAIL DARI PIUTANG',
-                'idtrans' => $storedLogTrailJurnal['id'],
-                'nobuktitrans' => $getJurnalHeader->nobukti,
-                'aksi' => 'DELETE',
-                'datajson' => $getJurnalDetail->toArray(),
-                'modifiedby' => auth('api')->user()->name
-            ];
-
-            $validatedLogTrailJurnalDetail = new StoreLogTrailRequest($logTrailJurnalDetail);
-            app(LogTrailController::class)->store($validatedLogTrailJurnalDetail);
-
-            DB::commit();
-
+        try {
+            $piutangHeader = (new PiutangHeader())->processDestroy($id);
             $selected = $this->getPosition($piutangHeader, $piutangHeader->getTable(), true);
             $piutangHeader->position = $selected->position;
             $piutangHeader->id = $selected->id;
             $piutangHeader->page = ceil($piutangHeader->position / ($request->limit ?? 10));
 
-            return response([
-                'status' => true,
+            DB::commit();
+
+            return response()->json([
                 'message' => 'Berhasil dihapus',
                 'data' => $piutangHeader
             ]);
-        } else {
+        } catch (\Throwable $th) {
             DB::rollBack();
 
-            return response([
-                'status' => false,
-                'message' => 'Gagal dihapus'
-            ]);
+            throw $th;
         }
     }
 

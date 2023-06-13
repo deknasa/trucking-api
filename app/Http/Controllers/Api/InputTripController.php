@@ -45,30 +45,11 @@ class InputTripController extends Controller
             $content['table'] = 'suratpengantar';
             $content['tgl'] = $tglbukti;
 
-            $upahsupir = DB::table('upahsupir')->from(
-                DB::raw("upahsupir with (readuncommitted)")
-            )
-                ->select(
-                    'id'
-                )
-                ->where('kotadari_id', $request->dari_id)
-                ->where('kotasampai_id', $request->sampai_id)
-                ->first();
-            if (!isset($upahsupir)) {
-                $upahsupir = DB::table('upahsupir')->from(
-                    DB::raw("upahsupir with (readuncommitted)")
-                )
-                    ->select(
-                        'id'
-                    )
-                    ->where('kotasampai_id', $request->dari_id)
-                    ->where('kotadari_id', $request->sampai_id)
-                    ->first();
-            }
+           
             $upahsupirRincian = DB::table('UpahSupirRincian')->from(
                 DB::Raw("UpahSupirRincian with (readuncommitted)")
             )
-                ->where('upahsupir_id', $upahsupir->id)
+                ->where('upahsupir_id', $request->upah_id)
                 ->where('container_id', $request->container_id)
                 ->where('statuscontainer_id', $request->statuscontainer_id)
                 ->first();
@@ -130,7 +111,7 @@ class InputTripController extends Controller
             $suratPengantar->statusgudangsama = $request->statusgudangsama;
             $suratPengantar->statuslongtrip = $request->statuslongtrip;
             $suratPengantar->trado_id = $request->trado_id;
-            $suratPengantar->upah_id = $upahsupir->id;
+            $suratPengantar->upah_id = $request->upah_id;
             $suratPengantar->supir_id = $request->supir_id;
             $suratPengantar->tarif_id = $request->tarifrincian_id;
             $suratPengantar->gajisupir = $upahsupirRincian->nominalsupir;

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\GetUpahSupirRincianRequest;
 use App\Models\UpahSupirRincian;
 use App\Http\Requests\StoreUpahSupirRincianRequest;
 use App\Http\Requests\UpdateUpahSupirRincianRequest;
@@ -109,6 +110,19 @@ class UpahSupirRincianController extends Controller
                 'message' => $th->getMessage()
             ]);
         }
+    }
+
+    public function get(GetUpahSupirRincianRequest $request)
+    {
+        $upahSupirRincian = new UpahSupirRincian();
+
+        return response([
+            'data' => $upahSupirRincian->get(),
+            'attributes' => [
+                'totalRows' => $upahSupirRincian->totalRows,
+                'totalPages' => $upahSupirRincian->totalPages
+            ]
+        ]);
     }
 
 

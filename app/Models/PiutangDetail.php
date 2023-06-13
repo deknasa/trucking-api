@@ -217,4 +217,21 @@ class PiutangDetail extends MyModel
     {
         return $query->skip($this->params['offset'])->take($this->params['limit']);
     }
+
+    public function processStore(PiutangHeader $piutangHeader, array $data): PiutangDetail
+    {
+        $piutangDetail = new PiutangDetail();
+        $piutangDetail->piutang_id = $piutangHeader->id;
+        $piutangDetail->nobukti = $piutangHeader->nobukti;
+        $piutangDetail->nominal = $data['nominal'];
+        $piutangDetail->keterangan = $data['keterangan'];
+        $piutangDetail->invoice_nobukti = $data['invoice_nobukti'] ?? '';
+        $piutangDetail->modifiedby = auth('api')->user()->name;
+        
+        if (!$piutangDetail->save()) {
+            throw new \Exception("Error storing piutang detail.");
+        }
+
+        return $piutangDetail;
+    }
 }

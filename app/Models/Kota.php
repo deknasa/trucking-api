@@ -118,6 +118,9 @@ class Kota extends MyModel
 
 
         $aktif = request()->aktif ?? '';
+        $kotaDariId = request()->kotadari_id ?? '';
+        $kotaSampaiId = request()->kotasampai_id ?? '';
+        $pilihKotaId = request()->pilihkota_id ?? '';
 
         $query = DB::table($this->table)->from(DB::raw("$this->table with (readuncommitted)"))
             ->select(
@@ -146,6 +149,13 @@ class Kota extends MyModel
 
             $query->where('kota.statusaktif', '=', $statusaktif->id);
         }
+        if ($kotaDariId > 0 && $kotaSampaiId > 0) {
+            $query->whereRaw("kota.id in ($kotaDariId,$kotaSampaiId)");
+        } 
+        if ($pilihKotaId > 0) {
+            $query->whereRaw("kota.id != $pilihKotaId");
+        }
+
         $this->totalRows = $query->count();
         $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;
 
