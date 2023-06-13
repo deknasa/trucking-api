@@ -49,6 +49,8 @@ use App\Http\Controllers\Api\ApprovalPendapatanSupirController;
 use App\Http\Controllers\Api\ApprovalTradoGambarController;
 use App\Http\Controllers\Api\BankPelangganController;
 use App\Http\Controllers\Api\DataRitasiController;
+use App\Http\Controllers\Api\AkuntansiController;
+use App\Http\Controllers\Api\TypeAkuntansiController;
 use App\Http\Controllers\Api\ExportLaporanKasGantungController;
 use App\Http\Controllers\Api\ExportLaporanKasHarianController;
 use App\Http\Controllers\Api\ExportLaporanStokController;
@@ -1261,6 +1263,22 @@ route::middleware(['auth:api'])->group(function () {
     Route::get('dataritasi/export', [DataRitasiController::class, 'export']);
     Route::get('dataritasi/getPosition2', [DataRitasiController::class, 'getPosition2']);
     Route::resource('dataritasi', DataRitasiController::class)->whereNumber('dataritasi');
+
+    Route::get('akuntansi/field_length', [AkuntansiController::class, 'fieldLength']);
+    Route::get('akuntansi/combostatus', [AkuntansiController::class, 'combostatus']);
+    Route::get('akuntansi/default', [AkuntansiController::class, 'default']);
+    Route::get('akuntansi/report', [AkuntansiController::class, 'report']);
+    Route::get('akuntansi/export', [AkuntansiController::class, 'export']);
+    Route::get('akuntansi/getPosition2', [AkuntansiController::class, 'getPosition2']);
+    Route::resource('akuntansi', AkuntansiController::class)->whereNumber('akuntansi');
+
+    Route::get('typeakuntansi/field_length', [TypeAkuntansiController::class, 'fieldLength']);
+    Route::get('typeakuntansi/combostatus', [TypeAkuntansiController::class, 'combostatus']);
+    Route::get('typeakuntansi/default', [TypeAkuntansiController::class, 'default']);
+    Route::get('typeakuntansi/report', [TypeAkuntansiController::class, 'report']);
+    Route::get('typeakuntansi/export', [TypeAkuntansiController::class, 'export']);
+    Route::get('typeakuntansi/getPosition2', [TypeAkuntansiController::class, 'getPosition2']);
+    Route::resource('typeakuntansi', TypeAkuntansiController::class)->whereNumber('typeakuntansi');
     
     Route::get('approvaltradogambar/field_length', [ApprovalTradoGambarController::class, 'fieldLength']);
     Route::resource('approvaltradogambar', ApprovalTradoGambarController::class)->whereNumber('approvaltradogambar');
