@@ -72,6 +72,8 @@ class UpahSupirRincian extends MyModel
             'container.kodecontainer as container',
             'statuscontainer.kodestatuscontainer as statuscontainer',
             'upahsupirrincian.nominalsupir',
+            'upahsupirrincian.nominalkenek',
+            'upahsupirrincian.nominalkomisi',
             'upahsupir.tglmulaiberlaku',
             'upahsupir.modifiedby',
             'upahsupir.created_at',
@@ -439,8 +441,8 @@ class UpahSupirRincian extends MyModel
                             $query = $query->WhereRaw("format(upahsupir.tglmulaiberlaku,'dd-MM-yyyy') like '%$filters[data]%'");
                         } else if ($filters['field'] == 'created_at' || $filters['field'] == 'updated_at') {
                             $query = $query->whereRaw("format(upahsupir." . $filters['field'].", 'dd-MM-yyyy HH:mm:ss') LIKE '%$filters[data]%'");
-                        } elseif ($filters['field'] == 'nominalsupir') {
-                            $query = $query->whereRaw("format(upahsupirrincian.nominalsupir, '#,#0.00') LIKE '%$filters[data]%'");
+                        } else if ($filters['field'] == 'nominalsupir' || $filters['field'] == 'nominalkenek' || $filters['field'] == 'nominalkomisi') {
+                            $query = $query->whereRaw("format(upahsupirrincian.".$filters['field'].", '#,#0.00') LIKE '%$filters[data]%'");
                         } else {
                             $query = $query->where('upahsupir.' . $filters['field'], 'LIKE', "%$filters[data]%");
                         }
@@ -465,8 +467,8 @@ class UpahSupirRincian extends MyModel
                                 $query = $query->orWhereRaw("format(upahsupir.tglmulaiberlaku,'dd-MM-yyyy') like '%$filters[data]%'");
                             } else if ($filters['field'] == 'created_at' || $filters['field'] == 'updated_at') {
                                 $query = $query->orWhereRaw("format(upahsupir." . $filters['field'].", 'dd-MM-yyyy HH:mm:ss') LIKE '%$filters[data]%'");
-                            } elseif ($filters['field'] == 'nominalsupir') {
-                                $query = $query->orWhereRaw("format(upahsupirrincian.nominalsupir, '#,#0.00') LIKE '%$filters[data]%'");
+                            } else if ($filters['field'] == 'nominalsupir' || $filters['field'] == 'nominalkenek' || $filters['field'] == 'nominalkomisi') {
+                                $query = $query->orWhereRaw("format(upahsupirrincian.".$filters['field'].", '#,#0.00') LIKE '%$filters[data]%'");
                             } else {
                                 $query = $query->orWhere('upahsupir.' . $filters['field'], 'LIKE', "%$filters[data]%");
                             }
