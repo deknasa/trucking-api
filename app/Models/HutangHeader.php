@@ -95,7 +95,8 @@ class HutangHeader extends MyModel
         ], $query);
 
         $this->setRequestParameters();
-
+        $periode = request()->periode ?? '';
+        $statusCetak = request()->statuscetak ?? '';
         $query = DB::table($this->table)->from(DB::raw("hutangheader with (readuncommitted)"))
             ->select(
                 'hutangheader.id',
@@ -119,14 +120,22 @@ class HutangHeader extends MyModel
                 'hutangheader.created_at',
                 'hutangheader.updated_at'
             )
-            ->whereBetween($this->table . '.tglbukti', [date('Y-m-d', strtotime(request()->tgldari)), date('Y-m-d', strtotime(request()->tglsampai))])
             ->leftJoin(DB::raw("parameter with (readuncommitted)"), 'hutangheader.statuscetak', 'parameter.id')
             ->leftJoin(DB::raw("parameter as statusapproval with (readuncommitted)"), 'hutangheader.statusapproval', 'statusapproval.id')
             ->leftJoin(DB::raw("akunpusat with (readuncommitted)"), 'hutangheader.coa', 'akunpusat.coa')
             ->leftJoin(DB::raw("supplier with (readuncommitted)"), 'hutangheader.supplier_id', 'supplier.id')
             ->leftJoin(DB::raw($tempbayar . " as c"), 'hutangheader.nobukti', 'c.hutang_nobukti');
-
-
+        if (request()->tgldari) {
+            $query->whereBetween($this->table . '.tglbukti', [date('Y-m-d', strtotime(request()->tgldari)), date('Y-m-d', strtotime(request()->tglsampai))]);
+        }
+        if ($periode != '') {
+            $periode = explode("-", $periode);
+            $query->whereRaw("MONTH(hutangheader.tglbukti) ='" . $periode[0] . "'")
+                ->whereRaw("year(hutangheader.tglbukti) ='" . $periode[1] . "'");
+        }
+        if ($statusCetak != '') {
+            $query->where("hutangheader.statuscetak", $statusCetak);
+        }
         $this->totalRows = $query->count();
         $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;
 
@@ -172,10 +181,10 @@ class HutangHeader extends MyModel
         $temp = $this->createTempHutang($id);
 
         $approval = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))
-        ->where('grp', 'STATUS APPROVAL')
-        ->where('subgrp', 'STATUS APPROVAL')
-        ->where('text', 'APPROVAL')
-        ->first();
+            ->where('grp', 'STATUS APPROVAL')
+            ->where('subgrp', 'STATUS APPROVAL')
+            ->where('text', 'APPROVAL')
+            ->first();
 
         $approvalId = $approval->id;
 

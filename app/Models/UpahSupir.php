@@ -402,12 +402,29 @@ class UpahSupir extends MyModel
             ->select(
                 'a.upahsupir_id'
             )
-            ->where('a.id', '=', $id)
+            ->where('a.upahsupir_id', '=', $id)
             ->first();
         if (isset($rekap)) {
             $data = [
                 'kondisi' => true,
                 'keterangan' => 'tarif',
+                'kodeerror' => 'SATL'
+            ];
+            goto selesai;
+        }
+        $sp = DB::table('suratpengantar')
+            ->from(
+                DB::raw("suratpengantar as a with (readuncommitted)")
+            )
+            ->select(   
+                'a.upah_id'
+            )
+            ->where('a.upah_id', '=', $id)
+            ->first();
+        if (isset($sp)) {
+            $data = [
+                'kondisi' => true,
+                'keterangan' => 'surat pengantar',
                 'kodeerror' => 'SATL'
             ];
             goto selesai;

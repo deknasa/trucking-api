@@ -34,6 +34,8 @@ class ServiceOutHeader extends MyModel
     public function get()
     {
         $this->setRequestParameters();
+        $periode = request()->periode ?? '';
+        $statusCetak = request()->statuscetak ?? '';
         $query = DB::table($this->table)->from(DB::raw("serviceoutheader with (readuncommitted)"))
         ->select(
             'serviceoutheader.id',
@@ -54,6 +56,15 @@ class ServiceOutHeader extends MyModel
             if (request()->tgldari) {
                 $query->whereBetween('serviceoutheader.tglbukti', [date('Y-m-d',strtotime(request()->tgldari )), date('Y-m-d',strtotime(request()->tglsampai ))]);
             }
+            if ($periode != '') {
+                $periode = explode("-", $periode);
+                $query->whereRaw("MONTH(serviceoutheader.tglbukti) ='" . $periode[0] . "'")
+                    ->whereRaw("year(serviceoutheader.tglbukti) ='" . $periode[1] . "'");
+            }
+            if ($statusCetak != '') {
+                $query->where("serviceoutheader.statuscetak", $statusCetak);
+            }
+    
         $this->totalRows = $query->count();
         $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;
 

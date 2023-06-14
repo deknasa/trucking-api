@@ -126,7 +126,8 @@ class PengeluaranTruckingHeader extends MyModel
     public function get()
     {
         $this->setRequestParameters();
-
+        $periode = request()->periode ?? '';
+        $statusCetak = request()->statuscetak ?? '';
         $query = DB::table($this->table)->from(DB::raw("pengeluarantruckingheader with (readuncommitted)"))
             ->select(
                 'pengeluarantruckingheader.id',
@@ -166,6 +167,14 @@ class PengeluaranTruckingHeader extends MyModel
         }
         if (request()->pengeluaranheader_id) {
             $query->where('pengeluarantruckingheader.pengeluarantrucking_id', request()->pengeluaranheader_id);
+        }
+        if ($periode != '') {
+            $periode = explode("-", $periode);
+            $query->whereRaw("MONTH(pengeluarantruckingheader.tglbukti) ='" . $periode[0] . "'")
+                ->whereRaw("year(pengeluarantruckingheader.tglbukti) ='" . $periode[1] . "'");
+        }
+        if ($statusCetak != '') {
+            $query->where("pengeluarantruckingheader.statuscetak", $statusCetak);
         }
         $this->totalRows = $query->count();
         $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;
