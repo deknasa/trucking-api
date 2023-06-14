@@ -54,7 +54,6 @@ class JurnalUmumHeaderController extends Controller
         DB::beginTransaction();
 
         try {
-            dd($request->all());
             $jurnalUmumHeader = (new JurnalUmumHeader())->processStore($request->all());
             $jurnalUmumHeader->position = $this->getPosition($jurnalUmumHeader, $jurnalUmumHeader->getTable())->position;
             $jurnalUmumHeader->page = ceil($jurnalUmumHeader->position / ($request->limit ?? 10));

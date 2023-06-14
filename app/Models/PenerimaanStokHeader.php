@@ -27,7 +27,8 @@ class PenerimaanStokHeader extends MyModel
     public function get()
     {
         $this->setRequestParameters();
-
+        $periode = request()->periode ?? '';
+        $statusCetak = request()->statuscetak ?? '';
         // dd(request());
 
         $spb = Parameter::where('grp', 'SPB STOK')->where('subgrp', 'SPB STOK')->first();
@@ -102,7 +103,14 @@ class PenerimaanStokHeader extends MyModel
         if (request()->penerimaanheader_id) {
             $query->where('penerimaanstokheader.penerimaanstok_id',request()->penerimaanheader_id);
         }
-        
+        if ($periode != '') {
+            $periode = explode("-", $periode);
+            $query->whereRaw("MONTH(penerimaanstokheader.tglbukti) ='" . $periode[0] . "'")
+                ->whereRaw("year(penerimaanstokheader.tglbukti) ='" . $periode[1] . "'");
+        }
+        if ($statusCetak != '') {
+            $query->where("penerimaanstokheader.statuscetak", $statusCetak);
+        }
         $this->totalRows = $query->count();
         $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;
 

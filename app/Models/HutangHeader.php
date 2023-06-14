@@ -49,7 +49,8 @@ class HutangHeader extends MyModel
         ], $query);
 
         $this->setRequestParameters();
-
+        $periode = request()->periode ?? '';
+        $statusCetak = request()->statuscetak ?? '';
         $query = DB::table($this->table)->from(DB::raw("hutangheader with (readuncommitted)"))
             ->select(
                 'hutangheader.id',
@@ -73,14 +74,22 @@ class HutangHeader extends MyModel
                 'hutangheader.created_at',
                 'hutangheader.updated_at'
             )
-            ->whereBetween($this->table . '.tglbukti', [date('Y-m-d', strtotime(request()->tgldari)), date('Y-m-d', strtotime(request()->tglsampai))])
             ->leftJoin(DB::raw("parameter with (readuncommitted)"), 'hutangheader.statuscetak', 'parameter.id')
             ->leftJoin(DB::raw("parameter as statusapproval with (readuncommitted)"), 'hutangheader.statusapproval', 'statusapproval.id')
             ->leftJoin(DB::raw("akunpusat with (readuncommitted)"), 'hutangheader.coa', 'akunpusat.coa')
             ->leftJoin(DB::raw("supplier with (readuncommitted)"), 'hutangheader.supplier_id', 'supplier.id')
             ->leftJoin(DB::raw($tempbayar . " as c"), 'hutangheader.nobukti', 'c.hutang_nobukti');
-
-
+        if (request()->tgldari) {
+            $query->whereBetween($this->table . '.tglbukti', [date('Y-m-d', strtotime(request()->tgldari)), date('Y-m-d', strtotime(request()->tglsampai))]);
+        }
+        if ($periode != '') {
+            $periode = explode("-", $periode);
+            $query->whereRaw("MONTH(hutangheader.tglbukti) ='" . $periode[0] . "'")
+                ->whereRaw("year(hutangheader.tglbukti) ='" . $periode[1] . "'");
+        }
+        if ($statusCetak != '') {
+            $query->where("hutangheader.statuscetak", $statusCetak);
+        }
         $this->totalRows = $query->count();
         $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;
 
@@ -117,6 +126,61 @@ class HutangHeader extends MyModel
 
         $data = $query->first();
         return $data;
+    }
+
+    public function getHutang($id)
+    {
+        $this->setRequestParameters();
+
+        $temp = $this->createTempHutang($id);
+
+        $approval = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))
+            ->where('grp', 'STATUS APPROVAL')
+            ->where('subgrp', 'STATUS APPROVAL')
+            ->where('text', 'APPROVAL')
+            ->first();
+
+        $approvalId = $approval->id;
+
+        $query = DB::table('hutangheader')->from(DB::raw("hutangheader with (readuncommitted)"))
+            ->select(DB::raw("row_number() Over(Order By hutangheader.id) as id,hutangheader.nobukti as nobukti,hutangheader.tglbukti, hutangheader.total as nominal," . $temp . ".sisa, 0 as total"))
+            ->join(DB::raw("$temp with (readuncommitted)"), 'hutangheader.nobukti', $temp . ".nobukti")
+            ->whereRaw("hutangheader.nobukti = $temp.nobukti")
+            ->whereRaw("hutangheader.statusapproval = $approvalId")
+            ->where(function ($query) use ($temp) {
+                $query->whereRaw("$temp.sisa != 0")
+                    ->orWhereRaw("$temp.sisa is null");
+            });
+        $data = $query->get();
+
+        return $data;
+    }
+
+    public function createTempHutang($id)
+    {
+        $temp = '##temp' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+
+        $fetch = DB::table('hutangheader')->from(
+            DB::raw("hutangheader with (readuncommitted)")
+        )
+            ->select(DB::raw("hutangheader.nobukti,sum(hutangbayardetail.nominal) as terbayar, (SELECT (hutangheader.total - coalesce(SUM(hutangbayardetail.nominal),0) - coalesce(SUM(hutangbayardetail.potongan),0)) FROM hutangbayardetail WHERE hutangbayardetail.hutang_nobukti= hutangheader.nobukti) AS sisa"))
+            ->leftJoin(DB::raw("hutangbayardetail with (readuncommitted)"), 'hutangbayardetail.hutang_nobukti', 'hutangheader.nobukti')
+            ->whereRaw("hutangheader.supplier_id = $id")
+            ->groupBy('hutangheader.nobukti', 'hutangheader.total');
+        // ->get();
+        Schema::create($temp, function ($table) {
+            $table->string('nobukti');
+            $table->bigInteger('terbayar')->nullable();
+            $table->bigInteger('sisa')->nullable();
+        });
+
+        $tes = DB::table($temp)->insertUsing(['nobukti', 'terbayar', 'sisa'], $fetch);
+
+        return $temp;
+    }
+    public function hutangdetail()
+    {
+        return $this->hasMany(HutangDetail::class, 'hutang_id');
     }
 
     public function selectColumns($query)

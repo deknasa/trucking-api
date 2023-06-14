@@ -216,8 +216,8 @@ class PenerimaanHeader extends MyModel
     public function get()
     {
         $this->setRequestParameters();
-
-
+        $periode = request()->periode ?? '';
+        $statusCetak = request()->statuscetak ?? '';
         $query = DB::table($this->table)->from(DB::raw("penerimaanheader with (readuncommitted)"))
             ->select(
                 'penerimaanheader.id',
@@ -251,7 +251,15 @@ class PenerimaanHeader extends MyModel
             $query->whereBetween($this->table . '.tglbukti', [date('Y-m-d', strtotime(request()->tgldari)), date('Y-m-d', strtotime(request()->tglsampai))])
                 ->where('penerimaanheader.bank_id', request()->bank);
         }
-
+        if ($periode != '') {
+            $periode = explode("-", $periode);
+            $query->whereRaw("MONTH(penerimaanheader.tglbukti) ='" . $periode[0] . "'")
+                ->whereRaw("year(penerimaanheader.tglbukti) ='" . $periode[1] . "'");
+        }
+        if ($statusCetak != '') {
+            $query->where("penerimaanheader.statuscetak", $statusCetak);
+        }
+        
         $this->totalRows = $query->count();
         $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;
 

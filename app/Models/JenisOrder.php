@@ -273,4 +273,73 @@ class JenisOrder extends MyModel
     {
         return $query->skip($this->params['offset'])->take($this->params['limit']);
     }
+
+    public function processStore(array $data): JenisOrder
+    {
+        $jenisorder = new JenisOrder();
+        $jenisorder->kodejenisorder = $data['kodejenisorder'];
+        $jenisorder->statusaktif = $data['statusaktif'];
+        $jenisorder->keterangan = $data['keterangan'] ?? '';
+        $jenisorder->modifiedby = auth('api')->user()->name;
+        // $request->sortname = $request->sortname ?? 'id';
+        // $request->sortorder = $request->sortorder ?? 'asc';
+
+        if (!$jenisorder->save()) {
+            throw new \Exception("Error storing service in header.");
+        }
+
+        (new LogTrail())->processStore([
+            'namatabel' => strtoupper($jenisorder->getTable()),
+            'postingdari' => 'ENTRY JENIS ORDER',
+            'idtrans' => $jenisorder->id,
+            'nobuktitrans' => $jenisorder->id,
+            'aksi' => 'ENTRY',
+            'datajson' => $jenisorder->toArray(),
+            'modifiedby' => $jenisorder->modifiedby
+        ]);
+
+        return $jenisorder;
+    }
+
+    public function processUpdate(JenisOrder $jenisorder, array $data): JenisOrder
+    {   
+        $jenisorder->kodejenisorder = $data['kodejenisorder'];
+        $jenisorder->keterangan = $data['keterangan'] ?? '';
+        $jenisorder->statusaktif =$data['statusaktif'];
+        $jenisorder->modifiedby = auth('api')->user()->name;
+
+
+        if (!$jenisorder->save()) {
+            throw new \Exception("Error update service in header.");
+        }
+        (new LogTrail())->processStore([
+            'namatabel' => strtoupper($jenisorder->getTable()),
+            'postingdari' => 'EDIT JENIS ORDER',
+            'idtrans' => $jenisorder->id,
+            'nobuktitrans' => $jenisorder->id,
+            'aksi' => 'EDIT',
+            'datajson' => $jenisorder->toArray(),
+            'modifiedby' => $jenisorder->modifiedby
+        ]);
+
+        return $jenisorder;
+    }
+
+    public function processDestroy($id): JenisOrder
+    {
+        $jenisOrder = new JenisOrder();
+        $jenisOrder = $jenisOrder->lockAndDestroy($id);
+
+        (new LogTrail())->processStore([
+            'namatabel' => strtoupper($jenisOrder->getTable()),
+            'postingdari' => 'DELETE JENIS ORDER',
+            'idtrans' => $jenisOrder->id,
+            'nobuktitrans' => $jenisOrder->id,
+            'aksi' => 'DELETE',
+            'datajson' => $jenisOrder->toArray(),
+            'modifiedby' => auth('api')->user()->name
+        ]);
+
+        return $jenisOrder;
+    }
 }

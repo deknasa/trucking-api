@@ -27,6 +27,8 @@ class InvoiceExtraHeader extends MyModel
     public function get()
     {
         $this->setRequestParameters();
+        $periode = request()->periode ?? '';
+        $statusCetak = request()->statuscetak ?? '';
 
         $query = DB::table($this->table);
         $query = $this->selectColumns($query)->from(
@@ -39,6 +41,14 @@ class InvoiceExtraHeader extends MyModel
 
         if (request()->tgldari && request()->tglsampai) {
             $query->whereBetween($this->table . '.tglbukti', [date('Y-m-d', strtotime(request()->tgldari)), date('Y-m-d', strtotime(request()->tglsampai))]);
+        } 
+        if ($periode != '') {
+            $periode = explode("-", $periode);
+            $query->whereRaw("MONTH(invoiceextraheader.tglbukti) ='" . $periode[0] . "'")
+                ->whereRaw("year(invoiceextraheader.tglbukti) ='" . $periode[1] . "'");
+        }
+        if ($statusCetak != '') {
+            $query->where("invoiceextraheader.statuscetak", $statusCetak);
         }
         $this->totalRows = $query->count();
         $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;

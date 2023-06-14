@@ -20,6 +20,7 @@ use Illuminate\Support\Facades\Schema;
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
 use Illuminate\Database\QueryException;
+use Illuminate\Http\JsonResponse;
 
 class ParameterController extends Controller
 {
@@ -57,49 +58,16 @@ class ParameterController extends Controller
         DB::beginTransaction();
 
         try {
-            $parameter = new Parameter();
-            $parameter->grp = $request->grp;
-            $parameter->subgrp = $request->subgrp;
-            $parameter->text = $request->text;
-            $parameter->kelompok = $request->kelompok ?? '';
-            $parameter->default = $request->default ?? '';
-            $parameter->type = $request->type ?? 0;
-            $parameter->modifiedby = auth('api')->user()->name;
 
-            $detailmemo = [];
-            for ($i = 0; $i < count($request->key); $i++) {
-                $datadetailmemo = [
-                    $request->key[$i] => $request->value[$i],
-                ];
-                $detailmemo = array_merge($detailmemo, $datadetailmemo);
-            }
-
-            $parameter->memo = json_encode($detailmemo);
-            if ($parameter->save()) {
-                $logTrail = [
-                    'namatabel' => strtoupper($parameter->getTable()),
-                    'postingdari' => 'ENTRY PARAMETER',
-                    'idtrans' => $parameter->id,
-                    'nobuktitrans' => $parameter->id,
-                    'aksi' => 'ENTRY',
-                    'datajson' => $parameter->toArray(),
-                    'modifiedby' => $parameter->modifiedby
-                ];
-
-                $validatedLogTrail = new StoreLogTrailRequest($logTrail);
-                $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
-
-                DB::commit();
-            }
-
-            /* Set position and page */
-            $selected = $this->getPosition($parameter, $parameter->getTable());
-            $parameter->position = $selected->position;
+            $parameter = (new Parameter())->processStore($request->all());
+            $parameter->position = $this->getPosition($parameter, $parameter->getTable())->position;
             $parameter->page = ceil($parameter->position / ($request->limit ?? 10));
-
+            
             if (isset($request->limit)) {
                 $parameter->page = ceil($parameter->position / $request->limit);
             }
+
+            DB::commit();
 
             return response([
                 'message' => 'Berhasil disimpan',
@@ -131,57 +99,17 @@ class ParameterController extends Controller
         DB::beginTransaction();
 
         try {
-            $parameter->grp = $request->grp;
-            $parameter->subgrp = $request->subgrp;
-            $parameter->text = $request->text;
-            $parameter->kelompok = $request->kelompok ?? '';
-            $parameter->default = $request->default ?? '';
-            $parameter->type = $request->type ?? 0;
-            $parameter->modifiedby = auth('api')->user()->name;
+            $parameter = (new Parameter())->processUpdate($parameter, $request->all());
+            $parameter->position = $this->getPosition($parameter, $parameter->getTable())->position;
+            $parameter->page = ceil($parameter->position / ($request->limit ?? 10));
 
-            $detailmemo = [];
-            for ($i = 0; $i < count($request->key); $i++) {
-                $datadetailmemo = [
-                    $request->key[$i] => $request->value[$i],
-                ];
-                $detailmemo = array_merge($detailmemo, $datadetailmemo);
-            }
+            DB::commit();
 
-            $parameter->memo = json_encode($detailmemo);
-            if ($parameter->save()) {
-                $logTrail = [
-                    'namatabel' => strtoupper($parameter->getTable()),
-                    'postingdari' => 'EDIT PARAMETER',
-                    'idtrans' => $parameter->id,
-                    'nobuktitrans' => $parameter->id,
-                    'aksi' => 'EDIT',
-                    'datajson' => $parameter->toArray(),
-                    'modifiedby' => $parameter->modifiedby
-                ];
-
-                $validatedLogTrail = new StoreLogTrailRequest($logTrail);
-                app(LogTrailController::class)->store($validatedLogTrail);
-
-                DB::commit();
-
-                /* Set position and page */
-                $selected = $this->getPosition($parameter, $parameter->getTable());
-                $parameter->position = $selected->position;
-                $parameter->page = ceil($parameter->position / ($request->limit ?? 10));
-
-                return response([
-                    'status' => true,
-                    'message' => 'Berhasil diubah',
-                    'data' => $parameter
-                ]);
-            } else {
-                DB::rollBack();
-
-                return response([
-                    'status' => false,
-                    'message' => 'Gagal diubah'
-                ]);
-            }
+            return response([
+                'status' => true,
+                'message' => 'Berhasil diubah',
+                'data' => $parameter
+            ]);
         } catch (\Throwable $th) {
             DB::rollBack();
 
@@ -196,42 +124,24 @@ class ParameterController extends Controller
     {
         DB::beginTransaction();
 
-        $parameter = new Parameter();
-        $parameter = $parameter->lockAndDestroy($id);
-
-        if ($parameter) {
-            $logTrail = [
-                'namatabel' => strtoupper($parameter->getTable()),
-                'postingdari' => 'DELETE PARAMETER',
-                'idtrans' => $parameter->id,
-                'nobuktitrans' => $parameter->id,
-                'aksi' => 'DELETE',
-                'datajson' => $parameter->toArray(),
-                'modifiedby' => $parameter->modifiedby
-            ];
-
-            $validatedLogTrail = new StoreLogTrailRequest($logTrail);
-            app(LogTrailController::class)->store($validatedLogTrail);
-
-            DB::commit();
-
+        try{
+            $parameter = (new parameter())->processDestroy($id);
             $selected = $this->getPosition($parameter, $parameter->getTable(), true);
             $parameter->position = $selected->position;
             $parameter->id = $selected->id;
             $parameter->page = ceil($parameter->position / ($request->limit ?? 10));
+
+            DB::commit();
 
             return response([
                 'status' => true,
                 'message' => 'Berhasil dihapus',
                 'data' => $parameter
             ]);
-        } else {
+        } catch (\Throwable $th) {
             DB::rollBack();
 
-            return response([
-                'status' => false,
-                'message' => 'Gagal dihapus'
-            ]);
+            throw $th;
         }
     }
 

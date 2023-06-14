@@ -6,6 +6,8 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
+use Illuminate\Support\Facades\Storage;
+use App\Helpers\App;
 
 class UpahSupir extends MyModel
 {
@@ -400,12 +402,29 @@ class UpahSupir extends MyModel
             ->select(
                 'a.upahsupir_id'
             )
-            ->where('a.id', '=', $id)
+            ->where('a.upahsupir_id', '=', $id)
             ->first();
         if (isset($rekap)) {
             $data = [
                 'kondisi' => true,
                 'keterangan' => 'tarif',
+                'kodeerror' => 'SATL'
+            ];
+            goto selesai;
+        }
+        $sp = DB::table('suratpengantar')
+            ->from(
+                DB::raw("suratpengantar as a with (readuncommitted)")
+            )
+            ->select(   
+                'a.upah_id'
+            )
+            ->where('a.upah_id', '=', $id)
+            ->first();
+        if (isset($sp)) {
+            $data = [
+                'kondisi' => true,
+                'keterangan' => 'surat pengantar',
                 'kodeerror' => 'SATL'
             ];
             goto selesai;
@@ -431,5 +450,294 @@ class UpahSupir extends MyModel
             ->first();
 
         return $query;
+    }
+
+    private function deleteFiles(UpahSupir $upahsupir)
+    {
+        $sizeTypes = ['', 'medium_', 'small_'];
+
+        $relatedPhotoUpahSupir = [];
+        $photoUpahSupir = json_decode($upahsupir->gambar, true);
+        if ($photoUpahSupir) {
+            foreach ($photoUpahSupir as $path) {
+                foreach ($sizeTypes as $sizeType) {
+                    $relatedPhotoUpahSupir[] = "upahsupir/$sizeType$path";
+                }
+            }
+            Storage::delete($relatedPhotoUpahSupir);
+        }
+    }
+
+    private function storeFiles(array $files, string $destinationFolder): string
+    {
+        $storedFiles = [];
+
+        foreach ($files as $file) {
+            $originalFileName = $file->hashName();
+            $storedFile = Storage::putFileAs($destinationFolder, $file, $originalFileName);
+            $resizedFiles = App::imageResize(storage_path("app/$destinationFolder/"), storage_path("app/$storedFile"), $originalFileName);
+
+            $storedFiles[] = $originalFileName;
+        }
+
+        return json_encode($storedFiles);
+    }
+
+    public function processStore(array $data): UpahSupir
+    {
+        try {
+            $group = 'STATUS SIMPAN KANDANG';
+            $text = 'SIMPAN KANDANG';
+
+            $statusSimpanKandang = DB::table('parameter')
+                ->where('grp', $group)
+                ->where('text', $text)
+                ->first();
+
+            $kandang = DB::table("kota")->from(DB::raw("kota with (readuncommitted)"))
+                ->where('kodekota', 'KANDANG')
+                ->first();
+            $belawan = DB::table("kota")->from(DB::raw("kota with (readuncommitted)"))
+                ->where('kodekota', 'BELAWAN')
+                ->first();
+
+            $upahsupir = new UpahSupir();
+            $upahsupir->kotadari_id = $data['kotadari_id'];
+            $upahsupir->parent_id = $data['parent_id'] ?? 0;
+            $upahsupir->tarif_id = $data['tarif_id'] ?? 0;
+            $upahsupir->kotasampai_id = $data['kotasampai_id'];
+            $upahsupir->penyesuaian = $data['penyesuaian'];
+            $upahsupir->jarak = $data['jarak'];
+            $upahsupir->zona_id = ($data['zona_id'] == null) ? 0 : $data['zona_id'] ?? 0;
+            $upahsupir->statusaktif = $data['statusaktif'];
+            $upahsupir->tglmulaiberlaku = date('Y-m-d', strtotime($data['tglmulaiberlaku']));
+            $upahsupir->statussimpankandang = $data['statussimpankandang'];
+            $upahsupir->statusluarkota = $data['statusluarkota'] ?? '';
+            $upahsupir->keterangan = $data['keterangan'];
+            $upahsupir->modifiedby = auth('api')->user()->user;
+            $this->deleteFiles($upahsupir);
+
+            if (array_key_exists('gambar', $data)) {
+                $upahsupir->gambar = $this->storeFiles($data['gambar'], 'upahsupir');
+            } else {
+                $upahsupir->gambar = '';
+            }
+
+            if (!$upahsupir->save()) {
+                throw new \Exception("Error storing upah supir.");
+            }
+
+            $storedLogTrail = (new LogTrail())->processStore([
+                'namatabel' => strtoupper($upahsupir->getTable()),
+                'postingdari' => 'ENTRY UPAH SUPIR',
+                'idtrans' => $upahsupir->id,
+                'nobuktitrans' => $upahsupir->id,
+                'aksi' => 'ENTRY',
+                'datajson' => $upahsupir->toArray(),
+                'modifiedby' => $upahsupir->modifiedby
+            ]);
+
+            $detaillog = [];
+            for ($i = 0; $i < count($data['nominalsupir']); $i++) {
+                $upahsupirDetail = (new UpahSupirRincian())->processStore($upahsupir, [
+                    'upahsupir_id' => $upahsupir->id,
+                    'container_id' => $data['container_id'][$i],
+                    'statuscontainer_id' => $data['statuscontainer_id'][$i],
+                    'nominalsupir' => $data['nominalsupir'][$i],
+                    'nominalkenek' => $data['nominalkenek'][$i] ?? 0,
+                    'nominalkomisi' => $data['nominalkomisi'][$i] ?? 0,
+                    'nominaltol' =>  $data['nominaltol'][$i] ?? 0,
+                    'liter' => $data['liter'][$i] ?? 0
+                ]);
+
+                $detaillog[] = $upahsupirDetail->toArray();
+            }
+            (new LogTrail())->processStore([
+                'namatabel' => strtoupper($upahsupirDetail->getTable()),
+                'postingdari' => 'ENTRY UPAH SUPIR RINCIAN',
+                'idtrans' =>  $storedLogTrail['id'],
+                'nobuktitrans' => $upahsupir->id,
+                'aksi' => 'ENTRY',
+                'datajson' => $detaillog,
+                'modifiedby' => auth('api')->user()->user,
+            ]);
+
+            if ($data['statussimpankandang'] == $statusSimpanKandang->id) {
+                $getBelawanKandang = DB::table("upahsupir")->from(DB::raw("upahsupir with (readuncommitted)"))
+                    ->select('id', 'jarak')
+                    ->where('kotadari_id', $belawan->id)
+                    ->where('kotasampai_id', $kandang->id)
+                    ->first();
+                    
+                $getRincianBelawanKandang = DB::table("upahsupirrincian")->from(DB::raw("upahsupirrincian with (readuncommitted)"))
+                    ->where('upahsupir_id', $getBelawanKandang->id)
+                    ->get();
+                $jarakKandang = $data['jarak'] - $getBelawanKandang->jarak;
+
+                $upahsupirKandang = new UpahSupir();
+                $upahsupirKandang->kotadari_id = $kandang->id;
+                $upahsupirKandang->parent_id = $kandang->parent_id ?? 0;
+                $upahsupirKandang->tarif_id = $kandang->tarif_id ?? 0;
+                $upahsupirKandang->kotasampai_id = $data['kotasampai_id'];
+                $upahsupirKandang->penyesuaian = $data['penyesuaian'];
+                $upahsupirKandang->jarak = ($jarakKandang < 0) ? 0 : $jarakKandang;
+                $upahsupirKandang->zona_id = ($data['zona_id'] == null) ? 0 : $data['zona_id'] ?? 0;
+                $upahsupirKandang->statusaktif = $data['statusaktif'];
+                $upahsupirKandang->tglmulaiberlaku = date('Y-m-d', strtotime($data['tglmulaiberlaku']));
+                $upahsupirKandang->statussimpankandang = $data['statussimpankandang'];
+                $upahsupirKandang->keterangan = $data['keterangan'];
+                $upahsupirKandang->modifiedby = auth('api')->user()->user;
+                $this->deleteFiles($upahsupirKandang);
+                if (array_key_exists('gambar', $data)) {
+                    $upahsupirKandang->gambar = $this->storeFiles($data['gambar'], 'upahsupir');
+                } else {
+                    $upahsupirKandang->gambar = '';
+                }
+                $upahsupirKandang->save();
+
+                $logTrailKandang = (new LogTrail())->processStore([
+                    'namatabel' => strtoupper($upahsupirKandang->getTable()),
+                    'postingdari' => 'ENTRY UPAH SUPIR',
+                    'idtrans' => $upahsupirKandang->id,
+                    'nobuktitrans' => $upahsupirKandang->id,
+                    'aksi' => 'ENTRY',
+                    'datajson' => $upahsupirKandang->toArray(),
+                    'modifiedby' => auth('api')->user()->user,
+                ]);
+
+                /* Store detail */
+                $detaillog = [];
+                for ($i = 0; $i < count($data['nominalsupir']); $i++) {
+                    $nomSupir = ($data['nominalsupir'][$i] == 0) ? 0 : $data['nominalsupir'][$i] - $getRincianBelawanKandang[$i]->nominalsupir;
+                    $nomKenek = ($data['nominalkenek'][$i] == 0) ? 0 : $data['nominalkenek'][$i] - $getRincianBelawanKandang[$i]->nominalkenek;
+                    $nomKomisi = ($data['nominalkomisi'][$i] == 0) ? 0 : $data['nominalkomisi'][$i] - $getRincianBelawanKandang[$i]->nominalkomisi;
+                    $nomTol = ($data['nominaltol'][$i] == 0) ? 0 : $data['nominaltol'][$i] - $getRincianBelawanKandang[$i]->nominaltol;
+                    $liter = ($data['liter'][$i] == 0) ? 0 : $data['liter'][$i] - $getRincianBelawanKandang[$i]->liter;
+
+                    $upahsupirDetail = (new UpahSupirRincian())->processStore($upahsupir, [
+                        'upahsupir_id' => $upahsupirKandang->id,
+                        'container_id' => $data['container_id'][$i],
+                        'statuscontainer_id' => $data['statuscontainer_id'][$i],
+                        'nominalsupir' => ($nomSupir < 0) ? 0 : $nomSupir,
+                        'nominalkenek' => ($nomKenek < 0) ? 0 : $nomKenek,
+                        'nominalkomisi' => ($nomKomisi < 0) ? 0 : $nomKomisi,
+                        'nominaltol' => ($nomTol < 0) ? 0 : $nomTol,
+                        'liter' => ($liter < 0) ? 0 : $liter,
+                    ]);
+                    $detaillog[] = $upahsupirDetail->toArray();
+                }
+                (new LogTrail())->processStore([
+                    'namatabel' => strtoupper($upahsupirDetail->getTable()),
+                    'postingdari' => 'ENTRY UPAH SUPIR RINCIAN',
+                    'idtrans' =>  $storedLogTrail['id'],
+                    'nobuktitrans' => $upahsupirKandang->id,
+                    'aksi' => 'ENTRY',
+                    'datajson' => $detaillog,
+                    'modifiedby' => auth('api')->user()->user,
+                ]);
+            }
+            return $upahsupir;
+        } catch (\Throwable $th) {
+            $this->deleteFiles($upahsupir);
+            throw $th;
+        }
+    }
+
+    public function processUpdate(UpahSupir $upahsupir, array $data): UpahSupir
+    {
+        try {
+            $upahsupir->kotadari_id = $data['kotadari_id'];
+            $upahsupir->parent_id = $data['parent_id'] ?? 0;
+            $upahsupir->tarif_id = $data['tarif_id'] ?? 0;
+            $upahsupir->kotasampai_id = $data['kotasampai_id'];
+            $upahsupir->penyesuaian = $data['penyesuaian'];
+            $upahsupir->jarak = $data['jarak'];
+            $upahsupir->zona_id = ($data['zona_id'] == null) ? 0 : $data['zona_id'] ?? 0;
+            $upahsupir->statusaktif = $data['statusaktif'];
+            $upahsupir->tglmulaiberlaku = date('Y-m-d', strtotime($data['tglmulaiberlaku']));
+            $upahsupir->keterangan = $data['keterangan'];
+            $upahsupir->modifiedby = auth('api')->user()->user;
+
+            $this->deleteFiles($upahsupir);
+            if (array_key_exists('gambar', $data)) {
+                $upahsupir->gambar = $this->storeFiles($data['gambar'], 'upahsupir');
+            } else {
+                $upahsupir->gambar = '';
+            }
+            if (!$upahsupir->save()) {
+                throw new \Exception("Error updating upah supir.");
+            }
+
+            $storedLogTrail = (new LogTrail())->processStore([
+                'namatabel' => strtoupper($upahsupir->getTable()),
+                'postingdari' => 'EDIT UPAH SUPIR',
+                'idtrans' => $upahsupir->id,
+                'nobuktitrans' => $upahsupir->id,
+                'aksi' => 'EDIT',
+                'datajson' => $upahsupir->toArray(),
+                'modifiedby' => $upahsupir->modifiedby
+            ]);
+
+            UpahSupirRincian::where('upahsupir_id', $upahsupir->id)->delete();
+            /* Store detail */
+            $detaillog = [];
+            for ($i = 0; $i < count($data['nominalsupir']); $i++) {
+                $upahsupirDetail = (new UpahSupirRincian())->processStore($upahsupir, [
+                    'upahsupir_id' => $upahsupir->id,
+                    'container_id' => $data['container_id'][$i],
+                    'statuscontainer_id' => $data['statuscontainer_id'][$i],
+                    'nominalsupir' => $data['nominalsupir'][$i],
+                    'nominalkenek' => $data['nominalkenek'][$i] ?? 0,
+                    'nominalkomisi' => $data['nominalkomisi'][$i] ?? 0,
+                    'nominaltol' =>  $data['nominaltol'][$i] ?? 0,
+                    'liter' => $data['liter'][$i] ?? 0,
+                ]);
+                $detaillog[] = $upahsupirDetail->toArray();
+            }
+            (new LogTrail())->processStore([
+                'namatabel' => strtoupper($upahsupirDetail->getTable()),
+                'postingdari' => 'EDIT UPAH SUPIR RINCIAN',
+                'idtrans' =>  $storedLogTrail['id'],
+                'nobuktitrans' => $upahsupir->id,
+                'aksi' => 'EDIT',
+                'datajson' => $detaillog,
+                'modifiedby' => auth('api')->user()->user,
+            ]);
+
+            return $upahsupir;
+        } catch (\Throwable $th) {
+            $this->deleteFiles($upahsupir);
+            throw $th;
+        }
+    }
+
+    public function processDestroy($id): UpahSupir
+    {
+        $getDetail = UpahSupirRincian::lockForUpdate()->where('upahsupir_id', $id)->get();
+
+        $upahSupir = new UpahSupir();
+        $upahSupir = $upahSupir->lockAndDestroy($id);
+
+        $storedLogTrail = (new LogTrail())->processStore([
+            'namatabel' => strtoupper($upahSupir->getTable()),
+            'postingdari' => 'DELETE UPAH SUPIR',
+            'idtrans' => $upahSupir->id,
+            'nobuktitrans' => $upahSupir->id,
+            'aksi' => 'DELETE',
+            'datajson' => $upahSupir->toArray(),
+            'modifiedby' => auth('api')->user()->name
+        ]);
+
+        $logTrailUpahSupirRincian = (new LogTrail())->processStore([
+            'namatabel' => 'UPAHSUPIRRINCIAN',
+            'postingdari' => 'DELETE UPAH SUPIR RINCIAN',
+            'idtrans' => $storedLogTrail['id'],
+            'nobuktitrans' => $upahSupir->id,
+            'aksi' => 'DELETE',
+            'datajson' => $getDetail->toArray(),
+            'modifiedby' => auth('api')->user()->name
+        ]);
+
+        return $upahSupir;
     }
 }

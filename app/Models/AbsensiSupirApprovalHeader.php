@@ -280,4 +280,49 @@ class AbsensiSupirApprovalHeader extends MyModel
     {
         return $query->skip($this->params['offset'])->take($this->params['limit']);
     }
+
+    public function getExport($id)
+    {
+        $this->setRequestParameters();
+
+        $getJudul = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))
+        ->select('text')
+        ->where('grp', 'JUDULAN LAPORAN')
+        ->where('subgrp', 'JUDULAN LAPORAN')
+        ->first();
+
+
+        $query = DB::table($this->table)->from(
+            DB::raw($this->table . " with (readuncommitted)")
+        )->select(
+            'absensisupirapprovalheader.id',
+            'absensisupirapprovalheader.nobukti',
+            'absensisupirapprovalheader.tglbukti',
+            'absensisupirapprovalheader.absensisupir_nobukti',
+            'absensisupirapprovalheader.keterangan',
+            'statusapproval.memo as statusapproval',
+            db::raw("(case when year(isnull(absensisupirapprovalheader.tglapproval,'1900/1/1'))=1900 then null else absensisupirapprovalheader.tglapproval end) as tglapproval"),
+            'absensisupirapprovalheader.userapproval',
+            'statusformat.memo as statusformat',
+            'absensisupirapprovalheader.pengeluaran_nobukti',
+            'akunpusat.keterangancoa as coakaskeluar',
+            'absensisupirapprovalheader.postingdari',
+            db::raw("(case when year(isnull(absensisupirapprovalheader.tglkaskeluar,'1900/1/1'))=1900 then null else absensisupirapprovalheader.tglkaskeluar end) as tglkaskeluar"),
+            'statuscetak.memo as statuscetak',
+            db::raw("(case when year(isnull(absensisupirapprovalheader.tglbukacetak,'1900/1/1'))=1900 then null else absensisupirapprovalheader.tglbukacetak end) as tglbukacetak"),
+            DB::raw("'Laporan Absensi Supir Header' as judulLaporan"),
+            DB::raw("'" . $getJudul->text . "' as judul")
+        )
+
+            //->whereBetween('tglbukti', [date('Y-m-d', strtotime(request()->tgldari)), date('Y-m-d', strtotime(request()->tglsampai))])
+            ->leftJoin(DB::raw("akunpusat with (readuncommitted)"), 'absensisupirapprovalheader.coakaskeluar', 'akunpusat.coa')
+            ->leftJoin(DB::raw("parameter as statusapproval with (readuncommitted)"), 'absensisupirapprovalheader.statusapproval', 'statusapproval.id')
+            ->leftJoin(DB::raw("parameter as statuscetak with (readuncommitted)"), 'absensisupirapprovalheader.statuscetak', 'statuscetak.id')
+            ->leftJoin(DB::raw("parameter as statusformat with (readuncommitted)"), 'absensisupirapprovalheader.statusformat', 'statusformat.id')
+            ->where("$this->table.id", $id);
+
+        $data = $query->first();
+        return $data;
+
+    }
 }

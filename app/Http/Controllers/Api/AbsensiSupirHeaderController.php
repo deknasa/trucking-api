@@ -17,6 +17,7 @@ use App\Models\AbsensiSupirDetail;
 use App\Models\KasGantungDetail;
 use App\Models\KasGantungHeader;
 use App\Models\Parameter;
+use App\Models\User;
 
 use App\Http\Requests\AbsensiSupirHeaderRequest;
 
@@ -751,6 +752,14 @@ class AbsensiSupirHeaderController extends Controller
 
         return response([
             'data' => $data
+        ]);
+    }
+
+    public function export($id)
+    {
+        $absensiSupirHeader = new AbsensiSupirHeader();
+        return response([
+            'data' => $absensiSupirHeader->getExport($id),
         ]);
     }
 }

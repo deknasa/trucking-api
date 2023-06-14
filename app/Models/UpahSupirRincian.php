@@ -72,6 +72,8 @@ class UpahSupirRincian extends MyModel
             'container.kodecontainer as container',
             'statuscontainer.kodestatuscontainer as statuscontainer',
             'upahsupirrincian.nominalsupir',
+            'upahsupirrincian.nominalkenek',
+            'upahsupirrincian.nominalkomisi',
             'upahsupir.tglmulaiberlaku',
             'upahsupir.modifiedby',
             'upahsupir.created_at',
@@ -398,6 +400,7 @@ class UpahSupirRincian extends MyModel
         }
     }
 
+<<<<<<< Updated upstream
     
     public function sort($query)
     {
@@ -439,8 +442,8 @@ class UpahSupirRincian extends MyModel
                             $query = $query->WhereRaw("format(upahsupir.tglmulaiberlaku,'dd-MM-yyyy') like '%$filters[data]%'");
                         } else if ($filters['field'] == 'created_at' || $filters['field'] == 'updated_at') {
                             $query = $query->whereRaw("format(upahsupir." . $filters['field'].", 'dd-MM-yyyy HH:mm:ss') LIKE '%$filters[data]%'");
-                        } elseif ($filters['field'] == 'nominalsupir') {
-                            $query = $query->whereRaw("format(upahsupirrincian.nominalsupir, '#,#0.00') LIKE '%$filters[data]%'");
+                        } else if ($filters['field'] == 'nominalsupir' || $filters['field'] == 'nominalkenek' || $filters['field'] == 'nominalkomisi') {
+                            $query = $query->whereRaw("format(upahsupirrincian.".$filters['field'].", '#,#0.00') LIKE '%$filters[data]%'");
                         } else {
                             $query = $query->where('upahsupir.' . $filters['field'], 'LIKE', "%$filters[data]%");
                         }
@@ -465,8 +468,8 @@ class UpahSupirRincian extends MyModel
                                 $query = $query->orWhereRaw("format(upahsupir.tglmulaiberlaku,'dd-MM-yyyy') like '%$filters[data]%'");
                             } else if ($filters['field'] == 'created_at' || $filters['field'] == 'updated_at') {
                                 $query = $query->orWhereRaw("format(upahsupir." . $filters['field'].", 'dd-MM-yyyy HH:mm:ss') LIKE '%$filters[data]%'");
-                            } elseif ($filters['field'] == 'nominalsupir') {
-                                $query = $query->orWhereRaw("format(upahsupirrincian.nominalsupir, '#,#0.00') LIKE '%$filters[data]%'");
+                            } else if ($filters['field'] == 'nominalsupir' || $filters['field'] == 'nominalkenek' || $filters['field'] == 'nominalkomisi') {
+                                $query = $query->orWhereRaw("format(upahsupirrincian.".$filters['field'].", '#,#0.00') LIKE '%$filters[data]%'");
                             } else {
                                 $query = $query->orWhere('upahsupir.' . $filters['field'], 'LIKE', "%$filters[data]%");
                             }
@@ -489,5 +492,25 @@ class UpahSupirRincian extends MyModel
     public function paginate($query)
     {
         return $query->skip($this->params['offset'])->take($this->params['limit']);
+=======
+    public function processStore(UpahSupir $upahsupir, array $data): UpahSupirRincian
+    {
+        $upahSupirRincian = new UpahSupirRincian();
+        $upahSupirRincian->upahsupir_id = $data['upahsupir_id'];
+        $upahSupirRincian->container_id = $data['container_id'];
+        $upahSupirRincian->statuscontainer_id = $data['statuscontainer_id'];
+        $upahSupirRincian->nominalsupir = $data['nominalsupir'];
+        $upahSupirRincian->nominalkenek = $data['nominalkenek'];
+        $upahSupirRincian->nominalkomisi = $data['nominalkomisi'];
+        $upahSupirRincian->nominaltol = $data['nominaltol'];
+        $upahSupirRincian->liter = $data['liter'];
+        $upahSupirRincian->modifiedby = auth('api')->user()->name;
+        
+        if (!$upahSupirRincian->save()) {
+            throw new \Exception("Error storing upah supir in detail.");
+        }
+
+        return $upahSupirRincian;
+>>>>>>> Stashed changes
     }
 }

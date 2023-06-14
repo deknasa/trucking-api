@@ -42,8 +42,8 @@ class StoreApprovalBukuCetakHeaderRequest extends FormRequest
 
         
         $rules = [
+            'tableId' => ['required','min:1'],
             'periode' => ['required',new ApprovalBukaCetak()],
-            'cetak' => ['required', Rule::in($statusCetak)],
             'table' => ['required', Rule::in($statusCetakUlang)],
         ];
         
@@ -54,7 +54,6 @@ class StoreApprovalBukuCetakHeaderRequest extends FormRequest
     {
         return [
             'periode' => 'Periode',
-            'cetak' => 'Proses Data',
             'table' => 'Table',
         ];
     }
@@ -63,8 +62,8 @@ class StoreApprovalBukuCetakHeaderRequest extends FormRequest
     {
         $controller = new ErrorController;
         return [
+            'tableId.required' => 'TRANSAKSI '.app(ErrorController::class)->geterror('WP')->keterangan,
             'periode.date_format' => app(ErrorController::class)->geterror('DF')->keterangan,
-            'cetak.required' => ':attribute' . ' ' . $controller->geterror('WI')->keterangan,
             'table.required' => ':attribute' . ' ' . $controller->geterror('WI')->keterangan,
         ];
     }

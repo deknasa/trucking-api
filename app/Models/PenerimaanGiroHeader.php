@@ -58,7 +58,8 @@ class PenerimaanGiroHeader extends MyModel
     public function get()
     {
         $this->setRequestParameters();
-
+        $periode = request()->periode ?? '';
+        $statusCetak = request()->statuscetak ?? '';
         $query = DB::table($this->table)->from(DB::raw("penerimaangiroheader with (readuncommitted)"))
             ->select(
                 'penerimaangiroheader.id',
@@ -86,6 +87,15 @@ class PenerimaanGiroHeader extends MyModel
             ->leftJoin(DB::raw("parameter as statusapproval with (readuncommitted)"), 'penerimaangiroheader.statusapproval', 'statusapproval.id');
         if (request()->tgldari && request()->tglsampai) {
             $query->whereBetween($this->table . '.tglbukti', [date('Y-m-d', strtotime(request()->tgldari)), date('Y-m-d', strtotime(request()->tglsampai))]);
+        }
+        
+        if ($periode != '') {
+            $periode = explode("-", $periode);
+            $query->whereRaw("MONTH(penerimaangiroheader.tglbukti) ='" . $periode[0] . "'")
+                ->whereRaw("year(penerimaangiroheader.tglbukti) ='" . $periode[1] . "'");
+        }
+        if ($statusCetak != '') {
+            $query->where("penerimaangiroheader.statuscetak", $statusCetak);
         }
 
         $this->sort($query);
