@@ -8,6 +8,7 @@ use App\Models\AbsensiSupirApprovalDetail;
 use App\Http\Requests\StoreAbsensiSupirApprovalDetailRequest;
 use App\Http\Requests\UpdateAbsensiSupirApprovalDetailRequest;
 use Illuminate\Http\Request;
+use App\Models\User;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\Validator;
@@ -19,8 +20,13 @@ class AbsensiSupirApprovalDetailController extends Controller
     {
         $absensiSupirApprovalDetail = new AbsensiSupirApprovalDetail();
 
+        $idUser = auth('api')->user()->id;
+        $getuser = User::select('name')
+            ->where('user.id', $idUser)->first();
+
         return response()->json([
             'data' => $absensiSupirApprovalDetail->get(),
+            'user' => $getuser,
             'attributes' => [
                 'totalRows' => $absensiSupirApprovalDetail->totalRows,
                 'totalPages' => $absensiSupirApprovalDetail->totalPages,

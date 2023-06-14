@@ -232,4 +232,73 @@ class StatusContainer extends MyModel
     {
         return $query->skip($this->params['offset'])->take($this->params['limit']);
     }
+
+    public function processStore(array $data): StatusContainer
+    {
+        $statusContainer = new StatusContainer();
+            $statusContainer->kodestatuscontainer = $data['kodestatuscontainer'];
+            $statusContainer->keterangan = $data['keterangan'] ?? '';
+            $statusContainer->statusaktif = $data['statusaktif'];
+            $statusContainer->modifiedby = auth('api')->user()->USER;
+            $data['sortname'] = $data['sortname'] ?? 'id';
+            $data['sortorder'] = $data['sortorder'] ?? 'asc';
+
+        if (!$statusContainer->save()) {
+            throw new \Exception('Error storing status container.');
+        }
+
+        (new LogTrail())->processStore([
+            'namatabel' => strtoupper($statusContainer->getTable()),
+            'postingdari' => 'ENTRY STATUS CONTAINER',
+            'idtrans' => $statusContainer->id,
+            'nobuktitrans' => $statusContainer->id,
+            'aksi' => 'ENTRY',
+            'datajson' => $statusContainer->toArray(),
+            'modifiedby' => $statusContainer->modifiedby
+        ]);
+
+        return $statusContainer;
+    }
+
+    public function processUpdate(StatusContainer $statusContainer, array $data): StatusContainer
+    {
+        $statusContainer->kodestatuscontainer = $data['kodestatuscontainer'];
+        $statusContainer->keterangan = $data['keterangan'] ?? '';
+        $statusContainer->statusaktif = $data['statusaktif'];
+        $statusContainer->modifiedby = auth('api')->user()->user;
+
+        if (!$statusContainer->save()) {
+            throw new \Exception('Error updating sta$statusContainer.');
+        }
+
+        (new LogTrail())->processStore([
+            'namatabel' => strtoupper($statusContainer->getTable()),
+            'postingdari' => 'EDIT STATUS CONTAINER',
+            'idtrans' => $statusContainer->id,
+            'nobuktitrans' => $statusContainer->id,
+            'aksi' => 'EDIT',
+            'datajson' => $statusContainer->toArray(),
+            'modifiedby' => $statusContainer->modifiedby
+        ]);
+
+        return $statusContainer;
+    }
+
+    public function processDestroy($id): StatusContainer
+    {
+        $statusContainer = new StatusContainer();
+        $statusContainer = $statusContainer->lockAndDestroy($id);
+
+        (new LogTrail())->processStore([
+            'namatabel' => strtoupper($statusContainer->getTable()),
+            'postingdari' => 'DELETE STATUS CONTAINER',
+            'idtrans' => $statusContainer->id,
+            'nobuktitrans' => $statusContainer->id,
+            'aksi' => 'DELETE',
+            'datajson' => $statusContainer->toArray(),
+            'modifiedby' => auth('api')->user()->user
+    ]);
+
+        return $statusContainer;
+    }
 }

@@ -258,4 +258,82 @@ class PengeluaranTrucking extends MyModel
     {
         return $query->skip($this->params['offset'])->take($this->params['limit']);
     }
+
+
+    public function processStore(array $data): PengeluaranTrucking
+    {
+        $pengeluaranTrucking = new PengeluaranTrucking();
+        $pengeluaranTrucking->kodepengeluaran = $data['kodepengeluaran'];
+        $pengeluaranTrucking->keterangan = $data['keterangan'] ?? '';
+        $pengeluaranTrucking->coadebet = $data['coadebet'] ?? '';;
+        $pengeluaranTrucking->coakredit = $data['coakredit'] ?? '';;
+        $pengeluaranTrucking->coapostingdebet = $data['coapostingdebet'];
+        $pengeluaranTrucking->coapostingkredit = $data['coapostingkredit'];
+        $pengeluaranTrucking->format = $data['format'];
+        $pengeluaranTrucking->modifiedby = auth('api')->user()->name;
+
+        // TOP:
+
+        if (!$pengeluaranTrucking->save()) {
+            throw new \Exception("Error storing service in header.");
+        }
+
+        (new LogTrail())->processStore([
+            'namatabel' => strtoupper($pengeluaranTrucking->getTable()),
+            'postingdari' => 'ENTRY PENGELUARAN TRUCKING',
+            'idtrans' => $pengeluaranTrucking->id,
+            'nobuktitrans' => $pengeluaranTrucking->id,
+            'aksi' => 'ENTRY',
+            'datajson' => $pengeluaranTrucking->toArray(),
+            'modifiedby' => $pengeluaranTrucking->modifiedby
+        ]);
+
+        return $pengeluaranTrucking;
+    }
+
+    public function processUpdate(PengeluaranTrucking $pengeluaranTrucking, array $data): PengeluaranTrucking
+    {
+        $pengeluaranTrucking->kodepengeluaran = $data['kodepengeluaran'];
+        $pengeluaranTrucking->keterangan = $data['keterangan'];
+        $pengeluaranTrucking->coadebet = $data['coadebet'] ?? '';
+        $pengeluaranTrucking->coakredit = $data['coakredit'] ?? '';
+        $pengeluaranTrucking->coapostingdebet = $data['coapostingdebet'] ?? '';
+        $pengeluaranTrucking->coapostingkredit = $data['coapostingkredit'] ?? '';
+        $pengeluaranTrucking->format = $data['format'];
+        $pengeluaranTrucking->modifiedby = auth('api')->user()->name;
+
+        if (!$pengeluaranTrucking->save()) {
+            throw new \Exception("Error update service in header.");
+        }
+
+        (new LogTrail())->processStore([
+            'namatabel' => strtoupper($pengeluaranTrucking->getTable()),
+            'postingdari' => 'EDIT PENGELUARAN TRUCKING',
+            'idtrans' => $pengeluaranTrucking->id,
+            'nobuktitrans' => $pengeluaranTrucking->id,
+            'aksi' => 'EDIT',
+            'datajson' => $pengeluaranTrucking->toArray(),
+            'modifiedby' => $pengeluaranTrucking->modifiedby
+        ]);
+
+        return $pengeluaranTrucking;
+    }
+
+    public function processDestroy($id): PengeluaranTrucking
+    {
+        $pengeluaranTrucking = new PengeluaranTrucking();
+        $pengeluaranTrucking = $pengeluaranTrucking->lockAndDestroy($id);
+
+        (new LogTrail())->processStore([
+            'namatabel' => strtoupper($pengeluaranTrucking->getTable()),
+            'postingdari' => 'DELETE PENGELUARAN TRUCKING',
+            'idtrans' => $pengeluaranTrucking->id,
+            'nobuktitrans' => $pengeluaranTrucking->id,
+            'aksi' => 'DELETE',
+            'datajson' => $pengeluaranTrucking->toArray(),
+            'modifiedby' => auth('api')->user()->name
+        ]);
+
+        return $pengeluaranTrucking;
+    }
 }

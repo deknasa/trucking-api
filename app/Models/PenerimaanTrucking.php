@@ -61,10 +61,10 @@ class PenerimaanTrucking extends MyModel
         $this->setRequestParameters();
 
         $getJudul = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))
-        ->select('text')
-        ->where('grp', 'JUDULAN LAPORAN')
-        ->where('subgrp', 'JUDULAN LAPORAN')
-        ->first();
+            ->select('text')
+            ->where('grp', 'JUDULAN LAPORAN')
+            ->where('subgrp', 'JUDULAN LAPORAN')
+            ->first();
 
         $query = DB::table($this->table)->from(DB::raw("$this->table with (readuncommitted)"))
             ->select(
@@ -129,7 +129,7 @@ class PenerimaanTrucking extends MyModel
 
         return $query->first();
     }
-    
+
     public function selectColumns($query)
     {
         return $query->select(
@@ -213,7 +213,6 @@ class PenerimaanTrucking extends MyModel
                         } else {
                             // $query = $query->where($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
                             $query = $query->whereRaw($this->table . ".[" .  $filters['field'] . "] LIKE '%" . escapeLike($filters['data']) . "%' escape '|'");
-
                         }
                     }
 
@@ -235,7 +234,6 @@ class PenerimaanTrucking extends MyModel
                         } else {
                             // $query = $query->orWhere($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
                             $query = $query->OrwhereRaw($this->table . ".[" .  $filters['field'] . "] LIKE '%" . escapeLike($filters['data']) . "%' escape '|'");
-
                         }
                     }
 
@@ -255,5 +253,80 @@ class PenerimaanTrucking extends MyModel
     public function paginate($query)
     {
         return $query->skip($this->params['offset'])->take($this->params['limit']);
+    }
+
+    public function processStore(array $data): PenerimaanTrucking
+    {
+        $penerimaanTrucking = new PenerimaanTrucking();
+        $penerimaanTrucking->kodepenerimaan = $data['kodepenerimaan'];
+        $penerimaanTrucking->keterangan = $data['keterangan'] ?? '';
+        $penerimaanTrucking->coadebet = $data['coadebet'] ?? '';
+        $penerimaanTrucking->coakredit = $data['coakredit'] ?? '';
+        $penerimaanTrucking->coapostingdebet = $data['coapostingdebet'] ?? '';
+        $penerimaanTrucking->coapostingkredit = $data['coapostingkredit'] ?? '';
+        $penerimaanTrucking->format = $data['format'];
+        $penerimaanTrucking->modifiedby = auth('api')->user()->name;
+
+        if (!$penerimaanTrucking->save()) {
+            throw new \Exception("Error storing service in header.");
+        }
+
+        (new LogTrail())->processStore([
+            'namatabel' => strtoupper($penerimaanTrucking->getTable()),
+            'postingdari' => 'ENTRY PENERIMAAN TRUCKING',
+            'idtrans' => $penerimaanTrucking->id,
+            'nobuktitrans' => $penerimaanTrucking->id,
+            'aksi' => 'ENTRY',
+            'datajson' => $penerimaanTrucking->toArray(),
+            'modifiedby' => $penerimaanTrucking->modifiedby
+        ]);
+        // $request->sortname = $request->sortname ?? 'id';
+        // $request->sortorder = $request->sortorder ?? 'asc';
+
+        return $penerimaanTrucking;
+    }
+    public function processUpdate(PenerimaanTrucking $penerimaanTrucking, array $data): PenerimaanTrucking
+    {
+        $penerimaanTrucking->kodepenerimaan = $data['kodepenerimaan'];
+        $penerimaanTrucking->keterangan = $data['keterangan'] ?? '';
+        $penerimaanTrucking->coadebet = $data['coadebet'] ?? '';
+        $penerimaanTrucking->coakredit = $data['coakredit'] ?? '';
+        $penerimaanTrucking->coapostingdebet = $data['coapostingdebet'] ?? '';
+        $penerimaanTrucking->coapostingkredit = $data['coapostingkredit'] ?? '';
+        $penerimaanTrucking->format = $data['format'];
+        $penerimaanTrucking->modifiedby = auth('api')->user()->name;
+
+        if (!$penerimaanTrucking->save()) {
+            throw new \Exception("Error update service in header.");
+        }
+
+        (new LogTrail())->processStore([
+            'namatabel' => strtoupper($penerimaanTrucking->getTable()),
+            'postingdari' => 'EDIT PENERIMAAN TRUCKING',
+            'idtrans' => $penerimaanTrucking->id,
+            'nobuktitrans' => $penerimaanTrucking->id,
+            'aksi' => 'EDIT',
+            'datajson' => $penerimaanTrucking->toArray(),
+            'modifiedby' => $penerimaanTrucking->modifiedby
+        ]);
+
+        return $penerimaanTrucking;
+    }
+    public function processDestroy($id): PenerimaanTrucking
+    {
+        $penerimaanTrucking = new PenerimaanTrucking();
+        $penerimaanTrucking = $penerimaanTrucking->lockAndDestroy($id);
+
+        (new LogTrail())->processStore([
+            'namatabel' => strtoupper($penerimaanTrucking->getTable()),
+            'postingdari' => 'DELETE PENERIMAAN TRUCKING',
+            'idtrans' => $penerimaanTrucking->id,
+            'nobuktitrans' => $penerimaanTrucking->id,
+            'aksi' => 'DELETE',
+            'datajson' => $penerimaanTrucking->toArray(),
+            'modifiedby' => auth('api')->user()->name
+        ]);
+
+        return $penerimaanTrucking;
     }
 }

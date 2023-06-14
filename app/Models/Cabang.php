@@ -158,8 +158,8 @@ class Cabang extends MyModel
 
         Schema::create($temp, function ($table) {
             $table->bigInteger('id')->nullable();
-            $table->string('grp', 500)->nullable();
-            $table->string('subgrp', 250)->nullable();
+            $table->string('kodecabang', 500)->nullable();
+            $table->string('namacabang', 250)->nullable();
             $table->string('statusaktif', 500)->nullable();
             $table->string('modifiedby', 50)->nullable();
             $table->dateTime('created_at')->nullable();
@@ -174,8 +174,8 @@ class Cabang extends MyModel
 
         DB::table($temp)->insertUsing([
             'id',
-            'grp',
-            'subgrp',
+            'kodecabang',
+            'namacabang',
             'statusaktif',
             'modifiedby',
             'created_at',
@@ -265,7 +265,7 @@ class Cabang extends MyModel
 
     public function processUpdate(Cabang $cabang, array $data): Cabang
     {
-        $cabang->kodecabang = $data['kodecabang'];
+        $cabang->kodecaban = $data['kodecabang'];
         $cabang->namacabang = $data['namacabang'];
         $cabang->statusaktif = $data['statusaktif'];
         $cabang->modifiedby = auth('api')->user()->user;

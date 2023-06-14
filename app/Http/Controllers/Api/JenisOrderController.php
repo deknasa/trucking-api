@@ -16,6 +16,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Database\QueryException;
+use Illuminate\Http\JsonResponse;
 
 class JenisOrderController extends Controller
 {
@@ -78,42 +79,18 @@ class JenisOrderController extends Controller
     /**
      * @ClassName 
      */
-    public function store(StoreJenisOrderRequest $request)
+    public function store(StoreJenisOrderRequest $request) : JsonResponse
     {
         DB::beginTransaction();
 
         try {
-            $jenisorder = new JenisOrder();
-            $jenisorder->kodejenisorder = $request->kodejenisorder;
-            $jenisorder->statusaktif = $request->statusaktif;
-            $jenisorder->keterangan = $request->keterangan ?? '';
-            $jenisorder->modifiedby = auth('api')->user()->name;
-            $request->sortname = $request->sortname ?? 'id';
-            $request->sortorder = $request->sortorder ?? 'asc';
-
-            if ($jenisorder->save()) {
-                $logTrail = [
-                    'namatabel' => strtoupper($jenisorder->getTable()),
-                    'postingdari' => 'ENTRY JENIS ORDER',
-                    'idtrans' => $jenisorder->id,
-                    'nobuktitrans' => $jenisorder->id,
-                    'aksi' => 'ENTRY',
-                    'datajson' => $jenisorder->toArray(),
-                    'modifiedby' => $jenisorder->modifiedby
-                ];
-
-                $validatedLogTrail = new StoreLogTrailRequest($logTrail);
-                $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
-
-                DB::commit();
-            }
-
-            /* Set position and page */
-            $selected = $this->getPosition($jenisorder, $jenisorder->getTable());
-            $jenisorder->position = $selected->position;
+            $jenisorder = (new JenisOrder())->processStore($request->all());
+            $jenisorder->position = $this->getPosition($jenisorder, $jenisorder->getTable())->position;
             $jenisorder->page = ceil($jenisorder->position / ($request->limit ?? 10));
 
-            return response([
+                DB::commit();
+        
+            return response()->json([
                 'status' => true,
                 'message' => 'Berhasil disimpan',
                 'data' => $jenisorder
@@ -135,40 +112,21 @@ class JenisOrderController extends Controller
     /**
      * @ClassName 
      */
-    public function update(UpdateJenisOrderRequest $request, JenisOrder $jenisorder)
+    public function update(UpdateJenisOrderRequest $request, JenisOrder $jenisorder) : JsonResponse
     {
         DB::beginTransaction();
         try {
-            $jenisorder->kodejenisorder = $request->kodejenisorder;
-            $jenisorder->keterangan = $request->keterangan ?? '';
-            $jenisorder->statusaktif = $request->statusaktif;
-            $jenisorder->modifiedby = auth('api')->user()->name;
-
-            if ($jenisorder->save()) {
-                $logTrail = [
-                    'namatabel' => strtoupper($jenisorder->getTable()),
-                    'postingdari' => 'EDIT JENIS ORDER',
-                    'idtrans' => $jenisorder->id,
-                    'nobuktitrans' => $jenisorder->id,
-                    'aksi' => 'EDIT',
-                    'datajson' => $jenisorder->toArray(),
-                    'modifiedby' => $jenisorder->modifiedby
-                ];
-
-                $validatedLogTrail = new StoreLogTrailRequest($logTrail);
-                app(LogTrailController::class)->store($validatedLogTrail);
-                DB::commit();
-            }
-            /* Set position and page */
-            $selected = $this->getPosition($jenisorder, $jenisorder->getTable());
-            $jenisorder->position = $selected->position;
+            $jenisorder = (new JenisOrder())->processUpdate($jenisorder, $request->all());
+            $jenisorder->position = $this->getPosition($jenisorder, $jenisorder->getTable())->position;
             $jenisorder->page = ceil($jenisorder->position / ($request->limit ?? 10));
 
-            return response([
-                'status' => true,
-                'message' => 'Berhasil diubah',
-                'data' => $jenisorder
-            ]);
+            DB::commit();
+
+                return response()->json([
+                    'status' => true,
+                    'message' => 'Berhasil diubah',
+                    'data' => $jenisorder
+                ]);
         } catch (\Throwable $th) {
             DB::rollBack();
             throw $th;
@@ -182,43 +140,24 @@ class JenisOrderController extends Controller
     public function destroy(Request $request, $id)
     {
         DB::beginTransaction();
-
-        $jenisOrder = new JenisOrder();
-        $jenisOrder = $jenisOrder->lockAndDestroy($id);
-        if ($jenisOrder) {
-            $logTrail = [
-                'namatabel' => strtoupper($jenisOrder->getTable()),
-                'postingdari' => 'DELETE JENIS ORDER',
-                'idtrans' => $jenisOrder->id,
-                'nobuktitrans' => $jenisOrder->id,
-                'aksi' => 'DELETE',
-                'datajson' => $jenisOrder->toArray(),
-                'modifiedby' => auth('api')->user()->name
-            ];
-
-            $validatedLogTrail = new StoreLogTrailRequest($logTrail);
-            app(LogTrailController::class)->store($validatedLogTrail);
-
+        
+        try {
+            $jenisorder = (new JenisOrder())->processDestroy($id);
+            $selected = $this->getPosition($jenisorder, $jenisorder->getTable(), true);
+            $jenisorder->position = $selected->position;
+            $jenisorder->id = $selected->id;
+            $jenisorder->page = ceil($jenisorder->position / ($request->limit ?? 10));
 
             DB::commit();
-            /* Set position and page */
-            $selected = $this->getPosition($jenisOrder, $jenisOrder->getTable(), true);
-            $jenisOrder->position = $selected->position;
-            $jenisOrder->id = $selected->id;
-            $jenisOrder->page = ceil($jenisOrder->position / ($request->limit ?? 10));
 
-            return response([
-                'status' => true,
+            return response()->json([
                 'message' => 'Berhasil dihapus',
-                'data' => $jenisOrder
+                'data' => $jenisorder
             ]);
-        } else {
+        } catch (\Throwable $th) {
             DB::rollBack();
 
-            return response([
-                'status' => false,
-                'message' => 'Gagal dihapus'
-            ]);
+            throw $th;
         }
     }
 

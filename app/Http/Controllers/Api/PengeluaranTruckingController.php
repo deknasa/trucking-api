@@ -10,6 +10,7 @@ use App\Http\Requests\UpdatePengeluaranTruckingRequest;
 use App\Http\Requests\DestroyPengeluaranTruckingRequest;
 use App\Http\Requests\RangeExportReportRequest;
 use Illuminate\Database\QueryException;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
@@ -67,48 +68,19 @@ class PengeluaranTruckingController extends Controller
     /**
      * @ClassName 
      */
-    public function store(StorePengeluaranTruckingRequest $request)
+    public function store(StorePengeluaranTruckingRequest $request): JsonResponse
     {
         DB::beginTransaction();
 
         try {
-            $pengeluaranTrucking = new PengeluaranTrucking();
-            $pengeluaranTrucking->kodepengeluaran = $request->kodepengeluaran;
-            $pengeluaranTrucking->keterangan = $request->keterangan ?? '';
-            $pengeluaranTrucking->coadebet = $request->coadebet ?? '';;
-            $pengeluaranTrucking->coakredit = $request->coakredit ?? '';;
-            $pengeluaranTrucking->coapostingdebet = $request->coapostingdebet;
-            $pengeluaranTrucking->coapostingkredit = $request->coapostingkredit;
-            $pengeluaranTrucking->format = $request->format;
-            $pengeluaranTrucking->modifiedby = auth('api')->user()->name;
-
-            TOP:
-            if ($pengeluaranTrucking->save()) {
-                $logTrail = [
-                    'namatabel' => strtoupper($pengeluaranTrucking->getTable()),
-                    'postingdari' => 'ENTRY PENGELUARAN TRUCKING',
-                    'idtrans' => $pengeluaranTrucking->id,
-                    'nobuktitrans' => $pengeluaranTrucking->id,
-                    'aksi' => 'ENTRY',
-                    'datajson' => $pengeluaranTrucking->toArray(),
-                    'modifiedby' => $pengeluaranTrucking->modifiedby
-                ];
-
-                $validatedLogTrail = new StoreLogTrailRequest($logTrail);
-                $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
-            }
-
-            $request->sortname = $request->sortname ?? 'id';
-            $request->sortorder = $request->sortorder ?? 'asc';
-            DB::commit();
-
-            /* Set position and page */
-            $selected = $this->getPosition($pengeluaranTrucking, $pengeluaranTrucking->getTable());
-            $pengeluaranTrucking->position = $selected->position;
+            $pengeluaranTrucking = (new PengeluaranTrucking())->processStore($request->all());
+            $pengeluaranTrucking->position = $this->getPosition($pengeluaranTrucking, $pengeluaranTrucking->getTable())->position;
             $pengeluaranTrucking->page = ceil($pengeluaranTrucking->position / ($request->limit ?? 10));
 
 
-            return response([
+            DB::commit();
+
+            return response()->json([
                 'status' => true,
                 'message' => 'Berhasil disimpan',
                 'data' => $pengeluaranTrucking
@@ -116,7 +88,6 @@ class PengeluaranTruckingController extends Controller
         } catch (\Throwable $th) {
             DB::rollBack();
             throw $th;
-            return response($th->getMessage());
         }
     }
 
@@ -132,43 +103,17 @@ class PengeluaranTruckingController extends Controller
     /**
      * @ClassName 
      */
-    public function update(UpdatePengeluaranTruckingRequest $request, PengeluaranTrucking $pengeluaranTrucking)
+    public function update(UpdatePengeluaranTruckingRequest $request, PengeluaranTrucking $pengeluaranTrucking): JsonResponse
     {
         DB::beginTransaction();
         try {
-            $pengeluaranTrucking->kodepengeluaran = $request->kodepengeluaran;
-            $pengeluaranTrucking->keterangan = $request->keterangan;
-            $pengeluaranTrucking->coadebet = $request->coadebet ?? '';
-            $pengeluaranTrucking->coakredit = $request->coakredit ?? '';
-            $pengeluaranTrucking->coapostingdebet = $request->coapostingdebet ?? '';
-            $pengeluaranTrucking->coapostingkredit = $request->coapostingkredit ?? '';
-            $pengeluaranTrucking->format = $request->format;
-            $pengeluaranTrucking->modifiedby = auth('api')->user()->name;
-
-            if ($pengeluaranTrucking->save()) {
-                $logTrail = [
-                    'namatabel' => strtoupper($pengeluaranTrucking->getTable()),
-                    'postingdari' => 'EDIT PENGELUARAN TRUCKING',
-                    'idtrans' => $pengeluaranTrucking->id,
-                    'nobuktitrans' => $pengeluaranTrucking->id,
-                    'aksi' => 'EDIT',
-                    'datajson' => $pengeluaranTrucking->toArray(),
-                    'modifiedby' => $pengeluaranTrucking->modifiedby
-                ];
-
-                $validatedLogTrail = new StoreLogTrailRequest($logTrail);
-                app(LogTrailController::class)->store($validatedLogTrail);
-            }
-            $request->sortname = $request->sortname ?? 'id';
-            $request->sortorder = $request->sortorder ?? 'asc';
-
-            DB::commit();
-            /* Set position and page */
-            $selected = $this->getPosition($pengeluaranTrucking, $pengeluaranTrucking->getTable());
-            $pengeluaranTrucking->position = $selected->position;
+            $pengeluaranTrucking = (new PengeluaranTrucking())->processUpdate($pengeluaranTrucking, $request->all());
+            $pengeluaranTrucking->position = $this->getPosition($pengeluaranTrucking, $pengeluaranTrucking->getTable())->position;
             $pengeluaranTrucking->page = ceil($pengeluaranTrucking->position / ($request->limit ?? 10));
 
-            return response([
+            DB::commit();
+
+            return response()->json([
                 'status' => true,
                 'message' => 'Berhasil diubah',
                 'data' => $pengeluaranTrucking
@@ -176,7 +121,6 @@ class PengeluaranTruckingController extends Controller
         } catch (\Throwable $th) {
             DB::rollBack();
             throw $th;
-            return response($th->getMessage());
         }
     }
     /**
@@ -185,41 +129,23 @@ class PengeluaranTruckingController extends Controller
     public function destroy(DestroyPengeluaranTruckingRequest $request, $id)
     {
         DB::beginTransaction();
-        $pengeluaranTrucking = new PengeluaranTrucking();
-        $pengeluaranTrucking = $pengeluaranTrucking->lockAndDestroy($id);
-        if ($pengeluaranTrucking) {
-            $logTrail = [
-                'namatabel' => strtoupper($pengeluaranTrucking->getTable()),
-                'postingdari' => 'DELETE PENGELUARAN TRUCKING',
-                'idtrans' => $pengeluaranTrucking->id,
-                'nobuktitrans' => $pengeluaranTrucking->id,
-                'aksi' => 'DELETE',
-                'datajson' => $pengeluaranTrucking->toArray(),
-                'modifiedby' => auth('api')->user()->name
-            ];
-
-            $validatedLogTrail = new StoreLogTrailRequest($logTrail);
-            app(LogTrailController::class)->store($validatedLogTrail);
-
-            DB::commit();
-
+        try {
+            $pengeluaranTrucking = (new PengeluaranTrucking())->processDestroy($id);
             $selected = $this->getPosition($pengeluaranTrucking, $pengeluaranTrucking->getTable(), true);
             $pengeluaranTrucking->position = $selected->position;
             $pengeluaranTrucking->id = $selected->id;
             $pengeluaranTrucking->page = ceil($pengeluaranTrucking->position / ($request->limit ?? 10));
 
-            return response([
-                'status' => true,
+            DB::commit();
+
+            return response()->json([
                 'message' => 'Berhasil dihapus',
                 'data' => $pengeluaranTrucking
             ]);
-        } else {
+        } catch (\Throwable $th) {
             DB::rollBack();
 
-            return response([
-                'status' => false,
-                'message' => 'Gagal dihapus'
-            ]);
+            throw $th;
         }
     }
 

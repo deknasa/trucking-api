@@ -27,6 +27,8 @@ class PengeluaranStokHeader extends MyModel
     public function get()
     {
         $this->setRequestParameters();
+        $periode = request()->periode ?? '';
+        $statusCetak = request()->statuscetak ?? '';
 
         $query = DB::table($this->table);
         $query = $this->selectColumns($query)
@@ -48,6 +50,14 @@ class PengeluaranStokHeader extends MyModel
         }
         if (request()->pengeluaranheader_id) {
             $query->where('pengeluaranstokheader.pengeluaranstok_id', request()->pengeluaranheader_id);
+        }
+        if ($periode != '') {
+            $periode = explode("-", $periode);
+            $query->whereRaw("MONTH(pengeluaranstokheader.tglbukti) ='" . $periode[0] . "'")
+                ->whereRaw("year(pengeluaranstokheader.tglbukti) ='" . $periode[1] . "'");
+        }
+        if ($statusCetak != '') {
+            $query->where("pengeluaranstokheader.statuscetak", $statusCetak);
         }
 
         $this->totalRows = $query->count();

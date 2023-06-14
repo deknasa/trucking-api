@@ -22,7 +22,11 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Database\QueryException;
 use PhpOffice\PhpSpreadsheet\IOFactory;
+<<<<<<< Updated upstream
 use App\Http\Requests\GetUpahSupirRangeRequest;
+=======
+use Illuminate\Http\JsonResponse;
+>>>>>>> Stashed changes
 
 class TarifController extends Controller
 {
@@ -122,91 +126,18 @@ class TarifController extends Controller
     /**
      * @ClassName 
      */
-    public function store(StoreTarifRequest $request)
+    public function store(StoreTarifRequest $request): JsonResponse
     {
-        // dd($request->all());
         DB::beginTransaction();
 
         try {
-            $tarif = new Tarif();
-            $tarif->parent_id = $request->parent_id ?? '';
-            $tarif->upahsupir_id = $request->upahsupir_id ?? '';
-            $tarif->tujuan = $request->tujuan;
-            $tarif->penyesuaian = $request->penyesuaian;
-            $tarif->statusaktif = $request->statusaktif;
-            $tarif->statussistemton = $request->statussistemton;
-            $tarif->kota_id = $request->kota_id;
-            $tarif->zona_id = $request->zona_id ?? '';
-            $tarif->tglmulaiberlaku = date('Y-m-d', strtotime($request->tglmulaiberlaku));
-            $tarif->statuspenyesuaianharga = $request->statuspenyesuaianharga;
-            $tarif->keterangan = $request->keterangan;
-            $tarif->modifiedby = auth('api')->user()->name;
-            if ($tarif->save()) {
-
-
-                $logTrail = [
-                    'namatabel' => strtoupper($tarif->getTable()),
-                    'postingdari' => 'ENTRY TARIF',
-                    'idtrans' => $tarif->id,
-                    'nobuktitrans' => $tarif->id,
-                    'aksi' => 'ENTRY',
-                    'datajson' => $tarif->toArray(),
-                    'modifiedby' => $tarif->modifiedby
-                ];
-
-                $validatedLogTrail = new StoreLogTrailRequest($logTrail);
-                $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
-
-                // dd(count($request->container_id));
-                $detaillog = [];
-                for ($i = 0; $i < count($request->container_id); $i++) {
-
-                    $datadetail = [
-                        'tarif_id' => $tarif->id,
-                        'container_id' => $request->container_id[$i],
-                        'nominal' => $request->nominal[$i],
-                        'modifiedby' => auth('api')->user()->name,
-                    ];
-
-                    $data = new StoreTarifRincianRequest($datadetail);
-                    $datadetails = app(TarifRincianController::class)->store($data);
-                    if ($datadetails['error']) {
-                        return response($datadetails, 422);
-                    } else {
-                        $iddetail = $datadetails['id'];
-                        $tabeldetail = $datadetails['tabel'];
-                    }
-
-
-                    $detaillog[] = $datadetails['detail']->toArray();
-                }
-
-                $datalogtrail = [
-                    'namatabel' => strtoupper($tabeldetail),
-                    'postingdari' => 'ENTRY UPAH SUPIR RINCIAN',
-                    'idtrans' =>  $storedLogTrail['id'],
-                    'nobuktitrans' => $tarif->id,
-                    'aksi' => 'ENTRY',
-                    'datajson' => $detaillog,
-                    'modifiedby' => $request->modifiedby,
-                ];
-
-                $data = new StoreLogTrailRequest($datalogtrail);
-                app(LogTrailController::class)->store($data);
-
-                $request->sortname = $request->sortname ?? 'id';
-                $request->sortorder = $request->sortorder ?? 'asc';
-
-                DB::commit();
-            }
-
-
-            /* Set position and page */
-            $selected = $this->getPosition($tarif, $tarif->getTable());
-            $tarif->position = $selected->position;
+            $tarif = (new Tarif())->processStore($request->all());
+            $tarif->position = $this->getPosition($tarif, $tarif->getTable())->position;
             $tarif->page = ceil($tarif->position / ($request->limit ?? 10));
 
-            return response([
+            DB::commit();
+            
+            return response()->json([
                 'status' => true,
                 'message' => 'Berhasil disimpan',
                 'data' => $tarif
@@ -238,89 +169,17 @@ class TarifController extends Controller
     /**
      * @ClassName 
      */
-    public function update(UpdateTarifRequest $request, Tarif $tarif)
+    public function update(UpdateTarifRequest $request, Tarif $tarif): JsonResponse
     {
         DB::beginTransaction();
-
         try {
-            $tarif->parent_id = $request->parent_id ?? '';
-            $tarif->upahsupir_id = $request->upahsupir_id ?? '';
-            $tarif->tujuan = $request->tujuan;
-            $tarif->penyesuaian = $request->penyesuaian;
-            $tarif->statusaktif = $request->statusaktif;
-            $tarif->statussistemton = $request->statussistemton;
-            $tarif->kota_id = $request->kota_id;
-            $tarif->zona_id = $request->zona_id ?? '';
-            $tarif->tglmulaiberlaku = date('Y-m-d', strtotime($request->tglmulaiberlaku));
-            $tarif->statuspenyesuaianharga = $request->statuspenyesuaianharga;
-            $tarif->keterangan = $request->keterangan;
-            $tarif->modifiedby = auth('api')->user()->name;
-
-            if ($tarif->save()) {
-                $logTrail = [
-                    'namatabel' => strtoupper($tarif->getTable()),
-                    'postingdari' => 'EDIT TARIF',
-                    'idtrans' => $tarif->id,
-                    'nobuktitrans' => $tarif->id,
-                    'aksi' => 'EDIT',
-                    'datajson' => $tarif->toArray(),
-                    'modifiedby' => $tarif->modifiedby
-                ];
-
-                $validatedLogTrail = new StoreLogTrailRequest($logTrail);
-                $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
-
-                // TarifRincian::where('tarif_id', $tarif->id)->delete();
-
-                $detaillog = [];
-                for ($i = 0; $i < count($request->container_id); $i++) {
-
-                    $datadetail = [
-                        'tarif_id' => $tarif->id,
-                        'detail_id' => $request->detail_id[$i],
-                        'container_id' => $request->container_id[$i],
-                        'nominal' => $request->nominal[$i],
-                        'modifiedby' => auth('api')->user()->name,
-                    ];
-
-                    $data = new StoreTarifRincianRequest($datadetail);
-                    $datadetails = app(TarifRincianController::class)->update($data);
-                    if ($datadetails['error']) {
-                        return response($datadetails, 422);
-                    } else {
-                        $iddetail = $datadetails['id'];
-                        $tabeldetail = $datadetails['tabel'];
-                    }
-
-
-                    $detaillog[] = $datadetails['detail']->toArray();
-                    // $detaillog[] = $data->all();
-                }
-                // return response($detaillog,422);
-                $datalogtrail = [
-                    'namatabel' => strtoupper($tabeldetail),
-                    'postingdari' => 'ENTRY UPAH SUPIR RINCIAN',
-                    'idtrans' =>  $storedLogTrail['id'],
-                    'nobuktitrans' => $tarif->id,
-                    'aksi' => 'ENTRY',
-                    'datajson' => $detaillog,
-                    'modifiedby' => $request->modifiedby,
-                ];
-
-                $data = new StoreLogTrailRequest($datalogtrail);
-                app(LogTrailController::class)->store($data);
-
-                $request->sortname = $request->sortname ?? 'id';
-                $request->sortorder = $request->sortorder ?? 'asc';
-
-                DB::commit();
-            }
-            /* Set position and page */
-            $selected = $this->getPosition($tarif, $tarif->getTable());
-            $tarif->position = $selected->position;
+            $tarif = (new Tarif())->processUpdate($tarif, $request->all());
+            $tarif->position = $this->getPosition($tarif, $tarif->getTable())->position;
             $tarif->page = ceil($tarif->position / ($request->limit ?? 10));
 
-            return response([
+            DB::commit();
+
+            return response()->json([
                 'status' => true,
                 'message' => 'Berhasil diubah',
                 'data' => $tarif
@@ -340,41 +199,23 @@ class TarifController extends Controller
 
         DB::beginTransaction();
 
-        $tarif = new Tarif();
-        $tarif = $tarif->lockAndDestroy($id);
-        if ($tarif) {
-            $logTrail = [
-                'namatabel' => strtoupper($tarif->getTable()),
-                'postingdari' => 'DELETE TARIF',
-                'idtrans' => $tarif->id,
-                'nobuktitrans' => $tarif->id,
-                'aksi' => 'DELETE',
-                'datajson' => $tarif->toArray(),
-                'modifiedby' => auth('api')->user()->name
-            ];
-
-            $validatedLogTrail = new StoreLogTrailRequest($logTrail);
-            app(LogTrailController::class)->store($validatedLogTrail);
-
-            DB::commit();
-            /* Set position and page */
+        try {
+            $tarif = (new Tarif())->processDestroy($id);
             $selected = $this->getPosition($tarif, $tarif->getTable(), true);
             $tarif->position = $selected->position;
             $tarif->id = $selected->id;
             $tarif->page = ceil($tarif->position / ($request->limit ?? 10));
+            
+            DB::commit();
 
             return response([
                 'status' => true,
                 'message' => 'Berhasil dihapus',
                 'data' => $tarif
             ]);
-        } else {
+        } catch (\Throwable $th) {
             DB::rollBack();
-
-            return response([
-                'status' => false,
-                'message' => 'Gagal dihapus'
-            ]);
+            throw $th;
         }
     }
 
@@ -472,7 +313,7 @@ class TarifController extends Controller
             } else {
                 return response([
                     'status' => true,
-                    'keterangan' => 'data berhasil di update',
+                    'keterangan' => 'harga berhasil di update',
                     'data' => $tarifrincian->updateharga($data),
                     'kondisi' => $cekdata
                 ]);

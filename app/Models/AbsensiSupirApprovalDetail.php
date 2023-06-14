@@ -60,7 +60,6 @@ class AbsensiSupirApprovalDetail extends MyModel
                 "trado.kodetrado as trado",
                 "supirutama.namasupir as supir",
                 "supirserap.namasupir as supirserap",
-
             )
 
             ->leftJoin("absensisupirapprovalheader", "$this->table.absensisupirapproval_id", "absensisupirapprovalheader.id")
@@ -68,7 +67,10 @@ class AbsensiSupirApprovalDetail extends MyModel
             ->leftJoin("supir as supirutama", "$this->table.supir_id", "supirutama.id")
             ->leftJoin("supir as supirserap", "$this->table.supirserap_id", "supirserap.id");
 
+            
+
             $query->where( $this->table.".absensisupirapproval_id", "=", request()->absensisupirapproval_id);
+
             $this->filter($query);
             $this->totalRows = $query->count();
             $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;

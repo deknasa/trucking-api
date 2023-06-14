@@ -294,4 +294,136 @@ class UpahRitasi extends MyModel
     {
         return $query->skip($this->params['offset'])->take($this->params['limit']);
     }
+
+    public function processStore(array $data): UpahRitasi
+    {
+        $upahritasi = new UpahRitasi();
+        $upahritasi->parent_id = $data['parent_id'] ?? 0;
+        $upahritasi->kotadari_id = $data['kotadari_id'];
+        $upahritasi->kotasampai_id = $data['kotasampai_id'];
+        $upahritasi->jarak = $data['jarak'];
+        $upahritasi->statusaktif = $data['statusaktif'];
+        $upahritasi->tglmulaiberlaku = date('Y-m-d', strtotime($data['tglmulaiberlaku']));
+        $upahritasi->modifiedby = auth('api')->user()->user;
+
+        if (!$upahritasi->save()) {
+            throw new \Exception('Error storing upah ritasi.');
+        }
+
+        $storedLogTrail = (new LogTrail())->processStore([
+            'namatabel' => strtoupper($upahritasi->getTable()),
+            'postingdari' => 'ENTRY UPAH RITASI',
+            'idtrans' => $upahritasi->id,
+            'nobuktitrans' => $upahritasi->id,
+            'aksi' => 'ENTRY',
+            'datajson' => $upahritasi->toArray(),
+            'modifiedby' => $upahritasi->modifiedby
+        ]);
+
+        $detaillog = [];
+        for ($i = 0; $i < count($data['nominalsupir']); $i++) {
+
+            $upahritasiDetail = (new UpahRitasiRincian())->processStore($upahritasi, [
+                'upahritasi_id' => $upahritasi->id,
+                'container_id' => $data['container_id'][$i],
+                'nominalsupir' => $data['nominalsupir'][$i],
+                'liter' => $data['liter'][$i] ?? 0,
+            ]);
+
+            $detaillog[] = $upahritasiDetail->toArray();
+        }
+
+        (new LogTrail())->processStore([
+            'namatabel' => strtoupper($upahritasiDetail->getTable()),
+            'postingdari' => 'ENTRY UPAH RITASI RINCIAN',
+            'idtrans' =>  $storedLogTrail['id'],
+            'nobuktitrans' => $upahritasi->id,
+            'aksi' => 'ENTRY',
+            'datajson' => $detaillog,
+            'modifiedby' => auth('api')->user()->user,
+        ]);
+
+        return $upahritasi;
+    }
+
+    public function processUpdate(UpahRitasi $upahritasi, array $data): UpahRitasi
+    {
+        $upahritasi->parent_id = $data['parent_id'] ?? 0;
+        $upahritasi->kotadari_id = $data['kotadari_id'];
+        $upahritasi->kotasampai_id = $data['kotasampai_id'];
+        $upahritasi->jarak = $data['jarak'];
+        $upahritasi->statusaktif = $data['statusaktif'];
+        $upahritasi->tglmulaiberlaku = date('Y-m-d', strtotime($data['tglmulaiberlaku']));
+        $upahritasi->modifiedby = auth('api')->user()->user;
+
+        if (!$upahritasi->save()) {
+            throw new \Exception("Error updating service in header.");
+        }
+
+        $storedLogTrail = (new LogTrail())->processStore([
+            'namatabel' => strtoupper($upahritasi->getTable()),
+            'postingdari' => 'EDIT UPAH RITASI',
+            'idtrans' => $upahritasi->id,
+            'nobuktitrans' => $upahritasi->id,
+            'aksi' => 'EDIT',
+            'datajson' => $upahritasi->toArray(),
+            'modifiedby' => $upahritasi->modifiedby
+        ]);
+
+        UpahRitasiRincian::where('upahritasi_id', $upahritasi->id)->delete();
+
+        $detaillog = [];
+        for ($i = 0; $i < count($data['nominalsupir']); $i++) {
+            $upahsupirDetail = (new UpahRitasiRincian())->processStore($upahritasi, [
+                'upahritasi_id' => $upahritasi->id,
+                'container_id' => $data['container_id'][$i],
+                'nominalsupir' => $data['nominalsupir'][$i],
+                'liter' => $data['liter'][$i] ?? 0,
+            ]);
+
+            $detaillog[] = $upahsupirDetail->toArray();
+        }
+
+        (new LogTrail())->processStore([
+            'namatabel' => strtoupper($upahsupirDetail->getTable()),
+            'postingdari' => 'EDIT UPAH RITASI RINCIAN',
+            'idtrans' =>  $storedLogTrail['id'],
+            'nobuktitrans' => $upahritasi->id,
+            'aksi' => 'EDIT',
+            'datajson' => $detaillog,
+            'modifiedby' => auth('api')->user()->user,
+        ]);
+
+        return $upahritasi;
+    }
+
+    public function processDestroy($id): UpahRitasi
+    {
+        $getDetail = UpahRitasiRincian::where('upahritasi_id', $id)->get();
+        $upahRitasi = new UpahRitasi();
+        $upahRitasi = $upahRitasi->lockAndDestroy($id);
+
+        $storedLogTrail = (new LogTrail())->processStore([
+            'namatabel' => strtoupper($upahRitasi->getTable()),
+            'postingdari' => 'DELETE UPAH RITASI',
+            'idtrans' => $upahRitasi->id,
+            'nobuktitrans' => $upahRitasi->id,
+            'aksi' => 'DELETE',
+            'datajson' => $upahRitasi->toArray(),
+            'modifiedby' => auth('api')->user()->user
+        ]);
+
+        // DELETE UPAH RITASI RINCIAN
+
+        $logTrailUpahRitasiRincian = (new LogTrail())->processStore([
+            'namatabel' => 'UPAHRITASIRINCIAN',
+            'postingdari' => 'DELETE UPAH RITASI RINCIAN',
+            'idtrans' => $storedLogTrail['id'],
+            'nobuktitrans' => $upahRitasi->id,
+            'aksi' => 'DELETE',
+            'datajson' => $getDetail->toArray(),
+            'modifiedby' => auth('api')->user()->name
+        ]);
+        return $upahRitasi;
+    }
 }

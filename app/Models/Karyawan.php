@@ -267,4 +267,73 @@ class Karyawan extends MyModel
     {
         return $query->skip($this->params['offset'])->take($this->params['limit']);
     }
+
+    public function processStore(array $data): Karyawan
+    {
+        $karyawan = new Karyawan();
+        $karyawan->namakaryawan = $data['namakaryawan'];
+        $karyawan->keterangan = $data['keterangan'] ?? '';
+        $karyawan->statusaktif = $data['statusaktif'];
+        $karyawan->statusstaff = $data['statusstaff'];
+        $karyawan->modifiedby = auth('api')->user()->user;
+
+        if (!$karyawan->save()) {
+            throw new \Exception('Error storing karyawan.');
+        }
+
+        (new LogTrail())->processStore([
+            'namatabel' => strtoupper($karyawan->getTable()),
+            'postingdari' => 'ENTRY KARYAWAN',
+            'idtrans' => $karyawan->id,
+            'nobuktitrans' => $karyawan->id,
+            'aksi' => 'ENTRY',
+            'datajson' => $karyawan->toArray(),
+            'modifiedby' => $karyawan->modifiedby
+        ]);
+
+        return $karyawan;
+    }
+
+    public function processUpdate(Karyawan $karyawan, array $data): Karyawan
+    {
+        $karyawan->namakaryawan = $data['namakaryawan'];
+        $karyawan->keterangan = $data['keterangan'] ?? '';
+        $karyawan->statusaktif = $data['statusaktif'];
+        $karyawan->statusstaff = $data['statusstaff'];
+        $karyawan->modifiedby = auth('api')->user()->user;
+
+        if (!$karyawan->save()) {
+            throw new \Exception('Error updating karayawan.');
+        }
+
+        (new LogTrail())->processStore([
+            'namatabel' => strtoupper($karyawan->getTable()),
+            'postingdari' => 'EDIT KARYAWAN',
+            'idtrans' => $karyawan->id,
+            'nobuktitrans' => $karyawan->id,
+            'aksi' => 'EDIT',
+            'datajson' => $karyawan->toArray(),
+            'modifiedby' => $karyawan->modifiedby
+        ]);
+
+        return $karyawan;
+    }
+
+    public function processDestroy($id): Karyawan
+    {
+        $karyawan = new karyawan();
+        $karyawan = $karyawan->lockAndDestroy($id);
+
+        (new LogTrail())->processStore([
+            'namatabel' => strtoupper($karyawan->getTable()),
+            'postingdari' => 'DELETE KARYAWAN',
+            'idtrans' => $karyawan->id,
+            'nobuktitrans' => $karyawan->id,
+            'aksi' => 'DELETE',
+            'datajson' => $karyawan->toArray(),
+            'modifiedby' => auth('api')->user()->name
+        ]);
+
+        return $karyawan;
+    }
 }

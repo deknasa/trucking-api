@@ -410,4 +410,12 @@ class OrderanTruckingController extends Controller
             "data" => $orderantrucking->getcont($id)
         ]);
     }
+
+    public function export($id)
+    {
+        $orderanTrucking = new OrderanTrucking();
+        return response([
+            'data' => $orderanTrucking->getExport($id),
+        ]);
+    }
 }

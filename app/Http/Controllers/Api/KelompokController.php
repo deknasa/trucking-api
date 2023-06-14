@@ -17,6 +17,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Database\QueryException;
+use Illuminate\Http\JsonResponse;
 
 class KelompokController extends Controller
 {
@@ -79,42 +80,18 @@ class KelompokController extends Controller
     /**
      * @ClassName 
      */
-    public function store(StoreKelompokRequest $request)
+    public function store(StoreKelompokRequest $request) : JsonResponse
     {
         DB::beginTransaction();
 
         try {
-            $kelompok = new Kelompok();
-            $kelompok->kodekelompok = $request->kodekelompok;
-            $kelompok->keterangan = $request->keterangan ?? '';
-            $kelompok->statusaktif = $request->statusaktif;
-            $kelompok->modifiedby = auth('api')->user()->name;
-            $request->sortname = $request->sortname ?? 'id';
-            $request->sortorder = $request->sortorder ?? 'asc';
-
-            if ($kelompok->save()) {
-                $logTrail = [
-                    'namatabel' => strtoupper($kelompok->getTable()),
-                    'postingdari' => 'ENTRY KELOMPOK',
-                    'idtrans' => $kelompok->id,
-                    'nobuktitrans' => $kelompok->id,
-                    'aksi' => 'ENTRY',
-                    'datajson' => $kelompok->toArray(),
-                    'modifiedby' => $kelompok->modifiedby
-                ];
-
-                $validatedLogTrail = new StoreLogTrailRequest($logTrail);
-                $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
-
-                DB::commit();
-            }
-
-            $selected = $this->getPosition($kelompok, $kelompok->getTable());
-
-            $kelompok->position = $selected->position;
+            $kelompok = (new Kelompok())->processStore($request->all());
+            $kelompok->position = $this->getPosition($kelompok, $kelompok->getTable())->position;
             $kelompok->page = ceil($kelompok->position / ($request->limit ?? 10));
 
-            return response([
+            DB::commit();
+
+            return response()->json([
                 'status' => true,
                 'message' => 'Berhasil disimpan',
                 'data' => $kelompok
@@ -136,36 +113,17 @@ class KelompokController extends Controller
     /**
      * @ClassName 
      */
-    public function update(UpdateKelompokRequest $request, Kelompok $kelompok)
+    public function update(UpdateKelompokRequest $request, Kelompok $kelompok) : JsonResponse
     {
         DB::beginTransaction();
         try {
-            $kelompok->kodekelompok = $request->kodekelompok;
-            $kelompok->keterangan = $request->keterangan ?? '';
-            $kelompok->statusaktif = $request->statusaktif;
-            $kelompok->modifiedby = auth('api')->user()->name;
-
-            if ($kelompok->save()) {
-                $logTrail = [
-                    'namatabel' => strtoupper($kelompok->getTable()),
-                    'postingdari' => 'EDIT KELOMPOK',
-                    'idtrans' => $kelompok->id,
-                    'nobuktitrans' => $kelompok->id,
-                    'aksi' => 'EDIT',
-                    'datajson' => $kelompok->toArray(),
-                    'modifiedby' => $kelompok->modifiedby
-                ];
-
-                $validatedLogTrail = new StoreLogTrailRequest($logTrail);
-                app(LogTrailController::class)->store($validatedLogTrail);
-                DB::commit();
-            }
-            /* Set position and page */
-            $selected = $this->getPosition($kelompok, $kelompok->getTable());
-            $kelompok->position = $selected->position;
+            $kelompok = (new Kelompok())->processUpdate($kelompok, $request->all());
+            $kelompok->position = $this->getPosition($kelompok, $kelompok->getTable())->position;
             $kelompok->page = ceil($kelompok->position / ($request->limit ?? 10));
 
-            return response([
+            DB::commit();
+
+            return response()->json([
                 'status' => true,
                 'message' => 'Berhasil diubah',
                 'data' => $kelompok
@@ -182,42 +140,23 @@ class KelompokController extends Controller
     {
         DB::beginTransaction();
 
-        $kelompok = new Kelompok();
-        $kelompok = $kelompok->lockAndDestroy($id);
-        if ($kelompok) {
-            $logTrail = [
-                'namatabel' => strtoupper($kelompok->getTable()),
-                'postingdari' => 'DELETE KELOMPOK',
-                'idtrans' => $kelompok->id,
-                'nobuktitrans' => $kelompok->id,
-                'aksi' => 'DELETE',
-                'datajson' => $kelompok->toArray(),
-                'modifiedby' => auth('api')->user()->name
-            ];
-
-            $validatedLogTrail = new StoreLogTrailRequest($logTrail);
-            app(LogTrailController::class)->store($validatedLogTrail);
-
-
-            DB::commit();
-
+        try {
+            $kelompok = (new Kelompok())->processDestroy($id);
             $selected = $this->getPosition($kelompok, $kelompok->getTable(), true);
             $kelompok->position = $selected->position;
             $kelompok->id = $selected->id;
             $kelompok->page = ceil($kelompok->position / ($request->limit ?? 10));
 
-            return response([
-                'status' => true,
+            DB::commit();
+
+            return response()->json([
                 'message' => 'Berhasil dihapus',
                 'data' => $kelompok
             ]);
-        } else {
+        } catch (\Throwable $th) {
             DB::rollBack();
 
-            return response([
-                'status' => false,
-                'message' => 'Gagal dihapus'
-            ]);
+            throw $th;
         }
     }
 

@@ -89,34 +89,11 @@ class KotaController extends Controller
         DB::beginTransaction();
 
         try {
-            $kota = new Kota();
-            $kota->kodekota = $request->kodekota;
-            $kota->keterangan = $request->keterangan ?? '';
-            $kota->zona_id = $request->zona_id;
-            $kota->statusaktif = $request->statusaktif;
-            $kota->modifiedby = auth('api')->user()->name;
-
-            if ($kota->save()) {
-                $logTrail = [
-                    'namatabel' => strtoupper($kota->getTable()),
-                    'postingdari' => 'ENTRY KOTA',
-                    'idtrans' => $kota->id,
-                    'nobuktitrans' => $kota->id,
-                    'aksi' => 'ENTRY',
-                    'datajson' => $kota->toArray(),
-                    'modifiedby' => $kota->modifiedby
-                ];
-
-                $validatedLogTrail = new StoreLogTrailRequest($logTrail);
-                $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
-
-                DB::commit();
-            }
-
-            /* Set position and page */
-            $selected = $this->getPosition($kota, $kota->getTable());
-            $kota->position = $selected->position;
+            $kota = (new Kota())->processStore($request->all());
+            $kota->position = $this->getPosition($kota, $kota->getTable())->position;
             $kota->page = ceil($kota->position / ($request->limit ?? 10));
+
+            DB::commit();
 
             return response([
                 'status' => true,
@@ -131,8 +108,6 @@ class KotaController extends Controller
 
     public function show($id)
     {
-
-
         $data = Kota::findAll($id);
         // dd($data);
         return response([
@@ -151,34 +126,12 @@ class KotaController extends Controller
         DB::beginTransaction();
 
         try {
-            $kota = Kota::find($request->id);
-            $kota->kodekota = $request->kodekota;
-            $kota->keterangan = $request->keterangan ?? '';
-            $kota->zona_id = $request->zona_id;
-            $kota->statusaktif = $request->statusaktif;
-            $kota->modifiedby = auth('api')->user()->name;
-            $kota->save();
-            if ($kota->save()) {
-                $logTrail = [
-                    'namatabel' => strtoupper($kota->getTable()),
-                    'postingdari' => 'EDIT KOTA',
-                    'idtrans' => $kota->id,
-                    'nobuktitrans' => $kota->id,
-                    'aksi' => 'EDIT',
-                    'datajson' => $kota->toArray(),
-                    'modifiedby' => $kota->modifiedby
-                ];
 
-                $validatedLogTrail = new StoreLogTrailRequest($logTrail);
-                app(LogTrailController::class)->store($validatedLogTrail);
-
-                DB::commit();
-            }
-
-            /* Set position and page */
-            $selected = $this->getPosition($kota, $kota->getTable());
-            $kota->position = $selected->position;
+            $kota = (new Kota())->processUpdate($kota, $request->all());
+            $kota->position = $this->getPosition($kota, $kota->getTable())->position;
             $kota->page = ceil($kota->position / ($request->limit ?? 10));
+
+            DB::commit();
 
             return response([
                 'status' => true,
@@ -197,42 +150,24 @@ class KotaController extends Controller
     public function destroy(DestroyKotaRequest $request, $id)
     {
         DB::beginTransaction();
-
-        $kota = new Kota();
-        $kota = $kota->lockAndDestroy($id);
-
-        if ($kota) {
-            $logTrail = [
-                'namatabel' => strtoupper($kota->getTable()),
-                'postingdari' => 'DELETE KOTA',
-                'idtrans' => $kota->id,
-                'nobuktitrans' => $kota->id,
-                'aksi' => 'DELETE',
-                'datajson' => $kota->toArray(),
-                'modifiedby' => auth('api')->user()->name
-            ];
-
-            $validatedLogTrail = new StoreLogTrailRequest($logTrail);
-            app(LogTrailController::class)->store($validatedLogTrail);
-
-            DB::commit();
+        try{
+            $kota = (new Kota())->processDestroy($id);
             $selected = $this->getPosition($kota, $kota->getTable(), true);
             $kota->position = $selected->position;
             $kota->id = $selected->id;
             $kota->page = ceil($kota->position / ($request->limit ?? 10));
+
+            DB::commit();
 
             return response([
                 'status' => true,
                 'message' => 'Berhasil dihapus',
                 'data' => $kota
             ]);
-        } else {
+        } catch (\Throwable $th) {
             DB::rollBack();
 
-            return response([
-                'status' => false,
-                'message' => 'Gagal dihapus'
-            ]);
+            throw $th;
         }
     }
 

@@ -322,4 +322,73 @@ class Container extends MyModel
     {
         return $query->skip($this->params['offset'])->take($this->params['limit']);
     }
+
+    public function processStore(array $data): Container
+    {
+        $container = new Container();
+            $container->kodecontainer = strtoupper($data['kodecontainer']);
+            $container->keterangan = strtoupper($data['keterangan']) ?? '';
+            $container->nominalsumbangan = $data['nominalsumbangan'];
+            $container->statusaktif = $data['statusaktif'];
+            $container->modifiedby = auth('api')->user()->user;
+
+        if (!$container->save()) {
+            throw new \Exception('Error storing container.');
+        }
+
+        (new LogTrail())->processStore([
+            'namatabel' => strtoupper($container->getTable()),
+            'postingdari' => 'ENTRY CONTAINER',
+            'idtrans' => $container->id,
+            'nobuktitrans' => $container->id,
+            'aksi' => 'ENTRY',
+            'datajson' => $container->toArray(),
+            'modifiedby' => $container->modifiedby
+        ]);
+
+        return $container;
+    }
+
+    public function processUpdate(Container $container, array $data): Container
+    {
+        $container->kodecontainer = $data['kodecontainer'];
+        $container->keterangan = $data['keterangan'] ?? '';
+        $container->nominalsumbangan = $data['nominalsumbangan'];
+        $container->statusaktif = $data['statusaktif'];
+        $container->modifiedby = auth('api')->user()->user;
+
+        if (!$container->save()) {
+            throw new \Exception('Error updating conta$container.');
+        }
+
+        (new LogTrail())->processStore([
+            'namatabel' => strtoupper($container->getTable()),
+            'postingdari' => 'EDIT CONTAINER',
+            'idtrans' => $container->id,
+            'nobuktitrans' => $container->id,
+            'aksi' => 'EDIT',
+            'datajson' => $container->toArray(),
+            'modifiedby' => $container->modifiedby
+        ]);
+
+        return $container;
+    }
+
+    public function processDestroy($id): Container
+    {
+        $container = new Container();
+        $container = $container->lockAndDestroy($id);
+
+        (new LogTrail())->processStore([
+            'namatabel' => strtoupper($container->getTable()),
+                'postingdari' => 'DELETE CONTAINER',
+                'idtrans' => $container->id,
+                'nobuktitrans' => $container->id,
+                'aksi' => 'DELETE',
+                'datajson' => $container->toArray(),
+                'modifiedby' => auth('api')->user()->user
+        ]);
+
+        return $container;
+    }
 }
