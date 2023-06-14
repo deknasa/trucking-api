@@ -223,8 +223,8 @@ class TypeAkuntansi extends MyModel
                             $query = $query->where('order', 'LIKE', "%$filters[data]%");
                         }  elseif ($filters['field'] == 'akuntansi') {
                             $query = $query->where('akuntansi.kodeakuntansi', 'LIKE', "%$filters[data]%");
-                        }  elseif ($filters['field'] == 'akuntansi') {
-                            $query = $query->where('keterangan', 'LIKE', "%$filters[data]%");
+                        }  elseif ($filters['field'] == 'keterangantype') {
+                            $query = $query->where('keterangantype', 'LIKE', "%$filters[data]%");
                         } else if ($filters['field'] == 'created_at' || $filters['field'] == 'updated_at') {
                             $query = $query->whereRaw("format(" . $this->table . "." . $filters['field'] . ", 'dd-MM-yyyy HH:mm:ss') LIKE '%$filters[data]%' escape '|'");
                         } else {
@@ -246,8 +246,8 @@ class TypeAkuntansi extends MyModel
                             } elseif ($filters['field'] == 'akuntansi') {
                                 $query = $query->orWhere('akuntansi.kodeakuntansi', 'LIKE', "%$filters[data]%");
                             } elseif ($filters['field'] == 'akuntansi') {
-                                $query = $query->orWhere('keterangan', 'LIKE', "%$filters[data]%");
-                            } elseif ($filters['field'] == 'typeakuntansi') {
+                                $query = $query->orWhere('keterangantype', 'LIKE', "%$filters[data]%");
+                            } elseif ($filters['field'] == 'keterangantype') {
                                 $query = $query->orWhere('keterangan', 'LIKE', "%$filters[data]%");
                             }else if ($filters['field'] == 'created_at' || $filters['field'] == 'updated_at') {
                                 $query = $query->orWhereRaw("format(" . $this->table . "." . $filters['field'] . ", 'dd-MM-yyyy HH:mm:ss') LIKE '%$filters[data]%'");
