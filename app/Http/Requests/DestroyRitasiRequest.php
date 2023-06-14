@@ -31,7 +31,7 @@ class DestroyRitasiRequest extends FormRequest
     {
       
         return [
-            'id' => new DestroyRitasi(),
+            'nobukti' => new DestroyRitasi(),
         ];
       
     }

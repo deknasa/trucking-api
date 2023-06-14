@@ -31,7 +31,7 @@ class DestroyRitasi implements Rule
     public function passes($attribute, $value)
     {
         $bank = new Ritasi();
-        $cekdata = $bank->cekvalidasiaksi($bank->id);
+        $cekdata = $bank->cekvalidasiaksi(request()->nobukti);
         if($cekdata['kondisi']){
           return false;
         }

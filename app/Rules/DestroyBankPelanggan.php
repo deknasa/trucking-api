@@ -30,7 +30,7 @@ class DestroyBankPelanggan implements Rule
     public function passes($attribute, $value)
     {
         $bank = new BankPelanggan();
-        $cekdata = $bank->cekvalidasihapus($bank->id);
+        $cekdata = $bank->cekvalidasihapus(request()->id);
         if($cekdata['kondisi']){
           return false;
         }
