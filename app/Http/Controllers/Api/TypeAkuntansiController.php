@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Requests\StoreTypeAkuntansiRequest;
 use App\Http\Requests\UpdateTypeAkuntansiRequest;
+use App\Http\Requests\DestroyTypeAkuntansiRequest;
 use App\Models\TypeAkuntansi;
 use App\Models\Parameter;
 use Illuminate\Support\Facades\Schema;
@@ -80,11 +81,12 @@ class TypeAkuntansiController extends Controller
             throw $th;
         }
     }
-    public function show(TypeAkuntansi $typeakuntansi)
+    public function show($id)
     {
+        $typeakuntansi = new TypeAkuntansi();
         return response([
             'status' => true,
-            'data' => $typeakuntansi
+            'data' => $typeakuntansi->find($id)
         ]);
     }
 
@@ -117,7 +119,7 @@ class TypeAkuntansiController extends Controller
     /**
      * @ClassName 
      */
-    public function destroy(Request $request, $id)
+    public function destroy(DestroyTypeAkuntansiRequest $request, $id)
     {
         DB::beginTransaction();
 
@@ -179,13 +181,21 @@ class TypeAkuntansiController extends Controller
                      'label' => 'No',
                  ],
                  [
-                     'label' => 'Kode Akuntansi',
-                     'index' => 'kodeakuntansi',
+                     'label' => 'Kode Tipe',
+                     'index' => 'kodetype',
                  ],
                  [
-                     'label' => 'Keterangan',
-                     'index' => 'keterangan',
+                     'label' => 'Order',
+                     'index' => 'order',
                  ],
+                 [
+                    'label' => 'Keterangan',
+                    'index' => 'keterangantype',
+                ],
+                [
+                    'label' => 'Akuntansi',
+                    'index' => 'akuntansi',
+                ],
                  [
                      'label' => 'Status Aktif',
                      'index' => 'statusaktif',

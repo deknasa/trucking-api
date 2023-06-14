@@ -38,7 +38,8 @@ class TypeAkuntansi extends MyModel
                 'typeakuntansi.kodetype',
                 'typeakuntansi.order',
                 'typeakuntansi.keterangantype',
-                'typeakuntansi.akuntansi_id as akuntansi',
+                'typeakuntansi.akuntansi_id',
+                'akuntansi.kodeakuntansi as akuntansi',
                 'parameter.memo as statusaktif',
                 'typeakuntansi.modifiedby',
                 'typeakuntansi.created_at',
@@ -48,6 +49,8 @@ class TypeAkuntansi extends MyModel
             )
             ->leftJoin(DB::raw("parameter with (readuncommitted)"), 'typeakuntansi.statusaktif', 'parameter.id')
             ->leftJoin(DB::raw("akuntansi with (readuncommitted)"), 'typeakuntansi.akuntansi_id', '=', 'akuntansi.id');
+ 
+
             $this->filter($query);
           
 
@@ -110,6 +113,35 @@ class TypeAkuntansi extends MyModel
        
         return $data;
     }
+    
+    public function find($id)
+    {
+        $this->setRequestParameters();
+     
+        $data = TypeAkuntansi::from(DB::raw("typeakuntansi with (readuncommitted)"))
+        
+            ->select(
+                'typeakuntansi.id',
+                'typeakuntansi.kodetype',
+                'typeakuntansi.order',
+                'typeakuntansi.keterangantype',
+                'typeakuntansi.akuntansi_id',
+                'akuntansi.kodeakuntansi as akuntansi',
+                'typeakuntansi.statusaktif',
+                'typeakuntansi.modifiedby',
+                'typeakuntansi.created_at',
+                'typeakuntansi.updated_at',
+            )
+            
+            ->leftJoin(DB::raw("parameter with (readuncommitted)"), 'typeakuntansi.statusaktif', 'parameter.id')
+            ->leftJoin(DB::raw("akuntansi with (readuncommitted)"), 'typeakuntansi.akuntansi_id', '=', 'akuntansi.id')
+            ->where('typeakuntansi.id', $id)
+            ->first();
+
+            // dd("her");
+
+        return $data;
+    }
 
     public function selectColumns($query)
     {
@@ -129,6 +161,8 @@ class TypeAkuntansi extends MyModel
         ->leftJoin(DB::raw("akuntansi with (readuncommitted)"), 'typeakuntansi.akuntansi_id', '=', 'akuntansi.id');
     }
 
+    
+    
     public function createTemp(string $modelTable)
     {
         $this->setRequestParameters();
@@ -184,11 +218,13 @@ class TypeAkuntansi extends MyModel
                         if ($filters['field'] == 'statusaktif') {
                             $query = $query->where('parameter.text', '=', $filters['data']);
                         } elseif ($filters['field'] == 'typeakuntansi') {
-                            $query = $query->where('kodetypeakuntansi', 'LIKE', "%$filters[data]%");
-                        } elseif ($filters['field'] == 'akuntansi') {
+                            $query = $query->where('kodetype', 'LIKE', "%$filters[data]%");
+                        } elseif ($filters['field'] == 'typeakuntansi') {
+                            $query = $query->where('order', 'LIKE', "%$filters[data]%");
+                        }  elseif ($filters['field'] == 'akuntansi') {
+                            $query = $query->where('akuntansi.kodeakuntansi', 'LIKE', "%$filters[data]%");
+                        }  elseif ($filters['field'] == 'akuntansi') {
                             $query = $query->where('keterangan', 'LIKE', "%$filters[data]%");
-                        }elseif ($filters['field'] == 'akuntansi') {
-                            $query = $query->where('nominal', 'LIKE', "%$filters[data]%");
                         } else if ($filters['field'] == 'created_at' || $filters['field'] == 'updated_at') {
                             $query = $query->whereRaw("format(" . $this->table . "." . $filters['field'] . ", 'dd-MM-yyyy HH:mm:ss') LIKE '%$filters[data]%' escape '|'");
                         } else {
@@ -203,9 +239,15 @@ class TypeAkuntansi extends MyModel
                         foreach ($this->params['filters']['rules'] as $index => $filters) {
                             if ($filters['field'] == 'statusaktif') {
                                 $query = $query->orWhere('parameter.text', '=', $filters['data']);
+                            } elseif ($filters['field'] == 'typeakuntansi') {
+                                $query = $query->orWhere('kodetype', 'LIKE', "%$filters[data]%");
+                            } elseif ($filters['field'] == 'typeakuntansi') {
+                                $query = $query->orWhere('order', 'LIKE', "%$filters[data]%");
                             } elseif ($filters['field'] == 'akuntansi') {
-                                $query = $query->orWhere('kodeakuntansi', 'LIKE', "%$filters[data]%");
+                                $query = $query->orWhere('akuntansi.kodeakuntansi', 'LIKE', "%$filters[data]%");
                             } elseif ($filters['field'] == 'akuntansi') {
+                                $query = $query->orWhere('keterangan', 'LIKE', "%$filters[data]%");
+                            } elseif ($filters['field'] == 'typeakuntansi') {
                                 $query = $query->orWhere('keterangan', 'LIKE', "%$filters[data]%");
                             }else if ($filters['field'] == 'created_at' || $filters['field'] == 'updated_at') {
                                 $query = $query->orWhereRaw("format(" . $this->table . "." . $filters['field'] . ", 'dd-MM-yyyy HH:mm:ss') LIKE '%$filters[data]%'");
