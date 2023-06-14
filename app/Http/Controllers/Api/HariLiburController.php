@@ -11,6 +11,7 @@ use App\Http\Requests\StoreLogTrailRequest;
 use App\Models\HariLibur;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Http\JsonResponse;
 
 class HariLiburController extends Controller
 {
@@ -41,40 +42,18 @@ class HariLiburController extends Controller
     /**
      * @ClassName 
      */
-    public function store(StoreHariLiburRequest $request)
+    public function store(StoreHariLiburRequest $request): JsonResponse
     {
         DB::beginTransaction();
 
         try {
-
-            $hariLibur = new HariLibur();
-            $hariLibur->tgl = date('Y-m-d', strtotime($request->tgl));
-            $hariLibur->keterangan = $request->keterangan ?? '';
-            $hariLibur->statusaktif = $request->statusaktif;
-            $hariLibur->modifiedby = auth('api')->user()->name;
-
-
-            if ($hariLibur->save()) {
-                $logTrail = [
-                    'namatabel' => strtoupper($hariLibur->getTable()),
-                    'postingdari' => 'ENTRY HARI LIBUR',
-                    'idtrans' => $hariLibur->id,
-                    'nobuktitrans' => $hariLibur->id,
-                    'aksi' => 'ENTRY',
-                    'datajson' => $hariLibur->toArray(),
-                    'modifiedby' => $hariLibur->modifiedby
-                ];
-
-                $validatedLogTrail = new StoreLogTrailRequest($logTrail);
-                $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
-            }
-            DB::commit();
-            $selected = $this->getPosition($hariLibur, $hariLibur->getTable());
-            $hariLibur->position = $selected->position;
+            $hariLibur = (new HariLibur())->processStore($request->all());
+            $hariLibur->position = $this->getPosition($hariLibur, $hariLibur->getTable())->position;
             $hariLibur->page = ceil($hariLibur->position / ($request->limit ?? 10));
+        
+            DB::commit();
 
-
-            return response([
+            return response()->json([
                 'status' => true,
                 'message' => 'Berhasil disimpan',
                 'data' => $hariLibur
@@ -102,34 +81,15 @@ class HariLiburController extends Controller
         DB::beginTransaction();
 
         try {
-            $harilibur->tgl = date('Y-m-d', strtotime($request->tgl));
-            $harilibur->keterangan = $request->keterangan ?? '';
-            $harilibur->statusaktif = $request->statusaktif;
-            $harilibur->modifiedby = auth('api')->user()->name;
-
-            if ($harilibur->save()) {
-                $logTrail = [
-                    'namatabel' => strtoupper($harilibur->getTable()),
-                    'postingdari' => 'EDIT HARI LIBUR',
-                    'idtrans' => $harilibur->id,
-                    'nobuktitrans' => $harilibur->id,
-                    'aksi' => 'EDIT',
-                    'datajson' => $harilibur->toArray(),
-                    'modifiedby' => $harilibur->modifiedby
-                ];
-
-                $validatedLogTrail = new StoreLogTrailRequest($logTrail);
-                app(LogTrailController::class)->store($validatedLogTrail);
-            }
-            DB::commit();
-            $selected = $this->getPosition($harilibur, $harilibur->getTable());
-            $harilibur->position = $selected->position;
+            $harilibur = (new harilibur())->processUpdate($harilibur, $request->all());
+            $harilibur->position = $this->getPosition($harilibur, $harilibur->getTable())->position;
             $harilibur->page = ceil($harilibur->position / ($request->limit ?? 10));
+            
+            DB::commit();
 
-
-            return response([
+            return response()->json([
                 'status' => true,
-                'message' => 'Berhasil disimpan',
+                'message' => 'Berhasil diubah.',
                 'data' => $harilibur
             ]);
         } catch (\Throwable $th) {
@@ -141,47 +101,28 @@ class HariLiburController extends Controller
     /**
      * @ClassName 
      */
-    public function destroy(DestroyHariLiburRequest $request, $id)
+    public function destroy(DestroyHariLiburRequest $request, $id): JsonResponse
     {
         DB::beginTransaction();
 
-        $hariLibur = new HariLibur();
-        $hariLibur = $hariLibur->lockAndDestroy($id);
-        if ($hariLibur) {
-            $logTrail = [
-                'namatabel' => strtoupper($hariLibur->getTable()),
-                'postingdari' => 'DELETE HARI LIBUR',
-                'idtrans' => $hariLibur->id,
-                'nobuktitrans' => $hariLibur->id,
-                'aksi' => 'DELETE',
-                'datajson' => $hariLibur->toArray(),
-                'modifiedby' => auth('api')->user()->name
-            ];
-
-            $validatedLogTrail = new StoreLogTrailRequest($logTrail);
-            app(LogTrailController::class)->store($validatedLogTrail);
+        try {
+            $harilibur = (new HariLibur())->processDestroy($id);
+            $selected = $this->getPosition($harilibur, $harilibur->getTable(), true);
+            $harilibur->position = $selected->position;
+            $harilibur->id = $selected->id;
+            $harilibur->page = ceil($harilibur->position / ($request->limit ?? 10));
 
             DB::commit();
-            /* Set position and page */
 
-            $selected = $this->getPosition($hariLibur, $hariLibur->getTable(), true);
-
-            $hariLibur->position = $selected->position;
-            $hariLibur->id = $selected->id;
-            $hariLibur->page = ceil($hariLibur->position / ($request->limit ?? 10));
-
-            return response([
+            return response()->json([
                 'status' => true,
                 'message' => 'Berhasil dihapus',
-                'data' => $hariLibur
+                'data' => $harilibur
             ]);
-        } else {
+        } catch (\Throwable $th) {
             DB::rollBack();
 
-            return response([
-                'status' => false,
-                'message' => 'Gagal dihapus'
-            ]);
+            throw $th;
         }
     }
 

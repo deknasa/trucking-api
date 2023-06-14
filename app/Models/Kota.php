@@ -319,4 +319,76 @@ class Kota extends MyModel
     {
         return $query->skip($this->params['offset'])->take($this->params['limit']);
     }
+
+    public function processStore(array $data): Kota
+    {
+        $kota = new Kota();
+        $kota->kodekota = $data['kodekota'];
+        $kota->keterangan = $data['keterangan'] ?? '';
+        $kota->zona_id = $data['zona_id'];
+        $kota->statusaktif = $data['statusaktif'];
+        $kota->modifiedby = auth('api')->user()->user;
+
+        if (!$kota->save()) {
+            throw new \Exception('Error storing kota.');
+        }
+
+        (new LogTrail())->processStore([
+            'namatabel' => strtoupper($kota->getTable()),
+            'postingdari' => 'ENTRY KOTA',
+            'idtrans' => $kota->id,
+            'nobuktitrans' => $kota->id,
+            'aksi' => 'ENTRY',
+            'datajson' => $kota->toArray(),
+            'modifiedby' => $kota->modifiedby
+        ]);
+
+        return $kota;
+    }
+
+    public function processUpdate(Kota $kota, array $data): Kota
+    {
+        $kota = Kota::find($data['id']);
+        $kota->kodekota = $data['kodekota'];
+        $kota->keterangan = $data['keterangan'] ?? '';
+        $kota->zona_id = $data['zona_id'];
+        $kota->statusaktif = $data['statusaktif'];
+        $kota->modifiedby = auth('api')->user()->user;
+
+        if (!$kota->save()) {
+            throw new \Exception('Error updating kota.');
+        }
+
+        (new LogTrail())->processStore([
+            'namatabel' => strtoupper($kota->getTable()),
+            'postingdari' => 'EDIT KOTA',
+            'idtrans' => $kota->id,
+            'nobuktitrans' => $kota->id,
+            'aksi' => 'EDIT',
+            'datajson' => $kota->toArray(),
+            'modifiedby' => $kota->modifiedby
+        ]);
+
+        return $kota;
+    }
+    
+    public function processDestroy($id): Kota
+    {
+        $kota = new Kota();
+        $kota = $kota->lockAndDestroy($id);
+
+        (new LogTrail())->processStore([
+            'namatabel' => strtoupper($kota->getTable()),
+            'postingdari' => 'DELETE KOTA',
+            'idtrans' => $kota->id,
+            'nobuktitrans' => $kota->id,
+            'aksi' => 'DELETE',
+            'datajson' => $kota->toArray(),
+            'modifiedby' => auth('api')->user()->user
+        ]);
+
+        return $kota;
+    }
+
+
 }

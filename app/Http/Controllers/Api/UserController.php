@@ -15,7 +15,6 @@ use App\Models\Parameter;
 use App\Models\Cabang;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Schema;
-use Illuminate\Support\Facades\Hash;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Http\Response;
@@ -97,48 +96,22 @@ class UserController extends Controller
     /**
      * @ClassName 
      */
-    public function store(StoreUserRequest $request)
+    public function store(StoreUserRequest $request): JsonResponse
     {
         DB::beginTransaction();
 
         try {
-            $user = new User();
-            $user->user = strtoupper($request->user);
-            $user->name = strtoupper($request->name);
-            $user->password = Hash::make($request->password);
-            $user->cabang_id = $request->cabang_id ?? '';
-            $user->karyawan_id = $request->karyawan_id;
-            $user->dashboard = strtoupper($request->dashboard);
-            $user->statusaktif = $request->statusaktif;
-            $user->modifiedby = auth('api')->user()->name;
-
-            if ($user->save()) {
-                $logTrail = [
-                    'namatabel' => strtoupper($user->getTable()),
-                    'postingdari' => 'ENTRY USER',
-                    'idtrans' => $user->id,
-                    'nobuktitrans' => $user->id,
-                    'aksi' => 'ENTRY',
-                    'datajson' => $user->makeVisible(['password', 'remember_token'])->toArray(),
-                    'modifiedby' => $user->modifiedby
-                ];
-
-                $validatedLogTrail = new StoreLogTrailRequest($logTrail);
-                $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
-
-                DB::commit();
-            }
-
-            /* Set position and page */
-            $selected = $this->getPosition($user, $user->getTable());
-            $user->position = $selected->position;
+            $user = (new User())->processStore($request->all());
+            $user->position = $this->getPosition($user, $user->getTable())->position;
             $user->page = ceil($user->position / ($request->limit ?? 10));
+            
+            DB::commit();
 
             if (isset($request->limit)) {
                 $user->page = ceil($user->position / $request->limit);
             }
 
-            return response([
+            return response()->json([
                 'status' => true,
                 'message' => 'Berhasil disimpan',
                 'data' => $user
@@ -161,46 +134,22 @@ class UserController extends Controller
     /**
      * @ClassName 
      */
-    public function update(UpdateUserRequest $request, User $user)
+    public function update(UpdateUserRequest $request, User $user): JsonResponse
     {
         DB::beginTransaction();
 
         try {
-            $user->user = $request->user;
-            $user->name = $request->name;
-            $user->cabang_id = $request->cabang_id ?? '';
-            $user->karyawan_id = $request->karyawan_id;
-            $user->dashboard = $request->dashboard;
-            $user->statusaktif = $request->statusaktif;
-            $user->modifiedby = auth('api')->user()->name;
-
-            if ($user->save()) {
-                $logTrail = [
-                    'namatabel' => strtoupper($user->getTable()),
-                    'postingdari' => 'EDIT USER',
-                    'idtrans' => $user->id,
-                    'nobuktitrans' => $user->id,
-                    'aksi' => 'EDIT',
-                    'datajson' => $user->makeVisible(['password', 'remember_token'])->toArray(),
-                    'modifiedby' => $user->modifiedby
-                ];
-
-                $validatedLogTrail = new StoreLogTrailRequest($logTrail);
-                $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
-
-                DB::commit();
-            }
-
-            /* Set position and page */
-            $selected = $this->getPosition($user, $user->getTable());
-            $user->position = $selected->position;
+            $user = (new User())->processUpdate($user, $request->all());
+            $user->position = $this->getPosition($user, $user->getTable())->position;
             $user->page = ceil($user->position / ($request->limit ?? 10));
+
+            DB::commit();
 
             if (isset($request->limit)) {
                 $user->page = ceil($user->position / $request->limit);
             }
 
-            return response([
+            return response()->json([
                 'status' => true,
                 'message' => 'Berhasil diubah',
                 'data' => $user
@@ -219,43 +168,25 @@ class UserController extends Controller
     {
         DB::beginTransaction();
 
-        $user = new User();
-        $user = $user->lockAndDestroy($id);
-        if ($user) {
-            $logTrail = [
-                'namatabel' => strtoupper($user->getTable()),
-                'postingdari' => 'DELETE USER',
-                'idtrans' => $user->id,
-                'nobuktitrans' => $user->id,
-                'aksi' => 'DELETE',
-                'datajson' => $user->toArray(),
-                'modifiedby' => auth('api')->user()->name
-            ];
+        try{
 
-            $validatedLogTrail = new StoreLogTrailRequest($logTrail);
-            $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
-
-            DB::commit();
-
-
-            /* Set position and page */
+            $user = (new User())->processDestroy($id);
             $selected = $this->getPosition($user, $user->getTable(), true);
             $user->position = $selected->position;
             $user->id = $selected->id;
             $user->page = ceil($user->position / ($request->limit ?? 10));
 
-            return response([
+            DB::commit();
+
+            return response()->json([
                 'status' => true,
                 'message' => 'Berhasil dihapus',
                 'data' => $user
             ]);
-        } else {
+        } catch (\Throwable $th) {
             DB::rollBack();
 
-            return response([
-                'status' => false,
-                'message' => 'Gagal dihapus'
-            ]);
+            throw $th;
         }
     }
 

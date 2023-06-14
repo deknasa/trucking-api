@@ -364,4 +364,30 @@ class AbsensiSupirHeader extends MyModel
         if ($query->statuscetak != $statusCetak->id) return true;
         return false;
     }
+
+    public function getExport($id)
+    {
+        $this->setRequestParameters();
+
+        $getJudul = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))
+        ->select('text')
+        ->where('grp', 'JUDULAN LAPORAN')
+        ->where('subgrp', 'JUDULAN LAPORAN')
+        ->first();
+
+        $query = DB::table($this->table)->from(DB::raw("absensisupirheader with (readuncommitted)"))
+            ->select(
+                'absensisupirheader.id',
+                'absensisupirheader.nobukti',
+                'absensisupirheader.tglbukti',
+                'absensisupirheader.kasgantung_nobukti',
+                DB::raw("(case when absensisupirheader.nominal IS NULL then 0 else absensisupirheader.nominal end) as nominal"),
+                DB::raw("'Laporan Absensi Supir Header' as judulLaporan"),
+                DB::raw("'" . $getJudul->text . "' as judul")
+            )
+            ->where("$this->table.id", $id);
+
+        $data = $query->first();
+        return $data;
+    }
 }

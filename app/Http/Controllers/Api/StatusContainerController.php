@@ -91,38 +91,16 @@ class StatusContainerController extends Controller
         DB::beginTransaction();
 
         try {
-            $statusContainer = new StatusContainer();
-            $statusContainer->kodestatuscontainer = $request->kodestatuscontainer;
-            $statusContainer->keterangan = $request->keterangan ?? '';
-            $statusContainer->statusaktif = $request->statusaktif;
-            $statusContainer->modifiedby = auth('api')->user()->name;
-            $request->sortname = $request->sortname ?? 'id';
-            $request->sortorder = $request->sortorder ?? 'asc';
 
-            if ($statusContainer->save()) {
-                $logTrail = [
-                    'namatabel' => strtoupper($statusContainer->getTable()),
-                    'postingdari' => 'ENTRY STATUS CONTAINER',
-                    'idtrans' => $statusContainer->id,
-                    'nobuktitrans' => $statusContainer->id,
-                    'aksi' => 'ENTRY',
-                    'datajson' => $statusContainer->toArray(),
-                    'modifiedby' => $statusContainer->modifiedby
-                ];
-
-                $validatedLogTrail = new StoreLogTrailRequest($logTrail);
-                $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
-            }
-
-            DB::commit();
-            /* Set position and page */
-            $selected = $this->getPosition($statusContainer, $statusContainer->getTable());
-            $statusContainer->position = $selected->position;
+            $statusContainer = (new StatusContainer())->processStore($request->all());
+            $statusContainer->position = $this->getPosition($statusContainer, $statusContainer->getTable())->position;
             $statusContainer->page = ceil($statusContainer->position / ($request->limit ?? 10));
+            
+            DB::commit() ;
 
-            return response([
+            return response()->json([
                 'status' => true,
-                'message' => 'Berhasil disimpan',
+                'message' => 'Berhasil disimpan.',
                 'data' => $statusContainer
             ], 201);
         } catch (\Throwable $th) {
@@ -139,30 +117,12 @@ class StatusContainerController extends Controller
 
         DB::beginTransaction();
         try {
-            $statusContainer->kodestatuscontainer = $request->kodestatuscontainer;
-            $statusContainer->keterangan = $request->keterangan ?? '';
-            $statusContainer->statusaktif = $request->statusaktif;
-            $statusContainer->modifiedby = auth('api')->user()->name;
 
-            if ($statusContainer->save()) {
-                $logTrail = [
-                    'namatabel' => strtoupper($statusContainer->getTable()),
-                    'postingdari' => 'EDIT STATUS CONTAINER',
-                    'idtrans' => $statusContainer->id,
-                    'nobuktitrans' => $statusContainer->id,
-                    'aksi' => 'EDIT',
-                    'datajson' => $statusContainer->toArray(),
-                    'modifiedby' => $statusContainer->modifiedby
-                ];
-                $validatedLogTrail = new StoreLogTrailRequest($logTrail);
-                app(LogTrailController::class)->store($validatedLogTrail);
-            }
-            DB::commit();
-
-            /* Set position and page */
-            $selected = $this->getPosition($statusContainer, $statusContainer->getTable());
-            $statusContainer->position = $selected->position;
+            $statusContainer = (new StatusContainer())->processUpdate($statusContainer, $request->all());
+            $statusContainer->position = $this->getPosition($statusContainer, $statusContainer->getTable())->position;
             $statusContainer->page = ceil($statusContainer->position / ($request->limit ?? 10));
+            
+            DB::commit();
 
             return response([
                 'status' => true,
@@ -182,43 +142,25 @@ class StatusContainerController extends Controller
     {
 
         DB::beginTransaction();
-        $statusContainer = new StatusContainer();
-        $statusContainer = $statusContainer->lockAndDestroy($id);
-
-        if ($statusContainer) {
-            $logTrail = [
-                'namatabel' => strtoupper($statusContainer->getTable()),
-                'postingdari' => 'DELETE STATUS CONTAINER',
-                'idtrans' => $statusContainer->id,
-                'nobuktitrans' => $statusContainer->id,
-                'aksi' => 'DELETE',
-                'datajson' => $statusContainer->toArray(),
-                'modifiedby' => auth('api')->user()->name
-            ];
-
-            $validatedLogTrail = new StoreLogTrailRequest($logTrail);
-            app(LogTrailController::class)->store($validatedLogTrail);
-
-            DB::commit();
-
-            /* Set position and page */
+       
+        try{
+            $statusContainer = (new StatusContainer())->processDestroy($id);
             $selected = $this->getPosition($statusContainer, $statusContainer->getTable(), true);
             $statusContainer->position = $selected->position;
             $statusContainer->id = $selected->id;
             $statusContainer->page = ceil($statusContainer->position / ($request->limit ?? 10));
+            
+            DB::commit();
 
             return response([
                 'status' => true,
                 'message' => 'Berhasil dihapus',
                 'data' => $statusContainer
             ]);
-        } else {
+        } catch (\Throwable $th) {
             DB::rollBack();
 
-            return response([
-                'status' => false,
-                'message' => 'Gagal dihapus'
-            ]);
+            throw $th;
         }
     }
 

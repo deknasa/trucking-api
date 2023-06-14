@@ -13,6 +13,7 @@ use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Facades\DB;
 use Laravel\Passport\HasApiTokens;
 use Illuminate\Support\Facades\Schema;
+use Illuminate\Support\Facades\Hash;
 
 class User extends Authenticatable
 {
@@ -329,5 +330,79 @@ class User extends Authenticatable
             'useracl.created_at',
             'useracl.updated_at'
         );
+    }
+
+    public function processStore(array $data): User
+    {
+        $user = new User();
+            $user->user = strtoupper($data['user']);
+            $user->name = strtoupper($data['name']);
+            $user->password = Hash::make($data['password']);
+            $user->cabang_id = $data['cabang_id'] ?? '';
+            $user->karyawan_id = $data['karyawan_id'] ?? '';
+            $user->dashboard = strtoupper($data['dashboard']);
+            $user->statusaktif = $data['statusaktif'];
+            $user->modifiedby = auth('api')->user()->name;
+
+        if (!$user->save()) {
+            throw new \Exception('Error storing user.');
+        }
+
+        (new LogTrail())->processStore([
+            'namatabel' => strtoupper($user->getTable()),
+            'postingdari' => 'ENTRY USER',
+            'idtrans' => $user->id,
+            'nobuktitrans' => $user->id,
+            'aksi' => 'ENTRY',
+            'datajson' => $user->makeVisible(['password', 'remember_token'])->toArray(),
+            'modifiedby' => $user->modifiedby
+        ]);
+
+        return $user;
+    }
+
+    public function processUpdate(User $user, array $data): User
+    {
+        $user->user = $data['user'];
+        $user->name = $data['name'];
+        $user->cabang_id = $data['cabang_id'] ?? '';
+        $user->karyawan_id = $data['karyawan_id'] ?? '';
+        $user->dashboard = $data['dashboard'];
+        $user->statusaktif = $data['statusaktif'];
+        $user->modifiedby = auth('api')->user()->user;
+
+        if (!$user->save()) {
+            throw new \Exception('Error updating user.');
+        }
+
+        (new LogTrail())->processStore([
+            'namatabel' => strtoupper($user->getTable()),
+            'postingdari' => 'EDIT USER',
+            'idtrans' => $user->id,
+            'nobuktitrans' => $user->id,
+            'aksi' => 'EDIT',
+            'datajson' => $user->makeVisible(['password', 'remember_token'])->toArray(),
+            'modifiedby' => $user->modifiedby
+        ]);
+
+        return $user;
+    }
+
+    public function processDestroy($id): User
+    {
+        $user = new User();
+        $user = $user->lockAndDestroy($id);
+
+        (new LogTrail())->processStore([
+            'namatabel' => strtoupper($user->getTable()),
+            'postingdari' => 'DELETE USER',
+            'idtrans' => $user->id,
+            'nobuktitrans' => $user->id,
+            'aksi' => 'DELETE',
+            'datajson' => $user->toArray(),
+            'modifiedby' => auth('api')->user()->user
+        ]);
+
+        return $user;
     }
 }

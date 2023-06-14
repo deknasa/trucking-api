@@ -230,4 +230,72 @@ class Kerusakan extends MyModel
     {
         return $query->skip($this->params['offset'])->take($this->params['limit']);
     }
+
+    public function processStore(array $data): Kerusakan
+    {
+        $kerusakan = new Kerusakan();
+        $kerusakan->keterangan = $data['keterangan'] ?? '';
+        $kerusakan->statusaktif = $data['statusaktif'];
+        $kerusakan->modifiedby = auth('api')->user()->user;
+        $data['sortname'] = $data['sortname'] ?? 'id';
+        $data['sortorder'] = $data['sortorder'] ?? 'asc';
+
+        if (!$kerusakan->save()) {
+            throw new \Exception('Error storing kerusakan.');
+        }
+
+        (new LogTrail())->processStore([
+            'namatabel' => strtoupper($kerusakan->getTable()),
+            'postingdari' => 'ENTRY KERUSAKAN',
+            'idtrans' => $kerusakan->id,
+            'nobuktitrans' => $kerusakan->id,
+            'aksi' => 'ENTRY',
+            'datajson' => $kerusakan->toArray(),
+            'modifiedby' => $kerusakan->modifiedby
+        ]);
+
+        return $kerusakan;
+    }
+
+    public function processUpdate(Kerusakan $kerusakan, array $data): Kerusakan
+    {
+        $kerusakan->keterangan = $data['keterangan'] ?? '';
+        $kerusakan->statusaktif = $data['statusaktif'];
+        $kerusakan->modifiedby = auth('api')->user()->user;
+
+        if (!$kerusakan->save()) {
+            throw new \Exception('Error updating kerusakan.');
+        }
+
+        (new LogTrail())->processStore([
+            'namatabel' => strtoupper($kerusakan->getTable()),
+            'postingdari' => 'EDIT KERUSAKAN',
+            'idtrans' => $kerusakan->id,
+            'nobuktitrans' => $kerusakan->id,
+            'aksi' => 'EDIT',
+            'datajson' => $kerusakan->toArray(),
+            'modifiedby' => $kerusakan->modifiedby
+        ]);
+
+        return $kerusakan;
+    }
+
+    public function processDestroy($id): Kerusakan
+    {
+        $kerusakan = new Kerusakan();
+        $kerusakan = $kerusakan->lockAndDestroy($id);
+
+        (new LogTrail())->processStore([
+            'namatabel' => strtoupper($kerusakan->getTable()),
+            'postingdari' => 'DELETE KERUSAKAN',
+            'idtrans' => $kerusakan->id,
+            'nobuktitrans' => $kerusakan->id,
+            'aksi' => 'DELETE',
+            'datajson' => $kerusakan->toArray(),
+            'modifiedby' => auth('api')->user()->name
+        ]);
+
+        return $kerusakan;
+    }
+
 }

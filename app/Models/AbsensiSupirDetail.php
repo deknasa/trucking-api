@@ -142,7 +142,7 @@ class AbsensiSupirDetail extends MyModel
             if (count($params["whereIn"]) > 0) {
                 $query->whereIn("absensi_id", $params["whereIn"]);
             }
-            if ($params["forReport"]) {
+            if (isset(request()->forReport) && request()->forReport) {
                 $query->select(
                     "header.id as id_header",
                     "header.nobukti as nobukti_header",
@@ -153,7 +153,7 @@ class AbsensiSupirDetail extends MyModel
                     "supir.namasupir as supir",
                     "absentrado.kodeabsen as status",
                     "$this->table.keterangan as keterangan_detail",
-                    "$this->table.jam",
+                    DB::raw("LEFT($this->table.jam, 5) as jam"),
                     "$this->table.uangjalan",
                     "$this->table.absensi_id",
                     DB::raw("isnull(c.jumlah,0) as jumlahtrip")
@@ -166,7 +166,6 @@ class AbsensiSupirDetail extends MyModel
                         $join->on("$this->table.supir_id", "=", "c.supir_id");
                         $join->on("$this->table.trado_id", "=", "c.trado_id");
                     });
-                $absensiSupirDetail = $query->get();
             } else {
                 $query->select(
                     "trado.kodetrado as trado",
@@ -175,14 +174,16 @@ class AbsensiSupirDetail extends MyModel
                     "absentrado.keterangan as statusKeterangan",
                     "absentrado.memo as memo",
                     "$this->table.keterangan as keterangan_detail",
-                    "$this->table.jam",
+                    DB::raw("LEFT($this->table.jam, 5) as jam"),
                     "$this->table.id",
                     "$this->table.trado_id",
                     "$this->table.supir_id",
                     "$this->table.uangjalan",
                     "$this->table.absensi_id",
+                    DB::raw("left(jam, 5)"),
                     DB::raw("isnull(c.jumlah,0) as jumlahtrip"),
                     DB::Raw("(case when isnull(c.jumlah,0)=0  and isnull(absentrado.kodeabsen,'')='' then ' $statustrip->memo ' else '' end) as statustrip")
+                    
                 )
                     ->leftjoin(DB::raw("trado with (readuncommitted)"), "trado.id", "$this->table.trado_id")
                     ->leftjoin(DB::raw("supir with (readuncommitted)"), "supir.id", "$this->table.supir_id")

@@ -201,4 +201,71 @@ class HariLibur extends MyModel
     {
         return $query->skip($this->params['offset'])->take($this->params['limit']);
     }
+
+    public function processStore(array $data): HariLibur
+    {
+        $hariLibur = new HariLibur();
+        $hariLibur->tgl = date('Y-m-d', strtotime($data['tgl']));
+        $hariLibur->keterangan = $data['keterangan'] ?? '';
+        $hariLibur->statusaktif = $data['statusaktif'];
+        $hariLibur->modifiedby = auth('api')->user()->name;
+
+        if (!$hariLibur->save()) {
+            throw new \Exception('Error storing hari libur.');
+        }
+
+        (new LogTrail())->processStore([
+            'namatabel' => strtoupper($hariLibur->getTable()),
+            'postingdari' => 'ENTRY HARI LIBUR',
+            'idtrans' => $hariLibur->id,
+            'nobuktitrans' => $hariLibur->id,
+            'aksi' => 'ENTRY',
+            'datajson' => $hariLibur->toArray(),
+            'modifiedby' => $hariLibur->modifiedby
+        ]);
+
+        return $hariLibur;
+    }
+
+    public function processUpdate(HariLibur $harilibur, array $data): HariLibur
+    {
+        $harilibur->tgl = date('Y-m-d', strtotime($data['tgl']));
+        $harilibur->keterangan = $data['keterangan'] ?? '';
+        $harilibur->statusaktif = $data['statusaktif'];
+        $harilibur->modifiedby = auth('api')->user()->user;
+
+        if (!$harilibur->save()) {
+            throw new \Exception('Error updating hari libur.');
+        }
+
+        (new LogTrail())->processStore([
+            'namatabel' => $harilibur->getTable(),
+            'postingdari' => 'EDIT HARI LIBUR',
+            'idtrans' => $harilibur->id,
+            'nobuktitrans' => $harilibur->id,
+            'aksi' => 'EDIT',
+            'datajson' => $harilibur->toArray(),
+            'modifiedby' => $harilibur->modifiedby
+        ]);
+
+        return $harilibur;
+    }
+
+    public function processDestroy($id): HariLibur
+    {
+        $harilibur = new harilibur();
+        $harilibur = $harilibur->lockAndDestroy($id);
+
+        (new LogTrail())->processStore([
+            'namatabel' => strtoupper($harilibur->getTable()),
+                'postingdari' => 'DELETE HARI LIBUR',
+                'idtrans' => $harilibur->id,
+                'nobuktitrans' => $harilibur->id,
+                'aksi' => 'DELETE',
+                'datajson' => $harilibur->toArray(),
+                'modifiedby' => auth('api')->user()->name
+        ]);
+
+        return $harilibur;
+    }
 }

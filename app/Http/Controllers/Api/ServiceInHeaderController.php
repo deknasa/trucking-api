@@ -110,7 +110,7 @@ class ServiceInHeaderController extends Controller
             $serviceInHeader->id = $selected->id;
             $serviceInHeader->page = ceil($serviceInHeader->position / ($request->limit ?? 10));
 
-            DB::rollBack();
+            DB::commit();
 
             return response()->json([
                 'message' => 'Berhasil dihapus',

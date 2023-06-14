@@ -358,4 +358,94 @@ class Parameter extends MyModel
 
             return $query;
     }
+
+    public function processStore(array $data): Parameter
+    {
+        $parameter = new Parameter();
+        $parameter->grp = $data['grp'];
+        $parameter->subgrp = $data['subgrp'];
+        $parameter->text = $data['subgrp'];
+        $parameter->kelompok = $data['kelompok'] ?? '';
+        $parameter->default = $data['default'] ?? '';
+        $parameter->type = $data['type'] ?? 0;
+        $parameter->modifiedby = auth('api')->user()->user;
+
+        $detailmemo = [];
+        for ($i = 0; $i < count($data['key']); $i++) {
+            $datadetailmemo = [
+                $data['key'][$i] => $data['value'][$i],
+            ];
+            $detailmemo = array_merge($detailmemo, $datadetailmemo);
+        }
+
+        $parameter->memo = json_encode($detailmemo);
+        if (!$parameter->save()) {
+            throw new \Exception('Error storing parameter.');
+        }
+
+        (new LogTrail())->processStore([
+            'namatabel' => strtoupper($parameter->getTable()),
+            'postingdari' => 'ENTRY PARAMETER',
+            'idtrans' => $parameter->id,
+            'nobuktitrans' => $parameter->id,
+            'aksi' => 'ENTRY',
+            'datajson' => $parameter->toArray(),
+            'modifiedby' => $parameter->modifiedby
+        ]);
+
+        return $parameter;
+    }
+
+    public function processUpdate(Parameter $parameter, array $data): Parameter
+    {
+        $parameter->grp = $data['grp'];
+        $parameter->subgrp = $data['subgrp'];
+        $parameter->text = $data['subgrp'];
+        $parameter->kelompok = $data['kelompok'] ?? '';
+        $parameter->default = $data['default'] ?? '';
+        $parameter->type =  $data['type'] ?? 0;
+        $parameter->modifiedby = auth('api')->user()->user;
+
+        $detailmemo = [];
+        for ($i = 0; $i < count($data['key']); $i++) {
+            $datadetailmemo = [
+                $data['key'][$i] => $data['value'][$i],
+            ];
+            $detailmemo = array_merge($detailmemo, $datadetailmemo);
+        }
+
+        $parameter->memo = json_encode($detailmemo);
+        if (!$parameter->save()) {
+            throw new \Exception('Error storing parameter.');
+        }
+        (new LogTrail())->processStore([
+            'namatabel' => strtoupper($parameter->getTable()),
+                'postingdari' => 'EDIT PARAMETER',
+                'idtrans' => $parameter->id,
+                'nobuktitrans' => $parameter->id,
+                'aksi' => 'EDIT',
+                'datajson' => $parameter->toArray(),
+                'modifiedby' => $parameter->modifiedby
+        ]);
+
+        return $parameter;
+    }
+
+    public function processDestroy($id): Parameter
+    {
+        $parameter = new Parameter();
+        $parameter = $parameter->lockAndDestroy($id);
+
+        (new LogTrail())->processStore([
+            'namatabel' => strtoupper($parameter->getTable()),
+            'postingdari' => 'DELETE PARAMETER',
+            'idtrans' => $parameter->id,
+            'nobuktitrans' => $parameter->id,
+            'aksi' => 'DELETE',
+            'datajson' => $parameter->toArray(),
+            'modifiedby' => $parameter->modifiedby
+        ]);
+
+        return $parameter;
+    }
 }

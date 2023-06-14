@@ -38,33 +38,13 @@ class ErrorController extends Controller
     public function store(StoreErrorRequest $request)
     {
         DB::beginTransaction();
+
         try {
-            $error = new Error();
-            $error->kodeerror = $request->kodeerror;
-            $error->keterangan = $request->keterangan;
-            $error->modifiedby = auth('api')->user()->name;
-
-            if ($error->save()) {
-                $logTrail = [
-                    'namatabel' => strtoupper($error->getTable()),
-                    'postingdari' => 'ENTRY ERROR',
-                    'idtrans' => $error->id,
-                    'nobuktitrans' => $error->id,
-                    'aksi' => 'ENTRY',
-                    'datajson' => $error->toArray(),
-                    'modifiedby' => $error->modifiedby
-                ];
-
-                $validatedLogTrail = new StoreLogTrailRequest($logTrail);
-                $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
-
-                DB::commit();
-            }
-
-            /* Set position and page */
-            $selected = $this->getPosition($error, $error->getTable());
-            $error->position = $selected->position;
+            $error = (new Error())->processStore($request->all());
+            $error->position = $this->getPosition($error, $error->getTable())->position;
             $error->page = ceil($error->position / ($request->limit ?? 10));
+
+            DB::commit();
 
             return response([
                 'status' => true,
@@ -92,31 +72,12 @@ class ErrorController extends Controller
     {
         DB::beginTransaction();
         try {
-            $error->kodeerror = $request->kodeerror;
-            $error->keterangan = $request->keterangan;
-            $error->modifiedby = auth('api')->user()->name;
-
-            if ($error->save()) {
-                $logTrail = [
-                    'namatabel' => strtoupper($error->getTable()),
-                    'postingdari' => 'EDIT ERROR',
-                    'idtrans' => $error->id,
-                    'nobuktitrans' => $error->id,
-                    'aksi' => 'EDIT',
-                    'datajson' => $error->toArray(),
-                    'modifiedby' => $error->modifiedby
-                ];
-
-                $validatedLogTrail = new StoreLogTrailRequest($logTrail);
-                $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
-
-                DB::commit();
-            }
-
-            /* Set position and page */
-            $selected = $this->getPosition($error, $error->getTable());
-            $error->position = $selected->position;
+            
+            $error = (new Error())->processUpdate($error, $request->all());
+            $error->position = $this->getPosition($error, $error->getTable())->position;
             $error->page = ceil($error->position / ($request->limit ?? 10));
+
+            DB::commit();
 
             return response([
                 'status' => true,
@@ -136,41 +97,24 @@ class ErrorController extends Controller
     {
         DB::beginTransaction();
 
-        $error = new Error();
-        $error = $error->lockAndDestroy($id);
-        if ($error) {
-            $logTrail = [
-                'namatabel' => strtoupper($error->getTable()),
-                'postingdari' => 'DELETE ERROR',
-                'idtrans' => $error->id,
-                'nobuktitrans' => $error->id,
-                'aksi' => 'DELETE',
-                'datajson' => $error->toArray(),
-                'modifiedby' => $error->modifiedby
-            ];
-
-            $validatedLogTrail = new StoreLogTrailRequest($logTrail);
-            $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
-
-            DB::commit();
-            /* Set position and page */
+        try {
+            $error = (new Error())->processDestroy($id);
             $selected = $this->getPosition($error, $error->getTable(), true);
             $error->position = $selected->position;
             $error->id = $selected->id;
             $error->page = ceil($error->position / ($request->limit ?? 10));
+
+            DB::commit();
 
             return response([
                 'status' => true,
                 'message' => 'Berhasil dihapus',
                 'data' => $error
             ]);
-        } else {
+        } catch (\Throwable $th) {
             DB::rollBack();
 
-            return response([
-                'status' => false,
-                'message' => 'Gagal dihapus'
-            ]);
+            throw $th;
         }
     }
 

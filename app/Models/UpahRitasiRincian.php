@@ -384,4 +384,20 @@ class UpahRitasiRincian extends MyModel
 
         return $query->get();
     }
+
+    public function processStore(UpahRitasi $upahritasi, array $data): UpahRitasiRincian
+    {
+        $upahritasirincian = new UpahRitasiRincian();
+        $upahritasirincian->upahritasi_id = $data['upahritasi_id'];
+        $upahritasirincian->container_id = $data['container_id'];
+        $upahritasirincian->nominalsupir = $data['nominalsupir'];
+        $upahritasirincian->liter = $data['liter'];
+        $upahritasirincian->modifiedby = auth('api')->user()->name;
+        
+        if (!$upahritasirincian->save()) {
+            throw new \Exception("Gagal menyimpan upah ritasi detail.");
+        }
+
+        return $upahritasirincian;
+    }
 }
