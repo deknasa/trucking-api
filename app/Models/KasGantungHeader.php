@@ -127,6 +127,9 @@ class KasGantungHeader extends MyModel
     {
         $this->setRequestParameters();
 
+        $periode = request()->periode ?? '';
+        $statusCetak = request()->statuscetak ?? '';
+
         $query = DB::table($this->table)->from(DB::raw("kasgantungheader with (readuncommitted)"))
             ->select(
                 'kasgantungheader.id',
@@ -147,12 +150,22 @@ class KasGantungHeader extends MyModel
                 'kasgantungheader.created_at',
                 'kasgantungheader.updated_at'
             )
-            ->whereBetween($this->table . '.tglbukti', [date('Y-m-d', strtotime(request()->tgldari)), date('Y-m-d', strtotime(request()->tglsampai))])
+            
             ->leftJoin(DB::raw("parameter with (readuncommitted)"), 'kasgantungheader.statuscetak', 'parameter.id')
             ->leftJoin(DB::raw("penerima with (readuncommitted)"), 'kasgantungheader.penerima_id', 'penerima.id')
             ->leftJoin(DB::raw("parameter as statuscetak with (readuncommitted)"), 'kasgantungheader.statuscetak', 'statuscetak.id')
             ->leftJoin(DB::raw("bank with (readuncommitted)"), 'kasgantungheader.bank_id', 'bank.id');
-
+        if (request()->tgldari && request()->tglsampai) {
+            $query->whereBetween($this->table . '.tglbukti', [date('Y-m-d', strtotime(request()->tgldari)), date('Y-m-d', strtotime(request()->tglsampai))]);
+        }
+        if ($periode != '') {
+            $periode = explode("-", $periode);
+            $query->whereRaw("MONTH(kasgantungheader.tglbukti) ='" . $periode[0] . "'")
+                ->whereRaw("year(kasgantungheader.tglbukti) ='" . $periode[1] . "'");
+        }
+        if ($statusCetak != '') {
+            $query->where("kasgantungheader.statuscetak", $statusCetak);
+        }
         $this->totalRows = $query->count();
         $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;
 
@@ -257,9 +270,13 @@ class KasGantungHeader extends MyModel
         $models = $this->filter($query);
         $models =  $query->whereBetween($this->table . '.tglbukti', [date('Y-m-d', strtotime(request()->tgldariheader)), date('Y-m-d', strtotime(request()->tglsampaiheader))]);
         // dd( $models);
-        DB::table($temp)->insertUsing(['id', 'nobukti', 'tglbukti',  'bank_id', 'pengeluaran_nobukti', 'coakaskeluar', 
-        'tglkaskeluar', 'statuscetak', 'userbukacetak', 'tglbukacetak', 'jumlahcetak', 'modifiedby', 'created_at', 'updated_at', 'penerima'], 
-        $models);
+        DB::table($temp)->insertUsing(
+            [
+                'id', 'nobukti', 'tglbukti',  'bank_id', 'pengeluaran_nobukti', 'coakaskeluar',
+                'tglkaskeluar', 'statuscetak', 'userbukacetak', 'tglbukacetak', 'jumlahcetak', 'modifiedby', 'created_at', 'updated_at', 'penerima'
+            ],
+            $models
+        );
 
         return  $temp;
     }
