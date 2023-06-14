@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
+use App\Services\RunningNumberService;
 
 class HutangHeader extends MyModel
 {
@@ -23,53 +24,6 @@ class HutangHeader extends MyModel
         'created_at',
         'updated_at',
     ];
-
-    public function cekvalidasiaksi($nobukti)
-    {
-        $hutangBayar = DB::table('hutangbayardetail')
-            ->from(
-                DB::raw("hutangbayardetail as a with (readuncommitted)")
-            )
-            ->select(
-                'a.hutang_nobukti'
-            )
-            ->where('a.hutang_nobukti', '=', $nobukti)
-            ->first();
-        if (isset($hutangBayar)) {
-            $data = [
-                'kondisi' => true,
-                'keterangan' => 'Pembayaran Hutang',
-                'kodeerror' => 'SATL'
-            ];
-            goto selesai;
-        }
-
-        $penerimaanStok = DB::table('penerimaanstokheader')
-            ->from(
-                DB::raw("penerimaanstokheader as a with (readuncommitted)")
-            )
-            ->select(
-                'a.hutang_nobukti'
-            )
-            ->where('a.hutang_nobukti', '=', $nobukti)
-            ->first();
-        if (isset($penerimaanStok)) {
-            $data = [
-                'kondisi' => true,
-                'keterangan' => 'Penerimaan Stok',
-                'kodeerror' => 'TDT'
-            ];
-            goto selesai;
-        }
-
-
-        $data = [
-            'kondisi' => false,
-            'keterangan' => '',
-        ];
-        selesai:
-        return $data;
-    }
 
     public function get()
     {
@@ -163,61 +117,6 @@ class HutangHeader extends MyModel
 
         $data = $query->first();
         return $data;
-    }
-
-    public function getHutang($id)
-    {
-        $this->setRequestParameters();
-
-        $temp = $this->createTempHutang($id);
-
-        $approval = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))
-        ->where('grp', 'STATUS APPROVAL')
-        ->where('subgrp', 'STATUS APPROVAL')
-        ->where('text', 'APPROVAL')
-        ->first();
-
-        $approvalId = $approval->id;
-
-        $query = DB::table('hutangheader')->from(DB::raw("hutangheader with (readuncommitted)"))
-            ->select(DB::raw("row_number() Over(Order By hutangheader.id) as id,hutangheader.nobukti as nobukti,hutangheader.tglbukti, hutangheader.total as nominal," . $temp . ".sisa, 0 as total"))
-            ->join(DB::raw("$temp with (readuncommitted)"), 'hutangheader.nobukti', $temp . ".nobukti")
-            ->whereRaw("hutangheader.nobukti = $temp.nobukti")
-            ->whereRaw("hutangheader.statusapproval = $approvalId")
-            ->where(function ($query) use ($temp) {
-                $query->whereRaw("$temp.sisa != 0")
-                    ->orWhereRaw("$temp.sisa is null");
-            });
-        $data = $query->get();
-
-        return $data;
-    }
-
-    public function createTempHutang($id)
-    {
-        $temp = '##temp' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
-
-        $fetch = DB::table('hutangheader')->from(
-            DB::raw("hutangheader with (readuncommitted)")
-        )
-            ->select(DB::raw("hutangheader.nobukti,sum(hutangbayardetail.nominal) as terbayar, (SELECT (hutangheader.total - coalesce(SUM(hutangbayardetail.nominal),0) - coalesce(SUM(hutangbayardetail.potongan),0)) FROM hutangbayardetail WHERE hutangbayardetail.hutang_nobukti= hutangheader.nobukti) AS sisa"))
-            ->leftJoin(DB::raw("hutangbayardetail with (readuncommitted)"), 'hutangbayardetail.hutang_nobukti', 'hutangheader.nobukti')
-            ->whereRaw("hutangheader.supplier_id = $id")
-            ->groupBy('hutangheader.nobukti', 'hutangheader.total');
-        // ->get();
-        Schema::create($temp, function ($table) {
-            $table->string('nobukti');
-            $table->bigInteger('terbayar')->nullable();
-            $table->bigInteger('sisa')->nullable();
-        });
-
-        $tes = DB::table($temp)->insertUsing(['nobukti', 'terbayar', 'sisa'], $fetch);
-
-        return $temp;
-    }
-    public function hutangdetail()
-    {
-        return $this->hasMany(HutangDetail::class, 'hutang_id');
     }
 
     public function selectColumns($query)
@@ -410,4 +309,369 @@ class HutangHeader extends MyModel
     {
         return $query->skip($this->params['offset'])->take($this->params['limit']);
     }
+
+    public function cekvalidasiaksi($nobukti)
+    {
+        $hutangBayar = DB::table('hutangbayardetail')
+            ->from(
+                DB::raw("hutangbayardetail as a with (readuncommitted)")
+            )
+            ->select(
+                'a.hutang_nobukti'
+            )
+            ->where('a.hutang_nobukti', '=', $nobukti)
+            ->first();
+        if (isset($hutangBayar)) {
+            $data = [
+                'kondisi' => true,
+                'keterangan' => 'Pembayaran Hutang',
+                'kodeerror' => 'SATL'
+            ];
+            goto selesai;
+        }
+
+        $penerimaanStok = DB::table('penerimaanstokheader')
+            ->from(
+                DB::raw("penerimaanstokheader as a with (readuncommitted)")
+            )
+            ->select(
+                'a.hutang_nobukti'
+            )
+            ->where('a.hutang_nobukti', '=', $nobukti)
+            ->first();
+        if (isset($penerimaanStok)) {
+            $data = [
+                'kondisi' => true,
+                'keterangan' => 'Penerimaan Stok',
+                'kodeerror' => 'TDT'
+            ];
+            goto selesai;
+        }
+
+
+        $data = [
+            'kondisi' => false,
+            'keterangan' => '',
+        ];
+        selesai:
+        return $data;
+    }
+
+    public function getHutang($id)
+    {
+        $this->setRequestParameters();
+
+        $temp = $this->createTempHutang($id);
+
+        $approval = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))
+        ->where('grp', 'STATUS APPROVAL')
+        ->where('subgrp', 'STATUS APPROVAL')
+        ->where('text', 'APPROVAL')
+        ->first();
+
+        $approvalId = $approval->id;
+
+        $query = DB::table('hutangheader')->from(DB::raw("hutangheader with (readuncommitted)"))
+            ->select(DB::raw("row_number() Over(Order By hutangheader.id) as id,hutangheader.nobukti as nobukti,hutangheader.tglbukti, hutangheader.total as nominal," . $temp . ".sisa, 0 as total"))
+            ->join(DB::raw("$temp with (readuncommitted)"), 'hutangheader.nobukti', $temp . ".nobukti")
+            ->whereRaw("hutangheader.nobukti = $temp.nobukti")
+            ->whereRaw("hutangheader.statusapproval = $approvalId")
+            ->where(function ($query) use ($temp) {
+                $query->whereRaw("$temp.sisa != 0")
+                    ->orWhereRaw("$temp.sisa is null");
+            });
+        $data = $query->get();
+
+        return $data;
+    }
+
+    public function createTempHutang($id)
+    {
+        $temp = '##temp' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+
+        $fetch = DB::table('hutangheader')->from(
+            DB::raw("hutangheader with (readuncommitted)")
+        )
+            ->select(DB::raw("hutangheader.nobukti,sum(hutangbayardetail.nominal) as terbayar, (SELECT (hutangheader.total - coalesce(SUM(hutangbayardetail.nominal),0) - coalesce(SUM(hutangbayardetail.potongan),0)) FROM hutangbayardetail WHERE hutangbayardetail.hutang_nobukti= hutangheader.nobukti) AS sisa"))
+            ->leftJoin(DB::raw("hutangbayardetail with (readuncommitted)"), 'hutangbayardetail.hutang_nobukti', 'hutangheader.nobukti')
+            ->whereRaw("hutangheader.supplier_id = $id")
+            ->groupBy('hutangheader.nobukti', 'hutangheader.total');
+        // ->get();
+        Schema::create($temp, function ($table) {
+            $table->string('nobukti');
+            $table->bigInteger('terbayar')->nullable();
+            $table->bigInteger('sisa')->nullable();
+        });
+
+        $tes = DB::table($temp)->insertUsing(['nobukti', 'terbayar', 'sisa'], $fetch);
+
+        return $temp;
+    }
+
+    public function hutangdetail()
+    {
+        return $this->hasMany(HutangDetail::class, 'hutang_id');
+    }
+
+    public function processStore(array $data): HutangHeader
+    {
+        
+        /*STORE HEADER*/
+        $group = 'HUTANG BUKTI';
+        $subGroup = 'HUTANG BUKTI';
+
+        $format = DB::table('parameter')->where('grp', $group)->where('subgrp', $subGroup)->first();
+
+        $statusCetak = Parameter::where('grp', 'STATUSCETAK')->where('text', 'BELUM CETAK')->first();
+        $getCoaDebet = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'JURNAL HUTANG MANUAL')->where('subgrp', 'DEBET')->first();
+        $memo = json_decode($getCoaDebet->memo, true);
+        $statusApproval = Parameter::from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS APPROVAL')->where('text', 'NON APPROVAL')->first();
+        $proseslain = $data['proseslain'] ?? "";
+        if ($proseslain == "") {
+            $total = array_sum($data['total_detail']);
+            $tglbukti = date('Y-m-d', strtotime($data['tglbukti']));
+            $coa = $memo['JURNAL'];
+        } else {
+            $total = $data['total'];
+            $tglbukti = $data['tglbukti'];
+            $coa = $data['coa'];
+        }
+        $hutangHeader = new HutangHeader();
+        
+        $hutangHeader->tglbukti = $tglbukti;
+        $hutangHeader->coa = $coa;
+        $hutangHeader->supplier_id = $data['supplier_id'];
+        $hutangHeader->postingdari = $data['postingdari'] ?? 'ENTRY HUTANG';
+        $hutangHeader->statusformat = $format->id;
+        $hutangHeader->statuscetak = $statusCetak->id;
+        $hutangHeader->statusapproval = $statusApproval->id;
+        $hutangHeader->total = $total;
+        $hutangHeader->modifiedby = auth('api')->user()->name;
+        $hutangHeader->nobukti = (new RunningNumberService)->get($group, $subGroup, $hutangHeader->getTable(), date('Y-m-d', strtotime($data['tglbukti'])));
+
+        
+        if (!$hutangHeader->save()) {
+            throw new \Exception("Error storing Hutang header.");
+        }
+
+        $hutangHeaderLogTrail = (new LogTrail())->processStore([
+            'namatabel' => strtoupper($hutangHeader->getTable()),
+            'postingdari' => strtoupper('ENTRY Hutang Header'),
+            'idtrans' => $hutangHeader->id,
+            'nobuktitrans' => $hutangHeader->nobukti,
+            'aksi' => 'ENTRY',
+            'datajson' => $hutangHeader->toArray(),
+            'modifiedby' => auth('api')->user()->user
+        ]);
+
+        /* Store detail */
+        $getCoaKredit = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'JURNAL HUTANG MANUAL')->where('subgrp', 'KREDIT')->first();
+        $memoKredit = json_decode($getCoaKredit->memo, true);
+
+        $hutangDetails = [];
+        $coakredit_detail = [];
+        $coadebet_detail = [];
+        $nominal_detail = [];
+        $keterangan_detail = [];
+        
+        for ($i = 0; $i < count($data['total_detail']); $i++) {
+
+            $hutangDetail = (new HutangDetail())->processStore($hutangHeader, [
+                'hutang_id' => $hutangHeader->id,
+                'nobukti' => $hutangHeader->nobukti,
+                'tgljatuhtempo' => date('Y-m-d', strtotime($data['tgljatuhtempo'][$i])),
+                'total' => $data['total_detail'][$i],
+                'cicilan' => '',
+                'totalbayar' => '',
+                'keterangan' => $data['keterangan_detail'][$i],
+                'modifiedby' => $hutangHeader->modifiedby,
+            ]);
+            $hutangDetails[] = $hutangDetail->toArray();
+            $coakredit_detail[] = $memoKredit['JURNAL'];
+            $coadebet_detail[] = $memo['JURNAL'];
+            $nominal_detail[] = $data['total_detail'][$i];
+            $keterangan_detail[] = $data['keterangan_detail'][$i];
+
+        }
+
+        (new LogTrail())->processStore([
+            'namatabel' => strtoupper($hutangDetail->getTable()),
+            'postingdari' => $data['postingdari']??strtoupper('ENTRY hutang Header'),
+            'idtrans' =>  $hutangHeaderLogTrail->id,
+            'nobuktitrans' => $hutangHeader->nobukti,
+            'aksi' => 'ENTRY',
+            'datajson' => $hutangDetails,
+            'modifiedby' => auth('api')->user()->user,
+        ]);
+
+        /*STORE JURNAL*/
+        $jurnalRequest = [
+            'tanpaprosesnobukti' => 1,
+            'nobukti' => $hutangHeader->nobukti,
+            'tglbukti' => date('Y-m-d', strtotime($data['tglbukti'])),
+            'postingdari' => "ENTRY HUTANG",
+            'statusapproval' => $statusApproval->id,
+            'userapproval' => "",
+            'tglapproval' => "",
+            'modifiedby' => auth('api')->user()->name,
+            'statusformat' => "0",
+            'coakredit_detail' => $coakredit_detail,
+            'coadebet_detail' => $coadebet_detail,
+            'nominal_detail' => $nominal_detail,
+            'keterangan_detail' => $keterangan_detail
+        ];
+
+        $jurnalUmumHeader = (new JurnalUmumHeader())->processStore($jurnalRequest);
+
+        return $hutangHeader;
+    }
+
+    public function processUpdate(HutangHeader $hutangHeader,array $data): HutangHeader
+    {
+        
+        /*STORE HEADER*/
+        $statusCetak = Parameter::where('grp', 'STATUSCETAK')->where('text', 'BELUM CETAK')->first();
+        $getCoaDebet = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'JURNAL HUTANG MANUAL')->where('subgrp', 'DEBET')->first();
+        $memo = json_decode($getCoaDebet->memo, true);
+        $statusApproval = Parameter::from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS APPROVAL')->where('text', 'NON APPROVAL')->first();
+        $proseslain = $data['proseslain'] ?? "";
+        if ($proseslain == "") {
+            $total = array_sum($data['total_detail']);
+            $coa = $memo['JURNAL'];
+        } else {
+            $total = $data['total'];
+            $coa = $data['coa'];
+        }
+        
+        $hutangHeader->coa = $coa;
+        $hutangHeader->supplier_id = $data['supplier_id'];
+        $hutangHeader->postingdari = $data['postingdari'] ?? 'ENTRY HUTANG';
+        $hutangHeader->statuscetak = $statusCetak->id;
+        $hutangHeader->statusapproval = $statusApproval->id;
+        $hutangHeader->total = $total;
+        $hutangHeader->modifiedby = auth('api')->user()->name;
+
+        
+        if (!$hutangHeader->save()) {
+            throw new \Exception("Error storing Hutang header.");
+        }
+
+        $hutangHeaderLogTrail = (new LogTrail())->processStore([
+            'namatabel' => strtoupper($hutangHeader->getTable()),
+            'postingdari' => strtoupper('ENTRY Hutang Header'),
+            'idtrans' => $hutangHeader->id,
+            'nobuktitrans' => $hutangHeader->nobukti,
+            'aksi' => 'ENTRY',
+            'datajson' => $hutangHeader->toArray(),
+            'modifiedby' => auth('api')->user()->user
+        ]);
+        
+        /*DELETE EXISTING JURNAL*/
+        $JurnalUmumDetail = JurnalUmumDetail::where('nobukti', $hutangHeader->nobukti)->lockForUpdate()->delete();
+        $JurnalUmumHeader = JurnalUmumHeader::where('nobukti', $hutangHeader->nobukti)->lockForUpdate()->delete();
+        /*DELETE EXISTING HUTANG*/
+        $hutangDetail = HutangDetail::where('hutang_id', $hutangHeader->id)->lockForUpdate()->delete();
+
+        /* Store detail */
+        $getCoaKredit = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'JURNAL HUTANG MANUAL')->where('subgrp', 'KREDIT')->first();
+        $memoKredit = json_decode($getCoaKredit->memo, true);
+
+        $hutangDetails = [];
+        $coakredit_detail = [];
+        $coadebet_detail = [];
+        $nominal_detail = [];
+        $keterangan_detail = [];
+        
+        for ($i = 0; $i < count($data['total_detail']); $i++) {
+
+            $hutangDetail = (new HutangDetail())->processStore($hutangHeader, [
+                'hutang_id' => $hutangHeader->id,
+                'nobukti' => $hutangHeader->nobukti,
+                'tgljatuhtempo' => date('Y-m-d', strtotime($data['tgljatuhtempo'][$i])),
+                'total' => $data['total_detail'][$i],
+                'cicilan' => '',
+                'totalbayar' => '',
+                'keterangan' => $data['keterangan_detail'][$i],
+                'modifiedby' => $hutangHeader->modifiedby,
+            ]);
+            $hutangDetails[] = $hutangDetail->toArray();
+            $coakredit_detail[] = $memoKredit['JURNAL'];
+            $coadebet_detail[] = $memo['JURNAL'];
+            $nominal_detail[] = $data['total_detail'][$i];
+            $keterangan_detail[] = $data['keterangan_detail'][$i];
+
+        }
+
+        (new LogTrail())->processStore([
+            'namatabel' => strtoupper($hutangDetail->getTable()),
+            'postingdari' => $data['postingdari']??strtoupper('ENTRY hutang Header'),
+            'idtrans' =>  $hutangHeaderLogTrail->id,
+            'nobuktitrans' => $hutangHeader->nobukti,
+            'aksi' => 'ENTRY',
+            'datajson' => $hutangDetails,
+            'modifiedby' => auth('api')->user()->user,
+        ]);
+
+        /*STORE JURNAL*/
+        $jurnalRequest = [
+            'tanpaprosesnobukti' => 1,
+            'nobukti' => $hutangHeader->nobukti,
+            'tglbukti' => date('Y-m-d', strtotime($data['tglbukti'])),
+            'postingdari' => "ENTRY HUTANG",
+            'statusapproval' => $statusApproval->id,
+            'userapproval' => "",
+            'tglapproval' => "",
+            'modifiedby' => auth('api')->user()->name,
+            'statusformat' => "0",
+            'coakredit_detail' => $coakredit_detail,
+            'coadebet_detail' => $coadebet_detail,
+            'nominal_detail' => $nominal_detail,
+            'keterangan_detail' => $keterangan_detail
+        ];
+
+        $jurnalUmumHeader = (new JurnalUmumHeader())->processStore($jurnalRequest);
+
+        return $hutangHeader;
+    }
+
+    public function processDestroy($id): HutangHeader
+    {
+
+        $hutangHeader = HutangHeader::findOrFail($id);
+        $dataHeader =  $hutangHeader->toArray();
+        $hutangDetail = HutangDetail::where('hutang_id', '=', $hutangHeader->id)->get();
+        $dataDetail = $hutangDetail->toArray();
+        
+       /*DELETE EXISTING JURNAL*/
+       $JurnalUmumDetail = JurnalUmumDetail::where('nobukti', $hutangHeader->nobukti)->lockForUpdate()->delete();
+       $JurnalUmumHeader = JurnalUmumHeader::where('nobukti', $hutangHeader->nobukti)->lockForUpdate()->delete();
+       /*DELETE EXISTING HUTANG*/
+       $hutangDetail = HutangDetail::where('hutang_id', $hutangHeader->id)->lockForUpdate()->delete();
+
+        $hutangHeader = $hutangHeader->lockAndDestroy($id);
+
+        $hutangLogTrail = (new LogTrail())->processStore([
+            'namatabel' => $hutangHeader->getTable(),
+            'postingdari' => strtoupper('DELETE penerimaan Stok Header'),
+            'idtrans' => $hutangHeader->id,
+            'nobuktitrans' => $hutangHeader->nobukti,
+            'aksi' => 'DELETE',
+            'datajson' =>$dataHeader,
+            'modifiedby' => auth('api')->user()->name
+        ]);
+
+        (new LogTrail())->processStore([
+            'namatabel' => $hutangDetail->getTable(),
+            'postingdari' => strtoupper('DELETE penerimaan Stok detail'),
+            'idtrans' => $hutangLogTrail['id'],
+            'nobuktitrans' => $hutangDetail->nobukti,
+            'aksi' => 'DELETE',
+            'datajson' =>$dataDetail,
+            'modifiedby' => auth('api')->user()->name
+        ]);
+
+        return $penerimaanStokHeader;
+    }
+
+
 }
