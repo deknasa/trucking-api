@@ -400,7 +400,6 @@ class UpahSupirRincian extends MyModel
         }
     }
 
-<<<<<<< Updated upstream
     
     public function sort($query)
     {
@@ -492,7 +491,8 @@ class UpahSupirRincian extends MyModel
     public function paginate($query)
     {
         return $query->skip($this->params['offset'])->take($this->params['limit']);
-=======
+    }
+    
     public function processStore(UpahSupir $upahsupir, array $data): UpahSupirRincian
     {
         $upahSupirRincian = new UpahSupirRincian();
@@ -511,6 +511,5 @@ class UpahSupirRincian extends MyModel
         }
 
         return $upahSupirRincian;
->>>>>>> Stashed changes
     }
 }
