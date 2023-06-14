@@ -323,10 +323,6 @@ class SupplierController extends Controller
                     'label' => 'No',
                 ],
                 [
-                    'label' => 'ID',
-                    'index' => 'id',
-                ],
-                [
                     'label' => 'Nama Supplier',
                     'index' => 'namasupplier',
                 ],
