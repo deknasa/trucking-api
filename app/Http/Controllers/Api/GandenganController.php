@@ -96,89 +96,14 @@ class GandenganController extends Controller
     {
         DB::beginTransaction();
         try {
-            $gandengan = new Gandengan();
-            $gandengan->kodegandengan = $request->kodegandengan;
-            $gandengan->keterangan = $request->keterangan ?? '';
-            $gandengan->statusaktif = $request->statusaktif;
-            $gandengan->modifiedby = auth('api')->user()->name;
-
-            if ($gandengan->save()) {
-                $logTrail = [
-                    'namatabel' => strtoupper($gandengan->getTable()),
-                    'postingdari' => 'ENTRY GANDENGAN',
-                    'idtrans' => $gandengan->id,
-                    'nobuktitrans' => $gandengan->id,
-                    'aksi' => 'ENTRY',
-                    'datajson' => $gandengan->toArray(),
-                    'modifiedby' => $gandengan->modifiedby
-                ];
-
-                $validatedLogTrail = new StoreLogTrailRequest($logTrail);
-                $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
-
-                $param1 = $gandengan->id;
-                $param2 = $gandengan->modifiedby;
-                $stokgudang = Stok::from(DB::raw("stok with (readuncommitted)"))
-                    ->select(DB::raw(
-                        "stok.id as stok_id,
-                        0  as gudang_id,
-                    0 as trado_id,"
-                            . $param1 . " as gandengan_id,
-                    0 as qty,'"
-                            . $param2 . "' as modifiedby"
-                    ))
-                    ->leftjoin('stokpersediaan', function ($join) use ($param1) {
-                        $join->on('stokpersediaan.stok_id', '=', 'stok.id');
-                        $join->on('stokpersediaan.gandengan_id', '=', DB::raw("'" . $param1 . "'"));
-                    })
-                    ->where(DB::raw("isnull(stokpersediaan.id,0)"), '=', 0);
-
-
-
-                $datadetail = json_decode($stokgudang->get(), true);
-
-                $dataexist = $stokgudang->exists();
-                $detaillogtrail = [];
-                foreach ($datadetail as $item) {
-
-
-                    $stokpersediaan = new StokPersediaan();
-                    $stokpersediaan->stok_id = $item['stok_id'];
-                    $stokpersediaan->gudang_id = $item['gudang_id'];
-                    $stokpersediaan->trado_id = $item['trado_id'];
-                    $stokpersediaan->gandengan_id = $item['gandengan_id'];
-                    $stokpersediaan->qty = $item['qty'];
-                    $stokpersediaan->modifiedby = $item['modifiedby'];
-                    $stokpersediaan->save();
-                    $detaillogtrail[] = $stokpersediaan->toArray();
-                }
-
-                if ($dataexist == true) {
-
-                    $logTrail = [
-                        'namatabel' => strtoupper($stokpersediaan->getTable()),
-                        'postingdari' => 'STOK PERSEDIAAN',
-                        'idtrans' => $gandengan->id,
-                        'nobuktitrans' => $gandengan->id,
-                        'aksi' => 'EDIT',
-                        'datajson' => json_encode($detaillogtrail),
-                        'modifiedby' => $gandengan->modifiedby
-                    ];
-
-                    $validatedLogTrail = new StoreLogTrailRequest($logTrail);
-                    app(LogTrailController::class)->store($validatedLogTrail);
-                }
-
-
-                DB::commit();
-            }
-
-            /* Set position and page */
+            $gandengan = (new Gandengan())->processStore($request->all());
             $selected = $this->getPosition($gandengan, $gandengan->getTable());
             $gandengan->position = $selected->position;
             $gandengan->page = ceil($gandengan->position / ($request->limit ?? 10));
 
-            return response([
+            DB::commit();
+
+            return response()->json([
                 'status' => true,
                 'message' => 'Berhasil disimpan',
                 'data' => $gandengan
@@ -213,88 +138,93 @@ class GandenganController extends Controller
     {
         DB::beginTransaction();
         try {
-            $gandengan->kodegandengan = $request->kodegandengan;
-            $gandengan->keterangan = $request->keterangan ?? '';
-            $gandengan->statusaktif = $request->statusaktif;
-            $gandengan->modifiedby = auth('api')->user()->name;
 
-            if ($gandengan->save()) {
-                $logTrail = [
-                    'namatabel' => strtoupper($gandengan->getTable()),
-                    'postingdari' => 'EDIT GANDENGAN',
-                    'idtrans' => $gandengan->id,
-                    'nobuktitrans' => $gandengan->id,
-                    'aksi' => 'EDIT',
-                    'datajson' => $gandengan->toArray(),
-                    'modifiedby' => $gandengan->modifiedby
-                ];
-
-                $validatedLogTrail = new StoreLogTrailRequest($logTrail);
-                $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
-
-                $param1 = $gandengan->id;
-                $param2 = $gandengan->modifiedby;
-                $stokgudang = Stok::from(DB::raw("stok with (readuncommitted)"))
-                    ->select(DB::raw(
-                        "stok.id as stok_id,
-                        0  as gudang_id,
-                    0 as trado_id,"
-                            . $param1 . " as gandengan_id,
-                    0 as qty,'"
-                            . $param2 . "' as modifiedby"
-                    ))
-                    ->leftjoin('stokpersediaan', function ($join) use ($param1) {
-                        $join->on('stokpersediaan.stok_id', '=', 'stok.id');
-                        $join->on('stokpersediaan.gandengan_id', '=', DB::raw("'" . $param1 . "'"));
-                    })
-                    ->where(DB::raw("isnull(stokpersediaan.id,0)"), '=', 0);
-
-
-
-                $datadetail = json_decode($stokgudang->get(), true);
-
-                $dataexist = $stokgudang->exists();
-                $detaillogtrail = [];
-                foreach ($datadetail as $item) {
-
-
-                    $stokpersediaan = new StokPersediaan();
-                    $stokpersediaan->stok_id = $item['stok_id'];
-                    $stokpersediaan->gudang_id = $item['gudang_id'];
-                    $stokpersediaan->trado_id = $item['trado_id'];
-                    $stokpersediaan->gandengan_id = $item['gandengan_id'];
-                    $stokpersediaan->qty = $item['qty'];
-                    $stokpersediaan->modifiedby = $item['modifiedby'];
-                    $stokpersediaan->save();
-                    $detaillogtrail[] = $stokpersediaan->toArray();
-                }
-
-                if ($dataexist == true) {
-
-                    $logTrail = [
-                        'namatabel' => strtoupper($stokpersediaan->getTable()),
-                        'postingdari' => 'STOK PERSEDIAAN',
-                        'idtrans' => $gandengan->id,
-                        'nobuktitrans' => $gandengan->id,
-                        'aksi' => 'EDIT',
-                        'datajson' => json_encode($detaillogtrail),
-                        'modifiedby' => $gandengan->modifiedby
-                    ];
-
-                    $validatedLogTrail = new StoreLogTrailRequest($logTrail);
-                    app(LogTrailController::class)->store($validatedLogTrail);
-                }
-
-
-                DB::commit();
-            }
-
-            /* Set position and page */
-            $selected = $this->getPosition($gandengan, $gandengan->getTable());
-            $gandengan->position = $selected->position;
+            $gandengan = (new Gandengan())->processUpdate($gandengan, $request->all());
+            $gandengan->position = $this->getPosition($gandengan, $gandengan->getTable())->position;
             $gandengan->page = ceil($gandengan->position / ($request->limit ?? 10));
 
-            return response([
+            // $gandengan->kodegandengan = $request->kodegandengan;
+            // $gandengan->keterangan = $request->keterangan ?? '';
+            // $gandengan->statusaktif = $request->statusaktif;
+            // $gandengan->modifiedby = auth('api')->user()->name;
+
+            // if ($gandengan->save()) {
+            //     $logTrail = [
+            //         'namatabel' => strtoupper($gandengan->getTable()),
+            //         'postingdari' => 'EDIT GANDENGAN',
+            //         'idtrans' => $gandengan->id,
+            //         'nobuktitrans' => $gandengan->id,
+            //         'aksi' => 'EDIT',
+            //         'datajson' => $gandengan->toArray(),
+            //         'modifiedby' => $gandengan->modifiedby
+            //     ];
+
+            //     $validatedLogTrail = new StoreLogTrailRequest($logTrail);
+            //     $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
+
+                // $param1 = $gandengan->id;
+                // $param2 = $gandengan->modifiedby;
+                // $stokgudang = Stok::from(DB::raw("stok with (readuncommitted)"))
+                //     ->select(DB::raw(
+                //         "stok.id as stok_id,
+                //         0  as gudang_id,
+                //     0 as trado_id,"
+                //             . $param1 . " as gandengan_id,
+                //     0 as qty,'"
+                //             . $param2 . "' as modifiedby"
+                //     ))
+                //     ->leftjoin('stokpersediaan', function ($join) use ($param1) {
+                //         $join->on('stokpersediaan.stok_id', '=', 'stok.id');
+                //         $join->on('stokpersediaan.gandengan_id', '=', DB::raw("'" . $param1 . "'"));
+                //     })
+                //     ->where(DB::raw("isnull(stokpersediaan.id,0)"), '=', 0);
+
+
+
+                // $datadetail = json_decode($stokgudang->get(), true);
+
+                // $dataexist = $stokgudang->exists();
+                // $detaillogtrail = [];
+                // foreach ($datadetail as $item) {
+
+
+                //     $stokpersediaan = new StokPersediaan();
+                //     $stokpersediaan->stok_id = $item['stok_id'];
+                //     $stokpersediaan->gudang_id = $item['gudang_id'];
+                //     $stokpersediaan->trado_id = $item['trado_id'];
+                //     $stokpersediaan->gandengan_id = $item['gandengan_id'];
+                //     $stokpersediaan->qty = $item['qty'];
+                //     $stokpersediaan->modifiedby = $item['modifiedby'];
+                //     $stokpersediaan->save();
+                //     $detaillogtrail[] = $stokpersediaan->toArray();
+                // }
+
+                // if ($dataexist == true) {
+
+                //     $logTrail = [
+                //         'namatabel' => strtoupper($stokpersediaan->getTable()),
+                //         'postingdari' => 'STOK PERSEDIAAN',
+                //         'idtrans' => $gandengan->id,
+                //         'nobuktitrans' => $gandengan->id,
+                //         'aksi' => 'EDIT',
+                //         'datajson' => json_encode($detaillogtrail),
+                //         'modifiedby' => $gandengan->modifiedby
+                //     ];
+
+                //     $validatedLogTrail = new StoreLogTrailRequest($logTrail);
+                //     app(LogTrailController::class)->store($validatedLogTrail);
+                // }
+
+
+            DB::commit();
+            // }
+
+            // /* Set position and page */
+            // $selected = $this->getPosition($gandengan, $gandengan->getTable());
+            // $gandengan->position = $selected->position;
+            // $gandengan->page = ceil($gandengan->position / ($request->limit ?? 10));
+
+            return response()->json([
                 'status' => true,
                 'message' => 'Berhasil diubah',
                 'data' => $gandengan
@@ -313,43 +243,24 @@ class GandenganController extends Controller
     {
         DB::beginTransaction();
 
-        $gandengan = new Gandengan();
-        $gandengan = $gandengan->lockAndDestroy($id);
-        if ($gandengan) {
-            $logTrail = [
-                'namatabel' => strtoupper($gandengan->getTable()),
-                'postingdari' => 'DELETE GANDENGAN',
-                'idtrans' => $gandengan->id,
-                'nobuktitrans' => $gandengan->id,
-                'aksi' => 'DELETE',
-                'datajson' => $gandengan->toArray(),
-                'modifiedby' => auth('api')->user()->name
-            ];
-
-            $validatedLogTrail = new StoreLogTrailRequest($logTrail);
-            $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
-
-            DB::commit();
-
-
-            /* Set position and page */
+        try {
+            $gandengan = (new Gandengan())->processDestroy($id);
             $selected = $this->getPosition($gandengan, $gandengan->getTable(), true);
             $gandengan->position = $selected->position;
             $gandengan->id = $selected->id;
             $gandengan->page = ceil($gandengan->position / ($request->limit ?? 10));
+
+            DB::commit();
 
             return response([
                 'status' => true,
                 'message' => 'Berhasil dihapus',
                 'data' => $gandengan
             ]);
-        } else {
+        } catch (\Throwable $th) {
             DB::rollBack();
 
-            return response([
-                'status' => false,
-                'message' => 'Gagal dihapus'
-            ]);
+            throw $th;
         }
     }
 

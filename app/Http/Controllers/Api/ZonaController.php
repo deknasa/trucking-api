@@ -87,35 +87,11 @@ class ZonaController extends Controller
         DB::beginTransaction();
 
         try {
-            $zona = new Zona();
-            $zona->zona = $request->zona;
-            $zona->statusaktif = $request->statusaktif;
-            $zona->keterangan = $request->keterangan ?? '';
-            $zona->modifiedby = auth('api')->user()->name;
-            $request->sortname = $request->sortname ?? 'id';
-            $request->sortorder = $request->sortorder ?? 'asc';
-
-            if ($zona->save()) {
-                $logTrail = [
-                    'namatabel' => strtoupper($zona->getTable()),
-                    'postingdari' => 'ENTRY ZONA',
-                    'idtrans' => $zona->id,
-                    'nobuktitrans' => $zona->id,
-                    'aksi' => 'ENTRY',
-                    'datajson' => $zona->toArray(),
-                    'modifiedby' => $zona->modifiedby
-                ];
-
-                $validatedLogTrail = new StoreLogTrailRequest($logTrail);
-                $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
-
-                DB::commit();
-            }
-
-            /* Set position and page */
-            $selected = $this->getPosition($zona, $zona->getTable());
-            $zona->position = $selected->position;
+            $zona = (new Zona())->processStore($request->all());
+            $zona->position = $this->getPosition($zona, $zona->getTable())->position;
             $zona->page = ceil($zona->position / ($request->limit ?? 10));
+
+            DB::commit();
 
             return response([
                 'status' => true,
@@ -143,31 +119,11 @@ class ZonaController extends Controller
     {
         DB::beginTransaction();
         try {
-            $zona->zona = $request->zona;
-            $zona->keterangan = $request->keterangan ?? '';
-            $zona->statusaktif = $request->statusaktif;
-            $zona->modifiedby = auth('api')->user()->name;
-
-            if ($zona->save()) {
-                $logTrail = [
-                    'namatabel' => strtoupper($zona->getTable()),
-                    'postingdari' => 'EDIT ZONA',
-                    'idtrans' => $zona->id,
-                    'nobuktitrans' => $zona->id,
-                    'aksi' => 'EDIT',
-                    'datajson' => $zona->toArray(),
-                    'modifiedby' => $zona->modifiedby
-                ];
-
-                $validatedLogTrail = new StoreLogTrailRequest($logTrail);
-                app(LogTrailController::class)->store($validatedLogTrail);
-            }
+            $zona = (new Zona())->processUpdate($zona, $request->all());
+            $zona->position = $this->getPosition($zona, $zona->getTable())->position;
+            $zona->page = ceil($zona->position / ($request->limit ?? 10));
 
             DB::commit();
-            /* Set position and page */
-            $selected = $this->getPosition($zona, $zona->getTable());
-            $zona->position = $selected->position;
-            $zona->page = ceil($zona->position / ($request->limit ?? 10));
 
             return response([
                 'status' => true,
@@ -185,42 +141,25 @@ class ZonaController extends Controller
     public function destroy(DestroyZonaRequest $request, $id)
     {
         DB::beginTransaction();
+        try {
 
-        $zona = new Zona();
-        $zona = $zona->lockAndDestroy($id);
-
-        if ($zona) {
-            $logTrail = [
-                'namatabel' => strtoupper($zona->getTable()),
-                'postingdari' => 'DELETE ZONA',
-                'idtrans' => $zona->id,
-                'nobuktitrans' => $zona->id,
-                'aksi' => 'DELETE',
-                'datajson' => $zona->toArray(),
-                'modifiedby' => auth('api')->user()->name
-            ];
-
-            $validatedLogTrail = new StoreLogTrailRequest($logTrail);
-            app(LogTrailController::class)->store($validatedLogTrail);
-            DB::commit();
-
+            $zona = (new Zona())->processDestroy($id);
             $selected = $this->getPosition($zona, $zona->getTable(), true);
             $zona->position = $selected->position;
             $zona->id = $selected->id;
             $zona->page = ceil($zona->position / ($request->limit ?? 10));
+
+            DB::commit();
 
             return response([
                 'status' => true,
                 'message' => 'Berhasil dihapus',
                 'data' => $zona
             ]);
-        } else {
+        }catch (\Throwable $th) {
             DB::rollBack();
 
-            return response([
-                'status' => false,
-                'message' => 'Gagal dihapus'
-            ]);
+            throw $th;
         }
     }
 

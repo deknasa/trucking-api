@@ -498,4 +498,51 @@ class OrderanTrucking extends MyModel
     {
         return $query->skip($this->params['offset'])->take($this->params['limit']);
     }
+
+    public function getExport($id)
+    {
+        $this->setRequestParameters();
+
+        $getJudul = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))
+        ->select('text')
+        ->where('grp', 'JUDULAN LAPORAN')
+        ->where('subgrp', 'JUDULAN LAPORAN')
+        ->first();
+
+        $query = DB::table($this->table)->from(
+            DB::raw($this->table . " with (readuncommitted)")
+        )
+            ->select(
+                'orderantrucking.id',
+                'orderantrucking.nobukti',
+                'orderantrucking.tglbukti',
+                'container.keterangan as container_id',
+                'agen.namaagen as agen_id',
+                'jenisorder.keterangan as jenisorder_id',
+                'pelanggan.namapelanggan as pelanggan_id',
+                'tarif.tujuan as tarif_id',
+                'orderantrucking.nominal',
+                'orderantrucking.nojobemkl',
+                'orderantrucking.nocont',
+                'orderantrucking.noseal',
+                'orderantrucking.nojobemkl2',
+                'orderantrucking.nocont2',
+                'orderantrucking.noseal2',
+                'parameter.memo as statuslangsir',
+                'param2.memo as statusperalihan',
+                DB::raw("'Laporan Absensi Supir Header' as judulLaporan"),
+                DB::raw("'" . $getJudul->text . "' as judul")
+            )
+            ->leftJoin(DB::raw("tarif with (readuncommitted)"), 'orderantrucking.tarif_id', '=', 'tarif.id')
+            ->leftJoin(DB::raw("container with (readuncommitted)"), 'orderantrucking.container_id', '=', 'container.id')
+            ->leftJoin(DB::raw("agen with (readuncommitted)"), 'orderantrucking.agen_id', '=', 'agen.id')
+            ->leftJoin(DB::raw("jenisorder with (readuncommitted)"), 'orderantrucking.jenisorder_id', '=', 'jenisorder.id')
+            ->leftJoin(DB::raw("pelanggan with (readuncommitted)"), 'orderantrucking.pelanggan_id', '=', 'pelanggan.id')
+            ->leftJoin(DB::raw("parameter with (readuncommitted)"), 'orderantrucking.statuslangsir', '=', 'parameter.id')
+            ->leftJoin(DB::raw("parameter AS param2 with (readuncommitted)"), 'orderantrucking.statusperalihan', '=', 'param2.id')
+            ->where("$this->table.id", $id);
+
+        $data = $query->first();
+        return $data;
+    }
 }

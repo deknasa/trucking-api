@@ -400,6 +400,7 @@ class UpahSupirRincian extends MyModel
         }
     }
 
+<<<<<<< Updated upstream
     
     public function sort($query)
     {
@@ -491,5 +492,25 @@ class UpahSupirRincian extends MyModel
     public function paginate($query)
     {
         return $query->skip($this->params['offset'])->take($this->params['limit']);
+=======
+    public function processStore(UpahSupir $upahsupir, array $data): UpahSupirRincian
+    {
+        $upahSupirRincian = new UpahSupirRincian();
+        $upahSupirRincian->upahsupir_id = $data['upahsupir_id'];
+        $upahSupirRincian->container_id = $data['container_id'];
+        $upahSupirRincian->statuscontainer_id = $data['statuscontainer_id'];
+        $upahSupirRincian->nominalsupir = $data['nominalsupir'];
+        $upahSupirRincian->nominalkenek = $data['nominalkenek'];
+        $upahSupirRincian->nominalkomisi = $data['nominalkomisi'];
+        $upahSupirRincian->nominaltol = $data['nominaltol'];
+        $upahSupirRincian->liter = $data['liter'];
+        $upahSupirRincian->modifiedby = auth('api')->user()->name;
+        
+        if (!$upahSupirRincian->save()) {
+            throw new \Exception("Error storing upah supir in detail.");
+        }
+
+        return $upahSupirRincian;
+>>>>>>> Stashed changes
     }
 }

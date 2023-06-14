@@ -150,4 +150,69 @@ class Error extends MyModel
     {
         return $query->skip($this->params['offset'])->take($this->params['limit']);
     }
+
+    public function processStore(array $data): Error
+    {
+        $error = new Error();
+        $error->kodeerror = $data['kodeerror'];
+        $error->keterangan = $data['keterangan'];
+        $error->modifiedby = auth('api')->user()->user;
+
+        if (!$error->save()) {
+            throw new \Exception('Error storing error.');
+        }
+
+        (new LogTrail())->processStore([
+            'namatabel' => strtoupper($error->getTable()),
+                'postingdari' => 'ENTRY ERROR',
+                'idtrans' => $error->id,
+                'nobuktitrans' => $error->id,
+                'aksi' => 'ENTRY',
+                'datajson' => $error->toArray(),
+                'modifiedby' => $error->modifiedby
+        ]);
+
+        return $error;
+    }
+
+    public function processUpdate(Error $error, array $data): Error
+    {
+        $error->kodeerror = $data['kodeerror'];
+        $error->keterangan = $data['keterangan'];
+        $error->modifiedby = auth('api')->user()->user;
+       
+        if (!$error->save()) {
+            throw new \Exception('Error updating cabang.');
+        }
+
+        (new LogTrail())->processStore([
+            'namatabel' => strtoupper($error->getTable()),
+            'postingdari' => 'EDIT ERROR',
+            'idtrans' => $error->id,
+            'nobuktitrans' => $error->id,
+            'aksi' => 'EDIT',
+            'datajson' => $error->toArray(),
+            'modifiedby' => $error->modifiedby
+        ]);
+
+        return $error;
+    }
+
+    public function processDestroy($id): Error
+    {
+        $error = new Error();
+        $error = $error->lockAndDestroy($id);
+
+        (new LogTrail())->processStore([
+            'namatabel' => strtoupper($error->getTable()),
+            'postingdari' => 'DELETE ERROR',
+            'idtrans' => $error->id,
+            'nobuktitrans' => $error->id,
+            'aksi' => 'DELETE',
+            'datajson' => $error->toArray(),
+            'modifiedby' => $error->modifiedby
+        ]);
+
+        return $error;
+    }
 }

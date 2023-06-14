@@ -10,6 +10,7 @@ use App\Http\Requests\StoreLogTrailRequest;
 use App\Http\Requests\UpdateKaryawanRequest;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Http\JsonResponse;
 
 class KaryawanController extends Controller
 {
@@ -74,42 +75,19 @@ class KaryawanController extends Controller
     /**
      * @ClassName 
      */
-    public function store(StoreKaryawanRequest $request)
+    public function store(StoreKaryawanRequest $request): JsonResponse
     {
         DB::beginTransaction();
         try {
-
-            $karyawan = new Karyawan();
-            $karyawan->namakaryawan = $request->namakaryawan;
-            $karyawan->keterangan = $request->keterangan ?? '';
-            $karyawan->statusaktif = $request->statusaktif;
-            $karyawan->statusstaff = $request->statusstaff;
-            $karyawan->modifiedby = auth('api')->user()->name;
-
-            if ($karyawan->save()) {
-                $logTrail = [
-                    'namatabel' => strtoupper($karyawan->getTable()),
-                    'postingdari' => 'ENTRY KARYAWAN',
-                    'idtrans' => $karyawan->id,
-                    'nobuktitrans' => $karyawan->id,
-                    'aksi' => 'ENTRY',
-                    'datajson' => $karyawan->toArray(),
-                    'modifiedby' => $karyawan->modifiedby
-                ];
-
-                $validatedLogTrail = new StoreLogTrailRequest($logTrail);
-                app(LogTrailController::class)->store($validatedLogTrail);
-            }
-
-            DB::commit();
-            /* Set position and page */
-            $selected = $this->getPosition($karyawan, $karyawan->getTable());
-            $karyawan->position = $selected->position;
+            $karyawan = (new Karyawan())->processStore($request->all());
+            $karyawan->position = $this->getPosition($karyawan, $karyawan->getTable())->position;
             $karyawan->page = ceil($karyawan->position / ($request->limit ?? 10));
 
-            return response([
+            DB::commit();
+
+            return response()->json([
                 'status' => true,
-                'message' => 'Berhasil disimpan',
+                'message' => 'Berhasil disimpan.',
                 'data' => $karyawan
             ], 201);
         } catch (\Throwable $th) {
@@ -117,7 +95,6 @@ class KaryawanController extends Controller
             throw $th;
         }
     }
-
 
     public function show(Karyawan $karyawan)
     {
@@ -133,33 +110,13 @@ class KaryawanController extends Controller
     public function update(UpdateKaryawanRequest $request, Karyawan $karyawan)
     {
         DB::beginTransaction();
+
         try {
-            $karyawan->namakaryawan = $request->namakaryawan;
-            $karyawan->keterangan = $request->keterangan ?? '';
-            $karyawan->statusaktif = $request->statusaktif;
-            $karyawan->statusstaff = $request->statusstaff;
-            $karyawan->modifiedby = auth('api')->user()->name;
-
-            if ($karyawan->save()) {
-                $logTrail = [
-                    'namatabel' => strtoupper($karyawan->getTable()),
-                    'postingdari' => 'EDIT KARYAWAN',
-                    'idtrans' => $karyawan->id,
-                    'nobuktitrans' => $karyawan->id,
-                    'aksi' => 'EDIT',
-                    'datajson' => $karyawan->toArray(),
-                    'modifiedby' => $karyawan->modifiedby
-                ];
-
-                $validatedLogTrail = new StoreLogTrailRequest($logTrail);
-                app(LogTrailController::class)->store($validatedLogTrail);
-            }
+            $karyawan = (new Karyawan())->processUpdate($karyawan, $request->all());
+            $karyawan->position = $this->getPosition($karyawan, $karyawan->getTable())->position;
+            $karyawan->page = ceil($karyawan->position / ($request->limit ?? 10));
 
             DB::commit();
-            /* Set position and page */
-            $selected = $this->getPosition($karyawan, $karyawan->getTable());
-            $karyawan->position = $selected->position;
-            $karyawan->page = ceil($karyawan->position / ($request->limit ?? 10));
 
             return response([
                 'status' => true,
@@ -179,43 +136,24 @@ class KaryawanController extends Controller
     {
         DB::beginTransaction();
 
-        $karyawan = new Karyawan();
-        $karyawan = $karyawan->lockAndDestroy($id);
-
-        if ($karyawan) {
-            $logTrail = [
-                'namatabel' => strtoupper($karyawan->getTable()),
-                'postingdari' => 'DELETE KARYAWAN',
-                'idtrans' => $karyawan->id,
-                'nobuktitrans' => $karyawan->id,
-                'aksi' => 'DELETE',
-                'datajson' => $karyawan->toArray(),
-                'modifiedby' => auth('api')->user()->name
-            ];
-
-            $validatedLogTrail = new StoreLogTrailRequest($logTrail);
-            app(LogTrailController::class)->store($validatedLogTrail);
-
-
-            DB::commit();
-
+        try{
+            $karyawan = (new Karyawan())->processDestroy($id);
             $selected = $this->getPosition($karyawan, $karyawan->getTable(), true);
             $karyawan->position = $selected->position;
             $karyawan->id = $selected->id;
             $karyawan->page = ceil($karyawan->position / ($request->limit ?? 10));
+
+            DB::commit();
 
             return response([
                 'status' => true,
                 'message' => 'Berhasil dihapus',
                 'data' => $karyawan
             ]);
-        } else {
+        } catch (\Throwable $th) {
             DB::rollBack();
 
-            return response([
-                'status' => false,
-                'message' => 'Gagal dihapus'
-            ]);
+            throw $th;
         }
     }
 

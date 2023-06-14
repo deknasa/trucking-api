@@ -15,7 +15,7 @@ use App\Http\Requests\UpdateUpahRitasiRequest;
 use App\Http\Requests\StoreUpahRitasiRincianRequest;
 use App\Http\Requests\UpdateUpahRitasiRincianRequest;
 use App\Http\Requests\StoreLogTrailRequest;
-
+use Illuminate\Http\JsonResponse;
 use App\Models\LogTrail;
 use App\Models\Parameter;
 use Illuminate\Database\QueryException;
@@ -82,83 +82,18 @@ class UpahRitasiController extends Controller
     /**
      * @ClassName 
      */
-    public function store(StoreUpahRitasiRequest $request)
+    public function store(StoreUpahRitasiRequest $request): JsonResponse
     {
         DB::beginTransaction();
 
         try {
-            $upahritasi = new UpahRitasi();
-
-            $upahritasi->parent_id = $request->parent_id ?? 0;
-            $upahritasi->kotadari_id = $request->kotadari_id;
-            $upahritasi->kotasampai_id = $request->kotasampai_id;
-            $upahritasi->jarak = $request->jarak;
-            $upahritasi->statusaktif = $request->statusaktif;
-            $upahritasi->tglmulaiberlaku = date('Y-m-d', strtotime($request->tglmulaiberlaku));
-
-            $upahritasi->modifiedby = auth('api')->user()->name;
-
-            if ($upahritasi->save()) {
-                $logTrail = [
-                    'namatabel' => strtoupper($upahritasi->getTable()),
-                    'postingdari' => 'ENTRY UPAH RITASI',
-                    'idtrans' => $upahritasi->id,
-                    'nobuktitrans' => $upahritasi->id,
-                    'aksi' => 'ENTRY',
-                    'datajson' => $upahritasi->toArray(),
-                    'modifiedby' => $upahritasi->modifiedby
-                ];
-                $validatedLogTrail = new StoreLogTrailRequest($logTrail);
-                $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
-                /* Store detail */
-                $detaillog = [];
-                for ($i = 0; $i < count($request->nominalsupir); $i++) {
-                    $datadetail = [
-                        'upahritasi_id' => $upahritasi->id,
-                        'container_id' => $request->container_id[$i],
-                        'nominalsupir' => $request->nominalsupir[$i],
-                        'liter' => $request->liter[$i] ?? 0,
-                        'modifiedby' => $upahritasi->modifiedby,
-                    ];
-                    $data = new StoreUpahRitasiRincianRequest($datadetail);
-                    $datadetails = app(UpahRitasiRincianController::class)->store($data);
-
-                    if ($datadetails['error']) {
-                        return response($datadetails, 422);
-                    } else {
-                        $iddetail = $datadetails['id'];
-                        $tabeldetail = $datadetails['tabel'];
-                    }
-
-                    $detaillog[] = $datadetails['detail']->toArray();
-                }
-
-
-                $datalogtrail = [
-                    'namatabel' => strtoupper($tabeldetail),
-                    'postingdari' => 'ENTRY UPAH RITASI RINCIAN',
-                    'idtrans' =>  $storedLogTrail['id'],
-                    'nobuktitrans' => $upahritasi->id,
-                    'aksi' => 'ENTRY',
-                    'datajson' => $detaillog,
-                    'modifiedby' => $upahritasi->modifiedby,
-                ];
-
-                $data = new StoreLogTrailRequest($datalogtrail);
-                app(LogTrailController::class)->store($data);
-
-                $request->sortname = $request->sortname ?? 'id';
-                $request->sortorder = $request->sortorder ?? 'asc';
-
-                DB::commit();
-            }
-
-            /* Set position and page */
-            $selected = $this->getPosition($upahritasi, $upahritasi->getTable());
-            $upahritasi->position = $selected->position;
+            $upahritasi = (new upahritasi())->processStore($request->all());
+            $upahritasi->position = $this->getPosition($upahritasi, $upahritasi->getTable())->position;
             $upahritasi->page = ceil($upahritasi->position / ($request->limit ?? 10));
 
-            return response([
+            DB::commit();
+
+            return response()->json([
                 'status' => true,
                 'message' => 'Berhasil disimpan',
                 'data' => $upahritasi
@@ -188,82 +123,19 @@ class UpahRitasiController extends Controller
     /**
      * @ClassName 
      */
-    public function update(UpdateUpahRitasiRequest $request, UpahRitasi $upahritasi)
+    public function update(UpdateUpahRitasiRequest $request, UpahRitasi $upahritasi): JsonResponse
     {
         DB::beginTransaction();
 
         try {
-            $upahritasi->parent_id = $request->parent_id ?? 0;
-            $upahritasi->kotadari_id = $request->kotadari_id;
-            $upahritasi->kotasampai_id = $request->kotasampai_id;
-            $upahritasi->jarak = $request->jarak;
-            $upahritasi->statusaktif = $request->statusaktif;
-            $upahritasi->tglmulaiberlaku = date('Y-m-d', strtotime($request->tglmulaiberlaku));
-
-            $upahritasi->modifiedby = auth('api')->user()->name;
-
-            if ($upahritasi->save()) {
-                $logTrail = [
-                    'namatabel' => strtoupper($upahritasi->getTable()),
-                    'postingdari' => 'EDIT UPAH RITASI',
-                    'idtrans' => $upahritasi->id,
-                    'nobuktitrans' => $upahritasi->id,
-                    'aksi' => 'EDIT',
-                    'datajson' => $upahritasi->toArray(),
-                    'modifiedby' => $upahritasi->modifiedby
-                ];
-                $validatedLogTrail = new StoreLogTrailRequest($logTrail);
-                $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
-
-                UpahRitasiRincian::where('upahritasi_id', $upahritasi->id)->delete();
-                /* Store detail */
-                $detaillog = [];
-                for ($i = 0; $i < count($request->nominalsupir); $i++) {
-                    $datadetail = [
-                        'upahritasi_id' => $upahritasi->id,
-                        'container_id' => $request->container_id[$i],
-                        'nominalsupir' => $request->nominalsupir[$i],
-                        'liter' => $request->liter[$i] ?? 0,
-                        'modifiedby' => $upahritasi->modifiedby,
-                    ];
-
-                    $data = new StoreUpahRitasiRincianRequest($datadetail);
-                    $datadetails = app(UpahRitasiRincianController::class)->store($data);
-
-                    if ($datadetails['error']) {
-                        return response($datadetails, 422);
-                    } else {
-                        $iddetail = $datadetails['id'];
-                        $tabeldetail = $datadetails['tabel'];
-                    }
-
-                    $detaillog[] = $datadetails['detail']->toArray();
-                }
-
-                $datalogtrail = [
-                    'namatabel' => strtoupper($tabeldetail),
-                    'postingdari' => 'EDIT UPAH RITASI RINCIAN',
-                    'idtrans' =>  $storedLogTrail['id'],
-                    'nobuktitrans' => $upahritasi->id,
-                    'aksi' => 'EDIT',
-                    'datajson' => $detaillog,
-                    'modifiedby' => $upahritasi->modifiedby,
-                ];
-
-                $data = new StoreLogTrailRequest($datalogtrail);
-                app(LogTrailController::class)->store($data);
-            }
-            $request->sortname = $request->sortname ?? 'id';
-            $request->sortorder = $request->sortorder ?? 'asc';
-            DB::commit();
-
-
-            /* Set position and page */
-            $selected = $this->getPosition($upahritasi, $upahritasi->getTable());
-            $upahritasi->position = $selected->position;
+               
+            $upahritasi = (new UpahRitasi())->processUpdate($upahritasi, $request->all());
+            $upahritasi->position = $this->getPosition($upahritasi, $upahritasi->getTable())->position;
             $upahritasi->page = ceil($upahritasi->position / ($request->limit ?? 10));
 
-            return response([
+            DB::commit();
+
+            return response()->json([
                 'status' => true,
                 'message' => 'Berhasil disimpan',
                 'data' => $upahritasi
@@ -282,56 +154,25 @@ class UpahRitasiController extends Controller
 
         DB::beginTransaction();
 
-        $getDetail = UpahRitasiRincian::where('upahritasi_id', $id)->get();
-        $upahRitasi = new UpahRitasi();
-        $upahRitasi = $upahRitasi->lockAndDestroy($id);
-        if ($upahRitasi) {
-            $logTrail = [
-                'namatabel' => strtoupper($upahRitasi->getTable()),
-                'postingdari' => 'DELETE UPAH RITASI',
-                'idtrans' => $upahRitasi->id,
-                'nobuktitrans' => $upahRitasi->id,
-                'aksi' => 'DELETE',
-                'datajson' => $upahRitasi->toArray(),
-                'modifiedby' => auth('api')->user()->name
-            ];
-
-            $validatedLogTrail = new StoreLogTrailRequest($logTrail);
-            $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
-
-            // DELETE UPAH RITASI RINCIAN
-            $logTrailUpahRitasiRincian = [
-                'namatabel' => 'UPAHRITASIRINCIAN',
-                'postingdari' => 'DELETE UPAH RITASI RINCIAN',
-                'idtrans' => $storedLogTrail['id'],
-                'nobuktitrans' => $upahRitasi->id,
-                'aksi' => 'DELETE',
-                'datajson' => $getDetail->toArray(),
-                'modifiedby' => auth('api')->user()->name
-            ];
-
-            $validatedLogTrailUpahRitasiRincian = new StoreLogTrailRequest($logTrailUpahRitasiRincian);
-            app(LogTrailController::class)->store($validatedLogTrailUpahRitasiRincian);
+        
+        try {
+            $upahritasi = (new UpahRitasi())->processDestroy($id);
+            $selected = $this->getPosition($upahritasi, $upahritasi->getTable(), true);
+            $upahritasi->position = $selected->position;
+            $upahritasi->id = $selected->id;
+            $upahritasi->page = ceil($upahritasi->position / ($request->limit ?? 10));
 
             DB::commit();
-            /* Set position and page */
-            $selected = $this->getPosition($upahRitasi, $upahRitasi->getTable(), true);
-            $upahRitasi->position = $selected->position;
-            $upahRitasi->id = $selected->id;
-            $upahRitasi->page = ceil($upahRitasi->position / ($request->limit ?? 10));
 
-            return response([
+            return response()->json([
                 'status' => true,
                 'message' => 'Berhasil dihapus',
-                'data' => $upahRitasi
+                'data' => $upahritasi
             ]);
-        } else {
+        } catch (\Throwable $th) {
             DB::rollBack();
 
-            return response([
-                'status' => false,
-                'message' => 'Gagal dihapus'
-            ]);
+            throw $th;
         }
     }
     

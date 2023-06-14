@@ -87,35 +87,11 @@ class MandorController extends Controller
         DB::beginTransaction();
 
         try {
-            $mandor = new Mandor();
-            $mandor->namamandor = $request->namamandor;
-            $mandor->keterangan = $request->keterangan ?? '';
-            $mandor->statusaktif = $request->statusaktif;
-            $mandor->modifiedby = auth('api')->user()->name;
-            $request->sortname = $request->sortname ?? 'id';
-            $request->sortorder = $request->sortorder ?? 'asc';
-
-            if ($mandor->save()) {
-                $logTrail = [
-                    'namatabel' => strtoupper($mandor->getTable()),
-                    'postingdari' => 'ENTRY MANDOR',
-                    'idtrans' => $mandor->id,
-                    'nobuktitrans' => $mandor->id,
-                    'aksi' => 'ENTRY',
-                    'datajson' => $mandor->toArray(),
-                    'modifiedby' => $mandor->modifiedby
-                ];
-
-                $validatedLogTrail = new StoreLogTrailRequest($logTrail);
-                $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
-
-                DB::commit();
-            }
-
-            /* Set position and page */
-            $selected = $this->getPosition($mandor, $mandor->getTable());
-            $mandor->position = $selected->position;
+            $mandor = (new Mandor())->processStore($request->all());
+            $mandor->position = $this->getPosition($mandor, $mandor->getTable())->position;
             $mandor->page = ceil($mandor->position / ($request->limit ?? 10));
+
+            DB::commit();
 
             return response([
                 'status' => true,
@@ -143,32 +119,11 @@ class MandorController extends Controller
     {
         DB::beginTransaction();
         try {
-            $mandor->namamandor = $request->namamandor;
-            $mandor->keterangan = $request->keterangan ?? '';
-            $mandor->statusaktif = $request->statusaktif;
-            $mandor->modifiedby = auth('api')->user()->name;
-
-            if ($mandor->save()) {
-                $logTrail = [
-                    'namatabel' => strtoupper($mandor->getTable()),
-                    'postingdari' => 'EDIT MANDOR',
-                    'idtrans' => $mandor->id,
-                    'nobuktitrans' => $mandor->id,
-                    'aksi' => 'EDIT',
-                    'datajson' => $mandor->toArray(),
-                    'modifiedby' => $mandor->modifiedby
-                ];
-
-                $validatedLogTrail = new StoreLogTrailRequest($logTrail);
-                app(LogTrailController::class)->store($validatedLogTrail);
-
-
-                DB::commit();
-            }
-            /* Set position and page */
-            $selected = $this->getPosition($mandor, $mandor->getTable());
-            $mandor->position = $selected->position;
+            $mandor = (new Mandor())->processUpdate($mandor, $request->all());
+            $mandor->position = $this->getPosition($mandor, $mandor->getTable())->position;
             $mandor->page = ceil($mandor->position / ($request->limit ?? 10));
+
+            DB::commit();
 
             return response([
                 'status' => true,
@@ -187,42 +142,25 @@ class MandorController extends Controller
     {
         DB::beginTransaction();
 
-        $mandor = new Mandor();
-        $mandor = $mandor->lockAndDestroy($id);
-
-        if ($mandor) {
-            $logTrail = [
-                'namatabel' => strtoupper($mandor->getTable()),
-                'postingdari' => 'DELETE MANDOR',
-                'idtrans' => $mandor->id,
-                'nobuktitrans' => $mandor->id,
-                'aksi' => 'DELETE',
-                'datajson' => $mandor->toArray(),
-                'modifiedby' => auth('api')->user()->name
-            ];
-
-            $validatedLogTrail = new StoreLogTrailRequest($logTrail);
-            app(LogTrailController::class)->store($validatedLogTrail);
-
-
-            DB::commit();
+        try 
+        {
+            $mandor = (new Mandor())->processDestroy($id);
             $selected = $this->getPosition($mandor, $mandor->getTable(), true);
             $mandor->position = $selected->position;
             $mandor->id = $selected->id;
             $mandor->page = ceil($mandor->position / ($request->limit ?? 10));
+
+            DB::commit();
 
             return response([
                 'status' => true,
                 'message' => 'Berhasil dihapus',
                 'data' => $mandor
             ]);
-        } else {
+        } catch (\Throwable $th) {
             DB::rollBack();
 
-            return response([
-                'status' => false,
-                'message' => 'Gagal dihapus'
-            ]);
+            throw $th;
         }
     }
 

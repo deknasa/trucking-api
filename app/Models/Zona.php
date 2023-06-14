@@ -248,4 +248,73 @@ class Zona extends MyModel
     {
         return $query->skip($this->params['offset'])->take($this->params['limit']);
     }
+
+    public function processStore(array $data): Zona
+    {
+        $zona = new Zona();
+        $zona->zona = $data['zona'];
+        $zona->statusaktif = $data['statusaktif'];
+        $zona->keterangan = $data['keterangan'] ?? '';
+        $zona->modifiedby = auth('api')->user()->user;
+        $data['sortname'] = $data['sortname'] ?? 'id';
+        $data['sortorder'] = $data['sortorder'] ?? 'asc';
+
+        if (!$zona->save()) {
+            throw new \Exception('Error storing zona.');
+        }
+
+        (new LogTrail())->processStore([
+            'namatabel' => strtoupper($zona->getTable()),
+            'postingdari' => 'ENTRY ZONA',
+            'idtrans' => $zona->id,
+            'nobuktitrans' => $zona->id,
+            'aksi' => 'ENTRY',
+            'datajson' => $zona->toArray(),
+            'modifiedby' => $zona->modifiedby
+        ]);
+
+        return $zona;
+    }
+
+    public function processUpdate(Zona $zona, array $data): Zona
+    {
+        $zona->zona = $data['zona'];
+        $zona->keterangan = $data['keterangan'] ?? '';
+        $zona->statusaktif = $data['statusaktif'];
+        $zona->modifiedby = auth('api')->user()->user;
+
+        if (!$zona->save()) {
+            throw new \Exception('Error updating zona.');
+        }
+
+        (new LogTrail())->processStore([
+            'namatabel' => strtoupper($zona->getTable()),
+            'postingdari' => 'EDIT ZONA',
+            'idtrans' => $zona->id,
+            'nobuktitrans' => $zona->id,
+            'aksi' => 'EDIT',
+            'datajson' => $zona->toArray(),
+            'modifiedby' => $zona->modifiedby
+        ]);
+
+        return $zona;
+    }
+
+    public function processDestroy($id): Zona
+    {
+        $zona = new Zona();
+        $zona = $zona->lockAndDestroy($id);
+
+        (new LogTrail())->processStore([
+            'namatabel' => strtoupper($zona->getTable()),
+            'postingdari' => 'DELETE ZONA',
+            'idtrans' => $zona->id,
+            'nobuktitrans' => $zona->id,
+            'aksi' => 'DELETE',
+            'datajson' => $zona->toArray(),
+            'modifiedby' => auth('api')->user()->user
+        ]);
+
+        return $zona;
+    }
 }

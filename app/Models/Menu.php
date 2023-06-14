@@ -190,4 +190,315 @@ class Menu extends MyModel
 
         return $validasiQuery;
     }
+
+    public function get_php_classes($php_code, $methods = false)
+    {
+        $classes = array();
+        $tokens = token_get_all($php_code);
+
+        $count = count($tokens);
+        for ($i = 2; $i < $count; $i++) {
+            if ($tokens[$i - 2][0] == T_CLASS && $tokens[$i - 1][0] == T_WHITESPACE && $tokens[$i][0] == T_STRING) {
+                $classes[] = $tokens[$i][1]; // assigning class name to classes array variable
+
+            }
+        }
+        return $classes;
+    }
+
+    public function listFolderFiles($controller)
+    {
+
+        $dir = base_path('app/http') . '/controllers/api/';
+        $ffs = scandir($dir);
+        unset($ffs[0], $ffs[1]);
+        if (count($ffs) < 1)
+            return;
+        $i = 0;
+        foreach ($ffs as $ff) {
+            if (is_dir($dir . '/' . $ff))
+                $this->listFolderFiles($dir . '/' . $ff);
+            elseif (is_file($dir . '/' . $ff) && strpos($ff, '.php') !== false) {
+                $classes = $this->get_php_classes(file_get_contents($dir . '/' . $ff));
+                foreach ($classes as $class) {
+                    if ($class == $controller) {
+
+
+                        if (!class_exists($class)) {
+                            include_once($dir . $ff);
+                        }
+
+                        $methods = $this->get_class_methods($class, true);
+
+                        foreach ($methods as $method) {
+                            if (isset($method['docComment']['ClassName'])) {
+                                $data[] = [
+                                    'class' => $class,
+                                    'method' => $method['name'],
+                                    'name' => $method['name'] . ' ' . $class
+                                ];
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        return $data ?? '';
+    }
+
+    public function processStore(array $data): Menu
+    {
+        $class = $this->listFolderFiles($data['controller']);
+        if ($class <> '') {
+            foreach ($class as $value) {
+                $namaclass = str_replace('controller', '', strtolower($value['class']));
+                
+                $dataaco = (new Acos())->processStore([
+                    'class' => $namaclass,
+                    'method' => $value['method'],
+                    'nama' => $value['name'],
+                    'modifiedby' => auth('api')->user()->user,
+                ]);
+            }
+
+            $list = Acos::select('id')
+                ->where('class', '=', $namaclass)
+                ->where('method', '=', 'index')
+                ->orderBy('id', 'asc')
+                ->first();
+            $menuacoid = $list->id;
+        } else {
+            $menuacoid = 0;
+        }
+
+        $menu = new Menu();
+        $menu->menuname = ucwords(strtolower($data['menuname']));
+        $menu->menuseq = $data['menuseq'];
+        $menu->menuparent = $data['menuparent'] ?? 0;
+        $menu->menuicon = strtolower($data['menuicon']);
+        $menu->menuexe = strtolower($data['menuexe']);
+        $menu->modifiedby = auth('api')->user()->user;
+        $menu->link = "";
+        $menu->aco_id = $menuacoid;
+
+        if (Menu::select('menukode')
+            ->where('menuparent', '=', $data['menuparent'])
+            ->exists()
+        ) {
+
+            if ($data['menuparent'] == 0) {
+
+                $list = Menu::select('menukode')
+                    ->where('menuparent', '=', '0')
+                    ->where(DB::raw('right(menukode,1)'), '<>', '9')
+                    ->where(DB::raw('left(menukode,1)'), '<>', 'Z')
+                    ->orderBy('menukode', 'desc')
+                    ->first();
+                $menukode = chr(ord($list->menukode) + 1);
+            } else {
+
+
+                if (Menu::select('menukode')
+                    ->where('menuparent', '=', $data['menuparent'])
+                    ->where(DB::raw('right(menukode,1)'), '<>', 'Z')
+                    ->exists()
+                ) {
+
+                    $list = Menu::select('menukode')
+                        ->where('menuparent', '=', $data['menuparent'])
+                        ->where(DB::raw('right(menukode,1)'), '<>', 'Z')
+                        ->orderBy('menukode', 'desc')
+                        ->first();
+
+                    $kodeakhir = substr($list->menukode, -1);
+                    $arrayangka = array('1', '2', '3', '4', '5', '6', '7', '8');
+                    if (in_array($kodeakhir, $arrayangka)) {
+
+                        $menukode = $list->menukode + 1;
+                    } else if ($kodeakhir == '9') {
+                        $kodeawal = substr($list->menukode, 0, strlen($list->menukode) - 1);
+                        $menukode = $kodeawal . 'A';
+                    } else {
+                        $kodeawal = substr($list->menukode, 0, strlen($list->menukode) - 1);
+                        $menukode = $kodeawal . chr((ord($kodeakhir) + 1));
+                    }
+                } else {
+
+                    $list = Menu::select('menukode')
+                        ->where('id', '=', $data['menuparent'])
+                        ->where(DB::raw('right(menukode,1)'), '<>', '9')
+                        ->orderBy('menukode', 'desc')
+                        ->first();
+                    $menukode = $list->menukode . '1';
+                }
+            }
+        } else {
+            if ($data['menuparent'] == 0) {
+                $menukode = 0;
+                $list = Menu::select('menukode')
+                    ->where('menuparent', '=', '0')
+                    ->where(DB::raw('right(menukode,1)'), '<>', 'Z')
+                    ->orderBy('menukode', 'desc')
+                    ->first();
+
+                $arrayangka = array('1', '2', '3', '4', '5', '6', '7', '8', '9');
+                $kodeakhir = $list->menukode;;
+                if (in_array($kodeakhir, $arrayangka)) {
+
+                    $menukode = $list->menukode + 1;
+                } else {
+                    $menukode =  chr((ord($kodeakhir) + 1));
+                }
+                $kodeakhir = substr($list->menukode, -1);
+                $arrayangka = array('1', '2', '3', '4', '5', '6', '7', '8');
+                if (in_array($kodeakhir, $arrayangka)) {
+
+                    $menukode = $list->menukode + 1;
+                } else if ($kodeakhir == '9') {
+                    $menukode = 'A';
+                } else {
+                    $menukode = chr((ord($kodeakhir) + 1));
+                }
+            } else {
+                $list = Menu::select('menukode')
+                    ->where('id', '=', $data['menuparent'])
+                    ->where(DB::raw('right(menukode,1)'), '<>', '9')
+                    ->orderBy('menukode', 'desc')
+                    ->first();
+                // dd('test4');
+                $menukode = $list->menukode . '1';
+            }
+        }
+
+        if (strtoupper($data['menuname']) == 'LOGOUT') {
+            $menukode = 'Z';
+        }
+        $menu->menukode = $menukode;
+        TOP:
+        if (!$menu->save()) {
+            throw new \Exception("Error storing menu.");
+        }
+
+        (new LogTrail())->processStore([
+            'namatabel' => strtoupper($menu->getTable()),
+            'postingdari' => 'ENTRY MENU',
+            'idtrans' => $menu->id,
+            'nobuktitrans' => $menu->id,
+            'aksi' => 'ENTRY',
+            'datajson' => $menu->toArray(),
+            'modifiedby' => $menu->modifiedby
+        ]);
+
+        return $menu;
+    }
+
+    public function processUpdate(Menu $menu, array $data): Menu
+    {    
+        $query = DB::table('menu')
+            ->from(
+                DB::raw("menu a with (readuncommitted)")
+            )
+            ->select(
+                DB::raw("trim(replace(b.nama,'index ','')) as controller")
+            )
+            ->join(DB::raw("acos b with(readuncommitted)"), 'a.aco_id', 'b.id')
+            ->where('a.id', '=', $data['id'])
+            ->first();
+
+        if ($query != null) {
+            $controller = $query->controller;
+        }
+
+        if ($query != null) {
+            $class = $this->listFolderFiles($controller);
+            if ($class <> '') {
+
+                foreach ($class as $value) {
+                    $namaclass = str_replace('controller', '', strtolower($value['class']));
+                    $queryacos = DB::table('acos')
+                        ->from(
+                            db::raw("acos a with(readuncommitted)")
+                        )
+                        ->select(
+                            'a.id'
+                        )
+                        ->where('a.class', '=', $namaclass)
+                        ->where('a.method', '=', $value['method'])
+                        ->where('a.nama', '=', $value['name'])
+                        ->first();
+
+                    if (!isset($queryacos)) {
+                        if (Acos::select('id')
+                            ->where('class', '=', $namaclass)
+                            ->exists()
+                        ) {
+                            $dataaco = (new Acos())->processStore([
+                                'class' => $namaclass,
+                                'method' => $value['method'],
+                                'nama' => $value['name'],
+                                'modifiedby' => auth('api')->user()->user,
+                            ]);
+                        }
+                    }
+                }
+            }
+        }
+
+        $menu = new Menu();
+        $menu = Menu::lockForUpdate()->findOrFail($data['id']);
+        $menu->menuname = ucwords(strtolower($data['menuname']));
+        $menu->menuseq = $data['menuseq'];
+        $menu->menuicon = strtolower($data['menuicon']);
+
+        if (!$menu->save()) {
+            throw new \Exception('Error updating menu.');
+        }
+
+        (new LogTrail())->processStore([
+            'namatabel' => strtoupper($menu->getTable()),
+            'postingdari' => 'EDIT MENU',
+            'idtrans' => $menu->id,
+            'nobuktitrans' => $menu->id,
+            'aksi' => 'EDIT',
+            'datajson' => $menu->toArray(),
+            'modifiedby' => $menu->modifiedby
+        ]);
+
+        return $menu;
+    }
+
+    public function processDestroy($id): Menu
+    {
+        $list = Menu::Select('aco_id')
+            ->where('id', '=', $id)
+            ->first();
+
+
+        if (Acos::select('id')
+            ->where('id', '=', $list->aco_id)
+            ->exists()
+        ) {
+            $list = Acos::select('class')
+                ->where('id', '=', $list->aco_id)
+                ->first();
+
+            Acos::where('class', $list->class)->delete();
+        }
+
+        $menu = new Menu();
+        $menu = $menu->lockAndDestroy($id);
+
+        (new LogTrail())->processStore([
+            'namatabel' => strtoupper($menu->getTable()),
+            'postingdari' => 'DELETE MENU',
+            'idtrans' => $menu->id,
+            'nobuktitrans' => $menu->id,
+            'aksi' => 'DELETE',
+            'datajson' => $menu->toArray(),
+            'modifiedby' => $menu->modifiedby
+        ]);
+
+        return $menu;
+    }
 }

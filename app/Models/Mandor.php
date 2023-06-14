@@ -227,4 +227,73 @@ class Mandor extends MyModel
     {
         return $query->skip($this->params['offset'])->take($this->params['limit']);
     }
+
+    public function processStore(array $data): Mandor
+    {
+        $mandor = new Mandor();
+        $mandor->namamandor = $data['namamandor'];
+        $mandor->keterangan = $data['keterangan'] ?? '';
+        $mandor->statusaktif = $data['statusaktif'];
+        $mandor->modifiedby = auth('api')->user()->user;
+        $data['sortname'] = $data['sortname'] ?? 'id';
+        $data['sortorder'] = $data['sortorder'] ?? 'asc';
+
+        if (!$mandor->save()) {
+            throw new \Exception('Error storing mandor.');
+        }
+
+        (new LogTrail())->processStore([
+            'namatabel' => strtoupper($mandor->getTable()),
+            'postingdari' => 'ENTRY MANDOR',
+            'idtrans' => $mandor->id,
+            'nobuktitrans' => $mandor->id,
+            'aksi' => 'ENTRY',
+            'datajson' => $mandor->toArray(),
+            'modifiedby' => $mandor->modifiedby
+        ]);
+
+        return $mandor;
+    }
+
+    public function processUpdate(Mandor $mandor, array $data): Mandor
+    {
+        $mandor->namamandor = $data['namamandor'];
+        $mandor->keterangan = $data['keterangan'] ?? '';
+        $mandor->statusaktif = $data['statusaktif'];
+        $mandor->modifiedby = auth('api')->user()->user;
+
+        if (!$mandor->save()) {
+            throw new \Exception('Error updating cabang.');
+        }
+
+        (new LogTrail())->processStore([
+            'namatabel' => strtoupper($mandor->getTable()),
+            'postingdari' => 'EDIT MANDOR',
+            'idtrans' => $mandor->id,
+            'nobuktitrans' => $mandor->id,
+            'aksi' => 'EDIT',
+            'datajson' => $mandor->toArray(),
+            'modifiedby' => $mandor->modifiedby
+        ]);
+
+        return $mandor;
+    }
+
+    public function processDestroy($id): Mandor
+    {
+        $mandor = new Mandor();
+        $mandor = $mandor->lockAndDestroy($id);
+
+        (new LogTrail())->processStore([
+            'namatabel' => strtoupper($mandor->getTable()),
+            'postingdari' => 'DELETE MANDOR',
+            'idtrans' => $mandor->id,
+            'nobuktitrans' => $mandor->id,
+            'aksi' => 'DELETE',
+            'datajson' => $mandor->toArray(),
+            'modifiedby' => auth('api')->user()->user
+        ]);
+
+        return $mandor;
+    }
 }

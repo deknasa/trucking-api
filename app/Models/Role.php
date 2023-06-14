@@ -163,4 +163,67 @@ class Role extends MyModel
                 'acl.updated_at'
             );
     }
+
+    public function processStore(array $data): Role
+    {
+        $role = new Role();
+        $role->rolename = $data['rolename'];
+        $role->modifiedby = auth('api')->user()->user;
+
+        if (!$role->save()) {
+            throw new \Exception('Error storing role.');
+        }
+
+        (new LogTrail())->processStore([
+            'namatabel' => strtoupper($role->getTable()),
+            'postingdari' => 'ENTRY ROLE',
+            'idtrans' => $role->id,
+            'nobuktitrans' => $role->id,
+            'aksi' => 'ENTRY',
+            'datajson' => $role->toArray(),
+            'modifiedby' => $role->modifiedby
+        ]);
+
+        return $role;
+    }
+
+    public function processUpdate(Role $role, array $data): Role
+    {
+        $role->rolename = $data['rolename'];
+        $role->modifiedby = auth('api')->user()->user;
+
+        if (!$role->save()) {
+            throw new \Exception('Error updating role.');
+        }
+
+        (new LogTrail())->processStore([
+            'namatabel' => strtoupper($role->getTable()),
+            'postingdari' => 'EDIT ROLE',
+            'idtrans' => $role->id,
+            'nobuktitrans' => $role->id,
+            'aksi' => 'EDIT',
+            'datajson' => $role->toArray(),
+            'modifiedby' => $role->modifiedby
+        ]);
+
+        return $role;
+    }
+
+    public function processDestroy($id): Role
+    {
+        $role = new Role();
+        $role = $role->lockAndDestroy($id);
+
+        (new LogTrail())->processStore([
+            'namatabel' => strtoupper($role->getTable()),
+            'postingdari' => 'DELETE ROLE',
+            'idtrans' => $role->id,
+            'nobuktitrans' => $role->id,
+            'aksi' => 'DELETE',
+            'datajson' => $role->toArray(),
+            'modifiedby' => auth('api')->user()->name
+        ]);
+
+        return $role;
+    }
 }
