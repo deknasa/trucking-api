@@ -59,10 +59,10 @@ class Merk extends MyModel
         $this->setRequestParameters();
 
         $getJudul = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))
-        ->select('text')
-        ->where('grp', 'JUDULAN LAPORAN')
-        ->where('subgrp', 'JUDULAN LAPORAN')
-        ->first();
+            ->select('text')
+            ->where('grp', 'JUDULAN LAPORAN')
+            ->where('subgrp', 'JUDULAN LAPORAN')
+            ->first();
 
         $aktif = request()->aktif ?? '';
 
@@ -196,11 +196,10 @@ class Merk extends MyModel
                         if ($filters['field'] == 'statusaktif') {
                             $query = $query->where('parameter.text', '=', "$filters[data]");
                         } else if ($filters['field'] == 'created_at' || $filters['field'] == 'updated_at') {
-                            $query = $query->whereRaw("format(".$this->table . "." . $filters['field'].", 'dd-MM-yyyy HH:mm:ss') LIKE '%$filters[data]%'");
+                            $query = $query->whereRaw("format(" . $this->table . "." . $filters['field'] . ", 'dd-MM-yyyy HH:mm:ss') LIKE '%$filters[data]%'");
                         } else {
                             // $query = $query->where('merk.' . $filters['field'], 'LIKE', "%$filters[data]%");
                             $query = $query->whereRaw('merk' . ".[" .  $filters['field'] . "] LIKE '%" . escapeLike($filters['data']) . "%' escape '|'");
-
                         }
                     }
 
@@ -211,11 +210,10 @@ class Merk extends MyModel
                             if ($filters['field'] == 'statusaktif') {
                                 $query = $query->orWhere('parameter.text', '=', "$filters[data]");
                             } else if ($filters['field'] == 'created_at' || $filters['field'] == 'updated_at') {
-                                $query = $query->orWhereRaw("format(".$this->table . "." . $filters['field'].", 'dd-MM-yyyy HH:mm:ss') LIKE '%$filters[data]%'");
+                                $query = $query->orWhereRaw("format(" . $this->table . "." . $filters['field'] . ", 'dd-MM-yyyy HH:mm:ss') LIKE '%$filters[data]%'");
                             } else {
                                 // $query = $query->orWhere('merk.' . $filters['field'], 'LIKE', "%$filters[data]%");
                                 $query = $query->OrwhereRaw('merk' . ".[" .  $filters['field'] . "] LIKE '%" . escapeLike($filters['data']) . "%' escape '|'");
-
                             }
                         }
                     });
@@ -236,5 +234,74 @@ class Merk extends MyModel
     public function paginate($query)
     {
         return $query->skip($this->params['offset'])->take($this->params['limit']);
+    }
+
+    public function processStore(array $data): Merk
+    {
+
+        $merk = new Merk();
+        $merk->kodemerk = $data['kodemerk'];
+        $merk->keterangan = $data['keterangan'] ?? '';
+        $merk->statusaktif = $data['statusaktif'];
+        $merk->modifiedby = auth('api')->user()->name;
+
+        if (!$merk->save()) {
+            throw new \Exception("Error storing service in header.");
+        }
+
+        (new LogTrail())->processStore([
+            'namatabel' => strtoupper($merk->getTable()),
+            'postingdari' => 'ENTRY MERK',
+            'idtrans' => $merk->id,
+            'nobuktitrans' => $merk->id,
+            'aksi' => 'ENTRY',
+            'datajson' => $merk->toArray(),
+            'modifiedby' => $merk->modifiedby
+        ]);
+
+        return $merk;
+    }
+
+    public function processUpdate(Merk $merk, array $data): Merk
+    {
+        $merk = Merk::lockForUpdate()->findOrFail($merk->id);
+        $merk->kodemerk = $data['kodemerk'];
+        $merk->keterangan = $data['keterangan'] ?? '';
+        $merk->statusaktif = $data['statusaktif'];
+        $merk->modifiedby = auth('api')->user()->name;
+
+        if (!$merk->save()) {
+            throw new \Exception("Error update service in header.");
+        }
+
+        (new LogTrail())->processStore([
+            'namatabel' => strtoupper($merk->getTable()),
+            'postingdari' => 'EDIT MERK',
+            'idtrans' => $merk->id,
+            'nobuktitrans' => $merk->id,
+            'aksi' => 'EDIT',
+            'datajson' => $merk->toArray(),
+            'modifiedby' => $merk->modifiedby
+        ]);
+
+        return $merk;
+    }
+
+    public function processDestroy($id): Merk
+    {
+        $merk = new Merk();
+        $merk = $merk->lockAndDestroy($id);
+
+        (new LogTrail())->processStore([
+            'namatabel' => strtoupper($merk->getTable()),
+            'postingdari' => 'DELETE MERK',
+            'idtrans' => $merk->id,
+            'nobuktitrans' => $merk->id,
+            'aksi' => 'DELETE',
+            'datajson' => $merk->toArray(),
+            'modifiedby' => $merk->modifiedby
+        ]);
+
+        return $merk;
     }
 }

@@ -201,4 +201,69 @@ class Satuan extends MyModel
     {
         return $query->skip($this->params['offset'])->take($this->params['limit']);
     }
+
+    public function processStore(array $data): Satuan
+    {
+        $satuan = new Satuan();
+        $satuan->satuan = $data['satuan'];
+        $satuan->statusaktif = $data['statusaktif'];
+        $satuan->modifiedby = auth('api')->user()->name;
+
+        if (!$satuan->save()) {
+            throw new \Exception("Error storing service in header.");
+        }
+
+        (new LogTrail())->processStore([
+            'namatabel' => strtoupper($satuan->getTable()),
+            'postingdari' => 'ENTRY SATUAN',
+            'idtrans' => $satuan->id,
+            'nobuktitrans' => $satuan->id,
+            'aksi' => 'ENTRY',
+            'datajson' => $satuan->toArray(),
+            'modifiedby' => $satuan->modifiedby
+        ]);
+
+        return $satuan;
+    }
+
+    public function processUpdate(Satuan $satuan, array $data): Satuan
+    {
+        $satuan->satuan = $data['satuan'];
+        $satuan->statusaktif = $data['statusaktif'];
+        $satuan->modifiedby = auth('api')->user()->name;
+
+        if (!$satuan->save()) {
+            throw new \Exception("Error update service in header.");
+        }
+
+        (new LogTrail())->processStore([
+            'namatabel' => strtoupper($satuan->getTable()),
+            'postingdari' => 'EDIT SATUAN',
+            'idtrans' => $satuan->id,
+            'nobuktitrans' => $satuan->id,
+            'aksi' => 'EDIT',
+            'datajson' => $satuan->toArray(),
+            'modifiedby' => $satuan->modifiedby
+        ]);
+
+        return $satuan;
+    }
+
+    public function processDestroy($id): Satuan
+    {
+        $satuan = new Satuan();
+        $satuan = $satuan->lockAndDestroy($id);
+
+        (new LogTrail())->processStore([
+            'namatabel' => strtoupper($satuan->getTable()),
+            'postingdari' => 'DELETE SATUAN',
+            'idtrans' => $satuan->id,
+            'nobuktitrans' => $satuan->id,
+            'aksi' => 'DELETE',
+            'datajson' => $satuan->toArray(),
+            'modifiedby' => $satuan->modifiedby
+        ]);
+
+        return $satuan;
+    }
 }
