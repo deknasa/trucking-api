@@ -29,7 +29,7 @@ class DestroyBank implements Rule
     public function passes($attribute, $value)
     {
         $bank = new Bank();
-        $cekdata = $bank->cekvalidasihapus($bank->id);
+        $cekdata = $bank->cekvalidasihapus(request()->id);
         if($cekdata['kondisi']){
           return false;
         }

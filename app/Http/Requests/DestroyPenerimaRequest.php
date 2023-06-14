@@ -31,7 +31,7 @@ class DestroyPenerimaRequest extends FormRequest
     {
       
         return [
-            'penerima_id' => new DestroyPenerima(),
+            'id' => new DestroyPenerima(),
         ];
       
     }

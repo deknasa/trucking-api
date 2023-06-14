@@ -30,7 +30,7 @@ class DestroyPenerima implements Rule
     public function passes($attribute, $value)
     {
         $penerima = new Penerima();
-        $cekdata = $penerima->cekvalidasihapus($penerima->id);
+        $cekdata = $penerima->cekvalidasihapus(request()->id);
         if($cekdata['kondisi']){
           return false;
         }

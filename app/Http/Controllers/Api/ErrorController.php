@@ -165,7 +165,6 @@ class ErrorController extends Controller
 
     public function geterror($kodeerror)
     {
-        // dd($request->aco_id);
 
         $temp = '##temp' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
         Schema::create($temp, function ($table) {

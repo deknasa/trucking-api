@@ -225,4 +225,89 @@ class AbsenTrado extends MyModel
     {
         return $query->skip($this->params['offset'])->take($this->params['limit']);
     }
+
+    public function processStore(array $data): AbsenTrado
+    {
+        $absenTrado = new AbsenTrado();
+        $absenTrado->kodeabsen = $data['kodeabsen'];
+        $absenTrado->keterangan = $data['keterangan'] ?? '';
+        $absenTrado->statusaktif = $data['statusaktif'];
+        $absenTrado->modifiedby = auth('api')->user()->name;
+
+        $detailmemo = [];
+        for ($i = 0; $i < count($data['key']); $i++) {
+            $datadetailmemo = [
+                $data['key'][$i] => $data['value'][$i],
+            ];
+            $detailmemo = array_merge($detailmemo, $datadetailmemo);
+        }
+        $absenTrado->memo = json_encode($detailmemo);
+
+        if (!$absenTrado->save()) {
+            throw new \Exception("Error storing service in header.");
+        }
+
+        (new LogTrail())->processStore([
+            'namatabel' => strtoupper($absenTrado->getTable()),
+            'postingdari' => 'ENTRY ABSEN TRADO',
+            'idtrans' => $absenTrado->id,
+            'nobuktitrans' => $absenTrado->id,
+            'aksi' => 'ENTRY',
+            'datajson' => $absenTrado->toArray(),
+            'modifiedby' => $absenTrado->modifiedby
+        ]);
+
+        return $absenTrado;
+    }
+    public function processUpdate(AbsenTrado $absentrado, array $data): AbsenTrado
+    {
+
+        $absentrado->kodeabsen = $data['kodeabsen'];
+        $absentrado->keterangan = $data['keterangan'] ?? '';
+        $absentrado->statusaktif = $data['statusaktif'];
+        $absentrado->modifiedby = auth('api')->user()->name;
+        $detailmemo = [];
+        for ($i = 0; $i < count($data['key']); $i++) {
+            $datadetailmemo = [
+                $data['key'][$i] => $data['value'][$i],
+            ];
+            $detailmemo = array_merge($detailmemo, $datadetailmemo);
+        }
+        $absentrado->memo = json_encode($detailmemo);
+
+
+        if (!$absentrado->save()) {
+            throw new \Exception("Error update service in header.");
+        }
+
+        (new LogTrail())->processStore([
+            'namatabel' => strtoupper($absentrado->getTable()),
+            'postingdari' => 'EDIT ABSEN TRADO',
+            'idtrans' => $absentrado->id,
+            'nobuktitrans' => $absentrado->id,
+            'aksi' => 'EDIT',
+            'datajson' => $absentrado->toArray(),
+            'modifiedby' => $absentrado->modifiedby
+        ]);
+
+        return $absentrado;
+    }
+
+    public function processDestroy($id): AbsenTrado
+    {
+        $absenTrado = new AbsenTrado();
+        $absenTrado = $absenTrado->lockAndDestroy($id);
+
+        (new LogTrail())->processStore([
+            'namatabel' => strtoupper($absenTrado->getTable()),
+            'postingdari' => 'DELETE ABSEN TRADO',
+            'idtrans' => $absenTrado->id,
+            'nobuktitrans' => $absenTrado->id,
+            'aksi' => 'DELETE',
+            'datajson' => $absenTrado->toArray(),
+            'modifiedby' => auth('api')->user()->name
+        ]);
+
+        return $absenTrado;
+    }
 }

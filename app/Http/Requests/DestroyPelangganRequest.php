@@ -33,7 +33,7 @@ class DestroyPelangganRequest extends FormRequest
     {
       
         return [
-            'kodepelanggan' => new DestroyPelanggan(),
+            'id' => new DestroyPelanggan(),
         ];
       
     }
