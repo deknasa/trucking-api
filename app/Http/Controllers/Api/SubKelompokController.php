@@ -13,7 +13,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Database\QueryException;
-
+use Illuminate\Http\JsonResponse;
 
 class SubKelompokController extends Controller
 {
@@ -85,45 +85,19 @@ class SubKelompokController extends Controller
     /**
      * @ClassName 
      */
-    public function store(StoreSubKelompokRequest $request)
+    public function store(StoreSubKelompokRequest $request) : JsonResponse
     {
-
 
         DB::beginTransaction();
 
         try {
-            $subKelompok = new SubKelompok();
-            $subKelompok->kodesubkelompok = $request->kodesubkelompok;
-            $subKelompok->keterangan = $request->keterangan ?? '';
-            $subKelompok->kelompok_id = $request->kelompok_id;
-            $subKelompok->statusaktif = $request->statusaktif;
-            $subKelompok->modifiedby = auth('api')->user()->name;
-            $request->sortname = $request->sortname ?? 'id';
-            $request->sortorder = $request->sortorder ?? 'asc';
-
-            if ($subKelompok->save()) {
-                $logTrail = [
-                    'namatabel' => strtoupper($subKelompok->getTable()),
-                    'postingdari' => 'ENTRY PARAMETER',
-                    'idtrans' => $subKelompok->id,
-                    'nobuktitrans' => $subKelompok->id,
-                    'aksi' => 'ENTRY',
-                    'datajson' => $subKelompok->toArray(),
-                    'modifiedby' => $subKelompok->modifiedby
-                ];
-
-                $validatedLogTrail = new StoreLogTrailRequest($logTrail);
-                $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
-
-                DB::commit();
-            }
-
-            /* Set position and page */
-            $selected = $this->getPosition($subKelompok, $subKelompok->getTable());
-            $subKelompok->position = $selected->position;
+            $subKelompok = (new SubKelompok())->processStore($request->all());
+            $subKelompok->position = $this->getPosition($subKelompok, $subKelompok->getTable())->position;
             $subKelompok->page = ceil($subKelompok->position / ($request->limit ?? 10));
 
-            return response([
+            DB::commit();   
+
+            return response()->json([
                 'status' => true,
                 'message' => 'Berhasil disimpan',
                 'data' => $subKelompok
@@ -138,38 +112,17 @@ class SubKelompokController extends Controller
     /**
      * @ClassName 
      */
-    public function update(UpdateSubKelompokRequest $request, SubKelompok $subKelompok)
+    public function update(UpdateSubKelompokRequest $request, SubKelompok $subKelompok) : JsonResponse
     {
         DB::beginTransaction();
         try {
-            $subKelompok->kodesubkelompok = $request->kodesubkelompok;
-            $subKelompok->keterangan = $request->keterangan ?? '';
-            $subKelompok->kelompok_id = $request->kelompok_id;
-            $subKelompok->statusaktif = $request->statusaktif;
-            $subKelompok->modifiedby = auth('api')->user()->name;
-
-            if ($subKelompok->save()) {
-                $logTrail = [
-                    'namatabel' => strtoupper($subKelompok->getTable()),
-                    'postingdari' => 'EDIT PARAMETER',
-                    'idtrans' => $subKelompok->id,
-                    'nobuktitrans' => $subKelompok->id,
-                    'aksi' => 'EDIT',
-                    'datajson' => $subKelompok->toArray(),
-                    'modifiedby' => $subKelompok->modifiedby
-                ];
-
-                $validatedLogTrail = new StoreLogTrailRequest($logTrail);
-                app(LogTrailController::class)->store($validatedLogTrail);
-                DB::commit();
-            }
-
-            /* Set position and page */
-            $selected = $this->getPosition($subKelompok, $subKelompok->getTable());
-            $subKelompok->position = $selected->position;
+            $subKelompok = (new SubKelompok())->processUpdate($subKelompok, $request->all());
+            $subKelompok->position = $this->getPosition($subKelompok, $subKelompok->getTable())->position;
             $subKelompok->page = ceil($subKelompok->position / ($request->limit ?? 10));
 
-            return response([
+            DB::commit();
+
+            return response()->json([
                 'status' => true,
                 'message' => 'Berhasil diubah',
                 'data' => $subKelompok
@@ -186,51 +139,23 @@ class SubKelompokController extends Controller
      */
     public function destroy(DestroySubKelompokRequest $request, $id)
     {
-        $cekvalidasi = $this->cekValidasi($id);
-        if ($cekvalidasi->original['kondisi'] == false) {
-            DB::beginTransaction();
+        try {
+            $subKelompok = (new SubKelompok())->processDestroy($id);
+            $selected = $this->getPosition($subKelompok, $subKelompok->getTable(), true);
+            $subKelompok->position = $selected->position;
+            $subKelompok->id = $selected->id;
+            $subKelompok->page = ceil($subKelompok->position / ($request->limit ?? 10));
 
-            $subKelompok = new SubKelompok();
-            $subKelompok = $subKelompok->lockAndDestroy($id);
-            if ($subKelompok) {
-                $logTrail = [
-                    'namatabel' => strtoupper($subKelompok->getTable()),
-                    'postingdari' => 'DELETE PARAMETER',
-                    'idtrans' => $subKelompok->id,
-                    'nobuktitrans' => $subKelompok->id,
-                    'aksi' => 'DELETE',
-                    'datajson' => $subKelompok->toArray(),
-                    'modifiedby' => $subKelompok->modifiedby
-                ];
+            DB::commit();
 
-                $validatedLogTrail = new StoreLogTrailRequest($logTrail);
-                app(LogTrailController::class)->store($validatedLogTrail);
-
-                DB::commit();
-                /* Set position and page */
-                $selected = $this->getPosition($subKelompok, $subKelompok->getTable(), true);
-                $subKelompok->position = $selected->position;
-                $subKelompok->id = $selected->id;
-                $subKelompok->page = ceil($subKelompok->position / ($request->limit ?? 10));
-
-                return response([
-                    'status' => true,
-                    'message' => 'Berhasil dihapus',
-                    'data' => $subKelompok
-                ]);
-            } else {
-                DB::rollBack();
-
-                return response([
-                    'status' => false,
-                    'message' => 'Gagal dihapus'
-                ]);
-            }
-        } else {
-            return response([
-                'status' => false,
-                'message' => $cekvalidasi->original['message']
+            return response()->json([
+                'message' => 'Berhasil dihapus',
+                'data' => $subKelompok
             ]);
+        } catch (\Throwable $th) {
+            DB::rollBack();
+
+            throw $th;
         }
     }
 

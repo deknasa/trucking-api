@@ -275,4 +275,75 @@ class PenerimaanStok extends MyModel
     {
         return $query->skip($this->params['offset'])->take($this->params['limit']);
     }
+
+    public function processStore(array $data): PenerimaanStok
+    {
+        $penerimaanStok = new PenerimaanStok();
+        $penerimaanStok->kodepenerimaan = $data['kodepenerimaan'];
+        $penerimaanStok->keterangan = $data['keterangan'] ?? '';
+        $penerimaanStok->coa = $data['coa'];
+        $penerimaanStok->format = $data['format'];
+        $penerimaanStok->statushitungstok = $data['statushitungstok'];
+        $penerimaanStok->modifiedby = auth('api')->user()->name;
+
+        if (!$penerimaanStok->save()) {
+            throw new \Exception("Error storing service in header.");
+        }
+
+        (new LogTrail())->processStore([
+            'namatabel' => strtoupper($penerimaanStok->getTable()),
+            'postingdari' => 'ENTRY PENERIMAAN STOK',
+            'idtrans' => $penerimaanStok->id,
+            'nobuktitrans' => $penerimaanStok->id,
+            'aksi' => 'ENTRY',
+            'datajson' => $penerimaanStok->toArray(),
+            'modifiedby' => $penerimaanStok->modifiedby
+        ]);
+
+        return $penerimaanStok;
+    }
+
+    public function processUpdate(PenerimaanStok $penerimaanStok, array $data): PenerimaanStok
+    {
+
+        $penerimaanStok->kodepenerimaan = $data['kodepenerimaan'];
+        $penerimaanStok->keterangan = $data['keterangan'] ?? '';
+        $penerimaanStok->coa = $data['coa'];
+        $penerimaanStok->format = $data['format'];
+        $penerimaanStok->statushitungstok = $data['statushitungstok'];
+        $penerimaanStok->modifiedby = auth('api')->user()->name;
+        if (!$penerimaanStok->save()) {
+            throw new \Exception("Error update service in header.");
+        }
+
+        (new LogTrail())->processStore([
+            'namatabel' => strtoupper($penerimaanStok->getTable()),
+            'postingdari' => 'EDIT PENERIMAAN STOK',
+            'idtrans' => $penerimaanStok->id,
+            'nobuktitrans' => $penerimaanStok->id,
+            'aksi' => 'EDIT',
+            'datajson' => $penerimaanStok->toArray(),
+            'modifiedby' => $penerimaanStok->modifiedby
+        ]);
+
+        return $penerimaanStok;
+    }
+
+    public function processDestroy($id): PenerimaanStok
+    {
+        $penerimaanStok = new PenerimaanStok;
+        $penerimaanStok = $penerimaanStok->lockAndDestroy($id);
+
+        (new LogTrail())->processStore([
+            'namatabel' => strtoupper($penerimaanStok->getTable()),
+            'postingdari' => 'DELETE PENERIMAAN STOK',
+            'idtrans' => $penerimaanStok->id,
+            'nobuktitrans' => $penerimaanStok->id,
+            'aksi' => 'DELETE',
+            'datajson' => $penerimaanStok->toArray(),
+            'modifiedby' => $penerimaanStok->modifiedby
+        ]);
+
+        return $penerimaanStok;
+    }
 }
