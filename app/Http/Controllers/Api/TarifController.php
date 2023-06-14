@@ -131,87 +131,6 @@ class TarifController extends Controller
         DB::beginTransaction();
 
         try {
-<<<<<<< Updated upstream
-            $tarif = new Tarif();
-            $tarif->parent_id = $request->parent_id ?? '';
-            $tarif->upahsupir_id = $request->upahsupir_id ?? '';
-            $tarif->tujuan = $request->tujuan;
-            $tarif->penyesuaian = $request->penyesuaian;
-            $tarif->statusaktif = $request->statusaktif;
-            $tarif->statussistemton = $request->statussistemton;
-            $tarif->kota_id = $request->kota_id;
-            $tarif->zona_id = $request->zona_id ?? '';
-            $tarif->tglmulaiberlaku = date('Y-m-d', strtotime($request->tglmulaiberlaku));
-            $tarif->statuspenyesuaianharga = $request->statuspenyesuaianharga;
-            $tarif->keterangan = $request->keterangan;
-            $tarif->modifiedby = auth('api')->user()->name;
-            if ($tarif->save()) {
-
-
-                $logTrail = [
-                    'namatabel' => strtoupper($tarif->getTable()),
-                    'postingdari' => 'ENTRY TARIF',
-                    'idtrans' => $tarif->id,
-                    'nobuktitrans' => $tarif->id,
-                    'aksi' => 'ENTRY',
-                    'datajson' => $tarif->toArray(),
-                    'modifiedby' => $tarif->modifiedby
-                ];
-
-                $validatedLogTrail = new StoreLogTrailRequest($logTrail);
-                $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
-
-                // dd(count($request->container_id));
-                $detaillog = [];
-                for ($i = 0; $i < count($request->container_id); $i++) {
-
-                    $datadetail = [
-                        'tarif_id' => $tarif->id,
-                        'container_id' => $request->container_id[$i],
-                        'nominal' => $request->nominal[$i],
-                        'modifiedby' => auth('api')->user()->name,
-                    ];
-
-                    $data = new StoreTarifRincianRequest($datadetail);
-                    $datadetails = app(TarifRincianController::class)->store($data);
-                    if ($datadetails['error']) {
-                        return response($datadetails, 422);
-                    } else {
-                        $iddetail = $datadetails['id'];
-                        $tabeldetail = $datadetails['tabel'];
-                    }
-
-
-                    $detaillog[] = $datadetails['detail']->toArray();
-                }
-
-                $datalogtrail = [
-                    'namatabel' => strtoupper($tabeldetail),
-                    'postingdari' => 'ENTRY UPAH SUPIR RINCIAN',
-                    'idtrans' =>  $storedLogTrail['id'],
-                    'nobuktitrans' => $tarif->id,
-                    'aksi' => 'ENTRY',
-                    'datajson' => $detaillog,
-                    'modifiedby' => $request->modifiedby,
-                ];
-
-                $data = new StoreLogTrailRequest($datalogtrail);
-                app(LogTrailController::class)->store($data);
-
-                $request->sortname = $request->sortname ?? 'id';
-                $request->sortorder = $request->sortorder ?? 'asc';
-
-                DB::commit();
-            }
-
-
-            /* Set position and page */
-            $selected = $this->getPosition($tarif, $tarif->getTable());
-            $tarif->position = $selected->position;
-            $tarif->page = ceil($tarif->position / ($request->limit ?? 10));
-
-            return response([
-=======
             $tarif = (new Tarif())->processStore($request->all());
             $tarif->position = $this->getPosition($tarif, $tarif->getTable())->position;
             $tarif->page = ceil($tarif->position / ($request->limit ?? 10));
@@ -219,7 +138,6 @@ class TarifController extends Controller
             DB::commit();
             
             return response()->json([
->>>>>>> Stashed changes
                 'status' => true,
                 'message' => 'Berhasil disimpan',
                 'data' => $tarif
