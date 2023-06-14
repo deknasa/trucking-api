@@ -78,10 +78,10 @@ class Kelompok extends MyModel
         $this->setRequestParameters();
 
         $getJudul = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))
-        ->select('text')
-        ->where('grp', 'JUDULAN LAPORAN')
-        ->where('subgrp', 'JUDULAN LAPORAN')
-        ->first();
+            ->select('text')
+            ->where('grp', 'JUDULAN LAPORAN')
+            ->where('subgrp', 'JUDULAN LAPORAN')
+            ->first();
 
         $aktif = request()->aktif ?? '';
 
@@ -212,11 +212,10 @@ class Kelompok extends MyModel
                         if ($filters['field'] == 'statusaktif') {
                             $query = $query->where('parameter.text', '=', "$filters[data]");
                         } else if ($filters['field'] == 'created_at' || $filters['field'] == 'updated_at') {
-                            $query = $query->whereRaw("format(".$this->table . "." . $filters['field'].", 'dd-MM-yyyy HH:mm:ss') LIKE '%$filters[data]%'");
+                            $query = $query->whereRaw("format(" . $this->table . "." . $filters['field'] . ", 'dd-MM-yyyy HH:mm:ss') LIKE '%$filters[data]%'");
                         } else {
                             // $query = $query->where('kelompok.' . $filters['field'], 'LIKE', "%$filters[data]%");
                             $query = $query->whereRaw('kelompok' . ".[" .  $filters['field'] . "] LIKE '%" . escapeLike($filters['data']) . "%' escape '|'");
-
                         }
                     }
 
@@ -227,12 +226,10 @@ class Kelompok extends MyModel
                             if ($filters['field'] == 'statusaktif') {
                                 $query = $query->orWhere('parameter.text', '=', "$filters[data]");
                             } else if ($filters['field'] == 'created_at' || $filters['field'] == 'updated_at') {
-                                $query = $query->orWhereRaw("format(".$this->table . "." . $filters['field'].", 'dd-MM-yyyy HH:mm:ss') LIKE '%$filters[data]%'");
+                                $query = $query->orWhereRaw("format(" . $this->table . "." . $filters['field'] . ", 'dd-MM-yyyy HH:mm:ss') LIKE '%$filters[data]%'");
                             } else {
                                 // $query = $query->orWhere('kelompok.' . $filters['field'], 'LIKE', "%$filters[data]%");
                                 $query = $query->OrwhereRaw('kelompok' . ".[" .  $filters['field'] . "] LIKE '%" . escapeLike($filters['data']) . "%' escape '|'");
-
-
                             }
                         }
                     });
@@ -253,5 +250,71 @@ class Kelompok extends MyModel
     public function paginate($query)
     {
         return $query->skip($this->params['offset'])->take($this->params['limit']);
+    }
+    public function processStore(array $data): Kelompok
+    {
+        $kelompok = new Kelompok();
+        $kelompok->kodekelompok = $data['kodekelompok'];
+        $kelompok->keterangan = $data['keterangan'] ?? '';
+        $kelompok->statusaktif = $data['statusaktif'];
+        $kelompok->modifiedby = auth('api')->user()->name;
+
+        if (!$kelompok->save()) {
+            throw new \Exception("Error storing service in header.");
+        }
+
+        (new LogTrail())->processStore([
+            'namatabel' => strtoupper($kelompok->getTable()),
+            'postingdari' => 'ENTRY KELOMPOK',
+            'idtrans' => $kelompok->id,
+            'nobuktitrans' => $kelompok->id,
+            'aksi' => 'ENTRY',
+            'datajson' => $kelompok->toArray(),
+            'modifiedby' => $kelompok->modifiedby
+        ]);
+
+        return $kelompok;
+    }
+
+    public function processUpdate(Kelompok $kelompok, array $data): Kelompok
+    {
+        $kelompok->kodekelompok = $data['kodekelompok'];
+        $kelompok->keterangan = $data['keterangan'] ?? '';
+        $kelompok->statusaktif = $data['statusaktif'];
+        $kelompok->modifiedby = auth('api')->user()->name;
+
+        if (!$kelompok->save()) {
+            throw new \Exception("Error update service in header.");
+        }
+
+        (new LogTrail())->processStore([
+            'namatabel' => strtoupper($kelompok->getTable()),
+            'postingdari' => 'EDIT KELOMPOK',
+            'idtrans' => $kelompok->id,
+            'nobuktitrans' => $kelompok->id,
+            'aksi' => 'EDIT',
+            'datajson' => $kelompok->toArray(),
+            'modifiedby' => $kelompok->modifiedby
+        ]);
+
+        return $kelompok;
+    }
+
+    public function processDestroy($id): Kelompok
+    {
+        $kelompok = new Kelompok();
+        $kelompok = $kelompok->lockAndDestroy($id);
+
+        (new LogTrail())->processStore([
+            'namatabel' => strtoupper($kelompok->getTable()),
+            'postingdari' => 'DELETE KELOMPOK',
+            'idtrans' => $kelompok->id,
+            'nobuktitrans' => $kelompok->id,
+            'aksi' => 'DELETE',
+            'datajson' => $kelompok->toArray(),
+            'modifiedby' => auth('api')->user()->name
+        ]);
+
+        return $kelompok;
     }
 }
