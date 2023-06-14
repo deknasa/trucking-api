@@ -347,7 +347,6 @@ class Gandengan extends MyModel
         ]);
 
         return $gandengan;
-
     }
 
     public function processUpdate(Gandengan $gandengan, array $data): Gandengan
@@ -388,14 +387,10 @@ class Gandengan extends MyModel
             })
             ->where(DB::raw("isnull(stokpersediaan.id,0)"), '=', 0);
 
-
-
         $datadetail = json_decode($stokgudang->get(), true);
-
         $dataexist = $stokgudang->exists();
         $detaillogtrail = [];
         foreach ($datadetail as $item) {
-
             $stokpersediaan = new StokPersediaan();
             $stokpersediaan->stok_id = $item['stok_id'];
             $stokpersediaan->gudang_id = $item['gudang_id'];
@@ -403,23 +398,23 @@ class Gandengan extends MyModel
             $stokpersediaan->gandengan_id = $item['gandengan_id'];
             $stokpersediaan->qty = $item['qty'];
             $stokpersediaan->modifiedby = $item['modifiedby'];
-            $stokpersediaan->save();
+            if (!$stokpersediaan->save()) {
+                throw new \Exception('Error store stok persediaan.');
+            }
             $detaillogtrail[] = $stokpersediaan->toArray();
         }
 
-        if (!$dataexist == true) {
-            throw new \Exception('Error updating gandengan.');
+        if ($dataexist == true) {
+            (new LogTrail())->processStore([
+                'namatabel' => strtoupper($stokpersediaan->getTable()),
+                'postingdari' => 'STOK PERSEDIAAN',
+                'idtrans' => $gandengan->id,
+                'nobuktitrans' => $gandengan->id,
+                'aksi' => 'EDIT',
+                'datajson' => json_encode($detaillogtrail),
+                'modifiedby' => $gandengan->modifiedby
+            ]);
         }
-
-        (new LogTrail())->processStore([
-            'namatabel' => strtoupper($stokpersediaan->getTable()),
-            'postingdari' => 'STOK PERSEDIAAN',
-            'idtrans' => $gandengan->id,
-            'nobuktitrans' => $gandengan->id,
-            'aksi' => 'EDIT',
-            'datajson' => json_encode($detaillogtrail),
-            'modifiedby' => $gandengan->modifiedby
-        ]);
 
         return $gandengan;
     }

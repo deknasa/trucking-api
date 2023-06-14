@@ -257,13 +257,15 @@ class Mandor extends MyModel
 
     public function processUpdate(Mandor $mandor, array $data): Mandor
     {
-        $mandor->namamandor = $data['namamandor'];
-        $mandor->keterangan = $data['keterangan'] ?? '';
+        $mandor->namamandor = $data['namamando'];
+        $mandor->keterangan = $data['keteranga'] ?? '';
         $mandor->statusaktif = $data['statusaktif'];
         $mandor->modifiedby = auth('api')->user()->user;
 
+        
         if (!$mandor->save()) {
-            throw new \Exception('Error updating cabang.');
+
+            throw new \Exception('Error updating mandor.');
         }
 
         (new LogTrail())->processStore([
