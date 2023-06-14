@@ -12,6 +12,7 @@ use App\Models\AbsenTrado;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Database\QueryException;
+use Illuminate\Http\JsonResponse;
 
 class AbsenTradoController extends Controller
 {
@@ -77,7 +78,7 @@ class AbsenTradoController extends Controller
     /**
      * @ClassName 
      */
-    public function store(StoreAbsenTradoRequest $request)
+    public function store(StoreAbsenTradoRequest $request) : JsonResponse
     {
         DB::beginTransaction();
 
@@ -109,7 +110,7 @@ class AbsenTradoController extends Controller
     /**
      * @ClassName 
      */
-    public function update(UpdateAbsenTradoRequest $request, AbsenTrado $absentrado)
+    public function update(UpdateAbsenTradoRequest $request, AbsenTrado $absentrado) : JsonResponse
     {
         DB::beginTransaction();
 
