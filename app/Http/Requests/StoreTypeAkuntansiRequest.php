@@ -33,8 +33,10 @@ class StoreTypeAkuntansiRequest extends FormRequest
             $status[] = $item['id'];
         }
         return [
-            'statusritasi' => 'required|unique:dataritasi',
-            'nominal' => ['required', 'numeric', 'max:1000000'], 
+            'kodetype' => 'required|unique:typeakuntansi',
+            'order' => ['required','gt:0','numeric', 'max:9999'], 
+            'akuntansi_id' => 'required',
+            
             'statusaktif' => ['required', Rule::in($status)],
         ];
     }
@@ -42,9 +44,9 @@ class StoreTypeAkuntansiRequest extends FormRequest
     public function attributes()
     {
         return [
-            'statusritasi' => 'Status Ritasi',
+            'kodetype' => 'Kode Tipe',
             'statusaktif' => 'Status Aktif',
-            'nominal' => 'Nominal',
+            'order' => 'Order',
         ];
     }
 
@@ -53,9 +55,9 @@ class StoreTypeAkuntansiRequest extends FormRequest
         $controller = new ErrorController;
         
         return [
-            'statusritasi.required' => ':attribute '. $controller->geterror('WI')->keterangan,
+            'kodetype.required' => ':attribute '. $controller->geterror('WI')->keterangan,
             'statusaktif.required' => ':attribute '. $controller->geterror('WI')->keterangan,
-            'nominal.required' => ':attribute '. $controller->geterror('WI')->keterangan
+            'order.required' => ':attribute '. $controller->geterror('WI')->keterangan
           
         ];
     }
