@@ -17,6 +17,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Database\QueryException;
+use Illuminate\Http\JsonResponse;
 
 class MerkController extends Controller
 {
@@ -80,42 +81,18 @@ class MerkController extends Controller
     /**
      * @ClassName 
      */
-    public function store(StoreMerkRequest $request)
+    public function store(StoreMerkRequest $request) : JsonResponse
     {
         DB::beginTransaction();
 
         try {
-            $merk = new Merk();
-            $merk->kodemerk = $request->kodemerk;
-            $merk->keterangan = $request->keterangan ?? '';
-            $merk->statusaktif = $request->statusaktif;
-            $merk->modifiedby = auth('api')->user()->name;
-            $request->sortname = $request->sortname ?? 'id';
-            $request->sortorder = $request->sortorder ?? 'asc';
-
-            if ($merk->save()) {
-                $logTrail = [
-                    'namatabel' => strtoupper($merk->getTable()),
-                    'postingdari' => 'ENTRY MERK',
-                    'idtrans' => $merk->id,
-                    'nobuktitrans' => $merk->id,
-                    'aksi' => 'ENTRY',
-                    'datajson' => $merk->toArray(),
-                    'modifiedby' => $merk->modifiedby
-                ];
-
-                $validatedLogTrail = new StoreLogTrailRequest($logTrail);
-                $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
-
-                DB::commit();
-            }
-
-            /* Set position and page */
-            $selected = $this->getPosition($merk, $merk->getTable());
-            $merk->position = $selected->position;
+            $merk = (new Merk())->processStore($request->all());
+            $merk->position = $this->getPosition($merk, $merk->getTable())->position;
             $merk->page = ceil($merk->position / ($request->limit ?? 10));
 
-            return response([
+            DB::commit();   
+
+            return response()->json([
                 'status' => true,
                 'message' => 'Berhasil disimpan',
                 'data' => $merk
@@ -138,38 +115,18 @@ class MerkController extends Controller
     /**
      * @ClassName 
      */
-    public function update(UpdateMerkRequest $request, Merk $merk)
+    public function update(UpdateMerkRequest $request, Merk $merk) : JsonResponse
     {
         DB::beginTransaction();
         try {
-            $merk = Merk::lockForUpdate()->findOrFail($merk->id);
-            $merk->kodemerk = $request->kodemerk;
-            $merk->keterangan = $request->keterangan ?? '';
-            $merk->statusaktif = $request->statusaktif;
-            $merk->modifiedby = auth('api')->user()->name;
 
-            if ($merk->save()) {
-                $logTrail = [
-                    'namatabel' => strtoupper($merk->getTable()),
-                    'postingdari' => 'EDIT MERK',
-                    'idtrans' => $merk->id,
-                    'nobuktitrans' => $merk->id,
-                    'aksi' => 'EDIT',
-                    'datajson' => $merk->toArray(),
-                    'modifiedby' => $merk->modifiedby
-                ];
-
-                $validatedLogTrail = new StoreLogTrailRequest($logTrail);
-                app(LogTrailController::class)->store($validatedLogTrail);
-
-                DB::commit();
-            }
-            /* Set position and page */
-            $selected = $this->getPosition($merk, $merk->getTable());
-            $merk->position = $selected->position;
+            $merk = (new Merk())->processUpdate($merk, $request->all());
+            $merk->position = $this->getPosition($merk, $merk->getTable())->position;
             $merk->page = ceil($merk->position / ($request->limit ?? 10));
 
-            return response([
+            DB::commit();
+
+            return response()->json([
                 'status' => true,
                 'message' => 'Berhasil diubah',
                 'data' => $merk
@@ -186,42 +143,23 @@ class MerkController extends Controller
     {
         DB::beginTransaction();
 
-        $merk = new Merk();
-        $merk = $merk->lockAndDestroy($id);
-
-        if ($merk) {
-            $logTrail = [
-                'namatabel' => strtoupper($merk->getTable()),
-                'postingdari' => 'DELETE MERK',
-                'idtrans' => $merk->id,
-                'nobuktitrans' => $merk->id,
-                'aksi' => 'DELETE',
-                'datajson' => $merk->toArray(),
-                'modifiedby' => $merk->modifiedby
-            ];
-
-            $validatedLogTrail = new StoreLogTrailRequest($logTrail);
-            app(LogTrailController::class)->store($validatedLogTrail);
-
-
-            DB::commit();
+        try {
+            $merk = (new Merk())->processDestroy($id);
             $selected = $this->getPosition($merk, $merk->getTable(), true);
             $merk->position = $selected->position;
             $merk->id = $selected->id;
             $merk->page = ceil($merk->position / ($request->limit ?? 10));
 
-            return response([
-                'status' => true,
+            DB::commit();
+
+            return response()->json([
                 'message' => 'Berhasil dihapus',
                 'data' => $merk
             ]);
-        } else {
+        } catch (\Throwable $th) {
             DB::rollBack();
 
-            return response([
-                'status' => false,
-                'message' => 'Gagal dihapus'
-            ]);
+            throw $th;
         }
     }
 

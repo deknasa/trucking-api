@@ -13,6 +13,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Database\QueryException;
+use Illuminate\Http\JsonResponse;
 
 class PenerimaanStokController extends Controller
 {
@@ -73,64 +74,24 @@ class PenerimaanStokController extends Controller
     /**
      * @ClassName 
      */
-    public function store(StorePenerimaanStokRequest $request)
+    public function store(StorePenerimaanStokRequest $request) : JsonResponse
     {
         DB::beginTransaction();
 
         try {
-            $penerimaanStok = new PenerimaanStok();
-            $penerimaanStok->kodepenerimaan = $request->kodepenerimaan;
-            $penerimaanStok->keterangan = $request->keterangan ?? '';
-            $penerimaanStok->coa = $request->coa;
-            $penerimaanStok->format = $request->format;
-            $penerimaanStok->statushitungstok = $request->statushitungstok;
-            $penerimaanStok->modifiedby = auth('api')->user()->name;
-            $request->sortname = $request->sortname ?? 'id';
-            $request->sortorder = $request->sortorder ?? 'asc';
-
-            TOP:
-            if ($penerimaanStok->save()) {
-                $logTrail = [
-                    'namatabel' => strtoupper($penerimaanStok->getTable()),
-                    'postingdari' => 'ENTRY PENERIMAAN STOK',
-                    'idtrans' => $penerimaanStok->id,
-                    'nobuktitrans' => $penerimaanStok->id,
-                    'aksi' => 'ENTRY',
-                    'datajson' => $penerimaanStok->toArray(),
-                    'modifiedby' => $penerimaanStok->modifiedby
-                ];
-
-                $validatedLogTrail = new StoreLogTrailRequest($logTrail);
-                $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
-
-                DB::commit();
-            }
-
-            /* Set position and page */
-            $selected = $this->getPosition($penerimaanStok, $penerimaanStok->getTable());
-            $penerimaanStok->position = $selected->position;
+            $penerimaanStok = (new PenerimaanStok())->processStore($request->all());
+            $penerimaanStok->position = $this->getPosition($penerimaanStok, $penerimaanStok->getTable())->position;
             $penerimaanStok->page = ceil($penerimaanStok->position / ($request->limit ?? 10));
 
-            if (isset($request->limit)) {
-                $penerimaanStok->page = ceil($penerimaanStok->position / $request->limit);
-            }
-
-            return response([
+            DB::commit(); 
+           
+            return response()->json([
+                'status' => true,
                 'message' => 'Berhasil disimpan',
                 'data' => $penerimaanStok
             ], 201);
-        } catch (QueryException $queryException) {
-            if (isset($queryException->errorInfo[1]) && is_array($queryException->errorInfo)) {
-                // Check if deadlock
-                if ($queryException->errorInfo[1] === 1205) {
-                    goto TOP;
-                }
-            }
-
-            throw $queryException;
         } catch (\Throwable $th) {
             DB::rollBack();
-
             throw $th;
         }
     }
@@ -150,47 +111,18 @@ class PenerimaanStokController extends Controller
     /**
      * @ClassName 
      */
-    public function update(UpdatePenerimaanStokRequest $request, PenerimaanStok $penerimaanStok, $id)
+    public function update(UpdatePenerimaanStokRequest $request, PenerimaanStok $penerimaanStok, $id) : JsonResponse
     {
         DB::beginTransaction();
         try {
-            $penerimaanStok = PenerimaanStok::where('id', $id)->first();
-            $penerimaanStok->kodepenerimaan = $request->kodepenerimaan;
-            $penerimaanStok->keterangan = $request->keterangan ?? '';
-            $penerimaanStok->coa = $request->coa;
-            $penerimaanStok->format = $request->format;
-            $penerimaanStok->statushitungstok = $request->statushitungstok;
-            $penerimaanStok->modifiedby = auth('api')->user()->name;
-            $request->sortname = $request->sortname ?? 'id';
-            $request->sortorder = $request->sortorder ?? 'asc';
-
-            if ($penerimaanStok->save()) {
-                $logTrail = [
-                    'namatabel' => strtoupper($penerimaanStok->getTable()),
-                    'postingdari' => 'EDIT PENERIMAAN STOK',
-                    'idtrans' => $penerimaanStok->id,
-                    'nobuktitrans' => $penerimaanStok->id,
-                    'aksi' => 'EDIT',
-                    'datajson' => $penerimaanStok->toArray(),
-                    'modifiedby' => $penerimaanStok->modifiedby
-                ];
-
-                $validatedLogTrail = new StoreLogTrailRequest($logTrail);
-                $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
-
-                DB::commit();
-            }
-
-            /* Set position and page */
-            $selected = $this->getPosition($penerimaanStok, $penerimaanStok->getTable());
-            $penerimaanStok->position = $selected->position;
+            $penerimaanStok = PenerimaanStok::findOrFail($id);
+            $penerimaanStok = (new PenerimaanStok())->processUpdate($penerimaanStok, $request->all());
+            $penerimaanStok->position = $this->getPosition($penerimaanStok, $penerimaanStok->getTable())->position;
             $penerimaanStok->page = ceil($penerimaanStok->position / ($request->limit ?? 10));
 
-            if (isset($request->limit)) {
-                $penerimaanStok->page = ceil($penerimaanStok->position / $request->limit);
-            }
+            DB::commit();
 
-            return response([
+            return response()->json([
                 'message' => 'Berhasil disimpan',
                 'data' => $penerimaanStok
             ], 201);
@@ -221,41 +153,24 @@ class PenerimaanStokController extends Controller
     {
         DB::beginTransaction();
 
-        $penerimaanStok = new PenerimaanStok;
-        $penerimaanStok = $penerimaanStok->lockAndDestroy($id);
-        if ($penerimaanStok) {
-            $logTrail = [
-                'namatabel' => strtoupper($penerimaanStok->getTable()),
-                'postingdari' => 'DELETE PENERIMAAN STOK',
-                'idtrans' => $penerimaanStok->id,
-                'nobuktitrans' => $penerimaanStok->id,
-                'aksi' => 'DELETE',
-                'datajson' => $penerimaanStok->toArray(),
-                'modifiedby' => $penerimaanStok->modifiedby
-            ];
-
-            $validatedLogTrail = new StoreLogTrailRequest($logTrail);
-            app(LogTrailController::class)->store($validatedLogTrail);
-
-            DB::commit();
-
+        
+        try {
+            $penerimaanStok = (new PenerimaanStok())->processDestroy($id);
             $selected = $this->getPosition($penerimaanStok, $penerimaanStok->getTable(), true);
             $penerimaanStok->position = $selected->position;
             $penerimaanStok->id = $selected->id;
             $penerimaanStok->page = ceil($penerimaanStok->position / ($request->limit ?? 10));
 
-            return response([
-                'status' => true,
+            DB::commit();
+
+            return response()->json([
                 'message' => 'Berhasil dihapus',
                 'data' => $penerimaanStok
             ]);
-        } else {
+        } catch (\Throwable $th) {
             DB::rollBack();
 
-            return response([
-                'status' => false,
-                'message' => 'Gagal dihapus'
-            ]);
+            throw $th;
         }
     }
 

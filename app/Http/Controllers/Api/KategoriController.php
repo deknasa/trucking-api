@@ -18,6 +18,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Database\QueryException;
+use Illuminate\Http\JsonResponse;
 
 class KategoriController extends Controller
 {
@@ -80,48 +81,18 @@ class KategoriController extends Controller
     /**
      * @ClassName 
      */
-    public function store(StoreKategoriRequest $request)
+    public function store(StoreKategoriRequest $request) : JsonResponse
     {
         DB::beginTransaction();
 
         try {
-            $kategori = new Kategori();
-            $kategori->kodekategori = $request->kodekategori;
-            $kategori->keterangan = $request->keterangan ?? '';
-            $kategori->subkelompok_id = $request->subkelompok_id;
-            $kategori->statusaktif = $request->statusaktif;
-            $kategori->modifiedby = auth('api')->user()->name;
-            $request->sortname = $request->sortname ?? 'id';
-            $request->sortorder = $request->sortorder ?? 'asc';
-
-            if ($kategori->save()) {
-                $logTrail = [
-                    'namatabel' => strtoupper($kategori->getTable()),
-                    'postingdari' => 'ENTRY KATEGORI',
-                    'idtrans' => $kategori->id,
-                    'nobuktitrans' => $kategori->id,
-                    'aksi' => 'ENTRY',
-                    'datajson' => $kategori->toArray(),
-                    'modifiedby' => $kategori->modifiedby
-                ];
-
-                $validatedLogTrail = new StoreLogTrailRequest($logTrail);
-                $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
-
-                DB::commit();
-            }
-
-            /* Set position and page */
-
-            $selected = $this->getPosition($kategori, $kategori->getTable());
-            $kategori->position = $selected->position;
+            $kategori = (new Kategori())->processStore($request->all());
+            $kategori->position = $this->getPosition($kategori, $kategori->getTable())->position;
             $kategori->page = ceil($kategori->position / ($request->limit ?? 10));
 
-            if (isset($request->limit)) {
-                $kategori->page = ceil($kategori->position / $request->limit);
-            }
+            DB::commit();
 
-            return response([
+            return response()->json([
                 'status' => true,
                 'message' => 'Berhasil disimpan',
                 'data' => $kategori
@@ -144,39 +115,17 @@ class KategoriController extends Controller
     /**
      * @ClassName 
      */
-    public function update(UpdateKategoriRequest $request, Kategori $kategori)
+    public function update(UpdateKategoriRequest $request, Kategori $kategori) : JsonResponse
     {
         DB::beginTransaction();
         try {
-            $kategori->kodekategori = $request->kodekategori;
-            $kategori->keterangan = $request->keterangan ?? '';
-            $kategori->subkelompok_id = $request->subkelompok_id;
-            $kategori->statusaktif = $request->statusaktif;
-            $kategori->modifiedby = auth('api')->user()->name;
-
-            if ($kategori->save()) {
-                $logTrail = [
-                    'namatabel' => strtoupper($kategori->getTable()),
-                    'postingdari' => 'EDIT KATEGORI',
-                    'idtrans' => $kategori->id,
-                    'nobuktitrans' => $kategori->id,
-                    'aksi' => 'EDIT',
-                    'datajson' => $kategori->toArray(),
-                    'modifiedby' => $kategori->modifiedby
-                ];
-
-                $validatedLogTrail = new StoreLogTrailRequest($logTrail);
-                app(LogTrailController::class)->store($validatedLogTrail);
-            }
-            DB::commit();
-
-            /* Set position and page */
-
-            $selected = $this->getPosition($kategori, $kategori->getTable());
-            $kategori->position = $selected->position;
+            $kategori = (new Kategori())->processUpdate($kategori, $request->all());
+            $kategori->position = $this->getPosition($kategori, $kategori->getTable())->position;
             $kategori->page = ceil($kategori->position / ($request->limit ?? 10));
 
-            return response([
+            DB::commit();
+
+            return response()->json([
                 'status' => true,
                 'message' => 'Berhasil diubah',
                 'data' => $kategori
@@ -193,43 +142,23 @@ class KategoriController extends Controller
     {
         DB::beginTransaction();
 
-        $kategori = new Kategori();
-        $kategori = $kategori->lockAndDestroy($id);
-        if ($kategori) {
-            $logTrail = [
-                'namatabel' => strtoupper($kategori->getTable()),
-                'postingdari' => 'DELETE KATEGORI',
-                'idtrans' => $kategori->id,
-                'nobuktitrans' => $kategori->id,
-                'aksi' => 'DELETE',
-                'datajson' => $kategori->toArray(),
-                'modifiedby' => auth('api')->user()->name
-            ];
-
-            $validatedLogTrail = new StoreLogTrailRequest($logTrail);
-            app(LogTrailController::class)->store($validatedLogTrail);
-
-
-            DB::commit();
-
+        try {
+            $kategori = (new Kategori())->processDestroy($id);
             $selected = $this->getPosition($kategori, $kategori->getTable(), true);
-
             $kategori->position = $selected->position;
             $kategori->id = $selected->id;
             $kategori->page = ceil($kategori->position / ($request->limit ?? 10));
 
-            return response([
-                'status' => true,
+            DB::commit();
+
+            return response()->json([
                 'message' => 'Berhasil dihapus',
                 'data' => $kategori
             ]);
-        } else {
+        } catch (\Throwable $th) {
             DB::rollBack();
 
-            return response([
-                'status' => false,
-                'message' => 'Gagal dihapus'
-            ]);
+            throw $th;
         }
     }
 
