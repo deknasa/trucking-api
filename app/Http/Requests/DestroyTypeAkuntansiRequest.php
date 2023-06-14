@@ -7,7 +7,7 @@ use App\Http\Controllers\Api\ErrorController;
 use App\Models\Parameter;
 use Illuminate\Validation\Rule;
 
-class StoreMainTypeAkuntansiRequest extends FormRequest
+class DestroyTypeAkuntansiRequest extends FormRequest
 {
      /**
      * Determine if the user is authorized to make this request.
@@ -33,10 +33,7 @@ class StoreMainTypeAkuntansiRequest extends FormRequest
             $status[] = $item['id'];
         }
         return [
-            'kodetype' => 'required|unique:maintypeakuntansi',
-            'order' => ['required','gt:0','numeric', 'max:9999'], 
-            'akuntansi' => 'required',
-            
+            'kodetype' => ['required', Rule::unique('typeakuntansi')->whereNotIn('id', [$this->id])],
             'statusaktif' => ['required', Rule::in($status)],
         ];
     }

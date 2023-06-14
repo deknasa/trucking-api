@@ -35,8 +35,7 @@ class UpdateTypeAkuntansiRequest extends FormRequest
         return [
             'kodetype' => ['required', Rule::unique('typeakuntansi')->whereNotIn('id', [$this->id])],
             'order' => ['required','gt:0','numeric', 'max:9999'], 
-            'akuntansi_id' => 'required',
-            
+            'akuntansi' => 'required',
             'statusaktif' => ['required', Rule::in($status)],
         ];
     }

@@ -5,6 +5,8 @@ namespace App\Http\Requests;
 use Illuminate\Foundation\Http\FormRequest;
 use App\Http\Controllers\Api\ErrorController;
 use App\Models\Parameter;
+use App\Models\SubKelompok;
+use App\Rules\ValidasiEditSubKelompok;
 use Illuminate\Validation\Rule;
 
 class UpdateSubKelompokRequest extends FormRequest
@@ -53,7 +55,9 @@ class UpdateSubKelompokRequest extends FormRequest
             ];
         }
 
+        // $getDataPiutang = SubKelompok::find(request()->id);
         $rules = [
+            'id' => [new ValidasiEditSubKelompok()],
             'kodesubkelompok' => ['required',Rule::unique('subkelompok')->whereNotIn('id', [$this->id])],
             'keterangan' => 'nullable',
             'kelompok' => 'required',

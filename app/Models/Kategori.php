@@ -271,4 +271,73 @@ class Kategori extends MyModel
     {
         return $query->skip($this->params['offset'])->take($this->params['limit']);
     }
+
+    public function processStore(array $data): Kategori
+    {
+        $kategori = new Kategori();
+        $kategori->kodekategori = $data['kodekategori'];
+        $kategori->keterangan = $data['keterangan'] ?? '';
+        $kategori->subkelompok_id = $data['subkelompok_id'];
+        $kategori->statusaktif = $data['statusaktif'];
+        $kategori->modifiedby = auth('api')->user()->name;
+
+        if (!$kategori->save()) {
+            throw new \Exception("Error storing service in header.");
+        }
+
+        (new LogTrail())->processStore([
+            'namatabel' => strtoupper($kategori->getTable()),
+            'postingdari' => 'ENTRY KATEGORI',
+            'idtrans' => $kategori->id,
+            'nobuktitrans' => $kategori->id,
+            'aksi' => 'ENTRY',
+            'datajson' => $kategori->toArray(),
+            'modifiedby' => $kategori->modifiedby
+        ]);
+
+        return $kategori;
+    }
+
+    public function processUpdate(Kategori $kategori, array $data): Kategori
+    {
+        $kategori->kodekategori = $data['kodekategori'];
+        $kategori->keterangan = $data['keterangan'] ?? '';
+        $kategori->subkelompok_id = $data['subkelompok_id'];
+        $kategori->statusaktif = $data['statusaktif'];
+        $kategori->modifiedby = auth('api')->user()->name;
+
+        if (!$kategori->save()) {
+            throw new \Exception("Error update service in header.");
+        }
+
+        (new LogTrail())->processStore([
+            'namatabel' => strtoupper($kategori->getTable()),
+            'postingdari' => 'EDIT KATEGORI',
+            'idtrans' => $kategori->id,
+            'nobuktitrans' => $kategori->id,
+            'aksi' => 'EDIT',
+            'datajson' => $kategori->toArray(),
+            'modifiedby' => $kategori->modifiedby
+        ]);
+
+        return $kategori;
+    }
+
+    public function processDestroy($id): Kategori
+    {
+        $kategori = new Kategori();
+        $kategori = $kategori->lockAndDestroy($id);
+
+        (new LogTrail())->processStore([
+            'namatabel' => strtoupper($kategori->getTable()),
+            'postingdari' => 'DELETE KATEGORI',
+            'idtrans' => $kategori->id,
+            'nobuktitrans' => $kategori->id,
+            'aksi' => 'DELETE',
+            'datajson' => $kategori->toArray(),
+            'modifiedby' => auth('api')->user()->name
+        ]);
+
+        return $kategori;
+    }
 }

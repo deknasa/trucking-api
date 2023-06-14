@@ -35,7 +35,7 @@ class StoreTypeAkuntansiRequest extends FormRequest
         return [
             'kodetype' => 'required|unique:typeakuntansi',
             'order' => ['required','gt:0','numeric', 'max:9999'], 
-            'akuntansi_id' => 'required',
+            'akuntansi' => 'required',
             
             'statusaktif' => ['required', Rule::in($status)],
         ];

@@ -51,6 +51,7 @@ use App\Http\Controllers\Api\BankPelangganController;
 use App\Http\Controllers\Api\DataRitasiController;
 use App\Http\Controllers\Api\AkuntansiController;
 use App\Http\Controllers\Api\TypeAkuntansiController;
+use App\Http\Controllers\Api\MainTypeAkuntansiController;
 use App\Http\Controllers\Api\ExportLaporanKasGantungController;
 use App\Http\Controllers\Api\ExportLaporanKasHarianController;
 use App\Http\Controllers\Api\ExportLaporanStokController;
@@ -1283,6 +1284,14 @@ route::middleware(['auth:api'])->group(function () {
     Route::get('typeakuntansi/getPosition2', [TypeAkuntansiController::class, 'getPosition2']);
     Route::resource('typeakuntansi', TypeAkuntansiController::class)->whereNumber('typeakuntansi');
     
+    Route::get('maintypeakuntansi/field_length', [MainTypeAkuntansiController::class, 'fieldLength']);
+    Route::get('maintypeakuntansi/combostatus', [MainTypeAkuntansiController::class, 'combostatus']);
+    Route::get('maintypeakuntansi/default', [MainTypeAkuntansiController::class, 'default']);
+    Route::get('maintypeakuntansi/report', [MainTypeAkuntansiController::class, 'report']);
+    Route::get('maintypeakuntansi/export', [MainTypeAkuntansiController::class, 'export']);
+    Route::get('maintypeakuntansi/getPosition2', [MainTypeAkuntansiController::class, 'getPosition2']);
+    Route::resource('maintypeakuntansi', MainTypeAkuntansiController::class)->whereNumber('maintypeakuntansi');
+
     Route::get('approvaltradogambar/field_length', [ApprovalTradoGambarController::class, 'fieldLength']);
     Route::resource('approvaltradogambar', ApprovalTradoGambarController::class)->whereNumber('approvaltradogambar');
 });

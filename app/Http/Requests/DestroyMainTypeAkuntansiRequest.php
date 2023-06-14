@@ -6,8 +6,9 @@ use Illuminate\Foundation\Http\FormRequest;
 use App\Http\Controllers\Api\ErrorController;
 use App\Models\Parameter;
 use Illuminate\Validation\Rule;
+use Illuminate\Support\Facades\URL;
 
-class StoreMainTypeAkuntansiRequest extends FormRequest
+class DestroyMainTypeAkuntansiRequest extends FormRequest
 {
      /**
      * Determine if the user is authorized to make this request.
@@ -32,14 +33,14 @@ class StoreMainTypeAkuntansiRequest extends FormRequest
         foreach ($data as $item) {
             $status[] = $item['id'];
         }
+        
         return [
-            'kodetype' => 'required|unique:maintypeakuntansi',
-            'order' => ['required','gt:0','numeric', 'max:9999'], 
-            'akuntansi' => 'required',
-            
+            'id' => ['required', Rule::unique('maintypeakuntansi')->whereNotIn('id', [$this->id])],
+            'kodetype' => ['required', Rule::unique('maintypeakuntansi')->whereNotIn('id', [$this->id])],
             'statusaktif' => ['required', Rule::in($status)],
         ];
     }
+    
 
     public function attributes()
     {
