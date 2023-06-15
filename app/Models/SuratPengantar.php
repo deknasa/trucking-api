@@ -1046,36 +1046,24 @@ class SuratPengantar extends MyModel
             }
         } else {
 
-            $suratPengantar->pelanggan_id = $orderanTrucking->pelanggan_id;
-            $suratPengantar->container_id = $orderanTrucking->container_id;
-            $suratPengantar->nojob = $orderanTrucking->nojobemkl;
-            $suratPengantar->nojob2 = $orderanTrucking->nojobemkl2 ?? '';
+            $suratPengantar->pelanggan_id = $data['pelanggan_id'];
+            $suratPengantar->container_id = $data['container_id'];
+            $suratPengantar->nojob = $data['nojob'];
+            $suratPengantar->nojob2 = $data['nojob2'] ?? '';
             $suratPengantar->nocont = $data['nocont'] ?? '';
             $suratPengantar->nocont2 = $data['nocont2'] ?? '';
             $suratPengantar->noseal = $data['noseal'] ?? '';
             $suratPengantar->noseal2 = $data['noseal2'] ?? '';
-            $suratPengantar->omset = $tarif->nominal;
-            $suratPengantar->agen_id = $orderanTrucking->agen_id;
-            $suratPengantar->jenisorder_id = $orderanTrucking->jenisorder_id;
-            $suratPengantar->tarif_id = $orderanTrucking->tarif_id;
-            $suratPengantar->nominalperalihan = $data['nominalperalihan'] ?? 0;
-            $persentaseperalihan = 0;
-            if (array_key_exists('nominalperalihan', $data)) {
-                if ($data['nominalperalihan'] != 0) {
-                    $persentaseperalihan = $data['nominalperalihan'] / $tarif->nominal;
-                }
-            }
+            $suratPengantar->agen_id = $data['agen_id'];
+            $suratPengantar->jenisorder_id = $data['jenisorder_id'];
+            $suratPengantar->tarif_id = $data['tarif_id'];
 
-            $suratPengantar->persentaseperalihan = $persentaseperalihan;
-            $suratPengantar->discount = $persentaseperalihan;
-            $suratPengantar->totalomset = $tarif->nominal - ($tarif->nominal * ($persentaseperalihan / 100));
-            $suratPengantar->totalton = $tarif->nominal * $data['qtyton'];
             if (!$suratPengantar->save()) {
                 throw new \Exception('Error edit surat pengantar.');
             }
             $suratPengantarLogTrail = (new LogTrail())->processStore([
                 'namatabel' => strtoupper($suratPengantar->getTable()),
-                'postingdari' => 'EDIT SURAT PENGANTAR',
+                'postingdari' => $data['postingdari'] ?? 'EDIT SURAT PENGANTAR',
                 'idtrans' => $suratPengantar->id,
                 'nobuktitrans' => $suratPengantar->nobukti,
                 'aksi' => 'EDIT',

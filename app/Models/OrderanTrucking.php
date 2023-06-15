@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Services\RunningNumberService;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\DB;
@@ -25,7 +26,7 @@ class OrderanTrucking extends MyModel
         'updated_at' => 'date:d-m-Y H:i:s'
     ];
 
-    public function cekvalidasihapus($nobukti)
+    public function cekvalidasihapus($nobukti, $aksi)
     {
 
         $suratPengantar = DB::table('suratpengantar')
@@ -33,20 +34,44 @@ class OrderanTrucking extends MyModel
                 DB::raw("suratpengantar as a with (readuncommitted)")
             )
             ->select(
-                'a.jobtrucking'
+                'a.jobtrucking',
+                'a.nobukti'
             )
             ->where('a.jobtrucking', '=', $nobukti)
             ->first();
-        if (isset($suratPengantar)) {
-            $data = [
-                'kondisi' => true,
-                'keterangan' => 'Surat Pengantar',
-            ];
+        if ($aksi == 'delete') {
+            if (isset($suratPengantar)) {
+                $data = [
+                    'kondisi' => true,
+                    'keterangan' => 'Surat Pengantar',
+                ];
 
 
-            goto selesai;
+                goto selesai;
+            }
+        } else {
+            if ($suratPengantar != null) {
+                $gajiSupir = DB::table('gajisupirdetail')
+                    ->from(
+                        DB::raw("gajisupirdetail as a with (readuncommitted)")
+                    )
+                    ->select(
+                        'a.suratpengantar_nobukti'
+                    )
+                    ->where('a.suratpengantar_nobukti', $suratPengantar->nobukti)
+                    ->first();
+
+                if (isset($gajiSupir)) {
+                    $data = [
+                        'kondisi' => true,
+                        'keterangan' => 'GAJI SUPIR',
+                    ];
+
+
+                    goto selesai;
+                }
+            }
         }
-
 
         $invoice = DB::table('invoicedetail')
             ->from(
@@ -152,17 +177,17 @@ class OrderanTrucking extends MyModel
     {
 
         $queryukuran = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))
-        ->select(
-            'text',
-        )
-        ->where('grp', 'UKURANCONTAINER2X20')
-        ->where('subgrp', 'UKURANCONTAINER2X20')
-        ->first();
+            ->select(
+                'text',
+            )
+            ->where('grp', 'UKURANCONTAINER2X20')
+            ->where('subgrp', 'UKURANCONTAINER2X20')
+            ->first();
 
         $data = DB::table('container')
             ->from(DB::raw("container with (readuncommitted)"))
             ->select(
-                DB::raw("(case when id=". $queryukuran->text ." then 1 else 0 end)  as kodecontainer")
+                DB::raw("(case when id=" . $queryukuran->text . " then 1 else 0 end)  as kodecontainer")
             )
             ->where('container.id', $id)
             ->first();
@@ -441,13 +466,12 @@ class OrderanTrucking extends MyModel
                         } else if ($filters['field'] == 'nominal') {
                             $query = $query->whereRaw("format($this->table.nominal, '#,#0.00') LIKE '%$filters[data]%'");
                         } else if ($filters['field'] == 'tglbukti') {
-                            $query = $query->whereRaw("format(".$this->table . "." . $filters['field'].", 'dd-MM-yyyy') LIKE '%$filters[data]%'");
+                            $query = $query->whereRaw("format(" . $this->table . "." . $filters['field'] . ", 'dd-MM-yyyy') LIKE '%$filters[data]%'");
                         } else if ($filters['field'] == 'created_at' || $filters['field'] == 'updated_at') {
-                            $query = $query->whereRaw("format(".$this->table . "." . $filters['field'].", 'dd-MM-yyyy HH:mm:ss') LIKE '%$filters[data]%'");
+                            $query = $query->whereRaw("format(" . $this->table . "." . $filters['field'] . ", 'dd-MM-yyyy HH:mm:ss') LIKE '%$filters[data]%'");
                         } else {
                             // $query = $query->where($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
                             $query = $query->whereRaw($this->table . ".[" .  $filters['field'] . "] LIKE '%" . escapeLike($filters['data']) . "%' escape '|'");
-
                         }
                     }
 
@@ -471,13 +495,12 @@ class OrderanTrucking extends MyModel
                         } else if ($filters['field'] == 'nominal') {
                             $query = $query->orWhereRaw("format($this->table.nominal, '#,#0.00') LIKE '%$filters[data]%'");
                         } else if ($filters['field'] == 'tglbukti') {
-                            $query = $query->orWhereRaw("format(".$this->table . "." . $filters['field'].", 'dd-MM-yyyy') LIKE '%$filters[data]%'");
+                            $query = $query->orWhereRaw("format(" . $this->table . "." . $filters['field'] . ", 'dd-MM-yyyy') LIKE '%$filters[data]%'");
                         } else if ($filters['field'] == 'created_at' || $filters['field'] == 'updated_at') {
-                            $query = $query->orWhereRaw("format(".$this->table . "." . $filters['field'].", 'dd-MM-yyyy HH:mm:ss') LIKE '%$filters[data]%'");
+                            $query = $query->orWhereRaw("format(" . $this->table . "." . $filters['field'] . ", 'dd-MM-yyyy HH:mm:ss') LIKE '%$filters[data]%'");
                         } else {
                             // $query = $query->orWhere($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
                             $query = $query->OrwhereRaw($this->table . ".[" .  $filters['field'] . "] LIKE '%" . escapeLike($filters['data']) . "%' escape '|'");
-
                         }
                     }
 
@@ -504,10 +527,10 @@ class OrderanTrucking extends MyModel
         $this->setRequestParameters();
 
         $getJudul = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))
-        ->select('text')
-        ->where('grp', 'JUDULAN LAPORAN')
-        ->where('subgrp', 'JUDULAN LAPORAN')
-        ->first();
+            ->select('text')
+            ->where('grp', 'JUDULAN LAPORAN')
+            ->where('subgrp', 'JUDULAN LAPORAN')
+            ->first();
 
         $query = DB::table($this->table)->from(
             DB::raw($this->table . " with (readuncommitted)")
@@ -544,5 +567,134 @@ class OrderanTrucking extends MyModel
 
         $data = $query->first();
         return $data;
+    }
+
+    public function processStore(array $data): OrderanTrucking
+    {
+        $orderanTrucking = new OrderanTrucking();
+        $group = 'ORDERANTRUCKING';
+        $subGroup = 'ORDERANTRUCKING';
+        $format = DB::table('parameter')
+            ->where('grp', $group)
+            ->where('subgrp', $subGroup)
+            ->first();
+
+        $orderanTrucking->tglbukti = date('Y-m-d', strtotime($data['tglbukti']));
+        $orderanTrucking->container_id = $data['container_id'];
+        $orderanTrucking->agen_id = $data['agen_id'];
+        $orderanTrucking->jenisorder_id = $data['jenisorder_id'];
+        $orderanTrucking->pelanggan_id = $data['pelanggan_id'];
+        $orderanTrucking->tarif_id = $data['tarifrincian_id'];
+        $orderanTrucking->nojobemkl = $data['nojobemkl'] ?? '';
+        $orderanTrucking->nocont = $data['nocont'];
+        $orderanTrucking->noseal = $data['noseal'];
+        $orderanTrucking->nojobemkl2 = $data['nojobemkl2'] ?? '';
+        $orderanTrucking->nocont2 = $data['nocont2'] ?? '';
+        $orderanTrucking->noseal2 = $data['noseal2'] ?? '';
+        $orderanTrucking->statuslangsir = $data['statuslangsir'];
+        $orderanTrucking->statusperalihan = $data['statusperalihan'];
+        $orderanTrucking->modifiedby = auth('api')->user()->name;
+        $orderanTrucking->statusformat = $format->id;
+
+        $tarifrincian = TarifRincian::find($data['tarifrincian_id']);
+        $orderanTrucking->nominal = $tarifrincian->nominal;
+        $orderanTrucking->nobukti = (new RunningNumberService)->get($group, $subGroup, $orderanTrucking->getTable(), date('Y-m-d', strtotime($data['tglbukti'])));
+
+        if (!$orderanTrucking->save()) {
+            throw new \Exception("Error orderan trucking.");
+        }
+
+        (new LogTrail())->processStore([
+            'namatabel' => strtoupper($orderanTrucking->getTable()),
+            'postingdari' => 'ENTRY ORDERAN TRUCKING',
+            'idtrans' => $orderanTrucking->id,
+            'nobuktitrans' => $orderanTrucking->nobukti,
+            'aksi' => 'ENTRY',
+            'datajson' => $orderanTrucking->toArray(),
+            'modifiedby' => auth('api')->user()->user
+        ]);
+        return $orderanTrucking;
+    }
+
+    public function processUpdate(OrderanTrucking $orderanTrucking, array $data): OrderanTrucking
+    {
+        $orderanTrucking->container_id = $data['container_id'];
+        $orderanTrucking->agen_id = $data['agen_id'];
+        $orderanTrucking->jenisorder_id = $data['jenisorder_id'];
+        $orderanTrucking->pelanggan_id = $data['pelanggan_id'];
+        $orderanTrucking->tarif_id = $data['tarifrincian_id'];
+        $orderanTrucking->nojobemkl = $data['nojobemkl'] ?? '';
+        $orderanTrucking->nocont = $data['nocont'];
+        $orderanTrucking->noseal = $data['noseal'];
+        $orderanTrucking->nojobemkl2 = $data['nojobemkl2'] ?? '';
+        $orderanTrucking->nocont2 = $data['nocont2'] ?? '';
+        $orderanTrucking->noseal2 = $data['noseal2'] ?? '';
+        $orderanTrucking->statuslangsir = $data['statuslangsir'];
+        $orderanTrucking->statusperalihan = $data['statusperalihan'];
+        $orderanTrucking->modifiedby = auth('api')->user()->name;
+
+        $tarifrincian = TarifRincian::from(DB::raw("tarifrincian"))->where('tarif_id', $data['tarifrincian_id'])->where('container_id', $data['container_id'])->first();
+        $orderanTrucking->nominal = $tarifrincian->nominal;
+
+        if (!$orderanTrucking->save()) {
+            throw new \Exception("Error updating orderan trucking.");
+        }
+
+        (new LogTrail())->processStore([
+            'namatabel' => strtoupper($orderanTrucking->getTable()),
+            'postingdari' => 'EDIT ORDERAN TRUCKING',
+            'idtrans' => $orderanTrucking->id,
+            'nobuktitrans' => $orderanTrucking->nobukti,
+            'aksi' => 'EDIT',
+            'datajson' => $orderanTrucking->toArray(),
+            'modifiedby' => auth('api')->user()->user
+        ]);
+        $get = SuratPengantar::from(DB::raw("suratpengantar with (readuncommitted)"))
+            ->select('id', 'nominalperalihan', 'qtyton')
+            ->where('jobtrucking', $orderanTrucking->nobukti)->get();
+
+        $datadetail = json_decode($get, true);
+        if (count($datadetail) > 0) {
+            foreach ($datadetail as $item) {
+                $suratPengantar = [
+                    'proseslain' => '1',
+                    'jobtrucking' => $orderanTrucking->nobukti,
+                    'nojob' =>  $data['nojobemkl'] ?? '',
+                    'nocont' =>  $data['nocont'] ?? '',
+                    'noseal' =>  $data['noseal'] ?? '',
+                    'nojob2' =>  $data['nojobemkl2'] ?? '',
+                    'nocont2' =>  $data['nocont2'] ?? '',
+                    'noseal2' =>  $data['noseal2'] ?? '',
+                    'container_id' => $data['container_id'],
+                    'agen_id' => $data['agen_id'],
+                    'jenisorder_id' => $data['jenisorder_id'],
+                    'pelanggan_id' => $data['pelanggan_id'],
+                    'tarif_id' => $data['tarifrincian_id'],
+                    'postingdari' => 'EDIT ORDERAN TRUCKING'
+                ];
+                $newSuratPengantar = new SuratPengantar();
+                $newSuratPengantar = $newSuratPengantar->findAll($item['id']);
+                (new SuratPengantar())->processUpdate($newSuratPengantar, $suratPengantar);
+            }
+        }
+        return $orderanTrucking;
+    }
+
+    public function processDestroy($id): OrderanTrucking
+    {
+        $orderanTrucking = new OrderanTrucking();
+        $orderanTrucking = $orderanTrucking->lockAndDestroy($id);
+
+        (new LogTrail())->processStore([
+            'namatabel' => $orderanTrucking->getTable(),
+            'postingdari' => 'DELETE ORDERAN TRUCKING',
+            'idtrans' => $orderanTrucking->id,
+            'nobuktitrans' => $orderanTrucking->nobukti,
+            'aksi' => 'DELETE',
+            'datajson' => $orderanTrucking->toArray(),
+            'modifiedby' => auth('api')->user()->name
+        ]);
+
+        return $orderanTrucking;
     }
 }

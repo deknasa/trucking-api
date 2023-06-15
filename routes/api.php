@@ -336,7 +336,7 @@ route::middleware(['auth:api'])->group(function () {
     Route::get('orderantrucking/combo', [OrderanTruckingController::class, 'combo']);
     Route::get('orderantrucking/field_length', [OrderanTruckingController::class, 'fieldLength']);
     Route::get('orderantrucking/default', [OrderanTruckingController::class, 'default']);
-    Route::post('orderantrucking/{id}/cekValidasi', [OrderanTruckingController::class, 'cekValidasi'])->name('orderantrucking.cekValidasi')->whereNumber('id');
+    Route::post('orderantrucking/{id}/{aksi}/cekValidasi', [OrderanTruckingController::class, 'cekValidasi'])->name('orderantrucking.cekValidasi')->whereNumber('id');
     Route::get('orderantrucking/{id}/getagentas', [OrderanTruckingController::class, 'getagentas'])->whereNumber('id');
     Route::get('orderantrucking/{id}/getcont', [OrderanTruckingController::class, 'getcont'])->whereNumber('id');
     Route::get('orderantrucking/{id}/export', [OrderanTruckingController::class, 'export'])->whereNumber('id');
