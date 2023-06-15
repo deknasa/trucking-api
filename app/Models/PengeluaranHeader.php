@@ -618,7 +618,7 @@ class PengeluaranHeader extends MyModel
             'tanpaprosesnobukti' => 1,
             'nobukti' => $pengeluaranHeader->nobukti,
             'tglbukti' => date('Y-m-d', strtotime($data['tglbukti'])),
-            'postingdari' => "ENTRY HUTANG",
+            'postingdari' => "ENTRY PENGELUARAN",
             'statusapproval' => $statusApproval->id,
             'userapproval' => "",
             'tglapproval' => "",
@@ -665,7 +665,7 @@ class PengeluaranHeader extends MyModel
         $pengeluaranHeader->modifiedby = auth('api')->user()->name;
 
         if (!$pengeluaranHeader->save()) {
-            throw new \Exception("Error storing Hutang header.");
+            throw new \Exception("Error Update Pengeluaran header.");
         }
 
         $pengeluaranHeaderLogTrail = (new LogTrail())->processStore([
@@ -724,7 +724,7 @@ class PengeluaranHeader extends MyModel
             'tanpaprosesnobukti' => 1,
             'nobukti' => $pengeluaranHeader->nobukti,
             'tglbukti' => date('Y-m-d', strtotime($data['tglbukti'])),
-            'postingdari' => "ENTRY HUTANG",
+            'postingdari' => "ENTRY PENGELUARAN",
             'statusapproval' => $statusApproval->id,
             'userapproval' => "",
             'tglapproval' => "",
@@ -757,7 +757,7 @@ class PengeluaranHeader extends MyModel
          $pengeluaranHeader = $pengeluaranHeader->lockAndDestroy($id);
          $hutangLogTrail = (new LogTrail())->processStore([
              'namatabel' => $this->table,
-             'postingdari' => strtoupper('DELETE penerimaan Stok Header'),
+             'postingdari' => strtoupper('DELETE pengeluaran Header'),
              'idtrans' => $pengeluaranHeader->id,
              'nobuktitrans' => $pengeluaranHeader->nobukti,
              'aksi' => 'DELETE',
@@ -767,7 +767,7 @@ class PengeluaranHeader extends MyModel
  
          (new LogTrail())->processStore([
              'namatabel' => (new LogTrail())->table,
-             'postingdari' => strtoupper('DELETE penerimaan Stok detail'),
+             'postingdari' => strtoupper('DELETE pengeluaran detail'),
              'idtrans' => $hutangLogTrail['id'],
              'nobuktitrans' => $pengeluaranHeader->nobukti,
              'aksi' => 'DELETE',
