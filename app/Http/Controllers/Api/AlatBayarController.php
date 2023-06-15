@@ -20,6 +20,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Database\QueryException;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Validator;
 
 class AlatBayarController extends Controller
@@ -84,70 +85,17 @@ class AlatBayarController extends Controller
     /**
      * @ClassName 
      */
-    public function store(StoreAlatBayarRequest $request)
+    public function store(StoreAlatBayarRequest $request) : JsonResponse
     {
         DB::beginTransaction();
         // dd($request->all());
         try {
-            $statusCair = Parameter::where('grp', 'STATUS LANGSUNG CAIR')->where('text', 'TIDAK LANGSUNG CAIR')->first();
-            $controller = new ErrorController;
-            if ($request->statuslangsungcair == $statusCair->id) {
-
-
-                $request->validate(
-                    [
-                        'coa' => [
-                            "required"
-                        ]
-                    ],
-                    [
-                        'coa.required' => ':attribute' . ' ' . app(ErrorController::class)->geterror('WI')->keterangan,
-
-                    ],
-                    [
-                        'coa' => 'kode perkiraan',
-                    ],
-                );
-            }
-
-
-            $alatbayar = new AlatBayar();
-            $alatbayar->kodealatbayar = $request->kodealatbayar;
-            $alatbayar->namaalatbayar = $request->namaalatbayar;
-            $alatbayar->keterangan = $request->keterangan ?? '';
-            $alatbayar->statuslangsungcair = $request->statuslangsungcair;
-            $alatbayar->statusdefault = $request->statusdefault;
-            $alatbayar->bank_id = $request->bank_id;
-            $alatbayar->coa = $request->coa ?? '';
-            $alatbayar->statusaktif = $request->statusaktif;
-            $alatbayar->modifiedby = auth('api')->user()->name;
-            $request->sortname = $request->sortname ?? 'id';
-            $request->sortorder = $request->sortorder ?? 'asc';
-
-            if ($alatbayar->save()) {
-                $logTrail = [
-                    'namatabel' => strtoupper($alatbayar->getTable()),
-                    'postingdari' => 'ENTRY ALATBAYAR',
-                    'idtrans' => $alatbayar->id,
-                    'nobuktitrans' => $alatbayar->id,
-                    'aksi' => 'ENTRY',
-                    'datajson' => $alatbayar->toArray(),
-                    'modifiedby' => $alatbayar->modifiedby
-                ];
-
-                $validatedLogTrail = new StoreLogTrailRequest($logTrail);
-                app(LogTrailController::class)->store($validatedLogTrail);
-
-                DB::commit();
-            }
-
-            /* Set position and page */
-            $selected = $this->getPosition($alatbayar, $alatbayar->getTable());
-            $alatbayar->position = $selected->position;
+            $alatbayar = (new AlatBayar())->processStore($request->all());
+            $alatbayar->position = $this->getPosition($alatbayar, $alatbayar->getTable())->position;
             $alatbayar->page = ceil($alatbayar->position / ($request->limit ?? 10));
 
-
-            return response([
+            DB::commit();   
+            return response()->json([
                 'status' => true,
                 'message' => 'Berhasil disimpan',
                 'data' => $alatbayar
@@ -171,65 +119,21 @@ class AlatBayarController extends Controller
     /**
      * @ClassName 
      */
-    public function update(UpdateAlatBayarRequest $request, AlatBayar $alatbayar)
+    public function update(UpdateAlatBayarRequest $request, AlatBayar $alatbayar) : JsonResponse
     {
         DB::beginTransaction();
         try {
-            $statusCair = Parameter::where('grp', 'STATUS LANGSUNG CAIR')->where('text', 'TIDAK LANGSUNG CAIR')->first();
+            $alatbayar = (new AlatBayar())->processUpdate($alatbayar, $request->all());
+            $alatbayar->position = $this->getPosition($alatbayar, $alatbayar->getTable())->position;
+            $alatbayar->page = ceil($alatbayar->position / ($request->limit ?? 10));
 
-            if ($request->statuslangsungcair == $statusCair->id) {
-                $request->validate(
-                    [
-                        'coa' => [
-                            "required"
-                        ]
-                    ],
-                    [
-                        'coa.required' => ':attribute' . ' ' . app(ErrorController::class)->geterror('WI')->keterangan,
+            DB::commit();
 
-                    ],
-                    [
-                        'coa' => 'kode perkiraan',
-                    ],
-                );
-            }
-            $alatbayar->kodealatbayar = $request->kodealatbayar;
-            $alatbayar->namaalatbayar = $request->namaalatbayar;
-            $alatbayar->keterangan = $request->keterangan ?? '';
-            $alatbayar->statuslangsungcair = $request->statuslangsungcair;
-            $alatbayar->statusdefault = $request->statusdefault;
-            $alatbayar->bank_id = $request->bank_id;
-            $alatbayar->coa = $request->coa ?? '';
-            $alatbayar->statusaktif = $request->statusaktif;
-            $alatbayar->modifiedby = auth('api')->user()->name;
-
-            if ($alatbayar->save()) {
-                $logTrail = [
-                    'namatabel' => strtoupper($alatbayar->getTable()),
-                    'postingdari' => 'EDIT ALATBAYAR',
-                    'idtrans' => $alatbayar->id,
-                    'nobuktitrans' => $alatbayar->id,
-                    'aksi' => 'EDIT',
-                    'datajson' => $alatbayar->toArray(),
-                    'modifiedby' => $alatbayar->modifiedby
-                ];
-
-                $validatedLogTrail = new StoreLogTrailRequest($logTrail);
-                app(LogTrailController::class)->store($validatedLogTrail);
-
-                DB::commit();
-                /* Set position and page */
-                $selected = $this->getPosition($alatbayar, $alatbayar->getTable());
-                $alatbayar->position = $selected->position;
-                $alatbayar->page = ceil($alatbayar->position / ($request->limit ?? 10));
-
-
-                return response([
-                    'status' => true,
-                    'message' => 'Berhasil diubah',
-                    'data' => $alatbayar
-                ]);
-            }
+            return response()->json([
+                'status' => true,
+                'message' => 'Berhasil diubah',
+                'data' => $alatbayar
+            ]);
         } catch (\Throwable $th) {
             DB::rollBack();
             throw $th;
@@ -242,42 +146,23 @@ class AlatBayarController extends Controller
     {
         DB::beginTransaction();
 
-        $alatBayar = new AlatBayar();
-        $alatBayar = $alatBayar->lockAndDestroy($id);
-
-        if ($alatBayar) {
-            $logTrail = [
-                'namatabel' => strtoupper($alatBayar->getTable()),
-                'postingdari' => 'DELETE ALATBAYAR',
-                'idtrans' => $alatBayar->id,
-                'nobuktitrans' => $alatBayar->id,
-                'aksi' => 'DELETE',
-                'datajson' => $alatBayar->toArray(),
-                'modifiedby' => $alatBayar->modifiedby
-            ];
-
-            $validatedLogTrail = new StoreLogTrailRequest($logTrail);
-            app(LogTrailController::class)->store($validatedLogTrail);
+        try {
+            $alatbayar = (new AlatBayar())->processDestroy($id);
+            $selected = $this->getPosition($alatbayar, $alatbayar->getTable(), true);
+            $alatbayar->position = $selected->position;
+            $alatbayar->id = $selected->id;
+            $alatbayar->page = ceil($alatbayar->position / ($request->limit ?? 10));
 
             DB::commit();
 
-            $selected = $this->getPosition($alatBayar, $alatBayar->getTable(), true);
-            $alatBayar->position = $selected->position;
-            $alatBayar->id = $selected->id;
-            $alatBayar->page = ceil($alatBayar->position / ($request->limit ?? 10));
-
-            return response([
-                'status' => true,
+            return response()->json([
                 'message' => 'Berhasil dihapus',
-                'data' => $alatBayar
+                'data' => $alatbayar
             ]);
-        } else {
+        } catch (\Throwable $th) {
             DB::rollBack();
 
-            return response([
-                'status' => false,
-                'message' => 'Gagal dihapus'
-            ]);
+            throw $th;
         }
     }
 

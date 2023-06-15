@@ -446,4 +446,82 @@ class AlatBayar extends MyModel
 
         return $query;
     }
+
+    public function processStore(array $data): AlatBayar
+    {
+        $alatbayar = new AlatBayar();
+        $alatbayar->kodealatbayar = $data['kodealatbayar'];
+        $alatbayar->namaalatbayar = $data['namaalatbayar'];
+        $alatbayar->keterangan = $data['keterangan'] ?? '';
+        $alatbayar->statuslangsungcair = $data['statuslangsungcair'];
+        $alatbayar->statusdefault = $data['statusdefault'];
+        $alatbayar->bank_id = $data['bank_id'];
+        $alatbayar->coa = $data['coa'] ?? '';
+        $alatbayar->statusaktif = $data['statusaktif'];
+        $alatbayar->modifiedby = auth('api')->user()->name;
+
+
+        if (!$alatbayar->save()) {
+            throw new \Exception("Error storing service in header.");
+        }
+
+        (new LogTrail())->processStore([
+            'namatabel' => strtoupper($alatbayar->getTable()),
+            'postingdari' => 'ENTRY ALATBAYAR',
+            'idtrans' => $alatbayar->id,
+            'nobuktitrans' => $alatbayar->id,
+            'aksi' => 'ENTRY',
+            'datajson' => $alatbayar->toArray(),
+            'modifiedby' => $alatbayar->modifiedby
+        ]);
+
+        return $alatbayar;
+    }
+
+    public function processUpdate(AlatBayar $alatbayar, array $data): AlatBayar
+    {
+        $alatbayar->kodealatbayar = $data['kodealatbayar'];
+        $alatbayar->namaalatbayar = $data['namaalatbayar'];
+        $alatbayar->keterangan = $data['keterangan'] ?? '';
+        $alatbayar->statuslangsungcair = $data['statuslangsungcair'];
+        $alatbayar->statusdefault = $data['statusdefault'];
+        $alatbayar->bank_id = $data['bank_id'];
+        $alatbayar->coa = $data['coa'] ?? '';
+        $alatbayar->statusaktif = $data['statusaktif'];
+        $alatbayar->modifiedby = auth('api')->user()->name;
+
+        if (!$alatbayar->save()) {
+            throw new \Exception("Error update service in header.");
+        }
+
+        (new LogTrail())->processStore([
+            'namatabel' => strtoupper($alatbayar->getTable()),
+            'postingdari' => 'EDIT ALATBAYAR',
+            'idtrans' => $alatbayar->id,
+            'nobuktitrans' => $alatbayar->id,
+            'aksi' => 'EDIT',
+            'datajson' => $alatbayar->toArray(),
+            'modifiedby' => $alatbayar->modifiedby
+        ]);
+
+        return $alatbayar;
+    }
+
+    public function processDestroy($id): AlatBayar
+    {
+        $alatBayar = new AlatBayar();
+        $alatBayar = $alatBayar->lockAndDestroy($id);
+
+        (new LogTrail())->processStore([
+            'namatabel' => strtoupper($alatBayar->getTable()),
+            'postingdari' => 'DELETE ALATBAYAR',
+            'idtrans' => $alatBayar->id,
+            'nobuktitrans' => $alatBayar->id,
+            'aksi' => 'DELETE',
+            'datajson' => $alatBayar->toArray(),
+            'modifiedby' => $alatBayar->modifiedby
+        ]);
+
+        return $alatBayar;
+    }
 }
