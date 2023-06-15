@@ -175,4 +175,28 @@ class PengeluaranDetail extends MyModel
     {
         return $query->skip($this->params['offset'])->take($this->params['limit']);
     }
+
+
+    public function processStore(PengeluaranHeader $pengeluaranHeader, array $data): PengeluaranDetail
+    {
+        $pengeluaranDetail = new PengeluaranDetail();
+        $pengeluaranDetail->pengeluaran_id = $data['pengeluaran_id'];
+        $pengeluaranDetail->nobukti = $data['nobukti'];
+        $pengeluaranDetail->nowarkat = $data['nowarkat'] ?? '';
+        $pengeluaranDetail->tgljatuhtempo = $data['tgljatuhtempo'] ?? '';
+        $pengeluaranDetail->nominal = $data['nominal'] ?? '';
+        $pengeluaranDetail->coadebet = $data['coadebet'] ?? '';
+        $pengeluaranDetail->coakredit = $data['coakredit'] ?? '';
+        $pengeluaranDetail->keterangan = $data['keterangan'] ?? '';
+        $pengeluaranDetail->bulanbeban = $data['bulanbeban'] ?? '';
+        $pengeluaranDetail->modifiedby = $data['modifiedby'];
+       
+        $pengeluaranDetail->save();
+        
+        if (!$pengeluaranDetail->save()) {
+            throw new \Exception("Error storing Hutang Detail.");
+        }
+
+        return $pengeluaranDetail;
+    }
 }
