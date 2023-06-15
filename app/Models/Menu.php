@@ -322,9 +322,9 @@ class Menu extends MyModel
             ->where('menuparent', '=', $data['menuparent'])
             ->exists()
         ) {
-
+      
             if ($data['menuparent'] == 0) {
-
+            
                 $list = Menu::select('menukode')
                     ->where('menuparent', '=', '0')
                     ->where(DB::raw('right(menukode,1)'), '<>', '9')
@@ -333,7 +333,7 @@ class Menu extends MyModel
                     ->first();
                 $menukode = chr(ord($list->menukode) + 1);
             } else {
-
+  
 
                 if (Menu::select('menukode')
                     ->where('menuparent', '=', $data['menuparent'])
@@ -370,6 +370,7 @@ class Menu extends MyModel
                 }
             }
         } else {
+      
             if ($data['menuparent'] == 0) {
                 $menukode = 0;
                 $list = Menu::select('menukode')
@@ -397,13 +398,18 @@ class Menu extends MyModel
                     $menukode = chr((ord($kodeakhir) + 1));
                 }
             } else {
+                // dd('test');
                 $list = Menu::select('menukode')
                     ->where('id', '=', $data['menuparent'])
-                    ->where(DB::raw('right(menukode,1)'), '<>', '9')
+                    // ->where(DB::raw('right(menukode,1)'), '<>', '9')
                     ->orderBy('menukode', 'desc')
                     ->first();
-                // dd('test4');
-                $menukode = $list->menukode . '1';
+
+                    if (isset($list)) {
+                        $menukode = $list->menukode . '1';
+
+                    }
+
             }
         }
 

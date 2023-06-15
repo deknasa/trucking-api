@@ -173,5 +173,9 @@ class MenuSeeder extends Seeder
         menu::create(['menuname' => 'APPROVAL', 'menuseq' => '100', 'menuparent' => '0', 'menuicon' => 'FAS FA-TRUCK', 'aco_id' => '0', 'link' => '', 'menuexe' => '', 'menukode' => 'B', 'modifiedby' => 'ADMIN',]);
         menu::create(['menuname' => 'APPROVAL BUKA CETAK ULANG', 'menuseq' => '100', 'menuparent' => '152', 'menuicon' => 'FAS FA-TRUCK', 'aco_id' => '441', 'link' => '', 'menuexe' => '', 'menukode' => 'B1', 'modifiedby' => 'ADMIN',]);
         menu::create(['menuname' => 'DATA RITASI', 'menuseq' => '100', 'menuparent' => '17', 'menuicon' => 'FAS FA-TRUCK', 'aco_id' => '443', 'link' => '', 'menuexe' => '', 'menukode' => '139', 'modifiedby' => 'ADMIN',]);
+        menu::create(['menuname' => 'JURNAL UMUM', 'menuseq' => '0', 'menuparent' => '3', 'menuicon' => 'FAS FAS-TRUCK', 'aco_id' => '0', 'link' => '', 'menuexe' => '', 'menukode' => '19', 'modifiedby' => 'ADMIN',]);
+        menu::create(['menuname' => 'AKUNTANSI', 'menuseq' => '100', 'menuparent' => '155', 'menuicon' => 'FAS FA-TRUCK', 'aco_id' => '448', 'link' => '', 'menuexe' => '', 'menukode' => '191', 'modifiedby' => 'ADMIN',]);
+        menu::create(['menuname' => 'TYPE KODE PERKIRAAN', 'menuseq' => '0', 'menuparent' => '155', 'menuicon' => 'FAS FA-TRUCK', 'aco_id' => '454', 'link' => '', 'menuexe' => '', 'menukode' => '192', 'modifiedby' => 'ADMIN',]);
+        menu::create(['menuname' => 'TYPE KODE PERKIRAAN PUSAT', 'menuseq' => '0', 'menuparent' => '155', 'menuicon' => 'FAS FA-TRUCK', 'aco_id' => '460', 'link' => '', 'menuexe' => '', 'menukode' => '193', 'modifiedby' => 'ADMIN',]);
     }
 }
