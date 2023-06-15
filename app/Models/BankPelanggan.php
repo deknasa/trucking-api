@@ -248,4 +248,73 @@ class BankPelanggan extends MyModel
     {
         return $query->skip($this->params['offset'])->take($this->params['limit']);
     }
+
+    public function processStore(array $data): BankPelanggan
+    {
+        $bankpelanggan = new BankPelanggan();
+        $bankpelanggan->kodebank = $data['kodebank'];
+        $bankpelanggan->namabank = $data['namabank'];
+        $bankpelanggan->keterangan = $data['keterangan'] ?? '';
+        $bankpelanggan->statusaktif = $data['statusaktif'];
+        $bankpelanggan->modifiedby = auth('api')->user()->name;
+
+        if (!$bankpelanggan->save()) {
+            throw new \Exception("Error storing service in header.");
+        }
+
+        (new LogTrail())->processStore([
+            'namatabel' => strtoupper($bankpelanggan->getTable()),
+            'postingdari' => 'ENTRY BANK PELANGGAN',
+            'idtrans' => $bankpelanggan->id,
+            'nobuktitrans' => $bankpelanggan->id,
+            'aksi' => 'ENTRY',
+            'datajson' => $bankpelanggan->toArray(),
+            'modifiedby' => $bankpelanggan->modifiedby
+        ]);
+
+        return $bankpelanggan;
+    }
+
+    public function processUpdate(BankPelanggan $bankpelanggan, array $data): BankPelanggan
+    {
+        $bankpelanggan->kodebank = $data['kodebank'];
+        $bankpelanggan->namabank = $data['namabank'];
+        $bankpelanggan->keterangan = $data['keterangan'];
+        $bankpelanggan->statusaktif = $data['statusaktif'];
+        $bankpelanggan->modifiedby = auth('api')->user()->name;
+
+        if (!$bankpelanggan->save()) {
+            throw new \Exception("Error update service in header.");
+        }
+
+        (new LogTrail())->processStore([
+            'namatabel' => strtoupper($bankpelanggan->getTable()),
+            'postingdari' => 'EDIT BankPelangganController',
+            'idtrans' => $bankpelanggan->id,
+            'nobuktitrans' => $bankpelanggan->id,
+            'aksi' => 'EDIT',
+            'datajson' => $bankpelanggan->toArray(),
+            'modifiedby' => $bankpelanggan->modifiedby
+        ]);
+
+        return $bankpelanggan;
+    }
+
+    public function processDestroy($id): BankPelanggan
+    {
+        $bankPelanggan = new BankPelanggan();
+        $bankPelanggan = $bankPelanggan->lockAndDestroy($id);
+
+        (new LogTrail())->processStore([
+            'namatabel' => strtoupper($bankPelanggan->getTable()),
+            'postingdari' => 'DELETE BANKPELANGGAN',
+            'idtrans' => $bankPelanggan->id,
+            'nobuktitrans' => $bankPelanggan->id,
+            'aksi' => 'DELETE',
+            'datajson' => $bankPelanggan->toArray(),
+            'modifiedby' => $bankPelanggan->modifiedby
+        ]);
+
+        return $bankPelanggan;
+    }
 }

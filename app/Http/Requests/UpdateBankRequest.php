@@ -40,7 +40,7 @@ class UpdateBankRequest extends FormRequest
             'tipe' => 'required',
             'statusaktif' => ['required', Rule::in($status),'numeric', 'min:1'],
             'formatpenerimaan' => 'required','numeric', 'min:1',
-            'formatpengeluaran' => 'required',,'numeric', 'min:1',
+            'formatpengeluaran' => 'required','numeric', 'min:1',
         ];
         return $rules;
     }

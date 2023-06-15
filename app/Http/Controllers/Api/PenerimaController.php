@@ -14,6 +14,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Database\QueryException;
+use Illuminate\Http\JsonResponse;
 
 class PenerimaController extends Controller
 {
@@ -77,45 +78,20 @@ class PenerimaController extends Controller
     /**
      * @ClassName 
      */
-    public function store(StorePenerimaRequest $request)
+    public function store(StorePenerimaRequest $request) : JsonResponse
     {
 
         DB::beginTransaction();
 // dd($request->npwp);
         try {
-            $penerima = new Penerima();
-            $penerima->namapenerima = $request->namapenerima;
-            $penerima->npwp = $request->npwp;
-            $penerima->noktp = $request->noktp;
-            $penerima->statusaktif = $request->statusaktif;
-            $penerima->statuskaryawan = $request->statuskaryawan;
-            $penerima->modifiedby = auth('api')->user()->name;
-            $request->sortname = $request->sortname ?? 'id';
-            $request->sortorder = $request->sortorder ?? 'asc';
 
-            if ($penerima->save()) {
-                $logTrail = [
-                    'namatabel' => strtoupper($penerima->getTable()),
-                    'postingdari' => 'ENTRY PENERIMA',
-                    'idtrans' => $penerima->id,
-                    'nobuktitrans' => $penerima->id,
-                    'aksi' => 'ENTRY',
-                    'datajson' => $penerima->toArray(),
-                    'modifiedby' => $penerima->modifiedby
-                ];
-
-                $validatedLogTrail = new StoreLogTrailRequest($logTrail);
-                $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
-
-                DB::commit();
-            }
-
-            /* Set position and page */
-            $selected = $this->getPosition($penerima, $penerima->getTable());
-            $penerima->position = $selected->position;
+            $penerima = (new Penerima())->processStore($request->all());
+            $penerima->position = $this->getPosition($penerima, $penerima->getTable())->position;
             $penerima->page = ceil($penerima->position / ($request->limit ?? 10));
 
-            return response([
+            DB::commit();  
+
+            return response()->json([
                 'status' => true,
                 'message' => 'Berhasil disimpan',
                 'data' => $penerima
@@ -138,41 +114,18 @@ class PenerimaController extends Controller
     /**
      * @ClassName 
      */
-    public function update(UpdatePenerimaRequest $request, Penerima $penerima)
+    public function update(UpdatePenerimaRequest $request, Penerima $penerima) : JsonResponse
     {
         DB::beginTransaction();
 
         try {
-            $penerima->namapenerima = $request->namapenerima;
-            $penerima->npwp = $request->npwp;
-            $penerima->noktp = $request->noktp;
-            $penerima->statusaktif = $request->statusaktif;
-            $penerima->statuskaryawan = $request->statuskaryawan;
-            $penerima->modifiedby = auth('api')->user()->name;
-
-            if ($penerima->save()) {
-                $logTrail = [
-                    'namatabel' => strtoupper($penerima->getTable()),
-                    'postingdari' => 'EDIT PENERIMA',
-                    'idtrans' => $penerima->id,
-                    'nobuktitrans' => $penerima->id,
-                    'aksi' => 'EDIT',
-                    'datajson' => $penerima->toArray(),
-                    'modifiedby' => $penerima->modifiedby
-                ];
-
-                $validatedLogTrail = new StoreLogTrailRequest($logTrail);
-                app(LogTrailController::class)->store($validatedLogTrail);
-
-
-                DB::commit();
-            }
-            /* Set position and page */
-            $selected = $this->getPosition($penerima, $penerima->getTable());
-            $penerima->position = $selected->position;
+            $penerima = (new Penerima())->processUpdate($penerima, $request->all());
+            $penerima->position = $this->getPosition($penerima, $penerima->getTable())->position;
             $penerima->page = ceil($penerima->position / ($request->limit ?? 10));
 
-            return response([
+            DB::commit();
+
+            return response()->json([
                 'status' => true,
                 'message' => 'Berhasil diubah',
                 'data' => $penerima
@@ -190,40 +143,23 @@ class PenerimaController extends Controller
     {
         DB::beginTransaction();
 
-        $penerima = new Penerima();
-        $penerima = $penerima->lockAndDestroy($id);
-        if ($penerima) {
-            $logTrail = [
-                'namatabel' => strtoupper($penerima->getTable()),
-                'postingdari' => 'DELETE PENERIMA',
-                'idtrans' => $penerima->id,
-                'nobuktitrans' => $penerima->id,
-                'aksi' => 'DELETE',
-                'datajson' => $penerima->toArray(),
-                'modifiedby' => $penerima->modifiedby
-            ];
-
-            $validatedLogTrail = new StoreLogTrailRequest($logTrail);
-            app(LogTrailController::class)->store($validatedLogTrail);
-
-            DB::commit();
+        try {
+            $penerima = (new Penerima())->processDestroy($id);
             $selected = $this->getPosition($penerima, $penerima->getTable(), true);
             $penerima->position = $selected->position;
             $penerima->id = $selected->id;
             $penerima->page = ceil($penerima->position / ($request->limit ?? 10));
 
-            return response([
-                'status' => true,
+            DB::commit();
+
+            return response()->json([
                 'message' => 'Berhasil dihapus',
                 'data' => $penerima
             ]);
-        } else {
+        } catch (\Throwable $th) {
             DB::rollBack();
 
-            return response([
-                'status' => false,
-                'message' => 'Gagal dihapus'
-            ]);
+            throw $th;
         }
     }
 

@@ -18,6 +18,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Database\QueryException;
+use Illuminate\Http\JsonResponse;
 
 class BankPelangganController extends Controller
 {
@@ -38,17 +39,18 @@ class BankPelangganController extends Controller
         ]);
     }
 
-    public function cekValidasi($id) {
-        $bankPelanggan= new BankPelanggan();
-        $cekdata=$bankPelanggan->cekvalidasihapus($id);
-        if ($cekdata['kondisi']==true) {
+    public function cekValidasi($id)
+    {
+        $bankPelanggan = new BankPelanggan();
+        $cekdata = $bankPelanggan->cekvalidasihapus($id);
+        if ($cekdata['kondisi'] == true) {
             $query = DB::table('error')
-            ->select(
-                DB::raw("ltrim(rtrim(keterangan))+' (".$cekdata['keterangan'].")' as keterangan")
+                ->select(
+                    DB::raw("ltrim(rtrim(keterangan))+' (" . $cekdata['keterangan'] . ")' as keterangan")
                 )
-            ->where('kodeerror', '=', 'SATL')
-            ->get();
-        $keterangan = $query['0'];
+                ->where('kodeerror', '=', 'SATL')
+                ->get();
+            $keterangan = $query['0'];
 
             $data = [
                 'status' => false,
@@ -58,7 +60,6 @@ class BankPelangganController extends Controller
             ];
 
             return response($data);
-         
         } else {
             $data = [
                 'status' => false,
@@ -67,7 +68,7 @@ class BankPelangganController extends Controller
                 'kondisi' => $cekdata['kondisi'],
             ];
 
-            return response($data); 
+            return response($data);
         }
     }
 
@@ -79,51 +80,28 @@ class BankPelangganController extends Controller
             'data' => $bankPelanggan->default()
         ]);
     }
-    
+
     /**
      * @ClassName 
      */
-    public function store(StoreBankPelangganRequest $request)
+    public function store(StoreBankPelangganRequest $request) : JsonResponse
     {
         DB::beginTransaction();
         try {
-            $bankpelanggan = new BankPelanggan();
-            $bankpelanggan->kodebank = $request->kodebank;
-            $bankpelanggan->namabank = $request->namabank;
-            $bankpelanggan->keterangan = $request->keterangan ?? '';
-            $bankpelanggan->statusaktif = $request->statusaktif;
-            $bankpelanggan->modifiedby = auth('api')->user()->name;
-
-            if ($bankpelanggan->save()) {
-                $logTrail = [
-                    'namatabel' => strtoupper($bankpelanggan->getTable()),
-                    'postingdari' => 'ENTRY BANK PELANGGAN',
-                    'idtrans' => $bankpelanggan->id,
-                    'nobuktitrans' => $bankpelanggan->id,
-                    'aksi' => 'ENTRY',
-                    'datajson' => $bankpelanggan->toArray(),
-                    'modifiedby' => $bankpelanggan->modifiedby
-                ];
-
-                $validatedLogTrail = new StoreLogTrailRequest($logTrail);
-                app(LogTrailController::class)->store($validatedLogTrail);
-
-                DB::commit();
-            }
-
-            /* Set position and page */
-            $selected = $this->getPosition($bankpelanggan, $bankpelanggan->getTable());
-            $bankpelanggan->position = $selected->position;
+            $bankpelanggan = (new BankPelanggan())->processStore($request->all());
+            $bankpelanggan->position = $this->getPosition($bankpelanggan, $bankpelanggan->getTable())->position;
             $bankpelanggan->page = ceil($bankpelanggan->position / ($request->limit ?? 10));
 
-            return response([
+            DB::commit();
+
+            return response()->json([
                 'status' => true,
                 'message' => 'Berhasil disimpan',
                 'data' => $bankpelanggan
             ], 201);
         } catch (\Throwable $th) {
             DB::rollBack();
-            return response($th->getMessage());
+            throw $th;
         }
     }
 
@@ -138,44 +116,22 @@ class BankPelangganController extends Controller
     /**
      * @ClassName 
      */
-    public function update(UpdateBankPelangganRequest $request, BankPelanggan $bankpelanggan)
+    public function update(UpdateBankPelangganRequest $request, BankPelanggan $bankpelanggan) : JsonResponse
     {
         DB::beginTransaction();
         try {
-            $bankpelanggan->kodebank = $request->kodebank;
-            $bankpelanggan->namabank = $request->namabank;
-            $bankpelanggan->keterangan = $request->keterangan;
-            $bankpelanggan->statusaktif = $request->statusaktif;
-            $bankpelanggan->modifiedby = auth('api')->user()->name;
 
-            if ($bankpelanggan->save()) {
-                $logTrail = [
-                    'namatabel' => strtoupper($bankpelanggan->getTable()),
-                    'postingdari' => 'EDIT BankPelangganController',
-                    'idtrans' => $bankpelanggan->id,
-                    'nobuktitrans' => $bankpelanggan->id,
-                    'aksi' => 'EDIT',
-                    'datajson' => $bankpelanggan->toArray(),
-                    'modifiedby' => $bankpelanggan->modifiedby
-                ];
+            $bankpelanggan = (new BankPelanggan())->processUpdate($bankpelanggan, $request->all());
+            $bankpelanggan->position = $this->getPosition($bankpelanggan, $bankpelanggan->getTable())->position;
+            $bankpelanggan->page = ceil($bankpelanggan->position / ($request->limit ?? 10));
 
-                $validatedLogTrail = new StoreLogTrailRequest($logTrail);
-                app(LogTrailController::class)->store($validatedLogTrail);
+            DB::commit();
 
-                DB::commit();
-
-                /* Set position and page */
-
-                $selected = $this->getPosition($bankpelanggan, $bankpelanggan->getTable());
-                $bankpelanggan->position = $selected->position;
-                $bankpelanggan->page = ceil($bankpelanggan->position / ($request->limit ?? 10));
-
-                return response([
+                return response()->json([
                     'status' => true,
                     'message' => 'Berhasil diubah',
                     'data' => $bankpelanggan
                 ]);
-            }
         } catch (\Throwable $th) {
             DB::rollBack();
             throw $th;
@@ -188,40 +144,23 @@ class BankPelangganController extends Controller
     {
         DB::beginTransaction();
 
-        $bankPelanggan = new BankPelanggan();
-        $bankPelanggan = $bankPelanggan->lockAndDestroy($id);
-        if ($bankPelanggan) {
-            $logTrail = [
-                'namatabel' => strtoupper($bankPelanggan->getTable()),
-                'postingdari' => 'DELETE BANKPELANGGAN',
-                'idtrans' => $bankPelanggan->id,
-                'nobuktitrans' => $bankPelanggan->id,
-                'aksi' => 'DELETE',
-                'datajson' => $bankPelanggan->toArray(),
-                'modifiedby' => $bankPelanggan->modifiedby
-            ];
-
-            $validatedLogTrail = new StoreLogTrailRequest($logTrail);
-            app(LogTrailController::class)->store($validatedLogTrail);
-
+        try {
+            $bankpelanggan = (new BankPelanggan())->processDestroy($id);
+            $selected = $this->getPosition($bankpelanggan, $bankpelanggan->getTable(), true);
+            $bankpelanggan->position = $selected->position;
+            $bankpelanggan->id = $selected->id;
+            $bankpelanggan->page = ceil($bankpelanggan->position / ($request->limit ?? 10));
 
             DB::commit();
-            $selected = $this->getPosition($bankPelanggan, $bankPelanggan->getTable(), true);
-            $bankPelanggan->position = $selected->position;
-            $bankPelanggan->id = $selected->id;
-            $bankPelanggan->page = ceil($bankPelanggan->position / ($request->limit ?? 10));
-            return response([
-                'status' => true,
+
+            return response()->json([
                 'message' => 'Berhasil dihapus',
-                'data' => $bankPelanggan
+                'data' => $bankpelanggan
             ]);
-        } else {
+        } catch (\Throwable $th) {
             DB::rollBack();
 
-            return response([
-                'status' => false,
-                'message' => 'Gagal dihapus'
-            ]);
+            throw $th;
         }
     }
 
@@ -258,48 +197,48 @@ class BankPelangganController extends Controller
             ]);
         } else {
 
-        $response = $this->index();
-        $decodedResponse = json_decode($response->content(), true);
-        $bankpelanggans = $decodedResponse['data'];
+            $response = $this->index();
+            $decodedResponse = json_decode($response->content(), true);
+            $bankpelanggans = $decodedResponse['data'];
 
-        $judulLaporan = $bankpelanggans[0]['judulLaporan'];
+            $judulLaporan = $bankpelanggans[0]['judulLaporan'];
 
-        $i = 0;
-        foreach ($bankpelanggans as $index => $params) {
+            $i = 0;
+            foreach ($bankpelanggans as $index => $params) {
 
-            $statusaktif = $params['statusaktif'];
+                $statusaktif = $params['statusaktif'];
 
-            $result = json_decode($statusaktif, true);
+                $result = json_decode($statusaktif, true);
 
-            $statusaktif = $result['MEMO'];
+                $statusaktif = $result['MEMO'];
 
-            $bankpelanggans[$i]['statusaktif'] = $statusaktif;
-            $i++;
+                $bankpelanggans[$i]['statusaktif'] = $statusaktif;
+                $i++;
+            }
+
+            $columns = [
+                [
+                    'label' => 'No',
+                ],
+                [
+                    'label' => 'Kode Bank',
+                    'index' => 'kodebank',
+                ],
+                [
+                    'label' => 'Nama Bank',
+                    'index' => 'namabank',
+                ],
+                [
+                    'label' => 'Keterangan',
+                    'index' => 'keterangan',
+                ],
+                [
+                    'label' => 'Status AKtif',
+                    'index' => 'statusaktif',
+                ],
+            ];
+
+            $this->toExcel($judulLaporan, $bankpelanggans, $columns);
         }
-
-        $columns = [
-            [
-                'label' => 'No',
-            ],
-            [
-                'label' => 'Kode Bank',
-                'index' => 'kodebank',
-            ],
-            [
-                'label' => 'Nama Bank',
-                'index' => 'namabank',
-            ],
-            [
-                'label' => 'Keterangan',
-                'index' => 'keterangan',
-            ],
-            [
-                'label' => 'Status AKtif',
-                'index' => 'statusaktif',
-            ],
-        ];
-
-        $this->toExcel($judulLaporan, $bankpelanggans, $columns);
-    }
     }
 }

@@ -62,6 +62,7 @@ class GetUpahSupirRangeRequest extends FormRequest
 
         return [
             'sampai.after_or_equal' => ':attribute ' . $controller->geterror('NTLK')->keterangan.' '. $this->dari,
+            'sampai.before' => ':attribute ' . $controller->geterror('NTLK')->keterangan.' '. $this->dari,
         ];
     }    
 

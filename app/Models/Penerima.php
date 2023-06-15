@@ -270,4 +270,76 @@ class Penerima extends MyModel
     {
         return $query->skip($this->params['offset'])->take($this->params['limit']);
     }
+
+    public function processStore(array $data): Penerima
+    {
+        $penerima = new Penerima();
+        $penerima->namapenerima = $data['namapenerima'];
+        $penerima->npwp = $data['npwp'];
+        $penerima->noktp = $data['noktp'];
+        $penerima->statusaktif = $data['statusaktif'];
+        $penerima->statuskaryawan = $data['statuskaryawan'];
+        $penerima->modifiedby = auth('api')->user()->name;
+
+
+        if (!$penerima->save()) {
+            throw new \Exception("Error storing service in header.");
+        }
+
+        (new LogTrail())->processStore([
+            'namatabel' => strtoupper($penerima->getTable()),
+            'postingdari' => 'ENTRY PENERIMA',
+            'idtrans' => $penerima->id,
+            'nobuktitrans' => $penerima->id,
+            'aksi' => 'ENTRY',
+            'datajson' => $penerima->toArray(),
+            'modifiedby' => $penerima->modifiedby
+        ]);
+
+        return $penerima;
+    }
+
+    public function processUpdate(Penerima $penerima, array $data): Penerima
+    {
+        $penerima->namapenerima = $data['namapenerima'];
+        $penerima->npwp = $data['npwp'];
+        $penerima->noktp = $data['noktp'];
+        $penerima->statusaktif = $data['statusaktif'];
+        $penerima->statuskaryawan = $data['statuskaryawan'];
+        $penerima->modifiedby = auth('api')->user()->name;
+
+        if (!$penerima->save()) {
+            throw new \Exception("Error update service in header.");
+        }
+
+        (new LogTrail())->processStore([
+            'namatabel' => strtoupper($penerima->getTable()),
+            'postingdari' => 'EDIT PENERIMA',
+            'idtrans' => $penerima->id,
+            'nobuktitrans' => $penerima->id,
+            'aksi' => 'EDIT',
+            'datajson' => $penerima->toArray(),
+            'modifiedby' => $penerima->modifiedby
+        ]);
+
+        return $penerima;
+    }
+
+    public function processDestroy($id): Penerima
+    {
+        $penerima = new Penerima();
+        $penerima = $penerima->lockAndDestroy($id);
+
+        (new LogTrail())->processStore([
+            'namatabel' => strtoupper($penerima->getTable()),
+            'postingdari' => 'DELETE PENERIMA',
+            'idtrans' => $penerima->id,
+            'nobuktitrans' => $penerima->id,
+            'aksi' => 'DELETE',
+            'datajson' => $penerima->toArray(),
+            'modifiedby' => $penerima->modifiedby
+        ]);
+
+        return $penerima;
+    }
 }

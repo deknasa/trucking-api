@@ -25,6 +25,7 @@ use PhpOffice\PhpSpreadsheet\IOFactory;
 use App\Http\Requests\GetUpahSupirRangeRequest;
 use Illuminate\Http\JsonResponse;
 
+
 class TarifController extends Controller
 {
     /**
@@ -418,3 +419,5 @@ class TarifController extends Controller
         $this->toExcel('Tarif', $tarifs, $columns);
     }
 }
+
+

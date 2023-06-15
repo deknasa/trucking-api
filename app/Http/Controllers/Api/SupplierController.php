@@ -16,6 +16,7 @@ use App\Models\Parameter;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Database\QueryException;
+use Illuminate\Http\JsonResponse;
 
 class SupplierController extends Controller
 {
@@ -102,59 +103,18 @@ class SupplierController extends Controller
     /**
      * @ClassName 
      */
-    public function store(StoreSupplierRequest $request)
+    public function store(StoreSupplierRequest $request) : JsonResponse
     {
         DB::beginTransaction();
 
         try {
-            $supplier = new Supplier();
-            $supplier->namasupplier = $request->namasupplier;
-            $supplier->namakontak = $request->namakontak;
-            $supplier->alamat = $request->alamat;
-            $supplier->kota = $request->kota;
-            $supplier->kodepos = $request->kodepos;
-            $supplier->notelp1 = $request->notelp1;
-            $supplier->notelp2 = $request->notelp2 ?? '';
-            $supplier->email = $request->email;
-            $supplier->statusaktif = $request->statusaktif;
-            $supplier->web = $request->web;
-            $supplier->namapemilik = $request->namapemilik;
-            $supplier->jenisusaha = $request->jenisusaha;
-            // $supplier->top = $request->top;
-            $supplier->bank = $request->bank;
-            $supplier->coa = $request->coa;
-            $supplier->rekeningbank = $request->rekeningbank;
-            $supplier->namarekening = $request->namarekening;
-            $supplier->jabatan = $request->jabatan;
-            $supplier->statusdaftarharga = $request->statusdaftarharga;
-            $supplier->kategoriusaha = $request->kategoriusaha;
-            $supplier->modifiedby = auth('api')->user()->name;
-            $request->sortname = $request->sortname ?? 'id';
-            $request->sortorder = $request->sortorder ?? 'asc';
-
-            if ($supplier->save()) {
-                $logTrail = [
-                    'namatabel' => strtoupper($supplier->getTable()),
-                    'postingdari' => 'ENTRY SUPPLIER',
-                    'idtrans' => $supplier->id,
-                    'nobuktitrans' => $supplier->id,
-                    'aksi' => 'ENTRY',
-                    'datajson' => $supplier->toArray(),
-                    'modifiedby' => $supplier->modifiedby
-                ];
-
-                $validatedLogTrail = new StoreLogTrailRequest($logTrail);
-                $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
-
-                DB::commit();
-            }
-
-            /* Set position and page */
-            $selected = $this->getPosition($supplier, $supplier->getTable());
-            $supplier->position = $selected->position;
+            $supplier = (new Supplier())->processStore($request->all());
+            $supplier->position = $this->getPosition($supplier, $supplier->getTable())->position;
             $supplier->page = ceil($supplier->position / ($request->limit ?? 10));
 
-            return response([
+            DB::commit();   
+
+            return response()->json([
                 'status' => true,
                 'message' => 'Berhasil disimpan',
                 'data' => $supplier
@@ -168,55 +128,18 @@ class SupplierController extends Controller
     /**
      * @ClassName 
      */
-    public function update(UpdateSupplierRequest $request, Supplier $supplier)
+    public function update(UpdateSupplierRequest $request, Supplier $supplier) : JsonResponse
     {
         DB::beginTransaction();
 
         try {
-            $supplier->namasupplier = $request->namasupplier;
-            $supplier->namakontak = $request->namakontak;
-            $supplier->alamat = $request->alamat;
-            $supplier->kota = $request->kota;
-            $supplier->kodepos = $request->kodepos;
-            $supplier->notelp1 = $request->notelp1;
-            $supplier->notelp2 = $request->notelp2 ?? '';
-            $supplier->email = $request->email;
-            $supplier->statusaktif = $request->statusaktif;
-            $supplier->web = $request->web;
-            $supplier->namapemilik = $request->namapemilik;
-            $supplier->jenisusaha = $request->jenisusaha;
-            // $supplier->top = $request->top;
-            $supplier->bank = $request->bank;
-            $supplier->coa = $request->coa;
-            $supplier->rekeningbank = $request->rekeningbank;
-            $supplier->namarekening = $request->namarekening;
-            $supplier->jabatan = $request->jabatan;
-            $supplier->statusdaftarharga = $request->statusdaftarharga;
-            $supplier->kategoriusaha = $request->kategoriusaha;
-            $supplier->modifiedby = auth('api')->user()->name;
-
-            if ($supplier->save()) {
-                $logTrail = [
-                    'namatabel' => strtoupper($supplier->getTable()),
-                    'postingdari' => 'EDIT SUPPLIER',
-                    'idtrans' => $supplier->id,
-                    'nobuktitrans' => $supplier->id,
-                    'aksi' => 'EDIT',
-                    'datajson' => $supplier->toArray(),
-                    'modifiedby' => $supplier->modifiedby
-                ];
-
-                $validatedLogTrail = new StoreLogTrailRequest($logTrail);
-                app(LogTrailController::class)->store($validatedLogTrail);
-            }
-            DB::commit();
-
-            /* Set position and page */
-            $selected = $this->getPosition($supplier, $supplier->getTable());
-            $supplier->position = $selected->position;
+            $supplier = (new Supplier())->processUpdate($supplier, $request->all());
+            $supplier->position = $this->getPosition($supplier, $supplier->getTable())->position;
             $supplier->page = ceil($supplier->position / ($request->limit ?? 10));
 
-            return response([
+            DB::commit();
+
+            return response()->json([
                 'status' => true,
                 'message' => 'Berhasil diubah',
                 'data' => $supplier
@@ -233,42 +156,23 @@ class SupplierController extends Controller
     {
         DB::beginTransaction();
 
-        $supplier = new Supplier();
-        $supplier = $supplier->lockAndDestroy($id);
-
-        if ($supplier) {
-            $logTrail = [
-                'namatabel' => strtoupper($supplier->getTable()),
-                'postingdari' => 'DELETE SUPPLIER',
-                'idtrans' => $supplier->id,
-                'nobuktitrans' => $supplier->id,
-                'aksi' => 'DELETE',
-                'datajson' => $supplier->toArray(),
-                'modifiedby' => $supplier->modifiedby
-            ];
-
-            $validatedLogTrail = new StoreLogTrailRequest($logTrail);
-            app(LogTrailController::class)->store($validatedLogTrail);
-            DB::commit();
-
-            /* Set position and page */
+        try {
+            $supplier = (new Supplier())->processDestroy($id);
             $selected = $this->getPosition($supplier, $supplier->getTable(), true);
             $supplier->position = $selected->position;
             $supplier->id = $selected->id;
             $supplier->page = ceil($supplier->position / ($request->limit ?? 10));
 
-            return response([
-                'status' => true,
+            DB::commit();
+
+            return response()->json([
                 'message' => 'Berhasil dihapus',
                 'data' => $supplier
             ]);
-        } else {
+        } catch (\Throwable $th) {
             DB::rollBack();
 
-            return response([
-                'status' => false,
-                'message' => 'Gagal dihapus'
-            ]);
+            throw $th;
         }
     }
 

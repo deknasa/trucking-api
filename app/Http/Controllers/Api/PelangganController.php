@@ -14,6 +14,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Database\QueryException;
 use App\Models\Parameter;
+use Illuminate\Http\JsonResponse;
 
 class PelangganController extends Controller
 {
@@ -79,48 +80,18 @@ class PelangganController extends Controller
     /**
      * @ClassName 
      */
-    public function store(StorePelangganRequest $request)
+    public function store(StorePelangganRequest $request) : JsonResponse
     {
         DB::beginTransaction();
 
         try {
-            $pelanggan = new Pelanggan();
-            $pelanggan->kodepelanggan = $request->kodepelanggan;
-            $pelanggan->namapelanggan = $request->namapelanggan;
-            $pelanggan->telp = $request->telp;
-            $pelanggan->alamat = $request->alamat;
-            $pelanggan->alamat2 = $request->alamat2 ?? '';
-            $pelanggan->kota = $request->kota;
-            $pelanggan->kodepos = $request->kodepos;
-            $pelanggan->keterangan = $request->keterangan ?? '';
-            $pelanggan->modifiedby = auth('api')->user()->name;
-            $pelanggan->statusaktif = $request->statusaktif;
-            $request->sortname = $request->sortname ?? 'id';
-            $request->sortorder = $request->sortorder ?? 'asc';
-
-            if ($pelanggan->save()) {
-                $logTrail = [
-                    'namatabel' => strtoupper($pelanggan->getTable()),
-                    'postingdari' => 'ENTRY PELANGGAN',
-                    'idtrans' => $pelanggan->id,
-                    'nobuktitrans' => $pelanggan->id,
-                    'aksi' => 'ENTRY',
-                    'datajson' => $pelanggan->toArray(),
-                    'modifiedby' => $pelanggan->modifiedby
-                ];
-
-                $validatedLogTrail = new StoreLogTrailRequest($logTrail);
-                $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
-
-                DB::commit();
-            }
-
-            /* Set position and page */
-            $selected = $this->getPosition($pelanggan, $pelanggan->getTable());
-            $pelanggan->position = $selected->position;
+            $pelanggan = (new Pelanggan())->processStore($request->all());
+            $pelanggan->position = $this->getPosition($pelanggan, $pelanggan->getTable())->position;
             $pelanggan->page = ceil($pelanggan->position / ($request->limit ?? 10));
 
-            return response([
+            DB::commit();
+
+            return response()->json([
                 'status' => true,
                 'message' => 'Berhasil disimpan',
                 'data' => $pelanggan
@@ -143,45 +114,19 @@ class PelangganController extends Controller
     /**
      * @ClassName 
      */
-    public function update(UpdatePelangganRequest $request, Pelanggan $pelanggan)
+    public function update(UpdatePelangganRequest $request, Pelanggan $pelanggan) : JsonResponse
     {
         DB::beginTransaction();
 
         try {
-            $pelanggan->kodepelanggan = $request->kodepelanggan;
-            $pelanggan->namapelanggan = $request->namapelanggan;
-            $pelanggan->telp = $request->telp;
-            $pelanggan->alamat = $request->alamat;
-            $pelanggan->alamat2 = $request->alamat2 ?? '';
-            $pelanggan->kota = $request->kota;
-            $pelanggan->kodepos = $request->kodepos;
-            $pelanggan->keterangan = $request->keterangan ?? '';
-            $pelanggan->statusaktif = $request->statusaktif;
-            $pelanggan->modifiedby = auth('api')->user()->name;
-
-            if ($pelanggan->save()) {
-                $logTrail = [
-                    'namatabel' => strtoupper($pelanggan->getTable()),
-                    'postingdari' => 'EDIT PELANGGAN',
-                    'idtrans' => $pelanggan->id,
-                    'nobuktitrans' => $pelanggan->id,
-                    'aksi' => 'EDIT',
-                    'datajson' => $pelanggan->toArray(),
-                    'modifiedby' => $pelanggan->modifiedby
-                ];
-
-                $validatedLogTrail = new StoreLogTrailRequest($logTrail);
-                app(LogTrailController::class)->store($validatedLogTrail);
-
-
-                DB::commit();
-            }
-            /* Set position and page */
-            $selected = $this->getPosition($pelanggan, $pelanggan->getTable());
-            $pelanggan->position = $selected->position;
+           
+            $pelanggan = (new Pelanggan())->processUpdate($pelanggan, $request->all());
+            $pelanggan->position = $this->getPosition($pelanggan, $pelanggan->getTable())->position;
             $pelanggan->page = ceil($pelanggan->position / ($request->limit ?? 10));
 
-            return response([
+            DB::commit();
+
+            return response()->json([
                 'status' => true,
                 'message' => 'Berhasil diubah',
                 'data' => $pelanggan
@@ -199,43 +144,23 @@ class PelangganController extends Controller
     {
         DB::beginTransaction();
 
-        $pelanggan = new Pelanggan();
-        $pelanggan = $pelanggan->lockAndDestroy($id);
-
-        if ($pelanggan) {
-            $logTrail = [
-                'namatabel' => strtoupper($pelanggan->getTable()),
-                'postingdari' => 'DELETE PARAMETER',
-                'idtrans' => $pelanggan->id,
-                'nobuktitrans' => $pelanggan->id,
-                'aksi' => 'DELETE',
-                'datajson' => $pelanggan->toArray(),
-                'modifiedby' => $pelanggan->modifiedby
-            ];
-
-            $validatedLogTrail = new StoreLogTrailRequest($logTrail);
-            app(LogTrailController::class)->store($validatedLogTrail);
-
-
-            DB::commit();
-            /* Set position and page */
+        try {
+            $pelanggan = (new Pelanggan())->processDestroy($id);
             $selected = $this->getPosition($pelanggan, $pelanggan->getTable(), true);
             $pelanggan->position = $selected->position;
             $pelanggan->id = $selected->id;
             $pelanggan->page = ceil($pelanggan->position / ($request->limit ?? 10));
 
-            return response([
-                'status' => true,
+            DB::commit();
+
+            return response()->json([
                 'message' => 'Berhasil dihapus',
                 'data' => $pelanggan
             ]);
-        } else {
+        } catch (\Throwable $th) {
             DB::rollBack();
 
-            return response([
-                'status' => false,
-                'message' => 'Gagal dihapus'
-            ]);
+            throw $th;
         }
     }
 
