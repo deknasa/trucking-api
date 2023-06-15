@@ -121,7 +121,7 @@ class StoreMandorTripRequest extends FormRequest
             $rulesTarif_id = [
                 'tarifrincian_id' => ['required', 'numeric', 'min:1', new ExistTarifRincianSuratPengantar()]
             ];
-        } else if ($tarifrincian_id == null && request()->upah != '') {
+        } else if ($tarifrincian_id == null && request()->tarifrincian != '') {
             $rulesTarif_id = [
                 'tarifrincian_id' => ['required', 'numeric', 'min:1', new ExistTarifRincianSuratPengantar()]
             ];
