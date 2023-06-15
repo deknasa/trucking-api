@@ -337,4 +337,83 @@ class Pelanggan extends MyModel
     {
         return $query->skip($this->params['offset'])->take($this->params['limit']);
     }
+
+    public function processStore(array $data): Pelanggan
+    {
+        $pelanggan = new Pelanggan();
+        $pelanggan->kodepelanggan = $data['kodepelanggan'];
+        $pelanggan->namapelanggan = $data['namapelanggan'];
+        $pelanggan->telp = $data['telp'];
+        $pelanggan->alamat = $data['alamat'];
+        $pelanggan->alamat2 = $data['alamat2'] ?? '';
+        $pelanggan->kota = $data['kota'];
+        $pelanggan->kodepos = $data['kodepos'];
+        $pelanggan->keterangan = $data['keterangan'] ?? '';
+        $pelanggan->modifiedby = auth('api')->user()->name;
+        $pelanggan->statusaktif = $data['statusaktif'];
+
+        if (!$pelanggan->save()) {
+            throw new \Exception("Error storing service in header.");
+        }
+
+        (new LogTrail())->processStore([
+            'namatabel' => strtoupper($pelanggan->getTable()),
+            'postingdari' => 'ENTRY PELANGGAN',
+            'idtrans' => $pelanggan->id,
+            'nobuktitrans' => $pelanggan->id,
+            'aksi' => 'ENTRY',
+            'datajson' => $pelanggan->toArray(),
+            'modifiedby' => $pelanggan->modifiedby
+        ]);
+
+        return $pelanggan;
+    }
+
+    public function processUpdate(Pelanggan $pelanggan, array $data): Pelanggan
+    {
+        $pelanggan->kodepelanggan = $data['kodepelanggan'];
+        $pelanggan->namapelanggan = $data['namapelanggan'];
+        $pelanggan->telp = $data['telp'];
+        $pelanggan->alamat = $data['alamat'];
+        $pelanggan->alamat2 = $data['alamat2'] ?? '';
+        $pelanggan->kota = $data['kota'];
+        $pelanggan->kodepos = $data['kodepos'];
+        $pelanggan->keterangan = $data['keterangan'] ?? '';
+        $pelanggan->statusaktif = $data['statusaktif'];
+        $pelanggan->modifiedby = auth('api')->user()->name;
+
+        if (!$pelanggan->save()) {
+            throw new \Exception("Error update service in header.");
+        }
+
+        (new LogTrail())->processStore([
+            'namatabel' => strtoupper($pelanggan->getTable()),
+            'postingdari' => 'EDIT PELANGGAN',
+            'idtrans' => $pelanggan->id,
+            'nobuktitrans' => $pelanggan->id,
+            'aksi' => 'EDIT',
+            'datajson' => $pelanggan->toArray(),
+            'modifiedby' => $pelanggan->modifiedbyf
+        ]);
+
+        return $pelanggan;
+    }
+
+    public function processDestroy($id): Pelanggan
+    {
+        $pelanggan = new Pelanggan();
+        $pelanggan = $pelanggan->lockAndDestroy($id);
+
+        (new LogTrail())->processStore([
+            'namatabel' => strtoupper($pelanggan->getTable()),
+            'postingdari' => 'DELETE PARAMETER',
+            'idtrans' => $pelanggan->id,
+            'nobuktitrans' => $pelanggan->id,
+            'aksi' => 'DELETE',
+            'datajson' => $pelanggan->toArray(),
+            'modifiedby' => $pelanggan->modifiedby
+        ]);
+
+        return $pelanggan;
+    }
 }
