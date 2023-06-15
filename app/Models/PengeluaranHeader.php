@@ -591,14 +591,14 @@ class PengeluaranHeader extends MyModel
                 'tgljatuhtempo' =>  date('Y-m-d', strtotime($data['tgljatuhtempo'][$i])),
                 'nominal' => $data['nominal_detail'][$i],
                 'coadebet' =>  $data['coadebet'][$i],
-                'coakredit' =>  $querysubgrppengeluaran->coa,
+                'coakredit' =>  (array_key_exists("coakredit",$data))? $data['coakredit'][$i]:$querysubgrppengeluaran->coa,
                 'keterangan' => $data['keterangan_detail'][$i],
                 'bulanbeban' =>  date('Y-m-d', strtotime($data['bulanbeban'][$i] ?? '1900/1/1')),
                 'modifiedby' => auth('api')->user()->name,
             ]);
             $pengeluaranDetails[] = $pengeluaranDetail->toArray();
             $coadebet_detail[] =  $data['coadebet'][$i];
-            $coakredit_detail[] = $querysubgrppengeluaran->coa;
+            $coakredit_detail[] = (array_key_exists("coakredit",$data))? $data['coakredit'][$i]:$querysubgrppengeluaran->coa;
             $nominal_detail[] = $data['nominal_detail'][$i];
             $keterangan_detail[] = $data['keterangan_detail'][$i];
         }
@@ -667,7 +667,7 @@ class PengeluaranHeader extends MyModel
         if (!$pengeluaranHeader->save()) {
             throw new \Exception("Error Update Pengeluaran header.");
         }
-
+        
         $pengeluaranHeaderLogTrail = (new LogTrail())->processStore([
             'namatabel' => strtoupper($pengeluaranHeader->getTable()),
             'postingdari' => $data['postingdari'] ??strtoupper('edit PENGELUARAN HEADER'),
@@ -697,14 +697,14 @@ class PengeluaranHeader extends MyModel
                 'tgljatuhtempo' =>  date('Y-m-d', strtotime($data['tgljatuhtempo'][$i])),
                 'nominal' => $data['nominal_detail'][$i],
                 'coadebet' =>  $data['coadebet'][$i],
-                'coakredit' =>  $querysubgrppengeluaran->coa,
+                'coakredit' =>  (array_key_exists("coakredit",$data))? $data['coakredit']:$querysubgrppengeluaran->coa,
                 'keterangan' => $data['keterangan_detail'][$i],
                 'bulanbeban' =>  date('Y-m-d', strtotime($data['bulanbeban'][$i] ?? '1900/1/1')),
                 'modifiedby' => auth('api')->user()->name,
             ]);
             $pengeluaranDetails[] = $pengeluaranDetail->toArray();
             $coadebet_detail[] =  $data['coadebet'][$i];
-            $coakredit_detail[] = $querysubgrppengeluaran->coa;
+            $coakredit_detail[] = (array_key_exists("coakredit",$data))? $data['coakredit'][$i]:$querysubgrppengeluaran->coa;
             $nominal_detail[] = $data['nominal_detail'][$i];
             $keterangan_detail[] = $data['keterangan_detail'][$i];
         }

@@ -6,6 +6,7 @@ use Illuminate\Foundation\Http\FormRequest;
 use App\Rules\DateTutupBuku;
 use App\Http\Controllers\Api\ParameterController;
 use App\Rules\ExistHutangNoBukti;
+use App\Rules\HutangBayarLimit;
 
 class StoreHutangBayarDetailRequest extends FormRequest
 {
@@ -44,7 +45,7 @@ class StoreHutangBayarDetailRequest extends FormRequest
             ],
             // 'hutang_id' => 'required',
             'keterangan.*' => 'required',
-            'bayar.*' => 'required|numeric|gt:0',
+            'bayar.*' => ['required','numeric','gt:0',new HutangBayarLimit()],
             'sisa.*' => 'required|numeric|min:0',
 
             'keterangan' => 'required|array',
@@ -58,7 +59,8 @@ class StoreHutangBayarDetailRequest extends FormRequest
     public function attributes()
     {
         return [
-            'keterangan.*' => 'keterangan detail'
+            'keterangan.*' => 'keterangan detail',
+            'bayar.*' => 'bayar'
         ];
     }
 }

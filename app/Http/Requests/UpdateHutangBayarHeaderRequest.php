@@ -60,7 +60,7 @@ class UpdateHutangBayarHeaderRequest extends FormRequest
         ->select(
             'a.tglbukti',
             'b.namasupplier as supplier',
-            'c.kodebank as bank',
+            'c.namabank as bank',
             'd.kodealatbayar as alatbayar',
         )
         ->leftJoin(DB::raw("supplier b with (readuncommitted)"), 'a.supplier_id', 'b.id')
