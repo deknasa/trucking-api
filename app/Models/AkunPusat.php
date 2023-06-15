@@ -378,4 +378,87 @@ class AkunPusat extends MyModel
     {
         return $query->skip($this->params['offset'])->take($this->params['limit']);
     }
+
+    public function processStore(array $data): AkunPusat
+    {
+        $akunPusat = new AkunPusat();
+        $akunPusat->coa = $data['coa'];
+        $akunPusat->keterangancoa = $data['keterangancoa'];
+        $akunPusat->type = $data['type'];
+        $akunPusat->level = $data['level'];
+        $akunPusat->parent = $data['parent'];
+        $akunPusat->statuscoa = $data['statuscoa'];
+        $akunPusat->statusaccountpayable = $data['statusaccountpayable'];
+        $akunPusat->statusneraca = $data['statusneraca'];
+        $akunPusat->statuslabarugi = $data['statuslabarugi'];
+        $akunPusat->coamain = $data['coamain'];
+        $akunPusat->statusaktif = $data['statusaktif'];
+        $akunPusat->modifiedby = auth('api')->user()->name;
+
+        if (!$akunPusat->save()) {
+            throw new \Exception("Error storing service in header.");
+        }
+
+        (new LogTrail())->processStore([
+            'namatabel' => strtoupper($akunPusat->getTable()),
+            'postingdari' => 'ENTRY AKUN PUSAT',
+            'idtrans' => $akunPusat->id,
+            'nobuktitrans' => $akunPusat->id,
+            'aksi' => 'ENTRY',
+            'datajson' => $akunPusat->toArray(),
+            'modifiedby' => $akunPusat->modifiedby
+        ]);
+
+        return $akunPusat;
+    }
+
+    public function processUpdate(AkunPusat $akunPusat, array $data): AkunPusat
+    {
+        $akunPusat->coa = $data['coa'];
+        $akunPusat->keterangancoa = $data['keterangancoa'];
+        $akunPusat->type = $data['type'];
+        $akunPusat->level = $data['level'];
+        $akunPusat->parent = $data['parent'];
+        $akunPusat->statuscoa = $data['statuscoa'];
+        $akunPusat->statusaccountpayable = $data['statusaccountpayable'];
+        $akunPusat->statusneraca = $data['statusneraca'];
+        $akunPusat->statuslabarugi = $data['statuslabarugi'];
+        $akunPusat->statusaktif = $data['statusaktif'];
+        $akunPusat->coamain = $data['coamain'];
+        $akunPusat->modifiedby = auth('api')->user()->name;
+
+        if (!$akunPusat->save()) {
+            throw new \Exception("Error update service in header.");
+        }
+
+        (new LogTrail())->processStore([
+            'namatabel' => strtoupper($akunPusat->getTable()),
+            'postingdari' => 'EDIT AKUN PUSAT',
+            'idtrans' => $akunPusat->id,
+            'nobuktitrans' => $akunPusat->id,
+            'aksi' => 'EDIT',
+            'datajson' => $akunPusat->toArray(),
+            'modifiedby' => $akunPusat->modifiedby
+        ]);
+
+        return $akunPusat;
+    }
+
+    public function processDestroy($id): AkunPusat
+    {
+        $akunPusat = new AkunPusat();
+        $akunPusat = $akunPusat->lockAndDestroy($id);
+
+        (new LogTrail())->processStore([
+            'namatabel' => strtoupper($akunPusat->getTable()),
+            'postingdari' => 'DELETE AKUN PUSAT',
+            'idtrans' => $akunPusat->id,
+            'nobuktitrans' => $akunPusat->id,
+            'aksi' => 'DELETE',
+            'datajson' => $akunPusat->toArray(),
+            'modifiedby' => $akunPusat->modifiedby
+        ]);
+
+        return $akunPusat;
+    }
 }
