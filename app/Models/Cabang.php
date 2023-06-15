@@ -156,16 +156,32 @@ class Cabang extends MyModel
 
         $temp = '##temp' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
 
-        Schema::create($temp, function ($table) {
+
+        DB::statement('select * into ' . $temp . ' from cabang where 1 = 0');
+
+        Schema::table($temp, function ($table) {
+            $table->dropColumn('id');
+            $table->dropColumn('statusaktif');
+        });
+
+
+        Schema::table($temp, function ($table) {
             $table->bigInteger('id')->nullable();
-            $table->string('grp', 500)->nullable();
-            $table->string('subgrp', 250)->nullable();
             $table->string('statusaktif', 500)->nullable();
-            $table->string('modifiedby', 50)->nullable();
-            $table->dateTime('created_at')->nullable();
-            $table->dateTime('updated_at')->nullable();
             $table->increments('position');
         });
+
+
+        // Schema::create($temp, function ($table) {
+        //     $table->bigInteger('id')->nullable();
+        //     $table->string('grp', 500)->nullable();
+        //     $table->string('subgrp', 250)->nullable();
+        //     $table->string('statusaktif', 500)->nullable();
+        //     $table->string('modifiedby', 50)->nullable();
+        //     $table->dateTime('created_at')->nullable();
+        //     $table->dateTime('updated_at')->nullable();
+        //     $table->increments('position');
+        // });
 
         $query = DB::table($modelTable);
         $query = $this->selectColumns($query);
@@ -174,8 +190,8 @@ class Cabang extends MyModel
 
         DB::table($temp)->insertUsing([
             'id',
-            'grp',
-            'subgrp',
+            'kodecabang',
+            'namacabang',
             'statusaktif',
             'modifiedby',
             'created_at',
