@@ -19,6 +19,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Database\QueryException;
+use Illuminate\Http\JsonResponse;
 
 class BankController extends Controller
 {
@@ -80,48 +81,17 @@ class BankController extends Controller
     /**
      * @ClassName 
      */
-    public function store(StoreBankRequest $request)
+    public function store(StoreBankRequest $request): JsonResponse
     {
         DB::beginTransaction();
         try {
-            $bank = new Bank();
-            $bank->kodebank = $request->kodebank;
-            $bank->namabank = $request->namabank;
-            $bank->coa = $request->coa;
-            $bank->tipe = $request->tipe;
-            $bank->statusaktif = $request->statusaktif;
-            $bank->formatpenerimaan = $request->formatpenerimaan;
-            $bank->formatpengeluaran = $request->formatpengeluaran;
-            $bank->modifiedby = auth('api')->user()->name;
-            $request->sortname = $request->sortname ?? 'id';
-            $request->sortorder = $request->sortorder ?? 'asc';
-
-            if ($bank->save()) {
-                $logTrail = [
-                    'namatabel' => strtoupper($bank->getTable()),
-                    'postingdari' => 'ENTRY BANK',
-                    'idtrans' => $bank->id,
-                    'nobuktitrans' => $bank->id,
-                    'aksi' => 'ENTRY',
-                    'datajson' => $bank->toArray(),
-                    'modifiedby' => $bank->modifiedby
-                ];
-
-                $validatedLogTrail = new StoreLogTrailRequest($logTrail);
-                app(LogTrailController::class)->store($validatedLogTrail);
-
-                DB::commit();
-            }
-
-            /* Set position and page */
-
-
-            $selected = $this->getPosition($bank, $bank->getTable());
-            $bank->position = $selected->position;
+            $bank = (new Bank())->processStore($request->all());
+            $bank->position = $this->getPosition($bank, $bank->getTable())->position;
             $bank->page = ceil($bank->position / ($request->limit ?? 10));
 
+            DB::commit();
 
-            return response([
+            return response()->json([
                 'status' => true,
                 'message' => 'Berhasil disimpan',
                 'data' => $bank,
@@ -143,47 +113,25 @@ class BankController extends Controller
     /**
      * @ClassName 
      */
-    public function update(UpdateBankRequest $request, Bank $bank)
+    public function update(UpdateBankRequest $request, Bank $bank): JsonResponse
     {
         DB::beginTransaction();
         try {
-            $bank->kodebank = $request->kodebank;
-            $bank->namabank = $request->namabank;
-            $bank->coa = $request->coa;
-            $bank->tipe = $request->tipe;
-            $bank->statusaktif = $request->statusaktif;
-            $bank->formatpenerimaan = $request->formatpenerimaan;
-            $bank->formatpengeluaran = $request->formatpengeluaran;
-            $bank->modifiedby = auth('api')->user()->name;
+            $bank = (new Bank())->processUpdate($bank, $request->all());
+            $bank->position = $this->getPosition($bank, $bank->getTable())->position;
+            $bank->page = ceil($bank->position / ($request->limit ?? 10));
 
-            if ($bank->save()) {
-                $logTrail = [
-                    'namatabel' => strtoupper($bank->getTable()),
-                    'postingdari' => 'EDIT BANK',
-                    'idtrans' => $bank->id,
-                    'nobuktitrans' => $bank->id,
-                    'aksi' => 'EDIT',
-                    'datajson' => $bank->toArray(),
-                    'modifiedby' => $bank->modifiedby
-                ];
+            DB::commit();
 
-                $validatedLogTrail = new StoreLogTrailRequest($logTrail);
-                app(LogTrailController::class)->store($validatedLogTrail);
-
-                DB::commit();
-                $selected = $this->getPosition($bank, $bank->getTable());
-                $bank->position = $selected->position;
-                $bank->page = ceil($bank->position / ($request->limit ?? 10));
-
-                return response([
-                    'status' => true,
-                    'message' => 'Berhasil diubah',
-                    'data' => $bank
-                ]);
-            }
+            return response()->json([
+                'status' => true,
+                'message' => 'Berhasil diubah',
+                'data' => $bank
+            ]);
         } catch (\Throwable $th) {
             DB::rollBack();
-            return response($th->getMessage());
+
+            throw $th;
         }
     }
     /**
@@ -193,43 +141,23 @@ class BankController extends Controller
     {
         DB::beginTransaction();
 
-        $bank = new Bank();
-        $bank = $bank->lockAndDestroy($id);
-
-        if ($bank) {
-            $logTrail = [
-                'namatabel' => strtoupper($bank->getTable()),
-                'postingdari' => 'DELETE BANK',
-                'idtrans' => $bank->id,
-                'nobuktitrans' => $bank->id,
-                'aksi' => 'DELETE',
-                'datajson' => $bank->toArray(),
-                'modifiedby' => $bank->modifiedby
-            ];
-
-            $validatedLogTrail = new StoreLogTrailRequest($logTrail);
-            app(LogTrailController::class)->store($validatedLogTrail);
-
-
-            DB::commit();
-
+        try {
+            $bank = (new Bank())->processDestroy($id);
             $selected = $this->getPosition($bank, $bank->getTable(), true);
             $bank->position = $selected->position;
             $bank->id = $selected->id;
             $bank->page = ceil($bank->position / ($request->limit ?? 10));
 
-            return response([
-                'status' => true,
+            DB::commit();
+
+            return response()->json([
                 'message' => 'Berhasil dihapus',
                 'data' => $bank
             ]);
-        } else {
+        } catch (\Throwable $th) {
             DB::rollBack();
 
-            return response([
-                'status' => false,
-                'message' => 'Gagal dihapus'
-            ]);
+            throw $th;
         }
     }
 

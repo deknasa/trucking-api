@@ -398,4 +398,105 @@ class Supplier extends MyModel
     {
         return $query->skip($this->params['offset'])->take($this->params['limit']);
     }
+
+    public function processStore(array $data): Supplier
+    {
+        $supplier = new Supplier();
+        $supplier->namasupplier = $data['namasupplier'];
+        $supplier->namakontak = $data['namakontak'];
+        $supplier->alamat = $data['alamat'];
+        $supplier->kota = $data['kota'];
+        $supplier->kodepos = $data['kodepos'];
+        $supplier->notelp1 = $data['notelp1'];
+        $supplier->notelp2 = $data['notelp2'] ?? '';
+        $supplier->email = $data['email'];
+        $supplier->statusaktif = $data['statusaktif'];
+        $supplier->web = $data['web'];
+        $supplier->namapemilik = $data['namapemilik'];
+        $supplier->jenisusaha = $data['jenisusaha'];
+        // $supplier->top = $request->top;
+        $supplier->bank = $data['bank'];
+        $supplier->coa = $data['coa'];
+        $supplier->rekeningbank = $data['rekeningbank'];
+        $supplier->namarekening = $data['namarekening'];
+        $supplier->jabatan = $data['jabatan'];
+        $supplier->statusdaftarharga = $data['statusdaftarharga'];
+        $supplier->kategoriusaha = $data['kategoriusaha'];
+        $supplier->modifiedby = auth('api')->user()->name;
+
+
+        if (!$supplier->save()) {
+            throw new \Exception("Error storing service in header.");
+        }
+
+        (new LogTrail())->processStore([
+            'namatabel' => strtoupper($supplier->getTable()),
+            'postingdari' => 'ENTRY SUPPLIER',
+            'idtrans' => $supplier->id,
+            'nobuktitrans' => $supplier->id,
+            'aksi' => 'ENTRY',
+            'datajson' => $supplier->toArray(),
+            'modifiedby' => $supplier->modifiedby
+        ]);
+
+        return $supplier;
+    }
+
+    public function processUpdate(Supplier $supplier, array $data): Supplier
+    {
+        $supplier->namasupplier = $data['namasupplier'];
+        $supplier->namakontak = $data['namakontak'];
+        $supplier->alamat = $data['alamat'];
+        $supplier->kota = $data['kota'];
+        $supplier->kodepos = $data['kodepos'];
+        $supplier->notelp1 = $data['notelp1'];
+        $supplier->notelp2 = $data['notelp2'] ?? '';
+        $supplier->email = $data['email'];
+        $supplier->statusaktif = $data['statusaktif'];
+        $supplier->web = $data['web'];
+        $supplier->namapemilik = $data['namapemilik'];
+        $supplier->jenisusaha = $data['jenisusaha'];
+        // $supplier->top = $request->top;
+        $supplier->bank = $data['bank'];
+        $supplier->coa = $data['coa'];
+        $supplier->rekeningbank = $data['rekeningbank'];
+        $supplier->namarekening = $data['namarekening'];
+        $supplier->jabatan = $data['jabatan'];
+        $supplier->statusdaftarharga = $data['statusdaftarharga'];
+        $supplier->kategoriusaha = $data['kategoriusaha'];
+        $supplier->modifiedby = auth('api')->user()->name;
+
+        if (!$supplier->save()) {
+            throw new \Exception("Error update service in header.");
+        }
+
+        (new LogTrail())->processStore([
+            'namatabel' => strtoupper($supplier->getTable()),
+            'postingdari' => 'EDIT SUPPLIER',
+            'idtrans' => $supplier->id,
+            'nobuktitrans' => $supplier->id,
+            'aksi' => 'EDIT',
+            'datajson' => $supplier->toArray(),
+            'modifiedby' => $supplier->modifiedby
+        ]);
+
+        return $supplier;
+    }
+    public function processDestroy($id): Supplier
+    {
+        $supplier = new Supplier();
+        $supplier = $supplier->lockAndDestroy($id);
+
+        (new LogTrail())->processStore([
+            'namatabel' => strtoupper($supplier->getTable()),
+            'postingdari' => 'DELETE SUPPLIER',
+            'idtrans' => $supplier->id,
+            'nobuktitrans' => $supplier->id,
+            'aksi' => 'DELETE',
+            'datajson' => $supplier->toArray(),
+            'modifiedby' => $supplier->modifiedby
+        ]);
+
+        return $supplier;
+    }
 }
