@@ -115,43 +115,9 @@ class PenerimaanStokController extends Controller
     {
         DB::beginTransaction();
         try {
-<<<<<<< Updated upstream
             $penerimaanStok = PenerimaanStok::findOrFail($id);
             $penerimaanStok = (new PenerimaanStok())->processUpdate($penerimaanStok, $request->all());
             $penerimaanStok->position = $this->getPosition($penerimaanStok, $penerimaanStok->getTable())->position;
-=======
-            $penerimaanStok = PenerimaanStok::where('id', $id)->first();
-            $penerimaanStok->kodepenerimaan = $request->kodepenerimaan;
-            $penerimaanStok->kodepenerimaan = $request->kodepenerimaan;
-            $penerimaanStok->keterangan = $request->keterangan ?? '';
-            $penerimaanStok->coa = $request->coa;
-            $penerimaanStok->format = $request->format;
-            $penerimaanStok->statushitungstok = $request->statushitungstok;
-            $penerimaanStok->modifiedby = auth('api')->user()->name;
-            $request->sortname = $request->sortname ?? 'id';
-            $request->sortorder = $request->sortorder ?? 'asc';
-
-            if ($penerimaanStok->save()) {
-                $logTrail = [
-                    'namatabel' => strtoupper($penerimaanStok->getTable()),
-                    'postingdari' => 'EDIT PENERIMAAN STOK',
-                    'idtrans' => $penerimaanStok->id,
-                    'nobuktitrans' => $penerimaanStok->id,
-                    'aksi' => 'EDIT',
-                    'datajson' => $penerimaanStok->toArray(),
-                    'modifiedby' => $penerimaanStok->modifiedby
-                ];
-
-                $validatedLogTrail = new StoreLogTrailRequest($logTrail);
-                $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
-
-                DB::commit();
-            }
-
-            /* Set position and page */
-            $selected = $this->getPosition($penerimaanStok, $penerimaanStok->getTable());
-            $penerimaanStok->position = $selected->position;
->>>>>>> Stashed changes
             $penerimaanStok->page = ceil($penerimaanStok->position / ($request->limit ?? 10));
 
             DB::commit();
