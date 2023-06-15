@@ -175,7 +175,7 @@ class Supir extends MyModel
     public function get()
     {
         $this->setRequestParameters();
-
+        $absen = request()->absen ?? '';
         $getJudul = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))
             ->select('text')
             ->where('grp', 'JUDULAN LAPORAN')
@@ -247,6 +247,11 @@ class Supir extends MyModel
                 ->first();
 
             $query->where('supir.statusaktif', '=', $statusaktif->id);
+        }
+        if ($absen == true) {
+            $tglbukti = date('Y-m-d', strtotime('now'));
+            $absensiSupirHeader = AbsensiSupirHeader::where('tglbukti', $tglbukti)->first();
+            $query->whereRaw("supir.id in (select supir_id from absensisupirdetail where absensi_id=$absensiSupirHeader->id)");
         }
         $this->totalRows = $query->count();
         $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;

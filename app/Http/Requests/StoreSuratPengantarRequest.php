@@ -20,6 +20,7 @@ use App\Rules\ExistPelanggan;
 use App\Rules\ExistAgen;
 use App\Rules\ExistJenisOrder;
 use App\Rules\ExistTarifRincian;
+use App\Rules\ExistUpahSupirRincianSuratPengantar;
 
 class StoreSuratPengantarRequest extends FormRequest
 {
@@ -74,7 +75,7 @@ class StoreSuratPengantarRequest extends FormRequest
             'statusbatalmuat' => ['required', Rule::in($statusbatalmuat)],
             'statusgudangsama' => ['required', Rule::in($statusgudangsama)],
             'nosp' => 'required',
-
+            'upah' => 'required',
         ];
 
         $jobtrucking = $this->jobtrucking;
@@ -290,7 +291,7 @@ class StoreSuratPengantarRequest extends FormRequest
                     new ExistSupir(),
                 ]
             ];
-        }        
+        }     
 
         $gandengan_id = $this->gandengan_id;
         $rulesgandengan_id = [];
@@ -714,6 +715,17 @@ class StoreSuratPengantarRequest extends FormRequest
                 ]
             ];
         }
+        $upah_id = $this->upah_id;
+        $rulesUpah_id = [];
+        if ($upah_id != null) {
+            $rulesUpah_id = [
+                'upah_id' => ['required', 'numeric', 'min:1', new ExistUpahSupirRincianSuratPengantar()]
+            ];
+        } else if ($upah_id == null && request()->upah != '') {
+            $rulesUpah_id = [
+                'upah_id' => ['required', 'numeric', 'min:1', new ExistUpahSupirRincianSuratPengantar()]
+            ];
+        }
         
         $rule = array_merge(
             $rules,
@@ -729,7 +741,7 @@ class StoreSuratPengantarRequest extends FormRequest
             $rulesagen_id,
             $rulesjenisorder_id,
             $rulestarifrincian_id,
-
+            $rulesUpah_id
         );
 
         return $rule;
