@@ -123,7 +123,7 @@ class PenerimaanStokController extends Controller
             DB::commit();
 
             return response()->json([
-                'message' => 'Berhasil disimpan',
+                'message' => 'Berhasil diubah',
                 'data' => $penerimaanStok
             ], 201);
         } catch (\Throwable $th) {

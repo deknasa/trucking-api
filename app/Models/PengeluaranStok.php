@@ -263,4 +263,76 @@ class PengeluaranStok extends MyModel
     {
         return $query->skip($this->params['offset'])->take($this->params['limit']);
     }
+
+    public function processStore(array $data): PengeluaranStok
+    {
+        $pengeluaranStok = new PengeluaranStok();
+        $pengeluaranStok->kodepengeluaran = $data['kodepengeluaran'];
+        $pengeluaranStok->keterangan = $data['keterangan'] ?? '';
+        $pengeluaranStok->coa = $data['coa'];
+        $pengeluaranStok->format = $data['format'];
+        $pengeluaranStok->statushitungstok = $data['statushitungstok'];
+        $pengeluaranStok->modifiedby = auth('api')->user()->name;
+
+        if (!$pengeluaranStok->save()) {
+            throw new \Exception("Error storing service in header.");
+        }
+
+        (new LogTrail())->processStore([
+            'namatabel' => strtoupper($pengeluaranStok->getTable()),
+            'postingdari' => 'ENTRY PENERIMAAN STOK',
+            'idtrans' => $pengeluaranStok->id,
+            'nobuktitrans' => $pengeluaranStok->id,
+            'aksi' => 'ENTRY',
+            'datajson' => $pengeluaranStok->toArray(),
+            'modifiedby' => $pengeluaranStok->modifiedby
+        ]);
+
+        return $pengeluaranStok;
+    }
+
+    public function processUpdate(PengeluaranStok $pengeluaranStok, array $data): PengeluaranStok
+    {
+        $pengeluaranStok->kodepengeluaran = $data['kodepengeluaran'];
+        $pengeluaranStok->keterangan = $data['keterangan'] ?? '';
+        $pengeluaranStok->coa = $data['coa'];
+        $pengeluaranStok->format = $data['format'];
+        $pengeluaranStok->statushitungstok = $data['statushitungstok'];
+        $pengeluaranStok->modifiedby = auth('api')->user()->name;
+
+        if (!$pengeluaranStok->save()) {
+            throw new \Exception("Error update service in header.");
+        }
+
+        (new LogTrail())->processStore([
+            'namatabel' => strtoupper($pengeluaranStok->getTable()),
+            'postingdari' => 'EDIT PENERIMAAN STOK',
+            'idtrans' => $pengeluaranStok->id,
+            'nobuktitrans' => $pengeluaranStok->id,
+            'aksi' => 'EDIT',
+            'datajson' => $pengeluaranStok->toArray(),
+            'modifiedby' => $pengeluaranStok->modifiedby
+        ]);
+
+        return $pengeluaranStok;
+    }
+
+    public function processDestroy($id): PengeluaranStok
+    {
+        $pengeluaranStok = new PengeluaranStok();
+        $pengeluaranStok = $pengeluaranStok->lockAndDestroy($id);
+
+
+        (new LogTrail())->processStore([
+            'namatabel' => strtoupper($pengeluaranStok->getTable()),
+            'postingdari' => 'DELETE PENERIMAAN STOK',
+            'idtrans' => $pengeluaranStok->id,
+            'nobuktitrans' => $pengeluaranStok->id,
+            'aksi' => 'DELETE',
+            'datajson' => $pengeluaranStok->toArray(),
+            'modifiedby' => $pengeluaranStok->modifiedby
+        ]);
+
+        return $pengeluaranStok;
+    }
 }

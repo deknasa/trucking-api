@@ -14,6 +14,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Database\QueryException;
+use Illuminate\Http\JsonResponse;
 
 class PengeluaranStokController extends Controller
 {
@@ -77,49 +78,18 @@ class PengeluaranStokController extends Controller
     /**
      * @ClassName 
      */
-    public function store(StorePengeluaranStokRequest $request)
+    public function store(StorePengeluaranStokRequest $request) : JsonResponse
     {
         DB::beginTransaction();
 
         try {
-            $pengeluaranStok = new PengeluaranStok();
-            $pengeluaranStok->kodepengeluaran = $request->kodepengeluaran;
-            $pengeluaranStok->keterangan = $request->keterangan ?? '';
-            $pengeluaranStok->coa = $request->coa;
-            $pengeluaranStok->format = $request->format;
-            $pengeluaranStok->statushitungstok = $request->statushitungstok;
-            $pengeluaranStok->modifiedby = auth('api')->user()->name;
-            $request->sortname = $request->sortname ?? 'id';
-            $request->sortorder = $request->sortorder ?? 'asc';
-
-            TOP:
-            if ($pengeluaranStok->save()) {
-                $logTrail = [
-                    'namatabel' => strtoupper($pengeluaranStok->getTable()),
-                    'postingdari' => 'ENTRY PENERIMAAN STOK',
-                    'idtrans' => $pengeluaranStok->id,
-                    'nobuktitrans' => $pengeluaranStok->id,
-                    'aksi' => 'ENTRY',
-                    'datajson' => $pengeluaranStok->toArray(),
-                    'modifiedby' => $pengeluaranStok->modifiedby
-                ];
-
-                $validatedLogTrail = new StoreLogTrailRequest($logTrail);
-                $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
-
-                DB::commit();
-            }
-
-            /* Set position and page */
-            $selected = $this->getPosition($pengeluaranStok, $pengeluaranStok->getTable());
-            $pengeluaranStok->position = $selected->position;
+            $pengeluaranStok = (new PengeluaranStok())->processStore($request->all());
+            $pengeluaranStok->position = $this->getPosition($pengeluaranStok, $pengeluaranStok->getTable())->position;
             $pengeluaranStok->page = ceil($pengeluaranStok->position / ($request->limit ?? 10));
 
-            if (isset($request->limit)) {
-                $pengeluaranStok->page = ceil($pengeluaranStok->position / $request->limit);
-            }
+            DB::commit();   
 
-            return response([
+            return response()->json([
                 'message' => 'Berhasil disimpan',
                 'data' => $pengeluaranStok
             ], 201);
@@ -146,48 +116,19 @@ class PengeluaranStokController extends Controller
     /**
      * @ClassName 
      */
-    public function update(UpdatePengeluaranStokRequest $request, PengeluaranStok $pengeluaranStok, $id)
+    public function update(UpdatePengeluaranStokRequest $request, PengeluaranStok $pengeluaranStok, $id) : JsonResponse
     {
         DB::beginTransaction();
         try {
-            $pengeluaranStok = PengeluaranStok::lockForUpdate()->where('id', $id)->first();
-            $pengeluaranStok->kodepengeluaran = $request->kodepengeluaran;
-            $pengeluaranStok->keterangan = $request->keterangan ?? '';
-            $pengeluaranStok->coa = $request->coa;
-            $pengeluaranStok->format = $request->format;
-            $pengeluaranStok->statushitungstok = $request->statushitungstok;
-            $pengeluaranStok->modifiedby = auth('api')->user()->name;
-            $request->sortname = $request->sortname ?? 'id';
-            $request->sortorder = $request->sortorder ?? 'asc';
-
-            if ($pengeluaranStok->save()) {
-                $logTrail = [
-                    'namatabel' => strtoupper($pengeluaranStok->getTable()),
-                    'postingdari' => 'EDIT PENERIMAAN STOK',
-                    'idtrans' => $pengeluaranStok->id,
-                    'nobuktitrans' => $pengeluaranStok->id,
-                    'aksi' => 'EDIT',
-                    'datajson' => $pengeluaranStok->toArray(),
-                    'modifiedby' => $pengeluaranStok->modifiedby
-                ];
-
-                $validatedLogTrail = new StoreLogTrailRequest($logTrail);
-                $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
-
-                DB::commit();
-            }
-
-            /* Set position and page */
-            $selected = $this->getPosition($pengeluaranStok, $pengeluaranStok->getTable());
-            $pengeluaranStok->position = $selected->position;
+            $pengeluaranStok = PengeluaranStok::findOrFail($id);
+            $pengeluaranStok = (new PengeluaranStok())->processUpdate($pengeluaranStok, $request->all());
+            $pengeluaranStok->position = $this->getPosition($pengeluaranStok, $pengeluaranStok->getTable())->position;
             $pengeluaranStok->page = ceil($pengeluaranStok->position / ($request->limit ?? 10));
 
-            if (isset($request->limit)) {
-                $pengeluaranStok->page = ceil($pengeluaranStok->position / $request->limit);
-            }
+            DB::commit();
 
-            return response([
-                'message' => 'Berhasil disimpan',
+            return response()->json([
+                'message' => 'Berhasil diubah',
                 'data' => $pengeluaranStok
             ], 201);
         } catch (\Throwable $th) {
@@ -217,42 +158,24 @@ class PengeluaranStokController extends Controller
     {
         DB::beginTransaction();
 
-        $pengeluaranStok = new PengeluaranStok();
-        $pengeluaranStok = $pengeluaranStok->lockAndDestroy($id);
-
-        if ($pengeluaranStok) {
-            $logTrail = [
-                'namatabel' => strtoupper($pengeluaranStok->getTable()),
-                'postingdari' => 'DELETE PENERIMAAN STOK',
-                'idtrans' => $pengeluaranStok->id,
-                'nobuktitrans' => $pengeluaranStok->id,
-                'aksi' => 'DELETE',
-                'datajson' => $pengeluaranStok->toArray(),
-                'modifiedby' => $pengeluaranStok->modifiedby
-            ];
-
-            $validatedLogTrail = new StoreLogTrailRequest($logTrail);
-            app(LogTrailController::class)->store($validatedLogTrail);
-
-            DB::commit();
-
+        
+        try {
+            $pengeluaranStok = (new PengeluaranStok())->processDestroy($id);
             $selected = $this->getPosition($pengeluaranStok, $pengeluaranStok->getTable(), true);
             $pengeluaranStok->position = $selected->position;
             $pengeluaranStok->id = $selected->id;
             $pengeluaranStok->page = ceil($pengeluaranStok->position / ($request->limit ?? 10));
 
-            return response([
-                'status' => true,
+            DB::commit();
+
+            return response()->json([
                 'message' => 'Berhasil dihapus',
                 'data' => $pengeluaranStok
             ]);
-        } else {
+        } catch (\Throwable $th) {
             DB::rollBack();
 
-            return response([
-                'status' => false,
-                'message' => 'Gagal dihapus'
-            ]);
+            throw $th;
         }
     }
 
