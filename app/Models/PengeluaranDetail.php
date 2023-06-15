@@ -194,7 +194,7 @@ class PengeluaranDetail extends MyModel
         $pengeluaranDetail->save();
         
         if (!$pengeluaranDetail->save()) {
-            throw new \Exception("Error storing Hutang Detail.");
+            throw new \Exception("Error storing Pengeluaran Detail.");
         }
 
         return $pengeluaranDetail;
