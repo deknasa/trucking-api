@@ -22,11 +22,9 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Database\QueryException;
 use PhpOffice\PhpSpreadsheet\IOFactory;
-<<<<<<< Updated upstream
 use App\Http\Requests\GetUpahSupirRangeRequest;
-=======
 use Illuminate\Http\JsonResponse;
->>>>>>> Stashed changes
+
 
 class TarifController extends Controller
 {
@@ -421,3 +419,5 @@ class TarifController extends Controller
         $this->toExcel('Tarif', $tarifs, $columns);
     }
 }
+
+
