@@ -62,6 +62,27 @@ class HutangBayarHeaderController extends Controller
         DB::beginTransaction();
         try {
             /* Store header */
+            $hutangBayarHeader = (new HutangBayarHeader())->processStore($request->all());
+            /* Set position and page */
+            $hutangBayarHeader->position = $this->getPosition($hutangBayarHeader, $hutangBayarHeader->getTable())->position;
+            $hutangBayarHeader->page = ceil($hutangBayarHeader->position / ($request->limit ?? 10));
+            if (isset($request->limit)) {
+                $hutangBayarHeader->page = ceil($hutangBayarHeader->position / ($request->limit ?? 10));
+            }
+
+            DB::commit();
+            return response()->json([
+                'message' => 'Berhasil disimpan',
+                'data' => $hutangBayarHeader
+            ], 201);    
+        } catch (\Throwable $th) {
+            DB::rollBack();
+
+            throw $th;
+        }
+        DB::beginTransaction();
+        try {
+            /* Store header */
 
             $group = 'PEMBAYARAN HUTANG BUKTI';
             $subgroup = 'PEMBAYARAN HUTANG BUKTI';

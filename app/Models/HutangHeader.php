@@ -679,7 +679,7 @@ class HutangHeader extends MyModel
             'modifiedby' => auth('api')->user()->name
         ]);
 
-        return $penerimaanStokHeader;
+        return $hutangHeader;
     }
 
 

@@ -32,8 +32,8 @@ class UpdatePengeluaranHeaderRequest extends FormRequest
      */
     public function rules()
     {
-        $query=DB::table('hutangbayarheader')->from(
-            DB::raw('hutangbayarheader a with (readuncommitted)')
+        $query=DB::table('pengeluaranheader')->from(
+            DB::raw('pengeluaranheader a with (readuncommitted)')
         )
         ->select(
             'a.tglbukti',
