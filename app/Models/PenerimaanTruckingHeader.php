@@ -74,7 +74,8 @@ class PenerimaanTruckingHeader extends MyModel
     public function get()
     {
         $this->setRequestParameters();
-
+        $periode = request()->periode ?? '';
+        $statusCetak = request()->statuscetak ?? '';
         $query = DB::table($this->table)->from(DB::raw("penerimaantruckingheader with (readuncommitted)"))
             ->select(
                 'penerimaantruckingheader.id',
@@ -99,10 +100,18 @@ class PenerimaanTruckingHeader extends MyModel
             ->leftJoin(DB::raw("parameter with (readuncommitted)"), 'penerimaantruckingheader.statuscetak', 'parameter.id')
             ->leftJoin(DB::raw("bank with (readuncommitted)"), 'penerimaantruckingheader.bank_id', 'bank.id');
         if (request()->tgldari) {
-            $query->whereBetween('tglbukti', [date('Y-m-d', strtotime(request()->tgldari)), date('Y-m-d', strtotime(request()->tglsampai))]);
+            $query->whereBetween('penerimaantruckingheader.tglbukti', [date('Y-m-d', strtotime(request()->tgldari)), date('Y-m-d', strtotime(request()->tglsampai))]);
         }
         if (request()->penerimaanheader_id) {
             $query->where('penerimaantrucking_id', request()->penerimaanheader_id);
+        }
+        if ($periode != '') {
+            $periode = explode("-", $periode);
+            $query->whereRaw("MONTH(penerimaantruckingheader.tglbukti) ='" . $periode[0] . "'")
+                ->whereRaw("year(penerimaantruckingheader.tglbukti) ='" . $periode[1] . "'");
+        }
+        if ($statusCetak != '') {
+            $query->where("penerimaantruckingheader.statuscetak", $statusCetak);
         }
 
         $this->totalRows = $query->count();

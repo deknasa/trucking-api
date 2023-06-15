@@ -1,12 +1,13 @@
 <?php
 
 namespace App\Http\Requests;
+
+use App\Rules\DateTutupBuku;
+use App\Rules\DestroySuratPengantar;
 use Illuminate\Foundation\Http\FormRequest;
-use App\Rules\ValidasiDestroyPenerimaanTrucking;
 
-class DestroyPenerimaanTruckingRequest extends FormRequest
+class DestroySuratPengantarRequest extends FormRequest
 {
-
     /**
      * Determine if the user is authorized to make this request.
      *
@@ -25,7 +26,12 @@ class DestroyPenerimaanTruckingRequest extends FormRequest
     public function rules()
     {
         return [
-            'id' => new ValidasiDestroyPenerimaanTrucking()
+            'nobukti' => new DestroySuratPengantar(),
+            'tglbukti' => [
+                'required', 'date_format:d-m-Y',
+                new DateTutupBuku()
+            ],
+
         ];
     }
 }

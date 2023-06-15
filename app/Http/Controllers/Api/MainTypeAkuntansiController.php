@@ -3,10 +3,10 @@
 
 namespace App\Http\Controllers\Api;
 
-use App\Http\Requests\StoreTypeAkuntansiRequest;
-use App\Http\Requests\UpdateTypeAkuntansiRequest;
-use App\Http\Requests\DestroyTypeAkuntansiRequest;
-use App\Models\TypeAkuntansi;
+use App\Http\Requests\StoreMainTypeAkuntansiRequest;
+use App\Http\Requests\UpdateMainTypeAkuntansiRequest;
+use App\Http\Requests\DestroyMainTypeAkuntansiRequest;
+use App\Models\MainTypeAkuntansi;
 use App\Models\Parameter;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Http\Request;
@@ -18,7 +18,7 @@ use Illuminate\Http\JsonResponse;
 
 
 
-class TypeAkuntansiController extends Controller
+class MainTypeAkuntansiController extends Controller
 {
 
     /**
@@ -27,12 +27,12 @@ class TypeAkuntansiController extends Controller
     public function index()
     {
         
-        $typeakuntansi = new TypeAkuntansi();
+        $maintypeakuntansi = new MainTypeAkuntansi();
         return response([
-            'data' => $typeakuntansi->get(),
+            'data' => $maintypeakuntansi->get(),
             'attributes' => [
-                'totalRows' => $typeakuntansi->totalRows,
-                'totalPages' => $typeakuntansi->totalPages
+                'totalRows' => $maintypeakuntansi->totalRows,
+                'totalPages' => $maintypeakuntansi->totalPages
             ]
         ]);
     }
@@ -47,10 +47,10 @@ class TypeAkuntansiController extends Controller
     public function default()
     {
 
-        $typeakuntansi = new TypeAkuntansi();
+        $maintypeakuntansi = new MainTypeAkuntansi();
         return response([
             'status' => true,
-            'data' => $typeakuntansi->default(),
+            'data' => $maintypeakuntansi->default(),
         ]);
         
     }
@@ -59,21 +59,21 @@ class TypeAkuntansiController extends Controller
     /**
      * @ClassName 
      */
-    public function store(StoreTypeAkuntansiRequest $request): JsonResponse
+    public function store(StoreMainTypeAkuntansiRequest $request): JsonResponse
     {
         DB::beginTransaction();
 
         try {
-            $typeakuntansi = (new TypeAkuntansi())->processStore($request->all());
-            $typeakuntansi->position = $this->getPosition($typeakuntansi, $typeakuntansi->getTable())->position;
-            $typeakuntansi->page = ceil($typeakuntansi->position / ($request->limit ?? 10));
+            $maintypeakuntansi = (new MainTypeAkuntansi())->processStore($request->all());
+            $maintypeakuntansi->position = $this->getPosition($maintypeakuntansi, $maintypeakuntansi->getTable())->position;
+            $maintypeakuntansi->page = ceil($maintypeakuntansi->position / ($request->limit ?? 10));
 
             DB::commit();
 
             return response()->json([
                 'status' => true,
                 'message' => 'Berhasil disimpan.',
-                'data' => $typeakuntansi
+                'data' => $maintypeakuntansi
             ], 201);
         } catch (\Throwable $th) {
             DB::rollBack();
@@ -83,31 +83,31 @@ class TypeAkuntansiController extends Controller
     }
     public function show($id)
     {
-        $typeakuntansi = new TypeAkuntansi();
+        $maintypeakuntansi = new MainTypeAkuntansi();
         return response([
             'status' => true,
-            'data' => $typeakuntansi->find($id)
+            'data' => $maintypeakuntansi->find($id)
         ]);
     }
 
     /**
      * @ClassName 
      */
-    public function update(UpdateTypeAkuntansiRequest $request, TypeAkuntansi $typeakuntansi): JsonResponse
+    public function update(UpdateMainTypeAkuntansiRequest $request, MainTypeAkuntansi $maintypeakuntansi): JsonResponse
     {
         DB::beginTransaction();
 
         try {
-            $typeakuntansi = (new TypeAkuntansi())->processUpdate($typeakuntansi, $request->all());
-            $typeakuntansi->position = $this->getPosition($typeakuntansi, $typeakuntansi->getTable())->position;
-            $typeakuntansi->page = ceil($typeakuntansi->position / ($request->limit ?? 10));
+            $maintypeakuntansi = (new MainTypeAkuntansi())->processUpdate($maintypeakuntansi, $request->all());
+            $maintypeakuntansi->position = $this->getPosition($maintypeakuntansi, $maintypeakuntansi->getTable())->position;
+            $maintypeakuntansi->page = ceil($maintypeakuntansi->position / ($request->limit ?? 10));
 
             DB::commit();
 
             return response()->json([
                 'status' => true,
                 'message' => 'Berhasil diubah.',
-                'data' => $typeakuntansi
+                'data' => $maintypeakuntansi
             ]);
         } catch (\Throwable $th) {
             DB::rollBack();
@@ -119,22 +119,22 @@ class TypeAkuntansiController extends Controller
     /**
      * @ClassName 
      */
-    public function destroy(DestroyTypeAkuntansiRequest $request, $id)
+    public function destroy(DestroyMainTypeAkuntansiRequest $request, $id)
     {
         DB::beginTransaction();
 
         try {
-            $typeakuntansi = (new TypeAkuntansi())->processDestroy($id);
-            $selected = $this->getPosition($typeakuntansi, $typeakuntansi->getTable(), true);
-            $typeakuntansi->position = $selected->position;
-            $typeakuntansi->id = $selected->id;
-            $typeakuntansi->page = ceil($typeakuntansi->position / ($request->limit ?? 10));
+            $maintypeakuntansi = (new MainTypeAkuntansi())->processDestroy($id);
+            $selected = $this->getPosition($maintypeakuntansi, $maintypeakuntansi->getTable(), true);
+            $maintypeakuntansi->position = $selected->position;
+            $maintypeakuntansi->id = $selected->id;
+            $maintypeakuntansi->page = ceil($maintypeakuntansi->position / ($request->limit ?? 10));
 
             DB::commit();
 
             return response()->json([
                 'message' => 'Berhasil dihapus',
-                'data' => $typeakuntansi
+                'data' => $maintypeakuntansi
             ]);
         } catch (\Throwable $th) {
             DB::rollBack();
@@ -156,12 +156,12 @@ class TypeAkuntansiController extends Controller
          } else {
              $response = $this->index();
              $decodedResponse = json_decode($response->content(), true);
-             $akuntansi = $decodedResponse['data'];
+             $maintypeakuntansi = $decodedResponse['data'];
  
-             $judulLaporan = $akuntansi[0]['judulLaporan'];
+             $judulLaporan = $maintypeakuntansi[0]['judulLaporan'];
  
              $i = 0;
-             foreach ($akuntansi as $index => $params) {
+             foreach ($maintypeakuntansi as $index => $params) {
  
  
                  $statusaktif = $params['statusaktif'];
@@ -172,7 +172,7 @@ class TypeAkuntansiController extends Controller
                  $statusaktif = $result['MEMO'];
  
  
-                 $akuntansi[$i]['statusaktif'] = $statusaktif;
+                 $maintypeakuntansi[$i]['statusaktif'] = $statusaktif;
                  $i++;
              }
  
@@ -202,14 +202,14 @@ class TypeAkuntansiController extends Controller
                  ],
              ];
  
-             $this->toExcel($judulLaporan, $akuntansi, $columns);
+             $this->toExcel($judulLaporan, $maintypeakuntansi, $columns);
          }
      }
      
      public function fieldLength()
      {
          $data = [];
-         $columns = DB::connection()->getDoctrineSchemaManager()->listTableDetails('typeakuntansi')->getColumns();
+         $columns = DB::connection()->getDoctrineSchemaManager()->listTableDetails('maintypeakuntansi')->getColumns();
  
          foreach ($columns as $index => $column) {
              $data[$index] = $column->getLength();

@@ -193,4 +193,32 @@ class PenerimaanDetail extends MyModel
     {
         return $query->skip($this->params['offset'])->take($this->params['limit']);
     }
+
+
+    public function processStore(PenerimaanHeader $penerimaanHeader, array $data): PenerimaanDetail
+    {
+        $penerimaanDetail = new PenerimaanDetail;
+        $penerimaanDetail->penerimaan_id = $data['penerimaan_id'];
+        $penerimaanDetail->nobukti = $data['nobukti'];
+        $penerimaanDetail->nowarkat = $data['nowarkat'] ?? '';
+        $penerimaanDetail->tgljatuhtempo = $data['tgljatuhtempo'];
+        $penerimaanDetail->nominal = $data['nominal'];
+        $penerimaanDetail->coadebet = $data['coadebet'];
+        $penerimaanDetail->coakredit = $data['coakredit'];
+        $penerimaanDetail->keterangan = $data['keterangan'];
+        $penerimaanDetail->bank_id = $data['bank_id'];
+        $penerimaanDetail->invoice_nobukti = $data['invoice_nobukti'] ?? '';
+        $penerimaanDetail->bankpelanggan_id = $data['bankpelanggan_id'] ?? 0;
+        $penerimaanDetail->pelunasanpiutang_nobukti = $data['pelunasanpiutang_nobukti'] ?? '';
+        $penerimaanDetail->bulanbeban = $data['bulanbeban'];
+        $penerimaanDetail->modifiedby = auth('api')->user()->name;
+        
+        $penerimaanDetail->save();
+        
+        if (!$penerimaanDetail->save()) {
+            throw new \Exception("Error storing Penerimaan Detail.");
+        }
+
+        return $penerimaanDetail;
+    }
 }

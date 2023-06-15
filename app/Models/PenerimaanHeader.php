@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
+use App\Services\RunningNumberService;
 
 
 
@@ -216,8 +217,8 @@ class PenerimaanHeader extends MyModel
     public function get()
     {
         $this->setRequestParameters();
-
-
+        $periode = request()->periode ?? '';
+        $statusCetak = request()->statuscetak ?? '';
         $query = DB::table($this->table)->from(DB::raw("penerimaanheader with (readuncommitted)"))
             ->select(
                 'penerimaanheader.id',
@@ -251,7 +252,15 @@ class PenerimaanHeader extends MyModel
             $query->whereBetween($this->table . '.tglbukti', [date('Y-m-d', strtotime(request()->tgldari)), date('Y-m-d', strtotime(request()->tglsampai))])
                 ->where('penerimaanheader.bank_id', request()->bank);
         }
-
+        if ($periode != '') {
+            $periode = explode("-", $periode);
+            $query->whereRaw("MONTH(penerimaanheader.tglbukti) ='" . $periode[0] . "'")
+                ->whereRaw("year(penerimaanheader.tglbukti) ='" . $periode[1] . "'");
+        }
+        if ($statusCetak != '') {
+            $query->where("penerimaanheader.statuscetak", $statusCetak);
+        }
+        
         $this->totalRows = $query->count();
         $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;
 
@@ -627,4 +636,265 @@ class PenerimaanHeader extends MyModel
 
         return $data;
     }
+
+    public function processStore(array $data): PenerimaanHeader
+    {
+        $bankid = $data['bank_id'];
+
+        $querysubgrppenerimaan = Bank::from(DB::raw("bank with (readuncommitted)"))
+        ->select(
+            'parameter.grp',
+            'parameter.subgrp',
+            'bank.formatpenerimaan',
+            'bank.coa',
+            'bank.tipe'
+        )
+        ->join(DB::raw("parameter with (readuncommitted)"), 'bank.formatpenerimaan', 'parameter.id')
+        ->whereRaw("bank.id = $bankid")
+        ->first();
+        $group = $querysubgrppenerimaan->grp;
+        $subGroup = $querysubgrppenerimaan->subgrp;
+        $format = DB::table('parameter')->where('grp', $group)->where('subgrp', $subGroup)->first();
+
+        $statusApproval = Parameter::from(DB::raw("parameter with (readuncommitted)")) ->where('grp', 'STATUS APPROVAL')->where('text', 'NON APPROVAL')->first();
+        $statuscetak = Parameter::from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUSCETAK')->where('text', 'BELUM CETAK')->first();
+
+        $penerimaanHeader = new PenerimaanHeader();
+        
+        $penerimaanHeader->tglbukti = date('Y-m-d', strtotime($data['tglbukti']));
+        $penerimaanHeader->pelanggan_id = $data['pelanggan_id'] ?? '';
+        $penerimaanHeader->agen_id = $data['agen_id'] ?? '';
+        $penerimaanHeader->postingdari = $data['postingdari'] ?? 'ENTRY PENERIMAAN KAS/BANK';
+        $penerimaanHeader->diterimadari = $data['diterimadari'] ?? '';
+        $penerimaanHeader->tgllunas = date('Y-m-d', strtotime($data['tgllunas']));
+        $penerimaanHeader->bank_id = $data['bank_id'] ?? '';
+        $penerimaanHeader->statusapproval = $statusApproval->id;
+        $penerimaanHeader->statuscetak = $statuscetak->id;
+        $penerimaanHeader->modifiedby = auth('api')->user()->name;
+        $penerimaanHeader->statusformat = $data['statusformat'] ?? $querysubgrppenerimaan->formatpenerimaan;
+        $penerimaanHeader->nobukti = (new RunningNumberService)->get($group, $subGroup, $penerimaanHeader->getTable(), date('Y-m-d', strtotime($data['tglbukti'])));
+
+        if (!$penerimaanHeader->save()) {
+            throw new \Exception("Error storing Hutang header.");
+        }
+
+        $penerimaanHeaderLogTrail = (new LogTrail())->processStore([
+            'namatabel' => strtoupper($penerimaanHeader->getTable()),
+            'postingdari' => $data['postingdari'] ??strtoupper('ENTRY penerimaan Header '),
+            'idtrans' => $penerimaanHeader->id,
+            'nobuktitrans' => $penerimaanHeader->nobukti,
+            'aksi' => 'ENTRY',
+            'datajson' => $penerimaanHeader->toArray(),
+            'modifiedby' => auth('api')->user()->user
+        ]);
+        $penerimaanDetails =[];
+        $coakredit_detail =[];
+        $coadebet_detail =[];
+        $nominal_detail =[];
+        $keterangan_detail =[];
+        for ($i = 0; $i < count($data['nominal_detail']); $i++) {
+            $penerimaanDetail = (new PenerimaanDetail())->processStore($penerimaanHeader, [
+                'penerimaan_id' => $penerimaanHeader->id,
+                'nobukti' => $penerimaanHeader->nobukti,
+                'nowarkat' => $data['nowarkat'][$i] ?? '',
+                'tgljatuhtempo' =>  date('Y-m-d', strtotime($data['tgljatuhtempo'][$i])),
+                'nominal' => $data['nominal_detail'][$i],
+                'coadebet' => $querysubgrppenerimaan->coa,
+                'coakredit' => $data['coakredit'][$i],
+                'keterangan' => $data['keterangan_detail'][$i],
+                'bank_id' => $penerimaanHeader->bank_id,
+                'invoice_nobukti' => $data['invoice_nobukti'][$i] ?? '-',
+                'bankpelanggan_id' => $data['bankpelanggan_id'][$i] ?? '',
+                'pelunasanpiutang_nobukti' => $data['pelunasanpiutang_nobukti'][$i] ?? '-',
+                'bulanbeban' =>  date('Y-m-d', strtotime($data['bulanbeban'][$i] ?? '1900/1/1')),
+                'modifiedby' => auth('api')->user()->name,
+            ]);
+            $penerimaanDetails[] = $penerimaanDetail->toArray();
+            $coakredit_detail []= $data['coakredit'][$i];
+            $coadebet_detail []= $querysubgrppenerimaan->coa;
+            $nominal_detail []= $data['nominal_detail'][$i];
+            $keterangan_detail []= $data['keterangan_detail'][$i];
+
+        }
+
+        $penerimaanDetailLogTrail = (new LogTrail())->processStore([
+            'namatabel' => strtoupper($penerimaanDetail->getTable()),
+            'postingdari' => $data['postingdari'] ??strtoupper('ENTRY penerimaan detail '),
+            'idtrans' => $penerimaanHeaderLogTrail->id,
+            'nobuktitrans' => $penerimaanHeader->nobukti,
+            'aksi' => 'ENTRY',
+            'datajson' => $penerimaanDetails,
+            'modifiedby' => auth('api')->user()->user
+        ]);
+
+        /*STORE JURNAL*/
+        $jurnalRequest = [
+            'tanpaprosesnobukti' => 1,
+            'nobukti' => $penerimaanHeader->nobukti,
+            'tglbukti' => date('Y-m-d', strtotime($data['tglbukti'])),
+            'postingdari' => "ENTRY PENERIMAAN",
+            'statusapproval' => $statusApproval->id,
+            'userapproval' => "",
+            'tglapproval' => "",
+            'modifiedby' => auth('api')->user()->name,
+            'statusformat' => "0",
+            'coakredit_detail' => $coakredit_detail,
+            'coadebet_detail' => $coadebet_detail,
+            'nominal_detail' => $nominal_detail,
+            'keterangan_detail' => $keterangan_detail
+        ];
+        $jurnalUmumHeader = (new JurnalUmumHeader())->processStore($jurnalRequest);
+        return $penerimaanHeader;
+
+
+    }
+    public function processUpdate(PenerimaanHeader $penerimaanHeader,array $data): PenerimaanHeader
+    {
+        $bankid = $data['bank_id'];
+
+        $querysubgrppenerimaan = Bank::from(DB::raw("bank with (readuncommitted)"))
+        ->select(
+            'parameter.grp',
+            'parameter.subgrp',
+            'bank.formatpenerimaan',
+            'bank.coa',
+            'bank.tipe'
+        )
+        ->join(DB::raw("parameter with (readuncommitted)"), 'bank.formatpenerimaan', 'parameter.id')
+        ->whereRaw("bank.id = $bankid")
+        ->first();
+        $group = $querysubgrppenerimaan->grp;
+        $subGroup = $querysubgrppenerimaan->subgrp;
+
+        $statusApproval = Parameter::from(DB::raw("parameter with (readuncommitted)")) ->where('grp', 'STATUS APPROVAL')->where('text', 'NON APPROVAL')->first();
+        $statuscetak = Parameter::from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUSCETAK')->where('text', 'BELUM CETAK')->first();
+        
+        $penerimaanHeader->pelanggan_id = $data['pelanggan_id'] ?? '';
+        $penerimaanHeader->diterimadari = $data['diterimadari'] ?? '';
+        $penerimaanHeader->tgllunas = date('Y-m-d', strtotime($data['tgllunas']));
+        $penerimaanHeader->bank_id = $data['bank_id'] ?? '';
+        $penerimaanHeader->modifiedby = auth('api')->user()->name;
+        $penerimaanHeader->agen_id = $data['agen_id'] ?? '';
+
+        if (!$penerimaanHeader->save()) {
+            throw new \Exception("Error Update penerimaan header.");
+        }
+
+        $penerimaanHeaderLogTrail = (new LogTrail())->processStore([
+            'namatabel' => strtoupper($penerimaanHeader->getTable()),
+            'postingdari' => $data['postingdari'] ??strtoupper('EDIT penerimaan Header '),
+            'idtrans' => $penerimaanHeader->id,
+            'nobuktitrans' => $penerimaanHeader->nobukti,
+            'aksi' => 'EDIT',
+            'datajson' => $penerimaanHeader->toArray(),
+            'modifiedby' => auth('api')->user()->user
+        ]);
+
+
+         /*DELETE EXISTING JURNAL*/
+         $JurnalUmumDetail = JurnalUmumDetail::where('nobukti', $penerimaanHeader->nobukti)->lockForUpdate()->delete();
+         $JurnalUmumHeader = JurnalUmumHeader::where('nobukti', $penerimaanHeader->nobukti)->lockForUpdate()->delete();
+         /*DELETE EXISTING Penerimaan*/
+         $penerimaanDetail = PenerimaanDetail::where('penerimaan_id', $penerimaanHeader->id)->lockForUpdate()->delete();
+
+         
+        $penerimaanDetails =[];
+        $coakredit_detail =[];
+        $coadebet_detail =[];
+        $nominal_detail =[];
+        $keterangan_detail =[];
+        for ($i = 0; $i < count($data['nominal_detail']); $i++) {
+            $penerimaanDetail = (new PenerimaanDetail())->processStore($penerimaanHeader, [
+                'penerimaan_id' => $penerimaanHeader->id,
+                'nobukti' => $penerimaanHeader->nobukti,
+                'nowarkat' => $data['nowarkat'][$i] ?? '',
+                'tgljatuhtempo' =>  date('Y-m-d', strtotime($data['tgljatuhtempo'][$i])),
+                'nominal' => $data['nominal_detail'][$i],
+                'coadebet' => $querysubgrppenerimaan->coa,
+                'coakredit' => $data['coakredit'][$i],
+                'keterangan' => $data['keterangan_detail'][$i],
+                'bank_id' => $penerimaanHeader->bank_id,
+                'invoice_nobukti' => $data['invoice_nobukti'][$i] ?? '-',
+                'bankpelanggan_id' => $data['bankpelanggan_id'][$i] ?? '',
+                'pelunasanpiutang_nobukti' => $data['pelunasanpiutang_nobukti'][$i] ?? '-',
+                'bulanbeban' =>  date('Y-m-d', strtotime($data['bulanbeban'][$i] ?? '1900/1/1')),
+                'modifiedby' => auth('api')->user()->name,
+            ]);
+            $penerimaanDetails[] = $penerimaanDetail->toArray();
+            $coakredit_detail []= $data['coakredit'][$i];
+            $coadebet_detail []= $querysubgrppenerimaan->coa;
+            $nominal_detail []= $data['nominal_detail'][$i];
+            $keterangan_detail []= $data['keterangan_detail'][$i];
+
+        }
+
+        $penerimaanDetailLogTrail = (new LogTrail())->processStore([
+            'namatabel' => strtoupper($penerimaanDetail->getTable()),
+            'postingdari' => $data['postingdari'] ??strtoupper('ENTRY penerimaan detail '),
+            'idtrans' => $penerimaanHeaderLogTrail->id,
+            'nobuktitrans' => $penerimaanHeader->nobukti,
+            'aksi' => 'ENTRY',
+            'datajson' => $penerimaanDetails,
+            'modifiedby' => auth('api')->user()->user
+        ]);
+
+        /*STORE JURNAL*/
+        $jurnalRequest = [
+            'tanpaprosesnobukti' => 1,
+            'nobukti' => $penerimaanHeader->nobukti,
+            'tglbukti' => date('Y-m-d', strtotime($data['tglbukti'])),
+            'postingdari' => "ENTRY PENERIMAAN",
+            'statusapproval' => $statusApproval->id,
+            'userapproval' => "",
+            'tglapproval' => "",
+            'modifiedby' => auth('api')->user()->name,
+            'statusformat' => "0",
+            'coakredit_detail' => $coakredit_detail,
+            'coadebet_detail' => $coadebet_detail,
+            'nominal_detail' => $nominal_detail,
+            'keterangan_detail' => $keterangan_detail
+        ];
+        $jurnalUmumHeader = (new JurnalUmumHeader())->processStore($jurnalRequest);
+        return $penerimaanHeader;
+    }
+
+
+    public function processDestroy($id): PenerimaanHeader
+    {
+        $penerimaanHeader = PenerimaanHeader::findOrFail($id);
+        $dataHeader =  $penerimaanHeader->toArray();
+        $penerimaanDetail = PenerimaanDetail::where('penerimaan_id', '=', $penerimaanHeader->id)->get();
+        $dataDetail = $penerimaanDetail->toArray();
+        
+        /*DELETE EXISTING JURNAL*/
+        $JurnalUmumDetail = JurnalUmumDetail::where('nobukti', $penerimaanHeader->nobukti)->lockForUpdate()->delete();
+        $JurnalUmumHeader = JurnalUmumHeader::where('nobukti', $penerimaanHeader->nobukti)->lockForUpdate()->delete();
+        /*DELETE EXISTING HUTANG*/
+        $penerimaanDetail = PenerimaanDetail::where('penerimaan_id', $penerimaanHeader->id)->lockForUpdate()->delete();
+        
+        $penerimaanHeader = $penerimaanHeader->lockAndDestroy($id);
+        $hutangLogTrail = (new LogTrail())->processStore([
+            'namatabel' => $this->table,
+            'postingdari' => strtoupper('DELETE penerimaan  Header'),
+            'idtrans' => $penerimaanHeader->id,
+            'nobuktitrans' => $penerimaanHeader->nobukti,
+            'aksi' => 'DELETE',
+            'datajson' =>$dataHeader,
+            'modifiedby' => auth('api')->user()->name
+        ]);
+ 
+        (new LogTrail())->processStore([
+            'namatabel' => (new LogTrail())->table,
+            'postingdari' => strtoupper('DELETE penerimaan  detail'),
+            'idtrans' => $hutangLogTrail['id'],
+            'nobuktitrans' => $penerimaanHeader->nobukti,
+            'aksi' => 'DELETE',
+            'datajson' =>$dataDetail,
+            'modifiedby' => auth('api')->user()->name
+        ]);
+ 
+        return $penerimaanHeader;
+    }
+ 
 }
+        

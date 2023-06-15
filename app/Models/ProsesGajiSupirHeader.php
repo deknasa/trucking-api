@@ -68,6 +68,8 @@ class ProsesGajiSupirHeader extends MyModel
     public function get()
     {
         $this->setRequestParameters();
+        $periode = request()->periode ?? '';
+        $statusCetak = request()->statuscetak ?? '';
 
         $this->tableTotal = $this->createTempTotal();
         $query = DB::table($this->table)->from(DB::raw("prosesgajisupirheader with (readuncommitted)"))
@@ -100,11 +102,21 @@ class ProsesGajiSupirHeader extends MyModel
                 $this->tableTotal . '.potonganpinjamansemua',
                 $this->tableTotal . '.deposito'
             )
-            ->whereBetween($this->table . '.tglbukti', [date('Y-m-d', strtotime(request()->tgldari)), date('Y-m-d', strtotime(request()->tglsampai))])
+            
             ->leftJoin(DB::raw("parameter as statuscetak with (readuncommitted)"), 'prosesgajisupirheader.statuscetak', 'statuscetak.id')
             ->leftJoin(DB::raw("parameter as statusapproval with (readuncommitted)"), 'prosesgajisupirheader.statusapproval', 'statusapproval.id')
             ->leftJoin($this->tableTotal, $this->tableTotal . '.nobukti', 'prosesgajisupirheader.nobukti');
-
+        if (request()->tgldari && request()->tglsampai) {
+            $query->whereBetween($this->table . '.tglbukti', [date('Y-m-d', strtotime(request()->tgldari)), date('Y-m-d', strtotime(request()->tglsampai))]);
+        }
+        if ($periode != '') {
+            $periode = explode("-", $periode);
+            $query->whereRaw("MONTH(prosesgajisupirheader.tglbukti) ='" . $periode[0] . "'")
+                ->whereRaw("year(prosesgajisupirheader.tglbukti) ='" . $periode[1] . "'");
+        }
+        if ($statusCetak != '') {
+            $query->where("prosesgajisupirheader.statuscetak", $statusCetak);
+        }
         $this->totalRows = $query->count();
         $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;
 
@@ -507,7 +519,6 @@ class ProsesGajiSupirHeader extends MyModel
                         if ($filters['field'] != '') {
                             // $query = $query->where($table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
                             $query = $query->whereRaw($table . ".[" .  $filters['field'] . "] LIKE '%" . escapeLike($filters['data']) . "%' escape '|'");
-
                         }
                     }
 
@@ -517,7 +528,6 @@ class ProsesGajiSupirHeader extends MyModel
                         if ($filters['field'] != '') {
                             // $query = $query->orWhere($table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
                             $query = $query->OrwhereRaw($table . ".[" .  $filters['field'] . "] LIKE '%" . escapeLike($filters['data']) . "%' escape '|'");
-
                         }
                     }
 
@@ -1076,7 +1086,7 @@ class ProsesGajiSupirHeader extends MyModel
         }
         $fetch = GajiSupirHeader::from(DB::raw("gajisupirheader with (readuncommitted)"))
             ->select(DB::raw("(SUM(uangmakanharian) + SUM(total)) as borongan, SUM(potonganpinjaman) as pinjamanpribadi, SUM(potonganpinjamansemua) as pinjamansemua, SUM(deposito) as deposito, SUM(bbm) as bbm, SUM(uangjalan) as uangjalan"))
-        ->whereRaw("gajisupirheader.nobukti in($bukti)");
+            ->whereRaw("gajisupirheader.nobukti in($bukti)");
         return $fetch->first();
     }
 }

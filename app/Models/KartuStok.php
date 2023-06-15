@@ -41,7 +41,7 @@ class KartuStok extends MyModel
         // dump(request()->filter);
         // dd($filter->id);
 
-        if (request()->filter == $filter->id) {
+        // if (request()->filter == $filter->id) {
             // dd('test');
             $query = $this->getlaporan($tgldari, $tglsampai, request()->stokdari_id, request()->stoksampai_id, request()->datafilter, 0, 0, $filter->text);
 
@@ -53,9 +53,9 @@ class KartuStok extends MyModel
                 $data = $query->get();
               
           
-        } else {
-            $data = [];
-        }
+        // } else {
+        //     $data = [];
+        // }
 
         return $data;
     }
@@ -269,6 +269,11 @@ class KartuStok extends MyModel
         $gudangkantor = Parameter::where('grp', 'GUDANG KANTOR')->where('subgrp', 'GUDANG KANTOR')->first();
 
         if ($filter == 'GUDANG' and $gudang_id = $gudangkantor->text) {
+
+
+
+
+//=========================================saldo awal masuk=========================================
             $spb = Parameter::from(
                 DB::raw("parameter with (readuncommitted)")
             )
@@ -297,6 +302,9 @@ class KartuStok extends MyModel
 
 
 
+
+
+//=========================================query rekap data masuk=========================================
             $queryrekap = PenerimaanStokHeader::from(
                 DB::raw("penerimaanstokheader as a with (readuncommitted)")
             )
@@ -340,6 +348,11 @@ class KartuStok extends MyModel
                 'modifiedby',
             ], $queryrekap);
 
+
+
+
+//=========================================saldo awal keluar=========================================
+
             $spk = Parameter::from(
                 DB::raw("parameter with (readuncommitted)")
             )->where('grp', 'SPK STOK')->where('subgrp', 'SPK STOK')->first();
@@ -364,6 +377,11 @@ class KartuStok extends MyModel
                 'nilaikeluar',
             ], $querysaldokeluar);
 
+
+
+
+//=========================================saldo awal=========================================
+//masuk - keluar
             $querysaldo = Stok::from(
                 DB::raw("stok as a with (readuncommitted)")
             )
@@ -402,7 +420,7 @@ class KartuStok extends MyModel
                     DB::raw("'' as modifiedby"),
                 )
                 ->join(DB::raw("stok as c with (readuncommitted)"), 'a.kodebarang', 'c.id');
-
+//saldo awal
 
             DB::table($temprekap)->insertUsing([
                 'statusmasuk',

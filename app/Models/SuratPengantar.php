@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Services\RunningNumberService;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
@@ -327,11 +328,11 @@ class SuratPengantar extends MyModel
                 'suratpengantar.supir_id',
                 'supir.namasupir as supir',
                 'suratpengantar.dari_id',
-                'kotadari.keterangan as dari',
+                'kotadari.kodekota as dari',
                 'suratpengantar.gandengan_id',
-                'gandengan.keterangan as gandengan',
+                'gandengan.kodegandengan as gandengan',
                 'suratpengantar.container_id',
-                'container.keterangan as container',
+                'container.kodecontainer as container',
                 'suratpengantar.nocont',
                 'suratpengantar.noseal',
                 'suratpengantar.statusperalihan',
@@ -341,9 +342,9 @@ class SuratPengantar extends MyModel
                 'suratpengantar.statusgudangsama',
                 'suratpengantar.keterangan',
                 'suratpengantar.sampai_id',
-                'kotasampai.keterangan as sampai',
+                'kotasampai.kodekota as sampai',
                 'suratpengantar.statuscontainer_id',
-                'statuscontainer.keterangan as statuscontainer',
+                'statuscontainer.kodestatuscontainer as statuscontainer',
                 'suratpengantar.nocont2',
                 'suratpengantar.noseal2',
                 'suratpengantar.pelanggan_id',
@@ -351,7 +352,7 @@ class SuratPengantar extends MyModel
                 'suratpengantar.agen_id',
                 'agen.namaagen as agen',
                 'suratpengantar.jenisorder_id',
-                'jenisorder.keterangan as jenisorder',
+                'jenisorder.kodejenisorder as jenisorder',
                 'suratpengantar.tarif_id as tarifrincian_id',
                 'tarif.tujuan as tarifrincian',
                 'suratpengantar.nominalperalihan',
@@ -365,6 +366,8 @@ class SuratPengantar extends MyModel
                 'suratpengantar.gajisupir',
                 'suratpengantar.gajikenek',
                 'suratpengantar.komisisupir',
+                'suratpengantar.upah_id',
+                'kotaupah.kodekota as upah'
             )
             ->leftJoin('kota as kotadari', 'kotadari.id', '=', 'suratpengantar.dari_id')
             ->leftJoin('kota as kotasampai', 'kotasampai.id', '=', 'suratpengantar.sampai_id')
@@ -375,6 +378,8 @@ class SuratPengantar extends MyModel
             ->leftJoin('supir', 'suratpengantar.supir_id', 'supir.id')
             ->leftJoin('jenisorder', 'suratpengantar.jenisorder_id', 'jenisorder.id')
             ->leftJoin('tarif', 'suratpengantar.tarif_id', 'tarif.id')
+            ->leftJoin('upahsupir', 'suratpengantar.upah_id', 'upahsupir.id')
+            ->leftJoin('kota as kotaupah', 'kotaupah.id', '=', 'upahsupir.kotasampai_id')
             ->leftJoin('cabang', 'suratpengantar.cabang_id', 'cabang.id')
             ->leftJoin('pelanggan', 'suratpengantar.pelanggan_id', 'pelanggan.id')
             ->leftJoin('gandengan', 'suratpengantar.gandengan_id', 'gandengan.id')
@@ -684,7 +689,7 @@ class SuratPengantar extends MyModel
             return $query->orderBy('mandortrado.namamandor', $this->params['sortOrder']);
         } else if ($this->params['sortIndex'] == 'mandorsupir_id') {
             return $query->orderBy('mandorsupir.namamandor', $this->params['sortOrder']);
-        } else{
+        } else {
             return $query->orderBy($this->table . '.' . $this->params['sortIndex'], $this->params['sortOrder']);
         }
     }
@@ -732,15 +737,14 @@ class SuratPengantar extends MyModel
                         } else if ($filters['field'] == 'statusbatalmuat') {
                             $query = $query->where('statusbatalmuat.text', '=', "$filters[data]");
                         } else if ($filters['field'] == 'gajisupir' || $filters['field'] == 'jarak') {
-                            $query = $query->whereRaw("format(".$this->table . "." . $filters['field'].", '#,#0.00') LIKE '%$filters[data]%'");
+                            $query = $query->whereRaw("format(" . $this->table . "." . $filters['field'] . ", '#,#0.00') LIKE '%$filters[data]%'");
                         } else if ($filters['field'] == 'tglbukti' || $filters['field'] == 'tglsp') {
-                            $query = $query->whereRaw("format(".$this->table . "." . $filters['field'].", 'dd-MM-yyyy') LIKE '%$filters[data]%'");
+                            $query = $query->whereRaw("format(" . $this->table . "." . $filters['field'] . ", 'dd-MM-yyyy') LIKE '%$filters[data]%'");
                         } else if ($filters['field'] == 'created_at' || $filters['field'] == 'updated_at') {
-                            $query = $query->whereRaw("format(".$this->table . "." . $filters['field'].", 'dd-MM-yyyy HH:mm:ss') LIKE '%$filters[data]%'");
-                        }else {
+                            $query = $query->whereRaw("format(" . $this->table . "." . $filters['field'] . ", 'dd-MM-yyyy HH:mm:ss') LIKE '%$filters[data]%'");
+                        } else {
                             // $query = $query->where($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
                             $query = $query->whereRaw($this->table . ".[" .  $filters['field'] . "] LIKE '%" . escapeLike($filters['data']) . "%' escape '|'");
-
                         }
                     }
 
@@ -785,15 +789,14 @@ class SuratPengantar extends MyModel
                             } else if ($filters['field'] == 'statusbatalmuat') {
                                 $query = $query->orWhere('statusbatalmuat.text', '=', "$filters[data]");
                             } else if ($filters['field'] == 'gajisupir' || $filters['field'] == 'jarak') {
-                                $query = $query->orWhereRaw("format(".$this->table . "." . $filters['field'].", '#,#0.00') LIKE '%$filters[data]%'");
+                                $query = $query->orWhereRaw("format(" . $this->table . "." . $filters['field'] . ", '#,#0.00') LIKE '%$filters[data]%'");
                             } else if ($filters['field'] == 'tglbukti' || $filters['field'] == 'tglsp') {
-                                $query = $query->orWhereRaw("format(".$this->table . "." . $filters['field'].", 'dd-MM-yyyy') LIKE '%$filters[data]%'");
+                                $query = $query->orWhereRaw("format(" . $this->table . "." . $filters['field'] . ", 'dd-MM-yyyy') LIKE '%$filters[data]%'");
                             } else if ($filters['field'] == 'created_at' || $filters['field'] == 'updated_at') {
-                                $query = $query->orWhereRaw("format(".$this->table . "." . $filters['field'].", 'dd-MM-yyyy HH:mm:ss') LIKE '%$filters[data]%'");
+                                $query = $query->orWhereRaw("format(" . $this->table . "." . $filters['field'] . ", 'dd-MM-yyyy HH:mm:ss') LIKE '%$filters[data]%'");
                             } else {
                                 // $query = $query->orWhere($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
                                 $query = $query->OrwhereRaw($this->table . ".[" .  $filters['field'] . "] LIKE '%" . escapeLike($filters['data']) . "%' escape '|'");
-
                             }
                         }
                     });
@@ -812,5 +815,310 @@ class SuratPengantar extends MyModel
     public function paginate($query)
     {
         return $query->skip($this->params['offset'])->take($this->params['limit']);
+    }
+
+    public function processStore(array $data): SuratPengantar
+    {
+        $group = 'SURAT PENGANTAR';
+        $subGroup = 'SURAT PENGANTAR';
+
+        $format = DB::table('parameter')
+            ->where('grp', $group)
+            ->where('subgrp', $subGroup)
+            ->first();
+
+        $orderanTrucking = OrderanTrucking::where('nobukti', $data['jobtrucking'])->first();
+        $upahsupir = UpahSupir::where('id', $data['upah_id'])->first();
+
+        $tarifrincian = TarifRincian::from(DB::raw("tarifrincian with (readuncommitted)"))->where('tarif_id', $orderanTrucking->tarif_id)->where('container_id', $orderanTrucking->container_id)->first();
+        $trado = Trado::find($data['trado_id']);
+        $upahsupirRincian = UpahSupirRincian::where('upahsupir_id', $data['upah_id'])->where('container_id', $data['container_id'])->where('statuscontainer_id', $data['statuscontainer_id'])->first();
+        $statusTidakBolehEditTujuan = Parameter::from(DB::raw("parameter with (readuncommitted)"))->where('grp', '=', 'STATUS EDIT TUJUAN')->where('text', '=', 'TIDAK BOLEH EDIT TUJUAN')->first();
+        $suratPengantar = new SuratPengantar();
+
+        $suratPengantar->jobtrucking = $data['jobtrucking'];
+        $suratPengantar->tglbukti = date('Y-m-d', strtotime($data['tglbukti']));
+        $suratPengantar->pelanggan_id = $orderanTrucking->pelanggan_id;
+        $suratPengantar->keterangan = $data['keterangan'] ?? '';
+        $suratPengantar->nourutorder = $data['nourutorder'] ?? 1;
+        $suratPengantar->upah_id = $upahsupir->id;
+        $suratPengantar->dari_id = $data['dari_id'];
+        $suratPengantar->sampai_id = $data['sampai_id'];
+        $suratPengantar->container_id = $orderanTrucking->container_id;
+        $suratPengantar->nocont = $orderanTrucking->nocont;
+        $suratPengantar->nocont2 = $orderanTrucking->nocont2 ?? '';
+        $suratPengantar->noseal = $orderanTrucking->noseal;
+        $suratPengantar->noseal2 = $orderanTrucking->noseal2 ?? '';
+        $suratPengantar->statuscontainer_id = $data['statuscontainer_id'];
+        $suratPengantar->trado_id = $data['trado_id'];
+        $suratPengantar->supir_id = $data['supir_id'];
+        $suratPengantar->gandengan_id = $data['gandengan_id'] ?? 0;
+        $suratPengantar->nojob = $orderanTrucking->nojobemkl;
+        $suratPengantar->nojob2 = $orderanTrucking->nojobemkl2 ?? '';
+        $suratPengantar->statuslongtrip = $data['statuslongtrip'];
+        $suratPengantar->omset = $tarifrincian->nominal;
+        $suratPengantar->gajisupir = $upahsupirRincian->nominalsupir;
+        $suratPengantar->gajikenek = $upahsupirRincian->nominalkenek;
+        $suratPengantar->agen_id = $orderanTrucking->agen_id;
+        $suratPengantar->jenisorder_id = $orderanTrucking->jenisorder_id;
+        $suratPengantar->statusperalihan = $data['statusperalihan'];
+        $suratPengantar->tarif_id = $orderanTrucking->tarif_id;
+        $suratPengantar->nominalperalihan = $data['nominalperalihan'] ?? 0;
+        $persentaseperalihan = 0;
+        if (array_key_exists('nominalperalihan', $data)) {
+
+            if ($data['nominalperalihan'] != 0) {
+                $persentaseperalihan = $data['nominalperalihan'] / $tarifrincian->nominal;
+            }
+        }
+
+        $suratPengantar->persentaseperalihan = $persentaseperalihan;
+        $suratPengantar->discount = $persentaseperalihan;
+        $suratPengantar->totalomset = $tarifrincian->nominal - ($tarifrincian->nominal * ($persentaseperalihan / 100));
+
+        $suratPengantar->biayatambahan_id = $data['biayatambahan_id'] ?? 0;
+        $suratPengantar->nosp = $data['nosp'];
+        $suratPengantar->tglsp = date('Y-m-d', strtotime($data['tglbukti']));
+        $suratPengantar->komisisupir = $upahsupirRincian->nominalkomisi;
+        $suratPengantar->tolsupir = $upahsupirRincian->nominaltol;
+        $suratPengantar->jarak = $upahsupir->jarak;
+        $suratPengantar->nosptagihlain = $data['nosptagihlain'] ?? '';
+        $suratPengantar->liter = $upahsupirRincian->liter ?? 0;
+        $suratPengantar->qtyton = $data['qtyton'] ?? 0;
+        $suratPengantar->totalton = $tarifrincian->nominal * $data['qtyton'];
+        $suratPengantar->mandorsupir_id = $trado->mandor_id;
+        $suratPengantar->mandortrado_id = $trado->mandor_id;
+        $suratPengantar->statusgudangsama = $data['statusgudangsama'];
+        $suratPengantar->statusbatalmuat = $data['statusbatalmuat'];
+        $suratPengantar->gudang = $data['gudang'];
+        $suratPengantar->modifiedby = auth('api')->user()->name;
+        $suratPengantar->statusformat = $format->id;
+
+        $suratPengantar->nobukti = (new RunningNumberService)->get($group, $subGroup, $suratPengantar->getTable(), date('Y-m-d', strtotime($data['tglbukti'])));
+
+
+        $suratPengantar->statusedittujuan = $statusTidakBolehEditTujuan->id;
+
+        if (!$suratPengantar->save()) {
+            throw new \Exception('Error storing surat pengantar.');
+        }
+
+       $suratPengantarLogTrail = (new LogTrail())->processStore([
+            'namatabel' => $suratPengantar->getTable(),
+            'postingdari' => 'ENTRY SURAT PENGANTAR',
+            'idtrans' => $suratPengantar->id,
+            'nobuktitrans' => $suratPengantar->id,
+            'aksi' => 'ENTRY',
+            'datajson' => $suratPengantar->toArray(),
+        ]);
+        if ($data['nominal'][0] != 0) {
+            $suratPengantarBiayaTambahans = [];
+            for ($i = 0; $i < count($data['nominal']); $i++) {
+                $suratPengantarBiayaTambahan = (new SuratPengantarBiayaTambahan())->processStore($suratPengantar, [
+                    'keteranganbiaya' => $data['keterangan_detail'][$i],
+                    'nominal' => $data['nominal'][$i],
+                    'nominaltagih' => $data['nominalTagih'][$i]
+                ]);
+                $suratPengantarBiayaTambahans[] = $suratPengantarBiayaTambahan->toArray();
+            }
+            (new LogTrail())->processStore([
+                'namatabel' => strtoupper($suratPengantarBiayaTambahan->getTable()),
+                'postingdari' => 'ENTRY SURAT PENGANTAR BIAYA TAMBAHAN',
+                'idtrans' =>  $suratPengantarLogTrail->id,
+                'nobuktitrans' => $suratPengantar->nobukti,
+                'aksi' => 'ENTRY',
+                'datajson' => $suratPengantarBiayaTambahans,
+                'modifiedby' => auth('api')->user()->user,
+            ]);
+        }
+
+        return $suratPengantar;
+    }
+    public function processUpdate(SuratPengantar $suratPengantar, array $data): SuratPengantar
+    {
+        $prosesLain = $data['proseslain'] ?? 0;
+        $orderanTrucking = OrderanTrucking::where('nobukti', $data['jobtrucking'])->first();
+
+        $tarif = Tarif::find($orderanTrucking->tarif_id);
+        $tarif = TarifRincian::where('tarif_id', $orderanTrucking->tarif_id)->where('container_id', $orderanTrucking->container_id)->first();
+
+        $statusTidakBolehEditTujuan = Parameter::from(DB::raw("parameter with (readuncommitted)"))->where('grp', '=', 'STATUS EDIT TUJUAN')->where('text', '=', 'TIDAK BOLEH EDIT TUJUAN')->first();
+
+        if ($prosesLain == 0) {
+
+            $upahsupir = UpahSupir::where('id', $data['upah_id'])->first();
+
+
+            // return response($tarif,422);
+            $trado = Trado::find($data['trado_id']);
+            $upahsupirRincian = UpahSupirRincian::where('upahsupir_id', $upahsupir->id)->where('container_id', $data['container_id'])->where('statuscontainer_id', $data['statuscontainer_id'])->first();
+
+            $suratPengantar->jobtrucking = $data['jobtrucking'];
+            $suratPengantar->tglbukti = date('Y-m-d', strtotime($data['tglbukti']));
+            $suratPengantar->pelanggan_id = $orderanTrucking->pelanggan_id;
+            $suratPengantar->keterangan = $data['keterangan'] ?? '';
+            $suratPengantar->nourutorder = $data['nourutorder'] ?? 1;
+            $suratPengantar->upah_id = $upahsupir->id;
+            $suratPengantar->dari_id = $data['dari_id'];
+            $suratPengantar->sampai_id = $data['sampai_id'];
+            $suratPengantar->container_id = $orderanTrucking->container_id;
+            $suratPengantar->nocont = $orderanTrucking->nocont;
+            $suratPengantar->nocont2 = $orderanTrucking->nocont2 ?? '';
+            $suratPengantar->statuscontainer_id = $data['statuscontainer_id'];
+            $suratPengantar->trado_id = $data['trado_id'];
+            $suratPengantar->supir_id = $data['supir_id'];
+            $suratPengantar->gandengan_id = $data['gandengan_id'] ?? 0;
+            $suratPengantar->nojob = $orderanTrucking->nojobemkl;
+            $suratPengantar->nojob2 = $orderanTrucking->nojobemkl2 ?? '';
+            $suratPengantar->noseal = $orderanTrucking->noseal;
+            $suratPengantar->noseal2 = $orderanTrucking->noseal2 ?? '';
+            $suratPengantar->statuslongtrip = $data['statuslongtrip'];
+            $suratPengantar->omset = $tarif->nominal;
+            $suratPengantar->gajisupir = $upahsupirRincian->nominalsupir;
+            $suratPengantar->gajikenek = $upahsupirRincian->nominalkenek;
+            $suratPengantar->agen_id = $orderanTrucking->agen_id;
+            $suratPengantar->jenisorder_id = $orderanTrucking->jenisorder_id;
+            $suratPengantar->statusperalihan = $data['statusperalihan'];
+            $suratPengantar->tarif_id = $orderanTrucking->tarif_id;
+            $suratPengantar->nominalperalihan = $data['nominalperalihan'] ?? 0;
+            $persentaseperalihan = 0;
+            if (array_key_exists('nominalperalihan', $data)) {
+                if ($data['nominalperalihan'] != 0) {
+                    $persentaseperalihan = $data['nominalperalihan'] / $tarif->nominal;
+                }
+            }
+
+            $suratPengantar->persentaseperalihan = $persentaseperalihan;
+            $suratPengantar->discount = $persentaseperalihan;
+            $suratPengantar->totalomset = $tarif->nominal - ($tarif->nominal * ($persentaseperalihan / 100));
+            $suratPengantar->biayatambahan_id = $data['biayatambahan_id'] ?? 0;
+            $suratPengantar->nosp = $data['nosp'];
+            $suratPengantar->tglsp = date('Y-m-d', strtotime($data['tglbukti']));
+            $suratPengantar->komisisupir = $upahsupirRincian->nominalkomisi;
+            $suratPengantar->tolsupir = $upahsupirRincian->nominaltol;
+            $suratPengantar->jarak = $upahsupir->jarak;
+            $suratPengantar->nosptagihlain = $data['nosptagihlain'] ?? '';
+            $suratPengantar->liter = $upahsupirRincian->liter ?? 0;
+            $suratPengantar->qtyton = $data['qtyton'] ?? 0;
+            $suratPengantar->totalton = $tarif->nominal * $data['qtyton'];
+            $suratPengantar->mandorsupir_id = $trado->mandor_id;
+            $suratPengantar->mandortrado_id = $trado->mandor_id;
+            $suratPengantar->statusgudangsama = $data['statusgudangsama'];
+            $suratPengantar->statusbatalmuat = $data['statusbatalmuat'];
+            $suratPengantar->gudang = $data['gudang'];
+            $suratPengantar->modifiedby = auth('api')->user()->name;
+            $suratPengantar->statusedittujuan = $statusTidakBolehEditTujuan->id;
+            if (!$suratPengantar->save()) {
+                throw new \Exception('Error edit surat pengantar.');
+            }
+    
+            $suratPengantarLogTrail = (new LogTrail())->processStore([
+                'namatabel' => strtoupper($suratPengantar->getTable()),
+                'postingdari' => 'EDIT SURAT PENGANTAR',
+                'idtrans' => $suratPengantar->id,
+                'nobuktitrans' => $suratPengantar->nobukti,
+                'aksi' => 'EDIT',
+                'datajson' => $suratPengantar->toArray(),
+                'modifiedby' => auth('api')->user()->user
+            ]);
+
+            if ($data['nominal'][0] != 0) {
+                
+                SuratPengantarBiayaTambahan::where('suratpengantar_id', $suratPengantar->id)->lockForUpdate()->delete();
+                $suratPengantarBiayaTambahans = [];
+                for ($i = 0; $i < count($data['nominal']); $i++) {
+                    $suratPengantarBiayaTambahan = (new SuratPengantarBiayaTambahan())->processStore($suratPengantar, [
+                        'keteranganbiaya' => $data['keterangan_detail'][$i],
+                        'nominal' => $data['nominal'][$i],
+                        'nominaltagih' => $data['nominalTagih'][$i]
+                    ]);
+                    $suratPengantarBiayaTambahans[] = $suratPengantarBiayaTambahan->toArray();
+                }
+                (new LogTrail())->processStore([
+                    'namatabel' => strtoupper($suratPengantarBiayaTambahan->getTable()),
+                    'postingdari' => 'EDIT SURAT PENGANTAR BIAYA TAMBAHAN',
+                    'idtrans' =>  $suratPengantarLogTrail->id,
+                    'nobuktitrans' => $suratPengantar->nobukti,
+                    'aksi' => 'EDIT',
+                    'datajson' => $suratPengantarBiayaTambahans,
+                    'modifiedby' => auth('api')->user()->user,
+                ]);
+            }
+        } else {
+
+            $suratPengantar->pelanggan_id = $orderanTrucking->pelanggan_id;
+            $suratPengantar->container_id = $orderanTrucking->container_id;
+            $suratPengantar->nojob = $orderanTrucking->nojobemkl;
+            $suratPengantar->nojob2 = $orderanTrucking->nojobemkl2 ?? '';
+            $suratPengantar->nocont = $data['nocont'] ?? '';
+            $suratPengantar->nocont2 = $data['nocont2'] ?? '';
+            $suratPengantar->noseal = $data['noseal'] ?? '';
+            $suratPengantar->noseal2 = $data['noseal2'] ?? '';
+            $suratPengantar->omset = $tarif->nominal;
+            $suratPengantar->agen_id = $orderanTrucking->agen_id;
+            $suratPengantar->jenisorder_id = $orderanTrucking->jenisorder_id;
+            $suratPengantar->tarif_id = $orderanTrucking->tarif_id;
+            $suratPengantar->nominalperalihan = $data['nominalperalihan'] ?? 0;
+            $persentaseperalihan = 0;
+            if (array_key_exists('nominalperalihan', $data)) {
+                if ($data['nominalperalihan'] != 0) {
+                    $persentaseperalihan = $data['nominalperalihan'] / $tarif->nominal;
+                }
+            }
+
+            $suratPengantar->persentaseperalihan = $persentaseperalihan;
+            $suratPengantar->discount = $persentaseperalihan;
+            $suratPengantar->totalomset = $tarif->nominal - ($tarif->nominal * ($persentaseperalihan / 100));
+            $suratPengantar->totalton = $tarif->nominal * $data['qtyton'];
+            if (!$suratPengantar->save()) {
+                throw new \Exception('Error edit surat pengantar.');
+            }
+            $suratPengantarLogTrail = (new LogTrail())->processStore([
+                'namatabel' => strtoupper($suratPengantar->getTable()),
+                'postingdari' => 'EDIT SURAT PENGANTAR',
+                'idtrans' => $suratPengantar->id,
+                'nobuktitrans' => $suratPengantar->nobukti,
+                'aksi' => 'EDIT',
+                'datajson' => $suratPengantar->toArray(),
+                'modifiedby' => auth('api')->user()->user
+            ]);
+        }
+
+
+        return $suratPengantar;
+    }
+    
+    public function processDestroy($id): SuratPengantar
+    {
+        $suratPengantarBiayaTambahan = SuratPengantarBiayaTambahan::where('suratpengantar_id', $id)->get();
+       
+        $suratPengantar = new SuratPengantar();
+        $suratPengantar = $suratPengantar->lockAndDestroy($id);
+
+        $suratPengantarLogTrail = (new LogTrail())->processStore([
+            'namatabel' => $suratPengantar->getTable(),
+            'postingdari' => 'DELETE SURAT PENGANTAR',
+            'idtrans' => $suratPengantar->id,
+            'nobuktitrans' => $suratPengantar->nobukti,
+            'aksi' => 'DELETE',
+            'datajson' => $suratPengantar->toArray(),
+            'modifiedby' => auth('api')->user()->name
+        ]);
+        
+        if(count($suratPengantarBiayaTambahan->toArray()) > 0){
+            SuratPengantarBiayaTambahan::where('suratpengantar_id', $id)->delete();
+           $tes = (new LogTrail())->processStore([
+                'namatabel' => 'SURATPENGANTARBIAYATAMBAHAN',
+                'postingdari' => 'DELETE SURAT PENGANTAR BIAYA TAMBAHAN',
+                'idtrans' => $suratPengantarLogTrail['id'],
+                'nobuktitrans' => $suratPengantar->nobukti,
+                'aksi' => 'DELETE',
+                'datajson' => $suratPengantarBiayaTambahan->toArray(),
+                'modifiedby' => auth('api')->user()->name
+            ]);
+        }
+       
+
+        return $suratPengantar;
     }
 }
