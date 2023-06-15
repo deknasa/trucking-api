@@ -25,7 +25,7 @@ class SubKelompok extends MyModel
         'updated_at',
     ];
     public function cekvalidasihapus($id)
-    {     
+    {
 
         $stok = DB::table('stok')
             ->from(
@@ -42,7 +42,7 @@ class SubKelompok extends MyModel
                 'keterangan' => 'Stok',
             ];
 
-            
+
             goto selesai;
         }
         $kategori = DB::table('kategori')
@@ -60,7 +60,7 @@ class SubKelompok extends MyModel
                 'keterangan' => 'Kategori',
             ];
 
-            
+
             goto selesai;
         }
 
@@ -70,7 +70,7 @@ class SubKelompok extends MyModel
             'kondisi' => false,
             'keterangan' => '',
         ];
- 
+
         selesai:
         return $data;
     }
@@ -80,10 +80,10 @@ class SubKelompok extends MyModel
         $this->setRequestParameters();
 
         $getJudul = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))
-        ->select('text')
-        ->where('grp', 'JUDULAN LAPORAN')
-        ->where('subgrp', 'JUDULAN LAPORAN')
-        ->first();
+            ->select('text')
+            ->where('grp', 'JUDULAN LAPORAN')
+            ->where('subgrp', 'JUDULAN LAPORAN')
+            ->first();
 
         $query = DB::table($this->table)->select(
             'subkelompok.id',
@@ -114,35 +114,36 @@ class SubKelompok extends MyModel
 
     public function default()
     {
-        
+
         $tempdefault = '##tempdefault' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
         Schema::create($tempdefault, function ($table) {
             $table->unsignedBigInteger('statusaktif')->nullable();
         });
 
-        $statusaktif=Parameter::from (
+        $statusaktif = Parameter::from(
             db::Raw("parameter with (readuncommitted)")
         )
-        ->select (
-            'id'
-        )
-        ->where('grp','=','STATUS AKTIF')
-        ->where('subgrp','=','STATUS AKTIF')
-        ->where('default', '=', 'YA')
-        ->first();
+            ->select(
+                'id'
+            )
+            ->where('grp', '=', 'STATUS AKTIF')
+            ->where('subgrp', '=', 'STATUS AKTIF')
+            ->where('default', '=', 'YA')
+            ->first();
         DB::table($tempdefault)->insert(["statusaktif" => $statusaktif->id]);
-        
-        $query=DB::table($tempdefault)->from(
-            DB::raw($tempdefault )
+
+        $query = DB::table($tempdefault)->from(
+            DB::raw($tempdefault)
         )
             ->select(
-                'statusaktif');
+                'statusaktif'
+            );
 
         $data = $query->first();
         // dd($data);
         return $data;
     }
-    
+
     public function selectColumns($query)
     { //sesuaikan dengan createtemp
 
@@ -170,7 +171,7 @@ class SubKelompok extends MyModel
         $temp = '##temp' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
         Schema::create($temp, function ($table) {
             $table->bigInteger('id')->nullable();
-            $table->string('kodesubkelompok',50)->nullable();
+            $table->string('kodesubkelompok', 50)->nullable();
             $table->longText('keterangan')->nullable();
             $table->string('kelompok_id')->nullable();
             $table->string('statusaktif', 500)->nullable();
@@ -195,9 +196,9 @@ class SubKelompok extends MyModel
 
     public function sort($query)
     {
-        if($this->params['sortIndex'] == 'kelompok_id'){
+        if ($this->params['sortIndex'] == 'kelompok_id') {
             return $query->orderBy('kelompok.keterangan', $this->params['sortOrder']);
-        }else{
+        } else {
             return $query->orderBy($this->table . '.' . $this->params['sortIndex'], $this->params['sortOrder']);
         }
     }
@@ -215,11 +216,10 @@ class SubKelompok extends MyModel
                         } else if ($filters['field'] == 'kelompokid') {
                             $query = $query->where('kelompok.id', '=', "$filters[data]");
                         } else if ($filters['field'] == 'created_at' || $filters['field'] == 'updated_at') {
-                            $query = $query->whereRaw("format(".$this->table . "." . $filters['field'].", 'dd-MM-yyyy HH:mm:ss') LIKE '%$filters[data]%'");
+                            $query = $query->whereRaw("format(" . $this->table . "." . $filters['field'] . ", 'dd-MM-yyyy HH:mm:ss') LIKE '%$filters[data]%'");
                         } else {
                             // $query = $query->where($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
                             $query = $query->whereRaw($this->table . ".[" .  $filters['field'] . "] LIKE '%" . escapeLike($filters['data']) . "%' escape '|'");
-
                         }
                     }
 
@@ -231,11 +231,10 @@ class SubKelompok extends MyModel
                         } else if ($filters['field'] == 'kelompok_id') {
                             $query = $query->orWhere('kelompok.keterangan', 'LIKE', "%$filters[data]%");
                         } else if ($filters['field'] == 'created_at' || $filters['field'] == 'updated_at') {
-                            $query = $query->orWhereRaw("format(".$this->table . "." . $filters['field'].", 'dd-MM-yyyy HH:mm:ss') LIKE '%$filters[data]%'");
+                            $query = $query->orWhereRaw("format(" . $this->table . "." . $filters['field'] . ", 'dd-MM-yyyy HH:mm:ss') LIKE '%$filters[data]%'");
                         } else {
                             // $query = $query->orWhere($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
                             $query = $query->OrwhereRaw($this->table . ".[" .  $filters['field'] . "] LIKE '%" . escapeLike($filters['data']) . "%' escape '|'");
-
                         }
                     }
 
@@ -255,5 +254,75 @@ class SubKelompok extends MyModel
     public function paginate($query)
     {
         return $query->skip($this->params['offset'])->take($this->params['limit']);
+    }
+
+    public function processStore(array $data): SubKelompok
+    {
+        $subKelompok = new SubKelompok();
+        $subKelompok->kodesubkelompok = $data['kodesubkelompok'];
+        $subKelompok->keterangan = $data['keterangan'] ?? '';
+        $subKelompok->kelompok_id = $data['kelompok_id'];
+        $subKelompok->statusaktif = $data['statusaktif'];
+        $subKelompok->modifiedby = auth('api')->user()->name;
+
+
+        if (!$subKelompok->save()) {
+            throw new \Exception("Error storing service in header.");
+        }
+
+        (new LogTrail())->processStore([
+            'namatabel' => strtoupper($subKelompok->getTable()),
+            'postingdari' => 'ENTRY PARAMETER',
+            'idtrans' => $subKelompok->id,
+            'nobuktitrans' => $subKelompok->id,
+            'aksi' => 'ENTRY',
+            'datajson' => $subKelompok->toArray(),
+            'modifiedby' => $subKelompok->modifiedby
+        ]);
+
+        return $subKelompok;
+    }
+
+    public function processUpdate(SubKelompok $subKelompok, array $data): SubKelompok
+    {
+        $subKelompok->kodesubkelompok = $data['kodesubkelompok'];
+        $subKelompok->keterangan = $data['keterangan'] ?? '';
+        $subKelompok->kelompok_id = $data['kelompok_id'];
+        $subKelompok->statusaktif = $data['statusaktif'];
+        $subKelompok->modifiedby = auth('api')->user()->name;
+
+        if (!$subKelompok->save()) {
+            throw new \Exception("Error update service in header.");
+        }
+
+        (new LogTrail())->processStore([
+            'namatabel' => strtoupper($subKelompok->getTable()),
+            'postingdari' => 'EDIT PARAMETER',
+            'idtrans' => $subKelompok->id,
+            'nobuktitrans' => $subKelompok->id,
+            'aksi' => 'EDIT',
+            'datajson' => $subKelompok->toArray(),
+            'modifiedby' => $subKelompok->modifiedby
+        ]);
+
+        return $subKelompok;
+    }
+
+    public function processDestroy($id): SubKelompok
+    {
+        $subKelompok = new SubKelompok();
+        $subKelompok = $subKelompok->lockAndDestroy($id);
+
+        (new LogTrail())->processStore([
+            'namatabel' => strtoupper($subKelompok->getTable()),
+            'postingdari' => 'DELETE PARAMETER',
+            'idtrans' => $subKelompok->id,
+            'nobuktitrans' => $subKelompok->id,
+            'aksi' => 'DELETE',
+            'datajson' => $subKelompok->toArray(),
+            'modifiedby' => $subKelompok->modifiedby
+        ]);
+
+        return $subKelompok;
     }
 }

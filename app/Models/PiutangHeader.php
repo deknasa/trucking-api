@@ -2,8 +2,10 @@
 
 namespace App\Models;
 
+use App\Services\RunningNumberService;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 
@@ -49,6 +51,9 @@ class PiutangHeader extends MyModel
 
         $this->setRequestParameters();
 
+        $periode = request()->periode ?? '';
+        $statusCetak = request()->statuscetak ?? '';
+
         $query = DB::table($this->table)->from(
             DB::raw("piutangheader with (readuncommitted)")
         )->select(
@@ -70,12 +75,22 @@ class PiutangHeader extends MyModel
             'piutangheader.userbukacetak',
             'agen.namaagen as agen_id',
         )
-            ->whereBetween($this->table . '.tglbukti', [date('Y-m-d', strtotime(request()->tgldari)), date('Y-m-d', strtotime(request()->tglsampai))])
             ->leftJoin(DB::raw("parameter with (readuncommitted)"), 'piutangheader.statuscetak', 'parameter.id')
             ->leftJoin(DB::raw("agen with (readuncommitted)"), 'piutangheader.agen_id', 'agen.id')
             ->leftJoin(DB::raw("akunpusat as debet with (readuncommitted)"), 'piutangheader.coadebet', 'debet.coa')
             ->leftJoin(DB::raw("akunpusat as kredit with (readuncommitted)"), 'piutangheader.coakredit', 'kredit.coa')
             ->leftJoin(DB::raw($temppelunasan . " as c"), 'piutangheader.nobukti', 'c.piutang_nobukti');
+        if(request()->tgldari && request()->tglsampai){
+            $query->whereBetween($this->table . '.tglbukti', [date('Y-m-d', strtotime(request()->tgldari)), date('Y-m-d', strtotime(request()->tglsampai))]);
+        }
+        if ($periode != '') {
+            $periode = explode("-", $periode);
+            $query->whereRaw("MONTH(piutangheader.tglbukti) ='" . $periode[0] . "'")
+                ->whereRaw("year(piutangheader.tglbukti) ='" . $periode[1] . "'");
+        }
+        if ($statusCetak != '') {
+            $query->where("piutangheader.statuscetak", $statusCetak);
+        }
 
         $this->totalRows = $query->count();
         $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;
@@ -319,7 +334,6 @@ class PiutangHeader extends MyModel
                         } else {
                             // $query = $query->where($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
                             $query = $query->whereRaw($this->table . ".[" .  $filters['field'] . "] LIKE '%" . escapeLike($filters['data']) . "%' escape '|'");
-
                         }
                     }
 
@@ -348,7 +362,6 @@ class PiutangHeader extends MyModel
                             } else {
                                 // $query = $query->orWhere($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
                                 $query = $query->OrwhereRaw($this->table . ".[" .  $filters['field'] . "] LIKE '%" . escapeLike($filters['data']) . "%' escape '|'");
-
                             }
                         }
                     });
@@ -381,8 +394,9 @@ class PiutangHeader extends MyModel
         return $this->hasMany(PiutangDetail::class, 'piutang_id');
     }
 
-    public function getSisaPiutang($nobukti, $agen_id){
-     
+    public function getSisaPiutang($nobukti, $agen_id)
+    {
+
 
         $query = DB::table('piutangheader')
             ->from(
@@ -392,9 +406,219 @@ class PiutangHeader extends MyModel
             ->leftJoin(DB::raw("pelunasanpiutangdetail with (readuncommitted)"), 'pelunasanpiutangdetail.piutang_nobukti', 'piutangheader.nobukti')
             ->whereRaw("piutangheader.agen_id = $agen_id")
             ->whereRaw("piutangheader.nobukti = '$nobukti'")
-            ->groupBy('piutangheader.nobukti','piutangheader.nominal')
+            ->groupBy('piutangheader.nobukti', 'piutangheader.nominal')
             ->first();
 
         return $query;
+    }
+
+    public function processStore(array $data): PiutangHeader
+    {
+        $tanpaprosesnobukti = $data['tanpaprosesnobukti'] ?? 0;
+
+        if ($tanpaprosesnobukti == 0) {
+
+            $group = 'PIUTANG BUKTI';
+            $subGroup = 'PIUTANG BUKTI';
+
+            $format = DB::table('parameter')
+                ->where('grp', $group)
+                ->where('subgrp', $subGroup)
+                ->first();
+        }
+
+        $piutangHeader = new PiutangHeader();
+        $getCoa = Agen::from(DB::raw("agen with (readuncommitted)"))->where('id', $data['agen_id'])->first();
+
+        $statusCetak = Parameter::from(
+            DB::raw("parameter with (readuncommitted)")
+        )->where('grp', 'STATUSCETAK')->where('text', 'BELUM CETAK')->first();
+
+        $piutangHeader->tglbukti = date('Y-m-d', strtotime($data['tglbukti']));
+        $piutangHeader->postingdari = $data['postingdari'] ?? 'ENTRY PIUTANG HEADER';
+        $piutangHeader->invoice_nobukti = $data['invoice_nobukti'] ?? '';
+        $piutangHeader->modifiedby = auth('api')->user()->name;
+        $piutangHeader->statusformat = $data['statusformat'] ?? $format->id;
+        $piutangHeader->agen_id = $data['agen_id'];
+        $piutangHeader->coadebet = $getCoa->coa;
+        $piutangHeader->coakredit = $getCoa->coapendapatan;
+        $piutangHeader->statuscetak = $statusCetak->id;
+        $piutangHeader->userbukacetak = '';
+        $piutangHeader->tglbukacetak = '';
+        $piutangHeader->nominal = ($tanpaprosesnobukti == 0) ? array_sum($data['nominal_detail']) : $data['nominal'];
+
+        if ($tanpaprosesnobukti == 0) {
+            $piutangHeader->nobukti = (new RunningNumberService)->get($group, $subGroup, $piutangHeader->getTable(), date('Y-m-d', strtotime($data['tglbukti'])));
+        } else {
+            $piutangHeader->nobukti = $data['nobukti'];
+        }
+
+        if (!$piutangHeader->save()) {
+            throw new \Exception("Error storing piutang header.");
+        }
+
+        $piutangHeaderLogTrail = (new LogTrail())->processStore([
+            'namatabel' => strtoupper($piutangHeader->getTable()),
+            'postingdari' => 'ENTRY PIUTANG HEADER',
+            'idtrans' => $piutangHeader->id,
+            'nobuktitrans' => $piutangHeader->nobukti,
+            'aksi' => 'ENTRY',
+            'datajson' => $piutangHeader->toArray(),
+            'modifiedby' => auth('api')->user()->user
+        ]);
+
+        $piutangDetails = [];
+        $coadebet_detail['coadebet_detail'] = [];
+        $coakredit_detail['coakredit_detail'] = [];
+        $keterangan_detail['keterangan_detail'] = [];
+        $nominal_detail['nominal_detail'] = [];
+        $tanpaProses['tanpaprosesnobukti'] = 1;
+
+        for ($i = 0; $i < count($data['nominal_detail']); $i++) {
+
+            $piutangDetail = (new PiutangDetail())->processStore($piutangHeader, [
+                'nominal' => $data['nominal_detail'][$i],
+                'keterangan' => $data['keterangan_detail'][$i],
+                'invoice_nobukti' => $data['invoice_nobukti'][$i] ?? ''
+            ]);
+
+            $coadebet_detail['coadebet_detail'][$i] = $getCoa->coa;
+            $coakredit_detail['coakredit_detail'][$i] = $getCoa->coapendapatan;
+            $keterangan_detail['keterangan_detail'][$i] = $data['keterangan_detail'][$i];
+            $nominal_detail['nominal_detail'][$i] = $data['nominal_detail'][$i];
+
+            $piutangDetails[] = $piutangDetail->toArray();
+        }
+
+        (new LogTrail())->processStore([
+            'namatabel' => strtoupper($piutangDetail->getTable()),
+            'postingdari' => 'ENTRY PIUTANG DETAIL',
+            'idtrans' =>  $piutangHeaderLogTrail->id,
+            'nobuktitrans' => $piutangHeader->nobukti,
+            'aksi' => 'ENTRY',
+            'datajson' => $piutangDetails,
+            'modifiedby' => auth('api')->user()->user,
+        ]);
+
+        $dataJurnal = array_merge(
+            $piutangHeader->toArray(),
+            $coadebet_detail,
+            $coakredit_detail,
+            $keterangan_detail,
+            $nominal_detail,
+            $tanpaProses
+        );
+
+        (new JurnalUmumHeader())->processStore($dataJurnal);
+        return $piutangHeader;
+    }
+
+    public function processUpdate(PiutangHeader $piutangHeader, array $data): PiutangHeader
+    {
+        $proseslain = $data['proseslain'] ?? 0;
+        $getCoa = Agen::from(DB::raw("agen with (readuncommitted)"))->where('id', $data['agen_id'])->first();
+
+        $piutangHeader->modifiedby = auth('api')->user()->name;
+        $piutangHeader->agen_id = $data['agen_id'];
+        $piutangHeader->coadebet = $getCoa->coa;
+        $piutangHeader->coakredit = $getCoa->coapendapatan;
+        $piutangHeader->nominal = ($proseslain != 0) ? $data['nominal'] : array_sum($data['nominal_detail']);
+
+
+        if (!$piutangHeader->save()) {
+            throw new \Exception("Error updating piutang header.");
+        }
+
+        $piutangHeaderLogTrail = (new LogTrail())->processStore([
+            'namatabel' => strtoupper($piutangHeader->getTable()),
+            'postingdari' => 'EDIT PIUTANG HEADER',
+            'idtrans' => $piutangHeader->id,
+            'nobuktitrans' => $piutangHeader->nobukti,
+            'aksi' => 'EDIT',
+            'datajson' => $piutangHeader->toArray(),
+            'modifiedby' => auth('api')->user()->user
+        ]);
+
+        PiutangDetail::where('piutang_id', $piutangHeader->id)->delete();
+
+        $piutangDetails = [];
+        $coadebet_detail['coadebet_detail'] = [];
+        $coakredit_detail['coakredit_detail'] = [];
+        $keterangan_detail['keterangan_detail'] = [];
+        $nominal_detail['nominal_detail'] = [];
+        $isUpdate['isUpdate'] = 1;
+
+        for ($i = 0; $i < count($data['nominal_detail']); $i++) {
+            $piutangDetail = (new PiutangDetail())->processStore($piutangHeader, [
+                'nominal' => $data['nominal_detail'][$i],
+                'keterangan' => $data['keterangan_detail'][$i],
+                'invoice_nobukti' => $data['invoice_nobukti'][$i] ?? ''
+            ]);
+
+            $coadebet_detail['coadebet_detail'][$i] = $getCoa->coa;
+            $coakredit_detail['coakredit_detail'][$i] = $getCoa->coapendapatan;
+            $keterangan_detail['keterangan_detail'][$i] = $data['keterangan_detail'][$i];
+            $nominal_detail['nominal_detail'][$i] = $data['nominal_detail'][$i];
+
+            $piutangDetails[] = $piutangDetail->toArray();
+        }
+
+        (new LogTrail())->processStore([
+            'namatabel' => strtoupper($piutangDetail->getTable()),
+            'postingdari' => 'EDIT PIUTANG DETAIL',
+            'idtrans' =>  $piutangHeaderLogTrail->id,
+            'nobuktitrans' => $piutangHeader->nobukti,
+            'aksi' => 'EDIT',
+            'datajson' => $piutangDetails,
+            'modifiedby' => auth('api')->user()->user,
+        ]);
+
+        $dataJurnal = array_merge(
+            $piutangHeader->toArray(),
+            $coadebet_detail,
+            $coakredit_detail,
+            $keterangan_detail,
+            $nominal_detail,
+            $isUpdate
+        );
+        $getJurnal = JurnalUmumHeader::from(DB::raw("jurnalumumheader with (readuncommitted)"))->where('nobukti', $piutangHeader->nobukti)->first();
+        $newJurnal = new JurnalUmumHeader();
+        $newJurnal = $newJurnal->find($getJurnal->id);
+        $jurnalumumHeader = (new JurnalUmumHeader())->processUpdate($newJurnal, $dataJurnal);
+
+        return $piutangHeader;
+    }
+
+    
+    public function processDestroy($id): PiutangHeader
+    {
+        $piutangDetails = PiutangDetail::lockForUpdate()->where('piutang_id', $id)->get();
+
+        $piutangHeader = new PiutangHeader();
+        $piutangHeader = $piutangHeader->lockAndDestroy($id);
+
+        $piutangHeaderLogTrail = (new LogTrail())->processStore([
+            'namatabel' => $piutangHeader->getTable(),
+            'postingdari' => 'DELETE PIUTANG HEADER',
+            'idtrans' => $piutangHeader->id,
+            'nobuktitrans' => $piutangHeader->nobukti,
+            'aksi' => 'DELETE',
+            'datajson' => $piutangHeader->toArray(),
+            'modifiedby' => auth('api')->user()->name
+        ]);
+
+        (new LogTrail())->processStore([
+            'namatabel' => 'PIUTANGDETAIL',
+            'postingdari' => 'DELETE PIUTANG DETAIL',
+            'idtrans' => $piutangHeaderLogTrail['id'],
+            'nobuktitrans' => $piutangHeader->nobukti,
+            'aksi' => 'DELETE',
+            'datajson' => $piutangDetails->toArray(),
+            'modifiedby' => auth('api')->user()->name
+        ]);
+
+        $getJurnal = JurnalUmumHeader::from(DB::raw("jurnalumumheader with (readuncommitted)"))->where('nobukti', $piutangHeader->nobukti)->first();
+        $jurnalumumHeader = (new JurnalUmumHeader())->processDestroy($getJurnal->id);
+        return $piutangHeader;
     }
 }

@@ -19,6 +19,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Database\QueryException;
+use Illuminate\Http\JsonResponse;
 
 class GudangController extends Controller
 {
@@ -84,169 +85,19 @@ class GudangController extends Controller
     /**
      * @ClassName 
      */
-    public function store(StoreGudangRequest $request)
+    public function store(StoreGudangRequest $request) : JsonResponse
     {
         DB::beginTransaction();
 
         try {
-            $gudang = new Gudang();
-            $gudang->gudang = $request->gudang;
-            $gudang->statusaktif = $request->statusaktif;
-            $gudang->modifiedby = auth('api')->user()->name;
-            $request->sortname = $request->sortname ?? 'id';
-            $request->sortorder = $request->sortorder ?? 'asc';
-
-            if ($gudang->save()) {
-
-                $logTrail = [
-                    'namatabel' => strtoupper($gudang->getTable()),
-                    'postingdari' => 'ENTRY GUDANG',
-                    'idtrans' => $gudang->id,
-                    'nobuktitrans' => $gudang->id,
-                    'aksi' => 'ENTRY',
-                    'datajson' => $gudang->toArray(),
-                    'modifiedby' => $gudang->modifiedby
-                ];
-
-                $validatedLogTrail = new StoreLogTrailRequest($logTrail);
-                $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
-
-                $param1 = $gudang->id;
-                $param2 = $gudang->modifiedby;
-
-                $statushitungstok=DB::table('parameter')->from(
-                    DB::raw("parameter with (readuncommitted)")
-                )
-                ->select(
-                    'id'
-                )
-                ->where('grp','=','STATUS HITUNG STOK')
-                ->where('subgrp','=','STATUS HITUNG STOK')
-                ->where('text','=','HITUNG STOK')
-                ->first();
-
-                $tempmasuk = '##tempmasuk' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
-                Schema::create($tempmasuk, function ($table) {
-                    $table->unsignedBigInteger('stok_id')->nullable();
-                    $table->unsignedBigInteger('gudang_id')->nullable();
-                    $table->double('qty', 15,2)->nullable();
-                });
-
-
-                $querymasuk=DB::table('penerimaanstokdetail')->from(
-                    DB::raw("penerimaanstokdetail as a with (readuncommitted)")
-                )
-                ->select (
-                    'a.stok_id',
-                    'b.gudang_id',
-                    DB::raw("sum(a.qty) as qty"),
-                )
-                ->join(DB::raw("penerimaanstokheader as b"),'a.penerimaanstokheader_id','b.id')
-                ->join(DB::raw("penerimaanstok as c"),'b.penerimaanstok_id','c.id')
-                ->where('c.statushitungstok','=',$statushitungstok->id)
-                ->whereRaw("isnull(b.gudang_id,0)<>0")
-                ->groupby('a.stok_id','b.gudang_id');
-
-                DB::table($tempmasuk)->insertUsing([
-                    'stok_id',
-                    'gudang_id',
-                    'qty',
-                ], $querymasuk);       
-                
-                $tempkeluar = '##tempkeluar' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
-                Schema::create($tempkeluar, function ($table) {
-                    $table->unsignedBigInteger('stok_id')->nullable();
-                    $table->unsignedBigInteger('gudang_id')->nullable();
-                    $table->double('qty', 15,2)->nullable();
-                });
-
-
-                $querykeluar=DB::table('pengeluaranstokdetail')->from(
-                    DB::raw("pengeluaranstokdetail as a with (readuncommitted)")
-                )
-                ->select (
-                    'a.stok_id',
-                    'b.gudang_id',
-                    DB::raw("sum(a.qty) as qty"),
-                )
-                ->join(DB::raw("pengeluaranstokheader as b"),'a.pengeluaranstokheader_id','b.id')
-                ->join(DB::raw("pengeluaranstok as c"),'b.pengeluaranstok_id','c.id')
-                ->where('c.statushitungstok','=',$statushitungstok->id)
-                ->whereRaw("isnull(b.gudang_id,0)<>0")
-                ->groupby('a.stok_id','b.gudang_id');
-
-                DB::table($tempkeluar)->insertUsing([
-                    'stok_id',
-                    'gudang_id',
-                    'qty',
-                ], $querykeluar);                     
-
-                $stokgudang = Stok::from(DB::raw("stok with (readuncommitted)"))
-                    ->select(DB::raw(
-                        "stok.id as stok_id,"
-                            . $param1 . "  as gudang_id,
-                    0 as trado_id,
-                    0 as gandengan_id,
-                    (isnull(b.qty,0)-isnull(C.Qty,0)) as qty,'"
-                            . $param2 . "' as modifiedby"
-                    ))
-                    ->leftjoin('stokpersediaan', function ($join) use ($param1) {
-                        $join->on('stokpersediaan.stok_id', '=', 'stok.id');
-                        $join->on('stokpersediaan.gudang_id', '=', DB::raw("'" . $param1 . "'"));
-                    })
-                    ->leftjoin(DB::raw($tempmasuk. " as b"),'stok.id','b.stok_id')
-                    ->leftjoin(DB::raw($tempkeluar. " as c"),'stok.id','c.stok_id')
-
-                    ->where(DB::raw("isnull(stokpersediaan.id,0)"), '=', 0);
-
-
-
-                    // dd($stokgudang->get());
-                $datadetail = json_decode($stokgudang->get(), true);
-
-                $dataexist = $stokgudang->exists();
-                $detaillogtrail = [];
-                foreach ($datadetail as $item) {
-
-
-                    $stokpersediaan = new StokPersediaan();
-                    $stokpersediaan->stok_id = $item['stok_id'];
-                    $stokpersediaan->gudang_id = $item['gudang_id'];
-                    $stokpersediaan->trado_id = $item['trado_id'];
-                    $stokpersediaan->gandengan_id = $item['gandengan_id'];
-                    $stokpersediaan->qty = $item['qty'];
-                    $stokpersediaan->modifiedby = $item['modifiedby'];
-                    $stokpersediaan->save();
-                    $detaillogtrail[] = $stokpersediaan->toArray();
-                }
-
-                if ($dataexist == true) {
-
-                    $logTrail = [
-                        'namatabel' => strtoupper($stokpersediaan->getTable()),
-                        'postingdari' => 'STOK PERSEDIAAN',
-                        'idtrans' => $gudang->id,
-                        'nobuktitrans' => $gudang->id,
-                        'aksi' => 'EDIT',
-                        'datajson' => json_encode($detaillogtrail),
-                        'modifiedby' => $gudang->modifiedby
-                    ];
-
-                    $validatedLogTrail = new StoreLogTrailRequest($logTrail);
-                    app(LogTrailController::class)->store($validatedLogTrail);
-                }
-
-
-                DB::commit();
-            }
-
-            /* Set position and page */
+            $gudang = (new Gudang())->processStore($request->all());
             $selected = $this->getPosition($gudang, $gudang->getTable());
             $gudang->position = $selected->position;
             $gudang->page = ceil($gudang->position / ($request->limit ?? 10));
 
+            DB::commit();
 
-            return response([
+            return response()->json([
                 'status' => true,
                 'message' => 'Berhasil disimpan',
                 'data' => $gudang
@@ -268,167 +119,16 @@ class GudangController extends Controller
     /**
      * @ClassName 
      */
-    public function update(UpdateGudangRequest $request, Gudang $gudang)
+    public function update(UpdateGudangRequest $request, Gudang $gudang) : JsonResponse
     {
         DB::beginTransaction();
         try {
-            $gudang->gudang = $request->gudang;
-            $gudang->statusaktif = $request->statusaktif;
-            $gudang->modifiedby = auth('api')->user()->name;
-
-            if ($gudang->save()) {
-
-
-                $logTrail = [
-                    'namatabel' => strtoupper($gudang->getTable()),
-                    'postingdari' => 'EDIT GUDANG',
-                    'idtrans' => $gudang->id,
-                    'nobuktitrans' => $gudang->id,
-                    'aksi' => 'EDIT',
-                    'datajson' => $gudang->toArray(),
-                    'modifiedby' => $gudang->modifiedby
-                ];
-
-                $validatedLogTrail = new StoreLogTrailRequest($logTrail);
-                app(LogTrailController::class)->store($validatedLogTrail);
-
-
-                $param1 = $gudang->id;
-                $param2 = $gudang->modifiedby;
-                
-                $statushitungstok=DB::table('parameter')->from(
-                    DB::raw("parameter with (readuncommitted)")
-                )
-                ->select(
-                    'id'
-                )
-                ->where('grp','=','STATUS HITUNG STOK')
-                ->where('subgrp','=','STATUS HITUNG STOK')
-                ->where('text','=','HITUNG STOK')
-                ->first();
-
-                $tempmasuk = '##tempmasuk' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
-                Schema::create($tempmasuk, function ($table) {
-                    $table->unsignedBigInteger('stok_id')->nullable();
-                    $table->unsignedBigInteger('gudang_id')->nullable();
-                    $table->double('qty', 15,2)->nullable();
-                });
-
-
-                $querymasuk=DB::table('penerimaanstokdetail')->from(
-                    DB::raw("penerimaanstokdetail as a with (readuncommitted)")
-                )
-                ->select (
-                    'a.stok_id',
-                    'b.gudang_id',
-                    DB::raw("sum(a.qty) as qty"),
-                )
-                ->join(DB::raw("penerimaanstokheader as b"),'a.penerimaanstokheader_id','b.id')
-                ->join(DB::raw("penerimaanstok as c"),'b.penerimaanstok_id','c.id')
-                ->where('c.statushitungstok','=',$statushitungstok->id)
-                ->whereRaw("isnull(b.gudang_id,0)<>0")
-                ->groupby('a.stok_id','b.gudang_id');
-
-                DB::table($tempmasuk)->insertUsing([
-                    'stok_id',
-                    'gudang_id',
-                    'qty',
-                ], $querymasuk);       
-                
-                $tempkeluar = '##tempkeluar' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
-                Schema::create($tempkeluar, function ($table) {
-                    $table->unsignedBigInteger('stok_id')->nullable();
-                    $table->unsignedBigInteger('gudang_id')->nullable();
-                    $table->double('qty', 15,2)->nullable();
-                });
-
-
-                $querykeluar=DB::table('pengeluaranstokdetail')->from(
-                    DB::raw("pengeluaranstokdetail as a with (readuncommitted)")
-                )
-                ->select (
-                    'a.stok_id',
-                    'b.gudang_id',
-                    DB::raw("sum(a.qty) as qty"),
-                )
-                ->join(DB::raw("pengeluaranstokheader as b"),'a.pengeluaranstokheader_id','b.id')
-                ->join(DB::raw("pengeluaranstok as c"),'b.pengeluaranstok_id','c.id')
-                ->where('c.statushitungstok','=',$statushitungstok->id)
-                ->whereRaw("isnull(b.gudang_id,0)<>0")
-                ->groupby('a.stok_id','b.gudang_id');
-
-                DB::table($tempkeluar)->insertUsing([
-                    'stok_id',
-                    'gudang_id',
-                    'qty',
-                ], $querykeluar);                     
-
-                $stokgudang = Stok::from(DB::raw("stok with (readuncommitted)"))
-                    ->select(DB::raw(
-                        "stok.id as stok_id,"
-                            . $param1 . "  as gudang_id,
-                    0 as trado_id,
-                    0 as gandengan_id,
-                    (isnull(b.qty,0)-isnull(C.Qty,0)) as qty,'"
-                            . $param2 . "' as modifiedby"
-                    ))
-                    ->leftjoin('stokpersediaan', function ($join) use ($param1) {
-                        $join->on('stokpersediaan.stok_id', '=', 'stok.id');
-                        $join->on('stokpersediaan.gudang_id', '=', DB::raw("'" . $param1 . "'"));
-                    })
-                    ->leftjoin(DB::raw($tempmasuk. " as b"),'stok.id','b.stok_id')
-                    ->leftjoin(DB::raw($tempkeluar. " as c"),'stok.id','c.stok_id')
-
-                    ->where(DB::raw("isnull(stokpersediaan.id,0)"), '=', 0);
-
-
-
-
-
-                $datadetail = json_decode($stokgudang->get(), true);
-
-                $dataexist = $stokgudang->exists();
-                $detaillogtrail = [];
-                foreach ($datadetail as $item) {
-
-
-                    $stokpersediaan = new StokPersediaan();
-                    $stokpersediaan->stok_id = $item['stok_id'];
-                    $stokpersediaan->gudang_id = $item['gudang_id'];
-                    $stokpersediaan->trado_id = $item['trado_id'];
-                    $stokpersediaan->gandengan_id = $item['gandengan_id'];
-                    $stokpersediaan->qty = $item['qty'];
-                    $stokpersediaan->modifiedby = $item['modifiedby'];
-                    $stokpersediaan->save();
-                    $detaillogtrail[] = $stokpersediaan->toArray();
-                }
-
-                if ($dataexist == true) {
-
-                    $logTrail = [
-                        'namatabel' => strtoupper($stokpersediaan->getTable()),
-                        'postingdari' => 'STOK PERSEDIAAN',
-                        'idtrans' => $gudang->id,
-                        'nobuktitrans' => $gudang->id,
-                        'aksi' => 'EDIT',
-                        'datajson' => json_encode($detaillogtrail),
-                        'modifiedby' => $gudang->modifiedby
-                    ];
-
-                    $validatedLogTrail = new StoreLogTrailRequest($logTrail);
-                    app(LogTrailController::class)->store($validatedLogTrail);
-                }
-
-
-
-                DB::commit();
-            }
-            /* Set position and page */
-            $selected = $this->getPosition($gudang, $gudang->getTable());
-            $gudang->position = $selected->position;
+            $gudang = (new Gudang())->processUpdate($gudang, $request->all());
+            $gudang->position = $this->getPosition($gudang, $gudang->getTable())->position;
             $gudang->page = ceil($gudang->position / ($request->limit ?? 10));
 
-            return response([
+            DB::commit();
+            return response()->json([
                 'status' => true,
                 'message' => 'Berhasil diubah',
                 'data' => $gudang
@@ -443,44 +143,26 @@ class GudangController extends Controller
      */
     public function destroy(DestroyGudangRequest $request, $id)
     {
-
         DB::beginTransaction();
 
-        $gudang = new Gudang();
-        $gudang = $gudang->lockAndDestroy($id);
-        if ($gudang) {
-            $logTrail = [
-                'namatabel' => strtoupper($gudang->getTable()),
-                'postingdari' => 'DELETE GUDANG',
-                'idtrans' => $gudang->id,
-                'nobuktitrans' => $gudang->id,
-                'aksi' => 'DELETE',
-                'datajson' => $gudang->toArray(),
-                'modifiedby' => auth('api')->user()->name
-            ];
-
-            $validatedLogTrail = new StoreLogTrailRequest($logTrail);
-            app(LogTrailController::class)->store($validatedLogTrail);
-
-            DB::commit();
-            /* Set position and page */
-            $selected = $this->getPosition($gudang, $gudang->getTable());
+        try {
+            $gudang = (new Gudang())->processDestroy($id);
+            $selected = $this->getPosition($gudang, $gudang->getTable(), true);
             $gudang->position = $selected->position;
             $gudang->id = $selected->id;
             $gudang->page = ceil($gudang->position / ($request->limit ?? 10));
 
-            return response([
+            DB::commit();
+
+            return response()->json([
                 'status' => true,
                 'message' => 'Berhasil dihapus',
                 'data' => $gudang
             ]);
-        } else {
+        } catch (\Throwable $th) {
             DB::rollBack();
 
-            return response([
-                'status' => false,
-                'message' => 'Gagal dihapus'
-            ]);
+            throw $th;
         }
     }
 

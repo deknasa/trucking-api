@@ -31,7 +31,7 @@ class DestroySupplier implements Rule
     public function passes($attribute, $value)
     {
         $bank = new Supplier();
-        $cekdata = $bank->cekvalidasihapus($bank->id);
+        $cekdata = $bank->cekvalidasihapus(request()->id);
         if($cekdata['kondisi']){
           return false;
         }

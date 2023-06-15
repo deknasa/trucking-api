@@ -686,4 +686,13 @@ class AbsensiSupirApprovalHeaderController extends Controller
             ]
         ]);
     }
+
+    public function export($id)
+    {   
+        $absensiSupirApprovalHeader = new AbsensiSupirApprovalHeader();
+        
+        return response([
+            'data' => $absensiSupirApprovalHeader->getExport($id)
+        ]);
+    }
 }

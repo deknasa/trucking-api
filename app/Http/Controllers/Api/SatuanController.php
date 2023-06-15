@@ -16,6 +16,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Database\QueryException;
+use Illuminate\Http\JsonResponse;
 
 class SatuanController extends Controller
 {
@@ -46,41 +47,18 @@ class SatuanController extends Controller
     /**
      * @ClassName 
      */
-    public function store(StoreSatuanRequest $request)
+    public function store(StoreSatuanRequest $request) : JsonResponse
     {
         DB::beginTransaction();
 
         try {
-            $satuan = new Satuan();
-            $satuan->satuan = $request->satuan;
-            $satuan->statusaktif = $request->statusaktif;
-            $satuan->modifiedby = auth('api')->user()->name;
-            $request->sortname = $request->sortname ?? 'id';
-            $request->sortorder = $request->sortorder ?? 'asc';
-
-            if ($satuan->save()) {
-                $logTrail = [
-                    'namatabel' => strtoupper($satuan->getTable()),
-                    'postingdari' => 'ENTRY SATUAN',
-                    'idtrans' => $satuan->id,
-                    'nobuktitrans' => $satuan->id,
-                    'aksi' => 'ENTRY',
-                    'datajson' => $satuan->toArray(),
-                    'modifiedby' => $satuan->modifiedby
-                ];
-
-                $validatedLogTrail = new StoreLogTrailRequest($logTrail);
-                $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
-
-                DB::commit();
-            }
-
-            /* Set position and page */
-            $selected = $this->getPosition($satuan, $satuan->getTable());
-            $satuan->position = $selected->position;
+            $satuan = (new Satuan())->processStore($request->all());
+            $satuan->position = $this->getPosition($satuan, $satuan->getTable())->position;
             $satuan->page = ceil($satuan->position / ($request->limit ?? 10));
 
-            return response([
+            DB::commit();   
+
+            return response()->json([
                 'status' => true,
                 'message' => 'Berhasil disimpan',
                 'data' => $satuan
@@ -107,33 +85,13 @@ class SatuanController extends Controller
         DB::beginTransaction();
 
         try {
-            $satuan->satuan = $request->satuan;
-            $satuan->statusaktif = $request->statusaktif;
-            $satuan->modifiedby = auth('api')->user()->name;
-
-            if ($satuan->save()) {
-                $logTrail = [
-                    'namatabel' => strtoupper($satuan->getTable()),
-                    'postingdari' => 'EDIT SATUAN',
-                    'idtrans' => $satuan->id,
-                    'nobuktitrans' => $satuan->id,
-                    'aksi' => 'EDIT',
-                    'datajson' => $satuan->toArray(),
-                    'modifiedby' => $satuan->modifiedby
-                ];
-
-                $validatedLogTrail = new StoreLogTrailRequest($logTrail);
-                app(LogTrailController::class)->store($validatedLogTrail);
-
-
-                DB::commit();
-            }
-            /* Set position and page */
-            $selected = $this->getPosition($satuan, $satuan->getTable());
-            $satuan->position = $selected->position;
+            $satuan = (new Satuan())->processUpdate($satuan, $request->all());
+            $satuan->position = $this->getPosition($satuan, $satuan->getTable())->position;
             $satuan->page = ceil($satuan->position / ($request->limit ?? 10));
 
-            return response([
+            DB::commit();
+
+            return response()->json([
                 'status' => true,
                 'message' => 'Berhasil diubah',
                 'data' => $satuan
@@ -150,41 +108,23 @@ class SatuanController extends Controller
     {
         DB::beginTransaction();
 
-        $satuan = new Satuan();
-        $satuan = $satuan->lockAndDestroy($id);
-        if ($satuan) {
-            $logTrail = [
-                'namatabel' => strtoupper($satuan->getTable()),
-                'postingdari' => 'DELETE SATUAN',
-                'idtrans' => $satuan->id,
-                'nobuktitrans' => $satuan->id,
-                'aksi' => 'DELETE',
-                'datajson' => $satuan->toArray(),
-                'modifiedby' => $satuan->modifiedby
-            ];
-
-            $data = new StoreLogTrailRequest($logTrail);
-            app(LogTrailController::class)->store($data);
-
-            DB::commit();
-            /* Set position and page */
+        try {
+            $satuan = (new Satuan())->processDestroy($id);
             $selected = $this->getPosition($satuan, $satuan->getTable(), true);
             $satuan->position = $selected->position;
             $satuan->id = $selected->id;
             $satuan->page = ceil($satuan->position / ($request->limit ?? 10));
 
-            return response([
-                'status' => true,
+            DB::commit();
+
+            return response()->json([
                 'message' => 'Berhasil dihapus',
                 'data' => $satuan
             ]);
-        } else {
+        } catch (\Throwable $th) {
             DB::rollBack();
 
-            return response([
-                'status' => false,
-                'message' => 'Gagal dihapus'
-            ]);
+            throw $th;
         }
     }
 

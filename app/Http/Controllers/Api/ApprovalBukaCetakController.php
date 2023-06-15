@@ -1,7 +1,9 @@
 <?php
 
 namespace App\Http\Controllers\Api;
+
 use App\Http\Controllers\Controller;
+use App\Http\Requests\ApprovalBukaCetakRequest;
 use Illuminate\Http\Request;
 use App\Models\Parameter;
 use Illuminate\Support\Facades\DB;
@@ -10,7 +12,8 @@ use App\Http\Requests\StoreLogTrailRequest;
 use App\Models\PenerimaanHeader;
 use App\Models\PengeluaranHeader;
 use App\Http\Requests\StoreApprovalBukuCetakHeaderRequest;
-use App\Rules\ApprovalBukaCetak;
+use App\Models\ApprovalBukaCetak;
+use App\Rules\ApprovalBukaCetak as RulesApprovalBukaCetak;
 
 class ApprovalBukaCetakController extends Controller
 {
@@ -20,81 +23,81 @@ class ApprovalBukaCetakController extends Controller
     public function index(Request $request)
     {
         $parameter = new Parameter();
-        $dataCetak = $parameter->getcombodata('STATUSCETAK', 'STATUSCETAK');
-        $dataCetak = json_decode($dataCetak, true);
-        foreach ($dataCetak as $item) {
-            $statusCetak[] = $item['id'];
-        }
+        $dataCetak = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUSCETAK')->where('text', 'CETAK')->first();
 
+        $request['statuscetak'] = $dataCetak->id;
+
+        $parameter = new Parameter();
         $dataCetakUlang = $parameter->getcombodata('CETAKULANG', 'CETAKULANG');
         $dataCetakUlang = json_decode($dataCetakUlang, true);
         foreach ($dataCetakUlang as $item) {
             $statusCetakUlang[] = $item['text'];
         }
-
-        $this->validate($request, [
-            'cetak' => ['required', Rule::in($statusCetak)],
+        $request->validate([
             'table' => ['required', Rule::in($statusCetakUlang)],
-            'periode' => ['required',new ApprovalBukaCetak()],
+            'periode' => ['required', new RulesApprovalBukaCetak()],
         ]);
-        
-        if($request->periode){
-            $periode = explode("-",$request->periode);
+
+        if ($request->periode) {
+            $periode = explode("-", $request->periode);
             $request->merge([
                 'year' => $periode[1],
-                'month'=> $periode[0]
+                'month' => $periode[0],
+                'statuscetak' => $dataCetak->id
             ]);
         }
-        if ($request->table && $request->cetak && $request->periode){
-            $table = Parameter::where('text',$request->table)->first();
-            $backSlash = " \ ";
-            $model = 'App\Models'.trim($backSlash).$table->text;
-            $data = app($model);
-            return response([
-                'data' => $data->get(),
-                'attributes' => [
-                    'totalRows' => $data->totalRows,
-                    'totalPages' => $data->totalPages
-                ]
-            ]);
-        }
+
+        $table = Parameter::where('text', $request->table)->first();
+        $backSlash = " \ ";
+        $model = 'App\Models' . trim($backSlash) . $table->text;
+        $data = app($model);
+        return response([
+            'data' => $data->get($request),
+            'attributes' => [
+                'totalRows' => $data->totalRows,
+                'totalPages' => $data->totalPages
+            ]
+        ]);
     }
     /**
      * @ClassName 
      */
     public function store(StoreApprovalBukuCetakHeaderRequest $request)
     {
-        if ($request->table && $request->cetak){
-            if ($request->tableId) {
-                $table = Parameter::where('text',$request->table)->first();
-                $backSlash = " \ ";
-                for ($i = 0; $i < count($request->tableId); $i++) {
-                    $this->bukaCetak($request->tableId[$i],$table);
-                }
-                
-            }
+        DB::beginTransaction();
+
+        try {
+            $approvalBukaCetak = (new ApprovalBukaCetak())->processStore($request->all());
+            DB::commit();
+
+            return response()->json([
+                'message' => 'Berhasil disimpan',
+                'data' => $approvalBukaCetak
+            ], 201);
+        } catch (\Throwable $th) {
+            DB::rollBack();
+
+            throw $th;
         }
-        return response([
-            'message' => 'Berhasil'
-        ]);
     }
-    public function bukaCetak($id,$table)
+    
+    public function bukaCetak($id, $table)
     {
         DB::beginTransaction();
         try {
             $backSlash = " \ ";
-    
-            $model = 'App\Models'.trim($backSlash).$table->text;
+
+            $model = 'App\Models' . trim($backSlash) . $table->text;
             $data = app($model)->findOrFail($id);
             $statusCetak = Parameter::where('grp', '=', 'STATUSCETAK')->where('text', '=', 'CETAK')->first();
             $statusBelumCetak = Parameter::where('grp', '=', 'STATUSCETAK')->where('text', '=', 'BELUM CETAK')->first();
-            
+
             if ($data->statuscetak == $statusCetak->id) {
                 $data->statuscetak = $statusBelumCetak->id;
             } else {
                 $data->statuscetak = $statusCetak->id;
             }
-    
+
             $data->tglbukacetak = date('Y-m-d', time());
             $data->userbukacetak = auth('api')->user()->name;
             if ($data->save()) {

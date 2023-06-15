@@ -31,7 +31,7 @@ class DestroyPenerimaanTruckingHeader implements Rule
     public function passes($attribute, $value)
     {
         $penerima = new PenerimaanTruckingHeader();
-        $cekdata = $penerima->cekvalidasiaksi($penerima->nobukti);
+        $cekdata = $penerima->cekvalidasiaksi(request()->nobukti);
         if($cekdata['kondisi']){
           return false;
         }

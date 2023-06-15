@@ -29,7 +29,7 @@ class DestroyBankRequest extends FormRequest
     {
       
         return [
-            'bank_id' => new DestroyBank(),
+            'id' => new DestroyBank(),
         ];
       
     }

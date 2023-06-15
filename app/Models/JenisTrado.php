@@ -237,4 +237,74 @@ class JenisTrado extends MyModel
     {
         return $query->skip($this->params['offset'])->take($this->params['limit']);
     }
+
+    public function processStore(array $data): JenisTrado
+    {
+        $jenistrado = new jenistrado();
+        $jenistrado->kodejenistrado = $data['kodejenistrado'];
+        $jenistrado->statusaktif = $data['statusaktif'];
+        $jenistrado->keterangan = $data['keterangan'] ?? '';
+        $jenistrado->modifiedby = auth('api')->user()->name;
+        $data['sortname'] = $data['sortname']?? 'id';
+        $data['sortorder'] = $data['sortorder'] ?? 'asc';
+
+        TOP:
+        if (!$jenistrado->save()) {
+            throw new \Exception('Error storing jenis trado.');
+        }
+
+        (new LogTrail())->processStore([
+            'namatabel' => strtoupper($jenistrado->getTable()),
+            'postingdari' => 'ENTRY JENIS TRADO',
+            'idtrans' => $jenistrado->id,
+            'nobuktitrans' => $jenistrado->id,
+            'aksi' => 'ENTRY',
+            'datajson' => $jenistrado->toArray(),
+            'modifiedby' => $jenistrado->modifiedby
+        ]);
+
+        return $jenistrado;
+    }
+
+    public function processUpdate(JenisTrado $jenistrado, array $data): JenisTrado
+    {
+        $jenistrado->kodejenistrado = $data['kodejenistrado'];
+        $jenistrado->keterangan = $data['keterangan'] ?? '';
+        $jenistrado->statusaktif =  $data['statusaktif'];
+        $jenistrado->modifiedby = auth('api')->user()->name;
+
+        if (!$jenistrado->save()) {
+            throw new \Exception('Error updating jenis trado.');
+        }
+
+        (new LogTrail())->processStore([
+            'namatabel' => strtoupper($jenistrado->getTable()),
+            'postingdari' => 'EDIT JENIS TRADO',
+            'idtrans' => $jenistrado->id,
+            'nobuktitrans' => $jenistrado->id,
+            'aksi' => 'EDIT',
+            'datajson' => $jenistrado->toArray(),
+            'modifiedby' => $jenistrado->modifiedby
+        ]);
+
+        return $jenistrado;
+    }
+
+    public function processDestroy($id): JenisTrado
+    {
+        $jenistrado = new JenisTrado();
+        $jenistrado = $jenistrado->lockAndDestroy($id);
+
+        (new LogTrail())->processStore([
+            'namatabel' => strtoupper($jenistrado->getTable()),
+                'postingdari' => 'DELETE JENIS TRADO',
+                'idtrans' => $jenistrado->id,
+                'nobuktitrans' => $jenistrado->id,
+                'aksi' => 'DELETE',
+                'datajson' => $jenistrado->toArray(),
+                'modifiedby' => auth('api')->user()->user
+        ]);
+
+        return $jenistrado;
+    }
 }

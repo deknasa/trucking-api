@@ -5,6 +5,7 @@ namespace App\Http\Requests;
 use App\Http\Controllers\Api\ErrorController;
 use App\Models\AbsensiSupirDetail;
 use App\Models\Parameter;
+use App\Models\TarifRincian;
 use App\Rules\cekUpahRitasiDariInputTrip;
 use App\Rules\cekUpahRitasiInputTrip;
 use App\Rules\cekUpahRitasiKeInputTrip;
@@ -16,10 +17,14 @@ use App\Rules\ExistContainer;
 use App\Rules\ExistGandengan;
 use App\Rules\ExistJenisOrder;
 use App\Rules\ExistKota;
+use App\Rules\ExistKotaDariSuratPengantar;
+use App\Rules\ExistKotaSampaiSuratPengantar;
 use App\Rules\ExistPelanggan;
 use App\Rules\ExistStatusContainer;
 use App\Rules\ExistSupir;
+use App\Rules\ExistTarifRincianSuratPengantar;
 use App\Rules\ExistTrado;
+use App\Rules\ExistUpahSupirRincianSuratPengantar;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
@@ -110,15 +115,39 @@ class StoreMandorTripRequest extends FormRequest
             ];
         }
 
+        $tarifrincian_id = $this->tarifrincian_id;
+        $rulesTarif_id = [];
+        if ($tarifrincian_id != null) {
+            $rulesTarif_id = [
+                'tarifrincian_id' => ['required', 'numeric', 'min:1', new ExistTarifRincianSuratPengantar()]
+            ];
+        } else if ($tarifrincian_id == null && request()->upah != '') {
+            $rulesTarif_id = [
+                'tarifrincian_id' => ['required', 'numeric', 'min:1', new ExistTarifRincianSuratPengantar()]
+            ];
+        }
+
+        $upah_id = $this->upah_id;
+        $rulesUpah_id = [];
+        if ($upah_id != null) {
+            $rulesUpah_id = [
+                'upah_id' => ['required', 'numeric', 'min:1', new ExistUpahSupirRincianSuratPengantar()]
+            ];
+        } else if ($upah_id == null && request()->upah != '') {
+            $rulesUpah_id = [
+                'upah_id' => ['required', 'numeric', 'min:1', new ExistUpahSupirRincianSuratPengantar()]
+            ];
+        }
+
         $dari_id = $this->dari_id;
         $rulesDari_id = [];
         if ($dari_id != null) {
             $rulesDari_id = [
-                'dari_id' => ['required', 'numeric', 'min:1', new ExistKota()]
+                'dari_id' => ['required', 'numeric', 'min:1', new ExistKotaDariSuratPengantar(), new ExistKota()]
             ];
         } else if ($dari_id == null && $this->dari != '') {
             $rulesDari_id = [
-                'dari_id' => ['required', 'numeric', 'min:1', new ExistKota()]
+                'dari_id' => ['required', 'numeric', 'min:1', new ExistKotaDariSuratPengantar(), new ExistKota()]
             ];
         }
 
@@ -126,11 +155,11 @@ class StoreMandorTripRequest extends FormRequest
         $rulesSampai_id = [];
         if ($sampai_id != null) {
             $rulesSampai_id = [
-                'sampai_id' => ['required', 'numeric', 'min:1', new ExistKota()]
+                'sampai_id' => ['required', 'numeric', 'min:1', new ExistKotaDariSuratPengantar(), new ExistKota()]
             ];
         } else if ($sampai_id == null && $this->sampai != '') {
             $rulesSampai_id = [
-                'sampai_id' => ['required', 'numeric', 'min:1', new ExistKota()]
+                'sampai_id' => ['required', 'numeric', 'min:1', new ExistKotaDariSuratPengantar(), new ExistKota()]
             ];
         }
 
@@ -231,6 +260,8 @@ class StoreMandorTripRequest extends FormRequest
             $rulesStatusContainer_id,
             $rulesTrado_id,
             $rulesUpahSupir,
+            $rulesTarif_id,
+            $rulesUpah_id,
             $ruleCekUpahRitasi
         );
 

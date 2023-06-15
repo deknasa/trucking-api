@@ -41,47 +41,17 @@ class RoleController extends Controller
         DB::beginTransaction();
 
         try {
-            $role = new Role();
-            $role->rolename = $request->rolename;
-            $role->modifiedby = auth('api')->user()->name;
 
-            TOP:
-            if ($role->save()) {
-                $logTrail = [
-                    'namatabel' => strtoupper($role->getTable()),
-                    'postingdari' => 'ENTRY ROLE',
-                    'idtrans' => $role->id,
-                    'nobuktitrans' => $role->id,
-                    'aksi' => 'ENTRY',
-                    'datajson' => $role->toArray(),
-                    'modifiedby' => $role->modifiedby
-                ];
-
-                $validatedLogTrail = new StoreLogTrailRequest($logTrail);
-                $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
-
-                DB::commit();
-            }
-
-            /* Set position and page */
-            $selected = $this->getPosition($role, $role->getTable());
-            $role->position = $selected->position;
+            $role = (new Role())->processStore($request->all());
+            $role->position = $this->getPosition($role, $role->getTable())->position;
             $role->page = ceil($role->position / ($request->limit ?? 10));
+            DB::commit();
 
-            return response([
+            return response()->json([
                 'status' => true,
                 'message' => 'Berhasil disimpan',
                 'data' => $role
             ], 201);
-        } catch (QueryException $queryException) {
-            if (isset($queryException->errorInfo[1]) && is_array($queryException->errorInfo)) {
-                // Check if deadlock
-                if ($queryException->errorInfo[1] === 1205) {
-                    goto TOP;
-                }
-            }
-
-            throw $queryException;
         } catch (\Throwable $th) {
             DB::rollBack();
 
@@ -111,30 +81,11 @@ class RoleController extends Controller
         DB::beginTransaction();
 
         try {
-            $role->rolename = $request->rolename;
-            $role->modifiedby = auth('api')->user()->name;
-
-            if ($role->save()) {
-                $logTrail = [
-                    'namatabel' => strtoupper($role->getTable()),
-                    'postingdari' => 'EDIT ROLE',
-                    'idtrans' => $role->id,
-                    'nobuktitrans' => $role->id,
-                    'aksi' => 'EDIT',
-                    'datajson' => $role->toArray(),
-                    'modifiedby' => $role->modifiedby
-                ];
-
-                $validatedLogTrail = new StoreLogTrailRequest($logTrail);
-                $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
-
-                DB::commit();
-            }
-
-            /* Set position and page */
-            $selected = $this->getPosition($role, $role->getTable());
-            $role->position = $selected->position;
+            $role = (new Role())->processUpdate($role, $request->all());
+            $role->position = $this->getPosition($role, $role->getTable())->position;
             $role->page = ceil($role->position / ($request->limit ?? 10));
+
+            DB::commit();
 
             return response([
                 'status' => true,
@@ -155,43 +106,24 @@ class RoleController extends Controller
     {
         DB::beginTransaction();
 
-        $role = new Role();
-        $role = $role->lockAndDestroy($id);
-        if ($role) {
-            $logTrail = [
-                'namatabel' => strtoupper($role->getTable()),
-                'postingdari' => 'DELETE ROLE',
-                'idtrans' => $role->id,
-                'nobuktitrans' => $role->id,
-                'aksi' => 'DELETE',
-                'datajson' => $role->toArray(),
-                'modifiedby' => auth('api')->user()->name
-            ];
-
-            $validatedLogTrail = new StoreLogTrailRequest($logTrail);
-            $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
-
-            DB::commit();
-
-
-            /* Set position and page */
+        try {
+            $role = (new Role())->processDestroy($id);
             $selected = $this->getPosition($role, $role->getTable(), true);
             $role->position = $selected->position;
             $role->id = $selected->id;
             $role->page = ceil($role->position / ($request->limit ?? 10));
+       
+            DB::commit();
 
             return response([
                 'status' => true,
                 'message' => 'Berhasil dihapus',
                 'data' => $role
             ]);
-        } else {
+        } catch (\Throwable $th) {
             DB::rollBack();
 
-            return response([
-                'status' => false,
-                'message' => 'Gagal dihapus'
-            ]);
+            throw $th;
         }
     }
 

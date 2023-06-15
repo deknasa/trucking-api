@@ -167,6 +167,8 @@ class PengeluaranHeader extends MyModel
     public function get()
     {
         $this->setRequestParameters();
+        $periode = request()->periode ?? '';
+        $statusCetak = request()->statuscetak ?? '';
 
         $query = DB::table($this->table)->from(DB::raw("pengeluaranheader with (readuncommitted)"))
             ->select(
@@ -205,6 +207,14 @@ class PengeluaranHeader extends MyModel
         if (request()->tgldari && request()->tglsampai) {
             $query->whereBetween($this->table . '.tglbukti', [date('Y-m-d', strtotime(request()->tgldari)), date('Y-m-d', strtotime(request()->tglsampai))])
                 ->where('pengeluaranheader.bank_id', request()->bank_id);
+        }
+        if ($periode != '') {
+            $periode = explode("-", $periode);
+            $query->whereRaw("MONTH(pengeluaranheader.tglbukti) ='" . $periode[0] . "'")
+                ->whereRaw("year(pengeluaranheader.tglbukti) ='" . $periode[1] . "'");
+        }
+        if ($statusCetak != '') {
+            $query->where("pengeluaranheader.statuscetak", $statusCetak);
         }
         $this->totalRows = $query->count();
         $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;

@@ -281,7 +281,7 @@ class Cabang extends MyModel
 
     public function processUpdate(Cabang $cabang, array $data): Cabang
     {
-        $cabang->kodecabang = $data['kodecabang'];
+        $cabang->kodecaban = $data['kodecabang'];
         $cabang->namacabang = $data['namacabang'];
         $cabang->statusaktif = $data['statusaktif'];
         $cabang->modifiedby = auth('api')->user()->user;

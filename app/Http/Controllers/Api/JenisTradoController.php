@@ -86,36 +86,11 @@ class JenisTradoController extends Controller
         DB::beginTransaction();
 
         try {
-            $jenistrado = new jenistrado();
-            $jenistrado->kodejenistrado = $request->kodejenistrado;
-            $jenistrado->statusaktif = $request->statusaktif;
-            $jenistrado->keterangan = $request->keterangan ?? '';
-            $jenistrado->modifiedby = auth('api')->user()->name;
-            $request->sortname = $request->sortname ?? 'id';
-            $request->sortorder = $request->sortorder ?? 'asc';
-
-            TOP:
-            if ($jenistrado->save()) {
-                $logTrail = [
-                    'namatabel' => strtoupper($jenistrado->getTable()),
-                    'postingdari' => 'ENTRY JENIS TRADO',
-                    'idtrans' => $jenistrado->id,
-                    'nobuktitrans' => $jenistrado->id,
-                    'aksi' => 'ENTRY',
-                    'datajson' => $jenistrado->toArray(),
-                    'modifiedby' => $jenistrado->modifiedby
-                ];
-
-                $validatedLogTrail = new StoreLogTrailRequest($logTrail);
-                $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
-
-                DB::commit();
-            }
-
-            /* Set position and page */
-            $selected = $this->getPosition($jenistrado, $jenistrado->getTable());
-            $jenistrado->position = $selected->position;
+            $jenistrado = (new JenisTrado())->processStore($request->all());
+            $jenistrado->position = $this->getPosition($jenistrado, $jenistrado->getTable())->position;
             $jenistrado->page = ceil($jenistrado->position / ($request->limit ?? 10));
+
+            DB::commit();
 
             return response([
                 'status' => true,
@@ -144,37 +119,16 @@ class JenisTradoController extends Controller
     {
         DB::beginTransaction();
         try {
-            $jenistrado->kodejenistrado = $request->kodejenistrado;
-            $jenistrado->keterangan = $request->keterangan ?? '';
-            $jenistrado->statusaktif = $request->statusaktif;
-            $jenistrado->modifiedby = auth('api')->user()->name;
+            $jenistrado = (new JenisTrado())->processUpdate($jenistrado, $request->all());
+            $jenistrado->position = $this->getPosition($jenistrado, $jenistrado->getTable())->position;
+            $jenistrado->page = ceil($jenistrado->position / ($request->limit ?? 10));
+            DB::commit();
 
-            if ($jenistrado->save()) {
-                $logTrail = [
-                    'namatabel' => strtoupper($jenistrado->getTable()),
-                    'postingdari' => 'EDIT JENIS TRADO',
-                    'idtrans' => $jenistrado->id,
-                    'nobuktitrans' => $jenistrado->id,
-                    'aksi' => 'EDIT',
-                    'datajson' => $jenistrado->toArray(),
-                    'modifiedby' => $jenistrado->modifiedby
-                ];
-
-                $validatedLogTrail = new StoreLogTrailRequest($logTrail);
-                app(LogTrailController::class)->store($validatedLogTrail);
-
-                DB::commit();
-
-                $selected = $this->getPosition($jenistrado, $jenistrado->getTable(), true);
-                $jenistrado->position = $selected->position;
-                $jenistrado->page = ceil($jenistrado->position / ($request->limit ?? 10));
-
-                return response([
-                    'status' => true,
-                    'message' => 'Berhasil diubah',
-                    'data' => $jenistrado
-                ]);
-            }
+            return response([
+                'status' => true,
+                'message' => 'Berhasil diubah',
+                'data' => $jenistrado
+            ]);
         } catch (\Throwable $th) {
             DB::rollBack();
             return response($th->getMessage());
@@ -189,41 +143,24 @@ class JenisTradoController extends Controller
     {
         DB::beginTransaction();
 
-        $jenisTrado = new JenisTrado();
-        $jenisTrado = $jenisTrado->lockAndDestroy($id);
-        if ($jenisTrado) {
-            $logTrail = [
-                'namatabel' => strtoupper($jenisTrado->getTable()),
-                'postingdari' => 'DELETE JENIS TRADO',
-                'idtrans' => $jenisTrado->id,
-                'nobuktitrans' => $jenisTrado->id,
-                'aksi' => 'DELETE',
-                'datajson' => $jenisTrado->toArray(),
-                'modifiedby' => auth('api')->user()->name
-            ];
-
-            $validatedLogTrail = new StoreLogTrailRequest($logTrail);
-            app(LogTrailController::class)->store($validatedLogTrail);
+        try {
+            $jenistrado = (new JenisTrado())->processDestroy($id);
+            $selected = $this->getPosition($jenistrado, $jenistrado->getTable(), true);
+            $jenistrado->position = $selected->position;
+            $jenistrado->id = $selected->id;
+            $jenistrado->page = ceil($jenistrado->position / ($request->limit ?? 10));
 
             DB::commit();
 
-            $selected = $this->getPosition($jenisTrado, $jenisTrado->getTable(), true);
-            $jenisTrado->position = $selected->position;
-            $jenisTrado->id = $selected->id;
-            $jenisTrado->page = ceil($jenisTrado->position / ($request->limit ?? 10));
-
-            return response([
+            return response()->json([
                 'status' => true,
                 'message' => 'Berhasil dihapus',
-                'data' => $jenisTrado
+                'data' => $jenistrado
             ]);
-        } else {
+        } catch (\Throwable $th) {
             DB::rollBack();
 
-            return response([
-                'status' => false,
-                'message' => 'Gagal dihapus'
-            ]);
+            throw $th;
         }
     }
 

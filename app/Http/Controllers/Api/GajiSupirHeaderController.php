@@ -1622,4 +1622,12 @@ class GajiSupirHeaderController extends Controller
             'data' => $data
         ]);
     }
+
+    public function export($id)
+    {
+        $gajiSupirHeader = new GajiSupirHeader();
+        return response([
+            'data' => $gajiSupirHeader->getExport($id),
+        ]);
+    }
 }

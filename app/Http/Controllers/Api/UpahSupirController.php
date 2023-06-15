@@ -25,9 +25,11 @@ use App\Models\Parameter;
 use Illuminate\Database\QueryException;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Http\JsonResponse;
 
 class UpahSupirController extends Controller
 {
+    private $upahsupir;
     /**
      * @ClassName 
      */
@@ -76,211 +78,27 @@ class UpahSupirController extends Controller
         }
     }
 
-    public function store(StoreUpahSupirRequest $request)
+    public function store(StoreUpahSupirRequest $request): JsonResponse
     {
         DB::beginTransaction();
 
         try {
-            $statusSimpanKandang = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))
-                ->where('grp', 'STATUS SIMPAN KANDANG')
-                ->where('text', 'SIMPAN KANDANG')
-                ->first();
-
-            $kandang = DB::table("kota")->from(DB::raw("kota with (readuncommitted)"))
-                ->where('kodekota', 'KANDANG')
-                ->first();
-            $belawan = DB::table("kota")->from(DB::raw("kota with (readuncommitted)"))
-                ->where('kodekota', 'BELAWAN')
-                ->first();
-
-            $upahsupir = new UpahSupir();
-            $upahsupir->kotadari_id = $request->kotadari_id;
-            $upahsupir->parent_id = $request->parent_id ?? 0;
-            $upahsupir->tarif_id = $request->tarif_id ?? 0;
-            $upahsupir->kotasampai_id = $request->kotasampai_id;
-            $upahsupir->penyesuaian = $request->penyesuaian;
-            $upahsupir->jarak = $request->jarak;
-            $upahsupir->zona_id = ($request->zona_id == null) ? 0 : $request->zona_id ?? 0;
-            $upahsupir->statusaktif = $request->statusaktif;
-            $upahsupir->tglmulaiberlaku = date('Y-m-d', strtotime($request->tglmulaiberlaku));
-            // $upahsupir->tglakhirberlaku = ($request->tglakhirberlaku == null) ? "" : date('Y-m-d', strtotime($request->tglakhirberlaku));
-            $upahsupir->statussimpankandang = $request->statussimpankandang;
-            $upahsupir->statusluarkota = $request->statusluarkota;
-            $upahsupir->keterangan = $request->keterangan;
-            $upahsupir->modifiedby = auth('api')->user()->name;
-            $this->deleteFiles($upahsupir);
-            if ($request->gambar) {
-                $upahsupir->gambar = $this->storeFiles($request->gambar, 'upahsupir');
-            } else {
-                $upahsupir->gambar = '';
-            }
-            $upahsupir->save();
-            $logTrail = [
-                'namatabel' => strtoupper($upahsupir->getTable()),
-                'postingdari' => 'ENTRY UPAH SUPIR',
-                'idtrans' => $upahsupir->id,
-                'nobuktitrans' => $upahsupir->id,
-                'aksi' => 'ENTRY',
-                'datajson' => $upahsupir->toArray(),
-                'modifiedby' => $upahsupir->modifiedby
-            ];
-            $validatedLogTrail = new StoreLogTrailRequest($logTrail);
-            $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
-
-            /* Store detail */
-            $detaillog = [];
-            for ($i = 0; $i < count($request->nominalsupir); $i++) {
-
-                $datadetail = [
-                    'upahsupir_id' => $upahsupir->id,
-                    'container_id' => $request->container_id[$i],
-                    'statuscontainer_id' => $request->statuscontainer_id[$i],
-                    'nominalsupir' => $request->nominalsupir[$i],
-                    'nominalkenek' => $request->nominalkenek[$i] ?? 0,
-                    'nominalkomisi' => $request->nominalkomisi[$i] ?? 0,
-                    'nominaltol' =>  $request->nominaltol[$i] ?? 0,
-                    'liter' => $request->liter[$i] ?? 0,
-                    'modifiedby' => auth('api')->user()->name,
-                ];
-                $data = new StoreUpahSupirRincianRequest($datadetail);
-                $datadetails = app(UpahSupirRincianController::class)->store($data);
-                if ($datadetails['error']) {
-                    return response($datadetails, 422);
-                } else {
-                    $iddetail = $datadetails['id'];
-                    $tabeldetail = $datadetails['tabel'];
-                }
-
-
-                $detaillog[] = $datadetails['detail']->toArray();
-            }
-            $datalogtrail = [
-                'namatabel' => strtoupper($tabeldetail),
-                'postingdari' => 'ENTRY UPAH SUPIR RINCIAN',
-                'idtrans' =>  $storedLogTrail['id'],
-                'nobuktitrans' => $upahsupir->id,
-                'aksi' => 'ENTRY',
-                'datajson' => $detaillog,
-                'modifiedby' => $request->modifiedby,
-            ];
-
-            $data = new StoreLogTrailRequest($datalogtrail);
-            app(LogTrailController::class)->store($data);
-
-            if ($request->statussimpankandang == $statusSimpanKandang->id) {
-                $getBelawanKandang = DB::table("upahsupir")->from(DB::raw("upahsupir with (readuncommitted)"))
-                    ->select('id', 'jarak')
-                    ->where('kotadari_id', $belawan->id)
-                    ->where('kotasampai_id', $kandang->id)
-                    ->first();
-
-                $getRincianBelawanKandang = DB::table("upahsupirrincian")->from(DB::raw("upahsupirrincian with (readuncommitted)"))
-                    ->where('upahsupir_id', $getBelawanKandang->id)
-                    ->get();
-                $jarakKandang = $request->jarak - $getBelawanKandang->jarak;
-
-                $upahsupirKandang = new UpahSupir();
-                $upahsupirKandang->kotadari_id = $kandang->id;
-                $upahsupirKandang->parent_id = $request->parent_id ?? 0;
-                $upahsupirKandang->tarif_id = $request->tarif_id ?? 0;
-                $upahsupirKandang->kotasampai_id = $request->kotasampai_id;
-                $upahsupirKandang->penyesuaian = $request->penyesuaian;
-                $upahsupirKandang->jarak = ($jarakKandang < 0) ? 0 : $jarakKandang;
-                $upahsupirKandang->zona_id = ($request->zona_id == null) ? 0 : $request->zona_id ?? 0;
-                $upahsupirKandang->statusaktif = $request->statusaktif;
-                $upahsupirKandang->tglmulaiberlaku = date('Y-m-d', strtotime($request->tglmulaiberlaku));
-                $upahsupirKandang->statussimpankandang = $request->statussimpankandang;
-                $upahsupirKandang->keterangan = $request->keterangan;
-                $upahsupirKandang->modifiedby = auth('api')->user()->name;
-                $this->deleteFiles($upahsupirKandang);
-                if ($request->gambar) {
-                    $upahsupirKandang->gambar = $this->storeFiles($request->gambar, 'upahsupir');
-                } else {
-                    $upahsupirKandang->gambar = '';
-                }
-                $upahsupirKandang->save();
-
-                $logTrailKandang = [
-                    'namatabel' => strtoupper($upahsupirKandang->getTable()),
-                    'postingdari' => 'ENTRY UPAH SUPIR',
-                    'idtrans' => $upahsupirKandang->id,
-                    'nobuktitrans' => $upahsupirKandang->id,
-                    'aksi' => 'ENTRY',
-                    'datajson' => $upahsupirKandang->toArray(),
-                    'modifiedby' => $upahsupirKandang->modifiedby
-                ];
-                $validatedLogTrail = new StoreLogTrailRequest($logTrailKandang);
-                $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
-
-                /* Store detail */
-                $detaillog = [];
-                for ($i = 0; $i < count($request->nominalsupir); $i++) {
-                    $nomSupir = ($request->nominalsupir[$i] == 0) ? 0 : $request->nominalsupir[$i] - $getRincianBelawanKandang[$i]->nominalsupir;
-                    $nomKenek = ($request->nominalkenek[$i] == 0) ? 0 : $request->nominalkenek[$i] - $getRincianBelawanKandang[$i]->nominalkenek;
-                    $nomKomisi = ($request->nominalkomisi[$i] == 0) ? 0 : $request->nominalkomisi[$i] - $getRincianBelawanKandang[$i]->nominalkomisi;
-                    $nomTol = ($request->nominaltol[$i] == 0) ? 0 : $request->nominaltol[$i] - $getRincianBelawanKandang[$i]->nominaltol;
-                    $liter = ($request->liter[$i] == 0) ? 0 : $request->liter[$i] - $getRincianBelawanKandang[$i]->liter;
-
-                    $datadetail = [
-                        'upahsupir_id' => $upahsupirKandang->id,
-                        'container_id' => $request->container_id[$i],
-                        'statuscontainer_id' => $request->statuscontainer_id[$i],
-                        'nominalsupir' => ($nomSupir < 0) ? 0 : $nomSupir,
-                        'nominalkenek' => ($nomKenek < 0) ? 0 : $nomKenek,
-                        'nominalkomisi' => ($nomKomisi < 0) ? 0 : $nomKomisi,
-                        'nominaltol' => ($nomTol < 0) ? 0 : $nomTol,
-                        'liter' => ($liter < 0) ? 0 : $liter,
-                        'modifiedby' => auth('api')->user()->name,
-                    ];
-
-                    $data = new StoreUpahSupirRincianRequest($datadetail);
-                    $datadetails = app(UpahSupirRincianController::class)->store($data);
-                    if ($datadetails['error']) {
-                        return response($datadetails, 422);
-                    } else {
-                        $iddetail = $datadetails['id'];
-                        $tabeldetail = $datadetails['tabel'];
-                    }
-
-
-                    $detaillog[] = $datadetails['detail']->toArray();
-                }
-
-                $datalogtrail = [
-                    'namatabel' => strtoupper($tabeldetail),
-                    'postingdari' => 'ENTRY UPAH SUPIR RINCIAN',
-                    'idtrans' =>  $storedLogTrail['id'],
-                    'nobuktitrans' => $upahsupirKandang->id,
-                    'aksi' => 'ENTRY',
-                    'datajson' => $detaillog,
-                    'modifiedby' => $request->modifiedby,
-                ];
-
-                $data = new StoreLogTrailRequest($datalogtrail);
-                app(LogTrailController::class)->store($data);
-            }
-            $request->sortname = $request->sortname ?? 'id';
-            $request->sortorder = $request->sortorder ?? 'asc';
-
+            $upahsupir = (new UpahSupir())->processStore($request->all());
+            $upahsupir->position = $this->getPosition($upahsupir, $upahsupir->getTable())->position;
+            $upahsupir->page = ceil($upahsupir->position / ($request->limit ?? 10));
+            $this->upahsupir = $upahsupir;
             DB::commit();
 
-            /* Set position and page */
-            $selected = $this->getPosition($upahsupir, $upahsupir->getTable());
-            $upahsupir->position = $selected->position;
-            $upahsupir->page = ceil($upahsupir->position / ($request->limit ?? 10));
-
-            return response([
+            return response()->json([
                 'status' => true,
                 'message' => 'Berhasil disimpan',
                 'data' => $upahsupir
             ], 201);
         } catch (\Throwable $th) {
-            $this->deleteFiles($upahsupir);
             DB::rollBack();
-            return response($th->getMessage());
-        }
 
-        return response($upahsupir->upahsupirRincian());
+            throw $th;
+        }
     }
 
 
@@ -300,104 +118,23 @@ class UpahSupirController extends Controller
     /**
      * @ClassName 
      */
-    public function update(UpdateUpahSupirRequest $request, UpahSupir $upahsupir)
+    public function update(UpdateUpahSupirRequest $request, UpahSupir $upahsupir): JsonResponse
     {
-
-
         DB::beginTransaction();
 
         try {
-            $upahsupir->kotadari_id = $request->kotadari_id;
-            $upahsupir->parent_id = $request->parent_id ?? 0;
-            $upahsupir->tarif_id = $request->tarif_id ?? 0;
-            $upahsupir->kotasampai_id = $request->kotasampai_id;
-            $upahsupir->penyesuaian = $request->penyesuaian;
-            $upahsupir->jarak = $request->jarak;
-            $upahsupir->zona_id = ($request->zona_id == null) ? 0 : $request->zona_id ?? 0;
-            $upahsupir->statusaktif = $request->statusaktif;
-            $upahsupir->tglmulaiberlaku = date('Y-m-d', strtotime($request->tglmulaiberlaku));
-            // $upahsupir->tglakhirberlaku = ($request->tglakhirberlaku == null) ? "" : date('Y-m-d', strtotime($request->tglakhirberlaku));
-            $upahsupir->keterangan = $request->keterangan;
-            $upahsupir->modifiedby = auth('api')->user()->name;
-
-            $this->deleteFiles($upahsupir);
-            if ($request->gambar) {
-                $upahsupir->gambar = $this->storeFiles($request->gambar, 'upahsupir');
-            } else {
-                $upahsupir->gambar = '';
-            }
-            if ($upahsupir->save()) {
-                $logTrail = [
-                    'namatabel' => strtoupper($upahsupir->getTable()),
-                    'postingdari' => 'EDIT UPAH SUPIR',
-                    'idtrans' => $upahsupir->id,
-                    'nobuktitrans' => $upahsupir->id,
-                    'aksi' => 'EDIT',
-                    'datajson' => $upahsupir->toArray(),
-                    'modifiedby' => $upahsupir->modifiedby
-                ];
-                $validatedLogTrail = new StoreLogTrailRequest($logTrail);
-                $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
-
-                UpahSupirRincian::where('upahsupir_id', $upahsupir->id)->delete();
-                /* Store detail */
-                $detaillog = [];
-                for ($i = 0; $i < count($request->nominalsupir); $i++) {
-                    $datadetail = [
-                        'upahsupir_id' => $upahsupir->id,
-                        'container_id' => $request->container_id[$i],
-                        'statuscontainer_id' => $request->statuscontainer_id[$i],
-                        'nominalsupir' => $request->nominalsupir[$i],
-                        'nominalkenek' => $request->nominalkenek[$i] ?? 0,
-                        'nominalkomisi' => $request->nominalkomisi[$i] ?? 0,
-                        'nominaltol' =>  $request->nominaltol[$i] ?? 0,
-                        'liter' => $request->liter[$i] ?? 0,
-                        'modifiedby' => $upahsupir->modifiedby,
-                    ];
-
-                    $data = new StoreUpahSupirRincianRequest($datadetail);
-                    $datadetails = app(UpahSupirRincianController::class)->store($data);
-
-                    if (!$datadetails['error']) {
-                        $iddetail = $datadetails['id'];
-                        $tabeldetail = $datadetails['tabel'];
-                    } else {
-                        return response($datadetails, 422);
-                    }
-
-                    $detaillog[] = $datadetails['detail']->toArray();
-                }
-                // return response($datadetails['error'], 422);
-                $datalogtrail = [
-                    'namatabel' => strtoupper($tabeldetail),
-                    'postingdari' => 'EDIT UPAH SUPIR RINCIAN',
-                    'idtrans' =>  $storedLogTrail['id'],
-                    'nobuktitrans' => $upahsupir->id,
-                    'aksi' => 'EDIT',
-                    'datajson' => $detaillog,
-                    'modifiedby' => auth('api')->user()->name,
-                ];
-
-                $data = new StoreLogTrailRequest($datalogtrail);
-                app(LogTrailController::class)->store($data);
-            }
-            $request->sortname = $request->sortname ?? 'id';
-            $request->sortorder = $request->sortorder ?? 'asc';
-            DB::commit();
-
-
-            /* Set position and page */
-            $selected = $this->getPosition($upahsupir, $upahsupir->getTable());
-            $upahsupir->position = $selected->position;
+            $upahsupir = (new UpahSupir())->processUpdate($upahsupir, $request->all());
+            $upahsupir->position = $this->getPosition($upahsupir, $upahsupir->getTable())->position;
             $upahsupir->page = ceil($upahsupir->position / ($request->limit ?? 10));
 
-            return response([
+            DB::commit();
+
+            return response()->json([
                 'status' => true,
                 'message' => 'Berhasil disimpan',
                 'data' => $upahsupir
             ]);
         } catch (\Throwable $th) {
-            $this->deleteFiles($upahsupir);
             DB::rollBack();
             throw $th;
         }
@@ -407,63 +144,27 @@ class UpahSupirController extends Controller
     /**
      * @ClassName 
      */
-    public function destroy(DestroyUpahSupirRequest $request, $id)
+    public function destroy(DestroyUpahSupirRequest $request, $id): JsonResponse
     {
-
         DB::beginTransaction();
 
-        $getDetail = UpahSupirRincian::lockForUpdate()->where('upahsupir_id', $id)->get();
+        try {
+            $upahsupir = (new upahsupir())->processDestroy($id);
+            $selected = $this->getPosition($upahsupir, $upahsupir->getTable(), true);
+            $upahsupir->position = $selected->position;
+            $upahsupir->id = $selected->id;
+            $upahsupir->page = ceil($upahsupir->position / ($request->limit ?? 10));
 
-        $upahSupir = new UpahSupir();
-        $upahSupir = $upahSupir->lockAndDestroy($id);
-        if ($upahSupir) {
-            $logTrail = [
-                'namatabel' => strtoupper($upahSupir->getTable()),
-                'postingdari' => 'DELETE UPAH SUPIR',
-                'idtrans' => $upahSupir->id,
-                'nobuktitrans' => $upahSupir->id,
-                'aksi' => 'DELETE',
-                'datajson' => $upahSupir->toArray(),
-                'modifiedby' => auth('api')->user()->name
-            ];
-
-            $validatedLogTrail = new StoreLogTrailRequest($logTrail);
-            $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
-
-            // DELETE UPAH SUPIR RINCIAN
-
-            $logTrailUpahSupirRincian = [
-                'namatabel' => 'UPAHSUPIRRINCIAN',
-                'postingdari' => 'DELETE UPAH SUPIR RINCIAN',
-                'idtrans' => $storedLogTrail['id'],
-                'nobuktitrans' => $upahSupir->id,
-                'aksi' => 'DELETE',
-                'datajson' => $getDetail->toArray(),
-                'modifiedby' => auth('api')->user()->name
-            ];
-
-            $validatedLogTrailUpahSupirRincian = new StoreLogTrailRequest($logTrailUpahSupirRincian);
-            app(LogTrailController::class)->store($validatedLogTrailUpahSupirRincian);
             DB::commit();
 
-            /* Set position and page */
-            $selected = $this->getPosition($upahSupir, $upahSupir->getTable(), true);
-            $upahSupir->position = $selected->position;
-            $upahSupir->id = $selected->id;
-            $upahSupir->page = ceil($upahSupir->position / ($request->limit ?? 10));
-
-            return response([
+            return response()->json([
                 'status' => true,
                 'message' => 'Berhasil dihapus',
-                'data' => $upahSupir
+                'data' => $upahsupir
             ]);
-        } else {
+        } catch (\Throwable $th) {
             DB::rollBack();
-
-            return response([
-                'status' => false,
-                'message' => 'Gagal dihapus'
-            ]);
+            throw $th;
         }
     }
 
@@ -526,7 +227,7 @@ class UpahSupirController extends Controller
     private function deleteFiles(UpahSupir $upahsupir)
     {
         $sizeTypes = ['', 'medium_', 'small_'];
-
+dd('here');;
         $relatedPhotoUpahSupir = [];
         $photoUpahSupir = json_decode($upahsupir->gambar, true);
         if ($photoUpahSupir) {

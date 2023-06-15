@@ -61,6 +61,7 @@ class UpahRitasiRincianController extends Controller
                     'header.jarak',
                     'zona.keterangan as zona',
                     'container.keterangan as container_id',
+                    'header.tglmulaiberlaku',
                     'detail.nominalsupir',
                     'detail.liter',
                     DB::raw("'Laporan Upah Ritasi' as judulLaporan"),

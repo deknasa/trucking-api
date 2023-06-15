@@ -49,184 +49,18 @@ class MenuController extends Controller
     {
         DB::beginTransaction();
         try {
-            $class = $this->listFolderFiles($request['controller']);
-            if ($class <> '') {
-
-                foreach ($class as $value) {
-                    $namaclass = str_replace('controller', '', strtolower($value['class']));
-                    $dataacos = [
-                        'class' => $namaclass,
-                        'method' => $value['method'],
-                        'nama' => $value['name'],
-                        'modifiedby' => auth('api')->user()->name,
-                    ];
-
-                    $data = new StoreAcosRequest($dataacos);
-
-                    $dataaco = app(AcosController::class)->store($data);
-
-                    if ($dataaco['error']) {
-                        return response($dataaco, 422);
-                    }
-                }
-
-
-                $list = Acos::select('id')
-                    ->where('class', '=', $namaclass)
-                    ->where('method', '=', 'index')
-                    ->orderBy('id', 'asc')
-                    ->first();
-                $menuacoid = $list->id;
-            } else {
-                $menuacoid = 0;
-            }
-
-            $menu = new Menu();
-            $menu->menuname = ucwords(strtolower($request->menuname));
-            $menu->menuseq = $request->menuseq;
-            $menu->menuparent = $request->menuparent ?? 0;
-            $menu->menuicon = strtolower($request->menuicon);
-            $menu->menuexe = strtolower($request->menuexe);
-            $menu->modifiedby = auth('api')->user()->name;
-            $menu->link = "";
-            $menu->aco_id = $menuacoid;
-
-            if (Menu::select('menukode')
-                ->where('menuparent', '=', $request->menuparent)
-                ->exists()
-            ) {
-
-                if ($request->menuparent == 0) {
-
-                    $list = Menu::select('menukode')
-                        ->where('menuparent', '=', '0')
-                        ->where(DB::raw('right(menukode,1)'), '<>', '9')
-                        ->where(DB::raw('left(menukode,1)'), '<>', 'Z')
-                        ->orderBy('menukode', 'desc')
-                        ->first();
-                    // dd('test1');
-                    $menukode = chr(ord($list->menukode) + 1);
-                } else {
-
-
-                    if (Menu::select('menukode')
-                        ->where('menuparent', '=', $request->menuparent)
-                        ->where(DB::raw('right(menukode,1)'), '<>', 'Z')
-                        ->exists()
-                    ) {
-
-                        $list = Menu::select('menukode')
-                            ->where('menuparent', '=', $request->menuparent)
-                            ->where(DB::raw('right(menukode,1)'), '<>', 'Z')
-                            ->orderBy('menukode', 'desc')
-                            ->first();
-
-                        $kodeakhir = substr($list->menukode, -1);
-                        $arrayangka = array('1', '2', '3', '4', '5', '6', '7', '8');
-                        if (in_array($kodeakhir, $arrayangka)) {
-
-                            $menukode = $list->menukode + 1;
-                        } else if ($kodeakhir == '9') {
-                            $kodeawal = substr($list->menukode, 0, strlen($list->menukode) - 1);
-                            $menukode = $kodeawal . 'A';
-                        } else {
-                            $kodeawal = substr($list->menukode, 0, strlen($list->menukode) - 1);
-                            $menukode = $kodeawal . chr((ord($kodeakhir) + 1));
-                        }
-                    } else {
-
-                        $list = Menu::select('menukode')
-                            ->where('id', '=', $request->menuparent)
-                            ->where(DB::raw('right(menukode,1)'), '<>', '9')
-                            ->orderBy('menukode', 'desc')
-                            ->first();
-                        // dd('test3');
-                        $menukode = $list->menukode . '1';
-                    }
-                }
-            } else {
-                if ($request->menuparent == 0) {
-                    $menukode = 0;
-                    $list = Menu::select('menukode')
-                        ->where('menuparent', '=', '0')
-                        ->where(DB::raw('right(menukode,1)'), '<>', 'Z')
-                        ->orderBy('menukode', 'desc')
-                        ->first();
-
-                    $arrayangka = array('1', '2', '3', '4', '5', '6', '7', '8', '9');
-                    $kodeakhir = $list->menukode;;
-                    if (in_array($kodeakhir, $arrayangka)) {
-
-                        $menukode = $list->menukode + 1;
-                    } else {
-                        $menukode =  chr((ord($kodeakhir) + 1));
-                    }
-                    // $menukode = $list->menukode + 1;
-                    $kodeakhir = substr($list->menukode, -1);
-                    $arrayangka = array('1', '2', '3', '4', '5', '6', '7', '8');
-                    if (in_array($kodeakhir, $arrayangka)) {
-
-                        $menukode = $list->menukode + 1;
-                    } else if ($kodeakhir == '9') {
-                        $menukode = 'A';
-                    } else {
-                        $menukode = chr((ord($kodeakhir) + 1));
-                    }
-                } else {
-                    $list = Menu::select('menukode')
-                        ->where('id', '=', $request->menuparent)
-                        ->where(DB::raw('right(menukode,1)'), '<>', '9')
-                        ->orderBy('menukode', 'desc')
-                        ->first();
-                    // dd('test4');
-                    $menukode = $list->menukode . '1';
-                }
-            }
-
-            if (strtoupper($request->menuname) == 'LOGOUT') {
-                $menukode = 'Z';
-            }
-            $menu->menukode = $menukode;
-            TOP:
-            if ($menu->save()) {
-                $logTrail = [
-                    'namatabel' => strtoupper($menu->getTable()),
-                    'postingdari' => 'ENTRY MENU',
-                    'idtrans' => $menu->id,
-                    'nobuktitrans' => $menu->id,
-                    'aksi' => 'ENTRY',
-                    'datajson' => $menu->toArray(),
-                    'modifiedby' => $menu->modifiedby
-                ];
-
-                $validatedLogTrail = new StoreLogTrailRequest($logTrail);
-                $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
-
-                DB::commit();
-            }
-
-            /* Set position and page */
-            $selected = $this->getPosition($menu, $menu->getTable());
-            $menu->position = $selected->position;
+            $menu = (new Menu())->processStore($request->all());
+            $menu->position = $this->getPosition($menu, $menu->getTable())->position;
             $menu->page = ceil($menu->position / ($request->limit ?? 10));
-
+            DB::commit();
+            
             return response([
                 'status' => true,
                 'message' => 'Berhasil disimpan',
                 'data' => $menu
             ]);
-        } catch (QueryException $queryException) {
-            if (isset($queryException->errorInfo[1]) && is_array($queryException->errorInfo)) {
-                // Check if deadlock
-                if ($queryException->errorInfo[1] === 1205) {
-                    goto TOP;
-                }
-            }
-
-            throw $queryException;
         } catch (\Throwable $th) {
             DB::rollBack();
-
             throw $th;
         }
     }
@@ -244,95 +78,15 @@ class MenuController extends Controller
      */
     public function update(UpdateMenuRequest $request, Menu $menu)
     {
-
-
-        $query = DB::table('menu')
-            ->from(
-                DB::raw("menu a with (readuncommitted)")
-            )
-            ->select(
-                DB::raw("trim(replace(b.nama,'index ','')) as controller")
-            )
-            ->join(DB::raw("acos b with(readuncommitted)"), 'a.aco_id', 'b.id')
-            ->where('a.id', '=', $request->id)
-            ->first();
-
-        if ($query != null) {
-            $controller = $query->controller;
-        }
-
         DB::beginTransaction();
 
         try {
-            if ($query != null) {
-                $class = $this->listFolderFiles($controller);
-                if ($class <> '') {
 
-                    foreach ($class as $value) {
-                        $namaclass = str_replace('controller', '', strtolower($value['class']));
-                        $queryacos = DB::table('acos')
-                            ->from(
-                                db::raw("acos a with(readuncommitted)")
-                            )
-                            ->select(
-                                'a.id'
-                            )
-                            ->where('a.class', '=', $namaclass)
-                            ->where('a.method', '=', $value['method'])
-                            ->where('a.nama', '=', $value['name'])
-                            ->first();
-
-                        if (!isset($queryacos)) {
-                            if (Acos::select('id')
-                                ->where('class', '=', $namaclass)
-                                ->exists()
-                            ) {
-                                $dataacos = [
-                                    'class' => $namaclass,
-                                    'method' => $value['method'],
-                                    'nama' => $value['name'],
-                                    'modifiedby' => auth('api')->user()->name,
-                                ];
-
-                                $data = new StoreAcosRequest($dataacos);
-                                $dataaco = app(AcosController::class)->store($data);
-
-                                if ($dataaco['error']) {
-                                    return response($dataaco, 422);
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-            
-            $menu = new Menu();
-            $menu = Menu::lockForUpdate()->findOrFail($request->id);
-            $menu->menuname = ucwords(strtolower($request->menuname));
-            $menu->menuseq = $request->menuseq;
-            $menu->menuicon = strtolower($request->menuicon);
-
-            if ($menu->save()) {
-                $logTrail = [
-                    'namatabel' => strtoupper($menu->getTable()),
-                    'postingdari' => 'EDIT MENU',
-                    'idtrans' => $menu->id,
-                    'nobuktitrans' => $menu->id,
-                    'aksi' => 'EDIT',
-                    'datajson' => $menu->toArray(),
-                    'modifiedby' => $menu->modifiedby
-                ];
-
-                $validatedLogTrail = new StoreLogTrailRequest($logTrail);
-                $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
-
-                DB::commit();
-            }
-
-            /* Set position and page */
-            $selected = $this->getPosition($menu, $menu->getTable());
-            $menu->position = $selected->position;
+            $menu = (new Menu())->processUpdate($menu, $request->all());
+            $menu->position = $this->getPosition($menu, $menu->getTable())->position;
             $menu->page = ceil($menu->position / ($request->limit ?? 10));
+
+            DB::commit();
 
             return response([
                 'status' => true,
@@ -352,59 +106,24 @@ class MenuController extends Controller
     public function destroy(DestroyMenuRequest $request, $id)
     {
         DB::beginTransaction();
-
-        $list = Menu::Select('aco_id')
-            ->where('id', '=', $id)
-            ->first();
-
-
-        if (Acos::select('id')
-            ->where('id', '=', $list->aco_id)
-            ->exists()
-        ) {
-            $list = Acos::select('class')
-                ->where('id', '=', $list->aco_id)
-                ->first();
-
-            Acos::where('class', $list->class)->delete();
-        }
-
-        $menu = new Menu();
-        $menu = $menu->lockAndDestroy($id);
-
-        if ($menu) {
-            $logTrail = [
-                'namatabel' => strtoupper($menu->getTable()),
-                'postingdari' => 'DELETE MENU',
-                'idtrans' => $menu->id,
-                'nobuktitrans' => $menu->id,
-                'aksi' => 'DELETE',
-                'datajson' => $menu->toArray(),
-                'modifiedby' => $menu->modifiedby
-            ];
-
-            $validatedLogTrail = new StoreLogTrailRequest($logTrail);
-            $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
-
-            DB::commit();
-
+        try {
+            $menu = (new Menu())->processDestroy($id);
             $selected = $this->getPosition($menu, $menu->getTable(), true);
             $menu->position = $selected->position;
             $menu->id = $selected->id;
             $menu->page = ceil($menu->position / ($request->limit ?? 10));
 
-            return response([
+            DB::commit();
+
+           return response()->json([
                 'status' => true,
                 'message' => 'Berhasil dihapus',
                 'data' => $menu
             ]);
-        } else {
+        } catch (\Throwable $th) {
             DB::rollBack();
 
-            return response([
-                'status' => false,
-                'message' => 'Gagal dihapus'
-            ]);
+            throw $th;
         }
     }
 

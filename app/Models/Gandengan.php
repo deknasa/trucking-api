@@ -275,4 +275,165 @@ class Gandengan extends MyModel
     {
         return $query->skip($this->params['offset'])->take($this->params['limit']);
     }
+
+    public function processStore(array $data): Gandengan
+    {
+        $gandengan = new Gandengan();
+        $gandengan->kodegandengan = $data['kodegandengan'];
+        $gandengan->keterangan = $data['keterangan'] ?? '';
+        $gandengan->statusaktif = $data['statusaktif'];
+        $gandengan->modifiedby = auth('api')->user()->name;
+
+        if (!$gandengan->save()) {
+            throw new \Exception('Error storing gandengan.');
+        }
+
+        (new LogTrail())->processStore([
+            'namatabel' => strtoupper($gandengan->getTable()),
+            'postingdari' => 'ENTRY GANDENGAN',
+            'idtrans' => $gandengan->id,
+            'nobuktitrans' => $gandengan->id,
+            'aksi' => 'ENTRY',
+            'datajson' => $gandengan->toArray(),
+            'modifiedby' => $gandengan->modifiedby
+        ]);
+
+        $param1 = $gandengan->id;
+        $param2 = $gandengan->modifiedby;
+        $stokgudang = Stok::from(DB::raw("stok with (readuncommitted)"))
+            ->select(DB::raw(
+                "stok.id as stok_id,
+                0  as gudang_id,
+            0 as trado_id,"
+                    . $param1 . " as gandengan_id,
+            0 as qty,'"
+                    . $param2 . "' as modifiedby"
+            ))
+            ->leftjoin('stokpersediaan', function ($join) use ($param1) {
+                $join->on('stokpersediaan.stok_id', '=', 'stok.id');
+                $join->on('stokpersediaan.gandengan_id', '=', DB::raw("'" . $param1 . "'"));
+            })
+            ->where(DB::raw("isnull(stokpersediaan.id,0)"), '=', 0);
+
+        $datadetail = json_decode($stokgudang->get(), true);
+
+        $dataexist = $stokgudang->exists();
+        $detaillogtrail = [];
+        foreach ($datadetail as $item) {
+
+            $stokpersediaan = new StokPersediaan();
+            $stokpersediaan->stok_id = $item['stok_id'];
+            $stokpersediaan->gudang_id = $item['gudang_id'];
+            $stokpersediaan->trado_id = $item['trado_id'];
+            $stokpersediaan->gandengan_id = $item['gandengan_id'];
+            $stokpersediaan->qty = $item['qty'];
+            $stokpersediaan->modifiedby = $item['modifiedby'];
+            $stokpersediaan->save();
+            $detaillogtrail[] = $stokpersediaan->toArray();
+        }
+
+        if (!$dataexist == true) {
+            throw new \Exception('Error storing gandengan.');
+        }
+
+        (new LogTrail())->processStore([
+            'namatabel' => strtoupper($stokpersediaan->getTable()),
+            'postingdari' => 'STOK PERSEDIAAN',
+            'idtrans' => $gandengan->id,
+            'nobuktitrans' => $gandengan->id,
+            'aksi' => 'EDIT',
+            'datajson' => json_encode($detaillogtrail),
+            'modifiedby' => $gandengan->modifiedby
+        ]);
+
+        return $gandengan;
+    }
+
+    public function processUpdate(Gandengan $gandengan, array $data): Gandengan
+    {
+        $gandengan->kodegandengan = $data['kodegandengan'];
+        $gandengan->keterangan = $data['keterangan'] ?? '';
+        $gandengan->statusaktif = $data['statusaktif'];
+        $gandengan->modifiedby = auth('api')->user()->user;
+
+        if (!$gandengan->save()) {
+            throw new \Exception('Error updating gandengan.');
+        }
+
+        (new LogTrail())->processStore([
+            'namatabel' => strtoupper($gandengan->getTable()),
+            'postingdari' => 'EDIT GANDENGAN',
+            'idtrans' => $gandengan->id,
+            'nobuktitrans' => $gandengan->id,
+            'aksi' => 'EDIT',
+            'datajson' => $gandengan->toArray(),
+            'modifiedby' => $gandengan->modifiedby
+        ]);
+
+        $param1 = $gandengan->id;
+        $param2 = $gandengan->modifiedby;
+        $stokgudang = Stok::from(DB::raw("stok with (readuncommitted)"))
+            ->select(DB::raw(
+                "stok.id as stok_id,
+                0  as gudang_id,
+            0 as trado_id,"
+                    . $param1 . " as gandengan_id,
+            0 as qty,'"
+                    . $param2 . "' as modifiedby"
+            ))
+            ->leftjoin('stokpersediaan', function ($join) use ($param1) {
+                $join->on('stokpersediaan.stok_id', '=', 'stok.id');
+                $join->on('stokpersediaan.gandengan_id', '=', DB::raw("'" . $param1 . "'"));
+            })
+            ->where(DB::raw("isnull(stokpersediaan.id,0)"), '=', 0);
+
+        $datadetail = json_decode($stokgudang->get(), true);
+        $dataexist = $stokgudang->exists();
+        $detaillogtrail = [];
+        foreach ($datadetail as $item) {
+            $stokpersediaan = new StokPersediaan();
+            $stokpersediaan->stok_id = $item['stok_id'];
+            $stokpersediaan->gudang_id = $item['gudang_id'];
+            $stokpersediaan->trado_id = $item['trado_id'];
+            $stokpersediaan->gandengan_id = $item['gandengan_id'];
+            $stokpersediaan->qty = $item['qty'];
+            $stokpersediaan->modifiedby = $item['modifiedby'];
+            if (!$stokpersediaan->save()) {
+                throw new \Exception('Error store stok persediaan.');
+            }
+            $detaillogtrail[] = $stokpersediaan->toArray();
+        }
+
+        if ($dataexist == true) {
+            (new LogTrail())->processStore([
+                'namatabel' => strtoupper($stokpersediaan->getTable()),
+                'postingdari' => 'STOK PERSEDIAAN',
+                'idtrans' => $gandengan->id,
+                'nobuktitrans' => $gandengan->id,
+                'aksi' => 'EDIT',
+                'datajson' => json_encode($detaillogtrail),
+                'modifiedby' => $gandengan->modifiedby
+            ]);
+        }
+
+        return $gandengan;
+    }
+
+    public function processDestroy($id): Gandengan
+    {
+        $gandengan = new Gandengan();
+        $gandengan = $gandengan->lockAndDestroy($id);
+
+        (new LogTrail())->processStore([
+            'namatabel' => strtoupper($gandengan->getTable()),
+            'postingdari' => 'DELETE GANDENGAN',
+            'idtrans' => $gandengan->id,
+            'nobuktitrans' => $gandengan->id,
+            'aksi' => 'DELETE',
+            'datajson' => $gandengan->toArray(),
+            'modifiedby' => auth('api')->user()->user
+        ]);
+
+        return $gandengan;
+    }
 }

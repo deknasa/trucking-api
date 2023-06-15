@@ -23,9 +23,8 @@ class AbsensiSupirDetailController extends Controller
         $absensiSupirDetail = new AbsensiSupirDetail();
 
         $idUser = auth('api')->user()->id;
-            $getuser = User::select('name', 'cabang.namacabang as cabang_id')
-                ->where('user.id', $idUser)->join('cabang', 'user.cabang_id', 'cabang.id')->first();
-
+        $getuser = User::select('name')
+            ->where('user.id', $idUser)->first();
 
             return response([
                 'data' => $absensiSupirDetail->get(),

@@ -55,6 +55,8 @@ class GajiSupirHeader extends MyModel
     public function get()
     {
         $this->setRequestParameters();
+        $periode = request()->periode ?? '';
+        $statusCetak = request()->statuscetak ?? '';
 
         $query = DB::table($this->table)->from(DB::raw("gajisupirheader with (readuncommitted)"))
             ->select(
@@ -82,9 +84,20 @@ class GajiSupirHeader extends MyModel
                 'gajisupirheader.created_at',
                 'gajisupirheader.updated_at',
             )
-            ->whereBetween($this->table . '.tglbukti', [date('Y-m-d', strtotime(request()->tgldari)), date('Y-m-d', strtotime(request()->tglsampai))])
+            
             ->leftJoin(DB::raw("parameter with (readuncommitted)"), 'gajisupirheader.statuscetak', 'parameter.id')
             ->leftJoin(DB::raw("supir with (readuncommitted)"), 'gajisupirheader.supir_id', 'supir.id');
+        if (request()->tgldari && request()->tglsampai) {
+            $query->whereBetween($this->table . '.tglbukti', [date('Y-m-d', strtotime(request()->tgldari)), date('Y-m-d', strtotime(request()->tglsampai))]);
+        }
+        if ($periode != '') {
+            $periode = explode("-", $periode);
+            $query->whereRaw("MONTH(gajisupirheader.tglbukti) ='" . $periode[0] . "'")
+                ->whereRaw("year(gajisupirheader.tglbukti) ='" . $periode[1] . "'");
+        }
+        if ($statusCetak != '') {
+            $query->where("gajisupirheader.statuscetak", $statusCetak);
+        }
         $this->totalRows = $query->count();
         $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;
 
@@ -899,7 +912,6 @@ class GajiSupirHeader extends MyModel
                         } else {
                             // $query = $query->where($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
                             $query = $query->whereRaw($this->table . ".[" .  $filters['field'] . "] LIKE '%" . escapeLike($filters['data']) . "%' escape '|'");
-
                         }
                     }
 
@@ -920,7 +932,6 @@ class GajiSupirHeader extends MyModel
                             } else {
                                 // $query->orWhere($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
                                 $query = $query->OrwhereRaw($this->table . ".[" .  $filters['field'] . "] LIKE '%" . escapeLike($filters['data']) . "%' escape '|'");
-
                             }
                         }
                     });
@@ -1086,5 +1097,42 @@ class GajiSupirHeader extends MyModel
             ->where("pengeluarantruckingdetail.nobukti", $nobukti);
 
         return $fetch->first();
+    }
+
+    public function getExport($id)
+    {
+        $this->setRequestParameters();
+
+        $getJudul = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))
+        ->select('text')
+        ->where('grp', 'JUDULAN LAPORAN')
+        ->where('subgrp', 'JUDULAN LAPORAN')
+        ->first();
+
+        $query = DB::table($this->table)->from(DB::raw("gajisupirheader with (readuncommitted)"))
+            ->select(
+                'gajisupirheader.id',
+                'gajisupirheader.nobukti',
+                'gajisupirheader.tglbukti',
+                'supir.namasupir as supir_id',
+                // 'gajisupirheader.keterangan',
+                'gajisupirheader.nominal',
+                'gajisupirheader.tgldari',
+                'gajisupirheader.tglsampai',
+                'gajisupirheader.total',
+                'gajisupirheader.uangjalan',
+                'gajisupirheader.bbm',
+                'gajisupirheader.deposito',
+                'gajisupirheader.potonganpinjaman',
+                'gajisupirheader.potonganpinjamansemua',
+                'gajisupirheader.uangmakanharian',
+                DB::raw("'Laporan Absensi Supir Header' as judulLaporan"),
+                DB::raw("'" . $getJudul->text . "' as judul")
+            )
+            ->leftJoin(DB::raw("parameter with (readuncommitted)"), 'gajisupirheader.statuscetak', 'parameter.id')
+            ->leftJoin(DB::raw("supir with (readuncommitted)"), 'gajisupirheader.supir_id', 'supir.id')
+            ->where("$this->table.id", $id);
+        $data = $query->first();
+        return $data;
     }
 }
