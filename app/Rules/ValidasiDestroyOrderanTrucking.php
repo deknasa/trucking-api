@@ -32,7 +32,7 @@ class ValidasiDestroyOrderanTrucking implements Rule
         if ($this->kondisi == true) {
             // dd('1');
             return false;
-        } else if ($this->kondisicetak == true) {
+        } else if ($this->kondisicetak == false) {
             // dd('2');
             return false;
         } else {
