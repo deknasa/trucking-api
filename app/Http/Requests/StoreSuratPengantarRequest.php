@@ -21,6 +21,8 @@ use App\Rules\ExistAgen;
 use App\Rules\ExistJenisOrder;
 use App\Rules\ExistTarifRincian;
 use App\Rules\ExistUpahSupirRincianSuratPengantar;
+use App\Rules\ValidasiSupirTrip;
+use App\Rules\ValidasiTradoTrip;
 
 class StoreSuratPengantarRequest extends FormRequest
 {
@@ -192,6 +194,7 @@ class StoreSuratPengantarRequest extends FormRequest
         if ($trado_id != '' && $this->trado != '') {
             $rulestrado_id = [
                 'trado' => [
+                    new ValidasiTradoTrip(),
                     new ExistTrado(),
                 ]
             ];
@@ -203,6 +206,7 @@ class StoreSuratPengantarRequest extends FormRequest
                         'required',
                         'numeric',
                         'min:1',
+                        new ValidasiTradoTrip(),
                         new ExistTrado(),
 
                     ]
@@ -214,6 +218,7 @@ class StoreSuratPengantarRequest extends FormRequest
                     $rulestrado_id = [
                         'trado' => [
                             'required',
+                            new ValidasiTradoTrip(),
                             new ExistTrado(),
                         ]
                     ];
@@ -226,6 +231,7 @@ class StoreSuratPengantarRequest extends FormRequest
                     'required',
                     'numeric',
                     'min:1',
+                    new ValidasiTradoTrip(),
                     new ExistTrado(),
                 ]
             ];
@@ -235,6 +241,7 @@ class StoreSuratPengantarRequest extends FormRequest
                     'required',
                     'numeric',
                     'min:1',
+                    new ValidasiTradoTrip(),
                     new ExistTrado(),
                 ]
             ];
@@ -245,7 +252,7 @@ class StoreSuratPengantarRequest extends FormRequest
         if ($supir_id != '' && $this->supir != '') {
             $rulessupir_id = [
                 'supir' => [
-                    new ExistSupir(),
+                    new ExistSupir(),new ValidasiSupirTrip(),
                 ]
             ];
         } else if ($supir_id != null) {
@@ -255,7 +262,7 @@ class StoreSuratPengantarRequest extends FormRequest
                     'supir_id' => [
                         'required',
                         'numeric',
-                        'min:1',
+                        'min:1',new ValidasiSupirTrip(),
                         new ExistSupir(),
 
                     ]
@@ -267,6 +274,7 @@ class StoreSuratPengantarRequest extends FormRequest
                     $rulessupir_id = [
                         'supir' => [
                             'required',
+                            new ValidasiSupirTrip(),
                             new ExistSupir(),
                         ]
                     ];
@@ -279,6 +287,7 @@ class StoreSuratPengantarRequest extends FormRequest
                     'required',
                     'numeric',
                     'min:1',
+                    new ValidasiSupirTrip(),
                     new ExistSupir(),
                 ]
             ];
@@ -288,6 +297,7 @@ class StoreSuratPengantarRequest extends FormRequest
                     'required',
                     'numeric',
                     'min:1',
+                    new ValidasiSupirTrip(),
                     new ExistSupir(),
                 ]
             ];
@@ -743,7 +753,7 @@ class StoreSuratPengantarRequest extends FormRequest
             $rulestarifrincian_id,
             $rulesUpah_id
         );
-
+        
         return $rule;
 
 
