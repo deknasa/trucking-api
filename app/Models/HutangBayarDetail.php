@@ -140,4 +140,25 @@ class HutangBayarDetail extends MyModel
     {
         return $query->skip($this->params['offset'])->take($this->params['limit']);
     }
+
+
+    public function processStore(HutangBayarHeader $hutangBayarHeader, array $data): HutangBayarDetail
+    {
+        $hutangBayarDetail = new HutangBayarDetail();
+        $hutangBayarDetail->hutangbayar_id = $data['hutangbayar_id'];
+        $hutangBayarDetail->nobukti = $data['nobukti'];
+        $hutangBayarDetail->nominal = $data['nominal'];
+        $hutangBayarDetail->hutang_nobukti = $data['hutang_nobukti'];
+        $hutangBayarDetail->cicilan = $data['cicilan'];
+        $hutangBayarDetail->potongan = $data['potongan'];
+        $hutangBayarDetail->keterangan = $data['keterangan'];
+        $hutangBayarDetail->modifiedby = $hutangBayarHeader->modifiedby;
+       
+        
+        if (!$hutangBayarDetail->save()) {
+            throw new \Exception("Error storing Pengeluaran Detail.");
+        }
+
+        return $hutangBayarDetail;
+    }
 }
