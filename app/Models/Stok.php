@@ -2,10 +2,12 @@
 
 namespace App\Models;
 
+use App\Helpers\App;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
+use Illuminate\Support\Facades\Storage;
 
 class Stok extends MyModel
 {
@@ -80,10 +82,10 @@ class Stok extends MyModel
         $this->setRequestParameters();
 
         $getJudul = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))
-        ->select('text')
-        ->where('grp', 'JUDULAN LAPORAN')
-        ->where('subgrp', 'JUDULAN LAPORAN')
-        ->first();
+            ->select('text')
+            ->where('grp', 'JUDULAN LAPORAN')
+            ->where('subgrp', 'JUDULAN LAPORAN')
+            ->first();
 
         $aktif = request()->aktif ?? '';
         $penerimaanstok_id = request()->penerimaanstok_id ?? '';
@@ -136,7 +138,7 @@ class Stok extends MyModel
             $spb = Parameter::where('grp', 'SPB STOK')->where('subgrp', 'SPB STOK')->first();
             if ($spb->text == $penerimaanstok_id) {
                 $query->leftJoin('penerimaanstokdetail', 'stok.id', 'penerimaanstokdetail.stok_id')
-                      ->where('penerimaanstokdetail.nobukti' , $penerimaanstokheader_nobukti);
+                    ->where('penerimaanstokdetail.nobukti', $penerimaanstokheader_nobukti);
             }
         }
 
@@ -319,11 +321,10 @@ class Stok extends MyModel
                         } else if ($filters['field'] == 'merk') {
                             $query = $query->where('merk.keterangan', 'LIKE', "%$filters[data]%");
                         } else if ($filters['field'] == 'created_at' || $filters['field'] == 'updated_at') {
-                            $query = $query->whereRaw("format(".$this->table . "." . $filters['field'].", 'dd-MM-yyyy HH:mm:ss') LIKE '%$filters[data]%'");
+                            $query = $query->whereRaw("format(" . $this->table . "." . $filters['field'] . ", 'dd-MM-yyyy HH:mm:ss') LIKE '%$filters[data]%'");
                         } else {
                             // $query = $query->where($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
                             $query = $query->whereRaw($this->table . ".[" .  $filters['field'] . "] LIKE '%" . escapeLike($filters['data']) . "%' escape '|'");
-
                         }
                     }
 
@@ -342,11 +343,10 @@ class Stok extends MyModel
                             } else if ($filters['field'] == 'merk') {
                                 $query = $query->orWhere('merk.keterangan', 'LIKE', "%$filters[data]%");
                             } else if ($filters['field'] == 'created_at' || $filters['field'] == 'updated_at') {
-                                $query = $query->orWhereRaw("format(".$this->table . "." . $filters['field'].", 'dd-MM-yyyy HH:mm:ss') LIKE '%$filters[data]%'");
+                                $query = $query->orWhereRaw("format(" . $this->table . "." . $filters['field'] . ", 'dd-MM-yyyy HH:mm:ss') LIKE '%$filters[data]%'");
                             } else {
                                 // $query = $query->orWhere($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
                                 $query = $query->OrwhereRaw($this->table . ".[" .  $filters['field'] . "] LIKE '%" . escapeLike($filters['data']) . "%' escape '|'");
-
                             }
                         }
                     });
@@ -367,5 +367,141 @@ class Stok extends MyModel
     public function paginate($query)
     {
         return $query->skip($this->params['offset'])->take($this->params['limit']);
+    }
+
+    public function processStore(array $data): Stok
+    {
+        $stok = new stok();
+        $stok->keterangan = $data['keterangan'];
+        $stok->namastok = $data['namastok'];
+        $stok->namaterpusat = $data['namaterpusat'];
+        $stok->statusaktif = $data['statusaktif'];
+        $stok->kelompok_id = $data['kelompok_id'];
+        $stok->subkelompok_id = $data['subkelompok_id'];
+        $stok->kategori_id = $data['kategori_id'];
+        $stok->merk_id = $data['merk_id'] ?? 0;
+        $stok->jenistrado_id = $data['jenistrado_id'] ?? 0;
+        $stok->keterangan = $data['keterangan'] ?? '';
+        $stok->qtymin = $data['qtymin'] ?? 0;
+        $stok->qtymax = $data['qtymax'] ?? 0;
+        $stok->modifiedby = auth('api')->user()->name;
+
+        if (array_key_exists('gambar', $data)) {
+            $stok->gambar = $this->storeFiles($data['gambar'], 'stok');
+        } else {
+            $stok->gambar = '';
+        }
+
+        if (!$stok->save()) {
+            throw new \Exception("Error storing stok.");
+        }
+
+        (new LogTrail())->processStore([
+            'namatabel' => strtoupper($stok->getTable()),
+            'postingdari' => 'ENTRY STOK',
+            'idtrans' => $stok->id,
+            'nobuktitrans' => $stok->id,
+            'aksi' => 'ENTRY',
+            'datajson' => $stok->toArray(),
+            'modifiedby' => $stok->modifiedby
+        ]);
+
+
+        return $stok;
+    }
+    public function processUpdate(Stok $stok, array $data): Stok
+    {
+
+        $stok->keterangan = $data['keterangan'];
+        $stok->namastok = $data['namastok'];
+        $stok->namaterpusat = $data['namaterpusat'];
+        $stok->namaterpusat = $data['namaterpusat'];
+        $stok->statusaktif = $data['statusaktif'];
+        $stok->kelompok_id = $data['kelompok_id'];
+        $stok->subkelompok_id = $data['subkelompok_id'];
+        $stok->kategori_id = $data['kategori_id'];
+        $stok->merk_id =  $data['merk_id'] ?? 0;
+        $stok->jenistrado_id = $data['jenistrado_id'] ?? 0;
+        $stok->keterangan = $data['keterangan'] ?? '';
+        $stok->qtymin = $data['qtymin'] ?? 0;
+        $stok->qtymax = $data['qtymax'] ?? 0;
+        $stok->modifiedby = auth('api')->user()->name;
+
+
+        $this->deleteFiles($stok);
+        if (array_key_exists('gambar', $data)) {
+            $stok->gambar = $this->storeFiles($data['gambar'], 'stok');
+        } else {
+            $stok->gambar = '';
+        }
+        if (!$stok->save()) {
+            throw new \Exception("Error updating stok.");
+        }
+
+
+        (new LogTrail())->processStore([
+            'namatabel' => strtoupper($stok->getTable()),
+            'postingdari' => 'EDIT STOK',
+            'idtrans' => $stok->id,
+            'nobuktitrans' => $stok->id,
+            'aksi' => 'ENTRY',
+            'datajson' => $stok->toArray(),
+            'modifiedby' => $stok->modifiedby
+        ]);
+
+        return $stok;
+    }
+
+    public function processDestroy($id): Stok
+    {
+        $stok = new Stok;
+        $stok = $stok->lockAndDestroy($id);
+
+        (new LogTrail())->processStore([
+            'namatabel' => strtoupper($stok->getTable()),
+            'postingdari' => 'DELETE STOK',
+            'idtrans' => $stok->id,
+            'nobuktitrans' => $stok->id,
+            'aksi' => 'DELETE',
+            'datajson' => $stok->toArray(),
+            'modifiedby' => $stok->modifiedby
+        ]);
+
+        return $stok;
+    }
+
+
+
+
+    private function storeFiles(array $files, string $destinationFolder): string
+    {
+        $storedFiles = [];
+
+        foreach ($files as $file) {
+            $originalFileName = $file->hashName();
+            $storedFile = Storage::putFileAs($destinationFolder, $file, $originalFileName);
+            $resizedFiles = App::imageResize(storage_path("app/$destinationFolder/"), storage_path("app/$storedFile"), $originalFileName);
+
+            $storedFiles[] = $originalFileName;
+        }
+
+        return json_encode($storedFiles);
+    }
+
+
+    private function deleteFiles(Stok $stok)
+    {
+        $sizeTypes = ['', 'medium_', 'small_'];
+
+        $relatedPhotoStok = [];
+        $photoStok = json_decode($stok->gambar, true);
+        if ($photoStok) {
+            foreach ($photoStok as $path) {
+                foreach ($sizeTypes as $sizeType) {
+                    $relatedPhotoStok[] = "stok/$sizeType$path";
+                }
+            }
+            Storage::delete($relatedPhotoStok);
+        }
     }
 }

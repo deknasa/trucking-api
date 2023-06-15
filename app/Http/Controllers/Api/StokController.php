@@ -10,6 +10,7 @@ use App\Http\Requests\RangeExportReportRequest;
 use App\Models\Stok;
 use App\Http\Requests\StoreStokRequest;
 use App\Http\Requests\UpdateStokRequest;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Intervention\Image\ImageManagerStatic as Image;
@@ -19,6 +20,7 @@ use Illuminate\Support\Facades\Storage;
 
 class StokController extends Controller
 {
+    private $stok;
     /**
      * @ClassName 
      */
@@ -79,60 +81,25 @@ class StokController extends Controller
     /**
      * @ClassName 
      */
-    public function store(StoreStokRequest $request)
+    public function store(StoreStokRequest $request) : JsonResponse
     {
         DB::beginTransaction();
         try {
-            $stok = new stok();
-            $stok->keterangan = $request->keterangan;
-            $stok->namastok = $request->namastok;
-            $stok->namaterpusat = $request->namaterpusat;
-            $stok->statusaktif = $request->statusaktif;
-            $stok->kelompok_id = $request->kelompok_id;
-            $stok->subkelompok_id = $request->subkelompok_id;
-            $stok->kategori_id = $request->kategori_id;
-            $stok->merk_id = $request->merk_id ?? 0;
-            $stok->jenistrado_id = $request->jenistrado_id ?? 0;
-            $stok->keterangan = $request->keterangan ?? '';
-            $stok->qtymin = $request->qtymin ?? 0;
-            $stok->qtymax = $request->qtymax ?? 0;
-            $stok->modifiedby = auth('api')->user()->name;
-
-            if ($request->gambar) {
-                $stok->gambar = $this->storeFiles($request->gambar, 'stok');
-            } else {
-                $stok->gambar = '';
-            }
-            $stok->save();
-
-            $logTrail = [
-                'namatabel' => strtoupper($stok->getTable()),
-                'postingdari' => 'ENTRY STOK',
-                'idtrans' => $stok->id,
-                'nobuktitrans' => $stok->id,
-                'aksi' => 'ENTRY',
-                'datajson' => $stok->toArray(),
-                'modifiedby' => $stok->modifiedby
-            ];
-            $validatedLogTrail = new StoreLogTrailRequest($logTrail);
-            $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
-
+            $stok = (new Stok())->processStore($request->all());
+            $stok->position = $this->getPosition($stok, $stok->getTable())->position;
+            $stok->page = ceil($stok->position / ($request->limit ?? 10));
+            // $this->stok = $stok;
             DB::commit();
 
-            /* Set position and page */
-            $selected = $this->getPosition($stok, $stok->getTable());
-            $stok->position = $selected->position;
-            $stok->page = ceil($stok->position / ($request->limit ?? 10));
-
-            return response([
+            return response()->json([
                 'status' => true,
                 'message' => 'Berhasil disimpan',
                 'data' => $stok
             ], 201);
         } catch (\Throwable $th) {
-            $this->deleteFiles($stok);
             DB::rollBack();
-            return response($th->getMessage());
+
+            throw $th;
         }
     }
 
@@ -167,58 +134,20 @@ class StokController extends Controller
 
         DB::beginTransaction();
         try {
-            $stok->keterangan = $request->keterangan;
-            $stok->namastok = $request->namastok;
-            $stok->namaterpusat = $request->namaterpusat;
-            $stok->namaterpusat = $request->namaterpusat;
-            $stok->statusaktif = $request->statusaktif;
-            $stok->kelompok_id = $request->kelompok_id;
-            $stok->subkelompok_id = $request->subkelompok_id;
-            $stok->kategori_id = $request->kategori_id;
-            $stok->merk_id =  $request->merk_id ?? 0;
-            $stok->jenistrado_id = $request->jenistrado_id ?? 0;
-            $stok->keterangan = $request->keterangan ?? '';
-            $stok->qtymin = $request->qtymin ?? 0;
-            $stok->qtymax = $request->qtymax ?? 0;
-            $stok->modifiedby = auth('api')->user()->name;
-
-            $this->deleteFiles($stok);
-            if ($request->gambar) {
-                $stok->gambar = $this->storeFiles($request->gambar, 'stok');
-            } else {
-                $stok->gambar = '';
-            }
-
-            $stok->save();
-
-            $logTrail = [
-                'namatabel' => strtoupper($stok->getTable()),
-                'postingdari' => 'EDIT STOK',
-                'idtrans' => $stok->id,
-                'nobuktitrans' => $stok->id,
-                'aksi' => 'ENTRY',
-                'datajson' => $stok->toArray(),
-                'modifiedby' => $stok->modifiedby
-            ];
-            $validatedLogTrail = new StoreLogTrailRequest($logTrail);
-            $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
+            $stok = (new Stok())->processUpdate($stok, $request->all());
+            $stok->position = $this->getPosition($stok, $stok->getTable())->position;
+            $stok->page = ceil($stok->position / ($request->limit ?? 10));
 
             DB::commit();
 
-            /* Set position and page */
-            $selected = $this->getPosition($stok, $stok->getTable());
-            $stok->position = $selected->position;
-            $stok->page = ceil($stok->position / ($request->limit ?? 10));
-
-            return response([
+            return response()->json([
                 'status' => true,
-                'message' => 'Berhasil disimpan',
+                'message' => 'Berhasil diubah',
                 'data' => $stok
-            ], 201);
+            ]);
         } catch (\Throwable $th) {
-            $this->deleteFiles($stok);
             DB::rollBack();
-            return response($th->getMessage());
+            throw $th;
         }
     }
 
@@ -228,43 +157,24 @@ class StokController extends Controller
     public function destroy(Request $request, $id)
     {
         DB::beginTransaction();
-
-        $stok = new Stok;
-        $stok = $stok->lockAndDestroy($id);
-        if ($stok) {
-            $logTrail = [
-                'namatabel' => strtoupper($stok->getTable()),
-                'postingdari' => 'DELETE STOK',
-                'idtrans' => $stok->id,
-                'nobuktitrans' => $stok->id,
-                'aksi' => 'DELETE',
-                'datajson' => $stok->toArray(),
-                'modifiedby' => $stok->modifiedby
-            ];
-
-            $validatedLogTrail = new StoreLogTrailRequest($logTrail);
-            app(LogTrailController::class)->store($validatedLogTrail);
-            $this->deleteFiles($stok);
-            DB::commit();
-
-            /* Set position and page */
+        
+        try {
+            $stok = (new Stok())->processDestroy($id);
             $selected = $this->getPosition($stok, $stok->getTable(), true);
             $stok->position = $selected->position;
             $stok->id = $selected->id;
             $stok->page = ceil($stok->position / ($request->limit ?? 10));
 
-            return response([
+            DB::commit();
+
+            return response()->json([
                 'status' => true,
                 'message' => 'Berhasil dihapus',
                 'data' => $stok
             ]);
-        } else {
+        } catch (\Throwable $th) {
             DB::rollBack();
-
-            return response([
-                'status' => false,
-                'message' => 'Gagal dihapus'
-            ]);
+            throw $th;
         }
     }
 
