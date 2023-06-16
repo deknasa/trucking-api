@@ -168,7 +168,9 @@ class Trado extends MyModel
             ->where('subgrp', 'JUDULAN LAPORAN')
             ->first();
 
+
         $query = DB::table($this->table)->from(DB::raw("$this->table with (readuncommitted)"))
+       
             ->select(
                 'trado.id',
                 'trado.keterangan',
@@ -214,7 +216,8 @@ class Trado extends MyModel
                 'supir.namasupir as supir_id',
                 'trado.updated_at',
                 DB::raw("'Laporan Trado' as judulLaporan"),
-                DB::raw("'" . $getJudul->text . "' as judul")
+                DB::raw("'" . $getJudul->text . "' as judul"),
+                DB::raw("'Tanggal Cetak : '+format(getdate(),'dd-MM-yyyy HH:mm:ss')+' User :".auth('api')->user()->name."' as tglcetak")
             )
             ->leftJoin(DB::raw("parameter as parameter_statusaktif with (readuncommitted)"), 'trado.statusaktif', 'parameter_statusaktif.id')
             ->leftJoin(DB::raw("parameter as parameter_statusjenisplat with (readuncommitted)"), 'trado.statusjenisplat', 'parameter_statusjenisplat.id')

@@ -191,7 +191,7 @@ class Supir extends MyModel
                 'supir.id',
                 'supir.namasupir',
                 'supir.namaalias',
-                'supir.tgllahir',
+                DB::raw("(case when year(isnull(supir.tgllahir,'1900/1/1'))=1900 then null else supir.tgllahir end) as tgllahir"),
                 'supir.alamat',
                 'supir.kota',
                 'supir.telp',
