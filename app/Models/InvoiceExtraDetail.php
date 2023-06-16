@@ -132,4 +132,20 @@ class InvoiceExtraDetail extends MyModel
     {
         return $query->skip($this->params['offset'])->take($this->params['limit']);
     }
+
+    public function processStore(InvoiceExtraHeader $invoiceExtraHeader, array $data): InvoiceExtraDetail
+    {
+        $invoiceExtraDetail = new InvoiceExtraDetail();
+        $invoiceExtraDetail->invoiceextra_id = $invoiceExtraHeader->id;
+        $invoiceExtraDetail->nobukti = $invoiceExtraHeader->nobukti;
+        $invoiceExtraDetail->nominal =  $data['nominal_detail'];
+        $invoiceExtraDetail->keterangan = $data['keterangan_detail'];
+        $invoiceExtraDetail->modifiedby = auth('api')->user()->name;
+        
+        if (!$invoiceExtraDetail->save()) {
+            throw new \Exception("Error storing invoice extra detail.");
+        }
+
+        return $invoiceExtraDetail;
+    }
 }
