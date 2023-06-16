@@ -342,6 +342,8 @@ class ParameterSeeder extends Seeder
         parameter::create(['grp' => 'JUDULAN LAPORAN', 'subgrp' => 'JUDULAN LAPORAN', 'kelompok' => '', 'text' => 'PT. TRANSPORINDO AGUNG SEJAHTERA', 'memo' => '{"MEMO":"PT. TRANSPORINDO AGUNG SEJAHTERA","SINGKATAN":"BJE","WARNA":"#28A745"}', 'type' => '118', 'modifiedby' => 'ADMIN', 'default' => '',]);
         parameter::create(['grp' => 'TIPE KAS/BANK', 'subgrp' => 'TIPE KAS/BANK', 'kelompok' => '', 'text' => 'KAS', 'memo' => '{"MEMO":"KAS","SINGKATAN":"K","WARNA":"#28A745"}', 'type' => '0', 'modifiedby' => 'ADMIN', 'default' => '',]);
         parameter::create(['grp' => 'TIPE KAS/BANK', 'subgrp' => 'TIPE KAS/BANK', 'kelompok' => '', 'text' => 'BANK', 'memo' => '{"MEMO":"BANK","SINGKATAN":"B","WARNA":"#6C757D"}', 'type' => '0', 'modifiedby' => 'ADMIN', 'default' => 'YA',]);
+        parameter::create(['grp' => 'DIPERIKSA', 'subgrp' => 'DIPERIKSA', 'kelompok' => '', 'text' => 'AYEN', 'memo' => '{"MEMO":"AYEN","SINGKATAN":"DPR","WARNA":"#28A745"}', 'type' => '118', 'modifiedby' => 'ADMIN', 'default' => '',]);
+        parameter::create(['grp' => 'DISETUJUI', 'subgrp' => 'DIPERIKSA', 'kelompok' => '', 'text' => 'ASAN', 'memo' => '{"MEMO":"ASAN","SINGKATAN":"DSJ","WARNA":"#28A745"}', 'type' => '118', 'modifiedby' => 'ADMIN', 'default' => '',]);
         
     }
 }
