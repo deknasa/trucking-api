@@ -29,7 +29,8 @@ class UpdateMenuRequest extends FormRequest
     public function rules()
     {
         return [
-            'menuname' => ['required',Rule::unique('menu')->whereNotIn('id', [$this->id])],
+            // 'menuname' => ['required',Rule::unique('menu')->whereNotIn('id', [$this->id])],
+             'menuname' => ['required'],
             'menuseq' => 'numeric|nullable',
         ];
     }

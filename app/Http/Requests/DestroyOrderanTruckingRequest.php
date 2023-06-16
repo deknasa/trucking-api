@@ -7,6 +7,7 @@ use App\Models\OrderanTrucking;
 use Illuminate\Validation\Rule;
 use App\Rules\ValidasiDestroyOrderanTrucking ;
 use App\Http\Controllers\Api\OrderanTruckingController;
+use Illuminate\Support\Facades\DB;
 
 class DestroyOrderanTruckingRequest extends FormRequest
 {
@@ -29,17 +30,15 @@ class DestroyOrderanTruckingRequest extends FormRequest
     {
         $controller = new OrderanTruckingController;
         $orderantrucking = new OrderanTrucking();
-        $cekdata = $orderantrucking->cekvalidasihapus($this->nobukti);
-        $cekdatacetak = $controller->cekvalidasi($this->id);
-        if ($cekdatacetak->original['kodestatus']=='1') {
+        $nobukti = OrderanTrucking::from(DB::raw("orderantrucking"))->where('id', request()->id)->first();
+        $cekdata = $orderantrucking->cekvalidasihapus($nobukti->nobukti, 'delete');
+        $cekdatacetak = $controller->cekvalidasi($this->id, 'delete');
+        if ($cekdatacetak->original['status']=='1') {
                 $cekdtcetak=true;
         } else {
             $cekdtcetak=false;
         }
-        
-
-         
-    
+            
         return [
             'id' => [ new ValidasiDestroyOrderanTrucking($cekdata['kondisi'],$cekdtcetak)],
         ];

@@ -28,6 +28,8 @@ class RekapPengeluaranHeader extends MyModel
     {
         $this->setRequestParameters();
 
+        $periode = request()->periode ?? '';
+        $statusCetak = request()->statuscetak ?? '';
         $query = DB::table($this->table);
         $query = $this->selectColumns($query)
         ->leftJoin('parameter as statusapproval','rekappengeluaranheader.statusapproval','statusapproval.id')
@@ -36,6 +38,14 @@ class RekapPengeluaranHeader extends MyModel
         ->leftJoin('bank','rekappengeluaranheader.bank_id','bank.id');
         if (request()->tgldari) {
             $query->whereBetween('tglbukti', [date('Y-m-d',strtotime(request()->tgldari )), date('Y-m-d',strtotime(request()->tglsampai ))]);
+        }
+        if ($periode != '') {
+            $periode = explode("-", $periode);
+            $query->whereRaw("MONTH(rekappengeluaranheader.tglbukti) ='" . $periode[0] . "'")
+                ->whereRaw("year(rekappengeluaranheader.tglbukti) ='" . $periode[1] . "'");
+        }
+        if ($statusCetak != '') {
+            $query->where("rekappengeluaranheader.statuscetak", $statusCetak);
         }
         $this->totalRows = $query->count();
         $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;

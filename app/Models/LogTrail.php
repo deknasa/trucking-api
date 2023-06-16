@@ -24,6 +24,7 @@ class LogTrail extends MyModel
     public function processStore(array $data): LogTrail
     {
         $logTrail = new LogTrail();
+        //dd($data['namatabel']);
         $logTrail->namatabel = strtoupper($data['namatabel']);
         $logTrail->postingdari = $data['postingdari'];
         $logTrail->idtrans = $data['idtrans'];

@@ -27,6 +27,8 @@ class PengembalianKasBankHeader extends MyModel
     public function get()
     {
         $this->setRequestParameters();
+        $periode = request()->periode ?? '';
+        $statusCetak = request()->statuscetak ?? '';
 
         $query = DB::table($this->table)->select(
             'pengembaliankasbankheader.id',
@@ -62,8 +64,16 @@ class PengembalianKasBankHeader extends MyModel
             ->leftJoin('parameter as statuscetak', 'pengembaliankasbankheader.statuscetak', 'statuscetak.id')
             ->leftJoin('parameter as statusjenistransaksi', 'pengembaliankasbankheader.statusjenistransaksi', 'statusjenistransaksi.id');
         if (request()->tgldari) {
-            $query->whereBetween('tglbukti', [date('Y-m-d', strtotime(request()->tgldari)), date('Y-m-d', strtotime(request()->tglsampai))])
+            $query->whereBetween('pengembaliankasbankheader.tglbukti', [date('Y-m-d', strtotime(request()->tgldari)), date('Y-m-d', strtotime(request()->tglsampai))])
                 ->where('pengembaliankasbankheader.bank_id', request()->bank_id);
+        }
+        if ($periode != '') {
+            $periode = explode("-", $periode);
+            $query->whereRaw("MONTH(pengembaliankasbankheader.tglbukti) ='" . $periode[0] . "'")
+                ->whereRaw("year(pengembaliankasbankheader.tglbukti) ='" . $periode[1] . "'");
+        }
+        if ($statusCetak != '') {
+            $query->where("pengembaliankasbankheader.statuscetak", $statusCetak);
         }
         $this->totalRows = $query->count();
         $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;

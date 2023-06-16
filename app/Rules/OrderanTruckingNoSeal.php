@@ -28,10 +28,10 @@ class OrderanTruckingNoSeal implements Rule
     {
         if ($this->kondisi == true) {
             // dd('1');
-            return false;
+            return true;
         } else {
             // dd('3');
-            return true;
+            return false;
         }
     }
 

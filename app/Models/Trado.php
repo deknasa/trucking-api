@@ -5,6 +5,8 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
+use Illuminate\Support\Facades\Storage;
+use App\Helpers\App;
 
 
 class Trado extends MyModel
@@ -166,7 +168,9 @@ class Trado extends MyModel
             ->where('subgrp', 'JUDULAN LAPORAN')
             ->first();
 
+
         $query = DB::table($this->table)->from(DB::raw("$this->table with (readuncommitted)"))
+       
             ->select(
                 'trado.id',
                 'trado.keterangan',
@@ -212,7 +216,8 @@ class Trado extends MyModel
                 'supir.namasupir as supir_id',
                 'trado.updated_at',
                 DB::raw("'Laporan Trado' as judulLaporan"),
-                DB::raw("'" . $getJudul->text . "' as judul")
+                DB::raw("'" . $getJudul->text . "' as judul"),
+                DB::raw("'Tanggal Cetak : '+format(getdate(),'dd-MM-yyyy HH:mm:ss')+' User :".auth('api')->user()->name."' as tglcetak") 
             )
             ->leftJoin(DB::raw("parameter as parameter_statusaktif with (readuncommitted)"), 'trado.statusaktif', 'parameter_statusaktif.id')
             ->leftJoin(DB::raw("parameter as parameter_statusjenisplat with (readuncommitted)"), 'trado.statusjenisplat', 'parameter_statusjenisplat.id')
@@ -575,5 +580,300 @@ class Trado extends MyModel
     public function paginate($query)
     {
         return $query->skip($this->params['offset'])->take($this->params['limit']);
+    }
+
+    private function storeFiles(array $files, string $destinationFolder): string
+    {
+        $storedFiles = [];
+
+        foreach ($files as $file) {
+            $originalFileName = $file->hashName();
+            $storedFile = Storage::putFileAs("trado/" . $destinationFolder, $file, $originalFileName);
+            $resizedFiles = App::imageResize(storage_path("app/trado/$destinationFolder/"), storage_path("app/$storedFile"), $originalFileName);
+
+            $storedFiles[] = $originalFileName;
+        }
+
+        return json_encode($storedFiles);
+    }
+
+    private function deleteFiles(Trado $trado)
+    {
+        $sizeTypes = ['', 'medium_', 'small_'];
+
+        $relatedPhotoTrado = [];
+        $relatedPhotoStnk = [];
+        $relatedPhotoBpkb = [];
+
+        $photoTrado = json_decode($trado->phototrado, true);
+        $photoStnk = json_decode($trado->photostnk, true);
+        $photoBpkb = json_decode($trado->photobpkb, true);
+
+        if ($photoTrado != '') {
+            foreach ($photoTrado as $path) {
+                foreach ($sizeTypes as $sizeType) {
+                    $relatedPhotoTrado[] = "trado/trado/$sizeType$path";
+                }
+            }
+            Storage::delete($relatedPhotoTrado);
+        }
+
+        if ($photoStnk != '') {
+            foreach ($photoStnk as $path) {
+                foreach ($sizeTypes as $sizeType) {
+                    $relatedPhotoStnk[] = "trado/stnk/$sizeType$path";
+                }
+            }
+            Storage::delete($relatedPhotoStnk);
+        }
+
+        if ($photoBpkb != '') {
+            foreach ($photoBpkb as $path) {
+                foreach ($sizeTypes as $sizeType) {
+                    $relatedPhotoBpkb[] = "trado/bpkb/$sizeType$path";
+                }
+            }
+            Storage::delete($relatedPhotoBpkb);
+        }
+    }
+
+    public function processStore(array $data): Trado
+    {
+        try {
+            $statusStandarisasi = DB::table('parameter')->where('grp', 'STATUS STANDARISASI')->where('default', 'YA')->first();
+            $statusMutasi = DB::table('parameter')->where('grp', 'STATUS MUTASI')->where('default', 'YA')->first();
+            $statusValidasi = DB::table('parameter')->where('grp', 'STATUS VALIDASI KENDARAAN')->where('default', 'YA')->first();
+            $statusMobStoring = DB::table('parameter')->where('grp', 'STATUS MOBIL STORING')->where('default', 'YA')->first(); 
+            $statusAppeditban = DB::table('parameter')->where('grp', 'STATUS APPROVAL EDIT BAN')->where('default', 'YA')->first();
+            $statusLewatValidasi = DB::table('parameter')->where('grp', 'STATUS LEWAT VALIDASI')->where('default', 'YA')->first();
+
+            $trado = new Trado();
+            $trado->keterangan = $data['keterangan'] ?? '';
+            $trado->kodetrado = $data['kodetrado'];
+            $trado->statusaktif = $data['statusaktif'];
+            $trado->tahun = $data['tahun'];
+            $trado->merek = $data['merek'];
+            $trado->norangka = $data['norangka'];
+            $trado->nomesin = $data['nomesin'];
+            $trado->nama = $data['nama'];
+            $trado->nostnk = $data['nostnk'];
+            $trado->alamatstnk = $data['alamatstnk'];
+            $trado->statusstandarisasi = $statusStandarisasi->id;
+            $trado->statusjenisplat = $data['statusjenisplat'];
+            $trado->statusmutasi = $statusMutasi->id;
+            $trado->tglpajakstnk = date('Y-m-d', strtotime($data['tglpajakstnk']));
+            $trado->statusvalidasikendaraan = $statusValidasi->id;
+            $trado->tipe = $data['tipe'];
+            $trado->jenis = $data['jenis'];
+            $trado->isisilinder = $data['isisilinder'];
+            $trado->warna = $data['warna'];
+            $trado->jenisbahanbakar = $data['jenisbahanbakar'];
+            $trado->jumlahsumbu = $data['jumlahsumbu'];
+            $trado->jumlahroda = $data['jumlahroda'];
+            $trado->model = $data['model'];
+            $trado->nobpkb = $data['nobpkb'];
+            $trado->statusmobilstoring = $statusMobStoring->id;
+            $trado->mandor_id = $data['mandor_id'] ?? 0;
+            $trado->supir_id = $data['supir_id'] ?? 0;
+            $trado->jumlahbanserap = $data['jumlahbanserap'];
+            $trado->statusgerobak = $data['statusgerobak'];
+            $trado->statusappeditban = $statusAppeditban->id;
+            $trado->statuslewatvalidasi = $statusLewatValidasi->id;
+            $trado->nominalplusborongan = str_replace(',', '', $data['nominalplusborongan']) ?? 0;
+            $trado->modifiedby = auth('api')->user()->user;
+
+            $trado->photostnk = ($data['photostnk']) ? $this->storeFiles($data['photostnk'], 'stnk') : '';
+            $trado->photobpkb = ($data['photobpkb']) ? $this->storeFiles($data['photobpkb'], 'bpkb') : '';
+            $trado->phototrado = ($data['phototrado']) ? $this->storeFiles($data['phototrado'], 'trado') : '';
+
+            if (!$trado->save()) {
+                throw new \Exception("Error storing trado.");
+            }
+
+            (new LogTrail())->processStore([
+                'namatabel' => strtoupper($trado->getTable()),
+                'postingdari' => 'ENTRY TRADO',
+                'idtrans' => $trado->id,
+                'nobuktitrans' => $trado->id,
+                'aksi' => 'ENTRY',
+                'datajson' => $trado->toArray(),
+                'modifiedby' => $trado->modifiedby
+            ]);
+
+            $param1 = $trado->id;
+            $param2 = $trado->modifiedby;
+            $stokgudang = Stok::from(DB::raw("stok with (readuncommitted)"))
+                ->select(DB::raw(
+                    "stok.id as stok_id,
+                    0  as gudang_id,"
+                        . $param1 . " as trado_id,
+                0 as gandengan_id,
+                0 as qty,'"
+                        . $param2 . "' as modifiedby"
+                ))
+                ->leftjoin('stokpersediaan', function ($join) use ($param1) {
+                    $join->on('stokpersediaan.stok_id', '=', 'stok.id');
+                    $join->on('stokpersediaan.trado_id', '=', DB::raw("'" . $param1 . "'"));
+                })
+                ->where(DB::raw("isnull(stokpersediaan.id,0)"), '=', 0);
+
+            $datadetail = json_decode($stokgudang->get(), true);
+
+            $dataexist = $stokgudang->exists();
+            $detaillogtrail = [];
+            foreach ($datadetail as $item) {
+
+
+                $stokpersediaan = new StokPersediaan();
+                $stokpersediaan->stok_id = $item['stok_id'];
+                $stokpersediaan->gudang_id = $item['gudang_id'];
+                $stokpersediaan->trado_id = $item['trado_id'];
+                $stokpersediaan->gandengan_id = $item['gandengan_id'];
+                $stokpersediaan->qty = $item['qty'];
+                $stokpersediaan->modifiedby = $item['modifiedby'];
+                if (!$stokpersediaan->save()) {
+                    throw new \Exception('Error store stok persediaan.');
+                }
+                $detaillogtrail[] = $stokpersediaan->toArray();
+            }
+
+            if ($dataexist == true) {
+                (new LogTrail())->processStore([
+                    'namatabel' => strtoupper($stokpersediaan->getTable()),
+                    'postingdari' => 'STOK PERSEDIAAN',
+                    'idtrans' => $stokpersediaan->id,
+                    'nobuktitrans' => $stokpersediaan->id,
+                    'aksi' => 'EDIT',
+                    'datajson' => json_encode($detaillogtrail),
+                    'modifiedby' => auth('api')->user()->name
+                ]);
+            }
+
+            return $trado;
+        } catch (\Throwable $th) {
+            $this->deleteFiles($trado);
+            throw $th;
+        }
+    }
+
+    public function processUpdate(Trado $trado, array $data): Trado
+    {
+        try {
+            $trado->keterangan = $data['keterangan'] ?? '';
+            $trado->kodetrado = $data['kodetrado'];
+            $trado->statusaktif = $data['statusaktif'];
+            $trado->tahun = $data['tahun'];
+            $trado->merek = $data['merek'];
+            $trado->norangka = $data['norangka'];
+            $trado->nomesin = $data['nomesin'];
+            $trado->nama = $data['nama'];
+            $trado->nostnk = $data['nostnk'];
+            $trado->alamatstnk = $data['alamatstnk'];
+            $trado->statusjenisplat = $data['statusjenisplat'];
+            $trado->tipe = $data['tipe'];
+            $trado->jenis = $data['jenis'];
+            $trado->tglpajakstnk = date('Y-m-d', strtotime($data['tglpajakstnk']));
+            $trado->isisilinder =  str_replace(',', '', $data['isisilinder']);
+            $trado->warna = $data['warna'];
+            $trado->jenisbahanbakar = $data['jenisbahanbakar'];
+            $trado->jumlahsumbu = $data['jumlahsumbu'];
+            $trado->jumlahroda = $data['jumlahroda'];
+            $trado->model = $data['model'];
+            $trado->nobpkb = $data['nobpkb'];
+            $trado->mandor_id = $data['mandor_id'] ?? 0;
+            $trado->supir_id = $data['supir_id'] ?? 0;
+            $trado->jumlahbanserap = $data['jumlahbanserap'];
+            $trado->statusgerobak = $data['statusgerobak'];
+            $trado->nominalplusborongan = str_replace(',', '', $data['nominalplusborongan']) ?? 0;
+
+            $this->deleteFiles($trado);
+
+            $trado->photostnk = ($data['photostnk']) ? $this->storeFiles($data['photostnk'], 'stnk') : '';
+            $trado->photobpkb = ($data['photobpkb']) ? $this->storeFiles($data['photobpkb'], 'bpkb') : '';
+            $trado->phototrado = ($data['phototrado']) ? $this->storeFiles($data['phototrado'], 'trado') : '';
+
+            if (!$trado->save()) {
+                throw new \Exception("Error updating trado.");
+            }
+
+            (new LogTrail())->processStore([
+                'namatabel' => strtoupper($trado->getTable()),
+                'postingdari' => 'EDIT TRADO',
+                'idtrans' => $trado->id,
+                'nobuktitrans' => $trado->id,
+                'aksi' => 'EDIT',
+                'datajson' => $trado->toArray(),
+                'modifiedby' => $trado->modifiedby
+            ]);
+
+            $param1 = $trado->id;
+            $param2 = $trado->modifiedby;
+            $stokgudang = Stok::from(DB::raw("stok with (readuncommitted)"))
+                ->select(DB::raw(
+                    "stok.id as stok_id,
+                    0  as gudang_id,"
+                        . $param1 . " as trado_id,
+                0 as gandengan_id,
+                0 as qty,'"
+                        . $param2 . "' as modifiedby"
+                ))
+                ->leftjoin('stokpersediaan', function ($join) use ($param1) {
+                    $join->on('stokpersediaan.stok_id', '=', 'stok.id');
+                    $join->on('stokpersediaan.trado_id', '=', DB::raw("'" . $param1 . "'"));
+                })
+                ->where(DB::raw("isnull(stokpersediaan.id,0)"), '=', 0);
+            $datadetail = json_decode($stokgudang->get(), true);
+
+            $dataexist = $stokgudang->exists();
+            $detaillogtrail = [];
+            foreach ($datadetail as $item) {
+                $stokpersediaan = new StokPersediaan();
+                $stokpersediaan->stok_id = $item['stok_id'];
+                $stokpersediaan->gudang_id = $item['gudang_id'];
+                $stokpersediaan->trado_id = $item['trado_id'];
+                $stokpersediaan->gandengan_id = $item['gandengan_id'];
+                $stokpersediaan->qty = $item['qty'];
+                $stokpersediaan->modifiedby = $item['modifiedby'];
+                if (!$stokpersediaan->save()) {
+                    throw new \Exception('Error store stok persediaan.');
+                }
+                $detaillogtrail[] = $stokpersediaan->toArray();
+            }
+
+            if ($dataexist == true) {
+                (new LogTrail())->processStore([
+                    'namatabel' => strtoupper($stokpersediaan->getTable()),
+                    'postingdari' => 'STOK PERSEDIAAN',
+                    'idtrans' => $trado->id,
+                    'nobuktitrans' => $trado->id,
+                    'aksi' => 'EDIT',
+                    'datajson' => json_encode($detaillogtrail),
+                    'modifiedby' => $trado->modifiedby
+                ]);
+            }
+            return $trado;
+        } catch (\Throwable $th) {
+            $this->deleteFiles($trado);
+            throw $th;
+        }
+    }
+
+    public function processDestroy($id): Trado
+    {
+        $trado = new Trado();
+        $trado = $trado->lockAndDestroy($id);
+
+        (new LogTrail())->processStore([
+            'namatabel' => strtoupper($trado->getTable()),
+            'postingdari' => 'DELETE TRADO',
+            'idtrans' => $trado->id,
+            'nobuktitrans' => $trado->id,
+            'aksi' => 'DELETE',
+            'datajson' => $trado->toArray(),
+            'modifiedby' => $trado->modifiedby
+        ]);
+        $this->deleteFiles($trado);
+
+        return $trado;
     }
 }

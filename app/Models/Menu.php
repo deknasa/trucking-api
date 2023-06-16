@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\DB;
+use ReflectionClass;
 use Illuminate\Support\Facades\Schema;
 
 
@@ -191,6 +192,26 @@ class Menu extends MyModel
         return $validasiQuery;
     }
 
+    public function get_class_methods($class, $comment = false)
+    {
+        $class = 'App\Http\Controllers\Api' . '\\' . $class;
+        $r = new ReflectionClass($class);
+        $methods = array();
+
+        foreach ($r->getMethods() as $m) {
+            if ($m->class == $class) {
+                $arr = ['name' => $m->name];
+                if ($comment === true) {
+                    $arr['docComment'] = $this->get_method_comment($r, $m->name);
+                }
+
+                $methods[] = $arr;
+            }
+        }
+
+        return $methods;
+    }
+
     public function get_php_classes($php_code, $methods = false)
     {
         $classes = array();
@@ -208,7 +229,6 @@ class Menu extends MyModel
 
     public function listFolderFiles($controller)
     {
-
         $dir = base_path('app/http') . '/controllers/api/';
         $ffs = scandir($dir);
         unset($ffs[0], $ffs[1]);
@@ -245,6 +265,22 @@ class Menu extends MyModel
         }
 
         return $data ?? '';
+    }
+
+    public function get_method_comment($obj, $method)
+    {
+        $comment = $obj->getMethod($method)->getDocComment();
+        //define the regular expression pattern to use for string matching
+        $pattern = "#(@[a-zA-Z]+\s*[a-zA-Z0-9, ()_].*)#";
+        //perform the regular expression on the string provided
+        preg_match_all($pattern, $comment, $matches, PREG_PATTERN_ORDER);
+        $comments = [];
+        foreach ($matches[0] as $match) {
+            $comment = preg_split('/[\s]/', $match, 2);
+            $comments[trim($comment[0], '@')] = $comment[1];
+        }
+
+        return $comments;
     }
 
     public function processStore(array $data): Menu
@@ -286,9 +322,9 @@ class Menu extends MyModel
             ->where('menuparent', '=', $data['menuparent'])
             ->exists()
         ) {
-
+      
             if ($data['menuparent'] == 0) {
-
+            
                 $list = Menu::select('menukode')
                     ->where('menuparent', '=', '0')
                     ->where(DB::raw('right(menukode,1)'), '<>', '9')
@@ -297,7 +333,7 @@ class Menu extends MyModel
                     ->first();
                 $menukode = chr(ord($list->menukode) + 1);
             } else {
-
+  
 
                 if (Menu::select('menukode')
                     ->where('menuparent', '=', $data['menuparent'])
@@ -334,6 +370,7 @@ class Menu extends MyModel
                 }
             }
         } else {
+      
             if ($data['menuparent'] == 0) {
                 $menukode = 0;
                 $list = Menu::select('menukode')
@@ -361,13 +398,18 @@ class Menu extends MyModel
                     $menukode = chr((ord($kodeakhir) + 1));
                 }
             } else {
+                // dd('test');
                 $list = Menu::select('menukode')
                     ->where('id', '=', $data['menuparent'])
-                    ->where(DB::raw('right(menukode,1)'), '<>', '9')
+                    // ->where(DB::raw('right(menukode,1)'), '<>', '9')
                     ->orderBy('menukode', 'desc')
                     ->first();
-                // dd('test4');
-                $menukode = $list->menukode . '1';
+
+                    if (isset($list)) {
+                        $menukode = $list->menukode . '1';
+
+                    }
+
             }
         }
 

@@ -14,6 +14,7 @@ use App\Rules\DateApprovalQuota;
 use App\Rules\ExistAbsensiSupirDetail;
 use App\Rules\ExistAgen;
 use App\Rules\ExistContainer;
+use App\Rules\ExistDataRitasi;
 use App\Rules\ExistGandengan;
 use App\Rules\ExistJenisOrder;
 use App\Rules\ExistKota;
@@ -25,6 +26,7 @@ use App\Rules\ExistSupir;
 use App\Rules\ExistTarifRincianSuratPengantar;
 use App\Rules\ExistTrado;
 use App\Rules\ExistUpahSupirRincianSuratPengantar;
+use App\Rules\JenisRitasiInputTrip;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
@@ -78,7 +80,8 @@ class StoreMandorTripRequest extends FormRequest
                 $status[] = $item['id'];
             }
             $ritasiRule = [
-                'jenisritasi.*' => ['required', 'numeric', Rule::in($status)],
+                'jenisritasi.*' => ['required'],
+                'jenisritasi_id.*' => [new JenisRitasiInputTrip()],
                 'ritasidari.*' => ['required'],
                 'ritasike.*' => ['required']
             ];
@@ -121,7 +124,7 @@ class StoreMandorTripRequest extends FormRequest
             $rulesTarif_id = [
                 'tarifrincian_id' => ['required', 'numeric', 'min:1', new ExistTarifRincianSuratPengantar()]
             ];
-        } else if ($tarifrincian_id == null && request()->upah != '') {
+        } else if ($tarifrincian_id == null && request()->tarifrincian != '') {
             $rulesTarif_id = [
                 'tarifrincian_id' => ['required', 'numeric', 'min:1', new ExistTarifRincianSuratPengantar()]
             ];
@@ -245,6 +248,7 @@ class StoreMandorTripRequest extends FormRequest
             "statusgudangsama" => "required",
             "statuslongtrip" => "required",
             "trado" => "required",
+            "upah" => "required",
         ];
 
         $rules = array_merge(
@@ -288,6 +292,9 @@ class StoreMandorTripRequest extends FormRequest
             "statuscontainer" => "statuscontainer",
             "trado_id" => "trado",
             "trado" => "trado",
+            'jenisritasi.*' => "jenis ritasi",
+            'ritasidari.*' => 'ritasi dari',
+            'ritasike.*' => 'ritasi ke',
         ];
     }
 

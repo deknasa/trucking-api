@@ -21,4 +21,19 @@ class SuratPengantarBiayaTambahan extends MyModel
         'created_at',
         'updated_at',
     ];
+    public function processStore(SuratPengantar $suratPengantar, array $data): SuratPengantarBiayaTambahan
+    {
+        $suratpengantarbiayatambahan = new SuratPengantarBiayaTambahan();
+        $suratpengantarbiayatambahan->suratpengantar_id = $suratPengantar->id;
+        $suratpengantarbiayatambahan->keteranganbiaya = $data['keteranganbiaya'];
+        $suratpengantarbiayatambahan->nominal = $data['nominal'];
+        $suratpengantarbiayatambahan->nominaltagih = $data['nominaltagih'];
+        $suratpengantarbiayatambahan->modifiedby = auth('api')->user()->name;;
+
+        if (!$suratpengantarbiayatambahan->save()) {
+            throw new \Exception("Error storing surat pengantar biaya tambahan.");
+        }
+
+        return $suratpengantarbiayatambahan;
+    }
 }

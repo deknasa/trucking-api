@@ -465,5 +465,23 @@ class AcosSeeder extends Seeder
         acos::create(['class' => 'dataritasi', 'method' => 'store', 'nama' => 'store DataRitasiController', 'modifiedby' => 'ADMIN',]);
         acos::create(['class' => 'dataritasi', 'method' => 'update', 'nama' => 'update DataRitasiController', 'modifiedby' => 'ADMIN',]);
         acos::create(['class' => 'dataritasi', 'method' => 'destroy', 'nama' => 'destroy DataRitasiController', 'modifiedby' => 'ADMIN',]);
+        acos::create(['class' => 'akuntansi', 'method' => 'index', 'nama' => 'index AkuntansiController', 'modifiedby' => 'ADMIN',]);
+        acos::create(['class' => 'akuntansi', 'method' => 'report', 'nama' => 'report AkuntansiController', 'modifiedby' => 'ADMIN',]);
+        acos::create(['class' => 'akuntansi', 'method' => 'store', 'nama' => 'store AkuntansiController', 'modifiedby' => 'ADMIN',]);
+        acos::create(['class' => 'akuntansi', 'method' => 'update', 'nama' => 'update AkuntansiController', 'modifiedby' => 'ADMIN',]);
+        acos::create(['class' => 'akuntansi', 'method' => 'destroy', 'nama' => 'destroy AkuntansiController', 'modifiedby' => 'ADMIN',]);
+        acos::create(['class' => 'akuntansi', 'method' => 'export', 'nama' => 'export AkuntansiController', 'modifiedby' => 'ADMIN',]);
+        acos::create(['class' => 'typeakuntansi', 'method' => 'index', 'nama' => 'index TypeAkuntansiController', 'modifiedby' => 'ADMIN',]);
+        acos::create(['class' => 'typeakuntansi', 'method' => 'report', 'nama' => 'report TypeAkuntansiController', 'modifiedby' => 'ADMIN',]);
+        acos::create(['class' => 'typeakuntansi', 'method' => 'store', 'nama' => 'store TypeAkuntansiController', 'modifiedby' => 'ADMIN',]);
+        acos::create(['class' => 'typeakuntansi', 'method' => 'update', 'nama' => 'update TypeAkuntansiController', 'modifiedby' => 'ADMIN',]);
+        acos::create(['class' => 'typeakuntansi', 'method' => 'destroy', 'nama' => 'destroy TypeAkuntansiController', 'modifiedby' => 'ADMIN',]);
+        acos::create(['class' => 'typeakuntansi', 'method' => 'export', 'nama' => 'export TypeAkuntansiController', 'modifiedby' => 'ADMIN',]);
+        acos::create(['class' => 'maintypeakuntansi', 'method' => 'index', 'nama' => 'index MainTypeAkuntansiController', 'modifiedby' => 'ADMIN',]);
+        acos::create(['class' => 'maintypeakuntansi', 'method' => 'report', 'nama' => 'report MainTypeAkuntansiController', 'modifiedby' => 'ADMIN',]);
+        acos::create(['class' => 'maintypeakuntansi', 'method' => 'store', 'nama' => 'store MainTypeAkuntansiController', 'modifiedby' => 'ADMIN',]);
+        acos::create(['class' => 'maintypeakuntansi', 'method' => 'update', 'nama' => 'update MainTypeAkuntansiController', 'modifiedby' => 'ADMIN',]);
+        acos::create(['class' => 'maintypeakuntansi', 'method' => 'destroy', 'nama' => 'destroy MainTypeAkuntansiController', 'modifiedby' => 'ADMIN',]);
+        acos::create(['class' => 'maintypeakuntansi', 'method' => 'export', 'nama' => 'export MainTypeAkuntansiController', 'modifiedby' => 'ADMIN',]);
     }
 }

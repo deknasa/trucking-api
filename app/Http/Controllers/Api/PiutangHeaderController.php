@@ -120,7 +120,7 @@ class PiutangHeaderController extends Controller
         DB::beginTransaction();
 
         try {
-            $piutangHeader = (new PiutangHeader())->processDestroy($id);
+            $piutangHeader = (new PiutangHeader())->processDestroy($id, 'DELETE PIUTANG');
             $selected = $this->getPosition($piutangHeader, $piutangHeader->getTable(), true);
             $piutangHeader->position = $selected->position;
             $piutangHeader->id = $selected->id;

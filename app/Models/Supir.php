@@ -7,6 +7,8 @@ use DateTimeInterface;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
+use App\Helpers\App;
+use Illuminate\Support\Facades\Storage;
 
 
 class Supir extends MyModel
@@ -175,7 +177,7 @@ class Supir extends MyModel
     public function get()
     {
         $this->setRequestParameters();
-
+        $absen = request()->absen ?? '';
         $getJudul = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))
             ->select('text')
             ->where('grp', 'JUDULAN LAPORAN')
@@ -189,7 +191,7 @@ class Supir extends MyModel
                 'supir.id',
                 'supir.namasupir',
                 'supir.namaalias',
-                'supir.tgllahir',
+                DB::raw("(case when year(isnull(supir.tgllahir,'1900/1/1'))=1900 then null else supir.tgllahir end) as tgllahir"),
                 'supir.alamat',
                 'supir.kota',
                 'supir.telp',
@@ -247,6 +249,11 @@ class Supir extends MyModel
                 ->first();
 
             $query->where('supir.statusaktif', '=', $statusaktif->id);
+        }
+        if ($absen == true) {
+            $tglbukti = date('Y-m-d', strtotime('now'));
+            $absensiSupirHeader = AbsensiSupirHeader::where('tglbukti', $tglbukti)->first();
+            $query->whereRaw("supir.id in (select supir_id from absensisupirdetail where absensi_id=$absensiSupirHeader->id)");
         }
         $this->totalRows = $query->count();
         $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;
@@ -666,5 +673,294 @@ class Supir extends MyModel
     public function paginate($query)
     {
         return $query->skip($this->params['offset'])->take($this->params['limit']);
+    }
+
+    private function deleteFiles(Supir $supir)
+    {
+        $sizeTypes = ['', 'medium_', 'small_'];
+
+        $relatedPhotoSupir = [];
+        $relatedPhotoKtp = [];
+        $relatedPhotoSim = [];
+        $relatedPhotoKk = [];
+        $relatedPhotoSkck = [];
+        $relatedPhotoDomisili = [];
+        $relatedPhotoVaksin = [];
+        $relatedPdfSuratPerjanjian = [];
+
+        $photoSupir = json_decode($supir->photosupir, true);
+        $photoKtp = json_decode($supir->photoktp, true);
+        $photoSim = json_decode($supir->photosim, true);
+        $photoKk = json_decode($supir->photokk, true);
+        $photoSkck = json_decode($supir->photoskck, true);
+        $photoDomisili = json_decode($supir->photodomisili, true);
+        $photoVaksin = json_decode($supir->photoVaksin, true);
+        $pdfSuratPerjanjian = json_decode($supir->pdfsuratperjanjian, true);
+
+        if ($photoSupir != '') {
+            foreach ($photoSupir as $path) {
+                foreach ($sizeTypes as $sizeType) {
+                    $relatedPhotoSupir[] = "supir/profil/$sizeType$path";
+                }
+            }
+            Storage::delete($relatedPhotoSupir);
+        }
+
+        if ($photoKtp != '') {
+            foreach ($photoKtp as $path) {
+                foreach ($sizeTypes as $sizeType) {
+                    $relatedPhotoKtp[] = "supir/ktp/$sizeType$path";
+                }
+            }
+            Storage::delete($relatedPhotoKtp);
+        }
+
+        if ($photoSim != '') {
+            foreach ($photoSim as $path) {
+                foreach ($sizeTypes as $sizeType) {
+                    $relatedPhotoSim[] = "supir/sim/$sizeType$path";
+                }
+            }
+            Storage::delete($relatedPhotoSim);
+        }
+
+        if ($photoKk != '') {
+            foreach ($photoKk as $path) {
+                foreach ($sizeTypes as $sizeType) {
+                    $relatedPhotoKk[] = "supir/kk/$sizeType$path";
+                }
+            }
+            Storage::delete($relatedPhotoKk);
+        }
+
+        if ($photoSkck != '') {
+            foreach ($photoSkck as $path) {
+                foreach ($sizeTypes as $sizeType) {
+                    $relatedPhotoSkck[] = "supir/skck/$sizeType$path";
+                }
+            }
+            Storage::delete($relatedPhotoSkck);
+        }
+
+        if ($photoDomisili != '') {
+            foreach ($photoDomisili as $path) {
+                foreach ($sizeTypes as $sizeType) {
+                    $relatedPhotoDomisili[] = "supir/domisili/$sizeType$path";
+                }
+            }
+            Storage::delete($relatedPhotoDomisili);
+        }
+        if ($photoVaksin != '') {
+            foreach ($photoVaksin as $path) {
+                foreach ($sizeTypes as $sizeType) {
+                    $relatedPhotoVaksin[] = "supir/vaksin/$sizeType$path";
+                }
+            }
+            Storage::delete($relatedPhotoVaksin);
+        }
+        if ($pdfSuratPerjanjian != '') {
+            foreach ($pdfSuratPerjanjian as $path) {
+                $relatedPdfSuratPerjanjian[] = "supir/suratperjanjian/$path";
+            }
+            Storage::delete($relatedPdfSuratPerjanjian);
+        }
+    }
+
+    private function storePdfFiles(array $files, string $destinationFolder): string
+    {
+        $storedFiles = [];
+
+        foreach ($files as $file) {
+            $originalFileName = "SURAT-" . $file->hashName();
+            $storedFile = Storage::putFileAs('supir/' . $destinationFolder, $file, $originalFileName);
+            $storedFiles[] = $originalFileName;
+        }
+
+        return json_encode($storedFiles);
+    }
+
+    private function storeFiles(array $files, string $destinationFolder): string
+    {
+        $storedFiles = [];
+        if ($destinationFolder == 'supir') {
+            $destinationFolder = 'profil';
+        }
+        foreach ($files as $file) {
+            $originalFileName = "$destinationFolder-" . $file->hashName();
+            $storedFile = Storage::putFileAs('supir/' . $destinationFolder, $file, $originalFileName);
+            $resizedFiles = App::imageResize(storage_path("app/supir/$destinationFolder/"), storage_path("app/$storedFile"), $originalFileName);
+
+            $storedFiles[] = $originalFileName;
+        }
+
+        return json_encode($storedFiles);
+    }
+
+    public function processStore(array $data): Supir
+    {
+        try {
+            $statusAdaUpdateGambar = DB::table('parameter')->where('grp', 'STATUS ADA UPDATE GAMBAR')->where('default', 'YA')->first();
+            $statusLuarKota = DB::table('parameter')->where('grp', 'STATUS LUAR KOTA')->where('default', 'YA')->first();
+            $statusZonaTertentu = DB::table('parameter')->where('grp', 'ZONA TERTENTU')->where('default', 'YA')->first();
+            $statusBlackList = DB::table('parameter')->where('grp', 'BLACKLIST SUPIR')->where('default', 'YA')->first();
+
+            $supir = new Supir();
+            $status = $supir->cekPemutihan($data['noktp']);
+
+            if ($status == true) {
+                $data['validate']([
+                    'pemutihansupir_nobukti' => 'required'
+                ], [
+                    'pemutihansupir_nobukti.required' => 'nobukti pemutihan supir ' . app(ErrorController::class)->geterror('WI')->keterangan,
+                ]);
+            }
+
+            
+            $depositke = str_replace(',', '', $data['depositke'] ?? '');
+            $supir->namasupir = $data['namasupir'];
+            $supir->alamat = $data['alamat'];
+            $supir->namaalias = $data['namaalias'];
+            $supir->kota = $data['kota'];
+            $supir->telp = $data['telp'];
+            $supir->statusaktif = $data['statusaktif'];
+            $supir->nominaldepositsa = array_key_exists('nominaldepositsa', $data) ? str_replace(',', '', $data['nominaldepositsa']) : 0;
+            $supir->depositke = str_replace('.', '', $depositke) ?? 0;
+            $supir->tglmasuk = date('Y-m-d', strtotime($data['tglmasuk']));
+            $supir->nominalpinjamansaldoawal = str_replace(',', '', $data['nominalpinjamansaldoawal']) ?? 0;
+            $supir->pemutihansupir_nobukti = $data['pemutihansupir_nobukti'] ?? '';
+            $supir->supirold_id = $data['supirold_id'] ?? 0;
+            $supir->tglexpsim = date('Y-m-d', strtotime($data['tglexpsim']));
+            $supir->nosim = $data['nosim'];
+            $supir->keterangan = $data['keterangan'] ?? '';
+            $supir->noktp = $data['noktp'];
+            $supir->nokk = $data['nokk'];
+            $supir->angsuranpinjaman = str_replace(',', '', $data['angsuranpinjaman']) ?? 0;
+            $supir->plafondeposito = str_replace(',', '', $data['plafondeposito']) ?? 0;
+            $supir->tgllahir = date('Y-m-d', strtotime($data['tgllahir']));
+            $supir->tglterbitsim = date('Y-m-d', strtotime($data['tglterbitsim']));
+            $supir->modifiedby = auth('api')->user()->user;
+
+            $supir->statusadaupdategambar = $statusAdaUpdateGambar->id;
+            $supir->statusluarkota = $statusLuarKota->id;
+            $supir->statuszonatertentu = $statusZonaTertentu->id;
+            $supir->statusblacklist = $statusBlackList->id;
+
+            $supir->photosupir = ($data['photosupir']) ? $this->storeFiles($data['photosupir'], 'supir') : '';
+            $supir->photoktp = ($data['photoktp']) ? $this->storeFiles($data['photoktp'], 'ktp') : '';
+            $supir->photosim = ($data['photosim']) ? $this->storeFiles($data['photosim'], 'sim') : '';
+            $supir->photokk = ($data['photokk']) ? $this->storeFiles($data['photokk'], 'kk') : '';
+            $supir->photoskck = ($data['photoskck']) ? $this->storeFiles($data['photoskck'], 'skck') : '';
+            $supir->photodomisili = ($data['photodomisili']) ? $this->storeFiles($data['photodomisili'], 'domisili') : '';
+            $supir->photovaksin = ($data['photovaksin']) ? $this->storeFiles($data['photovaksin'], 'vaksin') : '';
+            $supir->pdfsuratperjanjian = ($data['pdfsuratperjanjian']) ? $this->storePdfFiles($data['pdfsuratperjanjian'], 'suratperjanjian') : '';
+
+            if (!$supir->save()) {
+                throw new \Exception("Error storing supir.");
+            }
+
+            (new LogTrail())->processStore([
+                'namatabel' => strtoupper($supir->getTable()),
+                'postingdari' => 'ENTRY SUPIR',
+                'idtrans' => $supir->id,
+                'nobuktitrans' => $supir->id,
+                'aksi' => 'ENTRY',
+                'datajson' => $supir->toArray(),
+                'modifiedby' => $supir->modifiedby
+            ]);
+
+            return $supir;
+        } catch (\Throwable $th) {
+            $this->deleteFiles($supir);
+            throw $th;
+        }
+    }
+
+    public function processUpdate(Supir $supir, array $data): Supir
+    {
+        try {
+            $supirNew = new Supir();
+            $status = $supirNew->cekPemutihan($data['noktp']);
+
+            if ($status == true) {
+                $data['validate']([
+                    'pemutihansupir_nobukti' => 'required'
+                ], [
+                    'pemutihansupir_nobukti.required' => 'nobukti pemutihan supir ' . app(ErrorController::class)->geterror('WI')->keterangan,
+                ]);
+            }
+
+            $depositke = str_replace(',', '', $data['depositke'] ?? '');
+            $supir->namasupir = $data['namasupir'];
+            $supir->namaalias = $data['namaalias'];
+            $supir->alamat = $data['alamat'];
+            $supir->kota = $data['kota'];
+            $supir->telp = $data['telp'];
+            $supir->statusaktif = $data['statusaktif'];
+            $supir->pemutihansupir_nobukti = $data['pemutihansupir_nobukti'] ?? '';
+            $supir->nominaldepositsa = array_key_exists('nominaldepositsa', $data) ? str_replace(',', '', $data['nominaldepositsa']) : 0;
+            $supir->depositke = str_replace('.00', '', $depositke) ?? 0;
+            $supir->tglmasuk = date('Y-m-d', strtotime($data['tglmasuk']));
+            $supir->nominalpinjamansaldoawal = str_replace(',', '', $data['nominalpinjamansaldoawal']) ?? 0;
+            $supir->supirold_id = $data['supirold_id'] ?? 0;
+            $supir->tglexpsim = date('Y-m-d', strtotime($data['tglexpsim']));
+            $supir->nosim = $data['nosim'];
+            $supir->keterangan = $data['keterangan'] ?? '';
+            $supir->noktp = $data['noktp'];
+            $supir->nokk = $data['nokk'];
+            $supir->angsuranpinjaman = str_replace(',', '', $data['angsuranpinjaman']) ?? 0;
+            $supir->plafondeposito = str_replace(',', '', $data['plafondeposito']) ?? 0;
+            $supir->tgllahir = date('Y-m-d', strtotime($data['tgllahir']));
+            $supir->tglterbitsim = date('Y-m-d', strtotime($data['tglterbitsim']));
+            $supir->modifiedby = auth('api')->user()->name;
+
+            $this->deleteFiles($supir);
+
+            $supir->photosupir = ($data['photosupir']) ? $this->storeFiles($data['photosupir'], 'supir') : '';
+            $supir->photoktp = ($data['photoktp']) ? $this->storeFiles($data['photoktp'], 'ktp') : '';
+            $supir->photosim = ($data['photosim']) ? $this->storeFiles($data['photosim'], 'sim') : '';
+            $supir->photokk = ($data['photokk']) ? $this->storeFiles($data['photokk'], 'kk') : '';
+            $supir->photoskck = ($data['photoskck']) ? $this->storeFiles($data['photoskck'], 'skck') : '';
+            $supir->photodomisili = ($data['photodomisili']) ? $this->storeFiles($data['photodomisili'], 'domisili') : '';
+            $supir->photovaksin = ($data['photovaksin']) ? $this->storeFiles($data['photovaksin'], 'vaksin') : '';
+            $supir->pdfsuratperjanjian = ($data['pdfsuratperjanjian']) ? $this->storePdfFiles($data['pdfsuratperjanjian'], 'suratperjanjian') : '';
+
+            if (!$supir->save()) {
+                throw new \Exception("Error storing supir.");
+            }
+
+            (new LogTrail())->processStore([
+                'namatabel' => strtoupper($supir->getTable()),
+                'postingdari' => 'EDIT SUPIR',
+                'idtrans' => $supir->id,
+                'nobuktitrans' => $supir->id,
+                'aksi' => 'EDIT',
+                'datajson' => $supir->toArray(),
+                'modifiedby' => $supir->modifiedby
+            ]);
+            return $supir;
+        } catch (\Throwable $th) {
+            $this->deleteFiles($supir);
+            throw $th;
+        }
+    }
+
+    public function processDestroy($id): Supir
+    {
+        $supir = new Supir();
+        $supir = $supir->lockAndDestroy($id);
+
+        (new LogTrail())->processStore([
+            'namatabel' => strtoupper($supir->getTable()),
+            'postingdari' => 'DELETE SUPIR',
+            'idtrans' => $supir->id,
+            'nobuktitrans' => $supir->id,
+            'aksi' => 'DELETE',
+            'datajson' => $supir->toArray(),
+            'modifiedby' => auth('api')->user()->user
+
+        ]);
+        $this->deleteFiles($supir);
+
+        return $supir;
     }
 }
