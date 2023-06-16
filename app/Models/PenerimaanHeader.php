@@ -859,7 +859,7 @@ class PenerimaanHeader extends MyModel
     }
 
 
-    public function processDestroy($id): PenerimaanHeader
+    public function processDestroy($id,$postingdari =""): PenerimaanHeader
     {
         $penerimaanHeader = PenerimaanHeader::findOrFail($id);
         $dataHeader =  $penerimaanHeader->toArray();
