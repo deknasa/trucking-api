@@ -122,7 +122,7 @@ class InvoiceHeaderController extends Controller
         DB::beginTransaction();
 
         try {
-            $invoiceHeader = (new InvoiceHeader())->processDestroy($id);
+            $invoiceHeader = (new InvoiceHeader())->processDestroy($id,'DELETE INVOICE');
             $selected = $this->getPosition($invoiceHeader, $invoiceHeader->getTable(), true);
             $invoiceHeader->position = $selected->position;
             $invoiceHeader->id = $selected->id;

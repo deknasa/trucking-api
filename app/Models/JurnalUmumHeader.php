@@ -492,7 +492,7 @@ class JurnalUmumHeader extends MyModel
 
         $jurnalUmumHeaderLogTrail = (new LogTrail())->processStore([
             'namatabel' => $jurnalUmumHeader->getTable(),
-            'postingdari' => $postingDari ?? 'DELETE JURNAL UMUM HEADER',
+            'postingdari' => $postingDari,
             'idtrans' => $jurnalUmumHeader->id,
             'nobuktitrans' => $jurnalUmumHeader->nobukti,
             'aksi' => 'DELETE',
@@ -502,7 +502,7 @@ class JurnalUmumHeader extends MyModel
 
         (new LogTrail())->processStore([
             'namatabel' => 'JURNALUMUMDETAIL',
-            'postingdari' => $postingDari ?? 'DELETE JURNAL UMUM DETAIL',
+            'postingdari' => $postingDari,
             'idtrans' => $jurnalUmumHeaderLogTrail['id'],
             'nobuktitrans' => $jurnalUmumHeader->nobukti,
             'aksi' => 'DELETE',

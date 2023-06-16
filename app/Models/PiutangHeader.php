@@ -592,7 +592,7 @@ class PiutangHeader extends MyModel
 
         $piutangHeaderLogTrail = (new LogTrail())->processStore([
             'namatabel' => $piutangHeader->getTable(),
-            'postingdari' => $postingDari ?? 'DELETE PIUTANG HEADER',
+            'postingdari' => $postingDari,
             'idtrans' => $piutangHeader->id,
             'nobuktitrans' => $piutangHeader->nobukti,
             'aksi' => 'DELETE',
@@ -602,14 +602,13 @@ class PiutangHeader extends MyModel
 
         (new LogTrail())->processStore([
             'namatabel' => 'PIUTANGDETAIL',
-            'postingdari' => $postingDari ?? 'DELETE PIUTANG DETAIL',
+            'postingdari' => $postingDari,
             'idtrans' => $piutangHeaderLogTrail['id'],
             'nobuktitrans' => $piutangHeader->nobukti,
             'aksi' => 'DELETE',
             'datajson' => $piutangDetails->toArray(),
             'modifiedby' => auth('api')->user()->name
         ]);
-        $postingDari = $postingDari ?? 'DELETE PIUTANG HEADER';
         $getJurnal = JurnalUmumHeader::from(DB::raw("jurnalumumheader with (readuncommitted)"))->where('nobukti', $piutangHeader->nobukti)->first();
         $jurnalumumHeader = (new JurnalUmumHeader())->processDestroy($getJurnal->id, $postingDari);
         return $piutangHeader;

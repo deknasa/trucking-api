@@ -116,7 +116,7 @@ class InvoiceExtraHeaderController extends Controller
         DB::beginTransaction();
 
         try {
-            $invoiceExtraHeader = (new InvoiceExtraHeader())->processDestroy($id);
+            $invoiceExtraHeader = (new InvoiceExtraHeader())->processDestroy($id,'DELETE INVOICE EXTRA');
             $selected = $this->getPosition($invoiceExtraHeader, $invoiceExtraHeader->getTable(), true);
             $invoiceExtraHeader->position = $selected->position;
             $invoiceExtraHeader->id = $selected->id;
