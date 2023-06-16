@@ -699,7 +699,7 @@ class PenerimaanHeader extends MyModel
                 'nowarkat' => $data['nowarkat'][$i] ?? '',
                 'tgljatuhtempo' =>  date('Y-m-d', strtotime($data['tgljatuhtempo'][$i])),
                 'nominal' => $data['nominal_detail'][$i],
-                'coadebet' => $querysubgrppenerimaan->coa,
+                'coadebet' => $data['coadebet'][$i] ?? $querysubgrppenerimaan->coa,
                 'coakredit' => $data['coakredit'][$i],
                 'keterangan' => $data['keterangan_detail'][$i],
                 'bank_id' => $penerimaanHeader->bank_id,

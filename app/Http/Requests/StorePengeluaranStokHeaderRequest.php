@@ -71,7 +71,19 @@ class StorePengeluaranStokHeaderRequest extends FormRequest
                 'gudang' => "",
             ];
         }
-        $rules = array_merge($rules, $gudangTradoGandengan);
+        $returRules =[];
+        if($retur->text == request()->pengeluaranstok_id) {
+            $returRules = [
+                'statuspotongretur' => 'required',
+                'bank_id' => 'required',
+                'bank' => 'required'
+            ];
+            $potongHutang = DB::table('parameter')->where('grp', 'STATUS POTONG RETUR')->where('text', 'POTONG HUTANG')->first();
+            if (request()->statuspotongretur ==$potongHutang->id) {
+                $returRules = array_merge($returRules,["penerimaanstok_nobukti"=>'required']);
+            }
+        }
+        $rules = array_merge($rules, $gudangTradoGandengan,$returRules);
         
         $relatedRequests = [
             StorePengeluaranStokDetailRequest::class
@@ -96,6 +108,9 @@ class StorePengeluaranStokHeaderRequest extends FormRequest
             'trado' => 'trado',
             'gandengan' => 'gandengan',
             'gudang' => 'gudang',
+            'bank_id' => 'bank',
+            'bank' => 'bank',
+            'penerimaanstok_nobukti' => 'penerimaan stok no bukti',
         ];
 
         $relatedRequests = [
