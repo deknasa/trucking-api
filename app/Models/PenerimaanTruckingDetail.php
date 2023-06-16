@@ -257,4 +257,26 @@ class PenerimaanTruckingDetail extends MyModel
     {
         return $query->skip($this->params['offset'])->take($this->params['limit']);
     }
+
+
+    public function processStore(PenerimaanTruckingHeader $penerimaanTruckingHeader, array $data): PenerimaanTruckingDetail
+    {
+        
+        $penerimaantruckingDetail = new PenerimaanTruckingDetail();
+        
+        $penerimaantruckingDetail->penerimaantruckingheader_id = $data['penerimaantruckingheader_id'];
+        $penerimaantruckingDetail->nobukti = $data['nobukti'];
+        $penerimaantruckingDetail->supir_id = $data['supir_id'];
+        $penerimaantruckingDetail->pengeluarantruckingheader_nobukti = $data['pengeluarantruckingheader_nobukti'] ?? '';
+        $penerimaantruckingDetail->keterangan = $data['keterangan'];
+        $penerimaantruckingDetail->nominal = $data['nominal'];
+        $penerimaantruckingDetail->modifiedby = auth('api')->user()->name;
+        
+        if (!$penerimaantruckingDetail->save()) {
+            throw new \Exception("Error storing Penerimaan Trucking Detail.");
+        }
+
+        return $penerimaantruckingDetail;
+    }
+
 }

@@ -149,4 +149,25 @@ class InvoiceDetail extends MyModel
     {
         return $query->skip($this->params['offset'])->take($this->params['limit']);
     }
+
+    public function processStore(InvoiceHeader $invoiceHeader, array $data): InvoiceDetail
+    {
+        $invoiceDetail = new InvoiceDetail();
+        $invoiceDetail->invoice_id = $invoiceHeader->id;
+        $invoiceDetail->nobukti = $invoiceHeader->nobukti;
+        $invoiceDetail->nominal = $data['nominal'];
+        $invoiceDetail->nominalextra = $data['nominalextra'];
+        $invoiceDetail->nominalretribusi = $data['nominalretribusi'];
+        $invoiceDetail->total = $data['total'];
+        $invoiceDetail->keterangan = $data['keterangan'];
+        $invoiceDetail->orderantrucking_nobukti = $data['orderantrucking_nobukti'];
+        $invoiceDetail->suratpengantar_nobukti = $data['suratpengantar_nobukti'];
+        $invoiceDetail->modifiedby = auth('api')->user()->name;
+
+        if (!$invoiceDetail->save()) {
+            throw new \Exception("Error storing invoice detail.");
+        }
+
+        return $invoiceDetail;
+    }
 }

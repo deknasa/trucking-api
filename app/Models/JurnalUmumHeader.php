@@ -383,7 +383,7 @@ class JurnalUmumHeader extends MyModel
 
         $jurnalUmumHeaderLogTrail = (new LogTrail())->processStore([
             'namatabel' => strtoupper($jurnalUmumHeader->getTable()),
-            'postingdari' => 'ENTRY JURNAL UMUM HEADER',
+            'postingdari' => $data['postingdari'] ?? 'ENTRY JURNAL UMUM HEADER',
             'idtrans' => $jurnalUmumHeader->id,
             'nobuktitrans' => $jurnalUmumHeader->nobukti,
             'aksi' => 'ENTRY',
@@ -416,7 +416,7 @@ class JurnalUmumHeader extends MyModel
 
         (new LogTrail())->processStore([
             'namatabel' => strtoupper($jurnalUmumDetail->getTable()),
-            'postingdari' => 'ENTRY JURNAL UMUM DETAIL',
+            'postingdari' => $data['postingdari'] ?? 'ENTRY JURNAL UMUM DETAIL',
             'idtrans' =>  $jurnalUmumHeaderLogTrail->id,
             'nobuktitrans' => $jurnalUmumHeader->nobukti,
             'aksi' => 'ENTRY',
@@ -437,7 +437,7 @@ class JurnalUmumHeader extends MyModel
 
         $jurnalUmumHeaderLogTrail = (new LogTrail())->processStore([
             'namatabel' => strtoupper($jurnalUmumHeader->getTable()),
-            'postingdari' => 'EDIT JURNAL UMUM HEADER',
+            'postingdari' => $data['postingdari'] ?? 'EDIT JURNAL UMUM HEADER',
             'idtrans' => $jurnalUmumHeader->id,
             'nobuktitrans' => $jurnalUmumHeader->nobukti,
             'aksi' => 'EDIT',
@@ -472,7 +472,7 @@ class JurnalUmumHeader extends MyModel
 
         (new LogTrail())->processStore([
             'namatabel' => strtoupper($jurnalUmumDetail->getTable()),
-            'postingdari' => 'EDIT JURNAL UMUM DETAIL',
+            'postingdari' => $data['postingdari'] ?? 'EDIT JURNAL UMUM DETAIL',
             'idtrans' =>  $jurnalUmumHeaderLogTrail->id,
             'nobuktitrans' => $jurnalUmumHeader->nobukti,
             'aksi' => 'EDIT',
@@ -483,7 +483,7 @@ class JurnalUmumHeader extends MyModel
         return $jurnalUmumHeader;
     }
 
-    public function processDestroy($id): JurnalUmumHeader
+    public function processDestroy($id, $postingDari): JurnalUmumHeader
     {
         $jurnalUmumDetails = JurnalUmumDetail::lockForUpdate()->where('jurnalumum_id', $id)->get();
 
@@ -492,7 +492,7 @@ class JurnalUmumHeader extends MyModel
 
         $jurnalUmumHeaderLogTrail = (new LogTrail())->processStore([
             'namatabel' => $jurnalUmumHeader->getTable(),
-            'postingdari' => 'DELETE JURNAL UMUM HEADER',
+            'postingdari' => $postingDari,
             'idtrans' => $jurnalUmumHeader->id,
             'nobuktitrans' => $jurnalUmumHeader->nobukti,
             'aksi' => 'DELETE',
@@ -502,7 +502,7 @@ class JurnalUmumHeader extends MyModel
 
         (new LogTrail())->processStore([
             'namatabel' => 'JURNALUMUMDETAIL',
-            'postingdari' => 'DELETE JURNAL UMUM DETAIL',
+            'postingdari' => $postingDari,
             'idtrans' => $jurnalUmumHeaderLogTrail['id'],
             'nobuktitrans' => $jurnalUmumHeader->nobukti,
             'aksi' => 'DELETE',

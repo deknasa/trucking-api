@@ -511,8 +511,8 @@ class HutangBayarHeader extends MyModel
             $hutangBayarDetails[] = $hutangBayarDetail->toArray();
             $nominal_detail []= $data['bayar'][$i] - $data['potongan'][$i];
             $keterangan_detail []= $data['keterangan'][$i];
-            $coadebet []= $coa;
-            $coakredit []= $coakredits;
+            $coadebet []= $data['coadebet'] ?? $coa;
+            $coakredit []= $data['coakredit'] ?? $coakredits;
             $tgljatuhtempo[] = $hutang->tgljatuhtempo;
             $nowarkat[] = "";
         }
@@ -552,7 +552,6 @@ class HutangBayarHeader extends MyModel
             "bulanbeban"
         ];
 
-        // throw new \Exception($coadebet[0]);
 
         $pengeluaranHeader = (new PengeluaranHeader())->processStore($pengeluaranRequest);
         $hutangBayarHeader->pengeluaran_nobukti = $pengeluaranHeader->nobukti;
@@ -697,7 +696,6 @@ class HutangBayarHeader extends MyModel
             "bulanbeban"
         ];
 
-        // throw new \Exception($coadebet[0]);
 
         $pengeluaranHeader = (new PengeluaranHeader())->processStore($pengeluaranRequest);
         $hutangBayarHeader->pengeluaran_nobukti = $pengeluaranHeader->nobukti;

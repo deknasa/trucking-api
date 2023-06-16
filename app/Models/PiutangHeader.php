@@ -80,7 +80,7 @@ class PiutangHeader extends MyModel
             ->leftJoin(DB::raw("akunpusat as debet with (readuncommitted)"), 'piutangheader.coadebet', 'debet.coa')
             ->leftJoin(DB::raw("akunpusat as kredit with (readuncommitted)"), 'piutangheader.coakredit', 'kredit.coa')
             ->leftJoin(DB::raw($temppelunasan . " as c"), 'piutangheader.nobukti', 'c.piutang_nobukti');
-        if(request()->tgldari && request()->tglsampai){
+        if (request()->tgldari && request()->tglsampai) {
             $query->whereBetween($this->table . '.tglbukti', [date('Y-m-d', strtotime(request()->tgldari)), date('Y-m-d', strtotime(request()->tglsampai))]);
         }
         if ($periode != '') {
@@ -414,18 +414,14 @@ class PiutangHeader extends MyModel
 
     public function processStore(array $data): PiutangHeader
     {
-        $tanpaprosesnobukti = $data['tanpaprosesnobukti'] ?? 0;
 
-        if ($tanpaprosesnobukti == 0) {
+        $group = 'PIUTANG BUKTI';
+        $subGroup = 'PIUTANG BUKTI';
 
-            $group = 'PIUTANG BUKTI';
-            $subGroup = 'PIUTANG BUKTI';
-
-            $format = DB::table('parameter')
-                ->where('grp', $group)
-                ->where('subgrp', $subGroup)
-                ->first();
-        }
+        $format = DB::table('parameter')
+            ->where('grp', $group)
+            ->where('subgrp', $subGroup)
+            ->first();
 
         $piutangHeader = new PiutangHeader();
         $getCoa = Agen::from(DB::raw("agen with (readuncommitted)"))->where('id', $data['agen_id'])->first();
@@ -436,22 +432,18 @@ class PiutangHeader extends MyModel
 
         $piutangHeader->tglbukti = date('Y-m-d', strtotime($data['tglbukti']));
         $piutangHeader->postingdari = $data['postingdari'] ?? 'ENTRY PIUTANG HEADER';
-        $piutangHeader->invoice_nobukti = $data['invoice_nobukti'] ?? '';
+        $piutangHeader->invoice_nobukti = $data['invoice'] ?? '';
         $piutangHeader->modifiedby = auth('api')->user()->name;
-        $piutangHeader->statusformat = $data['statusformat'] ?? $format->id;
+        $piutangHeader->statusformat = $format->id;
         $piutangHeader->agen_id = $data['agen_id'];
         $piutangHeader->coadebet = $getCoa->coa;
         $piutangHeader->coakredit = $getCoa->coapendapatan;
         $piutangHeader->statuscetak = $statusCetak->id;
         $piutangHeader->userbukacetak = '';
         $piutangHeader->tglbukacetak = '';
-        $piutangHeader->nominal = ($tanpaprosesnobukti == 0) ? array_sum($data['nominal_detail']) : $data['nominal'];
+        $piutangHeader->nominal = array_sum($data['nominal_detail']);
 
-        if ($tanpaprosesnobukti == 0) {
-            $piutangHeader->nobukti = (new RunningNumberService)->get($group, $subGroup, $piutangHeader->getTable(), date('Y-m-d', strtotime($data['tglbukti'])));
-        } else {
-            $piutangHeader->nobukti = $data['nobukti'];
-        }
+        $piutangHeader->nobukti = (new RunningNumberService)->get($group, $subGroup, $piutangHeader->getTable(), date('Y-m-d', strtotime($data['tglbukti'])));
 
         if (!$piutangHeader->save()) {
             throw new \Exception("Error storing piutang header.");
@@ -459,7 +451,7 @@ class PiutangHeader extends MyModel
 
         $piutangHeaderLogTrail = (new LogTrail())->processStore([
             'namatabel' => strtoupper($piutangHeader->getTable()),
-            'postingdari' => 'ENTRY PIUTANG HEADER',
+            'postingdari' => $data['postingdari'] ?? 'ENTRY PIUTANG HEADER',
             'idtrans' => $piutangHeader->id,
             'nobuktitrans' => $piutangHeader->nobukti,
             'aksi' => 'ENTRY',
@@ -492,7 +484,7 @@ class PiutangHeader extends MyModel
 
         (new LogTrail())->processStore([
             'namatabel' => strtoupper($piutangDetail->getTable()),
-            'postingdari' => 'ENTRY PIUTANG DETAIL',
+            'postingdari' =>  $data['postingdari'] ?? 'ENTRY PIUTANG DETAIL',
             'idtrans' =>  $piutangHeaderLogTrail->id,
             'nobuktitrans' => $piutangHeader->nobukti,
             'aksi' => 'ENTRY',
@@ -522,6 +514,7 @@ class PiutangHeader extends MyModel
         $piutangHeader->agen_id = $data['agen_id'];
         $piutangHeader->coadebet = $getCoa->coa;
         $piutangHeader->coakredit = $getCoa->coapendapatan;
+        $piutangHeader->postingdari = $data['postingdari'] ?? 'EDIT PIUTANG HEADER';
         $piutangHeader->nominal = ($proseslain != 0) ? $data['nominal'] : array_sum($data['nominal_detail']);
 
 
@@ -531,7 +524,7 @@ class PiutangHeader extends MyModel
 
         $piutangHeaderLogTrail = (new LogTrail())->processStore([
             'namatabel' => strtoupper($piutangHeader->getTable()),
-            'postingdari' => 'EDIT PIUTANG HEADER',
+            'postingdari' => $data['postingdari'] ?? 'EDIT PIUTANG HEADER',
             'idtrans' => $piutangHeader->id,
             'nobuktitrans' => $piutangHeader->nobukti,
             'aksi' => 'EDIT',
@@ -565,7 +558,7 @@ class PiutangHeader extends MyModel
 
         (new LogTrail())->processStore([
             'namatabel' => strtoupper($piutangDetail->getTable()),
-            'postingdari' => 'EDIT PIUTANG DETAIL',
+            'postingdari' => $data['postingdari'] ?? 'EDIT PIUTANG DETAIL',
             'idtrans' =>  $piutangHeaderLogTrail->id,
             'nobuktitrans' => $piutangHeader->nobukti,
             'aksi' => 'EDIT',
@@ -589,8 +582,8 @@ class PiutangHeader extends MyModel
         return $piutangHeader;
     }
 
-    
-    public function processDestroy($id): PiutangHeader
+
+    public function processDestroy($id, $postingDari): PiutangHeader
     {
         $piutangDetails = PiutangDetail::lockForUpdate()->where('piutang_id', $id)->get();
 
@@ -599,7 +592,7 @@ class PiutangHeader extends MyModel
 
         $piutangHeaderLogTrail = (new LogTrail())->processStore([
             'namatabel' => $piutangHeader->getTable(),
-            'postingdari' => 'DELETE PIUTANG HEADER',
+            'postingdari' => $postingDari,
             'idtrans' => $piutangHeader->id,
             'nobuktitrans' => $piutangHeader->nobukti,
             'aksi' => 'DELETE',
@@ -609,16 +602,15 @@ class PiutangHeader extends MyModel
 
         (new LogTrail())->processStore([
             'namatabel' => 'PIUTANGDETAIL',
-            'postingdari' => 'DELETE PIUTANG DETAIL',
+            'postingdari' => $postingDari,
             'idtrans' => $piutangHeaderLogTrail['id'],
             'nobuktitrans' => $piutangHeader->nobukti,
             'aksi' => 'DELETE',
             'datajson' => $piutangDetails->toArray(),
             'modifiedby' => auth('api')->user()->name
         ]);
-
         $getJurnal = JurnalUmumHeader::from(DB::raw("jurnalumumheader with (readuncommitted)"))->where('nobukti', $piutangHeader->nobukti)->first();
-        $jurnalumumHeader = (new JurnalUmumHeader())->processDestroy($getJurnal->id);
+        $jurnalumumHeader = (new JurnalUmumHeader())->processDestroy($getJurnal->id, $postingDari);
         return $piutangHeader;
     }
 }

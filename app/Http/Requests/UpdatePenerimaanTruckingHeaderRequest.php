@@ -46,11 +46,15 @@ class UpdatePenerimaanTruckingHeaderRequest extends FormRequest
             $penerimaanId[] = $pt->id;
         }
 
-        $penerimaanQuerys = DB::table('penerimaantrucking')->from(DB::raw('penerimaantrucking with (readuncommitted)'))->select('penerimaantrucking.keterangan')->get();
+        $penerimaanQuerys = DB::table('penerimaantrucking')->from(DB::raw('penerimaantrucking with (readuncommitted)'))->select('penerimaantrucking.keterangan','penerimaantrucking.kodepenerimaan')->get();
        
         $penerimaanName = [];
         foreach ($penerimaanQuerys as $pt) {
             $penerimaanName[] = $pt->keterangan;
+        }
+        $penerimaanKode = [];
+        foreach ($penerimaanQuerys as $pt) {
+            $penerimaanName[] = $pt->kodepenerimaan;
         }
 
 
@@ -107,7 +111,7 @@ class UpdatePenerimaanTruckingHeaderRequest extends FormRequest
 
         $penerimaanTruckingHeader = new PenerimaanTruckingHeader();
         $getDataPenerimaan = $penerimaanTruckingHeader->findAll(request()->id);
-
+// dd(request()->penerimaantrucking);
         if ($kodepenerimaan == 'PJP') {
             $rules = [
                 'nobukti' => [Rule::in($getDataPenerimaan->nobukti)],
@@ -116,7 +120,7 @@ class UpdatePenerimaanTruckingHeaderRequest extends FormRequest
                 'date_equals:' . date('d-m-Y', strtotime($getDataPenerimaan->tglbukti)),
                     new DateTutupBuku(),
                 ],
-                'penerimaantrucking' => ['required',Rule::in($getDataPenerimaan->penerimaantrucking)],
+                'penerimaantrucking' => ['required',Rule::in($getDataPenerimaan->kodepenerimaan)],
                 'penerimaantrucking_id' => ['required', 'numeric', 'min:1',Rule::in($getDataPenerimaan->penerimaantrucking_id)],
                 'bank' => [$ruleBank, Rule::in($getDataPenerimaan->bank), 'required'],
                 'bank_id' => [Rule::in($getDataPenerimaan->bank_id), 'required', 'min:1','numeric'],
@@ -133,7 +137,7 @@ class UpdatePenerimaanTruckingHeaderRequest extends FormRequest
                 'date_equals:' . date('d-m-Y', strtotime($getDataPenerimaan->tglbukti)),
                     new DateTutupBuku(),
                 ],
-                'penerimaantrucking' => ['required',Rule::in($getDataPenerimaan->penerimaantrucking)],
+                'penerimaantrucking' => ['required',Rule::in($getDataPenerimaan->kodepenerimaan)],
                 'penerimaantrucking_id' => ['required', 'numeric', 'min:1',Rule::in($getDataPenerimaan->penerimaantrucking_id)],
                 'bank' => [$ruleBank, Rule::in($getDataPenerimaan->bank), 'required'],
                 'bank_id' => [Rule::in($getDataPenerimaan->bank_id), 'required', 'min:1'],
@@ -149,7 +153,7 @@ class UpdatePenerimaanTruckingHeaderRequest extends FormRequest
                 'date_equals:' . date('d-m-Y', strtotime($getDataPenerimaan->tglbukti)),
                     new DateTutupBuku(),
                 ],
-                'penerimaantrucking' => ['required',Rule::in($penerimaanName)],
+                'penerimaantrucking' => ['required',Rule::in($kodepenerimaan)],
                 'penerimaantrucking_id' => ['required', 'numeric', 'min:1',Rule::in($getDataPenerimaan->penerimaantrucking_id)],
                 'bank' => [$ruleBank, Rule::in($getDataPenerimaan->bank), 'required'],
                 'bank_id' => [Rule::in($getDataPenerimaan->bank_id), 'required', 'min:1'],
