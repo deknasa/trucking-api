@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Services\RunningNumberService;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\DB;
@@ -79,7 +80,7 @@ class InvoiceHeader extends MyModel
         return $data;
     }
 
-    
+
     public function cekvalidasiaksi($nobukti)
     {
         $hutangBayar = DB::table('invoiceheader')
@@ -89,7 +90,7 @@ class InvoiceHeader extends MyModel
             ->select(
                 'a.nobukti'
             )
-            ->join(DB::raw("jurnalumumpusatheader b with (readuncommitted)"),'a.piutang_nobukti','b.nobukti')
+            ->join(DB::raw("jurnalumumpusatheader b with (readuncommitted)"), 'a.piutang_nobukti', 'b.nobukti')
             ->where('a.nobukti', '=', $nobukti)
             ->first();
         if (isset($hutangBayar)) {
@@ -101,7 +102,7 @@ class InvoiceHeader extends MyModel
             goto selesai;
         }
 
-        
+
 
         $data = [
             'kondisi' => false,
@@ -293,7 +294,7 @@ class InvoiceHeader extends MyModel
             ->whereBetween('invoiceheader.tglbukti', [date('Y-m-d', strtotime($tgldari)), date('Y-m-d', strtotime($tglsampai))])
             ->whereRaw("isnull(invoicedetail.orderantrucking_nobukti, '') != ''");
         // ->where('invoiceheader.tsglbukti', '<=', date('Y-m-d', strtotime($tglsampai)));
-        
+
         $this->totalRows = $query->count();
         $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;
         $this->totalNominal = $query->sum('container.nominalsumbangan');
@@ -421,7 +422,6 @@ class InvoiceHeader extends MyModel
                             } else {
                                 // $query = $query->where($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
                                 $query = $query->whereRaw($this->table . ".[" .  $filters['field'] . "] LIKE '%" . escapeLike($filters['data']) . "%' escape '|'");
-
                             }
                         }
                     }
@@ -448,7 +448,6 @@ class InvoiceHeader extends MyModel
                                 } else {
                                     // $query = $query->orWhere($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
                                     $query = $query->OrwhereRaw($this->table . ".[" .  $filters['field'] . "] LIKE '%" . escapeLike($filters['data']) . "%' escape '|'");
-
                                 }
                             }
                         }
@@ -502,5 +501,258 @@ class InvoiceHeader extends MyModel
     public function invoiceDetails()
     {
         return $this->hasMany(InvoiceDetail::class, 'invoice_id');
+    }
+
+    public function processStore(array $data): InvoiceHeader
+    {
+        $group = 'INVOICE BUKTI';
+        $subGroup = 'INVOICE BUKTI';
+
+        $format = DB::table('parameter')
+            ->where('grp', $group)
+            ->where('subgrp', $subGroup)
+            ->first();
+
+        $statusApproval = Parameter::from(DB::raw("parameter with (readuncommitted)"))
+            ->where('grp', 'STATUS APPROVAL')->where('text', 'NON APPROVAL')->first();
+        $statusCetak = Parameter::from(DB::raw("parameter with (readuncommitted)"))
+            ->where('grp', 'STATUSCETAK')->where('text', 'BELUM CETAK')->first();
+
+        $invoiceHeader = new InvoiceHeader();
+        $invoiceHeader->tglbukti = date('Y-m-d', strtotime($data['tglbukti']));
+        $invoiceHeader->nominal = '';
+        $invoiceHeader->tglterima = date('Y-m-d', strtotime($data['tglterima']));
+        $invoiceHeader->tgljatuhtempo = date('Y-m-d');
+        $invoiceHeader->agen_id = $data['agen_id'];
+        $invoiceHeader->jenisorder_id = $data['jenisorder_id'];
+        $invoiceHeader->piutang_nobukti = $data['piutang_nobukti'] ?? '';
+        $invoiceHeader->statusapproval = $statusApproval->id;
+        $invoiceHeader->userapproval = '';
+        $invoiceHeader->tglapproval = '';
+        $invoiceHeader->statuscetak = $statusCetak->id;
+        $invoiceHeader->tgldari = date('Y-m-d', strtotime($data['tgldari']));
+        $invoiceHeader->tglsampai = date('Y-m-d', strtotime($data['tglsampai']));
+        $invoiceHeader->modifiedby = auth('api')->user()->name;
+        $invoiceHeader->statusformat = $format->id;
+        $invoiceHeader->nobukti = (new RunningNumberService)->get($group, $subGroup, $invoiceHeader->getTable(), date('Y-m-d', strtotime($data['tglbukti'])));
+
+        if (!$invoiceHeader->save()) {
+            throw new \Exception("Error storing invoice header.");
+        }
+
+        $invoiceDetails = [];
+
+        $keteranganDetail = [];
+        $nominalDetail = [];
+        $invoiceNobukti = [];
+
+        $total = 0;
+        for ($i = 0; $i < count($data['sp_id']); $i++) {
+
+            $SP = SuratPengantar::from(DB::raw("suratpengantar with (readuncommitted)"))
+                ->where('id', $data['sp_id'][$i])->first();
+            $orderantrucking = OrderanTrucking::from(DB::raw("orderantrucking with (readuncommitted)"))
+                ->where('nobukti', $SP->jobtrucking)->first();
+
+            $total = $total + $orderantrucking->nominal + $data['nominalretribusi'][$i] + $data['nominalextra'][$i];
+
+            $getSP = SuratPengantar::from(DB::raw("suratpengantar with (readuncommitted)"))
+                ->where('jobtrucking', $SP->jobtrucking)->get();
+
+            $allSP = "";
+            foreach ($getSP as $key => $value) {
+                if ($key == 0) {
+                    $allSP = $allSP . $value->nobukti;
+                } else {
+                    $allSP = $allSP . ',' . $value->nobukti;
+                }
+            }
+
+            $invoiceDetail = (new InvoiceDetail())->processStore($invoiceHeader, [
+                'nominal' => $orderantrucking->nominal,
+                'nominalextra' => $data['nominalextra'][$i],
+                'nominalretribusi' => $data['nominalretribusi'][$i],
+                'total' => $orderantrucking->nominal + $data['nominalretribusi'][$i] + $data['nominalextra'][$i],
+                'keterangan' => $SP->keterangan,
+                'orderantrucking_nobukti' => $SP->jobtrucking,
+                'suratpengantar_nobukti' => $allSP
+            ]);
+            // STORE 
+            $invoiceDetails[] = $invoiceDetail->toArray();
+        }
+
+        $keteranganDetail[] = "TAGIHAN INVOICE " . $data['jenisorder'] . " " . $data['agen'] . " periode " . $data['tgldari'] . " s/d " . $data['tglsampai'];
+        $nominalDetail[] = $total;
+        $invoiceNobukti[] =  $invoiceHeader->nobukti;
+
+        $invoiceRequest = [
+            'tglbukti' => date('Y-m-d', strtotime($data['tglbukti'])),
+            'postingdari' => 'ENTRY INVOICE HEADER',
+            'invoice' => $invoiceHeader->nobukti,
+            'agen_id' => $data['agen_id'],
+            'invoice_nobukti' => $invoiceNobukti,
+            'nominal_detail' => $nominalDetail,
+            'keterangan_detail' => $keteranganDetail,
+        ];
+
+        $piutangHeader = (new PiutangHeader())->processStore($invoiceRequest);
+        $invoiceHeader->piutang_nobukti = $piutangHeader->nobukti;
+        $invoiceHeader->nominal = $total;
+        $invoiceHeader->save();
+
+        $invoiceHeaderLogTrail = (new LogTrail())->processStore([
+            'namatabel' => strtoupper($invoiceHeader->getTable()),
+            'postingdari' => 'ENTRY INVOICE HEADER',
+            'idtrans' => $invoiceHeader->id,
+            'nobuktitrans' => $invoiceHeader->nobukti,
+            'aksi' => 'ENTRY',
+            'datajson' => $invoiceHeader->toArray(),
+            'modifiedby' => auth('api')->user()->user
+        ]);
+        (new LogTrail())->processStore([
+            'namatabel' => strtoupper($invoiceDetail->getTable()),
+            'postingdari' => 'ENTRY INVOICE DETAIL',
+            'idtrans' =>  $invoiceHeaderLogTrail->id,
+            'nobuktitrans' => $invoiceHeader->nobukti,
+            'aksi' => 'ENTRY',
+            'datajson' => $invoiceDetails,
+            'modifiedby' => auth('api')->user()->user,
+        ]);
+        return $invoiceHeader;
+    }
+
+    public function processUpdate(InvoiceHeader $invoiceHeader, array $data): InvoiceHeader
+    {
+        $invoiceHeader->tglbukti = date('Y-m-d', strtotime($data['tglbukti']));
+        $invoiceHeader->nominal = '';
+        $invoiceHeader->tglterima = date('Y-m-d', strtotime($data['tglterima']));
+        $invoiceHeader->tgldari = date('Y-m-d', strtotime($data['tgldari']));
+        $invoiceHeader->tglsampai = date('Y-m-d', strtotime($data['tglsampai']));
+        $invoiceHeader->modifiedby = auth('api')->user()->name;
+
+        if (!$invoiceHeader->save()) {
+            throw new \Exception("Error updating invoice header.");
+        }
+
+        $invoiceHeaderLogTrail = (new LogTrail())->processStore([
+            'namatabel' => strtoupper($invoiceHeader->getTable()),
+            'postingdari' => 'EDIT INVOICE HEADER',
+            'idtrans' => $invoiceHeader->id,
+            'nobuktitrans' => $invoiceHeader->nobukti,
+            'aksi' => 'EDIT',
+            'datajson' => $invoiceHeader->toArray(),
+            'modifiedby' => auth('api')->user()->user
+        ]);
+
+        InvoiceDetail::where('invoice_id', $invoiceHeader->id)->delete();
+
+        $keteranganDetail = [];
+        $nominalDetail = [];
+        $invoiceNobukti = [];
+
+        $invoiceDetails = [];
+
+        $keteranganDetail = [];
+        $nominalDetail = [];
+        $invoiceNobukti = [];
+
+        $total = 0;
+        for ($i = 0; $i < count($data['sp_id']); $i++) {
+
+            $SP = SuratPengantar::from(DB::raw("suratpengantar with (readuncommitted)"))
+                ->where('id', $data['sp_id'][$i])->first();
+            $orderantrucking = OrderanTrucking::from(DB::raw("orderantrucking with (readuncommitted)"))
+                ->where('nobukti', $SP->jobtrucking)->first();
+
+            $total = $total + $orderantrucking->nominal + $data['nominalretribusi'][$i] + $data['nominalextra'][$i];
+
+            $getSP = SuratPengantar::from(DB::raw("suratpengantar with (readuncommitted)"))
+                ->where('jobtrucking', $SP->jobtrucking)->get();
+
+            $allSP = "";
+            foreach ($getSP as $key => $value) {
+                if ($key == 0) {
+                    $allSP = $allSP . $value->nobukti;
+                } else {
+                    $allSP = $allSP . ',' . $value->nobukti;
+                }
+            }
+
+            $invoiceDetail = (new InvoiceDetail())->processStore($invoiceHeader, [
+                'nominal' => $orderantrucking->nominal,
+                'nominalextra' => $data['nominalextra'][$i],
+                'nominalretribusi' => $data['nominalretribusi'][$i],
+                'total' => $orderantrucking->nominal + $data['nominalretribusi'][$i] + $data['nominalextra'][$i],
+                'keterangan' => $SP->keterangan,
+                'orderantrucking_nobukti' => $SP->jobtrucking,
+                'suratpengantar_nobukti' => $allSP
+            ]);
+            // STORE 
+            $invoiceDetails[] = $invoiceDetail->toArray();
+        }
+
+        $keteranganDetail[] = "TAGIHAN INVOICE " . $data['jenisorder'] . " " . $data['agen'] . " periode " . $data['tgldari'] . " s/d " . $data['tglsampai'];
+        $nominalDetail[] = $total;
+        $invoiceNobukti[] =  $invoiceHeader->nobukti;
+
+        $invoiceHeader->nominal = $total;
+        $invoiceHeader->save();
+
+        (new LogTrail())->processStore([
+            'namatabel' => strtoupper($invoiceDetail->getTable()),
+            'postingdari' => 'EDIT INVOICE DETAIL',
+            'idtrans' =>  $invoiceHeaderLogTrail->id,
+            'nobuktitrans' => $invoiceHeader->nobukti,
+            'aksi' => 'EDIT',
+            'datajson' => $invoiceDetails,
+            'modifiedby' => auth('api')->user()->user,
+        ]);
+
+        $invoiceRequest = [
+            'postingdari' => 'EDIT INVOICE HEADER',
+            'invoice' => $invoiceHeader->nobukti,
+            'agen_id' => $invoiceHeader->agen_id,
+            'invoice_nobukti' => $invoiceNobukti,
+            'nominal_detail' => $nominalDetail,
+            'keterangan_detail' => $keteranganDetail,
+        ];
+
+        $getPiutang = PiutangHeader::from(DB::raw("piutangheader with (readuncommitted)"))->where('invoice_nobukti', $invoiceHeader->nobukti)->first();
+        $newPiutang = new PiutangHeader();
+        $newPiutang = $newPiutang->findUpdate($getPiutang->id);
+        (new PiutangHeader())->processUpdate($newPiutang, $invoiceRequest);
+
+        return $invoiceHeader;
+    }
+    public function processDestroy($id): InvoiceHeader
+    {
+        $invoiceDetails = InvoiceDetail::lockForUpdate()->where('invoice_id', $id)->get();
+
+        $invoiceHeader = new InvoiceHeader();
+        $invoiceHeader = $invoiceHeader->lockAndDestroy($id);
+
+        $invoiceHeaderLogTrail = (new LogTrail())->processStore([
+            'namatabel' => $invoiceHeader->getTable(),
+            'postingdari' => 'DELETE INVOICE HEADER',
+            'idtrans' => $invoiceHeader->id,
+            'nobuktitrans' => $invoiceHeader->nobukti,
+            'aksi' => 'DELETE',
+            'datajson' => $invoiceHeader->toArray(),
+            'modifiedby' => auth('api')->user()->name
+        ]);
+
+        (new LogTrail())->processStore([
+            'namatabel' => 'INVOICEDETAIL',
+            'postingdari' => 'DELETE INVOICE DETAIL',
+            'idtrans' => $invoiceHeaderLogTrail['id'],
+            'nobuktitrans' => $invoiceHeader->nobukti,
+            'aksi' => 'DELETE',
+            'datajson' => $invoiceDetails->toArray(),
+            'modifiedby' => auth('api')->user()->name
+        ]);
+
+        $getPiutang = PiutangHeader::from(DB::raw("piutangheader with (readuncommitted)"))->where('invoice_nobukti', $invoiceHeader->nobukti)->first();
+        (new PiutangHeader())->processDestroy($getPiutang->id, 'DELETE INVOICE HEADER');
+        return $invoiceHeader;
     }
 }
