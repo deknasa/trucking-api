@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Services\RunningNumberService;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\DB;
@@ -37,21 +38,21 @@ class ServiceOutHeader extends MyModel
         $periode = request()->periode ?? '';
         $statusCetak = request()->statuscetak ?? '';
         $query = DB::table($this->table)->from(DB::raw("serviceoutheader with (readuncommitted)"))
-        ->select(
-            'serviceoutheader.id',
-            'serviceoutheader.nobukti',
-            'serviceoutheader.tglbukti',
+            ->select(
+                'serviceoutheader.id',
+                'serviceoutheader.nobukti',
+                'serviceoutheader.tglbukti',
 
-            'trado.kodetrado as trado_id',
-            'statuscetak.memo as statuscetak',
+                'trado.kodetrado as trado_id',
+                'statuscetak.memo as statuscetak',
 
-            'serviceoutheader.tglkeluar',
-            'serviceoutheader.modifiedby',
-            'serviceoutheader.created_at',
-            'serviceoutheader.updated_at'
+                'serviceoutheader.tglkeluar',
+                'serviceoutheader.modifiedby',
+                'serviceoutheader.created_at',
+                'serviceoutheader.updated_at'
 
             )
-            ->leftJoin(DB::raw("parameter as statuscetak with (readuncommitted)") , 'serviceoutheader.statuscetak', 'statuscetak.id')
+            ->leftJoin(DB::raw("parameter as statuscetak with (readuncommitted)"), 'serviceoutheader.statuscetak', 'statuscetak.id')
             ->leftJoin(DB::raw("trado with (readuncommitted)"), 'serviceoutheader.trado_id', 'trado.id');
             if (request()->tgldari) {
                 $query->whereBetween('serviceoutheader.tglbukti', [date('Y-m-d',strtotime(request()->tgldari )), date('Y-m-d',strtotime(request()->tglsampai ))]);
@@ -95,9 +96,9 @@ class ServiceOutHeader extends MyModel
             'serviceoutheader.updated_at'
 
         )
-        ->leftJoin(DB::raw("parameter as statuscetak with (readuncommitted)") , 'serviceoutheader.statuscetak', 'statuscetak.id')
-        ->leftJoin(DB::raw("trado with (readuncommitted)"), 'serviceoutheader.trado_id', 'trado.id')
-        ->where('serviceoutheader.id', $id);
+            ->leftJoin(DB::raw("parameter as statuscetak with (readuncommitted)"), 'serviceoutheader.statuscetak', 'statuscetak.id')
+            ->leftJoin(DB::raw("trado with (readuncommitted)"), 'serviceoutheader.trado_id', 'trado.id')
+            ->where('serviceoutheader.id', $id);
         $data = $query->first();
 
         return $data;
@@ -121,9 +122,8 @@ class ServiceOutHeader extends MyModel
             )
 
         )
-        ->leftJoin(DB::raw("parameter as statuscetak with (readuncommitted)") , 'serviceoutheader.statuscetak', 'statuscetak.id')
-        ->leftJoin(DB::raw("trado with (readuncommitted)"), 'serviceoutheader.trado_id', 'trado.id');
-
+            ->leftJoin(DB::raw("parameter as statuscetak with (readuncommitted)"), 'serviceoutheader.statuscetak', 'statuscetak.id')
+            ->leftJoin(DB::raw("trado with (readuncommitted)"), 'serviceoutheader.trado_id', 'trado.id');
     }
 
     public function createTemp(string $modelTable)
@@ -131,7 +131,7 @@ class ServiceOutHeader extends MyModel
         $temp = '##temp' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
         Schema::create($temp, function ($table) {
             $table->bigInteger('id')->nullable();
-            $table->string('nobukti',50)->unique();
+            $table->string('nobukti', 50)->unique();
             $table->date('tglbukti')->nullable();
             $table->string('trado_id')->nullable();
             $table->date('tglkeluar')->nullable();
@@ -148,10 +148,10 @@ class ServiceOutHeader extends MyModel
         $query = $this->selectColumns($query);
         $this->sort($query);
         if (request()->tgldari) {
-            $query->whereBetween('serviceoutheader.tglbukti', [date('Y-m-d',strtotime(request()->tgldari )), date('Y-m-d',strtotime(request()->tglsampai ))]);
+            $query->whereBetween('serviceoutheader.tglbukti', [date('Y-m-d', strtotime(request()->tgldari)), date('Y-m-d', strtotime(request()->tglsampai))]);
         }
         $models = $this->filter($query);
-        DB::table($temp)->insertUsing(['id', 'nobukti', 'tglbukti',  'trado_id','tglkeluar','statuscetak', 'modifiedby', 'created_at', 'updated_at'], $models);
+        DB::table($temp)->insertUsing(['id', 'nobukti', 'tglbukti',  'trado_id', 'tglkeluar', 'statuscetak', 'modifiedby', 'created_at', 'updated_at'], $models);
 
 
         return  $temp;
@@ -159,9 +159,9 @@ class ServiceOutHeader extends MyModel
 
     public function sort($query)
     {
-        if($this->params['sortIndex'] == 'trado_id'){
+        if ($this->params['sortIndex'] == 'trado_id') {
             return $query->orderBy('trado.kodetrado', $this->params['sortOrder']);
-        }else{
+        } else {
             return $query->orderBy($this->table . '.' . $this->params['sortIndex'], $this->params['sortOrder']);
         }
     }
@@ -175,13 +175,12 @@ class ServiceOutHeader extends MyModel
                         if ($filters['field'] == 'trado_id') {
                             $query = $query->where('trado.kodetrado', 'LIKE', "%$filters[data]%");
                         } else if ($filters['field'] == 'tglbukti' || $filters['field'] == 'tglkeluar') {
-                            $query = $query->whereRaw("format(".$this->table . "." . $filters['field'].", 'dd-MM-yyyy') LIKE '%$filters[data]%'");
+                            $query = $query->whereRaw("format(" . $this->table . "." . $filters['field'] . ", 'dd-MM-yyyy') LIKE '%$filters[data]%'");
                         } else if ($filters['field'] == 'created_at' || $filters['field'] == 'updated_at') {
-                            $query = $query->whereRaw("format(".$this->table . "." . $filters['field'].", 'dd-MM-yyyy HH:mm:ss') LIKE '%$filters[data]%'");
+                            $query = $query->whereRaw("format(" . $this->table . "." . $filters['field'] . ", 'dd-MM-yyyy HH:mm:ss') LIKE '%$filters[data]%'");
                         } else {
                             // $query = $query->where($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
                             $query = $query->whereRaw($this->table . ".[" .  $filters['field'] . "] LIKE '%" . escapeLike($filters['data']) . "%' escape '|'");
-
                         }
                     }
 
@@ -192,9 +191,9 @@ class ServiceOutHeader extends MyModel
                             if ($filters['field'] == 'trado_id') {
                                 $query = $query->orWhere('trado.kodetrado', 'LIKE', "%$filters[data]%");
                             } else if ($filters['field'] == 'tglbukti' || $filters['field'] == 'tglkeluar') {
-                                $query = $query->orWhereRaw("format(".$this->table . "." . $filters['field'].", 'dd-MM-yyyy') LIKE '%$filters[data]%'");
+                                $query = $query->orWhereRaw("format(" . $this->table . "." . $filters['field'] . ", 'dd-MM-yyyy') LIKE '%$filters[data]%'");
                             } else if ($filters['field'] == 'created_at' || $filters['field'] == 'updated_at') {
-                                $query = $query->orWhereRaw("format(".$this->table . "." . $filters['field'].", 'dd-MM-yyyy HH:mm:ss') LIKE '%$filters[data]%'");
+                                $query = $query->orWhereRaw("format(" . $this->table . "." . $filters['field'] . ", 'dd-MM-yyyy HH:mm:ss') LIKE '%$filters[data]%'");
                             } else {
                                 // $query = $query->orWhere($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
                                 $query = $query->OrwhereRaw($this->table . ".[" .  $filters['field'] . "] LIKE '%" . escapeLike($filters['data']) . "%' escape '|'");
@@ -212,9 +211,9 @@ class ServiceOutHeader extends MyModel
             $this->totalPages = $this->params['limit'] > 0 ? ceil($this->totalRows / $this->params['limit']) : 1;
         }
         if (request()->cetak && request()->periode) {
-            $query->where('serviceoutheader.statuscetak','<>', request()->cetak)
-                  ->whereYear('serviceoutheader.tglbukti','=', request()->year)
-                  ->whereMonth('serviceoutheader.tglbukti','=', request()->month);
+            $query->where('serviceoutheader.statuscetak', '<>', request()->cetak)
+                ->whereYear('serviceoutheader.tglbukti', '=', request()->year)
+                ->whereMonth('serviceoutheader.tglbukti', '=', request()->month);
             return $query;
         }
         return $query;
@@ -223,5 +222,147 @@ class ServiceOutHeader extends MyModel
     public function paginate($query)
     {
         return $query->skip($this->params['offset'])->take($this->params['limit']);
+    }
+
+    public function processStore(array $data): ServiceOutHeader
+    {
+        $group = 'SERVICE OUT BUKTI';
+        $subgroup = 'SERVICE OUT BUKTI';
+
+        $format = DB::table('parameter')
+            ->where('grp', $group)
+            ->where('subgrp', $subgroup)
+            ->first();
+
+        $serviceout = new ServiceOutHeader();
+        $serviceout->tglbukti = date('Y-m-d', strtotime($data['tglbukti']));
+        $serviceout->trado_id = $data['trado_id'];
+        $serviceout->tglkeluar = date('Y-m-d', strtotime($data['tglkeluar']));
+        $serviceout->statusformat =  $format->id;
+        $serviceout->modifiedby = auth('api')->user()->name;
+
+        $serviceout->nobukti = (new RunningNumberService)->get($group, $subgroup, $serviceout->getTable(), date('Y-m-d', strtotime($data['tglbukti'])));
+
+        if (!$serviceout->save()) {
+            throw new \Exception("Error storing service in header.");
+        }
+
+        $serviceOutHeaderLogTrail = (new LogTrail())->processStore([
+            'namatabel' => strtoupper($serviceout->getTable()),
+            'postingdari' => 'ENTRY SERVICE OUT HEADER',
+            'idtrans' => $serviceout->id,
+            'nobuktitrans' => $serviceout->nobukti,
+            'aksi' => 'ENTRY',
+            'datajson' => $serviceout->toArray(),
+            'modifiedby' => $serviceout->modifiedby
+        ]);
+
+        /* Store detail */
+        $detaillog = [];
+        for ($i = 0; $i < count($data['keterangan_detail']); $i++) {
+            $datadetail = (new ServiceOutDetail())->processStore($serviceout, [
+                'serviceout_id' => $serviceout->id,
+                'nobukti' => $serviceout->nobukti,
+                'servicein_nobukti' => $data['servicein_nobukti'][$i],
+                'keterangan' => $data['keterangan_detail'][$i],
+                'modifiedby' => $serviceout->modifiedby,
+            ]);
+
+            $detaillog[] = $datadetail->toArray();
+        }
+
+
+        (new LogTrail())->processStore([
+            'namatabel' => strtoupper($datadetail->getTable()),
+            'postingdari' => 'ENTRY SERVICE OUT',
+            'idtrans' =>  $serviceOutHeaderLogTrail->id,
+            'nobuktitrans' => $serviceout->nobukti,
+            'aksi' => 'ENTRY',
+            'datajson' => $detaillog,
+            'modifiedby' => auth('api')->user()->user,
+        ]);
+
+
+        return $serviceout;
+    }
+
+    public function processUpdate(ServiceOutHeader $serviceoutheader, array $data): ServiceOutHeader
+    {
+        $serviceoutheader->tglbukti = date('Y-m-d', strtotime($data['tglbukti']));
+        $serviceoutheader->trado_id = $data['trado_id'];
+        $serviceoutheader->tglkeluar = date('Y-m-d', strtotime($data['tglkeluar']));
+        $serviceoutheader->modifiedby = auth('api')->user()->name;
+
+        if (!$serviceoutheader->save()) {
+            throw new \Exception("Error updating service in header.");
+        }
+
+        $serviceOutHeaderLogTrail = (new LogTrail())->processStore([
+            'namatabel' => strtoupper($serviceoutheader->getTable()),
+            'postingdari' => 'EDIT SERVICE OUT HEADER',
+            'idtrans' => $serviceoutheader->id,
+            'nobuktitrans' => $serviceoutheader->nobukti,
+            'aksi' => 'EDIT',
+            'datajson' => $serviceoutheader->toArray(),
+            'modifiedby' => $serviceoutheader->modifiedby
+        ]);
+
+        ServiceOutDetail::where('serviceout_id', $serviceoutheader->id)->lockForUpdate()->delete();
+
+        $detaillog = [];
+        for ($i = 0; $i < count($data['keterangan_detail']); $i++) {
+
+            $datadetail = (new ServiceOutDetail())->processStore($serviceoutheader, [
+                'serviceout_id' => $serviceoutheader->id,
+                'nobukti' => $serviceoutheader->nobukti,
+                'servicein_nobukti' => $data['servicein_nobukti'][$i],
+                'keterangan' => $data['keterangan_detail'][$i],
+                'modifiedby' => $serviceoutheader->modifiedby,
+            ]);
+
+            $detaillog[] = $datadetail->toArray();
+        }
+
+        (new LogTrail())->processStore([
+            'namatabel' => strtoupper($datadetail->getTable()),
+            'postingdari' => 'EDIT SERVICE OUT DETAIL',
+            'idtrans' =>  $serviceOutHeaderLogTrail->id,
+            'nobuktitrans' => $serviceoutheader->nobukti,
+            'aksi' => 'EDIT',
+            'datajson' => $detaillog,
+            'modifiedby' => $serviceoutheader->modifiedby,
+        ]);
+
+        return $serviceoutheader;
+    }
+
+    public function processDestroy($id): ServiceOutHeader
+    {
+        $getDetail = ServiceOutDetail::lockForUpdate()->where('serviceout_id', $id)->get();
+
+        $serviceOut = new ServiceOutHeader();
+        $serviceOut = $serviceOut->lockAndDestroy($id);
+
+        $serviceOutHeaderLogTrail = (new LogTrail())->processStore([
+            'namatabel' => strtoupper($serviceOut->getTable()),
+            'postingdari' => 'DELETE SERVICE OUT HEADER',
+            'idtrans' => $serviceOut->id,
+            'nobuktitrans' => $serviceOut->nobukti,
+            'aksi' => 'DELETE',
+            'datajson' => $serviceOut->toArray(),
+            'modifiedby' => auth('api')->user()->name
+        ]);
+
+        (new LogTrail())->processStore([
+            'namatabel' => 'SERVICEOUTDETAIL',
+            'postingdari' => 'DELETE SERVICE OUT DETAIL',
+            'idtrans' => $serviceOutHeaderLogTrail['id'],
+            'nobuktitrans' => $serviceOut->nobukti,
+            'aksi' => 'DELETE',
+            'datajson' => $getDetail->toArray(),
+            'modifiedby' => auth('api')->user()->name
+        ]);
+
+        return $serviceOut;
     }
 }
