@@ -64,14 +64,16 @@ class StorePenerimaanTruckingHeaderRequest extends FormRequest
 
         $supirId = Rule::in($supirId);
 
-        $penerimaantrucking_id = $this->penerimaantrucking_id;
         $rulespenerimaan_id = [];
-
-        $penerimaanTrucking = DB::table('penerimaantrucking')->from(DB::raw("penerimaantrucking with (readuncommitted)"))
-                ->whereRaw("id = ".$penerimaantrucking_id)
-                ->first();
-
-        $kodepenerimaan = $penerimaanTrucking->kodepenerimaan;
+        $kodepenerimaan ="";
+        if($this->penerimaantrucking_id) {
+            $penerimaantrucking_id = $this->penerimaantrucking_id;
+            $penerimaanTrucking = DB::table('penerimaantrucking')->from(DB::raw("penerimaantrucking with (readuncommitted)"))
+            ->whereRaw("id = ".$penerimaantrucking_id)
+            ->first();
+            $kodepenerimaan = $penerimaanTrucking->kodepenerimaan;
+        }
+            
 
         $penerimaanTruckingHeader = new PenerimaanTruckingHeader();
         $getDatapenerimaan = $penerimaanTruckingHeader->findAll(request()->id);
