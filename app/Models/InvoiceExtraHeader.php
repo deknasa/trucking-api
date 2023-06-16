@@ -436,7 +436,7 @@ class InvoiceExtraHeader extends MyModel
         return $invoiceExtraHeader;
     }
 
-    public function processDestroy($id): InvoiceExtraHeader
+    public function processDestroy($id, $postingDari): InvoiceExtraHeader
     {
         $invoiceExtraDetails = InvoiceExtraDetail::lockForUpdate()->where('invoiceextra_id', $id)->get();
 
@@ -445,7 +445,7 @@ class InvoiceExtraHeader extends MyModel
 
         $invoiceExtraHeaderLogTrail = (new LogTrail())->processStore([
             'namatabel' => $invoiceExtraHeader->getTable(),
-            'postingdari' => 'DELETE INVOICE EXTRA HEADER',
+            'postingdari' => $postingDari,
             'idtrans' => $invoiceExtraHeader->id,
             'nobuktitrans' => $invoiceExtraHeader->nobukti,
             'aksi' => 'DELETE',
@@ -455,7 +455,7 @@ class InvoiceExtraHeader extends MyModel
 
         (new LogTrail())->processStore([
             'namatabel' => 'INVOICEEXTRADETAIL',
-            'postingdari' => 'DELETE INVOICE EXTRA DETAIL',
+            'postingdari' => $postingDari,
             'idtrans' => $invoiceExtraHeaderLogTrail['id'],
             'nobuktitrans' => $invoiceExtraHeader->nobukti,
             'aksi' => 'DELETE',
@@ -464,7 +464,7 @@ class InvoiceExtraHeader extends MyModel
         ]);
 
         $getPiutang = PiutangHeader::from(DB::raw("piutangheader with (readuncommitted)"))->where('invoice_nobukti', $invoiceExtraHeader->nobukti)->first();
-        (new PiutangHeader())->processDestroy($getPiutang->id, 'DELETE INVOICE EXTRA HEADER');
+        (new PiutangHeader())->processDestroy($getPiutang->id, $postingDari);
         return $invoiceExtraHeader;
     }
 }

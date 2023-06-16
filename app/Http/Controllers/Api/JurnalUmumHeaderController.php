@@ -118,7 +118,7 @@ class JurnalUmumHeaderController extends Controller
         DB::beginTransaction();
 
         try {
-            $jurnalUmumHeader = (new JurnalUmumHeader())->processDestroy($id);
+            $jurnalUmumHeader = (new JurnalUmumHeader())->processDestroy($id, 'DELETE JURNAL UMUM');
             $selected = $this->getPosition($jurnalUmumHeader, $jurnalUmumHeader->getTable(), true);
             $jurnalUmumHeader->position = $selected->position;
             $jurnalUmumHeader->id = $selected->id;
