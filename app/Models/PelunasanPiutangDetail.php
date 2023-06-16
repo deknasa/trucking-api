@@ -136,5 +136,28 @@ class PelunasanPiutangDetail extends MyModel
         return $query->skip($this->params['offset'])->take($this->params['limit']);
     }
 
+    public function processStore(PelunasanPiutangHeader $pelunasanPiutangHeader, array $data): PelunasanPiutangDetail
+    {
+        $pelunasanPiutangDetail = new PelunasanPiutangDetail();
+        $pelunasanPiutangDetail->pelunasanpiutang_id = $pelunasanPiutangHeader->id;
+        $pelunasanPiutangDetail->nobukti = $pelunasanPiutangHeader->nobukti;
+        $pelunasanPiutangDetail->nominal = $data['nominal'];
+        $pelunasanPiutangDetail->piutang_nobukti = $data['piutang_nobukti'];
+        $pelunasanPiutangDetail->keterangan = $data['keterangan'];
+        $pelunasanPiutangDetail->potongan = $data['potongan'];
+        $pelunasanPiutangDetail->coapotongan = $data['coapotongan'];
+        $pelunasanPiutangDetail->invoice_nobukti = $data['invoice_nobukti'];
+        $pelunasanPiutangDetail->keteranganpotongan = $data['keteranganpotongan'];
+        $pelunasanPiutangDetail->nominallebihbayar = $data['nominallebihbayar'];
+        $pelunasanPiutangDetail->coalebihbayar = $data['coalebihbayar'];
+
+        $pelunasanPiutangDetail->modifiedby = auth('api')->user()->name;
+        
+        if (!$pelunasanPiutangDetail->save()) {
+            throw new \Exception("Error storing pelunasan piutang detail.");
+        }
+
+        return $pelunasanPiutangDetail;
+    }
     
 }

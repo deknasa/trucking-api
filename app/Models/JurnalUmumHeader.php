@@ -483,7 +483,7 @@ class JurnalUmumHeader extends MyModel
         return $jurnalUmumHeader;
     }
 
-    public function processDestroy($id, $postingDari): JurnalUmumHeader
+    public function processDestroy($id, $postingDari = ''): JurnalUmumHeader
     {
         $jurnalUmumDetails = JurnalUmumDetail::lockForUpdate()->where('jurnalumum_id', $id)->get();
 

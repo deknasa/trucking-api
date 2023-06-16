@@ -724,7 +724,7 @@ class InvoiceHeader extends MyModel
 
         return $invoiceHeader;
     }
-    public function processDestroy($id, $postingDari): InvoiceHeader
+    public function processDestroy($id, $postingDari = ''): InvoiceHeader
     {
         $invoiceDetails = InvoiceDetail::lockForUpdate()->where('invoice_id', $id)->get();
 

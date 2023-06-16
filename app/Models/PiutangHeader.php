@@ -583,7 +583,7 @@ class PiutangHeader extends MyModel
     }
 
 
-    public function processDestroy($id, $postingDari): PiutangHeader
+    public function processDestroy($id, $postingDari = ''): PiutangHeader
     {
         $piutangDetails = PiutangDetail::lockForUpdate()->where('piutang_id', $id)->get();
 

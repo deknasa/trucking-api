@@ -26,15 +26,28 @@ class PenerimaanGiroDetail extends MyModel
     public function findAll($id)
     {
         $detail = DB::table('penerimaangirodetail')->from(DB::raw("penerimaangirodetail with (readuncommitted)"))
-        ->select(
-            'penerimaangirodetail.nowarkat','penerimaangirodetail.tgljatuhtempo','penerimaangirodetail.nominal','penerimaangirodetail.coadebet','penerimaangirodetail.keterangan','penerimaangirodetail.bank_id','bank.namabank as bank', 'penerimaangirodetail.pelanggan_id','pelanggan.namapelanggan as pelanggan', 'penerimaangirodetail.invoice_nobukti', 'penerimaangirodetail.bankpelanggan_id','bankpelanggan.namabank as bankpelanggan','penerimaangirodetail.pelunasanpiutang_nobukti','penerimaangirodetail.jenisbiaya',
-            DB::raw("(case when year(cast(penerimaangirodetail.bulanbeban as datetime))<='2000' then '' else format(penerimaangirodetail.bulanbeban,'yyyy-MM-dd') end) as bulanbeban"),
-        )
-        ->leftJoin(DB::raw("bank with (readuncommitted)"),'penerimaangirodetail.bank_id','bank.id')
-        ->leftJoin(DB::raw("pelanggan with (readuncommitted)"),'penerimaangirodetail.pelanggan_id','pelanggan.id')
-        ->leftJoin(DB::raw("bankpelanggan with (readuncommitted)"),'penerimaangirodetail.bankpelanggan_id','bankpelanggan.id')
-        ->where('penerimaangirodetail.penerimaangiro_id',$id)
-        ->get();
+            ->select(
+                'penerimaangirodetail.nowarkat',
+                'penerimaangirodetail.tgljatuhtempo',
+                'penerimaangirodetail.nominal',
+                'penerimaangirodetail.coadebet',
+                'penerimaangirodetail.keterangan',
+                'penerimaangirodetail.bank_id',
+                'bank.namabank as bank',
+                'penerimaangirodetail.pelanggan_id',
+                'pelanggan.namapelanggan as pelanggan',
+                'penerimaangirodetail.invoice_nobukti',
+                'penerimaangirodetail.bankpelanggan_id',
+                'bankpelanggan.namabank as bankpelanggan',
+                'penerimaangirodetail.pelunasanpiutang_nobukti',
+                'penerimaangirodetail.jenisbiaya',
+                DB::raw("(case when year(cast(penerimaangirodetail.bulanbeban as datetime))<='2000' then '' else format(penerimaangirodetail.bulanbeban,'yyyy-MM-dd') end) as bulanbeban"),
+            )
+            ->leftJoin(DB::raw("bank with (readuncommitted)"), 'penerimaangirodetail.bank_id', 'bank.id')
+            ->leftJoin(DB::raw("pelanggan with (readuncommitted)"), 'penerimaangirodetail.pelanggan_id', 'pelanggan.id')
+            ->leftJoin(DB::raw("bankpelanggan with (readuncommitted)"), 'penerimaangirodetail.bankpelanggan_id', 'bankpelanggan.id')
+            ->where('penerimaangirodetail.penerimaangiro_id', $id)
+            ->get();
 
         return $detail;
     }
@@ -63,11 +76,11 @@ class PenerimaanGiroDetail extends MyModel
                 DB::raw("(case when year(cast(penerimaangirodetail.bulanbeban as datetime))<='2000' then '' else format(penerimaangirodetail.bulanbeban,'yyyy-MM-dd') end) as bulanbeban"),
                 $this->table . '.keterangan',
                 $this->table . '.nominal'
-            ) 
-            ->leftJoin(DB::raw("penerimaangiroheader as header with (readuncommitted)"),'header.id',$this->table . '.penerimaangiro_id')
-            ->leftJoin(DB::raw("pelanggan as ph with (readuncommitted)"), 'header.pelanggan_id', 'ph.id')
-            ->leftJoin(DB::raw("bank with (readuncommitted)"), $this->table . '.bank_id', 'bank.id')
-            ->leftJoin(DB::raw("bankpelanggan with (readuncommitted)"), $this->table . '.bankpelanggan_id', 'bankpelanggan.id');
+            )
+                ->leftJoin(DB::raw("penerimaangiroheader as header with (readuncommitted)"), 'header.id', $this->table . '.penerimaangiro_id')
+                ->leftJoin(DB::raw("pelanggan as ph with (readuncommitted)"), 'header.pelanggan_id', 'ph.id')
+                ->leftJoin(DB::raw("bank with (readuncommitted)"), $this->table . '.bank_id', 'bank.id')
+                ->leftJoin(DB::raw("bankpelanggan with (readuncommitted)"), $this->table . '.bankpelanggan_id', 'bankpelanggan.id');
 
             $query->where($this->table . '.penerimaangiro_id', '=', request()->penerimaangiro_id);
         } else {
@@ -86,10 +99,10 @@ class PenerimaanGiroDetail extends MyModel
                 $this->table . '.keterangan',
                 $this->table . '.nominal'
             )
-            ->leftJoin(DB::raw("akunpusat as coadebet with (readuncommitted)"), $this->table . '.coadebet', 'coadebet.coa')
-            ->leftJoin(DB::raw("akunpusat as coakredit with (readuncommitted)"), $this->table . '.coakredit', 'coakredit.coa')
-            ->leftJoin(DB::raw("bank with (readuncommitted)"), $this->table . '.bank_id', 'bank.id')
-            ->leftJoin(DB::raw("bankpelanggan with (readuncommitted)"), $this->table . '.bankpelanggan_id', 'bankpelanggan.id');
+                ->leftJoin(DB::raw("akunpusat as coadebet with (readuncommitted)"), $this->table . '.coadebet', 'coadebet.coa')
+                ->leftJoin(DB::raw("akunpusat as coakredit with (readuncommitted)"), $this->table . '.coakredit', 'coakredit.coa')
+                ->leftJoin(DB::raw("bank with (readuncommitted)"), $this->table . '.bank_id', 'bank.id')
+                ->leftJoin(DB::raw("bankpelanggan with (readuncommitted)"), $this->table . '.bankpelanggan_id', 'bankpelanggan.id');
 
             $this->sort($query);
             $query->where($this->table . '.penerimaangiro_id', '=', request()->penerimaangiro_id);
@@ -107,15 +120,15 @@ class PenerimaanGiroDetail extends MyModel
 
     public function sort($query)
     {
-        if($this->params['sortIndex'] == 'coadebet'){
+        if ($this->params['sortIndex'] == 'coadebet') {
             return $query->orderBy('coadebet.keterangancoa', $this->params['sortOrder']);
-        } else if($this->params['sortIndex'] == 'coakredit'){
+        } else if ($this->params['sortIndex'] == 'coakredit') {
             return $query->orderBy('coakredit.keterangancoa', $this->params['sortOrder']);
-        } else if($this->params['sortIndex'] == 'bank_id'){
+        } else if ($this->params['sortIndex'] == 'bank_id') {
             return $query->orderBy('bank.namabank', $this->params['sortOrder']);
-        } else if($this->params['sortIndex'] == 'bankpelanggan_id'){
+        } else if ($this->params['sortIndex'] == 'bankpelanggan_id') {
             return $query->orderBy('bankpelanggan.namabank', $this->params['sortOrder']);
-        }else{
+        } else {
             return $query->orderBy($this->table . '.' . $this->params['sortIndex'], $this->params['sortOrder']);
         }
     }
@@ -181,5 +194,31 @@ class PenerimaanGiroDetail extends MyModel
     public function paginate($query)
     {
         return $query->skip($this->params['offset'])->take($this->params['limit']);
+    }
+
+    public function processStore(PenerimaanGiroHeader $penerimaanGiroHeader, array $data): PenerimaanGiroDetail
+    {
+        $penerimaanGiroDetail = new PenerimaanGiroDetail();
+        $penerimaanGiroDetail->penerimaangiro_id = $penerimaanGiroHeader->id;
+        $penerimaanGiroDetail->nobukti = $penerimaanGiroHeader->nobukti;
+        $penerimaanGiroDetail->nowarkat = $data['nowarkat'];
+        $penerimaanGiroDetail->tgljatuhtempo = $data['tgljatuhtempo'];
+        $penerimaanGiroDetail->nominal = $data['nominal'];
+        $penerimaanGiroDetail->coadebet = $data['coadebet'];
+        $penerimaanGiroDetail->coakredit = $data['coakredit'];
+        $penerimaanGiroDetail->keterangan = $data['keterangan'];
+        $penerimaanGiroDetail->bank_id = $data['bank_id'];
+        $penerimaanGiroDetail->invoice_nobukti = $data['invoice_nobukti'];
+        $penerimaanGiroDetail->bankpelanggan_id = $data['bankpelanggan_id'];
+        $penerimaanGiroDetail->jenisbiaya = $data['jenisbiaya'];
+        $penerimaanGiroDetail->pelunasanpiutang_nobukti = $data['pelunasanpiutang_nobukti'];
+        $penerimaanGiroDetail->bulanbeban = $data['bulanbeban'];
+        $penerimaanGiroDetail->modifiedby = auth('api')->user()->name;
+
+        if (!$penerimaanGiroDetail->save()) {
+            throw new \Exception("Error storing Penerimaan Giro Detail.");
+        }
+
+        return $penerimaanGiroDetail;
     }
 }

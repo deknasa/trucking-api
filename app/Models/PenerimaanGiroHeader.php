@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Services\RunningNumberService;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\DB;
@@ -88,7 +89,7 @@ class PenerimaanGiroHeader extends MyModel
         if (request()->tgldari && request()->tglsampai) {
             $query->whereBetween($this->table . '.tglbukti', [date('Y-m-d', strtotime(request()->tgldari)), date('Y-m-d', strtotime(request()->tglsampai))]);
         }
-        
+
         if ($periode != '') {
             $periode = explode("-", $periode);
             $query->whereRaw("MONTH(penerimaangiroheader.tglbukti) ='" . $periode[0] . "'")
@@ -292,7 +293,6 @@ class PenerimaanGiroHeader extends MyModel
                             } else {
                                 // $query = $query->where($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
                                 $query = $query->whereRaw($this->table . ".[" .  $filters['field'] . "] LIKE '%" . escapeLike($filters['data']) . "%' escape '|'");
-
                             }
                         }
                     }
@@ -325,7 +325,6 @@ class PenerimaanGiroHeader extends MyModel
                                 } else {
                                     // $query->orWhere($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
                                     $query = $query->OrwhereRaw($this->table . ".[" .  $filters['field'] . "] LIKE '%" . escapeLike($filters['data']) . "%' escape '|'");
-
                                 }
                             }
                         }
@@ -352,5 +351,272 @@ class PenerimaanGiroHeader extends MyModel
     public function paginate($query)
     {
         return $query->skip($this->params['offset'])->take($this->params['limit']);
+    }
+
+    public function processStore(array $data): PenerimaanGiroHeader
+    {
+        $bankid = $data['bank_id'];
+
+        $group = 'PENERIMAAN GIRO BUKTI';
+        $subGroup = 'PENERIMAAN GIRO BUKTI';
+        $format = DB::table('parameter')->where('grp', $group)->where('subgrp', $subGroup)->first();
+
+        $statusApproval = Parameter::from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS APPROVAL')->where('text', 'NON APPROVAL')->first();
+        $statusCetak = Parameter::from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUSCETAK')->where('text', 'BELUM CETAK')->first();
+
+        $penerimaanGiroHeader = new PenerimaanGiroHeader();
+
+        $penerimaanGiroHeader->tglbukti = date('Y-m-d', strtotime($data['tglbukti']));
+        $penerimaanGiroHeader->pelanggan_id = $data['pelanggan_id'] ?? '';
+        $penerimaanGiroHeader->agen_id = $data['agen_id'] ?? '';
+        $penerimaanGiroHeader->postingdari = $data['postingdari'] ?? 'ENTRY PENERIMAAN GIRO';
+        $penerimaanGiroHeader->diterimadari = $data['diterimadari'];
+        $penerimaanGiroHeader->tgllunas = date('Y-m-d', strtotime($data['tgllunas']));
+        $penerimaanGiroHeader->cabang_id = 0;
+        $penerimaanGiroHeader->statusapproval = $statusApproval->id;
+        $penerimaanGiroHeader->userapproval = '';
+        $penerimaanGiroHeader->tglapproval = '';
+        $penerimaanGiroHeader->statusformat = $format->id;
+        $penerimaanGiroHeader->statuscetak = $statusCetak->id;
+        $penerimaanGiroHeader->modifiedby = auth('api')->user()->name;
+        $penerimaanGiroHeader->statusformat = $data['statusformat'] ?? $format->id;
+        $penerimaanGiroHeader->nobukti = (new RunningNumberService)->get($group, $subGroup, $penerimaanGiroHeader->getTable(), date('Y-m-d', strtotime($data['tglbukti'])));
+
+        if (!$penerimaanGiroHeader->save()) {
+            throw new \Exception("Error storing penerimaan giro header.");
+        }
+
+        $penerimaanGiroHeaderLogTrail = (new LogTrail())->processStore([
+            'namatabel' => strtoupper($penerimaanGiroHeader->getTable()),
+            'postingdari' => $data['postingdari'] ?? 'ENTRY PENERIMAAN GIRO HEADER',
+            'idtrans' => $penerimaanGiroHeader->id,
+            'nobuktitrans' => $penerimaanGiroHeader->nobukti,
+            'aksi' => 'ENTRY',
+            'datajson' => $penerimaanGiroHeader->toArray(),
+            'modifiedby' => auth('api')->user()->user
+        ]);
+
+        $penerimaanDetails = [];
+        $coakredit_detail = [];
+        $coadebet_detail = [];
+        $nominal_detail = [];
+        $keterangan_detail = [];
+
+        $coadebet = Parameter::from(DB::raw("parameter with (readuncommitted)"))
+            ->select('memo')->where('grp', 'JURNAL PENERIMAAN GIRO')->where('subgrp', 'DEBET')->first();
+        $coakredit = Parameter::from(DB::raw("parameter with (readuncommitted)"))
+            ->select('memo')->where('grp', 'JURNAL PENERIMAAN GIRO')->where('subgrp', 'KREDIT')->first();
+
+        $memodebet = json_decode($coadebet->memo, true);
+        $memokredit = json_decode($coakredit->memo, true);
+
+        for ($i = 0; $i < count($data['nominal']); $i++) {
+            $penerimaanDetail = (new PenerimaanGiroDetail())->processStore($penerimaanGiroHeader, [
+                'nowarkat' => $data['nowarkat'][$i],
+                'tgljatuhtempo' => date('Y-m-d', strtotime($data['tgljatuhtempo'][$i])),
+                'nominal' => $data['nominal'][$i],
+                'coadebet' => $memodebet['JURNAL'],
+                'coakredit' => $data['coakredit'][$i] ?? $memokredit['JURNAL'],
+                'keterangan' => $data['keterangan_detail'][$i],
+                'bank_id' => $data['bank_id'][$i],
+                'invoice_nobukti' => $data['invoice_nobukti'][$i] ?? '-',
+                'bankpelanggan_id' => $data['bankpelanggan_id'][$i] ?? '',
+                'jenisbiaya' => $data['jenisbiaya'][$i] ?? '',
+                'pelunasanpiutang_nobukti' => $data['pelunasanpiutang_nobukti'][$i] ?? '-',
+                'bulanbeban' =>  date('Y-m-d', strtotime($data['bulanbeban'][$i] ?? '1900/1/1')),
+                'modifiedby' => auth('api')->user()->name,
+            ]);
+            $penerimaanDetails[] = $penerimaanDetail->toArray();
+            $coakredit_detail[] = $data['coakredit'][$i] ?? $memokredit['JURNAL'];
+            $coadebet_detail[] = $memodebet['JURNAL'];
+            $nominal_detail[] = $data['nominal'][$i];
+            $keterangan_detail[] = $data['keterangan_detail'][$i];
+        }
+
+        (new LogTrail())->processStore([
+            'namatabel' => strtoupper($penerimaanDetail->getTable()),
+            'postingdari' => $data['postingdari'] ?? 'ENTRY PENERIMAAN GIRO DETAIL',
+            'idtrans' => $penerimaanGiroHeaderLogTrail->id,
+            'nobuktitrans' => $penerimaanGiroHeader->nobukti,
+            'aksi' => 'ENTRY',
+            'datajson' => $penerimaanDetails,
+            'modifiedby' => auth('api')->user()->user
+        ]);
+
+        /*STORE JURNAL*/
+        $jurnalRequest = [
+            'tanpaprosesnobukti' => 1,
+            'nobukti' => $penerimaanGiroHeader->nobukti,
+            'tglbukti' => date('Y-m-d', strtotime($data['tglbukti'])),
+            'postingdari' => $data['postingdari'] ?? "ENTRY PENERIMAAN GIRO",
+            'statusapproval' => $statusApproval->id,
+            'userapproval' => "",
+            'tglapproval' => "",
+            'modifiedby' => auth('api')->user()->name,
+            'statusformat' => "0",
+            'coakredit_detail' => $coakredit_detail,
+            'coadebet_detail' => $coadebet_detail,
+            'nominal_detail' => $nominal_detail,
+            'keterangan_detail' => $keterangan_detail
+        ];
+        $jurnalUmumHeader = (new JurnalUmumHeader())->processStore($jurnalRequest);
+        return $penerimaanGiroHeader;
+    }
+
+    public function processUpdate(PenerimaanGiroHeader $penerimaanGiroHeader, array $data): PenerimaanGiroHeader
+    {
+        $penerimaanGiroHeader->pelanggan_id = $data['pelanggan_id'] ?? '';
+        $penerimaanGiroHeader->agen_id = $data['agen_id'] ?? '';
+        $penerimaanGiroHeader->diterimadari = $data['diterimadari'];
+        $penerimaanGiroHeader->tgllunas = date('Y-m-d', strtotime($data['tgllunas']));
+        $penerimaanGiroHeader->modifiedby = auth('api')->user()->name;
+
+        if (!$penerimaanGiroHeader->save()) {
+            throw new \Exception("Error Update penerimaan giro header.");
+        }
+
+        $penerimaanGiroHeaderLogTrail = (new LogTrail())->processStore([
+            'namatabel' => strtoupper($penerimaanGiroHeader->getTable()),
+            'postingdari' => $data['postingdari'] ?? 'EDIT PENERIMAAN GIRO HEADER',
+            'idtrans' => $penerimaanGiroHeader->id,
+            'nobuktitrans' => $penerimaanGiroHeader->nobukti,
+            'aksi' => 'EDIT',
+            'datajson' => $penerimaanGiroHeader->toArray(),
+            'modifiedby' => auth('api')->user()->user
+        ]);
+
+        $penerimaanGiroDetail = PenerimaanGiroDetail::where('penerimaangiro_id', $penerimaanGiroHeader->id)->lockForUpdate()->delete();
+        $coadebet = Parameter::from(DB::raw("parameter with (readuncommitted)"))
+            ->select('memo')->where('grp', 'JURNAL PENERIMAAN GIRO')->where('subgrp', 'DEBET')->first();
+        $coakredit = Parameter::from(DB::raw("parameter with (readuncommitted)"))
+            ->select('memo')->where('grp', 'JURNAL PENERIMAAN GIRO')->where('subgrp', 'KREDIT')->first();
+
+        $memodebet = json_decode($coadebet->memo, true);
+        $memokredit = json_decode($coakredit->memo, true);
+
+        $penerimaanGiroDetails = [];
+        $coakredit_detail = [];
+        $coadebet_detail = [];
+        $nominal_detail = [];
+        $keterangan_detail = [];
+
+        for ($i = 0; $i < count($data['nominal']); $i++) {
+            $penerimaanGiroDetail = (new PenerimaanGiroDetail())->processStore($penerimaanGiroHeader, [
+                'nowarkat' => $data['nowarkat'][$i],
+                'tgljatuhtempo' => date('Y-m-d', strtotime($data['tgljatuhtempo'][$i])),
+                'nominal' => $data['nominal'][$i],
+                'coadebet' => $memodebet['JURNAL'],
+                'coakredit' => $data['coakredit'][$i] ?? $memokredit['JURNAL'],
+                'keterangan' => $data['keterangan_detail'][$i],
+                'bank_id' => $data['bank_id'][$i],
+                'invoice_nobukti' => $data['invoice_nobukti'][$i] ?? '-',
+                'bankpelanggan_id' => $data['bankpelanggan_id'][$i] ?? '',
+                'jenisbiaya' => $data['jenisbiaya'][$i] ?? '',
+                'pelunasanpiutang_nobukti' => $data['pelunasanpiutang_nobukti'][$i] ?? '-',
+                'bulanbeban' =>  date('Y-m-d', strtotime($data['bulanbeban'][$i] ?? '1900/1/1')),
+                'modifiedby' => auth('api')->user()->name,
+            ]);
+            $penerimaanGiroDetails[] = $penerimaanGiroDetail->toArray();
+            $coakredit_detail[] = $data['coakredit'][$i] ?? $memokredit['JURNAL'];
+            $coadebet_detail[] = $memodebet['JURNAL'];
+            $nominal_detail[] = $data['nominal'][$i];
+            $keterangan_detail[] = $data['keterangan_detail'][$i];
+        }
+
+        (new LogTrail())->processStore([
+            'namatabel' => strtoupper($penerimaanGiroDetail->getTable()),
+            'postingdari' => $data['postingdari'] ?? 'EDIT PENERIMAAN GIRO DETAIL',
+            'idtrans' => $penerimaanGiroHeaderLogTrail->id,
+            'nobuktitrans' => $penerimaanGiroHeader->nobukti,
+            'aksi' => 'EDIT',
+            'datajson' => $penerimaanGiroDetails,
+            'modifiedby' => auth('api')->user()->user
+        ]);
+
+        /*STORE JURNAL*/
+        $jurnalRequest = [
+            'postingdari' => $data['postingdari'] ?? 'EDIT PENERIMAAN GIRO DETAIL',
+            'coakredit_detail' => $coakredit_detail,
+            'coadebet_detail' => $coadebet_detail,
+            'nominal_detail' => $nominal_detail,
+            'keterangan_detail' => $keterangan_detail
+        ];
+        $getJurnal = JurnalUmumHeader::from(DB::raw("jurnalumumheader with (readuncommitted)"))->where('nobukti', $penerimaanGiroHeader->nobukti)->first();
+        $newJurnal = new JurnalUmumHeader();
+        $newJurnal = $newJurnal->find($getJurnal->id);
+        (new JurnalUmumHeader())->processUpdate($newJurnal, $jurnalRequest);
+
+        return $penerimaanGiroHeader;
+    }
+
+    public function processDestroy($id, $postingDari = ''): PenerimaanGiroHeader
+    {
+        $penerimaanGiroDetails = PenerimaanGiroDetail::lockForUpdate()->where('penerimaangiro_id', $id)->get();
+
+        $penerimaanGiroHeader = new PenerimaanGiroHeader();
+        $penerimaanGiroHeader = $penerimaanGiroHeader->lockAndDestroy($id);
+
+        $penerimaanGiroHeaderLogTrail = (new LogTrail())->processStore([
+            'namatabel' => $penerimaanGiroHeader->getTable(),
+            'postingdari' => $postingDari,
+            'idtrans' => $penerimaanGiroHeader->id,
+            'nobuktitrans' => $penerimaanGiroHeader->nobukti,
+            'aksi' => 'DELETE',
+            'datajson' => $penerimaanGiroHeader->toArray(),
+            'modifiedby' => auth('api')->user()->name
+        ]);
+
+        (new LogTrail())->processStore([
+            'namatabel' => 'PENERIMAANGIRODETAIL',
+            'postingdari' => $postingDari,
+            'idtrans' => $penerimaanGiroHeaderLogTrail['id'],
+            'nobuktitrans' => $penerimaanGiroHeader->nobukti,
+            'aksi' => 'DELETE',
+            'datajson' => $penerimaanGiroDetails->toArray(),
+            'modifiedby' => auth('api')->user()->name
+        ]);
+        $getJurnal = JurnalUmumHeader::from(DB::raw("jurnalumumheader with (readuncommitted)"))->where('nobukti', $penerimaanGiroHeader->nobukti)->first();
+        $jurnalumumHeader = (new JurnalUmumHeader())->processDestroy($getJurnal->id, $postingDari);
+        return $penerimaanGiroHeader;
+    }
+
+    public function processApproval(array $data)
+    {
+        $statusApproval = Parameter::from(DB::raw("parameter with (readuncommitted)"))
+            ->where('grp', '=', 'STATUS APPROVAL')->where('text', '=', 'APPROVAL')->first();
+        $statusNonApproval = Parameter::from(DB::raw("parameter with (readuncommitted)"))
+            ->where('grp', '=', 'STATUS APPROVAL')->where('text', '=', 'NON APPROVAL')->first();
+
+        for ($i = 0; $i < count($data['giroId']); $i++) {
+            $penerimaanGiro = PenerimaanGiroHeader::find($data['giroId'][$i]);
+
+            if ($penerimaanGiro->statusapproval == $statusApproval->id) {
+                $penerimaanGiro->statusapproval = $statusNonApproval->id;
+                $aksi = $statusNonApproval->text;
+            } else {
+                $penerimaanGiro->statusapproval = $statusApproval->id;
+                $aksi = $statusApproval->text;
+            }
+
+            $penerimaanGiro->tglapproval = date('Y-m-d H:i:s');
+            $penerimaanGiro->userapproval = auth('api')->user()->name;
+
+            if (!$penerimaanGiro->save()) {
+                throw new \Exception('Error Un/approval penerimaan giro.');
+            }
+
+            (new LogTrail())->processStore([
+                'namatabel' => strtoupper($penerimaanGiro->getTable()),
+                'postingdari' => "UN/APPROVAL PENERIMAAN GIRO",
+                'idtrans' => $penerimaanGiro->id,
+                'nobuktitrans' => $penerimaanGiro->nobukti,
+                'aksi' => $aksi,
+                'datajson' => $penerimaanGiro->toArray(),
+                'modifiedby' => auth('api')->user()->name,
+            ]);
+            $result[] = $penerimaanGiro;
+        }
+
+        return $result;
     }
 }

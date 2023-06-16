@@ -43,8 +43,8 @@ class NotaDebetDetail extends MyModel
                 "$this->table.modifiedby"
 
             )
-            ->leftJoin('notadebetheader as header', 'header.id', $this->table.'.notadebet_id')
-            ->leftJoin(DB::raw("akunpusat with (readuncommitted)"), "$this->table.coalebihbayar", 'akunpusat.coa');
+                ->leftJoin('notadebetheader as header', 'header.id', $this->table . '.notadebet_id')
+                ->leftJoin(DB::raw("akunpusat with (readuncommitted)"), "$this->table.coalebihbayar", 'akunpusat.coa');
 
             $query->where($this->table . ".notadebet_id", "=", request()->notadebet_id);
         } else {
@@ -61,13 +61,13 @@ class NotaDebetDetail extends MyModel
                 "akunpusat.keterangancoa as coalebihbayar",
                 "$this->table.modifiedby"
             )
-            ->leftJoin(DB::raw("akunpusat with (readuncommitted)"), "$this->table.coalebihbayar", 'akunpusat.coa');
-            
+                ->leftJoin(DB::raw("akunpusat with (readuncommitted)"), "$this->table.coalebihbayar", 'akunpusat.coa');
+
             $this->sort($query);
 
             $query->where($this->table . ".notadebet_id", "=", request()->notadebet_id);
             $this->filter($query);
-            
+
             $this->totalNominal = $query->sum('nominal');
             $this->totalNominalBayar = $query->sum('nominalbayar');
             $this->totalLebihBayar = $query->sum('lebihbayar');
@@ -78,13 +78,13 @@ class NotaDebetDetail extends MyModel
         }
         return $query->get();
     }
-    
-    
+
+
     public function sort($query)
     {
-        if($this->params['sortIndex'] == 'coalebihbayar'){
+        if ($this->params['sortIndex'] == 'coalebihbayar') {
             return $query->orderBy('akunpusat.keterangancoa', $this->params['sortOrder']);
-        }else{
+        } else {
             return $query->orderBy($this->table . '.' . $this->params['sortIndex'], $this->params['sortOrder']);
         }
     }
@@ -98,9 +98,9 @@ class NotaDebetDetail extends MyModel
                             if ($filters['field'] == 'coalebihbayar') {
                                 $query = $query->where('akunpusat.keterangancoa', 'LIKE', "%$filters[data]%");
                             } else if ($filters['field'] == 'nominal' || $filters['field'] == 'nominalbayar' || $filters['field'] == 'lebihbayar') {
-                                $query = $query->whereRaw("format(".$this->table . "." . $filters['field'].", '#,#0.00') LIKE '%$filters[data]%'");
+                                $query = $query->whereRaw("format(" . $this->table . "." . $filters['field'] . ", '#,#0.00') LIKE '%$filters[data]%'");
                             } else if ($filters['field'] == 'tglterima') {
-                                $query = $query->whereRaw("format(".$this->table . "." . $filters['field'].", 'dd-MM-yyyy') LIKE '%$filters[data]%'");
+                                $query = $query->whereRaw("format(" . $this->table . "." . $filters['field'] . ", 'dd-MM-yyyy') LIKE '%$filters[data]%'");
                             } else {
                                 $query = $query->where($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
                             }
@@ -114,9 +114,9 @@ class NotaDebetDetail extends MyModel
                             if ($filters['field'] == 'coalebihbayar') {
                                 $query = $query->orWhere('akunpusat.keterangancoa', 'LIKE', "%$filters[data]%");
                             } else if ($filters['field'] == 'nominal' || $filters['field'] == 'nominalbayar' || $filters['field'] == 'lebihbayar') {
-                                $query = $query->orWhereRaw("format(".$this->table . "." . $filters['field'].", '#,#0.00') LIKE '%$filters[data]%'");
+                                $query = $query->orWhereRaw("format(" . $this->table . "." . $filters['field'] . ", '#,#0.00') LIKE '%$filters[data]%'");
                             } else if ($filters['field'] == 'tglterima') {
-                                $query = $query->orWhereRaw("format(".$this->table . "." . $filters['field'].", 'dd-MM-yyyy') LIKE '%$filters[data]%'");
+                                $query = $query->orWhereRaw("format(" . $this->table . "." . $filters['field'] . ", 'dd-MM-yyyy') LIKE '%$filters[data]%'");
                             } else {
                                 $query = $query->orWhere($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
                             }
@@ -139,5 +139,26 @@ class NotaDebetDetail extends MyModel
     public function paginate($query)
     {
         return $query->skip($this->params['offset'])->take($this->params['limit']);
+    }
+
+    public function processStore(NotaDebetHeader $notaDebetHeader, array $data): NotaDebetDetail
+    {
+        $notaDebetDetail = new NotaDebetDetail();
+        $notaDebetDetail->notadebet_id = $notaDebetHeader->id;
+        $notaDebetDetail->nobukti = $notaDebetHeader->nobukti;
+        $notaDebetDetail->tglterima = $notaDebetHeader->tglterima;
+        $notaDebetDetail->invoice_nobukti = $data['invoice_nobukti'];
+        $notaDebetDetail->nominal = $data['nominal'];
+        $notaDebetDetail->nominalbayar = $data['nominalbayar'];
+        $notaDebetDetail->lebihbayar = $data['lebihbayar'];
+        $notaDebetDetail->keterangan = $data['keterangandetail'];
+        $notaDebetDetail->coalebihbayar = $data['coalebihbayar'];
+        $notaDebetDetail->modifiedby = auth('api')->user()->name;
+
+        if (!$notaDebetDetail->save()) {
+            throw new \Exception("Error storing nota debet Detail.");
+        }
+
+        return $notaDebetDetail;
     }
 }

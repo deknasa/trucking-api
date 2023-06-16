@@ -436,7 +436,7 @@ class InvoiceExtraHeader extends MyModel
         return $invoiceExtraHeader;
     }
 
-    public function processDestroy($id, $postingDari): InvoiceExtraHeader
+    public function processDestroy($id, $postingDari = ''): InvoiceExtraHeader
     {
         $invoiceExtraDetails = InvoiceExtraDetail::lockForUpdate()->where('invoiceextra_id', $id)->get();
 
