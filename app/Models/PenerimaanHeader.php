@@ -790,10 +790,6 @@ class PenerimaanHeader extends MyModel
             'modifiedby' => auth('api')->user()->user
         ]);
 
-
-         /*DELETE EXISTING JURNAL*/
-         $JurnalUmumDetail = JurnalUmumDetail::where('nobukti', $penerimaanHeader->nobukti)->lockForUpdate()->delete();
-         $JurnalUmumHeader = JurnalUmumHeader::where('nobukti', $penerimaanHeader->nobukti)->lockForUpdate()->delete();
          /*DELETE EXISTING Penerimaan*/
          $penerimaanDetail = PenerimaanDetail::where('penerimaan_id', $penerimaanHeader->id)->lockForUpdate()->delete();
 
@@ -854,7 +850,10 @@ class PenerimaanHeader extends MyModel
             'nominal_detail' => $nominal_detail,
             'keterangan_detail' => $keterangan_detail
         ];
-        $jurnalUmumHeader = (new JurnalUmumHeader())->processStore($jurnalRequest);
+         /*DELETE EXISTING JURNAL*/
+         $jurnalUmumHeader = JurnalUmumHeader::where('nobukti',$penerimaanTruckingHeader->penerimaan_nobukti)->first();
+         (new JurnalUmumHeader())->processUpdate($jurnalUmumHeader,$jurnalRequest);
+
         return $penerimaanHeader;
     }
 
@@ -866,16 +865,17 @@ class PenerimaanHeader extends MyModel
         $penerimaanDetail = PenerimaanDetail::where('penerimaan_id', '=', $penerimaanHeader->id)->get();
         $dataDetail = $penerimaanDetail->toArray();
         
-        /*DELETE EXISTING JURNAL*/
-        $JurnalUmumDetail = JurnalUmumDetail::where('nobukti', $penerimaanHeader->nobukti)->lockForUpdate()->delete();
-        $JurnalUmumHeader = JurnalUmumHeader::where('nobukti', $penerimaanHeader->nobukti)->lockForUpdate()->delete();
-        /*DELETE EXISTING HUTANG*/
+        /*DELETE EXISTING DETAIL*/
         $penerimaanDetail = PenerimaanDetail::where('penerimaan_id', $penerimaanHeader->id)->lockForUpdate()->delete();
         
+        /*DELETE EXISTING JURNAL*/
+        $jurnalUmumHeader = JurnalUmumHeader::where('nobukti',$penerimaanTruckingHeader->penerimaan_nobukti)->first();
+        (new JurnalUmumHeader())->processUpdate($jurnalUmumHeader->id,($postingdari =="") ? $postingdari :strtoupper('DELETE penerimaan  detail'));
+       
         $penerimaanHeader = $penerimaanHeader->lockAndDestroy($id);
         $hutangLogTrail = (new LogTrail())->processStore([
             'namatabel' => $this->table,
-            'postingdari' => strtoupper('DELETE penerimaan  Header'),
+            'postingdari' => ($postingdari =="") ? $postingdari :strtoupper('DELETE penerimaan  Header'),
             'idtrans' => $penerimaanHeader->id,
             'nobuktitrans' => $penerimaanHeader->nobukti,
             'aksi' => 'DELETE',
@@ -885,7 +885,7 @@ class PenerimaanHeader extends MyModel
  
         (new LogTrail())->processStore([
             'namatabel' => (new LogTrail())->table,
-            'postingdari' => strtoupper('DELETE penerimaan  detail'),
+            'postingdari' => ($postingdari =="") ? $postingdari :strtoupper('DELETE penerimaan  detail'),
             'idtrans' => $hutangLogTrail['id'],
             'nobuktitrans' => $penerimaanHeader->nobukti,
             'aksi' => 'DELETE',
