@@ -42,13 +42,11 @@ class ServiceOutDetail extends MyModel
             )
                 ->leftJoin(DB::raw("serviceoutheader as header with (readuncommitted)"), "header.id", "$this->table.serviceout_id")
                 ->leftJoin(DB::raw("trado with (readuncommitted)"), "header.trado_id", "trado.id");
-                $query->where($this->table . ".servicein_id", "=", request()->servicein_id);
+            $query->where($this->table . ".servicein_id", "=", request()->servicein_id);
 
             $serviceOutDetail = $query->get();
             $query->where($this->table . ".serviceout_id", "=", request()->serviceout_id);
-
-        }
-        else{
+        } else {
             $query->select(
                 "$this->table.servicein_nobukti",
                 "$this->table.keterangan",
@@ -63,17 +61,16 @@ class ServiceOutDetail extends MyModel
             $this->paginate($query);
         }
         return $query->get();
-
     }
 
     function getAll($id)
     {
         $query = DB::table('serviceoutdetail')->from(DB::raw("serviceoutdetail with (readuncommitted)"))
-        ->select(
-            'serviceoutdetail.nobukti',
-            'serviceoutdetail.keterangan',
-            'serviceinheader.nobukti as servicein_nobukti',
-        )
+            ->select(
+                'serviceoutdetail.nobukti',
+                'serviceoutdetail.keterangan',
+                'serviceinheader.nobukti as servicein_nobukti',
+            )
             ->leftJoin(DB::raw("serviceinheader with (readuncommitted)"), 'serviceoutdetail.servicein_nobukti', 'serviceinheader.nobukti')
 
             ->where('serviceout_id', '=', $id);
@@ -124,5 +121,21 @@ class ServiceOutDetail extends MyModel
     public function paginate($query)
     {
         return $query->skip($this->params['offset'])->take($this->params['limit']);
+    }
+
+    public function processStore(ServiceOutHeader $serviceOutHeader, array $data): ServiceOutDetail
+    {
+        $serviceoutdetail = new ServiceOutDetail();
+        $serviceoutdetail->serviceout_id = $data['serviceout_id'];
+        $serviceoutdetail->nobukti = $data['nobukti'];
+        $serviceoutdetail->servicein_nobukti = $data['servicein_nobukti'];
+        $serviceoutdetail->keterangan = $data['keterangan'];
+        $serviceoutdetail->modifiedby = auth('api')->user()->name;
+
+        if (!$serviceoutdetail->save()) {
+            throw new \Exception("Error storing service in detail.");
+        }
+
+        return $serviceoutdetail;
     }
 }
