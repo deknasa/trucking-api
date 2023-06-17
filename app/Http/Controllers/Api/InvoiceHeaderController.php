@@ -43,7 +43,6 @@ class InvoiceHeaderController extends Controller
     public function index(GetIndexRangeRequest $request)
     {
         $invoice = new InvoiceHeader();
-
         return response([
             "data" => $invoice->get(),
             "attributes" => [
@@ -416,7 +415,11 @@ class InvoiceHeaderController extends Controller
     /**
      * @ClassName
      */
-    public function export()
+    public function export($id)
     {
+        $invoiceheader = new InvoiceHeader();
+        return response([
+            'data' => $invoiceheader->getExport($id)
+        ]);
     }
 }

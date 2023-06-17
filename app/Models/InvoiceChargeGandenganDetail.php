@@ -47,11 +47,26 @@ class InvoiceChargeGandenganDetail extends MyModel
             )
             ->leftJoin(DB::raw("invoicechargegandenganheader as header with (readuncommitted)"), 'header.id', 'invoicechargegandengandetail.invoicechargegandengan_id')
             ->leftJoin(DB::raw("trado with (readuncommitted)"), 'trado.id', 'invoicechargegandengandetail.trado_id');
-
-
-
             $query->where($this->table . '.invoicechargegandengan_id', '=', request()->invoicechargegandengan_id);
-        } else {
+        } else if (isset(request()->forExport) && request()->forExport) {
+            $query->select(
+                'invoicechargegandengandetail.id',
+                'header.nobukti as nobukti_header',
+                'header.tglbukti',
+                'header.nominal as nominal_header',
+                'invoicechargegandengandetail.jobtrucking',
+                'invoicechargegandengandetail.tgltrip',
+                'invoicechargegandengandetail.jumlahhari',
+                'invoicechargegandengandetail.nominal',
+                'invoicechargegandengandetail.trado_id',
+                'trado.kodetrado as nopolisi',
+                'invoicechargegandengandetail.keterangan',
+            )
+            ->leftJoin(DB::raw("invoicechargegandenganheader as header with (readuncommitted)"), 'header.id', 'invoicechargegandengandetail.invoicechargegandengan_id')
+            ->leftJoin(DB::raw("trado with (readuncommitted)"), 'trado.id', 'invoicechargegandengandetail.trado_id');
+            $query->where($this->table . '.invoicechargegandengan_id', '=', request()->invoicechargegandengan_id);
+        }
+        else {
             $query->select(
                 'invoicechargegandengandetail.nobukti',
                 'invoicechargegandengandetail.jobtrucking',

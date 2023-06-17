@@ -18,7 +18,6 @@ class InvoiceExtraDetailController extends Controller
     public function index(): JsonResponse
     {
         $invoiceExtra = new InvoiceExtraDetail();
-
         return response()->json([
             'data' => $invoiceExtra->get(),
             'attributes' => [
@@ -69,6 +68,11 @@ class InvoiceExtraDetailController extends Controller
             return response($th->getMessage());
         }        
 
+    }
+
+    public function export()
+    {
+        
     }
 
 }

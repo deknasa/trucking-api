@@ -7,7 +7,8 @@ use App\Http\Requests\StoreOrderanTruckingRequest;
 use App\Http\Requests\UpdateOrderanTruckingRequest;
 use App\Http\Requests\DestroyOrderanTruckingRequest;
 use App\Http\Requests\GetIndexRangeRequest;
-
+use App\Http\Requests\RangeExportReportRequest;
+use App\Http\Requests\GetUpahSupirRangeRequest;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use App\Http\Controllers\Controller;
@@ -33,7 +34,6 @@ class OrderanTruckingController extends Controller
      */
     public function index(GetIndexRangeRequest $request)
     {
-
         $orderanTrucking = new OrderanTrucking();
         return response([
             'data' => $orderanTrucking->get(),
@@ -239,11 +239,13 @@ class OrderanTruckingController extends Controller
         ]);
     }
 
-    public function export($id)
+    public function export(GetUpahSupirRangeRequest $request)
     {
+        $dari = date('Y-m-d', strtotime($request->dari));
+        $sampai = date('Y-m-d', strtotime($request->sampai));
         $orderanTrucking = new OrderanTrucking();
         return response([
-            'data' => $orderanTrucking->getExport($id),
+            'data' => $orderanTrucking->getExport($dari, $sampai),
         ]);
     }
 }

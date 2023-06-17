@@ -251,84 +251,10 @@ class SupirController extends Controller
         DB::beginTransaction();
 
         try {
-
-            // $supir = new Supir();
-            // $status = $supir->cekPemutihan($request->noktp);
-
-            // if ($status == true) {
-            //     $request->validate([
-            //         'pemutihansupir_nobukti' => 'required'
-            //     ], [
-            //         'pemutihansupir_nobukti.required' => 'nobukti pemutihan supir ' . app(ErrorController::class)->geterror('WI')->keterangan,
-            //     ]);
-            // }
-
-            // $depositke = str_replace(',', '', $request->depositke);
-            // $supir->namasupir = $request->namasupir;
-            // $supir->alamat = $request->alamat;
-            // $supir->namaalias = $request->namaalias;
-            // $supir->kota = $request->kota;
-            // $supir->telp = $request->telp;
-            // $supir->statusaktif = $request->statusaktif;
-            // $supir->nominaldepositsa = str_replace(',', '', $request->nominaldepositsa) ?? 0;
-            // $supir->depositke = str_replace('.', '', $depositke) ?? 0;
-            // $supir->tglmasuk = date('Y-m-d', strtotime($request->tglmasuk));
-            // $supir->nominalpinjamansaldoawal = str_replace(',', '', $request->nominalpinjamansaldoawal) ?? 0;
-            // $supir->pemutihansupir_nobukti = $request->pemutihansupir_nobukti ?? '';
-            // $supir->supirold_id = $request->supirold_id ?? 0;
-            // $supir->tglexpsim = date('Y-m-d', strtotime($request->tglexpsim));
-            // $supir->nosim = $request->nosim;
-            // $supir->keterangan = $request->keterangan ?? '';
-            // $supir->noktp = $request->noktp;
-            // $supir->nokk = $request->nokk;
-            // $supir->angsuranpinjaman = str_replace(',', '', $request->angsuranpinjaman) ?? 0;
-            // $supir->plafondeposito = str_replace(',', '', $request->plafondeposito) ?? 0;
-            // $supir->tgllahir = date('Y-m-d', strtotime($request->tgllahir));
-            // $supir->tglterbitsim = date('Y-m-d', strtotime($request->tglterbitsim));
-            // $supir->modifiedby = auth('api')->user()->name;
-
-            // $statusAdaUpdateGambar = Parameter::from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS ADA UPDATE GAMBAR')->where('default', 'YA')->first();
-            // $statusLuarKota = Parameter::from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS LUAR KOTA')->where('default', 'YA')->first();
-            // $statusZonaTertentu = Parameter::from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'ZONA TERTENTU')->where('default', 'YA')->first();
-            // $statusBlackList = Parameter::from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'BLACKLIST SUPIR')->where('default', 'YA')->first();
-            // $supir->statusadaupdategambar = $statusAdaUpdateGambar->id;
-            // $supir->statusluarkota = $statusLuarKota->id;
-            // $supir->statuszonatertentu = $statusZonaTertentu->id;
-            // $supir->statusblacklist = $statusBlackList->id;
-
-            // // $trado->photostnk = ($request->photostnk) ? $this->storeFiles($request->photostnk, 'stnk') : '';
-            // $supir->photosupir = ($request->photosupir) ? $this->storeFiles($request->photosupir, 'supir') : '';
-            // $supir->photoktp = ($request->photoktp) ? $this->storeFiles($request->photoktp, 'ktp') : '';
-            // $supir->photosim = ($request->photosim) ? $this->storeFiles($request->photosim, 'sim') : '';
-            // $supir->photokk = ($request->photokk) ? $this->storeFiles($request->photokk, 'kk') : '';
-            // $supir->photoskck = ($request->photoskck) ? $this->storeFiles($request->photoskck, 'skck') : '';
-            // $supir->photodomisili = ($request->photodomisili) ? $this->storeFiles($request->photodomisili, 'domisili') : '';
-            // $supir->photovaksin = ($request->photovaksin) ? $this->storeFiles($request->photovaksin, 'vaksin') : '';
-            // $supir->pdfsuratperjanjian = ($request->pdfsuratperjanjian) ? $this->storePdfFiles($request->pdfsuratperjanjian, 'suratperjanjian') : '';
-
-            // $supir->save();
-
-            // $logTrail = [
-            //     'namatabel' => strtoupper($supir->getTable()),
-            //     'postingdari' => 'ENTRY SUPIR',
-            //     'idtrans' => $supir->id,
-            //     'nobuktitrans' => $supir->id,
-            //     'aksi' => 'ENTRY',
-            //     'datajson' => $supir->toArray(),
-            //     'modifiedby' => $supir->modifiedby
-            // ];
-            // $validatedLogTrail = new StoreLogTrailRequest($logTrail);
-            // $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
-
             $supir = (new supir())->processStore($request->all());
             $supir->position = $this->getPosition($supir, $supir->getTable())->position;
             $supir->page = ceil($supir->position / ($request->limit ?? 10));
             DB::commit();
-
-            /* Set position and page */
-            // $selected = $this->getPosition($supir, $supir->getTable());
-            // $supir->position = $selected->position;
-            // $supir->page = ceil($supir->position / ($request->limit ?? 10));
 
             return response()->json([
                 'status' => true,
@@ -349,67 +275,6 @@ class SupirController extends Controller
         DB::beginTransaction();
 
         try {
-            // $supirNew = new Supir();
-            // $status = $supirNew->cekPemutihan($request->noktp);
-
-            // if ($status == true) {
-            //     $request->validate([
-            //         'pemutihansupir_nobukti' => 'required'
-            //     ], [
-            //         'pemutihansupir_nobukti.required' => 'nobukti pemutihan supir ' . app(ErrorController::class)->geterror('WI')->keterangan,
-            //     ]);
-            // }
-            // $depositke = str_replace(',', '', $request->depositke);
-            // $supir->namasupir = $request->namasupir;
-            // $supir->namaalias = $request->namaalias;
-            // $supir->alamat = $request->alamat;
-            // $supir->kota = $request->kota;
-            // $supir->telp = $request->telp;
-            // $supir->statusaktif = $request->statusaktif;
-            // $supir->pemutihansupir_nobukti = $request->pemutihansupir_nobukti ?? '';
-            // $supir->nominaldepositsa = str_replace(',', '', $request->nominaldepositsa) ?? 0;
-            // $supir->depositke = str_replace('.00', '', $depositke) ?? 0;
-            // $supir->tglmasuk = date('Y-m-d', strtotime($request->tglmasuk));
-            // $supir->nominalpinjamansaldoawal = str_replace(',', '', $request->nominalpinjamansaldoawal) ?? 0;
-            // $supir->supirold_id = $request->supirold_id ?? 0;
-            // $supir->tglexpsim = date('Y-m-d', strtotime($request->tglexpsim));
-            // $supir->nosim = $request->nosim;
-            // $supir->keterangan = $request->keterangan ?? '';
-            // $supir->noktp = $request->noktp;
-            // $supir->nokk = $request->nokk;
-            // $supir->angsuranpinjaman = str_replace(',', '', $request->angsuranpinjaman) ?? 0;
-            // $supir->plafondeposito = str_replace(',', '', $request->plafondeposito) ?? 0;
-            // $supir->tgllahir = date('Y-m-d', strtotime($request->tgllahir));
-            // $supir->tglterbitsim = date('Y-m-d', strtotime($request->tglterbitsim));
-            // $supir->modifiedby = auth('api')->user()->name;
-
-            // $this->deleteFiles($supir);
-
-            // $supir->photosupir = ($request->photosupir) ? $this->storeFiles($request->photosupir, 'supir') : '';
-            // $supir->photoktp = ($request->photoktp) ? $this->storeFiles($request->photoktp, 'ktp') : '';
-            // $supir->photosim = ($request->photosim) ? $this->storeFiles($request->photosim, 'sim') : '';
-            // $supir->photokk = ($request->photokk) ? $this->storeFiles($request->photokk, 'kk') : '';
-            // $supir->photoskck = ($request->photoskck) ? $this->storeFiles($request->photoskck, 'skck') : '';
-            // $supir->photodomisili = ($request->photodomisili) ? $this->storeFiles($request->photodomisili, 'domisili') : '';
-            // $supir->photovaksin = ($request->photovaksin) ? $this->storeFiles($request->photovaksin, 'vaksin') : '';
-            // $supir->pdfsuratperjanjian = ($request->pdfsuratperjanjian) ? $this->storePdfFiles($request->pdfsuratperjanjian, 'suratperjanjian') : '';
-
-            // $supir->save();
-
-            // if ($supir->save()) {
-            //     $logTrail = [
-            //         'namatabel' => strtoupper($supir->getTable()),
-            //         'postingdari' => 'EDIT SUPIR',
-            //         'idtrans' => $supir->id,
-            //         'nobuktitrans' => $supir->id,
-            //         'aksi' => 'EDIT',
-            //         'datajson' => $supir->toArray(),
-            //         'modifiedby' => $supir->modifiedby
-            //     ];
-
-            //     $validatedLogTrail = new StoreLogTrailRequest($logTrail);
-            //     app(LogTrailController::class)->store($validatedLogTrail);
-            // }
             $supir = (new Supir())->processUpdate($supir, $request->all());
             $supir->position = $this->getPosition($supir, $supir->getTable())->position;
             $supir->page = ceil($supir->position / ($request->limit ?? 10));
@@ -422,7 +287,6 @@ class SupirController extends Controller
                 'data' => $supir
             ]);
         } catch (\Throwable $th) {
-            //$this->deleteFiles($supir);
             DB::rollBack();
             throw $th;
         }

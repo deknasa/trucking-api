@@ -430,4 +430,12 @@ class InvoiceChargeGandenganHeaderController extends Controller
             'data' => $invoiceChargeGandenganHeader->getInvoiceGandengan($id)
         ]);
     }
+
+    public function export($id)
+    {
+        $invoiceChargeGandengan = new InvoiceChargeGandenganHeader();
+        return response([
+            'data' => $invoiceChargeGandengan->getExport($id)
+        ]);
+    }
 }

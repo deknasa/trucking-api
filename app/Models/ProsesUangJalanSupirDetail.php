@@ -150,6 +150,29 @@ class ProsesUangJalanSupirDetail extends MyModel
                 ->leftJoin(DB::raw("parameter with (readuncommitted)"), 'parameter.id', '=', $this->table . '.statusprosesuangjalan');
 
             $query->where($this->table . '.prosesuangjalansupir_id', '=', request()->prosesuangjalansupir_id);
+        } else if(isset(request()->forExport) && request()->forExport) {
+            $query->select(
+                $this->table . '.nobukti',
+                'penerimaanbank.namabank as penerimaantrucking_bank_id',
+                DB::raw("(case when year(isnull($this->table.penerimaantrucking_tglbukti,'1900/1/1'))=1900 then null else $this->table.penerimaantrucking_tglbukti end) as penerimaantrucking_tglbukti"),
+                $this->table . '.penerimaantrucking_nobukti',
+                'pengeluaranbank.namabank as pengeluarantrucking_bank_id',
+                DB::raw("(case when year(isnull($this->table.pengeluarantrucking_tglbukti,'1900/1/1'))=1900 then null else $this->table.pengeluarantrucking_tglbukti end) as pengeluarantrucking_tglbukti"),
+                $this->table . '.pengeluarantrucking_nobukti',
+                'pengembalianbank.namabank as pengembaliankasgantung_bank_id',
+                DB::raw("(case when year(isnull($this->table.pengembaliankasgantung_tglbukti,'1900/1/1'))=1900 then null else $this->table.pengembaliankasgantung_tglbukti end) as pengembaliankasgantung_tglbukti"),
+                $this->table . '.pengembaliankasgantung_nobukti',
+                $this->table . '.nominal',
+                $this->table . '.keterangan',
+                'parameter.text as statusprosesuangjalan',
+
+            )
+                ->leftJoin(DB::raw("bank as penerimaanbank with (readuncommitted)"), 'penerimaanbank.id', '=', $this->table . '.penerimaantrucking_bank_id')
+                ->leftJoin(DB::raw("bank as pengeluaranbank with (readuncommitted)"), 'pengeluaranbank.id', '=', $this->table . '.pengeluarantrucking_bank_id')
+                ->leftJoin(DB::raw("bank as pengembalianbank with (readuncommitted)"), 'pengembalianbank.id', '=', $this->table . '.pengembaliankasgantung_bank_id')
+                ->leftJoin(DB::raw("parameter with (readuncommitted)"), 'parameter.id', '=', $this->table . '.statusprosesuangjalan');
+
+            $query->where($this->table . '.prosesuangjalansupir_id', '=', request()->prosesuangjalansupir_id);
         } else {
             $query->select(
                 $this->table . '.nobukti',

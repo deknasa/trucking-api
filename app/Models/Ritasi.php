@@ -429,4 +429,43 @@ class Ritasi extends MyModel
 
         return $ritasi;
     }
+
+    public function getExport($dari, $sampai)
+    {
+        $this->setRequestParameters();
+        $getParameter = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))
+        ->select(
+            'text as judul',
+            DB::raw("'Laporan Ritasi' as judulLaporan")
+        )->where('grp', 'JUDULAN LAPORAN')->where('subgrp', 'JUDULAN LAPORAN')->first();
+
+        $query = DB::table($this->table)
+            ->select(
+                'ritasi.id',
+                'ritasi.nobukti',
+                'ritasi.tglbukti',
+                'parameter.text as statusritasi',
+                'suratpengantar.nobukti as suratpengantar_nobukti',
+                'supir.namasupir as supir_id',
+                'trado.kodetrado as trado_id',
+                'ritasi.jarak',
+                'ritasi.gaji',
+                'dari.keterangan as dari_id',
+                'sampai.keterangan as sampai_id'
+            )
+            ->whereBetween($this->table . '.tglbukti', [date('Y-m-d', strtotime($dari)), date('Y-m-d', strtotime($sampai))])
+            ->leftJoin('parameter', 'ritasi.statusritasi', '=', 'parameter.id')
+            ->leftJoin('suratpengantar', 'ritasi.suratpengantar_nobukti', '=', 'suratpengantar.nobukti')
+            ->leftJoin('supir', 'ritasi.supir_id', '=', 'supir.id')
+            ->leftJoin('trado', 'ritasi.trado_id', '=', 'trado.id')
+            ->leftJoin('kota as dari', 'ritasi.dari_id', '=', 'dari.id')
+            ->leftJoin('kota as sampai', 'ritasi.sampai_id', '=', 'sampai.id');
+
+        $data = $query->get();
+        $allData = [
+            'data' => $data, 
+            'parameter' => $getParameter
+        ];
+        return $allData;
+    }
 }

@@ -339,7 +339,7 @@ route::middleware(['auth:api'])->group(function () {
     Route::post('orderantrucking/{id}/{aksi}/cekValidasi', [OrderanTruckingController::class, 'cekValidasi'])->name('orderantrucking.cekValidasi')->whereNumber('id');
     Route::get('orderantrucking/{id}/getagentas', [OrderanTruckingController::class, 'getagentas'])->whereNumber('id');
     Route::get('orderantrucking/{id}/getcont', [OrderanTruckingController::class, 'getcont'])->whereNumber('id');
-    Route::get('orderantrucking/{id}/export', [OrderanTruckingController::class, 'export'])->whereNumber('id');
+    Route::get('orderantrucking/export', [OrderanTruckingController::class, 'export']);
     Route::get('orderantrucking/getorderantrip', [OrderanTruckingController::class, 'getOrderanTrip']);
     Route::resource('orderantrucking', OrderanTruckingController::class)->whereNumber('orderantrucking');
 
@@ -764,15 +764,16 @@ route::middleware(['auth:api'])->group(function () {
     Route::post('invoiceextraheader/{id}/approval', [InvoiceExtraHeaderController::class, 'approval'])->whereNumber('id');
     Route::get('invoiceextraheader/{id}/printreport', [InvoiceExtraHeaderController::class, 'printReport'])->whereNumber('id');
     Route::post('invoiceextraheader/approval', [InvoiceExtraHeaderController::class, 'approval']);
+    Route::get('invoiceextraheader/{id}/export', [InvoiceExtraHeaderController::class, 'export'])->name('invoiceextraheader.export')->whereNumber('id');
     Route::post('invoiceextraheader/{id}/cekvalidasi', [InvoiceExtraHeaderController::class, 'cekvalidasi'])->name('invoiceextraheader.cekvalidasi')->whereNumber('id');
     Route::resource('invoiceextraheader', InvoiceExtraHeaderController::class)->whereNumber('invoiceextraheader');
     Route::resource('invoiceextradetail', InvoiceExtraDetailController::class)->whereNumber('invoiceextradetail');
 
     Route::post('invoicechargegandenganheader/{id}/cekvalidasi', [InvoiceChargeGandenganHeaderController::class, 'cekvalidasi'])->name('invoicechargegandenganheader.cekvalidasi')->whereNumber('id');
     Route::get('invoicechargegandenganheader/{id}/getinvoicegandengan', [InvoiceChargeGandenganHeaderController::class, 'getinvoicegandengan'])->name('invoicechargegandenganheader.getinvoicegandengan')->whereNumber('id');
+    Route::get('invoicechargegandenganheader/{id}/export', [InvoiceChargeGandenganHeaderController::class, 'export'])->name('invoicechargegandenganheader.export')->whereNumber('id');
     Route::resource('invoicechargegandenganheader', InvoiceChargeGandenganHeaderController::class)->whereNumber('invoicechargegandenganheader');
     Route::resource('invoicechargegandengandetail', InvoiceChargeGandenganDetailController::class)->whereNumber('invoicechargegandengandetail');
-
 
     Route::get('piutangheader/{id}/printreport', [PiutangHeaderController::class, 'printReport'])->whereNumber('id');
     Route::post('piutangheader/{id}/cekvalidasi', [PiutangHeaderController::class, 'cekvalidasi'])->name('piutangheader.cekvalidasi')->whereNumber('id');
@@ -828,6 +829,7 @@ route::middleware(['auth:api'])->group(function () {
     Route::get('serviceinheader/combo', [ServiceInHeaderController::class, 'combo']);
     Route::get('serviceinheader/grid', [ServiceInHeaderController::class, 'grid']);
     Route::get('serviceinheader/field_length', [ServiceInHeaderController::class, 'fieldLength']);
+    Route::get('serviceinheader/{id}/export', [ServiceInHeaderController::class, 'export'])->name('serviceinheader.export')->whereNumber('id');
     Route::post('serviceinheader/{id}/cekvalidasi', [ServiceInHeaderController::class, 'cekvalidasi'])->name('serviceinheader.cekvalidasi')->whereNumber('id');
     Route::resource('serviceinheader', ServiceInHeaderController::class)->parameter('serviceinheader', 'serviceInHeader')->whereNumber('serviceinheader');
     Route::resource('serviceindetail', ServiceInDetailController::class)->whereNumber('serviceindetail');
@@ -835,6 +837,7 @@ route::middleware(['auth:api'])->group(function () {
 
     Route::get('serviceoutheader/combo', [ServiceOutHeaderController::class, 'combo']);
     Route::get('serviceoutheader/field_length', [ServiceOutHeaderController::class, 'fieldLength']);
+    Route::get('serviceoutheader/{id}/export', [ServiceOutHeaderController::class, 'export'])->name('serviceoutheader.export')->whereNumber('id');
     Route::post('serviceoutheader/{id}/cekvalidasi', [ServiceOutHeaderController::class, 'cekvalidasi'])->name('serviceoutheader.cekvalidasi')->whereNumber('id');
     Route::resource('serviceoutheader', ServiceOutHeaderController::class)->whereNumber('serviceoutheader');
     Route::resource('serviceoutdetail', ServiceOutDetailController::class)->whereNumber('serviceoutdetail');
@@ -946,6 +949,7 @@ route::middleware(['auth:api'])->group(function () {
     Route::get('prosesgajisupirheader/getRic', [ProsesGajiSupirHeaderController::class, 'getRic']);
     Route::post('prosesgajisupirheader/hitungNominal', [ProsesGajiSupirHeaderController::class, 'hitungNominal']);
     Route::post('prosesgajisupirheader/noEdit', [ProsesGajiSupirHeaderController::class, 'noEdit']);
+    Route::get('prosesgajisupirheader/{id}/export', [ProsesGajiSupirHeaderController::class, 'export'])->name('prosesgajisupirheader.export')->whereNumber('id');
     Route::get('prosesgajisupirheader/{id}/getEdit', [ProsesGajiSupirHeaderController::class, 'getEdit'])->whereNumber('id');
     Route::get('prosesgajisupirheader/{dari}/{sampai}/getAllData', [ProsesGajiSupirHeaderController::class, 'getAllData']);
     Route::resource('prosesgajisupirheader', ProsesGajiSupirHeaderController::class)->whereNumber('prosesgajisupirheader');
@@ -960,6 +964,7 @@ route::middleware(['auth:api'])->group(function () {
     Route::get('invoiceheader/{id}/getAllEdit', [InvoiceHeaderController::class, 'getAllEdit'])->whereNumber('id');
     Route::get('invoiceheader/getSP', [InvoiceHeaderController::class, 'getSP']);
     Route::post('invoiceheader/approval', [InvoiceHeaderController::class, 'approval']);
+    Route::get('invoiceheader/{id}/export', [InvoiceHeaderController::class, 'export'])->name('invoiceheader.export')->whereNumber('id');
     Route::post('invoiceheader/{id}/cekvalidasi', [InvoiceHeaderController::class, 'cekvalidasi'])->name('invoiceheader.cekvalidasi')->whereNumber('id');
     Route::resource('invoiceheader', InvoiceHeaderController::class)->whereNumber('invoiceheader');
     Route::get('invoicedetail/piutang', [InvoiceDetailController::class, 'piutang']);
@@ -971,6 +976,7 @@ route::middleware(['auth:api'])->group(function () {
     Route::get('suratpengantar/combo', [SuratPengantarController::class, 'combo']);
     Route::get('suratpengantar/field_length', [SuratPengantarController::class, 'fieldLength']);
     Route::post('suratpengantar/cekUpahSupir', [SuratPengantarController::class, 'cekUpahSupir']);
+    Route::get('suratpengantar/export', [SuratPengantarController::class, 'export']);
     Route::post('suratpengantar/{id}/cekValidasi', [SuratPengantarController::class, 'cekValidasi'])->whereNumber('id');
     Route::get('suratpengantar/{id}/getTarifOmset', [SuratPengantarController::class, 'getTarifOmset'])->whereNumber('id');
     Route::get('suratpengantar/{id}/getpelabuhan', [SuratPengantarController::class, 'getpelabuhan'])->whereNumber('id');
@@ -1018,6 +1024,7 @@ route::middleware(['auth:api'])->group(function () {
     Route::get('ritasi/combo', [RitasiController::class, 'combo']);
     Route::get('ritasi/field_length', [RitasiController::class, 'fieldLength']);
     Route::get('ritasi/default', [RitasiController::class, 'default']);
+    Route::get('ritasi/export', [RitasiController::class, 'export']);
     Route::resource('ritasi', RitasiController::class)->whereNumber('ritasi');
 
     //pengeluaran
@@ -1079,6 +1086,7 @@ route::middleware(['auth:api'])->group(function () {
 
 
     Route::get('pendapatansupirheader/{id}/printreport', [PendapatanSupirHeaderController::class, 'printReport'])->whereNumber('id');
+    Route::get('pendapatansupirheader/{id}/export', [PendapatanSupirHeaderController::class, 'export'])->name('pendapatansupirheader.export')->whereNumber('id');
     Route::post('pendapatansupirheader/{id}/cekvalidasi', [PendapatanSupirHeaderController::class, 'cekvalidasi'])->name('pendapatansupirheader.cekvalidasi')->whereNumber('id');
     Route::post('pendapatansupirheader/approval', [PendapatanSupirHeaderController::class, 'approval']);
     Route::resource('pendapatansupirheader', PendapatanSupirHeaderController::class)->parameters(['pendapatansupirheader' => 'pendapatanSupirHeader'])->whereNumber('pendapatanSupirHeader');
@@ -1114,6 +1122,7 @@ route::middleware(['auth:api'])->group(function () {
     Route::get('prosesuangjalansupirheader/field_length', [ProsesUangJalanSupirHeaderController::class, 'fieldLength']);
     Route::get('prosesuangjalansupirheader/combo', [ProsesUangJalanSupirHeaderController::class, 'combo']);
     Route::get('prosesuangjalansupirheader/grid', [ProsesUangJalanSupirHeaderController::class, 'grid']);
+    Route::get('prosesuangjalansupirheader/{id}/export', [ProsesUangJalanSupirHeaderController::class, 'export'])->name('prosesuangjalansupirheader.export')->whereNumber('id');
     Route::get('prosesuangjalansupirheader/{id}/tarikPelunasan', [ProsesUangJalanSupirHeaderController::class, 'tarikPelunasan'])->whereNumber('id');
     Route::get('prosesuangjalansupirheader/{id}/getPinjaman', [ProsesUangJalanSupirHeaderController::class, 'getPinjaman'])->whereNumber('id');
     Route::get('prosesuangjalansupirheader/{id}/getPengembalian', [ProsesUangJalanSupirHeaderController::class, 'getPengembalian'])->whereNumber('id');

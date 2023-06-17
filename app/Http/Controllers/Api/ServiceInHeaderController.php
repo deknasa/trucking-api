@@ -198,4 +198,12 @@ class ServiceInHeaderController extends Controller
             'data' => $data
         ]);
     }
+
+    public function export($id)
+    {
+        $serviceInHeader = new ServiceInHeader();
+        return response([
+            'data' => $serviceInHeader->getExport($id)
+        ]);
+    }
 }

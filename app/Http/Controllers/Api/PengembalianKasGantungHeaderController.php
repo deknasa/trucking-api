@@ -857,8 +857,7 @@ class PengembalianKasGantungHeaderController extends Controller
     }
 
     public function export($id)
-    {
-        
+    {   
         $pengembalianKasGantungHeader = new PengembalianKasGantungHeader();
         return response([
             'data' => $pengembalianKasGantungHeader->getExport($id)

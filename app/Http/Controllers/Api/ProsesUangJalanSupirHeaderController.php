@@ -806,4 +806,13 @@ class ProsesUangJalanSupirHeaderController extends Controller
             return response($data);
         }
     }
+
+    public function export($id)
+    {
+        $prosesUangJalanSupir = new ProsesUangJalanSupirHeader();
+        return response([
+            'data' => $prosesUangJalanSupir->getExport($id)
+        ]);
+
+    }
 }

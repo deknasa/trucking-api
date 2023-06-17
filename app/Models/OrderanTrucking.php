@@ -104,8 +104,8 @@ class OrderanTrucking extends MyModel
 
     public function get()
     {
-
         $this->setRequestParameters();
+
         $query = DB::table($this->table)->from(
             DB::raw($this->table . " with (readuncommitted)")
         )
@@ -522,15 +522,15 @@ class OrderanTrucking extends MyModel
         return $query->skip($this->params['offset'])->take($this->params['limit']);
     }
 
-    public function getExport($id)
+    public function getExport($dari, $sampai)
     {
         $this->setRequestParameters();
 
-        $getJudul = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))
-            ->select('text')
-            ->where('grp', 'JUDULAN LAPORAN')
-            ->where('subgrp', 'JUDULAN LAPORAN')
-            ->first();
+        $getParameter = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))
+        ->select(
+            'text as judul',
+            DB::raw("'Laporan Orderan Trucking' as judulLaporan")
+        )->where('grp', 'JUDULAN LAPORAN')->where('subgrp', 'JUDULAN LAPORAN')->first();
 
         $query = DB::table($this->table)->from(
             DB::raw($this->table . " with (readuncommitted)")
@@ -553,20 +553,25 @@ class OrderanTrucking extends MyModel
                 'orderantrucking.noseal2',
                 'parameter.memo as statuslangsir',
                 'param2.memo as statusperalihan',
-                DB::raw("'Laporan Absensi Supir Header' as judulLaporan"),
-                DB::raw("'" . $getJudul->text . "' as judul")
+                'orderantrucking.modifiedby',
+                'orderantrucking.created_at',
+                'orderantrucking.updated_at'
             )
+            ->whereBetween($this->table . '.tglbukti', [date('Y-m-d', strtotime($dari)), date('Y-m-d', strtotime($sampai))])
             ->leftJoin(DB::raw("tarif with (readuncommitted)"), 'orderantrucking.tarif_id', '=', 'tarif.id')
             ->leftJoin(DB::raw("container with (readuncommitted)"), 'orderantrucking.container_id', '=', 'container.id')
             ->leftJoin(DB::raw("agen with (readuncommitted)"), 'orderantrucking.agen_id', '=', 'agen.id')
             ->leftJoin(DB::raw("jenisorder with (readuncommitted)"), 'orderantrucking.jenisorder_id', '=', 'jenisorder.id')
             ->leftJoin(DB::raw("pelanggan with (readuncommitted)"), 'orderantrucking.pelanggan_id', '=', 'pelanggan.id')
             ->leftJoin(DB::raw("parameter with (readuncommitted)"), 'orderantrucking.statuslangsir', '=', 'parameter.id')
-            ->leftJoin(DB::raw("parameter AS param2 with (readuncommitted)"), 'orderantrucking.statusperalihan', '=', 'param2.id')
-            ->where("$this->table.id", $id);
-
-        $data = $query->first();
-        return $data;
+            ->leftJoin(DB::raw("parameter AS param2 with (readuncommitted)"), 'orderantrucking.statusperalihan', '=', 'param2.id');
+        
+        $data = $query->get();
+        $allData = [
+            'data' => $data,
+            'parameter' => $getParameter
+        ];
+        return $allData;
     }
 
     public function processStore(array $data): OrderanTrucking
