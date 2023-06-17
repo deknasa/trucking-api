@@ -77,6 +77,7 @@ class StorePengeluaranTruckingHeaderRequest extends FormRequest
             $bankIds[] = $bankId->id;
         }
         $ruleStatusPosting = Rule::requiredIf(function () {
+            return false;
             $klaim = DB::table('pengeluarantrucking')->from(DB::raw("pengeluarantrucking with (readuncommitted)"))
                 // ->where('id',$this->pengeluarantrucking_id)
                 ->where('kodepengeluaran', "KLAIM")
@@ -207,7 +208,7 @@ class StorePengeluaranTruckingHeaderRequest extends FormRequest
                     new DateTutupBuku()
                 ],
                 'pengeluarantrucking' => 'required','numeric', 'min:1',
-                'statusposting' => 'required',
+                'statusposting' => [$ruleStatusPosting],
                 'bank' => [$ruleBank],
                 // 'tgldari' => [
                 //     'required', 'date_format:d-m-Y',

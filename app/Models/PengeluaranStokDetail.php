@@ -191,12 +191,12 @@ class PengeluaranStokDetail extends MyModel
             if (!$dari) {
                 throw new \Exception("qty tidak cukup");                
             }
-            if (($pengeluaranStokHeader->pengeluaranstok_id != $spk->text)) {
-                if (!$reuse) {
-                    throw new \Exception("bukan stok reuse");                
+            // if (($pengeluaranStokHeader->pengeluaranstok_id != $spk->text)) {
+            //     // if (!$reuse) {
+            //     //     throw new \Exception("bukan stok reuse");                
 
-                }
-            }
+            //     // }
+            // }
             if ($pengeluaranStokHeader->pengeluaranstok_id != ($kor->text || $rtr->text )) {
                 $persediaan = $this->persediaan($pengeluaranStokHeader->gudang_id,$pengeluaranStokHeader->trado_id,$pengeluaranStokHeader->gandengan_id);
                 $ke = $this->persediaanKe($data['stok_id'],$column,$value,$data['qty']);
