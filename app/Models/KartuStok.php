@@ -32,27 +32,38 @@ class KartuStok extends MyModel
     public function get()
     {
         $this->setRequestParameters();
-       
+
         $tgldari = date('Y-m-d', strtotime(request()->dari));
         $tglsampai = date('Y-m-d', strtotime(request()->sampai));
 
-        $filter = Parameter::where('grp', 'STOK PERSEDIAAN')->where('subgrp', 'STOK PERSEDIAAN')->where('text', 'GUDANG')->first();
+        $filtergudang = Parameter::where('grp', 'STOK PERSEDIAAN')->where('subgrp', 'STOK PERSEDIAAN')->where('text', 'GUDANG')->first();
+        $filtertrado = Parameter::where('grp', 'STOK PERSEDIAAN')->where('subgrp', 'STOK PERSEDIAAN')->where('text', 'TRADO')->first();
+        $filtergandengan = Parameter::where('grp', 'STOK PERSEDIAAN')->where('subgrp', 'STOK PERSEDIAAN')->where('text', 'GANDENGAN')->first();
 
         // dump(request()->filter);
         // dd($filter->id);
 
         // if (request()->filter == $filter->id) {
-            // dd('test');
-            $query = $this->getlaporan($tgldari, $tglsampai, request()->stokdari_id, request()->stoksampai_id, request()->datafilter, 0, 0, $filter->text);
+        // dd('test');
+        // dd($filter->text);
+        if (request()->filter == $filtergudang->id) {
+            $query = $this->getlaporan($tgldari, $tglsampai, request()->stokdari_id, request()->stoksampai_id, request()->datafilter, 0, 0, $filtergudang->text);
+        } else if (request()->filter == $filtertrado->id) {
+            $query = $this->getlaporan($tgldari, $tglsampai, request()->stokdari_id, request()->stoksampai_id, 0, request()->datafilter, 0, $filtertrado->text);
+        } else if (request()->filter == $filtergandengan->id) {
+            $query = $this->getlaporan($tgldari, $tglsampai, request()->stokdari_id, request()->stoksampai_id, 0, 0, request()->datafilter, $filtergandengan->text);
+        } else {
+            $query = $this->getlaporan($tgldari, $tglsampai, request()->stokdari_id, request()->stoksampai_id, request()->datafilter, 0, 0, $filtergudang->text);
+        }
 
-                $this->totalRows = $query->count();
-                $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;
-                $this->filter($query);
-                $this->paginate($query);
+        $this->totalRows = $query->count();
+        $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;
+        $this->filter($query);
+        $this->paginate($query);
 
-                $data = $query->get();
-              
-          
+        $data = $query->get();
+
+
         // } else {
         //     $data = [];
         // }
@@ -206,6 +217,12 @@ class KartuStok extends MyModel
     private function getlaporan($tgldari, $tglsampai, $stokdari, $stoksampai, $gudang_id, $trado_id, $gandengan_id, $filter)
     {
 
+
+        $filtergudang = Parameter::where('grp', 'STOK PERSEDIAAN')->where('subgrp', 'STOK PERSEDIAAN')->where('text', 'GUDANG')->first();
+        $filtertrado = Parameter::where('grp', 'STOK PERSEDIAAN')->where('subgrp', 'STOK PERSEDIAAN')->where('text', 'TRADO')->first();
+        $filtergandengan = Parameter::where('grp', 'STOK PERSEDIAAN')->where('subgrp', 'STOK PERSEDIAAN')->where('text', 'GANDENGAN')->first();
+
+
         $templaporan = '##templaporan' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
         Schema::create($templaporan, function ($table) {
             $table->id();
@@ -267,222 +284,305 @@ class KartuStok extends MyModel
         });
 
         $gudangkantor = Parameter::where('grp', 'GUDANG KANTOR')->where('subgrp', 'GUDANG KANTOR')->first();
+        $gudangsementara = Parameter::where('grp', 'GUDANG SEMENTARA')->where('subgrp', 'GUDANG SEMENTARA')->first();
+        $gudangpihak3 = Parameter::where('grp', 'GUDANG PIHAK3')->where('subgrp', 'GUDANG PIHAK3')->first();
 
-        if ($filter == 'GUDANG' and $gudang_id = $gudangkantor->text) {
+        // and $gudang_id = $gudangkantor->text)
 
+        $spb = Parameter::from(
+            DB::raw("parameter with (readuncommitted)")
+        )
+            ->where('grp', 'SPB STOK')->where('subgrp', 'SPB STOK')->first();
 
-
-
-//=========================================saldo awal masuk=========================================
-            $spb = Parameter::from(
-                DB::raw("parameter with (readuncommitted)")
-            )
-                ->where('grp', 'SPB STOK')->where('subgrp', 'SPB STOK')->first();
-
-            $querysaldomasuk = PenerimaanstokHeader::from(
-                DB::raw("penerimaanstokheader as a with (readuncommitted)")
-            )
-                ->select(
-                    'c.id as kodebarang',
-                    DB::raw("sum(b.qty) as qtymasuk"),
-                    DB::raw("sum(b.qty*b.harga) as nilaimasuk"),
-                )
-                ->join(DB::raw("penerimaanstokdetail as b with (readuncommitted)"), 'a.id', 'b.penerimaanstokheader_id')
-                ->join(DB::raw("stok as c with (readuncommitted)"), 'b.stok_id', 'c.id')
-                ->whereRaw("(b.stok_id>=" . $stokdari . " and B.stok_id<=" . $stoksampai . " )  and (a.tglBukti <'" . $tgldari . "')")
-                ->whereRaw("a.penerimaanstok_id in(" . $spb->text . ",7)")
-                ->groupBy('c.id');
-
-            DB::table($tempsaldoawalmasuk)->insertUsing([
-                'kodebarang',
-                'qtymasuk',
-                'nilaimasuk',
-            ], $querysaldomasuk);
+        $korplus = Parameter::from(
+            DB::raw("parameter with (readuncommitted)")
+        )
+            ->where('grp', 'KOR STOK')->where('subgrp', 'KOR STOK')->first();
 
 
+        $saldoawal = Parameter::from(
+            DB::raw("parameter with (readuncommitted)")
+        )
+            ->where('grp', 'SALDO AWAL STOK')->where('subgrp', 'SALDO AWAL STOK')->first();
+
+        $pg = Parameter::from(
+            DB::raw("parameter with (readuncommitted)")
+        )
+            ->where('grp', 'PG STOK')->where('subgrp', 'PG STOK')->first();
+
+        $pgdo = Parameter::from(
+            DB::raw("parameter with (readuncommitted)")
+        )
+            ->where('grp', 'DO STOK')->where('subgrp', 'DO STOK')->first();
+
+        $spbs = Parameter::from(
+            DB::raw("parameter with (readuncommitted)")
+        )
+            ->where('grp', 'REUSE STOK')->where('subgrp', 'REUSE STOK')->first();
 
 
+        $spk = Parameter::from(
+            DB::raw("parameter with (readuncommitted)")
+        )
+            ->where('grp', 'SPK STOK')->where('subgrp', 'SPK STOK')->first();
 
+        $retur = Parameter::from(
+            DB::raw("parameter with (readuncommitted)")
+        )
+            ->where('grp', 'RETUR STOK')->where('subgrp', 'RETUR STOK')->first();
 
-//=========================================query rekap data masuk=========================================
-            $queryrekap = PenerimaanStokHeader::from(
-                DB::raw("penerimaanstokheader as a with (readuncommitted)")
-            )
-                ->select(
-                    DB::raw("1 as statusmasuk"),
-                    'c.id as kodebarang',
-                    'c.namastok as namabarang',
-                    'a.tglbukti as tglbukti',
-                    'a.nobukti as nobukti',
-                    'c.kategori_id',
-                    'b.qty as qtymasuk',
-                    DB::raw("(b.qty*b.harga) as nilaimasuk"),
-                    DB::raw("0 as qtykeluar"),
-                    DB::raw("0 as nilaikeluar"),
-                    DB::raw("0 as qtysaldo"),
-                    DB::raw("0 as nilaisaldo"),
-                    'a.modifiedby'
-                )
-                ->join(DB::raw("penerimaanstokdetail as b with (readuncommitted)"), 'a.id', 'b.penerimaanstokheader_id')
-                ->join(DB::raw("stok as c with (readuncommitted)"), 'b.stok_id', 'c.id')
-                ->whereRaw("(b.stok_id>=" . $stokdari . " and B.stok_id<=" . $stoksampai . " )  and (a.tglBukti >='" . $tgldari . "' and a.tglbukti<='" . $tglsampai . "')")
-                ->whereRaw("a.penerimaanstok_id in(" . $spb->text . ")")
-                ->orderBy('a.tglbukti', 'Asc')
-                ->orderBy('a.nobukti', 'Asc')
-                ->orderBy('b.id', 'Asc');
-
-
-            DB::table($temprekap)->insertUsing([
-                'statusmasuk',
-                'kodebarang',
-                'namabarang',
-                'tglbukti',
-                'nobukti',
-                'kategori_id',
-                'qtymasuk',
-                'nilaimasuk',
-                'qtykeluar',
-                'nilaikeluar',
-                'qtysaldo',
-                'nilaisaldo',
-                'modifiedby',
-            ], $queryrekap);
+        $korminus = Parameter::from(
+            DB::raw("parameter with (readuncommitted)")
+        )
+            ->where('grp', 'KOR MINUS STOK')->where('subgrp', 'KOR MINUS STOK')->first();
 
 
 
-
-//=========================================saldo awal keluar=========================================
-
-            $spk = Parameter::from(
-                DB::raw("parameter with (readuncommitted)")
-            )->where('grp', 'SPK STOK')->where('subgrp', 'SPK STOK')->first();
-
-            $querysaldokeluar = PengeluaranstokHeader::from(
-                DB::raw("pengeluaranstokheader as a with (readuncommitted)")
-            )
-                ->select(
-                    'c.id as kodebarang',
-                    DB::raw("sum(b.penerimaanstok_qty) as qtykeluar"),
-                    DB::raw("sum(b.penerimaanstok_qty*b.penerimaanstok_harga) as nilaikeluar"),
-                )
-                ->join(DB::raw("pengeluaranstokdetailfifo as b with (readuncommitted)"), 'a.id', 'b.pengeluaranstokheader_id')
-                ->join(DB::raw("stok as c with (readuncommitted)"), 'b.stok_id', 'c.id')
-                ->whereRaw("(b.stok_id>=" . $stokdari . " and B.stok_id<=" . $stoksampai . " )  and (a.tglBukti <'" . $tgldari . "')")
-                ->whereRaw("a.pengeluaranstok_id=" . $spk->text)
-                ->groupBy('c.id');
-
-            DB::table($tempsaldoawalkeluar)->insertUsing([
-                'kodebarang',
-                'qtykeluar',
-                'nilaikeluar',
-            ], $querysaldokeluar);
-
-
-
-
-//=========================================saldo awal=========================================
-//masuk - keluar
-            $querysaldo = Stok::from(
-                DB::raw("stok as a with (readuncommitted)")
-            )
-                ->select(
-                    'a.id as kodebarang',
-                    DB::raw("(isnull(b.qtymasuk,0)-isnull(c.qtykeluar,0)) as qtysaldo"),
-                    DB::raw("(isnull(b.nilaimasuk,0)-isnull(c.nilaikeluar,0)) as nilaisaldo"),
-                )
-                ->leftjoin(DB::raw($tempsaldoawalmasuk . " as b"), 'a.id', 'b.kodebarang')
-                ->leftjoin(DB::raw($tempsaldoawalkeluar . " as c"), 'a.id', 'c.kodebarang')
-                ->whereRaw("(a.id>=" . $stokdari . " and a.id<=" . $stoksampai . " ) ");
-
-
-            DB::table($tempsaldoawal)->insertUsing([
-                'kodebarang',
-                'qtysaldo',
-                'nilaisaldo',
-            ], $querysaldo);
-
-            $queryrekap = DB::table($tempsaldoawal)->from(
-                DB::raw($tempsaldoawal . " as A")
-            )
-                ->select(
-                    DB::raw("0 as statusmasuk"),
-                    'c.id as kodebarang',
-                    DB::raw("c.namastok as namabarang"),
-                    DB::raw("'" . $tgldari . "' as tglbukti"),
-                    DB::raw("'Saldo Awal' as nobukti"),
-                    'c.kategori_id',
-                    DB::raw("a.qtysaldo as qtymasuk"),
-                    DB::raw("a.nilaisaldo as nilaimasuk"),
-                    DB::raw("0 as qtykeluar"),
-                    DB::raw("0 as nilaikeluar"),
-                    DB::raw("0 as qtysaldo"),
-                    DB::raw("0 as nilaisaldo"),
-                    DB::raw("'' as modifiedby"),
-                )
-                ->join(DB::raw("stok as c with (readuncommitted)"), 'a.kodebarang', 'c.id');
-//saldo awal
-
-            DB::table($temprekap)->insertUsing([
-                'statusmasuk',
-                'kodebarang',
-                'namabarang',
-                'tglbukti',
-                'nobukti',
-                'kategori_id',
-                'qtymasuk',
-                'nilaimasuk',
-                'qtykeluar',
-                'nilaikeluar',
-                'qtysaldo',
-                'nilaisaldo',
-                'modifiedby',
-            ], $queryrekap);
-
-
-
-            $queryrekap = PengeluaranStokHeader::from(
-                DB::raw("pengeluaranstokheader as a with (readuncommitted)")
-            )
-                ->select(
-                    DB::raw("2 as statusmasuk"),
-                    'c.id as kodebarang',
-                    'c.namastok as namabarang',
-                    'a.tglbukti as tglbukti',
-                    'a.nobukti as nobukti',
-                    'c.kategori_id',
-                    DB::raw("0 as qtymasuk"),
-                    DB::raw("0 as nilaimasuk"),
-                    DB::raw("b.penerimaanstok_qty as qtykeluar"),
-                    DB::raw("(b.penerimaanstok_qty*b.penerimaanstok_harga) as nilaikeluar"),
-                    DB::raw("0 as qtysaldo"),
-                    DB::raw("0 as nilaisaldo"),
-                    'a.modifiedby'
-                )
-                ->join(DB::raw("pengeluaranstokdetailfifo as b with (readuncommitted)"), 'a.id', 'b.pengeluaranstokheader_id')
-                ->join(DB::raw("stok as c with (readuncommitted)"), 'b.stok_id', 'c.id')
-                ->whereRaw("(b.stok_id>=" . $stokdari . " and B.stok_id<=" . $stoksampai . " )  and (a.tglBukti >='" . $tgldari . "' and a.tglbukti<='" . $tglsampai . "')")
-                ->whereRaw("a.pengeluaranstok_id=" . $spk->text)
-                ->orderBy('a.tglbukti', 'Asc')
-                ->orderBy('a.nobukti', 'Asc')
-                ->orderBy('b.id', 'Asc');
-
-
-            DB::table($temprekap)->insertUsing([
-                'statusmasuk',
-                'kodebarang',
-                'namabarang',
-                'tglbukti',
-                'nobukti',
-                'kategori_id',
-                'qtymasuk',
-                'nilaimasuk',
-                'qtykeluar',
-                'nilaikeluar',
-                'qtysaldo',
-                'nilaisaldo',
-                'modifiedby',
-            ], $queryrekap);
+        if ($filter == $filtergudang->text) {
+            //=========================================saldo awal masuk=========================================
+            if ($gudang_id == $gudangkantor->text) {
+                $penerimaanstok_id = $spb->text . ',' . $saldoawal->text . ',' . $korplus->text;
+                $pengeluaranstok_id = $spk->text . ',' . $korminus->text . ',' . $retur->text;
+            } else if ($gudang_id == $gudangsementara->text) {
+                $penerimaanstok_id = $pg->text . ',' . $pgdo->text . ',' . $spbs->text;
+                $pengeluaranstok_id = $korminus->text;
+            } else if ($gudang_id == $gudangpihak3->text) {
+                $penerimaanstok_id = $pg->text . ',' . $pgdo->text . ',' . $spbs->text;
+                $pengeluaranstok_id = $korminus->text;
+            } else {
+                $penerimaanstok_id = $spb->text . ',' . $saldoawal->text . ',' . $korplus->text;
+                $pengeluaranstok_id = $spk->text . ',' . $korminus->text . ',' . $retur->text;
+            }
+        } else if ($filter == $filtertrado->text) {
+            $penerimaanstok_id =  $pg->text . ',' . $pgdo->text . ',' . $spbs->text . ',' . $saldoawal->text . ',' . $korplus->text;
+            $pengeluaranstok_id = $korminus->text;
+        } else if ($filter == $filtergandengan->text) {
+            $penerimaanstok_id =  $pg->text . ',' . $pgdo->text . ',' . $spbs->text . ',' . $saldoawal->text . ',' . $korplus->text;
+            $pengeluaranstok_id = $korminus->text;
+        } else {
+            if ($gudang_id == $gudangkantor->text) {
+                $penerimaanstok_id = $spb->text . ',' . $saldoawal->text . ',' . $korplus->text;
+                $pengeluaranstok_id = $spk->text . ',' . $korminus->text . ',' . $retur->text;
+            } else if ($gudang_id == $gudangsementara->text) {
+                $penerimaanstok_id = $pg->text . ',' . $pgdo->text . ',' . $spbs->text;
+                $pengeluaranstok_id = $korminus->text;
+            } else if ($gudang_id == $gudangpihak3->text) {
+                $penerimaanstok_id = $pg->text . ',' . $pgdo->text . ',' . $spbs->text;
+                $pengeluaranstok_id = $korminus->text;
+            }
         }
+
+
+        $querysaldomasuk = PenerimaanstokHeader::from(
+            DB::raw("penerimaanstokheader as a with (readuncommitted)")
+        )
+            ->select(
+                'c.id as kodebarang',
+                DB::raw("sum(b.qty) as qtymasuk"),
+                DB::raw("sum(b.qty*b.harga) as nilaimasuk"),
+            )
+            ->join(DB::raw("penerimaanstokdetail as b with (readuncommitted)"), 'a.id', 'b.penerimaanstokheader_id')
+            ->join(DB::raw("stok as c with (readuncommitted)"), 'b.stok_id', 'c.id')
+            ->whereRaw("(b.stok_id>=" . $stokdari . " and B.stok_id<=" . $stoksampai . " )  and (a.tglBukti <'" . $tgldari . "')")
+            ->whereRaw("a.penerimaanstok_id in(" . $penerimaanstok_id . ")")
+            ->where('a.gudang_id', $gudang_id)
+            ->groupBy('c.id');
+
+        // dd($stokdari);
+        // dd($querysaldomasuk->get());
+
+
+        DB::table($tempsaldoawalmasuk)->insertUsing([
+            'kodebarang',
+            'qtymasuk',
+            'nilaimasuk',
+        ], $querysaldomasuk);
+
+
+
+
+
+
+        //=========================================query rekap data masuk=========================================
+        $queryrekap = PenerimaanStokHeader::from(
+            DB::raw("penerimaanstokheader as a with (readuncommitted)")
+        )
+            ->select(
+                DB::raw("1 as statusmasuk"),
+                'c.id as kodebarang',
+                'c.namastok as namabarang',
+                'a.tglbukti as tglbukti',
+                'a.nobukti as nobukti',
+                'c.kategori_id',
+                'b.qty as qtymasuk',
+                DB::raw("(b.qty*b.harga) as nilaimasuk"),
+                DB::raw("0 as qtykeluar"),
+                DB::raw("0 as nilaikeluar"),
+                DB::raw("0 as qtysaldo"),
+                DB::raw("0 as nilaisaldo"),
+                'a.modifiedby'
+            )
+            ->join(DB::raw("penerimaanstokdetail as b with (readuncommitted)"), 'a.id', 'b.penerimaanstokheader_id')
+            ->join(DB::raw("stok as c with (readuncommitted)"), 'b.stok_id', 'c.id')
+            ->whereRaw("(b.stok_id>=" . $stokdari . " and B.stok_id<=" . $stoksampai . " )  and (a.tglBukti >='" . $tgldari . "' and a.tglbukti<='" . $tglsampai . "')")
+            ->whereRaw("a.penerimaanstok_id in(" . $penerimaanstok_id  . ")")
+            ->orderBy('a.tglbukti', 'Asc')
+            ->orderBy('a.nobukti', 'Asc')
+            ->orderBy('b.id', 'Asc');
+
+
+        DB::table($temprekap)->insertUsing([
+            'statusmasuk',
+            'kodebarang',
+            'namabarang',
+            'tglbukti',
+            'nobukti',
+            'kategori_id',
+            'qtymasuk',
+            'nilaimasuk',
+            'qtykeluar',
+            'nilaikeluar',
+            'qtysaldo',
+            'nilaisaldo',
+            'modifiedby',
+        ], $queryrekap);
+
+
+
+
+        //=========================================saldo awal keluar=========================================
+
+        $spk = Parameter::from(
+            DB::raw("parameter with (readuncommitted)")
+        )->where('grp', 'SPK STOK')->where('subgrp', 'SPK STOK')->first();
+
+        $querysaldokeluar = PengeluaranstokHeader::from(
+            DB::raw("pengeluaranstokheader as a with (readuncommitted)")
+        )
+            ->select(
+                'c.id as kodebarang',
+                DB::raw("sum(b.penerimaanstok_qty) as qtykeluar"),
+                DB::raw("sum(b.penerimaanstok_qty*b.penerimaanstok_harga) as nilaikeluar"),
+            )
+            ->join(DB::raw("pengeluaranstokdetailfifo as b with (readuncommitted)"), 'a.id', 'b.pengeluaranstokheader_id')
+            ->join(DB::raw("stok as c with (readuncommitted)"), 'b.stok_id', 'c.id')
+            ->whereRaw("(b.stok_id>=" . $stokdari . " and B.stok_id<=" . $stoksampai . " )  and (a.tglBukti <'" . $tgldari . "')")
+            ->whereRaw("a.pengeluaranstok_id in(" . $pengeluaranstok_id . ")")
+            ->groupBy('c.id');
+
+        DB::table($tempsaldoawalkeluar)->insertUsing([
+            'kodebarang',
+            'qtykeluar',
+            'nilaikeluar',
+        ], $querysaldokeluar);
+
+
+
+
+        //=========================================saldo awal=========================================
+        //masuk - keluar
+        $querysaldo = Stok::from(
+            DB::raw("stok as a with (readuncommitted)")
+        )
+            ->select(
+                'a.id as kodebarang',
+                DB::raw("(isnull(b.qtymasuk,0)-isnull(c.qtykeluar,0)) as qtysaldo"),
+                DB::raw("(isnull(b.nilaimasuk,0)-isnull(c.nilaikeluar,0)) as nilaisaldo"),
+            )
+            ->leftjoin(DB::raw($tempsaldoawalmasuk . " as b"), 'a.id', 'b.kodebarang')
+            ->leftjoin(DB::raw($tempsaldoawalkeluar . " as c"), 'a.id', 'c.kodebarang')
+            ->whereRaw("(a.id>=" . $stokdari . " and a.id<=" . $stoksampai . " ) ");
+
+
+        DB::table($tempsaldoawal)->insertUsing([
+            'kodebarang',
+            'qtysaldo',
+            'nilaisaldo',
+        ], $querysaldo);
+
+        $queryrekap = DB::table($tempsaldoawal)->from(
+            DB::raw($tempsaldoawal . " as A")
+        )
+            ->select(
+                DB::raw("0 as statusmasuk"),
+                'c.id as kodebarang',
+                DB::raw("c.namastok as namabarang"),
+                DB::raw("'" . $tgldari . "' as tglbukti"),
+                DB::raw("'Saldo Awal' as nobukti"),
+                'c.kategori_id',
+                DB::raw("a.qtysaldo as qtymasuk"),
+                DB::raw("a.nilaisaldo as nilaimasuk"),
+                DB::raw("0 as qtykeluar"),
+                DB::raw("0 as nilaikeluar"),
+                DB::raw("0 as qtysaldo"),
+                DB::raw("0 as nilaisaldo"),
+                DB::raw("'' as modifiedby"),
+            )
+            ->join(DB::raw("stok as c with (readuncommitted)"), 'a.kodebarang', 'c.id');
+        //saldo awal
+
+        DB::table($temprekap)->insertUsing([
+            'statusmasuk',
+            'kodebarang',
+            'namabarang',
+            'tglbukti',
+            'nobukti',
+            'kategori_id',
+            'qtymasuk',
+            'nilaimasuk',
+            'qtykeluar',
+            'nilaikeluar',
+            'qtysaldo',
+            'nilaisaldo',
+            'modifiedby',
+        ], $queryrekap);
+
+
+
+        $queryrekap = PengeluaranStokHeader::from(
+            DB::raw("pengeluaranstokheader as a with (readuncommitted)")
+        )
+            ->select(
+                DB::raw("2 as statusmasuk"),
+                'c.id as kodebarang',
+                'c.namastok as namabarang',
+                'a.tglbukti as tglbukti',
+                'a.nobukti as nobukti',
+                'c.kategori_id',
+                DB::raw("0 as qtymasuk"),
+                DB::raw("0 as nilaimasuk"),
+                DB::raw("b.penerimaanstok_qty as qtykeluar"),
+                DB::raw("(b.penerimaanstok_qty*b.penerimaanstok_harga) as nilaikeluar"),
+                DB::raw("0 as qtysaldo"),
+                DB::raw("0 as nilaisaldo"),
+                'a.modifiedby'
+            )
+            ->join(DB::raw("pengeluaranstokdetailfifo as b with (readuncommitted)"), 'a.id', 'b.pengeluaranstokheader_id')
+            ->join(DB::raw("stok as c with (readuncommitted)"), 'b.stok_id', 'c.id')
+            ->whereRaw("(b.stok_id>=" . $stokdari . " and B.stok_id<=" . $stoksampai . " )  and (a.tglBukti >='" . $tgldari . "' and a.tglbukti<='" . $tglsampai . "')")
+            ->whereRaw("a.pengeluaranstok_id in(" . $pengeluaranstok_id .")")
+            ->orderBy('a.tglbukti', 'Asc')
+            ->orderBy('a.nobukti', 'Asc')
+            ->orderBy('b.id', 'Asc');
+
+
+        DB::table($temprekap)->insertUsing([
+            'statusmasuk',
+            'kodebarang',
+            'namabarang',
+            'tglbukti',
+            'nobukti',
+            'kategori_id',
+            'qtymasuk',
+            'nilaimasuk',
+            'qtykeluar',
+            'nilaikeluar',
+            'qtysaldo',
+            'nilaisaldo',
+            'modifiedby',
+        ], $queryrekap);
+        //akhir if gudang sebelumnya 
+        // }
 
         $querylaporan = DB::table($temprekap)->from(
             DB::raw($temprekap . " as A")
@@ -542,6 +642,7 @@ class KartuStok extends MyModel
         return $datalist;
     }
 
+
     public function getReport($stokdari_id, $stoksampai_id, $dari, $sampai, $filter, $datafilter)
     {
         // data coba coba
@@ -587,8 +688,8 @@ class KartuStok extends MyModel
                             $query = $query->where('a.kodebarang', 'LIKE', "%$filters[data]%");
                         } else if ($filters['field'] == 'kategori_id') {
                             $query = $query->where('b.kodekategori', 'LIKE', "%$filters[data]%");
-                        }else if ($filters['field'] == 'qtymasuk' || $filters['field'] == 'nilaimasuk' || $filters['field'] == 'qtykeluar' || $filters['field'] == 'nilaikeluar') {
-                            $query = $query->whereRaw("format(a." . $filters['field'].", '#,#0.00') LIKE '%$filters[data]%'");
+                        } else if ($filters['field'] == 'qtymasuk' || $filters['field'] == 'nilaimasuk' || $filters['field'] == 'qtykeluar' || $filters['field'] == 'nilaikeluar') {
+                            $query = $query->whereRaw("format(a." . $filters['field'] . ", '#,#0.00') LIKE '%$filters[data]%'");
                         } else if ($filters['field'] == 'qtysaldo') {
                             $query = $query->whereRaw("format((isnull(a.qtysaldo,0)+a.qtymasuk)-a.qtykeluar, '#,#0.00') LIKE '%$filters[data]%'");
                         } else if ($filters['field'] == 'nilaisaldo') {
@@ -598,7 +699,6 @@ class KartuStok extends MyModel
                         } else {
                             // $query = $query->where('a.' . $filters['field'], 'LIKE', "%$filters[data]%");
                             $query = $query->whereRaw('a' . ".[" .  $filters['field'] . "] LIKE '%" . escapeLike($filters['data']) . "%' escape '|'");
-
                         }
                     }
 
@@ -614,7 +714,7 @@ class KartuStok extends MyModel
                             } else if ($filters['field'] == 'kategori') {
                                 $query = $query->orWhere('b.kodekategori', 'LIKE', "%$filters[data]%");
                             } else if ($filters['field'] == 'qtymasuk' || $filters['field'] == 'nilaimasuk' || $filters['field'] == 'qtykeluar' || $filters['field'] == 'nilaikeluar') {
-                                $query = $query->orWhereRaw("format(a." . $filters['field'].", '#,#0.00') LIKE '%$filters[data]%'");
+                                $query = $query->orWhereRaw("format(a." . $filters['field'] . ", '#,#0.00') LIKE '%$filters[data]%'");
                             } else if ($filters['field'] == 'qtysaldo') {
                                 $query = $query->orWhereRaw("format((isnull(a.qtysaldo,0)+a.qtymasuk)-a.qtykeluar, '#,#0.00') LIKE '%$filters[data]%'");
                             } else if ($filters['field'] == 'nilaisaldo') {
@@ -624,7 +724,6 @@ class KartuStok extends MyModel
                             } else {
                                 // $query->orWhere('a.' . $filters['field'], 'LIKE', "%$filters[data]%");
                                 $query = $query->OrwhereRaw('a' . ".[" .  $filters['field'] . "] LIKE '%" . escapeLike($filters['data']) . "%' escape '|'");
-
                             }
                         }
                     });
