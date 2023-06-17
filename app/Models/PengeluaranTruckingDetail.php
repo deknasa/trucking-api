@@ -186,4 +186,28 @@ class PengeluaranTruckingDetail extends MyModel
     {
         return $query->skip($this->params['offset'])->take($this->params['limit']);
     }
+    public function processStore(PengeluaranTruckingHeader $pengeluaranTruckingHeader, array $data): PengeluaranTruckingDetail
+    {
+        $pengeluaranTruckingDetail = new PengeluaranTruckingDetail();
+        $pengeluaranTruckingDetail->pengeluarantruckingheader_id = $data['pengeluarantruckingheader_id'];
+        $pengeluaranTruckingDetail->nobukti = $data['nobukti'];
+        $pengeluaranTruckingDetail->supir_id = $data['supir_id'];
+        $pengeluaranTruckingDetail->penerimaantruckingheader_nobukti = $data['penerimaantruckingheader_nobukti']??"";
+        $pengeluaranTruckingDetail->stok_id = $data['stok_id'] ?? 0;
+        $pengeluaranTruckingDetail->pengeluaranstok_nobukti = $data['pengeluaranstok_nobukti'] ?? "";
+        $pengeluaranTruckingDetail->qty = $data['qty'] ?? 0;
+        $pengeluaranTruckingDetail->harga = $data['harga'] ?? 0;
+        $pengeluaranTruckingDetail->trado_id = $data['trado_id'] ?? 0;
+        $pengeluaranTruckingDetail->keterangan = $data['keterangan'];
+        $pengeluaranTruckingDetail->invoice_nobukti = $data['invoice_nobukti'];
+        $pengeluaranTruckingDetail->orderantrucking_nobukti = $data['orderantrucking_nobukti'];
+        $pengeluaranTruckingDetail->nominal = $data['nominal'];
+        $pengeluaranTruckingDetail->modifiedby = auth('api')->user()->name;
+        
+        if (!$pengeluaranTruckingDetail->save()) {
+            throw new \Exception("Error storing pengeluaran Trucking Detail.");
+        }
+        return $pengeluaranTruckingDetail;
+    }
+            
 }
