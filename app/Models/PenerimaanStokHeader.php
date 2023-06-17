@@ -470,7 +470,7 @@ class PenerimaanStokHeader extends MyModel
         $penerimaanStokHeader->penerimaanstok_nobukti   = ($data['penerimaanstok_nobukti'] == null) ? "" : $data['penerimaanstok_nobukti'];
         $penerimaanStokHeader->pengeluaranstok_nobukti  = ($data['pengeluaranstok_nobukti'] == null) ? "" : $data['pengeluaranstok_nobukti'];
         $penerimaanStokHeader->nobon                    = ($data['nobon'] == null) ? "" : $data['nobon'];
-        $penerimaanStokHeader->keterangan               = ($data['keterangan'] == null) ? "" : $data['keterangan'];
+        $penerimaanStokHeader->keterangan               = array_key_exists('keterangan',$data) ? $data['keterangan'] : "";
         $penerimaanStokHeader->coa                      = ($data['coa'] == null) ? "" : $data['coa'];
         $penerimaanStokHeader->statusformat             = $statusformat;
         $penerimaanStokHeader->penerimaanstok_id        = ($data['penerimaanstok_id'] == null) ? "" : $data['penerimaanstok_id'];
@@ -496,16 +496,6 @@ class PenerimaanStokHeader extends MyModel
             throw new \Exception("Error storing penerimaan Stok Header.");
         }
 
-        $penerimaanStokHeaderLogTrail = (new LogTrail())->processStore([
-            'namatabel' => strtoupper($penerimaanStokHeader->getTable()),
-            'postingdari' => strtoupper('ENTRY penerimaan Stok Header'),
-            'idtrans' => $penerimaanStokHeader->id,
-            'nobuktitrans' => $penerimaanStokHeader->nobukti,
-            'aksi' => 'ENTRY',
-            'datajson' => $penerimaanStokHeader->toArray(),
-            'modifiedby' => auth('api')->user()->user
-        ]);
-
         /*STORE DETAIL*/
         $penerimaanStokDetails = [];
         $totalharga = 0;
@@ -527,22 +517,14 @@ class PenerimaanStokHeader extends MyModel
             if ($data['penerimaanstok_id'] == $spb->text) {
                 $totalsat = ($data['detail_qty'][$i] * $data['detail_harga'][$i]);
                 $totalharga += $totalsat;
-                $detaildata[] = $totalharga;
+                $detaildata[] = $totalsat;
                 $tgljatuhtempo[] =  $data['tglbukti'];
                 $keterangan_detail[] =  $data['tglbukti'];
             }
             $penerimaanStokDetails[] = $penerimaanStokDetail->toArray();
         }
 
-        (new LogTrail())->processStore([
-            'namatabel' => strtoupper($penerimaanStokDetail->getTable()),
-            'postingdari' => strtoupper('ENTRY penerimaan Stok Detail'),
-            'idtrans' =>  $penerimaanStokHeaderLogTrail->id,
-            'nobuktitrans' => $penerimaanStokHeader->nobukti,
-            'aksi' => 'ENTRY',
-            'datajson' => $penerimaanStokDetails,
-            'modifiedby' => auth('api')->user()->user,
-        ]);
+        
         
         /*STORE HUTANG IF SPB*/
         if ($data['penerimaanstok_id'] == $spb->text) {
@@ -574,6 +556,26 @@ class PenerimaanStokHeader extends MyModel
             $penerimaanStokHeader->save();
 
         }
+
+        $penerimaanStokHeaderLogTrail = (new LogTrail())->processStore([
+            'namatabel' => strtoupper($penerimaanStokHeader->getTable()),
+            'postingdari' => strtoupper('ENTRY penerimaan Stok Header'),
+            'idtrans' => $penerimaanStokHeader->id,
+            'nobuktitrans' => $penerimaanStokHeader->nobukti,
+            'aksi' => 'ENTRY',
+            'datajson' => $penerimaanStokHeader->toArray(),
+            'modifiedby' => auth('api')->user()->user
+        ]);
+
+        (new LogTrail())->processStore([
+            'namatabel' => strtoupper($penerimaanStokDetail->getTable()),
+            'postingdari' => strtoupper('ENTRY penerimaan Stok Detail'),
+            'idtrans' =>  $penerimaanStokHeaderLogTrail->id,
+            'nobuktitrans' => $penerimaanStokHeader->nobukti,
+            'aksi' => 'ENTRY',
+            'datajson' => $penerimaanStokDetails,
+            'modifiedby' => auth('api')->user()->user,
+        ]);
 
         return $penerimaanStokHeader;
     }
@@ -675,14 +677,14 @@ class PenerimaanStokHeader extends MyModel
         }
         /*DELETE EXISTING DETAIL*/
         $penerimaanStokDetail = PenerimaanStokDetail::where('penerimaanstokheader_id', $penerimaanStokHeader->id)->lockForUpdate()->delete();
-        if (isset($penerimaanStokHeader->hutang_nobukti)) {
-            /*DELETE EXISTING JURNAL*/
-            $JurnalUmumDetail = JurnalUmumDetail::where('nobukti', $penerimaanStokHeader->hutang_nobukti)->lockForUpdate()->delete();
-            $JurnalUmumHeader = JurnalUmumHeader::where('nobukti', $penerimaanStokHeader->hutang_nobukti)->lockForUpdate()->delete();
-            /*DELETE EXISTING HUTANG*/
-            $hutangDetail = HutangDetail::where('nobukti', $penerimaanStokHeader->hutang_nobukti)->lockForUpdate()->delete();
-            $hutangHeader = HutangHeader::where('nobukti', $penerimaanStokHeader->hutang_nobukti)->lockForUpdate()->delete();
-        }
+        // if (isset($penerimaanStokHeader->hutang_nobukti)) {
+        //     /*DELETE EXISTING JURNAL*/
+        //     $JurnalUmumDetail = JurnalUmumDetail::where('nobukti', $penerimaanStokHeader->hutang_nobukti)->lockForUpdate()->delete();
+        //     $JurnalUmumHeader = JurnalUmumHeader::where('nobukti', $penerimaanStokHeader->hutang_nobukti)->lockForUpdate()->delete();
+        //     /*DELETE EXISTING HUTANG*/
+        //     $hutangDetail = HutangDetail::where('nobukti', $penerimaanStokHeader->hutang_nobukti)->lockForUpdate()->delete();
+        //     $hutangHeader = HutangHeader::where('nobukti', $penerimaanStokHeader->hutang_nobukti)->lockForUpdate()->delete();
+        // }
 
         /*STORE DETAIL*/
         $penerimaanStokDetails = [];
@@ -705,7 +707,7 @@ class PenerimaanStokHeader extends MyModel
             if ($data['penerimaanstok_id'] == $spb->text) {
                 $totalsat = ($data['detail_qty'][$i] * $data['detail_harga'][$i]);
                 $totalharga += $totalsat;
-                $detaildata[] = $totalharga;
+                $detaildata[] = $totalsat;
                 $tgljatuhtempo[] =  $data['tglbukti'];
                 $keterangan_detail[] =  $data['tglbukti'];
             }
@@ -746,10 +748,10 @@ class PenerimaanStokHeader extends MyModel
                 'total_detail' => $detaildata,
                 'keterangan_detail' => $keterangan_detail,
             ];
-        
-            $hutangHeader = (new HutangHeader())->processStore($hutangRequest);
-            $penerimaanStokHeader->hutang_nobukti = $hutangHeader->nobukti;
-            $penerimaanStokHeader->save();
+            $hutangHeader = HutangHeader::where('nobukti',$penerimaanStokHeader->hutang_nobukti)->first();
+            (new HutangHeader())->processUpdate($hutangHeader,$hutangRequest);
+            // $penerimaanStokHeader->hutang_nobukti = $hutangHeader->nobukti;
+            // $penerimaanStokHeader->save();
         
         }
         
@@ -773,12 +775,14 @@ class PenerimaanStokHeader extends MyModel
         /*DELETE EXISTING DETAIL*/
         $penerimaanStokDetail = PenerimaanStokDetail::where('penerimaanstokheader_id', $penerimaanStokHeader->id)->lockForUpdate()->delete();
         if (isset($penerimaanStokHeader->hutang_nobukti)) {
-            /*DELETE EXISTING JURNAL*/
-            $JurnalUmumDetail = JurnalUmumDetail::where('nobukti', $penerimaanStokHeader->hutang_nobukti)->lockForUpdate()->delete();
-            $JurnalUmumHeader = JurnalUmumHeader::where('nobukti', $penerimaanStokHeader->hutang_nobukti)->lockForUpdate()->delete();
-            /*DELETE EXISTING HUTANG*/
-            $hutangDetail = HutangDetail::where('nobukti', $penerimaanStokHeader->hutang_nobukti)->lockForUpdate()->delete();
-            $hutangHeader = HutangHeader::where('nobukti', $penerimaanStokHeader->hutang_nobukti)->lockForUpdate()->delete();
+            $hutangHeader = HutangHeader::where('nobukti',$penerimaanStokHeader->hutang_nobukti)->first();
+            (new HutangHeader())->processDestroy($hutangHeader->id);
+            // /*DELETE EXISTING JURNAL*/
+            // $JurnalUmumDetail = JurnalUmumDetail::where('nobukti', $penerimaanStokHeader->hutang_nobukti)->lockForUpdate()->delete();
+            // $JurnalUmumHeader = JurnalUmumHeader::where('nobukti', $penerimaanStokHeader->hutang_nobukti)->lockForUpdate()->delete();
+            // /*DELETE EXISTING HUTANG*/
+            // $hutangDetail = HutangDetail::where('nobukti', $penerimaanStokHeader->hutang_nobukti)->lockForUpdate()->delete();
+            // $hutangHeader = HutangHeader::where('nobukti', $penerimaanStokHeader->hutang_nobukti)->lockForUpdate()->delete();
         }
 
         $penerimaanStokHeader = $penerimaanStokHeader->lockAndDestroy($id);
