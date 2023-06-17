@@ -2,6 +2,10 @@
 
 namespace App\Models;
 
+use App\Http\Controllers\Api\ParameterController;
+use App\Http\Controllers\Api\PengeluaranHeaderController;
+use App\Http\Requests\UpdatePengeluaranHeaderRequest;
+use App\Services\RunningNumberService;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
@@ -150,7 +154,7 @@ class KasGantungHeader extends MyModel
                 'kasgantungheader.created_at',
                 'kasgantungheader.updated_at'
             )
-            
+
             ->leftJoin(DB::raw("parameter with (readuncommitted)"), 'kasgantungheader.statuscetak', 'parameter.id')
             ->leftJoin(DB::raw("penerima with (readuncommitted)"), 'kasgantungheader.penerima_id', 'penerima.id')
             ->leftJoin(DB::raw("parameter as statuscetak with (readuncommitted)"), 'kasgantungheader.statuscetak', 'statuscetak.id')
@@ -413,5 +417,352 @@ class KasGantungHeader extends MyModel
         // ->first();
 
         return $fetch->first();
+    }
+
+    public function processStore(array $data): KasGantungHeader
+    {
+        $tanpaprosesnobukti = $data['tanpaprosesnobukti'] ?? 0;
+
+        /* Store header */
+        $bank = Bank::find($data['bank_id']);
+
+        $group = 'KAS GANTUNG';
+        $subgroup = 'NOMOR KAS GANTUNG';
+        $format = DB::table('parameter')
+            ->where('grp', $group)
+            ->where('subgrp', $subgroup)
+            ->first();
+
+        $content['tgl'] = date('Y-m-d', strtotime($data['tglbukti']));
+
+
+        $coaKasKeluar = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))->select('text')->where('grp', 'COA KAS GANTUNG')->first();
+
+        $kasgantungHeader = new KasGantungHeader();
+
+        $statusCetak = Parameter::from(DB::raw("parameter with (readuncommitted)"))
+            ->where('grp', 'STATUSCETAK')->where('text', 'BELUM CETAK')->first();
+
+        $kasgantungHeader->tglbukti = date('Y-m-d', strtotime($data['tglbukti'])) ?? '1900/1/1';
+        $kasgantungHeader->penerima = $data['penerima'] ?? '';
+        $kasgantungHeader->bank_id = $data['bank_id'] ?? 0;
+        $kasgantungHeader->pengeluaran_nobukti = $data['pengeluaran_nobukti'];
+        $kasgantungHeader->coakaskeluar = $bank->coa ?? '';
+        $kasgantungHeader->postingdari = $data['postingdari'] ?? 'ENTRY KAS GANTUNG';
+        $kasgantungHeader->tglkaskeluar = date('Y-m-d', strtotime($data['tglbukti']));
+        $kasgantungHeader->modifiedby = auth('api')->user()->name;
+        $kasgantungHeader->statusformat = $format->id ?? $data['statusformat'];
+        $kasgantungHeader->statuscetak = $statusCetak->id ?? 0;
+        $kasgantungHeader->userbukacetak = '';
+        $kasgantungHeader->tglbukacetak = '';
+        $kasgantungHeader->nobukti = (new RunningNumberService)->get($group, $subgroup, $kasgantungHeader->getTable(), date('Y-m-d', strtotime($data['tglbukti'])));
+
+        if (!$kasgantungHeader->save()) {
+            throw new \Exception("Error storing kas gantung header.");
+        }
+
+        $pengeluaranHeaderLogTrail = (new LogTrail())->processStore([
+            'namatabel' => strtoupper($kasgantungHeader->getTable()),
+            'postingdari' => $data['postingdari'] ?? 'ENTRY KAS GANTUNG HEADER',
+            'idtrans' => $kasgantungHeader->id,
+            'nobuktitrans' => $kasgantungHeader->nobukti,
+            'aksi' => 'ENTRY',
+            'datajson' => $kasgantungHeader->toArray(),
+            'modifiedby' => $kasgantungHeader->modifiedby
+        ]);
+
+        $detaillog = [];
+
+        $noWarkat = [];
+        $tglJatuhTempo = [];
+        $detail = [];
+        $coaDebet = [];
+        $coaKredit = [];
+        $keterangan_detail = [];
+        $nominal = [];
+        $total = 0;
+
+        $dataCoaDebet = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))
+            ->where('grp', 'JURNAL KAS GANTUNG')->where('subgrp', 'DEBET')->first();
+        $memo = json_decode($dataCoaDebet->memo, true);
+
+        for ($i = 0; $i < count($data['nominal']); $i++) {
+
+            $kasgantungDetail = (new KasGantungDetail())->processStore($kasgantungHeader, [
+                'kasgantung_id' => $kasgantungHeader->id,
+                'nobukti' => $kasgantungHeader->nobukti,
+                'nominal' => $data['nominal'][$i],
+                'coa' => $bank->coa ?? '',
+                'keterangan' => $data['keterangan_detail'][$i],
+                'modifiedby' => auth('api')->user()->name,
+            ]);
+
+            $detaillog[] = $kasgantungDetail;
+
+            $total += $data['nominal'][$i];
+            $noWarkat[] = 0;
+            $tglJatuhTempo[] = $data['tglbukti'];
+            $coaKredit[] = $bank->coa;
+            $coaDebet[] = $memo['JURNAL'];
+            $keterangan_detail[] = $data['keterangan_detail'][$i];
+            $nominal[] = $data['nominal'][$i];
+        }
+
+        if ($data['bank_id'] != '') {
+
+            $parameterController = new ParameterController;
+            $statusApp = $parameterController->getparameterid('STATUS APPROVAL', 'STATUS APPROVAL', 'NON APPROVAL');
+
+            if ($bank->tipe == 'KAS') {
+                $jenisTransaksi = Parameter::from(DB::raw("parameter with (readuncommitted)"))
+                    ->where('grp', 'JENIS TRANSAKSI')->where('text', 'KAS')->first();
+            }
+            if ($bank->tipe == 'BANK') {
+                $jenisTransaksi = Parameter::from(DB::raw("parameter with (readuncommitted)"))
+                    ->where('grp', 'JENIS TRANSAKSI')->where('text', 'BANK')->first();
+            }
+
+
+
+            // $penerima = Penerima::from(DB::raw("penerima with (readuncommitted)"))->where("id", $data['penerima_id'])->first();
+            $namaPenerima = ($data['penerima'] != null) ? $data['penerima'] : '';
+
+
+            $pengeluaranDetail = [];
+
+            $alatbayar = AlatBayar::from(DB::raw("alatbayar with (readuncommitted)"))->where('bank_id', $bank->id)->first();
+
+
+            (new LogTrail())->processStore([
+                'namatabel' => strtoupper($kasgantungHeader->getTable()),
+                'postingdari' => 'ENTRY KAS GANTUNG DETAIL',
+                'idtrans' =>  $kasgantungHeader->id,
+                'nobuktitrans' => $kasgantungHeader->nobukti,
+                'aksi' => 'ENTRY',
+                'datajson' => $detaillog,
+                'modifiedby' => auth('api')->user()->name,
+            ]);
+
+
+            $pengeluaranRequest = [
+                'tglbukti' => date('Y-m-d', strtotime($data['tglbukti'])),
+                'pelanggan_id' => 0,
+                'postingdari' => 'ENTRY KAS GANTUNG',
+                'dibayarke' => $namaPenerima ?? '',
+                'alatbayar_id' => $alatbayar->id,
+                'bank_id' => $bank->id,
+                'nowarkat' => $noWarkat,
+
+                'tgljatuhtempo' =>  $tglJatuhTempo,
+                'coadebet' => $coaDebet,
+                'coakredit' => $coaKredit,
+                'keterangan_detail' => $keterangan_detail,
+                'nominal_detail' => $nominal
+            ];
+
+            $pengeluaranHeader = (new PengeluaranHeader())->processStore($pengeluaranRequest);
+            $kasgantungHeader->pengeluaran_nobukti = $pengeluaranHeader->nobukti;
+            $kasgantungHeader->save();
+        }
+
+        return $kasgantungHeader;
+    }
+
+    public function processUpdate(KasGantungHeader $kasgantungHeader, array $data): KasGantungHeader
+    {
+        $isUpdateUangJalan = $data['isUpdateUangJalan'] ?? 0;
+
+        $bank_id = $data['bank_id'];
+        $bank = Bank::lockForUpdate()->findOrFail($bank_id);
+
+        $kasgantungHeader->penerima = $data['penerima'] ?? '';
+
+        $kasgantungHeader->postingdari = $data['postingdari'] ?? 'EDIT KAS GANTUNG';
+        $kasgantungHeader->modifiedby = auth('api')->user()->name;
+
+        if (!$kasgantungHeader->save()) {
+            throw new \Exception("Error Update kas gantung header.");
+        }
+
+        (new LogTrail())->processStore([
+            'namatabel' => strtoupper($kasgantungHeader->getTable()),
+            'postingdari' => $data['postingdari'] ?? 'EDIT KAS GANTUNG HEADER',
+            'idtrans' => $kasgantungHeader->id,
+            'nobuktitrans' => $kasgantungHeader->nobukti,
+            'aksi' => 'EDIT',
+            'datajson' => $kasgantungHeader->toArray(),
+            'modifiedby' => $kasgantungHeader->modifiedby
+        ]);
+
+        KasgantungDetail::where('kasgantung_id', $kasgantungHeader->id)->lockForUpdate()->delete();
+
+        $detaillog = [];
+
+        $noWarkat = [];
+        $tglJatuhTempo = [];
+        $detail = [];
+        $coaDebet = [];
+        $coaKredit = [];
+        $keterangan_detail = [];
+        $nominal = [];
+        $total = 0;
+
+        $coakredit = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))
+            ->where('grp', 'JURNAL KAS GANTUNG')->where('subgrp', 'DEBET')->first();
+        $memo =  json_decode($coakredit->memo, true);
+
+        // $penerima = Penerima::from(DB::raw("penerima with (readuncommitted)"))->where("id", $request->penerima_id)->first();
+        $namaPenerima = ($data['penerima'] != null) ? $data['penerima'] : '';
+
+        $alatbayar = AlatBayar::from(DB::raw("alatbayar with (readuncommitted)"))->where('bank_id', $bank->id)->first();
+
+
+        for ($i = 0; $i < count($data['nominal']); $i++) {
+
+            $kasgantungDetail = (new KasGantungDetail())->processStore($kasgantungHeader, [
+                'nobukti' => $kasgantungHeader->nobukti,
+                'nominal' => ($isUpdateUangJalan != 0) ? $data['datadetail'][$i]['nominal'] : $data['nominal'][$i],
+                'coa' => ($isUpdateUangJalan != 0) ? '' : $bank->coa ?? '',
+                'keterangan' => ($isUpdateUangJalan != 0) ? $data['datadetail'][$i]['keterangan'] : $data['keterangan_detail'][$i],
+                'modifiedby' => auth('api')->user()->name,
+            ]);
+
+
+            $detaillog[] = $kasgantungDetail;
+
+            $noWarkat[] = 0;
+            $tglJatuhTempo[] = $data['tglbukti'];
+            $coaKredit[] = $bank->coa;
+            $coaDebet[] = $memo['JURNAL'];
+            $keterangan_detail[] = $data['keterangan_detail'][$i];
+            $nominal[] = $data['nominal'][$i];
+
+            $total += $data['nominal'][$i];
+        }
+
+        (new LogTrail())->processStore([
+            'namatabel' => strtoupper($kasgantungHeader->getTable()),
+            'postingdari' => $data['postingdari'] ?? 'EDIT KAS GANTUNG DETAIL',
+            'idtrans' =>  $kasgantungHeader->id,
+            'nobuktitrans' => $kasgantungHeader->nobukti,
+            'aksi' => 'EDIT',
+            'datajson' => $detaillog,
+            'modifiedby' => auth('api')->user()->name,
+        ]);
+
+        $pengeluaranRequest = [
+            'tglbukti' => date('Y-m-d', strtotime($data['tglbukti'])),
+            'pelanggan_id' => 0,
+            'postingdari' => 'ENTRY KAS GANTUNG',
+            'dibayarke' => $namaPenerima ?? '',
+            'alatbayar_id' => $alatbayar->id,
+            'bank_id' => $bank->id,
+            'nowarkat' => $noWarkat,
+
+            'tgljatuhtempo' =>  $tglJatuhTempo,
+            'coadebet' => $coaDebet,
+            'coakredit' => $coaKredit,
+            'keterangan_detail' => $keterangan_detail,
+            'nominal_detail' => $nominal
+        ];
+
+
+
+
+        if ($bank->tipe == 'KAS') {
+            $jenisTransaksi = Parameter::from(DB::raw("parameter with (readuncommitted)"))
+                ->where('grp', 'JENIS TRANSAKSI')->where('text', 'KAS')->first();
+        }
+        if ($bank->tipe == 'BANK') {
+            $jenisTransaksi = Parameter::from(DB::raw("parameter with (readuncommitted)"))
+                ->where('grp', 'JENIS TRANSAKSI')->where('text', 'BANK')->first();
+        }
+
+        $get = PengeluaranHeader::from(DB::raw("pengeluaranheader with (readuncommitted)"))->where('nobukti', $kasgantungHeader->pengeluaran_nobukti)->first();
+        $approvalabsensisupir = $data['approvalabsensisupir'] ?? false;
+        $data['from'] = $data['from'] ?? false;
+        $bank = Bank::lockForUpdate()->findOrFail($bank_id);
+
+        if ($data['from'] == "AbsensiSupirApprovalHeader") {
+            $querysubgrppengeluaran = DB::table('bank')->from(DB::raw("bank with (readuncommitted)"))
+                ->select(
+                    'parameter.grp',
+                    'parameter.subgrp',
+                    'bank.formatpengeluaran',
+                    'bank.coa'
+                )
+                ->join(DB::raw("parameter with (readuncommitted)"), 'bank.formatpengeluaran', 'parameter.id')
+                ->whereRaw("bank.id = $bank_id")
+                ->first();
+
+
+            if (!$kasgantungHeader->save()) {
+                throw new \Exception("Error storing Hutang header.");
+            }
+
+            $alatbayar = AlatBayar::from(DB::raw("alatbayar with (readuncommitted)"))->where('bank_id', $bank->id)->first();
+
+
+
+            $pengeluaranRequest = [
+                'tglbukti' => date('Y-m-d', strtotime($data['tglbukti'])),
+                'pelanggan_id' => 0,
+                'postingdari' => 'ENTRY KAS GANTUNG',
+                'dibayarke' => $namaPenerima ?? '',
+                'alatbayar_id' => $alatbayar->id,
+                'bank_id' => $bank->id,
+                'nowarkat' => $noWarkat,
+
+                'tgljatuhtempo' =>  $tglJatuhTempo,
+                'coadebet' => $coaDebet,
+                'coakredit' => $coaKredit,
+                'keterangan_detail' => $keterangan_detail,
+                'nominal_detail' => $nominal
+            ];
+
+            (new PengeluaranHeader())->processStore($pengeluaranRequest);
+        } else {
+            $newPengeluaran = new PengeluaranHeader();
+            $newPengeluaran = $newPengeluaran->find($get->id);
+            (new PengeluaranHeader())->processUpdate($newPengeluaran, $pengeluaranRequest);
+        }
+
+        return $kasgantungHeader;
+    }
+
+    public function processDestroy($id, $postingDari = ''): KasGantungHeader
+    {
+        $getDetail = KasGantungDetail::lockForUpdate()->where('kasgantung_id', $id)->get();
+
+
+        $kasgantungHeader = new KasGantungHeader();
+        $kasgantungHeader = $kasgantungHeader->lockAndDestroy($id);
+
+        $kasgantungHeaderLogTrail = (new LogTrail())->processStore([
+            'namatabel' => strtoupper($kasgantungHeader->getTable()),
+            'postingdari' => $data['postingdari'] ?? 'EDIT KAS GANTUNG DETAIL',
+            'idtrans' =>  $kasgantungHeader->id,
+            'nobuktitrans' => $kasgantungHeader->nobukti,
+            'aksi' => 'EDIT',
+            'datajson' => $kasgantungHeader->toArray(),
+            'modifiedby' => auth('api')->user()->name,
+        ]);
+
+        
+        (new LogTrail())->processStore([
+            'namatabel' => 'KASGANTUNGDETAIL',
+            'postingdari' => $postingDari,
+            'idtrans' => $kasgantungHeaderLogTrail['id'],
+            'nobuktitrans' => $kasgantungHeader->nobukti,
+            'aksi' => 'DELETE',
+            'datajson' => $getDetail->toArray(),
+            'modifiedby' => auth('api')->user()->name
+        ]);
+
+        $getPengeluaran = PengeluaranHeader::from(DB::raw("pengeluaranheader with (readuncommitted)"))->where('nobukti', $kasgantungHeader->pengeluaran_nobukti)->first();
+        $pengeluaranHeader = (new PengeluaranHeader())->processDestroy($getPengeluaran->id, $postingDari);
+
+        return $kasgantungHeader;
+
     }
 }

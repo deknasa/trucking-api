@@ -147,4 +147,23 @@ class KasGantungDetail extends MyModel
     {
         return $query->skip($this->params['offset'])->take($this->params['limit']);
     }
+
+    public function processStore(KasgantungHeader $kasGantungHeader, array $data) : KasGantungDetail
+    {
+        $kasgantungDetail = new KasGantungDetail();
+        $kasgantungDetail->kasgantung_id = $kasGantungHeader->id;
+        $kasgantungDetail->nobukti = $data['nobukti'];
+        $kasgantungDetail->nominal = $data['nominal'];
+        $kasgantungDetail->coa = $data['coa'];
+        $kasgantungDetail->keterangan = $data['keterangan'];
+
+        $kasgantungDetail->modifiedby = auth('api')->user()->name;
+
+        if (!$kasgantungDetail->save()) {
+            throw new \Exception("Error storing kas gantung detail.");
+        }
+
+        return $kasgantungDetail;
+        
+    }
 }
