@@ -455,7 +455,7 @@ class PengeluaranStokHeader extends MyModel
                 "pengeluaranstok_id" => $data['pengeluaranstok_id'],
                 "nobukti" => $pengeluaranStokHeader->nobukti,
                 "stok_id" => $data['detail_stok_id'][$i],
-                "gudang_id" => $data['gudang_id'],
+                "gudang_id" => $gudang_id,
                 "tglbukti" => $data['tglbukti'],
                 "qty" => $data['detail_qty'][$i],
                 "modifiedby" => auth('api')->user()->name,
@@ -470,7 +470,7 @@ class PengeluaranStokHeader extends MyModel
             }
 
             //hanya koreksi yang tidak dari gudang yang tidak menggunakan fifo
-            if ( ( ($kor->text == $data['pengeluaranstok_id']) && $data['gudang_id']) || ($kor->text != $data['pengeluaranstok_id'])) {
+            if ( ( ($kor->text == $data['pengeluaranstok_id']) && $gudang_id) || ($kor->text != $data['pengeluaranstok_id'])) {
                 (new PengeluaranStokDetailFifo())->processStore($pengeluaranStokHeader,$datadetailfifo);
             }
            

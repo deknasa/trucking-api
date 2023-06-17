@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
+use App\Services\RunningNumberService;
 
 class PengembalianKasGantungHeader extends MyModel
 {
@@ -512,4 +513,66 @@ class PengembalianKasGantungHeader extends MyModel
         $data = $query->first();
         return $data;
     }
+
+
+    public function processStore(array $data): PengembalianKasGantungHeader
+    {
+        $tanpaprosesnobukti = $data['tanpaprosesnobukti'] ?? 0;
+        $group = 'PENGEMBALIAN KAS GANTUNG BUKTI';
+        $subgroup = 'PENGEMBALIAN KAS GANTUNG BUKTI';
+
+        $format = DB::table('parameter')->where('grp', $group)->where('subgrp', $subgroup)->first();
+        $bankid = $data['bank_id'];
+        $querysubgrppenerimaan = DB::table('bank')->from(DB::raw("bank with (readuncommitted)"))->select('parameter.grp','parameter.subgrp','bank.formatpenerimaan','bank.coa')->join(DB::raw("parameter with (readuncommitted)"), 'bank.formatpenerimaan', 'parameter.id')->whereRaw("bank.id = $bankid")->first();
+        $coaKasMasuk = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))->select('memo')->where('grp', 'JURNAL PENGEMBALIAN KAS GANTUNG')->where('subgrp', 'KREDIT')->first();
+        $memo = json_decode($coaKasMasuk->memo, true);
+        $statusApproval = DB::table('parameter')->where('grp', 'STATUS APPROVAL')->where('text', 'NON APPROVAL')->first();
+        $statusCetak = Parameter::where('grp', 'STATUSCETAK')->where('text', 'BELUM CETAK')->first();
+
+
+        //$pengembalianKasGantungHeader->pelanggan_id = $data['pelanggan_id'] ?? 0;
+        $pengembalianKasGantungHeader->tglbukti = date('Y-m-d', strtotime($data['tglbukti']));
+        $pengembalianKasGantungHeader->bank_id = $data['bank_id'];
+        $pengembalianKasGantungHeader->tgldari = date('Y-m-d', strtotime($data['tgldari'])) ?? date('Y-m-d', strtotime($data['tglbukti']));
+        $pengembalianKasGantungHeader->tglsampai = date('Y-m-d', strtotime($data['tglsampai'])) ?? date('Y-m-d', strtotime($data['tglbukti']));
+        $pengembalianKasGantungHeader->penerimaan_nobukti = '';
+        $pengembalianKasGantungHeader->coakasmasuk = $querysubgrppenerimaan->coa;
+        $pengembalianKasGantungHeader->postingdari = $data['postingdari'] ?? "Pengembalian Kas Gantung";
+        $pengembalianKasGantungHeader->tglkasmasuk = date('Y-m-d', strtotime($data['tglbukti']));
+        $pengembalianKasGantungHeader->statusformat = $data['statusformat'] ?? $format->id;
+        $pengembalianKasGantungHeader->statuscetak = $statusCetak->id ?? 0;
+        $pengembalianKasGantungHeader->modifiedby = auth('api')->user()->name;
+        $pengembalianKasGantungHeader->nobukti = (new RunningNumberService)->get($group, $subGroup, $pengembalianKasGantungHeader->getTable(), date('Y-m-d', strtotime($data['tglbukti'])));
+        
+        $pengembalianKasGantungHeader->save();
+
+        if (!$penerimaanStokHeader->save()) {
+            throw new \Exception("Error storing pengembalian Kas Gantung Header");
+        }
+
+        for ($i = 0; $i < count($data['detail_harga']); $i++) {
+            $penerimaanStokDetail = (new PenerimaanStokDetail())->processStore($penerimaanStokHeader, [
+                "penerimaanstokheader_id" => $penerimaanStokHeader->id,
+                "nobukti" => $penerimaanStokHeader->nobukti,
+                "stok_id" => $data['detail_stok_id'][$i],
+                "qty" => $data['detail_qty'][$i],
+                "harga" => $data['detail_harga'][$i],
+                "persentasediscount" => $data['detail_persentasediscount'][$i],
+                "vulkanisirke" => $data['detail_vulkanisirke'][$i],
+                "detail_keterangan" => $data['detail_keterangan'][$i],
+                "detail_penerimaanstoknobukti" => $data['detail_penerimaanstoknobukti'][$i],
+            ]);
+            if ($data['penerimaanstok_id'] == $spb->text) {
+                $totalsat = ($data['detail_qty'][$i] * $data['detail_harga'][$i]);
+                $totalharga += $totalsat;
+                $detaildata[] = $totalsat;
+                $tgljatuhtempo[] =  $data['tglbukti'];
+                $keterangan_detail[] =  $data['tglbukti'];
+            }
+            $penerimaanStokDetails[] = $penerimaanStokDetail->toArray();
+        }
+    }
+
+     
+
 }

@@ -68,6 +68,27 @@ class PengembalianKasGantungHeaderController extends Controller
     {
         DB::beginTransaction();
         try {
+            /* Store header */
+            $pengembalianKasGantungHeader = (new PengembalianKasGantungHeader())->processStore($request->all());
+            /* Set position and page */
+            $pengembalianKasGantungHeader->position = $this->getPosition($pengembalianKasGantungHeader, $pengembalianKasGantungHeader->getTable())->position;
+            $pengembalianKasGantungHeader->page = ceil($pengembalianKasGantungHeader->position / ($request->limit ?? 10));
+            if (isset($request->limit)) {
+                $pengembalianKasGantungHeader->page = ceil($pengembalianKasGantungHeader->position / ($request->limit ?? 10));
+            }
+
+            DB::commit();
+            return response()->json([
+                'message' => 'Berhasil disimpan',
+                'data' => $pengembalianKasGantungHeader
+            ], 201);    
+        } catch (\Throwable $th) {
+            DB::rollBack();
+
+            throw $th;
+        }
+        DB::beginTransaction();
+        try {
             $tanpaprosesnobukti = $request->tanpaprosesnobukti ?? 0;
             if ($tanpaprosesnobukti == 0) {
                 $group = 'PENGEMBALIAN KAS GANTUNG BUKTI';
