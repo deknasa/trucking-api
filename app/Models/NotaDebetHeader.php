@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Services\RunningNumberService;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\DB;
@@ -35,12 +36,12 @@ class NotaDebetHeader extends MyModel
         $query = $this->selectColumns($query)->from(
             DB::raw($this->table . " with (readuncommitted)")
         )
-           
+
             ->leftJoin(DB::raw("pelunasanpiutangheader as pelunasanpiutang with (readuncommitted)"), 'notadebetheader.pelunasanpiutang_nobukti', 'pelunasanpiutang.nobukti')
             ->leftJoin(DB::raw("parameter with (readuncommitted)"), 'notadebetheader.statusapproval', 'parameter.id')
             ->leftJoin(DB::raw("parameter as statuscetak with (readuncommitted)"), 'notadebetheader.statuscetak', 'statuscetak.id');
         if (request()->tgldari && request()->tglsampai) {
-            $query ->whereBetween($this->table . '.tglbukti', [date('Y-m-d', strtotime(request()->tgldari)), date('Y-m-d', strtotime(request()->tglsampai))]);
+            $query->whereBetween($this->table . '.tglbukti', [date('Y-m-d', strtotime(request()->tgldari)), date('Y-m-d', strtotime(request()->tglsampai))]);
         }
         if ($periode != '') {
             $periode = explode("-", $periode);
@@ -284,4 +285,194 @@ class NotaDebetHeader extends MyModel
     {
         return $query->skip($this->params['offset'])->take($this->params['limit']);
     }
+    public function processStore(array $data): NotaDebetHeader
+    {
+        $group = 'NOTA DEBET BUKTI';
+        $subGroup = 'NOTA DEBET BUKTI';
+        $format = DB::table('parameter')->where('grp', $group)->where('subgrp', $subGroup)->first();
+
+        $statusApproval = Parameter::from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS APPROVAL')->where('text', 'NON APPROVAL')->first();
+        $statusCetak = Parameter::from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUSCETAK')->where('text', 'BELUM CETAK')->first();
+
+        $notaDebetHeader = new NotaDebetHeader();
+
+        $notaDebetHeader->pelunasanpiutang_nobukti = $data['pelunasanpiutang_nobukti'];
+        $notaDebetHeader->agen_id = $data['agen_id'];
+        $notaDebetHeader->tglbukti = date('Y-m-d', strtotime($data['tglbukti']));
+        $notaDebetHeader->statusapproval = $statusApproval->id;
+        $notaDebetHeader->tgllunas = date('Y-m-d', strtotime($data['tgllunas']));
+        $notaDebetHeader->statusformat = $format->id;
+        $notaDebetHeader->statuscetak = $statusCetak->id;
+        $notaDebetHeader->postingdari = $data['postingdari'];
+        $notaDebetHeader->modifiedby = auth('api')->user()->name; 
+        $notaDebetHeader->nobukti = (new RunningNumberService)->get($group, $subGroup, $notaDebetHeader->getTable(), date('Y-m-d', strtotime($data['tglbukti'])));
+
+        if (!$notaDebetHeader->save()) {
+            throw new \Exception("Error storing nota debet header.");
+        }
+
+        $notaDebetHeaderLogTrail = (new LogTrail())->processStore([
+            'namatabel' => strtoupper($notaDebetHeader->getTable()),
+            'postingdari' => $data['postingdari'],
+            'idtrans' => $notaDebetHeader->id,
+            'nobuktitrans' => $notaDebetHeader->nobukti,
+            'aksi' => 'ENTRY',
+            'datajson' => $notaDebetHeader->toArray(),
+            'modifiedby' => auth('api')->user()->user
+        ]);
+
+        $notaDebetDetails = [];
+        $coakredit_detail = [];
+        $coadebet_detail = [];
+        $nominal_detail = [];
+        $keterangan_detail = [];
+
+        for ($i = 0; $i < count($data['nominallebihbayar']); $i++) {
+            $notaDebetDetail = (new NotaDebetDetail())->processStore($notaDebetHeader, [
+                "invoice_nobukti" => $data['invoice_nobukti'][$i],
+                "nominal" => $data['nominalpiutang'][$i],
+                "nominalbayar" => $data['nominal'][$i],
+                "lebihbayar" => $data['nominallebihbayar'][$i],
+                "keterangandetail" => '-',
+                "coalebihbayar" => $data['coalebihbayar'][$i]
+            ]);
+            $notaDebetDetails[] = $notaDebetDetail->toArray();
+            $coakredit_detail[] = $data['coakredit'][$i];
+            $coadebet_detail[] = $data['coalebihbayar'][$i];
+            $nominal_detail[] = $data['nominallebihbayar'][$i]; //AMBIL LEBIH BAYAR ATAU GIMANA?
+            $keterangan_detail[] = '-';
+        }
+
+        (new LogTrail())->processStore([
+            'namatabel' => strtoupper($notaDebetDetail->getTable()),
+            'postingdari' => $data['postingdari'],
+            'idtrans' => $notaDebetHeaderLogTrail->id,
+            'nobuktitrans' => $notaDebetHeader->nobukti,
+            'aksi' => 'ENTRY',
+            'datajson' => $notaDebetDetails,
+            'modifiedby' => auth('api')->user()->user
+        ]);
+
+        /*STORE JURNAL*/
+        $jurnalRequest = [
+            'tanpaprosesnobukti' => 1,
+            'nobukti' => $notaDebetHeader->nobukti,
+            'tglbukti' => date('Y-m-d', strtotime($data['tglbukti'])),
+            'postingdari' => $data['postingdari'],
+            'statusapproval' => $statusApproval->id,
+            'userapproval' => "",
+            'tglapproval' => "",
+            'modifiedby' => auth('api')->user()->name,
+            'statusformat' => "0",
+            'coakredit_detail' => $coakredit_detail,
+            'coadebet_detail' => $coadebet_detail,
+            'nominal_detail' => $nominal_detail,
+            'keterangan_detail' => $keterangan_detail
+        ];
+        $jurnalUmumHeader = (new JurnalUmumHeader())->processStore($jurnalRequest);
+        return $notaDebetHeader;
+    }
+
+    public function processUpdate(NotaDebetHeader $notaDebetHeader,array $data): NotaDebetHeader
+    {
+        $notaDebetHeader->agen_id = $data['agen_id'] ?? '';
+        $notaDebetHeader->modifiedby = auth('api')->user()->name;
+
+        if (!$notaDebetHeader->save()) {
+            throw new \Exception("Error Update nota debet header.");
+        }
+
+        $notaDebetHeaderLogTrail = (new LogTrail())->processStore([
+            'namatabel' => strtoupper($notaDebetHeader->getTable()),
+            'postingdari' => $data['postingdari'],
+            'idtrans' => $notaDebetHeader->id,
+            'nobuktitrans' => $notaDebetHeader->nobukti,
+            'aksi' => 'EDIT',
+            'datajson' => $notaDebetHeader->toArray(),
+            'modifiedby' => auth('api')->user()->user
+        ]);
+
+        $notaDebetDetail = NotaDebetDetail::where('notadebet_id', $notaDebetHeader->id)->lockForUpdate()->delete();
+         
+        $notaDebetDetails =[];
+        $coakredit_detail =[];
+        $coadebet_detail =[];
+        $nominal_detail =[];
+        $keterangan_detail =[];
+        for ($i = 0; $i < count($data['nominallebihbayar']); $i++) {
+            $notaDebetDetail = (new NotaDebetDetail())->processStore($notaDebetHeader, [
+                "invoice_nobukti" => $data['invoice_nobukti'][$i],
+                "nominal" => $data['nominalpiutang'][$i],
+                "nominalbayar" => $data['nominal'][$i],
+                "lebihbayar" => $data['nominallebihbayar'][$i],
+                "keterangandetail" => '-',
+                "coalebihbayar" => $data['coalebihbayar'][$i]
+            ]);
+            $notaDebetDetails[] = $notaDebetDetail->toArray();
+            $coakredit_detail[] = $data['coakredit'][$i];
+            $coadebet_detail[] = $data['coalebihbayar'][$i];
+            $nominal_detail[] = $data['nominallebihbayar'][$i]; //AMBIL LEBIH BAYAR ATAU GIMANA?
+            $keterangan_detail[] = '-';
+
+        }
+
+        (new LogTrail())->processStore([
+            'namatabel' => strtoupper($notaDebetDetail->getTable()),
+            'postingdari' => $data['postingdari'],
+            'idtrans' => $notaDebetHeaderLogTrail->id,
+            'nobuktitrans' => $notaDebetHeader->nobukti,
+            'aksi' => 'EDIT',
+            'datajson' => $notaDebetDetails,
+            'modifiedby' => auth('api')->user()->user
+        ]);
+
+        /*STORE JURNAL*/
+        $jurnalRequest = [
+            'postingdari' => $data['postingdari'],
+            'coakredit_detail' => $coakredit_detail,
+            'coadebet_detail' => $coadebet_detail,
+            'nominal_detail' => $nominal_detail,
+            'keterangan_detail' => $keterangan_detail
+        ];
+        $getJurnal = JurnalUmumHeader::from(DB::raw("jurnalumumheader with (readuncommitted)"))->where('nobukti', $notaDebetHeader->nobukti)->first();
+        $newJurnal = new JurnalUmumHeader();
+        $newJurnal = $newJurnal->find($getJurnal->id);
+        (new JurnalUmumHeader())->processUpdate($newJurnal, $jurnalRequest);
+
+        return $notaDebetHeader;
+    }
+
+    public function processDestroy($id, $postingDari = ''): NotaDebetHeader
+    {
+        $notaDebetDetails = NotaDebetDetail::lockForUpdate()->where('notadebet_id', $id)->get();
+
+        $notaDebetHeader = new NotaDebetHeader();
+        $notaDebetHeader = $notaDebetHeader->lockAndDestroy($id);
+
+        $notaDebetHeaderLogTrail = (new LogTrail())->processStore([
+            'namatabel' => $notaDebetHeader->getTable(),
+            'postingdari' => $postingDari,
+            'idtrans' => $notaDebetHeader->id,
+            'nobuktitrans' => $notaDebetHeader->nobukti,
+            'aksi' => 'DELETE',
+            'datajson' => $notaDebetHeader->toArray(),
+            'modifiedby' => auth('api')->user()->name
+        ]);
+
+        (new LogTrail())->processStore([
+            'namatabel' => 'NOTADEBETDETAIL',
+            'postingdari' => $postingDari,
+            'idtrans' => $notaDebetHeaderLogTrail['id'],
+            'nobuktitrans' => $notaDebetHeader->nobukti,
+            'aksi' => 'DELETE',
+            'datajson' => $notaDebetDetails->toArray(),
+            'modifiedby' => auth('api')->user()->name
+        ]);
+        $getJurnal = JurnalUmumHeader::from(DB::raw("jurnalumumheader with (readuncommitted)"))->where('nobukti', $notaDebetHeader->nobukti)->first();
+        (new JurnalUmumHeader())->processDestroy($getJurnal->id, $postingDari);
+        
+        return $notaDebetHeader;
+    }
+
+
 }

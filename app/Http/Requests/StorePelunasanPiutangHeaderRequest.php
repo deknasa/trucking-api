@@ -8,7 +8,9 @@ use App\Rules\DateTutupBuku;
 use App\Rules\ExistAgen;
 use App\Rules\ExistAlatBayar;
 use App\Rules\ExistBank;
+use App\Rules\ValidasiNoWarkatPelunasanPiutang;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
 
 class StorePelunasanPiutangHeaderRequest extends FormRequest
@@ -76,7 +78,13 @@ class StorePelunasanPiutangHeaderRequest extends FormRequest
                 'alatbayar_id' => ['required', 'numeric', 'min:1', Rule::in($dataAlatBayar), new ExistAlatBayar()]
             ];
         }
-
+        $alatbayarGiro = AlatBayar::from(DB::raw("alatbayar with (readuncommitted)"))->where('kodealatbayar', 'GIRO')->first();
+        $rulesNoWarkat = [];
+        if (request()->alatbayar_id == $alatbayarGiro->id){
+            $rulesNoWarkat = [
+                'nowarkat' => 'required'
+            ];
+        }
         $rules = [
             'tglbukti' => [
                 'required', 'date_format:d-m-Y',
@@ -85,7 +93,7 @@ class StorePelunasanPiutangHeaderRequest extends FormRequest
             ],
             'bank' => 'required',
             'agen' => 'required',
-            'alatbayar' => ['required', Rule::in($dataKodeAlatBayar)],
+            'alatbayar' => ['required', Rule::in($dataKodeAlatBayar)]
         ];
         // dd(request()->alatbayar_id, $dataAlatBayar);
         $relatedRequests = [
@@ -98,7 +106,8 @@ class StorePelunasanPiutangHeaderRequest extends FormRequest
                 (new $relatedRequest)->rules(),
                 $rulesBank_id,
                 $rulesAgen_id,
-                $rulesAlatBayar_id
+                $rulesAlatBayar_id,
+                $rulesNoWarkat
             );
         }
 

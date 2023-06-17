@@ -141,4 +141,24 @@ class NotaKreditDetail extends MyModel
     {
         return $query->skip($this->params['offset'])->take($this->params['limit']);
     }
+    public function processStore(NotaKreditHeader $notaKreditHeader, array $data): NotaKreditDetail
+    {
+        $notaKreditDetail = new NotaKreditDetail();
+        $notaKreditDetail->notakredit_id = $notaKreditHeader->id;
+        $notaKreditDetail->nobukti = $notaKreditHeader->nobukti;
+        $notaKreditDetail->tglterima = $notaKreditHeader->tglterima;
+        $notaKreditDetail->invoice_nobukti = $data['invoice_nobukti'];
+        $notaKreditDetail->nominal = $data['nominal'];
+        $notaKreditDetail->nominalbayar = $data['nominalbayar'];
+        $notaKreditDetail->penyesuaian = $data['penyesuaian'];
+        $notaKreditDetail->keterangan = $data['keterangandetail'];
+        $notaKreditDetail->coaadjust = $data['coaadjust'];
+        $notaKreditDetail->modifiedby = auth('api')->user()->name;
+
+        if (!$notaKreditDetail->save()) {
+            throw new \Exception("Error storing nota kredit Detail.");
+        }
+
+        return $notaKreditDetail;
+    }
 }

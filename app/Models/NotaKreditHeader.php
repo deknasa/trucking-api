@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Services\RunningNumberService;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\DB;
@@ -272,5 +273,194 @@ class NotaKreditHeader extends MyModel
     public function paginate($query)
     {
         return $query->skip($this->params['offset'])->take($this->params['limit']);
+    }
+
+    public function processStore(array $data): NotaKreditHeader
+    {
+        $group = 'NOTA KREDIT BUKTI';
+        $subGroup = 'NOTA KREDIT BUKTI';
+        $format = DB::table('parameter')->where('grp', $group)->where('subgrp', $subGroup)->first();
+
+        $statusApproval = Parameter::from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS APPROVAL')->where('text', 'NON APPROVAL')->first();
+        $statusCetak = Parameter::from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUSCETAK')->where('text', 'BELUM CETAK')->first();
+
+        $notaKreditHeader = new NotaKreditHeader();
+
+        $notaKreditHeader->tglbukti = date('Y-m-d', strtotime($data['tglbukti']));
+        $notaKreditHeader->pelunasanpiutang_nobukti = $data['pelunasanpiutang_nobukti'];
+        $notaKreditHeader->agen_id = $data['agen_id'];
+        $notaKreditHeader->statusapproval = $statusApproval->id;
+        $notaKreditHeader->tgllunas = date('Y-m-d', strtotime($data['tgllunas']));
+        $notaKreditHeader->statusformat = $format->id;
+        $notaKreditHeader->statuscetak = $statusCetak->id;
+        $notaKreditHeader->postingdari = $data['postingdari'];
+        $notaKreditHeader->modifiedby = auth('api')->user()->name;
+        $notaKreditHeader->nobukti = (new RunningNumberService)->get($group, $subGroup, $notaKreditHeader->getTable(), date('Y-m-d', strtotime($data['tglbukti'])));
+
+        if (!$notaKreditHeader->save()) {
+            throw new \Exception("Error storing nota kredit header.");
+        }
+
+        $notaKreditHeaderLogTrail = (new LogTrail())->processStore([
+            'namatabel' => strtoupper($notaKreditHeader->getTable()),
+            'postingdari' => $data['postingdari'],
+            'idtrans' => $notaKreditHeader->id,
+            'nobuktitrans' => $notaKreditHeader->nobukti,
+            'aksi' => 'ENTRY',
+            'datajson' => $notaKreditHeader->toArray(),
+            'modifiedby' => auth('api')->user()->user
+        ]);
+
+        $notaKreditDetails = [];
+        $coakredit_detail = [];
+        $coadebet_detail = [];
+        $nominal_detail = [];
+        $keterangan_detail = [];
+
+        for ($i = 0; $i < count($data['potongan']); $i++) {
+            $notaKreditDetail = (new NotaKreditDetail())->processStore($notaKreditHeader, [
+                "invoice_nobukti" => $data['invoice_nobukti'][$i],
+                "nominal" => $data['nominalpiutang'][$i],
+                "nominalbayar" => $data['nominal'][$i],
+                "penyesuaian" => $data['potongan'][$i],
+                "keterangandetail" => $data['keteranganpotongan'][$i],
+                "coaadjust" => $data['coapotongan'][$i]
+            ]);
+            $notaKreditDetails[] = $notaKreditDetail->toArray();
+            $coakredit_detail[] = $data['coapotongan'][$i];
+            $coadebet_detail[] = $data['coadebet'][$i];
+            $nominal_detail[] = $data['potongan'][$i]; //AMBIL LEBIH BAYAR ATAU GIMANA?
+            $keterangan_detail[] = $data['keteranganpotongan'][$i];
+        }
+
+        (new LogTrail())->processStore([
+            'namatabel' => strtoupper($notaKreditDetail->getTable()),
+            'postingdari' => $data['postingdari'],
+            'idtrans' => $notaKreditHeaderLogTrail->id,
+            'nobuktitrans' => $notaKreditHeader->nobukti,
+            'aksi' => 'ENTRY',
+            'datajson' => $notaKreditDetails,
+            'modifiedby' => auth('api')->user()->user
+        ]);
+
+        /*STORE JURNAL*/
+        $jurnalRequest = [
+            'tanpaprosesnobukti' => 1,
+            'nobukti' => $notaKreditHeader->nobukti,
+            'tglbukti' => date('Y-m-d', strtotime($data['tglbukti'])),
+            'postingdari' => $data['postingdari'],
+            'statusapproval' => $statusApproval->id,
+            'userapproval' => "",
+            'tglapproval' => "",
+            'modifiedby' => auth('api')->user()->name,
+            'statusformat' => "0",
+            'coakredit_detail' => $coakredit_detail,
+            'coadebet_detail' => $coadebet_detail,
+            'nominal_detail' => $nominal_detail,
+            'keterangan_detail' => $keterangan_detail
+        ];
+        (new JurnalUmumHeader())->processStore($jurnalRequest);
+
+        return $notaKreditHeader;
+    }
+
+    public function processUpdate(NotaKreditHeader $notaKreditHeader, array $data): NotaKreditHeader
+    {
+        $notaKreditHeader->agen_id = $data['agen_id'] ?? '';
+        $notaKreditHeader->modifiedby = auth('api')->user()->name;
+
+        if (!$notaKreditHeader->save()) {
+            throw new \Exception("Error Update nota kredit header.");
+        }
+
+        $notaKreditHeaderLogTrail = (new LogTrail())->processStore([
+            'namatabel' => strtoupper($notaKreditHeader->getTable()),
+            'postingdari' => $data['postingdari'],
+            'idtrans' => $notaKreditHeader->id,
+            'nobuktitrans' => $notaKreditHeader->nobukti,
+            'aksi' => 'EDIT',
+            'datajson' => $notaKreditHeader->toArray(),
+            'modifiedby' => auth('api')->user()->user
+        ]);
+
+        NotaKreditDetail::where('notakredit_id', $notaKreditHeader->id)->lockForUpdate()->delete();
+
+        $notaKreditDetails = [];
+        $coakredit_detail = [];
+        $coadebet_detail = [];
+        $nominal_detail = [];
+        $keterangan_detail = [];
+        for ($i = 0; $i < count($data['potongan']); $i++) {
+            $notaKreditDetail = (new NotaKreditDetail())->processStore($notaKreditHeader, [
+                "invoice_nobukti" => $data['invoice_nobukti'][$i],
+                "nominal" => $data['nominalpiutang'][$i],
+                "nominalbayar" => $data['nominal'][$i],
+                "penyesuaian" => $data['potongan'][$i],
+                "keterangandetail" => $data['keteranganpotongan'][$i],
+                "coaadjust" => $data['coapotongan'][$i]
+            ]);
+            $notaKreditDetails[] = $notaKreditDetail->toArray();
+            $coakredit_detail[] = $data['coapotongan'][$i];
+            $coadebet_detail[] = $data['coadebet'][$i];
+            $nominal_detail[] = $data['potongan'][$i]; //AMBIL LEBIH BAYAR ATAU GIMANA?
+            $keterangan_detail[] = $data['keteranganpotongan'][$i];
+        }
+
+        (new LogTrail())->processStore([
+            'namatabel' => strtoupper($notaKreditDetail->getTable()),
+            'postingdari' => $data['postingdari'],
+            'idtrans' => $notaKreditHeaderLogTrail->id,
+            'nobuktitrans' => $notaKreditHeader->nobukti,
+            'aksi' => 'EDIT',
+            'datajson' => $notaKreditDetails,
+            'modifiedby' => auth('api')->user()->user
+        ]);
+
+        /*STORE JURNAL*/
+        $jurnalRequest = [
+            'postingdari' => $data['postingdari'],
+            'coakredit_detail' => $coakredit_detail,
+            'coadebet_detail' => $coadebet_detail,
+            'nominal_detail' => $nominal_detail,
+            'keterangan_detail' => $keterangan_detail
+        ];
+        $getJurnal = JurnalUmumHeader::from(DB::raw("jurnalumumheader with (readuncommitted)"))->where('nobukti', $notaKreditHeader->nobukti)->first();
+        $newJurnal = new JurnalUmumHeader();
+        $newJurnal = $newJurnal->find($getJurnal->id);
+        (new JurnalUmumHeader())->processUpdate($newJurnal, $jurnalRequest);
+
+        return $notaKreditHeader;
+    }
+
+    public function processDestroy($id, $postingDari = ''): NotaKreditHeader
+    {
+        $notaKreditDetails = NotaKreditDetail::lockForUpdate()->where('notakredit_id', $id)->get();
+
+        $notaKreditHeader = new NotaKreditHeader();
+        $notaKreditHeader = $notaKreditHeader->lockAndDestroy($id);
+
+        $notaKreditHeaderLogTrail = (new LogTrail())->processStore([
+            'namatabel' => $notaKreditHeader->getTable(),
+            'postingdari' => $postingDari,
+            'idtrans' => $notaKreditHeader->id,
+            'nobuktitrans' => $notaKreditHeader->nobukti,
+            'aksi' => 'DELETE',
+            'datajson' => $notaKreditHeader->toArray(),
+            'modifiedby' => auth('api')->user()->name
+        ]);
+
+        (new LogTrail())->processStore([
+            'namatabel' => 'NOTAKREDITDETAIL',
+            'postingdari' => $postingDari,
+            'idtrans' => $notaKreditHeaderLogTrail['id'],
+            'nobuktitrans' => $notaKreditHeader->nobukti,
+            'aksi' => 'DELETE',
+            'datajson' => $notaKreditDetails->toArray(),
+            'modifiedby' => auth('api')->user()->name
+        ]);
+        $getJurnal = JurnalUmumHeader::from(DB::raw("jurnalumumheader with (readuncommitted)"))->where('nobukti', $notaKreditHeader->nobukti)->first();
+        (new JurnalUmumHeader())->processDestroy($getJurnal->id, $postingDari);
+
+        return $notaKreditHeader;
     }
 }
