@@ -28,6 +28,7 @@ use App\Models\OrderanTrucking;
 use Carbon\Carbon;
 use Illuminate\Database\QueryException;
 use Illuminate\Http\JsonResponse;
+use App\Http\Requests\GetUpahSupirRangeRequest;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -405,5 +406,15 @@ class SuratPengantarController extends Controller
                 'message' => "$query->keterangan",
             ], 422);
         }
+    }
+
+    public function export(GetUpahSupirRangeRequest $request)
+    {
+        $dari = date('Y-m-d', strtotime($request->dari));
+        $sampai = date('Y-m-d', strtotime($request->sampai));
+        $suratPengantar = new SuratPengantar();
+        return response([
+            'data' => $suratPengantar->getExport($dari, $sampai),
+        ]);
     }
 }

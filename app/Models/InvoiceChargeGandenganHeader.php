@@ -277,4 +277,37 @@ class InvoiceChargeGandenganHeader extends MyModel
     {
         return $query->skip($this->params['offset'])->take($this->params['limit']);
     }
+
+    public function getExport($id) 
+    {
+        $this->setRequestParameters();
+
+        $getJudul = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))
+        ->select('text')
+        ->where('grp', 'JUDULAN LAPORAN')
+        ->where('subgrp', 'JUDULAN LAPORAN')
+        ->first();
+
+        $query = DB::table($this->table)->from(
+            DB::raw($this->table . " with (readuncommitted)")
+        )->select(
+            "$this->table.id",
+            "$this->table.nobukti",
+            "$this->table.tglbukti",
+            "$this->table.tglproses",
+            "$this->table.agen_id",
+            "$this->table.nominal",
+            "agen.namaagen as  agen",
+            "parameter.memo as statusapproval",
+            DB::raw("'Laporan Invoice Charge Gandengan' as judulLaporan"),
+            DB::raw("'" . $getJudul->text . "' as judul")
+        )
+            ->where("$this->table.id", $id)
+            ->leftJoin(DB::raw("parameter with (readuncommitted)"), 'invoicechargegandenganheader.statusapproval', 'parameter.id')
+            ->leftJoin(DB::raw("parameter as cetak with (readuncommitted)"), 'invoicechargegandenganheader.statuscetak', 'cetak.id')
+            ->leftJoin(DB::raw("agen with (readuncommitted)"), 'invoicechargegandenganheader.agen_id', 'agen.id');
+        
+        $data = $query->first();
+        return $data;
+    }
 }

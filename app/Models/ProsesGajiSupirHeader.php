@@ -1089,4 +1089,61 @@ class ProsesGajiSupirHeader extends MyModel
             ->whereRaw("gajisupirheader.nobukti in($bukti)");
         return $fetch->first();
     }
+
+    public function getExport($id)
+    {
+        $this->setRequestParameters();
+        $periode = request()->periode ?? '';
+        $statusCetak = request()->statuscetak ?? '';
+
+        $getJudul = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))
+        ->select('text')
+        ->where('grp', 'JUDULAN LAPORAN')
+        ->where('subgrp', 'JUDULAN LAPORAN')
+        ->first();
+
+        $this->tableTotal = $this->createTempTotal();
+        $query = DB::table($this->table)->from(DB::raw("prosesgajisupirheader with (readuncommitted)"))
+            ->select(
+                'prosesgajisupirheader.id',
+                'prosesgajisupirheader.nobukti',
+                'prosesgajisupirheader.tglbukti',
+                'prosesgajisupirheader.tgldari',
+                'prosesgajisupirheader.tglsampai',
+                'prosesgajisupirheader.periode',
+                'prosesgajisupirheader.userapproval',
+                'statusapproval.memo as statusapproval',
+                'statuscetak.memo as statuscetak',
+                'prosesgajisupirheader.pengeluaran_nobukti',
+                $this->tableTotal . '.total',
+                $this->tableTotal . '.totalposting',
+                $this->tableTotal . '.uangjalan',
+                $this->tableTotal . '.bbm',
+                $this->tableTotal . '.uangmakanharian',
+                $this->tableTotal . '.potonganpinjaman',
+                $this->tableTotal . '.potonganpinjamansemua',
+                $this->tableTotal . '.deposito',
+                DB::raw("'Laporan Proses Gaji Supir' as judulLaporan"),
+                DB::raw("'" . $getJudul->text . "' as judul")
+            )
+            ->where("$this->table.id", $id)
+            ->leftJoin(DB::raw("parameter as statuscetak with (readuncommitted)"), 'prosesgajisupirheader.statuscetak', 'statuscetak.id')
+            ->leftJoin(DB::raw("parameter as statusapproval with (readuncommitted)"), 'prosesgajisupirheader.statusapproval', 'statusapproval.id')
+            ->leftJoin($this->tableTotal, $this->tableTotal . '.nobukti', 'prosesgajisupirheader.nobukti');
+        if (request()->tgldari && request()->tglsampai) {
+            $query->whereBetween($this->table . '.tglbukti', [date('Y-m-d', strtotime(request()->tgldari)), date('Y-m-d', strtotime(request()->tglsampai))]);
+        }
+        if ($periode != '') {
+            $periode = explode("-", $periode);
+            $query->whereRaw("MONTH(prosesgajisupirheader.tglbukti) ='" . $periode[0] . "'")
+                ->whereRaw("year(prosesgajisupirheader.tglbukti) ='" . $periode[1] . "'");
+        }
+        if ($statusCetak != '') {
+            $query->where("prosesgajisupirheader.statuscetak", $statusCetak);
+        }
+
+        $data = $query->first();
+
+        return $data;
+    }
 }

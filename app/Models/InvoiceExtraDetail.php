@@ -63,6 +63,13 @@ class InvoiceExtraDetail extends MyModel
 
 
             $query->where($this->table . '.invoiceextra_id', '=', request()->invoiceextra_id);
+        } else if (isset(request()->forExport) && request()->forExport) {
+            $query->select(
+                $this->table . '.nobukti',
+                $this->table . '.nominal',
+                $this->table . '.keterangan',
+            );
+            $query->where($this->table . '.invoiceextra_id', '=', request()->invoiceextra_id);
         } else {
             $query->select(
                 $this->table . '.nobukti',

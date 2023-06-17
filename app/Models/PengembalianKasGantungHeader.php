@@ -483,7 +483,15 @@ class PengembalianKasGantungHeader extends MyModel
     {
         $this->setRequestParameters();
 
-        $query = DB::table($this->table)->select(
+        $getJudul = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))
+        ->select('text')
+        ->where('grp', 'JUDULAN LAPORAN')
+        ->where('subgrp', 'JUDULAN LAPORAN')
+        ->first();
+
+        $query = DB::table($this->table)->from(
+            DB::raw($this->table . " with (readuncommitted)")
+        )->select(
             "$this->table.id",
             "$this->table.nobukti",
             "$this->table.tglbukti",
@@ -494,6 +502,8 @@ class PengembalianKasGantungHeader extends MyModel
             "$this->table.postingdari",
             "$this->table.tglkasmasuk",
             "bank.namabank as bank",
+            DB::raw("'Laporan Pengembalian Kas Gantung' as judulLaporan"),
+            DB::raw("'" . $getJudul->text . "' as judul")
         )
             ->leftJoin(DB::raw("bank with (readuncommitted)"), "$this->table.bank_id", "bank.id")
             ->leftJoin("akunpusat", "$this->table.coakasmasuk", "akunpusat.coa")

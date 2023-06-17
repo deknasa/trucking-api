@@ -227,4 +227,33 @@ class PendapatanSupirHeader extends MyModel
     {
         return $query->skip($this->params['offset'])->take($this->params['limit']);
     }
+
+    public function getExport($id)
+    {
+        $this->setRequestParameters();
+
+        $getJudul = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))
+        ->select('text')
+        ->where('grp', 'JUDULAN LAPORAN')
+        ->where('subgrp', 'JUDULAN LAPORAN')
+        ->first();
+
+        $query = DB::table($this->table)->from(DB::raw("pendapatansupirheader with (readuncommitted)"))
+            ->select(
+                'pendapatansupirheader.id',
+                'pendapatansupirheader.nobukti',
+                'pendapatansupirheader.tglbukti',
+                'bank.namabank as bank_id',
+                'pendapatansupirheader.tgldari',
+                'pendapatansupirheader.tglsampai',
+                'pendapatansupirheader.periode',
+                DB::raw("'Laporan Pendapatan Supir' as judulLaporan"),
+                DB::raw("'" . $getJudul->text . "' as judul")
+            )
+            ->where("$this->table.id", $id)
+            ->leftJoin(DB::raw("bank with (readuncommitted)"), 'pendapatansupirheader.bank_id', 'bank.id');
+
+        $data = $query->first();
+        return $data;
+    }
 }

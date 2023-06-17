@@ -467,4 +467,51 @@ class InvoiceExtraHeader extends MyModel
         (new PiutangHeader())->processDestroy($getPiutang->id, $postingDari);
         return $invoiceExtraHeader;
     }
+
+    public function getExport($id)
+    {
+        $this->setRequestParameters();
+
+        $getJudul = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))
+        ->select('text')
+        ->where('grp', 'JUDULAN LAPORAN')
+        ->where('subgrp', 'JUDULAN LAPORAN')
+        ->first();
+
+        $periode = request()->periode ?? '';
+        $statusCetak = request()->statuscetak ?? '';
+
+        $query = DB::table($this->table)->select(
+            "$this->table.id",
+            "$this->table.nobukti",
+            "$this->table.tglbukti",
+            "$this->table.pelanggan_id",
+            "$this->table.agen_id",
+            "$this->table.nominal",
+            "$this->table.piutang_nobukti",
+            "pelanggan.namapelanggan as  pelanggan",
+            "agen.namaagen as  agen",
+            DB::raw("'Laporan Invoice Extra Header' as judulLaporan"),
+            DB::raw("'" . $getJudul->text . "' as judul")
+        )
+            ->leftJoin(DB::raw("parameter with (readuncommitted)"), 'invoiceextraheader.statusapproval', 'parameter.id')
+            ->leftJoin(DB::raw("parameter as cetak with (readuncommitted)"), 'invoiceextraheader.statuscetak', 'cetak.id')
+            ->leftJoin(DB::raw("pelanggan with (readuncommitted)"), 'invoiceextraheader.pelanggan_id', 'pelanggan.id')
+            ->leftJoin(DB::raw("agen with (readuncommitted)"), 'invoiceextraheader.agen_id', 'agen.id')
+            ->where("$this->table.id", $id);
+
+        if (request()->tgldari && request()->tglsampai) {
+            $query->whereBetween($this->table . '.tglbukti', [date('Y-m-d', strtotime(request()->tgldari)), date('Y-m-d', strtotime(request()->tglsampai))]);
+        } 
+        if ($periode != '') {
+            $periode = explode("-", $periode);
+            $query->whereRaw("MONTH(invoiceextraheader.tglbukti) ='" . $periode[0] . "'")
+                ->whereRaw("year(invoiceextraheader.tglbukti) ='" . $periode[1] . "'");
+        }
+        if ($statusCetak != '') {
+            $query->where("invoiceextraheader.statuscetak", $statusCetak);
+        }
+        $data = $query->first();
+        return $data;
+    }
 }

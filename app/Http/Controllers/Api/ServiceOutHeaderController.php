@@ -210,4 +210,12 @@ class ServiceOutHeaderController extends Controller
             'data' => $data
         ]);
     }
+
+    public function export($id)
+    {
+        $serviceOut = new ServiceOutHeader();
+        return response([
+            'data' => $serviceOut->getExport($id)
+        ]);
+    }
 }

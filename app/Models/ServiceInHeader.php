@@ -357,4 +357,33 @@ class ServiceInHeader extends MyModel
 
         return $serviceInHeader;
     }
+
+    public function getExport($id)
+    {
+        $this->setRequestParameters();
+
+        $getJudul = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))
+        ->select('text')
+        ->where('grp', 'JUDULAN LAPORAN')
+        ->where('subgrp', 'JUDULAN LAPORAN')
+        ->first();
+
+        $query = DB::table($this->table)->from(
+            DB::raw("serviceinheader with (readuncommitted)")
+        )
+            ->select(
+                'serviceinheader.id',
+                'serviceinheader.nobukti',
+                'serviceinheader.tglbukti',
+                'trado.kodetrado as trado_id',
+                'serviceinheader.tglmasuk',
+                DB::raw("'Laporan Service In' as judulLaporan"),
+                DB::raw("'" . $getJudul->text . "' as judul")
+            )
+            ->where("$this->table.id", $id)
+            ->leftJoin(DB::raw("trado with (readuncommitted)"), 'serviceinheader.trado_id', 'trado.id');
+        
+        $data = $query->first();
+        return $data;
+    }
 }

@@ -297,4 +297,35 @@ class ProsesUangJalanSupirHeader extends MyModel
 
         return $fetch->first();
     }
+
+    public function getExport($id)
+    {
+        $this->setRequestParameters();
+
+        $getJudul = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))
+        ->select('text')
+        ->where('grp', 'JUDULAN LAPORAN')
+        ->where('subgrp', 'JUDULAN LAPORAN')
+        ->first();
+
+        $query = DB::table($this->table)->from(DB::raw("prosesuangjalansupirheader with (readuncommitted)"))
+        ->select(
+            'prosesuangjalansupirheader.id',
+            'prosesuangjalansupirheader.nobukti',
+            'prosesuangjalansupirheader.tglbukti',
+            'prosesuangjalansupirheader.absensisupir_nobukti',
+            'prosesuangjalansupirheader.nominaluangjalan',
+            'trado.kodetrado as trado_id',
+            'supir.namasupir as supir_id',
+            DB::raw("'Laporan Proses Uang Jalan Supir' as judulLaporan"),
+            DB::raw("'" . $getJudul->text . "' as judul")
+        )
+        ->where("$this->table.id", $id)
+        ->leftJoin(DB::raw("trado with (readuncommitted)"), 'prosesuangjalansupirheader.trado_id', 'trado.id')
+        ->leftJoin(DB::raw("supir with (readuncommitted)"), 'prosesuangjalansupirheader.supir_id', 'supir.id');
+
+        $data = $query->first();
+        return $data;
+
+    }
 }

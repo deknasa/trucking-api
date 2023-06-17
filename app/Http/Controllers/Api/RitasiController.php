@@ -9,6 +9,7 @@ use App\Http\Requests\StoreLogTrailRequest;
 use App\Models\Parameter;
 use App\Models\Supir;
 use App\Models\Trado;
+use App\Http\Requests\GetUpahSupirRangeRequest;
 use App\Models\Kota;
 use App\Models\SuratPengantar;
 use App\Models\UpahRitasi;
@@ -159,6 +160,16 @@ class RitasiController extends Controller
 
         return response([
             'data' => $data
+        ]);
+    }
+
+    public function export(GetUpahSupirRangeRequest $request)
+    {
+        $dari = date('Y-m-d', strtotime($request->dari));
+        $sampai = date('Y-m-d', strtotime($request->sampai));
+        $ritasi = new Ritasi();
+        return response([
+            'data' => $ritasi->getExport($dari, $sampai)
         ]);
     }
 }

@@ -58,15 +58,23 @@ class InvoiceDetail extends MyModel
             $query->where($this->table . '.invoice_id', '=', request()->invoice_id);
         } else if (isset(request()->forExport) && request()->forExport) {
             $query->select(
+                'header.nobukti as nobukti_header',
                 'suratpengantar.tglsp',
                 'agen.namaagen as agen_id',
                 'kota.keterangan as tujuan',
                 'suratpengantar.nocont',
+                'suratpengantar.nosp',
                 $this->table . '.nominal as omset',
-                $this->table . '.keterangan as keterangan_detail'
+                $this->table . '.keterangan as keterangan_detail',
+                $this->table . '.nominalextra as extra',
+                $this->table . '.nominalretribusi',
+                $this->table . '.suratpengantar_nobukti',
+                $this->table . '.total as total_detail',
+                $this->table . '.orderantrucking_nobukti',
             )
 
                 ->leftJoin(DB::raw("suratpengantar with (readuncommitted)"), $this->table . '.suratpengantar_nobukti', 'suratpengantar.nobukti')
+                ->leftJoin(DB::raw("invoiceheader as header with (readuncommitted)"), 'header.id', $this->table . '.invoice_id')
                 ->leftJoin(DB::raw("agen with (readuncommitted)"), 'suratpengantar.agen_id', 'agen.id')
                 ->leftJoin(DB::raw("kota with (readuncommitted)"), 'suratpengantar.sampai_id', 'kota.id');
 

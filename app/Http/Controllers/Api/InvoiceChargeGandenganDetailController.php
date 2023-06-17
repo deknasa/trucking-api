@@ -18,7 +18,6 @@ class InvoiceChargeGandenganDetailController extends Controller
     public function index(): JsonResponse
     {
         $invoiceChargeGandengan = new InvoiceChargeGandenganDetail();
-
         return response()->json([
             'data' => $invoiceChargeGandengan->get(),
             'attributes' => [

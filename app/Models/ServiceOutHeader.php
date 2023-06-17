@@ -365,4 +365,31 @@ class ServiceOutHeader extends MyModel
 
         return $serviceOut;
     }
+
+    public function getExport($id)
+    {
+        $this->setRequestParameters();
+
+        $getJudul = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))
+        ->select('text')
+        ->where('grp', 'JUDULAN LAPORAN')
+        ->where('subgrp', 'JUDULAN LAPORAN')
+        ->first();
+
+        $query = DB::table($this->table)->from(DB::raw("serviceoutheader with (readuncommitted)"))
+        ->select(
+            'serviceoutheader.id',
+            'serviceoutheader.nobukti',
+            'serviceoutheader.tglbukti',
+            'trado.kodetrado as trado_id',
+            'serviceoutheader.tglkeluar',
+            DB::raw("'Laporan Service Out' as judulLaporan"),
+            DB::raw("'" . $getJudul->text . "' as judul")
+        )
+            ->where("$this->table.id", $id)
+            ->leftJoin(DB::raw("trado with (readuncommitted)"), 'serviceoutheader.trado_id', 'trado.id');
+        
+        $data = $query->first();
+        return $data;
+    }
 }

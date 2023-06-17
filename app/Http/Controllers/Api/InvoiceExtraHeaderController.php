@@ -256,4 +256,12 @@ class InvoiceExtraHeaderController extends Controller
             throw $th;
         }
     }
+
+    public function export($id)
+    {
+        $invoiceExtra = new InvoiceExtraHeader();
+        return response([
+            'data' => $invoiceExtra->getExport($id)
+        ]);
+    }
 }

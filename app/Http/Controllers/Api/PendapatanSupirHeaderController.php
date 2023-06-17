@@ -475,4 +475,12 @@ class PendapatanSupirHeaderController extends Controller
             return response($data);
         }
     }
+
+    public function export($id)
+    {
+        $pendapatanSupirHeader = new PendapatanSupirHeader();
+        return response([
+            'data' => $pendapatanSupirHeader->getExport($id)
+        ]);
+    }
 }

@@ -28,7 +28,6 @@ class InvoiceHeader extends MyModel
     public function get()
     {
         $this->setRequestParameters();
-
         $periode = request()->periode ?? '';
         $statusCetak = request()->statuscetak ?? '';
         $query = DB::table($this->table)->from(DB::raw("invoiceheader with (readuncommitted)"))
@@ -51,7 +50,7 @@ class InvoiceHeader extends MyModel
                 DB::raw('(case when (year(invoiceheader.tglbukacetak) <= 2000) then null else invoiceheader.tglbukacetak end ) as tglbukacetak'),
                 'invoiceheader.modifiedby',
                 'invoiceheader.created_at',
-                'invoiceheader.updated_at'
+                'invoiceheader.updated_at',
             )
             ->leftJoin(DB::raw("parameter as statusapproval with (readuncommitted)"), 'invoiceheader.statusapproval', 'statusapproval.id')
             ->leftJoin(DB::raw("parameter as statuscetak with (readuncommitted)"), 'invoiceheader.statuscetak', 'statuscetak.id')
@@ -754,5 +753,55 @@ class InvoiceHeader extends MyModel
         $getPiutang = PiutangHeader::from(DB::raw("piutangheader with (readuncommitted)"))->where('invoice_nobukti', $invoiceHeader->nobukti)->first();
         (new PiutangHeader())->processDestroy($getPiutang->id, $postingDari);
         return $invoiceHeader;
+    }
+
+    public function getExport($id) 
+    {
+        $this->setRequestParameters();
+
+        $getJudul = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))
+        ->select('text')
+        ->where('grp', 'JUDULAN LAPORAN')
+        ->where('subgrp', 'JUDULAN LAPORAN')
+        ->first();
+
+        $periode = request()->periode ?? '';
+        $statusCetak = request()->statuscetak ?? '';
+        $query = DB::table($this->table)->from(DB::raw("invoiceheader with (readuncommitted)"))
+            ->select(
+                'invoiceheader.id',
+                'invoiceheader.nobukti',
+                'invoiceheader.tglbukti',
+                'invoiceheader.nominal',
+                'invoiceheader.tglterima',
+                'invoiceheader.tgljatuhtempo',
+                'agen.namaagen as agen',
+                'jenisorder.keterangan as jenisorder_id',
+                'invoiceheader.piutang_nobukti',
+                'statusapproval.memo as statusapproval',
+                'statuscetak.memo as statuscetak',
+                DB::raw("'Laporan Invoice' as judulLaporan"),
+                DB::raw("'" . $getJudul->text . "' as judul")
+            )
+            ->where("$this->table.id", $id)
+            ->leftJoin(DB::raw("parameter as statusapproval with (readuncommitted)"), 'invoiceheader.statusapproval', 'statusapproval.id')
+            ->leftJoin(DB::raw("parameter as statuscetak with (readuncommitted)"), 'invoiceheader.statuscetak', 'statuscetak.id')
+            ->leftJoin(DB::raw("agen with (readuncommitted)"), 'invoiceheader.agen_id', 'agen.id')
+            ->leftJoin(DB::raw("jenisorder with (readuncommitted)"), 'invoiceheader.jenisorder_id', 'jenisorder.id');
+
+        if (request()->tgldari && request()->tglsampai) {
+            $query->whereBetween($this->table . '.tglbukti', [date('Y-m-d', strtotime(request()->tgldari)), date('Y-m-d', strtotime(request()->tglsampai))]);
+        }
+        if ($periode != '') {
+            $periode = explode("-", $periode);
+            $query->whereRaw("MONTH(invoiceheader.tglbukti) ='" . $periode[0] . "'")
+                ->whereRaw("year(invoiceheader.tglbukti) ='" . $periode[1] . "'");
+        }
+        if ($statusCetak != '') {
+            $query->where("invoiceheader.statuscetak", $statusCetak);
+        }
+
+        $data = $query->first();
+        return $data;
     }
 }

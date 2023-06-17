@@ -1885,4 +1885,12 @@ class ProsesGajiSupirHeaderController extends Controller
             'data' => $data
         ]);
     }
+
+    public function export($id)
+    {
+        $prosesGajiSupirHeader = new ProsesGajiSupirHeader();
+        return response([
+            'data' => $prosesGajiSupirHeader->getExport($id),
+        ]);
+    }
 }
