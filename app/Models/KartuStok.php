@@ -112,7 +112,7 @@ class KartuStok extends MyModel
                 'namastok as stoksampai',
 
             )
-            ->orderBy('id', 'desc')
+            ->orderBy('id', 'asc')
             ->limit(1)
             ->first();
         DB::table($tempStokSampai)->insert(
@@ -216,6 +216,11 @@ class KartuStok extends MyModel
 
     private function getlaporan($tgldari, $tglsampai, $stokdari, $stoksampai, $gudang_id, $trado_id, $gandengan_id, $filter)
     {
+
+        $gudang_id=$gudang_id ?? 0;
+        $trado_id=$trado_id ?? 0;
+        $gandengan_id=$gandengan_id ?? 0;
+
 
 
         $filtergudang = Parameter::where('grp', 'STOK PERSEDIAAN')->where('subgrp', 'STOK PERSEDIAAN')->where('text', 'GUDANG')->first();
@@ -374,6 +379,7 @@ class KartuStok extends MyModel
 
 
         if ($gudang_id != 0) {
+  
             $querysaldomasuk = PenerimaanstokHeader::from(
                 DB::raw("penerimaanstokheader as a with (readuncommitted)")
             )
@@ -389,6 +395,7 @@ class KartuStok extends MyModel
                 ->whereRaw("(a.gudang_id=". $gudang_id)
                 ->OrwhereRaw("a.gudangke_id=". $gudang_id. ")")
                 ->groupBy('c.id');
+                
         } else if ($trado_id != 0) {
             $querysaldomasuk = PenerimaanstokHeader::from(
                 DB::raw("penerimaanstokheader as a with (readuncommitted)")
@@ -422,6 +429,7 @@ class KartuStok extends MyModel
                 ->OrwhereRaw("a.gandenganke_id=". $gandengan_id. ")")
                 ->groupBy('c.id');
         } else {
+
             $querysaldomasuk = PenerimaanstokHeader::from(
                 DB::raw("penerimaanstokheader as a with (readuncommitted)")
             )

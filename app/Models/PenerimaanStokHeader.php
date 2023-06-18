@@ -583,6 +583,7 @@ class PenerimaanStokHeader extends MyModel
     public function processUpdate(PenerimaanStokHeader $penerimaanStokHeader, array $data): PenerimaanStokHeader
     {
         /*STORE HEADER*/
+      
         $idpenerimaan = $data['penerimaanstok_id'];
         $fetchFormat =  PenerimaanStok::where('id', $idpenerimaan)->first();
         $statusformat = $fetchFormat->format;
@@ -632,7 +633,6 @@ class PenerimaanStokHeader extends MyModel
             $ke = PenerimaanStokDetail::persediaan($gudangke_id,$tradoke_id,$gandenganke_id);
             $statuspindahgudang = Parameter::where('grp', 'STATUS PINDAH GUDANG')->where("text", $dari['nama']." ke ".$ke['nama'])->first();
         }
-        
 
         $penerimaanStokHeader->penerimaanstok_nobukti   = ($data['penerimaanstok_nobukti'] == null) ? "" : $data['penerimaanstok_nobukti'];
         $penerimaanStokHeader->pengeluaranstok_nobukti  = ($data['pengeluaranstok_nobukti'] == null) ? "" : $data['pengeluaranstok_nobukti'];

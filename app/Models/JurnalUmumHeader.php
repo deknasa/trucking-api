@@ -343,6 +343,7 @@ class JurnalUmumHeader extends MyModel
 
     public function processStore(array $data): JurnalUmumHeader
     {
+        // dd($data);
         $tanpaprosesnobukti = $data['tanpaprosesnobukti'] ?? 0;
 
         if ($tanpaprosesnobukti == 0) {
