@@ -622,6 +622,7 @@ class PengeluaranStokHeader extends MyModel
         $kor = Parameter::where('grp', 'KOR MINUS STOK')->where('subgrp', 'KOR MINUS STOK')->first();
         $rtr = Parameter::where('grp', 'RETUR STOK')->where('subgrp', 'RETUR STOK')->first();
         
+        if(array_key_exists("statuspotongretur",$data)) { $statuspotongretur = $data['statuspotongretur'];}  else  {$statuspotongretur = null;}
         if(array_key_exists("gudang_id",$data)) { $gudang_id = $data['gudang_id'];}  else  {$gudang_id = null;}
         if(array_key_exists("trado_id",$data)) { $trado_id = $data['trado_id'];}  else  {$trado_id = null;}
         if(array_key_exists("gandengan_id",$data)) { $gandengan_id = $data['gandengan_id'];}  else  {$gandengan_id = null;}
@@ -641,7 +642,7 @@ class PengeluaranStokHeader extends MyModel
          $pengeluaranStokHeader->servicein_nobukti    = $servicein_nobukti;
          $pengeluaranStokHeader->kerusakan_id         = ($data['kerusakan_id'] == null) ? "" : $data['kerusakan_id'];
          $pengeluaranStokHeader->statusformat      = ($statusformat == null) ? "" : $statusformat;
-         $pengeluaranStokHeader->statuspotongretur      = ($data['statuspotongretur'] == null) ? "" : $data['statuspotongretur'];
+         $pengeluaranStokHeader->statuspotongretur      = $statuspotongretur;
          $pengeluaranStokHeader->bank_id      = ($data['bank_id'] == null) ? "" : $data['bank_id'];
          $pengeluaranStokHeader->tglkasmasuk      = date('Y-m-d', strtotime($data['tglkasmasuk']));
          $pengeluaranStokHeader->modifiedby        = auth('api')->user()->name;
