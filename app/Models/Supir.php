@@ -226,7 +226,8 @@ class Supir extends MyModel
                 'supir.created_at',
                 'supir.updated_at',
                 DB::raw("'Laporan Supir' as judulLaporan"),
-                DB::raw("'" . $getJudul->text . "' as judul")
+                DB::raw("'" . $getJudul->text . "' as judul"),
+                DB::raw("'Tanggal Cetak : '+format(getdate(),'dd-MM-yyyy HH:mm:ss')+' User :".auth('api')->user()->name."' as tglcetak") 
             )
             ->leftJoin(DB::raw("zona with (readuncommitted)"), 'supir.zona_id', 'zona.id')
             ->leftJoin(DB::raw("parameter with (readuncommitted)"), 'supir.statusaktif', '=', 'parameter.id')

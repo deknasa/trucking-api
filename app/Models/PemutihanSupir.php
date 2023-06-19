@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Services\RunningNumberService;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\DB;
@@ -610,7 +611,6 @@ class PemutihanSupir extends MyModel
                         } else {
                             // $query = $query->where($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
                             $query = $query->whereRaw($this->table . ".[" .  $filters['field'] . "] LIKE '%" . escapeLike($filters['data']) . "%' escape '|'");
-
                         }
                     }
 
@@ -638,7 +638,6 @@ class PemutihanSupir extends MyModel
                         } else {
                             // $query = $query->orWhere($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
                             $query = $query->OrwhereRaw($this->table . ".[" .  $filters['field'] . "] LIKE '%" . escapeLike($filters['data']) . "%' escape '|'");
-
                         }
                     }
 
@@ -709,5 +708,297 @@ class PemutihanSupir extends MyModel
     public function paginate($query)
     {
         return $query->skip($this->params['offset'])->take($this->params['limit']);
+    }
+
+    public function processStore(array $data): PemutihanSupir
+    {
+
+        $group = 'PEMUTIHAN SUPIR BUKTI';
+        $subgroup = 'PEMUTIHAN SUPIR BUKTI';
+
+        $format = DB::table('parameter')
+            ->where('grp', $group)
+            ->where('subgrp', $subgroup)
+            ->first();
+
+        $pemutihanSupir = new PemutihanSupir();
+
+        $coaPengembalian = PenerimaanTrucking::from(DB::raw("penerimaantrucking with (readuncommitted)"))->where('kodepenerimaan', 'PJP')->first();
+
+        $pemutihanSupir->nobukti = (new RunningNumberService)->get($group, $subgroup, $pemutihanSupir->getTable(), date('Y-m-d', strtotime($data['tglbukti'])));
+        $pemutihanSupir->tglbukti = date('Y-m-d', strtotime($data['tglbukti']));
+        $pemutihanSupir->supir_id = $data['supir_id'];
+        $pemutihanSupir->pengeluaransupir = $data['pengeluaransupir'];
+        $pemutihanSupir->penerimaansupir = $data['penerimaansupir'] ?? 0;
+        $pemutihanSupir->bank_id = $data['bank_id'];
+        $pemutihanSupir->coa = $coaPengembalian->coapostingkredit;
+        $pemutihanSupir->statusformat = $format->id;
+        $pemutihanSupir->modifiedby = auth('api')->user()->name;
+
+        $pemutihanSupir->penerimaan_nobukti = (new RunningNumberService)->get($group, $subgroup, $pemutihanSupir->getTable(), date('Y-m-d', strtotime($data['tglbukti'])));
+
+        // GET NO BUKTI PENERIMAAN
+        $querysubgrppenerimaan = Bank::from(DB::raw("bank with (readuncommitted)"))
+            ->select(
+                'parameter.grp',
+                'parameter.subgrp',
+                'bank.formatpenerimaan',
+                'bank.coa',
+                'bank.tipe'
+            )
+            ->join(DB::raw("parameter with (readuncommitted)"), 'bank.formatpenerimaan', 'parameter.id')
+            ->whereRaw("bank.id = $pemutihanSupir->bank_id")
+            ->first();
+
+        if (!$pemutihanSupir->save()) {
+            throw new \Exception("Error storing pemutihan supir.");
+        }
+
+        $pemutihanSupirLogTrail = (new LogTrail())->processStore([
+            'namatabel' => strtoupper($pemutihanSupir->getTable()),
+            'postingdari' => $data['postingdari'] ?? 'ENTRY PEMUTIHAN SUPIR',
+            'idtrans' => $pemutihanSupir->id,
+            'nobuktitrans' => $pemutihanSupir->nobukti,
+            'aksi' => 'ENTRY',
+            'datajson' => $pemutihanSupir->toArray(),
+            'modifiedby' => $pemutihanSupir->modifiedby
+        ]);
+
+        $noBukti = [];
+        $coaDebet = [];
+        $coaPostingKredit = [];
+        $detaillog = [];
+        $nominal = [];
+        $keterangan = [];
+
+        $posting = Parameter::from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS POSTING')->where('text', 'POSTING')->first();
+
+        $formatPenerimaan = DB::table('parameter')
+            ->where('grp', $group)
+            ->where('subgrp', $subgroup)
+            ->first();
+
+        if ($data['postingId']) {
+            for ($i = 0; $i < count($data['postingId']); $i++) {
+                $pemutihanSupirDetail = (new PemutihanSupirDetail())->processStore($pemutihanSupir, [
+                    'pemutihansupir_id' => $pemutihanSupir->id,
+                    'nobukti' => $pemutihanSupir->nobukti,
+                    'pengeluarantrucking_nobukti' => $data['posting_nobukti'][$i],
+                    'nominal' => $data['posting_nominal'][$i],
+                    'statusposting' => $posting->id,
+                    'modifiedby' => auth('api')->user()->name
+                ]);
+
+                $detaillog[] = $pemutihanSupirDetail;
+
+                $noBukti = $pemutihanSupir->nobukti;
+                $nominal[] = $data['posting_nominal'][$i];
+                $coaDebet[] = $querysubgrppenerimaan->coa;
+                $coaPostingKredit[] = $coaPengembalian->coapostingkredit;
+                $keterangan[] = $data['posting_keterangan'][$i];
+
+
+                $statusApproval = 0;
+            }
+
+            $penerimaanRequest = [
+                'tglbukti' => date('Y-m-d', strtotime($data['tglbukti'])),
+                'postingdari' => 'PEMUTIHAN SUPIR',
+                'diterimadari' => $data['supir'],
+                'tgllunas' => date('Y-m-d', strtotime($data['tglbukti'])),
+                'bank_id' => $data['bank_id'],
+                'tgljatuhtempo' => date('Y-m-d', strtotime($data['tglbukti'])),
+                'nominal_detail' => $nominal,
+                'coadebet' => $coaDebet,
+                'coakredit' => $coaPostingKredit,
+                'keterangan_detail' => $keterangan,
+                'bulanbeban' => date('Y-m-d', strtotime($data['tglbukti'])),
+            ];
+
+            $penerimaanHeader = (new PenerimaanHeader())->processStore($penerimaanRequest);
+            $pemutihanSupir->penerimaan_nobukti = $penerimaanHeader->nobukti;
+            $pemutihanSupir->save();
+        }
+        if ($data['nonpostingId']) {
+            $nonPosting = Parameter::from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS POSTING')->where('text', 'BUKAN POSTING')->first();
+            for ($i = 0; $i < count($data['nonpostingId']); $i++) {
+                $pemutihanSupirDetail = (new PemutihanSupirDetail())->processStore($pemutihanSupir, [
+                    'pemutihansupir_id' => $pemutihanSupir->id,
+                    'nobukti' => $pemutihanSupir->nobukti,
+                    'pengeluarantrucking_nobukti' => $data['nonposting_nobukti'][$i],
+                    'nominal' => $data['nonposting_nominal'][$i],
+                    'statusposting' => $nonPosting->id,
+                    'modifiedby' => auth('api')->user()->name
+                ]);
+            }
+        }
+        $pemutihanSupirDetailLogTrail = (new LogTrail())->processStore([
+            'namatabel' => strtoupper($pemutihanSupirDetail->getTable()),
+            'postingdari' => 'ENTRY PEMUTIHAN SUPIR DETAIL',
+            'idtrans' =>  $pemutihanSupirLogTrail->id,
+            'nobuktitrans' => $pemutihanSupir->nobukti,
+            'aksi' => 'ENTRY',
+            'datajson' => $detaillog,
+            'modifiedby' => $pemutihanSupir->modifiedby,
+        ]);
+
+        return $pemutihanSupir;
+    }
+
+    public function processUpdate(PemutihanSupir $pemutihanSupir, array $data): PemutihanSupir
+    {
+
+        $coaPengembalian = PenerimaanTrucking::from(DB::raw("penerimaantrucking with (readuncommitted)"))->where('kodepenerimaan', 'PJP')->first();
+
+        $pemutihanSupir->pengeluaransupir =  $data['pengeluaransupir'];
+        $pemutihanSupir->penerimaansupir = $data['penerimaansupir'] ?? 0;
+        $pemutihanSupir->coa = $data['coa'];
+        $pemutihanSupir->modifiedby = auth('api')->user()->name;
+
+        // GET NO BUKTI PENERIMAAN
+        $querysubgrppenerimaan = Bank::from(DB::raw("bank with (readuncommitted)"))
+            ->select(
+                'parameter.grp',
+                'parameter.subgrp',
+                'bank.formatpenerimaan',
+                'bank.coa',
+                'bank.tipe'
+            )
+            ->join(DB::raw("parameter with (readuncommitted)"), 'bank.formatpenerimaan', 'parameter.id')
+            ->whereRaw("bank.id =" . $data['bank_id'])
+            ->first();
+
+
+        if (!$pemutihanSupir->save()) {
+            throw new \Exception("Error update pemutihan supir.");
+        }
+
+
+        $pemutihanSupirLogTrail = (new LogTrail())->processStore([
+            'namatabel' => strtoupper($pemutihanSupir->getTable()),
+            'postingdari' => 'EDIT PEMUTIHAN SUPIR',
+            'idtrans' => $pemutihanSupir->id,
+            'nobuktitrans' => $pemutihanSupir->nobukti,
+            'aksi' => 'EDIT',
+            'datajson' => $pemutihanSupir->toArray(),
+            'modifiedby' => auth('api')->user()->name
+        ]);
+
+        $pemutihanSupirdetail = PemutihanSupirDetail::where('pemutihansupir_id', $pemutihanSupir->id)->delete();
+
+        $coadebet = Bank::from(DB::raw("bank with (readuncommitted)"))->where('id', $pemutihanSupir->bank_id)->first();
+        $detaillog = [];
+        $penerimaanDetail = [];
+        $posting = Parameter::from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS POSTING')->where('text', 'POSTING')->first();
+
+        $noBukti = [];
+        $coaDebet = [];
+        $coaPostingKredit = [];
+        $detaillog = [];
+        $nominal = [];
+        $keterangan = [];
+
+        if ($data['postingId']) {
+
+            for ($i = 0; $i < count($data['postingId']); $i++) {
+                $pemutihanSupirDetail = (new PemutihanSupirDetail())->processStore($pemutihanSupir, [
+                    'pemutihansupir_id' => $pemutihanSupir->id,
+                    'nobukti' => $pemutihanSupir->nobukti,
+                    'pengeluarantrucking_nobukti' => $data['posting_nobukti'][$i],
+                    'nominal' => $data['posting_nominal'][$i],
+                    'statusposting' => $posting->id,
+                    'modifiedby' => auth('api')->user()->name
+                ]);
+
+                $detaillog[] = $pemutihanSupirDetail;
+
+                $noBukti = $pemutihanSupir->nobukti;
+                $nominal[] = $data['posting_nominal'][$i];
+                $coaDebet[] = $querysubgrppenerimaan->coa;
+                $coaPostingKredit[] = $coaPengembalian->coapostingkredit;
+                $keterangan[] = $data['posting_keterangan'][$i];
+
+
+                $statusApproval = 0;
+            }
+            $penerimaanRequest = [
+                'tglbukti' => date('Y-m-d', strtotime($data['tglbukti'])),
+                'postingdari' => 'PEMUTIHAN SUPIR',
+                'diterimadari' => $data['supir'],
+                'tgllunas' => date('Y-m-d', strtotime($data['tglbukti'])),
+                'bank_id' => $data['bank_id'],
+                'tgljatuhtempo' => date('Y-m-d', strtotime($data['tglbukti'])),
+                'nominal_detail' => $nominal,
+                'coadebet' => $coaDebet,
+                'coakredit' => $coaPostingKredit,
+                'keterangan_detail' => $keterangan,
+                'bulanbeban' => date('Y-m-d', strtotime($data['tglbukti'])),
+            ];
+
+            $penerimaanHeader = (new PenerimaanHeader())->processStore($penerimaanRequest);
+            $pemutihanSupir->penerimaan_nobukti = $penerimaanHeader->nobukti;
+            $pemutihanSupir->save();
+        }
+
+        if ($data['nonpostingId']) {
+
+            $nonPosting = Parameter::from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS POSTING')->where('text', 'BUKAN POSTING')->first();
+            for ($i = 0; $i < count($data['nonpostingId']); $i++) {
+                $pemutihanSupirDetail = (new PemutihanSupirDetail())->processStore($pemutihanSupir, [
+                    'pemutihansupir_id' => $pemutihanSupir->id,
+                    'nobukti' => $pemutihanSupir->nobukti,
+                    'pengeluarantrucking_nobukti' => $data['nonposting_nobukti'][$i],
+                    'nominal' => $data['nonposting_nominal'][$i],
+                    'statusposting' => $nonPosting->id,
+                    'modifiedby' => auth('api')->user()->name
+                ]);
+            }
+        }
+
+        $pemutihanSupirDetailLogTrail = (new LogTrail())->processStore([
+            'namatabel' => strtoupper($pemutihanSupirDetail->getTable()),
+            'postingdari' => 'EDIT PEMUTIHAN SUPIR DETAIL',
+            'idtrans' =>  $pemutihanSupirLogTrail->id,
+            'nobuktitrans' => $pemutihanSupir->nobukti,
+            'aksi' => 'EDIT',
+            'datajson' => $detaillog,
+            'modifiedby' => $pemutihanSupir->modifiedby,
+        ]);
+
+        return $pemutihanSupir;
+    }
+
+    public function processDestroy($id, $postingdari = ""): PemutihanSupir
+    {
+        $getDetail = PemutihanSupirDetail::lockForUpdate()->where('pemutihansupir_id', $id)->get();
+
+        $pemutihanSupir = new PemutihanSupir();
+        $pemutihanSupir = $pemutihanSupir->lockAndDestroy($id);
+
+        $pemutihanSupirLogTrail = (new LogTrail())->processStore([
+            'namatabel' => strtoupper($pemutihanSupir->getTable()),
+            'postingdari' => $postingdari,
+            'idtrans' =>  $pemutihanSupir->id,
+            'nobuktitrans' => $pemutihanSupir->nobukti,
+            'aksi' => 'EDIT',
+            'datajson' => $pemutihanSupir->toArray(),
+            'modifiedby' => auth('api')->user()->name,
+        ]);
+
+        (new LogTrail())->processStore([
+            'namatabel' => 'PEMUTIHANSUPIRDETAIL',
+            'postingdari' => $postingdari,
+            'idtrans' => $pemutihanSupirLogTrail['id'],
+            'nobuktitrans' => $pemutihanSupir->nobukti,
+            'aksi' => 'DELETE',
+            'datajson' => $getDetail->toArray(),
+            'modifiedby' => auth('api')->user()->name
+        ]);
+
+        $getPenerimaan = PenerimaanHeader::from(DB::raw("penerimaanheader with (readuncommitted)"))->where('nobukti', $pemutihanSupir->penerimaan_nobukti)->first();
+
+        $penerimaanHeader = (new PenerimaanHeader())->processDestroy($getPenerimaan->id, $postingdari);
+
+        return $pemutihanSupir;
     }
 }

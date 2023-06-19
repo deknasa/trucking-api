@@ -118,4 +118,22 @@ class PemutihanSupirDetail extends MyModel
     {
         return $query->skip($this->params['offset'])->take($this->params['limit']);
     }
+
+    public function processStore(PemutihanSupir $pemutihanSupir, array $data) : PemutihanSupirDetail
+    {
+        $pemutihanSupirDetail = new PemutihanSupirDetail();
+        $pemutihanSupirDetail->pemutihansupir_id = $pemutihanSupir->id;
+        $pemutihanSupirDetail->nobukti = $data['nobukti'];
+        $pemutihanSupirDetail->pengeluarantrucking_nobukti = $data['pengeluarantrucking_nobukti'];
+        $pemutihanSupirDetail->nominal = $data['nominal'];
+        $pemutihanSupirDetail->statusposting = $data['statusposting'];
+        $pemutihanSupirDetail->modifiedby = auth('api')->user()->name;
+
+        if (!$pemutihanSupirDetail->save()) {
+            throw new \Exception("Error storing pemutihan supir detail.");
+        }
+
+        return $pemutihanSupirDetail;
+        
+    }
 }

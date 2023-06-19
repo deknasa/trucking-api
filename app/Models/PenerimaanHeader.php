@@ -886,7 +886,7 @@ class PenerimaanHeader extends MyModel
         ]);
  
         (new LogTrail())->processStore([
-            'namatabel' => (new LogTrail())->table,
+            'namatabel' => 'PENERIMAANDETAIL',
             'postingdari' => ($postingdari =="") ? $postingdari :strtoupper('DELETE penerimaan  detail'),
             'idtrans' => $hutangLogTrail['id'],
             'nobuktitrans' => $penerimaanHeader->nobukti,
