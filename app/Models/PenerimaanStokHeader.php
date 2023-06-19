@@ -677,15 +677,7 @@ class PenerimaanStokHeader extends MyModel
         }
         /*DELETE EXISTING DETAIL*/
         $penerimaanStokDetail = PenerimaanStokDetail::where('penerimaanstokheader_id', $penerimaanStokHeader->id)->lockForUpdate()->delete();
-        // if (isset($penerimaanStokHeader->hutang_nobukti)) {
-        //     /*DELETE EXISTING JURNAL*/
-        //     $JurnalUmumDetail = JurnalUmumDetail::where('nobukti', $penerimaanStokHeader->hutang_nobukti)->lockForUpdate()->delete();
-        //     $JurnalUmumHeader = JurnalUmumHeader::where('nobukti', $penerimaanStokHeader->hutang_nobukti)->lockForUpdate()->delete();
-        //     /*DELETE EXISTING HUTANG*/
-        //     $hutangDetail = HutangDetail::where('nobukti', $penerimaanStokHeader->hutang_nobukti)->lockForUpdate()->delete();
-        //     $hutangHeader = HutangHeader::where('nobukti', $penerimaanStokHeader->hutang_nobukti)->lockForUpdate()->delete();
-        // }
-
+       
         /*STORE DETAIL*/
         $penerimaanStokDetails = [];
         $totalharga = 0;
@@ -724,7 +716,7 @@ class PenerimaanStokHeader extends MyModel
             'modifiedby' => auth('api')->user()->user,
         ]);
         
-        /*STORE HUTANG IF SPB*/
+        /*UPDATE HUTANG IF SPB*/
         if ($data['penerimaanstok_id'] == $spb->text) {
            
             $getCoaDebet = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'JURNAL HUTANG PEMBELIAN STOK')->where('subgrp', 'DEBET')->first();
@@ -750,8 +742,6 @@ class PenerimaanStokHeader extends MyModel
             ];
             $hutangHeader = HutangHeader::where('nobukti',$penerimaanStokHeader->hutang_nobukti)->first();
             (new HutangHeader())->processUpdate($hutangHeader,$hutangRequest);
-            // $penerimaanStokHeader->hutang_nobukti = $hutangHeader->nobukti;
-            // $penerimaanStokHeader->save();
         
         }
         
@@ -777,12 +767,6 @@ class PenerimaanStokHeader extends MyModel
         if (isset($penerimaanStokHeader->hutang_nobukti)) {
             $hutangHeader = HutangHeader::where('nobukti',$penerimaanStokHeader->hutang_nobukti)->first();
             (new HutangHeader())->processDestroy($hutangHeader->id);
-            // /*DELETE EXISTING JURNAL*/
-            // $JurnalUmumDetail = JurnalUmumDetail::where('nobukti', $penerimaanStokHeader->hutang_nobukti)->lockForUpdate()->delete();
-            // $JurnalUmumHeader = JurnalUmumHeader::where('nobukti', $penerimaanStokHeader->hutang_nobukti)->lockForUpdate()->delete();
-            // /*DELETE EXISTING HUTANG*/
-            // $hutangDetail = HutangDetail::where('nobukti', $penerimaanStokHeader->hutang_nobukti)->lockForUpdate()->delete();
-            // $hutangHeader = HutangHeader::where('nobukti', $penerimaanStokHeader->hutang_nobukti)->lockForUpdate()->delete();
         }
 
         $penerimaanStokHeader = $penerimaanStokHeader->lockAndDestroy($id);

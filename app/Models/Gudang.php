@@ -78,8 +78,10 @@ class Gudang extends MyModel
             ->where('grp', 'JUDULAN LAPORAN')
             ->where('subgrp', 'JUDULAN LAPORAN')
             ->first();
-
+            
         $aktif = request()->aktif ?? '';
+        $penerimaanStokPg = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'PG STOK')->where('subgrp', 'PG STOK')->first();
+        $penerimaanstok = request()->penerimaanstok_id ?? '';
 
         $query = DB::table($this->table)->from(DB::raw("$this->table with (readuncommitted)"))
             ->select(
@@ -107,6 +109,16 @@ class Gudang extends MyModel
                 ->first();
 
             $query->where('gudang.statusaktif', '=', $statusaktif->id);
+        }
+        // dd($penerimaanStokPg)
+        if ($penerimaanstok == $penerimaanStokPg->text) {
+            $gudangKantor = Gudang::from(
+                DB::raw("gudang with (readuncommitted)")
+            )
+                ->where('gudang','GUDANG KANTOR')
+                ->first();
+
+            $query->whereNotIn('gudang.id', [$gudangKantor->id]);
         }
 
         $this->totalRows = $query->count();

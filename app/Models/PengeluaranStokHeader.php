@@ -853,9 +853,9 @@ class PengeluaranStokHeader extends MyModel
                     'pelunasanpiutang_nobukti' =>null,
                     'bulanbeban' =>null,
                 ];
-                $penerimaanHeader = (new PenerimaanHeader())->processStore($penerimaanRequest);
+                $penerimaan = PenerimaanHeader::where('nobukti', $pengeluaranStokHeader->penerimaan_nobukti)->lockForUpdate()->first();
+                $penerimaanHeader = (new PenerimaanHeader())->processUpdate($penerimaan,$penerimaanRequest);
                 $pengeluaranStokHeader->coa = $querysubgrppenerimaan->coa;
-                $pengeluaranStokHeader->penerimaan_nobukti = $penerimaanHeader->nobukti;
                 $pengeluaranStokHeader->save();
                 
             } else if ($pengeluaranStokHeader->statuspotongretur == $potongHutang->id) {
@@ -881,11 +881,8 @@ class PengeluaranStokHeader extends MyModel
                     'keterangan' =>[$keterangan_detail[0]],
                 ];
                 // return response([$hutangHeader],422);
-                $hutangBayarHeader = (new HutangBayarHeader())->processStore($hutangBayarRequest);
-                $pengeluaranStokHeader->hutangbayar_nobukti = $hutangBayarHeader->nobukti;
-                $pengeluaranStokHeader->save();
-                
-            
+                $hutangbayar = PenerimaanHeader::where('nobukti', $pengeluaranStokHeader->penerimaan_nobukti)->lockForUpdate()->first();
+                $hutangBayarHeader = (new HutangBayarHeader())->processUpdate($hutangbayar,$hutangBayarRequest);            
                 
             }
         }
@@ -910,27 +907,11 @@ class PengeluaranStokHeader extends MyModel
        JurnalUmumHeader::where('nobukti', $pengeluaranStokHeader->nobukti)->delete();
 
        if ($statuspotongretur == $potongKas->id) {
-           /*DELETE EXISTING PENERIMAANHEADER*/
-           PenerimaanDetail::where('nobukti', $pengeluaranStokHeader->penerimaan_nobukti)->delete();
-           PenerimaanHeader::where('nobukti', $pengeluaranStokHeader->penerimaan_nobukti)->delete();
-           /*DELETE EXISTING JURNALUMUMHEADER DARI PENERIMAAN*/
-           JurnalUmumDetail::where('nobukti', $pengeluaranStokHeader->penerimaan_nobukti)->delete();
-           JurnalUmumHeader::where('nobukti', $pengeluaranStokHeader->penerimaan_nobukti)->delete();
-           
-       } else if ($statuspotongretur == $potongHutang->id) {
-           $hutangBayarHeader = HutangBayarHeader::where('nobukti', $pengeluaranStokHeader->hutangbayar_nobukti)->first();
-           $pengeluaranHeader = PengeluaranHeader::where('nobukti', $hutangBayarHeader->pengeluaran_nobukti)->first();
-           
-           /*DELETE EXISTING JURNALUMUMHEADER DARI PENGELUARAN DARI HUTANGBAYAR*/
-           JurnalUmumDetail::where('nobukti', $pengeluaranHeader->nobukti)->delete();
-           JurnalUmumHeader::where('nobukti', $pengeluaranHeader->nobukti)->delete();
+                           $penerimaan = PenerimaanHeader::where('nobukti', $pengeluaranStokHeader->penerimaan_nobukti)->lockForUpdate()->first();
 
-           /*DELETE EXISTING PENGELUARAN DARI HUTANGBAYAR*/
-           PengeluaranDetail::where('nobukti', $pengeluaranHeader->nobukti)->delete();
-           PengeluaranHeader::where('nobukti', $pengeluaranHeader->nobukti)->delete();
-           /*DELETE EXISTING HUTANGBAYARHEADER*/
-           HutangBayarDetail::where('nobukti', $pengeluaranStokHeader->hutangbayar_nobukti)->delete();
-           HutangBayarHeader::where('nobukti', $pengeluaranStokHeader->hutangbayar_nobukti)->delete();
+       } else if ($statuspotongretur == $potongHutang->id) {
+                          $hutangbayar = PenerimaanHeader::where('nobukti', $pengeluaranStokHeader->penerimaan_nobukti)->lockForUpdate()->first();
+
        }
            
          $pengeluaranStokHeader = $pengeluaranStokHeader->lockAndDestroy($id);
