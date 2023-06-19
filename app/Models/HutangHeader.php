@@ -497,8 +497,8 @@ class HutangHeader extends MyModel
                 'modifiedby' => $hutangHeader->modifiedby,
             ]);
             $hutangDetails[] = $hutangDetail->toArray();
-            $coakredit_detail[] = $memoKredit['JURNAL'];
-            $coadebet_detail[] = $memo['JURNAL'];
+            $coakredit_detail[] = ($data['coakredit'] == null) ? $memoKredit['JURNAL'] : $data['coakredit']; 
+            $coadebet_detail[] = ($data['coadebet'] == null) ? $memo['JURNAL'] : $data['coadebet'];  
             $nominal_detail[] = $data['total_detail'][$i];
             $keterangan_detail[] = $data['keterangan_detail'][$i];
 
