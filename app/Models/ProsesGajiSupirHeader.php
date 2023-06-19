@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Services\RunningNumberService;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
@@ -102,7 +103,7 @@ class ProsesGajiSupirHeader extends MyModel
                 $this->tableTotal . '.potonganpinjamansemua',
                 $this->tableTotal . '.deposito'
             )
-            
+
             ->leftJoin(DB::raw("parameter as statuscetak with (readuncommitted)"), 'prosesgajisupirheader.statuscetak', 'statuscetak.id')
             ->leftJoin(DB::raw("parameter as statusapproval with (readuncommitted)"), 'prosesgajisupirheader.statusapproval', 'statusapproval.id')
             ->leftJoin($this->tableTotal, $this->tableTotal . '.nobukti', 'prosesgajisupirheader.nobukti');
@@ -1145,5 +1146,122 @@ class ProsesGajiSupirHeader extends MyModel
         $data = $query->first();
 
         return $data;
+    }
+    
+    public function processStore(array $data): ProsesGajiSupirHeader
+    {
+        $group = 'PROSES GAJI SUPIR BUKTI';
+        $subGroup = 'PROSES GAJI SUPIR BUKTI';
+        $format = DB::table('parameter')->where('grp', $group)->where('subgrp', $subGroup)->first();
+
+        $statusApproval = Parameter::from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS APPROVAL')->where('text', 'NON APPROVAL')->first();
+        $statusCetak = Parameter::from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUSCETAK')->where('text', 'BELUM CETAK')->first();
+
+        $prosesGajiSupirHeader = new ProsesGajiSupirHeader();
+
+        $prosesGajiSupirHeader->tglbukti = date('Y-m-d', strtotime($data['tglbukti']));
+        $prosesGajiSupirHeader->tgldari = date('Y-m-d', strtotime($data['tgldari']));
+        $prosesGajiSupirHeader->tglsampai = date('Y-m-d', strtotime($data['tglsampai']));
+        $prosesGajiSupirHeader->statusapproval = $statusApproval->id;
+        $prosesGajiSupirHeader->userapproval = '';
+        $prosesGajiSupirHeader->tglapproval = '';
+        $prosesGajiSupirHeader->bank_id = $data['bank_idPR'];
+        $prosesGajiSupirHeader->periode = date('Y-m-d', strtotime($data['periode']));
+        $prosesGajiSupirHeader->statusformat = $format->id;
+        $prosesGajiSupirHeader->statuscetak = $statusCetak->id;
+        $prosesGajiSupirHeader->modifiedby = auth('api')->user()->name;
+        $prosesGajiSupirHeader->nobukti = (new RunningNumberService)->get($group, $subGroup, $prosesGajiSupirHeader->getTable(), date('Y-m-d', strtotime($data['tglbukti'])));
+
+        if (!$prosesGajiSupirHeader->save()) {
+            throw new \Exception("Error storing proses gaji supir header.");
+        }
+
+        $prosesGajiSupirDetails = [];
+
+        $coaDebet = Parameter::from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'JURNAL PROSES GAJI SUPIR')->where('kelompok', 'PENGELUARAN')
+            ->first();
+        $memoDebet = json_decode($coaDebet->memo, true);
+        $noWarkat = [];
+        $tglJatuhTempo = [];
+        $nominalDetailPengeluaran = [];
+        $coaDebetPengeluaran = [];
+        $keteranganDetailPengeluaran = [];
+
+        for ($i = 0; $i < count($data['rincianId']); $i++) {
+            $sp = SuratPengantar::from(DB::raw("suratpengantar with (readuncommitted)"))
+                ->where('supir_id', $data['supir_id'][$i])->first();
+
+            $prosesGajiSupirDetail = (new ProsesGajiSupirDetail())->processStore($prosesGajiSupirHeader, [
+                'gajisupir_nobukti' => $data['nobuktiRIC'][$i],
+                'supir_id' => $data['supir_id'][$i],
+                'trado_id' => $sp->trado_id,
+                'nominal' => $data['totalborongan'][$i],
+                'keterangan' => '',
+            ]);
+            $prosesGajiSupirDetails[] = $prosesGajiSupirDetail->toArray();
+            $noWarkat[] = '';
+            $tglJatuhTempo[] = $data['tglbukti'];
+            $nominalDetailPengeluaran[] =  $data['totalborongan'][$i];
+            $coaDebetPengeluaran[] = $memoDebet['JURNAL'];
+            $keteranganDetailPengeluaran[] = "Rincian Borongan Supir Dan Uang Makan periode" . $data['tgldari'] . " s/d " . $data['tglsampai'];
+        }
+
+        // POSTING KE PENGELUARAN
+        $pengeluaranHeaderRequest = [
+            'tglbukti' => date('Y-m-d', strtotime($data['tglbukti'])),
+            'pelanggan_id' => 0,
+            'postingdari' => 'ENTRY PROSES GAJI SUPIR',
+            'dibayarke' => 'PROSES GAJI SUPIR',
+            'bank_id' => $data['bank_idPR'],
+            'nowarkat' => $noWarkat,
+            'tgljatuhtempo' => $tglJatuhTempo,
+            'nominal_detail' => $nominalDetailPengeluaran,
+            'coadebet' => $coaDebetPengeluaran,
+            'keterangan_detail' => $keteranganDetailPengeluaran,
+        ];
+
+        $pengeluaranHeader = (new PengeluaranHeader())->processStore($pengeluaranHeaderRequest);
+        $prosesGajiSupirHeader->pengeluaran_nobukti = $pengeluaranHeader->nobukti;
+
+        $prosesGajiSupirHeader->save();
+
+        $prosesGajiSupirHeaderLogTrail = (new LogTrail())->processStore([
+            'namatabel' => strtoupper($prosesGajiSupirHeader->getTable()),
+            'postingdari' => 'PROSES GAJI SUPIR HEADER',
+            'idtrans' => $prosesGajiSupirHeader->id,
+            'nobuktitrans' => $prosesGajiSupirHeader->nobukti,
+            'aksi' => 'ENTRY',
+            'datajson' => $prosesGajiSupirHeader->toArray(),
+            'modifiedby' => auth('api')->user()->user
+        ]);
+
+        (new LogTrail())->processStore([
+            'namatabel' => strtoupper($prosesGajiSupirDetail->getTable()),
+            'postingdari' => 'ENTRY PROSES GAJI SUPIR DETAIL',
+            'idtrans' => $prosesGajiSupirHeaderLogTrail->id,
+            'nobuktitrans' => $prosesGajiSupirHeader->nobukti,
+            'aksi' => 'ENTRY',
+            'datajson' => $prosesGajiSupirDetails,
+            'modifiedby' => auth('api')->user()->user
+        ]);
+
+        /*STORE JURNAL*/
+        $jurnalRequest = [
+            'tanpaprosesnobukti' => 1,
+            'nobukti' => $penerimaanHeader->nobukti,
+            'tglbukti' => date('Y-m-d', strtotime($data['tglbukti'])),
+            'postingdari' => "ENTRY PENERIMAAN",
+            'statusapproval' => $statusApproval->id,
+            'userapproval' => "",
+            'tglapproval' => "",
+            'modifiedby' => auth('api')->user()->name,
+            'statusformat' => "0",
+            'coakredit_detail' => $coakredit_detail,
+            'coadebet_detail' => $coadebet_detail,
+            'nominal_detail' => $nominal_detail,
+            'keterangan_detail' => $keterangan_detail
+        ];
+        $jurnalUmumHeader = (new JurnalUmumHeader())->processStore($jurnalRequest);
+        return $penerimaanHeader;
     }
 }

@@ -59,7 +59,11 @@ class PiutangHeaderController extends Controller
         DB::beginTransaction();
 
         try {
-            $piutangHeader = (new PiutangHeader())->processStore($request->all());
+            $data = [
+                'keterangan' => $request->keterangan_detail,
+                'nominal' => $request->test ?? []
+            ];
+            $piutangHeader = (new PiutangHeader())->processStore($data);
             $piutangHeader->position = $this->getPosition($piutangHeader, $piutangHeader->getTable())->position;
             $piutangHeader->page = ceil($piutangHeader->position / ($request->limit ?? 10));
             

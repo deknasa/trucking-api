@@ -30,34 +30,30 @@ class UpdateGajiSupirHeaderRequest extends FormRequest
     public function rules()
     {
         $gajiSupir = new GajiSupirHeader();
-        $getGajisupir = $gajiSupir->findAll(request()->id);
+        $getDataGajiSupir = $gajiSupir->findAll(request()->id);
         $supir_id = $this->supir_id;
         $rulesSupir_id = [];
         if ($supir_id != null) {
             if ($supir_id == 0) {
                 $rulesSupir_id = [
-                    'supir_id' => ['required', 'numeric', 'min:1', Rule::in($getGajisupir->supir_id)]
+                    'supir_id' => ['required', 'numeric', 'min:1', Rule::in($getDataGajiSupir->supir_id)]
                 ];
             }else{
                 $rulesSupir_id = [
-                    'supir_id' => ['required', 'numeric', 'min:1', Rule::in($getGajisupir->supir_id)]
+                    'supir_id' => ['required', 'numeric', 'min:1', Rule::in($getDataGajiSupir->supir_id)]
                 ];
             }
         } else if ($supir_id == null && $this->supir != '') {
             $rulesSupir_id = [
-                'supir_id' => ['required', 'numeric', 'min:1', Rule::in($getGajisupir->supir_id)]
+                'supir_id' => ['required', 'numeric', 'min:1', Rule::in($getDataGajiSupir->supir_id)]
             ];
         }
         $parameter = new Parameter();
         $getBatas = $parameter->getBatasAwalTahun();
         $tglbatasawal = $getBatas->text;
         $tglbatasakhir = (date('Y') + 1) . '-01-01';
-
-        $gajiSupir = new GajiSupirHeader();
-        $getDataGajiSupir = $gajiSupir->findAll(request()->id);
-
         $rules = [
-            'nobukti' => [Rule::in($getDataGajiSupir), new DestroyGajiSupirNobukti()],
+            'nobukti' => [Rule::in($getDataGajiSupir->nobukti), new DestroyGajiSupirNobukti()],
             'supir' => 'required',
             'tgldari' => [
                 'required', 'date_format:d-m-Y',

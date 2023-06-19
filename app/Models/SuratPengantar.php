@@ -581,8 +581,7 @@ class SuratPengantar extends MyModel
             ->leftJoin('parameter as statusbatalmuat', 'suratpengantar.statusbatalmuat', 'statusbatalmuat.id')
             ->leftJoin('mandor as mandortrado', 'suratpengantar.mandortrado_id', 'mandortrado.id')
             ->leftJoin('mandor as mandorsupir', 'suratpengantar.mandorsupir_id', 'mandorsupir.id')
-            ->leftJoin('tarif', 'suratpengantar.tarif_id', 'tarif.id')
-            ->where('suratpengantar.tglbukti', date('Y-m-d', strtotime('now')));
+            ->leftJoin('tarif', 'suratpengantar.tarif_id', 'tarif.id');
 
         $this->totalRows = $query->count();
         $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;
