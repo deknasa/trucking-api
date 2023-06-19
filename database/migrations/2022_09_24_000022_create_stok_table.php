@@ -24,6 +24,7 @@ class CreateStokTable extends Migration
             $table->unsignedBigInteger('subkelompok_id')->nullable();
             $table->unsignedBigInteger('kategori_id')->nullable();
             $table->unsignedBigInteger('merk_id')->nullable();
+            $table->unsignedBigInteger('satuan_id')->nullable();
             $table->string('namastok',200)->nullable();
             $table->integer('statusaktif')->length(11)->nullable();
             $table->integer('statusreuse')->length(11)->nullable();
