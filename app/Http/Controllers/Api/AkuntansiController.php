@@ -60,10 +60,16 @@ class AkuntansiController extends Controller
      */
     public function store(StoreAkuntansiRequest $request): JsonResponse
     {
+        $data = [
+            'id' => $request->id,
+            "kodeakuntansi" => $request->kodeakuntansi,    
+            "keterangan" => $request->keterangan,
+            'statusaktif' => $request->statusaktif,
+        ];
         DB::beginTransaction();
 
         try {
-            $akuntansi = (new Akuntansi())->processStore($request->all());
+            $akuntansi = (new Akuntansi())->processStore($data);
             $akuntansi->position = $this->getPosition($akuntansi, $akuntansi->getTable())->position;
             $akuntansi->page = ceil($akuntansi->position / ($request->limit ?? 10));
 
@@ -93,10 +99,17 @@ class AkuntansiController extends Controller
      */
     public function update(UpdateAkuntansiRequest $request, Akuntansi $akuntansi): JsonResponse
     {
+        $data = [
+            'id' => $request->id,
+            "kodeakuntansi" => $request->kodeakuntansi,    
+            "keterangan" => $request->keterangan,
+            'statusaktif' => $request->statusaktif,
+        ];
+
         DB::beginTransaction();
 
         try {
-            $akuntansi = (new Akuntansi())->processUpdate($akuntansi, $request->all());
+            $akuntansi = (new Akuntansi())->processUpdate($akuntansi, $data);
             $akuntansi->position = $this->getPosition($akuntansi, $akuntansi->getTable())->position;
             $akuntansi->page = ceil($akuntansi->position / ($request->limit ?? 10));
 
