@@ -400,16 +400,6 @@ class PengeluaranStokHeader extends MyModel
             throw new \Exception("Error storing pengeluaran Stok Header.");
         }
 
-        $pengeluaranStokHeaderLogTrail = (new LogTrail())->processStore([
-            'namatabel' => strtoupper($pengeluaranStokHeader->getTable()),
-            'postingdari' => strtoupper('ENTRY penerimaan Stok Header'),
-            'idtrans' => $pengeluaranStokHeader->id,
-            'nobuktitrans' => $pengeluaranStokHeader->nobukti,
-            'aksi' => 'ENTRY',
-            'datajson' => $pengeluaranStokHeader->toArray(),
-            'modifiedby' => auth('api')->user()->user
-        ]);
-
         /*STORE DETAIL*/
         $pengeluaranStokDetails = [];
         if (!$data['detail_harga']) {
@@ -476,16 +466,6 @@ class PengeluaranStokHeader extends MyModel
            
         }
 
-        //store logtrail detail
-        (new LogTrail())->processStore([
-            'namatabel' => strtoupper($pengeluaranStokDetail->getTable()),
-            'postingdari' => strtoupper('ENTRY penerimaan Stok Detail'),
-            'idtrans' =>  $pengeluaranStokHeaderLogTrail->id,
-            'nobuktitrans' => $pengeluaranStokHeader->nobukti,
-            'aksi' => 'ENTRY',
-            'datajson' => $pengeluaranStokDetails,
-            'modifiedby' => auth('api')->user()->user,
-        ]);
 
         /*STORE JURNAL*/
         $jurnalRequest = [
@@ -596,6 +576,26 @@ class PengeluaranStokHeader extends MyModel
             }
         }
 
+        $pengeluaranStokHeaderLogTrail = (new LogTrail())->processStore([
+            'namatabel' => strtoupper($pengeluaranStokHeader->getTable()),
+            'postingdari' => strtoupper('ENTRY penerimaan Stok Header'),
+            'idtrans' => $pengeluaranStokHeader->id,
+            'nobuktitrans' => $pengeluaranStokHeader->nobukti,
+            'aksi' => 'ENTRY',
+            'datajson' => $pengeluaranStokHeader->toArray(),
+            'modifiedby' => auth('api')->user()->user
+        ]);
+        
+        //store logtrail detail
+        (new LogTrail())->processStore([
+            'namatabel' => strtoupper($pengeluaranStokDetail->getTable()),
+            'postingdari' => strtoupper('ENTRY penerimaan Stok Detail'),
+            'idtrans' =>  $pengeluaranStokHeaderLogTrail->id,
+            'nobuktitrans' => $pengeluaranStokHeader->nobukti,
+            'aksi' => 'ENTRY',
+            'datajson' => $pengeluaranStokDetails,
+            'modifiedby' => auth('api')->user()->user,
+        ]);
 
         
         return $pengeluaranStokHeader;
