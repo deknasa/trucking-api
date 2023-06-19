@@ -55,11 +55,23 @@ class ParameterController extends Controller
      */
     public function store(ParameterRequest $request)
     {
+        $data = [
+            'id' => $request->id,
+            "grp" => $request->grp,
+            "subgrp" => $request->subgrp,
+            "text" => $request->text,
+            "kelompok" => $request->kelompok,
+            "type" => $request->type,
+            "grup" => $request->grup,
+            "default" => $request->default,
+            "key" => $request->key,
+            "value" => $request->value,
+        ];
         DB::beginTransaction();
 
         try {
 
-            $parameter = (new Parameter())->processStore($request->all());
+            $parameter = (new Parameter())->processStore( $data);
             $parameter->position = $this->getPosition($parameter, $parameter->getTable())->position;
             $parameter->page = ceil($parameter->position / ($request->limit ?? 10));
             
@@ -96,10 +108,23 @@ class ParameterController extends Controller
      */
     public function update(UpdateParameterRequest $request, Parameter $parameter)
     {
+
+        $data = [
+            'id' => $request->id,
+            "grp" => $request->grp,
+            "subgrp" => $request->subgrp,
+            "text" => $request->text,
+            "kelompok" => $request->kelompok,
+            "type" => $request->type,
+            "grup" => $request->grup,
+            "default" => $request->default,
+            "key" => $request->key,
+            "value" => $request->value,
+        ];
         DB::beginTransaction();
 
         try {
-            $parameter = (new Parameter())->processUpdate($parameter, $request->all());
+            $parameter = (new Parameter())->processUpdate($parameter, $data);
             $parameter->position = $this->getPosition($parameter, $parameter->getTable())->position;
             $parameter->page = ceil($parameter->position / ($request->limit ?? 10));
 
