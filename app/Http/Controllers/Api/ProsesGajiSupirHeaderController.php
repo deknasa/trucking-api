@@ -92,6 +92,17 @@ class ProsesGajiSupirHeaderController extends Controller
 
         try {
 
+            $prosesGajiSupirHeader = (new ProsesGajiSupirHeader())->processStore($request->all());
+            $prosesGajiSupirHeader->position = $this->getPosition($prosesGajiSupirHeader, $prosesGajiSupirHeader->getTable())->position;
+            $prosesGajiSupirHeader->page = ceil($prosesGajiSupirHeader->position / ($request->limit ?? 10));
+
+            DB::commit();
+
+            return response()->json([
+                'message' => 'Berhasil disimpan',
+                'data' => $prosesGajiSupirHeader
+            ], 201);         
+
             $group = 'PROSES GAJI SUPIR BUKTI';
             $subgroup = 'PROSES GAJI SUPIR BUKTI';
 

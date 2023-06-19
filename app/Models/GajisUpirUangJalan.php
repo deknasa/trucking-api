@@ -20,4 +20,47 @@ class GajisUpirUangJalan extends MyModel
         'created_at' => 'date:d-m-Y H:i:s',
         'updated_at' => 'date:d-m-Y H:i:s'
     ];
+
+    public function processStore(array $data): GajisUpirUangJalan
+    {
+        $gajiSupirUangJalan = new GajisUpirUangJalan();
+        $gajiSupirUangJalan->gajisupir_id = $data['gajisupir_id'];
+        $gajiSupirUangJalan->gajisupir_nobukti = $data['gajisupir_nobukti'];
+        $gajiSupirUangJalan->absensisupir_nobukti = $data['absensisupir_nobukti'];
+        $gajiSupirUangJalan->supir_id = $data['supir_id'];
+        $gajiSupirUangJalan->nominal = $data['nominal'];
+
+        if (!$gajiSupirUangJalan->save()) {
+            throw new \Exception('Error storing gaji supir uang jalan.');
+        }
+
+        (new LogTrail())->processStore([
+            'namatabel' => $gajiSupirUangJalan->getTable(),
+            'postingdari' => 'ENTRY GAJI SUPIR UANG JALAN',
+            'idtrans' => $gajiSupirUangJalan->id,
+            'nobuktitrans' => $gajiSupirUangJalan->id,
+            'aksi' => 'ENTRY',
+            'datajson' => $gajiSupirUangJalan->toArray(),
+        ]);
+
+        return $gajiSupirUangJalan;
+    }
+    
+    public function processDestroy($id, $postingDari = ''): GajisUpirUangJalan
+    {
+        $gajiSupirUangJalan = new GajisUpirUangJalan();
+        $gajiSupirUangJalan = $gajiSupirUangJalan->lockAndDestroy($id);
+
+        (new LogTrail())->processStore([
+            'namatabel' => strtoupper($gajiSupirUangJalan->getTable()),
+            'postingdari' => $postingDari,
+            'idtrans' => $gajiSupirUangJalan->id,
+            'nobuktitrans' => $gajiSupirUangJalan->nobukti,
+            'aksi' => 'DELETE',
+            'datajson' => $gajiSupirUangJalan->toArray(),
+            'modifiedby' => auth('api')->user()->name
+        ]);
+
+        return $gajiSupirUangJalan;
+    }
 }
