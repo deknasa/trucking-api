@@ -52,22 +52,22 @@ class PemutihanSupirController extends Controller
             $nominalNonPosting = ($request->nonposting_nominal) ? array_sum($request->nonposting_nominal) : 0;
 
             $data = [
-                'tglbukti' => date('Y-m-d', strtotime($request->tglbukti)),
-                'supir_id' => $request->supir_id,
-                'supir' => $request->supir,
+                'tglbukti' => date('Y-m-d', strtotime($request->tglbukti)) ?? '',
+                'supir_id' => $request->supir_id ?? '',
+                'supir' => $request->supir ?? '',
                 'nonposting_nominal' => $request->nonposting_nominal ?? '',
                 'nonposting_nobukti' => $request->nonposting_nobukti ?? '',
                 'posting_nominal' => $request->posting_nominal ?? 0,
                 'pengeluaransupir' => $nominalPosting + $nominalNonPosting,
                 'penerimaansupir' => $request->penerimaansupir ?? 0,
                 'bank_id' => $request->bank_id ?? '',
-                'coa' => $coaPengembalian->coapostingkredit,
+                'coa' => $coaPengembalian->coapostingkredit ?? '',
                 'pengeluarantrucking_nobukti' => $request->posting_nobukti ?? 0,
                 'posting_nobukti' => $request->posting_nobukti ?? 0,
-                'nominal' => $request->posting_nominal,
-                'posting_keterangan' => $request->posting_keterangan,
-                'postingId' => $request->postingId,
-                'nonpostingId' => $request->nonpostingId
+                'nominal' => $request->posting_nominal ?? 0,
+                'posting_keterangan' => $request->posting_keterangan ?? '',
+                'postingId' => $request->postingId ?? '',
+                'nonpostingId' => $request->nonpostingId ?? ''
             ];
 
 
@@ -112,22 +112,22 @@ class PemutihanSupirController extends Controller
             $nominalNonPosting = ($request->nonposting_nominal) ? array_sum($request->nonposting_nominal) : 0;
 
             $data = [
-                'tglbukti' => date('Y-m-d', strtotime($request->tglbukti)),
-                'supir_id' => $request->supir_id,
-                'supir' => $request->supir,
+                'tglbukti' => date('Y-m-d', strtotime($request->tglbukti)) ?? '',
+                'supir_id' => $request->supir_id ?? '',
+                'supir' => $request->supir ?? '',
                 'nonposting_nominal' => $request->nonposting_nominal ?? '',
                 'nonposting_nobukti' => $request->nonposting_nobukti ?? '',
                 'posting_nominal' => $request->posting_nominal ?? 0,
                 'pengeluaransupir' => $nominalPosting + $nominalNonPosting,
                 'penerimaansupir' => $request->penerimaansupir ?? 0,
                 'bank_id' => $request->bank_id ?? '',
-                'coa' => $coaPengembalian->coapostingkredit,
+                'coa' => $coaPengembalian->coapostingkredit ?? '',
                 'pengeluarantrucking_nobukti' => $request->posting_nobukti ?? 0,
                 'posting_nobukti' => $request->posting_nobukti ?? 0,
-                'nominal' => $request->posting_nominal,
-                'posting_keterangan' => $request->posting_keterangan,
-                'postingId' => $request->postingId,
-                'nonpostingId' => $request->nonpostingId
+                'nominal' => $request->posting_nominal ?? 0,
+                'posting_keterangan' => $request->posting_keterangan ?? '',
+                'postingId' => $request->postingId ?? '',
+                'nonpostingId' => $request->nonpostingId ?? ''
             ];
 
             $pemutihanSupir = (new PemutihanSupir())->processUpdate($pemutihansupir, $data);

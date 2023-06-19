@@ -68,7 +68,30 @@ class KasGantungHeaderController extends Controller
         DB::beginTransaction();
 
         try {
-            $kasgantungHeader = (new KasGantungHeader())->processStore($request->all());
+
+            $bank = Bank::find($request->bank_id);
+          
+            $data = [
+            'tglbukti' => date('Y-m-d', strtotime($request->tglbukti)) ?? '1900/1/1',
+            'penerima_id' => $request->penerima_id ?? '',
+            'penerima' => $request->penerima ?? '',
+            'bank_id' => $request->bank_id ?? 0,
+            'pengeluaran_nobukti' => $request->pengeluaran_nobukti ?? '',
+            'coakaskeluar' => $bank->coa ?? '',
+            'postingdari' => $request->postingdari ?? 'ENTRY KAS GANTUNG',
+            'tglkaskeluar' => date('Y-m-d', strtotime($request->tglbukti)),
+            'modifiedby' => auth('api')->user()->name,
+            'statusformat' => $request->statusformat,
+            'statuscetak' => 0 ?? '',
+            'userbukacetak' => '',
+            'tglbukacetak' => '',
+
+            'nominal' => $request->nominal ?? 0,
+            'keterangan_detail' => $request->keterangan_detail ?? ''
+            ];
+
+
+            $kasgantungHeader = (new KasGantungHeader())->processStore($data);
             $kasgantungHeader->position = $this->getPosition($kasgantungHeader, $kasgantungHeader->getTable())->position;
             $kasgantungHeader->page = ceil($kasgantungHeader->position / ($request->limit ?? 10));
 
@@ -107,7 +130,28 @@ class KasGantungHeaderController extends Controller
         DB::beginTransaction();
 
         try {
-            $kasgantungHeader = (new KasGantungHeader())->processUpdate($kasgantungheader, $request->all());
+            $bank = Bank::find($request->bank_id);
+
+            $data = [
+                'tglbukti' => date('Y-m-d', strtotime($request->tglbukti)) ?? '1900/1/1',
+                'penerima_id' => $request->penerima_id ?? '',
+                'penerima' => $request->penerima ?? '',
+                'bank_id' => $request->bank_id ?? 0,
+                'pengeluaran_nobukti' => $request->pengeluaran_nobukti ?? '',
+                'coakaskeluar' => $bank->coa ?? '',
+                'postingdari' => $request->postingdari ?? 'ENTRY KAS GANTUNG',
+                'tglkaskeluar' => date('Y-m-d', strtotime($request->tglbukti)),
+                'modifiedby' => auth('api')->user()->name,
+                'statusformat' => $request->statusformat,
+                'statuscetak' => 0 ?? '',
+                'userbukacetak' => '',
+                'tglbukacetak' => '',
+    
+                'nominal' => $request->nominal ?? 0,
+                'keterangan_detail' => $request->keterangan_detail ?? ''
+                ];
+
+            $kasgantungHeader = (new KasGantungHeader())->processUpdate($kasgantungheader, $data);
             $kasgantungHeader->position = $this->getPosition($kasgantungHeader, $kasgantungHeader->getTable())->position;
             $kasgantungHeader->page = ceil($kasgantungHeader->position / ($request->limit ?? 10));
 
