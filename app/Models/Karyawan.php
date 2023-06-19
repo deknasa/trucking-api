@@ -29,11 +29,15 @@ class Karyawan extends MyModel
         $aktif = request()->aktif ?? '';
         $staff = request()->staff ?? '';
 
+        // dd(request()->forReport);
+
+        $report=request()->forReport ?? false;
+
         $getJudul = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))
-        ->select('text')
-        ->where('grp', 'JUDULAN LAPORAN')
-        ->where('subgrp', 'JUDULAN LAPORAN')
-        ->first();
+            ->select('text')
+            ->where('grp', 'JUDULAN LAPORAN')
+            ->where('subgrp', 'JUDULAN LAPORAN')
+            ->first();
 
         $query = DB::table($this->table)->from(DB::raw("karyawan with (readuncommitted)"))
             ->select(
@@ -46,7 +50,7 @@ class Karyawan extends MyModel
                 'karyawan.created_at',
                 'karyawan.updated_at',
                 DB::raw("'Laporan Karyawan' as judulLaporan "),
-                DB::raw("'".$getJudul->text ."' as judul ")
+                DB::raw("'" . $getJudul->text . "' as judul ")
             )
             ->leftJoin(DB::raw("parameter as statusaktif with (readuncommitted)"), 'karyawan.statusaktif', 'statusaktif.id')
             ->leftJoin(DB::raw("parameter as statusstaff with (readuncommitted)"), 'karyawan.statusstaff', 'statusstaff.id');
@@ -73,7 +77,7 @@ class Karyawan extends MyModel
 
             $query->where('karyawan.statusstaff', '=', $statusstaff->id);
         }
-        
+
         $this->totalRows = $query->count();
         $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;
 
@@ -81,8 +85,49 @@ class Karyawan extends MyModel
         $this->paginate($query);
 
         $data = $query->get();
+        // if ($report==true) {p
+        //     dd('test');
+        // } else {
+            // return $data;
+        // }
 
+        // if(array_key_exists("id",$data)) { $data_id = $data['id'];}  else  {$data_id = 0;}
+
+        // if ($data_id==0) {
+        //     dd('test');
+        // } else {
+        //     dd('test1');
+        // }
+
+        // if (isset($data)) {
+        //     dd('test');
+        // } else {
+        //     dd('test1');
+        // }
         return $data;
+        
+
+        // dd($data);
+        // if ($data != []) {
+        //     return $data;
+        // } else {
+        //     $query1 = DB::table($this->table)->from(DB::raw("karyawan with (readuncommitted)"))
+        //         ->select(
+        //             'karyawan.id',
+        //             'karyawan.namakaryawan',
+        //             'karyawan.keterangan',
+        //             'statusaktif.memo as statusaktif',
+        //             'statusstaff.memo as statusstaff',
+        //             'karyawan.modifiedby',
+        //             'karyawan.created_at',
+        //             'karyawan.updated_at',
+        //             DB::raw("'Laporan Karyawan' as judulLaporan "),
+        //             DB::raw("'" . $getJudul->text . "' as judul ")
+        //         )
+        //         ->leftJoin(DB::raw("parameter as statusaktif with (readuncommitted)"), 'karyawan.statusaktif', 'statusaktif.id')
+        //         ->leftJoin(DB::raw("parameter as statusstaff with (readuncommitted)"), 'karyawan.statusstaff', 'statusstaff.id');
+        //     dd($query1->get());
+        // }
     }
 
     public function default()
@@ -203,7 +248,7 @@ class Karyawan extends MyModel
         $query = $this->selectColumns($query);
         $this->sort($query);
         $models = $this->filter($query);
-        DB::table($temp)->insertUsing(['id', 'namakaryawan', 'keterangan', 'statusaktif','statusstaff', 'modifiedby', 'created_at', 'updated_at'], $models);
+        DB::table($temp)->insertUsing(['id', 'namakaryawan', 'keterangan', 'statusaktif', 'statusstaff', 'modifiedby', 'created_at', 'updated_at'], $models);
 
 
         return  $temp;
@@ -229,7 +274,6 @@ class Karyawan extends MyModel
                         } else {
                             // $query = $query->where($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
                             $query = $query->whereRaw($this->table . ".[" .  $filters['field'] . "] LIKE '%" . escapeLike($filters['data']) . "%' escape '|'");
-
                         }
                     }
 
@@ -246,7 +290,6 @@ class Karyawan extends MyModel
                             } else {
                                 // $query = $query->orWhere($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
                                 $query = $query->OrwhereRaw($this->table . ".[" .  $filters['field'] . "] LIKE '%" . escapeLike($filters['data']) . "%' escape '|'");
-
                             }
                         }
                     });
