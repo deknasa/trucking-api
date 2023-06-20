@@ -346,7 +346,7 @@ class KartuStok extends MyModel
         if ($filter == $filtergudang->text) {
             //=========================================saldo awal masuk=========================================
             if ($gudang_id == $gudangkantor->text) {
-                $penerimaanstok_id = $spb->text . ',' . $saldoawal->text . ',' . $korplus->text;
+                $penerimaanstok_id = $spb->text . ',' . $saldoawal->text . ',' . $korplus->text .','.  $spbs->text;
                 $pengeluaranstok_id = $spk->text . ',' . $korminus->text . ',' . $retur->text;
             } else if ($gudang_id == $gudangsementara->text) {
                 $penerimaanstok_id = $pg->text . ',' . $pgdo->text . ',' . $spbs->text;
@@ -988,6 +988,7 @@ class KartuStok extends MyModel
                 ->whereRaw("(b.stok_id>=" . $stokdari . " and B.stok_id<=" . $stoksampai . " )  and (a.tglBukti >='" . $tgldari . "' and a.tglbukti<='" . $tglsampai . "')")
                 ->whereRaw("a.penerimaanstok_id in(" . $penerimaanstok_id  . ")")
                 ->where('a.gudangdari_id', $gudang_id)
+                ->orderBy('a.id', 'Asc')
                 ->orderBy('a.tglbukti', 'Asc')
                 ->orderBy('a.nobukti', 'Asc')
                 ->orderBy('b.id', 'Asc');
@@ -1015,6 +1016,7 @@ class KartuStok extends MyModel
                 ->whereRaw("(b.stok_id>=" . $stokdari . " and B.stok_id<=" . $stoksampai . " )  and (a.tglBukti >='" . $tgldari . "' and a.tglbukti<='" . $tglsampai . "')")
                 ->whereRaw("a.penerimaanstok_id in(" . $penerimaanstok_id  . ")")
                 ->where('a.gandengandari_id', $gandengan_id)
+                ->orderBy('a.id', 'Asc')
                 ->orderBy('a.tglbukti', 'Asc')
                 ->orderBy('a.nobukti', 'Asc')
                 ->orderBy('b.id', 'Asc');
@@ -1042,6 +1044,7 @@ class KartuStok extends MyModel
                 ->whereRaw("(b.stok_id>=" . $stokdari . " and B.stok_id<=" . $stoksampai . " )  and (a.tglBukti >='" . $tgldari . "' and a.tglbukti<='" . $tglsampai . "')")
                 ->whereRaw("a.penerimaanstok_id in(" . $penerimaanstok_id  . ")")
                 ->where('a.tradodari_id', $trado_id)
+                ->orderBy('a.id', 'Asc')
                 ->orderBy('a.tglbukti', 'Asc')
                 ->orderBy('a.nobukti', 'Asc')
                 ->orderBy('b.id', 'Asc');
@@ -1068,6 +1071,7 @@ class KartuStok extends MyModel
                 ->join(DB::raw("stok as c with (readuncommitted)"), 'b.stok_id', 'c.id')
                 ->whereRaw("(b.stok_id>=" . $stokdari . " and B.stok_id<=" . $stoksampai . " )  and (a.tglBukti >='" . $tgldari . "' and a.tglbukti<='" . $tglsampai . "')")
                 ->whereRaw("a.penerimaanstok_id in(" . $penerimaanstok_id  . ")")
+                ->orderBy('a.id', 'Asc')
                 ->where('a.gudangdari_id', $gudang_id)
                 ->orderBy('a.tglbukti', 'Asc')
                 ->orderBy('a.nobukti', 'Asc')
