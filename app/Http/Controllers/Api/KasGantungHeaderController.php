@@ -86,8 +86,8 @@ class KasGantungHeaderController extends Controller
             'userbukacetak' => '',
             'tglbukacetak' => '',
 
-            'nominal' => $request->nominal ?? 0,
-            'keterangan_detail' => $request->keterangan_detail ?? ''
+            'nominal' => $request->nominal ,
+            'keterangan_detail' => $request->keterangan_detail ,
             ];
 
 

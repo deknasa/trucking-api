@@ -295,9 +295,6 @@ class PenerimaanStokDetail extends MyModel
             return false;
         }
         $stokpersediaan = StokPersediaan::lockForUpdate()->find($stokpersediaangudang->id);
-        if ($qty > $stokpersediaan->qty){ //check qty
-            return false;
-        }
         $result = $stokpersediaan->qty + $qty;
         $stokpersediaan->update(['qty'=> $result]);
         return $stokpersediaan;
@@ -308,9 +305,13 @@ class PenerimaanStokDetail extends MyModel
         if (!$stokpersediaangudang) {
             return false;
         }
-        $stokpersediaangudang->qty -= $qty;
-        $stokpersediaangudang->save();
-        return $stokpersediaangudang;
+        $stokpersediaan = StokPersediaan::lockForUpdate()->find($stokpersediaangudang->id);
+        if ($qty > $stokpersediaan->qty){ //check qty
+            return false;
+        }
+        $stokpersediaan->qty -= $qty;
+        $stokpersediaan->save();
+        return $stokpersediaan;
     }
 
     public function checkTempat($stokId,$persediaan,$persediaanId)
