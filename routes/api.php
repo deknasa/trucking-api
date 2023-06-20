@@ -1178,12 +1178,14 @@ route::middleware(['auth:api', 'authorized'])->group(function () {
     Route::get('laporantripgandengandetail/report', [LaporanTripGandenganDetailController::class, 'report'])->name('laporantripgandengandetail.report');
     Route::resource('laporantripgandengandetail', LaporanTripGandenganDetailController::class)->whereNumber('laporantripgandengandetail');
     Route::get('laporanuangjalan/report', [LaporanUangJalanController::class, 'report'])->name('laporanuangjalan.report');
+    Route::get('laporanuangjalan/export', [LaporanUangJalanController::class, 'export'])->name('laporanuangjalan.export');
     Route::resource('laporanuangjalan', LaporanUangJalanController::class)->whereNumber('laporanuangjalan');
     Route::get('laporanpinjamansupirkaryawan/report', [LaporanPinjamanSupirKaryawanController::class, 'report'])->name('laporanpinjamansupirkaryawan.report');
     Route::resource('laporanpinjamansupirkaryawan', LaporanPinjamanSupirKaryawanController::class)->whereNumber('laporanpinjamansupirkaryawan');
     Route::get('laporanpemotonganpinjamanperebs/report', [LaporanPemotonganPinjamanPerEBSController::class, 'report'])->name('laporanpemotonganpinjamanperebs.report');
     Route::resource('laporanpemotonganpinjamanperebs', LaporanPemotonganPinjamanPerEBSController::class)->whereNumber('laporanpemotonganpinjamanperebs');
     Route::get('laporansupirlebihdaritrado/report', [LaporanSupirLebihDariTradoController::class, 'report'])->name('laporansupirlebihdaritrado.report');
+    Route::get('laporansupirlebihdaritrado/export', [LaporanSupirLebihDariTradoController::class, 'export'])->name('laporansupirlebihdaritrado.export');
     Route::resource('laporansupirlebihdaritrado', LaporanSupirLebihDariTradoController::class)->whereNumber('ilaporansupirlebihdaritradod');
     Route::get('laporanpemotonganpinjamandepo/report', [LaporanPemotonganPinjamanDepoController::class, 'report'])->name('laporanpemotonganpinjamandepo.report');
     Route::resource('laporanpemotonganpinjamandepo', LaporanPemotonganPinjamanDepoController::class)->whereNumber('laporanpemotonganpinjamandepo');
