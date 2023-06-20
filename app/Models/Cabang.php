@@ -262,6 +262,7 @@ class Cabang extends MyModel
         $cabang->kodecabang = $data['kodecabang'];
         $cabang->namacabang = $data['namacabang'];
         $cabang->statusaktif = $data['statusaktif'];
+        $cabang->update = $data['statusaktif'];
         $cabang->modifiedby = auth('api')->user()->user;
 
         if (!$cabang->save()) {
