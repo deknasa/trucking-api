@@ -268,7 +268,7 @@ class JurnalUmumDetail extends MyModel
         $jurnalUmumDetail = new JurnalUmumDetail();
         $jurnalUmumDetail->jurnalumum_id = $jurnalUmumHeader->id;
         $jurnalUmumDetail->nobukti = $jurnalUmumHeader->nobukti; 
-        $jurnalUmumDetail->tglbukti = $jurnalUmumHeader->tglbukti;
+        $jurnalUmumDetail->tglbukti = $data['tglbukti'];
         $jurnalUmumDetail->coa = $data['coa'];
         $jurnalUmumDetail->nominal = $data['nominal'];
         $jurnalUmumDetail->keterangan = $data['keterangan'] ?? '';

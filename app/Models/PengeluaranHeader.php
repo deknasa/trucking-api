@@ -766,7 +766,7 @@ class PengeluaranHeader extends MyModel
          ]);
  
          (new LogTrail())->processStore([
-             'namatabel' => (new LogTrail())->table,
+             'namatabel' => 'PENGELUARANDETAIL',
              'postingdari' => strtoupper('DELETE pengeluaran detail'),
              'idtrans' => $hutangLogTrail['id'],
              'nobuktitrans' => $pengeluaranHeader->nobukti,
