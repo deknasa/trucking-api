@@ -61,7 +61,39 @@ class PenerimaanStokHeaderController extends Controller
         DB::beginTransaction();
         try {
             /* Store header */
-            $penerimaanStokHeader = (new PenerimaanStokHeader())->processStore($request->all());
+            $data = [
+                "penerimaanstok_id" => $request->penerimaanstok_id?? null,
+                "tglbukti" => $request->tglbukti?? null,
+                "gudangdari_id" => $request->gudangdari_id?? null,
+                "gudang_id" => $request->gudang_id?? null,
+                "gudangke_id" => $request->gudangke_id?? null,
+                "tradodari_id" => $request->tradodari_id?? null,
+                "trado_id" => $request->trado_id?? null,
+                "tradoke_id" => $request->tradoke_id?? null,
+                "gandengandari_id" => $request->gandengandari_id?? null,
+                "gandengan_id" => $request->gandengan_id?? null,
+                "gandenganke_id" => $request->gandenganke_id?? null,
+                "penerimaanstok_nobukti" => $request->penerimaanstok_nobukti?? null,
+                "pengeluaranstok_nobukti" => $request->pengeluaranstok_nobukti?? null,
+                "nobon" => $request->nobon?? null,
+                "keterangan" => $request->keterangan?? null,
+                "coa" => $request->coa?? null,
+                "supplier_id" => $request->supplier_id?? null,
+                "sortname" => $request->sortname?? null,
+                "sortorder" => $request->sortorder?? null,
+                "detail_stok_id" => $request->detail_stok_id?? [],
+                "detail_vulkanisirke" => $request->detail_vulkanisirke?? [],
+                "detail_keterangan" => $request->detail_keterangan?? [],
+                "detail_qty" => $request->detail_qty?? [],
+                "detail_harga" => $request->detail_harga?? [],
+                "detail_penerimaanstoknobukti" => $request->detail_penerimaanstoknobukti?? [],
+                "detail_penerimaanstoknobukti_id" => $request->detail_penerimaanstoknobukti_id?? [],
+                "detail_persentasediscount" => $request->detail_persentasediscount?? [],
+                "totalItem" => $request->totalItem?? [],
+            ];
+            $penerimaanStokHeader = (new PenerimaanStokHeader())->processStore($data);
+            
+            
             /* Set position and page */
             $penerimaanStokHeader->position = $this->getPosition($penerimaanStokHeader, $penerimaanStokHeader->getTable())->position;
             $penerimaanStokHeader->page = ceil($penerimaanStokHeader->position / ($request->limit ?? 10));
@@ -98,8 +130,38 @@ class PenerimaanStokHeaderController extends Controller
         DB::beginTransaction();        
         try {
            /* Store header */
+           $data = [
+            "penerimaanstok_id" => $request->penerimaanstok_id?? null,
+            "tglbukti" => $request->tglbukti?? null,
+            "gudangdari_id" => $request->gudangdari_id?? null,
+            "gudang_id" => $request->gudang_id?? null,
+            "gudangke_id" => $request->gudangke_id?? null,
+            "tradodari_id" => $request->tradodari_id?? null,
+            "trado_id" => $request->trado_id?? null,
+            "tradoke_id" => $request->tradoke_id?? null,
+            "gandengandari_id" => $request->gandengandari_id?? null,
+            "gandengan_id" => $request->gandengan_id?? null,
+            "gandenganke_id" => $request->gandenganke_id?? null,
+            "penerimaanstok_nobukti" => $request->penerimaanstok_nobukti?? null,
+            "pengeluaranstok_nobukti" => $request->pengeluaranstok_nobukti?? null,
+            "nobon" => $request->nobon?? null,
+            "keterangan" => $request->keterangan?? null,
+            "coa" => $request->coa?? null,
+            "supplier_id" => $request->supplier_id?? null,
+            "sortname" => $request->sortname?? null,
+            "sortorder" => $request->sortorder?? null,
+            "detail_stok_id" => $request->detail_stok_id?? [],
+            "detail_vulkanisirke" => $request->detail_vulkanisirke?? [],
+            "detail_keterangan" => $request->detail_keterangan?? [],
+            "detail_qty" => $request->detail_qty?? [],
+            "detail_harga" => $request->detail_harga?? [],
+            "detail_penerimaanstoknobukti" => $request->detail_penerimaanstoknobukti?? [],
+            "detail_penerimaanstoknobukti_id" => $request->detail_penerimaanstoknobukti_id?? [],
+            "detail_persentasediscount" => $request->detail_persentasediscount?? [],
+            "totalItem" => $request->totalItem?? [],
+        ];
            $penerimaanStokHeader = PenerimaanStokHeader::findOrFail($id);
-           $penerimaanStokHeader = (new PenerimaanStokHeader())->processUpdate($penerimaanStokHeader,$request->all());
+           $penerimaanStokHeader = (new PenerimaanStokHeader())->processUpdate($penerimaanStokHeader,$data);
            /* Set position and page */
            $penerimaanStokHeader->position = $this->getPosition($penerimaanStokHeader, $penerimaanStokHeader->getTable())->position;
            $penerimaanStokHeader->page = ceil($penerimaanStokHeader->position / ($request->limit ?? 10));

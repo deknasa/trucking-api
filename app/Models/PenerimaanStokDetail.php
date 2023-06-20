@@ -295,7 +295,7 @@ class PenerimaanStokDetail extends MyModel
             return false;
         }
         $stokpersediaan = StokPersediaan::lockForUpdate()->find($stokpersediaangudang->id);
-        if ($qty < $stokpersediaan->qty){ //check qty
+        if ($qty > $stokpersediaan->qty){ //check qty
             return false;
         }
         $result = $stokpersediaan->qty + $qty;
@@ -351,12 +351,12 @@ class PenerimaanStokDetail extends MyModel
                 $persediaanDari = $this->persediaan($gudangdari_id,$tradodari_id,$gandengandari_id);
                 $dari = $this->persediaanDariReturn($item['stok_id'],$persediaanDari['column'].'_id',$persediaanDari['value'],$item['qty']);
                 if (!$dari) {
-                    throw new \Exception("qty tidak cukup");
+                    throw new \Exception("qty tidak cukup dari");
                 }
-                $persediaanDari = $this->persediaan($gudangke_id,$tradoke_id,$gandenganke_id);
+                $persediaanKe = $this->persediaan($gudangke_id,$tradoke_id,$gandenganke_id);
                 $ke = $this->persediaanKeReturn($item['stok_id'],$persediaanKe['column'].'_id',$persediaanKe['value'],$item['qty']);
                 if (!$ke) {
-                    throw new \Exception("qty tidak cukup");
+                    throw new \Exception("qty tidak cukup ke");
                 }
             }
         }
