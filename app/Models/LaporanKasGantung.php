@@ -862,7 +862,7 @@ class LaporanKasGantung extends MyModel
             DB::raw('0 as debet'),
             'c.nominal as kredit',
         ])
-        ->join(DB::raw($pengembaliankasgantungdetail2 . " c with (readuncommitted)"), 'a.nobukti', '=', 'c.nobukti')
+        ->join(DB::raw($pengembaliankasgantungdetail2 . " c c"), 'a.nobukti', '=', 'c.nobukti')
         ->join('kasgantungheader as b', 'c.kasgantung_nobukti', 'b.nobukti')
         ->orderBy('a.tglbukti', 'asc')
         ->orderBy('c.kasgantung_nobukti', 'desc');
