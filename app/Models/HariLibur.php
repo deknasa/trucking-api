@@ -46,7 +46,8 @@ class HariLibur extends MyModel
                 "$this->table.created_at",
                 "$this->table.updated_at",
                 DB::raw("'Laporan Hari Libur' as judulLaporan"),
-                DB::raw("'" . $getJudul->text . "' as judul")
+                DB::raw("'" . $getJudul->text . "' as judul"),
+                DB::raw("'Tanggal Cetak : '+format(getdate(),'dd-MM-yyyy HH:mm:ss')+' User :".auth('api')->user()->name."' as tglcetak")
             )->leftJoin(DB::raw("parameter with (readuncommitted)"), 'harilibur.statusaktif', 'parameter.id');
 
 

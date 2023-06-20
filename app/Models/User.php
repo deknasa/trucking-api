@@ -111,7 +111,8 @@ class User extends Authenticatable
             "$this->table.created_at",
             "$this->table.updated_at",
             DB::raw("'Laporan User' as judulLaporan "),
-            DB::raw("'".$getJudul->text ."' as judul ")
+            DB::raw("'".$getJudul->text ."' as judul "),
+            DB::raw("'Tanggal Cetak : '+format(getdate(),'dd-MM-yyyy HH:mm:ss')+' User :".auth('api')->user()->name."' as tglcetak") 
         )
             ->leftJoin('parameter', 'user.statusaktif', '=', 'parameter.id')
             ->leftJoin('cabang', 'user.cabang_id', '=', 'cabang.id');
