@@ -398,6 +398,7 @@ class JurnalUmumHeader extends MyModel
             for ($x = 0; $x <= 1; $x++) {
                 if ($x == 1) {
                     $jurnalUmumDetail = (new JurnalUmumDetail())->processStore($jurnalUmumHeader, [
+                        'tglbukti' => (str_contains($jurnalUmumHeader->nobukti, 'EBS')) ? date('Y-m-d', strtotime($data['tglbukti_detail'][$i])) : $jurnalUmumHeader->tglbukti,
                         'coa' => $data['coakredit_detail'][$i],
                         'nominal' => '-' . $data['nominal_detail'][$i],
                         'keterangan' => $data['keterangan_detail'][$i],
@@ -405,6 +406,7 @@ class JurnalUmumHeader extends MyModel
                     ]);
                 } else {
                     $jurnalUmumDetail = (new JurnalUmumDetail())->processStore($jurnalUmumHeader, [
+                        'tglbukti' => (str_contains($jurnalUmumHeader->nobukti, 'EBS')) ? date('Y-m-d', strtotime($data['tglbukti_detail'][$i])) : $jurnalUmumHeader->tglbukti,
                         'coa' => $data['coadebet_detail'][$i],
                         'nominal' => $data['nominal_detail'][$i],
                         'keterangan' => $data['keterangan_detail'][$i],
@@ -449,11 +451,11 @@ class JurnalUmumHeader extends MyModel
         JurnalUmumDetail::where('jurnalumum_id', $jurnalUmumHeader->id)->delete();
 
         $jurnalUmumDetails = [];
-
         for ($i = 0; $i < count($data['nominal_detail']); $i++) {
             for ($x = 0; $x <= 1; $x++) {
                 if ($x == 1) {
                     $jurnalUmumDetail = (new JurnalUmumDetail())->processStore($jurnalUmumHeader, [
+                        'tglbukti' => (str_contains($jurnalUmumHeader->nobukti, 'EBS')) ? date('Y-m-d', strtotime($data['tglbukti_detail'][$i])) : $jurnalUmumHeader->tglbukti,
                         'coa' => $data['coakredit_detail'][$i],
                         'nominal' => '-' . $data['nominal_detail'][$i],
                         'keterangan' => $data['keterangan_detail'][$i],
@@ -461,6 +463,7 @@ class JurnalUmumHeader extends MyModel
                     ]);
                 } else {
                     $jurnalUmumDetail = (new JurnalUmumDetail())->processStore($jurnalUmumHeader, [
+                        'tglbukti' => (str_contains($jurnalUmumHeader->nobukti, 'EBS')) ? date('Y-m-d', strtotime($data['tglbukti_detail'][$i])) : $jurnalUmumHeader->tglbukti,
                         'coa' => $data['coadebet_detail'][$i],
                         'nominal' => $data['nominal_detail'][$i],
                         'keterangan' => $data['keterangan_detail'][$i],
