@@ -86,7 +86,12 @@ class JenisTradoController extends Controller
         DB::beginTransaction();
 
         try {
-            $jenistrado = (new JenisTrado())->processStore($request->all());
+            $data = [
+                'kodejenistrado' => $request->kodejenistrado,
+                'statusaktif' => $request->statusaktif,
+                'keterangan' => $request->keterangan ?? '',
+            ];
+            $jenistrado = (new JenisTrado())->processStore($data);
             $jenistrado->position = $this->getPosition($jenistrado, $jenistrado->getTable())->position;
             $jenistrado->page = ceil($jenistrado->position / ($request->limit ?? 10));
 
@@ -119,7 +124,12 @@ class JenisTradoController extends Controller
     {
         DB::beginTransaction();
         try {
-            $jenistrado = (new JenisTrado())->processUpdate($jenistrado, $request->all());
+            $data = [
+                'kodejenistrado' => $request->kodejenistrado,
+                'statusaktif' => $request->statusaktif,
+                'keterangan' => $request->keterangan ?? '',
+            ];
+            $jenistrado = (new JenisTrado())->processUpdate($jenistrado, $data);
             $jenistrado->position = $this->getPosition($jenistrado, $jenistrado->getTable())->position;
             $jenistrado->page = ceil($jenistrado->position / ($request->limit ?? 10));
             DB::commit();

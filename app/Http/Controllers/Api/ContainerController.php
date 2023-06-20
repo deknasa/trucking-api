@@ -38,18 +38,19 @@ class ContainerController extends Controller
             ]
         ]);
     }
-    
-    public function cekValidasi($id) {
-        $container= new Container();
-        $cekdata=$container->cekvalidasihapus($id);
-        if ($cekdata['kondisi']==true) {
+
+    public function cekValidasi($id)
+    {
+        $container = new Container();
+        $cekdata = $container->cekvalidasihapus($id);
+        if ($cekdata['kondisi'] == true) {
             $query = DB::table('error')
-            ->select(
-                DB::raw("ltrim(rtrim(keterangan))+' (".$cekdata['keterangan'].")' as keterangan")
+                ->select(
+                    DB::raw("ltrim(rtrim(keterangan))+' (" . $cekdata['keterangan'] . ")' as keterangan")
                 )
-            ->where('kodeerror', '=', 'SATL')
-            ->get();
-        $keterangan = $query['0'];
+                ->where('kodeerror', '=', 'SATL')
+                ->get();
+            $keterangan = $query['0'];
 
             $data = [
                 'status' => false,
@@ -59,7 +60,6 @@ class ContainerController extends Controller
             ];
 
             return response($data);
-         
         } else {
             $data = [
                 'status' => false,
@@ -68,10 +68,10 @@ class ContainerController extends Controller
                 'kondisi' => $cekdata['kondisi'],
             ];
 
-            return response($data); 
+            return response($data);
         }
     }
-    
+
     public function default()
     {
 
@@ -90,8 +90,14 @@ class ContainerController extends Controller
     {
         DB::beginTransaction();
         try {
+            $data = [
+                'kodecontainer' => strtoupper($request->kodecontainer),
+                'keterangan' => strtoupper($request->keterangan) ?? '',
+                'nominalsumbangan' => $request->nominalsumbangan,
+                'statusaktif' => $request->statusaktif,
+            ];
 
-            $container = (new container())->processStore($request->all());
+            $container = (new container())->processStore($data);
             $container->position = $this->getPosition($container, $container->getTable())->position;
             $container->page = ceil($container->position / ($request->limit ?? 10));
 
@@ -125,8 +131,14 @@ class ContainerController extends Controller
     {
         DB::beginTransaction();
         try {
+            $data = [
+                'kodecontainer' => strtoupper($request->kodecontainer),
+                'keterangan' => strtoupper($request->keterangan) ?? '',
+                'nominalsumbangan' => $request->nominalsumbangan,
+                'statusaktif' => $request->statusaktif,
+            ];
 
-            $container = (new Container())->processUpdate($container, $request->all());
+            $container = (new Container())->processUpdate($container, $data);
             $container->position = $this->getPosition($container, $container->getTable())->position;
             $container->page = ceil($container->position / ($request->limit ?? 10));
 
@@ -149,7 +161,7 @@ class ContainerController extends Controller
     public function destroy(Request $request, $id)
     {
         DB::beginTransaction();
-        try{
+        try {
             $container = (new container())->processDestroy($id);
             $selected = $this->getPosition($container, $container->getTable(), true);
             $container->position = $selected->position;
@@ -232,31 +244,29 @@ class ContainerController extends Controller
             return response([
                 'status' => true,
             ]);
-        }else {
+        } else {
             header('Access-Control-Allow-Origin: *');
             $response = $this->index();
             $decodedResponse = json_decode($response->content(), true);
             $containers = $decodedResponse['data'];
-    
+
             $judulLaporan = $containers[0]['judulLaporan'];
             $i = 0;
             foreach ($containers as $index => $params) {
-    
+
                 $statusaktif = $params['statusaktif'];
-    
+
                 $result = json_decode($statusaktif, true);
-    
+
                 $statusaktif = $result['MEMO'];
-    
-    
+
+
                 $containers[$i]['statusaktif'] = $statusaktif;
-                
+
                 $nominalsumbangan = number_format($params['nominalsumbangan'], 2, ',', '.');
                 $containers[$i]['nominalsumbangan'] = $nominalsumbangan;
-            
+
                 $i++;
-    
-    
             }
             $columns = [
                 [
@@ -279,9 +289,8 @@ class ContainerController extends Controller
                     'index' => 'statusaktif',
                 ],
             ];
-    
+
             $this->toExcel($judulLaporan, $containers, $columns);
         }
-        
     }
 }

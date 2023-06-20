@@ -58,10 +58,10 @@ class UpahRitasiController extends Controller
         $sampai = date('Y-m-d', strtotime($request->sampai));
 
         $cekData = DB::table("upahritasi")->from(DB::raw("upahritasi with (readuncommitted)"))
-        ->whereBetween('tglmulaiberlaku', [$dari, $sampai])
-        ->first();
+            ->whereBetween('tglmulaiberlaku', [$dari, $sampai])
+            ->first();
 
-        if($cekData != null){
+        if ($cekData != null) {
 
             $upahritasirincian = new UpahRitasiRincian();
 
@@ -69,7 +69,7 @@ class UpahRitasiController extends Controller
                 'status' => true,
                 'data' => $upahritasirincian->listpivot($dari, $sampai)
             ]);
-        }else{
+        } else {
             return response([
                 'errors' => [
                     "export" => "tidak ada data"
@@ -87,7 +87,19 @@ class UpahRitasiController extends Controller
         DB::beginTransaction();
 
         try {
-            $upahritasi = (new upahritasi())->processStore($request->all());
+            $data = [
+                'parent_id' => $request->parent_id ?? 0,
+                'kotadari_id' => $request->kotadari_id,
+                'kotasampai_id' => $request->kotasampai_id,
+                'jarak' => $request->jarak,
+                'statusaktif' => $request->statusaktif,
+                'tglmulaiberlaku' => date('Y-m-d', strtotime($request->tglmulaiberlaku)),
+
+                'container_id' => $request->container_id,
+                'nominalsupir' => $request->nominalsupir,
+                'liter' => $request->liter ?? 0,
+            ];
+            $upahritasi = (new upahritasi())->processStore($data);
             $upahritasi->position = $this->getPosition($upahritasi, $upahritasi->getTable())->position;
             $upahritasi->page = ceil($upahritasi->position / ($request->limit ?? 10));
 
@@ -128,8 +140,20 @@ class UpahRitasiController extends Controller
         DB::beginTransaction();
 
         try {
-               
-            $upahritasi = (new UpahRitasi())->processUpdate($upahritasi, $request->all());
+            $data = [
+                'parent_id' => $request->parent_id ?? 0,
+                'kotadari_id' => $request->kotadari_id,
+                'kotasampai_id' => $request->kotasampai_id,
+                'jarak' => $request->jarak,
+                'statusaktif' => $request->statusaktif,
+                'tglmulaiberlaku' => date('Y-m-d', strtotime($request->tglmulaiberlaku)),
+
+                'container_id' => $request->container_id,
+                'nominalsupir' => $request->nominalsupir,
+                'liter' => $request->liter ?? 0,
+            ];
+
+            $upahritasi = (new UpahRitasi())->processUpdate($upahritasi, $data);
             $upahritasi->position = $this->getPosition($upahritasi, $upahritasi->getTable())->position;
             $upahritasi->page = ceil($upahritasi->position / ($request->limit ?? 10));
 
@@ -154,7 +178,7 @@ class UpahRitasiController extends Controller
 
         DB::beginTransaction();
 
-        
+
         try {
             $upahritasi = (new UpahRitasi())->processDestroy($id);
             $selected = $this->getPosition($upahritasi, $upahritasi->getTable(), true);
@@ -175,7 +199,7 @@ class UpahRitasiController extends Controller
             throw $th;
         }
     }
-    
+
 
     public function combo(Request $request)
     {
@@ -248,7 +272,7 @@ class UpahRitasiController extends Controller
             'data' => $data
         ]);
     }
-    
+
     public function import(Request $request)
     {
         $request->validate(
@@ -270,15 +294,15 @@ class UpahRitasiController extends Controller
             $column_range = range('A', $column_limit);
             $startcount = 4;
             $data = array();
-            
-            $a=0;
+
+            $a = 0;
             foreach ($row_range as $row) {
 
                 $data[] = [
                     'kotadari' => $sheet->getCell($this->kolomexcel(1) . $row)->getValue(),
                     'kotasampai' => $sheet->getCell($this->kolomexcel(2) . $row)->getValue(),
                     'jarak' => $sheet->getCell($this->kolomexcel(3) . $row)->getValue(),
-                    'tglmulaiberlaku' => date('Y-m-d',strtotime($sheet->getCell($this->kolomexcel(4) . $row)->getFormattedValue())),
+                    'tglmulaiberlaku' => date('Y-m-d', strtotime($sheet->getCell($this->kolomexcel(4) . $row)->getFormattedValue())),
                     'kolom1' => $sheet->getCell($this->kolomexcel(5)  . $row)->getValue(),
                     'kolom2' => $sheet->getCell($this->kolomexcel(6)  . $row)->getValue(),
                     'kolom3' => $sheet->getCell($this->kolomexcel(7)  . $row)->getValue(),
@@ -288,13 +312,13 @@ class UpahRitasiController extends Controller
                     'modifiedby' => auth('api')->user()->name
                 ];
 
-            
+
                 $startcount++;
             }
- 
+
             $upahRitasiRincian = new UpahRitasiRincian();
             $cekdata = $upahRitasiRincian->cekupdateharga($data);
-           
+
             if ($cekdata == true) {
                 $query = DB::table('error')
                     ->select('keterangan')
@@ -322,13 +346,13 @@ class UpahRitasiController extends Controller
             throw $th;
         }
     }
-    
+
     private function kolomexcel($kolom)
     {
-        if ($kolom>=27 and $kolom<=52) {
-            $hasil='A'.chr(38+$kolom);
-        } else  {
-            $hasil=chr(64+$kolom);
+        if ($kolom >= 27 and $kolom <= 52) {
+            $hasil = 'A' . chr(38 + $kolom);
+        } else {
+            $hasil = chr(64 + $kolom);
         }
         return $hasil;
     }

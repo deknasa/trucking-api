@@ -89,7 +89,14 @@ class KotaController extends Controller
         DB::beginTransaction();
 
         try {
-            $kota = (new Kota())->processStore($request->all());
+            $data = [
+                'kodekota' => $request->kodekota,
+                'keterangan' => $request->keterangan ?? '',
+                'zona_id' => $request->zona_id,
+                'statusaktif' => $request->statusaktif
+            ];
+
+            $kota = (new Kota())->processStore($data);
             $kota->position = $this->getPosition($kota, $kota->getTable())->position;
             $kota->page = ceil($kota->position / ($request->limit ?? 10));
 
@@ -126,8 +133,15 @@ class KotaController extends Controller
         DB::beginTransaction();
 
         try {
+            $data = [
+                'id' => $request->id,
+                'kodekota' => $request->kodekota,
+                'keterangan' => $request->keterangan ?? '',
+                'zona_id' => $request->zona_id,
+                'statusaktif' => $request->statusaktif
+            ];
 
-            $kota = (new Kota())->processUpdate($kota, $request->all());
+            $kota = (new Kota())->processUpdate($kota, $data);
             $kota->position = $this->getPosition($kota, $kota->getTable())->position;
             $kota->page = ceil($kota->position / ($request->limit ?? 10));
 
@@ -150,7 +164,7 @@ class KotaController extends Controller
     public function destroy(DestroyKotaRequest $request, $id)
     {
         DB::beginTransaction();
-        try{
+        try {
             $kota = (new Kota())->processDestroy($id);
             $selected = $this->getPosition($kota, $kota->getTable(), true);
             $kota->position = $selected->position;

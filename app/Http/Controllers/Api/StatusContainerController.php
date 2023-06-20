@@ -91,12 +91,16 @@ class StatusContainerController extends Controller
         DB::beginTransaction();
 
         try {
-
-            $statusContainer = (new StatusContainer())->processStore($request->all());
+            $data = [
+                'kodestatuscontainer' => $request->kodestatuscontainer,
+                'keterangan' => $request->keterangan ?? '',
+                'statusaktif' => $request->statusaktif
+            ];
+            $statusContainer = (new StatusContainer())->processStore($data);
             $statusContainer->position = $this->getPosition($statusContainer, $statusContainer->getTable())->position;
             $statusContainer->page = ceil($statusContainer->position / ($request->limit ?? 10));
-            
-            DB::commit() ;
+
+            DB::commit();
 
             return response()->json([
                 'status' => true,
@@ -117,11 +121,15 @@ class StatusContainerController extends Controller
 
         DB::beginTransaction();
         try {
-
-            $statusContainer = (new StatusContainer())->processUpdate($statusContainer, $request->all());
+            $data = [
+                'kodestatuscontainer' => $request->kodestatuscontainer,
+                'keterangan' => $request->keterangan ?? '',
+                'statusaktif' => $request->statusaktif
+            ];
+            $statusContainer = (new StatusContainer())->processUpdate($statusContainer, $data);
             $statusContainer->position = $this->getPosition($statusContainer, $statusContainer->getTable())->position;
             $statusContainer->page = ceil($statusContainer->position / ($request->limit ?? 10));
-            
+
             DB::commit();
 
             return response([
@@ -142,14 +150,14 @@ class StatusContainerController extends Controller
     {
 
         DB::beginTransaction();
-       
-        try{
+
+        try {
             $statusContainer = (new StatusContainer())->processDestroy($id);
             $selected = $this->getPosition($statusContainer, $statusContainer->getTable(), true);
             $statusContainer->position = $selected->position;
             $statusContainer->id = $selected->id;
             $statusContainer->page = ceil($statusContainer->position / ($request->limit ?? 10));
-            
+
             DB::commit();
 
             return response([

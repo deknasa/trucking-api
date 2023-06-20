@@ -682,9 +682,9 @@ class Trado extends MyModel
             $trado->nominalplusborongan = str_replace(',', '', $data['nominalplusborongan']) ?? 0;
             $trado->modifiedby = auth('api')->user()->user;
 
-            $trado->photostnk = ($data['photostnk']) ? $this->storeFiles($data['photostnk'], 'stnk') : '';
-            $trado->photobpkb = ($data['photobpkb']) ? $this->storeFiles($data['photobpkb'], 'bpkb') : '';
-            $trado->phototrado = ($data['phototrado']) ? $this->storeFiles($data['phototrado'], 'trado') : '';
+            $trado->photostnk = $data['photostnk'];
+            $trado->photobpkb = $data['photobpkb'];
+            $trado->phototrado = $data['phototrado'];
 
             if (!$trado->save()) {
                 throw new \Exception("Error storing trado.");
@@ -788,9 +788,9 @@ class Trado extends MyModel
 
             $this->deleteFiles($trado);
 
-            $trado->photostnk = ($data['photostnk']) ? $this->storeFiles($data['photostnk'], 'stnk') : '';
-            $trado->photobpkb = ($data['photobpkb']) ? $this->storeFiles($data['photobpkb'], 'bpkb') : '';
-            $trado->phototrado = ($data['phototrado']) ? $this->storeFiles($data['phototrado'], 'trado') : '';
+            $trado->photostnk = $data['photostnk'];
+            $trado->photobpkb = $data['photobpkb'];
+            $trado->phototrado = $data['phototrado'];
 
             if (!$trado->save()) {
                 throw new \Exception("Error updating trado.");

@@ -79,7 +79,13 @@ class KaryawanController extends Controller
     {
         DB::beginTransaction();
         try {
-            $karyawan = (new Karyawan())->processStore($request->all());
+            $data = [
+                'namakaryawan' => $request->namakaryawan,
+                'keterangan' => $request->keterangan ?? '',
+                'statusaktif' => $request->statusaktif,
+                'statusstaff' => $request->statusstaff,
+            ];
+            $karyawan = (new Karyawan())->processStore($data);
             $karyawan->position = $this->getPosition($karyawan, $karyawan->getTable())->position;
             $karyawan->page = ceil($karyawan->position / ($request->limit ?? 10));
 
@@ -112,7 +118,13 @@ class KaryawanController extends Controller
         DB::beginTransaction();
 
         try {
-            $karyawan = (new Karyawan())->processUpdate($karyawan, $request->all());
+            $data = [
+                'namakaryawan' => $request->namakaryawan,
+                'keterangan' => $request->keterangan ?? '',
+                'statusaktif' => $request->statusaktif,
+                'statusstaff' => $request->statusstaff,
+            ];
+            $karyawan = (new Karyawan())->processUpdate($karyawan, $data);
             $karyawan->position = $this->getPosition($karyawan, $karyawan->getTable())->position;
             $karyawan->page = ceil($karyawan->position / ($request->limit ?? 10));
 
