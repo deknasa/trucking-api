@@ -115,10 +115,12 @@ class Gudang extends MyModel
             $gudangKantor = Gudang::from(
                 DB::raw("gudang with (readuncommitted)")
             )
+                ->select('id')
                 ->where('gudang','GUDANG KANTOR')
-                ->first();
+                ->orWhere('gudang','GUDANG PIHAK III')
+                ->get();
 
-            $query->whereNotIn('gudang.id', [$gudangKantor->id]);
+            $query->whereNotIn('gudang.id', $gudangKantor);
         }
 
         $this->totalRows = $query->count();

@@ -452,7 +452,7 @@ class PenerimaanStokHeader extends MyModel
             if ($data['penerimaanstok_id'] === $spbs->text) {
                 $statuspindahgudang = Parameter::where('grp', 'STATUS PINDAH GUDANG')->where('text', 'GUDANG KE GUDANG')->first();
                 $gudangdari_id = Gudang::where('gudang','GUDANG PIHAK III')->first()->id;
-                $gudangke_id = Gudang::where('gudang','GUDANG SEMENTARA')->first()->id;
+                $gudangke_id = Gudang::where('gudang','GUDANG KANTOR')->first()->id;
             }
             
         }else {

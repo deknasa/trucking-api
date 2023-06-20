@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
+use App\Services\RunningNumberService;
 
 class AbsensiSupirHeader extends MyModel
 {
@@ -395,22 +396,21 @@ class AbsensiSupirHeader extends MyModel
     public function processStore(array $data): AbsensiSupirHeader
     {
         $group = 'ABSENSI';
-        $subgroup = 'ABSENSI';
-        $format = DB::table('parameter')->where('grp', $group)->where('subgrp', $subgroup)->first();
+        $subGroup = 'ABSENSI';
+        $format = DB::table('parameter')->where('grp', $group)->where('subgrp', $subGroup)->first();
         $statusCetak = Parameter::from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUSCETAK')->where('text', 'BELUM CETAK')->first();
         $statusEditAbsensi = Parameter::from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS EDIT ABSENSI')->where('default', 'YA')->first();
 
         /* Store header */
         $absensiSupir = new AbsensiSupirHeader();
-        $absensiSupir->nobukti = app(Controller::class)->getRunningNumber($content)->original['data'];
-        $absensiSupir->tglbukti = date('Y-m-d', strtotime($request->tglbukti));
-        $absensiSupir->kasgantung_nobukti = $request->kasgantung_nobukti ?? '';
-        $absensiSupir->nominal = array_sum($request->uangjalan);
+        $absensiSupir->tglbukti = date('Y-m-d', strtotime($data['tglbukti']));
+        $absensiSupir->kasgantung_nobukti = $data['kasgantung_nobukti'] ?? '';
+        $absensiSupir->nominal = array_sum($data['uangjalan']);
         $absensiSupir->statusformat = $format->id;
         $absensiSupir->statuscetak = $statusCetak->id ?? 0;
         $absensiSupir->statusapprovaleditabsensi  = $statusEditAbsensi->id;
         $absensiSupir->modifiedby = auth('api')->user()->name;
-        $absensiSupir->nobukti = (new RunningNumberService)->get($group, $subGroup, $pengeluaranStokHeader->getTable(), date('Y-m-d', strtotime($data['tglbukti'])));
+        $absensiSupir->nobukti = (new RunningNumberService)->get($group, $subGroup, $absensiSupir->getTable(), date('Y-m-d', strtotime($data['tglbukti'])));
         
         if (!$absensiSupir->save()) {
             throw new \Exception("Error storing Absensi Supir Header.");
@@ -421,8 +421,8 @@ class AbsensiSupirHeader extends MyModel
             throw new \Exception("Error storing pengeluaran Stok Detail.");
         }
 
-        for ($i = 0; $i < count($request->trado_id); $i++) {
-            AbsensiSupirDetail::processStore([
+        for ($i = 0; $i < count($data['trado_id']); $i++) {
+            $absensiSupirDetail = AbsensiSupirDetail::processStore($absensiSupir,[
                 'absensi_id' => $absensiSupir->id,
                 'nobukti' => $absensiSupir->nobukti,
                 'trado_id' => $data['trado_id'][$i],
@@ -433,6 +433,49 @@ class AbsensiSupirHeader extends MyModel
                 'jam' => $data['jam'][$i],
                 'modifiedby' => $absensiSupir->modifiedby,
             ]);
+            $absensiSupirDetails[] = $absensiSupirDetail->toArray();
         }
+        /*STORE KAS GANTUNG*/
+        $bank = DB::table('bank')->from(DB::raw("bank with (readuncommitted)"))->select('id')->where('tipe', '=', 'KAS')->first();
+        
+        $kasGantungRequest = [
+            "tglbukti" => $data['tglbukti'],
+            "penerima" => '',
+            "bank_id" => $bank->id,
+            "pengeluaran_nobukti" => '',
+            "postingdari" => '',
+            "tglbukti" => 'ENTRY ABSENSI SUPIR',
+            
+            "nominal" => $data['uangjalan'],
+            "keterangan_detail" => $data['keterangan_detail'],
+        ];
+
+        $kasgantungHeader = (new KasGantungHeader())->processStore($kasGantungRequest);
+        
+        $absensiSupir->kasgantung_nobukti = $kasgantungHeader->nobukti;
+        $absensiSupir->save();
+
+        $absensiSupirLogTrail = (new LogTrail())->processStore([
+            'namatabel' => strtoupper($absensiSupir->getTable()),
+            'postingdari' => $data['postingdari'] ??strtoupper('ENTRY ABSENSI SUPIR Header '),
+            'idtrans' => $absensiSupir->id,
+            'nobuktitrans' => $absensiSupir->nobukti,
+            'aksi' => 'ENTRY',
+            'datajson' => $absensiSupir->toArray(),
+            'modifiedby' => auth('api')->user()->user
+        ]);
+
+        $absensiSupirDetailLogTrail = (new LogTrail())->processStore([
+            'namatabel' => strtoupper($absensiSupirDetail->getTable()),
+            'postingdari' => $data['postingdari'] ??strtoupper('ENTRY ABSENSI SUPIR detail '),
+            'idtrans' => $absensiSupirLogTrail->id,
+            'nobuktitrans' => $absensiSupir->nobukti,
+            'aksi' => 'ENTRY',
+            'datajson' => $absensiSupirDetails,
+            'modifiedby' => auth('api')->user()->user
+        ]);
+
+        dd($kasgantungHeader);
+        return $absensiSupir;
     }
 }
