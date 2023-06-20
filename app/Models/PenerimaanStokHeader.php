@@ -435,6 +435,12 @@ class PenerimaanStokHeader extends MyModel
             $gudangkantor = Parameter::where('grp', 'GUDANG KANTOR')->where('subgrp', 'GUDANG KANTOR')->first();
             $data['gudang_id'] = $gudangkantor->text;
         }
+        $gudangdari_id = $data['gudangdari_id'];
+        $gudangke_id = $data['gudangke_id'];
+        $tradodari_id = $data['tradodari_id'];
+        $tradoke_id = $data['tradoke_id'];
+        $gandengandari_id = $data['gandengandari_id'];
+        $gandenganke_id = $data['gandenganke_id'];
         
         if ($data['penerimaanstok_id'] !== $pg->text) {
             $statuspindahgudang = Parameter::where('grp', 'STATUS PINDAH GUDANG')->where('text', 'BUKAN PINDAH GUDANG')->first();
@@ -468,12 +474,12 @@ class PenerimaanStokHeader extends MyModel
         $penerimaanStokHeader->trado_id                 = $data['trado_id'];
         $penerimaanStokHeader->gandengan_id             = $data['gandengan_id'];
         $penerimaanStokHeader->supplier_id              = $data['supplier_id'];
-        $penerimaanStokHeader->gudangdari_id            = $data['gudangdari_id'];
-        $penerimaanStokHeader->gudangke_id              = $data['gudangke_id'];
-        $penerimaanStokHeader->tradodari_id             = $data['tradodari_id'];
-        $penerimaanStokHeader->tradoke_id               = $data['tradoke_id'];
-        $penerimaanStokHeader->gandengandari_id         = $data['gandengandari_id'];
-        $penerimaanStokHeader->gandenganke_id           = $data['gandenganke_id'];
+        $penerimaanStokHeader->gudangdari_id            = $gudangdari_id;
+        $penerimaanStokHeader->gudangke_id              = $gudangke_id;
+        $penerimaanStokHeader->tradodari_id             = $tradodari_id;
+        $penerimaanStokHeader->tradoke_id               = $tradoke_id;
+        $penerimaanStokHeader->gandengandari_id         = $gandengandari_id;
+        $penerimaanStokHeader->gandenganke_id           = $gandenganke_id;
         $penerimaanStokHeader->statuspindahgudang       = ($statuspindahgudang == null) ? "" : $statuspindahgudang->id;
         $penerimaanStokHeader->modifiedby               = auth('api')->user()->name;
         $penerimaanStokHeader->statuscetak              = $statusCetak->id;
@@ -594,6 +600,12 @@ class PenerimaanStokHeader extends MyModel
             $data['gudang_id'] = $gudangkantor->text;
         }
 
+        $gudangdari_id = $data['gudangdari_id'];
+        $gudangke_id = $data['gudangke_id'];
+        $tradodari_id = $data['tradodari_id'];
+        $tradoke_id = $data['tradoke_id'];
+        $gandengandari_id = $data['gandengandari_id'];
+        $gandenganke_id = $data['gandenganke_id'];
 
         if ($data['penerimaanstok_id'] !== $pg->text) {
             $statuspindahgudang = Parameter::where('grp', 'STATUS PINDAH GUDANG')->where('text', 'BUKAN PINDAH GUDANG')->first();
@@ -625,12 +637,12 @@ class PenerimaanStokHeader extends MyModel
         $penerimaanStokHeader->trado_id                 = $data['trado_id'];
         $penerimaanStokHeader->supplier_id              = $data['supplier_id'];
         $penerimaanStokHeader->gandengan_id             = $data['gandengan_id'];
-        $penerimaanStokHeader->gudangdari_id            = $data['gudangdari_id'];
-        $penerimaanStokHeader->gudangke_id              = $data['gudangke_id'];
-        $penerimaanStokHeader->tradodari_id             = $data['tradodari_id'];
-        $penerimaanStokHeader->tradoke_id               = $data['tradoke_id'];
-        $penerimaanStokHeader->gandengandari_id         = $data['gandengandari_id'];
-        $penerimaanStokHeader->gandenganke_id           = $data['gandenganke_id'];
+        $penerimaanStokHeader->gudangdari_id            = $gudangdari_id;
+        $penerimaanStokHeader->gudangke_id              = $gudangke_id;
+        $penerimaanStokHeader->tradodari_id             = $tradodari_id;
+        $penerimaanStokHeader->tradoke_id               = $tradoke_id;
+        $penerimaanStokHeader->gandengandari_id         = $gandengandari_id;
+        $penerimaanStokHeader->gandenganke_id           = $gandenganke_id;
         $penerimaanStokHeader->statuspindahgudang       = ($statuspindahgudang == null) ? "" : $statuspindahgudang->id;
         $penerimaanStokHeader->modifiedby               = auth('api')->user()->name;
         $penerimaanStokHeader->statuscetak              = $statusCetak->id;

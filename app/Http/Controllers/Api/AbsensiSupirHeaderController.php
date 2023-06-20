@@ -129,6 +129,44 @@ class AbsensiSupirHeaderController extends Controller
      */
     public function store(AbsensiSupirHeaderRequest $request)
     {
+       
+
+        dd();
+        DB::beginTransaction();
+        try {
+            $data = [
+                "tglbukti" =>  $request->tglbukti ?? null,
+                "trado_id" => $request->trado_id ?? [],
+                "trado" => $request->trado ?? [],
+                "supir_id" => $request->supir_id ?? [],
+                "supir" => $request->supir ?? [],
+                "keterangan_detail" => $request->keterangan_detail ?? [],
+                "absen_id" => $request->absen_id ?? [],
+                "absen" => null,
+                "jam" => $request->jam ?? [],
+                "uangjalan" => $request->uangjalan ?? [],
+            ];
+            
+
+            /* Store header */
+            $absensiSupirHeader = (new absensiSupirHeader())->processStore($data);
+            /* Set position and page */
+            $absensiSupirHeader->position = $this->getPosition($absensiSupirHeader, $absensiSupirHeader->getTable())->position;
+            $absensiSupirHeader->page = ceil($absensiSupirHeader->position / ($request->limit ?? 10));
+            if (isset($request->limit)) {
+                $absensiSupirHeader->page = ceil($absensiSupirHeader->position / ($request->limit ?? 10));
+            }
+
+            DB::commit();
+            return response()->json([
+                'message' => 'Berhasil disimpan',
+                'data' => $penerimaanStokHeader
+            ], 201);    
+        } catch (\Throwable $th) {
+            DB::rollBack();
+
+            throw $th;
+        }
 
         DB::beginTransaction();
         try {
