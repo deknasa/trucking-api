@@ -241,7 +241,7 @@ Route::get('trado/image/{field}/{filename}/{type}/{aksi}', [TradoController::cla
 Route::get('stok/{filename}/{type}', [StokController::class, 'getImage']);
 Route::get('upahsupir/{filename}/{type}', [UpahSupirController::class, 'getImage']);
 
-route::middleware(['auth:api', 'authorized'])->group(function () {
+route::middleware(['auth:api'])->group(function () {
     
 
     Route::get('kota/combo', [KotaController::class, 'combo']);
