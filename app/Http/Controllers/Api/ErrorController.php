@@ -40,7 +40,11 @@ class ErrorController extends Controller
         DB::beginTransaction();
 
         try {
-            $error = (new Error())->processStore($request->all());
+            $data = [
+                'kodeerror' => $request->kodeerror,
+                'keterangan' => $request->keterangan
+            ];
+            $error = (new Error())->processStore($data);
             $error->position = $this->getPosition($error, $error->getTable())->position;
             $error->page = ceil($error->position / ($request->limit ?? 10));
 
@@ -72,8 +76,11 @@ class ErrorController extends Controller
     {
         DB::beginTransaction();
         try {
-            
-            $error = (new Error())->processUpdate($error, $request->all());
+            $data = [
+                'kodeerror' => $request->kodeerror,
+                'keterangan' => $request->keterangan
+            ];
+            $error = (new Error())->processUpdate($error, $data);
             $error->position = $this->getPosition($error, $error->getTable())->position;
             $error->page = ceil($error->position / ($request->limit ?? 10));
 

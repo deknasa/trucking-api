@@ -31,7 +31,7 @@ class MenuController extends Controller
     {
         $menu = new Menu();
 
-       
+
 
         return response([
             'data' => $menu->get(),
@@ -49,11 +49,21 @@ class MenuController extends Controller
     {
         DB::beginTransaction();
         try {
-            $menu = (new Menu())->processStore($request->all());
+            $data = [
+                'menuname' => ucwords(strtolower($request->menuname)),
+                'menuseq' => $request->menuseq,
+                'menuparent' => $request->menuparent ?? 0,
+                'menuicon' => strtolower($request->menuicon),
+                'menuexe' => strtolower($request->menuexe),
+                'controller' => $request->controller
+            ];
+
+           
+            $menu = (new Menu())->processStore($data);
             $menu->position = $this->getPosition($menu, $menu->getTable())->position;
             $menu->page = ceil($menu->position / ($request->limit ?? 10));
             DB::commit();
-            
+
             return response([
                 'status' => true,
                 'message' => 'Berhasil disimpan',
@@ -79,10 +89,18 @@ class MenuController extends Controller
     public function update(UpdateMenuRequest $request, Menu $menu)
     {
         DB::beginTransaction();
-
         try {
+            $data = [
+                'id' => $request->id,
+                'menuname' => ucwords(strtolower($request->menuname)),
+                'menuseq' => $request->menuseq,
+                'menuparent' => $request->menuparent ?? 0,
+                'menuicon' => strtolower($request->menuicon),
+                'menuexe' => strtolower($request->menuexe),
+                'controller' => $request->controller
+            ];
 
-            $menu = (new Menu())->processUpdate($menu, $request->all());
+            $menu = (new Menu())->processUpdate($menu, $data);
             $menu->position = $this->getPosition($menu, $menu->getTable())->position;
             $menu->page = ceil($menu->position / ($request->limit ?? 10));
 
@@ -115,7 +133,7 @@ class MenuController extends Controller
 
             DB::commit();
 
-           return response()->json([
+            return response()->json([
                 'status' => true,
                 'message' => 'Berhasil dihapus',
                 'data' => $menu
@@ -134,48 +152,48 @@ class MenuController extends Controller
                 'status' => true,
             ]);
         } else {
-        $response = $this->index();
-        $decodedResponse = json_decode($response->content(), true);
-        $menus = $decodedResponse['data'];
+            $response = $this->index();
+            $decodedResponse = json_decode($response->content(), true);
+            $menus = $decodedResponse['data'];
 
-        $judulLaporan = $menus[0]['judulLaporan'];
+            $judulLaporan = $menus[0]['judulLaporan'];
 
-        $columns = [
-            [
-                'label' => 'No',
-            ],
-            [
-                'label' => 'Menu Name',
-                'index' => 'menuname',
-            ],
-            [
-                'label' => 'Menu Parent',
-                'index' => 'menuparent',
-            ],
-            [
-                'label' => 'Menu Icon',
-                'index' => 'menuicon',
-            ],
-            [
-                'label' => 'Aco ID',
-                'index' => 'aco_id',
-            ],
-            [
-                'label' => 'Link',
-                'index' => 'link',
-            ],
-            [
-                'label' => 'Menu Exe',
-                'index' => 'menuexe',
-            ],
-            [
-                'label' => 'Menu Kode',
-                'index' => 'menukode',
-            ],
-        ];
+            $columns = [
+                [
+                    'label' => 'No',
+                ],
+                [
+                    'label' => 'Menu Name',
+                    'index' => 'menuname',
+                ],
+                [
+                    'label' => 'Menu Parent',
+                    'index' => 'menuparent',
+                ],
+                [
+                    'label' => 'Menu Icon',
+                    'index' => 'menuicon',
+                ],
+                [
+                    'label' => 'Aco ID',
+                    'index' => 'aco_id',
+                ],
+                [
+                    'label' => 'Link',
+                    'index' => 'link',
+                ],
+                [
+                    'label' => 'Menu Exe',
+                    'index' => 'menuexe',
+                ],
+                [
+                    'label' => 'Menu Kode',
+                    'index' => 'menukode',
+                ],
+            ];
 
-        $this->toExcel($judulLaporan, $menus, $columns);
-    }
+            $this->toExcel($judulLaporan, $menus, $columns);
+        }
     }
 
 

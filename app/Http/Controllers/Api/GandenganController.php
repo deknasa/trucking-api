@@ -97,7 +97,12 @@ class GandenganController extends Controller
     {
         DB::beginTransaction();
         try {
-            $gandengan = (new Gandengan())->processStore($request->all());
+            $data = [
+                'kodegandengan' => $request->kodegandengan,
+                'keterangan' => $request->keterangan ?? '',
+                'statusaktif' => $request->statusaktif,
+            ];
+            $gandengan = (new Gandengan())->processStore($data);
             $selected = $this->getPosition($gandengan, $gandengan->getTable());
             $gandengan->position = $selected->position;
             $gandengan->page = ceil($gandengan->position / ($request->limit ?? 10));
@@ -138,9 +143,13 @@ class GandenganController extends Controller
     public function update(UpdateGandenganRequest $request, Gandengan $gandengan): JsonResponse
     {
         DB::beginTransaction();
-        
         try {
-            $gandengan = (new Gandengan())->processUpdate($gandengan, $request->all());
+            $data = [
+                'kodegandengan' => $request->kodegandengan,
+                'keterangan' => $request->keterangan ?? '',
+                'statusaktif' => $request->statusaktif,
+            ];
+            $gandengan = (new Gandengan())->processUpdate($gandengan, $data);
             $gandengan->position = $this->getPosition($gandengan, $gandengan->getTable())->position;
             $gandengan->page = ceil($gandengan->position / ($request->limit ?? 10));
 

@@ -89,9 +89,12 @@ class KerusakanController extends Controller
     {
         DB::beginTransaction();
 
-        try 
-        {
-            $kerusakan = (new Kerusakan())->processStore($request->all());
+        try {
+            $data = [
+                'keterangan' => $request->keterangan ?? '',
+                'statusaktif' => $request->statusaktif
+            ];
+            $kerusakan = (new Kerusakan())->processStore($data);
             $kerusakan->position = $this->getPosition($kerusakan, $kerusakan->getTable())->position;
             $kerusakan->page = ceil($kerusakan->position / ($request->limit ?? 10));
 
@@ -122,7 +125,11 @@ class KerusakanController extends Controller
     {
         DB::beginTransaction();
         try {
-            $kerusakan = (new Kerusakan())->processUpdate($kerusakan, $request->all());
+            $data = [
+                'keterangan' => $request->keterangan ?? '',
+                'statusaktif' => $request->statusaktif
+            ];
+            $kerusakan = (new Kerusakan())->processUpdate($kerusakan, $data);
             $kerusakan->position = $this->getPosition($kerusakan, $kerusakan->getTable())->position;
             $kerusakan->page = ceil($kerusakan->position / ($request->limit ?? 10));
 
@@ -145,14 +152,13 @@ class KerusakanController extends Controller
     {
         DB::beginTransaction();
 
-        try 
-        {
+        try {
             $kerusakan = (new Kerusakan())->processDestroy($id);
             $selected = $this->getPosition($kerusakan, $kerusakan->getTable(), true);
             $kerusakan->position = $selected->position;
             $kerusakan->id = $selected->id;
             $kerusakan->page = ceil($kerusakan->position / ($request->limit ?? 10));
-            
+
             DB::commit();
 
             return response([

@@ -129,12 +129,29 @@ class TarifController extends Controller
         DB::beginTransaction();
 
         try {
-            $tarif = (new Tarif())->processStore($request->all());
+            $data = [
+                'parent_id' => $request->parent_id ?? '',
+                'upahsupir_id' => $request->upahsupir_id ?? '',
+                'tujuan' => $request->tujuan,
+                'penyesuaian' => $request->penyesuaian,
+                'statusaktif' => $request->statusaktif,
+                'statussistemton' => $request->statussistemton,
+                'kota_id' => $request->kota_id,
+                'zona_id' => $request->zona_id ?? '',
+                'tglmulaiberlaku' => date('Y-m-d', strtotime($request->tglmulaiberlaku)),
+                'statuspenyesuaianharga' => $request->statuspenyesuaianharga,
+                'keterangan' => $request->keterangan,
+                'container_id' =>$request->container_id,
+                'nominal' => $request->nominal,
+                'detail_id' => $request->detail_id
+            ];
+
+            $tarif = (new Tarif())->processStore($data);
             $tarif->position = $this->getPosition($tarif, $tarif->getTable())->position;
             $tarif->page = ceil($tarif->position / ($request->limit ?? 10));
 
             DB::commit();
-            
+
             return response()->json([
                 'status' => true,
                 'message' => 'Berhasil disimpan',
@@ -171,7 +188,23 @@ class TarifController extends Controller
     {
         DB::beginTransaction();
         try {
-            $tarif = (new Tarif())->processUpdate($tarif, $request->all());
+            $data = [
+                'parent_id' => $request->parent_id ?? '',
+                'upahsupir_id' => $request->upahsupir_id ?? '',
+                'tujuan' => $request->tujuan,
+                'penyesuaian' => $request->penyesuaian,
+                'statusaktif' => $request->statusaktif,
+                'statussistemton' => $request->statussistemton,
+                'kota_id' => $request->kota_id,
+                'zona_id' => $request->zona_id ?? '',
+                'tglmulaiberlaku' => date('Y-m-d', strtotime($request->tglmulaiberlaku)),
+                'statuspenyesuaianharga' => $request->statuspenyesuaianharga,
+                'keterangan' => $request->keterangan,
+                'container_id' =>$request->container_id,
+                'nominal' => $request->nominal,
+                'detail_id' => $request->detail_id
+            ];
+            $tarif = (new Tarif())->processUpdate($tarif, $data);
             $tarif->position = $this->getPosition($tarif, $tarif->getTable())->position;
             $tarif->page = ceil($tarif->position / ($request->limit ?? 10));
 
@@ -203,7 +236,7 @@ class TarifController extends Controller
             $tarif->position = $selected->position;
             $tarif->id = $selected->id;
             $tarif->page = ceil($tarif->position / ($request->limit ?? 10));
-            
+
             DB::commit();
 
             return response([
@@ -282,18 +315,15 @@ class TarifController extends Controller
                     'modifiedby' => auth('api')->user()->name
                 ];
 
-             
+
                 $startcount++;
-
-               
-
             }
 
             $tarifrincian = new TarifRincian();
 
             $cekdata = $tarifrincian->cekupdateharga($data);
 
-           
+
             if ($cekdata == true) {
                 $query = DB::table('error')
                     ->select('keterangan')
@@ -419,5 +449,3 @@ class TarifController extends Controller
         $this->toExcel('Tarif', $tarifs, $columns);
     }
 }
-
-

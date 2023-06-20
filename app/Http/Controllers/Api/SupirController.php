@@ -251,7 +251,42 @@ class SupirController extends Controller
         DB::beginTransaction();
 
         try {
-            $supir = (new supir())->processStore($request->all());
+            $depositke = str_replace(',', '', $request->depositke);
+            $data = [
+                'namasupir' => $request->namasupir,
+                'alamat' => $request->alamat,
+                'namaalias' => $request->namaalias,
+                'kota' => $request->kota,
+                'telp' => $request->telp,
+                'statusaktif' => $request->statusaktif,
+                'nominaldepositsa' => str_replace(',', '', $request->nominaldepositsa) ?? 0,
+                'depositke' => str_replace('.', '', $depositke) ?? 0,
+                'tglmasuk' => date('Y-m-d', strtotime($request->tglmasuk)),
+                'nominalpinjamansaldoawal' => str_replace(',', '', $request->nominalpinjamansaldoawal) ?? 0,
+                'pemutihansupir_nobukti' => $request->pemutihansupir_nobukti ?? '',
+                'supirold_id' => $request->supirold_id ?? 0,
+                'tglexpsim' => date('Y-m-d', strtotime($request->tglexpsim)),
+                'nosim' => $request->nosim,
+                'keterangan' => $request->keterangan ?? '',
+                'noktp' => $request->noktp,
+                'nokk' => $request->nokk,
+                'angsuranpinjaman' => str_replace(',', '', $request->angsuranpinjaman) ?? 0,
+                'plafondeposito' => str_replace(',', '', $request->plafondeposito) ?? 0,
+                'tgllahir' => date('Y-m-d', strtotime($request->tgllahir)),
+                'tglterbitsim' => date('Y-m-d', strtotime($request->tglterbitsim)),
+                'modifiedby' => auth('api')->user()->name,
+
+                'photosupir' => ($request->photosupir) ? $this->storeFiles($request->photosupir, 'supir') : '',
+                'photoktp' => ($request->photoktp) ? $this->storeFiles($request->photoktp, 'ktp') : '',
+                'photosim' => ($request->photosim) ? $this->storeFiles($request->photosim, 'sim') : '',
+                'photokk' => ($request->photokk) ? $this->storeFiles($request->photokk, 'kk') : '',
+                'photoskck' => ($request->photoskck) ? $this->storeFiles($request->photoskck, 'skck') : '',
+                'photodomisili' => ($request->photodomisili) ? $this->storeFiles($request->photodomisili, 'domisili') : '',
+                'photovaksin' => ($request->photovaksin) ? $this->storeFiles($request->photovaksin, 'vaksin') : '',
+                'pdfsuratperjanjian' => ($request->pdfsuratperjanjian) ? $this->storePdfFiles($request->pdfsuratperjanjian, 'suratperjanjian') : ''
+
+            ];
+            $supir = (new supir())->processStore($data);
             $supir->position = $this->getPosition($supir, $supir->getTable())->position;
             $supir->page = ceil($supir->position / ($request->limit ?? 10));
             DB::commit();
@@ -275,7 +310,43 @@ class SupirController extends Controller
         DB::beginTransaction();
 
         try {
-            $supir = (new Supir())->processUpdate($supir, $request->all());
+            $depositke = str_replace(',', '', $request->depositke);
+            $data = [
+                'namasupir' => $request->namasupir,
+                'alamat' => $request->alamat,
+                'namaalias' => $request->namaalias,
+                'kota' => $request->kota,
+                'telp' => $request->telp,
+                'statusaktif' => $request->statusaktif,
+                'nominaldepositsa' => str_replace(',', '', $request->nominaldepositsa) ?? 0,
+                'depositke' => str_replace('.', '', $depositke) ?? 0,
+                'tglmasuk' => date('Y-m-d', strtotime($request->tglmasuk)),
+                'nominalpinjamansaldoawal' => str_replace(',', '', $request->nominalpinjamansaldoawal) ?? 0,
+                'pemutihansupir_nobukti' => $request->pemutihansupir_nobukti ?? '',
+                'supirold_id' => $request->supirold_id ?? 0,
+                'tglexpsim' => date('Y-m-d', strtotime($request->tglexpsim)),
+                'nosim' => $request->nosim,
+                'keterangan' => $request->keterangan ?? '',
+                'noktp' => $request->noktp,
+                'nokk' => $request->nokk,
+                'angsuranpinjaman' => str_replace(',', '', $request->angsuranpinjaman) ?? 0,
+                'plafondeposito' => str_replace(',', '', $request->plafondeposito) ?? 0,
+                'tgllahir' => date('Y-m-d', strtotime($request->tgllahir)),
+                'tglterbitsim' => date('Y-m-d', strtotime($request->tglterbitsim)),
+                'modifiedby' => auth('api')->user()->name,
+
+                'photosupir' => ($request->photosupir) ? $this->storeFiles($request->photosupir, 'supir') : '',
+                'photoktp' => ($request->photoktp) ? $this->storeFiles($request->photoktp, 'ktp') : '',
+                'photosim' => ($request->photosim) ? $this->storeFiles($request->photosim, 'sim') : '',
+                'photokk' => ($request->photokk) ? $this->storeFiles($request->photokk, 'kk') : '',
+                'photoskck' => ($request->photoskck) ? $this->storeFiles($request->photoskck, 'skck') : '',
+                'photodomisili' => ($request->photodomisili) ? $this->storeFiles($request->photodomisili, 'domisili') : '',
+                'photovaksin' => ($request->photovaksin) ? $this->storeFiles($request->photovaksin, 'vaksin') : '',
+                'pdfsuratperjanjian' => ($request->pdfsuratperjanjian) ? $this->storePdfFiles($request->pdfsuratperjanjian, 'suratperjanjian') : ''
+
+            ];
+
+            $supir = (new Supir())->processUpdate($supir, $data);
             $supir->position = $this->getPosition($supir, $supir->getTable())->position;
             $supir->page = ceil($supir->position / ($request->limit ?? 10));
 

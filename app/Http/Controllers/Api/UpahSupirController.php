@@ -56,7 +56,7 @@ class UpahSupirController extends Controller
     {
         $dari = date('Y-m-d', strtotime($request->dari));
         $sampai = date('Y-m-d', strtotime($request->sampai));
-      
+
         $upahsupirrincian = new UpahSupirRincian();
 
         $cekData = DB::table("upahsupir")->from(DB::raw("upahsupir with (readuncommitted)"))
@@ -83,7 +83,33 @@ class UpahSupirController extends Controller
         DB::beginTransaction();
 
         try {
-            $upahsupir = (new UpahSupir())->processStore($request->all());
+            $data = [
+                'kotadari_id' => $request->kotadari_id,
+                'parent_id' => $request->parent_id ?? 0,
+                'tarif_id' => $request->tarif_id ?? 0,
+                'kotasampai_id' => $request->kotasampai_id,
+                'penyesuaian' => $request->penyesuaian,
+                'jarak' => $request->jarak,
+                'zona_id' => ($request->zona_id == null) ? 0 : $request->zona_id ?? 0,
+                'statusaktif' => $request->statusaktif,
+
+                'tglmulaiberlaku' => date('Y-m-d', strtotime($request->tglmulaiberlaku)),
+
+                'statussimpankandang' => $request->statussimpankandang,
+                'statusluarkota' => $request->statusluarkota,
+                'keterangan' => $request->keterangan,
+                'gambar' => $request->gambar ?? [],
+
+                'container_id' => $request->container_id,
+                'statuscontainer_id' => $request->statuscontainer_id,
+                'nominalsupir' => $request->nominalsupir,
+                'nominalkenek' => $request->nominalkenek ?? 0,
+                'nominalkomisi' => $request->nominalkomisi ?? 0,
+                'nominaltol' =>  $request->nominaltol ?? 0,
+                'liter' => $request->liter ?? 0,
+
+            ];
+            $upahsupir = (new UpahSupir())->processStore($data);
             $upahsupir->position = $this->getPosition($upahsupir, $upahsupir->getTable())->position;
             $upahsupir->page = ceil($upahsupir->position / ($request->limit ?? 10));
             $this->upahsupir = $upahsupir;
@@ -123,7 +149,33 @@ class UpahSupirController extends Controller
         DB::beginTransaction();
 
         try {
-            $upahsupir = (new UpahSupir())->processUpdate($upahsupir, $request->all());
+            $data = [
+                'kotadari_id' => $request->kotadari_id,
+                'parent_id' => $request->parent_id ?? 0,
+                'tarif_id' => $request->tarif_id ?? 0,
+                'kotasampai_id' => $request->kotasampai_id,
+                'penyesuaian' => $request->penyesuaian,
+                'jarak' => $request->jarak,
+                'zona_id' => ($request->zona_id == null) ? 0 : $request->zona_id ?? 0,
+                'statusaktif' => $request->statusaktif,
+
+                'tglmulaiberlaku' => date('Y-m-d', strtotime($request->tglmulaiberlaku)),
+
+                'statussimpankandang' => $request->statussimpankandang,
+                'statusluarkota' => $request->statusluarkota,
+                'keterangan' => $request->keterangan,
+                'gambar' => $request->gambar ?? [],
+
+                'container_id' => $request->container_id,
+                'statuscontainer_id' => $request->statuscontainer_id,
+                'nominalsupir' => $request->nominalsupir,
+                'nominalkenek' => $request->nominalkenek ?? 0,
+                'nominalkomisi' => $request->nominalkomisi ?? 0,
+                'nominaltol' =>  $request->nominaltol ?? 0,
+                'liter' => $request->liter ?? 0,
+
+            ];
+            $upahsupir = (new UpahSupir())->processUpdate($upahsupir, $data);
             $upahsupir->position = $this->getPosition($upahsupir, $upahsupir->getTable())->position;
             $upahsupir->page = ceil($upahsupir->position / ($request->limit ?? 10));
 
@@ -227,7 +279,7 @@ class UpahSupirController extends Controller
     private function deleteFiles(UpahSupir $upahsupir)
     {
         $sizeTypes = ['', 'medium_', 'small_'];
-dd('here');;
+        dd('here');;
         $relatedPhotoUpahSupir = [];
         $photoUpahSupir = json_decode($upahsupir->gambar, true);
         if ($photoUpahSupir) {

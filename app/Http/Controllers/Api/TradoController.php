@@ -34,11 +34,11 @@ class TradoController extends Controller
     public function index()
     {
         $trado = new Trado();
-     
+
 
         return response([
 
-           
+
             'data' => $trado->get(),
             'attributes' => [
                 'totalRows' => $trado->totalRows,
@@ -96,7 +96,40 @@ class TradoController extends Controller
         DB::beginTransaction();
 
         try {
-            $trado = (new Trado())->processStore($request->all());
+            $data = [
+                'keterangan' => $request->keterangan ?? '',
+                'kodetrado' => $request->kodetrado,
+                'statusaktif' => $request->statusaktif,
+                'tahun' => $request->tahun,
+                'merek' => $request->merek,
+                'norangka' => $request->norangka,
+                'nomesin' => $request->nomesin,
+                'nama' => $request->nama,
+                'nostnk' => $request->nostnk,
+                'alamatstnk' => $request->alamatstnk,
+                'statusjenisplat' => $request->statusjenisplat,
+                'tglpajakstnk' => date('Y-m-d', strtotime($request->tglpajakstnk)),
+                'tipe' => $request->tipe,
+                'jenis' => $request->jenis,
+                'isisilinder' => $request->isisilinder,
+                'warna' => $request->warna,
+                'jenisbahanbakar' => $request->jenisbahanbakar,
+                'jumlahsumbu' => $request->jumlahsumbu,
+                'jumlahroda' => $request->jumlahroda,
+                'model' => $request->model,
+                'nobpkb' => $request->nobpkb,
+                'mandor_id' => $request->mandor_id ?? 0,
+                'supir_id' => $request->supir_id ?? 0,
+                'jumlahbanserap' => $request->jumlahbanserap,
+                'statusgerobak' => $request->statusgerobak,
+                'nominalplusborongan' => str_replace(',', '', $request->nominalplusborongan) ?? 0,
+                'photostnk' => ($request->photostnk) ? $this->storeFiles($request->photostnk, 'stnk') : '',
+                'photobpkb' => ($request->photobpkb) ? $this->storeFiles($request->photobpkb, 'bpkb') : '',
+                'phototrado' => ($request->phototrado) ? $this->storeFiles($request->phototrado, 'trado') : '',
+            ];
+
+
+            $trado = (new Trado())->processStore($data);
             $selected = $this->getPosition($trado, $trado->getTable());
             $trado->position = $selected->position;
             $trado->page = ceil($trado->position / ($request->limit ?? 10));
@@ -121,7 +154,40 @@ class TradoController extends Controller
         DB::beginTransaction();
 
         try {
-            $trado = (new Trado())->processUpdate($trado, $request->all());
+            $data = [
+                'keterangan' => $request->keterangan ?? '',
+                'kodetrado' => $request->kodetrado,
+                'statusaktif' => $request->statusaktif,
+                'tahun' => $request->tahun,
+                'merek' => $request->merek,
+                'norangka' => $request->norangka,
+                'nomesin' => $request->nomesin,
+                'nama' => $request->nama,
+                'nostnk' => $request->nostnk,
+                'alamatstnk' => $request->alamatstnk,
+                'statusjenisplat' => $request->statusjenisplat,
+                'tglpajakstnk' => date('Y-m-d', strtotime($request->tglpajakstnk)),
+                'tipe' => $request->tipe,
+                'jenis' => $request->jenis,
+                'isisilinder' => $request->isisilinder,
+                'warna' => $request->warna,
+                'jenisbahanbakar' => $request->jenisbahanbakar,
+                'jumlahsumbu' => $request->jumlahsumbu,
+                'jumlahroda' => $request->jumlahroda,
+                'model' => $request->model,
+                'nobpkb' => $request->nobpkb,
+                'mandor_id' => $request->mandor_id ?? 0,
+                'supir_id' => $request->supir_id ?? 0,
+                'jumlahbanserap' => $request->jumlahbanserap,
+                'statusgerobak' => $request->statusgerobak,
+                'nominalplusborongan' => str_replace(',', '', $request->nominalplusborongan) ?? 0,
+                'photostnk' => ($request->photostnk) ? $this->storeFiles($request->photostnk, 'stnk') : '',
+                'photobpkb' => ($request->photobpkb) ? $this->storeFiles($request->photobpkb, 'bpkb') : '',
+                'phototrado' => ($request->phototrado) ? $this->storeFiles($request->phototrado, 'trado') : '',
+            ];
+
+
+            $trado = (new Trado())->processUpdate($trado, $data);
             $trado->position = $this->getPosition($trado, $trado->getTable())->position;
             $trado->page = ceil($trado->position / ($request->limit ?? 10));
 

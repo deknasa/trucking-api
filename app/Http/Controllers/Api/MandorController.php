@@ -35,18 +35,19 @@ class MandorController extends Controller
             ]
         ]);
     }
-  
-    public function cekValidasi($id) {
-        $mandor= new Mandor();
-        $cekdata=$mandor->cekvalidasihapus($id);
-        if ($cekdata['kondisi']==true) {
+
+    public function cekValidasi($id)
+    {
+        $mandor = new Mandor();
+        $cekdata = $mandor->cekvalidasihapus($id);
+        if ($cekdata['kondisi'] == true) {
             $query = DB::table('error')
-            ->select(
-                DB::raw("ltrim(rtrim(keterangan))+' (".$cekdata['keterangan'].")' as keterangan")
+                ->select(
+                    DB::raw("ltrim(rtrim(keterangan))+' (" . $cekdata['keterangan'] . ")' as keterangan")
                 )
-            ->where('kodeerror', '=', 'SATL')
-            ->get();
-        $keterangan = $query['0'];
+                ->where('kodeerror', '=', 'SATL')
+                ->get();
+            $keterangan = $query['0'];
 
             $data = [
                 'status' => false,
@@ -56,7 +57,6 @@ class MandorController extends Controller
             ];
 
             return response($data);
-         
         } else {
             $data = [
                 'status' => false,
@@ -65,10 +65,10 @@ class MandorController extends Controller
                 'kondisi' => $cekdata['kondisi'],
             ];
 
-            return response($data); 
+            return response($data);
         }
     }
-    
+
 
     public function default()
     {
@@ -87,7 +87,12 @@ class MandorController extends Controller
         DB::beginTransaction();
 
         try {
-            $mandor = (new Mandor())->processStore($request->all());
+            $data = [
+                'namamandor' => $request->namamandor,
+                'keterangan' => $request->keterangan ?? '',
+                'statusaktif' => $request->statusaktif
+            ];
+            $mandor = (new Mandor())->processStore($data);
             $mandor->position = $this->getPosition($mandor, $mandor->getTable())->position;
             $mandor->page = ceil($mandor->position / ($request->limit ?? 10));
 
@@ -119,7 +124,12 @@ class MandorController extends Controller
     {
         DB::beginTransaction();
         try {
-            $mandor = (new Mandor())->processUpdate($mandor, $request->all());
+            $data = [
+                'namamandor' => $request->namamandor,
+                'keterangan' => $request->keterangan ?? '',
+                'statusaktif' => $request->statusaktif
+            ];
+            $mandor = (new Mandor())->processUpdate($mandor, $data);
             $mandor->position = $this->getPosition($mandor, $mandor->getTable())->position;
             $mandor->page = ceil($mandor->position / ($request->limit ?? 10));
 
@@ -142,8 +152,7 @@ class MandorController extends Controller
     {
         DB::beginTransaction();
 
-        try 
-        {
+        try {
             $mandor = (new Mandor())->processDestroy($id);
             $selected = $this->getPosition($mandor, $mandor->getTable(), true);
             $mandor->position = $selected->position;
@@ -195,49 +204,47 @@ class MandorController extends Controller
             ]);
         } else {
 
-        $response = $this->index();
-        $decodedResponse = json_decode($response->content(), true);
-        $mandors = $decodedResponse['data'];
+            $response = $this->index();
+            $decodedResponse = json_decode($response->content(), true);
+            $mandors = $decodedResponse['data'];
 
-        $judulLaporan = $mandors[0]['judulLaporan'];
-
-
-        $i = 0;
-        foreach ($mandors as $index => $params) {
-
-            $statusaktif = $params['statusaktif'];
-
-            $result = json_decode($statusaktif, true);
-
-            $statusaktif = $result['MEMO'];
+            $judulLaporan = $mandors[0]['judulLaporan'];
 
 
-            $mandors[$i]['statusaktif'] = $statusaktif;
+            $i = 0;
+            foreach ($mandors as $index => $params) {
 
-        
-            $i++;
+                $statusaktif = $params['statusaktif'];
+
+                $result = json_decode($statusaktif, true);
+
+                $statusaktif = $result['MEMO'];
 
 
+                $mandors[$i]['statusaktif'] = $statusaktif;
+
+
+                $i++;
+            }
+            $columns = [
+                [
+                    'label' => 'No',
+                ],
+                [
+                    'label' => 'Nama Mandor',
+                    'index' => 'namamandor',
+                ],
+                [
+                    'label' => 'Keterangan',
+                    'index' => 'keterangan',
+                ],
+                [
+                    'label' => 'Status Aktif',
+                    'index' => 'statusaktif',
+                ],
+            ];
+
+            $this->toExcel($judulLaporan, $mandors, $columns);
         }
-        $columns = [
-            [
-                'label' => 'No',
-            ],
-            [
-                'label' => 'Nama Mandor',
-                'index' => 'namamandor',
-            ],
-            [
-                'label' => 'Keterangan',
-                'index' => 'keterangan',
-            ],
-            [
-                'label' => 'Status Aktif',
-                'index' => 'statusaktif',
-            ],
-        ];
-
-        $this->toExcel($judulLaporan, $mandors, $columns);
-    }
     }
 }
