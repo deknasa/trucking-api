@@ -176,6 +176,7 @@ class PengeluaranStokHeaderController extends Controller
                 "detail_persentasediscount" => $request->detail_persentasediscount ,
                 "totalItem" => $request->totalItem ,
                 ];
+                
             /* Store header */
             $pengeluaranStokHeader = PengeluaranStokHeader::findOrFail($id);
             $pengeluaranStokHeader = (new PengeluaranStokHeader())->processUpdate($pengeluaranStokHeader,$data);

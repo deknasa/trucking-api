@@ -211,19 +211,19 @@ class PengeluaranStokDetail extends MyModel
         $pengeluaranStokDetail->nobukti = $data['nobukti'];
         $pengeluaranStokDetail->stok_id = $data['stok_id'];
         $pengeluaranStokDetail->qty = $data['qty'];
-        $pengeluaranStokDetail->harga = $data['harga'] ?? 0;
+        $pengeluaranStokDetail->harga = $data['harga'];
         $pengeluaranStokDetail->nominaldiscount = $nominaldiscount;
-        $pengeluaranStokDetail->total = $total ?? 0;
-        $pengeluaranStokDetail->persentasediscount = $data['persentasediscount'] ?? 0;
-        $pengeluaranStokDetail->vulkanisirke = $data['vulkanisirke'] ?? 0;
+        $pengeluaranStokDetail->total = $total;
+        $pengeluaranStokDetail->persentasediscount = $data['persentasediscount'];
+        $pengeluaranStokDetail->vulkanisirke = $data['vulkanisirke'];
         $pengeluaranStokDetail->keterangan = $data['detail_keterangan'];
 
         $pengeluaranStokDetail->modifiedby = auth('api')->user()->name;
 
-
         if (!$pengeluaranStokDetail->save()) {
             throw new \Exception("Error storing pengeluaran Stok Detail.");
         }
+        // dd($pengeluaranStokDetail);
 
         return $pengeluaranStokDetail;
         
@@ -341,12 +341,13 @@ class PengeluaranStokDetail extends MyModel
         if (!$stokpersediaangudang) {
             return false;
         }
+        $stokpersediaan = StokPersediaan::lockForUpdate()->find($stokpersediaangudang->id);
         if ($qty > $stokpersediaan->qty){ //check qty
             return false;
         }
-        $stokpersediaangudang->qty -= $qty;
-        $stokpersediaangudang->save();
-        return $stokpersediaangudang;
+        $stokpersediaan->qty -= $qty;
+        $stokpersediaan->save();
+        return $stokpersediaan;
     }
 
 
