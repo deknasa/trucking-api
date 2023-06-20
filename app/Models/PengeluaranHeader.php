@@ -741,7 +741,7 @@ class PengeluaranHeader extends MyModel
 
     }
     
-    public function processDestroy($id): PengeluaranHeader
+    public function processDestroy($id, $postingDari = ''): PengeluaranHeader
     {
         $pengeluaranHeader = PengeluaranHeader::findOrFail($id);
         $dataHeader =  $pengeluaranHeader->toArray();

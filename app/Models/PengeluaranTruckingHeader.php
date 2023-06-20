@@ -779,7 +779,7 @@ class PengeluaranTruckingHeader extends MyModel
         $pengeluaranTruckingHeader->tglbukti = date('Y-m-d', strtotime($data['tglbukti']));
         $pengeluaranTruckingHeader->pengeluarantrucking_id = $data['pengeluarantrucking_id'];
         $pengeluaranTruckingHeader->bank_id = (array_key_exists('bank_id',$data)) ? $data['bank_id'] : 0 ;
-        $pengeluaranTruckingHeader->statusposting =  ($data['statusposting']) ? $data['statusposting'] : $statusPosting->id ;
+        $pengeluaranTruckingHeader->statusposting = $data['statusposting'] ?? $statusPosting->id ;
         $pengeluaranTruckingHeader->coa = $data['coa'];
         $pengeluaranTruckingHeader->pengeluaran_nobukti = $data['pengeluaran_nobukti'] ?? '';
         $pengeluaranTruckingHeader->periodedari = $tgldari;
@@ -1067,7 +1067,7 @@ class PengeluaranTruckingHeader extends MyModel
         return $pengeluaranTruckingHeader;
     }
 
-    public function processDestroy($id): PengeluaranTruckingHeader
+    public function processDestroy($id, $postingDari = ''): PengeluaranTruckingHeader
     {
         $statusPosting = Parameter::from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS POSTING')->where('text', 'BUKAN POSTING')->first();
         $klaim = DB::table('pengeluarantrucking')->from(DB::raw("pengeluarantrucking with (readuncommitted)"))->where('kodepengeluaran', "KLAIM")->first();
@@ -1085,14 +1085,14 @@ class PengeluaranTruckingHeader extends MyModel
         }else{
             if ($pengeluaranTruckingHeader->statusposting != $statusPosting->id) {
                 $pengeluaranHeader = PengeluaranHeader::where('nobukti', $pengeluaranTruckingHeader->pengeluaran_nobukti)->lockForUpdate()->first();
-                $PengeluaranHeader = PengeluaranHeader::processDestroy($pengeluaranHeader->id);
+                $PengeluaranHeader = (new PengeluaranHeader)->processDestroy($pengeluaranHeader->id, $postingDari);
             }
         }
         $pengeluaranTruckingHeader = $pengeluaranTruckingHeader->lockAndDestroy($id);
         
          $pengeluaranTruckingLogTrail = (new LogTrail())->processStore([
              'namatabel' => $this->table,
-             'postingdari' => strtoupper('DELETE pengeluaran trucking Header'),
+             'postingdari' => $postingDari,
              'idtrans' => $pengeluaranTruckingHeader->id,
              'nobuktitrans' => $pengeluaranTruckingHeader->nobukti,
              'aksi' => 'DELETE',
@@ -1102,7 +1102,7 @@ class PengeluaranTruckingHeader extends MyModel
  
          (new LogTrail())->processStore([
              'namatabel' => (new LogTrail())->table,
-             'postingdari' => strtoupper('DELETE pengeluaran trucking Header'),
+             'postingdari' => $postingDari,
              'idtrans' => $pengeluaranTruckingLogTrail['id'],
              'nobuktitrans' => $pengeluaranTruckingHeader->nobukti,
              'aksi' => 'DELETE',

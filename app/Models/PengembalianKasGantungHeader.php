@@ -566,30 +566,19 @@ class PengembalianKasGantungHeader extends MyModel
             //     $coakreditmemo = json_decode($coakredit->memo, true);
             // }
                 
-
-            if (stripos(strtolower($data['keterangandetail'][$i]), 'input type=')) {
-                $keterangandetail = null;
-            } else {
-                $keterangandetail = $data['keterangandetail'][$i];
-            }
-            if (stripos(strtolower($data['coadetail'][$i]), 'input-group')) {
-                $coadetail = null;
-            } else {
-                $coadetail = $data['coadetail'][$i];
-            }
             $pengembalianKasGantungDetail = (new PengembalianKasGantungDetail())->processStore($pengembalianKasGantungHeader, [
                 "pengembaliankasgantung_id" => $pengembalianKasGantungHeader->id,
                 "nobukti" => $pengembalianKasGantungHeader->nobukti,
                 "nominal" => $data['nominal'][$i],
-                "coadetail" => ($tanpaprosesnobukti) ?  $coadetail: $memoKasGantung['JURNAL'] ,
-                "keterangandetail" =>  $keterangandetail,
+                "coadetail" => $data['coadetail'][$i] ?? $memoKasGantung['JURNAL'] ,
+                "keterangandetail" => $data['keterangandetail'][$i] ?? '',
                 "kasgantung_nobukti" => $data['kasgantung_nobukti'][$i],
             ]);
             $pengembalianKasGantungDetails[] = $pengembalianKasGantungDetail->toArray();
             $nominal_detail[] = $data['nominal'][$i];
             $coadebet_detail[] = $bank->coa;
             $coakredit_detail[] = $memo['JURNAL'];
-            $keterangan_detail[] = $keterangandetail;
+            $keterangan_detail[] =$data['keterangandetail'][$i];
 
         }
         
@@ -685,29 +674,19 @@ class PengembalianKasGantungHeader extends MyModel
         PengembalianKasGantungDetail::where('pengembaliankasgantung_id',$pengembalianKasGantungHeader->id)->lockForUpdate()->delete();
         for ($i = 0; $i < count($data['kasgantungdetail_id']); $i++) {
 
-            if (stripos(strtolower($data['keterangandetail'][$i]), 'input type=')) {
-                $keterangandetail = null;
-            } else {
-                $keterangandetail = $data['keterangandetail'][$i];
-            }
-            if (stripos(strtolower($data['coadetail'][$i]), 'input-group')) {
-                $coadetail = null;
-            } else {
-                $coadetail = $data['coadetail'][$i];
-            }
             $pengembalianKasGantungDetail = (new PengembalianKasGantungDetail())->processStore($pengembalianKasGantungHeader, [
                 "pengembaliankasgantung_id" => $pengembalianKasGantungHeader->id,
                 "nobukti" => $pengembalianKasGantungHeader->nobukti,
                 "nominal" => $data['nominal'][$i],
-                "coadetail" => ($tanpaprosesnobukti) ?  $coadetail: $memoKasGantung['JURNAL'] ,
-                "keterangandetail" =>  $keterangandetail,
+                "coadetail" => $data['coadetail'][$i] ?? $memoKasGantung['JURNAL'] ,
+                "keterangandetail" => $data['keterangandetail'][$i],
                 "kasgantung_nobukti" => $data['kasgantung_nobukti'][$i],
             ]);
             $pengembalianKasGantungDetails[] = $pengembalianKasGantungDetail->toArray();
             $nominal_detail[] = $data['nominal'][$i];
             $coadebet_detail[] = $bank->coa;
             $coakredit_detail[] = $memo['JURNAL'];
-            $keterangan_detail[] = $keterangandetail;
+            $keterangan_detail[] = $data['keterangandetail'][$i];
 
         }
         
