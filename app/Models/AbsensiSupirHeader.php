@@ -390,4 +390,49 @@ class AbsensiSupirHeader extends MyModel
         $data = $query->first();
         return $data;
     }
+
+
+    public function processStore(array $data): AbsensiSupirHeader
+    {
+        $group = 'ABSENSI';
+        $subgroup = 'ABSENSI';
+        $format = DB::table('parameter')->where('grp', $group)->where('subgrp', $subgroup)->first();
+        $statusCetak = Parameter::from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUSCETAK')->where('text', 'BELUM CETAK')->first();
+        $statusEditAbsensi = Parameter::from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS EDIT ABSENSI')->where('default', 'YA')->first();
+
+        /* Store header */
+        $absensiSupir = new AbsensiSupirHeader();
+        $absensiSupir->nobukti = app(Controller::class)->getRunningNumber($content)->original['data'];
+        $absensiSupir->tglbukti = date('Y-m-d', strtotime($request->tglbukti));
+        $absensiSupir->kasgantung_nobukti = $request->kasgantung_nobukti ?? '';
+        $absensiSupir->nominal = array_sum($request->uangjalan);
+        $absensiSupir->statusformat = $format->id;
+        $absensiSupir->statuscetak = $statusCetak->id ?? 0;
+        $absensiSupir->statusapprovaleditabsensi  = $statusEditAbsensi->id;
+        $absensiSupir->modifiedby = auth('api')->user()->name;
+        $absensiSupir->nobukti = (new RunningNumberService)->get($group, $subGroup, $pengeluaranStokHeader->getTable(), date('Y-m-d', strtotime($data['tglbukti'])));
+        
+        if (!$absensiSupir->save()) {
+            throw new \Exception("Error storing Absensi Supir Header.");
+        }
+        /*STORE DETAIL*/
+        $absensiSupirDetail = [];
+        if (!$data['trado_id']) {
+            throw new \Exception("Error storing pengeluaran Stok Detail.");
+        }
+
+        for ($i = 0; $i < count($request->trado_id); $i++) {
+            AbsensiSupirDetail::processStore([
+                'absensi_id' => $absensiSupir->id,
+                'nobukti' => $absensiSupir->nobukti,
+                'trado_id' => $data['trado_id'][$i],
+                'supir_id' => $data['supir_id'][$i],
+                'keterangan' => $data['keterangan_detail'][$i],
+                'uangjalan' => $data['uangjalan'][$i],
+                'absen_id' => $data['absen_id'][$i] ?? '',
+                'jam' => $data['jam'][$i],
+                'modifiedby' => $absensiSupir->modifiedby,
+            ]);
+        }
+    }
 }
