@@ -47,7 +47,8 @@ class Menu extends MyModel
                 'created_at',
                 'updated_at',
                 DB::raw("'Laporan Menu' as judulLaporan"),
-                DB::raw("'" . $getJudul->text . "' as judul")
+                DB::raw("'" . $getJudul->text . "' as judul"),
+                DB::raw("'Tanggal Cetak : '+format(getdate(),'dd-MM-yyyy HH:mm:ss')+' User :".auth('api')->user()->name."' as tglcetak")
             );
 
         $this->totalRows = $query->count();
