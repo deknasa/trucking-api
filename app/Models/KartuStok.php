@@ -1149,6 +1149,7 @@ class KartuStok extends MyModel
                 'a.modifiedby',
             )
             ->leftjoin('kategori as B', 'a.kategori_id', 'B.id')
+            ->orderBy('a.tglbukti', 'asc')
             ->orderBy('a.id', 'asc');
         // dd($datalist->get());
         return $datalist;
