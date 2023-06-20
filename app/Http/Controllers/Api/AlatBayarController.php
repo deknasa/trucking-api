@@ -85,16 +85,27 @@ class AlatBayarController extends Controller
     /**
      * @ClassName 
      */
-    public function store(StoreAlatBayarRequest $request) : JsonResponse
+    public function store(StoreAlatBayarRequest $request): JsonResponse
     {
         DB::beginTransaction();
         // dd($request->all());
         try {
-            $alatbayar = (new AlatBayar())->processStore($request->all());
+            $data = [
+                'kodealatbayar' => $request->kodealatbayar,
+                'namaalatbayar' => $request->namaalatbayar,
+                'keterangan' => $request->keterangan ?? '',
+                'statuslangsungcair' => $request->statuslangsungcair,
+                'statusdefault' => $request->statusdefault,
+                'bank_id' => $request->bank_id,
+                'coa' => $request->coa ?? '',
+                'statusaktif' => $request->statusaktif,
+            ];
+
+            $alatbayar = (new AlatBayar())->processStore($data);
             $alatbayar->position = $this->getPosition($alatbayar, $alatbayar->getTable())->position;
             $alatbayar->page = ceil($alatbayar->position / ($request->limit ?? 10));
 
-            DB::commit();   
+            DB::commit();
             return response()->json([
                 'status' => true,
                 'message' => 'Berhasil disimpan',
@@ -119,11 +130,21 @@ class AlatBayarController extends Controller
     /**
      * @ClassName 
      */
-    public function update(UpdateAlatBayarRequest $request, AlatBayar $alatbayar) : JsonResponse
+    public function update(UpdateAlatBayarRequest $request, AlatBayar $alatbayar): JsonResponse
     {
         DB::beginTransaction();
         try {
-            $alatbayar = (new AlatBayar())->processUpdate($alatbayar, $request->all());
+            $data = [
+                'kodealatbayar' => $request->kodealatbayar,
+                'namaalatbayar' => $request->namaalatbayar,
+                'keterangan' => $request->keterangan ?? '',
+                'statuslangsungcair' => $request->statuslangsungcair,
+                'statusdefault' => $request->statusdefault,
+                'bank_id' => $request->bank_id,
+                'coa' => $request->coa ?? '',
+                'statusaktif' => $request->statusaktif,
+            ];
+            $alatbayar = (new AlatBayar())->processUpdate($alatbayar, $data);
             $alatbayar->position = $this->getPosition($alatbayar, $alatbayar->getTable())->position;
             $alatbayar->page = ceil($alatbayar->position / ($request->limit ?? 10));
 

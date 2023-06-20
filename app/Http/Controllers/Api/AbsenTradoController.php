@@ -78,12 +78,19 @@ class AbsenTradoController extends Controller
     /**
      * @ClassName 
      */
-    public function store(StoreAbsenTradoRequest $request) : JsonResponse
+    public function store(StoreAbsenTradoRequest $request): JsonResponse
     {
         DB::beginTransaction();
 
         try {
-            $absenTrado = (new AbsenTrado())->processStore($request->all());
+            $data = [
+                'kodeabsen' => $request->kodeabsen ?? '',
+                'keterangan' => $request->keterangan ?? '',
+                'statusaktif' => $request->statusaktif ?? '',
+                'key' => $request->key ?? '',
+                'value' => $request->value ?? ''
+            ];
+            $absenTrado = (new AbsenTrado())->processStore($data);
             $absenTrado->position = $this->getPosition($absenTrado, $absenTrado->getTable())->position;
             $absenTrado->page = ceil($absenTrado->position / ($request->limit ?? 10));
 
@@ -95,7 +102,7 @@ class AbsenTradoController extends Controller
             ], 201);
         } catch (\Throwable $th) {
             DB::rollBack();
-            throw $th;      
+            throw $th;
         }
     }
 
@@ -110,22 +117,30 @@ class AbsenTradoController extends Controller
     /**
      * @ClassName 
      */
-    public function update(UpdateAbsenTradoRequest $request, AbsenTrado $absentrado) : JsonResponse
+    public function update(UpdateAbsenTradoRequest $request, AbsenTrado $absentrado): JsonResponse
     {
         DB::beginTransaction();
 
         try {
-                $absentrado = (new AbsenTrado())->processUpdate($absentrado, $request->all());
-                $absentrado->position = $this->getPosition($absentrado, $absentrado->getTable())->position;
-                $absentrado->page = ceil($absentrado->position / ($request->limit ?? 10));
+            $data = [
+                'kodeabsen' => $request->kodeabsen ?? '',
+                'keterangan' => $request->keterangan ?? '',
+                'statusaktif' => $request->statusaktif ?? '',
+                'key' => $request->key ?? '',
+                'value' => $request->value ?? ''
+            ];
 
-                DB::commit();
+            $absentrado = (new AbsenTrado())->processUpdate($absentrado, $data);
+            $absentrado->position = $this->getPosition($absentrado, $absentrado->getTable())->position;
+            $absentrado->page = ceil($absentrado->position / ($request->limit ?? 10));
 
-                return response()->json([
-                    'status' => true,
-                    'message' => 'Berhasil diubah',
-                    'data' => $absentrado
-                ]);
+            DB::commit();
+
+            return response()->json([
+                'status' => true,
+                'message' => 'Berhasil diubah',
+                'data' => $absentrado
+            ]);
         } catch (\Throwable $th) {
             DB::rollBack();
 

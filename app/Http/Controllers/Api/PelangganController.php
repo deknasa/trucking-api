@@ -80,12 +80,24 @@ class PelangganController extends Controller
     /**
      * @ClassName 
      */
-    public function store(StorePelangganRequest $request) : JsonResponse
+    public function store(StorePelangganRequest $request): JsonResponse
     {
         DB::beginTransaction();
 
         try {
-            $pelanggan = (new Pelanggan())->processStore($request->all());
+            $data = [
+                'kodepelanggan' => $request->kodepelanggan,
+                'namapelanggan' => $request->namapelanggan,
+                'telp' => $request->telp,
+                'alamat' => $request->alamat,
+                'alamat2' => $request->alamat2 ?? '',
+                'kota' => $request->kota,
+                'kodepos' => $request->kodepos,
+                'keterangan' => $request->keterangan ?? '',
+                'modifiedby' => auth('api')->user()->name,
+                'statusaktif' => $request->statusaktif,
+            ];
+            $pelanggan = (new Pelanggan())->processStore($data);
             $pelanggan->position = $this->getPosition($pelanggan, $pelanggan->getTable())->position;
             $pelanggan->page = ceil($pelanggan->position / ($request->limit ?? 10));
 
@@ -114,13 +126,25 @@ class PelangganController extends Controller
     /**
      * @ClassName 
      */
-    public function update(UpdatePelangganRequest $request, Pelanggan $pelanggan) : JsonResponse
+    public function update(UpdatePelangganRequest $request, Pelanggan $pelanggan): JsonResponse
     {
         DB::beginTransaction();
 
         try {
-           
-            $pelanggan = (new Pelanggan())->processUpdate($pelanggan, $request->all());
+            $data = [
+                'kodepelanggan' => $request->kodepelanggan,
+                'namapelanggan' => $request->namapelanggan,
+                'telp' => $request->telp,
+                'alamat' => $request->alamat,
+                'alamat2' => $request->alamat2 ?? '',
+                'kota' => $request->kota,
+                'kodepos' => $request->kodepos,
+                'keterangan' => $request->keterangan ?? '',
+                'modifiedby' => auth('api')->user()->name,
+                'statusaktif' => $request->statusaktif,
+            ];
+
+            $pelanggan = (new Pelanggan())->processUpdate($pelanggan, $data);
             $pelanggan->position = $this->getPosition($pelanggan, $pelanggan->getTable())->position;
             $pelanggan->page = ceil($pelanggan->position / ($request->limit ?? 10));
 

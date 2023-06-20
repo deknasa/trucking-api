@@ -74,7 +74,16 @@ class PenerimaanTruckingController extends Controller
         DB::beginTransaction();
 
         try {
-            $penerimaanTrucking = (new PenerimaanTrucking())->processStore($request->all());
+            $data = [
+                'kodepenerimaan' => $request->kodepenerimaan,
+                'keterangan' => $request->keterangan ?? '',
+                'coadebet' => $request->coadebet ?? '',
+                'coakredit' => $request->coakredit ?? '',
+                'coapostingdebet' => $request->coapostingdebet ?? '',
+                'coapostingkredit' => $request->coapostingkredit ?? '',
+                'format' => $request->format
+            ];
+            $penerimaanTrucking = (new PenerimaanTrucking())->processStore($data);
             $penerimaanTrucking->position = $this->getPosition($penerimaanTrucking, $penerimaanTrucking->getTable())->position;
             $penerimaanTrucking->page = ceil($penerimaanTrucking->position / ($request->limit ?? 10));
 
@@ -108,7 +117,17 @@ class PenerimaanTruckingController extends Controller
         DB::beginTransaction();
 
         try {
-            $penerimaanTrucking = (new PenerimaanTrucking())->processUpdate($penerimaanTrucking, $request->all());
+            $data = [
+                'kodepenerimaan' => $request->kodepenerimaan,
+                'keterangan' => $request->keterangan ?? '',
+                'coadebet' => $request->coadebet ?? '',
+                'coakredit' => $request->coakredit ?? '',
+                'coapostingdebet' => $request->coapostingdebet ?? '',
+                'coapostingkredit' => $request->coapostingkredit ?? '',
+                'format' => $request->format
+            ];
+
+            $penerimaanTrucking = (new PenerimaanTrucking())->processUpdate($penerimaanTrucking, $data);
             $penerimaanTrucking->position = $this->getPosition($penerimaanTrucking, $penerimaanTrucking->getTable())->position;
             $penerimaanTrucking->page = ceil($penerimaanTrucking->position / ($request->limit ?? 10));
 

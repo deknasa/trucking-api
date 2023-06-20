@@ -73,7 +73,16 @@ class PengeluaranTruckingController extends Controller
         DB::beginTransaction();
 
         try {
-            $pengeluaranTrucking = (new PengeluaranTrucking())->processStore($request->all());
+            $data = [
+                'kodepengeluaran' => $request->kodepengeluaran,
+                'keterangan' => $request->keterangan ?? '',
+                'coadebet' => $request->coadebet ?? '',
+                'coakredit' => $request->coakredit ?? '',
+                'coapostingdebet' => $request->coapostingdebet ?? '',
+                'coapostingkredit' => $request->coapostingkredit ?? '',
+                'format' => $request->format
+            ];
+            $pengeluaranTrucking = (new PengeluaranTrucking())->processStore($data);
             $pengeluaranTrucking->position = $this->getPosition($pengeluaranTrucking, $pengeluaranTrucking->getTable())->position;
             $pengeluaranTrucking->page = ceil($pengeluaranTrucking->position / ($request->limit ?? 10));
 
@@ -107,7 +116,17 @@ class PengeluaranTruckingController extends Controller
     {
         DB::beginTransaction();
         try {
-            $pengeluaranTrucking = (new PengeluaranTrucking())->processUpdate($pengeluaranTrucking, $request->all());
+            $data = [
+                'kodepengeluaran' => $request->kodepengeluaran,
+                'keterangan' => $request->keterangan ?? '',
+                'coadebet' => $request->coadebet ?? '',
+                'coakredit' => $request->coakredit ?? '',
+                'coapostingdebet' => $request->coapostingdebet ?? '',
+                'coapostingkredit' => $request->coapostingkredit ?? '',
+                'format' => $request->format
+            ];
+
+            $pengeluaranTrucking = (new PengeluaranTrucking())->processUpdate($pengeluaranTrucking, $data);
             $pengeluaranTrucking->position = $this->getPosition($pengeluaranTrucking, $pengeluaranTrucking->getTable())->position;
             $pengeluaranTrucking->page = ceil($pengeluaranTrucking->position / ($request->limit ?? 10));
 
