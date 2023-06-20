@@ -44,12 +44,25 @@ class AkunPusatController extends Controller
     /**
      * @ClassName 
      */
-    public function store(StoreAkunPusatRequest $request) : JsonResponse
+    public function store(StoreAkunPusatRequest $request): JsonResponse
     {
         DB::beginTransaction();
 
         try {
-            $akunPusat = (new AkunPusat())->processStore($request->all());
+            $data = [
+                'coa' => $request->coa,
+                'keterangancoa' => $request->keterangancoa,
+                'type' => $request->type,
+                'level' => $request->level,
+                'parent' => $request->parent,
+                'statuscoa' => $request->statuscoa,
+                'statusaccountpayable' => $request->statusaccountpayable,
+                'statusneraca' => $request->statusneraca,
+                'statuslabarugi' => $request->statuslabarugi,
+                'coamain' => $request->coamain,
+                'statusaktif' => $request->statusaktif,
+            ];
+            $akunPusat = (new AkunPusat())->processStore($data);
             $akunPusat->position = $this->getPosition($akunPusat, $akunPusat->getTable())->position;
             $akunPusat->page = ceil($akunPusat->position / ($request->limit ?? 10));
 
@@ -78,13 +91,25 @@ class AkunPusatController extends Controller
     /**
      * @ClassName 
      */
-    public function update(UpdateAkunPusatRequest $request, AkunPusat $akunPusat) : JsonResponse
+    public function update(UpdateAkunPusatRequest $request, AkunPusat $akunPusat): JsonResponse
     {
         DB::beginTransaction();
 
         try {
-            
-            $akunPusat = (new AkunPusat())->processUpdate($akunPusat, $request->all());
+            $data = [
+                'coa' => $request->coa,
+                'keterangancoa' => $request->keterangancoa,
+                'type' => $request->type,
+                'level' => $request->level,
+                'parent' => $request->parent,
+                'statuscoa' => $request->statuscoa,
+                'statusaccountpayable' => $request->statusaccountpayable,
+                'statusneraca' => $request->statusneraca,
+                'statuslabarugi' => $request->statuslabarugi,
+                'coamain' => $request->coamain,
+                'statusaktif' => $request->statusaktif,
+            ];
+            $akunPusat = (new AkunPusat())->processUpdate($akunPusat, $data);
             $akunPusat->position = $this->getPosition($akunPusat, $akunPusat->getTable())->position;
             $akunPusat->page = ceil($akunPusat->position / ($request->limit ?? 10));
 

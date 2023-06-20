@@ -52,7 +52,12 @@ class SatuanController extends Controller
         DB::beginTransaction();
 
         try {
-            $satuan = (new Satuan())->processStore($request->all());
+            $data = [
+                'satuan' => $request->satuan,
+                'statusaktif' => $request->statusaktif
+            ];
+
+            $satuan = (new Satuan())->processStore($data);
             $satuan->position = $this->getPosition($satuan, $satuan->getTable())->position;
             $satuan->page = ceil($satuan->position / ($request->limit ?? 10));
 
@@ -85,7 +90,12 @@ class SatuanController extends Controller
         DB::beginTransaction();
 
         try {
-            $satuan = (new Satuan())->processUpdate($satuan, $request->all());
+            $data = [
+                'satuan' => $request->satuan,
+                'statusaktif' => $request->statusaktif
+            ];
+
+            $satuan = (new Satuan())->processUpdate($satuan, $data);
             $satuan->position = $this->getPosition($satuan, $satuan->getTable())->position;
             $satuan->page = ceil($satuan->position / ($request->limit ?? 10));
 

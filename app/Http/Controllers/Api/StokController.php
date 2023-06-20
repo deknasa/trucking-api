@@ -81,11 +81,26 @@ class StokController extends Controller
     /**
      * @ClassName 
      */
-    public function store(StoreStokRequest $request) : JsonResponse
+    public function store(StoreStokRequest $request): JsonResponse
     {
         DB::beginTransaction();
         try {
-            $stok = (new Stok())->processStore($request->all());
+            $data = [
+                'keterangan' => $request->keterangan,
+                'namastok' => $request->namastok,
+                'namaterpusat' => $request->namaterpusat,
+                'statusaktif' => $request->statusaktif,
+                'kelompok_id' => $request->kelompok_id,
+                'subkelompok_id' => $request->subkelompok_id,
+                'kategori_id' => $request->kategori_id,
+                'merk_id' => $request->merk_id ?? 0,
+                'jenistrado_id' => $request->jenistrado_id ?? 0,
+                'keterangan' => $request->keterangan ?? '',
+                'qtymin' => $request->qtymin ?? 0,
+                'qtymax' => $request->qtymax ?? 0,
+
+            ];
+            $stok = (new Stok())->processStore($data);
             $stok->position = $this->getPosition($stok, $stok->getTable())->position;
             $stok->page = ceil($stok->position / ($request->limit ?? 10));
             // $this->stok = $stok;
@@ -134,7 +149,23 @@ class StokController extends Controller
 
         DB::beginTransaction();
         try {
-            $stok = (new Stok())->processUpdate($stok, $request->all());
+            $data = [
+                'keterangan' => $request->keterangan,
+                'namastok' => $request->namastok,
+                'namaterpusat' => $request->namaterpusat,
+                'statusaktif' => $request->statusaktif,
+                'kelompok_id' => $request->kelompok_id,
+                'subkelompok_id' => $request->subkelompok_id,
+                'kategori_id' => $request->kategori_id,
+                'merk_id' => $request->merk_id ?? 0,
+                'jenistrado_id' => $request->jenistrado_id ?? 0,
+                'keterangan' => $request->keterangan ?? '',
+                'qtymin' => $request->qtymin ?? 0,
+                'qtymax' => $request->qtymax ?? 0,
+
+            ];
+
+            $stok = (new Stok())->processUpdate($stok, $data);
             $stok->position = $this->getPosition($stok, $stok->getTable())->position;
             $stok->page = ceil($stok->position / ($request->limit ?? 10));
 
@@ -157,7 +188,7 @@ class StokController extends Controller
     public function destroy(Request $request, $id)
     {
         DB::beginTransaction();
-        
+
         try {
             $stok = (new Stok())->processDestroy($id);
             $selected = $this->getPosition($stok, $stok->getTable(), true);

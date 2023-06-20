@@ -85,7 +85,17 @@ class BankController extends Controller
     {
         DB::beginTransaction();
         try {
-            $bank = (new Bank())->processStore($request->all());
+            $data = [
+                'kodebank' => $request->kodebank,
+                'namabank' => $request->namabank,
+                'coa' => $request->coa,
+                'tipe' => $request->tipe,
+                'statusaktif' => $request->statusaktif,
+                'formatpenerimaan' => $request->formatpenerimaan,
+                'formatpengeluaran' => $request->formatpengeluaran,
+            ];
+
+            $bank = (new Bank())->processStore($data);
             $bank->position = $this->getPosition($bank, $bank->getTable())->position;
             $bank->page = ceil($bank->position / ($request->limit ?? 10));
 
@@ -117,7 +127,17 @@ class BankController extends Controller
     {
         DB::beginTransaction();
         try {
-            $bank = (new Bank())->processUpdate($bank, $request->all());
+            $data = [
+                'kodebank' => $request->kodebank,
+                'namabank' => $request->namabank,
+                'coa' => $request->coa,
+                'tipe' => $request->tipe,
+                'statusaktif' => $request->statusaktif,
+                'formatpenerimaan' => $request->formatpenerimaan,
+                'formatpengeluaran' => $request->formatpengeluaran,
+            ];
+
+            $bank = (new Bank())->processUpdate($bank, $data);
             $bank->position = $this->getPosition($bank, $bank->getTable())->position;
             $bank->page = ceil($bank->position / ($request->limit ?? 10));
 

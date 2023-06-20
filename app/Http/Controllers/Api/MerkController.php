@@ -81,16 +81,21 @@ class MerkController extends Controller
     /**
      * @ClassName 
      */
-    public function store(StoreMerkRequest $request) : JsonResponse
+    public function store(StoreMerkRequest $request): JsonResponse
     {
         DB::beginTransaction();
 
         try {
-            $merk = (new Merk())->processStore($request->all());
+            $data = [
+                'kodemerk' => $request->kodemerk,
+                'keterangan' => $request->keterangan ?? '',
+                'statusaktif' => $request->statusaktif,
+            ];
+            $merk = (new Merk())->processStore($data);
             $merk->position = $this->getPosition($merk, $merk->getTable())->position;
             $merk->page = ceil($merk->position / ($request->limit ?? 10));
 
-            DB::commit();   
+            DB::commit();
 
             return response()->json([
                 'status' => true,
@@ -115,12 +120,17 @@ class MerkController extends Controller
     /**
      * @ClassName 
      */
-    public function update(UpdateMerkRequest $request, Merk $merk) : JsonResponse
+    public function update(UpdateMerkRequest $request, Merk $merk): JsonResponse
     {
         DB::beginTransaction();
         try {
+            $data = [
+                'kodemerk' => $request->kodemerk,
+                'keterangan' => $request->keterangan ?? '',
+                'statusaktif' => $request->statusaktif,
+            ];
 
-            $merk = (new Merk())->processUpdate($merk, $request->all());
+            $merk = (new Merk())->processUpdate($merk, $data);
             $merk->position = $this->getPosition($merk, $merk->getTable())->position;
             $merk->page = ceil($merk->position / ($request->limit ?? 10));
 

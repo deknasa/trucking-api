@@ -388,9 +388,10 @@ class Gudang extends MyModel
             $detaillogtrail[] = $stokpersediaan->toArray();
         }
 
-        if (!$stokpersediaan->save()) {
+        if (!$dataexist == true) {
             throw new \Exception('Error store stok persediaan.');
         }
+
         (new LogTrail())->processStore([
             'namatabel' => strtoupper($stokpersediaan->getTable()),
             'postingdari' => 'STOK PERSEDIAAN',
@@ -400,10 +401,6 @@ class Gudang extends MyModel
             'datajson' => json_encode($detaillogtrail),
             'modifiedby' => $gudang->modifiedby
         ]);
-
-        if ($dataexist == true) {
-            (new LogTrail())->processStore([]);
-        }
 
         return $gudang;
     }

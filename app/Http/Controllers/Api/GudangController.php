@@ -38,19 +38,20 @@ class GudangController extends Controller
         ]);
     }
 
-    public function cekValidasi($id) {
-        
-        $gudang= new Gudang();
-        $cekdata=$gudang->cekvalidasihapus($id);
-        
-        if ($cekdata['kondisi']==true) {
+    public function cekValidasi($id)
+    {
+
+        $gudang = new Gudang();
+        $cekdata = $gudang->cekvalidasihapus($id);
+
+        if ($cekdata['kondisi'] == true) {
             $query = DB::table('error')
-            ->select(
-                DB::raw("ltrim(rtrim(keterangan))+' (".$cekdata['keterangan'].")' as keterangan")
+                ->select(
+                    DB::raw("ltrim(rtrim(keterangan))+' (" . $cekdata['keterangan'] . ")' as keterangan")
                 )
-            ->where('kodeerror', '=', 'SATL')
-            ->get();
-        $keterangan = $query['0'];
+                ->where('kodeerror', '=', 'SATL')
+                ->get();
+            $keterangan = $query['0'];
 
             $data = [
                 'status' => false,
@@ -60,7 +61,6 @@ class GudangController extends Controller
             ];
 
             return response($data);
-         
         } else {
             $data = [
                 'status' => false,
@@ -69,7 +69,7 @@ class GudangController extends Controller
                 'kondisi' => $cekdata['kondisi'],
             ];
 
-            return response($data); 
+            return response($data);
         }
     }
 
@@ -85,12 +85,16 @@ class GudangController extends Controller
     /**
      * @ClassName 
      */
-    public function store(StoreGudangRequest $request) : JsonResponse
+    public function store(StoreGudangRequest $request): JsonResponse
     {
         DB::beginTransaction();
 
         try {
-            $gudang = (new Gudang())->processStore($request->all());
+            $data = [
+                'gudang' => $request->gudang,
+                'statusaktif' => $request->statusaktif
+            ];
+            $gudang = (new Gudang())->processStore($data);
             $selected = $this->getPosition($gudang, $gudang->getTable());
             $gudang->position = $selected->position;
             $gudang->page = ceil($gudang->position / ($request->limit ?? 10));
@@ -119,11 +123,16 @@ class GudangController extends Controller
     /**
      * @ClassName 
      */
-    public function update(UpdateGudangRequest $request, Gudang $gudang) : JsonResponse
+    public function update(UpdateGudangRequest $request, Gudang $gudang): JsonResponse
     {
         DB::beginTransaction();
         try {
-            $gudang = (new Gudang())->processUpdate($gudang, $request->all());
+            $data = [
+                'gudang' => $request->gudang ?? '',
+                'statusaktif' => $request->statusaktif
+            ];
+
+            $gudang = (new Gudang())->processUpdate($gudang, $data);
             $gudang->position = $this->getPosition($gudang, $gudang->getTable())->position;
             $gudang->page = ceil($gudang->position / ($request->limit ?? 10));
 
@@ -200,44 +209,42 @@ class GudangController extends Controller
             ]);
         } else {
 
-        $response = $this->index();
-        $decodedResponse = json_decode($response->content(), true);
-        $gudangs = $decodedResponse['data'];
+            $response = $this->index();
+            $decodedResponse = json_decode($response->content(), true);
+            $gudangs = $decodedResponse['data'];
 
-        $judulLaporan = $gudangs[0]['judulLaporan'];
+            $judulLaporan = $gudangs[0]['judulLaporan'];
 
-        $i = 0;
-        foreach ($gudangs as $index => $params) {
+            $i = 0;
+            foreach ($gudangs as $index => $params) {
 
-            $statusaktif = $params['statusaktif'];
+                $statusaktif = $params['statusaktif'];
 
-            $result = json_decode($statusaktif, true);
+                $result = json_decode($statusaktif, true);
 
-            $statusaktif = $result['MEMO'];
-
-
-            $gudangs[$i]['statusaktif'] = $statusaktif;
-
-        
-            $i++;
+                $statusaktif = $result['MEMO'];
 
 
+                $gudangs[$i]['statusaktif'] = $statusaktif;
+
+
+                $i++;
+            }
+            $columns = [
+                [
+                    'label' => 'No',
+                ],
+                [
+                    'label' => 'Gudang',
+                    'index' => 'gudang',
+                ],
+                [
+                    'label' => 'Status Aktif',
+                    'index' => 'statusaktif',
+                ],
+            ];
+
+            $this->toExcel($judulLaporan, $gudangs, $columns);
         }
-        $columns = [
-            [
-                'label' => 'No',
-            ],
-            [
-                'label' => 'Gudang',
-                'index' => 'gudang',
-            ],
-            [
-                'label' => 'Status Aktif',
-                'index' => 'statusaktif',
-            ],
-        ];
-
-        $this->toExcel($judulLaporan, $gudangs, $columns);
     }
-}
 }

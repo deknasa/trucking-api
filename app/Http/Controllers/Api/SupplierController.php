@@ -103,16 +103,38 @@ class SupplierController extends Controller
     /**
      * @ClassName 
      */
-    public function store(StoreSupplierRequest $request) : JsonResponse
+    public function store(StoreSupplierRequest $request): JsonResponse
     {
         DB::beginTransaction();
 
         try {
-            $supplier = (new Supplier())->processStore($request->all());
+            $data = [
+                'namasupplier' => $request->namasupplier,
+                'namakontak' => $request->namakontak,
+                'alamat' => $request->alamat,
+                'kota' => $request->kota,
+                'kodepos' => $request->kodepos,
+                'notelp1' => $request->notelp1,
+                'notelp2' => $request->notelp2 ?? '',
+                'email' => $request->email,
+                'statusaktif' => $request->statusaktif,
+                'web' => $request->web,
+                'namapemilik' => $request->namapemilik,
+                'jenisusaha' => $request->jenisusaha,
+                // 'top' => $request->top,
+                'bank' => $request->bank,
+                'coa' => $request->coa,
+                'rekeningbank' => $request->rekeningbank,
+                'namarekening' => $request->namarekening,
+                'jabatan' => $request->jabatan,
+                'statusdaftarharga' => $request->statusdaftarharga,
+                'kategoriusaha' => $request->kategoriusaha,
+            ];
+            $supplier = (new Supplier())->processStore($data);
             $supplier->position = $this->getPosition($supplier, $supplier->getTable())->position;
             $supplier->page = ceil($supplier->position / ($request->limit ?? 10));
 
-            DB::commit();   
+            DB::commit();
 
             return response()->json([
                 'status' => true,
@@ -128,12 +150,35 @@ class SupplierController extends Controller
     /**
      * @ClassName 
      */
-    public function update(UpdateSupplierRequest $request, Supplier $supplier) : JsonResponse
+    public function update(UpdateSupplierRequest $request, Supplier $supplier): JsonResponse
     {
         DB::beginTransaction();
 
         try {
-            $supplier = (new Supplier())->processUpdate($supplier, $request->all());
+            $data = [
+                'namasupplier' => $request->namasupplier,
+                'namakontak' => $request->namakontak,
+                'alamat' => $request->alamat,
+                'kota' => $request->kota,
+                'kodepos' => $request->kodepos,
+                'notelp1' => $request->notelp1,
+                'notelp2' => $request->notelp2 ?? '',
+                'email' => $request->email,
+                'statusaktif' => $request->statusaktif,
+                'web' => $request->web,
+                'namapemilik' => $request->namapemilik,
+                'jenisusaha' => $request->jenisusaha,
+                // 'top' => $request->top,
+                'bank' => $request->bank,
+                'coa' => $request->coa,
+                'rekeningbank' => $request->rekeningbank,
+                'namarekening' => $request->namarekening,
+                'jabatan' => $request->jabatan,
+                'statusdaftarharga' => $request->statusdaftarharga,
+                'kategoriusaha' => $request->kategoriusaha,
+            ];
+
+            $supplier = (new Supplier())->processUpdate($supplier, $data);
             $supplier->position = $this->getPosition($supplier, $supplier->getTable())->position;
             $supplier->page = ceil($supplier->position / ($request->limit ?? 10));
 
@@ -196,7 +241,6 @@ class SupplierController extends Controller
             return response([
                 'status' => true,
             ]);
-
         } else {
 
             $response = $this->index();
@@ -307,6 +351,5 @@ class SupplierController extends Controller
 
             $this->toExcel($judulLaporan, $suppliers, $columns);
         }
-
     }
 }

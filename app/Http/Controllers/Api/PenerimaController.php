@@ -34,17 +34,18 @@ class PenerimaController extends Controller
         ]);
     }
 
-    public function cekValidasi($id) {
-        $penerima= new Penerima();
-        $cekdata=$penerima->cekvalidasihapus($id);
-        if ($cekdata['kondisi']==true) {
+    public function cekValidasi($id)
+    {
+        $penerima = new Penerima();
+        $cekdata = $penerima->cekvalidasihapus($id);
+        if ($cekdata['kondisi'] == true) {
             $query = DB::table('error')
-            ->select(
-                DB::raw("ltrim(rtrim(keterangan))+' (".$cekdata['keterangan'].")' as keterangan")
+                ->select(
+                    DB::raw("ltrim(rtrim(keterangan))+' (" . $cekdata['keterangan'] . ")' as keterangan")
                 )
-            ->where('kodeerror', '=', 'SATL')
-            ->get();
-        $keterangan = $query['0'];
+                ->where('kodeerror', '=', 'SATL')
+                ->get();
+            $keterangan = $query['0'];
 
             $data = [
                 'status' => false,
@@ -54,7 +55,6 @@ class PenerimaController extends Controller
             ];
 
             return response($data);
-         
         } else {
             $data = [
                 'status' => false,
@@ -63,7 +63,7 @@ class PenerimaController extends Controller
                 'kondisi' => $cekdata['kondisi'],
             ];
 
-            return response($data); 
+            return response($data);
         }
     }
 
@@ -78,18 +78,24 @@ class PenerimaController extends Controller
     /**
      * @ClassName 
      */
-    public function store(StorePenerimaRequest $request) : JsonResponse
+    public function store(StorePenerimaRequest $request): JsonResponse
     {
 
         DB::beginTransaction();
-// dd($request->npwp);
+        // dd($request->npwp);
         try {
-
-            $penerima = (new Penerima())->processStore($request->all());
+            $data = [
+                'namapenerima' => $request->namapenerima,
+                'npwp' => $request->npwp,
+                'noktp' => $request->noktp,
+                'statusaktif' => $request->statusaktif,
+                'statuskaryawan' => $request->statuskaryawan,
+            ];
+            $penerima = (new Penerima())->processStore($data);
             $penerima->position = $this->getPosition($penerima, $penerima->getTable())->position;
             $penerima->page = ceil($penerima->position / ($request->limit ?? 10));
 
-            DB::commit();  
+            DB::commit();
 
             return response()->json([
                 'status' => true,
@@ -114,12 +120,20 @@ class PenerimaController extends Controller
     /**
      * @ClassName 
      */
-    public function update(UpdatePenerimaRequest $request, Penerima $penerima) : JsonResponse
+    public function update(UpdatePenerimaRequest $request, Penerima $penerima): JsonResponse
     {
         DB::beginTransaction();
 
         try {
-            $penerima = (new Penerima())->processUpdate($penerima, $request->all());
+            $data = [
+                'namapenerima' => $request->namapenerima,
+                'npwp' => $request->npwp,
+                'noktp' => $request->noktp,
+                'statusaktif' => $request->statusaktif,
+                'statuskaryawan' => $request->statuskaryawan,
+            ];
+
+            $penerima = (new Penerima())->processUpdate($penerima, $data);
             $penerima->position = $this->getPosition($penerima, $penerima->getTable())->position;
             $penerima->page = ceil($penerima->position / ($request->limit ?? 10));
 
@@ -196,56 +210,56 @@ class PenerimaController extends Controller
             ]);
         } else {
 
-        $response = $this->index();
-        $decodedResponse = json_decode($response->content(), true);
-        $penerimas = $decodedResponse['data'];
+            $response = $this->index();
+            $decodedResponse = json_decode($response->content(), true);
+            $penerimas = $decodedResponse['data'];
 
-        $judulLaporan = $penerimas[0]['judulLaporan'];
+            $judulLaporan = $penerimas[0]['judulLaporan'];
 
-        $i = 0;
-        foreach ($penerimas as $index => $params) {
+            $i = 0;
+            foreach ($penerimas as $index => $params) {
 
-            $statusaktif = $params['statusaktif'];
-            $statusKaryawan = $params['statuskaryawan'];
+                $statusaktif = $params['statusaktif'];
+                $statusKaryawan = $params['statuskaryawan'];
 
-            $result = json_decode($statusaktif, true);
-            $resultKaryawan = json_decode($statusKaryawan, true);
+                $result = json_decode($statusaktif, true);
+                $resultKaryawan = json_decode($statusKaryawan, true);
 
-            $statusaktif = $result['MEMO'];
-            $statusKaryawan = $resultKaryawan['MEMO'];
+                $statusaktif = $result['MEMO'];
+                $statusKaryawan = $resultKaryawan['MEMO'];
 
-            $penerimas[$i]['statusaktif'] = $statusaktif;
-            $penerimas[$i]['statuskaryawan'] = $statusKaryawan;
-            $i++;
+                $penerimas[$i]['statusaktif'] = $statusaktif;
+                $penerimas[$i]['statuskaryawan'] = $statusKaryawan;
+                $i++;
+            }
+
+            $columns = [
+                [
+                    'label' => 'No',
+                ],
+                [
+                    'label' => 'Nama Penerima',
+                    'index' => 'namapenerima',
+                ],
+                [
+                    'label' => 'NPWP',
+                    'index' => 'npwp',
+                ],
+                [
+                    'label' => 'No KTP',
+                    'index' => 'noktp',
+                ],
+                [
+                    'label' => 'Status Aktif',
+                    'index' => 'statusaktif',
+                ],
+                [
+                    'label' => 'Status Karyawan',
+                    'index' => 'statuskaryawan',
+                ],
+            ];
+
+            $this->toExcel($judulLaporan, $penerimas, $columns);
         }
-
-        $columns = [
-            [
-                'label' => 'No',
-            ],
-            [
-                'label' => 'Nama Penerima',
-                'index' => 'namapenerima',
-            ],
-            [
-                'label' => 'NPWP',
-                'index' => 'npwp',
-            ],
-            [
-                'label' => 'No KTP',
-                'index' => 'noktp',
-            ],
-            [
-                'label' => 'Status Aktif',
-                'index' => 'statusaktif',
-            ],
-            [
-                'label' => 'Status Karyawan',
-                'index' => 'statuskaryawan',
-            ],
-        ];
-
-        $this->toExcel($judulLaporan, $penerimas, $columns);
-    }
     }
 }

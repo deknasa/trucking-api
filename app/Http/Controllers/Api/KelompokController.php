@@ -83,9 +83,13 @@ class KelompokController extends Controller
     public function store(StoreKelompokRequest $request) : JsonResponse
     {
         DB::beginTransaction();
-
         try {
-            $kelompok = (new Kelompok())->processStore($request->all());
+            $data = [
+                'kodekelompok' => $request->kodekelompok,
+                'keterangan' => $request->keterangan ?? '',
+                'statusaktif' => $request->statusaktif
+            ];
+            $kelompok = (new Kelompok())->processStore($data);
             $kelompok->position = $this->getPosition($kelompok, $kelompok->getTable())->position;
             $kelompok->page = ceil($kelompok->position / ($request->limit ?? 10));
 
@@ -117,7 +121,13 @@ class KelompokController extends Controller
     {
         DB::beginTransaction();
         try {
-            $kelompok = (new Kelompok())->processUpdate($kelompok, $request->all());
+            $data = [
+                'kodekelompok' => $request->kodekelompok,
+                'keterangan' => $request->keterangan ?? '',
+                'statusaktif' => $request->statusaktif
+            ];
+
+            $kelompok = (new Kelompok())->processUpdate($kelompok, $data);
             $kelompok->position = $this->getPosition($kelompok, $kelompok->getTable())->position;
             $kelompok->page = ceil($kelompok->position / ($request->limit ?? 10));
 

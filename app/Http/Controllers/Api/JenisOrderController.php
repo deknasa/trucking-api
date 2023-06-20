@@ -35,17 +35,18 @@ class JenisOrderController extends Controller
             ]
         ]);
     }
-    public function cekValidasi($id) {
-        $jenisOrder= new JenisOrder();
-        $cekdata=$jenisOrder->cekvalidasihapus($id);
-        if ($cekdata['kondisi']==true) {
+    public function cekValidasi($id)
+    {
+        $jenisOrder = new JenisOrder();
+        $cekdata = $jenisOrder->cekvalidasihapus($id);
+        if ($cekdata['kondisi'] == true) {
             $query = DB::table('error')
-            ->select(
-                DB::raw("ltrim(rtrim(keterangan))+' (".$cekdata['keterangan'].")' as keterangan")
+                ->select(
+                    DB::raw("ltrim(rtrim(keterangan))+' (" . $cekdata['keterangan'] . ")' as keterangan")
                 )
-            ->where('kodeerror', '=', 'SATL')
-            ->get();
-        $keterangan = $query['0'];
+                ->where('kodeerror', '=', 'SATL')
+                ->get();
+            $keterangan = $query['0'];
 
             $data = [
                 'status' => false,
@@ -55,7 +56,6 @@ class JenisOrderController extends Controller
             ];
 
             return response($data);
-         
         } else {
             $data = [
                 'status' => false,
@@ -64,10 +64,10 @@ class JenisOrderController extends Controller
                 'kondisi' => $cekdata['kondisi'],
             ];
 
-            return response($data); 
+            return response($data);
         }
     }
-    
+
     public function default()
     {
         $jenisOrder = new JenisOrder();
@@ -79,17 +79,23 @@ class JenisOrderController extends Controller
     /**
      * @ClassName 
      */
-    public function store(StoreJenisOrderRequest $request) : JsonResponse
+    public function store(StoreJenisOrderRequest $request): JsonResponse
     {
         DB::beginTransaction();
 
         try {
-            $jenisorder = (new JenisOrder())->processStore($request->all());
+            $data = [
+                'kodejenisorder' => $request->kodejenisorder ?? '',
+                'statusaktif' => $request->statusaktif ?? '',
+                'keterangan' => $request->keterangan ?? ''
+
+            ];
+            $jenisorder = (new JenisOrder())->processStore($data);
             $jenisorder->position = $this->getPosition($jenisorder, $jenisorder->getTable())->position;
             $jenisorder->page = ceil($jenisorder->position / ($request->limit ?? 10));
 
-                DB::commit();
-        
+            DB::commit();
+
             return response()->json([
                 'status' => true,
                 'message' => 'Berhasil disimpan',
@@ -112,21 +118,27 @@ class JenisOrderController extends Controller
     /**
      * @ClassName 
      */
-    public function update(UpdateJenisOrderRequest $request, JenisOrder $jenisorder) : JsonResponse
+    public function update(UpdateJenisOrderRequest $request, JenisOrder $jenisorder): JsonResponse
     {
         DB::beginTransaction();
         try {
-            $jenisorder = (new JenisOrder())->processUpdate($jenisorder, $request->all());
+            $data = [
+                'kodejenisorder' => $request->kodejenisorder ?? '',
+                'statusaktif' => $request->statusaktif ?? '',
+                'keterangan' => $request->keterangan ?? ''
+            ];
+
+            $jenisorder = (new JenisOrder())->processUpdate($jenisorder, $data);
             $jenisorder->position = $this->getPosition($jenisorder, $jenisorder->getTable())->position;
             $jenisorder->page = ceil($jenisorder->position / ($request->limit ?? 10));
 
             DB::commit();
 
-                return response()->json([
-                    'status' => true,
-                    'message' => 'Berhasil diubah',
-                    'data' => $jenisorder
-                ]);
+            return response()->json([
+                'status' => true,
+                'message' => 'Berhasil diubah',
+                'data' => $jenisorder
+            ]);
         } catch (\Throwable $th) {
             DB::rollBack();
             throw $th;
@@ -140,7 +152,7 @@ class JenisOrderController extends Controller
     public function destroy(Request $request, $id)
     {
         DB::beginTransaction();
-        
+
         try {
             $jenisorder = (new JenisOrder())->processDestroy($id);
             $selected = $this->getPosition($jenisorder, $jenisorder->getTable(), true);
@@ -194,46 +206,46 @@ class JenisOrderController extends Controller
             ]);
         } else {
 
-        $response = $this->index();
-        $decodedResponse = json_decode($response->content(), true);
-        $jenisorders = $decodedResponse['data'];
+            $response = $this->index();
+            $decodedResponse = json_decode($response->content(), true);
+            $jenisorders = $decodedResponse['data'];
 
-        $judulLaporan = $jenisorders[0]['judulLaporan'];
+            $judulLaporan = $jenisorders[0]['judulLaporan'];
 
-        $i = 0;
-        foreach ($jenisorders as $index => $params) {
+            $i = 0;
+            foreach ($jenisorders as $index => $params) {
 
-            $statusaktif = $params['statusaktif'];
+                $statusaktif = $params['statusaktif'];
 
-            $result = json_decode($statusaktif, true);
+                $result = json_decode($statusaktif, true);
 
-            $statusaktif = $result['MEMO'];
-
-
-            $jenisorders[$i]['statusaktif'] = $statusaktif;
+                $statusaktif = $result['MEMO'];
 
 
-            $i++;
+                $jenisorders[$i]['statusaktif'] = $statusaktif;
+
+
+                $i++;
+            }
+            $columns = [
+                [
+                    'label' => 'No',
+                ],
+                [
+                    'label' => 'Kode Jenis Order',
+                    'index' => 'kodejenisorder',
+                ],
+                [
+                    'label' => 'Keterangan',
+                    'index' => 'keterangan',
+                ],
+                [
+                    'label' => 'Status Aktif',
+                    'index' => 'statusaktif',
+                ],
+            ];
+
+            $this->toExcel($judulLaporan, $jenisorders, $columns);
         }
-        $columns = [
-            [
-                'label' => 'No',
-            ],
-            [
-                'label' => 'Kode Jenis Order',
-                'index' => 'kodejenisorder',
-            ],
-            [
-                'label' => 'Keterangan',
-                'index' => 'keterangan',
-            ],
-            [
-                'label' => 'Status Aktif',
-                'index' => 'statusaktif',
-            ],
-        ];
-
-        $this->toExcel($judulLaporan, $jenisorders, $columns);
-    }
     }
 }
