@@ -46,15 +46,23 @@ class KartuStok extends MyModel
         // if (request()->filter == $filter->id) {
         // dd('test');
         // dd($filter->text);
-        if (request()->filter == $filtergudang->id) {
-            $query = $this->getlaporan($tgldari, $tglsampai, request()->stokdari_id, request()->stoksampai_id, request()->datafilter, 0, 0, $filtergudang->text);
-        } else if (request()->filter == $filtertrado->id) {
-            $query = $this->getlaporan($tgldari, $tglsampai, request()->stokdari_id, request()->stoksampai_id, 0, request()->datafilter, 0, $filtertrado->text);
-        } else if (request()->filter == $filtergandengan->id) {
-            $query = $this->getlaporan($tgldari, $tglsampai, request()->stokdari_id, request()->stoksampai_id, 0, 0, request()->datafilter, $filtergandengan->text);
+        $datafilter=request()->datafilter ?? 0;
+        if ($datafilter==0) {
+            $query = $this->getall($tgldari, $tglsampai, request()->stokdari_id, request()->stoksampai_id, $datafilter, 0, 0, $filtergudang->text);
+
         } else {
-            $query = $this->getlaporan($tgldari, $tglsampai, request()->stokdari_id, request()->stoksampai_id, request()->datafilter, 0, 0, $filtergudang->text);
+            if (request()->filter == $filtergudang->id) {
+                $query = $this->getlaporan($tgldari, $tglsampai, request()->stokdari_id, request()->stoksampai_id, request()->datafilter, 0, 0, $filtergudang->text);
+            } else if (request()->filter == $filtertrado->id) {
+                $query = $this->getlaporan($tgldari, $tglsampai, request()->stokdari_id, request()->stoksampai_id, 0, request()->datafilter, 0, $filtertrado->text);
+            } else if (request()->filter == $filtergandengan->id) {
+                $query = $this->getlaporan($tgldari, $tglsampai, request()->stokdari_id, request()->stoksampai_id, 0, 0, request()->datafilter, $filtergandengan->text);
+            } else {
+                $query = $this->getlaporan($tgldari, $tglsampai, request()->stokdari_id, request()->stoksampai_id, request()->datafilter, 0, 0, $filtergudang->text);
+            }
+    
         }
+        
 
         $this->totalRows = $query->count();
         $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;
@@ -214,6 +222,159 @@ class KartuStok extends MyModel
         return $data;
     }
 
+    private function getall($tgldari, $tglsampai, $stokdari, $stoksampai, $gudang_id, $trado_id, $gandengan_id, $filter)
+    {
+
+        $temprekapall = '##temprekapall' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+        Schema::create($temprekapall, function ($table) {
+            $table->id();
+            $table->longText('lokasi')->nullable();
+            $table->string('kodebarang',1000)->nullable();
+            $table->string('namabarang', 1000)->nullable();
+            $table->dateTime('tglbukti')->nullable();
+            $table->string('nobukti', 100)->nullable();
+            $table->string('kategori_id',500)->nullable();
+            $table->double('qtymasuk', 15, 2)->nullable();
+            $table->double('nilaimasuk', 15, 2)->nullable();
+            $table->double('qtykeluar', 15, 2)->nullable();
+            $table->double('nilaikeluar', 15, 2)->nullable();
+            $table->double('qtysaldo', 15, 2)->nullable();
+            $table->double('nilaisaldo', 15, 2)->nullable();
+            $table->string('modifiedby', 100)->nullable();
+        });
+
+        $filtergudang = Parameter::where('grp', 'STOK PERSEDIAAN')->where('subgrp', 'STOK PERSEDIAAN')->where('text', 'GUDANG')->first();
+        $filtertrado = Parameter::where('grp', 'STOK PERSEDIAAN')->where('subgrp', 'STOK PERSEDIAAN')->where('text', 'TRADO')->first();
+        $filtergandengan = Parameter::where('grp', 'STOK PERSEDIAAN')->where('subgrp', 'STOK PERSEDIAAN')->where('text', 'GANDENGAN')->first();        
+
+
+        $querygudang = DB::table('gudang')->from(
+            DB::raw("gudang a with (readuncommitted)")
+            )->select(
+            'id',
+        )->orderBy('a.id','asc')
+        ->get();
+
+        $datadetail = json_decode($querygudang, true);
+        foreach ($datadetail as $item) {
+
+            $filter=$filtergudang->id;
+            $gandengan_id=0;
+            $trado_id=0;
+            $gudang_id=$item['id'];
+
+            DB::table($temprekapall)->insertUsing([
+                'lokasi',
+                'kodebarang',
+                'namabarang',
+                'tglbukti',
+                'nobukti',
+                'kategori_id',
+                'qtymasuk',
+                'nilaimasuk',
+                'qtykeluar',
+                'nilaikeluar',
+                'qtysaldo',
+                'nilaisaldo',
+                'modifiedby',
+            ], $this->getlaporan($tgldari, $tglsampai, $stokdari, $stoksampai, $gudang_id, $trado_id, $gandengan_id, $filter));
+    
+        }
+
+        $querytrado = DB::table('trado')->from(
+            DB::raw("trado a with (readuncommitted)")
+            )->select(
+            'id',
+        )->orderBy('a.id','asc')
+        ->get();
+
+        $datadetail = json_decode($querytrado, true);
+        foreach ($datadetail as $item) {
+
+            $filter=$filtertrado->id;
+            $gandengan_id=0;
+            $trado_id=$item['id'];
+            $gudang_id=0;
+
+            DB::table($temprekapall)->insertUsing([
+                'lokasi',
+                'kodebarang',
+                'namabarang',
+                'tglbukti',
+                'nobukti',
+                'kategori_id',
+                'qtymasuk',
+                'nilaimasuk',
+                'qtykeluar',
+                'nilaikeluar',
+                'qtysaldo',
+                'nilaisaldo',
+                'modifiedby',
+            ], $this->getlaporan($tgldari, $tglsampai, $stokdari, $stoksampai, $gudang_id, $trado_id, $gandengan_id, $filter));
+    
+        }        
+
+        $querygandengan = DB::table('gandengan')->from(
+            DB::raw("gandengan a with (readuncommitted)")
+            )->select(
+            'id',
+        )->orderBy('a.id','asc')
+        ->get();
+
+        $datadetail = json_decode($querygandengan, true);
+        foreach ($datadetail as $item) {
+
+            $filter=$filtergandengan->id;
+            $gandengan_id=$item['id'];
+            $trado_id=0;
+            $gudang_id=0;
+
+            DB::table($temprekapall)->insertUsing([
+                'lokasi',
+                'kodebarang',
+                'namabarang',
+                'tglbukti',
+                'nobukti',
+                'kategori_id',
+                'qtymasuk',
+                'nilaimasuk',
+                'qtykeluar',
+                'nilaikeluar',
+                'qtysaldo',
+                'nilaisaldo',
+                'modifiedby',
+            ], $this->getlaporan($tgldari, $tglsampai, $stokdari, $stoksampai, $gudang_id, $trado_id, $gandengan_id, $filter));
+    
+        }        
+
+
+
+        $datalist = DB::table($temprekapall)->from(
+            DB::raw($temprekapall . " as a")
+        )
+            ->select(
+                'a.lokasi',
+                'a.kodebarang',
+                'a.namabarang',
+                'a.tglbukti',
+                'a.nobukti',
+                'a.kategori_id',
+                'a.qtymasuk',
+                'a.nilaimasuk',
+                'a.qtykeluar',
+                'a.nilaikeluar',
+                'a.qtysaldo',
+                'a.nilaisaldo',
+                'a.modifiedby',
+            )
+            ->orderBy('a.id', 'asc');
+        // dd($datalist->get());
+        // dd($datalist->get());
+        return $datalist;
+
+
+    }
+
     private function getlaporan($tgldari, $tglsampai, $stokdari, $stoksampai, $gudang_id, $trado_id, $gandengan_id, $filter)
     {
 
@@ -221,6 +382,21 @@ class KartuStok extends MyModel
         $trado_id = $trado_id ?? 0;
         $gandengan_id = $gandengan_id ?? 0;
 
+        $lokasigudang= DB::table('gudang')->from(DB::raw("gudang with (readuncommitted)"))->select('gudang as lokasi')->where('id', $gudang_id)->first();
+        $lokasitrado= DB::table('trado')->from(DB::raw("trado with (readuncommitted)"))->select('kodetrado as lokasi')->where('id', $trado_id)->first();
+        $lokasigandengan= DB::table('gandengan')->from(DB::raw("gandengan with (readuncommitted)"))->select('kodegandengan as lokasi')->where('id', $gandengan_id)->first();
+        if (isset($lokasigudang)) {
+            $lokasi=$lokasigudang->lokasi;
+        }
+        if (isset($lokasitrado)) {
+            $lokasi=$lokasitrado->lokasi;
+ 
+        }
+        if (isset($lokasigandengan)) {
+            $lokasi=$lokasigandengan->lokasi;
+
+        }
+        // dd($lokasi);
 
 
         $filtergudang = Parameter::where('grp', 'STOK PERSEDIAAN')->where('subgrp', 'STOK PERSEDIAAN')->where('text', 'GUDANG')->first();
@@ -1131,10 +1307,31 @@ class KartuStok extends MyModel
             'modifiedby',
         ], $querylaporan);
 
+        $temprekapall = '##temprkpall' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+        Schema::create($temprekapall, function ($table) {
+            $table->id();
+            $table->longText('lokasi')->nullable();
+            $table->string('kodebarang',1000)->nullable();
+            $table->string('namabarang', 1000)->nullable();
+            $table->dateTime('tglbukti')->nullable();
+            $table->string('nobukti', 100)->nullable();
+            $table->string('kategori_id',500)->nullable();
+            $table->double('qtymasuk', 15, 2)->nullable();
+            $table->double('nilaimasuk', 15, 2)->nullable();
+            $table->double('qtykeluar', 15, 2)->nullable();
+            $table->double('nilaikeluar', 15, 2)->nullable();
+            $table->double('qtysaldo', 15, 2)->nullable();
+            $table->double('nilaisaldo', 15, 2)->nullable();
+            $table->string('modifiedby', 100)->nullable();
+        });
+        
+        
+
         $datalist = DB::table($templaporan)->from(
             DB::raw($templaporan . " as a")
         )
             ->select(
+                DB::raw("'".$lokasi."' as lokasi"),
                 'a.kodebarang',
                 'a.namabarang',
                 'a.tglbukti',
@@ -1152,6 +1349,44 @@ class KartuStok extends MyModel
             ->orderBy('a.tglbukti', 'asc')
             ->orderBy('a.id', 'asc');
         // dd($datalist->get());
+        // dd($datalist->get());
+
+        DB::table($temprekapall)->insertUsing([
+            'lokasi',
+            'kodebarang',
+            'namabarang',
+            'tglbukti',
+            'nobukti',
+            'kategori_id',
+            'qtymasuk',
+            'nilaimasuk',
+            'qtykeluar',
+            'nilaikeluar',
+            'qtysaldo',
+            'nilaisaldo',
+            'modifiedby',
+        ],  $datalist);
+
+        $datalist = DB::table($temprekapall)->from(
+            DB::raw($temprekapall . " as a")
+        )
+            ->select(
+                'a.lokasi',
+                'a.kodebarang',
+                'a.namabarang',
+                'a.tglbukti',
+                'a.nobukti',
+                'a.kategori_id',
+                'a.qtymasuk',
+                'a.nilaimasuk',
+                'a.qtykeluar',
+                'a.nilaikeluar',
+                'a.qtysaldo',
+                'a.nilaisaldo',
+                'a.modifiedby',
+            )
+            ->orderBy('a.id', 'asc');
+
         return $datalist;
     }
 
