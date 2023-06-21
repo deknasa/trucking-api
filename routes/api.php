@@ -1183,6 +1183,7 @@ route::middleware(['auth:api'])->group(function () {
     Route::get('laporanpinjamansupirkaryawan/report', [LaporanPinjamanSupirKaryawanController::class, 'report'])->name('laporanpinjamansupirkaryawan.report');
     Route::resource('laporanpinjamansupirkaryawan', LaporanPinjamanSupirKaryawanController::class)->whereNumber('laporanpinjamansupirkaryawan');
     Route::get('laporanpemotonganpinjamanperebs/report', [LaporanPemotonganPinjamanPerEBSController::class, 'report'])->name('laporanpemotonganpinjamanperebs.report');
+    Route::get('laporanpemotonganpinjamanperebs/export', [LaporanPemotonganPinjamanPerEBSController::class, 'export'])->name('laporanpemotonganpinjamanperebs.export');
     Route::resource('laporanpemotonganpinjamanperebs', LaporanPemotonganPinjamanPerEBSController::class)->whereNumber('laporanpemotonganpinjamanperebs');
     Route::get('laporansupirlebihdaritrado/report', [LaporanSupirLebihDariTradoController::class, 'report'])->name('laporansupirlebihdaritrado.report');
     Route::get('laporansupirlebihdaritrado/export', [LaporanSupirLebihDariTradoController::class, 'export'])->name('laporansupirlebihdaritrado.export');
