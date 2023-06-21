@@ -36,40 +36,29 @@ class BukaAbsensiController extends Controller
     {
         DB::beginTransaction();
         try {
-            $bukaAbsensi = new BukaAbsensi();
-            $bukaAbsensi->tglabsensi = date('Y-m-d', strtotime($request->tglabsensi));
-            $bukaAbsensi->modifiedby = auth('api')->user()->name;
 
-            
-            if ($bukaAbsensi->save()) {
-                $logTrail = [
-                    'namatabel' => strtoupper($bukaAbsensi->getTable()),
-                    'postingdari' => 'ENTRY BUKA ABSENSI',
-                    'idtrans' => $bukaAbsensi->id,
-                    'nobuktitrans' => $bukaAbsensi->id,
-                    'aksi' => 'ENTRY',
-                    'datajson' => $bukaAbsensi->toArray(),
-                    'modifiedby' => $bukaAbsensi->modifiedby
-                ];
 
-                $validatedLogTrail = new StoreLogTrailRequest($logTrail);
-                app(LogTrailController::class)->store($validatedLogTrail);
-
-                DB::commit();
-            }
-            $selected = $this->getPosition($bukaAbsensi, $bukaAbsensi->getTable());
-            $bukaAbsensi->position = $selected->position;
+            $data =[
+                'tglabsensi' => date('Y-m-d', strtotime($request->tglabsensi))
+            ];
+            /* Store header */
+            $bukaAbsensi = (new BukaAbsensi())->processStore($data);
+            /* Set position and page */
+            $bukaAbsensi->position = $this->getPosition($bukaAbsensi, $bukaAbsensi->getTable())->position;
             $bukaAbsensi->page = ceil($bukaAbsensi->position / ($request->limit ?? 10));
+            if (isset($request->limit)) {
+                $bukaAbsensi->page = ceil($bukaAbsensi->position / ($request->limit ?? 10));
+            }
 
-
-            return response([
-                'status' => true,
+            DB::commit();
+            return response()->json([
                 'message' => 'Berhasil disimpan',
-                'data' => $bukaAbsensi,
-            ], 201);
+                'data' => $bukaAbsensi
+            ], 201);    
         } catch (\Throwable $th) {
             DB::rollBack();
-            return response($th->getMessage());
+
+            throw $th;
         }
     }
 
@@ -93,40 +82,27 @@ class BukaAbsensiController extends Controller
     {
         DB::beginTransaction();
         try {
-            $bukaAbsensi = BukaAbsensi::findOrFail($id);
-            $bukaAbsensi->tglabsensi = date('Y-m-d', strtotime($request->tglabsensi));
-            $bukaAbsensi->modifiedby = auth('api')->user()->name;
-
-            
-            if ($bukaAbsensi->save()) {
-                $logTrail = [
-                    'namatabel' => strtoupper($bukaAbsensi->getTable()),
-                    'postingdari' => 'EDIT BUKA ABSENSI',
-                    'idtrans' => $bukaAbsensi->id,
-                    'nobuktitrans' => $bukaAbsensi->id,
-                    'aksi' => 'ENTRY',
-                    'datajson' => $bukaAbsensi->toArray(),
-                    'modifiedby' => $bukaAbsensi->modifiedby
-                ];
-
-                $validatedLogTrail = new StoreLogTrailRequest($logTrail);
-                app(LogTrailController::class)->store($validatedLogTrail);
-
-                DB::commit();
-            }
-            $selected = $this->getPosition($bukaAbsensi, $bukaAbsensi->getTable());
-            $bukaAbsensi->position = $selected->position;
+            $data =[
+                'tglabsensi' => date('Y-m-d', strtotime($request->tglabsensi))
+            ];
+            /* Store header */
+            $bukaAbsensi = (new BukaAbsensi())->processStore($data);
+            /* Set position and page */
+            $bukaAbsensi->position = $this->getPosition($bukaAbsensi, $bukaAbsensi->getTable())->position;
             $bukaAbsensi->page = ceil($bukaAbsensi->position / ($request->limit ?? 10));
+            if (isset($request->limit)) {
+                $bukaAbsensi->page = ceil($bukaAbsensi->position / ($request->limit ?? 10));
+            }
 
-
-            return response([
-                'status' => true,
+            DB::commit();
+            return response()->json([
                 'message' => 'Berhasil disimpan',
-                'data' => $bukaAbsensi,
-            ], 201);
+                'data' => $bukaAbsensi
+            ], 201);    
         } catch (\Throwable $th) {
             DB::rollBack();
-            return response($th->getMessage());
+
+            throw $th;
         }
     }
 
@@ -136,40 +112,24 @@ class BukaAbsensiController extends Controller
     public function destroy(Request $request, $id)
     {
         DB::beginTransaction();
-        $bukaAbsensi = new BukaAbsensi;
-        $bukaAbsensi = $bukaAbsensi->lockAndDestroy($id);
-        
-        if ($bukaAbsensi) {
-            $logTrail = [
-                'namatabel' => strtoupper($bukaAbsensi->getTable()),
-                'postingdari' => 'DELETE BUKA ABSENSI',
-                'idtrans' => $bukaAbsensi->id,
-                'nobuktitrans' => $bukaAbsensi->id,
-                'aksi' => 'ENTRY',
-                'datajson' => $bukaAbsensi->toArray(),
-                'modifiedby' => $bukaAbsensi->modifiedby
-            ];
-
-            $validatedLogTrail = new StoreLogTrailRequest($logTrail);
-            app(LogTrailController::class)->store($validatedLogTrail);
-            DB::commit();
-            $selected = $this->getPosition($bukaAbsensi, $bukaAbsensi->getTable());
-            $bukaAbsensi->position = $selected->position;
+        try {
+            // dd($bukaAbsensi);
+            $bukaAbsensi = (new BukaAbsensi())->processDestroy($id);
+            /* Set position and page */
+            $bukaAbsensi->position = $this->getPosition($bukaAbsensi, $bukaAbsensi->getTable())->position;
             $bukaAbsensi->page = ceil($bukaAbsensi->position / ($request->limit ?? 10));
+            if (isset($request->limit)) {
+                $bukaAbsensi->page = ceil($bukaAbsensi->position / ($request->limit ?? 10));
+            }
 
-
-            return response([
-                'status' => true,
+            DB::commit();
+            return response()->json([
                 'message' => 'Berhasil disimpan',
-                'data' => $bukaAbsensi,
-            ], 201);
-            
-        }else {
+                'data' => $bukaAbsensi
+            ], 201);    
+        } catch (\Throwable $th) {
             DB::rollBack();
-            return response([
-                'status' => false,
-                'message' => 'Gagal dihapus'
-            ]);
+            throw $th;
         }
     }
 }

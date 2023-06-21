@@ -31,7 +31,6 @@ class DateAllowedAbsen implements Rule
         $allowed = false ;
         
         $bukaAbsensi = BukaAbsensi::where('tglabsensi', '=', $date)->first();
-
         if($date == $today){
             $allowed = true;
         }

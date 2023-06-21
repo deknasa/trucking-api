@@ -443,8 +443,7 @@ class AbsensiSupirHeader extends MyModel
             "penerima" => '',
             "bank_id" => $bank->id,
             "pengeluaran_nobukti" => '',
-            "postingdari" => '',
-            "tglbukti" => 'ENTRY ABSENSI SUPIR',
+            "postingdari" => 'ENTRY ABSENSI SUPIR',
             
             "nominal" => $data['uangjalan'],
             "keterangan_detail" => $data['keterangan_detail'],
@@ -457,25 +456,150 @@ class AbsensiSupirHeader extends MyModel
 
         $absensiSupirLogTrail = (new LogTrail())->processStore([
             'namatabel' => strtoupper($absensiSupir->getTable()),
-            'postingdari' => $data['postingdari'] ??strtoupper('ENTRY ABSENSI SUPIR Header '),
+            'postingdari' => $data['postingdari'] ??strtoupper('EDIT ABSENSI SUPIR Header '),
             'idtrans' => $absensiSupir->id,
             'nobuktitrans' => $absensiSupir->nobukti,
-            'aksi' => 'ENTRY',
+            'aksi' => 'EDIT',
             'datajson' => $absensiSupir->toArray(),
             'modifiedby' => auth('api')->user()->user
         ]);
 
         $absensiSupirDetailLogTrail = (new LogTrail())->processStore([
             'namatabel' => strtoupper($absensiSupirDetail->getTable()),
-            'postingdari' => $data['postingdari'] ??strtoupper('ENTRY ABSENSI SUPIR detail '),
+            'postingdari' => $data['postingdari'] ??strtoupper('EDIT ABSENSI SUPIR detail '),
             'idtrans' => $absensiSupirLogTrail->id,
             'nobuktitrans' => $absensiSupir->nobukti,
-            'aksi' => 'ENTRY',
+            'aksi' => 'EDIT',
             'datajson' => $absensiSupirDetails,
             'modifiedby' => auth('api')->user()->user
         ]);
 
-        dd($kasgantungHeader);
+        // dd($kasgantungHeader);
+        return $absensiSupir;
+    }
+
+    public function processUpdate(AbsensiSupirHeader $absensiSupir,array $data): AbsensiSupirHeader
+    {
+
+        $group = 'ABSENSI';
+        $subGroup = 'ABSENSI';
+        $format = DB::table('parameter')->where('grp', $group)->where('subgrp', $subGroup)->first();
+        $statusCetak = Parameter::from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUSCETAK')->where('text', 'BELUM CETAK')->first();
+        $statusEditAbsensi = Parameter::from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS EDIT ABSENSI')->where('default', 'YA')->first();
+
+        /* Store header */
+        $absensiSupir->tglbukti = date('Y-m-d', strtotime($data['tglbukti']));
+        $absensiSupir->nominal = array_sum($data['uangjalan']);
+        $absensiSupir->statusformat = $format->id;
+        $absensiSupir->statuscetak = $statusCetak->id ?? 0;
+        $absensiSupir->statusapprovaleditabsensi  = $statusEditAbsensi->id;
+        $absensiSupir->modifiedby = auth('api')->user()->name;
+        
+        if (!$absensiSupir->save()) {
+            throw new \Exception("Error storing Absensi Supir Header.");
+        }
+
+        AbsensiSupirDetail::where('absensi_id', $absensiSupir->id)->delete();
+
+        /*STORE DETAIL*/
+        $absensiSupirDetail = [];
+        if (!$data['trado_id']) {
+            throw new \Exception("Error storing pengeluaran Stok Detail.");
+        }
+
+        for ($i = 0; $i < count($data['trado_id']); $i++) {
+            $absensiSupirDetail = AbsensiSupirDetail::processStore($absensiSupir,[
+                'absensi_id' => $absensiSupir->id,
+                'nobukti' => $absensiSupir->nobukti,
+                'trado_id' => $data['trado_id'][$i],
+                'supir_id' => $data['supir_id'][$i],
+                'keterangan' => $data['keterangan_detail'][$i],
+                'uangjalan' => $data['uangjalan'][$i],
+                'absen_id' => $data['absen_id'][$i] ?? '',
+                'jam' => $data['jam'][$i],
+                'modifiedby' => $absensiSupir->modifiedby,
+            ]);
+            $absensiSupirDetails[] = $absensiSupirDetail->toArray();
+        }
+        /*STORE KAS GANTUNG*/
+        $bank = DB::table('bank')->from(DB::raw("bank with (readuncommitted)"))->select('id')->where('tipe', '=', 'KAS')->first();
+        
+        $kasGantungRequest = [
+            "tglbukti" => $data['tglbukti'],
+            "penerima" => '',
+            "bank_id" => $bank->id,
+            "pengeluaran_nobukti" => '',
+            "postingdari" => 'ENTRY ABSENSI SUPIR',
+            
+            "nominal" => $data['uangjalan'],
+            "keterangan_detail" => $data['keterangan_detail'],
+        ];
+
+        $kasGantungHeader = KasGantungHeader::from(DB::raw("kasgantungheader with (readuncommitted)"))->where('nobukti', $absensiSupir->kasgantung_nobukti)->first();
+        $kasGantungHeader = (new KasGantungHeader())->processUpdate($kasGantungHeader,$kasGantungRequest);
+        
+        $absensiSupirLogTrail = (new LogTrail())->processStore([
+            'namatabel' => strtoupper($absensiSupir->getTable()),
+            'postingdari' => $data['postingdari'] ??strtoupper('EDIT ABSENSI SUPIR Header '),
+            'idtrans' => $absensiSupir->id,
+            'nobuktitrans' => $absensiSupir->nobukti,
+            'aksi' => 'EDIT',
+            'datajson' => $absensiSupir->toArray(),
+            'modifiedby' => auth('api')->user()->user
+        ]);
+
+        $absensiSupirDetailLogTrail = (new LogTrail())->processStore([
+            'namatabel' => strtoupper($absensiSupirDetail->getTable()),
+            'postingdari' => $data['postingdari'] ??strtoupper('EDIT ABSENSI SUPIR detail '),
+            'idtrans' => $absensiSupirLogTrail->id,
+            'nobuktitrans' => $absensiSupir->nobukti,
+            'aksi' => 'EDIT',
+            'datajson' => $absensiSupirDetails,
+            'modifiedby' => auth('api')->user()->user
+        ]);
+
+        // dd($kasgantungHeader);
+        return $absensiSupir;
+
+    }
+
+
+    public function processDestroy($id, $postingdari =""): AbsensiSupirHeader
+    {
+        $absensiSupir = AbsensiSupirHeader::findOrFail($id);
+        $dataHeader =  $absensiSupir->toArray();
+        $absensiSupirDetail = AbsensiSupirDetail::where('absensi_id', '=', $absensiSupir->id)->get();
+        $dataDetail = $absensiSupirDetail->toArray();
+        
+        /*DELETE EXISTING DETAIL*/
+        $absensiSupirDetail = AbsensiSupirDetail::where('absensi_id', $absensiSupir->id)->lockForUpdate()->delete();
+        
+        /*DELETE EXISTING JURNAL*/
+        $kasGantungHeader = KasGantungHeader::where('nobukti',$absensiSupir->kasgantung_nobukti)->first();
+        
+        (new KasGantungHeader())->processDestroy($kasGantungHeader->id,($postingdari =="") ? $postingdari :strtoupper('DELETE ABSENSI SUPIR detail'));
+       
+        $absensiSupir = $absensiSupir->lockAndDestroy($id);
+        $hutangLogTrail = (new LogTrail())->processStore([
+            'namatabel' => $this->table,
+            'postingdari' => ($postingdari =="") ? $postingdari :strtoupper('DELETE ABSENSI SUPIR Header'),
+            'idtrans' => $absensiSupir->id,
+            'nobuktitrans' => $absensiSupir->nobukti,
+            'aksi' => 'DELETE',
+            'datajson' =>$dataHeader,
+            'modifiedby' => auth('api')->user()->name
+        ]);
+ 
+        (new LogTrail())->processStore([
+            'namatabel' => 'PENERIMAANDETAIL',
+            'postingdari' => ($postingdari =="") ? $postingdari :strtoupper('DELETE ABSENSI SUPIR detail'),
+            'idtrans' => $hutangLogTrail['id'],
+            'nobuktitrans' => $absensiSupir->nobukti,
+            'aksi' => 'DELETE',
+            'datajson' =>$dataDetail,
+            'modifiedby' => auth('api')->user()->name
+        ]);
+ 
         return $absensiSupir;
     }
 }
