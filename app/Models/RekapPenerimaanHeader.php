@@ -67,7 +67,8 @@ class RekapPenerimaanHeader extends MyModel
             ->select(
                 'a.nobukti'
             )
-            ->join(DB::raw("jurnalumumpusatheader b with (readuncommitted)"),'a.penerimaan_nobukti','b.nobukti')
+            ->join(DB::raw("rekappenerimaandetail c with (readuncommitted)"),'a.nobukti','c.nobukti')
+            ->join(DB::raw("jurnalumumpusatheader b with (readuncommitted)"),'c.penerimaan_nobukti','b.nobukti')
             ->where('a.nobukti', '=', $nobukti)
             ->first();
         if (isset($hutangBayar)) {
