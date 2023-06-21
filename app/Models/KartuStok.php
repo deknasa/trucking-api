@@ -1144,8 +1144,8 @@ class KartuStok extends MyModel
                 'a.nilaimasuk',
                 'a.qtykeluar',
                 'a.nilaikeluar',
-                DB::raw("sum ((isnull(a.qtysaldo,0)+a.qtymasuk)-a.qtykeluar) over (order by a.id ASC) as qtysaldo"),
-                DB::raw("sum ((isnull(a.nilaisaldo,0)+a.nilaimasuk)-a.nilaikeluar) over (order by a.id ASC) as nilaisaldo"),
+                DB::raw("sum ((isnull(a.qtysaldo,0)+a.qtymasuk)-a.qtykeluar) over (order by a.tglbukti,a.id ASC) as qtysaldo"),
+                DB::raw("sum ((isnull(a.nilaisaldo,0)+a.nilaimasuk)-a.nilaikeluar) over (order by a.tglbukti,a.id ASC) as nilaisaldo"),
                 'a.modifiedby',
             )
             ->leftjoin('kategori as B', 'a.kategori_id', 'B.id')
