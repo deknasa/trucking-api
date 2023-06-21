@@ -68,7 +68,7 @@ class GetKartuStokRequest extends FormRequest
         foreach ($dataFilter as $item) {
             $status[] = $item['id'];
         }
-
+        $status[] = 0;
         
         $rules =  [
             'dari' => [
@@ -107,7 +107,7 @@ class GetKartuStokRequest extends FormRequest
                 'required',
                 Rule::in($status),
                 'numeric',
-                'min:1'
+                // 'min:1'
             ],
             'gudang' => [
                 'required',
