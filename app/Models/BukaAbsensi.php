@@ -123,4 +123,71 @@ class BukaAbsensi extends MyModel
 
         return $temp;
     }
+
+    public function processStore(array $data): BukaAbsensi
+    {
+        $bukaAbsensi = new BukaAbsensi();
+        $bukaAbsensi->tglabsensi = date('Y-m-d', strtotime($data['tglabsensi']));
+        $bukaAbsensi->modifiedby = auth('api')->user()->name;
+
+        if (!$bukaAbsensi->save()) {
+            throw new \Exception("Error Update Buka Absensi.");
+        }
+
+        (new LogTrail())->processStore([
+            'namatabel' => strtoupper($bukaAbsensi->getTable()),
+            'postingdari' => $data['postingdari'] ??strtoupper('ENTRY Buka Absensi '),
+            'idtrans' => $bukaAbsensi->id,
+            'nobuktitrans' =>  $bukaAbsensi->id,
+            'aksi' => 'ENTRY',
+            'datajson' => $bukaAbsensi->toArray(),
+            'modifiedby' => $bukaAbsensi->modifiedby
+        ]);
+        
+        return $bukaAbsensi;
+    }
+    public function processUpdate(BukaAbsensi $bukaAbsensi ,array $data): BukaAbsensi
+    {
+        $bukaAbsensi = new BukaAbsensi();
+        $bukaAbsensi->tglabsensi = date('Y-m-d', strtotime($data['tglabsensi']));
+        $bukaAbsensi->modifiedby = auth('api')->user()->name;
+
+        if (!$bukaAbsensi->save()) {
+            throw new \Exception("Error Update Buka Absensi.");
+        }
+
+        (new LogTrail())->processStore([
+            'namatabel' => strtoupper($bukaAbsensi->getTable()),
+            'postingdari' => $data['postingdari'] ??strtoupper('ENTRY Buka Absensi '),
+            'idtrans' => $bukaAbsensi->id,
+            'nobuktitrans' =>  $bukaAbsensi->id,
+            'aksi' => 'ENTRY',
+            'datajson' => $bukaAbsensi->toArray(),
+            'modifiedby' => $bukaAbsensi->modifiedby
+        ]);
+        
+        return $bukaAbsensi;
+    }
+
+    public function processDestroy($id,$postingdari =""): BukaAbsensi
+    {
+        $bukaAbsensi = BukaAbsensi::findOrFail($id);
+        $dataHeader =  $bukaAbsensi->toArray();
+      
+        $bukaAbsensi = $bukaAbsensi->lockAndDestroy($id);
+        $hutangLogTrail = (new LogTrail())->processStore([
+            'namatabel' => $this->table,
+            'postingdari' => ($postingdari =="") ? $postingdari :strtoupper('DELETE Buka Absensi'),
+            'idtrans' => $bukaAbsensi->id,
+            'nobuktitrans' =>  $bukaAbsensi->id,
+            'aksi' => 'ENTRY',
+            'datajson' => $bukaAbsensi->toArray(),
+            'modifiedby' => auth('api')->user()->name
+        ]);
+ 
+       
+ 
+        return $bukaAbsensi;
+    }
+
 }
