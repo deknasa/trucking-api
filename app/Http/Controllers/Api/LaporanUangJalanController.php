@@ -77,6 +77,12 @@ class LaporanUangJalanController extends Controller
         $laporanuangjalan = new LaporanUangJalan();
 
         $laporan_uang_jalan = $laporanuangjalan->getReport($tgldari, $tglsampai, $tglambil_jalandari, $tglambil_jalansampai, $supirdari, $supirsampai, $status);
+
+        foreach($laporan_uang_jalan as $item){
+            $item->tglabsensi = date('d-m-Y', strtotime($item->tglabsensi));
+            $item->tglkembali = date('d-m-Y', strtotime($item->tglkembali));
+        }
+      
         return response([
             'data' => $laporan_uang_jalan
         ]);
