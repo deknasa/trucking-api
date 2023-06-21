@@ -60,13 +60,13 @@ class OrderanTruckingValidasinoseal2x20 implements Rule
         } else {
 
             $nilai = true;
-            // if ($this->kondisi == true && $this->ukuran==true) {
-            //     // dd('1');
-            //     $nilai = false;
-            // } else {
-            //     // dd('3');
-            //     $nilai = true;
-            // }
+            if ($this->kondisi == true && $this->ukuran==true) {
+                // dd('1');
+                $nilai = false;
+            } else {
+                // dd('3');
+                $nilai = true;
+            }
 
             
         }
