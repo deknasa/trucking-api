@@ -74,7 +74,8 @@ class Parameter extends MyModel
                 DB::raw("case when parameter.type = 0 then '' else B.grp end as type"),
                 DB::raw("'Laporan Parameter' as judulLaporan "),
                 DB::raw("'".$getJudul->text ."' as judul "),
-                DB::raw("'Tanggal Cetak : '+format(getdate(),'dd-MM-yyyy HH:mm:ss')+' User :".auth('api')->user()->name."' as tglcetak") 
+                DB::raw("'Tgl Cetak :'+format(getdate(),'dd-MM-yyyy HH:mm:ss')as tglcetak"),
+                DB::raw(" 'User :".auth('api')->user()->name."' as usercetak")
             )
             ->leftJoin(DB::raw("parameter as B with (readuncommitted)"), 'parameter.type', 'B.id');
 
