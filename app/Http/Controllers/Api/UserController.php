@@ -18,6 +18,7 @@ use Illuminate\Support\Facades\Schema;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Http\Response;
+use Illuminate\Support\Facades\Hash;
 
 class UserController extends Controller
 {
@@ -59,13 +60,13 @@ class UserController extends Controller
             $user->roles()->detach();
 
             if (is_array($request->role_ids)) {
-            foreach ($request->role_ids as $role_id) {
-                            $user->roles()->attach($role_id, [
-                                'modifiedby' => auth('api')->user()->name
-                            ]);
-                        }
+                foreach ($request->role_ids as $role_id) {
+                    $user->roles()->attach($role_id, [
+                        'modifiedby' => auth('api')->user()->name
+                    ]);
+                }
             }
-            
+
 
             $logTrail = [
                 'namatabel' => strtoupper($user->getTable()),
@@ -101,10 +102,19 @@ class UserController extends Controller
         DB::beginTransaction();
 
         try {
-            $user = (new User())->processStore($request->all());
+            $data = [
+                'user' => strtoupper($request->user),
+                'name' => strtoupper($request->name),
+                'password' => Hash::make($request->password),
+                'cabang_id' => $request->cabang_id ?? '',
+                'karyawan_id' => $request->karyawan_id,
+                'dashboard' => strtoupper($request->dashboard),
+                'statusaktif' => $request->statusaktif,
+            ];
+            $user = (new User())->processStore($data);
             $user->position = $this->getPosition($user, $user->getTable())->position;
             $user->page = ceil($user->position / ($request->limit ?? 10));
-            
+
             DB::commit();
 
             if (isset($request->limit)) {
@@ -139,7 +149,17 @@ class UserController extends Controller
         DB::beginTransaction();
 
         try {
-            $user = (new User())->processUpdate($user, $request->all());
+            $data = [
+                'user' => strtoupper($request->user),
+                'name' => strtoupper($request->name),
+                'password' => Hash::make($request->password),
+                'cabang_id' => $request->cabang_id ?? '',
+                'karyawan_id' => $request->karyawan_id,
+                'dashboard' => strtoupper($request->dashboard),
+                'statusaktif' => $request->statusaktif,
+            ];
+
+            $user = (new User())->processUpdate($user, $data);
             $user->position = $this->getPosition($user, $user->getTable())->position;
             $user->page = ceil($user->position / ($request->limit ?? 10));
 
@@ -168,7 +188,7 @@ class UserController extends Controller
     {
         DB::beginTransaction();
 
-        try{
+        try {
 
             $user = (new User())->processDestroy($id);
             $selected = $this->getPosition($user, $user->getTable(), true);

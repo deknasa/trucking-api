@@ -113,4 +113,23 @@ class RekapPenerimaanDetail extends MyModel
         return $query->skip($this->params['offset'])->take($this->params['limit']);
     }
 
+    public function processStore(RekapPenerimaanHeader $rekapPenerimaanHeader, array $data): RekapPenerimaanDetail
+    {
+        $rekapPenerimaanDetail = new RekapPenerimaanDetail();
+        $rekapPenerimaanDetail->rekappenerimaan_id = $rekapPenerimaanHeader->id;
+        $rekapPenerimaanDetail->nobukti = $rekapPenerimaanHeader->nobukti;
+        $rekapPenerimaanDetail->tgltransaksi =  date('Y-m-d', strtotime($data['tgltransaksi_detail']));
+        $rekapPenerimaanDetail->penerimaan_nobukti = $data['penerimaan_nobukti'];
+        $rekapPenerimaanDetail->nominal = $data['nominal'];
+        $rekapPenerimaanDetail->keterangan = $data['keterangandetail'];
+        $rekapPenerimaanDetail->modifiedby = auth('api')->user()->name;
+
+        if (!$rekapPenerimaanDetail->save()) {
+            throw new \Exception("Error storing rekap penerimaan detail.");
+        }
+        
+        return $rekapPenerimaanDetail;
+
+    }
+
 }

@@ -125,19 +125,19 @@ class AbsensiSupirHeaderRequest extends FormRequest
             } else {
                 $kondisi = false;
             }
-
+            $tglbukti = date('d-m-Y', strtotime($queryexist->tglbukti));
             $rulesBeda = [
                 'tglbukti' => [
                     'required', 'date_format:d-m-Y',
                     new DateAllowedAbsen($kondisi),
                     new DateTutupBuku(),
-                    Rule::in($queryexist->tglbukti),
+                    Rule::in([$tglbukti]),
                 ],
                 'nobukti' => [
-                    Rule::in($queryexist->nobukti),
+                    Rule::in([$queryexist->nobukti]),
                 ],
                 'kasgantung_nobukti' => [
-                    Rule::in($queryexist->kasgantung_nobukti),
+                    Rule::in([$queryexist->kasgantung_nobukti]),
                 ],
             ];
         } else if (request()->isMethod('DELETE')) {

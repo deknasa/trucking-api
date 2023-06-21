@@ -87,7 +87,12 @@ class ZonaController extends Controller
         DB::beginTransaction();
 
         try {
-            $zona = (new Zona())->processStore($request->all());
+            $data = [
+                'zona' => $request->zona,
+                'statusaktif' => $request->statusaktif,
+                'keterangan' => $request->keterangan ?? ''
+            ];
+            $zona = (new Zona())->processStore($data);
             $zona->position = $this->getPosition($zona, $zona->getTable())->position;
             $zona->page = ceil($zona->position / ($request->limit ?? 10));
 
@@ -119,7 +124,12 @@ class ZonaController extends Controller
     {
         DB::beginTransaction();
         try {
-            $zona = (new Zona())->processUpdate($zona, $request->all());
+            $data = [
+                'zona' => $request->zona,
+                'statusaktif' => $request->statusaktif,
+                'keterangan' => $request->keterangan ?? ''
+            ];
+            $zona = (new Zona())->processUpdate($zona, $data);
             $zona->position = $this->getPosition($zona, $zona->getTable())->position;
             $zona->page = ceil($zona->position / ($request->limit ?? 10));
 

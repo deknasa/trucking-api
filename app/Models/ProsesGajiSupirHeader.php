@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Services\RunningNumberService;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
@@ -102,7 +103,7 @@ class ProsesGajiSupirHeader extends MyModel
                 $this->tableTotal . '.potonganpinjamansemua',
                 $this->tableTotal . '.deposito'
             )
-            
+
             ->leftJoin(DB::raw("parameter as statuscetak with (readuncommitted)"), 'prosesgajisupirheader.statuscetak', 'statuscetak.id')
             ->leftJoin(DB::raw("parameter as statusapproval with (readuncommitted)"), 'prosesgajisupirheader.statusapproval', 'statusapproval.id')
             ->leftJoin($this->tableTotal, $this->tableTotal . '.nobukti', 'prosesgajisupirheader.nobukti');
@@ -1097,10 +1098,10 @@ class ProsesGajiSupirHeader extends MyModel
         $statusCetak = request()->statuscetak ?? '';
 
         $getJudul = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))
-        ->select('text')
-        ->where('grp', 'JUDULAN LAPORAN')
-        ->where('subgrp', 'JUDULAN LAPORAN')
-        ->first();
+            ->select('text')
+            ->where('grp', 'JUDULAN LAPORAN')
+            ->where('subgrp', 'JUDULAN LAPORAN')
+            ->first();
 
         $this->tableTotal = $this->createTempTotal();
         $query = DB::table($this->table)->from(DB::raw("prosesgajisupirheader with (readuncommitted)"))
@@ -1146,4 +1147,1162 @@ class ProsesGajiSupirHeader extends MyModel
 
         return $data;
     }
+
+    public function processStore(array $data): ProsesGajiSupirHeader
+    {
+        $group = 'PROSES GAJI SUPIR BUKTI';
+        $subGroup = 'PROSES GAJI SUPIR BUKTI';
+        $format = DB::table('parameter')->where('grp', $group)->where('subgrp', $subGroup)->first();
+
+        $statusApproval = Parameter::from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS APPROVAL')->where('text', 'NON APPROVAL')->first();
+        $statusCetak = Parameter::from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUSCETAK')->where('text', 'BELUM CETAK')->first();
+
+        $prosesGajiSupirHeader = new ProsesGajiSupirHeader();
+
+        $prosesGajiSupirHeader->tglbukti = date('Y-m-d', strtotime($data['tglbukti']));
+        $prosesGajiSupirHeader->tgldari = date('Y-m-d', strtotime($data['tgldari']));
+        $prosesGajiSupirHeader->tglsampai = date('Y-m-d', strtotime($data['tglsampai']));
+        $prosesGajiSupirHeader->statusapproval = $statusApproval->id;
+        $prosesGajiSupirHeader->userapproval = '';
+        $prosesGajiSupirHeader->tglapproval = '';
+        $prosesGajiSupirHeader->bank_id = $data['bank_idPR'];
+        $prosesGajiSupirHeader->periode = date('Y-m-d', strtotime($data['periode']));
+        $prosesGajiSupirHeader->statusformat = $format->id;
+        $prosesGajiSupirHeader->statuscetak = $statusCetak->id;
+        $prosesGajiSupirHeader->modifiedby = auth('api')->user()->name;
+        $prosesGajiSupirHeader->nobukti = (new RunningNumberService)->get($group, $subGroup, $prosesGajiSupirHeader->getTable(), date('Y-m-d', strtotime($data['tglbukti'])));
+
+        if (!$prosesGajiSupirHeader->save()) {
+            throw new \Exception("Error storing proses gaji supir header.");
+        }
+
+        $prosesGajiSupirDetails = [];
+
+        $coaDebet = Parameter::from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'JURNAL PROSES GAJI SUPIR')->where('kelompok', 'PENGELUARAN')
+            ->first();
+        $memoDebet = json_decode($coaDebet->memo, true);
+        $noWarkat = [];
+        $tglJatuhTempo = [];
+        $nominalDetailPengeluaran = [];
+        $coaDebetPengeluaran = [];
+        $keteranganDetailPengeluaran = [];
+
+        for ($i = 0; $i < count($data['rincianId']); $i++) {
+            $sp = SuratPengantar::from(DB::raw("suratpengantar with (readuncommitted)"))
+                ->where('supir_id', $data['supir_id'][$i])->first();
+
+            $prosesGajiSupirDetail = (new ProsesGajiSupirDetail())->processStore($prosesGajiSupirHeader, [
+                'gajisupir_nobukti' => $data['nobuktiRIC'][$i],
+                'supir_id' => $data['supir_id'][$i],
+                'trado_id' => $sp->trado_id,
+                'nominal' => $data['totalborongan'][$i],
+                'keterangan' => '',
+            ]);
+            $prosesGajiSupirDetails[] = $prosesGajiSupirDetail->toArray();
+            $noWarkat[] = '';
+            $tglJatuhTempo[] = $data['tglbukti'];
+            $nominalDetailPengeluaran[] =  $data['totalborongan'][$i];
+            $coaDebetPengeluaran[] = $memoDebet['JURNAL'];
+            $keteranganDetailPengeluaran[] = "Rincian Borongan Supir Dan Uang Makan periode" . $data['tgldari'] . " s/d " . $data['tglsampai'];
+        }
+
+        // POSTING KE PENGELUARAN
+        $pengeluaranHeaderRequest = [
+            'tglbukti' => date('Y-m-d', strtotime($data['tglbukti'])),
+            'pelanggan_id' => 0,
+            'postingdari' => 'ENTRY PROSES GAJI SUPIR',
+            'dibayarke' => 'PROSES GAJI SUPIR',
+            'bank_id' => $data['bank_idPR'],
+            'nowarkat' => $noWarkat,
+            'tgljatuhtempo' => $tglJatuhTempo,
+            'nominal_detail' => $nominalDetailPengeluaran,
+            'coadebet' => $coaDebetPengeluaran,
+            'keterangan_detail' => $keteranganDetailPengeluaran,
+        ];
+
+        $pengeluaranHeader = (new PengeluaranHeader())->processStore($pengeluaranHeaderRequest);
+        $prosesGajiSupirHeader->pengeluaran_nobukti = $pengeluaranHeader->nobukti;
+
+        $prosesGajiSupirHeader->save();
+
+        $prosesGajiSupirHeaderLogTrail = (new LogTrail())->processStore([
+            'namatabel' => strtoupper($prosesGajiSupirHeader->getTable()),
+            'postingdari' => 'PROSES GAJI SUPIR HEADER',
+            'idtrans' => $prosesGajiSupirHeader->id,
+            'nobuktitrans' => $prosesGajiSupirHeader->nobukti,
+            'aksi' => 'ENTRY',
+            'datajson' => $prosesGajiSupirHeader->toArray(),
+            'modifiedby' => auth('api')->user()->user
+        ]);
+
+        (new LogTrail())->processStore([
+            'namatabel' => strtoupper($prosesGajiSupirDetail->getTable()),
+            'postingdari' => 'ENTRY PROSES GAJI SUPIR DETAIL',
+            'idtrans' => $prosesGajiSupirHeaderLogTrail->id,
+            'nobuktitrans' => $prosesGajiSupirHeader->nobukti,
+            'aksi' => 'ENTRY',
+            'datajson' => $prosesGajiSupirDetails,
+            'modifiedby' => auth('api')->user()->user
+        ]);
+
+        /*STORE JURNAL*/
+        $getData = $prosesGajiSupirHeader->getDataJurnal($data['nobuktiRIC']);
+        $nominalJurnal = [];
+        $coaDebetJurnal = [];
+        $coaKreditJurnal = [];
+        $keteranganJurnal = [];
+        $coadebet = Parameter::from(DB::raw("parameter with (readuncommitted)"))
+            ->select('memo')->where('grp', 'JURNAL PROSES GAJI SUPIR')->where('kelompok', 'PROSES GAJI SUPIR')->where('subgrp', 'DEBET')->first();
+        $coakredit = Parameter::from(DB::raw("parameter with (readuncommitted)"))
+            ->select('memo')->where('grp', 'JURNAL PROSES GAJI SUPIR')->where('kelompok', 'PROSES GAJI SUPIR')->where('subgrp', 'KREDIT')->first();
+
+        $memodebet = json_decode($coadebet->memo, true);
+        $memokredit = json_decode($coakredit->memo, true);
+
+        for ($i = 0; $i < count($getData); $i++) {
+            $tglbuktiJurnal[] = $getData[$i]->tglbukti;
+            $nominalJurnal[] = $getData[$i]->nominal;
+            $coaDebetJurnal[] = $memodebet['JURNAL'];
+            $coaKreditJurnal[] = $memokredit['JURNAL'];
+            $keteranganJurnal[] = $getData[$i]->keterangan;
+        }
+        $jurnalRequest = [
+            'tanpaprosesnobukti' => 1,
+            'nobukti' => $prosesGajiSupirHeader->nobukti,
+            'tglbukti' => date('Y-m-d', strtotime($data['tglbukti'])),
+            'postingdari' => "ENTRY PROSES GAJI SUPIR",
+            'statusapproval' => $statusApproval->id,
+            'userapproval' => "",
+            'tglapproval' => "",
+            'modifiedby' => auth('api')->user()->name,
+            'statusformat' => "0",
+            'tglbukti_detail' => $tglbuktiJurnal,
+            'coakredit_detail' => $coaKreditJurnal,
+            'coadebet_detail' => $coaDebetJurnal,
+            'nominal_detail' => $nominalJurnal,
+            'keterangan_detail' => $keteranganJurnal
+        ];
+        (new JurnalUmumHeader())->processStore($jurnalRequest);
+
+        // POSTING POT. SEMUA
+
+        if ($data['nomPS'] != 0) {
+            // INSERT KE PENERIMAAN
+            $gajiSupir = GajiSupirHeader::from(DB::raw("gajisupirheader with (readuncommitted)"))->where('tglbukti', '>=', $prosesGajiSupirHeader['tgldari'])
+                ->where('tglbukti', '<=', $prosesGajiSupirHeader['tglsampai'])
+                ->whereRaw("gajisupirheader.nobukti in(select gajisupir_nobukti from prosesgajisupirdetail where prosesgajisupir_id=" . $prosesGajiSupirHeader['id'] . ")")
+                ->whereRaw("gajisupirheader.nobukti in(select gajisupir_nobukti from gajisupirpelunasanpinjaman where supir_id=0)")
+                ->get();
+
+            foreach ($gajiSupir as $key => $value) {
+                $fetchPS = GajiSupirPelunasanPinjaman::from(DB::raw("gajisupirpelunasanpinjaman with (readuncommitted)"))->where('gajisupir_nobukti', $value->nobukti)->where('supir_id', '0')->first();
+
+                $penerimaanPS = PenerimaanTruckingHeader::from(DB::raw("penerimaantruckingheader with (readuncommitted)"))
+                    ->where('nobukti', $fetchPS->penerimaantrucking_nobukti)->first();
+
+                $getNominal = PenerimaanTruckingDetail::from(DB::raw("penerimaantruckingdetail with (readuncommitted)"))
+                    ->where('nobukti', $fetchPS->penerimaantrucking_nobukti)->get();
+
+                $coaKreditPS[] = $penerimaanPS->coa;
+                $nominalPS[] =  $getNominal->sum('nominal');
+                $keteranganPS[] = $penerimaanPS->nobukti;
+                $tglJatuhTempoPS[] = $data['tglbukti'];
+            }
+
+            $penerimaanHeadeRequest = [
+                'tglbukti' => date('Y-m-d', strtotime($data['tglbukti'])),
+                'pelanggan_id' => '',
+                'bank_id' => $data['bank_idPS'],
+                'postingdari' => 'PROSES GAJI SUPIR',
+                'diterimadari' => "PROSES GAJI SUPIR PERIODE " . $data['tgldari'] . " S/D " . $data['tglsampai'],
+                'tgllunas' => date('Y-m-d', strtotime($data['tglbukti'])),
+                'coakredit' => $coaKreditPS,
+                'nominal_detail' => $nominalPS,
+                'keterangan_detail' => $keteranganPS,
+                'tgljatuhtempo' => $tglJatuhTempoPS
+            ];
+
+            $penerimaanHeaderPS = (new PenerimaanHeader())->processStore($penerimaanHeadeRequest);
+
+            // UPDATE PENERIMAAN TRUCKING
+            foreach ($gajiSupir as $key => $value) {
+                $fetchPS = GajiSupirPelunasanPinjaman::from(DB::raw("gajisupirpelunasanpinjaman with (readuncommitted)"))->where('gajisupir_nobukti', $value->nobukti)->where('supir_id', '0')->first();
+
+                $penerimaanPS = PenerimaanTruckingHeader::from(DB::raw("penerimaantruckingheader with (readuncommitted)"))
+                    ->where('nobukti', $fetchPS->penerimaantrucking_nobukti)->first();
+
+                $penerimaanTruckingHeaderPS = [
+                    'ebs' => true,
+                    'postingdari' => 'PROSES GAJI SUPIR',
+                    'bank_id' => $data['bank_idPS'],
+                    'penerimaan_nobukti' => $penerimaanHeaderPS->nobukti,
+                ];
+                $newPenerimaanTruckingPS = new PenerimaanTruckingHeader();
+                $newPenerimaanTruckingPS = $newPenerimaanTruckingPS->findAll($penerimaanPS->id);
+                (new PenerimaanTruckingHeader())->processUpdate($newPenerimaanTruckingPS, $penerimaanTruckingHeaderPS);
+            }
+        }
+
+        // POSTING POT. PRIBADI
+
+        if ($data['nomPP'] != 0) {
+            // SAVE TO PENERIMAAN
+            $gajiSupirPP = GajiSupirHeader::from(DB::raw("gajisupirheader with (readuncommitted)"))->where('tglbukti', '>=', $prosesGajiSupirHeader['tgldari'])
+                ->where('tglbukti', '<=', $prosesGajiSupirHeader['tglsampai'])
+                ->whereRaw("gajisupirheader.nobukti in(select gajisupir_nobukti from prosesgajisupirdetail where prosesgajisupir_id=" . $prosesGajiSupirHeader['id'] . ")")
+                ->whereRaw("gajisupirheader.nobukti in(select gajisupir_nobukti from gajisupirpelunasanpinjaman where supir_id != 0)")
+                ->get();
+
+            foreach ($gajiSupirPP as $key => $value) {
+                $fetchPP = GajiSupirPelunasanPinjaman::from(DB::raw("gajisupirpelunasanpinjaman with (readuncommitted)"))->where('gajisupir_nobukti', $value->nobukti)->where('supir_id', '!=', '0')->first();
+
+                $penerimaanPP = PenerimaanTruckingHeader::from(DB::raw("penerimaantruckingheader with (readuncommitted)"))
+                    ->where('nobukti', $fetchPP->penerimaantrucking_nobukti)->first();
+                $getNominalPP = PenerimaanTruckingDetail::from(DB::raw("penerimaantruckingdetail with (readuncommitted)"))
+                    ->where('nobukti', $fetchPP->penerimaantrucking_nobukti)->get();
+
+                $coaKreditPP[] = $penerimaanPP->coa;
+                $nominalPP[] =  $getNominalPP->sum('nominal');
+                $keteranganPP[] = $penerimaanPP->nobukti;
+                $tglJatuhTempoPP[] = $data['tglbukti'];
+            }
+
+            $penerimaanHeaderPPRequest = [
+                'tglbukti' => date('Y-m-d', strtotime($data['tglbukti'])),
+                'pelanggan_id' => '',
+                'bank_id' => $data['bank_idPP'],
+                'postingdari' => 'PROSES GAJI SUPIR',
+                'diterimadari' => "PROSES GAJI SUPIR PERIODE " . $data['tgldari'] . " S/D " . $data['tglsampai'],
+                'tgllunas' => date('Y-m-d', strtotime($data['tglbukti'])),
+                'coakredit' => $coaKreditPP,
+                'nominal_detail' => $nominalPP,
+                'keterangan_detail' => $keteranganPP,
+                'tgljatuhtempo' => $tglJatuhTempoPP
+            ];
+            $penerimaanHeaderPP = (new PenerimaanHeader())->processStore($penerimaanHeaderPPRequest);
+
+            // UPDATE PENERIMAAN TRUCKING
+            foreach ($gajiSupir as $key => $value) {
+                $fetchPP = GajiSupirPelunasanPinjaman::from(DB::raw("gajisupirpelunasanpinjaman with (readuncommitted)"))->where('gajisupir_nobukti', $value->nobukti)->where('supir_id', '!=', '0')->first();
+
+                $penerimaanPP = PenerimaanTruckingHeader::from(DB::raw("penerimaantruckingheader with (readuncommitted)"))
+                    ->where('nobukti', $fetchPP->penerimaantrucking_nobukti)->first();
+
+                $penerimaanTruckingHeaderPP = [
+                    'ebs' => true,
+                    'postingdari' => 'PROSES GAJI SUPIR',
+                    'bank_id' => $data['bank_idPP'],
+                    'penerimaan_nobukti' => $penerimaanHeaderPP->nobukti,
+                ];
+                $newPenerimaanTruckingPP = new PenerimaanTruckingHeader();
+                $newPenerimaanTruckingPP = $newPenerimaanTruckingPP->findAll($penerimaanPP->id);
+                (new PenerimaanTruckingHeader())->processUpdate($newPenerimaanTruckingPP, $penerimaanTruckingHeaderPP);
+            }
+        }
+
+        // POSTING DEPOSITO
+        if ($data['nomDeposito'] != 0) {
+            // SAVE TO PENERIMAAN
+
+            $gajiSupirDeposito = GajiSupirHeader::from(DB::raw("gajisupirheader with (readuncommitted)"))->where('tglbukti', '>=', $prosesGajiSupirHeader['tgldari'])
+                ->where('tglbukti', '<=', $prosesGajiSupirHeader['tglsampai'])
+                ->whereRaw("gajisupirheader.nobukti in(select gajisupir_nobukti from prosesgajisupirdetail where prosesgajisupir_id=" . $prosesGajiSupirHeader['id'] . ")")
+                ->whereRaw("gajisupirheader.nobukti in(select gajisupir_nobukti from gajisupirdeposito)")
+                ->get();
+            foreach ($gajiSupirDeposito as $key => $value) {
+                $fetchDeposito = GajiSupirDeposito::from(DB::raw("gajisupirdeposito with (readuncommitted)"))->where('gajisupir_nobukti', $value->nobukti)->first();
+
+                $penerimaanDeposito = PenerimaanTruckingHeader::from(DB::raw("penerimaantruckingheader with (readuncommitted)"))
+                    ->where('nobukti', $fetchDeposito->penerimaantrucking_nobukti)->first();
+                $getNominalDeposito = PenerimaanTruckingDetail::from(DB::raw("penerimaantruckingdetail with (readuncommitted)"))
+                    ->where('nobukti', $fetchDeposito->penerimaantrucking_nobukti)->get();
+
+                $coaKreditDeposito[] = $penerimaanDeposito->coa;
+                $nominalDeposito[] =  $getNominalDeposito->sum('nominal');
+                $keteranganDeposito[] = $penerimaanDeposito->nobukti;
+                $tglJatuhTempoDeposito[] = $data['tglbukti'];
+            }
+
+            $penerimaanHeaderDepositoRequest = [
+                'tglbukti' => date('Y-m-d', strtotime($data['tglbukti'])),
+                'pelanggan_id' => '',
+                'bank_id' => $data['bank_idDeposito'],
+                'postingdari' => 'PROSES GAJI SUPIR',
+                'diterimadari' => "PROSES GAJI SUPIR PERIODE " . $data['tgldari'] . " S/D " . $data['tglsampai'],
+                'tgllunas' => date('Y-m-d', strtotime($data['tglbukti'])),
+                'coakredit' => $coaKreditDeposito,
+                'nominal_detail' => $nominalDeposito,
+                'keterangan_detail' => $keteranganDeposito,
+                'tgljatuhtempo' => $tglJatuhTempoDeposito
+            ];
+
+            $penerimaanHeaderDeposito = (new PenerimaanHeader())->processStore($penerimaanHeaderDepositoRequest);
+
+            foreach ($gajiSupirDeposito as $key => $value) {
+                $fetchDeposito = GajiSupirDeposito::from(DB::raw("gajisupirdeposito with (readuncommitted)"))->where('gajisupir_nobukti', $value->nobukti)->first();
+
+                $penerimaanDeposito = PenerimaanTruckingHeader::from(DB::raw("penerimaantruckingheader with (readuncommitted)"))
+                    ->where('nobukti', $fetchDeposito->penerimaantrucking_nobukti)->first();
+
+                $penerimaanTruckingHeaderDeposito = [
+                    'ebs' => true,
+                    'postingdari' => 'PROSES GAJI SUPIR',
+                    'bank_id' => $data['bank_idDeposito'],
+                    'penerimaan_nobukti' => $penerimaanHeaderDeposito->nobukti,
+                ];
+                $newPenerimaanTruckingDeposito = new PenerimaanTruckingHeader();
+                $newPenerimaanTruckingDeposito = $newPenerimaanTruckingDeposito->findAll($penerimaanDeposito->id);
+                (new PenerimaanTruckingHeader())->processUpdate($newPenerimaanTruckingDeposito, $penerimaanTruckingHeaderDeposito);
+            }
+        }
+        // POSTING BBM
+
+        if ($data['nomBBM'] != 0) {
+            // SAVE TO PENERIMAAN
+
+            $gajiSupirBBM = GajiSupirHeader::from(DB::raw("gajisupirheader with (readuncommitted)"))->where('tglbukti', '>=', $prosesGajiSupirHeader['tgldari'])
+                ->where('tglbukti', '<=', $prosesGajiSupirHeader['tglsampai'])
+                ->whereRaw("gajisupirheader.nobukti in(select gajisupir_nobukti from prosesgajisupirdetail where prosesgajisupir_id=" . $prosesGajiSupirHeader['id'] . ")")
+                ->whereRaw("gajisupirheader.nobukti in(select gajisupir_nobukti from gajisupirbbm)")
+                ->get();
+
+            foreach ($gajiSupirBBM as $key => $value) {
+                $fetchBBM = GajiSupirBBM::from(DB::raw("gajisupirbbm with (readuncommitted)"))->where('gajisupir_nobukti', $value->nobukti)->first();
+
+                $penerimaanBBM = PenerimaanTruckingHeader::from(DB::raw("penerimaantruckingheader with (readuncommitted)"))
+                    ->where('nobukti', $fetchBBM->penerimaantrucking_nobukti)->first();
+                $coaBBM = PenerimaanTrucking::from(DB::raw("penerimaantrucking with (readuncommitted)"))->where('kodepenerimaan', 'BBM')->first();
+
+                $coaKreditBBM[] = $coaBBM->coapostingkredit;
+                $nominalBBM[] =  $fetchBBM->nominal;
+                $keteranganBBM[] = $penerimaanBBM->nobukti;
+                $tglJatuhTempoBBM[] = $data['tglbukti'];
+            }
+
+            $penerimaanHeadeRequest = [
+                'tglbukti' => date('Y-m-d', strtotime($data['tglbukti'])),
+                'pelanggan_id' => '',
+                'bank_id' => $data['bank_idBBM'],
+                'postingdari' => 'PROSES GAJI SUPIR',
+                'diterimadari' => "PROSES GAJI SUPIR PERIODE " . $data['tgldari'] . " S/D " . $data['tglsampai'],
+                'tgllunas' => date('Y-m-d', strtotime($data['tglbukti'])),
+                'coakredit' => $coaKreditBBM,
+                'nominal_detail' => $nominalBBM,
+                'keterangan_detail' => $keteranganBBM,
+                'tgljatuhtempo' => $tglJatuhTempoBBM
+            ];
+
+            $penerimaanHeaderBBM = (new PenerimaanHeader())->processStore($penerimaanHeadeRequest);
+
+            foreach ($gajiSupirBBM as $key => $value) {
+                $fetchBBM = GajiSupirBBM::from(DB::raw("gajisupirbbm with (readuncommitted)"))->where('gajisupir_nobukti', $value->nobukti)->first();
+
+                $penerimaanBBM = PenerimaanTruckingHeader::from(DB::raw("penerimaantruckingheader with (readuncommitted)"))
+                    ->where('nobukti', $fetchBBM->penerimaantrucking_nobukti)->first();
+                $penerimaanTruckingHeaderBBM = [
+                    'ebs' => true,
+                    'postingdari' => 'PROSES GAJI SUPIR',
+                    'bank_id' => $data['bank_idBBM'],
+                    'penerimaan_nobukti' => $penerimaanHeaderBBM->nobukti,
+                ];
+
+                $newPenerimaanTruckingBBM = new PenerimaanTruckingHeader();
+                $newPenerimaanTruckingBBM = $newPenerimaanTruckingBBM->findAll($penerimaanBBM->id);
+                (new PenerimaanTruckingHeader())->processUpdate($newPenerimaanTruckingBBM, $penerimaanTruckingHeaderBBM);
+            }
+        }
+        if ($data['nomUangjalan'] != 0) {
+
+            // $request->nobuktiRIC[$i];
+            $pengembalianKasGantungDetail = [];
+            $allSP = "";
+            foreach ($data['nobuktiRIC'] as $key => $value) {
+                if ($key == 0) {
+                    $allSP = $allSP . "'$value'";
+                } else {
+                    $allSP = $allSP . ',' . "'$value'";
+                }
+            }
+            $gajiSupirUangjalan = GajisUpirUangJalan::from(DB::raw("gajisupiruangjalan with (readuncommitted)"))
+                ->select(DB::raw("absensisupirheader.kasgantung_nobukti,kasgantungheader.coakaskeluar, sum(gajisupiruangjalan.nominal) as nominal"))
+                ->join(DB::raw("absensisupirheader with (readuncommitted)"), 'gajisupiruangjalan.absensisupir_nobukti', 'absensisupirheader.nobukti')
+                ->join(DB::raw("kasgantungheader with (readuncommitted)"), 'absensisupirheader.kasgantung_nobukti', 'kasgantungheader.nobukti')
+                ->whereRaw("gajisupiruangjalan.gajisupir_nobukti in ($allSP)")
+                ->groupBy('absensisupirheader.kasgantung_nobukti', 'kasgantungheader.coakaskeluar')
+                ->get();
+
+            foreach ($gajiSupirUangjalan as $key => $value) {
+
+                $nominalUangJalan[] = $value->nominal;
+                $keteranganUangJalan[] = '-';
+                $kasgantung_nobukti[] = $value->kasgantung_nobukti;
+                $coaDetailKasGantung[] = $value->coakaskeluar;
+            }
+            $pengembalianKasGantungHeader = [
+                'tglbukti' => date('Y-m-d', strtotime($data['tglbukti'])),
+                'bank_id' => $data['bank_idUangjalan'],
+                'tgldari' => date('Y-m-d', strtotime($data['tgldari'])),
+                'tglsampai' => date('Y-m-d', strtotime($data['tglsampai'])),
+                'postingdari' => 'PROSES GAJI SUPIR',
+                'tglkasmasuk' => date('Y-m-d', strtotime($data['tglbukti'])),
+                'nominal' => $nominalUangJalan,
+                'keterangandetail' => $keteranganUangJalan,
+                'kasgantung_nobukti' => $kasgantung_nobukti,
+                'kasgantungdetail_id' => $kasgantung_nobukti,
+                'coadetail' => $coaDetailKasGantung
+            ];
+
+
+            (new PengembalianKasGantungHeader())->processStore($pengembalianKasGantungHeader);
+        }
+
+        return $prosesGajiSupirHeader;
+    }
+
+    public function processUpdate(ProsesGajiSupirHeader $prosesGajiSupirHeader, array $data): ProsesGajiSupirHeader
+    {
+        $prosesGajiSupirHeader->tgldari = date('Y-m-d', strtotime($data['tgldari']));
+        $prosesGajiSupirHeader->tglsampai = date('Y-m-d', strtotime($data['tglsampai']));
+        $prosesGajiSupirHeader->periode = date('Y-m-d', strtotime($data['periode']));
+        $prosesGajiSupirHeader->modifiedby = auth('api')->user()->name;
+
+        if (!$prosesGajiSupirHeader->save()) {
+            throw new \Exception("Error Update proses gaji supir header.");
+        }
+
+        $prosesGajiSupirHeaderLogTrail = (new LogTrail())->processStore([
+            'namatabel' => strtoupper($prosesGajiSupirHeader->getTable()),
+            'postingdari' => 'EDIT PROSES GAJI SUPIR HEADER',
+            'idtrans' => $prosesGajiSupirHeader->id,
+            'nobuktitrans' => $prosesGajiSupirHeader->nobukti,
+            'aksi' => 'EDIT',
+            'datajson' => $prosesGajiSupirHeader->toArray(),
+            'modifiedby' => auth('api')->user()->user
+        ]);
+
+        $penerimaan_nobuktiPS = '';
+        $gajiSupir = GajiSupirHeader::from(DB::raw("gajisupirheader with (readuncommitted)"))
+            ->where('tglbukti', '>=', $prosesGajiSupirHeader['tgldari'])
+            ->where('tglbukti', '<=', $prosesGajiSupirHeader['tglsampai'])
+            ->whereRaw("gajisupirheader.nobukti in(select gajisupir_nobukti from prosesgajisupirdetail where prosesgajisupir_id=" . $prosesGajiSupirHeader['id'] . ")")
+            ->whereRaw("gajisupirheader.nobukti in(select gajisupir_nobukti from gajisupirpelunasanpinjaman where supir_id=0)")
+            ->get();
+
+        foreach ($gajiSupir as $key => $value) {
+            $fetchPS = GajiSupirPelunasanPinjaman::from(DB::raw("gajisupirpelunasanpinjaman with (readuncommitted)"))->where('gajisupir_nobukti', $value->nobukti)->where('supir_id', '0')->first();
+            if ($fetchPS != null) {
+                $penerimaanPS = PenerimaanTruckingHeader::from(DB::raw("penerimaantruckingheader with (readuncommitted)"))
+                    ->where('nobukti', $fetchPS->penerimaantrucking_nobukti)->first();
+
+                $getNominal = PenerimaanTruckingDetail::from(DB::raw("penerimaantruckingdetail with (readuncommitted)"))
+                    ->where('nobukti', $fetchPS->penerimaantrucking_nobukti)->get();
+
+                $penerimaan_nobuktiPS = $penerimaanPS->penerimaan_nobukti;
+
+                $penerimaanTruckingHeaderPS = [
+                    'ebs' => true,
+                    'postingdari' => 'PROSES GAJI SUPIR',
+                    'bank_id' => 0,
+                    'penerimaan_nobukti' => ''
+                ];
+
+                $coaKreditPS[] = $penerimaanPS->coa;
+                $nominalPS[] =  $getNominal->sum('nominal');
+                $keteranganPS[] = $penerimaanPS->nobukti;
+                $tglJatuhTempoPS[] = $data['tglbukti'];
+
+                $newPenerimaanTruckingPS = new PenerimaanTruckingHeader();
+                $newPenerimaanTruckingPS = $newPenerimaanTruckingPS->findAll($penerimaanPS->id);
+                (new PenerimaanTruckingHeader())->processUpdate($newPenerimaanTruckingPS, $penerimaanTruckingHeaderPS);
+            }
+        }
+
+        $penerimaan_nobuktiPP = '';
+        $gajiSupir = GajiSupirHeader::from(DB::raw("gajisupirheader with (readuncommitted)"))->where('tglbukti', '>=', $prosesGajiSupirHeader['tgldari'])
+            ->where('tglbukti', '<=', $prosesGajiSupirHeader['tglsampai'])
+            ->whereRaw("gajisupirheader.nobukti in(select gajisupir_nobukti from prosesgajisupirdetail where prosesgajisupir_id=" . $prosesGajiSupirHeader['id'] . ")")
+            ->whereRaw("gajisupirheader.nobukti in(select gajisupir_nobukti from gajisupirpelunasanpinjaman where supir_id != 0)")
+            ->get();
+
+        foreach ($gajiSupir as $key => $value) {
+            $fetchPP = GajiSupirPelunasanPinjaman::from(DB::raw("gajisupirpelunasanpinjaman with (readuncommitted)"))->where('gajisupir_nobukti', $value->nobukti)->where('supir_id', '!=', '0')->first();
+            if ($fetchPP != null) {
+
+                $penerimaanPP = PenerimaanTruckingHeader::from(DB::raw("penerimaantruckingheader with (readuncommitted)"))
+                    ->where('nobukti', $fetchPP->penerimaantrucking_nobukti)->first();
+
+                $getNominalPP = PenerimaanTruckingDetail::from(DB::raw("penerimaantruckingdetail with (readuncommitted)"))
+                    ->where('nobukti', $fetchPP->penerimaantrucking_nobukti)->get();
+
+                $penerimaan_nobuktiPP = $penerimaanPP->penerimaan_nobukti;
+
+                $penerimaanTruckingHeaderPP = [
+                    'ebs' => true,
+                    'postingdari' => 'PROSES GAJI SUPIR',
+                    'bank_id' => 0,
+                    'penerimaan_nobukti' => ''
+                ];
+                $coaKreditPP[] = $penerimaanPP->coa;
+                $nominalPP[] =  $getNominalPP->sum('nominal');
+                $keteranganPP[] = $penerimaanPP->nobukti;
+                $tglJatuhTempoPP[] = $data['tglbukti'];
+
+                $newPenerimaanTruckingPP = new PenerimaanTruckingHeader();
+                $newPenerimaanTruckingPP = $newPenerimaanTruckingPP->findAll($penerimaanPP->id);
+                (new PenerimaanTruckingHeader())->processUpdate($newPenerimaanTruckingPP, $penerimaanTruckingHeaderPP);
+            }
+        }
+
+        $penerimaan_nobuktiDeposito = '';
+        $penerimaan_nobuktiBBM = '';
+        $gajiSupir = GajiSupirHeader::from(DB::raw("gajisupirheader with (readuncommitted)"))->where('tglbukti', '>=', $prosesGajiSupirHeader['tgldari'])
+            ->where('tglbukti', '<=', $prosesGajiSupirHeader['tglsampai'])
+            ->whereRaw("gajisupirheader.nobukti in(select gajisupir_nobukti from prosesgajisupirdetail where prosesgajisupir_id=" . $prosesGajiSupirHeader['id'] . ")")
+            ->whereRaw("gajisupirheader.nobukti in(select gajisupir_nobukti from gajisupirdeposito)")
+            ->get();
+
+        foreach ($gajiSupir as $key => $value) {
+            $fetchDeposito = GajiSupirDeposito::from(DB::raw("gajisupirdeposito with (readuncommitted)"))->where('gajisupir_nobukti', $value->nobukti)->first();
+            if ($fetchDeposito != null) {
+
+                $penerimaanDeposito = PenerimaanTruckingHeader::from(DB::raw("penerimaantruckingheader with (readuncommitted)"))
+                    ->where('nobukti', $fetchDeposito->penerimaantrucking_nobukti)->first();
+                $getNominalDeposito = PenerimaanTruckingDetail::from(DB::raw("penerimaantruckingdetail with (readuncommitted)"))
+                    ->where('nobukti', $fetchDeposito->penerimaantrucking_nobukti)->get();
+                $penerimaan_nobuktiDeposito = $penerimaanDeposito->penerimaan_nobukti;
+
+                $penerimaanTruckingHeaderDeposito = [
+                    'ebs' => true,
+                    'postingdari' => 'PROSES GAJI SUPIR',
+                    'bank_id' => 0,
+                    'penerimaan_nobukti' => ''
+                ];
+
+                $coaKreditDeposito[] = $penerimaanDeposito->coa;
+                $nominalDeposito[] =  $getNominalDeposito->sum('nominal');
+                $keteranganDeposito[] = $penerimaanDeposito->nobukti;
+                $tglJatuhTempoDeposito[] = $data['tglbukti'];
+
+                $newPenerimaanTruckingDeposito = new PenerimaanTruckingHeader();
+                $newPenerimaanTruckingDeposito = $newPenerimaanTruckingDeposito->findAll($penerimaanDeposito->id);
+                (new PenerimaanTruckingHeader())->processUpdate($newPenerimaanTruckingDeposito, $penerimaanTruckingHeaderDeposito);
+            }
+        }
+
+        $gajiSupir = GajiSupirHeader::from(DB::raw("gajisupirheader with (readuncommitted)"))->where('tglbukti', '>=', $prosesGajiSupirHeader['tgldari'])
+            ->where('tglbukti', '<=', $prosesGajiSupirHeader['tglsampai'])
+            ->whereRaw("gajisupirheader.nobukti in(select gajisupir_nobukti from prosesgajisupirdetail where prosesgajisupir_id=" . $prosesGajiSupirHeader['id'] . ")")
+            ->whereRaw("gajisupirheader.nobukti in(select gajisupir_nobukti from gajisupirbbm)")
+            ->get();
+
+        foreach ($gajiSupir as $key => $value) {
+            $fetchBBM = GajiSupirBBM::from(DB::raw("gajisupirbbm with (readuncommitted)"))->where('gajisupir_nobukti', $value->nobukti)->first();
+            if ($fetchBBM != null) {
+                $penerimaanBBM = PenerimaanTruckingHeader::from(DB::raw("penerimaantruckingheader with (readuncommitted)"))
+                    ->where('nobukti', $fetchBBM->penerimaantrucking_nobukti)->first();
+                $penerimaan_nobuktiBBM = $penerimaanBBM->penerimaan_nobukti;
+
+                $coaBBM = PenerimaanTrucking::from(DB::raw("penerimaantrucking with (readuncommitted)"))->where('kodepenerimaan', 'BBM')->first();
+
+                $penerimaanTruckingHeaderBBM = [
+                    'ebs' => true,
+                    'postingdari' => 'PROSES GAJI SUPIR',
+                    'bank_id' => 0,
+                    'penerimaan_nobukti' => ''
+                ];
+                $coaKreditBBM[] = $coaBBM->coapostingkredit;
+                $nominalBBM[] =  $fetchBBM->nominal;
+                $keteranganBBM[] = $penerimaanBBM->nobukti;
+                $tglJatuhTempoBBM[] = $data['tglbukti'];
+
+                $newPenerimaanTruckingBBM = new PenerimaanTruckingHeader();
+                $newPenerimaanTruckingBBM = $newPenerimaanTruckingBBM->findAll($penerimaanBBM->id);
+                (new PenerimaanTruckingHeader())->processUpdate($newPenerimaanTruckingBBM, $penerimaanTruckingHeaderBBM);
+            }
+        }
+
+
+        /*DELETE EXISTING Penerimaan*/
+        ProsesGajiSupirDetail::where('prosesgajisupir_id', $prosesGajiSupirHeader->id)->lockForUpdate()->delete();
+        $coaDebet = Parameter::from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'JURNAL PROSES GAJI SUPIR')->where('kelompok', 'PENGELUARAN')
+            ->first();
+        $memoDebet = json_decode($coaDebet->memo, true);
+        $noWarkat = [];
+        $tglJatuhTempo = [];
+        $nominalDetailPengeluaran = [];
+        $coaDebetPengeluaran = [];
+        $keteranganDetailPengeluaran = [];
+
+        for ($i = 0; $i < count($data['rincianId']); $i++) {
+            $sp = SuratPengantar::from(DB::raw("suratpengantar with (readuncommitted)"))
+                ->where('supir_id', $data['supir_id'][$i])->first();
+
+            $prosesGajiSupirDetail = (new ProsesGajiSupirDetail())->processStore($prosesGajiSupirHeader, [
+                'gajisupir_nobukti' => $data['nobuktiRIC'][$i],
+                'supir_id' => $data['supir_id'][$i],
+                'trado_id' => $sp->trado_id,
+                'nominal' => $data['totalborongan'][$i],
+                'keterangan' => '',
+            ]);
+
+            $prosesGajiSupirDetails[] = $prosesGajiSupirDetail->toArray();
+            // DATA DETAIL PENGELUARAN
+            $noWarkat[] = '';
+            $tglJatuhTempo[] = $data['tglbukti'];
+            $nominalDetailPengeluaran[] =  $data['totalborongan'][$i];
+            $coaDebetPengeluaran[] = $memoDebet['JURNAL'];
+            $keteranganDetailPengeluaran[] = "Rincian Borongan Supir Dan Uang Makan periode" . $data['tgldari'] . " s/d " . $data['tglsampai'];
+
+            if ($data['nomPS'] != 0) {
+
+                $bank = Bank::from(DB::raw("bank with (readuncommitted)"))
+                    ->select('coa')
+                    ->where('id', $data['bank_idPS'])
+                    ->first();
+                $fetchPS = GajiSupirPelunasanPinjaman::from(DB::raw("gajisupirpelunasanpinjaman with (readuncommitted)"))->where('gajisupir_nobukti', $data['nobuktiRIC'][$i])->where('supir_id', '0')->first();
+
+                if ($fetchPS != null) {
+                    $penerimaanPS = PenerimaanTruckingHeader::from(DB::raw("penerimaantruckingheader with (readuncommitted)"))
+                        ->where('nobukti', $fetchPS->penerimaantrucking_nobukti)->first();
+
+                    $penerimaanTruckingHeaderPS = [
+                        'ebs' => true,
+                        'postingdari' => 'PROSES GAJI SUPIR',
+                        'bank_id' => $data['bank_idPS'],
+                        'penerimaan_nobukti' => $penerimaan_nobuktiPS,
+                    ];
+
+                    $newPenerimaanTruckingPS = new PenerimaanTruckingHeader();
+                    $newPenerimaanTruckingPS = $newPenerimaanTruckingPS->findAll($penerimaanPS->id);
+                    (new PenerimaanTruckingHeader())->processUpdate($newPenerimaanTruckingPS, $penerimaanTruckingHeaderPS);
+                }
+            }
+
+            if ($data['nomPP'] != 0) {
+
+                $bank = Bank::from(DB::raw("bank with (readuncommitted)"))
+                    ->select('coa')
+                    ->where('id', $data['bank_idPP'])
+                    ->first();
+                $fetchPP = GajiSupirPelunasanPinjaman::from(DB::raw("gajisupirpelunasanpinjaman with (readuncommitted)"))->where('gajisupir_nobukti', $data['nobuktiRIC'][$i])->where('supir_id', '!=', '0')->first();
+
+                if ($fetchPP != null) {
+                    $penerimaanPP = PenerimaanTruckingHeader::from(DB::raw("penerimaantruckingheader with (readuncommitted)"))
+                        ->where('nobukti', $fetchPP->penerimaantrucking_nobukti)->first();
+                    $getNominal = PenerimaanTruckingDetail::from(DB::raw("penerimaantruckingdetail with (readuncommitted)"))
+                        ->where('nobukti', $fetchPP->penerimaantrucking_nobukti)->get();
+
+                    $penerimaanTruckingHeaderPP = [
+                        'ebs' => true,
+                        'postingdari' => 'PROSES GAJI SUPIR',
+                        'bank_id' => $data['bank_idPP'],
+                        'penerimaan_nobukti' => $penerimaan_nobuktiPP,
+                    ];
+
+                    $penerimaanDetailPP[] = [
+                        'nobukti' => $penerimaan_nobuktiPP,
+                        'nowarkat' => '',
+                        'tgljatuhtempo' => date('Y-m-d', strtotime($data['tglbukti'])),
+                        "nominal" => $getNominal->sum('nominal'),
+                        'coadebet' => $bank->coa,
+                        'coakredit' => $penerimaanPP->coa,
+                        'keterangan' => $penerimaanPP->nobukti,
+                        'invoice_nobukti' => '',
+                        'pelunasanpiutang_nobukti' => '',
+                        'bulanbeban' => date('Y-m-d', strtotime($data['tglbukti'])),
+                        'modifiedby' => auth('api')->user()->name,
+                    ];
+
+                    $newPenerimaanTruckingPP = new PenerimaanTruckingHeader();
+                    $newPenerimaanTruckingPP = $newPenerimaanTruckingPP->findAll($penerimaanPP->id);
+                    (new PenerimaanTruckingHeader())->processUpdate($newPenerimaanTruckingPP, $penerimaanTruckingHeaderPP);
+                }
+            }
+
+            if ($data['nomDeposito'] != 0) {
+                $bank = Bank::from(DB::raw("bank with (readuncommitted)"))
+                    ->select('coa')
+                    ->where('id', $data['bank_idDeposito'])
+                    ->first();
+                $fetchDeposito = GajiSupirDeposito::from(DB::raw("gajisupirdeposito with (readuncommitted)"))->where('gajisupir_nobukti', $data['nobuktiRIC'][$i])->first();
+
+                if ($fetchDeposito != null) {
+                    $penerimaanDeposito = PenerimaanTruckingHeader::from(DB::raw("penerimaantruckingheader with (readuncommitted)"))
+                        ->where('nobukti', $fetchDeposito->penerimaantrucking_nobukti)->first();
+                    $getNominal = PenerimaanTruckingDetail::from(DB::raw("penerimaantruckingdetail with (readuncommitted)"))
+                        ->where('nobukti', $fetchDeposito->penerimaantrucking_nobukti)->get();
+
+                    $penerimaanTruckingHeaderDeposito = [
+                        'ebs' => true,
+                        'postingdari' => 'PROSES GAJI SUPIR',
+                        'bank_id' => $data['bank_idDeposito'],
+                        'penerimaan_nobukti' => $penerimaan_nobuktiDeposito,
+                    ];
+
+                    $penerimaanDetailDeposito[] = [
+                        'nobukti' => $penerimaan_nobuktiDeposito,
+                        'nowarkat' => '',
+                        'tgljatuhtempo' => date('Y-m-d', strtotime($data['tglbukti'])),
+                        "nominal" => $getNominal->sum('nominal'),
+                        'coadebet' => $bank->coa,
+                        'coakredit' => $penerimaanDeposito->coa,
+                        'keterangan' => $penerimaanDeposito->nobukti,
+                        'invoice_nobukti' => '',
+                        'pelunasanpiutang_nobukti' => '',
+                        'bulanbeban' => date('Y-m-d', strtotime($data['tglbukti'])),
+                        'modifiedby' => auth('api')->user()->name,
+                    ];
+
+                    $newPenerimaanTruckingDeposito = new PenerimaanTruckingHeader();
+                    $newPenerimaanTruckingDeposito = $newPenerimaanTruckingDeposito->findAll($penerimaanDeposito->id);
+                    (new PenerimaanTruckingHeader())->processUpdate($newPenerimaanTruckingDeposito, $penerimaanTruckingHeaderDeposito);
+                }
+            }
+
+            if ($data['nomBBM'] != 0) {
+                $bank = Bank::from(DB::raw("bank with (readuncommitted)"))
+                    ->select('coa')
+                    ->where('id', $data['bank_idBBM'])
+                    ->first();
+                $fetchBBM = GajiSupirBBM::from(DB::raw("gajisupirbbm with (readuncommitted)"))->where('gajisupir_nobukti', $data['nobuktiRIC'][$i])->first();
+
+                if ($fetchBBM != null) {
+                    $penerimaanBBM = PenerimaanTruckingHeader::from(DB::raw("penerimaantruckingheader with (readuncommitted)"))
+                        ->where('nobukti', $fetchBBM->penerimaantrucking_nobukti)->first();
+                    $getNominal = PenerimaanTruckingDetail::from(DB::raw("penerimaantruckingdetail with (readuncommitted)"))
+                        ->where('nobukti', $fetchBBM->penerimaantrucking_nobukti)->get();
+
+                    $penerimaanTruckingHeaderBBM = [
+                        'ebs' => true,
+                        'postingdari' => 'PROSES GAJI SUPIR',
+                        'bank_id' => $data['bank_idBBM'],
+                        'penerimaan_nobukti' => $penerimaan_nobuktiBBM,
+                    ];
+
+                    $penerimaanDetailBBM[] = [
+                        'nobukti' => $penerimaan_nobuktiBBM,
+                        'nowarkat' => '',
+                        'tgljatuhtempo' => date('Y-m-d', strtotime($data['tglbukti'])),
+                        "nominal" => $getNominal->sum('nominal'),
+                        'coadebet' => $bank->coa,
+                        'coakredit' => $penerimaanBBM->coa,
+                        'keterangan' => $penerimaanBBM->nobukti,
+                        'invoice_nobukti' => '',
+                        'pelunasanpiutang_nobukti' => '',
+                        'bulanbeban' => date('Y-m-d', strtotime($data['tglbukti'])),
+                        'modifiedby' => auth('api')->user()->name,
+                    ];
+
+                    $newPenerimaanTruckingBBM = new PenerimaanTruckingHeader();
+                    $newPenerimaanTruckingBBM = $newPenerimaanTruckingBBM->findAll($penerimaanBBM->id);
+                    (new PenerimaanTruckingHeader())->processUpdate($newPenerimaanTruckingBBM, $penerimaanTruckingHeaderBBM);
+                }
+            }
+        }
+
+        if ($data['nomUangjalan'] != 0) {
+            $allSP = "";
+            foreach ($data['nobuktiRIC'] as $key => $value) {
+                if ($key == 0) {
+                    $allSP = $allSP . "'$value'";
+                } else {
+                    $allSP = $allSP . ',' . "'$value'";
+                }
+            }
+            $nobuktiPenerimaanKasgantung = PengembalianKasGantungHeader::from(DB::raw("pengembaliankasgantungheader with (readuncommitted)"))->where('penerimaan_nobukti', $data['nobuktiUangjalan'])->first();
+
+            $gajiSupirUangjalan = GajisUpirUangJalan::from(DB::raw("gajisupiruangjalan with (readuncommitted)"))
+                ->select(DB::raw("absensisupirheader.kasgantung_nobukti, kasgantungheader.coakaskeluar, sum(gajisupiruangjalan.nominal) as nominal"))
+                ->join(DB::raw("absensisupirheader with (readuncommitted)"), 'gajisupiruangjalan.absensisupir_nobukti', 'absensisupirheader.nobukti')
+                ->join(DB::raw("kasgantungheader with (readuncommitted)"), 'absensisupirheader.kasgantung_nobukti', 'kasgantungheader.nobukti')
+                ->whereRaw("gajisupiruangjalan.gajisupir_nobukti in ($allSP)")
+                ->groupBy('absensisupirheader.kasgantung_nobukti', 'kasgantungheader.coakaskeluar')
+                ->get();
+
+            foreach ($gajiSupirUangjalan as $key => $value) {
+                $nominalUangJalan[] = $value->nominal;
+                $keteranganUangJalan[] = '-';
+                $kasgantung_nobukti[] = $value->kasgantung_nobukti;
+                $coaDetailKasGantung[] = $value->coakaskeluar;
+            }
+            $pengembalianKasGantungHeader = [
+                'tglbukti' => date('Y-m-d', strtotime($data['tglbukti'])),
+                'bank_id' => $data['bank_idUangjalan'],
+                'tgldari' => date('Y-m-d', strtotime($data['tgldari'])),
+                'tglsampai' => date('Y-m-d', strtotime($data['tglsampai'])),
+                'postingdari' => 'PROSES GAJI SUPIR',
+                'tglkasmasuk' => date('Y-m-d', strtotime($data['tglbukti'])),
+                'nominal' => $nominalUangJalan,
+                'keterangandetail' => $keteranganUangJalan,
+                'kasgantung_nobukti' => $kasgantung_nobukti,
+                'kasgantungdetail_id' => $kasgantung_nobukti,
+                'coadetail' => $coaDetailKasGantung
+            ];
+            $newPengembalianKasgantung = new PengembalianKasGantungHeader();
+            $newPengembalianKasgantung = $newPengembalianKasgantung->findAll($nobuktiPenerimaanKasgantung->id);
+            (new PengembalianKasGantungHeader())->processUpdate($newPengembalianKasgantung, $pengembalianKasGantungHeader);
+        }
+
+        //UPDATE EBS DI PENGELUARAN
+
+        $pengeluaranHeaderRequest = [
+            'tglbukti' => date('Y-m-d', strtotime($data['tglbukti'])),
+            'pelanggan_id' => 0,
+            'postingdari' => 'EDIT PROSES GAJI SUPIR',
+            'dibayarke' => 'PROSES GAJI SUPIR',
+            'bank_id' => $data['bank_idPR'],
+            'nowarkat' => $noWarkat,
+            'tgljatuhtempo' => $tglJatuhTempo,
+            'nominal_detail' => $nominalDetailPengeluaran,
+            'coadebet' => $coaDebetPengeluaran,
+            'keterangan_detail' => $keteranganDetailPengeluaran,
+        ];
+
+        $get = PengeluaranHeader::from(DB::raw("pengeluaranheader with (readuncommitted)"))
+            ->where('pengeluaranheader.nobukti', $prosesGajiSupirHeader->pengeluaran_nobukti)->first();
+        $newPengeluaran = new PengeluaranHeader();
+        $newPengeluaran = $newPengeluaran->findAll($get->id);
+        (new PengeluaranHeader())->processUpdate($newPengeluaran, $pengeluaranHeaderRequest);
+
+        // UPDATE EBS JURNAL
+        $getData = $prosesGajiSupirHeader->getDataJurnal($data['nobuktiRIC']);
+        $nominalJurnal = [];
+        $coaDebetJurnal = [];
+        $coaKreditJurnal = [];
+        $keteranganJurnal = [];
+
+        $coadebet = Parameter::from(DB::raw("parameter with (readuncommitted)"))
+            ->select('memo')->where('grp', 'JURNAL PROSES GAJI SUPIR')->where('kelompok', 'PROSES GAJI SUPIR')->where('subgrp', 'DEBET')->first();
+        $coakredit = Parameter::from(DB::raw("parameter with (readuncommitted)"))
+            ->select('memo')->where('grp', 'JURNAL PROSES GAJI SUPIR')->where('kelompok', 'PROSES GAJI SUPIR')->where('subgrp', 'KREDIT')->first();
+
+        $memodebet = json_decode($coadebet->memo, true);
+        $memokredit = json_decode($coakredit->memo, true);
+
+        for ($i = 0; $i < count($getData); $i++) {
+            $tglbuktiJurnal[] = $getData[$i]->tglbukti;
+            $nominalJurnal[] = $getData[$i]->nominal;
+            $coaDebetJurnal[] = $memodebet['JURNAL'];
+            $coaKreditJurnal[] = $memokredit['JURNAL'];
+            $keteranganJurnal[] = $getData[$i]->keterangan;
+        }
+
+        $jurnalRequest = [
+            'tanpaprosesnobukti' => 1,
+            'nobukti' => $prosesGajiSupirHeader->nobukti,
+            'tglbukti' => date('Y-m-d', strtotime($data['tglbukti'])),
+            'postingdari' => "EDIT PROSES GAJI SUPIR",
+            'modifiedby' => auth('api')->user()->name,
+            'statusformat' => "0",
+            'tglbukti_detail' => $tglbuktiJurnal,
+            'coakredit_detail' => $coaKreditJurnal,
+            'coadebet_detail' => $coaDebetJurnal,
+            'nominal_detail' => $nominalJurnal,
+            'keterangan_detail' => $keteranganJurnal
+        ];
+        $getJurnal = JurnalUmumHeader::from(DB::raw("jurnalumumheader with (readuncommitted)"))->where('nobukti', $prosesGajiSupirHeader->nobukti)->first();
+        $newJurnal = new JurnalUmumHeader();
+        $newJurnal = $newJurnal->find($getJurnal->id);
+        (new JurnalUmumHeader())->processUpdate($newJurnal, $jurnalRequest);
+
+        $getPS = PenerimaanHeader::from(DB::raw("penerimaanheader with (readuncommitted)"))
+            ->select('id')
+            ->where('nobukti', $penerimaan_nobuktiPS)->first();
+
+        if ($getPS != null) {
+            $penerimaanHeaderPS = [
+
+                'tglbukti' => date('Y-m-d', strtotime($data['tglbukti'])),
+                'pelanggan_id' => '',
+                'bank_id' => $data['bank_idPS'],
+                'postingdari' => 'PROSES GAJI SUPIR',
+                'diterimadari' => "PROSES GAJI SUPIR PERIODE " . $data['tgldari'] . " S/D " . $data['tglsampai'],
+                'tgllunas' => date('Y-m-d', strtotime($data['tglbukti'])),
+                'coakredit' => $coaKreditPS,
+                'nominal_detail' => $nominalPS,
+                'keterangan_detail' => $keteranganPS,
+                'tgljatuhtempo' => $tglJatuhTempoPS
+
+            ];
+            $newPenerimaanPS = new PenerimaanHeader();
+            $newPenerimaanPS = $newPenerimaanPS->findAll($getPS->id);
+            (new PenerimaanHeader())->processUpdate($newPenerimaanPS, $penerimaanHeaderPS);
+        }
+
+        $getPP = PenerimaanHeader::from(DB::raw("penerimaanheader with (readuncommitted)"))
+            ->select('id')
+            ->where('nobukti', $penerimaan_nobuktiPP)->first();
+
+        if ($getPP != null) {
+            $penerimaanHeaderPP = [
+                'tglbukti' => date('Y-m-d', strtotime($data['tglbukti'])),
+                'pelanggan_id' => '',
+                'bank_id' => $data['bank_idPP'],
+                'postingdari' => 'PROSES GAJI SUPIR',
+                'diterimadari' => "PROSES GAJI SUPIR PERIODE " . $data['tgldari'] . " S/D " . $data['tglsampai'],
+                'tgllunas' => date('Y-m-d', strtotime($data['tglbukti'])),
+                'coakredit' => $coaKreditPP,
+                'nominal_detail' => $nominalPP,
+                'keterangan_detail' => $keteranganPP,
+                'tgljatuhtempo' => $tglJatuhTempoPP
+
+            ];
+            $newPenerimaanPP = new PenerimaanHeader();
+            $newPenerimaanPP = $newPenerimaanPP->findAll($getPP->id);
+            (new PenerimaanHeader())->processUpdate($newPenerimaanPP, $penerimaanHeaderPP);
+        }
+
+        $getDeposito = PenerimaanHeader::from(DB::raw("penerimaanheader with (readuncommitted)"))
+            ->select('id')
+            ->where('nobukti', $penerimaan_nobuktiDeposito)->first();
+        if ($data['nomDeposito'] != 0) {
+            if ($getDeposito != null) {
+                $penerimaanHeaderDeposito = [
+                    'tglbukti' => date('Y-m-d', strtotime($data['tglbukti'])),
+                    'pelanggan_id' => '',
+                    'bank_id' => $data['bank_idDeposito'],
+                    'postingdari' => 'PROSES GAJI SUPIR',
+                    'diterimadari' => "PROSES GAJI SUPIR PERIODE " . $data['tgldari'] . " S/D " . $data['tglsampai'],
+                    'tgllunas' => date('Y-m-d', strtotime($data['tglbukti'])),
+                    'coakredit' => $coaKreditDeposito,
+                    'nominal_detail' => $nominalDeposito,
+                    'keterangan_detail' => $keteranganDeposito,
+                    'tgljatuhtempo' => $tglJatuhTempoDeposito
+
+
+                ];
+
+                $newPenerimaanDeposito = new PenerimaanHeader();
+                $newPenerimaanDeposito = $newPenerimaanDeposito->findAll($getDeposito->id);
+                (new PenerimaanHeader())->processUpdate($newPenerimaanDeposito, $penerimaanHeaderDeposito);
+            } else {
+
+                $gajiSupirDeposito = GajiSupirHeader::from(DB::raw("gajisupirheader with (readuncommitted)"))->where('tglbukti', '>=', $prosesGajiSupirHeader['tgldari'])
+                    ->where('tglbukti', '<=', $prosesGajiSupirHeader['tglsampai'])
+                    ->whereRaw("gajisupirheader.nobukti in(select gajisupir_nobukti from prosesgajisupirdetail where prosesgajisupir_id=" . $prosesGajiSupirHeader['id'] . ")")
+                    ->whereRaw("gajisupirheader.nobukti in(select gajisupir_nobukti from gajisupirdeposito)")
+                    ->get();
+                foreach ($gajiSupirDeposito as $key => $value) {
+                    $fetchDeposito = GajiSupirDeposito::from(DB::raw("gajisupirdeposito with (readuncommitted)"))->where('gajisupir_nobukti', $value->nobukti)->first();
+
+                    $penerimaanDeposito = PenerimaanTruckingHeader::from(DB::raw("penerimaantruckingheader with (readuncommitted)"))
+                        ->where('nobukti', $fetchDeposito->penerimaantrucking_nobukti)->first();
+                    $getNominalDeposito = PenerimaanTruckingDetail::from(DB::raw("penerimaantruckingdetail with (readuncommitted)"))
+                        ->where('nobukti', $fetchDeposito->penerimaantrucking_nobukti)->get();
+
+                    $coaKreditDeposito[] = $penerimaanDeposito->coa;
+                    $nominalDeposito[] =  $getNominalDeposito->sum('nominal');
+                    $keteranganDeposito[] = $penerimaanDeposito->nobukti;
+                    $tglJatuhTempoDeposito[] = $data['tglbukti'];
+                }
+
+                $penerimaanHeaderDeposito = [
+                    'tglbukti' => date('Y-m-d', strtotime($data['tglbukti'])),
+                    'pelanggan_id' => '',
+                    'bank_id' => $data['bank_idDeposito'],
+                    'postingdari' => 'PROSES GAJI SUPIR',
+                    'diterimadari' => "PROSES GAJI SUPIR PERIODE " . $data['tgldari'] . " S/D " . $data['tglsampai'],
+                    'tgllunas' => date('Y-m-d', strtotime($data['tglbukti'])),
+                    'coakredit' => $coaKreditDeposito,
+                    'nominal_detail' => $nominalDeposito,
+                    'keterangan_detail' => $keteranganDeposito,
+                    'tgljatuhtempo' => $tglJatuhTempoDeposito
+                ];
+
+                $penerimaanHeaderDeposito = (new PenerimaanHeader())->processStore($penerimaanHeaderDeposito);
+
+                foreach ($gajiSupirDeposito as $key => $value) {
+                    $penerimaanTruckingHeaderDeposito = [
+                        'ebs' => true,
+                        'postingdari' => 'PROSES GAJI SUPIR',
+                        'bank_id' => $data['bank_idDeposito'],
+                        'penerimaan_nobukti' => $penerimaanHeaderDeposito->nobukti,
+                    ];
+
+                    $newPenerimaanTruckingDeposito = new PenerimaanTruckingHeader();
+                    $newPenerimaanTruckingDeposito = $newPenerimaanTruckingDeposito->findAll($penerimaanDeposito->id);
+                    (new PenerimaanTruckingHeader())->processUpdate($newPenerimaanTruckingDeposito, $penerimaanTruckingHeaderDeposito);
+                }
+            }
+        } else {
+            if ($getDeposito != null) {
+                (new PenerimaanHeader())->processDestroy($getDeposito->id, 'PROSES GAJI SUPIR');
+            }
+        }
+
+
+        $getBBM = PenerimaanHeader::from(DB::raw("penerimaanheader with (readuncommitted)"))
+            ->select('id')
+            ->where('nobukti', $penerimaan_nobuktiBBM)->first();
+        if ($data['nomBBM'] != 0) {
+            if ($getBBM != null) {
+                $penerimaanHeaderBBM = [
+                    'tglbukti' => date('Y-m-d', strtotime($data['tglbukti'])),
+                    'pelanggan_id' => '',
+                    'bank_id' => $data['bank_idBBM'],
+                    'postingdari' => 'PROSES GAJI SUPIR',
+                    'diterimadari' => "PROSES GAJI SUPIR PERIODE " . $data['tgldari'] . " S/D " . $data['tglsampai'],
+                    'tgllunas' => date('Y-m-d', strtotime($data['tglbukti'])),
+                    'coakredit' => $coaKreditBBM,
+                    'nominal_detail' => $nominalBBM,
+                    'keterangan_detail' => $keteranganBBM,
+                    'tgljatuhtempo' => $tglJatuhTempoBBM
+
+                ];
+                $newPenerimaanBBM = new PenerimaanHeader();
+                $newPenerimaanBBM = $newPenerimaanBBM->findAll($getBBM->id);
+                (new PenerimaanHeader())->processUpdate($newPenerimaanBBM, $penerimaanHeaderBBM);
+            }
+        }
+
+
+        (new LogTrail())->processStore([
+            'namatabel' => strtoupper($prosesGajiSupirDetail->getTable()),
+            'postingdari' => 'EDIT PROSES GAJI SUPIR DETAIL',
+            'idtrans' => $prosesGajiSupirHeaderLogTrail->id,
+            'nobuktitrans' => $prosesGajiSupirHeader->nobukti,
+            'aksi' => 'EDIT',
+            'datajson' => $prosesGajiSupirDetails,
+            'modifiedby' => auth('api')->user()->user
+        ]);
+
+
+        return $prosesGajiSupirHeader;
+    }
+
+    public function processDestroy($id, $postingDari ="", $nobuktiUangjalan): ProsesGajiSupirHeader
+    {
+        $prosesGajiSupirDetails = ProsesGajiSupirDetail::lockForUpdate()->where('prosesgajisupir_id', $id)->get();
+
+        $prosesGajiSupirHeader = new ProsesGajiSupirHeader();
+        $prosesGajiSupirHeader = $prosesGajiSupirHeader->lockAndDestroy($id);
+
+        $prosesGajiSupirHeaderLogTrail = (new LogTrail())->processStore([
+            'namatabel' => $prosesGajiSupirHeader->getTable(),
+            'postingdari' => $postingDari,
+            'idtrans' => $prosesGajiSupirHeader->id,
+            'nobuktitrans' => $prosesGajiSupirHeader->nobukti,
+            'aksi' => 'DELETE',
+            'datajson' => $prosesGajiSupirHeader->toArray(),
+            'modifiedby' => auth('api')->user()->name
+        ]);
+
+        (new LogTrail())->processStore([
+            'namatabel' => 'PROSESGAJISUPIRDETAIL',
+            'postingdari' => $postingDari,
+            'idtrans' => $prosesGajiSupirHeaderLogTrail['id'],
+            'nobuktitrans' => $prosesGajiSupirHeader->nobukti,
+            'aksi' => 'DELETE',
+            'datajson' => $prosesGajiSupirDetails->toArray(),
+            'modifiedby' => auth('api')->user()->name
+        ]);
+
+        
+        $getPengeluaran = PengeluaranHeader::from(DB::raw("pengeluaranheader with (readuncommitted)"))->where('nobukti', $prosesGajiSupirHeader->pengeluaran_nobukti)->first();
+        (new PengeluaranHeader())->processDestroy($getPengeluaran->id, $postingDari);
+
+        $getJurnal = JurnalUmumHeader::from(DB::raw("jurnalumumheader with (readuncommitted)"))->where('nobukti', $prosesGajiSupirHeader->nobukti)->first();
+        (new JurnalUmumHeader())->processDestroy($getJurnal->id, $postingDari);
+        
+        foreach ($prosesGajiSupirDetails as $key => $value) {
+            $fetchPS = GajiSupirPelunasanPinjaman::from(DB::raw("gajisupirpelunasanpinjaman with (readuncommitted)"))->where('gajisupir_nobukti', $value->gajisupir_nobukti)->where('supir_id', '0')->first();
+            if ($fetchPS != null) {
+
+                $penerimaanPS = PenerimaanTruckingHeader::from(DB::raw("penerimaantruckingheader with (readuncommitted)"))
+                    ->where('nobukti', $fetchPS->penerimaantrucking_nobukti)->first();
+
+                $penerimaanTruckingHeaderPS = [
+                    'ebs' => true,
+                    'postingdari' => 'PROSES GAJI SUPIR',
+                    'bank_id' => 0,
+                    'penerimaan_nobukti' => '',
+                ];
+                $newPenerimaanTruckingPS = new PenerimaanTruckingHeader();
+                $newPenerimaanTruckingPS = $newPenerimaanTruckingPS->findAll($penerimaanPS->id);
+                (new PenerimaanTruckingHeader())->processUpdate($newPenerimaanTruckingPS, $penerimaanTruckingHeaderPS);
+
+                $getPenerimaanPS = PenerimaanHeader::from(DB::raw("penerimaanheader with (readuncommitted)"))->where('nobukti', $penerimaanPS->penerimaan_nobukti)->first();
+                if ($getPenerimaanPS != null) {
+                    (new PenerimaanHeader())->processDestroy($getPenerimaanPS->id, $postingDari);
+                }
+            }
+
+            $fetchPP = GajiSupirPelunasanPinjaman::from(DB::raw("gajisupirpelunasanpinjaman with (readuncommitted)"))->where('gajisupir_nobukti', $value->gajisupir_nobukti)->where('supir_id', '!=', '0')->first();
+
+            if ($fetchPP != null) {
+
+                $penerimaanPP = PenerimaanTruckingHeader::from(DB::raw("penerimaantruckingheader with (readuncommitted)"))
+                    ->where('nobukti', $fetchPP->penerimaantrucking_nobukti)->first();
+
+                $penerimaanTruckingHeaderPP = [
+                    'ebs' => true,
+                    'postingdari' => 'PROSES GAJI SUPIR',
+                    'bank_id' => 0,
+                    'penerimaan_nobukti' => '',
+                ];
+                $newPenerimaanTruckingPP = new PenerimaanTruckingHeader();
+                $newPenerimaanTruckingPP = $newPenerimaanTruckingPP->findAll($penerimaanPP->id);
+                (new PenerimaanTruckingHeader())->processUpdate($newPenerimaanTruckingPP, $penerimaanTruckingHeaderPP);
+
+                $getPenerimaanPP = PenerimaanHeader::from(DB::raw("penerimaanheader with (readuncommitted)"))->where('nobukti', $penerimaanPP->penerimaan_nobukti)->first();
+                if ($getPenerimaanPP != null) {
+                    (new PenerimaanHeader())->processDestroy($getPenerimaanPP->id, $postingDari);
+                }
+            }
+
+            $fetchDeposito = GajiSupirDeposito::from(DB::raw("gajisupirdeposito with (readuncommitted)"))->where('gajisupir_nobukti', $value->gajisupir_nobukti)->first();
+
+            if ($fetchDeposito != null) {
+
+                $penerimaanDeposito = PenerimaanTruckingHeader::from(DB::raw("penerimaantruckingheader with (readuncommitted)"))
+                    ->where('nobukti', $fetchDeposito->penerimaantrucking_nobukti)->first();
+
+                $penerimaanTruckingHeaderDeposito = [
+                    'ebs' => true,
+                    'postingdari' => 'PROSES GAJI SUPIR',
+                    'bank_id' => 0,
+                    'penerimaan_nobukti' => '',
+                ];
+                $newPenerimaanTruckingDeposito = new PenerimaanTruckingHeader();
+                $newPenerimaanTruckingDeposito = $newPenerimaanTruckingDeposito->findAll($penerimaanDeposito->id);
+                (new PenerimaanTruckingHeader())->processUpdate($newPenerimaanTruckingDeposito, $penerimaanTruckingHeaderDeposito);
+
+                $getPenerimaanDeposito = PenerimaanHeader::from(DB::raw("penerimaanheader with (readuncommitted)"))->where('nobukti', $penerimaanDeposito->penerimaan_nobukti)->first();
+                if ($getPenerimaanDeposito != null) {
+                    (new PenerimaanHeader())->processDestroy($getPenerimaanDeposito->id, $postingDari);
+                }
+            }
+
+            $fetchBBM = GajiSupirBBM::from(DB::raw("gajisupirbbm with (readuncommitted)"))->where('gajisupir_nobukti', $value->gajisupir_nobukti)->first();
+
+            if ($fetchBBM != null) {
+
+                $penerimaanBBM = PenerimaanTruckingHeader::from(DB::raw("penerimaantruckingheader with (readuncommitted)"))
+                    ->where('nobukti', $fetchBBM->penerimaantrucking_nobukti)->first();
+
+                $penerimaanTruckingHeaderBBM = [
+                    'ebs' => true,
+                    'postingdari' => 'PROSES GAJI SUPIR',
+                    'bank_id' => 0,
+                    'penerimaan_nobukti' => '',
+                ];
+                $newPenerimaanTruckingBBM = new PenerimaanTruckingHeader();
+                $newPenerimaanTruckingBBM = $newPenerimaanTruckingBBM->findAll($penerimaanBBM->id);
+                (new PenerimaanTruckingHeader())->processUpdate($newPenerimaanTruckingBBM, $penerimaanTruckingHeaderBBM);
+
+                $getPenerimaanBBM = PenerimaanHeader::from(DB::raw("penerimaanheader with (readuncommitted)"))->where('nobukti', $penerimaanBBM->penerimaan_nobukti)->first();
+                if ($getPenerimaanBBM != null) {
+                    (new PenerimaanHeader())->processDestroy($getPenerimaanBBM->id, $postingDari);
+                }
+            }
+        }
+
+        if ($nobuktiUangjalan != null) {
+
+            $nobuktiPenerimaanKasgantung = PengembalianKasGantungHeader::from(DB::raw("pengembaliankasgantungheader with (readuncommitted)"))->where('penerimaan_nobukti', $nobuktiUangjalan)->first();
+            (new PengembalianKasGantungHeader())->processDestroy($nobuktiPenerimaanKasgantung->id, $postingDari);
+        }
+        return $prosesGajiSupirHeader;
+    }
+ 
 }

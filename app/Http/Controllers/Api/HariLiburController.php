@@ -47,10 +47,15 @@ class HariLiburController extends Controller
         DB::beginTransaction();
 
         try {
-            $hariLibur = (new HariLibur())->processStore($request->all());
+            $data = [
+                'tgl' => date('Y-m-d', strtotime($request->tgl)),
+                'keterangan' => $request->keterangan ?? '',
+                'statusaktif' => $request->statusaktif,
+            ];
+            $hariLibur = (new HariLibur())->processStore($data);
             $hariLibur->position = $this->getPosition($hariLibur, $hariLibur->getTable())->position;
             $hariLibur->page = ceil($hariLibur->position / ($request->limit ?? 10));
-        
+
             DB::commit();
 
             return response()->json([
@@ -81,10 +86,16 @@ class HariLiburController extends Controller
         DB::beginTransaction();
 
         try {
-            $harilibur = (new harilibur())->processUpdate($harilibur, $request->all());
+            $data = [
+                'tgl' => date('Y-m-d', strtotime($request->tgl)),
+                'keterangan' => $request->keterangan ?? '',
+                'statusaktif' => $request->statusaktif,
+            ];
+
+            $harilibur = (new harilibur())->processUpdate($harilibur, $data);
             $harilibur->position = $this->getPosition($harilibur, $harilibur->getTable())->position;
             $harilibur->page = ceil($harilibur->position / ($request->limit ?? 10));
-            
+
             DB::commit();
 
             return response()->json([

@@ -202,4 +202,23 @@ class ProsesGajiSupirDetail extends MyModel
     {
         return $query->skip($this->params['offset'])->take($this->params['limit']);
     }
+
+    public function processStore(ProsesGajiSupirHeader $prosesGajiSupirHeader, array $data): ProsesGajiSupirDetail
+    {
+        $prosesGajiSupirDetail = new ProsesGajiSupirDetail();
+        $prosesGajiSupirDetail->prosesgajisupir_id = $prosesGajiSupirHeader->id;
+        $prosesGajiSupirDetail->nobukti = $prosesGajiSupirHeader->nobukti;
+        $prosesGajiSupirDetail->gajisupir_nobukti = $data['gajisupir_nobukti'];
+        $prosesGajiSupirDetail->supir_id = $data['supir_id'];
+        $prosesGajiSupirDetail->trado_id = $data['trado_id'];
+        $prosesGajiSupirDetail->nominal = $data['nominal'];
+        $prosesGajiSupirDetail->keterangan = $data['keterangan'];
+        $prosesGajiSupirDetail->modifiedby = auth('api')->user()->name;
+        
+        if (!$prosesGajiSupirDetail->save()) {
+            throw new \Exception("Error storing Proses Gaji Supir Detail.");
+        }
+
+        return $prosesGajiSupirDetail;
+    }
 }

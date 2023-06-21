@@ -81,12 +81,18 @@ class KategoriController extends Controller
     /**
      * @ClassName 
      */
-    public function store(StoreKategoriRequest $request) : JsonResponse
+    public function store(StoreKategoriRequest $request): JsonResponse
     {
         DB::beginTransaction();
 
         try {
-            $kategori = (new Kategori())->processStore($request->all());
+            $data = [
+                'kodekategori' => $request->kodekategori ?? '',
+                'keterangan' => $request->keterangan ?? '',
+                'subkelompok_id' => $request->subkelompok_id,
+                'statusaktif' => $request->statusaktif
+            ];
+            $kategori = (new Kategori())->processStore($data);
             $kategori->position = $this->getPosition($kategori, $kategori->getTable())->position;
             $kategori->page = ceil($kategori->position / ($request->limit ?? 10));
 
@@ -115,11 +121,17 @@ class KategoriController extends Controller
     /**
      * @ClassName 
      */
-    public function update(UpdateKategoriRequest $request, Kategori $kategori) : JsonResponse
+    public function update(UpdateKategoriRequest $request, Kategori $kategori): JsonResponse
     {
         DB::beginTransaction();
         try {
-            $kategori = (new Kategori())->processUpdate($kategori, $request->all());
+            $data = [
+                'kodekategori' => $request->kodekategori ?? '',
+                'keterangan' => $request->keterangan ?? '',
+                'subkelompok_id' => $request->subkelompok_id,
+                'statusaktif' => $request->statusaktif
+            ];
+            $kategori = (new Kategori())->processUpdate($kategori, $data);
             $kategori->position = $this->getPosition($kategori, $kategori->getTable())->position;
             $kategori->page = ceil($kategori->position / ($request->limit ?? 10));
 

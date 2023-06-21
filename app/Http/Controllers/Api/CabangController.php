@@ -53,10 +53,18 @@ class CabangController extends Controller
      */
     public function store(StoreCabangRequest $request): JsonResponse
     {
+
+
+        $data = [
+            'id' => $request->id,
+            'kodecabang' => $request->kodecabang,
+            'namacabang' => $request->namacabang,
+            'statusaktif' => $request->statusaktif,
+        ];
         DB::beginTransaction();
 
         try {
-            $cabang = (new Cabang())->processStore($request->all());
+            $cabang = (new Cabang())->processStore($data);
             $cabang->position = $this->getPosition($cabang, $cabang->getTable())->position;
             $cabang->page = ceil($cabang->position / ($request->limit ?? 10));
 
@@ -87,10 +95,16 @@ class CabangController extends Controller
      */
     public function update(UpdateCabangRequest $request, Cabang $cabang): JsonResponse
     {
+        $data = [
+            'id' => $request->id,
+            'kodecabang' => $request->kodecabang,
+            'namacabang' => $request->namacabang,
+            'statusaktif' => $request->statusaktif,
+        ];
         DB::beginTransaction();
 
         try {
-            $cabang = (new Cabang())->processUpdate($cabang, $request->all());
+            $cabang = (new Cabang())->processUpdate($cabang, $data);
             $cabang->position = $this->getPosition($cabang, $cabang->getTable())->position;
             $cabang->page = ceil($cabang->position / ($request->limit ?? 10));
 

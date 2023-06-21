@@ -41,8 +41,10 @@ class RoleController extends Controller
         DB::beginTransaction();
 
         try {
-
-            $role = (new Role())->processStore($request->all());
+            $data = [
+                'rolename' => $request->rolename
+            ];
+            $role = (new Role())->processStore($data);
             $role->position = $this->getPosition($role, $role->getTable())->position;
             $role->page = ceil($role->position / ($request->limit ?? 10));
             DB::commit();
@@ -81,7 +83,11 @@ class RoleController extends Controller
         DB::beginTransaction();
 
         try {
-            $role = (new Role())->processUpdate($role, $request->all());
+            $data = [
+                'rolename' => $request->rolename
+            ];
+
+            $role = (new Role())->processUpdate($role, $data);
             $role->position = $this->getPosition($role, $role->getTable())->position;
             $role->page = ceil($role->position / ($request->limit ?? 10));
 

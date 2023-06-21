@@ -245,4 +245,49 @@ class GajiSupirPelunasanPinjaman extends MyModel
             ->get();
         return $data;
     }
+
+    public function processStore(array $data): GajiSupirPelunasanPinjaman
+    {
+        $gajiSupirPelunasanPinjaman = new GajiSupirPelunasanPinjaman();
+        $gajiSupirPelunasanPinjaman->gajisupir_id = $data['gajisupir_id'];
+        $gajiSupirPelunasanPinjaman->gajisupir_nobukti = $data['gajisupir_nobukti'];
+        $gajiSupirPelunasanPinjaman->penerimaantrucking_nobukti = $data['penerimaantrucking_nobukti'];
+        $gajiSupirPelunasanPinjaman->pengeluarantrucking_nobukti = $data['pengeluarantrucking_nobukti'];
+        $gajiSupirPelunasanPinjaman->supir_id = $data['supir_id'];
+        $gajiSupirPelunasanPinjaman->nominal = $data['nominal'];
+        $gajiSupirPelunasanPinjaman->modifiedby = auth('api')->user()->user;
+
+        if (!$gajiSupirPelunasanPinjaman->save()) {
+            throw new \Exception('Error storing gaji supir pelunasan pinjaman.');
+        }
+
+        (new LogTrail())->processStore([
+            'namatabel' => $gajiSupirPelunasanPinjaman->getTable(),
+            'postingdari' => 'ENTRY GAJI SUPIR PELUNASAN PINJAMAN',
+            'idtrans' => $gajiSupirPelunasanPinjaman->id,
+            'nobuktitrans' => $gajiSupirPelunasanPinjaman->id,
+            'aksi' => 'ENTRY',
+            'datajson' => $gajiSupirPelunasanPinjaman->toArray(),
+        ]);
+
+        return $gajiSupirPelunasanPinjaman;
+    }
+
+    public function processDestroy($id, $postingDari = ''): GajiSupirPelunasanPinjaman
+    {
+        $gajiSupirPelunasanPinjaman = new GajiSupirPelunasanPinjaman();
+        $gajiSupirPelunasanPinjaman = $gajiSupirPelunasanPinjaman->lockAndDestroy($id);
+
+        (new LogTrail())->processStore([
+            'namatabel' => strtoupper($gajiSupirPelunasanPinjaman->getTable()),
+            'postingdari' => $postingDari,
+            'idtrans' => $gajiSupirPelunasanPinjaman->id,
+            'nobuktitrans' => $gajiSupirPelunasanPinjaman->nobukti,
+            'aksi' => 'DELETE',
+            'datajson' => $gajiSupirPelunasanPinjaman->toArray(),
+            'modifiedby' => auth('api')->user()->name
+        ]);
+
+        return $gajiSupirPelunasanPinjaman;
+    }
 }

@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Services\RunningNumberService;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
@@ -84,7 +85,7 @@ class GajiSupirHeader extends MyModel
                 'gajisupirheader.created_at',
                 'gajisupirheader.updated_at',
             )
-            
+
             ->leftJoin(DB::raw("parameter with (readuncommitted)"), 'gajisupirheader.statuscetak', 'parameter.id')
             ->leftJoin(DB::raw("supir with (readuncommitted)"), 'gajisupirheader.supir_id', 'supir.id');
         if (request()->tgldari && request()->tglsampai) {
@@ -1104,10 +1105,10 @@ class GajiSupirHeader extends MyModel
         $this->setRequestParameters();
 
         $getJudul = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))
-        ->select('text')
-        ->where('grp', 'JUDULAN LAPORAN')
-        ->where('subgrp', 'JUDULAN LAPORAN')
-        ->first();
+            ->select('text')
+            ->where('grp', 'JUDULAN LAPORAN')
+            ->where('subgrp', 'JUDULAN LAPORAN')
+            ->first();
 
         $query = DB::table($this->table)->from(DB::raw("gajisupirheader with (readuncommitted)"))
             ->select(
@@ -1134,5 +1135,948 @@ class GajiSupirHeader extends MyModel
             ->where("$this->table.id", $id);
         $data = $query->first();
         return $data;
+    }
+
+    public function processStore(array $data): GajiSupirHeader
+    {
+        $group = 'RINCIAN GAJI SUPIR BUKTI';
+        $subGroup = 'RINCIAN GAJI SUPIR BUKTI';
+
+        $format = DB::table('parameter')
+            ->where('grp', $group)
+            ->where('subgrp', $subGroup)
+            ->first();
+
+        $statusCetak = Parameter::from(DB::raw("parameter with (readuncommitted)"))
+            ->where('grp', 'STATUSCETAK')->where('text', 'BELUM CETAK')->first();
+
+        $gajiSupirHeader = new GajiSupirHeader();
+        $gajiSupirHeader->tglbukti = date('Y-m-d', strtotime($data['tglbukti']));
+        $gajiSupirHeader->supir_id = $data['supir_id'];
+        $gajiSupirHeader->nominal = '';
+        $gajiSupirHeader->tgldari = date('Y-m-d', strtotime($data['tgldari']));
+        $gajiSupirHeader->tglsampai = date('Y-m-d', strtotime($data['tglsampai']));
+        $gajiSupirHeader->total = '';
+        $gajiSupirHeader->uangjalan = $data['uangjalan'] ?? 0;
+        $gajiSupirHeader->bbm = $data['nomBBM'] ?? 0;
+        $gajiSupirHeader->potonganpinjaman = ($data['nominalPP']) ? array_sum($data['nominalPP']) : 0;
+        $gajiSupirHeader->deposito = $data['nomDeposito'] ?? 0;
+        $gajiSupirHeader->potonganpinjamansemua = ($data['nominalPS']) ? array_sum($data['nominalPS']) : 0;
+        $gajiSupirHeader->komisisupir = ($data['rincian_komisisupir']) ? array_sum($data['rincian_komisisupir']) : 0;
+        $gajiSupirHeader->tolsupir = ($data['rincian_tolsupir']) ? array_sum($data['rincian_tolsupir']) : 0;
+        $gajiSupirHeader->voucher = $data['voucher'] ?? 0;
+        $gajiSupirHeader->uangmakanharian = $data['uangmakanharian'] ?? 0;
+        $gajiSupirHeader->pinjamanpribadi = 0;
+        $gajiSupirHeader->gajiminus = 0;
+        $gajiSupirHeader->uangJalantidakterhitung = $data['uangjalantidakterhitung'] ?? 0;
+        $gajiSupirHeader->statusformat = $format->id;
+        $gajiSupirHeader->statuscetak = $statusCetak->id;
+        $gajiSupirHeader->modifiedby = auth('api')->user()->user;
+        $gajiSupirHeader->nobukti = (new RunningNumberService)->get($group, $subGroup, $gajiSupirHeader->getTable(), date('Y-m-d', strtotime($data['tglbukti'])));
+
+
+        if (!$gajiSupirHeader->save()) {
+            throw new \Exception('Error storing gaji supir');
+        }
+
+        $gajiSupirDetails = [];
+
+        $total = 0;
+        $urut = 1;
+        for ($i = 0; $i < count($data['rincianId']); $i++) {
+            $total = $total + $data['rincian_gajisupir'][$i] + $data['rincian_gajikenek'][$i] + $data['rincian_upahritasi'][$i] + $data['rincian_biayaextra'][$i];
+
+            $gajiSupirDetail = (new GajiSupirDetail())->processStore($gajiSupirHeader, [
+                'nominaldeposito' => 0,
+                'nourut' => $urut,
+                'suratpengantar_nobukti' => $data['rincian_nobukti'][$i],
+                'ritasi_nobukti' => $data['rincian_ritasi'][$i],
+                'komisisupir' => $data['rincian_komisisupir'][$i],
+                'tolsupir' => $data['rincian_tolsupir'][$i],
+                'voucher' => $data['voucher'][$i] ?? 0,
+                'novoucher' => $data['novoucher'][$i] ?? 0,
+                'gajisupir' => $data['rincian_gajisupir'][$i],
+                'gajikenek' => $data['rincian_gajikenek'][$i],
+                'gajiritasi' => $data['rincian_upahritasi'][$i],
+                'biayatambahan' => $data['rincian_biayaextra'][$i],
+                'keteranganbiayatambahan' => $data['rincian_keteranganbiaya'][$i],
+                'nominalpengembalianpinjaman' => 0,
+            ]);
+
+            $gajiSupirDetails[] = $gajiSupirDetail->toArray();
+            $urut++;
+        }
+        $nominal = ($total - $gajiSupirHeader->uangjalan - $gajiSupirHeader->bbm - $gajiSupirHeader->potonganpinjaman - $gajiSupirHeader->potonganpinjamansemua - $gajiSupirHeader->deposito) + $gajiSupirHeader->uangmakanharian;
+
+        $gajiSupirHeader->nominal = $nominal;
+        $gajiSupirHeader->total = $total;
+
+        $gajiSupirHeader->save();
+
+        $gajiSupirHeaderLogTrail = (new LogTrail())->processStore([
+            'namatabel' => $gajiSupirHeader->getTable(),
+            'postingdari' => 'ENTRY GAJI SUPIR HEADER',
+            'idtrans' => $gajiSupirHeader->id,
+            'nobuktitrans' => $gajiSupirHeader->nobukti,
+            'aksi' => 'ENTRY',
+            'datajson' => $gajiSupirHeader->toArray(),
+            'modifiedby' => auth('api')->user()->user
+        ]);
+        (new LogTrail())->processStore([
+            'namatabel' => $gajiSupirDetail->getTable(),
+            'postingdari' => 'ENTRY GAJI SUPIR DETAIL',
+            'idtrans' => $gajiSupirHeaderLogTrail['id'],
+            'nobuktitrans' => $gajiSupirHeader->nobukti,
+            'aksi' => 'ENTRY',
+            'datajson' => $gajiSupirDetails,
+            'modifiedby' => auth('api')->user()->user
+        ]);
+        if ($data['pinjSemua']) {
+            $fetchFormatPS = PenerimaanTrucking::from(DB::raw("penerimaantrucking with (readuncommitted)"))
+                ->where('kodepenerimaan', 'PJP')
+                ->first();
+            $pengeluarantruckingheader_nobuktiPS = [];
+            $nominalPS = [];
+            $supirPS = [];
+            $keteranganPS = [];
+            for ($i = 0; $i < count($data['pinjSemua']); $i++) {
+                $supirPS[] = 0;
+                $pengeluarantruckingheader_nobuktiPS[] = $data['pinjSemua_nobukti'][$i];
+                $nominalPS[] = $data['nominalPS'][$i];
+                $keteranganPS[] = $data['pinjSemua_keterangan'][$i];
+            }
+
+            $penerimaanTruckingHeaderPS = [
+                'tanpaprosesnobukti' => '2',
+                'tglbukti' => date('Y-m-d', strtotime($data['tglbukti'])),
+                'penerimaantrucking_id' => $fetchFormatPS->id,
+                'bank_id' => 0,
+                'coa' => $fetchFormatPS->coapostingkredit,
+                'penerimaan_nobukti' => '',
+                'postingdari' => 'ENTRY GAJI SUPIR',
+                'supir_id' => $supirPS,
+                'pengeluarantruckingheader_nobukti' => $pengeluarantruckingheader_nobuktiPS,
+                'keterangan' => $keteranganPS,
+                'nominal' => $nominalPS
+            ];
+
+            $penerimaanPS = (new PenerimaanTruckingHeader())->processStore($penerimaanTruckingHeaderPS);
+
+            for ($i = 0; $i < count($data['pinjSemua']); $i++) {
+                $gajiSupirPelunasanPS = [
+                    'gajisupir_id' => $gajiSupirHeader->id,
+                    'gajisupir_nobukti' => $gajiSupirHeader->nobukti,
+                    'penerimaantrucking_nobukti' => $penerimaanPS->nobukti,
+                    'pengeluarantrucking_nobukti' => $data['pinjSemua_nobukti'][$i],
+                    'supir_id' => 0,
+                    'nominal' => $data['nominalPS'][$i]
+                ];
+                (new GajiSupirPelunasanPinjaman())->processStore($gajiSupirPelunasanPS);
+            }
+        }
+
+        if ($data['pinjPribadi']) {
+            $fetchFormatPP = PenerimaanTrucking::from(DB::raw("penerimaantrucking with (readuncommitted)"))
+                ->where('kodepenerimaan', 'PJP')
+                ->first();
+            $pengeluarantruckingheader_nobuktiPP = [];
+            $nominalPP = [];
+            $supirPP = [];
+            $keteranganPP = [];
+            for ($i = 0; $i < count($data['pinjPribadi']); $i++) {
+                $supirPP[] = $gajiSupirHeader->supir_id;
+                $pengeluarantruckingheader_nobuktiPP[] = $data['pinjPribadi_nobukti'][$i];
+                $nominalPP[] = $data['nominalPP'][$i];
+                $keteranganPP[] = $data['pinjPribadi_keterangan'][$i];
+            }
+
+            $penerimaanTruckingHeaderPP = [
+                'tanpaprosesnobukti' => '2',
+                'tglbukti' => date('Y-m-d', strtotime($data['tglbukti'])),
+                'penerimaantrucking_id' => $fetchFormatPP->id,
+                'bank_id' => 0,
+                'coa' => $fetchFormatPP->coapostingkredit,
+                'penerimaan_nobukti' => '',
+                'postingdari' => 'ENTRY GAJI SUPIR',
+                'supir_id' => $supirPP,
+                'pengeluarantruckingheader_nobukti' => $pengeluarantruckingheader_nobuktiPP,
+                'keterangan' => $keteranganPP,
+                'nominal' => $nominalPP
+            ];
+
+            $penerimaanPP = (new PenerimaanTruckingHeader())->processStore($penerimaanTruckingHeaderPP);
+
+            for ($i = 0; $i < count($data['pinjPribadi']); $i++) {
+                $gajiSupirPelunasanPP = [
+                    'gajisupir_id' => $gajiSupirHeader->id,
+                    'gajisupir_nobukti' => $gajiSupirHeader->nobukti,
+                    'penerimaantrucking_nobukti' => $penerimaanPP->nobukti,
+                    'pengeluarantrucking_nobukti' => $data['pinjPribadi_nobukti'][$i],
+                    'supir_id' => $gajiSupirHeader->supir_id,
+                    'nominal' => $data['nominalPP'][$i]
+                ];
+                (new GajiSupirPelunasanPinjaman())->processStore($gajiSupirPelunasanPP);
+            }
+        }
+
+        if ($data['nomDeposito'] != 0) {
+            $fetchFormatDPO = PenerimaanTrucking::from(DB::raw("penerimaantrucking with (readuncommitted)"))
+                ->where('kodepenerimaan', 'DPO')
+                ->first();
+
+            $supirDPO[] = $gajiSupirHeader->supir_id;
+            $pengeluarantruckingheader_nobuktiDPO[] = '';
+            $nominalDPO[] = $data['nomDeposito'];
+            $keteranganDPO[] = $data['ketDeposito'];
+
+            $penerimaanTruckingHeaderDPO = [
+                'tanpaprosesnobukti' => '2',
+                'tglbukti' => date('Y-m-d', strtotime($data['tglbukti'])),
+                'penerimaantrucking_id' => $fetchFormatDPO->id,
+                'bank_id' => 0,
+                'coa' => $fetchFormatDPO->coapostingkredit,
+                'penerimaan_nobukti' => '',
+                'postingdari' => 'ENTRY GAJI SUPIR',
+                'supir_id' => $supirDPO,
+                'pengeluarantruckingheader_nobukti' => $pengeluarantruckingheader_nobuktiDPO,
+                'keterangan' => $keteranganDPO,
+                'nominal' => $nominalDPO
+            ];
+
+            $penerimaanDPO = (new PenerimaanTruckingHeader())->processStore($penerimaanTruckingHeaderDPO);
+
+            $gajiSupirDPO = [
+                'gajisupir_id' => $gajiSupirHeader->id,
+                'gajisupir_nobukti' => $gajiSupirHeader->nobukti,
+                'penerimaantrucking_nobukti' => $penerimaanDPO->nobukti,
+                'pengeluarantrucking_nobukti' => '',
+                'supir_id' => $gajiSupirHeader->supir_id,
+                'nominal' => $data['nomDeposito']
+            ];
+            (new GajiSupirDeposito())->processStore($gajiSupirDPO);
+        }
+
+        if ($data['nomBBM'] != 0) {
+            $fetchFormatBBM = PenerimaanTrucking::from(DB::raw("penerimaantrucking with (readuncommitted)"))
+                ->where('kodepenerimaan', 'BBM')
+                ->first();
+
+            $supirBBM[] = $gajiSupirHeader->supir_id;
+            $pengeluarantruckingheader_nobuktiBBM[] = '';
+            $nominalBBM[] = $data['nomBBM'];
+            $keteranganBBM[] = $data['ketBBM'];
+
+            $penerimaanTruckingHeaderBBM = [
+                'tanpaprosesnobukti' => '2',
+                'tglbukti' => date('Y-m-d', strtotime($data['tglbukti'])),
+                'penerimaantrucking_id' => $fetchFormatBBM->id,
+                'bank_id' => 0,
+                'coa' => $fetchFormatBBM->coadebet,
+                'penerimaan_nobukti' => '',
+                'postingdari' => 'ENTRY GAJI SUPIR',
+                'supir_id' => $supirBBM,
+                'pengeluarantruckingheader_nobukti' => $pengeluarantruckingheader_nobuktiBBM,
+                'keterangan' => $keteranganBBM,
+                'nominal' => $nominalBBM
+            ];
+
+            $penerimaanBBM = (new PenerimaanTruckingHeader())->processStore($penerimaanTruckingHeaderBBM);
+
+            $gajiSupirBBM = [
+                'gajisupir_id' => $gajiSupirHeader->id,
+                'gajisupir_nobukti' => $gajiSupirHeader->nobukti,
+                'penerimaantrucking_nobukti' => $penerimaanBBM->nobukti,
+                'pengeluarantrucking_nobukti' => '',
+                'supir_id' => $gajiSupirHeader->supir_id,
+                'nominal' => $data['nomBBM']
+            ];
+
+            (new GajiSupirBBM())->processStore($gajiSupirBBM);
+
+            $coakredit_detail[] = $fetchFormatBBM->coakredit;
+            $coadebet_detail[] = $fetchFormatBBM->coadebet;
+            $nominal_detail[] = $data['nomBBM'];
+            $keterangan_detail[] = $data['ketBBM'];
+
+            $jurnalRequest = [
+                'tanpaprosesnobukti' => 1,
+                'nobukti' => $penerimaanBBM->nobukti,
+                'tglbukti' => date('Y-m-d', strtotime($data['tglbukti'])),
+                'postingdari' => "ENTRY GAJI SUPIR",
+                'statusformat' => "0",
+                'coakredit_detail' => $coakredit_detail,
+                'coadebet_detail' => $coadebet_detail,
+                'nominal_detail' => $nominal_detail,
+                'keterangan_detail' => $keterangan_detail
+            ];
+            (new JurnalUmumHeader())->processStore($jurnalRequest);
+        }
+        if ($data['absensi_nobukti']) {
+            for ($i = 0; $i < count($data['absensi_nobukti']); $i++) {
+                $gajiSupirUangJalan = [
+                    'gajisupir_id' => $gajiSupirHeader->id,
+                    'gajisupir_nobukti' => $gajiSupirHeader->nobukti,
+                    'absensisupir_nobukti' => $data['absensi_nobukti'][$i],
+                    'supir_id' => $data['supir_id'],
+                    'nominal' => $data['absensi_uangjalan'][$i]
+                ];
+
+                (new GajisUpirUangJalan())->processStore($gajiSupirUangJalan);
+            }
+        }
+
+        return $gajiSupirHeader;
+    }
+
+    public function processUpdate(GajiSupirHeader $gajiSupirHeader, array $data): GajiSupirHeader
+    {
+
+        $gajiSupirHeader->supir_id = $data['supir_id'];
+        $gajiSupirHeader->nominal = '';
+        $gajiSupirHeader->tgldari = date('Y-m-d', strtotime($data['tgldari']));
+        $gajiSupirHeader->tglsampai = date('Y-m-d', strtotime($data['tglsampai']));
+        $gajiSupirHeader->total = '';
+        $gajiSupirHeader->uangjalan = $data['uangjalan'] ?? 0;
+        $gajiSupirHeader->bbm = $data['nomBBM'] ?? 0;
+        $gajiSupirHeader->potonganpinjaman = ($data['nominalPP']) ? array_sum($data['nominalPP']) : 0;
+        $gajiSupirHeader->deposito = $data['nomDeposito'] ?? 0;
+        $gajiSupirHeader->potonganpinjamansemua = ($data['nominalPS']) ? array_sum($data['nominalPS']) : 0;
+        $gajiSupirHeader->komisisupir = ($data['rincian_komisisupir']) ? array_sum($data['rincian_komisisupir']) : 0;
+        $gajiSupirHeader->tolsupir = ($data['rincian_tolsupir']) ? array_sum($data['rincian_tolsupir']) : 0;
+        $gajiSupirHeader->voucher = $data['voucher'] ?? 0;
+        $gajiSupirHeader->uangmakanharian = $data['uangmakanharian'] ?? 0;
+        $gajiSupirHeader->pinjamanpribadi = 0;
+        $gajiSupirHeader->gajiminus = 0;
+        $gajiSupirHeader->uangJalantidakterhitung = $data['uangjalantidakterhitung'] ?? 0;
+        $gajiSupirHeader->modifiedby = auth('api')->user()->name;
+
+        if (!$gajiSupirHeader->save()) {
+            throw new \Exception('Error update gaji supir');
+        }
+
+        GajiSupirDetail::where('gajisupir_id', $gajiSupirHeader->id)->delete();
+
+        $gajiSupirDetails = [];
+
+        $total = 0;
+        $urut = 1;
+        for ($i = 0; $i < count($data['rincianId']); $i++) {
+            $total = $total + $data['rincian_gajisupir'][$i] + $data['rincian_gajikenek'][$i] + $data['rincian_upahritasi'][$i] + $data['rincian_biayaextra'][$i];
+
+            $gajiSupirDetail = (new GajiSupirDetail())->processStore($gajiSupirHeader, [
+                'nominaldeposito' => 0,
+                'nourut' => $urut,
+                'suratpengantar_nobukti' => $data['rincian_nobukti'][$i],
+                'ritasi_nobukti' => $data['rincian_ritasi'][$i],
+                'komisisupir' => $data['rincian_komisisupir'][$i],
+                'tolsupir' => $data['rincian_tolsupir'][$i],
+                'voucher' => $data['voucher'][$i] ?? 0,
+                'novoucher' => $data['novoucher'][$i] ?? 0,
+                'gajisupir' => $data['rincian_gajisupir'][$i],
+                'gajikenek' => $data['rincian_gajikenek'][$i],
+                'gajiritasi' => $data['rincian_upahritasi'][$i],
+                'biayatambahan' => $data['rincian_biayaextra'][$i],
+                'keteranganbiayatambahan' => $data['rincian_keteranganbiaya'][$i],
+                'nominalpengembalianpinjaman' => 0,
+            ]);
+
+            $gajiSupirDetails[] = $gajiSupirDetail->toArray();
+            $urut++;
+        }
+        $nominal = ($total - $gajiSupirHeader->uangjalan - $gajiSupirHeader->bbm - $gajiSupirHeader->potonganpinjaman - $gajiSupirHeader->potonganpinjamansemua - $gajiSupirHeader->deposito) + $gajiSupirHeader->uangmakanharian;
+
+        $gajiSupirHeader->nominal = $nominal;
+        $gajiSupirHeader->total = $total;
+
+        $gajiSupirHeader->save();
+
+        $gajiSupirHeaderLogTrail = (new LogTrail())->processStore([
+            'namatabel' => $gajiSupirHeader->getTable(),
+            'postingdari' => 'EDIT GAJI SUPIR HEADER',
+            'idtrans' => $gajiSupirHeader->id,
+            'nobuktitrans' => $gajiSupirHeader->nobukti,
+            'aksi' => 'EDIT',
+            'datajson' => $gajiSupirHeader->toArray(),
+            'modifiedby' => auth('api')->user()->user
+        ]);
+        (new LogTrail())->processStore([
+            'namatabel' => $gajiSupirDetail->getTable(),
+            'postingdari' => 'EDIT GAJI SUPIR DETAIL',
+            'idtrans' => $gajiSupirHeaderLogTrail['id'],
+            'nobuktitrans' => $gajiSupirHeader->nobukti,
+            'aksi' => 'EDIT',
+            'datajson' => $gajiSupirDetails,
+            'modifiedby' => auth('api')->user()->user
+        ]);
+
+        if ($data['pinjSemua']) {
+
+            $fetchFormatPS = PenerimaanTrucking::from(DB::raw("penerimaantrucking with (readuncommitted)"))
+                ->where('kodepenerimaan', 'PJP')
+                ->first();
+
+            $fetchPS = GajiSupirPelunasanPinjaman::from(DB::raw("gajisupirpelunasanpinjaman with (readuncommitted)"))
+                ->where('gajisupir_nobukti', $gajiSupirHeader->nobukti)->where('supir_id', '0')->first();
+
+            // jika ada maka update
+            if ($fetchPS != null) {
+
+                $pengeluaranPS = PenerimaanTruckingHeader::from(DB::raw("penerimaantruckingheader with (readuncommitted)"))
+                    ->where('nobukti', $fetchPS->penerimaantrucking_nobukti)->first();
+
+                GajiSupirPelunasanPinjaman::where('gajisupir_nobukti', $gajiSupirHeader->nobukti)->where('supir_id', '0')->delete();
+
+                $pengeluarantruckingheader_nobuktiPS = [];
+                $nominalPS = [];
+                $supirPS = [];
+                $keteranganPS = [];
+
+                for ($i = 0; $i < count($data['pinjSemua']); $i++) {
+                    $supirPS[] = 0;
+                    $pengeluarantruckingheader_nobuktiPS[] = $data['pinjSemua_nobukti'][$i];
+                    $nominalPS[] = $data['nominalPS'][$i];
+                    $keteranganPS[] = $data['pinjSemua_keterangan'][$i];
+                }
+
+                $penerimaanTruckingHeaderPS = [
+                    'tanpaprosesnobukti' => '2',
+                    'tglbukti' => date('Y-m-d', strtotime($data['tglbukti'])),
+                    'penerimaantrucking_id' => $fetchFormatPS->id,
+                    'bank_id' => 0,
+                    'coa' => $fetchFormatPS->coapostingkredit,
+                    'postingdari' => 'EDIT GAJI SUPIR',
+                    'supir_id' => $supirPS,
+                    'pengeluarantruckingheader_nobukti' => $pengeluarantruckingheader_nobuktiPS,
+                    'keterangan' => $keteranganPS,
+                    'nominal' => $nominalPS
+                ];
+
+                $newPenerimaanTruckingPS = new PenerimaanTruckingHeader();
+                $newPenerimaanTruckingPS = $newPenerimaanTruckingPS->findAll($pengeluaranPS->id);
+                $penerimaanPS = (new PenerimaanTruckingHeader())->processUpdate($newPenerimaanTruckingPS, $penerimaanTruckingHeaderPS);
+
+                for ($i = 0; $i < count($data['pinjSemua']); $i++) {
+                    $gajiSupirPelunasanPS = [
+                        'gajisupir_id' => $gajiSupirHeader->id,
+                        'gajisupir_nobukti' => $gajiSupirHeader->nobukti,
+                        'penerimaantrucking_nobukti' => $penerimaanPS->nobukti,
+                        'pengeluarantrucking_nobukti' => $data['pinjSemua_nobukti'][$i],
+                        'supir_id' => 0,
+                        'nominal' => $data['nominalPS'][$i]
+                    ];
+                    (new GajiSupirPelunasanPinjaman())->processStore($gajiSupirPelunasanPS);
+                }
+            } else {
+                // jika tidak ada, maka insert
+
+                $pengeluarantruckingheader_nobuktiPS = [];
+                $nominalPS = [];
+                $supirPS = [];
+                $keteranganPS = [];
+                for ($i = 0; $i < count($data['pinjSemua']); $i++) {
+                    $supirPS[] = 0;
+                    $pengeluarantruckingheader_nobuktiPS[] = $data['pinjSemua_nobukti'][$i];
+                    $nominalPS[] = $data['nominalPS'][$i];
+                    $keteranganPS[] = $data['pinjSemua_keterangan'][$i];
+                }
+
+                $penerimaanTruckingHeaderPS = [
+                    'tanpaprosesnobukti' => '2',
+                    'tglbukti' => date('Y-m-d', strtotime($data['tglbukti'])),
+                    'penerimaantrucking_id' => $fetchFormatPS->id,
+                    'bank_id' => 0,
+                    'coa' => $fetchFormatPS->coapostingkredit,
+                    'penerimaan_nobukti' => '',
+                    'postingdari' => 'EDIT GAJI SUPIR',
+                    'supir_id' => $supirPS,
+                    'pengeluarantruckingheader_nobukti' => $pengeluarantruckingheader_nobuktiPS,
+                    'keterangan' => $keteranganPS,
+                    'nominal' => $nominalPS
+                ];
+
+                $penerimaanPS = (new PenerimaanTruckingHeader())->processStore($penerimaanTruckingHeaderPS);
+
+                for ($i = 0; $i < count($data['pinjSemua']); $i++) {
+                    $gajiSupirPelunasanPS = [
+                        'gajisupir_id' => $gajiSupirHeader->id,
+                        'gajisupir_nobukti' => $gajiSupirHeader->nobukti,
+                        'penerimaantrucking_nobukti' => $penerimaanPS->nobukti,
+                        'pengeluarantrucking_nobukti' => $data['pinjSemua_nobukti'][$i],
+                        'supir_id' => 0,
+                        'nominal' => $data['nominalPS'][$i]
+                    ];
+                    (new GajiSupirPelunasanPinjaman())->processStore($gajiSupirPelunasanPS);
+                }
+            }
+        } else {
+            $fetchPS = GajiSupirPelunasanPinjaman::from(DB::raw("gajisupirpelunasanpinjaman with (readuncommitted)"))
+                ->where('gajisupir_nobukti', $gajiSupirHeader->nobukti)->where('supir_id', '0')->first();
+
+            if ($fetchPS != null) {
+                $getPenerimaanTrucking = PenerimaanTruckingHeader::from(DB::raw("penerimaantruckingheader with (readuncommitted)"))->where('nobukti', $fetchPS->penerimaantrucking_nobukti)->first();
+
+                (new PenerimaanTruckingHeader())->processDestroy($getPenerimaanTrucking->id, 'EDIT GAJI SUPIR');
+
+                $getDetailGSPS = GajiSupirPelunasanPinjaman::lockForUpdate()->where('gajisupir_nobukti', $gajiSupirHeader->nobukti)->where('supir_id', '0')->get();
+
+                foreach ($getDetailGSPS as $key => $value) {
+                    (new GajiSupirPelunasanPinjaman())->processDestroy($value->id, 'EDIT GAJI SUPIR');
+                }
+            }
+        }
+
+        if ($data['pinjPribadi']) {
+
+            $fetchFormatPP = PenerimaanTrucking::from(DB::raw("penerimaantrucking with (readuncommitted)"))
+                ->where('kodepenerimaan', 'PJP')
+                ->first();
+
+            $fetchPP = GajiSupirPelunasanPinjaman::from(DB::raw("gajisupirpelunasanpinjaman with (readuncommitted)"))
+                ->where('gajisupir_nobukti', $gajiSupirHeader->nobukti)->where('supir_id', $data['supir_id'])->first();
+
+            // jika ada maka edit
+            if ($fetchPP != null) {
+
+                $pengeluaranPP = PenerimaanTruckingHeader::from(DB::raw("penerimaantruckingheader with (readuncommitted)"))
+                    ->where('nobukti', $fetchPP->penerimaantrucking_nobukti)->first();
+
+                GajiSupirPelunasanPinjaman::where('gajisupir_nobukti', $gajiSupirHeader->nobukti)->where('supir_id', $data['supir_id'])->delete();
+
+                $pengeluarantruckingheader_nobuktiPP = [];
+                $nominalPP = [];
+                $supirPP = [];
+                $keteranganPP = [];
+
+                for ($i = 0; $i < count($data['pinjPribadi']); $i++) {
+                    $supirPP[] = $gajiSupirHeader->supir_id;
+                    $pengeluarantruckingheader_nobuktiPP[] = $data['pinjPribadi_nobukti'][$i];
+                    $nominalPP[] = $data['nominalPP'][$i];
+                    $keteranganPP[] = $data['pinjPribadi_keterangan'][$i];
+                }
+
+                $penerimaanTruckingHeaderPP = [
+                    'tanpaprosesnobukti' => '2',
+                    'tglbukti' => date('Y-m-d', strtotime($data['tglbukti'])),
+                    'penerimaantrucking_id' => $fetchFormatPP->id,
+                    'bank_id' => 0,
+                    'coa' => $fetchFormatPP->coapostingkredit,
+                    'postingdari' => 'EDIT GAJI SUPIR',
+                    'supir_id' => $supirPS,
+                    'pengeluarantruckingheader_nobukti' => $pengeluarantruckingheader_nobuktiPP,
+                    'keterangan' => $keteranganPP,
+                    'nominal' => $nominalPP
+                ];
+
+                $newPenerimaanTruckingPP = new PenerimaanTruckingHeader();
+                $newPenerimaanTruckingPP = $newPenerimaanTruckingPP->findAll($pengeluaranPP->id);
+                $penerimaanPP = (new PenerimaanTruckingHeader())->processUpdate($newPenerimaanTruckingPP, $penerimaanTruckingHeaderPP);
+
+                for ($i = 0; $i < count($data['pinjPribadi']); $i++) {
+                    $gajiSupirPelunasanPP = [
+                        'gajisupir_id' => $gajiSupirHeader->id,
+                        'gajisupir_nobukti' => $gajiSupirHeader->nobukti,
+                        'penerimaantrucking_nobukti' => $penerimaanPP->nobukti,
+                        'pengeluarantrucking_nobukti' => $data['pinjPribadi_nobukti'][$i],
+                        'supir_id' => $gajiSupirHeader->supir_id,
+                        'nominal' => $data['nominalPP'][$i]
+                    ];
+                    (new GajiSupirPelunasanPinjaman())->processStore($gajiSupirPelunasanPP);
+                }
+            } else {
+                // jika tidak ada, maka insert
+                $pengeluarantruckingheader_nobuktiPP = [];
+                $nominalPP = [];
+                $supirPP = [];
+                $keteranganPP = [];
+                for ($i = 0; $i < count($data['pinjPribadi']); $i++) {
+                    $supirPP[] = $gajiSupirHeader->supir_id;
+                    $pengeluarantruckingheader_nobuktiPP[] = $data['pinjPribadi_nobukti'][$i];
+                    $nominalPP[] = $data['nominalPP'][$i];
+                    $keteranganPP[] = $data['pinjPribadi_keterangan'][$i];
+                }
+
+                $penerimaanTruckingHeaderPP = [
+                    'tanpaprosesnobukti' => '2',
+                    'tglbukti' => date('Y-m-d', strtotime($data['tglbukti'])),
+                    'penerimaantrucking_id' => $fetchFormatPP->id,
+                    'bank_id' => 0,
+                    'coa' => $fetchFormatPP->coapostingkredit,
+                    'penerimaan_nobukti' => '',
+                    'postingdari' => 'EDIT GAJI SUPIR',
+                    'supir_id' => $supirPP,
+                    'pengeluarantruckingheader_nobukti' => $pengeluarantruckingheader_nobuktiPP,
+                    'keterangan' => $keteranganPP,
+                    'nominal' => $nominalPP
+                ];
+
+                $penerimaanPP = (new PenerimaanTruckingHeader())->processStore($penerimaanTruckingHeaderPP);
+
+                for ($i = 0; $i < count($data['pinjPribadi']); $i++) {
+                    $gajiSupirPelunasanPP = [
+                        'gajisupir_id' => $gajiSupirHeader->id,
+                        'gajisupir_nobukti' => $gajiSupirHeader->nobukti,
+                        'penerimaantrucking_nobukti' => $penerimaanPP->nobukti,
+                        'pengeluarantrucking_nobukti' => $data['pinjPribadi_nobukti'][$i],
+                        'supir_id' => $gajiSupirHeader->supir_id,
+                        'nominal' => $data['nominalPP'][$i]
+                    ];
+                    (new GajiSupirPelunasanPinjaman())->processStore($gajiSupirPelunasanPP);
+                }
+            }
+        } else {
+            $fetchPP = GajiSupirPelunasanPinjaman::from(DB::raw("gajisupirpelunasanpinjaman with (readuncommitted)"))
+                ->where('gajisupir_nobukti', $gajiSupirHeader->nobukti)->where('supir_id', $data['supir_id'])->first();
+            if ($fetchPP != null) {
+                $getPenerimaanTrucking = PenerimaanTruckingHeader::from(DB::raw("penerimaantruckingheader with (readuncommitted)"))->where('nobukti', $fetchPP->penerimaantrucking_nobukti)->first();
+
+                (new PenerimaanTruckingHeader())->processDestroy($getPenerimaanTrucking->id, 'EDIT GAJI SUPIR');
+
+                $getDetailGSPP = GajiSupirPelunasanPinjaman::lockForUpdate()->where('gajisupir_nobukti', $gajiSupirHeader->nobukti)->where('supir_id', $gajiSupirHeader->supir_id)->get();
+
+                foreach ($getDetailGSPP as $key => $value) {
+                    (new GajiSupirPelunasanPinjaman())->processDestroy($value->id, 'EDIT GAJI SUPIR');
+                }
+            }
+        }
+
+        if ($data['nomDeposito'] != 0) {
+
+            $fetchFormatDPO = PenerimaanTrucking::from(DB::raw("penerimaantrucking with (readuncommitted)"))
+                ->where('kodepenerimaan', 'DPO')
+                ->first();
+
+            $fetchDPO = GajiSupirDeposito::from(DB::raw("gajisupirdeposito with (readuncommitted)"))
+                ->where('gajisupir_nobukti', $gajiSupirHeader->nobukti)->first();
+
+            // jika ada maka update
+            if ($fetchDPO != null) {
+                $penerimaanDepo = PenerimaanTruckingHeader::from(DB::raw("penerimaantruckingheader with (readuncommitted)"))
+                    ->where('nobukti', $fetchDPO->penerimaantrucking_nobukti)->first();
+
+                $supirDPO[] = $gajiSupirHeader->supir_id;
+                $pengeluarantruckingheader_nobuktiDPO[] = '';
+                $nominalDPO[] = $data['nomDeposito'];
+                $keteranganDPO[] = $data['ketDeposito'];
+
+                $penerimaanTruckingHeaderDPO = [
+                    'tanpaprosesnobukti' => '2',
+                    'tglbukti' => date('Y-m-d', strtotime($data['tglbukti'])),
+                    'penerimaantrucking_id' => $fetchFormatDPO->id,
+                    'bank_id' => 0,
+                    'coa' => $fetchFormatDPO->coapostingkredit,
+                    'penerimaan_nobukti' => '',
+                    'postingdari' => 'EDIT GAJI SUPIR',
+                    'supir_id' => $supirDPO,
+                    'pengeluarantruckingheader_nobukti' => $pengeluarantruckingheader_nobuktiDPO,
+                    'keterangan' => $keteranganDPO,
+                    'nominal' => $nominalDPO
+                ];
+
+                $newPenerimaanTruckingDPO = new PenerimaanTruckingHeader();
+                $newPenerimaanTruckingDPO = $newPenerimaanTruckingDPO->findAll($penerimaanDepo->id);
+                $penerimaanDPO = (new PenerimaanTruckingHeader())->processUpdate($newPenerimaanTruckingDPO, $penerimaanTruckingHeaderDPO);
+
+                GajiSupirDeposito::where('gajisupir_nobukti', $gajiSupirHeader->nobukti)->where('supir_id', $gajiSupirHeader->supir_id)->delete();
+
+                $gajiSupirDPO = [
+                    'gajisupir_id' => $gajiSupirHeader->id,
+                    'gajisupir_nobukti' => $gajiSupirHeader->nobukti,
+                    'penerimaantrucking_nobukti' => $penerimaanDPO->nobukti,
+                    'pengeluarantrucking_nobukti' => '',
+                    'supir_id' => $gajiSupirHeader->supir_id,
+                    'nominal' => $data['nomDeposito']
+                ];
+                (new GajiSupirDeposito())->processStore($gajiSupirDPO);
+            } else {
+                $supirDPO[] = $gajiSupirHeader->supir_id;
+                $pengeluarantruckingheader_nobuktiDPO[] = '';
+                $nominalDPO[] = $data['nomDeposito'];
+                $keteranganDPO[] = $data['ketDeposito'];
+
+                $penerimaanTruckingHeaderDPO = [
+                    'tanpaprosesnobukti' => '2',
+                    'tglbukti' => date('Y-m-d', strtotime($data['tglbukti'])),
+                    'penerimaantrucking_id' => $fetchFormatDPO->id,
+                    'bank_id' => 0,
+                    'coa' => $fetchFormatDPO->coapostingkredit,
+                    'penerimaan_nobukti' => '',
+                    'postingdari' => 'ENTRY GAJI SUPIR',
+                    'supir_id' => $supirDPO,
+                    'pengeluarantruckingheader_nobukti' => $pengeluarantruckingheader_nobuktiDPO,
+                    'keterangan' => $keteranganDPO,
+                    'nominal' => $nominalDPO
+                ];
+
+                $penerimaanDPO = (new PenerimaanTruckingHeader())->processStore($penerimaanTruckingHeaderDPO);
+
+                $gajiSupirDPO = [
+                    'gajisupir_id' => $gajiSupirHeader->id,
+                    'gajisupir_nobukti' => $gajiSupirHeader->nobukti,
+                    'penerimaantrucking_nobukti' => $penerimaanDPO->nobukti,
+                    'pengeluarantrucking_nobukti' => '',
+                    'supir_id' => $gajiSupirHeader->supir_id,
+                    'nominal' => $data['nomDeposito']
+                ];
+                (new GajiSupirDeposito())->processStore($gajiSupirDPO);
+            }
+        } else {
+            $fetchDPO = GajiSupirDeposito::from(DB::raw("gajisupirdeposito with (readuncommitted)"))
+                ->where('gajisupir_nobukti', $gajiSupirHeader->nobukti)->first();
+            if ($fetchDPO != null) {
+                $getPenerimaanTrucking = PenerimaanTruckingHeader::from(DB::raw("penerimaantruckingheader with (readuncommitted)"))->where('nobukti', $fetchDPO->penerimaantrucking_nobukti)->first();
+                $tes = (new PenerimaanTruckingHeader())->processDestroy($getPenerimaanTrucking->id, 'EDIT GAJI SUPIR');
+                (new GajiSupirDeposito())->processDestroy($fetchDPO->id, 'EDIT GAJI SUPIR');
+            }
+        }
+
+        if ($data['nomBBM'] != 0) {
+            $fetchFormatBBM = PenerimaanTrucking::from(DB::raw("penerimaantrucking with (readuncommitted)"))
+                ->where('kodepenerimaan', 'BBM')
+                ->first();
+            $fetchBBM = GajiSupirBBM::from(DB::raw("gajisupirbbm with (readuncommitted)"))
+                ->where('gajisupir_nobukti', $gajiSupirHeader->nobukti)->first();
+
+            // jika ada maka update
+            if ($fetchBBM != null) {
+                $pengeluaranbbm = PenerimaanTruckingHeader::from(DB::raw("penerimaantruckingheader with (readuncommitted)"))
+                    ->where('nobukti', $fetchBBM->penerimaantrucking_nobukti)->first();
+
+                $supirBBM[] = $gajiSupirHeader->supir_id;
+                $pengeluarantruckingheader_nobuktiBBM[] = '';
+                $nominalBBM[] = $data['nomBBM'];
+                $keteranganBBM[] = $data['ketBBM'];
+
+                $penerimaanTruckingHeaderBBM = [
+                    'tanpaprosesnobukti' => '2',
+                    'tglbukti' => date('Y-m-d', strtotime($data['tglbukti'])),
+                    'penerimaantrucking_id' => $fetchFormatBBM->id,
+                    'bank_id' => 0,
+                    'coa' => $fetchFormatBBM->coadebet,
+                    'penerimaan_nobukti' => '',
+                    'postingdari' => 'ENTRY GAJI SUPIR',
+                    'supir_id' => $supirBBM,
+                    'pengeluarantruckingheader_nobukti' => $pengeluarantruckingheader_nobuktiBBM,
+                    'keterangan' => $keteranganBBM,
+                    'nominal' => $nominalBBM
+                ];
+
+                $newPenerimaanTruckingBBM = new PenerimaanTruckingHeader();
+                $newPenerimaanTruckingBBM = $newPenerimaanTruckingBBM->findAll($pengeluaranbbm->id);
+                $penerimaanBBM = (new PenerimaanTruckingHeader())->processUpdate($newPenerimaanTruckingBBM, $penerimaanTruckingHeaderBBM);
+
+                GajiSupirBBM::where('gajisupir_nobukti', $gajiSupirHeader->nobukti)->where('supir_id', $gajiSupirHeader->supir_id)->delete();
+
+                $gajiSupirBBM = [
+                    'gajisupir_id' => $gajiSupirHeader->id,
+                    'gajisupir_nobukti' => $gajiSupirHeader->nobukti,
+                    'penerimaantrucking_nobukti' => $penerimaanBBM->nobukti,
+                    'pengeluarantrucking_nobukti' => '',
+                    'supir_id' => $gajiSupirHeader->supir_id,
+                    'nominal' => $data['nomBBM']
+                ];
+
+                (new GajiSupirBBM())->processStore($gajiSupirBBM);
+
+                $coakredit_detail[] = $fetchFormatBBM->coakredit;
+                $coadebet_detail[] = $fetchFormatBBM->coadebet;
+                $nominal_detail[] = $data['nomBBM'];
+                $keterangan_detail[] = $data['ketBBM'];
+
+                $jurnalRequest = [
+                    'tanpaprosesnobukti' => 1,
+                    'postingdari' => "EDIT GAJI SUPIR",
+                    'coakredit_detail' => $coakredit_detail,
+                    'coadebet_detail' => $coadebet_detail,
+                    'nominal_detail' => $nominal_detail,
+                    'keterangan_detail' => $keterangan_detail
+                ];
+                $getJurnal = JurnalUmumHeader::from(DB::raw("jurnalumumheader with (readuncommitted)"))->where('nobukti', $fetchBBM->penerimaantrucking_nobukti)->first();
+                $newJurnal = new JurnalUmumHeader();
+                $newJurnal = $newJurnal->find($getJurnal->id);
+                $jurnalumumHeader = (new JurnalUmumHeader())->processUpdate($newJurnal, $jurnalRequest);
+            } else {
+                // jika tidak ada, maka insert
+                $supirBBM[] = $gajiSupirHeader->supir_id;
+                $pengeluarantruckingheader_nobuktiBBM[] = '';
+                $nominalBBM[] = $data['nomBBM'];
+                $keteranganBBM[] = $data['ketBBM'];
+
+                $penerimaanTruckingHeaderBBM = [
+                    'tanpaprosesnobukti' => '2',
+                    'tglbukti' => date('Y-m-d', strtotime($data['tglbukti'])),
+                    'penerimaantrucking_id' => $fetchFormatBBM->id,
+                    'bank_id' => 0,
+                    'coa' => $fetchFormatBBM->coadebet,
+                    'penerimaan_nobukti' => '',
+                    'postingdari' => 'EDIT GAJI SUPIR',
+                    'supir_id' => $supirBBM,
+                    'pengeluarantruckingheader_nobukti' => $pengeluarantruckingheader_nobuktiBBM,
+                    'keterangan' => $keteranganBBM,
+                    'nominal' => $nominalBBM
+                ];
+
+                $penerimaanBBM = (new PenerimaanTruckingHeader())->processStore($penerimaanTruckingHeaderBBM);
+
+                $gajiSupirBBM = [
+                    'gajisupir_id' => $gajiSupirHeader->id,
+                    'gajisupir_nobukti' => $gajiSupirHeader->nobukti,
+                    'penerimaantrucking_nobukti' => $penerimaanBBM->nobukti,
+                    'pengeluarantrucking_nobukti' => '',
+                    'supir_id' => $gajiSupirHeader->supir_id,
+                    'nominal' => $data['nomBBM']
+                ];
+
+                (new GajiSupirBBM())->processStore($gajiSupirBBM);
+
+                $coakredit_detail[] = $fetchFormatBBM->coakredit;
+                $coadebet_detail[] = $fetchFormatBBM->coadebet;
+                $nominal_detail[] = $data['nomBBM'];
+                $keterangan_detail[] = $data['ketBBM'];
+
+                $jurnalRequest = [
+                    'tanpaprosesnobukti' => 1,
+                    'nobukti' => $penerimaanBBM->nobukti,
+                    'tglbukti' => date('Y-m-d', strtotime($data['tglbukti'])),
+                    'postingdari' => "EDIT GAJI SUPIR",
+                    'statusformat' => "0",
+                    'coakredit_detail' => $coakredit_detail,
+                    'coadebet_detail' => $coadebet_detail,
+                    'nominal_detail' => $nominal_detail,
+                    'keterangan_detail' => $keterangan_detail
+                ];
+                (new JurnalUmumHeader())->processStore($jurnalRequest);
+            }
+        } else {
+            $fetchBBM = GajiSupirBBM::from(DB::raw("gajisupirbbm with (readuncommitted)"))
+                ->where('gajisupir_nobukti', $gajiSupirHeader->nobukti)->first();
+            if ($fetchBBM != null) {
+                $getPenerimaanTrucking = PenerimaanTruckingHeader::from(DB::raw("penerimaantruckingheader with (readuncommitted)"))->where('nobukti', $fetchBBM->penerimaantrucking_nobukti)->first();
+
+                $getJurnalHeader = JurnalUmumHeader::lockForUpdate()->where('nobukti', $fetchBBM->penerimaantrucking_nobukti)->first();
+
+                (new PenerimaanTruckingHeader())->processDestroy($getPenerimaanTrucking->id, 'EDIT GAJI SUPIR');
+
+                (new GajiSupirBBM())->processDestroy($fetchBBM->id, 'EDIT GAJI SUPIR');
+
+                (new JurnalUmumHeader())->processDestroy($getJurnalHeader->id, 'EDIT GAJI SUPIR');
+            }
+        }
+
+        if ($data['absensi_nobukti']) {
+            $cekUangjalan = GajisUpirUangJalan::from(DB::raw("gajisupiruangjalan with (readuncommitted)"))
+                ->where('gajisupir_nobukti', $gajiSupirHeader->nobukti)->where('supir_id', $data['supir_id'])->first();
+
+            if ($cekUangjalan != null) {
+                GajisUpirUangJalan::where('gajisupir_nobukti', $gajiSupirHeader->nobukti)->where('supir_id', $data['supir_id'])->delete();
+            }
+
+            for ($i = 0; $i < count($data['absensi_nobukti']); $i++) {
+                $gajiSupirUangJalan = [
+                    'gajisupir_id' => $gajiSupirHeader->id,
+                    'gajisupir_nobukti' => $gajiSupirHeader->nobukti,
+                    'absensisupir_nobukti' => $data['absensi_nobukti'][$i],
+                    'supir_id' => $data['supir_id'],
+                    'nominal' => $data['absensi_uangjalan'][$i]
+                ];
+
+                (new GajisUpirUangJalan())->processStore($gajiSupirUangJalan);
+            }
+        }
+
+        return $gajiSupirHeader;
+    }
+
+    public function processDestroy($id, $postingDari = ''): GajiSupirHeader
+    {
+        $gajiSupirDetails = GajiSupirDetail::lockForUpdate()->where('gajisupir_id', $id)->get();
+        $fetchDPO = GajiSupirDeposito::from(DB::raw("gajisupirdeposito with (readuncommitted)"))->whereRaw("gajisupir_id = $id")->first();
+        $fetchBBM = GajiSupirBBM::from(DB::raw("gajisupirbbm with (readuncommitted)"))->whereRaw("gajisupir_id = $id")->first();
+
+        $gajiSupirHeader = new GajiSupirHeader();
+        $gajiSupirHeader = $gajiSupirHeader->lockAndDestroy($id);
+
+        $gajiSupirHeaderLogTrail = (new LogTrail())->processStore([
+            'namatabel' => $gajiSupirHeader->getTable(),
+            'postingdari' => $postingDari,
+            'idtrans' => $gajiSupirHeader->id,
+            'nobuktitrans' => $gajiSupirHeader->nobukti,
+            'aksi' => 'DELETE',
+            'datajson' => $gajiSupirHeader->toArray(),
+            'modifiedby' => auth('api')->user()->name
+        ]);
+
+        (new LogTrail())->processStore([
+            'namatabel' => 'GAJISUPIRDETAIL',
+            'postingdari' => $postingDari,
+            'idtrans' => $gajiSupirHeaderLogTrail['id'],
+            'nobuktitrans' => $gajiSupirHeader->nobukti,
+            'aksi' => 'DELETE',
+            'datajson' => $gajiSupirDetails->toArray(),
+            'modifiedby' => auth('api')->user()->name
+        ]);
+
+        if ($fetchDPO != null) {
+            $getPenerimaanTrucking = PenerimaanTruckingHeader::from(DB::raw("penerimaantruckingheader with (readuncommitted)"))->where('nobukti', $fetchDPO->penerimaantrucking_nobukti)->first();
+            (new PenerimaanTruckingHeader())->processDestroy($getPenerimaanTrucking->id, $postingDari);
+
+            (new LogTrail())->processStore([
+                'namatabel' => 'GAJISUPIRDEPOSITO',
+                'postingdari' => $postingDari,
+                'idtrans' => $fetchDPO->id,
+                'nobuktitrans' => $gajiSupirHeader->nobukti,
+                'aksi' => 'DELETE',
+                'datajson' => '',
+                'modifiedby' => auth('api')->user()->name
+            ]);
+        }
+
+        if ($fetchBBM != null) {
+            $getPenerimaanTrucking = PenerimaanTruckingHeader::from(DB::raw("penerimaantruckingheader with (readuncommitted)"))->where('nobukti', $fetchBBM->penerimaantrucking_nobukti)->first();
+            $getJurnalHeader = JurnalUmumHeader::lockForUpdate()->where('nobukti', $fetchBBM->penerimaantrucking_nobukti)->first();
+            (new PenerimaanTruckingHeader())->processDestroy($getPenerimaanTrucking->id, $postingDari);
+            (new JurnalUmumHeader())->processDestroy($getJurnalHeader->id, $postingDari);
+
+            (new LogTrail())->processStore([
+                'namatabel' => 'GAJISUPIRBBM',
+                'postingdari' => $postingDari,
+                'idtrans' => $fetchBBM->id,
+                'nobuktitrans' => $gajiSupirHeader->nobukti,
+                'aksi' => 'DELETE',
+                'datajson' => '',
+                'modifiedby' => auth('api')->user()->name
+            ]);
+        }
+
+        $fetchPP = GajiSupirPelunasanPinjaman::from(DB::raw("gajisupirpelunasanpinjaman with (readuncommitted)"))->where('gajisupir_nobukti',  $gajiSupirHeader->nobukti)->where('supir_id', $gajiSupirHeader->supir_id)->first();
+        if ($fetchPP != null) {
+            $getPenerimaanTrucking = PenerimaanTruckingHeader::from(DB::raw("penerimaantruckingheader with (readuncommitted)"))->where('nobukti', $fetchPP->penerimaantrucking_nobukti)->first();
+            (new PenerimaanTruckingHeader())->processDestroy($getPenerimaanTrucking->id, $postingDari);
+
+            $getDetailGSPP = GajiSupirPelunasanPinjaman::lockForUpdate()->where('gajisupir_nobukti',  $gajiSupirHeader->nobukti)->where('supir_id', $gajiSupirHeader->supir_id)->get();
+            foreach ($getDetailGSPP as $key => $value) {
+                (new GajiSupirPelunasanPinjaman())->processDestroy($value->id, $postingDari);
+            }
+        }
+
+        $fetchPS = GajiSupirPelunasanPinjaman::from(DB::raw("gajisupirpelunasanpinjaman with (readuncommitted)"))
+            ->where('gajisupir_nobukti', $gajiSupirHeader->nobukti)->where('supir_id', '0')->first();
+        if ($fetchPS != null) {
+            $getPenerimaanTrucking = PenerimaanTruckingHeader::from(DB::raw("penerimaantruckingheader with (readuncommitted)"))->where('nobukti', $fetchPS->penerimaantrucking_nobukti)->first();
+            (new PenerimaanTruckingHeader())->processDestroy($getPenerimaanTrucking->id, $postingDari);
+
+            $getDetailGSPS = GajiSupirPelunasanPinjaman::lockForUpdate()->where('gajisupir_nobukti', $gajiSupirHeader->nobukti)->where('supir_id', '0')->get();
+            foreach ($getDetailGSPS as $key => $value) {
+                (new GajiSupirPelunasanPinjaman())->processDestroy($value->id, $postingDari);
+            }
+        }
+
+        $fetchUangJalan = GajisUpirUangJalan::from(DB::raw("gajisupiruangjalan with (readuncommitted)"))->whereRaw("gajisupir_id = $id")->first();
+        if ($fetchUangJalan != null) {
+            $getDetailUangJalan = GajisUpirUangJalan::lockForUpdate()->where('gajisupir_nobukti', $gajiSupirHeader->nobukti)->get();
+            foreach ($getDetailUangJalan as $key => $value) {
+                (new GajisUpirUangJalan())->processDestroy($value->id, $postingDari);
+            }
+        }
+        return $gajiSupirHeader;
     }
 }

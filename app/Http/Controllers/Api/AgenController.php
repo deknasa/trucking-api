@@ -79,16 +79,30 @@ class AgenController extends Controller
     /**
      * @ClassName 
      */
-    public function store(StoreAgenRequest $request) : JsonResponse
+    public function store(StoreAgenRequest $request): JsonResponse
     {
+        $data = [
+            'id' => $request->id,
+            'kodeagen' => $request->kodeagen,
+            'namaagen' => $request->namaagen,
+            'keterangan' => $request->keterangan,
+            'statusaktif' => $request->statusaktif,
+            'namaperusahaan' => $request->namaperusahaan,
+            'alamat' => $request->alamat,
+            'notelp' => $request->notelp,
+            'nohp' => $request->nohp,
+            'contactperson' => $request->contactperson,
+            'top' => $request->top,
+            'statustas' => $request->statustas,
+        ];
         DB::beginTransaction();
 
         try {
-            $agen = (new Agen())->processStore($request->all());
+            $agen = (new Agen())->processStore($data);
             $agen->position = $this->getPosition($agen, $agen->getTable())->position;
             $agen->page = ceil($agen->position / ($request->limit ?? 10));
 
-            DB::commit();   
+            DB::commit();
 
             return response()->json([
                 'status' => true,
@@ -113,23 +127,38 @@ class AgenController extends Controller
     /**
      * @ClassName 
      */
-    public function update(UpdateAgenRequest $request, Agen $agen) : JsonResponse
+    public function update(UpdateAgenRequest $request, Agen $agen): JsonResponse
     {
+
+        $data = [
+            'id' => $request->id,
+            'kodeagen' => $request->kodeagen,
+            'namaagen' => $request->namaagen,
+            'keterangan' => $request->keterangan,
+            'statusaktif' => $request->statusaktif,
+            'namaperusahaan' => $request->namaperusahaan,
+            'alamat' => $request->alamat,
+            'notelp' => $request->notelp,
+            'nohp' => $request->nohp,
+            'contactperson' => $request->contactperson,
+            'top' => $request->top,
+            'statustas' => $request->statustas,
+        ];
         DB::beginTransaction();
 
         try {
-            $agen = (new Agen())->processUpdate($agen, $request->all());
+            $agen = (new Agen())->processUpdate($agen, $data);
             $agen->position = $this->getPosition($agen, $agen->getTable())->position;
             $agen->page = ceil($agen->position / ($request->limit ?? 10));
 
 
             DB::commit();
 
-                return response()->json([
-                    'status' => true,
-                    'message' => 'Berhasil diubah',
-                    'data' => $agen
-                ]);
+            return response()->json([
+                'status' => true,
+                'message' => 'Berhasil diubah',
+                'data' => $agen
+            ]);
         } catch (\Throwable $th) {
             DB::rollBack();
 

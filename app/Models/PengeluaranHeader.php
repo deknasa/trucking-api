@@ -697,7 +697,7 @@ class PengeluaranHeader extends MyModel
                 'tgljatuhtempo' =>  date('Y-m-d', strtotime($data['tgljatuhtempo'][$i])),
                 'nominal' => $data['nominal_detail'][$i],
                 'coadebet' =>  $data['coadebet'][$i],
-                'coakredit' =>  (array_key_exists("coakredit",$data))? $data['coakredit']:$querysubgrppengeluaran->coa,
+                'coakredit' =>  (array_key_exists("coakredit",$data))? $data['coakredit'][$i]:$querysubgrppengeluaran->coa,
                 'keterangan' => $data['keterangan_detail'][$i],
                 'bulanbeban' =>  date('Y-m-d', strtotime($data['bulanbeban'][$i] ?? '1900/1/1')),
                 'modifiedby' => auth('api')->user()->name,
@@ -741,7 +741,7 @@ class PengeluaranHeader extends MyModel
 
     }
     
-    public function processDestroy($id): PengeluaranHeader
+    public function processDestroy($id, $postingDari = ''): PengeluaranHeader
     {
         $pengeluaranHeader = PengeluaranHeader::findOrFail($id);
         $dataHeader =  $pengeluaranHeader->toArray();
@@ -766,7 +766,7 @@ class PengeluaranHeader extends MyModel
          ]);
  
          (new LogTrail())->processStore([
-             'namatabel' => (new LogTrail())->table,
+             'namatabel' => 'PENGELUARANDETAIL',
              'postingdari' => strtoupper('DELETE pengeluaran detail'),
              'idtrans' => $hutangLogTrail['id'],
              'nobuktitrans' => $pengeluaranHeader->nobukti,

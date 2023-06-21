@@ -85,17 +85,23 @@ class SubKelompokController extends Controller
     /**
      * @ClassName 
      */
-    public function store(StoreSubKelompokRequest $request) : JsonResponse
+    public function store(StoreSubKelompokRequest $request): JsonResponse
     {
 
         DB::beginTransaction();
 
         try {
-            $subKelompok = (new SubKelompok())->processStore($request->all());
+            $data = [
+                'kodesubkelompok' => $request->kodesubkelompok,
+                'keterangan' => $request->keterangan ?? '',
+                'kelompok_id' => $request->kelompok_id,
+                'statusaktif' => $request->statusaktif
+            ];
+            $subKelompok = (new SubKelompok())->processStore($data);
             $subKelompok->position = $this->getPosition($subKelompok, $subKelompok->getTable())->position;
             $subKelompok->page = ceil($subKelompok->position / ($request->limit ?? 10));
 
-            DB::commit();   
+            DB::commit();
 
             return response()->json([
                 'status' => true,
@@ -112,11 +118,18 @@ class SubKelompokController extends Controller
     /**
      * @ClassName 
      */
-    public function update(UpdateSubKelompokRequest $request, SubKelompok $subKelompok) : JsonResponse
+    public function update(UpdateSubKelompokRequest $request, SubKelompok $subKelompok): JsonResponse
     {
         DB::beginTransaction();
         try {
-            $subKelompok = (new SubKelompok())->processUpdate($subKelompok, $request->all());
+            $data = [
+                'kodesubkelompok' => $request->kodesubkelompok,
+                'keterangan' => $request->keterangan ?? '',
+                'kelompok_id' => $request->kelompok_id,
+                'statusaktif' => $request->statusaktif
+            ];
+
+            $subKelompok = (new SubKelompok())->processUpdate($subKelompok, $data);
             $subKelompok->position = $this->getPosition($subKelompok, $subKelompok->getTable())->position;
             $subKelompok->page = ceil($subKelompok->position / ($request->limit ?? 10));
 

@@ -79,7 +79,14 @@ class PenerimaanStokController extends Controller
         DB::beginTransaction();
 
         try {
-            $penerimaanStok = (new PenerimaanStok())->processStore($request->all());
+            $data = [
+            'kodepenerimaan' => $request->kodepenerimaan,
+            'keterangan' => $request->keterangan ?? '',
+            'coa' => $request->coa ?? '',
+            'format' => $request->format ?? '',
+            'statushitungstok' => $request->statushitungstok
+            ];
+            $penerimaanStok = (new PenerimaanStok())->processStore($data);
             $penerimaanStok->position = $this->getPosition($penerimaanStok, $penerimaanStok->getTable())->position;
             $penerimaanStok->page = ceil($penerimaanStok->position / ($request->limit ?? 10));
 
@@ -115,8 +122,16 @@ class PenerimaanStokController extends Controller
     {
         DB::beginTransaction();
         try {
+            $data = [
+                'kodepenerimaan' => $request->kodepenerimaan,
+                'keterangan' => $request->keterangan ?? '',
+                'coa' => $request->coa ?? '',
+                'format' => $request->format ?? '',
+                'statushitungstok' => $request->statushitungstok
+                ];
+
             $penerimaanStok = PenerimaanStok::findOrFail($id);
-            $penerimaanStok = (new PenerimaanStok())->processUpdate($penerimaanStok, $request->all());
+            $penerimaanStok = (new PenerimaanStok())->processUpdate($penerimaanStok, $data);
             $penerimaanStok->position = $this->getPosition($penerimaanStok, $penerimaanStok->getTable())->position;
             $penerimaanStok->page = ceil($penerimaanStok->position / ($request->limit ?? 10));
 

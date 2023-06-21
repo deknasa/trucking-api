@@ -424,6 +424,7 @@ class HutangHeader extends MyModel
 
     public function processStore(array $data): HutangHeader
     {
+        // dd($data);
         
         /*STORE HEADER*/
         $group = 'HUTANG BUKTI';
@@ -496,8 +497,8 @@ class HutangHeader extends MyModel
                 'modifiedby' => $hutangHeader->modifiedby,
             ]);
             $hutangDetails[] = $hutangDetail->toArray();
-            $coakredit_detail[] = $memoKredit['JURNAL'];
-            $coadebet_detail[] = $memo['JURNAL'];
+            $coakredit_detail[] = ($data['coakredit'] == null) ? $memoKredit['JURNAL'] : $data['coakredit']; 
+            $coadebet_detail[] = ($data['coadebet'] == null) ? $memo['JURNAL'] : $data['coadebet'];  
             $nominal_detail[] = $data['total_detail'][$i];
             $keterangan_detail[] = $data['keterangan_detail'][$i];
 
@@ -538,6 +539,7 @@ class HutangHeader extends MyModel
     public function processUpdate(HutangHeader $hutangHeader,array $data): HutangHeader
     {
         
+        // dd($data);
         /*STORE HEADER*/
         $statusCetak = Parameter::where('grp', 'STATUSCETAK')->where('text', 'BELUM CETAK')->first();
         $getCoaDebet = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'JURNAL HUTANG MANUAL')->where('subgrp', 'DEBET')->first();
@@ -604,8 +606,8 @@ class HutangHeader extends MyModel
                 'modifiedby' => $hutangHeader->modifiedby,
             ]);
             $hutangDetails[] = $hutangDetail->toArray();
-            $coakredit_detail[] = $memoKredit['JURNAL'];
-            $coadebet_detail[] = $memo['JURNAL'];
+            $coakredit_detail[] = ($data['coakredit'] == null) ? $memoKredit['JURNAL'] : $data['coakredit']; 
+            $coadebet_detail[] = ($data['coadebet'] == null) ? $memo['JURNAL'] : $data['coadebet'];  
             $nominal_detail[] = $data['total_detail'][$i];
             $keterangan_detail[] = $data['keterangan_detail'][$i];
 
@@ -656,7 +658,6 @@ class HutangHeader extends MyModel
        $JurnalUmumHeader = JurnalUmumHeader::where('nobukti', $hutangHeader->nobukti)->lockForUpdate()->delete();
        /*DELETE EXISTING HUTANG*/
        $hutangDetail = HutangDetail::where('hutang_id', $hutangHeader->id)->lockForUpdate()->delete();
-
         $hutangHeader = $hutangHeader->lockAndDestroy($id);
 
         $hutangLogTrail = (new LogTrail())->processStore([
@@ -669,11 +670,12 @@ class HutangHeader extends MyModel
             'modifiedby' => auth('api')->user()->name
         ]);
 
+     
         (new LogTrail())->processStore([
-            'namatabel' => $hutangDetail->getTable(),
+            'namatabel' => 'HUTANGDETAIL',
             'postingdari' => strtoupper('DELETE penerimaan Stok detail'),
             'idtrans' => $hutangLogTrail['id'],
-            'nobuktitrans' => $hutangDetail->nobukti,
+            'nobuktitrans' => $hutangHeader->nobukti,
             'aksi' => 'DELETE',
             'datajson' =>$dataDetail,
             'modifiedby' => auth('api')->user()->name

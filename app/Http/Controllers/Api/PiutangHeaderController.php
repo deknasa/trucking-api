@@ -59,7 +59,13 @@ class PiutangHeaderController extends Controller
         DB::beginTransaction();
 
         try {
-            $piutangHeader = (new PiutangHeader())->processStore($request->all());
+            $data = [
+                'tglbukti' => $request->tglbukti,
+                'agen_id' => $request->agen_id,
+                'keterangan_detail' => $request->keterangan_detail,
+                'nominal_detail' => $request->nominal_detail
+            ];
+            $piutangHeader = (new PiutangHeader())->processStore($data);
             $piutangHeader->position = $this->getPosition($piutangHeader, $piutangHeader->getTable())->position;
             $piutangHeader->page = ceil($piutangHeader->position / ($request->limit ?? 10));
             
@@ -93,8 +99,13 @@ class PiutangHeaderController extends Controller
         DB::beginTransaction();
 
         try {
-
-            $piutang = (new PiutangHeader())->processUpdate($piutangHeader, $request->all());
+            $data = [
+                'tglbukti' => $request->tglbukti,
+                'agen_id' => $request->agen_id,
+                'keterangan_detail' => $request->keterangan_detail,
+                'nominal_detail' => $request->nominal_detail
+            ];
+            $piutang = (new PiutangHeader())->processUpdate($piutangHeader, $data);
             $piutang->position = $this->getPosition($piutang, $piutang->getTable())->position;
             $piutang->page = ceil($piutang->position / ($request->limit ?? 10));
 

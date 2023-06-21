@@ -183,6 +183,10 @@ class PenerimaanStokDetail extends MyModel
             }
 
             if (($penerimaanStokHeader->penerimaanstok_id == $spbs->text)||($penerimaanStokHeader->penerimaanstok_id == $do->text)) {
+                if (!$reuse) {
+                    throw new \Exception("bukan stok reuse");                
+
+                }
                 $persediaanDari = $this->persediaan($penerimaanStokHeader->gudangdari_id,$penerimaanStokHeader->tradodari_id,$penerimaanStokHeader->gandengandari_id);
                 $dari = $this->persediaanDari($data['stok_id'],$persediaanDari['column'].'_id',$persediaanDari['value'],$data['qty']);
                 if (!$dari) {
@@ -193,7 +197,7 @@ class PenerimaanStokDetail extends MyModel
             }
             
             if ($penerimaanStokHeader->penerimaanstok_id == $pg->text) {
-                if ($reuse) {
+                
                     $persediaanDari = $this->persediaan($penerimaanStokHeader->gudangdari_id,$penerimaanStokHeader->tradodari_id,$penerimaanStokHeader->gandengandari_id);
                     $dari = $this->persediaanDari($data['stok_id'],$persediaanDari['column'].'_id',$persediaanDari['value'],$data['qty']);
                     
@@ -203,7 +207,7 @@ class PenerimaanStokDetail extends MyModel
                     $persediaanKe = $this->persediaan($penerimaanStokHeader->gudangke_id,$penerimaanStokHeader->tradoke_id,$penerimaanStokHeader->gandenganke_id);
                     $ke = $this->persediaanKe($data['stok_id'],$persediaanKe['column'].'_id',$persediaanKe['value'],$data['qty']);
                     
-                }
+                
             }
             
         }
@@ -291,9 +295,6 @@ class PenerimaanStokDetail extends MyModel
             return false;
         }
         $stokpersediaan = StokPersediaan::lockForUpdate()->find($stokpersediaangudang->id);
-        if ($qty < $stokpersediaan->qty){ //check qty
-            return false;
-        }
         $result = $stokpersediaan->qty + $qty;
         $stokpersediaan->update(['qty'=> $result]);
         return $stokpersediaan;
@@ -304,9 +305,13 @@ class PenerimaanStokDetail extends MyModel
         if (!$stokpersediaangudang) {
             return false;
         }
-        $stokpersediaangudang->qty -= $qty;
-        $stokpersediaangudang->save();
-        return $stokpersediaangudang;
+        $stokpersediaan = StokPersediaan::lockForUpdate()->find($stokpersediaangudang->id);
+        if ($qty > $stokpersediaan->qty){ //check qty
+            return false;
+        }
+        $stokpersediaan->qty -= $qty;
+        $stokpersediaan->save();
+        return $stokpersediaan;
     }
 
     public function checkTempat($stokId,$persediaan,$persediaanId)
@@ -347,12 +352,12 @@ class PenerimaanStokDetail extends MyModel
                 $persediaanDari = $this->persediaan($gudangdari_id,$tradodari_id,$gandengandari_id);
                 $dari = $this->persediaanDariReturn($item['stok_id'],$persediaanDari['column'].'_id',$persediaanDari['value'],$item['qty']);
                 if (!$dari) {
-                    throw new \Exception("qty tidak cukup");
+                    throw new \Exception("qty tidak cukup dari");
                 }
-                $persediaanDari = $this->persediaan($gudangke_id,$tradoke_id,$gandenganke_id);
+                $persediaanKe = $this->persediaan($gudangke_id,$tradoke_id,$gandenganke_id);
                 $ke = $this->persediaanKeReturn($item['stok_id'],$persediaanKe['column'].'_id',$persediaanKe['value'],$item['qty']);
                 if (!$ke) {
-                    throw new \Exception("qty tidak cukup");
+                    throw new \Exception("qty tidak cukup ke");
                 }
             }
         }

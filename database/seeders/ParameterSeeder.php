@@ -344,6 +344,10 @@ class ParameterSeeder extends Seeder
         parameter::create(['grp' => 'TIPE KAS/BANK', 'subgrp' => 'TIPE KAS/BANK', 'kelompok' => '', 'text' => 'BANK', 'memo' => '{"MEMO":"BANK","SINGKATAN":"B","WARNA":"#6C757D"}', 'type' => '0', 'modifiedby' => 'ADMIN', 'default' => 'YA',]);
         parameter::create(['grp' => 'DIPERIKSA', 'subgrp' => 'DIPERIKSA', 'kelompok' => '', 'text' => 'AYEN', 'memo' => '{"MEMO":"AYEN","SINGKATAN":"DPR","WARNA":"#28A745"}', 'type' => '118', 'modifiedby' => 'ADMIN', 'default' => '',]);
         parameter::create(['grp' => 'DISETUJUI', 'subgrp' => 'DIPERIKSA', 'kelompok' => '', 'text' => 'ASAN', 'memo' => '{"MEMO":"ASAN","SINGKATAN":"DSJ","WARNA":"#28A745"}', 'type' => '118', 'modifiedby' => 'ADMIN', 'default' => '',]);
+        parameter::create(['grp' => 'SALDO AWAL STOK', 'subgrp' => 'SALDO AWAL STOK', 'kelompok' => '', 'text' => '7', 'memo' => '{"MEMO":"SALDO AWAL STOK","SINGKATAN":"3","WARNA":"#6C757D"}', 'type' => '0', 'modifiedby' => 'ADMIN', 'default' => '',]);
+        parameter::create(['grp' => 'GUDANG SEMENTARA', 'subgrp' => 'GUDANG SEMENTARA', 'kelompok' => '', 'text' => '3', 'memo' => '{"MEMO":"GUDANG SEMENTARA","SINGKATAN":"1","WARNA":"#6C757D"}', 'type' => '0', 'modifiedby' => 'ADMIN', 'default' => '',]);
+        parameter::create(['grp' => 'GUDANG PIHAK3', 'subgrp' => 'GUDANG PIHAK3', 'kelompok' => '', 'text' => '2', 'memo' => '{"MEMO":"GUDANG PIHAK 3","SINGKATAN":"1","WARNA":"#6C757D"}', 'type' => '0', 'modifiedby' => 'ADMIN', 'default' => '',]);
+
         
     }
 }

@@ -45,7 +45,9 @@ class Error extends MyModel
             'created_at',
             'updated_at',
             DB::raw("'Laporan Error' as judulLaporan"),
-            DB::raw("'" . $getJudul->text . "' as judul")
+            DB::raw("'" . $getJudul->text . "' as judul"),
+            DB::raw("'TglCetak:'+format(getdate(),'dd-MM-yyyy HH:mm:ss')as tglcetak"),
+            DB::raw(" 'User:".auth('api')->user()->name."' as usercetak")
         );
 
         $this->totalRows = $query->count();

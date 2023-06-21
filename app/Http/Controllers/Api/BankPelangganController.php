@@ -84,11 +84,17 @@ class BankPelangganController extends Controller
     /**
      * @ClassName 
      */
-    public function store(StoreBankPelangganRequest $request) : JsonResponse
+    public function store(StoreBankPelangganRequest $request): JsonResponse
     {
         DB::beginTransaction();
         try {
-            $bankpelanggan = (new BankPelanggan())->processStore($request->all());
+            $data = [
+                'kodebank' => $request->kodebank,
+                'namabank' => $request->namabank,
+                'keterangan' => $request->keterangan ?? '',
+                'statusaktif' => $request->statusaktif,
+            ];
+            $bankpelanggan = (new BankPelanggan())->processStore($data);
             $bankpelanggan->position = $this->getPosition($bankpelanggan, $bankpelanggan->getTable())->position;
             $bankpelanggan->page = ceil($bankpelanggan->position / ($request->limit ?? 10));
 
@@ -116,22 +122,28 @@ class BankPelangganController extends Controller
     /**
      * @ClassName 
      */
-    public function update(UpdateBankPelangganRequest $request, BankPelanggan $bankpelanggan) : JsonResponse
+    public function update(UpdateBankPelangganRequest $request, BankPelanggan $bankpelanggan): JsonResponse
     {
         DB::beginTransaction();
         try {
+            $data = [
+                'kodebank' => $request->kodebank,
+                'namabank' => $request->namabank,
+                'keterangan' => $request->keterangan ?? '',
+                'statusaktif' => $request->statusaktif,
+            ];
 
-            $bankpelanggan = (new BankPelanggan())->processUpdate($bankpelanggan, $request->all());
+            $bankpelanggan = (new BankPelanggan())->processUpdate($bankpelanggan, $data);
             $bankpelanggan->position = $this->getPosition($bankpelanggan, $bankpelanggan->getTable())->position;
             $bankpelanggan->page = ceil($bankpelanggan->position / ($request->limit ?? 10));
 
             DB::commit();
 
-                return response()->json([
-                    'status' => true,
-                    'message' => 'Berhasil diubah',
-                    'data' => $bankpelanggan
-                ]);
+            return response()->json([
+                'status' => true,
+                'message' => 'Berhasil diubah',
+                'data' => $bankpelanggan
+            ]);
         } catch (\Throwable $th) {
             DB::rollBack();
             throw $th;

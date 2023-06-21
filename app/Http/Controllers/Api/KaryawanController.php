@@ -30,17 +30,18 @@ class KaryawanController extends Controller
         ]);
     }
 
-    public function cekValidasi($id) {
-        $karyawan= new Karyawan();
-        $cekdata=$karyawan->cekvalidasihapus($id);
-        if ($cekdata['kondisi']==true) {
+    public function cekValidasi($id)
+    {
+        $karyawan = new Karyawan();
+        $cekdata = $karyawan->cekvalidasihapus($id);
+        if ($cekdata['kondisi'] == true) {
             $query = DB::table('error')
-            ->select(
-                DB::raw("ltrim(rtrim(keterangan))+' (".$cekdata['keterangan'].")' as keterangan")
+                ->select(
+                    DB::raw("ltrim(rtrim(keterangan))+' (" . $cekdata['keterangan'] . ")' as keterangan")
                 )
-            ->where('kodeerror', '=', 'SATL')
-            ->get();
-        $keterangan = $query['0'];
+                ->where('kodeerror', '=', 'SATL')
+                ->get();
+            $keterangan = $query['0'];
 
             $data = [
                 'status' => false,
@@ -50,7 +51,6 @@ class KaryawanController extends Controller
             ];
 
             return response($data);
-         
         } else {
             $data = [
                 'status' => false,
@@ -59,7 +59,7 @@ class KaryawanController extends Controller
                 'kondisi' => $cekdata['kondisi'],
             ];
 
-            return response($data); 
+            return response($data);
         }
     }
 
@@ -79,7 +79,13 @@ class KaryawanController extends Controller
     {
         DB::beginTransaction();
         try {
-            $karyawan = (new Karyawan())->processStore($request->all());
+            $data = [
+                'namakaryawan' => $request->namakaryawan,
+                'keterangan' => $request->keterangan ?? '',
+                'statusaktif' => $request->statusaktif,
+                'statusstaff' => $request->statusstaff,
+            ];
+            $karyawan = (new Karyawan())->processStore($data);
             $karyawan->position = $this->getPosition($karyawan, $karyawan->getTable())->position;
             $karyawan->page = ceil($karyawan->position / ($request->limit ?? 10));
 
@@ -112,7 +118,13 @@ class KaryawanController extends Controller
         DB::beginTransaction();
 
         try {
-            $karyawan = (new Karyawan())->processUpdate($karyawan, $request->all());
+            $data = [
+                'namakaryawan' => $request->namakaryawan,
+                'keterangan' => $request->keterangan ?? '',
+                'statusaktif' => $request->statusaktif,
+                'statusstaff' => $request->statusstaff,
+            ];
+            $karyawan = (new Karyawan())->processUpdate($karyawan, $data);
             $karyawan->position = $this->getPosition($karyawan, $karyawan->getTable())->position;
             $karyawan->page = ceil($karyawan->position / ($request->limit ?? 10));
 
@@ -136,7 +148,7 @@ class KaryawanController extends Controller
     {
         DB::beginTransaction();
 
-        try{
+        try {
             $karyawan = (new Karyawan())->processDestroy($id);
             $selected = $this->getPosition($karyawan, $karyawan->getTable(), true);
             $karyawan->position = $selected->position;
@@ -173,66 +185,72 @@ class KaryawanController extends Controller
     public function export(RangeExportReportRequest $request)
     {
         if (request()->cekExport) {
-            return response([
-                'status' => true,
-            ]);
+
+            if (request()->offset == "-1" && request()->limit == '1') {
+                return response([
+                    'status' => false,
+                    'message' => app(ErrorController::class)->geterror('DTA')->keterangan
+                ], 422);
+            } else {
+                return response([
+                    'status' => true,
+                ]);
+            }
         } else {
-      
-        header('Access-Control-Allow-Origin: *');
 
-        $response = $this->index();
-        $decodedResponse = json_decode($response->content(), true);
-        $karyawans = $decodedResponse['data'];
+            header('Access-Control-Allow-Origin: *');
 
-        $judulLaporan = $karyawans[0]['judulLaporan'];
+            $response = $this->index();
+            $decodedResponse = json_decode($response->content(), true);
+            $karyawans = $decodedResponse['data'];
 
-        $i = 0;
-        foreach ($karyawans as $index => $params) {
+            $judulLaporan = $karyawans[0]['judulLaporan'];
 
-            $statusaktif = $params['statusaktif'];
-            $statustaff = $params['statusstaff'];
+            $i = 0;
+            foreach ($karyawans as $index => $params) {
 
-            $result = json_decode($statusaktif, true);
-            $resultStaff = json_decode($statustaff, true);
+                $statusaktif = $params['statusaktif'];
+                $statustaff = $params['statusstaff'];
 
-            $statusaktif = $result['MEMO'];
-            $statustaff = $resultStaff['MEMO'];
+                $result = json_decode($statusaktif, true);
+                $resultStaff = json_decode($statustaff, true);
 
-
-            $karyawans[$i]['statusaktif'] = $statusaktif;
-            $karyawans[$i]['statusstaff'] = $statustaff;
-
-        
-            $i++;
+                $statusaktif = $result['MEMO'];
+                $statustaff = $resultStaff['MEMO'];
 
 
+                $karyawans[$i]['statusaktif'] = $statusaktif;
+                $karyawans[$i]['statusstaff'] = $statustaff;
+
+
+                $i++;
+            }
+
+
+
+            $columns = [
+                [
+                    'label' => 'No',
+                ],
+                [
+                    'label' => 'Nama Karyawan',
+                    'index' => 'namakaryawan',
+                ],
+                [
+                    'label' => 'Keterangan',
+                    'index' => 'keterangan',
+                ],
+                [
+                    'label' => 'Status Staff',
+                    'index' => 'statusstaff',
+                ],
+                [
+                    'label' => 'Status Aktif',
+                    'index' => 'statusaktif',
+                ],
+            ];
+
+            $this->toExcel($judulLaporan, $karyawans, $columns);
         }
-
-      
-
-        $columns = [
-            [
-                'label' => 'No',
-            ],
-            [
-                'label' => 'Nama Karyawan',
-                'index' => 'namakaryawan',
-            ],
-            [
-                'label' => 'Keterangan',
-                'index' => 'keterangan',
-            ],
-            [
-                'label' => 'Status Staff',
-                'index' => 'statusstaff',
-            ],
-            [
-                'label' => 'Status Aktif',
-                'index' => 'statusaktif',
-            ],
-        ];
-
-        $this->toExcel($judulLaporan, $karyawans, $columns);
-    }
     }
 }

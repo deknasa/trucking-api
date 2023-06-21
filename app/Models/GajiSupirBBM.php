@@ -38,4 +38,50 @@ class GajiSupirBBM extends MyModel
             return $deposito->first();
         }
     }
+
+    public function processStore(array $data): GajiSupirBBM
+    {
+        $gajiSupirBBM = new GajiSupirBBM();
+        $gajiSupirBBM->gajisupir_id = $data['gajisupir_id'];
+        $gajiSupirBBM->gajisupir_nobukti = $data['gajisupir_nobukti'];
+        $gajiSupirBBM->penerimaantrucking_nobukti = $data['penerimaantrucking_nobukti'];
+        $gajiSupirBBM->pengeluarantrucking_nobukti = $data['pengeluarantrucking_nobukti'];
+        $gajiSupirBBM->supir_id = $data['supir_id'];
+        $gajiSupirBBM->nominal = $data['nominal'];
+        $gajiSupirBBM->modifiedby = auth('api')->user()->user;
+
+        if (!$gajiSupirBBM->save()) {
+            throw new \Exception('Error storing gaji supir bbm.');
+        }
+
+        (new LogTrail())->processStore([
+            'namatabel' => $gajiSupirBBM->getTable(),
+            'postingdari' => 'ENTRY GAJI SUPIR BBM',
+            'idtrans' => $gajiSupirBBM->id,
+            'nobuktitrans' => $gajiSupirBBM->id,
+            'aksi' => 'ENTRY',
+            'datajson' => $gajiSupirBBM->toArray(),
+        ]);
+
+        return $gajiSupirBBM;
+    }
+
+    
+    public function processDestroy($id, $postingDari = ''): GajiSupirBBM
+    {
+        $gajiSupirBBM = new GajiSupirBBM();
+        $gajiSupirBBM = $gajiSupirBBM->lockAndDestroy($id);
+
+        (new LogTrail())->processStore([
+            'namatabel' => strtoupper($gajiSupirBBM->getTable()),
+            'postingdari' => $postingDari,
+            'idtrans' => $gajiSupirBBM->id,
+            'nobuktitrans' => $gajiSupirBBM->nobukti,
+            'aksi' => 'DELETE',
+            'datajson' => $gajiSupirBBM->toArray(),
+            'modifiedby' => auth('api')->user()->name
+        ]);
+
+        return $gajiSupirBBM;
+    }
 }

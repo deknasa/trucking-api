@@ -149,4 +149,25 @@ class PengembalianKasGantungDetail extends MyModel
     {
         return $query->skip($this->params['offset'])->take($this->params['limit']);
     }
+
+
+    public function processStore(PengembalianKasGantungHeader $pengembalianKasGantungHeader, array $data): PengembalianKasGantungDetail
+    {
+        
+        $pengembalianKasGantungDetail = new PengembalianKasGantungDetail();
+        $pengembalianKasGantungDetail->pengembaliankasgantung_id = $data['pengembaliankasgantung_id'];
+        $pengembalianKasGantungDetail->nobukti = $data['nobukti'];
+        $pengembalianKasGantungDetail->nominal = $data['nominal'];
+        $pengembalianKasGantungDetail->coa = $data['coadetail'];
+        $pengembalianKasGantungDetail->keterangan = $data['keterangandetail'];
+        $pengembalianKasGantungDetail->kasgantung_nobukti = $data['kasgantung_nobukti'];
+        $pengembalianKasGantungDetail->modifiedby = auth('api')->user()->name;
+        
+        if (!$pengembalianKasGantungDetail->save()) {
+            throw new \Exception("Error storing pengembalian Kas Gantung Detail");
+        }
+
+        return $pengembalianKasGantungDetail;
+    }
+
 }

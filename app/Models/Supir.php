@@ -226,7 +226,8 @@ class Supir extends MyModel
                 'supir.created_at',
                 'supir.updated_at',
                 DB::raw("'Laporan Supir' as judulLaporan"),
-                DB::raw("'" . $getJudul->text . "' as judul")
+                DB::raw("'" . $getJudul->text . "' as judul"),
+                DB::raw("'Tanggal Cetak : '+format(getdate(),'dd-MM-yyyy HH:mm:ss')+' User :".auth('api')->user()->name."' as tglcetak") 
             )
             ->leftJoin(DB::raw("zona with (readuncommitted)"), 'supir.zona_id', 'zona.id')
             ->leftJoin(DB::raw("parameter with (readuncommitted)"), 'supir.statusaktif', '=', 'parameter.id')
@@ -845,14 +846,14 @@ class Supir extends MyModel
             $supir->statuszonatertentu = $statusZonaTertentu->id;
             $supir->statusblacklist = $statusBlackList->id;
 
-            $supir->photosupir = ($data['photosupir']) ? $this->storeFiles($data['photosupir'], 'supir') : '';
-            $supir->photoktp = ($data['photoktp']) ? $this->storeFiles($data['photoktp'], 'ktp') : '';
-            $supir->photosim = ($data['photosim']) ? $this->storeFiles($data['photosim'], 'sim') : '';
-            $supir->photokk = ($data['photokk']) ? $this->storeFiles($data['photokk'], 'kk') : '';
-            $supir->photoskck = ($data['photoskck']) ? $this->storeFiles($data['photoskck'], 'skck') : '';
-            $supir->photodomisili = ($data['photodomisili']) ? $this->storeFiles($data['photodomisili'], 'domisili') : '';
-            $supir->photovaksin = ($data['photovaksin']) ? $this->storeFiles($data['photovaksin'], 'vaksin') : '';
-            $supir->pdfsuratperjanjian = ($data['pdfsuratperjanjian']) ? $this->storePdfFiles($data['pdfsuratperjanjian'], 'suratperjanjian') : '';
+            $supir->photosupir = $data['photosupir'];
+            $supir->photoktp = $data['photoktp'];
+            $supir->photosim = $data['photosim'];
+            $supir->photokk = $data['photokk'];
+            $supir->photoskck = $data['photoskck'];
+            $supir->photodomisili = $data['photodomisili'];
+            $supir->photovaksin = $data['photovaksin'];
+            $supir->pdfsuratperjanjian = $data['pdfsuratperjanjian'];
 
             if (!$supir->save()) {
                 throw new \Exception("Error storing supir.");
@@ -915,14 +916,14 @@ class Supir extends MyModel
 
             $this->deleteFiles($supir);
 
-            $supir->photosupir = ($data['photosupir']) ? $this->storeFiles($data['photosupir'], 'supir') : '';
-            $supir->photoktp = ($data['photoktp']) ? $this->storeFiles($data['photoktp'], 'ktp') : '';
-            $supir->photosim = ($data['photosim']) ? $this->storeFiles($data['photosim'], 'sim') : '';
-            $supir->photokk = ($data['photokk']) ? $this->storeFiles($data['photokk'], 'kk') : '';
-            $supir->photoskck = ($data['photoskck']) ? $this->storeFiles($data['photoskck'], 'skck') : '';
-            $supir->photodomisili = ($data['photodomisili']) ? $this->storeFiles($data['photodomisili'], 'domisili') : '';
-            $supir->photovaksin = ($data['photovaksin']) ? $this->storeFiles($data['photovaksin'], 'vaksin') : '';
-            $supir->pdfsuratperjanjian = ($data['pdfsuratperjanjian']) ? $this->storePdfFiles($data['pdfsuratperjanjian'], 'suratperjanjian') : '';
+            $supir->photosupir = $data['photosupir'];
+            $supir->photoktp = $data['photoktp'];
+            $supir->photosim = $data['photosim'];
+            $supir->photokk = $data['photokk'];
+            $supir->photoskck = $data['photoskck'];
+            $supir->photodomisili = $data['photodomisili'];
+            $supir->photovaksin = $data['photovaksin'];
+            $supir->pdfsuratperjanjian = $data['pdfsuratperjanjian'];
 
             if (!$supir->save()) {
                 throw new \Exception("Error storing supir.");

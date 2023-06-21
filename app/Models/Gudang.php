@@ -78,8 +78,10 @@ class Gudang extends MyModel
             ->where('grp', 'JUDULAN LAPORAN')
             ->where('subgrp', 'JUDULAN LAPORAN')
             ->first();
-
+            
         $aktif = request()->aktif ?? '';
+        $penerimaanStokPg = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'PG STOK')->where('subgrp', 'PG STOK')->first();
+        $penerimaanstok = request()->penerimaanstok_id ?? '';
 
         $query = DB::table($this->table)->from(DB::raw("$this->table with (readuncommitted)"))
             ->select(
@@ -107,6 +109,18 @@ class Gudang extends MyModel
                 ->first();
 
             $query->where('gudang.statusaktif', '=', $statusaktif->id);
+        }
+        // dd($penerimaanStokPg)
+        if ($penerimaanstok == $penerimaanStokPg->text) {
+            $gudangKantor = Gudang::from(
+                DB::raw("gudang with (readuncommitted)")
+            )
+                ->select('id')
+                ->where('gudang','GUDANG KANTOR')
+                ->orWhere('gudang','GUDANG PIHAK III')
+                ->get();
+
+            $query->whereNotIn('gudang.id', $gudangKantor);
         }
 
         $this->totalRows = $query->count();
@@ -376,9 +390,10 @@ class Gudang extends MyModel
             $detaillogtrail[] = $stokpersediaan->toArray();
         }
 
-        if (!$stokpersediaan->save()) {
+        if (!$dataexist == true) {
             throw new \Exception('Error store stok persediaan.');
         }
+
         (new LogTrail())->processStore([
             'namatabel' => strtoupper($stokpersediaan->getTable()),
             'postingdari' => 'STOK PERSEDIAAN',
@@ -388,10 +403,6 @@ class Gudang extends MyModel
             'datajson' => json_encode($detaillogtrail),
             'modifiedby' => $gudang->modifiedby
         ]);
-
-        if ($dataexist == true) {
-            (new LogTrail())->processStore([]);
-        }
 
         return $gudang;
     }

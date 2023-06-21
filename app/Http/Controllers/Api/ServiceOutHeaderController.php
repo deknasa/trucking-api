@@ -47,9 +47,16 @@ class ServiceOutHeaderController extends Controller
     public function store(StoreServiceOutHeaderRequest $request): JsonResponse
     {
         DB::beginTransaction();
-
         try {
-            $serviceOutHeader = (new ServiceOutHeader())->processStore($request->all());
+            $data = [
+                'tglbukti' => date('Y-m-d', strtotime($request->tglbukti)),
+                'trado_id' => $request->trado_id,
+                'tglkeluar' => date('Y-m-d', strtotime($request->tglkeluar)),
+                'servicein_nobukti' => $request->servicein_nobukti,
+                'keterangan_detail' => $request->keterangan_detail
+            ];
+
+            $serviceOutHeader = (new ServiceOutHeader())->processStore($data);
             $serviceOutHeader->position = $this->getPosition($serviceOutHeader, $serviceOutHeader->getTable())->position;
             $serviceOutHeader->page = ceil($serviceOutHeader->position / ($request->limit ?? 10));
 
@@ -89,7 +96,15 @@ class ServiceOutHeaderController extends Controller
         DB::beginTransaction();
 
         try {
-            $serviceoutheader = (new ServiceOutHeader())->processUpdate($serviceoutheader, $request->all());
+            $data = [
+                'tglbukti' => date('Y-m-d', strtotime($request->tglbukti)) ?? '',
+                'trado_id' => $request->trado_id ?? 0,
+                'tglkeluar' => date('Y-m-d', strtotime($request->tglkeluar)) ?? '',
+                'servicein_nobukti' => $request->servicein_nobukti ?? '',
+                'keterangan_detail' => $request->keterangan_detail ?? ''
+            ];
+
+            $serviceoutheader = (new ServiceOutHeader())->processUpdate($serviceoutheader, $data);
             $serviceoutheader->position = $this->getPosition($serviceoutheader, $serviceoutheader->getTable())->position;
             $serviceoutheader->page = ceil($serviceoutheader->position / ($request->limit ?? 10));
 

@@ -67,8 +67,44 @@ class PengeluaranStokHeaderController extends Controller
     {
         DB::beginTransaction();
         try {
+
+
+            $data =[
+                "tglbukti" =>$request->tglbukti ,
+                "pengeluaranstok" =>$request->pengeluaranstok ,
+                "pengeluaranstok_id" =>$request->pengeluaranstok_id ,
+                "penerimaanstok_nobukti" =>$request->penerimaanstok_nobukti ,
+                "pengeluaranstok_nobukti" =>$request->pengeluaranstok_nobukti ,
+                "supplier" =>$request->supplier ,
+                "supplier_id" =>$request->supplier_id ,
+                "kerusakan" =>$request->kerusakan ,
+                "kerusakan_id" =>$request->kerusakan_id ,
+                "supir" =>$request->supir ,
+                "supir_id" =>$request->supir_id ,
+                "servicein_nobukti" =>$request->servicein_nobukti ,
+                "trado" =>$request->trado ,
+                "trado_id" =>$request->trado_id ,
+                "gudang" =>$request->gudang ,
+                "gudang_id" =>$request->gudang_id ,
+                "gandengan" =>$request->gandengan ,
+                "gandengan_id" =>$request->gandengan_id ,
+                "statuspotongretur" =>$request->statuspotongretur ,
+                "bank" =>$request->bank ,
+                "bank_id" =>$request->bank_id ,
+                "tglkasmasuk" =>$request->tglkasmasuk ,
+                "penerimaan_nobukti" =>$request->penerimaan_nobukti ,
+
+                "detail_stok" => $request->detail_stok ,
+                "detail_stok_id" => $request->detail_stok_id ,
+                "detail_vulkanisirke" => $request->detail_vulkanisirke ,
+                "detail_keterangan" => $request->detail_keterangan ,
+                "detail_qty" => $request->detail_qty ,
+                "detail_harga" => $request->detail_harga ,
+                "detail_persentasediscount" => $request->detail_persentasediscount ,
+                "totalItem" => $request->totalItem ,
+                ];
             /* Store header */
-            $pengeluaranStokHeader = (new PengeluaranStokHeader())->processStore($request->all());
+            $pengeluaranStokHeader = (new PengeluaranStokHeader())->processStore($data);
             /* Set position and page */
             $pengeluaranStokHeader->position = $this->getPosition($pengeluaranStokHeader, $pengeluaranStokHeader->getTable())->position;
             $pengeluaranStokHeader->page = ceil($pengeluaranStokHeader->position / ($request->limit ?? 10));
@@ -106,9 +142,44 @@ class PengeluaranStokHeaderController extends Controller
         DB::beginTransaction();
 
         try {
+            $data =[
+                "tglbukti" =>$request->tglbukti ,
+                "pengeluaranstok" =>$request->pengeluaranstok ,
+                "pengeluaranstok_id" =>$request->pengeluaranstok_id ,
+                "penerimaanstok_nobukti" =>$request->penerimaanstok_nobukti ,
+                "pengeluaranstok_nobukti" =>$request->pengeluaranstok_nobukti ,
+                "supplier" =>$request->supplier ,
+                "supplier_id" =>$request->supplier_id ,
+                "kerusakan" =>$request->kerusakan ,
+                "kerusakan_id" =>$request->kerusakan_id ,
+                "supir" =>$request->supir ,
+                "supir_id" =>$request->supir_id ,
+                "servicein_nobukti" =>$request->servicein_nobukti ,
+                "trado" =>$request->trado ,
+                "trado_id" =>$request->trado_id ,
+                "gudang" =>$request->gudang ,
+                "gudang_id" =>$request->gudang_id ,
+                "gandengan" =>$request->gandengan ,
+                "gandengan_id" =>$request->gandengan_id ,
+                "statuspotongretur" =>$request->statuspotongretur ,
+                "bank" =>$request->bank ,
+                "bank_id" =>$request->bank_id ,
+                "tglkasmasuk" =>$request->tglkasmasuk ,
+                "penerimaan_nobukti" =>$request->penerimaan_nobukti ,
+
+                "detail_stok" => $request->detail_stok ,
+                "detail_stok_id" => $request->detail_stok_id ,
+                "detail_vulkanisirke" => $request->detail_vulkanisirke ,
+                "detail_keterangan" => $request->detail_keterangan ,
+                "detail_qty" => $request->detail_qty ,
+                "detail_harga" => $request->detail_harga ,
+                "detail_persentasediscount" => $request->detail_persentasediscount ,
+                "totalItem" => $request->totalItem ,
+                ];
+                
             /* Store header */
             $pengeluaranStokHeader = PengeluaranStokHeader::findOrFail($id);
-            $pengeluaranStokHeader = (new PengeluaranStokHeader())->processUpdate($pengeluaranStokHeader,$request->all());
+            $pengeluaranStokHeader = (new PengeluaranStokHeader())->processUpdate($pengeluaranStokHeader,$data);
             /* Set position and page */
             $pengeluaranStokHeader->position = $this->getPosition($pengeluaranStokHeader, $pengeluaranStokHeader->getTable())->position;
             $pengeluaranStokHeader->page = ceil($pengeluaranStokHeader->position / ($request->limit ?? 10));

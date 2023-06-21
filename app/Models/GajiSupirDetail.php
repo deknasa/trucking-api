@@ -227,4 +227,32 @@ class GajiSupirDetail extends MyModel
     {
         return $tempQuery->skip($this->params['offset'])->take($this->params['limit']);
     }
+    public function processStore(GajiSupirHeader $gajiSupirHeader, array $data): GajiSupirDetail
+    {
+        $gajiSupirDetail = new GajiSupirDetail();
+        $gajiSupirDetail->gajisupir_id = $gajiSupirHeader->id;
+        $gajiSupirDetail->nobukti = $gajiSupirHeader->nobukti;
+        $gajiSupirDetail->nominaldeposito = $data['nominaldeposito'];
+        $gajiSupirDetail->nourut = $data['nourut'];
+        $gajiSupirDetail->suratpengantar_nobukti = $data['suratpengantar_nobukti'];
+        $gajiSupirDetail->ritasi_nobukti = $data['ritasi_nobukti'];
+        $gajiSupirDetail->komisisupir = $data['komisisupir'];
+        $gajiSupirDetail->tolsupir = $data['tolsupir'];
+        $gajiSupirDetail->voucher = $data['voucher'];
+        $gajiSupirDetail->novoucher = $data['novoucher'];
+        $gajiSupirDetail->gajisupir = $data['gajisupir'];
+        $gajiSupirDetail->gajikenek = $data['gajikenek'];
+        $gajiSupirDetail->gajiritasi = $data['gajiritasi'];
+        $gajiSupirDetail->biayatambahan = $data['biayatambahan'];
+        $gajiSupirDetail->keteranganbiayatambahan = $data['keteranganbiayatambahan'];
+        $gajiSupirDetail->nominalpengembalianpinjaman = $data['nominalpengembalianpinjaman'];
+        
+        $gajiSupirDetail->modifiedby = auth('api')->user()->name;
+        
+        if (!$gajiSupirDetail->save()) {
+            throw new \Exception("Error storing gaji supir detail.");
+        }
+
+        return $gajiSupirDetail;
+    }
 }

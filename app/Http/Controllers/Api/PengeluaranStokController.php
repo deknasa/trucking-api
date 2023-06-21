@@ -78,16 +78,23 @@ class PengeluaranStokController extends Controller
     /**
      * @ClassName 
      */
-    public function store(StorePengeluaranStokRequest $request) : JsonResponse
+    public function store(StorePengeluaranStokRequest $request): JsonResponse
     {
         DB::beginTransaction();
 
         try {
-            $pengeluaranStok = (new PengeluaranStok())->processStore($request->all());
+            $data = [
+                'kodepengeluaran' => $request->kodepengeluaran,
+                'keterangan' => $request->keterangan ?? '',
+                'coa' => $request->coa ?? '',
+                'format' => $request->format ?? '',
+                'statushitungstok' => $request->statushitungstok ?? '',
+            ];
+            $pengeluaranStok = (new PengeluaranStok())->processStore($data);
             $pengeluaranStok->position = $this->getPosition($pengeluaranStok, $pengeluaranStok->getTable())->position;
             $pengeluaranStok->page = ceil($pengeluaranStok->position / ($request->limit ?? 10));
 
-            DB::commit();   
+            DB::commit();
 
             return response()->json([
                 'message' => 'Berhasil disimpan',
@@ -116,12 +123,20 @@ class PengeluaranStokController extends Controller
     /**
      * @ClassName 
      */
-    public function update(UpdatePengeluaranStokRequest $request, PengeluaranStok $pengeluaranStok, $id) : JsonResponse
+    public function update(UpdatePengeluaranStokRequest $request, PengeluaranStok $pengeluaranStok, $id): JsonResponse
     {
         DB::beginTransaction();
         try {
+            $data = [
+                'kodepengeluaran' => $request->kodepengeluaran,
+                'keterangan' => $request->keterangan ?? '',
+                'coa' => $request->coa ?? '',
+                'format' => $request->format ?? '',
+                'statushitungstok' => $request->statushitungstok ?? '',
+            ];
+
             $pengeluaranStok = PengeluaranStok::findOrFail($id);
-            $pengeluaranStok = (new PengeluaranStok())->processUpdate($pengeluaranStok, $request->all());
+            $pengeluaranStok = (new PengeluaranStok())->processUpdate($pengeluaranStok, $data);
             $pengeluaranStok->position = $this->getPosition($pengeluaranStok, $pengeluaranStok->getTable())->position;
             $pengeluaranStok->page = ceil($pengeluaranStok->position / ($request->limit ?? 10));
 
@@ -158,7 +173,7 @@ class PengeluaranStokController extends Controller
     {
         DB::beginTransaction();
 
-        
+
         try {
             $pengeluaranStok = (new PengeluaranStok())->processDestroy($id);
             $selected = $this->getPosition($pengeluaranStok, $pengeluaranStok->getTable(), true);
