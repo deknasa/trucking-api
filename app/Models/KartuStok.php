@@ -46,9 +46,9 @@ class KartuStok extends MyModel
         // if (request()->filter == $filter->id) {
         // dd('test');
         // dd($filter->text);
-        $datafilter=request()->datafilter ?? 0;
+        $datafilter=request()->filter ?? 0;
         if ($datafilter==0) {
-            $query = $this->getall($tgldari, $tglsampai, request()->stokdari_id, request()->stoksampai_id, $datafilter, 0, 0, $filtergudang->text);
+            $query = $this->getall($tgldari, $tglsampai, request()->stokdari_id, request()->stoksampai_id, $datafilter, 0, 0, 0);
 
         } else {
             if (request()->filter == $filtergudang->id) {
@@ -67,7 +67,7 @@ class KartuStok extends MyModel
         $this->totalRows = $query->count();
         $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;
         $this->filter($query);
-        $this->paginate($query);
+        // $this->paginate($query);
 
         $data = $query->get();
 
@@ -258,7 +258,7 @@ class KartuStok extends MyModel
         $datadetail = json_decode($querygudang, true);
         foreach ($datadetail as $item) {
 
-            $filter=$filtergudang->id;
+            $filter=$filtergudang->text;
             $gandengan_id=0;
             $trado_id=0;
             $gudang_id=$item['id'];
@@ -291,7 +291,7 @@ class KartuStok extends MyModel
         $datadetail = json_decode($querytrado, true);
         foreach ($datadetail as $item) {
 
-            $filter=$filtertrado->id;
+            $filter=$filtertrado->text;
             $gandengan_id=0;
             $trado_id=$item['id'];
             $gudang_id=0;
@@ -324,7 +324,7 @@ class KartuStok extends MyModel
         $datadetail = json_decode($querygandengan, true);
         foreach ($datadetail as $item) {
 
-            $filter=$filtergandengan->id;
+            $filter=$filtergandengan->text;
             $gandengan_id=$item['id'];
             $trado_id=0;
             $gudang_id=0;
