@@ -21,7 +21,7 @@ class DestroyRekapPenerimaanHeaderRequest extends FormRequest
      */
     public function authorize()
     {
-        return false;
+        return true;
     }
 
     /**
@@ -33,7 +33,9 @@ class DestroyRekapPenerimaanHeaderRequest extends FormRequest
     {
         $controller = new RekapPenerimaanHeaderController;
         $rekappenerimaanheader = new RekapPenerimaanHeader();
+        // dd('test');
         $cekdata = $rekappenerimaanheader->cekvalidasiaksi($this->nobukti);
+        
         $cekdatacetak = $controller->cekvalidasi($this->id);
         if ($cekdatacetak->original['kodestatus']=='1') {
                 $cekdtcetak=true;

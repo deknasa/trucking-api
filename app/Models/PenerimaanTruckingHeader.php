@@ -824,7 +824,6 @@ class PenerimaanTruckingHeader extends MyModel
         ]);
 
         if ($postingDari != 'EDIT GAJI SUPIR' && $postingDari != 'DELETE GAJI SUPIR') {
-            dd($postingDari);
 
             $penerimaanHeader = PenerimaanHeader::where('nobukti', $penerimaanTruckingHeader->penerimaan_nobukti)->first();
             // throw new \Exception($penerimaanHeader->nobukti);

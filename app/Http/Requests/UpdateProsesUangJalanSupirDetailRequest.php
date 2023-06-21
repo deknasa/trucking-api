@@ -69,10 +69,6 @@ class UpdateProsesUangJalanSupirDetailRequest extends FormRequest
             $rulesBankIdPengembalian = [
                 'bank_idpengembalian' => ['required', 'numeric', 'min:1',new CekBankPengembalianProsesUangJalanEdit(), new ExistBankProsesUangJalan()]
             ];
-        }else{
-            $rulesBankIdPengembalian = [
-                'bank_idpengembalian' => ['required', 'numeric', 'min:1',new CekBankPengembalianProsesUangJalanEdit(), new ExistBankProsesUangJalan()]
-            ];
         }
 
         $totalValidasi = [
