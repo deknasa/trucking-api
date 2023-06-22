@@ -41,7 +41,7 @@ class UpahSupirRincian extends MyModel
             )
             ->leftJoin('container', 'container.id', 'upahsupirrincian.container_id')
             ->leftJoin('statuscontainer', 'statuscontainer.id', 'upahsupirrincian.statuscontainer_id')
-            ->where('upahsupir_id', '=', $id)            
+            ->where('upahsupir_id', '=', $id)
             ->orderBy('container.id', 'asc')
             ->orderBy('statuscontainer.kodestatuscontainer', 'desc');
 
@@ -52,7 +52,8 @@ class UpahSupirRincian extends MyModel
         return $data;
     }
 
-    public function get(){
+    public function get()
+    {
         $this->setRequestParameters();
 
         $aktif = request()->aktif ?? '';
@@ -60,33 +61,33 @@ class UpahSupirRincian extends MyModel
         $container_id = request()->container_id ?? 0;
         $statuscontainer_id = request()->statuscontainer_id ?? 0;
         $query = DB::table("upahsupirrincian")->from(DB::raw("upahsupirrincian with (readuncommitted)"))
-        ->select(
-            'upahsupir.id',
-            'upahsupir.kotadari_id',
-            'upahsupir.kotasampai_id',
-            'kotadari.kodekota as kotadari',
-            'kotasampai.kodekota as kotasampai',
-            'upahsupir.penyesuaian',
-            'upahsupir.jarak',
-            'parameter.memo as statusaktif',
-            'container.kodecontainer as container',
-            'statuscontainer.kodestatuscontainer as statuscontainer',
-            'upahsupirrincian.nominalsupir',
-            'upahsupirrincian.nominalkenek',
-            'upahsupirrincian.nominalkomisi',
-            'upahsupir.tglmulaiberlaku',
-            'upahsupir.modifiedby',
-            'upahsupir.created_at',
-            'upahsupir.updated_at'
-        )
-        ->leftJoin(DB::raw("upahsupir with (readuncommitted)"), 'upahsupir.id', 'upahsupirrincian.upahsupir_id')
-        ->leftJoin(DB::raw("parameter with (readuncommitted)"), 'upahsupir.statusaktif', '=', 'parameter.id')
-        ->leftJoin(DB::raw("kota as kotadari with (readuncommitted)"), 'upahsupir.kotadari_id', 'kotadari.id')
-        ->leftJoin(DB::raw("kota as kotasampai with (readuncommitted)"), 'upahsupir.kotasampai_id', 'kotasampai.id')
-        ->leftJoin(DB::raw("container with (readuncommitted)"), 'upahsupirrincian.container_id', 'container.id')
-        ->leftJoin(DB::raw("statuscontainer with (readuncommitted)"), 'upahsupirrincian.statuscontainer_id', 'statuscontainer.id');
+            ->select(
+                'upahsupir.id',
+                'upahsupir.kotadari_id',
+                'upahsupir.kotasampai_id',
+                'kotadari.kodekota as kotadari',
+                'kotasampai.kodekota as kotasampai',
+                'upahsupir.penyesuaian',
+                'upahsupir.jarak',
+                'parameter.memo as statusaktif',
+                'container.kodecontainer as container',
+                'statuscontainer.kodestatuscontainer as statuscontainer',
+                'upahsupirrincian.nominalsupir',
+                'upahsupirrincian.nominalkenek',
+                'upahsupirrincian.nominalkomisi',
+                'upahsupir.tglmulaiberlaku',
+                'upahsupir.modifiedby',
+                'upahsupir.created_at',
+                'upahsupir.updated_at'
+            )
+            ->leftJoin(DB::raw("upahsupir with (readuncommitted)"), 'upahsupir.id', 'upahsupirrincian.upahsupir_id')
+            ->leftJoin(DB::raw("parameter with (readuncommitted)"), 'upahsupir.statusaktif', '=', 'parameter.id')
+            ->leftJoin(DB::raw("kota as kotadari with (readuncommitted)"), 'upahsupir.kotadari_id', 'kotadari.id')
+            ->leftJoin(DB::raw("kota as kotasampai with (readuncommitted)"), 'upahsupir.kotasampai_id', 'kotasampai.id')
+            ->leftJoin(DB::raw("container with (readuncommitted)"), 'upahsupirrincian.container_id', 'container.id')
+            ->leftJoin(DB::raw("statuscontainer with (readuncommitted)"), 'upahsupirrincian.statuscontainer_id', 'statuscontainer.id');
 
-        
+
         $this->sort($query);
 
         $this->filter($query);
@@ -118,7 +119,7 @@ class UpahSupirRincian extends MyModel
         return $data;
     }
 
-    public function getValidasiUpahsupir($container_id,$statuscontainer_id, $id)
+    public function getValidasiUpahsupir($container_id, $statuscontainer_id, $id)
     {
         $statusaktif = Parameter::from(
             DB::raw("parameter with (readuncommitted)")
@@ -136,7 +137,7 @@ class UpahSupirRincian extends MyModel
             ->where('upahsupirrincian.container_id', '=', $container_id)
             ->where('upahsupirrincian.statuscontainer_id', '=', $statuscontainer_id)
             ->where('upahsupir.statusaktif', '=', $statusaktif->id);
-        
+
         $data = $query->first();
 
 
@@ -156,12 +157,12 @@ class UpahSupirRincian extends MyModel
                 'upahsupir.id',
             )
             ->whereRaw("upahsupir.id in ($id)")
-            ->where(function ($query) use($kota_id) {
+            ->where(function ($query) use ($kota_id) {
                 $query->whereRaw("upahsupir.kotadari_id = $kota_id")
                     ->orWhereRaw("upahsupir.kotasampai_id = $kota_id");
             })
             ->where('upahsupir.statusaktif', '=', $statusaktif->id);
-            
+
         $data = $query->first();
 
 
@@ -196,9 +197,9 @@ class UpahSupirRincian extends MyModel
             'container.kodecontainer as container',
             'container.id as container_id'
         )->crossJoin('container')
-        ->orderBy('container.id', 'asc')
-        ->orderBy('statuscontainer.kodestatuscontainer', 'desc');
-        
+            ->orderBy('container.id', 'asc')
+            ->orderBy('statuscontainer.kodestatuscontainer', 'desc');
+
         $temp = '##tempcrossjoin' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
         Schema::create($temp, function ($table) {
             $table->increments('id');
@@ -400,7 +401,7 @@ class UpahSupirRincian extends MyModel
         }
     }
 
-    
+
     public function sort($query)
     {
         if ($this->params['sortIndex'] == 'penyesuaian' || $this->params['sortIndex'] == 'jarak' || $this->params['sortIndex'] == 'tglmulaiberlaku' || $this->params['sortIndex'] == 'modifiedby' || $this->params['sortIndex'] == 'created_at' || $this->params['sortIndex'] == 'updated_at' || $this->params['sortIndex'] == 'statusaktif') {
@@ -440,9 +441,9 @@ class UpahSupirRincian extends MyModel
                         } elseif ($filters['field'] == 'tglmulaiberlaku') {
                             $query = $query->WhereRaw("format(upahsupir.tglmulaiberlaku,'dd-MM-yyyy') like '%$filters[data]%'");
                         } else if ($filters['field'] == 'created_at' || $filters['field'] == 'updated_at') {
-                            $query = $query->whereRaw("format(upahsupir." . $filters['field'].", 'dd-MM-yyyy HH:mm:ss') LIKE '%$filters[data]%'");
+                            $query = $query->whereRaw("format(upahsupir." . $filters['field'] . ", 'dd-MM-yyyy HH:mm:ss') LIKE '%$filters[data]%'");
                         } else if ($filters['field'] == 'nominalsupir' || $filters['field'] == 'nominalkenek' || $filters['field'] == 'nominalkomisi') {
-                            $query = $query->whereRaw("format(upahsupirrincian.".$filters['field'].", '#,#0.00') LIKE '%$filters[data]%'");
+                            $query = $query->whereRaw("format(upahsupirrincian." . $filters['field'] . ", '#,#0.00') LIKE '%$filters[data]%'");
                         } else {
                             $query = $query->where('upahsupir.' . $filters['field'], 'LIKE', "%$filters[data]%");
                         }
@@ -466,9 +467,9 @@ class UpahSupirRincian extends MyModel
                             } elseif ($filters['field'] == 'tglmulaiberlaku') {
                                 $query = $query->orWhereRaw("format(upahsupir.tglmulaiberlaku,'dd-MM-yyyy') like '%$filters[data]%'");
                             } else if ($filters['field'] == 'created_at' || $filters['field'] == 'updated_at') {
-                                $query = $query->orWhereRaw("format(upahsupir." . $filters['field'].", 'dd-MM-yyyy HH:mm:ss') LIKE '%$filters[data]%'");
+                                $query = $query->orWhereRaw("format(upahsupir." . $filters['field'] . ", 'dd-MM-yyyy HH:mm:ss') LIKE '%$filters[data]%'");
                             } else if ($filters['field'] == 'nominalsupir' || $filters['field'] == 'nominalkenek' || $filters['field'] == 'nominalkomisi') {
-                                $query = $query->orWhereRaw("format(upahsupirrincian.".$filters['field'].", '#,#0.00') LIKE '%$filters[data]%'");
+                                $query = $query->orWhereRaw("format(upahsupirrincian." . $filters['field'] . ", '#,#0.00') LIKE '%$filters[data]%'");
                             } else {
                                 $query = $query->orWhere('upahsupir.' . $filters['field'], 'LIKE', "%$filters[data]%");
                             }
@@ -492,7 +493,7 @@ class UpahSupirRincian extends MyModel
     {
         return $query->skip($this->params['offset'])->take($this->params['limit']);
     }
-    
+
     public function processStore(UpahSupir $upahsupir, array $data): UpahSupirRincian
     {
         $upahSupirRincian = new UpahSupirRincian();
@@ -505,11 +506,34 @@ class UpahSupirRincian extends MyModel
         $upahSupirRincian->nominaltol = $data['nominaltol'];
         $upahSupirRincian->liter = $data['liter'];
         $upahSupirRincian->modifiedby = auth('api')->user()->name;
-        
+
         if (!$upahSupirRincian->save()) {
             throw new \Exception("Error storing upah supir in detail.");
         }
 
         return $upahSupirRincian;
+    }
+
+    public function getExistNominalUpahSupir($container_id, $statuscontainer_id, $id)
+    {
+        $statusaktif = Parameter::from(
+            DB::raw("parameter with (readuncommitted)")
+        )
+            ->where('grp', '=', 'STATUS AKTIF')
+            ->where('text', '=', 'AKTIF')
+            ->first();
+
+
+        $query = DB::table("upahsupir")->from(DB::raw("upahsupir with (readuncommitted)"))
+            ->select(
+                'upahsupirrincian.nominalsupir'
+            )
+            ->join(DB::raw("upahsupirrincian with (readuncommitted)"), 'upahsupir.id', 'upahsupirrincian.upahsupir_id')
+            ->whereRaw("upahsupir.id in ($id)")
+            ->where('upahsupirrincian.container_id', '=', $container_id)
+            ->where('upahsupirrincian.statuscontainer_id', '=', $statuscontainer_id)
+            ->where('upahsupir.statusaktif', '=', $statusaktif->id);
+
+        return $query->first();
     }
 }

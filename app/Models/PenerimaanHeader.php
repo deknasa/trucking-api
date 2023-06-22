@@ -186,7 +186,7 @@ class PenerimaanHeader extends MyModel
             ];
             goto selesai;
         }
-        
+
         $pemutihanSupir = DB::table('pemutihansupirheader')
             ->from(
                 DB::raw("pemutihansupirheader as a with (readuncommitted)")
@@ -260,7 +260,7 @@ class PenerimaanHeader extends MyModel
         if ($statusCetak != '') {
             $query->where("penerimaanheader.statuscetak", $statusCetak);
         }
-        
+
         $this->totalRows = $query->count();
         $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;
 
@@ -268,7 +268,7 @@ class PenerimaanHeader extends MyModel
         $this->filter($query);
         $this->paginate($query);
         $data = $query->get();
-        
+
 
         return $data;
     }
@@ -534,6 +534,14 @@ class PenerimaanHeader extends MyModel
                                 $query = $query->whereRaw("format($this->table.tgllunas,'dd-MM-yyyy') like '%$filters[data]%'");
                             } else if ($filters['field'] == 'tglapproval') {
                                 $query = $query->whereRaw("format($this->table.tglapproval,'dd-MM-yyyy') like '%$filters[data]%'");
+                            } else if ($filters['field'] == 'tglbukti_penerimaan') {
+                                $query = $query->whereRaw("format(" . $this->table . ".tglbukti, 'dd-MM-yyyy') LIKE '%$filters[data]%'");
+                            } else if ($filters['field'] == 'nobukti_penerimaan') {
+                                $query = $query->where('penerimaanheader.nobukti', 'LIKE', "%$filters[data]%");
+                            } else if ($filters['field'] == 'keterangan_detail') {
+                                $query = $query->where('penerimaandetail.keterangan', 'LIKE', "%$filters[data]%");
+                            } else if ($filters['field'] == 'nominal_detail') {
+                                $query = $query->whereRaw("format(c.nominal, '#,#0.00') LIKE '%$filters[data]%'");
                             } else {
                                 $query = $query->where($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
                             }
@@ -565,6 +573,14 @@ class PenerimaanHeader extends MyModel
                                     $query = $query->orWhereRaw("format($this->table.tgllunas,'dd-MM-yyyy') like '%$filters[data]%'");
                                 } else if ($filters['field'] == 'tglapproval') {
                                     $query = $query->orWhereRaw("format($this->table.tglapproval,'dd-MM-yyyy') like '%$filters[data]%'");
+                                } else if ($filters['field'] == 'tglbukti_penerimaan') {
+                                    $query = $query->orWhereRaw("format(" . $this->table . ".tglbukti, 'dd-MM-yyyy') LIKE '%$filters[data]%'");
+                                } else if ($filters['field'] == 'nobukti_penerimaan') {
+                                    $query = $query->orWhere('penerimaanheader.nobukti', 'LIKE', "%$filters[data]%");
+                                } else if ($filters['field'] == 'keterangan_detail') {
+                                    $query = $query->orWhere('penerimaandetail.keterangan', 'LIKE', "%$filters[data]%");
+                                } else if ($filters['field'] == 'nominal_detail') {
+                                    $query = $query->orWhereRaw("format(c.nominal, '#,#0.00') LIKE '%$filters[data]%'");
                                 } else {
                                     $query = $query->orWhere($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
                                 }
@@ -609,15 +625,29 @@ class PenerimaanHeader extends MyModel
     public function getRekapPenerimaanHeader($bank, $tglbukti)
     {
         $this->setRequestParameters();
+        $temp = '##tempDetail' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+        $penerimaanDetail = DB::table("penerimaandetail")->from(DB::raw("penerimaandetail with (readuncommitted)"))
+            ->select(
+                'nobukti',
+                'keterangan',
+                DB::raw('SUM(nominal) AS nominal')
+            )
+            ->groupBy('nobukti', 'keterangan');
+        Schema::create($temp, function ($table) {
+            $table->string('nobukti')->nullable();
+            $table->string('keterangan')->nullable();
+            $table->bigInteger('nominal')->nullable();
+        });
+        DB::table($temp)->insertUsing(['nobukti', 'keterangan', 'nominal'], $penerimaanDetail);
 
         $query = DB::table($this->table)->from(
             DB::raw($this->table . " with (readuncommitted)")
         )->select(
             'penerimaanheader.id',
-            'penerimaanheader.nobukti',
-            'penerimaanheader.tglbukti',
-            'penerimaandetail.keterangan as keterangan_detail',
-            DB::raw('SUM(penerimaandetail.nominal) AS nominal')
+            'penerimaanheader.nobukti as nobukti_penerimaan',
+            'penerimaanheader.tglbukti as tglbukti_penerimaan',
+            'c.keterangan as keterangan_detail',
+            'c.nominal as nominal_detail',
         )
             ->where('penerimaanheader.bank_id', $bank)
             ->where('penerimaanheader.tglbukti', $tglbukti)
@@ -626,12 +656,14 @@ class PenerimaanHeader extends MyModel
                 FROM rekappenerimaandetail with (readuncommitted)
                 WHERE penerimaan_nobukti = penerimaanheader.nobukti   
               )")
-            ->leftJoin(DB::raw("penerimaandetail with (readuncommitted)"), 'penerimaanheader.id', 'penerimaandetail.penerimaan_id')
-            ->groupBy('penerimaanheader.nobukti', 'penerimaanheader.id', 'penerimaanheader.tglbukti', 'penerimaandetail.keterangan');
+            ->leftJoin(DB::raw("$temp as c with (readuncommitted)"), 'penerimaanheader.nobukti', 'c.nobukti')
+            ->groupBy('penerimaanheader.nobukti', 'penerimaanheader.id', 'penerimaanheader.tglbukti', 'c.keterangan', 'c.nominal');
 
-            $this->totalRows = $query->count();
-            $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;
-            
+        $this->totalRows = $query->count();
+        $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;
+        $this->sort($query);
+        $this->filter($query);
+        $this->paginate($query);
         $data = $query->get();
 
         return $data;
@@ -642,25 +674,25 @@ class PenerimaanHeader extends MyModel
         $bankid = $data['bank_id'];
 
         $querysubgrppenerimaan = Bank::from(DB::raw("bank with (readuncommitted)"))
-        ->select(
-            'parameter.grp',
-            'parameter.subgrp',
-            'bank.formatpenerimaan',
-            'bank.coa',
-            'bank.tipe'
-        )
-        ->join(DB::raw("parameter with (readuncommitted)"), 'bank.formatpenerimaan', 'parameter.id')
-        ->whereRaw("bank.id = $bankid")
-        ->first();
+            ->select(
+                'parameter.grp',
+                'parameter.subgrp',
+                'bank.formatpenerimaan',
+                'bank.coa',
+                'bank.tipe'
+            )
+            ->join(DB::raw("parameter with (readuncommitted)"), 'bank.formatpenerimaan', 'parameter.id')
+            ->whereRaw("bank.id = $bankid")
+            ->first();
         $group = $querysubgrppenerimaan->grp;
         $subGroup = $querysubgrppenerimaan->subgrp;
         $format = DB::table('parameter')->where('grp', $group)->where('subgrp', $subGroup)->first();
 
-        $statusApproval = Parameter::from(DB::raw("parameter with (readuncommitted)")) ->where('grp', 'STATUS APPROVAL')->where('text', 'NON APPROVAL')->first();
+        $statusApproval = Parameter::from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS APPROVAL')->where('text', 'NON APPROVAL')->first();
         $statuscetak = Parameter::from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUSCETAK')->where('text', 'BELUM CETAK')->first();
 
         $penerimaanHeader = new PenerimaanHeader();
-        
+
         $penerimaanHeader->tglbukti = date('Y-m-d', strtotime($data['tglbukti']));
         $penerimaanHeader->pelanggan_id = $data['pelanggan_id'] ?? '';
         $penerimaanHeader->agen_id = $data['agen_id'] ?? '';
@@ -680,18 +712,18 @@ class PenerimaanHeader extends MyModel
 
         $penerimaanHeaderLogTrail = (new LogTrail())->processStore([
             'namatabel' => strtoupper($penerimaanHeader->getTable()),
-            'postingdari' => $data['postingdari'] ??strtoupper('ENTRY penerimaan Header '),
+            'postingdari' => $data['postingdari'] ?? strtoupper('ENTRY penerimaan Header '),
             'idtrans' => $penerimaanHeader->id,
             'nobuktitrans' => $penerimaanHeader->nobukti,
             'aksi' => 'ENTRY',
             'datajson' => $penerimaanHeader->toArray(),
             'modifiedby' => auth('api')->user()->user
         ]);
-        $penerimaanDetails =[];
-        $coakredit_detail =[];
-        $coadebet_detail =[];
-        $nominal_detail =[];
-        $keterangan_detail =[];
+        $penerimaanDetails = [];
+        $coakredit_detail = [];
+        $coadebet_detail = [];
+        $nominal_detail = [];
+        $keterangan_detail = [];
         for ($i = 0; $i < count($data['nominal_detail']); $i++) {
             $penerimaanDetail = (new PenerimaanDetail())->processStore($penerimaanHeader, [
                 'penerimaan_id' => $penerimaanHeader->id,
@@ -710,16 +742,15 @@ class PenerimaanHeader extends MyModel
                 'modifiedby' => auth('api')->user()->name,
             ]);
             $penerimaanDetails[] = $penerimaanDetail->toArray();
-            $coakredit_detail []= $data['coakredit'][$i];
-            $coadebet_detail []= $querysubgrppenerimaan->coa;
-            $nominal_detail []= $data['nominal_detail'][$i];
-            $keterangan_detail []= $data['keterangan_detail'][$i];
-
+            $coakredit_detail[] = $data['coakredit'][$i];
+            $coadebet_detail[] = $querysubgrppenerimaan->coa;
+            $nominal_detail[] = $data['nominal_detail'][$i];
+            $keterangan_detail[] = $data['keterangan_detail'][$i];
         }
 
         $penerimaanDetailLogTrail = (new LogTrail())->processStore([
             'namatabel' => strtoupper($penerimaanDetail->getTable()),
-            'postingdari' => $data['postingdari'] ??strtoupper('ENTRY penerimaan detail '),
+            'postingdari' => $data['postingdari'] ?? strtoupper('ENTRY penerimaan detail '),
             'idtrans' => $penerimaanHeaderLogTrail->id,
             'nobuktitrans' => $penerimaanHeader->nobukti,
             'aksi' => 'ENTRY',
@@ -745,30 +776,28 @@ class PenerimaanHeader extends MyModel
         ];
         $jurnalUmumHeader = (new JurnalUmumHeader())->processStore($jurnalRequest);
         return $penerimaanHeader;
-
-
     }
-    public function processUpdate(PenerimaanHeader $penerimaanHeader,array $data): PenerimaanHeader
+    public function processUpdate(PenerimaanHeader $penerimaanHeader, array $data): PenerimaanHeader
     {
         $bankid = $data['bank_id'];
 
         $querysubgrppenerimaan = Bank::from(DB::raw("bank with (readuncommitted)"))
-        ->select(
-            'parameter.grp',
-            'parameter.subgrp',
-            'bank.formatpenerimaan',
-            'bank.coa',
-            'bank.tipe'
-        )
-        ->join(DB::raw("parameter with (readuncommitted)"), 'bank.formatpenerimaan', 'parameter.id')
-        ->whereRaw("bank.id = $bankid")
-        ->first();
+            ->select(
+                'parameter.grp',
+                'parameter.subgrp',
+                'bank.formatpenerimaan',
+                'bank.coa',
+                'bank.tipe'
+            )
+            ->join(DB::raw("parameter with (readuncommitted)"), 'bank.formatpenerimaan', 'parameter.id')
+            ->whereRaw("bank.id = $bankid")
+            ->first();
         $group = $querysubgrppenerimaan->grp;
         $subGroup = $querysubgrppenerimaan->subgrp;
 
-        $statusApproval = Parameter::from(DB::raw("parameter with (readuncommitted)")) ->where('grp', 'STATUS APPROVAL')->where('text', 'NON APPROVAL')->first();
+        $statusApproval = Parameter::from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS APPROVAL')->where('text', 'NON APPROVAL')->first();
         $statuscetak = Parameter::from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUSCETAK')->where('text', 'BELUM CETAK')->first();
-        
+
         $penerimaanHeader->pelanggan_id = $data['pelanggan_id'] ?? '';
         $penerimaanHeader->diterimadari = $data['diterimadari'] ?? '';
         $penerimaanHeader->tgllunas = date('Y-m-d', strtotime($data['tgllunas']));
@@ -782,7 +811,7 @@ class PenerimaanHeader extends MyModel
 
         $penerimaanHeaderLogTrail = (new LogTrail())->processStore([
             'namatabel' => strtoupper($penerimaanHeader->getTable()),
-            'postingdari' => $data['postingdari'] ??strtoupper('EDIT penerimaan Header '),
+            'postingdari' => $data['postingdari'] ?? strtoupper('EDIT penerimaan Header '),
             'idtrans' => $penerimaanHeader->id,
             'nobuktitrans' => $penerimaanHeader->nobukti,
             'aksi' => 'EDIT',
@@ -790,15 +819,15 @@ class PenerimaanHeader extends MyModel
             'modifiedby' => auth('api')->user()->user
         ]);
 
-         /*DELETE EXISTING Penerimaan*/
-         $penerimaanDetail = PenerimaanDetail::where('penerimaan_id', $penerimaanHeader->id)->lockForUpdate()->delete();
+        /*DELETE EXISTING Penerimaan*/
+        $penerimaanDetail = PenerimaanDetail::where('penerimaan_id', $penerimaanHeader->id)->lockForUpdate()->delete();
 
-         
-        $penerimaanDetails =[];
-        $coakredit_detail =[];
-        $coadebet_detail =[];
-        $nominal_detail =[];
-        $keterangan_detail =[];
+
+        $penerimaanDetails = [];
+        $coakredit_detail = [];
+        $coadebet_detail = [];
+        $nominal_detail = [];
+        $keterangan_detail = [];
         for ($i = 0; $i < count($data['nominal_detail']); $i++) {
             $penerimaanDetail = (new PenerimaanDetail())->processStore($penerimaanHeader, [
                 'penerimaan_id' => $penerimaanHeader->id,
@@ -817,16 +846,15 @@ class PenerimaanHeader extends MyModel
                 'modifiedby' => auth('api')->user()->name,
             ]);
             $penerimaanDetails[] = $penerimaanDetail->toArray();
-            $coakredit_detail []= $data['coakredit'][$i];
-            $coadebet_detail []= $querysubgrppenerimaan->coa;
-            $nominal_detail []= $data['nominal_detail'][$i];
-            $keterangan_detail []= $data['keterangan_detail'][$i];
-
+            $coakredit_detail[] = $data['coakredit'][$i];
+            $coadebet_detail[] = $querysubgrppenerimaan->coa;
+            $nominal_detail[] = $data['nominal_detail'][$i];
+            $keterangan_detail[] = $data['keterangan_detail'][$i];
         }
 
         $penerimaanDetailLogTrail = (new LogTrail())->processStore([
             'namatabel' => strtoupper($penerimaanDetail->getTable()),
-            'postingdari' => $data['postingdari'] ??strtoupper('ENTRY penerimaan detail '),
+            'postingdari' => $data['postingdari'] ?? strtoupper('ENTRY penerimaan detail '),
             'idtrans' => $penerimaanHeaderLogTrail->id,
             'nobuktitrans' => $penerimaanHeader->nobukti,
             'aksi' => 'ENTRY',
@@ -850,53 +878,51 @@ class PenerimaanHeader extends MyModel
             'nominal_detail' => $nominal_detail,
             'keterangan_detail' => $keterangan_detail
         ];
-         /*DELETE EXISTING JURNAL*/
+        /*DELETE EXISTING JURNAL*/
         $getJurnal = JurnalUmumHeader::from(DB::raw("jurnalumumheader with (readuncommitted)"))->where('nobukti', $penerimaanHeader->nobukti)->first();
         $newJurnal = new JurnalUmumHeader();
         $newJurnal = $newJurnal->find($getJurnal->id);
-         (new JurnalUmumHeader())->processUpdate($newJurnal,$jurnalRequest);
+        (new JurnalUmumHeader())->processUpdate($newJurnal, $jurnalRequest);
 
         return $penerimaanHeader;
     }
 
 
-    public function processDestroy($id,$postingdari =""): PenerimaanHeader
+    public function processDestroy($id, $postingdari = ""): PenerimaanHeader
     {
         $penerimaanHeader = PenerimaanHeader::findOrFail($id);
         $dataHeader =  $penerimaanHeader->toArray();
         $penerimaanDetail = PenerimaanDetail::where('penerimaan_id', '=', $penerimaanHeader->id)->get();
         $dataDetail = $penerimaanDetail->toArray();
-        
+
         /*DELETE EXISTING DETAIL*/
         $penerimaanDetail = PenerimaanDetail::where('penerimaan_id', $penerimaanHeader->id)->lockForUpdate()->delete();
-        
+
         /*DELETE EXISTING JURNAL*/
-        $jurnalUmumHeader = JurnalUmumHeader::where('nobukti',$penerimaanHeader->nobukti)->first();
-        (new JurnalUmumHeader())->processDestroy($jurnalUmumHeader->id,($postingdari =="") ? $postingdari :strtoupper('DELETE penerimaan  detail'));
-       
+        $jurnalUmumHeader = JurnalUmumHeader::where('nobukti', $penerimaanHeader->nobukti)->first();
+        (new JurnalUmumHeader())->processDestroy($jurnalUmumHeader->id, ($postingdari == "") ? $postingdari : strtoupper('DELETE penerimaan  detail'));
+
         $penerimaanHeader = $penerimaanHeader->lockAndDestroy($id);
         $hutangLogTrail = (new LogTrail())->processStore([
             'namatabel' => $this->table,
-            'postingdari' => ($postingdari =="") ? $postingdari :strtoupper('DELETE penerimaan  Header'),
+            'postingdari' => ($postingdari == "") ? $postingdari : strtoupper('DELETE penerimaan  Header'),
             'idtrans' => $penerimaanHeader->id,
             'nobuktitrans' => $penerimaanHeader->nobukti,
             'aksi' => 'DELETE',
-            'datajson' =>$dataHeader,
+            'datajson' => $dataHeader,
             'modifiedby' => auth('api')->user()->name
         ]);
- 
+
         (new LogTrail())->processStore([
             'namatabel' => 'PENERIMAANDETAIL',
-            'postingdari' => ($postingdari =="") ? $postingdari :strtoupper('DELETE penerimaan  detail'),
+            'postingdari' => ($postingdari == "") ? $postingdari : strtoupper('DELETE penerimaan  detail'),
             'idtrans' => $hutangLogTrail['id'],
             'nobuktitrans' => $penerimaanHeader->nobukti,
             'aksi' => 'DELETE',
-            'datajson' =>$dataDetail,
+            'datajson' => $dataDetail,
             'modifiedby' => auth('api')->user()->name
         ]);
- 
+
         return $penerimaanHeader;
     }
- 
 }
-        

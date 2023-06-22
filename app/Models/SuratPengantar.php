@@ -943,7 +943,8 @@ class SuratPengantar extends MyModel
             'aksi' => 'ENTRY',
             'datajson' => $suratPengantar->toArray(),
         ]);
-        if (array_key_exists('nominal', $data)) {
+
+        if ($data['nominal']) {
             if ($data['nominal'][0] != 0) {
                 $suratPengantarBiayaTambahans = [];
                 for ($i = 0; $i < count($data['nominal']); $i++) {
@@ -1148,10 +1149,10 @@ class SuratPengantar extends MyModel
         $this->setRequestParameters();
 
         $getParameter = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))
-        ->select(
-            'text as judul',
-            DB::raw("'Laporan Surat Pengantar' as judulLaporan")
-        )->where('grp', 'JUDULAN LAPORAN')->where('subgrp', 'JUDULAN LAPORAN')->first();
+            ->select(
+                'text as judul',
+                DB::raw("'Laporan Surat Pengantar' as judulLaporan")
+            )->where('grp', 'JUDULAN LAPORAN')->where('subgrp', 'JUDULAN LAPORAN')->first();
 
         $query = DB::table($this->table)->select(
             'suratpengantar.id',

@@ -20,6 +20,7 @@ use App\Rules\ExistJenisOrder;
 use App\Rules\ExistKota;
 use App\Rules\ExistKotaDariSuratPengantar;
 use App\Rules\ExistKotaSampaiSuratPengantar;
+use App\Rules\ExistNominalUpahSupir;
 use App\Rules\ExistPelanggan;
 use App\Rules\ExistStatusContainer;
 use App\Rules\ExistSupir;
@@ -146,11 +147,11 @@ class StoreMandorTripRequest extends FormRequest
         $rulesDari_id = [];
         if ($dari_id != null) {
             $rulesDari_id = [
-                'dari_id' => ['required', 'numeric', 'min:1', new ExistKotaDariSuratPengantar(), new ExistKota()]
+                'dari_id' => ['required', 'numeric', 'min:1', new ExistKota()]
             ];
         } else if ($dari_id == null && $this->dari != '') {
             $rulesDari_id = [
-                'dari_id' => ['required', 'numeric', 'min:1', new ExistKotaDariSuratPengantar(), new ExistKota()]
+                'dari_id' => ['required', 'numeric', 'min:1', new ExistKota()]
             ];
         }
 
@@ -158,11 +159,11 @@ class StoreMandorTripRequest extends FormRequest
         $rulesSampai_id = [];
         if ($sampai_id != null) {
             $rulesSampai_id = [
-                'sampai_id' => ['required', 'numeric', 'min:1', new ExistKotaDariSuratPengantar(), new ExistKota()]
+                'sampai_id' => ['required', 'numeric', 'min:1', new ExistKota()]
             ];
         } else if ($sampai_id == null && $this->sampai != '') {
             $rulesSampai_id = [
-                'sampai_id' => ['required', 'numeric', 'min:1', new ExistKotaDariSuratPengantar(), new ExistKota()]
+                'sampai_id' => ['required', 'numeric', 'min:1', new ExistKota()]
             ];
         }
 
@@ -223,12 +224,6 @@ class StoreMandorTripRequest extends FormRequest
             ];
         }
 
-        $rulesUpahSupir = [];
-        if(request()->dari_id != '' && request()->sampai_id != '' && request()->container_id != '' && request()->statuscontainer_id != ''){
-            $rulesUpahSupir = [
-                'dari' => new cekUpahSupirInputTrip()
-            ];
-        }
         $rules = [
             'tglbukti' => [
                 'required', 'date_format:d-m-Y',
@@ -248,7 +243,7 @@ class StoreMandorTripRequest extends FormRequest
             "statusgudangsama" => "required",
             "statuslongtrip" => "required",
             "trado" => "required",
-            "upah" => "required",
+            "upah" => ["required",new ExistNominalUpahSupir()],
         ];
 
         $rules = array_merge(
@@ -263,7 +258,6 @@ class StoreMandorTripRequest extends FormRequest
             $rulesJenisOrder_id,
             $rulesStatusContainer_id,
             $rulesTrado_id,
-            $rulesUpahSupir,
             $rulesTarif_id,
             $rulesUpah_id,
             $ruleCekUpahRitasi

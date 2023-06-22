@@ -39,7 +39,8 @@ class Role extends MyModel
                 'updated_at',
                 DB::raw("'Laporan Role' as judulLaporan"),
                 DB::raw("'" . $getJudul->text . "' as judul"),
-                DB::raw("'Tanggal Cetak : '+format(getdate(),'dd-MM-yyyy HH:mm:ss')+' User :".auth('api')->user()->name."' as tglcetak")
+                DB::raw("'Tgl Cetak :'+format(getdate(),'dd-MM-yyyy HH:mm:ss')as tglcetak"),
+                DB::raw(" 'User :".auth('api')->user()->name."' as usercetak")
             );
 
         $this->totalRows = $query->count();

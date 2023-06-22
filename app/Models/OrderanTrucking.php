@@ -301,7 +301,7 @@ class OrderanTrucking extends MyModel
                 "tgltrip" => "2022-09-12",
                 "jumlahhari" => "11",
                 "nominal_detail" => "21000000",
-                "nopolisi" => "BK 1234 AB",
+                "nopolisi" => "B 9508 PH",
                 "keterangan" => "keterangan id 1",
             ], [
                 "id" => 2,
@@ -309,7 +309,7 @@ class OrderanTrucking extends MyModel
                 "tgltrip" => "2022-09-12",
                 "jumlahhari" => "12",
                 "nominal_detail" => "22000000",
-                "nopolisi" => "BK 4567 AB",
+                "nopolisi" => "B 9120 QZ",
                 "keterangan" => "keterangan id 2",
             ], [
                 "id" => 3,
@@ -317,7 +317,7 @@ class OrderanTrucking extends MyModel
                 "tgltrip" => "2022-09-12",
                 "jumlahhari" => "13",
                 "nominal_detail" => "23000000",
-                "nopolisi" => "BK 1234 AB",
+                "nopolisi" => "BK 8007 XA",
                 "keterangan" => "keterangan id 3",
             ]
         ];

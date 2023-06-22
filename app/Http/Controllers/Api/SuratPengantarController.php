@@ -66,11 +66,36 @@ class SuratPengantarController extends Controller
     public function store(StoreSuratPengantarRequest $request): JsonResponse
     {
         DB::beginTransaction();
-
-
-
         try {
-            $suratPengantar = (new SuratPengantar())->processStore($request->all());
+            $data = [
+                'jobtrucking' => $request->jobtrucking,
+                'upah_id' => $request->upah_id,
+                'container_id' => $request->container_id,
+                'tglbukti' => $request->tglbukti,
+                'keterangan' => $request->keterangan,
+                'nourutorder' => $request->nourutorder,
+                'dari_id' => $request->dari_id,
+                'sampai_id' => $request->sampai_id,
+                'statuscontainer_id' => $request->statuscontainer_id,
+                'trado_id' => $request->trado_id,
+                'supir_id' => $request->supir_id,
+                'gandengan_id' => $request->gandengan_id,
+                'statuslongtrip' => $request->statuslongtrip,
+                'statusperalihan' => $request->statusperalihan,
+                'nominalperalihan' => $request->nominalperalihan,
+                'biayatambahan_id' => $request->biayatambahan_id,
+                'nosp' => $request->nosp,
+                'nosptagihlain' => $request->nosptagihlain,
+                'qtyton' => $request->qtyton,
+                'statusgudangsama' => $request->statusgudangsama,
+                'statusbatalmuat' => $request->statusbatalmuat,
+                'gudang' => $request->gudang,
+                'keterangan_detail' => $request->keterangan_detail,
+                'nominal' => $request->nominal,
+                'nominalTagih' => $request->nominalTagih,
+
+            ];
+            $suratPengantar = (new SuratPengantar())->processStore($data);
             $suratPengantar->position = $this->getPosition($suratPengantar, $suratPengantar->getTable())->position;
             $suratPengantar->page = ceil($suratPengantar->position / ($request->limit ?? 10));
 
@@ -106,7 +131,35 @@ class SuratPengantarController extends Controller
 
         DB::beginTransaction();
         try {
-            $suratPengantar = (new SuratPengantar())->processUpdate($suratpengantar, $request->all());
+            $data = [
+                'jobtrucking' => $request->jobtrucking,
+                'upah_id' => $request->upah_id,
+                'container_id' => $request->container_id,
+                'tglbukti' => $request->tglbukti,
+                'keterangan' => $request->keterangan,
+                'nourutorder' => $request->nourutorder,
+                'dari_id' => $request->dari_id,
+                'sampai_id' => $request->sampai_id,
+                'statuscontainer_id' => $request->statuscontainer_id,
+                'trado_id' => $request->trado_id,
+                'supir_id' => $request->supir_id,
+                'gandengan_id' => $request->gandengan_id,
+                'statuslongtrip' => $request->statuslongtrip,
+                'statusperalihan' => $request->statusperalihan,
+                'nominalperalihan' => $request->nominalperalihan,
+                'biayatambahan_id' => $request->biayatambahan_id,
+                'nosp' => $request->nosp,
+                'nosptagihlain' => $request->nosptagihlain,
+                'qtyton' => $request->qtyton,
+                'statusgudangsama' => $request->statusgudangsama,
+                'statusbatalmuat' => $request->statusbatalmuat,
+                'gudang' => $request->gudang,
+                'keterangan_detail' => $request->keterangan_detail,
+                'nominal' => $request->nominal,
+                'nominalTagih' => $request->nominalTagih,
+
+            ];
+            $suratPengantar = (new SuratPengantar())->processUpdate($suratpengantar, $data);
             $suratPengantar->position = $this->getPosition($suratPengantar, $suratPengantar->getTable())->position;
             $suratPengantar->page = ceil($suratPengantar->position / ($request->limit ?? 10));
 
@@ -174,7 +227,7 @@ class SuratPengantarController extends Controller
 
     public function cekUpahSupir(Request $request)
     {
-        
+
         $upahSupir =  DB::table('upahsupir')->from(
             DB::raw("upahsupir with (readuncommitted)")
         )
@@ -185,7 +238,7 @@ class SuratPengantarController extends Controller
             ->where('upahsupirrincian.container_id', $request->container_id)
             ->where('upahsupirrincian.statuscontainer_id', $request->statuscontainer_id)
             ->first();
-      
+
         if (!isset($upahSupir)) {
             $upahSupir =  DB::table('upahsupir')->from(
                 DB::raw("upahsupir with (readuncommitted)")
@@ -217,15 +270,15 @@ class SuratPengantarController extends Controller
 
     public function cekValidasi($id)
     {
-     
+
         $suratPengantar = new SuratPengantar();
         $nobukti = DB::table('SuratPengantar')->from(DB::raw("suratpengantar with (readuncommitted)"))
-        ->where('id', $id)->first();
+            ->where('id', $id)->first();
         //validasi Hari ini
         $todayValidation = SuratPengantar::todayValidation($nobukti->id);
         $isEditAble = SuratPengantar::isEditAble($nobukti->id);
-        $edit =true;
-        if(!$todayValidation && !$isEditAble){
+        $edit = true;
+        if (!$todayValidation && !$isEditAble) {
             $query = DB::table('error')->select('keterangan')->where('kodeerror', '=', 'SATL')->get();
             $keterangan = $query['0'];
             $edit = false;
@@ -292,7 +345,7 @@ class SuratPengantarController extends Controller
     public function approvalBatalMuat($id)
     {
         DB::beginTransaction();
-        try{
+        try {
             $suratPengantar = SuratPengantar::lockForUpdate()->findOrFail($id);
 
             $statusBatalMuat = Parameter::from(DB::raw("parameter with (readuncommitted)"))->where('grp', '=', 'STATUS BATAL MUAT')->where('text', '=', 'BATAL MUAT')->first();
@@ -316,18 +369,17 @@ class SuratPengantarController extends Controller
                     'datajson' => $suratPengantar->toArray(),
                     'modifiedby' => auth('api')->user()->name
                 ];
-    
+
                 $validatedLogTrail = new StoreLogTrailRequest($logTrail);
                 $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
-    
+
                 DB::commit();
             }
 
             return response([
                 'message' => 'Berhasil'
             ]);
-
-        }catch (\Throwable $th) {
+        } catch (\Throwable $th) {
             DB::rollBack();
             throw $th;
         }
@@ -338,7 +390,7 @@ class SuratPengantarController extends Controller
     public function approvalEditTujuan($id)
     {
         DB::beginTransaction();
-        try{
+        try {
             $suratPengantar = SuratPengantar::lockForUpdate()->findOrFail($id);
 
             $statusEditTujuan = Parameter::from(DB::raw("parameter with (readuncommitted)"))->where('grp', '=', 'STATUS EDIT TUJUAN')->where('text', '=', 'EDIT TUJUAN')->first();
@@ -362,18 +414,17 @@ class SuratPengantarController extends Controller
                     'datajson' => $suratPengantar->toArray(),
                     'modifiedby' => auth('api')->user()->name
                 ];
-    
+
                 $validatedLogTrail = new StoreLogTrailRequest($logTrail);
                 $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
-    
+
                 DB::commit();
             }
 
             return response([
                 'message' => 'Berhasil'
             ]);
-
-        }catch (\Throwable $th) {
+        } catch (\Throwable $th) {
             DB::rollBack();
             throw $th;
         }
@@ -394,7 +445,7 @@ class SuratPengantarController extends Controller
             //  dd($data->toSql());
             ->first();
 
-            // dd($data);
+        // dd($data);
         if ($data != null) {
             return response([
                 'data' => $data

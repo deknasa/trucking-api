@@ -108,7 +108,8 @@ class InputTrip extends MyModel
             'statusgudangsama' => $data['statusgudangsama'],
             'gudang' => $data['gudang'],
             'tarif_id' => $data['tarifrincian_id'],
-            'inputtripmandor' => '1'
+            'inputtripmandor' => '1',
+            'nominal' => ''
         ];
         $suratPengantar = (new SuratPengantar())->processStore($dataSP);
 
