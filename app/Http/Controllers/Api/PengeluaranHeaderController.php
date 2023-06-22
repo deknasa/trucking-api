@@ -37,8 +37,10 @@ class PengeluaranHeaderController extends Controller
 {
 
     /**
-     * @ClassName
-     */
+     * @ClassName 
+     * pengeluaranheadercontainer
+     * @Detail1 PengeluaranDetailController
+    */
     public function index(GetIndexRangeRequest $request)
     {
         $pengeluaran = new PengeluaranHeader();
