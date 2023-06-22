@@ -95,20 +95,6 @@ class RekapPengeluaranHeader extends MyModel
 
     public function sort($query)
     {
-        if ($this->params['sortIndex'] == 'grp') {
-            return $query
-                ->orderBy($this->table . '.' . $this->params['sortIndex'], $this->params['sortOrder'])
-                ->orderBy($this->table . '.subgrp', $this->params['sortOrder'])
-                ->orderBy($this->table . '.id', $this->params['sortOrder']);
-        }
-
-        if ($this->params['sortIndex'] == 'subgrp') {
-            return $query
-                ->orderBy($this->table . '.' . $this->params['sortIndex'], $this->params['sortOrder'])
-                ->orderBy($this->table . '.grp', $this->params['sortOrder'])
-                ->orderBy($this->table . '.id', $this->params['sortOrder']);
-        }
-
         if ($this->params['sortIndex'] == 'bank') {
             return $query->orderBy('bank.namabank', $this->params['sortOrder']);
         }
@@ -130,6 +116,14 @@ class RekapPengeluaranHeader extends MyModel
                             $query = $query->whereRaw("format(" . $this->table . "." . $filters['field'] . ", 'dd-MM-yyyy') LIKE '%$filters[data]%'");
                         } else if ($filters['field'] == 'created_at' || $filters['field'] == 'updated_at') {
                             $query = $query->whereRaw("format(" . $this->table . "." . $filters['field'] . ", 'dd-MM-yyyy HH:mm:ss') LIKE '%$filters[data]%'");
+                        } else if ($filters['field'] == 'tglbukti_pengeluaran') {
+                            $query = $query->whereRaw("format(rekappengeluarandetail.tgltransaksi, 'dd-MM-yyyy') LIKE '%$filters[data]%'");
+                        } else if ($filters['field'] == 'nobukti_pengeluaran') {
+                            $query = $query->where('rekappengeluarandetail.pengeluaran_nobukti', 'LIKE', "%$filters[data]%");
+                        } else if ($filters['field'] == 'keterangan_detail') {
+                            $query = $query->where('rekappengeluarandetail.keterangan', 'LIKE', "%$filters[data]%");
+                        } else if ($filters['field'] == 'nominal_detail') {
+                            $query = $query->whereRaw("format(rekappengeluarandetail.nominal, '#,#0.00') LIKE '%$filters[data]%'");
                         } else {
                             // $query = $query->where($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
                             $query = $query->whereRaw($this->table . ".[" .  $filters['field'] . "] LIKE '%" . escapeLike($filters['data']) . "%' escape '|'");
@@ -150,6 +144,14 @@ class RekapPengeluaranHeader extends MyModel
                                 $query = $query->orWhereRaw("format(" . $this->table . "." . $filters['field'] . ", 'dd-MM-yyyy') LIKE '%$filters[data]%'");
                             } else if ($filters['field'] == 'created_at' || $filters['field'] == 'updated_at') {
                                 $query = $query->orWhereRaw("format(" . $this->table . "." . $filters['field'] . ", 'dd-MM-yyyy HH:mm:ss') LIKE '%$filters[data]%'");
+                            } else if ($filters['field'] == 'tglbukti_pengeluaran') {
+                                $query = $query->orWhereRaw("format(rekappengeluarandetail.tgltransaksi, 'dd-MM-yyyy') LIKE '%$filters[data]%'");
+                            } else if ($filters['field'] == 'nobukti_pengeluaran') {
+                                $query = $query->orWhere('rekappengeluarandetail.pengeluaran_nobukti', 'LIKE', "%$filters[data]%");
+                            } else if ($filters['field'] == 'keterangan_detail') {
+                                $query = $query->orWhere('rekappengeluarandetail.keterangan', 'LIKE', "%$filters[data]%");
+                            } else if ($filters['field'] == 'nominal_detail') {
+                                $query = $query->orWhereRaw("format(rekappengeluarandetail.nominal, '#,#0.00') LIKE '%$filters[data]%'");
                             } else {
                                 // $query = $query->orWhere($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
                                 $query = $query->OrwhereRaw($this->table . ".[" .  $filters['field'] . "] LIKE '%" . escapeLike($filters['data']) . "%' escape '|'");
@@ -268,9 +270,18 @@ class RekapPengeluaranHeader extends MyModel
             "rekappengeluarandetail.pengeluaran_nobukti as nobukti_pengeluaran",
             "rekappengeluarandetail.keterangan as keterangan_detail",
             "rekappengeluarandetail.tgltransaksi as tglbukti_pengeluaran",
-            "rekappengeluarandetail.nominal"
+            "rekappengeluarandetail.nominal as nominal_detail"
         )
             ->where('rekappengeluaran_id', $id);
+        $this->totalRows = $query->count();
+        $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;
+        if ($this->params['sortIndex'] == 'id') {
+            $query->orderBy('rekappengeluarandetail.pengeluaran_nobukti', $this->params['sortOrder']);
+        } else {
+            $query->orderBy('rekappengeluarandetail.' . $this->params['sortIndex'], $this->params['sortOrder']);
+        }
+        $this->filter($query);
+        $this->paginate($query);
         $data = $query->get();
 
         return $data;
