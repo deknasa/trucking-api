@@ -366,7 +366,7 @@ class Parameter extends MyModel
         $parameter = new Parameter();
         $parameter->grp = $data['grp'];
         $parameter->subgrp = $data['subgrp'];
-        $parameter->text = $data['subgrp'];
+        $parameter->text = $data['text'];
         $parameter->kelompok = $data['kelompok'] ?? '';
         $parameter->default = $data['default'] ?? '';
         $parameter->type = $data['type'] ?? 0;
@@ -402,7 +402,7 @@ class Parameter extends MyModel
     {
         $parameter->grp = $data['grp'];
         $parameter->subgrp = $data['subgrp'];
-        $parameter->text = $data['subgrp'];
+        $parameter->text = $data['text'];
         $parameter->kelompok = $data['kelompok'] ?? '';
         $parameter->default = $data['default'] ?? '';
         $parameter->type =  $data['type'] ?? 0;

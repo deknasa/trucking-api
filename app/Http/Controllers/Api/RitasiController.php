@@ -59,8 +59,16 @@ class RitasiController extends Controller
         DB::beginTransaction();
 
         try {
-
-            $ritasi = (new Ritasi())->processStore($request->all());
+            $data = [
+                'tglbukti' => $request->tglbukti,
+                'statusritasi_id' => $request->statusritasi_id,
+                'suratpengantar_nobukti' => $request->suratpengantar_nobukti,
+                'supir_id' => $request->supir_id,
+                'trado_id' => $request->trado_id,
+                'dari_id' => $request->dari_id,
+                'sampai_id' => $request->sampai_id,
+            ];
+            $ritasi = (new Ritasi())->processStore($data);
             $ritasi->position = $this->getPosition($ritasi, $ritasi->getTable())->position;
             $ritasi->page = ceil($ritasi->position / ($request->limit ?? 10));
 
@@ -92,7 +100,16 @@ class RitasiController extends Controller
     {
         DB::beginTransaction();
         try {
-            $ritasi = (new Ritasi())->processUpdate($ritasi, $request->all());
+            $data = [
+                'tglbukti' => $request->tglbukti,
+                'statusritasi_id' => $request->statusritasi_id,
+                'suratpengantar_nobukti' => $request->suratpengantar_nobukti,
+                'supir_id' => $request->supir_id,
+                'trado_id' => $request->trado_id,
+                'dari_id' => $request->dari_id,
+                'sampai_id' => $request->sampai_id,
+            ];
+            $ritasi = (new Ritasi())->processUpdate($ritasi, $data);
             $ritasi->position = $this->getPosition($ritasi, $ritasi->getTable())->position;
             $ritasi->page = ceil($ritasi->position / ($request->limit ?? 10));
 

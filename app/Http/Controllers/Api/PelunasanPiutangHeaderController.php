@@ -81,7 +81,24 @@ class PelunasanPiutangHeaderController extends Controller
         DB::beginTransaction();
 
         try {
-            $pelunasanPiutangHeader = (new PelunasanPiutangHeader())->processStore($request->all());
+            $data = [
+                'tglbukti' => $request->tglbukti,
+                'bank_id' => $request->bank_id,
+                'alatbayar_id' => $request->alatbayar_id,
+                'agen_id' => $request->agen_id,
+                'agen' => $request->agen,
+                'nowarkat' => $request->nowarkat,
+                'piutang_id' => $request->piutang_id,
+                'piutang_nobukti' => $request->piutang_nobukti,
+                'nominallebihbayar' => $request->nominallebihbayar,
+                'bayar' => $request->bayar,
+                'keterangan' => $request->keterangan,
+                'potongan' => $request->potongan,
+                'coapotongan' => $request->coapotongan,
+                'keteranganpotongan' => $request->keteranganpotongan,
+                'nominallebihbayar' => $request->nominallebihbayar,
+            ];
+            $pelunasanPiutangHeader = (new PelunasanPiutangHeader())->processStore($data);
             $pelunasanPiutangHeader->position = $this->getPosition($pelunasanPiutangHeader, $pelunasanPiutangHeader->getTable())->position;
             $pelunasanPiutangHeader->page = ceil($pelunasanPiutangHeader->position / ($request->limit ?? 10));
 
@@ -91,7 +108,6 @@ class PelunasanPiutangHeaderController extends Controller
                 'message' => 'Berhasil disimpan',
                 'data' => $pelunasanPiutangHeader
             ], 201);
-
         } catch (\Throwable $th) {
             DB::rollBack();
             throw $th;
@@ -121,7 +137,24 @@ class PelunasanPiutangHeaderController extends Controller
         DB::beginTransaction();
 
         try {
-            $pelunasanPiutangHeader = (new PelunasanPiutangHeader())->processUpdate($pelunasanpiutangheader, $request->all());
+            $data = [
+                'tglbukti' => $request->tglbukti,
+                'bank_id' => $request->bank_id,
+                'alatbayar_id' => $request->alatbayar_id,
+                'agen_id' => $request->agen_id,
+                'agen' => $request->agen,
+                'nowarkat' => $request->nowarkat,
+                'piutang_id' => $request->piutang_id,
+                'piutang_nobukti' => $request->piutang_nobukti,
+                'nominallebihbayar' => $request->nominallebihbayar,
+                'bayar' => $request->bayar,
+                'keterangan' => $request->keterangan,
+                'potongan' => $request->potongan,
+                'coapotongan' => $request->coapotongan,
+                'keteranganpotongan' => $request->keteranganpotongan,
+                'nominallebihbayar' => $request->nominallebihbayar,
+            ];
+            $pelunasanPiutangHeader = (new PelunasanPiutangHeader())->processUpdate($pelunasanpiutangheader, $data);
             $pelunasanPiutangHeader->position = $this->getPosition($pelunasanPiutangHeader, $pelunasanPiutangHeader->getTable())->position;
             $pelunasanPiutangHeader->page = ceil($pelunasanPiutangHeader->position / ($request->limit ?? 10));
 
@@ -131,7 +164,6 @@ class PelunasanPiutangHeaderController extends Controller
                 'message' => 'Berhasil diubah',
                 'data' => $pelunasanPiutangHeader
             ]);
-            
         } catch (\Throwable $th) {
             DB::rollBack();
             throw $th;
@@ -146,7 +178,7 @@ class PelunasanPiutangHeaderController extends Controller
         DB::beginTransaction();
 
         try {
-            $pelunasanPiutangHeader = (new PelunasanPiutangHeader())->processDestroy($id,'DELETE PELUNASAN PIUTANG');
+            $pelunasanPiutangHeader = (new PelunasanPiutangHeader())->processDestroy($id, 'DELETE PELUNASAN PIUTANG');
             $selected = $this->getPosition($pelunasanPiutangHeader, $pelunasanPiutangHeader->getTable(), true);
             $pelunasanPiutangHeader->position = $selected->position;
             $pelunasanPiutangHeader->id = $selected->id;
@@ -168,7 +200,7 @@ class PelunasanPiutangHeaderController extends Controller
         $request['postingdari'] = "DELETE PELUNASAN PIUTANG";
         $pelunasanpiutangheader = new PelunasanPiutangHeader();
         $pelunasanpiutangheader = $pelunasanpiutangheader->lockAndDestroy($id);
- 
+
         $newRequestPenerimaan = new DestroyPenerimaanHeaderRequest();
         $newRequestPenerimaan->postingdari = "DELETE PELUNASAN PIUTANG HEADER";
         if ($pelunasanpiutangheader) {
