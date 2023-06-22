@@ -65,7 +65,9 @@ class TarifRincianController extends Controller
                     'detail.nominal',
                     'header.keterangan',
                     DB::raw("'Laporan Tarif' as judulLaporan"),
-                    DB::raw("'" . $getJudul->text . "' as judul")
+                    DB::raw("'" . $getJudul->text . "' as judul"),
+                    DB::raw("'Tgl Cetak :'+format(getdate(),'dd-MM-yyyy HH:mm:ss')as tglcetak"),
+                    DB::raw(" 'User :".auth('api')->user()->name."' as usercetak")
                 )
                     ->leftJoin(DB::raw("tarif as header with (readuncommitted)"), 'header.id', 'detail.tarif_id')
                     ->leftJoin(DB::raw("container with (readuncommitted)"), 'container.id', 'detail.container_id')

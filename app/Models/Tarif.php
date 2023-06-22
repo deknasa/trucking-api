@@ -91,7 +91,9 @@ class Tarif extends MyModel
                 'tarif.keterangan',
                 'tarif.modifiedby',
                 'tarif.created_at',
-                'tarif.updated_at'
+                'tarif.updated_at',
+                DB::raw("'Tgl Cetak :'+format(getdate(),'dd-MM-yyyy HH:mm:ss')as tglcetak"),
+                DB::raw(" 'User :".auth('api')->user()->name."' as usercetak")
             )
             ->leftJoin(DB::raw("parameter with (readuncommitted)"), 'tarif.statusaktif', '=', 'parameter.id')
             ->leftJoin(DB::raw("kota with (readuncommitted)"), 'tarif.kota_id', '=', 'kota.id')
