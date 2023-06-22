@@ -19,6 +19,7 @@ use App\Rules\ExistStatusContainer;
 use App\Rules\ExistPelanggan;
 use App\Rules\ExistAgen;
 use App\Rules\ExistJenisOrder;
+use App\Rules\ExistNominalUpahSupir;
 use App\Rules\ExistTarifRincian;
 use App\Rules\ExistUpahSupirRincianSuratPengantar;
 use App\Rules\ValidasiSupirTrip;
@@ -77,7 +78,7 @@ class StoreSuratPengantarRequest extends FormRequest
             'statusbatalmuat' => ['required', Rule::in($statusbatalmuat)],
             'statusgudangsama' => ['required', Rule::in($statusgudangsama)],
             'nosp' => 'required',
-            'upah' => 'required',
+            'upah' => ['required',new ExistNominalUpahSupir()],
         ];
 
         $jobtrucking = $this->jobtrucking;

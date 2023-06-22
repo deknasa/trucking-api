@@ -68,7 +68,7 @@ class OrderanTruckingController extends Controller
             return response($data);
         } else {
             $data = [
-                'status' => false,
+                'status' => true,
                 'message' => '',
                 'errors' => '',
                 'kondisi' => $cekdata['kondisi'],
