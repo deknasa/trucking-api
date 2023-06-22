@@ -756,7 +756,7 @@ class PengeluaranHeader extends MyModel
  
          $pengeluaranHeader = $pengeluaranHeader->lockAndDestroy($id);
          $hutangLogTrail = (new LogTrail())->processStore([
-             'namatabel' => $this->table,
+             'namatabel' => $pengeluaranHeader->getTable(),
              'postingdari' => strtoupper('DELETE pengeluaran Header'),
              'idtrans' => $pengeluaranHeader->id,
              'nobuktitrans' => $pengeluaranHeader->nobukti,

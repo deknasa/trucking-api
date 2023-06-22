@@ -175,4 +175,21 @@ class AbsensiSupirApprovalDetail extends MyModel
 
         return $query;
     }
+
+
+    public function processStore(AbsensiSupirApprovalHeader $absensiSupirApprovalHeader, array $data) :AbsensiSupirApprovalDetail
+    {
+        $absensiSupirApprovalDetail = new AbsensiSupirApprovalDetail();
+        $absensiSupirApprovalDetail->absensisupirapproval_id = $data['absensisupirapproval_id'];
+        $absensiSupirApprovalDetail->nobukti = $data['nobukti'];
+        $absensiSupirApprovalDetail->trado_id = $data['trado_id'];
+        $absensiSupirApprovalDetail->supir_id = $data['supir_id'] ?? '';
+        $absensiSupirApprovalDetail->modifiedby = $data['modifiedby'];
+
+        if (!$absensiSupirApprovalDetail->save()) {
+            throw new \Exception("Gagal menyimpan absensi Approval supir detail.");
+        }
+        
+        return $absensiSupirApprovalDetail;
+    }
 }

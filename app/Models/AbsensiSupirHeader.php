@@ -441,7 +441,8 @@ class AbsensiSupirHeader extends MyModel
         $kasGantungRequest = [
             "tglbukti" => $data['tglbukti'],
             "penerima" => '',
-            "bank_id" => $bank->id,
+            "bank_id" => '',
+            "coakaskeluar" => '',
             "pengeluaran_nobukti" => '',
             "postingdari" => 'ENTRY ABSENSI SUPIR',
             
@@ -527,7 +528,8 @@ class AbsensiSupirHeader extends MyModel
         $kasGantungRequest = [
             "tglbukti" => $data['tglbukti'],
             "penerima" => '',
-            "bank_id" => $bank->id,
+            "bank_id" => '',
+            "coakaskeluar" => '',
             "pengeluaran_nobukti" => '',
             "postingdari" => 'ENTRY ABSENSI SUPIR',
             
