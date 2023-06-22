@@ -119,4 +119,21 @@ class RekapPengeluaranDetail extends MyModel
     {
         return $query->skip($this->params['offset'])->take($this->params['limit']);
     }
+    public function processStore(RekapPengeluaranHeader $rekapPengeluaranHeader, array $data): RekapPengeluaranDetail
+    {
+        $rekapPengeluaranDetail = new RekapPengeluaranDetail();
+        $rekapPengeluaranDetail->rekappengeluaran_id = $rekapPengeluaranHeader->id;
+        $rekapPengeluaranDetail->nobukti = $rekapPengeluaranHeader->nobukti;
+        $rekapPengeluaranDetail->tgltransaksi =  date('Y-m-d',strtotime($data['tgltransaksi']));
+        $rekapPengeluaranDetail->pengeluaran_nobukti = $data['pengeluaran_nobukti'];
+        $rekapPengeluaranDetail->nominal = $data['nominal'];
+        $rekapPengeluaranDetail->keterangan = $data['keterangan'];
+        $rekapPengeluaranDetail->modifiedby = auth('api')->user()->name;
+        
+        if (!$rekapPengeluaranDetail->save()) {
+            throw new \Exception("Error storing rekap pengeluaran detail.");
+        }
+
+        return $rekapPengeluaranDetail;
+    }
 }
