@@ -557,17 +557,29 @@ class PelunasanPiutangHeader extends MyModel
         $nominalBayar = [];
         $nominalPotongan = [];
         $coaPotongan = [];
-        $coaLebihBayar = [];
         $nominalLebihBayar = [];
         $coaDebetNotaKredit = [];
+        $coaDebetNotaDebet = [];
         $coaKreditNotaDebet = [];
+
+        $getCoa = Agen::from(DB::raw("agen with (readuncommitted)"))->where('id', $data['agen_id'])->first();
+
+        $getNotaDebetCoa = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->select('memo')
+            ->where('grp', 'JURNAL NOTA DEBET')->where('subgrp', 'KREDIT')->first();
+        $memoNotaDebetCoa= json_decode($getNotaDebetCoa->memo, true);
+        
+        $getNotaKreditCoa = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->select('memo')
+            ->where('grp', 'JURNAL NOTA KREDIT')->where('subgrp', 'KREDIT')->first();
+        $memoNotaKreditCoa= json_decode($getNotaKreditCoa->memo, true);
+        
         for ($i = 0; $i < count($data['piutang_id']); $i++) {
             $piutang = PiutangHeader::where('nobukti', $data['piutang_nobukti'][$i])->first();
+
             if ($data['nominallebihbayar'][$i] > 0) {
-                $getNominalLebih = AkunPusat::from(DB::raw("akunpusat with (readuncommitted)"))->where('keterangancoa', 'PENDAPATAN - BUNGA')->first();
-                $coaLebihBayar[] = $getNominalLebih->coa;
+                $getNominalLebih = $memoNotaDebetCoa['JURNAL'];
                 $nominalLebihBayar[] = $data['nominallebihbayar'][$i] ?? 0;
-                $coaKreditNotaDebet[] = $piutang->coakredit;
+                $coaDebetNotaDebet[] = $getCoa->coa;
+                $coaKreditNotaDebet[] = $memoNotaDebetCoa['JURNAL'];
             }
 
             $pelunasanPiutangDetail = (new PelunasanPiutangDetail())->processStore($pelunasanPiutangHeader, [
@@ -579,7 +591,7 @@ class PelunasanPiutangHeader extends MyModel
                 'invoice_nobukti' => $piutang->invoice_nobukti ?? '',
                 'keteranganpotongan' => $data['keteranganpotongan'][$i] ?? '',
                 'nominallebihbayar' => $data['nominallebihbayar'][$i] ?? '',
-                'coalebihbayar' => $getNominalLebih->coa ?? '',
+                'coalebihbayar' => $getNominalLebih ?? '',
             ]);
 
             $pelunasanPiutangDetails[] = $pelunasanPiutangDetail->toArray();
@@ -597,7 +609,7 @@ class PelunasanPiutangHeader extends MyModel
             $nominalBayar[] = $data['bayar'][$i];
             $nominalPotongan[] = $potongan;
             $coaPotongan[] = $data['coapotongan'][$i] ?? '';
-            $coaDebetNotaKredit[] = $piutang->coadebet;
+            $coaDebetNotaKredit[] = $memoNotaKreditCoa['JURNAL'];
         }
 
         if ($data['alatbayar_id'] != $alatbayarGiro->id) {
@@ -673,8 +685,8 @@ class PelunasanPiutangHeader extends MyModel
                 'nominalpiutang' => $nominalPiutang,
                 'nominal' => $nominalBayar,
                 'nominallebihbayar' => $nominalLebihBayar,
-                'coakredit' => $coaKreditNotaDebet,
-                'coalebihbayar'=> $coaLebihBayar
+                'coadebet' => $coaDebetNotaDebet,
+                'coakredit' => $coaKreditNotaDebet
             ];
             $notaDebetheader = (new NotaDebetHeader())->processStore($notaDebetRequest);
             $pelunasanPiutangHeader->notadebet_nobukti = $notaDebetheader->nobukti;
@@ -703,8 +715,8 @@ class PelunasanPiutangHeader extends MyModel
         return $pelunasanPiutangHeader;
     }
 
-    
-    public function processUpdate(PelunasanPiutangHeader $pelunasanPiutangHeader,array $data): PelunasanPiutangHeader
+
+    public function processUpdate(PelunasanPiutangHeader $pelunasanPiutangHeader, array $data): PelunasanPiutangHeader
     {
         $pelunasanPiutangHeader->modifiedby = auth('api')->user()->name;
 
@@ -712,35 +724,47 @@ class PelunasanPiutangHeader extends MyModel
             throw new \Exception("Error Update pelunasan piutang header.");
         }
 
-         PelunasanPiutangDetail::where('pelunasanpiutang_id', $pelunasanPiutangHeader->id)->lockForUpdate()->delete();
-         
-         $pelunasanPiutangDetails = [];
+        PelunasanPiutangDetail::where('pelunasanpiutang_id', $pelunasanPiutangHeader->id)->lockForUpdate()->delete();
 
-         $noWarkat = [];
-         $tglJatuhTempo = [];
-         $nominalDetail = [];
-         $coaKredit = [];
-         $keteranganDetail = [];
-         $invoiceNobukti = [];
-         $pelunasanNobukti = [];
-         $bankId = [];
- 
-         $nominalPiutang = [];
-         $nominalBayar = [];
-         $nominalPotongan = [];
-         $coaPotongan = [];
-         $coaLebihBayar = [];
-         $nominalLebihBayar = [];
-         $coaDebetNotaKredit = [];
-         $coaKreditNotaDebet = [];
+        $pelunasanPiutangDetails = [];
+
+        $noWarkat = [];
+        $tglJatuhTempo = [];
+        $nominalDetail = [];
+        $coaKredit = [];
+        $keteranganDetail = [];
+        $invoiceNobukti = [];
+        $pelunasanNobukti = [];
+        $bankId = [];
+
+        $nominalPiutang = [];
+        $nominalBayar = [];
+        $nominalPotongan = [];
+        $coaPotongan = [];
+        $coaLebihBayar = [];
+        $nominalLebihBayar = [];
+        $coaDebetNotaKredit = [];
+        $coaKreditNotaDebet = [];
+        $coaDebetNotaDebet = [];
+        $coaKreditNotaDebet = [];
+
+        $getCoa = Agen::from(DB::raw("agen with (readuncommitted)"))->where('id', $data['agen_id'])->first();
+
+        $getNotaDebetCoa = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->select('memo')
+            ->where('grp', 'JURNAL NOTA DEBET')->where('subgrp', 'KREDIT')->first();
+        $memoNotaDebetCoa= json_decode($getNotaDebetCoa->memo, true);
+
+        $getNotaKreditCoa = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->select('memo')
+            ->where('grp', 'JURNAL NOTA KREDIT')->where('subgrp', 'KREDIT')->first();
+        $memoNotaKreditCoa= json_decode($getNotaKreditCoa->memo, true);
 
         for ($i = 0; $i < count($data['piutang_id']); $i++) {
             $piutang = PiutangHeader::where('nobukti', $data['piutang_nobukti'][$i])->first();
             if ($data['nominallebihbayar'][$i] > 0) {
-                $getNominalLebih = AkunPusat::from(DB::raw("akunpusat with (readuncommitted)"))->where('keterangancoa', 'PENDAPATAN - BUNGA')->first();
-                $coaLebihBayar[] = $getNominalLebih->coa;
+                $getNominalLebih = $memoNotaDebetCoa['JURNAL'];
                 $nominalLebihBayar[] = $data['nominallebihbayar'][$i] ?? '';
-                $coaKreditNotaDebet[] = $piutang->coakredit;
+                $coaDebetNotaDebet[] = $getCoa->coa;
+                $coaKreditNotaDebet[] = $memoNotaDebetCoa['JURNAL'];
             }
 
             $pelunasanPiutangDetail = (new PelunasanPiutangDetail())->processStore($pelunasanPiutangHeader, [
@@ -752,7 +776,7 @@ class PelunasanPiutangHeader extends MyModel
                 'invoice_nobukti' => $piutang->invoice_nobukti ?? '',
                 'keteranganpotongan' => $data['keteranganpotongan'][$i] ?? '',
                 'nominallebihbayar' => $data['nominallebihbayar'][$i] ?? '',
-                'coalebihbayar' => $getNominalLebih->coa ?? '',
+                'coalebihbayar' => $getNominalLebih ?? '',
             ]);
 
             $pelunasanPiutangDetails[] = $pelunasanPiutangDetail->toArray();
@@ -770,8 +794,7 @@ class PelunasanPiutangHeader extends MyModel
             $nominalBayar[] = $data['bayar'][$i];
             $nominalPotongan[] = $potongan;
             $coaPotongan[] = $data['coapotongan'][$i] ?? '';
-            $coaDebetNotaKredit[] = $piutang->coadebet;
-
+            $coaDebetNotaKredit[] = $memoNotaKreditCoa['JURNAL'];
         }
 
         if ($pelunasanPiutangHeader->penerimaan_nobukti != '-') {
@@ -868,7 +891,7 @@ class PelunasanPiutangHeader extends MyModel
                 (new NotaKreditHeader())->processUpdate($newNotaKredit, $notaKreditRequest);
             } else {
                 $getNotaKredit = NotaKreditHeader::from(DB::raw("notakreditheader with (readuncommitted)"))->where('nobukti', $pelunasanPiutangHeader->notakredit_nobukti)->first();
-                
+
                 (new NotaKreditHeader())->processDestroy($getNotaKredit->id, 'DELETE PELUNASAN PIUTANG');
                 $pelunasanPiutangHeader->notakredit_nobukti = '-';
             }
@@ -906,11 +929,11 @@ class PelunasanPiutangHeader extends MyModel
                     'nominalpiutang' => $nominalPiutang,
                     'nominal' => $nominalBayar,
                     'nominallebihbayar' => $nominalLebihBayar,
-                    'coakredit' => $coaKreditNotaDebet,
-                    'coalebihbayar'=> $coaLebihBayar
+                    'coadebet' => $coaDebetNotaDebet,
+                    'coakredit' => $coaKreditNotaDebet
 
                 ];
-                
+
                 $newNotaDebet = new NotaDebetHeader();
                 $newNotaDebet = $newNotaDebet->findAll($get->id);
                 (new NotaDebetHeader())->processUpdate($newNotaDebet, $notaDebetRequest);
@@ -931,8 +954,8 @@ class PelunasanPiutangHeader extends MyModel
                     'nominalpiutang' => $nominalPiutang,
                     'nominal' => $nominalBayar,
                     'nominallebihbayar' => $nominalLebihBayar,
-                    'coakredit' => $coaKreditNotaDebet,
-                    'coalebihbayar'=> $coaLebihBayar
+                    'coadebet' => $coaDebetNotaDebet,
+                    'coakredit' => $coaKreditNotaDebet
                 ];
                 $notaDebetheader = (new NotaDebetHeader())->processStore($notaDebetRequest);
                 $pelunasanPiutangHeader->notadebet_nobukti = $notaDebetheader->nobukti;
@@ -940,7 +963,7 @@ class PelunasanPiutangHeader extends MyModel
         }
 
         $pelunasanPiutangHeader->save();
-        
+
         $pelunasanPiutangHeaderLogTrail = (new LogTrail())->processStore([
             'namatabel' => strtoupper($pelunasanPiutangHeader->getTable()),
             'postingdari' => $data['postingdari'] ?? 'ENTRY PELUNASAN PIUTANG HEADER',
@@ -963,7 +986,7 @@ class PelunasanPiutangHeader extends MyModel
         return $pelunasanPiutangHeader;
     }
 
-    
+
     public function processDestroy($id, $postingDari = ''): PelunasanPiutangHeader
     {
         $pelunasanPiutangDetails = PelunasanPiutangDetail::lockForUpdate()->where('pelunasanpiutang_id', $id)->get();
@@ -990,7 +1013,7 @@ class PelunasanPiutangHeader extends MyModel
             'datajson' => $pelunasanPiutangDetails->toArray(),
             'modifiedby' => auth('api')->user()->name
         ]);
-        
+
         if ($pelunasanPiutangHeader->penerimaan_nobukti != '-') {
             $getPenerimaan = PenerimaanHeader::from(DB::raw("penerimaanheader with (readuncommitted)"))->where('nobukti', $pelunasanPiutangHeader->penerimaan_nobukti)->first();
             (new PenerimaanHeader())->processDestroy($getPenerimaan->id, $postingDari);

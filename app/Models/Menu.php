@@ -49,8 +49,6 @@ class Menu extends MyModel
                 'menu.updated_at',
                 DB::raw("'Laporan Menu' as judulLaporan"),
                 DB::raw("'" . $getJudul->text . "' as judul"),
-                DB::raw("'Tanggal Cetak : '+format(getdate(),'dd-MM-yyyy HH:mm:ss')+' User :" . auth('api')->user()->name . "' as tglcetak")
-            );
                 DB::raw("'Tgl Cetak :'+format(getdate(),'dd-MM-yyyy HH:mm:ss')as tglcetak"),
                 DB::raw(" 'User :".auth('api')->user()->name."' as usercetak")
             )
