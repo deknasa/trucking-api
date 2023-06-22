@@ -1661,7 +1661,7 @@ class GajiSupirHeader extends MyModel
                     'bank_id' => 0,
                     'coa' => $fetchFormatPP->coapostingkredit,
                     'postingdari' => 'EDIT GAJI SUPIR',
-                    'supir_id' => $supirPS,
+                    'supir_id' => $supirPP,
                     'pengeluarantruckingheader_nobukti' => $pengeluarantruckingheader_nobuktiPP,
                     'keterangan' => $keteranganPP,
                     'nominal' => $nominalPP
