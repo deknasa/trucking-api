@@ -134,4 +134,21 @@ class PendapatanSupirDetail extends MyModel
     {
         return $query->skip($this->params['offset'])->take($this->params['limit']);
     }
+
+    public function processStore(PendapatanSupirHeader $pendapatanSupirHeader ,array $data): PendapatanSupirDetail
+    {
+        $pendapatanSupirDetail = new PendapatanSupirDetail();
+        $pendapatanSupirDetail->pendapatansupir_id = $data['pendapatansupir_id'];
+        $pendapatanSupirDetail->nobukti = $data['nobukti'];
+        $pendapatanSupirDetail->supir_id = $data['supir_id'];
+        $pendapatanSupirDetail->nominal = $data['nominal'];
+        $pendapatanSupirDetail->keterangan = $data['keterangan'];
+        $pendapatanSupirDetail->modifiedby = $data['modifiedby'];
+        
+        if (!$pendapatanSupirDetail->save()) {
+            throw new \Exception("Error storing pendapatan Supir header.");
+        }
+
+        return $pendapatanSupirDetail;
+    }
 }
