@@ -13,6 +13,9 @@ use Illuminate\Support\Facades\Validator;
 class KasGantungDetailController extends Controller
 {
 
+    /**
+     * @ClassName 
+     */
     public function index(): JsonResponse
     {
         $kasGantungDetail = new KasGantungDetail();
@@ -27,11 +30,11 @@ class KasGantungDetailController extends Controller
         ]);
     }
 
-    
+
     public function getKasgantung(): JsonResponse
     {
         $kasgantungDetail = new KasGantungDetail();
-        if(request()->nobukti != 'false' && request()->nobukti != null){
+        if (request()->nobukti != 'false' && request()->nobukti != null) {
 
             $fetch = KasGantungHeader::from(DB::raw("kasgantungheader with (readuncommitted)"))->where('nobukti', request()->nobukti)->first();
             request()->kasgantung_id = $fetch->id;
@@ -43,7 +46,7 @@ class KasGantungDetailController extends Controller
                     'totalNominal' => $kasgantungDetail->totalNominal
                 ]
             ]);
-        }else{
+        } else {
             return response()->json([
                 'data' => [],
                 'attributes' => [

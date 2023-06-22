@@ -166,7 +166,7 @@ class ZonaController extends Controller
                 'message' => 'Berhasil dihapus',
                 'data' => $zona
             ]);
-        }catch (\Throwable $th) {
+        } catch (\Throwable $th) {
             DB::rollBack();
 
             throw $th;
@@ -198,9 +198,9 @@ class ZonaController extends Controller
         ]);
     }
 
-    public function export(RangeExportReportRequest $request
-    )
-    {
+    public function export(
+        RangeExportReportRequest $request
+    ) {
         if (request()->cekExport) {
             return response([
                 'status' => true,
@@ -248,5 +248,11 @@ class ZonaController extends Controller
 
             $this->toExcel($judulLaporan, $zonas, $columns);
         }
+    }
+    /**
+     * @ClassName 
+     */
+    public function report()
+    {
     }
 }

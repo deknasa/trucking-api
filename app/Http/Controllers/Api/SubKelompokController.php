@@ -246,4 +246,11 @@ class SubKelompokController extends Controller
             'data' => $data
         ]);
     }
+
+    /**
+     * @ClassName 
+     */
+    public function report()
+    {
+    }
 }

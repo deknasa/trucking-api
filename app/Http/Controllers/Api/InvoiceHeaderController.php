@@ -37,9 +37,11 @@ use Illuminate\Support\Facades\Schema;
 
 class InvoiceHeaderController extends Controller
 {
-    /**
-     * @ClassName
-     */
+   /**
+     * @ClassName 
+     * InvoiceHeader
+     * @Detail1 InvoiceDetailController
+    */
     public function index(GetIndexRangeRequest $request)
     {
         $invoice = new InvoiceHeader();
@@ -51,6 +53,8 @@ class InvoiceHeaderController extends Controller
             ]
         ]);
     }
+
+    
 
     /**
      * @ClassName

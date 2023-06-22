@@ -174,7 +174,7 @@ class SuratPengantarController extends Controller
 
     public function cekUpahSupir(Request $request)
     {
-        
+
         $upahSupir =  DB::table('upahsupir')->from(
             DB::raw("upahsupir with (readuncommitted)")
         )
@@ -185,7 +185,7 @@ class SuratPengantarController extends Controller
             ->where('upahsupirrincian.container_id', $request->container_id)
             ->where('upahsupirrincian.statuscontainer_id', $request->statuscontainer_id)
             ->first();
-      
+
         if (!isset($upahSupir)) {
             $upahSupir =  DB::table('upahsupir')->from(
                 DB::raw("upahsupir with (readuncommitted)")
@@ -217,15 +217,15 @@ class SuratPengantarController extends Controller
 
     public function cekValidasi($id)
     {
-     
+
         $suratPengantar = new SuratPengantar();
         $nobukti = DB::table('SuratPengantar')->from(DB::raw("suratpengantar with (readuncommitted)"))
-        ->where('id', $id)->first();
+            ->where('id', $id)->first();
         //validasi Hari ini
         $todayValidation = SuratPengantar::todayValidation($nobukti->id);
         $isEditAble = SuratPengantar::isEditAble($nobukti->id);
-        $edit =true;
-        if(!$todayValidation && !$isEditAble){
+        $edit = true;
+        if (!$todayValidation && !$isEditAble) {
             $query = DB::table('error')->select('keterangan')->where('kodeerror', '=', 'SATL')->get();
             $keterangan = $query['0'];
             $edit = false;
@@ -292,7 +292,7 @@ class SuratPengantarController extends Controller
     public function approvalBatalMuat($id)
     {
         DB::beginTransaction();
-        try{
+        try {
             $suratPengantar = SuratPengantar::lockForUpdate()->findOrFail($id);
 
             $statusBatalMuat = Parameter::from(DB::raw("parameter with (readuncommitted)"))->where('grp', '=', 'STATUS BATAL MUAT')->where('text', '=', 'BATAL MUAT')->first();
@@ -316,18 +316,17 @@ class SuratPengantarController extends Controller
                     'datajson' => $suratPengantar->toArray(),
                     'modifiedby' => auth('api')->user()->name
                 ];
-    
+
                 $validatedLogTrail = new StoreLogTrailRequest($logTrail);
                 $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
-    
+
                 DB::commit();
             }
 
             return response([
                 'message' => 'Berhasil'
             ]);
-
-        }catch (\Throwable $th) {
+        } catch (\Throwable $th) {
             DB::rollBack();
             throw $th;
         }
@@ -338,7 +337,7 @@ class SuratPengantarController extends Controller
     public function approvalEditTujuan($id)
     {
         DB::beginTransaction();
-        try{
+        try {
             $suratPengantar = SuratPengantar::lockForUpdate()->findOrFail($id);
 
             $statusEditTujuan = Parameter::from(DB::raw("parameter with (readuncommitted)"))->where('grp', '=', 'STATUS EDIT TUJUAN')->where('text', '=', 'EDIT TUJUAN')->first();
@@ -362,18 +361,17 @@ class SuratPengantarController extends Controller
                     'datajson' => $suratPengantar->toArray(),
                     'modifiedby' => auth('api')->user()->name
                 ];
-    
+
                 $validatedLogTrail = new StoreLogTrailRequest($logTrail);
                 $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
-    
+
                 DB::commit();
             }
 
             return response([
                 'message' => 'Berhasil'
             ]);
-
-        }catch (\Throwable $th) {
+        } catch (\Throwable $th) {
             DB::rollBack();
             throw $th;
         }
@@ -394,7 +392,7 @@ class SuratPengantarController extends Controller
             //  dd($data->toSql());
             ->first();
 
-            // dd($data);
+        // dd($data);
         if ($data != null) {
             return response([
                 'data' => $data
@@ -408,6 +406,17 @@ class SuratPengantarController extends Controller
         }
     }
 
+
+    /**
+     * @ClassName 
+     */
+    public function report()
+    {
+    }
+
+    /**
+     * @ClassName 
+     */
     public function export(GetUpahSupirRangeRequest $request)
     {
         $dari = date('Y-m-d', strtotime($request->dari));

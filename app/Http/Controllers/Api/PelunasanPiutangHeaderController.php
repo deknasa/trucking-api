@@ -49,8 +49,10 @@ use Illuminate\Support\Facades\DB;
 
 class PelunasanPiutangHeaderController extends Controller
 {
-    /**
-     * @ClassName
+   /**
+     * @ClassName 
+     * PelunasanPiutangHeader
+     * @Detail1 PelunasanPiutangDetailController
      */
     public function index(GetIndexRangeRequest $request)
     {
@@ -91,7 +93,6 @@ class PelunasanPiutangHeaderController extends Controller
                 'message' => 'Berhasil disimpan',
                 'data' => $pelunasanPiutangHeader
             ], 201);
-
         } catch (\Throwable $th) {
             DB::rollBack();
             throw $th;
@@ -131,7 +132,6 @@ class PelunasanPiutangHeaderController extends Controller
                 'message' => 'Berhasil diubah',
                 'data' => $pelunasanPiutangHeader
             ]);
-            
         } catch (\Throwable $th) {
             DB::rollBack();
             throw $th;
@@ -146,7 +146,7 @@ class PelunasanPiutangHeaderController extends Controller
         DB::beginTransaction();
 
         try {
-            $pelunasanPiutangHeader = (new PelunasanPiutangHeader())->processDestroy($id,'DELETE PELUNASAN PIUTANG');
+            $pelunasanPiutangHeader = (new PelunasanPiutangHeader())->processDestroy($id, 'DELETE PELUNASAN PIUTANG');
             $selected = $this->getPosition($pelunasanPiutangHeader, $pelunasanPiutangHeader->getTable(), true);
             $pelunasanPiutangHeader->position = $selected->position;
             $pelunasanPiutangHeader->id = $selected->id;
@@ -168,7 +168,7 @@ class PelunasanPiutangHeaderController extends Controller
         $request['postingdari'] = "DELETE PELUNASAN PIUTANG";
         $pelunasanpiutangheader = new PelunasanPiutangHeader();
         $pelunasanpiutangheader = $pelunasanpiutangheader->lockAndDestroy($id);
- 
+
         $newRequestPenerimaan = new DestroyPenerimaanHeaderRequest();
         $newRequestPenerimaan->postingdari = "DELETE PELUNASAN PIUTANG HEADER";
         if ($pelunasanpiutangheader) {
@@ -291,5 +291,12 @@ class PelunasanPiutangHeaderController extends Controller
         return response([
             'data' => $data
         ]);
+    }
+
+    /**
+     * @ClassName 
+     */
+    public function report()
+    {
     }
 }

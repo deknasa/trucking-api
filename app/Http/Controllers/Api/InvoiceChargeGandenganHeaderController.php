@@ -20,6 +20,8 @@ class InvoiceChargeGandenganHeaderController extends Controller
 {
     /**
      * @ClassName 
+     * InvoiceChargeGandenganHeader
+     * @Detail1 InvoiceChargeGandenganDetailController
      */
     public function index(GetIndexRangeRequest $request)
     {
@@ -71,14 +73,14 @@ class InvoiceChargeGandenganHeaderController extends Controller
             $invoiceChargeGandenganHeader->modifiedby = auth('api')->user()->name;
             $request->sortname = $request->sortname ?? 'id';
             $request->sortorder = $request->sortorder ?? 'asc';
-            
+
             $nobukti = app(Controller::class)->getRunningNumber($content)->original['data'];
-            
-            
+
+
             $invoiceChargeGandenganHeader->statusformat = $format->id;
             $invoiceChargeGandenganHeader->nobukti = $nobukti;
             $invoiceChargeGandenganHeader->save();
-            
+
             if ($invoiceChargeGandenganHeader->save()) {
                 $logTrail = [
                     'namatabel' => strtoupper($invoiceChargeGandenganHeader->getTable()),
@@ -98,7 +100,7 @@ class InvoiceChargeGandenganHeaderController extends Controller
                     /* Store detail */
                     $detaillog = [];
                     for ($i = 0; $i < count($request->nominal_detail); $i++) {
-                        $trado = Trado::where('kodetrado',$request->nopolisi_detail[$i])->firstOrFail();
+                        $trado = Trado::where('kodetrado', $request->nopolisi_detail[$i])->firstOrFail();
                         $datadetail = [
                             "invoicechargegandengan_id" => $invoiceChargeGandenganHeader->id,
                             "nobukti" => $invoiceChargeGandenganHeader->nobukti,
@@ -164,7 +166,7 @@ class InvoiceChargeGandenganHeaderController extends Controller
                 'data' => $invoiceChargeGandenganHeader
             ], 201);
 
-            return response($invoiceChargeGandenganHeader,422);
+            return response($invoiceChargeGandenganHeader, 422);
         } catch (\Throwable $th) {
             DB::rollBack();
             throw $th;
@@ -183,7 +185,7 @@ class InvoiceChargeGandenganHeaderController extends Controller
         ]);
     }
 
-   /**
+    /**
      * @ClassName 
      */
     public function update(UpdateInvoiceChargeGandenganHeaderRequest $request,  $id)
@@ -197,7 +199,7 @@ class InvoiceChargeGandenganHeaderController extends Controller
 
             $total = array_sum($request->nominal_detail);
             $invoiceChargeGandenganHeader = InvoiceChargeGandenganHeader::findOrFail($id);
-            
+
             $invoiceChargeGandenganHeader->tglbukti = date('Y-m-d', strtotime($request->tglbukti));
             $invoiceChargeGandenganHeader->agen_id = $request->agen_id;
             $invoiceChargeGandenganHeader->tglproses = date('Y-m-d', strtotime($request->tglproses));
@@ -207,7 +209,7 @@ class InvoiceChargeGandenganHeaderController extends Controller
             $invoiceChargeGandenganHeader->modifiedby = auth('api')->user()->name;
             $request->sortname = $request->sortname ?? 'id';
             $request->sortorder = $request->sortorder ?? 'asc';
-            
+
             $invoiceChargeGandenganHeader->save();
             if ($invoiceChargeGandenganHeader->save()) {
                 $logTrail = [
@@ -222,8 +224,8 @@ class InvoiceChargeGandenganHeaderController extends Controller
 
                 $validatedLogTrail = new StoreLogTrailRequest($logTrail);
                 $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
-                
-                
+
+
                 $invoiceChargeGandenganDetail = InvoiceChargeGandenganDetail::where('invoicechargegandengan_id', $invoiceChargeGandenganHeader->id)->lockForUpdate()->delete();
                 if ($request->nominal_detail) {
                     $total = array_sum($request->nominal_detail);
@@ -231,7 +233,7 @@ class InvoiceChargeGandenganHeaderController extends Controller
                     /* Store detail */
                     $detaillog = [];
                     for ($i = 0; $i < count($request->nominal_detail); $i++) {
-                        $trado = Trado::where('kodetrado',$request->nopolisi_detail[$i])->firstOrFail();
+                        $trado = Trado::where('kodetrado', $request->nopolisi_detail[$i])->firstOrFail();
                         $datadetail = [
                             "invoicechargegandengan_id" => $invoiceChargeGandenganHeader->id,
                             "nobukti" => $invoiceChargeGandenganHeader->nobukti,
@@ -297,7 +299,7 @@ class InvoiceChargeGandenganHeaderController extends Controller
                 'data' => $invoiceChargeGandenganHeader
             ], 201);
 
-            return response($invoiceChargeGandenganHeader,422);
+            return response($invoiceChargeGandenganHeader, 422);
         } catch (\Throwable $th) {
             DB::rollBack();
             throw $th;
@@ -431,6 +433,17 @@ class InvoiceChargeGandenganHeaderController extends Controller
         ]);
     }
 
+    /**
+     * @ClassName 
+     */
+    public function report()
+    {
+    }
+
+
+    /**
+     * @ClassName 
+     */
     public function export($id)
     {
         $invoiceChargeGandengan = new InvoiceChargeGandenganHeader();

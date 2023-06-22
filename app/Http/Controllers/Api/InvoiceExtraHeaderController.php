@@ -29,8 +29,10 @@ use Illuminate\Http\JsonResponse;
 
 class InvoiceExtraHeaderController extends Controller
 {
-    /**
+ /**
      * @ClassName 
+     * InvoiceExtraHeader
+     * @Detail1 InvoiceExtraDetailController
      */
     public function index(GetIndexRangeRequest $request)
     {
@@ -63,7 +65,6 @@ class InvoiceExtraHeaderController extends Controller
                 'message' => 'Berhasil disimpan',
                 'data' => $invoiceExtra
             ], 201);
-            
         } catch (\Throwable $th) {
             DB::rollBack();
 
@@ -100,7 +101,6 @@ class InvoiceExtraHeaderController extends Controller
                 'message' => 'Berhasil diubah',
                 'data' => $invoiceExtraHeader
             ]);
-
         } catch (\Throwable $th) {
             DB::rollBack();
 
@@ -116,7 +116,7 @@ class InvoiceExtraHeaderController extends Controller
         DB::beginTransaction();
 
         try {
-            $invoiceExtraHeader = (new InvoiceExtraHeader())->processDestroy($id,'DELETE INVOICE EXTRA');
+            $invoiceExtraHeader = (new InvoiceExtraHeader())->processDestroy($id, 'DELETE INVOICE EXTRA');
             $selected = $this->getPosition($invoiceExtraHeader, $invoiceExtraHeader->getTable(), true);
             $invoiceExtraHeader->position = $selected->position;
             $invoiceExtraHeader->id = $selected->id;
@@ -257,6 +257,17 @@ class InvoiceExtraHeaderController extends Controller
         }
     }
 
+    /**
+     * @ClassName 
+     */
+    public function report()
+    {
+    }
+
+
+    /**
+     * @ClassName 
+     */
     public function export($id)
     {
         $invoiceExtra = new InvoiceExtraHeader();

@@ -27,7 +27,9 @@ use Illuminate\Support\Facades\DB;
 class PenerimaanGiroHeaderController extends Controller
 {
     /**
-     * @ClassName
+     * @ClassName 
+     * PenerimaanGiroHeader
+     * @Detail1 PenerimaanGiroDetailController
      */
     public function index(GetIndexRangeRequest $request)
     {
@@ -296,5 +298,12 @@ class PenerimaanGiroHeaderController extends Controller
 
             return response($data);
         }
+    }
+
+    /**
+     * @ClassName 
+     */
+    public function report()
+    {
     }
 }

@@ -33,9 +33,6 @@ class ServiceOutDetailController extends Controller
         
     }
 
-    /**
-     * @ClassName
-     */
     public function store(StoreServiceOutDetailRequest $request)
     {
         DB::beginTransaction();

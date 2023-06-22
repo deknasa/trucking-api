@@ -16,6 +16,10 @@ use Illuminate\Support\Facades\DB;
 
 class JurnalUmumPusatDetailController extends Controller
 {
+
+    /**
+     * @ClassName 
+     */
     public function index(): JsonResponse
     {
         $jurnalUmumPusatDetail = new JurnalUmumPusatDetail();

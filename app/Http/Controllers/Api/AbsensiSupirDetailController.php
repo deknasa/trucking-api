@@ -18,6 +18,9 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class AbsensiSupirDetailController extends Controller
 {
+    /**
+     * @ClassName
+     */
     public function index(Request $request)
     {
         $absensiSupirDetail = new AbsensiSupirDetail();
@@ -26,18 +29,18 @@ class AbsensiSupirDetailController extends Controller
         $getuser = User::select('name')
             ->where('user.id', $idUser)->first();
 
-            return response([
-                'data' => $absensiSupirDetail->get(),
-                'user' => $getuser,
-                "totalNominal" => $absensiSupirDetail->totalNominal,
-                'attributes' => [
-                    'totalRows' => $absensiSupirDetail->totalRows,
-                    "totalPages" => $absensiSupirDetail->totalPages,
-                ]
+        return response([
+            'data' => $absensiSupirDetail->get(),
+            'user' => $getuser,
+            "totalNominal" => $absensiSupirDetail->totalNominal,
+            'attributes' => [
+                'totalRows' => $absensiSupirDetail->totalRows,
+                "totalPages" => $absensiSupirDetail->totalPages,
+            ]
 
-            ]);
+        ]);
     }
-   
+
     public function store(StoreAbsensiSupirDetailRequest $request)
     {
         $absensiSupirDetail = new AbsensiSupirDetail();
@@ -75,7 +78,7 @@ class AbsensiSupirDetailController extends Controller
                 "records" => 0,
             ]);
         }
-        $request->request->add(['absensi_id'=> $absensiSupirHeader->id]);
+        $request->request->add(['absensi_id' => $absensiSupirHeader->id]);
 
         return $this->index($request);
     }
@@ -109,7 +112,7 @@ class AbsensiSupirDetailController extends Controller
     //     )
     //     ->where('a.id','=',$request->absensi_id)
     //     ->first();
-            
+
 
     //     $statustrip=DB::table("parameter")->from(
     //         DB::raw("parameter with (readuncommitted)")
@@ -161,7 +164,7 @@ class AbsensiSupirDetailController extends Controller
     //        DB::raw("count(a.nobukti) as jumlah")   
     //     )
     //     ->groupBy('a.trado_id','a.supir_id');
-   
+
 
     //     $tempspgroup = '##tempspgroup' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
     //     Schema::create($tempspgroup, function ($table) {
@@ -234,7 +237,7 @@ class AbsensiSupirDetailController extends Controller
     //                     $join->on('detail.supir_id', '=', 'c.supir_id');
     //                     $join->on('detail.trado_id', '=', 'c.trado_id');
     //                 });
-            
+
 
     //             $absensiSupirDetail = $query->get();
     //         } else {

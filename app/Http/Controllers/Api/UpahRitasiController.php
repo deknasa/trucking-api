@@ -26,8 +26,10 @@ use PhpOffice\PhpSpreadsheet\IOFactory;
 
 class UpahRitasiController extends Controller
 {
-    /**
+   /**
      * @ClassName 
+     * UpahRitasi
+     * @Detail1 UpahRitasiRincianController
      */
     public function index()
     {
@@ -355,5 +357,12 @@ class UpahRitasiController extends Controller
             $hasil = chr(64 + $kolom);
         }
         return $hasil;
+    }
+
+    /**
+     * @ClassName 
+     */
+    public function report()
+    {
     }
 }

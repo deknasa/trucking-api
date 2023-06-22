@@ -30,6 +30,8 @@ class TarifController extends Controller
 {
     /**
      * @ClassName 
+     * Tarif
+     * @Detail1 TarifRincianController
      */
     public function index()
     {
@@ -141,7 +143,7 @@ class TarifController extends Controller
                 'tglmulaiberlaku' => date('Y-m-d', strtotime($request->tglmulaiberlaku)),
                 'statuspenyesuaianharga' => $request->statuspenyesuaianharga,
                 'keterangan' => $request->keterangan,
-                'container_id' =>$request->container_id,
+                'container_id' => $request->container_id,
                 'nominal' => $request->nominal,
                 'detail_id' => $request->detail_id
             ];
@@ -200,7 +202,7 @@ class TarifController extends Controller
                 'tglmulaiberlaku' => date('Y-m-d', strtotime($request->tglmulaiberlaku)),
                 'statuspenyesuaianharga' => $request->statuspenyesuaianharga,
                 'keterangan' => $request->keterangan,
-                'container_id' =>$request->container_id,
+                'container_id' => $request->container_id,
                 'nominal' => $request->nominal,
                 'detail_id' => $request->detail_id
             ];
@@ -362,6 +364,16 @@ class TarifController extends Controller
         return $hasil;
     }
 
+    /**
+     * @ClassName 
+     */
+    public function report()
+    {
+    }
+
+    /**
+     * @ClassName 
+     */
     public function export()
     {
         $response = $this->index();

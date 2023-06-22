@@ -20,8 +20,10 @@ use App\Models\Parameter;
 class NotaDebetHeaderController extends Controller
 {
 
-    /**
-     * @ClassName
+      /**
+     * @ClassName 
+     * NotaDebetHeader
+     * @Detail1 NotaDebetDetailController
      */
     public function index(GetIndexRangeRequest $request)
     {
@@ -480,5 +482,12 @@ class NotaDebetHeaderController extends Controller
         } catch (\Throwable $th) {
             throw $th;
         }
+    }
+
+    /**
+     * @ClassName 
+     */
+    public function report()
+    {
     }
 }

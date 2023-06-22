@@ -36,8 +36,10 @@ use Illuminate\Http\JsonResponse;
 
 class PenerimaanStokHeaderController extends Controller
 {
-    /**
+      /**
      * @ClassName 
+     * PenerimaanStokHeader
+     * @Detail1 PenerimaanStokDetailController
      */
     public function index(GetIndexRangeRequest $request)
     {
@@ -62,38 +64,38 @@ class PenerimaanStokHeaderController extends Controller
         try {
             /* Store header */
             $data = [
-                "penerimaanstok_id" => $request->penerimaanstok_id?? null,
-                "tglbukti" => $request->tglbukti?? null,
-                "gudangdari_id" => $request->gudangdari_id?? null,
-                "gudang_id" => $request->gudang_id?? null,
-                "gudangke_id" => $request->gudangke_id?? null,
-                "tradodari_id" => $request->tradodari_id?? null,
-                "trado_id" => $request->trado_id?? null,
-                "tradoke_id" => $request->tradoke_id?? null,
-                "gandengandari_id" => $request->gandengandari_id?? null,
-                "gandengan_id" => $request->gandengan_id?? null,
-                "gandenganke_id" => $request->gandenganke_id?? null,
-                "penerimaanstok_nobukti" => $request->penerimaanstok_nobukti?? null,
-                "pengeluaranstok_nobukti" => $request->pengeluaranstok_nobukti?? null,
-                "nobon" => $request->nobon?? null,
-                "keterangan" => $request->keterangan?? null,
-                "coa" => $request->coa?? null,
-                "supplier_id" => $request->supplier_id?? null,
-                "sortname" => $request->sortname?? null,
-                "sortorder" => $request->sortorder?? null,
-                "detail_stok_id" => $request->detail_stok_id?? [],
-                "detail_vulkanisirke" => $request->detail_vulkanisirke?? [],
-                "detail_keterangan" => $request->detail_keterangan?? [],
-                "detail_qty" => $request->detail_qty?? [],
-                "detail_harga" => $request->detail_harga?? [],
-                "detail_penerimaanstoknobukti" => $request->detail_penerimaanstoknobukti?? [],
-                "detail_penerimaanstoknobukti_id" => $request->detail_penerimaanstoknobukti_id?? [],
-                "detail_persentasediscount" => $request->detail_persentasediscount?? [],
-                "totalItem" => $request->totalItem?? [],
+                "penerimaanstok_id" => $request->penerimaanstok_id ?? null,
+                "tglbukti" => $request->tglbukti ?? null,
+                "gudangdari_id" => $request->gudangdari_id ?? null,
+                "gudang_id" => $request->gudang_id ?? null,
+                "gudangke_id" => $request->gudangke_id ?? null,
+                "tradodari_id" => $request->tradodari_id ?? null,
+                "trado_id" => $request->trado_id ?? null,
+                "tradoke_id" => $request->tradoke_id ?? null,
+                "gandengandari_id" => $request->gandengandari_id ?? null,
+                "gandengan_id" => $request->gandengan_id ?? null,
+                "gandenganke_id" => $request->gandenganke_id ?? null,
+                "penerimaanstok_nobukti" => $request->penerimaanstok_nobukti ?? null,
+                "pengeluaranstok_nobukti" => $request->pengeluaranstok_nobukti ?? null,
+                "nobon" => $request->nobon ?? null,
+                "keterangan" => $request->keterangan ?? null,
+                "coa" => $request->coa ?? null,
+                "supplier_id" => $request->supplier_id ?? null,
+                "sortname" => $request->sortname ?? null,
+                "sortorder" => $request->sortorder ?? null,
+                "detail_stok_id" => $request->detail_stok_id ?? [],
+                "detail_vulkanisirke" => $request->detail_vulkanisirke ?? [],
+                "detail_keterangan" => $request->detail_keterangan ?? [],
+                "detail_qty" => $request->detail_qty ?? [],
+                "detail_harga" => $request->detail_harga ?? [],
+                "detail_penerimaanstoknobukti" => $request->detail_penerimaanstoknobukti ?? [],
+                "detail_penerimaanstoknobukti_id" => $request->detail_penerimaanstoknobukti_id ?? [],
+                "detail_persentasediscount" => $request->detail_persentasediscount ?? [],
+                "totalItem" => $request->totalItem ?? [],
             ];
             $penerimaanStokHeader = (new PenerimaanStokHeader())->processStore($data);
-            
-            
+
+
             /* Set position and page */
             $penerimaanStokHeader->position = $this->getPosition($penerimaanStokHeader, $penerimaanStokHeader->getTable())->position;
             $penerimaanStokHeader->page = ceil($penerimaanStokHeader->position / ($request->limit ?? 10));
@@ -105,7 +107,7 @@ class PenerimaanStokHeaderController extends Controller
             return response()->json([
                 'message' => 'Berhasil disimpan',
                 'data' => $penerimaanStokHeader
-            ], 201);    
+            ], 201);
         } catch (\Throwable $th) {
             DB::rollBack();
 
@@ -127,64 +129,64 @@ class PenerimaanStokHeaderController extends Controller
      */
     public function update(UpdatePenerimaanStokHeaderRequest $request, PenerimaanStokHeader $penerimaanStokHeader, $id): JsonResponse
     {
-        DB::beginTransaction();        
+        DB::beginTransaction();
         try {
-           /* Store header */
-           $data = [
-            "penerimaanstok_id" => $request->penerimaanstok_id?? null,
-            "tglbukti" => $request->tglbukti?? null,
-            "gudangdari_id" => $request->gudangdari_id?? null,
-            "gudang_id" => $request->gudang_id?? null,
-            "gudangke_id" => $request->gudangke_id?? null,
-            "tradodari_id" => $request->tradodari_id?? null,
-            "trado_id" => $request->trado_id?? null,
-            "tradoke_id" => $request->tradoke_id?? null,
-            "gandengandari_id" => $request->gandengandari_id?? null,
-            "gandengan_id" => $request->gandengan_id?? null,
-            "gandenganke_id" => $request->gandenganke_id?? null,
-            "penerimaanstok_nobukti" => $request->penerimaanstok_nobukti?? null,
-            "pengeluaranstok_nobukti" => $request->pengeluaranstok_nobukti?? null,
-            "nobon" => $request->nobon?? null,
-            "keterangan" => $request->keterangan?? null,
-            "coa" => $request->coa?? null,
-            "supplier_id" => $request->supplier_id?? null,
-            "sortname" => $request->sortname?? null,
-            "sortorder" => $request->sortorder?? null,
-            "detail_stok_id" => $request->detail_stok_id?? [],
-            "detail_vulkanisirke" => $request->detail_vulkanisirke?? [],
-            "detail_keterangan" => $request->detail_keterangan?? [],
-            "detail_qty" => $request->detail_qty?? [],
-            "detail_harga" => $request->detail_harga?? [],
-            "detail_penerimaanstoknobukti" => $request->detail_penerimaanstoknobukti?? [],
-            "detail_penerimaanstoknobukti_id" => $request->detail_penerimaanstoknobukti_id?? [],
-            "detail_persentasediscount" => $request->detail_persentasediscount?? [],
-            "totalItem" => $request->totalItem?? [],
-        ];
-           $penerimaanStokHeader = PenerimaanStokHeader::findOrFail($id);
-           $penerimaanStokHeader = (new PenerimaanStokHeader())->processUpdate($penerimaanStokHeader,$data);
-           /* Set position and page */
-           $penerimaanStokHeader->position = $this->getPosition($penerimaanStokHeader, $penerimaanStokHeader->getTable())->position;
-           $penerimaanStokHeader->page = ceil($penerimaanStokHeader->position / ($request->limit ?? 10));
-           if (isset($request->limit)) {
-               $penerimaanStokHeader->page = ceil($penerimaanStokHeader->position / ($request->limit ?? 10));
-           }
+            /* Store header */
+            $data = [
+                "penerimaanstok_id" => $request->penerimaanstok_id ?? null,
+                "tglbukti" => $request->tglbukti ?? null,
+                "gudangdari_id" => $request->gudangdari_id ?? null,
+                "gudang_id" => $request->gudang_id ?? null,
+                "gudangke_id" => $request->gudangke_id ?? null,
+                "tradodari_id" => $request->tradodari_id ?? null,
+                "trado_id" => $request->trado_id ?? null,
+                "tradoke_id" => $request->tradoke_id ?? null,
+                "gandengandari_id" => $request->gandengandari_id ?? null,
+                "gandengan_id" => $request->gandengan_id ?? null,
+                "gandenganke_id" => $request->gandenganke_id ?? null,
+                "penerimaanstok_nobukti" => $request->penerimaanstok_nobukti ?? null,
+                "pengeluaranstok_nobukti" => $request->pengeluaranstok_nobukti ?? null,
+                "nobon" => $request->nobon ?? null,
+                "keterangan" => $request->keterangan ?? null,
+                "coa" => $request->coa ?? null,
+                "supplier_id" => $request->supplier_id ?? null,
+                "sortname" => $request->sortname ?? null,
+                "sortorder" => $request->sortorder ?? null,
+                "detail_stok_id" => $request->detail_stok_id ?? [],
+                "detail_vulkanisirke" => $request->detail_vulkanisirke ?? [],
+                "detail_keterangan" => $request->detail_keterangan ?? [],
+                "detail_qty" => $request->detail_qty ?? [],
+                "detail_harga" => $request->detail_harga ?? [],
+                "detail_penerimaanstoknobukti" => $request->detail_penerimaanstoknobukti ?? [],
+                "detail_penerimaanstoknobukti_id" => $request->detail_penerimaanstoknobukti_id ?? [],
+                "detail_persentasediscount" => $request->detail_persentasediscount ?? [],
+                "totalItem" => $request->totalItem ?? [],
+            ];
+            $penerimaanStokHeader = PenerimaanStokHeader::findOrFail($id);
+            $penerimaanStokHeader = (new PenerimaanStokHeader())->processUpdate($penerimaanStokHeader, $data);
+            /* Set position and page */
+            $penerimaanStokHeader->position = $this->getPosition($penerimaanStokHeader, $penerimaanStokHeader->getTable())->position;
+            $penerimaanStokHeader->page = ceil($penerimaanStokHeader->position / ($request->limit ?? 10));
+            if (isset($request->limit)) {
+                $penerimaanStokHeader->page = ceil($penerimaanStokHeader->position / ($request->limit ?? 10));
+            }
 
-           DB::commit();
-           return response()->json([
-               'message' => 'Berhasil disimpan',
-               'data' => $penerimaanStokHeader
-           ]);    
-       } catch (\Throwable $th) {
-           DB::rollBack();
+            DB::commit();
+            return response()->json([
+                'message' => 'Berhasil disimpan',
+                'data' => $penerimaanStokHeader
+            ]);
+        } catch (\Throwable $th) {
+            DB::rollBack();
 
-           throw $th;
-       }
+            throw $th;
+        }
     }
 
     /**
      * @ClassName 
      */
-    public function destroy(DestroyPenerimaanStokHeaderRequest $request,PenerimaanStokHeader $penerimaanStokHeader, $id): JsonResponse
+    public function destroy(DestroyPenerimaanStokHeaderRequest $request, PenerimaanStokHeader $penerimaanStokHeader, $id): JsonResponse
     {
         DB::beginTransaction();
 
@@ -208,48 +210,48 @@ class PenerimaanStokHeaderController extends Controller
         }
     }
 
-    public function persediaan($gudang,$trado,$gandengan)
+    public function persediaan($gudang, $trado, $gandengan)
     {
         $kolom = null;
         $nama = null;
         $value = 0;
-        if(!empty($gudang)) {
+        if (!empty($gudang)) {
             $kolom = "gudang";
             $nama = "GUDANG";
             $value = $gudang;
-        } elseif(!empty($trado)) {
+        } elseif (!empty($trado)) {
             $kolom = "trado";
             $nama = "TRADO";
             $value = $trado;
-        } elseif(!empty($gandengan)) {
+        } elseif (!empty($gandengan)) {
             $kolom = "gandengan";
             $nama = "GANDENGAN";
             $value = $gandengan;
         }
         return [
-            "column"=>$kolom,
-            "value"=>$value,
-            "nama"=>$nama,
+            "column" => $kolom,
+            "value" => $value,
+            "nama" => $nama,
         ];
     }
 
-    public function persediaanDariReturn($stokId,$persediaan,$persediaanId,$qty)
+    public function persediaanDariReturn($stokId, $persediaan, $persediaanId, $qty)
     {
-        $stokpersediaangudang = $this->checkTempat($stokId,$persediaan,$persediaanId); //stok persediaan 
+        $stokpersediaangudang = $this->checkTempat($stokId, $persediaan, $persediaanId); //stok persediaan 
         if (!$stokpersediaangudang) {
             return false;
         }
         $stokpersediaan = StokPersediaan::lockForUpdate()->find($stokpersediaangudang->id);
-        if ($qty > $stokpersediaan->qty){ //check qty
+        if ($qty > $stokpersediaan->qty) { //check qty
             return false;
         }
         $result = $stokpersediaan->qty + $qty;
-        $stokpersediaan->update(['qty'=> $result]);
+        $stokpersediaan->update(['qty' => $result]);
         return $stokpersediaan;
     }
-    public function persediaanKeReturn($stokId,$persediaan,$persediaanId,$qty)
+    public function persediaanKeReturn($stokId, $persediaan, $persediaanId, $qty)
     {
-        $stokpersediaangudang = $this->checkTempat($stokId,$persediaan,$persediaanId); //stok persediaan 
+        $stokpersediaangudang = $this->checkTempat($stokId, $persediaan, $persediaanId); //stok persediaan 
         if (!$stokpersediaangudang) {
             return false;
         }
@@ -258,10 +260,10 @@ class PenerimaanStokHeaderController extends Controller
         return $stokpersediaangudang;
     }
 
-    public function checkTempat($stokId,$persediaan,$persediaanId)
+    public function checkTempat($stokId, $persediaan, $persediaanId)
     {
         $result = StokPersediaan::lockForUpdate()->where("stok_id", $stokId)->where("$persediaan", $persediaanId)->first();
-        return (!$result) ? false :$result;
+        return (!$result) ? false : $result;
     }
 
 
@@ -280,7 +282,7 @@ class PenerimaanStokHeaderController extends Controller
         $spb = Parameter::where('grp', 'SPB STOK')->where('subgrp', 'SPB STOK')->first();
 
         // dd($penerimaanStokHeader->isOutUsed($id));
-        
+
         if ($penerimaanStokHeader->isOutUsed($id)) {
             $query = Error::from(DB::raw("error with (readuncommitted)"))
                 ->select('keterangan')
@@ -310,7 +312,7 @@ class PenerimaanStokHeaderController extends Controller
             ];
             return response($data);
         }
-        
+
         if ($status == $statusApproval->id) {
             $query = Error::from(DB::raw("error with (readuncommitted)"))
                 ->select('keterangan')
@@ -417,5 +419,12 @@ class PenerimaanStokHeaderController extends Controller
         return response([
             'data' => $data
         ]);
+    }
+
+    /**
+     * @ClassName 
+     */
+    public function report()
+    {
     }
 }

@@ -58,7 +58,7 @@ class MenuController extends Controller
                 'controller' => $request->controller
             ];
 
-           
+
             $menu = (new Menu())->processStore($data);
             $menu->position = $this->getPosition($menu, $menu->getTable())->position;
             $menu->page = ceil($menu->position / ($request->limit ?? 10));
@@ -145,6 +145,9 @@ class MenuController extends Controller
         }
     }
 
+    /**
+     * @ClassName 
+     */
     public function export(RangeExportReportRequest $request)
     {
         if (request()->cekExport) {
@@ -409,5 +412,12 @@ class MenuController extends Controller
         }
 
         return $comments;
+    }
+
+    /**
+     * @ClassName 
+     */
+    public function report()
+    {
     }
 }

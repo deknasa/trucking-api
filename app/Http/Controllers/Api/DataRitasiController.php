@@ -1,4 +1,5 @@
-<?php 
+<?php
+
 namespace App\Http\Controllers\Api;
 
 use App\Http\Requests\StoreDataRitasiRequest;
@@ -23,7 +24,7 @@ use Illuminate\Database\QueryException;
 class DataRitasiController extends Controller
 {
 
-/**
+    /**
      * @ClassName 
      */
     public function index()
@@ -54,55 +55,55 @@ class DataRitasiController extends Controller
             'data' => $dataritasi->default(),
         ]);
     }
-     /**
+    /**
      * @ClassName 
      */
 
-     public function store(StoreDataRitasiRequest $request)
-     {
-         DB::beginTransaction();
-         try {
-             $dataritasi = new DataRitasi();
-             $dataritasi->statusritasi = $request->statusritasi;
-             $dataritasi->nominal = $request->nominal;
-             $dataritasi->statusaktif = $request->statusaktif;
-             $dataritasi->modifiedby = auth('api')->user()->name;
- 
-             if ($dataritasi->save()) {
-                 $logTrail = [
-                     'namatabel' => strtoupper($dataritasi->getTable()),
-                     'postingdari' => 'ENTRY dataritasi',
-                     'idtrans' => $dataritasi->id,
-                     'nobuktitrans' => $dataritasi->id,
-                     'aksi' => 'ENTRY',
-                     'datajson' => $dataritasi->toArray(),
-                     'modifiedby' => $dataritasi->modifiedby
-                 ];
- 
-                 $validatedLogTrail = new StoreLogTrailRequest($logTrail);
-                 $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
- 
-                 DB::commit();
-             }
- 
-             /* Set position and page */
-             $selected = $this->getPosition($dataritasi, $dataritasi->getTable());
-             $dataritasi->position = $selected->position;
-             $dataritasi->page = ceil($dataritasi->position / ($request->limit ?? 10));
- 
-             return response([
-                 'status' => true,
-                 'message' => 'Berhasil disimpan',
-                 'data' => $dataritasi
-             ], 201);
-         } catch (\Throwable $th) {
-             DB::rollBack();
- 
-             throw $th;
-         }
-     }
+    public function store(StoreDataRitasiRequest $request)
+    {
+        DB::beginTransaction();
+        try {
+            $dataritasi = new DataRitasi();
+            $dataritasi->statusritasi = $request->statusritasi;
+            $dataritasi->nominal = $request->nominal;
+            $dataritasi->statusaktif = $request->statusaktif;
+            $dataritasi->modifiedby = auth('api')->user()->name;
 
-     public function show(DataRitasi $dataritasi)
+            if ($dataritasi->save()) {
+                $logTrail = [
+                    'namatabel' => strtoupper($dataritasi->getTable()),
+                    'postingdari' => 'ENTRY dataritasi',
+                    'idtrans' => $dataritasi->id,
+                    'nobuktitrans' => $dataritasi->id,
+                    'aksi' => 'ENTRY',
+                    'datajson' => $dataritasi->toArray(),
+                    'modifiedby' => $dataritasi->modifiedby
+                ];
+
+                $validatedLogTrail = new StoreLogTrailRequest($logTrail);
+                $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
+
+                DB::commit();
+            }
+
+            /* Set position and page */
+            $selected = $this->getPosition($dataritasi, $dataritasi->getTable());
+            $dataritasi->position = $selected->position;
+            $dataritasi->page = ceil($dataritasi->position / ($request->limit ?? 10));
+
+            return response([
+                'status' => true,
+                'message' => 'Berhasil disimpan',
+                'data' => $dataritasi
+            ], 201);
+        } catch (\Throwable $th) {
+            DB::rollBack();
+
+            throw $th;
+        }
+    }
+
+    public function show(DataRitasi $dataritasi)
     {
         // dd($cabang);
         return response([
@@ -162,7 +163,7 @@ class DataRitasiController extends Controller
      * @ClassName 
      */
 
-     public function destroy(DestroyDataRitasiRequest $request, $id)
+    public function destroy(DestroyDataRitasiRequest $request, $id)
     {
         DB::beginTransaction();
         $dataritasi = new dataritasi();
@@ -203,77 +204,72 @@ class DataRitasiController extends Controller
         }
     }
 
-     public function fieldLength()
-     {
-         $data = [];
-         $columns = DB::connection()->getDoctrineSchemaManager()->listTableDetails('dataritasi')->getColumns();
- 
-         foreach ($columns as $index => $column) {
-             $data[$index] = $column->getLength();
-         }
- 
-         return response([
-             'data' => $data
-         ]);
-     }
+    public function fieldLength()
+    {
+        $data = [];
+        $columns = DB::connection()->getDoctrineSchemaManager()->listTableDetails('dataritasi')->getColumns();
 
-     public function export(RangeExportReportRequest $request)
-     {
-         if (request()->cekExport) {
-             return response([
-                 'status' => true,
-             ]);
-         }else {
-             header('Access-Control-Allow-Origin: *');
-             $response = $this->index();
-             $decodedResponse = json_decode($response->content(), true);
-             $dataritasi = $decodedResponse['data'];
-     
-             $judulLaporan = $dataritasi[0]['judulLaporan'];
-             $i = 0;
-             foreach ($dataritasi as $index => $params) {
-     
-                 $statusaktif = $params['statusaktif'];
-     
-                 $result = json_decode($statusaktif, true);
-     
-                 $statusaktif = $result['MEMO'];
-     
-     
-                 $dataritasi[$i]['statusaktif'] = $statusaktif;
-                 
-                 $nominal = number_format($params['nominal'], 2, ',', '.');
-                 $dataritasi[$i]['nominal'] = $nominal;
-             
-                 $i++;
-     
-     
-             }
-             $columns = [
-                 [
-                     'label' => 'No',
-                 ],
-                 [
-                     'label' => 'Status Ritasi',
-                     'index' => 'statusritasi',
-                 ],
-                 [
-                     'label' => 'nominal',
-                     'index' => 'nominal',
-                 ],
-                 [
-                     'label' => 'Status Aktif',
-                     'index' => 'statusaktif',
-                 ],
-             ];
-     
-             $this->toExcel($judulLaporan, $dataritasi, $columns);
-         }
-         
-     }
+        foreach ($columns as $index => $column) {
+            $data[$index] = $column->getLength();
+        }
+
+        return response([
+            'data' => $data
+        ]);
+    }
+
+    /**
+     * @ClassName 
+     */
+    public function export(RangeExportReportRequest $request)
+    {
+        if (request()->cekExport) {
+            return response([
+                'status' => true,
+            ]);
+        } else {
+            header('Access-Control-Allow-Origin: *');
+            $response = $this->index();
+            $decodedResponse = json_decode($response->content(), true);
+            $dataritasi = $decodedResponse['data'];
+
+            $judulLaporan = $dataritasi[0]['judulLaporan'];
+            $i = 0;
+            foreach ($dataritasi as $index => $params) {
+
+                $statusaktif = $params['statusaktif'];
+
+                $result = json_decode($statusaktif, true);
+
+                $statusaktif = $result['MEMO'];
+
+
+                $dataritasi[$i]['statusaktif'] = $statusaktif;
+
+                $nominal = number_format($params['nominal'], 2, ',', '.');
+                $dataritasi[$i]['nominal'] = $nominal;
+
+                $i++;
+            }
+            $columns = [
+                [
+                    'label' => 'No',
+                ],
+                [
+                    'label' => 'Status Ritasi',
+                    'index' => 'statusritasi',
+                ],
+                [
+                    'label' => 'nominal',
+                    'index' => 'nominal',
+                ],
+                [
+                    'label' => 'Status Aktif',
+                    'index' => 'statusaktif',
+                ],
+            ];
+
+            $this->toExcel($judulLaporan, $dataritasi, $columns);
+        }
+    }
 }
-
-
-
-
-?>

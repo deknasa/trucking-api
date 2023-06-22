@@ -44,11 +44,11 @@ class OrderanTruckingController extends Controller
         ]);
     }
 
-    public function cekValidasi($id,$aksi)
+    public function cekValidasi($id, $aksi)
     {
         $orderanTrucking = new OrderanTrucking();
         $nobukti = OrderanTrucking::from(DB::raw("orderantrucking"))->where('id', $id)->first();
-        $cekdata = $orderanTrucking->cekvalidasihapus($nobukti->nobukti,$aksi);
+        $cekdata = $orderanTrucking->cekvalidasihapus($nobukti->nobukti, $aksi);
         if ($cekdata['kondisi'] == true) {
             $query = DB::table('error')
                 ->select(
@@ -212,9 +212,9 @@ class OrderanTruckingController extends Controller
     {
         $orderanTrucking = new OrderanTrucking();
         $agen = $request->agen;
-        $tglbukti = date('Y-m-d',strtotime($request->tglbukti));
+        $tglbukti = date('Y-m-d', strtotime($request->tglbukti));
         return response([
-            'data' => $orderanTrucking->getOrderanTrip($tglbukti,$agen),
+            'data' => $orderanTrucking->getOrderanTrip($tglbukti, $agen),
             'attributes' => [
                 'totalRows' => $orderanTrucking->totalRows,
                 'totalPages' => $orderanTrucking->totalPages
@@ -239,6 +239,15 @@ class OrderanTruckingController extends Controller
         ]);
     }
 
+    /**
+     * @ClassName 
+     */
+    public function report()
+    {
+    }
+    /**
+     * @ClassName 
+     */
     public function export(GetUpahSupirRangeRequest $request)
     {
         $dari = date('Y-m-d', strtotime($request->dari));

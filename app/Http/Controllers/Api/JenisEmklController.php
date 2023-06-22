@@ -244,6 +244,17 @@ class JenisEmklController extends Controller
             'data' => $jenisemkls
         ]);
     }
+
+    /**
+     * @ClassName 
+     */
+    public function report()
+    {
+    }
+
+    /**
+     * @ClassName 
+     */
     public function export(RangeExportReportRequest $request)
     {
 
@@ -252,46 +263,46 @@ class JenisEmklController extends Controller
                 'status' => true,
             ]);
         } else {
-        $response = $this->index();
-        $decodedResponse = json_decode($response->content(), true);
-        $jenisemkls = $decodedResponse['data'];
+            $response = $this->index();
+            $decodedResponse = json_decode($response->content(), true);
+            $jenisemkls = $decodedResponse['data'];
 
-        $judulLaporan = $jenisemkls[0]['judulLaporan'];
+            $judulLaporan = $jenisemkls[0]['judulLaporan'];
 
-        $i = 0;
-        foreach ($jenisemkls as $index => $params) {
+            $i = 0;
+            foreach ($jenisemkls as $index => $params) {
 
-            $statusaktif = $params['statusaktif'];
+                $statusaktif = $params['statusaktif'];
 
-            $result = json_decode($statusaktif, true);
+                $result = json_decode($statusaktif, true);
 
-            $statusaktif = $result['MEMO'];
-
-
-            $jenisemkls[$i]['statusaktif'] = $statusaktif;
+                $statusaktif = $result['MEMO'];
 
 
-            $i++;
+                $jenisemkls[$i]['statusaktif'] = $statusaktif;
+
+
+                $i++;
+            }
+            $columns = [
+                [
+                    'label' => 'No',
+                ],
+                [
+                    'label' => 'Kode Jenis EMKL',
+                    'index' => 'kodejenisemkl',
+                ],
+                [
+                    'label' => 'Keterangan',
+                    'index' => 'keterangan',
+                ],
+                [
+                    'label' => 'Status Aktif',
+                    'index' => 'statusaktif',
+                ],
+            ];
+
+            $this->toExcel($judulLaporan, $jenisemkls, $columns);
         }
-        $columns = [
-            [
-                'label' => 'No',
-            ],
-            [
-                'label' => 'Kode Jenis EMKL',
-                'index' => 'kodejenisemkl',
-            ],
-            [
-                'label' => 'Keterangan',
-                'index' => 'keterangan',
-            ],
-            [
-                'label' => 'Status Aktif',
-                'index' => 'statusaktif',
-            ],
-        ];
-
-        $this->toExcel($judulLaporan, $jenisemkls, $columns);
-    }
     }
 }

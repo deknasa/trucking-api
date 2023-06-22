@@ -40,7 +40,9 @@ use Illuminate\Support\Facades\Schema;
 class HutangBayarHeaderController extends Controller
 {
     /**
-     * @ClassName index
+     * @ClassName 
+     * HutangBayarHeader
+     * @Detail1 HutangBayarDetailController
      */
     public function index(GetIndexRangeRequest $request)
     {
@@ -74,7 +76,7 @@ class HutangBayarHeaderController extends Controller
             return response()->json([
                 'message' => 'Berhasil disimpan',
                 'data' => $hutangBayarHeader
-            ], 201);    
+            ], 201);
         } catch (\Throwable $th) {
             DB::rollBack();
 
@@ -99,35 +101,34 @@ class HutangBayarHeaderController extends Controller
     /**
      * @ClassName update
      */
-    
-    public function update(UpdateHutangBayarHeaderRequest $request, HutangBayarHeader $hutangBayarHeader,$id)
+
+    public function update(UpdateHutangBayarHeaderRequest $request, HutangBayarHeader $hutangBayarHeader, $id)
     {
 
-        DB::beginTransaction();        
+        DB::beginTransaction();
         try {
-           /* Store header */
-           $hutangBayar = HutangBayarHeader::findOrFail($id);
-           $hutangBayarHeader = (new HutangBayarHeader())->processUpdate($hutangBayar,$request->all());
-           /* Set position and page */
-           $hutangBayarHeader->position = $this->getPosition($hutangBayarHeader, $hutangBayarHeader->getTable())->position;
-           $hutangBayarHeader->page = ceil($hutangBayarHeader->position / ($request->limit ?? 10));
-           if (isset($request->limit)) {
-               $hutangBayarHeader->page = ceil($hutangBayarHeader->position / ($request->limit ?? 10));
-           }
+            /* Store header */
+            $hutangBayar = HutangBayarHeader::findOrFail($id);
+            $hutangBayarHeader = (new HutangBayarHeader())->processUpdate($hutangBayar, $request->all());
+            /* Set position and page */
+            $hutangBayarHeader->position = $this->getPosition($hutangBayarHeader, $hutangBayarHeader->getTable())->position;
+            $hutangBayarHeader->page = ceil($hutangBayarHeader->position / ($request->limit ?? 10));
+            if (isset($request->limit)) {
+                $hutangBayarHeader->page = ceil($hutangBayarHeader->position / ($request->limit ?? 10));
+            }
 
-           DB::commit();
-           return response()->json([
-               'message' => 'Berhasil disimpan',
-               'data' => $hutangBayarHeader
-           ]);    
-       } catch (\Throwable $th) {
-           DB::rollBack();
+            DB::commit();
+            return response()->json([
+                'message' => 'Berhasil disimpan',
+                'data' => $hutangBayarHeader
+            ]);
+        } catch (\Throwable $th) {
+            DB::rollBack();
 
-           throw $th;
-       }
+            throw $th;
+        }
 
         DB::beginTransaction();
-
     }
 
     /**
@@ -413,5 +414,12 @@ class HutangBayarHeaderController extends Controller
         return response([
             'data' => $data
         ]);
+    }
+
+    /**
+     * @ClassName 
+     */
+    public function report()
+    {
     }
 }

@@ -36,8 +36,10 @@ use Illuminate\Database\QueryException;
 class PenerimaanTruckingHeaderController extends Controller
 {
 
-    /**
-     * @ClassName
+      /**
+     * @ClassName 
+     * PenerimaanTruckingHeader
+     * @Detail1 PenerimaanTruckingDetailController
      */
     public function index(GetPenerimaanTruckingHeaderRequest $request)
     {
@@ -73,7 +75,7 @@ class PenerimaanTruckingHeaderController extends Controller
             return response()->json([
                 'message' => 'Berhasil disimpan',
                 'data' => $penerimaanTruckingHeader
-            ], 201);    
+            ], 201);
         } catch (\Throwable $th) {
             DB::rollBack();
 
@@ -105,7 +107,7 @@ class PenerimaanTruckingHeaderController extends Controller
         try {
             /* Store header */
             // PenerimaanTruckingHeader::findOrFail($id);
-            $penerimaanTruckingHeader = (new PenerimaanTruckingHeader())->processUpdate($penerimaantruckingheader,$request->all());
+            $penerimaanTruckingHeader = (new PenerimaanTruckingHeader())->processUpdate($penerimaantruckingheader, $request->all());
             /* Set position and page */
             $penerimaanTruckingHeader->position = $this->getPosition($penerimaanTruckingHeader, $penerimaanTruckingHeader->getTable())->position;
             $penerimaanTruckingHeader->page = ceil($penerimaanTruckingHeader->position / ($request->limit ?? 10));
@@ -117,13 +119,12 @@ class PenerimaanTruckingHeaderController extends Controller
             return response()->json([
                 'message' => 'Berhasil disimpan',
                 'data' => $penerimaanTruckingHeader
-            ], 201);    
+            ], 201);
         } catch (\Throwable $th) {
             DB::rollBack();
 
             throw $th;
         }
-       
     }
 
 
@@ -176,7 +177,7 @@ class PenerimaanTruckingHeaderController extends Controller
             'data' => $penerimaanTrucking->getPinjaman($supir_id)
         ]);
     }
-    
+
     public function printReport($id)
     {
         DB::beginTransaction();
@@ -302,5 +303,12 @@ class PenerimaanTruckingHeaderController extends Controller
         return response([
             'data' => $data
         ]);
+    }
+
+    /**
+     * @ClassName 
+     */
+    public function report()
+    {
     }
 }

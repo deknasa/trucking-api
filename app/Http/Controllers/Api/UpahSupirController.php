@@ -32,6 +32,8 @@ class UpahSupirController extends Controller
     private $upahsupir;
     /**
      * @ClassName 
+     * UpahSupir
+     * @Detail1 UpahSupirController
      */
     public function index()
     {
@@ -418,5 +420,12 @@ class UpahSupirController extends Controller
 
             return response($data);
         }
+    }
+
+    /**
+     * @ClassName 
+     */
+    public function report()
+    {
     }
 }

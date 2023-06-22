@@ -15,7 +15,7 @@ use Illuminate\Support\Facades\Validator;
 class PenerimaanDetailController extends Controller
 {
     /**
-     * @ClassName
+     * @ClassName 
      */
     public function index(Request $request)
     {
@@ -32,10 +32,13 @@ class PenerimaanDetailController extends Controller
         ]);
     }
 
+    /**
+     * @ClassName 
+     */
     public function getPenerimaan(): JsonResponse
     {
         $penerimaanDetail = new PenerimaanDetail();
-        if(request()->nobukti != 'false' && request()->nobukti != null){
+        if (request()->nobukti != 'false' && request()->nobukti != null) {
             $fetch = PenerimaanHeader::from(DB::raw("penerimaanheader with (readuncommitted)"))->where('nobukti', request()->nobukti)->first();
             request()->penerimaan_id = $fetch->id;
             return response()->json([
@@ -46,7 +49,7 @@ class PenerimaanDetailController extends Controller
                     'totalNominal' => $penerimaanDetail->totalNominal
                 ]
             ]);
-        }else{
+        } else {
             return response()->json([
                 'data' => [],
                 'attributes' => [

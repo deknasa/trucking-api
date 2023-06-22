@@ -24,26 +24,28 @@ use Illuminate\Support\Facades\DB;
 
 class PencairanGiroPengeluaranHeaderController extends Controller
 {
-    /**
-     * @ClassName
+      /**
+     * @ClassName 
+     * PencairanGiroPengeluaranHeader
+     * @Detail1 PencairanGiroPengeluaranDetailController
      */
     public function index(Request $request)
     {
         $pencairanGiro = new PencairanGiroPengeluaranHeader();
 
         $this->validate($request, [
-            'periode' => ['required',new PencairanGiro()],
+            'periode' => ['required', new PencairanGiro()],
         ]);
-        
-        if($request->periode){
-            $periode = explode("-",$request->periode);
+
+        if ($request->periode) {
+            $periode = explode("-", $request->periode);
             $request->merge([
                 'year' => $periode[1],
-                'month'=> $periode[0]
+                'month' => $periode[0]
             ]);
         }
 
-        if ($request->periode){
+        if ($request->periode) {
             return response([
                 'data' => $pencairanGiro->get(),
                 'attributes' => [
@@ -52,8 +54,6 @@ class PencairanGiroPengeluaranHeaderController extends Controller
                 ]
             ]);
         }
-
-        
     }
 
     /**
@@ -85,10 +85,10 @@ class PencairanGiroPengeluaranHeaderController extends Controller
 
                 $nobukti = app(Controller::class)->getRunningNumber($content)->original['data'];
                 $pengeluaran = PengeluaranHeader::from(DB::raw("pengeluaranheader with (readuncommitted)"))
-                    ->select('nobukti','alatbayar_id')->where('id', $request->pengeluaranId[$i])->first();
+                    ->select('nobukti', 'alatbayar_id')->where('id', $request->pengeluaranId[$i])->first();
 
                 $cekPencairan = PencairanGiroPengeluaranHeader::from(DB::raw("pencairangiropengeluaranheader with (readuncommitted)"))->where('pengeluaran_nobukti', $pengeluaran->nobukti)->first();
-                
+
                 if ($cekPencairan != null) {
                     $getDetail = PencairanGiroPengeluaranDetail::lockForUpdate()->where('pencairangiropengeluaran_id', $cekPencairan->id)->get();
                     $getJurnalHeader = JurnalUmumHeader::lockForUpdate()->where('nobukti', $cekPencairan->nobukti)->first();
@@ -195,7 +195,7 @@ class PencairanGiroPengeluaranHeaderController extends Controller
                     // STORE DETAIL
 
                     $pengeluaranDetail = PengeluaranDetail::from(DB::raw("pengeluarandetail with (readuncommitted)"))->where('pengeluaran_id', $request->pengeluaranId[$i])->get();
-                    
+
                     $jurnaldetail = [];
                     $baris = 0;
                     foreach ($pengeluaranDetail as $index => $value) {
@@ -331,5 +331,12 @@ class PencairanGiroPengeluaranHeaderController extends Controller
                 'message' => $e->getMessage(),
             ];
         }
+    }
+
+    /**
+     * @ClassName 
+     */
+    public function report()
+    {
     }
 }

@@ -11,7 +11,9 @@ use Illuminate\Support\Facades\DB;
 
 class PemutihanSupirDetailController extends Controller
 {
-
+    /**
+     * @ClassName 
+     */
     public function index(): JsonResponse
     {
         $pemutihanSupir = new pemutihansupirdetail();

@@ -34,8 +34,10 @@ use PhpParser\Builder\Param;
 
 class PenerimaanHeaderController extends Controller
 {
-    /**
-     * @ClassName
+        /**
+     * @ClassName 
+     * PenerimaanHeaderHeader
+     * @Detail1 PenerimaanHeaderDetailController
      */
     public function index(GetIndexRangeRequest $request)
     {
@@ -79,12 +81,11 @@ class PenerimaanHeaderController extends Controller
             return response()->json([
                 'message' => 'Berhasil disimpan',
                 'data' => $penerimaanHeader
-            ], 201);            
+            ], 201);
         } catch (\Throwable $th) {
             DB::rollBack();
             throw $th;
         }
-
     }
 
     public function show($id)
@@ -102,30 +103,30 @@ class PenerimaanHeaderController extends Controller
     /**
      * @ClassName
      */
-    
+
     public function update(UpdatePenerimaanHeaderRequest $request, PenerimaanHeader $penerimaanheader)
     {
-        DB::beginTransaction();        
+        DB::beginTransaction();
         try {
-           /* Store header */
-           $penerimaanheader = (new PenerimaanHeader())->processUpdate($penerimaanheader,$request->all());
-           /* Set position and page */
-           $penerimaanheader->position = $this->getPosition($penerimaanheader, $penerimaanheader->getTable())->position;
-           $penerimaanheader->page = ceil($penerimaanheader->position / ($request->limit ?? 10));
-           if (isset($request->limit)) {
-               $penerimaanheader->page = ceil($penerimaanheader->position / ($request->limit ?? 10));
-           }
+            /* Store header */
+            $penerimaanheader = (new PenerimaanHeader())->processUpdate($penerimaanheader, $request->all());
+            /* Set position and page */
+            $penerimaanheader->position = $this->getPosition($penerimaanheader, $penerimaanheader->getTable())->position;
+            $penerimaanheader->page = ceil($penerimaanheader->position / ($request->limit ?? 10));
+            if (isset($request->limit)) {
+                $penerimaanheader->page = ceil($penerimaanheader->position / ($request->limit ?? 10));
+            }
 
-           DB::commit();
-           return response()->json([
-               'message' => 'Berhasil disimpan',
-               'data' => $penerimaanheader
-           ]);    
-       } catch (\Throwable $th) {
-           DB::rollBack();
+            DB::commit();
+            return response()->json([
+                'message' => 'Berhasil disimpan',
+                'data' => $penerimaanheader
+            ]);
+        } catch (\Throwable $th) {
+            DB::rollBack();
 
-           throw $th;
-       }
+            throw $th;
+        }
     }
 
     /**
@@ -153,8 +154,8 @@ class PenerimaanHeaderController extends Controller
 
             throw $th;
         }
-    }    
-    
+    }
+
     /**
      * @ClassName
      */
@@ -400,5 +401,12 @@ class PenerimaanHeaderController extends Controller
         } catch (\Throwable $th) {
             throw $th;
         }
+    }
+
+    /**
+     * @ClassName 
+     */
+    public function report()
+    {
     }
 }

@@ -221,7 +221,7 @@ class PindahBukuController extends Controller
                     'modifiedby' => auth('api')->user()->name,
                     'baris' => 0,
                 ]
-                ];
+            ];
 
             $jurnalHeader = [
                 'isUpdate' => 1,
@@ -380,5 +380,12 @@ class PindahBukuController extends Controller
 
             throw $th;
         }
+    }
+
+    /**
+     * @ClassName 
+     */
+    public function report()
+    {
     }
 }

@@ -22,6 +22,8 @@ class NotaKreditHeaderController extends Controller
 {
     /**
      * @ClassName 
+     * NotaKreditHeader
+     * @Detail1 NotaKreditDetailController
      */
     public function index(GetIndexRangeRequest $request)
     {
@@ -480,5 +482,12 @@ class NotaKreditHeaderController extends Controller
         } catch (\Throwable $th) {
             throw $th;
         }
+    }
+
+    /**
+     * @ClassName 
+     */
+    public function report()
+    {
     }
 }

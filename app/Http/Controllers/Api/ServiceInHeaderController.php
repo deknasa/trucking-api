@@ -18,8 +18,10 @@ use Illuminate\Http\JsonResponse;
 
 class ServiceInHeaderController extends Controller
 {
-    /**
-     * @ClassName index
+     /**
+     * @ClassName 
+     * ServiceInHeaderHeader
+     * @Detail1 ServiceInHeaderDetailController
      */
     public function index()
     {
@@ -205,5 +207,12 @@ class ServiceInHeaderController extends Controller
         return response([
             'data' => $serviceInHeader->getExport($id)
         ]);
+    }
+
+    /**
+     * @ClassName 
+     */
+    public function report()
+    {
     }
 }

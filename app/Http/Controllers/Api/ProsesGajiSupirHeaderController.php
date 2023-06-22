@@ -62,6 +62,8 @@ class ProsesGajiSupirHeaderController extends Controller
 {
     /**
      * @ClassName 
+     * ProsesGajiSupirHeader
+     * @Detail1 ProsesGajiSupirDetailController
      */
     public function index(GetIndexRangeRequest $request)
     {
@@ -124,7 +126,6 @@ class ProsesGajiSupirHeaderController extends Controller
                 'message' => 'Berhasil disimpan',
                 'data' => $prosesGajiSupirHeader
             ], 201);
-
         } catch (\Throwable $th) {
             DB::rollBack();
             throw $th;
@@ -196,7 +197,6 @@ class ProsesGajiSupirHeaderController extends Controller
                 'message' => 'Berhasil disimpan',
                 'data' => $prosesGajiSupirHeader
             ]);
-
         } catch (\Throwable $th) {
             DB::rollBack();
             throw $th;
@@ -484,7 +484,17 @@ class ProsesGajiSupirHeaderController extends Controller
             'data' => $data
         ]);
     }
+    /**
+     * @ClassName 
+     */
+    public function report()
+    {
+    }
 
+
+    /**
+     * @ClassName 
+     */
     public function export($id)
     {
         $prosesGajiSupirHeader = new ProsesGajiSupirHeader();

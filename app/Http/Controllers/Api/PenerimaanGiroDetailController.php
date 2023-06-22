@@ -13,6 +13,9 @@ use Illuminate\Support\Facades\DB;
 
 class PenerimaanGiroDetailController extends Controller
 {
+    /**
+     * @ClassName 
+     */
     public function index(): JsonResponse
     {
         $penerimaanGiro = new PenerimaanGiroDetail();
@@ -32,10 +35,10 @@ class PenerimaanGiroDetailController extends Controller
     public function store(StorePenerimaanGiroDetailRequest $request)
     {
         DB::beginTransaction();
-       
+
         try {
             $penerimaangiroDetail = new PenerimaanGiroDetail();
-            
+
             $penerimaangiroDetail->penerimaangiro_id = $request->penerimaangiro_id;
             $penerimaangiroDetail->nobukti = $request->nobukti;
             $penerimaangiroDetail->nowarkat = $request->nowarkat;
@@ -51,9 +54,9 @@ class PenerimaanGiroDetailController extends Controller
             $penerimaangiroDetail->pelunasanpiutang_nobukti = $request->pelunasanpiutang_nobukti;
             $penerimaangiroDetail->bulanbeban = $request->bulanbeban;
             $penerimaangiroDetail->modifiedby = auth('api')->user()->name;
-            
+
             $penerimaangiroDetail->save();
-           
+
             DB::commit();
             return [
                 'error' => false,
@@ -64,7 +67,6 @@ class PenerimaanGiroDetailController extends Controller
         } catch (\Throwable $th) {
             throw $th;
             DB::rollBack();
-        }     
+        }
     }
-
 }

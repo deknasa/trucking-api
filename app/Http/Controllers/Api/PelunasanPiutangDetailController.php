@@ -15,6 +15,9 @@ use Illuminate\Support\Facades\Validator;
 
 class PelunasanPiutangDetailController extends Controller
 {
+    /**
+     * @ClassName 
+     */
 
     public function index(): JsonResponse
     {
@@ -32,10 +35,13 @@ class PelunasanPiutangDetailController extends Controller
         ]);
     }
 
+    /**
+     * @ClassName 
+     */
     public function getPelunasan(): JsonResponse
     {
         $pelunasanPiutang = new PelunasanPiutangDetail();
-        if(request()->nobukti != 'false' && request()->nobukti != null){
+        if (request()->nobukti != 'false' && request()->nobukti != null) {
             $fetch = PelunasanPiutangHeader::from(DB::raw("pelunasanpiutangheader with (readuncommitted)"))->where('nobukti', request()->nobukti)->first();
             request()->pelunasanpiutang_id = $fetch->id;
             return response()->json([
@@ -46,7 +52,7 @@ class PelunasanPiutangDetailController extends Controller
                     'totalNominal' => $pelunasanPiutang->totalNominal
                 ]
             ]);
-        }else{
+        } else {
             return response()->json([
                 'data' => [],
                 'attributes' => [

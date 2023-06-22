@@ -33,6 +33,8 @@ class AbsensiSupirApprovalHeaderController extends Controller
 {
     /**
      * @ClassName 
+     * AbsensiSupirApprovalHeader
+     * @Detail1 AbsensiSupirApprovalDetailController
      */
     public function index(GetIndexRangeRequest $request)
     {
@@ -147,7 +149,7 @@ class AbsensiSupirApprovalHeaderController extends Controller
             $kasgantungStore = app(KasGantungHeaderController::class)->update($data, $kasgantung);
 
             $kasgantung = $kasgantungStore->original['data'];
-            
+
             $absensiSupirApprovalHeader->pengeluaran_nobukti = $kasgantung->pengeluaran_nobukti;
             $absensiSupirApprovalHeader->tglkaskeluar = $kasgantung->tglkaskeluar;
             $absensiSupirApprovalHeader->save();
@@ -282,7 +284,6 @@ class AbsensiSupirApprovalHeaderController extends Controller
                 'message' => 'Berhasil disimpan',
                 'data' => $absensiSupirApprovalHeader
             ], 201);
-        
         } catch (\Throwable $th) {
             DB::rollBack();
             throw $th;
@@ -503,7 +504,7 @@ class AbsensiSupirApprovalHeaderController extends Controller
         $kasGantung->kasgantungDetail()->update(['coa' => '']);
         $kasGantung->save();
         $request['postingdari'] = "DELETE ABSENSI SUPIR APPROVAL";
-       
+
 
         if ($absensiSupirApprovalHeader) {
             $logTrail = [
@@ -687,12 +688,22 @@ class AbsensiSupirApprovalHeaderController extends Controller
         ]);
     }
 
+    /**
+     * @ClassName 
+     */
     public function export($id)
-    {   
+    {
         $absensiSupirApprovalHeader = new AbsensiSupirApprovalHeader();
-        
+
         return response([
             'data' => $absensiSupirApprovalHeader->getExport($id)
         ]);
+    }
+
+    /**
+     * @ClassName 
+     */
+    public function report()
+    {
     }
 }
