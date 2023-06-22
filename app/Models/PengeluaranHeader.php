@@ -235,8 +235,8 @@ class PengeluaranHeader extends MyModel
                                 $query = $query->where('pengeluarandetail.keterangan', 'LIKE', "%$filters[data]%");
                             } else if ($filters['field'] == 'created_at' || $filters['field'] == 'updated_at') {
                                 $query = $query->whereRaw("format(" . $this->table . "." . $filters['field'] . ", 'dd-MM-yyyy HH:mm:ss') LIKE '%$filters[data]%'");
-                            } else if ($filters['field'] == 'nominal') {
-                                $query = $query->whereRaw("format(SUM(pengeluarandetail.nominal), '#,#0.00') LIKE '%$filters[data]%'");
+                            } else if ($filters['field'] == 'nominal_detail') {
+                                $query = $query->whereRaw("format(c.nominal, '#,#0.00') LIKE '%$filters[data]%'");
                             } else {
                                 // $query = $query->where($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
                                 $query = $query->whereRaw($this->table . ".[" .  $filters['field'] . "] LIKE '%" . escapeLike($filters['data']) . "%' escape '|'");
@@ -269,6 +269,8 @@ class PengeluaranHeader extends MyModel
                                     $query = $query->orWhere('pengeluarandetail.keterangan', 'LIKE', "%$filters[data]%");
                                 } else if ($filters['field'] == 'created_at' || $filters['field'] == 'updated_at') {
                                     $query = $query->orWhereRaw("format(" . $this->table . "." . $filters['field'] . ", 'dd-MM-yyyy HH:mm:ss') LIKE '%$filters[data]%'");
+                                } else if ($filters['field'] == 'nominal_detail') {
+                                    $query = $query->orWhereRaw("format(c.nominal, '#,#0.00') LIKE '%$filters[data]%'");
                                 } else {
                                     // $query->orWhere($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
                                     $query = $query->OrwhereRaw($this->table . ".[" .  $filters['field'] . "] LIKE '%" . escapeLike($filters['data']) . "%' escape '|'");
@@ -312,13 +314,28 @@ class PengeluaranHeader extends MyModel
     {
         $this->setRequestParameters();
 
+        $temp = '##tempDetail' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+        $pengeluaranDetail = DB::table("pengeluarandetail")->from(DB::raw("pengeluarandetail with (readuncommitted)"))
+        ->select(
+            'nobukti',
+            'keterangan',
+            DB::raw('SUM(nominal) AS nominal')
+        )
+        ->groupBy('nobukti', 'keterangan');
+        Schema::create($temp, function ($table) {
+            $table->string('nobukti')->nullable();
+            $table->string('keterangan')->nullable();
+            $table->bigInteger('nominal')->nullable();
+        });
+        DB::table($temp)->insertUsing(['nobukti', 'keterangan', 'nominal'], $pengeluaranDetail);
+
         $query = DB::table($this->table)->from(DB::raw("pengeluaranheader with (readuncommitted)"))
             ->select(
                 'pengeluaranheader.id',
                 'pengeluaranheader.nobukti as nobukti_pengeluaran',
                 'pengeluaranheader.tglbukti as tglbukti_pengeluaran',
-                'pengeluarandetail.keterangan as keterangan_detail',
-                DB::raw('SUM(pengeluarandetail.nominal) AS nominal')
+                'c.keterangan as keterangan_detail',
+                'c.nominal as nominal_detail',
             )
             ->where('pengeluaranheader.bank_id', $bank)
             ->where('pengeluaranheader.tglbukti', $tglbukti)
@@ -327,8 +344,8 @@ class PengeluaranHeader extends MyModel
                 FROM rekappengeluarandetail
                 WHERE pengeluaran_nobukti = pengeluaranheader.nobukti   
               )")
-            ->leftJoin(DB::raw("pengeluarandetail with (readuncommitted)"), 'pengeluaranheader.id', 'pengeluarandetail.pengeluaran_id')
-            ->groupBy('pengeluaranheader.nobukti', 'pengeluaranheader.id', 'pengeluaranheader.tglbukti', 'pengeluarandetail.keterangan');
+            ->leftJoin(DB::raw("$temp as c with (readuncommitted)"), 'pengeluaranheader.nobukti', 'c.nobukti')
+            ->groupBy('pengeluaranheader.nobukti', 'pengeluaranheader.id', 'pengeluaranheader.tglbukti', 'c.keterangan', 'c.nominal');
 
         $this->totalRows = $query->count();
         $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;
