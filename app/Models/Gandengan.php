@@ -110,7 +110,9 @@ class Gandengan extends MyModel
                 'gandengan.created_at',
                 'gandengan.updated_at',
                 DB::raw("'Laporan Gandengan' as judulLaporan"),
-                DB::raw("'" . $getJudul->text . "' as judul")
+                DB::raw("'" . $getJudul->text . "' as judul"),
+                DB::raw("'Tgl Cetak :'+format(getdate(),'dd-MM-yyyy HH:mm:ss')as tglcetak"),
+                DB::raw(" 'User :".auth('api')->user()->name."' as usercetak") 
             )
             ->leftJoin(DB::raw("parameter with (readuncommitted)"), 'gandengan.statusaktif', 'parameter.id');
 
