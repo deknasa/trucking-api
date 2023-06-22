@@ -64,7 +64,21 @@ class InvoiceHeaderController extends Controller
         DB::beginTransaction();
 
         try {
-            $invoiceHeader = (new InvoiceHeader())->processStore($request->all());
+            $data = [
+                'tglbukti' => $request->tglbukti,
+                'tglterima' => $request->tglterima,
+                'agen_id' => $request->agen_id,
+                'jenisorder_id' => $request->jenisorder_id,
+                'piutang_nobukti' => $request->piutang_nobukti,
+                'tgldari' => $request->tgldari,
+                'tglsampai' => $request->tglsampai,
+                'sp_id' => $request->sp_id,
+                'nominalretribusi' => $request->nominalretribusi,
+                'nominalextra' => $request->nominalextra,
+                'agen' => $request->agen,
+                'jenisorder' => $request->jenisorder
+            ];
+            $invoiceHeader = (new InvoiceHeader())->processStore($data);
             $invoiceHeader->position = $this->getPosition($invoiceHeader, $invoiceHeader->getTable())->position;
             $invoiceHeader->page = ceil($invoiceHeader->position / ($request->limit ?? 10));
 
@@ -74,7 +88,6 @@ class InvoiceHeaderController extends Controller
                 'message' => 'Berhasil disimpan',
                 'data' => $invoiceHeader
             ], 201);
-
         } catch (\Throwable $th) {
             DB::rollBack();
 
@@ -100,7 +113,22 @@ class InvoiceHeaderController extends Controller
         DB::beginTransaction();
 
         try {
-            $invoiceHeader = (new InvoiceHeader())->processUpdate($invoiceheader, $request->all());
+            $data = [
+                'tglbukti' => $request->tglbukti,
+                'tglterima' => $request->tglterima,
+                'agen_id' => $request->agen_id,
+                'jenisorder_id' => $request->jenisorder_id,
+                'piutang_nobukti' => $request->piutang_nobukti,
+                'tgldari' => $request->tgldari,
+                'tglsampai' => $request->tglsampai,
+                'sp_id' => $request->sp_id,
+                'nominalretribusi' => $request->nominalretribusi,
+                'nominalextra' => $request->nominalextra,
+                'agen' => $request->agen,
+                'jenisorder' => $request->jenisorder
+            ];
+
+            $invoiceHeader = (new InvoiceHeader())->processUpdate($invoiceheader, $data);
             $invoiceHeader->position = $this->getPosition($invoiceHeader, $invoiceHeader->getTable())->position;
             $invoiceHeader->page = ceil($invoiceHeader->position / ($request->limit ?? 10));
 
@@ -125,7 +153,7 @@ class InvoiceHeaderController extends Controller
         DB::beginTransaction();
 
         try {
-            $invoiceHeader = (new InvoiceHeader())->processDestroy($id,'DELETE INVOICE');
+            $invoiceHeader = (new InvoiceHeader())->processDestroy($id, 'DELETE INVOICE');
             $selected = $this->getPosition($invoiceHeader, $invoiceHeader->getTable(), true);
             $invoiceHeader->position = $selected->position;
             $invoiceHeader->id = $selected->id;
@@ -369,7 +397,7 @@ class InvoiceHeaderController extends Controller
                 ->first();
             // $keterangan = $query['0'];
             $keterangan = [
-                'keterangan' => 'No Bukti '.$pengeluaran->nobukti.' '.$query->keterangan
+                'keterangan' => 'No Bukti ' . $pengeluaran->nobukti . ' ' . $query->keterangan
             ];
             $data = [
                 'message' => $keterangan,
@@ -387,7 +415,7 @@ class InvoiceHeaderController extends Controller
             // $keterangan = $query['0'];
             //  dd($query->keterangan);
             $keterangan = [
-                'keterangan' => 'No Bukti '.$pengeluaran->nobukti.' '.$query->keterangan
+                'keterangan' => 'No Bukti ' . $pengeluaran->nobukti . ' ' . $query->keterangan
             ];
             $data = [
                 'message' => $keterangan,

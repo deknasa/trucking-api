@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Services\RunningNumberService;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\DB;
@@ -218,13 +219,12 @@ class InvoiceChargeGandenganHeader extends MyModel
                         } else if ($filters['field'] == 'nominal') {
                             $query = $query->whereRaw("format($this->table.nominal, '#,#0.00') LIKE '%$filters[data]%'");
                         } else if ($filters['field'] == 'tglbukti' || $filters['field'] == 'tglproses' || $filters['field'] == 'tglbukacetak' || $filters['field'] == 'tglapproval') {
-                            $query = $query->whereRaw("format(".$this->table . "." . $filters['field'].", 'dd-MM-yyyy') LIKE '%$filters[data]%'");
+                            $query = $query->whereRaw("format(" . $this->table . "." . $filters['field'] . ", 'dd-MM-yyyy') LIKE '%$filters[data]%'");
                         } else if ($filters['field'] == 'created_at' || $filters['field'] == 'updated_at') {
-                            $query = $query->whereRaw("format(".$this->table . "." . $filters['field'].", 'dd-MM-yyyy HH:mm:ss') LIKE '%$filters[data]%'");
-                        } else{
+                            $query = $query->whereRaw("format(" . $this->table . "." . $filters['field'] . ", 'dd-MM-yyyy HH:mm:ss') LIKE '%$filters[data]%'");
+                        } else {
                             // $query = $query->where($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
                             $query = $query->whereRaw($this->table . ".[" .  $filters['field'] . "] LIKE '%" . escapeLike($filters['data']) . "%' escape '|'");
-
                         }
                     }
                     break;
@@ -240,13 +240,12 @@ class InvoiceChargeGandenganHeader extends MyModel
                             } else if ($filters['field'] == 'nominal') {
                                 $query = $query->orWhereRaw("format($this->table.nominal, '#,#0.00') LIKE '%$filters[data]%'");
                             } else if ($filters['field'] == 'tglbukti' || $filters['field'] == 'tglproses' || $filters['field'] == 'tglbukacetak' || $filters['field'] == 'tglapproval') {
-                                $query = $query->orWhereRaw("format(".$this->table . "." . $filters['field'].", 'dd-MM-yyyy') LIKE '%$filters[data]%'");
+                                $query = $query->orWhereRaw("format(" . $this->table . "." . $filters['field'] . ", 'dd-MM-yyyy') LIKE '%$filters[data]%'");
                             } else if ($filters['field'] == 'created_at' || $filters['field'] == 'updated_at') {
-                                $query = $query->orWhereRaw("format(".$this->table . "." . $filters['field'].", 'dd-MM-yyyy HH:mm:ss') LIKE '%$filters[data]%'");
-                            } else{
+                                $query = $query->orWhereRaw("format(" . $this->table . "." . $filters['field'] . ", 'dd-MM-yyyy HH:mm:ss') LIKE '%$filters[data]%'");
+                            } else {
                                 // $query = $query->orWhere($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
                                 $query = $query->OrwhereRaw($this->table . ".[" .  $filters['field'] . "] LIKE '%" . escapeLike($filters['data']) . "%' escape '|'");
-
                             }
                         }
                     });
@@ -278,15 +277,15 @@ class InvoiceChargeGandenganHeader extends MyModel
         return $query->skip($this->params['offset'])->take($this->params['limit']);
     }
 
-    public function getExport($id) 
+    public function getExport($id)
     {
         $this->setRequestParameters();
 
         $getJudul = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))
-        ->select('text')
-        ->where('grp', 'JUDULAN LAPORAN')
-        ->where('subgrp', 'JUDULAN LAPORAN')
-        ->first();
+            ->select('text')
+            ->where('grp', 'JUDULAN LAPORAN')
+            ->where('subgrp', 'JUDULAN LAPORAN')
+            ->first();
 
         $query = DB::table($this->table)->from(
             DB::raw($this->table . " with (readuncommitted)")
@@ -306,8 +305,165 @@ class InvoiceChargeGandenganHeader extends MyModel
             ->leftJoin(DB::raw("parameter with (readuncommitted)"), 'invoicechargegandenganheader.statusapproval', 'parameter.id')
             ->leftJoin(DB::raw("parameter as cetak with (readuncommitted)"), 'invoicechargegandenganheader.statuscetak', 'cetak.id')
             ->leftJoin(DB::raw("agen with (readuncommitted)"), 'invoicechargegandenganheader.agen_id', 'agen.id');
-        
+
         $data = $query->first();
         return $data;
+    }
+
+    public function processStore(array $data): InvoiceChargeGandenganHeader
+    {
+
+        $group = 'INVOICE CHARGE GANDENGAN';
+        $subGroup = 'INVOICE CHARGE GANDENGAN';
+
+        $format = DB::table('parameter')
+            ->where('grp', $group)
+            ->where('subgrp', $subGroup)
+            ->first();
+
+        $invoiceChargeGandenganHeader = new InvoiceChargeGandenganHeader();
+
+        $statusApproval = Parameter::from(DB::raw("parameter with (readuncommitted)"))
+            ->where('grp', 'STATUS APPROVAL')->where('text', 'NON APPROVAL')->first();
+
+        $statusCetak = Parameter::from(
+            DB::raw("parameter with (readuncommitted)")
+        )->where('grp', 'STATUSCETAK')->where('text', 'BELUM CETAK')->first();
+
+        $invoiceChargeGandenganHeader->tglbukti = date('Y-m-d', strtotime($data['tglbukti']));
+        $invoiceChargeGandenganHeader->agen_id = $data['agen_id'];
+        $invoiceChargeGandenganHeader->tglproses = date('Y-m-d', strtotime($data['tglproses']));
+        $invoiceChargeGandenganHeader->statusapproval = $statusApproval->id;
+        $invoiceChargeGandenganHeader->statuscetak = $statusCetak->id;
+        $invoiceChargeGandenganHeader->nominal = array_sum($data['nominal_detail']);
+        $invoiceChargeGandenganHeader->modifiedby = auth('api')->user()->name;
+        $invoiceChargeGandenganHeader->statusformat = $format->id;
+        $invoiceChargeGandenganHeader->nobukti = (new RunningNumberService)->get($group, $subGroup, $invoiceChargeGandenganHeader->getTable(), date('Y-m-d', strtotime($data['tglbukti'])));
+
+        if (!$invoiceChargeGandenganHeader->save()) {
+            throw new \Exception("Error storing invoice charge gandengan header.");
+        }
+
+        $invoiceChargeGandenganHeaderLogTrail = (new LogTrail())->processStore([
+            'namatabel' => strtoupper($invoiceChargeGandenganHeader->getTable()),
+            'postingdari' => 'ENTRY INVOICE CHARGE GANDENGAN HEADER',
+            'idtrans' => $invoiceChargeGandenganHeader->id,
+            'nobuktitrans' => $invoiceChargeGandenganHeader->nobukti,
+            'aksi' => 'ENTRY',
+            'datajson' => $invoiceChargeGandenganHeader->toArray(),
+            'modifiedby' => auth('api')->user()->user
+        ]);
+
+        $invoiceChargeGandenganDetails = [];
+
+        for ($i = 0; $i < count($data['nominal_detail']); $i++) {
+            $trado = Trado::where('kodetrado', $data['nopolisi_detail'][$i])->first();
+            $invoiceChargeGandenganDetail = (new InvoiceChargeGandenganDetail())->processStore($invoiceChargeGandenganHeader, [
+                "jobtrucking_detail" => $data['jobtrucking_detail'][$i],
+                "tgltrip_detail" => $data['tgltrip_detail'][$i],
+                "jumlahhari_detail" => $data['jumlahhari_detail'][$i],
+                "trado_id" => $trado->id,
+                "nominal_detail" => $data['nominal_detail'][$i],
+                "keterangan_detail" => $data['keterangan_detail'][$i],
+            ]);
+
+            $invoiceChargeGandenganDetails[] = $invoiceChargeGandenganDetail->toArray();
+        }
+
+        (new LogTrail())->processStore([
+            'namatabel' => strtoupper($invoiceChargeGandenganDetail->getTable()),
+            'postingdari' =>  'ENTRY INVOICE CHARGE GANDENGAN DETAIL',
+            'idtrans' =>  $invoiceChargeGandenganHeaderLogTrail->id,
+            'nobuktitrans' => $invoiceChargeGandenganHeader->nobukti,
+            'aksi' => 'ENTRY',
+            'datajson' => $invoiceChargeGandenganDetails,
+            'modifiedby' => auth('api')->user()->user,
+        ]);
+
+        return $invoiceChargeGandenganHeader;
+    }
+
+    public function processUpdate(InvoiceChargeGandenganHeader $invoiceChargeGandenganHeader, array $data): InvoiceChargeGandenganHeader
+    {
+        $invoiceChargeGandenganHeader->tglbukti = date('Y-m-d', strtotime($data['tglbukti']));
+        $invoiceChargeGandenganHeader->agen_id = $data['agen_id'];
+        $invoiceChargeGandenganHeader->tglproses = date('Y-m-d', strtotime($data['tglproses']));
+        $invoiceChargeGandenganHeader->modifiedby = auth('api')->user()->name;
+        $invoiceChargeGandenganHeader->nominal = array_sum($data['nominal_detail']);
+       
+        if (!$invoiceChargeGandenganHeader->save()) {
+            throw new \Exception("Error updating invoice charge header.");
+        }
+
+        $invoiceChargeGandenganHeaderLogTrail = (new LogTrail())->processStore([
+            'namatabel' => strtoupper($invoiceChargeGandenganHeader->getTable()),
+            'postingdari' => $data['postingdari'] ?? 'EDIT INVOICE CHARGE GANDENGAN HEADER',
+            'idtrans' => $invoiceChargeGandenganHeader->id,
+            'nobuktitrans' => $invoiceChargeGandenganHeader->nobukti,
+            'aksi' => 'EDIT',
+            'datajson' => $invoiceChargeGandenganHeader->toArray(),
+            'modifiedby' => auth('api')->user()->user
+        ]);
+
+        InvoiceChargeGandenganDetail::where('invoicechargegandengan_id', $invoiceChargeGandenganHeader->id)->delete();
+
+        $invoiceChargeGandenganDetails = [];
+
+        for ($i = 0; $i < count($data['nominal_detail']); $i++) {
+            $trado = Trado::where('kodetrado', $data['nopolisi_detail'][$i])->first();
+
+            $invoiceChargeGandenganDetail = (new InvoiceChargeGandenganDetail())->processStore($invoiceChargeGandenganHeader, [
+                "jobtrucking_detail" => $data['jobtrucking_detail'][$i],
+                "tgltrip_detail" => $data['tgltrip_detail'][$i],
+                "jumlahhari_detail" => $data['jumlahhari_detail'][$i],
+                "trado_id" => $trado->id,
+                "nominal_detail" => $data['nominal_detail'][$i],
+                "keterangan_detail" => $data['keterangan_detail'][$i],
+            ]);
+
+            $invoiceChargeGandenganDetails[] = $invoiceChargeGandenganDetail->toArray();
+        }
+
+        (new LogTrail())->processStore([
+            'namatabel' => strtoupper($invoiceChargeGandenganDetail->getTable()),
+            'postingdari' => $data['postingdari'] ?? 'EDIT INVOICE CHARGE GANDENGAN DETAIL',
+            'idtrans' =>  $invoiceChargeGandenganHeaderLogTrail->id,
+            'nobuktitrans' => $invoiceChargeGandenganHeader->nobukti,
+            'aksi' => 'EDIT',
+            'datajson' => $invoiceChargeGandenganDetails,
+            'modifiedby' => auth('api')->user()->user,
+        ]);
+
+        return $invoiceChargeGandenganHeader;
+    }
+
+    public function processDestroy($id, $postingDari = ''): InvoiceChargeGandenganHeader
+    {
+        $invoiceChargeGandenganDetails = InvoiceChargeGandenganDetail::lockForUpdate()->where('invoicechargegandengan_id', $id)->get();
+
+        $invoiceChargeGandenganHeader = new InvoiceChargeGandenganHeader();
+        $invoiceChargeGandenganHeader = $invoiceChargeGandenganHeader->lockAndDestroy($id);
+
+        $invoiceChargeGandenganHeaderLogTrail = (new LogTrail())->processStore([
+            'namatabel' => $invoiceChargeGandenganHeader->getTable(),
+            'postingdari' => $postingDari,
+            'idtrans' => $invoiceChargeGandenganHeader->id,
+            'nobuktitrans' => $invoiceChargeGandenganHeader->nobukti,
+            'aksi' => 'DELETE',
+            'datajson' => $invoiceChargeGandenganHeader->toArray(),
+            'modifiedby' => auth('api')->user()->name
+        ]);
+
+        (new LogTrail())->processStore([
+            'namatabel' => 'INVOICECHARGEGANDENGANDETAIL',
+            'postingdari' => $postingDari,
+            'idtrans' => $invoiceChargeGandenganHeaderLogTrail['id'],
+            'nobuktitrans' => $invoiceChargeGandenganHeader->nobukti,
+            'aksi' => 'DELETE',
+            'datajson' => $invoiceChargeGandenganDetails->toArray(),
+            'modifiedby' => auth('api')->user()->name
+        ]);
+
+        return $invoiceChargeGandenganHeader;
     }
 }

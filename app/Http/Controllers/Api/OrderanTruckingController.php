@@ -68,7 +68,7 @@ class OrderanTruckingController extends Controller
             return response($data);
         } else {
             $data = [
-                'status' => false,
+                'status' => true,
                 'message' => '',
                 'errors' => '',
                 'kondisi' => $cekdata['kondisi'],
@@ -95,7 +95,23 @@ class OrderanTruckingController extends Controller
     {
         DB::beginTransaction();
         try {
-            $orderanTrucking = (new OrderanTrucking())->processStore($request->all());
+            $data = [
+                'tglbukti' => $request->tglbukti,
+                'container_id' => $request->container_id,
+                'agen_id' => $request->agen_id,
+                'jenisorder_id' => $request->jenisorder_id,
+                'pelanggan_id' => $request->pelanggan_id,
+                'tarifrincian_id' => $request->tarifrincian_id,
+                'nojobemkl' => $request->nojobemkl,
+                'nocont' => $request->nocont,
+                'noseal' => $request->noseal,
+                'nojobemkl2' => $request->nojobemkl2,
+                'nocont2' => $request->nocont2,
+                'noseal2' => $request->noseal2,
+                'statuslangsir' => $request->statuslangsir,
+                'statusperalihan' => $request->statusperalihan,
+            ];
+            $orderanTrucking = (new OrderanTrucking())->processStore($data);
             $orderanTrucking->position = $this->getPosition($orderanTrucking, $orderanTrucking->getTable())->position;
             $orderanTrucking->page = ceil($orderanTrucking->position / ($request->limit ?? 10));
 
@@ -128,7 +144,23 @@ class OrderanTruckingController extends Controller
     {
         DB::beginTransaction();
         try {
-            $orderanTrucking = (new OrderanTrucking())->processUpdate($orderantrucking, $request->all());
+            $data = [
+                'tglbukti' => $request->tglbukti,
+                'container_id' => $request->container_id,
+                'agen_id' => $request->agen_id,
+                'jenisorder_id' => $request->jenisorder_id,
+                'pelanggan_id' => $request->pelanggan_id,
+                'tarifrincian_id' => $request->tarifrincian_id,
+                'nojobemkl' => $request->nojobemkl,
+                'nocont' => $request->nocont,
+                'noseal' => $request->noseal,
+                'nojobemkl2' => $request->nojobemkl2,
+                'nocont2' => $request->nocont2,
+                'noseal2' => $request->noseal2,
+                'statuslangsir' => $request->statuslangsir,
+                'statusperalihan' => $request->statusperalihan,
+            ];
+            $orderanTrucking = (new OrderanTrucking())->processUpdate($orderantrucking, $data);
             $orderanTrucking->position = $this->getPosition($orderanTrucking, $orderanTrucking->getTable())->position;
             $orderanTrucking->page = ceil($orderanTrucking->position / ($request->limit ?? 10));
 

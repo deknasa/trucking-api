@@ -83,7 +83,24 @@ class PelunasanPiutangHeaderController extends Controller
         DB::beginTransaction();
 
         try {
-            $pelunasanPiutangHeader = (new PelunasanPiutangHeader())->processStore($request->all());
+            $data = [
+                'tglbukti' => $request->tglbukti,
+                'bank_id' => $request->bank_id,
+                'alatbayar_id' => $request->alatbayar_id,
+                'agen_id' => $request->agen_id,
+                'agen' => $request->agen,
+                'nowarkat' => $request->nowarkat,
+                'piutang_id' => $request->piutang_id,
+                'piutang_nobukti' => $request->piutang_nobukti,
+                'nominallebihbayar' => $request->nominallebihbayar,
+                'bayar' => $request->bayar,
+                'keterangan' => $request->keterangan,
+                'potongan' => $request->potongan,
+                'coapotongan' => $request->coapotongan,
+                'keteranganpotongan' => $request->keteranganpotongan,
+                'nominallebihbayar' => $request->nominallebihbayar,
+            ];
+            $pelunasanPiutangHeader = (new PelunasanPiutangHeader())->processStore($data);
             $pelunasanPiutangHeader->position = $this->getPosition($pelunasanPiutangHeader, $pelunasanPiutangHeader->getTable())->position;
             $pelunasanPiutangHeader->page = ceil($pelunasanPiutangHeader->position / ($request->limit ?? 10));
 
@@ -122,7 +139,24 @@ class PelunasanPiutangHeaderController extends Controller
         DB::beginTransaction();
 
         try {
-            $pelunasanPiutangHeader = (new PelunasanPiutangHeader())->processUpdate($pelunasanpiutangheader, $request->all());
+            $data = [
+                'tglbukti' => $request->tglbukti,
+                'bank_id' => $request->bank_id,
+                'alatbayar_id' => $request->alatbayar_id,
+                'agen_id' => $request->agen_id,
+                'agen' => $request->agen,
+                'nowarkat' => $request->nowarkat,
+                'piutang_id' => $request->piutang_id,
+                'piutang_nobukti' => $request->piutang_nobukti,
+                'nominallebihbayar' => $request->nominallebihbayar,
+                'bayar' => $request->bayar,
+                'keterangan' => $request->keterangan,
+                'potongan' => $request->potongan,
+                'coapotongan' => $request->coapotongan,
+                'keteranganpotongan' => $request->keteranganpotongan,
+                'nominallebihbayar' => $request->nominallebihbayar,
+            ];
+            $pelunasanPiutangHeader = (new PelunasanPiutangHeader())->processUpdate($pelunasanpiutangheader, $data);
             $pelunasanPiutangHeader->position = $this->getPosition($pelunasanPiutangHeader, $pelunasanPiutangHeader->getTable())->position;
             $pelunasanPiutangHeader->page = ceil($pelunasanPiutangHeader->position / ($request->limit ?? 10));
 

@@ -32,15 +32,15 @@ class PencairanGiroPengeluaranDetail extends MyModel
         $query->select(
             $this->anotherTable . '.nobukti',
             $this->anotherTable . '.nowarkat',
-            $this->anotherTable . '.tgljatuhtempo', 
+            $this->anotherTable . '.tgljatuhtempo',
             $this->anotherTable . '.nominal',
             'coadebet.keterangancoa as coadebet',
             'coakredit.keterangancoa as coakredit',
             $this->anotherTable . '.keterangan',
             DB::raw("(case when (year($this->anotherTable.bulanbeban) <= 2000) then null else $this->anotherTable.bulanbeban end ) as bulanbeban"),
         )
-        ->leftJoin('akunpusat as coadebet',$this->anotherTable.'.coadebet','coadebet.coa')
-        ->leftJoin('akunpusat as coakredit',$this->anotherTable.'.coakredit','coakredit.coa');
+            ->leftJoin('akunpusat as coadebet', $this->anotherTable . '.coadebet', 'coadebet.coa')
+            ->leftJoin('akunpusat as coakredit', $this->anotherTable . '.coakredit', 'coakredit.coa');
 
         $this->sort($query);
         $query->where($this->anotherTable . '.pengeluaran_id', '=', request()->pengeluaran_id);
@@ -57,11 +57,11 @@ class PencairanGiroPengeluaranDetail extends MyModel
 
     public function sort($query)
     {
-        if($this->params['sortIndex'] == 'coadebet'){
+        if ($this->params['sortIndex'] == 'coadebet') {
             return $query->orderBy('coadebet.keterangancoa', $this->params['sortOrder']);
-        } else if($this->params['sortIndex'] == 'coakredit'){
+        } else if ($this->params['sortIndex'] == 'coakredit') {
             return $query->orderBy('coakredit.keterangancoa', $this->params['sortOrder']);
-        }else{
+        } else {
             return $query->orderBy($this->anotherTable . '.' . $this->params['sortIndex'], $this->params['sortOrder']);
         }
     }
@@ -117,5 +117,28 @@ class PencairanGiroPengeluaranDetail extends MyModel
     public function paginate($query)
     {
         return $query->skip($this->params['offset'])->take($this->params['limit']);
+    }
+    public function processStore(PencairanGiroPengeluaranHeader $pencairanGiroPengeluaranHeader, array $data): PencairanGiroPengeluaranDetail
+    {
+        $pencairanGiroDetail = new PencairanGiroPengeluaranDetail();
+        $pencairanGiroDetail->pencairangiropengeluaran_id = $pencairanGiroPengeluaranHeader->id;
+        $pencairanGiroDetail->nobukti = $pencairanGiroPengeluaranHeader->nobukti;
+        $pencairanGiroDetail->alatbayar_id = $data['alatbayar_id'];
+        $pencairanGiroDetail->nowarkat = $data['nowarkat'];
+        $pencairanGiroDetail->tgljatuhtempo = $data['tgljatuhtempo'];
+        $pencairanGiroDetail->nominal = $data['nominal'];
+        $pencairanGiroDetail->coadebet = $data['coadebet'];
+        $pencairanGiroDetail->coakredit = $data['coakredit'];
+        $pencairanGiroDetail->keterangan = $data['keterangan'];
+        $pencairanGiroDetail->bulanbeban = $data['bulanbeban'];
+        $pencairanGiroDetail->modifiedby = auth('api')->user()->name;
+
+        $pencairanGiroDetail->save();
+
+        if (!$pencairanGiroDetail->save()) {
+            throw new \Exception("Error storing pencairan giro pengeluaran Detail.");
+        }
+
+        return $pencairanGiroDetail;
     }
 }

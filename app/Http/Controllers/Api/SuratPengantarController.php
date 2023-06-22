@@ -66,11 +66,36 @@ class SuratPengantarController extends Controller
     public function store(StoreSuratPengantarRequest $request): JsonResponse
     {
         DB::beginTransaction();
-
-
-
         try {
-            $suratPengantar = (new SuratPengantar())->processStore($request->all());
+            $data = [
+                'jobtrucking' => $request->jobtrucking,
+                'upah_id' => $request->upah_id,
+                'container_id' => $request->container_id,
+                'tglbukti' => $request->tglbukti,
+                'keterangan' => $request->keterangan,
+                'nourutorder' => $request->nourutorder,
+                'dari_id' => $request->dari_id,
+                'sampai_id' => $request->sampai_id,
+                'statuscontainer_id' => $request->statuscontainer_id,
+                'trado_id' => $request->trado_id,
+                'supir_id' => $request->supir_id,
+                'gandengan_id' => $request->gandengan_id,
+                'statuslongtrip' => $request->statuslongtrip,
+                'statusperalihan' => $request->statusperalihan,
+                'nominalperalihan' => $request->nominalperalihan,
+                'biayatambahan_id' => $request->biayatambahan_id,
+                'nosp' => $request->nosp,
+                'nosptagihlain' => $request->nosptagihlain,
+                'qtyton' => $request->qtyton,
+                'statusgudangsama' => $request->statusgudangsama,
+                'statusbatalmuat' => $request->statusbatalmuat,
+                'gudang' => $request->gudang,
+                'keterangan_detail' => $request->keterangan_detail,
+                'nominal' => $request->nominal,
+                'nominalTagih' => $request->nominalTagih,
+
+            ];
+            $suratPengantar = (new SuratPengantar())->processStore($data);
             $suratPengantar->position = $this->getPosition($suratPengantar, $suratPengantar->getTable())->position;
             $suratPengantar->page = ceil($suratPengantar->position / ($request->limit ?? 10));
 
@@ -106,7 +131,35 @@ class SuratPengantarController extends Controller
 
         DB::beginTransaction();
         try {
-            $suratPengantar = (new SuratPengantar())->processUpdate($suratpengantar, $request->all());
+            $data = [
+                'jobtrucking' => $request->jobtrucking,
+                'upah_id' => $request->upah_id,
+                'container_id' => $request->container_id,
+                'tglbukti' => $request->tglbukti,
+                'keterangan' => $request->keterangan,
+                'nourutorder' => $request->nourutorder,
+                'dari_id' => $request->dari_id,
+                'sampai_id' => $request->sampai_id,
+                'statuscontainer_id' => $request->statuscontainer_id,
+                'trado_id' => $request->trado_id,
+                'supir_id' => $request->supir_id,
+                'gandengan_id' => $request->gandengan_id,
+                'statuslongtrip' => $request->statuslongtrip,
+                'statusperalihan' => $request->statusperalihan,
+                'nominalperalihan' => $request->nominalperalihan,
+                'biayatambahan_id' => $request->biayatambahan_id,
+                'nosp' => $request->nosp,
+                'nosptagihlain' => $request->nosptagihlain,
+                'qtyton' => $request->qtyton,
+                'statusgudangsama' => $request->statusgudangsama,
+                'statusbatalmuat' => $request->statusbatalmuat,
+                'gudang' => $request->gudang,
+                'keterangan_detail' => $request->keterangan_detail,
+                'nominal' => $request->nominal,
+                'nominalTagih' => $request->nominalTagih,
+
+            ];
+            $suratPengantar = (new SuratPengantar())->processUpdate($suratpengantar, $data);
             $suratPengantar->position = $this->getPosition($suratPengantar, $suratPengantar->getTable())->position;
             $suratPengantar->page = ceil($suratPengantar->position / ($request->limit ?? 10));
 

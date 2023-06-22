@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Services\RunningNumberService;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\DB;
@@ -63,24 +64,24 @@ class PencairanGiroPengeluaranHeader extends MyModel
     public function selectColumns($query)
     {
         return $query->from(
-            DB::raw($this->table . " with (readuncommitted)")
+            DB::raw($this->table . " as pgp with (readuncommitted)")
         )
             ->select(
                 DB::raw(
-                    "$this->table.id,
-            $this->table.nobukti,
-            $this->table.tglbukti,
-            $this->table.keterangan,
-            $this->table.pengeluaran_nobukti,
+                    "pgp.id,
+            pgp.nobukti,
+            pgp.tglbukti,
+            pgp.keterangan,
+            pgp.pengeluaran_nobukti,
             statusapproval.text as statusapproval,
-            $this->table.userapproval,
-            $this->table.tglapproval,
-            $this->table.modifiedby,
-            $this->table.created_at,
-            $this->table.updated_at"
+            pgp.userapproval,
+            pgp.tglapproval,
+            pgp.modifiedby,
+            pgp.created_at,
+            pgp.updated_at"
                 )
             )
-            ->leftJoin(DB::raw("parameter as statusapproval with (readuncommitted)"), 'pencairangiropengeluaranheader.statusapproval', 'statusapproval.id');
+            ->leftJoin(DB::raw("parameter as statusapproval with (readuncommitted)"), 'pgp.statusapproval', 'statusapproval.id');
     }
 
     public function createTemp(string $modelTable)
@@ -158,7 +159,6 @@ class PencairanGiroPengeluaranHeader extends MyModel
                         } else {
                             // $query = $query->where($table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
                             $query = $query->whereRaw($this->table . ".[" .  $filters['field'] . "] LIKE '%" . escapeLike($filters['data']) . "%' escape '|'");
-
                         }
                     }
 
@@ -187,7 +187,6 @@ class PencairanGiroPengeluaranHeader extends MyModel
                             } else {
                                 // $query = $query->orWhere($this->anotherTable . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
                                 $query = $query->OrwhereRaw($this->table . ".[" .  $filters['field'] . "] LIKE '%" . escapeLike($filters['data']) . "%' escape '|'");
-
                             }
                         }
                     });
@@ -208,5 +207,145 @@ class PencairanGiroPengeluaranHeader extends MyModel
     public function paginate($query)
     {
         return $query->skip($this->params['offset'])->take($this->params['limit']);
+    }
+
+    public function processStore(array $data): PencairanGiroPengeluaranHeader
+    {
+
+        $group = 'PENCAIRAN GIRO BUKTI';
+        $subGroup = 'PENCAIRAN GIRO BUKTI';
+
+        $format = DB::table('parameter')
+            ->where('grp', $group)
+            ->where('subgrp', $subGroup)
+            ->first();
+
+        $pencairanGiro = new PencairanGiroPengeluaranHeader();
+
+        $statusApproval = Parameter::where('grp', 'STATUS APPROVAL')->where('text', 'NON APPROVAL')->first();
+
+        for ($i = 0; $i < count($data['pengeluaranId']); $i++) {
+
+            $pengeluaran = PengeluaranHeader::from(DB::raw("pengeluaranheader with (readuncommitted)"))
+                ->select('nobukti', 'alatbayar_id')->where('id', $data['pengeluaranId'][$i])->first();
+
+            $cekPencairan = PencairanGiroPengeluaranHeader::from(DB::raw("pencairangiropengeluaranheader with (readuncommitted)"))->where('pengeluaran_nobukti', $pengeluaran->nobukti)->first();
+
+            if ($cekPencairan != null) {
+                $getJurnalHeader = JurnalUmumHeader::where('nobukti', $cekPencairan->nobukti)->first();
+                $this->processDestroy($cekPencairan->id);
+
+                (new JurnalUmumHeader())->processDestroy($getJurnalHeader->id, 'PENCAIRAN GIRO PENGELUARAN DETAIL');
+            } else {
+                $pencairanGiro->nobukti = (new RunningNumberService)->get($group, $subGroup, $pencairanGiro->getTable(), date('Y-m-d'));
+                $pencairanGiro->tglbukti = date('Y-m-d');
+                $pencairanGiro->pengeluaran_nobukti = $pengeluaran->nobukti;
+                $pencairanGiro->statusapproval = $statusApproval->id;
+                $pencairanGiro->userapproval = '';
+                $pencairanGiro->tglapproval = '';
+                $pencairanGiro->modifiedby = auth('api')->user()->name;
+                $pencairanGiro->statusformat = $format->id;
+
+                if (!$pencairanGiro->save()) {
+                    throw new \Exception("Error storing pencairan giro pengeluaran header.");
+                }
+                $pencairanGiroLogTrail = (new LogTrail())->processStore([
+                    'namatabel' => strtoupper($pencairanGiro->getTable()),
+                    'postingdari' => 'ENTRY PENCAIRAN GIRO PENGELUARAN HEADER',
+                    'idtrans' => $pencairanGiro->id,
+                    'nobuktitrans' => $pencairanGiro->nobukti,
+                    'aksi' => 'ENTRY',
+                    'datajson' => $pencairanGiro->toArray(),
+                    'modifiedby' => auth('api')->user()->user
+                ]);
+
+
+
+                // STORE DETAIL
+
+                $pengeluaranDetail = PengeluaranDetail::from(DB::raw("pengeluarandetail with (readuncommitted)"))->where('pengeluaran_id', $data['pengeluaranId'][$i])->get();
+
+                $pencairanGiroDetails = [];
+                $coadebet_detail = [];
+                $coakredit_detail = [];
+                $keterangan_detail = [];
+                $nominal_detail = [];
+
+                foreach ($pengeluaranDetail as $index => $value) {
+
+                    $pencairanGiroDetail = (new PencairanGiroPengeluaranDetail())->processStore($pencairanGiro, [
+                        'alatbayar_id' => $pengeluaran->alatbayar_id,
+                        'nowarkat' => $value->nowarkat,
+                        'tgljatuhtempo' => $value->tgljatuhtempo,
+                        'nominal' => $value->nominal,
+                        'coadebet' => $value->coadebet,
+                        'coakredit' => $value->coakredit,
+                        'keterangan' => $value->keterangan,
+                        'bulanbeban' => $value->bulanbeban,
+                    ]);
+
+                    $coadebet_detail[$index] = $value->coadebet;
+                    $coakredit_detail[$index] = $value->coakredit;
+                    $keterangan_detail[$index] = $value->keterangan;
+                    $nominal_detail[$index] = $value->nominal;
+
+                    $pencairanGiroDetails[] = $pencairanGiroDetail->toArray();
+                }
+
+
+                (new LogTrail())->processStore([
+                    'namatabel' => 'PENCAIRANGIROPENGELUARANDETAIL',
+                    'postingdari' => 'ENTRY PENCAIRAN GIRO PENGELUARAN DETAIL',
+                    'idtrans' => $pencairanGiroLogTrail['id'],
+                    'nobuktitrans' => $pencairanGiro->nobukti,
+                    'aksi' => 'ENTRY',
+                    'datajson' => $pencairanGiroDetails,
+                    'modifiedby' => auth('api')->user()->name
+                ]);
+
+                $jurnalRequest = [
+                    'tanpaprosesnobukti' => 1,
+                    'nobukti' => $pencairanGiro->nobukti,
+                    'tglbukti' => date('Y-m-d'),
+                    'postingdari' => "ENTRY PENCAIRAN GIRO PENGELUARAN",
+                    'statusformat' => "0",
+                    'coakredit_detail' => $coakredit_detail,
+                    'coadebet_detail' => $coadebet_detail,
+                    'nominal_detail' => $nominal_detail,
+                    'keterangan_detail' => $keterangan_detail
+                ];
+                (new JurnalUmumHeader())->processStore($jurnalRequest);
+            }
+        }
+        return $pencairanGiro;
+    }
+
+    public function processDestroy($id, $postingDari = ''): PencairanGiroPengeluaranHeader
+    {
+        $getDetail = PencairanGiroPengeluaranDetail::lockForUpdate()->where('pencairangiropengeluaran_id', $id)->get();
+
+        $pencairanGiro = new PencairanGiroPengeluaranHeader();
+        $pencairanGiro = $pencairanGiro->lockAndDestroy($id);
+
+        $pencairanGiroLogTrail = (new LogTrail())->processStore([
+            'namatabel' => strtoupper($pencairanGiro->getTable()),
+            'postingdari' => 'DELETE PENCAIRAN GIRO PENGELUARAN HEADER',
+            'idtrans' => $pencairanGiro->id,
+            'nobuktitrans' => $pencairanGiro->nobukti,
+            'aksi' => 'DELETE',
+            'datajson' => $pencairanGiro->toArray(),
+            'modifiedby' => auth('api')->user()->user
+        ]);
+        (new LogTrail())->processStore([
+            'namatabel' => 'PENCAIRANGIROPENGELUARANDETAIL',
+            'postingdari' => 'DELETE PENCAIRAN GIRO PENGELUARAN DETAIL',
+            'idtrans' => $pencairanGiroLogTrail['id'],
+            'nobuktitrans' => $pencairanGiro->nobukti,
+            'aksi' => 'DELETE',
+            'datajson' => $getDetail->toArray(),
+            'modifiedby' => auth('api')->user()->name
+        ]);
+
+        return $pencairanGiro;
     }
 }

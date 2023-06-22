@@ -84,6 +84,7 @@ class RekapPenerimaanHeaderController extends Controller
         return response([
             'status' => true,
             'data' => $data,
+            'detail' => $rekapPenerimaanHeader->getRekapPenerimaanHeader($id),
         ]);
     }
     /**

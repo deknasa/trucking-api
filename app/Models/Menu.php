@@ -32,24 +32,31 @@ class Menu extends MyModel
             ->first();
 
         $query = DB::table($this->table)
-            ->from(DB::raw($this->table . " with (readuncommitted)"))
+            ->from(DB::raw($this->table . " as menu with (readuncommitted)"))
             ->select(
-                'id',
-                'menuname',
-                'menuseq',
-                'menuparent',
-                'menuicon',
-                'aco_id',
-                'link',
-                'menuexe',
-                'menukode',
-                'modifiedby',
-                'created_at',
-                'updated_at',
+                'menu.id',
+                'menu.menuname',
+                'menu.menuseq',
+                'menu.menuparent',
+                'menu2.menuname as menuparent2',
+                'menu.menuicon',
+                'menu.aco_id',
+                'menu.link',
+                'menu.menuexe',
+                'menu.menukode',
+                'menu.modifiedby',
+                'menu.created_at',
+                'menu.updated_at',
                 DB::raw("'Laporan Menu' as judulLaporan"),
                 DB::raw("'" . $getJudul->text . "' as judul"),
                 DB::raw("'Tanggal Cetak : '+format(getdate(),'dd-MM-yyyy HH:mm:ss')+' User :" . auth('api')->user()->name . "' as tglcetak")
             );
+                DB::raw("'Tgl Cetak :'+format(getdate(),'dd-MM-yyyy HH:mm:ss')as tglcetak"),
+                DB::raw(" 'User :".auth('api')->user()->name."' as usercetak")
+            )
+            ->leftJoin(DB::raw("menu as menu2 with (readuncommitted)"), 'menu2.id', '=', 'menu.menuparent');
+
+      
 
         $this->totalRows = $query->count();
         $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;

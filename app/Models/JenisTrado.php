@@ -76,7 +76,9 @@ class JenisTrado extends MyModel
                 'jenistrado.created_at',
                 'jenistrado.updated_at',
                 DB::raw("'Laporan Jenis Trado' as judulLaporan"),
-                DB::raw("'" . $getJudul->text . "' as judul")
+                DB::raw("'" . $getJudul->text . "' as judul"),
+                DB::raw("'Tgl Cetak :'+format(getdate(),'dd-MM-yyyy HH:mm:ss')as tglcetak"),
+                DB::raw(" 'User :".auth('api')->user()->name."' as usercetak")
             )
             ->leftJoin(DB::raw("parameter with (readuncommitted)"), 'jenistrado.statusaktif', '=', 'parameter.id');
 

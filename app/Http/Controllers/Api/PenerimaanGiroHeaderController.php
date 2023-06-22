@@ -51,7 +51,22 @@ class PenerimaanGiroHeaderController extends Controller
     {
         DB::BeginTransaction();
         try {
-            $penerimaanGiroHeader = (new PenerimaanGiroHeader())->processStore($request->all());
+            $data = [
+                'tglbukti' => $request->tglbukti,
+                'pelanggan_id' => $request->pelanggan_id,
+                'agen_id' => $request->agen_id,
+                'diterimadari' => $request->diterimadari,
+                'tgllunas' => $request->tgllunas,
+                'nowarkat' => $request->nowarkat,
+                'tgljatuhtempo' => $request->tgljatuhtempo,
+                'nominal' => $request->nominal,
+                'keterangan_detail' => $request->keterangan_detail,
+                'bank_id' => $request->bank_id,
+                'bankpelanggan_id' => $request->bankpelanggan_id,
+                'jenisbiaya' => $request->jenisbiaya,
+                'bulanbeban' => $request->bulanbeban,
+            ];
+            $penerimaanGiroHeader = (new PenerimaanGiroHeader())->processStore($data);
             $penerimaanGiroHeader->position = $this->getPosition($penerimaanGiroHeader, $penerimaanGiroHeader->getTable())->position;
             $penerimaanGiroHeader->page = ceil($penerimaanGiroHeader->position / ($request->limit ?? 10));
 
@@ -87,8 +102,22 @@ class PenerimaanGiroHeaderController extends Controller
         DB::beginTransaction();
 
         try {
-
-            $penerimaanGiroHeader = (new PenerimaanGiroHeader())->processUpdate($penerimaangiroheader, $request->all());
+            $data = [
+                'tglbukti' => $request->tglbukti,
+                'pelanggan_id' => $request->pelanggan_id,
+                'agen_id' => $request->agen_id,
+                'diterimadari' => $request->diterimadari,
+                'tgllunas' => $request->tgllunas,
+                'nowarkat' => $request->nowarkat,
+                'tgljatuhtempo' => $request->tgljatuhtempo,
+                'nominal' => $request->nominal,
+                'keterangan_detail' => $request->keterangan_detail,
+                'bank_id' => $request->bank_id,
+                'bankpelanggan_id' => $request->bankpelanggan_id,
+                'jenisbiaya' => $request->jenisbiaya,
+                'bulanbeban' => $request->bulanbeban,
+            ];
+            $penerimaanGiroHeader = (new PenerimaanGiroHeader())->processUpdate($penerimaangiroheader, $data);
             /* Set position and page */
             $penerimaanGiroHeader->position = $this->getPosition($penerimaanGiroHeader, $penerimaanGiroHeader->getTable())->position;
             $penerimaanGiroHeader->page = ceil($penerimaanGiroHeader->position / ($request->limit ?? 10));

@@ -19,6 +19,7 @@ use App\Models\PengeluaranDetail;
 use App\Models\PengeluaranHeader;
 use App\Rules\ApprovalBukaCetak;
 use App\Rules\PencairanGiro;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
@@ -59,7 +60,7 @@ class PencairanGiroPengeluaranHeaderController extends Controller
     /**
      * @ClassName
      */
-    public function store(StorePencairanGiroPengeluaranHeaderRequest $request)
+    public function store(StorePencairanGiroPengeluaranHeaderRequest $request): JsonResponse
     {
         DB::BeginTransaction();
         try {
@@ -277,59 +278,14 @@ class PencairanGiroPengeluaranHeaderController extends Controller
             $request->sortorder = $request->sortorder ?? 'asc';
             DB::commit();
 
-            return response([
-                'status' => true,
+            return response()->json([
                 'message' => 'Berhasil disimpan',
                 'data' => $pencairanGiro
-            ]);
+            ], 201);      
+
         } catch (\Throwable $th) {
             DB::rollBack();
             throw $th;
-            return response($th->getMessage());
-        }
-    }
-
-    private function storeJurnal($header, $detail)
-    {
-
-        try {
-            $jurnal = new StoreJurnalUmumHeaderRequest($header);
-            $jurnals = app(JurnalUmumHeaderController::class)->store($jurnal);
-
-            $nobukti = $header['nobukti'];
-            $fetchId = JurnalUmumHeader::select('id')
-                ->where('nobukti', '=', $nobukti)
-                ->first();
-            foreach ($detail as $key => $value) {
-                $value['jurnalumum_id'] = $jurnals->original['data']['id'];
-                $jurnal = new StoreJurnalUmumDetailRequest($value);
-                $datadetails = app(JurnalUmumDetailController::class)->store($jurnal);
-
-                $detailLog[] = $datadetails['detail']->toArray();
-            }
-
-            $datalogtrail = [
-                'namatabel' => strtoupper($datadetails['tabel']),
-                'postingdari' => 'ENTRY PENCAIRAN GIRO PENGELUARAN',
-                'idtrans' => $jurnals->original['idlogtrail'],
-                'nobuktitrans' => $nobukti,
-                'aksi' => 'ENTRY',
-                'datajson' => $detailLog,
-                'modifiedby' => auth('api')->user()->name,
-            ];
-
-            $data = new StoreLogTrailRequest($datalogtrail);
-            app(LogTrailController::class)->store($data);
-
-
-            return [
-                'status' => true,
-            ];
-        } catch (\Exception $e) {
-            return [
-                'status' => false,
-                'message' => $e->getMessage(),
-            ];
         }
     }
 

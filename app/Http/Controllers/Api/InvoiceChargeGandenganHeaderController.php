@@ -14,7 +14,8 @@ use App\Http\Requests\UpdateInvoiceChargeGandenganHeaderRequest;
 use Illuminate\Support\Facades\DB;
 use App\Http\Requests\StoreInvoiceChargeGandenganDetailRequest;
 use App\Http\Requests\GetIndexRangeRequest;
-
+use App\Models\Error;
+use Illuminate\Http\JsonResponse;
 
 class InvoiceChargeGandenganHeaderController extends Controller
 {
@@ -39,23 +40,28 @@ class InvoiceChargeGandenganHeaderController extends Controller
     /**
      * @ClassName 
      */
-    public function store(StoreInvoiceChargeGandenganHeaderRequest $request)
+    public function store(StoreInvoiceChargeGandenganHeaderRequest $request): JsonResponse
     {
         DB::beginTransaction();
         try {
-            $group = 'INVOICE CHARGE GANDENGAN';
-            $subgroup = 'INVOICE CHARGE GANDENGAN';
 
-            $format = DB::table('parameter')
-                ->where('grp', $group)
-                ->where('subgrp', $subgroup)
-                ->first();
+            $data = [
+                'tglbukti' => $request->tglbukti,
+                'agen_id' => $request->agen_id,
+                'tglproses' => $request->tglproses,
+                'id_detail' => $request->id_detail,
+                'jobtrucking_detail' => $request->jobtrucking_detail,
+                'tgltrip_detail' => $request->tgltrip_detail,
+                'jumlahhari_detail' => $request->jumlahhari_detail,
+                'nopolisi_detail' => $request->nopolisi_detail,
+                'keterangan_detail' => $request->keterangan_detail,
+                'nominal_detail' => $request->nominal_detail
+            ];
+            $invoiceChargeGandengan = (new InvoiceChargeGandenganHeader())->processStore($data);
+            $invoiceChargeGandengan->position = $this->getPosition($invoiceChargeGandengan, $invoiceChargeGandengan->getTable())->position;
+            $invoiceChargeGandengan->page = ceil($invoiceChargeGandengan->position / ($request->limit ?? 10));
 
-            $content = new Request();
-            $content['group'] = $group;
-            $content['subgroup'] = $subgroup;
-            $content['table'] = 'invoicechargegandenganheader';
-            $content['tgl'] = date('Y-m-d', strtotime($request->tglbukti));
+            DB::commit();
 
             $statusApproval = Parameter::from(DB::raw("parameter with (readuncommitted)"))
                 ->where('grp', 'STATUS APPROVAL')->where('text', 'NON APPROVAL')->first();
@@ -163,40 +169,38 @@ class InvoiceChargeGandenganHeaderController extends Controller
 
             return response([
                 'message' => 'Berhasil disimpan',
-                'data' => $invoiceChargeGandenganHeader
+                'data' => $invoiceChargeGandengan
             ], 201);
+<<<<<<< HEAD
 
             return response($invoiceChargeGandenganHeader, 422);
+=======
+>>>>>>> a8acf1ecf07bf2c9c32e09b26f20fb000ded3599
         } catch (\Throwable $th) {
             DB::rollBack();
             throw $th;
         }
     }
 
-    /**
-     * @ClassName 
-     */
     public function show($id)
     {
         $invoiceChargeGandenganHeader = new InvoiceChargeGandenganHeader();
         return response([
             'status' => true,
-            'data' => $invoiceChargeGandenganHeader->find($id)
+            'data' => $invoiceChargeGandenganHeader->find($id),
+            'detail' => $invoiceChargeGandenganHeader->getInvoiceGandengan($id)
         ]);
     }
 
     /**
      * @ClassName 
      */
-    public function update(UpdateInvoiceChargeGandenganHeaderRequest $request,  $id)
+    public function update(UpdateInvoiceChargeGandenganHeaderRequest $request, InvoiceChargeGandenganHeader $invoicechargegandenganheader): JsonResponse
     {
         DB::beginTransaction();
         try {
-            $statusApproval = Parameter::from(DB::raw("parameter with (readuncommitted)"))
-                ->where('grp', 'STATUS APPROVAL')->where('text', 'NON APPROVAL')->first();
-            $statusCetak = Parameter::from(DB::raw("parameter with (readuncommitted)"))
-                ->where('grp', 'STATUSCETAK')->where('text', 'BELUM CETAK')->first();
 
+<<<<<<< HEAD
             $total = array_sum($request->nominal_detail);
             $invoiceChargeGandenganHeader = InvoiceChargeGandenganHeader::findOrFail($id);
 
@@ -300,6 +304,30 @@ class InvoiceChargeGandenganHeaderController extends Controller
             ], 201);
 
             return response($invoiceChargeGandenganHeader, 422);
+=======
+            $data = [
+                'tglbukti' => $request->tglbukti,
+                'agen_id' => $request->agen_id,
+                'tglproses' => $request->tglproses,
+                'id_detail' => $request->id_detail,
+                'jobtrucking_detail' => $request->jobtrucking_detail,
+                'tgltrip_detail' => $request->tgltrip_detail,
+                'jumlahhari_detail' => $request->jumlahhari_detail,
+                'nopolisi_detail' => $request->nopolisi_detail,
+                'keterangan_detail' => $request->keterangan_detail,
+                'nominal_detail' => $request->nominal_detail
+            ];
+            $invoiceChargeGandengan = (new InvoiceChargeGandenganHeader())->processUpdate($invoicechargegandenganheader, $data);
+            $invoiceChargeGandengan->position = $this->getPosition($invoiceChargeGandengan, $invoiceChargeGandengan->getTable())->position;
+            $invoiceChargeGandengan->page = ceil($invoiceChargeGandengan->position / ($request->limit ?? 10));
+
+            DB::commit();
+
+            return response()->json([
+                'message' => 'Berhasil diubah',
+                'data' => $invoiceChargeGandengan
+            ]);
+>>>>>>> a8acf1ecf07bf2c9c32e09b26f20fb000ded3599
         } catch (\Throwable $th) {
             DB::rollBack();
             throw $th;
@@ -307,70 +335,29 @@ class InvoiceChargeGandenganHeaderController extends Controller
     }
 
     /**
-     * Remove the specified resource from storage.
-     *
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
+     * @ClassName 
      */
-    public function destroy($id)
+    public function destroy(Request $request, $id)
     {
         DB::beginTransaction();
 
-
-        $getDetail = InvoiceChargeGandenganDetail::lockForUpdate()->where('invoicechargegandengan_id', $id)->get();
-
-        $request['postingdari'] = "DELETE INVOICE EXTRA";
-        $invoiceChargeGandengan = new InvoiceChargeGandenganHeader();
-        $invoiceChargeGandengan = $invoiceChargeGandengan->lockAndDestroy($id);
-
-        if ($invoiceChargeGandengan) {
-            $logTrail = [
-                'namatabel' => strtoupper($invoiceChargeGandengan->getTable()),
-                'postingdari' => 'DELETE INVOICE HEADER',
-                'idtrans' => $invoiceChargeGandengan->id,
-                'nobuktitrans' => $invoiceChargeGandengan->nobukti,
-                'aksi' => 'DELETE',
-                'datajson' => $invoiceChargeGandengan->toArray(),
-                'modifiedby' => auth('api')->user()->name
-            ];
-
-            $validatedLogTrail = new StoreLogTrailRequest($logTrail);
-            $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
-
-            // DELETE INVOICE EXTRA DETAIL
-            $logTrailInvoiceChargeGandenganDetail = [
-                'namatabel' => 'INVOICECHARGEGANDENGANDETAIL',
-                'postingdari' => 'DELETE INVOICE CHARGE GANDENGAN DETAIL',
-                'idtrans' => $storedLogTrail['id'],
-                'nobuktitrans' => $invoiceChargeGandengan->nobukti,
-                'aksi' => 'DELETE',
-                'datajson' => $getDetail->toArray(),
-                'modifiedby' => auth('api')->user()->name
-            ];
-
-            $validatedLogTrailInvoiceChargeGandenganDetail = new StoreLogTrailRequest($logTrailInvoiceChargeGandenganDetail);
-            app(LogTrailController::class)->store($validatedLogTrailInvoiceChargeGandenganDetail);
-
-
-            DB::commit();
-
+        try {
+            $invoiceChargeGandengan = (new InvoiceChargeGandenganHeader())->processDestroy($id, 'DELETE INVOICE CHARGE GANDENGAN');
             $selected = $this->getPosition($invoiceChargeGandengan, $invoiceChargeGandengan->getTable(), true);
             $invoiceChargeGandengan->position = $selected->position;
             $invoiceChargeGandengan->id = $selected->id;
             $invoiceChargeGandengan->page = ceil($invoiceChargeGandengan->position / ($request->limit ?? 10));
 
-            return response([
-                'status' => true,
+            DB::commit();
+
+            return response()->json([
                 'message' => 'Berhasil dihapus',
                 'data' => $invoiceChargeGandengan
             ]);
-        } else {
+        } catch (\Throwable $th) {
             DB::rollBack();
 
-            return response([
-                'status' => false,
-                'message' => 'Gagal dihapus'
-            ]);
+            throw $th;
         }
     }
 

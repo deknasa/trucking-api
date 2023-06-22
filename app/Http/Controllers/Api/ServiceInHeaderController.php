@@ -44,7 +44,14 @@ class ServiceInHeaderController extends Controller
         DB::beginTransaction();
 
         try {
-            $serviceInHeader = (new ServiceInHeader())->processStore($request->all());
+            $data = [
+                'tglbukti' => $request->tglbukti,
+                'trado_id' => $request->trado_id,
+                'tglmasuk' => $request->tglmasuk,
+                'karyawan_id' => $request->karyawan_id,
+                'keterangan_detail' => $request->keterangan_detail,
+            ];
+            $serviceInHeader = (new ServiceInHeader())->processStore($data);
             $serviceInHeader->position = $this->getPosition($serviceInHeader, $serviceInHeader->getTable())->position;
             $serviceInHeader->page = ceil($serviceInHeader->position / ($request->limit ?? 10));
 
@@ -81,7 +88,14 @@ class ServiceInHeaderController extends Controller
         DB::beginTransaction();
 
         try {
-            $serviceInHeader = (new ServiceInHeader())->processUpdate($serviceInHeader, $request->all());
+            $data = [
+                'tglbukti' => $request->tglbukti,
+                'trado_id' => $request->trado_id,
+                'tglmasuk' => $request->tglmasuk,
+                'karyawan_id' => $request->karyawan_id,
+                'keterangan_detail' => $request->keterangan_detail,
+            ];
+            $serviceInHeader = (new ServiceInHeader())->processUpdate($serviceInHeader, $data);
             $serviceInHeader->position = $this->getPosition($serviceInHeader, $serviceInHeader->getTable())->position;
             $serviceInHeader->page = ceil($serviceInHeader->position / ($request->limit ?? 10));
 
