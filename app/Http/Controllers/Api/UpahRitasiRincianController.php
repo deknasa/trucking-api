@@ -65,7 +65,9 @@ class UpahRitasiRincianController extends Controller
                     'detail.nominalsupir',
                     'detail.liter',
                     DB::raw("'Laporan Upah Ritasi' as judulLaporan"),
-                    DB::raw("'" . $getJudul->text . "' as judul")
+                    DB::raw("'" . $getJudul->text . "' as judul"),
+                    DB::raw("'Tgl Cetak :'+format(getdate(),'dd-MM-yyyy HH:mm:ss')as tglcetak"),
+                    DB::raw(" 'User :".auth('api')->user()->name."' as usercetak")
                 )
                     ->leftJoin(DB::raw("upahritasi as header with (readuncommitted)"), 'header.id', 'detail.upahritasi_id')
                     ->leftJoin(DB::raw("kota as kotadari with (readuncommitted)"), 'kotadari.id', '=', 'header.kotadari_id')

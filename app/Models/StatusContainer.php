@@ -85,7 +85,9 @@ class StatusContainer extends MyModel
                 'statuscontainer.created_at',
                 'statuscontainer.updated_at',
                 DB::raw("'Laporan Status Container' as judulLaporan"),
-                DB::raw("'" . $getJudul->text . "' as judul")
+                DB::raw("'" . $getJudul->text . "' as judul"),
+                DB::raw("'Tgl Cetak :'+format(getdate(),'dd-MM-yyyy HH:mm:ss')as tglcetak"),
+                DB::raw(" 'User :".auth('api')->user()->name."' as usercetak")
             )
             ->leftJoin(DB::raw("parameter with (readuncommitted)"), 'statuscontainer.statusaktif', '=', 'parameter.id');
 
