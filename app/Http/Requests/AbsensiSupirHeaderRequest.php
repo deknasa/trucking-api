@@ -99,10 +99,15 @@ class AbsensiSupirHeaderRequest extends FormRequest
                 ->select(
                     'tglbukti',
                     'nobukti',
-                    'kasgantung_nobukti'
+                    'kasgantung_nobukti',
+                    'statusapprovaleditabsensi'
                 )
                 ->where('id', $this->id)
                 ->first();
+            $approvaledit = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))
+                            ->where('grp','STATUS EDIT ABSENSI')
+                            ->where('subgrp','STATUS EDIT ABSENSI')
+                            ->first();
 
 
 
@@ -125,6 +130,13 @@ class AbsensiSupirHeaderRequest extends FormRequest
             } else {
                 $kondisi = false;
             }
+
+            if ($queryexist->statusapprovaleditabsensi == $approvaledit->id) {
+                $kondisi = true;
+            }else{
+                $kondisi = false;
+            }
+            
             $tglbukti = date('d-m-Y', strtotime($queryexist->tglbukti));
             $rulesBeda = [
                 'tglbukti' => [

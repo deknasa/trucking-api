@@ -536,12 +536,28 @@ class AbsensiSupirHeaderController extends Controller
         $passes = true;
         $isEditAble = AbsensiSupirHeader::isEditAble($id);
         if (!$isEditAble) {
-            $query = DB::table('error')->select('keterangan')->where('kodeerror', '=', 'SATL')->get();
+            $query = DB::table('error')->select('keterangan')->where('kodeerror', '=', 'BAED')->get();
             $keterangan = $query['0'];
 
             $data = [
                 'message' => $keterangan,
                 'errors' => 'status approve edit tidak boleh',
+                'kodestatus' => '1',
+                'kodenobukti' => '1'
+            ];
+            $passes = false;
+            // return response($data);
+        }
+
+
+        $isDateAllowed = AbsensiSupirHeader::isDateAllowed($id);
+        if (!$isDateAllowed) {
+            $query = DB::table('error')->select('keterangan')->where('kodeerror', '=', 'TEPT')->get();
+            $keterangan = $query['0'];
+
+            $data = [
+                'message' => $keterangan,
+                'errors' => 'data tidak bisa diedit pada tanggal ini',
                 'kodestatus' => '1',
                 'kodenobukti' => '1'
             ];
@@ -564,7 +580,7 @@ class AbsensiSupirHeaderController extends Controller
 
             // return response($data);
         }
-        if (($todayValidation && $isApproved) || ($isEditAble && $printValidation)) {
+        if (($todayValidation && $isApproved) || ($isEditAble && $printValidation) || $isDateAllowed) {
             $data = [
                 'message' => '',
                 'errors' => 'success',
