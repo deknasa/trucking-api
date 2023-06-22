@@ -38,7 +38,6 @@ class DestroyOrderanTruckingRequest extends FormRequest
         } else {
             $cekdtcetak=false;
         }
-            
         return [
             'id' => [ new ValidasiDestroyOrderanTrucking($cekdata['kondisi'],$cekdtcetak)],
         ];
