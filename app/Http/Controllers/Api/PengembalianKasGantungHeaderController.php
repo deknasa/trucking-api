@@ -36,8 +36,10 @@ use PhpParser\Node\Stmt\Else_;
 
 class PengembalianKasGantungHeaderController extends Controller
 {
-    /**
+      /**
      * @ClassName 
+     * PengembalianKasGantungHeader
+     * @Detail1 PengembalianKasGantungDetailController
      */
     public function index(GetIndexRangeRequest $request)
     {
@@ -49,7 +51,6 @@ class PengembalianKasGantungHeaderController extends Controller
                 'totalPages' => $pengembalianKasGantungHeader->totalPages
             ]
         ]);
-
     }
 
     public function default()
@@ -78,7 +79,7 @@ class PengembalianKasGantungHeaderController extends Controller
                 "postingdari" => $request->postingdari ?? null,
                 "statusformat" => $request->statusformat ?? null,
                 "penerimaan_nobukti" => $request->penerimaan_nobukti ?? null,
-                
+
 
                 "nominal" => $request->nominal ?? [],
                 "sisa" => $request->sisa ?? [],
@@ -98,7 +99,7 @@ class PengembalianKasGantungHeaderController extends Controller
             return response()->json([
                 'message' => 'Berhasil disimpan',
                 'data' => $pengembalianKasGantungHeader
-            ], 201);    
+            ], 201);
         } catch (\Throwable $th) {
             DB::rollBack();
 
@@ -118,14 +119,14 @@ class PengembalianKasGantungHeaderController extends Controller
     /**
      * @ClassName 
      */
-    public function update(UpdatePengembalianKasGantungHeaderRequest $request, PengembalianKasGantungHeader $pengembalianKasGantungHeader,$id)
+    public function update(UpdatePengembalianKasGantungHeaderRequest $request, PengembalianKasGantungHeader $pengembalianKasGantungHeader, $id)
     {
         DB::beginTransaction();
         try {
 
             /* Store header */
             $pengembalianKasGantungHeader = PengembalianKasGantungHeader::findOrFail($id);
-            $pengembalianKasGantungHeader = (new PengembalianKasGantungHeader())->processUpdate($pengembalianKasGantungHeader,[
+            $pengembalianKasGantungHeader = (new PengembalianKasGantungHeader())->processUpdate($pengembalianKasGantungHeader, [
                 "tanpaprosesnobukti" => $request->tanpaprosesnobukti ?? null,
                 "tglbukti" => $request->tglbukti ?? null,
                 "bank_id" => $request->bank_id ?? null,
@@ -134,7 +135,7 @@ class PengembalianKasGantungHeaderController extends Controller
                 "postingdari" => $request->postingdari ?? null,
                 "statusformat" => $request->statusformat ?? null,
                 "penerimaan_nobukti" => $request->penerimaan_nobukti ?? null,
-                
+
                 "nominal" => $request->nominal ?? [],
                 "sisa" => $request->sisa ?? [],
                 "coadetail" => $request->coadetail ?? [],
@@ -154,7 +155,7 @@ class PengembalianKasGantungHeaderController extends Controller
             return response()->json([
                 'message' => 'Berhasil disimpan',
                 'data' => $pengembalianKasGantungHeader
-            ], 201);    
+            ], 201);
         } catch (\Throwable $th) {
             DB::rollBack();
 
@@ -167,7 +168,7 @@ class PengembalianKasGantungHeaderController extends Controller
     public function destroy(DestroyPengembalianKasGantungHeaderRequest $request, $id)
     {
 
-       DB::beginTransaction();
+        DB::beginTransaction();
         try {
 
             /* delete header */
@@ -185,7 +186,7 @@ class PengembalianKasGantungHeaderController extends Controller
             return response()->json([
                 'message' => 'Berhasil disimpan',
                 'data' => $pengembalianKasGantungHeader
-            ], 201);    
+            ], 201);
         } catch (\Throwable $th) {
             DB::rollBack();
 
@@ -350,7 +351,7 @@ class PengembalianKasGantungHeaderController extends Controller
     }
 
     public function export($id)
-    {   
+    {
         $pengembalianKasGantungHeader = new PengembalianKasGantungHeader();
         return response([
             'data' => $pengembalianKasGantungHeader->getExport($id)
@@ -397,5 +398,11 @@ class PengembalianKasGantungHeaderController extends Controller
         } catch (\Throwable $th) {
             throw $th;
         }
+    }
+    /**
+     * @ClassName 
+     */
+    public function report()
+    {
     }
 }

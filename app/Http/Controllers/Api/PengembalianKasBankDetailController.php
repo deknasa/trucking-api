@@ -18,9 +18,7 @@ use Illuminate\Validation\Rule;
 class PengembalianKasBankDetailController extends Controller
 {
     /**
-     * Display a listing of the resource.
-     *
-     * @return \Illuminate\Http\Response
+     * @ClassName 
      */
     public function index(Request $request)
     {

@@ -1,6 +1,7 @@
 <?php
 
 namespace App\Http\Controllers\Api;
+
 use App\Http\Requests\StoreLogTrailRequest;
 use App\Http\Controllers\Controller;
 
@@ -16,16 +17,18 @@ use Illuminate\Validation\Rule;
 
 class NotaKreditDetailController extends Controller
 {
-    
+    /**
+     * @ClassName 
+     */
     public function index(Request $request)
-    { 
+    {
         $notaKreditDetail = new NotaKreditDetail();
 
         return response([
             'data' => $notaKreditDetail->get(),
             'attributes' => [
-                'totalRows' => $notaKreditDetail->totalRows ,
-                'totalPages' => $notaKreditDetail->totalPages ,
+                'totalRows' => $notaKreditDetail->totalRows,
+                'totalPages' => $notaKreditDetail->totalPages,
                 'totalNominal' => $notaKreditDetail->totalNominal,
                 'totalNominalBayar' => $notaKreditDetail->totalNominalBayar,
                 'totalPenyesuaian' => $notaKreditDetail->totalPenyesuaian,
@@ -33,11 +36,11 @@ class NotaKreditDetailController extends Controller
         ]);
     }
 
-    
+
     public function store(StoreNotaKreditDetailRequest $request)
     {
         DB::beginTransaction();
-        
+
         try {
 
             $notaKreditDetail = new NotaKreditDetail();
@@ -51,8 +54,8 @@ class NotaKreditDetailController extends Controller
             $notaKreditDetail->keterangan = $request->keterangandetail;
             $notaKreditDetail->coaadjust = $request->coaadjust;
             $notaKreditDetail->modifiedby = $request->modifiedby;
-            
-            
+
+
             if ($notaKreditDetail->save()) {
                 DB::commit();
                 return [
@@ -65,9 +68,5 @@ class NotaKreditDetailController extends Controller
         } catch (\Throwable $th) {
             throw $th;
         }
-
-        
     }
-
-    
 }

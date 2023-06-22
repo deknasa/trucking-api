@@ -19,8 +19,11 @@ use Illuminate\Support\Facades\DB;
 class JurnalUmumPusatHeaderController extends Controller
 {
     /**
-     * @ClassName
+     * @ClassName 
+     * JurnalUmumPusatHeader
+     * @Detail1 JurnalUmumPusatDetailController
      */
+
     public function index()
     {
         $jurnalUmumPusat = new JurnalUmumPusatHeader();
@@ -41,7 +44,7 @@ class JurnalUmumPusatHeaderController extends Controller
         DB::BeginTransaction();
         try {
 
-            $statusApp = Parameter::where('id',$request->approve)->first();
+            $statusApp = Parameter::where('id', $request->approve)->first();
             if ($request->approve == 3) {
 
                 for ($i = 0; $i < count($request->jurnalId); $i++) {
@@ -79,7 +82,7 @@ class JurnalUmumPusatHeaderController extends Controller
                     $jurnalApprove->tglapproval = date('Y-m-d H:i:s');
 
                     $jurnalApprove->save();
-                
+
                     $logTrail = [
                         'namatabel' => strtoupper($jurnalApprove->getTable()),
                         'postingdari' => 'APPROVED JURNAL',
@@ -89,7 +92,7 @@ class JurnalUmumPusatHeaderController extends Controller
                         'datajson' => $jurnalApprove->toArray(),
                         'modifiedby' => auth('api')->user()->name
                     ];
-    
+
                     $validatedlogTrail = new StoreLogTrailRequest($logTrail);
                     app(LogTrailController::class)->store($validatedlogTrail);
 
@@ -184,7 +187,7 @@ class JurnalUmumPusatHeaderController extends Controller
                     $jurnalApprove->tglapproval = date('Y-m-d H:i:s');
 
                     $jurnalApprove->save();
-                    
+
                     $logTrail = [
                         'namatabel' => strtoupper($jurnalApprove->getTable()),
                         'postingdari' => 'APPROVED JURNAL',
@@ -194,7 +197,7 @@ class JurnalUmumPusatHeaderController extends Controller
                         'datajson' => $jurnalApprove->toArray(),
                         'modifiedby' => auth('api')->user()->name
                     ];
-    
+
                     $validatedlogTrail = new StoreLogTrailRequest($logTrail);
                     app(LogTrailController::class)->store($validatedlogTrail);
                 }
@@ -285,5 +288,12 @@ class JurnalUmumPusatHeaderController extends Controller
             DB::rollBack();
             return response($th->getMessage());
         }
+    }
+
+    /**
+     * @ClassName 
+     */
+    public function report()
+    {
     }
 }

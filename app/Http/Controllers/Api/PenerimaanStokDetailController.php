@@ -40,6 +40,7 @@ class PenerimaanStokDetailController extends Controller
         ]);
     }
     
+  
     public function hutang(): JsonResponse
     {
         $hutangDetail = new HutangDetail();
@@ -66,9 +67,7 @@ class PenerimaanStokDetailController extends Controller
         }
     }
 
-    /**
-     * @ClassName 
-     */
+ 
     public function store(StorePenerimaanStokDetailRequest $request)
     {
         DB::beginTransaction();

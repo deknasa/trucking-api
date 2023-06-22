@@ -35,9 +35,12 @@ use Illuminate\Http\JsonResponse;
 
 class KasGantungHeaderController extends Controller
 {
-    /**
+      /**
      * @ClassName 
+     * KasGantungHeader
+     * @Detail1 KasGantungDetailController
      */
+
     public function index(GetIndexRangeRequest $request)
     {
         $kasgantungHeader = new KasGantungHeader();
@@ -350,5 +353,12 @@ class KasGantungHeaderController extends Controller
         return response([
             'data' => $data
         ]);
+    }
+
+        /**
+     * @ClassName 
+     */
+    public function report()
+    {
     }
 }

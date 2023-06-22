@@ -33,6 +33,8 @@ class AbsensiSupirApprovalHeaderController extends Controller
 {
     /**
      * @ClassName 
+     * AbsensiSupirApprovalHeader
+     * @Detail1 AbsensiSupirApprovalDetailController
      */
     public function index(GetIndexRangeRequest $request)
     {
@@ -77,11 +79,157 @@ class AbsensiSupirApprovalHeaderController extends Controller
                 $absensiSupirApprovalHeader->page = ceil($absensiSupirApprovalHeader->position / ($request->limit ?? 10));
             }
 
+
+            $dataKasgantung = [
+                "tglbukti" => $kasgantung->tglbukti,
+                // "keterangan" => $absensiSupirApprovalHeader->keterangan,
+                "bank_id" => $bank->id,
+                "penerima_id" => $kasgantung->penerima_id,
+                "coakaskeluar" => $coakaskeluar,
+                "postingdari" => 'ENTRY ABSENSI SUsPIR APPROVAL',
+                "tglkaskeluar" => $request->tglbukti,
+                'keterangan_detail' => $details['keterangan'],
+                'nominal' => $details['nominal'],
+                'approvalabsensisupir' => true,
+                'absensisupirapprovalheader_id' => $absensiSupirApprovalHeader->id,
+                'absensisupir_nobukti' => $absensiSupirApprovalHeader->absensisupir_nobukti,
+                "from" => "AbsensiSupirApprovalHeader"
+            ];
+
+
+            $data = new UpdateKasGantungHeaderRequest($dataKasgantung);
+            // dump($data);
+            $kasgantungStore = app(KasGantungHeaderController::class)->update($data, $kasgantung);
+
+            $kasgantung = $kasgantungStore->original['data'];
+
+            $absensiSupirApprovalHeader->pengeluaran_nobukti = $kasgantung->pengeluaran_nobukti;
+            $absensiSupirApprovalHeader->tglkaskeluar = $kasgantung->tglkaskeluar;
+            $absensiSupirApprovalHeader->save();
+
+
+
+            $logTrail = [
+                'namatabel' => strtoupper($absensiSupirApprovalHeader->getTable()),
+                'postingdari' => 'ENTRY ABSENSI SUPIR APPROVAL HEADER',
+                'idtrans' => $absensiSupirApprovalHeader->id,
+                'nobuktitrans' => $absensiSupirApprovalHeader->nobukti,
+                'aksi' => 'ADD',
+                'datajson' => $absensiSupirApprovalHeader->toArray(),
+                'modifiedby' => $absensiSupirApprovalHeader->modifiedby
+            ];
+            $validatedLogTrail = new StoreLogTrailRequest($logTrail);
+            $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
+            if ($request->trado_id) {
+                /* Store detail */
+                $detaillog = [];
+                $jurnalDetail = [];
+                for ($i = 0; $i < count($request->trado_id); $i++) {
+                    $supirId = ($request->supir_id[$i] != null) ? $request->supir_id[$i] : 0;
+                    $datadetail = [
+                        "absensisupirapproval_id" => $absensiSupirApprovalHeader->id,
+                        "nobukti" => $absensiSupirApprovalHeader->nobukti,
+                        "trado_id" => $request->trado_id[$i],
+                        "supir_id" => $supirId,
+                        "modifiedby" => auth('api')->user()->name
+                    ];
+                    $data = new StoreAbsensiSupirApprovalDetailRequest($datadetail);
+                    $absensiSupirApprovalDetail = app(AbsensiSupirApprovalDetailController::class)->store($data);
+
+                    if ($absensiSupirApprovalDetail['error']) {
+                        return response($absensiSupirApprovalDetail, 422);
+                    } else {
+                        $iddetail = $absensiSupirApprovalDetail['id'];
+                        $tabeldetail = $absensiSupirApprovalDetail['tabel'];
+                    }
+                    $datadetaillog = [
+                        "id" => $iddetail,
+                        "absensisupirapproval_id" => $absensiSupirApprovalHeader->id,
+                        "nobukti" => $absensiSupirApprovalHeader->nobukti,
+                        "trado_id" => $request->trado_id[$i],
+                        "supir_id" => $supirId,
+                        "modifiedby" => auth('api')->user()->name,
+                        'created_at' => date('d-m-Y H:i:s', strtotime($absensiSupirApprovalHeader->created_at)),
+                        'updated_at' => date('d-m-Y H:i:s', strtotime($absensiSupirApprovalHeader->updated_at)),
+                    ];
+
+
+                    $detaillog[] = $datadetaillog;
+                }
+                $datalogtrail = [
+                    'namatabel' => $tabeldetail,
+                    'postingdari' => 'ENTRY ABSENSI SUPIR APPROVAL DETAIL',
+                    'idtrans' =>  $iddetail,
+                    'nobuktitrans' => $absensiSupirApprovalHeader->nobukti,
+                    'aksi' => 'ENTRY',
+                    'datajson' => $detaillog,
+                    'modifiedby' => auth('api')->user()->name,
+                ];
+
+                $data = new StoreLogTrailRequest($datalogtrail);
+                app(LogTrailController::class)->store($data);
+
+                $jurnalHeader = [
+                    'tanpaprosesnobukti' => 1,
+                    'nobukti' => $absensiSupirApprovalHeader->nobukti,
+                    'tglbukti' => date('Y-m-d', strtotime($absensiSupirApprovalHeader->tglbukti)),
+                    // 'keterangan' => $absensiSupirApprovalHeader->keterangan,
+                    'postingdari' => 'ENTRY ABSENSI SUPIR APPROVAL DETAIL',
+                    'statusapproval' => $absensiSupirApprovalHeader->statusapproval,
+                    'userapproval' => "",
+                    'tglapproval' => "",
+                    'statusformat' => 0,
+                    'modifiedby' => auth('api')->user()->name,
+                ];
+
+                $jurnalDetail = [
+                    [
+                        'nobukti' => $absensiSupirApprovalHeader->nobukti,
+                        'tglbukti' => date('Y-m-d', strtotime($absensiSupirApprovalHeader->tglbukti)),
+                        'coa' =>  $memodebet['JURNAL'],
+                        'nominal' => $total,
+                        // 'keterangan' => $request->keterangan,
+                        'modifiedby' => auth('api')->user()->name,
+                        'baris' => $i,
+                    ], [
+                        'nobukti' => $absensiSupirApprovalHeader->nobukti,
+                        'tglbukti' => date('Y-m-d', strtotime($absensiSupirApprovalHeader->tglbukti)),
+                        'coa' =>  $kasgantung->coakaskeluar,
+                        'nominal' => -$total,
+                        // 'keterangan' => $request->keterangan,
+                        'modifiedby' => auth('api')->user()->name,
+                        'baris' => $i,
+                    ]
+                ];
+            }
+
+            // $queryabsen = DB::table('absensisupirapproval')
+            //     ->from(
+            //         DB::raw("absensisupirheader a with (readuncommitted)")
+            //     )
+            //     ->select(
+            //         'b.pengeluaran_nobukti',
+            //         'b.tglkaskeluar'
+            //     )
+            //     ->join(DB::raw("kasgantungheader b"), 'a.kasgantung_nobukti', 'b.nobukti')
+            //     ->first();
+            // if (isset($queryabsen)) {
+            //     $absensisupirapprovalheader  = AbsensiSupirApprovalHeader::lockForUpdate()->where("id", $absensiSupirApprovalHeader->id)
+            //         ->firstorFail();
+            //     $absensisupirapprovalheader->pengeluaran_nobukti = $queryabsen->pengeluaran_nobukti;
+            //     $absensisupirapprovalheader->tglkaskeluar = $queryabsen->tglkaskeluar;
+            //     $absensisupirapprovalheader->save();
+            // }
+
             DB::commit();
             return response()->json([
                 'message' => 'Berhasil disimpan',
                 'data' => $absensiSupirApprovalHeader
+<<<<<<< HEAD
+            ], 201);
+=======
             ], 201);    
+>>>>>>> a8acf1ecf07bf2c9c32e09b26f20fb000ded3599
         } catch (\Throwable $th) {
             DB::rollBack();
 
@@ -155,6 +303,54 @@ class AbsensiSupirApprovalHeaderController extends Controller
 
 
         DB::beginTransaction();
+<<<<<<< HEAD
+
+        $getDetail = AbsensiSupirApprovalDetail::lockForUpdate()->where('absensisupirapproval_id', $id)->get();
+
+        $absensiSupirApprovalHeader = new AbsensiSupirApprovalHeader();
+        $absensiSupirApprovalHeader = $absensiSupirApprovalHeader->lockAndDestroy($id);
+
+        $pengeluaran = $absensiSupirApprovalHeader->pengeluaran_nobukti;
+        $kasGantung = KasGantungHeader::where('pengeluaran_nobukti', $pengeluaran)->first();
+        // return response($kasGantung,422);
+        $kasGantung->pengeluaran_nobukti = '';
+        $kasGantung->coakaskeluar = '';
+        $kasGantung->kasgantungDetail()->update(['coa' => '']);
+        $kasGantung->save();
+        $request['postingdari'] = "DELETE ABSENSI SUPIR APPROVAL";
+
+
+        if ($absensiSupirApprovalHeader) {
+            $logTrail = [
+                'namatabel' => strtoupper($absensiSupirApprovalHeader->getTable()),
+                'postingdari' => 'DELETE ABSENSI SUPIR APPROVAL',
+                'idtrans' => $id,
+                'nobuktitrans' => $absensiSupirApprovalHeader->nobukti,
+                'aksi' => 'DELETE',
+                'datajson' => $absensiSupirApprovalHeader->toArray(),
+                'modifiedby' => auth('api')->user()->name
+            ];
+
+            $validatedLogTrail = new StoreLogTrailRequest($logTrail);
+            $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
+
+            // DELETE ABSENSI SUPIR APPROVAL DETAIL
+            $logTrailAbsensiApprovalDetail = [
+                'namatabel' => 'ABSENSISUPIRAPPROVALDETAIL',
+                'postingdari' => 'DELETE ABSENSI SUPIR APPROVAL DETAIL',
+                'idtrans' => $storedLogTrail['id'] ?? '',
+                'nobuktitrans' => $absensiSupirApprovalHeader->nobukti,
+                'aksi' => 'DELETE',
+                'datajson' => $getDetail->toArray(),
+                'modifiedby' => auth('api')->user()->name
+            ];
+
+            $validatedLogTrailAbsensiApprovalDetail = new StoreLogTrailRequest($logTrailAbsensiApprovalDetail);
+            app(LogTrailController::class)->store($validatedLogTrailAbsensiApprovalDetail);
+
+            $getPengeluaran = PengeluaranHeader::from(DB::raw("pengeluaranheader with (readuncommitted)"))->where('nobukti', $pengeluaran)->first();
+            app(PengeluaranHeaderController::class)->destroy($request, $getPengeluaran->id);
+=======
         try {
             // dd($absensiSupirApprovalHeader);
             $absensiSupirApprovalHeader = (new AbsensiSupirApprovalHeader())->processDestroy($id);
@@ -164,6 +360,7 @@ class AbsensiSupirApprovalHeaderController extends Controller
             if (isset($request->limit)) {
                 $absensiSupirApprovalHeader->page = ceil($absensiSupirApprovalHeader->position / ($request->limit ?? 10));
             }
+>>>>>>> a8acf1ecf07bf2c9c32e09b26f20fb000ded3599
 
             DB::commit();
             return response()->json([
@@ -305,12 +502,22 @@ class AbsensiSupirApprovalHeaderController extends Controller
         ]);
     }
 
+    /**
+     * @ClassName 
+     */
     public function export($id)
-    {   
+    {
         $absensiSupirApprovalHeader = new AbsensiSupirApprovalHeader();
-        
+
         return response([
             'data' => $absensiSupirApprovalHeader->getExport($id)
         ]);
+    }
+
+    /**
+     * @ClassName 
+     */
+    public function report()
+    {
     }
 }

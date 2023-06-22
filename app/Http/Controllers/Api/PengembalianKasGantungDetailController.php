@@ -18,25 +18,27 @@ use Illuminate\Validation\Rule;
 
 class PengembalianKasGantungDetailController extends Controller
 {
+    /**
+     * @ClassName 
+     */
     public function index(Request $request)
     {
-            $pengembalianKasGantungDetail = new PengembalianKasGantungDetail();
+        $pengembalianKasGantungDetail = new PengembalianKasGantungDetail();
 
-            $idUser = auth('api')->user()->id;
-            $getuser = User::select('name', 'cabang.id as cabang_id', 'cabang.namacabang as nama_cabang')
-                ->where('user.id', $idUser)->join('cabang', 'user.cabang_id', 'cabang.id')->first();
+        $idUser = auth('api')->user()->id;
+        $getuser = User::select('name', 'cabang.id as cabang_id', 'cabang.namacabang as nama_cabang')
+            ->where('user.id', $idUser)->join('cabang', 'user.cabang_id', 'cabang.id')->first();
 
-            
-            return response([
-                'data' => $pengembalianKasGantungDetail->get(),
-                'user' => $getuser,
-                'attributes' => [
-                    'totalRows' => $pengembalianKasGantungDetail->totalRows,
-                    'totalPages' => $pengembalianKasGantungDetail->totalPages,
-                    'totalNominal' => $pengembalianKasGantungDetail->totalNominal
-                    ]
-            ]);
-        
+
+        return response([
+            'data' => $pengembalianKasGantungDetail->get(),
+            'user' => $getuser,
+            'attributes' => [
+                'totalRows' => $pengembalianKasGantungDetail->totalRows,
+                'totalPages' => $pengembalianKasGantungDetail->totalPages,
+                'totalNominal' => $pengembalianKasGantungDetail->totalNominal
+            ]
+        ]);
     }
 
     /**
@@ -58,9 +60,9 @@ class PengembalianKasGantungDetailController extends Controller
     public function store(StorePengembalianKasGantungDetailRequest $request)
     {
         DB::beginTransaction();
-       
+
         try {
-            
+
             $pengembalianKasGantungDetail = new PengembalianKasGantungDetail();
             $pengembalianKasGantungDetail->pengembaliankasgantung_id = $request->pengembaliankasgantung_id;
             $pengembalianKasGantungDetail->nobukti = $request->nobukti;
@@ -69,7 +71,7 @@ class PengembalianKasGantungDetailController extends Controller
             $pengembalianKasGantungDetail->keterangan = $request->keterangandetail;
             $pengembalianKasGantungDetail->kasgantung_nobukti = $request->kasgantung_nobukti;
             $pengembalianKasGantungDetail->modifiedby = auth('api')->user()->name;
-            
+
             DB::commit();
             if ($pengembalianKasGantungDetail->save()) {
                 return [

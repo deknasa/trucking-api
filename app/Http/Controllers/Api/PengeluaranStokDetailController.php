@@ -41,9 +41,7 @@ class PengeluaranStokDetailController extends Controller
             ]
         ]);
     }
-    /**
-     * @ClassName 
-     */
+ 
     public function store(StorePengeluaranStokDetailRequest $request)
     {
         DB::beginTransaction();

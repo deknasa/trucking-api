@@ -196,6 +196,11 @@ class MandorController extends Controller
             'data' => $data
         ]);
     }
+
+    /**
+     * @ClassName 
+     */
+
     public function export(RangeExportReportRequest $request)
     {
         if (request()->cekExport) {
@@ -246,5 +251,12 @@ class MandorController extends Controller
 
             $this->toExcel($judulLaporan, $mandors, $columns);
         }
+    }
+
+    /**
+     * @ClassName 
+     */
+    public function report()
+    {
     }
 }

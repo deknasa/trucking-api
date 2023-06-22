@@ -15,6 +15,10 @@ use Illuminate\Validation\Rule;
 
 class InvoiceExtraDetailController extends Controller
 {
+
+    /**
+     * @ClassName 
+     */
     public function index(): JsonResponse
     {
         $invoiceExtra = new InvoiceExtraDetail();
@@ -46,7 +50,7 @@ class InvoiceExtraDetailController extends Controller
                 'errors' => $validator->messages()
             ];
         }
-        
+
         try {
             $invoiceExtraDetail = new InvoiceExtraDetail();
 
@@ -66,13 +70,10 @@ class InvoiceExtraDetailController extends Controller
         } catch (\Throwable $th) {
             DB::rollBack();
             return response($th->getMessage());
-        }        
-
+        }
     }
 
     public function export()
     {
-        
     }
-
 }

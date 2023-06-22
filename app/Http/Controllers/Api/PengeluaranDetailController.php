@@ -23,22 +23,25 @@ class PengeluaranDetailController extends Controller
      */
     public function index(Request $request)
     {
-        $pengeluaranDetail = new PengeluaranDetail ();
+        $pengeluaranDetail = new PengeluaranDetail();
 
         return response([
             'data' => $pengeluaranDetail->get(),
             'attributes' => [
-                'totalRows' => $pengeluaranDetail->totalRows ,
-                'totalPages' => $pengeluaranDetail->totalPages ,
+                'totalRows' => $pengeluaranDetail->totalRows,
+                'totalPages' => $pengeluaranDetail->totalPages,
                 'totalNominal' => $pengeluaranDetail->totalNominal
             ]
         ]);
     }
 
+    /**
+     * @ClassName
+     */
     public function getPengeluaran(): JsonResponse
     {
         $pengeluaranDetail = new PengeluaranDetail();
-        if(request()->nobukti != 'false' && request()->nobukti != null){
+        if (request()->nobukti != 'false' && request()->nobukti != null) {
             $fetch = PengeluaranHeader::from(DB::raw("pengeluaranheader with (readuncommitted)"))->where('nobukti', request()->nobukti)->first();
             request()->pengeluaran_id = $fetch->id;
             return response()->json([
@@ -49,7 +52,7 @@ class PengeluaranDetailController extends Controller
                     'totalNominal' => $pengeluaranDetail->totalNominal
                 ]
             ]);
-        }else{
+        } else {
             return response()->json([
                 'data' => [],
                 'attributes' => [
@@ -60,7 +63,7 @@ class PengeluaranDetailController extends Controller
             ]);
         }
     }
-        
+
     public function store(StorePengeluaranDetailRequest $request)
     {
         DB::beginTransaction();

@@ -173,6 +173,17 @@ class PenerimaanTruckingController extends Controller
         }
     }
 
+
+    /**
+     * @ClassName 
+     */
+    public function report()
+    {
+    }
+
+    /**
+     * @ClassName 
+     */
     public function export(RangeExportReportRequest $request)
     {
 

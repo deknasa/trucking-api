@@ -197,6 +197,16 @@ class JenisOrderController extends Controller
             'data' => $data
         ]);
     }
+    /**
+     * @ClassName 
+     */
+    public function report()
+    {
+    }
+
+    /**
+     * @ClassName 
+     */
     public function export(RangeExportReportRequest $request)
     {
 

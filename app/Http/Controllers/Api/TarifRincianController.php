@@ -13,9 +13,7 @@ use Illuminate\Support\Facades\DB;
 class TarifRincianController extends Controller
 {
     /**
-     * Display a listing of the resource.
-     *
-     * @return \Illuminate\Http\Response
+     * @ClassName 
      */
     public function index(Request $request)
     {
@@ -48,11 +46,11 @@ class TarifRincianController extends Controller
             }
 
             $getJudul = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))
-            ->select('text')
-            ->where('grp', 'JUDULAN LAPORAN')
-            ->where('subgrp', 'JUDULAN LAPORAN')
-            ->first();
-            
+                ->select('text')
+                ->where('grp', 'JUDULAN LAPORAN')
+                ->where('subgrp', 'JUDULAN LAPORAN')
+                ->first();
+
             if ($params['forReport']) {
                 $query->select(
                     'header.tujuan',
@@ -90,13 +88,13 @@ class TarifRincianController extends Controller
             }
 
             $idUser = auth('api')->user()->id;
-            $getuser = User::select('name','cabang.namacabang as cabang_id')
-            ->where('user.id',$idUser)->join('cabang','user.cabang_id','cabang.id')->first();
-           
+            $getuser = User::select('name', 'cabang.namacabang as cabang_id')
+                ->where('user.id', $idUser)->join('cabang', 'user.cabang_id', 'cabang.id')->first();
+
             return response([
                 'data' => $tarif,
                 'user' => $getuser,
-                
+
             ]);
         } catch (\Throwable $th) {
             return response([
@@ -111,20 +109,20 @@ class TarifRincianController extends Controller
      * @return \Illuminate\Http\Response
      */
 
-     public function get()
-     {
-         $tarifrincian = new TarifRincian();
- 
-         return response([
-             'data' => $tarifrincian->get(),
-             'attributes' => [
-                 'totalRows' => $tarifrincian->totalRows,
-                 'totalPages' => $tarifrincian->totalPages
-             ]
-         ]);
-     }
+    public function get()
+    {
+        $tarifrincian = new TarifRincian();
 
-    
+        return response([
+            'data' => $tarifrincian->get(),
+            'attributes' => [
+                'totalRows' => $tarifrincian->totalRows,
+                'totalPages' => $tarifrincian->totalPages
+            ]
+        ]);
+    }
+
+
     public function create()
     {
         //
@@ -145,11 +143,11 @@ class TarifRincianController extends Controller
         $tarifRincian->nominal = $request->nominal;
         $tarifRincian->modifiedby = auth('api')->user()->name;
 
-        
+
         if (!$tarifRincian->save()) {
             throw new \Exception("Gagal menyimpan tarif detail.");
         }
-        
+
         return [
             'error' => false,
             'detail' => $tarifRincian,
@@ -172,7 +170,7 @@ class TarifRincianController extends Controller
         if (!$tarifRincian->save()) {
             throw new \Exception("Gagal mengedit tarif detail.", 1);
         }
-        
+
         return [
             'error' => false,
             'detail' => $tarifRincian,
@@ -199,21 +197,21 @@ class TarifRincianController extends Controller
         return response([
             'status' => true,
             'detail' => $tarifRincian->setUpRow()
-        ]);        
+        ]);
     }
     public function setUpRowExcept($id)
     {
         $tarifRincian = new tarifRincian();
-        $rincian = $tarifRincian->where('tarif_id',$id)->get();
+        $rincian = $tarifRincian->where('tarif_id', $id)->get();
         foreach ($rincian as $e) {
             $data[] = [
-                 "container_id" => $e->container_id,
-                ];
+                "container_id" => $e->container_id,
+            ];
         }
         // return $data;
         return response([
             'status' => true,
             'detail' => $tarifRincian->setUpRowExcept($data)
-        ]);        
+        ]);
     }
 }

@@ -16,6 +16,9 @@ use Illuminate\Validation\Rule;
 
 class AbsensiSupirApprovalDetailController extends Controller
 {
+    /**
+     * @ClassName
+     */
     public function index(Request $request)
     {
         $absensiSupirApprovalDetail = new AbsensiSupirApprovalDetail();

@@ -40,8 +40,10 @@ use PhpParser\Node\Stmt\Else_;
 class PengeluaranTruckingHeaderController extends Controller
 {
 
-    /**
-     * @ClassName
+       /**
+     * @ClassName 
+     * PengeluaranTruckingHeader
+     * @Detail1 PengeluaranTruckingDetailController
      */
     public function index(GetPengeluaranRangeRequest $request)
     {
@@ -59,7 +61,7 @@ class PengeluaranTruckingHeaderController extends Controller
     /**
      * @ClassName
      */
-    public function store(StorePengeluaranTruckingHeaderRequest $request) : JsonResponse
+    public function store(StorePengeluaranTruckingHeaderRequest $request): JsonResponse
     {
         DB::beginTransaction();
         try {
@@ -76,7 +78,7 @@ class PengeluaranTruckingHeaderController extends Controller
             return response()->json([
                 'message' => 'Berhasil disimpan',
                 'data' => $pengeluaranTruckingHeader
-            ], 201);    
+            ], 201);
         } catch (\Throwable $th) {
             DB::rollBack();
 
@@ -84,7 +86,6 @@ class PengeluaranTruckingHeaderController extends Controller
         }
 
         DB::beginTransaction();
-       
     }
 
 
@@ -94,9 +95,9 @@ class PengeluaranTruckingHeaderController extends Controller
         $data = PengeluaranTruckingHeader::findAll($id);
         $posting = DB::table('parameter')->where('grp', "STATUS POSTING")->where('text', "POSTING")->first();
         $bukanPosting = DB::table('parameter')->where('grp', "STATUS POSTING")->where('text', "BUKAN POSTING")->first();
-        $data['postingpinjaman'] =$bukanPosting->id;
-        if ($data->pengeluarantrucking_nobukti !="") {
-            $data['postingpinjaman'] =$posting->id;
+        $data['postingpinjaman'] = $bukanPosting->id;
+        if ($data->pengeluarantrucking_nobukti != "") {
+            $data['postingpinjaman'] = $posting->id;
         }
         // dd($data);
         if ($data->kodepengeluaran == 'BST') {
@@ -130,13 +131,13 @@ class PengeluaranTruckingHeaderController extends Controller
     /**
      * @ClassName
      */
-    public function update(UpdatePengeluaranTruckingHeaderRequest $request, PengeluaranTruckingHeader $pengeluaranTruckingHeader,$id)
+    public function update(UpdatePengeluaranTruckingHeaderRequest $request, PengeluaranTruckingHeader $pengeluaranTruckingHeader, $id)
     {
         DB::beginTransaction();
         try {
             /* Store header */
             $pengeluaranTruckingHeader = PengeluaranTruckingHeader::findOrfail($id);
-            $pengeluaranTruckingHeader = (new PengeluaranTruckingHeader())->processUpdate($pengeluaranTruckingHeader,$request->all());
+            $pengeluaranTruckingHeader = (new PengeluaranTruckingHeader())->processUpdate($pengeluaranTruckingHeader, $request->all());
             /* Set position and page */
             $pengeluaranTruckingHeader->position = $this->getPosition($pengeluaranTruckingHeader, $pengeluaranTruckingHeader->getTable())->position;
             $pengeluaranTruckingHeader->page = ceil($pengeluaranTruckingHeader->position / ($request->limit ?? 10));
@@ -148,7 +149,7 @@ class PengeluaranTruckingHeaderController extends Controller
             return response()->json([
                 'message' => 'Berhasil disimpan',
                 'data' => $pengeluaranTruckingHeader
-            ], 201);    
+            ], 201);
         } catch (\Throwable $th) {
             DB::rollBack();
 
@@ -160,25 +161,25 @@ class PengeluaranTruckingHeaderController extends Controller
     {
         // dd($data);
         $fetchFormat = DB::table('pengeluarantrucking')->from(DB::raw("pengeluarantrucking with (readuncommitted)"))
-            ->where('kodepengeluaran',"PJT")
+            ->where('kodepengeluaran', "PJT")
             ->first();
         if ($fetchFormat->kodepengeluaran != 'BLS') {
             $request['coa'] = $fetchFormat->coapostingdebet;
         }
         $statusformat = $fetchFormat->format;
         $fetchGrp = Parameter::where('id', $statusformat)->first();
-        
+
         $format = DB::table('parameter')
-        ->where('grp', $fetchGrp->grp)
-        ->where('subgrp', $fetchGrp->subgrp)
-        ->first();
-        
+            ->where('grp', $fetchGrp->grp)
+            ->where('subgrp', $fetchGrp->subgrp)
+            ->first();
+
         $content = new Request();
         $content['group'] = $fetchGrp->grp;
         $content['subgroup'] = $fetchGrp->subgrp;
         $content['table'] = 'pengeluarantruckingheader';
         $content['tgl'] = date('Y-m-d', strtotime($data['tglbukti']));
-        
+
         $nobukti = app(Controller::class)->getRunningNumber($content)->original['data'];
         $data['nobukti'] = $nobukti;
         $data['coa'] = $nobukti;
@@ -193,12 +194,12 @@ class PengeluaranTruckingHeaderController extends Controller
                 'error' => false,
                 'nobukti' => $nobukti
             ];
-        }catch (\Throwable $th) {
+        } catch (\Throwable $th) {
             throw $th;
             DB::rollBack();
-        }     
+        }
     }
-        
+
 
     /**
      * @ClassName
@@ -209,7 +210,7 @@ class PengeluaranTruckingHeaderController extends Controller
         try {
             /* Store header */
             $pengeluaranTruckingHeader = PengeluaranTruckingHeader::findOrfail($id);
-            $pengeluaranTruckingHeader = (new PengeluaranTruckingHeader())->processDestroy($id,$postingdari ="PENGELUARAN TRUCKING");
+            $pengeluaranTruckingHeader = (new PengeluaranTruckingHeader())->processDestroy($id, $postingdari = "PENGELUARAN TRUCKING");
             /* Set position and page */
             $pengeluaranTruckingHeader->position = $this->getPosition($pengeluaranTruckingHeader, $pengeluaranTruckingHeader->getTable())->position;
             $pengeluaranTruckingHeader->page = ceil($pengeluaranTruckingHeader->position / ($request->limit ?? 10));
@@ -221,7 +222,7 @@ class PengeluaranTruckingHeaderController extends Controller
             return response()->json([
                 'message' => 'Berhasil disimpan',
                 'data' => $pengeluaranTruckingHeader
-            ], 201);    
+            ], 201);
         } catch (\Throwable $th) {
             DB::rollBack();
 
@@ -333,12 +334,11 @@ class PengeluaranTruckingHeaderController extends Controller
 
         $PengeluaranTruckingHeader = PengeluaranTruckingHeader::from(DB::raw("pengeluarantruckingheader"))->where('id', $id)->first();
         $klaim = DB::table('pengeluarantrucking')->from(DB::raw("pengeluarantrucking with (readuncommitted)"))
-                ->where('kodepengeluaran',"KLAIM")
-                ->first();
+            ->where('kodepengeluaran', "KLAIM")
+            ->first();
         if ($klaim->id == $PengeluaranTruckingHeader->pengeluarantrucking_id) {
             $cekdata = $pengeluaran->cekvalidasiklaim($id);
-            
-        }else {
+        } else {
             // dd($nobukti->pengeluaran_nobukti);
             $cekdata = $pengeluaran->cekvalidasiaksi($nobukti->nobukti);
             // $cekdata = $pengeluaran->cekvalidasiaksi($nobukti->pengeluaran_nobukti);
@@ -437,7 +437,7 @@ class PengeluaranTruckingHeaderController extends Controller
         // $data = $pengeluaranTrucking->getTarikDeposito($pengeluaranTrucking->pengeluarantruckingdetail[0]->supir_id);
         return response([
             'status' => true,
-            'data' => $data, 
+            'data' => $data,
             'attributes' => [
                 'totalRows' => $invoiceHeader->totalRows,
                 'totalPages' => $invoiceHeader->totalPages,
@@ -449,9 +449,9 @@ class PengeluaranTruckingHeaderController extends Controller
     public function getEditInvoice($id)
     {
         $pengeluaranTrucking = new PengeluaranTruckingHeader();
-        if(request()->aksi == 'show'){
+        if (request()->aksi == 'show') {
             $data = $pengeluaranTrucking->getShowInvoice($id, request()->tgldari, request()->tglsampai);
-        }else{
+        } else {
             $data = $pengeluaranTrucking->getEditInvoice($id, request()->tgldari, request()->tglsampai);
         }
 
@@ -477,5 +477,12 @@ class PengeluaranTruckingHeaderController extends Controller
         return response([
             'data' => $data
         ]);
+    }
+
+    /**
+     * @ClassName 
+     */
+    public function report()
+    {
     }
 }

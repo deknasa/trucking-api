@@ -13,7 +13,9 @@ use Illuminate\Support\Facades\Validator;
 
 class UpahRitasiRincianController extends Controller
 {
-
+    /**
+     * @ClassName 
+     */
     public function index(Request $request)
     {
 

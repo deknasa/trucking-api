@@ -17,6 +17,9 @@ use Illuminate\Support\Facades\Validator;
 
 class PiutangDetailController extends Controller
 {
+    /**
+     * @ClassName 
+     */
     public function index(): JsonResponse
     {
         $piutangDetail = new PiutangDetail();
@@ -63,9 +66,9 @@ class PiutangDetailController extends Controller
             $piutangdetail->modifiedby = auth('api')->user()->name;
 
             $piutangdetail->save();
-            
+
             $datadetail = $piutangdetail;
-            if($request->entridetail == 1) {
+            if ($request->entridetail == 1) {
                 $nobukti = $piutangdetail->nobukti;
                 $getBaris = DB::table('jurnalumumdetail')->from(
                     DB::raw("jurnalumumdetail with (readuncommitted)")
@@ -88,7 +91,7 @@ class PiutangDetailController extends Controller
                 $detailLogJurnal = [];
                 for ($x = 0; $x <= 1; $x++) {
                     $memo = json_decode($getCOA[$x]->memo, true);
-                    
+
                     if ($x == 1) {
                         $jurnaldetail = [
                             'jurnalumum_id' => $request->jurnal_id,
@@ -116,7 +119,7 @@ class PiutangDetailController extends Controller
                     $detail = new StoreJurnalUmumDetailRequest($jurnaldetail);
                     $detailJurnal = app(JurnalUmumDetailController::class)->store($detail);
 
-                    
+
                     $detailLogJurnal[] = $detailJurnal['detail']->toArray();
                 }
 
@@ -128,12 +131,12 @@ class PiutangDetailController extends Controller
             }
             DB::commit();
 
-                return [
-                    'error' => false,
-                    'detail' => $datadetail,
-                    'id' => $piutangdetail->id,
-                    'tabel' => $piutangdetail->getTable(),
-                ];
+            return [
+                'error' => false,
+                'detail' => $datadetail,
+                'id' => $piutangdetail->id,
+                'tabel' => $piutangdetail->getTable(),
+            ];
         } catch (\Throwable $th) {
             DB::rollBack();
 

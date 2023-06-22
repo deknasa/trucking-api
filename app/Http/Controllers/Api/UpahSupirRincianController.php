@@ -14,7 +14,9 @@ use Illuminate\Support\Facades\Validator;
 
 class UpahSupirRincianController extends Controller
 {
-
+    /**
+     * @ClassName 
+     */
     public function index(Request $request)
     {
         $params = [

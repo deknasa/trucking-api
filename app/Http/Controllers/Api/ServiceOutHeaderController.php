@@ -25,7 +25,9 @@ class ServiceOutHeaderController extends Controller
 {
 
     /**
-     * @ClassName
+     * @ClassName 
+     * ServiceOutHeader
+     * @Detail1 ServiceOutDetailController
      */
     public function index(GetIndexRangeRequest $request)
     {
@@ -91,7 +93,7 @@ class ServiceOutHeaderController extends Controller
     /**
      * @ClassName
      */
-    public function update(UpdateServiceOutHeaderRequest $request, ServiceOutHeader $serviceoutheader) : JsonResponse
+    public function update(UpdateServiceOutHeaderRequest $request, ServiceOutHeader $serviceoutheader): JsonResponse
     {
         DB::beginTransaction();
 
@@ -128,7 +130,7 @@ class ServiceOutHeaderController extends Controller
     {
 
         DB::beginTransaction();
-        
+
         try {
             $serviceOutHeader = (new ServiceOutHeader())->processDestroy($id);
             $selected = $this->getPosition($serviceOutHeader, $serviceOutHeader->getTable(), true);
@@ -226,6 +228,16 @@ class ServiceOutHeaderController extends Controller
         ]);
     }
 
+    /**
+     * @ClassName 
+     */
+    public function report()
+    {
+    }
+
+    /**
+     * @ClassName 
+     */
     public function export($id)
     {
         $serviceOut = new ServiceOutHeader();

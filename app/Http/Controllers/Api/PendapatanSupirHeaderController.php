@@ -19,6 +19,8 @@ class PendapatanSupirHeaderController extends Controller
 {
     /**
      * @ClassName 
+     * PendapatanSupirHeader
+     * @Detail1 PendapatanSupirDetailController
      */
     public function index(GetIndexRangeRequest $request)
     {
@@ -189,7 +191,7 @@ class PendapatanSupirHeaderController extends Controller
         }
     }
 
-    
+
     /**
      * @ClassName
      */
@@ -347,6 +349,16 @@ class PendapatanSupirHeaderController extends Controller
         }
     }
 
+    /**
+     * @ClassName 
+     */
+    public function report()
+    {
+    }
+
+    /**
+     * @ClassName 
+     */
     public function export($id)
     {
         $pendapatanSupirHeader = new PendapatanSupirHeader();

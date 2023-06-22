@@ -47,7 +47,7 @@ class SatuanController extends Controller
     /**
      * @ClassName 
      */
-    public function store(StoreSatuanRequest $request) : JsonResponse
+    public function store(StoreSatuanRequest $request): JsonResponse
     {
         DB::beginTransaction();
 
@@ -61,7 +61,7 @@ class SatuanController extends Controller
             $satuan->position = $this->getPosition($satuan, $satuan->getTable())->position;
             $satuan->page = ceil($satuan->position / ($request->limit ?? 10));
 
-            DB::commit();   
+            DB::commit();
 
             return response()->json([
                 'status' => true,
@@ -162,6 +162,17 @@ class SatuanController extends Controller
             'data' => $data
         ]);
     }
+
+    /**
+     * @ClassName 
+     */
+    public function report()
+    {
+    }
+
+    /**
+     * @ClassName 
+     */
     public function export(RangeExportReportRequest $request)
     {
 
