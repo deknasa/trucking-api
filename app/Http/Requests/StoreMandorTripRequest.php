@@ -224,12 +224,6 @@ class StoreMandorTripRequest extends FormRequest
             ];
         }
 
-        $rulesUpahSupir = [];
-        if(request()->dari_id != '' && request()->sampai_id != '' && request()->container_id != '' && request()->statuscontainer_id != ''){
-            $rulesUpahSupir = [
-                'dari' => new cekUpahSupirInputTrip()
-            ];
-        }
         $rules = [
             'tglbukti' => [
                 'required', 'date_format:d-m-Y',
@@ -264,7 +258,6 @@ class StoreMandorTripRequest extends FormRequest
             $rulesJenisOrder_id,
             $rulesStatusContainer_id,
             $rulesTrado_id,
-            $rulesUpahSupir,
             $rulesTarif_id,
             $rulesUpah_id,
             $ruleCekUpahRitasi
