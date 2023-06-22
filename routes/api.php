@@ -216,7 +216,8 @@ use App\Http\Controllers\Api\LaporanNeracaController;
 use App\Http\Controllers\Api\LaporanPenyesuaianBarangController;
 use App\Http\Controllers\Api\LaporanPemakaianBanController;
 use App\Http\Controllers\Api\LaporanTransaksiHarianController;
-
+use App\Http\Controllers\Api\LaporanJurnalUmumController;
+// use App\Http\Controllers\Api\LaporanTransaksiHarianController;
 
 /*
     |--------------------------------------------------------------------------
@@ -1140,9 +1141,16 @@ route::middleware(['auth:api'])->group(function () {
     Route::get('laporanketeranganpinjamansupir/report', [LaporanKeteranganPinjamanSupirController::class, 'report'])->name('laporanketeranganpinjamansupir.report');
     Route::get('laporanketeranganpinjamansupir/export', [LaporanKeteranganPinjamanSupirController::class, 'export'])->name('laporanketeranganpinjamansupir.export');
     Route::resource('laporanketeranganpinjamansupir', LaporanKeteranganPinjamanSupirController::class);
+
     Route::get('laporankasgantung/report', [LaporanKasGantungController::class, 'report'])->name('laporankasgantung.report');
     Route::get('laporankasgantung/export', [LaporanKasGantungController::class, 'export'])->name('laporankasgantung.export');
     Route::resource('laporankasgantung', LaporanKasGantungController::class)->whereNumber('laporankasgantung');
+
+    Route::get('laporanjurnalumum/report', [LaporanJurnalUmumController::class, 'report'])->name('laporanjurnalumum.report');
+    Route::get('laporanjurnalumum/export', [LaporanJurnalUmumController::class, 'export'])->name('laporanjurnalumum.export');
+    Route::resource('laporanjurnalumum', LaporanJurnalUmumController::class)->whereNumber('laporanjurnalumum');
+
+
 
     Route::get('laporanhutangbbm/report', [LaporanHutangBBMController::class, 'report'])->name('laporanhutangbbm.report');
     Route::get('laporanhutangbbm/export', [LaporanHutangBBMController::class, 'export'])->name('laporanhutangbbm.export');
@@ -1219,6 +1227,7 @@ route::middleware(['auth:api'])->group(function () {
     // Route::resource('exportlaporandeposito', ExportLaporanDepositoController::class);
     Route::get('exportlaporankasgantung/export', [ExportLaporanKasGantungController::class, 'export'])->name('exportlaporankasgantung.export');
     Route::resource('exportlaporankasgantung', ExportLaporanKasGantungController::class)->whereNumber('exportlaporankasgantung');
+    
     Route::get('exportlaporanstok/export', [ExportLaporanStokController::class, 'export'])->name('exportlaporanstok.export');
     Route::resource('exportlaporanstok', ExportLaporanStokController::class)->whereNumber('exportlaporanstok');
     Route::get('laporanritasitrado/export', [LaporanRitasiTradoController::class, 'export'])->name('laporanritasitrado.export');
