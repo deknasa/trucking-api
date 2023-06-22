@@ -53,7 +53,14 @@ class InvoiceExtraHeaderController extends Controller
         DB::beginTransaction();
 
         try {
-            $invoiceExtra = (new InvoiceExtraHeader())->processStore($request->all());
+            $data = [
+                'tglbukti' => $request->tglbukti,
+                'nominal' => $request->nominal,
+                'agen_id' => $request->agen_id,
+                'nominal_detail' => $request->nominal_detail,
+                'keterangan_detail' => $request->keterangan_detail,
+            ];
+            $invoiceExtra = (new InvoiceExtraHeader())->processStore($data);
             $invoiceExtra->position = $this->getPosition($invoiceExtra, $invoiceExtra->getTable())->position;
             $invoiceExtra->page = ceil($invoiceExtra->position / ($request->limit ?? 10));
 
@@ -63,7 +70,6 @@ class InvoiceExtraHeaderController extends Controller
                 'message' => 'Berhasil disimpan',
                 'data' => $invoiceExtra
             ], 201);
-            
         } catch (\Throwable $th) {
             DB::rollBack();
 
@@ -90,7 +96,14 @@ class InvoiceExtraHeaderController extends Controller
         DB::beginTransaction();
 
         try {
-            $invoiceExtraHeader = (new InvoiceExtraHeader())->processUpdate($invoiceextraheader, $request->all());
+            $data = [
+                'tglbukti' => $request->tglbukti,
+                'nominal' => $request->nominal,
+                'agen_id' => $request->agen_id,
+                'nominal_detail' => $request->nominal_detail,
+                'keterangan_detail' => $request->keterangan_detail,
+            ];
+            $invoiceExtraHeader = (new InvoiceExtraHeader())->processUpdate($invoiceextraheader, $data);
             $invoiceExtraHeader->position = $this->getPosition($invoiceExtraHeader, $invoiceExtraHeader->getTable())->position;
             $invoiceExtraHeader->page = ceil($invoiceExtraHeader->position / ($request->limit ?? 10));
 
@@ -100,7 +113,6 @@ class InvoiceExtraHeaderController extends Controller
                 'message' => 'Berhasil diubah',
                 'data' => $invoiceExtraHeader
             ]);
-
         } catch (\Throwable $th) {
             DB::rollBack();
 
@@ -116,7 +128,7 @@ class InvoiceExtraHeaderController extends Controller
         DB::beginTransaction();
 
         try {
-            $invoiceExtraHeader = (new InvoiceExtraHeader())->processDestroy($id,'DELETE INVOICE EXTRA');
+            $invoiceExtraHeader = (new InvoiceExtraHeader())->processDestroy($id, 'DELETE INVOICE EXTRA');
             $selected = $this->getPosition($invoiceExtraHeader, $invoiceExtraHeader->getTable(), true);
             $invoiceExtraHeader->position = $selected->position;
             $invoiceExtraHeader->id = $selected->id;

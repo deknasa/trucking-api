@@ -347,6 +347,11 @@ class ParameterSeeder extends Seeder
         parameter::create(['grp' => 'SALDO AWAL STOK', 'subgrp' => 'SALDO AWAL STOK', 'kelompok' => '', 'text' => '7', 'memo' => '{"MEMO":"SALDO AWAL STOK","SINGKATAN":"3","WARNA":"#6C757D"}', 'type' => '0', 'modifiedby' => 'ADMIN', 'default' => '',]);
         parameter::create(['grp' => 'GUDANG SEMENTARA', 'subgrp' => 'GUDANG SEMENTARA', 'kelompok' => '', 'text' => '3', 'memo' => '{"MEMO":"GUDANG SEMENTARA","SINGKATAN":"1","WARNA":"#6C757D"}', 'type' => '0', 'modifiedby' => 'ADMIN', 'default' => '',]);
         parameter::create(['grp' => 'GUDANG PIHAK3', 'subgrp' => 'GUDANG PIHAK3', 'kelompok' => '', 'text' => '2', 'memo' => '{"MEMO":"GUDANG PIHAK 3","SINGKATAN":"1","WARNA":"#6C757D"}', 'type' => '0', 'modifiedby' => 'ADMIN', 'default' => '',]);
+        parameter::create(['grp' => 'LAPORAN PEMBELIAN', 'subgrp' => 'LAPORAN PEMBELIAN', 'kelompok' => '', 'text' => 'ORDERAN PEMBELIAN', 'memo' => '{"MEMO":"ORDERAN PEMBELIAN","SINGKATAN":"OP","WARNA":"#6C757D"}', 'type' => '0', 'modifiedby' => 'ADMIN', 'default' => '',]);
+        parameter::create(['grp' => 'LAPORAN PEMBELIAN', 'subgrp' => 'LAPORAN PEMBELIAN', 'kelompok' => '', 'text' => 'HISTORY ORDERAN PEMBELIAN', 'memo' => '{"MEMO":"HISTORY ORDERAN PEMBELIAN","SINGKATAN":"HOP","WARNA":"#6C757D"}', 'type' => '0', 'modifiedby' => 'ADMIN', 'default' => '',]);
+        parameter::create(['grp' => 'LAPORAN PEMBELIAN', 'subgrp' => 'LAPORAN PEMBELIAN', 'kelompok' => '', 'text' => 'PEMBELIAN', 'memo' => '{"MEMO":"PEMBELIAN","SINGKATAN":"P","WARNA":"#6C757D"}', 'type' => '0', 'modifiedby' => 'ADMIN', 'default' => '',]);
+        parameter::create(['grp' => 'LAPORAN PEMBELIAN', 'subgrp' => 'LAPORAN PEMBELIAN', 'kelompok' => '', 'text' => 'PEMBELIAN PER SUPPLIER', 'memo' => '{"MEMO":"PEMBELIAN PER SUPPLIER","SINGKATAN":"PSP","WARNA":"#6C757D"}', 'type' => '0', 'modifiedby' => 'ADMIN', 'default' => '',]);
+        parameter::create(['grp' => 'LAPORAN PEMBELIAN', 'subgrp' => 'LAPORAN PEMBELIAN', 'kelompok' => '', 'text' => 'RETUR PEMBELIAN', 'memo' => '{"MEMO":"RETUR PEMBELIAN","SINGKATAN":"RP","WARNA":"#6C757D"}', 'type' => '0', 'modifiedby' => 'ADMIN', 'default' => '',]);
 
         
     }

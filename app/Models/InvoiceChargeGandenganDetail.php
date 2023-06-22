@@ -155,4 +155,23 @@ class InvoiceChargeGandenganDetail extends MyModel
         return $query->skip($this->params['offset'])->take($this->params['limit']);
     }
 
+    public function processStore(InvoiceChargeGandenganHeader $invoiceChargeGandenganHeader, array $data): InvoiceChargeGandenganDetail
+    {
+        $invoiceChargeGandenganDetail = new InvoiceChargeGandenganDetail();
+        $invoiceChargeGandenganDetail->invoicechargegandengan_id = $invoiceChargeGandenganHeader->id;
+        $invoiceChargeGandenganDetail->nobukti = $invoiceChargeGandenganHeader->nobukti;
+        $invoiceChargeGandenganDetail->jobtrucking = $data['jobtrucking_detail'];
+        $invoiceChargeGandenganDetail->trado_id = $data['trado_id'];
+        $invoiceChargeGandenganDetail->tgltrip = $data['tgltrip_detail'];
+        $invoiceChargeGandenganDetail->jumlahhari = $data['jumlahhari_detail'];
+        $invoiceChargeGandenganDetail->nominal = $data['nominal_detail'];
+        $invoiceChargeGandenganDetail->keterangan = $data['keterangan_detail'];
+        $invoiceChargeGandenganDetail->modifiedby = auth('api')->user()->name;
+        
+        if (!$invoiceChargeGandenganDetail->save()) {
+            throw new \Exception("Error storing invoice charge gandengan detail.");
+        }
+
+        return $invoiceChargeGandenganDetail;
+    }
 }

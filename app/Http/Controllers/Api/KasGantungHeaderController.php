@@ -145,7 +145,8 @@ class KasGantungHeaderController extends Controller
                 'statusformat' => $request->statusformat,
                 'statuscetak' => 0 ?? '',
                 'userbukacetak' => '',
-                'tglbukacetak' => '',
+                'coakredit' => '',
+                'coadebet' => '',
     
                 'nominal' => $request->nominal ?? 0,
                 'keterangan_detail' => $request->keterangan_detail ?? ''

@@ -50,7 +50,9 @@ class Karyawan extends MyModel
                 'karyawan.created_at',
                 'karyawan.updated_at',
                 DB::raw("'Laporan Karyawan' as judulLaporan "),
-                DB::raw("'" . $getJudul->text . "' as judul ")
+                DB::raw("'" . $getJudul->text . "' as judul "),
+                DB::raw("'Tgl Cetak :'+format(getdate(),'dd-MM-yyyy HH:mm:ss')as tglcetak"),
+                DB::raw(" 'User :".auth('api')->user()->name."' as usercetak")
             )
             ->leftJoin(DB::raw("parameter as statusaktif with (readuncommitted)"), 'karyawan.statusaktif', 'statusaktif.id')
             ->leftJoin(DB::raw("parameter as statusstaff with (readuncommitted)"), 'karyawan.statusstaff', 'statusstaff.id');
