@@ -51,240 +51,40 @@ class AbsensiSupirApprovalHeaderController extends Controller
      */
     public function store(StoreAbsensiSupirApprovalHeaderRequest $request)
     {
+       
+// dd($request->all());
         DB::beginTransaction();
-
         try {
-
-            $group = 'ABSENSI SUPIR APPROVAL BUKTI';
-            $subgroup = 'ABSENSI SUPIR APPROVAL BUKTI';
-            $format = DB::table('parameter')
-                ->where('grp', $group)
-                ->where('subgrp', $subgroup)
-                ->first();
-
-            $content = new Request();
-            $content['group'] = $group;
-            $content['subgroup'] = $subgroup;
-            $content['table'] = 'absensisupirapprovalheader';
-            $content['tgl'] = date('Y-m-d', strtotime($request->tglbukti));
-
-            $group = 'JURNAL APPROVAL ABSENSI SUPIR';
-            $subgroup = 'KREDIT';
-            $coaaproval = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))
-                ->where('grp', $group)
-                ->where('subgrp', $subgroup)
-                ->first();
-
-            $memokredit = json_decode($coaaproval->memo, true);
-
-
-            $group = 'JURNAL APPROVAL ABSENSI SUPIR';
-            $subgroup = 'DEBET';
-            $coadebet = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))
-                ->where('grp', $group)
-                ->where('subgrp', $subgroup)
-                ->first();
-
-            $memodebet = json_decode($coadebet->memo, true);
-
-
-
-
-            $coakaskeluar = $memokredit['JURNAL'];
-            $absensiSupirApprovalHeader = new AbsensiSupirApprovalHeader();
-            $absensisupir = DB::table('absensisupirheader')->where('nobukti', $request->absensisupir)->first();
-            $statusCetak = Parameter::where('grp', 'STATUSCETAK')->where('text', 'BELUM CETAK')->first();
+            $data =[
+                "tglbukti"=>$request->tglbukti,
+                "absensisupir_nobukti"=>$request->absensisupir_nobukti,
+                "kasgantung_nobukti"=>$request->kasgantung_nobukti,
+                "pengeluaran_nobukti"=>$request->pengeluaran_nobukti,
+                "tglkaskeluar"=>$request->tglkaskeluar,
+                'supir_id' => $request->supir_id,
+                'trado_id' => $request->trado_id,
+                'uangjalan' => $request->uangjalan,
+                'supir_id' => $request->supir_id,
+                'trado_id' => $request->trado_id,
+                'uangjalan' => $request->uangjalan,
+            ];
             /* Store header */
-            $absensiSupirApprovalHeader->tglbukti =  date('Y-m-d', strtotime($request->tglbukti));
-            $absensiSupirApprovalHeader->absensisupir_nobukti =  $request->absensisupir_nobukti;
-            // $absensiSupirApprovalHeader->keterangan =  $request->keterangan;
-            $absensiSupirApprovalHeader->statusapproval =  4;
-            $absensiSupirApprovalHeader->statusformat =  $format->id;
-            $absensiSupirApprovalHeader->pengeluaran_nobukti = $request->pengeluaran_nobukti ?? '0';
-            $absensiSupirApprovalHeader->coakaskeluar = $coakaskeluar;
-            $absensiSupirApprovalHeader->tglkaskeluar = $request->tglkaskeluar ?? '1900/1/1';
-            $absensiSupirApprovalHeader->postingdari =  "ABSENSI SUPIR APPROVAL";
-            $absensiSupirApprovalHeader->statuscetak = $statusCetak->id ?? 0;
-            $absensiSupirApprovalHeader->modifiedby =  auth('api')->user()->name;
-            TOP:
-            $nobukti = app(Controller::class)->getRunningNumber($content)->original['data'];
-            $absensiSupirApprovalHeader->nobukti = $nobukti;
-
-            $absensiSupirApprovalHeader->save();
-
-            $bank = DB::table('bank')->where('coa', $coakaskeluar)->first();
-            // $kasgantung = DB::table('kasgantungheader')->where('nobukti', $request->kasgantung_nobukti)->first();
-            $kasgantung = KasGantungHeader::where('nobukti', $request->kasgantung_nobukti)->first();
-            $kasgantungdetail = DB::table('kasgantungdetail')->where('nobukti', $request->kasgantung_nobukti)->get();
-            $details = [];
-            $total = 0;
-            foreach ($kasgantungdetail as $detail) {
-                $details['keterangan'][] = $detail->keterangan;
-                $details['nominal'][] = $detail->nominal;
-                $total += $detail->nominal;
+            $absensiSupirApprovalHeader = (new AbsensiSupirApprovalHeader())->processStore($data);
+            /* Set position and page */
+            $absensiSupirApprovalHeader->position = $this->getPosition($absensiSupirApprovalHeader, $absensiSupirApprovalHeader->getTable())->position;
+            $absensiSupirApprovalHeader->page = ceil($absensiSupirApprovalHeader->position / ($request->limit ?? 10));
+            if (isset($request->limit)) {
+                $absensiSupirApprovalHeader->page = ceil($absensiSupirApprovalHeader->position / ($request->limit ?? 10));
             }
-
-
-            $dataKasgantung = [
-                "tglbukti" => $kasgantung->tglbukti,
-                // "keterangan" => $absensiSupirApprovalHeader->keterangan,
-                "bank_id" => $bank->id,
-                "penerima_id" => $kasgantung->penerima_id,
-                "coakaskeluar" => $coakaskeluar,
-                "postingdari" => 'ENTRY ABSENSI SUsPIR APPROVAL',
-                "tglkaskeluar" => $request->tglbukti,
-                'keterangan_detail' => $details['keterangan'],
-                'nominal' => $details['nominal'],
-                'approvalabsensisupir' => true,
-                'absensisupirapprovalheader_id' => $absensiSupirApprovalHeader->id,
-                'absensisupir_nobukti' => $absensiSupirApprovalHeader->absensisupir_nobukti,
-                "from" => "AbsensiSupirApprovalHeader"
-            ];
-
-
-            $data = new UpdateKasGantungHeaderRequest($dataKasgantung);
-            // dump($data);
-            $kasgantungStore = app(KasGantungHeaderController::class)->update($data, $kasgantung);
-
-            $kasgantung = $kasgantungStore->original['data'];
-            
-            $absensiSupirApprovalHeader->pengeluaran_nobukti = $kasgantung->pengeluaran_nobukti;
-            $absensiSupirApprovalHeader->tglkaskeluar = $kasgantung->tglkaskeluar;
-            $absensiSupirApprovalHeader->save();
-
-
-
-            $logTrail = [
-                'namatabel' => strtoupper($absensiSupirApprovalHeader->getTable()),
-                'postingdari' => 'ENTRY ABSENSI SUPIR APPROVAL HEADER',
-                'idtrans' => $absensiSupirApprovalHeader->id,
-                'nobuktitrans' => $absensiSupirApprovalHeader->nobukti,
-                'aksi' => 'ADD',
-                'datajson' => $absensiSupirApprovalHeader->toArray(),
-                'modifiedby' => $absensiSupirApprovalHeader->modifiedby
-            ];
-            $validatedLogTrail = new StoreLogTrailRequest($logTrail);
-            $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
-            if ($request->trado_id) {
-                /* Store detail */
-                $detaillog = [];
-                $jurnalDetail = [];
-                for ($i = 0; $i < count($request->trado_id); $i++) {
-                    $supirId = ($request->supir_id[$i] != null) ? $request->supir_id[$i] : 0;
-                    $datadetail = [
-                        "absensisupirapproval_id" => $absensiSupirApprovalHeader->id,
-                        "nobukti" => $absensiSupirApprovalHeader->nobukti,
-                        "trado_id" => $request->trado_id[$i],
-                        "supir_id" => $supirId,
-                        "modifiedby" => auth('api')->user()->name
-                    ];
-                    $data = new StoreAbsensiSupirApprovalDetailRequest($datadetail);
-                    $absensiSupirApprovalDetail = app(AbsensiSupirApprovalDetailController::class)->store($data);
-
-                    if ($absensiSupirApprovalDetail['error']) {
-                        return response($absensiSupirApprovalDetail, 422);
-                    } else {
-                        $iddetail = $absensiSupirApprovalDetail['id'];
-                        $tabeldetail = $absensiSupirApprovalDetail['tabel'];
-                    }
-                    $datadetaillog = [
-                        "id" => $iddetail,
-                        "absensisupirapproval_id" => $absensiSupirApprovalHeader->id,
-                        "nobukti" => $absensiSupirApprovalHeader->nobukti,
-                        "trado_id" => $request->trado_id[$i],
-                        "supir_id" => $supirId,
-                        "modifiedby" => auth('api')->user()->name,
-                        'created_at' => date('d-m-Y H:i:s', strtotime($absensiSupirApprovalHeader->created_at)),
-                        'updated_at' => date('d-m-Y H:i:s', strtotime($absensiSupirApprovalHeader->updated_at)),
-                    ];
-
-
-                    $detaillog[] = $datadetaillog;
-                }
-                $datalogtrail = [
-                    'namatabel' => $tabeldetail,
-                    'postingdari' => 'ENTRY ABSENSI SUPIR APPROVAL DETAIL',
-                    'idtrans' =>  $iddetail,
-                    'nobuktitrans' => $absensiSupirApprovalHeader->nobukti,
-                    'aksi' => 'ENTRY',
-                    'datajson' => $detaillog,
-                    'modifiedby' => auth('api')->user()->name,
-                ];
-
-                $data = new StoreLogTrailRequest($datalogtrail);
-                app(LogTrailController::class)->store($data);
-
-                $jurnalHeader = [
-                    'tanpaprosesnobukti' => 1,
-                    'nobukti' => $absensiSupirApprovalHeader->nobukti,
-                    'tglbukti' => date('Y-m-d', strtotime($absensiSupirApprovalHeader->tglbukti)),
-                    // 'keterangan' => $absensiSupirApprovalHeader->keterangan,
-                    'postingdari' => 'ENTRY ABSENSI SUPIR APPROVAL DETAIL',
-                    'statusapproval' => $absensiSupirApprovalHeader->statusapproval,
-                    'userapproval' => "",
-                    'tglapproval' => "",
-                    'statusformat' => 0,
-                    'modifiedby' => auth('api')->user()->name,
-                ];
-
-                $jurnalDetail = [
-                    [
-                        'nobukti' => $absensiSupirApprovalHeader->nobukti,
-                        'tglbukti' => date('Y-m-d', strtotime($absensiSupirApprovalHeader->tglbukti)),
-                        'coa' =>  $memodebet['JURNAL'],
-                        'nominal' => $total,
-                        // 'keterangan' => $request->keterangan,
-                        'modifiedby' => auth('api')->user()->name,
-                        'baris' => $i,
-                    ], [
-                        'nobukti' => $absensiSupirApprovalHeader->nobukti,
-                        'tglbukti' => date('Y-m-d', strtotime($absensiSupirApprovalHeader->tglbukti)),
-                        'coa' =>  $kasgantung->coakaskeluar,
-                        'nominal' => -$total,
-                        // 'keterangan' => $request->keterangan,
-                        'modifiedby' => auth('api')->user()->name,
-                        'baris' => $i,
-                    ]
-                ];
-            }
-
-            // $queryabsen = DB::table('absensisupirapproval')
-            //     ->from(
-            //         DB::raw("absensisupirheader a with (readuncommitted)")
-            //     )
-            //     ->select(
-            //         'b.pengeluaran_nobukti',
-            //         'b.tglkaskeluar'
-            //     )
-            //     ->join(DB::raw("kasgantungheader b"), 'a.kasgantung_nobukti', 'b.nobukti')
-            //     ->first();
-            // if (isset($queryabsen)) {
-            //     $absensisupirapprovalheader  = AbsensiSupirApprovalHeader::lockForUpdate()->where("id", $absensiSupirApprovalHeader->id)
-            //         ->firstorFail();
-            //     $absensisupirapprovalheader->pengeluaran_nobukti = $queryabsen->pengeluaran_nobukti;
-            //     $absensisupirapprovalheader->tglkaskeluar = $queryabsen->tglkaskeluar;
-            //     $absensisupirapprovalheader->save();
-            // }
 
             DB::commit();
-
-            /* Set position and page */
-
-            $selected = $this->getPosition($absensiSupirApprovalHeader, $absensiSupirApprovalHeader->getTable());
-            $absensiSupirApprovalHeader->position = $selected->position;
-            $absensiSupirApprovalHeader->page = ceil($absensiSupirApprovalHeader->position / ($request->limit ?? 10));
-
-            if (isset($request->limit)) {
-                $absensiSupirApprovalHeader->page = ceil($absensiSupirApprovalHeader->position / $request->limit);
-            }
-
-            return response([
+            return response()->json([
                 'message' => 'Berhasil disimpan',
                 'data' => $absensiSupirApprovalHeader
-            ], 201);
-        
+            ], 201);    
         } catch (\Throwable $th) {
             DB::rollBack();
+
             throw $th;
         }
     }
@@ -311,173 +111,38 @@ class AbsensiSupirApprovalHeaderController extends Controller
     public function update(UpdateAbsensiSupirApprovalHeaderRequest $request, AbsensiSupirApprovalHeader $absensiSupirApprovalHeader, $id)
     {
         DB::beginTransaction();
-
         try {
-
-            $group = 'ABSENSI SUPIR APPROVAL BUKTI';
-            $subgroup = 'ABSENSI SUPIR APPROVAL BUKTI';
-            $format = DB::table('parameter')
-                ->where('grp', $group)
-                ->where('subgrp', $subgroup)
-                ->first();
-
-            $group = 'JURNAL APPROVAL ABSENSI SUPIR';
-            $subgroup = 'KREDIT';
-            $coaaproval = DB::table('parameter')
-                ->where('grp', $group)
-                ->where('subgrp', $subgroup)
-                ->first();
-
-            $memokredit = json_decode($coaaproval->memo, true);
-
-            $group = 'JURNAL APPROVAL ABSENSI SUPIR';
-            $subgroup = 'DEBET';
-            $coadebet = DB::table('parameter')
-                ->where('grp', $group)
-                ->where('subgrp', $subgroup)
-                ->first();
-
-
-            $coakaskeluar = $memokredit['JURNAL'];
-
+            $data =[
+                "tglbukti"=>$request->tglbukti,
+                "absensisupir_nobukti"=>$request->absensisupir_nobukti,
+                "kasgantung_nobukti"=>$request->kasgantung_nobukti,
+                "pengeluaran_nobukti"=>$request->pengeluaran_nobukti,
+                "tglkaskeluar"=>$request->tglkaskeluar,
+                'supir_id' => $request->supir_id,
+                'trado_id' => $request->trado_id,
+                'uangjalan' => $request->uangjalan,
+                'supir_id' => $request->supir_id,
+                'trado_id' => $request->trado_id,
+                'uangjalan' => $request->uangjalan,
+            ];
             /* Store header */
-            $absensiSupirApprovalHeader = AbsensiSupirApprovalHeader::lockForUpdate()->findOrFail($id);
-
-            $kasgantung = DB::table('kasgantungheader')
-                ->select('kasgantungheader.pengeluaran_nobukti', 'kasgantungheader.tglbukti', 'kasgantungdetail.coa')
-                ->leftJoin('kasgantungdetail', 'kasgantungheader.id', 'kasgantungdetail.kasgantung_id')
-                ->where('kasgantungheader.nobukti', $request->kasgantung_nobukti)
-                ->first();
-
-            /* Store header */
-            $absensiSupirApprovalHeader->tglbukti =  date('Y-m-d', strtotime($request->tglbukti));
-            $absensiSupirApprovalHeader->absensisupir_nobukti =  $request->absensisupir_nobukti;
-            // $absensiSupirApprovalHeader->keterangan =  $request->keterangan;
-            $absensiSupirApprovalHeader->statusapproval =  4;
-            $absensiSupirApprovalHeader->statusformat =  $format->id;
-            $absensiSupirApprovalHeader->pengeluaran_nobukti = $kasgantung->pengeluaran_nobukti ?? '0';
-            $absensiSupirApprovalHeader->coakaskeluar = $coakaskeluar;
-            $absensiSupirApprovalHeader->postingdari =  "ABSENSI SUPIR APPROVAL";
-            $absensiSupirApprovalHeader->modifiedby =  auth('api')->user()->name;
-            if ($absensiSupirApprovalHeader->save()) {
-                $bank = DB::table('bank')->where('coa', $coakaskeluar)->first();
-
-                // $kasgantung = DB::table('kasgantungheader')->where('nobukti', $request->kasgantung_nobukti)->first();
-                $absensisupir = AbsensiSupirHeader::where('nobukti', $request->absensisupir_nobukti)->first();
-                $kasgantung = KasGantungHeader::where('nobukti', $absensisupir->kasgantung_nobukti)->first();
-                // return response($kasgantung, 442);
-
-                $kasgantungdetail = DB::table('kasgantungdetail')->where('nobukti', $absensisupir->kasgantung_nobukti)->get();
-                $details = [];
-                $total = 0;
-                foreach ($kasgantungdetail as $detail) {
-                    $details['keterangan'][] = $detail->keterangan;
-                    $details['nominal'][] = $detail->nominal;
-                    $total += $detail->nominal;
-                }
-
-                $dataKasgantung = [
-                    "tglbukti" => $kasgantung->tglbukti,
-                    // "keterangan" => $absensiSupirApprovalHeader->keterangan,
-                    "bank_id" => $bank->id,
-                    "penerima_id" => $kasgantung->penerima_id,
-                    "coakaskeluar" => $coakaskeluar,
-                    "pengeluaran_nobukti" => $absensiSupirApprovalHeader->pengeluaran_nobukti,
-                    "postingdari" => 'ENTRY ABSENSI SUPIR APPROVAL',
-                    "tglkaskeluar" => $request->tglbukti,
-                    'keterangan_detail' => $details['keterangan'],
-                    'nominal' => $details['nominal'],
-                    "from" => "AbsensiSupirApprovalHeader"
-                ];
-
-                $data = new UpdateKasGantungHeaderRequest($dataKasgantung);
-                $kasgantungStore = app(KasGantungHeaderController::class)->update($data, $kasgantung);
-                $kasgantung = $kasgantungStore->original['data'];
-
-
-                $absensiSupirApprovalHeader->pengeluaran_nobukti = $kasgantung->pengeluaran_nobukti;
-                $absensiSupirApprovalHeader->tglkaskeluar = $kasgantung->tglkaskeluar;
-
-                $absensiSupirApprovalHeader->save();
-
-                $logTrail = [
-                    'namatabel' => strtoupper($absensiSupirApprovalHeader->getTable()),
-                    'postingdari' => 'EDIT ABSENSI SUPIR APPROVAL HEADER',
-                    'idtrans' => $absensiSupirApprovalHeader->id,
-                    'nobuktitrans' => $absensiSupirApprovalHeader->nobukti,
-                    'aksi' => 'EDIT',
-                    'datajson' => $absensiSupirApprovalHeader->toArray(),
-                    'modifiedby' => $absensiSupirApprovalHeader->modifiedby
-                ];
-                $validatedLogTrail = new StoreLogTrailRequest($logTrail);
-                $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
-                if ($request->trado_id) {
-
-                    /* Store detail */
-                    $detaillog = [];
-                    AbsensiSupirApprovalDetail::where('absensisupirapproval_id', $id)->lockForUpdate()->delete();
-                    for ($i = 0; $i < count($request->trado_id); $i++) {
-                        $supirId = ($request->supir_id[$i] != null) ? $request->supir_id[$i] : 0;
-                        $datadetail = [
-                            "absensisupirapproval_id" => $absensiSupirApprovalHeader->id,
-                            "nobukti" => $absensiSupirApprovalHeader->nobukti,
-                            "trado_id" => $request->trado_id[$i],
-                            "supir_id" => $supirId,
-                            "modifiedby" => auth('api')->user()->name
-                        ];
-                        $data = new StoreAbsensiSupirApprovalDetailRequest($datadetail);
-                        $absensiSupirApprovalDetail = app(AbsensiSupirApprovalDetailController::class)->store($data);
-
-                        if ($absensiSupirApprovalDetail['error']) {
-                            return response($absensiSupirApprovalDetail, 422);
-                        } else {
-                            $iddetail = $absensiSupirApprovalDetail['id'];
-                            $tabeldetail = $absensiSupirApprovalDetail['tabel'];
-                        }
-                        $datadetaillog = [
-                            "id" => $iddetail,
-                            "absensisupirapproval_id" => $absensiSupirApprovalHeader->id,
-                            "nobukti" => $absensiSupirApprovalHeader->nobukti,
-                            "trado_id" => $request->trado_id[$i],
-                            "supir_id" => $supirId,
-                            "modifiedby" => auth('api')->user()->name,
-                            'created_at' => date('d-m-Y H:i:s', strtotime($absensiSupirApprovalHeader->created_at)),
-                            'updated_at' => date('d-m-Y H:i:s', strtotime($absensiSupirApprovalHeader->updated_at)),
-                        ];
-                        $detaillog[] = $datadetaillog;
-                    }
-                    $datalogtrail = [
-                        'namatabel' => $tabeldetail,
-                        'postingdari' => 'ENTRY ABSENSI SUPIR APPROVAL DETAIL',
-                        'idtrans' =>  $iddetail,
-                        'nobuktitrans' => $absensiSupirApprovalHeader->nobukti,
-                        'aksi' => 'ENTRY',
-                        'datajson' => $detaillog,
-                        'modifiedby' => auth('api')->user()->name,
-                    ];
-                    $data = new StoreLogTrailRequest($datalogtrail);
-                    app(LogTrailController::class)->store($data);
-                }
-                DB::commit();
-            }
+            $absensiSupirApprovalHeader = (new AbsensiSupirApprovalHeader())->processStore($data);
             /* Set position and page */
-
-            $selected = $this->getPosition($absensiSupirApprovalHeader, $absensiSupirApprovalHeader->getTable());
-            $absensiSupirApprovalHeader->position = $selected->position;
+            $absensiSupirApprovalHeader->position = $this->getPosition($absensiSupirApprovalHeader, $absensiSupirApprovalHeader->getTable())->position;
             $absensiSupirApprovalHeader->page = ceil($absensiSupirApprovalHeader->position / ($request->limit ?? 10));
-
             if (isset($request->limit)) {
-                $absensiSupirApprovalHeader->page = ceil($absensiSupirApprovalHeader->position / $request->limit);
+                $absensiSupirApprovalHeader->page = ceil($absensiSupirApprovalHeader->position / ($request->limit ?? 10));
             }
 
-            return response([
+            DB::commit();
+            return response()->json([
                 'message' => 'Berhasil disimpan',
                 'data' => $absensiSupirApprovalHeader
-            ], 201);
+            ], 201);    
         } catch (\Throwable $th) {
             DB::rollBack();
+
             throw $th;
-            return response($th->getMessage());
         }
 
         return response($request->all(), 442);
@@ -488,8 +153,28 @@ class AbsensiSupirApprovalHeaderController extends Controller
     public function destroy(Request $request, $id)
     {
 
-        DB::beginTransaction();
 
+        DB::beginTransaction();
+        try {
+            // dd($absensiSupirApprovalHeader);
+            $absensiSupirApprovalHeader = (new AbsensiSupirApprovalHeader())->processDestroy($id);
+            /* Set position and page */
+            $absensiSupirApprovalHeader->position = $this->getPosition($absensiSupirApprovalHeader, $absensiSupirApprovalHeader->getTable())->position;
+            $absensiSupirApprovalHeader->page = ceil($absensiSupirApprovalHeader->position / ($request->limit ?? 10));
+            if (isset($request->limit)) {
+                $absensiSupirApprovalHeader->page = ceil($absensiSupirApprovalHeader->position / ($request->limit ?? 10));
+            }
+
+            DB::commit();
+            return response()->json([
+                'message' => 'Berhasil disimpan',
+                'data' => $absensiSupirApprovalHeader
+            ], 201);    
+        } catch (\Throwable $th) {
+            DB::rollBack();
+            throw $th;
+        }
+        
         $getDetail = AbsensiSupirApprovalDetail::lockForUpdate()->where('absensisupirapproval_id', $id)->get();
 
         $absensiSupirApprovalHeader = new AbsensiSupirApprovalHeader();

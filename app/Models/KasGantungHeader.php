@@ -447,7 +447,7 @@ class KasGantungHeader extends MyModel
         $kasgantungHeader->penerima = $data['penerima'] ?? '';
         $kasgantungHeader->bank_id = $data['bank_id'] ?? 0;
         $kasgantungHeader->pengeluaran_nobukti = $data['pengeluaran_nobukti'];
-        $kasgantungHeader->coakaskeluar = $bank->coa ?? '';
+        $kasgantungHeader->coakaskeluar = $data['coakaskeluar'] ?? $bank->coa ;
         $kasgantungHeader->postingdari = $data['postingdari'] ?? 'ENTRY KAS GANTUNG';
         $kasgantungHeader->tglkaskeluar = date('Y-m-d', strtotime($data['tglbukti']));
         $kasgantungHeader->modifiedby = auth('api')->user()->name;
@@ -502,8 +502,8 @@ class KasGantungHeader extends MyModel
             $total += $data['nominal'][$i];
             $noWarkat[] = 0;
             $tglJatuhTempo[] = $data['tglbukti'];
-            $coaKredit[] = $bank->coa;
-            $coaDebet[] = $memo['JURNAL'];
+            $coaKredit[] = $data['coakredit'][$i] ?? $bank->coa??'';
+            $coaDebet[] = $data['coadebet'][$i] ?? $memo['JURNAL'];
             $keterangan_detail[] = $data['keterangan_detail'][$i];
             $nominal[] = $data['nominal'][$i];
         }
@@ -522,13 +522,8 @@ class KasGantungHeader extends MyModel
                     ->where('grp', 'JENIS TRANSAKSI')->where('text', 'BANK')->first();
             }
 
-
-
-            // $penerima = Penerima::from(DB::raw("penerima with (readuncommitted)"))->where("id", $data['penerima_id'])->first();
             $namaPenerima = ($data['penerima'] != null) ? $data['penerima'] : '';
 
-
-            $pengeluaranDetail = [];
 
             $alatbayar = AlatBayar::from(DB::raw("alatbayar with (readuncommitted)"))->where('bank_id', $bank->id)->first();
 
@@ -576,7 +571,7 @@ class KasGantungHeader extends MyModel
         $bank = Bank::lockForUpdate()->findOrFail($bank_id);
 
         $kasgantungHeader->penerima = $data['penerima'] ?? '';
-
+        $kasgantungHeader->coakaskeluar = $data['coakaskeluar'] ?? $bank->coa ;
         $kasgantungHeader->postingdari = $data['postingdari'] ?? 'EDIT KAS GANTUNG';
         $kasgantungHeader->modifiedby = auth('api')->user()->name;
 
@@ -632,8 +627,8 @@ class KasGantungHeader extends MyModel
 
             $noWarkat[] = 0;
             $tglJatuhTempo[] = $data['tglbukti'];
-            $coaKredit[] = $bank->coa;
-            $coaDebet[] = $memo['JURNAL'];
+            $coaKredit[] = $data['coakredit'][$i] ?? $bank->coa;
+            $coaDebet[] = $data['coadebet'][$i] ?? $memo['JURNAL'];
             $keterangan_detail[] = $data['keterangan_detail'][$i];
             $nominal[] = $data['nominal'][$i];
 
@@ -720,7 +715,10 @@ class KasGantungHeader extends MyModel
                 'nominal_detail' => $nominal
             ];
 
-            (new PengeluaranHeader())->processStore($pengeluaranRequest);
+            $pengeluaran = (new PengeluaranHeader())->processStore($pengeluaranRequest);
+            $kasgantungHeader->pengeluaran_nobukti = $pengeluaran->nobukti;
+            $kasgantungHeader->save();
+            
         } else {
             $newPengeluaran = new PengeluaranHeader();
             $newPengeluaran = $newPengeluaran->find($get->id);
