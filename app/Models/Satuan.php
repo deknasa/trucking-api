@@ -43,7 +43,9 @@ class Satuan extends MyModel
             'satuan.created_at',
             'satuan.updated_at',
             DB::raw("'Laporan Satuan' as judulLaporan"),
-            DB::raw("'" . $getJudul->text . "' as judul")
+            DB::raw("'" . $getJudul->text . "' as judul"),
+            DB::raw("'Tgl Cetak :'+format(getdate(),'dd-MM-yyyy HH:mm:ss')as tglcetak"),
+            DB::raw(" 'User :".auth('api')->user()->name."' as usercetak")
         )
             ->leftJoin('parameter', 'satuan.statusaktif', '=', 'parameter.id');
 

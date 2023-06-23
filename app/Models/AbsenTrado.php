@@ -66,7 +66,9 @@ class AbsenTrado extends MyModel
                 'absentrado.created_at',
                 'absentrado.updated_at',
                 DB::raw("'Laporan Absen Trado' as judulLaporan"),
-                DB::raw("'" . $getJudul->text . "' as judul")
+                DB::raw("'" . $getJudul->text . "' as judul"),
+                DB::raw("'Tgl Cetak :'+format(getdate(),'dd-MM-yyyy HH:mm:ss')as tglcetak"),
+                DB::raw(" 'User :".auth('api')->user()->name."' as usercetak")
             )
             ->leftJoin(DB::raw("parameter with (readuncommitted)"), 'absentrado.statusaktif', '=', 'parameter.id');
 
