@@ -14,6 +14,9 @@ use Illuminate\Support\Facades\DB;
 
 class ProsesUangJalanSupirDetailController extends Controller
 {
+    /**
+     * @ClassName
+     */
     public function index(): JsonResponse
     {
         $prosesUangJalanSupir = new ProsesUangJalanSupirDetail();
@@ -31,12 +34,12 @@ class ProsesUangJalanSupirDetailController extends Controller
     {
         $transfer = Parameter::from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS PROSES UANG JALAN')->where('text', 'TRANSFER')->first();
         $nobukti = ProsesUangJalanSupirDetail::from(DB::raw("prosesuangjalansupirdetail with (readuncommitted)"))
-        ->where('statusprosesuangjalan', $transfer->id)->where('prosesuangjalansupir_id', request()->prosesuangjalan_id)->first();
+            ->where('statusprosesuangjalan', $transfer->id)->where('prosesuangjalansupir_id', request()->prosesuangjalan_id)->first();
 
         $jurnalDetail = new JurnalUmumDetail();
-        
-        if(request()->nobukti != 'false' && request()->nobukti != null){
-            
+
+        if (request()->nobukti != 'false' && request()->nobukti != null) {
+
             return response()->json([
                 'data' => $jurnalDetail->getJurnalFromAnotherTable($nobukti->pengeluarantrucking_nobukti),
                 'attributes' => [
@@ -46,8 +49,8 @@ class ProsesUangJalanSupirDetailController extends Controller
                     'totalNominalKredit' => $jurnalDetail->totalNominalKredit,
                 ]
             ]);
-        }else{
-            
+        } else {
+
             return response()->json([
                 'data' => [],
                 'attributes' => [
@@ -66,7 +69,7 @@ class ProsesUangJalanSupirDetailController extends Controller
         DB::beginTransaction();
 
         try {
-            
+
             $prosesUangJalan = new ProsesUangJalanSupirDetail();
 
             $prosesUangJalan->prosesuangjalansupir_id = $request->prosesuangjalansupir_id;
@@ -84,7 +87,7 @@ class ProsesUangJalanSupirDetailController extends Controller
             $prosesUangJalan->nominal = $request->nominal;
             $prosesUangJalan->keterangan = $request->keterangan;
             $prosesUangJalan->modifiedby = auth('api')->user()->name;
-            
+
             $prosesUangJalan->save();
             DB::commit();
 

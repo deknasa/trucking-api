@@ -21,7 +21,7 @@ class ServiceInHeaderController extends Controller
      /**
      * @ClassName 
      * ServiceInHeaderHeader
-     * @Detail1 ServiceInHeaderDetailController
+     * @Detail1 ServiceInDetailController
      */
     public function index()
     {
