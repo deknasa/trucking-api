@@ -12,9 +12,8 @@ use App\Models\HistoriPenerimaanStok;
 use App\Models\Parameter;
 use App\Models\Stok;
 use App\Models\Penerimaanstok;
-
-
 use Illuminate\Support\Facades\DB;
+
 
 class HistoriPenerimaanStokController extends Controller
 {
@@ -24,8 +23,6 @@ class HistoriPenerimaanStokController extends Controller
     public function index(GetIndexHistoriPenerimaanRequest $request)
     {
             $HistoriPenerimaanStok = new HistoriPenerimaanStok();
-
-
             return response([
                 'data' => $HistoriPenerimaanStok->get(),
                 'attributes' => [
@@ -33,6 +30,7 @@ class HistoriPenerimaanStokController extends Controller
                     'totalPages' => $HistoriPenerimaanStok->totalPages
                 ]
             ]);
+
     }
 
     public function default()
@@ -57,17 +55,17 @@ class HistoriPenerimaanStokController extends Controller
         $filter = PenerimaanStok::findOrFail($request->filter);
        
 
-        $report = [
-            'stokdari' => $stokdari_id->namastok,
-            'stoksampai' => $stoksampai_id->namastok,
-            'dari' => $request->dari,
-            'sampai' => $request->sampai,
-            'filter' => $filter->keterangan,
-        ];
+        // $report = [
+        //     'stokdari' => $stokdari_id->namastok,
+        //     'stoksampai' => $stoksampai_id->namastok,
+        //     'dari' => $request->dari,
+        //     'sampai' => $request->sampai,
+        //     'filter' => $filter->keterangan,
+        // ];
 
         return response([
             'data' => $HistoriPenerimaanStok->get(),
-            'dataheader' => $report
+            // 'dataheader' => $report
         ]);
     }
 }

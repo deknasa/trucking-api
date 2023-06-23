@@ -32,17 +32,6 @@ class LaporanJurnalUmumController extends Controller
         $sampai = date('Y-m-d', strtotime($request->sampai));
         $laporanjurnalumum = new LaporanJurnalUmum();
 
-        // $report = LaporanKasGantung::getReport($sampai, $jenis);
-        // $report = [
-        //     [
-        //         'tanggal' => "24/2/2023",
-        //         "nobukti" => "KGT 0002/II/2023",
-        //         "keterangian" => "BELANJAS",
-        //         "debet" => "25412",
-        //         "kredit" => "351251",
-        //         "saldo" => "151511"
-        //     ]
-        // ];
 
         $laporan_jurnalumum = $laporanjurnalumum->getReport($dari, $sampai, );
 
