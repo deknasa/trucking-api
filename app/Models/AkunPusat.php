@@ -46,6 +46,57 @@ class AkunPusat extends MyModel
         return $data;
     }
 
+    public function cekValidasi($id)
+    {
+        $getCoa = DB::table("akunpusat")->from(DB::raw("akunpusat with (readuncommitted)"))->where('id', $id)->first();
+        $coa = $getCoa->coa;
+
+        $parent = DB::table('jurnalumumdetail')
+            ->from(
+                DB::raw("jurnalumumdetail as a with (readuncommitted)")
+            )
+            ->select(
+                'a.coa'
+            )
+            ->where('a.coa', '=', $coa)
+            ->first();
+
+        if (isset($parent)) {
+            $data = [
+                'kondisi' => true,
+                'keterangan' => 'jurnal umum',
+                'kodeerror' => 'SATL'
+            ];
+            goto selesai;
+        }
+
+        $akunPusat = DB::table('akunpusat')
+            ->from(
+                DB::raw("akunpusat as a with (readuncommitted)")
+            )
+            ->select(
+                'a.coa'
+            )
+            ->where('a.coa', '=', $coa)
+            ->first();
+
+        if (isset($akunPusat)) {
+            $data = [
+                'kondisi' => true,
+                'keterangan' => 'akun pusat',
+                'kodeerror' => 'SATL'
+            ];
+            goto selesai;
+        }
+
+        $data = [
+            'kondisi' => false,
+            'keterangan' => '',
+        ];
+        selesai:
+        return $data;
+    }
+
     public function get()
     {
         $this->setRequestParameters();
@@ -71,10 +122,11 @@ class AkunPusat extends MyModel
                 'akunpusat.id',
                 'akunpusat.coa',
                 'akunpusat.keterangancoa',
-                'akunpusat.type',
+                'typeakuntansi.kodetype as type',
                 'akunpusat.level',
                 'akunpusat.parent',
                 'akunpusat.coamain',
+                'akuntansi.kodeakuntansi as akuntansi',
                 'parameter_statusaktif.memo as statusaktif',
                 'parameter_statuscoa.memo as statuscoa',
                 'parameter_statusaccountpayable.memo as statusaccountpayable',
@@ -86,7 +138,8 @@ class AkunPusat extends MyModel
                 DB::raw("'Laporan Kode Perkiraan' as judulLaporan"),
                 DB::raw("'" . $getJudul->text . "' as judul")
             )
-
+            ->leftJoin(DB::raw("typeakuntansi with (readuncommitted)"), 'akunpusat.type_id', 'typeakuntansi.id')
+            ->leftJoin(DB::raw("akuntansi with (readuncommitted)"), 'akunpusat.akuntansi_id', 'akuntansi.id')
             ->leftJoin(DB::raw("parameter as parameter_statusaktif with (readuncommitted)"), 'akunpusat.statusaktif', '=', 'parameter_statusaktif.id')
             ->leftJoin(DB::raw("parameter as parameter_statuscoa with (readuncommitted)"), 'akunpusat.statuscoa', '=', 'parameter_statuscoa.id')
             ->leftJoin(DB::raw("parameter as parameter_statusaccountpayable with (readuncommitted)"), 'akunpusat.statusaccountpayable', '=', 'parameter_statusaccountpayable.id')
@@ -309,8 +362,40 @@ class AkunPusat extends MyModel
         return $temp;
     }
 
+    public function findAll($id)
+    {
+        $query = DB::table("akunpusat")->from(DB::raw("akunpusat with (readuncommitted)"))
+            ->select(
+                'akunpusat.id',
+                'akunpusat.coa',
+                'akunpusat.keterangancoa',
+                'typeakuntansi.kodetype as type',
+                'akunpusat.type_id',
+                'akunpusat.akuntansi_id',
+                'akuntansi.kodeakuntansi as akuntansi',
+                'akunpusat.parent',
+                'akunpusat.statuscoa',
+                'akunpusat.statusaccountpayable',
+                'akunpusat.statusneraca',
+                'akunpusat.statuslabarugi',
+                'akunpusat.statusaktif',
+                'akunpusat.coamain'
+            )
+            ->leftJoin(DB::raw("typeakuntansi with (readuncommitted)"), 'akunpusat.type_id', 'typeakuntansi.id')
+            ->leftJoin(DB::raw("akuntansi with (readuncommitted)"), 'akunpusat.akuntansi_id', 'akuntansi.id')
+            ->where('akunpusat.id', $id)
+            ->first();
+
+        return $query;
+    }
+
     public function sort($query)
     {
+        if ($this->params['sortIndex'] == 'akuntansi') {
+            return $query->orderBy('akuntansi.kodeakuntansi', $this->params['sortOrder']);
+        } else if ($this->params['sortIndex'] == 'type') {
+            return $query->orderBy('typeakuntansi.kodetype', $this->params['sortOrder']);
+        }
         return $query->orderBy($this->table . '.' . $this->params['sortIndex'], $this->params['sortOrder']);
     }
 
@@ -332,6 +417,10 @@ class AkunPusat extends MyModel
                             $query = $query->where('parameter_statuslabarugi.text', '=', "$filters[data]");
                         } else if ($filters['field'] == 'created_at' || $filters['field'] == 'updated_at') {
                             $query = $query->whereRaw("format(" . $this->table . "." . $filters['field'] . ", 'dd-MM-yyyy HH:mm:ss') LIKE '%$filters[data]%'");
+                        } elseif ($filters['field'] == 'type') {
+                            $query = $query->where('typeakuntansi.kodetype', 'LIKE', "%$filters[data]%");
+                        } elseif ($filters['field'] == 'akuntansi') {
+                            $query = $query->where('akuntansi.kodeakuntansi', 'LIKE', "%$filters[data]%");
                         } else {
                             // $query = $query->where($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
                             $query = $query->whereRaw($this->table . ".[" .  $filters['field'] . "] LIKE '%" . escapeLike($filters['data']) . "%' escape '|'");
@@ -354,6 +443,10 @@ class AkunPusat extends MyModel
                                 $query = $query->orWhere('parameter_statusneraca.text', '=', "$filters[data]");
                             } else if ($filters['field'] == 'statuslabarugi') {
                                 $query = $query->orWhere('parameter_statuslabarugi.text', '=', "$filters[data]");
+                            } elseif ($filters['field'] == 'type') {
+                                $query = $query->orWhere('typeakuntansi.kodetype', 'LIKE', "%$filters[data]%");
+                            } elseif ($filters['field'] == 'akuntansi') {
+                                $query = $query->orWhere('akuntansi.kodeakuntansi', 'LIKE', "%$filters[data]%");
                             } else {
                                 // $query = $query->orWhere($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
                                 $query = $query->OrwhereRaw($this->table . ".[" .  $filters['field'] . "] LIKE '%" . escapeLike($filters['data']) . "%' escape '|'");
@@ -381,12 +474,22 @@ class AkunPusat extends MyModel
 
     public function processStore(array $data): AkunPusat
     {
+        if ($data['parent'] == null) {
+            $parent = $data['coa'];
+            $level = 1;
+        } else {
+            $parent = $data['parent'];
+            $getLevel = DB::table("akunpusat")->from(DB::raw("akunpusat with (readuncommitted)"))->where('coa', $parent)->first();
+            $level = $getLevel->level + 1;
+        }
         $akunPusat = new AkunPusat();
         $akunPusat->coa = $data['coa'];
         $akunPusat->keterangancoa = $data['keterangancoa'];
+        $akunPusat->type_id = $data['type_id'];
         $akunPusat->type = $data['type'];
-        $akunPusat->level = $data['level'];
-        $akunPusat->parent = $data['parent'];
+        $akunPusat->level = $level;
+        $akunPusat->parent = $parent;
+        $akunPusat->akuntansi_id = $data['akuntansi_id'];
         $akunPusat->statuscoa = $data['statuscoa'];
         $akunPusat->statusaccountpayable = $data['statusaccountpayable'];
         $akunPusat->statusneraca = $data['statusneraca'];
@@ -396,7 +499,7 @@ class AkunPusat extends MyModel
         $akunPusat->modifiedby = auth('api')->user()->name;
 
         if (!$akunPusat->save()) {
-            throw new \Exception("Error storing service in header.");
+            throw new \Exception("Error storing akun pusat.");
         }
 
         (new LogTrail())->processStore([
@@ -414,11 +517,25 @@ class AkunPusat extends MyModel
 
     public function processUpdate(AkunPusat $akunPusat, array $data): AkunPusat
     {
+        if ($data['parent'] == null) {
+            $parent = $data['coa'];
+            $level = 1;
+        } else {
+            $parent = $data['parent'];
+            $getLevel = DB::table("akunpusat")->from(DB::raw("akunpusat with (readuncommitted)"))->where('coa', $parent)->first();
+            if ($parent == $data['coa']) {
+                $level = $getLevel->level;
+            } else {
+                $level = $getLevel->level + 1;
+            }
+        }
         $akunPusat->coa = $data['coa'];
         $akunPusat->keterangancoa = $data['keterangancoa'];
+        $akunPusat->type_id = $data['type_id'];
         $akunPusat->type = $data['type'];
-        $akunPusat->level = $data['level'];
-        $akunPusat->parent = $data['parent'];
+        $akunPusat->level = $level;
+        $akunPusat->parent = $parent;
+        $akunPusat->akuntansi_id = $data['akuntansi_id'];
         $akunPusat->statuscoa = $data['statuscoa'];
         $akunPusat->statusaccountpayable = $data['statusaccountpayable'];
         $akunPusat->statusneraca = $data['statusneraca'];
@@ -428,7 +545,7 @@ class AkunPusat extends MyModel
         $akunPusat->modifiedby = auth('api')->user()->name;
 
         if (!$akunPusat->save()) {
-            throw new \Exception("Error update service in header.");
+            throw new \Exception("Error update akun pusat.");
         }
 
         (new LogTrail())->processStore([

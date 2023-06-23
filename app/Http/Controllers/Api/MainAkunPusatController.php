@@ -52,7 +52,8 @@ class MainAkunPusatController extends Controller
                 'coa' => $request->coa,
                 'keterangancoa' => $request->keterangancoa,
                 'type' => $request->type,
-                'level' => $request->level,
+                'type_id' => $request->type_id,
+                'akuntansi_id' => $request->akuntansi_id,
                 'parent' => $request->parent,
                 'statuscoa' => $request->statuscoa,
                 'statusaccountpayable' => $request->statusaccountpayable,
@@ -78,11 +79,12 @@ class MainAkunPusatController extends Controller
         }
     }
 
-    public function show(MainAkunPusat $akunPusat)
+    public function show($id)
     {
+        $mainAkunPusat = (new MainAkunPusat())->findAll($id);
         return response([
             'status' => true,
-            'data' => $akunPusat
+            'data' => $mainAkunPusat
         ]);
     }
 
@@ -98,7 +100,8 @@ class MainAkunPusatController extends Controller
                 'coa' => $request->coa,
                 'keterangancoa' => $request->keterangancoa,
                 'type' => $request->type,
-                'level' => $request->level,
+                'type_id' => $request->type_id,
+                'akuntansi_id' => $request->akuntansi_id,
                 'parent' => $request->parent,
                 'statuscoa' => $request->statuscoa,
                 'statusaccountpayable' => $request->statusaccountpayable,
@@ -268,6 +271,40 @@ class MainAkunPusatController extends Controller
 
             ];
             $this->toExcel($judulLaporan, $akunpusats, $columns);
+        }
+    }
+
+    public function cekValidasi($id)
+    {
+        $mainAkunPusat = new MainAkunPusat();
+        $cekdata = $mainAkunPusat->cekValidasi($id);
+        if ($cekdata['kondisi'] == true) {
+            $query = DB::table('error')
+                ->select(
+                    DB::raw("ltrim(rtrim(keterangan))+' (" . $cekdata['keterangan'] . ")' as keterangan")
+                )
+                ->where('kodeerror', '=', $cekdata['kodeerror'])
+                ->get();
+            $keterangan = $query['0'];
+
+            $data = [
+                'status' => false,
+                'message' => $keterangan,
+                'errors' => '',
+                'kondisi' => $cekdata['kondisi'],
+            ];
+
+            return response($data);
+        } else {
+
+            $data = [
+                'status' => true,
+                'message' => '',
+                'errors' => '',
+                'kondisi' => $cekdata['kondisi'],
+            ];
+
+            return response($data);
         }
     }
 }
