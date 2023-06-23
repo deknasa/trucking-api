@@ -31,6 +31,7 @@ class CreatePenerimaandetailTable extends Migration
             $table->string('invoice_nobukti',50)->nullable();
             $table->unsignedBigInteger('bankpelanggan_id')->nullable();
             $table->string('pelunasanpiutang_nobukti',50)->nullable();
+            $table->string('penerimaangiro_nobukti',50)->nullable();
             $table->date('bulanbeban')->nullable();
             $table->string('modifiedby',50)->nullable();
             $table->timestamps();
