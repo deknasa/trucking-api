@@ -925,10 +925,10 @@ class ProsesGajiSupirHeader extends MyModel
         });
 
         DB::table($tempRincian)->insertUsing(['tglbukti', 'gajisupir'], $fetchTempRincian);
-
+        
         $fetchTempRincian2 = DB::table($tempGaji)->from(DB::raw("$tempGaji as A with (readuncommitted)"))
             ->select(
-                DB::raw("C.tglbukti, sum(isnull(B.gajisupir,0)+isnull(B.gajiritasi,0)) as gajisupir")
+                DB::raw("C.tglbukti, isnull(sum(isnull(B.gajisupir,0)+isnull(B.gajiritasi,0)),0) as gajisupir")
             )
             ->join(DB::raw("gajisupirdetail as B with (readuncommitted)"), 'A.nobukti', 'B.nobukti')
             ->join(DB::raw("ritasi as C with (readuncommitted)"), 'B.ritasi_nobukti', 'C.nobukti')
@@ -937,10 +937,10 @@ class ProsesGajiSupirHeader extends MyModel
 
 
         DB::table($tempRincian)->insertUsing(['tglbukti', 'gajisupir'], $fetchTempRincian2);
-
+      
         $tempRincianJurnal = '##Temprincianjurnal' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
         $fetchTempRincianJurnal = DB::table($tempRincian)->from(DB::raw("$tempRincian with (readuncommitted)"))
-            ->select(DB::raw("tglbukti, sum(isnull(gajisupir,0)) as nominal, '' as keterangan"))
+            ->select(DB::raw("tglbukti, isnull(sum(gajisupir),0) as nominal, '' as keterangan"))
             ->groupBy('tglbukti');
         Schema::create($tempRincianJurnal, function ($table) {
 
@@ -950,10 +950,10 @@ class ProsesGajiSupirHeader extends MyModel
         });
 
         DB::table($tempRincianJurnal)->insertUsing(['tglbukti', 'nominal', 'keterangan'], $fetchTempRincianJurnal);
-
+        
         $fetchTempRincianJurnal2 = DB::table($tempGaji)->from(DB::raw("$tempGaji as A with (readuncommitted)"))
             ->select(
-                DB::raw("C.tglbukti, sum(isnull(B.komisisupir, 0)) as nominal, 'Komisi Supir' as keterangan")
+                DB::raw("C.tglbukti, isnull(sum(B.komisisupir),0) as nominal, 'Komisi Supir' as keterangan")
             )
             ->join(DB::raw("gajisupirdetail as B with (readuncommitted)"), 'A.nobukti', 'B.nobukti')
             ->join(DB::raw("suratpengantar as C with (readuncommitted)"), 'B.suratpengantar_nobukti', 'C.nobukti')
@@ -961,18 +961,16 @@ class ProsesGajiSupirHeader extends MyModel
             ->groupBy('C.tglbukti');
 
         DB::table($tempRincianJurnal)->insertUsing(['tglbukti', 'nominal', 'keterangan'], $fetchTempRincianJurnal2);
-
+        
         $tgl = DB::table($tempRincianJurnal)->select(DB::raw("min(tglbukti) as tglbukti"))->first();
 
         $fetchTempRincianJurnal3 = DB::table($tempGaji)->from(DB::raw("$tempGaji as A with (readuncommitted)"))
             ->select(
-                DB::raw("'$tgl->tglbukti', sum(isnull(B.uangmakanharian, 0)) as nominal, '' as keterangan")
+                DB::raw("'$tgl->tglbukti', isnull(sum(B.uangmakanharian),0) as nominal, '' as keterangan")
             )
             ->join(DB::raw("gajisupirheader as B with (readuncommitted)"), 'A.nobukti', 'B.nobukti')
             ->whereRaw("isnull(B.uangmakanharian ,0)<>0");
-
         DB::table($tempRincianJurnal)->insertUsing(['tglbukti', 'nominal', 'keterangan'], $fetchTempRincianJurnal3);
-
         $data = DB::table($tempRincianJurnal)->orderBy('tglbukti')->orderBy('keterangan')->get();
         return $data;
     }

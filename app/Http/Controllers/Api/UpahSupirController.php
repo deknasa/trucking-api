@@ -33,7 +33,7 @@ class UpahSupirController extends Controller
     /**
      * @ClassName 
      * UpahSupir
-     * @Detail1 UpahSupirController
+     * @Detail1 UpahSupirRincianController
      */
     public function index()
     {
@@ -79,7 +79,10 @@ class UpahSupirController extends Controller
             ], 422);
         }
     }
-
+    
+    /**
+     * @ClassName 
+     */
     public function store(StoreUpahSupirRequest $request): JsonResponse
     {
         DB::beginTransaction();
