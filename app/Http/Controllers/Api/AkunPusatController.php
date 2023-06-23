@@ -53,7 +53,8 @@ class AkunPusatController extends Controller
                 'coa' => $request->coa,
                 'keterangancoa' => $request->keterangancoa,
                 'type' => $request->type,
-                'level' => $request->level,
+                'type_id' => $request->type_id,
+                'akuntansi_id' => $request->akuntansi_id,
                 'parent' => $request->parent,
                 'statuscoa' => $request->statuscoa,
                 'statusaccountpayable' => $request->statusaccountpayable,
@@ -80,8 +81,9 @@ class AkunPusatController extends Controller
         }
     }
 
-    public function show(AkunPusat $akunPusat)
+    public function show($id)
     {
+        $akunPusat = (new AkunPusat())->findAll($id);
         return response([
             'status' => true,
             'data' => $akunPusat
@@ -100,7 +102,8 @@ class AkunPusatController extends Controller
                 'coa' => $request->coa,
                 'keterangancoa' => $request->keterangancoa,
                 'type' => $request->type,
-                'level' => $request->level,
+                'type_id' => $request->type_id,
+                'akuntansi_id' => $request->akuntansi_id,
                 'parent' => $request->parent,
                 'statuscoa' => $request->statuscoa,
                 'statusaccountpayable' => $request->statusaccountpayable,
@@ -275,6 +278,40 @@ class AkunPusatController extends Controller
 
             ];
             $this->toExcel($judulLaporan, $akunpusats, $columns);
+        }
+    }
+
+    public function cekValidasi($id)
+    {
+        $akunPusat = new AkunPusat();
+        $cekdata = $akunPusat->cekValidasi($id);
+        if ($cekdata['kondisi'] == true) {
+            $query = DB::table('error')
+                ->select(
+                    DB::raw("ltrim(rtrim(keterangan))+' (" . $cekdata['keterangan'] . ")' as keterangan")
+                )
+                ->where('kodeerror', '=', $cekdata['kodeerror'])
+                ->get();
+            $keterangan = $query['0'];
+
+            $data = [
+                'status' => false,
+                'message' => $keterangan,
+                'errors' => '',
+                'kondisi' => $cekdata['kondisi'],
+            ];
+
+            return response($data);
+        } else {
+
+            $data = [
+                'status' => true,
+                'message' => '',
+                'errors' => '',
+                'kondisi' => $cekdata['kondisi'],
+            ];
+
+            return response($data);
         }
     }
 }

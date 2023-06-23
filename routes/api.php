@@ -217,6 +217,8 @@ use App\Http\Controllers\Api\LaporanPenyesuaianBarangController;
 use App\Http\Controllers\Api\LaporanPemakaianBanController;
 use App\Http\Controllers\Api\LaporanTransaksiHarianController;
 use App\Http\Controllers\Api\LaporanJurnalUmumController;
+use App\Http\Controllers\Api\MainAkunPusatController;
+
 // use App\Http\Controllers\Api\LaporanTransaksiHarianController;
 
 /*
@@ -550,7 +552,15 @@ route::middleware(['auth:api','authorized'])->group(function () {
     Route::get('akunpusat/default', [AkunPusatController::class, 'default']);
     Route::get('akunpusat/export', [AkunPusatController::class, 'export']);
     Route::get('akunpusat/report', [AkunPusatController::class, 'report']);
+    Route::get('akunpusat/{id}/cekValidasi', [AkunPusatController::class, 'cekValidasi'])->name('akunpusat.cekValidasi')->whereNumber('id');
     Route::resource('akunpusat', AkunPusatController::class)->parameters(['akunpusat' => 'akunPusat'])->whereNumber('akunPusat');
+
+    Route::get('mainakunpusat/field_length', [MainAkunPusatController::class, 'fieldLength']);
+    Route::get('mainakunpusat/default', [MainAkunPusatController::class, 'default']);
+    Route::get('mainakunpusat/export', [MainAkunPusatController::class, 'export']);
+    Route::get('mainakunpusat/report', [MainAkunPusatController::class, 'report']);
+    Route::get('mainakunpusat/{id}/cekValidasi', [MainAkunPusatController::class, 'cekValidasi'])->name('mainakunpusat.cekValidasi')->whereNumber('id');
+    Route::resource('mainakunpusat', MainAkunPusatController::class)->whereNumber('mainakunpusat');
 
     Route::get('error/field_length', [ErrorController::class, 'fieldLength']);
     Route::get('error/geterrors', [ErrorController::class, 'errorUrl']);

@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests;
 
+use App\Rules\ValidasiDestroyMainAkunPusat;
 use Illuminate\Foundation\Http\FormRequest;
 
 class DestroyMainAkunPusatRequest extends FormRequest
@@ -13,7 +14,7 @@ class DestroyMainAkunPusatRequest extends FormRequest
      */
     public function authorize()
     {
-        return false;
+        return true;
     }
 
     /**
@@ -24,7 +25,7 @@ class DestroyMainAkunPusatRequest extends FormRequest
     public function rules()
     {
         return [
-            //
+            'id' => new ValidasiDestroyMainAkunPusat()
         ];
     }
 }

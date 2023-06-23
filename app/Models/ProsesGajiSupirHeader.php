@@ -921,7 +921,7 @@ class ProsesGajiSupirHeader extends MyModel
         Schema::create($tempRincian, function ($table) {
 
             $table->date('tglbukti');
-            $table->bigInteger('gajisupir');
+            $table->bigInteger('gajisupir')->nullable();
         });
 
         DB::table($tempRincian)->insertUsing(['tglbukti', 'gajisupir'], $fetchTempRincian);
@@ -945,8 +945,8 @@ class ProsesGajiSupirHeader extends MyModel
         Schema::create($tempRincianJurnal, function ($table) {
 
             $table->date('tglbukti');
-            $table->bigInteger('nominal');
-            $table->string('keterangan');
+            $table->bigInteger('nominal')->nullable();
+            $table->string('keterangan')->nullable();
         });
 
         DB::table($tempRincianJurnal)->insertUsing(['tglbukti', 'nominal', 'keterangan'], $fetchTempRincianJurnal);
