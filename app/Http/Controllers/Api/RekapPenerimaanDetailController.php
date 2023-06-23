@@ -17,49 +17,50 @@ use Illuminate\Validation\Rule;
 
 class RekapPenerimaanDetailController extends Controller
 {
-    
+    /**
+     * @ClassName 
+     */
     public function index(Request $request)
     {
-        
-           
-        $rekapPenerimaanDetail = new RekapPenerimaanDetail ();
+
+
+        $rekapPenerimaanDetail = new RekapPenerimaanDetail();
 
         return response([
             'data' => $rekapPenerimaanDetail->get(),
             'attributes' => [
-                'totalRows' => $rekapPenerimaanDetail->totalRows ,
-                'totalPages' => $rekapPenerimaanDetail->totalPages ,
-                'totalNominal' => $rekapPenerimaanDetail->totalNominal ,
+                'totalRows' => $rekapPenerimaanDetail->totalRows,
+                'totalPages' => $rekapPenerimaanDetail->totalPages,
+                'totalNominal' => $rekapPenerimaanDetail->totalNominal,
             ]
         ]);
     }
 
-    
-    
+
+
     public function store(StoreRekapPenerimaanDetailRequest $request)
     {
         DB::beginTransaction();
         try {
-             
+
 
             $rekeapPenerimaanDetail = new RekapPenerimaanDetail();
             $rekeapPenerimaanDetail->rekappenerimaan_id = $request->rekappenerimaan_id;
             $rekeapPenerimaanDetail->nobukti = $request->nobukti;
-            $rekeapPenerimaanDetail->tgltransaksi =  date('Y-m-d',strtotime($request->tgltransaksi));
+            $rekeapPenerimaanDetail->tgltransaksi =  date('Y-m-d', strtotime($request->tgltransaksi));
             $rekeapPenerimaanDetail->penerimaan_nobukti = $request->penerimaan_nobukti;
             $rekeapPenerimaanDetail->nominal = $request->nominal;
             $rekeapPenerimaanDetail->keterangan = $request->keterangandetail;
             $rekeapPenerimaanDetail->modifiedby = $request->modifiedby;
-            
+
             $rekeapPenerimaanDetail->save();
             DB::commit();
-                return [
-                    'error' => false,
-                    'id' => $rekeapPenerimaanDetail->id,
-                    'data' => $rekeapPenerimaanDetail,
-                    'tabel' => $rekeapPenerimaanDetail->getTable(),
-                ];
-            
+            return [
+                'error' => false,
+                'id' => $rekeapPenerimaanDetail->id,
+                'data' => $rekeapPenerimaanDetail,
+                'tabel' => $rekeapPenerimaanDetail->getTable(),
+            ];
         } catch (\Throwable $th) {
             throw $th;
             DB::rollBack();

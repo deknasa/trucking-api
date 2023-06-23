@@ -17,6 +17,9 @@ use Illuminate\Support\Facades\Validator;
 class JurnalUmumDetailController extends Controller
 {
 
+        /**
+     * @ClassName 
+     */
     public function index(): JsonResponse
     {
         $jurnalumumDetail = new JurnalUmumDetail();
@@ -68,9 +71,6 @@ class JurnalUmumDetailController extends Controller
         
     }
 
-    /**
-     * @ClassName
-     */
     public function store(StoreJurnalUmumDetailRequest $request)
     {
         DB::beginTransaction();

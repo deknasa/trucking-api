@@ -21,6 +21,8 @@ class InvoiceChargeGandenganHeaderController extends Controller
 {
     /**
      * @ClassName 
+     * InvoiceChargeGandenganHeader
+     * @Detail1 InvoiceChargeGandenganDetailController
      */
     public function index(GetIndexRangeRequest $request)
     {
@@ -203,6 +205,17 @@ class InvoiceChargeGandenganHeaderController extends Controller
         ]);
     }
 
+    /**
+     * @ClassName 
+     */
+    public function report()
+    {
+    }
+
+
+    /**
+     * @ClassName 
+     */
     public function export($id)
     {
         $invoiceChargeGandengan = new InvoiceChargeGandenganHeader();

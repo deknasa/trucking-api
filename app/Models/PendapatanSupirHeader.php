@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
+use App\Services\RunningNumberService;
 
 class PendapatanSupirHeader extends MyModel
 {
@@ -255,5 +256,155 @@ class PendapatanSupirHeader extends MyModel
 
         $data = $query->first();
         return $data;
+    }
+
+
+    public function processStore(array $data): PendapatanSupirHeader
+    {
+        /* Store header */
+        $group = 'PENDAPATAN SUPIR BUKTI';
+        $subGroup = 'PENDAPATAN SUPIR BUKTI';
+        $format = DB::table('parameter')->where('grp', $group)->where('subgrp', $subGroup)->first();
+
+        $statusApp = Parameter::from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS APPROVAL')->where('text', 'NON APPROVAL')->first();
+        $statusCetak = Parameter::from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUSCETAK')->where('text', 'BELUM CETAK')->first();
+        
+        $pendapatanSupirHeader = new PendapatanSupirHeader();
+
+        $pendapatanSupirHeader->tglbukti = date('Y-m-d', strtotime($data['tglbukti']));
+        $pendapatanSupirHeader->bank_id  = $data['bank_id'];
+        $pendapatanSupirHeader->tgldari  = date('Y-m-d', strtotime($data['tgldari']));
+        $pendapatanSupirHeader->tglsampai  = date('Y-m-d', strtotime($data['tglsampai']));
+        $pendapatanSupirHeader->statusapproval  = $statusApp->id;
+        $pendapatanSupirHeader->userapproval  = '';
+        $pendapatanSupirHeader->tglapproval  = '';
+        $pendapatanSupirHeader->periode  = date('Y-m-d', strtotime($data['periode']));
+        $pendapatanSupirHeader->statusformat = $format->id;
+        $pendapatanSupirHeader->statuscetak = $statusCetak->id;
+        $pendapatanSupirHeader->modifiedby = auth('api')->user()->name;
+        $pendapatanSupirHeader->nobukti = (new RunningNumberService)->get($group, $subGroup, $pendapatanSupirHeader->getTable(), date('Y-m-d', strtotime($data['tglbukti'])));
+        
+        if (!$pendapatanSupirHeader->save()) {
+            throw new \Exception("Error storing pendapatan Supir header.");
+        }
+
+
+        for ($i = 0; $i < count($data['nominal']); $i++) {
+            $pendapatanSupirDetail = (new PendapatanSupirDetail)->processStore($pendapatanSupirHeader,[
+                'pendapatansupir_id' => $pendapatanSupirHeader->id,
+                'nobukti' => $pendapatanSupirHeader->nobukti,
+                'supir_id' => $data['supir_id'][$i],
+                'nominal' => $data['nominal'][$i],
+                'keterangan' => $data['keterangan_detail'][$i],
+                'modifiedby' => $pendapatanSupirHeader->modifiedby,
+            ]);
+            $pendapatanSupirs[] = $pendapatanSupirHeader->toArray();
+        }
+
+
+        $pendapatanSupirLogTrail = (new LogTrail())->processStore([
+            'namatabel' => strtoupper($pendapatanSupirHeader->getTable()),
+            'postingdari' => $data['postingdari'] ?? 'ENTRY pendapatan Supir HEADER',
+            'idtrans' => $pendapatanSupirHeader->id,
+            'nobuktitrans' => $pendapatanSupirHeader->nobukti,
+            'aksi' => 'ENTRY',
+            'datajson' => $pendapatanSupirHeader->toArray(),
+            'modifiedby' => $pendapatanSupirHeader->modifiedby
+        ]);
+        (new LogTrail())->processStore([
+            'namatabel' => strtoupper($pendapatanSupirDetail->getTable()),
+            'postingdari' => $data['postingdari'] ?? 'ENTRY pendapatan Supir HEADER',
+            'idtrans' => $pendapatanSupirHeader->id,
+            'nobuktitrans' => $pendapatanSupirHeader->nobukti,
+            'aksi' => 'ENTRY',
+            'datajson' => $pendapatanSupirs,
+            'modifiedby' => $pendapatanSupirHeader->modifiedby
+        ]);
+       
+        return $pendapatanSupirHeader;
+    }
+
+
+    public function processUpdate(PendapatanSupirHeader $pendapatanSupirHeader, array $data): PendapatanSupirHeader
+    {
+        $pendapatanSupirHeader->tglbukti = date('Y-m-d', strtotime($data['tglbukti']));
+        $pendapatanSupirHeader->bank_id = $data['bank_id'];
+        $pendapatanSupirHeader->tgldari = date('Y-m-d', strtotime($data['tgldari']));
+        $pendapatanSupirHeader->tglsampai = date('Y-m-d', strtotime($data['tglsampai']));
+        $pendapatanSupirHeader->periode = date('Y-m-d', strtotime($data['periode']));
+
+        if (!$pendapatanSupirHeader->save()) {
+            throw new \Exception("Error storing pendapatan Supir header.");
+        }
+
+        PendapatanSupirDetail::where('pendapatansupir_id', $pendapatanSupirHeader->id)->lockForUpdate()->delete();
+
+        for ($i = 0; $i < count($data['nominal']); $i++) {
+            $pendapatanSupirDetail = (new PendapatanSupirDetail)->processStore($pendapatanSupirHeader,[
+                'pendapatansupir_id' => $pendapatanSupirHeader->id,
+                'nobukti' => $pendapatanSupirHeader->nobukti,
+                'supir_id' => $data['supir_id'][$i],
+                'nominal' => $data['nominal'][$i],
+                'keterangan' => $data['keterangan_detail'][$i],
+                'modifiedby' => $pendapatanSupirHeader->modifiedby,
+            ]);
+            $pendapatanSupirs[] = $pendapatanSupirHeader->toArray();
+        }
+
+        $pendapatanSupirLogTrail = (new LogTrail())->processStore([
+            'namatabel' => strtoupper($pendapatanSupirHeader->getTable()),
+            'postingdari' => $data['postingdari'] ?? 'EDIT pendapatan Supir HEADER',
+            'idtrans' => $pendapatanSupirHeader->id,
+            'nobuktitrans' => $pendapatanSupirHeader->nobukti,
+            'aksi' => 'EDIT',
+            'datajson' => $pendapatanSupirHeader->toArray(),
+            'modifiedby' => $pendapatanSupirHeader->modifiedby
+        ]);
+        (new LogTrail())->processStore([
+            'namatabel' => strtoupper($pendapatanSupirDetail->getTable()),
+            'postingdari' => $data['postingdari'] ?? 'EDIT pendapatan Supir HEADER',
+            'idtrans' => $pendapatanSupirHeader->id,
+            'nobuktitrans' => $pendapatanSupirHeader->nobukti,
+            'aksi' => 'EDIT',
+            'datajson' => $pendapatanSupirs,
+            'modifiedby' => $pendapatanSupirHeader->modifiedby
+        ]);
+       
+
+        return $pendapatanSupirHeader;
+    }
+
+    public function processDestroy($id, $postingDari = ''): PendapatanSupirHeader
+    {
+        $pendapatanSupirHeader = PendapatanSupirHeader::findOrFail($id);
+        $dataHeader =  $pendapatanSupirHeader->toArray();
+        $pendapatanSupirDetail = PendapatanSupirDetail::where('pendapatansupir_id', '=', $pendapatanSupirHeader->id)->get();
+        $dataDetail = $pendapatanSupirDetail->toArray();
+        
+        $pendapatanSupirDetail = PendapatanSupirDetail::where('pendapatansupir_id', $pendapatanSupirHeader->id)->lockForUpdate()->delete();
+ 
+         $pendapatanSupirHeader = $pendapatanSupirHeader->lockAndDestroy($id);
+         $hutangLogTrail = (new LogTrail())->processStore([
+             'namatabel' => $pendapatanSupirHeader->getTable(),
+             'postingdari' => strtoupper('DELETE PENDAPATAN SUPIR HEADAER'),
+             'idtrans' => $pendapatanSupirHeader->id,
+             'nobuktitrans' => $pendapatanSupirHeader->nobukti,
+             'aksi' => 'DELETE',
+             'datajson' =>$dataHeader,
+             'modifiedby' => auth('api')->user()->name
+         ]);
+ 
+         (new LogTrail())->processStore([
+             'namatabel' => 'PENDAPATANSUPIRDETAIL',
+             'postingdari' => strtoupper('DELETE PENDAPATAN SUPIR DETAIL'),
+             'idtrans' => $hutangLogTrail['id'],
+             'nobuktitrans' => $pendapatanSupirHeader->nobukti,
+             'aksi' => 'DELETE',
+             'datajson' =>$dataDetail,
+             'modifiedby' => auth('api')->user()->name
+         ]);
+ 
+         return $pendapatanSupirHeader;
+        
     }
 }

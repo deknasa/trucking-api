@@ -15,6 +15,9 @@ use Illuminate\Http\JsonResponse;
 
 class InvoiceChargeGandenganDetailController extends Controller
 {
+    /**
+     * @ClassName
+     */
     public function index(): JsonResponse
     {
         $invoiceChargeGandengan = new InvoiceChargeGandenganDetail();
@@ -29,7 +32,7 @@ class InvoiceChargeGandenganDetailController extends Controller
     }
     public function store(StoreInvoiceChargeGandenganDetailRequest $request)
     {
-        
+
         DB::beginTransaction();
         $validator = Validator::make($request->all(), [
             // 'jobtrucking_detail' => 'required',
@@ -59,7 +62,7 @@ class InvoiceChargeGandenganDetailController extends Controller
                 'errors' => $validator->messages()
             ];
         }
-        
+
         try {
             $invoiceChargeGandenganDetail = new InvoiceChargeGandenganDetail();
             $invoiceChargeGandenganDetail->invoicechargegandengan_id = $request->invoicechargegandengan_id;
@@ -70,20 +73,17 @@ class InvoiceChargeGandenganDetailController extends Controller
             $invoiceChargeGandenganDetail->jumlahhari = $request->jumlahhari_detail;
             $invoiceChargeGandenganDetail->nominal = $request->nominal_detail;
             $invoiceChargeGandenganDetail->keterangan = $request->keterangan_detail;
-            
+
             $invoiceChargeGandenganDetail->save();
             DB::commit();
-                return [
-                    'error' => false,
-                    'id' => $invoiceChargeGandenganDetail->id,
-                    'tabel' => $invoiceChargeGandenganDetail->getTable(),
-                ];
-            
+            return [
+                'error' => false,
+                'id' => $invoiceChargeGandenganDetail->id,
+                'tabel' => $invoiceChargeGandenganDetail->getTable(),
+            ];
         } catch (\Throwable $th) {
             DB::rollBack();
             return response($th->getMessage());
-        }    
+        }
     }
-
-   
 }

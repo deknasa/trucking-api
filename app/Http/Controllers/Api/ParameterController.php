@@ -243,6 +243,14 @@ class ParameterController extends Controller
         $data = $querydata->first();
         return $data;
     }
+
+     /**
+     * @ClassName 
+     */
+    public function report()
+    {
+    }
+    
     /**
      * @ClassName
      */

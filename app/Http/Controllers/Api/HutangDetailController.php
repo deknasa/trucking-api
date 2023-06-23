@@ -26,6 +26,9 @@ use Illuminate\Support\Facades\Validator;
 class HutangDetailController extends Controller
 {
 
+    /**
+     * @ClassName
+     */
     public function index(): JsonResponse
     {
         $hutangDetail = new HutangDetail();
@@ -60,7 +63,7 @@ class HutangDetailController extends Controller
     {
         // DB::beginTransaction();
 
-        
+
         try {
             $hutangdetail = new HutangDetail();
             $hutangdetail->hutang_id = $request->hutang_id;
@@ -71,9 +74,9 @@ class HutangDetailController extends Controller
             $hutangdetail->totalbayar = $request->totalbayar;
             $hutangdetail->keterangan = $request->keterangan;
             $hutangdetail->modifiedby = auth('api')->user()->name;
-           
+
             $hutangdetail->save();
-           
+
             // DB::commit();
             return [
                 'error' => false,
@@ -84,8 +87,6 @@ class HutangDetailController extends Controller
         } catch (\Throwable $th) {
             // DB::rollBack();
             throw $th;
-        }        
+        }
     }
-
 }
-

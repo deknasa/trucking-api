@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
@@ -19,10 +20,13 @@ use Illuminate\Support\Facades\Validator;
 
 class GajiSupirDetailController extends Controller
 {
+    /**
+     * @ClassName
+     */
     public function index(): JsonResponse
     {
         $gajiSupir = new GajiSupirDetail();
-        
+
         return response()->json([
             'data' => $gajiSupir->get(),
             'attributes' => [
@@ -37,12 +41,15 @@ class GajiSupirDetailController extends Controller
             ]
         ]);
     }
-    
+
+    /**
+     * @ClassName
+     */
     public function potSemua(): JsonResponse
     {
         $potSemua = new PenerimaanTruckingDetail();
 
-        if(request()->nobukti != 'false' && request()->nobukti != null){
+        if (request()->nobukti != 'false' && request()->nobukti != null) {
             return response()->json([
                 'data' => $potSemua->getPotSemua(request()->nobukti),
                 'attributes' => [
@@ -51,7 +58,7 @@ class GajiSupirDetailController extends Controller
                     'totalNominalPotSemua' => $potSemua->totalNominalPotSemua
                 ]
             ]);
-        }else{
+        } else {
             return response()->json([
                 'data' => [],
                 'attributes' => [
@@ -62,11 +69,15 @@ class GajiSupirDetailController extends Controller
             ]);
         }
     }
+
+    /**
+     * @ClassName
+     */
     public function potPribadi(): JsonResponse
     {
         $potPribadi = new PenerimaanTruckingDetail();
 
-        if(request()->nobukti != 'false' && request()->nobukti != null){
+        if (request()->nobukti != 'false' && request()->nobukti != null) {
             return response()->json([
                 'data' => $potPribadi->getPotPribadi(request()->nobukti),
                 'attributes' => [
@@ -75,7 +86,7 @@ class GajiSupirDetailController extends Controller
                     'totalNominalPotPribadi' => $potPribadi->totalNominalPotPribadi
                 ]
             ]);
-        }else{
+        } else {
             return response()->json([
                 'data' => [],
                 'attributes' => [
@@ -87,11 +98,14 @@ class GajiSupirDetailController extends Controller
         }
     }
 
+    /**
+     * @ClassName
+     */
     public function deposito(): JsonResponse
     {
         $deposito = new PenerimaanTruckingDetail();
 
-        if(request()->nobukti != 'false' && request()->nobukti != null){
+        if (request()->nobukti != 'false' && request()->nobukti != null) {
             return response()->json([
                 'data' => $deposito->getDeposito(request()->nobukti),
                 'attributes' => [
@@ -100,7 +114,7 @@ class GajiSupirDetailController extends Controller
                     'totalNominalDeposito' => $deposito->totalNominalDeposito
                 ]
             ]);
-        }else{
+        } else {
             return response()->json([
                 'data' => [],
                 'attributes' => [
@@ -111,15 +125,18 @@ class GajiSupirDetailController extends Controller
             ]);
         }
     }
-    
+
+    /**
+     * @ClassName
+     */
     public function jurnalBBM(): JsonResponse
     {
         $jurnalDetail = new JurnalUmumDetail();
-        
+
         $fetch = GajiSupirBBM::from(DB::raw("gajisupirbbm with (readuncommitted)"))->where('gajisupir_nobukti', request()->nobukti)->first();
-        
-        if($fetch!=null){
-            
+
+        if ($fetch != null) {
+
             return response()->json([
                 'data' => $jurnalDetail->getJurnalFromAnotherTable($fetch->penerimaantrucking_nobukti),
                 'attributes' => [
@@ -129,8 +146,8 @@ class GajiSupirDetailController extends Controller
                     'totalNominalKredit' => $jurnalDetail->totalNominalKredit,
                 ]
             ]);
-        }else{
-            
+        } else {
+
             return response()->json([
                 'data' => [],
                 'attributes' => [
@@ -143,11 +160,14 @@ class GajiSupirDetailController extends Controller
         }
     }
 
+    /**
+     * @ClassName
+     */
     public function absensi(): JsonResponse
     {
         $absensi = new AbsensiSupirDetail();
 
-        if(request()->nobukti != 'false' && request()->nobukti != null){
+        if (request()->nobukti != 'false' && request()->nobukti != null) {
             return response()->json([
                 'data' => $absensi->getAbsensiUangJalan(request()->nobukti),
                 'attributes' => [
@@ -156,7 +176,7 @@ class GajiSupirDetailController extends Controller
                     'totalUangJalan' => $absensi->totalUangJalan
                 ]
             ]);
-        }else{
+        } else {
             return response()->json([
                 'data' => [],
                 'attributes' => [
@@ -170,7 +190,7 @@ class GajiSupirDetailController extends Controller
     public function store(StoreGajiSupirDetailRequest $request)
     {
         $gajisupirdetail = new GajiSupirDetail();
-        
+
         $gajisupirdetail->gajisupir_id = $request->gajisupir_id;
         $gajisupirdetail->nobukti = $request->nobukti;
         $gajisupirdetail->nominaldeposito = $request->nominaldeposito;
@@ -187,21 +207,18 @@ class GajiSupirDetailController extends Controller
         $gajisupirdetail->biayatambahan = $request->biayatambahan;
         $gajisupirdetail->keteranganbiayatambahan = $request->keteranganbiayatambahan;
         $gajisupirdetail->nominalpengembalianpinjaman = $request->nominalpengembalianpinjaman;
-        
+
         $gajisupirdetail->modifiedby = auth('api')->user()->name;
-        
+
         if (!$gajisupirdetail->save()) {
             throw new \Exception("Gagal menyimpan gaji supir detail.");
         }
-        
+
         return [
             'error' => false,
             'detail' => $gajisupirdetail,
             'id' => $gajisupirdetail->id,
             'tabel' => $gajisupirdetail->getTable(),
-        ];       
+        ];
     }
-
-
-
 }

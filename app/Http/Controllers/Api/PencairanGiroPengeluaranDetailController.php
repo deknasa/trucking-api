@@ -13,6 +13,9 @@ use Illuminate\Support\Facades\DB;
 
 class PencairanGiroPengeluaranDetailController extends Controller
 {
+    /**
+     * @ClassName 
+     */
     public function index(): JsonResponse
     {
         $pencairanGiroPengeluaran = new PencairanGiroPengeluaranDetail();
@@ -27,14 +30,14 @@ class PencairanGiroPengeluaranDetailController extends Controller
         ]);
     }
 
-   
+
     public function store(StorePencairanGiroPengeluaranDetailRequest $request)
     {
         DB::beginTransaction();
 
         try {
             $pencairanGiroDetail = new PencairanGiroPengeluaranDetail();
-            
+
             $pencairanGiroDetail->pencairangiropengeluaran_id = $request->pencairangiropengeluaran_id;
             $pencairanGiroDetail->nobukti = $request->nobukti;
             $pencairanGiroDetail->alatbayar_id = $request->alatbayar_id;
@@ -58,10 +61,8 @@ class PencairanGiroPengeluaranDetailController extends Controller
             ];
         } catch (\Throwable $th) {
             DB::rollBack();
-            
+
             throw $th;
         }
     }
-
-   
 }

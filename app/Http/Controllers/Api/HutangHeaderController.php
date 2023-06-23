@@ -32,9 +32,11 @@ use Illuminate\Database\QueryException;
 
 class HutangHeaderController extends Controller
 {
-    /**
-     * @ClassName
-     */
+   /**
+     * @ClassName 
+     * HutangHeader
+     * @Detail1 HutangDetailController
+    */
     public function index(GetIndexRangeRequest $request)
     {
         $hutang = new HutangHeader();
@@ -47,6 +49,8 @@ class HutangHeaderController extends Controller
             ]
         ]);
     }
+
+    
 
     /**
      * @ClassName
@@ -389,5 +393,12 @@ class HutangHeaderController extends Controller
         return response([
             'data' => $data
         ]);
+    }
+
+     /**
+     * @ClassName 
+     */
+    public function report()
+    {
     }
 }

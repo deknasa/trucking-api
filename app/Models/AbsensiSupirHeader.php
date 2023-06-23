@@ -73,6 +73,7 @@ class AbsensiSupirHeader extends MyModel
                 DB::raw("(case when absensisupirheader.nominal IS NULL then 0 else absensisupirheader.nominal end) as nominal"),
                 DB::raw('(case when (year(absensisupirheader.tglbukacetak) <= 2000) then null else absensisupirheader.tglbukacetak end ) as tglbukacetak'),
                 'statuscetak.memo as statuscetak',
+                'statusapprovaleditabsensi.memo as statusapprovaleditabsensi',
                 'absensisupirheader.userbukacetak',
                 'absensisupirheader.jumlahcetak',
                 'absensisupirheader.modifiedby',
@@ -80,7 +81,8 @@ class AbsensiSupirHeader extends MyModel
                 'absensisupirheader.updated_at'
             )
             // request()->tgldari ?? date('Y-m-d',strtotime('today'))
-            ->leftJoin(DB::raw("parameter as statuscetak with (readuncommitted)"), 'absensisupirheader.statuscetak', 'statuscetak.id');
+            ->leftJoin(DB::raw("parameter as statuscetak with (readuncommitted)"), 'absensisupirheader.statuscetak', 'statuscetak.id')
+            ->leftJoin(DB::raw("parameter as statusapprovaleditabsensi with (readuncommitted)"), 'absensisupirheader.statusapprovaleditabsensi', 'statusapprovaleditabsensi.id');
         if (request()->tgldari) {
             $query->whereBetween('tglbukti', [date('Y-m-d', strtotime(request()->tgldari)), date('Y-m-d', strtotime(request()->tglsampai))]);
         }
@@ -336,6 +338,20 @@ class AbsensiSupirHeader extends MyModel
         if ($query->statusedit != $tidakBolehEdit->id) return true;
         return false;
     }
+    public function isDateAllowed($id)
+    {
+
+        
+        $query = DB::table('absensisupirheader')->from(DB::raw("absensisupirheader with (readuncommitted)"))
+        ->select('tglbukti')
+        ->where('id', $id)
+        ->first();
+        
+        $date = date('Y-m-d', strtotime($query->tglbukti));
+        $bukaAbsensi = BukaAbsensi::where('tglabsensi', '=', $date)->first();
+        if ($bukaAbsensi) return true;
+        return false;
+    }
     public function isUsedTrip($id)
     {
         $absensisupirheader = DB::table('absensisupirheader')->from(DB::raw("absensisupirheader with (readuncommitted)"))->where('id', $id)->first();
@@ -524,15 +540,15 @@ class AbsensiSupirHeader extends MyModel
         }
         /*STORE KAS GANTUNG*/
         $bank = DB::table('bank')->from(DB::raw("bank with (readuncommitted)"))->select('id')->where('tipe', '=', 'KAS')->first();
+        $bank = DB::table('bank')->from(DB::raw("bank with (readuncommitted)"))->select('id')->where('tipe', '=', 'KAS')->first();
         
         $kasGantungRequest = [
             "tglbukti" => $data['tglbukti'],
-            "penerima" => '',
+            "penerima" => null,
             "bank_id" => '',
-            "coakaskeluar" => '',
-            "pengeluaran_nobukti" => '',
+            "coakaskeluar" => null,
+            "pengeluaran_nobukti" => null,
             "postingdari" => 'ENTRY ABSENSI SUPIR',
-            
             "nominal" => $data['uangjalan'],
             "keterangan_detail" => $data['keterangan_detail'],
         ];
@@ -540,6 +556,9 @@ class AbsensiSupirHeader extends MyModel
         $kasGantungHeader = KasGantungHeader::from(DB::raw("kasgantungheader with (readuncommitted)"))->where('nobukti', $absensiSupir->kasgantung_nobukti)->first();
         $kasGantungHeader = (new KasGantungHeader())->processUpdate($kasGantungHeader,$kasGantungRequest);
         
+        $bukaAbsensi = BukaAbsensi::from(DB::raw("BukaAbsensi with (readuncommitted)"))->where('tglabsensi', $absensiSupir->tglbukti)->first();
+        $bukaAbsensi = (new BukaAbsensi())->processDestroy($bukaAbsensi->id);
+
         $absensiSupirLogTrail = (new LogTrail())->processStore([
             'namatabel' => strtoupper($absensiSupir->getTable()),
             'postingdari' => $data['postingdari'] ??strtoupper('EDIT ABSENSI SUPIR Header '),

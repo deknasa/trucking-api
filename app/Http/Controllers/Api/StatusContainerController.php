@@ -241,4 +241,11 @@ class StatusContainerController extends Controller
             $this->toExcel($judulLaporan, $statusContainers, $columns);
         }
     }
+
+    /**
+     * @ClassName 
+     */
+    public function report()
+    {
+    }
 }

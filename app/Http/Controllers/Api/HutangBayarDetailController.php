@@ -14,6 +14,9 @@ use Illuminate\Support\Facades\Validator;
 
 class HutangBayarDetailController extends Controller
 {
+    /**
+     * @ClassName
+     */
     public function index(): JsonResponse
     {
         $hutangBayar = new HutangBayarDetail();

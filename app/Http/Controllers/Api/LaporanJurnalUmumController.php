@@ -32,7 +32,6 @@ class LaporanJurnalUmumController extends Controller
         $sampai = date('Y-m-d', strtotime($request->sampai));
         $laporanjurnalumum = new LaporanJurnalUmum();
 
-       
 
         $laporan_jurnalumum = $laporanjurnalumum->getReport($dari, $sampai, );
 

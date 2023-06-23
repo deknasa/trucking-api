@@ -25,6 +25,8 @@ class RekapPengeluaranHeaderController extends Controller
 {
     /**
      * @ClassName 
+     * RekapPengeluaranHeader
+     * @Detail1 RekapPengeluaranDetailController
      */
     public function index(GetIndexRangeRequest $request)
     {
@@ -266,5 +268,12 @@ class RekapPengeluaranHeaderController extends Controller
                 'totalPages' => $rekapPengeluaran->totalPages
             ]
         ]);
+    }
+
+    /**
+     * @ClassName 
+     */
+    public function report()
+    {
     }
 }

@@ -52,6 +52,8 @@ class GajiSupirHeaderController extends Controller
 {
     /**
      * @ClassName 
+     * GajiSupirHeader
+     * @Detail1 GajiSupirDetailController
      */
     public function index(GetIndexRangeRequest $request)
     {
@@ -155,7 +157,7 @@ class GajiSupirHeaderController extends Controller
         DB::beginTransaction();
 
         try {
-            
+
             $data = [
                 'tglbukti' => $request->tglbukti,
                 'supir_id' => $request->supir_id,
@@ -601,6 +603,17 @@ class GajiSupirHeaderController extends Controller
         ]);
     }
 
+    /**
+     * @ClassName 
+     */
+    public function report()
+    {
+    }
+
+
+    /**
+     * @ClassName 
+     */
     public function export($id)
     {
         $gajiSupirHeader = new GajiSupirHeader();

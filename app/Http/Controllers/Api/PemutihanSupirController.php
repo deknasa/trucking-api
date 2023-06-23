@@ -26,7 +26,9 @@ use Throwable;
 class PemutihanSupirController extends Controller
 {
     /**
-     * @ClassName
+     * @ClassName 
+     * PemutihanSupir
+     * @Detail1 PemutihanSupirDetailController
      */
     public function index(GetIndexRangeRequest $request)
     {
@@ -43,7 +45,7 @@ class PemutihanSupirController extends Controller
     /**
      * @ClassName
      */
-    public function store(StorePemutihanSupirRequest $request) :JsonResponse
+    public function store(StorePemutihanSupirRequest $request): JsonResponse
     {
         DB::beginTransaction();
         try {
@@ -102,7 +104,7 @@ class PemutihanSupirController extends Controller
     /**
      * @ClassName
      */
-    public function update(UpdatePemutihanSupirRequest $request, PemutihanSupir $pemutihansupir) :JsonResponse
+    public function update(UpdatePemutihanSupirRequest $request, PemutihanSupir $pemutihansupir): JsonResponse
     {
         DB::beginTransaction();
         try {
@@ -140,7 +142,6 @@ class PemutihanSupirController extends Controller
                 'message' => 'Berhasil diubah',
                 'data' =>  $pemutihanSupir
             ]);
-            
         } catch (\Throwable $th) {
             DB::rollBack();
             throw $th;
@@ -150,7 +151,7 @@ class PemutihanSupirController extends Controller
     /**
      * @ClassName
      */
-    public function destroy(Request $request, $id) :JsonResponse
+    public function destroy(Request $request, $id): JsonResponse
     {
         DB::beginTransaction();
 
@@ -362,5 +363,12 @@ class PemutihanSupirController extends Controller
         return response([
             'data' => $data
         ]);
+    }
+
+    /**
+     * @ClassName 
+     */
+    public function report()
+    {
     }
 }

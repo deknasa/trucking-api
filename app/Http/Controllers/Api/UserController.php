@@ -24,7 +24,9 @@ class UserController extends Controller
 {
     /**
      * @ClassName 
-     */
+     * user
+     * @Detail1 AcosController
+    */
     public function index()
     {
         $user = new User();

@@ -25,6 +25,8 @@ class RekapPenerimaanHeaderController extends Controller
 {
     /**
      * @ClassName 
+     * RekapPenerimaanHeader
+     * @Detail1 RekapPenerimaanDetailController
      */
     public function index(GetIndexRangeRequest $request)
     {
@@ -41,7 +43,7 @@ class RekapPenerimaanHeaderController extends Controller
     /**
      * @ClassName 
      */
-    public function store(StoreRekapPenerimaanHeaderRequest $request) :JsonResponse
+    public function store(StoreRekapPenerimaanHeaderRequest $request): JsonResponse
     {
         DB::beginTransaction();
 
@@ -82,6 +84,7 @@ class RekapPenerimaanHeaderController extends Controller
         return response([
             'status' => true,
             'data' => $data,
+            'detail' => $rekapPenerimaanHeader->getRekapPenerimaanHeader($id),
         ]);
     }
     /**
@@ -90,18 +93,18 @@ class RekapPenerimaanHeaderController extends Controller
     public function update(UpdateRekapPenerimaanHeaderRequest $request, RekapPenerimaanHeader $rekappenerimaanheader)
     {
         DB::beginTransaction();
-        
+
         try {
             $data = [
                 'tglbukti' => date('Y-m-d', strtotime($request->tglbukti)),
                 'tgltransaksi'  => date('Y-m-d', strtotime($request->tgltransaksi)),
                 'bank_id' => $request->bank_id,
-    
+
                 "tgltransaksi_detail" => $request->tgltransaksi_detail,
                 "penerimaan_nobukti" => $request->penerimaan_nobukti,
                 "nominal" => $request->nominal,
                 "keterangan_detail" => $request->keterangan_detail,
-    
+
             ];
 
             $rekapPenerimaanHeader = (new RekapPenerimaanHeader())->processUpdate($rekappenerimaanheader, $data);
@@ -112,9 +115,8 @@ class RekapPenerimaanHeaderController extends Controller
 
             return response()->json([
                 'message' => 'Berhasil diubah',
-                'data' =>  $rekapPenerimaanHeader                                           
+                'data' =>  $rekapPenerimaanHeader
             ]);
-            
         } catch (\Throwable $th) {
             DB::rollBack();
             throw $th;
@@ -126,7 +128,7 @@ class RekapPenerimaanHeaderController extends Controller
     public function destroy(DestroyRekapPenerimaanHeaderRequest $request, $id)
     {
         DB::beginTransaction();
-       
+
         try {
             $rekapPenerimaanHeader = (new RekapPenerimaanHeader())->processDestroy($id, 'DELETE REKAP PENERIMAAN HEADER');
             $selected = $this->getPosition($rekapPenerimaanHeader, $rekapPenerimaanHeader->getTable(), true);
@@ -274,5 +276,12 @@ class RekapPenerimaanHeaderController extends Controller
                 'totalPages' => $rekapPenerimaan->totalPages
             ]
         ]);
+    }
+
+    /**
+     * @ClassName 
+     */
+    public function report()
+    {
     }
 }

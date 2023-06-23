@@ -209,12 +209,12 @@ class Menu extends MyModel
                 $arr = ['name' => $m->name];
                 if ($comment === true) {
                     $arr['docComment'] = $this->get_method_comment($r, $m->name);
+                    // if(array_key_exists("ClassName",$arr['docComment'])) { $arr['detail'] = $arr['docComment']['ClassName'];}   else  {$arr['detail'] = [];}
                 }
-
                 $methods[] = $arr;
             }
         }
-
+        // dd($methods);
         return $methods;
     }
 
@@ -255,13 +255,31 @@ class Menu extends MyModel
                         }
 
                         $methods = $this->get_class_methods($class, true);
-
+                        // dd($methods);
                         foreach ($methods as $method) {
                             if (isset($method['docComment']['ClassName'])) {
+                                if (isset($method['docComment']['Detail1'])) {
+                                    $detail1 = $method['docComment']['Detail1'];
+                                } else {
+                                    $detail1 = '';
+                                }
+                                if (isset($method['docComment']['Detail2'])) {
+                                    $detail2 = $method['docComment']['Detail2'];
+                                } else {
+                                    $detail2 = '';
+                                }
+                                if (isset($method['docComment']['Detail3'])) {
+                                    $detail3 = $method['docComment']['Detail3'];
+                                } else {
+                                    $detail3 = '';
+                                }
                                 $data[] = [
                                     'class' => $class,
                                     'method' => $method['name'],
-                                    'name' => $method['name'] . ' ' . $class
+                                    'name' => $method['name'] . ' ' . $class,
+                                    'detail1' => trim($detail1),
+                                    'detail2' => trim($detail2),
+                                    'detail3' => trim($detail3)
                                 ];
                             }
                         }
@@ -269,7 +287,6 @@ class Menu extends MyModel
                 }
             }
         }
-
         return $data ?? '';
     }
 
@@ -280,6 +297,7 @@ class Menu extends MyModel
         $pattern = "#(@[a-zA-Z]+\s*[a-zA-Z0-9, ()_].*)#";
         //perform the regular expression on the string provided
         preg_match_all($pattern, $comment, $matches, PREG_PATTERN_ORDER);
+        // dd($matches[0]);
         $comments = [];
         foreach ($matches[0] as $match) {
             $comment = preg_split('/[\s]/', $match, 2);
@@ -291,18 +309,61 @@ class Menu extends MyModel
 
     public function processStore(array $data): Menu
     {
+
         $class = $this->listFolderFiles($data['controller']);
         if ($class <> '') {
             foreach ($class as $value) {
+
                 $namaclass = str_replace('controller', '', strtolower($value['class']));
-                
+
                 $dataaco = (new Acos())->processStore([
                     'class' => $namaclass,
                     'method' => $value['method'],
                     'nama' => $value['name'],
                     'modifiedby' => auth('api')->user()->user,
                 ]);
+
+                if ($value['detail1'] != '') {
+                    $classdetail1 = $this->listFolderFiles($value['detail1']);
+                    foreach ($classdetail1 as $valuedetail1) {
+                        $namaclass = str_replace('controller', '', strtolower($valuedetail1['class']));
+                        $dataaco = (new Acos())->processStore([
+                            'class' => $namaclass,
+                            'method' => $value['method'],
+                            'nama' => $value['name'],
+                            'modifiedby' => auth('api')->user()->user,
+                        ]);
+                    }
+                }
+
+                if ($value['detail2'] != '') {
+                    $classdetail2 = $this->listFolderFiles($value['detail2']);
+                    foreach ($classdetail2 as $valuedetail2) {
+                        $namaclass = str_replace('controller', '', strtolower($valuedetail2['class']));
+                        $dataaco = (new Acos())->processStore([
+                            'class' => $namaclass,
+                            'method' => $value['method'],
+                            'nama' => $value['name'],
+                            'modifiedby' => auth('api')->user()->user,
+                        ]);
+                    }
+                }
+
+                if ($value['detail3'] != '') {
+                    $classdetail3 = $this->listFolderFiles($value['detail3']);
+                    foreach ($classdetail3 as $valuedetail3) {
+                        $namaclass = str_replace('controller', '', strtolower($valuedetail3['class']));
+                        $dataaco = (new Acos())->processStore([
+                            'class' => $namaclass,
+                            'method' => $value['method'],
+                            'nama' => $value['name'],
+                            'modifiedby' => auth('api')->user()->user,
+                        ]);
+                    }
+                }
             }
+
+
 
             $list = Acos::select('id')
                 ->where('class', '=', $namaclass)
@@ -328,9 +389,9 @@ class Menu extends MyModel
             ->where('menuparent', '=', $data['menuparent'])
             ->exists()
         ) {
-      
+
             if ($data['menuparent'] == 0) {
-            
+
                 $list = Menu::select('menukode')
                     ->where('menuparent', '=', '0')
                     ->where(DB::raw('right(menukode,1)'), '<>', '9')
@@ -339,7 +400,7 @@ class Menu extends MyModel
                     ->first();
                 $menukode = chr(ord($list->menukode) + 1);
             } else {
-  
+
 
                 if (Menu::select('menukode')
                     ->where('menuparent', '=', $data['menuparent'])
@@ -376,7 +437,7 @@ class Menu extends MyModel
                 }
             }
         } else {
-      
+
             if ($data['menuparent'] == 0) {
                 $menukode = 0;
                 $list = Menu::select('menukode')
@@ -411,11 +472,9 @@ class Menu extends MyModel
                     ->orderBy('menukode', 'desc')
                     ->first();
 
-                    if (isset($list)) {
-                        $menukode = $list->menukode . '1';
-
-                    }
-
+                if (isset($list)) {
+                    $menukode = $list->menukode . '1';
+                }
             }
         }
 
@@ -442,7 +501,7 @@ class Menu extends MyModel
     }
 
     public function processUpdate(Menu $menu, array $data): Menu
-    {    
+    {
         $query = DB::table('menu')
             ->from(
                 DB::raw("menu a with (readuncommitted)")
@@ -489,6 +548,117 @@ class Menu extends MyModel
                             ]);
                         }
                     }
+                    // cek detail1
+
+                    if ($value['detail1'] != '') {
+                        $classdetail1 = $this->listFolderFiles($value['detail1']);
+                        // dd($classdetail1);
+                        foreach ($classdetail1 as $valuedetail1) {
+                            $namaclass = str_replace('controller', '', strtolower($valuedetail1['class']));
+
+                            $queryacos = DB::table('acos')
+                                ->from(
+                                    db::raw("acos a with(readuncommitted)")
+                                )
+                                ->select(
+                                    'a.id'
+                                )
+                                ->where('a.class', '=', $namaclass)
+                                ->where('a.method', '=', $valuedetail1['method'])
+                                ->where('a.nama', '=', $valuedetail1['name'])
+                                ->first();
+
+                            if (!isset($queryacos)) {
+                                // if (Acos::select('id')
+                                //     ->where('class', '=', $namaclass)
+                                //     ->exists()
+                                // ) {
+
+                                    $dataaco = (new Acos())->processStore([
+                                        'class' => $namaclass,
+                                        'method' => $valuedetail1['method'],
+                                        'nama' => $valuedetail1['name'],
+                                        'modifiedby' => auth('api')->user()->user,
+                                    ]);
+                                // }
+                            }
+                        }
+                    }
+
+                    // 
+                    // cek detail2
+                    if ($value['detail2'] != '') {
+                        $classdetail2 = $this->listFolderFiles($value['detail2']);
+                        foreach ($classdetail2 as $valuedetail2) {
+                            $namaclass = str_replace('controller', '', strtolower($valuedetail2['class']));
+
+                            $queryacos = DB::table('acos')
+                                ->from(
+                                    db::raw("acos a with(readuncommitted)")
+                                )
+                                ->select(
+                                    'a.id'
+                                )
+                                ->where('a.class', '=', $namaclass)
+                                ->where('a.method', '=', $valuedetail2['method'])
+                                ->where('a.nama', '=', $valuedetail2['name'])
+                                ->first();
+
+                            if (!isset($queryacos)) {
+                                // if (Acos::select('id')
+                                //     ->where('class', '=', $namaclass)
+                                //     ->exists()
+                                // ) {
+
+                                    $dataaco = (new Acos())->processStore([
+                                        'class' => $namaclass,
+                                        'method' => $valuedetail2['method'],
+                                        'nama' => $valuedetail2['name'],
+                                        'modifiedby' => auth('api')->user()->user,
+                                    ]);
+                                // }
+                            }
+                        }
+                    }
+
+                    //  
+                    // cek detail3
+                    if ($value['detail3'] != '') {
+                        $classdetail3 = $this->listFolderFiles($value['detail3']);
+                        foreach ($classdetail3 as $valuedetail3) {
+                            $namaclass = str_replace('controller', '', strtolower($valuedetail3['class']));
+
+                            $queryacos = DB::table('acos')
+                                ->from(
+                                    db::raw("acos a with(readuncommitted)")
+                                )
+                                ->select(
+                                    'a.id'
+                                )
+                                ->where('a.class', '=', $namaclass)
+                                ->where('a.method', '=', $valuedetail3['method'])
+                                ->where('a.nama', '=', $valuedetail3['name'])
+                                ->first();
+
+                            if (!isset($queryacos)) {
+                                // if (Acos::select('id')
+                                //     ->where('class', '=', $namaclass)
+                                //     ->exists()
+                                // ) {
+
+                                    $dataaco = (new Acos())->processStore([
+                                        'class' => $namaclass,
+                                        'method' => $valuedetail3['method'],
+                                        'nama' => $valuedetail3['name'],
+                                        'modifiedby' => auth('api')->user()->user,
+                                    ]);
+                                // }
+                            }
+                        }
+                    }
+
+                    //                                         
+
                 }
             }
         }

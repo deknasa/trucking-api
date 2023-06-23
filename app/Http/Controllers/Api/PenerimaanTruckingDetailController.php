@@ -13,7 +13,9 @@ use Illuminate\Support\Facades\Validator;
 
 class PenerimaanTruckingDetailController extends Controller
 {
-    
+    /**
+     * @ClassName 
+     */
     public function index(Request $request)
     {
         $penerimaanTruckingDetail = new PenerimaanTruckingDetail();
@@ -28,14 +30,14 @@ class PenerimaanTruckingDetailController extends Controller
     }
 
 
-    
+
     public function store(StorePenerimaanTruckingDetailRequest $request)
     {
         DB::beginTransaction();
-        
+
         try {
             $penerimaantruckingDetail = new PenerimaanTruckingDetail();
-            
+
             $penerimaantruckingDetail->penerimaantruckingheader_id = $request->penerimaantruckingheader_id;
             $penerimaantruckingDetail->nobukti = $request->nobukti;
             $penerimaantruckingDetail->supir_id = $request->supir_id;
@@ -43,9 +45,9 @@ class PenerimaanTruckingDetailController extends Controller
             $penerimaantruckingDetail->keterangan = $request->keterangan;
             $penerimaantruckingDetail->nominal = $request->nominal;
             $penerimaantruckingDetail->modifiedby = auth('api')->user()->name;
-            
+
             $penerimaantruckingDetail->save();
-           
+
             DB::commit();
             return [
                 'error' => false,
@@ -56,8 +58,6 @@ class PenerimaanTruckingDetailController extends Controller
         } catch (\Throwable $th) {
             throw $th;
             DB::rollBack();
-        }        
+        }
     }
-
-
 }

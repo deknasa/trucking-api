@@ -74,24 +74,24 @@ class PenerimaanStokController extends Controller
     /**
      * @ClassName 
      */
-    public function store(StorePenerimaanStokRequest $request) : JsonResponse
+    public function store(StorePenerimaanStokRequest $request): JsonResponse
     {
         DB::beginTransaction();
 
         try {
             $data = [
-            'kodepenerimaan' => $request->kodepenerimaan,
-            'keterangan' => $request->keterangan ?? '',
-            'coa' => $request->coa ?? '',
-            'format' => $request->format ?? '',
-            'statushitungstok' => $request->statushitungstok
+                'kodepenerimaan' => $request->kodepenerimaan,
+                'keterangan' => $request->keterangan ?? '',
+                'coa' => $request->coa ?? '',
+                'format' => $request->format ?? '',
+                'statushitungstok' => $request->statushitungstok
             ];
             $penerimaanStok = (new PenerimaanStok())->processStore($data);
             $penerimaanStok->position = $this->getPosition($penerimaanStok, $penerimaanStok->getTable())->position;
             $penerimaanStok->page = ceil($penerimaanStok->position / ($request->limit ?? 10));
 
-            DB::commit(); 
-           
+            DB::commit();
+
             return response()->json([
                 'status' => true,
                 'message' => 'Berhasil disimpan',
@@ -118,7 +118,7 @@ class PenerimaanStokController extends Controller
     /**
      * @ClassName 
      */
-    public function update(UpdatePenerimaanStokRequest $request, PenerimaanStok $penerimaanStok, $id) : JsonResponse
+    public function update(UpdatePenerimaanStokRequest $request, PenerimaanStok $penerimaanStok, $id): JsonResponse
     {
         DB::beginTransaction();
         try {
@@ -128,7 +128,7 @@ class PenerimaanStokController extends Controller
                 'coa' => $request->coa ?? '',
                 'format' => $request->format ?? '',
                 'statushitungstok' => $request->statushitungstok
-                ];
+            ];
 
             $penerimaanStok = PenerimaanStok::findOrFail($id);
             $penerimaanStok = (new PenerimaanStok())->processUpdate($penerimaanStok, $data);
@@ -168,7 +168,7 @@ class PenerimaanStokController extends Controller
     {
         DB::beginTransaction();
 
-        
+
         try {
             $penerimaanStok = (new PenerimaanStok())->processDestroy($id);
             $selected = $this->getPosition($penerimaanStok, $penerimaanStok->getTable(), true);
@@ -188,7 +188,16 @@ class PenerimaanStokController extends Controller
             throw $th;
         }
     }
+    /**
+     * @ClassName 
+     */
+    public function report()
+    {
+    }
 
+    /**
+     * @ClassName 
+     */
     public function export(RangeExportReportRequest $request)
     {
         if (request()->cekExport) {

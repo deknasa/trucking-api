@@ -5,6 +5,8 @@ namespace App\Http\Requests;
 use Illuminate\Foundation\Http\FormRequest;
 use App\Http\Controllers\Api\ErrorController;
 use App\Models\Parameter;
+use App\Rules\ExistAkuntansi;
+use App\Rules\ExistTypeAkuntansi;
 use Illuminate\Validation\Rule;
 
 class StoreAkunPusatRequest extends FormRequest
@@ -60,14 +62,37 @@ class StoreAkunPusatRequest extends FormRequest
         foreach ($dataLabaRugi as $item) {
             $statusLabaRugi[] = $item['id'];
         }
+        
+        $type_id = $this->type_id;
+        $rulesType_id = [];
+        if ($type_id != null) {
+            $rulesType_id = [
+                'type_id' => ['required', 'numeric', 'min:1', new ExistTypeAkuntansi()],
+            ];
+        } else if ($type_id == null && $this->type != '') {
+            $rulesType_id = [
+                'type_id' => ['required', 'numeric', 'min:1', new ExistTypeAkuntansi()],
+            ];
+        }
+        
+        $akuntansi_id = $this->akuntansi_id;
+        $rulesAkuntansi_id = [];
+        if ($akuntansi_id != null) {
+            $rulesAkuntansi_id = [
+                'akuntansi_id' => ['required', 'numeric', 'min:1', new ExistAkuntansi()],
+            ];
+        } else if ($akuntansi_id == null && $this->akuntansi != '') {
+            $rulesAkuntansi_id = [
+                'akuntansi_id' => ['required', 'numeric', 'min:1', new ExistAkuntansi()],
+            ];
+        }
 
 
         $rules = [
             'coa' => ['required','unique:akunpusat'],
             'keterangancoa' => ['required','unique:akunpusat'],
             'type' => ['required'],
-            'level' => ['required'],
-            'parent' => ['required'],
+            'akuntansi' => ['required'],
             'statuscoa' => ['required', Rule::in($statusCoa)],
             'statusaccountpayable' => ['required', Rule::in($statusAccount)],
             'statusneraca' => ['required', Rule::in($statusNeraca)],
@@ -75,6 +100,12 @@ class StoreAkunPusatRequest extends FormRequest
             'coamain' => ['required'],
             'statusaktif' => ['required', Rule::in($statusAktif)],
         ];
+
+        $rules = array_merge(
+            $rules,
+            $rulesType_id,
+            $rulesAkuntansi_id
+        );
 
         return $rules;
     }
@@ -85,8 +116,6 @@ class StoreAkunPusatRequest extends FormRequest
             'coa' => 'kode coa',
             'keterangancoa' => 'keterangan coa',
             'type' => 'type',
-            'level' => 'level',
-            'parent' => 'parent',
             'statuscoa' => 'status coa',
             'statusaccountpayable' => 'status account payable',
             'statusneraca' => 'status neraca',
@@ -104,8 +133,6 @@ class StoreAkunPusatRequest extends FormRequest
             'coa.required' => ':attribute' . ' ' . $controller->geterror('WI')->keterangan,
             'keterangancoa.required' => ':attribute' . ' ' . $controller->geterror('WI')->keterangan,
             'type.required' => ':attribute' . ' ' . $controller->geterror('WI')->keterangan,
-            'level.required' => ':attribute' . ' ' . $controller->geterror('WI')->keterangan,
-            'parent.required' => ':attribute' . ' ' . $controller->geterror('WI')->keterangan,
             'statuscoa.required' => ':attribute' . ' ' . $controller->geterror('WI')->keterangan,
             'statusaccountpayable.required' => ':attribute' . ' ' . $controller->geterror('WI')->keterangan,
             'statusneraca.required' => ':attribute' . ' ' . $controller->geterror('WI')->keterangan,

@@ -334,11 +334,11 @@ class NotaDebetHeader extends MyModel
                 "nominalbayar" => $data['nominal'][$i],
                 "lebihbayar" => $data['nominallebihbayar'][$i],
                 "keterangandetail" => '-',
-                "coalebihbayar" => $data['coalebihbayar'][$i]
+                "coalebihbayar" => $data['coakredit'][$i]
             ]);
             $notaDebetDetails[] = $notaDebetDetail->toArray();
             $coakredit_detail[] = $data['coakredit'][$i];
-            $coadebet_detail[] = $data['coalebihbayar'][$i];
+            $coadebet_detail[] = $data['coadebet'][$i];
             $nominal_detail[] = $data['nominallebihbayar'][$i]; //AMBIL LEBIH BAYAR ATAU GIMANA?
             $keterangan_detail[] = '-';
         }
@@ -406,11 +406,11 @@ class NotaDebetHeader extends MyModel
                 "nominalbayar" => $data['nominal'][$i],
                 "lebihbayar" => $data['nominallebihbayar'][$i],
                 "keterangandetail" => '-',
-                "coalebihbayar" => $data['coalebihbayar'][$i]
+                "coalebihbayar" => $data['coakredit'][$i]
             ]);
             $notaDebetDetails[] = $notaDebetDetail->toArray();
             $coakredit_detail[] = $data['coakredit'][$i];
-            $coadebet_detail[] = $data['coalebihbayar'][$i];
+            $coadebet_detail[] = $data['coadebet'][$i];
             $nominal_detail[] = $data['nominallebihbayar'][$i]; //AMBIL LEBIH BAYAR ATAU GIMANA?
             $keterangan_detail[] = '-';
 

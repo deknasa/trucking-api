@@ -921,7 +921,7 @@ class ProsesGajiSupirHeader extends MyModel
         Schema::create($tempRincian, function ($table) {
 
             $table->date('tglbukti');
-            $table->bigInteger('gajisupir');
+            $table->bigInteger('gajisupir')->nullable();
         });
 
         DB::table($tempRincian)->insertUsing(['tglbukti', 'gajisupir'], $fetchTempRincian);
@@ -940,13 +940,13 @@ class ProsesGajiSupirHeader extends MyModel
 
         $tempRincianJurnal = '##Temprincianjurnal' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
         $fetchTempRincianJurnal = DB::table($tempRincian)->from(DB::raw("$tempRincian with (readuncommitted)"))
-            ->select(DB::raw("tglbukti, sum(gajisupir) as nominal, '' as keterangan"))
+            ->select(DB::raw("tglbukti, sum(isnull(gajisupir,0)) as nominal, '' as keterangan"))
             ->groupBy('tglbukti');
         Schema::create($tempRincianJurnal, function ($table) {
 
             $table->date('tglbukti');
-            $table->bigInteger('nominal');
-            $table->string('keterangan');
+            $table->bigInteger('nominal')->nullable();
+            $table->string('keterangan')->nullable();
         });
 
         DB::table($tempRincianJurnal)->insertUsing(['tglbukti', 'nominal', 'keterangan'], $fetchTempRincianJurnal);

@@ -80,7 +80,7 @@ class KelompokController extends Controller
     /**
      * @ClassName 
      */
-    public function store(StoreKelompokRequest $request) : JsonResponse
+    public function store(StoreKelompokRequest $request): JsonResponse
     {
         DB::beginTransaction();
         try {
@@ -117,7 +117,7 @@ class KelompokController extends Controller
     /**
      * @ClassName 
      */
-    public function update(UpdateKelompokRequest $request, Kelompok $kelompok) : JsonResponse
+    public function update(UpdateKelompokRequest $request, Kelompok $kelompok): JsonResponse
     {
         DB::beginTransaction();
         try {
@@ -194,6 +194,17 @@ class KelompokController extends Controller
             'data' => $data
         ]);
     }
+
+    /**
+     * @ClassName 
+     */
+    public function report()
+    {
+    }
+
+    /**
+     * @ClassName 
+     */
     public function export(RangeExportReportRequest $request)
     {
 

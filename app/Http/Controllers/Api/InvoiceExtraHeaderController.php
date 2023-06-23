@@ -29,8 +29,10 @@ use Illuminate\Http\JsonResponse;
 
 class InvoiceExtraHeaderController extends Controller
 {
-    /**
+ /**
      * @ClassName 
+     * InvoiceExtraHeader
+     * @Detail1 InvoiceExtraDetailController
      */
     public function index(GetIndexRangeRequest $request)
     {
@@ -269,6 +271,17 @@ class InvoiceExtraHeaderController extends Controller
         }
     }
 
+    /**
+     * @ClassName 
+     */
+    public function report()
+    {
+    }
+
+
+    /**
+     * @ClassName 
+     */
     public function export($id)
     {
         $invoiceExtra = new InvoiceExtraHeader();

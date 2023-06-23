@@ -343,6 +343,17 @@ class TradoController extends Controller
             Storage::delete($relatedPhotoBpkb);
         }
     }
+
+    /**
+     * @ClassName 
+     */
+    public function report()
+    {
+    }
+
+    /**
+     * @ClassName 
+     */
     public function export(RangeExportReportRequest $request)
     {
 

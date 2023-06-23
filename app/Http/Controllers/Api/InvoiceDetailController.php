@@ -18,6 +18,9 @@ use Illuminate\Support\Facades\Validator;
 class InvoiceDetailController extends Controller
 {
 
+    /**
+     * @ClassName
+     */
     public function index(): JsonResponse
     {
         $invoice = new InvoiceDetail();
@@ -38,7 +41,7 @@ class InvoiceDetailController extends Controller
     public function piutang(): JsonResponse
     {
         $piutangDetail = new PiutangDetail();
-        
+
         return response()->json([
             'data' => $piutangDetail->getPiutangFromInvoice(request()->nobukti_piutang),
             'attributes' => [
@@ -48,15 +51,15 @@ class InvoiceDetailController extends Controller
             ]
         ]);
     }
-        
+
     public function store(StoreInvoiceDetailRequest $request)
     {
         DB::beginTransaction();
 
-        
+
         try {
             $invoiceDetail = new InvoiceDetail();
-            
+
             $invoiceDetail->invoice_id = $request->invoice_id;
             $invoiceDetail->nobukti = $request->nobukti;
             $invoiceDetail->nominal = $request->nominal;
@@ -66,13 +69,13 @@ class InvoiceDetailController extends Controller
             $invoiceDetail->keterangan = $request->keterangan;
             $invoiceDetail->orderantrucking_nobukti = $request->orderantrucking_nobukti;
             $invoiceDetail->suratpengantar_nobukti = $request->suratpengantar_nobukti;
-            
+
             $invoiceDetail->modifiedby = auth('api')->user()->name;
-            
+
             $invoiceDetail->save();
-           
+
             DB::commit();
-           
+
             return [
                 'error' => false,
                 'detail' => $invoiceDetail,
@@ -82,8 +85,6 @@ class InvoiceDetailController extends Controller
         } catch (\Throwable $th) {
             throw $th;
             DB::rollBack();
-        }      
+        }
     }
-
-    
 }

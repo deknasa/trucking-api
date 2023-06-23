@@ -1,6 +1,7 @@
 <?php
 
 namespace App\Http\Controllers\Api;
+
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -14,10 +15,9 @@ use App\Http\Requests\UpdateNotaDebetDetailRequest;
 
 class NotaDebetDetailController extends Controller
 {
+
     /**
-     * Display a listing of the resource.
-     *
-     * @return \Illuminate\Http\Response
+     * @ClassName 
      */
     public function index(Request $request)
     {
@@ -26,8 +26,8 @@ class NotaDebetDetailController extends Controller
         return response([
             'data' => $notaDebetDetail->get(),
             'attributes' => [
-                'totalRows' => $notaDebetDetail->totalRows ,
-                'totalPages' => $notaDebetDetail->totalPages ,
+                'totalRows' => $notaDebetDetail->totalRows,
+                'totalPages' => $notaDebetDetail->totalPages,
                 'totalNominal' => $notaDebetDetail->totalNominal,
                 'totalNominalBayar' => $notaDebetDetail->totalNominalBayar,
                 'totalLebihBayar' => $notaDebetDetail->totalLebihBayar,
@@ -37,7 +37,7 @@ class NotaDebetDetailController extends Controller
     public function store(StoreNotaDebetDetailRequest $request)
     {
         DB::beginTransaction();
-        
+
         try {
 
             $notaDebetDetail = new NotaDebetDetail();
@@ -51,7 +51,7 @@ class NotaDebetDetailController extends Controller
             $notaDebetDetail->keterangan = $request->keterangandetail;
             $notaDebetDetail->coalebihbayar = $request->coalebihbayar;
             $notaDebetDetail->modifiedby = $request->modifiedby;
-            
+
             DB::commit();
             if ($notaDebetDetail->save()) {
                 return [
@@ -65,7 +65,5 @@ class NotaDebetDetailController extends Controller
             throw $th;
             DB::rollBack();
         }
-
-        
     }
 }

@@ -33,6 +33,8 @@ class AbsensiSupirApprovalHeaderController extends Controller
 {
     /**
      * @ClassName 
+     * AbsensiSupirApprovalHeader
+     * @Detail1 AbsensiSupirApprovalDetailController
      */
     public function index(GetIndexRangeRequest $request)
     {
@@ -305,12 +307,22 @@ class AbsensiSupirApprovalHeaderController extends Controller
         ]);
     }
 
+    /**
+     * @ClassName 
+     */
     public function export($id)
-    {   
+    {
         $absensiSupirApprovalHeader = new AbsensiSupirApprovalHeader();
-        
+
         return response([
             'data' => $absensiSupirApprovalHeader->getExport($id)
         ]);
+    }
+
+    /**
+     * @ClassName 
+     */
+    public function report()
+    {
     }
 }

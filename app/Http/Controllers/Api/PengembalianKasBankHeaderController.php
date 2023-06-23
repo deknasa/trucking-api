@@ -32,6 +32,8 @@ class PengembalianKasBankHeaderController extends Controller
 {
     /**
      * @ClassName 
+     * PengembalianKasBankHeader
+     * @Detail1 PengembalianKasBankDetailController
      */
     public function index()
     {
@@ -45,7 +47,7 @@ class PengembalianKasBankHeaderController extends Controller
             ]
         ]);
     }
-    
+
     public function default()
     {
         $pengembalianKasBankHeader = new PengembalianKasBankHeader();
@@ -434,7 +436,7 @@ class PengembalianKasBankHeaderController extends Controller
         $pengembalianKasBankHeader = new PengembalianKasBankHeader;
         $pengembalianKasBankHeader = $pengembalianKasBankHeader->lockAndDestroy($id);
 
-       
+
         if ($pengembalianKasBankHeader) {
             $logTrail = [
                 'namatabel' => strtoupper($pengembalianKasBankHeader->getTable()),
@@ -596,5 +598,12 @@ class PengembalianKasBankHeaderController extends Controller
         return response([
             'data' => $data
         ]);
+    }
+
+    /**
+     * @ClassName 
+     */
+    public function report()
+    {
     }
 }

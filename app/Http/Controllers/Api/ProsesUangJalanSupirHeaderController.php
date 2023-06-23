@@ -44,8 +44,10 @@ use Illuminate\Support\Facades\DB;
 
 class ProsesUangJalanSupirHeaderController extends Controller
 {
-    /**
-     * @ClassName
+       /**
+     * @ClassName 
+     * ProsesUangJalanSupirHeader
+     * @Detail1 ProsesUangJalanSupirDetailController
      */
     public function index(GetIndexRangeRequest $request)
     {
@@ -144,7 +146,7 @@ class ProsesUangJalanSupirHeaderController extends Controller
         DB::beginTransaction();
 
         try {
-           
+
             $data = [
                 'tglbukti' => $request->tglbukti,
                 'absensisupir' => $request->absensisupir,
@@ -189,7 +191,6 @@ class ProsesUangJalanSupirHeaderController extends Controller
                 'message' => 'Berhasil diubah',
                 'data' => $prosesUangJalanSupir
             ]);
-
         } catch (\Throwable $th) {
             DB::rollBack();
             throw $th;
@@ -275,6 +276,16 @@ class ProsesUangJalanSupirHeaderController extends Controller
         }
     }
 
+    /**
+     * @ClassName 
+     */
+    public function report()
+    {
+    }
+
+    /**
+     * @ClassName 
+     */
     public function export($id)
     {
         $prosesUangJalanSupir = new ProsesUangJalanSupirHeader();

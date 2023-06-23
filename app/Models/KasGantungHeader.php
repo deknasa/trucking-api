@@ -425,7 +425,7 @@ class KasGantungHeader extends MyModel
 
         /* Store header */
         $bank = Bank::find($data['bank_id']);
-
+        $coakaskeluar = $bank->coa ??null;
         $group = 'KAS GANTUNG';
         $subgroup = 'NOMOR KAS GANTUNG';
         $format = DB::table('parameter')
@@ -447,7 +447,7 @@ class KasGantungHeader extends MyModel
         $kasgantungHeader->penerima = $data['penerima'] ?? '';
         $kasgantungHeader->bank_id = $data['bank_id'] ?? 0;
         $kasgantungHeader->pengeluaran_nobukti = $data['pengeluaran_nobukti'];
-        $kasgantungHeader->coakaskeluar = $data['coakaskeluar'] ?? $bank->coa ;
+        $kasgantungHeader->coakaskeluar = $data['coakaskeluar'] ?? $coakaskeluar ;
         $kasgantungHeader->postingdari = $data['postingdari'] ?? 'ENTRY KAS GANTUNG';
         $kasgantungHeader->tglkaskeluar = date('Y-m-d', strtotime($data['tglbukti']));
         $kasgantungHeader->modifiedby = auth('api')->user()->name;
@@ -492,7 +492,7 @@ class KasGantungHeader extends MyModel
                 'kasgantung_id' => $kasgantungHeader->id,
                 'nobukti' => $kasgantungHeader->nobukti,
                 'nominal' => $data['nominal'][$i],
-                'coa' => $bank->coa ?? '',
+                'coa' => $coakaskeluar,
                 'keterangan' => $data['keterangan_detail'][$i],
                 'modifiedby' => auth('api')->user()->name,
             ]);
@@ -502,13 +502,13 @@ class KasGantungHeader extends MyModel
             $total += $data['nominal'][$i];
             $noWarkat[] = 0;
             $tglJatuhTempo[] = $data['tglbukti'];
-            $coaKredit[] = $data['coakredit'][$i] ?? $bank->coa??'';
+            $coaKredit[] = $data['coakredit'][$i] ?? $coakaskeluar;
             $coaDebet[] = $data['coadebet'][$i] ?? $memo['JURNAL'];
             $keterangan_detail[] = $data['keterangan_detail'][$i];
             $nominal[] = $data['nominal'][$i];
         }
 
-        if ($data['bank_id'] != '') {
+        if ($data['bank_id'] != '' || $data['bank_id'] != null) {
 
             $parameterController = new ParameterController;
             $statusApp = $parameterController->getparameterid('STATUS APPROVAL', 'STATUS APPROVAL', 'NON APPROVAL');
@@ -567,11 +567,11 @@ class KasGantungHeader extends MyModel
     {
         $isUpdateUangJalan = $data['isUpdateUangJalan'] ?? 0;
 
-        $bank_id = $data['bank_id'];
-        $bank = Bank::lockForUpdate()->findOrFail($bank_id);
-
+        $bank_id = $data['bank_id']??$kasgantungHeader->bank_id;
+        $bank = Bank::lockForUpdate()->find($bank_id);
+        $coakaskeluar = $bank->coa ?? null;
         $kasgantungHeader->penerima = $data['penerima'] ?? '';
-        $kasgantungHeader->coakaskeluar = $data['coakaskeluar'] ?? $bank->coa ;
+        $kasgantungHeader->coakaskeluar = $data['coakaskeluar'] ?? $coakaskeluar ;
         $kasgantungHeader->postingdari = $data['postingdari'] ?? 'EDIT KAS GANTUNG';
         $kasgantungHeader->modifiedby = auth('api')->user()->name;
 
@@ -608,8 +608,7 @@ class KasGantungHeader extends MyModel
 
         // $penerima = Penerima::from(DB::raw("penerima with (readuncommitted)"))->where("id", $request->penerima_id)->first();
         $namaPenerima = ($data['penerima'] != null) ? $data['penerima'] : '';
-
-        $alatbayar = AlatBayar::from(DB::raw("alatbayar with (readuncommitted)"))->where('bank_id', $bank->id)->first();
+        $alatbayar = ($bank != null ) ?AlatBayar::from(DB::raw("alatbayar with (readuncommitted)"))->where('bank_id', $bank->id)->first() : '';
 
 
         for ($i = 0; $i < count($data['nominal']); $i++) {
@@ -617,7 +616,7 @@ class KasGantungHeader extends MyModel
             $kasgantungDetail = (new KasGantungDetail())->processStore($kasgantungHeader, [
                 'nobukti' => $kasgantungHeader->nobukti,
                 'nominal' => ($isUpdateUangJalan != 0) ? $data['datadetail'][$i]['nominal'] : $data['nominal'][$i],
-                'coa' => ($isUpdateUangJalan != 0) ? '' : $bank->coa ?? '',
+                'coa' => ($isUpdateUangJalan != 0) ? '' : $coakaskeluar,
                 'keterangan' => ($isUpdateUangJalan != 0) ? $data['datadetail'][$i]['keterangan'] : $data['keterangan_detail'][$i],
                 'modifiedby' => auth('api')->user()->name,
             ]);
@@ -627,7 +626,7 @@ class KasGantungHeader extends MyModel
 
             $noWarkat[] = 0;
             $tglJatuhTempo[] = $data['tglbukti'];
-            $coaKredit[] = $data['coakredit'][$i] ?? $bank->coa;
+            $coaKredit[] = $data['coakredit'][$i] ?? $coakaskeluar;
             $coaDebet[] = $data['coadebet'][$i] ?? $memo['JURNAL'];
             $keterangan_detail[] = $data['keterangan_detail'][$i];
             $nominal[] = $data['nominal'][$i];
@@ -650,8 +649,8 @@ class KasGantungHeader extends MyModel
             'pelanggan_id' => 0,
             'postingdari' => 'ENTRY KAS GANTUNG',
             'dibayarke' => $namaPenerima ?? '',
-            'alatbayar_id' => $alatbayar->id,
-            'bank_id' => $bank->id,
+            'alatbayar_id' => $alatbayar->id??'',
+            'bank_id' => $bank->id??'',
             'nowarkat' => $noWarkat,
 
             'tgljatuhtempo' =>  $tglJatuhTempo,
@@ -664,11 +663,11 @@ class KasGantungHeader extends MyModel
 
 
 
-        if ($bank->tipe == 'KAS') {
+        if ( $bank && $bank->tipe == 'KAS') {
             $jenisTransaksi = Parameter::from(DB::raw("parameter with (readuncommitted)"))
                 ->where('grp', 'JENIS TRANSAKSI')->where('text', 'KAS')->first();
         }
-        if ($bank->tipe == 'BANK') {
+        if ( $bank && $bank->tipe == 'BANK') {
             $jenisTransaksi = Parameter::from(DB::raw("parameter with (readuncommitted)"))
                 ->where('grp', 'JENIS TRANSAKSI')->where('text', 'BANK')->first();
         }
@@ -676,7 +675,6 @@ class KasGantungHeader extends MyModel
         $get = PengeluaranHeader::from(DB::raw("pengeluaranheader with (readuncommitted)"))->where('nobukti', $kasgantungHeader->pengeluaran_nobukti)->first();
         $approvalabsensisupir = $data['approvalabsensisupir'] ?? false;
         $data['from'] = $data['from'] ?? false;
-        $bank = Bank::lockForUpdate()->findOrFail($bank_id);
 
         if ($data['from'] == "AbsensiSupirApprovalHeader") {
             $querysubgrppengeluaran = DB::table('bank')->from(DB::raw("bank with (readuncommitted)"))
@@ -720,9 +718,11 @@ class KasGantungHeader extends MyModel
             $kasgantungHeader->save();
             
         } else {
-            $newPengeluaran = new PengeluaranHeader();
-            $newPengeluaran = $newPengeluaran->find($get->id);
-            (new PengeluaranHeader())->processUpdate($newPengeluaran, $pengeluaranRequest);
+            if ($get) {
+                $newPengeluaran = new PengeluaranHeader();
+                $newPengeluaran = $newPengeluaran->find($get->id);
+                (new PengeluaranHeader())->processUpdate($newPengeluaran, $pengeluaranRequest);
+            }
         }
 
         return $kasgantungHeader;

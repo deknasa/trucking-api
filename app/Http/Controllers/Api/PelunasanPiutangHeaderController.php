@@ -49,8 +49,10 @@ use Illuminate\Support\Facades\DB;
 
 class PelunasanPiutangHeaderController extends Controller
 {
-    /**
-     * @ClassName
+   /**
+     * @ClassName 
+     * PelunasanPiutangHeader
+     * @Detail1 PelunasanPiutangDetailController
      */
     public function index(GetIndexRangeRequest $request)
     {
@@ -323,5 +325,12 @@ class PelunasanPiutangHeaderController extends Controller
         return response([
             'data' => $data
         ]);
+    }
+
+    /**
+     * @ClassName 
+     */
+    public function report()
+    {
     }
 }

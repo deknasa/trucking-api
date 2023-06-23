@@ -35,8 +35,10 @@ use Illuminate\Support\Facades\Log;
 
 class PiutangHeaderController extends Controller
 {
-    /**
-     * @ClassName
+       /**
+     * @ClassName 
+     * PiutangHeaderHeader
+     * @Detail1 PiutangDetailController
      */
     public function index(GetIndexRangeRequest $request)
     {
@@ -68,14 +70,13 @@ class PiutangHeaderController extends Controller
             $piutangHeader = (new PiutangHeader())->processStore($data);
             $piutangHeader->position = $this->getPosition($piutangHeader, $piutangHeader->getTable())->position;
             $piutangHeader->page = ceil($piutangHeader->position / ($request->limit ?? 10));
-            
+
             DB::commit();
 
             return response()->json([
                 'message' => 'Berhasil disimpan',
                 'data' => $piutangHeader
-            ], 201);      
-            
+            ], 201);
         } catch (\Throwable $th) {
             DB::rollBack();
 
@@ -115,7 +116,6 @@ class PiutangHeaderController extends Controller
                 'message' => 'Berhasil diubah',
                 'data' => $piutang
             ]);
-
         } catch (\Throwable $th) {
             DB::rollBack();
 
@@ -350,4 +350,6 @@ class PiutangHeaderController extends Controller
             'data' => $data
         ]);
     }
+
+ 
 }

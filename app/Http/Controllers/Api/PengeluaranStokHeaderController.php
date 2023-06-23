@@ -46,8 +46,10 @@ use App\Models\JurnalUmumHeader;
 
 class PengeluaranStokHeaderController extends Controller
 {
-    /**
+       /**
      * @ClassName 
+     * PengeluaranStokHeader
+     * @Detail1 PengeluaranStokDetailController
      */
     public function index(GetIndexRangeRequest $request)
     {
@@ -69,40 +71,40 @@ class PengeluaranStokHeaderController extends Controller
         try {
 
 
-            $data =[
-                "tglbukti" =>$request->tglbukti ,
-                "pengeluaranstok" =>$request->pengeluaranstok ,
-                "pengeluaranstok_id" =>$request->pengeluaranstok_id ,
-                "penerimaanstok_nobukti" =>$request->penerimaanstok_nobukti ,
-                "pengeluaranstok_nobukti" =>$request->pengeluaranstok_nobukti ,
-                "supplier" =>$request->supplier ,
-                "supplier_id" =>$request->supplier_id ,
-                "kerusakan" =>$request->kerusakan ,
-                "kerusakan_id" =>$request->kerusakan_id ,
-                "supir" =>$request->supir ,
-                "supir_id" =>$request->supir_id ,
-                "servicein_nobukti" =>$request->servicein_nobukti ,
-                "trado" =>$request->trado ,
-                "trado_id" =>$request->trado_id ,
-                "gudang" =>$request->gudang ,
-                "gudang_id" =>$request->gudang_id ,
-                "gandengan" =>$request->gandengan ,
-                "gandengan_id" =>$request->gandengan_id ,
-                "statuspotongretur" =>$request->statuspotongretur ,
-                "bank" =>$request->bank ,
-                "bank_id" =>$request->bank_id ,
-                "tglkasmasuk" =>$request->tglkasmasuk ,
-                "penerimaan_nobukti" =>$request->penerimaan_nobukti ,
+            $data = [
+                "tglbukti" => $request->tglbukti,
+                "pengeluaranstok" => $request->pengeluaranstok,
+                "pengeluaranstok_id" => $request->pengeluaranstok_id,
+                "penerimaanstok_nobukti" => $request->penerimaanstok_nobukti,
+                "pengeluaranstok_nobukti" => $request->pengeluaranstok_nobukti,
+                "supplier" => $request->supplier,
+                "supplier_id" => $request->supplier_id,
+                "kerusakan" => $request->kerusakan,
+                "kerusakan_id" => $request->kerusakan_id,
+                "supir" => $request->supir,
+                "supir_id" => $request->supir_id,
+                "servicein_nobukti" => $request->servicein_nobukti,
+                "trado" => $request->trado,
+                "trado_id" => $request->trado_id,
+                "gudang" => $request->gudang,
+                "gudang_id" => $request->gudang_id,
+                "gandengan" => $request->gandengan,
+                "gandengan_id" => $request->gandengan_id,
+                "statuspotongretur" => $request->statuspotongretur,
+                "bank" => $request->bank,
+                "bank_id" => $request->bank_id,
+                "tglkasmasuk" => $request->tglkasmasuk,
+                "penerimaan_nobukti" => $request->penerimaan_nobukti,
 
-                "detail_stok" => $request->detail_stok ,
-                "detail_stok_id" => $request->detail_stok_id ,
-                "detail_vulkanisirke" => $request->detail_vulkanisirke ,
-                "detail_keterangan" => $request->detail_keterangan ,
-                "detail_qty" => $request->detail_qty ,
-                "detail_harga" => $request->detail_harga ,
-                "detail_persentasediscount" => $request->detail_persentasediscount ,
-                "totalItem" => $request->totalItem ,
-                ];
+                "detail_stok" => $request->detail_stok,
+                "detail_stok_id" => $request->detail_stok_id,
+                "detail_vulkanisirke" => $request->detail_vulkanisirke,
+                "detail_keterangan" => $request->detail_keterangan,
+                "detail_qty" => $request->detail_qty,
+                "detail_harga" => $request->detail_harga,
+                "detail_persentasediscount" => $request->detail_persentasediscount,
+                "totalItem" => $request->totalItem,
+            ];
             /* Store header */
             $pengeluaranStokHeader = (new PengeluaranStokHeader())->processStore($data);
             /* Set position and page */
@@ -116,13 +118,12 @@ class PengeluaranStokHeaderController extends Controller
             return response()->json([
                 'message' => 'Berhasil disimpan',
                 'data' => $pengeluaranStokHeader
-            ], 201);    
+            ], 201);
         } catch (\Throwable $th) {
             DB::rollBack();
 
             throw $th;
         }
-        
     }
 
     public function show(PengeluaranStokHeader $pengeluaranStokHeader, $id)
@@ -142,44 +143,44 @@ class PengeluaranStokHeaderController extends Controller
         DB::beginTransaction();
 
         try {
-            $data =[
-                "tglbukti" =>$request->tglbukti ,
-                "pengeluaranstok" =>$request->pengeluaranstok ,
-                "pengeluaranstok_id" =>$request->pengeluaranstok_id ,
-                "penerimaanstok_nobukti" =>$request->penerimaanstok_nobukti ,
-                "pengeluaranstok_nobukti" =>$request->pengeluaranstok_nobukti ,
-                "supplier" =>$request->supplier ,
-                "supplier_id" =>$request->supplier_id ,
-                "kerusakan" =>$request->kerusakan ,
-                "kerusakan_id" =>$request->kerusakan_id ,
-                "supir" =>$request->supir ,
-                "supir_id" =>$request->supir_id ,
-                "servicein_nobukti" =>$request->servicein_nobukti ,
-                "trado" =>$request->trado ,
-                "trado_id" =>$request->trado_id ,
-                "gudang" =>$request->gudang ,
-                "gudang_id" =>$request->gudang_id ,
-                "gandengan" =>$request->gandengan ,
-                "gandengan_id" =>$request->gandengan_id ,
-                "statuspotongretur" =>$request->statuspotongretur ,
-                "bank" =>$request->bank ,
-                "bank_id" =>$request->bank_id ,
-                "tglkasmasuk" =>$request->tglkasmasuk ,
-                "penerimaan_nobukti" =>$request->penerimaan_nobukti ,
+            $data = [
+                "tglbukti" => $request->tglbukti,
+                "pengeluaranstok" => $request->pengeluaranstok,
+                "pengeluaranstok_id" => $request->pengeluaranstok_id,
+                "penerimaanstok_nobukti" => $request->penerimaanstok_nobukti,
+                "pengeluaranstok_nobukti" => $request->pengeluaranstok_nobukti,
+                "supplier" => $request->supplier,
+                "supplier_id" => $request->supplier_id,
+                "kerusakan" => $request->kerusakan,
+                "kerusakan_id" => $request->kerusakan_id,
+                "supir" => $request->supir,
+                "supir_id" => $request->supir_id,
+                "servicein_nobukti" => $request->servicein_nobukti,
+                "trado" => $request->trado,
+                "trado_id" => $request->trado_id,
+                "gudang" => $request->gudang,
+                "gudang_id" => $request->gudang_id,
+                "gandengan" => $request->gandengan,
+                "gandengan_id" => $request->gandengan_id,
+                "statuspotongretur" => $request->statuspotongretur,
+                "bank" => $request->bank,
+                "bank_id" => $request->bank_id,
+                "tglkasmasuk" => $request->tglkasmasuk,
+                "penerimaan_nobukti" => $request->penerimaan_nobukti,
 
-                "detail_stok" => $request->detail_stok ,
-                "detail_stok_id" => $request->detail_stok_id ,
-                "detail_vulkanisirke" => $request->detail_vulkanisirke ,
-                "detail_keterangan" => $request->detail_keterangan ,
-                "detail_qty" => $request->detail_qty ,
-                "detail_harga" => $request->detail_harga ,
-                "detail_persentasediscount" => $request->detail_persentasediscount ,
-                "totalItem" => $request->totalItem ,
-                ];
-                
+                "detail_stok" => $request->detail_stok,
+                "detail_stok_id" => $request->detail_stok_id,
+                "detail_vulkanisirke" => $request->detail_vulkanisirke,
+                "detail_keterangan" => $request->detail_keterangan,
+                "detail_qty" => $request->detail_qty,
+                "detail_harga" => $request->detail_harga,
+                "detail_persentasediscount" => $request->detail_persentasediscount,
+                "totalItem" => $request->totalItem,
+            ];
+
             /* Store header */
             $pengeluaranStokHeader = PengeluaranStokHeader::findOrFail($id);
-            $pengeluaranStokHeader = (new PengeluaranStokHeader())->processUpdate($pengeluaranStokHeader,$data);
+            $pengeluaranStokHeader = (new PengeluaranStokHeader())->processUpdate($pengeluaranStokHeader, $data);
             /* Set position and page */
             $pengeluaranStokHeader->position = $this->getPosition($pengeluaranStokHeader, $pengeluaranStokHeader->getTable())->position;
             $pengeluaranStokHeader->page = ceil($pengeluaranStokHeader->position / ($request->limit ?? 10));
@@ -191,19 +192,18 @@ class PengeluaranStokHeaderController extends Controller
             return response()->json([
                 'message' => 'Berhasil disimpan',
                 'data' => $pengeluaranStokHeader
-            ]);    
+            ]);
         } catch (\Throwable $th) {
             DB::rollBack();
 
             throw $th;
         }
-            
     }
 
     /**
      * @ClassName 
      */
-    public function destroy(Request $request,PengeluaranStokHeader $pengeluaranStokHeader, $id): JsonResponse
+    public function destroy(Request $request, PengeluaranStokHeader $pengeluaranStokHeader, $id): JsonResponse
     // public function destroy(DestroyPengeluaranStokHeaderRequest $request,PengeluaranStokHeader $pengeluaranStokHeader, $id): JsonResponse
     {
         DB::beginTransaction();
@@ -244,71 +244,69 @@ class PengeluaranStokHeaderController extends Controller
             throw $th;
         }
     }
-    
-    public function storePembayaranHutang($penerimaanHeader){
-        try {            
+
+    public function storePembayaranHutang($penerimaanHeader)
+    {
+        try {
             $penerimaan = new StoreHutangBayarHeaderRequest($penerimaanHeader);
             $header = app(HutangBayarHeaderController::class)->store($penerimaan);
             return [
                 'status' => true,
                 'data' => $header->original['data'],
             ];
-            
-
         } catch (\Throwable $th) {
             throw $th;
         }
-            
     }
-    
-    public function persediaanDari($stokId,$persediaan,$persediaanId,$qty)
+
+    public function persediaanDari($stokId, $persediaan, $persediaanId, $qty)
     {
-        $stokpersediaangudang = $this->checkTempat($stokId,$persediaan,$persediaanId); //stok persediaan 
+        $stokpersediaangudang = $this->checkTempat($stokId, $persediaan, $persediaanId); //stok persediaan 
         if (!$stokpersediaangudang) {
             return false;
         }
         $stokpersediaan = StokPersediaan::lockForUpdate()->find($stokpersediaangudang->id);
-        if ($qty > $stokpersediaan->qty){ //check qty
+        if ($qty > $stokpersediaan->qty) { //check qty
             return false;
         }
         $result = $stokpersediaan->qty - $qty;
-        $stokpersediaan->update(['qty'=> $result]);
+        $stokpersediaan->update(['qty' => $result]);
         return $stokpersediaan;
     }
-    public function persediaanKe($stokId,$persediaan,$persediaanId,$qty)
+    public function persediaanKe($stokId, $persediaan, $persediaanId, $qty)
     {
-        $stokpersediaangudang = $this->checkTempat($stokId,$persediaan,$persediaanId); //stok persediaan 
+        $stokpersediaangudang = $this->checkTempat($stokId, $persediaan, $persediaanId); //stok persediaan 
         if (!$stokpersediaangudang) {
-            $stokpersediaangudang= StokPersediaan::create(["stok_id"=> $stokId, $persediaan => $persediaanId]);
+            $stokpersediaangudang = StokPersediaan::create(["stok_id" => $stokId, $persediaan => $persediaanId]);
         }
         $stokpersediaangudang->qty += $qty;
         $stokpersediaangudang->save();
         return $stokpersediaangudang;
     }
 
-    public function persediaan($gudang,$trado,$gandengan)
+    public function persediaan($gudang, $trado, $gandengan)
     {
         $kolom = null;
         $value = 0;
-        if(!empty($gudang)) {
+        if (!empty($gudang)) {
             $kolom = "gudang";
             $value = $gudang;
-          } elseif(!empty($trado)) {
+        } elseif (!empty($trado)) {
             $kolom = "trado";
             $value = $trado;
-          } elseif(!empty($gandengan)) {
+        } elseif (!empty($gandengan)) {
             $kolom = "gandengan";
             $value = $gandengan;
-          }
-          return [
-            "column"=>$kolom,
-            "value"=>$value
+        }
+        return [
+            "column" => $kolom,
+            "value" => $value
         ];
     }
-    public function checkTempat($stokId,$persediaan,$persediaanId)
+    public function checkTempat($stokId, $persediaan, $persediaanId)
     {
         $result = StokPersediaan::lockForUpdate()->where("stok_id", $stokId)->where("$persediaan", $persediaanId)->first();
-        return (!$result) ? false :$result;
+        return (!$result) ? false : $result;
     }
 
     public function cekvalidasi($id)
@@ -383,7 +381,7 @@ class PengeluaranStokHeaderController extends Controller
                     $iddetail = $datadetails['id'];
                     $tabeldetail = $datadetails['tabel'];
                 }
-                
+
                 $detailLog[] = $datadetails['detail']->toArray();
             }
             // dd($detail);
@@ -448,5 +446,12 @@ class PengeluaranStokHeaderController extends Controller
         } catch (\Throwable $th) {
             throw $th;
         }
+    }
+
+    /**
+     * @ClassName 
+     */
+    public function report()
+    {
     }
 }

@@ -1,4 +1,4 @@
-<?php 
+<?php
 
 
 namespace App\Http\Controllers\Api;
@@ -25,7 +25,7 @@ class AkuntansiController extends Controller
      */
     public function index()
     {
-        
+
         $akuntansi = new Akuntansi();
         return response([
             'data' => $akuntansi->get(),
@@ -51,9 +51,8 @@ class AkuntansiController extends Controller
             'status' => true,
             'data' => $akuntansi->default(),
         ]);
-        
     }
-    
+
 
     /**
      * @ClassName 
@@ -62,7 +61,7 @@ class AkuntansiController extends Controller
     {
         $data = [
             'id' => $request->id,
-            "kodeakuntansi" => $request->kodeakuntansi,    
+            "kodeakuntansi" => $request->kodeakuntansi,
             "keterangan" => $request->keterangan,
             'statusaktif' => $request->statusaktif,
         ];
@@ -101,7 +100,7 @@ class AkuntansiController extends Controller
     {
         $data = [
             'id' => $request->id,
-            "kodeakuntansi" => $request->kodeakuntansi,    
+            "kodeakuntansi" => $request->kodeakuntansi,
             "keterangan" => $request->keterangan,
             'statusaktif' => $request->statusaktif,
         ];
@@ -153,123 +152,117 @@ class AkuntansiController extends Controller
             throw $th;
         }
     }
-    
+
+
+
     /**
      * @ClassName 
      */
 
-     public function export(RangeExportReportRequest $request)
-     {
-         if (request()->cekExport) {
-             return response([
-                 'status' => true,
-             ]);
-         } else {
-             $response = $this->index();
-             $decodedResponse = json_decode($response->content(), true);
-             $akuntansi = $decodedResponse['data'];
- 
-             $judulLaporan = $akuntansi[0]['judulLaporan'];
- 
-             $i = 0;
-             foreach ($akuntansi as $index => $params) {
- 
- 
-                 $statusaktif = $params['statusaktif'];
- 
- 
-                 $result = json_decode($statusaktif, true);
- 
-                 $statusaktif = $result['MEMO'];
- 
- 
-                 $akuntansi[$i]['statusaktif'] = $statusaktif;
-                 $i++;
-             }
- 
-             $columns = [
-                 [
-                     'label' => 'No',
-                 ],
-                 [
-                     'label' => 'Kode Akuntansi',
-                     'index' => 'kodeakuntansi',
-                 ],
-                 [
-                     'label' => 'Keterangan',
-                     'index' => 'keterangan',
-                 ],
-                 [
-                     'label' => 'Status Aktif',
-                     'index' => 'statusaktif',
-                 ],
-             ];
- 
-             $this->toExcel($judulLaporan, $akuntansi, $columns);
-         }
-     }
-     
-     public function fieldLength()
-     {
-         $data = [];
-         $columns = DB::connection()->getDoctrineSchemaManager()->listTableDetails('akuntansi')->getColumns();
- 
-         foreach ($columns as $index => $column) {
-             $data[$index] = $column->getLength();
-         }
- 
-         return response([
-             'data' => $data
-         ]);
-     }
-     public function combostatus(Request $request)
-     {
- 
-         $params = [
-             'status' => $request->status ?? '',
-             'grp' => $request->grp ?? '',
-             'subgrp' => $request->subgrp ?? '',
-         ];
-         $temp = '##temp' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
-         if ($params['status'] == 'entry') {
-             $query = Parameter::select('id', 'text as keterangan')
-                 ->where('grp', "=", $params['grp'])
-                 ->where('subgrp', "=", $params['subgrp']);
-         } else {
-             Schema::create($temp, function ($table) {
-                 $table->integer('id')->length(11)->nullable();
-                 $table->string('parameter', 50)->nullable();
-                 $table->string('param', 50)->nullable();
-             });
- 
-             DB::table($temp)->insert(
-                 [
-                     'id' => '0',
-                     'parameter' => 'ALL',
-                     'param' => '',
-                 ]
-             );
- 
-             $queryall = Parameter::select('id', 'text as parameter', 'text as param')
-                 ->where('grp', "=", $params['grp'])
-                 ->where('subgrp', "=", $params['subgrp']);
- 
-             $query = DB::table($temp)
-                 ->unionAll($queryall);
-         }
- 
-         $data = $query->get();
- 
-         return response([
-             'data' => $data
-         ]);
-     }
-     
+    public function export(RangeExportReportRequest $request)
+    {
+        if (request()->cekExport) {
+            return response([
+                'status' => true,
+            ]);
+        } else {
+            $response = $this->index();
+            $decodedResponse = json_decode($response->content(), true);
+            $akuntansi = $decodedResponse['data'];
+
+            $judulLaporan = $akuntansi[0]['judulLaporan'];
+
+            $i = 0;
+            foreach ($akuntansi as $index => $params) {
+
+
+                $statusaktif = $params['statusaktif'];
+
+
+                $result = json_decode($statusaktif, true);
+
+                $statusaktif = $result['MEMO'];
+
+
+                $akuntansi[$i]['statusaktif'] = $statusaktif;
+                $i++;
+            }
+
+            $columns = [
+                [
+                    'label' => 'No',
+                ],
+                [
+                    'label' => 'Kode Akuntansi',
+                    'index' => 'kodeakuntansi',
+                ],
+                [
+                    'label' => 'Keterangan',
+                    'index' => 'keterangan',
+                ],
+                [
+                    'label' => 'Status Aktif',
+                    'index' => 'statusaktif',
+                ],
+            ];
+
+            $this->toExcel($judulLaporan, $akuntansi, $columns);
+        }
+    }
+
+    public function fieldLength()
+    {
+        $data = [];
+        $columns = DB::connection()->getDoctrineSchemaManager()->listTableDetails('akuntansi')->getColumns();
+
+        foreach ($columns as $index => $column) {
+            $data[$index] = $column->getLength();
+        }
+
+        return response([
+            'data' => $data
+        ]);
+    }
+    public function combostatus(Request $request)
+    {
+
+        $params = [
+            'status' => $request->status ?? '',
+            'grp' => $request->grp ?? '',
+            'subgrp' => $request->subgrp ?? '',
+        ];
+        $temp = '##temp' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+        if ($params['status'] == 'entry') {
+            $query = Parameter::select('id', 'text as keterangan')
+                ->where('grp', "=", $params['grp'])
+                ->where('subgrp', "=", $params['subgrp']);
+        } else {
+            Schema::create($temp, function ($table) {
+                $table->integer('id')->length(11)->nullable();
+                $table->string('parameter', 50)->nullable();
+                $table->string('param', 50)->nullable();
+            });
+
+            DB::table($temp)->insert(
+                [
+                    'id' => '0',
+                    'parameter' => 'ALL',
+                    'param' => '',
+                ]
+            );
+
+            $queryall = Parameter::select('id', 'text as parameter', 'text as param')
+                ->where('grp', "=", $params['grp'])
+                ->where('subgrp', "=", $params['subgrp']);
+
+            $query = DB::table($temp)
+                ->unionAll($queryall);
+        }
+
+        $data = $query->get();
+
+        return response([
+            'data' => $data
+        ]);
+    }
 }
-
-
-
-
-
-
-?>

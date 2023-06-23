@@ -13,6 +13,9 @@ use Illuminate\Support\Facades\Validator;
 class ServiceInDetailController extends Controller
 {
 
+    /**
+     * @ClassName 
+     */
     public function index(Request $request)
     {
         $serviceInDetail = new ServiceInDetail();
@@ -28,9 +31,6 @@ class ServiceInDetailController extends Controller
                 'totalPages' => $serviceInDetail->totalPages
             ]
         ]);
-           
-
-          
     }
 
     public function store(StoreServiceInDetailRequest $request)

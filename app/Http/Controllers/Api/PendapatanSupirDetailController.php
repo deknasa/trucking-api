@@ -13,6 +13,9 @@ use Illuminate\Support\Facades\DB;
 
 class PendapatanSupirDetailController extends Controller
 {
+    /**
+     * @ClassName 
+     */
     public function index(): JsonResponse
     {
         $pendapatanSupir = new PendapatanSupirDetail();
@@ -27,23 +30,23 @@ class PendapatanSupirDetailController extends Controller
         ]);
     }
 
-   
+
     public function store(StorePendapatanSupirDetailRequest $request)
     {
         DB::beginTransaction();
-       
+
         try {
             $pendapatanSupirDetail = new PendapatanSupirDetail();
-            
+
             $pendapatanSupirDetail->pendapatansupir_id = $request->pendapatansupir_id;
             $pendapatanSupirDetail->nobukti = $request->nobukti;
             $pendapatanSupirDetail->supir_id = $request->supir_id;
             $pendapatanSupirDetail->nominal = $request->nominal;
             $pendapatanSupirDetail->keterangan = $request->keterangan;
             $pendapatanSupirDetail->modifiedby = auth('api')->user()->name;
-            
+
             $pendapatanSupirDetail->save();
-           
+
             DB::commit();
             return [
                 'error' => false,
@@ -54,8 +57,6 @@ class PendapatanSupirDetailController extends Controller
         } catch (\Throwable $th) {
             throw $th;
             DB::rollBack();
-        }   
+        }
     }
-
-    
 }

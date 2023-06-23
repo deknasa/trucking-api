@@ -72,7 +72,7 @@ class RekapPenerimaanHeader extends MyModel
             ->join(DB::raw("jurnalumumpusatheader b with (readuncommitted)"), 'c.penerimaan_nobukti', 'b.nobukti')
             ->where('a.nobukti', '=', $nobukti)
             ->first();
-  
+
         if (isset($hutangBayar)) {
             $data = [
                 'kondisi' => true,
@@ -128,6 +128,14 @@ class RekapPenerimaanHeader extends MyModel
                             $query = $query->whereRaw("format(" . $this->table . "." . $filters['field'] . ", 'dd-MM-yyyy') LIKE '%$filters[data]%'");
                         } else if ($filters['field'] == 'created_at' || $filters['field'] == 'updated_at') {
                             $query = $query->whereRaw("format(" . $this->table . "." . $filters['field'] . ", 'dd-MM-yyyy HH:mm:ss') LIKE '%$filters[data]%'");
+                        } else if ($filters['field'] == 'tglbukti_penerimaan') {
+                            $query = $query->whereRaw("format(rekappenerimaandetail.tgltransaksi, 'dd-MM-yyyy') LIKE '%$filters[data]%'");
+                        } else if ($filters['field'] == 'nobukti_penerimaan') {
+                            $query = $query->where('rekappenerimaandetail.penerimaan_nobukti', 'LIKE', "%$filters[data]%");
+                        } else if ($filters['field'] == 'keterangan_detail') {
+                            $query = $query->where('rekappenerimaandetail.keterangan', 'LIKE', "%$filters[data]%");
+                        } else if ($filters['field'] == 'nominal_detail') {
+                            $query = $query->whereRaw("format(rekappenerimaandetail.nominal, '#,#0.00') LIKE '%$filters[data]%'");
                         } else {
                             // $query = $query->where($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
                             $query = $query->whereRaw($this->table . ".[" .  $filters['field'] . "] LIKE '%" . escapeLike($filters['data']) . "%' escape '|'");
@@ -148,6 +156,14 @@ class RekapPenerimaanHeader extends MyModel
                                 $query = $query->orWhereRaw("format(" . $this->table . "." . $filters['field'] . ", 'dd-MM-yyyy') LIKE '%$filters[data]%'");
                             } else if ($filters['field'] == 'created_at' || $filters['field'] == 'updated_at') {
                                 $query = $query->orWhereRaw("format(" . $this->table . "." . $filters['field'] . ", 'dd-MM-yyyy HH:mm:ss') LIKE '%$filters[data]%'");
+                            } else if ($filters['field'] == 'tglbukti_penerimaan') {
+                                $query = $query->orWhereRaw("format(rekappenerimaandetail.tgltransaksi, 'dd-MM-yyyy') LIKE '%$filters[data]%'");
+                            } else if ($filters['field'] == 'nobukti_penerimaan') {
+                                $query = $query->orWhere('rekappenerimaandetail.penerimaan_nobukti', 'LIKE', "%$filters[data]%");
+                            } else if ($filters['field'] == 'keterangan_detail') {
+                                $query = $query->orWhere('rekappenerimaandetail.keterangan', 'LIKE', "%$filters[data]%");
+                            } else if ($filters['field'] == 'nominal_detail') {
+                                $query = $query->orWhereRaw("format(rekappenerimaandetail.nominal, '#,#0.00') LIKE '%$filters[data]%'");
                             } else {
                                 // $query = $query->orWhere($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
                                 $query = $query->OrwhereRaw($this->table . ".[" .  $filters['field'] . "] LIKE '%" . escapeLike($filters['data']) . "%' escape '|'");
@@ -262,12 +278,21 @@ class RekapPenerimaanHeader extends MyModel
 
         $query = DB::table('rekappenerimaandetail')->select(
             "rekappenerimaandetail.nobukti",
-            "rekappenerimaandetail.penerimaan_nobukti",
+            "rekappenerimaandetail.penerimaan_nobukti as nobukti_penerimaan",
             "rekappenerimaandetail.keterangan as keterangan_detail",
-            "rekappenerimaandetail.tgltransaksi as tglbukti",
-            "rekappenerimaandetail.nominal"
+            "rekappenerimaandetail.tgltransaksi as tglbukti_penerimaan",
+            "rekappenerimaandetail.nominal as nominal_detail"
         )
             ->where('rekappenerimaan_id', $id);
+        $this->totalRows = $query->count();
+        $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;
+        if ($this->params['sortIndex'] == 'id') {
+            $query->orderBy('rekappenerimaandetail.penerimaan_nobukti', $this->params['sortOrder']);
+        } else {
+            $query->orderBy('rekappenerimaandetail.' . $this->params['sortIndex'], $this->params['sortOrder']);
+        }
+        $this->filter($query);
+        $this->paginate($query);
         $data = $query->get();
 
         return $data;
@@ -293,7 +318,7 @@ class RekapPenerimaanHeader extends MyModel
 
     public function processStore(array $data): RekapPenerimaanHeader
     {
-      
+
         $group = 'REKAP PENERIMAAN BUKTI';
         $subgroup = 'REKAP PENERIMAAN BUKTI';
 
@@ -324,7 +349,7 @@ class RekapPenerimaanHeader extends MyModel
         if (!$rekapPenerimaanHeader->save()) {
             throw new \Exception("Error storing rekap penerimaan header.");
         }
-        
+
 
         $rekapPenerimaanHeaderLogTrail = (new LogTrail())->processStore([
             'namatabel' => strtoupper($rekapPenerimaanHeader->getTable()),
@@ -339,7 +364,7 @@ class RekapPenerimaanHeader extends MyModel
         if ($data['penerimaan_nobukti']) {
             $rekapPenerimaanDetails = [];
             for ($i = 0; $i < count($data['penerimaan_nobukti']); $i++) {
-               
+
                 $rekapPenerimaanDetail = (new RekapPenerimaanDetail())->processStore($rekapPenerimaanHeader, [
                     "tgltransaksi_detail" => $data['tgltransaksi_detail'][$i],
                     "penerimaan_nobukti" => $data['penerimaan_nobukti'][$i],
@@ -359,14 +384,13 @@ class RekapPenerimaanHeader extends MyModel
             'aksi' => 'ENTRY',
             'datajson' => $rekapPenerimaanDetail,
             'modifiedby' => auth('api')->user()->name,
-            
+
         ]);
 
-        return $rekapPenerimaanHeader;     
-  
+        return $rekapPenerimaanHeader;
     }
 
-    public function processUpdate(RekapPenerimaanHeader $rekapPenerimaanheader, array $data) : RekapPenerimaanHeader
+    public function processUpdate(RekapPenerimaanHeader $rekapPenerimaanheader, array $data): RekapPenerimaanHeader
     {
         $rekapPenerimaanheader->tglbukti = date('Y-m-d', strtotime($data['tglbukti']));
         $rekapPenerimaanheader->tgltransaksi  = date('Y-m-d', strtotime($data['tgltransaksi']));
@@ -402,7 +426,6 @@ class RekapPenerimaanHeader extends MyModel
                     "keterangandetail" => $data['keterangan_detail'][$i],
                     "modifiedby" => auth('api')->user()->name
                 ]);
-
             }
 
             (new LogTrail())->processStore([
@@ -413,14 +436,14 @@ class RekapPenerimaanHeader extends MyModel
                 'aksi' => 'ENTRY',
                 'datajson' => $rekapPenerimaanDetail,
                 'modifiedby' => auth('api')->user()->name,
-                
+
             ]);
-           
+
             return $rekapPenerimaanheader;
         }
     }
 
-    public function processDestroy($id, $postingdari = "") : RekapPenerimaanHeader
+    public function processDestroy($id, $postingdari = ""): RekapPenerimaanHeader
     {
         $getDetail = RekapPenerimaanDetail::lockForUpdate()->where('rekappenerimaan_id', $id)->get();
 
@@ -449,7 +472,5 @@ class RekapPenerimaanHeader extends MyModel
 
 
         return $rekapPenerimaanHeader;
-
-
     }
 }

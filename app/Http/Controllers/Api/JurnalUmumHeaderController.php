@@ -31,7 +31,9 @@ use Throwable;
 class JurnalUmumHeaderController extends Controller
 {
     /**
-     * @ClassName
+     * @ClassName 
+     * JurnalUmumHeader
+     * @Detail1 JurnalUmumDetailController
      */
     public function index(GetIndexRangeRequest $request)
     {
@@ -63,7 +65,7 @@ class JurnalUmumHeaderController extends Controller
             return response()->json([
                 'message' => 'Berhasil disimpan',
                 'data' => $jurnalUmumHeader
-            ], 201);            
+            ], 201);
         } catch (\Throwable $th) {
             DB::rollBack();
             throw $th;
@@ -75,7 +77,7 @@ class JurnalUmumHeaderController extends Controller
     {
         $jurnalUmumHeader = JurnalUmumHeader::find($id);
         $jurnalUmumDetail = (new JurnalUmumDetail)->findAll($jurnalUmumHeader['nobukti']);
-        
+
         return response([
             'status' => true,
             'data' => $jurnalUmumHeader,
@@ -102,7 +104,6 @@ class JurnalUmumHeaderController extends Controller
                 'message' => 'Berhasil diubah',
                 'data' => $jurnalumumHeader
             ]);
-
         } catch (\Throwable $th) {
             DB::rollBack();
             throw $th;
@@ -114,7 +115,7 @@ class JurnalUmumHeaderController extends Controller
      * @ClassName
      */
     public function destroy(DestroyJurnalUmumRequest $request, $id): JsonResponse
-    { 
+    {
         DB::beginTransaction();
 
         try {
@@ -528,5 +529,12 @@ class JurnalUmumHeaderController extends Controller
         return response([
             'data' => $data
         ]);
+    }
+
+    /**
+     * @ClassName 
+     */
+    public function report()
+    {
     }
 }

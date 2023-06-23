@@ -31,6 +31,8 @@ class AbsensiSupirHeaderController extends Controller
 {
     /**
      * @ClassName 
+     * AbsensiSupirHeader
+     * @Detail1 AbsensiSupirDetailController
      */
     public function index(GetIndexRangeRequest $request)
     {
@@ -131,11 +133,11 @@ class AbsensiSupirHeaderController extends Controller
      */
     public function store(AbsensiSupirHeaderRequest $request)
     {
-       
+
         DB::beginTransaction();
         try {
             $data = [
-                "tglbukti" =>  $request->tglbukti ,
+                "tglbukti" =>  $request->tglbukti,
                 "trado_id" => $request->trado_id,
                 "trado" => $request->trado,
                 "supir_id" => $request->supir_id,
@@ -146,7 +148,7 @@ class AbsensiSupirHeaderController extends Controller
                 "jam" => $request->jam,
                 "uangjalan" => $request->uangjalan,
             ];
-            
+
 
             /* Store header */
             $absensiSupirHeader = (new absensiSupirHeader())->processStore($data);
@@ -161,7 +163,7 @@ class AbsensiSupirHeaderController extends Controller
             return response()->json([
                 'message' => 'Berhasil disimpan',
                 'data' => $absensiSupirHeader
-            ], 201);    
+            ], 201);
         } catch (\Throwable $th) {
             DB::rollBack();
 
@@ -351,7 +353,7 @@ class AbsensiSupirHeaderController extends Controller
         DB::beginTransaction();
         try {
             $data = [
-                "tglbukti" =>  $request->tglbukti ,
+                "tglbukti" =>  $request->tglbukti,
                 "trado_id" => $request->trado_id,
                 "trado" => $request->trado,
                 "supir_id" => $request->supir_id,
@@ -362,11 +364,11 @@ class AbsensiSupirHeaderController extends Controller
                 "jam" => $request->jam,
                 "uangjalan" => $request->uangjalan,
             ];
-            
+
 
             /* Store header */
             // dd($absensiSupirHeader);
-            $absensiSupirHeader = (new absensiSupirHeader())->processUpdate($absensiSupirHeader,$data);
+            $absensiSupirHeader = (new absensiSupirHeader())->processUpdate($absensiSupirHeader, $data);
             /* Set position and page */
             $absensiSupirHeader->position = $this->getPosition($absensiSupirHeader, $absensiSupirHeader->getTable())->position;
             $absensiSupirHeader->page = ceil($absensiSupirHeader->position / ($request->limit ?? 10));
@@ -378,7 +380,7 @@ class AbsensiSupirHeaderController extends Controller
             return response()->json([
                 'message' => 'Berhasil disimpan',
                 'data' => $absensiSupirHeader
-            ], 201);    
+            ], 201);
         } catch (\Throwable $th) {
             DB::rollBack();
             throw $th;
@@ -406,13 +408,11 @@ class AbsensiSupirHeaderController extends Controller
             return response()->json([
                 'message' => 'Berhasil disimpan',
                 'data' => $absensiSupirHeader
-            ], 201);    
+            ], 201);
         } catch (\Throwable $th) {
             DB::rollBack();
             throw $th;
         }
-
-       
     }
 
     public function storeKasGantung($kasGantungHeader, $kasGantungDetail)
@@ -487,7 +487,7 @@ class AbsensiSupirHeaderController extends Controller
             'kodestatus' => '0',
             'kodenobukti' => '1'
         ];
-        
+
         return response($data);
     }
 
@@ -536,12 +536,28 @@ class AbsensiSupirHeaderController extends Controller
         $passes = true;
         $isEditAble = AbsensiSupirHeader::isEditAble($id);
         if (!$isEditAble) {
-            $query = DB::table('error')->select('keterangan')->where('kodeerror', '=', 'SATL')->get();
+            $query = DB::table('error')->select('keterangan')->where('kodeerror', '=', 'BAED')->get();
             $keterangan = $query['0'];
 
             $data = [
                 'message' => $keterangan,
                 'errors' => 'status approve edit tidak boleh',
+                'kodestatus' => '1',
+                'kodenobukti' => '1'
+            ];
+            $passes = false;
+            // return response($data);
+        }
+
+
+        $isDateAllowed = AbsensiSupirHeader::isDateAllowed($id);
+        if (!$isDateAllowed) {
+            $query = DB::table('error')->select('keterangan')->where('kodeerror', '=', 'TEPT')->get();
+            $keterangan = $query['0'];
+
+            $data = [
+                'message' => $keterangan,
+                'errors' => 'data tidak bisa diedit pada tanggal ini',
                 'kodestatus' => '1',
                 'kodenobukti' => '1'
             ];
@@ -564,7 +580,7 @@ class AbsensiSupirHeaderController extends Controller
 
             // return response($data);
         }
-        if (($todayValidation && $isApproved) || ($isEditAble && $printValidation)) {
+        if (($todayValidation && $isApproved) || ($isEditAble && $printValidation) || $isDateAllowed) {
             $data = [
                 'message' => '',
                 'errors' => 'success',
@@ -593,18 +609,19 @@ class AbsensiSupirHeaderController extends Controller
         ]);
     }
 
-    public function cekValidasiAksi($id) {
-        $absensiSupirHeader= new AbsensiSupirHeader();
+    public function cekValidasiAksi($id)
+    {
+        $absensiSupirHeader = new AbsensiSupirHeader();
         $nobukti = AbsensiSupirHeader::from(DB::raw("absensisupirheader"))->where('id', $id)->first();
-        $cekdata=$absensiSupirHeader->cekvalidasiaksi($nobukti->nobukti);
-        if ($cekdata['kondisi']==true) {
+        $cekdata = $absensiSupirHeader->cekvalidasiaksi($nobukti->nobukti);
+        if ($cekdata['kondisi'] == true) {
             $query = DB::table('error')
-            ->select(
-                DB::raw("ltrim(rtrim(keterangan))+' (".$cekdata['keterangan'].")' as keterangan")
+                ->select(
+                    DB::raw("ltrim(rtrim(keterangan))+' (" . $cekdata['keterangan'] . ")' as keterangan")
                 )
-            ->where('kodeerror', '=', 'SATL')
-            ->get();
-        $keterangan = $query['0'];
+                ->where('kodeerror', '=', 'SATL')
+                ->get();
+            $keterangan = $query['0'];
 
             $data = [
                 'status' => false,
@@ -614,16 +631,15 @@ class AbsensiSupirHeaderController extends Controller
             ];
 
             return response($data);
-
         } else {
-                $data = [
-                    'status' => false,
-                    'message' => '',
-                    'errors' => '',
-                    'kondisi' => $cekdata['kondisi'],
-                ];
+            $data = [
+                'status' => false,
+                'message' => '',
+                'errors' => '',
+                'kondisi' => $cekdata['kondisi'],
+            ];
 
-            return response($data); 
+            return response($data);
         }
     }
 
@@ -641,11 +657,20 @@ class AbsensiSupirHeaderController extends Controller
         ]);
     }
 
+    /**
+     * @ClassName 
+     */
     public function export($id)
     {
         $absensiSupirHeader = new AbsensiSupirHeader();
         return response([
             'data' => $absensiSupirHeader->getExport($id),
         ]);
+    }
+    /**
+     * @ClassName 
+     */
+    public function report()
+    {
     }
 }

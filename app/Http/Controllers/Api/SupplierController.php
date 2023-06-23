@@ -235,6 +235,16 @@ class SupplierController extends Controller
         ]);
     }
 
+    /**
+     * @ClassName 
+     */
+    public function report()
+    {
+    }
+
+    /**
+     * @ClassName 
+     */
     public function export(RangeExportReportRequest $request)
     {
         if (request()->cekExport) {
