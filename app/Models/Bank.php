@@ -293,7 +293,7 @@ class Bank extends MyModel
 
             $query->where('bank.statusaktif', '=', $statusaktif->id);
         }
-        if ($alatBayar) {
+        if ($alatBayar != 0) {
             $getTipe = DB::table($this->table)->from(
                 DB::raw($this->table . " with (readuncommitted)")
             )->where('bank.id', '=', $alatBayar)->first();
