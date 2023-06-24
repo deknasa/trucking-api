@@ -246,10 +246,6 @@ class PelangganController extends Controller
                     'label' => 'No',
                 ],
                 [
-                    'label' => 'ID',
-                    'index' => 'id',
-                ],
-                [
                     'label' => 'Kode Pelanggan',
                     'index' => 'kodepelanggan',
                 ],
@@ -286,6 +282,12 @@ class PelangganController extends Controller
                     'index' => 'keterangan',
                 ],
             ];
+
+            // foreach ($columns as &$column) {
+            //     if (isset($column['label'])) {
+            //         $column['label'] = strtoupper($column['label']);
+            //     }
+            // }
 
             $this->toExcel($judulLaporan, $pelanggans, $columns);
         }
