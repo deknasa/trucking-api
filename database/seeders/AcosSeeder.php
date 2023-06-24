@@ -654,7 +654,7 @@ class AcosSeeder extends Seeder
         acos::create(['class' => 'penerimaanheader', 'method' => 'destroy', 'nama' => 'destroy PenerimaanHeaderController', 'modifiedby' => 'ADMIN',]);
         acos::create(['class' => 'penerimaanheader', 'method' => 'approval', 'nama' => 'approval PenerimaanHeaderController', 'modifiedby' => 'ADMIN',]);
         acos::create(['class' => 'penerimaanheader', 'method' => 'report', 'nama' => 'report PenerimaanHeaderController', 'modifiedby' => 'ADMIN',]);
-       acos::create([ 'class' => 'upahsupirrincian', 'method' => 'index', 'nama' => 'index UpahSupirRincianController', 'modifiedby' => 'ADMIN',]);
-        acos::create([ 'class' => 'upahsupirrincian', 'method' => 'get', 'nama' => 'get UpahSupirRincianController', 'modifiedby' => 'ADMIN',]);      
+        acos::create(['class' => 'upahsupirrincian', 'method' => 'index', 'nama' => 'index UpahSupirRincianController', 'modifiedby' => 'ADMIN',]);
+        acos::create(['class' => 'upahsupirrincian', 'method' => 'get', 'nama' => 'get UpahSupirRincianController', 'modifiedby' => 'ADMIN',]);
     }
 }

@@ -19,6 +19,7 @@ class UserAclSeeder extends Seeder
         DB::statement("DBCC CHECKIDENT ('useracl', RESEED, 1);");
 
 
+
         useracl::create(['aco_id' => '1', 'user_id' => '2', 'modifiedby' => 'ADMIN',]);
         useracl::create(['aco_id' => '2', 'user_id' => '2', 'modifiedby' => 'ADMIN',]);
         useracl::create(['aco_id' => '3', 'user_id' => '2', 'modifiedby' => 'ADMIN',]);
@@ -660,6 +661,7 @@ class UserAclSeeder extends Seeder
         useracl::create(['aco_id' => '633', 'user_id' => '1', 'modifiedby' => 'ADMIN',]);
         useracl::create(['aco_id' => '634', 'user_id' => '1', 'modifiedby' => 'ADMIN',]);
         useracl::create(['aco_id' => '635', 'user_id' => '1', 'modifiedby' => 'ADMIN',]);
-
+        useracl::create(['aco_id' => '636', 'user_id' => '1', 'modifiedby' => 'ADMIN',]);
+        useracl::create(['aco_id' => '637', 'user_id' => '1', 'modifiedby' => 'ADMIN',]);
     }
 }
