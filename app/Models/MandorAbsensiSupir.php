@@ -55,11 +55,13 @@ class MandorAbsensiSupir extends MyModel
             ->leftJoin(DB::raw("absentrado with (readuncommitted)"), 'absensisupirdetail.absen_id', 'absentrado.id')
             ->leftJoin(DB::raw("supir with (readuncommitted)"), 'absensisupirdetail.supir_id', 'supir.id');
         $query = $trado->union($absensisupirdetail);
-
-        $this->sort($query);
-
+        // $this->totalRows = $query->count();
+        // $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;
+        // $this->sort($query);
+        // $this->filter($query);
+        // $this->paginate($query);
         $data = $query->get();
-
+        // dd($query->take(5)->get());
         return $data;
     }
 
@@ -234,4 +236,113 @@ class MandorAbsensiSupir extends MyModel
 
         return $query;
     }
+
+    public function processStore(array $data)
+    {
+        $AbsensiSupirHeader = AbsensiSupirHeader::where('tglbukti', date('Y-m-d', strtotime('now')))->first();
+        
+        if (!$AbsensiSupirHeader) {
+            $absensiSupirRequest = [
+                "tglbukti" =>$data['tglbukti'],
+                "kasgantung_nobukti" =>$data['kasgantung_nobukti'],
+                "uangjalan" =>[0],
+                "trado_id" =>[$data['trado_id']],
+                "supir_id" =>[$data['supir_id']],
+                "keterangan_detail" =>[$data['keterangan']],
+                "absen_id" =>[$data['absen_id']],
+                "jam" =>[$data['jam']],
+            ];
+            $AbsensiSupirHeader = (new AbsensiSupirHeader())->processStore($absensiSupirRequest);
+        }
+
+        // $AbsensiSupirDetail = (new AbsensiSupirDetail())->processStore($absensiSupirRequest);
+        $absensiSupirDetail = AbsensiSupirDetail::where('absensi_id', $AbsensiSupirHeader->id)->where('trado_id', $data['trado_id'])->lockForUpdate()->first();
+        if ($absensiSupirDetail) {
+            $absensiSupirDetail->delete();
+        }
+
+
+        $absensiSupirDetail = AbsensiSupirDetail::processStore($AbsensiSupirHeader,[
+            'absensi_id' => $AbsensiSupirHeader->id,
+            'nobukti' => $AbsensiSupirHeader->nobukti,
+            'trado_id' => $data['trado_id'],
+            'supir_id' => $data['supir_id'],
+            'keterangan' => $data['keterangan'],
+            'absen_id' => $data['absen_id'] ?? '',
+            'jam' => $data['jam'],
+            'modifiedby' => $AbsensiSupirHeader->modifiedby,
+        ]);
+
+        $AbsensiSupirHeaderLogtrail = (new LogTrail())->processStore([
+            'namatabel' => $this->table,
+            'postingdari' => strtoupper('ENTRY ABSENSI SUPIR Header'),
+            'idtrans' => $AbsensiSupirHeader->id,
+            'nobuktitrans' => $AbsensiSupirHeader->nobukti,
+            'aksi' => 'ENTRY',
+            'datajson' => $AbsensiSupirHeader->toArray(),
+            'modifiedby' => auth('api')->user()->name
+        ]);
+        (new LogTrail())->processStore([
+            'namatabel' => $this->table,
+            'postingdari' => strtoupper('ENTRY ABSENSI SUPIR Detail'),
+            'idtrans' => $AbsensiSupirHeaderLogtrail->id,
+            'nobuktitrans' => $AbsensiSupirHeader->nobukti,
+            'aksi' => 'ENTRY',
+            'datajson' => $absensiSupirDetail->toArray(),
+            'modifiedby' => auth('api')->user()->name
+        ]);
+
+        return $absensiSupirDetail;
+    }
+    public function processUpdate(AbsensiSupirDetail $AbsensiSupirDetail, array $data)
+    {
+        $AbsensiSupirHeader = AbsensiSupirHeader::where('id', $AbsensiSupirDetail->absensi_id)->first();
+        $AbsensiSupirDetail = AbsensiSupirDetail::where('id', $AbsensiSupirDetail->id)->lockForUpdate()->first();
+        $AbsensiSupirDetail->delete();
+
+        // dd($AbsensiSupirDetail);
+
+        $absensiSupirDetail = AbsensiSupirDetail::processStore($AbsensiSupirHeader,[
+            'absensi_id' => $AbsensiSupirHeader->id,
+            'nobukti' => $AbsensiSupirHeader->nobukti,
+            'trado_id' => $data['trado_id'],
+            'supir_id' => $data['supir_id'],
+            'keterangan' => $data['keterangan'],
+            'absen_id' => $data['absen_id'] ?? '',
+            'jam' => $data['jam'],
+            'modifiedby' => $AbsensiSupirHeader->modifiedby,
+        ]);
+
+        $AbsensiSupirHeaderLogtrail = (new LogTrail())->processStore([
+            'namatabel' => $this->table,
+            'postingdari' => strtoupper('EDIT ABSENSI SUPIR Header'),
+            'idtrans' => $AbsensiSupirHeader->id,
+            'nobuktitrans' => $AbsensiSupirHeader->nobukti,
+            'aksi' => 'EDIT',
+            'datajson' => $AbsensiSupirHeader->toArray(),
+            'modifiedby' => auth('api')->user()->name
+        ]);
+        (new LogTrail())->processStore([
+            'namatabel' => $this->table,
+            'postingdari' => strtoupper('EDIT ABSENSI SUPIR Detail'),
+            'idtrans' => $AbsensiSupirHeaderLogtrail->id,
+            'nobuktitrans' => $AbsensiSupirHeader->nobukti,
+            'aksi' => 'EDIT',
+            'datajson' => $absensiSupirDetail->toArray(),
+            'modifiedby' => auth('api')->user()->name
+        ]);
+
+        return $absensiSupirDetail;
+    }
+
+
+    public function processDestroy($id)
+    {
+        // $AbsensiSupirHeader = AbsensiSupirHeader::where('id', $AbsensiSupirDetail->absensi_id)->first();
+        $AbsensiSupirDetail = AbsensiSupirDetail::where('id', $id)->lockForUpdate()->first();
+        $AbsensiSupirDetail->delete();
+    }
+        
+       
+        
 }

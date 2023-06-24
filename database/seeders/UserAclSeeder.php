@@ -660,5 +660,6 @@ class UserAclSeeder extends Seeder
         useracl::create(['aco_id' => '633', 'user_id' => '1', 'modifiedby' => 'ADMIN',]);
         useracl::create(['aco_id' => '634', 'user_id' => '1', 'modifiedby' => 'ADMIN',]);
         useracl::create(['aco_id' => '635', 'user_id' => '1', 'modifiedby' => 'ADMIN',]);
+
     }
 }

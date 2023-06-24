@@ -860,6 +860,13 @@ class Supir extends MyModel
                 throw new \Exception("Error storing supir.");
             }
 
+            $approvalSupirGambar = ApprovalSupirGambar::where('noktp',$supir->noktp)->first();
+            if ($approvalSupirGambar) {
+                $nonApp = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))->whereRaw("grp like '%STATUS APPROVAL%'")->whereRaw("text like '%NON APPROVAL%'")->first();
+                $approvalSupirGambar->statusapproval = $nonApp->id;
+                $approvalSupirGambar->save();
+            }
+
             (new LogTrail())->processStore([
                 'namatabel' => strtoupper($supir->getTable()),
                 'postingdari' => 'ENTRY SUPIR',
@@ -928,6 +935,13 @@ class Supir extends MyModel
 
             if (!$supir->save()) {
                 throw new \Exception("Error storing supir.");
+            }
+
+            $approvalSupirGambar = ApprovalSupirGambar::where('noktp',$supir->noktp)->first();
+            if ($approvalSupirGambar) {
+                $nonApp = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))->whereRaw("grp like '%STATUS APPROVAL%'")->whereRaw("text like '%NON APPROVAL%'")->first();
+                $approvalSupirGambar->statusapproval = $nonApp->id;
+                $approvalSupirGambar->save();
             }
 
             (new LogTrail())->processStore([

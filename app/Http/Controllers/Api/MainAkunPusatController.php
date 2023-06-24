@@ -3,48 +3,47 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
-use App\Models\AkunPusat;
-use App\Http\Requests\StoreAkunPusatRequest;
-use App\Http\Requests\StoreLogTrailRequest;
-use App\Http\Requests\UpdateAkunPusatRequest;
-use App\Http\Requests\DestroyAkunPusatRequest;
+use App\Http\Requests\DestroyMainAkunPusatRequest;
 use App\Http\Requests\RangeExportReportRequest;
+use App\Http\Requests\StoreMainAkunPusatRequest;
+use App\Http\Requests\UpdateMainAkunPusatRequest;
+use App\Models\MainAkunPusat;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Database\QueryException;
 use Illuminate\Http\JsonResponse;
 
-class AkunPusatController extends Controller
+class MainAkunPusatController extends Controller
 {
     /**
      * @ClassName 
      */
     public function index()
     {
-        $akunPusat = new AkunPusat();
+        $mainAkunPusat = new MainAkunPusat();
 
         return response([
-            'data' => $akunPusat->get(),
+            'data' => $mainAkunPusat->get(),
             'attributes' => [
-                'totalRows' => $akunPusat->totalRows,
-                'totalPages' => $akunPusat->totalPages
+                'totalRows' => $mainAkunPusat->totalRows,
+                'totalPages' => $mainAkunPusat->totalPages
             ]
         ]);
     }
     public function default()
     {
-        $akunPusat = new AkunPusat();
+        $mainAkunPusat = new MainAkunPusat();
         return response([
             'status' => true,
-            'data' => $akunPusat->default()
+            'data' => $mainAkunPusat->default()
         ]);
     }
 
     /**
      * @ClassName 
      */
-    public function store(StoreAkunPusatRequest $request): JsonResponse
+    public function store(StoreMainAkunPusatRequest $request): JsonResponse
     {
         DB::beginTransaction();
 
@@ -60,19 +59,18 @@ class AkunPusatController extends Controller
                 'statusaccountpayable' => $request->statusaccountpayable,
                 'statusneraca' => $request->statusneraca,
                 'statuslabarugi' => $request->statuslabarugi,
-                'coamain' => $request->coamain,
                 'statusaktif' => $request->statusaktif,
             ];
-            $akunPusat = (new AkunPusat())->processStore($data);
-            $akunPusat->position = $this->getPosition($akunPusat, $akunPusat->getTable())->position;
-            $akunPusat->page = ceil($akunPusat->position / ($request->limit ?? 10));
+            $mainAkunPusat = (new MainAkunPusat())->processStore($data);
+            $mainAkunPusat->position = $this->getPosition($mainAkunPusat, $mainAkunPusat->getTable())->position;
+            $mainAkunPusat->page = ceil($mainAkunPusat->position / ($request->limit ?? 10));
 
             DB::commit();
 
             return response()->json([
                 'status' => true,
                 'message' => 'Berhasil disimpan',
-                'data' => $akunPusat
+                'data' => $mainAkunPusat
             ], 201);
         } catch (\Throwable $th) {
             DB::rollBack();
@@ -83,17 +81,17 @@ class AkunPusatController extends Controller
 
     public function show($id)
     {
-        $akunPusat = (new AkunPusat())->findAll($id);
+        $mainAkunPusat = (new MainAkunPusat())->findAll($id);
         return response([
             'status' => true,
-            'data' => $akunPusat
+            'data' => $mainAkunPusat
         ]);
     }
 
     /**
      * @ClassName 
      */
-    public function update(UpdateAkunPusatRequest $request, AkunPusat $akunPusat): JsonResponse
+    public function update(UpdateMainAkunPusatRequest $request, MainAkunPusat $mainakunpusat): JsonResponse
     {
         DB::beginTransaction();
 
@@ -109,19 +107,18 @@ class AkunPusatController extends Controller
                 'statusaccountpayable' => $request->statusaccountpayable,
                 'statusneraca' => $request->statusneraca,
                 'statuslabarugi' => $request->statuslabarugi,
-                'coamain' => $request->coamain,
                 'statusaktif' => $request->statusaktif,
             ];
-            $akunPusat = (new AkunPusat())->processUpdate($akunPusat, $data);
-            $akunPusat->position = $this->getPosition($akunPusat, $akunPusat->getTable())->position;
-            $akunPusat->page = ceil($akunPusat->position / ($request->limit ?? 10));
+            $mainAkunPusat = (new MainAkunPusat())->processUpdate($mainakunpusat, $data);
+            $mainAkunPusat->position = $this->getPosition($mainAkunPusat, $mainAkunPusat->getTable())->position;
+            $mainAkunPusat->page = ceil($mainAkunPusat->position / ($request->limit ?? 10));
 
             DB::commit();
 
             return response()->json([
                 'status' => true,
                 'message' => 'Berhasil diubah',
-                'data' => $akunPusat
+                'data' => $mainAkunPusat
             ]);
         } catch (\Throwable $th) {
             DB::rollBack();
@@ -133,22 +130,22 @@ class AkunPusatController extends Controller
     /**
      * @ClassName 
      */
-    public function destroy(DestroyAkunPusatRequest $request, $id)
+    public function destroy(DestroyMainAkunPusatRequest $request, $id)
     {
         DB::beginTransaction();
 
         try {
-            $akunPusat = (new AkunPusat())->processDestroy($id);
-            $selected = $this->getPosition($akunPusat, $akunPusat->getTable(), true);
-            $akunPusat->position = $selected->position;
-            $akunPusat->id = $selected->id;
-            $akunPusat->page = ceil($akunPusat->position / ($request->limit ?? 10));
+            $mainAkunPusat = (new MainAkunPusat())->processDestroy($id);
+            $selected = $this->getPosition($mainAkunPusat, $mainAkunPusat->getTable(), true);
+            $mainAkunPusat->position = $selected->position;
+            $mainAkunPusat->id = $selected->id;
+            $mainAkunPusat->page = ceil($mainAkunPusat->position / ($request->limit ?? 10));
 
             DB::commit();
 
             return response()->json([
                 'message' => 'Berhasil dihapus',
-                'data' => $akunPusat
+                'data' => $mainAkunPusat
             ]);
         } catch (\Throwable $th) {
             DB::rollBack();
@@ -160,7 +157,7 @@ class AkunPusatController extends Controller
     public function fieldLength()
     {
         $data = [];
-        $columns = DB::connection()->getDoctrineSchemaManager()->listTableDetails('akunPusat')->getColumns();
+        $columns = DB::connection()->getDoctrineSchemaManager()->listTableDetails('mainakunpusat')->getColumns();
 
         foreach ($columns as $index => $column) {
             $data[$index] = $column->getLength();
@@ -252,10 +249,6 @@ class AkunPusatController extends Controller
                     'index' => 'parent',
                 ],
                 [
-                    'label' => 'COA Main',
-                    'index' => 'coamain',
-                ],
-                [
                     'label' => 'Status COA',
                     'index' => 'statuscoa',
                 ],
@@ -283,8 +276,8 @@ class AkunPusatController extends Controller
 
     public function cekValidasi($id)
     {
-        $akunPusat = new AkunPusat();
-        $cekdata = $akunPusat->cekValidasi($id);
+        $mainAkunPusat = new MainAkunPusat();
+        $cekdata = $mainAkunPusat->cekValidasi($id);
         if ($cekdata['kondisi'] == true) {
             $query = DB::table('error')
                 ->select(

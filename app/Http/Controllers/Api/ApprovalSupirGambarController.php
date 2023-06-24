@@ -35,43 +35,30 @@ class ApprovalSupirGambarController extends Controller
     {
         DB::beginTransaction();
         try {
-            $approvalSupirGambar = new ApprovalSupirGambar();
-            $approvalSupirGambar->namasupir = ($request->namasupir == null) ? "" : $request->namasupir;
-            $approvalSupirGambar->noktp = ($request->noktp == null) ? "" : $request->noktp;
-            $approvalSupirGambar->statusapproval = ($request->statusapproval == null) ? "" : $request->statusapproval;
-            $approvalSupirGambar->tglbatas = date('Y-m-d', strtotime($request->tglbatas));
-            // $approvalSupirGambar->modifiedby = auth('api')->user()->name;
-
-            
-            if ($approvalSupirGambar->save()) {
-                $logTrail = [
-                    'namatabel' => strtoupper($approvalSupirGambar->getTable()),
-                    'postingdari' => 'ENTRY BUKA ABSENSI',
-                    'idtrans' => $approvalSupirGambar->id,
-                    'nobuktitrans' => $approvalSupirGambar->id,
-                    'aksi' => 'ENTRY',
-                    'datajson' => $approvalSupirGambar->toArray(),
-                    'modifiedby' => $approvalSupirGambar->modifiedby
-                ];
-
-                $validatedLogTrail = new StoreLogTrailRequest($logTrail);
-                app(LogTrailController::class)->store($validatedLogTrail);
-
-                DB::commit();
-            }
-            $selected = $this->getPosition($approvalSupirGambar, $approvalSupirGambar->getTable());
-            $approvalSupirGambar->position = $selected->position;
+            $data =[
+                "namasupir" => $request->namasupir,
+                "noktp" => $request->noktp,
+                "statusapproval" => $request->statusapproval,
+                "tglbatas" => $request->tglbatas,
+            ];
+            /* Store header */
+            $approvalSupirGambar = (new ApprovalSupirGambar())->processStore($data);
+            /* Set position and page */
+            $approvalSupirGambar->position = $this->getPosition($approvalSupirGambar, $approvalSupirGambar->getTable())->position;
             $approvalSupirGambar->page = ceil($approvalSupirGambar->position / ($request->limit ?? 10));
+            if (isset($request->limit)) {
+                $approvalSupirGambar->page = ceil($approvalSupirGambar->position / ($request->limit ?? 10));
+            }
 
-
-            return response([
-                'status' => true,
+            DB::commit();
+            return response()->json([
                 'message' => 'Berhasil disimpan',
-                'data' => $approvalSupirGambar,
-            ], 201);
+                'data' => $approvalSupirGambar
+            ], 201);    
         } catch (\Throwable $th) {
             DB::rollBack();
-            return response($th->getMessage());
+
+            throw $th;
         }
     }
 
@@ -96,44 +83,33 @@ class ApprovalSupirGambarController extends Controller
     public function update(UpdateApprovalSupirGambarRequest $request, ApprovalSupirGambar $approvalSupirGambar,$id)
     {
         DB::beginTransaction();
+
         try {
+            $data =[
+                "namasupir" => $request->namasupir,
+                "noktp" => $request->noktp,
+                "statusapproval" => $request->statusapproval,
+                "tglbatas" => $request->tglbatas,
+            ];
+            /* Store header */
             $approvalSupirGambar = ApprovalSupirGambar::findOrFail($id);
-            $approvalSupirGambar->namasupir = ($request->namasupir == null) ? "" : $request->namasupir;
-            $approvalSupirGambar->noktp = ($request->noktp == null) ? "" : $request->noktp;
-            $approvalSupirGambar->statusapproval = ($request->statusapproval == null) ? "" : $request->statusapproval;
-            $approvalSupirGambar->tglbatas = date('Y-m-d', strtotime($request->tglbatas));
-            // $approvalSupirGambar->modifiedby = auth('api')->user()->name;
-
-            
-            if ($approvalSupirGambar->save()) {
-                $logTrail = [
-                    'namatabel' => strtoupper($approvalSupirGambar->getTable()),
-                    'postingdari' => 'EDIT BUKA ABSENSI',
-                    'idtrans' => $approvalSupirGambar->id,
-                    'nobuktitrans' => $approvalSupirGambar->id,
-                    'aksi' => 'ENTRY',
-                    'datajson' => $approvalSupirGambar->toArray(),
-                    'modifiedby' => $approvalSupirGambar->modifiedby
-                ];
-
-                $validatedLogTrail = new StoreLogTrailRequest($logTrail);
-                app(LogTrailController::class)->store($validatedLogTrail);
-
-                DB::commit();
-            }
-            $selected = $this->getPosition($approvalSupirGambar, $approvalSupirGambar->getTable());
-            $approvalSupirGambar->position = $selected->position;
+            $approvalSupirGambar = (new ApprovalSupirGambar())->processUpdate($approvalSupirGambar,$data);
+            /* Set position and page */
+            $approvalSupirGambar->position = $this->getPosition($approvalSupirGambar, $approvalSupirGambar->getTable())->position;
             $approvalSupirGambar->page = ceil($approvalSupirGambar->position / ($request->limit ?? 10));
+            if (isset($request->limit)) {
+                $approvalSupirGambar->page = ceil($approvalSupirGambar->position / ($request->limit ?? 10));
+            }
 
-
-            return response([
-                'status' => true,
+            DB::commit();
+            return response()->json([
                 'message' => 'Berhasil disimpan',
-                'data' => $approvalSupirGambar,
-            ], 201);
+                'data' => $approvalSupirGambar
+            ], 201);    
         } catch (\Throwable $th) {
             DB::rollBack();
-            return response($th->getMessage());
+
+            throw $th;
         }
     }
 
@@ -145,39 +121,25 @@ class ApprovalSupirGambarController extends Controller
     {
         DB::beginTransaction();
         try {
-            $approvalSupirGambar = new ApprovalSupirGambar;
-            $approvalSupirGambar = $approvalSupirGambar->lockAndDestroy($id);
-            
-            if ($approvalSupirGambar) {
-                $logTrail = [
-                    'namatabel' => strtoupper($approvalSupirGambar->getTable()),
-                    'postingdari' => 'DELETE BUKA ABSENSI',
-                    'idtrans' => $approvalSupirGambar->id,
-                    'nobuktitrans' => $approvalSupirGambar->id,
-                    'aksi' => 'ENTRY',
-                    'datajson' => $approvalSupirGambar->toArray(),
-                    'modifiedby' => $approvalSupirGambar->modifiedby
-                ];
-
-                $validatedLogTrail = new StoreLogTrailRequest($logTrail);
-                app(LogTrailController::class)->store($validatedLogTrail);
-
-                DB::commit();
-            }
-            $selected = $this->getPosition($approvalSupirGambar, $approvalSupirGambar->getTable());
-            $approvalSupirGambar->position = $selected->position;
+            // dd($approvalSupirGambar);
+            $approvalSupirGambar = (new ApprovalSupirGambar())->processDestroy($id);
+            /* Set position and page */
+            $approvalSupirGambar->position = $this->getPosition($approvalSupirGambar, $approvalSupirGambar->getTable())->position;
             $approvalSupirGambar->page = ceil($approvalSupirGambar->position / ($request->limit ?? 10));
+            if (isset($request->limit)) {
+                $approvalSupirGambar->page = ceil($approvalSupirGambar->position / ($request->limit ?? 10));
+            }
 
-
-            return response([
-                'status' => true,
+            DB::commit();
+            return response()->json([
                 'message' => 'Berhasil disimpan',
-                'data' => $approvalSupirGambar,
-            ], 201);
+                'data' => $approvalSupirGambar
+            ], 201);    
         } catch (\Throwable $th) {
             DB::rollBack();
-            return response($th->getMessage());
+            throw $th;
         }
+        
     }
     public function default()
     {

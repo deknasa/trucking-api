@@ -3,11 +3,14 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
-use App\Models\LaporanJurnalUmum;
+use App\Http\Requests\GetIndexRangeRequest;
+use App\Http\Requests\ReportLaporanPembelianRequest;
+use App\Models\LaporanPembelianStok;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
-class LaporanJurnalUmumController extends Controller
+
+class LaporanPembelianStokController extends Controller
 {
     /**
      * @ClassName
@@ -23,6 +26,7 @@ class LaporanJurnalUmumController extends Controller
         ]);
     }
 
+    
     /**
      * @ClassName
      */
@@ -30,18 +34,21 @@ class LaporanJurnalUmumController extends Controller
     {
         $dari = date('Y-m-d', strtotime($request->dari));
         $sampai = date('Y-m-d', strtotime($request->sampai));
-        $laporanjurnalumum = new LaporanJurnalUmum();
+        $stokdari = $request->stokdari;
+        $stoksampai = $request->stoksampai;
+     
 
+        $laporanpembelianstok = new LaporanPembelianStok();
 
-        $laporan_jurnalumum = $laporanjurnalumum->getReport($dari, $sampai, );
+       
 
-        foreach($laporan_jurnalumum as $item){
+        $laporan_pembelianstok= $laporanpembelianstok->getReport($dari, $sampai,$stokdari, $stoksampai);
+        foreach($laporan_pembelianstok as $item){
             $item->tglbukti = date('d-m-Y', strtotime($item->tglbukti));
-            $item->dari = date('d-m-Y', strtotime(substr($item->dari, 0, 10)));
-            $item->sampai = date('d-m-Y', strtotime(substr($item->sampai, 0, 10)));
         }
+      
         return response([
-            'data' => $laporan_jurnalumum
+            'data' => $laporan_pembelianstok
             // 'data' => $report
         ]);
     }
@@ -53,22 +60,22 @@ class LaporanJurnalUmumController extends Controller
     {
         $dari = date('Y-m-d', strtotime($request->dari));
         $sampai = date('Y-m-d', strtotime($request->sampai));
-        $laporanjurnalumum = new LaporanJurnalUmum();
+        $stokdari = $request->stokdari;
+        $stoksampai = $request->stoksampai;
 
-        // $report = LaporanKasGantung::getReport($sampai, $jenis);
-        // $report = [
-        //     [
-        //         'tanggal' => "24/2/2023",
-        //         "nobukti" => "KGT 0002/II/2023",
-        //         "keterangian" => "BELANJAS",
-        //         "debet" => "25412",
-        //         "kredit" => "351251",
-        //         "saldo" => "151511"
-        //     ]
-        // ];
+        $laporanpembelianstok = new LaporanPembelianStok();
+
+       
+
+        $laporan_pembelianstok= $laporanpembelianstok->getExport($dari, $sampai,$stokdari, $stoksampai);
+        foreach($laporan_pembelianstok as $item){
+            $item->tglbukti = date('d-m-Y', strtotime($item->tglbukti));
+        }
+      
         return response([
-            'data' => $laporanjurnalumum->getReport($dari, $sampai)
+            'data' => $laporan_pembelianstok
             // 'data' => $report
         ]);
     }
+    
 }

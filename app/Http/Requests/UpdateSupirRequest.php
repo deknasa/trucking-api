@@ -42,10 +42,10 @@ class UpdateSupirRequest extends FormRequest
                 ->first();
             if ($cekValidasi != '') {
                 if ($cekValidasi->statusapproval == $nonApp->id) {
-                    return true;
+                    return false;
                 } else {
-                    if (date('Y-m-d') > $cekValidasi->tglbatas) {
-                        return true;
+                    if (date('Y-m-d') < $cekValidasi->tglbatas) {
+                        return false;
                     }
                 }
             }

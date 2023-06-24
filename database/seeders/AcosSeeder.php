@@ -18,6 +18,7 @@ class AcosSeeder extends Seeder
         DB::statement("delete Acos");
         DB::statement("DBCC CHECKIDENT ('Acos', RESEED, 1);");
 
+
         acos::create(['class' => 'parameter', 'method' => 'index', 'nama' => 'index ParameterController', 'modifiedby' => 'ADMIN',]);
         acos::create(['class' => 'parameter', 'method' => 'store', 'nama' => 'store ParameterController', 'modifiedby' => 'ADMIN',]);
         acos::create(['class' => 'parameter', 'method' => 'update', 'nama' => 'update ParameterController', 'modifiedby' => 'ADMIN',]);
@@ -653,5 +654,7 @@ class AcosSeeder extends Seeder
         acos::create(['class' => 'penerimaanheader', 'method' => 'destroy', 'nama' => 'destroy PenerimaanHeaderController', 'modifiedby' => 'ADMIN',]);
         acos::create(['class' => 'penerimaanheader', 'method' => 'approval', 'nama' => 'approval PenerimaanHeaderController', 'modifiedby' => 'ADMIN',]);
         acos::create(['class' => 'penerimaanheader', 'method' => 'report', 'nama' => 'report PenerimaanHeaderController', 'modifiedby' => 'ADMIN',]);
+       acos::create([ 'class' => 'upahsupirrincian', 'method' => 'index', 'nama' => 'index UpahSupirRincianController', 'modifiedby' => 'ADMIN',]);
+        acos::create([ 'class' => 'upahsupirrincian', 'method' => 'get', 'nama' => 'get UpahSupirRincianController', 'modifiedby' => 'ADMIN',]);      
     }
 }
