@@ -53,7 +53,7 @@ class LaporanPembelianStok extends MyModel
                         DB::raw('(b.qty * b.harga - b.nominaldiscount) AS total'),
                         DB::raw("ISNULL(e.satuan, '') AS satuan"),
                         'b.keterangan',
-                    DB::raw("'Laporan Pembelian' as judulLaporan"),
+                    DB::raw("'Laporan Pembelian Stok' as judulLaporan"),
                     DB::raw("'" . $getJudul->text . "' as judul"),
                     DB::raw("'Tgl Cetak :'+format(getdate(),'dd-MM-yyyy HH:mm:ss')as tglcetak"),
                     DB::raw(" 'User :".auth('api')->user()->name."' as usercetak")
@@ -106,7 +106,11 @@ public function getExport($dari, $sampai,$stokdari, $stoksampai )
                     'b.nominaldiscount',
                     DB::raw('(b.qty * b.harga - b.nominaldiscount) AS total'),
                     DB::raw("ISNULL(e.satuan, '') AS satuan"),
-                    'b.keterangan'
+                    'b.keterangan',
+                    DB::raw("'Laporan Pembelian Stok' as judulLaporan"),
+                    DB::raw("'" . $getJudul->text . "' as judul"),
+                    DB::raw("'Tgl Cetak :'+format(getdate(),'dd-MM-yyyy HH:mm:ss')as tglcetak"),
+                    DB::raw(" 'User :".auth('api')->user()->name."' as usercetak")
                 )
                 ->join('penerimaanstokdetail AS b', 'a.nobukti', '=', 'b.nobukti')
                 ->leftJoin('supplier AS c', 'a.supplier_id', '=', 'c.id')
