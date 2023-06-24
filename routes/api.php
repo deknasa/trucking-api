@@ -218,6 +218,8 @@ use App\Http\Controllers\Api\LaporanPemakaianBanController;
 use App\Http\Controllers\Api\LaporanTransaksiHarianController;
 use App\Http\Controllers\Api\LaporanJurnalUmumController;
 use App\Http\Controllers\Api\LaporanPembelianController;
+use App\Http\Controllers\Api\LaporanPembelianStokController;
+use App\Models\LaporanPembelian;
 
 // use App\Http\Controllers\Api\LaporanTransaksiHarianController;
 
@@ -1165,6 +1167,10 @@ route::middleware(['auth:api','authorized'])->group(function () {
     Route::get('laporanpembelian/report', [LaporanPembelianController::class, 'report'])->name('laporanpembelian.report');
     Route::get('laporanpembelian/export', [LaporanPembelianController::class, 'export'])->name('laporanpembelian.export');
     Route::resource('laporanpembelian', LaporanPembelianController::class)->whereNumber('laporanpembelian');
+
+    Route::get('laporanpembelianstok/report', [LaporanPembelianStokController::class, 'report'])->name('laporanpembelianstok.report');
+    Route::get('laporanpembelianstok/export', [LaporanPembelianStokController::class, 'export'])->name('laporanpembelianstok.export');
+    Route::resource('laporanpembelianstok', LaporanPembelianStokController::class)->whereNumber('laporanpembelianstok');
 
 
 
