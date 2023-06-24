@@ -36,8 +36,8 @@ class PenerimaanHeaderController extends Controller
 {
         /**
      * @ClassName 
-     * PenerimaanHeaderHeader
-     * @Detail1 PenerimaanHeaderDetailController
+     * PenerimaanHeaderController
+     * @Detail1 PenerimaanDetailController
      */
     public function index(GetIndexRangeRequest $request)
     {

@@ -502,6 +502,7 @@ class Menu extends MyModel
 
     public function processUpdate(Menu $menu, array $data): Menu
     {
+    
         $query = DB::table('menu')
             ->from(
                 DB::raw("menu a with (readuncommitted)")
@@ -518,6 +519,7 @@ class Menu extends MyModel
         }
 
         if ($query != null) {
+            
             $class = $this->listFolderFiles($controller);
             if ($class <> '') {
 
