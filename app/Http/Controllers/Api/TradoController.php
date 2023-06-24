@@ -420,10 +420,6 @@ class TradoController extends Controller
                     'label' => 'No',
                 ],
                 [
-                    'label' => 'ID',
-                    'index' => 'id',
-                ],
-                [
                     'label' => 'Keterangan',
                     'index' => 'keterangan',
                 ],

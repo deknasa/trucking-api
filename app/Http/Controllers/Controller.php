@@ -159,12 +159,24 @@ class Controller extends BaseController
         $sheet->getStyle("A2")->getFont()->setSize(12);
         $sheet->mergeCells('A2:' . $alphabets[count($columns) + 2] . '2');
 
+            $i = 0;
+            foreach ($columns as &$kolom) {
+                if (isset($kolom['label'])) {
+                    $kolom['label'] = strtoupper($kolom['label']);
+                    
+                    $label[$i] = strtoupper($kolom['label']);
+                    $i++;
+                }
 
+            }
+           
         /* Set the table header */
         foreach ($columns as $columnsIndex => $column) {
-            $sheet->setCellValue($alphabets[$columnsIndex] . $tableHeaderRow, $column['label'] ?? $columnsIndex + 1);
+            $sheet->setCellValue($alphabets[$columnsIndex] . $tableHeaderRow, $label[$i] ?? $columnsIndex + 1);
 
             $sheet->getColumnDimension($alphabets[$columnsIndex])->setAutoSize(true);
+
+          
         }
 
         /* Set the table header style */
