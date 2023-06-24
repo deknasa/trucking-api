@@ -95,7 +95,9 @@ class SubKelompok extends MyModel
             'subkelompok.created_at',
             'subkelompok.updated_at',
             DB::raw("'Laporan Sub Kelompok' as judulLaporan"),
-            DB::raw("'" . $getJudul->text . "' as judul")
+            DB::raw("'" . $getJudul->text . "' as judul"),
+            DB::raw("'Tgl Cetak :'+format(getdate(),'dd-MM-yyyy HH:mm:ss')as tglcetak"),
+            DB::raw(" 'User :".auth('api')->user()->name."' as usercetak")
         )
             ->leftJoin('kelompok', 'subkelompok.kelompok_id', '=', 'kelompok.id')
             ->leftJoin('parameter', 'subkelompok.statusaktif', '=', 'parameter.id');

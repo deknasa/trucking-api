@@ -84,7 +84,9 @@ class AkunPusat extends MyModel
                 'akunpusat.created_at',
                 'akunpusat.updated_at',
                 DB::raw("'Laporan Kode Perkiraan' as judulLaporan"),
-                DB::raw("'" . $getJudul->text . "' as judul")
+                DB::raw("'" . $getJudul->text . "' as judul"),
+                DB::raw("'Tgl Cetak :'+format(getdate(),'dd-MM-yyyy HH:mm:ss')as tglcetak"),
+                DB::raw(" 'User :" . auth('api')->user()->name . "' as usercetak")
             )
 
             ->leftJoin(DB::raw("parameter as parameter_statusaktif with (readuncommitted)"), 'akunpusat.statusaktif', '=', 'parameter_statusaktif.id')

@@ -187,9 +187,13 @@ class KaryawanController extends Controller
         if (request()->cekExport) {
 
             if (request()->offset == "-1" && request()->limit == '1') {
+                
                 return response([
+                    'errors' => [
+                        "export" => app(ErrorController::class)->geterror('DTA')->keterangan
+                    ],
                     'status' => false,
-                    'message' => app(ErrorController::class)->geterror('DTA')->keterangan
+                    'message' => "The given data was invalid."
                 ], 422);
             } else {
                 return response([
