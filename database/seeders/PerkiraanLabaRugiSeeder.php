@@ -157,5 +157,5 @@ class PerkiraanLabaRugiSeeder extends Seeder
         perkiraanlabarugi::create([ 'coa' => '05.02.02.01', 'bulan' => '11', 'tahun' => '2023', 'keterangancoa' => 'Laba/Rugi Bulan Berjalan - Medan', 'type' => 'Laba/Rugi', 'modifiedby' => 'admin',]);
         perkiraanlabarugi::create([ 'coa' => '05.02.02.01', 'bulan' => '12', 'tahun' => '2023', 'keterangancoa' => 'Laba/Rugi Bulan Berjalan - Medan', 'type' => 'Laba/Rugi', 'modifiedby' => 'admin',]);
     }
-    }
+    
 }
