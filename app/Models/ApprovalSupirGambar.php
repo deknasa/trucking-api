@@ -171,4 +171,73 @@ class ApprovalSupirGambar extends MyModel
         // dd($data);
         return $data;
     }
+
+    public function processStore(array $data): ApprovalSupirGambar
+    {
+        $approvalSupirGambar = new ApprovalSupirGambar();
+        $approvalSupirGambar->namasupir = $data['namasupir'];
+        $approvalSupirGambar->noktp = $data['noktp'];
+        $approvalSupirGambar->statusapproval = $data['statusapproval'];
+        $approvalSupirGambar->tglbatas = date('Y-m-d', strtotime($data['tglbatas']));
+
+        if (!$approvalSupirGambar->save()) {
+            throw new \Exception("Error store Approval Supir Gambar.");
+        }
+
+        (new LogTrail())->processStore([
+            'namatabel' => strtoupper($approvalSupirGambar->getTable()),
+            'postingdari' => $data['postingdari'] ??strtoupper('ENTRY Approval Supir Gambar '),
+            'idtrans' => $approvalSupirGambar->id,
+            'nobuktitrans' =>  $approvalSupirGambar->id,
+            'aksi' => 'ENTRY',
+            'datajson' => $approvalSupirGambar->toArray(),
+            'modifiedby' => $approvalSupirGambar->modifiedby
+        ]);
+        
+        return $approvalSupirGambar;
+    }
+
+    public function processUpdate(ApprovalSupirGambar $approvalSupirGambar ,array $data): ApprovalSupirGambar
+    {
+        $approvalSupirGambar->namasupir = $data['namasupir'];
+        $approvalSupirGambar->noktp = $data['noktp'];
+        $approvalSupirGambar->statusapproval = $data['statusapproval'];
+        $approvalSupirGambar->tglbatas = date('Y-m-d', strtotime($data['tglbatas']));
+
+        if (!$approvalSupirGambar->save()) {
+            throw new \Exception("Error store Approval Supir Gambar.");
+        }
+
+        (new LogTrail())->processStore([
+            'namatabel' => strtoupper($approvalSupirGambar->getTable()),
+            'postingdari' => $data['postingdari'] ??strtoupper('EDIT Approval Supir Gambar '),
+            'idtrans' => $approvalSupirGambar->id,
+            'nobuktitrans' =>  $approvalSupirGambar->id,
+            'aksi' => 'EDIT',
+            'datajson' => $approvalSupirGambar->toArray(),
+            'modifiedby' => $approvalSupirGambar->modifiedby
+        ]);
+        
+        return $approvalSupirGambar;
+    }
+
+    public function processDestroy($id,$postingdari =""): ApprovalSupirGambar
+    {
+        $approvalSupirGambar = ApprovalSupirGambar::findOrFail($id);
+        $dataHeader =  $approvalSupirGambar->toArray();
+      
+        $approvalSupirGambar = $approvalSupirGambar->lockAndDestroy($id);
+        $hutangLogTrail = (new LogTrail())->processStore([
+            'namatabel' => $this->table,
+            'postingdari' => ($postingdari =="") ? $postingdari :strtoupper('DELETE Approval Supir Gambar'),
+            'idtrans' => $approvalSupirGambar->id,
+            'nobuktitrans' =>  $approvalSupirGambar->id,
+            'aksi' => 'DELETE',
+            'datajson' => $approvalSupirGambar->toArray(),
+            'modifiedby' => auth('api')->user()->name
+        ]);
+        return $approvalSupirGambar;
+    }
+
+
 }
