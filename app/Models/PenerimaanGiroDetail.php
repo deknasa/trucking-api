@@ -118,6 +118,27 @@ class PenerimaanGiroDetail extends MyModel
         return $query->get();
     }
 
+    public function getDetailForPenerimaan()
+    {
+        $query = DB::table('penerimaangirodetail')->from(DB::raw("penerimaangirodetail with (readuncommitted)"))
+            ->select(
+                'penerimaangirodetail.nobukti',
+                'penerimaangirodetail.nowarkat',
+                'penerimaangirodetail.tgljatuhtempo',
+                'penerimaangirodetail.coadebet as coakredit',
+                DB::raw("(case when penerimaangirodetail.bankpelanggan_id=0 then null else penerimaangirodetail.bankpelanggan_id end) as bankpelanggan_id"),
+                'coadebet.keterangancoa as ketcoakredit',
+                'bankpelanggan.namabank as bankpelanggan',
+                'penerimaangirodetail.keterangan',
+                'penerimaangirodetail.nominal'
+            )
+            ->leftJoin(DB::raw("akunpusat as coadebet with (readuncommitted)"), 'penerimaangirodetail.coadebet', 'coadebet.coa')
+            ->leftJoin(DB::raw("bankpelanggan with (readuncommitted)"), 'penerimaangirodetail.bankpelanggan_id', 'bankpelanggan.id')
+            ->where('penerimaangirodetail.penerimaangiro_id', '=', request()->penerimaangiro_id);
+
+        return $query->get();
+    }
+
     public function sort($query)
     {
         if ($this->params['sortIndex'] == 'coadebet') {

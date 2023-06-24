@@ -501,6 +501,23 @@ class PengeluaranHeader extends MyModel
             ];
             goto selesai;
         }
+        $prosesGajiSupir = DB::table('prosesgajisupirheader')
+            ->from(
+                DB::raw("prosesgajisupirheader as a with (readuncommitted)")
+            )
+            ->select(
+                'a.pengeluaran_nobukti'
+            )
+            ->where('a.pengeluaran_nobukti', '=', $nobukti)
+            ->first();
+        if (isset($prosesGajiSupir)) {
+            $data = [
+                'kondisi' => true,
+                'keterangan' => 'Proses Gaji Supir',
+                'kodeerror' => 'TDT'
+            ];
+            goto selesai;
+        }
 
 
         $data = [

@@ -30,7 +30,13 @@ class PenerimaanGiroDetailController extends Controller
         ]);
     }
 
+    public function getDetail(){
+        $penerimaanGiro = new PenerimaanGiroDetail();
 
+        return response()->json([
+            'data' => $penerimaanGiro->getDetailForPenerimaan(),
+        ]);
+    }
 
     public function store(StorePenerimaanGiroDetailRequest $request)
     {

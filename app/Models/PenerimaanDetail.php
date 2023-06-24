@@ -68,6 +68,7 @@ class PenerimaanDetail extends MyModel
                 "bankpelanggan.namabank as bankpelanggan_id", ///
 
                 "$this->table.pelunasanpiutang_nobukti",
+                "$this->table.penerimaangiro_nobukti",
                 DB::raw("(case when year(isnull($this->table.bulanbeban,'1900/1/1'))=1900 then null else $this->table.bulanbeban end) as bulanbeban"),
                 "a.keterangancoa as coadebet",
                 "b.keterangancoa as coakredit",
@@ -210,6 +211,7 @@ class PenerimaanDetail extends MyModel
         $penerimaanDetail->invoice_nobukti = $data['invoice_nobukti'] ?? '';
         $penerimaanDetail->bankpelanggan_id = $data['bankpelanggan_id'] ?? 0;
         $penerimaanDetail->pelunasanpiutang_nobukti = $data['pelunasanpiutang_nobukti'] ?? '';
+        $penerimaanDetail->penerimaangiro_nobukti = $data['penerimaangiro_nobukti'] ?? '';
         $penerimaanDetail->bulanbeban = $data['bulanbeban'];
         $penerimaanDetail->modifiedby = auth('api')->user()->name;
         

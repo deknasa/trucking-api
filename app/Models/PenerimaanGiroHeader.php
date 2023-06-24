@@ -48,6 +48,25 @@ class PenerimaanGiroHeader extends MyModel
             goto selesai;
         }
 
+        $penerimaan = DB::table('penerimaandetail')
+            ->from(
+                DB::raw("penerimaandetail as a with (readuncommitted)")
+            )
+            ->select(
+                'a.penerimaangiro_nobukti'
+            )
+            ->where('a.penerimaangiro_nobukti', '=', $nobukti)
+            ->first();
+        if (isset($penerimaan)) {
+            $data = [
+                'kondisi' => true,
+                'keterangan' => 'Penerimaan Kas/Bank',
+                'kodeerror' => 'SATL'
+            ];
+            goto selesai;
+        }
+
+
         $data = [
             'kondisi' => false,
             'keterangan' => '',
@@ -265,6 +284,60 @@ class PenerimaanGiroHeader extends MyModel
         }
     }
 
+    public function getPenerimaan()
+    {
+        $this->setRequestParameters();
+        $temp = '##tempDetail' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+        $fetch = DB::table("penerimaangirodetail")->from(DB::raw("penerimaangirodetail with (readuncommitted)"))
+        ->select(DB::raw("nobukti, isnull(sum(isnull(nominal,0)),0)"))
+        ->groupBy('nobukti');
+
+        Schema::create($temp, function ($table) {
+            $table->string('nobukti')->nullable();
+            $table->bigInteger('nominal')->nullable();
+        });
+        DB::table($temp)->insertUsing(['nobukti', 'nominal'], $fetch);
+
+        $query = DB::table("penerimaangiroheader")->from(DB::raw("penerimaangiroheader with (readuncommitted)"))
+        ->select(
+            'penerimaangiroheader.id', 
+            'penerimaangiroheader.nobukti', 
+            'penerimaangiroheader.tglbukti', 
+            'penerimaangiroheader.postingdari', 
+            'penerimaangiroheader.diterimadari', 
+            'penerimaangiroheader.tgllunas', 
+            'penerimaangiroheader.modifiedby', 
+            'penerimaangiroheader.created_at', 
+            'penerimaangiroheader.updated_at',
+            'agen.namaagen', 
+            'pelanggan.namapelanggan',
+            'c.nominal'
+        )
+        ->leftJoin(DB::raw("$temp as c with (readuncommitted)"), 'penerimaangiroheader.nobukti', 'c.nobukti')
+        ->leftJoin(DB::raw("agen with (readuncommitted)"), 'penerimaangiroheader.agen_id', 'agen.id')
+        ->leftJoin(DB::raw("pelanggan with (readuncommitted)"), 'penerimaangiroheader.pelanggan_id', 'pelanggan.id')
+        ->whereRaw("penerimaangiroheader.nobukti not in (select penerimaangiro_nobukti from penerimaanheader)");    
+
+        if (request()->tgldari && request()->tglsampai) {
+            $query->whereBetween($this->table . '.tglbukti', [date('Y-m-d', strtotime(request()->tgldari)), date('Y-m-d', strtotime(request()->tglsampai))]);
+        }
+
+        if(request()->nobukti != ''){
+            $nobukti = request()->nobukti;
+            $query->orWhereRaw("penerimaangiroheader.nobukti in ('$nobukti')");
+        }
+        
+        $this->sort($query);
+        $this->filter($query);
+        $this->paginate($query);
+
+        $this->totalRows = $query->count();
+        $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;
+        $data = $query->get();
+
+        return $data;
+    }
+
     public function filter($query, $relationFields = [])
     {
         if (count($this->params['filters']) > 0 && @$this->params['filters']['rules'][0]['data'] != '') {
@@ -290,6 +363,8 @@ class PenerimaanGiroHeader extends MyModel
                                 $query = $query->whereRaw("format($this->table.tglbukti,'dd-MM-yyyy') like '%$filters[data]%'");
                             } else if ($filters['field'] == 'tglapproval') {
                                 $query = $query->whereRaw("format($this->table.tglapproval,'dd-MM-yyyy') like '%$filters[data]%'");
+                            } else if ($filters['field'] == 'nominal') {
+                                $query = $query->whereRaw("format(c.nominal,'#,#0.00') like '%$filters[data]%'");                                
                             } else {
                                 // $query = $query->where($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
                                 $query = $query->whereRaw($this->table . ".[" .  $filters['field'] . "] LIKE '%" . escapeLike($filters['data']) . "%' escape '|'");
@@ -322,6 +397,8 @@ class PenerimaanGiroHeader extends MyModel
                                     $query = $query->orWhereRaw("format($this->table.tglbukti,'dd-MM-yyyy') like '%$filters[data]%'");
                                 } else if ($filters['field'] == 'tglapproval') {
                                     $query = $query->orWhereRaw("format($this->table.tglapproval,'dd-MM-yyyy') like '%$filters[data]%'");
+                                } else if ($filters['field'] == 'nominal') {
+                                    $query = $query->orWhereRaw("format(c.nominal,'#,#0.00') like '%$filters[data]%'");
                                 } else {
                                     // $query->orWhere($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
                                     $query = $query->OrwhereRaw($this->table . ".[" .  $filters['field'] . "] LIKE '%" . escapeLike($filters['data']) . "%' escape '|'");
