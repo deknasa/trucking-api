@@ -111,6 +111,7 @@ class DatabaseSeeder extends Seeder
             PengeluaranStokDetailRincianSeeder::class,
             PengeluaranTruckingHeaderSeeder::class,
             PengeluaranTruckingDetailSeeder::class,
+            PerkiraanLabarugiSeeder::class,
 
         ]);
     }
