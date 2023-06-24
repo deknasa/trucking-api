@@ -34,7 +34,7 @@ use PhpParser\Builder\Param;
 
 class PenerimaanHeaderController extends Controller
 {
-        /**
+    /**
      * @ClassName 
      * PenerimaanHeaderController
      * @Detail1 PenerimaanDetailController
@@ -72,7 +72,22 @@ class PenerimaanHeaderController extends Controller
         DB::beginTransaction();
 
         try {
-            $penerimaanHeader = (new penerimaanHeader())->processStore($request->all());
+            $data = [
+                'tglbukti' => $request->tglbukti,
+                'pelanggan_id' => $request->pelanggan_id,
+                'agen_id' => $request->agen_id,
+                'diterimadari' => $request->diterimadari,
+                'tgllunas' => $request->tgllunas,
+                'bank_id' => $request->bank_id,
+                'nowarkat' => $request->nowarkat,
+                'tgljatuhtempo' => $request->tgljatuhtempo,
+                'nominal_detail' => $request->nominal_detail,
+                'coakredit' => $request->coakredit,
+                'keterangan_detail' => $request->keterangan_detail,
+                'bankpelanggan_id' => $request->bankpelanggan_id,
+                'penerimaangiro_nobukti' => $request->penerimaangiro_nobukti,
+            ];
+            $penerimaanHeader = (new penerimaanHeader())->processStore($data);
             $penerimaanHeader->position = $this->getPosition($penerimaanHeader, $penerimaanHeader->getTable())->position;
             $penerimaanHeader->page = ceil($penerimaanHeader->position / ($request->limit ?? 10));
 
@@ -108,8 +123,23 @@ class PenerimaanHeaderController extends Controller
     {
         DB::beginTransaction();
         try {
+            $data = [
+                'tglbukti' => $request->tglbukti,
+                'pelanggan_id' => $request->pelanggan_id,
+                'agen_id' => $request->agen_id,
+                'diterimadari' => $request->diterimadari,
+                'tgllunas' => $request->tgllunas,
+                'bank_id' => $request->bank_id,
+                'nowarkat' => $request->nowarkat,
+                'tgljatuhtempo' => $request->tgljatuhtempo,
+                'nominal_detail' => $request->nominal_detail,
+                'coakredit' => $request->coakredit,
+                'keterangan_detail' => $request->keterangan_detail,
+                'bankpelanggan_id' => $request->bankpelanggan_id,
+                'penerimaangiro_nobukti' => $request->penerimaangiro_nobukti,
+            ];
             /* Store header */
-            $penerimaanheader = (new PenerimaanHeader())->processUpdate($penerimaanheader, $request->all());
+            $penerimaanheader = (new PenerimaanHeader())->processUpdate($penerimaanheader, $data);
             /* Set position and page */
             $penerimaanheader->position = $this->getPosition($penerimaanheader, $penerimaanheader->getTable())->position;
             $penerimaanheader->page = ceil($penerimaanheader->position / ($request->limit ?? 10));

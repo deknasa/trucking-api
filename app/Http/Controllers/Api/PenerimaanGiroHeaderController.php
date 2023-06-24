@@ -45,6 +45,24 @@ class PenerimaanGiroHeaderController extends Controller
     }
 
     /**
+     * @ClassName 
+     */
+    public function get(GetIndexRangeRequest $request): JsonResponse
+    {
+        // untuk lookup penerimaangiro
+        $penerimaanGiro = new PenerimaanGiroHeader();
+
+        return response()->json([
+            'data' => $penerimaanGiro->getPenerimaan(),
+            'attributes' => [
+                'totalRows' => $penerimaanGiro->totalRows,
+                'totalPages' => $penerimaanGiro->totalPages,
+                'totalNominal' => $penerimaanGiro->totalNominal
+            ]
+        ]);
+    }
+
+    /**
      * @ClassName
      */
     public function store(StorePenerimaanGiroHeaderRequest $request): JsonResponse

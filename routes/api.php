@@ -1064,9 +1064,11 @@ route::middleware(['auth:api','authorized'])->group(function () {
     Route::get('penerimaangiroheader/combo', [PenerimaanGiroHeaderController::class, 'combo']);
     Route::get('penerimaangiroheader/grid', [PenerimaanGiroHeaderController::class, 'grid']);
     Route::post('penerimaangiroheader/approval', [PenerimaanGiroHeaderController::class, 'approval']);
+    Route::get('penerimaangiroheader/get', [PenerimaanGiroHeaderController::class, 'get']);
     Route::get('penerimaangiroheader/{id}/tarikPelunasan', [PenerimaanGiroHeaderController::class, 'tarikPelunasan'])->whereNumber('id');
     Route::get('penerimaangiroheader/{id}/getPelunasan', [PenerimaanGiroHeaderController::class, 'getPelunasan'])->whereNumber('id');
     Route::resource('penerimaangiroheader', PenerimaanGiroHeaderController::class)->whereNumber('penerimaangiroheader');
+    Route::get('penerimaangirodetail/getDetail', [PenerimaanGiroDetailController::class, 'getDetail']);
     Route::resource('penerimaangirodetail', PenerimaanGiroDetailController::class)->whereNumber('penerimaangirodetail');
 
     Route::get('harilibur/field_length', [HariLiburController::class, 'fieldLength']);

@@ -404,6 +404,7 @@ class PenerimaanHeader extends MyModel
                 'penerimaanheader.id',
                 'penerimaanheader.nobukti',
                 'penerimaanheader.tglbukti',
+                'penerimaanheader.penerimaangiro_nobukti',
                 DB::raw("(case when penerimaanheader.pelanggan_id=0 then null else penerimaanheader.pelanggan_id end) as pelanggan_id"),
                 'pelanggan.namapelanggan as pelanggan',
                 'penerimaanheader.statuscetak',
@@ -700,6 +701,7 @@ class PenerimaanHeader extends MyModel
         $penerimaanHeader->diterimadari = $data['diterimadari'] ?? '';
         $penerimaanHeader->tgllunas = date('Y-m-d', strtotime($data['tgllunas']));
         $penerimaanHeader->bank_id = $data['bank_id'] ?? '';
+        $penerimaanHeader->penerimaangiro_nobukti = $data['penerimaangiro_nobukti'] ?? '';
         $penerimaanHeader->statusapproval = $statusApproval->id;
         $penerimaanHeader->statuscetak = $statuscetak->id;
         $penerimaanHeader->modifiedby = auth('api')->user()->name;
@@ -737,6 +739,7 @@ class PenerimaanHeader extends MyModel
                 'bank_id' => $penerimaanHeader->bank_id,
                 'invoice_nobukti' => $data['invoice_nobukti'][$i] ?? '-',
                 'bankpelanggan_id' => $data['bankpelanggan_id'][$i] ?? '',
+                'penerimaangiro_nobukti' => $data['penerimaangiro_nobukti'] ?? '',
                 'pelunasanpiutang_nobukti' => $data['pelunasanpiutang_nobukti'][$i] ?? '-',
                 'bulanbeban' =>  date('Y-m-d', strtotime($data['bulanbeban'][$i] ?? '1900/1/1')),
                 'modifiedby' => auth('api')->user()->name,
@@ -802,6 +805,7 @@ class PenerimaanHeader extends MyModel
         $penerimaanHeader->diterimadari = $data['diterimadari'] ?? '';
         $penerimaanHeader->tgllunas = date('Y-m-d', strtotime($data['tgllunas']));
         $penerimaanHeader->bank_id = $data['bank_id'] ?? '';
+        $penerimaanHeader->penerimaangiro_nobukti = $data['penerimaangiro_nobukti'] ?? '';
         $penerimaanHeader->modifiedby = auth('api')->user()->name;
         $penerimaanHeader->agen_id = $data['agen_id'] ?? '';
 
@@ -841,6 +845,7 @@ class PenerimaanHeader extends MyModel
                 'bank_id' => $penerimaanHeader->bank_id,
                 'invoice_nobukti' => $data['invoice_nobukti'][$i] ?? '-',
                 'bankpelanggan_id' => $data['bankpelanggan_id'][$i] ?? '',
+                'penerimaangiro_nobukti' => $data['penerimaangiro_nobukti'] ?? '',
                 'pelunasanpiutang_nobukti' => $data['pelunasanpiutang_nobukti'][$i] ?? '-',
                 'bulanbeban' =>  date('Y-m-d', strtotime($data['bulanbeban'][$i] ?? '1900/1/1')),
                 'modifiedby' => auth('api')->user()->name,
