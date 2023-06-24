@@ -26,6 +26,7 @@ class CreatePiutangheaderTable extends Migration
             $table->string('postingdari',150)->nullable();
             $table->double('nominal',15,2)->nullable();
             $table->string('invoice_nobukti',50)->nullable();
+            $table->date('tgljatuhtempo')->nullable();
             $table->unsignedBigInteger('agen_id')->nullable();
             $table->unsignedBigInteger('statusformat')->nullable();
             $table->integer('statuscetak')->Length(11)->nullable();
