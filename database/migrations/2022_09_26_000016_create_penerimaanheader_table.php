@@ -28,6 +28,7 @@ class CreatePenerimaanheaderTable extends Migration
             $table->string('postingdari',50)->nullable();
             $table->string('diterimadari',100)->nullable();
             $table->date('tgllunas')->nullable();
+            $table->string('penerimaangiro_nobukti',50)->nullable();            
             $table->integer('statusapproval')->length(11)->nullable();
             $table->string('userapproval',50)->nullable();
             $table->date('tglapproval')->nullable();
