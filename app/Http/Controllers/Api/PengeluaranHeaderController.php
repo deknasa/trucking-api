@@ -285,6 +285,7 @@ class PengeluaranHeaderController extends Controller
     public function cekvalidasi($id)
     {
         $pengeluaran = PengeluaranHeader::find($id);
+        $cekdata = $pengeluaran->cekvalidasiaksi($pengeluaran->nobukti);
         $status = $pengeluaran->statusapproval;
         $statusApproval = Parameter::from(DB::raw("parameter with (readuncommitted)"))
             ->where('grp', 'STATUS APPROVAL')->where('text', 'APPROVAL')->first();
@@ -317,6 +318,23 @@ class PengeluaranHeaderController extends Controller
                 'errors' => 'sudah cetak',
                 'kodestatus' => '1',
                 'kodenobukti' => '1'
+            ];
+
+            return response($data);
+        } if ($cekdata['kondisi'] == true) {
+            $query = DB::table('error')
+                ->select(
+                    DB::raw("ltrim(rtrim(keterangan))+' (" . $cekdata['keterangan'] . ")' as keterangan")
+                )
+                ->where('kodeerror', '=', $cekdata['kodeerror'])
+                ->get();
+            $keterangan = $query['0'];
+
+            $data = [
+                'status' => false,
+                'message' => $keterangan,
+                'errors' => '',
+                'kondisi' => $cekdata['kondisi'],
             ];
 
             return response($data);

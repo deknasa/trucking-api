@@ -448,6 +448,24 @@ class PengeluaranHeader extends MyModel
             goto selesai;
         }
 
+        $hutangbayarheader = DB::table('hutangbayarheader')
+            ->from(
+                DB::raw("hutangbayarheader as a with (readuncommitted)")
+            )
+            ->select(
+                'a.pengeluaran_nobukti'
+            )
+            ->where('a.pengeluaran_nobukti', '=', $nobukti)
+            ->first();
+        if (isset($hutangbayarheader)) {
+            $data = [
+                'kondisi' => true,
+                'keterangan' => 'Hutang bayar header',
+                'kodeerror' => 'TDT'
+            ];
+            goto selesai;
+        }
+
         $pengeluaranTrucking = DB::table('pengeluarantruckingheader')
             ->from(
                 DB::raw("pengeluarantruckingheader as a with (readuncommitted)")
