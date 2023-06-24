@@ -591,13 +591,13 @@ class HutangBayarHeader extends MyModel
             'modifiedby' => auth('api')->user()->user
         ]);
         
-        $pengeluaranHeader = PengeluaranHeader::where('nobukti', $hutangBayarHeader->pengeluaran_nobukti)->lockForUpdate()->first();
-        /*DELETE EXISTING JURNAL*/
-        $JurnalUmumDetail = JurnalUmumDetail::where('nobukti', $pengeluaranHeader->nobukti)->lockForUpdate()->delete();
-        $JurnalUmumHeader = JurnalUmumHeader::where('nobukti', $pengeluaranHeader->nobukti)->lockForUpdate()->delete();
-        /*DELETE EXISTING Pengeluaran*/
-        $pengeluaranDetail = PengeluaranDetail::where('pengeluaran_id', $pengeluaranHeader->id)->lockForUpdate()->delete();
-        $pengeluaranHeader->delete();
+        // $pengeluaranHeader = PengeluaranHeader::where('nobukti', $hutangBayarHeader->pengeluaran_nobukti)->lockForUpdate()->first();
+        // /*DELETE EXISTING JURNAL*/
+        // $JurnalUmumDetail = JurnalUmumDetail::where('nobukti', $pengeluaranHeader->nobukti)->lockForUpdate()->delete();
+        // $JurnalUmumHeader = JurnalUmumHeader::where('nobukti', $pengeluaranHeader->nobukti)->lockForUpdate()->delete();
+        // /*DELETE EXISTING Pengeluaran*/
+        // $pengeluaranDetail = PengeluaranDetail::where('pengeluaran_id', $pengeluaranHeader->id)->lockForUpdate()->delete();
+        // $pengeluaranHeader->delete();
         /*DELETE EXISTING hutang bayar*/
         HutangBayarDetail::where('hutangbayar_id', $hutangBayarHeader->id)->lockForUpdate()->delete();
         
@@ -697,9 +697,9 @@ class HutangBayarHeader extends MyModel
         ];
 
 
-        $pengeluaranHeader = (new PengeluaranHeader())->processStore($pengeluaranRequest);
-        $hutangBayarHeader->pengeluaran_nobukti = $pengeluaranHeader->nobukti;
-        $hutangBayarHeader->save();
+        $pengeluaranHeader = PengeluaranHeader::where('nobukti',$hutangBayarHeader->pengeluaran_nobukti)->first();
+        $pengeluaranHeader = (new PengeluaranHeader())->processUpdate($pengeluaranHeader,$pengeluaranRequest);
+        // $hutangBayarHeader->save();
         return $hutangBayarHeader;
     }
 

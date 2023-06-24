@@ -60,8 +60,21 @@ class HutangHeaderController extends Controller
 
         DB::beginTransaction();
         try {
+            $data = [
+                "tglbukti" => $request->tglbukti,
+                "total" => $request->total,
+                "coa" => $request->coa,
+                "supplier_id" => $request->supplier_id,
+                "postingdari" => $request->postingdari,
+                "tgljatuhtempo" => $request->tgljatuhtempo,
+                "keterangan_detail" => $request->keterangan_detail,
+                "coakredit" => $request->coakredit,
+                "coadebet" => $request->coadebet,
+                "total_detail" => $request->total_detail,
+                "proseslain" => $request->proseslain,
+            ];
             /* Store header */
-            $hutangHeader = (new HutangHeader())->processStore($request->all());
+            $hutangHeader = (new HutangHeader())->processStore($data);
             /* Set position and page */
             $hutangHeader->position = $this->getPosition($hutangHeader, $hutangHeader->getTable())->position;
             $hutangHeader->page = ceil($hutangHeader->position / ($request->limit ?? 10));
