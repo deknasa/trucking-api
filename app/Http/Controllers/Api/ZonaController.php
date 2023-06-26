@@ -202,9 +202,21 @@ class ZonaController extends Controller
         RangeExportReportRequest $request
     ) {
         if (request()->cekExport) {
-            return response([
-                'status' => true,
-            ]);
+
+            if (request()->offset == "-1" && request()->limit == '1') {
+                
+                return response([
+                    'errors' => [
+                        "export" => app(ErrorController::class)->geterror('DTA')->keterangan
+                    ],
+                    'status' => false,
+                    'message' => "The given data was invalid."
+                ], 422);
+            } else {
+                return response([
+                    'status' => true,
+                ]);
+            }
         } else {
 
             $response = $this->index();
