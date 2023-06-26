@@ -55,10 +55,12 @@ class KasGantungDetail extends MyModel
                 $this->table . '.keterangan as keterangan_detail',
                 $this->table . '.nominal',
                 $this->table . '.coa',
+                'akunpusat.keterangancoa as keterangancoa',
                 $this->table . '.kasgantung_id'
             ])
                 ->leftjoin(DB::raw("kasgantungheader as header with (readuncommitted)"), 'header.id', $this->table . '.kasgantung_id')
                 ->leftjoin(DB::raw("penerima with (readuncommitted)"), 'header.penerima_id', 'penerima.id')
+                ->leftjoin(DB::raw("akunpusat with (readuncommitted)"), $this->table .'.coa', 'akunpusat.coa')
                 ->leftjoin(DB::raw("bank with (readuncommitted)"), 'header.bank_id', 'bank.id');
 
             $query->where($this->table . '.kasgantung_id', '=', request()->kasgantung_id);

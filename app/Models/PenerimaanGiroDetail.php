@@ -66,8 +66,8 @@ class PenerimaanGiroDetail extends MyModel
                 'header.diterimadari',
                 $this->table . '.nowarkat',
                 $this->table . '.tgljatuhtempo',
-                $this->table . '.coadebet',
-                $this->table . '.coakredit',
+                'debetcoa.keterangancoa as coadebet',
+                'kreditcoa.keterangancoa as coakredit',
                 'bank.namabank as bank_id',
                 'bankpelanggan.namabank as bankpelanggan_id',
                 $this->table . '.invoice_nobukti',
@@ -80,6 +80,8 @@ class PenerimaanGiroDetail extends MyModel
                 ->leftJoin(DB::raw("penerimaangiroheader as header with (readuncommitted)"), 'header.id', $this->table . '.penerimaangiro_id')
                 ->leftJoin(DB::raw("pelanggan as ph with (readuncommitted)"), 'header.pelanggan_id', 'ph.id')
                 ->leftJoin(DB::raw("bank with (readuncommitted)"), $this->table . '.bank_id', 'bank.id')
+                ->leftjoin(DB::raw("akunpusat as debetcoa with (readuncommitted)"), $this->table .'.coadebet', 'debetcoa.coa')
+                ->leftjoin(DB::raw("akunpusat as kreditcoa with (readuncommitted)"), $this->table .'.coakredit', 'kreditcoa.coa')
                 ->leftJoin(DB::raw("bankpelanggan with (readuncommitted)"), $this->table . '.bankpelanggan_id', 'bankpelanggan.id');
 
             $query->where($this->table . '.penerimaangiro_id', '=', request()->penerimaangiro_id);

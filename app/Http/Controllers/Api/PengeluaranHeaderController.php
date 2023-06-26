@@ -385,4 +385,12 @@ class PengeluaranHeaderController extends Controller
             return response($data);
         }
     }
+
+    public function export($id)
+    {
+        $pengeluaranHeader = new PengeluaranHeader();
+        return response([
+            'data' => $pengeluaranHeader->getExport($id)
+        ]);
+    }
 }

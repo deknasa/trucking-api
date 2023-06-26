@@ -41,20 +41,11 @@ class PenerimaanTruckingDetail extends MyModel
 
         if (isset(request()->forReport) && request()->forReport) {
             $query->select(
-                "header.nobukti",
-                "header.tglbukti",
-                "header.coa",
-                "header.penerimaan_nobukti",
-                "bank.namabank as bank",
-                "penerimaantrucking.keterangan as penerimaantrucking",
                 "supir.namasupir as supir_id",
                 "$this->table.pengeluarantruckingheader_nobukti",
                 "$this->table.nominal",
                 "$this->table.keterangan",
             )
-                ->leftJoin(DB::raw("penerimaantruckingheader as header with (readuncommitted)"), "header.id", "$this->table.penerimaantruckingheader_id")
-                ->leftJoin(DB::raw("penerimaantrucking with (readuncommitted)"), "header.penerimaantrucking_id", "penerimaantrucking.id")
-                ->leftJoin(DB::raw("bank with (readuncommitted)"), "header.bank_id", "bank.id")
                 ->leftJoin(DB::raw("supir with (readuncommitted)"), "$this->table.supir_id", "supir.id");
         } else {
             $query->select(

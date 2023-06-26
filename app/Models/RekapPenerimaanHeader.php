@@ -316,6 +316,36 @@ class RekapPenerimaanHeader extends MyModel
         return $query->skip($this->params['offset'])->take($this->params['limit']);
     }
 
+    public function getExport($id)
+    {
+        $this->setRequestParameters();
+
+        $getJudul = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))
+        ->select('text')
+        ->where('grp', 'JUDULAN LAPORAN')
+        ->where('subgrp', 'JUDULAN LAPORAN')
+        ->first();
+
+        $query = DB::table($this->table)->from(
+            DB::raw($this->table . " with (readuncommitted)")
+        )->select(
+            "$this->table.id",
+            "$this->table.nobukti",
+            "$this->table.tglbukti",
+            "$this->table.bank_id",
+            "$this->table.tgltransaksi",
+            "bank.namabank as bank",
+            DB::raw("'Laporan Rekap Penerimaan' as judulLaporan"),
+            DB::raw("'" . $getJudul->text . "' as judul"),
+            DB::raw("'Tgl Cetak:'+format(getdate(),'dd-MM-yyyy HH:mm:ss')as tglcetak"),
+            DB::raw(" 'User :".auth('api')->user()->name."' as usercetak")
+        )
+        ->where("$this->table.id", $id)
+        ->leftJoin('bank','rekappenerimaanheader.bank_id','bank.id');
+        $data = $query->first();
+        return $data;
+    }
+
     public function processStore(array $data): RekapPenerimaanHeader
     {
 

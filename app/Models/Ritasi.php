@@ -451,7 +451,11 @@ class Ritasi extends MyModel
                 'ritasi.jarak',
                 'ritasi.gaji',
                 'dari.keterangan as dari_id',
-                'sampai.keterangan as sampai_id'
+                'sampai.keterangan as sampai_id',
+                DB::raw("'" . $dari . "' as tgldari"),
+                DB::raw("'" . $sampai . "' as tglsampai"),
+                DB::raw("'Tgl Cetak:'+format(getdate(),'dd-MM-yyyy HH:mm:ss')as tglcetak"),
+                DB::raw(" 'User :".auth('api')->user()->name."' as usercetak")
             )
             ->whereBetween($this->table . '.tglbukti', [date('Y-m-d', strtotime($dari)), date('Y-m-d', strtotime($sampai))])
             ->leftJoin('parameter', 'ritasi.statusritasi', '=', 'parameter.id')

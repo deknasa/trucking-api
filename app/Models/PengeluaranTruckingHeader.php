@@ -724,6 +724,61 @@ class PengeluaranTruckingHeader extends MyModel
         return $query->skip($this->params['offset'])->take($this->params['limit']);
     }
 
+    public function getExport($id)
+    {
+        $this->setRequestParameters();
+
+        $getJudul = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))
+        ->select('text')
+        ->where('grp', 'JUDULAN LAPORAN')
+        ->where('subgrp', 'JUDULAN LAPORAN')
+        ->first();
+
+        $periode = request()->periode ?? '';
+        $statusCetak = request()->statuscetak ?? '';
+        $query = DB::table($this->table)->from(DB::raw("pengeluarantruckingheader with (readuncommitted)"))
+            ->select(
+                'pengeluarantruckingheader.id',
+                'pengeluarantruckingheader.nobukti',
+                'pengeluarantruckingheader.tglbukti',
+                'pengeluarantruckingheader.pengeluaran_nobukti',
+                'pengeluarantrucking.keterangan as pengeluarantrucking_id',
+                'bank.namabank as bank_id',
+                'trado.keterangan as trado',
+                'supir.namasupir as supir',
+                'pengeluarantruckingheader.pengeluarantrucking_nobukti',
+                'akunpusat.keterangancoa as coa',
+                DB::raw("'Laporan Pengeluaran Trucking' as judulLaporan"),
+                DB::raw("'" . $getJudul->text . "' as judul"),
+                DB::raw("'Tgl Cetak:'+format(getdate(),'dd-MM-yyyy HH:mm:ss')as tglcetak"),
+                DB::raw(" 'User :".auth('api')->user()->name."' as usercetak")
+            )
+            ->where("$this->table.id", $id)
+            ->leftJoin(DB::raw("pengeluarantrucking with (readuncommitted)"), 'pengeluarantruckingheader.pengeluarantrucking_id', 'pengeluarantrucking.id')
+            ->leftJoin(DB::raw("bank with (readuncommitted)"), 'pengeluarantruckingheader.bank_id', 'bank.id')
+            ->leftJoin(DB::raw("akunpusat with (readuncommitted)"), 'pengeluarantruckingheader.coa', 'akunpusat.coa')
+            ->leftJoin(DB::raw("trado with (readuncommitted)"), 'pengeluarantruckingheader.trado_id', 'trado.id')
+            ->leftJoin(DB::raw("supir with (readuncommitted)"), 'pengeluarantruckingheader.supir_id', 'supir.id');
+
+        if (request()->tgldari) {
+            $query->whereBetween('pengeluarantruckingheader.tglbukti', [date('Y-m-d', strtotime(request()->tgldari)), date('Y-m-d', strtotime(request()->tglsampai))]);
+        }
+        if (request()->pengeluaranheader_id) {
+            $query->where('pengeluarantruckingheader.pengeluarantrucking_id', request()->pengeluaranheader_id);
+        }
+        if ($periode != '') {
+            $periode = explode("-", $periode);
+            $query->whereRaw("MONTH(pengeluarantruckingheader.tglbukti) ='" . $periode[0] . "'")
+                ->whereRaw("year(pengeluarantruckingheader.tglbukti) ='" . $periode[1] . "'");
+        }
+        if ($statusCetak != '') {
+            $query->where("pengeluarantruckingheader.statuscetak", $statusCetak);
+        }
+
+        $data = $query->first();
+        return $data;
+    }
+
     public function storePinjamanPosting($postingPinjaman)
     {
         $postingPinjaman['tanpaprosesnobukti'] = 2;

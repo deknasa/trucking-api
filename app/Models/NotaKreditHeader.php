@@ -463,4 +463,34 @@ class NotaKreditHeader extends MyModel
 
         return $notaKreditHeader;
     }
+
+    public function getExport($id)
+    {
+        $this->setRequestParameters();
+
+        $getJudul = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))
+        ->select('text')
+        ->where('grp', 'JUDULAN LAPORAN')
+        ->where('subgrp', 'JUDULAN LAPORAN')
+        ->first();
+
+        $query = DB::table($this->table)->from(DB::raw("notakreditheader with (readuncommitted)"))
+            ->select(
+            "$this->table.id",
+            "$this->table.nobukti",
+            "$this->table.pelunasanpiutang_nobukti",
+            "$this->table.tglbukti",
+            "$this->table.postingdari",
+            "$this->table.tgllunas",
+            'pelunasanpiutang.penerimaan_nobukti',
+            DB::raw("'Laporan Nota Kredit' as judulLaporan"),
+            DB::raw("'" . $getJudul->text . "' as judul"),
+            DB::raw("'Tgl Cetak:'+format(getdate(),'dd-MM-yyyy HH:mm:ss')as tglcetak"),
+            DB::raw(" 'User :".auth('api')->user()->name."' as usercetak")
+        )
+            ->where("$this->table.id", $id)
+            ->leftJoin(DB::raw("pelunasanpiutangheader as pelunasanpiutang with (readuncommitted)"), 'notakreditheader.pelunasanpiutang_nobukti', 'pelunasanpiutang.nobukti');
+        $data = $query->first();
+        return $data;
+    }
 }

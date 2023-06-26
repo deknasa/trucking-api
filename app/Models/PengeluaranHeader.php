@@ -846,4 +846,41 @@ class PengeluaranHeader extends MyModel
 
         return $pengeluaranHeader;
     }
+    public function getExport($id)
+    {
+        $this->setRequestParameters();
+
+        $getJudul = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))
+        ->select('text')
+        ->where('grp', 'JUDULAN LAPORAN')
+        ->where('subgrp', 'JUDULAN LAPORAN')
+        ->first();
+
+        $query = DB::table($this->table)->from(DB::raw("pengeluaranheader with (readuncommitted)"))
+            ->select(
+                'pengeluaranheader.id',
+                'pengeluaranheader.nobukti',
+                'pengeluaranheader.tglbukti',
+                'pelanggan.namapelanggan as pelanggan_id',
+                'pengeluaranheader.postingdari',
+                'pengeluaranheader.dibayarke',
+                'alatbayar.namaalatbayar as alatbayar_id',
+                'bank.namabank as bank_id',
+                'bank.tipe as tipe_bank',
+                'pengeluaranheader.transferkeac',
+                'pengeluaranheader.transferkean',
+                'pengeluaranheader.transferkebank',
+                DB::raw("'Laporan Pengeluaran' as judulLaporan"),
+                DB::raw("'" . $getJudul->text . "' as judul"),
+                DB::raw("'Tgl Cetak:'+format(getdate(),'dd-MM-yyyy HH:mm:ss')as tglcetak"),
+                DB::raw(" 'User :".auth('api')->user()->name."' as usercetak")
+            )
+            ->where("$this->table.id", $id)
+            ->leftJoin(DB::raw("pelanggan with (readuncommitted)"), 'pengeluaranheader.pelanggan_id', 'pelanggan.id')
+            ->leftJoin(DB::raw("alatbayar with (readuncommitted)"), 'pengeluaranheader.alatbayar_id', 'alatbayar.id')
+            ->leftJoin(DB::raw("bank with (readuncommitted)"), 'pengeluaranheader.bank_id', 'bank.id');
+        
+        $data = $query->first();
+        return $data;
+    }
 }
