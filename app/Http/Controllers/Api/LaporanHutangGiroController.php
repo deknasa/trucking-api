@@ -2,14 +2,17 @@
 
 namespace App\Http\Controllers\Api;
 
-use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
+use App\Http\Requests\GetIndexRangeRequest;
+use App\Http\Requests\ReportLaporanPembelianRequest;
+use App\Models\LaporanHutangGiro;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
-use App\Models\LaporanPiutangGiro;
 
-class LaporanPiutangGiroController extends Controller
+
+class LaporanHutangGiroController extends Controller
 {
-     /**
+    /**
      * @ClassName
      */
     public function index(Request $request)
@@ -23,54 +26,56 @@ class LaporanPiutangGiroController extends Controller
         ]);
     }
 
+    
     /**
      * @ClassName
      */
     public function report(Request $request)
     {
-        
         $periode = date('Y-m-d', strtotime($request->periode));
     
      
 
-        $laporanpiutanggiro = new LaporanPiutangGiro();
+        $laporanhutanggiro = new LaporanHutangGiro();
 
        
 
-        $laporan_piutanggiro= $laporanpiutanggiro->getReport($periode);
-        foreach($laporan_piutanggiro as $item){
+        $laporan_hutanggiro= $laporanhutanggiro->getReport($periode);
+        foreach($laporan_hutanggiro as $item){
             $item->tglbukti = date('d-m-Y', strtotime($item->tglbukti));
             $item->tgljatuhtempo = date('d-m-Y', strtotime($item->tgljatuhtempo));
-        }
-        return response([
-            'data' => $laporan_piutanggiro
-            // 'data' => $report
-        ]);
+            
         }
       
-         /**
+        return response([
+            'data' => $laporan_hutanggiro
+            // 'data' => $report
+        ]);
+    }
+
+   /**
      * @ClassName
      */
     public function export(Request $request)
     {
-        
         $periode = date('Y-m-d', strtotime($request->periode));
     
      
 
-        $laporanpiutanggiro = new LaporanPiutangGiro();
+        $laporanhutanggiro = new LaporanHutangGiro();
 
        
 
-        $laporan_piutanggiro= $laporanpiutanggiro->getExport($periode);
-        foreach($laporan_piutanggiro as $item){
+        $laporan_hutanggiro= $laporanhutanggiro->getReport($periode);
+        foreach($laporan_hutanggiro as $item){
             $item->tglbukti = date('d-m-Y', strtotime($item->tglbukti));
-            $item->tgljatuhtempo = date('d-m-Y', strtotime($item->tgljatuhtempo));
-        }
-        return response([
-            'data' => $laporan_piutanggiro
-            // 'data' => $report
-        ]);
         }
       
+        return response([
+            'data' => $laporan_hutanggiro
+            // 'data' => $report
+        ]);
+       
+    }
+    
 }

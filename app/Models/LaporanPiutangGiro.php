@@ -24,22 +24,133 @@ class LaporanPiutangGiro extends MyModel
         'updated_at',
     ];
 
-    public function getReport($sampai, $dari)
+    public function getExport($periode)
     {
-        $sampai = date("Y-m-d", strtotime($sampai));
-        // data coba coba
-        $query = DB::table('penerimaantruckingdetail')->from(
-            DB::raw("penerimaantruckingdetail with (readuncommitted)")
-        )->select(
-            'penerimaantruckingdetail.id',
-            'supir.namasupir',
-            'penerimaantruckingdetail.nominal',
-        )
-        ->leftJoin(DB::raw("supir with (readuncommitted)"), 'penerimaantruckingdetail.supir_id', 'supir.id')
-        ->leftJoin(DB::raw("penerimaantruckingheader with (readuncommitted)"), 'penerimaantruckingdetail.penerimaantruckingheader_id', 'penerimaantruckingheader.id')
-        ->where('penerimaantruckingheader.tglbukti','<=',$sampai);
+       
+        $getJudul = DB::table('parameter')
+        ->select('text')
+        ->where('grp', 'JUDULAN LAPORAN')
+        ->where('subgrp', 'JUDULAN LAPORAN')
+        ->first();
+        $alatbayar = 3;
 
-        $data = $query->get();
+        $TempPencairan = '##TempPencairan' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+         Schema::create($TempPencairan, function ($table) {
+             $table->string('nobukti', 50);
+             $table->string('nobuktipencairan', 50);
+             $table->date('tglbukti');
+             $table->date('tglbuktipencairan');
+         });
+        //  dd("Sda");
+         $select_TempPencairan = DB::table('penerimaangiroheader')->from(DB::raw("penerimaangiroheader AS A WITH (READUNCOMMITTED)"))
+        ->select([
+            'a.nobukti',
+            'b.nobukti AS nobuktipencairan',
+            'a.tglbukti',
+            'c.tglbukti AS tglbuktipencairan',
+            
+        ])
+        ->join(DB::raw("penerimaandetail AS b with (readuncommitted)"), 'a.nobukti', '=', 'b.penerimaangiro_nobukti')
+        ->join(DB::raw("penerimaanheader AS c with (readuncommitted)"), 'b.nobukti', '=', 'c.nobukti')
+        ->where('c.tglbukti', '<=', $periode);
+        
+
+        
+        DB::table($TempPencairan)->insertUsing([
+            'nobukti',
+            'nobuktipencairan',
+            'tglbukti',
+            'tglbuktipencairan',
+        ], $select_TempPencairan);
+
+
+        $select_TempPencairan2 = DB::table('penerimaangiroheader')->from(DB::raw("penerimaangiroheader AS A WITH (READUNCOMMITTED)"))
+        ->select([
+            'a.nobukti',
+            'b.tglbukti',
+            'c.nowarkat',
+            'c.nominal',
+            'c.tgljatuhtempo',
+            DB::raw("'Laporan Piutang Giro' as judulLaporan"),
+            DB::raw("'" . $getJudul->text . "' as judul"),
+            DB::raw("'Tgl Cetak :'+format(getdate(),'dd-MM-yyyy HH:mm:ss')as tglcetak"),
+            DB::raw(" 'User :".auth('api')->user()->name."' as usercetak") 
+            
+        ])
+        ->leftJoin(DB::raw("{$TempPencairan} AS b"), function ($join) {
+            $join->on('a.nobukti', '=', 'b.nobukti')
+                ->whereNull('b.nobukti');
+        })
+        ->join(DB::raw("penerimaangirodetail AS c WITH (READUNCOMMITTED)"), 'a.nobukti', '=', 'c.nobukti')
+        ->whereNull('b.nobukti');
+
+        $data = $select_TempPencairan2->get();
         return $data;
+        // dd($select_TempPencairan2->get());
+    }
+
+    public function getReport($periode)
+    {
+       
+        $getJudul = DB::table('parameter')
+        ->select('text')
+        ->where('grp', 'JUDULAN LAPORAN')
+        ->where('subgrp', 'JUDULAN LAPORAN')
+        ->first();
+        $alatbayar = 3;
+
+        $TempPencairan = '##TempPencairan' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+         Schema::create($TempPencairan, function ($table) {
+             $table->string('nobukti', 50);
+             $table->string('nobuktipencairan', 50);
+             $table->date('tglbukti');
+             $table->date('tglbuktipencairan');
+         });
+        //  dd("Sda");
+         $select_TempPencairan = DB::table('penerimaangiroheader')->from(DB::raw("penerimaangiroheader AS A WITH (READUNCOMMITTED)"))
+        ->select([
+            'a.nobukti',
+            'b.nobukti AS nobuktipencairan',
+            'a.tglbukti',
+            'c.tglbukti AS tglbuktipencairan',
+            
+        ])
+        ->join(DB::raw("penerimaandetail AS b with (readuncommitted)"), 'a.nobukti', '=', 'b.penerimaangiro_nobukti')
+        ->join(DB::raw("penerimaanheader AS c with (readuncommitted)"), 'b.nobukti', '=', 'c.nobukti')
+        ->where('c.tglbukti', '<=', $periode);
+        
+
+        
+        DB::table($TempPencairan)->insertUsing([
+            'nobukti',
+            'nobuktipencairan',
+            'tglbukti',
+            'tglbuktipencairan',
+        ], $select_TempPencairan);
+
+
+        $select_TempPencairan2 = DB::table('penerimaangiroheader')->from(DB::raw("penerimaangiroheader AS A WITH (READUNCOMMITTED)"))
+        ->select([
+            'a.nobukti',
+            'b.tglbukti',
+            'c.nowarkat',
+            'c.nominal',
+            'c.tgljatuhtempo',
+            DB::raw("'Laporan Piutang Giro' as judulLaporan"),
+            DB::raw("'" . $getJudul->text . "' as judul"),
+            DB::raw("'Tgl Cetak :'+format(getdate(),'dd-MM-yyyy HH:mm:ss')as tglcetak"),
+            DB::raw(" 'User :".auth('api')->user()->name."' as usercetak") 
+            
+        ])
+        ->leftJoin(DB::raw("{$TempPencairan} AS b"), function ($join) {
+            $join->on('a.nobukti', '=', 'b.nobukti')
+                ->whereNull('b.nobukti');
+        })
+        ->join(DB::raw("penerimaangirodetail AS c WITH (READUNCOMMITTED)"), 'a.nobukti', '=', 'c.nobukti')
+        ->whereNull('b.nobukti');
+
+        $data = $select_TempPencairan2->get();
+        return $data;
+        // dd($select_TempPencairan2->get());
     }
 }
