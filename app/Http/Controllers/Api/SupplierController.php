@@ -17,6 +17,8 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Database\QueryException;
 use Illuminate\Http\JsonResponse;
+use App\Http\Requests\ApprovalSupplierRequest;
+
 
 class SupplierController extends Controller
 {
@@ -113,6 +115,9 @@ class SupplierController extends Controller
                 'namakontak' => $request->namakontak,
                 'alamat' => $request->alamat,
                 'kota' => $request->kota,
+                'top' => $request->top,
+                'keterangan' => $request->keterangan,
+                'statusapproval' => $request->statusapproval,
                 'kodepos' => $request->kodepos,
                 'notelp1' => $request->notelp1,
                 'notelp2' => $request->notelp2 ?? '',
@@ -160,7 +165,10 @@ class SupplierController extends Controller
                 'namakontak' => $request->namakontak,
                 'alamat' => $request->alamat,
                 'kota' => $request->kota,
+                'top' => $request->top,
                 'kodepos' => $request->kodepos,
+                'keterangan' => $request->keterangan,
+                'statusapproval' => $request->statusapproval,
                 'notelp1' => $request->notelp1,
                 'notelp2' => $request->notelp2 ?? '',
                 'email' => $request->email,
@@ -234,6 +242,58 @@ class SupplierController extends Controller
             'data' => $data
         ]);
     }
+
+        /**
+     * @ClassName 
+     */
+    public function approval(ApprovalSupplierRequest $request)
+    {
+        DB::beginTransaction();
+
+        try {
+
+            $statusApproval = Parameter::from(DB::raw("parameter with (readuncommitted)"))
+                ->where('grp', '=', 'STATUS APPROVAL')->where('text', '=', 'APPROVAL')->first();
+            $statusNonApproval = Parameter::from(DB::raw("parameter with (readuncommitted)"))
+                ->where('grp', '=', 'STATUS APPROVAL')->where('text', '=', 'NON APPROVAL')->first();
+
+            for ($i = 0; $i < count($request->Id); $i++) {
+                $Supplier = Supplier::find($request->Id[$i]);
+        
+                if ($Supplier->statusapproval == $statusApproval->id) {
+                    $Supplier->statusapproval = $statusNonApproval->id;
+                    $aksi = $statusNonApproval->text;
+                } else {
+                    $Supplier->statusapproval = $statusApproval->id;
+                    $aksi = $statusApproval->text;
+                }
+
+                $Supplier->tglapproval = date('Y-m-d', time());
+                $Supplier->userapproval = auth('api')->user()->name;
+                if ($Supplier->save()) {
+                    $logTrail = [
+                        'namatabel' => strtoupper($Supplier->getTable()),
+                        'postingdari' => 'APPROVAL SUPPLIER',
+                        'idtrans' => $Supplier->id,
+                        'nobuktitrans' => $Supplier->nobukti,
+                        'aksi' => $aksi,
+                        'datajson' => $Supplier->toArray(),
+                        'modifiedby' => auth('api')->user()->name
+                    ];
+
+                    $validatedLogTrail = new StoreLogTrailRequest($logTrail);
+                    $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
+                }
+            }
+            DB::commit();
+            return response([
+                'message' => 'Berhasil'
+            ]);
+        } catch (\Throwable $th) {
+            throw $th;
+        }
+    }
+
 
     /**
      * @ClassName 

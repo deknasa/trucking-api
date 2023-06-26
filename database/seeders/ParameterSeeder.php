@@ -355,7 +355,7 @@ class ParameterSeeder extends Seeder
         parameter::create(['grp' => 'JURNAL NOTA KREDIT', 'subgrp' => 'DEBET', 'kelompok' => '', 'text' => 'DEBET', 'memo' => '{"MEMO":"JURNAL PIUTANG MANUAL DEBET","SINGKATAN":"D","WARNA":"#28A745","JURNAL":"06.03.01.01"}', 'type' => '0', 'modifiedby' => 'ADMIN', 'default' => '',]);
         parameter::create(['grp' => 'JURNAL NOTA KREDIT', 'subgrp' => 'KREDIT', 'kelompok' => '', 'text' => 'KREDIT', 'memo' => '{"MEMO":"JURNAL PIUTANG MANUAL KREDIT","SINGKATAN":"K","WARNA":"#6C757D","JURNAL":"01.08.01.06"}', 'type' => '0', 'modifiedby' => 'ADMIN', 'default' => '',]);
         parameter::create(['grp' => 'JURNAL NOTA DEBET', 'subgrp' => 'KREDIT', 'kelompok' => '', 'text' => 'KREDIT', 'memo' => '{"MEMO":"JURNAL PIUTANG MANUAL KREDIT","SINGKATAN":"K","WARNA":"#6C757D","JURNAL":"06.02.01.01"}', 'type' => '0', 'modifiedby' => 'ADMIN', 'default' => '',]);
-
-        
+        parameter::create(['grp' => 'JURNAL SUPPLIER', 'subgrp' => 'JURNAL SUPPLIER', 'kelompok' => 'JURNAL SUPPLIER', 'text' => '', 'memo' => '{"MEMO":"JURNAL SUPPLIER","SINGKATAN":"JS","WARNA":"#28A745","JURNAL":"03.02.02.01"}', 'type' => '0', 'modifiedby' => 'ADMIN', 'default' => '',]);
+        parameter::create(['grp' => 'JURNAL SUPPLIER', 'subgrp' => 'JURNAL SUPPLIER', 'kelompok' => 'JURNAL SUPPLIER', 'text' => '', 'memo' => '{"MEMO":"JURNAL SUPPLIER","SINGKATAN":"JS","WARNA":"#28A745","JURNAL":"03.02.02.04"}', 'type' => '0', 'modifiedby' => 'ADMIN', 'default' => '',]);
     }
 }
