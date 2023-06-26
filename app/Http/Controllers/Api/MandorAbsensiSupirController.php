@@ -15,7 +15,7 @@ use App\Http\Requests\StoreKasGantungHeaderRequest;
 use App\Http\Requests\StoreLogTrailRequest;
 use App\Http\Requests\MandorAbsensiSupirRequest;
 
-
+use stdClass;
 use App\Models\Error;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -55,11 +55,9 @@ class MandorAbsensiSupirController extends Controller
                 "jam" => $request->jam,
             ];
             $AbsensiSupirHeader = (new MandorAbsensiSupir())->processStore($data);
-            // $AbsensiSupirHeader->position = $this->getPosition($AbsensiSupirHeader, $AbsensiSupirHeader->getTable())->position;
-            // $AbsensiSupirHeader->page = ceil($AbsensiSupirHeader->position / ($request->limit ?? 10));
-            // if (isset($request->limit)) {
-            //     $AbsensiSupirHeader->page = ceil($AbsensiSupirHeader->position / ($request->limit ?? 10));
-            // }        
+            $AbsensiSupirHeader->position = $this->getPositionMandor($AbsensiSupirHeader->trado_id)->position;
+            $AbsensiSupirHeader->page = ceil($AbsensiSupirHeader->position / ($request->limit ?? 10));
+
             DB::commit();
             return response([
                 'message' => 'Berhasil disimpan',
@@ -137,6 +135,7 @@ class MandorAbsensiSupirController extends Controller
     {
         DB::beginTransaction();
         try {
+            $statusaktif = DB::table('parameter')->where('grp', 'STATUS AKTIF')->where('subgrp', 'STATUS AKTIF')->where('text', 'AKTIF')->first();
             $data = [
                 "tglbukti" =>$request->tglbukti,
                 "kasgantung_nobukti" =>$request->kasgantung_nobukti,
@@ -149,11 +148,12 @@ class MandorAbsensiSupirController extends Controller
             ];
             $AbsensiSupirDetail = AbsensiSupirDetail::findOrFail($id);
             $AbsensiSupirDetail = (new MandorAbsensiSupir())->processUpdate($AbsensiSupirDetail,$data);
-            // $AbsensiSupirHeader->position = $this->getPosition($AbsensiSupirHeader, $AbsensiSupirHeader->getTable())->position;
-            // $AbsensiSupirHeader->page = ceil($AbsensiSupirHeader->position / ($request->limit ?? 10));
-            // if (isset($request->limit)) {
-            //     $AbsensiSupirHeader->page = ceil($AbsensiSupirHeader->position / ($request->limit ?? 10));
-            // }        
+            $AbsensiSupirDetail->position = $this->getPositionMandor($AbsensiSupirDetail->trado_id)->position;
+            if ($request->limit == 0) {
+                $request->limit = DB::table('trado')->where('statusaktif',$statusaktif->id)->count();
+            }
+            $AbsensiSupirDetail->page = ceil($AbsensiSupirDetail->position / ($request->limit ?? 10));
+
             DB::commit();
             return response([
                 'message' => 'Berhasil disimpan',
@@ -175,13 +175,16 @@ class MandorAbsensiSupirController extends Controller
         DB::beginTransaction();
         try {
             $AbsensiSupirDetail = AbsensiSupirDetail::findOrFail($id);
+            $statusaktif = DB::table('parameter')->where('grp', 'STATUS AKTIF')->where('subgrp', 'STATUS AKTIF')->where('text', 'AKTIF')->first();
+
             
             $AbsensiSupirDetail = (new MandorAbsensiSupir())->processDestroy($AbsensiSupirDetail->id);
-            // $AbsensiSupirHeader->position = $this->getPosition($AbsensiSupirHeader, $AbsensiSupirHeader->getTable())->position;
-            // $AbsensiSupirHeader->page = ceil($AbsensiSupirHeader->position / ($request->limit ?? 10));
-            // if (isset($request->limit)) {
-            //     $AbsensiSupirHeader->page = ceil($AbsensiSupirHeader->position / ($request->limit ?? 10));
-            // }        
+            $AbsensiSupirDetail->position = $this->getPositionMandor(0,true)->position;
+            if ($request->limit == 0) {
+                $request->limit = DB::table('trado')->where('statusaktif',$statusaktif->id)->count();
+            }
+            $AbsensiSupirDetail->page = ceil($AbsensiSupirDetail->position / ($request->limit ?? 10));
+ 
             DB::commit();
             return response([
                 'message' => 'Berhasil disimpan',
@@ -259,6 +262,45 @@ class MandorAbsensiSupirController extends Controller
         return response([
             "data" => $mandorabsensisupir->getabsentrado($id)
         ]);
+    }
+
+
+    function getPositionMandor($trado_id,$isDeleting = false)
+    {
+        $data = new stdClass();
+        $model = new MandorAbsensiSupir();
+        $indexRow = request()->indexRow ?? 1;
+        $limit = request()->limit ?? 10;
+        $page = request()->page ?? 1;
+
+        $temporaryTable = $model->createTemp('adas');
+        if ($isDeleting) {
+            if ($page == 1) {
+                $position = $indexRow + 1;
+            } else {
+                $page = $page - 1;
+                $row = $page * $limit;
+                $position = $indexRow + $row + 1;
+            }
+
+            if (!DB::table($temporaryTable)->where('position', '=', $position)->exists()) {
+                $position -= 1;
+            }
+            $query = DB::table($temporaryTable)
+            ->select('position', 'id')
+            ->where('position', '=', $position)
+            ->orderBy('position');
+        }else {
+            $query = DB::table($temporaryTable)->select('position')->where('trado_id', $trado_id)->orderBy('position');
+        }
+        // dd($query->first());
+        if ($query->first() == null) {
+            $data->position = 0;
+            $data->id = 0;
+        } else {
+            $data = $query->first();
+        }
+        return $data;
     }
 
 }
