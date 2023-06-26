@@ -44,6 +44,10 @@ class StorePiutangHeaderRequest extends FormRequest
                 new DateTutupBuku(),
                 'before_or_equal:' . date('d-m-Y')
             ],
+            'tgljatuhtempo' => [
+                'required', 'date_format:d-m-Y',
+                'after_or_equal:' . date('d-m-Y')
+            ],
             'agen' => 'required',
         ];
 
@@ -65,6 +69,7 @@ class StorePiutangHeaderRequest extends FormRequest
     {
         $attributes = [
             'tglbukti' => 'Tanggal',
+            'tgljatuhtempo' => 'Tanggal Jatuh tempo',
             'agen' => 'Agen',
             'nominal_detail.*' => 'Nominal',
             'keterangan_detail.*' => 'Keterangan',

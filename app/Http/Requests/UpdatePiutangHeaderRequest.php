@@ -53,6 +53,10 @@ class UpdatePiutangHeaderRequest extends FormRequest
                 new NotOffDay(),
                 new DateTutupBuku()
             ],
+            'tgljatuhtempo' => [
+                'required','date_format:d-m-Y',
+                'after_or_equal:'.date('d-m-Y', strtotime($getDataPiutang->tglbukti)),
+            ],
             'agen' => 'required',
         ];
 
@@ -74,6 +78,7 @@ class UpdatePiutangHeaderRequest extends FormRequest
     {
         $attributes = [
             'tglbukti' => 'Tanggal',
+            'tgljatuhtempo' => 'Tanggal jatuh tempo',
             'agen' => 'Agen',
             'nominal_detail.*' => 'Nominal',
             'keterangan_detail.*' => 'Keterangan',
