@@ -40,6 +40,8 @@ class Ritasi extends MyModel
                 'supir.namasupir as supir_id',
                 'trado.kodetrado as trado_id',
                 'ritasi.jarak',
+                'ritasi.upah',
+                'ritasi.extra',
                 'ritasi.gaji',
                 'dari.keterangan as dari_id',
                 'sampai.keterangan as sampai_id',
@@ -230,7 +232,7 @@ class Ritasi extends MyModel
                             $query = $query->where('dari.keterangan', 'LIKE', "%$filters[data]%");
                         } elseif ($filters['field'] == 'sampai_id') {
                             $query = $query->where('sampai.keterangan', 'LIKE', "%$filters[data]%");
-                        } else if ($filters['field'] == 'jarak' || $filters['field'] == 'gaji') {
+                        } else if ($filters['field'] == 'jarak' || $filters['field'] == 'gaji' || $filters['field'] == 'upah' || $filters['field'] == 'extra') {
                             $query = $query->whereRaw("format(" . $this->table . "." . $filters['field'] . ", '#,#0.00') LIKE '%$filters[data]%'");
                         } else if ($filters['field'] == 'tglbukti') {
                             $query = $query->whereRaw("format(" . $this->table . "." . $filters['field'] . ", 'dd-MM-yyyy') LIKE '%$filters[data]%'");
@@ -256,7 +258,7 @@ class Ritasi extends MyModel
                                 $query = $query->where('dari.keterangan', 'LIKE', "%$filters[data]%");
                             } elseif ($filters['field'] == 'sampai_id') {
                                 $query = $query->where('sampai.keterangan', 'LIKE', "%$filters[data]%");
-                            } else if ($filters['field'] == 'jarak' || $filters['field'] == 'gaji') {
+                            } else if ($filters['field'] == 'jarak' || $filters['field'] == 'gaji' || $filters['field'] == 'upah' || $filters['field'] == 'extra') {
                                 $query = $query->orWhereRaw("format(" . $this->table . "." . $filters['field'] . ", '#,#0.00') LIKE '%$filters[data]%'");
                             } else if ($filters['field'] == 'tglbukti') {
                                 $query = $query->orWhereRaw("format(" . $this->table . "." . $filters['field'] . ", 'dd-MM-yyyy') LIKE '%$filters[data]%'");
@@ -315,15 +317,14 @@ class Ritasi extends MyModel
         return $data;
     }
 
-    public function cekUpahRitasi($dari, $sampai, $container)
+    public function cekUpahRitasi($dari, $sampai)
     {
         $query = DB::table("upahritasi")->from(DB::raw("upahritasi with (readuncommitted)"))
-            ->select(DB::raw("upahritasirincian.nominalsupir, upahritasirincian.liter"))
+            ->select(DB::raw("upahritasi.nominalsupir, upahritasirincian.liter"))
             ->join(DB::raw("upahritasirincian with (readuncommitted)"), 'upahritasi.id', 'upahritasirincian.upahritasi_id')
             ->where('upahritasi.kotadari_id', $dari)
             ->where('upahritasi.kotasampai_id', $sampai)
-            ->where('upahritasirincian.container_id', $container)
-            ->whereRaw("upahritasirincian.nominalsupir != 0")
+            ->whereRaw("upahritasi.nominalsupir != 0")
             ->first();
 
         return $query;
@@ -339,13 +340,7 @@ class Ritasi extends MyModel
             ->where('subgrp', $subGroup)
             ->first();
         $upahRitasi = DB::table('upahritasi')->where('kotadari_id', $data['dari_id'])->where('kotasampai_id', $data['sampai_id'])->first();
-
-
-        $upahRitasiId = $upahRitasi->id;
-        $getSP = DB::table("suratpengantar")->from(DB::raw("suratpengantar with (readuncommitted)"))->select('container_id')->where('nobukti', $data['suratpengantar_nobukti'])->first();
-
-        $upahRitasiRincian = DB::table('upahritasirincian')->where('upahritasi_id', $upahRitasiId)->where('container_id', $getSP->container_id)->first();
-
+        $extra = DB::table("dataritasi")->from(DB::raw("dataritasi with (readuncommitted)"))->where('id', $data['statusritasi_id'])->first();
 
         $ritasi = new Ritasi();
         $ritasi->tglbukti = date('Y-m-d', strtotime($data['tglbukti']));
@@ -355,8 +350,10 @@ class Ritasi extends MyModel
         $ritasi->trado_id = $data['trado_id'];
         $ritasi->dari_id = $data['dari_id'];
         $ritasi->sampai_id = $data['sampai_id'];
-        $ritasi->jarak = $upahRitasiRincian->liter;
-        $ritasi->gaji = $upahRitasiRincian->nominalsupir;
+        $ritasi->jarak = $upahRitasi->jarak;
+        $ritasi->upah = $upahRitasi->nominalsupir;
+        $ritasi->extra = $extra->nominal;
+        $ritasi->gaji = $upahRitasi->nominalsupir + $extra->nominal;
         $ritasi->statusformat = $format->id;
         $ritasi->modifiedby = auth('api')->user()->name;
         $ritasi->nobukti = (new RunningNumberService)->get($group, $subGroup, $ritasi->getTable(), date('Y-m-d', strtotime($data['tglbukti'])));
@@ -382,15 +379,16 @@ class Ritasi extends MyModel
     public function processUpdate(Ritasi $ritasi, array $data): Ritasi
     {
         $upahRitasi = DB::table('upahritasi')->where('kotadari_id', $data['dari_id'])->where('kotasampai_id', $data['sampai_id'])->first();
-        $upahRitasiId = $upahRitasi->id;
-        $upahRitasiRincian = DB::table('upahritasirincian')->where('upahritasi_id', $upahRitasiId)->first();
+        $extra = DB::table("dataritasi")->from(DB::raw("dataritasi with (readuncommitted)"))->where('id', $data['statusritasi_id'])->first();
 
         $ritasi->statusritasi = $data['statusritasi_id'];
         $ritasi->suratpengantar_nobukti = $data['suratpengantar_nobukti'];
         $ritasi->supir_id = $data['supir_id'];
         $ritasi->trado_id = $data['trado_id'];
-        $ritasi->jarak = $upahRitasiRincian->liter;
-        $ritasi->gaji = $upahRitasiRincian->nominalsupir;
+        $ritasi->jarak = $upahRitasi->jarak;
+        $ritasi->upah = $upahRitasi->nominalsupir;
+        $ritasi->extra = $extra->nominal;
+        $ritasi->gaji = $upahRitasi->nominalsupir + $extra->nominal;
         $ritasi->dari_id = $data['dari_id'];
         $ritasi->sampai_id = $data['sampai_id'];
         $ritasi->modifiedby = auth('api')->user()->name;
@@ -434,10 +432,10 @@ class Ritasi extends MyModel
     {
         $this->setRequestParameters();
         $getParameter = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))
-        ->select(
-            'text as judul',
-            DB::raw("'Laporan Ritasi' as judulLaporan")
-        )->where('grp', 'JUDULAN LAPORAN')->where('subgrp', 'JUDULAN LAPORAN')->first();
+            ->select(
+                'text as judul',
+                DB::raw("'Laporan Ritasi' as judulLaporan")
+            )->where('grp', 'JUDULAN LAPORAN')->where('subgrp', 'JUDULAN LAPORAN')->first();
 
         $query = DB::table($this->table)
             ->select(
@@ -467,9 +465,18 @@ class Ritasi extends MyModel
 
         $data = $query->get();
         $allData = [
-            'data' => $data, 
+            'data' => $data,
             'parameter' => $getParameter
         ];
         return $allData;
+    }
+
+    public function ExistTradoSupirRitasi($nobukti)
+    {
+        $query = DB::table("suratpengantar")->from(DB::raw("suratpengantar with (readuncommitted)"))
+        ->select('trado_id','supir_id')
+        ->where('nobukti', $nobukti)
+        ->first();
+        return $query;
     }
 }

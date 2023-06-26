@@ -4,9 +4,10 @@ namespace App\Rules;
 
 use App\Http\Controllers\Api\ErrorController;
 use App\Models\Ritasi;
+use App\Models\Trado;
 use Illuminate\Contracts\Validation\Rule;
 
-class cekUpahRitasiDariInputTrip implements Rule
+class ExistTradoRitasi implements Rule
 {
     /**
      * Create a new rule instance.
@@ -27,16 +28,16 @@ class cekUpahRitasiDariInputTrip implements Rule
      */
     public function passes($attribute, $value)
     {
-        $attribute = substr($attribute,11);
-        $ritasiDari_id = request()->ritasidari_id[$attribute];
-        $ritasiKe_id = request()->ritasike_id[$attribute];
-        $this->sampai = request()->ritasike[$attribute];
-        $this->dari = $value;
-        $ritasi = new Ritasi();
-        $cekUpah = $ritasi->cekUpahRitasi($ritasiDari_id, $ritasiKe_id);
-        if($cekUpah == null){
-            return false;
-        }else{
+        if (request()->suratpengantar_nobukti != null) {
+
+            $ritasi = new Ritasi();
+            $get = $ritasi->ExistTradoSupirRitasi(request()->suratpengantar_nobukti);
+            if ($get->trado_id == $value) {
+                return true;
+            } else {
+                return false;
+            }
+        } else {
             return true;
         }
     }
@@ -48,6 +49,7 @@ class cekUpahRitasiDariInputTrip implements Rule
      */
     public function message()
     {
-        return app(ErrorController::class)->geterror('URBA')->keterangan." dari $this->dari KE $this->sampai";
+        $controller = new ErrorController;
+        return ':attribute' . ' ' . $controller->geterror('TVD')->keterangan;
     }
 }
