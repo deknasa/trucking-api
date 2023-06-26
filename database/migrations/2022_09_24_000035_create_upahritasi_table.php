@@ -23,6 +23,7 @@ class CreateUpahritasiTable extends Migration
             $table->unsignedBigInteger('tarif_id')->nullable();
             $table->unsignedBigInteger('kotadari_id')->nullable();
             $table->unsignedBigInteger('kotasampai_id')->nullable();
+            $table->double('nominalsupir',15,2)->nullable();
             $table->double('jarak',15,2)->nullable();
             $table->unsignedBigInteger('zona_id')->nullable();
             $table->integer('statusaktif')->length(11)->nullable();
