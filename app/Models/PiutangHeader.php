@@ -248,6 +248,7 @@ class PiutangHeader extends MyModel
                 "$this->table.id,
                  $this->table.nobukti,
                  $this->table.tglbukti,
+                 $this->table.tgljatuhtempo,
                  $this->table.postingdari,
                  $this->table.nominal,
                  isnull(c.nominal,0) as nominalpelunasan,
@@ -269,6 +270,7 @@ class PiutangHeader extends MyModel
             $table->bigInteger('id')->nullable();
             $table->string('nobukti', 1000)->nullable();
             $table->date('tglbukti')->nullable();
+            $table->date('tgljatuhtempo')->nullable();
             $table->string('postingdari', 1000)->nullable();
             $table->float('nominal')->nullable();
             $table->float('nominalpelunasan')->nullable();
@@ -287,7 +289,7 @@ class PiutangHeader extends MyModel
         $models = $this->filter($query);
         $models = $query
             ->whereBetween($this->table . '.tglbukti', [date('Y-m-d', strtotime(request()->tgldariheader)), date('Y-m-d', strtotime(request()->tglsampaiheader))]);
-        DB::table($temp)->insertUsing(['id', 'nobukti', 'tglbukti', 'postingdari', 'nominal', 'nominalpelunasan', 'sisapiutang', 'invoice_nobukti', 'agen_id', 'modifiedby', 'updated_at'], $models);
+        DB::table($temp)->insertUsing(['id', 'nobukti', 'tglbukti', 'tgljatuhtempo', 'postingdari', 'nominal', 'nominalpelunasan', 'sisapiutang', 'invoice_nobukti', 'agen_id', 'modifiedby', 'updated_at'], $models);
 
         return $temp;
     }
@@ -329,7 +331,7 @@ class PiutangHeader extends MyModel
                             $query = $query->where('debet.keterangancoa', 'LIKE', "%$filters[data]%");
                         } else if ($filters['field'] == 'coakredit') {
                             $query = $query->where('kredit.keterangancoa', 'LIKE', "%$filters[data]%");
-                        } else if ($filters['field'] == 'tglbukti') {
+                        } else if ($filters['field'] == 'tglbukti' || $filters['field'] == 'tgljatuhtempo') {
                             $query = $query->whereRaw("format(" . $this->table . "." . $filters['field'] . ", 'dd-MM-yyyy') LIKE '%$filters[data]%'");
                         } else if ($filters['field'] == 'created_at' || $filters['field'] == 'updated_at') {
                             $query = $query->whereRaw("format(" . $this->table . "." . $filters['field'] . ", 'dd-MM-yyyy HH:mm:ss') LIKE '%$filters[data]%'");
@@ -357,7 +359,7 @@ class PiutangHeader extends MyModel
                                 $query = $query->orWhere('debet.keterangancoa', 'LIKE', "%$filters[data]%");
                             } else if ($filters['field'] == 'coakredit') {
                                 $query = $query->orWhere('kredit.keterangancoa', 'LIKE', "%$filters[data]%");
-                            } else if ($filters['field'] == 'tglbukti') {
+                            } else if ($filters['field'] == 'tglbukti' || $filters['field'] == 'tgljatuhtempo') {
                                 $query = $query->orWhereRaw("format(" . $this->table . "." . $filters['field'] . ", 'dd-MM-yyyy') LIKE '%$filters[data]%'");
                             } else if ($filters['field'] == 'created_at' || $filters['field'] == 'updated_at') {
                                 $query = $query->orWhereRaw("format(" . $this->table . "." . $filters['field'] . ", 'dd-MM-yyyy HH:mm:ss') LIKE '%$filters[data]%'");

@@ -6,6 +6,7 @@ use App\Http\Controllers\Api\ErrorController;
 use App\Models\Ritasi;
 use Illuminate\Foundation\Http\FormRequest;
 use App\Rules\DateTutupBuku;
+use App\Rules\ExistSuratPengantarRitasi;
 use Illuminate\Validation\Rule;
 use Illuminate\Support\Facades\DB;
 
@@ -51,7 +52,7 @@ class UpdateRitasiRequest extends FormRequest
                 new DateTutupBuku()
             ],
             'statusritasi' => 'required','numeric', 'min:1',
-            'suratpengantar_nobukti' => 'required',
+            'suratpengantar_nobukti' => [new ExistSuratPengantarRitasi()],
             'dari' => 'required','numeric', 'min:1',
             'sampai' => 'required','numeric', 'min:1',
             'trado' => 'required','numeric', 'min:1',

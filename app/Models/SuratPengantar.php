@@ -156,6 +156,8 @@ class SuratPengantar extends MyModel
             'suratpengantar.gudang',
             'trado.kodetrado as trado_id',
             'supir.namasupir as supir_id',
+            'suratpengantar.trado_id as tradolookup',
+            'suratpengantar.supir_id as supirlookup',
             'gandengan.keterangan as gandengan_id',
             'statuslongtrip.memo as statuslongtrip',
             'statusperalihan.memo as statusperalihan',

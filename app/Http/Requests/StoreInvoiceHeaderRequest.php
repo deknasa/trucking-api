@@ -45,6 +45,10 @@ class StoreInvoiceHeaderRequest extends FormRequest
                 new DateTutupBuku(),
                 'before_or_equal:' . date('d-m-Y'),
             ],
+            'tgljatuhtempo' => [
+                'required', 'date_format:d-m-Y',
+                'after_or_equal:' . date('d-m-Y')
+            ],
             'tgldari' => [
                 'required',
                 'date_format:d-m-Y',
@@ -62,20 +66,13 @@ class StoreInvoiceHeaderRequest extends FormRequest
             StoreInvoiceDetailRequest::class
         ];
 
-        foreach ($relatedRequests as $relatedRequest) {
-            $rules = array_merge(
-                $rules,
-                (new $relatedRequest)->rules()
-            );
-        }
-
         $agen_id = $this->agen_id;
         $rulesagen_id = [];
         if ($agen_id != '' && $this->agen != '') {
             $rulesagen_id = [
                 'agen' => [
                     new ExistAgen(),
-                    new ValidasiDetail($jumlahdetail),
+                    // new ValidasiDetail($jumlahdetail),
                 ]
             ];
         } else if ($agen_id != null) {
@@ -129,7 +126,7 @@ class StoreInvoiceHeaderRequest extends FormRequest
             $rulesjenisorder_id = [
                 'jenisorder' => [
                     new ExistJenisOrder(),
-                    new ValidasiDetail($jumlahdetail),
+                    // new ValidasiDetail($jumlahdetail),
                 ]
             ];
         } else if ($jenisorder_id != null) {
@@ -176,28 +173,30 @@ class StoreInvoiceHeaderRequest extends FormRequest
                 ]
             ];
         }        
-
         
-        $rule = array_merge(
-            $rules,
-            $rulesagen_id,
-            $rulesjenisorder_id,
-        );
+        foreach ($relatedRequests as $relatedRequest) {
+            $rules = array_merge(
+                $rules,
+                (new $relatedRequest)->rules(),
+                $rulesagen_id,
+                $rulesjenisorder_id,
+            );
+        }
 
-        return $rule;
+        return $rules;
     }
 
     public function attributes()
     {
-        // $attributes = [
-        //     'tglbukti' => 'Tanggal Bukti',
-        //     'tglterima' => 'Tanggal Terima',
-        //     'jenisorder' => 'Jenis Order',
-        // ];
+        $attributes = [
+            'tglbukti' => 'Tanggal Bukti',
+            'tglterima' => 'Tanggal Terima',
+            'jenisorder' => 'Jenis Order',
+        ];
 
         // return $attributes;
 
-        $attributes = [];
+        // $attributes = [];
         $relatedRequests = [
             StoreHutangBayarDetailRequest::class
         ];

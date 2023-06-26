@@ -521,7 +521,7 @@ class InvoiceHeader extends MyModel
         $invoiceHeader->tglbukti = date('Y-m-d', strtotime($data['tglbukti']));
         $invoiceHeader->nominal = '';
         $invoiceHeader->tglterima = date('Y-m-d', strtotime($data['tglterima']));
-        $invoiceHeader->tgljatuhtempo = date('Y-m-d');
+        $invoiceHeader->tgljatuhtempo = date('Y-m-d', strtotime($data['tgljatuhtempo']));
         $invoiceHeader->agen_id = $data['agen_id'];
         $invoiceHeader->jenisorder_id = $data['jenisorder_id'];
         $invoiceHeader->piutang_nobukti = $data['piutang_nobukti'] ?? '';
@@ -586,6 +586,7 @@ class InvoiceHeader extends MyModel
 
         $invoiceRequest = [
             'tglbukti' => date('Y-m-d', strtotime($data['tglbukti'])),
+            'tgljatuhtempo' => date('Y-m-d', strtotime($data['tgljatuhtempo'])),
             'postingdari' => 'ENTRY INVOICE HEADER',
             'invoice' => $invoiceHeader->nobukti,
             'agen_id' => $data['agen_id'],
@@ -622,7 +623,7 @@ class InvoiceHeader extends MyModel
 
     public function processUpdate(InvoiceHeader $invoiceHeader, array $data): InvoiceHeader
     {
-        $invoiceHeader->tglbukti = date('Y-m-d', strtotime($data['tglbukti']));
+        $invoiceHeader->tgljatuhtempo = date('Y-m-d', strtotime($data['tgljatuhtempo']));
         $invoiceHeader->nominal = '';
         $invoiceHeader->tglterima = date('Y-m-d', strtotime($data['tglterima']));
         $invoiceHeader->tgldari = date('Y-m-d', strtotime($data['tgldari']));
@@ -708,6 +709,7 @@ class InvoiceHeader extends MyModel
         ]);
 
         $invoiceRequest = [
+            'tgljatuhtempo' => date('Y-m-d', strtotime($data['tgljatuhtempo'])),
             'postingdari' => 'EDIT INVOICE HEADER',
             'invoice' => $invoiceHeader->nobukti,
             'agen_id' => $invoiceHeader->agen_id,

@@ -161,6 +161,7 @@ class Trado extends MyModel
         $this->setRequestParameters();
 
         $aktif = request()->aktif ?? '';
+        $trado_id = request()->trado_id ?? '';
 
         $getJudul = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))
             ->select('text')
@@ -246,6 +247,9 @@ class Trado extends MyModel
             $query->where('trado.statusaktif', '=', $statusaktif->id);
         }
 
+        if($trado_id != ''){
+            $query->where('trado.id', $trado_id);
+        }
         $this->totalRows = $query->count();
         $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;
 

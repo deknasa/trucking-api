@@ -185,6 +185,7 @@ class Supir extends MyModel
             ->first();
 
         $aktif = request()->aktif ?? '';
+        $supir_id = request()->supir_id ?? '';
 
         $query = DB::table($this->table)->from(DB::raw("$this->table with (readuncommitted)"))
             ->select(
@@ -256,6 +257,9 @@ class Supir extends MyModel
             $tglbukti = date('Y-m-d', strtotime('now'));
             $absensiSupirHeader = AbsensiSupirHeader::where('tglbukti', $tglbukti)->first();
             $query->whereRaw("supir.id in (select supir_id from absensisupirdetail where absensi_id=$absensiSupirHeader->id)");
+        }
+        if($supir_id != ''){
+            $query->where('supir.id', $supir_id);
         }
         $this->totalRows = $query->count();
         $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;
