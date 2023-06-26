@@ -88,6 +88,7 @@ class PelangganController extends Controller
             $data = [
                 'kodepelanggan' => $request->kodepelanggan,
                 'namapelanggan' => $request->namapelanggan,
+                'namakontak' => $request->namakontak,
                 'telp' => $request->telp,
                 'alamat' => $request->alamat,
                 'alamat2' => $request->alamat2 ?? '',
@@ -134,6 +135,7 @@ class PelangganController extends Controller
             $data = [
                 'kodepelanggan' => $request->kodepelanggan,
                 'namapelanggan' => $request->namapelanggan,
+                'namakontak' => $request->namakontak,
                 'telp' => $request->telp,
                 'alamat' => $request->alamat,
                 'alamat2' => $request->alamat2 ?? '',
