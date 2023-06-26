@@ -64,6 +64,7 @@ class PiutangHeaderController extends Controller
             $data = [
                 'tglbukti' => $request->tglbukti,
                 'agen_id' => $request->agen_id,
+                'tgljatuhtempo' => $request->tgljatuhtempo,
                 'keterangan_detail' => $request->keterangan_detail,
                 'nominal_detail' => $request->nominal_detail
             ];
@@ -103,6 +104,7 @@ class PiutangHeaderController extends Controller
             $data = [
                 'tglbukti' => $request->tglbukti,
                 'agen_id' => $request->agen_id,
+                'tgljatuhtempo' => $request->tgljatuhtempo,
                 'keterangan_detail' => $request->keterangan_detail,
                 'nominal_detail' => $request->nominal_detail
             ];

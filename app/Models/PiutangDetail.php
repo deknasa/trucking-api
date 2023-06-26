@@ -36,6 +36,7 @@ class PiutangDetail extends MyModel
                 'header.id as id_header',
                 'header.nobukti as nobukti_header',
                 'header.tglbukti as tgl_header',
+                'header.tgljatuhtempo as tgljatuhtempo',
                 'header.keterangan as keterangan_header',
                 'header.invoice_nobukti as invoice_nobukti',
                 'agen.namaagen as agen_id',

@@ -60,6 +60,7 @@ class PiutangHeader extends MyModel
             'piutangheader.id',
             'piutangheader.nobukti',
             'piutangheader.tglbukti',
+            'piutangheader.tgljatuhtempo',
             'piutangheader.postingdari',
             'piutangheader.nominal',
             DB::raw("isnull(c.nominal,0) as nominalpelunasan"),
@@ -205,6 +206,7 @@ class PiutangHeader extends MyModel
             'piutangheader.id',
             'piutangheader.nobukti',
             'piutangheader.tglbukti',
+            'piutangheader.tgljatuhtempo',
             'piutangheader.postingdari',
             'piutangheader.nominal',
             'piutangheader.invoice_nobukti',
@@ -431,6 +433,7 @@ class PiutangHeader extends MyModel
         )->where('grp', 'STATUSCETAK')->where('text', 'BELUM CETAK')->first();
 
         $piutangHeader->tglbukti = date('Y-m-d', strtotime($data['tglbukti']));
+        $piutangHeader->tgljatuhtempo = date('Y-m-d', strtotime($data['tgljatuhtempo']));
         $piutangHeader->postingdari = $data['postingdari'] ?? 'ENTRY PIUTANG HEADER';
         $piutangHeader->invoice_nobukti = $data['invoice'] ?? '';
         $piutangHeader->modifiedby = auth('api')->user()->name;
@@ -511,6 +514,7 @@ class PiutangHeader extends MyModel
         $getCoa = Agen::from(DB::raw("agen with (readuncommitted)"))->where('id', $data['agen_id'])->first();
 
         $piutangHeader->modifiedby = auth('api')->user()->name;
+        $piutangHeader->tgljatuhtempo = date('Y-m-d', strtotime($data['tgljatuhtempo']));
         $piutangHeader->agen_id = $data['agen_id'];
         $piutangHeader->coadebet = $getCoa->coa;
         $piutangHeader->coakredit = $getCoa->coapendapatan;
