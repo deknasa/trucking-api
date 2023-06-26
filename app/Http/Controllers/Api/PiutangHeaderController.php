@@ -336,8 +336,12 @@ class PiutangHeaderController extends Controller
     /**
      * @ClassName
      */
-    public function export()
+    public function export($id)
     {
+        $piutang = new PiutangHeader();
+        return response([
+            'data' => $piutang->getExport($id)
+        ]);
     }
     public function fieldLength()
     {

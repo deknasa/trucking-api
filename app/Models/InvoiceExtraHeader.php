@@ -491,8 +491,10 @@ class InvoiceExtraHeader extends MyModel
             "$this->table.piutang_nobukti",
             "pelanggan.namapelanggan as  pelanggan",
             "agen.namaagen as  agen",
-            DB::raw("'Laporan Invoice Extra Header' as judulLaporan"),
-            DB::raw("'" . $getJudul->text . "' as judul")
+            DB::raw("'Laporan Invoice Extra' as judulLaporan"),
+            DB::raw("'" . $getJudul->text . "' as judul"),
+            DB::raw("'Tgl Cetak:'+format(getdate(),'dd-MM-yyyy HH:mm:ss')as tglcetak"),
+            DB::raw(" 'User :".auth('api')->user()->name."' as usercetak")
         )
             ->leftJoin(DB::raw("parameter with (readuncommitted)"), 'invoiceextraheader.statusapproval', 'parameter.id')
             ->leftJoin(DB::raw("parameter as cetak with (readuncommitted)"), 'invoiceextraheader.statuscetak', 'cetak.id')

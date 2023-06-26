@@ -34,34 +34,11 @@ class GajiSupirDetail extends MyModel
 
         if (isset(request()->forReport) && request()->forReport) {
             
-            $parameter = Parameter::from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'JUDULAN LAPORAN')->where('subgrp', 'JUDULAN LAPORAN')->first();
-            $query->select(
-                'header.id',
-                'header.nobukti',
-                'header.tglbukti',
-                'header.nominal',
-                'supir.namasupir as supir',
-                $this->table . '.suratpengantar_nobukti',
-                'suratpengantar.tglsp',
-                'suratpengantar.nosp',
-                'suratpengantar.nocont',
-                'sampai.keterangan as sampai',
-                'dari.keterangan as dari',
-                DB::raw("'$parameter->text' as judul"),
-                DB::raw("'Laporan Gaji Supir' as judulLaporan"),
-                $this->table . '.gajisupir',
-                $this->table . '.gajikenek',
+            $tempDetail = $this->createTemp();
+            $this->tempTable = $tempDetail;
+            $tempQuery = DB::table($tempDetail)->from(DB::raw("$tempDetail with (readuncommitted)"));
 
-            )
-                ->leftJoin(DB::raw("gajisupirheader as header with (readuncommitted)"), 'header.id', $this->table . '.gajisupir_id')
-                ->leftJoin(DB::raw("supir with (readuncommitted)"), 'header.supir_id', 'supir.id')
-                ->leftJoin(DB::raw("suratpengantar with (readuncommitted)"), $this->table . '.suratpengantar_nobukti', 'suratpengantar.nobukti')
-                ->leftJoin(DB::raw("kota as dari with (readuncommitted)"), 'suratpengantar.dari_id', 'dari.id')
-                ->leftJoin(DB::raw("kota as sampai with (readuncommitted)"), 'suratpengantar.sampai_id', 'sampai.id');
-
-            $query->where($this->table . ".gajisupir_id", "=", request()->gajisupir_id);
-
-            return $query->get();
+            return $tempQuery->get();
         } else {
             $tempDetail = $this->createTemp();
             $this->tempTable = $tempDetail;

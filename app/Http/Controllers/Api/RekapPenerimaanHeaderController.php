@@ -282,6 +282,16 @@ class RekapPenerimaanHeaderController extends Controller
      * @ClassName 
      */
     public function report()
+    {}
+
+    /**
+     * @ClassName 
+     */
+    public function export($id)
     {
+        $rekapPenerimaan = new RekapPenerimaanHeader();
+        return response([
+            'data' => $rekapPenerimaan->getExport($id)
+        ]);
     }
 }

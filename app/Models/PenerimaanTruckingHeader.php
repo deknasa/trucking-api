@@ -833,4 +833,52 @@ class PenerimaanTruckingHeader extends MyModel
         }
         return $penerimaanTruckingHeader;
     }
+
+    public function getExport($id)
+    {
+        $this->setRequestParameters();
+
+        $getJudul = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))
+        ->select('text')
+        ->where('grp', 'JUDULAN LAPORAN')
+        ->where('subgrp', 'JUDULAN LAPORAN')
+        ->first();
+
+        $periode = request()->periode ?? '';
+        $statusCetak = request()->statuscetak ?? '';
+        $query = DB::table($this->table)->from(DB::raw("penerimaantruckingheader with (readuncommitted)"))
+            ->select(
+                'penerimaantruckingheader.id',
+                'penerimaantruckingheader.nobukti',
+                'penerimaantruckingheader.tglbukti',
+                'penerimaantrucking.keterangan as penerimaantrucking_id',
+                'penerimaantruckingheader.penerimaan_nobukti',
+                'bank.namabank as bank_id',
+                'akunpusat.keterangancoa as coa',
+                DB::raw("'Laporan Penerimaan Trucking' as judulLaporan"),
+                DB::raw("'" . $getJudul->text . "' as judul"),
+                DB::raw("'Tgl Cetak:'+format(getdate(),'dd-MM-yyyy HH:mm:ss')as tglcetak"),
+                DB::raw(" 'User :".auth('api')->user()->name."' as usercetak")
+            )
+            ->where("$this->table.id", $id)
+            ->leftJoin(DB::raw("penerimaantrucking with (readuncommitted)"), 'penerimaantruckingheader.penerimaantrucking_id', 'penerimaantrucking.id')
+            ->leftJoin(DB::raw("akunpusat with (readuncommitted)"), 'penerimaantruckingheader.coa', 'akunpusat.coa')
+            ->leftJoin(DB::raw("bank with (readuncommitted)"), 'penerimaantruckingheader.bank_id', 'bank.id');
+        if (request()->tgldari) {
+            $query->whereBetween('penerimaantruckingheader.tglbukti', [date('Y-m-d', strtotime(request()->tgldari)), date('Y-m-d', strtotime(request()->tglsampai))]);
+        }
+        if (request()->penerimaanheader_id) {
+            $query->where('penerimaantrucking_id', request()->penerimaanheader_id);
+        }
+        if ($periode != '') {
+            $periode = explode("-", $periode);
+            $query->whereRaw("MONTH(penerimaantruckingheader.tglbukti) ='" . $periode[0] . "'")
+                ->whereRaw("year(penerimaantruckingheader.tglbukti) ='" . $periode[1] . "'");
+        }
+        if ($statusCetak != '') {
+            $query->where("penerimaantruckingheader.statuscetak", $statusCetak);
+        }
+        $data = $query->first();
+        return $data;
+    }
 }

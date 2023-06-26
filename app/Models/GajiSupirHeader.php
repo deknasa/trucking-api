@@ -1116,7 +1116,6 @@ class GajiSupirHeader extends MyModel
                 'gajisupirheader.nobukti',
                 'gajisupirheader.tglbukti',
                 'supir.namasupir as supir_id',
-                // 'gajisupirheader.keterangan',
                 'gajisupirheader.nominal',
                 'gajisupirheader.tgldari',
                 'gajisupirheader.tglsampai',
@@ -1127,12 +1126,16 @@ class GajiSupirHeader extends MyModel
                 'gajisupirheader.potonganpinjaman',
                 'gajisupirheader.potonganpinjamansemua',
                 'gajisupirheader.uangmakanharian',
-                DB::raw("'Laporan Absensi Supir Header' as judulLaporan"),
-                DB::raw("'" . $getJudul->text . "' as judul")
+                DB::raw("'Laporan Rincian Gaji Supir' as judulLaporan"),
+                DB::raw("'" . $getJudul->text . "' as judul"),
+                DB::raw("'" . $getJudul->text . "' as judul"),
+                DB::raw("'Tgl Cetak:'+format(getdate(),'dd-MM-yyyy HH:mm:ss')as tglcetak"),
+                DB::raw(" 'User :".auth('api')->user()->name."' as usercetak")
             )
             ->leftJoin(DB::raw("parameter with (readuncommitted)"), 'gajisupirheader.statuscetak', 'parameter.id')
             ->leftJoin(DB::raw("supir with (readuncommitted)"), 'gajisupirheader.supir_id', 'supir.id')
             ->where("$this->table.id", $id);
+
         $data = $query->first();
         return $data;
     }

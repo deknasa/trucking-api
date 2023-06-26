@@ -684,5 +684,81 @@ class HutangHeader extends MyModel
         return $hutangHeader;
     }
 
+    public function getExport($id)
+    {
+        $this->setRequestParameters();
+
+        $getJudul = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))
+        ->select('text')
+        ->where('grp', 'JUDULAN LAPORAN')
+        ->where('subgrp', 'JUDULAN LAPORAN')
+        ->first();
+
+        $tempbayar = '##tempbayar' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+        Schema::create($tempbayar, function ($table) {
+            $table->string('hutang_nobukti', 100)->nullable();
+            $table->double('nominal', 15, 2)->nullable();
+        });
+
+        $query = DB::table('hutangbayardetail')->from(
+            DB::raw("hutangbayardetail as a with (readuncommitted)")
+        )
+            ->select(
+                'a.hutang_nobukti',
+                DB::raw("sum(a.nominal+a.potongan) as nominal")
+            )
+            ->groupby('hutang_nobukti');
+
+        DB::table($tempbayar)->insertUsing([
+            'hutang_nobukti',
+            'nominal',
+        ], $query);
+
+        $this->setRequestParameters();
+        $periode = request()->periode ?? '';
+        $statusCetak = request()->statuscetak ?? '';
+        $query = DB::table($this->table)->from(DB::raw("hutangheader with (readuncommitted)"))
+            ->select(
+                'hutangheader.id',
+                'hutangheader.nobukti',
+                'hutangheader.tglbukti',
+                'hutangheader.postingdari',
+
+                'akunpusat.keterangancoa as coa',
+                'supplier.namasupplier as supplier_id',
+                'hutangheader.total',
+                DB::raw("isnull(c.nominal,0) as nominalbayar"),
+                DB::raw("hutangheader.total-isnull(c.nominal,0) as sisahutang"),
+
+                'parameter.memo as statuscetak',
+                'statusapproval.memo as statusapproval',
+                'hutangheader.userbukacetak',
+                'hutangheader.jumlahcetak',
+                DB::raw('(case when (year(hutangheader.tglbukacetak) <= 2000) then null else hutangheader.tglbukacetak end ) as tglbukacetak'),
+                DB::raw("'Laporan Hutang' as judulLaporan"),
+                DB::raw("'" . $getJudul->text . "' as judul"),
+                DB::raw("'Tgl Cetak:'+format(getdate(),'dd-MM-yyyy HH:mm:ss')as tglcetak"),
+                DB::raw(" 'User :".auth('api')->user()->name."' as usercetak")
+            )
+            ->where("$this->table.id", $id)
+            ->leftJoin(DB::raw("parameter with (readuncommitted)"), 'hutangheader.statuscetak', 'parameter.id')
+            ->leftJoin(DB::raw("parameter as statusapproval with (readuncommitted)"), 'hutangheader.statusapproval', 'statusapproval.id')
+            ->leftJoin(DB::raw("akunpusat with (readuncommitted)"), 'hutangheader.coa', 'akunpusat.coa')
+            ->leftJoin(DB::raw("supplier with (readuncommitted)"), 'hutangheader.supplier_id', 'supplier.id')
+            ->leftJoin(DB::raw($tempbayar . " as c"), 'hutangheader.nobukti', 'c.hutang_nobukti');
+        if (request()->tgldari) {
+            $query->whereBetween($this->table . '.tglbukti', [date('Y-m-d', strtotime(request()->tgldari)), date('Y-m-d', strtotime(request()->tglsampai))]);
+        }
+        if ($periode != '') {
+            $periode = explode("-", $periode);
+            $query->whereRaw("MONTH(hutangheader.tglbukti) ='" . $periode[0] . "'")
+                ->whereRaw("year(hutangheader.tglbukti) ='" . $periode[1] . "'");
+        }
+        if ($statusCetak != '') {
+            $query->where("hutangheader.statuscetak", $statusCetak);
+        }
+        $data = $query->first();
+        return $data;
+    }
 
 }

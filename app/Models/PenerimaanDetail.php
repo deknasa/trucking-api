@@ -45,7 +45,6 @@ class PenerimaanDetail extends MyModel
                 DB::raw("(case when year(isnull($this->table.bulanbeban,'1900/1/1'))=1900 then null else $this->table.bulanbeban end) as bulanbeban"),
                 "debet.keterangancoa as coadebet",
                 "kredit.keterangancoa as coakredit",
-
             )
                 ->leftJoin(DB::raw("penerimaanheader as header with (readuncommitted)"), "header.id", "$this->table.penerimaan_id")
                 ->leftJoin(DB::raw("bank with (readuncommitted)"), "bank.id", "header.bank_id")

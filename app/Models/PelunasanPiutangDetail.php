@@ -31,23 +31,16 @@ class PelunasanPiutangDetail extends MyModel
 
         if (isset(request()->forReport) && request()->forReport) {
             $query->select(
-                'header.nobukti',
-                'header.tglbukti',
-                'header.keterangan as keterangan_header',
-                'bank.namabank as bank',
-                'agen.namaagen as agen',
+                $this->table .'.piutang_nobukti',
+                $this->table .'.invoice_nobukti',
+                $this->table .'.keteranganpotongan',
+                'akunpusat.keterangancoa as coapotongan',
                 $this->table . '.nominal',
-                $this->table . '.keterangan as keterangan_detail',
-                $this->table . '.nominal',
-                $this->table . '.piutang_nobukti',
-                $this->table . '.tglcair',
-                $this->table . '.tgljt',
+                $this->table . '.keterangan',
+                $this->table .'.nominallebihbayar',
+                $this->table .'.potongan',
             )
-                ->leftJoin(DB::raw("pelunasanpiutangheader as header with (readuncommitted)"), 'header.id', $this->table . '.pelunasanpiutang_id')
-                ->leftJoin(DB::raw("bank with (readuncommitted)"), 'header.bank_id', 'bank.id')
-                ->leftJoin(DB::raw("agen with (readuncommitted)"), 'header.agen_id', 'agen.id');
-
-
+                ->leftJoin(DB::raw("akunpusat with (readuncommitted)"), $this->table .'.coapotongan', 'akunpusat.coa');
             $query->where($this->table . '.pelunasanpiutang_id', '=', request()->pelunasanpiutang_id);
         } else {
             $query->select(

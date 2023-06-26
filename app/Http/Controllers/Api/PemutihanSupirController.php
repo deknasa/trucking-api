@@ -11,6 +11,7 @@ use App\Http\Requests\StorePemutihanSupirRequest;
 use App\Http\Requests\StorePenerimaanHeaderRequest;
 use App\Http\Requests\UpdatePemutihanSupirRequest;
 use App\Http\Requests\UpdatePenerimaanHeaderRequest;
+use App\Http\Requests\GetUpahSupirRangeRequest;
 use App\Models\Bank;
 use App\Models\Parameter;
 use App\Models\PemutihanSupirDetail;
@@ -369,6 +370,16 @@ class PemutihanSupirController extends Controller
      * @ClassName 
      */
     public function report()
+    {}
+
+    /**
+     * @ClassName 
+     */
+    public function export($id)
     {
+        $pemutihanSupir = new PemutihanSupir();
+        return response([
+            'data' => $pemutihanSupir->getExport($id)
+        ]);
     }
 }
