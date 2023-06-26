@@ -219,7 +219,7 @@ use App\Http\Controllers\Api\LaporanTransaksiHarianController;
 use App\Http\Controllers\Api\LaporanJurnalUmumController;
 use App\Http\Controllers\Api\LaporanPembelianController;
 use App\Http\Controllers\Api\LaporanPembelianStokController;
-use App\Models\LaporanPembelian;
+use App\Http\Controllers\Api\LaporanHutangGiroController;
 
 // use App\Http\Controllers\Api\LaporanTransaksiHarianController;
 
@@ -1174,6 +1174,10 @@ route::middleware(['auth:api','authorized'])->group(function () {
     Route::get('laporanpembelianstok/export', [LaporanPembelianStokController::class, 'export'])->name('laporanpembelianstok.export');
     Route::resource('laporanpembelianstok', LaporanPembelianStokController::class)->whereNumber('laporanpembelianstok');
 
+    Route::get('laporanhutanggiro/report', [LaporanHutangGiroController::class, 'report'])->name('laporanhutanggiro.report');
+    Route::get('laporanhutanggiro/export', [LaporanHutangGiroController::class, 'export'])->name('laporanhutanggiro.export');
+    Route::resource('laporanhutanggiro', LaporanHutangGiroController::class)->whereNumber('laporanhutanggiro');
+
 
 
     Route::get('laporanhutangbbm/report', [LaporanHutangBBMController::class, 'report'])->name('laporanhutangbbm.report');
@@ -1184,8 +1188,11 @@ route::middleware(['auth:api','authorized'])->group(function () {
     Route::resource('lapkartuhutangpervendordetail', LapKartuHutangPerVendorDetailController::class)->whereNumber('lapkartuhutangpervendordetail');
     Route::get('laporanwarkatbelumcair/report', [LaporanWarkatBelumCairController::class, 'report'])->name('laporanwarkatbelumcair.report');
     Route::resource('laporanwarkatbelumcair', LaporanWarkatBelumCairController::class)->whereNumber('laporanwarkatbelumcair');
+
     Route::get('laporanpiutanggiro/report', [LaporanPiutangGiroController::class, 'report'])->name('laporanpiutanggiro.report');
+    Route::get('laporanpiutanggiro/export', [LaporanPiutangGiroController::class, 'export'])->name('laporanpiutanggiro.export');
     Route::resource('laporanpiutanggiro', LaporanPiutangGiroController::class)->whereNumber('laporanpiutanggiro');
+    
     Route::get('laporanlabarugi/report', [LaporanLabaRugiController::class, 'report'])->name('laporanlabarugi.report');
     Route::resource('laporanlabarugi', LaporanLabaRugiController::class)->whereNumber('laporanlabarugi');
     Route::get('laporanneraca/report', [LaporanNeracaController::class, 'report'])->name('laporanneraca.report');
