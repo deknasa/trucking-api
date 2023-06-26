@@ -27,12 +27,16 @@ class ExistSuratPengantarRitasi implements Rule
      */
     public function passes($attribute, $value)
     {
-        $SuratPengantar  = DB::table("suratpengantar")->from(DB::raw("suratpengantar with (readuncommitted)"))
-            ->where('nobukti', $value)
-            ->first();
-        if ($SuratPengantar  == null) {
-            return false;
-        } else {
+        if ($value != null) {
+            $SuratPengantar  = DB::table("suratpengantar")->from(DB::raw("suratpengantar with (readuncommitted)"))
+                ->where('nobukti', $value)
+                ->first();
+            if ($SuratPengantar  == null) {
+                return false;
+            } else {
+                return true;
+            }
+        }else{
             return true;
         }
     }

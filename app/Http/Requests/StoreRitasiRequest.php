@@ -94,7 +94,7 @@ class StoreRitasiRequest extends FormRequest
                 new DateTutupBuku()
             ],
             'statusritasi' => 'required',
-            'suratpengantar_nobukti' => ['required', new ExistSuratPengantarRitasi()],
+            'suratpengantar_nobukti' => [new ExistSuratPengantarRitasi()],
             'dari' => ['required', new CekUpahRitasi()],
             'sampai' => 'required',
             'trado' => 'required',

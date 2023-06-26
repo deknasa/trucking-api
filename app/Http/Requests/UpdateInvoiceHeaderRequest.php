@@ -57,8 +57,11 @@ class UpdateInvoiceHeaderRequest extends FormRequest
             'tglbukti' => [
                 'required', 'date_format:d-m-Y',
                 new DateTutupBuku(),
-                'before_or_equal:' . date('d-m-Y'),
                 Rule::in(date('d-m-Y', strtotime($query->tglbukti))),
+            ],
+             'tgljatuhtempo' => [
+                'required','date_format:d-m-Y',
+                'after_or_equal:'.date('d-m-Y', strtotime($query->tglbukti)),
             ],
             'tgldari' => [
                 'required',
@@ -90,7 +93,7 @@ class UpdateInvoiceHeaderRequest extends FormRequest
             $rulesagen_id = [
                 'agen' => [
                     new ExistAgen(),
-                    new ValidasiDetail($jumlahdetail),
+                    // new ValidasiDetail($jumlahdetail),
                     Rule::in($query->agen),
 
                 ]
@@ -145,7 +148,7 @@ class UpdateInvoiceHeaderRequest extends FormRequest
             $rulesjenisorder_id = [
                 'jenisorder' => [
                     new ExistJenisOrder(),
-                    new ValidasiDetail($jumlahdetail),
+                    // new ValidasiDetail($jumlahdetail),
                     Rule::in($query->jenisorder),
                 ]
             ];

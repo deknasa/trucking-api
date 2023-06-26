@@ -67,6 +67,7 @@ class InvoiceHeaderController extends Controller
             $data = [
                 'tglbukti' => $request->tglbukti,
                 'tglterima' => $request->tglterima,
+                'tgljatuhtempo' => $request->tgljatuhtempo,
                 'agen_id' => $request->agen_id,
                 'jenisorder_id' => $request->jenisorder_id,
                 'piutang_nobukti' => $request->piutang_nobukti,
@@ -116,6 +117,7 @@ class InvoiceHeaderController extends Controller
             $data = [
                 'tglbukti' => $request->tglbukti,
                 'tglterima' => $request->tglterima,
+                'tgljatuhtempo' => $request->tgljatuhtempo,
                 'agen_id' => $request->agen_id,
                 'jenisorder_id' => $request->jenisorder_id,
                 'piutang_nobukti' => $request->piutang_nobukti,
