@@ -172,7 +172,6 @@ class UpahRitasiRincian extends MyModel
             $table->unsignedBigInteger('container_id')->nullable();
             $table->string('container', 1000)->nullable();
             $table->string('litercontainer', 1000)->nullable();
-            $table->double('nominal', 15, 2)->nullable();
             $table->double('liter', 10, 2)->nullable();
         });
 
@@ -182,7 +181,6 @@ class UpahRitasiRincian extends MyModel
                 'container.id as container_id',
                 'container.keterangan as container',
                 'container.keterangan as litercontainer',
-                DB::raw("isnull(upahritasirincian.nominalsupir,0) as nominal"),
                 DB::raw("isnull(upahritasirincian.liter,0) as liter"),
             )
             ->leftJoin(DB::raw("upahritasirincian with (readuncommitted)"), 'container.id', '=', 'upahritasirincian.container_id')
@@ -195,12 +193,11 @@ class UpahRitasiRincian extends MyModel
             'container_id',
             'container',
             'litercontainer',
-            'nominal',
             'liter',
         ], $query);
 
         $id = DB::table($tempdata)->first();
-
+        
         if ($id == null) {
             return null;
         } else {
@@ -212,6 +209,7 @@ class UpahRitasiRincian extends MyModel
                 $table->string('tujuan')->nullable();
                 $table->string('jarak')->nullable();
                 $table->string('tglmulaiberlaku')->nullable();
+                $table->double('nominal', 15, 2)->nullable();
             });
 
             $querytempupah = DB::table('upahritasi')->from(DB::raw("upahritasi with (readuncommitted)"))
@@ -221,6 +219,7 @@ class UpahRitasiRincian extends MyModel
                     'kota.keterangan as tujuan',
                     'upahritasi.jarak',
                     'upahritasi.tglmulaiberlaku',
+                    DB::raw("isnull(upahritasi.nominalsupir,0) as nominal"),
                     
                 )
                 ->leftJoin(DB::raw("kota with (readuncommitted)"), 'upahritasi.kotasampai_id', '=', 'kota.id')
@@ -233,9 +232,9 @@ class UpahRitasiRincian extends MyModel
                 'tujuan',
                 'jarak',
                 'tglmulaiberlaku',
+                'nominal',
                 
             ], $querytempupah);
-
 
             $tempdatagroup = '##tempdatagroup' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
             Schema::create($tempdatagroup, function ($table) {
@@ -290,20 +289,20 @@ class UpahRitasiRincian extends MyModel
                 $a = $a + 1;
             }
 
-            $statement = ' select b.dari as [Dari],b.tujuan as [Tujuan],b.jarak as [Jarak],b.tglmulaiberlaku as [Tgl Mulai Berlaku],A.* from (select id,' . $columnid . ' from 
-                (select A.id,A.container,A.nominal
-                    from ' . $tempdata . ' A) as SourceTable
+            // $statement = ' select b.dari as [Dari],b.tujuan as [Tujuan],b.jarak as [Jarak], b.nominal as [Nominal],b.tglmulaiberlaku as [Tgl Mulai Berlaku],A.* from (select id,' . $columnid . ' from 
+            //     (select A.id,A.container
+            //         from ' . $tempdata . ' A) as SourceTable
             
-                Pivot (
-                    max(nominal)
-                    for container in (' . $columnid . ')
-                    ) as PivotTable)A
-                inner join ' . $tempupah . ' b with (readuncommitted) on A.id=B.id
+            //     Pivot (
+            //         max(nominal)
+            //         for container in (' . $columnid . ')
+            //         ) as PivotTable)A
+            //     inner join ' . $tempupah . ' b with (readuncommitted) on A.id=B.id
                 
 
-            ';
+            // ';
 
-            $statement2 = 'select b.tujuan as [Tujuan],A.* from (select id,' . $columnliterid . ' from 
+            $statement2 = 'select b.dari as [Dari],b.tujuan as [Tujuan],b.jarak as [Jarak],b.tglmulaiberlaku as [Tgl Mulai Berlaku], b.nominal as [Nominal],A.* from (select id,' . $columnliterid . ' from 
                 (select A.id,A.litercontainer,A.liter
                     from ' . $tempdata . ' A) as SourceTable
             
@@ -314,17 +313,17 @@ class UpahRitasiRincian extends MyModel
                 inner join ' . $tempupah . ' b with (readuncommitted) on A.id=B.id
             ';
 
-            $data1 = DB::select(DB::raw($statement));
+            // $data1 = DB::select(DB::raw($statement));
             $data2 = DB::select(DB::raw($statement2));
-            $merger = [];
-            foreach ($data1 as $key => $value) {
-                $datas2 = json_decode(json_encode($data2[$key]), true);
-                $datas1 = json_decode(json_encode($data1[$key]), true);
-                $merger[] = array_merge($datas1, $datas2);
-            }
+            // $merger = [];
+            // foreach ($data1 as $key => $value) {
+            //     $datas2 = json_decode(json_encode($data2[$key]), true);
+            //     $datas1 = json_decode(json_encode($data1[$key]), true);
+            //     $merger[] = array_merge($datas1, $datas2);
+            // }
 
 
-            return $merger;
+            return $data2;
         }
     }
 
@@ -390,7 +389,7 @@ class UpahRitasiRincian extends MyModel
         $upahritasirincian = new UpahRitasiRincian();
         $upahritasirincian->upahritasi_id = $data['upahritasi_id'];
         $upahritasirincian->container_id = $data['container_id'];
-        $upahritasirincian->nominalsupir = $data['nominalsupir'];
+        $upahritasirincian->nominalsupir = 0;
         $upahritasirincian->liter = $data['liter'];
         $upahritasirincian->modifiedby = auth('api')->user()->name;
         

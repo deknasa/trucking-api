@@ -1038,7 +1038,7 @@ route::middleware(['auth:api','authorized'])->group(function () {
     Route::get('upahritasi/default', [UpahRitasiController::class, 'default']);
     Route::get('upahritasi/comboluarkota', [UpahRitasiController::class, 'comboluarkota']);
     Route::get('upahritasi/field_length', [UpahRitasiController::class, 'fieldLength']);
-    Route::get('upahritasi/listpivot', [UpahRitasiController::class, 'listpivot']);
+    Route::get('upahritasi/export', [UpahRitasiController::class, 'export']);
     Route::post('upahritasi/import', [UpahRitasiController::class, 'import']);
     Route::resource('upahritasi', UpahRitasiController::class)->whereNumber('upahritasi');
 

@@ -81,5 +81,6 @@ class ErrorSeeder extends Seeder
         error::create(['kodeerror' => 'DTA', 'keterangan' => 'DATA TIDAK ADA', 'modifiedby' => 'ADMIN',]);
         error::create(['kodeerror' => 'BAED', 'keterangan' => 'BUKA APPROVAL EDIT DATA', 'modifiedby' => 'ADMIN',]);
         error::create(['kodeerror' => 'TEPT', 'keterangan' => 'DATA TIDAK BISA DIEDIT PADA TANGGAL INI', 'modifiedby' => 'ADMIN',]);
+        error::create(['kodeerror' => 'NTS', 'keterangan' => 'NILAI TIDAK BOLEH SAMA', 'modifiedby' => 'ADMIN',]);
     }
 }

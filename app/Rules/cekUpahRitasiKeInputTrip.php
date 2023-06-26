@@ -32,9 +32,8 @@ class cekUpahRitasiKeInputTrip implements Rule
         $ritasiKe_id = request()->ritasike_id[$attribute];
         $this->sampai = $value;
         $this->dari = request()->ritasidari[$attribute];
-        $this->container = request()->container;
         $ritasi = new Ritasi();
-        $cekUpah = $ritasi->cekUpahRitasi($ritasiDari_id, $ritasiKe_id, request()->container_id);
+        $cekUpah = $ritasi->cekUpahRitasi($ritasiDari_id, $ritasiKe_id);
         if($cekUpah == null){
             return false;
         }else{
@@ -49,6 +48,6 @@ class cekUpahRitasiKeInputTrip implements Rule
      */
     public function message()
     {
-        return app(ErrorController::class)->geterror('URBA')->keterangan." dari $this->dari KE $this->sampai cont $this->container";
+        return app(ErrorController::class)->geterror('URBA')->keterangan." dari $this->dari KE $this->sampai";
     }
 }

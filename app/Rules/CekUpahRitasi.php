@@ -28,11 +28,10 @@ class CekUpahRitasi implements Rule
      */
     public function passes($attribute, $value)
     {
-        $getSP = DB::table("suratpengantar")->from(DB::raw("suratpengantar with (readuncommitted)"))->select('container_id')->where('nobukti', request()->suratpengantar_nobukti)->first();
         $this->dari = request()->dari;
         $this->sampai = request()->sampai;
         $ritasi = new Ritasi();
-        $cekUpah = $ritasi->cekUpahRitasi(request()->dari_id, request()->sampai_id, $getSP->container_id);
+        $cekUpah = $ritasi->cekUpahRitasi(request()->dari_id, request()->sampai_id);
         if($cekUpah == null){
             return false;
         }else{

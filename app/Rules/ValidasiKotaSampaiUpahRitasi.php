@@ -3,10 +3,9 @@
 namespace App\Rules;
 
 use App\Http\Controllers\Api\ErrorController;
-use App\Models\Ritasi;
 use Illuminate\Contracts\Validation\Rule;
 
-class cekUpahRitasiDariInputTrip implements Rule
+class ValidasiKotaSampaiUpahRitasi implements Rule
 {
     /**
      * Create a new rule instance.
@@ -27,14 +26,8 @@ class cekUpahRitasiDariInputTrip implements Rule
      */
     public function passes($attribute, $value)
     {
-        $attribute = substr($attribute,11);
-        $ritasiDari_id = request()->ritasidari_id[$attribute];
-        $ritasiKe_id = request()->ritasike_id[$attribute];
-        $this->sampai = request()->ritasike[$attribute];
-        $this->dari = $value;
-        $ritasi = new Ritasi();
-        $cekUpah = $ritasi->cekUpahRitasi($ritasiDari_id, $ritasiKe_id);
-        if($cekUpah == null){
+        $kotadari_id = request()->kotadari_id;
+        if(request()->kotasampai_id == $kotadari_id){
             return false;
         }else{
             return true;
@@ -48,6 +41,7 @@ class cekUpahRitasiDariInputTrip implements Rule
      */
     public function message()
     {
-        return app(ErrorController::class)->geterror('URBA')->keterangan." dari $this->dari KE $this->sampai";
+        $controller = new ErrorController;
+        return ':attribute' . ' ' . $controller->geterror('NTS')->keterangan.' dengan kota dari';
     }
 }

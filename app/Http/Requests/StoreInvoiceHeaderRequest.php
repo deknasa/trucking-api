@@ -62,9 +62,16 @@ class StoreInvoiceHeaderRequest extends FormRequest
             ],
         ];
 
-        $relatedRequests = [
-            StoreInvoiceDetailRequest::class
-        ];
+        // $relatedRequests = [
+        //     StoreInvoiceHeaderRequest::class
+        // ];
+
+        // foreach ($relatedRequests as $relatedRequest) {
+        //     $rules = array_merge(
+        //         $rules,
+        //         (new $relatedRequest)->rules()
+        //     );
+        // }
 
         $agen_id = $this->agen_id;
         $rulesagen_id = [];
@@ -72,7 +79,7 @@ class StoreInvoiceHeaderRequest extends FormRequest
             $rulesagen_id = [
                 'agen' => [
                     new ExistAgen(),
-                    // new ValidasiDetail($jumlahdetail),
+                    new ValidasiDetail($jumlahdetail),
                 ]
             ];
         } else if ($agen_id != null) {
@@ -126,7 +133,7 @@ class StoreInvoiceHeaderRequest extends FormRequest
             $rulesjenisorder_id = [
                 'jenisorder' => [
                     new ExistJenisOrder(),
-                    // new ValidasiDetail($jumlahdetail),
+                    new ValidasiDetail($jumlahdetail),
                 ]
             ];
         } else if ($jenisorder_id != null) {
@@ -174,16 +181,13 @@ class StoreInvoiceHeaderRequest extends FormRequest
             ];
         }        
         
-        foreach ($relatedRequests as $relatedRequest) {
-            $rules = array_merge(
-                $rules,
-                (new $relatedRequest)->rules(),
-                $rulesagen_id,
-                $rulesjenisorder_id,
-            );
-        }
+        $rule = array_merge(
+            $rules,
+            $rulesagen_id,
+            $rulesjenisorder_id,
+        );
 
-        return $rules;
+        return $rule;
     }
 
     public function attributes()
