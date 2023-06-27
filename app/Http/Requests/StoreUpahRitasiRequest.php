@@ -64,7 +64,7 @@ class StoreUpahRitasiRequest extends FormRequest
                 new UniqueUpahRitasiSampai(),
                 new ExistKota(),
                 function ($attribute, $value, $fail) {
-                    // Mendapatkan nilai kotadari_id dari input atau model yang relevan
+                    // Mendapatkan nilai kotadari_i d dari input atau model yang relevan
                     $kotadari_id = $this->kotadari_id;
         
                     if ($value == $kotadari_id) {
