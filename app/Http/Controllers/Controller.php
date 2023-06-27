@@ -159,24 +159,21 @@ class Controller extends BaseController
         $sheet->getStyle("A2")->getFont()->setSize(12);
         $sheet->mergeCells('A2:' . $alphabets[count($columns) + 2] . '2');
 
-            $i = 0;
-            foreach ($columns as &$kolom) {
-                if (isset($kolom['label'])) {
-                    $kolom['label'] = strtoupper($kolom['label']);
-                    
-                    $label[$i] = strtoupper($kolom['label']);
-                    $i++;
-                }
+        $i = 0;
+        foreach ($columns as &$kolom) {
+            if (isset($kolom['label'])) {
+                $kolom['label'] = strtoupper($kolom['label']);
 
+                $label[$i] = strtoupper($kolom['label']);
+                $i++;
             }
-           
+        }
+
         /* Set the table header */
         foreach ($columns as $columnsIndex => $column) {
             $sheet->setCellValue($alphabets[$columnsIndex] . $tableHeaderRow, $label[$i] ?? $columnsIndex + 1);
 
             $sheet->getColumnDimension($alphabets[$columnsIndex])->setAutoSize(true);
-
-          
         }
 
         /* Set the table header style */
@@ -186,12 +183,12 @@ class Controller extends BaseController
             ->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID)
             ->getStartColor()
             ->applyFromArray($styleArray);
-            
-            $sheet
+
+        $sheet
             ->getStyle("A$tableHeaderRow:" . $alphabets[count($columns) - 1] . "$tableHeaderRow")
             ->getAlignment()
             ->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER);
-        
+
 
         // ->setARGB('FF02c4f5');
 
@@ -217,24 +214,22 @@ class Controller extends BaseController
                     isset($column['index']) && $column['index'] == 'tglberhentisupir' ||
                     isset($column['index']) && $column['index'] == 'tgllahir' ||
                     isset($column['index']) && $column['index'] == 'tglterbitsim' || isset($column['index']) && $column['index'] == 'tglapproval'
-                    
+
                 ) {
                     if (isset($row[$column['index']])) {
                         // dd(substr($row[$column['index']],0,4));
-                        if (substr($row[$column['index']],0,4) == '1900') {
+                        if (substr($row[$column['index']], 0, 4) == '1900') {
                             $value = '';
                             $sheet->setCellValue($alphabets[$columnsIndex] . $startRow, $value);
                         } else {
                             $value = date('d-m-Y', strtotime($row[$column['index']]));
-                            
+
                             $sheet->setCellValue($alphabets[$columnsIndex] . $startRow, $value);
                             $sheet->getStyle($alphabets[$columnsIndex] . $startRow)->getNumberFormat()->setFormatCode('dd-mm-yyyy');
                         }
                     } else {
                         $value = $dataIndex + 1;
                     }
-
-                   
                 } elseif (
                     isset($column['index']) && $column['index'] == 'kmawal' ||
                     isset($column['index']) && $column['index'] == 'kmakhirgantioli' ||
@@ -243,15 +238,15 @@ class Controller extends BaseController
                     isset($column['index']) && $column['index'] == 'jumlahsumbu' ||
                     isset($column['index']) && $column['index'] == 'jumlahroda' ||
                     isset($column['index']) && $column['index'] == 'jumlahbanserap' ||
-                    isset($column['index']) && $column['index'] == 'nominaldepositsa'||
+                    isset($column['index']) && $column['index'] == 'nominaldepositsa' ||
                     isset($column['index']) && $column['index'] == 'depositke' ||
                     isset($column['index']) && $column['index'] == 'nominalpinjamansaldoawal' ||
-                    isset($column['index']) && $column['index'] == 'supirrold_id' 
+                    isset($column['index']) && $column['index'] == 'supirrold_id'
 
                 ) {
                     $sheet->setCellValue($alphabets[$columnsIndex] . $startRow, isset($column['index']) ? $row[$column['index']] : $dataIndex + 1);
                     $sheet->getStyle($alphabets[$columnsIndex] . $startRow)->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_RIGHT);
-                }else{
+                } else {
                     // $sheet->setCellValue($alphabets[$columnsIndex] . $tableHeaderRow, $column['label'] ?? $columnsIndex + 1);
                     $sheet->setCellValue($alphabets[$columnsIndex] . $startRow, isset($column['index']) ? $row[$column['index']] : $dataIndex + 1);
                     $sheet->getStyle($alphabets[$columnsIndex] . $startRow)->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_LEFT);
@@ -328,5 +323,50 @@ class Controller extends BaseController
             $data = $query->first();
         }
         return $data;
+    }
+
+    function get_client_ip()
+    {
+        $query = DB::table('parameter')->from (
+            DB::Raw("parameter with (readuncommitted)")
+        )
+        ->select('text')
+        ->where('grp', '=', 'HOSTNAME')
+        ->where('subgrp', '=', 'HOSTNAME')
+        ->first();
+
+        $ipaddress = '';
+        if (getenv('HTTP_CLIENT_IP'))
+            $ipaddress = getenv('HTTP_CLIENT_IP');
+        else if (getenv('HTTP_X_FORWARDED_FOR'))
+            $ipaddress = getenv('HTTP_X_FORWARDED_FOR');
+        else if (getenv('HTTP_X_FORWARDED'))
+            $ipaddress = getenv('HTTP_X_FORWARDED');
+        else if (getenv('HTTP_FORWARDED_FOR'))
+            $ipaddress = getenv('HTTP_FORWARDED_FOR');
+        else if (getenv('HTTP_FORWARDED'))
+            $ipaddress = getenv('HTTP_FORWARDED');
+        else if (getenv('REMOTE_ADDR'))
+            $ipaddress = getenv('REMOTE_ADDR');
+        else
+            $ipaddress = 'IP tidak dikenali';
+            if ($ipaddress=='::1' ) {
+                $ipaddress= gethostbyname(strtolower($query->text));
+            }
+        return $ipaddress;
+    }
+
+    function get_server_ip()
+    {
+        $query = DB::table('parameter')->from (
+            DB::Raw("parameter with (readuncommitted)")
+        )
+        ->select('text')
+        ->where('grp', '=', 'HOSTNAME')
+        ->where('subgrp', '=', 'HOSTNAME')
+        ->first();
+        // $ipaddress = gethostbyname(strtolower($query->text));
+        $ipaddress = gethostbyname("tasmdn.kozow.com");
+        return $ipaddress;
     }
 }
