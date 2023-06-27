@@ -376,7 +376,8 @@ route::middleware(['auth:api','authorized'])->group(function () {
     Route::get('upahsupir/combo', [UpahSupirController::class, 'combo']);
     Route::get('upahsupir/field_length', [UpahSupirController::class, 'fieldLength']);
     Route::get('upahsupir/default', [UpahSupirController::class, 'default']);
-    Route::get('upahsupir/listpivot', [UpahSupirController::class, 'listpivot']);
+    Route::get('upahsupir/export', [UpahSupirController::class, 'export']);
+    Route::post('upahsupir/import', [UpahSupirController::class, 'import']);
     Route::post('upahsupir/{id}/cekValidasi', [UpahSupirController::class, 'cekValidasi'])->name('upahsupir.cekValidasi')->whereNumber('id');
     Route::resource('upahsupir', UpahSupirController::class)->whereNumber('upahsupir');
 
