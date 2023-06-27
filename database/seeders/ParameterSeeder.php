@@ -366,5 +366,6 @@ class ParameterSeeder extends Seeder
         parameter::create(['grp' => 'STATUS SERVICE RUTIN', 'subgrp' => 'STATUS SERVICE RUTIN', 'kelompok' => '', 'text' => 'PERGANTIAN OLI MESIN', 'memo' => '{"MEMO":"PERGANTIAN OLI MESIN","SINGKATAN":"MLK","WARNA":"#28A745"}', 'type' => '0', 'modifiedby' => 'ADMIN', 'default' => '',]);
         parameter::create(['grp' => 'STATUS SERVICE RUTIN', 'subgrp' => 'STATUS SERVICE RUTIN', 'kelompok' => '', 'text' => 'PERGANTIAN OLI PERSNELING', 'memo' => '{"MEMO":"PERGANTIAN OLI PERSNELING","SINGKATAN":"MLK","WARNA":"#28A745"}', 'type' => '0', 'modifiedby' => 'ADMIN', 'default' => '',]);
         parameter::create(['grp' => 'STATUS SERVICE RUTIN', 'subgrp' => 'STATUS SERVICE RUTIN', 'kelompok' => '', 'text' => 'PERGANTIAN SARINGAN HAWA', 'memo' => '{"MEMO":"PERGANTIAN SARINGAN HAWA","SINGKATAN":"MLK","WARNA":"#28A745"}', 'type' => '0', 'modifiedby' => 'ADMIN', 'default' => '',]);
+        parameter::create(['grp' => 'HOSTNAME', 'subgrp' => 'HOSTNAME', 'kelompok' => '', 'text' => 'LOCALHOST', 'memo' => '{"MEMO":"HOSTNAME","SINGKATAN":"MLK","WARNA":"#28A745"}', 'type' => '0', 'modifiedby' => 'ADMIN', 'default' => '',]);
     }
 }
