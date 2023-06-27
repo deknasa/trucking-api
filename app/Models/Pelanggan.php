@@ -155,6 +155,7 @@ class Pelanggan extends MyModel
             'pelanggan.id',
             'pelanggan.kodepelanggan',
             'pelanggan.namapelanggan',
+            'pelanggan.namakontak',
             'pelanggan.keterangan',
             'pelanggan.telp',
             'pelanggan.alamat',
@@ -193,6 +194,7 @@ class Pelanggan extends MyModel
 
         $data = $query->get();
 
+        // dd($data);
         return $data;
     }
 
@@ -206,6 +208,7 @@ class Pelanggan extends MyModel
                     "$this->table.id,
             $this->table.kodepelanggan,
             $this->table.namapelanggan,
+            $this->table.namakontak,
             $this->table.keterangan,
             $this->table.telp,
             parameter.text as statusaktif,
@@ -227,6 +230,7 @@ class Pelanggan extends MyModel
             $table->bigInteger('id')->nullable();
             $table->string('kodepelanggan', 1000)->nullable();
             $table->string('namapelanggan', 1000)->nullable();
+            $table->string('namakontak', 1000)->nullable();
             $table->string('keterangan', 1000)->nullable();
             $table->string('telp', 1000)->nullable();
             $table->string('alamat', 1000)->nullable();
@@ -245,7 +249,7 @@ class Pelanggan extends MyModel
         $query = $this->selectColumns($query);
         $this->sort($query);
         $models = $this->filter($query);
-        DB::table($temp)->insertUsing(['id', 'kodepelanggan', 'namapelanggan', 'keterangan', 'telp', 'alamat', 'alamat2', 'kota', 'kodepos', 'modifiedby', 'statusaktif', 'created_at', 'updated_at'], $models);
+        DB::table($temp)->insertUsing(['id', 'kodepelanggan', 'namapelanggan','namakontak', 'keterangan', 'telp', 'alamat', 'alamat2', 'kota', 'kodepos', 'modifiedby', 'statusaktif', 'created_at', 'updated_at'], $models);
 
 
         return  $temp;
@@ -345,6 +349,7 @@ class Pelanggan extends MyModel
         $pelanggan = new Pelanggan();
         $pelanggan->kodepelanggan = $data['kodepelanggan'];
         $pelanggan->namapelanggan = $data['namapelanggan'];
+        $pelanggan->namakontak = $data['namakontak'];
         $pelanggan->telp = $data['telp'];
         $pelanggan->alamat = $data['alamat'];
         $pelanggan->alamat2 = $data['alamat2'] ?? '';
@@ -375,6 +380,7 @@ class Pelanggan extends MyModel
     {
         $pelanggan->kodepelanggan = $data['kodepelanggan'];
         $pelanggan->namapelanggan = $data['namapelanggan'];
+        $pelanggan->namakontak = $data['namakontak'];
         $pelanggan->telp = $data['telp'];
         $pelanggan->alamat = $data['alamat'];
         $pelanggan->alamat2 = $data['alamat2'] ?? '';

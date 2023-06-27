@@ -504,7 +504,9 @@ class PengembalianKasGantungHeader extends MyModel
             "$this->table.tglkasmasuk",
             "bank.namabank as bank",
             DB::raw("'Laporan Pengembalian Kas Gantung' as judulLaporan"),
-            DB::raw("'" . $getJudul->text . "' as judul")
+            DB::raw("'" . $getJudul->text . "' as judul"),
+            DB::raw("'Tgl Cetak:'+format(getdate(),'dd-MM-yyyy HH:mm:ss')as tglcetak"),
+            DB::raw(" 'User :".auth('api')->user()->name."' as usercetak")
         )
             ->leftJoin(DB::raw("bank with (readuncommitted)"), "$this->table.bank_id", "bank.id")
             ->leftJoin("akunpusat", "$this->table.coakasmasuk", "akunpusat.coa")

@@ -64,7 +64,7 @@ class UpahRitasiRincianController extends Controller
                     'zona.keterangan as zona',
                     'container.keterangan as container_id',
                     'header.tglmulaiberlaku',
-                    'detail.nominalsupir',
+                    'header.nominalsupir',
                     'detail.liter',
                     DB::raw("'Laporan Upah Ritasi' as judulLaporan"),
                     DB::raw("'" . $getJudul->text . "' as judul"),
@@ -81,7 +81,7 @@ class UpahRitasiRincianController extends Controller
             } else {
                 $query->select(
                     'container.keterangan as container_id',
-                    'detail.nominalsupir',
+                    // 'detail.nominalsupir',
                     // 'detail.nominalkenek',
                     // 'detail.nominalkomisi',
                     // 'detail.nominaltol',

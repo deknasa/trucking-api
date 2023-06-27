@@ -359,6 +359,16 @@ class KasGantungHeaderController extends Controller
      * @ClassName 
      */
     public function report()
+    { }
+
+    /**
+     * @ClassName 
+     */
+    public function export($id)
     {
+        $kasgantung = new KasGantungHeader();
+        return response([
+            'data' => $kasgantung->getExport($id)
+        ]);
     }
 }

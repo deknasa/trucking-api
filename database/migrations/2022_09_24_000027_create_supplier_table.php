@@ -16,7 +16,7 @@ class CreateSupplierTable extends Migration
     {
 
         Schema::dropIfExists('supplier');
-        
+
         Schema::create('supplier', function (Blueprint $table) {
             $table->id();
             $table->longText('namasupplier')->nullable();
@@ -31,13 +31,17 @@ class CreateSupplierTable extends Migration
             $table->string('web', 50)->nullable();
             $table->string('namapemilik', 150)->nullable();
             $table->string('jenisusaha', 150)->nullable();
-            $table->integer('top')->length(11)->nullable();
             $table->string('bank', 150)->nullable();
             $table->string('rekeningbank', 150)->nullable();
             $table->string('namarekening', 150)->nullable();
             $table->string('jabatan', 150)->nullable();
             $table->integer('statusdaftarharga')->length(11)->nullable();
             $table->string('kategoriusaha', 150)->nullable();
+            $table->double('top', 15, 2)->nullable();
+            $table->longText('keterangan')->nullable();
+            $table->integer('statusapproval')->Length(11)->nullable();
+            $table->date('tglapproval')->nullable();
+            $table->string('userapproval', 50)->nullable();
             $table->string('modifiedby', 50)->nullable();
             $table->string('coa', 50)->nullable();
             $table->timestamps();

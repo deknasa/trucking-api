@@ -491,7 +491,7 @@ class AbsensiSupirHeaderController extends Controller
     {
         $absensiSupirHeader = new AbsensiSupirHeader();
         return response([
-            'data' => $absensiSupirHeader->getExport($id),
+            'data' => $absensiSupirHeader->getExport($id)
         ]);
     }
     /**

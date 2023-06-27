@@ -21,5 +21,6 @@ class PengeluaranStokSeeder extends Seeder
         PengeluaranStok::create(['kodepengeluaran' => 'SPK', 'keterangan' => 'SPK STOK', 'coa' => '', 'format' => '135', 'statushitungstok' => '177', 'modifiedby' => 'ADMIN',]);
         PengeluaranStok::create(['kodepengeluaran' => 'RTR', 'keterangan' => 'RETUR STOK', 'coa' => '', 'format' => '139', 'statushitungstok' => '177', 'modifiedby' => 'ADMIN',]);
         PengeluaranStok::create(['kodepengeluaran' => 'KOR', 'keterangan' => 'KOREKSI STOK', 'coa' => '', 'format' => '221', 'statushitungstok' => '177', 'modifiedby' => 'ADMIN',]);
+        PengeluaranStok::create(['kodepengeluaran' => 'PJA', 'keterangan' => 'PENJUALAN STOK AFKIR', 'coa' => '', 'format' => '340', 'statushitungstok' => '177', 'modifiedby' => 'ADMIN',]);
     }
 }

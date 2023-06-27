@@ -930,4 +930,42 @@ class PenerimaanHeader extends MyModel
 
         return $penerimaanHeader;
     }
+
+    public function getExport($id)
+    {
+        $this->setRequestParameters();
+
+        $getJudul = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))
+        ->select('text')
+        ->where('grp', 'JUDULAN LAPORAN')
+        ->where('subgrp', 'JUDULAN LAPORAN')
+        ->first();
+
+        $query = DB::table($this->table)->from(DB::raw("penerimaanheader with (readuncommitted)"))
+            ->select(
+                'penerimaanheader.id',
+                'penerimaanheader.nobukti',
+                'penerimaanheader.tglbukti',
+                'pelanggan.namapelanggan as pelanggan_id',
+                'agen.namaagen as agen_id',
+                'bank.namabank as bank_id',
+                'bank.tipe as tipe_bank',
+                'penerimaanheader.postingdari',
+                'penerimaanheader.diterimadari',
+                DB::raw('(case when (year(penerimaanheader.tgllunas) <= 2000) then null else penerimaanheader.tgllunas end ) as tgllunas'),
+                'penerimaanheader.userapproval',
+                DB::raw("'Laporan Penerimaan' as judulLaporan"),
+                DB::raw("'" . $getJudul->text . "' as judul"),
+                DB::raw("'Tgl Cetak:'+format(getdate(),'dd-MM-yyyy HH:mm:ss')as tglcetak"),
+                DB::raw(" 'User :".auth('api')->user()->name."' as usercetak")
+            )
+            ->where("$this->table.id", $id)
+            ->leftJoin(DB::raw("pelanggan with (readuncommitted)"), 'penerimaanheader.pelanggan_id', 'pelanggan.id')
+            ->leftJoin(DB::raw("bank with (readuncommitted)"), 'penerimaanheader.bank_id', 'bank.id')
+            ->leftJoin(DB::raw("agen with (readuncommitted)"), 'penerimaanheader.agen_id', 'agen.id');
+
+        $data = $query->first();
+        return $data;
+    }
+ 
 }

@@ -378,7 +378,9 @@ class ServiceInHeader extends MyModel
                 'trado.kodetrado as trado_id',
                 'serviceinheader.tglmasuk',
                 DB::raw("'Laporan Service In' as judulLaporan"),
-                DB::raw("'" . $getJudul->text . "' as judul")
+                DB::raw("'" . $getJudul->text . "' as judul"),
+                DB::raw("'Tgl Cetak:'+format(getdate(),'dd-MM-yyyy HH:mm:ss')as tglcetak"),
+                DB::raw(" 'User :".auth('api')->user()->name."' as usercetak")
             )
             ->where("$this->table.id", $id)
             ->leftJoin(DB::raw("trado with (readuncommitted)"), 'serviceinheader.trado_id', 'trado.id');

@@ -3,10 +3,9 @@
 namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
-use App\Http\Controllers\Api\ParameterController;
 use App\Http\Controllers\Api\ErrorController;
 
-class StoreUpahRitasiRincianRequest extends FormRequest
+class ApprovalSupplierRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
@@ -26,9 +25,14 @@ class StoreUpahRitasiRincianRequest extends FormRequest
     public function rules()
     {
         return [
-            'container.*' => 'required',
-            'container_id.*' => 'required',
-            'liter.*' => ['required','numeric','min:0','max:'. (new ParameterController)->getparamid('BATAS NILAI LITER','BATAS NILAI LITER')->text],
+            'Id' => 'required'
+        ];
+    }
+
+    public function messages()
+    {
+        return [
+            'Id.required' => 'Supplier ' . app(ErrorController::class)->geterror('WP')->keterangan,
         ];
     }
 }

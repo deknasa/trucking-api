@@ -535,6 +535,16 @@ class JurnalUmumHeaderController extends Controller
      * @ClassName 
      */
     public function report()
+    { }
+
+    /**
+     * @ClassName 
+     */
+    public function export($id)
     {
+        $jurnalumum = new JurnalUmumHeader();
+        return response([
+            'data' => $jurnalumum->getExport($id)
+        ]);
     }
 }

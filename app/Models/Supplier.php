@@ -119,8 +119,9 @@ class Supplier extends MyModel
             // "$this->table.*",
             'supplier.id',
             'supplier.namasupplier',
-            'supplier.namasupplier',
             'supplier.namakontak',
+            'supplier.top',
+            'supplier.keterangan',
             'supplier.alamat',
             'supplier.kota',
             'supplier.kodepos',
@@ -140,7 +141,7 @@ class Supplier extends MyModel
 
             'parameter_statusdaftarharga.memo as statusdaftarharga',
             'supplier.kategoriusaha',
-
+            'statusapproval.memo as statusapproval',
             'supplier.modifiedby',
             'supplier.created_at',
             'supplier.updated_at',
@@ -151,7 +152,9 @@ class Supplier extends MyModel
 
         )
             ->leftJoin('parameter as parameter_statusaktif', "supplier.statusaktif", '=', 'parameter_statusaktif.id')
+            ->leftJoin(DB::raw("parameter as statusapproval with (readuncommitted)"), 'supplier.statusapproval', 'statusapproval.id')
             ->leftJoin('parameter as parameter_statusdaftarharga', "supplier.statusdaftarharga", '=', 'parameter_statusdaftarharga.id');
+            
 
         if ($aktif == 'AKTIF') {
             $statusaktif = Parameter::from(
@@ -228,20 +231,21 @@ class Supplier extends MyModel
         return $data;
     }
 
-    public function find($id)
+    public function findAll($id)
     {
         $query = DB::table('supplier')->select(
             'supplier.id',
             'supplier.namasupplier',
-            'supplier.namasupplier',
             'supplier.namakontak',
+            'supplier.[top]',
+            'supplier.keterangan',
             'supplier.alamat',
             'supplier.kota',
             'supplier.kodepos',
             'supplier.notelp1',
             'supplier.notelp2',
             'supplier.email',
-
+            'supplier.statusapproval',
             'supplier.statusaktif',
             'supplier.web',
             'supplier.namapemilik',
@@ -254,7 +258,9 @@ class Supplier extends MyModel
 
             'supplier.statusdaftarharga',
             'supplier.kategoriusaha',
-
+            'supplier.statusapproval',
+            'supplier.tglapproval',
+            'supplier.userapproval',
             'supplier.modifiedby',
             'supplier.created_at',
             'supplier.updated_at'
@@ -275,6 +281,8 @@ class Supplier extends MyModel
                 "$this->table.id,
             $this->table.namasupplier,
             $this->table.namakontak,
+            $this->table.[top],
+            $this->table.keterangan,
             $this->table.alamat,
             $this->table.kota,
             $this->table.kodepos,
@@ -293,7 +301,9 @@ class Supplier extends MyModel
             $this->table.jabatan,
             $this->table.statusdaftarharga,
             $this->table.kategoriusaha,
-
+            $this->table.statusapproval,
+            $this->table.tglapproval,
+            $this->table.userapproval,
             $this->table.modifiedby,
             $this->table.created_at,
             $this->table.updated_at"
@@ -309,6 +319,8 @@ class Supplier extends MyModel
             $table->bigInteger('id')->nullable();
             $table->longText('namasupplier')->nullable();
             $table->string('namakontak', 150)->nullable();
+            $table->integer('top')->length(11)->nullable();
+            $table->longText('keterangan')->nullable();
             $table->longText('alamat')->nullable();
             $table->string('kota', 150)->nullable();
             $table->string('kodepos', 50)->nullable();
@@ -326,6 +338,9 @@ class Supplier extends MyModel
             $table->string('jabatan', 150)->nullable();
             $table->string('statusdaftarharga')->length(11)->nullable();
             $table->string('kategoriusaha', 150)->nullable();
+            $table->string('statusapproval',150)->nullable();
+            $table->date('tglapproval')->nullable();
+            $table->string('userapproval',50)->nullable();            
             $table->string('modifiedby', 50)->nullable();
             $table->dateTime('created_at')->nullable();
             $table->dateTime('updated_at')->nullable();
@@ -336,7 +351,8 @@ class Supplier extends MyModel
         $query = $this->selectColumns($query);
         $this->sort($query);
         $models = $this->filter($query);
-        DB::table($temp)->insertUsing(['id', 'namasupplier', 'namakontak',  'alamat', 'kota', 'kodepos', 'notelp1', 'notelp2', 'email',  'statusaktif', 'web', 'namapemilik', 'jenisusaha', 'bank', 'coa', 'rekeningbank',  'namarekening', 'jabatan', 'statusdaftarharga', 'kategoriusaha', 'modifiedby', 'created_at', 'updated_at'], $models);
+        // dd($models->get());
+        DB::table($temp)->insertUsing(['id', 'namasupplier', 'namakontak','top','keterangan',  'alamat', 'kota', 'kodepos', 'notelp1', 'notelp2', 'email',  'statusaktif', 'web', 'namapemilik', 'jenisusaha', 'bank', 'coa', 'rekeningbank',  'namarekening', 'jabatan', 'statusdaftarharga', 'kategoriusaha','statusapproval','tglapproval','userapproval', 'modifiedby', 'created_at', 'updated_at'], $models);
 
         return  $temp;
     }
@@ -403,9 +419,16 @@ class Supplier extends MyModel
 
     public function processStore(array $data): Supplier
     {
+
+        $statusNonApproval = Parameter::from(DB::raw("parameter with (readuncommitted)"))
+        ->where('grp', '=', 'STATUS APPROVAL')->where('text', '=', 'NON APPROVAL')->first();
+
         $supplier = new Supplier();
         $supplier->namasupplier = $data['namasupplier'];
         $supplier->namakontak = $data['namakontak'];
+        $supplier->top = $data['top'];
+        $supplier->keterangan = $data['keterangan'];
+        $supplier->statusapproval = $statusNonApproval->id;
         $supplier->alamat = $data['alamat'];
         $supplier->kota = $data['kota'];
         $supplier->kodepos = $data['kodepos'];
@@ -448,6 +471,8 @@ class Supplier extends MyModel
     {
         $supplier->namasupplier = $data['namasupplier'];
         $supplier->namakontak = $data['namakontak'];
+        $supplier->top = $data['top'];
+        $supplier->keterangan = $data['keterangan'];
         $supplier->alamat = $data['alamat'];
         $supplier->kota = $data['kota'];
         $supplier->kodepos = $data['kodepos'];

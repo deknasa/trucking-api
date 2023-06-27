@@ -42,8 +42,18 @@ class ProsesGajiSupirDetail extends MyModel
                 DB::raw("'Laporan Proses Gaji Supir' as judulLaporan"),
                 $this->table . '.gajisupir_nobukti',
                 $this->table . '.nominal',
-                $this->table . '.keterangan as keterangan_detail'
+                $this->table . '.keterangan as keterangan_detail',
+                'gajisupirheader.total',
+                'gajisupirheader.uangjalan',
+                'gajisupirheader.bbm',
+                'gajisupirheader.uangmakanharian',
+                'gajisupirheader.potonganpinjaman',
+                'gajisupirheader.potonganpinjamansemua',
+                'gajisupirheader.deposito',
+                'gajisupirheader.komisisupir',
+                'gajisupirheader.tolsupir',
             )
+                ->leftJoin(DB::raw("gajisupirheader with (readuncommitted)"), $this->table . '.gajisupir_nobukti', 'gajisupirheader.nobukti')
                 ->leftJoin(DB::raw("prosesgajisupirheader as header with (readuncommitted)"), 'header.id', $this->table . '.prosesgajisupir_id')
                 ->leftJoin(DB::raw("supir with (readuncommitted)"), $this->table . '.supir_id', 'supir.id')
                 ->leftJoin(DB::raw("trado with (readuncommitted)"), $this->table . '.trado_id', 'trado.id');

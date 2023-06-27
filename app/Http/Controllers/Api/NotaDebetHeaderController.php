@@ -281,6 +281,16 @@ class NotaDebetHeaderController extends Controller
      * @ClassName 
      */
     public function report()
+    {}
+
+     /**
+     * @ClassName 
+     */
+    public function export($id)
     {
+        $notadebet = new NotaDebetHeader();
+        return response([
+            'data' => $notadebet->getExport($id)
+        ]);
     }
 }

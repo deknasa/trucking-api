@@ -26,7 +26,7 @@ use PhpOffice\PhpSpreadsheet\IOFactory;
 
 class UpahRitasiController extends Controller
 {
-   /**
+    /**
      * @ClassName 
      * UpahRitasi
      * @Detail1 UpahRitasiRincianController
@@ -54,7 +54,10 @@ class UpahRitasiController extends Controller
         ]);
     }
 
-    public function listpivot(GetUpahSupirRangeRequest $request)
+    /**
+     * @ClassName 
+     */
+    public function export(GetUpahSupirRangeRequest $request)
     {
         $dari = date('Y-m-d', strtotime($request->dari));
         $sampai = date('Y-m-d', strtotime($request->sampai));
@@ -94,11 +97,11 @@ class UpahRitasiController extends Controller
                 'kotadari_id' => $request->kotadari_id,
                 'kotasampai_id' => $request->kotasampai_id,
                 'jarak' => $request->jarak,
+                'nominalsupir' => $request->nominalsupir,
                 'statusaktif' => $request->statusaktif,
                 'tglmulaiberlaku' => date('Y-m-d', strtotime($request->tglmulaiberlaku)),
 
                 'container_id' => $request->container_id,
-                'nominalsupir' => $request->nominalsupir,
                 'liter' => $request->liter ?? 0,
             ];
             $upahritasi = (new upahritasi())->processStore($data);
@@ -114,10 +117,8 @@ class UpahRitasiController extends Controller
             ], 201);
         } catch (\Throwable $th) {
             DB::rollBack();
-            return response($th->getMessage());
+            throw $th;
         }
-
-        return response($upahritasi->upahritasiRincian());
     }
 
 
@@ -147,11 +148,11 @@ class UpahRitasiController extends Controller
                 'kotadari_id' => $request->kotadari_id,
                 'kotasampai_id' => $request->kotasampai_id,
                 'jarak' => $request->jarak,
+                'nominalsupir' => $request->nominalsupir,
                 'statusaktif' => $request->statusaktif,
                 'tglmulaiberlaku' => date('Y-m-d', strtotime($request->tglmulaiberlaku)),
 
                 'container_id' => $request->container_id,
-                'nominalsupir' => $request->nominalsupir,
                 'liter' => $request->liter ?? 0,
             ];
 
@@ -275,6 +276,9 @@ class UpahRitasiController extends Controller
         ]);
     }
 
+    /**
+     * @ClassName 
+     */
     public function import(Request $request)
     {
         $request->validate(

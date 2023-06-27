@@ -309,6 +309,16 @@ class PenerimaanTruckingHeaderController extends Controller
      * @ClassName 
      */
     public function report()
+    { }
+
+    /**
+     * @ClassName 
+     */
+    public function export($id)
     {
+        $penerimaantruckingheader = new PenerimaanTruckingHeader();
+        return response([
+            'data' => $penerimaantruckingheader->getExport($id)
+        ]);
     }
 }

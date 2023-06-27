@@ -45,6 +45,7 @@ class UpahRitasi extends MyModel
                 'kotasampai.keterangan as kotasampai_id',
                 DB::raw("CONCAT(upahritasi.jarak, ' KM') as jarak"),
                 'upahritasi.parent_id',
+                'upahritasi.nominalsupir',
                 // 'zona.keterangan as zona_id',
                 'parameter.memo as statusaktif',
                 'upahritasi.tglmulaiberlaku',
@@ -95,6 +96,7 @@ class UpahRitasi extends MyModel
                 'kotasampai.keterangan as kotasampai',
 
                 'upahritasi.jarak',
+                'upahritasi.nominalsupir',
                 'upahritasi.parent_id',
                 // 'upahritasi.zona_id',
                 // 'zona.keterangan as zona',
@@ -302,6 +304,7 @@ class UpahRitasi extends MyModel
         $upahritasi->kotadari_id = $data['kotadari_id'];
         $upahritasi->kotasampai_id = $data['kotasampai_id'];
         $upahritasi->jarak = $data['jarak'];
+        $upahritasi->nominalsupir = $data['nominalsupir'];
         $upahritasi->statusaktif = $data['statusaktif'];
         $upahritasi->tglmulaiberlaku = date('Y-m-d', strtotime($data['tglmulaiberlaku']));
         $upahritasi->modifiedby = auth('api')->user()->user;
@@ -321,18 +324,16 @@ class UpahRitasi extends MyModel
         ]);
 
         $detaillog = [];
-        for ($i = 0; $i < count($data['nominalsupir']); $i++) {
+        
+        for ($i = 0; $i < count($data['container_id']); $i++) {
 
             $upahritasiDetail = (new UpahRitasiRincian())->processStore($upahritasi, [
                 'upahritasi_id' => $upahritasi->id,
                 'container_id' => $data['container_id'][$i],
-                'nominalsupir' => $data['nominalsupir'][$i],
                 'liter' => $data['liter'][$i] ?? 0,
             ]);
-
             $detaillog[] = $upahritasiDetail->toArray();
         }
-
         (new LogTrail())->processStore([
             'namatabel' => strtoupper($upahritasiDetail->getTable()),
             'postingdari' => 'ENTRY UPAH RITASI RINCIAN',
@@ -352,6 +353,7 @@ class UpahRitasi extends MyModel
         $upahritasi->kotadari_id = $data['kotadari_id'];
         $upahritasi->kotasampai_id = $data['kotasampai_id'];
         $upahritasi->jarak = $data['jarak'];
+        $upahritasi->nominalsupir = $data['nominalsupir'];
         $upahritasi->statusaktif = $data['statusaktif'];
         $upahritasi->tglmulaiberlaku = date('Y-m-d', strtotime($data['tglmulaiberlaku']));
         $upahritasi->modifiedby = auth('api')->user()->user;
@@ -373,11 +375,10 @@ class UpahRitasi extends MyModel
         UpahRitasiRincian::where('upahritasi_id', $upahritasi->id)->delete();
 
         $detaillog = [];
-        for ($i = 0; $i < count($data['nominalsupir']); $i++) {
+        for ($i = 0; $i < count($data['container_id']); $i++) {
             $upahsupirDetail = (new UpahRitasiRincian())->processStore($upahritasi, [
                 'upahritasi_id' => $upahritasi->id,
                 'container_id' => $data['container_id'][$i],
-                'nominalsupir' => $data['nominalsupir'][$i],
                 'liter' => $data['liter'][$i] ?? 0,
             ]);
 
