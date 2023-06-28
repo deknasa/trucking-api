@@ -45,17 +45,23 @@ class AuthController extends Controller
         if ($ipclient != $ipserver) {
             $data = [
                 'status' => false,
-                'message' => '',
+                'message' => 'tests ',
                 'errors' => '',
+                'ipclient' => $ipclient,
+                'ipserver' =>  $ipserver,
             ];
         } else {
             $data = [
                 'status' => true,
                 'message' => '',
                 'errors' => '',
+                'ipclient' => $ipclient,
+                'ipserver' =>  $ipserver,
             ];
 
         }
-        return $data;
+        return response([
+            'data' => $data,
+        ]);
     }
 }

@@ -351,7 +351,7 @@ class Controller extends BaseController
         else
             $ipaddress = 'IP tidak dikenali';
             if ($ipaddress=='::1' ) {
-                $ipaddress= gethostbyname(strtolower($query->text));
+                $ipaddress= gethostbyname(env('APP_HOSTNAME'));
             }
         return $ipaddress;
     }
@@ -366,7 +366,7 @@ class Controller extends BaseController
         ->where('subgrp', '=', 'HOSTNAME')
         ->first();
         // $ipaddress = gethostbyname(strtolower($query->text));
-        $ipaddress = gethostbyname("tasmdn.kozow.com");
+        $ipaddress = gethostbyname(env('APP_HOSTNAME'));
         return $ipaddress;
     }
 }
