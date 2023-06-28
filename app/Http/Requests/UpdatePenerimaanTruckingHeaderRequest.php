@@ -6,6 +6,9 @@ use App\Http\Controllers\Api\ErrorController;
 use App\Models\PenerimaanTruckingHeader;
 use Illuminate\Foundation\Http\FormRequest;
 use App\Rules\DateTutupBuku;
+use App\Rules\ExistSupirDPOPenerimaanTrucking;
+use App\Rules\SupirDPOPenerimaanTrucking;
+use App\Rules\ValidasiDetail;
 use Illuminate\Validation\Rule;
 use Illuminate\Support\Facades\DB;
 
@@ -109,10 +112,21 @@ class UpdatePenerimaanTruckingHeaderRequest extends FormRequest
             return false;
         });
 
+        $penerimaantrucking_id = $this->penerimaantrucking_id;
+        if ($penerimaantrucking_id != null) {
+            $rulespenerimaan_id = [
+                'penerimaantrucking_id' => ['required', 'numeric', 'min:1',Rule::in($penerimaanId)]
+            ];
+        } else if ($penerimaantrucking_id == null && $this->penerimaantrucking != '') {
+            $rulespenerimaan_id = [
+                'penerimaantrucking_id' => ['required', 'numeric', 'min:1',Rule::in($penerimaanId)]
+            ];
+        }
         $penerimaanTruckingHeader = new PenerimaanTruckingHeader();
         $getDataPenerimaan = $penerimaanTruckingHeader->findAll(request()->id);
 // dd(request()->penerimaantrucking);
         if ($kodepenerimaan == 'PJP') {
+            $jumlahdetail = $this->jumlahdetail ?? 0;
             $rules = [
                 'nobukti' => [Rule::in($getDataPenerimaan->nobukti)],
                 "tglbukti" => [
@@ -121,10 +135,9 @@ class UpdatePenerimaanTruckingHeaderRequest extends FormRequest
                     new DateTutupBuku(),
                 ],
                 'penerimaantrucking' => ['required',Rule::in($getDataPenerimaan->kodepenerimaan)],
-                'penerimaantrucking_id' => ['required', 'numeric', 'min:1',Rule::in($getDataPenerimaan->penerimaantrucking_id)],
                 'bank' => [$ruleBank, Rule::in($getDataPenerimaan->bank), 'required'],
                 'bank_id' => [Rule::in($getDataPenerimaan->bank_id), 'required', 'min:1','numeric'],
-                'supir' => ['required', Rule::in($getDataPenerimaan->supir)],
+                'supir' => ['required', Rule::in($getDataPenerimaan->supir),new ValidasiDetail($jumlahdetail)],
                 'supirheader_id' => ['required', Rule::in($getDataPenerimaan->supirheader_id), 'numeric','min:1'],
                 // 'keterangancoa' => 'required'
             ];
@@ -138,11 +151,10 @@ class UpdatePenerimaanTruckingHeaderRequest extends FormRequest
                     new DateTutupBuku(),
                 ],
                 'penerimaantrucking' => ['required',Rule::in($getDataPenerimaan->kodepenerimaan)],
-                'penerimaantrucking_id' => ['required', 'numeric', 'min:1',Rule::in($getDataPenerimaan->penerimaantrucking_id)],
                 'bank' => [$ruleBank, Rule::in($getDataPenerimaan->bank), 'required'],
                 'bank_id' => [Rule::in($getDataPenerimaan->bank_id), 'required', 'min:1'],
                 'supir.*' => ['required', $supir],
-                'supir_id.*' => ['required', $supirId, 'numeric','min:1'],
+                'supir_id.*' => [new SupirDPOPenerimaanTrucking, new ExistSupirDPOPenerimaanTrucking()],
                 // 'keterangancoa' => 'required'
             ];
         }else{
@@ -154,7 +166,6 @@ class UpdatePenerimaanTruckingHeaderRequest extends FormRequest
                     new DateTutupBuku(),
                 ],
                 'penerimaantrucking' => ['required',Rule::in($kodepenerimaan)],
-                'penerimaantrucking_id' => ['required', 'numeric', 'min:1',Rule::in($getDataPenerimaan->penerimaantrucking_id)],
                 'bank' => [$ruleBank, Rule::in($getDataPenerimaan->bank), 'required'],
                 'bank_id' => [Rule::in($getDataPenerimaan->bank_id), 'required', 'min:1'],
                 // 'keterangancoa' => 'required'
@@ -168,7 +179,8 @@ class UpdatePenerimaanTruckingHeaderRequest extends FormRequest
         foreach ($relatedRequests as $relatedRequest) {
             $rules = array_merge(
                 $rules,
-                (new $relatedRequest)->rules()
+                (new $relatedRequest)->rules(),
+                $rulespenerimaan_id
             );
         }
         return $rules;

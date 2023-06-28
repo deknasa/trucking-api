@@ -70,8 +70,6 @@ class StorePenerimaanTruckingDetailRequest extends FormRequest
             ->where('id', $idpenerimaan)
             ->first();
         return [
-            'pjp_id' => [$requiredPJP, 'array'],
-            'pjp_id.*' => $requiredPJP,
             'sisa.*' => [$requiredPJP, $sisaNominus],
             'nominal' => 'required|array',
             'nominal.*' => ['required', 'numeric', 'gt:0'],
@@ -83,7 +81,6 @@ class StorePenerimaanTruckingDetailRequest extends FormRequest
     public function attributes()
     {
         return [
-            'pjp_id' => 'pjt',
             'nominal.*' => 'nominal',
             'keterangan.*' => 'keterangan',
         ];
@@ -92,7 +89,6 @@ class StorePenerimaanTruckingDetailRequest extends FormRequest
     public function messages()
     {
         return [
-            'pjp_id.required' => 'PJT ' . app(ErrorController::class)->geterror('WP')->keterangan,
             'nominal.*.gt' => app(ErrorController::class)->geterror('GT-ANGKA-0')->keterangan,
             'sisa.*.min' => 'SISA ' . app(ErrorController::class)->geterror('NTM')->keterangan,
         ];

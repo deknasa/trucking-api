@@ -360,7 +360,8 @@ class JurnalUmumHeader extends MyModel
         $jurnalUmumHeader = new JurnalUmumHeader();
         $statusApproval = Parameter::from(
             DB::raw("parameter with (readuncommitted)")
-        )->where('grp', 'STATUS APPROVAL')->where('text', 'APPROVAL')->first();$statusNonApproval = Parameter::from(
+        )->where('grp', 'STATUS APPROVAL')->where('text', 'APPROVAL')->first();
+        $statusNonApproval = Parameter::from(
             DB::raw("parameter with (readuncommitted)")
         )->where('grp', 'STATUS APPROVAL')->where('text', 'NON APPROVAL')->first();
 
@@ -522,10 +523,10 @@ class JurnalUmumHeader extends MyModel
         $this->setRequestParameters();
 
         $getJudul = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))
-        ->select('text')
-        ->where('grp', 'JUDULAN LAPORAN')
-        ->where('subgrp', 'JUDULAN LAPORAN')
-        ->first();
+            ->select('text')
+            ->where('grp', 'JUDULAN LAPORAN')
+            ->where('subgrp', 'JUDULAN LAPORAN')
+            ->first();
 
         $this->setRequestParameters();
 
@@ -570,12 +571,90 @@ class JurnalUmumHeader extends MyModel
                 DB::raw("'Laporan Jurnal Umum' as judulLaporan"),
                 DB::raw("'" . $getJudul->text . "' as judul"),
                 DB::raw("'Tgl Cetak:'+format(getdate(),'dd-MM-yyyy HH:mm:ss')as tglcetak"),
-                DB::raw(" 'User :".auth('api')->user()->name."' as usercetak")
+                DB::raw(" 'User :" . auth('api')->user()->name . "' as usercetak")
             )
             ->where("$this->table.id", $id)
             ->leftjoin(DB::raw($tempsummary . " as c"), 'jurnalumumheader.nobukti', 'c.nobukti');
-        
+
         $data = $query->first();
         return $data;
+    }
+
+    public function processApproval(array $data): JurnalUmumHeader
+    {
+        // dd($data);
+
+        $statusApproval = Parameter::from(
+            DB::raw("parameter with (readuncommitted)")
+        )->where('grp', '=', 'STATUS APPROVAL')->where('text', '=', 'APPROVAL')->first();
+        $statusNonApproval = Parameter::from(
+            DB::raw("parameter with (readuncommitted)")
+        )->where('grp', '=', 'STATUS APPROVAL')->where('text', '=', 'NON APPROVAL')->first();
+
+        for ($i = 0; $i < count($data['jurnalId']); $i++) {
+
+            $jurnalumum = JurnalUmumHeader::find($data['jurnalId'][$i]);
+
+            if ($jurnalumum->statusapproval == $statusApproval->id) {
+                $jurnalumum->statusapproval = $statusNonApproval->id;
+                $jurnalumum->tglapproval = date('Y-m-d', strtotime("1900-01-01"));
+                $jurnalumum->userapproval = '';
+                $aksi = $statusNonApproval->text;
+            } else {
+                $jurnalumum->statusapproval = $statusApproval->id;
+                $aksi = $statusApproval->text;
+                $jurnalumum->tglapproval = date('Y-m-d H:i:s');
+                $jurnalumum->userapproval = auth('api')->user()->name;
+            }
+
+            if (!$jurnalumum->save()) {
+                throw new \Exception("Error approval jurnal umum header.");
+            }
+            (new LogTrail())->processStore([
+                'namatabel' => strtoupper($jurnalumum->getTable()),
+                'postingdari' => 'APPROVAL JURNAL UMUM',
+                'idtrans' => $jurnalumum->id,
+                'nobuktitrans' => $jurnalumum->nobukti,
+                'aksi' => $aksi,
+                'datajson' => $jurnalumum->toArray(),
+                'modifiedby' => auth('api')->user()->user
+            ]);
+
+            // PROSES JURNAL UMUM PUSAT
+            $jurnalUmumPusat = JurnalUmumPusatHeader::from(DB::raw("jurnalumumpusatheader with (readuncommitted)"))->where('nobukti', $jurnalumum->nobukti)->first();
+            if ($jurnalUmumPusat != null) {
+                (new JurnalUmumPusatHeader())->processDestroy($jurnalUmumPusat->id, "$aksi JURNAL UMUM");
+            } else {
+
+                $jurnalDetail = JurnalUmumDetail::where('jurnalumum_id', $data['jurnalId'][$i])->get();
+                $coa_detail = [];
+                $nominal_detail = [];
+                $keterangan_detail = [];
+                $baris = [];
+                
+                foreach ($jurnalDetail as $index => $value) {
+                    $coa_detail[] = $value->coa;
+                    $nominal_detail[] = $value->nominal;
+                    $keterangan_detail[] = $value->keterangan;
+                    $baris[] = $value->baris;
+                }
+
+                $jurnalRequest = [
+                    'nobukti' => $jurnalumum->nobukti,
+                    'tglbukti' => $jurnalumum->tglbukti,
+                    'postingdari' => $jurnalumum->postingdari,
+                    'statusapproval' => $jurnalumum->statusapproval,
+                    'statusformat' => $jurnalumum->statusformat,
+                    'coa_detail' => $coa_detail,
+                    'nominal_detail' => $nominal_detail,
+                    'keterangan_detail' => $keterangan_detail,
+                    'baris' => $baris,
+                ];
+
+                (new JurnalUmumPusatHeader())->processStore($jurnalRequest);
+            }
+        }
+
+        return $jurnalumum;
     }
 }

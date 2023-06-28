@@ -8,6 +8,7 @@ use App\Rules\DateTutupBuku;
 use App\Rules\ExistAgen;
 use App\Rules\ExistAlatBayar;
 use App\Rules\ExistBank;
+use App\Rules\ValidasiDetail;
 use App\Rules\ValidasiNoWarkatPelunasanPiutang;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Support\Facades\DB;
@@ -32,6 +33,8 @@ class StorePelunasanPiutangHeaderRequest extends FormRequest
      */
     public function rules()
     {
+
+        $jumlahdetail = $this->jumlahdetail ?? 0;
 
         $bank_id = $this->bank_id;
         $rulesBank_id = [];
@@ -80,7 +83,7 @@ class StorePelunasanPiutangHeaderRequest extends FormRequest
         }
         $alatbayarGiro = AlatBayar::from(DB::raw("alatbayar with (readuncommitted)"))->where('kodealatbayar', 'GIRO')->first();
         $rulesNoWarkat = [];
-        if (request()->alatbayar_id == $alatbayarGiro->id){
+        if (request()->alatbayar_id == $alatbayarGiro->id) {
             $rulesNoWarkat = [
                 'nowarkat' => 'required'
             ];
@@ -92,7 +95,10 @@ class StorePelunasanPiutangHeaderRequest extends FormRequest
                 'before_or_equal:' . date('d-m-Y')
             ],
             'bank' => 'required',
-            'agen' => 'required',
+            'agen' => [
+                'required',
+                new ValidasiDetail($jumlahdetail)
+            ],
             'alatbayar' => ['required', Rule::in($dataKodeAlatBayar)]
         ];
         // dd(request()->alatbayar_id, $dataAlatBayar);
@@ -129,7 +135,6 @@ class StorePelunasanPiutangHeaderRequest extends FormRequest
     public function messages()
     {
         return [
-            'piutang_id.required' => 'PIUTANG ' . app(ErrorController::class)->geterror('WP')->keterangan,
             'sisa.*.min' => 'SISA ' . app(ErrorController::class)->geterror('NTM')->keterangan,
             'bayar.*.gt' => app(ErrorController::class)->geterror('GT-ANGKA-0')->keterangan,
             'bayar.*.numeric' => 'nominal harus ' . app(ErrorController::class)->geterror('BTSANGKA')->keterangan,
