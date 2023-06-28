@@ -551,11 +551,10 @@ class OrderanTrucking extends MyModel
                 'orderantrucking.nojobemkl2',
                 'orderantrucking.nocont2',
                 'orderantrucking.noseal2',
-                'parameter.memo as statuslangsir',
-                'param2.memo as statusperalihan',
-                'orderantrucking.modifiedby',
-                'orderantrucking.created_at',
-                'orderantrucking.updated_at'
+                DB::raw("'" . $dari . "' as tgldari"),
+                DB::raw("'" . $sampai . "' as tglsampai"),
+                DB::raw("'Tgl Cetak:'+format(getdate(),'dd-MM-yyyy HH:mm:ss')as tglcetak"),
+                DB::raw(" 'User :".auth('api')->user()->name."' as usercetak")
             )
             ->whereBetween($this->table . '.tglbukti', [date('Y-m-d', strtotime($dari)), date('Y-m-d', strtotime($sampai))])
             ->leftJoin(DB::raw("tarif with (readuncommitted)"), 'orderantrucking.tarif_id', '=', 'tarif.id')

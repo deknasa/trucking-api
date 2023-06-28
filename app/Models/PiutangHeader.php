@@ -619,4 +619,76 @@ class PiutangHeader extends MyModel
         $jurnalumumHeader = (new JurnalUmumHeader())->processDestroy($getJurnal->id, $postingDari);
         return $piutangHeader;
     }
+
+    public function getExport($id)
+    {
+        $temppelunasan = '##temppelunasan' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+        Schema::create($temppelunasan, function ($table) {
+            $table->string('piutang_nobukti', 100)->nullable();
+            $table->double('nominal', 15, 2)->nullable();
+        });
+
+        $query = DB::table('pelunasanpiutangdetail')->from(
+            DB::raw("pelunasanpiutangdetail as a with (readuncommitted)")
+        )
+            ->select(
+                'a.piutang_nobukti',
+                DB::raw("sum(a.nominal+a.potongan) as nominal")
+            )
+            ->groupby('piutang_nobukti');
+
+        DB::table($temppelunasan)->insertUsing([
+            'piutang_nobukti',
+            'nominal',
+        ], $query);
+
+        $this->setRequestParameters();
+
+        $periode = request()->periode ?? '';
+        $statusCetak = request()->statuscetak ?? '';
+
+        $getJudul = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))
+        ->select('text')
+        ->where('grp', 'JUDULAN LAPORAN')
+        ->where('subgrp', 'JUDULAN LAPORAN')
+        ->first();
+
+        $query = DB::table($this->table)->from(
+            DB::raw("piutangheader with (readuncommitted)")
+        )->select(
+            'piutangheader.id',
+            'piutangheader.nobukti',
+            'piutangheader.tglbukti',
+            'piutangheader.postingdari',
+            'piutangheader.nominal',
+            DB::raw("isnull(c.nominal,0) as nominalpelunasan"),
+            DB::raw("piutangheader.nominal-isnull(c.nominal,0) as sisapiutang"),
+            'piutangheader.invoice_nobukti',
+            'debet.keterangancoa as coadebet',
+            'kredit.keterangancoa as coakredit',
+            'agen.namaagen as agen_id',
+            DB::raw("'Laporan Piutang' as judulLaporan"),
+            DB::raw("'" . $getJudul->text . "' as judul"),
+            DB::raw("'Tgl Cetak:'+format(getdate(),'dd-MM-yyyy HH:mm:ss')as tglcetak"),
+            DB::raw(" 'User :".auth('api')->user()->name."' as usercetak")
+        )
+            ->where("$this->table.id", $id)
+            ->leftJoin(DB::raw("agen with (readuncommitted)"), 'piutangheader.agen_id', 'agen.id')
+            ->leftJoin(DB::raw("akunpusat as debet with (readuncommitted)"), 'piutangheader.coadebet', 'debet.coa')
+            ->leftJoin(DB::raw("akunpusat as kredit with (readuncommitted)"), 'piutangheader.coakredit', 'kredit.coa')
+            ->leftJoin(DB::raw($temppelunasan . " as c"), 'piutangheader.nobukti', 'c.piutang_nobukti');
+        if (request()->tgldari && request()->tglsampai) {
+            $query->whereBetween($this->table . '.tglbukti', [date('Y-m-d', strtotime(request()->tgldari)), date('Y-m-d', strtotime(request()->tglsampai))]);
+        }
+        if ($periode != '') {
+            $periode = explode("-", $periode);
+            $query->whereRaw("MONTH(piutangheader.tglbukti) ='" . $periode[0] . "'")
+                ->whereRaw("year(piutangheader.tglbukti) ='" . $periode[1] . "'");
+        }
+        if ($statusCetak != '') {
+            $query->where("piutangheader.statuscetak", $statusCetak);
+        }
+        $data = $query->first();
+        return $data;
+    }
 }

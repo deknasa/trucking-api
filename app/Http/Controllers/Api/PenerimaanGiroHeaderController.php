@@ -351,6 +351,16 @@ class PenerimaanGiroHeaderController extends Controller
      * @ClassName 
      */
     public function report()
+    { } 
+    
+    /**
+     * @ClassName 
+     */
+    public function export($id)
     {
+        $penerimaanGiro = new PenerimaanGiroHeader();
+        return response([
+            'data' => $penerimaanGiro->getExport($id),
+        ]);
     }
 }

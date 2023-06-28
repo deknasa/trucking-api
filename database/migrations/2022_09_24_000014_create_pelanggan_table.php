@@ -22,6 +22,7 @@ class CreatePelangganTable extends Migration
             $table->id();
             $table->string('kodepelanggan',50)->nullable();
             $table->string('namapelanggan',100)->nullable();
+            $table->string('namakontak',1000)->nullable();
             $table->longText('keterangan')->nullable();
             $table->string('telp',100)->nullable();
             $table->string('alamat',200)->nullable();

@@ -26,7 +26,7 @@ class GajiSupirDetailController extends Controller
     public function index(): JsonResponse
     {
         $gajiSupir = new GajiSupirDetail();
-
+        //($gajiSupir->get());
         return response()->json([
             'data' => $gajiSupir->get(),
             'attributes' => [

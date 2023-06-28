@@ -763,4 +763,38 @@ class KasGantungHeader extends MyModel
         return $kasgantungHeader;
 
     }
+
+    public function getExport($id)
+    {
+        $this->setRequestParameters();
+
+        $getJudul = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))
+        ->select('text')
+        ->where('grp', 'JUDULAN LAPORAN')
+        ->where('subgrp', 'JUDULAN LAPORAN')
+        ->first();
+
+        $query = DB::table($this->table)->from(DB::raw("kasgantungheader with (readuncommitted)"))
+        ->select(
+            'kasgantungheader.id',
+            'kasgantungheader.nobukti',
+            'kasgantungheader.tglbukti',
+            'kasgantungheader.penerima',
+            'penerima.namapenerima as penerima_id',
+            'bank.namabank as bank_id',
+            'kasgantungheader.pengeluaran_nobukti',
+            'kasgantungheader.coakaskeluar',
+            'kasgantungheader.postingdari',
+            DB::raw("'Laporan Kas Gantung' as judulLaporan"),
+            DB::raw("'" . $getJudul->text . "' as judul"),
+            DB::raw("'Tgl Cetak:'+format(getdate(),'dd-MM-yyyy HH:mm:ss')as tglcetak"),
+            DB::raw(" 'User :".auth('api')->user()->name."' as usercetak")
+        )
+        ->where("$this->table.id", $id)
+        ->leftJoin(DB::raw("penerima with (readuncommitted)"), 'kasgantungheader.penerima_id', 'penerima.id')
+        ->leftJoin(DB::raw("bank with (readuncommitted)"), 'kasgantungheader.bank_id', 'bank.id');
+
+        $data = $query->first();
+        return $data;
+    }
 }

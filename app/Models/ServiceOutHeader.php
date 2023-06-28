@@ -384,7 +384,9 @@ class ServiceOutHeader extends MyModel
             'trado.kodetrado as trado_id',
             'serviceoutheader.tglkeluar',
             DB::raw("'Laporan Service Out' as judulLaporan"),
-            DB::raw("'" . $getJudul->text . "' as judul")
+            DB::raw("'" . $getJudul->text . "' as judul"),
+            DB::raw("'Tgl Cetak:'+format(getdate(),'dd-MM-yyyy HH:mm:ss')as tglcetak"),
+            DB::raw(" 'User :".auth('api')->user()->name."' as usercetak")
         )
             ->where("$this->table.id", $id)
             ->leftJoin(DB::raw("trado with (readuncommitted)"), 'serviceoutheader.trado_id', 'trado.id');

@@ -38,7 +38,8 @@ class LaporanBukuBesar extends MyModel
         Schema::create($tempsaldo, function ($table) {
             $table->double('urut', 15, 2)->nullable();
             $table->string('coa', 1000)->nullable();
-            $table->dateTime('tglbukti')->nullable();
+            $table->string('keterangancoa', 1000)->nullable();
+            $table->date('tglbukti')->nullable();
             $table->string('nobukti', 100)->nullable();
             $table->longText('keterangan')->nullable();
             $table->double('debet', 15, 2)->nullable();
@@ -53,6 +54,7 @@ class LaporanBukuBesar extends MyModel
             ->select(
                 DB::raw("1 as urut"),
                 'b.coa',
+                'c.keterangancoa',
                 DB::raw("'1900/1/1' as tglbukti"),
                 DB::raw("'' as nobukti"),
                 DB::raw("'SALDO AWAL' as keterangan"),
@@ -64,18 +66,19 @@ class LaporanBukuBesar extends MyModel
             ->join(DB::raw("akunpusat as c with(readuncommitted)"), 'b.coa', 'c.coa')
             ->where('a.tglbukti', '<', $dari)
             ->whereRaw("(c.id >=" . $coadari_id)
-            ->whereRaw(DB::raw("c.id <=" . $coadari_id . ")"))
-            ->groupBy('b.coa');
+            ->whereRaw(DB::raw("c.id <=" . $coasampai_id . ")"))
+            ->groupBy('b.coa','c.keterangancoa');
 
               
 
-            // dd($querysaldoawal->get());
+            // dd($querysaldoawal->toSql());
 
 
    
         DB::table($tempsaldo)->insertUsing([
             'urut',
             'coa',
+            'keterangancoa',
             'tglbukti',
             'nobukti',
             'keterangan',
@@ -90,6 +93,7 @@ class LaporanBukuBesar extends MyModel
             ->select(
                 DB::raw("1 as urut"),
                 'a.coa',
+                'a.keterangancoa',
                 DB::raw("'1900/1/1' as tglbukti"),
                 DB::raw("'' as nobukti"),
                 DB::raw("'SALDO AWAL' as keterangan"),
@@ -99,12 +103,13 @@ class LaporanBukuBesar extends MyModel
             )
             ->leftjoin(DB::raw($tempsaldo)." as b",'a.coa','b.coa')
             ->whereRaw("(a.id >=" . $coadari_id)
-            ->whereRaw(DB::raw("a.id <=" . $coadari_id . ")"))
+            ->whereRaw(DB::raw("a.id <=" . $coasampai_id . ")"))
             ->whereRaw("isnull(B.coa,'')=''");
-
+            // dd($querysaldoawal->toSql());
             DB::table($tempsaldo)->insertUsing([
                 'urut',
                 'coa',
+                'keterangancoa',
                 'tglbukti',
                 'nobukti',
                 'keterangan',
@@ -119,7 +124,8 @@ class LaporanBukuBesar extends MyModel
             $table->id();
             $table->double('urut', 15, 2)->nullable();
             $table->string('coa', 1000)->nullable();
-            $table->dateTime('tglbukti')->nullable();
+            $table->string('keterangancoa', 1000)->nullable();
+            $table->date('tglbukti')->nullable();
             $table->string('nobukti', 100)->nullable();
             $table->longText('keterangan')->nullable();
             $table->double('debet', 15, 2)->nullable();
@@ -133,6 +139,7 @@ class LaporanBukuBesar extends MyModel
             ->select(
                 DB::raw("2 as urut"),
                 'b.coa',
+                'c.keterangancoa',
                 DB::raw("a.tglbukti"),
                 DB::raw("a.nobukti as nobukti"),
                 DB::raw("b.keterangan as keterangan"),
@@ -156,6 +163,7 @@ class LaporanBukuBesar extends MyModel
         DB::table($tempdetail)->insertUsing([
             'urut',
             'coa',
+            'keterangancoa',
             'tglbukti',
             'nobukti',
             'keterangan',
@@ -172,7 +180,8 @@ class LaporanBukuBesar extends MyModel
             $table->id();
             $table->unsignedBigInteger('urut')->nullable();
             $table->string('coa', 1000)->nullable();
-            $table->dateTime('tglbukti')->nullable();
+            $table->string('keterangancoa', 1000)->nullable();
+            $table->date('tglbukti')->nullable();
             $table->string('nobukti', 100)->nullable();
             $table->longText('keterangan')->nullable();
             $table->double('debet', 15, 2)->nullable();
@@ -184,6 +193,7 @@ class LaporanBukuBesar extends MyModel
             ->select(
                 'urut',
                 'coa',
+                'keterangancoa',
                 'tglbukti',
                 'nobukti',
                 'keterangan',
@@ -196,6 +206,7 @@ class LaporanBukuBesar extends MyModel
         DB::table($temprekap)->insertUsing([
             'urut',
             'coa',
+            'keterangancoa',
             'tglbukti',
             'nobukti',
             'keterangan',
@@ -208,6 +219,7 @@ class LaporanBukuBesar extends MyModel
             ->select(
                 'urut',
                 'coa',
+                'keterangancoa',
                 'tglbukti',
                 'nobukti',
                 'keterangan',
@@ -220,6 +232,7 @@ class LaporanBukuBesar extends MyModel
         DB::table($temprekap)->insertUsing([
             'urut',
             'coa',
+            'keterangancoa',
             'tglbukti',
             'nobukti',
             'keterangan',
@@ -228,17 +241,28 @@ class LaporanBukuBesar extends MyModel
             'saldo',
         ], $queryRekap);
 
+        $getJudul = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))
+            ->select('text')
+            ->where('grp', 'JUDULAN LAPORAN')
+            ->where('subgrp', 'JUDULAN LAPORAN')
+            ->first();
+
         $queryRekap = DB::table($temprekap)
             ->select(
                 'id',
                 'urut',
                 'coa',
+                'keterangancoa',
                 DB::raw("(case when year(tglbukti)=1900 then null else tglbukti end) as tglbukti"),
                 'nobukti',
                 'keterangan',
                 DB::raw("(case when debet=0 then null else debet end) as debet"),
                 DB::raw("(case when kredit=0 then null else kredit end) as kredit"),
-                DB::raw("sum ((isnull(saldo,0)+debet)-Kredit) over (order by id asc) as Saldo")
+                DB::raw("sum ((isnull(saldo,0)+debet)-Kredit) over (order by id asc) as Saldo"),
+                DB::raw("'Laporan Buku Besar' as judulLaporan"),
+                DB::raw("'" . $getJudul->text . "' as judul"),
+                DB::raw("'Tgl Cetak:'+format(getdate(),'dd-MM-yyyy HH:mm:ss')as tglcetak"),
+                DB::raw(" 'User :".auth('api')->user()->name."' as usercetak")
             )
             ->orderBy('id', 'Asc');
 

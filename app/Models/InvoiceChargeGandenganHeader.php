@@ -299,7 +299,9 @@ class InvoiceChargeGandenganHeader extends MyModel
             "agen.namaagen as  agen",
             "parameter.memo as statusapproval",
             DB::raw("'Laporan Invoice Charge Gandengan' as judulLaporan"),
-            DB::raw("'" . $getJudul->text . "' as judul")
+            DB::raw("'" . $getJudul->text . "' as judul"),
+            DB::raw("'Tgl Cetak:'+format(getdate(),'dd-MM-yyyy HH:mm:ss')as tglcetak"),
+            DB::raw(" 'User :".auth('api')->user()->name."' as usercetak")
         )
             ->where("$this->table.id", $id)
             ->leftJoin(DB::raw("parameter with (readuncommitted)"), 'invoicechargegandenganheader.statusapproval', 'parameter.id')

@@ -437,6 +437,16 @@ class PenerimaanHeaderController extends Controller
      * @ClassName 
      */
     public function report()
+    {}
+
+    /**
+     * @ClassName 
+     */
+    public function export($id)
     {
+        $penerimaanHeader = new PenerimaanHeader();
+        return response([
+            'data' => $penerimaanHeader->getExport($id)
+        ]);
     }
 }

@@ -513,7 +513,7 @@ class UpahSupir extends MyModel
             $upahsupir->tglmulaiberlaku = date('Y-m-d', strtotime($data['tglmulaiberlaku']));
             $upahsupir->statussimpankandang = $data['statussimpankandang'];
             $upahsupir->statusluarkota = $data['statusluarkota'] ?? '';
-            $upahsupir->keterangan = $data['keterangan'];
+            $upahsupir->keterangan = $data['keterangan'] ?? '';
             $upahsupir->modifiedby = auth('api')->user()->user;
             $this->deleteFiles($upahsupir);
 

@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 use App\Services\RunningNumberService;
-
+use Psy\CodeCleaner\FunctionReturnInWriteContextPass;
 
 class HutangBayarHeader extends MyModel
 {
@@ -747,4 +747,53 @@ class HutangBayarHeader extends MyModel
     }
 
 
+    public function getExport($id)
+    {
+        $this->setRequestParameters();
+
+        $getJudul = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))
+        ->select('text')
+        ->where('grp', 'JUDULAN LAPORAN')
+        ->where('subgrp', 'JUDULAN LAPORAN')
+        ->first();
+
+        $periode = request()->periode ?? '';
+        $statusCetak = request()->statuscetak ?? '';
+
+        $query = DB::table($this->table)->from(DB::raw("hutangbayarheader with (readuncommitted)"))
+            ->select(
+                'hutangbayarheader.id',
+                'hutangbayarheader.nobukti',
+                'hutangbayarheader.tglbukti',
+                'hutangbayarheader.pengeluaran_nobukti',
+                'akunpusat.keterangancoa as coa',
+                'bank.namabank as bank_id',
+                'supplier.namasupplier as supplier_id',
+                'alatbayar.keterangan as alatbayar_id',
+                'hutangbayarheader.tglcair',
+                DB::raw("'Laporan Pembayaran Hutang' as judulLaporan"),
+                DB::raw("'" . $getJudul->text . "' as judul"),
+                DB::raw("'Tgl Cetak:'+format(getdate(),'dd-MM-yyyy HH:mm:ss')as tglcetak"),
+                DB::raw(" 'User :".auth('api')->user()->name."' as usercetak")
+            )
+            ->where("$this->table.id", $id)
+            ->leftJoin(DB::raw("akunpusat with (readuncommitted)"), 'hutangbayarheader.coa', 'akunpusat.coa')
+            ->leftJoin(DB::raw("bank with (readuncommitted)"), 'hutangbayarheader.bank_id', 'bank.id')
+            ->leftJoin(DB::raw("supplier with (readuncommitted)"), 'hutangbayarheader.supplier_id', 'supplier.id')
+            ->leftJoin(DB::raw("alatbayar with (readuncommitted)"), 'hutangbayarheader.alatbayar_id', 'alatbayar.id');
+        
+        if (request()->tgldari) {
+            $query->whereBetween($this->table . '.tglbukti', [date('Y-m-d', strtotime(request()->tgldari)), date('Y-m-d', strtotime(request()->tglsampai))]);
+        }
+        if ($periode != '') {
+            $periode = explode("-", $periode);
+            $query->whereRaw("MONTH(hutangbayarheader.tglbukti) ='" . $periode[0] . "'")
+                ->whereRaw("year(hutangbayarheader.tglbukti) ='" . $periode[1] . "'");
+        }
+        if ($statusCetak != '') {
+            $query->where("hutangbayarheader.statuscetak", $statusCetak);
+        }
+        $data = $query->first();
+        return $data;
+    }
 }

@@ -420,6 +420,16 @@ class HutangBayarHeaderController extends Controller
      * @ClassName 
      */
     public function report()
+    { }
+
+    /**
+     * @ClassName 
+     */
+    public function export($id)
     {
+        $hutangbayar = new HutangBayarHeader();
+        return response([
+            'data' => $hutangbayar->getExport($id)
+        ]);
     }
 }

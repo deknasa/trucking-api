@@ -28,8 +28,14 @@ class CreateStokTable extends Migration
             $table->string('namastok',200)->nullable();
             $table->integer('statusaktif')->length(11)->nullable();
             $table->integer('statusreuse')->length(11)->nullable();
+            $table->integer('statusban')->length(11)->nullable();
+            $table->integer('statusservicerutin')->length(11)->nullable();
             $table->double('qtymin',15,2)->nullable();
             $table->double('qtymax',15,2)->nullable();
+            $table->double('hargabelimin',15,2)->nullable();
+            $table->double('hargabelimax',15,2)->nullable();
+            $table->double('vulkanisirawal',15,2)->nullable();
+            $table->double('totalvulkanisir',15,2)->nullable();
             $table->longText('keterangan')->nullable();
             $table->longText('gambar')->nullable();
             $table->longText('namaterpusat')->nullable();
