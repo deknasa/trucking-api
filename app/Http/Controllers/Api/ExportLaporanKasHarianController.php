@@ -3,6 +3,8 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\ValidasiExportKasHairanRequest;
+use App\Http\Requests\ValidasiExportKasHarianRequest;
 use App\Models\ExportLaporanKasHarian;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -26,23 +28,28 @@ class ExportLaporanKasHarianController extends Controller
     /**
      * @ClassName
      */
-    public function export(Request $request)
+    public function export(ValidasiExportKasHarianRequest $request)
     {
-        $sampai = $request->sampai;
-        $jenis = $request->jenis;
+        if ($request->isCheck) {
+            return response([
+                'data' => 'ok'
+            ]);
+        } else {
+
+            $sampai = $request->sampai;
+            $jenis = $request->jenis;
 
 
-        $export = ExportLaporanKasHarian::getExport($sampai, $jenis);
+            $export = ExportLaporanKasHarian::getExport($sampai, $jenis);
 
-        foreach ($export[0] as $data) {
-            $data->tgl = date('d-m-Y', strtotime($data->tgl));
+            foreach ($export[0] as $data) {
+                $data->tgl = date('d-m-Y', strtotime($data->tgl));
+            }
+
+            return response([
+                'data' => $export[0],
+                'dataDua' => $export[1],
+            ]);
         }
-
-        return response([
-            'data' => $export[0],
-            'dataDua' => $export[1],
-        ]);
-
-
     }
 }
