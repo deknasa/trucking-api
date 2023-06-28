@@ -26,7 +26,6 @@ class UpdatePengembalianKasGantungDetailRequest extends FormRequest
     public function rules()
     {
         return [
-            'kasgantungdetail_id' => 'required',
             'nominal.*' => ['required','numeric','gt:0', new CekMaxBayarPengembalianKasGantungEdit()],
             'keterangandetail.*' => 'required',
             'coadetail.*' => 'required',

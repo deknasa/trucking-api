@@ -7,6 +7,9 @@ use App\Models\Parameter;
 use Illuminate\Foundation\Http\FormRequest;
 use App\Rules\DateTutupBuku;
 use App\Rules\ExistBank;
+use App\Rules\ExistSupir;
+use App\Rules\ExistSupirForPengeluaranTrucking;
+use App\Rules\ValidasiDetail;
 use Illuminate\Validation\Rule;
 use Illuminate\Support\Facades\DB;
 
@@ -156,6 +159,8 @@ class StorePengeluaranTruckingHeaderRequest extends FormRequest
 
         $kodepengeluaran    = $pengeluaranTrucking->kodepengeluaran;
 
+        $rulesSupir_id = [];
+
         if($kodepengeluaran == 'KBBM' ){
             $rules = [
                 "tglbukti" => [
@@ -200,6 +205,30 @@ class StorePengeluaranTruckingHeaderRequest extends FormRequest
                 ],
                 // 'keterangancoa' => 'required',
             ];
+        }elseif($kodepengeluaran == 'TDE'){
+            $supirheader_id = $this->supirheader_id;
+            if ($supirheader_id != null) {
+                $rulesSupir_id = [
+                    'supirheader_id' => ['required', 'numeric', 'min:1', new ExistSupirForPengeluaranTrucking()]
+                ];
+            } else if ($supirheader_id == null && $this->supirheader != '') {
+                $rulesSupir_id = [
+                    'supirheader_id' => ['required', 'numeric', 'min:1', new ExistSupirForPengeluaranTrucking()]
+                ];
+            }
+            $jumlahdetail = $this->jumlahdetail ?? 0;
+            $rules = [
+                "tglbukti" => [
+                    "required", 'date_format:d-m-Y',
+                    'date_equals:'.date('d-m-Y'),
+                    new DateTutupBuku()
+                ],
+                'pengeluarantrucking' => 'required','numeric', 'min:1',
+                'statusposting' => 'required',
+                'bank' => [$ruleBank],
+                'supirheader' => ['required',  new ValidasiDetail($jumlahdetail)],
+                // 'keterangancoa' => 'required',
+            ];
         }else{
             $rules = [
                 "tglbukti" => [
@@ -234,7 +263,8 @@ class StorePengeluaranTruckingHeaderRequest extends FormRequest
                 $rules,
                 (new $relatedRequest)->rules(),
                 $rulesBank_id,
-                $rulseKlaim
+                $rulseKlaim,
+                $rulesSupir_id
             );
         }
 
@@ -249,7 +279,7 @@ class StorePengeluaranTruckingHeaderRequest extends FormRequest
             'tglbukti' => 'Tgl Bukti',
             'keterangancoa' => 'nama perkiraan',
             'pengeluarantrucking' => 'Kode Pengeluaran',
-            'supirhaeader' => 'supir',
+            'supirheader' => 'supir',
             'supirhaeader_id' => 'supir',
             'trado' => 'trado',
             'tradoheader_id' => 'trado',

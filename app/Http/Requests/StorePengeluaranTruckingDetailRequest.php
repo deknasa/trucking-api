@@ -121,8 +121,6 @@ class StorePengeluaranTruckingDetailRequest extends FormRequest
         }
 
         $rules = [
-            'tde_id' => [$requiredTDE, 'array'],
-            'tde_id.*' => $requiredTDE,
             'kbbm_id' => [$requiredKBBM, 'array'],
             'kbbm_id.*' => $requiredKBBM,
             'id_detail' => [$requiredBST, 'array'],
@@ -147,7 +145,6 @@ class StorePengeluaranTruckingDetailRequest extends FormRequest
     public function attributes()
     {
         return [
-            'tde_id' => 'deposito',
             'kbbm_id' => 'bbm',
             'id_detail' => 'invoice',
             'supir.*' => 'supir',
@@ -159,7 +156,6 @@ class StorePengeluaranTruckingDetailRequest extends FormRequest
     public function messages()
     {
         return [
-            'tde_id.required' => 'deposito ' . app(ErrorController::class)->geterror('WP')->keterangan,
             'kbbm_id.required' => 'bbm ' . app(ErrorController::class)->geterror('WP')->keterangan,
             'id_detail.required' => 'invoice ' . app(ErrorController::class)->geterror('WP')->keterangan,
             'nominal.*.gt' => app(ErrorController::class)->geterror('GT-ANGKA-0')->keterangan,
