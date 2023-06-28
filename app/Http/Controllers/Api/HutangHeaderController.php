@@ -412,6 +412,16 @@ class HutangHeaderController extends Controller
      * @ClassName 
      */
     public function report()
+    {}
+    
+    /**
+     * @ClassName 
+     */
+    public function export($id)
     {
+        $hutangHeader = new HutangHeader();
+        return response([
+            'data' => $hutangHeader->getExport($id)
+        ]);
     }
 }

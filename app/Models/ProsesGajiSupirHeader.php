@@ -1123,12 +1123,15 @@ class ProsesGajiSupirHeader extends MyModel
                 $this->tableTotal . '.potonganpinjamansemua',
                 $this->tableTotal . '.deposito',
                 DB::raw("'Laporan Proses Gaji Supir' as judulLaporan"),
-                DB::raw("'" . $getJudul->text . "' as judul")
+                DB::raw("'" . $getJudul->text . "' as judul"),
+                DB::raw("'Tgl Cetak:'+format(getdate(),'dd-MM-yyyy HH:mm:ss')as tglcetak"),
+                DB::raw(" 'User :".auth('api')->user()->name."' as usercetak")
             )
             ->where("$this->table.id", $id)
             ->leftJoin(DB::raw("parameter as statuscetak with (readuncommitted)"), 'prosesgajisupirheader.statuscetak', 'statuscetak.id')
             ->leftJoin(DB::raw("parameter as statusapproval with (readuncommitted)"), 'prosesgajisupirheader.statusapproval', 'statusapproval.id')
             ->leftJoin($this->tableTotal, $this->tableTotal . '.nobukti', 'prosesgajisupirheader.nobukti');
+
         if (request()->tgldari && request()->tglsampai) {
             $query->whereBetween($this->table . '.tglbukti', [date('Y-m-d', strtotime(request()->tgldari)), date('Y-m-d', strtotime(request()->tglsampai))]);
         }

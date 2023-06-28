@@ -110,6 +110,7 @@ class AkunPusat extends MyModel
         // dd(request()->offset);
         $level = request()->level ?? '';
         $potongan = request()->potongan ?? '';
+        $supplier = request()->supplier ?? '';
 
         $aktif = request()->aktif ?? '';
 
@@ -164,6 +165,12 @@ class AkunPusat extends MyModel
 
             $query->whereRaw("akunpusat.coa in ($temp)");
         }
+
+        if ($supplier != '') {
+            $temp = implode(',', $this->TempParameterSupplier());
+
+            $query->whereRaw("akunpusat.coa in ($temp)");
+        }        
         if ($aktif == 'AKTIF') {
             $statusaktif = Parameter::from(
                 DB::raw("parameter with (readuncommitted)")
@@ -192,6 +199,18 @@ class AkunPusat extends MyModel
             $memo = json_decode($value->memo, true);
             $coa[] = "'" . $memo['JURNAL'] . "'";
         }
+        return $coa;
+    }
+
+    public function TempParameterSupplier()
+    {
+        $parameter = Parameter::from(DB::raw("parameter with (readuncommitted)"))->select('memo')->where('kelompok', 'JURNAL SUPPLIER')->get();
+        $coa = [];
+        foreach ($parameter as $key => $value) {
+            $memo = json_decode($value->memo, true);
+            $coa[] = "'" . trim($memo['JURNAL']) . "'";
+        }
+        // dd($coa);
         return $coa;
     }
     public function default()

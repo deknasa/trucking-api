@@ -1192,6 +1192,10 @@ class SuratPengantar extends MyModel
             'tarif.tujuan as tarif_id',
             'mandortrado.namamandor as mandortrado_id',
             'mandorsupir.namamandor as mandorsupir_id',
+            DB::raw("'" . $dari . "' as tgldari"),
+            DB::raw("'" . $sampai . "' as tglsampai"),
+            DB::raw("'Tgl Cetak:'+format(getdate(),'dd-MM-yyyy HH:mm:ss')as tglcetak"),
+            DB::raw(" 'User :".auth('api')->user()->name."' as usercetak")
         )
             ->whereBetween($this->table . '.tglbukti', [date('Y-m-d', strtotime($dari)), date('Y-m-d', strtotime($sampai))])
             ->leftJoin('pelanggan', 'suratpengantar.pelanggan_id', 'pelanggan.id')

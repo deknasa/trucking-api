@@ -58,19 +58,15 @@ class UpdateSupplierRequest extends FormRequest
             'namakontak' => 'required',
             'alamat' => 'required',
             'kota' => 'required',
-            'kodepos' => 'required|min:1|max:50',
             'notelp1' => ['required','min:10','max:50'],
-            'email' => ['required','email:rfc,dns'],
+            'top' => ['required','numeric','min:1'],
+            'email' => ['email:rfc,dns','nullable'],
             'statusaktif' => ['required',Rule::in($status),'numeric','min:1'],
             'namapemilik' => 'required',
             'jenisusaha' => 'required',
-            'bank' => ['required'],
             'coa' => ['required',$coa],
-            'rekeningbank' => ['required','max:150','min:1'],
             'namarekening' => ['required'],
-            'jabatan' => 'required',
             'statusdaftarharga' => ['required','numeric',Rule::in($statusDaftarHarga)],
-            'kategoriusaha' => 'required',
         ];
 
      
@@ -87,6 +83,7 @@ class UpdateSupplierRequest extends FormRequest
             'namasupplier' => 'nama supplier',
             'namakontak' => 'nama kontak',
             'alamat' => 'alamat',
+            'top' => 'syarat pembayaran',
             'kota' => 'kota',
             'kodepos' => 'kode pos',
             'notelp1' => 'no telp 1',
@@ -111,6 +108,7 @@ class UpdateSupplierRequest extends FormRequest
         return [
             'namasupplier.required' => ':attribute' . ' ' . $controller->geterror('WI')->keterangan,
             'namakontak.required' => ':attribute' . ' ' . $controller->geterror('WI')->keterangan,
+            'top.required' => ':attribute' . ' ' . $controller->geterror('WI')->keterangan,
             'alamat.required' => ':attribute' . ' ' . $controller->geterror('WI')->keterangan,
             'kota.required' => ':attribute' . ' ' . $controller->geterror('WI')->keterangan,
             'kodepos.required' => ':attribute' . ' ' . $controller->geterror('WI')->keterangan,

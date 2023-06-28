@@ -26,6 +26,7 @@ use Illuminate\Database\QueryException;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Http\JsonResponse;
+use PhpOffice\PhpSpreadsheet\IOFactory;
 
 class UpahSupirController extends Controller
 {
@@ -53,8 +54,7 @@ class UpahSupirController extends Controller
      * @ClassName 
      */
 
-
-    public function listpivot(GetUpahSupirRangeRequest $request)
+    public function export(GetUpahSupirRangeRequest $request)
     {
         $dari = date('Y-m-d', strtotime($request->dari));
         $sampai = date('Y-m-d', strtotime($request->sampai));
@@ -266,6 +266,103 @@ class UpahSupirController extends Controller
         ]);
     }
 
+    /**
+     * @ClassName 
+     */
+    public function import(Request $request)
+    {
+        $request->validate(
+            [
+                'fileImport' => 'required|file|mimes:xls,xlsx'
+            ],
+            [
+                'fileImport.mimes' => 'file import ' . app(ErrorController::class)->geterror('FXLS')->keterangan,
+            ]
+        );
+
+        $the_file = $request->file('fileImport');
+        try {
+            $spreadsheet = IOFactory::load($the_file->getRealPath());
+            $sheet        = $spreadsheet->getActiveSheet();
+            $row_limit    = $sheet->getHighestDataRow();
+            $column_limit = $sheet->getHighestDataColumn();
+            $row_range    = range(2, $row_limit);
+            $column_range = range('A', $column_limit);
+            $startcount = 2;
+            $data = array();
+            $a = 0;
+            foreach ($row_range as $row) {
+
+                $data[] = [
+                    'kotadari' => $sheet->getCell($this->kolomexcel(1) . $row)->getValue(),
+                    'kotasampai' => $sheet->getCell($this->kolomexcel(2) . $row)->getValue(),
+                    'penyesuaian' => $sheet->getCell($this->kolomexcel(3) . $row)->getValue(),
+                    'jarak' => $sheet->getCell($this->kolomexcel(4) . $row)->getValue(),
+                    'tglmulaiberlaku' => date('Y-m-d', strtotime($sheet->getCell($this->kolomexcel(5) . $row)->getFormattedValue())),
+                    'kolom1' => $sheet->getCell($this->kolomexcel(6)  . $row)->getValue(),
+                    'kolom2' => $sheet->getCell($this->kolomexcel(7)  . $row)->getValue(),
+                    'kolom3' => $sheet->getCell($this->kolomexcel(8)  . $row)->getValue(),
+                    'kolom4' => $sheet->getCell($this->kolomexcel(9)  . $row)->getValue(),
+                    'kolom5' => $sheet->getCell($this->kolomexcel(10)  . $row)->getValue(),
+                    'kolom6' => $sheet->getCell($this->kolomexcel(11)  . $row)->getValue(),
+                    'kolom7' => $sheet->getCell($this->kolomexcel(12)  . $row)->getValue(),
+                    'kolom8' => $sheet->getCell($this->kolomexcel(13)  . $row)->getValue(),
+                    'kolom9' => $sheet->getCell($this->kolomexcel(14)  . $row)->getValue(),
+                    'liter1' => $sheet->getCell($this->kolomexcel(15)  . $row)->getValue(),
+                    'liter2' => $sheet->getCell($this->kolomexcel(16)  . $row)->getValue(),
+                    'liter3' => $sheet->getCell($this->kolomexcel(17)  . $row)->getValue(),
+                    'liter4' => $sheet->getCell($this->kolomexcel(18)  . $row)->getValue(),
+                    'liter5' => $sheet->getCell($this->kolomexcel(19)  . $row)->getValue(),
+                    'liter6' => $sheet->getCell($this->kolomexcel(20)  . $row)->getValue(),
+                    'liter7' => $sheet->getCell($this->kolomexcel(21)  . $row)->getValue(),
+                    'liter8' => $sheet->getCell($this->kolomexcel(22)  . $row)->getValue(),
+                    'liter9' => $sheet->getCell($this->kolomexcel(23)  . $row)->getValue(),
+                    'modifiedby' => auth('api')->user()->name
+                ];
+
+
+                $startcount++;
+            }
+            $upahSupirRincian = new UpahSupirRincian();
+            $cekdata = $upahSupirRincian->cekupdateharga($data);
+
+            if ($cekdata == true) {
+                $query = DB::table('error')
+                    ->select('keterangan')
+                    ->where('kodeerror', '=', 'SPI')
+                    ->get();
+                $keterangan = $query['0'];
+
+                $data = [
+                    'message' => $keterangan,
+                    'errors' => '',
+                    'kondisi' => $cekdata
+                ];
+
+                return response($data);
+            } else {
+                return response([
+                    'status' => true,
+                    'keterangan' => 'harga berhasil di update',
+                    'data' => $upahSupirRincian->updateharga($data),
+                    'kondisi' => $cekdata
+                ]);
+            }
+        } catch (\Throwable $th) {
+            DB::rollBack();
+            throw $th;
+        }
+    }
+
+    private function kolomexcel($kolom)
+    {
+        if ($kolom >= 27 and $kolom <= 52) {
+            $hasil = 'A' . chr(38 + $kolom);
+        } else {
+            $hasil = chr(64 + $kolom);
+        }
+        return $hasil;
+    }
     private function storeFiles(array $files, string $destinationFolder): string
     {
         $storedFiles = [];
@@ -309,87 +406,87 @@ class UpahSupirController extends Controller
             }
         }
     }
-    public function export()
-    {
-        $response = $this->index();
-        $decodedResponse = json_decode($response->content(), true);
-        $upahSupirs = $decodedResponse['data'];
+    // public function export()
+    // {
+    //     $response = $this->index();
+    //     $decodedResponse = json_decode($response->content(), true);
+    //     $upahSupirs = $decodedResponse['data'];
 
-        // dd($upahSupirs);
-
-
-        $i = 0;
-        foreach ($tarifs as $index => $params) {
-
-            $statusaktif = $params['statusaktif'];
-            $statusSistemTon = $params['statussistemton'];
-            $statusPenyesuaianHarga = $params['statuspenyesuaianharga'];
-
-            $result = json_decode($statusaktif, true);
-            $resultSistemTon = json_decode($statusSistemTon, true);
-            $resultPenyesuaianHarga = json_decode($statusPenyesuaianHarga, true);
-
-            $statusaktif = $result['MEMO'];
-            $statusSistemTon = $resultSistemTon['MEMO'];
-            $statusPenyesuaianHarga = $resultPenyesuaianHarga['MEMO'];
+    //     // dd($upahSupirs);
 
 
-            $tarifs[$i]['statusaktif'] = $statusaktif;
-            $tarifs[$i]['statussistemton'] = $statusSistemTon;
-            $tarifs[$i]['statuspenyesuaianharga'] = $statusPenyesuaianHarga;
+    //     $i = 0;
+    //     foreach ($tarifs as $index => $params) {
+
+    //         $statusaktif = $params['statusaktif'];
+    //         $statusSistemTon = $params['statussistemton'];
+    //         $statusPenyesuaianHarga = $params['statuspenyesuaianharga'];
+
+    //         $result = json_decode($statusaktif, true);
+    //         $resultSistemTon = json_decode($statusSistemTon, true);
+    //         $resultPenyesuaianHarga = json_decode($statusPenyesuaianHarga, true);
+
+    //         $statusaktif = $result['MEMO'];
+    //         $statusSistemTon = $resultSistemTon['MEMO'];
+    //         $statusPenyesuaianHarga = $resultPenyesuaianHarga['MEMO'];
 
 
-            $i++;
-        }
+    //         $tarifs[$i]['statusaktif'] = $statusaktif;
+    //         $tarifs[$i]['statussistemton'] = $statusSistemTon;
+    //         $tarifs[$i]['statuspenyesuaianharga'] = $statusPenyesuaianHarga;
 
-        $columns = [
-            [
-                'label' => 'No',
-            ],
-            [
-                'label' => 'Parent',
-                'index' => 'parent_id',
-            ],
-            [
-                'label' => 'Upah Supir',
-                'index' => 'upahsupir_id',
-            ],
-            [
-                'label' => 'Tujuan',
-                'index' => 'tujuan',
-            ],
-            [
-                'label' => 'Status Aktif',
-                'index' => 'statusaktif',
-            ],
-            [
-                'label' => 'Status Sistem Ton',
-                'index' => 'statussistemton',
-            ],
-            [
-                'label' => 'Kota',
-                'index' => 'kota_id',
-            ],
-            [
-                'label' => 'Zona',
-                'index' => 'zona_id',
-            ],
-            [
-                'label' => 'Tgl Mulai Berlaku',
-                'index' => 'tglmulaiberlaku',
-            ],
-            [
-                'label' => 'Status Penyesuaian Harga',
-                'index' => 'statuspenyesuaianharga',
-            ],
-            [
-                'label' => 'Keterangan',
-                'index' => 'keterangan',
-            ],
-        ];
 
-        $this->toExcel('Tarif', $tarifs, $columns);
-    }
+    //         $i++;
+    //     }
+
+    //     $columns = [
+    //         [
+    //             'label' => 'No',
+    //         ],
+    //         [
+    //             'label' => 'Parent',
+    //             'index' => 'parent_id',
+    //         ],
+    //         [
+    //             'label' => 'Upah Supir',
+    //             'index' => 'upahsupir_id',
+    //         ],
+    //         [
+    //             'label' => 'Tujuan',
+    //             'index' => 'tujuan',
+    //         ],
+    //         [
+    //             'label' => 'Status Aktif',
+    //             'index' => 'statusaktif',
+    //         ],
+    //         [
+    //             'label' => 'Status Sistem Ton',
+    //             'index' => 'statussistemton',
+    //         ],
+    //         [
+    //             'label' => 'Kota',
+    //             'index' => 'kota_id',
+    //         ],
+    //         [
+    //             'label' => 'Zona',
+    //             'index' => 'zona_id',
+    //         ],
+    //         [
+    //             'label' => 'Tgl Mulai Berlaku',
+    //             'index' => 'tglmulaiberlaku',
+    //         ],
+    //         [
+    //             'label' => 'Status Penyesuaian Harga',
+    //             'index' => 'statuspenyesuaianharga',
+    //         ],
+    //         [
+    //             'label' => 'Keterangan',
+    //             'index' => 'keterangan',
+    //         ],
+    //     ];
+
+    //     $this->toExcel('Tarif', $tarifs, $columns);
+    // }
 
     public function cekValidasi($id)
     {

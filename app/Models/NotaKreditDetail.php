@@ -31,8 +31,6 @@ class NotaKreditDetail extends MyModel
 
         if (isset(request()->forReport) && request()->forReport) {
             $query->select(
-                "header.nobukti as nobukti_header",
-                "header.tglbukti",
                 "$this->table.id",
                 "$this->table.notakredit_id",
                 "$this->table.nobukti",
@@ -44,7 +42,6 @@ class NotaKreditDetail extends MyModel
                 "$this->table.keterangan",
                 "$this->table.coaadjust",
                 "$this->table.modifiedby"
-
             )
             ->leftJoin('notakreditheader as header', 'header.id', $this->table.'.notakredit_id');
 

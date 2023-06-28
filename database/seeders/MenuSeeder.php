@@ -18,7 +18,6 @@ class MenuSeeder extends Seeder
 
         DB::statement("delete menu");
         DB::statement("DBCC CHECKIDENT ('menu', RESEED, 1);");
-
         menu::create(['menuname' => 'DASHBOARD', 'menuseq' => '0', 'menuparent' => '0', 'menuicon' => 'FAS FA-HOME', 'aco_id' => '0', 'link' => 'DASHBOARD', 'menuexe' => '', 'menukode' => '0', 'modifiedby' => '',]);
         menu::create(['menuname' => 'LOGOUT', 'menuseq' => '9', 'menuparent' => '0', 'menuicon' => 'FAS FA-SIGN-OUT-ALT', 'aco_id' => '0', 'link' => 'LOGOUT', 'menuexe' => '', 'menukode' => 'Z', 'modifiedby' => '',]);
         menu::create(['menuname' => 'MASTER', 'menuseq' => '1', 'menuparent' => '0', 'menuicon' => 'FAS FA-USER-TAG', 'aco_id' => '0', 'link' => '', 'menuexe' => '', 'menukode' => '1', 'modifiedby' => '',]);

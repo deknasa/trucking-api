@@ -331,6 +331,16 @@ class PelunasanPiutangHeaderController extends Controller
      * @ClassName 
      */
     public function report()
+    { }
+
+    /**
+     * @ClassName 
+     */
+    public function export($id)
     {
+        $pelunasanpiutang = new PelunasanPiutangHeader();
+        return response([
+            'data' => $pelunasanpiutang->getExport($id)
+        ]);
     }
 }

@@ -40,12 +40,10 @@ class InvoiceDetail extends MyModel
                 $this->table . '.nominal as omset',
                 $this->table . '.total as total_detail',
                 $this->table . '.nominalextra as extra',
-                'suratpengantar.nocont',
-                'suratpengantar.tglsp',
-                'suratpengantar.nosp',
                 'suratpengantar.keterangan',
-                'kota.keterangan as tujuan',
-                $this->table . '.invoice_id'
+                $this->table . '.invoice_id',
+                $this->table . '.nominalretribusi',
+                $this->table . '.suratpengantar_nobukti',
             )
                 ->distinct($this->table . '.orderantrucking_nobukti')
                 ->leftJoin(DB::raw("suratpengantar with (readuncommitted)"), $this->table . '.orderantrucking_nobukti', 'suratpengantar.jobtrucking')

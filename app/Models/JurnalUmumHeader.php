@@ -516,4 +516,66 @@ class JurnalUmumHeader extends MyModel
 
         return $jurnalUmumHeader;
     }
+
+    public function getExport($id)
+    {
+        $this->setRequestParameters();
+
+        $getJudul = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))
+        ->select('text')
+        ->where('grp', 'JUDULAN LAPORAN')
+        ->where('subgrp', 'JUDULAN LAPORAN')
+        ->first();
+
+        $this->setRequestParameters();
+
+        $lennobukti = 3;
+
+        $tempsummary = '##tempsummary' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+        Schema::create($tempsummary, function ($table) {
+            $table->id();
+            $table->string('nobukti', 1000)->nullable();
+            $table->double('nominaldebet', 15, 2)->nullable();
+            $table->double('nominalkredit', 15, 2)->nullable();
+        });
+
+        $querysummary = JurnalUmumHeader::from(
+            DB::raw("jurnalumumheader as a with (readuncommitted)")
+        )
+            ->select(
+                'a.nobukti as nobukti',
+                DB::raw("sum((case when b.nominal<=0 then 0 else b.nominal end)) as nominaldebet"),
+                DB::raw("sum((case when b.nominal>=0 then 0 else abs(b.nominal) end)) as nominalkredit"),
+            )
+            ->join(DB::raw("jurnalumumdetail as b with (readuncommitted)"), 'a.nobukti', 'b.nobukti')
+            ->groupBy('a.nobukti');
+
+
+        DB::table($tempsummary)->insertUsing([
+            'nobukti',
+            'nominaldebet',
+            'nominalkredit',
+        ], $querysummary);
+
+        $query = DB::table($this->table)->from(
+            DB::raw("jurnalumumheader with (readuncommitted)")
+        )
+            ->select(
+                'jurnalumumheader.id',
+                'jurnalumumheader.nobukti',
+                'jurnalumumheader.tglbukti',
+                'jurnalumumheader.postingdari',
+                'c.nominaldebet as nominaldebet',
+                'c.nominalkredit as nominalkredit',
+                DB::raw("'Laporan Jurnal Umum' as judulLaporan"),
+                DB::raw("'" . $getJudul->text . "' as judul"),
+                DB::raw("'Tgl Cetak:'+format(getdate(),'dd-MM-yyyy HH:mm:ss')as tglcetak"),
+                DB::raw(" 'User :".auth('api')->user()->name."' as usercetak")
+            )
+            ->where("$this->table.id", $id)
+            ->leftjoin(DB::raw($tempsummary . " as c"), 'jurnalumumheader.nobukti', 'c.nobukti');
+        
+        $data = $query->first();
+        return $data;
+    }
 }

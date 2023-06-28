@@ -483,6 +483,16 @@ class PengeluaranTruckingHeaderController extends Controller
      * @ClassName 
      */
     public function report()
+    {}
+
+    /**
+     * @ClassName 
+     */
+    public function export($id)
     {
+        $pengeluarantruckingheader = new PengeluaranTruckingHeader();
+        return response([
+            'data' => $pengeluarantruckingheader->getExport($id)
+        ]);
     }
 }

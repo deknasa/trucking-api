@@ -783,7 +783,9 @@ class InvoiceHeader extends MyModel
                 'statusapproval.memo as statusapproval',
                 'statuscetak.memo as statuscetak',
                 DB::raw("'Laporan Invoice' as judulLaporan"),
-                DB::raw("'" . $getJudul->text . "' as judul")
+                DB::raw("'" . $getJudul->text . "' as judul"),
+                DB::raw("'Tgl Cetak:'+format(getdate(),'dd-MM-yyyy HH:mm:ss')as tglcetak"),
+                DB::raw(" 'User :".auth('api')->user()->name."' as usercetak")
             )
             ->where("$this->table.id", $id)
             ->leftJoin(DB::raw("parameter as statusapproval with (readuncommitted)"), 'invoiceheader.statusapproval', 'statusapproval.id')

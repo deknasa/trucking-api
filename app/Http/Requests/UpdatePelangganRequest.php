@@ -38,10 +38,10 @@ class UpdatePelangganRequest extends FormRequest
         return [
             'kodepelanggan' => ['required',Rule::unique('pelanggan')->whereNotIn('id', [$this->id])],
             'namapelanggan' => 'required',
+            'namakontak' => 'required',
             'telp' => 'required|min:12|max:13',
             'alamat' => 'required',
             'kota' => 'required',
-            'kodepos' => 'required|min:5|max:5',
             'statusaktif' => ['required', Rule::in($status),'numeric', 'min:1'],
         ];
     }
@@ -51,6 +51,7 @@ class UpdatePelangganRequest extends FormRequest
         return [
             'kodepelanggan' => 'kode pelanggan',
             'namapelanggan' => 'nama pelanggan',
+            'namakontak' => 'nama kontak',
             'kodepos' => 'kode pos',
             'telp' => 'no telpon',
             'alamat' => 'alamat',
@@ -70,7 +71,7 @@ class UpdatePelangganRequest extends FormRequest
         return [
             'kodepelanggan.required' => ':attribute' . ' ' . $controller->geterror('WI')->keterangan,
             'namapelanggan.required' => ':attribute' . ' ' . $controller->geterror('WI')->keterangan,
-            'kodepos.required' => ':attribute' . ' ' . $controller->geterror('WI')->keterangan,
+            'namakontak.required' => ':attribute' . ' ' . $controller->geterror('WI')->keterangan,
             'telp.required' => ':attribute' . ' ' . $controller->geterror('WI')->keterangan,
             'alamat.required' => ':attribute' . ' ' . $controller->geterror('WI')->keterangan,
             'kota.required' => ':attribute' . ' ' . $controller->geterror('WI')->keterangan,

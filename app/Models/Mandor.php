@@ -259,7 +259,7 @@ class Mandor extends MyModel
 
     public function processUpdate(Mandor $mandor, array $data): Mandor
     {
-        $mandor->namamandor = $data['namamandor'];
+        $mandor->namamando = $data['namamandor'];
         $mandor->keterangan = $data['keterangan'] ?? '';
         $mandor->statusaktif = $data['statusaktif'];
         $mandor->modifiedby = auth('api')->user()->user;

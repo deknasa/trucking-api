@@ -8,6 +8,7 @@ use App\Http\Controllers\Api\ErrorController;
 use App\Models\Parameter;
 use App\Rules\ExistKota;
 use App\Rules\UniqueUpahRitasiSampai;
+use App\Rules\ValidasiKotaSampaiUpahRitasi;
 use Illuminate\Validation\Rule;
 
 class StoreUpahRitasiRequest extends FormRequest
@@ -36,7 +37,7 @@ class StoreUpahRitasiRequest extends FormRequest
                 $rulesKotaDari_id = [
                     'kotadari_id' => ['required', 'numeric', 'min:1', new ExistKota()]
                 ];
-            } 
+            }
         } else if ($kotadari_id == null && $this->kotadari != '') {
             $rulesKotaDari_id = [
                 'kotadari_id' => ['required', 'numeric', 'min:1', new ExistKota()]
@@ -48,14 +49,17 @@ class StoreUpahRitasiRequest extends FormRequest
         if ($kotasampai_id != null) {
             if ($kotasampai_id == 0) {
                 $rulesKotaSampai_id = [
-                    'kotasampai_id' => ['required', 'numeric', 'min:1', new UniqueUpahRitasiSampai(), new ExistKota()]
+                    'kotasampai_id' => [
+                        'required', 'numeric', 'min:1', new UniqueUpahRitasiSampai(), new ExistKota()]
                 ];
-            } 
+            }
         } else if ($kotasampai_id == null && $this->kotasampai != '') {
             $rulesKotaSampai_id = [
-                'kotasampai_id' => ['required', 'numeric', 'min:1', new UniqueUpahRitasiSampai(), new ExistKota()]
+                'kotasampai_id' => [
+                    'required', 'numeric', 'min:1', new UniqueUpahRitasiSampai(), new ExistKota()]
             ];
         }
+
         $rulesKotaSampai_id = [
             'kotasampai_id' => [
                 'required',
@@ -75,6 +79,7 @@ class StoreUpahRitasiRequest extends FormRequest
             ],
         ];
         
+
         $parameter = new Parameter();
         $dataAktif = $parameter->getcombodata('STATUS AKTIF', 'STATUS AKTIF');
         $dataAktif = json_decode($dataAktif, true);
@@ -85,13 +90,15 @@ class StoreUpahRitasiRequest extends FormRequest
         $tglBatasAkhir = (date('Y') + 1) . '-01-01';
         $rules =  [
             'kotadari' => 'required',
-            'kotasampai' => ['required', new UniqueUpahRitasiSampai()],
+            'kotasampai' => ['required', new UniqueUpahRitasiSampai(),new ValidasiKotaSampaiUpahRitasi()],
             'jarak' => ['required', 'numeric', 'gt:0', 'max:' . (new ParameterController)->getparamid('BATAS NILAI JARAK', 'BATAS NILAI JARAK')->text],
             'statusaktif' => ['required', Rule::in($statusAktif)],
-            'tglmulaiberlaku' => ['required', 'date_format:d-m-Y',
-                'before:'.$tglBatasAkhir,
-                'after_or_equal:'.date('d-m-Y')
+            'tglmulaiberlaku' => [
+                'required', 'date_format:d-m-Y',
+                'before:' . $tglBatasAkhir,
+                'after_or_equal:' . date('d-m-Y')
             ],
+            'nominalsupir' => ['required', 'numeric', 'gt:0', 'max:' . (new ParameterController)->getparamid('BATAS NILAI UPAH', 'BATAS NILAI UPAH')->text],
         ];
 
         $relatedRequests = [
@@ -120,7 +127,7 @@ class StoreUpahRitasiRequest extends FormRequest
             'statusaktif' => 'status aktif',
             'tglmulaiberlaku' => 'tanggal mulai berlaku',
             'container.*' => 'container',
-            'nominalsupir.*' => 'nominal supir',
+            'nominalsupir' => 'nominal supir',
         ];
     }
 
@@ -129,10 +136,8 @@ class StoreUpahRitasiRequest extends FormRequest
         $controller = new ErrorController;
 
         return [
-            'jarak.max' => ':attribute ' . 'maximal jarak '. (new ParameterController)->getparamid('BATAS NILAI JARAK','BATAS NILAI JARAK')->text,
+            'jarak.max' => ':attribute ' . 'maximal jarak ' . (new ParameterController)->getparamid('BATAS NILAI JARAK', 'BATAS NILAI JARAK')->text,
             'jarak.gt' => ':attribute ' . (new ErrorController)->geterror('GT-ANGKA-0')->keterangan,
-            'kotadari_id.required' => ':attribute ' . $controller->geterror('HPDL')->keterangan,
-            'kotasampai_id.required' => ':attribute ' . $controller->geterror('HPDL')->keterangan,
         ];
     }
 }

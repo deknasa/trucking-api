@@ -31,7 +31,7 @@ class LaporanKasBank extends MyModel
 
         $dari = date('Y-m-d', strtotime(request()->dari)) ?? '1900/1/1';
         $sampai = date('Y-m-d', strtotime(request()->sampai)) ?? '1900/1/1';
-        $bank_id = request()->bankid ?? '0';
+        $bank_id = $bank_id;
 
         $tempsaldo = '##tempsaldo' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
         Schema::create($tempsaldo, function ($table) {
@@ -202,6 +202,12 @@ class LaporanKasBank extends MyModel
             )
             ->where('a.id', '=', $bank_id)
             ->first();
+            
+        $getJudul = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))
+        ->select('text')
+        ->where('grp', 'JUDULAN LAPORAN')
+        ->where('subgrp', 'JUDULAN LAPORAN')
+        ->first();
 
         $queryhasil = DB::table($temprekap)->from(
             $tempsaldo . " as a"
@@ -215,7 +221,11 @@ class LaporanKasBank extends MyModel
                 'a.keterangan',
                 'a.debet',
                 'a.kredit',
-                DB::raw("sum ((isnull(a.saldo,0)+a.debet)-a.Kredit) over (order by a.id asc) as saldo")
+                DB::raw("sum ((isnull(a.saldo,0)+a.debet)-a.Kredit) over (order by a.id asc) as saldo"),
+                DB::raw("'Laporan Kas/Bank' as judulLaporan"),
+                DB::raw("'" . $getJudul->text . "' as judul"),
+                DB::raw("'Tgl Cetak:'+format(getdate(),'dd-MM-yyyy HH:mm:ss')as tglcetak"),
+                DB::raw(" 'User :".auth('api')->user()->name."' as usercetak")
             )
             ->leftjoin(DB::raw("akunpusat as b with (readuncommitted)"), 'a.coa', 'b.coa')
             ->orderBy('a.id', 'Asc');

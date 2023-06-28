@@ -696,4 +696,37 @@ class PenerimaanGiroHeader extends MyModel
 
         return $result;
     }
+
+    public function getExport($id)
+    {
+        $this->setRequestParameters();
+
+        $getJudul = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))
+        ->select('text')
+        ->where('grp', 'JUDULAN LAPORAN')
+        ->where('subgrp', 'JUDULAN LAPORAN')
+        ->first();
+
+        $query = DB::table($this->table)->from(DB::raw("penerimaangiroheader with (readuncommitted)"))
+            ->select(
+                'penerimaangiroheader.id',
+                'penerimaangiroheader.nobukti',
+                'penerimaangiroheader.tglbukti',
+                'pelanggan.namapelanggan as pelanggan_id',
+                'agen.namaagen as agen_id',
+                'penerimaangiroheader.postingdari',
+                'penerimaangiroheader.diterimadari',
+                'penerimaangiroheader.tgllunas',
+                DB::raw("'Laporan Penerimaan Giro' as judulLaporan"),
+                DB::raw("'" . $getJudul->text . "' as judul"),
+                DB::raw("'Tgl Cetak:'+format(getdate(),'dd-MM-yyyy HH:mm:ss')as tglcetak"),
+                DB::raw(" 'User :".auth('api')->user()->name."' as usercetak")
+                
+            )
+            ->where("$this->table.id", $id)
+            ->leftJoin(DB::raw("pelanggan with (readuncommitted)"), 'penerimaangiroheader.pelanggan_id', 'pelanggan.id')
+            ->leftJoin(DB::raw("agen with (readuncommitted)"), 'penerimaangiroheader.agen_id', 'agen.id');
+        $data = $query->first();
+        return $data;
+    }
 }
