@@ -34,8 +34,8 @@ class LaporanPembelianStokController extends Controller
     {
         $dari = date('Y-m-d', strtotime($request->dari));
         $sampai = date('Y-m-d', strtotime($request->sampai));
-        $stokdari = $request->stokdari;
-        $stoksampai = $request->stoksampai;
+        $stokdari = $request->stokdari_id;
+        $stoksampai = $request->stoksampai_id;
      
 
         $laporanpembelianstok = new LaporanPembelianStok();
@@ -60,8 +60,8 @@ class LaporanPembelianStokController extends Controller
     {
         $dari = date('Y-m-d', strtotime($request->dari));
         $sampai = date('Y-m-d', strtotime($request->sampai));
-        $stokdari = $request->stokdari;
-        $stoksampai = $request->stoksampai;
+        $stokdari = $request->stokdari_id;
+        $stoksampai = $request->stoksampai_id;
 
         $laporanpembelianstok = new LaporanPembelianStok();
 
