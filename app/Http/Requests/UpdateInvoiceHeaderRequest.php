@@ -77,7 +77,7 @@ class UpdateInvoiceHeaderRequest extends FormRequest
         ];
 
         $relatedRequests = [
-            StoreInvoiceDetailRequest::class
+            UpdateInvoiceDetailRequest::class
         ];
 
         foreach ($relatedRequests as $relatedRequest) {
@@ -93,7 +93,7 @@ class UpdateInvoiceHeaderRequest extends FormRequest
             $rulesagen_id = [
                 'agen' => [
                     new ExistAgen(),
-                    // new ValidasiDetail($jumlahdetail),
+                    new ValidasiDetail($jumlahdetail),
                     Rule::in($query->agen),
 
                 ]
@@ -148,7 +148,7 @@ class UpdateInvoiceHeaderRequest extends FormRequest
             $rulesjenisorder_id = [
                 'jenisorder' => [
                     new ExistJenisOrder(),
-                    // new ValidasiDetail($jumlahdetail),
+                    new ValidasiDetail($jumlahdetail),
                     Rule::in($query->jenisorder),
                 ]
             ];

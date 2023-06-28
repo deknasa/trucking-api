@@ -158,4 +158,24 @@ class JurnalUmumPusatDetail extends MyModel
     {
         return $query->skip($this->params['offset'])->take($this->params['limit']);
     }
+
+    public function processStore(JurnalUmumPusatHeader $jurnalUmumPusatHeader, array $data): JurnalUmumPusatDetail
+    {
+        $jurnalUmumDetail = new JurnalUmumPusatDetail();
+        $jurnalUmumDetail->jurnalumumpusat_id = $jurnalUmumPusatHeader->id;
+        $jurnalUmumDetail->nobukti = $jurnalUmumPusatHeader->nobukti; 
+        $jurnalUmumDetail->tglbukti = $jurnalUmumPusatHeader->tglbukti;
+        $jurnalUmumDetail->coa = $data['coa'];
+        $jurnalUmumDetail->coamain = $data['coamain'];
+        $jurnalUmumDetail->nominal = $data['nominal'];
+        $jurnalUmumDetail->keterangan = $data['keterangan'] ?? '';
+        $jurnalUmumDetail->modifiedby = auth('api')->user()->name;
+        $jurnalUmumDetail->baris = $data['baris'];
+        
+        if (!$jurnalUmumDetail->save()) {
+            throw new \Exception("Error storing jurnal umum pusat detail.");
+        }
+
+        return $jurnalUmumDetail;
+    }
 }
