@@ -369,5 +369,7 @@ class ParameterSeeder extends Seeder
         parameter::create(['grp' => 'PENJUALAN STOK AFKIR', 'subgrp' => 'PENJUALAN STOK AFKIR', 'kelompok' => '', 'text' => '4', 'memo' => '{"MEMO":"RETUR STOK","SINGKATAN":"4","WARNA":"#6C757D"}', 'type' => '0', 'modifiedby' => 'ADMIN', 'default' => '',]);
         parameter::create(['grp' => 'JURNAL PENJUALAN STOK AFKIR', 'subgrp' => 'KREDIT', 'kelompok' => '', 'text' => 'KREDIT', 'memo' => '{"MEMO":"JURNAL PENJUALAN STOK AFKIR","SINGKATAN":"JPJA","WARNA":"#28A745","JURNAL":"01.01.02.34"}', 'type' => '0', 'modifiedby' => '1', 'default' => '',]);
         parameter::create(['grp' => 'HOSTNAME', 'subgrp' => 'HOSTNAME', 'kelompok' => '', 'text' => 'LOCALHOST', 'memo' => '{"MEMO":"HOSTNAME","SINGKATAN":"MLK","WARNA":"#28A745"}', 'type' => '0', 'modifiedby' => 'ADMIN', 'default' => '',]);
+        parameter::create(['grp' => 'STATUS AKSES', 'subgrp' => 'STATUS AKSES', 'kelompok' => '', 'text' => 'PUBLIC', 'memo' => '{"MEMO":"PUBLIC","SINGKATAN":"P","WARNA":"#28A745"}', 'type' => '0', 'modifiedby' => 'ADMIN', 'default' => 'YA',]);
+        parameter::create(['grp' => 'STATUS AKSES', 'subgrp' => 'STATUS AKSES', 'kelompok' => '', 'text' => 'PRIVATE', 'memo' => '{"MEMO":"PRIVATE","SINGKATAN":"V","WARNA":"#28A745"}', 'type' => '0', 'modifiedby' => 'ADMIN', 'default' => 'YA',]);
     }
 }
