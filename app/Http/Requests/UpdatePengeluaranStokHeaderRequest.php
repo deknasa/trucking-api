@@ -6,6 +6,7 @@ use Illuminate\Foundation\Http\FormRequest;
 use App\Rules\DateTutupBuku;
 use App\Http\Controllers\Api\ParameterController;
 use App\Http\Controllers\Api\ErrorController;
+use App\Http\Controllers\Api\PengeluaranStokHeaderController;
 use Illuminate\Validation\Rule;
 use Illuminate\Support\Facades\DB;
 
@@ -34,6 +35,13 @@ class UpdatePengeluaranStokHeaderRequest extends FormRequest
         
         
         $rules = [
+            'id' => function ($attribute, $value, $fail) {
+                $id = $this->route('pengeluaranstokheader');
+                $statusEdit = app(PengeluaranStokHeaderController::class)->cekvalidasi($id);
+                if($statusEdit->original['kodestatus']){
+                    $fail(app(ErrorController::class)->geterror('SDC')->keterangan);
+                }
+            },
             "tglbukti" => [
                 "required",
                 new DateTutupBuku()
