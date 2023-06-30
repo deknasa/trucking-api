@@ -375,6 +375,9 @@ class ParameterSeeder extends Seeder
         parameter::create(['grp' => 'GST STOK', 'subgrp' => 'GST STOK', 'kelompok' => '', 'text' => '5', 'memo' => '{"MEMO":"GST STOK","SINGKATAN":"5","WARNA":"#6C757D"}', 'type' => '0', 'modifiedby' => 'ADMIN', 'default' => '',]);
         parameter::create(['grp' => 'STATUS AKSES', 'subgrp' => 'STATUS AKSES', 'kelompok' => '', 'text' => 'PUBLIC', 'memo' => '{"MEMO":"PUBLIC","SINGKATAN":"P","WARNA":"#28A745"}', 'type' => '0', 'modifiedby' => 'ADMIN', 'default' => 'YA',]);
         parameter::create(['grp' => 'STATUS AKSES', 'subgrp' => 'STATUS AKSES', 'kelompok' => '', 'text' => 'PRIVATE', 'memo' => '{"MEMO":"PRIVATE","SINGKATAN":"V","WARNA":"#28A745"}', 'type' => '0', 'modifiedby' => 'ADMIN', 'default' => 'YA',]);
-
+        parameter::create(['grp' => 'PSPK STOK', 'subgrp' => 'PSPK STOK', 'kelompok' => '', 'text' => '10', 'memo' => '{"MEMO":"PSPK STOK","SINGKATAN":"10","WARNA":"#6C757D"}', 'type' => '0', 'modifiedby' => 'ADMIN', 'default' => '',]);
+        parameter::create(['grp' => 'STATUS GANDENGAN', 'subgrp' => 'STATUS GANDENGAN', 'kelompok' => '', 'text' => 'TINGGAL GANDENGAN', 'memo' => '{"MEMO":"TINGGAL GANDENGAN","SINGKATAN":"P","WARNA":"#28A745"}', 'type' => '0', 'modifiedby' => 'ADMIN', 'default' => 'YA',]);
+        parameter::create(['grp' => 'STATUS GANDENGAN', 'subgrp' => 'STATUS GANDENGAN', 'kelompok' => '', 'text' => 'TINGGAL CONTAINER', 'memo' => '{"MEMO":"TINGGAL CONTAINER","SINGKATAN":"V","WARNA":"#28A745"}', 'type' => '0', 'modifiedby' => 'ADMIN', 'default' => 'YA',]);
+        
     }
 }
