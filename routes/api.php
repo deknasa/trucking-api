@@ -223,7 +223,7 @@ use App\Http\Controllers\Api\LaporanHutangGiroController;
 use App\Http\Controllers\LaporanKasHarianController;
 use App\Http\Controllers\Api\LaporanKartuHutangPerSupplierController;
 use App\Http\Controllers\Api\LaporanKartuPiutangPerAgenController;
-
+use App\Http\Controllers\Api\MainAkunPusatController;
 // use App\Http\Controllers\Api\LaporanTransaksiHarianController;
 
 /*
@@ -1223,7 +1223,9 @@ route::middleware(['auth:api','authorized'])->group(function () {
     Route::resource('laporanpiutanggiro', LaporanPiutangGiroController::class)->whereNumber('laporanpiutanggiro');
     
     Route::get('laporanlabarugi/report', [LaporanLabaRugiController::class, 'report'])->name('laporanlabarugi.report');
+    Route::get('laporanlabarugi/export', [LaporanLabaRugiController::class, 'export'])->name('laporanlabarugi.export');
     Route::resource('laporanlabarugi', LaporanLabaRugiController::class)->whereNumber('laporanlabarugi');
+
     Route::get('laporanneraca/report', [LaporanNeracaController::class, 'report'])->name('laporanneraca.report');
     Route::resource('laporanneraca', LaporanNeracaController::class)->whereNumber('laporanneraca');
     Route::get('laporanpenyesuaianbarang/report', [LaporanPenyesuaianBarangController::class, 'report'])->name('laporanpenyesuaianbarang.report');
