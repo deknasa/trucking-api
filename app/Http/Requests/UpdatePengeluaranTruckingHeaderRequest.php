@@ -7,6 +7,8 @@ use App\Models\Parameter;
 use App\Models\PengeluaranTruckingHeader;
 use Illuminate\Foundation\Http\FormRequest;
 use App\Rules\DateTutupBuku;
+use App\Rules\ExistSupirForPengeluaranTrucking;
+use App\Rules\ValidasiDetail;
 use Illuminate\Validation\Rule;
 use Illuminate\Support\Facades\DB;
 
@@ -128,6 +130,7 @@ class UpdatePengeluaranTruckingHeaderRequest extends FormRequest
         $pengeluaranTruckingHeader = new PengeluaranTruckingHeader();
         $getDataPengeluaran = $pengeluaranTruckingHeader->findAll(request()->id);
 
+        $rulesSupir_id = [];
         if ($kodepengeluaran == 'BST') {
             $rules = [
                 'nobukti' => [Rule::in($getDataPengeluaran->nobukti)],
@@ -169,6 +172,30 @@ class UpdatePengeluaranTruckingHeaderRequest extends FormRequest
                     'after_or_equal:' . date('Y-m-d', strtotime($this->tgldari))
                 ],
             ];
+        }elseif($kodepengeluaran == 'TDE'){
+            $supirheader_id = $this->supirheader_id;
+            if ($supirheader_id != null) {
+                $rulesSupir_id = [
+                    'supirheader_id' => ['required', 'numeric', 'min:1', new ExistSupirForPengeluaranTrucking()]
+                ];
+            } else if ($supirheader_id == null && $this->supirheader != '') {
+                $rulesSupir_id = [
+                    'supirheader_id' => ['required', 'numeric', 'min:1', new ExistSupirForPengeluaranTrucking()]
+                ];
+            }
+            $jumlahdetail = $this->jumlahdetail ?? 0;
+            $rules = [
+                "tglbukti" => [
+                    "required", 'date_format:d-m-Y',
+                    'date_equals:'.date('d-m-Y'),
+                    new DateTutupBuku()
+                ],
+                'pengeluarantrucking' => 'required','numeric', 'min:1',
+                'statusposting' => 'required',
+                'bank' => [$ruleBank],
+                'supirheader' => ['required',  new ValidasiDetail($jumlahdetail)],
+                // 'keterangancoa' => 'required',
+            ];
         }else{
             $rules = [
                 'nobukti' => [Rule::in($getDataPengeluaran->nobukti)],
@@ -190,7 +217,8 @@ class UpdatePengeluaranTruckingHeaderRequest extends FormRequest
         foreach ($relatedRequests as $relatedRequest) {
             $rules = array_merge(
                 $rules,
-                $rulseKlaim
+                $rulseKlaim,
+                $rulesSupir_id
             );
         }
         return $rules;

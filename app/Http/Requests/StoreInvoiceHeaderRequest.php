@@ -62,16 +62,6 @@ class StoreInvoiceHeaderRequest extends FormRequest
             ],
         ];
 
-        // $relatedRequests = [
-        //     StoreInvoiceHeaderRequest::class
-        // ];
-
-        // foreach ($relatedRequests as $relatedRequest) {
-        //     $rules = array_merge(
-        //         $rules,
-        //         (new $relatedRequest)->rules()
-        //     );
-        // }
 
         $agen_id = $this->agen_id;
         $rulesagen_id = [];
@@ -181,13 +171,19 @@ class StoreInvoiceHeaderRequest extends FormRequest
             ];
         }        
         
-        $rule = array_merge(
-            $rules,
-            $rulesagen_id,
-            $rulesjenisorder_id,
-        );
+        $relatedRequests = [
+            StoreInvoiceDetailRequest::class
+        ];
 
-        return $rule;
+        foreach ($relatedRequests as $relatedRequest) {
+            $rules = array_merge(
+                $rules,
+                (new $relatedRequest)->rules(), 
+                $rulesagen_id,
+                $rulesjenisorder_id,
+            );
+        }
+        return $rules;
     }
 
     public function attributes()

@@ -7,6 +7,7 @@ use App\Models\AlatBayar;
 use App\Models\PelunasanPiutangHeader;
 use Illuminate\Foundation\Http\FormRequest;
 use App\Rules\DateTutupBuku;
+use App\Rules\ValidasiDetail;
 use Illuminate\Validation\Rule;
 
 class UpdatePelunasanPiutangHeaderRequest extends FormRequest
@@ -28,7 +29,8 @@ class UpdatePelunasanPiutangHeaderRequest extends FormRequest
      */
     public function rules()
     {
-        
+
+        $jumlahdetail = $this->jumlahdetail ?? 0;
         $pelunasanPiutang = new PelunasanPiutangHeader();
         $getDataPelunasan = $pelunasanPiutang->findAll(request()->id);
 
@@ -37,12 +39,12 @@ class UpdatePelunasanPiutangHeaderRequest extends FormRequest
         if ($bank_id != null) {
             if ($bank_id == 0) {
                 $rulesBank_id = [
-                    'bank_id' => ['required', 'numeric', 'min:1',Rule::in($getDataPelunasan->bank_id)]
+                    'bank_id' => ['required', 'numeric', 'min:1', Rule::in($getDataPelunasan->bank_id)]
                 ];
             }
         } else if ($bank_id == null && $this->bank != '') {
             $rulesBank_id = [
-                'bank_id' => ['required', 'numeric', 'min:1',Rule::in($getDataPelunasan->bank_id)]
+                'bank_id' => ['required', 'numeric', 'min:1', Rule::in($getDataPelunasan->bank_id)]
             ];
         }
         $agen_id = $this->agen_id;
@@ -86,12 +88,15 @@ class UpdatePelunasanPiutangHeaderRequest extends FormRequest
         $rules = [
             'nobukti' => [Rule::in($getDataPelunasan->nobukti)],
             "tglbukti" => [
-                "required",'date_format:d-m-Y',
-                'date_equals:'.date('d-m-Y', strtotime($getDataPelunasan->tglbukti)),
+                "required", 'date_format:d-m-Y',
+                'date_equals:' . date('d-m-Y', strtotime($getDataPelunasan->tglbukti)),
                 new DateTutupBuku()
             ],
             'bank' => 'required',
-            'agen' => 'required',
+            'agen' => [
+                'required',
+                new ValidasiDetail($jumlahdetail)
+            ],
             'alatbayar' => ['required', Rule::in($dataKodeAlatBayar)],
         ];
 
@@ -108,7 +113,7 @@ class UpdatePelunasanPiutangHeaderRequest extends FormRequest
                 $rulesAlatBayar_id
             );
         }
-        
+
         return $rules;
     }
 
@@ -120,16 +125,15 @@ class UpdatePelunasanPiutangHeaderRequest extends FormRequest
             'bayar.*' => 'Nominal Bayar',
             'keterangan.*' => 'keterangan'
         ];
-        
+
         return $attributes;
     }
 
-    public function messages() 
+    public function messages()
     {
         return [
-            'piutang_id.required' => 'PIUTANG '.app(ErrorController::class)->geterror('WP')->keterangan,
             'bayar.*.gt' => 'Nominal Tidak Boleh Kosong dan Harus Lebih Besar Dari 0',
-            'bayar.*.numeric' => 'nominal harus '.app(ErrorController::class)->geterror('BTSANGKA')->keterangan,
+            'bayar.*.numeric' => 'nominal harus ' . app(ErrorController::class)->geterror('BTSANGKA')->keterangan,
             'tglbukti.date_format' => app(ErrorController::class)->geterror('DF')->keterangan,
         ];
     }

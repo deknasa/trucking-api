@@ -31,10 +31,18 @@ class ExportLaporanKasHarianController extends Controller
         $sampai = $request->sampai;
         $jenis = $request->jenis;
 
-        $export = ExportLaporanKasHarian::getExport();
-        
+
+        $export = ExportLaporanKasHarian::getExport($sampai, $jenis);
+
+        foreach ($export[0] as $data) {
+            $data->tgl = date('d-m-Y', strtotime($data->tgl));
+        }
+
         return response([
-            'data' => $export
+            'data' => $export[0],
+            'dataDua' => $export[1],
         ]);
+
+
     }
 }

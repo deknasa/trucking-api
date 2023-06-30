@@ -268,10 +268,11 @@ class UpahSupirRincian extends MyModel
                 DB::raw("isnull(upahsupirrincian.liter,0) as liter"),
             )
             ->leftJoin(DB::raw("upahsupirrincian with (readuncommitted)"), 'container.id', '=', 'upahsupirrincian.container_id')
+            ->leftJoin(DB::raw("statuscontainer with (readuncommitted)"), 'statuscontainer.id', '=', 'upahsupirrincian.statuscontainer_id')
             ->leftJoin(DB::raw("upahsupir with (readuncommitted)"), 'upahsupir.id', '=', 'upahsupirrincian.upahsupir_id')
             ->whereRaw("upahsupir.tglmulaiberlaku >= '$dari'")
             ->whereRaw("upahsupir.tglmulaiberlaku <= '$sampai'");
-
+        dd($query->get());
         DB::table($tempdata)->insertUsing([
             'id',
             'container_id',
@@ -535,5 +536,145 @@ class UpahSupirRincian extends MyModel
             ->where('upahsupir.statusaktif', '=', $statusaktif->id);
 
         return $query->first();
+    }
+
+
+    public function cekupdateharga($data)
+    {
+        $tempdata = '##tempdata' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+        Schema::create($tempdata, function ($table) {
+            $table->string('kotadari', 1000)->nullable();
+            $table->string('kotasampai', 1000)->nullable();
+            $table->string('penyesuaian', 1000)->nullable();
+            $table->integer('jarak')->nullable();
+            $table->date('tglmulaiberlaku')->nullable();
+        });
+
+        foreach ($data as $item) {
+            $values = array(
+                'kotadari' => $item['kotadari'],
+                'kotasampai' => $item['kotasampai'],
+                'penyesuaian' => $item['penyesuaian'],
+                'jarak' => $item['jarak'],
+                'tglmulaiberlaku' => $item['tglmulaiberlaku'],
+            );
+            DB::table($tempdata)->insert($values);
+        }
+
+        $temptgl = '##temptgl' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+        Schema::create($temptgl, function ($table) {
+            $table->date('tglmulaiberlaku')->nullable();
+        });
+
+        $querytgl = DB::table('upahsupir')
+            ->from(DB::raw("upahsupir with (readuncommitted)"))
+            ->select(
+                'tglmulaiberlaku'
+            )
+            ->groupBy('tglmulaiberlaku');
+
+        DB::table($temptgl)->insertUsing(['tglmulaiberlaku'], $querytgl);
+
+
+        $query = DB::table($tempdata)
+            ->from(DB::raw($tempdata . " as a"))
+            ->select(
+                'a.tglmulaiberlaku'
+            )
+            ->join(DB::raw($temptgl . " as b"), 'a.tglmulaiberlaku', 'b.tglmulaiberlaku')
+            ->first();
+
+
+        if (isset($query)) {
+            $kondisi = true;
+        } else {
+            $kondisi = false;
+        }
+
+        return $kondisi;
+    }
+
+    public function updateharga($data)
+    {
+
+        foreach ($data as $item) {
+
+            $kotadari = Kota::from(DB::raw("kota with (readuncommitted)"))->where('keterangan', strtoupper(trim($item['kotadari'])))->first();
+            $kotasampai = Kota::from(DB::raw("kota with (readuncommitted)"))->where('keterangan', strtoupper(trim($item['kotasampai'])))->first();
+
+            $querydetail = DB::table('container')
+                ->from(
+                    DB::raw("container  with (readuncommitted)")
+                )
+                ->select(
+                    'id'
+                )
+                ->orderBy('id', 'Asc');
+
+            $statusContainer = DB::table('statuscontainer')
+                ->from(
+                    DB::raw("statuscontainer  with (readuncommitted)")
+                )
+                ->select(
+                    'id'
+                )
+                ->orderBy('id', 'Asc');
+            $datadetail = json_decode($querydetail->get(), true);
+            $dataStatus = json_decode($statusContainer->get(), true);
+            $a = 0;
+            $container_id = [];
+            $nominal = [];
+            $liter = [];
+
+            foreach ($datadetail as $key => $itemdetail) {
+
+                foreach ($dataStatus as $itemStatus) {
+                    $a = $a + 1;
+                    $kolom = 'kolom' . $a;
+                    $nominal[] = $item[$kolom];
+                    $container_id[] = $itemdetail['id'];
+                    $statuscontainer_id[] = $itemStatus['id'];
+                }
+            }
+            $i = 0;
+            foreach ($datadetail as $itemdetail) {
+
+                foreach ($dataStatus as $itemStatus) {
+                    $i = $i + 1;
+                    $kolomliter = 'liter' . $i;
+                    $liter[] = $item[$kolomliter];
+                }
+            }
+
+            $statusSimpanKandang = DB::table('parameter')
+            ->where('grp', 'STATUS SIMPAN KANDANG')
+            ->where('text', 'TIDAK SIMPAN KANDANG')
+            ->first();
+
+            $upahRitasiRequest = [
+                'parent_id' => 0,
+                'tarif_id' => 0,
+                'kotadari_id' => $kotadari->id,
+                'kotasampai_id' => $kotasampai->id,
+                'penyesuaian' => $item['penyesuaian'],
+                'jarak' => $item['jarak'],
+                'zona_id' => 0,
+                'statusaktif' =>  1,
+                'tglmulaiberlaku' => $item['tglmulaiberlaku'],
+                'modifiedby' => $item['modifiedby'],
+                'container_id' => $container_id,
+                'statuscontainer_id' => $statuscontainer_id,
+                'nominalsupir' => $nominal,
+                'liter' => $liter,
+                'statussimpankandang' => $statusSimpanKandang->id
+            ];
+
+            $upahRitasi = (new UpahSupir())->processStore($upahRitasiRequest);
+        }
+
+
+
+
+        return $data;
     }
 }

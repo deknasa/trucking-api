@@ -220,6 +220,9 @@ use App\Http\Controllers\Api\LaporanJurnalUmumController;
 use App\Http\Controllers\Api\LaporanPembelianController;
 use App\Http\Controllers\Api\LaporanPembelianStokController;
 use App\Http\Controllers\Api\LaporanHutangGiroController;
+use App\Http\Controllers\LaporanKasHarianController;
+use App\Http\Controllers\Api\LaporanKartuHutangPerSupplierController;
+use App\Http\Controllers\Api\LaporanKartuPiutangPerAgenController;
 
 // use App\Http\Controllers\Api\LaporanTransaksiHarianController;
 
@@ -239,6 +242,7 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
 });
 
 Route::post('token', [AuthController::class, 'token']);
+Route::get('cekIp', [AuthController::class, 'cekIp']);
 
 Route::get('supir/image/{field}/{filename}/{type}/{aksi}', [SupirController::class, 'getImage']);
 Route::get('supir/pdf/{field}/{filename}', [SupirController::class, 'getPdf']);
@@ -376,7 +380,8 @@ route::middleware(['auth:api','authorized'])->group(function () {
     Route::get('upahsupir/combo', [UpahSupirController::class, 'combo']);
     Route::get('upahsupir/field_length', [UpahSupirController::class, 'fieldLength']);
     Route::get('upahsupir/default', [UpahSupirController::class, 'default']);
-    Route::get('upahsupir/listpivot', [UpahSupirController::class, 'listpivot']);
+    Route::get('upahsupir/export', [UpahSupirController::class, 'export']);
+    Route::post('upahsupir/import', [UpahSupirController::class, 'import']);
     Route::post('upahsupir/{id}/cekValidasi', [UpahSupirController::class, 'cekValidasi'])->name('upahsupir.cekValidasi')->whereNumber('id');
     Route::resource('upahsupir', UpahSupirController::class)->whereNumber('upahsupir');
 
@@ -1167,9 +1172,13 @@ route::middleware(['auth:api','authorized'])->group(function () {
     Route::resource('laporandepositosupir', LaporanDepositoSupirController::class);
     Route::get('laporanpinjamansupir/report', [LaporanPinjamanSupirController::class, 'report'])->name('laporanpinjamansupir.report');
     Route::resource('laporanpinjamansupir', LaporanPinjamanSupirController::class);
-    Route::get('laporanketeranganpinjamansupir/report', [LaporanKeteranganPinjamanSupirController::class, 'report'])->name('laporanketeranganpinjamansupir.report');
+
     Route::get('laporanketeranganpinjamansupir/export', [LaporanKeteranganPinjamanSupirController::class, 'export'])->name('laporanketeranganpinjamansupir.export');
     Route::resource('laporanketeranganpinjamansupir', LaporanKeteranganPinjamanSupirController::class);
+
+    Route::get('laporankasharian/report', [LaporanKasHarianController::class, 'report'])->name('laporankasharian.report');
+    Route::get('laporankasharian/export', [LaporanKasHarianController::class, 'export'])->name('laporankasharian.export');
+    Route::resource('laporankasharian', LaporanKasHarianController::class);
 
     Route::get('laporankasgantung/report', [LaporanKasGantungController::class, 'report'])->name('laporankasgantung.report');
     Route::get('laporankasgantung/export', [LaporanKasGantungController::class, 'export'])->name('laporankasgantung.export');
@@ -1192,7 +1201,13 @@ route::middleware(['auth:api','authorized'])->group(function () {
     Route::get('laporanhutanggiro/export', [LaporanHutangGiroController::class, 'export'])->name('laporanhutanggiro.export');
     Route::resource('laporanhutanggiro', LaporanHutangGiroController::class)->whereNumber('laporanhutanggiro');
 
+    Route::get('laporankartuhutangpersupplier/report', [LaporanKartuHutangPerSupplierController::class, 'report'])->name('laporankartuhutangpersupplier.report');
+    Route::get('laporankartuhutangpersupplier/export', [LaporanKartuHutangPerSupplierController::class, 'export'])->name('laporankartuhutangpersupplier.export');
+    Route::resource('laporankartuhutangpersupplier', LaporanKartuHutangPerSupplierController::class)->whereNumber('laporankartuhutangpersupplier');
 
+    Route::get('laporankartupiutangperagen/report', [LaporanKartuPiutangPerAgenController::class, 'report'])->name('laporankartupiutangperagen.report');
+    Route::get('laporankartupiutangperagen/export', [LaporanKartuPiutangPerAgenController::class, 'export'])->name('laporankartupiutangperagen.export');
+    Route::resource('laporankartupiutangperagen', LaporanKartuPiutangPerAgenController::class)->whereNumber('laporankartupiutangperagen');
 
     Route::get('laporanhutangbbm/report', [LaporanHutangBBMController::class, 'report'])->name('laporanhutangbbm.report');
     Route::get('laporanhutangbbm/export', [LaporanHutangBBMController::class, 'export'])->name('laporanhutangbbm.export');

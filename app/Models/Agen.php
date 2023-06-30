@@ -6,6 +6,8 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use App\Traits\RestrictDeletion;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
+use App\Http\Controllers\Controller;
+
 
 class Agen extends MyModel
 {
@@ -202,8 +204,10 @@ class Agen extends MyModel
             ->leftJoin(DB::raw("parameter as statusapproval with (readuncommitted)"), 'agen.statusapproval', 'statusapproval.id')
             ->leftJoin(DB::raw("parameter as statustas with (readuncommitted)"), 'agen.statustas', 'statustas.id');
 
-
-
+            // $controller = new Controller;
+            // dump($controller->get_client_ip());
+            // dd($controller->get_server_ip());
+            
 
 
         $this->filter($query);
