@@ -184,7 +184,6 @@ class Agen extends MyModel
                 'agen.namaperusahaan',
                 'agen.alamat',
                 'agen.notelp',
-                'agen.nohp',
                 'agen.contactperson',
                 'agen.top',
                 'statusapproval.memo as statusapproval',
@@ -473,7 +472,6 @@ class Agen extends MyModel
         $agen->namaperusahaan = $data['namaperusahaan'];
         $agen->alamat = $data['alamat'];
         $agen->notelp = $data['notelp'];
-        $agen->nohp = $data['nohp'];
         $agen->contactperson = $data['contactperson'];
         $agen->top = $data['top'];
         $agen->statusapproval = $statusNonApproval->id;
@@ -485,7 +483,7 @@ class Agen extends MyModel
         // $request->sortorder = $request->sortorder ?? 'asc';
 
         if (!$agen->save()) {
-            throw new \Exception("Error storing service in header.");
+            throw new \Exception("Error storing agen.");
         }
 
         (new LogTrail())->processStore([
@@ -510,7 +508,6 @@ class Agen extends MyModel
         $agen->namaperusahaan = $data['namaperusahaan'];
         $agen->alamat = $data['alamat'];
         $agen->notelp = $data['notelp'];
-        $agen->nohp = $data['nohp'];
         $agen->contactperson = $data['contactperson'];
         $agen->top = $data['top'];
         $agen->statustas = $data['statustas'];
@@ -520,7 +517,7 @@ class Agen extends MyModel
         // $request->sortorder = $request->sortorder ?? 'asc';
 
         if (!$agen->save()) {
-            throw new \Exception("Error update service in header.");
+            throw new \Exception("Error update agen.");
         }
 
         (new LogTrail())->processStore([
