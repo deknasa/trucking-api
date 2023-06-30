@@ -47,7 +47,6 @@ class UpdateAgenRequest extends FormRequest
             "namaperusahaan" => "required",
             "alamat" => "required",
             "notelp" => ["required",Rule::unique('agen')->whereNotIn('id', [$this->id]),"min:11","max:13"],
-            "nohp" => ["required",Rule::unique('agen')->whereNotIn('id', [$this->id]),"min:11","max:13"],
             "contactperson" => "required",
             "top" => "required|numeric|gt:0|max:999",
             "statustas" => ["required",Rule::in($statusTas),'numeric','min:1'],
@@ -58,14 +57,13 @@ class UpdateAgenRequest extends FormRequest
     public function attributes()
     {
         return [
-            "kodeagen" => "kode agen",
-            "namaagen" => "nama agen",
-            "statusaktif" => "status",
+            "kodeagen" => "kode agen (emkl)",
+            "namaagen" => "nama agen (emkl)",
+            "statusaktif" => "status aktif",
             "namaperusahaan" => "nama perusahaan",
-            "notelp" => "no telp",
-            "nohp" => "no hp",
-            "contactperson" => "contact person",
-            "top" => "top",
+            "notelp" => "no telepon/handphone",
+            "contactperson" => "nama kontak",
+            "top" => "status pembayaran (top)",
             "statustas" => "status tas",
             // "keteranganjenisemkl" => "jenis emkl",
         ];
@@ -82,7 +80,6 @@ class UpdateAgenRequest extends FormRequest
             'namaperusahaan.required' => ':attribute' . ' ' . $controller->geterror('WI')->keterangan,
             'alamat.required' => ':attribute' . ' ' . $controller->geterror('WI')->keterangan,
             'notelp.required' => ':attribute' . ' ' . $controller->geterror('WI')->keterangan,
-            'nohp.required' => ':attribute' . ' ' . $controller->geterror('WI')->keterangan,
             'contactperson.required' => ':attribute' . ' ' . $controller->geterror('WI')->keterangan,
             'top.required' => ':attribute' . ' ' . $controller->geterror('WI')->keterangan,
             'jenisusaha.required' => ':attribute' . ' ' . $controller->geterror('WI')->keterangan,

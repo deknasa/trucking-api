@@ -90,7 +90,6 @@ class AgenController extends Controller
             'namaperusahaan' => $request->namaperusahaan,
             'alamat' => $request->alamat,
             'notelp' => $request->notelp,
-            'nohp' => $request->nohp,
             'contactperson' => $request->contactperson,
             'top' => $request->top,
             'statustas' => $request->statustas,
@@ -139,7 +138,6 @@ class AgenController extends Controller
             'namaperusahaan' => $request->namaperusahaan,
             'alamat' => $request->alamat,
             'notelp' => $request->notelp,
-            'nohp' => $request->nohp,
             'contactperson' => $request->contactperson,
             'top' => $request->top,
             'statustas' => $request->statustas,
@@ -257,11 +255,11 @@ class AgenController extends Controller
                     'label' => 'No',
                 ],
                 [
-                    'label' => 'Kode Agen',
+                    'label' => 'Kode Agen (EMKL)',
                     'index' => 'kodeagen',
                 ],
                 [
-                    'label' => 'Nama Agen',
+                    'label' => 'Nama Agen (EMKL)',
                     'index' => 'namaagen',
                 ],
                 [
@@ -281,19 +279,15 @@ class AgenController extends Controller
                     'index' => 'alamat',
                 ],
                 [
-                    'label' => 'No Telp',
+                    'label' => 'No Telp/HP',
                     'index' => 'notelp',
                 ],
                 [
-                    'label' => 'No Hp',
-                    'index' => 'nohp',
-                ],
-                [
-                    'label' => 'Contact Person',
+                    'label' => 'Nama Kontak',
                     'index' => 'contactperson',
                 ],
                 [
-                    'label' => 'TOP',
+                    'label' => 'Status Pembayaran (TOP)',
                     'index' => 'top',
                 ],
                 [
