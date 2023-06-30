@@ -21,6 +21,7 @@ class DatabaseSeeder extends Seeder
             CabangSeeder::class,
             UserSeeder::class,
             AkunPusatSeeder::class,
+            MainAkunPusatSeeder::class,
             AcosSeeder::class,            
             MenuSeeder::class,
             RoleSeeder::class,
