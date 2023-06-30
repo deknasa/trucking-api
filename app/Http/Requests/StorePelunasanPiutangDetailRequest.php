@@ -31,7 +31,6 @@ class StorePelunasanPiutangDetailRequest extends FormRequest
     public function rules()
     {
         return [
-            'piutang_id' => 'required',
             'bayar.*' => ['required', 'numeric', 'gt:0', new CekMaxBayarPelunasanPiutang()],
             'keterangan.*' => 'required',
             'sisa.*' => ['required', 'numeric', 'min:0', new CekMinusSisaPelunasanPiutang()],

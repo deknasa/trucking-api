@@ -35,7 +35,7 @@ use Illuminate\Support\Facades\Log;
 
 class PiutangHeaderController extends Controller
 {
-       /**
+    /**
      * @ClassName 
      * PiutangHeaderHeader
      * @Detail1 PiutangDetailController

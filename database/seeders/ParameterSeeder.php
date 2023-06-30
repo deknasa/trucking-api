@@ -368,5 +368,6 @@ class ParameterSeeder extends Seeder
         parameter::create(['grp' => 'STATUS SERVICE RUTIN', 'subgrp' => 'STATUS SERVICE RUTIN', 'kelompok' => '', 'text' => 'PERGANTIAN SARINGAN HAWA', 'memo' => '{"MEMO":"PERGANTIAN SARINGAN HAWA","SINGKATAN":"MLK","WARNA":"#28A745"}', 'type' => '0', 'modifiedby' => 'ADMIN', 'default' => '',]);
         parameter::create(['grp' => 'PENJUALAN STOK AFKIR', 'subgrp' => 'PENJUALAN STOK AFKIR', 'kelompok' => '', 'text' => '4', 'memo' => '{"MEMO":"RETUR STOK","SINGKATAN":"4","WARNA":"#6C757D"}', 'type' => '0', 'modifiedby' => 'ADMIN', 'default' => '',]);
         parameter::create(['grp' => 'JURNAL PENJUALAN STOK AFKIR', 'subgrp' => 'KREDIT', 'kelompok' => '', 'text' => 'KREDIT', 'memo' => '{"MEMO":"JURNAL PENJUALAN STOK AFKIR","SINGKATAN":"JPJA","WARNA":"#28A745","JURNAL":"01.01.02.34"}', 'type' => '0', 'modifiedby' => '1', 'default' => '',]);
+        parameter::create(['grp' => 'HOSTNAME', 'subgrp' => 'HOSTNAME', 'kelompok' => '', 'text' => 'LOCALHOST', 'memo' => '{"MEMO":"HOSTNAME","SINGKATAN":"MLK","WARNA":"#28A745"}', 'type' => '0', 'modifiedby' => 'ADMIN', 'default' => '',]);
     }
 }

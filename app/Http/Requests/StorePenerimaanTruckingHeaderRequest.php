@@ -6,6 +6,9 @@ use App\Http\Controllers\Api\ErrorController;
 use App\Models\PenerimaanTruckingHeader;
 use Illuminate\Foundation\Http\FormRequest;
 use App\Rules\DateTutupBuku;
+use App\Rules\ExistSupirDPOPenerimaanTrucking;
+use App\Rules\SupirDPOPenerimaanTrucking;
+use App\Rules\ValidasiDetail;
 use Illuminate\Validation\Rule;
 use Illuminate\Support\Facades\DB;
 
@@ -106,8 +109,19 @@ class StorePenerimaanTruckingHeaderRequest extends FormRequest
             }
             return false;
         });
+        $penerimaantrucking_id = $this->penerimaantrucking_id;
+        if ($penerimaantrucking_id != null) {
+            $rulespenerimaan_id = [
+                'penerimaantrucking_id' => ['required', 'numeric', 'min:1',Rule::in($penerimaanId)]
+            ];
+        } else if ($penerimaantrucking_id == null && $this->penerimaantrucking != '') {
+            $rulespenerimaan_id = [
+                'penerimaantrucking_id' => ['required', 'numeric', 'min:1',Rule::in($penerimaanId)]
+            ];
+        }
 
         if ($kodepenerimaan == 'PJP') {
+            $jumlahdetail = $this->jumlahdetail ?? 0;
             $rules = [
                 'tglbukti' => [
                     'required',
@@ -116,10 +130,9 @@ class StorePenerimaanTruckingHeaderRequest extends FormRequest
                     new DateTutupBuku(),
                 ],
                 'penerimaantrucking' => ['required',Rule::in($penerimaanName)],
-                'penerimaantrucking_id' => ['required', 'numeric', 'min:1',Rule::in($penerimaanId)],
                 'bank' => [$ruleBank, $bank, 'required'],
                 'bank_id' => [Rule::in($bankIds), 'required', 'min:1','numeric'],
-                'supir' => ['required', $supir],
+                'supir' => ['required', $supir, new ValidasiDetail($jumlahdetail)],
                 'supirheader_id' => ['required', $supirId, 'numeric','min:1'],
                 // 'keterangancoa' => 'required'
             ];
@@ -133,11 +146,10 @@ class StorePenerimaanTruckingHeaderRequest extends FormRequest
                     new DateTutupBuku(),
                 ],
                 'penerimaantrucking' => ['required',Rule::in($penerimaanName)],
-                'penerimaantrucking_id' => ['required', 'numeric', 'min:1',Rule::in($penerimaanId)],
                 'bank' => [$ruleBank, $bank, 'required'],
                 'bank_id' => [Rule::in($bankIds), 'required', 'min:1'],
                 'supir.*' => ['required', $supir],
-                'supir_id.*' => ['required', $supirId, 'numeric','min:1'],
+                'supir_id.*' => [new SupirDPOPenerimaanTrucking, new ExistSupirDPOPenerimaanTrucking()],
                 // 'keterangancoa' => 'required'
             ];
         }else{
@@ -149,7 +161,6 @@ class StorePenerimaanTruckingHeaderRequest extends FormRequest
                     new DateTutupBuku(),
                 ],
                 'penerimaantrucking' => ['required',Rule::in($penerimaanName)],
-                'penerimaantrucking_id' => ['required', 'numeric', 'min:1',Rule::in($penerimaanId)],
                 'bank' => [$ruleBank, $bank, 'required'],
                 'bank_id' => [Rule::in($bankIds), 'required', 'min:1'],
                 // 'keterangancoa' => 'required'
@@ -163,7 +174,8 @@ class StorePenerimaanTruckingHeaderRequest extends FormRequest
         foreach ($relatedRequests as $relatedRequest) {
             $rules = array_merge(
                 $rules,
-                (new $relatedRequest)->rules()
+                (new $relatedRequest)->rules(),
+                $rulespenerimaan_id
             );
         }
         return $rules;
@@ -175,6 +187,7 @@ class StorePenerimaanTruckingHeaderRequest extends FormRequest
             'tglbukti' => 'Tgl Bukti',
             'keterangancoa' => 'nama perkiraan',
             'penerimaantrucking' => 'Kode Penerimaan',
+            'supir.*' => 'supir'
         ];
 
         $relatedRequests = [

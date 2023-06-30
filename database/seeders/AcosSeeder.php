@@ -17,8 +17,6 @@ class AcosSeeder extends Seeder
     {
         DB::statement("delete Acos");
         DB::statement("DBCC CHECKIDENT ('Acos', RESEED, 1);");
-
-
         acos::create([ 'class' => 'parameter', 'method' => 'index', 'nama' => 'index ParameterController', 'modifiedby' => 'ADMIN',]);
         acos::create([ 'class' => 'parameter', 'method' => 'store', 'nama' => 'store ParameterController', 'modifiedby' => 'ADMIN',]);
         acos::create([ 'class' => 'parameter', 'method' => 'update', 'nama' => 'update ParameterController', 'modifiedby' => 'ADMIN',]);
@@ -667,6 +665,12 @@ class AcosSeeder extends Seeder
         acos::create([ 'class' => 'laporanpembelian', 'method' => 'export', 'nama' => 'export LaporanPembelianController', 'modifiedby' => 'ADMIN',]);
         acos::create([ 'class' => 'laporanpembelianstok', 'method' => 'index', 'nama' => 'index LaporanPembelianStokController', 'modifiedby' => 'ADMIN',]);
         acos::create([ 'class' => 'laporanpembelianstok', 'method' => 'report', 'nama' => 'report LaporanPembelianStokController', 'modifiedby' => 'ADMIN',]);
-        acos::create([ 'class' => 'laporanpembelianstok', 'method' => 'export', 'nama' => 'export LaporanPembelianStokController', 'modifiedby' => 'ADMIN',]);    
+        acos::create([ 'class' => 'laporanpembelianstok', 'method' => 'export', 'nama' => 'export LaporanPembelianStokController', 'modifiedby' => 'ADMIN',]);
+        acos::create([ 'class' => 'upahsupir', 'method' => 'export', 'nama' => 'export UpahSupirController', 'modifiedby' => 'ADMIN',]);
+        acos::create([ 'class' => 'upahsupir', 'method' => 'import', 'nama' => 'import UpahSupirController', 'modifiedby' => 'ADMIN',]);
+        acos::create([ 'class' => 'upahritasi', 'method' => 'export', 'nama' => 'export UpahRitasiController', 'modifiedby' => 'ADMIN',]);
+        acos::create([ 'class' => 'upahritasi', 'method' => 'import', 'nama' => 'import UpahRitasiController', 'modifiedby' => 'ADMIN',]);
+        acos::create([ 'class' => 'laporankasbank', 'method' => 'export', 'nama' => 'export LaporanKasBankController', 'modifiedby' => 'ADMIN',]);
+        acos::create([ 'class' => 'jurnalumumheader', 'method' => 'export', 'nama' => 'export JurnalUmumHeaderController', 'modifiedby' => 'ADMIN',]);
     }
 }

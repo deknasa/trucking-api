@@ -188,7 +188,6 @@ class JurnalUmumPusatHeader extends MyModel
                         } else {
                             // $query = $query->where($this->anothertable . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
                             $query = $query->whereRaw($this->anothertable . ".[" .  $filters['field'] . "] LIKE '%" . escapeLike($filters['data']) . "%' escape '|'");
-
                         }
                     }
 
@@ -206,7 +205,6 @@ class JurnalUmumPusatHeader extends MyModel
                             } else {
                                 // $query = $query->orWhere($this->anothertable . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
                                 $query = $query->OrwhereRaw($this->anothertable . ".[" .  $filters['field'] . "] LIKE '%" . escapeLike($filters['data']) . "%' escape '|'");
-
                             }
                         }
                     });
@@ -227,5 +225,97 @@ class JurnalUmumPusatHeader extends MyModel
     public function paginate($query)
     {
         return $query->skip($this->params['offset'])->take($this->params['limit']);
+    }
+
+    public function processStore(array $data): JurnalUmumPusatHeader
+    {
+        $jurnalUmumPusatHeader = new JurnalUmumPusatHeader();
+        $statusApproval = Parameter::from(
+            DB::raw("parameter with (readuncommitted)")
+        )->where('grp', 'STATUS APPROVAL')->where('text', 'APPROVAL')->first();
+        $statusNonApproval = Parameter::from(
+            DB::raw("parameter with (readuncommitted)")
+        )->where('grp', 'STATUS APPROVAL')->where('text', 'NON APPROVAL')->first();
+
+        $jurnalUmumPusatHeader->nobukti = $data['nobukti'];
+        $jurnalUmumPusatHeader->tglbukti = date('Y-m-d', strtotime($data['tglbukti']));
+        $jurnalUmumPusatHeader->postingdari = $data['postingdari'];
+        $jurnalUmumPusatHeader->statusapproval = $data['statusapproval'];
+        $jurnalUmumPusatHeader->userapproval = auth('api')->user()->name;
+        $jurnalUmumPusatHeader->tglapproval = date('Y-m-d H:i:s');
+        $jurnalUmumPusatHeader->statusformat = $data['statusformat'];
+        $jurnalUmumPusatHeader->modifiedby = auth('api')->user()->name;
+
+
+        if (!$jurnalUmumPusatHeader->save()) {
+            throw new \Exception("Error storing jurnal umum pusat header.");
+        }
+
+        $jurnalUmumPusatHeaderLogTrail = (new LogTrail())->processStore([
+            'namatabel' => strtoupper($jurnalUmumPusatHeader->getTable()),
+            'postingdari' => 'ENTRY JURNAL UMUM PUSAT HEADER',
+            'idtrans' => $jurnalUmumPusatHeader->id,
+            'nobuktitrans' => $jurnalUmumPusatHeader->nobukti,
+            'aksi' => 'ENTRY',
+            'datajson' => $jurnalUmumPusatHeader->toArray(),
+            'modifiedby' => auth('api')->user()->user
+        ]);
+
+        $jurnalUmumPusatDetails = [];
+
+        for ($i = 0; $i < count($data['nominal_detail']); $i++) {
+            $akunPusat = DB::table("akunpusat")->from(DB::raw("akunpusat"))->where('coa', $data['coa_detail'][$i])->first();
+            $jurnalUmumPusatDetail = (new JurnalUmumPusatDetail())->processStore($jurnalUmumPusatHeader, [
+                'coa' => $data['coa_detail'][$i],
+                'nominal' => $data['nominal_detail'][$i],
+                'coamain' => $akunPusat->coamain,
+                'keterangan' => $data['keterangan_detail'][$i],
+                'baris' => $data['baris'][$i],
+            ]);
+
+            $jurnalUmumPusatDetails[] = $jurnalUmumPusatDetail->toArray();
+        }
+
+        (new LogTrail())->processStore([
+            'namatabel' => strtoupper($jurnalUmumPusatDetail->getTable()),
+            'postingdari' => 'ENTRY JURNAL UMUM PUSAT DETAIL',
+            'idtrans' =>  $jurnalUmumPusatHeaderLogTrail->id,
+            'nobuktitrans' => $jurnalUmumPusatHeader->nobukti,
+            'aksi' => 'ENTRY',
+            'datajson' => $jurnalUmumPusatDetails,
+            'modifiedby' => auth('api')->user()->user,
+        ]);
+
+        return $jurnalUmumPusatHeader;
+    }
+
+    public function processDestroy($id, $postingDari = ''): JurnalUmumPusatHeader
+    {
+        $jurnalUmumDetails = JurnalUmumPusatDetail::lockForUpdate()->where('jurnalumumpusat_id', $id)->get();
+
+        $jurnalUmumHeader = new JurnalUmumPusatHeader();
+        $jurnalUmumHeader = $jurnalUmumHeader->lockAndDestroy($id);
+
+        $jurnalUmumHeaderLogTrail = (new LogTrail())->processStore([
+            'namatabel' => $jurnalUmumHeader->getTable(),
+            'postingdari' => $postingDari,
+            'idtrans' => $jurnalUmumHeader->id,
+            'nobuktitrans' => $jurnalUmumHeader->nobukti,
+            'aksi' => 'DELETE',
+            'datajson' => $jurnalUmumHeader->toArray(),
+            'modifiedby' => auth('api')->user()->name
+        ]);
+
+        (new LogTrail())->processStore([
+            'namatabel' => 'JURNALUMUMDETAIL',
+            'postingdari' => $postingDari,
+            'idtrans' => $jurnalUmumHeaderLogTrail['id'],
+            'nobuktitrans' => $jurnalUmumHeader->nobukti,
+            'aksi' => 'DELETE',
+            'datajson' => $jurnalUmumDetails->toArray(),
+            'modifiedby' => auth('api')->user()->name
+        ]);
+
+        return $jurnalUmumHeader;
     }
 }

@@ -7,6 +7,7 @@ use App\Models\PengembalianKasGantungHeader;
 use Illuminate\Foundation\Http\FormRequest;
 use App\Rules\DateTutupBuku;
 use App\Rules\DestroyPengembalianKasGantung;
+use App\Rules\ValidasiDetail;
 use Illuminate\Validation\Rule;
 
 class UpdatePengembalianKasGantungHeaderRequest extends FormRequest
@@ -29,6 +30,7 @@ class UpdatePengembalianKasGantungHeaderRequest extends FormRequest
     public function rules()
     {
 
+        $jumlahdetail = $this->jumlahdetail ?? 0;
         $pengembalian = new PengembalianKasGantungHeader();
         $getDataPengembalian = $pengembalian->findAll(request()->id);
 
@@ -60,6 +62,7 @@ class UpdatePengembalianKasGantungHeaderRequest extends FormRequest
             'tgldari' => [
                 'required', 'date_format:d-m-Y',
                 'before_or_equal:' .$tglbatasakhir,
+                new ValidasiDetail($jumlahdetail)
             ],
             "tglsampai" => [
                 "required", 'date_format:d-m-Y',
