@@ -373,7 +373,8 @@ class ParameterSeeder extends Seeder
         parameter::create(['grp' => 'PENGELUARAN STOK', 'subgrp' => 'SPAREPART GANTUNG TRUCKING', 'kelompok' => '', 'text' => '#GST #9999#/#R#/#Y', 'memo' => '{"MEMO":"KOREKSI STOK MINUS BUKTI","SINGKATAN":"#GST #9999#/#R#/#Y","WARNA":"#28A745"}', 'type' => '118', 'modifiedby' => 'ADMIN', 'default' => '',]);
         parameter::create(['grp' => 'PST STOK', 'subgrp' => 'PST STOK', 'kelompok' => '', 'text' => '9', 'memo' => '{"MEMO":"PST STOK","SINGKATAN":"9","WARNA":"#6C757D"}', 'type' => '0', 'modifiedby' => 'ADMIN', 'default' => '',]);
         parameter::create(['grp' => 'GST STOK', 'subgrp' => 'GST STOK', 'kelompok' => '', 'text' => '5', 'memo' => '{"MEMO":"GST STOK","SINGKATAN":"5","WARNA":"#6C757D"}', 'type' => '0', 'modifiedby' => 'ADMIN', 'default' => '',]);
-
+        parameter::create(['grp' => 'STATUS AKSES', 'subgrp' => 'STATUS AKSES', 'kelompok' => '', 'text' => 'PUBLIC', 'memo' => '{"MEMO":"PUBLIC","SINGKATAN":"P","WARNA":"#28A745"}', 'type' => '0', 'modifiedby' => 'ADMIN', 'default' => 'YA',]);
+        parameter::create(['grp' => 'STATUS AKSES', 'subgrp' => 'STATUS AKSES', 'kelompok' => '', 'text' => 'PRIVATE', 'memo' => '{"MEMO":"PRIVATE","SINGKATAN":"V","WARNA":"#28A745"}', 'type' => '0', 'modifiedby' => 'ADMIN', 'default' => 'YA',]);
 
     }
 }
