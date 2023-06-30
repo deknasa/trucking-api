@@ -224,6 +224,8 @@ use App\Http\Controllers\LaporanKasHarianController;
 use App\Http\Controllers\Api\LaporanKartuHutangPerSupplierController;
 use App\Http\Controllers\Api\LaporanKartuPiutangPerAgenController;
 use App\Http\Controllers\Api\MainAkunPusatController;
+use App\Http\Controllers\Api\UbahPasswordController;
+
 // use App\Http\Controllers\Api\LaporanTransaksiHarianController;
 
 /*
@@ -1379,4 +1381,7 @@ route::middleware(['auth:api','authorized'])->group(function () {
 
     Route::get('approvaltradogambar/field_length', [ApprovalTradoGambarController::class, 'fieldLength']);
     Route::resource('approvaltradogambar', ApprovalTradoGambarController::class)->whereNumber('approvaltradogambar');
+
+    Route::get('ubahpassword/field_length', [UbahPasswordController::class, 'fieldLength']);
+    Route::resource('ubahpassword', UbahPasswordController::class)->whereNumber('ubahpassword');
 });
