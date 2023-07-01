@@ -98,6 +98,59 @@ class Gandengan extends MyModel
             ->first();
 
         $aktif = request()->aktif ?? '';
+        $asal = request()->asal ?? '';
+
+        if ($asal == 'YA') {
+            $statusGandengan = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS GANDENGAN')->where('text', 'TINGGAL CONTAINER')->first();
+            $belawan = DB::table("kota")->from(DB::raw("kota with (readuncommitted)"))->where('kodekota', 'BELAWAN')->first();
+
+            $tempStatus = '##tempstatus' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+            Schema::create($tempStatus, function ($table) {
+                $table->unsignedBigInteger('id');
+                $table->string('jobtrucking');
+            });
+
+            $getStatus = DB::table("gandengan")->from(DB::raw("gandengan with (readuncommitted)"))
+                    ->select('gandengan.id','suratpengantar.jobtrucking')
+                    ->join(DB::raw("suratpengantar with (readuncommitted)"), 'suratpengantar.gandengan_id', 'gandengan.id')
+                    ->where('suratpengantar.statusgandengan', $statusGandengan->id);
+
+            DB::table($tempStatus)->insertUsing([
+                'id',
+                'jobtrucking'
+            ], $getStatus);
+
+            $tempJob = '##tempjob' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+            Schema::create($tempJob, function ($table) {
+                $table->string('jobtrucking');
+            });
+
+            $getJob = DB::table("$tempStatus")->from(DB::raw("$tempStatus as a with (readuncommitted)"))
+                    ->select('a.jobtrucking')
+                    ->join(DB::raw("suratpengantar as b with (readuncommitted)"), 'a.jobtrucking', 'b.jobtrucking')
+                    ->where('b.sampai_id', $belawan->id);
+
+            DB::table($tempJob)->insertUsing([
+                'jobtrucking'
+            ], $getJob);
+
+            $tempAll = '##tempall' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+            Schema::create($tempAll, function ($table) {
+                $table->unsignedBigInteger('id');
+                $table->string('jobtrucking');
+            });
+
+            $getAll = DB::table("$tempStatus")->from(DB::raw("$tempStatus as a with (readuncommitted)"))
+                    ->select('a.*')
+                    ->leftJoin(DB::raw("$tempJob as b with (readuncommitted)"), 'a.jobtrucking', 'b.jobtrucking')
+                    ->whereRaw("ISNULL(b.jobtrucking, '') = ''");
+
+            DB::table($tempAll)->insertUsing([
+                'id',
+                'jobtrucking'
+            ], $getAll);
+        }
+
         $query = DB::table($this->table)->from(
             DB::raw($this->table . " with (readuncommitted)")
         )
@@ -112,7 +165,7 @@ class Gandengan extends MyModel
                 DB::raw("'Laporan Gandengan' as judulLaporan"),
                 DB::raw("'" . $getJudul->text . "' as judul"),
                 DB::raw("'Tgl Cetak :'+format(getdate(),'dd-MM-yyyy HH:mm:ss')as tglcetak"),
-                DB::raw(" 'User :".auth('api')->user()->name."' as usercetak") 
+                DB::raw(" 'User :" . auth('api')->user()->name . "' as usercetak")
             )
             ->leftJoin(DB::raw("parameter with (readuncommitted)"), 'gandengan.statusaktif', 'parameter.id');
 
@@ -129,6 +182,10 @@ class Gandengan extends MyModel
                 ->first();
 
             $query->where('gandengan.statusaktif', '=', $statusaktif->id);
+        }
+
+        if ($asal == 'YA') {
+            $query->whereRaw("gandengan.id in (select id from $tempAll)");
         }
         $this->totalRows = $query->count();
         $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;
