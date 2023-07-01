@@ -17,6 +17,8 @@ class AcosSeeder extends Seeder
     {
         DB::statement("delete Acos");
         DB::statement("DBCC CHECKIDENT ('Acos', RESEED, 1);");
+
+
         acos::create(['class' => 'parameter', 'method' => 'index', 'nama' => 'index ParameterController', 'modifiedby' => 'ADMIN',]);
         acos::create(['class' => 'parameter', 'method' => 'store', 'nama' => 'store ParameterController', 'modifiedby' => 'ADMIN',]);
         acos::create(['class' => 'parameter', 'method' => 'update', 'nama' => 'update ParameterController', 'modifiedby' => 'ADMIN',]);
@@ -674,5 +676,6 @@ class AcosSeeder extends Seeder
         acos::create(['class' => 'jurnalumumheader', 'method' => 'export', 'nama' => 'export JurnalUmumHeaderController', 'modifiedby' => 'ADMIN',]);
         acos::create(['class' => 'ubahpassword', 'method' => 'index', 'nama' => 'index UbahPasswordController', 'modifiedby' => 'ADMIN',]);
         acos::create(['class' => 'ubahpassword', 'method' => 'store', 'nama' => 'store UbahPasswordController', 'modifiedby' => 'ADMIN',]);
+        acos::create(['class' => 'jobtrucking', 'method' => 'index', 'nama' => 'index JobTruckingController', 'modifiedby' => 'ADMIN',]);
     }
 }
