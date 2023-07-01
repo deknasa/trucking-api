@@ -465,11 +465,6 @@ class PiutangHeader extends MyModel
         ]);
 
         $piutangDetails = [];
-        $coadebet_detail['coadebet_detail'] = [];
-        $coakredit_detail['coakredit_detail'] = [];
-        $keterangan_detail['keterangan_detail'] = [];
-        $nominal_detail['nominal_detail'] = [];
-        $tanpaProses['tanpaprosesnobukti'] = 1;
 
         for ($i = 0; $i < count($data['nominal_detail']); $i++) {
 
@@ -479,10 +474,10 @@ class PiutangHeader extends MyModel
                 'invoice_nobukti' => $data['invoice_nobukti'][$i] ?? ''
             ]);
 
-            $coadebet_detail['coadebet_detail'][$i] = $getCoa->coa;
-            $coakredit_detail['coakredit_detail'][$i] = $getCoa->coapendapatan;
-            $keterangan_detail['keterangan_detail'][$i] = $data['keterangan_detail'][$i];
-            $nominal_detail['nominal_detail'][$i] = $data['nominal_detail'][$i];
+            $coadebet_detail[] = $getCoa->coa;
+            $coakredit_detail[] = $getCoa->coapendapatan;
+            $keterangan_detail[] = $data['keterangan_detail'][$i];
+            $nominal_detail[] = $data['nominal_detail'][$i];
 
             $piutangDetails[] = $piutangDetail->toArray();
         }
@@ -497,16 +492,19 @@ class PiutangHeader extends MyModel
             'modifiedby' => auth('api')->user()->user,
         ]);
 
-        $dataJurnal = array_merge(
-            $piutangHeader->toArray(),
-            $coadebet_detail,
-            $coakredit_detail,
-            $keterangan_detail,
-            $nominal_detail,
-            $tanpaProses
-        );
+        $jurnalRequest = [
+            'tanpaprosesnobukti' => 1,
+            'nobukti' => $piutangHeader->nobukti,
+            'tglbukti' => date('Y-m-d', strtotime($data['tglbukti'])),
+            'postingdari' => $data['postingdari'] ?? 'ENTRY PIUTANG HEADER',
+            'statusformat' => "0",
+            'coakredit_detail' => $coakredit_detail,
+            'coadebet_detail' => $coadebet_detail,
+            'nominal_detail' => $nominal_detail,
+            'keterangan_detail' => $keterangan_detail
+        ];
 
-        (new JurnalUmumHeader())->processStore($dataJurnal);
+        (new JurnalUmumHeader())->processStore($jurnalRequest);
         return $piutangHeader;
     }
 
@@ -541,11 +539,6 @@ class PiutangHeader extends MyModel
         PiutangDetail::where('piutang_id', $piutangHeader->id)->delete();
 
         $piutangDetails = [];
-        $coadebet_detail['coadebet_detail'] = [];
-        $coakredit_detail['coakredit_detail'] = [];
-        $keterangan_detail['keterangan_detail'] = [];
-        $nominal_detail['nominal_detail'] = [];
-        $isUpdate['isUpdate'] = 1;
 
         for ($i = 0; $i < count($data['nominal_detail']); $i++) {
             $piutangDetail = (new PiutangDetail())->processStore($piutangHeader, [
@@ -554,10 +547,10 @@ class PiutangHeader extends MyModel
                 'invoice_nobukti' => $data['invoice_nobukti'][$i] ?? ''
             ]);
 
-            $coadebet_detail['coadebet_detail'][$i] = $getCoa->coa;
-            $coakredit_detail['coakredit_detail'][$i] = $getCoa->coapendapatan;
-            $keterangan_detail['keterangan_detail'][$i] = $data['keterangan_detail'][$i];
-            $nominal_detail['nominal_detail'][$i] = $data['nominal_detail'][$i];
+            $coadebet_detail[] = $getCoa->coa;
+            $coakredit_detail[] = $getCoa->coapendapatan;
+            $keterangan_detail[] = $data['keterangan_detail'][$i];
+            $nominal_detail[] = $data['nominal_detail'][$i];
 
             $piutangDetails[] = $piutangDetail->toArray();
         }
@@ -572,18 +565,21 @@ class PiutangHeader extends MyModel
             'modifiedby' => auth('api')->user()->user,
         ]);
 
-        $dataJurnal = array_merge(
-            $piutangHeader->toArray(),
-            $coadebet_detail,
-            $coakredit_detail,
-            $keterangan_detail,
-            $nominal_detail,
-            $isUpdate
-        );
+        $jurnalRequest = [
+            'tanpaprosesnobukti' => 1,
+            'nobukti' => $piutangHeader->nobukti,
+            'tglbukti' => date('Y-m-d', strtotime($data['tglbukti'])),
+            'postingdari' => $data['postingdari'] ?? 'EDIT PIUTANG HEADER',
+            'statusformat' => "0",
+            'coakredit_detail' => $coakredit_detail,
+            'coadebet_detail' => $coadebet_detail,
+            'nominal_detail' => $nominal_detail,
+            'keterangan_detail' => $keterangan_detail
+        ];
         $getJurnal = JurnalUmumHeader::from(DB::raw("jurnalumumheader with (readuncommitted)"))->where('nobukti', $piutangHeader->nobukti)->first();
         $newJurnal = new JurnalUmumHeader();
         $newJurnal = $newJurnal->find($getJurnal->id);
-        $jurnalumumHeader = (new JurnalUmumHeader())->processUpdate($newJurnal, $dataJurnal);
+        $jurnalumumHeader = (new JurnalUmumHeader())->processUpdate($newJurnal, $jurnalRequest);
 
         return $piutangHeader;
     }

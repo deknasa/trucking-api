@@ -49,8 +49,7 @@ class Ritasi extends MyModel
                 'ritasi.created_at',
                 'ritasi.updated_at'
             )
-            ->leftJoin(DB::raw("dataritasi with (readuncommitted)"), 'ritasi.statusritasi', 'dataritasi.id')
-            ->leftJoin(DB::raw("parameter with (readuncommitted)"), 'dataritasi.statusritasi', '=', 'parameter.id')
+            ->leftJoin(DB::raw("parameter with (readuncommitted)"), 'ritasi.statusritasi', '=', 'parameter.id')
             ->leftJoin(DB::raw("supir with (readuncommitted)"), 'ritasi.supir_id', '=', 'supir.id')
             ->leftJoin(DB::raw("trado with (readuncommitted)"), 'ritasi.trado_id', '=', 'trado.id')
             ->leftJoin(DB::raw("kota as dari with (readuncommitted)"), 'ritasi.dari_id', '=', 'dari.id')
@@ -111,7 +110,7 @@ class Ritasi extends MyModel
             'ritasi.id',
             'ritasi.nobukti',
             'ritasi.tglbukti',
-            'ritasi.statusritasi as statusritasi_id',
+            'ritasi.dataritasi_id as statusritasi_id',
             'parameter.text as statusritasi',
             'ritasi.suratpengantar_nobukti',
             'ritasi.dari_id',
@@ -127,7 +126,7 @@ class Ritasi extends MyModel
             ->leftJoin(DB::raw("trado with (readuncommitted)"), 'ritasi.trado_id', '=', 'trado.id')
             ->leftJoin(DB::raw("kota as dari with (readuncommitted)"), 'ritasi.dari_id', '=', 'dari.id')
             ->leftJoin(DB::raw("kota as sampai with (readuncommitted)"), 'ritasi.sampai_id', '=', 'sampai.id')
-            ->leftJoin(DB::raw("dataritasi with (readuncommitted)"), 'ritasi.statusritasi', 'dataritasi.id')
+            ->leftJoin(DB::raw("dataritasi with (readuncommitted)"), 'ritasi.dataritasi_id', 'dataritasi.id')
             ->leftJoin(DB::raw("parameter with (readuncommitted)"), 'parameter.id', 'dataritasi.statusritasi')
             ->where('ritasi.id', $id);
 
@@ -344,7 +343,8 @@ class Ritasi extends MyModel
 
         $ritasi = new Ritasi();
         $ritasi->tglbukti = date('Y-m-d', strtotime($data['tglbukti']));
-        $ritasi->statusritasi = $data['statusritasi_id'];
+        $ritasi->statusritasi = $extra->statusritasi;
+        $ritasi->dataritasi_id = $data['statusritasi_id'];
         $ritasi->suratpengantar_nobukti = $data['suratpengantar_nobukti'];
         $ritasi->supir_id = $data['supir_id'];
         $ritasi->trado_id = $data['trado_id'];
@@ -381,7 +381,8 @@ class Ritasi extends MyModel
         $upahRitasi = DB::table('upahritasi')->where('kotadari_id', $data['dari_id'])->where('kotasampai_id', $data['sampai_id'])->first();
         $extra = DB::table("dataritasi")->from(DB::raw("dataritasi with (readuncommitted)"))->where('id', $data['statusritasi_id'])->first();
 
-        $ritasi->statusritasi = $data['statusritasi_id'];
+        $ritasi->statusritasi = $extra->statusritasi;
+        $ritasi->dataritasi_id = $data['statusritasi_id'];
         $ritasi->suratpengantar_nobukti = $data['suratpengantar_nobukti'];
         $ritasi->supir_id = $data['supir_id'];
         $ritasi->trado_id = $data['trado_id'];
