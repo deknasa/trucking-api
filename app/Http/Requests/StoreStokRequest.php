@@ -44,6 +44,8 @@ class StoreStokRequest extends FormRequest
             // "namaterpusat"=>'required',
             "qtymin"=> [new NotDecimal(), new MinNull(),'numeric','max:10000'],
             "qtymax"=> [new NotDecimal(), new NumberMax(),'numeric','max:10000'],
+            "hargabelimin"=> [new NotDecimal(), new MinNull(),'numeric'],
+            "hargabelimax"=> [new NotDecimal(), new NumberMax(),'numeric'],
             'gambar' => 'array',
             'gambar.*' => 'image'
         ];

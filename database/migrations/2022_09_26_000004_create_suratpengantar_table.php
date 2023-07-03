@@ -83,6 +83,8 @@ class CreateSuratpengantarTable extends Migration
             $table->unsignedBigInteger('statusformat')->nullable();
             $table->unsignedBigInteger('statusgudangsama')->nullable();
             $table->unsignedBigInteger('statusbatalmuat')->nullable();
+            $table->unsignedBigInteger('statusgandengan')->nullable();
+            $table->unsignedBigInteger('gandenganasal_id')->nullable();
             $table->string('gudang',500)->nullable();
             $table->string('modifiedby',50)->nullable();
             $table->timestamps();

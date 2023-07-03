@@ -179,5 +179,6 @@ class MenuSeeder extends Seeder
         menu::create(['menuname' => 'MAIN AKUN PUSAT', 'menuseq' => '0', 'menuparent' => '155', 'menuicon' => 'FAS FA-TRUCK', 'aco_id' => '638', 'link' => '', 'menuexe' => '', 'menukode' => '194', 'modifiedby' => 'ADMIN',]);
         menu::create(['menuname' => 'LAP. PEMBELIAN PER SUPPLIER', 'menuseq' => '0', 'menuparent' => '145', 'menuicon' => 'FAS FA-TRUCK', 'aco_id' => '644', 'link' => '', 'menuexe' => '', 'menukode' => '641', 'modifiedby' => 'ADMIN',]);
         menu::create(['menuname' => 'LAP. PEMBELIAN PER STOK', 'menuseq' => '0', 'menuparent' => '145', 'menuicon' => 'FAS FA-TRUCK', 'aco_id' => '647', 'link' => '', 'menuexe' => '', 'menukode' => '642', 'modifiedby' => 'ADMIN',]);
+        menu::create(['menuname' => 'UBAH PASSWORD', 'menuseq' => '0', 'menuparent' => '4', 'menuicon' => 'FAS FA-TRUCK', 'aco_id' => '656', 'link' => '', 'menuexe' => '', 'menukode' => '117', 'modifiedby' => 'ADMIN',]);
     }
 }

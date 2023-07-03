@@ -59,6 +59,7 @@ class InvoiceExtraHeaderController extends Controller
                 'tglbukti' => $request->tglbukti,
                 'nominal' => $request->nominal,
                 'agen_id' => $request->agen_id,
+                'tgljatuhtempo' => $request->tgljatuhtempo,
                 'nominal_detail' => $request->nominal_detail,
                 'keterangan_detail' => $request->keterangan_detail,
             ];
@@ -102,6 +103,7 @@ class InvoiceExtraHeaderController extends Controller
                 'tglbukti' => $request->tglbukti,
                 'nominal' => $request->nominal,
                 'agen_id' => $request->agen_id,
+                'tgljatuhtempo' => $request->tgljatuhtempo,
                 'nominal_detail' => $request->nominal_detail,
                 'keterangan_detail' => $request->keterangan_detail,
             ];

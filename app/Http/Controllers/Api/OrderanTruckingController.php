@@ -29,9 +29,11 @@ use Illuminate\Support\Facades\Http;
 
 class OrderanTruckingController extends Controller
 {
-    /**
+      /**
      * @ClassName 
-     */
+     * orderantruckingcontroller
+     * @Detail1 JobTruckingController
+    */
     public function index(GetIndexRangeRequest $request)
     {
         $orderanTrucking = new OrderanTrucking();
