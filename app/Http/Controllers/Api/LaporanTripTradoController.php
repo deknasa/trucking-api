@@ -58,6 +58,10 @@ class LaporanTripTradoController extends Controller
         ]);
 
     }
+
+      /**
+     * @ClassName
+     */
     public function export(Request $request)
         {
             $dari = $request->dari;
