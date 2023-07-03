@@ -30,16 +30,16 @@ class UpdateInvoiceExtraHeaderRequest extends FormRequest
     public function rules()
     {
 
-        $query=DB::table('invoiceExtraheader')->from(
+        $query = DB::table('invoiceExtraheader')->from(
             DB::raw('invoiceextraheader a with (readuncommitted)')
         )
-        ->select(
-            'a.tglbukti',
-            'b.kodeagen as agen',
-        )
-        ->leftJoin(DB::raw("agen b with (readuncommitted)"), 'a.agen_id', 'b.id')
-        ->where('a.id','=',$this->id)
-        ->first();
+            ->select(
+                'a.tglbukti',
+                'b.kodeagen as agen',
+            )
+            ->leftJoin(DB::raw("agen b with (readuncommitted)"), 'a.agen_id', 'b.id')
+            ->where('a.id', '=', $this->id)
+            ->first();
 
         $rules = [
             'tglbukti' => [
@@ -48,6 +48,10 @@ class UpdateInvoiceExtraHeaderRequest extends FormRequest
                 'before_or_equal:' . date('d-m-Y'),
                 Rule::in(date('d-m-Y', strtotime($query->tglbukti))),
 
+            ], 
+            'tgljatuhtempo' => [
+                'required', 'date_format:d-m-Y',
+                'after_or_equal:' . date('d-m-Y', strtotime($query->tglbukti)),
             ],
 
         ];
@@ -124,18 +128,18 @@ class UpdateInvoiceExtraHeaderRequest extends FormRequest
 
         return $rule;
     }
-    
+
     public function attributes()
     {
         $attributes = [
             'nominal_detail.*' => 'Harga',
             'keterangan_detail.*' => 'Keterangan',
         ];
-        
+
         return $attributes;
     }
 
-    public function messages() 
+    public function messages()
     {
         return [
             'nominal_detail.*.gt' => 'Harga Tidak Boleh Kosong dan Harus Lebih Besar Dari 0',

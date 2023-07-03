@@ -98,6 +98,14 @@ class StokController extends Controller
                 'keterangan' => $request->keterangan ?? '',
                 'qtymin' => $request->qtymin ?? 0,
                 'qtymax' => $request->qtymax ?? 0,
+                'statusreuse'=>$request->statusreuse,
+                'statusban'=>$request->statusban,
+                'statusservicerutin'=>$request->statusservicerutin,
+                'totalvulkanisir'=>$request->totalvulkanisir,
+                'vulkanisirawal'=>$request->vulkanisirawal,
+                'hargabelimin'=>$request->hargabelimin,
+                'hargabelimax'=>$request->hargabelimax,
+                'gambar'=>$request->gambar,
 
             ];
             $stok = (new Stok())->processStore($data);
@@ -132,8 +140,10 @@ class StokController extends Controller
                 }
             }
         }
+        $statusPakai = (new Stok)->cekvalidasihapus($id);
         return response([
             'status' => true,
+            'statuspakai' => $statusPakai['kondisi'],
             'data' => $stok,
             'count' => $countGambar
         ]);
@@ -162,6 +172,14 @@ class StokController extends Controller
                 'keterangan' => $request->keterangan ?? '',
                 'qtymin' => $request->qtymin ?? 0,
                 'qtymax' => $request->qtymax ?? 0,
+                'statusreuse'=>$request->statusreuse,
+                'statusban'=>$request->statusban,
+                'statusservicerutin'=>$request->statusservicerutin,
+                'totalvulkanisir'=>$request->totalvulkanisir,
+                'vulkanisirawal'=>$request->vulkanisirawal,
+                'hargabelimin'=>$request->hargabelimin,
+                'hargabelimax'=>$request->hargabelimax,
+                'gambar'=>$request->gambar,
 
             ];
 

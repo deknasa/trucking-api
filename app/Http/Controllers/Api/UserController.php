@@ -107,12 +107,12 @@ class UserController extends Controller
             $data = [
                 'user' => strtoupper($request->user),
                 'name' => strtoupper($request->name),
+                'email' => strtoupper($request->email),
                 'password' => Hash::make($request->password),
                 'cabang_id' => $request->cabang_id ?? '',
                 'karyawan_id' => $request->karyawan_id,
                 'dashboard' => strtoupper($request->dashboard),
                 'statusaktif' => $request->statusaktif,
-                'statusakses' => $request->statusakses,
             ];
             $user = (new User())->processStore($data);
             $user->position = $this->getPosition($user, $user->getTable())->position;
@@ -155,6 +155,7 @@ class UserController extends Controller
             $data = [
                 'user' => strtoupper($request->user),
                 'name' => strtoupper($request->name),
+                'email' => strtoupper($request->email),
                 'password' => Hash::make($request->password),
                 'cabang_id' => $request->cabang_id ?? '',
                 'karyawan_id' => $request->karyawan_id,

@@ -161,6 +161,8 @@ class Stok extends MyModel
         $tempdefault = '##tempdefault' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
         Schema::create($tempdefault, function ($table) {
             $table->unsignedBigInteger('statusaktif')->nullable();
+            $table->unsignedBigInteger('statusreuse')->nullable();
+            $table->unsignedBigInteger('statusban')->nullable();
         });
 
         $statusaktif = Parameter::from(
@@ -174,13 +176,41 @@ class Stok extends MyModel
             ->where('default', '=', 'YA')
             ->first();
 
-        DB::table($tempdefault)->insert(["statusaktif" => $statusaktif->id]);
+        $statusreuse = Parameter::from(
+            db::Raw("parameter with (readuncommitted)")
+        )
+            ->select(
+                'id'
+            )
+            ->where('grp', '=', 'STATUS REUSE')
+            ->where('subgrp', '=', 'STATUS REUSE')
+            ->where('default', '=', 'YA')
+            ->first();
+
+        $statusban = Parameter::from(
+            db::Raw("parameter with (readuncommitted)")
+        )
+            ->select(
+                'id'
+            )
+            ->where('grp', '=', 'STATUS BAN')
+            ->where('subgrp', '=', 'STATUS BAN')
+            ->where('default', '=', 'YA')
+            ->first();
+            
+            DB::table($tempdefault)->insert([
+                "statusaktif" => $statusaktif->id,
+                "statusreuse" => $statusreuse->id,
+                "statusban" => $statusban->id
+            ]);
 
         $query = DB::table($tempdefault)->from(
             DB::raw($tempdefault)
         )
             ->select(
-                'statusaktif'
+                'statusaktif',
+                'statusreuse',
+                'statusban'
             );
 
         $data = $query->first();
@@ -386,6 +416,12 @@ class Stok extends MyModel
         $stok->keterangan = $data['keterangan'] ?? '';
         $stok->qtymin = $data['qtymin'] ?? 0;
         $stok->qtymax = $data['qtymax'] ?? 0;
+        $stok->statusreuse = $data['statusreuse'];
+        $stok->statusban = $data['statusban'];
+        $stok->statusservicerutin = $data['statusservicerutin'];
+        $stok->vulkanisirawal = $data['vulkanisirawal'];
+        $stok->hargabelimin = $data['hargabelimin'];
+        $stok->hargabelimax = $data['hargabelimax'];
         $stok->modifiedby = auth('api')->user()->name;
 
         if (array_key_exists('gambar', $data)) {
@@ -427,11 +463,20 @@ class Stok extends MyModel
         $stok->keterangan = $data['keterangan'] ?? '';
         $stok->qtymin = $data['qtymin'] ?? 0;
         $stok->qtymax = $data['qtymax'] ?? 0;
+        $stok->statusban = $data['statusban'];
+        $stok->statusservicerutin = $data['statusservicerutin'];
+        $stok->hargabelimin = $data['hargabelimin'];
+        $stok->hargabelimax = $data['hargabelimax'];
         $stok->modifiedby = auth('api')->user()->name;
 
+        $statusPakai = $this->cekvalidasihapus($stok->id);
+        if (!$statusPakai['kondisi']){
+            $stok->statusreuse = $data['statusreuse'];
+            $stok->vulkanisirawal = $data['vulkanisirawal'];
+        }
 
         $this->deleteFiles($stok);
-        if (array_key_exists('gambar', $data)) {
+        if ($data['gambar']) {
             $stok->gambar = $this->storeFiles($data['gambar'], 'stok');
         } else {
             $stok->gambar = '';

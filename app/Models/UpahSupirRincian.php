@@ -364,6 +364,9 @@ class UpahSupirRincian extends MyModel
                 $table->unsignedBigInteger('id')->nullable();
                 $table->string('dari')->nullable();
                 $table->string('tujuan')->nullable();
+                $table->string('penyesuaian')->nullable();
+                $table->unsignedBigInteger('jarak')->nullable();
+                $table->date('tglmulaiberlaku')->nullable();
             });
 
             $querytempupah = DB::table('upahsupir')->from(DB::raw("upahsupir with (readuncommitted)"))
@@ -371,6 +374,9 @@ class UpahSupirRincian extends MyModel
                     'upahsupir.id as id',
                     'dari.keterangan as dari',
                     'kota.keterangan as tujuan',
+                    'upahsupir.penyesuaian',
+                    'upahsupir.jarak',
+                    'upahsupir.tglmulaiberlaku'
                 )
                 ->leftJoin(DB::raw("kota with (readuncommitted)"), 'upahsupir.kotasampai_id', '=', 'kota.id')
                 ->leftJoin(DB::raw("kota as dari with (readuncommitted)"), 'upahsupir.kotadari_id', '=', 'dari.id');
@@ -379,6 +385,9 @@ class UpahSupirRincian extends MyModel
                 'id',
                 'dari',
                 'tujuan',
+                'penyesuaian',
+                'jarak',
+                'tglmulaiberlaku',
             ], $querytempupah);
 
             $tempdatagroup = '##tempdatagroup' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
@@ -447,7 +456,7 @@ class UpahSupirRincian extends MyModel
             }
             // dd($columnid);
 
-            $statement = ' select b.dari,b.tujuan,A.* from (select id,' . $columnid . ' from 
+            $statement = ' select b.dari,b.tujuan,b.penyesuaian,b.jarak,b.tglmulaiberlaku,A.* from (select id,' . $columnid . ' from 
                 (select A.id,A.containerstatuscontainer,A.nominal
                     from ' . $tempdata . ' A) as SourceTable
             

@@ -104,6 +104,7 @@ class InvoiceExtraHeader extends MyModel
             $table->bigInteger('id')->nullable();
             $table->string('nobukti', 50)->unique();
             $table->date('tglbukti')->nullable();
+            $table->date('tgljatuhtempo')->nullable();
             $table->unsignedBigInteger('pelanggan_id')->nullable();
             $table->unsignedBigInteger('agen_id')->nullable();
             $table->double('nominal')->nullable();
@@ -125,6 +126,7 @@ class InvoiceExtraHeader extends MyModel
                 "$this->table.id",
                 "$this->table.nobukti",
                 "$this->table.tglbukti",
+                "$this->table.tgljatuhtempo",
                 "$this->table.pelanggan_id",
                 "$this->table.agen_id",
                 "$this->table.nominal",
@@ -143,6 +145,7 @@ class InvoiceExtraHeader extends MyModel
             'id',
             'nobukti',
             'tglbukti',
+            'tgljatuhtempo',
             'pelanggan_id',
             'agen_id',
             'nominal',
@@ -165,6 +168,7 @@ class InvoiceExtraHeader extends MyModel
                 "$this->table.id",
                 "$this->table.nobukti",
                 "$this->table.tglbukti",
+                "$this->table.tgljatuhtempo",
                 "$this->table.pelanggan_id",
                 "$this->table.agen_id",
                 "$this->table.nominal",
@@ -208,7 +212,7 @@ class InvoiceExtraHeader extends MyModel
                                 $query = $query->where('agen.namaagen', 'LIKE', "%$filters[data]%");
                             } else if ($filters['field'] == 'nominal') {
                                 $query = $query->whereRaw("format($this->table.nominal, '#,#0.00') LIKE '%$filters[data]%'");
-                            } else if ($filters['field'] == 'tglbukti' || $filters['field'] == 'tglbukacetak' || $filters['field'] == 'tglapproval') {
+                            } else if ($filters['field'] == 'tglbukti' || $filters['field'] == 'tglbukacetak' || $filters['field'] == 'tglapproval' || $filters['field'] == 'tgljatuhtempo') {
                                 $query = $query->whereRaw("format(" . $this->table . "." . $filters['field'] . ", 'dd-MM-yyyy') LIKE '%$filters[data]%'");
                             } else if ($filters['field'] == 'created_at' || $filters['field'] == 'updated_at') {
                                 $query = $query->whereRaw("format(" . $this->table . "." . $filters['field'] . ", 'dd-MM-yyyy HH:mm:ss') LIKE '%$filters[data]%'");
@@ -231,7 +235,7 @@ class InvoiceExtraHeader extends MyModel
                                     $query = $query->orWhere('agen.namaagen', 'LIKE', "%$filters[data]%");
                                 } else if ($filters['field'] == 'nominal') {
                                     $query = $query->orWhereRaw("format($this->table.nominal, '#,#0.00') LIKE '%$filters[data]%'");
-                                } else if ($filters['field'] == 'tglbukti' || $filters['field'] == 'tglbukacetak' || $filters['field'] == 'tglapproval') {
+                                } else if ($filters['field'] == 'tglbukti' || $filters['field'] == 'tglbukacetak' || $filters['field'] == 'tglapproval' || $filters['field'] == 'tgljatuhtempo') {
                                     $query = $query->orWhereRaw("format(" . $this->table . "." . $filters['field'] . ", 'dd-MM-yyyy') LIKE '%$filters[data]%'");
                                 } else if ($filters['field'] == 'created_at' || $filters['field'] == 'updated_at') {
                                     $query = $query->orWhereRaw("format(" . $this->table . "." . $filters['field'] . ", 'dd-MM-yyyy HH:mm:ss') LIKE '%$filters[data]%'");
@@ -306,6 +310,7 @@ class InvoiceExtraHeader extends MyModel
         $invoiceExtraHeader->tglbukti = date('Y-m-d', strtotime($data['tglbukti']));
         $invoiceExtraHeader->nominal = $data['nominal'];
         $invoiceExtraHeader->agen_id = $data['agen_id'];
+        $invoiceExtraHeader->tgljatuhtempo = date('Y-m-d', strtotime($data['tgljatuhtempo']));
         $invoiceExtraHeader->statusapproval = $statusApproval->id;
         $invoiceExtraHeader->userapproval = '';
         $invoiceExtraHeader->tglapproval = '';
@@ -338,6 +343,7 @@ class InvoiceExtraHeader extends MyModel
 
         $invoiceRequest = [
             'tglbukti' => date('Y-m-d', strtotime($data['tglbukti'])),
+            'tgljatuhtempo' => date('Y-m-d', strtotime($data['tgljatuhtempo'])),
             'postingdari' => 'ENTRY INVOICE EXTRA',
             'invoice' => $invoiceExtraHeader->nobukti,
             'agen_id' => $data['agen_id'],
@@ -374,6 +380,7 @@ class InvoiceExtraHeader extends MyModel
     {
         $invoiceExtraHeader->nominal = $data['nominal'];
         $invoiceExtraHeader->agen_id = $data['agen_id'];
+        $invoiceExtraHeader->tgljatuhtempo = date('Y-m-d', strtotime($data['tgljatuhtempo']));
         $invoiceExtraHeader->modifiedby = auth('api')->user()->name;
 
         if (!$invoiceExtraHeader->save()) {
@@ -422,6 +429,7 @@ class InvoiceExtraHeader extends MyModel
         $invoiceRequest = [
             'postingdari' => 'EDIT INVOICE EXTRA',
             'invoice' => $invoiceExtraHeader->nobukti,
+            'tgljatuhtempo' => date('Y-m-d', strtotime($data['tgljatuhtempo'])),
             'agen_id' => $data['agen_id'],
             'invoice_nobukti' => $invoiceNobukti,
             'nominal_detail' => $nominalDetail,
@@ -485,6 +493,7 @@ class InvoiceExtraHeader extends MyModel
             "$this->table.id",
             "$this->table.nobukti",
             "$this->table.tglbukti",
+            "$this->table.tgljatuhtempo",
             "$this->table.pelanggan_id",
             "$this->table.agen_id",
             "$this->table.nominal",
