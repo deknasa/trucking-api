@@ -40,6 +40,8 @@ class StoreGandenganRequest extends FormRequest
 
         $rules = [
             'kodegandengan' => ['required', 'unique:gandengan'],
+            'jumlahroda' => ['required'],
+            'jumlahbanserap' => ['required'],
             'statusaktif' => ['required', Rule::in($status)]
         ];
         return $rules;
@@ -50,6 +52,8 @@ class StoreGandenganRequest extends FormRequest
     {
         return [
             'kodegandengan' => 'kode gandengan',
+            'jumlahroda' => 'jumlah roda',
+            'jumlahbanserap' => 'jumlah ban serap',
             'statusaktif' => 'status',
         ];
     }
