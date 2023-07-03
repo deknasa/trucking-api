@@ -103,6 +103,7 @@ class User extends Authenticatable
             "$this->table.id",
             "$this->table.user",
             "$this->table.name",
+            "$this->table.email",
             "cabang.namacabang as cabang_id",
             "$this->table.karyawan_id",
             "$this->table.dashboard",
@@ -339,6 +340,7 @@ class User extends Authenticatable
         $user = new User();
             $user->user = strtoupper($data['user']);
             $user->name = strtoupper($data['name']);
+            $user->email = strtoupper($data['email']);
             $user->password = Hash::make($data['password']);
             $user->cabang_id = $data['cabang_id'] ?? '';
             $user->karyawan_id = $data['karyawan_id'] ?? '';
@@ -367,6 +369,7 @@ class User extends Authenticatable
     {
         $user->user = $data['user'];
         $user->name = $data['name'];
+        $user->email = $data['email'];
         $user->cabang_id = $data['cabang_id'] ?? '';
         $user->karyawan_id = $data['karyawan_id'] ?? '';
         $user->dashboard = $data['dashboard'];

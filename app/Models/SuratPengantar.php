@@ -290,8 +290,8 @@ class SuratPengantar extends MyModel
 
         $iddefaultstatusbatal = $status->id ?? 0;
 
-        // STATUS GANDENGAN
         $status = Parameter::from(
+
             db::Raw("parameter with (readuncommitted)")
         )
             ->select(
