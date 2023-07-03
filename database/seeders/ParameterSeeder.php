@@ -371,13 +371,16 @@ class ParameterSeeder extends Seeder
         parameter::create(['grp' => 'HOSTNAME', 'subgrp' => 'HOSTNAME', 'kelompok' => '', 'text' => 'LOCALHOST', 'memo' => '{"MEMO":"HOSTNAME","SINGKATAN":"MLK","WARNA":"#28A745"}', 'type' => '0', 'modifiedby' => 'ADMIN', 'default' => '',]);
         parameter::create(['grp' => 'PENERIMAAN STOK', 'subgrp' => 'PENGEMBALIAN SPAREPART GANTUNG TRUCKING BUKTI', 'kelompok' => '', 'text' => '#PST #9999#/#R#/#Y', 'memo' => '{"MEMO":"PERBAIKAN STOK BUKTI","SINGKATAN":"#PST #9999#/#R#/#Y","WARNA":"#28A745"}', 'type' => '118', 'modifiedby' => 'ADMIN', 'default' => '',]);
         parameter::create(['grp' => 'PENGELUARAN STOK', 'subgrp' => 'SPAREPART GANTUNG TRUCKING', 'kelompok' => '', 'text' => '#GST #9999#/#R#/#Y', 'memo' => '{"MEMO":"KOREKSI STOK MINUS BUKTI","SINGKATAN":"#GST #9999#/#R#/#Y","WARNA":"#28A745"}', 'type' => '118', 'modifiedby' => 'ADMIN', 'default' => '',]);
-        parameter::create(['grp' => 'PST STOK', 'subgrp' => 'PST STOK', 'kelompok' => '', 'text' => '9', 'memo' => '{"MEMO":"PST STOK","SINGKATAN":"9","WARNA":"#6C757D"}', 'type' => '0', 'modifiedby' => 'ADMIN', 'default' => '',]);
+        parameter::create(['grp' => 'PST STOK', 'subgrp' => 'PST STOK', 'kelompok' => '', 'text' => '8', 'memo' => '{"MEMO":"PST STOK","SINGKATAN":"8","WARNA":"#6C757D"}', 'type' => '0', 'modifiedby' => 'ADMIN', 'default' => '',]);
         parameter::create(['grp' => 'GST STOK', 'subgrp' => 'GST STOK', 'kelompok' => '', 'text' => '5', 'memo' => '{"MEMO":"GST STOK","SINGKATAN":"5","WARNA":"#6C757D"}', 'type' => '0', 'modifiedby' => 'ADMIN', 'default' => '',]);
         parameter::create(['grp' => 'STATUS AKSES', 'subgrp' => 'STATUS AKSES', 'kelompok' => '', 'text' => 'PUBLIC', 'memo' => '{"MEMO":"PUBLIC","SINGKATAN":"P","WARNA":"#28A745"}', 'type' => '0', 'modifiedby' => 'ADMIN', 'default' => 'YA',]);
         parameter::create(['grp' => 'STATUS AKSES', 'subgrp' => 'STATUS AKSES', 'kelompok' => '', 'text' => 'PRIVATE', 'memo' => '{"MEMO":"PRIVATE","SINGKATAN":"V","WARNA":"#28A745"}', 'type' => '0', 'modifiedby' => 'ADMIN', 'default' => 'YA',]);
-        parameter::create(['grp' => 'PSPK STOK', 'subgrp' => 'PSPK STOK', 'kelompok' => '', 'text' => '10', 'memo' => '{"MEMO":"PSPK STOK","SINGKATAN":"10","WARNA":"#6C757D"}', 'type' => '0', 'modifiedby' => 'ADMIN', 'default' => '',]);
+        parameter::create(['grp' => 'PSPK STOK', 'subgrp' => 'PSPK STOK', 'kelompok' => '', 'text' => '9', 'memo' => '{"MEMO":"PSPK STOK","SINGKATAN":"9","WARNA":"#6C757D"}', 'type' => '0', 'modifiedby' => 'ADMIN', 'default' => '',]);
         parameter::create(['grp' => 'STATUS GANDENGAN', 'subgrp' => 'STATUS GANDENGAN', 'kelompok' => '', 'text' => 'TINGGAL GANDENGAN', 'memo' => '{"MEMO":"TINGGAL GANDENGAN","SINGKATAN":"P","WARNA":"#28A745"}', 'type' => '0', 'modifiedby' => 'ADMIN', 'default' => 'YA',]);
-        parameter::create(['grp' => 'STATUS GANDENGAN', 'subgrp' => 'STATUS GANDENGAN', 'kelompok' => '', 'text' => 'TINGGAL CONTAINER', 'memo' => '{"MEMO":"TINGGAL CONTAINER","SINGKATAN":"V","WARNA":"#28A745"}', 'type' => '0', 'modifiedby' => 'ADMIN', 'default' => '',]);
+        parameter::create(['grp' => 'STATUS GANDENGAN', 'subgrp' => 'STATUS GANDENGAN', 'kelompok' => '', 'text' => 'TINGGAL CONTAINER', 'memo' => '{"MEMO":"TINGGAL CONTAINER","SINGKATAN":"V","WARNA":"#28A745"}', 'type' => '0', 'modifiedby' => 'ADMIN', 'default' => 'YA',]);
+        parameter::create(['grp' => 'PENERIMAAN STOK', 'subgrp' => 'PENGEMBALIAN SPK BUKTI', 'kelompok' => '', 'text' => '#PSPK #9999#/#R#/#Y', 'memo' => '{"MEMO":"PERBAIKAN STOK BUKTI","SINGKATAN":"#PSPK #9999#/#R#/#Y","WARNA":"#28A745"}', 'type' => '118', 'modifiedby' => 'ADMIN', 'default' => '',]);
+
+
         
     }
 }

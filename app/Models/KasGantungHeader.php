@@ -758,8 +758,9 @@ class KasGantungHeader extends MyModel
         ]);
 
         $getPengeluaran = PengeluaranHeader::from(DB::raw("pengeluaranheader with (readuncommitted)"))->where('nobukti', $kasgantungHeader->pengeluaran_nobukti)->first();
-        $pengeluaranHeader = (new PengeluaranHeader())->processDestroy($getPengeluaran->id, $postingDari);
-
+        if ($getPengeluaran) {
+            $pengeluaranHeader = (new PengeluaranHeader())->processDestroy($getPengeluaran->id, $postingDari);
+        }
         return $kasgantungHeader;
 
     }

@@ -319,6 +319,20 @@ class PengeluaranStokHeaderController extends Controller
         $statusCetak = Parameter::from(DB::raw("parameter with (readuncommitted)"))
             ->where('grp', 'STATUSCETAK')->where('text', 'CETAK')->first();
 
+        if ($pengeluaran->isInUsed($id)) {
+            $query = Error::from(DB::raw("error with (readuncommitted)"))
+                ->select('keterangan')
+                ->whereRaw("kodeerror = 'SATL'")
+                ->get();
+            $keterangan = $query['0'];
+            $data = [
+                'message' => $keterangan,
+                'errors' => 'Penerimaan stok',
+                'kodestatus' => '1',
+                'kodenobukti' => '1'
+            ];
+            return response($data);
+        }
         if ($status == $statusApproval->id) {
             $query = Error::from(DB::raw("error with (readuncommitted)"))
                 ->select('keterangan')

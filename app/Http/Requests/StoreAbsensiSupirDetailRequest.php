@@ -28,6 +28,7 @@ class StoreAbsensiSupirDetailRequest extends FormRequest
      */
     public function rules()
     {
+        // dd($this->input('absen_id.*'));
         return [
             'trado' => 'required|array',
             'trado.*' => 'required',
@@ -37,10 +38,10 @@ class StoreAbsensiSupirDetailRequest extends FormRequest
             'supir_ID.*' => ['nullable','distinct'],
             // 'uangjalan' => 'required|array',
             // 'uangjalan.*' => 'required|numeric|gt:0',
-            // // 'absen' => 'required|array',
-            // // 'absen.*' => 'required',
-            // 'jam' => 'required|array',
-            // 'jam.*' => 'required',
+            // 'absen_id' => 'nullable|array',
+            'absen_id.*' => 'nullable',
+            // 'jam' => ['array', Rule::when(empty($this->input('absen_id')), 'date_format:H:i')],
+            'jam.*' => ['nullable', 'date_format:H:i'],
             // 'keterangan_detail' => 'required|array',
             // 'keterangan_detail.*' => 'required',
         ];
@@ -54,6 +55,7 @@ class StoreAbsensiSupirDetailRequest extends FormRequest
             'supir_id.*.distinct' => 'supir Tidak boleh sama',
 
 
+            'jam.date_format' => app(ErrorController::class)->geterror('DF')->keterangan,
             'tglbukti.date_format' => app(ErrorController::class)->geterror('DF')->keterangan
         ];
         

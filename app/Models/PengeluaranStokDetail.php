@@ -180,6 +180,7 @@ class PengeluaranStokDetail extends MyModel
         $kor = Parameter::where('grp', 'KOR MINUS STOK')->where('subgrp', 'KOR MINUS STOK')->first();
         $rtr = Parameter::where('grp', 'RETUR STOK')->where('subgrp', 'RETUR STOK')->first();
         $pja = Parameter::where('grp', 'PENJUALAN STOK AFKIR')->where('subgrp', 'PENJUALAN STOK AFKIR')->first();
+        $gst = Parameter::where('grp', 'GST STOK')->where('subgrp', 'GST STOK')->first();
         $gudangkantor = Parameter::where('grp', 'GUDANG KANTOR')->where('subgrp', 'GUDANG KANTOR')->first();
         $gudangsementara = Parameter::where('grp', 'GUDANG SEMENTARA')->where('subgrp', 'GUDANG SEMENTARA')->first();
 
@@ -195,13 +196,13 @@ class PengeluaranStokDetail extends MyModel
             if (!$dari) {
                 throw new \Exception("qty tidak cukup");                
             }
-            if (($pengeluaranStokHeader->pengeluaranstok_id != $spk->text)) {
+            if (($pengeluaranStokHeader->pengeluaranstok_id != $spk->text) || ($pengeluaranStokHeader->pengeluaranstok_id != $gst->text)) {
                 if (!$reuse) {
                     throw new \Exception("bukan stok reuse");                
 
                 }
             }
-            if ($pengeluaranStokHeader->pengeluaranstok_id == $spk->text) {
+            if (($pengeluaranStokHeader->pengeluaranstok_id == $spk->text) || $pengeluaranStokHeader->pengeluaranstok_id == $gst->text) {
                 // if (!$reuse) {
                 //     throw new \Exception("bukan stok reuse");                
                 // }
@@ -294,6 +295,7 @@ class PengeluaranStokDetail extends MyModel
         $kor = Parameter::where('grp', 'KOR MINUS STOK')->where('subgrp', 'KOR MINUS STOK')->first();
         $rtr = Parameter::where('grp', 'RETUR STOK')->where('subgrp', 'RETUR STOK')->first();
         $pja = Parameter::where('grp', 'PENJUALAN STOK AFKIR')->where('subgrp', 'PENJUALAN STOK AFKIR')->first();
+        $gst = Parameter::where('grp', 'GST STOK')->where('subgrp', 'GST STOK')->first();
         $gudangkantor = Parameter::where('grp', 'GUDANG KANTOR')->where('subgrp', 'GUDANG KANTOR')->first();
         $gudangsementara = Parameter::where('grp', 'GUDANG SEMENTARA')->where('subgrp', 'GUDANG SEMENTARA')->first();
         $pengeluaranStokDetail = PengeluaranStokDetail::where('pengeluaranstokheader_id', $id)->get();
@@ -315,7 +317,7 @@ class PengeluaranStokDetail extends MyModel
                 throw new \Exception("qty tidak cukup return");
             }
 
-            if ($pengeluaranStokHeader->pengeluaranstok_id == $spk->text) {
+            if (($pengeluaranStokHeader->pengeluaranstok_id == $spk->text)|| ($pengeluaranStokHeader->pengeluaranstok_id == $gst->text)) {
                 $persediaan = $this->persediaan($pengeluaranStokHeader->gudang_id,$pengeluaranStokHeader->trado_id,$pengeluaranStokHeader->gandengan_id);
                 $dari = $this->persediaanKeReturn($detail->stok_id,$persediaan['column'].'_id',$persediaan['value'],$detail->qty);
             }

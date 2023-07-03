@@ -501,6 +501,16 @@ class KartuStok extends MyModel
         )
             ->where('grp', 'REUSE STOK')->where('subgrp', 'REUSE STOK')->first();
 
+        $pst = Parameter::from(
+            DB::raw("parameter with (readuncommitted)")
+        )
+            ->where('grp', 'PST STOK')->where('subgrp', 'PST STOK')->first();
+        
+        $pspk = Parameter::from(
+            DB::raw("parameter with (readuncommitted)")
+        )
+            ->where('grp', 'PSPK STOK')->where('subgrp', 'PSPK STOK')->first();
+
 
         $spk = Parameter::from(
             DB::raw("parameter with (readuncommitted)")
@@ -516,14 +526,19 @@ class KartuStok extends MyModel
             DB::raw("parameter with (readuncommitted)")
         )
             ->where('grp', 'KOR MINUS STOK')->where('subgrp', 'KOR MINUS STOK')->first();
+        
+        $gst = Parameter::from(
+            DB::raw("parameter with (readuncommitted)")
+        )
+            ->where('grp', 'GST STOK')->where('subgrp', 'GST STOK')->first();
 
 
 
         if ($filter == $filtergudang->text) {
             //=========================================saldo awal masuk=========================================
             if ($gudang_id == $gudangkantor->text) {
-                $penerimaanstok_id = $spb->text . ',' . $saldoawal->text . ',' . $korplus->text .','.  $spbs->text;
-                $pengeluaranstok_id = $spk->text . ',' . $korminus->text . ',' . $retur->text;
+                $penerimaanstok_id = $spb->text . ',' . $saldoawal->text . ',' . $korplus->text .','.  $spbs->text .','.  $pst->text.','.  $pspk->text;
+                $pengeluaranstok_id = $spk->text . ',' . $korminus->text . ',' . $retur->text. ',' . $gst->text;
             } else if ($gudang_id == $gudangsementara->text) {
                 $penerimaanstok_id = $pg->text . ',' . $pgdo->text . ',' . $spbs->text;
                 $pengeluaranstok_id = $korminus->text;
@@ -531,8 +546,8 @@ class KartuStok extends MyModel
                 $penerimaanstok_id = $pg->text . ',' . $pgdo->text . ',' . $spbs->text;
                 $pengeluaranstok_id = $korminus->text;
             } else {
-                $penerimaanstok_id = $spb->text . ',' . $saldoawal->text . ',' . $korplus->text;
-                $pengeluaranstok_id = $spk->text . ',' . $korminus->text . ',' . $retur->text;
+                $penerimaanstok_id = $spb->text . ',' . $saldoawal->text . ',' . $korplus->text .','.  $pst->text.','.  $pspk->text;
+                $pengeluaranstok_id = $spk->text . ',' . $korminus->text . ',' . $retur->text. ',' . $gst->text;
             }
         } else if ($filter == $filtertrado->text) {
             $penerimaanstok_id =  $pg->text . ',' . $pgdo->text . ',' . $spbs->text . ',' . $saldoawal->text . ',' . $korplus->text;
@@ -542,8 +557,8 @@ class KartuStok extends MyModel
             $pengeluaranstok_id = $korminus->text;
         } else {
             if ($gudang_id == $gudangkantor->text) {
-                $penerimaanstok_id = $spb->text . ',' . $saldoawal->text . ',' . $korplus->text;
-                $pengeluaranstok_id = $spk->text . ',' . $korminus->text . ',' . $retur->text;
+                $penerimaanstok_id = $spb->text . ',' . $saldoawal->text . ',' . $korplus->text .','.  $pst->text.','.  $pspk->text;;
+                $pengeluaranstok_id = $spk->text . ',' . $korminus->text . ',' . $retur->text. ',' . $gst->text;
             } else if ($gudang_id == $gudangsementara->text) {
                 $penerimaanstok_id = $pg->text . ',' . $pgdo->text . ',' . $spbs->text;
                 $pengeluaranstok_id = $korminus->text;
@@ -645,7 +660,7 @@ class KartuStok extends MyModel
 
 
 
-        $pengeluaranstok_id2 = $spk->text;
+        $pengeluaranstok_id2 = $spk->text . ',' . $gst->text;
         if ($trado_id != 0) {
             $querysaldomasuk = PengeluaranstokHeader::from(
                 DB::raw("pengeluaranstokheader as a with (readuncommitted)")
