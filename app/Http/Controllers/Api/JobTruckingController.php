@@ -10,10 +10,9 @@ use App\Http\Controllers\Controller;
 
 class JobTruckingController extends Controller
 {
+
     /**
-     * Display a listing of the resource.
-     *
-     * @return \Illuminate\Http\Response
+     * @ClassName
      */
     public function index()
     {

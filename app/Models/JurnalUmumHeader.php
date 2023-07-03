@@ -405,6 +405,13 @@ class JurnalUmumHeader extends MyModel
                         'keterangan' => $data['keterangan_detail'][$i],
                         'baris' => $i,
                     ]);
+
+                    if ($tanpaprosesnobukti == 0) {
+                        $coa_detail[] = $data['coakredit_detail'][$i];
+                        $nominal_detail[] = '-' . $data['nominal_detail'][$i];
+                        $keterangan_detail[] = $data['keterangan_detail'][$i];
+                        $baris[] = $i;
+                    }
                 } else {
                     $jurnalUmumDetail = (new JurnalUmumDetail())->processStore($jurnalUmumHeader, [
                         'tglbukti' => (str_contains($jurnalUmumHeader->nobukti, 'EBS')) ? date('Y-m-d', strtotime($data['tglbukti_detail'][$i])) : $jurnalUmumHeader->tglbukti,
@@ -413,6 +420,13 @@ class JurnalUmumHeader extends MyModel
                         'keterangan' => $data['keterangan_detail'][$i],
                         'baris' => $i,
                     ]);
+
+                    if ($tanpaprosesnobukti == 0) {
+                        $coa_detail[] = $data['coadebet_detail'][$i];
+                        $nominal_detail[] = $data['nominal_detail'][$i];
+                        $keterangan_detail[] = $data['keterangan_detail'][$i];
+                        $baris[] = $i;
+                    }
                 }
                 $jurnalUmumDetails[] = $jurnalUmumDetail->toArray();
             }
@@ -427,6 +441,21 @@ class JurnalUmumHeader extends MyModel
             'datajson' => $jurnalUmumDetails,
             'modifiedby' => auth('api')->user()->user,
         ]);
+        
+        if ($tanpaprosesnobukti == 0) {
+            $jurnalRequest = [
+                'nobukti' => $jurnalUmumHeader->nobukti,
+                'tglbukti' => $jurnalUmumHeader->tglbukti,
+                'postingdari' => $jurnalUmumHeader->postingdari,
+                'statusapproval' => $jurnalUmumHeader->statusapproval,
+                'statusformat' => $jurnalUmumHeader->statusformat,
+                'coa_detail' => $coa_detail,
+                'nominal_detail' => $nominal_detail,
+                'keterangan_detail' => $keterangan_detail,
+                'baris' => $baris,
+            ];
+            (new JurnalUmumPusatHeader())->processStore($jurnalRequest);
+        }
 
         return $jurnalUmumHeader;
     }
@@ -631,7 +660,7 @@ class JurnalUmumHeader extends MyModel
                 $nominal_detail = [];
                 $keterangan_detail = [];
                 $baris = [];
-                
+
                 foreach ($jurnalDetail as $index => $value) {
                     $coa_detail[] = $value->coa;
                     $nominal_detail[] = $value->nominal;

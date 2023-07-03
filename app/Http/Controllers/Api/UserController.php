@@ -112,6 +112,7 @@ class UserController extends Controller
                 'karyawan_id' => $request->karyawan_id,
                 'dashboard' => strtoupper($request->dashboard),
                 'statusaktif' => $request->statusaktif,
+                'statusakses' => $request->statusakses,
             ];
             $user = (new User())->processStore($data);
             $user->position = $this->getPosition($user, $user->getTable())->position;

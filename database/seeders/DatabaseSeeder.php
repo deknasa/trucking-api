@@ -113,6 +113,9 @@ class DatabaseSeeder extends Seeder
             PengeluaranTruckingHeaderSeeder::class,
             PengeluaranTruckingDetailSeeder::class,
             PerkiraanLabarugiSeeder::class,
+            SaldoAkunPusatDetailSeeder::class,
+            JurnalUmumPusatHeaderSeeder::class,
+            JurnalUmumPusatDetailSeeder::class,
 
         ]);
     }

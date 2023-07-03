@@ -216,7 +216,7 @@ $results2 = DB::table('mainakunpusat AS C')
         ->where('subgrp', 'JUDULAN LAPORAN')
         ->first();
 
-        //   dd("ASda");
+          
         $cmpy = DB::table('parameter')
         ->select('text')
         ->where('grp', 'JUDULAN LAPORAN')
