@@ -72,7 +72,7 @@ class StoreAbsensiSupirHeaderRequest extends FormRequest
             'supir.*' => 'Supir',
             // 'absen_id.*' => 'Absen',
             // 'absen' => 'Absen',
-            'jam.*' => 'Jam',
+            // 'jam.*' => 'Jam',
             'keterangan_detail.*' => 'Keterangan Detail'
         ];
     }

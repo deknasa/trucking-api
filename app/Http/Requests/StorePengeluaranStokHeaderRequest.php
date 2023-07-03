@@ -31,6 +31,7 @@ class StorePengeluaranStokHeaderRequest extends FormRequest
         $spk = DB::table('parameter')->where('grp', 'SPK STOK')->where('subgrp', 'SPK STOK')->first();
         $retur = DB::table('parameter')->where('grp', 'RETUR STOK')->where('subgrp', 'RETUR STOK')->first();
         $kor = DB::table('parameter')->where('grp', 'KOR MINUS STOK')->where('subgrp', 'KOR MINUS STOK')->first();
+        $gst = DB::table('parameter')->where('grp', 'GST STOK')->where('subgrp', 'GST STOK')->first();
         
         
         $rules = [
@@ -61,6 +62,19 @@ class StorePengeluaranStokHeaderRequest extends FormRequest
         if ($spk->text == request()->pengeluaranstok_id) {
             $salahSatuDari = Rule::requiredIf(function () use ($spk) {
                 if ((empty($this->input('trado')) && empty($this->input('gandengan')) && $this->input('pengeluaranstok_id')) == $spk->text) {
+                    return true;
+                }
+                return false;
+            });
+            $gudangTradoGandengan = [
+                'trado' => $salahSatuDari,
+                'gandengan' => $salahSatuDari,
+                'gudang' => "",
+            ];
+        }
+        if ($gst->text == request()->pengeluaranstok_id) {
+            $salahSatuDari = Rule::requiredIf(function () use ($gst) {
+                if ((empty($this->input('trado')) && empty($this->input('gandengan')) && $this->input('pengeluaranstok_id')) == $gst->text) {
                     return true;
                 }
                 return false;

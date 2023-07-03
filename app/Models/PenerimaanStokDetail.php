@@ -175,9 +175,11 @@ class PenerimaanStokDetail extends MyModel
         $kor = Parameter::where('grp', 'KOR STOK')->where('subgrp', 'KOR STOK')->first();
         $spbs = Parameter::where('grp', 'REUSE STOK')->where('subgrp', 'REUSE STOK')->first();
         $pg = Parameter::where('grp', 'PG STOK')->where('subgrp', 'PG STOK')->first();
+        $pst = Parameter::where('grp', 'PST STOK')->where('subgrp', 'PST STOK')->first();
+        $pspk = Parameter::where('grp', 'PSPK STOK')->where('subgrp', 'PSPK STOK')->first();
         // dd($datahitungstok->statushitungstok_id);
         if ($datahitungstok->statushitungstok_id == $statushitungstok->id) {
-            if (($penerimaanStokHeader->penerimaanstok_id == $spb->text)||$penerimaanStokHeader->penerimaanstok_id == $kor->text) {
+            if (($penerimaanStokHeader->penerimaanstok_id == $spb->text)||($penerimaanStokHeader->penerimaanstok_id == $kor->text) ||($penerimaanStokHeader->penerimaanstok_id == $pst->text)||($penerimaanStokHeader->penerimaanstok_id == $pspk->text)) {
                 $persediaan = $this->persediaan($penerimaanStokHeader->gudang_id,$penerimaanStokHeader->trado_id,$penerimaanStokHeader->gandengan_id);
                 $this->persediaanKe($data['stok_id'],$persediaan['column'].'_id',$persediaan['value'],$data['qty']);
             }
@@ -330,6 +332,8 @@ class PenerimaanStokDetail extends MyModel
         $do = Parameter::where('grp', 'DO STOK')->where('subgrp', 'DO STOK')->first();
         $spbs = Parameter::where('grp', 'REUSE STOK')->where('subgrp', 'REUSE STOK')->first();
         $kor = Parameter::where('grp', 'KOR STOK')->where('subgrp', 'KOR STOK')->first();
+        $pst = Parameter::where('grp', 'PST STOK')->where('subgrp', 'PST STOK')->first();
+        $pspk = Parameter::where('grp', 'PSPK STOK')->where('subgrp', 'PSPK STOK')->first();
 
         $gudangkantor = Parameter::where('grp', 'GUDANG KANTOR')->where('subgrp', 'GUDANG KANTOR')->first();
         $pengeluaranStokDetail = PenerimaanStokDetail::where('penerimaanstokheader_id', $id)->get();
@@ -343,7 +347,7 @@ class PenerimaanStokDetail extends MyModel
         $tradodari_id = $penerimaanStokHeader->tradodari_id;
         $gandengandari_id = $penerimaanStokHeader->gandengandari_id;
         foreach ($pengeluaranStokDetail as $item) {
-            if (($penerimaanStokHeader->penerimaanstok_id == $spb->text)||($penerimaanStokHeader->penerimaanstok_id == $kor->text)) {
+            if (($penerimaanStokHeader->penerimaanstok_id == $spb->text)||($penerimaanStokHeader->penerimaanstok_id == $kor->text) ||($penerimaanStokHeader->penerimaanstok_id == $pst->text)||($penerimaanStokHeader->penerimaanstok_id == $pspk->text)) {
                 $persediaan = $this->persediaan($gudang_id,$trado_id,$gandengan_id);
                 $this->persediaanKeReturn($item['stok_id'],$persediaan['column'].'_id',$persediaan['value'],$item['qty']);
             }
