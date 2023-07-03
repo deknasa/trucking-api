@@ -17,6 +17,8 @@ class CreateGandenganTable extends Migration
             $table->id();
             $table->string('kodegandengan', 300)->nullable();
             $table->string('keterangan', 300)->nullable();
+            $table->integer('jumlahroda')->length(11)->nullable();
+            $table->integer('jumlahbanserap')->length(11)->nullable();
             $table->integer('statusaktif')->length(11)->nullable();
             $table->string('modifiedby', 30)->nullable();            
             $table->timestamps();
