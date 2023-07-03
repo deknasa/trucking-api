@@ -224,6 +224,8 @@ use App\Http\Controllers\LaporanKasHarianController;
 use App\Http\Controllers\Api\LaporanKartuHutangPerSupplierController;
 use App\Http\Controllers\Api\LaporanKartuPiutangPerAgenController;
 use App\Http\Controllers\Api\MainAkunPusatController;
+use App\Http\Controllers\Api\LaporanHistoryDepositoController;
+
 // use App\Http\Controllers\Api\LaporanTransaksiHarianController;
 
 /*
@@ -1208,6 +1210,10 @@ route::middleware(['auth:api','authorized'])->group(function () {
     Route::get('laporankartupiutangperagen/report', [LaporanKartuPiutangPerAgenController::class, 'report'])->name('laporankartupiutangperagen.report');
     Route::get('laporankartupiutangperagen/export', [LaporanKartuPiutangPerAgenController::class, 'export'])->name('laporankartupiutangperagen.export');
     Route::resource('laporankartupiutangperagen', LaporanKartuPiutangPerAgenController::class)->whereNumber('laporankartupiutangperagen');
+
+    Route::get('laporanhistorydeposito/report', [LaporanHistoryDepositoController::class, 'report'])->name('laporanhistorydeposito.report');
+    Route::get('laporanhistorydeposito/export', [LaporanHistoryDepositoController::class, 'export'])->name('laporanhistorydeposito.export');
+    Route::resource('laporanhistorydeposito', LaporanHistoryDepositoController::class)->whereNumber('laporanhistorydeposito');
 
     Route::get('laporanhutangbbm/report', [LaporanHutangBBMController::class, 'report'])->name('laporanhutangbbm.report');
     Route::get('laporanhutangbbm/export', [LaporanHutangBBMController::class, 'export'])->name('laporanhutangbbm.export');
