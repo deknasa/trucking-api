@@ -52,6 +52,9 @@ class LaporanRekapSumbanganController extends Controller
         ]);
     }
 
+      /**
+     * @ClassName
+     */
     public function export(Request $request)
     {
         $dari = $request->dari;
@@ -59,7 +62,7 @@ class LaporanRekapSumbanganController extends Controller
 
         $export = LaporanRekapSumbangan::getReport($dari,$sampai);
 
-        dd($export);
+   
 
         return response([
             'data' => $export

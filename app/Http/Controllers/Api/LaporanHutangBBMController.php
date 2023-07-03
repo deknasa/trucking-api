@@ -56,6 +56,10 @@ class LaporanHutangBBMController extends Controller
             'data' => $report
         ]);
     }
+
+      /**
+     * @ClassName
+     */
     public function export(Request $request)
         {
             $sampai = $request->sampai;

@@ -18,6 +18,8 @@ class MenuSeeder extends Seeder
 
         DB::statement("delete menu");
         DB::statement("DBCC CHECKIDENT ('menu', RESEED, 1);");
+
+
         menu::create(['menuname' => 'DASHBOARD', 'menuseq' => '0', 'menuparent' => '0', 'menuicon' => 'FAS FA-HOME', 'aco_id' => '0', 'link' => 'DASHBOARD', 'menuexe' => '', 'menukode' => '0', 'modifiedby' => '',]);
         menu::create(['menuname' => 'LOGOUT', 'menuseq' => '9', 'menuparent' => '0', 'menuicon' => 'FAS FA-SIGN-OUT-ALT', 'aco_id' => '0', 'link' => 'LOGOUT', 'menuexe' => '', 'menukode' => 'Z', 'modifiedby' => '',]);
         menu::create(['menuname' => 'MASTER', 'menuseq' => '1', 'menuparent' => '0', 'menuicon' => 'FAS FA-USER-TAG', 'aco_id' => '0', 'link' => '', 'menuexe' => '', 'menukode' => '1', 'modifiedby' => '',]);
@@ -64,14 +66,14 @@ class MenuSeeder extends Seeder
         menu::create(['menuname' => 'SATUAN', 'menuseq' => '145', 'menuparent' => '34', 'menuicon' => 'FAS FA-USER', 'aco_id' => '145', 'link' => '', 'menuexe' => '', 'menukode' => '145', 'modifiedby' => 'ADMIN',]);
         menu::create(['menuname' => 'SURAT PENGANTAR', 'menuseq' => '222', 'menuparent' => '104', 'menuicon' => 'FAS FA-USER', 'aco_id' => '149', 'link' => '', 'menuexe' => '', 'menukode' => '222', 'modifiedby' => 'ADMIN',]);
         menu::create(['menuname' => 'SUPPLIER', 'menuseq' => '181', 'menuparent' => '53', 'menuicon' => 'FAS FA-USER', 'aco_id' => '153', 'link' => '', 'menuexe' => '', 'menukode' => '181', 'modifiedby' => 'ADMIN',]);
-        menu::create(['menuname' => 'SUPIR', 'menuseq' => '1317', 'menuparent' => '99', 'menuicon' => 'FAS FA-USER', 'aco_id' => '157', 'link' => '', 'menuexe' => '', 'menukode' => '1317', 'modifiedby' => 'ADMIN',]);
+        menu::create(['menuname' => 'SUPIR', 'menuseq' => '1317', 'menuparent' => '165', 'menuicon' => 'FAS FA-USER', 'aco_id' => '157', 'link' => '', 'menuexe' => '', 'menukode' => '13151', 'modifiedby' => 'ADMIN',]);
         menu::create(['menuname' => 'SUB KELOMPOK', 'menuseq' => '146', 'menuparent' => '34', 'menuicon' => 'FAS FA-USER-TAG', 'aco_id' => '161', 'link' => '', 'menuexe' => '', 'menukode' => '146', 'modifiedby' => 'ADMIN',]);
         menu::create(['menuname' => 'STATUS CONTAINER', 'menuseq' => '1322', 'menuparent' => '103', 'menuicon' => 'FAS FA-TRUCK', 'aco_id' => '165', 'link' => '', 'menuexe' => '', 'menukode' => '1322', 'modifiedby' => 'ADMIN',]);
         menu::create(['menuname' => 'TARIF', 'menuseq' => '1331', 'menuparent' => '100', 'menuicon' => 'FAS FA-TRUCK', 'aco_id' => '169', 'link' => '', 'menuexe' => '', 'menukode' => '1331', 'modifiedby' => 'ADMIN',]);
         menu::create(['menuname' => 'JURNAL UMUM', 'menuseq' => '16', 'menuparent' => '3', 'menuicon' => 'FAS FA-TRUCK', 'aco_id' => '0', 'link' => '', 'menuexe' => '', 'menukode' => '16', 'modifiedby' => 'ADMIN',]);
         menu::create(['menuname' => 'KAS/BANK', 'menuseq' => '17', 'menuparent' => '3', 'menuicon' => 'FAS FA-TRUCK', 'aco_id' => '0', 'link' => '', 'menuexe' => '', 'menukode' => '17', 'modifiedby' => 'ADMIN',]);
         menu::create(['menuname' => 'RELASI', 'menuseq' => '18', 'menuparent' => '3', 'menuicon' => 'FAS FA-TRUCK', 'aco_id' => '0', 'link' => '', 'menuexe' => '', 'menukode' => '18', 'modifiedby' => 'ADMIN',]);
-        menu::create(['menuname' => 'TRADO', 'menuseq' => '1311', 'menuparent' => '99', 'menuicon' => 'FAS FA-TRUCK', 'aco_id' => '173', 'link' => '', 'menuexe' => '', 'menukode' => '1311', 'modifiedby' => 'ADMIN',]);
+        menu::create(['menuname' => 'TRADO', 'menuseq' => '1311', 'menuparent' => '163', 'menuicon' => 'FAS FA-TRUCK', 'aco_id' => '173', 'link' => '', 'menuexe' => '', 'menukode' => '13111', 'modifiedby' => 'ADMIN',]);
         menu::create(['menuname' => 'UPAH SUPIR', 'menuseq' => '1332', 'menuparent' => '100', 'menuicon' => 'FAS FA-TRUCK', 'aco_id' => '177', 'link' => '', 'menuexe' => '', 'menukode' => '1332', 'modifiedby' => 'ADMIN',]);
         menu::create(['menuname' => 'UPAH RITASI', 'menuseq' => '1333', 'menuparent' => '100', 'menuicon' => 'FAS FA-TRUCK', 'aco_id' => '181', 'link' => '', 'menuexe' => '', 'menukode' => '1333', 'modifiedby' => 'ADMIN',]);
         menu::create(['menuname' => 'ZONA', 'menuseq' => '1342', 'menuparent' => '101', 'menuicon' => 'FAS FA-TRUCK', 'aco_id' => '185', 'link' => '', 'menuexe' => '', 'menukode' => '1342', 'modifiedby' => 'ADMIN',]);
@@ -180,5 +182,14 @@ class MenuSeeder extends Seeder
         menu::create(['menuname' => 'LAP. PEMBELIAN PER SUPPLIER', 'menuseq' => '0', 'menuparent' => '145', 'menuicon' => 'FAS FA-TRUCK', 'aco_id' => '644', 'link' => '', 'menuexe' => '', 'menukode' => '641', 'modifiedby' => 'ADMIN',]);
         menu::create(['menuname' => 'LAP. PEMBELIAN PER STOK', 'menuseq' => '0', 'menuparent' => '145', 'menuicon' => 'FAS FA-TRUCK', 'aco_id' => '647', 'link' => '', 'menuexe' => '', 'menukode' => '642', 'modifiedby' => 'ADMIN',]);
         menu::create(['menuname' => 'UBAH PASSWORD', 'menuseq' => '0', 'menuparent' => '4', 'menuicon' => 'FAS FA-TRUCK', 'aco_id' => '656', 'link' => '', 'menuexe' => '', 'menukode' => '117', 'modifiedby' => 'ADMIN',]);
+        menu::create(['menuname' => 'TRADO', 'menuseq' => '100', 'menuparent' => '99', 'menuicon' => 'FAS FA-TRUCK', 'aco_id' => '0', 'link' => '', 'menuexe' => '', 'menukode' => '1311', 'modifiedby' => 'ADMIN',]);
+        menu::create(['menuname' => 'APPROVAL TRADO TANPA GAMBAR', 'menuseq' => '100', 'menuparent' => '163', 'menuicon' => 'FAS FA-TRUCK', 'aco_id' => '659', 'link' => '', 'menuexe' => '', 'menukode' => '13112', 'modifiedby' => 'ADMIN',]);
+        menu::create(['menuname' => 'SUPIR', 'menuseq' => '100', 'menuparent' => '99', 'menuicon' => 'FAS FA-TRUCK', 'aco_id' => '0', 'link' => '', 'menuexe' => '', 'menukode' => '1315', 'modifiedby' => 'ADMIN',]);
+        menu::create(['menuname' => 'APPROVAL SUPIR TANPA GAMBAR', 'menuseq' => '100', 'menuparent' => '165', 'menuicon' => 'FAS FA-TRUCK', 'aco_id' => '663', 'link' => '', 'menuexe' => '', 'menukode' => '13152', 'modifiedby' => 'ADMIN',]);
+        menu::create(['menuname' => 'LAP. LABA RUGI', 'menuseq' => '100', 'menuparent' => '143', 'menuicon' => 'FAS FA-TRUCK', 'aco_id' => '680', 'link' => '', 'menuexe' => '', 'menukode' => '622', 'modifiedby' => 'ADMIN',]);
+        menu::create(['menuname' => 'LAP. HUTANG GIRO', 'menuseq' => '0', 'menuparent' => '144', 'menuicon' => 'FAS FA-TRUCK', 'aco_id' => '683', 'link' => '', 'menuexe' => '', 'menukode' => '631', 'modifiedby' => 'ADMIN',]);
+        menu::create(['menuname' => 'LAP. PIUTANG GIRO', 'menuseq' => '0', 'menuparent' => '144', 'menuicon' => 'FAS FA-TRUCK', 'aco_id' => '686', 'link' => '', 'menuexe' => '', 'menukode' => '632', 'modifiedby' => 'ADMIN',]);
+        menu::create(['menuname' => 'KARTU HUTANG', 'menuseq' => '0', 'menuparent' => '144', 'menuicon' => 'FAS FA-TRUCK', 'aco_id' => '689', 'link' => '', 'menuexe' => '', 'menukode' => '633', 'modifiedby' => 'ADMIN',]);
+        menu::create(['menuname' => 'KARTU PIUTANG', 'menuseq' => '0', 'menuparent' => '144', 'menuicon' => 'FAS FA-TRUCK', 'aco_id' => '692', 'link' => '', 'menuexe' => '', 'menukode' => '634', 'modifiedby' => 'ADMIN',]);
     }
 }

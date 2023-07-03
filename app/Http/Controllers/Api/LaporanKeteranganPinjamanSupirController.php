@@ -46,7 +46,10 @@ class LaporanKeteranganPinjamanSupirController extends Controller
             'data' => $report
         ]);
     }
-
+    
+       /**
+     * @ClassName
+     */
     public function export(Request $request)
     {
         $periode = $request->periode;
