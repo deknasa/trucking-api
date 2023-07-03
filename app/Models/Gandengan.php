@@ -158,6 +158,8 @@ class Gandengan extends MyModel
                 'gandengan.id',
                 'gandengan.kodegandengan',
                 'gandengan.keterangan',
+                'gandengan.jumlahroda',
+                'gandengan.jumlahbanserap',
                 'parameter.memo as statusaktif',
                 'gandengan.modifiedby',
                 'gandengan.created_at',
@@ -340,6 +342,8 @@ class Gandengan extends MyModel
         $gandengan = new Gandengan();
         $gandengan->kodegandengan = $data['kodegandengan'];
         $gandengan->keterangan = $data['keterangan'] ?? '';
+        $gandengan->jumlahroda = $data['jumlahroda'];
+        $gandengan->jumlahbanserap = $data['jumlahbanserap'];
         $gandengan->statusaktif = $data['statusaktif'];
         $gandengan->modifiedby = auth('api')->user()->name;
 
@@ -412,6 +416,8 @@ class Gandengan extends MyModel
     {
         $gandengan->kodegandengan = $data['kodegandengan'];
         $gandengan->keterangan = $data['keterangan'] ?? '';
+        $gandengan->jumlahroda = $data['jumlahroda'];
+        $gandengan->jumlahbanserap = $data['jumlahbanserap'];
         $gandengan->statusaktif = $data['statusaktif'];
         $gandengan->modifiedby = auth('api')->user()->user;
 

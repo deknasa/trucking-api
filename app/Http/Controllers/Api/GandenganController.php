@@ -100,6 +100,8 @@ class GandenganController extends Controller
             $data = [
                 'kodegandengan' => $request->kodegandengan,
                 'keterangan' => $request->keterangan ?? '',
+                'jumlahroda' => $request->jumlahroda,
+                'jumlahbanserap' => $request->jumlahbanserap,
                 'statusaktif' => $request->statusaktif,
             ];
             $gandengan = (new Gandengan())->processStore($data);
@@ -147,6 +149,8 @@ class GandenganController extends Controller
             $data = [
                 'kodegandengan' => $request->kodegandengan,
                 'keterangan' => $request->keterangan ?? '',
+                'jumlahroda' => $request->jumlahroda,
+                'jumlahbanserap' => $request->jumlahbanserap,
                 'statusaktif' => $request->statusaktif,
             ];
             $gandengan = (new Gandengan())->processUpdate($gandengan, $data);
