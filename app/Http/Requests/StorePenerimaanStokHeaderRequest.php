@@ -36,9 +36,12 @@ class StorePenerimaanStokHeaderRequest extends FormRequest
         $kor = DB::table('parameter')->where('grp', 'KOR STOK')->where('subgrp', 'KOR STOK')->first();
         $pg = DB::table('parameter')->where('grp', 'PG STOK')->where('subgrp', 'PG STOK')->first();
         $reuse = DB::table('parameter')->where('grp', 'REUSE STOK')->where('subgrp', 'REUSE STOK')->first();
+        $pst = DB::table('parameter')->where('grp', 'PST STOK')->where('subgrp', 'PST STOK')->first();
+        $pspk = DB::table('parameter')->where('grp', 'PSPK STOK')->where('subgrp', 'PSPK STOK')->first();
         
         $requiredSupplier = Rule::requiredIf((request()->penerimaanstok_id == $spb->text)||(request()->penerimaanstok_id == $po->text)||(request()->penerimaanstok_id == $do->text)||(request()->penerimaanstok_id == $reuse->text));
         // $requiredPenerimaanStokNobukti = Rule::requiredIf((request()->penerimaanstok_id == $spb->text));
+        $requiredPengeluaranStokNobukti = Rule::requiredIf((request()->penerimaanstok_id == $pst->text) || (request()->penerimaanstok_id == $pspk->text));
         $salahsatu = Rule::requiredIf(function () use ($kor) {
             if ((empty($this->input('trado')) && empty($this->input('gandengan')) && empty($this->input('gudang'))) && $this->input('penerimaanstok_id') ==$kor->text) {
                 return true;
@@ -91,6 +94,7 @@ class StorePenerimaanStokHeaderRequest extends FormRequest
             "penerimaanstok" => ["required",Rule::in($kodepenerimaan)],
             "penerimaanstok_id" => ["required",Rule::in($kode)],
             // "penerimaanstok_nobukti" => $requiredPenerimaanStokNobukti,
+            "pengeluaranstok_nobukti" => $requiredPengeluaranStokNobukti,
             'trado' => $salahsatu,
             'gandengan' => $salahsatu,
             'gudang' => $salahsatu,
