@@ -113,7 +113,7 @@ class TradoSupirMilikMandorController extends Controller
     /**
      * @ClassName 
      */
-    public function destroy(TradoSupirMilikMandor $tradoSupirMilikMandor)
+    public function destroy(TradoSupirMilikMandor $tradoSupirMilikMandor,$id)
     {
         DB::beginTransaction();
         try {
