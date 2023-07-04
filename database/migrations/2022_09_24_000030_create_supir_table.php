@@ -55,6 +55,7 @@ class CreateSupirTable extends Migration
             $table->longText('keteranganberhentisupir')->nullable();
             $table->date('tgllahir')->nullable();
             $table->date('tglterbitsim')->nullable();
+            $table->unsignedBigInteger('mandor_id')->nullable();
             $table->string('modifiedby', 30)->nullable();
             $table->timestamps();
 
