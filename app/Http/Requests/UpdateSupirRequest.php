@@ -52,6 +52,28 @@ class UpdateSupirRequest extends FormRequest
             return true;
         });
 
+        $ruleKeterangan = Rule::requiredIf(function () {
+            $noktp = request()->noktp;
+            $nonApp = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))
+                ->whereRaw("grp like '%STATUS APPROVAL%'")
+                ->whereRaw("text like '%NON APPROVAL%'")
+                ->first();
+            $cekValidasi = DB::table('approvalsupirketerangan')->from(DB::raw("approvalsupirketerangan with (readuncommitted)"))
+                ->select('noktp', 'tglbatas','statusapproval')
+                ->whereRaw("noktp in ('$noktp')")
+                ->first();
+            if ($cekValidasi != '') {
+                if ($cekValidasi->statusapproval == $nonApp->id) {
+                    return false;
+                } else {
+                    if (date('Y-m-d') < $cekValidasi->tglbatas) {
+                        return false;
+                    }
+                }
+            }
+            return true;
+        });
+
         $tglbatasakhir = date('Y-m-d', strtotime('-' . (new ParameterController)->getparamid('MINIMAL USIA SUPIR', 'MINIMAL USIA SUPIR')->text . ' years', strtotime( date('Y-m-d'))));
         $tglbatasawal = date('Y-m-d', strtotime('-' . (new ParameterController)->getparamid('MAXIMAL USIA SUPIR', 'MAXIMAL USIA SUPIR')->text . ' years', strtotime(date('Y-m-d'))));
 
@@ -60,23 +82,23 @@ class UpdateSupirRequest extends FormRequest
 
 
         $rules = [
-            'namasupir' => ['required'],
-            'alamat' => 'required',
-            'namaalias' => 'required',
-            'kota' => 'required',
-            'telp' => 'required|min:8|max:50|unique:supir,telp,' . $this->supir->id,
-            'statusaktif' => 'required|int|exists:parameter,id',
-            'tglmasuk' => 'required',
-            'tglexpsim' => 'required',
-            'nosim' => 'required|min:12|max:12|unique:supir,nosim,' . $this->supir->id, //.',nosim',
-            'noktp' => 'required|min:16|max:16|unique:supir,noktp,' . $this->supir->id, //.',noktp',
-            'nokk' => 'required|min:16|max:16',
+            'namasupir' => [$ruleKeterangan],
+            'alamat' => [$ruleKeterangan],
+            'namaalias' => $ruleKeterangan,
+            'kota' => [$ruleKeterangan],
+            'telp' => [$ruleKeterangan,'min:8','max:50','unique:supir,telp,' . $this->supir->id,'nullable'],
+            'statusaktif' => [$ruleKeterangan,'int','exists:parameter,id'],
+            'tglmasuk' => [$ruleKeterangan],
+            'tglexpsim' => [$ruleKeterangan],
+            'nosim' => [$ruleKeterangan,'min:12','max:12','unique:supir,nosim,' . $this->supir->id,'nullable'], //.',nosim',
+            'noktp' => [$ruleKeterangan,'min:16','max:16','unique:supir,noktp,' . $this->supir->id,'nullable'], //.',noktp',
+            'nokk' => [$ruleKeterangan,'min:16','max:16','nullable'],
             'tgllahir' => [
-                'required', 'date_format:d-m-Y', 
+                $ruleKeterangan, 'date_format:d-m-Y', 
                 'after_or_equal:' . $tglbatasawal, 
-                'before_or_equal:' . $tglbatasakhir,
+                'before_or_equal:' . $tglbatasakhir,'nullable'
             ],
-            'tglterbitsim' => 'required',
+            'tglterbitsim' => [$ruleKeterangan],
             'photosupir' => [$ruleGambar, 'array'],
             'photosupir.*' => [$ruleGambar, 'image'],
             'photoktp' => [$ruleGambar, 'array'],

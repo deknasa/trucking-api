@@ -368,7 +368,10 @@ class MandorAbsensiSupir extends MyModel
     public function processStore(array $data)
     {
         $AbsensiSupirHeader = AbsensiSupirHeader::where('tglbukti', date('Y-m-d', strtotime('now')))->first();
-        
+        $tidakadasupir = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))->select('text')->where('grp', 'TIDAK ADA SUPIR')->where('subgrp', 'TIDAK ADA SUPIR')->first();
+        if ($tidakadasupir->text == $data['absen_id'] ) {
+            $data['supir_id'] = "";
+        }
         if (!$AbsensiSupirHeader) {
             $absensiSupirRequest = [
                 "tglbukti" =>$data['tglbukti'],
@@ -427,7 +430,10 @@ class MandorAbsensiSupir extends MyModel
         $AbsensiSupirHeader = AbsensiSupirHeader::where('id', $AbsensiSupirDetail->absensi_id)->first();
         $AbsensiSupirDetail = AbsensiSupirDetail::where('id', $AbsensiSupirDetail->id)->lockForUpdate()->first();
         $AbsensiSupirDetail->delete();
-
+        $tidakadasupir = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))->select('text')->where('grp', 'TIDAK ADA SUPIR')->where('subgrp', 'TIDAK ADA SUPIR')->first();
+        if ($tidakadasupir->text == $data['absen_id'] ) {
+            $data['supir_id'] = "";
+        }
         // dd($AbsensiSupirDetail);
 
         $absensiSupirDetail = AbsensiSupirDetail::processStore($AbsensiSupirHeader,[

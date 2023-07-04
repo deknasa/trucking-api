@@ -705,6 +705,14 @@ class Trado extends MyModel
                 'modifiedby' => $trado->modifiedby
             ]);
 
+
+            $approvalTradoKeterangan = ApprovalTradoKeterangan::where('kodetrado',$trado->kodetrado)->first();
+            if ($approvalTradoKeterangan) {
+                $nonApp = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))->whereRaw("grp like '%STATUS APPROVAL%'")->whereRaw("text like '%NON APPROVAL%'")->first();
+                $approvalTradoKeterangan->statusapproval = $nonApp->id;
+                $approvalTradoKeterangan->save();
+            }
+
             $param1 = $trado->id;
             $param2 = $trado->modifiedby;
             $stokgudang = Stok::from(DB::raw("stok with (readuncommitted)"))
@@ -810,6 +818,13 @@ class Trado extends MyModel
                 'datajson' => $trado->toArray(),
                 'modifiedby' => $trado->modifiedby
             ]);
+
+            $approvalTradoKeterangan = ApprovalTradoKeterangan::where('kodetrado',$trado->kodetrado)->first();
+            if ($approvalTradoKeterangan) {
+                $nonApp = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))->whereRaw("grp like '%STATUS APPROVAL%'")->whereRaw("text like '%NON APPROVAL%'")->first();
+                $approvalTradoKeterangan->statusapproval = $nonApp->id;
+                $approvalTradoKeterangan->save();
+            }
 
             $param1 = $trado->id;
             $param2 = $trado->modifiedby;

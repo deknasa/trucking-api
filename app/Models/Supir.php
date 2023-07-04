@@ -871,6 +871,13 @@ class Supir extends MyModel
                 $approvalSupirGambar->save();
             }
 
+            $approvalSupirKeterangan = ApprovalSupirKeterangan::where('noktp',$supir->noktp)->first();
+            if ($approvalSupirKeterangan) {
+                $nonApp = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))->whereRaw("grp like '%STATUS APPROVAL%'")->whereRaw("text like '%NON APPROVAL%'")->first();
+                $approvalSupirKeterangan->statusapproval = $nonApp->id;
+                $approvalSupirKeterangan->save();
+            }
+
             (new LogTrail())->processStore([
                 'namatabel' => strtoupper($supir->getTable()),
                 'postingdari' => 'ENTRY SUPIR',
@@ -946,6 +953,13 @@ class Supir extends MyModel
                 $nonApp = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))->whereRaw("grp like '%STATUS APPROVAL%'")->whereRaw("text like '%NON APPROVAL%'")->first();
                 $approvalSupirGambar->statusapproval = $nonApp->id;
                 $approvalSupirGambar->save();
+            }
+
+            $approvalSupirKeterangan = ApprovalSupirKeterangan::where('noktp',$supir->noktp)->first();
+            if ($approvalSupirKeterangan) {
+                $nonApp = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))->whereRaw("grp like '%STATUS APPROVAL%'")->whereRaw("text like '%NON APPROVAL%'")->first();
+                $approvalSupirKeterangan->statusapproval = $nonApp->id;
+                $approvalSupirKeterangan->save();
             }
 
             (new LogTrail())->processStore([

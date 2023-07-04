@@ -2,7 +2,9 @@
 
 namespace App\Http\Requests;
 
+use App\Http\Controllers\Api\ErrorController;
 use Illuminate\Foundation\Http\FormRequest;
+use App\Rules\DateApprovalTradoGambar;
 
 class UpdateApprovalSupirKeteranganRequest extends FormRequest
 {
@@ -13,7 +15,7 @@ class UpdateApprovalSupirKeteranganRequest extends FormRequest
      */
     public function authorize()
     {
-        return false;
+        return true;
     }
 
     /**
@@ -24,7 +26,30 @@ class UpdateApprovalSupirKeteranganRequest extends FormRequest
     public function rules()
     {
         return [
-            //
+            "namasupir"=> "required",
+            'noktp' => 'required|min:16|max:16|unique:approvalsupirketerangan,noktp,'.$this->id,
+            "statusapproval"=> "required",
+            'tglbatas' => ['required','date_format:d-m-Y',new DateApprovalTradoGambar()],
+        ];
+    }
+
+    public function attributes()
+    {
+        return [
+            'namasupir' => 'Nama Supir',
+            'noktp' => 'No KTP',
+            'statusapproval' => 'status approval',
+            'tglbatas' => 'Tanggal Batas',
+        ];
+    }
+    public function messages() 
+    {
+        $controller = new ErrorController;
+
+        return [
+            'noktp.max' => 'Max. 16 karakter',
+            'noktp.min' => 'Min. 16 karakter',
+            'noktp.unique' => ':attribute' . ' ' . $controller->geterror('SPI')->keterangan,
         ];
     }
 }

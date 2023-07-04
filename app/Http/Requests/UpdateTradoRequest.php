@@ -57,6 +57,28 @@ class UpdateTradoRequest extends FormRequest
 
         });
 
+        $ruleKeterangan = Rule::requiredIf(function () {
+            $kodetrado = request()->kodetrado;
+            $nonApp = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))
+                ->whereRaw("grp like '%STATUS APPROVAL%'")
+                ->whereRaw("text like '%NON APPROVAL%'")
+                ->first();
+            $cekValidasi = DB::table('approvaltradoketerangan')->from(DB::raw("approvaltradoketerangan with (readuncommitted)"))
+                ->select('kodetrado', 'tglbatas','statusapproval')
+                ->whereRaw("kodetrado in ('$kodetrado')")
+                ->first();
+            if ($cekValidasi != '') {
+                if ($cekValidasi->statusapproval == $nonApp->id) {
+                    return false;
+                } else {
+                    if (date('Y-m-d') < $cekValidasi->tglbatas) {
+                        return false;
+                    }
+                }
+            }
+            return true;
+        });
+
         $parameter = new Parameter();
         $data = $parameter->getcombodata('STATUS AKTIF', 'STATUS AKTIF');
         $data = json_decode($data, true);
@@ -65,27 +87,27 @@ class UpdateTradoRequest extends FormRequest
         } 
         return [
             'kodetrado' => ['required',Rule::unique('trado')->whereNotIn('id', [$this->id])],
-            'statusaktif' => ['required', Rule::in($status)],
-            'tahun' => 'required|min:4|max:4',
-            'merek' => 'required',
-            'norangka' => ['required', 'max:20', Rule::unique('trado')->whereNotIn('id', [$this->id])],
-            'nomesin' =>  ['required','max:20', Rule::unique('trado')->whereNotIn('id', [$this->id])],
-            'nama' => 'required',
-            'nostnk' =>  ['required', 'max:50', Rule::unique('trado')->whereNotIn('id', [$this->id])],
-            'alamatstnk' => 'required',
-            'statusjenisplat' => 'required',
-            'tglpajakstnk' => 'required',
-            'tipe' => 'required',
-            'jenis' => 'required',
-            'isisilinder' => 'required|numeric|min:1|digits_between:1,5',
-            'warna' => 'required',
-            'jenisbahanbakar' => 'required',
-            'jumlahsumbu' => 'required|numeric|min:1|digits_between:1,2',
-            'jumlahroda' => 'required|numeric|min:1|digits_between:1,2',
-            'model' => 'required',
-            'nobpkb' => ['required', 'max:15', Rule::unique('trado')->whereNotIn('id', [$this->id])],
-            'jumlahbanserap' => 'required|numeric|min:1|digits_between:1,2',
-            'statusgerobak' => 'required',
+            'statusaktif' => [$ruleKeterangan, Rule::in($status)],
+            'tahun' => [$ruleKeterangan,'min:4','max:4','nullable'],
+            'merek' => $ruleKeterangan,
+            'norangka' => [$ruleKeterangan, 'max:20', Rule::unique('trado')->whereNotIn('id', [$this->id])],
+            'nomesin' =>  [$ruleKeterangan,'max:20', Rule::unique('trado')->whereNotIn('id', [$this->id])],
+            'nama' => [$ruleKeterangan],
+            'nostnk' =>  [$ruleKeterangan, 'max:50', Rule::unique('trado')->whereNotIn('id', [$this->id])],
+            'alamatstnk' => [$ruleKeterangan],
+            'statusjenisplat' => [$ruleKeterangan],
+            'tglpajakstnk' => [$ruleKeterangan],
+            'tipe' => [$ruleKeterangan],
+            'jenis' => [$ruleKeterangan],
+            'isisilinder' => [$ruleKeterangan,'numeric','min:1','digits_between:1,5','nullable'],
+            'warna' => [$ruleKeterangan],
+            'jenisbahanbakar' => [$ruleKeterangan],
+            'jumlahsumbu' => [$ruleKeterangan,'numeric','min:1','digits_between:1,2','nullable'],
+            'jumlahroda' => [$ruleKeterangan,'numeric','min:1','digits_between:1,2','nullable'],
+            'model' => [$ruleKeterangan],
+            'nobpkb' => [$ruleKeterangan, 'max:15', Rule::unique('trado')->whereNotIn('id', [$this->id])],
+            'jumlahbanserap' => [$ruleKeterangan,'numeric','min:1','digits_between:1,2','nullable'],
+            'statusgerobak' => [$ruleKeterangan],
             'nominalplusborongan' => [new NotDecimal()],
             'phototrado' => [$ruleGambar, 'array'],
             'phototrado.*' => [$ruleGambar, 'image'],
