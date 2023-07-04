@@ -158,6 +158,7 @@ class Gandengan extends MyModel
                 'gandengan.id',
                 'gandengan.kodegandengan',
                 'gandengan.keterangan',
+                'trado.kodetrado as trado',
                 'gandengan.jumlahroda',
                 'gandengan.jumlahbanserap',
                 'parameter.memo as statusaktif',
@@ -169,8 +170,8 @@ class Gandengan extends MyModel
                 DB::raw("'Tgl Cetak :'+format(getdate(),'dd-MM-yyyy HH:mm:ss')as tglcetak"),
                 DB::raw(" 'User :" . auth('api')->user()->name . "' as usercetak")
             )
-            ->leftJoin(DB::raw("parameter with (readuncommitted)"), 'gandengan.statusaktif', 'parameter.id');
-
+            ->leftJoin(DB::raw("parameter with (readuncommitted)"), 'gandengan.statusaktif', 'parameter.id')
+            ->leftJoin(DB::raw("trado with (readuncommitted)"), 'gandengan.trado_id', '=', 'trado.id');
 
 
 
@@ -232,6 +233,37 @@ class Gandengan extends MyModel
         // dd($data);
         return $data;
     }
+
+    public function find($id)
+    {
+        $this->setRequestParameters();
+     
+        $data = DB::table("gandengan")->from(DB::raw("gandengan with (readuncommitted)"))
+        
+            ->select(
+                'gandengan.id',
+                'gandengan.kodegandengan',
+                'gandengan.keterangan',
+                'gandengan.trado_id',
+                'trado.kodetrado as trado',
+                'gandengan.jumlahroda',
+                'gandengan.jumlahbanserap',
+                'gandengan.statusaktif',
+                'gandengan.modifiedby',
+                'gandengan.created_at',
+                'gandengan.updated_at',
+            )
+            
+            ->leftJoin(DB::raw("trado with (readuncommitted)"), 'gandengan.trado_id', '=', 'trado.id')
+            ->where('gandengan.id', $id)
+            ->first();
+
+            // dd("her");
+
+        return $data;
+    }
+
+
     public function selectColumns($query)
     {
         return $query->from(
@@ -241,6 +273,9 @@ class Gandengan extends MyModel
                 "$this->table.id",
                 "$this->table.kodegandengan",
                 "$this->table.keterangan",
+                "$this->table.trado_id",
+                "$this->table.jumlahroda",
+                "$this->table.jumlahbanserap",
                 "parameter.text as statusaktif",
                 "$this->table.modifiedby",
                 "$this->table.created_at",
@@ -258,6 +293,9 @@ class Gandengan extends MyModel
             $table->bigInteger('id')->nullable();
             $table->string('kodegandengan', 500)->nullable();
             $table->string('keterangan', 500)->nullable();
+            $table->unsignedBigInteger('trado_id')->nullable();
+            $table->integer('jumlahroda')->length(11)->nullable();
+            $table->integer('jumlahbanserap')->length(11)->nullable();
             $table->string('statusaktif', 500)->nullable();
             $table->string('modifiedby', 50)->nullable();
             $table->dateTime('created_at')->nullable();
@@ -274,6 +312,9 @@ class Gandengan extends MyModel
             'id',
             'kodegandengan',
             'keterangan',
+            'trado_id',
+            'jumlahroda',
+            'jumlahbanserap',
             'statusaktif',
             'modifiedby',
             'created_at',
@@ -296,7 +337,13 @@ class Gandengan extends MyModel
                     foreach ($this->params['filters']['rules'] as $index => $filters) {
                         if ($filters['field'] == 'statusaktif') {
                             $query = $query->where('parameter.text', '=', $filters['data']);
-                        } else if ($filters['field'] == 'created_at' || $filters['field'] == 'updated_at') {
+                        } elseif ($filters['field'] == 'trado') {
+                            $query = $query->where('trado.kodetrado', 'LIKE', "%$filters[data]%");
+                        } elseif ($filters['field'] == 'gandengan') {
+                            $query = $query->where('jumlahroda', 'LIKE', "%$filters[data]%");
+                        } elseif ($filters['field'] == 'gandengan') {
+                            $query = $query->where('jumlahbanserap', 'LIKE', "%$filters[data]%");
+                        }  else if ($filters['field'] == 'created_at' || $filters['field'] == 'updated_at') {
                             $query = $query->whereRaw("format(" . $this->table . "." . $filters['field'] . ", 'dd-MM-yyyy HH:mm:ss') LIKE '%$filters[data]%'");
                         } else {
                             // $query = $query->where($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
@@ -310,6 +357,12 @@ class Gandengan extends MyModel
                         foreach ($this->params['filters']['rules'] as $index => $filters) {
                             if ($filters['field'] == 'statusaktif') {
                                 $query = $query->orWhere('parameter.text', '=', $filters['data']);
+                            } elseif ($filters['field'] == 'trado') {
+                                $query = $query->orWhere('trado.kodetrado', 'LIKE', "%$filters[data]%");
+                            } elseif ($filters['field'] == 'gandengan') {
+                                $query = $query->orWhere('jumlahroda', 'LIKE', "%$filters[data]%");
+                            } elseif ($filters['field'] == 'gandengan') {
+                                $query = $query->orWhere('jumlahbanserap', 'LIKE', "%$filters[data]%");
                             } else if ($filters['field'] == 'created_at' || $filters['field'] == 'updated_at') {
                                 $query = $query->orWhereRaw("format(" . $this->table . "." . $filters['field'] . ", 'dd-MM-yyyy HH:mm:ss') LIKE '%$filters[data]%'");
                             } else {
@@ -342,6 +395,7 @@ class Gandengan extends MyModel
         $gandengan = new Gandengan();
         $gandengan->kodegandengan = $data['kodegandengan'];
         $gandengan->keterangan = $data['keterangan'] ?? '';
+        $gandengan->trado_id = $data['trado_id'];
         $gandengan->jumlahroda = $data['jumlahroda'];
         $gandengan->jumlahbanserap = $data['jumlahbanserap'];
         $gandengan->statusaktif = $data['statusaktif'];
@@ -416,6 +470,7 @@ class Gandengan extends MyModel
     {
         $gandengan->kodegandengan = $data['kodegandengan'];
         $gandengan->keterangan = $data['keterangan'] ?? '';
+        $gandengan->trado_id = $data['trado_id'];
         $gandengan->jumlahroda = $data['jumlahroda'];
         $gandengan->jumlahbanserap = $data['jumlahbanserap'];
         $gandengan->statusaktif = $data['statusaktif'];
