@@ -48,7 +48,9 @@ class LaporanKasGantungController extends Controller
         ]);
     }
 
-
+    /**
+     * @ClassName
+     */
     public function export(Request $request){
         $periode = $request->periode;
         $laporankasgantung = new LaporanKasGantung();

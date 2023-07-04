@@ -479,457 +479,455 @@ class LaporanKasGantung extends MyModel
 
     public function getReport($periode)
     {
+ //   return $periode;
+ $pengembaliankasgantungheader = '##pengembaliankasgantungheader' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+ Schema::create($pengembaliankasgantungheader, function ($table) {
+     $table->bigInteger('id')->nullable();
+     $table->string('nobukti', 50)->nullable();
+     $table->date('tglbukti')->nullable();
+     $table->bigInteger('pelanggan_id')->nullable();
+     $table->longText('keterangan')->nullable();
+     $table->bigInteger('bank_id')->nullable();
+     $table->date('tgldari')->nullable();
+     $table->date('tglsampai')->nullable();
+     $table->string('penerimaan_nobukti', 50)->nullable();
+     $table->string('coakasmasuk', 50)->nullable();
+     $table->string('postingdari', 50)->nullable();
+     $table->date('tglkasmasuk')->nullable();
+     $table->bigInteger('statusformat')->nullable();
+     $table->integer('statuscetak')->nullable();
+     $table->string('userbukacetak', 50)->nullable();
+     $table->date('tglbukacetak')->nullable();
+     $table->integer('jumlahcetak')->nullable();
+     $table->string('modifiedby', 50)->nullable();
+     $table->dateTime('created_at')->nullable();
+     $table->dateTime('updated_at')->nullable();
+ });
 
-        $pengembaliankasgantungheader = '##pengembaliankasgantungheader' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
-        Schema::create($pengembaliankasgantungheader, function ($table) {
-            $table->bigInteger('id')->nullable();
-            $table->string('nobukti', 50)->nullable();
-            $table->date('tglbukti')->nullable();
-            $table->bigInteger('pelanggan_id')->nullable();
-            $table->longText('keterangan')->nullable();
-            $table->bigInteger('bank_id')->nullable();
-            $table->date('tgldari')->nullable();
-            $table->date('tglsampai')->nullable();
-            $table->string('penerimaan_nobukti', 50)->nullable();
-            $table->string('coakasmasuk', 50)->nullable();
-            $table->string('postingdari', 50)->nullable();
-            $table->date('tglkasmasuk')->nullable();
-            $table->bigInteger('statusformat')->nullable();
-            $table->integer('statuscetak')->nullable();
-            $table->string('userbukacetak', 50)->nullable();
-            $table->date('tglbukacetak')->nullable();
-            $table->integer('jumlahcetak')->nullable();
-            $table->string('modifiedby', 50)->nullable();
-            $table->dateTime('created_at')->nullable();
-            $table->dateTime('updated_at')->nullable();
-        });
-       
+ $dataheader = DB::table('pengembaliankasgantungheader')->from(DB::raw("pengembaliankasgantungheader AS A WITH (READUNCOMMITTED)"))
+ ->select([
+     'A.id',
+     'A.nobukti',
+     'A.tglbukti',
+     'A.pelanggan_id',
+     'A.keterangan',
+     'A.bank_id',
+     'A.tgldari',
+     'A.tglsampai',
+     'A.penerimaan_nobukti',
+     'A.coakasmasuk',
+     'A.postingdari',
+     'A.tglkasmasuk',
+     'A.statusformat',
+     'A.statuscetak',
+     'A.userbukacetak',
+     'A.tglbukacetak',
+     'A.jumlahcetak',
+     'A.modifiedby',
+     'A.created_at',
+     'A.updated_at'
+ ])
+ ->where('A.tglbukti', '<', $periode);
+ 
 
-        $dataheader = DB::table('pengembaliankasgantungheader')->from(DB::raw("pengembaliankasgantungheader AS A WITH (READUNCOMMITTED)"))
-        ->select([
-            'A.id',
-            'A.nobukti',
-            'A.tglbukti',
-            'A.pelanggan_id',
-            'A.keterangan',
-            'A.bank_id',
-            'A.tgldari',
-            'A.tglsampai',
-            'A.penerimaan_nobukti',
-            'A.coakasmasuk',
-            'A.postingdari',
-            'A.tglkasmasuk',
-            'A.statusformat',
-            'A.statuscetak',
-            'A.userbukacetak',
-            'A.tglbukacetak',
-            'A.jumlahcetak',
-            'A.modifiedby',
-            'A.created_at',
-            'A.updated_at'
-        ])
-        ->where('A.tglbukti', '<', $periode);
-        
-       
-        DB::table($pengembaliankasgantungheader)->insertUsing([
-            'id',
-            'nobukti',
-            'tglbukti',
-            'pelanggan_id',
-            'keterangan',
-            'bank_id',
-            'tgldari',
-            'tglsampai',
-            'penerimaan_nobukti',
-            'coakasmasuk',
-            'postingdari',
-            'tglkasmasuk',
-            'statusformat',
-            'statuscetak',
-            'userbukacetak',
-            'tglbukacetak',
-            'jumlahcetak',
-            'modifiedby',
-            'created_at',
-            'updated_at'
-        ], $dataheader);
-       
-    //   dd($dataheader->get());
+ DB::table($pengembaliankasgantungheader)->insertUsing([
+     'id',
+     'nobukti',
+     'tglbukti',
+     'pelanggan_id',
+     'keterangan',
+     'bank_id',
+     'tgldari',
+     'tglsampai',
+     'penerimaan_nobukti',
+     'coakasmasuk',
+     'postingdari',
+     'tglkasmasuk',
+     'statusformat',
+     'statuscetak',
+     'userbukacetak',
+     'tglbukacetak',
+     'jumlahcetak',
+     'modifiedby',
+     'created_at',
+     'updated_at'
+ ], $dataheader);
 
-       //NOTE - pengembalian kas gantung detail
-        $pengembaliankasgantungdetail = '##pengembaliankasgantungdetail' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
-        Schema::create($pengembaliankasgantungdetail, function ($table) {
-            $table->bigInteger('id')->nullable();
-            $table->bigInteger('pengembaliankasgantung_id')->nullable();
-            $table->string('nobukti', 50)->nullable();
-            $table->float('nominal')->nullable();
-            $table->string('coa')->nullable();
-            $table->longText('keterangan')->nullable();
-            $table->string('modifiedby', 50)->nullable();
-            $table->string('kasgantung_nobukti', 50)->nullable();
-            $table->dateTime('created_at')->nullable();
-            $table->dateTime('updated_at')->nullable();
-        });
+//   dd($dataheader->get());
 
-        $datadetail = DB::table('pengembaliankasgantungdetail')->from(DB::raw("pengembaliankasgantungdetail AS A WITH (READUNCOMMITTED)"))
-        ->select([
-            'A.id',
-            'A.pengembaliankasgantung_id',
-            'A.nobukti',
-            'A.nominal',
-            'A.coa',
-            'A.keterangan',
-            'A.modifiedby',
-            'A.kasgantung_nobukti',
-            'A.created_at',
-            'A.updated_at'
-        ])
-        ->join(DB::raw("pengembaliankasgantungheader as b with (readuncommitted)"), 'a.nobukti', 'b.nobukti');
-        
+//NOTE - pengembalian kas gantung detail
+ $pengembaliankasgantungdetail = '##pengembaliankasgantungdetail' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+ Schema::create($pengembaliankasgantungdetail, function ($table) {
+     $table->bigInteger('id')->nullable();
+     $table->bigInteger('pengembaliankasgantung_id')->nullable();
+     $table->string('nobukti', 50)->nullable();
+     $table->float('nominal')->nullable();
+     $table->string('coa')->nullable();
+     $table->longText('keterangan')->nullable();
+     $table->string('modifiedby', 50)->nullable();
+     $table->string('kasgantung_nobukti', 50)->nullable();
+     $table->dateTime('created_at')->nullable();
+     $table->dateTime('updated_at')->nullable();
+ });
+
+ $datadetail = DB::table('pengembaliankasgantungdetail')->from(DB::raw("pengembaliankasgantungdetail AS A WITH (READUNCOMMITTED)"))
+ ->select([
+     'A.id',
+     'A.pengembaliankasgantung_id',
+     'A.nobukti',
+     'A.nominal',
+     'A.coa',
+     'A.keterangan',
+     'A.modifiedby',
+     'A.kasgantung_nobukti',
+     'A.created_at',
+     'A.updated_at'
+ ])
+ ->join(DB::raw("pengembaliankasgantungheader as b with (readuncommitted)"), 'a.nobukti', 'b.nobukti');
+ 
+
+ DB::table($pengembaliankasgantungdetail)->insertUsing([
+     'id',
+     'pengembaliankasgantung_id',
+     'nobukti',
+     'nominal',
+     'coa',
+     'keterangan',
+     'modifiedby',
+     'kasgantung_nobukti',
+     'created_at',
+     'updated_at',
+ ], $datadetail);
+ // dd($datadetail->get());
+
+  //NOTE - kas gantung header
+  $kasgantungheader = '##kasgantungheader' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+  Schema::create($kasgantungheader, function ($table) {
+      $table->bigInteger('id')->nullable();
+      $table->string('nobukti', 50)->nullable();
+      $table->date('tglbukti')->nullable();
+      $table->longText('keterangan')->nullable();
+      $table->bigInteger('penerima_id')->nullable();
+      $table->bigInteger('bank_id')->nullable();
+      $table->string('pengeluaran_nobukti', 50)->nullable();
+      $table->string('coakaskeluar', 50)->nullable();
+      $table->string('postingdari', 50)->nullable();
+      $table->date('tglkaskeluar')->nullable();
+      $table->bigInteger('statusformat')->nullable();
+      $table->integer('statuscetak')->nullable();
+      $table->string('userbukacetak', 50)->nullable();
+      $table->date('tglbukacetak')->nullable();
+      $table->integer('jumlahcetak')->nullable();
+      $table->string('modifiedby', 50)->nullable();
+      $table->dateTime('created_at')->nullable();
+      $table->dateTime('updated_at')->nullable();
+  });
+
+  $kasheader = DB::table('kasgantungheader')->from(DB::raw("kasgantungheader AS A WITH (READUNCOMMITTED)"))
+  ->select([
+      'A.id',
+      'A.nobukti',
+      'A.tglbukti',
+      'A.keterangan',
+      'A.penerima_id',
+      'A.bank_id',
+      'A.pengeluaran_nobukti',
+      'A.coakaskeluar',
+      'A.postingdari',
+      'A.tglkaskeluar',
+      'A.statusformat',
+      'A.statuscetak',
+      'A.userbukacetak',
+      'A.tglbukacetak',
+      'A.jumlahcetak',
+      'A.modifiedby',
+      'A.created_at',
+      'A.updated_at'
+  ])
+  ->where('A.tglbukti', '<', $periode);
+ //  dd($kasheader->get());
+
+ DB::table($kasgantungheader)->insertUsing([
+     'id',
+     'nobukti',
+     'tglbukti',
+     'keterangan',
+     'penerima_id',
+     'bank_id',
+     'pengeluaran_nobukti',
+     'coakaskeluar',
+     'postingdari',
+     'tglkaskeluar',
+     'statusformat',
+     'statuscetak',
+     'userbukacetak',
+     'tglbukacetak',
+     'jumlahcetak',
+     'modifiedby',
+     'created_at',
+     'updated_at',
+ ], $kasheader);
+ // dd($kasheader->get());
+
+
+ //NOTE - kasgantungdetail
+ $kasgantungdetail = '##kasgantungdetail' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+  Schema::create($kasgantungdetail, function ($table) {
+      $table->string('nobukti', 50);
+      $table->longText('keterangan');
+      $table->float('nominal');
+  });
   
-        DB::table($pengembaliankasgantungdetail)->insertUsing([
-            'id',
-            'pengembaliankasgantung_id',
-            'nobukti',
-            'nominal',
-            'coa',
-            'keterangan',
-            'modifiedby',
-            'kasgantung_nobukti',
-            'created_at',
-            'updated_at',
-        ], $datadetail);
-        // dd($datadetail->get());
-       
-         //NOTE - kas gantung header
-         $kasgantungheader = '##kasgantungheader' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
-         Schema::create($kasgantungheader, function ($table) {
-             $table->bigInteger('id')->nullable();
-             $table->string('nobukti', 50)->nullable();
-             $table->date('tglbukti')->nullable();
-             $table->longText('keterangan')->nullable();
-             $table->bigInteger('penerima_id')->nullable();
-             $table->bigInteger('bank_id')->nullable();
-             $table->string('pengeluaran_nobukti', 50)->nullable();
-             $table->string('coakaskeluar', 50)->nullable();
-             $table->string('postingdari', 50)->nullable();
-             $table->date('tglkaskeluar')->nullable();
-             $table->bigInteger('statusformat')->nullable();
-             $table->integer('statuscetak')->nullable();
-             $table->string('userbukacetak', 50)->nullable();
-             $table->date('tglbukacetak')->nullable();
-             $table->integer('jumlahcetak')->nullable();
-             $table->string('modifiedby', 50)->nullable();
-             $table->dateTime('created_at')->nullable();
-             $table->dateTime('updated_at')->nullable();
-         });
+  $kasdetail = DB::table('kasgantungdetail')->from(DB::raw("kasgantungdetail AS A WITH (READUNCOMMITTED)"))
+  ->select([
+      'A.nobukti',
+      DB::raw('MAX(A.keterangan)'),
+      DB::raw('SUM(A.nominal) as nominal')
+  ])
+  ->join(DB::raw("kasgantungheader as b with (readuncommitted)"), 'a.nobukti', 'b.nobukti')
+  ->groupBy('A.nobukti');
 
-         $kasheader = DB::table('kasgantungheader')->from(DB::raw("kasgantungheader AS A WITH (READUNCOMMITTED)"))
-         ->select([
-             'A.id',
-             'A.nobukti',
-             'A.tglbukti',
-             'A.keterangan',
-             'A.penerima_id',
-             'A.bank_id',
-             'A.pengeluaran_nobukti',
-             'A.coakaskeluar',
-             'A.postingdari',
-             'A.tglkaskeluar',
-             'A.statusformat',
-             'A.statuscetak',
-             'A.userbukacetak',
-             'A.tglbukacetak',
-             'A.jumlahcetak',
-             'A.modifiedby',
-             'A.created_at',
-             'A.updated_at'
-         ])
-         ->where('A.tglbukti', '<', $periode);
-        //  dd($kasheader->get());
-
-        DB::table($kasgantungheader)->insertUsing([
-            'id',
-            'nobukti',
-            'tglbukti',
-            'keterangan',
-            'penerima_id',
-            'bank_id',
-            'pengeluaran_nobukti',
-            'coakaskeluar',
-            'postingdari',
-            'tglkaskeluar',
-            'statusformat',
-            'statuscetak',
-            'userbukacetak',
-            'tglbukacetak',
-            'jumlahcetak',
-            'modifiedby',
-            'created_at',
-            'updated_at',
-        ], $kasheader);
-        // dd($kasheader->get());
+  DB::table($kasgantungdetail)->insertUsing([
+     'nobukti',
+     'keterangan',
+     'nominal',
+ ], $kasdetail);
+ //  dd('$kasdetail->get()');
 
 
-        //NOTE - kasgantungdetail
-        $kasgantungdetail = '##kasgantungdetail' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
-         Schema::create($kasgantungdetail, function ($table) {
-             $table->string('nobukti', 50);
-             $table->longText('keterangan');
-             $table->float('nominal');
-         });
-         
-         $kasdetail = DB::table('kasgantungdetail')->from(DB::raw("kasgantungdetail AS A WITH (READUNCOMMITTED)"))
-         ->select([
-             'A.nobukti',
-             DB::raw('MAX(A.keterangan)'),
-             DB::raw('SUM(A.nominal) as nominal')
-         ])
-         ->join(DB::raw("kasgantungheader as b with (readuncommitted)"), 'a.nobukti', 'b.nobukti')
-         ->groupBy('A.nobukti');
+ //NOTE - pengembaliankasgantungheader2
+ $pengembaliankasgantungheader2 = '##pengembaliankasgantungheader2' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+ Schema::create($pengembaliankasgantungheader2, function ($table) {
+     $table->bigInteger('id')->nullable();
+     $table->string('nobukti', 50)->nullable();
+     $table->date('tglbukti')->nullable();
+     $table->bigInteger('pelanggan_id')->nullable();
+     $table->longText('keterangan')->nullable();
+     $table->bigInteger('bank_id')->nullable();
+     $table->date('tgldari')->nullable();
+     $table->date('tglsampai')->nullable();
+     $table->string('penerimaan_nobukti', 50)->nullable();
+     $table->string('coakasmasuk', 50)->nullable();
+     $table->string('postingdari', 50)->nullable();
+     $table->date('tglkasmasuk')->nullable();
+     $table->bigInteger('statusformat')->nullable();
+     $table->integer('statuscetak')->nullable();
+     $table->string('userbukacetak', 50)->nullable();
+     $table->date('tglbukacetak')->nullable();
+     $table->integer('jumlahcetak')->nullable();
+     $table->string('modifiedby', 50)->nullable();
+     $table->dateTime('created_at')->nullable();
+     $table->dateTime('updated_at')->nullable();
+ });
 
-         DB::table($kasgantungdetail)->insertUsing([
-            'nobukti',
-            'keterangan',
-            'nominal',
-        ], $kasdetail);
-        //  dd('$kasdetail->get()');
-
-
-        //NOTE - pengembaliankasgantungheader2
-        $pengembaliankasgantungheader2 = '##pengembaliankasgantungheader2' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
-        Schema::create($pengembaliankasgantungheader2, function ($table) {
-            $table->bigInteger('id')->nullable();
-            $table->string('nobukti', 50)->nullable();
-            $table->date('tglbukti')->nullable();
-            $table->bigInteger('pelanggan_id')->nullable();
-            $table->longText('keterangan')->nullable();
-            $table->bigInteger('bank_id')->nullable();
-            $table->date('tgldari')->nullable();
-            $table->date('tglsampai')->nullable();
-            $table->string('penerimaan_nobukti', 50)->nullable();
-            $table->string('coakasmasuk', 50)->nullable();
-            $table->string('postingdari', 50)->nullable();
-            $table->date('tglkasmasuk')->nullable();
-            $table->bigInteger('statusformat')->nullable();
-            $table->integer('statuscetak')->nullable();
-            $table->string('userbukacetak', 50)->nullable();
-            $table->date('tglbukacetak')->nullable();
-            $table->integer('jumlahcetak')->nullable();
-            $table->string('modifiedby', 50)->nullable();
-            $table->dateTime('created_at')->nullable();
-            $table->dateTime('updated_at')->nullable();
-        });
-
-        $dataheader2 = DB::table('pengembaliankasgantungheader')->from(DB::raw("pengembaliankasgantungheader AS A WITH (READUNCOMMITTED)"))
-        ->select([
-            'A.id',
-            'A.nobukti',
-            'A.tglbukti',
-            'A.pelanggan_id',
-            'A.keterangan',
-            'A.bank_id',
-            'A.tgldari',
-            'A.tglsampai',
-            'A.penerimaan_nobukti',
-            'A.coakasmasuk',
-            'A.postingdari',
-            'A.tglkasmasuk',
-            'A.statusformat',
-            'A.statuscetak',
-            'A.userbukacetak',
-            'A.tglbukacetak',
-            'A.jumlahcetak',
-            'A.modifiedby',
-            'A.created_at',
-            'A.updated_at',
-        ])
-        ->where('A.tglbukti', '<', $periode);
+ $dataheader2 = DB::table('pengembaliankasgantungheader')->from(DB::raw("pengembaliankasgantungheader AS A WITH (READUNCOMMITTED)"))
+ ->select([
+     'A.id',
+     'A.nobukti',
+     'A.tglbukti',
+     'A.pelanggan_id',
+     'A.keterangan',
+     'A.bank_id',
+     'A.tgldari',
+     'A.tglsampai',
+     'A.penerimaan_nobukti',
+     'A.coakasmasuk',
+     'A.postingdari',
+     'A.tglkasmasuk',
+     'A.statusformat',
+     'A.statuscetak',
+     'A.userbukacetak',
+     'A.tglbukacetak',
+     'A.jumlahcetak',
+     'A.modifiedby',
+     'A.created_at',
+     'A.updated_at',
+ ])
+ ->where('A.tglbukti', '<', $periode);
 
 
-        DB::table($pengembaliankasgantungheader2)->insertUsing([
-            'id',
-            'nobukti',
-            'tglbukti',
-            'pelanggan_id',
-            'keterangan',
-            'bank_id',
-            'tgldari',
-            'tglsampai',
-            'penerimaan_nobukti',
-            'coakasmasuk',
-            'postingdari',
-            'tglkasmasuk',
-            'statusformat',
-            'statuscetak',
-            'userbukacetak',
-            'tglbukacetak',
-            'jumlahcetak',
-            'modifiedby',
-            'created_at',
-            'updated_at'
-        ], $dataheader2);
-       
+ DB::table($pengembaliankasgantungheader2)->insertUsing([
+     'id',
+     'nobukti',
+     'tglbukti',
+     'pelanggan_id',
+     'keterangan',
+     'bank_id',
+     'tgldari',
+     'tglsampai',
+     'penerimaan_nobukti',
+     'coakasmasuk',
+     'postingdari',
+     'tglkasmasuk',
+     'statusformat',
+     'statuscetak',
+     'userbukacetak',
+     'tglbukacetak',
+     'jumlahcetak',
+     'modifiedby',
+     'created_at',
+     'updated_at'
+ ], $dataheader2);
 
 
 
-        //NOTE - pengembaliankasgantungdetail2
-        $pengembaliankasgantungdetail2 = '##pengembaliankasgantungdetail2' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
-        Schema::create($pengembaliankasgantungdetail2, function ($table) {
-            $table->string('nobukti', 50)->nullable();
-            $table->string('kasgantung_nobukti', 50)->nullable();
-            $table->float('nominal')->nullable();
-            $table->longText('keterangan')->nullable();
-        });
 
-        $kasdetail2 = DB::table('pengembaliankasgantungdetail')->from(DB::raw("pengembaliankasgantungdetail AS A WITH (READUNCOMMITTED)"))
-        ->select([
-            'A.nobukti',
-            'A.kasgantung_nobukti',
-            DB::raw('SUM(A.nominal) as nominal'),
-            DB::raw('MAX(A.keterangan)'),
-        ])
-        ->join(DB::raw($pengembaliankasgantungheader2 . " as b with (readuncommitted)"), 'a.nobukti', 'b.nobukti')
-        ->groupBy('A.nobukti', 'A.kasgantung_nobukti');
+ //NOTE - pengembaliankasgantungdetail2
+ $pengembaliankasgantungdetail2 = '##pengembaliankasgantungdetail2' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+ Schema::create($pengembaliankasgantungdetail2, function ($table) {
+     $table->string('nobukti', 50)->nullable();
+     $table->string('kasgantung_nobukti', 50)->nullable();
+     $table->float('nominal')->nullable();
+     $table->longText('keterangan')->nullable();
+ });
 
-
-        DB::table($pengembaliankasgantungdetail2)->insertUsing([
-            'nobukti',
-            'kasgantung_nobukti',
-            'nominal',
-            'keterangan',
-        ], $kasdetail2);
-        // dd($kasdetail2->get());
+ $kasdetail2 = DB::table('pengembaliankasgantungdetail')->from(DB::raw("pengembaliankasgantungdetail AS A WITH (READUNCOMMITTED)"))
+ ->select([
+     'A.nobukti',
+     'A.kasgantung_nobukti',
+     DB::raw('SUM(A.nominal) as nominal'),
+     DB::raw('MAX(A.keterangan)'),
+ ])
+ ->join(DB::raw($pengembaliankasgantungheader2 . " as b with (readuncommitted)"), 'a.nobukti', 'b.nobukti')
+ ->groupBy('A.nobukti', 'A.kasgantung_nobukti');
 
 
+ DB::table($pengembaliankasgantungdetail2)->insertUsing([
+     'nobukti',
+     'kasgantung_nobukti',
+     'nominal',
+     'keterangan',
+ ], $kasdetail2);
+ // dd($kasdetail2->get());
 
-        //NOTE - TempLaporan
-        $TempLaporan = '##TempLaporan' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
-        Schema::create($TempLaporan, function ($table) {
-            $table->bigIncrements('id');
-            $table->dateTime('tglbuktikasgantung');
-            $table->dateTime('tglbukti');
-            $table->string('nobukti', 50);
-            $table->longText('keterangan');
-            $table->integer('flag');
-            $table->float('debet');
-            $table->float('kredit');
-            $table->float('saldo')->nullable();
-        });
-       
-  $temp_kasgantungheader = DB::table('kasgantungheader')->from(DB::raw($kasgantungheader ." AS a"))
-        ->select([
-            'A.tglbukti',
-            'A.tglbukti',
-            'C.nobukti',
-            'C.keterangan',
-            DB::raw('0 as flag'),
-            'C.nominal as debet',
-            DB::raw('0 as kredit'),
-        ])
-        ->leftJoin(DB::raw($pengembaliankasgantungdetail . " AS b"), function ($join) {
-            $join->on('a.nobukti', '=', 'b.kasgantung_nobukti')
-                 ->whereNull('b.nobukti');
-        })
-        ->join(DB::raw($kasgantungdetail . " AS c with (readuncommitted)"), 'a.nobukti', 'c.nobukti')
-        ->orderBy('a.tglbukti', 'asc')
-        ->orderBy('c.nobukti', 'desc');
 
-           DB::table($TempLaporan)->insertUsing([
-            'tglbuktikasgantung',
-            'tglbukti',
-            'nobukti',
-            'keterangan',
-            'flag',
-            'debet',
-            'kredit'
-        ], $temp_kasgantungheader);
-        // dd($temp_kasgantungheader->get());
+
+ //NOTE - TempLaporan
+ $TempLaporan = '##TempLaporan' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+ Schema::create($TempLaporan, function ($table) {
+     $table->bigIncrements('id');
+     $table->dateTime('tglbuktikasgantung');
+     $table->dateTime('tglbukti');
+     $table->string('nobukti', 50);
+     $table->longText('keterangan');
+     $table->integer('flag');
+     $table->float('debet');
+     $table->float('kredit');
+     $table->float('saldo')->nullable();
+ });
+
+$temp_kasgantungheader = DB::table('kasgantungheader')->from(DB::raw($kasgantungheader ." AS a"))
+ ->select([
+     'A.tglbukti',
+     'A.tglbukti',
+     'C.nobukti',
+     'C.keterangan',
+     DB::raw('0 as flag'),
+     'C.nominal as debet',
+     DB::raw('0 as kredit'),
+ ])
+ ->leftJoin(DB::raw($pengembaliankasgantungdetail . " AS b"), function ($join) {
+     $join->on('a.nobukti', '=', 'b.kasgantung_nobukti')
+          ->whereNull('b.nobukti');
+ })
+ ->join(DB::raw($kasgantungdetail . " AS c with (readuncommitted)"), 'a.nobukti', 'c.nobukti')
+ ->orderBy('a.tglbukti', 'asc')
+ ->orderBy('c.nobukti', 'desc');
+
+    DB::table($TempLaporan)->insertUsing([
+     'tglbuktikasgantung',
+     'tglbukti',
+     'nobukti',
+     'keterangan',
+     'flag',
+     'debet',
+     'kredit'
+ ], $temp_kasgantungheader);
+ // dd($temp_kasgantungheader->get());
 
 
 
 
 
 
-        //NOTE - TempLaporan
-        $temp_pengembaliankasgantungheader2 = DB::table('pengembaliankasgantungheader2')->from(DB::raw($pengembaliankasgantungheader2 . " AS a"))
-        ->select([
-            'B.tglbukti',
-            'A.tglbukti',
-            'C.kasgantung_nobukti as nobukti',
-            'C.keterangan',
-            DB::raw('1 as flag'),
-            DB::raw('0 as debet'),
-            'c.nominal as kredit',
-        ])
-        ->join(DB::raw($pengembaliankasgantungdetail2 . " c c"), 'a.nobukti', '=', 'c.nobukti')
-        ->join('kasgantungheader as b', 'c.kasgantung_nobukti', 'b.nobukti')
-        ->orderBy('a.tglbukti', 'asc')
-        ->orderBy('c.kasgantung_nobukti', 'desc');
-       
-        DB::table($TempLaporan)->insertUsing([
-            'tglbuktikasgantung',
-            'tglbukti',
-            'nobukti',
-            'keterangan',
-            'flag',
-            'debet',
-            'kredit'
-        ], $temp_pengembaliankasgantungheader2);
+ //NOTE - TempLaporan
+ $temp_pengembaliankasgantungheader2 = DB::table('pengembaliankasgantungheader2')->from(DB::raw($pengembaliankasgantungheader2 . " AS a"))
+ ->select([
+     'B.tglbukti',
+     'A.tglbukti',
+     'C.kasgantung_nobukti as nobukti',
+     'C.keterangan',
+     DB::raw('1 as flag'),
+     DB::raw('0 as debet'),
+     'c.nominal as kredit',
+ ])
+ ->join(DB::raw($pengembaliankasgantungdetail2 . " c with (readuncommitted)"), 'a.nobukti', '=', 'c.nobukti')
+ ->join('kasgantungheader as b', 'c.kasgantung_nobukti', 'b.nobukti')
+ ->orderBy('a.tglbukti', 'asc')
+ ->orderBy('c.kasgantung_nobukti', 'desc');
+
+ DB::table($TempLaporan)->insertUsing([
+     'tglbuktikasgantung',
+     'tglbukti',
+     'nobukti',
+     'keterangan',
+     'flag',
+     'debet',
+     'kredit'
+ ], $temp_pengembaliankasgantungheader2);
 // dd($temp_pengembaliankasgantungheader2->get());
 
-        //NOTE - TempLaporan2
-        $TempLaporan2 = '##TempLaporan2' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
-        Schema::create($TempLaporan2, function ($table) {
-            $table->bigIncrements('id');
-            $table->dateTime('tglbukti');
-            $table->string('nobukti', 50);
-            $table->longText('keterangan');
-            $table->float('debet');
-            $table->float('kredit');
-            $table->float('saldo')->nullable();
-        });
+ //NOTE - TempLaporan2
+ $TempLaporan2 = '##TempLaporan2' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+ Schema::create($TempLaporan2, function ($table) {
+     $table->bigIncrements('id');
+     $table->dateTime('tglbukti');
+     $table->string('nobukti', 50);
+     $table->longText('keterangan');
+     $table->float('debet');
+     $table->float('kredit');
+     $table->float('saldo')->nullable();
+ });
 
-        $select_TempLaporan = DB::table('TempLaporan')->from(DB::raw($TempLaporan . " AS a"))
-        ->select([
-            'A.tglbukti',
-            'A.nobukti',
-            'A.keterangan',
-            'A.debet',
-            'A.kredit',
-            DB::raw('0 as saldo'),
-           
-        ])
-        ->orderBy('a.tglbuktikasgantung', 'asc')
-        ->orderBy('a.nobukti', 'asc')
-        ->orderBy('a.flag', 'desc');
-
-        DB::table($TempLaporan2)->insertUsing([
-            'tglbukti',
-            'nobukti',
-            'keterangan',
-            'debet',
-            'kredit',
-            'saldo'
-        ], $select_TempLaporan);
-
-
-        $select_TempLaporan2 = DB::table('TempLaporan2')->from(DB::raw($TempLaporan2 . " AS a"))
-        ->select([
-            'A.tglbukti as tanggal',
-            'A.nobukti',
-            'A.keterangan',
-            'A.debet',
-            'A.kredit',
-            DB::raw('sum((isnull(A.saldo, 0) + A.debet) - A.kredit) over (order by id asc) as Saldo'),
-
-        ])
-       ->orderBy('a.id', 'asc');
-        // dd($select_TempLaporan2->get());
-            
-        $data = $select_TempLaporan2->get();
-        return $data;
+ $select_TempLaporan = DB::table('TempLaporan')->from(DB::raw($TempLaporan . " AS a"))
+ ->select([
+     'A.tglbukti',
+     'A.nobukti',
+     'A.keterangan',
+     'A.debet',
+     'A.kredit',
+     DB::raw('0 as saldo'),
     
+ ])
+ ->orderBy('a.tglbuktikasgantung', 'asc')
+ ->orderBy('a.nobukti', 'asc')
+ ->orderBy('a.flag', 'desc');
+
+ DB::table($TempLaporan2)->insertUsing([
+     'tglbukti',
+     'nobukti',
+     'keterangan',
+     'debet',
+     'kredit',
+     'saldo'
+ ], $select_TempLaporan);
+
+
+ $select_TempLaporan2 = DB::table('TempLaporan2')->from(DB::raw($TempLaporan2 . " AS a"))
+ ->select([
+     'A.tglbukti as tanggal',
+     'A.nobukti',
+     'A.keterangan',
+     'A.debet',
+     'A.kredit',
+     DB::raw('sum((isnull(A.saldo, 0) + A.debet) - A.kredit) over (order by id asc) as Saldo'),
+
+ ])
+->orderBy('a.id', 'asc');
+ // dd($select_TempLaporan2->get());
+     
+ $data = $select_TempLaporan2->get();
+ return $data;
    
     }
 
