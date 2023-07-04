@@ -22,17 +22,53 @@ class LaporanHistoryPinjamanController extends Controller
             ]
         ]);
     }
+    /**
+     * @ClassName
+     */
+    public function report(Request $request)
+    {
+        $supirdari_id = $request->supirdari_id;
+        $supirsampai_id = $request->supirsampai_id;
+        $supirdari = $request->supirdari;
+        $supirsampai = $request->supirsampai;
+
+        $laporanhistorypinjaman = new LaporanHistoryPinjaman();
+
+
+        $laporan_historypinjaman= $laporanhistorypinjaman->getReport($supirdari_id, $supirsampai_id);
+        foreach($laporan_historypinjaman as $item){
+            $item->tglbukti = date('d-m-Y', strtotime($item->tglbukti));
+        }
+   
+        return response([
+            'data' => $laporan_historypinjaman
+            // 'data' => $report
+        ]);
+    }
+
 
     /**
      * @ClassName
      */
     public function export(Request $request)
     {
-        $periode = $request->periode;
+        $supirdari_id = $request->supirdari_id;
+        $supirsampai_id = $request->supirsampai_id;
+        $supirdari = $request->supirdari;
+        $supirsampai = $request->supirsampai;
 
-        $report = LaporanHistoryPinjaman::getExport($periode);
+        $laporanhistorypinjaman = new LaporanHistoryPinjaman();
+
+
+        $laporan_historypinjaman= $laporanhistorypinjaman->getExport($supirdari_id, $supirsampai_id);
+        foreach($laporan_historypinjaman as $item){
+            $item->tglbukti = date('d-m-Y', strtotime($item->tglbukti));
+        }
+   
         return response([
-            'data' => $report
+            'data' => $laporan_historypinjaman
+            // 'data' => $report
         ]);
+      
     }
 }
