@@ -9,6 +9,8 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
 use App\Http\Controllers\Api\ParameterController;
 use App\Http\Controllers\Api\ErrorController;
+use App\Rules\SupirBlackListKtp;
+use App\Rules\SupirBlackListSim;
 
 class StoreSupirRequest extends FormRequest
 {
@@ -87,8 +89,8 @@ class StoreSupirRequest extends FormRequest
             'statusaktif' => [$ruleKeterangan,'int','exists:parameter,id'],
             'tglmasuk' => [$ruleKeterangan],
             'tglexpsim' => [$ruleKeterangan],
-            'nosim' => [$ruleKeterangan,'unique:supir','min:12','max:12','nullable'],
-            'noktp' => ['required','unique:supir','min:16','max:16'],
+            'nosim' => [$ruleKeterangan,'unique:supir','min:12','max:12','nullable',new SupirBlackListSim()],
+            'noktp' => ['required','unique:supir','min:16','max:16',new SupirBlackListKtp()],
             'nokk' => [$ruleKeterangan,'min:16','max:16','nullable'],
             'tgllahir' => [
                 $ruleKeterangan, 'date_format:d-m-Y', 

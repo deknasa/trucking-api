@@ -13,7 +13,7 @@ class UpdateTradoSupirMilikMandorRequest extends FormRequest
      */
     public function authorize()
     {
-        return false;
+        return true;
     }
 
     /**
@@ -24,7 +24,9 @@ class UpdateTradoSupirMilikMandorRequest extends FormRequest
     public function rules()
     {
         return [
-            //
+            'supir_id' => ['required', 'unique:tradosupirmilikmandor,supir_id,' . $this->tradosupirmilikmandor],
+            'trado_id' => ['required', 'unique:tradosupirmilikmandor,trado_id,' . $this->tradosupirmilikmandor],
+            'mandor_id' => ['required'],
         ];
     }
 }
