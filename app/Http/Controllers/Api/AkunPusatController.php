@@ -9,11 +9,14 @@ use App\Http\Requests\StoreLogTrailRequest;
 use App\Http\Requests\UpdateAkunPusatRequest;
 use App\Http\Requests\DestroyAkunPusatRequest;
 use App\Http\Requests\RangeExportReportRequest;
+use App\Http\Requests\TransferAkunPusatRequest;
+use App\Models\Cabang;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Database\QueryException;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Support\Facades\Http;
 
 class AkunPusatController extends Controller
 {
@@ -57,6 +60,7 @@ class AkunPusatController extends Controller
                 'akuntansi_id' => $request->akuntansi_id,
                 'parent' => $request->parent,
                 'statuscoa' => $request->statuscoa,
+                'level' => $request->level,
                 'statusaccountpayable' => $request->statusaccountpayable,
                 'statusneraca' => $request->statusneraca,
                 'statuslabarugi' => $request->statuslabarugi,
@@ -189,7 +193,7 @@ class AkunPusatController extends Controller
         if (request()->cekExport) {
 
             if (request()->offset == "-1" && request()->limit == '1') {
-                
+
                 return response([
                     'errors' => [
                         "export" => app(ErrorController::class)->geterror('DTA')->keterangan
@@ -325,5 +329,102 @@ class AkunPusatController extends Controller
 
             return response($data);
         }
+    }
+
+
+    /**
+     * @ClassName 
+     */
+    public function transfer(TransferAkunPusatRequest $request)
+    {
+        DB::beginTransaction();
+
+        try {
+
+            for ($x = 0; $x < count($request->cabang); $x++) {
+                for ($i = 0; $i < count($request->coaId); $i++) {
+
+                    $akunPusat = (new AkunPusat())->findAll($request->coaId[$i]);
+
+                    $transferToCabang = $this->transferToCabang($request->cabang[$x], $akunPusat);
+
+                    if ($transferToCabang['statuscode'] != 200) {
+
+                        dd($transferToCabang);
+                    }
+                }
+            }
+            if (
+                $transferToCabang == 200
+            ) {
+                DB::commit();
+
+                return response()->json([
+                    'status' => true,
+                    'message' => 'Berhasil ditransfer',
+                ]);
+            }
+        } catch (\Throwable $th) {
+            DB::rollBack();
+
+            throw $th;
+        }
+    }
+
+    public function getCabang($cabangId)
+    {
+        $getCabang = Cabang::find($cabangId);
+        if ($getCabang->kodecabang == 'MDN') {
+            return [
+                "cabang" => $getCabang->namacabang,
+                "server" => getenv('MDN_SERVER'),
+            ];
+        } else if ($getCabang->kodecabang == 'SBY') {
+            return [
+                "cabang" => $getCabang->namacabang,
+                "server" => getenv('SBT_SERVER'),
+            ];
+        } else if ($getCabang->kodecabang == 'MKS') {
+            return [
+                "cabang" => $getCabang->namacabang,
+                "server" => getenv('MKS_SERVER'),
+            ];
+        } else if ($getCabang->kodecabang == 'JKT') {
+            return [
+                "cabang" => $getCabang->namacabang,
+                "server" => getenv('JKT_SERVER'),
+            ];
+        }
+    }
+
+    public function transferToCabang($cabangId, $data)
+    {
+        $cabang = $this->getCabang($cabangId);
+
+        $tes = Http::withHeaders([
+            'Content-Type' => 'application/json',
+            'Accept' => 'application/json'
+        ])
+            ->post($cabang['server'] . 'trucking-api/public/api/token', [
+                'user' => getenv('USER_API'),
+                'password' => getenv('PASSWORD_API'),
+            ]);
+        $access_token = json_decode($tes, TRUE)['access_token'];
+        $data = json_decode(json_encode($data), true);
+
+        $transferAkunPusat = Http::withHeaders([
+            'Content-Type' => 'application/json',
+            'Accept' => 'application/json',
+            'Authorization' => 'Bearer ' . $access_token
+        ])->post($cabang['server'] . 'trucking-api/public/api/akunpusat', $data);
+        $tesResp = $transferAkunPusat->toPsrResponse();
+
+        $response = [
+            'statuscode' => $tesResp->getStatusCode(),
+            'data' => $transferAkunPusat->json(),
+            'cabang' => $cabang['cabang']
+        ];
+
+        return $response;
     }
 }
