@@ -100,6 +100,7 @@ class GandenganController extends Controller
             $data = [
                 'kodegandengan' => $request->kodegandengan,
                 'keterangan' => $request->keterangan ?? '',
+                'trado_id' => $request->trado_id,
                 'jumlahroda' => $request->jumlahroda,
                 'jumlahbanserap' => $request->jumlahbanserap,
                 'statusaktif' => $request->statusaktif,
@@ -129,11 +130,12 @@ class GandenganController extends Controller
      * @param  \App\Models\Gandengan  $gandengan
      * @return \Illuminate\Http\Response
      */
-    public function show(Gandengan $gandengan)
+    public function show($id)
     {
+        $gandengan = new Gandengan();
         return response([
             'status' => true,
-            'data' => $gandengan
+            'data' => $gandengan->find($id)
         ]);
     }
 
@@ -149,6 +151,7 @@ class GandenganController extends Controller
             $data = [
                 'kodegandengan' => $request->kodegandengan,
                 'keterangan' => $request->keterangan ?? '',
+                'trado_id' => $request->trado_id,
                 'jumlahroda' => $request->jumlahroda,
                 'jumlahbanserap' => $request->jumlahbanserap,
                 'statusaktif' => $request->statusaktif,
@@ -249,15 +252,28 @@ class GandenganController extends Controller
                     'label' => 'No',
                 ],
                 [
-                    'label' => 'Kode Gandengan',
+                    'label' => 'GANDENGAN',
                     'index' => 'kodegandengan',
                 ],
                 [
-                    'label' => 'Keterangan',
+                    'label' => 'NAMA GANDENGAN',
                     'index' => 'keterangan',
                 ],
                 [
-                    'label' => 'Status Aktif',
+                    'label' => 'NO POLISI',
+                    'index' => 'trado',
+                ],
+                [
+                    'label' => 'JUMLAH BAN',
+                    'index' => 'jumlahroda',
+                ],
+                [
+                    'label' => 'JUMLAH BAN SERAP',
+                    'index' => 'jumlahbanserap',
+                ],
+
+                [
+                    'label' => 'STATUS AKTIF',
                     'index' => 'statusaktif',
                 ],
             ];
