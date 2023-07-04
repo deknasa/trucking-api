@@ -161,6 +161,30 @@ class AkunPusatController extends Controller
         }
     }
 
+    public function deleteCoa(Request $request)
+    {
+        DB::beginTransaction();
+
+        try {
+            $akunPusat = (new AkunPusat())->processDeleteCoa($request->coa);
+            $selected = $this->getPosition($akunPusat, $akunPusat->getTable(), true);
+            $akunPusat->position = $selected->position;
+            $akunPusat->id = $selected->id;
+            $akunPusat->page = ceil($akunPusat->position / ($request->limit ?? 10));
+
+            DB::commit();
+
+            return response()->json([
+                'message' => 'Berhasil dihapus',
+                'data' => $akunPusat
+            ]);
+        } catch (\Throwable $th) {
+            DB::rollBack();
+
+            throw $th;
+        }
+    }
+
     public function fieldLength()
     {
         $data = [];
@@ -347,23 +371,31 @@ class AkunPusatController extends Controller
                     $akunPusat = (new AkunPusat())->findAll($request->coaId[$i]);
 
                     $transferToCabang = $this->transferToCabang($request->cabang[$x], $akunPusat);
+                   
+                    $statusCode[] = $transferToCabang['statuscode'];
+                }
+            }
 
-                    if ($transferToCabang['statuscode'] != 200) {
+            $errorCode = [422, 500];
+            $check = [];
+            foreach ($errorCode as $value) {
+                if (in_array($value, $statusCode)) {
+                    $check[] = true;
+                }
+            }
+            if (count($check) > 0) {
+                for ($x = 0; $x < count($request->cabang); $x++) {
+                    for ($i = 0; $i < count($request->coaId); $i++) {
 
-                        dd($transferToCabang);
+                        $akunPusat = (new AkunPusat())->findAll($request->coaId[$i]);
+
+                        $deleteToCabang = $this->deleteToCabang($request->cabang[$x], $akunPusat->coa);
+
+                        $statusCode[] = $deleteToCabang['statuscode'];
                     }
                 }
             }
-            if (
-                $transferToCabang == 200
-            ) {
-                DB::commit();
-
-                return response()->json([
-                    'status' => true,
-                    'message' => 'Berhasil ditransfer',
-                ]);
-            }
+           
         } catch (\Throwable $th) {
             DB::rollBack();
 
@@ -399,6 +431,7 @@ class AkunPusatController extends Controller
 
     public function transferToCabang($cabangId, $data)
     {
+        // cek status code, kalau ada aja salahsatu yg bukan 200, langsung jalankan delete
         $cabang = $this->getCabang($cabangId);
 
         $tes = Http::withHeaders([
@@ -419,6 +452,41 @@ class AkunPusatController extends Controller
         ])->post($cabang['server'] . 'trucking-api/public/api/akunpusat', $data);
         $tesResp = $transferAkunPusat->toPsrResponse();
 
+        $response = [
+            'statuscode' => $tesResp->getStatusCode(),
+            'data' => $transferAkunPusat->json(),
+            'cabang' => $cabang['cabang']
+        ];
+
+        return $response;
+    }
+
+    public function deleteToCabang($cabangId, $data)
+    {
+        // cek status code, kalau ada aja salahsatu yg bukan 200, langsung jalankan delete
+        $cabang = $this->getCabang($cabangId);
+
+        $tes = Http::withHeaders([
+            'Content-Type' => 'application/json',
+            'Accept' => 'application/json'
+        ])
+            ->post($cabang['server'] . 'trucking-api/public/api/token', [
+                'user' => getenv('USER_API'),
+                'password' => getenv('PASSWORD_API'),
+            ]);
+        $access_token = json_decode($tes, TRUE)['access_token'];
+
+        $data = [
+            'coa' => $data
+        ];
+
+        $transferAkunPusat = Http::withHeaders([
+            'Content-Type' => 'application/json',
+            'Accept' => 'application/json',
+            'Authorization' => 'Bearer ' . $access_token
+        ])->delete($cabang['server'] . 'trucking-api/public/api/akunpusat/deleteCoa', $data);
+        $tesResp = $transferAkunPusat->toPsrResponse();
+dd($transferAkunPusat->json());
         $response = [
             'statuscode' => $tesResp->getStatusCode(),
             'data' => $transferAkunPusat->json(),

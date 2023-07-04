@@ -586,9 +586,29 @@ class AkunPusat extends MyModel
             'nobuktitrans' => $akunPusat->id,
             'aksi' => 'DELETE',
             'datajson' => $akunPusat->toArray(),
-            'modifiedby' => $akunPusat->modifiedby
+            'modifiedby' => auth('api')->user()->name
         ]);
 
+        return $akunPusat;
+    }
+    public function processDeleteCoa($coa): AkunPusat
+    {
+        $akunPusat = new AkunPusat();
+        $getCoa = DB::table("akunpusat")->from(DB::raw("akunpusat with (readuncommitted)"))->where('coa', $coa)->first();
+        if ($getCoa != null) {
+
+            $akunPusat = $akunPusat->lockAndDestroy($coa, 'coa');
+
+            (new LogTrail())->processStore([
+                'namatabel' => strtoupper($akunPusat->getTable()),
+                'postingdari' => 'DELETE AKUN PUSAT',
+                'idtrans' => $akunPusat->id,
+                'nobuktitrans' => $akunPusat->id,
+                'aksi' => 'DELETE',
+                'datajson' => $akunPusat->toArray(),
+                'modifiedby' => auth('api')->user()->name
+            ]);
+        }
         return $akunPusat;
     }
 }
