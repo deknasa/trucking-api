@@ -36,8 +36,10 @@ class LaporanBukuBesarController extends Controller
                 'data' => 'ok'
             ]);
         } else {
+          
             $laporanbukubesar = new LaporanBukuBesar();
 
+            
             $coadari_id = AkunPusat::find($request->coadari_id);
             $coasampai_id = AkunPusat::find($request->coasampai_id);
             $cabang_id = auth('api')->user()->cabang_id;
@@ -51,6 +53,8 @@ class LaporanBukuBesarController extends Controller
                 'sampai' => $request->sampai,
                 'cabang' => $cabang->namacabang
             ];
+
+         
             return response([
                 'data' => $laporanbukubesar->getReport(),
                 'dataheader' => $dataHeader

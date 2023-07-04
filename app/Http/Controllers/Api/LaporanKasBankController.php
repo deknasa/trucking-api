@@ -29,6 +29,8 @@ class LaporanKasBankController extends Controller
      */
     public function report(ValidasiLaporanKasBankRequest $request)
     {
+
+
         if ($request->isCheck) {
             return response([
                 'data' => 'ok'
@@ -37,10 +39,12 @@ class LaporanKasBankController extends Controller
             $dari = $request->dari;
             $sampai = $request->sampai;
             $bank_id = $request->bank_id;
+     
+
 
             $laporankasbank = new LaporanKasBank();
             return response([
-                'data' => $laporankasbank->getReport($dari, $sampai, $bank_id)
+                'data' => $laporankasbank->getReport($dari, $sampai, $bank_id,)
             ]);
         }
     }

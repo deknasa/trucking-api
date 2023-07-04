@@ -1,4 +1,4 @@
- <?php
+<?php
 
 namespace App\Rules;
 
@@ -27,6 +27,7 @@ class ExistAkunPusatId implements Rule
      */
     public function passes($attribute, $value)
     {
+        
         $akunPusat = DB::table("akunpusat")->from(DB::raw("akunpusat with (readuncommitted)"))
             ->where('id', $value)
             ->first();
