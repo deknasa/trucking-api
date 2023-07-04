@@ -27,8 +27,8 @@ class ExportLaporanKasHarian extends MyModel
     public function getExport($sampai, $jenis)
     {
 
-        $bulan = substr($sampai, 0, 2);
 
+        $bulan = substr($sampai, 0, 2);
         $tahun = substr($sampai, -4);
 
         $tgl = $tahun . '-' . $bulan . '-02';
@@ -36,17 +36,17 @@ class ExportLaporanKasHarian extends MyModel
 
         $tgl3 = date('Y-m-d', strtotime($tgl1 . ' +33 days'));
 
-    
+
 
         $tahun2 = date('Y', strtotime($tgl3));
         $bulan2 = date('m', strtotime($tgl3));
 
         $tanggal = $tahun . '-' . $bulan . '-01';
 
-        $tgl2 = $tahun2. '-'. $bulan2 . '-1';
+        $tgl2 = $tahun2 . '-' . $bulan2 . '-1';
         $tgl2 = date('Y-m-d', strtotime($tgl2 . ' -1 day'));
 
-      
+
         $querySaldoAwal = DB::table("saldoawalbank")->from(
             DB::raw("saldoawalbank")
         )
@@ -56,7 +56,9 @@ class ExportLaporanKasHarian extends MyModel
             ->whereRaw("right(bulan,4)+left(bulan,2)<right($tahun,4)+left($bulan,2)")
             ->where('bank_id', $jenis)->first();
 
+
         $saldoAwal = $querySaldoAwal->saldoawal;
+
 
         $tempList = '##tempList' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
         Schema::create($tempList, function ($table) {
@@ -98,7 +100,7 @@ class ExportLaporanKasHarian extends MyModel
             'saldo' => $saldoAwal
         ]);
 
-      
+
         while ($tgl1 <= $tgl2) {
             DB::table($tempList)->insert([
                 'jenis' => 1,
@@ -657,6 +659,7 @@ class ExportLaporanKasHarian extends MyModel
         ], $queryRekapKredit);
 
 
+
         $getData2 = DB::table($tempRekapPerkiraan)->from(
             DB::raw($tempRekapPerkiraan . " as a")
         )
@@ -671,6 +674,8 @@ class ExportLaporanKasHarian extends MyModel
             ->get();
 
 
-       return [$getData,$getData2];
+
+
+        return [$getData, $getData2];
     }
 }

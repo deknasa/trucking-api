@@ -36,8 +36,8 @@ class ExportLaporanKasHarianController extends Controller
             ]);
         } else {
 
-            $sampai = $request->sampai;
-            $jenis = $request->jenis;
+            $sampai = $request->periode;
+            $jenis = $request->bank_id;
 
 
             $export = ExportLaporanKasHarian::getExport($sampai, $jenis);
