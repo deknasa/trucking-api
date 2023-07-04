@@ -717,5 +717,17 @@ class UserAclSeeder extends Seeder
         useracl::create(['aco_id' => '691', 'user_id' => '1', 'modifiedby' => 'ADMIN',]);
         useracl::create(['aco_id' => '692', 'user_id' => '1', 'modifiedby' => 'ADMIN',]);
         useracl::create(['aco_id' => '693', 'user_id' => '1', 'modifiedby' => 'ADMIN',]);
+        useracl::create(['aco_id' => '694', 'user_id' => '1', 'modifiedby' => 'ADMIN',]);
+        useracl::create(['aco_id' => '695', 'user_id' => '1', 'modifiedby' => 'ADMIN',]);
+        useracl::create(['aco_id' => '696', 'user_id' => '1', 'modifiedby' => 'ADMIN',]);
+        useracl::create(['aco_id' => '697', 'user_id' => '1', 'modifiedby' => 'ADMIN',]);
+        useracl::create(['aco_id' => '698', 'user_id' => '1', 'modifiedby' => 'ADMIN',]);
+        useracl::create(['aco_id' => '699', 'user_id' => '1', 'modifiedby' => 'ADMIN',]);
+        useracl::create(['aco_id' => '700', 'user_id' => '1', 'modifiedby' => 'ADMIN',]);
+        useracl::create(['aco_id' => '701', 'user_id' => '1', 'modifiedby' => 'ADMIN',]);
+        useracl::create(['aco_id' => '702', 'user_id' => '1', 'modifiedby' => 'ADMIN',]);
+        useracl::create(['aco_id' => '703', 'user_id' => '1', 'modifiedby' => 'ADMIN',]);
+        useracl::create(['aco_id' => '704', 'user_id' => '1', 'modifiedby' => 'ADMIN',]);
+        useracl::create(['aco_id' => '705', 'user_id' => '1', 'modifiedby' => 'ADMIN',]);
     }
 }

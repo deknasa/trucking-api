@@ -518,6 +518,7 @@ class Menu extends MyModel
             $controller = $query->controller;
         }
 
+
         if ($query != null) {
             
             $class = $this->listFolderFiles($controller);

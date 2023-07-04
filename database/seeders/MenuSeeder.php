@@ -19,7 +19,6 @@ class MenuSeeder extends Seeder
         DB::statement("delete menu");
         DB::statement("DBCC CHECKIDENT ('menu', RESEED, 1);");
 
-
         menu::create(['menuname' => 'DASHBOARD', 'menuseq' => '0', 'menuparent' => '0', 'menuicon' => 'FAS FA-HOME', 'aco_id' => '0', 'link' => 'DASHBOARD', 'menuexe' => '', 'menukode' => '0', 'modifiedby' => '',]);
         menu::create(['menuname' => 'LOGOUT', 'menuseq' => '9', 'menuparent' => '0', 'menuicon' => 'FAS FA-SIGN-OUT-ALT', 'aco_id' => '0', 'link' => 'LOGOUT', 'menuexe' => '', 'menukode' => 'Z', 'modifiedby' => '',]);
         menu::create(['menuname' => 'MASTER', 'menuseq' => '1', 'menuparent' => '0', 'menuicon' => 'FAS FA-USER-TAG', 'aco_id' => '0', 'link' => '', 'menuexe' => '', 'menukode' => '1', 'modifiedby' => '',]);
@@ -191,5 +190,8 @@ class MenuSeeder extends Seeder
         menu::create(['menuname' => 'LAP. PIUTANG GIRO', 'menuseq' => '0', 'menuparent' => '144', 'menuicon' => 'FAS FA-TRUCK', 'aco_id' => '686', 'link' => '', 'menuexe' => '', 'menukode' => '632', 'modifiedby' => 'ADMIN',]);
         menu::create(['menuname' => 'KARTU HUTANG', 'menuseq' => '0', 'menuparent' => '144', 'menuicon' => 'FAS FA-TRUCK', 'aco_id' => '689', 'link' => '', 'menuexe' => '', 'menukode' => '633', 'modifiedby' => 'ADMIN',]);
         menu::create(['menuname' => 'KARTU PIUTANG', 'menuseq' => '0', 'menuparent' => '144', 'menuicon' => 'FAS FA-TRUCK', 'aco_id' => '692', 'link' => '', 'menuexe' => '', 'menukode' => '634', 'modifiedby' => 'ADMIN',]);
+        menu::create(['menuname' => 'APPROVAL DATA TIDAK LENGKAP', 'menuseq' => '0', 'menuparent' => '163', 'menuicon' => 'FAS FA-TRUCK', 'aco_id' => '694', 'link' => '', 'menuexe' => '', 'menukode' => '13113', 'modifiedby' => 'ADMIN',]);
+        menu::create(['menuname' => 'APPROVAL DATA TIDAK LENGKAP', 'menuseq' => '0', 'menuparent' => '165', 'menuicon' => 'FAS FA-TRUCK', 'aco_id' => '698', 'link' => '', 'menuexe' => '', 'menukode' => '13153', 'modifiedby' => 'ADMIN',]);
+        menu::create(['menuname' => 'LAP. NERACA', 'menuseq' => '0', 'menuparent' => '143', 'menuicon' => 'FAS FA-TRUCK', 'aco_id' => '703', 'link' => '', 'menuexe' => '', 'menukode' => '623', 'modifiedby' => 'ADMIN',]);
     }
 }
