@@ -327,13 +327,7 @@ class Controller extends BaseController
 
     function get_client_ip()
     {
-        $query = DB::table('parameter')->from (
-            DB::Raw("parameter with (readuncommitted)")
-        )
-        ->select('text')
-        ->where('grp', '=', 'HOSTNAME')
-        ->where('subgrp', '=', 'HOSTNAME')
-        ->first();
+   
 
         $ipaddress = '';
         if (getenv('HTTP_CLIENT_IP'))
@@ -351,20 +345,14 @@ class Controller extends BaseController
         else
             $ipaddress = 'IP tidak dikenali';
             if ($ipaddress=='::1' ) {
-                $ipaddress= gethostbyname(env('APP_HOSTNAME'));
+                $ipaddress= gethostbyname('tasmdn.kozow.com');
             }
         return $ipaddress;
     }
 
     function get_server_ip()
     {
-        $query = DB::table('parameter')->from (
-            DB::Raw("parameter with (readuncommitted)")
-        )
-        ->select('text')
-        ->where('grp', '=', 'HOSTNAME')
-        ->where('subgrp', '=', 'HOSTNAME')
-        ->first();
+
         // $ipaddress = gethostbyname(strtolower($query->text));
         $ipaddress = gethostbyname(env('APP_HOSTNAME'));
         return $ipaddress;

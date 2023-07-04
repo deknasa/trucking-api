@@ -225,6 +225,10 @@ use App\Http\Controllers\LaporanKasHarianController;
 use App\Http\Controllers\Api\LaporanKartuHutangPerSupplierController;
 use App\Http\Controllers\Api\LaporanKartuPiutangPerAgenController;
 use App\Http\Controllers\Api\LaporanMingguanSupirController;
+use App\Http\Controllers\Api\MainAkunPusatController;
+use App\Http\Controllers\Api\LaporanHistoryDepositoController;
+use App\Http\Controllers\Api\UbahPasswordController;
+
 
 // use App\Http\Controllers\Api\LaporanTransaksiHarianController;
 
@@ -1215,6 +1219,10 @@ route::middleware(['auth:api','authorized'])->group(function () {
     Route::get('laporankartupiutangperagen/export', [LaporanKartuPiutangPerAgenController::class, 'export'])->name('laporankartupiutangperagen.export');
     Route::resource('laporankartupiutangperagen', LaporanKartuPiutangPerAgenController::class)->whereNumber('laporankartupiutangperagen');
 
+    Route::get('laporanhistorydeposito/report', [LaporanHistoryDepositoController::class, 'report'])->name('laporanhistorydeposito.report');
+    Route::get('laporanhistorydeposito/export', [LaporanHistoryDepositoController::class, 'export'])->name('laporanhistorydeposito.export');
+    Route::resource('laporanhistorydeposito', LaporanHistoryDepositoController::class)->whereNumber('laporanhistorydeposito');
+
     Route::get('laporanhutangbbm/report', [LaporanHutangBBMController::class, 'report'])->name('laporanhutangbbm.report');
     Route::get('laporanhutangbbm/export', [LaporanHutangBBMController::class, 'export'])->name('laporanhutangbbm.export');
     Route::resource('laporanhutangbbm', LaporanHutangBBMController::class)->whereNumber('laporanhutangbbm');
@@ -1229,7 +1237,9 @@ route::middleware(['auth:api','authorized'])->group(function () {
     Route::resource('laporanpiutanggiro', LaporanPiutangGiroController::class)->whereNumber('laporanpiutanggiro');
     
     Route::get('laporanlabarugi/report', [LaporanLabaRugiController::class, 'report'])->name('laporanlabarugi.report');
+    Route::get('laporanlabarugi/export', [LaporanLabaRugiController::class, 'export'])->name('laporanlabarugi.export');
     Route::resource('laporanlabarugi', LaporanLabaRugiController::class)->whereNumber('laporanlabarugi');
+
     Route::get('laporanneraca/report', [LaporanNeracaController::class, 'report'])->name('laporanneraca.report');
     Route::get('laporanneraca/export', [LaporanNeracaController::class, 'export'])->name('laporanneraca.export');
     Route::resource('laporanneraca', LaporanNeracaController::class)->whereNumber('laporanneraca');
@@ -1386,4 +1396,7 @@ route::middleware(['auth:api','authorized'])->group(function () {
 
     Route::get('approvaltradogambar/field_length', [ApprovalTradoGambarController::class, 'fieldLength']);
     Route::resource('approvaltradogambar', ApprovalTradoGambarController::class)->whereNumber('approvaltradogambar');
+
+    Route::get('ubahpassword/field_length', [UbahPasswordController::class, 'fieldLength']);
+    Route::resource('ubahpassword', UbahPasswordController::class)->whereNumber('ubahpassword');
 });

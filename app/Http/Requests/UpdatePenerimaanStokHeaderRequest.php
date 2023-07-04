@@ -6,6 +6,7 @@ use Illuminate\Foundation\Http\FormRequest;
 use App\Rules\DateTutupBuku;
 use App\Http\Controllers\Api\ParameterController;
 use App\Http\Controllers\Api\ErrorController;
+use App\Http\Controllers\Api\PenerimaanStokHeaderController;
 use Illuminate\Validation\Rule;
 use Illuminate\Support\Facades\DB;
 
@@ -34,9 +35,13 @@ class UpdatePenerimaanStokHeaderRequest extends FormRequest
         $kor = DB::table('parameter')->where('grp', 'KOR STOK')->where('subgrp', 'KOR STOK')->first();
         $pg = DB::table('parameter')->where('grp', 'PG STOK')->where('subgrp', 'PG STOK')->first();
         $reuse = DB::table('parameter')->where('grp', 'REUSE STOK')->where('subgrp', 'REUSE STOK')->first();
+        $pst = DB::table('parameter')->where('grp', 'PST STOK')->where('subgrp', 'PST STOK')->first();
+        $pspk = DB::table('parameter')->where('grp', 'PSPK STOK')->where('subgrp', 'PSPK STOK')->first();
         
         $requiredSupplier = Rule::requiredIf((request()->penerimaanstok_id == $spb->text)||(request()->penerimaanstok_id == $po->text)||(request()->penerimaanstok_id == $do->text)||(request()->penerimaanstok_id == $reuse->text));
         // $requiredPenerimaanStokNobukti = Rule::requiredIf((request()->penerimaanstok_id == $spb->text));
+        $requiredPengeluaranStokNobukti = Rule::requiredIf((request()->penerimaanstok_id == $pst->text) || (request()->penerimaanstok_id == $pspk->text));
+
         $salahsatu = Rule::requiredIf(function () use ($kor) {
             if ((empty($this->input('trado')) && empty($this->input('gandengan')) && empty($this->input('gudang'))) && $this->input('penerimaanstok_id') ==$kor->text) {
                 return true;
@@ -56,6 +61,13 @@ class UpdatePenerimaanStokHeaderRequest extends FormRequest
             return false;
         });
         $rules = [
+            'id' => function ($attribute, $value, $fail) {
+                $id = $this->route('penerimaanstokheader');
+                $statusEdit = app(PenerimaanStokHeaderController::class)->cekvalidasi($id);
+                if($statusEdit->original['kodestatus']){
+                    $fail(app(ErrorController::class)->geterror('SDC')->keterangan);
+                }
+            },
             'tglbukti' => [
                 'required',
                 new DateTutupBuku()
@@ -65,6 +77,7 @@ class UpdatePenerimaanStokHeaderRequest extends FormRequest
             // "penerimaanstok" => "required",
             // "penerimaanstok_id" => "required",
             // "penerimaanstok_nobukti" => $requiredPenerimaanStokNobukti,
+            "pengeluaranstok_nobukti" => $requiredPengeluaranStokNobukti,
             'trado' => $salahsatu,
             'gandengan' => $salahsatu,
             'gudang' => $salahsatu,

@@ -45,7 +45,7 @@ return [
     'digits_between' => 'The :attribute must be between :min and :max digits.',
     'dimensions' => 'The :attribute has invalid image dimensions.',
     'distinct' => ':attribute ' . (new ErrorController)->geterror('SPI')->keterangan,
-    'email' => 'The :attribute must be a valid email address.',
+    'email' => ':attribute ' . (new ErrorController)->geterror('EMAIL')->keterangan,
     'ends_with' => 'The :attribute must end with one of the following: :values.',
     'enum' => 'The selected :attribute is invalid.',
     'exists' => 'The selected :attribute is invalid.',

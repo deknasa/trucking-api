@@ -39,9 +39,8 @@ class AuthController extends Controller
     public function cekIp(Request $request)
     {
 
-        $controller = new Controller;
-        $ipclient = $controller->get_client_ip();
-        $ipserver = $controller->get_server_ip();
+        $ipclient = $this->get_client_ip();
+        $ipserver = $this->get_server_ip();
         if ($ipclient != $ipserver) {
             $data = [
                 'status' => false,

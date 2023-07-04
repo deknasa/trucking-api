@@ -247,37 +247,106 @@ class UpahSupirRincian extends MyModel
     }
     public function listpivot($dari, $sampai)
     {
+        $tempdatacs = '##tempdatacontainerstatus' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+        Schema::create($tempdatacs, function ($table) {
+            $table->unsignedBigInteger('upah_id')->nullable();
+            $table->unsignedBigInteger('container_id')->nullable();
+            $table->unsignedBigInteger('statuscontainer_id')->nullable();
+            $table->string('container', 1000)->nullable();
+            $table->string('statuscontainer', 1000)->nullable();
+        });
+
+        $queryupah = DB::table('upahsupir')->from(DB::raw("upahsupir as a with (readuncommitted)"))
+            ->select(
+                'a.id',
+            )
+            ->whereRaw("a.tglmulaiberlaku >= '$dari'")
+            ->whereRaw("a.tglmulaiberlaku <= '$sampai'")
+            ->orderBy('a.id', 'asc')
+            ->get();
+
+        $datadetailupah = json_decode($queryupah, true);
+        foreach ($datadetailupah as $itema) {
+
+            $querycs1 = DB::table('container')->from(DB::raw("container with (readuncommitted)"))
+                ->select(
+                    'container.id as container_id',
+                    'container.keterangan as container',
+                )
+                ->orderBy('container.id', 'asc')
+                ->get();
+
+            $datadetailcs1 = json_decode($querycs1, true);
+
+            foreach ($datadetailcs1 as $item) {
+
+                $querycs2 = DB::table('statuscontainer')->from(DB::raw("statuscontainer with (readuncommitted)"))
+                    ->select(
+                        'statuscontainer.id as statuscontainer_id',
+                        'statuscontainer.kodestatuscontainer as statuscontainer',
+                    )
+                    ->orderBy('statuscontainer.kodestatuscontainer', 'desc')
+                    ->get();
+
+                $datadetailcs2 = json_decode($querycs2, true);
+                foreach ($datadetailcs2 as $item1) {
+
+                    $values = array('upah_id' => $itema['id'], 'container_id' => $item['container_id'], 'statuscontainer_id' => $item1['statuscontainer_id'], 'container' => $item['container'], 'statuscontainer' => $item1['statuscontainer']);
+                    DB::table($tempdatacs)->insert($values);
+                }
+            }
+        }
+
+
+        // dd(DB::table($tempdatacs)->get());
+
 
         $tempdata = '##tempdata' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
         Schema::create($tempdata, function ($table) {
             $table->unsignedBigInteger('id')->nullable();
             $table->unsignedBigInteger('container_id')->nullable();
+            $table->unsignedBigInteger('statuscontainer_id')->nullable();
             $table->string('container', 1000)->nullable();
-            $table->string('litercontainer', 1000)->nullable();
+            $table->string('statuscontainer', 1000)->nullable();
+            $table->string('containerstatuscontainer', 1000)->nullable();
+            $table->string('containerstatuscontainerliter', 1000)->nullable();
             $table->double('nominal', 15, 2)->nullable();
             $table->double('liter', 10, 2)->nullable();
         });
 
-        $query = DB::table('container')->from(DB::raw("container with (readuncommitted)"))
+        $query = DB::table($tempdatacs)->from(DB::raw($tempdatacs . " as a"))
             ->select(
-                'upahsupir_id as id',
-                'container.id as container_id',
-                'container.keterangan as container',
-                'container.keterangan as litercontainer',
-                DB::raw("isnull(upahsupirrincian.nominalsupir,0) as nominal"),
-                DB::raw("isnull(upahsupirrincian.liter,0) as liter"),
+                'a.upah_id as id',
+                'a.container_id as container_id',
+                'a.container as container',
+                'a.statuscontainer_id as statuscontainer_id',
+                'a.statuscontainer as statuscontainer',
+                DB::raw("ltrim(rtrim(a.container))+'_'+ltrim(rtrim(a.statuscontainer)) as containerstatuscontainer"),
+                DB::raw("'liter'+trim(rtrim(a.container))+'_'+ltrim(rtrim(a.statuscontainer)) as containerstatuscontainerliter"),
+                DB::raw("isnull(b.nominalsupir,0) as nominal"),
+                DB::raw("isnull(b.liter,0) as liter"),
             )
-            ->leftJoin(DB::raw("upahsupirrincian with (readuncommitted)"), 'container.id', '=', 'upahsupirrincian.container_id')
-            ->leftJoin(DB::raw("statuscontainer with (readuncommitted)"), 'statuscontainer.id', '=', 'upahsupirrincian.statuscontainer_id')
-            ->leftJoin(DB::raw("upahsupir with (readuncommitted)"), 'upahsupir.id', '=', 'upahsupirrincian.upahsupir_id')
-            ->whereRaw("upahsupir.tglmulaiberlaku >= '$dari'")
-            ->whereRaw("upahsupir.tglmulaiberlaku <= '$sampai'");
-        dd($query->get());
+            ->leftJoin(DB::raw("upahsupirrincian b with (readuncommitted)"), function ($join) {
+                $join->on('a.container_id', '=', 'b.container_id');
+                $join->on('a.statuscontainer_id', '=', 'b.statuscontainer_id');
+                $join->on('a.upah_id', '=', 'b.upahsupir_id');
+            })
+            ->leftJoin(DB::raw("upahsupir with (readuncommitted)"), 'upahsupir.id', '=', 'b.upahsupir_id')
+            ->orderBy('a.upah_id', 'asc')
+            ->orderBy('a.statuscontainer', 'desc')
+            ->orderBy('a.container', 'asc');
+        // ->whereRaw("upahsupir.tglmulaiberlaku >= '$dari'")
+        // ->whereRaw("upahsupir.tglmulaiberlaku <= '$sampai'");
+
+
         DB::table($tempdata)->insertUsing([
             'id',
             'container_id',
             'container',
-            'litercontainer',
+            'statuscontainer_id',
+            'statuscontainer',
+            'containerstatuscontainer',
+            'containerstatuscontainerliter',
             'nominal',
             'liter',
         ], $query);
@@ -295,6 +364,9 @@ class UpahSupirRincian extends MyModel
                 $table->unsignedBigInteger('id')->nullable();
                 $table->string('dari')->nullable();
                 $table->string('tujuan')->nullable();
+                $table->string('penyesuaian')->nullable();
+                $table->unsignedBigInteger('jarak')->nullable();
+                $table->date('tglmulaiberlaku')->nullable();
             });
 
             $querytempupah = DB::table('upahsupir')->from(DB::raw("upahsupir with (readuncommitted)"))
@@ -302,6 +374,9 @@ class UpahSupirRincian extends MyModel
                     'upahsupir.id as id',
                     'dari.keterangan as dari',
                     'kota.keterangan as tujuan',
+                    'upahsupir.penyesuaian',
+                    'upahsupir.jarak',
+                    'upahsupir.tglmulaiberlaku'
                 )
                 ->leftJoin(DB::raw("kota with (readuncommitted)"), 'upahsupir.kotasampai_id', '=', 'kota.id')
                 ->leftJoin(DB::raw("kota as dari with (readuncommitted)"), 'upahsupir.kotadari_id', '=', 'dari.id');
@@ -310,11 +385,17 @@ class UpahSupirRincian extends MyModel
                 'id',
                 'dari',
                 'tujuan',
+                'penyesuaian',
+                'jarak',
+                'tglmulaiberlaku',
             ], $querytempupah);
 
             $tempdatagroup = '##tempdatagroup' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
             Schema::create($tempdatagroup, function ($table) {
                 $table->unsignedBigInteger('container_id')->nullable();
+                $table->string('container', 200)->nullable();
+                $table->unsignedBigInteger('statuscontainer_id')->nullable();
+                $table->string('statuscontainer', 200)->nullable();
             });
 
             $querydatagroup =  DB::table($tempdata)->from(
@@ -322,24 +403,39 @@ class UpahSupirRincian extends MyModel
             )
                 ->select(
                     'container_id',
+                    'container',
+                    'statuscontainer_id',
+                    'statuscontainer',
                 )
-                ->groupBy('container_id',);
+                ->groupBy('container_id')
+                ->groupBy('container')
+                ->groupBy('statuscontainer_id')
+                ->groupBy('statuscontainer');
+
+
 
             DB::table($tempdatagroup)->insertUsing([
                 'container_id',
+                'container',
+                'statuscontainer_id',
+                'statuscontainer',
             ], $querydatagroup);
 
+
             $queryloop = DB::table($tempdatagroup)->from(
-                DB::raw($tempdatagroup)
+                DB::raw($tempdatagroup . " a with (readuncommitted)")
             )
                 ->select(
-                    'container.keterangan as container',
-                    'container.keterangan as litercontainer'
+                    'a.container as container',
+                    'a.statuscontainer as statuscontainer',
                 )
-                ->leftJoin('container', "$tempdatagroup.container_id", 'container.id')
-                ->orderBy('container.id', 'asc')
+                ->orderBy('container_id', 'asc')
+                ->orderBy('statuscontainer', 'desc')
                 ->get();
 
+
+
+            // 
             $columnid = '';
             $columnliterid = '';
             $a = 0;
@@ -347,47 +443,43 @@ class UpahSupirRincian extends MyModel
 
             foreach ($datadetail as $item) {
                 if ($a == 0) {
-                    $columnid = $columnid . '[' . $item['container'] . ']';
-                    $columnliterid = $columnliterid . '[liter' . $item['litercontainer'] . ']';
+                    $columnid = $columnid . '[' . $item['container'] . '_' . $item['statuscontainer'] . ']';
+                    $columnliterid = $columnliterid . '[liter' . $item['container']. '_' . $item['statuscontainer'] . ']';
 
-                    DB::table($tempdata)
-                        ->where('container', $item['container'])
-                        ->update(['litercontainer' => 'liter' . $item['container']]);
                 } else {
-                    $columnid = $columnid . ',[' . $item['container'] . ']';
-                    $columnliterid = $columnliterid . ',[liter' . $item['litercontainer'] . ']';
+                    $columnid = $columnid . ',[' . $item['container']. '_' . $item['statuscontainer'] . ']';
+                    $columnliterid = $columnliterid . ',[liter' . $item['container']. '_' . $item['statuscontainer'] . ']';
 
-                    DB::table($tempdata)
-                        ->where('container', $item['container'])
-                        ->update(['litercontainer' => 'liter' . $item['container']]);
                 }
 
                 $a = $a + 1;
             }
+            // dd($columnid);
 
-            $statement = ' select b.dari,b.tujuan,A.* from (select id,' . $columnid . ' from 
-                (select A.id,A.container,A.nominal
+            $statement = ' select b.dari,b.tujuan,b.penyesuaian,b.jarak,b.tglmulaiberlaku,A.* from (select id,' . $columnid . ' from 
+                (select A.id,A.containerstatuscontainer,A.nominal
                     from ' . $tempdata . ' A) as SourceTable
             
                 Pivot (
                     max(nominal)
-                    for container in (' . $columnid . ')
+                    for containerstatuscontainer in (' . $columnid . ')
                     ) as PivotTable)A
                 inner join ' . $tempupah . ' b with (readuncommitted) on A.id=B.id
             ';
 
             $statement2 = 'select b.tujuan,A.* from (select id,' . $columnliterid . ' from 
-                (select A.id,A.litercontainer,A.liter
+                (select A.id,A.containerstatuscontainerliter,A.liter
                     from ' . $tempdata . ' A) as SourceTable
             
                 Pivot (
                     max(liter)
-                    for litercontainer in (' . $columnliterid . ')
+                    for containerstatuscontainerliter in (' . $columnliterid . ')
                     ) as PivotTable)A
                 inner join ' . $tempupah . ' b with (readuncommitted) on A.id=B.id
             ';
 
             $data1 = DB::select(DB::raw($statement));
+            // dd($data1);
             $data2 = DB::select(DB::raw($statement2));
             $merger = [];
             foreach ($data1 as $key => $value) {
@@ -396,7 +488,7 @@ class UpahSupirRincian extends MyModel
                 $merger[] = array_merge($datas1, $datas2);
             }
 
-
+            // dd('test');
 
             return $merger;
         }
@@ -647,9 +739,9 @@ class UpahSupirRincian extends MyModel
             }
 
             $statusSimpanKandang = DB::table('parameter')
-            ->where('grp', 'STATUS SIMPAN KANDANG')
-            ->where('text', 'TIDAK SIMPAN KANDANG')
-            ->first();
+                ->where('grp', 'STATUS SIMPAN KANDANG')
+                ->where('text', 'TIDAK SIMPAN KANDANG')
+                ->first();
 
             $upahRitasiRequest = [
                 'parent_id' => 0,

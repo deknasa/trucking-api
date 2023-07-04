@@ -36,12 +36,13 @@ class UpdateUserRequest extends FormRequest
         return [
             'user' => ['required',Rule::unique('user')->whereNotIn('id', [$this->id])],
             'name' => ['required',Rule::unique('user')->whereNotIn('id', [$this->id])],
+            'email' => ['required','email:rfc,dns', Rule::unique('user')->whereNotIn('id', [$this->id])],
             // 'password' => 'required',
             // 'karyawan_id' => 'required',
             'cabang_id' => 'required',
             // 'dashboard' => 'required',
             // 'statusaktif' => ['required', 'int', 'exists:parameter,id'],
-            'statusaktif' => ['required', Rule::in($status)]
+            'statusaktif' => ['required', Rule::in($status)],
         ];
     }
 

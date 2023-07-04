@@ -21,6 +21,7 @@ class DatabaseSeeder extends Seeder
             CabangSeeder::class,
             UserSeeder::class,
             AkunPusatSeeder::class,
+            MainAkunPusatSeeder::class,
             AcosSeeder::class,            
             MenuSeeder::class,
             RoleSeeder::class,
@@ -112,6 +113,9 @@ class DatabaseSeeder extends Seeder
             PengeluaranTruckingHeaderSeeder::class,
             PengeluaranTruckingDetailSeeder::class,
             PerkiraanLabarugiSeeder::class,
+            SaldoAkunPusatDetailSeeder::class,
+            JurnalUmumPusatHeaderSeeder::class,
+            JurnalUmumPusatDetailSeeder::class,
 
         ]);
     }

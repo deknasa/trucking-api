@@ -558,8 +558,12 @@ class AbsensiSupirHeader extends MyModel
         $kasGantungHeader = KasGantungHeader::from(DB::raw("kasgantungheader with (readuncommitted)"))->where('nobukti', $absensiSupir->kasgantung_nobukti)->first();
         $kasGantungHeader = (new KasGantungHeader())->processUpdate($kasGantungHeader,$kasGantungRequest);
         
-        $bukaAbsensi = BukaAbsensi::from(DB::raw("BukaAbsensi with (readuncommitted)"))->where('tglabsensi', $absensiSupir->tglbukti)->first();
-        $bukaAbsensi = (new BukaAbsensi())->processDestroy($bukaAbsensi->id);
+        $date = date('Y-m-d', strtotime($absensiSupir->tglbukti));
+        $now = date('Y-m-d', strtotime('now'));
+        if ($date != $now) {
+            $bukaAbsensi = BukaAbsensi::from(DB::raw("BukaAbsensi"))->where('tglabsensi', $absensiSupir->tglbukti)->first();
+            $bukaAbsensi = (new BukaAbsensi())->processDestroy($bukaAbsensi->id);
+        }
 
         $absensiSupirLogTrail = (new LogTrail())->processStore([
             'namatabel' => strtoupper($absensiSupir->getTable()),

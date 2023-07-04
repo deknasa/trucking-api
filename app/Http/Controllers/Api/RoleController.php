@@ -118,7 +118,7 @@ class RoleController extends Controller
             $role->position = $selected->position;
             $role->id = $selected->id;
             $role->page = ceil($role->position / ($request->limit ?? 10));
-       
+
             DB::commit();
 
             return response([
@@ -180,12 +180,22 @@ class RoleController extends Controller
         }
     }
 
+    /**
+     * @ClassName 
+     */
+    public function report()
+    {
+    }
+
+    /**
+     * @ClassName 
+     */
     public function export(RangeExportReportRequest $request)
     {
         if (request()->cekExport) {
 
             if (request()->offset == "-1" && request()->limit == '1') {
-                
+
                 return response([
                     'errors' => [
                         "export" => app(ErrorController::class)->geterror('DTA')->keterangan

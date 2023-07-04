@@ -38,12 +38,13 @@ class StoreUserRequest extends FormRequest
          
             'user' => ['required', 'unique:user,user'],
             'name' => 'required|unique:user',
+            'email' => 'required|unique:user|email:rfc,dns',
             'password' => 'required',
             // 'karyawan_id' => 'required',
             'cabang_id' => 'required',
             // 'dashboard' => 'required',
             // 'statusaktif' => ['required', 'int', 'exists:parameter,id'],
-            'statusaktif' => ['required', Rule::in($status)]
+            'statusaktif' => ['required', Rule::in($status)],
         ];
         
     }
@@ -53,10 +54,20 @@ class StoreUserRequest extends FormRequest
         return [
             'user' => 'user',
             'name' => 'nama user',
+            'email' => 'email',
             'password' => 'password',
             'karyawan_id' => 'karyawan',
             'dashboard' => 'dashboard',
             'statusaktif' => 'status',
+        ];
+    }
+
+    public function messages()
+    {
+        $controller = new ErrorController;
+
+        return [
+            'email.required' => ':attribute' . ' ' . $controller->geterror('EMAIL')->keterangan,
         ];
     }
 }
