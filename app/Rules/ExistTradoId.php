@@ -1,4 +1,4 @@
- <?php
+<?php
 
 namespace App\Rules;
 
@@ -6,7 +6,7 @@ use App\Http\Controllers\Api\ErrorController;
 use Illuminate\Contracts\Validation\Rule;
 use Illuminate\Support\Facades\DB;
 
-class ExistAkunPusatId implements Rule
+class ExistTradoId implements Rule
 {
     /**
      * Create a new rule instance.
@@ -27,12 +27,12 @@ class ExistAkunPusatId implements Rule
      */
     public function passes($attribute, $value)
     {
-        $akunPusat = DB::table("akunpusat")->from(DB::raw("akunpusat with (readuncommitted)"))
+        $trado = DB::table("trado")->from(DB::raw("trado with (readuncommitted)"))
             ->where('id', $value)
             ->first();
-        if($akunPusat == null){
+        if ($trado == null) {
             return false;
-        }else{
+        } else {
             return true;
         }
     }

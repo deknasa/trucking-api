@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
+use App\Http\Requests\ValidasiLaporanNeracaRequest;
 use Illuminate\Support\Facades\DB;
 use App\Models\LaporanNeraca;
 
@@ -26,20 +27,42 @@ class LaporanNeracaController extends Controller
     /**
      * @ClassName
      */
-    public function report(Request $request)
+    public function report(ValidasiLaporanNeracaRequest $request)
     {
-        $sampai = $request->sampai;
+        if ($request->isCheck) {
+            return response([
+                'data' => 'ok'
+            ]);
+        } else {
 
-        $report = [
-            [
-                'judul' => 'PT. Transporindo Agung Sejahtera',
-                'subjudul' => 'Laporan Neraca Divisi Trucking',
-                'aktivalancar' => '30.292.637.247,41',
+            $sampai = $request->sampai;
 
-            ], 
-        ];
-        return response([
-            'data' => $report
-        ]);
+            $report = LaporanNeraca::getReport($sampai);
+
+            return response([
+                'data' => $report
+            ]);
+        }
+    }
+
+    /**
+     * @ClassName
+     */
+    public function export(ValidasiLaporanNeracaRequest $request)
+    {
+        if ($request->isCheck) {
+            return response([
+                'data' => 'ok'
+            ]);
+        } else {
+
+            $sampai = $request->sampai;
+
+            $export = LaporanNeraca::getReport($sampai);
+
+            return response([
+                'data' => $export
+            ]);
+        }
     }
 }
