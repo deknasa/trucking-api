@@ -13,7 +13,7 @@ class StoreTradoSupirMilikMandorRequest extends FormRequest
      */
     public function authorize()
     {
-        return false;
+        return true;
     }
 
     /**
@@ -24,7 +24,9 @@ class StoreTradoSupirMilikMandorRequest extends FormRequest
     public function rules()
     {
         return [
-            //
+            'supir_id' => ['required', 'unique:tradosupirmilikmandor,supir_id'],
+            'trado_id' => ['required', 'unique:tradosupirmilikmandor,trado_id'],
+            'mandor_id' => ['required'],
         ];
     }
 }

@@ -6,6 +6,9 @@ use App\Http\Controllers\Api\AbsensiSupirHeaderController;
 
 use App\Http\Controllers\Api\ApprovalSupirGambarController;
 use App\Http\Controllers\Api\ApprovalSupirKeteranganController;
+use App\Http\Controllers\Api\BlackListSupirController;
+use App\Http\Controllers\Api\TradoSupirMilikMandorController;
+
 use App\Http\Controllers\Api\BukaAbsensiController;
 use App\Http\Controllers\Api\SuratPengantarApprovalInputTripController;
 
@@ -431,7 +434,13 @@ route::middleware(['auth:api','authorized'])->group(function () {
     Route::resource('approvalsupirgambar', ApprovalSupirGambarController::class)->whereNumber('approvalsupirgambar');
     
     Route::get('approvalsupirketerangan/default', [ApprovalSupirKeteranganController::class,'default']);
-    Route::resource('approvalsupirketerangan', ApprovalSupirKeteranganController::class)->whereNumber('approvalsupirgambar');
+    Route::resource('approvalsupirketerangan', ApprovalSupirKeteranganController::class)->whereNumber('approvalsupirketerangan');
+
+    Route::get('blacklistsupir/default', [BlackListSupirController::class,'default']);
+    Route::resource('blacklistsupir', BlackListSupirController::class)->whereNumber('blacklistsupir');
+
+    Route::get('tradosupirmilikmandor/default', [TradoSupirMilikMandorController::class,'default']);
+    Route::resource('tradosupirmilikmandor', TradoSupirMilikMandorController::class)->whereNumber('tradosupirmilikmandor');
 
     Route::get('suratpengantarapprovalinputtrip/cektanggal', [SuratPengantarApprovalInputTripController::class, 'isTanggalAvaillable']);
     Route::resource('suratpengantarapprovalinputtrip', SuratPengantarApprovalInputTripController::class)->whereNumber('suratpengantarapprovalinputtrip');
@@ -1405,7 +1414,7 @@ route::middleware(['auth:api','authorized'])->group(function () {
     Route::resource('approvaltradogambar', ApprovalTradoGambarController::class)->whereNumber('approvaltradogambar');
     
     Route::get('approvaltradoketerangan/field_length', [ApprovalTradoKeteranganController::class, 'fieldLength']);
-    Route::resource('approvaltradoketerangan', ApprovalTradoKeteranganController::class)->whereNumber('approvaltradogambar');
+    Route::resource('approvaltradoketerangan', ApprovalTradoKeteranganController::class)->whereNumber('approvaltradoketerangan');
 
     Route::get('ubahpassword/field_length', [UbahPasswordController::class, 'fieldLength']);
     Route::resource('ubahpassword', UbahPasswordController::class)->whereNumber('ubahpassword');
