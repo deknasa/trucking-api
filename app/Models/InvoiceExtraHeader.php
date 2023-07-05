@@ -500,13 +500,15 @@ class InvoiceExtraHeader extends MyModel
             "$this->table.piutang_nobukti",
             "pelanggan.namapelanggan as  pelanggan",
             "agen.namaagen as  agen",
+            'statuscetak.memo as statuscetak',
+            'statuscetak.id as  statuscetak_id',
             DB::raw("'Laporan Invoice Extra' as judulLaporan"),
             DB::raw("'" . $getJudul->text . "' as judul"),
             DB::raw("'Tgl Cetak:'+format(getdate(),'dd-MM-yyyy HH:mm:ss')as tglcetak"),
             DB::raw(" 'User :".auth('api')->user()->name."' as usercetak")
         )
             ->leftJoin(DB::raw("parameter with (readuncommitted)"), 'invoiceextraheader.statusapproval', 'parameter.id')
-            ->leftJoin(DB::raw("parameter as cetak with (readuncommitted)"), 'invoiceextraheader.statuscetak', 'cetak.id')
+            ->leftJoin(DB::raw("parameter as statuscetak with (readuncommitted)"), 'invoiceextraheader.statuscetak', 'statuscetak.id')
             ->leftJoin(DB::raw("pelanggan with (readuncommitted)"), 'invoiceextraheader.pelanggan_id', 'pelanggan.id')
             ->leftJoin(DB::raw("agen with (readuncommitted)"), 'invoiceextraheader.agen_id', 'agen.id')
             ->where("$this->table.id", $id);

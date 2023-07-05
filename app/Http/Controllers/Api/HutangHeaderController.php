@@ -285,37 +285,30 @@ class HutangHeaderController extends Controller
         DB::beginTransaction();
 
         try {
-            $hutang = HutangHeader::lockForUpdate()->findOrFail($id);
-            $statusSudahCetak = Parameter::from(DB::raw("parameter with (readuncommitted)"))
-                ->where('grp', '=', 'STATUSCETAK')->where('text', '=', 'CETAK')->first();
-            $statusBelumCetak = Parameter::from(DB::raw("parameter with (readuncommitted)"))
-                ->where('grp', '=', 'STATUSCETAK')->where('text', '=', 'BELUM CETAK')->first();
+            $hutangHeader = HutangHeader::findOrFail($id);
+            $statusSudahCetak = Parameter::where('grp', '=', 'STATUSCETAK')->where('text', '=', 'CETAK')->first();
+            $statusBelumCetak = Parameter::where('grp', '=', 'STATUSCETAK')->where('text', '=', 'BELUM CETAK')->first();
 
-            if ($hutang->statuscetak != $statusSudahCetak->id) {
-                $hutang->statuscetak = $statusSudahCetak->id;
-                $hutang->tglbukacetak = date('Y-m-d H:i:s');
-                $hutang->userbukacetak = auth('api')->user()->name;
-                $hutang->jumlahcetak = $hutang->jumlahcetak + 1;
-
-                if ($hutang->save()) {
+            if ($hutangHeader->statuscetak != $statusSudahCetak->id) {
+                $hutangHeader->statuscetak = $statusSudahCetak->id;
+                $hutangHeader->tglbukacetak = date('Y-m-d H:i:s');
+                $hutangHeader->userbukacetak = auth('api')->user()->name;
+                $hutangHeader->jumlahcetak = $hutangHeader->jumlahcetak + 1;
+                if ($hutangHeader->save()) {
                     $logTrail = [
-                        'namatabel' => strtoupper($hutang->getTable()),
+                        'namatabel' => strtoupper($hutangHeader->getTable()),
                         'postingdari' => 'PRINT HUTANG HEADER',
-                        'idtrans' => $hutang->id,
-                        'nobuktitrans' => $hutang->nobukti,
+                        'idtrans' => $hutangHeader->id,
+                        'nobuktitrans' => $hutangHeader->id,
                         'aksi' => 'PRINT',
-                        'datajson' => $hutang->toArray(),
-                        'modifiedby' => Auth('api')->user()->name
+                        'datajson' => $hutangHeader->toArray(),
+                        'modifiedby' => $hutangHeader->modifiedby
                     ];
-
                     $validatedLogTrail = new StoreLogTrailRequest($logTrail);
                     $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
-
                     DB::commit();
                 }
             }
-
-
             return response([
                 'message' => 'Berhasil'
             ]);

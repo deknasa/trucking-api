@@ -321,51 +321,6 @@ class ProsesGajiSupirHeaderController extends Controller
         ]);
     }
 
-
-    public function printReport($id)
-    {
-        DB::beginTransaction();
-
-        try {
-            $prosesgaji = ProsesGajiSupirHeader::lockForUpdate()->findOrFail($id);
-            $statusSudahCetak = Parameter::from(DB::raw("parameter with (readuncommitted)"))
-                ->where('grp', '=', 'STATUSCETAK')->where('text', '=', 'CETAK')->first();
-            $statusBelumCetak = Parameter::from(DB::raw("parameter with (readuncommitted)"))
-                ->where('grp', '=', 'STATUSCETAK')->where('text', '=', 'BELUM CETAK')->first();
-
-            if ($prosesgaji->statuscetak != $statusSudahCetak->id) {
-                $prosesgaji->statuscetak = $statusSudahCetak->id;
-                $prosesgaji->tglbukacetak = date('Y-m-d H:i:s');
-                $prosesgaji->userbukacetak = auth('api')->user()->name;
-                $prosesgaji->jumlahcetak = $prosesgaji->jumlahcetak + 1;
-
-                if ($prosesgaji->save()) {
-                    $logTrail = [
-                        'namatabel' => strtoupper($prosesgaji->getTable()),
-                        'postingdari' => 'PRINT PROSES GAJI SUPIR HEADER',
-                        'idtrans' => $prosesgaji->id,
-                        'nobuktitrans' => $prosesgaji->nobukti,
-                        'aksi' => 'PRINT',
-                        'datajson' => $prosesgaji->toArray(),
-                        'modifiedby' => auth('api')->user()->name,
-                    ];
-
-                    $validatedLogTrail = new StoreLogTrailRequest($logTrail);
-                    $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
-
-                    DB::commit();
-                }
-            }
-
-
-            return response([
-                'message' => 'Berhasil'
-            ]);
-        } catch (\Throwable $th) {
-            throw $th;
-        }
-    }
-
     public function cekvalidasi($id)
     {
         $prosesgaji = ProsesGajiSupirHeader::find($id);
@@ -501,5 +456,42 @@ class ProsesGajiSupirHeaderController extends Controller
         return response([
             'data' => $prosesGajiSupirHeader->getExport($id),
         ]);
+    }
+
+    public function printReport($id)
+    {
+        DB::beginTransaction();
+
+        try {
+            $prosesGajiSupirHeader = ProsesGajiSupirHeader::findOrFail($id);
+            $statusSudahCetak = Parameter::where('grp', '=', 'STATUSCETAK')->where('text', '=', 'CETAK')->first();
+            $statusBelumCetak = Parameter::where('grp', '=', 'STATUSCETAK')->where('text', '=', 'BELUM CETAK')->first();
+
+            if ($prosesGajiSupirHeader->statuscetak != $statusSudahCetak->id) {
+                $prosesGajiSupirHeader->statuscetak = $statusSudahCetak->id;
+                $prosesGajiSupirHeader->tglbukacetak = date('Y-m-d H:i:s');
+                $prosesGajiSupirHeader->userbukacetak = auth('api')->user()->name;
+                $prosesGajiSupirHeader->jumlahcetak = $prosesGajiSupirHeader->jumlahcetak + 1;
+                if ($prosesGajiSupirHeader->save()) {
+                    $logTrail = [
+                        'namatabel' => strtoupper($prosesGajiSupirHeader->getTable()),
+                        'postingdari' => 'PRINT ABSENSI SUPIR HEADER',
+                        'idtrans' => $prosesGajiSupirHeader->id,
+                        'nobuktitrans' => $prosesGajiSupirHeader->id,
+                        'aksi' => 'PRINT',
+                        'datajson' => $prosesGajiSupirHeader->toArray(),
+                        'modifiedby' => $prosesGajiSupirHeader->modifiedby
+                    ];
+                    $validatedLogTrail = new StoreLogTrailRequest($logTrail);
+                    $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
+                    DB::commit();
+                }
+            }
+            return response([
+                'message' => 'Berhasil'
+            ]);
+        } catch (\Throwable $th) {
+            throw $th;
+        }
     }
 }

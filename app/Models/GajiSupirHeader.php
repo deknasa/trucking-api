@@ -76,6 +76,7 @@ class GajiSupirHeader extends MyModel
                 'gajisupirheader.potonganpinjaman',
                 'gajisupirheader.potonganpinjamansemua',
                 'gajisupirheader.uangmakanharian',
+                'gajisupirheader.uangJalantidakterhitung',
                 'parameter.memo as statuscetak',
                 "parameter.text as statuscetak_text",
                 'gajisupirheader.userbukacetak',
@@ -84,6 +85,7 @@ class GajiSupirHeader extends MyModel
                 'gajisupirheader.modifiedby',
                 'gajisupirheader.created_at',
                 'gajisupirheader.updated_at',
+                DB::raw('(total + uangmakanharian - uangJalantidakterhitung - uangjalan - potonganpinjaman - potonganpinjamansemua - deposito - bbm) as sisa')
             )
 
             ->leftJoin(DB::raw("parameter with (readuncommitted)"), 'gajisupirheader.statuscetak', 'parameter.id')
@@ -1116,9 +1118,8 @@ class GajiSupirHeader extends MyModel
                 'gajisupirheader.nobukti',
                 'gajisupirheader.tglbukti',
                 'supir.namasupir as supir_id',
-                'gajisupirheader.nominal',
-                'gajisupirheader.tgldari',
-                'gajisupirheader.tglsampai',
+                'statuscetak.memo as statuscetak',
+                "statuscetak.id as  statuscetak_id",
                 'gajisupirheader.total',
                 'gajisupirheader.uangjalan',
                 'gajisupirheader.bbm',
@@ -1126,13 +1127,15 @@ class GajiSupirHeader extends MyModel
                 'gajisupirheader.potonganpinjaman',
                 'gajisupirheader.potonganpinjamansemua',
                 'gajisupirheader.uangmakanharian',
+                'gajisupirheader.uangJalantidakterhitung',
+                DB::raw('(total + uangmakanharian - uangJalantidakterhitung - uangjalan - potonganpinjaman - potonganpinjamansemua - deposito - bbm) as sisa'),
+                DB::raw('(case when (year(gajisupirheader.tglbukacetak) <= 2000) then null else gajisupirheader.tglbukacetak end ) as tglbukacetak'),
                 DB::raw("'Laporan Rincian Gaji Supir' as judulLaporan"),
-                DB::raw("'" . $getJudul->text . "' as judul"),
                 DB::raw("'" . $getJudul->text . "' as judul"),
                 DB::raw("'Tgl Cetak:'+format(getdate(),'dd-MM-yyyy HH:mm:ss')as tglcetak"),
                 DB::raw(" 'User :".auth('api')->user()->name."' as usercetak")
             )
-            ->leftJoin(DB::raw("parameter with (readuncommitted)"), 'gajisupirheader.statuscetak', 'parameter.id')
+            ->leftJoin(DB::raw("parameter as statuscetak with (readuncommitted)"), 'gajisupirheader.statuscetak', 'statuscetak.id')
             ->leftJoin(DB::raw("supir with (readuncommitted)"), 'gajisupirheader.supir_id', 'supir.id')
             ->where("$this->table.id", $id);
 

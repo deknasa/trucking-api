@@ -262,6 +262,11 @@ return [
      * To define API_URL. So that, it can
      * be called for every API Request.
      */
+    'jwt_key' => env('JWT_KEY', 'ddwadu918412g4bkuaukawf91824g12uvakvaskuvuaf'),
+    'jwt_alg' => env('JWT_ALG', 'HS256'),
+    'jwt_exp' => env('JWT_EXP', '30'),
     'api_url' => env('API_URL', 'http://tassby.kozow.com:8888/emkl-backend/public/api/'),
+
+    'web_url' => env('WEB_URL', 'http://localhost/trucking/'),
 
 ];

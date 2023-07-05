@@ -235,37 +235,30 @@ class PengeluaranTruckingHeaderController extends Controller
         DB::beginTransaction();
 
         try {
-            $pengeluaran = PengeluaranTruckingHeader::lockForUpdate()->findOrFail($id);
-            $statusSudahCetak = Parameter::from(DB::raw("parameter with (readuncommitted)"))
-                ->where('grp', '=', 'STATUSCETAK')->where('text', '=', 'CETAK')->first();
-            $statusBelumCetak = Parameter::from(DB::raw("parameter with (readuncommitted)"))
-                ->where('grp', '=', 'STATUSCETAK')->where('text', '=', 'BELUM CETAK')->first();
+            $pengeluaranTruckingHeader = PengeluaranTruckingHeader::findOrFail($id);
+            $statusSudahCetak = Parameter::where('grp', '=', 'STATUSCETAK')->where('text', '=', 'CETAK')->first();
+            $statusBelumCetak = Parameter::where('grp', '=', 'STATUSCETAK')->where('text', '=', 'BELUM CETAK')->first();
 
-            if ($pengeluaran->statuscetak != $statusSudahCetak->id) {
-                $pengeluaran->statuscetak = $statusSudahCetak->id;
-                $pengeluaran->tglbukacetak = date('Y-m-d H:i:s');
-                $pengeluaran->userbukacetak = auth('api')->user()->name;
-                $pengeluaran->jumlahcetak = $pengeluaran->jumlahcetak + 1;
-
-                if ($pengeluaran->save()) {
+            if ($pengeluaranTruckingHeader->statuscetak != $statusSudahCetak->id) {
+                $pengeluaranTruckingHeader->statuscetak = $statusSudahCetak->id;
+                $pengeluaranTruckingHeader->tglbukacetak = date('Y-m-d H:i:s');
+                $pengeluaranTruckingHeader->userbukacetak = auth('api')->user()->name;
+                $pengeluaranTruckingHeader->jumlahcetak = $pengeluaranTruckingHeader->jumlahcetak + 1;
+                if ($pengeluaranTruckingHeader->save()) {
                     $logTrail = [
-                        'namatabel' => strtoupper($pengeluaran->getTable()),
+                        'namatabel' => strtoupper($pengeluaranTruckingHeader->getTable()),
                         'postingdari' => 'PRINT PENGELUARAN TRUCKING HEADER',
-                        'idtrans' => $pengeluaran->id,
-                        'nobuktitrans' => $pengeluaran->nobukti,
+                        'idtrans' => $pengeluaranTruckingHeader->id,
+                        'nobuktitrans' => $pengeluaranTruckingHeader->id,
                         'aksi' => 'PRINT',
-                        'datajson' => $pengeluaran->toArray(),
-                        'modifiedby' => auth('api')->user()->name,
+                        'datajson' => $pengeluaranTruckingHeader->toArray(),
+                        'modifiedby' => $pengeluaranTruckingHeader->modifiedby
                     ];
-
                     $validatedLogTrail = new StoreLogTrailRequest($logTrail);
                     $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
-
                     DB::commit();
                 }
             }
-
-
             return response([
                 'message' => 'Berhasil'
             ]);

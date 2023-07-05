@@ -9,8 +9,12 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
 use App\Http\Controllers\Api\ParameterController;
 use App\Http\Controllers\Api\ErrorController;
+<<<<<<< Updated upstream
 use App\Rules\SupirBlackListKtp;
 use App\Rules\SupirBlackListSim;
+=======
+use App\Rules\NoKtpSupir;
+>>>>>>> Stashed changes
 
 class StoreSupirRequest extends FormRequest
 {

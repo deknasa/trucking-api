@@ -952,6 +952,8 @@ class PenerimaanHeader extends MyModel
                 'bank.tipe as tipe_bank',
                 'penerimaanheader.postingdari',
                 'penerimaanheader.diterimadari',
+                'statuscetak.memo as statuscetak',
+                'statuscetak.id as  statuscetak_id',
                 DB::raw('(case when (year(penerimaanheader.tgllunas) <= 2000) then null else penerimaanheader.tgllunas end ) as tgllunas'),
                 'penerimaanheader.userapproval',
                 DB::raw("'Laporan Penerimaan' as judulLaporan"),
@@ -960,6 +962,7 @@ class PenerimaanHeader extends MyModel
                 DB::raw(" 'User :".auth('api')->user()->name."' as usercetak")
             )
             ->where("$this->table.id", $id)
+            ->leftJoin(DB::raw("parameter as statuscetak with (readuncommitted)"), 'penerimaanheader.statuscetak', 'statuscetak.id')
             ->leftJoin(DB::raw("pelanggan with (readuncommitted)"), 'penerimaanheader.pelanggan_id', 'pelanggan.id')
             ->leftJoin(DB::raw("bank with (readuncommitted)"), 'penerimaanheader.bank_id', 'bank.id')
             ->leftJoin(DB::raw("agen with (readuncommitted)"), 'penerimaanheader.agen_id', 'agen.id');

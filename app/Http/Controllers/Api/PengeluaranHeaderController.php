@@ -228,37 +228,30 @@ class PengeluaranHeaderController extends Controller
         DB::beginTransaction();
 
         try {
-            $pengeluaran = PengeluaranHeader::lockForUpdate()->findOrFail($id);
-            $statusSudahCetak = Parameter::from(DB::raw("parameter with (readuncommitted)"))
-                ->where('grp', '=', 'STATUSCETAK')->where('text', '=', 'CETAK')->first();
-            $statusBelumCetak = Parameter::from(DB::raw("parameter with (readuncommitted)"))
-                ->where('grp', '=', 'STATUSCETAK')->where('text', '=', 'BELUM CETAK')->first();
+            $pengeluaranHeader = PengeluaranHeader::findOrFail($id);
+            $statusSudahCetak = Parameter::where('grp', '=', 'STATUSCETAK')->where('text', '=', 'CETAK')->first();
+            $statusBelumCetak = Parameter::where('grp', '=', 'STATUSCETAK')->where('text', '=', 'BELUM CETAK')->first();
 
-            if ($pengeluaran->statuscetak != $statusSudahCetak->id) {
-                $pengeluaran->statuscetak = $statusSudahCetak->id;
-                $pengeluaran->tglbukacetak = date('Y-m-d H:i:s');
-                $pengeluaran->userbukacetak = auth('api')->user()->name;
-                $pengeluaran->jumlahcetak = $pengeluaran->jumlahcetak + 1;
-
-                if ($pengeluaran->save()) {
+            if ($pengeluaranHeader->statuscetak != $statusSudahCetak->id) {
+                $pengeluaranHeader->statuscetak = $statusSudahCetak->id;
+                $pengeluaranHeader->tglbukacetak = date('Y-m-d H:i:s');
+                $pengeluaranHeader->userbukacetak = auth('api')->user()->name;
+                $pengeluaranHeader->jumlahcetak = $pengeluaranHeader->jumlahcetak + 1;
+                if ($pengeluaranHeader->save()) {
                     $logTrail = [
-                        'namatabel' => strtoupper($pengeluaran->getTable()),
+                        'namatabel' => strtoupper($pengeluaranHeader->getTable()),
                         'postingdari' => 'PRINT PENGELUARAN HEADER',
-                        'idtrans' => $pengeluaran->id,
-                        'nobuktitrans' => $pengeluaran->nobukti,
+                        'idtrans' => $pengeluaranHeader->id,
+                        'nobuktitrans' => $pengeluaranHeader->id,
                         'aksi' => 'PRINT',
-                        'datajson' => $pengeluaran->toArray(),
-                        'modifiedby' => auth('api')->user()->name,
+                        'datajson' => $pengeluaranHeader->toArray(),
+                        'modifiedby' => $pengeluaranHeader->modifiedby
                     ];
-
                     $validatedLogTrail = new StoreLogTrailRequest($logTrail);
                     $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
-
                     DB::commit();
                 }
             }
-
-
             return response([
                 'message' => 'Berhasil'
             ]);
@@ -386,6 +379,17 @@ class PengeluaranHeaderController extends Controller
         }
     }
 
+
+    /**
+     * @ClassName
+     */
+    public function report()
+    {
+    }
+
+    /**
+     * @ClassName
+     */
     public function export($id)
     {
         $pengeluaranHeader = new PengeluaranHeader();

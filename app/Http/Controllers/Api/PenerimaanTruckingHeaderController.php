@@ -183,37 +183,30 @@ class PenerimaanTruckingHeaderController extends Controller
         DB::beginTransaction();
 
         try {
-            $penerimaanTrucking = PenerimaanTruckingHeader::lockForUpdate()->findOrFail($id);
-            $statusSudahCetak = Parameter::from(DB::raw("parameter with (readuncommitted)"))
-                ->where('grp', '=', 'STATUSCETAK')->where('text', '=', 'CETAK')->first();
-            $statusBelumCetak = Parameter::from(DB::raw("parameter with (readuncommitted)"))
-                ->where('grp', '=', 'STATUSCETAK')->where('text', '=', 'BELUM CETAK')->first();
+            $penerimaanTruckingHeader = PenerimaanTruckingHeader::findOrFail($id);
+            $statusSudahCetak = Parameter::where('grp', '=', 'STATUSCETAK')->where('text', '=', 'CETAK')->first();
+            $statusBelumCetak = Parameter::where('grp', '=', 'STATUSCETAK')->where('text', '=', 'BELUM CETAK')->first();
 
-            if ($penerimaanTrucking->statuscetak != $statusSudahCetak->id) {
-                $penerimaanTrucking->statuscetak = $statusSudahCetak->id;
-                $penerimaanTrucking->tglbukacetak = date('Y-m-d H:i:s');
-                $penerimaanTrucking->userbukacetak = auth('api')->user()->name;
-                $penerimaanTrucking->jumlahcetak = $penerimaanTrucking->jumlahcetak + 1;
-
-                if ($penerimaanTrucking->save()) {
+            if ($penerimaanTruckingHeader->statuscetak != $statusSudahCetak->id) {
+                $penerimaanTruckingHeader->statuscetak = $statusSudahCetak->id;
+                $penerimaanTruckingHeader->tglbukacetak = date('Y-m-d H:i:s');
+                $penerimaanTruckingHeader->userbukacetak = auth('api')->user()->name;
+                $penerimaanTruckingHeader->jumlahcetak = $penerimaanTruckingHeader->jumlahcetak + 1;
+                if ($penerimaanTruckingHeader->save()) {
                     $logTrail = [
-                        'namatabel' => strtoupper($penerimaanTrucking->getTable()),
+                        'namatabel' => strtoupper($penerimaanTruckingHeader->getTable()),
                         'postingdari' => 'PRINT PENERIMAAN TRUCKING HEADER',
-                        'idtrans' => $penerimaanTrucking->id,
-                        'nobuktitrans' => $penerimaanTrucking->nobukti,
+                        'idtrans' => $penerimaanTruckingHeader->id,
+                        'nobuktitrans' => $penerimaanTruckingHeader->id,
                         'aksi' => 'PRINT',
-                        'datajson' => $penerimaanTrucking->toArray(),
-                        'modifiedby' => auth('api')->user()->name,
+                        'datajson' => $penerimaanTruckingHeader->toArray(),
+                        'modifiedby' => $penerimaanTruckingHeader->modifiedby
                     ];
-
                     $validatedLogTrail = new StoreLogTrailRequest($logTrail);
                     $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
-
                     DB::commit();
                 }
             }
-
-
             return response([
                 'message' => 'Berhasil'
             ]);

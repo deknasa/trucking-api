@@ -199,38 +199,29 @@ class PiutangHeaderController extends Controller
         DB::beginTransaction();
 
         try {
-            $piutang = PiutangHeader::lockForUpdate()->findOrFail($id);
-            $statusSudahCetak = Parameter::from(
-                DB::raw("parameter with (readuncommitted)")
-            )->where('grp', '=', 'STATUSCETAK')->where('text', '=', 'CETAK')->first();
-            $statusBelumCetak = Parameter::from(
-                DB::raw("parameter with (readuncommitted)")
-            )->where('grp', '=', 'STATUSCETAK')->where('text', '=', 'BELUM CETAK')->first();
+            $piutangHeader = PiutangHeader::findOrFail($id);
+            $statusSudahCetak = Parameter::where('grp', '=', 'STATUSCETAK')->where('text', '=', 'CETAK')->first();
+            $statusBelumCetak = Parameter::where('grp', '=', 'STATUSCETAK')->where('text', '=', 'BELUM CETAK')->first();
 
-            if ($piutang->statuscetak != $statusSudahCetak->id) {
-                $piutang->statuscetak = $statusSudahCetak->id;
-                $piutang->tglbukacetak = date('Y-m-d H:i:s');
-                $piutang->userbukacetak = auth('api')->user()->name;
-
-                if ($piutang->save()) {
+            if ($piutangHeader->statuscetak != $statusSudahCetak->id) {
+                $piutangHeader->statuscetak = $statusSudahCetak->id;
+                $piutangHeader->tglbukacetak = date('Y-m-d H:i:s');
+                $piutangHeader->userbukacetak = auth('api')->user()->name;
+                if ($piutangHeader->save()) {
                     $logTrail = [
-                        'namatabel' => strtoupper($piutang->getTable()),
+                        'namatabel' => strtoupper($piutangHeader->getTable()),
                         'postingdari' => 'PRINT PIUTANG HEADER',
-                        'idtrans' => $piutang->id,
-                        'nobuktitrans' => $piutang->nobukti,
+                        'idtrans' => $piutangHeader->id,
+                        'nobuktitrans' => $piutangHeader->id,
                         'aksi' => 'PRINT',
-                        'datajson' => $piutang->toArray(),
-                        'modifiedby' => auth('api')->user()->name,
+                        'datajson' => $piutangHeader->toArray(),
+                        'modifiedby' => $piutangHeader->modifiedby
                     ];
-
                     $validatedLogTrail = new StoreLogTrailRequest($logTrail);
                     $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
-
                     DB::commit();
                 }
             }
-
-
             return response([
                 'message' => 'Berhasil'
             ]);
@@ -343,6 +334,7 @@ class PiutangHeaderController extends Controller
             'data' => $piutang->getExport($id)
         ]);
     }
+
     public function fieldLength()
     {
         $data = [];

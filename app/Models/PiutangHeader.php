@@ -663,12 +663,15 @@ class PiutangHeader extends MyModel
             'debet.keterangancoa as coadebet',
             'kredit.keterangancoa as coakredit',
             'agen.namaagen as agen_id',
+            'statuscetak.memo as statuscetak',
+            'statuscetak.id as  statuscetak_id',
             DB::raw("'Laporan Piutang' as judulLaporan"),
             DB::raw("'" . $getJudul->text . "' as judul"),
             DB::raw("'Tgl Cetak:'+format(getdate(),'dd-MM-yyyy HH:mm:ss')as tglcetak"),
             DB::raw(" 'User :".auth('api')->user()->name."' as usercetak")
         )
             ->where("$this->table.id", $id)
+            ->leftJoin(DB::raw("parameter as statuscetak with (readuncommitted)"), 'piutangheader.statuscetak', 'statuscetak.id')
             ->leftJoin(DB::raw("agen with (readuncommitted)"), 'piutangheader.agen_id', 'agen.id')
             ->leftJoin(DB::raw("akunpusat as debet with (readuncommitted)"), 'piutangheader.coadebet', 'debet.coa')
             ->leftJoin(DB::raw("akunpusat as kredit with (readuncommitted)"), 'piutangheader.coakredit', 'kredit.coa')

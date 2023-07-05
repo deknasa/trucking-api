@@ -1113,6 +1113,7 @@ class ProsesGajiSupirHeader extends MyModel
                 'prosesgajisupirheader.userapproval',
                 'statusapproval.memo as statusapproval',
                 'statuscetak.memo as statuscetak',
+                "statuscetak.id as  statuscetak_id",
                 'prosesgajisupirheader.pengeluaran_nobukti',
                 $this->tableTotal . '.total',
                 $this->tableTotal . '.totalposting',

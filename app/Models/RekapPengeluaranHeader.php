@@ -325,12 +325,15 @@ class RekapPengeluaranHeader extends MyModel
             "$this->table.tgltransaksi",
             "$this->table.keterangan",
             "bank.namabank as bank",
+            'statuscetak.memo as statuscetak',
+            'statuscetak.id as  statuscetak_id',
             DB::raw("'Laporan Rekap Pengeluaran' as judulLaporan"),
             DB::raw("'" . $getJudul->text . "' as judul"),
             DB::raw("'Tgl Cetak:'+format(getdate(),'dd-MM-yyyy HH:mm:ss')as tglcetak"),
             DB::raw(" 'User :".auth('api')->user()->name."' as usercetak")
         )
         ->where("$this->table.id", $id)
+        ->leftJoin(DB::raw("parameter as statuscetak with (readuncommitted)"), 'rekappengeluaranheader.statuscetak', 'statuscetak.id')
         ->leftJoin('bank','rekappengeluaranheader.bank_id','bank.id');
         
         $data = $query->first();

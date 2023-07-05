@@ -500,4 +500,41 @@ class AbsensiSupirHeaderController extends Controller
     public function report()
     {
     }
+
+    public function printReport($id)
+    {
+        DB::beginTransaction();
+
+        try {
+            $absensiSupirHeader = AbsensiSupirHeader::findOrFail($id);
+            $statusSudahCetak = Parameter::where('grp', '=', 'STATUSCETAK')->where('text', '=', 'CETAK')->first();
+            $statusBelumCetak = Parameter::where('grp', '=', 'STATUSCETAK')->where('text', '=', 'BELUM CETAK')->first();
+
+            if ($absensiSupirHeader->statuscetak != $statusSudahCetak->id) {
+                $absensiSupirHeader->statuscetak = $statusSudahCetak->id;
+                $absensiSupirHeader->tglbukacetak = date('Y-m-d H:i:s');
+                $absensiSupirHeader->userbukacetak = auth('api')->user()->name;
+                $absensiSupirHeader->jumlahcetak = $absensiSupirHeader->jumlahcetak + 1;
+                if ($absensiSupirHeader->save()) {
+                    $logTrail = [
+                        'namatabel' => strtoupper($absensiSupirHeader->getTable()),
+                        'postingdari' => 'PRINT ABSENSI SUPIR HEADER',
+                        'idtrans' => $absensiSupirHeader->id,
+                        'nobuktitrans' => $absensiSupirHeader->id,
+                        'aksi' => 'PRINT',
+                        'datajson' => $absensiSupirHeader->toArray(),
+                        'modifiedby' => $absensiSupirHeader->modifiedby
+                    ];
+                    $validatedLogTrail = new StoreLogTrailRequest($logTrail);
+                    $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
+                    DB::commit();
+                }
+            }
+            return response([
+                'message' => 'Berhasil'
+            ]);
+        } catch (\Throwable $th) {
+            throw $th;
+        }
+    }
 }
