@@ -1128,6 +1128,10 @@ class GajiSupirHeader extends MyModel
                 'gajisupirheader.potonganpinjamansemua',
                 'gajisupirheader.uangmakanharian',
                 'gajisupirheader.uangJalantidakterhitung',
+                db::raw(' CASE
+                WHEN gajisupirheader.jumlahcetak = 0 THEN NULL
+                ELSE gajisupirheader.jumlahcetak
+              END AS jumlahcetak'),
                 DB::raw('(total + uangmakanharian - uangJalantidakterhitung - uangjalan - potonganpinjaman - potonganpinjamansemua - deposito - bbm) as sisa'),
                 DB::raw('(case when (year(gajisupirheader.tglbukacetak) <= 2000) then null else gajisupirheader.tglbukacetak end ) as tglbukacetak'),
                 DB::raw("'Laporan Rincian Gaji Supir' as judulLaporan"),

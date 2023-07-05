@@ -80,7 +80,7 @@ class PemutihanSupirController extends Controller
 
             DB::commit();
 
-            return response([
+            return response()->json([
                 'status' => true,
                 'message' => 'Berhasil disimpan',
                 'data' => $pemutihanSupir

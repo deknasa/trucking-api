@@ -318,6 +318,10 @@ class ProsesUangJalanSupirHeader extends MyModel
             'prosesuangjalansupirheader.nominaluangjalan',
             'trado.kodetrado as trado_id',
             'supir.namasupir as supir_id',
+        //     db::raw(' CASE
+        //     WHEN prosesuangjalansupirheader.jumlahcetak = 0 THEN NULL
+        //     ELSE prosesuangjalansupirheader.jumlahcetak
+        //   END AS jumlahcetak'),
             // 'statuscetak.memo as statuscetak',
             // 'statuscetak.id as  statuscetak_id',
             DB::raw("'Laporan Proses Uang Jalan Supir' as judulLaporan"),

@@ -733,6 +733,10 @@ class PemutihanSupir extends MyModel
                 'akunpusat.keterangancoa as coa',
                 'pemutihansupirheader.pengeluaransupir',
                 'pemutihansupirheader.penerimaansupir',
+            //     db::raw(' CASE
+            //     WHEN pemutihansupirheader.jumlahcetak = 0 THEN NULL
+            //     ELSE pemutihansupirheader.jumlahcetak
+            //   END AS jumlahcetak'),
                 DB::raw("'Laporan Pemutihan Supir' as judulLaporan"),
                 DB::raw("'" . $getJudul->text . "' as judul"),
                 DB::raw("'Tgl Cetak:'+format(getdate(),'dd-MM-yyyy HH:mm:ss')as tglcetak"),
@@ -764,7 +768,7 @@ class PemutihanSupir extends MyModel
 
         $pemutihanSupir->nobukti = (new RunningNumberService)->get($group, $subgroup, $pemutihanSupir->getTable(), date('Y-m-d', strtotime($data['tglbukti'])));
         $pemutihanSupir->tglbukti = date('Y-m-d', strtotime($data['tglbukti']));
-        $pemutihanSupir->supir_id = $data['supr_id'];
+        $pemutihanSupir->supir_id = $data['supir_id'];
         $pemutihanSupir->pengeluaransupir = $data['pengeluaransupir'];
         $pemutihanSupir->penerimaansupir = $data['penerimaansupir'] ?? 0;
         $pemutihanSupir->bank_id = $data['bank_id'];

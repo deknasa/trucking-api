@@ -385,6 +385,10 @@ class ServiceInHeader extends MyModel
                 'serviceinheader.tglbukti',
                 'trado.kodetrado as trado_id',
                 'serviceinheader.tglmasuk',
+                db::raw("CASE
+                WHEN serviceinheader.jumlahcetak = 0 THEN NULL
+                ELSE serviceinheader.jumlahcetak
+              END AS jumlahcetak"),
                 DB::raw("'Laporan Service In' as judulLaporan"),
                 DB::raw("'" . $getJudul->text . "' as judul"),
                 DB::raw("'Tgl Cetak:'+format(getdate(),'dd-MM-yyyy HH:mm:ss')as tglcetak"),

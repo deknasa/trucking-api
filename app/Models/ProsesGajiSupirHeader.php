@@ -1115,6 +1115,10 @@ class ProsesGajiSupirHeader extends MyModel
                 'statuscetak.memo as statuscetak',
                 "statuscetak.id as  statuscetak_id",
                 'prosesgajisupirheader.pengeluaran_nobukti',
+                db::raw(' CASE
+                WHEN prosesgajisupirheader.jumlahcetak = 0 THEN NULL
+                ELSE prosesgajisupirheader.jumlahcetak
+              END AS jumlahcetak'),
                 $this->tableTotal . '.total',
                 $this->tableTotal . '.totalposting',
                 $this->tableTotal . '.uangjalan',

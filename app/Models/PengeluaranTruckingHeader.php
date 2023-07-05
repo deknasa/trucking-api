@@ -750,6 +750,10 @@ class PengeluaranTruckingHeader extends MyModel
                 'akunpusat.keterangancoa as coa',
                 'statuscetak.memo as statuscetak',
                 'statuscetak.id as  statuscetak_id',
+                db::raw("CASE
+                WHEN pengeluarantruckingheader.jumlahcetak = 0 THEN NULL
+                ELSE pengeluarantruckingheader.jumlahcetak
+              END AS jumlahcetak"),
                 DB::raw("'Laporan Pengeluaran Trucking' as judulLaporan"),
                 DB::raw("'" . $getJudul->text . "' as judul"),
                 DB::raw("'Tgl Cetak:'+format(getdate(),'dd-MM-yyyy HH:mm:ss')as tglcetak"),
