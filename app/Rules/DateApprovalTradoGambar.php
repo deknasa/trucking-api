@@ -26,7 +26,9 @@ class DateApprovalTradoGambar implements Rule
      */
     public function passes($attribute, $value)
     {
-        if($value < date('d-m-Y') || $value == date('d-m-Y')){
+        $value = strtotime($value);
+        $today = strtotime("today");
+        if($value <= $today ){
             return false;
         }else{
             return true;
