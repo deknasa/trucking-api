@@ -402,9 +402,9 @@ class AkunPusatController extends Controller
                             $dataCoa[] = $akunPusat->coa;
                         }
                     } else if ($transferToCabang['statuscode'] == 500) {
-                        $messages[] = $transferToCabang['cabang'] . ' : server sedang offline';
+                        $messages[] = $transferToCabang['cabang'] . ' : server sedang tidak bisa diakses';
                     } else {
-                        $messages[] = $transferToCabang['cabang'] . ' : proses cek coa belum ada';
+                        $messages[] = $transferToCabang['cabang'] . ' : proses cek akun pusat belum ada';
                     }
                 }
                 if ($transferToCabang['statuscode'] == 200) {
@@ -420,7 +420,9 @@ class AkunPusatController extends Controller
             }
             if(!empty($returnArray)){
                 return response([
-                    'data' => $returnArray
+                    'errors' => [
+                        'data' => $returnArray
+                    ]
                 ], 422);
             }
 

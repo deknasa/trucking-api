@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests;
 
+use App\Rules\ValidasiDetail;
 use Illuminate\Foundation\Http\FormRequest;
 
 class TransferAkunPusatRequest extends FormRequest
@@ -23,9 +24,9 @@ class TransferAkunPusatRequest extends FormRequest
      */
     public function rules()
     {
+        $jumlahdetail = $this->jumlahdetail ?? 0;
         return [
-            'cabang' => 'required',
-            'coaId' => 'required'
+            'cabang' => ['required',new ValidasiDetail($jumlahdetail)],
         ];
     }
 }
