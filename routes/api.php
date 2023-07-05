@@ -581,6 +581,7 @@ route::middleware(['auth:api','authorized'])->group(function () {
     Route::get('akunpusat/report', [AkunPusatController::class, 'report']);
     Route::post('akunpusat/transfer', [AkunPusatController::class, 'transfer']);
     Route::delete('akunpusat/deleteCoa', [AkunPusatController::class, 'deleteCoa']);
+    Route::get('akunpusat/checkCoa', [AkunPusatController::class, 'checkCoa']);
     Route::get('akunpusat/{id}/cekValidasi', [AkunPusatController::class, 'cekValidasi'])->name('akunpusat.cekValidasi')->whereNumber('id');
     Route::resource('akunpusat', AkunPusatController::class)->parameters(['akunpusat' => 'akunPusat'])->whereNumber('akunPusat');
 
