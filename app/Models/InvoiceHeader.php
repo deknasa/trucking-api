@@ -262,10 +262,12 @@ class InvoiceHeader extends MyModel
             ->where('jenisorder_id', $request->jenisorder_id)
             ->where('tglbukti', '>=', date('Y-m-d', strtotime($request->tgldari)))
             ->where('tglbukti', '<=', date('Y-m-d', strtotime($request->tglsampai)))
+            ->whereRaw("nocont != ''")
+            ->whereRaw("noseal != ''")
             ->groupBy('jobtrucking');
         Schema::create($temp, function ($table) {
             $table->bigInteger('id')->nullable();
-            $table->string('jobtrucking');
+            $table->string('jobtrucking')->nullable();
         });
 
         $tes = DB::table($temp)->insertUsing(['id', 'jobtrucking'], $fetch);

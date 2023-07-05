@@ -199,6 +199,8 @@ class InvoiceHeaderController extends Controller
             ->whereRaw("jenisorder_id = $request->jenisorder_id")
             ->whereRaw("tglbukti >= '$dari'")
             ->whereRaw("tglbukti <= '$sampai'")
+            ->whereRaw("nocont != ''")
+            ->whereRaw("noseal != ''")
             ->whereRaw("suratpengantar.jobtrucking not in(select orderantrucking_nobukti from invoicedetail)");
 
         if ($cekSP->first()) {

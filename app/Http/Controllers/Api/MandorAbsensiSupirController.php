@@ -44,6 +44,8 @@ class MandorAbsensiSupirController extends Controller
     {
         DB::beginTransaction();
         try {
+            
+            $statusaktif = DB::table('parameter')->where('grp', 'STATUS AKTIF')->where('subgrp', 'STATUS AKTIF')->where('text', 'AKTIF')->first();
             $data = [
                 "tglbukti" =>$request->tglbukti,
                 "kasgantung_nobukti" =>$request->kasgantung_nobukti,
@@ -56,6 +58,9 @@ class MandorAbsensiSupirController extends Controller
             ];
             $AbsensiSupirHeader = (new MandorAbsensiSupir())->processStore($data);
             $AbsensiSupirHeader->position = $this->getPositionMandor($AbsensiSupirHeader->trado_id)->position;
+            if ($request->limit == 0) {
+                $request->limit = DB::table('trado')->where('statusaktif',$statusaktif->id)->count();
+            }
             $AbsensiSupirHeader->page = ceil($AbsensiSupirHeader->position / ($request->limit ?? 10));
 
             DB::commit();
