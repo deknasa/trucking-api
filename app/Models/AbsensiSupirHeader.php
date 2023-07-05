@@ -403,7 +403,10 @@ class AbsensiSupirHeader extends MyModel
                 "statuscetak.id as  statuscetak_id",
                 'statusapprovaleditabsensi.memo as statusapprovaleditabsensi',
                 'absensisupirheader.userbukacetak',
-                'absensisupirheader.jumlahcetak',
+                db::raw(' CASE
+                WHEN absensisupirheader.jumlahcetak = 0 THEN NULL
+                ELSE absensisupirheader.jumlahcetak
+              END AS jumlahcetak'),
                 DB::raw("(case when absensisupirheader.nominal IS NULL then 0 else absensisupirheader.nominal end) as nominal"),
                 DB::raw("'Laporan Absensi Supir' as judulLaporan"),
                 DB::raw("'" . $getJudul->text . "' as judul"),

@@ -300,6 +300,10 @@ class InvoiceChargeGandenganHeader extends MyModel
             "parameter.memo as statusapproval",
             'statuscetak.memo as statuscetak',
             'statuscetak.id as  statuscetak_id',
+            db::raw("CASE
+            WHEN $this->table.jumlahcetak = 0 THEN NULL
+            ELSE $this->table.jumlahcetak
+          END AS jumlahcetak"),
             DB::raw("'Laporan Invoice Charge Gandengan' as judulLaporan"),
             DB::raw("'" . $getJudul->text . "' as judul"),
             DB::raw("'Tgl Cetak:'+format(getdate(),'dd-MM-yyyy HH:mm:ss')as tglcetak"),

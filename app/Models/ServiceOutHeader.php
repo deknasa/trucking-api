@@ -391,6 +391,10 @@ class ServiceOutHeader extends MyModel
             'serviceoutheader.tglbukti',
             'trado.kodetrado as trado_id',
             'serviceoutheader.tglkeluar',
+            db::raw("CASE
+                WHEN serviceoutheader.jumlahcetak = 0 THEN NULL
+                ELSE serviceoutheader.jumlahcetak
+              END AS jumlahcetak"),
             DB::raw("'Laporan Service Out' as judulLaporan"),
             DB::raw("'" . $getJudul->text . "' as judul"),
             DB::raw("'Tgl Cetak:'+format(getdate(),'dd-MM-yyyy HH:mm:ss')as tglcetak"),
