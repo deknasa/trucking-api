@@ -194,7 +194,7 @@ class AkunPusatController extends Controller
                 'status' => true,
                 'message' => 'tidak ada data yang sama'
             ]);
-        }else{
+        } else {
             return response()->json([
                 'status' => false,
                 'message' => 'ada data yang sama'
@@ -390,6 +390,8 @@ class AkunPusatController extends Controller
 
             for ($x = 0; $x < count($request->cabang); $x++) {
                 $messages = []; // Array to store messages for each cabang
+                $messages200 = []; // Array to store messages for statuscode 200
+                $dataCoa = [];
 
                 for ($i = 0; $i < count($request->coaId); $i++) {
                     $akunPusat = (new AkunPusat())->findAll($request->coaId[$i]);
@@ -398,7 +400,7 @@ class AkunPusatController extends Controller
 
                     if ($transferToCabang['statuscode'] == 200) {
                         if ($transferToCabang['data']['status'] == false) {
-                            $messages200[] = $transferToCabang['cabang'] . ' : sudah pernah input' ;
+                            $messages200[] = $transferToCabang['cabang'] . ' : sudah pernah input';
                             $dataCoa[] = $akunPusat->coa;
                         }
                     } else if ($transferToCabang['statuscode'] == 500) {
@@ -407,25 +409,25 @@ class AkunPusatController extends Controller
                         $messages[] = $transferToCabang['cabang'] . ' : proses cek akun pusat belum ada';
                     }
                 }
-                if ($transferToCabang['statuscode'] == 200) {
+                if (!empty($messages200)) {
                     $data = implode(', ', $dataCoa);
                     $msg = array_unique($messages200);
-                    $messages[] = $msg[0].' '.$data;
+                    $messages[] = $msg[0] . ' ' . $data;
                 }
                 // Add the messages to the return array
                 if (!empty($messages)) {
                     $messages = array_unique($messages);
-                    $returnArray[$x] = implode(', ', $messages);
+                    $returnArray[] = implode(', ', $messages);
                 }
             }
-            if(!empty($returnArray)){
+
+            if (!empty($returnArray)) {
                 return response([
-                    'errors' => [
-                        'data' => $returnArray
-                    ]
-                ], 422);
+                    'message' => $returnArray
+                ], 500);
             }
 
+            $returnArray = [];
             for ($x = 0; $x < count($request->cabang); $x++) {
                 for ($i = 0; $i < count($request->coaId); $i++) {
 
@@ -435,9 +437,12 @@ class AkunPusatController extends Controller
 
                     $statusCode[] = $transferToCabang['statuscode'];
                 }
-                if ($transferToCabang['statuscode'] != 200) {
-                    $cabangError[] = $transferToCabang['cabang'];
+                if ($transferToCabang['statuscode'] != 201) {
+                    $cabangError[] = $transferToCabang['cabang'] . ' : server sedang tidak bisa diakses';
                     $statusCodeError[] = $transferToCabang['statuscode'];
+                }
+                if (!empty($cabangError)) {
+                    $returnArray = array_unique($cabangError);
                 }
             }
 
@@ -459,6 +464,13 @@ class AkunPusatController extends Controller
                         $statusCode[] = $deleteToCabang['statuscode'];
                     }
                 }
+                return response([
+                    'message' => $returnArray
+                ], 500);
+            } else {
+                return response([
+                    'status' => true
+                ]);
             }
         } catch (\Throwable $th) {
             DB::rollBack();
@@ -473,22 +485,22 @@ class AkunPusatController extends Controller
         if ($getCabang->kodecabang == 'MDN') {
             return [
                 "cabang" => $getCabang->namacabang,
-                "server" => getenv('MDN_SERVER'),
+                "server" => config('app.server_mdn'),
             ];
         } else if ($getCabang->kodecabang == 'SBY') {
             return [
                 "cabang" => $getCabang->namacabang,
-                "server" => getenv('SBT_SERVER'),
+                "server" => config('app.server_sby'),
             ];
         } else if ($getCabang->kodecabang == 'MKS') {
             return [
                 "cabang" => $getCabang->namacabang,
-                "server" => getenv('MKS_SERVER'),
+                "server" => config('app.server_mks'),
             ];
         } else if ($getCabang->kodecabang == 'JKT') {
             return [
                 "cabang" => $getCabang->namacabang,
-                "server" => getenv('JKT_SERVER'),
+                "server" => config('app.server_jkt'),
             ];
         }
     }
@@ -503,8 +515,8 @@ class AkunPusatController extends Controller
             'Accept' => 'application/json'
         ])
             ->post($cabang['server'] . 'trucking-api/public/api/token', [
-                'user' => getenv('USER_API'),
-                'password' => getenv('PASSWORD_API'),
+                'user' => config('app.user_api'),
+                'password' => config('app.pass_api'),
             ]);
         $access_token = json_decode($tes, TRUE)['access_token'];
         $data = json_decode(json_encode($data), true);
@@ -535,8 +547,8 @@ class AkunPusatController extends Controller
             'Accept' => 'application/json'
         ])
             ->post($cabang['server'] . 'trucking-api/public/api/token', [
-                'user' => getenv('USER_API'),
-                'password' => getenv('PASSWORD_API'),
+                'user' => config('app.user_api'),
+                'password' => config('app.pass_api'),
             ]);
         $access_token = json_decode($tes, TRUE)['access_token'];
 
@@ -564,14 +576,13 @@ class AkunPusatController extends Controller
     {
         // cek status code, kalau ada aja salahsatu yg bukan 200, langsung jalankan delete
         $cabang = $this->getCabang($cabangId);
-
         $tes = Http::withHeaders([
             'Content-Type' => 'application/json',
             'Accept' => 'application/json'
         ])
             ->post($cabang['server'] . 'trucking-api/public/api/token', [
-                'user' => getenv('USER_API'),
-                'password' => getenv('PASSWORD_API'),
+                'user' => config('app.user_api'),
+                'password' => config('app.pass_api'),
             ]);
         $access_token = json_decode($tes, TRUE)['access_token'];
         $data = json_decode(json_encode($data), true);

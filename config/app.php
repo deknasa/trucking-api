@@ -266,7 +266,13 @@ return [
     'jwt_alg' => env('JWT_ALG', 'HS256'),
     'jwt_exp' => env('JWT_EXP', '30'),
     'api_url' => env('API_URL', 'http://tassby.kozow.com:8888/emkl-backend/public/api/'),
-
+    'server_mdn' => env('MDN_SERVER'),
+    'server_jkt' => env('JKT_SERVER'),
+    'server_sby' => env('SBY_SERVER'),
+    'server_mks' => env('MKS_SERVER'),
+    'server_btg' => env('BTG_SERVER'),
+    'user_api' => env('USER_API'),
+    'pass_api' => env('PASSWORD_API'),
     'web_url' => env('WEB_URL', 'http://localhost/trucking/'),
 
 ];
