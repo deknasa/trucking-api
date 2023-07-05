@@ -70,24 +70,6 @@ class AkunPusat extends MyModel
             goto selesai;
         }
 
-        $akunPusat = DB::table('akunpusat')
-            ->from(
-                DB::raw("akunpusat as a with (readuncommitted)")
-            )
-            ->select(
-                'a.coa'
-            )
-            ->where('a.coa', '=', $coa)
-            ->first();
-
-        if (isset($akunPusat)) {
-            $data = [
-                'kondisi' => true,
-                'keterangan' => 'akun pusat',
-                'kodeerror' => 'SATL'
-            ];
-            goto selesai;
-        }
 
         $data = [
             'kondisi' => false,
@@ -170,7 +152,7 @@ class AkunPusat extends MyModel
             $temp = implode(',', $this->TempParameterSupplier());
 
             $query->whereRaw("akunpusat.coa in ($temp)");
-        }        
+        }
         if ($aktif == 'AKTIF') {
             $statusaktif = Parameter::from(
                 DB::raw("parameter with (readuncommitted)")
@@ -400,6 +382,7 @@ class AkunPusat extends MyModel
                 'akunpusat.statusneraca',
                 'akunpusat.statuslabarugi',
                 'akunpusat.statusaktif',
+                'akunpusat.level',
                 'akunpusat.coamain'
             )
             ->leftJoin(DB::raw("typeakuntansi with (readuncommitted)"), 'akunpusat.type_id', 'typeakuntansi.id')
@@ -407,6 +390,12 @@ class AkunPusat extends MyModel
             ->where('akunpusat.id', $id)
             ->first();
 
+        return $query;
+    }
+
+    public function getTransferData($id)
+    {
+        $query = DB::table("akunpusat")->from(DB::raw("akunpusat with (readuncommitted)"))->where('id', $id)->first();
         return $query;
     }
 
@@ -495,13 +484,16 @@ class AkunPusat extends MyModel
 
     public function processStore(array $data): AkunPusat
     {
+        $level = $data['level'] ?? 0;
         if ($data['parent'] == null) {
             $parent = $data['coa'];
             $level = 1;
         } else {
             $parent = $data['parent'];
-            $getLevel = DB::table("akunpusat")->from(DB::raw("akunpusat with (readuncommitted)"))->where('coa', $parent)->first();
-            $level = $getLevel->level + 1;
+            if ($level == 0) {
+                $getLevel = DB::table("akunpusat")->from(DB::raw("akunpusat with (readuncommitted)"))->where('coa', $parent)->first();
+                $level = $getLevel->level + 1;
+            }
         }
         $akunPusat = new AkunPusat();
         $akunPusat->coa = $data['coa'];
@@ -594,9 +586,29 @@ class AkunPusat extends MyModel
             'nobuktitrans' => $akunPusat->id,
             'aksi' => 'DELETE',
             'datajson' => $akunPusat->toArray(),
-            'modifiedby' => $akunPusat->modifiedby
+            'modifiedby' => auth('api')->user()->name
         ]);
 
+        return $akunPusat;
+    }
+    public function processDeleteCoa($coa): AkunPusat
+    {
+        $akunPusat = new AkunPusat();
+        $getCoa = DB::table("akunpusat")->from(DB::raw("akunpusat with (readuncommitted)"))->where('coa', $coa)->first();
+        if ($getCoa != null) {
+
+            $akunPusat = $akunPusat->lockAndDestroy($coa, 'coa');
+
+            (new LogTrail())->processStore([
+                'namatabel' => strtoupper($akunPusat->getTable()),
+                'postingdari' => 'DELETE AKUN PUSAT',
+                'idtrans' => $akunPusat->id,
+                'nobuktitrans' => $akunPusat->id,
+                'aksi' => 'DELETE',
+                'datajson' => $akunPusat->toArray(),
+                'modifiedby' => auth('api')->user()->name
+            ]);
+        }
         return $akunPusat;
     }
 }

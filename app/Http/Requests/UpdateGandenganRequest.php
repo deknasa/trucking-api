@@ -37,6 +37,7 @@ class UpdateGandenganRequest extends FormRequest
 
         return [
             'kodegandengan' => ['required',Rule::unique('gandengan')->whereNotIn('id', [$this->id])],
+            'trado_id' => ['required',Rule::unique('gandengan')->whereNotIn('id', [$this->id])],
             'jumlahroda' => ['required'],
             'jumlahbanserap' => ['required'],
             'statusaktif' => ['required', Rule::in($status)]
@@ -49,6 +50,7 @@ class UpdateGandenganRequest extends FormRequest
     {
         return [
             'kodegandengan' => 'kode gandengan',
+            'trado_id' => 'no polisi',
             'jumlahroda' => 'jumlah roda',
             'jumlahbanserap' => 'jumlah ban serap',
             'statusaktif' => 'status',

@@ -3,6 +3,7 @@
 namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
+use App\Http\Controllers\Api\ErrorController;
 
 class StoreBlackListSupirRequest extends FormRequest
 {
@@ -13,7 +14,7 @@ class StoreBlackListSupirRequest extends FormRequest
      */
     public function authorize()
     {
-        return false;
+        return true;
     }
 
     /**
@@ -24,7 +25,32 @@ class StoreBlackListSupirRequest extends FormRequest
     public function rules()
     {
         return [
-            //
+            // "namasupir"=> "required",
+            'noktp' => ['required','unique:blacklistsupir','min:16','max:16'],
+            'nosim' => ['unique:blacklistsupir','min:12','min:12'],
+        ];
+    }
+
+    public function attributes()
+    {
+        return [
+            'namasupir' => 'Nama Supir',
+            'noktp' => 'No KTP',
+            'nosim' => 'No SIM',
+        ];
+    }
+
+    public function messages() 
+    {
+        $controller = new ErrorController;
+
+        return [
+            'noktp.max' => 'Max. 16 karakter',
+            'noktp.min' => 'Min. 16 karakter',
+            'noktp.unique' => ':attribute' . ' ' . $controller->geterror('SPI')->keterangan,
+            'nosim.max' => 'Max. 12 karakter',
+            'nosim.min' => 'Min. 12 karakter',
+            'nosim.unique' => ':attribute' . ' ' . $controller->geterror('SPI')->keterangan,
         ];
     }
 }

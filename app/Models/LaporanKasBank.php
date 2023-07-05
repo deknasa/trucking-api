@@ -28,6 +28,8 @@ class LaporanKasBank extends MyModel
 
     public function getReport($dari, $sampai, $bank_id)
     {
+        $dariformat = date('Y/m/d', strtotime($dari));
+        $sampaiformat = date('Y/m/d', strtotime($sampai));
 
         $dari = date('Y-m-d', strtotime(request()->dari)) ?? '1900/1/1';
         $sampai = date('Y-m-d', strtotime(request()->sampai)) ?? '1900/1/1';
@@ -55,6 +57,7 @@ class LaporanKasBank extends MyModel
                 DB::raw("sum(b.nominal) as nominal")
             )
             ->join(DB::raw("penerimaandetail as b with (readuncommitted)"), 'a.nobukti', 'b.nobukti')
+            ->whereRaw("a.tglbukti>=cast(ltrim(rtrim(str(year('" . $dariformat . "'))))+'/'+ltrim(rtrim(str(month('" . $dariformat . "'))))+'/1' as datetime) ")
             ->where('a.tglbukti', '<', $dari)
             ->where('a.bank_id', '=', $bank_id)
             ->first();
@@ -66,11 +69,27 @@ class LaporanKasBank extends MyModel
                 DB::raw("sum(b.nominal) as nominal")
             )
             ->join(DB::raw("pengeluarandetail as b with (readuncommitted)"), 'a.nobukti', 'b.nobukti')
+            ->whereRaw("a.tglbukti>=cast(ltrim(rtrim(str(year('" . $dariformat . "'))))+'/'+ltrim(rtrim(str(month('" . $dariformat . "'))))+'/1' as datetime) ")
             ->where('a.tglbukti', '<', $dari)
             ->where('a.bank_id', '=', $bank_id)
             ->first();
 
-        $saldoawal = $querysaldoawalpenerimaan->nominal - $querysaldoawalpengeluaran->nominal;
+
+
+        $querysaldoawal = DB::table("saldoawalbank")->from(
+            DB::raw("saldoawalbank as a with (readuncommitted)")
+        )
+            ->select(
+                DB::raw("sum(isnull(a.nominaldebet,0)-isnull(a.nominalkredit,0)) as nominal")
+            )
+            ->whereRaw("cast(right(a.bulan,4)+'/'+left(a.bulan,2)+'/1' as date)<'" . $dariformat . "'")
+            ->whereRaw("a.bulan<>format(cast('" . $dariformat . "' as date),'MM-yyyy')")
+            // ->where('a.tglbukti', '<', $dari)
+            ->where('a.bank_id', '=', $bank_id)
+            ->first();
+
+
+            $saldoawal =  ($querysaldoawal->nominal+$querysaldoawalpenerimaan->nominal) - $querysaldoawalpengeluaran->nominal;
 
         // data coba coba
 
@@ -179,7 +198,7 @@ class LaporanKasBank extends MyModel
             ->orderBy('a.urut', 'Asc')
             ->orderBy('a.id', 'Asc');
 
-                   
+
 
 
         DB::table($temprekap)->insertUsing([
@@ -202,12 +221,12 @@ class LaporanKasBank extends MyModel
             )
             ->where('a.id', '=', $bank_id)
             ->first();
-            
+
         $getJudul = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))
-        ->select('text')
-        ->where('grp', 'JUDULAN LAPORAN')
-        ->where('subgrp', 'JUDULAN LAPORAN')
-        ->first();
+            ->select('text')
+            ->where('grp', 'JUDULAN LAPORAN')
+            ->where('subgrp', 'JUDULAN LAPORAN')
+            ->first();
 
         $queryhasil = DB::table($temprekap)->from(
             $tempsaldo . " as a"
@@ -225,7 +244,7 @@ class LaporanKasBank extends MyModel
                 DB::raw("'Laporan Kas/Bank' as judulLaporan"),
                 DB::raw("'" . $getJudul->text . "' as judul"),
                 DB::raw("'Tgl Cetak:'+format(getdate(),'dd-MM-yyyy HH:mm:ss')as tglcetak"),
-                DB::raw(" 'User :".auth('api')->user()->name."' as usercetak")
+                DB::raw(" 'User :" . auth('api')->user()->name . "' as usercetak")
             )
             ->leftjoin(DB::raw("akunpusat as b with (readuncommitted)"), 'a.coa', 'b.coa')
             ->orderBy('a.id', 'Asc');

@@ -2,11 +2,10 @@
 
 namespace App\Rules;
 
-use App\Http\Controllers\Api\ErrorController;
 use Illuminate\Contracts\Validation\Rule;
-use Illuminate\Support\Facades\DB;
+use App\Models\BlackListSupir;
 
-class ExistAkunPusatId implements Rule
+class SupirBlackListKtp implements Rule
 {
     /**
      * Create a new rule instance.
@@ -27,15 +26,12 @@ class ExistAkunPusatId implements Rule
      */
     public function passes($attribute, $value)
     {
-        
-        $akunPusat = DB::table("akunpusat")->from(DB::raw("akunpusat with (readuncommitted)"))
-            ->where('id', $value)
-            ->first();
-        if($akunPusat == null){
-            return false;
-        }else{
-            return true;
+        $blackListSupir =BlackListSupir::where('noktp',$value)->first();
+        $allowed = true;
+        if($blackListSupir){
+            $allowed = false;
         }
+        return $allowed;
     }
 
     /**
@@ -45,7 +41,6 @@ class ExistAkunPusatId implements Rule
      */
     public function message()
     {
-        $controller = new ErrorController;
-        return ':attribute' . ' ' . $controller->geterror('TVD')->keterangan;
+        return 'Ktp Supir Sudah Di BlackList';
     }
 }
