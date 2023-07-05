@@ -298,6 +298,8 @@ class InvoiceChargeGandenganHeader extends MyModel
             "$this->table.nominal",
             "agen.namaagen as  agen",
             "parameter.memo as statusapproval",
+            'statuscetak.memo as statuscetak',
+            'statuscetak.id as  statuscetak_id',
             DB::raw("'Laporan Invoice Charge Gandengan' as judulLaporan"),
             DB::raw("'" . $getJudul->text . "' as judul"),
             DB::raw("'Tgl Cetak:'+format(getdate(),'dd-MM-yyyy HH:mm:ss')as tglcetak"),
@@ -305,7 +307,7 @@ class InvoiceChargeGandenganHeader extends MyModel
         )
             ->where("$this->table.id", $id)
             ->leftJoin(DB::raw("parameter with (readuncommitted)"), 'invoicechargegandenganheader.statusapproval', 'parameter.id')
-            ->leftJoin(DB::raw("parameter as cetak with (readuncommitted)"), 'invoicechargegandenganheader.statuscetak', 'cetak.id')
+            ->leftJoin(DB::raw("parameter as statuscetak with (readuncommitted)"), 'invoicechargegandenganheader.statuscetak', 'statuscetak.id')
             ->leftJoin(DB::raw("agen with (readuncommitted)"), 'invoicechargegandenganheader.agen_id', 'agen.id');
 
         $data = $query->first();

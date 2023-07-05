@@ -237,35 +237,30 @@ class NotaKreditHeaderController extends Controller
         DB::beginTransaction();
 
         try {
-            $notakredit = NotaKreditHeader::lockForUpdate()->findOrFail($id);
+            $notaKreditHeader = NotaKreditHeader::findOrFail($id);
             $statusSudahCetak = Parameter::where('grp', '=', 'STATUSCETAK')->where('text', '=', 'CETAK')->first();
             $statusBelumCetak = Parameter::where('grp', '=', 'STATUSCETAK')->where('text', '=', 'BELUM CETAK')->first();
 
-            if ($notakredit->statuscetak != $statusSudahCetak->id) {
-                $notakredit->statuscetak = $statusSudahCetak->id;
-                $notakredit->tglbukacetak = date('Y-m-d H:i:s');
-                $notakredit->userbukacetak = auth('api')->user()->name;
-                $notakredit->jumlahcetak = $notakredit->jumlahcetak + 1;
-
-                if ($notakredit->save()) {
+            if ($notaKreditHeader->statuscetak != $statusSudahCetak->id) {
+                $notaKreditHeader->statuscetak = $statusSudahCetak->id;
+                $notaKreditHeader->tglbukacetak = date('Y-m-d H:i:s');
+                $notaKreditHeader->userbukacetak = auth('api')->user()->name;
+                $notaKreditHeader->jumlahcetak = $notaKreditHeader->jumlahcetak + 1;
+                if ($notaKreditHeader->save()) {
                     $logTrail = [
-                        'namatabel' => strtoupper($notakredit->getTable()),
+                        'namatabel' => strtoupper($notaKreditHeader->getTable()),
                         'postingdari' => 'PRINT NOTA KREDIT HEADER',
-                        'idtrans' => $notakredit->id,
-                        'nobuktitrans' => $notakredit->nobukti,
+                        'idtrans' => $notaKreditHeader->id,
+                        'nobuktitrans' => $notaKreditHeader->id,
                         'aksi' => 'PRINT',
-                        'datajson' => $notakredit->toArray(),
-                        'modifiedby' => auth('api')->user()->name
+                        'datajson' => $notaKreditHeader->toArray(),
+                        'modifiedby' => $notaKreditHeader->modifiedby
                     ];
-
                     $validatedLogTrail = new StoreLogTrailRequest($logTrail);
                     $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
-
                     DB::commit();
                 }
             }
-
-
             return response([
                 'message' => 'Berhasil'
             ]);
@@ -273,6 +268,7 @@ class NotaKreditHeaderController extends Controller
             throw $th;
         }
     }
+
 
     /**
      * @ClassName 

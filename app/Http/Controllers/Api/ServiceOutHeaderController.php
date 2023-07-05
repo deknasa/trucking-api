@@ -228,6 +228,44 @@ class ServiceOutHeaderController extends Controller
         ]);
     }
 
+    public function printReport($id)
+    {
+        DB::beginTransaction();
+
+        try {
+            $serviceOutHeader = ServiceOutHeader::findOrFail($id);
+            $statusSudahCetak = Parameter::where('grp', '=', 'STATUSCETAK')->where('text', '=', 'CETAK')->first();
+            $statusBelumCetak = Parameter::where('grp', '=', 'STATUSCETAK')->where('text', '=', 'BELUM CETAK')->first();
+
+            if ($serviceOutHeader->statuscetak != $statusSudahCetak->id) {
+                $serviceOutHeader->statuscetak = $statusSudahCetak->id;
+                $serviceOutHeader->tglbukacetak = date('Y-m-d H:i:s');
+                $serviceOutHeader->userbukacetak = auth('api')->user()->name;
+                $serviceOutHeader->jumlahcetak = $serviceOutHeader->jumlahcetak + 1;
+                if ($serviceOutHeader->save()) {
+                    $logTrail = [
+                        'namatabel' => strtoupper($serviceOutHeader->getTable()),
+                        'postingdari' => 'PRINT SERVICE OUT HEADER',
+                        'idtrans' => $serviceOutHeader->id,
+                        'nobuktitrans' => $serviceOutHeader->id,
+                        'aksi' => 'PRINT',
+                        'datajson' => $serviceOutHeader->toArray(),
+                        'modifiedby' => $serviceOutHeader->modifiedby
+                    ];
+                    $validatedLogTrail = new StoreLogTrailRequest($logTrail);
+                    $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
+                    DB::commit();
+                }
+            }
+            return response([
+                'message' => 'Berhasil'
+            ]);
+        } catch (\Throwable $th) {
+            throw $th;
+        }
+    }
+
+
     /**
      * @ClassName 
      */

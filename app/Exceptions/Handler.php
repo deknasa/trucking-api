@@ -50,24 +50,24 @@ class Handler extends ExceptionHandler
         });
     }
 
-    public function render($request, Throwable $e)
-    {
-        if (
-            $e instanceof QueryException ||
-            $e instanceof PDOException
-        ) {
-            $errors = [];
+    // public function render($request, Throwable $e)
+    // {
+    //     if (
+    //         $e instanceof QueryException ||
+    //         $e instanceof PDOException
+    //     ) {
+    //         $errors = [];
 
-            do {
-                $errors[] = $e->getMessage();
-            } while ($e = $e->getPrevious());
+    //         do {
+    //             $errors[] = $e->getMessage();
+    //         } while ($e = $e->getPrevious());
 
-            return response()->json([
-                'message' => 'Internal server error.',
-                'errors' => $errors,
-            ], 500);
-        }
+    //         return response()->json([
+    //             'message' => 'Internal server error.',
+    //             'errors' => $errors,
+    //         ], 500);
+    //     }
 
-        return parent::render($request, $e);
-    }
+    //     return parent::render($request, $e);
+    // }
 }

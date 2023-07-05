@@ -782,6 +782,7 @@ class InvoiceHeader extends MyModel
                 'invoiceheader.piutang_nobukti',
                 'statusapproval.memo as statusapproval',
                 'statuscetak.memo as statuscetak',
+                'statuscetak.id as  statuscetak_id',
                 DB::raw("'Laporan Invoice' as judulLaporan"),
                 DB::raw("'" . $getJudul->text . "' as judul"),
                 DB::raw("'Tgl Cetak:'+format(getdate(),'dd-MM-yyyy HH:mm:ss')as tglcetak"),

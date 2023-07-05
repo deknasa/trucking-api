@@ -723,14 +723,13 @@ class HutangHeader extends MyModel
                 'hutangheader.nobukti',
                 'hutangheader.tglbukti',
                 'hutangheader.postingdari',
-
                 'akunpusat.keterangancoa as coa',
                 'supplier.namasupplier as supplier_id',
                 'hutangheader.total',
                 DB::raw("isnull(c.nominal,0) as nominalbayar"),
                 DB::raw("hutangheader.total-isnull(c.nominal,0) as sisahutang"),
-
-                'parameter.memo as statuscetak',
+                'statuscetak.memo as statuscetak',
+                'statuscetak.id as  statuscetak_id',
                 'statusapproval.memo as statusapproval',
                 'hutangheader.userbukacetak',
                 'hutangheader.jumlahcetak',
@@ -741,7 +740,7 @@ class HutangHeader extends MyModel
                 DB::raw(" 'User :".auth('api')->user()->name."' as usercetak")
             )
             ->where("$this->table.id", $id)
-            ->leftJoin(DB::raw("parameter with (readuncommitted)"), 'hutangheader.statuscetak', 'parameter.id')
+            ->leftJoin(DB::raw("parameter as statuscetak with (readuncommitted)"), 'hutangheader.statuscetak', 'statuscetak.id')
             ->leftJoin(DB::raw("parameter as statusapproval with (readuncommitted)"), 'hutangheader.statusapproval', 'statusapproval.id')
             ->leftJoin(DB::raw("akunpusat with (readuncommitted)"), 'hutangheader.coa', 'akunpusat.coa')
             ->leftJoin(DB::raw("supplier with (readuncommitted)"), 'hutangheader.supplier_id', 'supplier.id')

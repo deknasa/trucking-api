@@ -15,6 +15,7 @@ use App\Http\Requests\UpdateServiceInHeaderRequest;
 use App\Models\ServiceInDetail;
 use App\Http\Requests\GetIndexRangeRequest;
 use Illuminate\Http\JsonResponse;
+use App\Http\Requests\StoreLogTrailRequest;
 
 class ServiceInHeaderController extends Controller
 {
@@ -215,6 +216,46 @@ class ServiceInHeaderController extends Controller
         ]);
     }
 
+    public function printReport($id)
+    {
+        DB::beginTransaction();
+
+        try {
+            $serviceInHeader = ServiceInHeader::findOrFail($id);
+            $statusSudahCetak = Parameter::where('grp', '=', 'STATUSCETAK')->where('text', '=', 'CETAK')->first();
+            $statusBelumCetak = Parameter::where('grp', '=', 'STATUSCETAK')->where('text', '=', 'BELUM CETAK')->first();
+
+            if ($serviceInHeader->statuscetak != $statusSudahCetak->id) {
+                $serviceInHeader->statuscetak = $statusSudahCetak->id;
+                $serviceInHeader->tglbukacetak = date('Y-m-d H:i:s');
+                $serviceInHeader->userbukacetak = auth('api')->user()->name;
+                $serviceInHeader->jumlahcetak = $serviceInHeader->jumlahcetak + 1;
+                if ($serviceInHeader->save()) {
+                    $logTrail = [
+                        'namatabel' => strtoupper($serviceInHeader->getTable()),
+                        'postingdari' => 'PRINT SERVICE IN HEADER',
+                        'idtrans' => $serviceInHeader->id,
+                        'nobuktitrans' => $serviceInHeader->id,
+                        'aksi' => 'PRINT',
+                        'datajson' => $serviceInHeader->toArray(),
+                        'modifiedby' => $serviceInHeader->modifiedby
+                    ];
+                    $validatedLogTrail = new StoreLogTrailRequest($logTrail);
+                    $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
+                    DB::commit();
+                }
+            }
+            return response([
+                'message' => 'Berhasil'
+            ]);
+        } catch (\Throwable $th) {
+            throw $th;
+        }
+    }
+
+     /**
+     * @ClassName 
+     */
     public function export($id)
     {
         $serviceInHeader = new ServiceInHeader();

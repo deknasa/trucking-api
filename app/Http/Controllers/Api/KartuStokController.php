@@ -11,6 +11,7 @@ use App\Models\Parameter;
 use App\Models\Stok;
 use App\Models\Trado;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 
 class KartuStokController extends Controller
@@ -67,13 +68,20 @@ class KartuStokController extends Controller
             } 
         }
 
+        $user = Auth::user();
+        $userCetak = $user->name;
+
         $report = [
             'stokdari' => $stokdari_id->namastok,
             'stoksampai' => $stoksampai_id->namastok,
             'dari' => $request->dari,
             'sampai' => $request->sampai,
             'filter' => $filter->text??"",
-            'datafilter' => $datafilter??""
+            'datafilter' => $datafilter??"",
+            'judul' => 'PT TRANSPORINDO AGUNG SEJAHTERA',
+            'judulLaporan' => 'Laporan Kartu Stok',
+            'user' => $userCetak,
+            'tglCetak' => date('d-m-Y H:i:s'),
         ];
 
         return response([

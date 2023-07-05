@@ -248,12 +248,15 @@ class PendapatanSupirHeader extends MyModel
                 'pendapatansupirheader.tgldari',
                 'pendapatansupirheader.tglsampai',
                 'pendapatansupirheader.periode',
+                'statuscetak.memo as statuscetak',
+                'statuscetak.id as  statuscetak_id',
                 DB::raw("'Laporan Pendapatan Supir' as judulLaporan"),
                 DB::raw("'" . $getJudul->text . "' as judul"),
                 DB::raw("'Tgl Cetak:'+format(getdate(),'dd-MM-yyyy HH:mm:ss')as tglcetak"),
                 DB::raw(" 'User :".auth('api')->user()->name."' as usercetak")
             )
             ->where("$this->table.id", $id)
+            ->leftJoin(DB::raw("parameter as statuscetak with (readuncommitted)"), 'pendapatansupirheader.statuscetak', 'statuscetak.id')
             ->leftJoin(DB::raw("bank with (readuncommitted)"), 'pendapatansupirheader.bank_id', 'bank.id');
 
         $data = $query->first();

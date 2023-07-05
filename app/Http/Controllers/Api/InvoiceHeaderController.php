@@ -338,42 +338,36 @@ class InvoiceHeaderController extends Controller
             throw $th;
         }
     }
+
     public function printReport($id)
     {
         DB::beginTransaction();
 
         try {
-            $invoice = InvoiceHeader::lockForUpdate()->findOrFail($id);
-            $statusSudahCetak = Parameter::from(DB::raw("parameter with (readuncommitted)"))
-                ->where('grp', '=', 'STATUSCETAK')->where('text', '=', 'CETAK')->first();
-            $statusBelumCetak = Parameter::from(DB::raw("parameter with (readuncommitted)"))
-                ->where('grp', '=', 'STATUSCETAK')->where('text', '=', 'BELUM CETAK')->first();
+            $invoiceHeader = InvoiceHeader::findOrFail($id);
+            $statusSudahCetak = Parameter::where('grp', '=', 'STATUSCETAK')->where('text', '=', 'CETAK')->first();
+            $statusBelumCetak = Parameter::where('grp', '=', 'STATUSCETAK')->where('text', '=', 'BELUM CETAK')->first();
 
-            if ($invoice->statuscetak != $statusSudahCetak->id) {
-                $invoice->statuscetak = $statusSudahCetak->id;
-                $invoice->tglbukacetak = date('Y-m-d H:i:s');
-                $invoice->userbukacetak = auth('api')->user()->name;
-                $invoice->jumlahcetak = $invoice->jumlahcetak + 1;
-
-                if ($invoice->save()) {
+            if ($invoiceHeader->statuscetak != $statusSudahCetak->id) {
+                $invoiceHeader->statuscetak = $statusSudahCetak->id;
+                $invoiceHeader->tglbukacetak = date('Y-m-d H:i:s');
+                $invoiceHeader->userbukacetak = auth('api')->user()->name;
+                $invoiceHeader->jumlahcetak = $invoiceHeader->jumlahcetak + 1;
+                if ($invoiceHeader->save()) {
                     $logTrail = [
-                        'namatabel' => strtoupper($invoice->getTable()),
+                        'namatabel' => strtoupper($invoiceHeader->getTable()),
                         'postingdari' => 'PRINT INVOICE HEADER',
-                        'idtrans' => $invoice->id,
-                        'nobuktitrans' => $invoice->nobukti,
+                        'idtrans' => $invoiceHeader->id,
+                        'nobuktitrans' => $invoiceHeader->id,
                         'aksi' => 'PRINT',
-                        'datajson' => $invoice->toArray(),
-                        'modifiedby' => auth('api')->user()->name,
+                        'datajson' => $invoiceHeader->toArray(),
+                        'modifiedby' => $invoiceHeader->modifiedby
                     ];
-
                     $validatedLogTrail = new StoreLogTrailRequest($logTrail);
                     $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
-
                     DB::commit();
                 }
             }
-
-
             return response([
                 'message' => 'Berhasil'
             ]);

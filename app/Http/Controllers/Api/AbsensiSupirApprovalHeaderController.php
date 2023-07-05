@@ -307,6 +307,43 @@ class AbsensiSupirApprovalHeaderController extends Controller
         ]);
     }
 
+    public function printReport($id)
+    {
+        DB::beginTransaction();
+
+        try {
+            $absensisupirapproval = AbsensiSupirApprovalHeader::findOrFail($id);
+            $statusSudahCetak = Parameter::where('grp', '=', 'STATUSCETAK')->where('text', '=', 'CETAK')->first();
+            $statusBelumCetak = Parameter::where('grp', '=', 'STATUSCETAK')->where('text', '=', 'BELUM CETAK')->first();
+
+            if ($absensisupirapproval->statuscetak != $statusSudahCetak->id) {
+                $absensisupirapproval->statuscetak = $statusSudahCetak->id;
+                $absensisupirapproval->tglbukacetak = date('Y-m-d H:i:s');
+                $absensisupirapproval->userbukacetak = auth('api')->user()->name;
+                $absensisupirapproval->jumlahcetak = $absensisupirapproval->jumlahcetak + 1;
+                if ($absensisupirapproval->save()) {
+                    $logTrail = [
+                        'namatabel' => strtoupper($absensisupirapproval->getTable()),
+                        'postingdari' => 'PRINT INVOICE HEADER',
+                        'idtrans' => $absensisupirapproval->id,
+                        'nobuktitrans' => $absensisupirapproval->id,
+                        'aksi' => 'PRINT',
+                        'datajson' => $absensisupirapproval->toArray(),
+                        'modifiedby' => $absensisupirapproval->modifiedby
+                    ];
+                    $validatedLogTrail = new StoreLogTrailRequest($logTrail);
+                    $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
+                    DB::commit();
+                }
+            }
+            return response([
+                'message' => 'Berhasil'
+            ]);
+        } catch (\Throwable $th) {
+            throw $th;
+        }
+    }
+
     /**
      * @ClassName 
      */

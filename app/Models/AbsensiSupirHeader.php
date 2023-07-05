@@ -398,13 +398,21 @@ class AbsensiSupirHeader extends MyModel
                 'absensisupirheader.nobukti',
                 'absensisupirheader.tglbukti',
                 'absensisupirheader.kasgantung_nobukti',
+                DB::raw('(case when (year(absensisupirheader.tglbukacetak) <= 2000) then null else absensisupirheader.tglbukacetak end ) as tglbukacetak'),
+                'statuscetak.memo as statuscetak',
+                "statuscetak.id as  statuscetak_id",
+                'statusapprovaleditabsensi.memo as statusapprovaleditabsensi',
+                'absensisupirheader.userbukacetak',
+                'absensisupirheader.jumlahcetak',
                 DB::raw("(case when absensisupirheader.nominal IS NULL then 0 else absensisupirheader.nominal end) as nominal"),
                 DB::raw("'Laporan Absensi Supir' as judulLaporan"),
                 DB::raw("'" . $getJudul->text . "' as judul"),
                 DB::raw("'Tgl Cetak:'+format(getdate(),'dd-MM-yyyy HH:mm:ss')as tglcetak"),
                 DB::raw(" 'User :".auth('api')->user()->name."' as usercetak")
             )
-            ->where("$this->table.id", $id);
+            ->where("$this->table.id", $id)
+            ->leftJoin(DB::raw("parameter as statuscetak with (readuncommitted)"), 'absensisupirheader.statuscetak', 'statuscetak.id')
+            ->leftJoin(DB::raw("parameter as statusapprovaleditabsensi with (readuncommitted)"), 'absensisupirheader.statusapprovaleditabsensi', 'statusapprovaleditabsensi.id');
 
         $data = $query->first();
         return $data;
