@@ -40,11 +40,18 @@ class AuthController extends Controller
     {
 
         $ipclient = $this->get_client_ip();
+        if ($request->ipclient) {
+            $ipclient = $request->ipclient;
+            if ($ipclient=='::1' ) {
+                $ipclient= gethostbyname('tasmdn.kozow.com');
+            }
+        }
+
         $ipserver = $this->get_server_ip();
         if ($ipclient != $ipserver) {
             $data = [
                 'status' => false,
-                'message' => 'tests ',
+                'message' => 'test',
                 'errors' => '',
                 'ipclient' => $ipclient,
                 'ipserver' =>  $ipserver,
@@ -59,6 +66,17 @@ class AuthController extends Controller
             ];
 
         }
+
+        // $data = [
+        //     'status' => false,
+        //     'message' => 'tests ',
+        //     'APP_HOSTNAME' => env('APP_HOSTNAME'),
+        //     'tasmdn' => $ipclient,
+        //     'request' => request()->ip(),
+        //     'REMOTE_ADDR' => getenv('REMOTE_ADDR'),
+        //     'SERVER_ADDR' => getenv('SERVER_ADDR'),
+        //     'ipserver' =>  $ipserver,
+        // ];
         return response([
             'data' => $data,
         ]);

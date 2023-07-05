@@ -345,7 +345,7 @@ class Controller extends BaseController
         else
             $ipaddress = 'IP tidak dikenali';
             if ($ipaddress=='::1' ) {
-                $ipaddress= gethostbyname('tasmdn.kozow.com');
+                $ipaddress= gethostbyname(env('APP_HOSTNAME'));
             }
         return $ipaddress;
     }

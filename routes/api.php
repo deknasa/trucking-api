@@ -255,6 +255,7 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
 Route::post('token', [AuthController::class, 'token']);
 Route::get('cekIp', [AuthController::class, 'cekIp']);
 
+
 Route::get('supir/image/{field}/{filename}/{type}/{aksi}', [SupirController::class, 'getImage']);
 Route::get('supir/pdf/{field}/{filename}', [SupirController::class, 'getPdf']);
 Route::get('trado/image/{field}/{filename}/{type}/{aksi}', [TradoController::class, 'getImage']);
@@ -1419,3 +1420,4 @@ route::middleware(['auth:api','authorized'])->group(function () {
     Route::get('ubahpassword/field_length', [UbahPasswordController::class, 'fieldLength']);
     Route::resource('ubahpassword', UbahPasswordController::class)->whereNumber('ubahpassword');
 });
+Route::get('parameter/select/{grp}/{subgrp}/{text}', [ParameterController::class, 'getparameterid']);
