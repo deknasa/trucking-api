@@ -193,5 +193,7 @@ class MenuSeeder extends Seeder
         menu::create(['menuname' => 'APPROVAL DATA TIDAK LENGKAP', 'menuseq' => '0', 'menuparent' => '163', 'menuicon' => 'FAS FA-TRUCK', 'aco_id' => '694', 'link' => '', 'menuexe' => '', 'menukode' => '13113', 'modifiedby' => 'ADMIN',]);
         menu::create(['menuname' => 'APPROVAL DATA TIDAK LENGKAP', 'menuseq' => '0', 'menuparent' => '165', 'menuicon' => 'FAS FA-TRUCK', 'aco_id' => '698', 'link' => '', 'menuexe' => '', 'menukode' => '13153', 'modifiedby' => 'ADMIN',]);
         menu::create(['menuname' => 'LAP. NERACA', 'menuseq' => '0', 'menuparent' => '143', 'menuicon' => 'FAS FA-TRUCK', 'aco_id' => '703', 'link' => '', 'menuexe' => '', 'menukode' => '623', 'modifiedby' => 'ADMIN',]);
+        menu::create(['menuname' => 'BLACKLIST SUPIR', 'menuseq' => '0', 'menuparent' => '165', 'menuicon' => 'FAS FA-TRUCK', 'aco_id' => '706', 'link' => '', 'menuexe' => '', 'menukode' => '13154', 'modifiedby' => 'ADMIN',]);
+        menu::create(['menuname' => 'TRADO/SUPIR MILIK MANDOR', 'menuseq' => '0', 'menuparent' => '99', 'menuicon' => 'FAS FA-TRUCK', 'aco_id' => '711', 'link' => '', 'menuexe' => '', 'menukode' => '1317', 'modifiedby' => 'ADMIN',]);
     }
 }
