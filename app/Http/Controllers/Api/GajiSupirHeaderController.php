@@ -355,50 +355,6 @@ class GajiSupirHeaderController extends Controller
         ]);
     }
 
-    public function printReport($id)
-    {
-        DB::beginTransaction();
-
-        try {
-            $gajisupir = GajiSupirHeader::lockForUpdate()->findOrFail($id);
-            $statusSudahCetak = Parameter::from(DB::raw("parameter with (readuncommitted)"))
-                ->where('grp', '=', 'STATUSCETAK')->where('text', '=', 'CETAK')->first();
-            $statusBelumCetak = Parameter::from(DB::raw("parameter with (readuncommitted)"))
-                ->where('grp', '=', 'STATUSCETAK')->where('text', '=', 'BELUM CETAK')->first();
-
-            if ($gajisupir->statuscetak != $statusSudahCetak->id) {
-                $gajisupir->statuscetak = $statusSudahCetak->id;
-                $gajisupir->tglbukacetak = date('Y-m-d H:i:s');
-                $gajisupir->userbukacetak = auth('api')->user()->name;
-                $gajisupir->jumlahcetak = $gajisupir->jumlahcetak + 1;
-
-                if ($gajisupir->save()) {
-                    $logTrail = [
-                        'namatabel' => strtoupper($gajisupir->getTable()),
-                        'postingdari' => 'PRINT GAJI SUPIR HEADER',
-                        'idtrans' => $gajisupir->id,
-                        'nobuktitrans' => $gajisupir->nobukti,
-                        'aksi' => 'PRINT',
-                        'datajson' => $gajisupir->toArray(),
-                        'modifiedby' => auth('api')->user()->name,
-                    ];
-
-                    $validatedLogTrail = new StoreLogTrailRequest($logTrail);
-                    $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
-
-                    DB::commit();
-                }
-            }
-
-
-            return response([
-                'message' => 'Berhasil'
-            ]);
-        } catch (\Throwable $th) {
-            throw $th;
-        }
-    }
-
     public function cekvalidasi($id)
     {
         $gajisupir = GajiSupirHeader::find($id);
@@ -601,6 +557,43 @@ class GajiSupirHeaderController extends Controller
         return response([
             'data' => $data
         ]);
+    }
+
+    public function printReport($id)
+    {
+        DB::beginTransaction();
+
+        try {
+            $gajisupir = GajiSupirHeader::findOrFail($id);
+            $statusSudahCetak = Parameter::where('grp', '=', 'STATUSCETAK')->where('text', '=', 'CETAK')->first();
+            $statusBelumCetak = Parameter::where('grp', '=', 'STATUSCETAK')->where('text', '=', 'BELUM CETAK')->first();
+
+            if ($gajisupir->statuscetak != $statusSudahCetak->id) {
+                $gajisupir->statuscetak = $statusSudahCetak->id;
+                $gajisupir->tglbukacetak = date('Y-m-d H:i:s');
+                $gajisupir->userbukacetak = auth('api')->user()->name;
+                $gajisupir->jumlahcetak = $gajisupir->jumlahcetak + 1;
+                if ($gajisupir->save()) {
+                    $logTrail = [
+                        'namatabel' => strtoupper($gajisupir->getTable()),
+                        'postingdari' => 'PRINT GAJI SUPIR HEADER',
+                        'idtrans' => $gajisupir->id,
+                        'nobuktitrans' => $gajisupir->id,
+                        'aksi' => 'PRINT',
+                        'datajson' => $gajisupir->toArray(),
+                        'modifiedby' => $gajisupir->modifiedby
+                    ];
+                    $validatedLogTrail = new StoreLogTrailRequest($logTrail);
+                    $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
+                    DB::commit();
+                }
+            }
+            return response([
+                'message' => 'Berhasil'
+            ]);
+        } catch (\Throwable $th) {
+            throw $th;
+        }
     }
 
     /**

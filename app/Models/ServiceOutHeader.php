@@ -172,7 +172,9 @@ class ServiceOutHeader extends MyModel
             switch ($this->params['filters']['groupOp']) {
                 case "AND":
                     foreach ($this->params['filters']['rules'] as $index => $filters) {
-                        if ($filters['field'] == 'trado_id') {
+                        if ($filters['field'] == 'statuscetak') {
+                            $query = $query->where('statuscetak.text', '=', $filters['data']);
+                        } else if ($filters['field'] == 'trado_id') {
                             $query = $query->where('trado.kodetrado', 'LIKE', "%$filters[data]%");
                         } else if ($filters['field'] == 'tglbukti' || $filters['field'] == 'tglkeluar') {
                             $query = $query->whereRaw("format(" . $this->table . "." . $filters['field'] . ", 'dd-MM-yyyy') LIKE '%$filters[data]%'");
@@ -188,7 +190,9 @@ class ServiceOutHeader extends MyModel
                 case "OR":
                     $query = $query->where(function ($query) {
                         foreach ($this->params['filters']['rules'] as $index => $filters) {
-                            if ($filters['field'] == 'trado_id') {
+                            if ($filters['field'] == 'statuscetak') {
+                                $query = $query->orWhere('statuscetak.text', '=', $filters['data']);
+                            } else if ($filters['field'] == 'trado_id') {
                                 $query = $query->orWhere('trado.kodetrado', 'LIKE', "%$filters[data]%");
                             } else if ($filters['field'] == 'tglbukti' || $filters['field'] == 'tglkeluar') {
                                 $query = $query->orWhereRaw("format(" . $this->table . "." . $filters['field'] . ", 'dd-MM-yyyy') LIKE '%$filters[data]%'");
@@ -234,11 +238,15 @@ class ServiceOutHeader extends MyModel
             ->where('subgrp', $subgroup)
             ->first();
 
+        $statusCetak = Parameter::from(DB::raw("parameter with (readuncommitted)"))
+            ->where('grp', 'STATUSCETAK')->where('text', 'BELUM CETAK')->first();
+
         $serviceout = new ServiceOutHeader();
         $serviceout->tglbukti = date('Y-m-d', strtotime($data['tglbukti']));
         $serviceout->trado_id = $data['trado_id'];
         $serviceout->tglkeluar = date('Y-m-d', strtotime($data['tglkeluar']));
         $serviceout->statusformat =  $format->id;
+        $serviceout->statuscetak = $statusCetak->id;
         $serviceout->modifiedby = auth('api')->user()->name;
 
         $serviceout->nobukti = (new RunningNumberService)->get($group, $subgroup, $serviceout->getTable(), date('Y-m-d', strtotime($data['tglbukti'])));

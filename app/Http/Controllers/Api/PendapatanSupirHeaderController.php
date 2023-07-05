@@ -259,37 +259,30 @@ class PendapatanSupirHeaderController extends Controller
         DB::beginTransaction();
 
         try {
-            $pendapatan = PendapatanSupirHeader::lockForUpdate()->findOrFail($id);
-            $statusSudahCetak = Parameter::from(DB::raw("parameter with (readuncommitted)"))
-                ->where('grp', '=', 'STATUSCETAK')->where('text', '=', 'CETAK')->first();
-            $statusBelumCetak = Parameter::from(DB::raw("parameter with (readuncommitted)"))
-                ->where('grp', '=', 'STATUSCETAK')->where('text', '=', 'BELUM CETAK')->first();
+            $pendapatanSupirHeader = PendapatanSupirHeader::findOrFail($id);
+            $statusSudahCetak = Parameter::where('grp', '=', 'STATUSCETAK')->where('text', '=', 'CETAK')->first();
+            $statusBelumCetak = Parameter::where('grp', '=', 'STATUSCETAK')->where('text', '=', 'BELUM CETAK')->first();
 
-            if ($pendapatan->statuscetak != $statusSudahCetak->id) {
-                $pendapatan->statuscetak = $statusSudahCetak->id;
-                $pendapatan->tglbukacetak = date('Y-m-d H:i:s');
-                $pendapatan->userbukacetak = auth('api')->user()->name;
-                $pendapatan->jumlahcetak = $pendapatan->jumlahcetak + 1;
-
-                if ($pendapatan->save()) {
+            if ($pendapatanSupirHeader->statuscetak != $statusSudahCetak->id) {
+                $pendapatanSupirHeader->statuscetak = $statusSudahCetak->id;
+                $pendapatanSupirHeader->tglbukacetak = date('Y-m-d H:i:s');
+                $pendapatanSupirHeader->userbukacetak = auth('api')->user()->name;
+                $pendapatanSupirHeader->jumlahcetak = $pendapatanSupirHeader->jumlahcetak + 1;
+                if ($pendapatanSupirHeader->save()) {
                     $logTrail = [
-                        'namatabel' => strtoupper($pendapatan->getTable()),
+                        'namatabel' => strtoupper($pendapatanSupirHeader->getTable()),
                         'postingdari' => 'PRINT PENDAPATAN SUPIR HEADER',
-                        'idtrans' => $pendapatan->id,
-                        'nobuktitrans' => $pendapatan->nobukti,
+                        'idtrans' => $pendapatanSupirHeader->id,
+                        'nobuktitrans' => $pendapatanSupirHeader->id,
                         'aksi' => 'PRINT',
-                        'datajson' => $pendapatan->toArray(),
-                        'modifiedby' => auth('api')->user()->name,
+                        'datajson' => $pendapatanSupirHeader->toArray(),
+                        'modifiedby' => $pendapatanSupirHeader->modifiedby
                     ];
-
                     $validatedLogTrail = new StoreLogTrailRequest($logTrail);
                     $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
-
                     DB::commit();
                 }
             }
-
-
             return response([
                 'message' => 'Berhasil'
             ]);

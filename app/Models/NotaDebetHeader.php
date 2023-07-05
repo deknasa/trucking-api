@@ -493,6 +493,8 @@ class NotaDebetHeader extends MyModel
                 "$this->table.postingdari",
                 "$this->table.tgllunas",
                 'pelunasanpiutang.penerimaan_nobukti',
+                'statuscetak.memo as statuscetak',
+                'statuscetak.id as  statuscetak_id',
                 DB::raw("'Laporan Nota Debet' as judulLaporan"),
                 DB::raw("'" . $getJudul->text . "' as judul"),
                 DB::raw("'Tgl Cetak:'+format(getdate(),'dd-MM-yyyy HH:mm:ss')as tglcetak"),

@@ -205,6 +205,43 @@ class InvoiceChargeGandenganHeaderController extends Controller
         ]);
     }
 
+    public function printReport($id)
+    {
+        DB::beginTransaction();
+
+        try {
+            $invoiceChargeGandengan = InvoiceChargeGandenganHeader::findOrFail($id);
+            $statusSudahCetak = Parameter::where('grp', '=', 'STATUSCETAK')->where('text', '=', 'CETAK')->first();
+            $statusBelumCetak = Parameter::where('grp', '=', 'STATUSCETAK')->where('text', '=', 'BELUM CETAK')->first();
+
+            if ($invoiceChargeGandengan->statuscetak != $statusSudahCetak->id) {
+                $invoiceChargeGandengan->statuscetak = $statusSudahCetak->id;
+                $invoiceChargeGandengan->tglbukacetak = date('Y-m-d H:i:s');
+                $invoiceChargeGandengan->userbukacetak = auth('api')->user()->name;
+                $invoiceChargeGandengan->jumlahcetak = $invoiceChargeGandengan->jumlahcetak + 1;
+                if ($invoiceChargeGandengan->save()) {
+                    $logTrail = [
+                        'namatabel' => strtoupper($invoiceChargeGandengan->getTable()),
+                        'postingdari' => 'PRINT INVOICE CHARGE GANDENGAN HEADER',
+                        'idtrans' => $invoiceChargeGandengan->id,
+                        'nobuktitrans' => $invoiceChargeGandengan->id,
+                        'aksi' => 'PRINT',
+                        'datajson' => $invoiceChargeGandengan->toArray(),
+                        'modifiedby' => $invoiceChargeGandengan->modifiedby
+                    ];
+                    $validatedLogTrail = new StoreLogTrailRequest($logTrail);
+                    $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
+                    DB::commit();
+                }
+            }
+            return response([
+                'message' => 'Berhasil'
+            ]);
+        } catch (\Throwable $th) {
+            throw $th;
+        }
+    }
+
     /**
      * @ClassName 
      */

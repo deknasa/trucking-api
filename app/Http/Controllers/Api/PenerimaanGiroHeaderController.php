@@ -223,36 +223,30 @@ class PenerimaanGiroHeaderController extends Controller
         DB::beginTransaction();
 
         try {
-            $piutang = PenerimaanGiroHeader::lockForUpdate()->findOrFail($id);
-            $statusSudahCetak = Parameter::from(DB::raw("parameter with (readuncommitted)"))
-                ->where('grp', '=', 'STATUSCETAK')->where('text', '=', 'CETAK')->first();
-            $statusBelumCetak = Parameter::from(DB::raw("parameter with (readuncommitted)"))
-                ->where('grp', '=', 'STATUSCETAK')->where('text', '=', 'BELUM CETAK')->first();
+            $penerimaanGiro = PenerimaanGiroHeader::findOrFail($id);
+            $statusSudahCetak = Parameter::where('grp', '=', 'STATUSCETAK')->where('text', '=', 'CETAK')->first();
+            $statusBelumCetak = Parameter::where('grp', '=', 'STATUSCETAK')->where('text', '=', 'BELUM CETAK')->first();
 
-            if ($piutang->statuscetak != $statusSudahCetak->id) {
-                $piutang->statuscetak = $statusSudahCetak->id;
-                $piutang->tglbukacetak = date('Y-m-d H:i:s');
-                $piutang->userbukacetak = auth('api')->user()->name;
-
-                if ($piutang->save()) {
+            if ($penerimaanGiro->statuscetak != $statusSudahCetak->id) {
+                $penerimaanGiro->statuscetak = $statusSudahCetak->id;
+                $penerimaanGiro->tglbukacetak = date('Y-m-d H:i:s');
+                $penerimaanGiro->userbukacetak = auth('api')->user()->name;
+                $penerimaanGiro->jumlahcetak = $penerimaanGiro->jumlahcetak + 1;
+                if ($penerimaanGiro->save()) {
                     $logTrail = [
-                        'namatabel' => strtoupper($piutang->getTable()),
-                        'postingdari' => 'PRINT PIUTANG HEADER',
-                        'idtrans' => $piutang->id,
-                        'nobuktitrans' => $piutang->nobukti,
+                        'namatabel' => strtoupper($penerimaanGiro->getTable()),
+                        'postingdari' => 'PRINT PENERIMAAN GIRO HEADER',
+                        'idtrans' => $penerimaanGiro->id,
+                        'nobuktitrans' => $penerimaanGiro->id,
                         'aksi' => 'PRINT',
-                        'datajson' => $piutang->toArray(),
-                        'modifiedby' => auth('api')->user()->name,
+                        'datajson' => $penerimaanGiro->toArray(),
+                        'modifiedby' => $penerimaanGiro->modifiedby
                     ];
-
                     $validatedLogTrail = new StoreLogTrailRequest($logTrail);
                     $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
-
                     DB::commit();
                 }
             }
-
-
             return response([
                 'message' => 'Berhasil'
             ]);

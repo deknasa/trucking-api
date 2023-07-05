@@ -207,34 +207,30 @@ class InvoiceExtraHeaderController extends Controller
         DB::beginTransaction();
 
         try {
-            $invoiceExtra = InvoiceExtraHeader::findOrFail($id);
+            $invoiceExtraHeader = InvoiceExtraHeader::findOrFail($id);
             $statusSudahCetak = Parameter::where('grp', '=', 'STATUSCETAK')->where('text', '=', 'CETAK')->first();
             $statusBelumCetak = Parameter::where('grp', '=', 'STATUSCETAK')->where('text', '=', 'BELUM CETAK')->first();
 
-            if ($invoiceExtra->statuscetak != $statusSudahCetak->id) {
-                $invoiceExtra->statuscetak = $statusSudahCetak->id;
-                $invoiceExtra->tglbukacetak = date('Y-m-d H:i:s');
-                $invoiceExtra->userbukacetak = auth('api')->user()->name;
-                $invoiceExtra->jumlahcetak = $invoiceExtra->jumlahcetak + 1;
-                if ($invoiceExtra->save()) {
+            if ($invoiceExtraHeader->statuscetak != $statusSudahCetak->id) {
+                $invoiceExtraHeader->statuscetak = $statusSudahCetak->id;
+                $invoiceExtraHeader->tglbukacetak = date('Y-m-d H:i:s');
+                $invoiceExtraHeader->userbukacetak = auth('api')->user()->name;
+                $invoiceExtraHeader->jumlahcetak = $invoiceExtraHeader->jumlahcetak + 1;
+                if ($invoiceExtraHeader->save()) {
                     $logTrail = [
-                        'namatabel' => strtoupper($invoiceExtra->getTable()),
-                        'postingdari' => 'PRINT INVOICE EXTRA',
-                        'idtrans' => $invoiceExtra->id,
-                        'nobuktitrans' => $invoiceExtra->id,
+                        'namatabel' => strtoupper($invoiceExtraHeader->getTable()),
+                        'postingdari' => 'PRINT INVOICE EXTRA HEADER',
+                        'idtrans' => $invoiceExtraHeader->id,
+                        'nobuktitrans' => $invoiceExtraHeader->id,
                         'aksi' => 'PRINT',
-                        'datajson' => $invoiceExtra->toArray(),
-                        'modifiedby' => $invoiceExtra->modifiedby
+                        'datajson' => $invoiceExtraHeader->toArray(),
+                        'modifiedby' => $invoiceExtraHeader->modifiedby
                     ];
-
                     $validatedLogTrail = new StoreLogTrailRequest($logTrail);
                     $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
-
                     DB::commit();
                 }
             }
-
-
             return response([
                 'message' => 'Berhasil'
             ]);

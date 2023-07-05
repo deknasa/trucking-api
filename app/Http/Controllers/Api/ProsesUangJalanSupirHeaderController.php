@@ -276,6 +276,43 @@ class ProsesUangJalanSupirHeaderController extends Controller
         }
     }
 
+    public function printReport($id)
+    {
+        DB::beginTransaction();
+
+        try {
+            $prosesUangJalanSupir = ProsesUangJalanSupirHeader::findOrFail($id);
+            $statusSudahCetak = Parameter::where('grp', '=', 'STATUSCETAK')->where('text', '=', 'CETAK')->first();
+            $statusBelumCetak = Parameter::where('grp', '=', 'STATUSCETAK')->where('text', '=', 'BELUM CETAK')->first();
+
+            if ($prosesUangJalanSupir->statuscetak != $statusSudahCetak->id) {
+                $prosesUangJalanSupir->statuscetak = $statusSudahCetak->id;
+                $prosesUangJalanSupir->tglbukacetak = date('Y-m-d H:i:s');
+                $prosesUangJalanSupir->userbukacetak = auth('api')->user()->name;
+                $prosesUangJalanSupir->jumlahcetak = $prosesUangJalanSupir->jumlahcetak + 1;
+                if ($prosesUangJalanSupir->save()) {
+                    $logTrail = [
+                        'namatabel' => strtoupper($prosesUangJalanSupir->getTable()),
+                        'postingdari' => 'PRINT PROSES UANG JALAN SUPIR HEADER',
+                        'idtrans' => $prosesUangJalanSupir->id,
+                        'nobuktitrans' => $prosesUangJalanSupir->id,
+                        'aksi' => 'PRINT',
+                        'datajson' => $prosesUangJalanSupir->toArray(),
+                        'modifiedby' => $prosesUangJalanSupir->modifiedby
+                    ];
+                    $validatedLogTrail = new StoreLogTrailRequest($logTrail);
+                    $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
+                    DB::commit();
+                }
+            }
+            return response([
+                'message' => 'Berhasil'
+            ]);
+        } catch (\Throwable $th) {
+            throw $th;
+        }
+    }
+
     /**
      * @ClassName 
      */

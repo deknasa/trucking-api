@@ -278,6 +278,43 @@ class RekapPenerimaanHeaderController extends Controller
         ]);
     }
 
+    public function printReport($id)
+    {
+        DB::beginTransaction();
+
+        try {
+            $rekapPenerimaan = RekapPenerimaanHeader::findOrFail($id);
+            $statusSudahCetak = Parameter::where('grp', '=', 'STATUSCETAK')->where('text', '=', 'CETAK')->first();
+            $statusBelumCetak = Parameter::where('grp', '=', 'STATUSCETAK')->where('text', '=', 'BELUM CETAK')->first();
+
+            if ($rekapPenerimaan->statuscetak != $statusSudahCetak->id) {
+                $rekapPenerimaan->statuscetak = $statusSudahCetak->id;
+                $rekapPenerimaan->tglbukacetak = date('Y-m-d H:i:s');
+                $rekapPenerimaan->userbukacetak = auth('api')->user()->name;
+                $rekapPenerimaan->jumlahcetak = $rekapPenerimaan->jumlahcetak + 1;
+                if ($rekapPenerimaan->save()) {
+                    $logTrail = [
+                        'namatabel' => strtoupper($rekapPenerimaan->getTable()),
+                        'postingdari' => 'PRINT REKAP PENERIMAAN HEADER',
+                        'idtrans' => $rekapPenerimaan->id,
+                        'nobuktitrans' => $rekapPenerimaan->id,
+                        'aksi' => 'PRINT',
+                        'datajson' => $rekapPenerimaan->toArray(),
+                        'modifiedby' => $rekapPenerimaan->modifiedby
+                    ];
+                    $validatedLogTrail = new StoreLogTrailRequest($logTrail);
+                    $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
+                    DB::commit();
+                }
+            }
+            return response([
+                'message' => 'Berhasil'
+            ]);
+        } catch (\Throwable $th) {
+            throw $th;
+        }
+    }
+
     /**
      * @ClassName 
      */

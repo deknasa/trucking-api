@@ -210,43 +210,35 @@ class KasGantungHeaderController extends Controller
         ]);
     }
 
-
     public function printReport($id)
     {
         DB::beginTransaction();
 
         try {
-            $kasgantung = KasGantungHeader::lockForUpdate()->findOrFail($id);
-            $statusSudahCetak = Parameter::from(DB::raw("parameter with (readuncommitted)"))
-                ->where('grp', '=', 'STATUSCETAK')->where('text', '=', 'CETAK')->first();
-            $statusBelumCetak = Parameter::from(DB::raw("parameter with (readuncommitted)"))
-                ->where('grp', '=', 'STATUSCETAK')->where('text', '=', 'BELUM CETAK')->first();
+            $kasgantungHeader = KasgantungHeader::findOrFail($id);
+            $statusSudahCetak = Parameter::where('grp', '=', 'STATUSCETAK')->where('text', '=', 'CETAK')->first();
+            $statusBelumCetak = Parameter::where('grp', '=', 'STATUSCETAK')->where('text', '=', 'BELUM CETAK')->first();
 
-            if ($kasgantung->statuscetak != $statusSudahCetak->id) {
-                $kasgantung->statuscetak = $statusSudahCetak->id;
-                $kasgantung->tglbukacetak = date('Y-m-d H:i:s');
-                $kasgantung->userbukacetak = auth('api')->user()->name;
-                $kasgantung->jumlahcetak = $kasgantung->jumlahcetak + 1;
-
-                if ($kasgantung->save()) {
+            if ($kasgantungHeader->statuscetak != $statusSudahCetak->id) {
+                $kasgantungHeader->statuscetak = $statusSudahCetak->id;
+                $kasgantungHeader->tglbukacetak = date('Y-m-d H:i:s');
+                $kasgantungHeader->userbukacetak = auth('api')->user()->name;
+                $kasgantungHeader->jumlahcetak = $kasgantungHeader->jumlahcetak + 1;
+                if ($kasgantungHeader->save()) {
                     $logTrail = [
-                        'namatabel' => strtoupper($kasgantung->getTable()),
+                        'namatabel' => strtoupper($kasgantungHeader->getTable()),
                         'postingdari' => 'PRINT KAS GANTUNG HEADER',
-                        'idtrans' => $kasgantung->id,
-                        'nobuktitrans' => $kasgantung->nobukti,
+                        'idtrans' => $kasgantungHeader->id,
+                        'nobuktitrans' => $kasgantungHeader->id,
                         'aksi' => 'PRINT',
-                        'datajson' => $kasgantung->toArray(),
-                        'modifiedby' => auth('api')->user()->name,
+                        'datajson' => $kasgantungHeader->toArray(),
+                        'modifiedby' => $kasgantungHeader->modifiedby
                     ];
-
                     $validatedLogTrail = new StoreLogTrailRequest($logTrail);
                     $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
-
                     DB::commit();
                 }
             }
-
-
             return response([
                 'message' => 'Berhasil'
             ]);
@@ -254,7 +246,6 @@ class KasGantungHeaderController extends Controller
             throw $th;
         }
     }
-
 
     public function cekValidasiAksi($id)
     {
