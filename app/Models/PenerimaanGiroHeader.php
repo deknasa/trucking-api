@@ -717,6 +717,8 @@ class PenerimaanGiroHeader extends MyModel
                 'penerimaangiroheader.postingdari',
                 'penerimaangiroheader.diterimadari',
                 'penerimaangiroheader.tgllunas',
+                'statuscetak.memo as statuscetak',
+                'statuscetak.id as  statuscetak_id',
                 DB::raw("'Laporan Penerimaan Giro' as judulLaporan"),
                 DB::raw("'" . $getJudul->text . "' as judul"),
                 DB::raw("'Tgl Cetak:'+format(getdate(),'dd-MM-yyyy HH:mm:ss')as tglcetak"),
@@ -724,6 +726,7 @@ class PenerimaanGiroHeader extends MyModel
                 
             )
             ->where("$this->table.id", $id)
+            ->leftJoin(DB::raw("parameter as statuscetak with (readuncommitted)"), 'penerimaangiroheader.statuscetak', 'statuscetak.id')
             ->leftJoin(DB::raw("pelanggan with (readuncommitted)"), 'penerimaangiroheader.pelanggan_id', 'pelanggan.id')
             ->leftJoin(DB::raw("agen with (readuncommitted)"), 'penerimaangiroheader.agen_id', 'agen.id');
         $data = $query->first();

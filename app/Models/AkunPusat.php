@@ -398,6 +398,12 @@ class AkunPusat extends MyModel
         $query = DB::table("akunpusat")->from(DB::raw("akunpusat with (readuncommitted)"))->where('id', $id)->first();
         return $query;
     }
+    
+    public function checkTransferData($coa)
+    {
+        $query = DB::table("akunpusat")->from(DB::raw("akunpusat with (readuncommitted)"))->where('coa', $coa)->first();
+        return $query;
+    }
 
     public function sort($query)
     {

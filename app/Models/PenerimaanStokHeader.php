@@ -130,6 +130,12 @@ class PenerimaanStokHeader extends MyModel
         if (request()->penerimaanheader_id==$po->text) {
             $penerimaanstok_nobukti = "nobuktispb.nobukti as penerimaanstok_nobukti";
         }
+
+        $getJudul = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))
+                ->select('text')
+                ->where('grp', 'JUDULAN LAPORAN')
+                ->where('subgrp', 'JUDULAN LAPORAN')
+                ->first();
             
         return $query->select(
             "$this->table.id",
@@ -170,6 +176,7 @@ class PenerimaanStokHeader extends MyModel
             "statuscetak.memo as  statuscetak",
             "nobuktipenerimaanstok.tglbukti as parrenttglbukti",
             "statuscetak.id as  statuscetak_id",
+            DB::raw("'" . $getJudul->text . "' as judul")
         );
     }
 

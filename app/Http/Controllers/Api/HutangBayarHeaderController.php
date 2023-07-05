@@ -282,37 +282,30 @@ class HutangBayarHeaderController extends Controller
         DB::beginTransaction();
 
         try {
-            $hutangBayar = HutangBayarHeader::lockForUpdate()->findOrFail($id);
-            $statusSudahCetak = Parameter::from(DB::raw("parameter with (readuncommitted)"))
-                ->where('grp', '=', 'STATUSCETAK')->where('text', '=', 'CETAK')->first();
-            $statusBelumCetak = Parameter::from(DB::raw("parameter with (readuncommitted)"))
-                ->where('grp', '=', 'STATUSCETAK')->where('text', '=', 'BELUM CETAK')->first();
+            $hutangBayar = HutangBayarHeader::findOrFail($id);
+            $statusSudahCetak = Parameter::where('grp', '=', 'STATUSCETAK')->where('text', '=', 'CETAK')->first();
+            $statusBelumCetak = Parameter::where('grp', '=', 'STATUSCETAK')->where('text', '=', 'BELUM CETAK')->first();
 
             if ($hutangBayar->statuscetak != $statusSudahCetak->id) {
                 $hutangBayar->statuscetak = $statusSudahCetak->id;
                 $hutangBayar->tglbukacetak = date('Y-m-d H:i:s');
                 $hutangBayar->userbukacetak = auth('api')->user()->name;
                 $hutangBayar->jumlahcetak = $hutangBayar->jumlahcetak + 1;
-
                 if ($hutangBayar->save()) {
                     $logTrail = [
                         'namatabel' => strtoupper($hutangBayar->getTable()),
                         'postingdari' => 'PRINT HUTANG BAYAR HEADER',
                         'idtrans' => $hutangBayar->id,
-                        'nobuktitrans' => $hutangBayar->nobukti,
+                        'nobuktitrans' => $hutangBayar->id,
                         'aksi' => 'PRINT',
                         'datajson' => $hutangBayar->toArray(),
-                        'modifiedby' => auth('api')->user()->name,
+                        'modifiedby' => $hutangBayar->modifiedby
                     ];
-
                     $validatedLogTrail = new StoreLogTrailRequest($logTrail);
                     $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
-
                     DB::commit();
                 }
             }
-
-
             return response([
                 'message' => 'Berhasil'
             ]);

@@ -24,6 +24,7 @@ class Cabang extends MyModel
         $this->setRequestParameters();
 
         $aktif = request()->aktif ?? '';
+        $transferCoa = request()->transferCoa ?? '';
 
         $getJudul = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))
             ->select('text')
@@ -60,6 +61,9 @@ class Cabang extends MyModel
                 ->first();
 
             $query->where('cabang.statusaktif', '=', $statusaktif->id);
+        }
+        if ($transferCoa != '') {
+            $query->where('cabang.kodecabang', '!=', 'PST');
         }
 
         $this->totalRows = $query->count();

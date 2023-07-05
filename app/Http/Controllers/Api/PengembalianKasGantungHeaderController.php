@@ -350,45 +350,32 @@ class PengembalianKasGantungHeaderController extends Controller
         }
     }
 
-    public function export($id)
-    {
-        $pengembalianKasGantungHeader = new PengembalianKasGantungHeader();
-        return response([
-            'data' => $pengembalianKasGantungHeader->getExport($id)
-        ]);
-    }
-
     public function printReport($id)
     {
         DB::beginTransaction();
 
         try {
-            $pengembalianKgt = PengembalianKasGantungHeader::lockForUpdate()->findOrFail($id);
-            $statusSudahCetak = Parameter::from(DB::raw("parameter with (readuncommitted)"))
-                ->where('grp', '=', 'STATUSCETAK')->where('text', '=', 'CETAK')->first();
-            $statusBelumCetak = Parameter::from(DB::raw("parameter with (readuncommitted)"))
-                ->where('grp', '=', 'STATUSCETAK')->where('text', '=', 'BELUM CETAK')->first();
+            $pengembalianKasGantung = PengembalianKasGantungHeader::findOrFail($id);
+            $statusSudahCetak = Parameter::where('grp', '=', 'STATUSCETAK')->where('text', '=', 'CETAK')->first();
+            $statusBelumCetak = Parameter::where('grp', '=', 'STATUSCETAK')->where('text', '=', 'BELUM CETAK')->first();
 
-            if ($pengembalianKgt->statuscetak != $statusSudahCetak->id) {
-                $pengembalianKgt->statuscetak = $statusSudahCetak->id;
-                $pengembalianKgt->tglbukacetak = date('Y-m-d H:i:s');
-                $pengembalianKgt->userbukacetak = auth('api')->user()->name;
-                $pengembalianKgt->jumlahcetak = $pengembalianKgt->jumlahcetak + 1;
-
-                if ($pengembalianKgt->save()) {
+            if ($pengembalianKasGantung->statuscetak != $statusSudahCetak->id) {
+                $pengembalianKasGantung->statuscetak = $statusSudahCetak->id;
+                $pengembalianKasGantung->tglbukacetak = date('Y-m-d H:i:s');
+                $pengembalianKasGantung->userbukacetak = auth('api')->user()->name;
+                $pengembalianKasGantung->jumlahcetak = $pengembalianKasGantung->jumlahcetak + 1;
+                if ($pengembalianKasGantung->save()) {
                     $logTrail = [
-                        'namatabel' => strtoupper($pengembalianKgt->getTable()),
-                        'postingdari' => 'PRINT PENERIMAAN TRUCKING HEADER',
-                        'idtrans' => $pengembalianKgt->id,
-                        'nobuktitrans' => $pengembalianKgt->nobukti,
+                        'namatabel' => strtoupper($pengembalianKasGantung->getTable()),
+                        'postingdari' => 'PRINT PENGEMBALIAN KAS GANTUNG HEADER',
+                        'idtrans' => $pengembalianKasGantung->id,
+                        'nobuktitrans' => $pengembalianKasGantung->id,
                         'aksi' => 'PRINT',
-                        'datajson' => $pengembalianKgt->toArray(),
-                        'modifiedby' => auth('api')->user()->name,
+                        'datajson' => $pengembalianKasGantung->toArray(),
+                        'modifiedby' => $pengembalianKasGantung->modifiedby
                     ];
-
                     $validatedLogTrail = new StoreLogTrailRequest($logTrail);
                     $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
-
                     DB::commit();
                 }
             }
@@ -399,6 +386,18 @@ class PengembalianKasGantungHeaderController extends Controller
             throw $th;
         }
     }
+
+    /**
+     * @ClassName 
+     */
+    public function export($id)
+    {
+        $pengembalianKasGantungHeader = new PengembalianKasGantungHeader();
+        return response([
+            'data' => $pengembalianKasGantungHeader->getExport($id)
+        ]);
+    }
+
     /**
      * @ClassName 
      */

@@ -2,10 +2,10 @@
 
 namespace App\Http\Requests;
 
-use App\Rules\ValidasiDetail;
+use App\Http\Controllers\Api\ErrorController;
 use Illuminate\Foundation\Http\FormRequest;
 
-class TransferAkunPusatRequest extends FormRequest
+class ForgotPasswordRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
@@ -24,9 +24,18 @@ class TransferAkunPusatRequest extends FormRequest
      */
     public function rules()
     {
-        $jumlahdetail = $this->jumlahdetail ?? 0;
+
         return [
-            'cabang' => ['required',new ValidasiDetail($jumlahdetail)],
+            'user' => 'required|exists:user,user'
+        ];
+    }
+
+    public function messages()
+    {
+       
+        return [
+            'user.required' => ':attribute' . ' ' . app(ErrorController::class)->geterror('WI')->keterangan,
+            'user.exists' => ':attribute' . ' ' . 'TIDAK ADA',
         ];
     }
 }

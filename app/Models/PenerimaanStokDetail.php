@@ -54,6 +54,12 @@ class PenerimaanStokDetail extends MyModel
             $totalRows =  $query->count();
             $penerimaanStokDetail = $query->get();
         }else{
+            $getJudul = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))
+                ->select('text')
+                ->where('grp', 'JUDULAN LAPORAN')
+                ->where('subgrp', 'JUDULAN LAPORAN')
+                ->first();
+
             $query->select(
                 "$this->table.penerimaanstokheader_id",
                 "$this->table.nobukti",
@@ -67,6 +73,10 @@ class PenerimaanStokDetail extends MyModel
                 "$this->table.keterangan",
                 "$this->table.vulkanisirke",
                 "$this->table.modifiedby",
+                DB::raw("'Laporan Purchase Order (PO)' as judulLaporan"),
+                DB::raw("'" . $getJudul->text . "' as judul"),
+                DB::raw("'Tgl Cetak:'+format(getdate(),'dd-MM-yyyy HH:mm:ss')as tglcetak"),
+                DB::raw(" 'User :".auth('api')->user()->name."' as usercetak")
             )
             ->leftJoin("penerimaanstokheader", "$this->table.penerimaanstokheader_id", "penerimaanstokheader.id")
             ->leftJoin("stok", "$this->table.stok_id", "stok.id");

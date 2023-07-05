@@ -33,12 +33,38 @@ class GajiSupirDetail extends MyModel
         $query = DB::table($this->table)->from(DB::raw("$this->table with (readuncommitted)"));
 
         if (isset(request()->forReport) && request()->forReport) {
-            
-            $tempDetail = $this->createTemp();
-            $this->tempTable = $tempDetail;
-            $tempQuery = DB::table($tempDetail)->from(DB::raw("$tempDetail with (readuncommitted)"));
 
-            return $tempQuery->get();
+            $query->select(
+                $this->table .  '.nobukti',
+                $this->table . '.suratpengantar_nobukti',
+                'suratpengantar.nosp',
+                'statuscontainer.kodestatuscontainer',
+                'dari.keterangan as dari',
+                'sampai.keterangan as sampai',
+                'container.kodecontainer',
+                'suratpengantar.liter',
+                'suratpengantar.nocont',
+                'suratpengantar.tglsp',
+                'agen.namaagen as agen',
+                'parameter.text as statusritasi',
+                $this->table . '.gajisupir',
+                $this->table . '.gajikenek',
+                DB::raw("({$this->table}.gajisupir + {$this->table}.gajikenek) as borongan"),
+                $this->table . '.gajiritasi as upahritasi',
+                $this->table . '.biayatambahan as biayaextra'
+            )
+                ->leftJoin(DB::raw("suratpengantar with (readuncommitted)"), $this->table . '.suratpengantar_nobukti', 'suratpengantar.nobukti')
+                ->leftJoin(DB::raw("statuscontainer with (readuncommitted)"), 'suratpengantar.statuscontainer_id', 'statuscontainer.id')
+                ->leftJoin(DB::raw("kota as dari with (readuncommitted)"), 'suratpengantar.dari_id', 'dari.id')
+                ->leftJoin(DB::raw("kota as sampai with (readuncommitted)"), 'suratpengantar.sampai_id', 'sampai.id')
+                ->leftJoin(DB::raw("ritasi with (readuncommitted)"), $this->table . '.ritasi_nobukti', 'ritasi.nobukti')
+                ->leftJoin(DB::raw("container with (readuncommitted)"), 'suratpengantar.container_id', 'container.id')
+                ->leftJoin(DB::raw("agen with (readuncommitted)"), 'suratpengantar.agen_id', 'agen.id')
+                ->leftJoin(DB::raw("parameter with (readuncommitted)"), 'ritasi.statusritasi', 'parameter.id')
+                ->where('gajisupirdetail.suratpengantar_nobukti', '!=', '-');
+
+            $query->where($this->table . '.gajisupir_id', '=', request()->gajisupir_id);
+            return $query->get();
         } else {
             $tempDetail = $this->createTemp();
             $this->tempTable = $tempDetail;
@@ -134,7 +160,9 @@ class GajiSupirDetail extends MyModel
                 'ritasi.nobukti as ritasi_nobukti',
                 'parameter.text as statusritasi',
                 'gajisupirdetail.biayatambahan as biayaextra',
-                'gajisupirdetail.keteranganbiayatambahan'
+                'gajisupirdetail.keteranganbiayatambahan',
+                
+
             )
             ->leftJoin(DB::raw("ritasi with (readuncommitted)"), 'gajisupirdetail.ritasi_nobukti', 'ritasi.nobukti')
             ->leftJoin(DB::raw("kota as dari with (readuncommitted)"), 'ritasi.dari_id', 'dari.id')

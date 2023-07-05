@@ -394,37 +394,30 @@ class PenerimaanHeaderController extends Controller
         DB::beginTransaction();
 
         try {
-            $penerimaan = PenerimaanHeader::lockForUpdate()->findOrFail($id);
-            $statusSudahCetak = Parameter::from(DB::raw("parameter with (readuncommitted)"))
-                ->where('grp', '=', 'STATUSCETAK')->where('text', '=', 'CETAK')->first();
-            $statusBelumCetak = Parameter::from(DB::raw("parameter with (readuncommitted)"))
-                ->where('grp', '=', 'STATUSCETAK')->where('text', '=', 'BELUM CETAK')->first();
+            $penerimaanHeader = PenerimaanHeader::findOrFail($id);
+            $statusSudahCetak = Parameter::where('grp', '=', 'STATUSCETAK')->where('text', '=', 'CETAK')->first();
+            $statusBelumCetak = Parameter::where('grp', '=', 'STATUSCETAK')->where('text', '=', 'BELUM CETAK')->first();
 
-            if ($penerimaan->statuscetak != $statusSudahCetak->id) {
-                $penerimaan->statuscetak = $statusSudahCetak->id;
-                $penerimaan->tglbukacetak = date('Y-m-d H:i:s');
-                $penerimaan->userbukacetak = auth('api')->user()->name;
-                $penerimaan->jumlahcetak = $penerimaan->jumlahcetak + 1;
-
-                if ($penerimaan->save()) {
+            if ($penerimaanHeader->statuscetak != $statusSudahCetak->id) {
+                $penerimaanHeader->statuscetak = $statusSudahCetak->id;
+                $penerimaanHeader->tglbukacetak = date('Y-m-d H:i:s');
+                $penerimaanHeader->userbukacetak = auth('api')->user()->name;
+                $penerimaanHeader->jumlahcetak = $penerimaanHeader->jumlahcetak + 1;
+                if ($penerimaanHeader->save()) {
                     $logTrail = [
-                        'namatabel' => strtoupper($penerimaan->getTable()),
+                        'namatabel' => strtoupper($penerimaanHeader->getTable()),
                         'postingdari' => 'PRINT PENERIMAAN HEADER',
-                        'idtrans' => $penerimaan->id,
-                        'nobuktitrans' => $penerimaan->nobukti,
+                        'idtrans' => $penerimaanHeader->id,
+                        'nobuktitrans' => $penerimaanHeader->id,
                         'aksi' => 'PRINT',
-                        'datajson' => $penerimaan->toArray(),
-                        'modifiedby' => auth('api')->user()->name
+                        'datajson' => $penerimaanHeader->toArray(),
+                        'modifiedby' => $penerimaanHeader->modifiedby
                     ];
-
                     $validatedLogTrail = new StoreLogTrailRequest($logTrail);
                     $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
-
                     DB::commit();
                 }
             }
-
-
             return response([
                 'message' => 'Berhasil'
             ]);

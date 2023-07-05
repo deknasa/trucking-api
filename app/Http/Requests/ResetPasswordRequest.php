@@ -2,10 +2,9 @@
 
 namespace App\Http\Requests;
 
-use App\Rules\ValidasiDetail;
 use Illuminate\Foundation\Http\FormRequest;
 
-class TransferAkunPusatRequest extends FormRequest
+class ResetPasswordRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
@@ -24,9 +23,8 @@ class TransferAkunPusatRequest extends FormRequest
      */
     public function rules()
     {
-        $jumlahdetail = $this->jumlahdetail ?? 0;
         return [
-            'cabang' => ['required',new ValidasiDetail($jumlahdetail)],
+            'password' => 'required|confirmed',
         ];
     }
 }
