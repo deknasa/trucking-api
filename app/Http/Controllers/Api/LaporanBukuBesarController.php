@@ -54,7 +54,7 @@ class LaporanBukuBesarController extends Controller
                 'cabang' => $cabang->namacabang
             ];
 
-         
+        
             return response([
                 'data' => $laporanbukubesar->getReport(),
                 'dataheader' => $dataHeader

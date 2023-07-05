@@ -64,8 +64,8 @@ class LaporanBukuBesar extends MyModel
 
 
 
-        $tempsaldo = '##tempsaldo' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
-        Schema::create($tempsaldo, function ($table) {
+        $tempsaldo2 = '##tempsaldo2' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+        Schema::create($tempsaldo2, function ($table) {
             $table->double('urut', 15, 2)->nullable();
             $table->string('coa', 1000)->nullable();
             $table->string('keterangancoa', 1000)->nullable();
@@ -90,11 +90,10 @@ class LaporanBukuBesar extends MyModel
                 DB::raw("'SALDO AWAL' as keterangan"),
                 DB::raw("0 as debet"),
                 DB::raw("0 as kredit"),
-                DB::raw("sum(isnull(b.nominal,0)+isnull(d.saldo,0)) as saldo")
+                DB::raw("sum(isnull(b.nominal,0)) as saldo")
             )
             ->join(DB::raw("jurnalumumpusatdetail as b with (readuncommitted)"), 'a.nobukti', 'b.nobukti')
             ->join(DB::raw("akunpusat as c with(readuncommitted)"), 'b.coa', 'c.coa')
-            ->leftjoin(DB::raw($tempsaldorekap)." as d",'c.coa','d.coa')
             ->whereRaw("a.tglbukti>=cast(ltrim(rtrim(str(year('" . $dariformat . "'))))+'/'+ltrim(rtrim(str(month('" . $dariformat . "'))))+'/1' as datetime) ")
             ->where('a.tglbukti', '<', $dari)
             ->whereRaw("(c.id >=" . $coadari_id)
@@ -107,7 +106,7 @@ class LaporanBukuBesar extends MyModel
 
 
    
-        DB::table($tempsaldo)->insertUsing([
+        DB::table($tempsaldo2)->insertUsing([
             'urut',
             'coa',
             'keterangancoa',
@@ -133,12 +132,12 @@ class LaporanBukuBesar extends MyModel
                 DB::raw("0 as kredit"),
                 DB::raw("0 as saldo")
             )
-            ->leftjoin(DB::raw($tempsaldo)." as b",'a.coa','b.coa')
+            ->leftjoin(DB::raw($tempsaldo2)." as b",'a.coa','b.coa')
             ->whereRaw("(a.id >=" . $coadari_id)
             ->whereRaw(DB::raw("a.id <=" . $coasampai_id . ")"))
             ->whereRaw("isnull(B.coa,'')=''");
             // dd($querysaldoawal->toSql());
-            DB::table($tempsaldo)->insertUsing([
+            DB::table($tempsaldo2)->insertUsing([
                 'urut',
                 'coa',
                 'keterangancoa',
@@ -149,6 +148,51 @@ class LaporanBukuBesar extends MyModel
                 'kredit',
                 'saldo',
             ], $querysaldoawal);
+
+
+            $tempsaldo = '##tempsaldo' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+            Schema::create($tempsaldo, function ($table) {
+                $table->double('urut', 15, 2)->nullable();
+                $table->string('coa', 1000)->nullable();
+                $table->string('keterangancoa', 1000)->nullable();
+                $table->date('tglbukti')->nullable();
+                $table->string('nobukti', 100)->nullable();
+                $table->longText('keterangan')->nullable();
+                $table->double('debet', 15, 2)->nullable();
+                $table->double('kredit', 15, 2)->nullable();
+                $table->double('saldo', 15, 2)->nullable();
+            });
+            
+            $querysaldoawal = DB::table(DB::raw($tempsaldo) )->from(
+                DB::raw(DB::raw($tempsaldo2)." a with (readuncommitted)")
+            )
+                ->select(
+                    DB::raw("1 as urut"),
+                    'a.coa',
+                    'a.keterangancoa',
+                    DB::raw("'1900/1/1' as tglbukti"),
+                    DB::raw("'' as nobukti"),
+                    DB::raw("'SALDO AWAL' as keterangan"),
+                    DB::raw("0 as debet"),
+                    DB::raw("0 as kredit"),
+                    DB::raw("(isnull(a.saldo,0)+isnull(b.saldo,0)) as saldo")
+                )
+                ->leftjoin(DB::raw($tempsaldorekap)." as b",'a.coa','b.coa');
+
+                DB::table($tempsaldo)->insertUsing([
+                    'urut',
+                    'coa',
+                    'keterangancoa',
+                    'tglbukti',
+                    'nobukti',
+                    'keterangan',
+                    'debet',
+                    'kredit',
+                    'saldo',
+                ], $querysaldoawal);                
+
+
+
 
 
         $tempdetail = '##tempdetail' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));

@@ -379,6 +379,8 @@ class ParameterSeeder extends Seeder
         parameter::create(['grp' => 'STATUS GANDENGAN', 'subgrp' => 'STATUS GANDENGAN', 'kelompok' => '', 'text' => 'TINGGAL GANDENGAN', 'memo' => '{"MEMO":"TINGGAL GANDENGAN","SINGKATAN":"P","WARNA":"#28A745"}', 'type' => '0', 'modifiedby' => 'ADMIN', 'default' => 'YA',]);
         parameter::create(['grp' => 'STATUS GANDENGAN', 'subgrp' => 'STATUS GANDENGAN', 'kelompok' => '', 'text' => 'TINGGAL CONTAINER', 'memo' => '{"MEMO":"TINGGAL CONTAINER","SINGKATAN":"V","WARNA":"#28A745"}', 'type' => '0', 'modifiedby' => 'ADMIN', 'default' => 'YA',]);
         parameter::create(['grp' => 'PENERIMAAN STOK', 'subgrp' => 'PENGEMBALIAN SPK BUKTI', 'kelompok' => '', 'text' => '#PSPK #9999#/#R#/#Y', 'memo' => '{"MEMO":"PERBAIKAN STOK BUKTI","SINGKATAN":"#PSPK #9999#/#R#/#Y","WARNA":"#28A745"}', 'type' => '118', 'modifiedby' => 'ADMIN', 'default' => '',]);
+        parameter::create(['grp' => 'STATUS GANDENGAN', 'subgrp' => 'STATUS GANDENGAN', 'kelompok' => '', 'text' => 'DEPO PIL', 'memo' => '{"MEMO":"DEPO PIL","SINGKATAN":"DP","WARNA":"#28A745"}', 'type' => '0', 'modifiedby' => 'ADMIN', 'default' => 'YA',]);
+        parameter::create(['grp' => 'BATAS KM LUAR KOTA', 'subgrp' => 'BATAS KM LUAR KOTA', 'kelompok' => '', 'text' => '62', 'memo' => '{"MEMO":"BATAS KM LUAR KOTA","SINGKATAN":"BKLK","WARNA":"#28A745"}', 'type' => '0', 'modifiedby' => 'ADMIN', 'default' => 'YA',]);
 
 
         
