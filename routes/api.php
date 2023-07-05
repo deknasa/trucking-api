@@ -63,6 +63,7 @@ use App\Http\Controllers\Api\ExportPembelianBarangController;
 use App\Http\Controllers\Api\ExportPengeluaranBarangController;
 use App\Http\Controllers\Api\ExportRincianMingguanController;
 use App\Http\Controllers\Api\ExportRincianMingguanPendapatanSupirController;
+use App\Http\Controllers\Api\ForgotPasswordController;
 use App\Http\Controllers\Api\GajiSupirDetailController;
 use App\Http\Controllers\Api\GajiSupirHeaderController;
 use App\Http\Controllers\Api\JenisEmklController;
@@ -232,6 +233,7 @@ use App\Http\Controllers\Api\LaporanHistoryDepositoController;
 use App\Http\Controllers\Api\UbahPasswordController;
 
 
+
 // use App\Http\Controllers\Api\LaporanTransaksiHarianController;
 
 /*
@@ -258,8 +260,8 @@ Route::get('trado/image/{field}/{filename}/{type}/{aksi}', [TradoController::cla
 Route::get('stok/{filename}/{type}', [StokController::class, 'getImage']);
 Route::get('upahsupir/{filename}/{type}', [UpahSupirController::class, 'getImage']);
 
-route::middleware(['auth:api','authorized'])->group(function () {
-    
+route::middleware(['auth:api', 'authorized'])->group(function () {
+
 
     Route::get('kota/combo', [KotaController::class, 'combo']);
     Route::get('kota/field_length', [KotaController::class, 'fieldLength']);
@@ -426,11 +428,11 @@ route::middleware(['auth:api','authorized'])->group(function () {
     Route::get('absensisupirdetail/get', [AbsensiSupirDetailController::class, 'getDetailAbsensi']);
     Route::resource('absensisupirdetail', AbsensiSupirDetailController::class);
     Route::resource('bukaabsensi', BukaAbsensiController::class)->whereNumber('bukaabsensi');
-    
-    Route::get('approvalsupirgambar/default', [ApprovalSupirGambarController::class,'default']);
+
+    Route::get('approvalsupirgambar/default', [ApprovalSupirGambarController::class, 'default']);
     Route::resource('approvalsupirgambar', ApprovalSupirGambarController::class)->whereNumber('approvalsupirgambar');
-    
-    Route::get('approvalsupirketerangan/default', [ApprovalSupirKeteranganController::class,'default']);
+
+    Route::get('approvalsupirketerangan/default', [ApprovalSupirKeteranganController::class, 'default']);
     Route::resource('approvalsupirketerangan', ApprovalSupirKeteranganController::class)->whereNumber('approvalsupirgambar');
 
     Route::get('suratpengantarapprovalinputtrip/cektanggal', [SuratPengantarApprovalInputTripController::class, 'isTanggalAvaillable']);
@@ -783,7 +785,7 @@ route::middleware(['auth:api','authorized'])->group(function () {
     Route::apiResource('penerimaanstokdetail', PenerimaanStokDetailController::class)->whereNumber('penerimaanstokdetail');
 
     Route::get('pengeluaranstok/field_length', [PengeluaranStokController::class, 'fieldLength']);
-    Route::get('pengeluaranstok/export', [PengeluaranStokController::class,'export']);
+    Route::get('pengeluaranstok/export', [PengeluaranStokController::class, 'export']);
     Route::get('pengeluaranstok/default', [PengeluaranStokController::class, 'default']);
     Route::post('pengeluaranstok/{id}/cekValidasi', [PengeluaranStokController::class, 'cekValidasi'])->name('pengeluaranstok.cekValidasi')->whereNumber('id');
     Route::apiResource('pengeluaranstok', PengeluaranStokController::class)->whereNumber('pengeluaranstok');
@@ -1158,7 +1160,7 @@ route::middleware(['auth:api','authorized'])->group(function () {
     Route::get('laporankasbank/report', [LaporanKasBankController::class, 'report'])->name('laporankasbank.report');
     Route::get('laporankasbank/export', [LaporanKasBankController::class, 'export'])->name('laporankasbank.export');
     Route::resource('laporankasbank', LaporanKasBankController::class)->whereNumber('laporankasbank');
-    
+
     Route::get('laporanbukubesar/report', [LaporanBukuBesarController::class, 'report'])->name('laporanbukubesar.report');
     Route::resource('laporanbukubesar', LaporanBukuBesarController::class)->whereNumber('laporanbukubesar');
 
@@ -1240,7 +1242,7 @@ route::middleware(['auth:api','authorized'])->group(function () {
     Route::get('laporanpiutanggiro/report', [LaporanPiutangGiroController::class, 'report'])->name('laporanpiutanggiro.report');
     Route::get('laporanpiutanggiro/export', [LaporanPiutangGiroController::class, 'export'])->name('laporanpiutanggiro.export');
     Route::resource('laporanpiutanggiro', LaporanPiutangGiroController::class)->whereNumber('laporanpiutanggiro');
-    
+
     Route::get('laporanlabarugi/report', [LaporanLabaRugiController::class, 'report'])->name('laporanlabarugi.report');
     Route::get('laporanlabarugi/export', [LaporanLabaRugiController::class, 'export'])->name('laporanlabarugi.export');
     Route::resource('laporanlabarugi', LaporanLabaRugiController::class)->whereNumber('laporanlabarugi');
@@ -1311,7 +1313,7 @@ route::middleware(['auth:api','authorized'])->group(function () {
     // Route::resource('exportlaporandeposito', ExportLaporanDepositoController::class);
     Route::get('exportlaporankasgantung/export', [ExportLaporanKasGantungController::class, 'export'])->name('exportlaporankasgantung.export');
     Route::resource('exportlaporankasgantung', ExportLaporanKasGantungController::class)->whereNumber('exportlaporankasgantung');
-    
+
     Route::get('exportlaporanstok/export', [ExportLaporanStokController::class, 'export'])->name('exportlaporanstok.export');
     Route::resource('exportlaporanstok', ExportLaporanStokController::class)->whereNumber('exportlaporanstok');
     Route::get('laporanritasitrado/export', [LaporanRitasiTradoController::class, 'export'])->name('laporanritasitrado.export');
@@ -1390,7 +1392,7 @@ route::middleware(['auth:api','authorized'])->group(function () {
     Route::get('typeakuntansi/export', [TypeAkuntansiController::class, 'export']);
     Route::get('typeakuntansi/getPosition2', [TypeAkuntansiController::class, 'getPosition2']);
     Route::resource('typeakuntansi', TypeAkuntansiController::class)->whereNumber('typeakuntansi');
-    
+
     Route::get('maintypeakuntansi/field_length', [MainTypeAkuntansiController::class, 'fieldLength']);
     Route::get('maintypeakuntansi/combostatus', [MainTypeAkuntansiController::class, 'combostatus']);
     Route::get('maintypeakuntansi/default', [MainTypeAkuntansiController::class, 'default']);
@@ -1401,10 +1403,13 @@ route::middleware(['auth:api','authorized'])->group(function () {
 
     Route::get('approvaltradogambar/field_length', [ApprovalTradoGambarController::class, 'fieldLength']);
     Route::resource('approvaltradogambar', ApprovalTradoGambarController::class)->whereNumber('approvaltradogambar');
-    
+
     Route::get('approvaltradoketerangan/field_length', [ApprovalTradoKeteranganController::class, 'fieldLength']);
     Route::resource('approvaltradoketerangan', ApprovalTradoKeteranganController::class)->whereNumber('approvaltradogambar');
 
     Route::get('ubahpassword/field_length', [UbahPasswordController::class, 'fieldLength']);
     Route::resource('ubahpassword', UbahPasswordController::class)->whereNumber('ubahpassword');
 });
+
+Route::post('forgot-password', [ForgotPasswordController::class, 'sendResetLink']);
+Route::post('reset-password/{token}', [ForgotPasswordController::class, 'resetPassword'])->name('resetPassword');

@@ -19,6 +19,7 @@ class LaporanKasHarianController extends Controller
 
     public function export(Request $request)
     {
+        
         $periode = $request->periode;
      
         $export = LaporanKasHarian::getReport($periode);
