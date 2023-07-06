@@ -2,8 +2,10 @@
 
 namespace App\Http\Requests;
 
+use App\Rules\BayarPotonganPelunasanPiutang;
 use App\Rules\CekMaxBayarPelunasanPiutang;
 use App\Rules\CekMinusSisaPelunasanPiutang;
+use App\Rules\PotonganBayarPelunasanPiutang;
 use App\Rules\RequiredCoaPotonganPelunasanPiutang;
 use App\Rules\RequiredKetPotonganPelunasanPiutang;
 use App\Rules\RequiredPotonganPelunasanPiutang;
@@ -31,10 +33,10 @@ class StorePelunasanPiutangDetailRequest extends FormRequest
     public function rules()
     {
         return [
-            'bayar.*' => ['required', 'numeric', 'gt:0', new CekMaxBayarPelunasanPiutang()],
+            'bayar.*' => ['required', 'numeric', 'min:0', new BayarPotonganPelunasanPiutang(), new CekMaxBayarPelunasanPiutang()],
             'keterangan.*' => 'required',
             'sisa.*' => ['required', 'numeric', 'min:0', new CekMinusSisaPelunasanPiutang()],
-            'potongan.*' => ['numeric', 'min:0', new RequiredPotonganPelunasanPiutang()],
+            'potongan.*' => ['numeric', 'min:0', new PotonganBayarPelunasanPiutang(), new RequiredPotonganPelunasanPiutang()],
             'nominallebihbayar.*' => ['numeric', 'min:0'],
             'keteranganpotongan.*' => new RequiredKetPotonganPelunasanPiutang(),
             'coapotongan.*' => new RequiredCoaPotonganPelunasanPiutang()
