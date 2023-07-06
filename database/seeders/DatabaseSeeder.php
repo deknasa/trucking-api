@@ -118,6 +118,7 @@ class DatabaseSeeder extends Seeder
             JurnalUmumPusatDetailSeeder::class,
             SaldoAwalBankSeeder::class,
             SaldoAwalBukuBesarSeeder::class,
+            DataRitasiSeeder::class,
 
         ]);
     }
