@@ -108,6 +108,7 @@ class User extends Authenticatable
             "$this->table.karyawan_id",
             "$this->table.dashboard",
             "parameter.memo as statusaktif",
+            "statusakses.memo as statusakses",
             "$this->table.modifiedby",
             "$this->table.created_at",
             "$this->table.updated_at",
@@ -117,6 +118,7 @@ class User extends Authenticatable
             DB::raw(" 'User :".auth('api')->user()->name."' as usercetak")
         )
             ->leftJoin('parameter', 'user.statusaktif', '=', 'parameter.id')
+            ->leftJoin('parameter as statusakses', 'user.statusakses', '=', 'statusakses.id')
             ->leftJoin('cabang', 'user.cabang_id', '=', 'cabang.id');
 
         $this->totalRows = $query->count();
@@ -138,6 +140,7 @@ class User extends Authenticatable
         Schema::create($tempdefault, function ($table) {
             $table->unsignedBigInteger('karyawan_id')->nullable();
             $table->unsignedBigInteger('statusaktif')->nullable();
+            $table->unsignedBigInteger('statusakses')->nullable();
         });
 
         $status = Parameter::from(
@@ -165,10 +168,23 @@ class User extends Authenticatable
             ->first();
 
         $iddefaultstatusaktif = $status->id ?? 0;
+         
+        $status = Parameter::from(
+            db::Raw("parameter with (readuncommitted)")
+        )
+            ->select(
+                'id'
+            )
+            ->where('grp', '=', 'STATUS AKSES')
+            ->where('subgrp', '=', 'STATUS AKSES')
+            ->where('default', '=', 'YA')
+            ->first();
+
+        $iddefaultstatusakses = $status->id ?? 0;
         
 
         DB::table($tempdefault)->insert(
-            ["karyawan_id" => $iddefaultstatuskaryawan,"statusaktif" => $iddefaultstatusaktif]
+            ["karyawan_id" => $iddefaultstatuskaryawan,"statusaktif" => $iddefaultstatusaktif,"statusakses" => $iddefaultstatusakses]
         );
 
         $query = DB::table($tempdefault)->from(
@@ -177,6 +193,7 @@ class User extends Authenticatable
             ->select(
                 'karyawan_id',
                 'statusaktif',
+                'statusakses'
             );
 
         $data = $query->first();
@@ -262,6 +279,8 @@ class User extends Authenticatable
                     foreach ($this->params['filters']['rules'] as $index => $filters) {
                         if ($filters['field'] == 'statusaktif') {
                             $query = $query->where('parameter.text', '=', $filters['data']);
+                        } else if ($filters['field'] == 'statusakses') {
+                            $query = $query->where('statusakses.text', '=', $filters['data']);
                         } else if ($filters['field'] == 'menuparent') {
                             $query = $query->where('menu2.menuname', 'LIKE', "%$filters[data]%");
                         } else if ($filters['field'] == 'cabang_id') {
@@ -282,6 +301,8 @@ class User extends Authenticatable
                     foreach ($this->params['filters']['rules'] as $index => $filters) {
                         if ($filters['field'] == 'statusaktif') {
                             $query = $query->orWhere('parameter.text', '=', $filters['data']);
+                        } else if ($filters['field'] == 'statusakses') {
+                            $query = $query->orWhere('statusakses.text', '=', $filters['data']);
                         } else if ($filters['field'] == 'menuparent') {
                             $query = $query->orWhere('menu2.menuname', 'LIKE', "%$filters[data]%");
                         } else if ($filters['field'] == 'cabang.namacabang') {
@@ -346,6 +367,7 @@ class User extends Authenticatable
             $user->karyawan_id = $data['karyawan_id'] ?? '';
             $user->dashboard = strtoupper($data['dashboard']);
             $user->statusaktif = $data['statusaktif'];
+            $user->statusakses = $data['statusakses'];
             $user->modifiedby = auth('api')->user()->name;
 
         if (!$user->save()) {
@@ -374,6 +396,7 @@ class User extends Authenticatable
         $user->karyawan_id = $data['karyawan_id'] ?? '';
         $user->dashboard = $data['dashboard'];
         $user->statusaktif = $data['statusaktif'];
+        $user->statusakses = $data['statusakses'];
         $user->modifiedby = auth('api')->user()->user;
 
         if (!$user->save()) {

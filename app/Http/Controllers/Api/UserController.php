@@ -26,7 +26,7 @@ class UserController extends Controller
      * @ClassName 
      * user
      * @Detail1 AcosController
-    */
+     */
     public function index()
     {
         $user = new User();
@@ -113,6 +113,7 @@ class UserController extends Controller
                 'karyawan_id' => $request->karyawan_id,
                 'dashboard' => strtoupper($request->dashboard),
                 'statusaktif' => $request->statusaktif,
+                'statusakses' => $request->statusakses,
             ];
             $user = (new User())->processStore($data);
             $user->position = $this->getPosition($user, $user->getTable())->position;
@@ -161,6 +162,7 @@ class UserController extends Controller
                 'karyawan_id' => $request->karyawan_id,
                 'dashboard' => strtoupper($request->dashboard),
                 'statusaktif' => $request->statusaktif,
+                'statusakses' => $request->statusakses,
             ];
 
             $user = (new User())->processUpdate($user, $data);
@@ -214,12 +216,22 @@ class UserController extends Controller
         }
     }
 
+    /**
+     * @ClassName 
+     */
+    public function report()
+    {
+    }
+
+    /**
+     * @ClassName 
+     */
     public function export(RangeExportReportRequest $request)
     {
         if (request()->cekExport) {
 
             if (request()->offset == "-1" && request()->limit == '1') {
-                
+
                 return response([
                     'errors' => [
                         "export" => app(ErrorController::class)->geterror('DTA')->keterangan
@@ -247,12 +259,16 @@ class UserController extends Controller
             foreach ($users as $index => $params) {
 
                 $statusaktif = $params['statusaktif'];
+                $statusakses = $params['statusakses'];
 
                 $result = json_decode($statusaktif, true);
+                $resultAkses = json_decode($statusakses, true);
 
                 $statusaktif = $result['MEMO'];
+                $statusakses = $resultAkses['MEMO'];
 
                 $users[$i]['statusaktif'] = $statusaktif;
+                $users[$i]['statusakses'] = $statusakses;
 
                 $i++;
             }
@@ -279,8 +295,12 @@ class UserController extends Controller
                     'index' => 'dashboard',
                 ],
                 [
-                    'label' => 'Statusaktif',
+                    'label' => 'Status aktif',
                     'index' => 'statusaktif',
+                ],
+                [
+                    'label' => 'status akses',
+                    'index' => 'statusakses',
                 ],
             ];
 

@@ -34,6 +34,11 @@ class StoreUserRequest extends FormRequest
         foreach ($data as $item) {
             $status[] = $item['id'];
         }
+        $data = $parameter->getcombodata('STATUS AKSES', 'STATUS AKSES');
+        $data = json_decode($data, true);
+        foreach ($data as $item) {
+            $statusAkses[] = $item['id'];
+        }
         return [
          
             'user' => ['required', 'unique:user,user'],
@@ -45,6 +50,7 @@ class StoreUserRequest extends FormRequest
             // 'dashboard' => 'required',
             // 'statusaktif' => ['required', 'int', 'exists:parameter,id'],
             'statusaktif' => ['required', Rule::in($status)],
+            'statusakses' => ['required', Rule::in($statusAkses)],
         ];
         
     }
@@ -59,6 +65,7 @@ class StoreUserRequest extends FormRequest
             'karyawan_id' => 'karyawan',
             'dashboard' => 'dashboard',
             'statusaktif' => 'status',
+            'statusakses' => 'status akses',
         ];
     }
 
