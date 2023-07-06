@@ -1345,6 +1345,7 @@ route::middleware(['auth:api', 'authorized'])->group(function () {
     Route::get('laporanritasigandengan/header', [LaporanRitasiGandenganController::class, 'header'])->name('laporanritasigandengan.header');
     Route::get('laporanritasigandengan/export', [LaporanRitasiGandenganController::class, 'export'])->name('laporanritasigandengan.export');
     Route::resource('laporanritasigandengan', LaporanRitasiGandenganController::class)->whereNumber('laporanritasigandengan');
+    Route::get('laporanhistorypinjaman/report', [LaporanHistoryPinjamanController::class, 'report'])->name('laporanhistorypinjaman.report');
     Route::get('laporanhistorypinjaman/export', [LaporanHistoryPinjamanController::class, 'export'])->name('laporanhistorypinjaman.export');
     Route::resource('laporanhistorypinjaman', LaporanHistoryPinjamanController::class)->whereNumber('laporanhistorypinjaman');
     Route::get('exportpemakaianbarang/export', [ExportPemakaianBarangController::class, 'export'])->name('exportpemakaianbarang.export');
