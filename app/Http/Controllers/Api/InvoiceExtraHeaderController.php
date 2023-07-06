@@ -151,6 +151,69 @@ class InvoiceExtraHeaderController extends Controller
         }
     }
 
+    /**
+     * @ClassName
+     */
+    public function approval(Request $request)
+    {
+        DB::beginTransaction();
+
+        try {
+            if ($request->extraId != '') {
+
+                $statusApproval = Parameter::from(DB::raw("parameter with (readuncommitted)"))
+                    ->where('grp', '=', 'STATUS APPROVAL')->where('text', '=', 'APPROVAL')->first();
+                $statusNonApproval = Parameter::from(DB::raw("parameter with (readuncommitted)"))
+                    ->where('grp', '=', 'STATUS APPROVAL')->where('text', '=', 'NON APPROVAL')->first();
+
+                for ($i = 0; $i < count($request->extraId); $i++) {
+                    $invoice = InvoiceExtraHeader::find($request->extraId[$i]);
+                    if ($invoice->statusapproval == $statusApproval->id) {
+                        $invoice->statusapproval = $statusNonApproval->id;
+                        $aksi = $statusNonApproval->text;
+                    } else {
+                        $invoice->statusapproval = $statusApproval->id;
+                        $aksi = $statusApproval->text;
+                    }
+
+                    $invoice->tglapproval = date('Y-m-d', time());
+                    $invoice->userapproval = auth('api')->user()->name;
+
+                    if ($invoice->save()) {
+                        $logTrail = [
+                            'namatabel' => strtoupper($invoice->getTable()),
+                            'postingdari' => 'APPROVAL INVOICE EXTRA',
+                            'idtrans' => $invoice->id,
+                            'nobuktitrans' => $invoice->nobukti,
+                            'aksi' => $aksi,
+                            'datajson' => $invoice->toArray(),
+                            'modifiedby' => auth('api')->user()->name
+                        ];
+
+                        $validatedLogTrail = new StoreLogTrailRequest($logTrail);
+                        $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
+                    }
+                }
+                DB::commit();
+                return response([
+                    'message' => 'Berhasil'
+                ]);
+            } else {
+                $query = DB::table('error')->select('keterangan')->where('kodeerror', '=', 'WP')
+                    ->first();
+                return response([
+                    'errors' => [
+                        'penerimaan' => "INVOICE $query->keterangan"
+                    ],
+                    'message' => "INVOICE $query->keterangan",
+                ], 422);
+            }
+        } catch (\Throwable $th) {
+            throw $th;
+        }
+    }
+
+
     public function cekvalidasi($id)
     {
         $pengeluaran = InvoiceExtraHeader::findOrFail($id);
