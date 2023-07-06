@@ -85,6 +85,11 @@ class LaporanHutangGiro extends MyModel
     ->where('a.alatbayar_id', $alatbayar);
     
     $data = $select_TempPencairan2->get();
+
+    // $data = DB::table('user')->get();
+
+
+
     return $data;
 
     
@@ -156,6 +161,8 @@ class LaporanHutangGiro extends MyModel
     ->whereNull('b.nobukti')
     ->where('a.alatbayar_id', $alatbayar);
     $data = $select_TempPencairan2->get();
+
+
     return $data;
         
 }

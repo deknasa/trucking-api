@@ -42,6 +42,8 @@ class ExportLaporanKasHarianController extends Controller
 
             $export = ExportLaporanKasHarian::getExport($sampai, $jenis);
 
+          
+
             foreach ($export[0] as $data) {
                 $data->tgl = date('d-m-Y', strtotime($data->tgl));
             }
