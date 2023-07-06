@@ -316,13 +316,11 @@ class PenerimaanHeaderController extends Controller
             $query = Error::from(DB::raw("error with (readuncommitted)"))
                 ->select('keterangan')
                 ->where('kodeerror', '=', 'SAP')
-                ->get();
-            $keterangan = $query['0'];
+                ->first();
             $data = [
-                'message' => $keterangan,
-                'errors' => 'sudah approve',
-                'kodestatus' => '1',
-                'kodenobukti' => '1'
+                'error' => true,
+                'message' => $query->keterangan,
+                'statuspesan' => 'warning',
             ];
 
             return response($data);
@@ -330,23 +328,20 @@ class PenerimaanHeaderController extends Controller
             $query = Error::from(DB::raw("error with (readuncommitted)"))
                 ->select('keterangan')
                 ->where('kodeerror', '=', 'SDC')
-                ->get();
-            $keterangan = $query['0'];
+                ->first();
             $data = [
-                'message' => $keterangan,
-                'errors' => 'sudah cetak',
-                'kodestatus' => '1',
-                'kodenobukti' => '1'
+                'error' => true,
+                'message' => $query->keterangan,
+                'statuspesan' => 'warning',
             ];
 
             return response($data);
         } else {
 
             $data = [
+                'error' => false,
                 'message' => '',
-                'errors' => 'belum approve',
-                'kodestatus' => '0',
-                'kodenobukti' => '1'
+                'statuspesan' => 'success',
             ];
 
             return response($data);
@@ -365,24 +360,21 @@ class PenerimaanHeaderController extends Controller
                     DB::raw("ltrim(rtrim(keterangan))+' (" . $cekdata['keterangan'] . ")' as keterangan")
                 )
                 ->where('kodeerror', '=', $cekdata['kodeerror'])
-                ->get();
-            $keterangan = $query['0'];
+                ->first();
 
             $data = [
-                'status' => false,
-                'message' => $keterangan,
-                'errors' => '',
-                'kondisi' => $cekdata['kondisi'],
+                'error' => true,
+                'message' => $query->keterangan,
+                'statuspesan' => 'warning',
             ];
 
             return response($data);
         } else {
 
             $data = [
-                'status' => false,
+                'error' => false,
                 'message' => '',
-                'errors' => '',
-                'kondisi' => $cekdata['kondisi'],
+                'statuspesan' => 'success',
             ];
 
             return response($data);

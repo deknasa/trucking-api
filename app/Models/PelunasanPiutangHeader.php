@@ -598,7 +598,7 @@ class PelunasanPiutangHeader extends MyModel
             $potongan = $data['potongan'][$i] ?? 0;
             $noWarkat[] = $data['nowarkat'] ?? '-';
             $tglJatuhTempo[] = $data['tglbukti'];
-            $nominalDetail[] = $data['bayar'][$i] - $potongan;
+            $nominalDetail[] = $data['bayar'][$i];
             $coaKredit[] =  $piutang->coadebet;
             $keteranganDetail[] = $data['keterangan'][$i];
             $invoiceNobukti[] = $piutang->invoice_nobukti ?? '';
@@ -783,7 +783,7 @@ class PelunasanPiutangHeader extends MyModel
             $potongan = $data['potongan'][$i] ?? 0;
             $noWarkat[] = $data['nowarkat'] ?? '-';
             $tglJatuhTempo[] = $pelunasanPiutangHeader->tglbukti;
-            $nominalDetail[] = $data['bayar'][$i] - $potongan;
+            $nominalDetail[] = $data['bayar'][$i];
             $coaKredit[] =  $piutang->coadebet;
             $keteranganDetail[] = $data['keterangan'][$i];
             $invoiceNobukti[] = $piutang->invoice_nobukti ?? '';
