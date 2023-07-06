@@ -64,7 +64,7 @@ class AbsensiSupirHeader extends MyModel
     {
         $this->setRequestParameters();
 
-        $query = DB::table($this->table)->from(DB::raw("absensisupirheader with (readuncommitted)"))
+        $query = DB::table($this->table)->from(DB::raw("absensissupirheader with (readuncommitted)"))
             ->select(
                 'absensisupirheader.id',
                 'absensisupirheader.nobukti',

@@ -263,6 +263,7 @@ Route::get('supir/pdf/{field}/{filename}', [SupirController::class, 'getPdf']);
 Route::get('trado/image/{field}/{filename}/{type}/{aksi}', [TradoController::class, 'getImage']);
 Route::get('stok/{filename}/{type}', [StokController::class, 'getImage']);
 Route::get('upahsupir/{filename}/{type}', [UpahSupirController::class, 'getImage']);
+Route::get('parameter/getparamrequest', [ParameterController::class, 'getparamrequest']);
 
 route::middleware(['auth:api', 'authorized'])->group(function () {
 
