@@ -42,6 +42,7 @@ class LaporanLabaRugi extends MyModel
     public function getReport($bulan, $tahun)
     {
         
+
         $getJudul = DB::table('parameter')
         ->select('text')
         ->where('grp', 'JUDULAN LAPORAN')
@@ -70,8 +71,9 @@ class LaporanLabaRugi extends MyModel
   
     ->join(DB::raw("jurnalumumpusatheader as H with (readuncommitted)"), 'H.nobukti', '=', 'D.nobukti')
     ->join('mainakunpusat as CD', 'CD.COA', '=', 'D.coamain')
-    ->whereRaw('MONTH(D.tglbukti) = ? AND YEAR(D.tglbukti) = ?', [$bulan, $tahun])
+    ->whereRaw("MONTH(D.tglbukti) = " . $bulan . " AND YEAR(D.tglbukti) = ". $tahun)
     ->groupBy('D.coamain');
+
     // dd("Adas");
     DB::table($Temprekappendapatan)->insertUsing([
         'coamain',
@@ -98,9 +100,9 @@ class LaporanLabaRugi extends MyModel
    });
 
 
-   $cmpy = 'PT. TRANSPORINDO AGUNG SEJAHTERA';
-$bulan = '02';
-$tahun = '2023';
+//    $cmpy = 'PT. TRANSPORINDO AGUNG SEJAHTERA';
+
+
 
 
 $results = DB::table('mainakunpusat AS C')
@@ -125,7 +127,10 @@ $results = DB::table('mainakunpusat AS C')
 ->leftJoin('mainakunpusat AS G', 'C.parent', '=', 'G.coa')
 ->leftJoin($Temprekappendapatan . ' AS E', 'C.coa', '=', 'E.CoaMAin')
 ->whereIn('AT.kodetype', ['Pendapatan'])
+->whereRaw("isnull(E.nominal,0)<>0")
 ->orderBy('coa');
+
+// dd($results->toSql());
 
 
 DB::table($TempLabaRugi)->insertUsing([
@@ -165,7 +170,8 @@ $results2 = DB::table('mainakunpusat AS C')
     ->join('mainTypeakuntansi AS AT', 'AT.id', '=', 'C.type_id')
     ->leftJoin('mainakunpusat AS G', 'C.parent', '=', 'G.coa')
     ->leftJoin($Temprekappendapatan . ' AS E', 'C.coa', '=', 'E.CoaMAin')
-    ->whereIn('AT.kodetype', ['Beban']);
+    ->whereIn('AT.kodetype', ['Beban'])
+    ->whereRaw("isnull(E.nominal,0)<>0");
 
     DB::table($TempLabaRugi)->insertUsing([
         'keteranganmain',
@@ -183,7 +189,6 @@ $results2 = DB::table('mainakunpusat AS C')
         'KeteranganParent'
     ], $results2);
 
-    
     $data1 = $results->get();
     $data2 = $results2->get();
     
