@@ -568,7 +568,7 @@ class PiutangHeader extends MyModel
         $jurnalRequest = [
             'tanpaprosesnobukti' => 1,
             'nobukti' => $piutangHeader->nobukti,
-            'tglbukti' => date('Y-m-d', strtotime($data['tglbukti'])),
+            'tglbukti' => $piutangHeader->tglbukti,
             'postingdari' => $data['postingdari'] ?? 'EDIT PIUTANG HEADER',
             'statusformat' => "0",
             'coakredit_detail' => $coakredit_detail,
