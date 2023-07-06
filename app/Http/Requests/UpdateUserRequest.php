@@ -33,6 +33,11 @@ class UpdateUserRequest extends FormRequest
         foreach ($data as $item) {
             $status[] = $item['id'];
         }
+        $data = $parameter->getcombodata('STATUS AKSES', 'STATUS AKSES');
+        $data = json_decode($data, true);
+        foreach ($data as $item) {
+            $statusAkses[] = $item['id'];
+        }
         return [
             'user' => ['required',Rule::unique('user')->whereNotIn('id', [$this->id])],
             'name' => ['required',Rule::unique('user')->whereNotIn('id', [$this->id])],
@@ -43,6 +48,7 @@ class UpdateUserRequest extends FormRequest
             // 'dashboard' => 'required',
             // 'statusaktif' => ['required', 'int', 'exists:parameter,id'],
             'statusaktif' => ['required', Rule::in($status)],
+            'statusakses' => ['required', Rule::in($statusAkses)],
         ];
     }
 
@@ -56,6 +62,7 @@ class UpdateUserRequest extends FormRequest
             'cabang_id' => 'cabang',
             'dashboard' => 'dashboard',
             'statusaktif' => 'status',
+            'statusakses' => 'status akses',
         ];
     }
 }
