@@ -26,6 +26,10 @@ class CreateJurnalumumheaderTable extends Migration
             $table->string('userapproval',50)->nullable();
             $table->dateTime('tglapproval')->nullable();
             $table->unsignedBigInteger('statusformat')->nullable();              
+            $table->integer('statuscetak')->Length(11)->nullable();
+            $table->string('userbukacetak',50)->nullable();
+            $table->date('tglbukacetak')->nullable();
+            $table->integer('jumlahcetak')->Length(11)->nullable();             
             $table->string('modifiedby',50)->nullable();
             $table->timestamps();
 

@@ -28,59 +28,60 @@ class LaporanLabaRugiController extends Controller
      */
     public function report(Request $request)
     {
-    //     $sampai = $request->sampai;
+        // $bulan = $request->bulan;
+        // $tahun = $request->tahun;
 
-    //     $report = [
-    //         [
-    //             'judul' => 'PT. Transporindo Agung Sejahtera',
-    //             'subjudul' => 'Laporan Laba Rugi Divisi Trucking',
-    //             'pndptusaha' => '414.623.710,00',
-    //             'pndptusahamdn' => '414.623.710,00',
-    //             'pndptlainheader' => '18.765.282,00', 
-    //             'pndptlain' => '18.746.236,00',
-    //             'pndptbunga' => '19.046,50',
-    //             'potonganpndpt' => '0,00',
-    //             'penghapusanpndpt' => '0,00',
-    //         ], 
-    //     ];
-    //     return response([
-    //         'data' => $report
-    //     ]);
-    // }
-        $bulan = $request->bulan;
-        $tahun = $request->tahun;
-
-        $laporanlabarugi = new LaporanLabaRugi();
+        // $laporanlabarugi = new LaporanLabaRugi();
 
 
-        $laporan_labarugi= $laporanlabarugi->getReport($bulan, $tahun);
-        // foreach($laporan_labarugi as $item){
-        //     $item->tglbukti = date('d-m-Y', strtotime($item->tglbukti));
-        //     $item->tgljatuhtempo = date('d-m-Y', strtotime($item->tgljatuhtempo));
+        // $laporan_labarugi= $laporanlabarugi->getReport($bulan, $tahun);
+
+
+        // return response([
+        //     'data' => $laporan_labarugi
+
+        // ]);
+
+
+        // if ($request->isCheck) {
+        //     return response([
+        //         'data' => 'ok'
+        //     ]);
+        // } else {
+
+            $bulan = substr($request->sampai,0,2);
+            $tahun = substr($request->sampai,3,4);
+
+            $laporanlabarugi = new LaporanLabaRugi();
+
+
+            $laporan_labarugi = $laporanlabarugi->getReport($bulan, $tahun);
+
+
+
+            return response([
+                'data' => $laporan_labarugi,
+            ]);
         // }
-      
-        return response([
-            'data' => $laporan_labarugi
-            // 'data' => $report
-        ]);
-}
+    }
 
     /**
      * @ClassName
      */
-    public function export(Request $request){
+    public function export(Request $request)
+    {
         $bulan = $request->bulan;
         $tahun = $request->tahun;
 
         $laporanlabarugi = new LaporanLabaRugi();
 
 
-        $laporan_labarugi= $laporanlabarugi->getExport($bulan, $tahun);
+        $laporan_labarugi = $laporanlabarugi->getExport($bulan, $tahun);
         // foreach($laporan_labarugi as $item){
         //     $item->tglbukti = date('d-m-Y', strtotime($item->tglbukti));
         //     $item->tgljatuhtempo = date('d-m-Y', strtotime($item->tgljatuhtempo));
         // }
-      
+
         return response([
             'data' => $laporan_labarugi
             // 'data' => $report
