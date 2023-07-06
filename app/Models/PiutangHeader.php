@@ -663,6 +663,7 @@ class PiutangHeader extends MyModel
             'debet.keterangancoa as coadebet',
             'kredit.keterangancoa as coakredit',
             'agen.namaagen as agen_id',
+            'piutangheader.jumlahcetak',
             'statuscetak.memo as statuscetak',
             'statuscetak.id as  statuscetak_id',
             DB::raw("'Laporan Piutang' as judulLaporan"),

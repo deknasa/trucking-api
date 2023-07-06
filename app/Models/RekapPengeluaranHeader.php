@@ -324,6 +324,7 @@ class RekapPengeluaranHeader extends MyModel
             "$this->table.bank_id",
             "$this->table.tgltransaksi",
             "$this->table.keterangan",
+            "$this->table.jumlahcetak",
             "bank.namabank as bank",
             'statuscetak.memo as statuscetak',
             'statuscetak.id as  statuscetak_id',

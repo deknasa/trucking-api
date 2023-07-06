@@ -502,6 +502,7 @@ class PengembalianKasGantungHeader extends MyModel
             "$this->table.penerimaan_nobukti",
             "$this->table.postingdari",
             "$this->table.tglkasmasuk",
+            "$this->table.jumlahcetak",
             "bank.namabank as bank",
             'statuscetak.memo as statuscetak',
             'statuscetak.id as  statuscetak_id',
