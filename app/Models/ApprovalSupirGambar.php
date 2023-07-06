@@ -225,9 +225,81 @@ class ApprovalSupirGambar extends MyModel
     {
         $approvalSupirGambar = ApprovalSupirGambar::findOrFail($id);
         $dataHeader =  $approvalSupirGambar->toArray();
-      
         $approvalSupirGambar = $approvalSupirGambar->lockAndDestroy($id);
-        $hutangLogTrail = (new LogTrail())->processStore([
+        
+        if ($approvalSupirGambar) {
+
+            $supir = DB::table('supir')->from(DB::raw("supir with (readuncommitted)"))
+                ->where('noktp', $approvalSupirGambar->noktp)
+                ->first();
+            
+            if ($supir) {
+                $statusNonAktif = DB::table('parameter')->where('grp', 'STATUS AKTIF')->where('subgrp', 'STATUS AKTIF')->where('text', 'NON AKTIF')->first();
+                $statusAktif = DB::table('parameter')->where('grp', 'STATUS AKTIF')->where('subgrp', 'STATUS AKTIF')->where('text', 'AKTIF')->first();
+
+                $statusAktifSupir = $supir->statusaktif;
+                $aktif =$statusNonAktif->id;
+                if ( ($supir->photosupir != "") || ($supir->photoktp != "") || ($supir->photosim != "") || ($supir->photokk != "") || ($supir->photoskck != "") || ($supir->photodomisili != "") || ($supir->photovaksin != "") || ($supir->pdfsuratperjanjian != "") ) {
+                    // dd('ada supir ada poto');
+                    foreach (json_decode($supir->photosupir) as $value) {
+                        if (!Storage::exists("supir/supir/$value")) {
+                            $aktif = $statusNonAktif->id;
+                            goto selesai;
+                        }
+                    }                           
+                    foreach (json_decode($supir->photoktp) as $value) {
+                        if (!Storage::exists("supir/ktp/$value")) {
+                            $aktif = $statusNonAktif->id;
+                            goto selesai;
+                        }
+                    }                           
+                    foreach (json_decode($supir->photosim) as $value) {
+                        if (!Storage::exists("supir/sim/$value")) {
+                            $aktif = $statusNonAktif->id;
+                            goto selesai;
+                        }
+                    }                           
+                    foreach (json_decode($supir->photokk) as $value) {
+                        if (!Storage::exists("supir/kk/$value")) {
+                            $aktif = $statusNonAktif->id;
+                            goto selesai;
+                        }
+                    }                           
+                    foreach (json_decode($supir->photoskck) as $value) {
+                        if (!Storage::exists("supir/skck/$value")) {
+                            $aktif = $statusNonAktif->id;
+                            goto selesai;
+                        }
+                    }                           
+                    foreach (json_decode($supir->photodomisili) as $value) {
+                        if (!Storage::exists("supir/domisili/$value")) {
+                            $aktif = $statusNonAktif->id;
+                            goto selesai;
+                        }
+                    }
+                    foreach (json_decode($supir->photovaksin) as $value) {
+                        if (!Storage::exists("supir/vaksin/$value")) {
+                            $aktif = $statusNonAktif->id;
+                            goto selesai;
+                        }
+                    }                           
+                    foreach (json_decode($supir->pdfsuratperjanjian) as $value) {
+                        if (!Storage::exists("supir/suratperjanjian/$value")) {
+                            $aktif = $statusNonAktif->id;
+                            goto selesai;
+                        }
+                    }
+                   
+                }
+                selesai:
+                DB::table('supir')->where('noktp', $supir->noktp)->update([
+                    'statusaktif' => $aktif,
+                ]);
+                $sup = DB::table('supir')->where('noktp', $supir->noktp)->first();
+                // dd($sup->statusaktif,$statusAktif->id);
+            }
+        }        
+        (new LogTrail())->processStore([
             'namatabel' => $this->table,
             'postingdari' => ($postingdari =="") ? $postingdari :strtoupper('DELETE Approval Supir Gambar'),
             'idtrans' => $approvalSupirGambar->id,
