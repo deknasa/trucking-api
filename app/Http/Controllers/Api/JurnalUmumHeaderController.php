@@ -545,6 +545,43 @@ class JurnalUmumHeaderController extends Controller
         ]);
     }
 
+    public function printReport($id)
+    {
+        DB::beginTransaction();
+
+        try {
+            $jurnalUmum = JurnalUmumHeader::findOrFail($id);
+            $statusSudahCetak = Parameter::where('grp', '=', 'STATUSCETAK')->where('text', '=', 'CETAK')->first();
+            $statusBelumCetak = Parameter::where('grp', '=', 'STATUSCETAK')->where('text', '=', 'BELUM CETAK')->first();
+
+            if ($jurnalUmum->statuscetak != $statusSudahCetak->id) {
+                $jurnalUmum->statuscetak = $statusSudahCetak->id;
+                $jurnalUmum->tglbukacetak = date('Y-m-d H:i:s');
+                $jurnalUmum->userbukacetak = auth('api')->user()->name;
+                $jurnalUmum->jumlahcetak = $jurnalUmum->jumlahcetak + 1;
+                if ($jurnalUmum->save()) {
+                    $logTrail = [
+                        'namatabel' => strtoupper($jurnalUmum->getTable()),
+                        'postingdari' => 'PRINT ABSENSI SUPIR HEADER',
+                        'idtrans' => $jurnalUmum->id,
+                        'nobuktitrans' => $jurnalUmum->id,
+                        'aksi' => 'PRINT',
+                        'datajson' => $jurnalUmum->toArray(),
+                        'modifiedby' => $jurnalUmum->modifiedby
+                    ];
+                    $validatedLogTrail = new StoreLogTrailRequest($logTrail);
+                    $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
+                    DB::commit();
+                }
+            }
+            return response([
+                'message' => 'Berhasil'
+            ]);
+        } catch (\Throwable $th) {
+            throw $th;
+        }
+    }
+
     /**
      * @ClassName 
      */

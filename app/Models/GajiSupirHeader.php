@@ -1120,6 +1120,8 @@ class GajiSupirHeader extends MyModel
                 'supir.namasupir as supir_id',
                 'statuscetak.memo as statuscetak',
                 "statuscetak.id as  statuscetak_id",
+                'gajisupirheader.tgldari',
+                'gajisupirheader.tglsampai',
                 'gajisupirheader.total',
                 'gajisupirheader.uangjalan',
                 'gajisupirheader.bbm',

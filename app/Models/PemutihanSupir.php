@@ -733,10 +733,7 @@ class PemutihanSupir extends MyModel
                 'akunpusat.keterangancoa as coa',
                 'pemutihansupirheader.pengeluaransupir',
                 'pemutihansupirheader.penerimaansupir',
-            //     db::raw(' CASE
-            //     WHEN pemutihansupirheader.jumlahcetak = 0 THEN NULL
-            //     ELSE pemutihansupirheader.jumlahcetak
-            //   END AS jumlahcetak'),
+                
                 DB::raw("'Laporan Pemutihan Supir' as judulLaporan"),
                 DB::raw("'" . $getJudul->text . "' as judul"),
                 DB::raw("'Tgl Cetak:'+format(getdate(),'dd-MM-yyyy HH:mm:ss')as tglcetak"),

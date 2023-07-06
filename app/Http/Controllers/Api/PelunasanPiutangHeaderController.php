@@ -343,4 +343,41 @@ class PelunasanPiutangHeaderController extends Controller
             'data' => $pelunasanpiutang->getExport($id)
         ]);
     }
+
+    public function printReport($id)
+    {
+        DB::beginTransaction();
+
+        try {
+            $pelunasanpiutang = PelunasanPiutangHeader::findOrFail($id);
+            $statusSudahCetak = Parameter::where('grp', '=', 'STATUSCETAK')->where('text', '=', 'CETAK')->first();
+            $statusBelumCetak = Parameter::where('grp', '=', 'STATUSCETAK')->where('text', '=', 'BELUM CETAK')->first();
+
+            if ($pelunasanpiutang->statuscetak != $statusSudahCetak->id) {
+                $pelunasanpiutang->statuscetak = $statusSudahCetak->id;
+                $pelunasanpiutang->tglbukacetak = date('Y-m-d H:i:s');
+                $pelunasanpiutang->userbukacetak = auth('api')->user()->name;
+                $pelunasanpiutang->jumlahcetak = $pelunasanpiutang->jumlahcetak + 1;
+                if ($pelunasanpiutang->save()) {
+                    $logTrail = [
+                        'namatabel' => strtoupper($pelunasanpiutang->getTable()),
+                        'postingdari' => 'PRINT ABSENSI SUPIR HEADER',
+                        'idtrans' => $pelunasanpiutang->id,
+                        'nobuktitrans' => $pelunasanpiutang->id,
+                        'aksi' => 'PRINT',
+                        'datajson' => $pelunasanpiutang->toArray(),
+                        'modifiedby' => $pelunasanpiutang->modifiedby
+                    ];
+                    $validatedLogTrail = new StoreLogTrailRequest($logTrail);
+                    $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
+                    DB::commit();
+                }
+            }
+            return response([
+                'message' => 'Berhasil'
+            ]);
+        } catch (\Throwable $th) {
+            throw $th;
+        }
+    }
 }

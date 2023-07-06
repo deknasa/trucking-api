@@ -110,11 +110,12 @@ class PelunasanPiutangHeader extends MyModel
                 'pelunasanpiutangheader.penerimaangiro_nobukti',
                 'pelunasanpiutangheader.notadebet_nobukti',
                 'pelunasanpiutangheader.notakredit_nobukti',
-
+                'statuscetak.memo as statuscetak',
                 'bank.namabank as bank_id',
                 'agen.namaagen as agen_id',
                 'alatbayar.namaalatbayar as alatbayar_id'
             )
+            ->leftJoin(DB::raw("parameter as statuscetak with (readuncommitted)"), 'pelunasanpiutangheader.statuscetak', 'statuscetak.id')
             ->whereBetween($this->table . '.tglbukti', [date('Y-m-d', strtotime(request()->tgldari)), date('Y-m-d', strtotime(request()->tglsampai))])
             ->leftJoin(DB::raw("bank with (readuncommitted)"), 'pelunasanpiutangheader.bank_id', 'bank.id')
             ->leftJoin(DB::raw("agen with (readuncommitted)"), 'pelunasanpiutangheader.agen_id', 'agen.id')
@@ -408,7 +409,9 @@ class PelunasanPiutangHeader extends MyModel
             switch ($this->params['filters']['groupOp']) {
                 case "AND":
                     foreach ($this->params['filters']['rules'] as $index => $filters) {
-                        if ($filters['field'] == 'bank_id') {
+                        if ($filters['field'] == 'statuscetak') {
+                            $query = $query->where('statuscetak.text', '=', "$filters[data]");
+                        } else if ($filters['field'] == 'bank_id') {
                             $query = $query->where('bank.namabank', 'LIKE', "%$filters[data]%");
                         } else if ($filters['field'] == 'agen_id') {
                             $query = $query->where('agen.namaagen', 'LIKE', "%$filters[data]%");
@@ -428,7 +431,9 @@ class PelunasanPiutangHeader extends MyModel
                 case "OR":
                     $query = $query->where(function ($query) {
                         foreach ($this->params['filters']['rules'] as $index => $filters) {
-                            if ($filters['field'] == 'bank_id') {
+                            if ($filters['field'] == 'statuscetak') {
+                                $query = $query->orWhere('statuscetak.text', '=', "$filters[data]");
+                            } else if ($filters['field'] == 'bank_id') {
                                 $query = $query->orWhere('bank.namabank', 'LIKE', "%$filters[data]%");
                             } else if ($filters['field'] == 'agen_id') {
                                 $query = $query->orWhere('agen.namaagen', 'LIKE', "%$filters[data]%");
@@ -495,6 +500,7 @@ class PelunasanPiutangHeader extends MyModel
     {
         $group = 'PELUNASAN PIUTANG BUKTI';
         $subGroup = 'PELUNASAN PIUTANG BUKTI';
+        $statusCetak = Parameter::from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUSCETAK')->where('text', 'BELUM CETAK')->first();
 
         $format = DB::table('parameter')
             ->where('grp', $group)
@@ -529,6 +535,7 @@ class PelunasanPiutangHeader extends MyModel
         $pelunasanPiutangHeader->alatbayar_id = $data['alatbayar_id'];
         $pelunasanPiutangHeader->penerimaan_nobukti = '-';
         $pelunasanPiutangHeader->penerimaangiro_nobukti = '-';
+        $pelunasanPiutangHeader->statuscetak = $statusCetak->id ?? 0;
         $pelunasanPiutangHeader->notakredit_nobukti = '-';
         $pelunasanPiutangHeader->notadebet_nobukti = '-';
         $pelunasanPiutangHeader->agen_id = $data['agen_id'];
@@ -1055,6 +1062,8 @@ class PelunasanPiutangHeader extends MyModel
                 'pelunasanpiutangheader.penerimaangiro_nobukti',
                 'pelunasanpiutangheader.notadebet_nobukti',
                 'pelunasanpiutangheader.notakredit_nobukti',
+                'pelunasanpiutangheader.jumlahcetak',
+                'statuscetak.memo as statuscetak',
                 'bank.namabank as bank_id',
                 'agen.namaagen as agen_id',
                 'alatbayar.namaalatbayar as alatbayar_id',
@@ -1063,6 +1072,7 @@ class PelunasanPiutangHeader extends MyModel
                 DB::raw("'Tgl Cetak:'+format(getdate(),'dd-MM-yyyy HH:mm:ss')as tglcetak"),
                 DB::raw(" 'User :".auth('api')->user()->name."' as usercetak")
             )
+            ->leftJoin(DB::raw("parameter as statuscetak with (readuncommitted)"), 'pelunasanpiutangheader.statuscetak', 'statuscetak.id')
             ->leftJoin(DB::raw("bank with (readuncommitted)"), 'pelunasanpiutangheader.bank_id', 'bank.id')
             ->leftJoin(DB::raw("agen with (readuncommitted)"), 'pelunasanpiutangheader.agen_id', 'agen.id')
             ->leftJoin(DB::raw("alatbayar with (readuncommitted)"), 'pelunasanpiutangheader.alatbayar_id', 'alatbayar.id')
