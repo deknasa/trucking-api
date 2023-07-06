@@ -18,26 +18,26 @@ class CreatePiutangheaderTable extends Migration
 
         Schema::create('piutangheader', function (Blueprint $table) {
             $table->id();
-            $table->string('nobukti',50)->unique();
+            $table->string('nobukti', 50)->unique();
             $table->date('tglbukti')->nullable();
-            $table->longText('keterangan')->nullable();            
-            $table->string('coadebet',150)->nullable();
-            $table->string('coakredit',150)->nullable();
-            $table->string('postingdari',150)->nullable();
-            $table->double('nominal',15,2)->nullable();
-            $table->string('invoice_nobukti',50)->nullable();
+            $table->longText('keterangan')->nullable();
+            $table->string('coadebet', 150)->nullable();
+            $table->string('coakredit', 150)->nullable();
+            $table->string('postingdari', 150)->nullable();
+            $table->double('nominal', 15, 2)->nullable();
+            $table->string('invoice_nobukti', 50)->nullable();
             $table->date('tgljatuhtempo')->nullable();
             $table->unsignedBigInteger('agen_id')->nullable();
             $table->unsignedBigInteger('statusformat')->nullable();
+            $table->integer('jumlahcetak')->Length(11)->nullable();
             $table->integer('statuscetak')->Length(11)->nullable();
-            $table->string('userbukacetak',50)->nullable();
+            $table->string('userbukacetak', 50)->nullable();
             $table->date('tglbukacetak')->nullable();
-            $table->string('modifiedby',50)->nullable();
+            $table->string('modifiedby', 50)->nullable();
             $table->timestamps();
 
-            
-            $table->foreign('agen_id', 'piutangheader_agen_agen_id_foreign')->references('id')->on('agen');
 
+            $table->foreign('agen_id', 'piutangheader_agen_agen_id_foreign')->references('id')->on('agen');
         });
 
         DB::statement("ALTER TABLE piutangheader NOCHECK CONSTRAINT piutangheader_agen_agen_id_foreign");
