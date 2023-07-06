@@ -482,6 +482,7 @@ class NotaKreditHeader extends MyModel
             "$this->table.tglbukti",
             "$this->table.postingdari",
             "$this->table.tgllunas",
+            "$this->table.jumlahcetak",
             'pelunasanpiutang.penerimaan_nobukti',
             'statuscetak.memo as statuscetak',
             'statuscetak.id as  statuscetak_id',

@@ -786,6 +786,7 @@ class KasGantungHeader extends MyModel
             'kasgantungheader.pengeluaran_nobukti',
             'kasgantungheader.coakaskeluar',
             'kasgantungheader.postingdari',
+            'kasgantungheader.jumlahcetak',
             'statuscetak.memo as statuscetak',
             'statuscetak.id as  statuscetak_id',
             DB::raw("'Laporan Kas Gantung' as judulLaporan"),

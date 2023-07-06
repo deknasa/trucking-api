@@ -946,6 +946,7 @@ class PenerimaanHeader extends MyModel
                 'penerimaanheader.id',
                 'penerimaanheader.nobukti',
                 'penerimaanheader.tglbukti',
+                'penerimaanheader.jumlahcetak',
                 'pelanggan.namapelanggan as pelanggan_id',
                 'agen.namaagen as agen_id',
                 'bank.namabank as bank_id',

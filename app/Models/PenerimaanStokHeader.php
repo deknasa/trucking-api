@@ -146,6 +146,7 @@ class PenerimaanStokHeader extends MyModel
             "$this->table.pengeluaranstok_nobukti",
             "gudangs.gudang as gudang",
             "trado.kodetrado as trado",
+            "gandengan.keterangan as gandengan",
             "tradodari.keterangan as tradodari",
             "tradoke.keterangan as tradoke",
             "gandengandari.keterangan as gandengandari",

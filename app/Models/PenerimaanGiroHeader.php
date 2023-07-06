@@ -717,6 +717,7 @@ class PenerimaanGiroHeader extends MyModel
                 'penerimaangiroheader.postingdari',
                 'penerimaangiroheader.diterimadari',
                 'penerimaangiroheader.tgllunas',
+                'penerimaangiroheader.jumlahcetak',
                 'statuscetak.memo as statuscetak',
                 'statuscetak.id as  statuscetak_id',
                 DB::raw("'Laporan Penerimaan Giro' as judulLaporan"),
