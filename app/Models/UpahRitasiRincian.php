@@ -129,28 +129,21 @@ class UpahRitasiRincian extends MyModel
                 $kolom = 'kolom' . $a;
 
                 $container_id[] = $itemdetail['id'];
-                $nominal[] = $item[$kolom];
+                $liter[] = $item[$kolom];
             }
 
-            $i = 0;
-            foreach ($datadetail as $itemdetail) {
-                $i = $i + 1;
-                $kolomliter = 'liter' . $i;
-
-                $liter[] = $item[$kolomliter];
-            }
             $upahRitasiRequest = [
                 'parent_id' => 0,
                 'tarif_id' => 0,
                 'kotadari_id' => $kotadari->id,
                 'kotasampai_id' => $kotasampai->id,
                 'jarak' => $item['jarak'],
+                'nominalsupir' => $item['nominalsupir'],
                 'zona_id' => 0,
                 'statusaktif' =>  1,
                 'tglmulaiberlaku' => $item['tglmulaiberlaku'],
                 'modifiedby' => $item['modifiedby'],
                 'container_id' => $container_id,
-                'nominalsupir' => $nominal,
                 'liter' => $liter
             ];
 

@@ -304,17 +304,16 @@ class UpahRitasiController extends Controller
             $a = 0;
             foreach ($row_range as $row) {
 
+
                 $data[] = [
                     'kotadari' => $sheet->getCell($this->kolomexcel(1) . $row)->getValue(),
                     'kotasampai' => $sheet->getCell($this->kolomexcel(2) . $row)->getValue(),
                     'jarak' => $sheet->getCell($this->kolomexcel(3) . $row)->getValue(),
                     'tglmulaiberlaku' => date('Y-m-d', strtotime($sheet->getCell($this->kolomexcel(4) . $row)->getFormattedValue())),
-                    'kolom1' => $sheet->getCell($this->kolomexcel(5)  . $row)->getValue(),
-                    'kolom2' => $sheet->getCell($this->kolomexcel(6)  . $row)->getValue(),
-                    'kolom3' => $sheet->getCell($this->kolomexcel(7)  . $row)->getValue(),
-                    'liter1' => $sheet->getCell($this->kolomexcel(8)  . $row)->getValue(),
-                    'liter2' => $sheet->getCell($this->kolomexcel(9)  . $row)->getValue(),
-                    'liter3' => $sheet->getCell($this->kolomexcel(10)  . $row)->getValue(),
+                    'nominalsupir' => $sheet->getCell($this->kolomexcel(5)  . $row)->getValue(),
+                    'kolom1' => $sheet->getCell($this->kolomexcel(6)  . $row)->getValue(),
+                    'kolom2' => $sheet->getCell($this->kolomexcel(7)  . $row)->getValue(),
+                    'kolom3' => $sheet->getCell($this->kolomexcel(8)  . $row)->getValue(),
                     'modifiedby' => auth('api')->user()->name
                 ];
 

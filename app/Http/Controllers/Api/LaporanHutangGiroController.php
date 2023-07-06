@@ -26,56 +26,82 @@ class LaporanHutangGiroController extends Controller
         ]);
     }
 
-    
+
     /**
      * @ClassName
      */
     public function report(Request $request)
     {
         $periode = date('Y-m-d', strtotime($request->periode));
-    
-     
-
         $laporanhutanggiro = new LaporanHutangGiro();
 
-       
+        $laporan_hutanggiro = $laporanhutanggiro->getReport($periode);
 
-        $laporan_hutanggiro= $laporanhutanggiro->getReport($periode);
-        foreach($laporan_hutanggiro as $item){
-            $item->tglbukti = date('d-m-Y', strtotime($item->tglbukti));
-            $item->tgljatuhtempo = date('d-m-Y', strtotime($item->tgljatuhtempo));
-            
+        if ($request->isCheck) {
+            if (count($laporan_hutanggiro) === 0) {
+
+                return response([
+                    'errors' => [
+                        "export" => app(ErrorController::class)->geterror('DTA')->keterangan
+                    ],
+
+                    'message' => "The given data was invalid."
+                ], 422);
+            } else {
+                return response([
+                    'data' => 'ok'
+                ]);
+            }
+        } else {
+            foreach ($laporan_hutanggiro as $item) {
+                $item->tglbukti = date('d-m-Y', strtotime($item->tglbukti));
+                $item->tgljatuhtempo = date('d-m-Y', strtotime($item->tgljatuhtempo));
+            }
+
+            return response([
+                'data' => $laporan_hutanggiro
+
+            ]);
         }
-      
-        return response([
-            'data' => $laporan_hutanggiro
-            // 'data' => $report
-        ]);
     }
 
-   /**
+    /**
      * @ClassName
      */
     public function export(Request $request)
     {
         $periode = date('Y-m-d', strtotime($request->periode));
-    
-     
 
         $laporanhutanggiro = new LaporanHutangGiro();
 
-       
+        $laporan_hutanggiro = $laporanhutanggiro->getReport($periode);
 
-        $laporan_hutanggiro= $laporanhutanggiro->getReport($periode);
-        foreach($laporan_hutanggiro as $item){
+        if ($request->isCheck) {
+            if (count($laporan_hutanggiro) === 0) {
+
+                return response([
+                    'errors' => [
+                        "export" => app(ErrorController::class)->geterror('DTA')->keterangan
+                    ],
+
+                    'message' => "The given data was invalid."
+                ], 422);
+            } else {
+                return response([
+                    'data' => 'ok'
+                ]);
+            }
+        } else {
+       
+       
+        foreach ($laporan_hutanggiro as $item) {
             $item->tglbukti = date('d-m-Y', strtotime($item->tglbukti));
         }
-      
+
         return response([
             'data' => $laporan_hutanggiro
             // 'data' => $report
         ]);
-       
     }
-    
+    }
 }
