@@ -111,7 +111,6 @@ class AbsensiSupirHeader extends MyModel
                 'absensisupirheader.statusapprovaleditabsensi',
                 'absensisupirheader.userbukacetak',
                 'absensisupirheader.jumlahcetak',
-
             )
             ->where('id', $id);
         $data = $query->first();
@@ -251,7 +250,7 @@ class AbsensiSupirHeader extends MyModel
                     foreach ($this->params['filters']['rules'] as $index => $filters) {
                         if ($filters['field'] == 'statuscetak') {
                             $query = $query->where('statuscetak.text', '=', "$filters[data]");
-                        }else if ($filters['field'] == 'nominal') {
+                        } else if ($filters['field'] == 'nominal') {
                             $query = $query->whereRaw("format($this->table.nominal, '#,#0.00') LIKE '%$filters[data]%'");
                         } else if ($filters['field'] == 'tglbukti' || $filters['field'] == 'tglbukacetak') {
                             $query = $query->whereRaw("format(".$this->table . "." . $filters['field'].", 'dd-MM-yyyy') LIKE '%$filters[data]%'");

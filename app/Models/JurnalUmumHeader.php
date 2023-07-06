@@ -71,6 +71,7 @@ class JurnalUmumHeader extends MyModel
                 'jurnalumumheader.tglbukti',
                 'jurnalumumheader.postingdari',
                 'jurnalumumheader.userapproval',
+                'statuscetak.memo as statuscetak',
                 DB::raw('(case when (year(jurnalumumheader.tglapproval) <= 2000) then null else jurnalumumheader.tglapproval end ) as tglapproval'),
                 'jurnalumumheader.modifiedby',
                 'jurnalumumheader.created_at',
@@ -79,6 +80,7 @@ class JurnalUmumHeader extends MyModel
                 'c.nominaldebet as nominaldebet',
                 'c.nominalkredit as nominalkredit',
             )
+            ->leftJoin(DB::raw("parameter as statuscetak with (readuncommitted)"), 'jurnalumumheader.statuscetak', 'statuscetak.id')
             ->whereBetween($this->table . '.tglbukti', [date('Y-m-d', strtotime(request()->tgldari)), date('Y-m-d', strtotime(request()->tglsampai))])
             ->leftJoin(DB::raw("parameter as statusapproval with (readuncommitted)"), 'jurnalumumheader.statusapproval', 'statusapproval.id')
             ->leftjoin(DB::raw($tempsummary . " as c"), 'jurnalumumheader.nobukti', 'c.nobukti');
@@ -170,7 +172,9 @@ class JurnalUmumHeader extends MyModel
                 case "AND":
                     foreach ($this->params['filters']['rules'] as $index => $filters) {
                         if ($filters['field'] != '') {
-                            if ($filters['field'] == 'statusapproval') {
+                            if ($filters['field'] == 'statuscetak') {
+                                $query = $query->where('statuscetak.text', '=', "$filters[data]");
+                            } else if ($filters['field'] == 'statusapproval') {
                                 $query = $query->where('statusapproval.text', '=', $filters['data']);
                             } else if ($filters['field'] == 'nominaldebet') {
                                 $query = $query->whereRaw("format(c.nominaldebet, '#,#0.00') LIKE '%$filters[data]%'");
@@ -192,7 +196,9 @@ class JurnalUmumHeader extends MyModel
                     $query = $query->where(function ($query) {
                         foreach ($this->params['filters']['rules'] as $index => $filters) {
                             if ($filters['field'] != '') {
-                                if ($filters['field'] == 'statusapproval') {
+                                if ($filters['field'] == 'statuscetak') {
+                                    $query = $query->orWhere('statuscetak.text', '=', "$filters[data]");
+                                } else if ($filters['field'] == 'statusapproval') {
                                     $query = $query->orWhere('statusapproval.text', '=', $filters['data']);
                                 } else if ($filters['field'] == 'nominaldebet') {
                                     $query = $query->orWhereRaw("format(c.nominaldebet, '#,#0.00') LIKE '%$filters[data]%'");
@@ -345,6 +351,7 @@ class JurnalUmumHeader extends MyModel
     {
         // dd($data);
         $tanpaprosesnobukti = $data['tanpaprosesnobukti'] ?? 0;
+        $statusCetak = Parameter::from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUSCETAK')->where('text', 'BELUM CETAK')->first();
 
         if ($tanpaprosesnobukti == 0) {
 
@@ -370,6 +377,7 @@ class JurnalUmumHeader extends MyModel
         $jurnalUmumHeader->statusapproval = ($tanpaprosesnobukti == 1) ? $statusNonApproval->id : $statusApproval->id;
         $jurnalUmumHeader->userapproval = ($tanpaprosesnobukti == 1) ? '' : auth('api')->user()->name;
         $jurnalUmumHeader->tglapproval = ($tanpaprosesnobukti == 1) ? '' : date('Y-m-d H:i:s');
+        $jurnalUmumHeader->statuscetak = $statusCetak->id ?? 0;
         $jurnalUmumHeader->statusformat = $data['statusformat'] ?? $format->id;
         $jurnalUmumHeader->modifiedby = auth('api')->user()->name;
 
@@ -463,6 +471,7 @@ class JurnalUmumHeader extends MyModel
     public function processUpdate(JurnalUmumHeader $jurnalUmumHeader, array $data): JurnalUmumHeader
     {
         $jurnalUmumHeader->modifiedby = auth('api')->user()->name;
+        
 
         if (!$jurnalUmumHeader->save()) {
             throw new \Exception("Error updating jurnal umum header.");
@@ -597,6 +606,8 @@ class JurnalUmumHeader extends MyModel
                 'jurnalumumheader.postingdari',
                 'c.nominaldebet as nominaldebet',
                 'c.nominalkredit as nominalkredit',
+                'jurnalumumheader.statuscetak',
+                'jurnalumumheader.jumlahcetak',
                 DB::raw("'Laporan Jurnal Umum' as judulLaporan"),
                 DB::raw("'" . $getJudul->text . "' as judul"),
                 DB::raw("'Tgl Cetak:'+format(getdate(),'dd-MM-yyyy HH:mm:ss')as tglcetak"),

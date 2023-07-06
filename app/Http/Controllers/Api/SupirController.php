@@ -729,4 +729,13 @@ class SupirController extends Controller
             $this->toExcel($judulLaporan, $supirs, $columns);
         }
     }
+
+    public function getSupirResign(Request $request)
+    {
+        $supir = new Supir();
+        $noktp = $request->noktp;
+        return response([
+            'data' => $supir->getSupirResignModel($noktp)
+        ]);
+    }
 }

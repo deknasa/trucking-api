@@ -434,7 +434,7 @@ class PiutangHeader extends MyModel
             DB::raw("parameter with (readuncommitted)")
         )->where('grp', 'STATUSCETAK')->where('text', 'BELUM CETAK')->first();
 
-        $piutangHeader->tglbukti = date('Y-m-d', strtotime($data['tglbukti']));
+        $piutangHeader->tglbukti = date('Y-m-d', strtotime($data['tglbukt']));
         $piutangHeader->tgljatuhtempo = date('Y-m-d', strtotime($data['tgljatuhtempo']));
         $piutangHeader->postingdari = $data['postingdari'] ?? 'ENTRY PIUTANG HEADER';
         $piutangHeader->invoice_nobukti = $data['invoice'] ?? '';

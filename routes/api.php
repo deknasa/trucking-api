@@ -744,6 +744,7 @@ route::middleware(['auth:api', 'authorized'])->group(function () {
 
     Route::get('running_number', [Controller::class, 'getRunningNumber'])->name('running_number');
     Route::get('jurnalumumheader/no_bukti', [JurnalUmumHeaderController::class, 'getNoBukti']);
+    Route::get('jurnalumumheader/{id}/printreport', [JurnalUmumHeaderController::class, 'printReport'])->whereNumber('id');
     Route::post('jurnalumumheader/{id}/approval', [JurnalUmumHeaderController::class, 'approval'])->name('jurnalumumheader.approval')->whereNumber('id');
     Route::get('jurnalumumheader/combo', [JurnalUmumHeaderController::class, 'combo']);
     Route::post('jurnalumumheader/{id}/cekapproval', [JurnalUmumHeaderController::class, 'cekapproval'])->name('jurnalumumheader.cekapproval')->whereNumber('id');
@@ -856,6 +857,7 @@ route::middleware(['auth:api', 'authorized'])->group(function () {
     Route::get('pelunasanpiutangheader/no_bukti', [PelunasanPiutangHeaderController::class, 'getNoBukti']);
     Route::get('pelunasanpiutangheader/default', [PelunasanPiutangHeaderController::class, 'default']);
     Route::get('pelunasanpiutangheader/combo', [PelunasanPiutangHeaderController::class, 'combo']);
+    Route::get('pelunasanpiutangheader/{id}/printreport', [PelunasanPiutangHeaderController::class, 'printReport'])->whereNumber('id');
     Route::get('pelunasanpiutangheader/{id}/export', [PelunasanPiutangHeaderController::class, 'export'])->name('pelunasanpiutangheader.export')->whereNumber('id');
     Route::get('pelunasanpiutangheader/{id}/getpiutang', [PelunasanPiutangHeaderController::class, 'getpiutang'])->name('pelunasanpiutangheader.getpiutang')->whereNumber('id');
     Route::get('pelunasanpiutangheader/{id}/{agenid}/getPelunasanPiutang', [PelunasanPiutangHeaderController::class, 'getPelunasanPiutang'])->whereNumber('id');

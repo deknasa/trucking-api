@@ -40,11 +40,13 @@ class ProsesUangJalanSupirHeader extends MyModel
                 DB::raw('(case when (year(prosesuangjalansupirheader.tglapproval) <= 2000) then null else prosesuangjalansupirheader.tglapproval end ) as tglapproval'),
                 'statusapproval.memo as statusapproval',
                 'trado.kodetrado as trado_id',
+                'statuscetak.memo as statuscetak',
                 'supir.namasupir as supir_id',
                 'prosesuangjalansupirheader.modifiedby',
                 'prosesuangjalansupirheader.created_at',
                 'prosesuangjalansupirheader.updated_at'
             )
+            ->leftJoin(DB::raw("parameter as statuscetak with (readuncommitted)"), 'prosesuangjalansupirheader.statuscetak', 'statuscetak.id')
             ->leftJoin(DB::raw("parameter as statusapproval with (readuncommitted)"), 'prosesuangjalansupirheader.statusapproval', 'statusapproval.id')
             ->leftJoin(DB::raw("trado with (readuncommitted)"), 'prosesuangjalansupirheader.trado_id', 'trado.id')
             ->leftJoin(DB::raw("supir with (readuncommitted)"), 'prosesuangjalansupirheader.supir_id', 'supir.id');
@@ -218,7 +220,9 @@ class ProsesUangJalanSupirHeader extends MyModel
             switch ($this->params['filters']['groupOp']) {
                 case "AND":
                     foreach ($this->params['filters']['rules'] as $index => $filters) {
-                        if ($filters['field'] == 'statusapproval') {
+                        if ($filters['field'] == 'statuscetak') {
+                            $query = $query->where('statuscetak.text', '=', "$filters[data]");
+                        } else if ($filters['field'] == 'statusapproval') {
                             $query = $query->where('statusapproval.text', '=', "$filters[data]");
                         } else if ($filters['field'] == 'trado_id') {
                             $query = $query->where('trado.kodetrado', 'LIKE', "%$filters[data]%");
@@ -240,7 +244,9 @@ class ProsesUangJalanSupirHeader extends MyModel
                 case "OR":
                     $query = $query->where(function ($query) {
                         foreach ($this->params['filters']['rules'] as $index => $filters) {
-                            if ($filters['field'] == 'statusapproval') {
+                            if ($filters['field'] == 'statuscetak') {
+                                $query = $query->orWhere('statuscetak.text', '=', "$filters[data]");
+                            } else if ($filters['field'] == 'statusapproval') {
                                 $query = $query->orWhere('statusapproval.text', '=', "$filters[data]");
                             } else if ($filters['field'] == 'trado_id') {
                                 $query = $query->orWhere('trado.kodetrado', 'LIKE', "%$filters[data]%");
@@ -318,18 +324,15 @@ class ProsesUangJalanSupirHeader extends MyModel
             'prosesuangjalansupirheader.nominaluangjalan',
             'trado.kodetrado as trado_id',
             'supir.namasupir as supir_id',
-        //     db::raw(' CASE
-        //     WHEN prosesuangjalansupirheader.jumlahcetak = 0 THEN NULL
-        //     ELSE prosesuangjalansupirheader.jumlahcetak
-        //   END AS jumlahcetak'),
-            // 'statuscetak.memo as statuscetak',
-            // 'statuscetak.id as  statuscetak_id',
+            'statuscetak.memo as statuscetak',
+            'prosesuangjalansupirheader.jumlahcetak',
             DB::raw("'Laporan Proses Uang Jalan Supir' as judulLaporan"),
             DB::raw("'" . $getJudul->text . "' as judul"),
             DB::raw("'Tgl Cetak:'+format(getdate(),'dd-MM-yyyy HH:mm:ss')as tglcetak"),
             DB::raw(" 'User :".auth('api')->user()->name."' as usercetak")
         )
         ->where("$this->table.id", $id)
+        ->leftJoin(DB::raw("parameter as statuscetak with (readuncommitted)"), 'prosesuangjalansupirheader.statuscetak', 'statuscetak.id')
         ->leftJoin(DB::raw("trado with (readuncommitted)"), 'prosesuangjalansupirheader.trado_id', 'trado.id')
         ->leftJoin(DB::raw("supir with (readuncommitted)"), 'prosesuangjalansupirheader.supir_id', 'supir.id');
 
@@ -343,6 +346,7 @@ class ProsesUangJalanSupirHeader extends MyModel
 
         $group = 'PROSES UANG JALAN BUKTI';
         $subGroup = 'PROSES UANG JALAN BUKTI';
+        $statusCetak = Parameter::from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUSCETAK')->where('text', 'BELUM CETAK')->first();
 
         $format = DB::table('parameter')
             ->where('grp', $group)
@@ -361,6 +365,7 @@ class ProsesUangJalanSupirHeader extends MyModel
         $prosesUangJalanSupir->absensisupir_nobukti = $data['absensisupir'];
         $prosesUangJalanSupir->trado_id = $data['trado_id'];
         $prosesUangJalanSupir->supir_id = $data['supir_id'];
+        $prosesUangJalanSupir->statuscetak = $statusCetak->id ?? 0;
         $prosesUangJalanSupir->nominaluangjalan = $dataAbsensiSupir->nominal;
         $prosesUangJalanSupir->statusapproval = $statusApproval->id;
         $prosesUangJalanSupir->statusformat = $format->id;
