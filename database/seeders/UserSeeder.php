@@ -21,6 +21,8 @@ class UserSeeder extends Seeder
             'name' => 'ADMIN',
             'cabang_id' => Cabang::where('kodecabang', 'PST')->first()->id,
             'statusaktif' => Parameter::where('grp', 'STATUS AKTIF')->where('text', 'AKTIF')->first()->id,
+            'statusakses' => Parameter::where('grp', 'STATUS AKSES')->where('text', 'PUBLIC')->first()->id,
+            'email' =>'pt.transporindo@gmail.com',
             'password' => bcrypt('123456'),
         ]);
         
