@@ -8,7 +8,7 @@ use Illuminate\Http\Request;
 use App\Http\Requests\StoreSuratPengantarApprovalInputTripRequest;
 use App\Http\Requests\StoreLogTrailRequest;
 use App\Http\Requests\UpdateSuratPengantarApprovalInputTripRequest;
-use DB;
+use Illuminate\Support\Facades\DB;
 
 class SuratPengantarApprovalInputTripController extends Controller
 {
@@ -40,7 +40,7 @@ class SuratPengantarApprovalInputTripController extends Controller
             $suratPengantarApprovalInputTrip->jumlahtrip = $request->jumlahtrip;
             $suratPengantarApprovalInputTrip->modifiedby = auth('api')->user()->name;
 
-            
+
             if ($suratPengantarApprovalInputTrip->save()) {
                 $logTrail = [
                     'namatabel' => strtoupper($suratPengantarApprovalInputTrip->getTable()),
@@ -76,7 +76,7 @@ class SuratPengantarApprovalInputTripController extends Controller
     /**
      * @ClassName
      */
-    public function show(SuratPengantarApprovalInputTrip $suratPengantarApprovalInputTrip,$id)
+    public function show(SuratPengantarApprovalInputTrip $suratPengantarApprovalInputTrip, $id)
     {
         $suratPengantarApprovalInputTrip = new SuratPengantarApprovalInputTrip();
         return response([
@@ -91,7 +91,7 @@ class SuratPengantarApprovalInputTripController extends Controller
     /**
      * @ClassName
      */
-    public function update(UpdateSuratPengantarApprovalInputTripRequest $request, SuratPengantarApprovalInputTrip $suratPengantarApprovalInputTrip,$id)
+    public function update(UpdateSuratPengantarApprovalInputTripRequest $request, SuratPengantarApprovalInputTrip $suratPengantarApprovalInputTrip, $id)
     {
         DB::beginTransaction();
         try {
@@ -100,7 +100,7 @@ class SuratPengantarApprovalInputTripController extends Controller
             $suratPengantarApprovalInputTrip->jumlahtrip = $request->jumlahtrip;
             $suratPengantarApprovalInputTrip->modifiedby = auth('api')->user()->name;
 
-            
+
             if ($suratPengantarApprovalInputTrip->save()) {
                 $logTrail = [
                     'namatabel' => strtoupper($suratPengantarApprovalInputTrip->getTable()),
@@ -136,13 +136,13 @@ class SuratPengantarApprovalInputTripController extends Controller
     /**
      * @ClassName
      */
-    public function destroy(SuratPengantarApprovalInputTrip $suratPengantarApprovalInputTrip,$id)
+    public function destroy(SuratPengantarApprovalInputTrip $suratPengantarApprovalInputTrip, $id)
     {
         DB::beginTransaction();
         try {
             $suratPengantarApprovalInputTrip = new SuratPengantarApprovalInputTrip;
             $suratPengantarApprovalInputTrip = $suratPengantarApprovalInputTrip->lockAndDestroy($id);
-            
+
             if ($suratPengantarApprovalInputTrip) {
                 $logTrail = [
                     'namatabel' => strtoupper($suratPengantarApprovalInputTrip->getTable()),
@@ -175,12 +175,16 @@ class SuratPengantarApprovalInputTripController extends Controller
         }
     }
 
-    public function isTanggalAvaillable(){
+    /**
+     * @ClassName
+     */
+    public function isTanggalAvaillable()
+    {
         $suratPengantarApprovalInputTrip = new SuratPengantarApprovalInputTrip;
         return response([
             'status' => true,
             'message' => 'Berhasil disimpan',
-            'data' =>$suratPengantarApprovalInputTrip->isTanggalAvaillable()
+            'data' => $suratPengantarApprovalInputTrip->isTanggalAvaillable()
         ], 201);
         return $suratPengantarApprovalInputTrip->isTanggalAvaillable();
     }
