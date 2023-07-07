@@ -734,5 +734,7 @@ class AcosSeeder extends Seeder
         acos::create(['class' => 'tradosupirmilikmandor', 'method' => 'show', 'nama' => 'show TradoSupirMilikMandorController', 'modifiedby' => 'ADMIN',]);
         acos::create(['class' => 'tradosupirmilikmandor', 'method' => 'update', 'nama' => 'update TradoSupirMilikMandorController', 'modifiedby' => 'ADMIN',]);
         acos::create(['class' => 'tradosupirmilikmandor', 'method' => 'destroy', 'nama' => 'destroy TradoSupirMilikMandorController', 'modifiedby' => 'ADMIN',]);
+        acos::create(['class' => 'user', 'method' => 'report', 'nama' => 'report UserController', 'modifiedby' => 'ADMIN',]);
+        acos::create(['class' => 'user', 'method' => 'export', 'nama' => 'export UserController', 'modifiedby' => 'ADMIN',]);
     }
 }
