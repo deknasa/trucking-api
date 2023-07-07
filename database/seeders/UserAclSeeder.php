@@ -741,5 +741,11 @@ class UserAclSeeder extends Seeder
         useracl::create(['aco_id' => '715', 'user_id' => '1', 'modifiedby' => 'ADMIN',]);
         useracl::create(['aco_id' => '716', 'user_id' => '1', 'modifiedby' => 'ADMIN',]);
         useracl::create(['aco_id' => '717', 'user_id' => '1', 'modifiedby' => 'ADMIN',]);
+        useracl::create(['aco_id' => '718', 'user_id' => '1', 'modifiedby' => 'ADMIN',]);
+        useracl::create(['aco_id' => '719', 'user_id' => '1', 'modifiedby' => 'ADMIN',]);
+        useracl::create(['aco_id' => '720', 'user_id' => '1', 'modifiedby' => 'ADMIN',]);
+        useracl::create(['aco_id' => '721', 'user_id' => '1', 'modifiedby' => 'ADMIN',]);
+        useracl::create(['aco_id' => '722', 'user_id' => '1', 'modifiedby' => 'ADMIN',]);
+        useracl::create(['aco_id' => '723', 'user_id' => '1', 'modifiedby' => 'ADMIN',]);
     }
 }

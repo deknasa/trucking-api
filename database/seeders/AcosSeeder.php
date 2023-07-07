@@ -736,5 +736,11 @@ class AcosSeeder extends Seeder
         acos::create(['class' => 'tradosupirmilikmandor', 'method' => 'destroy', 'nama' => 'destroy TradoSupirMilikMandorController', 'modifiedby' => 'ADMIN',]);
         acos::create(['class' => 'user', 'method' => 'report', 'nama' => 'report UserController', 'modifiedby' => 'ADMIN',]);
         acos::create(['class' => 'user', 'method' => 'export', 'nama' => 'export UserController', 'modifiedby' => 'ADMIN',]);
+        acos::create(['class' => 'suratpengantarapprovalinputtrip', 'method' => 'index', 'nama' => 'index SuratPengantarApprovalInputTripController', 'modifiedby' => 'ADMIN',]);
+        acos::create(['class' => 'suratpengantarapprovalinputtrip', 'method' => 'store', 'nama' => 'store SuratPengantarApprovalInputTripController', 'modifiedby' => 'ADMIN',]);
+        acos::create(['class' => 'suratpengantarapprovalinputtrip', 'method' => 'show', 'nama' => 'show SuratPengantarApprovalInputTripController', 'modifiedby' => 'ADMIN',]);
+        acos::create(['class' => 'suratpengantarapprovalinputtrip', 'method' => 'update', 'nama' => 'update SuratPengantarApprovalInputTripController', 'modifiedby' => 'ADMIN',]);
+        acos::create(['class' => 'suratpengantarapprovalinputtrip', 'method' => 'destroy', 'nama' => 'destroy SuratPengantarApprovalInputTripController', 'modifiedby' => 'ADMIN',]);
+        acos::create(['class' => 'suratpengantarapprovalinputtrip', 'method' => 'isTanggalAvaillable', 'nama' => 'isTanggalAvaillable SuratPengantarApprovalInputTripController', 'modifiedby' => 'ADMIN',]);
     }
 }
