@@ -27,7 +27,7 @@ class StoreApprovalSupirKeteranganRequest extends FormRequest
     {
         return [
             "namasupir"=> "required",
-            'noktp' => 'required|unique:approvalsupirgambar|min:16|max:16',
+            'noktp' => 'required|unique:approvalsupirketerangan|min:16|max:16',
             "statusapproval"=> "required",
             "tglbatas" => ['required','date_format:d-m-Y',new DateApprovalTradoGambar()],
         ];

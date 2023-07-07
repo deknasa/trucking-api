@@ -415,6 +415,37 @@ class PenerimaanStokHeader extends MyModel
         return $data;
     }
 
+    public function getDetailPengeluaran($id)
+    {
+        $penerimaan = PenerimaanStokHeader::findOrFail($id);
+        $penerimaanstokdetail = DB::table('penerimaanstokdetail')
+        ->select(
+            "penerimaanstokdetail.penerimaanstokheader_id",
+            "penerimaanstokdetail.nobukti",
+            "stok.namastok as stok",
+            "pengeluaranstokdetail.qty as maximum",
+            "penerimaanstokdetail.stok_id",
+            "penerimaanstokdetail.qty",
+            "penerimaanstokdetail.harga",
+            "penerimaanstokdetail.persentasediscount",
+            "penerimaanstokdetail.nominaldiscount",
+            "penerimaanstokdetail.total",
+            "penerimaanstokdetail.keterangan",
+            "penerimaanstokdetail.vulkanisirke",
+            "penerimaanstokdetail.modifiedby",
+        )
+        ->leftJoin('penerimaanstokheader','penerimaanstokdetail.penerimaanstokheader_id','penerimaanstokheader.id')
+        ->leftJoin('pengeluaranstokdetail','penerimaanstokheader.pengeluaranstok_nobukti','pengeluaranstokdetail.nobukti')
+        ->leftJoin("stok","penerimaanstokdetail.stok_id","stok.id")
+        ->where('penerimaanstokdetail.penerimaanstokheader_id',$penerimaan->id)
+        ->whereRaw('penerimaanstokdetail.stok_id = pengeluaranstokdetail.stok_id')
+        ->get();
+
+        $data = $penerimaanstokdetail;
+        return $data;
+        
+    }
+
     public function paginate($query)
     {
         return $query->skip($this->params['offset'])->take($this->params['limit']);
