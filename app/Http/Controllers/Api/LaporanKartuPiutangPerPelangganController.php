@@ -29,6 +29,8 @@ class LaporanKartuPiutangPerPelangganController extends Controller
      */
     public function report(Request $request)
     {
+
+        
         $sampai = $request->sampai;
         $dari = $request->dari;
         $pelanggandari_id = $request->pelanggandari_id;
