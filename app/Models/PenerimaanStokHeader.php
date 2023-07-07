@@ -422,7 +422,7 @@ class PenerimaanStokHeader extends MyModel
             "penerimaanstokdetail.penerimaanstokheader_id",
             "penerimaanstokdetail.nobukti",
             "stok.namastok as stok",
-            "pengeluaranstokdetail.qty as maximium",
+            "pengeluaranstokdetail.qty as maximum",
             "penerimaanstokdetail.stok_id",
             "penerimaanstokdetail.qty",
             "penerimaanstokdetail.harga",
