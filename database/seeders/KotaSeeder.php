@@ -448,5 +448,7 @@ class KotaSeeder extends Seeder
         kota::create(['kodekota' => 'ZONA I', 'keterangan' => 'ZONA I', 'zona_id' => '0', 'statusaktif' => '1', 'modifiedby' => 'RYAN',]);
         kota::create(['kodekota' => 'ZONA II', 'keterangan' => 'ZONA II', 'zona_id' => '0', 'statusaktif' => '1', 'modifiedby' => 'RYAN',]);
         kota::create(['kodekota' => 'ZONA III', 'keterangan' => 'ZONA III', 'zona_id' => '0', 'statusaktif' => '1', 'modifiedby' => 'RYAN',]);
+        kota::create(['kodekota' => 'BELAWAN RANGKA', 'keterangan' => 'BELAWAN RANGKA', 'zona_id' => '0', 'statusaktif' => '1', 'modifiedby' => 'RYAN',]);
+        kota::create(['kodekota' => 'KIM (KANDANG)', 'keterangan' => 'KIM (KANDANG)', 'zona_id' => '0', 'statusaktif' => '1', 'modifiedby' => 'RYAN',]);
     }
 }
