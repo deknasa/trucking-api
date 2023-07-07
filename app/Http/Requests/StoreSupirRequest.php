@@ -91,8 +91,8 @@ class StoreSupirRequest extends FormRequest
             'statusaktif' => [$ruleKeterangan,'int','exists:parameter,id'],
             'tglmasuk' => [$ruleKeterangan],
             'tglexpsim' => [$ruleKeterangan],
-            'nosim' => [$ruleKeterangan,'min:12','max:12','nullable',new NoSimSupir(),new SupirBlackListSim()],
-            'noktp' => ['required','min:16','max:16',new NoKtpSupir(), new SupirBlackListKtp()],
+            'nosim' => [$ruleKeterangan,'min:12','max:12','nullable',new SupirBlackListSim()],
+            'noktp' => ['required','min:16','max:16', new SupirBlackListKtp()],
             'nokk' => [$ruleKeterangan,'min:16','max:16','nullable'],
             'tgllahir' => [
                 $ruleKeterangan, 'date_format:d-m-Y', 
