@@ -8,6 +8,7 @@ use App\Models\PenerimaanStokHeader;
 use App\Models\PenerimaanStokDetail;
 use App\Models\HutangHeader;
 use App\Models\HutangDetail;
+use App\Models\PengeluaranStokDetail;
 
 
 use App\Http\Requests\StoreLogTrailRequest;
@@ -266,7 +267,14 @@ class PenerimaanStokHeaderController extends Controller
         return (!$result) ? false : $result;
     }
 
-
+    public function getPengeluaranStok($id)
+    {
+        $penerimaanStokHeader  = (new PenerimaanStokHeader)->getDetailPengeluaran($id);
+        return response([
+            'status' => true,
+            'detail' => $penerimaanStokHeader,
+        ]);
+    }
 
     public function cekvalidasi($id)
     {
