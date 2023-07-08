@@ -29,7 +29,7 @@ class ExistTarifRincianSuratPengantar implements Rule
     public function passes($attribute, $value)
     {
         $tarifRincian = new TarifRincian();
-        $dataTarif = $tarifRincian->getValidasiTarif(request()->container_id,$value);
+        $dataTarif = $tarifRincian->getValidasiTarif(request()->container_id, request()->upah_id);
         if($dataTarif == null){
             return false;
         }else{

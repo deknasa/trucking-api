@@ -140,4 +140,51 @@ class InputTrip extends MyModel
 
         return $suratPengantar;
     }
+
+    public function getKotaRitasi($dataRitasiId)
+    {
+        $ritasiPulang = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS RITASI')->where('text', 'PULANG RANGKA')->first();
+        $ritasiTurun = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS RITASI')->where('text', 'TURUN RANGKA')->first();
+
+        if($dataRitasiId == $ritasiPulang->id){
+            $temp = '##temp' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+            Schema::create($temp, function ($table) {
+                $table->unsignedBigInteger('dari_id')->nullable();
+                $table->string('dari')->nullable();
+                $table->unsignedBigInteger('sampai_id')->nullable();
+                $table->string('sampai')->nullable();
+            });
+
+            $dari = DB::table("kota")->from(DB::raw("kota with (readuncommitted)"))->where("kodekota",'BELAWAN RANGKA')->first();
+            $sampai = DB::table("kota")->from(DB::raw("kota with (readuncommitted)"))->where("kodekota",'KIM (KANDANG)')->first();
+
+            DB::table($temp)->insert(
+                ["dari_id" => $dari->id, "dari" => $dari->kodekota, "sampai_id" => $sampai->id, "sampai" => $sampai->kodekota]
+            );
+            $query = DB::table($temp)->from(DB::raw($temp))->first();
+    
+            return $query;
+        }else if($dataRitasiId == $ritasiTurun->id){
+            $temp = '##temp' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+            Schema::create($temp, function ($table) {
+                $table->unsignedBigInteger('dari_id')->nullable();
+                $table->string('dari')->nullable();
+                $table->unsignedBigInteger('sampai_id')->nullable();
+                $table->string('sampai')->nullable();
+            });
+
+            $dari = DB::table("kota")->from(DB::raw("kota with (readuncommitted)"))->where("kodekota",'KIM (KANDANG)')->first();
+            $sampai = DB::table("kota")->from(DB::raw("kota with (readuncommitted)"))->where("kodekota",'BELAWAN RANGKA')->first();
+
+            DB::table($temp)->insert(
+                ["dari_id" => $dari->id, "dari" => $dari->kodekota, "sampai_id" => $sampai->id, "sampai" => $sampai->kodekota]
+            );
+            $query = DB::table($temp)->from(DB::raw($temp))->first();
+    
+            return $query;
+        }else{
+            $query =[];
+            return $query;
+        }
+    }
 }
