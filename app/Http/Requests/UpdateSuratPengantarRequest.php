@@ -84,6 +84,7 @@ class UpdateSuratPengantarRequest extends FormRequest
             'nobukti' => [
                 Rule::in($query->nobukti),
             ],
+            "lokasibongkarmuat" => "required",
             'statuslongtrip' => ['required', Rule::in($statuslongtrip)],
             'statusperalihan' => ['required', Rule::in($statusperalihan)],
             'statusbatalmuat' => ['required', Rule::in($statusbatalmuat)],
@@ -774,7 +775,8 @@ class UpdateSuratPengantarRequest extends FormRequest
             'statusgudangsama' => 'status gudangsama',
             'tarifrincian' => 'tujuan tarif',
             'jenisorder' => 'jenis orderan',
-            'sampai' => 'tujuan',
+            'sampai' => 'tujuan',            
+            "lokasibongkarmuat" => "lokasi bongkar/muat",
             // 'qtyton' => 'QTY ton',
             'statusbatalmuat' => 'status batal muat'
 

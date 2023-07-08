@@ -85,6 +85,7 @@ class SuratPengantarController extends Controller
                 'statusperalihan' => $request->statusperalihan,
                 'nominalperalihan' => $request->nominalperalihan,
                 'biayatambahan_id' => $request->biayatambahan_id,
+                'penyesuaian' => $request->penyesuaian,
                 'nosp' => $request->nosp,
                 'nosptagihlain' => $request->nosptagihlain,
                 'qtyton' => $request->qtyton,
@@ -145,6 +146,7 @@ class SuratPengantarController extends Controller
                 'statusgandengan' => $request->statusgandengan,
                 'trado_id' => $request->trado_id,
                 'supir_id' => $request->supir_id,
+                'penyesuaian' => $request->penyesuaian,
                 'gandengan_id' => $request->gandengan_id,
                 'statuslongtrip' => $request->statuslongtrip,
                 'statusperalihan' => $request->statusperalihan,
@@ -279,14 +281,18 @@ class SuratPengantarController extends Controller
         //validasi Hari ini
         $todayValidation = SuratPengantar::todayValidation($nobukti->id);
         $isEditAble = SuratPengantar::isEditAble($nobukti->id);
+
         $edit = true;
-        if (!$todayValidation && !$isEditAble) {
-            $query = DB::table('error')->select('keterangan')->where('kodeerror', '=', 'SATL')->get();
-            $keterangan = $query['0'];
+        if (!$todayValidation) {
             $edit = false;
+            if(!$isEditAble){
+                $edit = false;
+            }
+        }else{
+            if(!$isEditAble){
+                $edit = false;
+            }
         }
-
-
 
         $cekdata = $suratPengantar->cekvalidasihapus($nobukti->nobukti, $nobukti->jobtrucking);
         if ($cekdata['kondisi'] == true) {
@@ -395,23 +401,27 @@ class SuratPengantarController extends Controller
         try {
             $suratPengantar = SuratPengantar::lockForUpdate()->findOrFail($id);
 
-            $statusEditTujuan = Parameter::from(DB::raw("parameter with (readuncommitted)"))->where('grp', '=', 'STATUS EDIT TUJUAN')->where('text', '=', 'EDIT TUJUAN')->first();
-            $statusTidakBolehEditTujuan = Parameter::from(DB::raw("parameter with (readuncommitted)"))->where('grp', '=', 'STATUS EDIT TUJUAN')->where('text', '=', 'TIDAK BOLEH EDIT TUJUAN')->first();
+            $statusApproval = Parameter::from(DB::raw("parameter with (readuncommitted)"))->where('grp', '=', 'STATUS APPROVAL')->where('text', '=', 'APPROVAL')->first();
+            $statusNonApproval = Parameter::from(DB::raw("parameter with (readuncommitted)"))->where('grp', '=', 'STATUS APPROVAL')->where('text', '=', 'NON APPROVAL')->first();
             // statusapprovaleditabsensi,tglapprovaleditabsensi,userapprovaleditabsensi 
-            if ($suratPengantar->statusedittujuan == $statusEditTujuan->id) {
-                $suratPengantar->statusedittujuan = $statusTidakBolehEditTujuan->id;
-                $aksi = $statusTidakBolehEditTujuan->text;
+            if ($suratPengantar->statusapprovaleditsuratpengantar == $statusApproval->id) {
+                $suratPengantar->statusapprovaleditsuratpengantar = $statusNonApproval->id;
+                $suratPengantar->tglapprovaleditsuratpengantar = date('Y-m-d', strtotime("1900-01-01"));
+                $suratPengantar->userapprovaleditsuratpengantar = '';
+                $aksi = $statusNonApproval->text;
             } else {
-                $suratPengantar->statusedittujuan = $statusEditTujuan->id;
-                $aksi = $statusEditTujuan->text;
+                $suratPengantar->statusapprovaleditsuratpengantar = $statusApproval->id;                
+                $suratPengantar->tglapprovaleditsuratpengantar = date('Y-m-d H:i:s');
+                $suratPengantar->userapprovaleditsuratpengantar = auth('api')->user()->name;
+                $aksi = $statusApproval->text;
             }
 
             if ($suratPengantar->save()) {
                 $logTrail = [
                     'namatabel' => strtoupper($suratPengantar->getTable()),
-                    'postingdari' => 'APPROVED EDIT TUJUAN',
+                    'postingdari' => "$aksi EDIT SURAT PENGANTAR",
                     'idtrans' => $suratPengantar->id,
-                    'nobuktitrans' => $suratPengantar->id,
+                    'nobuktitrans' => $suratPengantar->nobukti,
                     'aksi' => $aksi,
                     'datajson' => $suratPengantar->toArray(),
                     'modifiedby' => auth('api')->user()->name

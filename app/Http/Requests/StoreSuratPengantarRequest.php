@@ -72,7 +72,8 @@ class StoreSuratPengantarRequest extends FormRequest
                 'required', 'date_format:d-m-Y',
                 new DateTutupBuku(),
                 'before_or_equal:' . date('d-m-Y'),
-            ],
+            ],            
+            "lokasibongkarmuat" => "required",
             'statuslongtrip' => ['required', Rule::in($statuslongtrip)],
             'statusperalihan' => ['required', Rule::in($statusperalihan)],
             'statusbatalmuat' => ['required', Rule::in($statusbatalmuat)],
@@ -793,6 +794,7 @@ class StoreSuratPengantarRequest extends FormRequest
             'tarifrincian' => 'tujuan tarif',
             'jenisorder' => 'jenis orderan',
             'sampai' => 'tujuan',
+            "lokasibongkarmuat" => "lokasi bongkar/muat",
             // 'qtyton' => 'QTY ton',
             'statusbatalmuat' => 'status batal muat'
             

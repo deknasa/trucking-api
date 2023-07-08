@@ -54,6 +54,7 @@ class InputTripController extends Controller
                 'noseal2' => $request->noseal2,
                 'dari_id' => $request->dari_id,
                 'sampai_id' => $request->sampai_id,
+                'penyesuaian' => $request->penyesuaian,
                 'trado_id' => $request->trado_id,
                 'supir_id' => $request->supir_id,
                 'gandengan_id' => $request->gandengan_id,

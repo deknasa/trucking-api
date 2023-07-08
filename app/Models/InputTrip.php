@@ -92,6 +92,7 @@ class InputTrip extends MyModel
             'sampai_id' => $data['sampai_id'],
             'container_id' => $data['container_id'],
             'statuscontainer_id' => $data['statuscontainer_id'],
+            'penyesuaian' => $data['penyesuaian'],
             'trado_id' => $data['trado_id'],
             'supir_id' => $data['supir_id'],
             'gandengan_id' => $data['gandengan_id'],

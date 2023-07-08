@@ -283,6 +283,7 @@ class StoreMandorTripRequest extends FormRequest
             "dari" => "dari",
             "gandengan_id" => "gandengan",
             "gandengan" => "gandengan",
+            "lokasibongkarmuat" => "lokasi bongkar/muat",
             "jenisorder_id" => "jenisorder",
             "jenisorder" => "jenisorder",
             "pelanggan_id" => "pelanggan",
