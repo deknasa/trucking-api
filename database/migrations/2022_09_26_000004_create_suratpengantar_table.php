@@ -20,8 +20,8 @@ class CreateSuratpengantarTable extends Migration
 
         Schema::create('suratpengantar', function (Blueprint $table) {
             $table->id();
-            $table->string('nobukti',50)->unique();
-            $table->string('jobtrucking',50)->nullable();
+            $table->string('nobukti', 50)->unique();
+            $table->string('jobtrucking', 50)->nullable();
             $table->date('tglbukti')->nullable();
             $table->unsignedBigInteger('pelanggan_id')->nullable();
             $table->longText('keterangan')->nullable();
@@ -31,53 +31,53 @@ class CreateSuratpengantarTable extends Migration
             $table->unsignedBigInteger('sampai_id')->nullable();
             $table->longText('penyesuaian')->nullable();
             $table->unsignedBigInteger('container_id')->nullable();
-            $table->string('nocont',50)->nullable();
-            $table->string('nocont2',50)->nullable();
-            $table->string('noseal',50)->nullable();
-            $table->string('noseal2',50)->nullable();
+            $table->string('nocont', 50)->nullable();
+            $table->string('nocont2', 50)->nullable();
+            $table->string('noseal', 50)->nullable();
+            $table->string('noseal2', 50)->nullable();
             $table->unsignedBigInteger('statuscontainer_id')->nullable();
             $table->unsignedBigInteger('trado_id')->nullable();
             $table->unsignedBigInteger('gandengan_id')->nullable();
             $table->unsignedBigInteger('supir_id')->nullable();
-            $table->string('nojob',50)->nullable();
-            $table->string('nojob2',50)->nullable();
+            $table->string('nojob', 50)->nullable();
+            $table->string('nojob2', 50)->nullable();
             $table->integer('statuslongtrip')->length(11)->nullable();
-            $table->decimal('omset',15,2)->nullable();
-            $table->decimal('discount',15,2)->nullable();
-            $table->decimal('totalomset',15,2)->nullable();
-            $table->decimal('gajisupir',15,2)->nullable();
-            $table->decimal('gajikenek',15,2)->nullable();
+            $table->decimal('omset', 15, 2)->nullable();
+            $table->decimal('discount', 15, 2)->nullable();
+            $table->decimal('totalomset', 15, 2)->nullable();
+            $table->decimal('gajisupir', 15, 2)->nullable();
+            $table->decimal('gajikenek', 15, 2)->nullable();
             $table->unsignedBigInteger('agen_id')->nullable();
             $table->unsignedBigInteger('jenisorder_id')->nullable();
             $table->integer('statusperalihan')->length(11)->nullable();
             $table->unsignedBigInteger('tarif_id')->nullable();
-            $table->decimal('nominalperalihan',15,2)->nullable();
-            $table->decimal('persentaseperalihan',15,2)->nullable();
+            $table->decimal('nominalperalihan', 15, 2)->nullable();
+            $table->decimal('persentaseperalihan', 15, 2)->nullable();
             $table->unsignedBigInteger('biayatambahan_id')->nullable();
-            $table->string('nosp',50)->nullable();
+            $table->string('nosp', 50)->nullable();
             $table->date('tglsp')->nullable();
             $table->integer('statusritasiomset')->length(11)->nullable();
             $table->unsignedBigInteger('cabang_id')->nullable();
-            $table->decimal('komisisupir',15,2)->nullable();
-            $table->decimal('tolsupir',15,2)->nullable();
-            $table->decimal('jarak',15,2)->nullable();
-            $table->string('nosptagihlain',50)->nullable();
-            $table->decimal('nilaitagihlain',15,2)->nullable();
-            $table->string('tujuantagih',50)->nullable();
-            $table->decimal('liter',15,2)->nullable();
-            $table->decimal('nominalstafle',15,2)->nullable();
+            $table->decimal('komisisupir', 15, 2)->nullable();
+            $table->decimal('tolsupir', 15, 2)->nullable();
+            $table->decimal('jarak', 15, 2)->nullable();
+            $table->string('nosptagihlain', 50)->nullable();
+            $table->decimal('nilaitagihlain', 15, 2)->nullable();
+            $table->string('tujuantagih', 50)->nullable();
+            $table->decimal('liter', 15, 2)->nullable();
+            $table->decimal('nominalstafle', 15, 2)->nullable();
             $table->integer('statusnotif')->length(11)->nullable();
             $table->integer('statusoneway')->length(11)->nullable();
             $table->integer('statusedittujuan')->length(11)->nullable();
-            $table->decimal('upahbongkardepo',15,2)->nullable();
-            $table->decimal('upahmuatdepo',15,2)->nullable();
-            $table->decimal('hargatol',15,2)->nullable();
-            $table->decimal('qtyton',15,2)->nullable();
-            $table->decimal('totalton',15,2)->nullable();
+            $table->decimal('upahbongkardepo', 15, 2)->nullable();
+            $table->decimal('upahmuatdepo', 15, 2)->nullable();
+            $table->decimal('hargatol', 15, 2)->nullable();
+            $table->decimal('qtyton', 15, 2)->nullable();
+            $table->decimal('totalton', 15, 2)->nullable();
             $table->unsignedBigInteger('mandorsupir_id')->nullable();
             $table->unsignedBigInteger('mandortrado_id')->nullable();
             $table->integer('statustrip')->length(11)->nullable();
-            $table->string('notripasal',50)->nullable();
+            $table->string('notripasal', 50)->nullable();
             $table->date('tgldoor')->nullable();
             $table->integer('statusdisc')->length(11)->nullable();
             $table->unsignedBigInteger('statusformat')->nullable();
@@ -85,8 +85,11 @@ class CreateSuratpengantarTable extends Migration
             $table->unsignedBigInteger('statusbatalmuat')->nullable();
             $table->unsignedBigInteger('statusgandengan')->nullable();
             $table->unsignedBigInteger('gandenganasal_id')->nullable();
-            $table->string('gudang',500)->nullable();
-            $table->string('modifiedby',50)->nullable();
+            $table->string('gudang', 500)->nullable();
+            $table->integer('statusapprovaleditsuratpengantar')->Length(11)->nullable();
+            $table->string('userapprovaleditsuratpengantar', 50)->nullable();
+            $table->date('tglapprovaleditsuratpengantar')->nullable();
+            $table->string('modifiedby', 50)->nullable();
             $table->timestamps();
 
             $table->foreign('jobtrucking', 'suratpengantar_orderantrucking_jobtrucking_foreign')->references('nobukti')->on('orderantrucking');
@@ -105,8 +108,6 @@ class CreateSuratpengantarTable extends Migration
             $table->foreign('cabang_id', 'suratpengantar_cabang_cabang_id_foreign')->references('id')->on('cabang');
             $table->foreign('mandorsupir_id', 'suratpengantar_mandor_mandorsupir_id_foreign')->references('id')->on('mandor');
             $table->foreign('mandortrado_id', 'suratpengantar_mandor_mandortrado_id_foreign')->references('id')->on('mandor');
-
-
         });
 
         DB::statement("ALTER TABLE suratpengantar NOCHECK CONSTRAINT suratpengantar_orderantrucking_jobtrucking_foreign");
@@ -125,7 +126,6 @@ class CreateSuratpengantarTable extends Migration
         DB::statement("ALTER TABLE suratpengantar NOCHECK CONSTRAINT suratpengantar_cabang_cabang_id_foreign");
         DB::statement("ALTER TABLE suratpengantar NOCHECK CONSTRAINT suratpengantar_mandor_mandorsupir_id_foreign");
         DB::statement("ALTER TABLE suratpengantar NOCHECK CONSTRAINT suratpengantar_mandor_mandortrado_id_foreign");
-
     }
 
     /**
