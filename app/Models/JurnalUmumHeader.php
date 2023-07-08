@@ -71,7 +71,7 @@ class JurnalUmumHeader extends MyModel
                 'jurnalumumheader.tglbukti',
                 'jurnalumumheader.postingdari',
                 'jurnalumumheader.userapproval',
-                'statuscetak.memo as statuscetak',
+                // 'statuscetak.memo as statuscetak',
                 DB::raw('(case when (year(jurnalumumheader.tglapproval) <= 2000) then null else jurnalumumheader.tglapproval end ) as tglapproval'),
                 'jurnalumumheader.modifiedby',
                 'jurnalumumheader.created_at',
@@ -80,7 +80,7 @@ class JurnalUmumHeader extends MyModel
                 'c.nominaldebet as nominaldebet',
                 'c.nominalkredit as nominalkredit',
             )
-            ->leftJoin(DB::raw("parameter as statuscetak with (readuncommitted)"), 'jurnalumumheader.statuscetak', 'statuscetak.id')
+            // ->leftJoin(DB::raw("parameter as statuscetak with (readuncommitted)"), 'jurnalumumheader.statuscetak', 'statuscetak.id')
             ->whereBetween($this->table . '.tglbukti', [date('Y-m-d', strtotime(request()->tgldari)), date('Y-m-d', strtotime(request()->tglsampai))])
             ->leftJoin(DB::raw("parameter as statusapproval with (readuncommitted)"), 'jurnalumumheader.statusapproval', 'statusapproval.id')
             ->leftjoin(DB::raw($tempsummary . " as c"), 'jurnalumumheader.nobukti', 'c.nobukti');
@@ -351,7 +351,7 @@ class JurnalUmumHeader extends MyModel
     {
         // dd($data);
         $tanpaprosesnobukti = $data['tanpaprosesnobukti'] ?? 0;
-        $statusCetak = Parameter::from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUSCETAK')->where('text', 'BELUM CETAK')->first();
+        // $statusCetak = Parameter::from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUSCETAK')->where('text', 'BELUM CETAK')->first();
 
         if ($tanpaprosesnobukti == 0) {
 
@@ -377,7 +377,7 @@ class JurnalUmumHeader extends MyModel
         $jurnalUmumHeader->statusapproval = ($tanpaprosesnobukti == 1) ? $statusNonApproval->id : $statusApproval->id;
         $jurnalUmumHeader->userapproval = ($tanpaprosesnobukti == 1) ? '' : auth('api')->user()->name;
         $jurnalUmumHeader->tglapproval = ($tanpaprosesnobukti == 1) ? '' : date('Y-m-d H:i:s');
-        $jurnalUmumHeader->statuscetak = $statusCetak->id ?? 0;
+        // $jurnalUmumHeader->statuscetak = $statusCetak->id ?? 0;
         $jurnalUmumHeader->statusformat = $data['statusformat'] ?? $format->id;
         $jurnalUmumHeader->modifiedby = auth('api')->user()->name;
 
@@ -606,7 +606,7 @@ class JurnalUmumHeader extends MyModel
                 'jurnalumumheader.postingdari',
                 'c.nominaldebet as nominaldebet',
                 'c.nominalkredit as nominalkredit',
-                'jurnalumumheader.statuscetak',
+                // 'jurnalumumheader.statuscetak',
                 'jurnalumumheader.jumlahcetak',
                 DB::raw("'Laporan Jurnal Umum' as judulLaporan"),
                 DB::raw("'" . $getJudul->text . "' as judul"),

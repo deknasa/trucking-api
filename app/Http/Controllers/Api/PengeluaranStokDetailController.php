@@ -11,6 +11,11 @@ use App\Models\PenerimaanStokDetail;
 use App\Models\PengeluaranStokHeader;
 use App\Models\Parameter;
 use App\Models\StokPersediaan;
+use App\Models\HutangBayarHeader;
+use App\Models\HutangBayarDetail;
+use App\Models\PengeluaranHeader;
+use App\Models\PengeluaranDetail;
+use App\Models\JurnalUmumDetail;
 use App\Models\PengeluaranStokDetailFifo;
 use App\Models\Stok;
 
@@ -22,6 +27,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
+use Illuminate\Http\JsonResponse;
 
 class PengeluaranStokDetailController extends Controller
 {
@@ -40,6 +46,95 @@ class PengeluaranStokDetailController extends Controller
 
             ]
         ]);
+    }
+
+    public function hutangbayar(): JsonResponse
+    {
+        $hutangbayarDetail = new HutangBayarDetail();
+        if(request()->nobukti != 'false' && request()->nobukti != null){
+            $fetch = HutangBayarHeader::from(DB::raw("hutangbayarheader with (readuncommitted)"))->where('nobukti', request()->nobukti)->first();
+            request()->hutangbayar_id = $fetch->id;
+            return response()->json([
+                'data' => $hutangbayarDetail->get(request()->hutangbayar_id),
+                'attributes' => [
+                    'totalRows' => $hutangbayarDetail->totalRows,
+                    'totalPages' => $hutangbayarDetail->totalPages,
+                    'totalNominal' => $hutangbayarDetail->totalNominal
+                ]
+            ]);
+        }else{
+            return response()->json([
+                'data' => [],
+                'attributes' => [
+                    'totalRows' => $hutangbayarDetail->totalRows,
+                    'totalPages' => $hutangbayarDetail->totalPages,
+                    'totalNominal' => 0
+                ]
+            ]);
+        }
+    }
+    public function pengeluaran(): JsonResponse
+    {
+        $pengeluaranDetail = new PengeluaranDetail();
+        if (request()->nobukti != 'false' && request()->nobukti != null) {
+            $HutangBayar = HutangBayarHeader::from(DB::raw("hutangbayarheader with (readuncommitted)"))->where('nobukti', request()->nobukti)->first();
+            
+            $fetch = PengeluaranHeader::from(DB::raw("pengeluaranheader with (readuncommitted)"))->where('nobukti', $HutangBayar->pengeluaran_nobukti)->first();
+            request()->pengeluaran_id = $fetch->id;
+            return response()->json([
+                'data' => $pengeluaranDetail->get(request()->pengeluaran_id),
+                'attributes' => [
+                    'totalRows' => $pengeluaranDetail->totalRows,
+                    'totalPages' => $pengeluaranDetail->totalPages,
+                    'totalNominal' => $pengeluaranDetail->totalNominal
+                ]
+            ]);
+        } else {
+            return response()->json([
+                'data' => [],
+                'attributes' => [
+                    'totalRows' => $pengeluaranDetail->totalRows,
+                    'totalPages' => $pengeluaranDetail->totalPages,
+                    'totalNominal' => 0
+                ]
+            ]);
+        }
+    }
+    
+    public function jurnal(): JsonResponse
+    {
+        $jurnalDetail = new JurnalUmumDetail();
+
+        if(request()->nobukti != 'false' && request()->nobukti != null){
+            if (request()->statuspotong == 219) {//penerimaan
+                $nobukti = request()->nobukti;
+            }elseif (request()->statuspotong == 220) {// potong hutangbayar
+                $hutangBayar = HutangBayarHeader::from(DB::raw("hutangbayarheader with (readuncommitted)"))->where('nobukti', request()->nobukti)->first();
+                $pengeluaranHeader = PengeluaranHeader::from(DB::raw("pengeluaranheader with (readuncommitted)"))->where('nobukti', $hutangBayar->pengeluaran_nobukti)->first();
+                $nobukti = $pengeluaranHeader->nobukti;
+            }
+
+            return response()->json([
+                'data' => $jurnalDetail->getJurnalFromAnotherTable($nobukti),
+                'attributes' => [
+                    'totalRows' => $jurnalDetail->totalRows,
+                    'totalPages' => $jurnalDetail->totalPages,
+                    'totalNominalDebet' => $jurnalDetail->totalNominalDebet,
+                    'totalNominalKredit' => $jurnalDetail->totalNominalKredit,
+                ]
+            ]);
+        }else{
+            
+            return response()->json([
+                'data' => [],
+                'attributes' => [
+                    'totalRows' => $jurnalDetail->totalRows,
+                    'totalPages' => $jurnalDetail->totalPages,
+                    'totalNominalDebet' => 0,
+                    'totalNominalKredit' => 0,
+                ]
+            ]);
+        }
     }
  
     public function store(StorePengeluaranStokDetailRequest $request)
