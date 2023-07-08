@@ -306,8 +306,9 @@ class AbsensiSupirHeader extends MyModel
             ->where('id', $id)
             ->first();
         $tglbukti = strtotime($query->tglbukti);
-        $today = strtotime('today');
-        if ($tglbukti === $today) return true;
+        $limit = strtotime($query->tglbukti.'+1 days +12 hours' );
+        $now = strtotime('now');
+        if ($now < $limit) return true;
         return false;
     }
     public function isApproved($nobukti)
