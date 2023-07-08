@@ -381,14 +381,11 @@ class TarifRincian extends MyModel
             ->where('text', '=', 'AKTIF')
             ->first();
 
-        $query = Tarif::from(DB::raw("tarif with (readuncommitted)"))
+        $query = DB::table("upahsupir")->from(DB::raw("upahsupir with (readuncommitted)"))
             ->select(
-                'tarif.id',
+                'tarif_id',
             )
-            ->leftJoin(DB::raw("tarifrincian with (readuncommitted)"), 'tarif.id', '=', 'tarifrincian.tarif_id')
-            ->whereRaw("tarif.id in ($id)")
-            ->where('tarifrincian.container_id', '=', $container_id)
-            ->where('tarif.statusaktif', '=', $statusaktif->id);
+            ->where("id", $id);
             
         $data = $query->first();
 

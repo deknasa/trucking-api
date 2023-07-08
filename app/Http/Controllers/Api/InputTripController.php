@@ -82,4 +82,11 @@ class InputTripController extends Controller
             throw $th;
         }
     }
+
+    public function getKotaRitasi(Request $request)
+    {
+        return response([
+            'data' => (new InputTrip())->getKotaRitasi($request->dataritasi_id)
+        ]);
+    }
 }

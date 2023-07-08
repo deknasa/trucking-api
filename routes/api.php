@@ -384,6 +384,7 @@ route::middleware(['auth:api', 'authorized'])->group(function () {
     Route::get('historytrip', [HistoryTripController::class, 'index']);
     Route::get('listtrip', [ListTripController::class, 'index']);
     Route::post('inputtrip', [InputTripController::class, 'store']);
+    Route::get('inputtrip/getKotaRitasi', [InputTripController::class, 'getKotaRitasi']);
 
 
     Route::get('mekanik/combo', [MekanikController::class, 'combo']);

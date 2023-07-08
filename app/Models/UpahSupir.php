@@ -69,6 +69,7 @@ class UpahSupir extends MyModel
             ->select(
                 'upahsupir.id',
                 'parent.keterangan as parent_id',
+                'tarif.tujuan as tarif',
                 'kotadari.keterangan as kotadari_id',
                 'kotasampai.keterangan as kotasampai_id',
                 'upahsupir.penyesuaian',
@@ -87,6 +88,7 @@ class UpahSupir extends MyModel
                 DB::raw("'" . $getJudul->text . "' as judul")
             )
             ->leftJoin(DB::raw("$temp as parent with (readuncommitted)"), 'parent.id', '=', 'upahsupir.parent_id')
+            ->leftJoin(DB::raw("tarif with (readuncommitted)"), 'upahsupir.tarif_id', '=', 'tarif.id')
             ->leftJoin(DB::raw("kota as kotadari with (readuncommitted)"), 'kotadari.id', '=', 'upahsupir.kotadari_id')
             ->leftJoin(DB::raw("kota as kotasampai with (readuncommitted)"), 'kotasampai.id', '=', 'upahsupir.kotasampai_id')
             ->leftJoin(DB::raw("parameter with (readuncommitted)"), 'upahsupir.statusaktif', 'parameter.id')
@@ -139,13 +141,13 @@ class UpahSupir extends MyModel
             DB::raw("(case when upahsupir.parent_id=0 then null else upahsupir.parent_id end) as parent_id"),
             'parent.keterangan as parent',
             DB::raw("(case when upahsupir.tarif_id=0 then null else upahsupir.tarif_id end) as tarif_id"),
-            'tarif.tujuan as tarif',
+            DB::raw("TRIM(tarif.tujuan) as tarif"),
             'upahsupir.kotadari_id',
-            'kotadari.keterangan as kotadari',
+            DB::raw("TRIM(kotadari.keterangan) as kotadari"),
             'upahsupir.keterangan',
             'upahsupir.penyesuaian',
             'upahsupir.kotasampai_id',
-            'kotasampai.keterangan as kotasampai',
+            DB::raw("TRIM(kotasampai.keterangan) as kotasampai"),
             'upahsupir.jarak',
             'zona.keterangan as zona',
             DB::raw("(case when upahsupir.zona_id=0 then null else upahsupir.zona_id end) as zona_id"),

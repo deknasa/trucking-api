@@ -931,6 +931,8 @@ class SuratPengantar extends MyModel
 
             $suratPengantar->statusedittujuan = $statusTidakBolehEditTujuan->id;
         } else {
+            $orderanTrucking = OrderanTrucking::where('nobukti', $data['jobtrucking'])->first();
+
             $suratPengantar->jobtrucking = $data['jobtrucking'];
             $suratPengantar->tglbukti = date('Y-m-d', strtotime($data['tglbukti']));
             $suratPengantar->pelanggan_id = $data['pelanggan_id'];
@@ -957,7 +959,12 @@ class SuratPengantar extends MyModel
             $suratPengantar->tolsupir = $upahsupirRincian->nominaltol;
             $suratPengantar->jarak = $upahsupir->jarak;
             $suratPengantar->liter = $upahsupirRincian->liter ?? 0;
-
+            $suratPengantar->nocont = $orderanTrucking->nocont ?? '';
+            $suratPengantar->nocont2 = $orderanTrucking->nocont2 ?? '';
+            $suratPengantar->noseal = $orderanTrucking->noseal ?? '';
+            $suratPengantar->noseal2 = $orderanTrucking->noseal2 ?? '';
+            $suratPengantar->nojob = $orderanTrucking->nojobemkl ?? '';
+            $suratPengantar->nojob2 = $orderanTrucking->nojobemkl2 ?? '';
             $suratPengantar->totalomset = $data['totalomset'];
 
             $suratPengantar->tglsp = date('Y-m-d', strtotime($data['tglbukti']));

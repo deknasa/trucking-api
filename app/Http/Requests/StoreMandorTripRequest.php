@@ -6,6 +6,7 @@ use App\Http\Controllers\Api\ErrorController;
 use App\Models\AbsensiSupirDetail;
 use App\Models\Parameter;
 use App\Models\TarifRincian;
+use App\Models\UpahSupirRincian;
 use App\Rules\cekUpahRitasiDariInputTrip;
 use App\Rules\cekUpahRitasiInputTrip;
 use App\Rules\cekUpahRitasiKeInputTrip;
@@ -52,47 +53,50 @@ class StoreMandorTripRequest extends FormRequest
     {
         // START VALIDASI RITASI
         $ritasiRule = [];
-        $jenisRitasi = false;
-        foreach (request()->jenisritasi as $value) {
-            if ($value != null) {
-                $jenisRitasi = true;
-                break;
-            }
-        }
-        $ritasiDari = false;
-        foreach (request()->ritasidari as $value) {
-            if ($value != null) {
-                $ritasiDari = true;
-                break;
-            }
-        }
-        $ritasiKe = false;
-        foreach (request()->ritasike as $value) {
-            if ($value != null) {
-                $ritasiKe = true;
-                break;
-            }
-        }
-        if ($jenisRitasi || $ritasiDari || $ritasiKe) {
-            $parameter = new Parameter();
-            $data = $parameter->getcombodata('STATUS RITASI', 'STATUS RITASI');
-            $data = json_decode($data, true);
-            foreach ($data as $item) {
-                $status[] = $item['id'];
-            }
-            $ritasiRule = [
-                'jenisritasi.*' => ['required'],
-                'jenisritasi_id.*' => [new JenisRitasiInputTrip()],
-                'ritasidari.*' => ['required'],
-                'ritasike.*' => ['required']
-            ];
-        }
         $ruleCekUpahRitasi = [];
-        if ($jenisRitasi && $ritasiDari && $ritasiKe && request()->container_id != 0) {
-            $ruleCekUpahRitasi = [
-                'ritasidari.*' => new cekUpahRitasiDariInputTrip(),
-                'ritasike.*' => new cekUpahRitasiKeInputTrip()
-            ];
+        if (request()->ritasidari != null && request()->ritasike != null) {
+
+            $jenisRitasi = false;
+            foreach (request()->jenisritasi as $value) {
+                if ($value != null) {
+                    $jenisRitasi = true;
+                    break;
+                }
+            }
+            $ritasiDari = false;
+            foreach (request()->ritasidari as $value) {
+                if ($value != null) {
+                    $ritasiDari = true;
+                    break;
+                }
+            }
+            $ritasiKe = false;
+            foreach (request()->ritasike as $value) {
+                if ($value != null) {
+                    $ritasiKe = true;
+                    break;
+                }
+            }
+            if ($jenisRitasi || $ritasiDari || $ritasiKe) {
+                $parameter = new Parameter();
+                $data = $parameter->getcombodata('STATUS RITASI', 'STATUS RITASI');
+                $data = json_decode($data, true);
+                foreach ($data as $item) {
+                    $status[] = $item['id'];
+                }
+                $ritasiRule = [
+                    'jenisritasi.*' => ['required'],
+                    'jenisritasi_id.*' => [new JenisRitasiInputTrip()],
+                    'ritasidari.*' => ['required'],
+                    'ritasike.*' => ['required']
+                ];
+            }
+            if ($jenisRitasi && $ritasiDari && $ritasiKe && request()->container_id != 0) {
+                $ruleCekUpahRitasi = [
+                    'ritasidari.*' => new cekUpahRitasiDariInputTrip(),
+                    'ritasike.*' => new cekUpahRitasiKeInputTrip()
+                ];
+            }
         }
         // END VALIDASI RITASI
         $agen_id = $this->agen_id;
@@ -143,15 +147,17 @@ class StoreMandorTripRequest extends FormRequest
             ];
         }
 
+        $validasiUpah = (new UpahSupirRincian())->cekValidasiInputTripUpah(request()->statuscontainer_id, request()->jenisorder_id, request()->upah_id);
+
         $dari_id = $this->dari_id;
         $rulesDari_id = [];
         if ($dari_id != null) {
             $rulesDari_id = [
-                'dari_id' => ['required', 'numeric', 'min:1', new ExistKota()]
+                'dari_id' => ['required', 'numeric', 'min:1', new ExistKota(), Rule::in($validasiUpah->kotadari_id)]
             ];
         } else if ($dari_id == null && $this->dari != '') {
             $rulesDari_id = [
-                'dari_id' => ['required', 'numeric', 'min:1', new ExistKota()]
+                'dari_id' => ['required', 'numeric', 'min:1', new ExistKota(), Rule::in($validasiUpah->kotadari_id)]
             ];
         }
 
@@ -159,11 +165,11 @@ class StoreMandorTripRequest extends FormRequest
         $rulesSampai_id = [];
         if ($sampai_id != null) {
             $rulesSampai_id = [
-                'sampai_id' => ['required', 'numeric', 'min:1', new ExistKota()]
+                'sampai_id' => ['required', 'numeric', 'min:1', new ExistKota(), Rule::in($validasiUpah->kotasampai_id)]
             ];
         } else if ($sampai_id == null && $this->sampai != '') {
             $rulesSampai_id = [
-                'sampai_id' => ['required', 'numeric', 'min:1', new ExistKota()]
+                'sampai_id' => ['required', 'numeric', 'min:1', new ExistKota(), Rule::in($validasiUpah->kotasampai_id)]
             ];
         }
 
@@ -233,17 +239,18 @@ class StoreMandorTripRequest extends FormRequest
             "agen" => "required",
             "tarifrincian" => "required",
             "container" => "required",
-            "dari" => "required",
+            "dari" => ["required"],
             "gandengan" => "required",
             "gudang" => "required",
             "jenisorder" => "required",
             "pelanggan" => "required",
-            "sampai" => "required",
+            "sampai" => ["required"],
             "statuscontainer" => "required",
             "statusgudangsama" => "required",
             "statuslongtrip" => "required",
+            "lokasibongkarmuat" => "required",
             "trado" => "required",
-            "upah" => ["required",new ExistNominalUpahSupir()],
+            "upah" => ["required", new ExistNominalUpahSupir()],
         ];
 
         $rules = array_merge(

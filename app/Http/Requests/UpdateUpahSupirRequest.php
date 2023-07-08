@@ -72,17 +72,9 @@ class UpdateUpahSupirRequest extends FormRequest
         $tarif_id = $this->tarif_id;
         $rulesTarif_id = [];
         if ($tarif_id != null) {
-            if ($tarif_id == 0) {
                 $rulesTarif_id = [
                     'tarif_id' => ['required', 'numeric', 'min:1',Rule::in($dataUpahSupir->tarif_id), new ExistTarif()]
                 ];
-            } else {
-                if ($this->tarif == '') {
-                    $rulesTarif_id = [
-                        'tarif' => ['required',Rule::in($dataUpahSupir->tarif)]
-                    ];
-                }
-            }
         } else if ($tarif_id == null && $this->tarif != '') {
             $rulesTarif_id = [
                 'tarif_id' => ['required', 'numeric', 'min:1',Rule::in($dataUpahSupir->tarif_id), new ExistTarif()]
@@ -145,6 +137,7 @@ class UpdateUpahSupirRequest extends FormRequest
         $rules =  [
             'kotadari' => ['required',Rule::in($dataUpahSupir->kotadari)],
             'kotasampai' => ['required',Rule::in($dataUpahSupir->kotasampai)],
+            'tarif' => ['required',Rule::in($dataUpahSupir->tarif)],
             'penyesuaian' => [Rule::in($dataUpahSupir->penyesuaian),new UniqueUpahSupirSampaiEdit()],
             'jarak' => ['required','numeric','gt:0','max:'. (new ParameterController)->getparamid('BATAS KM UPAH SUPIR','BATAS KM UPAH SUPIR')->text],
             'statusaktif' => ['required', Rule::in($statusAktif)],

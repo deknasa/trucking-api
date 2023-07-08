@@ -159,7 +159,7 @@ class PiutangHeader extends MyModel
             ->from(
                 DB::raw("piutangheader with (readuncommitted)")
             )
-            ->select(DB::raw("row_number() Over(Order By piutangheader.id) as id,piutangheader.nobukti as nobukti,piutangheader.tglbukti, piutangheader.invoice_nobukti, piutangheader.nominal, piutangheader.agen_id," . $temp . ".sisa, $temp.sisa as sisaawal"))
+            ->select(DB::raw("row_number() Over(Order By piutangheader.id) as id,piutangheader.nobukti as nobukti,piutangheader.tglbukti as tglbukti_piutang, piutangheader.invoice_nobukti, piutangheader.nominal, piutangheader.agen_id," . $temp . ".sisa, $temp.sisa as sisaawal"))
             ->leftJoin(DB::raw("$temp with (readuncommitted)"), 'piutangheader.agen_id', $temp . ".agen_id")
             ->whereRaw("piutangheader.agen_id = $id")
             ->whereRaw("piutangheader.nobukti = $temp.nobukti")

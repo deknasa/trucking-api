@@ -111,16 +111,18 @@ class Kota extends MyModel
         $this->setRequestParameters();
 
         $getJudul = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))
-        ->select('text')
-        ->where('grp', 'JUDULAN LAPORAN')
-        ->where('subgrp', 'JUDULAN LAPORAN')
-        ->first();
+            ->select('text')
+            ->where('grp', 'JUDULAN LAPORAN')
+            ->where('subgrp', 'JUDULAN LAPORAN')
+            ->first();
 
 
         $aktif = request()->aktif ?? '';
         $kotaDariId = request()->kotadari_id ?? '';
         $kotaSampaiId = request()->kotasampai_id ?? '';
         $pilihKotaId = request()->pilihkota_id ?? '';
+        $dataRitasiId = request()->dataritasi_id ?? '';
+        $ritasiDariKe = request()->ritasidarike ?? '';
 
         $query = DB::table($this->table)->from(DB::raw("$this->table with (readuncommitted)"))
             ->select(
@@ -135,11 +137,11 @@ class Kota extends MyModel
                 DB::raw("'Laporan Kota' as judulLaporan"),
                 DB::raw("'" . $getJudul->text . "' as judul"),
                 DB::raw("'Tgl Cetak :'+format(getdate(),'dd-MM-yyyy HH:mm:ss')as tglcetak"),
-                DB::raw(" 'User :".auth('api')->user()->name."' as usercetak")
+                DB::raw(" 'User :" . auth('api')->user()->name . "' as usercetak")
             )
             ->leftJoin(DB::raw("parameter with (readuncommitted)"), 'kota.statusaktif', '=', 'parameter.id')
             ->leftJoin(DB::raw("zona with (readuncommitted)"), 'kota.zona_id', '=', 'zona.id');
-            
+
         $this->filter($query);
         if ($aktif == 'AKTIF') {
             $statusaktif = Parameter::from(
@@ -153,9 +155,26 @@ class Kota extends MyModel
         }
         if ($kotaDariId > 0 && $kotaSampaiId > 0) {
             $query->whereRaw("kota.id in ($kotaDariId,$kotaSampaiId)");
-        } 
+        }
         if ($pilihKotaId > 0) {
             $query->whereRaw("kota.id != $pilihKotaId");
+        }
+        if ($dataRitasiId != '') {
+            $ritasiPulang = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS RITASI')->where('text', 'PULANG RANGKA')->first();
+            $ritasiTurun = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS RITASI')->where('text', 'TURUN RANGKA')->first();
+            if ($dataRitasiId == $ritasiPulang->id) {
+                if($ritasiDariKe == 'dari') {
+                    $query->where("kodekota",'BELAWAN RANGKA')->first();
+                }else{
+                    $query->where("kodekota",'KIM (KANDANG)')->first();
+                }
+            }else if($dataRitasiId == $ritasiTurun->id){
+                if($ritasiDariKe == 'dari') {
+                    $query->where("kodekota",'KIM (KANDANG)')->first();
+                }else{
+                    $query->where("kodekota",'BELAWAN RANGKA')->first();
+                }
+            }
         }
 
         $this->totalRows = $query->count();
@@ -278,11 +297,10 @@ class Kota extends MyModel
                         } else if ($filters['field'] == 'zona_id') {
                             $query = $query->where('zona.zona', 'LIKE', "%$filters[data]%");
                         } else if ($filters['field'] == 'created_at' || $filters['field'] == 'updated_at') {
-                            $query = $query->whereRaw("format(".$this->table . "." . $filters['field'].", 'dd-MM-yyyy HH:mm:ss') LIKE '%$filters[data]%'");
+                            $query = $query->whereRaw("format(" . $this->table . "." . $filters['field'] . ", 'dd-MM-yyyy HH:mm:ss') LIKE '%$filters[data]%'");
                         } else {
                             // $query = $query->where('kota.' . $filters['field'], 'LIKE', "%$filters[data]%");
                             $query = $query->whereRaw('kota' . ".[" .  $filters['field'] . "] LIKE '%" . escapeLike($filters['data']) . "%' escape '|'");
-
                         }
                     }
 
@@ -293,13 +311,12 @@ class Kota extends MyModel
                             if ($filters['field'] == 'statusaktif') {
                                 $query = $query->orWhere('parameter.text', '=', "$filters[data]");
                             } else if ($filters['field'] == 'created_at' || $filters['field'] == 'updated_at') {
-                                $query = $query->orWhereRaw("format(".$this->table . "." . $filters['field'].", 'dd-MM-yyyy HH:mm:ss') LIKE '%$filters[data]%'");
+                                $query = $query->orWhereRaw("format(" . $this->table . "." . $filters['field'] . ", 'dd-MM-yyyy HH:mm:ss') LIKE '%$filters[data]%'");
                             } else if ($filters['field'] == 'zona_id') {
                                 $query = $query->orWhere('zona.zona', 'LIKE', "%$filters[data]%");
                             } else {
                                 // $query = $query->orWhere('kota.' . $filters['field'], 'LIKE', "%$filters[data]%");
                                 $query = $query->OrwhereRaw('kota' . ".[" .  $filters['field'] . "] LIKE '%" . escapeLike($filters['data']) . "%' escape '|'");
-
                             }
                         }
                     });
@@ -373,7 +390,7 @@ class Kota extends MyModel
 
         return $kota;
     }
-    
+
     public function processDestroy($id): Kota
     {
         $kota = new Kota();
@@ -391,6 +408,4 @@ class Kota extends MyModel
 
         return $kota;
     }
-
-
 }

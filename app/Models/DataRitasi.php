@@ -33,6 +33,7 @@ class DataRitasi extends MyModel
         $query = DB::table($this->table)->from(DB::raw("$this->table with (readuncommitted)"))
             ->select(
                 'dataritasi.id',
+                'dataritasi.statusritasi as statusritasi_id',
                 'statusritasi.text as statusritasi',
                 'dataritasi.nominal',
                 'parameter.memo as statusaktif',
