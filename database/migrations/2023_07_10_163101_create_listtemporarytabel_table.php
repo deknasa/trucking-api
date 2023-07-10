@@ -4,7 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-class CreateApprovalBukaTanggalSuratPengantarsTable extends Migration
+class CreateListtemporarytabelTable extends Migration
 {
     /**
      * Run the migrations.
@@ -13,8 +13,11 @@ class CreateApprovalBukaTanggalSuratPengantarsTable extends Migration
      */
     public function up()
     {
-        Schema::create('approval_buka_tanggal_surat_pengantars', function (Blueprint $table) {
+        Schema::create('listtemporarytabel', function (Blueprint $table) {
             $table->id();
+            $table->string('class', 50)->nullable();
+            $table->string('namatabel', 50)->nullable();
+            $table->string('modifiedby', 50)->nullable();
             $table->timestamps();
         });
     }
@@ -26,6 +29,6 @@ class CreateApprovalBukaTanggalSuratPengantarsTable extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('approval_buka_tanggal_surat_pengantars');
+        Schema::dropIfExists('listtemporarytabel');
     }
 }
