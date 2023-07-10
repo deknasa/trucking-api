@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
+use Illuminate\Validation\ValidationException;
 
 class PengeluaranStokDetail extends MyModel
 {
@@ -205,7 +206,7 @@ class PengeluaranStokDetail extends MyModel
                 $dari = $this->persediaanDari($data['stok_id'],'gudang_id', $gudangkantor->text,$data['qty']);
             }
             if (!$dari) {
-                throw new \Exception("qty tidak cukup");                
+                throw ValidationException::withMessages(['qty' => 'qty tidak cukup']);
             }
             // if (($pengeluaranStokHeader->pengeluaranstok_id != $spk->text) || ($pengeluaranStokHeader->pengeluaranstok_id != $gst->text)) {
             //     if (!$reuse) {
@@ -326,7 +327,7 @@ class PengeluaranStokDetail extends MyModel
             
             
             if (!$dari) {
-                throw new \Exception("qty tidak cukup return");
+                throw ValidationException::withMessages(['qty' => 'qty tidak cukup return']);
             }
 
             if (($pengeluaranStokHeader->pengeluaranstok_id == $spk->text)|| ($pengeluaranStokHeader->pengeluaranstok_id == $gst->text)) {

@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 use App\Http\Controllers\Api\ErrorController;
+use Illuminate\Validation\ValidationException;
 
 class PengeluaranStokDetailFifo extends MyModel
 {
@@ -93,7 +94,8 @@ class PengeluaranStokDetailFifo extends MyModel
 
            
             if ( $data['qty'] > $qtyin) {
-                throw new \Exception("QTY " .app(ErrorController::class)->geterror('SMIN')->keterangan);
+                // throw new \Exception("QTY " .app(ErrorController::class)->geterror('SMIN')->keterangan);
+                throw ValidationException::withMessages(['qty' => "QTY " .app(ErrorController::class)->geterror('SMIN')->keterangan]);
             }
             
 
