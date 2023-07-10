@@ -606,7 +606,8 @@ class JurnalUmumHeader extends MyModel
                 'jurnalumumheader.postingdari',
                 'c.nominaldebet as nominaldebet',
                 'c.nominalkredit as nominalkredit',
-                'jurnalumumheader.statuscetak',
+                'statuscetak.memo as statuscetak',
+                "statuscetak.id as  statuscetak_id",
                 'jurnalumumheader.jumlahcetak',
                 DB::raw("'Laporan Jurnal Umum' as judulLaporan"),
                 DB::raw("'" . $getJudul->text . "' as judul"),
@@ -614,6 +615,7 @@ class JurnalUmumHeader extends MyModel
                 DB::raw(" 'User :" . auth('api')->user()->name . "' as usercetak")
             )
             ->where("$this->table.id", $id)
+            ->leftJoin(DB::raw("parameter as statuscetak with (readuncommitted)"), 'jurnalumumheader.statuscetak', 'statuscetak.id')
             ->leftjoin(DB::raw($tempsummary . " as c"), 'jurnalumumheader.nobukti', 'c.nobukti');
 
         $data = $query->first();

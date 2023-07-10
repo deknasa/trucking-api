@@ -366,6 +366,43 @@ class PemutihanSupirController extends Controller
         ]);
     }
 
+    public function printReport($id)
+    {
+        DB::beginTransaction();
+
+        try {
+            $pemutihanSupir = PemutihanSupir::findOrFail($id);
+            $statusSudahCetak = Parameter::where('grp', '=', 'STATUSCETAK')->where('text', '=', 'CETAK')->first();
+            $statusBelumCetak = Parameter::where('grp', '=', 'STATUSCETAK')->where('text', '=', 'BELUM CETAK')->first();
+
+            if ($pemutihanSupir->statuscetak != $statusSudahCetak->id) {
+                $pemutihanSupir->statuscetak = $statusSudahCetak->id;
+                $pemutihanSupir->tglbukacetak = date('Y-m-d H:i:s');
+                $pemutihanSupir->userbukacetak = auth('api')->user()->name;
+                $pemutihanSupir->jumlahcetak = $pemutihanSupir->jumlahcetak + 1;
+                if ($pemutihanSupir->save()) {
+                    $logTrail = [
+                        'namatabel' => strtoupper($pemutihanSupir->getTable()),
+                        'postingdari' => 'PRINT PEMUTIHAN SUPIR',
+                        'idtrans' => $pemutihanSupir->id,
+                        'nobuktitrans' => $pemutihanSupir->id,
+                        'aksi' => 'PRINT',
+                        'datajson' => $pemutihanSupir->toArray(),
+                        'modifiedby' => $pemutihanSupir->modifiedby
+                    ];
+                    $validatedLogTrail = new StoreLogTrailRequest($logTrail);
+                    $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
+                    DB::commit();
+                }
+            }
+            return response([
+                'message' => 'Berhasil'
+            ]);
+        } catch (\Throwable $th) {
+            throw $th;
+        }
+    }
+
     /**
      * @ClassName 
      */

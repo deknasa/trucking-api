@@ -1064,6 +1064,7 @@ class PelunasanPiutangHeader extends MyModel
                 'pelunasanpiutangheader.notakredit_nobukti',
                 'pelunasanpiutangheader.jumlahcetak',
                 'statuscetak.memo as statuscetak',
+                "statuscetak.id as  statuscetak_id",
                 'bank.namabank as bank_id',
                 'agen.namaagen as agen_id',
                 'alatbayar.namaalatbayar as alatbayar_id',

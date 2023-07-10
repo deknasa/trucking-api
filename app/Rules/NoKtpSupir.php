@@ -27,12 +27,16 @@ class NoKtpSupir implements Rule
      */
     public function passes($attribute, $value)
     {
-        $namasupir = request()->namasupir;
-        $dataSupir = (new Supir())->validationSupirResign($namasupir);
+        $noktp = request()->noktp;
+        $dataSupir = (new Supir())->validationSupirResign($noktp);
+       
         if($dataSupir != null){
             return true;
         }else{
-            return false;
+            $dataBolehInput = (new Supir())->validasiBolehInput($noktp);
+            if($dataBolehInput != null){
+                return true;
+            }
         }
     }
 

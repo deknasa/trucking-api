@@ -37,6 +37,7 @@ class PemutihanSupir extends MyModel
                 'bank.namabank as bank',
                 'pemutihansupirheader.penerimaan_nobukti',
                 'akunpusat.keterangancoa as coa',
+                'statuscetak.memo as statuscetak',
                 'pemutihansupirheader.pengeluaransupir',
                 'pemutihansupirheader.penerimaansupir',
                 'pemutihansupirheader.modifiedby',
@@ -46,6 +47,7 @@ class PemutihanSupir extends MyModel
             )
             ->whereBetween($this->table . '.tglbukti', [date('Y-m-d', strtotime(request()->tgldari)), date('Y-m-d', strtotime(request()->tglsampai))])
             ->leftJoin(DB::raw("supir with (readuncommitted)"), 'pemutihansupirheader.supir_id', 'supir.id')
+            ->leftJoin(DB::raw("parameter as statuscetak with (readuncommitted)"), 'pemutihansupirheader.statuscetak', 'statuscetak.id')
             ->leftJoin(DB::raw("bank with (readuncommitted)"), 'pemutihansupirheader.bank_id', 'bank.id')
             ->leftJoin(DB::raw("akunpusat with (readuncommitted)"), 'pemutihansupirheader.coa', 'akunpusat.coa');
 
@@ -590,7 +592,9 @@ class PemutihanSupir extends MyModel
             switch ($this->params['filters']['groupOp']) {
                 case "AND":
                     foreach ($this->params['filters']['rules'] as $index => $filters) {
-                        if ($filters['field'] == 'supir') {
+                        if ($filters['field'] == 'statuscetak') {
+                            $query = $query->where('statuscetak.text', '=', "$filters[data]");
+                        } else if ($filters['field'] == 'supir') {
                             $query = $query->where('supir.namasupir', 'LIKE', "%$filters[data]%");
                         } else if ($filters['field'] == 'bank') {
                             $query = $query->where('bank.namabank', 'LIKE', "%$filters[data]%");
@@ -617,7 +621,9 @@ class PemutihanSupir extends MyModel
                     break;
                 case "OR":
                     foreach ($this->params['filters']['rules'] as $index => $filters) {
-                        if ($filters['field'] == 'supir') {
+                        if ($filters['field'] == 'statuscetak') {
+                            $query = $query->orWhere('statuscetak.text', '=', "$filters[data]");
+                        } else if ($filters['field'] == 'supir') {
                             $query = $query->orWhere('supir.namasupir', 'LIKE', "%$filters[data]%");
                         } else if ($filters['field'] == 'bank') {
                             $query = $query->orWhere('bank.namabank', 'LIKE', "%$filters[data]%");
@@ -733,13 +739,16 @@ class PemutihanSupir extends MyModel
                 'akunpusat.keterangancoa as coa',
                 'pemutihansupirheader.pengeluaransupir',
                 'pemutihansupirheader.penerimaansupir',
-                
+                'pemutihansupirheader.jumlahcetak',
+                'statuscetak.memo as statuscetak',
+                "statuscetak.id as  statuscetak_id",
                 DB::raw("'Laporan Pemutihan Supir' as judulLaporan"),
                 DB::raw("'" . $getJudul->text . "' as judul"),
                 DB::raw("'Tgl Cetak:'+format(getdate(),'dd-MM-yyyy HH:mm:ss')as tglcetak"),
                 DB::raw(" 'User :".auth('api')->user()->name."' as usercetak")
             )
             ->where("$this->table.id", $id)
+            ->leftJoin(DB::raw("parameter as statuscetak with (readuncommitted)"), 'pemutihansupirheader.statuscetak', 'statuscetak.id')
             ->leftJoin(DB::raw("supir with (readuncommitted)"), 'pemutihansupirheader.supir_id', 'supir.id')
             ->leftJoin(DB::raw("bank with (readuncommitted)"), 'pemutihansupirheader.bank_id', 'bank.id')
             ->leftJoin(DB::raw("akunpusat with (readuncommitted)"), 'pemutihansupirheader.coa', 'akunpusat.coa');

@@ -78,7 +78,7 @@ class AbsensiSupirHeader extends MyModel
                 'absensisupirheader.jumlahcetak',
                 'absensisupirheader.modifiedby',
                 'absensisupirheader.created_at',
-                'absensisupirheader.updated_at'
+                'absensisupirheader.updated_at',
             )
             // request()->tgldari ?? date('Y-m-d',strtotime('today'))
             ->leftJoin(DB::raw("parameter as statuscetak with (readuncommitted)"), 'absensisupirheader.statuscetak', 'statuscetak.id')
@@ -403,10 +403,7 @@ class AbsensiSupirHeader extends MyModel
                 "statuscetak.id as  statuscetak_id",
                 'statusapprovaleditabsensi.memo as statusapprovaleditabsensi',
                 'absensisupirheader.userbukacetak',
-                db::raw(' CASE
-                WHEN absensisupirheader.jumlahcetak = 0 THEN NULL
-                ELSE absensisupirheader.jumlahcetak
-              END AS jumlahcetak'),
+                'absensisupirheader.jumlahcetak',
                 DB::raw("(case when absensisupirheader.nominal IS NULL then 0 else absensisupirheader.nominal end) as nominal"),
                 DB::raw("'Laporan Absensi Supir' as judulLaporan"),
                 DB::raw("'" . $getJudul->text . "' as judul"),
