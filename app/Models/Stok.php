@@ -103,9 +103,9 @@ class Stok extends MyModel
             'stok.namaterpusat',
             'stok.modifiedby',
             'jenistrado.keterangan as jenistrado',
-            'kelompok.keterangan as kelompok',
-            'subkelompok.keterangan as subkelompok',
-            'kategori.keterangan as kategori',
+            'kelompok.kodekelompok as kelompok',
+            'subkelompok.kodesubkelompok as subkelompok',
+            'kategori.kodekategori as kategori',
             'merk.keterangan as merk',
             'stok.created_at',
             'stok.updated_at',
@@ -125,6 +125,7 @@ class Stok extends MyModel
 
 
         $this->filter($query);
+        // dd($query->toSql());
         if ($aktif == 'AKTIF') {
             $statusaktif = Parameter::from(
                 DB::raw("parameter with (readuncommitted)")
@@ -234,10 +235,11 @@ class Stok extends MyModel
             'stok.subkelompok_id',
             'stok.kategori_id',
             'stok.merk_id',
+            'stok.statusban',
             'jenistrado.keterangan as jenistrado',
-            'kelompok.keterangan as kelompok',
-            'subkelompok.keterangan as subkelompok',
-            'kategori.keterangan as kategori',
+            'kelompok.kodekelompok as kelompok',
+            'subkelompok.kodesubkelompok as subkelompok',
+            'kategori.kodekategori as kategori',
             'merk.keterangan as merk',
         )
             ->leftJoin('jenistrado', 'stok.jenistrado_id', 'jenistrado.id')
@@ -278,23 +280,29 @@ class Stok extends MyModel
         $this->setRequestParameters();
         $query = DB::table($modelTable);
         $query = $this->select(
-            'id',
-            'jenistrado_id',
-            'kelompok_id',
-            'subkelompok_id',
-            'kategori_id',
-            'merk_id',
-            'namastok',
-            'statusaktif',
-            'qtymin',
-            'qtymax',
-            'keterangan',
-            'gambar',
-            'namaterpusat',
-            'modifiedby',
-            'created_at',
-            'updated_at'
-        );
+            'stok.id',
+            'stok.jenistrado_id',
+            'stok.kelompok_id',
+            'stok.subkelompok_id',
+            'stok.kategori_id',
+            'stok.merk_id',
+            'stok.namastok',
+            'stok.statusaktif',
+            'stok.qtymin',
+            'stok.qtymax',
+            'stok.keterangan',
+            'stok.gambar',
+            'stok.namaterpusat',
+            'stok.modifiedby',
+            'stok.created_at',
+            'stok.updated_at'
+        )
+        ->leftJoin('jenistrado', 'stok.jenistrado_id', 'jenistrado.id')
+        ->leftJoin('kelompok', 'stok.kelompok_id', 'kelompok.id')
+        ->leftJoin('subkelompok', 'stok.subkelompok_id', 'subkelompok.id')
+        ->leftJoin('kategori', 'stok.kategori_id', 'kategori.id')
+        ->leftJoin('parameter', 'stok.statusaktif', 'parameter.id')
+        ->leftJoin('merk', 'stok.merk_id', 'merk.id');
         $query = $this->sort($query);
         $models = $this->filter($query);
         DB::table($temp)->insertUsing([
@@ -319,16 +327,49 @@ class Stok extends MyModel
         return  $temp;
     }
 
+
+    public function selectColumns($query)
+    {
+       
+        return $query->select(
+            DB::raw(
+                "$this->table.id,
+                $this->table.namastok,
+                parameter.memo as statusaktif,
+                $this->table.qtymin,
+                $this->table.qtymax,
+                $this->table.keterangan,
+                $this->table.gambar,
+                $this->table.namaterpusat,
+                $this->table.modifiedby,
+                jenistrado.keterangan as jenistrado,
+                kelompok.kodekelompok as kelompok,
+                subkelompok.kodesubkelompok as subkelompok,
+                kategori.kodekategori as kategori,
+                merk.keterangan as merk,
+                $this->table.created_at,
+                $this->table.updated_at"
+            )
+        )
+        ->leftJoin('jenistrado', 'stok.jenistrado_id', 'jenistrado.id')
+        ->leftJoin('kelompok', 'stok.kelompok_id', 'kelompok.id')
+        ->leftJoin('subkelompok', 'stok.subkelompok_id', 'subkelompok.id')
+        ->leftJoin('kategori', 'stok.kategori_id', 'kategori.id')
+        ->leftJoin('parameter', 'stok.statusaktif', 'parameter.id')
+        ->leftJoin('merk', 'stok.merk_id', 'merk.id');
+    }
+
+    
     public function sort($query)
     {
         if ($this->params['sortIndex'] == 'jenistrado') {
             return $query->orderBy('jenistrado.keterangan', $this->params['sortOrder']);
         } else if ($this->params['sortIndex'] == 'kelompok') {
-            return $query->orderBy('kelompok.keterangan', $this->params['sortOrder']);
+            return $query->orderBy('kelompok.kodekelompok', $this->params['sortOrder']);
         } else if ($this->params['sortIndex'] == 'subkelompok') {
-            return $query->orderBy('subkelompok.keterangan', $this->params['sortOrder']);
+            return $query->orderBy('subkelompok.kodesubkelompok', $this->params['sortOrder']);
         } else if ($this->params['sortIndex'] == 'kategori') {
-            return $query->orderBy('kategori.keterangan', $this->params['sortOrder']);
+            return $query->orderBy('kategori.kodekategori', $this->params['sortOrder']);
         } else if ($this->params['sortIndex'] == 'merk') {
             return $query->orderBy('merk.keterangan', $this->params['sortOrder']);
         } else {
@@ -343,15 +384,15 @@ class Stok extends MyModel
                 case "AND":
                     foreach ($this->params['filters']['rules'] as $index => $filters) {
                         if ($filters['field'] == 'jenistrado') {
-                            $query = $query->where('jenistrado.keterangan', 'LIKE', "%$filters[data]%");
+                            $query = $query->where('jenistrado.keterangan', 'LIKE', "'%$filters[data]%'");
                         } else if ($filters['field'] == 'kelompok') {
-                            $query = $query->where('kelompok.keterangan', 'LIKE', "%$filters[data]%");
+                            $query = $query->where('kelompok.kodekelompok', 'LIKE', "'%$filters[data]%'");
                         } else if ($filters['field'] == 'subkelompok') {
-                            $query = $query->where('subkelompok.keterangan', 'LIKE', "%$filters[data]%");
+                            $query = $query->where('subkelompok.kodesubkelompok', 'LIKE', "'%$filters[data]%'");
                         } else if ($filters['field'] == 'kategori') {
-                            $query = $query->where('kategori.keterangan', 'LIKE', "%$filters[data]%");
+                            $query = $query->where('kategori.kodekategori', 'LIKE', "'%$filters[data]%'");
                         } else if ($filters['field'] == 'merk') {
-                            $query = $query->where('merk.keterangan', 'LIKE', "%$filters[data]%");
+                            $query = $query->where('merk.keterangan', 'LIKE', "'%$filters[data]%'");
                         } else if ($filters['field'] == 'created_at' || $filters['field'] == 'updated_at') {
                             $query = $query->whereRaw("format(" . $this->table . "." . $filters['field'] . ", 'dd-MM-yyyy HH:mm:ss') LIKE '%$filters[data]%'");
                         } else {
@@ -365,15 +406,15 @@ class Stok extends MyModel
                     $query->where(function ($query) {
                         foreach ($this->params['filters']['rules'] as $index => $filters) {
                             if ($filters['field'] == 'jenistrado') {
-                                $query = $query->orWhere('jenistrado.keterangan', 'LIKE', "%$filters[data]%");
+                                $query = $query->orWhere('jenistrado.keterangan', 'LIKE', "'%$filters[data]%'");
                             } else if ($filters['field'] == 'kelompok') {
-                                $query = $query->orWhere('kelompok.keterangan', 'LIKE', "%$filters[data]%");
+                                $query = $query->orWhere('kelompok.kodekelompok', 'LIKE', "'%$filters[data]%'");
                             } else if ($filters['field'] == 'subkelompok') {
-                                $query = $query->orWhere('subkelompok.keterangan', 'LIKE', "%$filters[data]%");
+                                $query = $query->orWhere('subkelompok.kodesubkelompok', 'LIKE', "'%$filters[data]%'");
                             } else if ($filters['field'] == 'kategori') {
-                                $query = $query->orWhere('kategori.keterangan', 'LIKE', "%$filters[data]%");
+                                $query = $query->orWhere('kategori.kodekategori', 'LIKE', "'%$filters[data]%'");
                             } else if ($filters['field'] == 'merk') {
-                                $query = $query->orWhere('merk.keterangan', 'LIKE', "%$filters[data]%");
+                                $query = $query->orWhere('merk.keterangan', 'LIKE', "'%$filters[data]%'");
                             } else if ($filters['field'] == 'created_at' || $filters['field'] == 'updated_at') {
                                 $query = $query->orWhereRaw("format(" . $this->table . "." . $filters['field'] . ", 'dd-MM-yyyy HH:mm:ss') LIKE '%$filters[data]%'");
                             } else {
@@ -423,8 +464,7 @@ class Stok extends MyModel
         $stok->hargabelimin = $data['hargabelimin'];
         $stok->hargabelimax = $data['hargabelimax'];
         $stok->modifiedby = auth('api')->user()->name;
-
-        if (array_key_exists('gambar', $data)) {
+        if ($data['gambar']) {
             $stok->gambar = $this->storeFiles($data['gambar'], 'stok');
         } else {
             $stok->gambar = '';

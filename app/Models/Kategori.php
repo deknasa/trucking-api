@@ -84,7 +84,9 @@ class Kategori extends MyModel
             ->leftJoin(DB::raw("parameter with (readuncommitted)"), 'kategori.statusaktif', '=', 'parameter.id')
             ->leftJoin(DB::raw("subkelompok AS p with (readuncommitted)"), 'kategori.subkelompok_id', '=', 'p.id');
 
-
+            if (request()->subkelompok) {
+                $query->where('kategori.subkelompok_id','=',request()->subkelompok);
+            }
 
         $this->filter($query);
         if ($aktif == 'AKTIF') {

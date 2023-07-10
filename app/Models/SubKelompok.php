@@ -102,6 +102,10 @@ class SubKelompok extends MyModel
             ->leftJoin('kelompok', 'subkelompok.kelompok_id', '=', 'kelompok.id')
             ->leftJoin('parameter', 'subkelompok.statusaktif', '=', 'parameter.id');
 
+        if (request()->kelompok) {
+            $query->where('subkelompok.kelompok_id','=',request()->kelompok);
+        }
+            
         $this->totalRows = $query->count();
         $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;
 

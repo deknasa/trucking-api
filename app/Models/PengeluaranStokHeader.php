@@ -520,7 +520,6 @@ class PengeluaranStokHeader extends MyModel
             'nominal_detail' => $nominal_detail,
             'keterangan_detail' => $keterangan_detail
         ];
-        $jurnalUmumHeader = (new JurnalUmumHeader())->processStore($jurnalRequest);
 
         if ($rtr->text == $data['pengeluaranstok_id']) {
             $potongKas = Parameter::where('grp', 'STATUS POTONG RETUR')->where('text', 'POSTING KE KAS/BANK')->first();
@@ -669,6 +668,8 @@ class PengeluaranStokHeader extends MyModel
             $pengeluaranStokHeader->penerimaan_nobukti = $penerimaanHeader->nobukti;
             $pengeluaranStokHeader->save();
             
+        }else {
+            $jurnalUmumHeader = (new JurnalUmumHeader())->processStore($jurnalRequest);
         }
 
         $pengeluaranStokHeaderLogTrail = (new LogTrail())->processStore([
@@ -875,8 +876,6 @@ class PengeluaranStokHeader extends MyModel
             'keterangan_detail' => $keterangan_detail
         ];
         
-        $jurnalUmumHeader = JurnalUmumHeader::where('nobukti', $pengeluaranStokHeader->nobukti)->lockForUpdate()->first();
-        $jurnalUmumHeader = (new JurnalUmumHeader())->processUpdate($jurnalUmumHeader,$jurnalRequest);
 
         if ($rtr->text == $fetchFormat->id) {
             $potongKas = Parameter::where('grp', 'STATUS POTONG RETUR')->where('text', 'POSTING KE KAS/BANK')->first();
@@ -1025,6 +1024,9 @@ class PengeluaranStokHeader extends MyModel
             $pengeluaranStokHeader->coa = $querysubgrppenerimaan->coa;
             $pengeluaranStokHeader->save();
             
+        }else {
+            $jurnalUmumHeader = JurnalUmumHeader::where('nobukti', $pengeluaranStokHeader->nobukti)->lockForUpdate()->first();
+            $jurnalUmumHeader = (new JurnalUmumHeader())->processUpdate($jurnalUmumHeader,$jurnalRequest);
         }
 
         $pengeluaranStokHeaderLogTrail = (new LogTrail())->processStore([
@@ -1072,17 +1074,19 @@ class PengeluaranStokHeader extends MyModel
         
        $potongKas = Parameter::where('grp', 'STATUS POTONG RETUR')->where('text', 'POSTING KE KAS/BANK')->first();
        $potongHutang = Parameter::where('grp', 'STATUS POTONG RETUR')->where('text', 'POTONG HUTANG')->first();
-       /*DELETE EXISTING JURNALUMUMHEADER*/
-       $jurnalUmumHeader = JurnalUmumHeader::where('nobukti', $pengeluaranStokHeader->nobukti)->lockForUpdate()->first();
-       (new JurnalUmumHeader())->processDestroy($jurnalUmumHeader->id);
-
+       
+       
        if ($statuspotongretur == $potongKas->id) {
            $penerimaan = PenerimaanHeader::where('nobukti', $pengeluaranStokHeader->penerimaan_nobukti)->lockForUpdate()->first();
            (new PenerimaanHeader())->processDestroy($penerimaan->id);
        } else if ($statuspotongretur == $potongHutang->id) {
            $hutangbayar = HutangBayarHeader::where('nobukti', $pengeluaranStokHeader->hutangbayar_nobukti)->lockForUpdate()->first();
            (new HutangBayarHeader())->processDestroy($hutangbayar->id);
-       }
+       }else {
+           /*DELETE EXISTING JURNALUMUMHEADER*/
+          $jurnalUmumHeader = JurnalUmumHeader::where('nobukti', $pengeluaranStokHeader->nobukti)->lockForUpdate()->first();
+          (new JurnalUmumHeader())->processDestroy($jurnalUmumHeader->id);
+        }
            
          $pengeluaranStokHeader = $pengeluaranStokHeader->lockAndDestroy($id);
          $hutangLogTrail = (new LogTrail())->processStore([
