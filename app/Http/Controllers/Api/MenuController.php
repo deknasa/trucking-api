@@ -153,7 +153,7 @@ class MenuController extends Controller
         if (request()->cekExport) {
 
             if (request()->offset == "-1" && request()->limit == '1') {
-                
+
                 return response([
                     'errors' => [
                         "export" => app(ErrorController::class)->geterror('DTA')->keterangan
@@ -315,6 +315,7 @@ class MenuController extends Controller
                 $this->listFolderFiles($dir . '/' . $ff);
             elseif (is_file($dir . '/' . $ff) && strpos($ff, '.php') !== false) {
                 $classes = $this->get_php_classes(file_get_contents($dir . '/' . $ff));
+
                 foreach ($classes as $class) {
                     if ($class == $controller) {
 
@@ -327,10 +328,28 @@ class MenuController extends Controller
 
                         foreach ($methods as $method) {
                             if (isset($method['docComment']['ClassName'])) {
+                                if (isset($method['docComment']['Detail1'])) {
+                                    $detail1 = $method['docComment']['Detail1'];
+                                } else {
+                                    $detail1 = '';
+                                }
+                                if (isset($method['docComment']['Detail2'])) {
+                                    $detail2 = $method['docComment']['Detail2'];
+                                } else {
+                                    $detail2 = '';
+                                }
+                                if (isset($method['docComment']['Detail3'])) {
+                                    $detail3 = $method['docComment']['Detail3'];
+                                } else {
+                                    $detail3 = '';
+                                }
                                 $data[] = [
                                     'class' => $class,
                                     'method' => $method['name'],
-                                    'name' => $method['name'] . ' ' . $class
+                                    'name' => $method['name'] . ' ' . $class,
+                                    'detail1' => trim($detail1),
+                                    'detail2' => trim($detail2),
+                                    'detail3' => trim($detail3)
                                 ];
                             }
                         }
@@ -338,7 +357,6 @@ class MenuController extends Controller
                 }
             }
         }
-
         return $data ?? '';
     }
 
@@ -350,9 +368,21 @@ class MenuController extends Controller
         if (count($ffs) < 1)
             return;
         $i = 0;
-        $data[] = [
-            'class' => 'NON CONTROLLER',
-        ];
+        // $data[] = [
+        //     'class' => 'NON CONTROLLER',
+        // ];
+        $temp = '##tempclass' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+        Schema::create($temp, function ($table) {
+            $table->id();
+            $table->string('class', 1000)->nullable();
+        });
+
+        DB::table($temp)->insert(
+            [
+                'class' => 'NON CONTROLLER',
+            ]
+        );
+        $cdetail = '';
         foreach ($ffs as $ff) {
             if (is_dir($dir . '/' . $ff))
                 $this->listFolderFiles($dir . '/' . $ff);
@@ -364,12 +394,109 @@ class MenuController extends Controller
                         include_once($dir . $ff);
                     }
 
-                    $data[] = [
-                        'class' => $class,
-                    ];
+
+
+                    // }
+
+
+                    DB::table($temp)->insert(
+                        [
+                            'class' => $class,
+                        ]
+                    );
+                    // dd(DB::table($temp)->get());
                 }
             }
         }
+        // dd(DB::table($temp)->get());
+        $tempmenu = '##tempclassmenu' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+        Schema::create($tempmenu, function ($table) {
+            $table->string('class', 1000)->nullable();
+        });
+
+        $querymenu = DB::table('menu')->from(
+            DB::raw("menu a with (readuncommitted)")
+        )
+            ->select(
+                DB::raw("trim(replace(nama,'index','')) as nama"),
+            )
+            ->join(DB::raw("acos b with (readuncommitted)"), 'a.aco_id', 'b.id');
+
+        DB::table($tempmenu)->insertUsing([
+            'class',
+        ], $querymenu);
+
+
+        $querymenu = DB::table('acos')->from(
+            DB::raw("acos a with (readuncommitted)")
+        )
+            ->select(
+                DB::raw("trim(replace(a.nama,'index','')) as nama"),
+            )
+            ->leftjoin(DB::raw($tempmenu . " b "), DB::raw("trim(replace(a.nama,'index',''))"), 'b.class')
+            ->where('a.method', 'index')
+            ->whereRaw("isnull(b.class,'')=''");
+
+        // dd($querymenu->toSql());
+
+        DB::table($tempmenu)->insertUsing([
+            'class',
+        ], $querymenu);
+
+
+        $query = DB::table(DB::raw($temp))->from(
+            DB::raw(DB::raw($temp) . " a with (readuncommitted)")
+        )
+            ->select(
+                'a.id',
+                'a.class',
+            )
+            ->leftjoin(DB::raw($tempmenu) . " as b", 'a.class', 'b.class')
+            ->whereRaw("isnull(b.class,'')=''")
+            ->orderby('a.id', 'asc');
+
+        $temprekap = '##temprekap' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+        Schema::create($temprekap, function ($table) {
+            $table->integer('id')->nullable();
+            $table->string('class', 1000)->nullable();
+        });
+
+        DB::table($temprekap)->insertUsing([
+            'id',
+            'class',
+        ], $query);
+
+        $dataquery = DB::table($temprekap)
+            ->select(
+                'class',
+                'id'
+            )
+            ->whereRaw("class not in('NON CONTROLLER')")
+            ->orderby('id', 'asc')
+            ->get();
+
+
+        $datadetail = json_decode($dataquery, true);
+        foreach ($datadetail as $item) {
+        
+            $cls=$this->listFolderFiles($item['class']);
+            if ($cls=='') {
+                DB::table($temprekap)->where('id', $item['id'])->delete();
+            }
+        }
+
+        // ->get();
+        // dd($data);
+
+        // dd($this->listFolderFiles('AkunPusatDetailController'));
+
+        $data = DB::table($temprekap)
+        ->select(
+            'class',
+            'id'
+        )
+        ->orderby('id', 'asc')
+        ->get();
 
         return response([
             'data' => $data ?? []

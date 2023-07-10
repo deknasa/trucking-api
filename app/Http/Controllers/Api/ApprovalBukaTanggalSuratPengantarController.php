@@ -1,6 +1,9 @@
 <?php
 
-namespace App\Http\Controllers;
+
+namespace App\Http\Controllers\Api;
+
+use App\Http\Controllers\Controller;
 
 use App\Models\ApprovalBukaTanggalSuratPengantar;
 use App\Http\Requests\StoreApprovalBukaTanggalSuratPengantarRequest;

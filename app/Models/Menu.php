@@ -50,11 +50,11 @@ class Menu extends MyModel
                 DB::raw("'Laporan Menu' as judulLaporan"),
                 DB::raw("'" . $getJudul->text . "' as judul"),
                 DB::raw("'Tgl Cetak :'+format(getdate(),'dd-MM-yyyy HH:mm:ss')as tglcetak"),
-                DB::raw(" 'User :".auth('api')->user()->name."' as usercetak")
+                DB::raw(" 'User :" . auth('api')->user()->name . "' as usercetak")
             )
             ->leftJoin(DB::raw("menu as menu2 with (readuncommitted)"), 'menu2.id', '=', 'menu.menuparent');
 
-      
+
 
         $this->totalRows = $query->count();
         $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;
@@ -385,10 +385,13 @@ class Menu extends MyModel
         $menu->link = "";
         $menu->aco_id = $menuacoid;
 
+
+
         if (Menu::select('menukode')
             ->where('menuparent', '=', $data['menuparent'])
             ->exists()
         ) {
+
 
             if ($data['menuparent'] == 0) {
 
@@ -408,6 +411,7 @@ class Menu extends MyModel
                     ->exists()
                 ) {
 
+
                     $list = Menu::select('menukode')
                         ->where('menuparent', '=', $data['menuparent'])
                         ->where(DB::raw('right(menukode,1)'), '<>', 'Z')
@@ -416,9 +420,13 @@ class Menu extends MyModel
 
                     $kodeakhir = substr($list->menukode, -1);
                     $arrayangka = array('1', '2', '3', '4', '5', '6', '7', '8');
-                    if (in_array($kodeakhir, $arrayangka)) {
 
-                        $menukode = $list->menukode + 1;
+                    // dd($kodeakhir);
+                    if (in_array($kodeakhir, $arrayangka)) {
+                        // $menukode = $list->menukode + 1;
+                        $kodeawal = substr($list->menukode, 0, strlen($list->menukode) - 1);
+                        $nilai = substr($list->menukode,  -1) + 1;
+                        $menukode = $kodeawal . $nilai;
                     } else if ($kodeakhir == '9') {
                         $kodeawal = substr($list->menukode, 0, strlen($list->menukode) - 1);
                         $menukode = $kodeawal . 'A';
@@ -481,6 +489,7 @@ class Menu extends MyModel
         if (strtoupper($data['menuname']) == 'LOGOUT') {
             $menukode = 'Z';
         }
+        // dd($menukode);
         $menu->menukode = $menukode;
         TOP:
         if (!$menu->save()) {
@@ -502,7 +511,7 @@ class Menu extends MyModel
 
     public function processUpdate(Menu $menu, array $data): Menu
     {
-    
+
         $query = DB::table('menu')
             ->from(
                 DB::raw("menu a with (readuncommitted)")
@@ -520,7 +529,7 @@ class Menu extends MyModel
 
 
         if ($query != null) {
-            
+
             $class = $this->listFolderFiles($controller);
             // dd($class);
             if ($class <> '') {
@@ -578,12 +587,12 @@ class Menu extends MyModel
                                 //     ->exists()
                                 // ) {
 
-                                    $dataaco = (new Acos())->processStore([
-                                        'class' => $namaclass,
-                                        'method' => $valuedetail1['method'],
-                                        'nama' => $valuedetail1['name'],
-                                        'modifiedby' => auth('api')->user()->user,
-                                    ]);
+                                $dataaco = (new Acos())->processStore([
+                                    'class' => $namaclass,
+                                    'method' => $valuedetail1['method'],
+                                    'nama' => $valuedetail1['name'],
+                                    'modifiedby' => auth('api')->user()->user,
+                                ]);
                                 // }
                             }
                         }
@@ -614,12 +623,12 @@ class Menu extends MyModel
                                 //     ->exists()
                                 // ) {
 
-                                    $dataaco = (new Acos())->processStore([
-                                        'class' => $namaclass,
-                                        'method' => $valuedetail2['method'],
-                                        'nama' => $valuedetail2['name'],
-                                        'modifiedby' => auth('api')->user()->user,
-                                    ]);
+                                $dataaco = (new Acos())->processStore([
+                                    'class' => $namaclass,
+                                    'method' => $valuedetail2['method'],
+                                    'nama' => $valuedetail2['name'],
+                                    'modifiedby' => auth('api')->user()->user,
+                                ]);
                                 // }
                             }
                         }
@@ -650,12 +659,12 @@ class Menu extends MyModel
                                 //     ->exists()
                                 // ) {
 
-                                    $dataaco = (new Acos())->processStore([
-                                        'class' => $namaclass,
-                                        'method' => $valuedetail3['method'],
-                                        'nama' => $valuedetail3['name'],
-                                        'modifiedby' => auth('api')->user()->user,
-                                    ]);
+                                $dataaco = (new Acos())->processStore([
+                                    'class' => $namaclass,
+                                    'method' => $valuedetail3['method'],
+                                    'nama' => $valuedetail3['name'],
+                                    'modifiedby' => auth('api')->user()->user,
+                                ]);
                                 // }
                             }
                         }

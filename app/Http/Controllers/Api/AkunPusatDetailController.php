@@ -1,6 +1,7 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Api;
+use App\Http\Controllers\Controller;
 
 use App\Models\AkunPusatDetail;
 use App\Http\Requests\StoreAkunPusatDetailRequest;
@@ -8,11 +9,7 @@ use App\Http\Requests\UpdateAkunPusatDetailRequest;
 
 class AkunPusatDetailController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
+
     public function index()
     {
         //

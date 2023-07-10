@@ -1,6 +1,8 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Api;
+
+use App\Http\Controllers\Controller;
 
 use App\Models\SaldoAkunPusatDetail;
 use App\Http\Requests\StoreSaldoAkunPusatDetailRequest;
@@ -9,9 +11,7 @@ use App\Http\Requests\UpdateSaldoAkunPusatDetailRequest;
 class SaldoAkunPusatDetailController extends Controller
 {
     /**
-     * Display a listing of the resource.
-     *
-     * @return \Illuminate\Http\Response
+     * @ClassName
      */
     public function index()
     {
