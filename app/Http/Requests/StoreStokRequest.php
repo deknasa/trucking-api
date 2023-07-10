@@ -4,6 +4,7 @@ namespace App\Http\Requests;
 
 use App\Http\Controllers\Api\ErrorController;
 use App\Models\Parameter;
+use App\Models\Kelompok;
 use Illuminate\Validation\Rule;
 use App\Http\Controllers\Api\ParameterController;
 use App\Rules\MinNull;
@@ -35,6 +36,10 @@ class StoreStokRequest extends FormRequest
         foreach ($data as $item) {
             $status[] = $item['id'];
         }
+        $kelompokBan = Kelompok::where("kodekelompok","BAN")->first();
+        // dd(($kelompokBan->id == $this->input('kelompok_id')));
+
+
         return [
             "namastok"=>'required',
             "kelompok"=>'required',
@@ -46,6 +51,7 @@ class StoreStokRequest extends FormRequest
             "qtymax"=> [new NotDecimal(), new NumberMax(),'numeric','max:10000'],
             "hargabelimin"=> [new NotDecimal(), new MinNull(),'numeric'],
             "hargabelimax"=> [new NotDecimal(), new NumberMax(),'numeric'],
+            'statusban' => [Rule::requiredIf($kelompokBan->id == $this->input('kelompok_id'))],
             'gambar' => 'array',
             'gambar.*' => 'image'
         ];
