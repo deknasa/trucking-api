@@ -82,6 +82,15 @@ class InputTrip extends MyModel
             $nobuktiorderantrucking = $jobtrucking;
         }
 
+        $bukaTrip = DB::table("suratpengantarapprovalinputtrip")->from(DB::raw("suratpengantarapprovalinputtrip with (readuncommitted)"))
+        ->where('tglbukti', date('Y-m-d', strtotime($data['tglbukti'])))
+        ->first();
+
+        $approvalId = '';
+        if($bukaTrip != null){
+            $approvalId = $bukaTrip->id;
+        }
+
         $dataSP = [
 
             'jobtrucking' => $nobuktiorderantrucking,
@@ -112,7 +121,8 @@ class InputTrip extends MyModel
             'gudang' => $data['gudang'],
             'tarif_id' => $data['tarifrincian_id'],
             'inputtripmandor' => '1',
-            'nominal' => ''
+            'nominal' => '',
+            'approvalbukatanggal_id' => $approvalId
         ];
         $suratPengantar = (new SuratPengantar())->processStore($dataSP);
 
