@@ -325,6 +325,7 @@ class ProsesUangJalanSupirHeader extends MyModel
             'trado.kodetrado as trado_id',
             'supir.namasupir as supir_id',
             'statuscetak.memo as statuscetak',
+            "statuscetak.id as  statuscetak_id",
             'prosesuangjalansupirheader.jumlahcetak',
             DB::raw("'Laporan Proses Uang Jalan Supir' as judulLaporan"),
             DB::raw("'" . $getJudul->text . "' as judul"),

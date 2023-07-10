@@ -3,10 +3,10 @@
 namespace App\Rules;
 
 use App\Http\Controllers\Api\ErrorController;
-use Illuminate\Contracts\Validation\Rule;
 use App\Models\Supir;
+use Illuminate\Contracts\Validation\Rule;
 
-class NoSimSupir implements Rule
+class NoTelpSupir implements Rule
 {
     /**
      * Create a new rule instance.
@@ -28,6 +28,7 @@ class NoSimSupir implements Rule
     public function passes($attribute, $value)
     {
         $noktp = request()->noktp;
+
         $dataSupir = (new Supir())->validationSupirResign($noktp);
         if($dataSupir != null){
             return true;

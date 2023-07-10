@@ -174,6 +174,8 @@ class ServiceInHeader extends MyModel
                 case "AND":
                     foreach ($this->params['filters']['rules'] as $index => $filters) {
                         if ($filters['field'] == 'statuscetak') {
+                            $query = $query->where('statuscetak.text', '=', "$filters[data]");
+                        } else if ($filters['field'] == 'statuscetak') {
                             $query = $query->where('statuscetak.text', '=', $filters['data']);
                         } else if ($filters['field'] == 'trado_id') {
                             $query = $query->where('trado.kodetrado', 'LIKE', "%$filters[data]%");
@@ -192,6 +194,8 @@ class ServiceInHeader extends MyModel
                     $query = $query->where(function ($query) {
                         foreach ($this->params['filters']['rules'] as $index => $filters) {
                             if ($filters['field'] == 'statuscetak') {
+                                $query = $query->orWhere('statuscetak.text', '=', "$filters[data]");
+                            } else if ($filters['field'] == 'statuscetak') {
                                 $query = $query->orWhere('statuscetak.text', '=', $filters['data']);
                             } else if ($filters['field'] == 'trado_id') {
                                 $query = $query->orWhere('trado.kodetrado', 'LIKE', "%$filters[data]%");
@@ -385,16 +389,16 @@ class ServiceInHeader extends MyModel
                 'serviceinheader.tglbukti',
                 'trado.kodetrado as trado_id',
                 'serviceinheader.tglmasuk',
-                db::raw("CASE
-                WHEN serviceinheader.jumlahcetak = 0 THEN NULL
-                ELSE serviceinheader.jumlahcetak
-              END AS jumlahcetak"),
+                'statuscetak.memo as statuscetak',
+                "statuscetak.id as  statuscetak_id",
+                "serviceinheader.jumlahcetak",
                 DB::raw("'Laporan Service In' as judulLaporan"),
                 DB::raw("'" . $getJudul->text . "' as judul"),
                 DB::raw("'Tgl Cetak:'+format(getdate(),'dd-MM-yyyy HH:mm:ss')as tglcetak"),
                 DB::raw(" 'User :".auth('api')->user()->name."' as usercetak")
             )
             ->where("$this->table.id", $id)
+            ->leftJoin(DB::raw("parameter as statuscetak with (readuncommitted)"), 'serviceinheader.statuscetak', 'statuscetak.id')
             ->leftJoin(DB::raw("trado with (readuncommitted)"), 'serviceinheader.trado_id', 'trado.id');
         
         $data = $query->first();

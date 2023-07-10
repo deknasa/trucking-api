@@ -37,6 +37,7 @@ class PengeluaranStokDetailController extends Controller
     public function index(Request $request)
     {
         $pengeluaranStokDetail = new PengeluaranStokDetail();
+        
         return response([
             'data' => $pengeluaranStokDetail->get(),
             'attributes' => [

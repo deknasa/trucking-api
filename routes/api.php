@@ -1363,6 +1363,7 @@ route::middleware(['auth:api', 'authorized'])->group(function () {
 
     Route::get('pemutihansupir/getPost', [PemutihanSupirController::class, 'getPost']);
     Route::get('pemutihansupir/getNonPost', [PemutihanSupirController::class, 'getNonPost']);
+    Route::get('pemutihansupir/{id}/printreport', [PemutihanSupirController::class, 'printpemutihansupirReport'])->whereNumber('id');
     Route::get('pemutihansupir/{id}/export', [PemutihanSupirController::class, 'export'])->name('pemutihansupir.export')->whereNumber('id');
     Route::get('pemutihansupir/{pemutihanId}/getEditPost', [PemutihanSupirController::class, 'getEditPost'])->whereNumber('pemutihanId');
     Route::get('pemutihansupir/{pemutihanId}/getEditNonPost', [PemutihanSupirController::class, 'getEditNonPost'])->whereNumber('pemutihanId');

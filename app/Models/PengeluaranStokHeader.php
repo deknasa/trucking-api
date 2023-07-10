@@ -308,6 +308,12 @@ class PengeluaranStokHeader extends MyModel
 
     public function selectColumns($query)
     {
+        $getJudul = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))
+                ->select('text')
+                ->where('grp', 'JUDULAN LAPORAN')
+                ->where('subgrp', 'JUDULAN LAPORAN')
+                ->first();
+
         return $query->select(
             "$this->table.id",
             "$this->table.nobukti",
@@ -341,6 +347,9 @@ class PengeluaranStokHeader extends MyModel
             "gandengan.keterangan as gandengan",
             "supir.namasupir as supir",
             "supplier.namasupplier as supplier",
+            DB::raw("'" . $getJudul->text . "' as judul"),
+            DB::raw("'Tgl Cetak:'+format(getdate(),'dd-MM-yyyy HH:mm:ss')as tglcetak"),
+            DB::raw(" 'User :".auth('api')->user()->name."' as usercetak")
         );
     }
 

@@ -391,16 +391,16 @@ class ServiceOutHeader extends MyModel
             'serviceoutheader.tglbukti',
             'trado.kodetrado as trado_id',
             'serviceoutheader.tglkeluar',
-            db::raw("CASE
-                WHEN serviceoutheader.jumlahcetak = 0 THEN NULL
-                ELSE serviceoutheader.jumlahcetak
-              END AS jumlahcetak"),
+            'statuscetak.memo as statuscetak',
+            "statuscetak.id as  statuscetak_id",
+            'serviceoutheader.jumlahcetak',
             DB::raw("'Laporan Service Out' as judulLaporan"),
             DB::raw("'" . $getJudul->text . "' as judul"),
             DB::raw("'Tgl Cetak:'+format(getdate(),'dd-MM-yyyy HH:mm:ss')as tglcetak"),
             DB::raw(" 'User :".auth('api')->user()->name."' as usercetak")
         )
             ->where("$this->table.id", $id)
+            ->leftJoin(DB::raw("parameter as statuscetak with (readuncommitted)"), 'serviceoutheader.statuscetak', 'statuscetak.id')
             ->leftJoin(DB::raw("trado with (readuncommitted)"), 'serviceoutheader.trado_id', 'trado.id');
         
         $data = $query->first();
