@@ -140,6 +140,7 @@ class LogTrailController extends Controller
      * @param  \App\Http\Requests\StorelogtrailRequest  $request
      * @return \Illuminate\Http\Response
      */
+
     public function store(StoreLogTrailRequest $request)
     {
         $LogTrail = new LogTrail();
@@ -165,6 +166,9 @@ class LogTrailController extends Controller
         }
     }
 
+    /**
+     * @ClassName 
+     */
     public function header(Request $request)
     {
         $params = [
@@ -293,7 +297,9 @@ class LogTrailController extends Controller
             'params' => $params
         ]);
     }
-
+    /**
+     * @ClassName 
+     */
     public function detail(Request $request)
     {
         $params = [
