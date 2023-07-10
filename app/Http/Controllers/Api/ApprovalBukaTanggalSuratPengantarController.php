@@ -1,89 +1,135 @@
 <?php
 
-
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
-
 use App\Models\ApprovalBukaTanggalSuratPengantar;
 use App\Http\Requests\StoreApprovalBukaTanggalSuratPengantarRequest;
 use App\Http\Requests\UpdateApprovalBukaTanggalSuratPengantarRequest;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class ApprovalBukaTanggalSuratPengantarController extends Controller
 {
     /**
-     * Display a listing of the resource.
-     *
-     * @return \Illuminate\Http\Response
+     * @ClassName 
      */
     public function index()
     {
-        //
+        $approvalBukaTanggal = new ApprovalBukaTanggalSuratPengantar();
+        return response([
+            'data' => $approvalBukaTanggal->get(),
+            'attributes' => [
+                'totalRows' => $approvalBukaTanggal->totalRows,
+                'totalPages' => $approvalBukaTanggal->totalPages
+            ]
+        ]);
     }
 
-    /**
-     * Show the form for creating a new resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
-    public function create()
+    public function default()
     {
-        //
+
+        $approvalBukaTanggal = new ApprovalBukaTanggalSuratPengantar();
+        return response([
+            'status' => true,
+            'data' => $approvalBukaTanggal->default(),
+        ]);
     }
 
+
     /**
-     * Store a newly created resource in storage.
-     *
-     * @param  \App\Http\Requests\StoreApprovalBukaTanggalSuratPengantarRequest  $request
-     * @return \Illuminate\Http\Response
+     * @ClassName 
      */
     public function store(StoreApprovalBukaTanggalSuratPengantarRequest $request)
     {
-        //
+       
+        DB::beginTransaction();
+
+        try {
+           
+        } catch (\Throwable $th) {
+            DB::rollBack();
+            throw $th;
+        }
+    }
+
+
+    public function show(ApprovalBukaTanggalSuratPengantar $approvalBukaTanggalSP)
+    {
+        return response([
+            'status' => true,
+            'data' => $approvalBukaTanggalSP
+        ]);
     }
 
     /**
-     * Display the specified resource.
-     *
-     * @param  \App\Models\ApprovalBukaTanggalSuratPengantar  $approvalBukaTanggalSuratPengantar
-     * @return \Illuminate\Http\Response
+     * @ClassName 
      */
-    public function show(ApprovalBukaTanggalSuratPengantar $approvalBukaTanggalSuratPengantar)
+    public function update(UpdateApprovalBukaTanggalSuratPengantarRequest $request, ApprovalBukaTanggalSuratPengantar $approvalBukaTanggalSP): JsonResponse
     {
-        //
+        $data = [
+            'tglbukti' => $request->tglbukti,
+            'jumlah' => $request->jumlah,
+            'statusapproval' => $request->statusapproval,
+        ];
+        DB::beginTransaction();
+
+        try {
+            $approvalBukaTanggal = (new ApprovalBukaTanggalSuratPengantar())->processUpdate($approvalBukaTanggalSP, $data);
+            $approvalBukaTanggal->position = $this->getPosition($approvalBukaTanggal, $approvalBukaTanggal->getTable())->position;
+            $approvalBukaTanggal->page = ceil($approvalBukaTanggal->position / ($request->limit ?? 10));
+
+            DB::commit();
+
+            return response()->json([
+                'status' => true,
+                'message' => 'Berhasil diubah.',
+                'data' => $approvalBukaTanggal
+            ]);
+        } catch (\Throwable $th) {
+            DB::rollBack();
+            throw $th;
+        }
     }
 
     /**
-     * Show the form for editing the specified resource.
-     *
-     * @param  \App\Models\ApprovalBukaTanggalSuratPengantar  $approvalBukaTanggalSuratPengantar
-     * @return \Illuminate\Http\Response
+     * @ClassName 
      */
-    public function edit(ApprovalBukaTanggalSuratPengantar $approvalBukaTanggalSuratPengantar)
+    public function destroy(Request $request, $id): JsonResponse
     {
-        //
+        DB::beginTransaction();
+
+        try {
+            $approvalBukaTanggal = (new ApprovalBukaTanggalSuratPengantar())->processDestroy($id);
+            $selected = $this->getPosition($approvalBukaTanggal, $approvalBukaTanggal->getTable(), true);
+            $approvalBukaTanggal->position = $selected->position;
+            $approvalBukaTanggal->id = $selected->id;
+            $approvalBukaTanggal->page = ceil($approvalBukaTanggal->position / ($request->limit ?? 10));
+
+            DB::commit();
+
+            return response()->json([
+                'message' => 'Berhasil dihapus',
+                'data' => $approvalBukaTanggal
+            ]);
+        } catch (\Throwable $th) {
+            DB::rollBack();
+            throw $th;
+        }
     }
 
-    /**
-     * Update the specified resource in storage.
-     *
-     * @param  \App\Http\Requests\UpdateApprovalBukaTanggalSuratPengantarRequest  $request
-     * @param  \App\Models\ApprovalBukaTanggalSuratPengantar  $approvalBukaTanggalSuratPengantar
-     * @return \Illuminate\Http\Response
-     */
-    public function update(UpdateApprovalBukaTanggalSuratPengantarRequest $request, ApprovalBukaTanggalSuratPengantar $approvalBukaTanggalSuratPengantar)
+    public function fieldLength()
     {
-        //
-    }
+        $data = [];
+        $columns = DB::connection()->getDoctrineSchemaManager()->listTableDetails('approvalbukatanggalsuratpengantar')->getColumns();
 
-    /**
-     * Remove the specified resource from storage.
-     *
-     * @param  \App\Models\ApprovalBukaTanggalSuratPengantar  $approvalBukaTanggalSuratPengantar
-     * @return \Illuminate\Http\Response
-     */
-    public function destroy(ApprovalBukaTanggalSuratPengantar $approvalBukaTanggalSuratPengantar)
-    {
-        //
+        foreach ($columns as $index => $column) {
+            $data[$index] = $column->getLength();
+        }
+
+        return response([
+            'data' => $data
+        ]);
     }
 }

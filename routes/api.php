@@ -55,6 +55,7 @@ use App\Http\Controllers\Api\ApprovalTradoKeteranganController;
 use App\Http\Controllers\Api\BankPelangganController;
 use App\Http\Controllers\Api\DataRitasiController;
 use App\Http\Controllers\Api\AkuntansiController;
+use App\Http\Controllers\Api\ApprovalBukaTanggalSuratPengantarController;
 use App\Http\Controllers\Api\TypeAkuntansiController;
 use App\Http\Controllers\Api\MainTypeAkuntansiController;
 use App\Http\Controllers\Api\ExportLaporanKasGantungController;
@@ -448,6 +449,9 @@ route::middleware(['auth:api', 'authorized'])->group(function () {
     Route::get('tradosupirmilikmandor/default', [TradoSupirMilikMandorController::class,'default']);
     Route::resource('tradosupirmilikmandor', TradoSupirMilikMandorController::class)->whereNumber('tradosupirmilikmandor');
 
+    Route::get('suratpengantarapprovalinputtrip/default', [SuratPengantarApprovalInputTripController::class, 'default']);
+    Route::post('suratpengantarapprovalinputtrip/{id}/cekvalidasi', [SuratPengantarApprovalInputTripController::class, 'cekvalidasi'])->name('suratpengantarapprovalinputtrip.cekvalidasi')->whereNumber('id');
+    Route::get('suratpengantarapprovalinputtrip/field_length', [SuratPengantarApprovalInputTripController::class, 'fieldLength']);
     Route::get('suratpengantarapprovalinputtrip/cektanggal', [SuratPengantarApprovalInputTripController::class, 'isTanggalAvaillable']);
     Route::resource('suratpengantarapprovalinputtrip', SuratPengantarApprovalInputTripController::class)->whereNumber('suratpengantarapprovalinputtrip');
 
@@ -1443,6 +1447,7 @@ route::middleware(['auth:api', 'authorized'])->group(function () {
     Route::get('ubahpassword/field_length', [UbahPasswordController::class, 'fieldLength']);
     Route::resource('ubahpassword', UbahPasswordController::class)->whereNumber('ubahpassword');
 });
+Route::get('suratpengantarapprovalinputtrip/updateapproval', [SuratPengantarApprovalInputTripController::class, 'updateApproval']);
 
 Route::get('parameter/select/{grp}/{subgrp}/{text}', [ParameterController::class, 'getparameterid']);
 

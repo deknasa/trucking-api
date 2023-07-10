@@ -5,6 +5,7 @@ namespace App\Rules;
 use Illuminate\Contracts\Validation\Rule;
 use App\Models\SuratPengantarApprovalInputTrip;
 use App\Models\SuratPengantar;
+use Illuminate\Support\Facades\DB;
 
 class DateApprovalQuota implements Rule
 {
@@ -39,6 +40,11 @@ class DateApprovalQuota implements Rule
         }
         if ($bukaAbsensi){
             $suratPengantar = SuratPengantar::where('tglbukti', '=', $date)->count();
+            $nonApproval = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where("grp", 'STATUS APPROVAL')->where("text", "NON APPROVAL")->first();
+            $cekApproval = SuratPengantarApprovalInputTrip::where('statusapproval', '=', $nonApproval->id)->where('tglbukti', '=', $date)->first();
+            if($cekApproval){
+                return false;
+            }
             if($bukaAbsensi < ($suratPengantar+1)){
                 return false;
             }

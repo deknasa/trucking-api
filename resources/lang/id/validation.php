@@ -24,7 +24,7 @@ return [
     'alpha_dash' => 'The :attribute must only contain letters, numbers, dashes and underscores.',
     'alpha_num' => 'The :attribute must only contain letters and numbers.',
     'array' => 'The :attribute must be an array.',
-    'before' => 'The :attribute must be a date before :date.',
+    'before' => ':attribute ' . (new ErrorController)->geterror('MIN')->keterangan .  ' :date.',
     'before_or_equal' => ':attribute ' . (new ErrorController)->geterror('HBSD')->keterangan .  ' :date.',
     'between' => [
         'numeric' => ':attribute ' . (new ErrorController)->geterror('NTLK')->keterangan . ' :min dan ' . (new ErrorController)->geterror('NTLB')->keterangan . ' :max.',

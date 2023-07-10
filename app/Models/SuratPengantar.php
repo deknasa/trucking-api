@@ -981,7 +981,7 @@ class SuratPengantar extends MyModel
             $suratPengantar->totalomset = $data['totalomset'];
             $suratPengantar->penyesuaian = $data['penyesuaian'];
             $suratPengantar->tglsp = date('Y-m-d', strtotime($data['tglbukti']));
-
+            $suratPengantar->approvalbukatanggal_id = $data['approvalbukatanggal_id'] ?? '';
             $suratPengantar->statusapprovaleditsuratpengantar = $statusNonApproval->id;
             $suratPengantar->statusgudangsama = $data['statusgudangsama'];
             $suratPengantar->statusbatalmuat = $data['statusbatalmuat'];
