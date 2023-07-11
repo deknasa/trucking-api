@@ -395,7 +395,7 @@ class Gandengan extends MyModel
         $gandengan = new Gandengan();
         $gandengan->kodegandengan = $data['kodegandengan'];
         $gandengan->keterangan = $data['keterangan'] ?? '';
-        $gandengan->trado_id = $data['trado_id'];
+        $gandengan->trado_id = $data['trado_id'] ?? '';
         $gandengan->jumlahroda = $data['jumlahroda'];
         $gandengan->jumlahbanserap = $data['jumlahbanserap'];
         $gandengan->statusaktif = $data['statusaktif'];
@@ -470,7 +470,7 @@ class Gandengan extends MyModel
     {
         $gandengan->kodegandengan = $data['kodegandengan'];
         $gandengan->keterangan = $data['keterangan'] ?? '';
-        $gandengan->trado_id = $data['trado_id'];
+        $gandengan->trado_id = $data['trado_id'] ?? '';
         $gandengan->jumlahroda = $data['jumlahroda'];
         $gandengan->jumlahbanserap = $data['jumlahbanserap'];
         $gandengan->statusaktif = $data['statusaktif'];
