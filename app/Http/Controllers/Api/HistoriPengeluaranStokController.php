@@ -66,4 +66,11 @@ class HistoriPengeluaranStokController extends Controller
             'dataheader' => $report
         ]);
     }
+
+    /**
+     * @ClassName
+     */
+    public function export(){
+
+    }
 }

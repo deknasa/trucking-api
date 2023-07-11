@@ -68,4 +68,11 @@ class HistoriPenerimaanStokController extends Controller
             // 'dataheader' => $report
         ]);
     }
+    
+     /**
+     * @ClassName
+     */
+    public function export(){
+
+    }
 }
