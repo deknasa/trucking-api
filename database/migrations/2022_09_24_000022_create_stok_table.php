@@ -48,6 +48,40 @@ class CreateStokTable extends Migration
             $table->foreign('kategori_id', 'stok_kategori_kategori_id_foreign')->references('id')->on('kategori');
             $table->foreign('merk_id', 'stok_merk_merk_id_foreign')->references('id')->on('merk');
 
+            $schemaManager = Schema::getConnection()->getDoctrineSchemaManager();
+            $indexesFound  = $schemaManager->listTableIndexes('stok');            
+
+            if (! array_key_exists('stok_jenistrado_id_index', $indexesFound)) {
+                $table->index('jenistrado_id', 'stok_jenistrado_id_index');
+            }              
+            if (! array_key_exists('stok_kelompok_id_index', $indexesFound)) {
+                $table->index('kelompok_id', 'stok_kelompok_id_index');
+            }              
+            if (! array_key_exists('stok_subkelompok_id_index', $indexesFound)) {
+                $table->index('subkelompok_id', 'stok_subkelompok_id_index');
+            }              
+            if (! array_key_exists('stok_kategori_id_index', $indexesFound)) {
+                $table->index('kategori_id', 'stok_kategori_id_index');
+            }              
+            if (! array_key_exists('stok_merk_id_index', $indexesFound)) {
+                $table->index('merk_id', 'stok_merk_id_index');
+            }              
+            if (! array_key_exists('stok_satuan_id_index', $indexesFound)) {
+                $table->index('satuan_id', 'stok_satuan_id_index');
+            }              
+            if (! array_key_exists('stok_statusaktif_index', $indexesFound)) {
+                $table->index('statusaktif', 'stok_statusaktif_index');
+            }              
+            if (! array_key_exists('stok_statusreuse_index', $indexesFound)) {
+                $table->index('statusreuse', 'stok_statusreuse_index');
+            }              
+            if (! array_key_exists('stok_statusservicerutin_index', $indexesFound)) {
+                $table->index('statusservicerutin', 'stok_statusservicerutin_index');
+            }              
+            if (! array_key_exists('stok_namastok_index', $indexesFound)) {
+                $table->index('namastok', 'stok_namastok_index');
+            }              
+
         });
 
         DB::statement("ALTER TABLE stok NOCHECK CONSTRAINT stok_jenistrado_jenistrado_id_foreign");
