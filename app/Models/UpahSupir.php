@@ -54,7 +54,6 @@ class UpahSupir extends MyModel
 
         $aktif = request()->aktif ?? '';
 
-
         if ($proses == 'reload') {
             $temtabel = 'temp' . rand(1, getrandmax()) . str_replace('.', '', microtime(true)) ;
 
@@ -95,6 +94,8 @@ class UpahSupir extends MyModel
                 $table->longText('jarak')->nullable();
                 $table->longText('zona_id')->nullable()->nullable();
                 $table->longText('statusaktif')->nullable();
+                $table->longText('statusaktif_text')->nullable();
+                $table->bigInteger('statusaktif_id')->nullable();
                 $table->date('tglmulaiberlaku')->nullable();
                 $table->longText('statusluarkota')->nullable();
                 $table->longText('gambar')->nullable();
@@ -133,6 +134,8 @@ class UpahSupir extends MyModel
                     DB::raw("CONCAT(upahsupir.jarak, ' KM') as jarak"),
                     'zona.keterangan as zona_id',
                     'parameter.memo as statusaktif',
+                    'parameter.text as statusaktif_text',
+                    'upahsupir.statusaktif as statusaktif_id',
                     'upahsupir.tglmulaiberlaku',
                     // 'upahsupir.tglakhirberlaku',
                     'statusluarkota.memo as statusluarkota',
@@ -162,6 +165,8 @@ class UpahSupir extends MyModel
                 'jarak',
                 'zona_id',
                 'statusaktif',
+                'statusaktif_text',
+                'statusaktif_id',
                 'tglmulaiberlaku',
                 'statusluarkota',
                 'gambar',
@@ -223,9 +228,8 @@ class UpahSupir extends MyModel
                 ->where('text', '=', 'AKTIF')
                 ->first();
 
-            $query->where('upahsupir.statusaktif', '=', $statusaktif->id);
+            $query->where('a.statusaktif_id', '=', $statusaktif->id);
         }
-
         $this->totalRows = $query->count();
         $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;
         
@@ -433,7 +437,7 @@ class UpahSupir extends MyModel
         } else if ($this->params['sortIndex'] == 'zona_id') {
             return $query->orderBy('a.zona_id', $this->params['sortOrder']);
         } else {
-            return $query->orderBy($this->table . '.' . $this->params['sortIndex'], $this->params['sortOrder']);
+            return $query->orderBy('a.' . $this->params['sortIndex'], $this->params['sortOrder']);
         }
     }
 
@@ -444,7 +448,7 @@ class UpahSupir extends MyModel
                 case "AND":
                     foreach ($this->params['filters']['rules'] as $index => $filters) {
                         if ($filters['field'] == 'statusaktif') {
-                            $query = $query->where('a.statusaktif', '=', $filters['data']);
+                            $query = $query->where('a.statusaktif_text', '=', $filters['data']);
                         } elseif ($filters['field'] == 'parent_id') {
                             $query = $query->where('a.parent_id', '=', $filters['data']);
                         } elseif ($filters['field'] == 'statusluarkota') {
@@ -458,12 +462,12 @@ class UpahSupir extends MyModel
                         } else if ($filters['field'] == 'jarak') {
                             $query = $query->whereRaw("a.jarak LIKE '%$filters[data]%'");
                         } else if ($filters['field'] == 'tglmulaiberlaku') {
-                            $query = $query->whereRaw("format(" . $this->table . "." . $filters['field'] . ", 'dd-MM-yyyy') LIKE '%$filters[data]%'");
+                            $query = $query->whereRaw("format(a." . $filters['field'] . ", 'dd-MM-yyyy') LIKE '%$filters[data]%'");
                         } else if ($filters['field'] == 'created_at' || $filters['field'] == 'updated_at') {
-                            $query = $query->whereRaw("format(" . $this->table . "." . $filters['field'] . ", 'dd-MM-yyyy HH:mm:ss') LIKE '%$filters[data]%'");
+                            $query = $query->whereRaw("format(a." . $filters['field'] . ", 'dd-MM-yyyy HH:mm:ss') LIKE '%$filters[data]%'");
                         } else {
                             // $query = $query->where($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
-                            $query = $query->whereRaw($this->table . ".[" .  $filters['field'] . "] LIKE '%" . escapeLike($filters['data']) . "%' escape '|'");
+                            $query = $query->whereRaw("a.[" .  $filters['field'] . "] LIKE '%" . escapeLike($filters['data']) . "%' escape '|'");
                         }
                     }
 
@@ -472,7 +476,7 @@ class UpahSupir extends MyModel
                     $query->where(function ($query) {
                         foreach ($this->params['filters']['rules'] as $index => $filters) {
                             if ($filters['field'] == 'statusaktif') {
-                                $query = $query->orWhere('a.statusaktif', '=', $filters['data']);
+                                $query = $query->orWhere('a.statusaktif_text', '=', $filters['data']);
                             } elseif ($filters['field'] == 'statusluarkota') {
                                 $query = $query->orWhere('a.statusluarkota', '=', $filters['data']);
                             } else if ($filters['field'] == 'kotadari_id') {
@@ -486,12 +490,12 @@ class UpahSupir extends MyModel
                             } else if ($filters['field'] == 'jarak') {
                                 $query = $query->orWhereRaw("a.jarak LIKE '%$filters[data]%'");
                             } else if ($filters['field'] == 'tglmulaiberlaku') {
-                                $query = $query->orWhereRaw("format(" . $this->table . "." . $filters['field'] . ", 'dd-MM-yyyy') LIKE '%$filters[data]%'");
+                                $query = $query->orWhereRaw("format(a." . $filters['field'] . ", 'dd-MM-yyyy') LIKE '%$filters[data]%'");
                             } else if ($filters['field'] == 'created_at' || $filters['field'] == 'updated_at') {
-                                $query = $query->orWhereRaw("format(" . $this->table . "." . $filters['field'] . ", 'dd-MM-yyyy HH:mm:ss') LIKE '%$filters[data]%'");
+                                $query = $query->orWhereRaw("format(a." . $filters['field'] . ", 'dd-MM-yyyy HH:mm:ss') LIKE '%$filters[data]%'");
                             } else {
                                 // $query = $query->orWhere($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
-                                $query = $query->OrwhereRaw($this->table . ".[" .  $filters['field'] . "] LIKE '%" . escapeLike($filters['data']) . "%' escape '|'");
+                                $query = $query->OrwhereRaw("a.[" .  $filters['field'] . "] LIKE '%" . escapeLike($filters['data']) . "%' escape '|'");
                             }
                         }
                     });
