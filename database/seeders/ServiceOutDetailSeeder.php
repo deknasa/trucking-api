@@ -16,9 +16,6 @@ class ServiceOutDetailSeeder extends Seeder
      */
     public function run()
     {
-        DB::statement("delete ServiceOutDetail");
-        DB::statement("DBCC CHECKIDENT ('ServiceOutDetail', RESEED, 1);");
-
-        ServiceOutDetail::create(['serviceout_id' => '1', 'nobukti' => 'SOUT 0001/V/2022', 'servicein_nobukti' => 'SIN 0001/V/2022', 'keterangan' => 'SERVICE OPNAME', 'modifiedby' => 'ADMIN',]);
+        
     }
 }

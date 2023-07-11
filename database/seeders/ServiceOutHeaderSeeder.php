@@ -16,10 +16,5 @@ class ServiceOutHeaderSeeder extends Seeder
     public function run()
     {
   
-        DB::statement("delete ServiceOutHeader");
-        DB::statement("DBCC CHECKIDENT ('ServiceOutHeader', RESEED, 1);");
-
-        ServiceOutHeader::create([ 'nobukti' => 'SOUT 0001/V/2022', 'tglbukti' => '2022/5/31', 'trado_id' => '1', 'tglkeluar' => '2022/5/31',  'statusformat' => '143', 'modifiedby' => 'ADMIN',]);
-
     }
 }
