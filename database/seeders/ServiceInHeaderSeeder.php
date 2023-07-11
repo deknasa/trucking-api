@@ -15,9 +15,6 @@ class ServiceInHeaderSeeder extends Seeder
      */
     public function run()
     {
-        DB::statement("delete ServiceInHeader");
-        DB::statement("DBCC CHECKIDENT ('ServiceInHeader', RESEED, 1);");
-
-        ServiceInHeader::create([ 'nobukti' => 'SIN 0001/V/2022', 'tglbukti' => '2022/5/31', 'trado_id' => '1', 'tglmasuk' => '2022/5/30',  'statusformat' => '142', 'modifiedby' => 'ADMIN',]);
+        
     }
 }
