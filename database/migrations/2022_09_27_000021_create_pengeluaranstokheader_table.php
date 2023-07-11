@@ -60,6 +60,62 @@ class CreatePengeluaranstokheaderTable extends Migration
             $table->foreign('penerimaan_nobukti', 'pengeluaranstokheader_penerimaanheader_penerimaan_nobukti_foreign')->references('nobukti')->on('penerimaanheader');
             $table->foreign('hutangbayar_nobukti', 'pengeluaranstokheader_hutangbayarheader_hutangbayar_nobukti_foreign')->references('nobukti')->on('hutangbayarheader');
 
+            $schemaManager = Schema::getConnection()->getDoctrineSchemaManager();
+            $indexesFound  = $schemaManager->listTableIndexes('pengeluaranstokheader');            
+
+            if (! array_key_exists('pengeluaranstokheader_nobukti_index', $indexesFound)) {
+                $table->index('nobukti', 'pengeluaranstokheader_nobukti_index');
+            }   
+
+            if (! array_key_exists('pengeluaranstokheader_pengeluaranstok_id_index', $indexesFound)) {
+                $table->index('pengeluaranstok_id', 'pengeluaranstokheader_pengeluaranstok_id_index');
+            }         
+            if (! array_key_exists('pengeluaranstokheader_trado_id_index', $indexesFound)) {
+                $table->index('trado_id', 'pengeluaranstokheader_trado_id_index');
+            }  
+            if (! array_key_exists('pengeluaranstokheader_gudang_id_index', $indexesFound)) {
+                $table->index('gudang_id', 'pengeluaranstokheader_gudang_id_index');
+            }  
+            if (! array_key_exists('pengeluaranstokheader_gandengan_id_index', $indexesFound)) {
+                $table->index('gandengan_id', 'pengeluaranstokheader_gandengan_id_index');
+            }  
+            if (! array_key_exists('pengeluaranstokheader_supir_id_index', $indexesFound)) {
+                $table->index('supir_id', 'pengeluaranstokheader_supir_id_index');
+            }  
+            if (! array_key_exists('pengeluaranstokheader_supplier_id_index', $indexesFound)) {
+                $table->index('supplier_id', 'pengeluaranstokheader_supplier_id_index');
+            }  
+            if (! array_key_exists('pengeluaranstokheader_pengeluaranstok_nobukti_index', $indexesFound)) {
+                $table->index('pengeluaranstok_nobukti', 'pengeluaranstokheader_pengeluaranstok_nobukti_index');
+            }  
+            if (! array_key_exists('pengeluaranstokheader_penerimaanstok_nobukti_index', $indexesFound)) {
+                $table->index('penerimaanstok_nobukti', 'pengeluaranstokheader_penerimaanstok_nobukti_index');
+            }  
+            if (! array_key_exists('pengeluaranstokheader_servicein_nobukti_index', $indexesFound)) {
+                $table->index('servicein_nobukti', 'pengeluaranstokheader_servicein_nobukti_index');
+            }  
+            if (! array_key_exists('pengeluaranstokheader_kerusakan_id_index', $indexesFound)) {
+                $table->index('kerusakan_id', 'pengeluaranstokheader_kerusakan_id_index');
+            }  
+            if (! array_key_exists('pengeluaranstokheader_bank_id_index', $indexesFound)) {
+                $table->index('bank_id', 'pengeluaranstokheader_bank_id_index');
+            } 
+            if (! array_key_exists('pengeluaranstokheader_penerimaan_nobukti_index', $indexesFound)) {
+                $table->index('penerimaan_nobukti', 'pengeluaranstokheader_penerimaan_nobukti_index');
+            } 
+            if (! array_key_exists('pengeluaranstokheader_coa_index', $indexesFound)) {
+                $table->index('coa', 'pengeluaranstokheader_coa_index');
+            } 
+            if (! array_key_exists('pengeluaranstokheader_hutangbayar_nobukti_index', $indexesFound)) {
+                $table->index('hutangbayar_nobukti', 'pengeluaranstokheader_hutangbayar_nobukti_index');
+            } 
+            if (! array_key_exists('pengeluaranstokheader_statusformat_index', $indexesFound)) {
+                $table->index('statusformat', 'pengeluaranstokheader_statusformat_index');
+            }                                                                                                                                                                                         
+            if (! array_key_exists('pengeluaranstokheader_statuscetak_index', $indexesFound)) {
+                $table->index('statuscetak', 'pengeluaranstokheader_statuscetak_index');
+            }                                                                                                                                                                                         
+
         });
 
         DB::statement("ALTER TABLE pengeluaranstokheader NOCHECK CONSTRAINT pengeluaranstokheader_bank_bank_id_foreign");

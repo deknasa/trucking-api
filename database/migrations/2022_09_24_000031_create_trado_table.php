@@ -70,6 +70,47 @@ class CreateTradoTable extends Migration
 
             $table->foreign('mandor_id', 'trado_mandor_mandor_id_foreign')->references('id')->on('mandor');
             $table->foreign('supir_id', 'trado_supir_supir_id_foreign')->references('id')->on('supir');
+
+            $schemaManager = Schema::getConnection()->getDoctrineSchemaManager();
+            $indexesFound  = $schemaManager->listTableIndexes('trado');            
+
+            if (! array_key_exists('trado_kodetrado_index', $indexesFound)) {
+                $table->index('kodetrado', 'trado_kodetrado_index');
+            }        
+            if (! array_key_exists('trado_statusaktif_index', $indexesFound)) {
+                $table->index('statusaktif', 'trado_statusaktif_index');
+            }        
+            if (! array_key_exists('trado_statusgerobak_index', $indexesFound)) {
+                $table->index('statusgerobak', 'trado_statusgerobak_index');
+            }        
+            if (! array_key_exists('trado_statusstandarisasi_index', $indexesFound)) {
+                $table->index('statusstandarisasi', 'trado_statusstandarisasi_index');
+            }                                            
+            if (! array_key_exists('trado_statusjenisplat_index', $indexesFound)) {
+                $table->index('statusjenisplat', 'trado_statusjenisplat_index');
+            }                                            
+            if (! array_key_exists('trado_statusmutasi_index', $indexesFound)) {
+                $table->index('statusmutasi', 'trado_statusmutasi_index');
+            }                                            
+            if (! array_key_exists('trado_statusvalidasikendaraan_index', $indexesFound)) {
+                $table->index('statusvalidasikendaraan', 'trado_statusvalidasikendaraan_index');
+            }                                            
+            if (! array_key_exists('trado_statusmobilstoring_index', $indexesFound)) {
+                $table->index('statusmobilstoring', 'trado_statusmobilstoring_index');
+            }                                            
+            if (! array_key_exists('trado_mandor_id_index', $indexesFound)) {
+                $table->index('mandor_id', 'trado_mandor_id_index');
+            }                                            
+            if (! array_key_exists('trado_supir_id_index', $indexesFound)) {
+                $table->index('supir_id', 'trado_supir_id_index');
+            }                                            
+            if (! array_key_exists('trado_statusappeditban_index', $indexesFound)) {
+                $table->index('statusappeditban', 'trado_statusappeditban_index');
+            }                                            
+            if (! array_key_exists('trado_statuslewatvalidasi_index', $indexesFound)) {
+                $table->index('statuslewatvalidasi', 'trado_statuslewatvalidasi_index');
+            }                                            
+            
         });
 
         DB::statement("ALTER TABLE trado NOCHECK CONSTRAINT trado_mandor_mandor_id_foreign");

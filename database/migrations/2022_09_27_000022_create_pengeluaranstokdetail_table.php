@@ -35,6 +35,27 @@ class CreatePengeluaranstokdetailTable extends Migration
                       
             $table->foreign('pengeluaranstokheader_id', 'pengeluaranstokdetail_pengeluaranstokheader_pengeluaranstokheader_id_foreign')->references('id')->on('pengeluaranstokheader')->onDelete('cascade');  
             $table->foreign('stok_id', 'pengeluaranstokdetail_stok_stok_id_foreign')->references('id')->on('stok');
+
+            $schemaManager = Schema::getConnection()->getDoctrineSchemaManager();
+            $indexesFound  = $schemaManager->listTableIndexes('pengeluaranstokdetail');            
+
+            if (! array_key_exists('pengeluaranstokdetail_nobukti_index', $indexesFound)) {
+                $table->index('nobukti', 'pengeluaranstokdetail_nobukti_index');
+            }  
+
+            if (! array_key_exists('pengeluaranstokdetail_pengeluaranstokheader_id_index', $indexesFound)) {
+                $table->index('pengeluaranstokheader_id', 'pengeluaranstokdetail_pengeluaranstokheader_id_index');
+            } 
+
+            if (! array_key_exists('pengeluaranstokdetail_stok_id_index', $indexesFound)) {
+                $table->index('stok_id', 'pengeluaranstokdetail_stok_id_index');
+            }              
+            if (! array_key_exists('pengeluaranstokdetail_vulkanisirke_index', $indexesFound)) {
+                $table->index('vulkanisirke', 'pengeluaranstokdetail_vulkanisirke_index');
+            }             
+            if (! array_key_exists('pengeluaranstokdetail_pengeluaranstok_nobukti_index', $indexesFound)) {
+                $table->index('pengeluaranstok_nobukti', 'pengeluaranstokdetail_pengeluaranstok_nobukti_index');
+            }               
         });
 
         DB::statement("ALTER TABLE pengeluaranstokdetail NOCHECK CONSTRAINT pengeluaranstokdetail_stok_stok_id_foreign");

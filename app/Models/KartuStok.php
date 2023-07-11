@@ -52,10 +52,10 @@ class KartuStok extends MyModel
         $user = auth('api')->user()->name;
         $class = 'KartuStokController';
 
-        
+
 
         if ($proses == 'reload') {
-            $temtabel = 'temp' . rand(1, getrandmax()) . str_replace('.', '', microtime(true)). request()->nd ?? 0;
+            $temtabel = 'temp' . rand(1, getrandmax()) . str_replace('.', '', microtime(true)) . request()->nd ?? 0;
 
             $querydata = DB::table('listtemporarytabel')->from(
                 DB::raw("listtemporarytabel a with (readuncommitted)")
@@ -100,6 +100,11 @@ class KartuStok extends MyModel
                 $table->double('qtysaldo', 15, 2)->nullable();
                 $table->double('nilaisaldo', 15, 2)->nullable();
                 $table->string('modifiedby', 100)->nullable();
+
+                $table->index('kodebarang', 'temtabel_kodebarang_index');                
+                $table->index('namabarang', 'temtabel_namabarang_index');                
+                $table->index('nobukti', 'temtabel_nobukti_index');                
+                $table->index('kategori_id', 'temtabel_kategori_id_index');                   
             });
 
             if ($datafilter == 0) {
@@ -194,10 +199,10 @@ class KartuStok extends MyModel
                 )
                 ->where('class', '=', $class)
                 ->where('modifiedby', '=', $user)
-                ->first(); 
+                ->first();
 
-                // dd($querydata);
-                $temtabel = $querydata->namatabel;
+            // dd($querydata);
+            $temtabel = $querydata->namatabel;
         }
 
         $query = DB::table(DB::raw($temtabel))->from(
@@ -569,6 +574,8 @@ class KartuStok extends MyModel
 
 
         $templaporan = '##templaporan' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+
+
         Schema::create($templaporan, function ($table) {
             $table->id();
             $table->unsignedBigInteger('kodebarang')->nullable();
@@ -583,7 +590,14 @@ class KartuStok extends MyModel
             $table->double('qtysaldo', 15, 2)->nullable();
             $table->double('nilaisaldo', 15, 2)->nullable();
             $table->string('modifiedby', 100)->nullable();
+
+            $table->index('kodebarang', 'templaporan_kodebarang_index');
+            $table->index('kategori_id', 'templaporan_kategori_id_index');
+            $table->index('namabarang', 'templaporan_namabarang_index');
+            $table->index('nobukti', 'templaporan_nobukti_index');
         });
+
+
 
         $temprekap = '##temprekap' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
         Schema::create($temprekap, function ($table) {
@@ -601,6 +615,13 @@ class KartuStok extends MyModel
             $table->double('qtysaldo', 15, 2)->nullable();
             $table->double('nilaisaldo', 15, 2)->nullable();
             $table->string('modifiedby', 100)->nullable();
+
+            $table->index('statusmasuk', 'temprekap_statusmasuk_index');
+            $table->index('kodebarang', 'temprekap_kodebarang_index');
+            $table->index('kategori_id', 'temprekap_kategori_id_index');
+            $table->index('namabarang', 'temprekap_namabarang_index');
+            $table->index('nobukti', 'temprekap_nobukti_index');
+            
         });
 
 
@@ -610,6 +631,8 @@ class KartuStok extends MyModel
             $table->unsignedBigInteger('kodebarang')->nullable();
             $table->double('qtymasuk', 15, 2)->nullable();
             $table->double('nilaimasuk', 15, 2)->nullable();
+
+            $table->index('kodebarang', 'tempsaldoawalmasuk_kodebarang_index');            
         });
 
         $tempsaldoawalkeluar = '##tempsaldoawalkeluar' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
@@ -618,6 +641,8 @@ class KartuStok extends MyModel
             $table->unsignedBigInteger('kodebarang')->nullable();
             $table->double('qtykeluar', 15, 2)->nullable();
             $table->double('nilaikeluar', 15, 2)->nullable();
+
+            $table->index('kodebarang', 'tempsaldoawalkeluar_kodebarang_index');                 
         });
 
         $tempsaldoawal = '##tempsaldoawal' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
@@ -626,6 +651,8 @@ class KartuStok extends MyModel
             $table->unsignedBigInteger('kodebarang')->nullable();
             $table->double('qtysaldo', 15, 2)->nullable();
             $table->double('nilaisaldo', 15, 2)->nullable();
+
+            $table->index('kodebarang', 'tempsaldoawal_kodebarang_index');                  
         });
 
         $gudangkantor = Parameter::where('grp', 'GUDANG KANTOR')->where('subgrp', 'GUDANG KANTOR')->first();
@@ -1502,6 +1529,11 @@ class KartuStok extends MyModel
             $table->double('qtysaldo', 15, 2)->nullable();
             $table->double('nilaisaldo', 15, 2)->nullable();
             $table->string('modifiedby', 100)->nullable();
+
+            $table->index('kodebarang', 'temprekapall_kodebarang_index');                
+            $table->index('namabarang', 'temprekapall_namabarang_index');                
+            $table->index('nobukti', 'temprekapall_nobukti_index');                
+            $table->index('kategori_id', 'temprekapall_kategori_id_index');                
         });
 
 

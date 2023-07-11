@@ -38,6 +38,19 @@ class CreatePenerimaanstokdetailTable extends Migration
             $table->foreign('penerimaanstokheader_id', 'penerimaanstokdetail_penerimaanstokheader_penerimaanstokheader_id_foreign')->references('id')->on('penerimaanstokheader')->onDelete('cascade');  
             $table->foreign('stok_id', 'penerimaanstokdetail_stok_stok_id_foreign')->references('id')->on('stok');
 
+            $schemaManager = Schema::getConnection()->getDoctrineSchemaManager();
+            $indexesFound  = $schemaManager->listTableIndexes('penerimaanstokdetail');            
+
+            if (! array_key_exists('penerimaanstokdetail_nobukti_index', $indexesFound)) {
+                $table->index('nobukti', 'penerimaanstokdetail_nobukti_index');
+            }      
+            if (! array_key_exists('penerimaanstokdetail_penerimaanstokheader_id_index', $indexesFound)) {
+                $table->index('penerimaanstokheader_id', 'penerimaanstokdetail_penerimaanstokheader_id_index');
+            }      
+            if (! array_key_exists('penerimaanstokdetail_penerimaanstok_nobukti_index', $indexesFound)) {
+                $table->index('penerimaanstok_nobukti', 'penerimaanstokdetail_penerimaanstok_nobukti_index');
+            }                                
+
         });
         
         DB::statement("ALTER TABLE penerimaanstokdetail NOCHECK CONSTRAINT penerimaanstokdetail_stok_stok_id_foreign");
