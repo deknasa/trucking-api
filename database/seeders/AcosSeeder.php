@@ -709,8 +709,8 @@ class AcosSeeder extends Seeder
         acos::create(['class' => 'laporankartuhutangpersupplier', 'method' => 'index', 'nama' => 'index LaporanKartuHutangPerSupplierController', 'modifiedby' => 'ADMIN',]);
         acos::create(['class' => 'laporankartuhutangpersupplier', 'method' => 'report', 'nama' => 'report LaporanKartuHutangPerSupplierController', 'modifiedby' => 'ADMIN',]);
         acos::create(['class' => 'laporankartuhutangpersupplier', 'method' => 'export', 'nama' => 'export LaporanKartuHutangPerSupplierController', 'modifiedby' => 'ADMIN',]);
-        acos::create(['class' => 'laporankartupiutangperpelanggan', 'method' => 'index', 'nama' => 'index LaporanKartuPiutangPerPelangganController', 'modifiedby' => 'ADMIN',]);
-        acos::create(['class' => 'laporankartupiutangperpelanggan', 'method' => 'report', 'nama' => 'report LaporanKartuPiutangPerPelangganController', 'modifiedby' => 'ADMIN',]);
+        acos::create(['class' => 'laporankartupiutangperagen', 'method' => 'index', 'nama' => 'index laporankartupiutangperagenController', 'modifiedby' => 'ADMIN',]);
+        acos::create(['class' => 'laporankartupiutangperagen', 'method' => 'report', 'nama' => 'report laporankartupiutangperagenController', 'modifiedby' => 'ADMIN',]);
         acos::create(['class' => 'approvaltradoketerangan', 'method' => 'index', 'nama' => 'index ApprovalTradoKeteranganController', 'modifiedby' => 'ADMIN',]);
         acos::create(['class' => 'approvaltradoketerangan', 'method' => 'store', 'nama' => 'store ApprovalTradoKeteranganController', 'modifiedby' => 'ADMIN',]);
         acos::create(['class' => 'approvaltradoketerangan', 'method' => 'update', 'nama' => 'update ApprovalTradoKeteranganController', 'modifiedby' => 'ADMIN',]);
