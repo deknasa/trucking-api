@@ -25,18 +25,13 @@ class LaporanHistoryPinjaman extends MyModel
     ];
 
 
-    public function getReport($supirdari_id, $supirsampai_id){
-    // dd("sdad");
-    $getJudul = DB::table('parameter')
-    ->select('text')
-    ->where('grp', 'JUDULAN LAPORAN')
-    ->where('subgrp', 'JUDULAN LAPORAN')
-    ->first();
-// dd("Sdsa");
-$pengeluarantrucking_id = 1;
-$penerimaantrucking_id = 2;
+    public function getReport($supirdari_id, $supirsampai_id)
+    {
+        $getJudul = DB::table('parameter')->select('text')->where('grp', 'JUDULAN LAPORAN')->where('subgrp', 'JUDULAN LAPORAN')->first();
+        $pengeluarantrucking_id = 1;
+        $penerimaantrucking_id = 2;
 
-$temphistory = '##temphistory' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+        $temphistory = '##temphistory' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
         Schema::create($temphistory, function ($table) {
             $table->string('nobukti', 50);
             $table->date('tglbukti');
@@ -55,9 +50,9 @@ $temphistory = '##temphistory' . rand(1, getrandmax()) . str_replace('.', '', mi
             DB::raw('1 as tipe'),
         ])
         ->join(DB::raw("pengeluarantruckingdetail AS B with (readuncommitted)"), 'A.nobukti', '=', 'B.nobukti')
-        ->where('B.supir_id', '>=', $supirdari_id)
-        ->where('B.supir_id', '<=', $supirsampai_id)
-        ->where('pengeluarantrucking_id', '=', $pengeluarantrucking_id)
+        ->whereRaw("B.supir_id >= $supirdari_id")
+        ->whereRaw("B.supir_id <= $supirsampai_id")
+        ->where('a.pengeluarantrucking_id',$pengeluarantrucking_id)
         ->orderBy('B.supir_id')
         ->orderBy('A.tglbukti')
         ->orderBy('A.nobukti');
@@ -71,9 +66,9 @@ $temphistory = '##temphistory' . rand(1, getrandmax()) . str_replace('.', '', mi
             'tipe',
         ], $select_temphistory);
         // dd($select_temphistory->get());
-    // dd($select_temphistory->get());
+        // dd($select_temphistory->get());
     
-    $select_temphistory2 = DB::table('penerimaantruckingheader')->from(DB::raw("penerimaantruckingheader AS A WITH (READUNCOMMITTED)"))
+        $select_temphistory2 = DB::table('penerimaantruckingheader')->from(DB::raw("penerimaantruckingheader AS A WITH (READUNCOMMITTED)"))
         ->select([
             DB::raw("A.nobukti + (CASE WHEN ISNULL(D.nobukti, '') = '' THEN '' ELSE '( ' + ISNULL(D.nobukti, '') + ' ) ' END) AS nobukti"),
             'A.tglbukti',
