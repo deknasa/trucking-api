@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\LaporanHistoryPinjaman;
+use App\Models\Supir;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
@@ -29,15 +30,16 @@ class LaporanHistoryPinjamanController extends Controller
     {
         $supirdari_id = $request->supirdari_id;
         $supirsampai_id = $request->supirsampai_id;
-        $supirdari = $request->supirdari;
-        $supirsampai = $request->supirsampai;
+        $supirdari = Supir::find($supirdari_id);
+        $supirsampai = Supir::find($supirsampai_id);
 
         $laporanhistorypinjaman = new LaporanHistoryPinjaman();
-
-
+        
         $laporan_historypinjaman= $laporanhistorypinjaman->getReport($supirdari_id, $supirsampai_id);
         foreach($laporan_historypinjaman as $item){
             $item->tglbukti = date('d-m-Y', strtotime($item->tglbukti));
+            $item->supirdari = $supirdari->namasupir;
+            $item->supirsampai = $supirsampai->namasupir;
         }
    
         return response([
@@ -60,7 +62,7 @@ class LaporanHistoryPinjamanController extends Controller
         $laporanhistorypinjaman = new LaporanHistoryPinjaman();
 
 
-        $laporan_historypinjaman= $laporanhistorypinjaman->getExport($supirdari_id, $supirsampai_id);
+        $laporan_historypinjaman= $laporanhistorypinjaman->getReport($supirdari_id, $supirsampai_id);
         foreach($laporan_historypinjaman as $item){
             $item->tglbukti = date('d-m-Y', strtotime($item->tglbukti));
         }
