@@ -242,8 +242,9 @@ class KartuStok extends MyModel
 
         $this->totalRows = $query->count();
         $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;
+        $query->orderBy('a.' . $this->params['sortIndex'], $this->params['sortOrder']);
         $this->filter($query);
-        // $this->paginate($query);
+        $this->paginate($query);
 
         $data = $query->get();
 
