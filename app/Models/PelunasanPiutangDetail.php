@@ -39,6 +39,7 @@ class PelunasanPiutangDetail extends MyModel
                 $this->table . '.keterangan',
                 $this->table .'.nominallebihbayar',
                 $this->table .'.potongan',
+                DB::raw("'' as sisapiutang"),
             )
                 ->leftJoin(DB::raw("akunpusat with (readuncommitted)"), $this->table .'.coapotongan', 'akunpusat.coa');
             $query->where($this->table . '.pelunasanpiutang_id', '=', request()->pelunasanpiutang_id);

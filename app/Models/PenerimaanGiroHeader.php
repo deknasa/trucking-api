@@ -712,23 +712,25 @@ class PenerimaanGiroHeader extends MyModel
                 'penerimaangiroheader.id',
                 'penerimaangiroheader.nobukti',
                 'penerimaangiroheader.tglbukti',
-                'pelanggan.namapelanggan as pelanggan_id',
+                'cabang.namacabang as cabang',
                 'agen.namaagen as agen_id',
-                'penerimaangiroheader.postingdari',
                 'penerimaangiroheader.diterimadari',
-                'penerimaangiroheader.tgllunas',
+                'detail.nowarkat as nowarkat',
+                'bank.namabank as bank',
                 'penerimaangiroheader.jumlahcetak',
                 'statuscetak.memo as statuscetak',
                 'statuscetak.id as  statuscetak_id',
-                DB::raw("'Laporan Penerimaan Giro' as judulLaporan"),
+                DB::raw("'Bukti Penerimaan Giro' as judulLaporan"),
                 DB::raw("'" . $getJudul->text . "' as judul"),
                 DB::raw("'Tgl Cetak:'+format(getdate(),'dd-MM-yyyy HH:mm:ss')as tglcetak"),
                 DB::raw(" 'User :".auth('api')->user()->name."' as usercetak")
                 
             )
             ->where("$this->table.id", $id)
+            ->leftJoin(DB::raw("penerimaangirodetail as detail with (readuncommitted)"), "penerimaangiroheader.id",  $this->table . '.id')
+            ->leftJoin(DB::raw("bank with (readuncommitted)"), 'detail.bank_id', 'bank.id')
             ->leftJoin(DB::raw("parameter as statuscetak with (readuncommitted)"), 'penerimaangiroheader.statuscetak', 'statuscetak.id')
-            ->leftJoin(DB::raw("pelanggan with (readuncommitted)"), 'penerimaangiroheader.pelanggan_id', 'pelanggan.id')
+            ->leftJoin(DB::raw("cabang with (readuncommitted)"), 'penerimaangiroheader.cabang_id', 'cabang.id')
             ->leftJoin(DB::raw("agen with (readuncommitted)"), 'penerimaangiroheader.agen_id', 'agen.id');
         $data = $query->first();
         return $data;

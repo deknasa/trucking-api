@@ -30,17 +30,10 @@ class NotaDebetDetail extends MyModel
 
         if (isset(request()->forReport) && request()->forReport) {
             $query->select(
-                "header.nobukti as nobukti_header",
-                "header.tglbukti",
-                "$this->table.nobukti",
-                "$this->table.tglterima",
                 "$this->table.invoice_nobukti",
-                "$this->table.nominal",
-                "$this->table.nominalbayar",
                 "$this->table.lebihbayar",
                 "$this->table.keterangan",
                 "akunpusat.keterangancoa as coalebihbayar",
-                "$this->table.modifiedby"
 
             )
                 ->leftJoin('notadebetheader as header', 'header.id', $this->table . '.notadebet_id')

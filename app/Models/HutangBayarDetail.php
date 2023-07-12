@@ -51,29 +51,12 @@ class HutangBayarDetail extends MyModel
 
         if (isset(request()->forReport) && request()->forReport) {
             $query->select(
-                'header.nobukti',
-                'header.tglbukti',
-                'header.keterangan as keteranganheader',
-                'header.pengeluaran_nobukti',
-                'header.coa',
-                'bank.namabank as bank',
-                'supplier.namasupplier as supplier',
-                'pelanggan.namapelanggan as pelanggan',
                 $this->table . '.nominal',
                 $this->table . '.keterangan',
-                'header.tglcair',
-                $this->table . '.potongan',
                 $this->table . '.hutang_nobukti',
-                'alatbayar.namaalatbayar as alatbayar_id',
-
+                DB::raw("'' as tgljatuhtempo"),
             )
-                ->leftJoin(DB::raw("hutangbayarheader as header with (readuncommitted)"), 'header.id', $this->table . '.hutangbayar_id')
-                ->leftJoin(DB::raw("bank with (readuncommitted)"), 'header.bank_id', 'bank.id')
-                ->leftJoin(DB::raw("supplier with (readuncommitted)"), 'header.supplier_id', 'supplier.id')
-                ->leftJoin(DB::raw("pelanggan with (readuncommitted)"), 'header.pelanggan_id', 'pelanggan.id')
-                ->leftJoin(DB::raw("alatbayar with (readuncommitted)"), 'header.alatbayar_id', 'alatbayar.id');
-
-            $query->where($this->table . '.hutangbayar_id', '=', request()->hutangbayar_id);
+            ->where($this->table . '.hutangbayar_id', '=', request()->hutangbayar_id);
         } else {
             $query->select(
                 $this->table . '.nobukti',
@@ -82,7 +65,6 @@ class HutangBayarDetail extends MyModel
                 $this->table . '.potongan',
                 $this->table . '.hutang_nobukti'
             );
-
             $this->sort($query);
             $query->where($this->table . '.hutangbayar_id', '=', request()->hutangbayar_id);
             $this->filter($query);

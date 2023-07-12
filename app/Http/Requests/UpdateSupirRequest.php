@@ -11,6 +11,9 @@ use App\Http\Controllers\Api\ParameterController;
 use App\Http\Controllers\Api\ErrorController;
 use App\Rules\SupirBlackListKtp;
 use App\Rules\SupirBlackListSim;
+use App\Rules\NoKtpSupir;
+use App\Rules\NoSimSupir;
+use App\Rules\NoTelpSupir;
 
 class UpdateSupirRequest extends FormRequest
 {
@@ -88,12 +91,12 @@ class UpdateSupirRequest extends FormRequest
             'alamat' => [$ruleKeterangan],
             'namaalias' => $ruleKeterangan,
             'kota' => [$ruleKeterangan],
-            'telp' => [$ruleKeterangan,'min:8','max:50','unique:supir,telp,' . $this->supir->id,'nullable'],
+            'telp' => [$ruleKeterangan,'min:8','max:50',new NoTelpSupir(),],
             'statusaktif' => [$ruleKeterangan,'int','exists:parameter,id'],
             'tglmasuk' => [$ruleKeterangan],
             'tglexpsim' => [$ruleKeterangan],
-            'nosim' => [$ruleKeterangan,'min:12','max:12','unique:supir,nosim,' . $this->supir->id,'nullable',new SupirBlackListSim()], //.',nosim',
-            'noktp' => ['required','min:16','max:16','unique:supir,noktp,' . $this->supir->id,'nullable',new SupirBlackListKtp()], //.',noktp',
+            'nosim' => [$ruleKeterangan,'min:12','max:12', new NoSimSupir(),new SupirBlackListSim()], //.',nosim',
+            'noktp' => ['required','min:16','max:16', new NoKtpSupir(),new SupirBlackListKtp()], //.',noktp',
             'nokk' => [$ruleKeterangan,'min:16','max:16','nullable'],
             'tgllahir' => [
                 $ruleKeterangan, 'date_format:d-m-Y', 
