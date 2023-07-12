@@ -53,15 +53,16 @@ class UpahRitasiRincian extends MyModel
         Schema::create($tempdata, function ($table) {
             $table->string('kotadari', 1000)->nullable();
             $table->string('kotasampai', 1000)->nullable();
-            $table->integer('jarak')->nullable();
+            $table->double('nominalsupir', 15, 2)->nullable();
+            $table->double('jarak', 15, 2)->nullable();
             $table->date('tglmulaiberlaku')->nullable();
-           
         });
 
         foreach ($data as $item) {
             $values = array(
                 'kotadari' => $item['kotadari'],
                 'kotasampai' => $item['kotasampai'],
+                'nominalsupir' => $item['nominalsupir'],
                 'jarak' => $item['jarak'],
                 'tglmulaiberlaku' => $item['tglmulaiberlaku'],
             );
@@ -70,27 +71,32 @@ class UpahRitasiRincian extends MyModel
 
         $temptgl = '##temptgl' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
         Schema::create($temptgl, function ($table) {
+            $table->string('kotadari', 1000)->nullable();
+            $table->string('kotasampai', 1000)->nullable();
             $table->date('tglmulaiberlaku')->nullable();
         });
 
         $querytgl = DB::table('upahritasi')
             ->from(DB::raw("upahritasi with (readuncommitted)"))
             ->select(
-                'tglmulaiberlaku'
+                'kotadari.keterangan as kotadari',
+                'kotasampai.keterangan as kotasampai',
+                'tglmulaiberlaku',
             )
-            ->groupBy('tglmulaiberlaku');
 
-        DB::table($temptgl)->insertUsing(['tglmulaiberlaku'], $querytgl);
+            ->leftJoin(DB::raw("kota as kotadari with (readuncommitted)"), 'kotadari.id', '=', 'upahritasi.kotadari_id')
+            ->leftJoin(DB::raw("kota as kotasampai with (readuncommitted)"), 'kotasampai.id', '=', 'upahritasi.kotasampai_id');
 
+        DB::table($temptgl)->insertUsing(['kotadari', 'kotasampai', 'tglmulaiberlaku'], $querytgl);
 
+                // dd( DB::table($tempdata)->get(),  DB::table($temptgl)->get());
         $query = DB::table($tempdata)
             ->from(DB::raw($tempdata . " as a"))
-            ->select(
-                'a.tglmulaiberlaku'
-            )
             ->join(DB::raw($temptgl . " as b"), 'a.tglmulaiberlaku', 'b.tglmulaiberlaku')
+            ->where('a.kotadari', 'b.kotadari')
+            ->where('a.kotasampai', 'b.kotasampai')
+            ->whereRaw("a.tglmulaiberlaku = b.tglmulaiberlaku")
             ->first();
-
 
         if (isset($query)) {
             $kondisi = true;
@@ -190,7 +196,7 @@ class UpahRitasiRincian extends MyModel
         ], $query);
 
         $id = DB::table($tempdata)->first();
-        
+
         if ($id == null) {
             return null;
         } else {
@@ -213,7 +219,7 @@ class UpahRitasiRincian extends MyModel
                     'upahritasi.jarak',
                     'upahritasi.tglmulaiberlaku',
                     DB::raw("isnull(upahritasi.nominalsupir,0) as nominal"),
-                    
+
                 )
                 ->leftJoin(DB::raw("kota with (readuncommitted)"), 'upahritasi.kotasampai_id', '=', 'kota.id')
                 ->leftJoin(DB::raw("kota as dari with (readuncommitted)"), 'upahritasi.kotadari_id', '=', 'dari.id');
@@ -226,7 +232,7 @@ class UpahRitasiRincian extends MyModel
                 'jarak',
                 'tglmulaiberlaku',
                 'nominal',
-                
+
             ], $querytempupah);
 
             $tempdatagroup = '##tempdatagroup' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
@@ -285,13 +291,13 @@ class UpahRitasiRincian extends MyModel
             // $statement = ' select b.dari as [Dari],b.tujuan as [Tujuan],b.jarak as [Jarak], b.nominal as [Nominal],b.tglmulaiberlaku as [Tgl Mulai Berlaku],A.* from (select id,' . $columnid . ' from 
             //     (select A.id,A.container
             //         from ' . $tempdata . ' A) as SourceTable
-            
+
             //     Pivot (
             //         max(nominal)
             //         for container in (' . $columnid . ')
             //         ) as PivotTable)A
             //     inner join ' . $tempupah . ' b with (readuncommitted) on A.id=B.id
-                
+
 
             // ';
 
@@ -326,7 +332,7 @@ class UpahRitasiRincian extends MyModel
             'container.keterangan as container',
             'container.id as container_id',
             db::Raw("0 as nominalsupir"),
-            db::Raw("0 as liter"),            
+            db::Raw("0 as liter"),
         );
 
         return $query->get();
@@ -385,7 +391,7 @@ class UpahRitasiRincian extends MyModel
         $upahritasirincian->nominalsupir = 0;
         $upahritasirincian->liter = $data['liter'];
         $upahritasirincian->modifiedby = auth('api')->user()->name;
-        
+
         if (!$upahritasirincian->save()) {
             throw new \Exception("Gagal menyimpan upah ritasi detail.");
         }

@@ -30,7 +30,7 @@ class UpahRitasiRincianController extends Controller
         ];
 
         try {
-            $query = UpahRitasiRincian::from(DB::raw("upahritasirincian as detail with (readuncommitted)"));
+            $query = DB::table("upahritasirincian")->from(DB::raw("upahritasirincian as detail with (readuncommitted)"));
 
             if (isset($params['id'])) {
                 $query->where('detail.id', $params['id']);
@@ -60,7 +60,7 @@ class UpahRitasiRincianController extends Controller
                 $query->select(
                     'kotadari.keterangan as kotadari',
                     'kotasampai.keterangan as kotasampai',
-                    'header.jarak',
+                    DB::raw("round(cast(header.jarak as money),2) as jarak"),
                     'zona.keterangan as zona',
                     'container.keterangan as container_id',
                     'header.tglmulaiberlaku',
@@ -76,7 +76,7 @@ class UpahRitasiRincianController extends Controller
                     ->leftJoin(DB::raw("kota as kotasampai with (readuncommitted)"), 'kotasampai.id', '=', 'header.kotasampai_id')
                     ->leftJoin(DB::raw("zona with (readuncommitted)"), 'header.zona_id', 'zona.id')
                     ->leftJoin(DB::raw("container with (readuncommitted)"), 'container.id', 'detail.container_id');
-
+                
                 $upahritasi = $query->get();
             } else {
                 $query->select(
