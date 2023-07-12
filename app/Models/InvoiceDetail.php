@@ -30,30 +30,25 @@ class InvoiceDetail extends MyModel
 
         if (isset(request()->forReport) && request()->forReport) {
             $query->select(
-                'header.id as id_header',
-                'header.nobukti as nobukti_header',
-                'header.tglbukti',
-                'header.nominal as nominal_header',
-                'agen.namaagen as agen',
-                'cabang.namacabang as cabang',
-                $this->table . '.orderantrucking_nobukti',
+                'suratpengantar.tglsp',
+                'pelanggan.namapelanggan as shipper',
+                'kota.keterangan as tujuan',
+                'suratpengantar.nocont',
+                'container.kodecontainer as ukcont',
+                DB::raw("'' as [full]"),
+                DB::raw("'' as empty"),
+                DB::raw("'' as fullEmpty"),
                 $this->table . '.nominal as omset',
-                $this->table . '.total as total_detail',
-                $this->table . '.nominalextra as extra',
-                'suratpengantar.keterangan',
-                $this->table . '.invoice_id',
-                $this->table . '.nominalretribusi',
-                $this->table . '.suratpengantar_nobukti',
+                DB::raw("({$this->table}.nominalextra + {$this->table}.nominalretribusi) as extra"),
+                $this->table . '.total as jumlah',
+                $this->table . '.keterangan',
             )
-                ->distinct($this->table . '.orderantrucking_nobukti')
+                ->where($this->table . '.invoice_id', '=', request()->invoice_id)
                 ->leftJoin(DB::raw("suratpengantar with (readuncommitted)"), $this->table . '.orderantrucking_nobukti', 'suratpengantar.jobtrucking')
-                ->leftJoin(DB::raw("invoiceheader as header with (readuncommitted)"), 'header.id', $this->table . '.invoice_id')
-                ->leftJoin(DB::raw("agen with (readuncommitted)"), 'header.agen_id', 'agen.id')
-                ->leftJoin(DB::raw("cabang with (readuncommitted)"), 'header.cabang_id', 'cabang.id')
+                ->leftJoin(DB::raw("pelanggan with (readuncommitted)"), 'suratpengantar.pelanggan_id', 'pelanggan.id')
+                ->leftJoin(DB::raw("container with (readuncommitted)"), 'suratpengantar.container_id', 'container.id')
                 ->leftJoin(DB::raw("kota with (readuncommitted)"), 'suratpengantar.sampai_id', 'kota.id');
-
-
-            $query->where($this->table . '.invoice_id', '=', request()->invoice_id);
+    
         } else if (isset(request()->forExport) && request()->forExport) {
             $query->select(
                 'header.nobukti as nobukti_header',

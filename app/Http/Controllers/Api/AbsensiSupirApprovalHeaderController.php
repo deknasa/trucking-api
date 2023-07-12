@@ -258,7 +258,6 @@ class AbsensiSupirApprovalHeaderController extends Controller
 
     public function cekvalidasi($id)
     {
-
         $absensisupirapproval = AbsensiSupirApprovalHeader::find($id);
         $statusdatacetak = $absensisupirapproval->statuscetak;
         $statusCetak = Parameter::where('grp', 'STATUSCETAK')->where('text', 'CETAK')->first();
