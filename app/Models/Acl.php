@@ -29,15 +29,26 @@ class Acl extends MyModel
     {
         $this->setRequestParameters();
 
+        $getJudul = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))
+                    ->select('text')
+                    ->where('grp', 'JUDULAN LAPORAN')
+                    ->where('subgrp', 'JUDULAN LAPORAN')
+                    ->first();
         $query = DB::table($this->table)->from(
             DB::raw($this->table . " with (readuncommitted)")
         )->select(
             DB::raw("role.rolename as rolename,
                         acl.role_id as role_id,
+                        min(acl.id) as id,
                         min(acl.id) as id_,
                         max(acl.modifiedby) as modifiedby,
                         max(acl.created_at) as created_at,
-                            max(acl.updated_at) as updated_at")
+                            max(acl.updated_at) as updated_at"),
+            DB::raw("'Laporan Absen Trado' as judulLaporan"),
+                DB::raw("'" . $getJudul->text . "' as judul"),
+                DB::raw("'Tgl Cetak :'+format(getdate(),'dd-MM-yyyy HH:mm:ss')as tglcetak"),
+                DB::raw(" 'User :".auth('api')->user()->name."' as usercetak")
+                            
         )
             ->Join(DB::raw("role with (readuncommitted)"), 'acl.role_id', '=', 'role.id')
             ->groupby('acl.role_id', 'role.rolename');
