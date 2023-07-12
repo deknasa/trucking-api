@@ -59,30 +59,15 @@ class PenerimaanGiroDetail extends MyModel
 
         if (isset(request()->forReport) && request()->forReport) {
             $query->select(
-                'header.nobukti',
-                'header.tglbukti',
-                'ph.namapelanggan as pelangganheader',
-                'header.tgllunas',
-                'header.diterimadari',
-                $this->table . '.nowarkat',
-                $this->table . '.tgljatuhtempo',
-                'debetcoa.keterangancoa as coadebet',
-                'kreditcoa.keterangancoa as coakredit',
+                'kreditcoa.keterangancoa as namacoakredit',
                 'bank.namabank as bank_id',
-                'bankpelanggan.namabank as bankpelanggan_id',
+                $this->table . '.tgljatuhtempo',
                 $this->table . '.invoice_nobukti',
-                $this->table . '.pelunasanpiutang_nobukti',
-                $this->table . '.jenisbiaya',
-                DB::raw("(case when year(cast(penerimaangirodetail.bulanbeban as datetime))<='2000' then '' else format(penerimaangirodetail.bulanbeban,'yyyy-MM-dd') end) as bulanbeban"),
                 $this->table . '.keterangan',
-                $this->table . '.nominal'
+                $this->table . '.nominal',
             )
-                ->leftJoin(DB::raw("penerimaangiroheader as header with (readuncommitted)"), 'header.id', $this->table . '.penerimaangiro_id')
-                ->leftJoin(DB::raw("pelanggan as ph with (readuncommitted)"), 'header.pelanggan_id', 'ph.id')
                 ->leftJoin(DB::raw("bank with (readuncommitted)"), $this->table . '.bank_id', 'bank.id')
-                ->leftjoin(DB::raw("akunpusat as debetcoa with (readuncommitted)"), $this->table .'.coadebet', 'debetcoa.coa')
-                ->leftjoin(DB::raw("akunpusat as kreditcoa with (readuncommitted)"), $this->table .'.coakredit', 'kreditcoa.coa')
-                ->leftJoin(DB::raw("bankpelanggan with (readuncommitted)"), $this->table . '.bankpelanggan_id', 'bankpelanggan.id');
+                ->leftjoin(DB::raw("akunpusat as kreditcoa with (readuncommitted)"), $this->table .'.coakredit', 'kreditcoa.coa');
 
             $query->where($this->table . '.penerimaangiro_id', '=', request()->penerimaangiro_id);
         } else {

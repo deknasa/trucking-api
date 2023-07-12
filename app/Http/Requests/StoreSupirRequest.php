@@ -13,6 +13,7 @@ use App\Rules\SupirBlackListKtp;
 use App\Rules\SupirBlackListSim;
 use App\Rules\NoKtpSupir;
 use App\Rules\NoSimSupir;
+use App\Rules\NoTelpSupir;
 
 class StoreSupirRequest extends FormRequest
 {
@@ -87,12 +88,12 @@ class StoreSupirRequest extends FormRequest
             'alamat' => [$ruleKeterangan],
             'namaalias' => [$ruleKeterangan],
             'kota' => [$ruleKeterangan],
-            'telp' => [$ruleKeterangan,'unique:supir','min:8','max:50','nullable'],
+            'telp' => [$ruleKeterangan,'min:8','max:50','nullable', new NoTelpSupir()],
             'statusaktif' => [$ruleKeterangan,'int','exists:parameter,id'],
             'tglmasuk' => [$ruleKeterangan],
             'tglexpsim' => [$ruleKeterangan],
             'nosim' => [$ruleKeterangan,'min:12','max:12','nullable',new SupirBlackListSim()],
-            'noktp' => ['required','min:16','max:16', new SupirBlackListKtp()],
+            'noktp' => ['required','min:16','max:16', new NoKtpSupir(), new SupirBlackListKtp()],
             'nokk' => [$ruleKeterangan,'min:16','max:16','nullable'],
             'tgllahir' => [
                 $ruleKeterangan, 'date_format:d-m-Y', 
@@ -152,8 +153,6 @@ class StoreSupirRequest extends FormRequest
             'nokk.min' => 'Min. 16 karakter',
             'nosim.max' => 'Max. 12 karakter',
             'nosim.min' => 'Min. 12 karakter',
-            'nosim.unique' => ':attribute Sudah digunakan',
-            'noktp.unique' => ':attribute Sudah digunakan',
             'tgllahir.after_or_equal' => ':attribute ' . $controller->geterror('NTLK')->keterangan.' '. date('d-m-Y', strtotime($tglbatasawal)). ' dan '. $controller->geterror('NTLB')->keterangan.' '. date('d-m-Y', strtotime($tglbatasakhir)),            
             'tgllahir.before_or_equal' => ':attribute ' . $controller->geterror('NTLK')->keterangan.' '. date('d-m-Y', strtotime($tglbatasawal)). ' dan '. $controller->geterror('NTLB')->keterangan.' '. date('d-m-Y', strtotime($tglbatasakhir)),  
         ];

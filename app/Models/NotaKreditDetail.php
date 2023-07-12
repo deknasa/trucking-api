@@ -31,19 +31,13 @@ class NotaKreditDetail extends MyModel
 
         if (isset(request()->forReport) && request()->forReport) {
             $query->select(
-                "$this->table.id",
-                "$this->table.notakredit_id",
-                "$this->table.nobukti",
-                "$this->table.tglterima",
                 "$this->table.invoice_nobukti",
-                "$this->table.nominal",
-                "$this->table.nominalbayar",
                 "$this->table.penyesuaian",
                 "$this->table.keterangan",
                 "$this->table.coaadjust",
-                "$this->table.modifiedby"
+                "akunpusat.keterangancoa as coaadjust",
             )
-            ->leftJoin('notakreditheader as header', 'header.id', $this->table.'.notakredit_id');
+            ->leftJoin(DB::raw("akunpusat with (readuncommitted)"), "$this->table.coaadjust", 'akunpusat.coa');
 
             $query->where($this->table . ".notakredit_id", "=", request()->notakredit_id);
         } else {
