@@ -133,8 +133,7 @@ class KategoriController extends Controller
             ];
             $kategori = (new Kategori())->processUpdate($kategori, $data);
             $kategori->position = $this->getPosition($kategori, $kategori->getTable())->position;
-            $kategori->page = ceil($kategori->position / ($request->limit ?? 10));
-
+            $kategori->page = ceil($kategori->position / ((($request->limit)?$request->limit:10) ?? 10));
             DB::commit();
 
             return response()->json([

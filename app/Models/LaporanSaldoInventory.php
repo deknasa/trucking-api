@@ -8,4 +8,22 @@ use Illuminate\Database\Eloquent\Model;
 class LaporanSaldoInventory extends MyModel
 {
     use HasFactory;
+ 
+    protected $table = '';
+
+    protected $casts = [
+        'created_at' => 'date:d-m-Y H:i:s',
+        'updated_at' => 'date:d-m-Y H:i:s'
+    ];
+
+    protected $guarded = [
+        'id',
+        'created_at',
+        'updated_at',
+    ];
+
+    public function getReport()
+    {
+        
+    }
 }

@@ -195,26 +195,25 @@ class ErrorController extends Controller
     public function geterror($kodeerror)
     {
 
-        $temp = '##temp' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
-        Schema::create($temp, function ($table) {
-            $table->id();
-            $table->string('keterangan', 50)->nullable();
-        });
-
-        DB::table($temp)->insert(
-            [
-                'keterangan' => 'kode error belum terdaftar',
-            ]
-        );
-
-        if (Error::select('keterangan')
-            ->where('kodeerror', '=', $kodeerror)
-            ->exists()
-        ) {
-            $data = Error::select('keterangan')
+        $data = DB::table('error')->from(
+                    DB::raw("error  with (readuncommitted)")
+                )
+                ->select('keterangan')
                 ->where('kodeerror', '=', $kodeerror)
                 ->first();
-        } else {
+        if (!$data) {
+            $temp = '##temp' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+            Schema::create($temp, function ($table) {
+                $table->id();
+                $table->string('keterangan', 50)->nullable();
+            });
+
+            DB::table($temp)->insert(
+                [
+                    'keterangan' => 'kode error belum terdaftar',
+                ]
+            );
+
             $data = DB::table($temp)
                 ->select('keterangan')
                 ->first();

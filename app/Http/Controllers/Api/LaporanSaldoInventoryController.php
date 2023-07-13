@@ -11,78 +11,160 @@ use App\Http\Requests\UpdateLaporanSaldoInventoryRequest;
 class LaporanSaldoInventoryController extends Controller
 {
     /**
-     * Display a listing of the resource.
-     *
-     * @return \Illuminate\Http\Response
+     * @ClassName
      */
-    public function index()
+    public function index(Request $request)
     {
-        //
+        return response([
+            'data' => [],
+            'attributes' => [
+                'totalRows' => 0,
+                'totalPages' => 0
+            ]
+        ]);
     }
 
+    
     /**
-     * Show the form for creating a new resource.
-     *
-     * @return \Illuminate\Http\Response
+     * @ClassName
      */
-    public function create()
+    public function report(Request $request)
     {
-        //
-    }
+        $sampai = $request->sampai;
+        $dari = $request->dari;
 
-    /**
-     * Store a newly created resource in storage.
-     *
-     * @param  \App\Http\Requests\StoreLaporanSaldoInventoryRequest  $request
-     * @return \Illuminate\Http\Response
-     */
-    public function store(StoreLaporanSaldoInventoryRequest $request)
-    {
-        //
-    }
+        $laporankartustok = new LaporanKartuStok();
 
-    /**
-     * Display the specified resource.
-     *
-     * @param  \App\Models\LaporanSaldoInventory  $laporanSaldoInventory
-     * @return \Illuminate\Http\Response
-     */
-    public function show(LaporanSaldoInventory $laporanSaldoInventory)
-    {
-        //
+        $report = [
+            [
+                'namagudang' => 'GUDANG KANTOR',
+                'header' => 'Laporan Kartu Stok',
+                'namabarang' => 'BAN DALAM SWALLOW 900',
+                'tanggal' => '08-May-2023',
+                'stokdari' => '0007255076',
+                'stoksampai' => '0007255090',
+                'kodebarang' => '04819203',
+                'transaksi' => 'SPB 0006/V/2023',
+                'kategori' => 'Ban',
+                'qtymasuk' => '1',
+                'qtykeluar' => '0',
+                'hargaperkategori' => '8300000',
+                'nominalmasuk' => '0',
+                'nominalkeluar' => '8300000',
+                'qtysaldo' => '0',
+                'nominalsaldo' => '0'
+            ],
+            [
+                'namagudang' => 'GUDANG KANTOR',
+                'header' => 'Laporan Kartu Stok',
+                'namabarang' => 'GANTUNGAN BAN SERAP',
+                'tanggal' => '08-May-2023',
+                'stokdari' => '0007255076',
+                'stoksampai' => '0007255090',
+                'kodebarang' => '021651515',
+                'transaksi' => 'SPB 0006/V/2023',
+                'kategori' => 'Ban',
+                'qtymasuk' => '1',
+                'qtykeluar' => '0',
+                'hargaperkategori' => '8300000',
+                'nominalmasuk' => '0',
+                'nominalkeluar' => '8300000',
+                'qtysaldo' => '0',
+                'nominalsaldo' => '0'
+            ],
+            [
+                'namagudang' => 'GUDANG KANTOR',
+                'header' => 'Laporan Kartu Stok',
+                'namabarang' => 'BAN LUAR 1000',
+                'tanggal' => '08-May-2023',
+                'stokdari' => '0007255076',
+                'stoksampai' => '0007255090',
+                'kodebarang' => '0216514858',
+                'transaksi' => 'SPB 0006/V/2023',
+                'kategori' => 'Ban',
+                'qtymasuk' => '1',
+                'qtykeluar' => '0',
+                'hargaperkategori' => '8300000',
+                'nominalmasuk' => '8300000',
+                'nominalkeluar' => '0',
+                'qtysaldo' => '0',
+                'nominalsaldo' => '0'
+            ],
+            
+        ];
+        return response([
+            'data' => $report
+        ]);
     }
-
-    /**
-     * Show the form for editing the specified resource.
-     *
-     * @param  \App\Models\LaporanSaldoInventory  $laporanSaldoInventory
-     * @return \Illuminate\Http\Response
+      /**
+     * @ClassName
      */
-    public function edit(LaporanSaldoInventory $laporanSaldoInventory)
+    public function export(Request $request)
     {
-        //
-    }
+        $sampai = $request->sampai;
+        $dari = $request->dari;
 
-    /**
-     * Update the specified resource in storage.
-     *
-     * @param  \App\Http\Requests\UpdateLaporanSaldoInventoryRequest  $request
-     * @param  \App\Models\LaporanSaldoInventory  $laporanSaldoInventory
-     * @return \Illuminate\Http\Response
-     */
-    public function update(UpdateLaporanSaldoInventoryRequest $request, LaporanSaldoInventory $laporanSaldoInventory)
-    {
-        //
-    }
+        $laporankartustok = new LaporanKartuStok();
 
-    /**
-     * Remove the specified resource from storage.
-     *
-     * @param  \App\Models\LaporanSaldoInventory  $laporanSaldoInventory
-     * @return \Illuminate\Http\Response
-     */
-    public function destroy(LaporanSaldoInventory $laporanSaldoInventory)
-    {
-        //
+        $report = [
+            [
+                'namagudang' => 'GUDANG KANTOR',
+                'header' => 'Laporan Kartu Stok',
+                'namabarang' => 'BAN DALAM SWALLOW 900',
+                'tanggal' => '08-May-2023',
+                'stokdari' => '0007255076',
+                'stoksampai' => '0007255090',
+                'kodebarang' => '04819203',
+                'transaksi' => 'SPB 0006/V/2023',
+                'kategori' => 'Ban',
+                'qtymasuk' => '1',
+                'qtykeluar' => '0',
+                'hargaperkategori' => '8300000',
+                'nominalmasuk' => '0',
+                'nominalkeluar' => '8300000',
+                'qtysaldo' => '0',
+                'nominalsaldo' => '0'
+            ],
+            [
+                'namagudang' => 'GUDANG KANTOR',
+                'header' => 'Laporan Kartu Stok',
+                'namabarang' => 'GANTUNGAN BAN SERAP',
+                'tanggal' => '08-May-2023',
+                'stokdari' => '0007255076',
+                'stoksampai' => '0007255090',
+                'kodebarang' => '021651515',
+                'transaksi' => 'SPB 0006/V/2023',
+                'kategori' => 'Ban',
+                'qtymasuk' => '1',
+                'qtykeluar' => '0',
+                'hargaperkategori' => '8300000',
+                'nominalmasuk' => '0',
+                'nominalkeluar' => '8300000',
+                'qtysaldo' => '0',
+                'nominalsaldo' => '0'
+            ],
+            [
+                'namagudang' => 'GUDANG KANTOR',
+                'header' => 'Laporan Kartu Stok',
+                'namabarang' => 'BAN LUAR 1000',
+                'tanggal' => '08-May-2023',
+                'stokdari' => '0007255076',
+                'stoksampai' => '0007255090',
+                'kodebarang' => '0216514858',
+                'transaksi' => 'SPB 0006/V/2023',
+                'kategori' => 'Ban',
+                'qtymasuk' => '1',
+                'qtykeluar' => '0',
+                'hargaperkategori' => '8300000',
+                'nominalmasuk' => '8300000',
+                'nominalkeluar' => '0',
+                'qtysaldo' => '0',
+                'nominalsaldo' => '0'
+            ],
+            
+        ];
+        return response([
+            'data' => $report
+        ]);
     }
 }
