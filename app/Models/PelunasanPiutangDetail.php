@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 
 class PelunasanPiutangDetail extends MyModel
 {
@@ -29,37 +30,117 @@ class PelunasanPiutangDetail extends MyModel
 
         $query = DB::table($this->table)->from(DB::raw("$this->table with (readuncommitted)"));
 
+        //  
+
+        // 
+
         if (isset(request()->forReport) && request()->forReport) {
+
+            $temppiutang = '##tempiutang' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+            Schema::create($temppiutang, function ($table) {
+                $table->string('piutang_nobukti', 1000)->nullable();
+                $table->float('nominal')->nullable();
+            });
+
+            $querydata = DB::table('pelunasanpiutangdetail')->from(
+                DB::raw("pelunasanpiutangdetail a with (readuncommitted)")
+            )
+                ->select(
+                    'a.piutang_nobukti',
+                    'b.nominal',
+                )
+                ->join(DB::raw("piutangheader as b with (readuncommitted)"), 'a.piutang_nobukti', 'b.nobukti')
+                ->where('a.pelunasanpiutang_id', '=', request()->pelunasanpiutang_id);
+
+
+            DB::table($temppiutang)->insertUsing([
+                'piutang_nobukti',
+                'nominal',
+            ], $querydata);
+
+            $temppelunasanpiutang = '##tempelunasanpiutang' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+            Schema::create($temppelunasanpiutang, function ($table) {
+                $table->string('piutang_nobukti', 1000)->nullable();
+                $table->float('nominal')->nullable();
+            });
+
+            $querydatapelunasan = DB::table('pelunasanpiutangdetail')->from(
+                DB::raw("pelunasanpiutangdetail a with (readuncommitted)")
+            )
+                ->select(
+                    'a.piutang_nobukti',
+                    DB::raw("sum(isnull(a.nominal,0)+isnull(a.potongan,0)) as nominal"),
+                )
+                ->join(DB::raw($temppiutang . " as b "), 'a.piutang_nobukti', 'b.piutang_nobukti')
+                ->where('a.pelunasanpiutang_id', '<=', request()->pelunasanpiutang_id)
+                ->groupby('a.piutang_nobukti');
+
+            DB::table($temppelunasanpiutang)->insertUsing([
+                'piutang_nobukti',
+                'nominal',
+            ], $querydatapelunasan);
+
+            $temprekap = '##temrekap' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+            Schema::create($temprekap, function ($table) {
+                $table->string('piutang_nobukti', 1000)->nullable();
+                $table->float('nominalpiutang')->nullable();
+                $table->float('nominalpelunasan')->nullable();
+                $table->float('nominalsisa')->nullable();
+            });
+
+            $queryrekap = DB::table($temppiutang)->from(
+                DB::raw($temppiutang . " a ")
+            )
+                ->select(
+                    'a.piutang_nobukti',
+                    DB::raw("isnull(a.nominal,0) as nominalpiutang"),
+                    DB::raw("isnull(b.nominal,0) as nominalpelunasan"),
+                    DB::raw("(isnull(a.nominal,0)-isnull(b.nominal,0)) as nominalsisa"),
+                )
+                ->leftjoin(DB::raw($temppelunasanpiutang . " as b "), 'a.piutang_nobukti', 'b.piutang_nobukti');
+
+
+            DB::table($temprekap)->insertUsing([
+                'piutang_nobukti',
+                'nominalpiutang',
+                'nominalpelunasan',
+                'nominalsisa',
+            ], $queryrekap);
+
+
+
+
             $query->select(
-                $this->table .'.piutang_nobukti',
-                $this->table .'.invoice_nobukti',
-                $this->table .'.keteranganpotongan',
+                $this->table . '.piutang_nobukti',
+                $this->table . '.invoice_nobukti',
+                $this->table . '.keteranganpotongan',
                 'akunpusat.keterangancoa as coapotongan',
                 $this->table . '.nominal',
                 $this->table . '.keterangan',
-                $this->table .'.nominallebihbayar',
-                $this->table .'.potongan',
-                DB::raw("'' as sisapiutang"),
+                $this->table . '.nominallebihbayar',
+                $this->table . '.potongan',
+                DB::raw("isnull(b.nominalsisa,0) as sisapiutang"),
             )
-                ->leftJoin(DB::raw("akunpusat with (readuncommitted)"), $this->table .'.coapotongan', 'akunpusat.coa');
+                ->leftJoin(DB::raw("akunpusat with (readuncommitted)"), $this->table . '.coapotongan', 'akunpusat.coa')
+                ->leftjoin(DB::raw($temprekap . " as b "), $this->table . '.piutang_nobukti', 'b.piutang_nobukti');
             $query->where($this->table . '.pelunasanpiutang_id', '=', request()->pelunasanpiutang_id);
         } else {
             $query->select(
-                $this->table .'.nobukti',
-                $this->table .'.nominal',
-                $this->table .'.keterangan',
-                $this->table .'.piutang_nobukti',
-                $this->table .'.nominallebihbayar',
-                $this->table .'.potongan',
-                $this->table .'.keteranganpotongan',
+                $this->table . '.nobukti',
+                $this->table . '.nominal',
+                $this->table . '.keterangan',
+                $this->table . '.piutang_nobukti',
+                $this->table . '.nominallebihbayar',
+                $this->table . '.potongan',
+                $this->table . '.keteranganpotongan',
                 'akunpusat.keterangancoa as coapotongan',
-                $this->table .'.invoice_nobukti'
+                $this->table . '.invoice_nobukti'
             )
-            ->leftJoin(DB::raw("akunpusat with (readuncommitted)"), $this->table .'.coapotongan', 'akunpusat.coa');
+                ->leftJoin(DB::raw("akunpusat with (readuncommitted)"), $this->table . '.coapotongan', 'akunpusat.coa');
 
             $this->sort($query);
             $query->where($this->table . '.pelunasanpiutang_id', '=', request()->pelunasanpiutang_id);
-            $this->filter($query); 
+            $this->filter($query);
 
             $this->totalNominal = $query->sum('nominal');
             $this->totalPotongan = $query->sum('potongan');
@@ -75,9 +156,9 @@ class PelunasanPiutangDetail extends MyModel
 
     public function sort($query)
     {
-        if($this->params['sortIndex'] == 'coapotongan') {
+        if ($this->params['sortIndex'] == 'coapotongan') {
             return $query->orderBy('akunpusat.keterangancoa', $this->params['sortOrder']);
-        }else{
+        } else {
             return $query->orderBy($this->table . '.' . $this->params['sortIndex'], $this->params['sortOrder']);
         }
     }
@@ -91,7 +172,7 @@ class PelunasanPiutangDetail extends MyModel
                             if ($filters['field'] == 'coapotongan') {
                                 $query = $query->where('akunpusat.keterangancoa', 'LIKE', "%$filters[data]%");
                             } else if ($filters['field'] == 'nominal' || $filters['field'] == 'potongan' || $filters['field'] == 'nominallebihbayar') {
-                                $query = $query->whereRaw("format(".$this->table . "." . $filters['field'].", '#,#0.00') LIKE '%$filters[data]%'");
+                                $query = $query->whereRaw("format(" . $this->table . "." . $filters['field'] . ", '#,#0.00') LIKE '%$filters[data]%'");
                             } else {
                                 $query = $query->where($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
                             }
@@ -105,7 +186,7 @@ class PelunasanPiutangDetail extends MyModel
                             if ($filters['field'] == 'coapotongan') {
                                 $query = $query->orWhere('akunpusat.keterangancoa', 'LIKE', "%$filters[data]%");
                             } else if ($filters['field'] == 'nominal' || $filters['field'] == 'potongan' || $filters['field'] == 'nominallebihbayar') {
-                                $query = $query->orWhereRaw("format(".$this->table . "." . $filters['field'].", '#,#0.00') LIKE '%$filters[data]%'");
+                                $query = $query->orWhereRaw("format(" . $this->table . "." . $filters['field'] . ", '#,#0.00') LIKE '%$filters[data]%'");
                             } else {
                                 $query = $query->orWhere($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
                             }
@@ -146,12 +227,11 @@ class PelunasanPiutangDetail extends MyModel
         $pelunasanPiutangDetail->coalebihbayar = $data['coalebihbayar'];
 
         $pelunasanPiutangDetail->modifiedby = auth('api')->user()->name;
-        
+
         if (!$pelunasanPiutangDetail->save()) {
             throw new \Exception("Error storing pelunasan piutang detail.");
         }
 
         return $pelunasanPiutangDetail;
     }
-    
 }
