@@ -22,7 +22,6 @@ class PelunasanPiutangDetailController extends Controller
     public function index(): JsonResponse
     {
         $pelunasanPiutang = new PelunasanPiutangDetail();
-
         return response()->json([
             'data' => $pelunasanPiutang->get(),
             'attributes' => [
