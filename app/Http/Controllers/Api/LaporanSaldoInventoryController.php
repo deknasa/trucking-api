@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 
 use App\Models\LaporanSaldoInventory;
+use Illuminate\Http\Request;
 use App\Http\Requests\StoreLaporanSaldoInventoryRequest;
 use App\Http\Requests\UpdateLaporanSaldoInventoryRequest;
 
@@ -30,67 +31,103 @@ class LaporanSaldoInventoryController extends Controller
      */
     public function report(Request $request)
     {
-        $sampai = $request->sampai;
-        $dari = $request->dari;
 
-        $laporankartustok = new LaporanKartuStok();
+        $kelompok_id = $request->kelompok_id;
+        $statusreuse = $request->statusreuse;
+        $statusban = $request->statusban;
+        $filter = $request->filter;
+        $jenistgltampil = $request->jenistgltampil;
+        $tgldari = $request->tgldari;
+        $tglsampai = $request->tglsampai;
+        $stokdari_id = $request->stokdari_id;
+        $stoksampai_id = $request->stoksampai_id;
+        $dataFilter = $request->dataFilter;
+
+        $laporanSaldoInventory = new LaporanSaldoInventory();
 
         $report = [
             [
-                'namagudang' => 'GUDANG KANTOR',
-                'header' => 'Laporan Kartu Stok',
-                'namabarang' => 'BAN DALAM SWALLOW 900',
-                'tanggal' => '08-May-2023',
-                'stokdari' => '0007255076',
-                'stoksampai' => '0007255090',
+                'header' => 'Laporan Saldo Inventory',
+                'lokasi' => 'GUDANG',
+                'namalokasi' => 'GUDANG KANTOR',
+                'kategori' => 'sparepart',
+                'tgldari' => '2023-07-20',
+                'tglsampai' => '2023-07-20',
+                'stokdari' => 'BAN DALAM SWALLOW 900',
+                'stoksampai' => 'BAN DALAM SWALLOW 900',
+                'vulkanisirke' => 'Vul Ke: 0',
                 'kodebarang' => '04819203',
-                'transaksi' => 'SPB 0006/V/2023',
-                'kategori' => 'Ban',
-                'qtymasuk' => '1',
-                'qtykeluar' => '0',
-                'hargaperkategori' => '8300000',
-                'nominalmasuk' => '0',
-                'nominalkeluar' => '8300000',
-                'qtysaldo' => '0',
-                'nominalsaldo' => '0'
+                'namabarang' => 'BAN DALAM SWALLOW 900',
+                'tanggal' => '08-07-2023',
+                'qty' => '200',
+                'satuan' => 'buah',
+                'nominal' => '8300000',
             ],
             [
-                'namagudang' => 'GUDANG KANTOR',
-                'header' => 'Laporan Kartu Stok',
-                'namabarang' => 'GANTUNGAN BAN SERAP',
-                'tanggal' => '08-May-2023',
-                'stokdari' => '0007255076',
-                'stoksampai' => '0007255090',
-                'kodebarang' => '021651515',
-                'transaksi' => 'SPB 0006/V/2023',
-                'kategori' => 'Ban',
-                'qtymasuk' => '1',
-                'qtykeluar' => '0',
-                'hargaperkategori' => '8300000',
-                'nominalmasuk' => '0',
-                'nominalkeluar' => '8300000',
-                'qtysaldo' => '0',
-                'nominalsaldo' => '0'
+                'header' => 'Laporan Saldo Inventory',
+                'lokasi' => 'GUDANG',
+                'namalokasi' => 'GUDANG KANTOR',
+                'kategori' => 'sparepart',
+                'tgldari' => '2023-07-20',
+                'tglsampai' => '2023-07-20',
+                'stokdari' => 'BAN DALAM SWALLOW 900',
+                'stoksampai' => 'BAN DALAM SWALLOW 900',
+                'vulkanisirke' => 'Vul Ke: 0',
+                'kodebarang' => '04819203',
+                'namabarang' => 'BAN DALAM SWALLOW 900',
+                'tanggal' => '08-07-2023',
+                'qty' => '200',
+                'satuan' => 'buah',
+                'nominal' => '8300000',
+            ],[
+                'header' => 'Laporan Saldo Inventory',
+                'lokasi' => 'GUDANG',
+                'namalokasi' => 'GUDANG KANTOR',
+                'kategori' => 'sparepart',
+                'tgldari' => '2023-07-20',
+                'tglsampai' => '2023-07-20',
+                'stokdari' => 'BAN DALAM SWALLOW 900',
+                'stoksampai' => 'BAN DALAM SWALLOW 900',
+                'vulkanisirke' => 'Vul Ke: 0',
+                'kodebarang' => '04819203',
+                'namabarang' => 'BAN DALAM SWALLOW 900',
+                'tanggal' => '08-07-2023',
+                'qty' => '200',
+                'satuan' => 'buah',
+                'nominal' => '8300000',
+            ],[
+                'header' => 'Laporan Saldo Inventory',
+                'lokasi' => 'GUDANG',
+                'namalokasi' => 'GUDANG KANTOR',
+                'kategori' => 'sparepart',
+                'tgldari' => '2023-07-20',
+                'tglsampai' => '2023-07-20',
+                'stokdari' => 'BAN DALAM SWALLOW 900',
+                'stoksampai' => 'BAN DALAM SWALLOW 900',
+                'vulkanisirke' => 'Vul Ke: 0',
+                'kodebarang' => '04819203',
+                'namabarang' => 'BAN DALAM SWALLOW 900',
+                'tanggal' => '08-07-2023',
+                'qty' => '200',
+                'satuan' => 'buah',
+                'nominal' => '8300000',
+            ],[
+                'header' => 'Laporan Saldo Inventory',
+                'lokasi' => 'GUDANG',
+                'namalokasi' => 'GUDANG KANTOR',
+                'kategori' => 'sparepart',
+                'tgldari' => '2023-07-20',
+                'tglsampai' => '2023-07-20',
+                'stokdari' => 'BAN DALAM SWALLOW 900',
+                'stoksampai' => 'BAN DALAM SWALLOW 900',
+                'vulkanisirke' => 'Vul Ke: 0',
+                'kodebarang' => '04819203',
+                'namabarang' => 'BAN DALAM SWALLOW 900',
+                'tanggal' => '08-07-2023',
+                'qty' => '200',
+                'satuan' => 'buah',
+                'nominal' => '8300000',
             ],
-            [
-                'namagudang' => 'GUDANG KANTOR',
-                'header' => 'Laporan Kartu Stok',
-                'namabarang' => 'BAN LUAR 1000',
-                'tanggal' => '08-May-2023',
-                'stokdari' => '0007255076',
-                'stoksampai' => '0007255090',
-                'kodebarang' => '0216514858',
-                'transaksi' => 'SPB 0006/V/2023',
-                'kategori' => 'Ban',
-                'qtymasuk' => '1',
-                'qtykeluar' => '0',
-                'hargaperkategori' => '8300000',
-                'nominalmasuk' => '8300000',
-                'nominalkeluar' => '0',
-                'qtysaldo' => '0',
-                'nominalsaldo' => '0'
-            ],
-            
         ];
         return response([
             'data' => $report
@@ -104,64 +141,92 @@ class LaporanSaldoInventoryController extends Controller
         $sampai = $request->sampai;
         $dari = $request->dari;
 
-        $laporankartustok = new LaporanKartuStok();
+        $laporanSaldoInventory = new LaporanSaldoInventory();
 
         $report = [
             [
-                'namagudang' => 'GUDANG KANTOR',
-                'header' => 'Laporan Kartu Stok',
-                'namabarang' => 'BAN DALAM SWALLOW 900',
-                'tanggal' => '08-May-2023',
-                'stokdari' => '0007255076',
-                'stoksampai' => '0007255090',
+                'header' => 'Laporan Saldo Inventory',
+                'lokasi' => 'GUDANG',
+                'namalokasi' => 'GUDANG KANTOR',
+                'kategori' => 'sparepart',
+                'tgldari' => '2023-07-20',
+                'tglsampai' => '2023-07-20',
+                'stokdari' => 'BAN DALAM SWALLOW 900',
+                'stoksampai' => 'BAN DALAM SWALLOW 900',
+                'vulkanisirke' => 'Vul Ke: 0',
                 'kodebarang' => '04819203',
-                'transaksi' => 'SPB 0006/V/2023',
-                'kategori' => 'Ban',
-                'qtymasuk' => '1',
-                'qtykeluar' => '0',
-                'hargaperkategori' => '8300000',
-                'nominalmasuk' => '0',
-                'nominalkeluar' => '8300000',
-                'qtysaldo' => '0',
-                'nominalsaldo' => '0'
+                'namabarang' => 'BAN DALAM SWALLOW 900',
+                'tanggal' => '08-07-2023',
+                'qty' => '200',
+                'satuan' => 'buah',
+                'nominal' => '8300000',
             ],
             [
-                'namagudang' => 'GUDANG KANTOR',
-                'header' => 'Laporan Kartu Stok',
-                'namabarang' => 'GANTUNGAN BAN SERAP',
-                'tanggal' => '08-May-2023',
-                'stokdari' => '0007255076',
-                'stoksampai' => '0007255090',
-                'kodebarang' => '021651515',
-                'transaksi' => 'SPB 0006/V/2023',
-                'kategori' => 'Ban',
-                'qtymasuk' => '1',
-                'qtykeluar' => '0',
-                'hargaperkategori' => '8300000',
-                'nominalmasuk' => '0',
-                'nominalkeluar' => '8300000',
-                'qtysaldo' => '0',
-                'nominalsaldo' => '0'
+                'header' => 'Laporan Saldo Inventory',
+                'lokasi' => 'GUDANG',
+                'namalokasi' => 'GUDANG KANTOR',
+                'kategori' => 'sparepart',
+                'tgldari' => '2023-07-20',
+                'tglsampai' => '2023-07-20',
+                'stokdari' => 'BAN DALAM SWALLOW 900',
+                'stoksampai' => 'BAN DALAM SWALLOW 900',
+                'vulkanisirke' => 'Vul Ke: 0',
+                'kodebarang' => '04819203',
+                'namabarang' => 'BAN DALAM SWALLOW 900',
+                'tanggal' => '08-07-2023',
+                'qty' => '200',
+                'satuan' => 'buah',
+                'nominal' => '8300000',
+            ],[
+                'header' => 'Laporan Saldo Inventory',
+                'lokasi' => 'GUDANG',
+                'namalokasi' => 'GUDANG KANTOR',
+                'kategori' => 'sparepart',
+                'tgldari' => '2023-07-20',
+                'tglsampai' => '2023-07-20',
+                'stokdari' => 'BAN DALAM SWALLOW 900',
+                'stoksampai' => 'BAN DALAM SWALLOW 900',
+                'vulkanisirke' => 'Vul Ke: 0',
+                'kodebarang' => '04819203',
+                'namabarang' => 'BAN DALAM SWALLOW 900',
+                'tanggal' => '08-07-2023',
+                'qty' => '200',
+                'satuan' => 'buah',
+                'nominal' => '8300000',
+            ],[
+                'header' => 'Laporan Saldo Inventory',
+                'lokasi' => 'GUDANG',
+                'namalokasi' => 'GUDANG KANTOR',
+                'kategori' => 'sparepart',
+                'tgldari' => '2023-07-20',
+                'tglsampai' => '2023-07-20',
+                'stokdari' => 'BAN DALAM SWALLOW 900',
+                'stoksampai' => 'BAN DALAM SWALLOW 900',
+                'vulkanisirke' => 'Vul Ke: 0',
+                'kodebarang' => '04819203',
+                'namabarang' => 'BAN DALAM SWALLOW 900',
+                'tanggal' => '08-07-2023',
+                'qty' => '200',
+                'satuan' => 'buah',
+                'nominal' => '8300000',
+            ],[
+                'header' => 'Laporan Saldo Inventory',
+                'lokasi' => 'GUDANG',
+                'namalokasi' => 'GUDANG KANTOR',
+                'kategori' => 'sparepart',
+                'tgldari' => '2023-07-20',
+                'tglsampai' => '2023-07-20',
+                'stokdari' => 'BAN DALAM SWALLOW 900',
+                'stoksampai' => 'BAN DALAM SWALLOW 900',
+                'vulkanisirke' => 'Vul Ke: 0',
+                'kodebarang' => '04819203',
+                'namabarang' => 'BAN DALAM SWALLOW 900',
+                'tanggal' => '08-07-2023',
+                'qty' => '200',
+                'satuan' => 'buah',
+                'nominal' => '8300000',
             ],
-            [
-                'namagudang' => 'GUDANG KANTOR',
-                'header' => 'Laporan Kartu Stok',
-                'namabarang' => 'BAN LUAR 1000',
-                'tanggal' => '08-May-2023',
-                'stokdari' => '0007255076',
-                'stoksampai' => '0007255090',
-                'kodebarang' => '0216514858',
-                'transaksi' => 'SPB 0006/V/2023',
-                'kategori' => 'Ban',
-                'qtymasuk' => '1',
-                'qtykeluar' => '0',
-                'hargaperkategori' => '8300000',
-                'nominalmasuk' => '8300000',
-                'nominalkeluar' => '0',
-                'qtysaldo' => '0',
-                'nominalsaldo' => '0'
-            ],
-            
+        
         ];
         return response([
             'data' => $report

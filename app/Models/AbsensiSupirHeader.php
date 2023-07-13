@@ -306,7 +306,7 @@ class AbsensiSupirHeader extends MyModel
             ->where('id', $id)
             ->first();
         $tglbukti = strtotime($query->tglbukti);
-        $limit = strtotime($query->tglbukti.'+1 days +12 hours' );
+        $limit = strtotime($query->tglbukti.'+1 days +12 hours +9 minutes' );
         $now = strtotime('now');
         if ($now < $limit) return true;
         return false;
@@ -568,7 +568,7 @@ class AbsensiSupirHeader extends MyModel
         
         $date = date('Y-m-d', strtotime($absensiSupir->tglbukti));
         $now = date('Y-m-d', strtotime('now'));
-        if ($date != $now) {
+        if (!$this->todayValidation($absensiSupir->id)) {
             $bukaAbsensi = BukaAbsensi::from(DB::raw("BukaAbsensi"))->where('tglabsensi', $absensiSupir->tglbukti)->first();
             $bukaAbsensi = (new BukaAbsensi())->processDestroy($bukaAbsensi->id);
         }
