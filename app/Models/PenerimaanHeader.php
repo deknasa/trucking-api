@@ -895,18 +895,10 @@ class PenerimaanHeader extends MyModel
 
     public function processDestroy($id, $postingdari = ""): PenerimaanHeader
     {
-        $penerimaanHeader = PenerimaanHeader::findOrFail($id);
-        $dataHeader =  $penerimaanHeader->toArray();
-        $penerimaanDetail = PenerimaanDetail::where('penerimaan_id', '=', $penerimaanHeader->id)->get();
+        $penerimaanDetail = PenerimaanDetail::where('penerimaan_id', '=', $id)->get();
         $dataDetail = $penerimaanDetail->toArray();
 
-        /*DELETE EXISTING DETAIL*/
-        $penerimaanDetail = PenerimaanDetail::where('penerimaan_id', $penerimaanHeader->id)->lockForUpdate()->delete();
-
-        /*DELETE EXISTING JURNAL*/
-        $jurnalUmumHeader = JurnalUmumHeader::where('nobukti', $penerimaanHeader->nobukti)->first();
-        (new JurnalUmumHeader())->processDestroy($jurnalUmumHeader->id, ($postingdari == "") ? $postingdari : strtoupper('DELETE penerimaan  detail'));
-
+        $penerimaanHeader = new PenerimaanHeader();
         $penerimaanHeader = $penerimaanHeader->lockAndDestroy($id);
         $hutangLogTrail = (new LogTrail())->processStore([
             'namatabel' => $this->table,
@@ -914,7 +906,7 @@ class PenerimaanHeader extends MyModel
             'idtrans' => $penerimaanHeader->id,
             'nobuktitrans' => $penerimaanHeader->nobukti,
             'aksi' => 'DELETE',
-            'datajson' => $dataHeader,
+            'datajson' => $penerimaanHeader->toArray(),
             'modifiedby' => auth('api')->user()->name
         ]);
 
@@ -928,6 +920,9 @@ class PenerimaanHeader extends MyModel
             'modifiedby' => auth('api')->user()->name
         ]);
 
+        /*DELETE EXISTING JURNAL*/
+        $jurnalUmumHeader = JurnalUmumHeader::where('nobukti', $penerimaanHeader->nobukti)->first();
+        (new JurnalUmumHeader())->processDestroy($jurnalUmumHeader->id, ($postingdari == "") ? $postingdari : strtoupper('DELETE penerimaan  detail'));
         return $penerimaanHeader;
     }
 

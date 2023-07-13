@@ -338,7 +338,8 @@ class AbsensiSupirApprovalHeader extends MyModel
         $group = 'ABSENSI SUPIR APPROVAL BUKTI';
         $subGroup = 'ABSENSI SUPIR APPROVAL BUKTI';
         $format = DB::table('parameter')->where('grp', $group)->where('subgrp', $subGroup)->first();
-        $statusApproval = Parameter::from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS APPROVAL')->where('text', 'NON APPROVAL')->first();
+        $statusApproval = Parameter::from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS APPROVAL')->where('text', 'APPROVAL')->first();
+        $statusCetak = Parameter::from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUSCETAK')->where('text', 'BELUM CETAK')->first();
 
         $coaKreditApproval = DB::table('parameter')->where('grp', 'JURNAL APPROVAL ABSENSI SUPIR')->where('subgrp', 'KREDIT')->first();
         $memoKredit = json_decode($coaKreditApproval->memo, true);
@@ -430,6 +431,7 @@ class AbsensiSupirApprovalHeader extends MyModel
         $subGroup = 'ABSENSI SUPIR APPROVAL BUKTI';
         $format = DB::table('parameter')->where('grp', $group)->where('subgrp', $subGroup)->first();
         $statusApproval = Parameter::from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS APPROVAL')->where('text', 'NON APPROVAL')->first();
+        $statusCetak = Parameter::from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUSCETAK')->where('text', 'BELUM CETAK')->first();
 
         $coaKreditApproval = DB::table('parameter')->where('grp', 'JURNAL APPROVAL ABSENSI SUPIR')->where('subgrp', 'KREDIT')->first();
         $memoKredit = json_decode($coaKreditApproval->memo, true);
@@ -533,7 +535,7 @@ class AbsensiSupirApprovalHeader extends MyModel
 
 
         $pengeluaran = PengeluaranHeader::where('nobukti', $absensiSupirApprovalHeader->pengeluaran_nobukti)->lockForUpdate()->first();
-        PengeluaranHeader::processDestroy($pengeluaran->id, 'absesnsi SUpir Approval');
+        (new PengeluaranHeader())->processDestroy($pengeluaran->id, 'Absensi Supir Approval');
 
         $absensiSupirApprovalHeader = new AbsensiSupirApprovalHeader();
         $absensiSupirApprovalHeader = $absensiSupirApprovalHeader->lockAndDestroy($id);

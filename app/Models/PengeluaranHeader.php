@@ -813,31 +813,25 @@ class PengeluaranHeader extends MyModel
 
     public function processDestroy($id, $postingDari = ''): PengeluaranHeader
     {
-        $pengeluaranHeader = PengeluaranHeader::findOrFail($id);
-        $dataHeader =  $pengeluaranHeader->toArray();
-        $pengeluaranDetail = PengeluaranDetail::where('pengeluaran_id', '=', $pengeluaranHeader->id)->get();
+        $pengeluaranDetail = PengeluaranDetail::where('pengeluaran_id', '=', $id)->get();
         $dataDetail = $pengeluaranDetail->toArray();
 
-        /*DELETE EXISTING JURNAL*/
-        $JurnalUmumDetail = JurnalUmumDetail::where('nobukti', $pengeluaranHeader->nobukti)->lockForUpdate()->delete();
-        $JurnalUmumHeader = JurnalUmumHeader::where('nobukti', $pengeluaranHeader->nobukti)->lockForUpdate()->delete();
-        /*DELETE EXISTING HUTANG*/
-        $pengeluaranDetail = PengeluaranDetail::where('pengeluaran_id', $pengeluaranHeader->id)->lockForUpdate()->delete();
-
+        $pengeluaranHeader = new PengeluaranHeader();
         $pengeluaranHeader = $pengeluaranHeader->lockAndDestroy($id);
+
         $hutangLogTrail = (new LogTrail())->processStore([
             'namatabel' => $this->table,
-            'postingdari' => strtoupper('DELETE pengeluaran Header'),
+            'postingdari' => ($postingDari == "") ? $postingDari : strtoupper('DELETE pengeluaran Header'),
             'idtrans' => $pengeluaranHeader->id,
             'nobuktitrans' => $pengeluaranHeader->nobukti,
             'aksi' => 'DELETE',
-            'datajson' => $dataHeader,
+            'datajson' => $pengeluaranHeader->toArray(),
             'modifiedby' => auth('api')->user()->name
         ]);
 
         (new LogTrail())->processStore([
             'namatabel' => 'PENGELUARANDETAIL',
-            'postingdari' => strtoupper('DELETE pengeluaran detail'),
+            'postingdari' => ($postingDari == "") ? $postingDari : strtoupper('DELETE pengeluaran detail'),
             'idtrans' => $hutangLogTrail['id'],
             'nobuktitrans' => $pengeluaranHeader->nobukti,
             'aksi' => 'DELETE',
@@ -845,6 +839,9 @@ class PengeluaranHeader extends MyModel
             'modifiedby' => auth('api')->user()->name
         ]);
 
+        $getJurnal = JurnalUmumHeader::from(DB::raw("jurnalumumheader with (readuncommitted)"))->where('nobukti', $pengeluaranHeader->nobukti)->first();
+        $jurnalumumHeader = (new JurnalUmumHeader())->processDestroy($getJurnal->id, ($postingDari == "") ? $postingDari : strtoupper('DELETE pengeluaran Header'));
+        
         return $pengeluaranHeader;
     }
     public function getExport($id)
