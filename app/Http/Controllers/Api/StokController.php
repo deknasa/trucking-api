@@ -98,14 +98,14 @@ class StokController extends Controller
                 'keterangan' => $request->keterangan ?? '',
                 'qtymin' => $request->qtymin ?? 0,
                 'qtymax' => $request->qtymax ?? 0,
-                'statusreuse'=>$request->statusreuse,
-                'statusban'=>$request->statusban,
-                'statusservicerutin'=>$request->statusservicerutin,
-                'totalvulkanisir'=>$request->totalvulkanisir,
-                'vulkanisirawal'=>$request->vulkanisirawal,
-                'hargabelimin'=>$request->hargabelimin,
-                'hargabelimax'=>$request->hargabelimax,
-                'gambar'=>$request->gambar,
+                'statusreuse' => $request->statusreuse,
+                'statusban' => $request->statusban,
+                'statusservicerutin' => $request->statusservicerutin,
+                'totalvulkanisir' => $request->totalvulkanisir,
+                'vulkanisirawal' => $request->vulkanisirawal,
+                'hargabelimin' => $request->hargabelimin,
+                'hargabelimax' => $request->hargabelimax,
+                'gambar' => $request->gambar,
 
             ];
             $stok = (new Stok())->processStore($data);
@@ -172,14 +172,14 @@ class StokController extends Controller
                 'keterangan' => $request->keterangan ?? '',
                 'qtymin' => $request->qtymin ?? 0,
                 'qtymax' => $request->qtymax ?? 0,
-                'statusreuse'=>$request->statusreuse,
-                'statusban'=>$request->statusban,
-                'statusservicerutin'=>$request->statusservicerutin,
-                'totalvulkanisir'=>$request->totalvulkanisir,
-                'vulkanisirawal'=>$request->vulkanisirawal,
-                'hargabelimin'=>$request->hargabelimin,
-                'hargabelimax'=>$request->hargabelimax,
-                'gambar'=>$request->gambar,
+                'statusreuse' => $request->statusreuse,
+                'statusban' => $request->statusban,
+                'statusservicerutin' => $request->statusservicerutin,
+                'totalvulkanisir' => $request->totalvulkanisir,
+                'vulkanisirawal' => $request->vulkanisirawal,
+                'hargabelimin' => $request->hargabelimin,
+                'hargabelimax' => $request->hargabelimax,
+                'gambar' => $request->gambar,
 
             ];
 
@@ -263,7 +263,11 @@ class StokController extends Controller
         if (Storage::exists("stok/$type" . '_' . "$filename")) {
             return response()->file(storage_path("app/stok/$type" . '_' . "$filename"));
         } else {
-            return response()->file(storage_path("app/stok/$filename"));
+            if (Storage::exists("stok/$filename")) {
+                return response()->file(storage_path("app/stok/$filename"));
+            }else {
+                return response()->file(storage_path("app/no-image.jpg"));
+            }
         }
     }
 
@@ -297,7 +301,7 @@ class StokController extends Controller
         if (request()->cekExport) {
 
             if (request()->offset == "-1" && request()->limit == '1') {
-                
+
                 return response([
                     'errors' => [
                         "export" => app(ErrorController::class)->geterror('DTA')->keterangan
@@ -386,5 +390,33 @@ class StokController extends Controller
             ];
             $this->toExcel($judulLaporan, $stoks, $columns);
         }
+    }
+
+    public function getGambar()
+    {
+        $stok = (new stok())->getGambarName(request()->id);
+        if($stok->gambar != ''){
+            $gambar = json_decode($stok->gambar);
+            $filename = $gambar[0];
+            if (Storage::exists("stok/ori" . '_' . "$filename")) {
+                
+                return response([
+                    'gambar' => $filename
+                ]);
+            } else {
+                if (Storage::exists("stok/$filename")) {
+                    return response([
+                        'gambar' => "$filename"
+                    ]);
+                }else {
+                    return response([
+                        'gambar' => "no-image"
+                    ]);
+                }
+            }
+        }
+        return response([
+            'gambar' => "no-image"
+        ]);
     }
 }
