@@ -227,7 +227,7 @@ class Kategori extends MyModel
             switch ($this->params['filters']['groupOp']) {
                 case "AND":
                     foreach ($this->params['filters']['rules'] as $index => $filters) {
-                        if ($filters['field'] == 'statusaktif') {
+                        if ($filters['field'] == 'status') {
                             $query = $query->where('parameter.text', '=', $filters['data']);
                         } elseif ($filters['field'] == 'subkelompok') {
                             $query = $query->where('p.keterangan', 'LIKE', "%$filters[data]%");
@@ -245,7 +245,7 @@ class Kategori extends MyModel
                 case "OR":
                     $query->where(function ($query) {
                         foreach ($this->params['filters']['rules'] as $index => $filters) {
-                            if ($filters['field'] == 'statusaktif') {
+                            if ($filters['field'] == 'status') {
                                 $query = $query->orWhere('parameter.text', '=', $filters['data']);
                             } elseif ($filters['field'] == 'subkelompok') {
                                 $query = $query->orWhere('p.keterangan', 'LIKE', "%$filters[data]%");

@@ -4,6 +4,7 @@ namespace App\Rules;
 
 use Illuminate\Contracts\Validation\Rule;
 use App\Models\BukaAbsensi;
+use App\Models\AbsensiSupirHeader;
 
 class DateAllowedAbsen implements Rule
 {
@@ -29,12 +30,14 @@ class DateAllowedAbsen implements Rule
         $date = date('Y-m-d', strtotime($value));
         $today = date('Y-m-d', strtotime("today"));
         $allowed = false ;
-        
         $bukaAbsensi = BukaAbsensi::where('tglabsensi', '=', $date)->first();
+        $todayValidation = AbsensiSupirHeader::todayValidation(request()->id);
+        
         // $limit = strtotime($date.'+1 days +12 hours' );
         // $now = strtotime('now');
         // if($now < $limit){
-        if($date == $today){
+        if($todayValidation){
+        // if($date == $today){
             $allowed = true;
         }
         else if ($bukaAbsensi){
