@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 
 
 class HutangBayarDetail extends MyModel
@@ -49,14 +50,63 @@ class HutangBayarDetail extends MyModel
 
         $query = DB::table($this->table)->from(DB::raw("$this->table with (readuncommitted)"));
 
+     
+
         if (isset(request()->forReport) && request()->forReport) {
-            $query->select(
-                $this->table . '.nominal',
-                $this->table . '.keterangan',
-                $this->table . '.hutang_nobukti',
-                DB::raw("'' as tgljatuhtempo"),
+
+            $temphutangbayar = '##temhutangbayar' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+        Schema::create($temphutangbayar, function ($table) {
+            $table->string('hutang_nobukti', 1000)->nullable();
+        });
+
+        $querydata = DB::table('hutangbayardetail')->from(
+            DB::raw("hutangbayardetail a with (readuncommitted)")
+        )
+            ->select(
+                'hutang_nobukti',
             )
+            ->where('hutangbayar_id', '=', request()->invoice_id);
+
+
+        DB::table($temphutangbayar)->insertUsing([
+            'hutang_nobukti',
+        ], $querydata);
+
+
+        $temphutang = '##temhutang' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+        Schema::create($temphutang, function ($table) {
+            $table->string('hutang_nobukti', 1000)->nullable();
+            $table->date('tgljatuhtempo')->nullable();
+        });
+
+        $queryrekap = DB::table('hutangdetail')->from(
+            DB::raw("hutangdetail a with (readuncommitted)")
+        )
+            ->select(
+                'b.nobukti as hutang_nobukti',
+                db::raw("max(isnull(a.tgljatuhtempo,'1900/1/1')) as tgljatuhtempo")
+            )
+            ->join(DB::raw("hutangheader as b with (readuncommitted)"), 'a.hutang_id', 'b.id')
+            ->join(DB::raw($temphutangbayar . " c "), 'b.nobukti', 'c.hutang_nobukti')
+            ->groupby('b.nobukti');
+
+        DB::table($temphutang)->insertUsing([
+            'hutang_nobukti',
+            'tgljatuhtempo',
+        ], $queryrekap);
+
+//  dd( DB::table($temphutang)->get());
+
+        $query->select(
+            $this->table . '.nominal',
+            $this->table . '.keterangan',
+            $this->table . '.hutang_nobukti',
+            DB::raw("(case when year(isnull(b.tgljatuhtempo,'1900/1/1'))=1900 then null else isnull(b.tgljatuhtempo,'1900/1/1') end)  as tgljatuhtempo"),
+        )
+        ->leftJoin(DB::raw($temphutang . " as b"), $this->table . '.hutang_nobukti', 'b.hutang_nobukti')
             ->where($this->table . '.hutangbayar_id', '=', request()->hutangbayar_id);
+
+//  dd($query->get());
         } else {
             $query->select(
                 $this->table . '.nobukti',
@@ -135,8 +185,8 @@ class HutangBayarDetail extends MyModel
         $hutangBayarDetail->potongan = $data['potongan'];
         $hutangBayarDetail->keterangan = $data['keterangan'];
         $hutangBayarDetail->modifiedby = $hutangBayarHeader->modifiedby;
-       
-        
+
+
         if (!$hutangBayarDetail->save()) {
             throw new \Exception("Error storing Pengeluaran Detail.");
         }
