@@ -325,7 +325,6 @@ class UpahSupirController extends Controller
             }
             $upahSupirRincian = new UpahSupirRincian();
             $cekdata = $upahSupirRincian->cekupdateharga($data);
-
             if ($cekdata == true) {
                 $query = DB::table('error')
                     ->select('keterangan')

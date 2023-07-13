@@ -5,6 +5,7 @@ namespace App\Http\Requests;
 use Illuminate\Foundation\Http\FormRequest;
 use App\Http\Controllers\Api\ErrorController;
 use App\Models\Parameter;
+use App\Models\PengeluaranTrucking;
 use Illuminate\Validation\Rule;
 
 
@@ -112,10 +113,13 @@ class UpdatePengeluaranTruckingRequest extends FormRequest
             $rulesCoaPostingKredit = [
                 'coapostingkredit' => ['required', 'string', 'min:1']
             ];
-        }
+        }  
+        $pengeluaranTrucking = new PengeluaranTrucking();
+        $getDataPengeluaranTrucking = $pengeluaranTrucking->findAll(request()->id);
+
 
         $rules =  [
-            'kodepengeluaran' => ['required',Rule::unique('pengeluarantrucking')->whereNotIn('id', [$this->id])],
+            'kodepengeluaran' => ['required',Rule::in($getDataPengeluaranTrucking->kodepengeluaran),Rule::unique('pengeluarantrucking')->whereNotIn('id', [$this->id])],
             'format' => ['required', Rule::in($format)],
             'coadebetKeterangan' => 'required',
             'coakreditKeterangan' => 'required',
@@ -137,7 +141,7 @@ class UpdatePengeluaranTruckingRequest extends FormRequest
     public function attributes()
     {
         return [
-            'kodepengeluaran' => 'kode penerimaan',
+            'kodepengeluaran' => 'kode pengeluaran',
             'keterangan' => 'keterangan',
             'format' => 'format bukti',
             'coadebetKeterangan' => 'coa debet',

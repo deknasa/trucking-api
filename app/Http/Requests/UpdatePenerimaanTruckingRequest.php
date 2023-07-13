@@ -5,6 +5,7 @@ namespace App\Http\Requests;
 use Illuminate\Foundation\Http\FormRequest;
 use App\Http\Controllers\Api\ErrorController;
 use App\Models\Parameter;
+use App\Models\PenerimaanTrucking;
 use Illuminate\Validation\Rule;
 
 class UpdatePenerimaanTruckingRequest extends FormRequest
@@ -112,9 +113,11 @@ class UpdatePenerimaanTruckingRequest extends FormRequest
                 'coapostingkredit' => ['required', 'string', 'min:1']
             ];
         }
+        $penerimaanTrucking = new PenerimaanTrucking();
+        $getDataPenerimaanTrucking = $penerimaanTrucking->findAll(request()->id);
 
         $rules = [
-            'kodepenerimaan' => ['required',Rule::unique('penerimaantrucking')->whereNotIn('id', [$this->id])],
+            'kodepenerimaan' => ['required',Rule::in($getDataPenerimaanTrucking->kodepenerimaan),Rule::unique('penerimaantrucking')->whereNotIn('id', [$this->id])],
             'format' => ['required', Rule::in($format)],
             'coadebetKeterangan' => 'required',
             'coakreditKeterangan' => 'required',

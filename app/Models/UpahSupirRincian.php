@@ -767,27 +767,28 @@ class UpahSupirRincian extends MyModel
 
         $temptgl = '##temptgl' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
         Schema::create($temptgl, function ($table) {
+            $table->string('kotadari', 1000)->nullable();
+            $table->string('kotasampai', 1000)->nullable();
             $table->date('tglmulaiberlaku')->nullable();
         });
 
         $querytgl = DB::table('upahsupir')
             ->from(DB::raw("upahsupir with (readuncommitted)"))
             ->select(
+                'kotadari.keterangan as kotadari',
+                'kotasampai.keterangan as kotasampai',
                 'tglmulaiberlaku'
             )
-            ->groupBy('tglmulaiberlaku');
-
-        DB::table($temptgl)->insertUsing(['tglmulaiberlaku'], $querytgl);
+            ->leftJoin(DB::raw("kota as kotadari with (readuncommitted)"), 'upahsupir.kotadari_id', 'kotadari.id')
+            ->leftJoin(DB::raw("kota as kotasampai with (readuncommitted)"), 'upahsupir.kotasampai_id', 'kotasampai.id');
+            
+        DB::table($temptgl)->insertUsing(['kotadari', 'kotasampai', 'tglmulaiberlaku'], $querytgl);
 
 
         $query = DB::table($tempdata)
             ->from(DB::raw($tempdata . " as a"))
-            ->select(
-                'a.tglmulaiberlaku'
-            )
-            ->join(DB::raw($temptgl . " as b"), 'a.tglmulaiberlaku', 'b.tglmulaiberlaku')
+            ->join(DB::raw($temptgl . " as b"), 'a.kotadari', 'b.kotadari')
             ->first();
-
 
         if (isset($query)) {
             $kondisi = true;
