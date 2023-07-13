@@ -88,6 +88,7 @@ class Stok extends MyModel
             ->first();
 
         $aktif = request()->aktif ?? '';
+        $kelompok = request()->kelompok_id ?? '';
         $penerimaanstok_id = request()->penerimaanstok_id ?? '';
         $penerimaanstokheader_nobukti = request()->penerimaanstokheader_nobukti ?? '';
 
@@ -137,6 +138,9 @@ class Stok extends MyModel
             $query->where('stok.statusaktif', '=', $statusaktif->id);
         }
 
+        if($kelompok != ''){
+            $query->where('stok.kelompok_id', '=', $kelompok);
+        }
         if ($penerimaanstokheader_nobukti) {
             $spb = Parameter::where('grp', 'SPB STOK')->where('subgrp', 'SPB STOK')->first();
             if ($spb->text == $penerimaanstok_id) {
@@ -251,6 +255,16 @@ class Stok extends MyModel
             ->first();
 
         return $data;
+    }
+
+    public function getGambarName($id)
+    {
+        $query = DB::table("stok")->from(DB::raw("stok with (readuncommitted)"))
+        ->select('gambar')
+        ->where('id', $id)
+        ->first();
+
+        return $query;
     }
 
     public function createTemp(string $modelTable)

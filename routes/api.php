@@ -259,7 +259,7 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
 
 Route::post('token', [AuthController::class, 'token']);
 Route::get('cekIp', [AuthController::class, 'cekIp']);
-
+// Route::post('oauth/token', '\Laravel\Passport\Http\Controllers\AccessTokenController@issueToken');
 
 Route::get('supir/image/{field}/{filename}/{type}/{aksi}', [SupirController::class, 'getImage']);
 Route::get('supir/pdf/{field}/{filename}', [SupirController::class, 'getPdf']);
@@ -708,6 +708,7 @@ route::middleware(['auth:api', 'authorized'])->group(function () {
     Route::get('supplier/report', [SupplierController::class, 'report']);
     Route::resource('supplier', SupplierController::class)->whereNumber('supplier');
 
+    Route::get('stok/getGambar', [StokController::class, 'getGambar']);
     Route::get('stok/default', [StokController::class, 'default']);
     Route::get('stok/field_length', [StokController::class, 'fieldLength']);
     Route::post('stok/{id}/cekValidasi', [StokController::class, 'cekValidasi'])->name('stok.cekValidasi')->whereNumber('id');
