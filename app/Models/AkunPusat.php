@@ -398,7 +398,7 @@ class AkunPusat extends MyModel
         $query = DB::table("akunpusat")->from(DB::raw("akunpusat with (readuncommitted)"))->where('id', $id)->first();
         return $query;
     }
-    
+
     public function checkTransferData($coa)
     {
         $query = DB::table("akunpusat")->from(DB::raw("akunpusat with (readuncommitted)"))->where('coa', $coa)->first();
@@ -421,25 +421,27 @@ class AkunPusat extends MyModel
             switch ($this->params['filters']['groupOp']) {
                 case "AND":
                     foreach ($this->params['filters']['rules'] as $index => $filters) {
-                        if ($filters['field'] == 'statusaktif') {
-                            $query = $query->where('parameter_statusaktif.text', '=', $filters['data']);
-                        } else if ($filters['field'] == 'statuscoa') {
-                            $query = $query->where('parameter_statuscoa.text', '=', "$filters[data]");
-                        } else if ($filters['field'] == 'statusaccountpayable') {
-                            $query = $query->where('parameter_statusaccountpayable.text', '=', "$filters[data]");
-                        } else if ($filters['field'] == 'statusneraca') {
-                            $query = $query->where('parameter_statusneraca.text', '=', "$filters[data]");
-                        } else if ($filters['field'] == 'statuslabarugi') {
-                            $query = $query->where('parameter_statuslabarugi.text', '=', "$filters[data]");
-                        } else if ($filters['field'] == 'created_at' || $filters['field'] == 'updated_at') {
-                            $query = $query->whereRaw("format(" . $this->table . "." . $filters['field'] . ", 'dd-MM-yyyy HH:mm:ss') LIKE '%$filters[data]%'");
-                        } elseif ($filters['field'] == 'type') {
-                            $query = $query->where('typeakuntansi.kodetype', 'LIKE', "%$filters[data]%");
-                        } elseif ($filters['field'] == 'akuntansi') {
-                            $query = $query->where('akuntansi.kodeakuntansi', 'LIKE', "%$filters[data]%");
-                        } else {
-                            // $query = $query->where($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
-                            $query = $query->whereRaw($this->table . ".[" .  $filters['field'] . "] LIKE '%" . escapeLike($filters['data']) . "%' escape '|'");
+                        if ($filters['field'] != '') {
+                            if ($filters['field'] == 'statusaktif') {
+                                $query = $query->where('parameter_statusaktif.text', '=', $filters['data']);
+                            } else if ($filters['field'] == 'statuscoa') {
+                                $query = $query->where('parameter_statuscoa.text', '=', "$filters[data]");
+                            } else if ($filters['field'] == 'statusaccountpayable') {
+                                $query = $query->where('parameter_statusaccountpayable.text', '=', "$filters[data]");
+                            } else if ($filters['field'] == 'statusneraca') {
+                                $query = $query->where('parameter_statusneraca.text', '=', "$filters[data]");
+                            } else if ($filters['field'] == 'statuslabarugi') {
+                                $query = $query->where('parameter_statuslabarugi.text', '=', "$filters[data]");
+                            } else if ($filters['field'] == 'created_at' || $filters['field'] == 'updated_at') {
+                                $query = $query->whereRaw("format(" . $this->table . "." . $filters['field'] . ", 'dd-MM-yyyy HH:mm:ss') LIKE '%$filters[data]%'");
+                            } elseif ($filters['field'] == 'type') {
+                                $query = $query->where('typeakuntansi.kodetype', 'LIKE', "%$filters[data]%");
+                            } elseif ($filters['field'] == 'akuntansi') {
+                                $query = $query->where('akuntansi.kodeakuntansi', 'LIKE', "%$filters[data]%");
+                            } else {
+                                // $query = $query->where($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
+                                $query = $query->whereRaw($this->table . ".[" .  $filters['field'] . "] LIKE '%" . escapeLike($filters['data']) . "%' escape '|'");
+                            }
                         }
                     }
 
@@ -447,25 +449,27 @@ class AkunPusat extends MyModel
                 case "OR":
                     $query->where(function ($query) {
                         foreach ($this->params['filters']['rules'] as $index => $filters) {
-                            if ($filters['field'] == 'statusaktif') {
-                                $query = $query->orWhere('parameter_statusaktif.text', '=', $filters['data']);
-                            } else if ($filters['field'] == 'created_at' || $filters['field'] == 'updated_at') {
-                                $query = $query->orWhereRaw("format(" . $this->table . "." . $filters['field'] . ", 'dd-MM-yyyy HH:mm:ss') LIKE '%$filters[data]%'");
-                            } else if ($filters['field'] == 'statuscoa') {
-                                $query = $query->orWhere('parameter_statuscoa.text', '=', "$filters[data]");
-                            } else if ($filters['field'] == 'statusaccountpayable') {
-                                $query = $query->orWhere('parameter_statusaccountpayable.text', '=', "$filters[data]");
-                            } else if ($filters['field'] == 'statusneraca') {
-                                $query = $query->orWhere('parameter_statusneraca.text', '=', "$filters[data]");
-                            } else if ($filters['field'] == 'statuslabarugi') {
-                                $query = $query->orWhere('parameter_statuslabarugi.text', '=', "$filters[data]");
-                            } elseif ($filters['field'] == 'type') {
-                                $query = $query->orWhere('typeakuntansi.kodetype', 'LIKE', "%$filters[data]%");
-                            } elseif ($filters['field'] == 'akuntansi') {
-                                $query = $query->orWhere('akuntansi.kodeakuntansi', 'LIKE', "%$filters[data]%");
-                            } else {
-                                // $query = $query->orWhere($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
-                                $query = $query->OrwhereRaw($this->table . ".[" .  $filters['field'] . "] LIKE '%" . escapeLike($filters['data']) . "%' escape '|'");
+                            if ($filters['field'] != '') {
+                                if ($filters['field'] == 'statusaktif') {
+                                    $query = $query->orWhere('parameter_statusaktif.text', '=', $filters['data']);
+                                } else if ($filters['field'] == 'created_at' || $filters['field'] == 'updated_at') {
+                                    $query = $query->orWhereRaw("format(" . $this->table . "." . $filters['field'] . ", 'dd-MM-yyyy HH:mm:ss') LIKE '%$filters[data]%'");
+                                } else if ($filters['field'] == 'statuscoa') {
+                                    $query = $query->orWhere('parameter_statuscoa.text', '=', "$filters[data]");
+                                } else if ($filters['field'] == 'statusaccountpayable') {
+                                    $query = $query->orWhere('parameter_statusaccountpayable.text', '=', "$filters[data]");
+                                } else if ($filters['field'] == 'statusneraca') {
+                                    $query = $query->orWhere('parameter_statusneraca.text', '=', "$filters[data]");
+                                } else if ($filters['field'] == 'statuslabarugi') {
+                                    $query = $query->orWhere('parameter_statuslabarugi.text', '=', "$filters[data]");
+                                } elseif ($filters['field'] == 'type') {
+                                    $query = $query->orWhere('typeakuntansi.kodetype', 'LIKE', "%$filters[data]%");
+                                } elseif ($filters['field'] == 'akuntansi') {
+                                    $query = $query->orWhere('akuntansi.kodeakuntansi', 'LIKE', "%$filters[data]%");
+                                } else {
+                                    // $query = $query->orWhere($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
+                                    $query = $query->OrwhereRaw($this->table . ".[" .  $filters['field'] . "] LIKE '%" . escapeLike($filters['data']) . "%' escape '|'");
+                                }
                             }
                         }
                     });

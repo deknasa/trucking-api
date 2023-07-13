@@ -423,6 +423,7 @@ class AkunPusatController extends Controller
 
             if (!empty($returnArray)) {
                 return response([
+                    'statuspesan' => 'warning',
                     'message' => $returnArray
                 ], 500);
             }
