@@ -235,6 +235,7 @@ use App\Http\Controllers\Api\LaporanMingguanSupirController;
 use App\Http\Controllers\Api\MainAkunPusatController;
 use App\Http\Controllers\Api\LaporanHistoryDepositoController;
 use App\Http\Controllers\Api\LaporanPinjamanPerUnitTradoController;
+use App\Http\Controllers\Api\StokPusatController;
 use App\Http\Controllers\Api\UbahPasswordController;
 
 
@@ -1452,6 +1453,8 @@ route::middleware(['auth:api', 'authorized'])->group(function () {
     Route::get('laporanpinjamanperunittrado/report', [LaporanPinjamanPerUnitTradoController::class, 'report'])->name('laporanpinjamanperunittrado.report');
     Route::get('laporanpinjamanperunittrado/export', [LaporanPinjamanPerUnitTradoController::class, 'export'])->name('laporanpinjamanperunittrado.export');
     Route::resource('laporanpinjamanperunittrado', LaporanPinjamanPerUnitTradoController::class)->whereNumber('laporanpinjamanperunittrado');
+    
+    Route::resource('stokpusat', StokPusatController::class)->whereNumber('stokpusat');
 });
 Route::get('suratpengantarapprovalinputtrip/updateapproval', [SuratPengantarApprovalInputTripController::class, 'updateApproval']);
 

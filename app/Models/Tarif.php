@@ -58,6 +58,23 @@ class Tarif extends MyModel
             ];
             goto selesai;
         }
+        
+        $upahSupir = DB::table('upahsupir')
+            ->from(
+                DB::raw("upahsupir as a with (readuncommitted)")
+            )
+            ->select(
+                'a.tarif_id'
+            )
+            ->where('a.tarif_id', '=', $id)
+            ->first();
+        if (isset($upahSupir)) {
+            $data = [
+                'kondisi' => true,
+                'keterangan' => 'Upah Supir',
+            ];
+            goto selesai;
+        }
 
 
         $data = [
@@ -281,7 +298,7 @@ class Tarif extends MyModel
                 'parent.tujuan as parent',
                 DB::raw("(case when tarif.upahsupir_id=0 then null else tarif.upahsupir_id end) as upahsupir_id"),
                 "$tempUpahsupir.kotasampai_id as upahsupir",
-                'tarif.tujuan',
+                DB::raw("TRIM(tarif.tujuan) as tujuan"),
                 'tarif.penyesuaian',
                 'tarif.statusaktif',
                 'tarif.statussistemton',
