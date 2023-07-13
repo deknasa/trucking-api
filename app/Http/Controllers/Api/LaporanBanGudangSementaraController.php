@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use App\Models\LaporanBanGudangSementara;
 
 class LaporanBanGudangSementaraController extends Controller
 {
@@ -27,18 +28,27 @@ class LaporanBanGudangSementaraController extends Controller
      */
     public function report()
     {
-        $report = [
-            [
-                "kodestok" => "BAUT 12",
-                'namastok' => 'BAUT 12',
-                'gudang' => 'GUDANG PIHAK KE-3',
-                'nobukti' => 'PG 00035/II/2023',
-                'tanggal' => '23/2/2023',
-                'jlhhari' => '23'
-            ]
-        ];
+        // $report = [
+        //     [
+        //         "kodestok" => "BAUT 12",
+        //         'namastok' => 'BAUT 12',
+        //         'gudang' => 'GUDANG PIHAK KE-3',
+        //         'nobukti' => 'PG 00035/II/2023',
+        //         'tanggal' => '23/2/2023',
+        //         'jlhhari' => '23'
+        //     ]
+        // ];
+        // return response([
+        //     'data' => $report
+        // ]);
+
+
+        $laporanbankgudangsementara = new LaporanBanGudangSementara();
+
+
+
         return response([
-            'data' => $report
+            'data' => $laporanbankgudangsementara->getReport(),
         ]);
     }
 }
