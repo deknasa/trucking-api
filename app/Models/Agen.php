@@ -72,7 +72,7 @@ class Agen extends MyModel
         if (isset($piutang)) {
             $data = [
                 'kondisi' => true,
-                'keterangan' => 'Stok',
+                'keterangan' => 'piutang',
             ];
             goto selesai;
         }
