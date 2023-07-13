@@ -36,6 +36,7 @@ class UpdateUpahSupirRequest extends FormRequest
     {        
         $upahSupir = new UpahSupir();
         $dataUpahSupir = $upahSupir->findAll(request()->id);
+        $check = (new UpahSupir())->cekValidasi(request()->id);
 
         $parameter = new Parameter();
         $dataAktif = $parameter->getcombodata('STATUS AKTIF', 'STATUS AKTIF');
@@ -54,18 +55,18 @@ class UpdateUpahSupirRequest extends FormRequest
         if ($parent_id != null) {
             if ($parent_id == 0) {
                 $rulesParent_id = [
-                    'parent_id' => ['required', 'numeric', 'min:1',Rule::in($dataUpahSupir->parent_id), new ExistUpahSupir()]
+                    'parent_id' => ['required', 'numeric', 'min:1', new ExistUpahSupir(), ($check['kondisi']) ? Rule::in($dataUpahSupir->parent_id) : '']
                 ];
             } else {
                 if ($this->parent == '') {
                     $rulesParent_id = [
-                        'parent' => ['required',Rule::in($dataUpahSupir->parent)]
+                        'parent' => ['required', ($check['kondisi']) ? Rule::in($dataUpahSupir->parent) : '']
                     ];
                 }
             }
         } else if ($parent_id == null && $this->parent != '') {
             $rulesParent_id = [
-                'parent_id' => ['required', 'numeric', 'min:1',Rule::in($dataUpahSupir->parent_id), new ExistUpahSupir()]
+                'parent_id' => ['required', 'numeric', 'min:1', new ExistUpahSupir(), ($check['kondisi']) ? Rule::in($dataUpahSupir->parent_id) : '']
             ];
         }
 
@@ -73,11 +74,11 @@ class UpdateUpahSupirRequest extends FormRequest
         $rulesTarif_id = [];
         if ($tarif_id != null) {
                 $rulesTarif_id = [
-                    'tarif_id' => ['required', 'numeric', 'min:1',Rule::in($dataUpahSupir->tarif_id), new ExistTarif()]
+                    'tarif_id' => ['required', 'numeric', 'min:1', new ExistTarif(), ($check['kondisi']) ? Rule::in($dataUpahSupir->tarif_id) : '']
                 ];
         } else if ($tarif_id == null && $this->tarif != '') {
             $rulesTarif_id = [
-                'tarif_id' => ['required', 'numeric', 'min:1',Rule::in($dataUpahSupir->tarif_id), new ExistTarif()]
+                'tarif_id' => ['required', 'numeric', 'min:1', new ExistTarif(), ($check['kondisi']) ? Rule::in($dataUpahSupir->tarif_id) : '']
             ];
         }
 
@@ -86,18 +87,18 @@ class UpdateUpahSupirRequest extends FormRequest
         if ($zona_id != null) {
             if ($zona_id == 0) {
                 $rulesZona_id = [
-                    'zona_id' => ['required', 'numeric', 'min:1',Rule::in($dataUpahSupir->zona_id), new ExistZona()]
+                    'zona_id' => ['required', 'numeric', 'min:1', new ExistZona(), ($check['kondisi']) ? Rule::in($dataUpahSupir->zona_id) : '']
                 ];
             } else {
                 if ($this->zona == '') {
                     $rulesZona_id = [
-                        'zona' => ['required',Rule::in($dataUpahSupir->zona)]
+                        'zona' => ['required', ($check['kondisi']) ? Rule::in($dataUpahSupir->zona) : '']
                     ];
                 }
             }
         } else if ($zona_id == null && $this->zona != '') {
             $rulesZona_id = [
-                'zona_id' => ['required', 'numeric', 'min:1',Rule::in($dataUpahSupir->zona_id), new ExistZona()]
+                'zona_id' => ['required', 'numeric', 'min:1', new ExistZona(), ($check['kondisi']) ? Rule::in($dataUpahSupir->zona_id) : '']
             ];
         }
         
@@ -106,12 +107,12 @@ class UpdateUpahSupirRequest extends FormRequest
         if ($kotadari_id != null) {
             if ($kotadari_id == 0) {
                 $rulesKotaDari_id = [
-                    'kotadari_id' => ['required', 'numeric', 'min:1',Rule::in($dataUpahSupir->kotadari_id), new ExistKota()]
+                    'kotadari_id' => ['required', 'numeric', 'min:1', new ExistKota(), ($check['kondisi']) ? Rule::in($dataUpahSupir->kotadari_id) : '']
                 ];
             } 
         } else if ($kotadari_id == null && $this->kotadari != '') {
             $rulesKotaDari_id = [
-                'kotadari_id' => ['required', 'numeric', 'min:1',Rule::in($dataUpahSupir->kotadari_id), new ExistKota()]
+                'kotadari_id' => ['required', 'numeric', 'min:1', new ExistKota(), ($check['kondisi']) ? Rule::in($dataUpahSupir->kotadari_id) : '']
             ];
         }
 
@@ -120,12 +121,12 @@ class UpdateUpahSupirRequest extends FormRequest
         if ($kotasampai_id != null) {
             if ($kotasampai_id == 0) {
                 $rulesKotaSampai_id = [
-                    'kotasampai_id' => ['required', 'numeric', 'min:1',Rule::in($dataUpahSupir->kotasampai_id), new UniqueUpahSupirSampaiEdit(), new ExistKota()]
+                    'kotasampai_id' => ['required', 'numeric', 'min:1', new UniqueUpahSupirSampaiEdit(), new ExistKota(), ($check['kondisi']) ? Rule::in($dataUpahSupir->kotasampai_id) : '']
                 ];
             } 
         } else if ($kotasampai_id == null && $this->kotasampai != '') {
             $rulesKotaSampai_id = [
-                'kotasampai_id' => ['required', 'numeric', 'min:1',Rule::in($dataUpahSupir->kotasampai_id), new UniqueUpahSupirSampaiEdit(), new ExistKota()]
+                'kotasampai_id' => ['required', 'numeric', 'min:1', new UniqueUpahSupirSampaiEdit(), new ExistKota(), ($check['kondisi']) ? Rule::in($dataUpahSupir->kotasampai_id) : '']
             ];
         }
 
@@ -135,10 +136,10 @@ class UpdateUpahSupirRequest extends FormRequest
         $tglbatasawal = $getBatas->text;
         $tglBatasAkhir = (date('Y') + 1) . '-01-01';
         $rules =  [
-            'kotadari' => ['required',Rule::in($dataUpahSupir->kotadari)],
-            'kotasampai' => ['required',Rule::in($dataUpahSupir->kotasampai)],
-            'tarif' => ['required',Rule::in($dataUpahSupir->tarif)],
-            'penyesuaian' => [Rule::in($dataUpahSupir->penyesuaian),new UniqueUpahSupirSampaiEdit()],
+            'kotadari' => ['required', ($check['kondisi']) ? Rule::in($dataUpahSupir->kotadari) : ''],
+            'kotasampai' => ['required', ($check['kondisi']) ? Rule::in($dataUpahSupir->kotasampai) : ''],
+            'tarif' => ['required', ($check['kondisi']) ? Rule::in($dataUpahSupir->tarif) : ''],
+            'penyesuaian' => [new UniqueUpahSupirSampaiEdit(), ($check['kondisi']) ? Rule::in($dataUpahSupir->penyesuaian) : ''],
             'jarak' => ['required','numeric','gt:0','max:'. (new ParameterController)->getparamid('BATAS KM UPAH SUPIR','BATAS KM UPAH SUPIR')->text],
             'statusaktif' => ['required', Rule::in($statusAktif)],
             'statussimpankandang' => [new SimpanKandangUpahSupir()],

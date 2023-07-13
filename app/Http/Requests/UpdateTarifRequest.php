@@ -6,6 +6,9 @@ use App\Http\Controllers\Api\ErrorController;
 use App\Models\Parameter;
 use App\Models\Tarif;
 use App\Rules\UniqueTarifEdit;
+use App\Rules\ValidasiKotaTarif;
+use App\Rules\ValidasiPenyesuaianTarif;
+use App\Rules\ValidasiTujuanTarif;
 use App\Rules\ValidasiTujuanTarifDariUpahSupir;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
@@ -31,7 +34,8 @@ class UpdateTarifRequest extends FormRequest
     {
         $tarif = new Tarif();
         $dataTarif = $tarif->findAll($this->id);
-        
+        $check = (new Tarif())->cekvalidasihapus(request()->id);
+
         $parameter = new Parameter();
         $dataAktif = $parameter->getcombodata('STATUS AKTIF', 'STATUS AKTIF');
         $dataAktif = json_decode($dataAktif, true);
@@ -53,11 +57,11 @@ class UpdateTarifRequest extends FormRequest
         $rulesKota_id = [];
         if ($kota_id != null) {
             $rulesKota_id = [
-                'kota_id' => ['required', 'numeric', 'min:1', Rule::in($dataTarif->kota_id)]
+                'kota_id' => ['required', 'numeric', 'min:1', ($check['kondisi']) ? Rule::in($dataTarif->kota_id) : '']
             ];
         } else if ($kota_id == null && $this->kota != '') {
             $rulesKota_id = [
-                'kota_id' => ['required', 'numeric', 'min:1', Rule::in($dataTarif->kota_id)],
+                'kota_id' => ['required', 'numeric', 'min:1', ($check['kondisi']) ? Rule::in($dataTarif->kota_id) : ''],
             ];
         }
 
@@ -66,18 +70,18 @@ class UpdateTarifRequest extends FormRequest
         if ($parent_id != null) {
             if ($parent_id == 0) {
                 $rulesParent_id = [
-                    'parent_id' => ['required', 'numeric', 'min:1', Rule::in($dataTarif->parent_id)]
+                    'parent_id' => ['required', 'numeric', 'min:1',  ($check['kondisi']) ? Rule::in($dataTarif->parent_id) : '']
                 ];
             } else {
                 if ($this->parent == '') {
                     $rulesParent_id = [
-                        'parent' => ['required', Rule::in($dataTarif->parent)]
+                        'parent' => ['required',  ($check['kondisi']) ? Rule::in($dataTarif->parent) : '']
                     ];
                 }
             }
         } else if ($parent_id == null && $this->parent != '') {
             $rulesParent_id = [
-                'parent_id' => ['required', 'numeric', 'min:1', Rule::in($dataTarif->parent_id)]
+                'parent_id' => ['required', 'numeric', 'min:1',  ($check['kondisi']) ? Rule::in($dataTarif->parent_id) : '']
             ];
         }
 
@@ -86,18 +90,18 @@ class UpdateTarifRequest extends FormRequest
         if ($upahsupir_id != null) {
             if ($upahsupir_id == 0) {
                 $rulesUpahSupir_id = [
-                    'upahsupir_id' => ['required', 'numeric', 'min:1',Rule::in($dataTarif->upahsupir_id)]
+                    'upahsupir_id' => ['required', 'numeric', 'min:1',  ($check['kondisi']) ? Rule::in($dataTarif->upahsupir_id) : '']
                 ];
             } else {
                 if ($this->upahsupir == '') {
                     $rulesUpahSupir_id = [
-                        'upahsupir' => ['required',Rule::in($dataTarif->upahsupir)]
+                        'upahsupir' => ['required',  ($check['kondisi']) ? Rule::in($dataTarif->upahsupir) : '']
                     ];
                 }
             }
         } else if ($upahsupir_id == null && $this->upahsupir != '') {
             $rulesUpahSupir_id = [
-                'upahsupir_id' => ['required', 'numeric', 'min:1',Rule::in($dataTarif->upahsupir_id)]
+                'upahsupir_id' => ['required', 'numeric', 'min:1',  ($check['kondisi']) ? Rule::in($dataTarif->upahsupir_id) : '']
             ];
         }
 
@@ -106,31 +110,31 @@ class UpdateTarifRequest extends FormRequest
         if ($zona_id != null) {
             if ($zona_id == 0) {
                 $rulesZona_id = [
-                    'zona_id' => ['required', 'numeric', 'min:1', Rule::in($dataTarif->zona_id)]
+                    'zona_id' => ['required', 'numeric', 'min:1',  ($check['kondisi']) ? Rule::in($dataTarif->zona_id) : '']
                 ];
             } else {
                 if ($this->zona == '') {
                     $rulesZona_id = [
-                        'zona' => ['required', Rule::in($dataTarif->zona)]
+                        'zona' => ['required',  ($check['kondisi']) ? Rule::in($dataTarif->zona) : '']
                     ];
                 }
             }
         } else if ($zona_id == null && $this->zona != '') {
             $rulesZona_id = [
-                'zona_id' => ['required', 'numeric', 'min:1', Rule::in($dataTarif->zona_id)]
+                'zona_id' => ['required', 'numeric', 'min:1',  ($check['kondisi']) ? Rule::in($dataTarif->zona_id) : '']
             ];
         }
 
         $rules = [
-            'tujuan' =>  ['required',Rule::in($dataTarif->tujuan), new ValidasiTujuanTarifDariUpahSupir()],
-            'penyesuaian' => [Rule::in($dataTarif->penyesuaian),new UniqueTarifEdit()],
+            'tujuan' =>  ['required', new ValidasiTujuanTarifDariUpahSupir(), ($check['kondisi']) ? Rule::in($dataTarif->tujuan) : ''],
+            'penyesuaian' => [new UniqueTarifEdit(), ($check['kondisi']) ? Rule::in($dataTarif->penyesuaian) : ''],
             'statusaktif' => ['required', Rule::in($statusAktif)],
             'statussistemton' => ['required', Rule::in($statusTon)],
             'tglmulaiberlaku' => [
                 'required', 'date_format:d-m-Y',
                 'before_or_equal:' . date('d-m-Y'),
             ],
-            'kota' => ['required', Rule::in($dataTarif->kota)],
+            'kota' => ['required', ($check['kondisi']) ? Rule::in($dataTarif->kota) : ''],
             'statuspenyesuaianharga' => ['required', Rule::in($statusPenyesuaian)],
         ];
 
