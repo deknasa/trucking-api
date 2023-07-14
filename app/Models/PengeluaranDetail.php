@@ -31,11 +31,11 @@ class PengeluaranDetail extends MyModel
         if (isset(request()->forReport) && request()->forReport) {
             $query->select(
                 "debet.keterangancoa as coadebet",
-                DB::raw("'' as bank"),
+                "$this->table.bank",
                 "$this->table.tgljatuhtempo",
                 "$this->table.nominal",
                 "$this->table.keterangan",
-                DB::raw("'' as invoice_nobukti"),
+                "$this->table.noinvoice as invoice_nobukti",
             )
                 ->leftJoin(DB::raw("pengeluaranheader as header with (readuncommitted)"), "header.id", "$this->table.pengeluaran_id")
                 ->leftJoin(DB::raw("akunpusat as debet with (readuncommitted)"), "debet.coa", "$this->table.coadebet");
