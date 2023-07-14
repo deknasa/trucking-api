@@ -28,7 +28,6 @@ class LaporanPemakaianBan extends MyModel
 
     public function getReport($dari, $sampai, $posisiAkhir, $jenisLaporan)
     {
-
         $dari = date('Y-m-d', strtotime(request()->dari)) ?? '1900/1/1';
         $sampai = date('Y-m-d', strtotime(request()->sampai)) ?? '1900/1/1';
 
@@ -58,10 +57,11 @@ class LaporanPemakaianBan extends MyModel
             'namastok',
         ], $queryDataBan);
 
+      
 
         $Temphasildata = '##Temphasildata' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
         Schema::create($Temphasildata, function ($table) {
-            $table->integer('status')->nullable();
+            $table->integer('[status]')->nullable();
             $table->date('tglbukti')->nullable();
             $table->integer('id')->nullable();
             $table->string('nobukti', 1000)->nullable();
@@ -80,7 +80,7 @@ class LaporanPemakaianBan extends MyModel
             DB::raw("penerimaanstokheader as a with (readuncommitted)")
         )
             ->select(
-                DB::raw("1 as status"),
+                DB::raw("1 as [status]"),
                 'a.tglbukti',
                 'a.id',
                 'a.nobukti',
@@ -98,8 +98,9 @@ class LaporanPemakaianBan extends MyModel
             ->join(DB::raw($TempDataBan . " as c "), 'b.stok_id', 'c.id')
             ->orderBy('a.id', 'asc');
 
+
         DB::table($Temphasildata)->insertUsing([
-            'status',
+            '[status]',
             'tglbukti',
             'id',
             'nobukti',
@@ -114,11 +115,12 @@ class LaporanPemakaianBan extends MyModel
             'updated_at',
         ], $queryhasildata);
 
+
         $queryhasildata = DB::table("pengeluaranstokheader")->from(
             DB::raw("pengeluaranstokheader as a with (readuncommitted)")
         )
             ->select(
-                DB::raw("2 as status"),
+                DB::raw("2 as [status]"),
                 'a.tglbukti',
                 'a.id',
                 'a.nobukti',
@@ -137,7 +139,7 @@ class LaporanPemakaianBan extends MyModel
             ->orderBy('a.id', 'asc');
 
         DB::table($Temphasildata)->insertUsing([
-            'status',
+            '[status]',
             'tglbukti',
             'id',
             'nobukti',
@@ -152,29 +154,30 @@ class LaporanPemakaianBan extends MyModel
             'updated_at',
         ], $queryhasildata);
 
+
         $Temphasildata2 = '##Temphasildata2' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
         Schema::create($Temphasildata2, function ($table) {
-            $table->integer('status')->nullable();
+            $table->integer('[status]')->nullable();
             $table->integer('id')->nullable();
             $table->integer('stok_id')->nullable();
             $table->string('nobukti', 1000)->nullable();
             $table->date('tglbukti')->nullable();
             $table->string('namastok', 1000)->nullable();
-            $table->integer('gudangdari_id')->nullable();
-            $table->integer('tradodari_id')->nullable();
-            $table->integer('gandengandari_id')->nullable();
-            $table->integer('gudangke_id')->nullable();
-            $table->integer('tradoke_id')->nullable();
-            $table->integer('gandenganke_id')->nullable();
+            $table->string('gudangdari',1000)->nullable();
+            $table->string('tradodari',1000)->nullable();
+            $table->string('gandengandari',1000)->nullable();
+            $table->string('gudangke',1000)->nullable();
+            $table->string('tradoke',1000)->nullable();
+            $table->string('gandenganke',1000)->nullable();
             $table->dateTime('created_at')->nullable();
             $table->dateTime('updated_at')->nullable();
         });
-
+  
         $queryhasildata2 = DB::table($Temphasildata)->from(
             DB::raw($Temphasildata . " as a ")
         )
             ->select(
-                'a.status',
+                'a.[status]',
                 'a.stok_id',
                 'a.tglbukti',
                 'a.id',
@@ -198,34 +201,39 @@ class LaporanPemakaianBan extends MyModel
             ->leftjoin(DB::raw("gandengan as f1 with (readuncommitted)"), 'a.gandenganout_id', 'f1.id')
             ->orderBy('a.id', 'asc');
 
+      
+
+
         DB::table($Temphasildata2)->insertUsing([
-            'status',
-            'id',
+            '[status]',
             'stok_id',
-            'nobukti',
             'tglbukti',
+            'id',
+            'nobukti',
             'namastok',
-            'gudangdari_id',
-            'tradodari_id',
-            'gandengandari_id',
-            'gudangke_id',
-            'tradoke_id',
-            'gandenganke_id',
+            'gudangdari',
+            'tradodari',
+            'gandengandari',
+            'gudangke',
+            'tradoke',
+            'gandenganke',
             'created_at',
             'updated_at',
         ], $queryhasildata2);
 
+
+      
         $temphasil = '##temphasil' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
         Schema::create($temphasil, function ($table) {
-            $table->integer('status')->nullable();
+            $table->integer('[status]')->nullable();
             $table->integer('stok_id')->nullable();
             $table->dateTime('tglbukti')->nullable();
             $table->string('tanggal', 50)->nullable();
             $table->integer('id')->nullable();
             $table->string('nobukti', 1000)->nullable();
             $table->string('namastok', 1000)->nullable();
-            $table->string('in', 1000)->nullable();
-            $table->string('out', 1000)->nullable();
+            $table->string('[in]', 1000)->nullable();
+            $table->string('[out]', 1000)->nullable();
             $table->dateTime('created_at')->nullable();
             $table->dateTime('updated_at')->nullable();
         });
@@ -234,13 +242,13 @@ class LaporanPemakaianBan extends MyModel
             DB::raw($Temphasildata2 . " as a ")
         )
             ->select(
-                'a.status',
+                'a.[status]',
                 'a.stok_id',
                 'a.tglbukti',
                 DB::raw("format(a.tglbukti,'yyyyMMdd')+format(a.created_at,'yyyyMMddHHmmss') as tanggal"),
                 'a.id',
                 'a.nobukti',
-                'b.namastok',
+                'a.namastok',
                 DB::raw("
                 (case when left(a.nobukti,3)='SPK' then 
         
@@ -264,24 +272,26 @@ class LaporanPemakaianBan extends MyModel
                 'a.updated_at',
             );
 
+
         DB::table($temphasil)->insertUsing([
-            'status',
+            '[status]',
             'stok_id',
             'tglbukti',
             'tanggal',
             'id',
             'nobukti',
             'namastok',
-            'in',
-            'out',
+            '[in]',
+            '[out]',
             'created_at',
             'updated_at',
         ], $querytemphasil);
+        
 
         $temphasildata3 = '##Temphasildata3' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
         Schema::create($temphasildata3, function ($table) {
             $table->id();
-            $table->integer('status')->nullable();
+            $table->integer('[status]')->nullable();
             $table->integer('stok_id')->nullable();
             $table->dateTime('tglbukti')->nullable();
             $table->integer('dataid')->nullable();
@@ -297,7 +307,7 @@ class LaporanPemakaianBan extends MyModel
         $temphasildata3rekap = '##Temphasildata3rekap' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
         Schema::create($temphasildata3rekap, function ($table) {
             $table->id();
-            $table->integer('status')->nullable();
+            $table->integer('[status]')->nullable();
             $table->integer('stok_id')->nullable();
             $table->dateTime('tglbukti')->nullable();
             $table->integer('dataid')->nullable();
@@ -310,10 +320,10 @@ class LaporanPemakaianBan extends MyModel
             $table->string('tanggal', 50)->nullable();
             $table->integer('urut')->nullable();
         });
-
+     
         $temphasiltemp = '##temphasiltemp' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
         Schema::create($temphasiltemp, function ($table) {
-            $table->integer('status')->nullable();
+            $table->integer('[status]')->nullable();
             $table->integer('stok_id')->nullable();
             $table->dateTime('tglbukti')->nullable();
             $table->integer('id')->nullable();
@@ -332,21 +342,20 @@ class LaporanPemakaianBan extends MyModel
                 DB::raw($temphasil . " as a ")
             )
                 ->select(
-                    'a.status',
+                    'a.[status]',
                     'a.stok_id',
                     'a.tglbukti',
                     'a.id',
                     'a.nobukti',
-                    'b.namastok',
-                    DB::raw("[IN] as posisi"),
+                    'a.namastok',
+                    'a.[in] as posisi',
                     DB::raw("'IN' as keterangan"),
                     'a.created_at',
                     'a.updated_at',
                     'a.tanggal',
                 );
-
             DB::table($temphasiltemp)->insertUsing([
-                'status',
+                '[status]',
                 'stok_id',
                 'tglbukti',
                 'id',
@@ -359,18 +368,18 @@ class LaporanPemakaianBan extends MyModel
                 'tanggal',
             ], $queryhasiltemp);
 
-
+          
             $queryhasiltemp = DB::table($temphasil)->from(
                 DB::raw($temphasil . " as a ")
             )
                 ->select(
-                    'a.status',
+                    'a.[status]',
                     'a.stok_id',
                     'a.tglbukti',
                     'a.id',
                     'a.nobukti',
-                    'b.namastok',
-                    DB::raw("[OUT] as posisi"),
+                    'a.namastok',
+                    'a.[out] as posisi',
                     DB::raw("'OUT' as keterangan"),
                     'a.created_at',
                     'a.updated_at',
@@ -378,7 +387,7 @@ class LaporanPemakaianBan extends MyModel
                 );
 
             DB::table($temphasiltemp)->insertUsing([
-                'status',
+                '[status]',
                 'stok_id',
                 'tglbukti',
                 'id',
@@ -391,11 +400,12 @@ class LaporanPemakaianBan extends MyModel
                 'tanggal',
             ], $queryhasiltemp);
 
-            $queryhasildata3 = DB::table($temphasildata3)->from(
+           
+            $queryhasildata3 = DB::table($temphasiltemp)->from(
                 DB::raw($temphasiltemp . " as a ")
             )
                 ->select(
-                    'a.status',
+                    'a.[status]',
                     'a.stok_id',
                     'a.tglbukti',
                     'a.id as dataid',
@@ -408,11 +418,12 @@ class LaporanPemakaianBan extends MyModel
                     'a.tanggal',
                 )
                 ->whereRaw("a.posisi<>''")
-                ->whereRaw("a.keterangan<>'IN'")
+                ->whereRaw("a.keterangan='IN'")
                 ->orderBy('a.tanggal', 'desc');
 
+          
             DB::table($temphasildata3)->insertUsing([
-                'status',
+                '[status]',
                 'stok_id',
                 'tglbukti',
                 'dataid',
@@ -429,7 +440,7 @@ class LaporanPemakaianBan extends MyModel
                 DB::raw($temphasildata3 . " as a ")
             )
                 ->select(
-                    'a.status',
+                    'a.[status]',
                     'a.stok_id',
                     'a.tglbukti',
                     'a.dataid',
@@ -444,11 +455,11 @@ class LaporanPemakaianBan extends MyModel
 
                 )
                 ->whereRaw("a.posisi<>''")
-                ->whereRaw("a.keterangan<>'IN'")
+                ->whereRaw("a.keterangan='IN'")
                 ->orderBy('a.tanggal', 'desc');
 
             DB::table($temphasildata3rekap)->insertUsing([
-                'status',
+                '[status]',
                 'stok_id',
                 'tglbukti',
                 'dataid',
@@ -467,20 +478,25 @@ class LaporanPemakaianBan extends MyModel
             DB::raw($temphasildata3rekap . " as a ")
         )
             ->select(
-                'a.status',
-                'a.stok_id',
-                'a.tglbukti',
-                'a.dataid',
+                db::Raw("'PT.Transporindo Agung Sejahtera' as header"),
+                'a.namastok as nobanA',
                 'a.nobukti',
-                'a.namastok',
-                'a.posisi',
-                'a.keterangan',
-
+                'a.tglbukti as tanggal',
+                db::Raw("'' as gudang"),
+                'a.posisi as posisiakhir',
+                db::Raw("'' as kondisiakhir"),
+                db::Raw("'' as nopg"),
+                db::Raw("'' as nobanB"),
+                db::Raw("'' as alasanpenggantian"),
+                db::Raw("'' as vulke"),
+                db::Raw("'' as noklaim"),
+                db::Raw("'' as nopjt"),
+                db::Raw("'' as ketafkir"),
             )
             ->whereRaw("a.urut=1")
             ->orderBy('a.id', 'asc');
 
-            dd($query->get());
+
         $data = $query->get();
         return $data;
     }
