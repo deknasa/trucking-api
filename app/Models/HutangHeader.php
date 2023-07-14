@@ -357,6 +357,24 @@ class HutangHeader extends MyModel
             goto selesai;
         }
 
+        $hutangExtra = DB::table('hutangextraheader')
+            ->from(
+                DB::raw("hutangextraheader as a with (readuncommitted)")
+            )
+            ->select(
+                'a.hutang_nobukti'
+            )
+            ->where('a.hutang_nobukti', '=', $nobukti)
+            ->first();
+        if (isset($hutangExtra)) {
+            $data = [
+                'kondisi' => true,
+                'keterangan' => 'Hutang Extra',
+                'kodeerror' => 'TDT'
+            ];
+            goto selesai;
+        }
+
 
         $data = [
             'kondisi' => false,
@@ -577,9 +595,6 @@ class HutangHeader extends MyModel
             'modifiedby' => auth('api')->user()->user
         ]);
         
-        /*DELETE EXISTING JURNAL*/
-        $JurnalUmumDetail = JurnalUmumDetail::where('nobukti', $hutangHeader->nobukti)->lockForUpdate()->delete();
-        $JurnalUmumHeader = JurnalUmumHeader::where('nobukti', $hutangHeader->nobukti)->lockForUpdate()->delete();
         /*DELETE EXISTING HUTANG*/
         $hutangDetail = HutangDetail::where('hutang_id', $hutangHeader->id)->lockForUpdate()->delete();
 
@@ -627,12 +642,8 @@ class HutangHeader extends MyModel
         $jurnalRequest = [
             'tanpaprosesnobukti' => 1,
             'nobukti' => $hutangHeader->nobukti,
-            'tglbukti' => date('Y-m-d', strtotime($data['tglbukti'])),
-            'postingdari' => "ENTRY HUTANG",
-            'statusapproval' => $statusApproval->id,
-            'userapproval' => "",
-            'tglapproval' => "",
-            'modifiedby' => auth('api')->user()->name,
+            'tglbukti' => $hutangHeader->tglbukti,
+            'postingdari' =>  $data['postingdari'] ?? "EDIT HUTANG HEADER",
             'statusformat' => "0",
             'coakredit_detail' => $coakredit_detail,
             'coadebet_detail' => $coadebet_detail,
@@ -640,40 +651,39 @@ class HutangHeader extends MyModel
             'keterangan_detail' => $keterangan_detail
         ];
 
-        $jurnalUmumHeader = (new JurnalUmumHeader())->processStore($jurnalRequest);
+        $getJurnal = JurnalUmumHeader::from(DB::raw("jurnalumumheader with (readuncommitted)"))->where('nobukti', $hutangHeader->nobukti)->first();
+        $newJurnal = new JurnalUmumHeader();
+        $newJurnal = $newJurnal->find($getJurnal->id);
+        $jurnalumumHeader = (new JurnalUmumHeader())->processUpdate($newJurnal, $jurnalRequest);
+
 
         return $hutangHeader;
     }
 
-    public function processDestroy($id): HutangHeader
+    public function processDestroy($id, $postingDari = ''): HutangHeader
     {
-
-        $hutangHeader = HutangHeader::findOrFail($id);
-        $dataHeader =  $hutangHeader->toArray();
-        $hutangDetail = HutangDetail::where('hutang_id', '=', $hutangHeader->id)->get();
+        $hutangDetail = HutangDetail::where('hutang_id', '=', $id)->get();
         $dataDetail = $hutangDetail->toArray();
-        
-       /*DELETE EXISTING JURNAL*/
-       $JurnalUmumDetail = JurnalUmumDetail::where('nobukti', $hutangHeader->nobukti)->lockForUpdate()->delete();
-       $JurnalUmumHeader = JurnalUmumHeader::where('nobukti', $hutangHeader->nobukti)->lockForUpdate()->delete();
+      
        /*DELETE EXISTING HUTANG*/
-       $hutangDetail = HutangDetail::where('hutang_id', $hutangHeader->id)->lockForUpdate()->delete();
+
+        $hutangHeader = new HutangHeader();
         $hutangHeader = $hutangHeader->lockAndDestroy($id);
 
         $hutangLogTrail = (new LogTrail())->processStore([
             'namatabel' => $hutangHeader->getTable(),
-            'postingdari' => strtoupper('DELETE penerimaan Stok Header'),
+            'postingdari' => $postingDari,
             'idtrans' => $hutangHeader->id,
             'nobuktitrans' => $hutangHeader->nobukti,
             'aksi' => 'DELETE',
-            'datajson' =>$dataHeader,
+            'datajson' =>$hutangHeader->toArray(),
             'modifiedby' => auth('api')->user()->name
         ]);
 
      
         (new LogTrail())->processStore([
             'namatabel' => 'HUTANGDETAIL',
-            'postingdari' => strtoupper('DELETE penerimaan Stok detail'),
+            'postingdari' => $postingDari,
             'idtrans' => $hutangLogTrail['id'],
             'nobuktitrans' => $hutangHeader->nobukti,
             'aksi' => 'DELETE',
@@ -681,6 +691,8 @@ class HutangHeader extends MyModel
             'modifiedby' => auth('api')->user()->name
         ]);
 
+        $getJurnal = JurnalUmumHeader::from(DB::raw("jurnalumumheader with (readuncommitted)"))->where('nobukti', $hutangHeader->nobukti)->first();
+        $jurnalumumHeader = (new JurnalUmumHeader())->processDestroy($getJurnal->id, $postingDari);
         return $hutangHeader;
     }
 
@@ -700,6 +712,8 @@ class HutangHeader extends MyModel
                 'hutangheader.nobukti',
                 'hutangheader.tglbukti',
                 'supplier.namasupplier as supplier_id',
+                'hutangheader.postingdari',
+                'akunpusat.keterangancoa as coa',
                 'statuscetak.memo as statuscetak',
                 'statuscetak.id as  statuscetak_id',
                 'hutangheader.jumlahcetak',
@@ -710,6 +724,7 @@ class HutangHeader extends MyModel
             )
             ->where("$this->table.id", $id)
             ->leftJoin(DB::raw("parameter as statuscetak with (readuncommitted)"), 'hutangheader.statuscetak', 'statuscetak.id')
+            ->leftJoin(DB::raw("akunpusat with (readuncommitted)"), 'hutangheader.coa', 'akunpusat.coa')
             ->leftJoin(DB::raw("supplier with (readuncommitted)"), 'hutangheader.supplier_id', 'supplier.id');
         
         $data = $query->first();
