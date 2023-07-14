@@ -5,6 +5,7 @@ namespace App\Http\Requests;
 use Illuminate\Foundation\Http\FormRequest;
 use App\Http\Controllers\Api\ErrorController;
 use App\Models\Parameter;
+use App\Models\PengeluaranStok;
 use Illuminate\Validation\Rule;
 
 class UpdatePengeluaranStokRequest extends FormRequest
@@ -59,8 +60,10 @@ class UpdatePengeluaranStokRequest extends FormRequest
             ];
         }
 
+        $pengeluaranStok = new PengeluaranStok();
+        $getDataPengeluaranStok = $pengeluaranStok->find(request()->id);
         $rules = [
-            "kodepengeluaran" => ['required',Rule::unique('pengeluaranstok')->whereNotIn('id', [$this->id])],
+            "kodepengeluaran" => ['required',Rule::in($getDataPengeluaranStok->kodepengeluaran),Rule::unique('pengeluaranstok')->whereNotIn('id', [$this->id])],
             "keterangancoa" => "required",
             "format" => ['required', Rule::in($format)],
             "statushitungstok" => ['required', Rule::in($statusHitungStok)],
