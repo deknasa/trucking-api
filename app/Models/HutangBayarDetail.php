@@ -98,15 +98,20 @@ class HutangBayarDetail extends MyModel
             //  dd( DB::table($temphutang)->get());
 
             $query->select(
-                $this->table . '.nominal',
+                $this->table . '.nominal as nominaLbayar',
                 $this->table . '.keterangan',
                 $this->table . '.hutang_nobukti',
+                DB::raw("'' as spb_nobukti"),
+                DB::raw("'' as nominalhutang"),
+                DB::raw("'' as diskon"),
+                DB::raw("'' as keterangandiskon"),
+                DB::raw("'' as sisahutang"),
                 DB::raw("(case when year(isnull(b.tgljatuhtempo,'1900/1/1'))=1900 then null else isnull(b.tgljatuhtempo,'1900/1/1') end)  as tgljatuhtempo"),
             )
                 ->leftJoin(DB::raw($temphutang . " as b"), $this->table . '.hutang_nobukti', 'b.hutang_nobukti')
                 ->where($this->table . '.hutangbayar_id', '=', request()->hutangbayar_id);
 
-            //  dd($query->get());
+            
         } else {
             $query->select(
                 $this->table . '.nobukti',

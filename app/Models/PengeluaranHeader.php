@@ -41,9 +41,7 @@ class PengeluaranHeader extends MyModel
                 'pengeluaranheader.id',
                 'pengeluaranheader.nobukti',
                 'pengeluaranheader.tglbukti',
-
                 'pelanggan.namapelanggan as pelanggan_id',
-
                 'pengeluaranheader.postingdari',
                 'pengeluaranheader.dibayarke',
                 'alatbayar.namaalatbayar as alatbayar_id',
