@@ -152,13 +152,16 @@ class Controller extends BaseController
         $spreadsheet = new Spreadsheet();
         $sheet = $spreadsheet->getActiveSheet();
         $sheet->setCellValue('A1', $data[0]['judul']);
-        $sheet->getStyle("A1")->getFont()->setSize(14);
+        $sheet->getStyle("A1")->getFont()->setSize(12);
+        $sheet->getStyle("A1")->getFont()->setBold(true);
         $sheet->getStyle('A1')->getAlignment()->setHorizontal('center');
-        $sheet->mergeCells('A1:' . $alphabets[count($columns) + 2] . '1');
+        $sheet->mergeCells('A1:' . $alphabets[count($columns)-1] . '1');
 
         $sheet->setCellValue('A2', $Laporan);
         $sheet->getStyle("A2")->getFont()->setSize(12);
-        $sheet->mergeCells('A2:' . $alphabets[count($columns) + 2] . '2');
+        $sheet->getStyle('A2')->getAlignment()->setHorizontal('center');
+        $sheet->getStyle("A2")->getFont()->setBold(true);
+        $sheet->mergeCells('A2:' . $alphabets[count($columns)-1] . '2');
 
         $i = 0;
         foreach ($columns as &$kolom) {
