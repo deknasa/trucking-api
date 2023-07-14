@@ -42,15 +42,15 @@ class RekapPengeluaranDetail extends MyModel
         // }
         if (isset(request()->forReport) && request()->forReport) {
             $query->select(
-                "$this->table.id",
-                "$this->table.rekappengeluaran_id",
-                "$this->table.nobukti",
-                "$this->table.pengeluaran_nobukti",
-                "$this->table.tgltransaksi",
-                "$this->table.nominal",
-                "$this->table.keterangan",
-                "$this->table.modifiedby",
-            );
+                'pengeluarandetail.coadebet',
+                DB::raw('MAX(akunpusat.keterangancoa) AS keterangancoa'),
+                DB::raw("sum(pengeluarandetail.nominal) as nominal"),
+                DB::raw("'' as keterangan"),
+            )
+            ->leftJoin(DB::raw("pengeluarandetail with (readuncommitted)"), $this->table . '.pengeluaran_nobukti', 'pengeluarandetail.nobukti')
+            ->leftJoin(DB::raw("akunpusat with (readuncommitted)"), 'pengeluarandetail.coadebet', 'akunpusat.coa')
+            ->groupBy('pengeluarandetail.coadebet');
+
         } else {
                 
             $query->select(
