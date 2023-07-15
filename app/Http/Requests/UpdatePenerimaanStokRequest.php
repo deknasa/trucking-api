@@ -5,6 +5,7 @@ namespace App\Http\Requests;
 use Illuminate\Foundation\Http\FormRequest;
 use App\Http\Controllers\Api\ErrorController;
 use App\Models\Parameter;
+use App\Models\PenerimaanStok;
 use Illuminate\Validation\Rule;
 
 class UpdatePenerimaanStokRequest extends FormRequest
@@ -58,9 +59,11 @@ class UpdatePenerimaanStokRequest extends FormRequest
                 'coa' => ['required', 'string', 'min:1']
             ];
         }
+        $penerimaanStok = new PenerimaanStok();
+        $getDataPenerimaanStok = $penerimaanStok->find(request()->id);
 
         $rules = [
-            'kodepenerimaan' => ['required',Rule::unique('penerimaanstok')->whereNotIn('id', [$this->id])],
+            'kodepenerimaan' => ['required',Rule::in($getDataPenerimaanStok->kodepenerimaan),Rule::unique('penerimaanstok')->whereNotIn('id', [$this->id])],
             'keterangancoa' => 'required',
             "format" => "required",
             'statushitungstok' => ['required', Rule::in($statushitungStok)],

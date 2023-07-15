@@ -51,20 +51,11 @@ class HutangDetail extends MyModel
 
         if (isset(request()->forReport) && request()->forReport) {
             $query->select(
-                'header.nobukti',
-                'header.tglbukti',
-                'pelanggan.namapelanggan as pelanggan_id',
-                'header.coa',
-                'header.keterangan as keteranganheader',
-                'header.total as totalheader',
-                'supplier.namasupplier as supplier_id',
                 DB::raw("(case when year(isnull($this->table.tgljatuhtempo,'1900/1/1'))<2000 then null else $this->table.tgljatuhtempo end) as tgljatuhtempo"),
                 $this->table . '.total',
                 $this->table . '.keterangan'
-            )->leftJoin(DB::raw("hutangheader as header with (readuncommitted)"), 'header.id', $this->table . '.hutang_id')
-                ->leftJoin(DB::raw("pelanggan with (readuncommitted)"), 'header.pelanggan_id', 'pelanggan.id')
-                ->leftJoin(DB::raw("supplier with (readuncommitted)"), 'header.supplier_id', 'supplier.id');
-
+            );
+                
             $query->where($this->table . '.hutang_id', '=', request()->hutang_id);
         } else {
             $query->select(
@@ -83,6 +74,30 @@ class HutangDetail extends MyModel
 
             $this->paginate($query);
         }
+
+        return $query->get();
+    }
+
+    
+    public function getHutangFromHutangExtra($nobukti)
+    {
+        $this->setRequestParameters();
+        $query = DB::table($this->table)->from(DB::raw("$this->table with (readuncommitted)"))
+            ->select(
+                $this->table . '.nobukti',
+                DB::raw("(case when year(isnull($this->table.tgljatuhtempo,'1900/1/1'))<2000 then null else $this->table.tgljatuhtempo end) as tgljatuhtempo"),
+                $this->table . '.total',
+                $this->table . '.keterangan',
+            );
+
+        $this->sort($query, 'hutangdetail');
+        $query->where($this->table . '.nobukti', '=',$nobukti);
+        $this->filter($query);
+        $this->totalNominal = $query->sum('total');
+        $this->totalRows = $query->count();
+        $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;
+
+        $this->paginate($query);
 
         return $query->get();
     }

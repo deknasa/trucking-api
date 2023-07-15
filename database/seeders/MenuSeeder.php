@@ -204,5 +204,7 @@ class MenuSeeder extends Seeder
         menu::create([ 'menuname' => 'LAP. PINJAMAN PER TRADO', 'menuseq' => '0', 'menuparent' => '145', 'menuicon' => 'FAS FA-TRUCK', 'aco_id' => '742', 'link' => '', 'menuexe' => '', 'menukode' => '665', 'modifiedby' => 'ADMIN',]);
         menu::create([ 'menuname' => 'LAP. KARTU HUTANG PREDIKSI (EBS)', 'menuseq' => '0', 'menuparent' => '145', 'menuicon' => 'FAS FA-TRUCK', 'aco_id' => '745', 'link' => '', 'menuexe' => '', 'menukode' => '66B', 'modifiedby' => 'ADMIN',]);
         menu::create([ 'menuname' => 'LAP. BAN DI GDG SEMENTARA/PHK KE 3', 'menuseq' => '0', 'menuparent' => '145', 'menuicon' => 'FAS FA-TRUCK', 'aco_id' => '747', 'link' => '', 'menuexe' => '', 'menukode' => '66E', 'modifiedby' => 'ADMIN',]);
+        menu::create([ 'menuname' => 'LAP. PEMAKAIAN BAN', 'menuseq' => '0', 'menuparent' => '145', 'menuicon' => 'FAS FA-TRUCK', 'aco_id' => '728', 'link' => '', 'menuexe' => '', 'menukode' => '66O', 'modifiedby' => 'ADMIN',]);
+        menu::create([ 'menuname' => 'HUTANG EXTRA', 'menuseq' => '0', 'menuparent' => '109', 'menuicon' => 'FAS FA-TRUCK', 'aco_id' => '749', 'link' => '', 'menuexe' => '', 'menukode' => '73', 'modifiedby' => 'ADMIN',]);
     }
 }

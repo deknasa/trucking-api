@@ -218,7 +218,7 @@ class HutangHeaderController extends Controller
         DB::beginTransaction();
 
         try {
-            $hutangHeader = (new HutangHeader())->processDestroy($id);
+            $hutangHeader = (new HutangHeader())->processDestroy($id, "DELETE HUTANG HEADER");
             $selected = $this->getPosition($hutangHeader, $hutangHeader->getTable(), true);
             $hutangHeader->position = $selected->position;
             $hutangHeader->id = $selected->id;

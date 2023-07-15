@@ -199,4 +199,37 @@ class RitasiController extends Controller
             'data' => $ritasi->getExport($dari, $sampai)
         ]);
     }
+
+    public function cekValidasi($id)
+    {
+        $ritasi = new Ritasi();
+        $nobukti = DB::table("ritasi")->from(DB::raw("ritasi"))->where('id', $id)->first();
+        $cekdata = $ritasi->cekvalidasiaksi($nobukti->nobukti);
+        if ($cekdata['kondisi'] == true) {
+            $query = DB::table('error')
+                ->select(
+                    DB::raw("ltrim(rtrim(keterangan))+' (" . $cekdata['keterangan'] . ")' as keterangan")
+                )
+                ->where('kodeerror', '=', $cekdata['kodeerror'])
+                ->first();
+
+            $data = [
+                'error' => true,
+                'message' => $query->keterangan,
+                'statuspesan' => 'warning',
+            ];
+
+            return response($data);
+        } else {
+
+            $data = [
+                'error' => false,
+                'message' => '',
+                'statuspesan' => 'success',
+            ];
+
+            return response($data);
+        }
+    }
+
 }

@@ -383,7 +383,10 @@ class ParameterSeeder extends Seeder
         parameter::create(['grp' => 'BATAS KM LUAR KOTA', 'subgrp' => 'BATAS KM LUAR KOTA', 'kelompok' => '', 'text' => '62', 'memo' => '{"MEMO":"BATAS KM LUAR KOTA","SINGKATAN":"BKLK","WARNA":"#28A745"}', 'type' => '0', 'modifiedby' => 'ADMIN', 'default' => 'YA',]);
         parameter::create(['grp' => 'LAPORAN STOK INVENTORI', 'subgrp' => 'JENIS TGL TAMPIL', 'kelompok' => '', 'text' => 'TANGGAL MASUK GUDANG KANTOR', 'memo' => '{"MEMO":"TANGGAL MASUK GUDANG KANTOR","SINGKATAN":"TMGK","WARNA":"#28A745"}', 'type' => '0', 'modifiedby' => 'ADMIN', 'default' => '',]);
         parameter::create(['grp' => 'LAPORAN STOK INVENTORI', 'subgrp' => 'JENIS TGL TAMPIL', 'kelompok' => '', 'text' => 'TANGGAL MASUK GUDANG SEMENTARA', 'memo' => '{"MEMO":"TANGGAL MASUK GUDANG SEMENTARA","SINGKATAN":"TMGS","WARNA":"#28A745"}', 'type' => '0', 'modifiedby' => 'ADMIN', 'default' => 'YA',]);
-
+        parameter::create(['grp' => 'JURNAL HUTANG EXTRA MANUAL', 'subgrp' => 'DEBET', 'kelompok' => '', 'text' => 'DEBET', 'memo' => '{"MEMO":"JURNAL HUTANG EXTRA MANUAL DEBET","SINGKATAN":"JHEMD","WARNA":"#28A745","JURNAL":"07.02.01.04"}', 'type' => '0', 'modifiedby' => 'ADMIN', 'default' => '',]);
+        parameter::create(['grp' => 'JURNAL HUTANG EXTRA MANUAL', 'subgrp' => 'KREDIT', 'kelompok' => '', 'text' => 'KREDIT', 'memo' => '{"MEMO":"JURNAL HUTANG EXTRA MANUAL KREDIT","SINGKATAN":"JHEMK","WARNA":"#6C757D","JURNAL":"03.02.02.04"}', 'type' => '0', 'modifiedby' => 'ADMIN', 'default' => '',]);
+        parameter::create(['grp' => 'HUTANG EXTRA BUKTI', 'subgrp' => 'HUTANG EXTRA BUKTI', 'kelompok' => '', 'text' => '#HEXT #9999#/#R#/#Y', 'memo' => '{"MEMO":"HUTANG EXTRA BUKTI","SINGKATAN":"#HEXT #9999#/#R#/#Y","WARNA":"#28A745"}', 'type' => '118', 'modifiedby' => 'ADMIN', 'default' => '',]);
+        
 
         
     }

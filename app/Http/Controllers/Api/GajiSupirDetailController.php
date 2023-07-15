@@ -133,7 +133,7 @@ class GajiSupirDetailController extends Controller
     {
         $jurnalDetail = new JurnalUmumDetail();
 
-        $fetch = GajiSupirBBM::from(DB::raw("gajisupirbbm with (readuncommitted)"))->where('gajisupir_nobukti', request()->nobukti)->first();
+        $fetch = DB::table("gajisupirbbm")->from(DB::raw("gajisupirbbm with (readuncommitted)"))->where('gajisupir_nobukti', request()->nobukti)->first();
 
         if ($fetch != null) {
 
@@ -167,7 +167,9 @@ class GajiSupirDetailController extends Controller
     {
         $absensi = new AbsensiSupirDetail();
 
-        if (request()->nobukti != 'false' && request()->nobukti != null) {
+        $fetch = DB::table("gajisupiruangjalan")->from(DB::raw("gajisupiruangjalan with (readuncommitted)"))->where('gajisupir_nobukti', request()->nobukti)->first();
+
+        if ($fetch != null) {
             return response()->json([
                 'data' => $absensi->getAbsensiUangJalan(request()->nobukti),
                 'attributes' => [

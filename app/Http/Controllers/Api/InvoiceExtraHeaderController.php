@@ -29,7 +29,7 @@ use Illuminate\Http\JsonResponse;
 
 class InvoiceExtraHeaderController extends Controller
 {
- /**
+    /**
      * @ClassName 
      * InvoiceExtraHeader
      * @Detail1 InvoiceExtraDetailController
@@ -228,13 +228,11 @@ class InvoiceExtraHeaderController extends Controller
             $query = Error::from(DB::raw("error with (readuncommitted)"))
                 ->select('keterangan')
                 ->whereRaw("kodeerror = 'SAP'")
-                ->get();
-            $keterangan = $query['0'];
+                ->first();
             $data = [
-                'message' => $keterangan,
-                'errors' => 'sudah approve',
-                'kodestatus' => '1',
-                'kodenobukti' => '1'
+                'error' => true,
+                'message' =>  'No Bukti ' . $pengeluaran->nobukti . ' ' . $query->keterangan,
+                'statuspesan' => 'warning',
             ];
 
             return response($data);
@@ -242,24 +240,22 @@ class InvoiceExtraHeaderController extends Controller
             $query = Error::from(DB::raw("error with (readuncommitted)"))
                 ->select('keterangan')
                 ->whereRaw("kodeerror = 'SDC'")
-                ->get();
-            $keterangan = $query['0'];
+                ->first();
             $data = [
-                'message' => $keterangan,
-                'errors' => 'sudah cetak',
-                'kodestatus' => '1',
-                'kodenobukti' => '1'
+                'error' => true,
+                'message' =>  'No Bukti ' . $pengeluaran->nobukti . ' ' . $query->keterangan,
+                'statuspesan' => 'warning',
             ];
 
             return response($data);
         } else {
 
             $data = [
+                'error' => false,
                 'message' => '',
-                'errors' => 'belum approve',
-                'kodestatus' => '0',
-                'kodenobukti' => '1'
+                'statuspesan' => 'success',
             ];
+
 
             return response($data);
         }
@@ -349,5 +345,37 @@ class InvoiceExtraHeaderController extends Controller
         return response([
             'data' => $invoiceExtra->getExport($id)
         ]);
+    }
+
+    public function cekvalidasiAksi($id)
+    {
+        $invoiceHeader = new InvoiceExtraHeader();
+        $nobukti = InvoiceExtraHeader::from(DB::raw("invoiceextraheader"))->where('id', $id)->first();
+        $cekdata = $invoiceHeader->cekvalidasiaksi($nobukti->nobukti);
+        if ($cekdata['kondisi'] == true) {
+            $query = DB::table('error')
+                ->select(
+                    DB::raw("ltrim(rtrim(keterangan))+' (" . $cekdata['keterangan'] . ")' as keterangan")
+                )
+                ->where('kodeerror', '=', $cekdata['kodeerror'])
+                ->first();
+
+            $data = [
+                'error' => true,
+                'message' => $query->keterangan,
+                'statuspesan' => 'warning',
+            ];
+
+            return response($data);
+        } else {
+
+            $data = [
+                'error' => false,
+                'message' => '',
+                'statuspesan' => 'success',
+            ];
+
+            return response($data);
+        }
     }
 }

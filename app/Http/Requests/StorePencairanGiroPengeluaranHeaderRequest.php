@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests;
 
+use App\Http\Controllers\Api\ErrorController;
 use Illuminate\Foundation\Http\FormRequest;
 
 class StorePencairanGiroPengeluaranHeaderRequest extends FormRequest
@@ -27,6 +28,20 @@ class StorePencairanGiroPengeluaranHeaderRequest extends FormRequest
             'pengeluaranId' => 'required|array',
             'pengeluaranId.*' => 'required',
             'periode' => 'required'
+        ];
+    }
+
+    public function attributes()
+    {
+        return [
+            'pengeluaranId' => 'Transaksi'
+        ];
+    }
+
+    public function messages()
+    {
+        return [
+            'pengeluaranId.required' => ':attribute ' .  app(ErrorController::class)->geterror('WP')->keterangan
         ];
     }
 }

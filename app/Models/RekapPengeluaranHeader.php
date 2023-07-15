@@ -274,9 +274,14 @@ class RekapPengeluaranHeader extends MyModel
         )
             ->where('rekappengeluaran_id', $id);
         $this->totalRows = $query->count();
+        $this->totalNominal = $query->sum('nominal');
         $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;
-        if ($this->params['sortIndex'] == 'id') {
+        if ($this->params['sortIndex'] == 'id' || $this->params['sortIndex'] == 'nobukti_pengeluaran') {
             $query->orderBy('rekappengeluarandetail.pengeluaran_nobukti', $this->params['sortOrder']);
+        } else if ($this->params['sortIndex'] == 'tglbukti_pengeluaran') {
+            $query->orderBy('rekappengeluarandetail.tgltransaksi', $this->params['sortOrder']);
+        } else if ($this->params['sortIndex'] == 'nominal_detail') {
+            $query->orderBy('rekappengeluarandetail.nominal', $this->params['sortOrder']);
         } else {
             $query->orderBy('rekappengeluarandetail.' . $this->params['sortIndex'], $this->params['sortOrder']);
         }
@@ -326,9 +331,7 @@ class RekapPengeluaranHeader extends MyModel
             "$this->table.keterangan",
             "$this->table.jumlahcetak",
             "bank.namabank as bank",
-            'statuscetak.memo as statuscetak',
-            'statuscetak.id as  statuscetak_id',
-            DB::raw("'Bukti Rekap Pengeluaran' as judulLaporan"),
+            DB::raw("'Laporan Rekap Pengeluaran' as judulLaporan"),
             DB::raw("'" . $getJudul->text . "' as judul"),
             DB::raw("'Tgl Cetak:'+format(getdate(),'dd-MM-yyyy HH:mm:ss')as tglcetak"),
             DB::raw(" 'User :".auth('api')->user()->name."' as usercetak")

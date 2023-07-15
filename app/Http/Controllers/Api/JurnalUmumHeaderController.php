@@ -562,7 +562,7 @@ class JurnalUmumHeaderController extends Controller
                 if ($jurnalUmum->save()) {
                     $logTrail = [
                         'namatabel' => strtoupper($jurnalUmum->getTable()),
-                        'postingdari' => 'PRINT ABSENSI SUPIR HEADER',
+                        'postingdari' => 'PRINT JURNAL UMUM HEADER',
                         'idtrans' => $jurnalUmum->id,
                         'nobuktitrans' => $jurnalUmum->id,
                         'aksi' => 'PRINT',

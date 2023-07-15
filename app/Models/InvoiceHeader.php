@@ -82,6 +82,25 @@ class InvoiceHeader extends MyModel
 
     public function cekvalidasiaksi($nobukti)
     {
+        
+        $pelunasanPiutang = DB::table('pelunasanpiutangdetail')
+            ->from(
+                DB::raw("pelunasanpiutangdetail as a with (readuncommitted)")
+            )
+            ->select(
+                'a.invoice_nobukti'
+            )
+            ->where('a.invoice_nobukti', '=', $nobukti)
+            ->first();
+        if (isset($pelunasanPiutang)) {
+            $data = [
+                'kondisi' => true,
+                'keterangan' => 'Pelunasan Piutang',
+                'kodeerror' => 'SATL'
+            ];
+            goto selesai;
+        }
+        
         $hutangBayar = DB::table('invoiceheader')
             ->from(
                 DB::raw("invoiceheader as a with (readuncommitted)")
@@ -100,7 +119,6 @@ class InvoiceHeader extends MyModel
             ];
             goto selesai;
         }
-
 
 
         $data = [

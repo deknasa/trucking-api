@@ -32,15 +32,15 @@ class RekapPenerimaanDetail extends MyModel
 
         if (isset(request()->forReport) && request()->forReport) {
             $query->select(
-                "$this->table.id",
-                "$this->table.rekappenerimaan_id",
-                "$this->table.nobukti",
-                "$this->table.penerimaan_nobukti",
-                "$this->table.tgltransaksi",
-                "$this->table.nominal",
-                "$this->table.keterangan",
-                "$this->table.modifiedby",
-            );
+                'penerimaandetail.coakredit',
+                DB::raw('MAX(akunpusat.keterangancoa) AS keterangancoa'),
+                DB::raw("sum(penerimaandetail.nominal) as nominal"),
+                DB::raw("'' as keterangan"),
+            )
+            ->leftJoin(DB::raw("penerimaandetail with (readuncommitted)"), $this->table . '.penerimaan_nobukti', 'penerimaandetail.nobukti')
+             ->leftJoin(DB::raw("akunpusat with (readuncommitted)"), 'penerimaandetail.coakredit', 'akunpusat.coa')
+            ->groupBy('penerimaandetail.coakredit');
+                
             $query->where($this->table . ".rekappenerimaan_id", "=", request()->rekappenerimaan_id);
 
         } else {

@@ -573,12 +573,12 @@ class PelunasanPiutangHeader extends MyModel
 
         $getNotaDebetCoa = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->select('memo')
             ->where('grp', 'JURNAL NOTA DEBET')->where('subgrp', 'KREDIT')->first();
-        $memoNotaDebetCoa= json_decode($getNotaDebetCoa->memo, true);
-        
+        $memoNotaDebetCoa = json_decode($getNotaDebetCoa->memo, true);
+
         $getNotaKreditCoa = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->select('memo')
             ->where('grp', 'JURNAL NOTA KREDIT')->where('subgrp', 'KREDIT')->first();
-        $memoNotaKreditCoa= json_decode($getNotaKreditCoa->memo, true);
-        
+        $memoNotaKreditCoa = json_decode($getNotaKreditCoa->memo, true);
+
         for ($i = 0; $i < count($data['piutang_id']); $i++) {
             $piutang = PiutangHeader::where('nobukti', $data['piutang_nobukti'][$i])->first();
 
@@ -604,7 +604,15 @@ class PelunasanPiutangHeader extends MyModel
             $pelunasanPiutangDetails[] = $pelunasanPiutangDetail->toArray();
             $potongan = $data['potongan'][$i] ?? 0;
             $noWarkat[] = $data['nowarkat'] ?? '-';
-            $tglJatuhTempo[] = $data['tglbukti'];
+            if ($data['alatbayar_id'] != $alatbayarGiro->id) {
+                $tglJatuhTempo[] = $data['tglbukti'];
+            } else {
+                $top = intval($getCoa->top);
+                $dateNow = date('Y-m-d');
+                $nextDay = date('d-m-Y', strtotime($dateNow . " +$top day"));
+                $tglJatuhTempo[] = $nextDay;
+            }
+
             $nominalDetail[] = $data['bayar'][$i];
             $coaKredit[] =  $piutang->coadebet;
             $keteranganDetail[] = $data['keterangan'][$i];
@@ -731,6 +739,7 @@ class PelunasanPiutangHeader extends MyModel
             throw new \Exception("Error Update pelunasan piutang header.");
         }
 
+        $alatbayarGiro = AlatBayar::from(DB::raw("alatbayar with (readuncommitted)"))->where('kodealatbayar', 'GIRO')->first();
         PelunasanPiutangDetail::where('pelunasanpiutang_id', $pelunasanPiutangHeader->id)->lockForUpdate()->delete();
 
         $pelunasanPiutangDetails = [];
@@ -759,11 +768,11 @@ class PelunasanPiutangHeader extends MyModel
 
         $getNotaDebetCoa = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->select('memo')
             ->where('grp', 'JURNAL NOTA DEBET')->where('subgrp', 'KREDIT')->first();
-        $memoNotaDebetCoa= json_decode($getNotaDebetCoa->memo, true);
+        $memoNotaDebetCoa = json_decode($getNotaDebetCoa->memo, true);
 
         $getNotaKreditCoa = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->select('memo')
             ->where('grp', 'JURNAL NOTA KREDIT')->where('subgrp', 'KREDIT')->first();
-        $memoNotaKreditCoa= json_decode($getNotaKreditCoa->memo, true);
+        $memoNotaKreditCoa = json_decode($getNotaKreditCoa->memo, true);
 
         for ($i = 0; $i < count($data['piutang_id']); $i++) {
             $piutang = PiutangHeader::where('nobukti', $data['piutang_nobukti'][$i])->first();
@@ -789,6 +798,14 @@ class PelunasanPiutangHeader extends MyModel
             $pelunasanPiutangDetails[] = $pelunasanPiutangDetail->toArray();
             $potongan = $data['potongan'][$i] ?? 0;
             $noWarkat[] = $data['nowarkat'] ?? '-';
+            if ($pelunasanPiutangHeader->alatbayar_id != $alatbayarGiro->id) {
+                $tglJatuhTempo[] = $pelunasanPiutangHeader->tglbukti;
+            } else {
+                $top = intval($getCoa->top);
+                $dateNow = date('Y-m-d');
+                $nextDay = date('d-m-Y', strtotime($dateNow . " +$top day"));
+                $tglJatuhTempo[] = $nextDay;
+            }
             $tglJatuhTempo[] = $pelunasanPiutangHeader->tglbukti;
             $nominalDetail[] = $data['bayar'][$i];
             $coaKredit[] =  $piutang->coadebet;
@@ -1048,10 +1065,10 @@ class PelunasanPiutangHeader extends MyModel
         $this->setRequestParameters();
 
         $getJudul = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))
-        ->select('text')
-        ->where('grp', 'JUDULAN LAPORAN')
-        ->where('subgrp', 'JUDULAN LAPORAN')
-        ->first();
+            ->select('text')
+            ->where('grp', 'JUDULAN LAPORAN')
+            ->where('subgrp', 'JUDULAN LAPORAN')
+            ->first();
 
         $query = DB::table($this->table)->from(DB::raw("pelunasanpiutangheader with (readuncommitted)"))
             ->select(
@@ -1068,10 +1085,10 @@ class PelunasanPiutangHeader extends MyModel
                 'bank.namabank as bank_id',
                 'agen.namaagen as agen_id',
                 'alatbayar.namaalatbayar as alatbayar_id',
-                DB::raw("'Laporan Pelunasan Piutang' as judulLaporan"),
+                DB::raw("'Cetak Penerimaan Piutang' as judulLaporan"),
                 DB::raw("'" . $getJudul->text . "' as judul"),
                 DB::raw("'Tgl Cetak:'+format(getdate(),'dd-MM-yyyy HH:mm:ss')as tglcetak"),
-                DB::raw(" 'User :".auth('api')->user()->name."' as usercetak")
+                DB::raw(" 'User :" . auth('api')->user()->name . "' as usercetak")
             )
             ->leftJoin(DB::raw("parameter as statuscetak with (readuncommitted)"), 'pelunasanpiutangheader.statuscetak', 'statuscetak.id')
             ->leftJoin(DB::raw("bank with (readuncommitted)"), 'pelunasanpiutangheader.bank_id', 'bank.id')

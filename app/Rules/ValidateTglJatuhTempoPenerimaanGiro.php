@@ -3,10 +3,10 @@
 namespace App\Rules;
 
 use App\Http\Controllers\Api\ErrorController;
-use App\Models\Supir;
+use App\Models\Agen;
 use Illuminate\Contracts\Validation\Rule;
 
-class NoKtpSupir implements Rule
+class ValidateTglJatuhTempoPenerimaanGiro implements Rule
 {
     /**
      * Create a new rule instance.
@@ -27,13 +27,19 @@ class NoKtpSupir implements Rule
      */
     public function passes($attribute, $value)
     {
-        $namasupir = request()->namasupir;
-        $dataSupir = (new Supir())->validationSupirResign($namasupir);
-        if($dataSupir != null){
-            return true;
-        }else{
-            return false;
+        $agen = Agen::find(request()->agen_id);
+        if ($agen != null) {
+            $top = intval($agen->top);
+            $dateNow = date('Y-m-d');
+            $nextDay = date('d-m-Y', strtotime($dateNow . " +$top day"));
+
+            if ($value > $nextDay) {
+                return false;
+            } else {
+                return true;
+            }
         }
+        return true;
     }
 
     /**
@@ -43,7 +49,6 @@ class NoKtpSupir implements Rule
      */
     public function message()
     {
-        $controller = new ErrorController;
-        return ':attribute' . ' ' . $controller->geterror('SPI')->keterangan;
+        return app(ErrorController::class)->geterror('TOP')->keterangan;
     }
 }

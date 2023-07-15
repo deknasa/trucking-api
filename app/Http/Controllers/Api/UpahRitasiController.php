@@ -368,4 +368,36 @@ class UpahRitasiController extends Controller
     public function report()
     {
     }
+
+    
+    public function cekValidasi($id)
+    {
+        $upahRitasi = new UpahRitasi();
+        $cekdata = $upahRitasi->cekValidasi($id);
+        if ($cekdata['kondisi'] == true) {
+            $query = DB::table('error')
+                ->select(
+                    DB::raw("ltrim(rtrim(keterangan))+' (" . $cekdata['keterangan'] . ")' as keterangan")
+                )
+                ->where('kodeerror', '=', $cekdata['kodeerror'])
+                ->first();
+
+            $data = [
+                'error' => true,
+                'message' =>  $query->keterangan,
+                'statuspesan' => 'warning',
+            ];
+            return response($data);
+        } else {
+
+            $data = [
+                'error' => false,
+                'message' => '',
+                'statuspesan' => 'success',
+            ];
+
+            return response($data);
+        }
+    }
+
 }

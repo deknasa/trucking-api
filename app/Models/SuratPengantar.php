@@ -88,6 +88,27 @@ class SuratPengantar extends MyModel
             goto selesai;
         }
 
+        $ritasi = DB::table('ritasi')
+            ->from(
+                DB::raw("ritasi as a with (readuncommitted)")
+            )
+            ->select(
+                'a.suratpengantar_nobukti'
+            )
+            ->where('a.suratpengantar_nobukti', '=', $nobukti)
+            ->first();
+
+
+        if (isset($ritasi)) {
+            $data = [
+                'kondisi' => true,
+                'keterangan' => 'ritasi',
+            ];
+
+
+            goto selesai;
+        }
+
         $tempinvdetail = '##tempinvdetail' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
         Schema::create($tempinvdetail, function ($table) {
             $table->string('suratpengantar_nobukti')->nullable();

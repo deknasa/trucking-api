@@ -361,7 +361,7 @@ class PelunasanPiutangHeaderController extends Controller
                 if ($pelunasanpiutang->save()) {
                     $logTrail = [
                         'namatabel' => strtoupper($pelunasanpiutang->getTable()),
-                        'postingdari' => 'PRINT ABSENSI SUPIR HEADER',
+                        'postingdari' => 'PRINT PELUNASAN PIUTANG HEADER',
                         'idtrans' => $pelunasanpiutang->id,
                         'nobuktitrans' => $pelunasanpiutang->id,
                         'aksi' => 'PRINT',

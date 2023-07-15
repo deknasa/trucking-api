@@ -30,6 +30,34 @@ class UpahRitasi extends MyModel
     }
 
 
+    public function cekValidasi($id)
+    {
+        $upahRitasi = DB::table("upahritasi")->from(DB::raw("upahritasi with (readuncommitted)"))->where('id', $id)->first();
+        
+        $rekap = DB::table('ritasi')
+            ->from(
+                DB::raw("ritasi as a with (readuncommitted)")
+            )
+            ->where('a.dari_id', '=', $upahRitasi->kotadari_id)
+            ->where('a.sampai_id', '=', $upahRitasi->kotasampai_id)
+            ->first();
+
+        if (isset($rekap)) {
+            $data = [
+                'kondisi' => true,
+                'keterangan' => 'ritasi',
+                'kodeerror' => 'SATL'
+            ];
+            goto selesai;
+        }
+
+        $data = [
+            'kondisi' => false,
+            'keterangan' => '',
+        ];
+        selesai:
+        return $data;
+    }
 
 
     public function get()

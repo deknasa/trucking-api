@@ -249,7 +249,8 @@ class RekapPengeluaranHeaderController extends Controller
             'previousURL' => $previousURL,
             'attributes' => [
                 'totalRows' => $pengeluaran->totalRows,
-                'totalPages' => $pengeluaran->totalPages
+                'totalPages' => $pengeluaran->totalPages,
+                'totalNominal' => $pengeluaran->totalNominal,
             ]
         ]);
     }
@@ -265,7 +266,8 @@ class RekapPengeluaranHeaderController extends Controller
             'previousURL' => $previousURL,
             'attributes' => [
                 'totalRows' => $rekapPengeluaran->totalRows,
-                'totalPages' => $rekapPengeluaran->totalPages
+                'totalPages' => $rekapPengeluaran->totalPages,
+                'totalNominal' => $rekapPengeluaran->totalNominal,
             ]
         ]);
     }

@@ -289,20 +289,21 @@ class Ritasi extends MyModel
     }
     public function cekvalidasiaksi($nobukti)
     {
-        $suratPengantar = DB::table('suratpengantar')
+
+        $gajiSupir = DB::table('gajisupirdetail')
             ->from(
-                DB::raw("suratpengantar as a with (readuncommitted)")
+                DB::raw("gajisupirdetail as a with (readuncommitted)")
             )
             ->select(
-                'a.nobukti'
+                'a.ritasi_nobukti'
             )
-            ->where('a.nobukti', '=', $nobukti)
+            ->where('a.ritasi_nobukti', '=', $nobukti)
             ->first();
-        if (isset($suratPengantar)) {
+        if (isset($gajiSupir)) {
             $data = [
                 'kondisi' => true,
-                'keterangan' => 'Surat Pengantar',
-                'kodeerror' => 'TDT'
+                'keterangan' => 'GAJI SUPIR',
+                'kodeerror' => 'SATL'
             ];
             goto selesai;
         }

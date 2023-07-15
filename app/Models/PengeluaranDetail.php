@@ -30,30 +30,15 @@ class PengeluaranDetail extends MyModel
 
         if (isset(request()->forReport) && request()->forReport) {
             $query->select(
-                "header.nobukti",
-                "header.tglbukti",
-                "header.dibayarke",
-                "header.transferkeac",
-                "header.transferkean",
-                "header.transferkebank",
-                "pelanggan.namapelanggan as pelanggan",
-                "bank.namabank as bank",
-                "$this->table.nowarkat",
+                "debet.keterangancoa as coadebet",
+                "$this->table.bank",
                 "$this->table.tgljatuhtempo",
                 "$this->table.nominal",
                 "$this->table.keterangan",
-                DB::raw("(case when year(isnull($this->table.bulanbeban,'1900/1/1'))=1900 then null else $this->table.bulanbeban end) as bulanbeban"),
-                "debet.keterangancoa as coadebet",
-                "kredit.keterangancoa as coakredit",
-                "alatbayar.namaalatbayar as alatbayar_id"
-
+                "$this->table.noinvoice as invoice_nobukti",
             )
                 ->leftJoin(DB::raw("pengeluaranheader as header with (readuncommitted)"), "header.id", "$this->table.pengeluaran_id")
-                ->leftJoin(DB::raw("bank with (readuncommitted)"), "bank.id", "=", "header.bank_id")
-                ->leftJoin(DB::raw("pelanggan with (readuncommitted)"), "pelanggan.id", "=", "header.pelanggan_id")
-                ->leftJoin(DB::raw("akunpusat as debet with (readuncommitted)"), "debet.coa", "$this->table.coadebet")
-                ->leftJoin(DB::raw("akunpusat as kredit with (readuncommitted)"), "kredit.coa", "$this->table.coakredit")
-                ->leftJoin(DB::raw("alatbayar with (readuncommitted)"), "alatbayar.id", "=", "header.alatbayar_id");
+                ->leftJoin(DB::raw("akunpusat as debet with (readuncommitted)"), "debet.coa", "$this->table.coadebet");
             $query->where($this->table . ".pengeluaran_id", "=", request()->pengeluaran_id);
 
             $pengeluaranDetail = $query->get();
