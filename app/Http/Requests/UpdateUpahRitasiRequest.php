@@ -33,17 +33,18 @@ class UpdateUpahRitasiRequest extends FormRequest
     public function rules()
     {
         $upahRitasi = new UpahRitasi();
-        $getTglMulaiBerlaku = $upahRitasi->findAll(request()->id);
+        $dataRitasi = $upahRitasi->findAll(request()->id);
+        $check = (new UpahRitasi())->cekValidasi(request()->id);
 
         $kotadari_id = $this->kotadari_id;
         $rulesKotaDari_id = [];
         if ($kotadari_id != null) {
                 $rulesKotaDari_id = [
-                    'kotadari_id' => ['required', 'numeric', 'min:1', new ExistKota()]
+                    'kotadari_id' => ['required', 'numeric', 'min:1', new ExistKota(), ($check['kondisi']) ? Rule::in($dataRitasi->kotadari_id) : '']
                 ];
         } else if ($kotadari_id == null && $this->kotadari != '') {
             $rulesKotaDari_id = [
-                'kotadari_id' => ['required', 'numeric', 'min:1', new ExistKota()]
+                'kotadari_id' => ['required', 'numeric', 'min:1', new ExistKota(), ($check['kondisi']) ? Rule::in($dataRitasi->kotadari_id) : '']
             ];
         }
 
@@ -51,11 +52,11 @@ class UpdateUpahRitasiRequest extends FormRequest
         $rulesKotaSampai_id = [];
         if ($kotasampai_id != null) {
             $rulesKotaSampai_id = [
-                'kotasampai_id' => ['required', 'numeric', 'min:1', new UniqueUpahRitasiSampaiEdit(), new ExistKota()]
+                'kotasampai_id' => ['required', 'numeric', 'min:1', new UniqueUpahRitasiSampaiEdit(), new ExistKota(), ($check['kondisi']) ? Rule::in($dataRitasi->kotasampai_id) : '']
             ];
         } else if ($kotasampai_id == null && $this->kotasampai != '') {
             $rulesKotaSampai_id = [
-                'kotasampai_id' => ['required', 'numeric', 'min:1', new UniqueUpahRitasiSampaiEdit(), new ExistKota()]
+                'kotasampai_id' => ['required', 'numeric', 'min:1', new UniqueUpahRitasiSampaiEdit(), new ExistKota(), ($check['kondisi']) ? Rule::in($dataRitasi->kotasampai_id) : '']
             ];
         }
 
@@ -68,14 +69,14 @@ class UpdateUpahRitasiRequest extends FormRequest
 
         $tglBatasAkhir = (date('Y') + 1) . '-01-01';
         $rules =  [
-            'kotadari' => 'required',
-            'kotasampai' => ['required', new UniqueUpahRitasiSampaiEdit(), new ValidasiKotaSampaiUpahRitasi()],
+            'kotadari' => ['required', ($check['kondisi']) ? Rule::in($dataRitasi->kotadari) : ''],
+            'kotasampai' => ['required', new UniqueUpahRitasiSampaiEdit(), new ValidasiKotaSampaiUpahRitasi(), ($check['kondisi']) ? Rule::in($dataRitasi->kotasampai) : ''],
             'jarak' => ['required', 'numeric', 'gt:0', 'max:' . (new ParameterController)->getparamid('BATAS NILAI JARAK', 'BATAS NILAI JARAK')->text],
             'statusaktif' => ['required', Rule::in($statusAktif)],
             'tglmulaiberlaku' => [
                 'required', 'date_format:d-m-Y',
                 'before:' . $tglBatasAkhir,
-                'after_or_equal:' . date('d-m-Y', strtotime($getTglMulaiBerlaku->tglmulaiberlaku))
+                'after_or_equal:' . date('d-m-Y', strtotime($dataRitasi->tglmulaiberlaku))
             ],
             'nominalsupir' => ['required', 'numeric', 'gt:0', 'max:' . (new ParameterController)->getparamid('BATAS NILAI UPAH', 'BATAS NILAI UPAH')->text],
         ];

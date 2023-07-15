@@ -775,7 +775,7 @@ class PemutihanSupir extends MyModel
 
         $pemutihanSupir->nobukti = (new RunningNumberService)->get($group, $subgroup, $pemutihanSupir->getTable(), date('Y-m-d', strtotime($data['tglbukti'])));
         $pemutihanSupir->tglbukti = date('Y-m-d', strtotime($data['tglbukti']));
-        $pemutihanSupir->supir_id = $data['supr_id'];
+        $pemutihanSupir->supir_id = $data['supir_id'];
         $pemutihanSupir->pengeluaransupir = $data['pengeluaransupir'];
         $pemutihanSupir->penerimaansupir = $data['penerimaansupir'] ?? 0;
         $pemutihanSupir->bank_id = $data['bank_id'];
