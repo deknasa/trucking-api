@@ -325,7 +325,7 @@ class AbsensiSupirHeaderController extends Controller
         $passes = true;
         $keterangan = [];
         //validasi Hari ini
-        $todayValidation = AbsensiSupirHeader::todayValidation($absensisupir->id);
+        $todayValidation = AbsensiSupirHeader::todayValidation($absensisupir->tglbukti);
         if (!$todayValidation) {
             $query = DB::table('error')->select('keterangan')->where('kodeerror', '=', 'SATL')->get();
             // $keterangan = $query['0'];

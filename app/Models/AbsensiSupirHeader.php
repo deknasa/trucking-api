@@ -299,14 +299,15 @@ class AbsensiSupirHeader extends MyModel
         return $query->skip($this->params['offset'])->take($this->params['limit']);
     }
 
-    public function todayValidation($id)
+    public function todayValidation($tglbukti)
     {
-        $query = DB::table('absensisupirheader')->from(DB::raw("absensisupirheader with (readuncommitted)"))
-            ->select('tglbukti')
-            ->where('id', $id)
-            ->first();
-        $tglbukti = strtotime($query->tglbukti);
-        $limit = strtotime($query->tglbukti.'+1 days +12 hours +9 minutes' );
+        // $query = DB::table('absensisupirheader')->from(DB::raw("absensisupirheader with (readuncommitted)"))
+        //     ->select('tglbukti')
+        //     ->where('id', $id)
+        //     ->first();
+        // $tglbukti = strtotime($query->tglbukti);
+        $tglbuktistr = strtotime($tglbukti);
+        $limit = strtotime($tglbukti.'+1 days +12 hours +9 minutes' );
         $now = strtotime('now');
         if ($now < $limit) return true;
         return false;
@@ -568,7 +569,8 @@ class AbsensiSupirHeader extends MyModel
         
         $date = date('Y-m-d', strtotime($absensiSupir->tglbukti));
         $now = date('Y-m-d', strtotime('now'));
-        if (!$this->todayValidation($absensiSupir->id)) {
+        if (!$this->todayValidation($date)) {
+        // if (!$this->todayValidation($absensiSupir->id)) {
             $bukaAbsensi = BukaAbsensi::from(DB::raw("BukaAbsensi"))->where('tglabsensi', $absensiSupir->tglbukti)->first();
             $bukaAbsensi = (new BukaAbsensi())->processDestroy($bukaAbsensi->id);
         }
