@@ -313,15 +313,29 @@ class PenerimaanGiroHeader extends MyModel
         )
         ->leftJoin(DB::raw("$temp as c with (readuncommitted)"), 'penerimaangiroheader.nobukti', 'c.nobukti')
         ->leftJoin(DB::raw("agen with (readuncommitted)"), 'penerimaangiroheader.agen_id', 'agen.id')
-        ->whereRaw("penerimaangiroheader.nobukti not in (select penerimaangiro_nobukti from penerimaanheader where penerimaangiro_nobukti != '')");    
+        ->leftJoin(DB::raw("pelanggan with (readuncommitted)"), 'penerimaangiroheader.pelanggan_id', 'pelanggan.id');
 
         if (request()->tgldari && request()->tglsampai) {
             $query->whereBetween($this->table . '.tglbukti', [date('Y-m-d', strtotime(request()->tgldari)), date('Y-m-d', strtotime(request()->tglsampai))]);
         }
 
-        if(request()->nobukti != ''){
-            $nobukti = request()->nobukti;
+        if(request()->nobuktis != ''){
+            $nobukti = request()->nobuktis;
+            $query->whereNotIn('penerimaangiroheader.nobukti', function($query) {
+                $query->select(DB::raw('DISTINCT penerimaanheader.penerimaangiro_nobukti'))
+                ->from('penerimaanheader')
+                ->whereNotNull('penerimaanheader.penerimaangiro_nobukti')
+                ->where('penerimaanheader.penerimaangiro_nobukti','!=','');
+            });  
             $query->orWhereRaw("penerimaangiroheader.nobukti in ('$nobukti')");
+            // dd('asdas');
+        }else {
+            $query->whereNotIn('penerimaangiroheader.nobukti', function($query) {
+                $query->select(DB::raw('DISTINCT penerimaanheader.penerimaangiro_nobukti'))
+                ->from('penerimaanheader')
+                ->whereNotNull('penerimaanheader.penerimaangiro_nobukti')
+                ->where('penerimaanheader.penerimaangiro_nobukti','!=','');
+            });   
         }
         
         $this->sort($query);
