@@ -475,7 +475,7 @@ class ProsesGajiSupirHeaderController extends Controller
                 if ($prosesGajiSupirHeader->save()) {
                     $logTrail = [
                         'namatabel' => strtoupper($prosesGajiSupirHeader->getTable()),
-                        'postingdari' => 'PRINT ABSENSI SUPIR HEADER',
+                        'postingdari' => 'PRINT PROSES GAJI SUPIR HEADER',
                         'idtrans' => $prosesGajiSupirHeader->id,
                         'nobuktitrans' => $prosesGajiSupirHeader->id,
                         'aksi' => 'PRINT',

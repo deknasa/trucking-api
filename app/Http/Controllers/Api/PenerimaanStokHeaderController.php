@@ -391,7 +391,7 @@ class PenerimaanStokHeaderController extends Controller
                 if ($penerimaanStokHeader->save()) {
                     $logTrail = [
                         'namatabel' => strtoupper($penerimaanStokHeader->getTable()),
-                        'postingdari' => 'PRINT INVOICE EXTRA',
+                        'postingdari' => 'PRINT PENERIMAAN STOK HEADER',
                         'idtrans' => $penerimaanStokHeader->id,
                         'nobuktitrans' => $penerimaanStokHeader->id,
                         'aksi' => 'PRINT',

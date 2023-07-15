@@ -1000,97 +1000,63 @@ class Supir extends MyModel
 
     public function getSupirResignModel($noktp)
     {
+        
         $query = Supir::from(DB::raw("supir with (readuncommitted)"))
-            ->select(
-                'supir.id',
-                'supir.namasupir',
-                'supir.namaalias',
-                'supir.alamat',
-                'supir.kota',
-                'supir.telp',
-                'supir.statusaktif',
-                'supir.pemutihansupir_nobukti',
-                'supir.nominaldepositsa',
-                'supir.depositke',
-                'supir.nominalpinjamansaldoawal',
-                'supir.supirold_id',
-                'supirlama.namasupir as supirold',
-                'supir.tglexpsim',
-                'supir.nosim',
-                'supir.keterangan',
-                'supir.noktp',
-                'supir.nokk',
-                'supir.statusadaupdategambar',
-                'supir.statusluarkota',
-                'supir.statuszonatertentu',
-                'supir.zona_id',
-                'zona.keterangan as zona',
-                'supir.angsuranpinjaman',
-                'supir.plafondeposito',
-                'supir.photosupir',
-                'supir.photoktp',
-                'supir.photosim',
-                'supir.photokk',
-                'supir.photoskck',
-                'supir.photovaksin',
-                'supir.pdfsuratperjanjian',
-                'supir.photodomisili',
-                'supir.keteranganresign',
-                'supir.keteranganberhentisupir',
-                'supir.statusblacklist',
-                'supir.tglberhentisupir',
-                'supir.tgllahir',
-                'supir.tglterbitsim'
-            )
-            ->where('supir.noktp', $noktp)
-            ->leftJoin(DB::raw("zona with (readuncommitted)"), 'supir.zona_id', 'zona.id')
-            ->leftJoin(DB::raw("supir as supirlama with (readuncommitted)"), 'supir.supirold_id', '=', 'supirlama.id')
-            ->first();
-
+        ->select(
+            'supir.id',
+            'supir.namasupir',
+            'supir.alamat',
+            'supir.kota',
+            'supir.telp',
+            'supir.statusaktif',
+            'supir.pemutihansupir_nobukti',
+            'supir.nominaldepositsa',
+            'supir.depositke',
+            'supir.tglmasuk',
+            'supir.nominalpinjamansaldoawal',
+            'supir.supirold_id',
+            'supirlama.namasupir as supirold',
+            'supir.tglexpsim',
+            'supir.nosim',
+            'supir.keterangan',
+            'supir.noktp',
+            'supir.nokk',
+            'supir.statusadaupdategambar',
+            'supir.statusluarkota',
+            'supir.statuszonatertentu',
+            'supir.zona_id',
+            'zona.keterangan as zona',
+            'supir.angsuranpinjaman',
+            'supir.plafondeposito',
+            'supir.photosupir',
+            'supir.photoktp',
+            'supir.photosim',
+            'supir.photokk',
+            'supir.photoskck',
+            'supir.photovaksin',
+            'supir.pdfsuratperjanjian',
+            'supir.photodomisili',
+            'supir.keteranganresign',
+            'supir.keteranganberhentisupir',
+            'supir.statusblacklist',
+            'supir.tglberhentisupir',
+            'supir.tgllahir',
+            'supir.tglterbitsim'
+        ) 
+        ->where('supir.noktp', $noktp)
+        ->leftJoin(DB::raw("zona with (readuncommitted)"), 'supir.zona_id', 'zona.id')
+        ->leftJoin(DB::raw("supir as supirlama with (readuncommitted)"), 'supir.supirold_id', '=', 'supirlama.id')
+        ->first();
+        
         return $query;
     }
 
-    // public function validationSupirResign($namaSupir)
-    // {
-    //     $query = DB::table("supir")->from(DB::raw("supir with (readuncommitted)"))
-    //     ->where("namasupir", $namaSupir)
-    //     ->whereRaw("isnull(tglberhentisupir,'1900-01-01') <> '1900-01-01'")
-    //     ->first();
-
-    //     return $query;
-    // }
-
-    public function validationSupirResign($noktp)
+    public function validationSupirResign($namaSupir)
     {
         $query = DB::table("supir")->from(DB::raw("supir with (readuncommitted)"))
-            ->where("noktp", $noktp)
-            ->whereRaw("isnull(tglberhentisupir,'1900-01-01') <> '1900-01-01'")
-            ->first();
-        // if ($query != null) {
-        //     return $query;
-        // } else {
-        //     
+        ->where("namasupir", $namaSupir)
+        ->first();
 
-        // }
-        // if ($query == null) {
-        //     $checkQuery = DB::table("supir")
-        //         ->where("noktp", $noktp)
-        //         ->whereRaw("year(isnull(tglberhentisupir,'1900/1/1')) = 1900")
-        //         ->exists();
-
-        //     if (!$checkQuery) {
-        //         return 'test';
-        //     }
-        // }
         return $query;
-    }
-
-    public function validasiBolehInput($noktp)
-    {
-        $cekResign = DB::table("supir")->from(DB::raw("supir with (readuncommitted)"))
-            ->where("noktp", $noktp)
-            ->whereRaw("isnull(tglberhentisupir,'1900-01-01') = '1900-01-01'")
-            ->first();
-        return $cekResign;
     }
 }
