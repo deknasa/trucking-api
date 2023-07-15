@@ -24,19 +24,19 @@ class InvoiceDetailController extends Controller
     public function index(): JsonResponse
     {
         $invoice = new InvoiceDetail();
-       dd($invoice->get());
+    //    dd($invoice->get());
 
-        // return response()->json([
-        //     'data' => $invoice->get(),
-        //     'attributes' => [
-        //         'totalRows' => $invoice->totalRows,
-        //         'totalPages' => $invoice->totalPages,
-        //         'totalNominal' => $invoice->totalNominal,
-        //         'totalTotal' => $invoice->totalTotal,
-        //         'totalRetribusi' => $invoice->totalRetribusi,
-        //         'totalExtra' => $invoice->totalExtra,
-        //     ]
-        // ]);
+        return response()->json([
+            'data' => $invoice->get(),
+            'attributes' => [
+                'totalRows' => $invoice->totalRows,
+                'totalPages' => $invoice->totalPages,
+                'totalNominal' => $invoice->totalNominal,
+                'totalTotal' => $invoice->totalTotal,
+                'totalRetribusi' => $invoice->totalRetribusi,
+                'totalExtra' => $invoice->totalExtra,
+            ]
+        ]);
     }
 
     public function piutang(): JsonResponse
