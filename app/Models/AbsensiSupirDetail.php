@@ -158,7 +158,7 @@ class AbsensiSupirDetail extends MyModel
                     "header.nominal as nominal_header",
                     "trado.kodetrado as trado",
                     "supir.namasupir as supir",
-                    "absentrado.kodeabsen as status",
+                    "absentrado.keterangan as status",
                     "$this->table.keterangan as keterangan_detail",
                     DB::raw("LEFT($this->table.jam, 5) as jam"),
                     "$this->table.uangjalan",

@@ -26,6 +26,8 @@ class CreatePengeluarandetailTable extends Migration
             $table->string('coadebet',50)->nullable();
             $table->string('coakredit',50)->nullable();
             $table->longText('keterangan')->nullable();
+            $table->string('noinvoice',150)->nullable();
+            $table->string('bank',150)->nullable();
             $table->date('bulanbeban')->nullable();
             $table->string('modifiedby',50)->nullable();
             $table->timestamps();

@@ -33,20 +33,15 @@ class InvoiceChargeGandenganDetail extends MyModel
 
         if (isset(request()->forReport) && request()->forReport) {
             $query->select(
-                'invoicechargegandengandetail.id',
-                'header.nobukti as nobukti_header',
-                'header.tglbukti',
-                'header.nominal as nominal_header',
+                DB::raw("'' as gandengan"),
                 'invoicechargegandengandetail.jobtrucking',
-                'invoicechargegandengandetail.tgltrip',
+                DB::raw("'' as dari"),
+                DB::raw("'' as sampai"),
+                DB::raw("'' as orderan"),
                 'invoicechargegandengandetail.jumlahhari',
                 'invoicechargegandengandetail.nominal',
-                'invoicechargegandengandetail.trado_id',
-                'trado.kodetrado as nopolisi',
-                'invoicechargegandengandetail.keterangan',
-            )
-            ->leftJoin(DB::raw("invoicechargegandenganheader as header with (readuncommitted)"), 'header.id', 'invoicechargegandengandetail.invoicechargegandengan_id')
-            ->leftJoin(DB::raw("trado with (readuncommitted)"), 'trado.id', 'invoicechargegandengandetail.trado_id');
+                DB::raw("'' as namagudang"),
+            );
             $query->where($this->table . '.invoicechargegandengan_id', '=', request()->invoicechargegandengan_id);
         } else if (isset(request()->forExport) && request()->forExport) {
             $query->select(

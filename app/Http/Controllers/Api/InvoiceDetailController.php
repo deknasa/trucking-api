@@ -24,7 +24,7 @@ class InvoiceDetailController extends Controller
     public function index(): JsonResponse
     {
         $invoice = new InvoiceDetail();
-    //    dd($invoice->get());
+
 
         return response()->json([
             'data' => $invoice->get(),

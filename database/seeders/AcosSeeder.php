@@ -766,5 +766,12 @@ class AcosSeeder extends Seeder
         acos::create([ 'class' => 'laporankartuhutangprediksi', 'method' => 'report', 'nama' => 'report LaporanKartuHutangPrediksiController', 'modifiedby' => 'ADMIN',]);
         acos::create([ 'class' => 'laporanbangudangsementara', 'method' => 'index', 'nama' => 'index LaporanBanGudangSementaraController', 'modifiedby' => 'ADMIN',]);
         acos::create([ 'class' => 'laporanbangudangsementara', 'method' => 'report', 'nama' => 'report LaporanBanGudangSementaraController', 'modifiedby' => 'ADMIN',]);
+        acos::create([ 'class' => 'hutangextraheader', 'method' => 'index', 'nama' => 'index HutangExtraHeaderController', 'modifiedby' => 'ADMIN',]);
+        acos::create([ 'class' => 'hutangextradetail', 'method' => 'index', 'nama' => 'index HutangExtraHeaderController', 'modifiedby' => 'ADMIN',]);
+        acos::create([ 'class' => 'hutangextraheader', 'method' => 'store', 'nama' => 'store HutangExtraHeaderController', 'modifiedby' => 'ADMIN',]);
+        acos::create([ 'class' => 'hutangextraheader', 'method' => 'update', 'nama' => 'update HutangExtraHeaderController', 'modifiedby' => 'ADMIN',]);
+        acos::create([ 'class' => 'hutangextraheader', 'method' => 'destroy', 'nama' => 'destroy HutangExtraHeaderController', 'modifiedby' => 'ADMIN',]);
+        acos::create([ 'class' => 'hutangextraheader', 'method' => 'report', 'nama' => 'report HutangExtraHeaderController', 'modifiedby' => 'ADMIN',]);
+        acos::create([ 'class' => 'hutangextraheader', 'method' => 'export', 'nama' => 'export HutangExtraHeaderController', 'modifiedby' => 'ADMIN',]);
     }
 }

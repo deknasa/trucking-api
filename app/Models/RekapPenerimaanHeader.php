@@ -285,12 +285,19 @@ class RekapPenerimaanHeader extends MyModel
         )
             ->where('rekappenerimaan_id', $id);
         $this->totalRows = $query->count();
+        $this->totalNominal = $query->sum('nominal');
         $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;
-        if ($this->params['sortIndex'] == 'id') {
+
+        if ($this->params['sortIndex'] == 'id' || $this->params['sortIndex'] == 'nobukti_penerimaan') {
             $query->orderBy('rekappenerimaandetail.penerimaan_nobukti', $this->params['sortOrder']);
+        } else if ($this->params['sortIndex'] == 'tglbukti_penerimaan') {
+            $query->orderBy('rekappenerimaandetail.tgltransaksi', $this->params['sortOrder']);
+        } else if ($this->params['sortIndex'] == 'nominal_detail') {
+            $query->orderBy('rekappenerimaandetail.nominal', $this->params['sortOrder']);
         } else {
             $query->orderBy('rekappenerimaandetail.' . $this->params['sortIndex'], $this->params['sortOrder']);
         }
+        
         $this->filter($query);
         $this->paginate($query);
         $data = $query->get();

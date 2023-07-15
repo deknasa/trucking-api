@@ -87,6 +87,30 @@ class HutangDetail extends MyModel
         return $query->get();
     }
 
+    
+    public function getHutangFromHutangExtra($nobukti)
+    {
+        $this->setRequestParameters();
+        $query = DB::table($this->table)->from(DB::raw("$this->table with (readuncommitted)"))
+            ->select(
+                $this->table . '.nobukti',
+                DB::raw("(case when year(isnull($this->table.tgljatuhtempo,'1900/1/1'))<2000 then null else $this->table.tgljatuhtempo end) as tgljatuhtempo"),
+                $this->table . '.total',
+                $this->table . '.keterangan',
+            );
+
+        $this->sort($query, 'hutangdetail');
+        $query->where($this->table . '.nobukti', '=',$nobukti);
+        $this->filter($query);
+        $this->totalNominal = $query->sum('total');
+        $this->totalRows = $query->count();
+        $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;
+
+        $this->paginate($query);
+
+        return $query->get();
+    }
+
 
     public function getHistory()
     {

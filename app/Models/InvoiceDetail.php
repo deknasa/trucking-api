@@ -30,7 +30,6 @@ class InvoiceDetail extends MyModel
         $query = DB::table($this->table)->from(DB::raw("$this->table with (readuncommitted)"));
 
         if (isset(request()->forReport) && request()->forReport) {
-
             $tempsp = '##tempsp' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
             Schema::create($tempsp, function ($table) {
                 $table->string('jobtrucking', 1000)->nullable();
@@ -38,6 +37,10 @@ class InvoiceDetail extends MyModel
                 $table->string('spfull', 1000)->nullable();
                 $table->string('spempty', 1000)->nullable();
                 $table->string('spfullempty', 1000)->nullable();
+                $table->integer('pelanggan_id')->nullable();
+                $table->integer('container_id')->nullable();
+                $table->date('tglsp')->nullable();
+                $table->integer('sampai_id')->nullable();
             });
 
             $tempinvoice = '##tempinvoice' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
@@ -66,6 +69,10 @@ class InvoiceDetail extends MyModel
                     DB::raw("(case when isnull(c.kodestatuscontainer,'')='FULL' then a.nosp else '' end) as spfull"),
                     DB::raw("(case when isnull(c.kodestatuscontainer,'')='EMPTY' then a.nosp else '' end) as spempty"),
                     DB::raw("(case when isnull(c.kodestatuscontainer,'')='FULL EMPTY' then a.nosp else '' end) as spfullempty"),
+                    'a.pelanggan_id',
+                    'a.container_id',
+                    'a.tglsp',
+                    'a.sampai_id',
                 )
                 ->join(DB::raw($tempinvoice . " b "), 'a.jobtrucking', 'b.jobtrucking')
                 ->leftjoin(DB::raw("statuscontainer as c with (readuncommitted)"), 'a.statuscontainer_id', 'c.id');
@@ -76,6 +83,10 @@ class InvoiceDetail extends MyModel
                 'spfull',
                 'spempty',
                 'spfullempty',
+                'pelanggan_id',
+                'container_id',
+                'tglsp',
+                'sampai_id'
             ], $querysp);
 
             $tempsprekap = '##tempsprekap' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
@@ -85,6 +96,10 @@ class InvoiceDetail extends MyModel
                 $table->string('spfull', 1000)->nullable();
                 $table->string('spempty', 1000)->nullable();
                 $table->string('spfullempty', 1000)->nullable();
+                $table->integer('pelanggan_id')->nullable();
+                $table->integer('container_id')->nullable();
+                $table->date('tglsp')->nullable();
+                $table->integer('sampai_id')->nullable();
             });
 
             $querysprekap = DB::table($tempsp)->from(
@@ -96,6 +111,10 @@ class InvoiceDetail extends MyModel
                     DB::Raw("max(a.spfull) as spfull"),
                     DB::Raw("max(a.spempty) as spempty"),
                     DB::Raw("max(a.spfullempty) as spfullempty"),
+                    DB::Raw("max(a.pelanggan_id) as pelanggan_id"),
+                    DB::Raw("max(a.container_id) as container_id"),
+                    DB::Raw("max(a.tglsp) as tglsp"),
+                    DB::Raw("max(a.sampai_id) as sampai_id"),
                 )
                 ->groupby('a.jobtrucking');
 
@@ -105,6 +124,10 @@ class InvoiceDetail extends MyModel
                 'spfull',
                 'spempty',
                 'spfullempty',
+                'pelanggan_id',
+                'container_id',
+                'tglsp',
+                'sampai_id'
             ], $querysprekap);
 
             $query->select(
@@ -122,7 +145,7 @@ class InvoiceDetail extends MyModel
                 $this->table . '.keterangan',
             )
                 ->where($this->table . '.invoice_id', '=', request()->invoice_id)
-                ->leftJoin(DB::raw($tempsprekap . "as suratpengantar"), $this->table . '.orderantrucking_nobukti', 'suratpengantar.jobtrucking')
+                ->leftJoin(DB::raw($tempsprekap . " as suratpengantar"), $this->table . '.orderantrucking_nobukti', 'suratpengantar.jobtrucking')
                 ->leftJoin(DB::raw("pelanggan with (readuncommitted)"), 'suratpengantar.pelanggan_id', 'pelanggan.id')
                 ->leftJoin(DB::raw("container with (readuncommitted)"), 'suratpengantar.container_id', 'container.id')
                 ->leftJoin(DB::raw("kota with (readuncommitted)"), 'suratpengantar.sampai_id', 'kota.id');
@@ -150,8 +173,6 @@ class InvoiceDetail extends MyModel
 
             $query->where($this->table . '.invoice_id', '=', request()->invoice_id);
         } else {
-
-
             // $tempsp = '##tempsp' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
             // Schema::create($tempsp, function ($table) {
             //     $table->string('jobtrucking', 1000)->nullable();
@@ -248,6 +269,7 @@ class InvoiceDetail extends MyModel
             //     ->leftJoin(DB::raw("container with (readuncommitted)"), 'suratpengantar.container_id', 'container.id')
             //     ->leftJoin(DB::raw("kota with (readuncommitted)"), 'suratpengantar.sampai_id', 'kota.id');
 
+
             $query->select(
                 $this->table . '.nobukti',
                 $this->table . '.keterangan',
@@ -272,8 +294,6 @@ class InvoiceDetail extends MyModel
 
             $this->paginate($query);
         }
-
-        // dd($query->get());
         return $query->get();
     }
 

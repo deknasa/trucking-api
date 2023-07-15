@@ -171,6 +171,8 @@ use App\Http\Controllers\Api\JurnalUmumPusatHeaderController;
 use App\Http\Controllers\Api\KartuStokController;
 use App\Http\Controllers\Api\HistoriPenerimaanStokController;
 use App\Http\Controllers\Api\HistoriPengeluaranStokController;
+use App\Http\Controllers\Api\HutangExtraDetailController;
+use App\Http\Controllers\Api\HutangExtraHeaderController;
 use App\Http\Controllers\Api\KaryawanController;
 use App\Http\Controllers\Api\LaporanBanGudangSementaraController;
 use App\Http\Controllers\Api\LaporanBukuBesarController;
@@ -1462,6 +1464,18 @@ route::middleware(['auth:api', 'authorized'])->group(function () {
     Route::resource('laporanpinjamanperunittrado', LaporanPinjamanPerUnitTradoController::class)->whereNumber('laporanpinjamanperunittrado');
     
     Route::resource('stokpusat', StokPusatController::class)->whereNumber('stokpusat');
+
+    Route::get('hutangextraheader/{id}/printreport', [HutangExtraHeaderController::class, 'printReport'])->whereNumber('id');
+    Route::get('hutangextraheader/{id}/export', [HutangExtraHeaderController::class, 'export'])->name('hutangextraheader.export')->whereNumber('id');
+    Route::post('hutangextraheader/{id}/cekvalidasi', [HutangExtraHeaderController::class, 'cekvalidasi'])->name('hutangextraheader.cekvalidasi')->whereNumber('id');
+    Route::post('hutangextraheader/approval', [HutangExtraHeaderController::class, 'approval']);
+    Route::get('hutangextraheader/combo', [HutangExtraHeaderController::class, 'combo']);
+    Route::get('hutangextraheader/grid', [HutangExtraHeaderController::class, 'grid']);
+    Route::post('hutangextraheader/{id}/cekValidasiAksi', [HutangExtraHeaderController::class, 'cekValidasiAksi'])->name('hutangextraheader.cekValidasiAksi')->whereNumber('id');
+    Route::get('hutangextraheader/field_length', [HutangExtraHeaderController::class, 'fieldLength']);
+    Route::resource('hutangextraheader', HutangExtraHeaderController::class)->whereNumber('hutangextraheader');
+    Route::get('hutangextradetail/hutang', [HutangExtraDetailController::class, 'hutang']);
+    Route::resource('hutangextradetail', HutangExtraDetailController::class)->whereNumber('hutangextradetail');
 });
 Route::get('suratpengantarapprovalinputtrip/updateapproval', [SuratPengantarApprovalInputTripController::class, 'updateApproval']);
 

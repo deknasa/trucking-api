@@ -107,9 +107,6 @@ class PelunasanPiutangDetail extends MyModel
                 'nominalsisa',
             ], $queryrekap);
 
-
-
-
             $query->select(
                 $this->table . '.piutang_nobukti',
                 $this->table . '.invoice_nobukti',
@@ -119,6 +116,7 @@ class PelunasanPiutangDetail extends MyModel
                 $this->table . '.keterangan',
                 $this->table . '.nominallebihbayar',
                 $this->table . '.potongan',
+                DB::raw("isnull(b.nominalpiutang,0) as nominalpiutang"),
                 DB::raw("isnull(b.nominalsisa,0) as sisapiutang"),
             )
                 ->leftJoin(DB::raw("akunpusat with (readuncommitted)"), $this->table . '.coapotongan', 'akunpusat.coa')
