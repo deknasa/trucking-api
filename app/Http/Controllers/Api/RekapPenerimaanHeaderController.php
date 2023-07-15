@@ -257,7 +257,8 @@ class RekapPenerimaanHeaderController extends Controller
             'previousURL' => $previousURL,
             'attributes' => [
                 'totalRows' => $penerimaan->totalRows,
-                'totalPages' => $penerimaan->totalPages
+                'totalPages' => $penerimaan->totalPages,
+                'totalNominal' => $penerimaan->totalNominal,
             ]
         ]);
     }
@@ -273,7 +274,8 @@ class RekapPenerimaanHeaderController extends Controller
             'previousURL' => $previousURL,
             'attributes' => [
                 'totalRows' => $rekapPenerimaan->totalRows,
-                'totalPages' => $rekapPenerimaan->totalPages
+                'totalPages' => $rekapPenerimaan->totalPages,
+                'totalNominal' => $rekapPenerimaan->totalNominal,
             ]
         ]);
     }
