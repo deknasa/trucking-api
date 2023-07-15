@@ -274,9 +274,14 @@ class RekapPengeluaranHeader extends MyModel
         )
             ->where('rekappengeluaran_id', $id);
         $this->totalRows = $query->count();
+        $this->totalNominal = $query->sum('nominal');
         $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;
-        if ($this->params['sortIndex'] == 'id') {
+        if ($this->params['sortIndex'] == 'id' || $this->params['sortIndex'] == 'nobukti_pengeluaran') {
             $query->orderBy('rekappengeluarandetail.pengeluaran_nobukti', $this->params['sortOrder']);
+        } else if ($this->params['sortIndex'] == 'tglbukti_pengeluaran') {
+            $query->orderBy('rekappengeluarandetail.tgltransaksi', $this->params['sortOrder']);
+        } else if ($this->params['sortIndex'] == 'nominal_detail') {
+            $query->orderBy('rekappengeluarandetail.nominal', $this->params['sortOrder']);
         } else {
             $query->orderBy('rekappengeluarandetail.' . $this->params['sortIndex'], $this->params['sortOrder']);
         }

@@ -32,7 +32,11 @@ class StoreRekapPenerimaanHeaderRequest extends FormRequest
                 "required",'date_format:d-m-Y',
                 new DateTutupBuku()
             ],
-            "tgltransaksi"=>"required|date_format:d-m-Y",
+            'tgltransaksi' => [
+                'required', 'date_format:d-m-Y',
+                new DateTutupBuku(),
+                'before_or_equal:' . date('d-m-Y'),
+            ],
             "bank"=>"required",
         ];
         $relatedRequests = [

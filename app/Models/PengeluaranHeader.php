@@ -202,6 +202,12 @@ class PengeluaranHeader extends MyModel
             return $query->orderBy('alatbayar.namaalatbayar', $this->params['sortOrder']);
         } else if ($this->params['sortIndex'] == 'bank_id') {
             return $query->orderBy('bank.namabank', $this->params['sortOrder']);
+        } else if ($this->params['sortIndex'] == 'nobukti_pengeluaran') {
+            return $query->orderBy('pengeluaranheader.nobukti', $this->params['sortOrder']);
+        } else if ($this->params['sortIndex'] == 'tglbukti_pengeluaran') {
+            return $query->orderBy('pengeluaranheader.tglbukti', $this->params['sortOrder']);
+        } else if ($this->params['sortIndex'] == 'nominal_detail') {
+            return $query->orderBy('pengeluaranheader.nominal', $this->params['sortOrder']);
         } else {
             return $query->orderBy($this->table . '.' . $this->params['sortIndex'], $this->params['sortOrder']);
         }
@@ -312,49 +318,93 @@ class PengeluaranHeader extends MyModel
     public function getRekapPengeluaranHeader($bank, $tglbukti)
     {
         $this->setRequestParameters();
+        $temp = '##temp' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
 
-        $temp = '##tempDetail' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
-        $pengeluaranDetail = DB::table("pengeluarandetail")->from(DB::raw("pengeluarandetail with (readuncommitted)"))
-        ->select(
-            'nobukti',
-            'keterangan',
-            DB::raw('SUM(nominal) AS nominal')
-        )
-        ->groupBy('nobukti', 'keterangan');
-        Schema::create($temp, function ($table) {
-            $table->string('nobukti')->nullable();
-            $table->string('keterangan')->nullable();
-            $table->bigInteger('nominal')->nullable();
-        });
-        DB::table($temp)->insertUsing(['nobukti', 'keterangan', 'nominal'], $pengeluaranDetail);
-
-        $query = DB::table($this->table)->from(DB::raw("pengeluaranheader with (readuncommitted)"))
+        $query = DB::table("pengeluaranheader")->from(DB::raw("pengeluaranheader"))
             ->select(
-                'pengeluaranheader.id',
                 'pengeluaranheader.nobukti as nobukti_pengeluaran',
                 'pengeluaranheader.tglbukti as tglbukti_pengeluaran',
-                'c.keterangan as keterangan_detail',
-                'c.nominal as nominal_detail',
+                DB::raw("SUM(pengeluarandetail.nominal) as nominal_detail")
+
             )
+            ->leftJoin(DB::raw("pengeluarandetail with (readuncommitted)"), 'pengeluaranheader.nobukti', 'pengeluarandetail.nobukti')
             ->where('pengeluaranheader.bank_id', $bank)
             ->where('pengeluaranheader.tglbukti', $tglbukti)
-            ->whereRaw(" NOT EXISTS (
-                SELECT pengeluaran_nobukti
-                FROM rekappengeluarandetail
-                WHERE pengeluaran_nobukti = pengeluaranheader.nobukti   
-              )")
-            ->leftJoin(DB::raw("$temp as c with (readuncommitted)"), 'pengeluaranheader.nobukti', 'c.nobukti')
-            ->groupBy('pengeluaranheader.nobukti', 'pengeluaranheader.id', 'pengeluaranheader.tglbukti', 'c.keterangan', 'c.nominal');
+            ->whereRaw("pengeluaranheader.nobukti not in (select pengeluaran_nobukti from rekappengeluarandetail)")
+            ->groupBy('pengeluaranheader.nobukti')
+            ->groupBy('pengeluaranheader.tglbukti');
 
-        $this->totalRows = $query->count();
+        Schema::create($temp, function ($table) {
+            $table->string('nobukti_pengeluaran')->nullable();
+            $table->date('tglbukti_pengeluaran')->nullable();
+            $table->double('nominal_detail', 15, 2)->nullable();
+        });
+
+        DB::table($temp)->insertUsing(['nobukti_pengeluaran', 'tglbukti_pengeluaran', 'nominal_detail'], $query);
+
+        $dataTemp =  DB::table("$temp")->from(DB::raw("$temp"))
+            ->select(
+                $temp . '.nobukti_pengeluaran',
+                $temp . '.tglbukti_pengeluaran',
+                $temp . '.nominal_detail',
+
+            );
+
+        $this->filterRekap($dataTemp, $temp);
+        $this->totalNominal = $dataTemp->sum($temp . '.nominal_detail');
+        $this->totalRows = $dataTemp->count();
         $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;
+        $dataTemp->orderBy($temp . '.' . $this->params['sortIndex'], $this->params['sortOrder']);
+        $dataTemp->skip($this->params['offset'])->take($this->params['limit']);
 
-        $this->sort($query);
-        $this->filter($query);
-        $this->paginate($query);
-        $data = $query->get();
+        $data = $dataTemp->get();
 
         return $data;
+    }
+
+    public function filterRekap($dataTemp, $temp, $relationFields = [])
+    {
+        if (count($this->params['filters']) > 0 && @$this->params['filters']['rules'][0]['data'] != '') {
+            switch ($this->params['filters']['groupOp']) {
+                case "AND":
+                    foreach ($this->params['filters']['rules'] as $index => $filters) {
+                        if ($filters['field'] != '') {
+                            if ($filters['field'] == 'tglbukti_pengeluaran') {
+                                $dataTemp = $dataTemp->whereRaw("format(" . $temp . ".tglbukti_pengeluaran, 'dd-MM-yyyy') LIKE '%$filters[data]%'");
+                            } else if ($filters['field'] == 'nominal_detail') {
+                                $dataTemp = $dataTemp->whereRaw("format($temp.nominal_detail, '#,#0.00') LIKE '%$filters[data]%'");
+                            } else {
+                                // $dataTemp = $dataTemp->where($temp . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
+                                $dataTemp = $dataTemp->whereRaw($temp . ".[" .  $filters['field'] . "] LIKE '%" . escapeLike($filters['data']) . "%' escape '|'");
+                            }
+                        }
+                    }
+
+                    break;
+                case "OR":
+                    $dataTemp = $dataTemp->where(function ($dataTemp, $temp) {
+                        foreach ($this->params['filters']['rules'] as $index => $filters) {
+                            if ($filters['field'] != '') {
+                                if ($filters['field'] == 'tglbukti_pengeluaran') {
+                                    $dataTemp = $dataTemp->orWhereRaw("format(" . $temp . ".tglbukti_pengeluaran, 'dd-MM-yyyy') LIKE '%$filters[data]%'");
+                                } else if ($filters['field'] == 'nominal_detail') {
+                                    $dataTemp = $dataTemp->orWhereRaw("format($temp.nominal_detail, '#,#0.00') LIKE '%$filters[data]%'");
+                                } else {
+                                    // $dataTemp->orWhere($temp . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
+                                    $dataTemp = $dataTemp->OrwhereRaw($temp . ".[" .  $filters['field'] . "] LIKE '%" . escapeLike($filters['data']) . "%' escape '|'");
+                                }
+                            }
+                        }
+                    });
+
+                    break;
+                default:
+
+                    break;
+            }
+        }
+
+        return $dataTemp;
     }
 
     public function cekvalidasiaksi($nobukti)
@@ -839,18 +889,19 @@ class PengeluaranHeader extends MyModel
 
         $getJurnal = JurnalUmumHeader::from(DB::raw("jurnalumumheader with (readuncommitted)"))->where('nobukti', $pengeluaranHeader->nobukti)->first();
         $jurnalumumHeader = (new JurnalUmumHeader())->processDestroy($getJurnal->id, ($postingDari == "") ? $postingDari : strtoupper('DELETE pengeluaran Header'));
-        
+
         return $pengeluaranHeader;
     }
+
     public function getExport($id)
     {
         $this->setRequestParameters();
 
         $getJudul = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))
-        ->select('text')
-        ->where('grp', 'JUDULAN LAPORAN')
-        ->where('subgrp', 'JUDULAN LAPORAN')
-        ->first();
+            ->select('text')
+            ->where('grp', 'JUDULAN LAPORAN')
+            ->where('subgrp', 'JUDULAN LAPORAN')
+            ->first();
 
         $query = DB::table($this->table)->from(DB::raw("pengeluaranheader with (readuncommitted)"))
             ->select(
@@ -872,14 +923,14 @@ class PengeluaranHeader extends MyModel
                 DB::raw("'Laporan Pengeluaran' as judulLaporan"),
                 DB::raw("'" . $getJudul->text . "' as judul"),
                 DB::raw("'Tgl Cetak:'+format(getdate(),'dd-MM-yyyy HH:mm:ss')as tglcetak"),
-                DB::raw(" 'User :".auth('api')->user()->name."' as usercetak")
+                DB::raw(" 'User :" . auth('api')->user()->name . "' as usercetak")
             )
             ->where("$this->table.id", $id)
             ->leftJoin(DB::raw("parameter as statuscetak with (readuncommitted)"), 'pengeluaranheader.statuscetak', 'statuscetak.id')
             ->leftJoin(DB::raw("pelanggan with (readuncommitted)"), 'pengeluaranheader.pelanggan_id', 'pelanggan.id')
             ->leftJoin(DB::raw("alatbayar with (readuncommitted)"), 'pengeluaranheader.alatbayar_id', 'alatbayar.id')
             ->leftJoin(DB::raw("bank with (readuncommitted)"), 'pengeluaranheader.bank_id', 'bank.id');
-        
+
         $data = $query->first();
         return $data;
     }

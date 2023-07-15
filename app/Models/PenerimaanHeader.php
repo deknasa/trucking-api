@@ -503,6 +503,12 @@ class PenerimaanHeader extends MyModel
             return $query->orderBy('agen.namaagen', $this->params['sortOrder']);
         } else if ($this->params['sortIndex'] == 'pelanggan_id') {
             return $query->orderBy('pelanggan.namapelanggan', $this->params['sortOrder']);
+        } else if ($this->params['sortIndex'] == 'nobukti_penerimaan') {
+            return $query->orderBy('penerimaanheader.nobukti', $this->params['sortOrder']);
+        } else if ($this->params['sortIndex'] == 'tglbukti_penerimaan') {
+            return $query->orderBy('penerimaanheader.tglbukti', $this->params['sortOrder']);
+        } else if ($this->params['sortIndex'] == 'nominal_detail') {
+            return $query->orderBy('penerimaanheader.nominal', $this->params['sortOrder']);
         } else {
             return $query->orderBy($this->table . '.' . $this->params['sortIndex'], $this->params['sortOrder']);
         }
@@ -626,49 +632,94 @@ class PenerimaanHeader extends MyModel
     public function getRekapPenerimaanHeader($bank, $tglbukti)
     {
         $this->setRequestParameters();
-        $temp = '##tempDetail' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
-        $penerimaanDetail = DB::table("penerimaandetail")->from(DB::raw("penerimaandetail with (readuncommitted)"))
-            ->select(
-                'nobukti',
-                'keterangan',
-                DB::raw('SUM(nominal) AS nominal')
-            )
-            ->groupBy('nobukti', 'keterangan');
-        Schema::create($temp, function ($table) {
-            $table->string('nobukti')->nullable();
-            $table->string('keterangan')->nullable();
-            $table->bigInteger('nominal')->nullable();
-        });
-        DB::table($temp)->insertUsing(['nobukti', 'keterangan', 'nominal'], $penerimaanDetail);
+        $temp = '##temp' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
 
-        $query = DB::table($this->table)->from(
-            DB::raw($this->table . " with (readuncommitted)")
-        )->select(
-            'penerimaanheader.id',
-            'penerimaanheader.nobukti as nobukti_penerimaan',
-            'penerimaanheader.tglbukti as tglbukti_penerimaan',
-            'c.keterangan as keterangan_detail',
-            'c.nominal as nominal_detail',
-        )
+        $query = DB::table("penerimaanheader")->from(DB::raw("penerimaanheader"))
+            ->select(
+                'penerimaanheader.nobukti as nobukti_penerimaan',
+                'penerimaanheader.tglbukti as tglbukti_penerimaan',
+                DB::raw("SUM(penerimaandetail.nominal) as nominal_detail")
+
+            )
+            ->leftJoin(DB::raw("penerimaandetail with (readuncommitted)"), 'penerimaanheader.nobukti', 'penerimaandetail.nobukti')
             ->where('penerimaanheader.bank_id', $bank)
             ->where('penerimaanheader.tglbukti', $tglbukti)
-            ->whereRaw(" NOT EXISTS (
-                SELECT penerimaan_nobukti
-                FROM rekappenerimaandetail with (readuncommitted)
-                WHERE penerimaan_nobukti = penerimaanheader.nobukti   
-              )")
-            ->leftJoin(DB::raw("$temp as c with (readuncommitted)"), 'penerimaanheader.nobukti', 'c.nobukti')
-            ->groupBy('penerimaanheader.nobukti', 'penerimaanheader.id', 'penerimaanheader.tglbukti', 'c.keterangan', 'c.nominal');
+            ->whereRaw("penerimaanheader.nobukti not in (select penerimaan_nobukti from rekappenerimaandetail)")
+            ->groupBy('penerimaanheader.nobukti')
+            ->groupBy('penerimaanheader.tglbukti');
 
-        $this->totalRows = $query->count();
+        Schema::create($temp, function ($table) {
+            $table->string('nobukti_penerimaan')->nullable();
+            $table->date('tglbukti_penerimaan')->nullable();
+            $table->double('nominal_detail', 15, 2)->nullable();
+        });
+
+        DB::table($temp)->insertUsing(['nobukti_penerimaan', 'tglbukti_penerimaan', 'nominal_detail'], $query);
+
+        $dataTemp =  DB::table("$temp")->from(DB::raw("$temp"))
+            ->select(
+                $temp . '.nobukti_penerimaan',
+                $temp . '.tglbukti_penerimaan',
+                $temp . '.nominal_detail',
+            );
+
+        $this->filterRekap($dataTemp, $temp);
+        $this->totalNominal = $dataTemp->sum($temp . '.nominal_detail');
+        $this->totalRows = $dataTemp->count();
         $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;
-        $this->sort($query);
-        $this->filter($query);
-        $this->paginate($query);
-        $data = $query->get();
+        $dataTemp->orderBy($temp . '.' . $this->params['sortIndex'], $this->params['sortOrder']);
+        $dataTemp->skip($this->params['offset'])->take($this->params['limit']);
+
+        $data = $dataTemp->get();
 
         return $data;
     }
+    
+    public function filterRekap($dataTemp, $temp, $relationFields = [])
+    {
+        if (count($this->params['filters']) > 0 && @$this->params['filters']['rules'][0]['data'] != '') {
+            switch ($this->params['filters']['groupOp']) {
+                case "AND":
+                    foreach ($this->params['filters']['rules'] as $index => $filters) {
+                        if ($filters['field'] != '') {
+                            if ($filters['field'] == 'tglbukti_penerimaan') {
+                                $dataTemp = $dataTemp->whereRaw("format(" . $temp . ".tglbukti_penerimaan, 'dd-MM-yyyy') LIKE '%$filters[data]%'");
+                            } else if ($filters['field'] == 'nominal_detail') {
+                                $dataTemp = $dataTemp->whereRaw("format($temp.nominal_detail, '#,#0.00') LIKE '%$filters[data]%'");
+                            } else {
+                                // $dataTemp = $dataTemp->where($temp . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
+                                $dataTemp = $dataTemp->whereRaw($temp . ".[" .  $filters['field'] . "] LIKE '%" . escapeLike($filters['data']) . "%' escape '|'");
+                            }
+                        }
+                    }
+
+                    break;
+                case "OR":
+                    $dataTemp = $dataTemp->where(function ($dataTemp, $temp) {
+                        foreach ($this->params['filters']['rules'] as $index => $filters) {
+                            if ($filters['field'] != '') {
+                                if ($filters['field'] == 'tglbukti_penerimaan') {
+                                    $dataTemp = $dataTemp->orWhereRaw("format(" . $temp . ".tglbukti_penerimaan, 'dd-MM-yyyy') LIKE '%$filters[data]%'");
+                                } else if ($filters['field'] == 'nominal_detail') {
+                                    $dataTemp = $dataTemp->orWhereRaw("format($temp.nominal_detail, '#,#0.00') LIKE '%$filters[data]%'");
+                                } else {
+                                    // $dataTemp->orWhere($temp . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
+                                    $dataTemp = $dataTemp->OrwhereRaw($temp . ".[" .  $filters['field'] . "] LIKE '%" . escapeLike($filters['data']) . "%' escape '|'");
+                                }
+                            }
+                        }
+                    });
+
+                    break;
+                default:
+
+                    break;
+            }
+        }
+
+        return $dataTemp;
+    }
+
 
     public function processStore(array $data): PenerimaanHeader
     {
@@ -931,10 +982,10 @@ class PenerimaanHeader extends MyModel
         $this->setRequestParameters();
 
         $getJudul = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))
-        ->select('text')
-        ->where('grp', 'JUDULAN LAPORAN')
-        ->where('subgrp', 'JUDULAN LAPORAN')
-        ->first();
+            ->select('text')
+            ->where('grp', 'JUDULAN LAPORAN')
+            ->where('subgrp', 'JUDULAN LAPORAN')
+            ->first();
 
         $query = DB::table($this->table)->from(DB::raw("penerimaanheader with (readuncommitted)"))
             ->select(
@@ -955,7 +1006,7 @@ class PenerimaanHeader extends MyModel
                 DB::raw("'Laporan Penerimaan' as judulLaporan"),
                 DB::raw("'" . $getJudul->text . "' as judul"),
                 DB::raw("'Tgl Cetak:'+format(getdate(),'dd-MM-yyyy HH:mm:ss')as tglcetak"),
-                DB::raw(" 'User :".auth('api')->user()->name."' as usercetak")
+                DB::raw(" 'User :" . auth('api')->user()->name . "' as usercetak")
             )
             ->where("$this->table.id", $id)
             ->leftJoin(DB::raw("parameter as statuscetak with (readuncommitted)"), 'penerimaanheader.statuscetak', 'statuscetak.id')
@@ -966,5 +1017,4 @@ class PenerimaanHeader extends MyModel
         $data = $query->first();
         return $data;
     }
- 
 }
