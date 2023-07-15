@@ -50,6 +50,8 @@ class PengeluaranDetail extends MyModel
                 "$this->table.nowarkat",
                 "$this->table.nominal",
                 "$this->table.keterangan",
+                "$this->table.noinvoice",
+                "$this->table.bank",
                 DB::raw("(case when year(isnull($this->table.bulanbeban,'1900/1/1'))<2000 then null else $this->table.bulanbeban end) as bulanbeban"),
                 DB::raw("(case when year(isnull($this->table.tgljatuhtempo,'1900/1/1'))<2000 then null else $this->table.tgljatuhtempo end) as tgljatuhtempo"),
                 "debet.keterangancoa as coadebet",
@@ -82,6 +84,8 @@ class PengeluaranDetail extends MyModel
                 'pengeluarandetail.keterangan',
                 'pengeluarandetail.nominal',
                 'pengeluarandetail.coadebet',
+                'pengeluarandetail.noinvoice',
+                'pengeluarandetail.bank',
                 'akunpusat.keterangancoa as ketcoadebet',
                 DB::raw("(case when year(cast(pengeluarandetail.bulanbeban as datetime))='1900' then '' else format(pengeluarandetail.bulanbeban,'yyyy-MM-dd') end) as bulanbeban"),
             )
@@ -173,7 +177,8 @@ class PengeluaranDetail extends MyModel
         $pengeluaranDetail->coadebet = $data['coadebet'] ?? '';
         $pengeluaranDetail->coakredit = $data['coakredit'] ?? '';
         $pengeluaranDetail->keterangan = $data['keterangan'] ?? '';
-        $pengeluaranDetail->bulanbeban = $data['bulanbeban'] ?? '';
+        $pengeluaranDetail->noinvoice = $data['noinvoice'] ?? '';
+        $pengeluaranDetail->bank = $data['bank'] ?? '';
         $pengeluaranDetail->modifiedby = $data['modifiedby'];
        
         $pengeluaranDetail->save();

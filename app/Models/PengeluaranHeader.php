@@ -713,7 +713,8 @@ class PengeluaranHeader extends MyModel
                 'coadebet' =>  $data['coadebet'][$i],
                 'coakredit' => (array_key_exists("coakredit", $data)) ? $data['coakredit'][$i] : $querysubgrppengeluaran->coa,
                 'keterangan' => $data['keterangan_detail'][$i],
-                'bulanbeban' =>  date('Y-m-d', strtotime($data['bulanbeban'][$i] ?? '1900/1/1')),
+                'noinvoice' => $data['noinvoice'][$i] ?? '',
+                'bank' => $data['bank_detail'][$i] ?? '',
                 'modifiedby' => auth('api')->user()->name,
             ]);
             $pengeluaranDetails[] = $pengeluaranDetail->toArray();
@@ -818,7 +819,8 @@ class PengeluaranHeader extends MyModel
                 'coadebet' =>  $data['coadebet'][$i],
                 'coakredit' => (array_key_exists("coakredit", $data)) ? $data['coakredit'][$i] : $querysubgrppengeluaran->coa,
                 'keterangan' => $data['keterangan_detail'][$i],
-                'bulanbeban' =>  date('Y-m-d', strtotime($data['bulanbeban'][$i] ?? '1900/1/1')),
+                'noinvoice' => $data['noinvoice'][$i] ?? '',
+                'bank' => $data['bank_detail'][$i] ?? '',
                 'modifiedby' => auth('api')->user()->name,
             ]);
             $pengeluaranDetails[] = $pengeluaranDetail->toArray();
