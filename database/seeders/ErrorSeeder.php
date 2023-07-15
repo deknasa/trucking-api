@@ -83,5 +83,6 @@ class ErrorSeeder extends Seeder
         error::create(['kodeerror' => 'TEPT', 'keterangan' => 'DATA TIDAK BISA DIEDIT PADA TANGGAL INI', 'modifiedby' => 'ADMIN',]);
         error::create(['kodeerror' => 'NTS', 'keterangan' => 'NILAI TIDAK BOLEH SAMA', 'modifiedby' => 'ADMIN',]);
         error::create(['kodeerror' => 'JTK', 'keterangan' => 'TIDAK BOLEH KURANG DARI JUMLAH TRIP YANG SUDAH DIBUAT', 'modifiedby' => 'ADMIN',]);
+        error::create(['kodeerror' => 'TOP', 'keterangan' => 'MELEBIHI BATAS TOP AGEN', 'modifiedby' => 'ADMIN',]);
     }
 }
