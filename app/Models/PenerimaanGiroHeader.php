@@ -139,7 +139,7 @@ class PenerimaanGiroHeader extends MyModel
                     "$this->table.id,
             $this->table.nobukti,
             $this->table.tglbukti,
-            pelanggan.namapelanggan as pelanggan_id,
+            agen.namaagen as agen_id,
             $this->table.postingdari,
             $this->table.diterimadari,
             $this->table.tgllunas,
@@ -155,7 +155,7 @@ class PenerimaanGiroHeader extends MyModel
             $this->table.updated_at"
                 )
             )
-            ->leftJoin(DB::raw("pelanggan with (readuncommitted)"), 'penerimaangiroheader.pelanggan_id', 'pelanggan.id')
+            ->leftJoin(DB::raw("agen with (readuncommitted)"), 'penerimaangiroheader.agen_id', 'agen.id')
             ->leftJoin(DB::raw("parameter as statuscetak with (readuncommitted)"), 'penerimaangiroheader.statuscetak', 'statuscetak.id')
             ->leftJoin(DB::raw("parameter as statusapproval with (readuncommitted)"), 'penerimaangiroheader.statusapproval', 'statusapproval.id');
     }
@@ -167,13 +167,13 @@ class PenerimaanGiroHeader extends MyModel
                 'penerimaangiroheader.id',
                 'penerimaangiroheader.nobukti',
                 'penerimaangiroheader.tglbukti',
-                'penerimaangiroheader.pelanggan_id',
-                'pelanggan.namapelanggan as pelanggan',
+                'penerimaangiroheader.agen_id',
+                'agen.namaagen as agen',
                 'penerimaangiroheader.diterimadari',
                 'penerimaangiroheader.tgllunas',
                 'penerimaangiroheader.statuscetak'
             )
-            ->leftJoin(DB::raw("pelanggan with (readuncommitted)"), 'penerimaangiroheader.pelanggan_id', 'pelanggan.id')
+            ->leftJoin(DB::raw("agen with (readuncommitted)"), 'penerimaangiroheader.agen_id', 'agen.id')
             ->where('penerimaangiroheader.id', $id)
             ->first();
 
@@ -227,7 +227,7 @@ class PenerimaanGiroHeader extends MyModel
             $table->bigInteger('id')->nullable();
             $table->string('nobukti', 1000)->nullable();
             $table->date('tglbukti', 1000)->nullable();
-            $table->string('pelanggan_id', 1000)->nullable();
+            $table->string('agen_id', 1000)->nullable();
             $table->string('postingdari', 1000)->nullable();
             $table->string('diterimadari', 1000)->nullable();
             $table->date('tgllunas', 1000)->nullable();
@@ -254,7 +254,7 @@ class PenerimaanGiroHeader extends MyModel
             'id',
             'nobukti',
             'tglbukti',
-            'pelanggan_id',
+            'agen_id',
             'postingdari',
             'diterimadari',
             'tgllunas',
@@ -277,8 +277,8 @@ class PenerimaanGiroHeader extends MyModel
 
     public function sort($query)
     {
-        if ($this->params['sortIndex'] == 'pelanggan_id') {
-            return $query->orderBy('pelanggan.namapelanggan', $this->params['sortOrder']);
+        if ($this->params['sortIndex'] == 'agen_id') {
+            return $query->orderBy('agen.namaagen', $this->params['sortOrder']);
         } else {
             return $query->orderBy($this->table . '.' . $this->params['sortIndex'], $this->params['sortOrder']);
         }
@@ -297,7 +297,6 @@ class PenerimaanGiroHeader extends MyModel
             $table->bigInteger('nominal')->nullable();
         });
         DB::table($temp)->insertUsing(['nobukti', 'nominal'], $fetch);
-
         $query = DB::table("penerimaangiroheader")->from(DB::raw("penerimaangiroheader with (readuncommitted)"))
         ->select(
             'penerimaangiroheader.id', 
@@ -309,14 +308,12 @@ class PenerimaanGiroHeader extends MyModel
             'penerimaangiroheader.modifiedby', 
             'penerimaangiroheader.created_at', 
             'penerimaangiroheader.updated_at',
-            'agen.namaagen', 
-            'pelanggan.namapelanggan',
+            'agen.namaagen as agen_id', 
             'c.nominal'
         )
         ->leftJoin(DB::raw("$temp as c with (readuncommitted)"), 'penerimaangiroheader.nobukti', 'c.nobukti')
         ->leftJoin(DB::raw("agen with (readuncommitted)"), 'penerimaangiroheader.agen_id', 'agen.id')
-        ->leftJoin(DB::raw("pelanggan with (readuncommitted)"), 'penerimaangiroheader.pelanggan_id', 'pelanggan.id')
-        ->whereRaw("penerimaangiroheader.nobukti not in (select penerimaangiro_nobukti from penerimaanheader)");    
+        ->whereRaw("penerimaangiroheader.nobukti not in (select penerimaangiro_nobukti from penerimaanheader where penerimaangiro_nobukti != '')");    
 
         if (request()->tgldari && request()->tglsampai) {
             $query->whereBetween($this->table . '.tglbukti', [date('Y-m-d', strtotime(request()->tgldari)), date('Y-m-d', strtotime(request()->tglsampai))]);
@@ -351,8 +348,8 @@ class PenerimaanGiroHeader extends MyModel
                                 $query = $query->where('agen.namaagen', '=', "$filters[data]");
                             } else if ($filters['field'] == 'statuscetak') {
                                 $query = $query->where('statuscetak.text', '=', "$filters[data]");
-                            } else if ($filters['field'] == 'pelanggan_id') {
-                                $query = $query->where('pelanggan.namapelanggan', 'LIKE', "%$filters[data]%");
+                            } else if ($filters['field'] == 'agen_id') {
+                                $query = $query->where('agen.namaagen', 'LIKE', "%$filters[data]%");
                             } else if ($filters['field'] == 'created_at') {
                                 $query = $query->whereRaw("format($this->table.created_at,'dd-MM-yyyy HH:mm:ss') like '%$filters[data]%'");
                             } else if ($filters['field'] == 'updated_at') {
@@ -385,8 +382,8 @@ class PenerimaanGiroHeader extends MyModel
                                     $query = $query->orWhere('agen.namaagen', '=', "$filters[data]");
                                 } else if ($filters['field'] == 'tglbukti') {
                                     $query->orWhere($this->table . '.tglbukti', '=', date('Y-m-d', strtotime($filters['data'])));
-                                } else if ($filters['field'] == 'pelanggan_id') {
-                                    $query->orWhere('pelanggan.namapelanggan', 'LIKE', "%$filters[data]%");
+                                } else if ($filters['field'] == 'agen_id') {
+                                    $query->orWhere('agen.namaagen', 'LIKE', "%$filters[data]%");
                                 } else if ($filters['field'] == 'created_at') {
                                     $query = $query->orWhereRaw("format($this->table.created_at,'dd-MM-yyyy HH:mm:ss') like '%$filters[data]%'");
                                 } else if ($filters['field'] == 'updated_at') {

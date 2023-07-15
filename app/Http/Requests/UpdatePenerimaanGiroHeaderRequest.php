@@ -5,6 +5,7 @@ namespace App\Http\Requests;
 use App\Http\Controllers\Api\ErrorController;
 use Illuminate\Foundation\Http\FormRequest;
 use App\Rules\DateTutupBuku;
+use App\Rules\ExistAgen;
 
 class UpdatePenerimaanGiroHeaderRequest extends FormRequest
 {
@@ -25,12 +26,25 @@ class UpdatePenerimaanGiroHeaderRequest extends FormRequest
      */
     public function rules()
     {
+        $agen_id = $this->agen_id;
+        $rulesAgen_id = [];
+        if ($agen_id != null) {
+            $rulesAgen_id = [
+                'agen_id' => ['required', 'numeric', 'min:1', new ExistAgen()]
+            ];
+        } else if ($agen_id == null && $this->agen != '') {
+            $rulesAgen_id = [
+                'agen_id' => ['required', 'numeric', 'min:1', new ExistAgen()]
+            ];
+        }
+
         $rules = [
             "tglbukti" => [
                 "required",'date_format:d-m-Y',
                 new DateTutupBuku()
             ],
-            'tgllunas' => 'required'
+            'tgllunas' => 'required',
+            'agen' => 'required',
         ];
         $relatedRequests = [
             UpdatePenerimaanGiroDetailRequest::class
@@ -39,7 +53,8 @@ class UpdatePenerimaanGiroHeaderRequest extends FormRequest
         foreach ($relatedRequests as $relatedRequest) {
             $rules = array_merge(
                 $rules,
-                (new $relatedRequest)->rules()
+                (new $relatedRequest)->rules(),
+                $rulesAgen_id
             );
         }
 

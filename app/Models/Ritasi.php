@@ -307,6 +307,24 @@ class Ritasi extends MyModel
             goto selesai;
         }
 
+        $gajiSupir = DB::table('gajisupirdetail')
+            ->from(
+                DB::raw("gajisupirdetail as a with (readuncommitted)")
+            )
+            ->select(
+                'a.ritasi_nobukti'
+            )
+            ->where('a.ritasi_nobukti', '=', $nobukti)
+            ->first();
+        if (isset($gajiSupir)) {
+            $data = [
+                'kondisi' => true,
+                'keterangan' => 'GAJI SUPIR',
+                'kodeerror' => 'SATL'
+            ];
+            goto selesai;
+        }
+
 
         $data = [
             'kondisi' => false,
