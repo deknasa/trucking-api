@@ -56,6 +56,12 @@ class PengeluaranStokDetail extends MyModel
 
         } else {
 
+            $getJudul = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))
+            ->select('text')
+            ->where('grp', 'JUDULAN LAPORAN')
+            ->where('subgrp', 'JUDULAN LAPORAN')
+            ->first();
+
             $query->select(
                 "$this->table.pengeluaranstokheader_id",
                 "$this->table.nobukti",
@@ -69,6 +75,9 @@ class PengeluaranStokDetail extends MyModel
                 "$this->table.keterangan",
                 "$this->table.vulkanisirke",
                 "$this->table.modifiedby",
+                DB::raw("'" . $getJudul->text . "' as judul"),
+                DB::raw("'Tgl Cetak:'+format(getdate(),'dd-MM-yyyy HH:mm:ss')as tglcetak"),
+                DB::raw(" 'User :".auth('api')->user()->name."' as usercetak")
             ) 
             ->leftJoin("pengeluaranstokheader", "$this->table.pengeluaranstokheader_id", "pengeluaranstokheader.id")
             ->leftJoin("stok", "$this->table.stok_id", "stok.id");

@@ -323,7 +323,7 @@ class AbsensiSupirApprovalHeaderController extends Controller
                 if ($absensisupirapproval->save()) {
                     $logTrail = [
                         'namatabel' => strtoupper($absensisupirapproval->getTable()),
-                        'postingdari' => 'PRINT INVOICE HEADER',
+                        'postingdari' => 'PRINT ABSENSI SUPIR APPROVAL HEADER',
                         'idtrans' => $absensisupirapproval->id,
                         'nobuktitrans' => $absensisupirapproval->id,
                         'aksi' => 'PRINT',

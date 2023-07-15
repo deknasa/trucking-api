@@ -9,11 +9,6 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
 use App\Http\Controllers\Api\ParameterController;
 use App\Http\Controllers\Api\ErrorController;
-use App\Rules\SupirBlackListKtp;
-use App\Rules\SupirBlackListSim;
-use App\Rules\NoKtpSupir;
-use App\Rules\NoSimSupir;
-use App\Rules\NoTelpSupir;
 
 class StoreSupirRequest extends FormRequest
 {
@@ -84,17 +79,17 @@ class StoreSupirRequest extends FormRequest
         $tglbatasawal = date('Y-m-d', strtotime('-' . (new ParameterController)->getparamid('MAXIMAL USIA SUPIR', 'MAXIMAL USIA SUPIR')->text . ' years', strtotime(date('Y-m-d'))));
 
         return [
-            'namasupir' => [$ruleKeterangan],
-            'alamat' => [$ruleKeterangan],
-            'namaalias' => [$ruleKeterangan],
-            'kota' => [$ruleKeterangan],
-            'telp' => [$ruleKeterangan,'min:8','max:50','nullable', new NoTelpSupir()],
-            'statusaktif' => [$ruleKeterangan,'int','exists:parameter,id'],
-            'tglmasuk' => [$ruleKeterangan],
-            'tglexpsim' => [$ruleKeterangan],
-            'nosim' => [$ruleKeterangan,'min:12','max:12','nullable',new SupirBlackListSim()],
-            'noktp' => ['required','min:16','max:16', new NoKtpSupir(), new SupirBlackListKtp()],
-            'nokk' => [$ruleKeterangan,'min:16','max:16','nullable'],
+            'namasupir' => 'required',
+            'alamat' => 'required',
+            'namaalias' => 'required',
+            'kota' => 'required',
+            'telp' => 'required|unique:supir|min:8|max:50',
+            'statusaktif' => 'required|int|exists:parameter,id',
+            'tglmasuk' => 'required',
+            'tglexpsim' => 'required',
+            'nosim' => 'required|unique:supir|min:12|max:12',
+            'noktp' => 'required|unique:supir|min:16|max:16',
+            'nokk' => 'required|min:16|max:16',
             'tgllahir' => [
                 $ruleKeterangan, 'date_format:d-m-Y', 
                 'after_or_equal:' . $tglbatasawal, 
