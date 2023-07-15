@@ -239,8 +239,8 @@ class AbsensiSupirDetail extends MyModel
                     ->where('absensisupirdetail.absensi_id', '=', $id);
             })
             ->leftjoin(DB::raw("supir with (readuncommitted)"), 'absensisupirdetail.supir_id', 'supir.id')
-            ->leftJoin(DB::raw("absentrado with (readuncommitted)"), 'absensisupirdetail.absen_id', 'absentrado.id');
-
+            ->leftJoin(DB::raw("absentrado with (readuncommitted)"), 'absensisupirdetail.absen_id', 'absentrado.id')
+            ->orderBy('trado.kodetrado','asc');
 
 
         $data = $query->get();
