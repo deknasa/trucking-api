@@ -1000,7 +1000,6 @@ class Supir extends MyModel
 
     public function getSupirResignModel($noktp)
     {
-        
         $query = Supir::from(DB::raw("supir with (readuncommitted)"))
         ->select(
             'supir.id',
@@ -1051,12 +1050,22 @@ class Supir extends MyModel
         return $query;
     }
 
-    public function validationSupirResign($namaSupir)
+    public function validationSupirResign($noktp, $id=0)
     {
         $query = DB::table("supir")->from(DB::raw("supir with (readuncommitted)"))
-        ->where("namasupir", $namaSupir)
-        ->first();
-
-        return $query;
+            ->where("noktp", $noktp)
+            ->whereRaw("isnull(tglberhentisupir,'1900-01-01') = '1900-01-01'");
+            if($id != 0)
+            {
+                $query->whereRaw("id != $id");
+                
+            }
+        $data = $query->first();
+        if($data != null)
+        {
+            return false;
+        } else {
+            return true;
+        }
     }
 }
