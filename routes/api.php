@@ -1106,6 +1106,7 @@ route::middleware(['auth:api', 'authorized'])->group(function () {
     Route::resource('upahritasirincian', UpahRitasiRincianController::class)->whereNumber('upahritasirincian');
 
     Route::get('ritasi/combo', [RitasiController::class, 'combo']);
+    Route::post('ritasi/{id}/cekvalidasi', [RitasiController::class, 'cekvalidasi'])->name('ritasi.cekValidasi')->whereNumber('id');
     Route::get('ritasi/field_length', [RitasiController::class, 'fieldLength']);
     Route::get('ritasi/default', [RitasiController::class, 'default']);
     Route::get('ritasi/export', [RitasiController::class, 'export']);

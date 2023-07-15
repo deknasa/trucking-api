@@ -771,6 +771,7 @@ class PemutihanSupir extends MyModel
         $pemutihanSupir = new PemutihanSupir();
 
         $coaPengembalian = PenerimaanTrucking::from(DB::raw("penerimaantrucking with (readuncommitted)"))->where('kodepenerimaan', 'PJP')->first();
+        $statusCetak = Parameter::from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUSCETAK')->where('text', 'BELUM CETAK')->first();
 
         $pemutihanSupir->nobukti = (new RunningNumberService)->get($group, $subgroup, $pemutihanSupir->getTable(), date('Y-m-d', strtotime($data['tglbukti'])));
         $pemutihanSupir->tglbukti = date('Y-m-d', strtotime($data['tglbukti']));
@@ -779,6 +780,7 @@ class PemutihanSupir extends MyModel
         $pemutihanSupir->penerimaansupir = $data['penerimaansupir'] ?? 0;
         $pemutihanSupir->bank_id = $data['bank_id'];
         $pemutihanSupir->coa = $coaPengembalian->coapostingkredit;
+        $pemutihanSupir->statuscetak = $statusCetak->id ?? 0;
         $pemutihanSupir->statusformat = $format->id;
         $pemutihanSupir->modifiedby = auth('api')->user()->name;
 
