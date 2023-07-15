@@ -65,6 +65,25 @@ class InvoiceExtraHeader extends MyModel
 
     public function cekvalidasiaksi($nobukti)
     {
+        
+        $pelunasanPiutang = DB::table('pelunasanpiutangdetail')
+            ->from(
+                DB::raw("pelunasanpiutangdetail as a with (readuncommitted)")
+            )
+            ->select(
+                'a.invoice_nobukti'
+            )
+            ->where('a.invoice_nobukti', '=', $nobukti)
+            ->first();
+        if (isset($pelunasanPiutang)) {
+            $data = [
+                'kondisi' => true,
+                'keterangan' => 'Pelunasan Piutang',
+                'kodeerror' => 'SATL'
+            ];
+            goto selesai;
+        }
+        
         $hutangBayar = DB::table('invoiceextraheader')
             ->from(
                 DB::raw("invoiceextraheader as a with (readuncommitted)")
