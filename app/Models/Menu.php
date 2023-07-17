@@ -532,6 +532,7 @@ class Menu extends MyModel
 
             $class = $this->listFolderFiles($controller);
             // dd($class);
+            // dd($controller);
             if ($class <> '') {
 
                 foreach ($class as $value) {
