@@ -295,35 +295,459 @@ class OrderanTrucking extends MyModel
 
         return $data;
     }
+
+    public function reminderchargegandengan()
+    {
+
+
+        $ptglmulai = '2022/11/1';
+        $pdariid = 1;
+
+        $tempjobtrucking = '##tempjobtrucking' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+        Schema::create($tempjobtrucking, function ($table) {
+            $table->string('jobtrucking', 1000)->nullable();
+        });
+
+        $queryjobtrucking = DB::table('suratpengantar')->from(
+            DB::raw("suratpengantar a with (readuncommitted)")
+        )
+            ->select(
+                'a.jobtrucking',
+            )
+            ->groupby('a.jobtrucking');
+
+
+        DB::table($tempjobtrucking)->insertUsing([
+            'jobtrucking',
+        ], $queryjobtrucking);
+
+        $tempawaltrip = '##tempawaltrip' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+        Schema::create($tempawaltrip, function ($table) {
+            $table->string('jobtrucking', 1000)->nullable();
+            $table->date('tgl')->nullable();
+            $table->string('nogandengan', 1000)->nullable();
+            $table->string('trado', 1000)->nullable();
+            $table->string('supir', 1000)->nullable();
+            $table->string('namagudang', 1000)->nullable();
+        });
+
+        $tempakhirtrip = '##tempakhirtrip' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+        Schema::create($tempakhirtrip, function ($table) {
+            $table->string('jobtrucking', 1000)->nullable();
+            $table->date('tgl')->nullable();
+            $table->string('nogandengan', 1000)->nullable();
+        });
+
+        $statusnonlangsir = DB::table('parameter')->from(
+            DB::raw("parameter a with (readuncommitted)")
+        )->select(
+            'id'
+        )
+            ->where('grp', '=', 'STATUS LANGSIR')
+            ->where('subgrp', '=', 'STATUS LANGSIR')
+            ->where('text', '=', 'BUKAN LANGSIR')
+            ->first();
+
+// dd('test');
+
+        $queryawaltrip = DB::table($tempjobtrucking)->from(
+            DB::raw($tempjobtrucking . " a ")
+        )
+            ->select(
+                'a.jobtrucking',
+                db::raw("min(b.tglbukti) as tgl"),
+                db::raw("max(c.kodegandengan) as nogandengan"),
+                db::raw("max(d.kodetrado) as trado"),
+                db::raw("max(e.namasupir) as supir"),
+                db::raw("max(f.namapelanggan) as namagudang"),
+            )
+            ->join(DB::raw("suratpengantar as b with (readuncommitted)"), 'a.jobtrucking', 'b.jobtrucking')
+            ->leftjoin(DB::raw("gandengan as c with (readuncommitted)"), 'b.gandengan_id', 'c.id')
+            ->leftjoin(DB::raw("trado as d with (readuncommitted)"), 'b.trado_id', 'd.id')
+            ->leftjoin(DB::raw("supir as e with (readuncommitted)"), 'b.supir_id', 'e.id')
+            ->leftjoin(DB::raw("pelanggan as f with (readuncommitted)"), 'b.pelanggan_id', 'f.id')
+            ->join(DB::raw("orderantrucking as g with (readuncommitted)"), 'a.jobtrucking', 'g.nobukti')
+            ->where('b.dari_id', '=', $pdariid)
+            ->whereRaw("isnull(g.statuslangsir,0)=". $statusnonlangsir->id)
+            ->groupby('a.jobtrucking');
+
+            // dd($queryawaltrip->get());
+
+        DB::table($tempawaltrip)->insertUsing([
+            'jobtrucking',
+            'tgl',
+            'nogandengan',
+            'trado',
+            'supir',
+            'namagudang',
+        ], $queryawaltrip);
+
+        
+       
+
+        $queryawaltrip = DB::table($tempjobtrucking)->from(
+            DB::raw($tempjobtrucking . " a ")
+        )
+            ->select(
+                'a.jobtrucking',
+                db::raw("min(b.tglbukti) as tgl"),
+                db::raw("max(c1.kodegandengan) as nogandengan"),
+                db::raw("max(d.kodetrado) as trado"),
+                db::raw("max(e.namasupir) as supir"),
+                db::raw("max(f.namapelanggan) as namagudang"),
+            )
+            ->join(DB::raw("orderantrucking as c with(readuncommitted)"), function ($join) {
+                $join->on('a.jobtrucking', '=', 'c.jobtruckingasal');
+                $join->on(DB::raw("isnull(c.jobtruckingasal,'')"),'<>', db::raw("''"));
+            })
+            ->join(DB::raw("suratpengantar as b with (readuncommitted)"), 'c.jobtruckingasal', 'b.jobtrucking')
+            ->leftjoin(DB::raw("gandengan as c1 with (readuncommitted)"), 'b.gandengan_id', 'c1.id')
+            ->leftjoin(DB::raw("trado as d with (readuncommitted)"), 'b.trado_id', 'd.id')
+            ->leftjoin(DB::raw("supir as e with (readuncommitted)"), 'b.supir_id', 'e.id')
+            ->leftjoin(DB::raw("pelanggan as f with (readuncommitted)"), 'b.pelanggan_id', 'f.id')
+            ->where('b.dari_id', '=', $pdariid)
+            ->whereRaw("isnull(c.statuslangsir,0)=". $statusnonlangsir->id)
+            ->groupby('a.jobtrucking');
+
+            
+dd($queryawaltrip->get());
+           
+        DB::table($tempawaltrip)->insertUsing([
+            'jobtrucking',
+            'tgl',
+            'nogandengan',
+            'trado',
+            'supir',
+            'namagudang',
+        ], $queryawaltrip);
+
+        dd('test');
+ 
+        $queryakhirtrip = DB::table($tempjobtrucking)->from(
+            DB::raw($tempjobtrucking . " a ")
+        )
+            ->select(
+                'b.jobtrucking as jobtrucking',
+                db::raw("max(b.tglbukti) as tgl"),
+                db::raw("max(c.kodegandengan) as nogandengan"),
+            )
+            ->join(DB::raw("suratpengantar as b with (readuncommitted)"), 'a.jobtruckingasal', 'b.jobtrucking')
+            ->leftjoin(DB::raw("gandengan as c with (readuncommitted)"), 'b.gandengan_id', 'c.id')
+            ->where('b.dari_id', '=', $pdariid)
+            ->groupby('a.jobtrucking');
+
+        DB::table($tempakhirtrip)->insertUsing([
+            'jobtrucking',
+            'tgl',
+            'nogandengan',
+        ], $queryakhirtrip);
+
+
+        $temphasil = '##temphasil' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+        Schema::create($temphasil, function ($table) {
+            $table->string('jobtrucking', 1000)->nullable();
+            $table->string('nogandengan', 1000)->nullable();
+            $table->date('tglawal')->nullable();
+            $table->date('tglakhir')->nullable();
+            $table->integer('jumlahhari')->nullable();
+            $table->string('trado', 1000)->nullable();
+            $table->string('supir', 1000)->nullable();
+            $table->string('namagudang', 1000)->nullable();
+        });
+
+        $queryhasil =  DB::table($tempjobtrucking)->from(
+            DB::raw($tempjobtrucking . " a ")
+        )
+            ->select(
+                'a.jobtrucking as jobtrucking',
+                db::raw("isnull(b.nogandengan,'') as nogandengan"),
+                db::raw("isnull(b.tgl,'') as tglawal"),
+                db::raw("isnull(c.tgl,'') as tglakhir"),
+                db::raw("((datediff(day,  b.tgl,getdate())+1)-" .
+                    $this->getjumlahharilibur(db::raw("b.tgl"), DB::raw("getdate()"))
+                    . ") as jumlahhari"),
+                'b.trado',
+                'b.supir',
+                'b.namagudang'
+
+            )
+            ->leftjoin(DB::raw($tempawaltrip . " as b "), 'a.jobtrucking', 'b.jobtrucking')
+            ->leftjoin(DB::raw($tempakhirtrip . " as c "), 'a.jobtrucking', 'c.jobtrucking')
+            ->whereRaw("len(ltrim(rtrim(a.jobtrucking)))>4")
+            ->whereRaw("year(isnull(c.tgl,'1900/1/1'))=1900")
+            ->whereRaw("year(isnull(b.Tgl,'1900/1/1'))<>1900")
+            ->whereRaw("b.tgl>=" . $ptglmulai);
+
+        DB::table($temphasil)->insertUsing([
+            'jobtrucking',
+            'nogandengan',
+            'tglawal',
+            'tglakhir',
+            'jumlahhari',
+            'trado',
+            'supir',
+            'namagudang',
+        ], $queryhasil);
+
+        $queryhasil =  DB::table($tempjobtrucking)->from(
+            DB::raw($tempjobtrucking . " a ")
+        )
+            ->select(
+                'a.jobtrucking as jobtrucking',
+                db::raw("isnull(b.nogandengan,'') as nogandengan"),
+                db::raw("isnull(b.tgl,'') as tglawal"),
+                db::raw("isnull(c.tgl,'') as tglakhir"),
+                db::raw("((datediff(day,b.tgl,c.tgl)+1)-" .
+                    $this->getjumlahharilibur(db::raw("b.tgl"), DB::raw("c.tgl"))
+                    . ") as jumlahhari"),
+                'b.trado',
+                'b.supir',
+                'b.namagudang'
+
+            )
+            ->leftjoin(DB::raw($tempawaltrip . " as b "), 'a.jobtrucking', 'b.jobtrucking')
+            ->leftjoin(DB::raw($tempakhirtrip . " as c "), 'a.jobtrucking', 'c.jobtrucking')
+            ->whereRaw("len(ltrim(rtrim(a.jobtrucking)))>4")
+            ->whereRaw("year(isnull(c.tgl,'1900/1/1'))<>1900")
+            ->whereRaw("year(isnull(b.Tgl,'1900/1/1'))<>1900")
+            ->whereRaw("b.tgl>=" . $ptglmulai)
+            ->whereRaw(
+                "((DATEDIFF(day,  B.Ftgl,C.Ftgl)+1)-"
+                    . $this->getjumlahharilibur(db::raw("b.tgl"), DB::raw("c.tgl")) . ">6"
+            );
+
+        DB::table($temphasil)->insertUsing([
+            'jobtrucking',
+            'nogandengan',
+            'tglawal',
+            'tglakhir',
+            'jumlahhari',
+            'trado',
+            'supir',
+            'namagudang',
+        ], $queryhasil);
+
+        $listjobtrucking = '##listjobtrucking' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+        Schema::create($listjobtrucking, function ($table) {
+            $table->string('jobtrucking', 1000)->nullable();
+            $table->date('tgl')->nullable();
+            $table->string('kota', 1000)->nullable();
+        });
+
+        $listjobtruckingrekap = '##listjobtruckingrekap' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+        Schema::create($listjobtruckingrekap, function ($table) {
+            $table->string('jobtrucking', 1000)->nullable();
+        });
+
+        $querylistjobtruckingrekap =  DB::table($temphasil)->from(
+            DB::raw($temphasil . " a ")
+        )
+            ->select(
+                'a.jobtrucking as jobtrucking',
+            )
+            ->join(DB::raw("orderantrucking as b with (readuncommitted)"), 'a.jobtrucking', 'b.nobukti')
+            ->join(DB::raw("orderantrucking as c with(readuncommitted)"), function ($join) {
+                $join->on('a.jobtrucking', '=', 'c.jobtruckingasal');
+                $join->on(DB::raw("isnull(c.jobtruckingasal,'')"), '<>', '');
+            })
+            ->whereRaw("isnull(b.statusapprovalnonchargegandengan,4)=4")
+            ->whereRaw("isnull(c.nobukti,'')=''")
+            ->orderBy('a.jumlahhari', 'desc');
+
+        DB::table($listjobtruckingrekap)->insertUsing([
+            'jobtrucking',
+        ], $querylistjobtruckingrekap);
+
+
+        $querylistjobtrucking =  DB::table('suratpengantar')->from(
+            DB::raw("suratpengantar a with (readuncommitted)")
+        )
+            ->select(
+                'a.jobtrucking as jobtrucking',
+                'a.tgl as tgl',
+                'c.kodekota as kota',
+            )
+            ->join(DB::raw($listjobtruckingrekap . " as b "), 'a.jobtrucking', 'b.jobtrucking')
+            ->join(DB::raw("kota as c with (readuncommitted)"), 'a.sampai_id', 'c.id')
+            ->join(DB::raw("orderantrucking as d with (readuncommitted)"), 'a.jobtrucking', 'd.nobukti')
+
+            ->whereRaw("c.kodekota not in(
+                     'BELAWAN', 'KIM (KANDANG)','KANDANG'     
+                     )")
+            ->whereRaw("isnull(d.statusjoblangsir,0)=0");
+
+        DB::table($listjobtrucking)->insertUsing([
+            'jobtrucking',
+            'tgl',
+            'kota',
+        ], $querylistjobtrucking);
+
+        $listjobtruckinglist = '##listjobtruckinglist' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+        Schema::create($listjobtruckinglist, function ($table) {
+            $table->string('jobtrucking', 1000)->nullable();
+            $table->date('tgl')->nullable();
+            $table->string('kota', 1000)->nullable();
+        });
+
+        $querylistjobtruckinglist = DB::table($listjobtrucking)->from(
+            DB::raw($listjobtrucking . " a ")
+        )
+            ->select(
+                'a.jobtrucking as jobtrucking',
+                db::raw("max(a.tgl) as tgl"),
+                db::raw("max(a.kota) as kota"),
+            )
+            ->groupby('a.jobtrucking');
+
+        DB::table($listjobtruckinglist)->insertUsing([
+            'jobtrucking',
+            'tgl',
+            'kota',
+        ], $querylistjobtruckinglist);
+
+        $query = DB::table($temphasil)->from(
+            DB::raw($temphasil . " a ")
+        )
+            ->select(
+                'a.jobtrucking as jobtrucking',
+            )
+            ->join(DB::raw("orderantrucking as b with (readuncommitted)"), 'a.jobtrucking', 'b.nobukti')
+            ->leftjoin(DB::raw("orderantrucking as c with(readuncommitted)"), function ($join) {
+                $join->on('a.jobtrucking', '=', 'c.jobtruckingasal');
+                $join->on(DB::raw("isnull(c.jobtruckingasal,'')"), '<>', '');
+            })
+            ->leftjoin(DB::raw($listjobtruckinglist . " as d "), 'a.jobtrucking', 'd.jobtrucking')
+            ->leftjoin(DB::raw("invoicechargegandengandetail as e "), 'a.jobtrucking', 'e.jobtrucking')
+            ->leftjoin(DB::raw("pelunasanpiutangdetail as f "), 'e.nobukti', 'f.invoice_nobukti')
+            ->whereRaw("isnull(b.statusapprovalnonchargegandengan,4)=4")
+            ->whereRaw("isnull(c.nobukti,'')=''")
+            ->whereRaw("isnull(f.nobukti,'')=''")
+            ->orderBy('jumlahhari', 'desc');
+
+        $data = $query->get();
+        return $data;
+    }
+    public function getjumlahharilibur($ptgl1, $ptgl2)
+    {
+        $pjumlah = 0;
+        $atgl1 = $ptgl1;
+        $atgl2 = $ptgl2;
+
+        while ($atgl1 <= $atgl2) {
+            $datepart = DB::select(DB::raw("select datepart(dw," . $ptgl1 . ") as dpart"))->first();
+            if ($datepart->dpart == 1) {
+                $pjumlah = $pjumlah + 1;
+            }
+            $querylibur = DB::table('harilibur')->from(
+                db::raw("harilibur as a with (readuncommitted)")
+            )
+                ->select(
+                    'tgl'
+                )->where('tgl', '=', $atgl1)
+                ->first();
+            if (isset($querylibur)) {
+                $pjumlah = $pjumlah + 1;
+            }
+
+            $atgl1 = $atgl1 + 1;
+        }
+        return $pjumlah;
+    }
+
     public function getOrderanTrip($tglproses, $agen)
     {
-        $data = [
-            [
-                "id" => 1,
-                "jobtrucking" => "III/ V /00001",
-                "tgltrip" => "2022-09-12",
-                "jumlahhari" => "11",
-                "nominal_detail" => "21000000",
-                "nopolisi" => "B 9508 PH",
-                "keterangan" => "keterangan id 1",
-            ], [
-                "id" => 2,
-                "jobtrucking" => "III/ V /00002",
-                "tgltrip" => "2022-09-12",
-                "jumlahhari" => "12",
-                "nominal_detail" => "22000000",
-                "nopolisi" => "B 9120 QZ",
-                "keterangan" => "keterangan id 2",
-            ], [
-                "id" => 3,
-                "jobtrucking" => "III/ V /00003",
-                "tgltrip" => "2022-09-12",
-                "jumlahhari" => "13",
-                "nominal_detail" => "23000000",
-                "nopolisi" => "BK 8007 XA",
-                "keterangan" => "keterangan id 3",
-            ]
-        ];
+        //     create table #Tempdatalist(
+        //         FJobTrucking varchar(100),
+        //         FNoGandengan varchar(500),
+        //         FTglAwal datetime,
+        //         FTglAkhir datetime,
+        //         FJumlahHari integer,
+        //         FJenisOrderan varchar(100),
+        //         FEmkl varchar(100),
+        //         FUkuranContainer varchar(100),
+        //         FJobEmkl1 varchar(100),
+        //         FJobEmkl2  varchar(100),
+        //         FNoCont1 varchar(100),
+        //         FNoCont2 varchar(100),
+        //         FKGdg varchar(100),
+        //         FKSupir varchar(100),
+        //         FNamaGudang varchar(1000),
+        //         FNoInvoice varchar(100))
+
+        //         insert into #Tempdatalist(
+        //         FJobTrucking,FNoGandengan,FTglAwal,FTglAkhir,FJumlahHari,FJenisOrderan,FEmkl,FUkuranContainer,FJobEmkl1,FJobEmkl2 ,
+        //         FNoCont1,FNoCont2,FKGdg,FKSupir,FNamaGudang,FNoInvoice)
+        //         exec usp_reminderchargegandengan
+
+
+        //        SELECT CAST(1 AS BIT) AS FPilih,H.FJobTrucking AS FNTransOrder, H.FTglAwal AS FTglOrder,(isnull(H.FJumlahHAri,0)-6) as FQty,
+        //        300000 as FHrgSat,((isnull(H.FJumlahHAri,0)-6)*300000) FTotal,0 as FPDisc,0 as FNDisc,
+        //          0 as FBiaya,((isnull(H.FJumlahHAri,0)-6)*300000)  as FNominal,
+        //          'Charge Gandengan '+ltrim(rtrim(str((isnull(H.FJumlahHAri,0))))-6)+ ' Hari, Dari Tgl '+
+        //          (case when day(H.FTglawal)>=10 then '' else '0' end)+ltrim(rtrim(str(day(H.FTglAwal)))) +'-'+
+        //          (case when month(H.FTglawal)>=10 then '' else '0' end)+ltrim(rtrim(str(month(H.FTglAwal)))) +'-'+
+        //          ltrim(rtrim(str(year(H.FTglAwal)))) +' Sampai '+
+        //          (case when day(H.FTglakhir)>=10 then '' else '0' end)+ltrim(rtrim(str(day(H.FTglakhir)))) +'-'+
+        //          (case when month(H.FTglakhir)>=10 then '' else '0' end)+ltrim(rtrim(str(month(H.FTglakhir)))) +'-'+
+        //          ltrim(rtrim(str(year(H.FTglakhir))))+' Di Gudang '+ltrim(rtrim(H.FNamaGudang))
+        //          as FKet,
+        //          '' as FUserID,getdate() as FTglInput,H.FEMKL,H.FEMKL,H.FEMKL,H.FKGdg 
+        //  FROM #Tempdatalist H 
+        //  WHERE H.FJobTrucking NOT IN (SELECT FNTransOrder FROM [TrInvoiceCuciTrado_R] WHERE FNTrans<>@pNoBukti) 
+        //          AND H.FEMKL=@pEMKL  and year(isnull(H.FTglAkhir,'1900/1/1'))<>1900 and H.FJumlahHari>6
+        //          ORDER BY H.FJobTrucking
+
+
+        //          $tempdatalist = '##tempdatalist' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+        //          Schema::create($tempdatalist, function ($table) {
+        //              $table->string('jobtrucking', 1000)->nullable();
+        //              $table->string('nogandengan', 1000)->nullable();
+        //              $table->date('tglawal')->nullable();
+        //              $table->date('tglakhir')->nullable();
+        //              $table->integer('jumlahhari')->nullable();
+        //              $table->string('jenisorderan', 1000)->nullable();
+        //              $table->string('emkl', 1000)->nullable();
+        //              $table->string('ukurancontainer', 1000)->nullable();
+        //              $table->string('jobemkl1', 1000)->nullable();
+        //              $table->string('jobemkl2', 1000)->nullable();
+        //              $table->string('nocont1', 1000)->nullable();
+        //              $table->string('nocont2', 1000)->nullable();
+        //              $table->string('trado', 1000)->nullable();
+        //              $table->string('supir', 1000)->nullable();
+        //              $table->string('namagudang', 1000)->nullable();
+        //              $table->string('noinvoice', 1000)->nullable();
+        //             });             
+
+
+
+        //     $data = [
+        //         [
+        //             "id" => 1,
+        //             "jobtrucking" => "III/ V /00001",
+        //             "tgltrip" => "2022-09-12",
+        //             "jumlahhari" => "11",
+        //             "nominal_detail" => "21000000",
+        //             "nopolisi" => "B 9508 PH",
+        //             "keterangan" => "keterangan id 1",
+        //         ], [
+        //             "id" => 2,
+        //             "jobtrucking" => "III/ V /00002",
+        //             "tgltrip" => "2022-09-12",
+        //             "jumlahhari" => "12",
+        //             "nominal_detail" => "22000000",
+        //             "nopolisi" => "B 9120 QZ",
+        //             "keterangan" => "keterangan id 2",
+        //         ], [
+        //             "id" => 3,
+        //             "jobtrucking" => "III/ V /00003",
+        //             "tgltrip" => "2022-09-12",
+        //             "jumlahhari" => "13",
+        //             "nominal_detail" => "23000000",
+        //             "nopolisi" => "BK 8007 XA",
+        //             "keterangan" => "keterangan id 3",
+        //         ]
+        //     ];
+        $data = $this->reminderchargegandengan();
 
         return $data;
     }
@@ -541,10 +965,10 @@ class OrderanTrucking extends MyModel
         $this->setRequestParameters();
 
         $getParameter = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))
-        ->select(
-            'text as judul',
-            DB::raw("'Laporan Orderan Trucking' as judulLaporan")
-        )->where('grp', 'JUDULAN LAPORAN')->where('subgrp', 'JUDULAN LAPORAN')->first();
+            ->select(
+                'text as judul',
+                DB::raw("'Laporan Orderan Trucking' as judulLaporan")
+            )->where('grp', 'JUDULAN LAPORAN')->where('subgrp', 'JUDULAN LAPORAN')->first();
 
         $query = DB::table($this->table)->from(
             DB::raw($this->table . " with (readuncommitted)")
@@ -568,7 +992,7 @@ class OrderanTrucking extends MyModel
                 DB::raw("'" . $dari . "' as tgldari"),
                 DB::raw("'" . $sampai . "' as tglsampai"),
                 DB::raw("'Tgl Cetak:'+format(getdate(),'dd-MM-yyyy HH:mm:ss')as tglcetak"),
-                DB::raw(" 'User :".auth('api')->user()->name."' as usercetak")
+                DB::raw(" 'User :" . auth('api')->user()->name . "' as usercetak")
             )
             ->whereBetween($this->table . '.tglbukti', [date('Y-m-d', strtotime($dari)), date('Y-m-d', strtotime($sampai))])
             ->leftJoin(DB::raw("tarif with (readuncommitted)"), 'orderantrucking.tarif_id', '=', 'tarif.id')
@@ -578,7 +1002,7 @@ class OrderanTrucking extends MyModel
             ->leftJoin(DB::raw("pelanggan with (readuncommitted)"), 'orderantrucking.pelanggan_id', '=', 'pelanggan.id')
             ->leftJoin(DB::raw("parameter with (readuncommitted)"), 'orderantrucking.statuslangsir', '=', 'parameter.id')
             ->leftJoin(DB::raw("parameter AS param2 with (readuncommitted)"), 'orderantrucking.statusperalihan', '=', 'param2.id');
-        
+
         $data = $query->get();
         $allData = [
             'data' => $data,
