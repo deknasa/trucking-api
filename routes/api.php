@@ -371,6 +371,7 @@ route::middleware(['auth:api', 'authorized'])->group(function () {
     Route::get('orderantrucking/{id}/getcont', [OrderanTruckingController::class, 'getcont'])->whereNumber('id');
     Route::get('orderantrucking/export', [OrderanTruckingController::class, 'export']);
     Route::get('orderantrucking/getorderantrip', [OrderanTruckingController::class, 'getOrderanTrip']);
+    Route::post('orderantrucking/approval', [OrderanTruckingController::class, 'approval']);
     Route::resource('orderantrucking', OrderanTruckingController::class)->whereNumber('orderantrucking');
 
     Route::resource('jobtrucking', JobTruckingController::class);
@@ -834,6 +835,7 @@ route::middleware(['auth:api', 'authorized'])->group(function () {
     Route::get('invoiceextraheader/{id}/printreport', [InvoiceExtraHeaderController::class, 'printReport'])->whereNumber('id');
     Route::post('invoiceextraheader/approval', [InvoiceExtraHeaderController::class, 'approval']);
     Route::get('invoiceextraheader/{id}/export', [InvoiceExtraHeaderController::class, 'export'])->name('invoiceextraheader.export')->whereNumber('id');
+    Route::post('invoiceextraheader/{id}/cekvalidasiAksi', [InvoiceExtraHeaderController::class, 'cekvalidasiAksi'])->name('invoiceextraheader.cekvalidasiAksi')->whereNumber('id');
     Route::post('invoiceextraheader/{id}/cekvalidasi', [InvoiceExtraHeaderController::class, 'cekvalidasi'])->name('invoiceextraheader.cekvalidasi')->whereNumber('id');
     Route::resource('invoiceextraheader', InvoiceExtraHeaderController::class)->whereNumber('invoiceextraheader');
     Route::resource('invoiceextradetail', InvoiceExtraDetailController::class)->whereNumber('invoiceextradetail');
@@ -1048,6 +1050,7 @@ route::middleware(['auth:api', 'authorized'])->group(function () {
     Route::get('invoiceheader/getSP', [InvoiceHeaderController::class, 'getSP']);
     Route::post('invoiceheader/approval', [InvoiceHeaderController::class, 'approval']);
     Route::get('invoiceheader/{id}/export', [InvoiceHeaderController::class, 'export'])->name('invoiceheader.export')->whereNumber('id');
+    Route::post('invoiceheader/{id}/cekvalidasiAksi', [InvoiceHeaderController::class, 'cekvalidasiAksi'])->name('invoiceheader.cekvalidasiAksi')->whereNumber('id');
     Route::post('invoiceheader/{id}/cekvalidasi', [InvoiceHeaderController::class, 'cekvalidasi'])->name('invoiceheader.cekvalidasi')->whereNumber('id');
     Route::resource('invoiceheader', InvoiceHeaderController::class)->whereNumber('invoiceheader');
     Route::get('invoicedetail/piutang', [InvoiceDetailController::class, 'piutang']);
@@ -1099,6 +1102,7 @@ route::middleware(['auth:api', 'authorized'])->group(function () {
     Route::get('upahritasi/field_length', [UpahRitasiController::class, 'fieldLength']);
     Route::get('upahritasi/export', [UpahRitasiController::class, 'export']);
     Route::post('upahritasi/import', [UpahRitasiController::class, 'import']);
+    Route::post('upahritasi/{id}/cekValidasi', [UpahRitasiController::class, 'cekValidasi'])->name('upahritasi.cekValidasi')->whereNumber('id');
     Route::resource('upahritasi', UpahRitasiController::class)->whereNumber('upahritasi');
 
     Route::get('upahritasirincian/setuprow', [UpahRitasiRincianController::class, 'setUpRow']);
@@ -1106,6 +1110,7 @@ route::middleware(['auth:api', 'authorized'])->group(function () {
     Route::resource('upahritasirincian', UpahRitasiRincianController::class)->whereNumber('upahritasirincian');
 
     Route::get('ritasi/combo', [RitasiController::class, 'combo']);
+    Route::post('ritasi/{id}/cekvalidasi', [RitasiController::class, 'cekvalidasi'])->name('ritasi.cekValidasi')->whereNumber('id');
     Route::get('ritasi/field_length', [RitasiController::class, 'fieldLength']);
     Route::get('ritasi/default', [RitasiController::class, 'default']);
     Route::get('ritasi/export', [RitasiController::class, 'export']);

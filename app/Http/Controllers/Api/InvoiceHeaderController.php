@@ -393,15 +393,11 @@ class InvoiceHeaderController extends Controller
                 ->select('keterangan')
                 ->whereRaw("kodeerror = 'SAP'")
                 ->first();
-            // $keterangan = $query['0'];
-            $keterangan = [
-                'keterangan' => 'No Bukti ' . $pengeluaran->nobukti . ' ' . $query->keterangan
-            ];
+         
             $data = [
-                'message' => $keterangan,
-                'errors' => 'sudah approve',
-                'kodestatus' => '1',
-                'kodenobukti' => '1'
+                'error' => true,
+                'message' =>  'No Bukti ' . $pengeluaran->nobukti . ' ' . $query->keterangan,
+                'statuspesan' => 'warning',
             ];
 
             return response($data);
@@ -410,26 +406,50 @@ class InvoiceHeaderController extends Controller
                 ->select('keterangan')
                 ->whereRaw("kodeerror = 'SDC'")
                 ->first();
-            // $keterangan = $query['0'];
-            //  dd($query->keterangan);
-            $keterangan = [
-                'keterangan' => 'No Bukti ' . $pengeluaran->nobukti . ' ' . $query->keterangan
-            ];
+            
             $data = [
-                'message' => $keterangan,
-                'errors' => 'sudah cetak',
-                'kodestatus' => '1',
-                'kodenobukti' => '1'
+                'error' => true,
+                'message' =>  'No Bukti ' . $pengeluaran->nobukti . ' ' . $query->keterangan,
+                'statuspesan' => 'warning',
+            ];
+            return response($data);
+        } else {
+
+            $data = [
+                'error' => false,
+                'message' => '',
+                'statuspesan' => 'success',
+            ];
+
+            return response($data);
+        }
+    }
+    public function cekvalidasiAksi($id)
+    {
+        $invoiceHeader = new InvoiceHeader();
+        $nobukti = InvoiceHeader::from(DB::raw("invoiceheader"))->where('id', $id)->first();
+        $cekdata = $invoiceHeader->cekvalidasiaksi($nobukti->nobukti);
+        if ($cekdata['kondisi'] == true) {
+            $query = DB::table('error')
+                ->select(
+                    DB::raw("ltrim(rtrim(keterangan))+' (" . $cekdata['keterangan'] . ")' as keterangan")
+                )
+                ->where('kodeerror', '=', $cekdata['kodeerror'])
+                ->first();
+
+            $data = [
+                'error' => true,
+                'message' => $query->keterangan,
+                'statuspesan' => 'warning',
             ];
 
             return response($data);
         } else {
 
             $data = [
+                'error' => false,
                 'message' => '',
-                'errors' => 'belum approve',
-                'kodestatus' => '0',
-                'kodenobukti' => '1'
+                'statuspesan' => 'success',
             ];
 
             return response($data);

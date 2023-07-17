@@ -712,10 +712,9 @@ class HutangHeader extends MyModel
                 'hutangheader.nobukti',
                 'hutangheader.tglbukti',
                 'supplier.namasupplier as supplier_id',
-                'hutangheader.postingdari',
-                'akunpusat.keterangancoa as coa',
                 'statuscetak.memo as statuscetak',
                 'statuscetak.id as  statuscetak_id',
+                'hutangheader.userbukacetak',
                 'hutangheader.jumlahcetak',
                 DB::raw("'Cetak Hutang' as judulLaporan"),
                 DB::raw("'" . $getJudul->text . "' as judul"),
@@ -724,6 +723,7 @@ class HutangHeader extends MyModel
             )
             ->where("$this->table.id", $id)
             ->leftJoin(DB::raw("parameter as statuscetak with (readuncommitted)"), 'hutangheader.statuscetak', 'statuscetak.id')
+            ->leftJoin(DB::raw("parameter as statusapproval with (readuncommitted)"), 'hutangheader.statusapproval', 'statusapproval.id')
             ->leftJoin(DB::raw("akunpusat with (readuncommitted)"), 'hutangheader.coa', 'akunpusat.coa')
             ->leftJoin(DB::raw("supplier with (readuncommitted)"), 'hutangheader.supplier_id', 'supplier.id');
         

@@ -127,6 +127,7 @@ class OrderanTrucking extends MyModel
                 'orderantrucking.noseal2',
                 'parameter.memo as statuslangsir',
                 'param2.memo as statusperalihan',
+                'statusapprovalbukatrip.memo as statusapprovalbukatrip',
                 'orderantrucking.modifiedby',
                 'orderantrucking.created_at',
                 'orderantrucking.updated_at'
@@ -138,6 +139,7 @@ class OrderanTrucking extends MyModel
             ->leftJoin(DB::raw("jenisorder with (readuncommitted)"), 'orderantrucking.jenisorder_id', '=', 'jenisorder.id')
             ->leftJoin(DB::raw("pelanggan with (readuncommitted)"), 'orderantrucking.pelanggan_id', '=', 'pelanggan.id')
             ->leftJoin(DB::raw("parameter with (readuncommitted)"), 'orderantrucking.statuslangsir', '=', 'parameter.id')
+            ->leftJoin(DB::raw("parameter AS statusapprovalbukatrip with (readuncommitted)"), 'orderantrucking.statusapprovalbukatrip', '=', 'statusapprovalbukatrip.id')
             ->leftJoin(DB::raw("parameter AS param2 with (readuncommitted)"), 'orderantrucking.statusperalihan', '=', 'param2.id');
 
         $this->totalRows = $query->count();
@@ -277,6 +279,7 @@ class OrderanTrucking extends MyModel
                 'orderantrucking.noseal2',
                 'orderantrucking.statuslangsir',
                 'orderantrucking.statusperalihan',
+                'orderantrucking.statusapprovalbukatrip',
                 'orderantrucking.modifiedby',
                 'orderantrucking.created_at',
                 'orderantrucking.updated_at'
@@ -798,6 +801,7 @@ dd($queryawaltrip->get());
             $this->table.noseal2,
             'parameter.text as statuslangsir',
             'param2.text as statusperalihan',
+            'statusapprovalbukatrip.text as statusapprovalbukatrip',
             $this->table.modifiedby,
             $this->table.created_at,
             $this->table.updated_at"
@@ -809,6 +813,7 @@ dd($queryawaltrip->get());
             ->leftJoin(DB::raw("jenisorder with (readuncommitted)"), 'orderantrucking.jenisorder_id', '=', 'jenisorder.id')
             ->leftJoin(DB::raw("pelanggan with (readuncommitted)"), 'orderantrucking.pelanggan_id', '=', 'pelanggan.id')
             ->leftJoin(DB::raw("parameter with (readuncommitted)"), 'orderantrucking.statuslangsir', '=', 'parameter.id')
+            ->leftJoin(DB::raw("parameter AS statusapprovalbukatrip with (readuncommitted)"), 'orderantrucking.statusapprovalbukatrip', '=', 'statusapprovalbukatrip.id')
             ->leftJoin(DB::raw("parameter AS param2 with (readuncommitted)"), 'orderantrucking.statusperalihan', '=', 'param2.id');
     }
 
@@ -833,6 +838,7 @@ dd($queryawaltrip->get());
             $table->string('noseal2', 1000)->nullable();
             $table->string('statuslangsir', 1000)->nullable();
             $table->string('statusperalihan', 1000)->nullable();
+            $table->string('statusapprovalbukatrip', 1000)->nullable();
             $table->string('modifiedby', 50)->nullable();
             $table->dateTime('created_at')->nullable();
             $table->dateTime('updated_at')->nullable();
@@ -845,7 +851,7 @@ dd($queryawaltrip->get());
         $this->sort($query);
         $models = $this->filter($query);
         $models =  $query->whereBetween($this->table . '.tglbukti', [date('Y-m-d', strtotime(request()->tgldariheader)), date('Y-m-d', strtotime(request()->tglsampaiheader))]);
-        DB::table($temp)->insertUsing(['id', 'nobukti', 'tglbukti', 'container_id', 'agen_id', 'jenisorder_id', 'pelanggan_id', 'tarif_id', 'nominal', 'nojobemkl', 'nocont', 'noseal', 'nojobemkl2', 'nocont2', 'noseal2', 'statuslangsir', 'statusperalihan', 'modifiedby', 'created_at', 'updated_at'], $models);
+        DB::table($temp)->insertUsing(['id', 'nobukti', 'tglbukti', 'container_id', 'agen_id', 'jenisorder_id', 'pelanggan_id', 'tarif_id', 'nominal', 'nojobemkl', 'nocont', 'noseal', 'nojobemkl2', 'nocont2', 'noseal2', 'statuslangsir', 'statusperalihan','statusapprovalbukatrip', 'modifiedby', 'created_at', 'updated_at'], $models);
 
 
         return  $temp;
@@ -873,58 +879,66 @@ dd($queryawaltrip->get());
             switch ($this->params['filters']['groupOp']) {
                 case "AND":
                     foreach ($this->params['filters']['rules'] as $index => $filters) {
-                        if ($filters['field'] == 'statuslangsir') {
-                            $query = $query->where('parameter.text', '=', "$filters[data]");
-                        } elseif ($filters['field'] == 'statusperalihan') {
-                            $query = $query->where('param2.text', '=', "$filters[data]");
-                        } elseif ($filters['field'] == 'agen_id') {
-                            $query = $query->where('agen.namaagen', 'LIKE', "%$filters[data]%");
-                        } elseif ($filters['field'] == 'pelanggan_id') {
-                            $query = $query->where('pelanggan.namapelanggan', 'LIKE', "%$filters[data]%");
-                        } elseif ($filters['field'] == 'container_id') {
-                            $query = $query->where('container.keterangan', 'LIKE', "%$filters[data]%");
-                        } elseif ($filters['field'] == 'tarif_id') {
-                            $query = $query->where('tarif.tujuan', 'LIKE', "%$filters[data]%");
-                        } elseif ($filters['field'] == 'jenisorder_id') {
-                            $query = $query->where('jenisorder.keterangan', 'LIKE', "%$filters[data]%");
-                        } else if ($filters['field'] == 'nominal') {
-                            $query = $query->whereRaw("format($this->table.nominal, '#,#0.00') LIKE '%$filters[data]%'");
-                        } else if ($filters['field'] == 'tglbukti') {
-                            $query = $query->whereRaw("format(" . $this->table . "." . $filters['field'] . ", 'dd-MM-yyyy') LIKE '%$filters[data]%'");
-                        } else if ($filters['field'] == 'created_at' || $filters['field'] == 'updated_at') {
-                            $query = $query->whereRaw("format(" . $this->table . "." . $filters['field'] . ", 'dd-MM-yyyy HH:mm:ss') LIKE '%$filters[data]%'");
-                        } else {
-                            // $query = $query->where($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
-                            $query = $query->whereRaw($this->table . ".[" .  $filters['field'] . "] LIKE '%" . escapeLike($filters['data']) . "%' escape '|'");
+                        if ($filters['field'] != '') {
+                            if ($filters['field'] == 'statuslangsir') {
+                                $query = $query->where('parameter.text', '=', "$filters[data]");
+                            } elseif ($filters['field'] == 'statusperalihan') {
+                                $query = $query->where('param2.text', '=', "$filters[data]");
+                            } elseif ($filters['field'] == 'statusapprovalbukatrip') {
+                                $query = $query->where('statusapprovalbukatrip.text', '=', "$filters[data]");
+                            } elseif ($filters['field'] == 'agen_id') {
+                                $query = $query->where('agen.namaagen', 'LIKE', "%$filters[data]%");
+                            } elseif ($filters['field'] == 'pelanggan_id') {
+                                $query = $query->where('pelanggan.namapelanggan', 'LIKE', "%$filters[data]%");
+                            } elseif ($filters['field'] == 'container_id') {
+                                $query = $query->where('container.keterangan', 'LIKE', "%$filters[data]%");
+                            } elseif ($filters['field'] == 'tarif_id') {
+                                $query = $query->where('tarif.tujuan', 'LIKE', "%$filters[data]%");
+                            } elseif ($filters['field'] == 'jenisorder_id') {
+                                $query = $query->where('jenisorder.keterangan', 'LIKE', "%$filters[data]%");
+                            } else if ($filters['field'] == 'nominal') {
+                                $query = $query->whereRaw("format($this->table.nominal, '#,#0.00') LIKE '%$filters[data]%'");
+                            } else if ($filters['field'] == 'tglbukti') {
+                                $query = $query->whereRaw("format(" . $this->table . "." . $filters['field'] . ", 'dd-MM-yyyy') LIKE '%$filters[data]%'");
+                            } else if ($filters['field'] == 'created_at' || $filters['field'] == 'updated_at') {
+                                $query = $query->whereRaw("format(" . $this->table . "." . $filters['field'] . ", 'dd-MM-yyyy HH:mm:ss') LIKE '%$filters[data]%'");
+                            } else {
+                                // $query = $query->where($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
+                                $query = $query->whereRaw($this->table . ".[" .  $filters['field'] . "] LIKE '%" . escapeLike($filters['data']) . "%' escape '|'");
+                            }
                         }
                     }
 
                     break;
                 case "OR":
                     foreach ($this->params['filters']['rules'] as $index => $filters) {
-                        if ($filters['field'] == 'statuslangsir') {
-                            $query = $query->orWhere('parameter.text', '', "$filters[data]");
-                        } elseif ($filters['field'] == 'statusperalihan') {
-                            $query = $query->orWhere('param2.text', '', "$filters[data]");
-                        } elseif ($filters['field'] == 'agen_id') {
-                            $query = $query->orWhere('agen.namaagen', 'LIKE', "%$filters[data]%");
-                        } elseif ($filters['field'] == 'pelanggan_id') {
-                            $query = $query->orWhere('pelanggan.namapelanggan', 'LIKE', "%$filters[data]%");
-                        } elseif ($filters['field'] == 'container_id') {
-                            $query = $query->orWhere('container.keterangan', 'LIKE', "%$filters[data]%");
-                        } elseif ($filters['field'] == 'tarif_id') {
-                            $query = $query->orWhere('tarif.tujuan', 'LIKE', "%$filters[data]%");
-                        } elseif ($filters['field'] == 'jenisorder_id') {
-                            $query = $query->orWhere('jenisorder.keterangan', 'LIKE', "%$filters[data]%");
-                        } else if ($filters['field'] == 'nominal') {
-                            $query = $query->orWhereRaw("format($this->table.nominal, '#,#0.00') LIKE '%$filters[data]%'");
-                        } else if ($filters['field'] == 'tglbukti') {
-                            $query = $query->orWhereRaw("format(" . $this->table . "." . $filters['field'] . ", 'dd-MM-yyyy') LIKE '%$filters[data]%'");
-                        } else if ($filters['field'] == 'created_at' || $filters['field'] == 'updated_at') {
-                            $query = $query->orWhereRaw("format(" . $this->table . "." . $filters['field'] . ", 'dd-MM-yyyy HH:mm:ss') LIKE '%$filters[data]%'");
-                        } else {
-                            // $query = $query->orWhere($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
-                            $query = $query->OrwhereRaw($this->table . ".[" .  $filters['field'] . "] LIKE '%" . escapeLike($filters['data']) . "%' escape '|'");
+                        if ($filters['field'] != '') {
+                            if ($filters['field'] == 'statuslangsir') {
+                                $query = $query->orWhere('parameter.text', '', "$filters[data]");
+                            } elseif ($filters['field'] == 'statusperalihan') {
+                                $query = $query->orWhere('param2.text', '', "$filters[data]");
+                            } elseif ($filters['field'] == 'statusapprovalbukatrip') {
+                                $query = $query->orWhere('statusapprovalbukatrip.text', '', "$filters[data]");
+                            } elseif ($filters['field'] == 'agen_id') {
+                                $query = $query->orWhere('agen.namaagen', 'LIKE', "%$filters[data]%");
+                            } elseif ($filters['field'] == 'pelanggan_id') {
+                                $query = $query->orWhere('pelanggan.namapelanggan', 'LIKE', "%$filters[data]%");
+                            } elseif ($filters['field'] == 'container_id') {
+                                $query = $query->orWhere('container.keterangan', 'LIKE', "%$filters[data]%");
+                            } elseif ($filters['field'] == 'tarif_id') {
+                                $query = $query->orWhere('tarif.tujuan', 'LIKE', "%$filters[data]%");
+                            } elseif ($filters['field'] == 'jenisorder_id') {
+                                $query = $query->orWhere('jenisorder.keterangan', 'LIKE', "%$filters[data]%");
+                            } else if ($filters['field'] == 'nominal') {
+                                $query = $query->orWhereRaw("format($this->table.nominal, '#,#0.00') LIKE '%$filters[data]%'");
+                            } else if ($filters['field'] == 'tglbukti') {
+                                $query = $query->orWhereRaw("format(" . $this->table . "." . $filters['field'] . ", 'dd-MM-yyyy') LIKE '%$filters[data]%'");
+                            } else if ($filters['field'] == 'created_at' || $filters['field'] == 'updated_at') {
+                                $query = $query->orWhereRaw("format(" . $this->table . "." . $filters['field'] . ", 'dd-MM-yyyy HH:mm:ss') LIKE '%$filters[data]%'");
+                            } else {
+                                // $query = $query->orWhere($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
+                                $query = $query->OrwhereRaw($this->table . ".[" .  $filters['field'] . "] LIKE '%" . escapeLike($filters['data']) . "%' escape '|'");
+                            }
                         }
                     }
 
@@ -1124,5 +1138,45 @@ dd($queryawaltrip->get());
         ]);
 
         return $orderanTrucking;
+    }
+
+    public function processApproval(array $data)
+    {
+        $statusApproval = Parameter::from(DB::raw("parameter with (readuncommitted)"))
+            ->where('grp', '=', 'STATUS APPROVAL')->where('text', '=', 'APPROVAL')->first();
+        $statusNonApproval = Parameter::from(DB::raw("parameter with (readuncommitted)"))
+            ->where('grp', '=', 'STATUS APPROVAL')->where('text', '=', 'NON APPROVAL')->first();
+
+        for ($i = 0; $i < count($data['orderanTruckingId']); $i++) {
+            $orderanTrucking = OrderanTrucking::find($data['orderanTruckingId'][$i]);
+            if ($orderanTrucking->statusapprovalbukatrip == $statusApproval->id) {
+                $orderanTrucking->statusapprovalbukatrip = $statusNonApproval->id;
+                $aksi = $statusNonApproval->text;
+            } else {
+                $orderanTrucking->statusapprovalbukatrip = $statusApproval->id;
+                $aksi = $statusApproval->text;
+            }
+
+            $orderanTrucking->tglapprovalbukatrip = date('Y-m-d H:i:s');
+            $orderanTrucking->userapprovalbukatrip = auth('api')->user()->name;
+
+            if (!$orderanTrucking->save()) {
+                throw new \Exception('Error Un/approval orderan Trucking.');
+            }
+
+            (new LogTrail())->processStore([
+                'namatabel' => strtoupper($orderanTrucking->getTable()),
+                'postingdari' => "UN/APPROVAL orderan Trucking",
+                'idtrans' => $orderanTrucking->id,
+                'nobuktitrans' => $orderanTrucking->nobukti,
+                'aksi' => $aksi,
+                'datajson' => $orderanTrucking->toArray(),
+                'modifiedby' => auth('api')->user()->name,
+            ]);
+            $result[] = $orderanTrucking;
+        }
+
+        return $result;
+        
     }
 }

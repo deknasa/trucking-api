@@ -25,6 +25,7 @@ class InvoiceDetailController extends Controller
     {
         $invoice = new InvoiceDetail();
 
+
         return response()->json([
             'data' => $invoice->get(),
             'attributes' => [

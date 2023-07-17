@@ -31,19 +31,14 @@ class DateAllowedAbsen implements Rule
         $today = date('Y-m-d', strtotime("today"));
         $allowed = false ;
         $bukaAbsensi = BukaAbsensi::where('tglabsensi', '=', $date)->first();
-        $todayValidation = AbsensiSupirHeader::todayValidation(request()->id);
+        $todayValidation = AbsensiSupirHeader::todayValidation($date);
         
-        // $limit = strtotime($date.'+1 days +12 hours' );
-        // $now = strtotime('now');
-        // if($now < $limit){
         if($todayValidation){
-        // if($date == $today){
             $allowed = true;
         }
         else if ($bukaAbsensi){
             $allowed = true;
         }
-
         else if  ($this->kondisi==true) {
             $allowed = true;
         }

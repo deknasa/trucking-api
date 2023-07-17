@@ -438,7 +438,7 @@ class PengeluaranStokHeaderController extends Controller
                 if ($pengeluaranStokHeader->save()) {
                     $logTrail = [
                         'namatabel' => strtoupper($pengeluaranStokHeader->getTable()),
-                        'postingdari' => 'PRINT INVOICE EXTRA',
+                        'postingdari' => 'PRINT PENGELUARAN STOK HEADER',
                         'idtrans' => $pengeluaranStokHeader->id,
                         'nobuktitrans' => $pengeluaranStokHeader->id,
                         'aksi' => 'PRINT',

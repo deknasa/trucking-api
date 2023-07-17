@@ -38,6 +38,9 @@ class CreateOrderantruckingTable extends Migration
             $table->integer('statusapprovalnonchargegandengan')->Length(11)->nullable();
             $table->string('userapprovalnonchargegandengan',50)->nullable();
             $table->date('tglapprovalnonchargegandengan')->nullable();            
+            $table->integer('statusapprovalbukatrip')->Length(11)->nullable();
+            $table->date('tglapprovalbukatrip')->nullable();
+            $table->string('userapprovalbukatrip',50)->nullable();
             $table->unsignedBigInteger('statusformat')->nullable();
             $table->string('modifiedby',50)->nullable();
             $table->timestamps();

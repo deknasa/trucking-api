@@ -5,6 +5,8 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Models\PenerimaanDetail;
 use App\Http\Requests\StorePenerimaanDetailRequest;
+use App\Models\PenerimaanGiroDetail;
+use App\Models\PenerimaanGiroHeader;
 use App\Models\PenerimaanHeader;
 use App\Models\User;
 use Illuminate\Http\JsonResponse;
@@ -39,16 +41,32 @@ class PenerimaanDetailController extends Controller
     {
         $penerimaanDetail = new PenerimaanDetail();
         if (request()->nobukti != 'false' && request()->nobukti != null) {
-            $fetch = PenerimaanHeader::from(DB::raw("penerimaanheader with (readuncommitted)"))->where('nobukti', request()->nobukti)->first();
-            request()->penerimaan_id = $fetch->id;
-            return response()->json([
-                'data' => $penerimaanDetail->get(request()->penerimaan_id),
-                'attributes' => [
-                    'totalRows' => $penerimaanDetail->totalRows,
-                    'totalPages' => $penerimaanDetail->totalPages,
-                    'totalNominal' => $penerimaanDetail->totalNominal
-                ]
-            ]);
+            if (str_contains(request()->nobukti, 'BPGT')) {
+                $fetch = PenerimaanGiroHeader::from(DB::raw("penerimaangiroheader with (readuncommitted)"))->where('nobukti', request()->nobukti)->first();
+                request()->penerimaangiro_id = $fetch->id;
+
+                $penerimaanGiroDetail = new PenerimaanGiroDetail();
+                return response()->json([
+                    'data' => $penerimaanGiroDetail->get(request()->penerimaangiro_id),
+                    'attributes' => [
+                        'totalRows' => $penerimaanGiroDetail->totalRows,
+                        'totalPages' => $penerimaanGiroDetail->totalPages,
+                        'totalNominal' => $penerimaanGiroDetail->totalNominal
+                    ]
+                ]);
+            } else {
+
+                $fetch = PenerimaanHeader::from(DB::raw("penerimaanheader with (readuncommitted)"))->where('nobukti', request()->nobukti)->first();
+                request()->penerimaan_id = $fetch->id;
+                return response()->json([
+                    'data' => $penerimaanDetail->get(request()->penerimaan_id),
+                    'attributes' => [
+                        'totalRows' => $penerimaanDetail->totalRows,
+                        'totalPages' => $penerimaanDetail->totalPages,
+                        'totalNominal' => $penerimaanDetail->totalNominal
+                    ]
+                ]);
+            }
         } else {
             return response()->json([
                 'data' => [],

@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests;
 
+use App\Rules\ValidateTglJatuhTempoPenerimaanGiro;
 use Illuminate\Foundation\Http\FormRequest;
 
 class UpdatePenerimaanGiroDetailRequest extends FormRequest
@@ -25,7 +26,7 @@ class UpdatePenerimaanGiroDetailRequest extends FormRequest
     {
         return [
             'tgljatuhtempo' => 'required|array',
-            'tgljatuhtempo.*' => 'required|date_format:d-m-Y',
+            'tgljatuhtempo.*' => ['required','date_format:d-m-Y', new ValidateTglJatuhTempoPenerimaanGiro()],
             'nominal' => 'required|array',
             'nominal.*' => 'required|numeric|gt:0',
             'keterangan_detail' => 'required|array',

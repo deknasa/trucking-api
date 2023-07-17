@@ -5,7 +5,7 @@ namespace App\Http\Requests;
 use App\Http\Controllers\Api\ErrorController;
 use Illuminate\Foundation\Http\FormRequest;
 
-class StorePencairanGiroPengeluaranHeaderRequest extends FormRequest
+class ValidasiApprovalOrderanTruckingRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
@@ -25,23 +25,13 @@ class StorePencairanGiroPengeluaranHeaderRequest extends FormRequest
     public function rules()
     {
         return [
-            'pengeluaranId' => 'required|array',
-            'pengeluaranId.*' => 'required',
-            'periode' => 'required'
+            'orderanTruckingId' => 'required'
         ];
     }
-
-    public function attributes()
-    {
-        return [
-            'pengeluaranId' => 'Transaksi'
-        ];
-    }
-
     public function messages()
     {
         return [
-            'pengeluaranId.required' => ':attribute ' .  app(ErrorController::class)->geterror('WP')->keterangan
+            'orderanTruckingId.required' => 'Orderan Trucking '.app(ErrorController::class)->geterror('WP')->keterangan,
         ];
     }
 }
