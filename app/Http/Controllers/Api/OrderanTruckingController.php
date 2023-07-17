@@ -6,6 +6,7 @@ use App\Models\OrderanTrucking;
 use App\Http\Requests\StoreOrderanTruckingRequest;
 use App\Http\Requests\UpdateOrderanTruckingRequest;
 use App\Http\Requests\DestroyOrderanTruckingRequest;
+use App\Http\Requests\ValidasiApprovalOrderanTruckingRequest;
 use App\Http\Requests\GetIndexRangeRequest;
 use App\Http\Requests\RangeExportReportRequest;
 use App\Http\Requests\GetUpahSupirRangeRequest;
@@ -254,6 +255,26 @@ class OrderanTruckingController extends Controller
                 'totalPages' => $orderanTrucking->totalPages
             ]
         ]);
+    }
+
+    /**
+     * @ClassName
+     * 
+     */
+    public function approval(ValidasiApprovalOrderanTruckingRequest $request)    {
+        DB::beginTransaction();
+
+        try {
+            $orderanTrucking = (new OrderanTrucking())->processApproval($request->all());
+
+            DB::commit();
+            return response()->json([
+                'message' => 'Berhasil disimpan',
+                'data' => $orderanTrucking
+            ]);
+        } catch (\Throwable $th) {
+            throw $th;
+        }
     }
 
     public function getagentas($id)

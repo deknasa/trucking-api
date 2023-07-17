@@ -371,6 +371,7 @@ route::middleware(['auth:api', 'authorized'])->group(function () {
     Route::get('orderantrucking/{id}/getcont', [OrderanTruckingController::class, 'getcont'])->whereNumber('id');
     Route::get('orderantrucking/export', [OrderanTruckingController::class, 'export']);
     Route::get('orderantrucking/getorderantrip', [OrderanTruckingController::class, 'getOrderanTrip']);
+    Route::post('orderantrucking/approval', [OrderanTruckingController::class, 'approval']);
     Route::resource('orderantrucking', OrderanTruckingController::class)->whereNumber('orderantrucking');
 
     Route::resource('jobtrucking', JobTruckingController::class);
