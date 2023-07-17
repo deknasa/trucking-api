@@ -203,6 +203,12 @@ class ApprovalSupirKeterangan extends MyModel
         $approvalSupirKeterangan->statusapproval = $data['statusapproval'];
         $approvalSupirKeterangan->tglbatas = date('Y-m-d', strtotime($data['tglbatas']));
 
+        $statusNonApproval = Parameter::from(DB::Raw("parameter with (readuncommitted)"))->select('id')->where('grp', '=', 'STATUS APPROVAL')->where('subgrp', '=', 'STATUS APPROVAL')->where('text', '=', 'NON APPROVAL')->first();
+        //nonaktif supir
+        if ($data['statusapproval'] == $statusNonApproval->id) {
+            $supirModel = Supir::processStatusNonAktifKeterangan($approvalSupirKeterangan->noktp);
+        }
+
         if (!$approvalSupirKeterangan->save()) {
             throw new \Exception("Error store Approval Supir Gambar.");
         }
@@ -225,6 +231,9 @@ class ApprovalSupirKeterangan extends MyModel
         $approvalSupirKeterangan = ApprovalSupirKeterangan::findOrFail($id);
         $dataHeader =  $approvalSupirKeterangan->toArray();
       
+        //nonaktif supir
+        $supirModel = Supir::processStatusNonAktifKeterangan($approvalSupirKeterangan->noktp);
+
         $approvalSupirKeterangan = $approvalSupirKeterangan->lockAndDestroy($id);
         $hutangLogTrail = (new LogTrail())->processStore([
             'namatabel' => $this->table,

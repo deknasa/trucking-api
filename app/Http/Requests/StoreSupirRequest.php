@@ -91,16 +91,16 @@ class StoreSupirRequest extends FormRequest
             $cekSupir = false;
         }
         return [
-            'namasupir' => [$ruleKeterangan],
+            'namasupir' => ['required'],
             'alamat' => [$ruleKeterangan],
             'namaalias' => [$ruleKeterangan],
             'kota' => [$ruleKeterangan],
-            'telp' => [$ruleKeterangan,'min:8','max:50','nullable', new SupirResign($cekSupir)],
+            'telp' => [$ruleKeterangan,'unique:supir','min:8','max:50','nullable'],
             'statusaktif' => [$ruleKeterangan,'int','exists:parameter,id'],
             'tglmasuk' => [$ruleKeterangan],
             'tglexpsim' => [$ruleKeterangan],
-            'nosim' => [$ruleKeterangan,'min:12','max:12','nullable',new SupirResign($cekSupir),new SupirBlackListSim()],
-            'noktp' => ['required','min:16','max:16', new SupirResign($cekSupir), new SupirBlackListKtp()],
+            'nosim' => [$ruleKeterangan,'unique:supir','min:12','max:12','nullable'],
+            'noktp' => ['required','unique:supir','min:16','max:16'],
             'nokk' => [$ruleKeterangan,'min:16','max:16','nullable'],
             'tgllahir' => [
                 $ruleKeterangan, 'date_format:d-m-Y', 
