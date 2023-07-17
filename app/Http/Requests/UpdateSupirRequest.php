@@ -9,11 +9,10 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
 use App\Http\Controllers\Api\ParameterController;
 use App\Http\Controllers\Api\ErrorController;
+use App\Models\Supir;
 use App\Rules\SupirBlackListKtp;
 use App\Rules\SupirBlackListSim;
-use App\Rules\NoKtpSupir;
-use App\Rules\NoSimSupir;
-use App\Rules\NoTelpSupir;
+use App\Rules\SupirResign;
 
 class UpdateSupirRequest extends FormRequest
 {
@@ -82,21 +81,27 @@ class UpdateSupirRequest extends FormRequest
         $tglbatasakhir = date('Y-m-d', strtotime('-' . (new ParameterController)->getparamid('MINIMAL USIA SUPIR', 'MINIMAL USIA SUPIR')->text . ' years', strtotime( date('Y-m-d'))));
         $tglbatasawal = date('Y-m-d', strtotime('-' . (new ParameterController)->getparamid('MAXIMAL USIA SUPIR', 'MAXIMAL USIA SUPIR')->text . ' years', strtotime(date('Y-m-d'))));
 
-        // dump($tglbatasawal);
-        // dd($tglbatasakhir);
-
+        //validasi supir resign
+        $noktp = request()->noktp;
+        $id = request()->id;
+        $dataSupir = (new Supir())->validationSupirResign($noktp, $id);
+        if($dataSupir == true){
+            $cekSupir = true;
+        }else{
+            $cekSupir = false;
+        }
 
         $rules = [
             'namasupir' => [$ruleKeterangan],
             'alamat' => [$ruleKeterangan],
             'namaalias' => $ruleKeterangan,
             'kota' => [$ruleKeterangan],
-            'telp' => [$ruleKeterangan,'min:8','max:50',new NoTelpSupir(),],
+            'telp' => [$ruleKeterangan,'min:8','max:50',new SupirResign($cekSupir),],
             'statusaktif' => [$ruleKeterangan,'int','exists:parameter,id'],
             'tglmasuk' => [$ruleKeterangan],
             'tglexpsim' => [$ruleKeterangan],
-            'nosim' => [$ruleKeterangan,'min:12','max:12', new NoSimSupir(),new SupirBlackListSim()], //.',nosim',
-            'noktp' => ['required','min:16','max:16', new NoKtpSupir(),new SupirBlackListKtp()], //.',noktp',
+            'nosim' => [$ruleKeterangan,'min:12','max:12', new SupirResign($cekSupir),new SupirBlackListSim()], //.',nosim',
+            'noktp' => ['required','min:16','max:16', new SupirResign($cekSupir),new SupirBlackListKtp()], //.',noktp',
             'nokk' => [$ruleKeterangan,'min:16','max:16','nullable'],
             'tgllahir' => [
                 $ruleKeterangan, 'date_format:d-m-Y', 
