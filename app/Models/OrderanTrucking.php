@@ -296,9 +296,30 @@ class OrderanTrucking extends MyModel
         return $data;
     }
 
+    public function  test1 ($b) {
+        dd($b);
+        if ($b=='TRP 0001/I/2023') {
+            $c=1;
+        } else if ($b=='TRP 0001/II/2023') {
+            $c=3;
+        } else {
+            $c=4;
+        }
+        return $c;
+    }
+
     public function reminderchargegandengan()
     {
 
+        $queryjobtrucking = DB::table('suratpengantar')->from(
+            DB::raw("suratpengantar a with (readuncommitted)")
+        )
+            ->select(
+                'a.nobukti',
+                DB::raw($this->test1(["a.nobukti"]) ." as test"),
+            );
+
+            dd($queryjobtrucking->get());
 
         $ptglmulai = '2022/11/1';
         $pdariid = 1;
@@ -410,7 +431,6 @@ class OrderanTrucking extends MyModel
             ->groupby('a.jobtrucking');
 
             
-dd($queryawaltrip->get());
            
         DB::table($tempawaltrip)->insertUsing([
             'jobtrucking',
@@ -421,8 +441,7 @@ dd($queryawaltrip->get());
             'namagudang',
         ], $queryawaltrip);
 
-        dd('test');
- 
+
         $queryakhirtrip = DB::table($tempjobtrucking)->from(
             DB::raw($tempjobtrucking . " a ")
         )
@@ -431,10 +450,12 @@ dd($queryawaltrip->get());
                 db::raw("max(b.tglbukti) as tgl"),
                 db::raw("max(c.kodegandengan) as nogandengan"),
             )
-            ->join(DB::raw("suratpengantar as b with (readuncommitted)"), 'a.jobtruckingasal', 'b.jobtrucking')
+            ->join(DB::raw("suratpengantar as b with (readuncommitted)"), 'a.jobtrucking', 'b.jobtrucking')
             ->leftjoin(DB::raw("gandengan as c with (readuncommitted)"), 'b.gandengan_id', 'c.id')
             ->where('b.dari_id', '=', $pdariid)
-            ->groupby('a.jobtrucking');
+            ->groupby('b.jobtrucking');
+
+            
 
         DB::table($tempakhirtrip)->insertUsing([
             'jobtrucking',
@@ -442,7 +463,9 @@ dd($queryawaltrip->get());
             'nogandengan',
         ], $queryakhirtrip);
 
-
+        // dd(db::table($tempawaltrip)->get());
+        // $this->getjumlahharilibur('2023/7/1', '2023/7/17');
+ 
         $temphasil = '##temphasil' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
         Schema::create($temphasil, function ($table) {
             $table->string('jobtrucking', 1000)->nullable();
@@ -455,17 +478,27 @@ dd($queryawaltrip->get());
             $table->string('namagudang', 1000)->nullable();
         });
 
+        // $this->getjumlahharilibur(db::raw("'2023/7/1'"), DB::select("select getdate()"));
+        
+        // $btgl='2023/7/6';
         $queryhasil =  DB::table($tempjobtrucking)->from(
             DB::raw($tempjobtrucking . " a ")
         )
             ->select(
                 'a.jobtrucking as jobtrucking',
                 db::raw("isnull(b.nogandengan,'') as nogandengan"),
+                
                 db::raw("isnull(b.tgl,'') as tglawal"),
                 db::raw("isnull(c.tgl,'') as tglakhir"),
+                db::raw('$btgl=b.tgl'),
+                
                 db::raw("((datediff(day,  b.tgl,getdate())+1)-" .
-                    $this->getjumlahharilibur(db::raw("b.tgl"), DB::raw("getdate()"))
-                    . ") as jumlahhari"),
+                $this->getjumlahharilibur($btgl, '2023/7/17')
+                // $this->getjumlahharilibur('2023/7/1', '2023/7/17')
+                // $this->getjumlahharilibur(db::raw("'2023/7/1'"), DB::select("select format(getdate(),'yyyy/MM/dd')"))
+
+                
+                . ") as jumlahhari"),
                 'b.trado',
                 'b.supir',
                 'b.namagudang'
@@ -478,6 +511,8 @@ dd($queryawaltrip->get());
             ->whereRaw("year(isnull(b.Tgl,'1900/1/1'))<>1900")
             ->whereRaw("b.tgl>=" . $ptglmulai);
 
+     
+            dd($queryhasil->toSql());
         DB::table($temphasil)->insertUsing([
             'jobtrucking',
             'nogandengan',
@@ -488,7 +523,7 @@ dd($queryawaltrip->get());
             'supir',
             'namagudang',
         ], $queryhasil);
-
+    
         $queryhasil =  DB::table($tempjobtrucking)->from(
             DB::raw($tempjobtrucking . " a ")
         )
@@ -513,7 +548,7 @@ dd($queryawaltrip->get());
             ->whereRaw("b.tgl>=" . $ptglmulai)
             ->whereRaw(
                 "((DATEDIFF(day,  B.Ftgl,C.Ftgl)+1)-"
-                    . $this->getjumlahharilibur(db::raw("b.tgl"), DB::raw("c.tgl")) . ">6"
+                    . $this->getjumlahharilibur(db::raw("'b.tgl'"), DB::raw("c.tgl")) . ">6"
             );
 
         DB::table($temphasil)->insertUsing([
@@ -630,12 +665,15 @@ dd($queryawaltrip->get());
     public function getjumlahharilibur($ptgl1, $ptgl2)
     {
         $pjumlah = 0;
-        $atgl1 = $ptgl1;
-        $atgl2 = $ptgl2;
+        dump($ptgl1);
+        dd($ptgl2);
+        $atgl1 = date('Y-m-d', strtotime($ptgl1)) ;
+        $atgl2 = date('Y-m-d', strtotime($ptgl2)) ;
 
         while ($atgl1 <= $atgl2) {
-            $datepart = DB::select(DB::raw("select datepart(dw," . $ptgl1 . ") as dpart"))->first();
-            if ($datepart->dpart == 1) {
+            $datepart = DB::select("select datepart(dw," . $atgl1 . ") as dpart");
+            $dpart=json_decode(json_encode($datepart),true)[0]['dpart'];
+            if ($dpart == 1) {
                 $pjumlah = $pjumlah + 1;
             }
             $querylibur = DB::table('harilibur')->from(
@@ -648,9 +686,9 @@ dd($queryawaltrip->get());
             if (isset($querylibur)) {
                 $pjumlah = $pjumlah + 1;
             }
-
-            $atgl1 = $atgl1 + 1;
+            $atgl1=date ("Y-m-d", strtotime("+1 day", strtotime($atgl1)));
         }
+        // dd($pjumlah);
         return $pjumlah;
     }
 
