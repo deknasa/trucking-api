@@ -398,15 +398,15 @@ class Stok extends MyModel
                 case "AND":
                     foreach ($this->params['filters']['rules'] as $index => $filters) {
                         if ($filters['field'] == 'jenistrado') {
-                            $query = $query->where('jenistrado.keterangan', 'LIKE', "'%$filters[data]%'");
+                            $query = $query->whereRaw('jenistrado.keterangan LIKE'. "'%$filters[data]%'");
                         } else if ($filters['field'] == 'kelompok') {
-                            $query = $query->where('kelompok.kodekelompok', 'LIKE', "'%$filters[data]%'");
+                            $query = $query->whereRaw('kelompok.kodekelompok LIKE'. "'%$filters[data]%'");
                         } else if ($filters['field'] == 'subkelompok') {
-                            $query = $query->where('subkelompok.kodesubkelompok', 'LIKE', "'%$filters[data]%'");
+                            $query = $query->whereRaw('subkelompok.kodesubkelompok LIKE'. "'%$filters[data]%'");
                         } else if ($filters['field'] == 'kategori') {
-                            $query = $query->where('kategori.kodekategori', 'LIKE', "'%$filters[data]%'");
+                            $query = $query->whereRaw('kategori.kodekategori LIKE'. "'%$filters[data]%'");
                         } else if ($filters['field'] == 'merk') {
-                            $query = $query->where('merk.keterangan', 'LIKE', "'%$filters[data]%'");
+                            $query = $query->whereRaw('merk.keterangan LIKE'. "'%$filters[data]%'");
                         } else if ($filters['field'] == 'created_at' || $filters['field'] == 'updated_at') {
                             $query = $query->whereRaw("format(" . $this->table . "." . $filters['field'] . ", 'dd-MM-yyyy HH:mm:ss') LIKE '%$filters[data]%'");
                         } else {
@@ -420,15 +420,15 @@ class Stok extends MyModel
                     $query->where(function ($query) {
                         foreach ($this->params['filters']['rules'] as $index => $filters) {
                             if ($filters['field'] == 'jenistrado') {
-                                $query = $query->orWhere('jenistrado.keterangan', 'LIKE', "'%$filters[data]%'");
+                                $query = $query->orWhereRaw('jenistrado.keterangan LIKE '. "'%$filters[data]%'");
                             } else if ($filters['field'] == 'kelompok') {
-                                $query = $query->orWhere('kelompok.kodekelompok', 'LIKE', "'%$filters[data]%'");
+                                $query = $query->orWhereRaw('kelompok.kodekelompok LIKE '. "'%$filters[data]%'");
                             } else if ($filters['field'] == 'subkelompok') {
-                                $query = $query->orWhere('subkelompok.kodesubkelompok', 'LIKE', "'%$filters[data]%'");
+                                $query = $query->orWhereRaw('subkelompok.kodesubkelompok LIKE '. "'%$filters[data]%'");
                             } else if ($filters['field'] == 'kategori') {
-                                $query = $query->orWhere('kategori.kodekategori', 'LIKE', "'%$filters[data]%'");
+                                $query = $query->orWhereRaw('kategori.kodekategori LIKE '. "'%$filters[data]%'");
                             } else if ($filters['field'] == 'merk') {
-                                $query = $query->orWhere('merk.keterangan', 'LIKE', "'%$filters[data]%'");
+                                $query = $query->orWhereRaw('merk.keterangan LIKE '. "'%$filters[data]%'");
                             } else if ($filters['field'] == 'created_at' || $filters['field'] == 'updated_at') {
                                 $query = $query->orWhereRaw("format(" . $this->table . "." . $filters['field'] . ", 'dd-MM-yyyy HH:mm:ss') LIKE '%$filters[data]%'");
                             } else {
