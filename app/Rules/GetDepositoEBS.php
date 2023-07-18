@@ -28,12 +28,16 @@ class GetDepositoEBS implements Rule
     public function passes($attribute, $value)
     {
         $prosesGajiSupir = new ProsesGajiSupirHeader();
-        $getBorongan = $prosesGajiSupir->getSumBoronganForValidation(request()->nobuktiRIC);
-        if((float)$getBorongan->deposito != (float)request()->nomDeposito){
-            return false;
-        }else{
-            return true;
+        if (request()->nobuktiRIC != null) {
+
+            $getBorongan = $prosesGajiSupir->getSumBoronganForValidation(request()->nobuktiRIC);
+            if ((float)$getBorongan->deposito != (float)request()->nomDeposito) {
+                return false;
+            } else {
+                return true;
+            }
         }
+        return true;
     }
 
     /**

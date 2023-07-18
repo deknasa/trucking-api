@@ -32,20 +32,22 @@ class StoreProsesGajiSupirHeaderRequest extends FormRequest
         // First day of the month.
         $awalPeriode = date('Y-m-01', strtotime(request()->tgldari));
         $rules = [
+
+            'keterangan' => ['required'],
             'periode' => [
                 'required', 'date_format:d-m-Y',
                 'before_or_equal:' . date('Y-m-d'),
-                'after_or_equal:'.$awalPeriode,
+                'after_or_equal:' . $awalPeriode,
             ],
             'tgldari' => [
                 'required', 'date_format:d-m-Y',
                 'before_or_equal:' . date('Y-m-d'),
-                'after_or_equal:'.$tglbatasawal,
+                'after_or_equal:' . $tglbatasawal,
             ],
             'tglsampai' => [
                 'required', 'date_format:d-m-Y',
                 'before_or_equal:' . date('Y-m-d'),
-                'after_or_equal:'.$this->tgldari 
+                'after_or_equal:' . $this->tgldari
             ],
             'tglbukti' => [
                 'required', 'date_format:d-m-Y',
@@ -57,7 +59,7 @@ class StoreProsesGajiSupirHeaderRequest extends FormRequest
         $relatedRequests = [
             StoreProsesGajiSupirDetailRequest::class
         ];
-
+        // dd($rules);
         foreach ($relatedRequests as $relatedRequest) {
             $rules = array_merge(
                 $rules,
@@ -67,7 +69,8 @@ class StoreProsesGajiSupirHeaderRequest extends FormRequest
         return $rules;
     }
 
-    public function attributes() {
+    public function attributes()
+    {
         return [
             'tgldari' => 'Tanggal Dari',
             'tglsampai' => 'Tanggal Sampai',

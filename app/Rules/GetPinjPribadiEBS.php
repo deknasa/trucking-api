@@ -28,12 +28,16 @@ class GetPinjPribadiEBS implements Rule
     public function passes($attribute, $value)
     {
         $prosesGajiSupir = new ProsesGajiSupirHeader();
-        $getBorongan = $prosesGajiSupir->getSumBoronganForValidation(request()->nobuktiRIC);
-        if((float)$getBorongan->pinjamanpribadi != (float)request()->nomPP){
-            return false;
-        }else{
-            return true;
+        if (request()->nobuktiRIC != null) {
+
+            $getBorongan = $prosesGajiSupir->getSumBoronganForValidation(request()->nobuktiRIC);
+            if ((float)$getBorongan->pinjamanpribadi != (float)request()->nomPP) {
+                return false;
+            } else {
+                return true;
+            }
         }
+        return true;
     }
 
     /**

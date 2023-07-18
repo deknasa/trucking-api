@@ -82,6 +82,7 @@ class ProsesGajiSupirHeader extends MyModel
                 'prosesgajisupirheader.tglbukti',
                 'prosesgajisupirheader.tgldari',
                 'prosesgajisupirheader.tglsampai',
+                'prosesgajisupirheader.keterangan',
                 'prosesgajisupirheader.periode',
                 'prosesgajisupirheader.userapproval',
                 'statusapproval.memo as statusapproval',
@@ -1171,6 +1172,7 @@ class ProsesGajiSupirHeader extends MyModel
         $prosesGajiSupirHeader->statusapproval = $statusApproval->id;
         $prosesGajiSupirHeader->userapproval = '';
         $prosesGajiSupirHeader->tglapproval = '';
+        $prosesGajiSupirHeader->keterangan = $data['keterangan'];
         $prosesGajiSupirHeader->bank_id = $data['bank_idPR'];
         $prosesGajiSupirHeader->periode = date('Y-m-d', strtotime($data['periode']));
         $prosesGajiSupirHeader->statusformat = $format->id;
@@ -1570,6 +1572,7 @@ class ProsesGajiSupirHeader extends MyModel
         $prosesGajiSupirHeader->tgldari = date('Y-m-d', strtotime($data['tgldari']));
         $prosesGajiSupirHeader->tglsampai = date('Y-m-d', strtotime($data['tglsampai']));
         $prosesGajiSupirHeader->periode = date('Y-m-d', strtotime($data['periode']));
+        $prosesGajiSupirHeader->keterangan = $data['keterangan'];
         $prosesGajiSupirHeader->modifiedby = auth('api')->user()->name;
 
         if (!$prosesGajiSupirHeader->save()) {
