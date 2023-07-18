@@ -560,7 +560,7 @@ class OrderanTrucking extends MyModel
                 DB::raw("a.tglsampai as tglawal"),
                 DB::raw("a.tglkembali as tglkembali"),
                 DB::raw("(a.hari-a.harilibur)  as jumlahhari"),
-                DB::raw("isnull(d.kodejenisorder,'') as jenisorder"),
+                DB::raw("isnull(d.keterangan,'') as jenisorder"),
                 DB::raw("isnull(e.namaagen ,'') as namaemkl"),
                 DB::raw("isnull(f.kodecontainer,'') as ukurancontainer"),
                 DB::raw("isnull(b.nojob,'') as nojob"),
@@ -680,9 +680,11 @@ class OrderanTrucking extends MyModel
                 DB::raw("a.jumlahhari as jumlahhari"),
                 DB::raw("(a.jumlahhari-5)*300000 as nominal_detail"),
                 DB::raw("isnull(a.kodetrado ,'') as nopolisi"),
-                DB::raw("isnull(a.trado_id ,'') as trado_id"),
+                DB::raw("isnull(a.trado_id ,0) as trado_id"),
                 DB::raw("isnull(a.gandengan ,'') as gandengan"),
-                DB::raw("isnull(a.gandengan_id ,'') as gandengan_id"),
+                DB::raw("isnull(a.gandengan_id ,0) as gandengan_id"),
+                DB::raw("isnull(a.jenisorder ,'') as jenisorder"),
+                DB::raw("isnull(a.namagudang ,'') as namagudang"),
                 DB::raw("'' as keterangan"),
             )
             ->where('a.agen_id','=',$agen)
