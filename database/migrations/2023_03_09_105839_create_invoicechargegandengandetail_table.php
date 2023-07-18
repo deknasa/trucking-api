@@ -20,7 +20,9 @@ class CreateInvoicechargegandengandetailTable extends Migration
             $table->string('nobukti', 50)->nullable();
             $table->string('jobtrucking', 50)->nullable();
             $table->unsignedBigInteger('trado_id')->nullable();
+            $table->unsignedBigInteger('gandengan_id')->nullable();
             $table->date('tgltrip')->nullable();
+            $table->date('tglakhir')->nullable();
             $table->integer('jumlahhari')->Length(11)->nullable();
             $table->double('nominal',15,2)->nullable();
             $table->double('total',15,2)->nullable();
