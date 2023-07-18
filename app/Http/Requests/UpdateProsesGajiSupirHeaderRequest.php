@@ -57,6 +57,7 @@ class UpdateProsesGajiSupirHeaderRequest extends FormRequest
                 'date_equals:' . date('d-m-Y', strtotime($getDataProsesGaji->tglbukti)),
                 new DateTutupBuku()
             ],
+            'keterangan' => 'required'
         ];
         $relatedRequests = [
             UpdateProsesGajiSupirDetailRequest::class
