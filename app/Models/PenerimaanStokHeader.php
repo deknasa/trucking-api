@@ -884,7 +884,8 @@ class PenerimaanStokHeader extends MyModel
         }
         /*DELETE EXISTING DETAIL*/
         $penerimaanStokDetail = PenerimaanStokDetail::where('penerimaanstokheader_id', $penerimaanStokHeader->id)->lockForUpdate()->delete();
-        if (isset($penerimaanStokHeader->hutang_nobukti)) {
+        if (isset($penerimaanStokHeader->hutang_nobukti) && ($penerimaanStokHeader->hutang_nobukti !== "")) {
+            // dd(isset($penerimaanStokHeader->hutang_nobukti) && ($penerimaanStokHeader->hutang_nobukti !== ""));
             $hutangHeader = HutangHeader::where('nobukti',$penerimaanStokHeader->hutang_nobukti)->first();
             (new HutangHeader())->processDestroy($hutangHeader->id);
         }
