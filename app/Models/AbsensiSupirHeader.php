@@ -144,6 +144,7 @@ class AbsensiSupirHeader extends MyModel
 
     public function createTemp(string $modelTable)
     {
+        $this->setRequestParameters();
 
         $temp = '##temp' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
 
@@ -163,12 +164,32 @@ class AbsensiSupirHeader extends MyModel
             $table->increments('position');
         });
 
-        $this->setRequestParameters();
-        $query = DB::table($modelTable);
-        $query = $this->selectColumns($query);
-        $this->sort($query);
-        $models = $this->filter($query);
+        $query = DB::table($this->table)->from(DB::raw("absensisupirheader with (readuncommitted)"))
+            ->select(
+                'absensisupirheader.id',
+                'absensisupirheader.nobukti',
+                'absensisupirheader.tglbukti',
+                'absensisupirheader.kasgantung_nobukti',
+                DB::raw("(case when absensisupirheader.nominal IS NULL then 0 else absensisupirheader.nominal end) as nominal"),
+                'statuscetak.memo as statuscetak',
+                'absensisupirheader.userbukacetak',
+                DB::raw('(case when (year(absensisupirheader.tglbukacetak) <= 2000) then null else absensisupirheader.tglbukacetak end ) as tglbukacetak'),
+                'absensisupirheader.jumlahcetak',
+                'absensisupirheader.modifiedby',
+                'absensisupirheader.created_at',
+                'absensisupirheader.updated_at',
+            )
+            // request()->tgldari ?? date('Y-m-d',strtotime('today'))
+            ->leftJoin(DB::raw("parameter as statuscetak with (readuncommitted)"), 'absensisupirheader.statuscetak', 'statuscetak.id')
+            ->leftJoin(DB::raw("parameter as statusapprovaleditabsensi with (readuncommitted)"), 'absensisupirheader.statusapprovaleditabsensi', 'statusapprovaleditabsensi.id');
+        if (request()->tgldari) {
+            $query->whereBetween('tglbukti', [date('Y-m-d', strtotime(request()->tgldari)), date('Y-m-d', strtotime(request()->tglsampai))]);
+        }
 
+
+        // $query = DB::table($modelTable);
+        $query = $this->sort($query);
+        $models = $this->filter($query);
         DB::table($temp)->insertUsing([
             'id',
             'nobukti',
