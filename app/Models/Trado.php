@@ -896,4 +896,40 @@ class Trado extends MyModel
 
         return $trado;
     }
+
+    public function processStatusNonAktifKeterangan($kodetrado)
+    {
+        $trado = Trado::from(DB::raw("trado with (readuncommitted)"))->where('kodetrado',$kodetrado)->first();
+
+        $statusNonAktif = Parameter::from(DB::Raw("parameter with (readuncommitted)"))->select('id')->where('grp', '=', 'STATUS AKTIF')->where('subgrp', '=', 'STATUS AKTIF')->where('text', '=', 'NON AKTIF')->first();
+        $statusAktif = Parameter::from(DB::Raw("parameter with (readuncommitted)"))->select('id')->where('grp', '=', 'STATUS AKTIF')->where('subgrp', '=', 'STATUS AKTIF')->where('text', '=', 'AKTIF')->first();
+        $required = [
+            "kodetrado" => $trado->kodetrado,
+            "tahun" => $trado->tahun,
+            "merek" => $trado->merek,
+            "norangka" => $trado->norangka,
+            "nomesin" => $trado->nomesin,
+            "nama" => $trado->nama,
+            "nostnk" => $trado->nostnk,
+            "alamatstnk" => $trado->alamatstnk,
+            "tglpajakstnk" => $trado->tglpajakstnk,
+            "tipe" => $trado->tipe,
+            "jenis" => $trado->jenis,
+            "isisilinder" => $trado->isisilinder,
+            "warna" => $trado->warna,
+            "jenisbahanbakar" => $trado->jenisbahanbakar,
+            "jumlahsumbu" => $trado->jumlahsumbu,
+            "jumlahroda" => $trado->jumlahroda,
+            "model" => $trado->model,
+            "nobpkb" => $trado->nobpkb,
+            "jumlahbanserap" => $trado->jumlahbanserap, 
+        ];
+        $key = array_keys($required, null);
+        if (count($key)) {
+            $trado->statusaktif = $statusNonAktif->id;
+            $trado->save();
+        }
+        return $key;
+    }
+
 }

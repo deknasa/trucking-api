@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\ApprovalTradoKeterangan;
+use App\Models\Trado;
 use App\Http\Requests\StoreApprovalTradoKeteranganRequest;
 use App\Http\Requests\StoreLogTrailRequest;
 use App\Http\Requests\UpdateApprovalTradoKeteranganRequest;
@@ -95,7 +96,7 @@ class ApprovalTradoKeteranganController extends Controller
             if ($approvaltradoketerangan->save()) {
 
                 $statusApp = DB::table('parameter')->where('grp', 'STATUS APPROVAL')->where('subgrp', 'STATUS APPROVAL')->where('text', 'APPROVAL')->first();
-                $trado = DB::table('trado')->from(DB::raw("trado with (readuncommitted)"))
+                $trado = Trado::from(DB::raw("trado with (readuncommitted)"))
                     ->where('kodetrado', $request->kodetrado)
                     ->first();
                 if ($trado != '') {
@@ -108,38 +109,33 @@ class ApprovalTradoKeteranganController extends Controller
                     } else {
 
                         $statusNonAktif = DB::table('parameter')->where('grp', 'STATUS AKTIF')->where('subgrp', 'STATUS AKTIF')->where('text', 'NON AKTIF')->first();
-                        if ($trado->photostnk == '' || $trado->phototrado == '' || $trado->photobpkb == '') {
-                            DB::table('trado')->where('kodetrado', $request->kodetrado)->update([
-                                'statusaktif' => $statusNonAktif->id,
-                            ]);
-                            goto selesai;
-                        } else {
-                            foreach (json_decode($trado->photobpkb) as $value) {
-                                if (!Storage::exists("trado/bpkb/$value")) {
-                                    DB::table('trado')->where('kodetrado', $request->kodetrado)->update([
-                                        'statusaktif' => $statusNonAktif->id,
-                                    ]);
-                                    goto selesai;
-                                }
+                        
+                            $required = [
+                                "kodetrado" => $trado->kodetrado,
+                                "tahun" => $trado->tahun,
+                                "merek" => $trado->merek,
+                                "norangka" => $trado->norangka,
+                                "nomesin" => $trado->nomesin,
+                                "nama" => $trado->nama,
+                                "nostnk" => $trado->nostnk,
+                                "alamatstnk" => $trado->alamatstnk,
+                                "tglpajakstnk" => $trado->tglpajakstnk,
+                                "tipe" => $trado->tipe,
+                                "jenis" => $trado->jenis,
+                                "isisilinder" => $trado->isisilinder,
+                                "warna" => $trado->warna,
+                                "jenisbahanbakar" => $trado->jenisbahanbakar,
+                                "jumlahsumbu" => $trado->jumlahsumbu,
+                                "jumlahroda" => $trado->jumlahroda,
+                                "model" => $trado->model,
+                                "nobpkb" => $trado->nobpkb,
+                                "jumlahbanserap" => $trado->jumlahbanserap, 
+                            ];
+                            $key = array_keys($required, null);
+                            if (count($key)) {
+                                $trado->statusaktif = $statusNonAktif->id;
+                                $trado->save();
                             }
-                            foreach (json_decode($trado->photostnk) as $value) {
-                                if (!Storage::exists("trado/stnk/$value")) {
-                                    DB::table('trado')->where('kodetrado', $request->kodetrado)->update([
-                                        'statusaktif' => $statusNonAktif->id,
-                                    ]);
-                                    goto selesai;
-                                }
-                            }
-                            foreach (json_decode($trado->phototrado) as $value) {
-                                if (!Storage::exists("trado/trado/$value")) {
-                                    DB::table('trado')->where('kodetrado', $request->kodetrado)->update([
-                                        'statusaktif' => $statusNonAktif->id,
-                                    ]);
-                                    goto selesai;
-                                }
-                            }
-                        }
-                        selesai:
                     }
                 }
 
@@ -182,44 +178,37 @@ class ApprovalTradoKeteranganController extends Controller
         $approvalTradoKeterangan = new ApprovalTradoKeterangan();
         $approvalTradoKeterangan = $approvalTradoKeterangan->lockAndDestroy($id);
         if ($approvalTradoKeterangan) {
-            $trado = DB::table('trado')->from(DB::raw("trado with (readuncommitted)"))
+            $trado = Trado::from(DB::raw("trado with (readuncommitted)"))
                 ->where('kodetrado', $approvalTradoKeterangan->kodetrado)
                 ->first();
             if ($trado != '') {
                 $statusNonAktif = DB::table('parameter')->where('grp', 'STATUS AKTIF')->where('subgrp', 'STATUS AKTIF')->where('text', 'NON AKTIF')->first();
-
-                if ($trado->photostnk == '' || $trado->phototrado == '' || $trado->photobpkb == '') {
-                    DB::table('trado')->where('kodetrado', $approvalTradoKeterangan->kodetrado)->update([
-                        'statusaktif' => $statusNonAktif->id,
-                    ]);
-                    goto selesai;
-                } else {
-                    foreach (json_decode($trado->photobpkb) as $value) {
-                        if (!Storage::exists("trado/bpkb/$value")) {
-                            DB::table('trado')->where('kodetrado', $approvalTradoKeterangan->kodetrado)->update([
-                                'statusaktif' => $statusNonAktif->id,
-                            ]);
-                            goto selesai;
-                        }
-                    }
-                    foreach (json_decode($trado->photostnk) as $value) {
-                        if (!Storage::exists("trado/stnk/$value")) {
-                            DB::table('trado')->where('kodetrado', $approvalTradoKeterangan->kodetrado)->update([
-                                'statusaktif' => $statusNonAktif->id,
-                            ]);
-                            goto selesai;
-                        }
-                    }
-                    foreach (json_decode($trado->phototrado) as $value) {
-                        if (!Storage::exists("trado/trado/$value")) {
-                            DB::table('trado')->where('kodetrado', $approvalTradoKeterangan->kodetrado)->update([
-                                'statusaktif' => $statusNonAktif->id,
-                            ]);
-                            goto selesai;
-                        }
-                    }
+                $required = [
+                    "kodetrado" => $trado->kodetrado,
+                    "tahun" => $trado->tahun,
+                    "merek" => $trado->merek,
+                    "norangka" => $trado->norangka,
+                    "nomesin" => $trado->nomesin,
+                    "nama" => $trado->nama,
+                    "nostnk" => $trado->nostnk,
+                    "alamatstnk" => $trado->alamatstnk,
+                    "tglpajakstnk" => $trado->tglpajakstnk,
+                    "tipe" => $trado->tipe,
+                    "jenis" => $trado->jenis,
+                    "isisilinder" => $trado->isisilinder,
+                    "warna" => $trado->warna,
+                    "jenisbahanbakar" => $trado->jenisbahanbakar,
+                    "jumlahsumbu" => $trado->jumlahsumbu,
+                    "jumlahroda" => $trado->jumlahroda,
+                    "model" => $trado->model,
+                    "nobpkb" => $trado->nobpkb,
+                    "jumlahbanserap" => $trado->jumlahbanserap, 
+                ];
+                $key = array_keys($required, null);
+                if (count($key)) {
+                    $trado->statusaktif = $statusNonAktif->id;
+                    $trado->save();
                 }
-                selesai:
             }
             $logTrail = [
                 'namatabel' => strtoupper($approvalTradoKeterangan->getTable()),
