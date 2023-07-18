@@ -23,6 +23,7 @@ class CreatePengeluarantruckingheaderTable extends Migration
             $table->longText('keterangan')->nullable();            
             $table->unsignedBigInteger('pengeluarantrucking_id')->nullable();
             $table->unsignedBigInteger('bank_id')->nullable();
+            $table->unsignedBigInteger('karyawan_id')->nullable();
             $table->unsignedBigInteger('supir_id')->nullable();
             $table->unsignedBigInteger('trado_id')->nullable();
             $table->integer('statusposting')->length(11)->nullable();

@@ -26,5 +26,6 @@ class PengeluaranTruckingSeeder extends Seeder
         pengeluarantrucking::create(['kodepengeluaran' => 'KBBM', 'keterangan' => 'PELUNASAN HUTANG BBM', 'coadebet' => '03.02.02.07', 'coakredit' => '01.01.01.02', 'coapostingdebet' => '03.02.02.07', 'coapostingkredit' => '01.01.01.02', 'format' => '298', 'modifiedby' => 'ADMIN',]);
         pengeluarantrucking::create(['kodepengeluaran' => 'BLS', 'keterangan' => 'BIAYA LAIN SUPIR', 'coadebet' => '', 'coakredit' => '', 'coapostingdebet' => '', 'coapostingkredit' => '', 'format' => '279', 'modifiedby' => 'ADMIN',]);
         pengeluarantrucking::create(['kodepengeluaran' => 'KLAIM', 'keterangan' => 'KLAIM SUPIR', 'coadebet' => '', 'coakredit' => '', 'coapostingdebet' => '', 'coapostingkredit' => '', 'format' => '318', 'modifiedby' => 'ADMIN',]);
+        pengeluarantrucking::create(['kodepengeluaran' => 'PJK', 'keterangan' => 'PINJAMAN KARYAWAN', 'coadebet' => '01.05.02.02', 'coakredit' => '01.01.01.02', 'coapostingdebet' => '01.05.02.02', 'coapostingkredit' => '01.01.01.02', 'format' => '369', 'modifiedby' => 'ADMIN',]);
     }
 }
