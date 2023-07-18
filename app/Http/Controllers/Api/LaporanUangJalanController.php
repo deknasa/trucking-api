@@ -41,6 +41,7 @@ class LaporanUangJalanController extends Controller
     //         'data' => $report
     //     ]);
     // }
+
     /**
      * @ClassName
      */
@@ -89,6 +90,9 @@ class LaporanUangJalanController extends Controller
 
     }
 
+     /**
+     * @ClassName
+     */
     public function export(Request $request){
         $tgldari = date('Y-m-d', strtotime($request->ricdari1));
         $tglsampai = date('Y-m-d', strtotime($request->ricsampai));

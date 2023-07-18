@@ -62,7 +62,9 @@ class LaporanSupirLebihDariTradoController extends Controller
         ]);
     }
 
-   
+    /**
+     * @ClassName
+     */
     public function export(Request $request)
     {
         $sampai = $request->sampai;
