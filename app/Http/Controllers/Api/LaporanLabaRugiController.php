@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
+use App\Http\Requests\ValidasiLaporanLabaRugiRequest;
 use Illuminate\Support\Facades\DB;
 use App\Models\LaporanLabaRugi;
 
@@ -26,43 +27,27 @@ class LaporanLabaRugiController extends Controller
     /**
      * @ClassName
      */
-    public function report(Request $request)
+    public function report(ValidasiLaporanLabaRugiRequest $request)
     {
-        // $bulan = $request->bulan;
-        // $tahun = $request->tahun;
+        $bulan = substr($request->sampai, 0, 2);
+        $tahun = substr($request->sampai, 3, 4);
 
-        // $laporanlabarugi = new LaporanLabaRugi();
+        $laporanlabarugi = new LaporanLabaRugi();
 
+        $laporan_labarugi = $laporanlabarugi->getReport($bulan, $tahun);
 
-        // $laporan_labarugi= $laporanlabarugi->getReport($bulan, $tahun);
-
-
-        // return response([
-        //     'data' => $laporan_labarugi
-
-        // ]);
-
-
-        // if ($request->isCheck) {
-        //     return response([
-        //         'data' => 'ok'
-        //     ]);
-        // } else {
-
-            $bulan = substr($request->sampai,0,2);
-            $tahun = substr($request->sampai,3,4);
-
-            $laporanlabarugi = new LaporanLabaRugi();
-
-
-            $laporan_labarugi = $laporanlabarugi->getReport($bulan, $tahun);
-
-
-
+        if (count($laporan_labarugi) == 0) {
             return response([
                 'data' => $laporan_labarugi,
+                'message' => 'tidak ada data'
+            ], 500);
+        }else{
+            return response([
+                'data' => $laporan_labarugi,
+                'message' => 'berhasil'
             ]);
-        // }
+        }
+        
     }
 
     /**

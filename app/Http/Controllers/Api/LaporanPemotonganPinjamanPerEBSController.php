@@ -61,6 +61,9 @@ class LaporanPemotonganPinjamanPerEBSController extends Controller
         ]);
     }
 
+    /**
+     * @ClassName
+     */
     public function export(Request $request)
     {
         $dari = date('Y-m-d', strtotime($request->dari));
