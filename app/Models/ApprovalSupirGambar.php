@@ -203,6 +203,12 @@ class ApprovalSupirGambar extends MyModel
         $approvalSupirGambar->noktp = $data['noktp'];
         $approvalSupirGambar->statusapproval = $data['statusapproval'];
         $approvalSupirGambar->tglbatas = date('Y-m-d', strtotime($data['tglbatas']));
+        
+        $statusNonApproval = Parameter::from(DB::Raw("parameter with (readuncommitted)"))->select('id')->where('grp', '=', 'STATUS APPROVAL')->where('subgrp', '=', 'STATUS APPROVAL')->where('text', '=', 'NON APPROVAL')->first();
+        //nonaktif supir
+        if ($data['statusapproval'] == $statusNonApproval->id) {
+            $supirModel = Supir::processStatusNonAktifGambar($approvalSupirGambar->noktp);
+        }
 
         if (!$approvalSupirGambar->save()) {
             throw new \Exception("Error store Approval Supir Gambar.");
@@ -226,6 +232,9 @@ class ApprovalSupirGambar extends MyModel
         $approvalSupirGambar = ApprovalSupirGambar::findOrFail($id);
         $dataHeader =  $approvalSupirGambar->toArray();
         $approvalSupirGambar = $approvalSupirGambar->lockAndDestroy($id);
+        
+        //nonaktif supir
+        $supirModel = Supir::processStatusNonAktifGambar($approvalSupirGambar->noktp);
         
         if ($approvalSupirGambar) {
 

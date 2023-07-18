@@ -998,6 +998,58 @@ class Supir extends MyModel
         return $supir;
     }
 
+    public function processStatusNonAktifKeterangan($noktp)
+    {
+
+        $supir = Supir::from(DB::raw("supir with (readuncommitted)"))->where('noktp',$noktp)->first();
+
+        $statusNonAktif = Parameter::from(DB::Raw("parameter with (readuncommitted)"))->select('id')->where('grp', '=', 'STATUS AKTIF')->where('subgrp', '=', 'STATUS AKTIF')->where('text', '=', 'NON AKTIF')->first();
+        $statusAktif = Parameter::from(DB::Raw("parameter with (readuncommitted)"))->select('id')->where('grp', '=', 'STATUS AKTIF')->where('subgrp', '=', 'STATUS AKTIF')->where('text', '=', 'AKTIF')->first();
+        
+        $required = [
+            "namasupir" => $supir->namasupir,
+            "alamat" => $supir->alamat,
+            "namaalias" => $supir->namaalias,
+            "kota" => $supir->kota,
+            "telp" => $supir->telp,
+            "nosim" => $supir->nosim,
+            "noktp" => $supir->noktp,
+            "nokk" => $supir->nokk,
+            "tgllahir" => $supir->tgllahir,
+        ];
+        $key = array_keys($required, null);
+        if (count($key)) {
+            $supir->statusaktif = $statusNonAktif->id;
+            $supir->save();
+        }
+        return $key;
+    }
+    public function processStatusNonAktifGambar($noktp)
+    {
+        $supir = Supir::from(DB::raw("supir with (readuncommitted)"))->where('noktp',$noktp)->first();
+
+        $statusNonAktif = Parameter::from(DB::Raw("parameter with (readuncommitted)"))->select('id')->where('grp', '=', 'STATUS AKTIF')->where('subgrp', '=', 'STATUS AKTIF')->where('text', '=', 'NON AKTIF')->first();
+        $statusAktif = Parameter::from(DB::Raw("parameter with (readuncommitted)"))->select('id')->where('grp', '=', 'STATUS AKTIF')->where('subgrp', '=', 'STATUS AKTIF')->where('text', '=', 'AKTIF')->first();
+        
+        $required=[
+            "photosupir" => $supir->photosupir,
+            "photoktp" => $supir->photoktp,
+            "photosim" => $supir->photosim,
+            "photokk" => $supir->photokk,
+            "photoskck" => $supir->photoskck,
+            "photodomisili" => $supir->photodomisili,
+            "photovaksin" => $supir->photovaksin,
+            "pdfsuratperjanjian" => $supir->pdfsuratperjanjian,
+        ];
+
+        $key = array_keys($required, null);
+        if (count($key)) {
+            $supir->statusaktif = $statusNonAktif->id;
+            $supir->save();
+        }
+        return $key;
+    }
+
     public function getSupirResignModel($noktp)
     {
         $query = Supir::from(DB::raw("supir with (readuncommitted)"))
