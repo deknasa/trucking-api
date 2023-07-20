@@ -394,13 +394,6 @@ class LaporanKartuPiutangPerAgen extends MyModel
             ->first();
 
 
-        $getJudul = DB::table('parameter')
-            ->select('text')
-            ->where('grp', 'JUDULAN LAPORAN')
-            ->where('subgrp', 'JUDULAN LAPORAN')
-            ->first();
-
-
         $Temppiutang = '##Temppiutang' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
         Schema::create($Temppiutang, function ($table) {
             $table->datetime('tglbukti')->nullable();
