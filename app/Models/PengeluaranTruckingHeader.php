@@ -858,6 +858,7 @@ class PengeluaranTruckingHeader extends MyModel
                 'pengeluarantruckingheader_id' => $pengeluaranTruckingHeader->id,
                 'nobukti' => $pengeluaranTruckingHeader->nobukti,
                 'supir_id' => $data['supir_id'][$i] ?? null,
+                'karyawan_id' => $data['karyawan_id'][$i] ?? null,
                 'stok_id' => $data['stok_id'][$i] ?? null,
                 'pengeluaranstok_nobukti' =>$data['pengeluaranstok_nobukti'][$i] ?? null,
                 'qty' => $data['qty'][$i] ?? null,
@@ -908,7 +909,7 @@ class PengeluaranTruckingHeader extends MyModel
                 $alatbayar = AlatBayar::where('bank_id', $pengeluaranTruckingHeader->bank_id)->first();
                 $queryPengeluaran = Bank::from(DB::raw("bank with (readuncommitted)"))->select( 'parameter.grp', 'parameter.subgrp', 'bank.formatpengeluaran', 'bank.coa', 'bank.tipe')->join(DB::raw("parameter with (readuncommitted)"), 'bank.formatpengeluaran', 'parameter.id')->where("bank.id",$data['bank_id'])->first();
                 for ($i = 0; $i < count($nominal_detail); $i++) {
-                    $coakredit_detail = $queryPengeluaran->coa;
+                    $coakredit_detail []= $queryPengeluaran->coa;
                     $coadebet_detail []= $data['coa'];
                     $nowarkat []= "" ;
                     $tglkasmasuk []= (array_key_exists('tglkasmasuk',$data))?date('Y-m-d', strtotime($data['tglkasmasuk'])) : date('Y-m-d', strtotime($data['tglbukti']));
@@ -1020,6 +1021,7 @@ class PengeluaranTruckingHeader extends MyModel
                 'pengeluarantruckingheader_id' => $pengeluaranTruckingHeader->id,
                 'nobukti' => $pengeluaranTruckingHeader->nobukti,
                 'supir_id' => $data['supir_id'][$i] ?? null,
+                'karyawan_id' => $data['karyawan_id'][$i] ?? null,
                 'stok_id' => $data['stok_id'][$i] ?? null,
                 'pengeluaranstok_nobukti' =>$data['pengeluaranstok_nobukti'][$i] ?? null,
                 'qty' => $data['qty'][$i] ?? null,
@@ -1046,6 +1048,7 @@ class PengeluaranTruckingHeader extends MyModel
                 
                 for ($i=0; $i < count($data['nominal']) ; $i++) { 
                    $pjt_supir_id[] = $data['supirheader_id'];
+                   $pjt_karyawan_id[] = $data['karyawan_id'];
                    $pjt_nominal[] = $data['nominal'][$i];
                    $pjt_keterangan[] = $data['keterangan'][$i];
                     
@@ -1055,6 +1058,7 @@ class PengeluaranTruckingHeader extends MyModel
                     "pengeluarantrucking_id" => $pinjaman->id,
                     "statusposting" => $statusPosting->id,
                     'supir_id' => $pjt_supir_id,
+                    'karyawan_id' => $pjt_karyawan_id,
                     'nominal' => $pjt_nominal,
                     'keterangan' => $pjt_keterangan,
                 ];

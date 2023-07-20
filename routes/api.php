@@ -775,9 +775,11 @@ route::middleware(['auth:api', 'authorized'])->group(function () {
     Route::post('penerimaantruckingheader/{id}/cekValidasiAksi', [PenerimaanTruckingHeaderController::class, 'cekValidasiAksi'])->name('penerimaantruckingheader.cekValidasiAksi')->whereNumber('id');
     Route::post('penerimaantruckingheader/{id}/cekvalidasi', [PenerimaanTruckingHeaderController::class, 'cekvalidasi'])->name('penerimaantruckingheader.cekvalidasi')->whereNumber('id');
     Route::get('penerimaantruckingheader/{id}/{aksi}/getpengembalianpinjaman', [PenerimaanTruckingHeaderController::class, 'getPengembalianPinjaman'])->name('pengeluarantruckingheader.getPengembalianPinjaman')->whereNumber('id');
+    Route::get('penerimaantruckingheader/{id}/{aksi}/getpengembalianpinjamankaryawan', [PenerimaanTruckingHeaderController::class, 'getPengembalianPinjamanKaryawan'])->name('pengeluarantruckingheader.getPengembalianPinjamanKaryawan')->whereNumber('id');
     Route::get('penerimaantruckingheader/no_bukti', [PenerimaanTruckingHeaderController::class, 'getNoBukti']);
     Route::get('penerimaantruckingheader/{id}/export', [PenerimaanTruckingHeaderController::class, 'export'])->name('penerimaantruckingheader.export')->whereNumber('id');
     Route::get('penerimaantruckingheader/{supirId}/getpinjaman', [PenerimaanTruckingHeaderController::class, 'getPinjaman'])->whereNumber('supirId');
+    Route::get('penerimaantruckingheader/{supirId}/getpinjamankaryawan', [PenerimaanTruckingHeaderController::class, 'getPinjamanKaryawan'])->whereNumber('karyawanId');
     Route::get('penerimaantruckingheader/combo', [PenerimaanTruckingHeaderController::class, 'combo']);
     Route::get('penerimaantruckingheader/grid', [PenerimaanTruckingHeaderController::class, 'grid']);
     Route::get('penerimaantruckingheader/field_length', [PenerimaanTruckingHeaderController::class, 'fieldLength']);

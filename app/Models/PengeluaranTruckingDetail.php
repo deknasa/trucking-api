@@ -33,13 +33,15 @@ class PengeluaranTruckingDetail extends MyModel
         if (isset(request()->forReport) && request()->forReport) {
             $query->select(
                 'supir.namasupir as supir_id',
+                'karyawan.namakaryawan as karyawan_id',
                 $this->table . '.penerimaantruckingheader_nobukti',
                 $this->table . '.nominal',
                 $this->table . '.orderantrucking_nobukti',
                 $this->table . '.keterangan',
                 $this->table . '.invoice_nobukti',
             )
-                ->leftJoin(DB::raw("supir with (readuncommitted)"), $this->table . '.supir_id', 'supir.id');
+                ->leftJoin(DB::raw("supir with (readuncommitted)"), $this->table . '.supir_id', 'supir.id')
+                ->leftJoin(DB::raw("karyawan with (readuncommitted)"), $this->table . '.karyawan_id', 'karyawan.id');
 
             $query->where($this->table . '.pengeluarantruckingheader_id', '=', request()->pengeluarantruckingheader_id);
         } else {
@@ -57,8 +59,10 @@ class PengeluaranTruckingDetail extends MyModel
                 $this->table . '.orderantrucking_nobukti',
                 DB::raw("container.keterangan as container"),
                 'supir.namasupir as supir_id',
+                'karyawan.namakaryawan as karyawan_id',
                 $this->table . '.penerimaantruckingheader_nobukti',
             )
+                ->leftJoin(DB::raw("karyawan with (readuncommitted)"), $this->table . '.karyawan_id', 'karyawan.id')
                 ->leftJoin(DB::raw("supir with (readuncommitted)"), $this->table . '.supir_id', 'supir.id')
                 ->leftJoin(DB::raw("orderantrucking as ot with (readuncommitted)"), 'pengeluarantruckingdetail.orderantrucking_nobukti', 'ot.nobukti')
                 ->leftJoin(DB::raw("stok with (readuncommitted)"), 'pengeluarantruckingdetail.stok_id', 'stok.id')
@@ -110,11 +114,14 @@ class PengeluaranTruckingDetail extends MyModel
                 "),
                                
                 'supir.namasupir as supir',
-                'supir.id as supir_id'
+                'supir.id as supir_id',
+                'karyawan.namakaryawan as karyawan',
+                'karyawan.id as karyawan_id'
                 )
             ->leftJoin(DB::raw("orderantrucking as ot with (readuncommitted)"), 'pengeluarantruckingdetail.orderantrucking_nobukti', 'ot.nobukti')
             ->leftJoin(DB::raw("container with (readuncommitted)"), 'ot.container_id', 'container.id')    
             ->leftJoin(DB::raw("supir with (readuncommitted)"), 'pengeluarantruckingdetail.supir_id', 'supir.id')
+            ->leftJoin(DB::raw("karyawan with (readuncommitted)"), 'pengeluarantruckingdetail.karyawan_id', 'karyawan.id')
             ->leftJoin(DB::raw("stok with (readuncommitted)"), 'pengeluarantruckingdetail.stok_id', 'stok.id')
             ->leftJoin(DB::raw("pengeluaranstokheader with (readuncommitted)"), 'pengeluaranstokheader.nobukti', 'pengeluarantruckingdetail.pengeluaranstok_nobukti')
             ->where('pengeluarantruckingdetail.pengeluarantruckingheader_id', '=', $id);
@@ -128,6 +135,8 @@ class PengeluaranTruckingDetail extends MyModel
     {
         if ($this->params['sortIndex'] == 'supir_id') {
             return $query->orderBy('supir.namasupir', $this->params['sortOrder']);
+        } else if ($this->params['sortIndex'] == 'karyawan_id') {
+            return $query->orderBy('karyawan.namakaryawan', $this->params['sortOrder']);
         } else {
             return $query->orderBy($this->table . '.' . $this->params['sortIndex'], $this->params['sortOrder']);
         }
@@ -142,6 +151,8 @@ class PengeluaranTruckingDetail extends MyModel
                         foreach ($this->params['filters']['rules'] as $index => $filters) {
                             if ($filters['field'] == 'supir_id') {
                                 $query = $query->where('supir.namasupir', 'LIKE', "%$filters[data]%");
+                            } else if ($filters['field'] == 'karyawan_id') {
+                                $query = $query->where('karyawan.namakaryawan', 'LIKE', "%$filters[data]%");
                             } else if ($filters['field'] == 'nominal') {
                                 $query = $query->whereRaw("format($this->table.nominal, '#,#0.00') LIKE '%$filters[data]%'");
                             } else {
@@ -156,6 +167,8 @@ class PengeluaranTruckingDetail extends MyModel
                         foreach ($this->params['filters']['rules'] as $index => $filters) {
                             if ($filters['field'] == 'supir_id') {
                                 $query = $query->orWhere('supir.namasupir', 'LIKE', "%$filters[data]%");
+                            }else if ($filters['field'] == 'karyawan_id') {
+                                $query = $query->orWhere('karyawan.namakaryawan', 'LIKE', "%$filters[data]%");
                             } else if ($filters['field'] == 'nominal') {
                                 $query = $query->orWhereRaw("format($this->table.nominal, '#,#0.00') LIKE '%$filters[data]%'");
                             } else {
@@ -186,6 +199,7 @@ class PengeluaranTruckingDetail extends MyModel
         $pengeluaranTruckingDetail->pengeluarantruckingheader_id = $data['pengeluarantruckingheader_id'];
         $pengeluaranTruckingDetail->nobukti = $data['nobukti'];
         $pengeluaranTruckingDetail->supir_id = $data['supir_id'];
+        $pengeluaranTruckingDetail->karyawan_id = $data['karyawan_id'];
         $pengeluaranTruckingDetail->penerimaantruckingheader_nobukti = $data['penerimaantruckingheader_nobukti']??"";
         $pengeluaranTruckingDetail->stok_id = $data['stok_id'] ?? 0;
         $pengeluaranTruckingDetail->pengeluaranstok_nobukti = $data['pengeluaranstok_nobukti'] ?? "";

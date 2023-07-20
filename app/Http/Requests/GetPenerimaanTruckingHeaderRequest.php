@@ -55,7 +55,7 @@ class GetPenerimaanTruckingHeaderRequest extends FormRequest
                 'after_or_equal:' . date('Y-m-d', strtotime($this->tgldari)),
             ],
             'penerimaanheader_id' => [
-                'required',
+                'nullable',
                 $penerimaanTruckingRule,
             ],
         ];

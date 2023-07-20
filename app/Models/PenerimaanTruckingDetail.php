@@ -258,6 +258,7 @@ class PenerimaanTruckingDetail extends MyModel
         $penerimaantruckingDetail->penerimaantruckingheader_id = $data['penerimaantruckingheader_id'];
         $penerimaantruckingDetail->nobukti = $data['nobukti'];
         $penerimaantruckingDetail->supir_id = $data['supir_id'];
+        $penerimaantruckingDetail->karyawan_id = $data['karyawan_id'];
         $penerimaantruckingDetail->pengeluarantruckingheader_nobukti = $data['pengeluarantruckingheader_nobukti'] ?? '';
         $penerimaantruckingDetail->keterangan = $data['keterangan'];
         $penerimaantruckingDetail->nominal = $data['nominal'];
