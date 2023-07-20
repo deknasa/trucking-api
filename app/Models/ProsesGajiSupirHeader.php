@@ -1111,6 +1111,7 @@ class ProsesGajiSupirHeader extends MyModel
                 'prosesgajisupirheader.tgldari',
                 'prosesgajisupirheader.tglsampai',
                 'prosesgajisupirheader.periode',
+                'prosesgajisupirheader.keterangan',
                 'prosesgajisupirheader.userapproval',
                 'statusapproval.memo as statusapproval',
                 'statuscetak.memo as statuscetak',
@@ -1130,7 +1131,7 @@ class ProsesGajiSupirHeader extends MyModel
                 $this->tableTotal . '.deposito',
                 DB::raw("'Laporan Proses Gaji Supir' as judulLaporan"),
                 DB::raw("'" . $getJudul->text . "' as judul"),
-                DB::raw("'Tgl Cetak:'+format(getdate(),'dd-MM-yyyy HH:mm:ss')as tglcetak"),
+                DB::raw("format(getdate(),'dd-MM-yyyy')as tglcetak"),
                 DB::raw(" 'User :".auth('api')->user()->name."' as usercetak")
             )
             ->where("$this->table.id", $id)
