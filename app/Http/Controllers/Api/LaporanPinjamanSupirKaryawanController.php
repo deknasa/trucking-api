@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\ValidasiLaporanPinjamanSupirRequest;
 use App\Models\LaporanPinjamanSupirKaryawan;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -26,48 +27,23 @@ class LaporanPinjamanSupirKaryawanController extends Controller
     /**
      * @ClassName
      */
-    public function report(Request $request)
+    public function report(ValidasiLaporanPinjamanSupirRequest $request)
     {
         $sampai = $request->sampai;
-        // $jenis = $request->jenis;
+        $laporanPinjSupir = new LaporanPinjamanSupirKaryawan();
 
-        // $report = LaporanPinjamanSupirKaryawan::getReport($sampai, $jenis);
-        // $report = [
-        //     [
-        //         'tanggal' => '23/2/2023',
-        //         'nobukti' => 'PJT 0001/II/2023',
-        //         'keterangan' => 'TES KETERANGAN OKE',
-        //         'debet' => '21421',
-        //         'kredit' => '25151',
-        //         'saldo' => '1251511'
-        //     ],
-        //     [
-        //         'tanggal' => '23/2/2023',
-        //         'nobukti' => 'PJT 0002/II/2023',
-        //         'keterangan' => 'TES KETERANGAN OKE 2',
-        //         'debet' => '96969',
-        //         'kredit' => '12879',
-        //         'saldo' => '912449'
-        //     ]
-        // ];
-        // return response([
-        //     'data' => $report
-        // ]);
+        $dataPinjSupir = $laporanPinjSupir->getReport($sampai);
 
-        if ($request->isCheck) {
+        if (count($dataPinjSupir) == 0) {
             return response([
-                'data' => 'ok'
-            ]);
-        } else {
-
-            $sampai = $request->sampai;
-
-            $report = LaporanPinjamanSupirkaryawan::getReport($sampai);
-
+                'data' => $dataPinjSupir,
+                'message' => 'tidak ada data'
+            ], 500);
+        }else{
             return response([
-                'data' => $report
+                'data' => $dataPinjSupir,
+                'message' => 'berhasil'
             ]);
         }
-
     }
 }

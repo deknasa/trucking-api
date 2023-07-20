@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\ValidasiLaporanPinjamanSupirRequest;
 use App\Models\LaporanPinjamanSupir;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -26,46 +27,23 @@ class LaporanPinjamanSupirController extends Controller
     /**
      * @ClassName
      */
-    public function report(Request $request)
+    public function report(ValidasiLaporanPinjamanSupirRequest $request)
     {
         $sampai = $request->sampai;
+        $laporanPinjSupir = new LaporanPinjamanSupir();
 
-        
-        // $report = [
-        //     [
-        //         "supir" => "HERMAN",
-        //         "keterangan" => "TES KETERANGAN",
-        //         "nominal" => "351251",
-        //         "nominal_pinjaman" => "124124",
-        //         "pengembalian" => "2112312",
-        //         "saldo" => "12512512"
-        //     ],
-        //     [
-        //         "supir" => "ANDIKA",
-        //         "keterangan" => "TES KETERANGAN ANDIKA",
-        //         "nominal" => "4125151",
-        //         "nominal_pinjaman" => "461123",
-        //         "pengembalian" => "512515",
-        //         "saldo" => "52612463"
-        //     ]
+        $dataPinjSupir = $laporanPinjSupir->getReport($sampai);
 
-        // ];
-
-        if ($request->isCheck) {
+        if (count($dataPinjSupir) == 0) {
             return response([
-                'data' => 'ok'
-            ]);
-        } else {
-
-            $sampai = $request->sampai;
-
-            $report = LaporanPinjamanSupir::getReport($sampai);
-
+                'data' => $dataPinjSupir,
+                'message' => 'tidak ada data'
+            ], 500);
+        }else{
             return response([
-                'data' => $report
+                'data' => $dataPinjSupir,
+                'message' => 'berhasil'
             ]);
         }
-
-
     }
 }
