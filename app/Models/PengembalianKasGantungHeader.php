@@ -581,6 +581,7 @@ class PengembalianKasGantungHeader extends MyModel
                 "kasgantung_nobukti" => $data['kasgantung_nobukti'][$i],
             ]);
             $pengembalianKasGantungDetails[] = $pengembalianKasGantungDetail->toArray();
+            $tglJatuhTempo[] = $data['tglbukti'];
             $nominal_detail[] = $data['nominal'][$i];
             $coadebet_detail[] = $bank->coa;
             $coakredit_detail[] = $memo['JURNAL'];
@@ -601,7 +602,7 @@ class PengembalianKasGantungHeader extends MyModel
             'bank_id'=>$pengembalianKasGantungHeader->bank_id,
             
             'nowarkat' =>null,
-            'tgljatuhtempo' =>date('Y-m-d', strtotime($data['tglbukti'])),
+            'tgljatuhtempo' => $tglJatuhTempo,
             'nominal_detail' => $nominal_detail,
             'coadebet' => $coadebet_detail,
             'coakredit' => $coakredit_detail,
@@ -609,7 +610,7 @@ class PengembalianKasGantungHeader extends MyModel
             'invoice_nobukti' =>null,
             'bankpelanggan_id' =>null,
             'pelunasanpiutang_nobukti' =>null,
-            'bulanbeban' =>date('Y-m-d', strtotime($data['tglbukti'])),
+            'bulanbeban' => $tglJatuhTempo,
         ];
         $penerimaanHeader = (new PenerimaanHeader())->processStore($penerimaanRequest);
         $pengembalianKasGantungHeader->penerimaan_nobukti = $penerimaanHeader->nobukti;
@@ -689,6 +690,7 @@ class PengembalianKasGantungHeader extends MyModel
                 "kasgantung_nobukti" => $data['kasgantung_nobukti'][$i],
             ]);
             $pengembalianKasGantungDetails[] = $pengembalianKasGantungDetail->toArray();
+            $tglJatuhTempo[] = $data['tglbukti'];
             $nominal_detail[] = $data['nominal'][$i];
             $coadebet_detail[] = $bank->coa;
             $coakredit_detail[] = $memo['JURNAL'];
@@ -709,7 +711,7 @@ class PengembalianKasGantungHeader extends MyModel
             'bank_id'=>$pengembalianKasGantungHeader->bank_id,
             
             'nowarkat' =>null,
-            'tgljatuhtempo' =>date('Y-m-d', strtotime($data['tglbukti'])),
+            'tgljatuhtempo' => $tglJatuhTempo,
             'nominal_detail' => $nominal_detail,
             'coadebet' => $coadebet_detail,
             'coakredit' => $coakredit_detail,
@@ -717,7 +719,7 @@ class PengembalianKasGantungHeader extends MyModel
             'invoice_nobukti' =>null,
             'bankpelanggan_id' =>null,
             'pelunasanpiutang_nobukti' =>null,
-            'bulanbeban' =>date('Y-m-d', strtotime($data['tglbukti'])),
+            'bulanbeban' => $tglJatuhTempo,
         ];
         $penerimaan = PenerimaanHeader::where('nobukti', $pengembalianKasGantungHeader->penerimaan_nobukti)->lockForUpdate()->first();
         $penerimaanHeader = (new PenerimaanHeader())->processUpdate($penerimaan,$penerimaanRequest);
