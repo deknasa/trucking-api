@@ -26,21 +26,34 @@ class LaporanKlaimPJTSupir extends MyModel
 
 
 
-    public function getReport($sampai, $dari)
+    public function getReport($sampai, $dari,$kelompok)
     {
-        $sampai = date("Y-m-d", strtotime($sampai));
-        // data coba coba
-        $query = DB::table('penerimaantruckingdetail')->from(
-            DB::raw("penerimaantruckingdetail with (readuncommitted)")
-        )->select(
-            'penerimaantruckingdetail.id',
-            'supir.namasupir',
-            'penerimaantruckingdetail.nominal',
-        )
-        ->leftJoin(DB::raw("supir with (readuncommitted)"), 'penerimaantruckingdetail.supir_id', 'supir.id')
-        ->leftJoin(DB::raw("penerimaantruckingheader with (readuncommitted)"), 'penerimaantruckingdetail.penerimaantruckingheader_id', 'penerimaantruckingheader.id')
-        ->where('penerimaantruckingheader.tglbukti','<=',$sampai);
+       
 
+        $pidpengeluarantrucking=7;
+
+        $query = DB::table("pengeluarantruckingheader")->from(
+            DB::raw("pengeluarantruckingheader as a with (readuncommitted)")
+        )
+            ->select(
+                'a.nobukti',
+                'a.tglbukti',
+                'b.nominal',
+                'b.keterangan',
+                'd.namasupir',
+                'c.namastok'
+
+            )
+            ->join(DB::raw("pengeluarantruckingdetail as b with (readuncommitted)"), 'a.nobukti', 'b.nobukti')
+            ->join(DB::raw("stok as c with (readuncommitted)"), 'b.stok_id', 'c.id')
+            ->join(DB::raw("supir as d with (readuncommitted)"), 'a.supir_id', 'd.id')
+            ->where('a.pengeluarantrucking_id', '=', $pidpengeluarantrucking)
+            ->whereRaw("a.tglbukti >='".  date('Y/m/d', strtotime($dari)). "'")
+            ->whereRaw("a.tglbukti <='".  date('Y/m/d', strtotime($sampai)). "'")
+            ->where('c.kelompok_id', '=', $kelompok);
+
+
+            // dd($query->get());
         $data = $query->get();
         return $data;
     }
