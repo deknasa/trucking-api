@@ -29,29 +29,45 @@ class LaporanPinjamanSupirKaryawanController extends Controller
     public function report(Request $request)
     {
         $sampai = $request->sampai;
-        $jenis = $request->jenis;
+        // $jenis = $request->jenis;
 
         // $report = LaporanPinjamanSupirKaryawan::getReport($sampai, $jenis);
-        $report = [
-            [
-                'tanggal' => '23/2/2023',
-                'nobukti' => 'PJT 0001/II/2023',
-                'keterangan' => 'TES KETERANGAN OKE',
-                'debet' => '21421',
-                'kredit' => '25151',
-                'saldo' => '1251511'
-            ],
-            [
-                'tanggal' => '23/2/2023',
-                'nobukti' => 'PJT 0002/II/2023',
-                'keterangan' => 'TES KETERANGAN OKE 2',
-                'debet' => '96969',
-                'kredit' => '12879',
-                'saldo' => '912449'
-            ]
-        ];
-        return response([
-            'data' => $report
-        ]);
+        // $report = [
+        //     [
+        //         'tanggal' => '23/2/2023',
+        //         'nobukti' => 'PJT 0001/II/2023',
+        //         'keterangan' => 'TES KETERANGAN OKE',
+        //         'debet' => '21421',
+        //         'kredit' => '25151',
+        //         'saldo' => '1251511'
+        //     ],
+        //     [
+        //         'tanggal' => '23/2/2023',
+        //         'nobukti' => 'PJT 0002/II/2023',
+        //         'keterangan' => 'TES KETERANGAN OKE 2',
+        //         'debet' => '96969',
+        //         'kredit' => '12879',
+        //         'saldo' => '912449'
+        //     ]
+        // ];
+        // return response([
+        //     'data' => $report
+        // ]);
+
+        if ($request->isCheck) {
+            return response([
+                'data' => 'ok'
+            ]);
+        } else {
+
+            $sampai = $request->sampai;
+
+            $report = LaporanPinjamanSupirkaryawan::getReport($sampai);
+
+            return response([
+                'data' => $report
+            ]);
+        }
+
     }
 }
