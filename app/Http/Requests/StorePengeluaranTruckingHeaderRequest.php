@@ -37,6 +37,9 @@ class StorePengeluaranTruckingHeaderRequest extends FormRequest
         $tglbatasawal = $getBatas->text;
         $tglbatasakhir = (date('Y') + 1) . '-01-01';
 
+        if (!request()->pengeluarantrucking_id) {
+            return ["pengeluarantrucking_id"=>['required']];
+        }
         $requiredTglPriode = Rule::requiredIf(function () {
             
             $bst = DB::table('pengeluarantrucking')->from(DB::raw("pengeluarantrucking with (readuncommitted)"))
@@ -237,7 +240,7 @@ class StorePengeluaranTruckingHeaderRequest extends FormRequest
                     new DateTutupBuku()
                 ],
                 'pengeluarantrucking' => 'required','numeric', 'min:1',
-                'statusposting' => [$ruleStatusPosting],
+                'statusposting' => 'required',
                 'bank' => [$ruleBank],
                 // 'tgldari' => [
                 //     'required', 'date_format:d-m-Y',

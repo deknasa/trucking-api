@@ -21,6 +21,7 @@ class CreatePenerimaantruckingdetailTable extends Migration
             $table->unsignedBigInteger('penerimaantruckingheader_id');
             $table->string('nobukti',50)->nullable();
             $table->unsignedBigInteger('supir_id')->nullable();
+            $table->unsignedBigInteger('karyawan_id')->nullable();
             $table->string('pengeluarantruckingheader_nobukti',50)->nullable();
             $table->string('pengeluaranstokheader_nobukti',50)->nullable();
             $table->unsignedBigInteger('stok_id')->nullable();
