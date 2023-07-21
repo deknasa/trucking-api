@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\ValidationForLaporanKlaimPjtSupirRequest;
 use App\Models\LaporanKlaimPJTSupir;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -26,42 +27,25 @@ class LaporanKlaimPJTSupirController extends Controller
     /**
      * @ClassName
      */
-    public function report(Request $request)
+    public function report(ValidationForLaporanKlaimPjtSupirRequest $request)
     {
         $sampai = $request->sampai;
         $dari = $request->dari;
-        $kategori = $request->kelompok;
+        $kelompok_id = $request->kelompok_id;
+        $laporanKlaim = new LaporanKlaimPJTSupir();
 
-        if ($request->isCheck) {
+        $laporan_klaim = $laporanKlaim->getReport($sampai,$dari,$kelompok_id);
+
+        if (count($laporan_klaim) == 0) {
             return response([
-                'data' => 'ok'
-            ]);
-        } else {
-
-
-            $report = LaporanKlaimPJTSupir::getReport($sampai,$dari,$kategori);
-
+                'data' => $laporan_klaim,
+                'message' => 'tidak ada data'
+            ], 500);
+        }else{
             return response([
-                'data' => $report
+                'data' => $laporan_klaim,
+                'message' => 'berhasil'
             ]);
         }
-
-
-        // $report = LaporanKlaimPJTSupir::getReport($sampai, $dari);
-        // $report = [
-        //     [
-        //         'noklaim' => "1231",
-        //         'tanggal' => "23/2/2023",
-        //         'nilaiklaim' => '1242155',
-        //         'nobukti' => "PJT 0001/II/2023",
-        //         'keterangan' => "TES KETERANGAN PROIDENT REPREHENDE",
-        //         'bebanke' => '1',
-        //         'kodestok' => 'BAUT 12',
-        //         'keteranganstok' => 'TEMPORE NIHIL ET ET'
-        //     ]
-        // ];
-        // return response([
-        //     'data' => $report
-        // ]);
     }
 }

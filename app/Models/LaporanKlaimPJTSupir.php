@@ -26,11 +26,16 @@ class LaporanKlaimPJTSupir extends MyModel
 
 
 
-    public function getReport($sampai, $dari,$kelompok)
+    public function getReport($sampai, $dari, $kelompok)
     {
-       
 
-        $pidpengeluarantrucking=7;
+        $getJudul = DB::table('parameter')
+            ->select('text')
+            ->where('grp', 'JUDULAN LAPORAN')
+            ->where('subgrp', 'JUDULAN LAPORAN')
+            ->first();
+
+        $pidpengeluarantrucking = 7;
 
         $query = DB::table("pengeluarantruckingheader")->from(
             DB::raw("pengeluarantruckingheader as a with (readuncommitted)")
@@ -41,19 +46,23 @@ class LaporanKlaimPJTSupir extends MyModel
                 'b.nominal',
                 'b.keterangan',
                 'd.namasupir',
-                'c.namastok'
+                'c.namastok',
+                DB::raw("'Laporan Klaim PJT Supir' as judulLaporan"),
+                DB::raw("'" . $getJudul->text . "' as judul"),
+                DB::raw("'Tgl Cetak :'+format(getdate(),'dd-MM-yyyy HH:mm:ss')as tglcetak"),
+                DB::raw(" 'User :" . auth('api')->user()->name . "' as usercetak")
 
             )
             ->join(DB::raw("pengeluarantruckingdetail as b with (readuncommitted)"), 'a.nobukti', 'b.nobukti')
             ->join(DB::raw("stok as c with (readuncommitted)"), 'b.stok_id', 'c.id')
             ->join(DB::raw("supir as d with (readuncommitted)"), 'a.supir_id', 'd.id')
             ->where('a.pengeluarantrucking_id', '=', $pidpengeluarantrucking)
-            ->whereRaw("a.tglbukti >='".  date('Y/m/d', strtotime($dari)). "'")
-            ->whereRaw("a.tglbukti <='".  date('Y/m/d', strtotime($sampai)). "'")
+            ->whereRaw("a.tglbukti >='" .  date('Y/m/d', strtotime($dari)) . "'")
+            ->whereRaw("a.tglbukti <='" .  date('Y/m/d', strtotime($sampai)) . "'")
             ->where('c.kelompok_id', '=', $kelompok);
 
 
-            // dd($query->get());
+        // dd($query->get());
         $data = $query->get();
         return $data;
     }

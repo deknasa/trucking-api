@@ -245,16 +245,32 @@ class OrderanTruckingController extends Controller
 
     public function getOrderanTrip(Request $request)
     {
-        $orderanTrucking = new OrderanTrucking();
-        $agen = $request->agen;
-        $tglbukti = date('Y-m-d', strtotime($request->tglbukti));
-        return response([
-            'data' => $orderanTrucking->getOrderanTrip($tglbukti, $agen),
-            'attributes' => [
-                'totalRows' => $orderanTrucking->totalRows,
-                'totalPages' => $orderanTrucking->totalPages
-            ]
-        ]);
+        if($request->aksi != 'edit'){
+
+            $orderanTrucking = new OrderanTrucking();
+            $agen = $request->agen;
+            $tglbukti = date('Y-m-d', strtotime($request->tglbukti));
+            return response([
+                'data' => $orderanTrucking->getOrderanTrip($tglbukti, $agen),
+                'attributes' => [
+                    'totalRows' => $orderanTrucking->totalRows,
+                    'totalPages' => $orderanTrucking->totalPages,
+                    'totalNominal' => $orderanTrucking->totalNominal,
+                ]
+            ]);
+        }else{
+            $orderanTrucking = new OrderanTrucking();
+            $agen = $request->agen;
+            $tglbukti = date('Y-m-d', strtotime($request->tglbukti));
+            return response([
+                'data' => $orderanTrucking->getOrderanTripEdit($request->idInvoice, $agen),
+                'attributes' => [
+                    'totalRows' => $orderanTrucking->totalRows,
+                    'totalPages' => $orderanTrucking->totalPages,
+                    'totalNominal' => $orderanTrucking->totalNominal,
+                ]
+            ]);
+        }
     }
 
     /**
