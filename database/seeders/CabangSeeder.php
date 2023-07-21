@@ -24,5 +24,6 @@ class CabangSeeder extends Seeder
         cabang::create(['kodecabang' => 'SBY',  'namacabang' => 'SURABAYA',  'statusaktif' => '1',  'modifiedby' => 'ADMIN',]);
         cabang::create(['kodecabang' => 'MKS',  'namacabang' => 'MAKASSAR',  'statusaktif' => '1',  'modifiedby' => 'ADMIN',]);
         cabang::create(['kodecabang' => 'BTG',  'namacabang' => 'BITUNG',  'statusaktif' => '1',  'modifiedby' => 'ADMIN',]);
+        cabang::create(['kodecabang' => 'TNL',  'namacabang' => 'JAKARTA TNL',  'statusaktif' => '1',  'modifiedby' => 'ADMIN',]);
     }
 }

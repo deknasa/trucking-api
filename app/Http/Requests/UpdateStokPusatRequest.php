@@ -2,7 +2,10 @@
 
 namespace App\Http\Requests;
 
+use App\Rules\ExistKelompok;
+use App\Rules\ValidasiDetail;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
 class UpdateStokPusatRequest extends FormRequest
 {
@@ -13,7 +16,7 @@ class UpdateStokPusatRequest extends FormRequest
      */
     public function authorize()
     {
-        return false;
+        return true;
     }
 
     /**
@@ -23,8 +26,31 @@ class UpdateStokPusatRequest extends FormRequest
      */
     public function rules()
     {
-        return [
-            //
+        $jumlahdetail = $this->jumlahRow ?? 0;
+        $kelompok_id = $this->kelompok_id;
+        $rulesKelompok_id = [];
+        if ($kelompok_id != null) {
+            $rulesKelompok_id = [
+                'kelompok_id' => ['required', 'numeric', 'min:1', new ExistKelompok()]
+            ];
+        } else if ($kelompok_id == null && $this->agen != '') {
+            $rulesKelompok_id = [
+                'kelompok_id' => ['required', 'numeric', 'min:1', new ExistKelompok()]
+            ];
+        }
+        $rules = [
+            'namastok' => ['required', Rule::unique('stokpusat')->whereNotIn('id', [$this->id])],
+            'kelompok' => [
+                'required',
+                new ValidasiDetail($jumlahdetail)
+            ]
         ];
+
+        $rules = array_merge(
+            $rules,
+            $rulesKelompok_id
+        );
+
+        return $rules;
     }
 }
