@@ -52,7 +52,9 @@ class Menu extends MyModel
                 DB::raw("'Tgl Cetak :'+format(getdate(),'dd-MM-yyyy HH:mm:ss')as tglcetak"),
                 DB::raw(" 'User :" . auth('api')->user()->name . "' as usercetak")
             )
-            ->leftJoin(DB::raw("menu as menu2 with (readuncommitted)"), 'menu2.id', '=', 'menu.menuparent');
+            ->leftJoin(DB::raw("menu as menu2 with (readuncommitted)"), 'menu2.id', '=', 'menu.menuparent')
+            ->leftJoin(DB::raw("acos with (readuncommitted)"), 'acos.id', '=', 'menu.aco_id');
+
 
 
 
@@ -62,6 +64,7 @@ class Menu extends MyModel
         // $this->selectColumns($query);
         $this->sort($query);
         $this->filter($query);
+        // dd($query->toSql());
         $this->paginate($query);
 
         $data = $query->get();
@@ -156,7 +159,8 @@ class Menu extends MyModel
                         } else if ($filters['field'] == 'menuparent') {
                             $query = $query->orWhere('menu2.menuname', 'LIKE', "%$filters[data]%");
                         } else if ($filters['field'] == 'aco_id') {
-                            $query = $query->orWhere('acos.nama', 'LIKE', "%$filters[data]%");
+                            // $query = $query->orWhere('acos.nama', 'LIKE', "%$filters[data]%");
+                            $query = $query->orWhereRaw("acos.nama like '%" . escapeLike($filters['data']) . "%' escape '|'");
                         } else if ($filters['field'] == 'created_at' || $filters['field'] == 'updated_at') {
                             $query = $query->orWhereRaw("format(" . $this->table . "." . $filters['field'] . ", 'dd-MM-yyyy HH:mm:ss') LIKE '%$filters[data]%'");
                         } else {
@@ -527,7 +531,7 @@ class Menu extends MyModel
             $controller = $query->controller;
         }
 
-
+        // dd($controller);
         if ($query != null) {
 
             $class = $this->listFolderFiles($controller);

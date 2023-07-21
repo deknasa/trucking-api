@@ -223,6 +223,54 @@ class PengeluaranStokDetail extends MyModel
             }
         }
 
+        if ($pengeluaranStokHeader->pengeluaranstok_id == $spk->text) {
+            $tempstatusservice = '##tempstatusservice' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+
+            Schema::create($tempstatusservice, function ($table) {
+                $table->integer('idstatus',)->nullable();
+            });
+    
+            $querystatusservice = DB::table('parameter')->from(
+                DB::raw( "parameter a with (readuncommitted)")
+            )
+                ->select(
+                    'a.id as idstatus',
+                )
+                ->where('a.grp','=','STATUS SERVICE RUTIN')
+                ->where('a.subgrp','=','STATUS SERVICE RUTIN');
+    
+    
+                DB::table($tempstatusservice)->insertUsing([
+                    'idstatus',
+                ], $querystatusservice);  
+                
+                
+            $stokid=$data['stok_id'];
+            $querystokstatusservis = DB::table('stok')->from(
+                DB::raw( "stok a with (readuncommitted)")
+            )
+                ->select(
+                    'a.statusservicerutin',
+                )
+                ->Join(DB::raw($tempstatusservice ." as b"), 'a.statusservicerutin', '=', 'b.idstatus')
+                ->where('a.id','=',$stokid)
+                ->first();
+    
+            if (isset($querystokstatusservis)) {
+                $idstatusservicerutin=$querystokstatusservis->statusservicerutin;
+            } else {
+                $idstatusservicerutin=0;
+            }
+    
+        } else {
+            $idstatusservicerutin=0;
+        }
+
+
+
+
+       
+
         $pengeluaranStokDetail = new PengeluaranStokDetail();
         $pengeluaranStokDetail->pengeluaranstokheader_id = $data['pengeluaranstokheader_id'];
         $pengeluaranStokDetail->nobukti = $data['nobukti'];
@@ -234,6 +282,7 @@ class PengeluaranStokDetail extends MyModel
         $pengeluaranStokDetail->persentasediscount = $data['persentasediscount'];
         $pengeluaranStokDetail->vulkanisirke = $data['vulkanisirke'];
         $pengeluaranStokDetail->keterangan = $data['detail_keterangan'];
+        $pengeluaranStokDetail->statusservicerutin = $idstatusservicerutin;
 
         $pengeluaranStokDetail->modifiedby = auth('api')->user()->name;
 
