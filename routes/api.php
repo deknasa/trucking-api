@@ -268,6 +268,7 @@ Route::get('supir/image/{field}/{filename}/{type}/{aksi}', [SupirController::cla
 Route::get('supir/pdf/{field}/{filename}', [SupirController::class, 'getPdf']);
 Route::get('trado/image/{field}/{filename}/{type}/{aksi}', [TradoController::class, 'getImage']);
 Route::get('stok/{filename}/{type}', [StokController::class, 'getImage']);
+Route::get('stokpusat/{filename}/{type}', [StokPusatController::class, 'getImage']);
 Route::get('upahsupir/{filename}/{type}', [UpahSupirController::class, 'getImage']);
 Route::get('parameter/getparamrequest', [ParameterController::class, 'getparamrequest']);
 

@@ -15,6 +15,7 @@ class CreateStokpusatrincianTable extends Migration
     {
         Schema::create('stokpusatrincian', function (Blueprint $table) {
             $table->id();
+            $table->unsignedBigInteger('stokpusat_id')->nullable();
             $table->string('namastok',200)->nullable();
             $table->unsignedBigInteger('kelompok_id')->nullable();
             $table->unsignedBigInteger('stok_id')->nullable();
@@ -22,6 +23,8 @@ class CreateStokpusatrincianTable extends Migration
             $table->longText('gambar')->nullable();
             $table->string('modifiedby',50)->nullable();            
             $table->timestamps();
+            
+            $table->foreign('stokpusat_id', 'stokpusatrincian_stokpusat_stokpusat_id_foreign')->references('id')->on('stokpusat')->onDelete('cascade');
         });
     }
 
