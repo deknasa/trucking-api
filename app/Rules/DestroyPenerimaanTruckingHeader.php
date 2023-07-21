@@ -21,6 +21,7 @@ class DestroyPenerimaanTruckingHeader implements Rule
         //
     }
 
+    private $message;
     /**
      * Determine if the validation rule passes.
      *
@@ -30,12 +31,29 @@ class DestroyPenerimaanTruckingHeader implements Rule
      */
     public function passes($attribute, $value)
     {
-        $penerima = new PenerimaanTruckingHeader();
-        $cekdata = $penerima->cekvalidasiaksi(request()->nobukti);
-        if($cekdata['kondisi']){
-          return false;
+        $penerimaan = new PenerimaanTruckingHeader();
+        $PenerimaanTruckingHeader = $penerimaan->where('id',request()->id)->first();
+        
+        $printValidation = $penerimaan->printValidation($PenerimaanTruckingHeader->id);
+        if ($printValidation) {
+            $this->message = 'SDC';
+            return false;
         }
-
+        $isUangJalanProcessed = $penerimaan->isUangJalanProcessed($PenerimaanTruckingHeader->nobukti);
+        if ($isUangJalanProcessed) {
+            $this->message = 'TDT';
+            return false;
+        }
+        $isUangOut = $penerimaan->isUangOut($PenerimaanTruckingHeader->nobukti);
+        if ($isUangOut) {
+            $this->message = 'SATL';
+            return false;
+        }
+        $isUangOut = $penerimaan->isUangOut($PenerimaanTruckingHeader->nobukti);
+        if ($isUangOut) {
+            $this->message = 'SATL';
+            return false;
+        }
         return true;
     }
 
@@ -46,6 +64,6 @@ class DestroyPenerimaanTruckingHeader implements Rule
      */
     public function message()
     {
-        return app(ErrorController::class)->geterror('SATL')->keterangan;
+        return app(ErrorController::class)->geterror($this->message)->keterangan;
     }
 }

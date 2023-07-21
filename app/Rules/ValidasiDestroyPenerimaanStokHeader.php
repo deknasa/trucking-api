@@ -17,7 +17,7 @@ class ValidasiDestroyPenerimaanStokHeader implements Rule
     {
         //
     }
-
+    private $message;
     /**
      * Determine if the validation rule passes.
      *
@@ -27,24 +27,27 @@ class ValidasiDestroyPenerimaanStokHeader implements Rule
      */
     public function passes($attribute, $value)
     {
-        $penerimaanStokHeader = new PenerimaanStokHeader();
-        // $cekdata = $penerimaanStokHeader->cekvalidasihapus(request()->id);
-        $isOutUsed = $penerimaanStokHeader->isOutUsed(request()->id);
-        $isEhtUsed = $penerimaanStokHeader->isEhtUsed(request()->id);
-        $isPOUsed = $penerimaanStokHeader->isPOUsed(request()->id);
-        // dd([$isOutUsed
-        // $isEhtUsed
-        // $isPOUsed])
-        if($isOutUsed){
-          return false;
-        }
-        if($isEhtUsed){
-          return false;
-        }
-        if($isPOUsed){
-          return false;
-        }
+      $penerimaanStokHeader = new PenerimaanStokHeader();
+      if ($penerimaanStokHeader->isOutUsed($id)) {
+        $this->message = 'SATL';
+        return false;
+      }
+      if ($penerimaanStokHeader->isEhtUsed($id)) {
+        $this->message = 'SATL';
+        return false;
+      }
+      if ($penerimaanStokHeader->isApproved($id)) {
+        $this->message = 'SAP';
+        return false;
+      } else if ($penerimaanStokHeader->isPOUsed($id)) {
+        $this->message = 'SATL';
+        return false;
+      } else if ($penerimaanStokHeader->printValidation($id)) {
+        $this->message = 'SDC';
+        return false;
+      }
         return true;
+          
     }
 
     /**
@@ -54,6 +57,6 @@ class ValidasiDestroyPenerimaanStokHeader implements Rule
      */
     public function message()
     {
-        return app(ErrorController::class)->geterror('SATL')->keterangan;
+        return app(ErrorController::class)->geterror($this->message)->keterangan;
     }
 }

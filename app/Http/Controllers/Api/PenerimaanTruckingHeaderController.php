@@ -241,11 +241,8 @@ class PenerimaanTruckingHeaderController extends Controller
     public function cekvalidasi($id)
     {
         $penerimaanTrucking = PenerimaanTruckingHeader::find($id);
-        $statusdatacetak = $penerimaanTrucking->statuscetak;
-        $statusCetak = Parameter::from(DB::raw("parameter with (readuncommitted)"))
-            ->where('grp', 'STATUSCETAK')->where('text', 'CETAK')->first();
 
-        if ($statusdatacetak == $statusCetak->id) {
+        if ($penerimaanTrucking->printValidation($id)) {
             $query = DB::table('error')
                 ->select('keterangan')
                 ->where('kodeerror', '=', 'SDC')
@@ -275,36 +272,45 @@ class PenerimaanTruckingHeaderController extends Controller
     public function cekValidasiAksi($id)
     {
         $penerimaan = new PenerimaanTruckingHeader();
-        $nobukti = PenerimaanTruckingHeader::from(DB::raw("penerimaantruckingheader"))->where('id', $id)->first();
-        $cekdata = $penerimaan->cekvalidasiaksi($nobukti->penerimaan_nobukti);
-        if ($cekdata['kondisi'] == true) {
-            $query = DB::table('error')
-                ->select(
-                    DB::raw("ltrim(rtrim(keterangan))+' (" . $cekdata['keterangan'] . ")' as keterangan")
-                )
-                ->where('kodeerror', '=', $cekdata['kodeerror'])
-                ->get();
+        $PenerimaanTruckingHeader = PenerimaanTruckingHeader::from(DB::raw("penerimaantruckingheader"))->where('id', $id)->first();
+        
+        $isUangJalanProcessed = $penerimaan->isUangJalanProcessed($PenerimaanTruckingHeader->nobukti);
+        if ($isUangJalanProcessed) {
+            $query = DB::table('error')->select(    DB::raw("ltrim(rtrim(keterangan))+' (Proses Uang Jalan Supir )' as keterangan"))->where('kodeerror', '=', 'TDT')->get();
             $keterangan = $query['0'];
-
             $data = [
                 'status' => false,
                 'message' => $keterangan,
                 'errors' => '',
-                'kondisi' => $cekdata['kondisi'],
+                'kondisi' => true,
             ];
-
-            return response($data);
-        } else {
-
-            $data = [
-                'status' => false,
-                'message' => '',
-                'errors' => '',
-                'kondisi' => $cekdata['kondisi'],
-            ];
-
             return response($data);
         }
+
+        $isUangOut = $penerimaan->isUangOut($PenerimaanTruckingHeader->nobukti);
+        if ($isUangOut) {
+            $query = DB::table('error')->select(    DB::raw("ltrim(rtrim(keterangan))+' (Proses Uang Jalan Supir )' as keterangan"))->where('kodeerror', '=', 'SATL')->get();
+            $keterangan = $query['0'];
+            $data = [
+                'status' => false,
+                'message' => $keterangan,
+                'errors' => '',
+                'kondisi' => true,
+            ];
+            return response($data);
+        }
+       
+        $data = [
+            'status' => true,
+            'message' => 'success',
+            'errors' => '',
+            'kondisi' => false,
+        ];
+
+        return response($data);
+      
+
+        
     }
 
     public function fieldLength()

@@ -25,53 +25,6 @@ class PenerimaanTruckingHeader extends MyModel
         'updated_at',
     ];
 
-    public function cekvalidasiaksi($nobukti)
-    {
-
-        $prosesUangJalan = DB::table('prosesuangjalansupirdetail')
-            ->from(
-                DB::raw("prosesuangjalansupirdetail as a with (readuncommitted)")
-            )
-            ->select(
-                'a.penerimaantrucking_nobukti'
-            )
-            ->where('a.penerimaantrucking_nobukti', '=', $nobukti)
-            ->first();
-        if (isset($prosesUangJalan)) {
-            $data = [
-                'kondisi' => true,
-                'keterangan' => 'Proses Uang Jalan Supir',
-                'kodeerror' => 'TDT'
-            ];
-            goto selesai;
-        }
-
-        $pengeluaranTrucking = DB::table('pengeluarantruckingdetail')
-            ->from(
-                DB::raw("pengeluarantruckingdetail as a with (readuncommitted)")
-            )
-            ->select(
-                'a.penerimaantruckingheader_nobukti'
-            )
-            ->where('a.penerimaantruckingheader_nobukti', '=', $nobukti)
-            ->first();
-        if (isset($pengeluaranTrucking)) {
-            $data = [
-                'kondisi' => true,
-                'keterangan' => 'Pengeluaran Trucking',
-                'kodeerror' => 'SATL'
-            ];
-            goto selesai;
-        }
-
-        $data = [
-            'kondisi' => false,
-            'keterangan' => '',
-        ];
-        selesai:
-        return $data;
-    }
-
     public function get()
     {
         $this->setRequestParameters();
@@ -1038,4 +991,91 @@ class PenerimaanTruckingHeader extends MyModel
         $data = $query->first();
         return $data;
     }
+
+    public function printValidation($id)
+    {
+        $query = DB::table($this->table)->from($this->table)->where('penerimaantruckingheader.id',$id);
+        $data = $query->first();
+        $status = $data->statuscetak;
+        $statusCetak = Parameter::from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUSCETAK')->where('text', 'CETAK')->first();
+
+        if ($status == $statusCetak->id) {
+            return true;
+        }
+        
+        return false;
+    }
+
+    public function isUangJalanProcessed($nobukti)
+    {
+        $prosesUangJalan = DB::table('prosesuangjalansupirdetail')->from(DB::raw("prosesuangjalansupirdetail as a with (readuncommitted)"))->select('a.penerimaantrucking_nobukti')
+        ->where('a.penerimaantrucking_nobukti', '=', $nobukti)
+        ->first();
+
+        if (isset($prosesUangJalan)) {
+            //jika uang jalan ada maka true
+            return true;
+        }
+        return false;
+    }
+    public function isUangOut($nobukti)
+    {
+        $prosesUangJalan = DB::table('pengeluarantruckingdetail')->from(DB::raw("prosesuangjalansupirdetail as a with (readuncommitted)"))->select('a.penerimaantrucking_nobukti')
+        ->where('a.penerimaantrucking_nobukti', '=', $nobukti)
+        ->first();
+
+        if (isset($prosesUangJalan)) {
+            //jika uang jalan ada maka true
+            return true;
+        }
+        return false;
+    }
+
+    public function cekvalidasiaksi($nobukti)
+    {
+
+        $prosesUangJalan = DB::table('prosesuangjalansupirdetail')
+            ->from(
+                DB::raw("prosesuangjalansupirdetail as a with (readuncommitted)")
+            )
+            ->select(
+                'a.penerimaantrucking_nobukti'
+            )
+            ->where('a.penerimaantrucking_nobukti', '=', $nobukti)
+            ->first();
+        if (isset($prosesUangJalan)) {
+            $data = [
+                'kondisi' => true,
+                'keterangan' => 'Proses Uang Jalan Supir',
+                'kodeerror' => 'TDT'
+            ];
+            goto selesai;
+        }
+
+        $pengeluaranTrucking = DB::table('pengeluarantruckingdetail')
+            ->from(
+                DB::raw("pengeluarantruckingdetail as a with (readuncommitted)")
+            )
+            ->select(
+                'a.penerimaantruckingheader_nobukti'
+            )
+            ->where('a.penerimaantruckingheader_nobukti', '=', $nobukti)
+            ->first();
+        if (isset($pengeluaranTrucking)) {
+            $data = [
+                'kondisi' => true,
+                'keterangan' => 'Pengeluaran Trucking',
+                'kodeerror' => 'SATL'
+            ];
+            goto selesai;
+        }
+
+        $data = [
+            'kondisi' => false,
+            'keterangan' => '',
+        ];
+        selesai:
+        return $data;
+    }
+
 }

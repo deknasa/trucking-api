@@ -33,6 +33,7 @@ class DestroyPenerimaanTruckingHeaderRequest extends FormRequest
       
         return [
             'nobukti' => new DestroyPenerimaanTruckingHeader(),
+            'id' => new DestroyPenerimaanTruckingHeader(),
         ];
       
     }

@@ -9,6 +9,7 @@ use App\Rules\DateTutupBuku;
 use App\Rules\ExistSupirDPOPenerimaanTrucking;
 use App\Rules\SupirDPOPenerimaanTrucking;
 use App\Rules\ValidasiDetail;
+use App\Rules\DestroyPenerimaanTruckingHeader;
 use Illuminate\Validation\Rule;
 use Illuminate\Support\Facades\DB;
 
@@ -128,6 +129,8 @@ class UpdatePenerimaanTruckingHeaderRequest extends FormRequest
         if ($kodepenerimaan == 'PJP') {
             $jumlahdetail = $this->jumlahdetail ?? 0;
             $rules = [
+                "id" => new DestroyPenerimaanTruckingHeader(),
+
                 'nobukti' => [Rule::in($getDataPenerimaan->nobukti)],
                 "tglbukti" => [
                 "required", 'date_format:d-m-Y',
@@ -144,6 +147,8 @@ class UpdatePenerimaanTruckingHeaderRequest extends FormRequest
         
         }elseif($kodepenerimaan == 'DPO'){
             $rules = [
+                "id" => new DestroyPenerimaanTruckingHeader(),
+
                 'nobukti' => [Rule::in($getDataPenerimaan->nobukti)],
                 "tglbukti" => [
                 "required", 'date_format:d-m-Y',
@@ -159,6 +164,8 @@ class UpdatePenerimaanTruckingHeaderRequest extends FormRequest
             ];
         }else{
             $rules = [
+                "id" => new DestroyPenerimaanTruckingHeader(),
+
                 'nobukti' => [Rule::in($getDataPenerimaan->nobukti)],
                 "tglbukti" => [
                 "required", 'date_format:d-m-Y',
