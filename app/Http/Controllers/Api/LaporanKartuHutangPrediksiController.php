@@ -31,21 +31,42 @@ class LaporanKartuHutangPrediksiController extends Controller
         $sampai = $request->sampai;
         $dari = $request->dari;
 
-        // $report = LaporanKartuHutangPrediksi::getReport($sampai, $dari);
-        $report = [
-            [
-                "noebs" => 'BKT-M BCA 0003/II/2023',
-                'tanggal' => '23/2/2023',
-                'nobukti' => '',
-                'keterangan' => 'TES KETERANGAN I',
-                'nominal' => '123412',
-                'bayar' => '0',
-                'saldo' => '214124124'
+        $sampai = $request->sampai;
+        $LaporanKartuHutangPrediksi = new LaporanKartuHutangPrediksi();
 
-            ]
-        ];
-        return response([
-            'data' => $report
-        ]);
+        $dataHutangPrediksi = $LaporanKartuHutangPrediksi->getReport($sampai,$dari);
+
+        if (count($dataHutangPrediksi) == 0) {
+            return response([
+                'data' => $dataHutangPrediksi,
+                'message' => 'tidak ada data'
+            ], 500);
+        }else{
+            return response([
+                'data' => $dataHutangPrediksi,
+                'message' => 'berhasil'
+            ]);
+        }
+
+
+
+
+
+        // $report = LaporanKartuHutangPrediksi::getReport($sampai, $dari);
+        // $report = [
+        //     [
+        //         "noebs" => 'BKT-M BCA 0003/II/2023',
+        //         'tanggal' => '23/2/2023',
+        //         'nobukti' => '',
+        //         'keterangan' => 'TES KETERANGAN I',
+        //         'nominal' => '123412',
+        //         'bayar' => '0',
+        //         'saldo' => '214124124'
+
+        //     ]
+        // ];
+        // return response([
+        //     'data' => $report
+        // ]);
     }
 }
