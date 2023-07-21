@@ -4,6 +4,7 @@ namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
 use App\Rules\DateTutupBuku;
+use App\Rules\ValidasiDestroyPenerimaanStokHeader;
 use App\Http\Controllers\Api\ParameterController;
 use App\Http\Controllers\Api\ErrorController;
 use App\Http\Controllers\Api\PenerimaanStokHeaderController;
@@ -61,13 +62,7 @@ class UpdatePenerimaanStokHeaderRequest extends FormRequest
             return false;
         });
         $rules = [
-            'id' => function ($attribute, $value, $fail) {
-                $id = $this->route('penerimaanstokheader');
-                $statusEdit = app(PenerimaanStokHeaderController::class)->cekvalidasi($id);
-                if($statusEdit->original['kodestatus']){
-                    $fail(app(ErrorController::class)->geterror('SDC')->keterangan);
-                }
-            },
+            'id' => [new ValidasiDestroyPenerimaanStokHeader()],
             'tglbukti' => [
                 'required',
                 new DateTutupBuku()

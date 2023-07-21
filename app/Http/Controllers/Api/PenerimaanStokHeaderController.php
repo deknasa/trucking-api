@@ -280,16 +280,7 @@ class PenerimaanStokHeaderController extends Controller
     {
         $penerimaanStokHeader  = new PenerimaanStokHeader();
 
-        $peneimaan = $penerimaanStokHeader->findOrFail($id);
-        $status = $peneimaan->statusapproval;
-        $statusApproval = Parameter::from(DB::raw("parameter with (readuncommitted)"))
-            ->where('grp', 'STATUS APPROVAL')->where('text', 'APPROVAL')->first();
-        $statusdatacetak = $peneimaan->statuscetak;
-        $statusCetak = Parameter::from(DB::raw("parameter with (readuncommitted)"))
-            ->where('grp', 'STATUSCETAK')->where('text', 'CETAK')->first();
-        $spb = Parameter::where('grp', 'SPB STOK')->where('subgrp', 'SPB STOK')->first();
-
-        // dd($penerimaanStokHeader->isOutUsed($id));
+        // $peneimaan = $penerimaanStokHeader->findOrFail($id);
 
         if ($penerimaanStokHeader->isOutUsed($id)) {
             $query = Error::from(DB::raw("error with (readuncommitted)"))
@@ -321,7 +312,7 @@ class PenerimaanStokHeaderController extends Controller
             return response($data);
         }
 
-        if ($status == $statusApproval->id) {
+        if ($penerimaanStokHeader->isApproved($id)) {
             $query = Error::from(DB::raw("error with (readuncommitted)"))
                 ->select('keterangan')
                 ->whereRaw("kodeerror = 'SAP'")
@@ -348,7 +339,7 @@ class PenerimaanStokHeaderController extends Controller
                 'kodenobukti' => '1'
             ];
             return response($data);
-        } else if ($statusdatacetak == $statusCetak->id) {
+        } else if ($penerimaanStokHeader->printValidation($id)) {
             $query = Error::from(DB::raw("error with (readuncommitted)"))
                 ->select('keterangan')
                 ->whereRaw("kodeerror = 'SDC'")

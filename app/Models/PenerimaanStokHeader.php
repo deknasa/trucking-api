@@ -963,6 +963,33 @@ class PenerimaanStokHeader extends MyModel
         
         return false;
     }
+    public function isApproved($id)
+    {
+        $query = DB::table($this->table)->from($this->table)->where('penerimaanstokheader.id',$id);
+        $data = $query->first();
+        $status = $data->statusapproval;
+        $statusApproval = DB::table('parameter')->where('grp', 'STATUS APPROVAL')->where('text', 'APPROVAL')->first();
+
+        if ($status == $statusApproval->id) {
+            return true;
+        }
+        
+        return false;
+    }
+
+    public function printValidation($id)
+    {
+        $query = DB::table($this->table)->from($this->table)->where('penerimaanstokheader.id',$id);
+        $data = $query->first();
+        $status = $data->statuscetak;
+        $statusCetak = Parameter::from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUSCETAK')->where('text', 'CETAK')->first();
+
+        if ($status == $statusCetak->id) {
+            return true;
+        }
+        
+        return false;
+    }
 
     
 
