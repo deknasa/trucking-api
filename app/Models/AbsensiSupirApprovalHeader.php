@@ -333,6 +333,21 @@ class AbsensiSupirApprovalHeader extends MyModel
         return $data;
     }
 
+    public function printValidation($id)
+    {
+
+        $statusCetak = DB::table('absensisupirapprovalheader')->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUSCETAK')->where('text', 'CETAK')->first();
+
+        $query = DB::table('absensisupirapprovalheader')->from(DB::raw("absensisupirapprovalheader with (readuncommitted)"))
+            ->select('statuscetak')
+            ->where('id', $id)
+            ->first();
+
+        //jika belum cetak return true
+        if ($query->statuscetak != $statusCetak->id) return true;
+        return false;
+    }
+
     public function processStore(array $data): AbsensiSupirApprovalHeader
     {
         $group = 'ABSENSI SUPIR APPROVAL BUKTI';

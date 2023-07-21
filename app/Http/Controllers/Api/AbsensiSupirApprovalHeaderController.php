@@ -16,6 +16,7 @@ use App\Models\Parameter;
 
 use App\Http\Requests\StoreAbsensiSupirApprovalHeaderRequest;
 use App\Http\Requests\UpdateAbsensiSupirApprovalHeaderRequest;
+use App\Http\Requests\DestroyAbsensiSupirApprovalHeaderRequest;
 use App\Http\Requests\StoreAbsensiSupirApprovalDetailRequest;
 use App\Http\Requests\StoreJurnalUmumDetailRequest;
 use App\Http\Requests\StoreJurnalUmumHeaderRequest;
@@ -152,7 +153,7 @@ class AbsensiSupirApprovalHeaderController extends Controller
     /**
      * @ClassName 
      */
-    public function destroy(Request $request, $id)
+    public function destroy(DestroyAbsensiSupirApprovalHeaderRequest $request, $id)
     {
 
 
@@ -259,18 +260,15 @@ class AbsensiSupirApprovalHeaderController extends Controller
     public function cekvalidasi($id)
     {
         $absensisupirapproval = AbsensiSupirApprovalHeader::find($id);
-        $statusdatacetak = $absensisupirapproval->statuscetak;
-        $statusCetak = Parameter::where('grp', 'STATUSCETAK')->where('text', 'CETAK')->first();
 
-        if ($statusdatacetak == $statusCetak->id) {
-            $query = DB::table('error')
-                ->select('keterangan')
-                ->where('kodeerror', '=', 'SDC')
-                ->get();
+         //validasi cetak
+         $printValidation = AbsensiSupirApprovalHeader::printValidation($id);
+         if (!$printValidation) {
+            $query = DB::table('error')->select('keterangan')->where('kodeerror', '=', 'SDC')->get();
             $keterangan = $query['0'];
             $data = [
                 'message' => $keterangan,
-                'errors' => 'sudah cetak',
+                'errors' => 'status approve edit tidak boleh',
                 'kodestatus' => '1',
                 'kodenobukti' => '1'
             ];

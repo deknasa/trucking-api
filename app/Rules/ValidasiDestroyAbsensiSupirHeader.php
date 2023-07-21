@@ -3,6 +3,8 @@
 namespace App\Rules;
 
 use Illuminate\Contracts\Validation\Rule;
+use App\Http\Controllers\Api\ErrorController;
+use App\Models\AbsensiSupirHeader;
 
 class ValidasiDestroyAbsensiSupirHeader implements Rule
 {
@@ -11,11 +13,12 @@ class ValidasiDestroyAbsensiSupirHeader implements Rule
      *
      * @return void
      */
-    public function __construct($param)
+    public function __construct()
     {
-        $this->kondisi = $param;
+        
     }
-    public $kondisi;
+
+    private $message;
     /**
      * Determine if the validation rule passes.
      *
@@ -25,13 +28,38 @@ class ValidasiDestroyAbsensiSupirHeader implements Rule
      */
     public function passes($attribute, $value)
     {
-        if ($this->kondisi == true) {
-            // dd('1');
-            return false;
-        } else {
-            // dd('3');
+
+        $absensisupir = AbsensiSupirHeader::findOrFail(request()->id);
+
+        $isDateAllowed = AbsensiSupirHeader::isDateAllowed($absensisupir->id);
+        if (!$isDateAllowed) {
+            $this->message = "TEPT";
+
+        }
+        $isEditAble = AbsensiSupirHeader::isEditAble($absensisupir->id);
+        if (!$isEditAble) {
+            $this->message = "BAED";
+
+        }
+        $printValidation = AbsensiSupirHeader::printValidation($absensisupir->id);
+        if (!$printValidation) {
+            $this->message = "SDC";
+
+        }
+        $todayValidation = AbsensiSupirHeader::todayValidation($absensisupir->tglbukti);
+        if (!$todayValidation) {
+            $this->message = "SATL";
+
+        }
+        $isApproved = AbsensiSupirHeader::isApproved($absensisupir->nobukti);
+        if (!$isApproved) {
+            $this->message = "SATL";
+
+        }
+        if (($todayValidation && $isApproved) || ($isEditAble && $printValidation) || $isDateAllowed) {
             return true;
         }
+        return false;
     }
 
     /**
@@ -41,6 +69,6 @@ class ValidasiDestroyAbsensiSupirHeader implements Rule
      */
     public function message()
     {
-        return app(ErrorController::class)->geterror('SATL')->keterangan;
+        return app(ErrorController::class)->geterror($this->message)->keterangan;
     }
 }

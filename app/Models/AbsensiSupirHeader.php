@@ -335,7 +335,7 @@ class AbsensiSupirHeader extends MyModel
     }
     public function isApproved($nobukti)
     {
-        $query = DB::table('absensisupirapprovalheader')
+        $absensiSupir = DB::table('absensisupirapprovalheader')
             ->from(
                 DB::raw("absensisupirapprovalheader as a with (readuncommitted)")
             )
@@ -529,7 +529,6 @@ class AbsensiSupirHeader extends MyModel
 
     public function processUpdate(AbsensiSupirHeader $absensiSupir,array $data): AbsensiSupirHeader
     {
-
         $group = 'ABSENSI';
         $subGroup = 'ABSENSI';
         $format = DB::table('parameter')->where('grp', $group)->where('subgrp', $subGroup)->first();
