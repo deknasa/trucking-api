@@ -108,7 +108,7 @@ class UserController extends Controller
                 'user' => strtoupper($request->user),
                 'name' => strtoupper($request->name),
                 'email' => strtoupper($request->email),
-                'password' => Hash::make($request->password),
+                'password' => $request->password,
                 'cabang_id' => $request->cabang_id ?? '',
                 'karyawan_id' => $request->karyawan_id,
                 'dashboard' => strtoupper($request->dashboard),

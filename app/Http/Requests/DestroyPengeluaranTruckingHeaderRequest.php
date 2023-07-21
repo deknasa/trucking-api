@@ -3,12 +3,6 @@
 namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
-use App\Http\Controllers\Api\ErrorController;
-use App\Models\Parameter;
-use App\Rules\DestroyBank;
-use App\Rules\DestroyBankPelanggan;
-use App\Rules\DestroyJurnalUmum;
-use App\Rules\DestroyPenerima;
 use App\Rules\DestroyPengeluaranTruckingHeader;
 use Illuminate\Validation\Rule;
 

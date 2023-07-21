@@ -206,6 +206,7 @@ class PengeluaranTruckingHeaderController extends Controller
      */
     public function destroy(DestroyPengeluaranTruckingHeaderRequest $request, $id)
     {
+        dd($id);
         DB::beginTransaction();
         try {
             /* Store header */

@@ -11,6 +11,8 @@ use App\Rules\ExistSupirForPengeluaranTrucking;
 use App\Rules\ValidasiDetail;
 use Illuminate\Validation\Rule;
 use Illuminate\Support\Facades\DB;
+use App\Rules\DestroyPengeluaranTruckingHeader;
+
 
 class UpdatePengeluaranTruckingHeaderRequest extends FormRequest
 {
