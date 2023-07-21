@@ -324,6 +324,55 @@ class AbsensiSupirHeaderController extends Controller
 
         $passes = true;
         $keterangan = [];
+
+        $isDateAllowed = AbsensiSupirHeader::isDateAllowed($id);
+        if (!$isDateAllowed) {
+            $query = DB::table('error')->select('keterangan')->where('kodeerror', '=', 'TEPT')->get();
+            $keterangan = $query['0'];
+
+            $data = [
+                'message' => $keterangan,
+                'errors' => 'data tidak bisa diedit pada tanggal ini',
+                'kodestatus' => '1',
+                'kodenobukti' => '1'
+            ];
+            $passes = false;
+            // return response($data);
+        }
+
+        //validasi status edit
+        $passes = true;
+        $isEditAble = AbsensiSupirHeader::isEditAble($id);
+        if (!$isEditAble) {
+            $query = DB::table('error')->select('keterangan')->where('kodeerror', '=', 'BAED')->get();
+            $keterangan = $query['0'];
+
+            $data = [
+                'message' => $keterangan,
+                'errors' => 'status approve edit tidak boleh',
+                'kodestatus' => '1',
+                'kodenobukti' => '1'
+            ];
+            $passes = false;
+            // return response($data);
+        }
+
+        //validasi cetak
+        $printValidation = AbsensiSupirHeader::printValidation($id);
+        if (!$printValidation) {
+            $query = DB::table('error')->select('keterangan')->where('kodeerror', '=', 'SDC')->get();
+            $keterangan = $query['0'];
+            $data = [
+                'message' => $keterangan,
+                'errors' => 'Sudah cetak',
+                'kodestatus' => '1',
+                'kodenobukti' => '1'
+            ];
+            $passes = false;
+
+            // return response($data);
+        }
+        
         //validasi Hari ini
         $todayValidation = AbsensiSupirHeader::todayValidation($absensisupir->tglbukti);
         if (!$todayValidation) {
@@ -354,57 +403,6 @@ class AbsensiSupirHeaderController extends Controller
                 'kodenobukti' => '1'
             ];
             $passes = false;
-            // return response($data);
-        }
-
-
-
-        //validasi status edit
-        $passes = true;
-        $isEditAble = AbsensiSupirHeader::isEditAble($id);
-        if (!$isEditAble) {
-            $query = DB::table('error')->select('keterangan')->where('kodeerror', '=', 'BAED')->get();
-            $keterangan = $query['0'];
-
-            $data = [
-                'message' => $keterangan,
-                'errors' => 'status approve edit tidak boleh',
-                'kodestatus' => '1',
-                'kodenobukti' => '1'
-            ];
-            $passes = false;
-            // return response($data);
-        }
-
-
-        $isDateAllowed = AbsensiSupirHeader::isDateAllowed($id);
-        if (!$isDateAllowed) {
-            $query = DB::table('error')->select('keterangan')->where('kodeerror', '=', 'TEPT')->get();
-            $keterangan = $query['0'];
-
-            $data = [
-                'message' => $keterangan,
-                'errors' => 'data tidak bisa diedit pada tanggal ini',
-                'kodestatus' => '1',
-                'kodenobukti' => '1'
-            ];
-            $passes = false;
-            // return response($data);
-        }
-
-        //validasi cetak
-        $printValidation = AbsensiSupirHeader::printValidation($id);
-        if (!$printValidation) {
-            $query = DB::table('error')->select('keterangan')->where('kodeerror', '=', 'SDC')->get();
-            $keterangan = $query['0'];
-            $data = [
-                'message' => $keterangan,
-                'errors' => 'status approve edit tidak boleh',
-                'kodestatus' => '1',
-                'kodenobukti' => '1'
-            ];
-            $passes = false;
-
             // return response($data);
         }
         if (($todayValidation && $isApproved) || ($isEditAble && $printValidation) || $isDateAllowed) {

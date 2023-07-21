@@ -139,6 +139,7 @@ class AbsensiSupirHeaderRequest extends FormRequest
             
             $tglbukti = date('d-m-Y', strtotime($queryexist->tglbukti));
             $rulesBeda = [
+                'id' =>[new ValidasiDestroyAbsensiSupirHeader()],
                 'tglbukti' => [
                     'required', 'date_format:d-m-Y',
                     new DateAllowedAbsen($kondisi),
@@ -159,7 +160,7 @@ class AbsensiSupirHeaderRequest extends FormRequest
 
 
             return [
-                'id' => [new ValidasiDestroyAbsensiSupirHeader($cekdata['kondisi'])],
+                'id' => [new ValidasiDestroyAbsensiSupirHeader()],
             ];
         } else {
             $awal  = date_create(date('Y-m-d', strtotime($this->tglbukti)));

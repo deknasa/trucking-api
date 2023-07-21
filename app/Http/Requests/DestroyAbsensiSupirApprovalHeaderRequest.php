@@ -2,12 +2,10 @@
 
 namespace App\Http\Requests;
 
-use App\Http\Controllers\Api\ErrorController;
 use Illuminate\Foundation\Http\FormRequest;
-use App\Rules\DateTutupBuku;
 use App\Rules\ValidasiDestroyAbsensiSupirApprovalHeader;
 
-class UpdateAbsensiSupirApprovalHeaderRequest extends FormRequest
+class DestroyAbsensiSupirApprovalHeaderRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
@@ -28,18 +26,6 @@ class UpdateAbsensiSupirApprovalHeaderRequest extends FormRequest
     {
         return [
             "id"=>[new ValidasiDestroyAbsensiSupirApprovalHeader()],
-            "absensisupir_nobukti" => "required",
-            "tglbukti" => [
-                "required", 'date_format:d-m-Y',
-                new DateTutupBuku()
-            ],
-        ];
-    }
-
-    public function messages()
-    {
-        return [
-            'tglbukti.date_format' => app(ErrorController::class)->geterror('DF')->keterangan,
         ];
     }
 }
