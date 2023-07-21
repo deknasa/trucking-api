@@ -83,7 +83,6 @@ class StorePengeluaranTruckingHeaderRequest extends FormRequest
             $bankIds[] = $bankId->id;
         }
         $ruleStatusPosting = Rule::requiredIf(function () {
-            return false;
             $klaim = DB::table('pengeluarantrucking')->from(DB::raw("pengeluarantrucking with (readuncommitted)"))
                 // ->where('id',$this->pengeluarantrucking_id)
                 ->where('kodepengeluaran', "KLAIM")

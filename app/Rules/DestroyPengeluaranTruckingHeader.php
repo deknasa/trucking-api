@@ -34,7 +34,14 @@ class DestroyPengeluaranTruckingHeader implements Rule
         $nobukti = JurnalUmumHeader::from(DB::raw("pengeluarantruckingheader"))->where('id', request()->id)->first();
         $cekdata = $gajisupir->cekvalidasiaksi($nobukti->nobukti);
         if($cekdata['kondisi']){
-          return false;
+            $this->message = 'TDT';
+            return false;
+        }
+
+        $printValidation = $gajisupir->printValidation(request()->id);
+        if ($printValidation) {
+            $this->message = 'SDC';
+            return false;
         }
 
         return true;

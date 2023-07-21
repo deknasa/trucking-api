@@ -28,6 +28,7 @@ use Illuminate\Support\Facades\Schema;
 use App\Http\Requests\StoreLogTrailRequest;
 use App\Http\Requests\StorePengeluaranStokHeaderRequest;
 use App\Http\Requests\UpdatePengeluaranStokHeaderRequest;
+use App\Http\Requests\DestroyPengeluaranStokHeaderRequest;
 use App\Http\Requests\StorePengeluaranStokDetailRequest;
 use App\Http\Requests\StorePengeluaranStokDetailFifoRequest;
 use App\Http\Requests\StoreHutangBayarHeaderRequest;
@@ -203,8 +204,7 @@ class PengeluaranStokHeaderController extends Controller
     /**
      * @ClassName 
      */
-    public function destroy(Request $request, PengeluaranStokHeader $pengeluaranStokHeader, $id): JsonResponse
-    // public function destroy(DestroyPengeluaranStokHeaderRequest $request,PengeluaranStokHeader $pengeluaranStokHeader, $id): JsonResponse
+    public function destroy(DestroyPengeluaranStokHeaderRequest $request, PengeluaranStokHeader $pengeluaranStokHeader, $id): JsonResponse
     {
         DB::beginTransaction();
 
@@ -312,13 +312,7 @@ class PengeluaranStokHeaderController extends Controller
     public function cekvalidasi($id)
     {
         $pengeluaran = PengeluaranStokHeader::findOrFail($id);
-        $status = $pengeluaran->statusapproval;
-        $statusApproval = Parameter::from(DB::raw("parameter with (readuncommitted)"))
-            ->where('grp', 'STATUS APPROVAL')->where('text', 'APPROVAL')->first();
-        $statusdatacetak = $pengeluaran->statuscetak;
-        $statusCetak = Parameter::from(DB::raw("parameter with (readuncommitted)"))
-            ->where('grp', 'STATUSCETAK')->where('text', 'CETAK')->first();
-
+        
         if ($pengeluaran->isInUsed($id)) {
             $query = Error::from(DB::raw("error with (readuncommitted)"))
                 ->select('keterangan')
@@ -333,21 +327,7 @@ class PengeluaranStokHeaderController extends Controller
             ];
             return response($data);
         }
-        if ($status == $statusApproval->id) {
-            $query = Error::from(DB::raw("error with (readuncommitted)"))
-                ->select('keterangan')
-                ->whereRaw("kodeerror = 'SAP'")
-                ->get();
-            $keterangan = $query['0'];
-            $data = [
-                'message' => $keterangan,
-                'errors' => 'sudah approve',
-                'kodestatus' => '1',
-                'kodenobukti' => '1'
-            ];
-
-            return response($data);
-        } else if ($statusdatacetak == $statusCetak->id) {
+        if ($pengeluaran->printValidation($id)) {
             $query = Error::from(DB::raw("error with (readuncommitted)"))
                 ->select('keterangan')
                 ->whereRaw("kodeerror = 'SDC'")

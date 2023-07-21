@@ -394,6 +394,18 @@ class PengeluaranStokHeader extends MyModel
         return false;
     }
 
+    public function printValidation($id)
+    {
+        $query = DB::table($this->table)->from($this->table)->where('pengeluaranstokheader.id',$id);
+        $data = $query->first();
+        $status = $data->statuscetak;
+        $statusCetak = Parameter::from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUSCETAK')->where('text', 'CETAK')->first();
+        if ($status == $statusCetak->id){
+            return true;
+        }
+        return false;
+    }
+
     public function processStore(array $data): PengeluaranStokHeader
     {
         $idpengeluaran = $data['pengeluaranstok_id'];
