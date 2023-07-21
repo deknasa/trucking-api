@@ -15,6 +15,9 @@ use Laravel\Passport\HasApiTokens;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\Hash;
 
+
+
+
 class User extends Authenticatable
 {
     use HasApiTokens, HasFactory, Notifiable;
@@ -420,6 +423,32 @@ class User extends Authenticatable
     {
         $user = new User();
         $user = $user->lockAndDestroy($id);
+
+        $getuserrole = DB::table("UserRole")->from(
+            DB::raw("userrole with (readuncommitted)")
+        )
+            ->select('id')
+            ->where('user_id', $id)->get();
+        $datadetail = json_decode($getuserrole, true);
+
+        foreach ($datadetail as $item) {
+            $userrole = (new UserRole())->processDestroy($item['id']);
+
+        }
+
+
+        $getuseracl = DB::table("UserAcl")->from(
+            DB::raw("useracl with (readuncommitted)")
+        )
+            ->select('id')
+            ->where('user_id', $id)->get();
+        $datadetail = json_decode($getuseracl, true);
+        foreach ($datadetail as $item) {
+            $useracl = (new UserAcl())->processDestroy($item['id']);
+
+        }
+
+
 
         (new LogTrail())->processStore([
             'namatabel' => strtoupper($user->getTable()),

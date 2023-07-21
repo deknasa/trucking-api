@@ -88,4 +88,22 @@ class UserAcl extends MyModel
     {
         return $query->skip($this->params['offset'])->take($this->params['limit']);
     }
+
+    public function processDestroy($id): UserAcl
+    {
+        $userAcl = new UserAcl();
+        $userAcl = $userAcl->lockAndDestroy($id);
+
+        (new LogTrail())->processStore([
+            'namatabel' => strtoupper($userAcl->getTable()),
+            'postingdari' => 'DELETE PARAMETER',
+            'idtrans' => $userAcl->id,
+            'nobuktitrans' => $userAcl->id,
+            'aksi' => 'DELETE',
+            'datajson' => $userAcl->toArray(),
+            'modifiedby' => $userAcl->modifiedby
+        ]);
+
+        return $userAcl;
+    }
 }

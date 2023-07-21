@@ -87,4 +87,22 @@ class UserRole extends MyModel
     {
         return $query->skip($this->params['offset'])->take($this->params['limit']);
     }
+
+    public function processDestroy($id): UserRole
+    {
+        $userRole = new UserRole();
+        $userRole = $userRole->lockAndDestroy($id);
+
+        (new LogTrail())->processStore([
+            'namatabel' => strtoupper($userRole->getTable()),
+            'postingdari' => 'DELETE PARAMETER',
+            'idtrans' => $userRole->id,
+            'nobuktitrans' => $userRole->id,
+            'aksi' => 'DELETE',
+            'datajson' => $userRole->toArray(),
+            'modifiedby' => $userRole->modifiedby
+        ]);
+
+        return $userRole;
+    }
 }
