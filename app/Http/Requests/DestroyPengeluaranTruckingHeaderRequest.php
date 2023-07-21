@@ -27,7 +27,7 @@ class DestroyPengeluaranTruckingHeaderRequest extends FormRequest
     {
       
         return [
-            'nobukti' => new DestroyPengeluaranTruckingHeader(),
+            'id' => new DestroyPengeluaranTruckingHeader(),
         ];
       
     }

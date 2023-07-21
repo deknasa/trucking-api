@@ -56,13 +56,15 @@ class Authorized
         $userRole = DB::table('userrole')
             ->where('user_id', $userId)
             ->first();
-
-        $userRoleAcl = DB::table('useracl')
+        
+        $userRoleAcl = DB::table('userrole')
             ->select('acos.id')
-            ->leftJoin('acos', 'useracl.aco_id', '=', 'acos.id')
-            ->where('acos.class', '=', $class)
-            ->where('acos.method', '=', $method)
-            ->where('useracl.user_id', $userRole->user_id ?? null);
+            ->leftJoin('role', 'userrole.role_id', 'role.id')
+            ->leftJoin('acl', 'role.id', 'acl.role_id')
+            ->leftJoin('acos', 'acl.aco_id', 'acos.id')
+            ->whereRaw("acos.[class] = '".$class ."'")
+            ->whereRaw("acos.[method] = '".$method . "'")
+            ->whereRaw('userrole.user_id = '.$userRole->user_id);
 
         $userAcl = DB::table('useracl')
             ->select('acos.id')

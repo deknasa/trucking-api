@@ -218,6 +218,7 @@ class UpdatePengeluaranTruckingHeaderRequest extends FormRequest
 
         foreach ($relatedRequests as $relatedRequest) {
             $rules = array_merge(
+                ['id' => new DestroyPengeluaranTruckingHeader() ],
                 $rules,
                 $rulseKlaim,
                 $rulesSupir_id
