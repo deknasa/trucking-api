@@ -532,6 +532,7 @@ class OrderanTrucking extends MyModel
             )
             ->leftjoin(DB::raw("suratpengantar as b with (readuncommitted)"), 'a.jobtrucking', 'b.jobtrucking')
             ->leftjoin(DB::raw("invoicechargegandengandetail as c with (readuncommitted)"), 'a.jobtrucking', 'c.jobtrucking')
+            ->whereRaw("isnull(c.jobtrucking,'')=''")
             ->groupBY('a.jobtrucking');
 
         DB::table($tempdata)->insertUsing([
@@ -618,8 +619,62 @@ class OrderanTrucking extends MyModel
         return $pjumlah;
     }
 
-    public function getOrderanTrip($tglproses, $agen)
+    public function getOrderanTrip($tglproses, $agen,$idinvoice)
     {
+        $queryagen=DB::table('agen')->from(
+            DB::raw("agen a with (readuncommitted)")
+        )
+        ->select (
+            'a.kodeagen'
+        )->where('a.id','=',$agen)
+        ->first();
+
+        $queryinvoice=DB::table('invoicechargegandenganheader')->from(
+            DB::raw("invoicechargegandenganheader a with (readuncommitted)")
+        )
+        ->select (
+            'a.nobukti'
+        )->where('a.id','=',$idinvoice)
+        ->first();
+
+        $querysp=DB::table('suratpengantar')->from(
+            DB::raw("suratpengantar a with (readuncommitted)")
+        )
+        ->select (
+            'a.jobtrucking',
+            DB::raw("max(c.kodecontainer) as container"),
+            DB::raw("max(a.nojob) as nojob"),
+            DB::raw("max(a.nojob2) as nojob2"),
+            DB::raw("max(a.nocont) as nocont"),
+            DB::raw("max(a.nocont2) as nocont2"),
+            DB::raw("max(a.supir_id) as supir_id"),
+
+        )
+        ->join(db::raw("invoicechargegandengandetail b with (readuncommitted)"),'a.jobtrucking','b.jobtrucking')
+        ->join(db::raw("container c with (readuncommitted)"),'a.container_id','c.id')
+        ->groupBy('a.jobtrucking');
+
+        $tempsp = '##tempsp' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+        Schema::create($tempsp, function ($table) {
+            $table->string('jobtrucking', 50)->nullable();
+            $table->string('container', 500)->nullable();
+            $table->string('nojob', 500)->nullable();
+            $table->string('nojob2', 500)->nullable();
+            $table->string('nocont', 500)->nullable();
+            $table->string('nocont2', 500)->nullable();
+            $table->integer('supir_id')->nullable();
+        });
+
+        DB::table($tempsp)->insertUsing([
+            'jobtrucking',
+            'container',
+            'nojob',
+            'nojob2',
+            'nocont',
+            'nocont2',
+            'supir_id',
+        ], $querysp);
+
 
         $this->setRequestParameters();
 
@@ -647,6 +702,59 @@ class OrderanTrucking extends MyModel
             $table->integer('agen_id')->nullable();
         });
 
+        $query=DB::table("invoicechargegandengandetail")->from(
+            db::raw("invoicechargegandengandetail a with (readuncommitted)")
+        )
+        ->select (
+            'a.jobtrucking',
+            'b.kodegandengan as gandengan',
+            DB::raw("'1900/1/1' as tglawal"),
+            DB::raw("'1900/1/1' as tglkembali"),
+            'a.jumlahhari',
+            'a.jenisorder',
+            DB::raw("'" .$queryagen->kodeagen ."' as namaemkl"),
+            'c.container as ukurancontainer',
+            'c.nojob',
+            'c.nojob2',
+            'c.nocont',
+            'c.nocont2',
+            'd.kodetrado',
+            'e.namasupir as supir',
+            'a.namagudang',
+            DB::raw("'".$queryinvoice->nobukti ."' as noinvoice"),
+            'a.trado_id',
+            'a.gandengan_id',
+            DB::raw($agen ." as agen_id")
+        )
+        ->join(db::raw("gandengan b with (readuncommitted)"),'a.gandengan_id','b.id')
+        ->join(DB::raw($tempsp ." c"),'a.jobtrucking','c.jobtrucking')
+        ->join(db::raw("trado d with (readuncommitted)"),'a.trado_id','d.id')
+        ->join(db::raw("supir e with (readuncommitted)"),'c.supir_id','e.id')
+        ->where('invoicechargegandengan_id','=',$idinvoice);
+
+        // dd($query->toSql());
+        
+        DB::table($tempdatalist)->insertUsing([
+            'jobtrucking',
+            'gandengan',
+            'tglawal',
+            'tglkembali',
+            'jumlahhari',
+            'jenisorder',
+            'namaemkl',
+            'ukurancontainer',
+            'nojob',
+            'nojob2',
+            'nocont',
+            'nocont2',
+            'kodetrado',
+            'supir',
+            'namagudang',
+            'noinvoice',
+            'trado_id',
+            'gandengan_id',
+            'agen_id',
+        ],  $query);
 
         DB::table($tempdatalist)->insertUsing([
             'jobtrucking',
@@ -703,10 +811,7 @@ class OrderanTrucking extends MyModel
         return $data;
     }
 
-    public function getOrderanTripEdit($idInvoice, $agen)
-    {
-
-    }
+  
     public function sortInvoice($query)
     {
         if ($this->params['sortIndex'] == 'nopolisi') {

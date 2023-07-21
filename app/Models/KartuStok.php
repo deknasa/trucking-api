@@ -399,7 +399,7 @@ class KartuStok extends MyModel
         return $data;
     }
 
-    private function getall($tgldari, $tglsampai, $stokdari, $stoksampai, $gudang_id, $trado_id, $gandengan_id, $filter)
+    public function getall($tgldari, $tglsampai, $stokdari, $stoksampai, $gudang_id, $trado_id, $gandengan_id, $filter)
     {
 
         $temprekapall = '##temprekapall' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
@@ -547,9 +547,12 @@ class KartuStok extends MyModel
         return $datalist;
     }
 
-    private function getlaporan($tgldari, $tglsampai, $stokdari, $stoksampai, $gudang_id, $trado_id, $gandengan_id, $filter)
+    public function getlaporan($tgldari, $tglsampai, $stokdari, $stoksampai, $gudang_id, $trado_id, $gandengan_id, $filter)
     {
 
+        // dump($tgldari);
+        // dd($tglsampai);
+        
         $gudang_id = $gudang_id ?? 0;
         $trado_id = $trado_id ?? 0;
         $gandengan_id = $gandengan_id ?? 0;
@@ -725,7 +728,10 @@ class KartuStok extends MyModel
             ->where('grp', 'GST STOK')->where('subgrp', 'GST STOK')->first();
 
 
-
+            // dump($filter);
+            // dump($filtergudang->text);
+            // dump($gudang_id);
+            // dd($gudangkantor->text);
         if ($filter == $filtergudang->text) {
             //=========================================saldo awal masuk=========================================
             if ($gudang_id == $gudangkantor->text) {

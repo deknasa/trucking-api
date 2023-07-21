@@ -251,7 +251,7 @@ class OrderanTruckingController extends Controller
             $agen = $request->agen;
             $tglbukti = date('Y-m-d', strtotime($request->tglbukti));
             return response([
-                'data' => $orderanTrucking->getOrderanTrip($tglbukti, $agen),
+                'data' => $orderanTrucking->getOrderanTrip($tglbukti, $agen,$request->idInvoice),
                 'attributes' => [
                     'totalRows' => $orderanTrucking->totalRows,
                     'totalPages' => $orderanTrucking->totalPages,
@@ -263,7 +263,7 @@ class OrderanTruckingController extends Controller
             $agen = $request->agen;
             $tglbukti = date('Y-m-d', strtotime($request->tglbukti));
             return response([
-                'data' => $orderanTrucking->getOrderanTripEdit($request->idInvoice, $agen),
+                'data' => $orderanTrucking->getOrderanTrip($tglbukti, $agen,$request->idInvoice),
                 'attributes' => [
                     'totalRows' => $orderanTrucking->totalRows,
                     'totalPages' => $orderanTrucking->totalPages,
