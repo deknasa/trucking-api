@@ -120,6 +120,8 @@ class DatabaseSeeder extends Seeder
             SaldoAwalBukuBesarSeeder::class,
             DataRitasiSeeder::class,
             SaldoHutangPrediksiSeeder::class,
+            InvoiceChargeGandenganHeaderSeeder::class,
+            InvoiceChargeGandenganDetailSeeder::class,
 
         ]);
     }

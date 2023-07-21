@@ -239,7 +239,7 @@ class StorePengeluaranTruckingHeaderRequest extends FormRequest
                     new DateTutupBuku()
                 ],
                 'pengeluarantrucking' => 'required','numeric', 'min:1',
-                'statusposting' => 'required',
+                'statusposting' => [$ruleStatusPosting],
                 'bank' => [$ruleBank],
                 // 'tgldari' => [
                 //     'required', 'date_format:d-m-Y',

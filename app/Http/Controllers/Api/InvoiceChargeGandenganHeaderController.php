@@ -51,12 +51,17 @@ class InvoiceChargeGandenganHeaderController extends Controller
                 'tglproses' => $request->tglproses,
                 'id_detail' => $request->id_detail,
                 'jobtrucking_detail' => $request->jobtrucking_detail,
-                'tgltrip_detail' => $request->tgltrip_detail,
-                'jumlahhari_detail' => $request->jumlahhari_detail,
                 'nopolisi_detail' => $request->nopolisi_detail,
+                'gandengan_detail' => $request->gandengan_detail,
+                'tgltrip_detail' => $request->tgltrip_detail,
+                'tglkembali_detail' => $request->tglkembali_detail,
+                'jumlahhari_detail' => $request->jumlahhari_detail,
                 'keterangan_detail' => $request->keterangan_detail,
-                'nominal_detail' => $request->nominal_detail
+                'nominal_detail' => $request->nominal_detail,
+                'jenisorder_detail' => $request->jenisorder_detail,
+                'namagudang_detail' => $request->namagudang_detail,
             ];
+            
             $invoiceChargeGandengan = (new InvoiceChargeGandenganHeader())->processStore($data);
             $invoiceChargeGandengan->position = $this->getPosition($invoiceChargeGandengan, $invoiceChargeGandengan->getTable())->position;
             $invoiceChargeGandengan->page = ceil($invoiceChargeGandengan->position / ($request->limit ?? 10));

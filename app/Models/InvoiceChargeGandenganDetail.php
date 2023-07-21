@@ -157,9 +157,14 @@ class InvoiceChargeGandenganDetail extends MyModel
         $invoiceChargeGandenganDetail->nobukti = $invoiceChargeGandenganHeader->nobukti;
         $invoiceChargeGandenganDetail->jobtrucking = $data['jobtrucking_detail'];
         $invoiceChargeGandenganDetail->trado_id = $data['trado_id'];
+        $invoiceChargeGandenganDetail->gandengan_id = $data['gandengan_id'];
         $invoiceChargeGandenganDetail->tgltrip = $data['tgltrip_detail'];
+        $invoiceChargeGandenganDetail->tglakhir = $data['tglkembali_detail'];
         $invoiceChargeGandenganDetail->jumlahhari = $data['jumlahhari_detail'];
         $invoiceChargeGandenganDetail->nominal = $data['nominal_detail'];
+        $invoiceChargeGandenganDetail->total = $data['nominal_detail'];
+        $invoiceChargeGandenganDetail->jenisorder = $data['jenisorder_detail'];
+        $invoiceChargeGandenganDetail->namagudang = $data['namagudang_detail'];
         $invoiceChargeGandenganDetail->keterangan = $data['keterangan_detail'];
         $invoiceChargeGandenganDetail->modifiedby = auth('api')->user()->name;
         

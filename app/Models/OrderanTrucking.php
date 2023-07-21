@@ -436,7 +436,6 @@ class OrderanTrucking extends MyModel
             'harilibur',
         ], $querylisttempjobtruckingakhir);
 
-
         $querylisttempjobtruckingakhirlooping = DB::table($listtempjobtruckingakhir)->from(
             DB::raw($listtempjobtruckingakhir . " a")
         )
@@ -622,6 +621,8 @@ class OrderanTrucking extends MyModel
     public function getOrderanTrip($tglproses, $agen)
     {
 
+        $this->setRequestParameters();
+
         $tempdatalist = '##tempdatalist' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
         Schema::create($tempdatalist, function ($table) {
             $table->id();
@@ -641,8 +642,8 @@ class OrderanTrucking extends MyModel
             $table->string('supir', 500)->nullable();
             $table->string('namagudang', 500)->nullable();
             $table->string('noinvoice', 500)->nullable();
-            $table->integer('gandengan_id')->nullable();
             $table->integer('trado_id')->nullable();
+            $table->integer('gandengan_id')->nullable();
             $table->integer('agen_id')->nullable();
         });
 
@@ -664,8 +665,8 @@ class OrderanTrucking extends MyModel
             'supir',
             'namagudang',
             'noinvoice',
-            'gandengan_id',
             'trado_id',
+            'gandengan_id',
             'agen_id',
         ], $this->reminderchargegandengan());
 
@@ -687,46 +688,89 @@ class OrderanTrucking extends MyModel
                 DB::raw("isnull(a.namagudang ,'') as namagudang"),
                 DB::raw("'' as keterangan"),
             )
-            ->where('a.agen_id','=',$agen)
-            ->orderBy('a.id', 'asc');
+            ->where('a.agen_id', '=', $agen);
+        $this->filterInvoice($query);
 
+        $this->totalNominal = $query->sum(DB::raw("(a.jumlahhari-5)*300000"));
+        $this->totalRows = $query->count();
+        $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;
 
-
-
-
-
-        //     $data = [
-        //         [
-        //             "id" => 1,
-        //             "jobtrucking" => "III/ V /00001",
-        //             "tgltrip" => "2022-09-12",
-        //             "jumlahhari" => "11",
-        //             "nominal_detail" => "21000000",
-        //             "nopolisi" => "B 9508 PH",
-        //             "keterangan" => "keterangan id 1",
-        //         ], [
-        //             "id" => 2,
-        //             "jobtrucking" => "III/ V /00002",
-        //             "tgltrip" => "2022-09-12",
-        //             "jumlahhari" => "12",
-        //             "nominal_detail" => "22000000",
-        //             "nopolisi" => "B 9120 QZ",
-        //             "keterangan" => "keterangan id 2",
-        //         ], [
-        //             "id" => 3,
-        //             "jobtrucking" => "III/ V /00003",
-        //             "tgltrip" => "2022-09-12",
-        //             "jumlahhari" => "13",
-        //             "nominal_detail" => "23000000",
-        //             "nopolisi" => "BK 8007 XA",
-        //             "keterangan" => "keterangan id 3",
-        //         ]
-        //     ];
+        $this->sortInvoice($query);
+        $query->skip($this->params['offset'])->take($this->params['limit']);
         $data = $query->get();
         // dd($data);
 
         return $data;
     }
+
+    public function getOrderanTripEdit($idInvoice, $agen)
+    {
+
+    }
+    public function sortInvoice($query)
+    {
+        if ($this->params['sortIndex'] == 'nopolisi') {
+            return $query->orderBy('a.kodetrado', $this->params['sortOrder']);
+        } else if ($this->params['sortIndex'] == 'tgltrip') {
+            return $query->orderBy('a.tglawal', $this->params['sortOrder']);
+        } else if ($this->params['sortIndex'] == 'nominal_detail') {
+            return $query->orderBy(DB::raw("(a.jumlahhari-5)*300000"), $this->params['sortOrder']);
+        } else {
+            return $query->orderBy('a.' . $this->params['sortIndex'], $this->params['sortOrder']);
+        }
+    }
+
+    public function filterInvoice($query)
+    {
+        if (count($this->params['filters']) > 0 && @$this->params['filters']['rules'][0]['data'] != '') {
+            switch ($this->params['filters']['groupOp']) {
+                case "AND":
+                    foreach ($this->params['filters']['rules'] as $index => $filters) {
+                        if ($filters['field'] != '') {
+                            if ($filters['field'] == 'nopolisi') {
+                                $query = $query->where('a.kodetrado', 'LIKE', "%$filters[data]%");
+                            } else if ($filters['field'] == 'tgltrip') {
+                                $query = $query->whereRaw("format(a.tglawal,'dd-MM-yyyy') like '%$filters[data]%'");
+                            } else if ($filters['field'] == 'tglkembali') {
+                                $query = $query->whereRaw("format(a.tglkembali,'dd-MM-yyyy') like '%$filters[data]%'");
+                            } else if ($filters['field'] == 'nominal_detail') {
+                                $query = $query->whereRaw("format((a.jumlahhari-5)*300000, '#,#0.00') LIKE '%$filters[data]%'");
+                            } else {
+                                $query = $query->where('a.' . $filters['field'], 'LIKE', "%$filters[data]%");
+                            }
+                        }
+                    }
+
+                    break;
+                case "OR":
+                    $query = $query->where(function ($query) {
+                        foreach ($this->params['filters']['rules'] as $index => $filters) {
+                            if ($filters['field'] != '') {
+                                if ($filters['field'] == 'nopolisi') {
+                                    $query = $query->orWhere('a.kodetrado', 'LIKE', "%$filters[data]%");
+                                } else if ($filters['field'] == 'tgltrip') {
+                                    $query = $query->orWhereRaw("format(a.tglawal,'dd-MM-yyyy') like '%$filters[data]%'");
+                                } else if ($filters['field'] == 'tglkembali') {
+                                    $query = $query->orWhereRaw("format(a.tglkembali,'dd-MM-yyyy') like '%$filters[data]%'");
+                                }else if ($filters['field'] == 'nominal_detail') {
+                                    $query = $query->orWhereRaw("format((a.jumlahhari-5)*300000, '#,#0.00') LIKE '%$filters[data]%'");
+                                } else {
+                                    $query = $query->orWhere('a.' . $filters['field'], 'LIKE', "%$filters[data]%");
+                                }
+                            }
+                        }
+                    });
+                    break;
+                default:
+
+                    break;
+            }
+
+            $this->totalRows = $query->count();
+            $this->totalPages = $this->params['limit'] > 0 ? ceil($this->totalRows / $this->params['limit']) : 1;
+        }
+    }
+
 
     public function agen()
     {
