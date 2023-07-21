@@ -423,17 +423,27 @@ class InvoiceChargeGandenganHeader extends MyModel
         InvoiceChargeGandenganDetail::where('invoicechargegandengan_id', $invoiceChargeGandenganHeader->id)->delete();
 
         $invoiceChargeGandenganDetails = [];
-
         for ($i = 0; $i < count($data['nominal_detail']); $i++) {
-            $trado = Trado::where('kodetrado', $data['nopolisi_detail'][$i])->first();
+            // $trado = Trado::where('kodetrado', $data['nopolisi_detail'][$i])->first();
 
             $invoiceChargeGandenganDetail = (new InvoiceChargeGandenganDetail())->processStore($invoiceChargeGandenganHeader, [
+                // "jobtrucking_detail" => $data['jobtrucking_detail'][$i],
+                // "tgltrip_detail" => $data['tgltrip_detail'][$i],
+                // "jumlahhari_detail" => $data['jumlahhari_detail'][$i],
+                // "trado_id" => $trado->id,
+                // "nominal_detail" => $data['nominal_detail'][$i],
+                // "keterangan_detail" => $data['keterangan_detail'][$i],
+
                 "jobtrucking_detail" => $data['jobtrucking_detail'][$i],
-                "tgltrip_detail" => $data['tgltrip_detail'][$i],
+                "trado_id" => $data['nopolisi_detail'][$i],
+                "gandengan_id" => $data['gandengan_detail'][$i],
+                "tgltrip_detail" => date('Y-m-d', strtotime($data['tgltrip_detail'][$i])),
+                "tglkembali_detail" => date('Y-m-d', strtotime($data['tglkembali_detail'][$i])),
                 "jumlahhari_detail" => $data['jumlahhari_detail'][$i],
-                "trado_id" => $trado->id,
                 "nominal_detail" => $data['nominal_detail'][$i],
                 "keterangan_detail" => $data['keterangan_detail'][$i],
+                "jenisorder_detail" => $data['jenisorder_detail'][$i],
+                "namagudang_detail" => $data['namagudang_detail'][$i],                
             ]);
 
             $invoiceChargeGandenganDetails[] = $invoiceChargeGandenganDetail->toArray();
