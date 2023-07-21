@@ -18,6 +18,7 @@ class ValidasiDestroyPengeluaranStokHeader implements Rule
         //
     }
 
+    private $message;
     /**
      * Determine if the validation rule passes.
      *
@@ -27,21 +28,16 @@ class ValidasiDestroyPengeluaranStokHeader implements Rule
      */
     public function passes($attribute, $value)
     {
-        $penerimaanStokHeader = new PengeluaranStokHeader();
-        // $cekdata = $penerimaanStokHeader->cekvalidasihapus(request()->id);
-        $isJurnalUsed = $penerimaanStokHeader->isJurnalUsed(request()->id);
-        $isHutangUsed = $penerimaanStokHeader->isHutangBayarUsed(request()->id);
-        // $isPOUsed = $penerimaanStokHeader->isPOUsed(request()->id);
-        // dd([$isOutUsed
-        // $isEhtUsed
-        // $isPOUsed])
-        if($isOutUsed){
+        $pengeluaranStokHeader = new PengeluaranStokHeader();
+        $id = request()->id;
+        $isInUsed = $pengeluaranStokHeader->isInUsed($id);
+        $printValidation = $pengeluaranStokHeader->printValidation($id);
+        if($isInUsed){
+          $this->message = 'SATL';
           return false;
         }
-        if($isEhtUsed){
-          return false;
-        }
-        if($isPOUsed){
+        if($printValidation){
+          $this->message = 'SDC';
           return false;
         }
         return true;
@@ -54,6 +50,6 @@ class ValidasiDestroyPengeluaranStokHeader implements Rule
      */
     public function message()
     {
-        return app(ErrorController::class)->geterror('SATL')->keterangan;
+        return app(ErrorController::class)->geterror($this->message)->keterangan;
     }
 }
