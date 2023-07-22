@@ -245,13 +245,14 @@ class OrderanTruckingController extends Controller
 
     public function getOrderanTrip(Request $request)
     {
+        $idinvoice=$request->idInvoice ?? 0;
         if($request->aksi != 'edit'){
 
             $orderanTrucking = new OrderanTrucking();
             $agen = $request->agen;
             $tglbukti = date('Y-m-d', strtotime($request->tglbukti));
             return response([
-                'data' => $orderanTrucking->getOrderanTrip($tglbukti, $agen,$request->idInvoice),
+                'data' => $orderanTrucking->getOrderanTrip($tglbukti, $agen,$idinvoice),
                 'attributes' => [
                     'totalRows' => $orderanTrucking->totalRows,
                     'totalPages' => $orderanTrucking->totalPages,
@@ -263,7 +264,7 @@ class OrderanTruckingController extends Controller
             $agen = $request->agen;
             $tglbukti = date('Y-m-d', strtotime($request->tglbukti));
             return response([
-                'data' => $orderanTrucking->getOrderanTrip($tglbukti, $agen,$request->idInvoice),
+                'data' => $orderanTrucking->getOrderanTrip($tglbukti, $agen,$idinvoice),
                 'attributes' => [
                     'totalRows' => $orderanTrucking->totalRows,
                     'totalPages' => $orderanTrucking->totalPages,
