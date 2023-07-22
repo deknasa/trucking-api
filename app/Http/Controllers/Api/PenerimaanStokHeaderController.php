@@ -312,21 +312,7 @@ class PenerimaanStokHeaderController extends Controller
             return response($data);
         }
 
-        if ($penerimaanStokHeader->isApproved($id)) {
-            $query = Error::from(DB::raw("error with (readuncommitted)"))
-                ->select('keterangan')
-                ->whereRaw("kodeerror = 'SAP'")
-                ->get();
-            $keterangan = $query['0'];
-            $data = [
-                'message' => $keterangan,
-                'errors' => 'sudah approve',
-                'kodestatus' => '1',
-                'kodenobukti' => '1'
-            ];
-
-            return response($data);
-        } else if ($penerimaanStokHeader->isPOUsed($id)) {
+        if ($penerimaanStokHeader->isPOUsed($id)) {
             $query = Error::from(DB::raw("error with (readuncommitted)"))
                 ->select('keterangan')
                 ->whereRaw("kodeerror = 'SATL'")
