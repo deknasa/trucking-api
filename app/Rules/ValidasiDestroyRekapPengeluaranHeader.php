@@ -3,6 +3,7 @@
 namespace App\Rules;
 
 use Illuminate\Contracts\Validation\Rule;
+use App\Http\Controllers\Api\ErrorController;
 
 class ValidasiDestroyRekapPengeluaranHeader implements Rule
 {
