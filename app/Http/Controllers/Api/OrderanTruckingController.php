@@ -30,11 +30,11 @@ use Illuminate\Support\Facades\Http;
 
 class OrderanTruckingController extends Controller
 {
-      /**
+    /**
      * @ClassName 
      * orderantruckingcontroller
      * @Detail1 JobTruckingController
-    */
+     */
     public function index(GetIndexRangeRequest $request)
     {
         $orderanTrucking = new OrderanTrucking();
@@ -245,40 +245,26 @@ class OrderanTruckingController extends Controller
 
     public function getOrderanTrip(Request $request)
     {
-        $idinvoice=$request->idInvoice ?? 0;
-        if($request->aksi != 'edit'){
-
-            $orderanTrucking = new OrderanTrucking();
-            $agen = $request->agen;
-            $tglbukti = date('Y-m-d', strtotime($request->tglbukti));
-            return response([
-                'data' => $orderanTrucking->getOrderanTrip($tglbukti, $agen,$idinvoice),
-                'attributes' => [
-                    'totalRows' => $orderanTrucking->totalRows,
-                    'totalPages' => $orderanTrucking->totalPages,
-                    'totalNominal' => $orderanTrucking->totalNominal,
-                ]
-            ]);
-        }else{
-            $orderanTrucking = new OrderanTrucking();
-            $agen = $request->agen;
-            $tglbukti = date('Y-m-d', strtotime($request->tglbukti));
-            return response([
-                'data' => $orderanTrucking->getOrderanTrip($tglbukti, $agen,$idinvoice),
-                'attributes' => [
-                    'totalRows' => $orderanTrucking->totalRows,
-                    'totalPages' => $orderanTrucking->totalPages,
-                    'totalNominal' => $orderanTrucking->totalNominal,
-                ]
-            ]);
-        }
+        $idinvoice = $request->idInvoice ?? 0;
+        $orderanTrucking = new OrderanTrucking();
+        $agen = $request->agen;
+        $tglbukti = date('Y-m-d', strtotime($request->tglbukti));
+        return response([
+            'data' => $orderanTrucking->getOrderanTrip($tglbukti, $agen, $idinvoice),
+            'attributes' => [
+                'totalRows' => $orderanTrucking->totalRows,
+                'totalPages' => $orderanTrucking->totalPages,
+                'totalNominal' => $orderanTrucking->totalNominal,
+            ]
+        ]);
     }
 
     /**
      * @ClassName
      * 
      */
-    public function approval(ValidasiApprovalOrderanTruckingRequest $request)    {
+    public function approval(ValidasiApprovalOrderanTruckingRequest $request)
+    {
         DB::beginTransaction();
 
         try {

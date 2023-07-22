@@ -32,7 +32,7 @@ class LaporanRitasiGandenganController extends Controller
         
         $export = new LaporanRitasiGandengan ();
         return response([
-            'data' => $export->getData($periode)
+            'data' => $export->Export($periode)
         ]);
     }
 

@@ -637,6 +637,11 @@ class OrderanTrucking extends MyModel
         )->where('a.id','=',$idinvoice)
         ->first();
 
+        if(isset($queryinvoice)){
+            $noinvoice = $queryinvoice->nobukti;
+        }else{
+            $noinvoice = '';
+        }
         $querysp=DB::table('suratpengantar')->from(
             DB::raw("suratpengantar a with (readuncommitted)")
         )
@@ -721,7 +726,7 @@ class OrderanTrucking extends MyModel
             'd.kodetrado',
             'e.namasupir as supir',
             'a.namagudang',
-            DB::raw("'".$queryinvoice->nobukti ."' as noinvoice"),
+            DB::raw("'".$noinvoice ."' as noinvoice"),
             'a.trado_id',
             'a.gandengan_id',
             DB::raw($agen ." as agen_id")
@@ -784,6 +789,7 @@ class OrderanTrucking extends MyModel
             ->select(
                 'a.id',
                 DB::raw("isnull(a.jobtrucking,'') as jobtrucking"),
+                DB::raw("isnull(a.noinvoice,'') as noinvoice"),
                 DB::raw("a.tglawal as tgltrip"),
                 DB::raw("a.tglkembali as tglkembali"),
                 DB::raw("a.jumlahhari as jumlahhari"),

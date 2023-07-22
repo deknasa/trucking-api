@@ -33,15 +33,16 @@ class InvoiceChargeGandenganDetail extends MyModel
 
         if (isset(request()->forReport) && request()->forReport) {
             $query->select(
-                DB::raw("'' as gandengan"),
+                DB::raw("gandengan.kodegandengan as gandengan"),
                 'invoicechargegandengandetail.jobtrucking',
-                DB::raw("'' as dari"),
-                DB::raw("'' as sampai"),
-                DB::raw("'' as orderan"),
+                'invoicechargegandengandetail.tgltrip as dari',
+                'invoicechargegandengandetail.tglakhir as sampai',
+                'invoicechargegandengandetail.jenisorder as orderan',
                 'invoicechargegandengandetail.jumlahhari',
                 'invoicechargegandengandetail.nominal',
-                DB::raw("'' as namagudang"),
-            );
+                'invoicechargegandengandetail.namagudang',
+            )
+            ->leftJoin(DB::raw("gandengan with (readuncommitted)"), 'invoicechargegandengandetail.gandengan_id', 'gandengan.id');
             $query->where($this->table . '.invoicechargegandengan_id', '=', request()->invoicechargegandengan_id);
         } else if (isset(request()->forExport) && request()->forExport) {
             $query->select(
@@ -49,16 +50,19 @@ class InvoiceChargeGandenganDetail extends MyModel
                 'header.nobukti as nobukti_header',
                 'header.tglbukti',
                 'header.nominal as nominal_header',
+                DB::raw("gandengan.kodegandengan as gandengan"),
                 'invoicechargegandengandetail.jobtrucking',
                 'invoicechargegandengandetail.tgltrip',
+                'invoicechargegandengandetail.tglakhir',
+                'invoicechargegandengandetail.jenisorder as orderan',
                 'invoicechargegandengandetail.jumlahhari',
                 'invoicechargegandengandetail.nominal',
-                'invoicechargegandengandetail.trado_id',
-                'trado.kodetrado as nopolisi',
+                'invoicechargegandengandetail.namagudang',
                 'invoicechargegandengandetail.keterangan',
             )
             ->leftJoin(DB::raw("invoicechargegandenganheader as header with (readuncommitted)"), 'header.id', 'invoicechargegandengandetail.invoicechargegandengan_id')
-            ->leftJoin(DB::raw("trado with (readuncommitted)"), 'trado.id', 'invoicechargegandengandetail.trado_id');
+            ->leftJoin(DB::raw("trado with (readuncommitted)"), 'trado.id', 'invoicechargegandengandetail.trado_id')
+            ->leftJoin(DB::raw("gandengan with (readuncommitted)"), 'invoicechargegandengandetail.gandengan_id', 'gandengan.id');
             $query->where($this->table . '.invoicechargegandengan_id', '=', request()->invoicechargegandengan_id);
         }
         else {
@@ -66,13 +70,19 @@ class InvoiceChargeGandenganDetail extends MyModel
                 'invoicechargegandengandetail.nobukti',
                 'invoicechargegandengandetail.jobtrucking',
                 'invoicechargegandengandetail.tgltrip',
+                'invoicechargegandengandetail.tglakhir',
                 'invoicechargegandengandetail.jumlahhari',
+                'invoicechargegandengandetail.jenisorder',
+                'invoicechargegandengandetail.namagudang',
                 'invoicechargegandengandetail.nominal',
                 'invoicechargegandengandetail.trado_id',
                 'trado.kodetrado as nopolisi',
+                'invoicechargegandengandetail.gandengan_id',
+                'gandengan.kodegandengan as gandengan',
                 'invoicechargegandengandetail.keterangan',
             )
-            ->leftJoin(DB::raw("trado with (readuncommitted)"), 'trado.id', 'invoicechargegandengandetail.trado_id');
+            ->leftJoin(DB::raw("trado with (readuncommitted)"), 'trado.id', 'invoicechargegandengandetail.trado_id')
+            ->leftJoin(DB::raw("gandengan with (readuncommitted)"), 'gandengan.id', 'invoicechargegandengandetail.gandengan_id');
 
 
             $this->sort($query);
@@ -93,6 +103,8 @@ class InvoiceChargeGandenganDetail extends MyModel
     {
         if($this->params['sortIndex'] == 'nopolisi'){
             return $query->orderBy('trado.kodetrado', $this->params['sortOrder']);
+        }if($this->params['sortIndex'] == 'gandengan'){
+            return $query->orderBy('gandengan.kodegandengan', $this->params['sortOrder']);
         }else{
             return $query->orderBy($this->table . '.' . $this->params['sortIndex'], $this->params['sortOrder']);
         }
@@ -106,9 +118,11 @@ class InvoiceChargeGandenganDetail extends MyModel
                         foreach ($this->params['filters']['rules'] as $index => $filters) {
                             if ($filters['field'] == 'nopolisi') {
                                 $query = $query->where('trado.kodetrado', 'LIKE', "%$filters[data]%");
+                            } else if ($filters['field'] == 'gandengan') {
+                                $query = $query->where('gandengan.kodegandengan', 'LIKE', "%$filters[data]%");
                             } else if ($filters['field'] == 'nominal') {
                                 $query = $query->whereRaw("format($this->table.nominal, '#,#0.00') LIKE '%$filters[data]%'");
-                            } else if ($filters['field'] == 'tgltrip') {
+                            } else if ($filters['field'] == 'tgltrip' || $filters['field'] == 'tglakhir') {
                                 $query = $query->whereRaw("format(".$this->table . "." . $filters['field'].", 'dd-MM-yyyy') LIKE '%$filters[data]%'");
                             } else {
                                 $query = $query->where($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
@@ -122,9 +136,11 @@ class InvoiceChargeGandenganDetail extends MyModel
                         foreach ($this->params['filters']['rules'] as $index => $filters) {
                             if ($filters['field'] == 'nopolisi') {
                                 $query = $query->orWhere('trado.kodetrado', 'LIKE', "%$filters[data]%");
+                            } else if ($filters['field'] == 'gandengan') {
+                                $query = $query->orWhere('trado.kodetrado', 'LIKE', "%$filters[data]%");
                             } else if ($filters['field'] == 'nominal') {
                                 $query = $query->orWhereRaw("format($this->table.nominal, '#,#0.00') LIKE '%$filters[data]%'");
-                            } else if ($filters['field'] == 'tgltrip') {
+                            } else if ($filters['field'] == 'tgltrip' || $filters['field'] == 'tglakhir') {
                                 $query = $query->orWhereRaw("format(".$this->table . "." . $filters['field'].", 'dd-MM-yyyy') LIKE '%$filters[data]%'");
                             } else{
                                 $query = $query->orWhere($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");

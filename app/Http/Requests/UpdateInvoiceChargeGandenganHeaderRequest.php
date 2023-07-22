@@ -3,8 +3,11 @@
 namespace App\Http\Requests;
 
 use App\Http\Controllers\Api\ErrorController;
+use App\Models\InvoiceChargeGandenganHeader;
 use App\Rules\DateTutupBuku;
+use App\Rules\ExistAgen;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
 class UpdateInvoiceChargeGandenganHeaderRequest extends FormRequest
 {
@@ -25,16 +28,38 @@ class UpdateInvoiceChargeGandenganHeaderRequest extends FormRequest
      */
     public function rules()
     {
-        return [
+        $invoiceCharge = new InvoiceChargeGandenganHeader();
+        $getData = $invoiceCharge->find(request()->id);
+        
+        $agen_id = $this->agen_id;
+        $rulesAgen_id = [];
+        if ($agen_id != null) {
+            $rulesAgen_id = [
+                'agen_id' => ['required', 'numeric', 'min:1', new ExistAgen(), Rule::in($getData->agen_id)]
+            ];
+        } else if ($agen_id == null && $this->agen != '') {
+            $rulesAgen_id = [
+                'agen_id' => ['required', 'numeric', 'min:1', new ExistAgen(), Rule::in($getData->agen_id)]
+            ];
+        }
+
+        $rules = [
             'tglbukti' => [
-                'required','date_format:d-m-Y',
+                'required', 'date_format:d-m-Y',
                 new DateTutupBuku()
             ],
             'agen' => 'required',
             'tglproses' => 'required|date_format:d-m-Y'
         ];
+
+        $rules = array_merge(
+            $rules,
+            $rulesAgen_id
+        );
+
+        return $rules;
     }
-    public function messages() 
+    public function messages()
     {
         return [
             'tglbukti.date_format' => app(ErrorController::class)->geterror('DF')->keterangan,
