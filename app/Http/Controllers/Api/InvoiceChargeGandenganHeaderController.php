@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\DestroyInvoiceChargeGandenganRequest;
 use Illuminate\Http\Request;
 use App\Models\InvoiceChargeGandenganHeader;
 use App\Models\InvoiceChargeGandenganDetail;
@@ -131,7 +132,7 @@ class InvoiceChargeGandenganHeaderController extends Controller
     /**
      * @ClassName 
      */
-    public function destroy(Request $request, $id)
+    public function destroy(DestroyInvoiceChargeGandenganRequest $request, $id)
     {
         DB::beginTransaction();
 
@@ -169,39 +170,36 @@ class InvoiceChargeGandenganHeaderController extends Controller
             $query = Error::from(DB::raw("error with (readuncommitted)"))
                 ->select('keterangan')
                 ->whereRaw("kodeerror = 'SAP'")
-                ->get();
-            $keterangan = $query['0'];
-            $data = [
-                'message' => $keterangan,
-                'errors' => 'sudah approve',
-                'kodestatus' => '1',
-                'kodenobukti' => '1'
-            ];
+                ->first();
 
+            $data = [
+                'error' => true,
+                'message' =>  'No Bukti ' . $InvoiceChargeGandenganHeader->nobukti . ' ' . $query->keterangan,
+                'kodeerror' => 'SAP',
+                'statuspesan' => 'warning',
+            ];
             return response($data);
         } else if ($statusdatacetak == $statusCetak->id) {
             $query = Error::from(DB::raw("error with (readuncommitted)"))
                 ->select('keterangan')
                 ->whereRaw("kodeerror = 'SDC'")
-                ->get();
-            $keterangan = $query['0'];
+                ->first();
+
             $data = [
-                'message' => $keterangan,
-                'errors' => 'sudah cetak',
-                'kodestatus' => '1',
-                'kodenobukti' => '1'
+                'error' => true,
+                'message' =>  'No Bukti ' . $InvoiceChargeGandenganHeader->nobukti . ' ' . $query->keterangan,
+                'kodeerror' => 'SDC',
+                'statuspesan' => 'warning',
             ];
 
             return response($data);
         } else {
 
             $data = [
+                'error' => false,
                 'message' => '',
-                'errors' => 'belum approve',
-                'kodestatus' => '0',
-                'kodenobukti' => '1'
+                'statuspesan' => 'success',
             ];
-
             return response($data);
         }
     }

@@ -49,7 +49,7 @@ use Illuminate\Support\Facades\DB;
 
 class PelunasanPiutangHeaderController extends Controller
 {
-   /**
+    /**
      * @ClassName 
      * PelunasanPiutangHeader
      * @Detail1 PelunasanPiutangDetailController
@@ -331,7 +331,8 @@ class PelunasanPiutangHeaderController extends Controller
      * @ClassName 
      */
     public function report()
-    { }
+    {
+    }
 
     /**
      * @ClassName 
@@ -378,6 +379,71 @@ class PelunasanPiutangHeaderController extends Controller
             ]);
         } catch (\Throwable $th) {
             throw $th;
+        }
+    }
+
+
+    public function cekvalidasi($id)
+    {
+        $pengeluaran = PelunasanPiutangHeader::find($id);
+
+        $statusdatacetak = $pengeluaran->statuscetak;
+        $statusCetak = Parameter::from(DB::raw("parameter with (readuncommitted)"))
+            ->where('grp', 'STATUSCETAK')->where('text', 'CETAK')->first();
+
+        if ($statusdatacetak == $statusCetak->id) {
+            $query = Error::from(DB::raw("error with (readuncommitted)"))
+                ->select('keterangan')
+                ->whereRaw("kodeerror = 'SDC'")
+                ->first();
+
+            $data = [
+                'error' => true,
+                'message' =>  'No Bukti ' . $pengeluaran->nobukti . ' ' . $query->keterangan,
+                'kodeerror' => 'SDC',
+                'statuspesan' => 'warning',
+            ];
+            return response($data);
+        } else {
+
+            $data = [
+                'error' => false,
+                'message' => '',
+                'statuspesan' => 'success',
+            ];
+
+            return response($data);
+        }
+    }
+
+    public function cekvalidasiAksi($id)
+    {
+        $cekdata = (new PelunasanPiutangHeader())->cekvalidasiaksi($id);
+        if ($cekdata['kondisi'] == true) {
+            $query = DB::table('error')
+                ->select(
+                    DB::raw("ltrim(rtrim(keterangan))+' (" . $cekdata['keterangan'] . ")' as keterangan")
+                )
+                ->where('kodeerror', '=', $cekdata['kodeerror'])
+                ->first();
+
+            $data = [
+                'error' => true,
+                'message' => $query->keterangan,
+                'kodeerror' => $cekdata['kodeerror'],
+                'statuspesan' => 'warning',
+            ];
+
+            return response($data);
+        } else {
+
+            $data = [
+                'error' => false,
+                'message' => '',
+                'statuspesan' => 'success',
+            ];
+
+            return response($data);
         }
     }
 }

@@ -7,6 +7,7 @@ use App\Models\AlatBayar;
 use App\Models\PelunasanPiutangHeader;
 use Illuminate\Foundation\Http\FormRequest;
 use App\Rules\DateTutupBuku;
+use App\Rules\ValidasiDestroyPelunasanPiutang;
 use App\Rules\ValidasiDetail;
 use Illuminate\Validation\Rule;
 
@@ -86,6 +87,7 @@ class UpdatePelunasanPiutangHeaderRequest extends FormRequest
         }
 
         $rules = [
+            'id' => new ValidasiDestroyPelunasanPiutang(),
             'nobukti' => [Rule::in($getDataPelunasan->nobukti)],
             "tglbukti" => [
                 "required", 'date_format:d-m-Y',

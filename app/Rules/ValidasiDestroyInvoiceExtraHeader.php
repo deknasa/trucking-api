@@ -4,6 +4,8 @@ namespace App\Rules;
 
 use Illuminate\Contracts\Validation\Rule;
 use App\Http\Controllers\Api\ErrorController;
+use App\Http\Controllers\Api\InvoiceExtraHeaderController;
+use App\Models\InvoiceExtraHeader;
 
 class ValidasiDestroyInvoiceExtraHeader implements Rule
 {
@@ -12,10 +14,9 @@ class ValidasiDestroyInvoiceExtraHeader implements Rule
      *
      * @return void
      */
-    public function __construct($param, $paramcetak)
+    public function __construct()
     {
-        $this->kondisi = $param;
-        $this->kondisicetak = $paramcetak;
+
     }
 
     public $kondisi;
@@ -29,16 +30,25 @@ class ValidasiDestroyInvoiceExtraHeader implements Rule
      */
     public function passes($attribute, $value)
     {
-        if ($this->kondisi == true) {
-            // dd('1');
+        
+        $controller = new InvoiceExtraHeaderController;
+        $invoiceextraheader = new InvoiceExtraHeader();
+        $cekdata = $invoiceextraheader->cekvalidasiaksi(request()->nobukti);
+        $cekdatacetak = $controller->cekvalidasi(request()->id);
+        
+        if ($cekdata['kondisi']) {
+            $this->kodeerror = $cekdata['kodeerror'];            
+            $this->keterangan = ' ('. $cekdata['keterangan'].')';
             return false;
-        } else if ($this->kondisicetak == true) {
-            // dd('2');
-            return false;
-        } else {
-            // dd('3');
-            return true;
         }
+        $getOriginal = $cekdatacetak->original;
+        if ($getOriginal['error'] == true) {
+            $this->kodeerror = $getOriginal['kodeerror'];
+            $this->keterangan = '';
+            return false;
+        }
+
+        return true;
     }
 
     /**
@@ -48,11 +58,7 @@ class ValidasiDestroyInvoiceExtraHeader implements Rule
      */
     public function message()
     {
-        if ($this->kondisi == true) {
-            return app(ErrorController::class)->geterror('SATL')->keterangan;
-        } else {
-            return app(ErrorController::class)->geterror('SDC')->keterangan;
-        }
+        return app(ErrorController::class)->geterror($this->kodeerror)->keterangan.$this->keterangan;
         
     }
 }

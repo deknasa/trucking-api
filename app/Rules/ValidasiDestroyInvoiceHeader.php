@@ -4,6 +4,8 @@ namespace App\Rules;
 
 use Illuminate\Contracts\Validation\Rule;
 use App\Http\Controllers\Api\ErrorController;
+use App\Http\Controllers\Api\InvoiceHeaderController;
+use App\Models\InvoiceHeader;
 
 class ValidasiDestroyInvoiceHeader implements Rule
 {
@@ -12,10 +14,9 @@ class ValidasiDestroyInvoiceHeader implements Rule
      *
      * @return void
      */
-    public function __construct($param, $paramcetak)
+    public function __construct()
     {
-        $this->kondisi = $param;
-        $this->kondisicetak = $paramcetak;
+
     }
 
     public $kondisi;
@@ -29,16 +30,24 @@ class ValidasiDestroyInvoiceHeader implements Rule
      */
     public function passes($attribute, $value)
     {
-        if ($this->kondisi == true) {
-            // dd('1');
+        $controller = new InvoiceHeaderController;
+        $invoiceheader = new InvoiceHeader();
+        $cekdata = $invoiceheader->cekvalidasiaksi(request()->nobukti);
+        $cekdatacetak = $controller->cekvalidasi(request()->id);
+
+        if ($cekdata['kondisi']) {
+            $this->kodeerror = $cekdata['kodeerror'];            
+            $this->keterangan = ' ('. $cekdata['keterangan'].')';
             return false;
-        } else if ($this->kondisicetak == true) {
-            // dd('2');
-            return false;
-        } else {
-            // dd('3');
-            return true;
         }
+        $getOriginal = $cekdatacetak->original;
+        if ($getOriginal['error'] == true) {
+            $this->kodeerror = $getOriginal['kodeerror'];
+            $this->keterangan = '';
+            return false;
+        }
+
+        return true;
     }
 
     /**
@@ -48,11 +57,7 @@ class ValidasiDestroyInvoiceHeader implements Rule
      */
     public function message()
     {
-        if ($this->kondisi == true) {
-            return app(ErrorController::class)->geterror('SATL')->keterangan;
-        } else {
-            return app(ErrorController::class)->geterror('SDC')->keterangan;
-        }
+        return app(ErrorController::class)->geterror($this->kodeerror)->keterangan.$this->keterangan;
         
     }
 }

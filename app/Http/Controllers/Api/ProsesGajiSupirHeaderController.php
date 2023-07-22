@@ -373,8 +373,7 @@ class ProsesGajiSupirHeaderController extends Controller
     public function cekValidasiAksi($id)
     {
         $prosesGaji = new ProsesGajiSupirHeader();
-        $nobukti = ProsesGajiSupirHeader::from(DB::raw("prosesgajisupirheader"))->where('id', $id)->first();
-        $cekdata = $prosesGaji->cekvalidasiaksi($nobukti->nobukti);
+        $cekdata = $prosesGaji->cekvalidasiaksi($id);
         if ($cekdata['kondisi'] == true) {
             $query = DB::table('error')
                 ->select(

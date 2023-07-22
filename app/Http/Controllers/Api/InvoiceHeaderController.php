@@ -397,6 +397,7 @@ class InvoiceHeaderController extends Controller
             $data = [
                 'error' => true,
                 'message' =>  'No Bukti ' . $pengeluaran->nobukti . ' ' . $query->keterangan,
+                'kodeerror' => 'SAP',
                 'statuspesan' => 'warning',
             ];
 
@@ -410,6 +411,7 @@ class InvoiceHeaderController extends Controller
             $data = [
                 'error' => true,
                 'message' =>  'No Bukti ' . $pengeluaran->nobukti . ' ' . $query->keterangan,
+                'kodeerror' =>'SDC',
                 'statuspesan' => 'warning',
             ];
             return response($data);
@@ -440,6 +442,7 @@ class InvoiceHeaderController extends Controller
             $data = [
                 'error' => true,
                 'message' => $query->keterangan,
+                'kodeerror' => $cekdata['kodeerror'],
                 'statuspesan' => 'warning',
             ];
 

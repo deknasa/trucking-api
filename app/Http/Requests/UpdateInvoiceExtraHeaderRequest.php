@@ -6,6 +6,7 @@ use App\Http\Controllers\Api\ErrorController;
 use Illuminate\Foundation\Http\FormRequest;
 use App\Rules\DateTutupBuku;
 use App\Rules\ExistAgen;
+use App\Rules\ValidasiDestroyInvoiceExtraHeader;
 use App\Rules\ValidasiDetail;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
@@ -42,6 +43,7 @@ class UpdateInvoiceExtraHeaderRequest extends FormRequest
             ->first();
 
         $rules = [
+            'id' => [ new ValidasiDestroyInvoiceExtraHeader()],
             'tglbukti' => [
                 'required', 'date_format:d-m-Y',
                 new DateTutupBuku(),

@@ -7,6 +7,7 @@ use Illuminate\Foundation\Http\FormRequest;
 use App\Rules\DateTutupBuku;
 use App\Rules\ExistAgen;
 use App\Rules\ExistJenisOrder;
+use App\Rules\ValidasiDestroyInvoiceHeader;
 use App\Rules\ValidasiDetail;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
@@ -49,6 +50,7 @@ class UpdateInvoiceHeaderRequest extends FormRequest
 
 
         $rules = [
+            'id' => new ValidasiDestroyInvoiceHeader(),
             'tglterima' => [
                 'required', 'date_format:d-m-Y',
                 new DateTutupBuku(),
