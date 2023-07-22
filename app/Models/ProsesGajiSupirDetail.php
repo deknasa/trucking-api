@@ -33,8 +33,9 @@ class ProsesGajiSupirDetail extends MyModel
             $query->select(
                 $this->table . '.nominal',
                 $this->table . '.keterangan as keterangan_detail',
+                'prosesgajisupirheader.keterangan',
             )
-                ->leftJoin(DB::raw("gajisupirheader with (readuncommitted)"), $this->table . '.gajisupir_nobukti', 'gajisupirheader.nobukti');
+                ->leftJoin(DB::raw("prosesgajisupirheader with (readuncommitted)"), $this->table . '.prosesgajisupir_id', 'prosesgajisupirheader.id');
             $query->where($this->table . '.prosesgajisupir_id', '=', request()->prosesgajisupir_id);
         } else {
             $query->select(
