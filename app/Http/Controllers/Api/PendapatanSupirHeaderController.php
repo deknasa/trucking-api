@@ -131,7 +131,7 @@ class PendapatanSupirHeaderController extends Controller
     /**
      * @ClassName 
      */
-    public function destroy(Request $request, $id)
+    public function destroy(DestroyPendapatanSupirHeaderRequest $request, $id)
     {
         DB::beginTransaction();
 
