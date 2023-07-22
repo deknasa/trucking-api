@@ -9,6 +9,7 @@ use App\Models\Mekanik;
 use App\Models\Parameter;
 use App\Models\Error;
 use App\Http\Requests\StoreServiceInHeaderRequest;
+use App\Http\Requests\DestroyServiceInHeaderRequest;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use App\Http\Requests\UpdateServiceInHeaderRequest;
@@ -116,7 +117,7 @@ class ServiceInHeaderController extends Controller
     /**
      * @ClassName
      */
-    public function destroy(Request $request, $id): JsonResponse
+    public function destroy(DestroyServiceInHeaderRequest $request, $id): JsonResponse
     {
         DB::beginTransaction();
 
