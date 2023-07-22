@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests;
 
+use App\Rules\DestroyHutangExtra;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
@@ -25,7 +26,7 @@ class DestroyHutangExtraHeaderRequest extends FormRequest
     public function rules()
     {
         return [
-            'id' => Rule::in($this->id)
+            'id' => [Rule::in($this->id), new DestroyHutangExtra()]
         ];
     }
 }

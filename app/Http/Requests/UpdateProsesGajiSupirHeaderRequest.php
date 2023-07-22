@@ -6,6 +6,7 @@ use App\Http\Controllers\Api\ErrorController;
 use App\Models\ProsesGajiSupirHeader;
 use Illuminate\Foundation\Http\FormRequest;
 use App\Rules\DateTutupBuku;
+use App\Rules\DestroyProsesGajiSupir;
 use Illuminate\Validation\Rule;
 
 class UpdateProsesGajiSupirHeaderRequest extends FormRequest
@@ -35,7 +36,8 @@ class UpdateProsesGajiSupirHeaderRequest extends FormRequest
         $tglbatasakhir = (date('Y') + 1) . '-01-01';
         // First day of the month.
         $awalPeriode = date('Y-m-01', strtotime(request()->tgldari));
-        $rules = [
+        $rules = [            
+            'id' => new DestroyProsesGajiSupir(),
             'nobukti' => [Rule::in($getDataProsesGaji->nobukti)],
             'periode' => [
                 'required', 'date_format:d-m-Y',

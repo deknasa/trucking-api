@@ -3,6 +3,7 @@
 namespace App\Http\Requests;
 
 use App\Rules\DateTutupBuku;
+use App\Rules\DestroyProsesGajiSupir;
 use Illuminate\Foundation\Http\FormRequest;
 
 class DestroyProsesGajiSupirHeaderRequest extends FormRequest
@@ -25,6 +26,7 @@ class DestroyProsesGajiSupirHeaderRequest extends FormRequest
     public function rules()
     {
         return [
+            'id' => new DestroyProsesGajiSupir(),
             'tglbukti' => [
                 'required','date_format:d-m-Y',
                 new DateTutupBuku()

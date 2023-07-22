@@ -53,7 +53,8 @@ class UpdateGajiSupirHeaderRequest extends FormRequest
         $tglbatasawal = $getBatas->text;
         $tglbatasakhir = (date('Y') + 1) . '-01-01';
         $rules = [
-            'nobukti' => [Rule::in($getDataGajiSupir->nobukti), new DestroyGajiSupirNobukti()],
+            'id' => new DestroyGajiSupirNobukti(),
+            'nobukti' => [Rule::in($getDataGajiSupir->nobukti)],
             'supir' => 'required',
             'tgldari' => [
                 'required', 'date_format:d-m-Y',
