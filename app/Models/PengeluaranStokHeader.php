@@ -464,10 +464,19 @@ class PengeluaranStokHeader extends MyModel
         if (!$data['detail_harga']) {
             throw new \Exception("Error storing pengeluaran Stok Detail.");
         }
-        $getCoaDebet = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'JURNAL PEMAKAIAN STOK')->where('subgrp', 'DEBET')->first();
-        $memo = json_decode($getCoaDebet->memo, true);
-        $getCoaKredit = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'JURNAL PEMAKAIAN STOK')->where('subgrp', 'KREDIT')->first();
-        $memokredit = json_decode($getCoaKredit->memo, true);
+        if ($idpengeluaran==$kor->text) {
+            $getCoaDebet = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'JURNAL KOREKSI STOK MINUS')->where('subgrp', 'DEBET')->first();
+            $memo = json_decode($getCoaDebet->memo, true);
+            $getCoaKredit = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'JURNAL PEMAKAIAN STOK')->where('subgrp', 'KREDIT')->first();
+            $memokredit = json_decode($getCoaKredit->memo, true);
+
+        } else {
+            $getCoaDebet = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'JURNAL PEMAKAIAN STOK')->where('subgrp', 'DEBET')->first();
+            $memo = json_decode($getCoaDebet->memo, true);
+            $getCoaKredit = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'JURNAL PEMAKAIAN STOK')->where('subgrp', 'KREDIT')->first();
+            $memokredit = json_decode($getCoaKredit->memo, true);
+    
+        }
 
         $summaryDetail=0;
         $coadebet_detail = [];
@@ -818,10 +827,19 @@ class PengeluaranStokHeader extends MyModel
         if (!$data['detail_harga']) {
             throw new \Exception("Error storing pengeluaran Stok Detail.");
         }
-        $getCoaDebet = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'JURNAL PEMAKAIAN STOK')->where('subgrp', 'DEBET')->first();
-        $memo = json_decode($getCoaDebet->memo, true);
-        $getCoaKredit = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'JURNAL PEMAKAIAN STOK')->where('subgrp', 'KREDIT')->first();
-        $memokredit = json_decode($getCoaKredit->memo, true);
+        if ($idpengeluaran==$kor->text) {
+            $getCoaDebet = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'JURNAL KOREKSI STOK MINUS')->where('subgrp', 'DEBET')->first();
+            $memo = json_decode($getCoaDebet->memo, true);
+            $getCoaKredit = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'JURNAL PEMAKAIAN STOK')->where('subgrp', 'KREDIT')->first();
+            $memokredit = json_decode($getCoaKredit->memo, true);
+
+        } else {
+            $getCoaDebet = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'JURNAL PEMAKAIAN STOK')->where('subgrp', 'DEBET')->first();
+            $memo = json_decode($getCoaDebet->memo, true);
+            $getCoaKredit = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'JURNAL PEMAKAIAN STOK')->where('subgrp', 'KREDIT')->first();
+            $memokredit = json_decode($getCoaKredit->memo, true);
+    
+        }
 
         $summaryDetail=0;
         $coadebet_detail = [];

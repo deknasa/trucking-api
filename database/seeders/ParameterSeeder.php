@@ -388,6 +388,7 @@ class ParameterSeeder extends Seeder
         parameter::create(['grp' => 'HUTANG EXTRA BUKTI', 'subgrp' => 'HUTANG EXTRA BUKTI', 'kelompok' => '', 'text' => '#HEXT #9999#/#R#/#Y', 'memo' => '{"MEMO":"HUTANG EXTRA BUKTI","SINGKATAN":"#HEXT #9999#/#R#/#Y","WARNA":"#28A745"}', 'type' => '118', 'modifiedby' => 'ADMIN', 'default' => '',]);
         parameter::create(['grp' => 'PENGELUARAN TRUCKING', 'subgrp' => 'PINJAMAN KARYAWAN BUKTI', 'kelompok' => '', 'text' => '#PJK #9999#/#R#/#Y', 'memo' => '{"MEMO":"PINJAMAN KARYAWAN BUKTI","SINGKATAN":"#PJK #9999#/#R#/#Y","WARNA":"#28A745"}', 'type' => '118', 'modifiedby' => 'ADMIN', 'default' => '',]);
         parameter::create(['grp' => 'PENERIMAAN TRUCKING', 'subgrp' => 'PENGEMBALIAN PINJAMAN KARYAWAN BUKTI', 'kelompok' => '', 'text' => '#PJPK #9999#/#R#/#Y', 'memo' => '{"MEMO":"PIUTANG BUKTI","SINGKATAN":"#PJPK #9999#/#R#/#Y","WARNA":"#28A745"}', 'type' => '118', 'modifiedby' => 'ADMIN', 'default' => '',]);
+        parameter::create(['grp' => 'JURNAL KOREKSI STOK MINUS', 'subgrp' => 'DEBET', 'kelompok' => '', 'text' => 'DEBET', 'memo' => '{"MEMO":"JURNAL KOREKSI STOK MINUS","SINGKATAN":"D","WARNA":"#28A745","JURNAL":"05.01.01.01"}', 'type' => '0', 'modifiedby' => 'ADMIN', 'default' => '',]);
         
 
         

@@ -74,6 +74,7 @@ class HutangDetail extends MyModel
 
             $this->paginate($query);
         }
+        
 
         return $query->get();
     }
