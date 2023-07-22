@@ -25,13 +25,13 @@ class LaporanSaldoInventory extends MyModel
         'updated_at',
     ];
 
-    public function getReport($kelompok_id, $statusreuse, $statusban, $filter, $jenistgltampil, $tgldari, $tglsampai, $stokdari_id, $stoksampai_id, $dataFilter)
+    public function getReport($kelompok_id, $statusreuse, $statusban, $filter, $jenistgltampil, $priode, $stokdari_id, $stoksampai_id, $dataFilter)
     {
 
-        // dd($tgldari);
-        $tgldari1= date('Y-m-d', strtotime($tgldari));
-        $tgldari= date("Y-m-d", strtotime("+1 day", strtotime($tgldari)));
-        $tglsampai= date("Y-m-d", strtotime("+1 day", strtotime($tgldari)));
+        // dd($priode);
+        $priode1= date('Y-m-d', strtotime($priode));
+        $priode= date("Y-m-d", strtotime("+1 day", strtotime($priode)));
+        // $tglsampai= date("Y-m-d", strtotime("+1 day", strtotime($tgldari)));
         
 
         $temprekapall = '##temprekapall' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
@@ -91,7 +91,7 @@ class LaporanSaldoInventory extends MyModel
             'qtysaldo',
             'nilaisaldo',
             'modifiedby',
-        ], (new KartuStok())->getlaporan($tgldari, $tglsampai, $stokdari_id, $stoksampai_id, $gudang_id, $trado_id, $gandengan_id, $filterdata));
+        ], (new KartuStok())->getlaporan($priode, $priode1, $stokdari_id, $stoksampai_id, $gudang_id, $trado_id, $gandengan_id, $filterdata));
 
         DB::delete(DB::raw("delete " . $temprekapall . "  WHERE upper(nobukti)<>'SALDO AWAL'"));
 
@@ -99,17 +99,18 @@ class LaporanSaldoInventory extends MyModel
             DB::raw($temprekapall . " a")
         )
             ->select(
+                DB::raw("'Laporan Saldo Inventory' as header"),
                 'a.lokasi',
                 'a.lokasi as namalokasi',
                 DB::raw("'' as kategori"),
-                DB::raw("'".$tgldari1."' as tgldari"),
-                DB::raw("'".$tgldari1."' as tglsampai"),
+                DB::raw("'".$priode1."' as tgldari"),
+                DB::raw("'".$priode1."' as tglsampai"),
                 DB::raw("'' as stokdari"),
                 DB::raw("'' as stoksampai"),
                 DB::raw("'' as vulkanisirke"),
                 'a.kodebarang',
                 'a.namabarang',
-                DB::raw("'".$tgldari1."' as tanggal"),
+                DB::raw("'".$priode1."' as tanggal"),
                 'a.qtysaldo as qty',
                 DB::raw("'' as satuan"),
                 'a.nilaisaldo as nominal',
