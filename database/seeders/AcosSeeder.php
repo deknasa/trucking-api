@@ -799,5 +799,12 @@ class AcosSeeder extends Seeder
         acos::create([ 'class' => 'serviceinheader', 'method' => 'export', 'nama' => 'export ServiceInHeaderController', 'modifiedby' => 'ADMIN',]);
         acos::create([ 'class' => 'penerimaantruckingheader', 'method' => 'export', 'nama' => 'export PenerimaanTruckingHeaderController', 'modifiedby' => 'ADMIN',]);
         acos::create([ 'class' => 'pengeluarantruckingheader', 'method' => 'export', 'nama' => 'export PengeluaranTruckingHeaderController', 'modifiedby' => 'ADMIN',]);
+        acos::create([ 'class' => 'stokpusat', 'method' => 'index', 'nama' => 'index StokPusatController', 'modifiedby' => 'ADMIN',]);
+        acos::create([ 'class' => 'stokpusat', 'method' => 'store', 'nama' => 'store StokPusatController', 'modifiedby' => 'ADMIN',]);
+        acos::create([ 'class' => 'stokpusat', 'method' => 'update', 'nama' => 'update StokPusatController', 'modifiedby' => 'ADMIN',]);
+        acos::create([ 'class' => 'stokpusat', 'method' => 'destroy', 'nama' => 'destroy StokPusatController', 'modifiedby' => 'ADMIN',]);
+        acos::create([ 'class' => 'akunpusat', 'method' => 'report', 'nama' => 'report AkunPusatController', 'modifiedby' => 'ADMIN',]);
+        acos::create([ 'class' => 'akunpusat', 'method' => 'export', 'nama' => 'export AkunPusatController', 'modifiedby' => 'ADMIN',]);
+        acos::create([ 'class' => 'akunpusat', 'method' => 'transfer', 'nama' => 'transfer AkunPusatController', 'modifiedby' => 'ADMIN',]);
     }
 }

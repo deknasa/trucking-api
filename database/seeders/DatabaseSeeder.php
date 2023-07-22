@@ -33,6 +33,7 @@ class DatabaseSeeder extends Seeder
             BankSeeder::class,
             ErrorSeeder::class,
             SupirSeeder::class,
+            KaryawanSeeder::class,
             TradoSeeder::class,
             AlatBayarSeeder::class,
             ContainerSeeder::class,
