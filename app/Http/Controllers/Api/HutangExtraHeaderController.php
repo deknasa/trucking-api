@@ -185,7 +185,8 @@ class HutangExtraHeaderController extends Controller
            
             $data = [
                 'error' => true,
-                'message' =>  'No Bukti ' . $hutang->nobukti . ' ' . $query->keterangan,
+                'message' => $query->keterangan,
+                'kodeerror' => 'SDC',
                 'statuspesan' => 'warning',
             ];
 
@@ -197,6 +198,39 @@ class HutangExtraHeaderController extends Controller
                 'message' => '',
                 'statuspesan' => 'success',
             ];
+
+            return response($data);
+        }
+    }
+
+    public function cekValidasiAksi($id)
+    {
+        $hutangExtra = new HutangExtraHeader();
+        $nobukti = HutangExtraHeader::from(DB::raw("hutangextraheader"))->where('id', $id)->first();
+        $cekdata = $hutangExtra->cekvalidasiaksi($nobukti->hutang_nobukti);
+        if ($cekdata['kondisi'] == true) {
+            $query = DB::table('error')
+                ->select(
+                    DB::raw("ltrim(rtrim(keterangan))+' (" . $cekdata['keterangan'] . ")' as keterangan")
+                )
+                ->where('kodeerror', '=', $cekdata['kodeerror'])
+                ->first();
+            $data = [
+                'error' => true,
+                'message' => $query->keterangan,
+                'kodeerror' => $cekdata['kodeerror'],
+                'statuspesan' => 'warning',
+            ];
+
+            return response($data);
+        } else {
+           
+            $data = [
+                'error' => false,
+                'message' => '',
+                'statuspesan' => 'success',
+            ];
+
 
             return response($data);
         }

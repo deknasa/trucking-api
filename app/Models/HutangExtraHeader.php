@@ -25,6 +25,35 @@ class HutangExtraHeader extends MyModel
         'updated_at',
     ];
 
+    public function cekvalidasiaksi($nobukti)
+    {
+        $hutangBayar = DB::table('hutangbayardetail')
+            ->from(
+                DB::raw("hutangbayardetail as a with (readuncommitted)")
+            )
+            ->select(
+                'a.hutang_nobukti'
+            )
+            ->where('a.hutang_nobukti', '=', $nobukti)
+            ->first();
+        if (isset($hutangBayar)) {
+            $data = [
+                'kondisi' => true,
+                'keterangan' => 'HUTANG BAYAR',
+                'kodeerror' => 'SATL'
+            ];
+            goto selesai;
+        }
+
+
+
+        $data = [
+            'kondisi' => false,
+            'keterangan' => '',
+        ];
+        selesai:
+        return $data;
+    }
     public function get()
     {
         $this->setRequestParameters();

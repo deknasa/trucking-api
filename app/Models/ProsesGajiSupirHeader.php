@@ -65,6 +65,36 @@ class ProsesGajiSupirHeader extends MyModel
 
         return $data;
     }
+    
+    public function cekvalidasiaksi($nobukti)
+    {
+        $hutangBayar = DB::table('jurnalumumpusatheader')
+            ->from(
+                DB::raw("jurnalumumpusatheader as a with (readuncommitted)")
+            )
+            ->select(
+                'a.nobukti'
+            )
+            ->where('a.nobukti', '=', $nobukti)
+            ->first();
+        if (isset($hutangBayar)) {
+            $data = [
+                'kondisi' => true,
+                'keterangan' => 'Approval Jurnal',
+                'kodeerror' => 'SAP'
+            ];
+            goto selesai;
+        }
+
+
+
+        $data = [
+            'kondisi' => false,
+            'keterangan' => '',
+        ];
+        selesai:
+        return $data;
+    }
 
     public function get()
     {

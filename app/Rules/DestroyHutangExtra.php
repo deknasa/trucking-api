@@ -3,12 +3,12 @@
 namespace App\Rules;
 
 use App\Http\Controllers\Api\ErrorController;
-use App\Http\Controllers\Api\GajiSupirHeaderController;
-use App\Models\GajiSupirHeader;
+use App\Http\Controllers\Api\HutangExtraHeaderController;
+use App\Models\HutangExtraHeader;
 use Illuminate\Contracts\Validation\Rule;
 use Illuminate\Support\Facades\DB;
 
-class DestroyGajiSupirNobukti implements Rule
+class DestroyHutangExtra implements Rule
 {
     /**
      * Create a new rule instance.
@@ -29,23 +29,23 @@ class DestroyGajiSupirNobukti implements Rule
      */
     public function passes($attribute, $value)
     {
-        $gajisupir = new GajiSupirHeader();
-        $nobukti = GajiSupirHeader::from(DB::raw("gajisupirheader"))->where('id', request()->id)->first();
-        $cekdata = $gajisupir->cekvalidasiaksi($nobukti->nobukti);
+        
+        $gajisupir = new HutangExtraHeader();
+        $nobukti = HutangExtraHeader::from(DB::raw("hutangextraheader"))->where('id', request()->id)->first();
+        $cekdata = $gajisupir->cekvalidasiaksi($nobukti->hutang_nobukti);
         if ($cekdata['kondisi']) {
-            $this->kodeerror = $cekdata['kodeerror'];            
+            $this->kodeerror = $cekdata['kodeerror'];
             $this->keterangan = ' ('. $cekdata['keterangan'].')';
             return false;
         }
-        
-        $cekCetak = app(GajiSupirHeaderController::class)->cekvalidasi(request()->id);
+
+        $cekCetak = app(HutangExtraHeaderController::class)->cekvalidasi(request()->id);
         $getOriginal = $cekCetak->original;
         if ($getOriginal['error'] == true) {
             $this->kodeerror = $getOriginal['kodeerror'];
             $this->keterangan = '';
             return false;
         }
-
         return true;
     }
 

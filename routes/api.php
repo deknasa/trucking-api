@@ -1030,6 +1030,7 @@ route::middleware(['auth:api', 'authorized'])->group(function () {
 
     Route::get('prosesgajisupirheader/default', [ProsesGajiSupirHeaderController::class, 'default']);
     Route::post('prosesgajisupirheader/{id}/cekvalidasi', [ProsesGajiSupirHeaderController::class, 'cekvalidasi'])->name('prosesgajisupirheader.cekvalidasi')->whereNumber('id');
+    Route::post('prosesgajisupirheader/{id}/cekValidasiAksi', [ProsesGajiSupirHeaderController::class, 'cekValidasiAksi'])->name('prosesgajisupirheader.cekValidasiAksi')->whereNumber('id');
     Route::get('prosesgajisupirheader/no_bukti', [ProsesGajiSupirHeaderController::class, 'getNoBukti']);
     Route::get('prosesgajisupirheader/grid', [ProsesGajiSupirHeaderController::class, 'grid']);
     Route::get('prosesgajisupirheader/field_length', [ProsesGajiSupirHeaderController::class, 'fieldLength']);
@@ -1476,6 +1477,7 @@ route::middleware(['auth:api', 'authorized'])->group(function () {
     Route::get('hutangextraheader/{id}/printreport', [HutangExtraHeaderController::class, 'printReport'])->whereNumber('id');
     Route::get('hutangextraheader/{id}/export', [HutangExtraHeaderController::class, 'export'])->name('hutangextraheader.export')->whereNumber('id');
     Route::post('hutangextraheader/{id}/cekvalidasi', [HutangExtraHeaderController::class, 'cekvalidasi'])->name('hutangextraheader.cekvalidasi')->whereNumber('id');
+    Route::post('hutangextraheader/{id}/cekValidasiAksi', [HutangExtraHeaderController::class, 'cekValidasiAksi'])->name('hutangextraheader.cekValidasiAksi')->whereNumber('id');
     Route::post('hutangextraheader/approval', [HutangExtraHeaderController::class, 'approval']);
     Route::get('hutangextraheader/combo', [HutangExtraHeaderController::class, 'combo']);
     Route::get('hutangextraheader/grid', [HutangExtraHeaderController::class, 'grid']);

@@ -3,6 +3,7 @@
 namespace App\Http\Requests;
 
 use App\Rules\DateTutupBuku;
+use App\Rules\DestroyHutangExtra;
 use App\Rules\ExistSupplier;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Support\Facades\DB;
@@ -36,6 +37,7 @@ class UpdateHutangExtraHeaderRequest extends FormRequest
         ->first();
 
         $rules = [
+            'id' => new DestroyHutangExtra(),
             'tglbukti' => [
                 'required', 'date_format:d-m-Y',
                 new DateTutupBuku(),
