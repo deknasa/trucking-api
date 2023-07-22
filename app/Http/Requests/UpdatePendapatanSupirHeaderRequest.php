@@ -7,6 +7,7 @@ use App\Models\Parameter;
 use App\Models\PendapatanSupirHeader;
 use Illuminate\Foundation\Http\FormRequest;
 use App\Rules\DateTutupBuku;
+use App\Rules\ValidasiDestroyPendapatanSupirHeader;
 use Illuminate\Validation\Rule;
 use Illuminate\Support\Facades\DB;
 
@@ -39,6 +40,7 @@ class UpdatePendapatanSupirHeaderRequest extends FormRequest
 
 
         $rules = [
+            'id' =>[new ValidasiDestroyPendapatanSupirHeader()],
             'nobukti' => [Rule::in($getData->nobukti)],
             "tglbukti" => [
                 "required", 

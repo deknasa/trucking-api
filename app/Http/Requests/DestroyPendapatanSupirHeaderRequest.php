@@ -6,6 +6,7 @@ use App\Http\Controllers\Api\ErrorController;
 use App\Models\Parameter;
 use Illuminate\Foundation\Http\FormRequest;
 use App\Rules\DateTutupBuku;
+use App\Rules\ValidasiDestroyPendapatanSupirHeader;
 
 class DestroyPendapatanSupirHeaderRequest extends FormRequest
 {
@@ -32,6 +33,7 @@ class DestroyPendapatanSupirHeaderRequest extends FormRequest
         $tglbatasakhir = (date('Y') + 1) . '-01-01';
         
         $rules = [
+            'id' =>[new ValidasiDestroyPendapatanSupirHeader()],
             "tglbukti" => [
                 "required",
                 new DateTutupBuku()
