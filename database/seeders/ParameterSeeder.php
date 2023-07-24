@@ -389,8 +389,6 @@ class ParameterSeeder extends Seeder
         parameter::create(['grp' => 'PENGELUARAN TRUCKING', 'subgrp' => 'PINJAMAN KARYAWAN BUKTI', 'kelompok' => '', 'text' => '#PJK #9999#/#R#/#Y', 'memo' => '{"MEMO":"PINJAMAN KARYAWAN BUKTI","SINGKATAN":"#PJK #9999#/#R#/#Y","WARNA":"#28A745"}', 'type' => '118', 'modifiedby' => 'ADMIN', 'default' => '',]);
         parameter::create(['grp' => 'PENERIMAAN TRUCKING', 'subgrp' => 'PENGEMBALIAN PINJAMAN KARYAWAN BUKTI', 'kelompok' => '', 'text' => '#PJPK #9999#/#R#/#Y', 'memo' => '{"MEMO":"PIUTANG BUKTI","SINGKATAN":"#PJPK #9999#/#R#/#Y","WARNA":"#28A745"}', 'type' => '118', 'modifiedby' => 'ADMIN', 'default' => '',]);
         parameter::create(['grp' => 'JURNAL KOREKSI STOK MINUS', 'subgrp' => 'DEBET', 'kelompok' => '', 'text' => 'DEBET', 'memo' => '{"MEMO":"JURNAL KOREKSI STOK MINUS","SINGKATAN":"D","WARNA":"#28A745","JURNAL":"05.01.01.01"}', 'type' => '0', 'modifiedby' => 'ADMIN', 'default' => '',]);
-        parameter::create(['grp' => 'STATUS UPAH ZONA', 'subgrp' => 'STATUS UPAH ZONA', 'kelompok' => '', 'text' => 'UPAH ZONA', 'memo' => '{"MEMO":"UPAH ZONA","SINGKATAN":"ZR","WARNA":"#28A745"}', 'type' => '0', 'modifiedby' => 'ADMIN', 'default' => '',]);
-        parameter::create(['grp' => 'STATUS UPAH ZONA', 'subgrp' => 'STATUS UPAH ZONA', 'kelompok' => '', 'text' => 'BUKAN UPAH ZONA', 'memo' => '{"MEMO":"BUKAN UPAH ZONA","SINGKATAN":"BZR","WARNA":"#6C757D"}', 'type' => '0', 'modifiedby' => 'ADMIN', 'default' => 'YA',]);
         
 
         
