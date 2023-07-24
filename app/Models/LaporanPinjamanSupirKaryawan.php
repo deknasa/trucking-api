@@ -245,7 +245,7 @@ class LaporanPinjamanSupirKaryawan extends MyModel
                 'a.debet',
                 'a.kredit',
                 DB::raw("sum ((isnull(a.saldo,0)+a.debet+a.kredit)) over (order by a.id asc) as Saldo"),
-                DB::raw("'Laporan Pinjaman Supir Karyawan' as judulLaporan"),
+                DB::raw("'Laporan Pinjaman Karyawan' as judulLaporan"),
                 DB::raw("'" . $getJudul->text . "' as judul"),
                 DB::raw("'Tgl Cetak :'+format(getdate(),'dd-MM-yyyy HH:mm:ss')as tglcetak"),
                 DB::raw(" 'User :" . auth('api')->user()->name . "' as usercetak")
