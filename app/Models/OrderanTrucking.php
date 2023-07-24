@@ -1157,7 +1157,7 @@ class OrderanTrucking extends MyModel
         $orderanTrucking->agen_id = $data['agen_id'];
         $orderanTrucking->jenisorder_id = $data['jenisorder_id'];
         $orderanTrucking->pelanggan_id = $data['pelanggan_id'];
-        $orderanTrucking->tarif_id = $data['tarifrincian_id'];
+        $orderanTrucking->tarif_id = $data['tarifrincian_id'] ?? '';
         $orderanTrucking->nojobemkl = $data['nojobemkl'] ?? '';
         $orderanTrucking->nocont = $data['nocont'];
         $orderanTrucking->noseal = $data['noseal'];
@@ -1170,7 +1170,7 @@ class OrderanTrucking extends MyModel
         $orderanTrucking->statusformat = $format->id;
 
         $tarifrincian = TarifRincian::find($data['tarifrincian_id']);
-        $orderanTrucking->nominal = $tarifrincian->nominal;
+        $orderanTrucking->nominal = $tarifrincian->nominal ?? '';
         $orderanTrucking->nobukti = (new RunningNumberService)->get($group, $subGroup, $orderanTrucking->getTable(), date('Y-m-d', strtotime($data['tglbukti'])));
 
         if (!$orderanTrucking->save()) {

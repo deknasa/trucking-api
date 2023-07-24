@@ -56,39 +56,44 @@ class TarifRincian extends MyModel
         Schema::create($tempdata, function ($table) {
             $table->string('tujuan', 1000)->nullable();
             $table->date('tglmulaiberlaku')->nullable();
-            $table->string('kota', 1000)->nullable();
+            $table->string('penyesuaian', 1000)->nullable();
         });
 
         foreach ($data as $item) {
             $values = array(
                 'tujuan' => $item['tujuan'],
                 'tglmulaiberlaku' => $item['tglmulaiberlaku'],
-                'kota' => $item['kota']
+                'penyesuaian' => $item['penyesuaian']
             );
             DB::table($tempdata)->insert($values);
         }
 
         $temptgl = '##temptgl' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
         Schema::create($temptgl, function ($table) {
+            $table->string('tujuan', 1000)->nullable();
             $table->date('tglmulaiberlaku')->nullable();
+            $table->string('penyesuaian', 1000)->nullable();
         });
 
         $querytgl = DB::table('tarif')
             ->from(DB::raw("tarif with (readuncommitted)"))
             ->select(
-                'tglmulaiberlaku'
-            )
-            ->groupBy('tglmulaiberlaku');
+                'tujuan',
+                'tglmulaiberlaku',
+                'penyesuaian'
+            );
 
-        DB::table($temptgl)->insertUsing(['tglmulaiberlaku'], $querytgl);
+        DB::table($temptgl)->insertUsing(['tujuan','tglmulaiberlaku', 'penyesuaian'], $querytgl);
 
 
         $query = DB::table($tempdata)
             ->from(DB::raw($tempdata . " as a"))
             ->select(
+                'a.tujuan',
+                'a.penyesuaian',
                 'a.tglmulaiberlaku'
             )
-            ->join(DB::raw($temptgl . " as b"), 'a.tglmulaiberlaku', 'b.tglmulaiberlaku')
+            ->join(DB::raw($temptgl . " as b"), 'a.penyesuaian', 'b.penyesuaian')
             ->first();
 
 
@@ -157,6 +162,7 @@ class TarifRincian extends MyModel
 
             $tarifRequest = [
                 'tujuan' => $item['tujuan'],
+                'penyesuaian' => $item['penyesuaian'],
                 'tglmulaiberlaku' => $item['tglmulaiberlaku'],
                 'modifiedby' => $item['modifiedby'],
                 'parent_id' => 0,
@@ -165,13 +171,13 @@ class TarifRincian extends MyModel
                 'statussistemton' => $statussistemton,
                 'kota_id' => $querykota->id ?? 0,
                 'zona_id' => 0,
+                'keterangan' => '',
                 'statuspenyesuaianharga' => $statuspenyesuaianharga,
                 'container_id' => $container_id,
                 'nominal' => $nominal,
             ];
 
-            $tarif = new StoreTarifRequest($tarifRequest);
-            app(TarifController::class)->store($tarif);
+            (new Tarif())->processStore($tarifRequest);
         }
 
         return $data;

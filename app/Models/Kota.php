@@ -123,6 +123,7 @@ class Kota extends MyModel
         $pilihKotaId = request()->pilihkota_id ?? '';
         $dataRitasiId = request()->dataritasi_id ?? '';
         $ritasiDariKe = request()->ritasidarike ?? '';
+        $kotaZona = request()->kotaZona ?? '';
 
         $query = DB::table($this->table)->from(DB::raw("$this->table with (readuncommitted)"))
             ->select(
@@ -155,6 +156,9 @@ class Kota extends MyModel
         }
         if ($kotaDariId > 0 && $kotaSampaiId > 0) {
             $query->whereRaw("kota.id in ($kotaDariId,$kotaSampaiId)");
+        }
+        if ($kotaZona > 0) {
+            $query->whereRaw("kota.zona_id = $kotaZona");
         }
         if ($pilihKotaId > 0) {
             $query->whereRaw("kota.id != $pilihKotaId");
