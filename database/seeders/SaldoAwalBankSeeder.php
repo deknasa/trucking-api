@@ -288,5 +288,7 @@ class SaldoAwalBankSeeder extends Seeder
         saldoawalbank::create(['bulan' => '02-2023', 'bank_id' => '1', 'nominaldebet' => '750399864.00', 'nominalkredit' => '752678664.00',]);
         saldoawalbank::create(['bulan' => '03-2023', 'bank_id' => '4', 'nominaldebet' => '1129716789.97', 'nominalkredit' => '1101983725.99',]);
         saldoawalbank::create(['bulan' => '03-2023', 'bank_id' => '1', 'nominaldebet' => '793806410.00', 'nominalkredit' => '792039810.00',]);
+        saldoawalbank::create(['bulan' => '04-2023', 'bank_id' => '4', 'nominaldebet' => '1236646766.50', 'nominalkredit' => '1197928755.30',]);
+        saldoawalbank::create(['bulan' => '04-2023', 'bank_id' => '1', 'nominaldebet' => '574793537.00', 'nominalkredit' => '561148637.00',]);
     }
 }
