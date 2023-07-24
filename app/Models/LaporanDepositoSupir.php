@@ -28,7 +28,7 @@ class LaporanDepositoSupir extends MyModel
 
     public function getReport($sampai, $jenis)
     {
-        $penerimaantrucking_id=3;
+        $penerimaantrucking_id = 3;
         $sampai = date('Y-m-d', strtotime(request()->sampai)) ?? '1900/1/1';
         $jenis = request()->jenis ?? '';
 
@@ -148,7 +148,7 @@ class LaporanDepositoSupir extends MyModel
                 'a.id',
                 DB::raw("cast(substring([text],1,charindex('-',[text])-1) as money) as nominalawal"),
                 DB::raw("cast(substring([text],charindex('-',[text])+1,20) as money) as nominalakhir"),
-                 DB::raw("'Keterangan Deposito '+format(cast(substring([text],1,charindex('-',[text])-1) as money),'#,#0')+' - '+format(cast(substring([text],charindex('-',[text])+1,20) as money),'#,#')  as keterangan"),
+                DB::raw("'Keterangan Deposito '+format(cast(substring([text],1,charindex('-',[text])-1) as money),'#,#0')+' - '+format(cast(substring([text],charindex('-',[text])+1,20) as money),'#,#')  as keterangan"),
             )
             ->where('a.grp', '=', 'RANGE DEPOSITO SUPIR')
             ->where('a.subgrp', '=', 'RANGE DEPOSITO SUPIR')
@@ -165,7 +165,7 @@ class LaporanDepositoSupir extends MyModel
         $tempsaldo = '##tempsaldo' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
         Schema::create($tempsaldo, function ($table) {
             $table->unsignedBigInteger('supir_id')->nullable();
-            $table->string('namasupir',200)->nullable();
+            $table->string('namasupir', 200)->nullable();
             $table->double('saldo', 15, 2)->nullable();
             $table->double('deposito', 15, 2)->nullable();
             $table->double('penarikan', 15, 2)->nullable();
@@ -195,21 +195,28 @@ class LaporanDepositoSupir extends MyModel
             ->whereRaw(DB::raw("(isnull(b.nominal,0)-isnull(a.nominal,0))<>0 or isnull(b1.nominal,0)<>0 or isnull(a1.nominal,0)<>0"))
             ->orderBy('c.id', 'Asc');
 
-            DB::table($tempsaldo)->insertUsing([
-                'supir_id',
-                'namasupir',
-                'saldo',
-                'deposito',
-                'penarikan',
-                'total',
-                'keterangan',
-                'cicil',
-            ], $querysaldo);
+        DB::table($tempsaldo)->insertUsing([
+            'supir_id',
+            'namasupir',
+            'saldo',
+            'deposito',
+            'penarikan',
+            'total',
+            'keterangan',
+            'cicil',
+        ], $querysaldo);
 
-            $query=DB::table($tempsaldo)->from(
-                DB::raw($tempsaldo. " as a")
-            )
-            ->select (
+
+        $getJudul = DB::table('parameter')
+            ->select('text')
+            ->where('grp', 'JUDULAN LAPORAN')
+            ->where('subgrp', 'JUDULAN LAPORAN')
+            ->first();
+
+        $query = DB::table($tempsaldo)->from(
+            DB::raw($tempsaldo . " as a")
+        )
+            ->select(
                 'b.id',
                 'a.supir_id',
                 'a.namasupir',
@@ -218,17 +225,21 @@ class LaporanDepositoSupir extends MyModel
                 'a.penarikan',
                 'a.total',
                 'a.keterangan',
-                'a.cicil',                
+                'a.cicil',
                 DB::raw("b.keterangan as keterangan"),
-                DB::raw("'DEPOSITO SUPIR A/N '+trim(a.namasupir) as keterangandeposito")
+                DB::raw("'DEPOSITO SUPIR A/N '+trim(a.namasupir) as keterangandeposito"),
+                DB::raw("'Laporan Deposito' as judulLaporan"),
+                DB::raw("'" . $getJudul->text . "' as judul"),
+                DB::raw("'Tgl Cetak :'+format(getdate(),'dd-MM-yyyy HH:mm:ss')as tglcetak"),
+                DB::raw(" 'User :" . auth('api')->user()->name . "' as usercetak")
             )
-            ->join(DB::raw($temprangedeposito ." as b "), function ($join)  {
+            ->join(DB::raw($temprangedeposito . " as b "), function ($join) {
                 $join->on('a.total', '>=', 'b.nominalawal');
                 $join->on('a.total', '<=', 'b.nominalakhir');
             });
 
-            $data=$query->get();
-       
+        $data = $query->get();
+
         return $data;
     }
 }
