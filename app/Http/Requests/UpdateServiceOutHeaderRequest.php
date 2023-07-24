@@ -5,6 +5,7 @@ namespace App\Http\Requests;
 use App\Http\Controllers\Api\ErrorController;
 use Illuminate\Foundation\Http\FormRequest;
 use App\Rules\DateTutupBuku;
+use App\Rules\ValidasiDestroyServiceOutHeader;
 
 class UpdateServiceOutHeaderRequest extends FormRequest
 {
@@ -26,6 +27,7 @@ class UpdateServiceOutHeaderRequest extends FormRequest
     public function rules()
     {
         $rules = [
+            "id"=>[new ValidasiDestroyServiceOutHeader()],
             "tglbukti" => [
                 "required",'date_format:d-m-Y',
                 new DateTutupBuku()

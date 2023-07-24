@@ -2,13 +2,11 @@
 
 namespace App\Rules;
 
-use App\Http\Controllers\Api\ErrorController;
-use App\Models\PenerimaanGiroHeader;
 use Illuminate\Contracts\Validation\Rule;
-use Illuminate\Support\Facades\DB;
-use App\Http\Controllers\Api\PenerimaanGiroHeaderController;
+use App\Http\Controllers\Api\ErrorController;
+use App\Http\Controllers\Api\ServiceOutHeaderController;
 
-class DestroyPenerimaanGiro implements Rule
+class ValidasiDestroyServiceOutHeader implements Rule
 {
     /**
      * Create a new rule instance.
@@ -17,7 +15,7 @@ class DestroyPenerimaanGiro implements Rule
      */
     public function __construct()
     {
-        //
+        
     }
 
     /**
@@ -29,14 +27,7 @@ class DestroyPenerimaanGiro implements Rule
      */
     public function passes($attribute, $value)
     {
-        $penerimaanGiro = new PenerimaanGiroHeader();
-        $nobukti = PenerimaanGiroHeader::from(DB::raw("penerimaangiroheader"))->where('id', request()->id)->first();
-        $cekdata = $penerimaanGiro->cekvalidasiaksi($nobukti->nobukti);
-        if($cekdata['kondisi']){
-          return false;
-        }
-
-        $serviceInHeader = app(PenerimaanGiroHeaderController::class);
+        $serviceInHeader = app(ServiceOutHeaderController::class);
         $cekdata = $serviceInHeader->cekvalidasi(request()->id);
         
         if($cekdata->original['kodestatus'] =="1"){
@@ -52,6 +43,6 @@ class DestroyPenerimaanGiro implements Rule
      */
     public function message()
     {
-        return app(ErrorController::class)->geterror('SATL')->keterangan;
+        return app(ErrorController::class)->geterror('SDC')->keterangan;
     }
 }
