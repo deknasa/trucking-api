@@ -29,7 +29,10 @@ use App\Rules\ExistTarifRincianSuratPengantar;
 use App\Rules\ExistTrado;
 use App\Rules\ExistUpahSupirRincianSuratPengantar;
 use App\Rules\JenisRitasiInputTrip;
+use App\Rules\ValidasiKotaUpahZona;
+use App\Rules\ValidasiKotaZonaTrip;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
 
 class StoreMandorTripRequest extends FormRequest
@@ -50,7 +53,18 @@ class StoreMandorTripRequest extends FormRequest
      * @return array
      */
     public function rules()
-    {
+    {      
+
+        $parameter = new Parameter();
+        $dataUpahZona = $parameter->getcombodata('STATUS UPAH ZONA', 'STATUS UPAH ZONA');
+        $dataUpahZona = json_decode($dataUpahZona, true);
+        foreach ($dataUpahZona as $item) {
+            $statusUpahZona[] = $item['id'];
+        }
+
+        $getBukanUpahZona = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS UPAH ZONA')->where('text', 'NON UPAH ZONA')->first();
+        $getUpahZona = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS UPAH ZONA')->where('text', 'UPAH ZONA')->first();
+
         // START VALIDASI RITASI
         $ritasiRule = [];
         $ruleCekUpahRitasi = [];
@@ -148,16 +162,17 @@ class StoreMandorTripRequest extends FormRequest
         }
 
         $validasiUpah = (new UpahSupirRincian())->cekValidasiInputTripUpah(request()->statuscontainer_id, request()->jenisorder_id, request()->upah_id);
+        $getUpah = DB::table("upahsupir")->from(DB::raw("upahsupir with (readuncommitted)"))->select('zonadari_id','zonasampai_id')->where('id', request()->upah_id)->first();
 
         $dari_id = $this->dari_id;
         $rulesDari_id = [];
         if ($dari_id != null) {
             $rulesDari_id = [
-                'dari_id' => ['required', 'numeric', 'min:1', new ExistKota(), Rule::in($validasiUpah->kotadari_id)]
+                'dari_id' => ['required', 'numeric', 'min:1', new ExistKota(), (request()->statusupahzona == $getUpahZona->id) ? new ValidasiKotaZonaTrip($getUpah->zonadari_id) : Rule::in($validasiUpah->kotadari_id)]
             ];
         } else if ($dari_id == null && $this->dari != '') {
             $rulesDari_id = [
-                'dari_id' => ['required', 'numeric', 'min:1', new ExistKota(), Rule::in($validasiUpah->kotadari_id)]
+                'dari_id' => ['required', 'numeric', 'min:1', new ExistKota(), (request()->statusupahzona == $getUpahZona->id) ? new ValidasiKotaZonaTrip($getUpah->zonadari_id) : Rule::in($validasiUpah->kotadari_id)]
             ];
         }
 
@@ -165,11 +180,11 @@ class StoreMandorTripRequest extends FormRequest
         $rulesSampai_id = [];
         if ($sampai_id != null) {
             $rulesSampai_id = [
-                'sampai_id' => ['required', 'numeric', 'min:1', new ExistKota(), Rule::in($validasiUpah->kotasampai_id)]
+                'sampai_id' => ['required', 'numeric', 'min:1', new ExistKota(), (request()->statusupahzona == $getUpahZona->id) ? new ValidasiKotaZonaTrip($getUpah->zonasampai_id) : Rule::in($validasiUpah->kotasampai_id)]
             ];
         } else if ($sampai_id == null && $this->sampai != '') {
             $rulesSampai_id = [
-                'sampai_id' => ['required', 'numeric', 'min:1', new ExistKota(), Rule::in($validasiUpah->kotasampai_id)]
+                'sampai_id' => ['required', 'numeric', 'min:1', new ExistKota(), (request()->statusupahzona == $getUpahZona->id) ? new ValidasiKotaZonaTrip($getUpah->zonasampai_id) : Rule::in($validasiUpah->kotasampai_id)]
             ];
         }
 
@@ -237,7 +252,7 @@ class StoreMandorTripRequest extends FormRequest
             ],
 
             "agen" => "required",
-            "tarifrincian" => "required",
+            "tarifrincian" => ['required_if:statusupahzona,=,' . $getBukanUpahZona->id, new ValidasiKotaUpahZona($getBukanUpahZona->id)],
             "container" => "required",
             "dari" => ["required"],
             "gandengan" => "required",
@@ -251,6 +266,7 @@ class StoreMandorTripRequest extends FormRequest
             "lokasibongkarmuat" => "required",
             "trado" => "required",
             "upah" => ["required", new ExistNominalUpahSupir()],
+            'statusupahzona' => ['required', Rule::in($statusUpahZona)],
         ];
 
         $rules = array_merge(

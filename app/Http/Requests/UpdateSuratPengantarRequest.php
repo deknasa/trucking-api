@@ -22,6 +22,7 @@ use App\Rules\ExistJenisOrder;
 use App\Rules\ExistNominalUpahSupir;
 use App\Rules\ExistTarifRincian;
 use App\Rules\ExistUpahSupirRincianSuratPengantar;
+use App\Rules\ValidasiKotaUpahZona;
 
 class UpdateSuratPengantarRequest extends FormRequest
 {
@@ -74,6 +75,15 @@ class UpdateSuratPengantarRequest extends FormRequest
             $statusgudangsama[] = $item['id'];
         }
 
+        $dataUpahZona = $parameter->getcombodata('STATUS UPAH ZONA', 'STATUS UPAH ZONA');
+        $dataUpahZona = json_decode($dataUpahZona, true);
+        foreach ($dataUpahZona as $item) {
+            $statusUpahZona[] = $item['id'];
+        }
+
+        $getBukanUpahZona = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS UPAH ZONA')->where('text', 'NON UPAH ZONA')->first();
+        $getUpahZona = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS UPAH ZONA')->where('text', 'UPAH ZONA')->first();
+        
         $rules = [
             'tglbukti' => [
                 'required', 'date_format:d-m-Y',
@@ -91,6 +101,7 @@ class UpdateSuratPengantarRequest extends FormRequest
             'statusgudangsama' => ['required', Rule::in($statusgudangsama)],
             'nosp' => 'required',
             'upah' => ['required',new ExistNominalUpahSupir()],
+            'statusupahzona' => ['required', Rule::in($statusUpahZona)],
 
         ];
 
@@ -692,11 +703,11 @@ class UpdateSuratPengantarRequest extends FormRequest
 
                 $rulestarifrincian_id = [
                     'tarifrincian_id' => [
-                        'required',
+                        'required_if:statusupahzona,=,' . $getBukanUpahZona->id,
                         'numeric',
                         'min:1',
                         new ExistTarifRincian(),
-
+                        new ValidasiKotaUpahZona($getBukanUpahZona->id)
                     ]
 
                 ];
@@ -705,8 +716,8 @@ class UpdateSuratPengantarRequest extends FormRequest
 
                     $rulestarifrincian_id = [
                         'tarifrincian' => [
-                            'required',
-                            new ExistTarifRincian(),
+                            'required_if:statusupahzona,=,' . $getBukanUpahZona->id,
+                            new ValidasiKotaUpahZona($getBukanUpahZona->id)
                         ]
                     ];
                 }
@@ -715,19 +726,18 @@ class UpdateSuratPengantarRequest extends FormRequest
 
             $rulestarifrincian_id = [
                 'tarifrincian_id' => [
-                    'required',
+                    'required_if:statusupahzona,=,' . $getBukanUpahZona->id,
                     'numeric',
                     'min:1',
                     new ExistTarifRincian(),
+                    new ValidasiKotaUpahZona($getBukanUpahZona->id)
                 ]
             ];
         } else {
             $rulestarifrincian_id = [
                 'tarifrincian' => [
-                    'required',
-                    'numeric',
-                    'min:1',
-                    new ExistTarifRincian(),
+                    'required_if:statusupahzona,=,' . $getBukanUpahZona->id,
+                    new ValidasiKotaUpahZona($getBukanUpahZona->id)
                 ]
             ];
         }

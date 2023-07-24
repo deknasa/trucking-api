@@ -83,14 +83,23 @@ class InputTrip extends MyModel
         }
 
         $bukaTrip = DB::table("suratpengantarapprovalinputtrip")->from(DB::raw("suratpengantarapprovalinputtrip with (readuncommitted)"))
-        ->where('tglbukti', date('Y-m-d', strtotime($data['tglbukti'])))
-        ->first();
+            ->where('tglbukti', date('Y-m-d', strtotime($data['tglbukti'])))
+            ->first();
 
         $approvalId = '';
-        if($bukaTrip != null){
+        if ($bukaTrip != null) {
             $approvalId = $bukaTrip->id;
         }
+        $getZona = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS UPAH ZONA')->where('text', 'UPAH ZONA')->first();
+        $upahZona = DB::table("upahsupir")->from(DB::raw("upahsupir with (readuncommitted)"))->where('id', $data['upah_id'])->first();
 
+        $data['zonadari_id'] = '';
+        $data['zonasampai_id'] = '';
+
+        if ($data['statusupahzona'] == $getZona->id) {
+            $data['zonadari_id'] = $upahZona->zonadari_id;
+            $data['zonasampai_id'] = $upahZona->zonasampai_id;
+        }
         $dataSP = [
 
             'jobtrucking' => $nobuktiorderantrucking,
@@ -108,17 +117,21 @@ class InputTrip extends MyModel
             'gandenganasal_id' => $data['gandenganasal_id'],
             'statuslongtrip' => $data['statuslongtrip'],
             'statusgandengan' => $data['statusgandengan'],
-            'omset' => $tarifrincian->nominal,
+            'statusupahzona' => $data['statusupahzona'],
+            'omset' => $tarifrincian->nominal ?? 0,
             'gajisupir' => $upahsupirRincian->nominalsupir,
             'gajikenek' => $upahsupirRincian->nominalkenek,
             'agen_id' => $data['agen_id'],
+            'zonadari_id' => $data['zonadari_id'],
+            'zonasampai_id' => $data['zonasampai_id'],
             'jenisorder_id' => $data['jenisorder_id'],
             'statusperalihan' => $statusperalihan->id,
-            'totalomset' => $tarifrincian->nominal,
+            'totalomset' => $tarifrincian->nominal ?? 0,
             'tglsp' => $tglbukti,
             'statusbatalmuat' => $statusbatalmuat->id,
             'statusgudangsama' => $data['statusgudangsama'],
             'gudang' => $data['gudang'],
+            'lokasibongkarmuat' => $data['lokasibongkarmuat'],
             'tarif_id' => $data['tarifrincian_id'],
             'inputtripmandor' => '1',
             'nominal' => '',
@@ -157,7 +170,7 @@ class InputTrip extends MyModel
         $ritasiPulang = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS RITASI')->where('text', 'PULANG RANGKA')->first();
         $ritasiTurun = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS RITASI')->where('text', 'TURUN RANGKA')->first();
 
-        if($dataRitasiId == $ritasiPulang->id){
+        if ($dataRitasiId == $ritasiPulang->id) {
             $temp = '##temp' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
             Schema::create($temp, function ($table) {
                 $table->unsignedBigInteger('dari_id')->nullable();
@@ -166,16 +179,16 @@ class InputTrip extends MyModel
                 $table->string('sampai')->nullable();
             });
 
-            $dari = DB::table("kota")->from(DB::raw("kota with (readuncommitted)"))->where("kodekota",'BELAWAN RANGKA')->first();
-            $sampai = DB::table("kota")->from(DB::raw("kota with (readuncommitted)"))->where("kodekota",'KIM (KANDANG)')->first();
+            $dari = DB::table("kota")->from(DB::raw("kota with (readuncommitted)"))->where("kodekota", 'BELAWAN RANGKA')->first();
+            $sampai = DB::table("kota")->from(DB::raw("kota with (readuncommitted)"))->where("kodekota", 'KIM (KANDANG)')->first();
 
             DB::table($temp)->insert(
                 ["dari_id" => $dari->id, "dari" => $dari->kodekota, "sampai_id" => $sampai->id, "sampai" => $sampai->kodekota]
             );
             $query = DB::table($temp)->from(DB::raw($temp))->first();
-    
+
             return $query;
-        }else if($dataRitasiId == $ritasiTurun->id){
+        } else if ($dataRitasiId == $ritasiTurun->id) {
             $temp = '##temp' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
             Schema::create($temp, function ($table) {
                 $table->unsignedBigInteger('dari_id')->nullable();
@@ -184,17 +197,17 @@ class InputTrip extends MyModel
                 $table->string('sampai')->nullable();
             });
 
-            $dari = DB::table("kota")->from(DB::raw("kota with (readuncommitted)"))->where("kodekota",'KIM (KANDANG)')->first();
-            $sampai = DB::table("kota")->from(DB::raw("kota with (readuncommitted)"))->where("kodekota",'BELAWAN RANGKA')->first();
+            $dari = DB::table("kota")->from(DB::raw("kota with (readuncommitted)"))->where("kodekota", 'KIM (KANDANG)')->first();
+            $sampai = DB::table("kota")->from(DB::raw("kota with (readuncommitted)"))->where("kodekota", 'BELAWAN RANGKA')->first();
 
             DB::table($temp)->insert(
                 ["dari_id" => $dari->id, "dari" => $dari->kodekota, "sampai_id" => $sampai->id, "sampai" => $sampai->kodekota]
             );
             $query = DB::table($temp)->from(DB::raw($temp))->first();
-    
+
             return $query;
-        }else{
-            $query =[];
+        } else {
+            $query = [];
             return $query;
         }
     }
