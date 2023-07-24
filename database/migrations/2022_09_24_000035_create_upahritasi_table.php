@@ -23,10 +23,13 @@ class CreateUpahritasiTable extends Migration
             $table->unsignedBigInteger('tarif_id')->nullable();
             $table->unsignedBigInteger('kotadari_id')->nullable();
             $table->unsignedBigInteger('kotasampai_id')->nullable();
+            $table->unsignedBigInteger('zonadari_id')->nullable();
+            $table->unsignedBigInteger('zonasampai_id')->nullable();
             $table->double('nominalsupir',15,2)->nullable();
             $table->double('jarak',15,2)->nullable();
             $table->unsignedBigInteger('zona_id')->nullable();
             $table->integer('statusaktif')->length(11)->nullable();
+            $table->integer('statuszonaritasi')->length(11)->nullable();
             $table->date('tglmulaiberlaku')->nullable();
             $table->string('modifiedby',50)->nullable();            
             $table->timestamps();
