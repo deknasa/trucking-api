@@ -553,7 +553,7 @@ class LaporanKasGantung extends MyModel
      'updated_at'
  ], $dataheader);
 
-//   dd($dataheader->get());
+//    dd($dataheader->get());
 
 //NOTE - pengembalian kas gantung detail
  $pengembaliankasgantungdetail = '##pengembaliankasgantungdetail' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
