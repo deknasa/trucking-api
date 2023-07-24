@@ -720,6 +720,8 @@ class LaporanKasGantung extends MyModel
      $table->dateTime('updated_at')->nullable();
  });
 
+
+
  $dataheader2 = DB::table('pengembaliankasgantungheader')->from(DB::raw("pengembaliankasgantungheader AS A WITH (READUNCOMMITTED)"))
  ->select([
      'A.id',
@@ -744,6 +746,8 @@ class LaporanKasGantung extends MyModel
      'A.updated_at',
  ])
  ->where('A.tglbukti', '<', $periode);
+
+
 
 
  DB::table($pengembaliankasgantungheader2)->insertUsing([
@@ -799,8 +803,6 @@ class LaporanKasGantung extends MyModel
      'keterangan',
  ], $kasdetail2);
  // dd($kasdetail2->get());
-
-
 
  //NOTE - TempLaporan
  $TempLaporan = '##TempLaporan' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
