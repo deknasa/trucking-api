@@ -27,7 +27,7 @@ class DestroyPiutangHeaderRequest extends FormRequest
     public function rules()
     {
         $rules = [
-            'nobukti' => new DestroyPiutang(),
+            'id' => new DestroyPiutang(),
             'tglbukti' => [
                 'required','date_format:d-m-Y',
                 new DateTutupBuku()

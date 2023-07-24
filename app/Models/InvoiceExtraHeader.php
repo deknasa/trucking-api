@@ -98,7 +98,7 @@ class InvoiceExtraHeader extends MyModel
             $data = [
                 'kondisi' => true,
                 'keterangan' => 'Approval Jurnal',
-                'kodeerror' => 'SATL'
+                'kodeerror' => 'SAP'
             ];
             goto selesai;
         }

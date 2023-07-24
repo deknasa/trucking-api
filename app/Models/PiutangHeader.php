@@ -119,6 +119,7 @@ class PiutangHeader extends MyModel
             $data = [
                 'kondisi' => true,
                 'keterangan' => 'Pelunasan Piutang',
+                'kodeerror' => 'SATL'
             ];
             goto selesai;
         }
@@ -157,6 +158,23 @@ class PiutangHeader extends MyModel
             goto selesai;
         }
 
+        $jurnalpusat = DB::table('jurnalumumpusatheader')
+            ->from(
+                DB::raw("jurnalumumpusatheader as a with (readuncommitted)")
+            )
+            ->select(
+                'a.nobukti'
+            )
+            ->where('a.nobukti', '=', $nobukti)
+            ->first();
+        if (isset($jurnalpusat)) {
+            $data = [
+                'kondisi' => true,
+                'keterangan' => 'Approval Jurnal',
+                'kodeerror' => 'SAP'
+            ];
+            goto selesai;
+        }
 
         $data = [
             'kondisi' => false,
@@ -661,10 +679,10 @@ class PiutangHeader extends MyModel
         $statusCetak = request()->statuscetak ?? '';
 
         $getJudul = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))
-        ->select('text')
-        ->where('grp', 'JUDULAN LAPORAN')
-        ->where('subgrp', 'JUDULAN LAPORAN')
-        ->first();
+            ->select('text')
+            ->where('grp', 'JUDULAN LAPORAN')
+            ->where('subgrp', 'JUDULAN LAPORAN')
+            ->first();
 
         $query = DB::table($this->table)->from(
             DB::raw("piutangheader with (readuncommitted)")
@@ -686,7 +704,7 @@ class PiutangHeader extends MyModel
             DB::raw("'Laporan Piutang' as judulLaporan"),
             DB::raw("'" . $getJudul->text . "' as judul"),
             DB::raw("'Tgl Cetak:'+format(getdate(),'dd-MM-yyyy HH:mm:ss')as tglcetak"),
-            DB::raw(" 'User :".auth('api')->user()->name."' as usercetak")
+            DB::raw(" 'User :" . auth('api')->user()->name . "' as usercetak")
         )
             ->where("$this->table.id", $id)
             ->leftJoin(DB::raw("parameter as statuscetak with (readuncommitted)"), 'piutangheader.statuscetak', 'statuscetak.id')

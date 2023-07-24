@@ -66,8 +66,11 @@ class ProsesGajiSupirHeader extends MyModel
         return $data;
     }
     
-    public function cekvalidasiaksi($nobukti)
+    public function cekvalidasiaksi($id)
     {
+        
+        $prosesGaji = ProsesGajiSupirHeader::from(DB::raw("prosesgajisupirheader"))->where('id', $id)->first();
+
         $hutangBayar = DB::table('jurnalumumpusatheader')
             ->from(
                 DB::raw("jurnalumumpusatheader as a with (readuncommitted)")
@@ -75,7 +78,7 @@ class ProsesGajiSupirHeader extends MyModel
             ->select(
                 'a.nobukti'
             )
-            ->where('a.nobukti', '=', $nobukti)
+            ->where('a.nobukti', '=', $prosesGaji->nobukti)
             ->first();
         if (isset($hutangBayar)) {
             $data = [
@@ -86,7 +89,23 @@ class ProsesGajiSupirHeader extends MyModel
             goto selesai;
         }
 
-
+        $hutangBayar = DB::table('jurnalumumpusatheader')
+            ->from(
+                DB::raw("jurnalumumpusatheader as a with (readuncommitted)")
+            )
+            ->select(
+                'a.nobukti'
+            )
+            ->where('a.nobukti', '=', $prosesGaji->pengeluaran_nobukti)
+            ->first();
+        if (isset($hutangBayar)) {
+            $data = [
+                'kondisi' => true,
+                'keterangan' => 'Approval Jurnal',
+                'kodeerror' => 'SAP'
+            ];
+            goto selesai;
+        }
 
         $data = [
             'kondisi' => false,

@@ -32,8 +32,7 @@ class DestroyProsesGajiSupir implements Rule
     {
         
         $gajisupir = new ProsesGajiSupirHeader();
-        $nobukti = ProsesGajiSupirHeader::from(DB::raw("prosesgajisupirheader"))->where('id', request()->id)->first();
-        $cekdata = $gajisupir->cekvalidasiaksi($nobukti->nobukti);
+        $cekdata = $gajisupir->cekvalidasiaksi(request()->id);
         if ($cekdata['kondisi']) {
             $this->kodeerror = $cekdata['kodeerror'];
             $this->keterangan = ' ('. $cekdata['keterangan'].')';

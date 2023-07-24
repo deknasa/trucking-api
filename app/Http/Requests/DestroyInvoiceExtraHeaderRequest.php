@@ -27,22 +27,9 @@ class DestroyInvoiceExtraHeaderRequest extends FormRequest
      */
     public function rules()
     {
-        $controller = new InvoiceExtraHeaderController;
-        $invoiceextraheader = new InvoiceExtraHeader();
-        $cekdata = $invoiceextraheader->cekvalidasiaksi($this->nobukti);
-        $cekdatacetak = $controller->cekvalidasi($this->id);
-        // dd($cekdata['kondisi']);
-        if ($cekdatacetak->original['kodestatus']=='1') {
-                $cekdtcetak=true;
-        } else {
-            $cekdtcetak=false;
-        }
-        
-
-         
     
         return [
-            'id' => [ new ValidasiDestroyInvoiceExtraHeader($cekdata['kondisi'],$cekdtcetak)],
+            'id' => [ new ValidasiDestroyInvoiceExtraHeader()],
         ];
     }
 }

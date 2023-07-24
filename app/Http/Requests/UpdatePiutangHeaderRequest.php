@@ -46,7 +46,8 @@ class UpdatePiutangHeaderRequest extends FormRequest
         $piutangHeader = new PiutangHeader();
         $getDataPiutang = $piutangHeader->findUpdate(request()->id);
         $rules = [
-            'nobukti' => [Rule::in($getDataPiutang->nobukti), new DestroyPiutang()],
+            'id' => [new DestroyPiutang()],
+            'nobukti' => [Rule::in($getDataPiutang->nobukti)],
             'tglbukti' => [
                 'required','date_format:d-m-Y',
                 'date_equals:'.date('d-m-Y', strtotime($getDataPiutang->tglbukti)),

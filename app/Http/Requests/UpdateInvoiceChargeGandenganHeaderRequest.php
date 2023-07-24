@@ -6,6 +6,7 @@ use App\Http\Controllers\Api\ErrorController;
 use App\Models\InvoiceChargeGandenganHeader;
 use App\Rules\DateTutupBuku;
 use App\Rules\ExistAgen;
+use App\Rules\ValidasiDestroyInvoiceChargeGandengan;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
@@ -44,6 +45,7 @@ class UpdateInvoiceChargeGandenganHeaderRequest extends FormRequest
         }
 
         $rules = [
+            'id' => new ValidasiDestroyInvoiceChargeGandengan(),
             'tglbukti' => [
                 'required', 'date_format:d-m-Y',
                 new DateTutupBuku()

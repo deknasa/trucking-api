@@ -2,14 +2,10 @@
 
 namespace App\Http\Requests;
 
+use App\Rules\ValidasiDestroyInvoiceChargeGandengan;
 use Illuminate\Foundation\Http\FormRequest;
-use App\Models\InvoiceHeader;
-use Illuminate\Validation\Rule;
-use App\Rules\ValidasiDestroyInvoiceHeader ;
-use App\Http\Controllers\Api\InvoiceHeaderController;
 
-
-class DestroyInvoiceHeaderRequest extends FormRequest
+class DestroyInvoiceChargeGandenganRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
@@ -28,10 +24,8 @@ class DestroyInvoiceHeaderRequest extends FormRequest
      */
     public function rules()
     {
-       
-
         return [
-            'id' => [ new ValidasiDestroyInvoiceHeader()],
+            'id' => new ValidasiDestroyInvoiceChargeGandengan(),
         ];
     }
 }

@@ -875,6 +875,8 @@ route::middleware(['auth:api', 'authorized'])->group(function () {
     Route::resource('hutangdetail', HutangDetailController::class)->whereNumber('hutangdetail');
 
     Route::get('running_number', [Controller::class, 'getRunningNumber'])->name('running_number');
+    Route::post('pelunasanpiutangheader/{id}/cekValidasiAksi', [PelunasanPiutangHeaderController::class, 'cekValidasiAksi'])->name('pelunasanpiutangheader.cekValidasiAksi')->whereNumber('id');
+    Route::post('pelunasanpiutangheader/{id}/cekvalidasi', [PelunasanPiutangHeaderController::class, 'cekvalidasi'])->name('pelunasanpiutangheader.cekvalidasi')->whereNumber('id');
     Route::get('pelunasanpiutangheader/no_bukti', [PelunasanPiutangHeaderController::class, 'getNoBukti']);
     Route::get('pelunasanpiutangheader/default', [PelunasanPiutangHeaderController::class, 'default']);
     Route::get('pelunasanpiutangheader/combo', [PelunasanPiutangHeaderController::class, 'combo']);
