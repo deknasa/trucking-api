@@ -2,11 +2,12 @@
 
 namespace App\Http\Requests;
 
-use App\Rules\DateTutupBuku;
-use App\Rules\DestroyPenerimaanGiro;
+use App\Http\Controllers\Api\ErrorController;
 use Illuminate\Foundation\Http\FormRequest;
+use App\Rules\DateTutupBuku;
+use App\Rules\ValidasiDestroyServiceOutHeader;
 
-class DestroyPenerimaanGiroHeaderRequest extends FormRequest
+class DestroyServiceOutHeaderRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
@@ -25,13 +26,15 @@ class DestroyPenerimaanGiroHeaderRequest extends FormRequest
      */
     public function rules()
     {
-        return [
-            'id' => new DestroyPenerimaanGiro(),
-            'nobukti' => new DestroyPenerimaanGiro(),
-            'tglbukti' => [
-                'required','date_format:d-m-Y',
+        $rules = [
+            "id"=>[new ValidasiDestroyServiceOutHeader()],
+            "tglbukti" => [
                 new DateTutupBuku()
-            ],
+            ]
         ];
+        
+        return $rules;
     }
+
+    
 }

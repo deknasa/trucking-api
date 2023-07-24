@@ -5,6 +5,7 @@ namespace App\Http\Requests;
 use App\Http\Controllers\Api\ErrorController;
 use Illuminate\Foundation\Http\FormRequest;
 use App\Rules\DateTutupBuku;
+use App\Rules\DestroyPenerimaanGiro;
 use App\Rules\ExistAgen;
 
 class UpdatePenerimaanGiroHeaderRequest extends FormRequest
@@ -52,6 +53,7 @@ class UpdatePenerimaanGiroHeaderRequest extends FormRequest
 
         foreach ($relatedRequests as $relatedRequest) {
             $rules = array_merge(
+                ['id'=> new DestroyPenerimaanGiro()],
                 $rules,
                 (new $relatedRequest)->rules(),
                 $rulesAgen_id

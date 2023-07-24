@@ -14,6 +14,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use App\Http\Requests\StoreLogTrailRequest;
 use App\Http\Requests\UpdateServiceOutHeaderRequest;
+use App\Http\Requests\DestroyServiceOutHeaderRequest;
 use App\Models\LogTrail;
 use App\Models\ServiceInHeader;
 use App\Models\ServiceOutDetail;
@@ -126,11 +127,10 @@ class ServiceOutHeaderController extends Controller
     /**
      * @ClassName
      */
-    public function destroy(Request $request, $id)
+    public function destroy(DestroyServiceOutHeaderRequest $request, $id)
     {
 
         DB::beginTransaction();
-
         try {
             $serviceOutHeader = (new ServiceOutHeader())->processDestroy($id);
             $selected = $this->getPosition($serviceOutHeader, $serviceOutHeader->getTable(), true);
