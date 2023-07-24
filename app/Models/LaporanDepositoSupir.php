@@ -29,6 +29,7 @@ class LaporanDepositoSupir extends MyModel
     public function getReport($sampai, $jenis)
     {
         $penerimaantrucking_id = 3;
+        $pengeluarantrucking_id = 2;
         $sampai = date('Y-m-d', strtotime(request()->sampai)) ?? '1900/1/1';
         $jenis = request()->jenis ?? '';
 
@@ -73,7 +74,7 @@ class LaporanDepositoSupir extends MyModel
             )
             ->join(DB::raw("pengeluarantruckingdetail b with (readuncommitted)"), 'a.id', 'b.pengeluarantruckingheader_id')
             ->where('a.tglbukti', '<', $sampai)
-            ->where('a.pengeluarantrucking_id', '=', 1)
+            ->where('a.pengeluarantrucking_id', '=', $pengeluarantrucking_id)
             ->groupBy('b.supir_id');
 
         DB::table($temppengeluarantrucking)->insertUsing([
@@ -239,6 +240,7 @@ class LaporanDepositoSupir extends MyModel
             });
 
         $data = $query->get();
+
 
         return $data;
     }

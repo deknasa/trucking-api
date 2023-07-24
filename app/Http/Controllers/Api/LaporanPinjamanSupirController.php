@@ -30,9 +30,10 @@ class LaporanPinjamanSupirController extends Controller
     public function report(ValidasiLaporanPinjamanSupirRequest $request)
     {
         $sampai = $request->sampai;
+        $jenis = $request->jenis ?? 83;
         $laporanPinjSupir = new LaporanPinjamanSupir();
 
-        $dataPinjSupir = $laporanPinjSupir->getReport($sampai);
+        $dataPinjSupir = $laporanPinjSupir->getReport($sampai,$jenis);
 
         if (count($dataPinjSupir) == 0) {
             return response([

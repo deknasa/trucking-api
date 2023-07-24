@@ -26,7 +26,7 @@ class LaporanPinjamanSupir extends MyModel
 
 
 
-    public function getReport($sampai)
+    public function getReport($sampai,$jenis)
     {
         $pengeluarantrucking_id = 1;
         $penerimaantrucking_id = 2;
@@ -54,7 +54,9 @@ class LaporanPinjamanSupir extends MyModel
             ->join(DB::raw("pengeluarantruckingdetail as b with (readuncommitted) "), 'a.nobukti', 'b.nobukti')
             ->where('a.pengeluarantrucking_id', '=', $pengeluarantrucking_id)
             ->whereRaw("a.tglbukti<='" . date('Y/m/d', strtotime($sampai)) . "'")
-            ->whereRaw("isnull(b.supir_id,0)<>0")
+            // ->whereRaw("isnull(b.supir_id,0)<>0")
+            ->where('a.statusposting', '=', $jenis)
+
             ->OrderBy('a.tglbukti', 'asc')
             ->OrderBy('a.nobukti', 'asc');
 
@@ -86,9 +88,13 @@ class LaporanPinjamanSupir extends MyModel
             })
 
             ->leftjoin(DB::raw("prosesgajisupirdetail as d with (readuncommitted) "), 'c.gajisupir_nobukti', 'd.gajisupir_nobukti')
+            ->leftjoin(DB::raw("pengeluarantruckingheader as e with (readuncommitted) "), 'b.pengeluarantruckingheader_nobukti', 'e.nobukti')
+
             ->where('a.penerimaantrucking_id', '=', $penerimaantrucking_id)
             ->whereRaw("a.tglbukti<'" . date('Y/m/d', strtotime($sampai)) . "'")
-            ->whereRaw("isnull(b.supir_id,0)<>0")
+            // ->whereRaw("isnull(b.supir_id,0)<>0")
+            ->where('e.statusposting', '=', $jenis)
+
             ->OrderBy('a.tglbukti', 'asc')
             ->OrderBy('a.nobukti', 'asc');
 
@@ -154,7 +160,8 @@ class LaporanPinjamanSupir extends MyModel
             ->leftjoin(DB::raw("pengeluarantruckingheader as e with (readuncommitted) "), 'b.pengeluarantruckingheader_nobukti', 'e.nobukti')
             ->where('a.penerimaantrucking_id', '=', $penerimaantrucking_id)
             ->whereRaw("a.tglbukti='" . date('Y/m/d', strtotime($sampai)) . "'")
-            ->whereRaw("isnull(b.supir_id,0)<>0")
+            ->where('e.statusposting', '=', $jenis)
+
             ->OrderBy('a.tglbukti', 'asc')
             ->OrderBy('a.nobukti', 'asc');
 
