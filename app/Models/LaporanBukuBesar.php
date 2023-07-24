@@ -63,6 +63,7 @@ class LaporanBukuBesar extends MyModel
             ], $querysaldoawal);            
 
 
+            // dd(dB::table($tempsaldorekap)->get());
 
         $tempsaldo2 = '##tempsaldo2' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
         Schema::create($tempsaldo2, function ($table) {
@@ -118,6 +119,8 @@ class LaporanBukuBesar extends MyModel
             'saldo',
         ], $querysaldoawal);
 
+       
+
         $querysaldoawal = DB::table("akunpusat")->from(
             DB::raw("akunpusat as a with (readuncommitted)")
         )
@@ -149,6 +152,7 @@ class LaporanBukuBesar extends MyModel
                 'saldo',
             ], $querysaldoawal);
 
+            
 
             $tempsaldo = '##tempsaldo' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
             Schema::create($tempsaldo, function ($table) {
@@ -194,7 +198,6 @@ class LaporanBukuBesar extends MyModel
 
 
 
-
         $tempdetail = '##tempdetail' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
         Schema::create($tempdetail, function ($table) {
             $table->id();
@@ -235,7 +238,6 @@ class LaporanBukuBesar extends MyModel
             ->orderBy('b.id', 'asc');
 
 
-            //    dd($querydetail->get());
         DB::table($tempdetail)->insertUsing([
             'urut',
             'coa',
@@ -291,6 +293,7 @@ class LaporanBukuBesar extends MyModel
             'saldo',
         ], $queryRekap1);
 
+
         $queryRekap = DB::table($tempdetail)
             ->select(
                 'urut',
@@ -317,6 +320,8 @@ class LaporanBukuBesar extends MyModel
             'saldo',
         ], $queryRekap);
 
+
+
         $getJudul = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))
             ->select('text')
             ->where('grp', 'JUDULAN LAPORAN')
@@ -334,7 +339,7 @@ class LaporanBukuBesar extends MyModel
                 'keterangan',
                 DB::raw("(case when debet=0 then null else debet end) as debet"),
                 DB::raw("(case when kredit=0 then null else kredit end) as kredit"),
-                DB::raw("sum ((isnull(saldo,0)+debet)-Kredit) over (order by id asc) as Saldo"),
+                DB::raw("sum ((isnull(saldo,0)+debet)-Kredit) over (partition by coa order by id asc) as Saldo"),
                 DB::raw("'Laporan Buku Besar' as judulLaporan"),
                 DB::raw("'" . $getJudul->text . "' as judul"),
                 DB::raw("'Tgl Cetak:'+format(getdate(),'dd-MM-yyyy HH:mm:ss')as tglcetak"),
