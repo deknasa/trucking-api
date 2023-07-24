@@ -80,7 +80,7 @@ class CreateSuratpengantarTable extends Migration
             $table->string('notripasal', 50)->nullable();
             $table->date('tgldoor')->nullable();
             $table->integer('statusdisc')->length(11)->nullable();
-            $table->unsignedBigInteger('statuszonaritasi')->nullable();
+            $table->unsignedBigInteger('statusupahzona')->nullable();
             $table->unsignedBigInteger('zonadari_id')->nullable();
             $table->unsignedBigInteger('zonasampai_id')->nullable();
             $table->unsignedBigInteger('statusformat')->nullable();
