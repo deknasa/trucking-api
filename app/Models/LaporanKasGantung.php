@@ -191,7 +191,7 @@ class LaporanKasGantung extends MyModel
              'A.created_at',
              'A.updated_at'
          ])
-         ->where('A.tglbukti', '<', $periode);
+         ->where('A.tglbukti', '<=', $periode);
         //  dd($kasheader->get());
 
         DB::table($kasgantungheader)->insertUsing([
@@ -644,7 +644,7 @@ class LaporanKasGantung extends MyModel
       'A.created_at',
       'A.updated_at'
   ])
-  ->where('A.tglbukti', '<', $periode);
+  ->where('A.tglbukti', '<=', $periode);
  //  dd($kasheader->get());
 
  DB::table($kasgantungheader)->insertUsing([
