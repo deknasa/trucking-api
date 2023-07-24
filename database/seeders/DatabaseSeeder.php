@@ -100,6 +100,8 @@ class DatabaseSeeder extends Seeder
             AbsensiSupirApprovalDetailSeeder::class,
             UpahSupirSeeder::class,
             UpahSupirRincianSeeder::class,
+            UpahRitasiSeeder::class,
+            UpahRitasiRincianSeeder::class,
             OrderanTruckingSeeder::class,
             SuratPengantarSeeder::class,
             SuratPengantarbiayatambahanSeeder::class,
