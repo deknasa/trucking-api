@@ -111,9 +111,9 @@ class LaporanSaldoInventory extends MyModel
                 'a.kodebarang',
                 'a.namabarang',
                 DB::raw("'".$priode1."' as tanggal"),
-                'a.qtysaldo as qty',
+                'a.qtymasuk as qty',
                 DB::raw("'' as satuan"),
-                'a.nilaisaldo as nominal',
+                'a.nilaimasuk as nominal',
 
             );
            
