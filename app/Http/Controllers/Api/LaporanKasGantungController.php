@@ -28,7 +28,8 @@ class LaporanKasGantungController extends Controller
      */
     public function report(Request $request)
     {
-        $periode = $request->periode;
+        $periode = date('Y-m-d', strtotime($request->periode)) ;
+        
         $laporankasgantung = new LaporanKasGantung();
         
         // $report = LaporanKasGantung::getReport($sampai, $jenis);
@@ -52,7 +53,7 @@ class LaporanKasGantungController extends Controller
      * @ClassName
      */
     public function export(Request $request){
-        $periode = $request->periode;
+        $periode = date('Y-m-d', strtotime($request->periode)) ;
         $laporankasgantung = new LaporanKasGantung();
         //   $export = LaporanKasGantung::getExport($sampai, $jenis);
         // $export = [

@@ -90,14 +90,18 @@ class UpahSupir extends MyModel
                 $table->longText('tarif')->nullable();
                 $table->longText('kotadari_id')->nullable();
                 $table->longText('kotasampai_id')->nullable();
+                $table->longText('zonadari_id')->nullable();
+                $table->longText('zonasampai_id')->nullable();
                 $table->longText('penyesuaian')->nullable();
                 $table->longText('jarak')->nullable();
                 $table->longText('zona_id')->nullable()->nullable();
                 $table->longText('statusaktif')->nullable();
                 $table->longText('statusaktif_text')->nullable();
                 $table->bigInteger('statusaktif_id')->nullable();
+                $table->longText('statusupahzona')->nullable();
+                $table->longText('statusupahzona_text')->nullable();
+                $table->bigInteger('statusupahzona_id')->nullable();
                 $table->date('tglmulaiberlaku')->nullable();
-                $table->longText('statusluarkota')->nullable();
                 $table->longText('gambar')->nullable();
                 $table->longText('keterangan')->nullable();
                 $table->dateTime('created_at')->nullable();
@@ -130,15 +134,21 @@ class UpahSupir extends MyModel
                     'tarif.tujuan as tarif',
                     'kotadari.keterangan as kotadari_id',
                     'kotasampai.keterangan as kotasampai_id',
+                    'zonadari.zona as zonadari_id',
+                    'zonasampai.zona as zonasampai_id',
                     'upahsupir.penyesuaian',
                     DB::raw("CONCAT(upahsupir.jarak, ' KM') as jarak"),
                     'zona.keterangan as zona_id',
                     'parameter.memo as statusaktif',
                     'parameter.text as statusaktif_text',
                     'upahsupir.statusaktif as statusaktif_id',
+
+                    'statusupahzona.memo as statusupahzona',
+                    'statusupahzona.text as statusupahzona_text',
+                    'upahsupir.statusupahzona as statusupahzona_id',
+
                     'upahsupir.tglmulaiberlaku',
                     // 'upahsupir.tglakhirberlaku',
-                    'statusluarkota.memo as statusluarkota',
                     'upahsupir.gambar',
                     'upahsupir.keterangan',
                     'upahsupir.created_at',
@@ -151,8 +161,10 @@ class UpahSupir extends MyModel
                 ->leftJoin(DB::raw("tarif with (readuncommitted)"), 'upahsupir.tarif_id', '=', 'tarif.id')
                 ->leftJoin(DB::raw("kota as kotadari with (readuncommitted)"), 'kotadari.id', '=', 'upahsupir.kotadari_id')
                 ->leftJoin(DB::raw("kota as kotasampai with (readuncommitted)"), 'kotasampai.id', '=', 'upahsupir.kotasampai_id')
+                ->leftJoin(DB::raw("zona as zonadari with (readuncommitted)"), 'zonadari.id', '=', 'upahsupir.zonadari_id')
+                ->leftJoin(DB::raw("zona as zonasampai with (readuncommitted)"), 'zonasampai.id', '=', 'upahsupir.zonasampai_id')
                 ->leftJoin(DB::raw("parameter with (readuncommitted)"), 'upahsupir.statusaktif', 'parameter.id')
-                ->leftJoin(DB::raw("parameter as statusluarkota with (readuncommitted)"), 'upahsupir.statusluarkota', 'statusluarkota.id')
+                ->leftJoin(DB::raw("parameter as statusupahzona with (readuncommitted)"), 'upahsupir.statusupahzona', 'statusupahzona.id')
                 ->leftJoin(DB::raw("zona with (readuncommitted)"), 'upahsupir.zona_id', 'zona.id');
 
             DB::table($temtabel)->insertUsing([
@@ -161,14 +173,18 @@ class UpahSupir extends MyModel
                 'tarif',
                 'kotadari_id',
                 'kotasampai_id',
+                'zonadari_id',
+                'zonasampai_id',
                 'penyesuaian',
                 'jarak',
                 'zona_id',
                 'statusaktif',
                 'statusaktif_text',
                 'statusaktif_id',
+                'statusupahzona',
+                'statusupahzona_text',
+                'statusupahzona_id',
                 'tglmulaiberlaku',
-                'statusluarkota',
                 'gambar',
                 'keterangan',
                 'created_at',
@@ -200,12 +216,14 @@ class UpahSupir extends MyModel
                 'a.tarif',
                 'a.kotadari_id',
                 'a.kotasampai_id',
+                'a.zonadari_id',
+                'a.zonasampai_id',
                 'a.penyesuaian',
                 'a.jarak',
                 'a.zona_id',
                 'a.statusaktif',
+                'a.statusupahzona',
                 'a.tglmulaiberlaku',
-                'a.statusluarkota',
                 'a.gambar',
                 'a.keterangan',
                 'a.created_at',
@@ -264,16 +282,23 @@ class UpahSupir extends MyModel
             'parent.keterangan as parent',
             DB::raw("(case when upahsupir.tarif_id=0 then null else upahsupir.tarif_id end) as tarif_id"),
             DB::raw("TRIM(tarif.tujuan) as tarif"),
-            'upahsupir.kotadari_id',
+            DB::raw("(case when upahsupir.kotadari_id=0 then null else upahsupir.kotadari_id end) as kotadari_id"),
             DB::raw("TRIM(kotadari.keterangan) as kotadari"),
             'upahsupir.keterangan',
             'upahsupir.penyesuaian',
-            'upahsupir.kotasampai_id',
+            DB::raw("(case when upahsupir.kotasampai_id=0 then null else upahsupir.kotasampai_id end) as kotasampai_id"),
             DB::raw("TRIM(kotasampai.keterangan) as kotasampai"),
+
+            'upahsupir.zonadari_id',
+            DB::raw("TRIM(zonadari.zona) as zonadari"),
+            'upahsupir.zonasampai_id',
+            DB::raw("TRIM(zonasampai.zona) as zonasampai"),
             'upahsupir.jarak',
             'zona.keterangan as zona',
             DB::raw("(case when upahsupir.zona_id=0 then null else upahsupir.zona_id end) as zona_id"),
             'upahsupir.statusaktif',
+            'upahsupir.statusupahzona',
+            'upahsupir.statussimpankandang',
 
             'upahsupir.tglmulaiberlaku',
             // 'upahsupir.tglakhirberlaku',
@@ -287,6 +312,8 @@ class UpahSupir extends MyModel
             ->leftJoin(DB::raw("$temp as parent with (readuncommitted)"), 'parent.id', '=', 'upahsupir.parent_id')
             ->leftJoin(DB::raw("kota as kotadari with (readuncommitted)"), 'kotadari.id', '=', 'upahsupir.kotadari_id')
             ->leftJoin(DB::raw("kota as kotasampai with (readuncommitted)"), 'kotasampai.id', '=', 'upahsupir.kotasampai_id')
+            ->leftJoin(DB::raw("zona as zonadari with (readuncommitted)"), 'zonadari.id', '=', 'upahsupir.zonadari_id')
+            ->leftJoin(DB::raw("zona as zonasampai with (readuncommitted)"), 'zonasampai.id', '=', 'upahsupir.zonasampai_id')
             ->leftJoin(DB::raw("zona with (readuncommitted)"), 'upahsupir.zona_id', 'zona.id')
             ->leftJoin(DB::raw("tarif with (readuncommitted)"), 'upahsupir.tarif_id', 'tarif.id')
             ->leftJoin(DB::raw("parameter as statusluarkota with (readuncommitted)"), 'upahsupir.statusluarkota', 'statusluarkota.id')
@@ -308,6 +335,7 @@ class UpahSupir extends MyModel
             $table->unsignedBigInteger('statusaktif')->nullable();
             $table->unsignedBigInteger('statusluarkota')->nullable();
             $table->unsignedBigInteger('statussimpankandang')->nullable();
+            $table->unsignedBigInteger('statusupahzona')->nullable();
         });
 
         $status = Parameter::from(
@@ -351,8 +379,21 @@ class UpahSupir extends MyModel
 
         $iddefaultstatusSimpanKandang = $status->id ?? 0;
 
+        $status = Parameter::from(
+            db::Raw("parameter with (readuncommitted)")
+        )
+            ->select(
+                'id'
+            )
+            ->where('grp', '=', 'STATUS UPAH ZONA')
+            ->where('subgrp', '=', 'STATUS UPAH ZONA')
+            ->where('default', '=', 'YA')
+            ->first();
+
+        $iddefaultstatusUpahZona = $status->id ?? 0;
+
         DB::table($tempdefault)->insert(
-            ["statusaktif" => $iddefaultstatusaktif, "statusluarkota" => $iddefaultstatusluarkota, "statussimpankandang" => $iddefaultstatusSimpanKandang]
+            ["statusaktif" => $iddefaultstatusaktif, "statusluarkota" => $iddefaultstatusluarkota, "statussimpankandang" => $iddefaultstatusSimpanKandang, "statusupahzona" => $iddefaultstatusUpahZona]
         );
 
         $query = DB::table($tempdefault)->from(
@@ -361,7 +402,8 @@ class UpahSupir extends MyModel
             ->select(
                 'statusaktif',
                 'statusluarkota',
-                'statussimpankandang'
+                'statussimpankandang',
+                'statusupahzona'
             );
 
         $data = $query->first();
@@ -461,12 +503,14 @@ class UpahSupir extends MyModel
                 '$this->table.parent_id',
                 kotadari.keterangan as kotadari_id,
                 kotasampai.keterangan as kotasampai_id,
+                zonadari.zona as zonadari_id,
+                zonasampai.zona as zonasampai_id,
                 '$this->table.penyesuaian',
                 zona.keterangan as zona_id,
                 $this->table.jarak,
                 $this->table.statusaktif,
                 $this->table.tglmulaiberlaku,
-                $this->table.statusluarkota,
+                $this->table.statusupahzona,
                  $this->table.modifiedby,
                  $this->table.created_at,
                  $this->table.updated_at"
@@ -474,6 +518,10 @@ class UpahSupir extends MyModel
         )
             ->leftJoin(DB::raw("kota as kotadari with (readuncommitted)"), 'kotadari.id', '=', 'upahsupir.kotadari_id')
             ->leftJoin(DB::raw("kota as kotasampai with (readuncommitted)"), 'kotasampai.id', '=', 'upahsupir.kotasampai_id')
+            ->leftJoin(DB::raw("zona as zonadari with (readuncommitted)"), 'zonadari.id', '=', 'upahsupir.zonadari_id')
+            ->leftJoin(DB::raw("zona as zonasampai with (readuncommitted)"), 'zonasampai.id', '=', 'upahsupir.zonasampai_id')
+            ->leftJoin(DB::raw("parameter with (readuncommitted)"), 'upahsupir.statusaktif', 'parameter.id')
+            ->leftJoin(DB::raw("parameter as statusupahzona with (readuncommitted)"), 'upahsupir.statusupahzona', 'statusupahzona.id')
             ->leftJoin(DB::raw("zona with (readuncommitted)"), 'upahsupir.zona_id', 'zona.id');
     }
 
@@ -485,13 +533,15 @@ class UpahSupir extends MyModel
             $table->string('parent_id')->nullable();
             $table->string('kotadari_id')->nullable();
             $table->string('kotasampai_id')->nullable();
+            $table->string('zonadari_id')->nullable();
+            $table->string('zonasampai_id')->nullable();
             $table->string('penyesuaian')->nullable();
             $table->string('zona_id')->nullable()->nullable();
             $table->double('jarak', 15, 2)->nullable();
             $table->integer('statusaktif')->length(11)->nullable();
             $table->date('tglmulaiberlaku')->nullable();
             // $table->date('tglakhirberlaku')->nullable();
-            $table->integer('statusluarkota')->length(11)->nullable();
+            $table->integer('statusupahzona')->length(11)->nullable();
             $table->string('modifiedby', 50)->nullable();
             $table->dateTime('created_at')->nullable();
             $table->dateTime('updated_at')->nullable();
@@ -502,7 +552,7 @@ class UpahSupir extends MyModel
         $query = $this->selectColumns($query);
         $this->sortForPosition($query);
         $models = $this->filterForPosition($query);
-        DB::table($temp)->insertUsing(['id', 'parent_id', 'kotadari_id', 'kotasampai_id', 'penyesuaian', 'zona_id', 'jarak', 'statusaktif', 'tglmulaiberlaku', 'statusluarkota', 'modifiedby', 'created_at', 'updated_at'], $models);
+        DB::table($temp)->insertUsing(['id', 'parent_id', 'kotadari_id', 'kotasampai_id', 'zonadari_id', 'zonasampai_id', 'penyesuaian', 'zona_id', 'jarak', 'statusaktif', 'tglmulaiberlaku', 'statusupahzona', 'modifiedby', 'created_at', 'updated_at'], $models);
         return $temp;
     }
 
@@ -512,6 +562,10 @@ class UpahSupir extends MyModel
             return $query->orderBy('a.kotadari_id', $this->params['sortOrder']);
         } else if ($this->params['sortIndex'] == 'kotasampai_id') {
             return $query->orderBy('a.kotasampai_id', $this->params['sortOrder']);
+        } else if ($this->params['sortIndex'] == 'zonadari_id') {
+            return $query->orderBy('a.zonadari_id', $this->params['sortOrder']);
+        } else if ($this->params['sortIndex'] == 'zonasampai_id') {
+            return $query->orderBy('a.zonasampai_id', $this->params['sortOrder']);
         } else if ($this->params['sortIndex'] == 'zona_id') {
             return $query->orderBy('a.zona_id', $this->params['sortOrder']);
         } else {
@@ -525,6 +579,10 @@ class UpahSupir extends MyModel
             return $query->orderBy('kotadari.keterangan', $this->params['sortOrder']);
         } else if ($this->params['sortIndex'] == 'kotasampai_id') {
             return $query->orderBy('kotasampai.keterangan', $this->params['sortOrder']);
+        } else if ($this->params['sortIndex'] == 'zonadari_id') {
+            return $query->orderBy('zonadari.zona', $this->params['sortOrder']);
+        } else if ($this->params['sortIndex'] == 'zonasampai_id') {
+            return $query->orderBy('zonasampai.zona', $this->params['sortOrder']);
         } else if ($this->params['sortIndex'] == 'zona_id') {
             return $query->orderBy('zona.keterangan', $this->params['sortOrder']);
         } else {
@@ -540,14 +598,18 @@ class UpahSupir extends MyModel
                     foreach ($this->params['filters']['rules'] as $index => $filters) {
                         if ($filters['field'] == 'statusaktif') {
                             $query = $query->where('a.statusaktif_text', '=', $filters['data']);
+                        } else if ($filters['field'] == 'statusupahzona') {
+                            $query = $query->where('a.statusupahzona_text', '=', $filters['data']);
                         } elseif ($filters['field'] == 'parent_id') {
                             $query = $query->where('a.parent_id', '=', $filters['data']);
-                        } elseif ($filters['field'] == 'statusluarkota') {
-                            $query = $query->where('a.statusluarkota', '=', $filters['data']);
                         } else if ($filters['field'] == 'kotadari_id') {
                             $query = $query->where('a.kotadari_id', 'LIKE', "%$filters[data]%");
                         } else if ($filters['field'] == 'kotasampai_id') {
                             $query = $query->where('a.kotasampai_id', 'LIKE', "%$filters[data]%");
+                        } else if ($filters['field'] == 'zonadari_id') {
+                            $query = $query->where('a.zonadari_id', 'LIKE', "%$filters[data]%");
+                        } else if ($filters['field'] == 'zonasampai_id') {
+                            $query = $query->where('a.zonasampai_id', 'LIKE', "%$filters[data]%");
                         } else if ($filters['field'] == 'zona_id') {
                             $query = $query->where('a.zona_id', 'LIKE', "%$filters[data]%");
                         } else if ($filters['field'] == 'jarak') {
@@ -568,14 +630,18 @@ class UpahSupir extends MyModel
                         foreach ($this->params['filters']['rules'] as $index => $filters) {
                             if ($filters['field'] == 'statusaktif') {
                                 $query = $query->orWhere('a.statusaktif_text', '=', $filters['data']);
-                            } elseif ($filters['field'] == 'statusluarkota') {
-                                $query = $query->orWhere('a.statusluarkota', '=', $filters['data']);
+                            } elseif ($filters['field'] == 'statusupahzona') {
+                                $query = $query->orWhere('a.statusupahzona', '=', $filters['data']);
                             } else if ($filters['field'] == 'kotadari_id') {
                                 $query = $query->orWhere('a.kotadari_id', 'LIKE', "%$filters[data]%");
+                            } else if ($filters['field'] == 'zonadari_id') {
+                                $query = $query->orWhere('a.zonadari_id', 'LIKE', "%$filters[data]%");
                             } else if ($filters['field'] == 'parent_id') {
                                 $query = $query->orWhere('a.parent_id', 'LIKE', "%$filters[data]%");
                             } else if ($filters['field'] == 'kotasampai_id') {
                                 $query = $query->orWhere('a.kotasampai_id', 'LIKE', "%$filters[data]%");
+                            } else if ($filters['field'] == 'zonasampai_id') {
+                                $query = $query->orWhere('a.zonasampai_id', 'LIKE', "%$filters[data]%");
                             } else if ($filters['field'] == 'zona_id') {
                                 $query = $query->orWhere('a.zona_id', 'LIKE', "%$filters[data]%");
                             } else if ($filters['field'] == 'jarak') {
@@ -602,7 +668,7 @@ class UpahSupir extends MyModel
 
         return $query;
     }
-    
+
     public function filterForPosition($query, $relationFields = [])
     {
         if (count($this->params['filters']) > 0 && @$this->params['filters']['rules'][0]['data'] != '') {
@@ -613,12 +679,16 @@ class UpahSupir extends MyModel
                             $query = $query->where('parameter.text', '=', $filters['data']);
                         } elseif ($filters['field'] == 'parent_id') {
                             $query = $query->where('parent.keterangan', '=', $filters['data']);
-                        } elseif ($filters['field'] == 'statusluarkota') {
-                            $query = $query->where('statusluarkota.text', '=', $filters['data']);
+                        } elseif ($filters['field'] == 'statusupahzona') {
+                            $query = $query->where('statusupahzona.text', '=', $filters['data']);
                         } else if ($filters['field'] == 'kotadari_id') {
                             $query = $query->where('kotadari.keterangan', 'LIKE', "%$filters[data]%");
                         } else if ($filters['field'] == 'kotasampai_id') {
                             $query = $query->where('kotasampai.keterangan', 'LIKE', "%$filters[data]%");
+                        } else if ($filters['field'] == 'zonadari_id') {
+                            $query = $query->where('zonadari.keterangan', 'LIKE', "%$filters[data]%");
+                        } else if ($filters['field'] == 'zonasampai_id') {
+                            $query = $query->where('zonasampai.keterangan', 'LIKE', "%$filters[data]%");
                         } else if ($filters['field'] == 'zona_id') {
                             $query = $query->where('zona.keterangan', 'LIKE', "%$filters[data]%");
                         } else if ($filters['field'] == 'jarak') {
@@ -639,14 +709,18 @@ class UpahSupir extends MyModel
                         foreach ($this->params['filters']['rules'] as $index => $filters) {
                             if ($filters['field'] == 'statusaktif') {
                                 $query = $query->orWhere('parameter.text', '=', $filters['data']);
-                            } elseif ($filters['field'] == 'statusluarkota') {
-                                $query = $query->orWhere('statusluarkota.text', '=', $filters['data']);
+                            } elseif ($filters['field'] == 'statusupahzona') {
+                                $query = $query->orWhere('statusupahzona.text', '=', $filters['data']);
                             } else if ($filters['field'] == 'kotadari_id') {
                                 $query = $query->orWhere('kotadari.keterangan', 'LIKE', "%$filters[data]%");
+                            } else if ($filters['field'] == 'zonadari_id') {
+                                $query = $query->orWhere('zonadari.keterangan', 'LIKE', "%$filters[data]%");
                             } else if ($filters['field'] == 'parent_id') {
                                 $query = $query->orWhere('parent.keterangan', 'LIKE', "%$filters[data]%");
                             } else if ($filters['field'] == 'kotasampai_id') {
                                 $query = $query->orWhere('kotasampai.keterangan', 'LIKE', "%$filters[data]%");
+                            } else if ($filters['field'] == 'zonasampai_id') {
+                                $query = $query->orWhere('zonasampai.keterangan', 'LIKE', "%$filters[data]%");
                             } else if ($filters['field'] == 'zona_id') {
                                 $query = $query->orWhere('zona.keterangan', 'LIKE', "%$filters[data]%");
                             } else if ($filters['field'] == 'jarak') {
@@ -788,15 +862,18 @@ class UpahSupir extends MyModel
                 ->first();
 
             $upahsupir = new UpahSupir();
-            $upahsupir->kotadari_id = $data['kotadari_id'];
+            $upahsupir->kotadari_id = $data['kotadari_id'] ?? 0;
             $upahsupir->parent_id = $data['parent_id'] ?? 0;
             $upahsupir->tarif_id = $data['tarif_id'] ?? 0;
-            $upahsupir->kotasampai_id = $data['kotasampai_id'];
+            $upahsupir->kotasampai_id = $data['kotasampai_id'] ?? 0;
             $upahsupir->penyesuaian = $data['penyesuaian'];
             $upahsupir->jarak = $data['jarak'];
             $upahsupir->zona_id = ($data['zona_id'] == null) ? 0 : $data['zona_id'] ?? 0;
             $upahsupir->statusaktif = $data['statusaktif'];
             $upahsupir->tglmulaiberlaku = date('Y-m-d', strtotime($data['tglmulaiberlaku']));
+            $upahsupir->zonadari_id = $data['zonadari_id'] ?? 0;
+            $upahsupir->zonasampai_id = $data['zonasampai_id'] ?? 0;
+            $upahsupir->statusupahzona = $data['statusupahzona'];
             $upahsupir->statussimpankandang = $data['statussimpankandang'];
             $upahsupir->statusluarkota = $data['statusluarkota'] ?? '';
             $upahsupir->keterangan = $data['keterangan'] ?? '';
@@ -932,11 +1009,14 @@ class UpahSupir extends MyModel
     public function processUpdate(UpahSupir $upahsupir, array $data): UpahSupir
     {
         try {
-            $upahsupir->kotadari_id = $data['kotadari_id'];
+            $upahsupir->kotadari_id = $data['kotadari_id'] ?? 0;
             $upahsupir->parent_id = $data['parent_id'] ?? 0;
             $upahsupir->tarif_id = $data['tarif_id'] ?? 0;
-            $upahsupir->kotasampai_id = $data['kotasampai_id'];
+            $upahsupir->kotasampai_id = $data['kotasampai_id'] ?? 0;
             $upahsupir->penyesuaian = $data['penyesuaian'];
+            $upahsupir->zonadari_id = $data['zonadari_id'] ?? 0;
+            $upahsupir->zonasampai_id = $data['zonasampai_id'] ?? 0;
+            $upahsupir->statusupahzona = $data['statusupahzona'];
             $upahsupir->jarak = $data['jarak'];
             $upahsupir->zona_id = ($data['zona_id'] == null) ? 0 : $data['zona_id'] ?? 0;
             $upahsupir->statusaktif = $data['statusaktif'];

@@ -93,8 +93,8 @@ class UpahRitasiRincian extends MyModel
         $query = DB::table($tempdata)
             ->from(DB::raw($tempdata . " as a"))
             ->join(DB::raw($temptgl . " as b"), 'a.tglmulaiberlaku', 'b.tglmulaiberlaku')
-            ->where('a.kotadari', 'b.kotadari')
-            ->where('a.kotasampai', 'b.kotasampai')
+            ->whereRaw("trim(a.kotadari) = trim(b.kotadari)")
+            ->whereRaw("trim(a.kotasampai) = trim(b.kotasampai)")
             ->whereRaw("a.tglmulaiberlaku = b.tglmulaiberlaku")
             ->first();
 
@@ -103,7 +103,7 @@ class UpahRitasiRincian extends MyModel
         } else {
             $kondisi = false;
         }
-
+        
         return $kondisi;
     }
 

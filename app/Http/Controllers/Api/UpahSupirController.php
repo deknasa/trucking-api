@@ -100,6 +100,9 @@ class UpahSupirController extends Controller
 
                 'tglmulaiberlaku' => date('Y-m-d', strtotime($request->tglmulaiberlaku)),
 
+                'statusupahzona' => $request->statusupahzona,
+                'zonadari_id' => $request->zonadari_id,
+                'zonasampai_id' => $request->zonasampai_id,
                 'statussimpankandang' => $request->statussimpankandang,
                 'statusluarkota' => $request->statusluarkota,
                 'keterangan' => $request->keterangan,
@@ -166,6 +169,9 @@ class UpahSupirController extends Controller
 
                 'tglmulaiberlaku' => date('Y-m-d', strtotime($request->tglmulaiberlaku)),
 
+                'statusupahzona' => $request->statusupahzona,
+                'zonadari_id' => $request->zonadari_id,
+                'zonasampai_id' => $request->zonasampai_id,
                 'statussimpankandang' => $request->statussimpankandang,
                 'statusluarkota' => $request->statusluarkota,
                 'keterangan' => $request->keterangan,
