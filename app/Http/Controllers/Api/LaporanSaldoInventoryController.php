@@ -32,14 +32,14 @@ class LaporanSaldoInventoryController extends Controller
     public function report(Request $request)
     {
 
-        $kelompok_id = $request->kelompok_id;
-        $statusreuse = $request->statusreuse;
-        $statusban = $request->statusban;
+        $kelompok_id = $request->kelompok_id ?? 0;
+        $statusreuse = $request->statusreuse ?? 0;
+        $statusban = $request->statusban ?? 0;
         $filter = $request->filter;
-        $jenistgltampil = $request->jenistgltampil;
+        $jenistgltampil = $request->jenistgltampil ?? '';
         $priode = $request->priode;
-        $stokdari_id = $request->stokdari_id;
-        $stoksampai_id = $request->stoksampai_id;
+        $stokdari_id = $request->stokdari_id ?? 0;
+        $stoksampai_id = $request->stoksampai_id ?? 0;
         $dataFilter = $request->dataFilter;
         // dd($request->all());
         $laporanSaldoInventory = new LaporanSaldoInventory();

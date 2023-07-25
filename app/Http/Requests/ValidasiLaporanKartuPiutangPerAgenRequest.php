@@ -53,10 +53,7 @@ class ValidasiLaporanKartuPiutangPerAgenRequest extends FormRequest
             'dari' => [
                 'required', 'date_format:d-m-Y',
             ],
-            'sampai' => [
-                'required', 'date_format:d-m-Y',
-                'after_or_equal:' . request()->dari
-            ],
+            
             'agendari' => ['required'],
             'agensampai' => ['required']
         ];

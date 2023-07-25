@@ -27,6 +27,8 @@ class LaporanKartuPiutangPerAgen extends MyModel
     public function getReport($dari, $sampai, $agenDari, $agenSampai)
     {
 
+
+         
         $getJudul = DB::table('parameter')
             ->select('text')
             ->where('grp', 'JUDULAN LAPORAN')
@@ -176,20 +178,20 @@ class LaporanKartuPiutangPerAgen extends MyModel
             $table->double('nominal')->nullable();
         });
 
-        $select_Temppiutangberjalan = DB::table($Temppiutang)->from(DB::raw($Temppiutang . " AS A"))
-            ->select([
-                'A.tglbukti',
-                'A.nobukti',
-                'A.nominal',
-            ])
-            ->where('A.tglbukti', '>', $dari)
-            ->where('A.tglbukti', '<=', $sampai);
+        // $select_Temppiutangberjalan = DB::table($Temppiutang)->from(DB::raw($Temppiutang . " AS A"))
+        //     ->select([
+        //         'A.tglbukti',
+        //         'A.nobukti',
+        //         'A.nominal',
+        //     ])
+        //     ->where('A.tglbukti', '>', $dari)
+        //     ->where('A.tglbukti', '<=', $sampai);
 
-        DB::table($Temppiutangberjalan)->insertUsing([
-            'tglbukti',
-            'nobukti',
-            'nominal'
-        ], $select_Temppiutangberjalan);
+        // DB::table($Temppiutangberjalan)->insertUsing([
+        //     'tglbukti',
+        //     'nobukti',
+        //     'nominal'
+        // ], $select_Temppiutangberjalan);
 
         $Temppiutangbyrberjalan = '##Temppiutangbyrberjalan' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
         Schema::create($Temppiutangbyrberjalan, function ($table) {
@@ -199,23 +201,23 @@ class LaporanKartuPiutangPerAgen extends MyModel
             $table->double('nominal');
         });
 
-        $select_Temppiutangbyrberjalan = DB::table($Temppiutangbyr)->from(DB::raw($Temppiutangbyr . " AS A"))
-            ->select([
-                DB::raw('MAX(A.tglbukti) as tglbukti'),
-                DB::raw('MAX(A.nobukti) as nobukti'),
-                'A.piutang_nobukti',
-                DB::raw('SUM(A.nominal) as nominal')
-            ])
-            ->where('A.tglbukti', '>', $dari)
-            ->where('A.tglbukti', '<=', $sampai)
-            ->groupBy('A.piutang_nobukti');
+        // $select_Temppiutangbyrberjalan = DB::table($Temppiutangbyr)->from(DB::raw($Temppiutangbyr . " AS A"))
+        //     ->select([
+        //         DB::raw('MAX(A.tglbukti) as tglbukti'),
+        //         DB::raw('MAX(A.nobukti) as nobukti'),
+        //         'A.piutang_nobukti',
+        //         DB::raw('SUM(A.nominal) as nominal')
+        //     ])
+        //     ->where('A.tglbukti', '>', $dari)
+        //     ->where('A.tglbukti', '<=', $sampai)
+        //     ->groupBy('A.piutang_nobukti');
 
-        DB::table($Temppiutangbyrberjalan)->insertUsing([
-            'tglbukti',
-            'nobukti',
-            'piutang_nobukti',
-            'nominal',
-        ], $select_Temppiutangbyrberjalan);
+        // DB::table($Temppiutangbyrberjalan)->insertUsing([
+        //     'tglbukti',
+        //     'nobukti',
+        //     'piutang_nobukti',
+        //     'nominal',
+        // ], $select_Temppiutangbyrberjalan);
 
         $TemppiutangbyrberjalanCicil = '##TemppiutangbyrberjalanCicil' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
         Schema::create($TemppiutangbyrberjalanCicil, function ($table) {
@@ -226,24 +228,24 @@ class LaporanKartuPiutangPerAgen extends MyModel
             $table->integer('urut');
         });
 
-        $select_TemppiutangbyrberjalanCicil = DB::table($Temppiutangbyr)->from(DB::raw($Temppiutangbyr . " AS A"))
-            ->select([
-                DB::raw('A.tglbukti as tglbukti'),
-                DB::raw('A.nobukti as nobukti'),
-                'A.piutang_nobukti',
-                DB::raw('A.nominal as nominal'),
-                DB::raw("row_number() Over(partition BY A.piutang_nobukti Order By A.tglbukti) as urut")
-            ])
-            ->where('A.tglbukti', '>', $dari)
-            ->where('A.tglbukti', '<=', $sampai);
+        // $select_TemppiutangbyrberjalanCicil = DB::table($Temppiutangbyr)->from(DB::raw($Temppiutangbyr . " AS A"))
+        //     ->select([
+        //         DB::raw('A.tglbukti as tglbukti'),
+        //         DB::raw('A.nobukti as nobukti'),
+        //         'A.piutang_nobukti',
+        //         DB::raw('A.nominal as nominal'),
+        //         DB::raw("row_number() Over(partition BY A.piutang_nobukti Order By A.tglbukti) as urut")
+        //     ])
+        //     ->where('A.tglbukti', '>', $dari)
+        //     ->where('A.tglbukti', '<=', $sampai);
 
-        DB::table($TemppiutangbyrberjalanCicil)->insertUsing([
-            'tglbukti',
-            'nobukti',
-            'piutang_nobukti',
-            'nominal',
-            'urut',
-        ], $select_TemppiutangbyrberjalanCicil);
+        // DB::table($TemppiutangbyrberjalanCicil)->insertUsing([
+        //     'tglbukti',
+        //     'nobukti',
+        //     'piutang_nobukti',
+        //     'nominal',
+        //     'urut',
+        // ], $select_TemppiutangbyrberjalanCicil);
 
         $TempCicil = '##TempCicil' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
         Schema::create($TempCicil, function ($table) {
