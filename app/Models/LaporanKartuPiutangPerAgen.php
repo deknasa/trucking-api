@@ -356,7 +356,7 @@ class LaporanKartuPiutangPerAgen extends MyModel
                 'C.keterangan',
                 'A.nobukti',
                 'C.tglbukti',
-                'C.tgljatuhtempo',
+                DB::raw("dateadd(d,isnull(d.[top],0),c.tglbukti) as tgljatuhtempo"),
                 DB::raw('ISNULL(B.urut, 0) + 1 as cicil'),
                 'A.nominal',
                 'A.bayar',
