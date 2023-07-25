@@ -72,6 +72,12 @@ class LaporanTripGandenganDetail extends MyModel
             'nocont',
         ], $select_suratpengantar);
   
+        $getJudul = DB::table('parameter')
+            ->select('text')
+            ->where('grp', 'JUDULAN LAPORAN')
+            ->where('subgrp', 'JUDULAN LAPORAN')
+            ->first();
+
         $select_Tempsuratpengantar = DB::table('Tempsuratpengantar as A')->from(DB::raw($Tempsuratpengantar . " AS A"))
         ->select([
             DB::raw("B.keterangan as gandengan"),
@@ -82,7 +88,11 @@ class LaporanTripGandenganDetail extends MyModel
             DB::raw("D.kodetrado as noplat"),
             DB::raw("(ltrim(rtrim(G.keterangan))+' - '+ltrim(rtrim(H.keterangan))) as rute"),
             "F.kodecontainer as cont",
-            "A.keterangan"
+            "A.keterangan",
+            DB::raw("'Laporan Trip Gandengan Detail' as judulLaporan"),
+            DB::raw("'" . $getJudul->text . "' as judul"),
+            DB::raw("'Tgl Cetak :'+format(getdate(),'dd-MM-yyyy HH:mm:ss')as tglcetak"),
+            DB::raw(" 'User :" . auth('api')->user()->name . "' as usercetak")
         ])
         ->join('gandengan as B', 'A.gandengan_id', '=', 'B.id')
         ->join('supir as C', 'A.supir_id', '=', 'C.id')

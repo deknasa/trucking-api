@@ -1327,8 +1327,10 @@ route::middleware(['auth:api', 'authorized'])->group(function () {
     Route::get('laporantriptrado/export', [LaporanTripTradoController::class, 'export'])->name('laporantriptrado.export');
     Route::resource('laporantriptrado', LaporanTripTradoController::class)->whereNumber('laporantriptrado');
     Route::get('laporankartuhutangprediksi/report', [LaporanKartuHutangPrediksiController::class, 'report'])->name('laporankartuhutangprediksi.report');
+    Route::get('laporankartuhutangprediksi/export', [LaporanKartuHutangPrediksiController::class, 'export'])->name('laporankartuhutangprediksi.export');
     Route::resource('laporankartuhutangprediksi', LaporanKartuHutangPrediksiController::class)->whereNumber('laporankartuhutangprediksi');
     Route::get('laporantripgandengandetail/report', [LaporanTripGandenganDetailController::class, 'report'])->name('laporantripgandengandetail.report');
+    Route::get('laporantripgandengandetail/export', [LaporanTripGandenganDetailController::class, 'export'])->name('laporantripgandengandetail.export');
     Route::resource('laporantripgandengandetail', LaporanTripGandenganDetailController::class)->whereNumber('laporantripgandengandetail');
     Route::get('laporanuangjalan/report', [LaporanUangJalanController::class, 'report'])->name('laporanuangjalan.report');
     Route::get('laporanuangjalan/export', [LaporanUangJalanController::class, 'export'])->name('laporanuangjalan.export');

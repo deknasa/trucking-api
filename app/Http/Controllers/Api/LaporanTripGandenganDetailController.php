@@ -56,4 +56,25 @@ class LaporanTripGandenganDetailController extends Controller
             'data' => $laporantripgandengandetail->getReport($gandengandari_id, $gandengansampai_id, date('Y-m-d', strtotime($dari)), date('Y-m-d', strtotime($sampai)))
         ]);
     }
+     /**
+     * @ClassName
+     */
+    public function export(Request $request)
+    {
+        $dari = $request->dari;
+        $sampai = $request->sampai;
+        $gandengandari = $request->gandengandari;
+        $gandengansampai = $request->gandengansampai;
+        $gandengandari_id = $request->gandengandari_id;
+        $gandengansampai_id = $request->gandengansampai_id;
+
+        $laporantripgandengandetail = new LaporanTripGandenganDetail();
+
+        $dataTripGandengan = $laporantripgandengandetail->getReport($gandengandari_id, $gandengansampai_id, date('Y-m-d', strtotime($dari)), date('Y-m-d', strtotime($sampai)));
+
+
+        return response([
+            'data' => $dataTripGandengan
+        ]);
+    }
 }
