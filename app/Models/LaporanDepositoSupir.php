@@ -134,6 +134,37 @@ class LaporanDepositoSupir extends MyModel
 
         // 
 
+        $temprangedeposito1 = '##temprangedeposito1' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+        Schema::create($temprangedeposito1, function ($table) {
+            $table->unsignedBigInteger('id')->nullable();
+            $table->double('nominalawal', 15, 2)->nullable();
+            $table->double('nominalakhir', 15, 2)->nullable();
+            $table->longtext('keterangan', 1000)->nullable();
+            $table->integer('urut')->nullable();
+        });
+
+        $queryrangedeposito1 = DB::table('parameter')->from(
+            DB::raw("parameter as a with (readuncommitted)")
+        )
+            ->select(
+                'a.id',
+                DB::raw("cast(substring([text],1,charindex('-',[text])-1) as money) as nominalawal"),
+                DB::raw("cast(substring([text],charindex('-',[text])+1,20) as money) as nominalakhir"),
+                DB::raw("'Keterangan Deposito '+format(cast(substring([text],1,charindex('-',[text])-1) as money),'#,#0')+' - '+format(cast(substring([text],charindex('-',[text])+1,20) as money),'#,#')  as keterangan"),
+                DB::raw("row_number() Over(Order By a.id desc) as urut"),
+            )
+            ->where('a.grp', '=', 'RANGE DEPOSITO SUPIR')
+            ->where('a.subgrp', '=', 'RANGE DEPOSITO SUPIR')
+            ->OrderBy('id', 'asc');
+
+        DB::table($temprangedeposito1)->insertUsing([
+            'id',
+            'nominalawal',
+            'nominalakhir',
+            'keterangan',
+            'urut',
+        ], $queryrangedeposito1);
+
         $temprangedeposito = '##temprangedeposito' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
         Schema::create($temprangedeposito, function ($table) {
             $table->unsignedBigInteger('id')->nullable();
@@ -142,18 +173,16 @@ class LaporanDepositoSupir extends MyModel
             $table->longtext('keterangan', 1000)->nullable();
         });
 
-        $queryrangedeposito = DB::table('parameter')->from(
-            DB::raw("parameter as a with (readuncommitted)")
+        $queryrangedeposito = DB::table($temprangedeposito1)->from(
+            DB::raw($temprangedeposito1 ." as a with (readuncommitted)")
         )
             ->select(
                 'a.id',
-                DB::raw("cast(substring([text],1,charindex('-',[text])-1) as money) as nominalawal"),
-                DB::raw("cast(substring([text],charindex('-',[text])+1,20) as money) as nominalakhir"),
-                DB::raw("'Keterangan Deposito '+format(cast(substring([text],1,charindex('-',[text])-1) as money),'#,#0')+' - '+format(cast(substring([text],charindex('-',[text])+1,20) as money),'#,#')  as keterangan"),
+                DB::raw("a.nominalawal"),
+                DB::raw("a.nominalakhir"),
+                DB::raw("(case when a.urut=1 then 'Keterangan Deposito Di Atas '+format(a.nominalawal,'#,#0') else a.keterangan end)   as keterangan"),
             )
-            ->where('a.grp', '=', 'RANGE DEPOSITO SUPIR')
-            ->where('a.subgrp', '=', 'RANGE DEPOSITO SUPIR')
-            ->OrderBy('id', 'Asc');
+            ->OrderBy('a.id', 'Asc');
 
         DB::table($temprangedeposito)->insertUsing([
             'id',
@@ -161,6 +190,8 @@ class LaporanDepositoSupir extends MyModel
             'nominalakhir',
             'keterangan',
         ], $queryrangedeposito);
+
+        // dd(db::table($temprangedeposito)->OrderBy('id', 'Asc')->get());
 
 
         $tempsaldo = '##tempsaldo' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
@@ -237,7 +268,9 @@ class LaporanDepositoSupir extends MyModel
             ->join(DB::raw($temprangedeposito . " as b "), function ($join) {
                 $join->on('a.total', '>=', 'b.nominalawal');
                 $join->on('a.total', '<=', 'b.nominalakhir');
-            });
+            })
+            ->orderBy('b.id','asc')
+            ->orderBy('a.namasupir','asc');
 
         $data = $query->get();
 
