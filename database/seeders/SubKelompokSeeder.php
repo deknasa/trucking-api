@@ -137,6 +137,7 @@ class SubKelompokSeeder extends Seeder
         subkelompok::create(['kodesubkelompok' => 'PAWON', 'keterangan' => 'PAWON', 'kelompok_id' => '2', 'statusaktif' => '1', 'modifiedby' => 'ADMIN',]);
         subkelompok::create(['kodesubkelompok' => 'PEN', 'keterangan' => 'PEN', 'kelompok_id' => '2', 'statusaktif' => '1', 'modifiedby' => 'ADMIN',]);
         subkelompok::create(['kodesubkelompok' => 'PEN PER', 'keterangan' => 'PEN PER', 'kelompok_id' => '2', 'statusaktif' => '1', 'modifiedby' => 'ADMIN',]);
+        subkelompok::create(['kodesubkelompok' => 'PENTA', 'keterangan' => 'PENTA', 'kelompok_id' => '2', 'statusaktif' => '1', 'modifiedby' => 'ADMIN',]);
         subkelompok::create(['kodesubkelompok' => 'PER', 'keterangan' => 'PER', 'kelompok_id' => '2', 'statusaktif' => '1', 'modifiedby' => 'ADMIN',]);
         subkelompok::create(['kodesubkelompok' => 'PERALATAN MEKANIK', 'keterangan' => 'PERALATAN MEKANIK', 'kelompok_id' => '4', 'statusaktif' => '1', 'modifiedby' => 'ADMIN',]);
         subkelompok::create(['kodesubkelompok' => 'PESAWAT', 'keterangan' => 'PESAWAT', 'kelompok_id' => '2', 'statusaktif' => '1', 'modifiedby' => 'ADMIN',]);
@@ -162,6 +163,7 @@ class SubKelompokSeeder extends Seeder
         subkelompok::create(['kodesubkelompok' => 'SAKLAR', 'keterangan' => 'SAKLAR', 'kelompok_id' => '2', 'statusaktif' => '1', 'modifiedby' => 'ADMIN',]);
         subkelompok::create(['kodesubkelompok' => 'SALAMAN', 'keterangan' => 'SALAMAN', 'kelompok_id' => '2', 'statusaktif' => '1', 'modifiedby' => 'ADMIN',]);
         subkelompok::create(['kodesubkelompok' => 'SARANG', 'keterangan' => 'SARANG', 'kelompok_id' => '2', 'statusaktif' => '1', 'modifiedby' => 'ADMIN',]);
+        subkelompok::create(['kodesubkelompok' => 'SEAL', 'keterangan' => 'SEAL', 'kelompok_id' => '0', 'statusaktif' => '1', 'modifiedby' => 'ADMIN',]);
         subkelompok::create(['kodesubkelompok' => 'SEAL', 'keterangan' => 'SEAL', 'kelompok_id' => '2', 'statusaktif' => '1', 'modifiedby' => 'ADMIN',]);
         subkelompok::create(['kodesubkelompok' => 'SEAL KLEP', 'keterangan' => 'SEAL KLEP', 'kelompok_id' => '2', 'statusaktif' => '1', 'modifiedby' => 'ADMIN',]);
         subkelompok::create(['kodesubkelompok' => 'SEGITIGA', 'keterangan' => 'SEGITIGA', 'kelompok_id' => '2', 'statusaktif' => '1', 'modifiedby' => 'ADMIN',]);
@@ -177,6 +179,7 @@ class SubKelompokSeeder extends Seeder
         subkelompok::create(['kodesubkelompok' => 'SINGKRON', 'keterangan' => 'SINGKRON', 'kelompok_id' => '2', 'statusaktif' => '1', 'modifiedby' => 'ADMIN',]);
         subkelompok::create(['kodesubkelompok' => 'SINKRON', 'keterangan' => 'SINKRON', 'kelompok_id' => '2', 'statusaktif' => '1', 'modifiedby' => 'ADMIN',]);
         subkelompok::create(['kodesubkelompok' => 'SOKET', 'keterangan' => 'SOKET', 'kelompok_id' => '2', 'statusaktif' => '1', 'modifiedby' => 'ADMIN',]);
+        subkelompok::create(['kodesubkelompok' => 'SOLAR', 'keterangan' => 'SOLAR', 'kelompok_id' => '2', 'statusaktif' => '1', 'modifiedby' => 'ADMIN',]);
         subkelompok::create(['kodesubkelompok' => 'SOLASIBAN', 'keterangan' => 'SOLASIBAN', 'kelompok_id' => '2', 'statusaktif' => '1', 'modifiedby' => 'ADMIN',]);
         subkelompok::create(['kodesubkelompok' => 'SOLDER', 'keterangan' => 'SOLDER', 'kelompok_id' => '4', 'statusaktif' => '1', 'modifiedby' => 'ADMIN',]);
         subkelompok::create(['kodesubkelompok' => 'SPION', 'keterangan' => 'SPION', 'kelompok_id' => '2', 'statusaktif' => '1', 'modifiedby' => 'ADMIN',]);
@@ -206,6 +209,7 @@ class SubKelompokSeeder extends Seeder
         subkelompok::create(['kodesubkelompok' => 'VELG', 'keterangan' => 'VELG', 'kelompok_id' => '2', 'statusaktif' => '1', 'modifiedby' => 'ADMIN',]);
         subkelompok::create(['kodesubkelompok' => 'VELVE', 'keterangan' => 'VELVE', 'kelompok_id' => '2', 'statusaktif' => '1', 'modifiedby' => 'ADMIN',]);
         subkelompok::create(['kodesubkelompok' => 'VORING', 'keterangan' => 'VORING', 'kelompok_id' => '2', 'statusaktif' => '1', 'modifiedby' => 'ADMIN',]);
+        subkelompok::create(['kodesubkelompok' => 'WAYAR', 'keterangan' => 'WAYAR', 'kelompok_id' => '2', 'statusaktif' => '1', 'modifiedby' => 'ADMIN',]);
         subkelompok::create(['kodesubkelompok' => 'WIPER LINK', 'keterangan' => 'WIPER LINK', 'kelompok_id' => '2', 'statusaktif' => '1', 'modifiedby' => 'ADMIN',]);
     }
 }
