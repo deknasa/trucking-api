@@ -895,7 +895,9 @@ class UpahSupirRincian extends MyModel
                 ->where('grp', 'STATUS SIMPAN KANDANG')
                 ->where('text', 'TIDAK SIMPAN KANDANG')
                 ->first();
-
+            $getBukanUpahZona = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))
+                ->where('grp', 'STATUS UPAH ZONA')
+                ->where('text', 'NON UPAH ZONA')->first();
             $upahRitasiRequest = [
                 'parent_id' => 0,
                 'tarif_id' => 0,
@@ -911,7 +913,8 @@ class UpahSupirRincian extends MyModel
                 'statuscontainer_id' => $statuscontainer_id,
                 'nominalsupir' => $nominal,
                 'liter' => $liter,
-                'statussimpankandang' => $statusSimpanKandang->id
+                'statussimpankandang' => $statusSimpanKandang->id,
+                'statusupahzona' => $getBukanUpahZona->id
             ];
 
             $upahRitasi = (new UpahSupir())->processStore($upahRitasiRequest);
