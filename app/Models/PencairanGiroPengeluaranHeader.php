@@ -33,9 +33,11 @@ class PencairanGiroPengeluaranHeader extends MyModel
         $year = substr($periode, 3);
 
         $alatBayar = AlatBayar::from(DB::raw("alatbayar with (readuncommitted)"))->where('kodealatbayar', 'GIRO')->first();
-        $query = DB::table($this->anotherTable)->from(DB::raw("pengeluaranheader with (readuncommitted)"))
+        $query1 = DB::table($this->anotherTable)->from(DB::raw("pengeluaranheader with (readuncommitted)"))
             ->select(
-                DB::raw("pengeluaranheader.nobukti as pengeluaran_nobukti,pengeluaranheader.id, pengeluaranheader.dibayarke, bank.namabank as bank_id, pengeluaranheader.transferkeac, pengeluaranheader.modifiedby, pengeluaranheader.created_at,pengeluaranheader.updated_at, alatbayar.namaalatbayar as alatbayar_id, pgp.nobukti, pgp.tglbukti, parameter.memo as statusapproval, (SELECT (SUM(pengeluarandetail.nominal)) FROM pengeluarandetail 
+                DB::raw("pengeluaranheader.nobukti as pengeluaran_nobukti,pengeluaranheader.id, 
+                pengeluaranheader.dibayarke, bank.namabank as bank_id, pengeluaranheader.transferkeac, 
+                pengeluaranheader.modifiedby, pengeluaranheader.created_at,pengeluaranheader.updated_at, alatbayar.namaalatbayar as alatbayar_id, pgp.nobukti, pgp.tglbukti, parameter.memo as statusapproval, (SELECT (SUM(pengeluarandetail.nominal)) FROM pengeluarandetail 
         WHERE pengeluarandetail.nobukti= pengeluaranheader.nobukti and pengeluaranheader.alatbayar_id=$alatBayar->id) as nominal")
             )
             ->distinct('pengeluaranheader.nobukti')
@@ -48,15 +50,98 @@ class PencairanGiroPengeluaranHeader extends MyModel
             ->whereRaw("YEAR(pengeluaranheader.tglbukti) = $year")
             ->where('pengeluaranheader.alatbayar_id', $alatBayar->id);
 
-        $this->sort($query, 'pengeluaranheader');
-        $this->filter($query, 'pengeluaranheader');
-        $this->paginate($query);
+            $query2 = DB::table($this->anotherTable)->from(DB::raw("saldopengeluaranheader as pengeluaranheader with (readuncommitted) "))
+            ->select(
+                DB::raw("pengeluaranheader.nobukti as pengeluaran_nobukti,pengeluaranheader.id, pengeluaranheader.dibayarke, bank.namabank as bank_id, pengeluaranheader.transferkeac, pengeluaranheader.modifiedby, pengeluaranheader.created_at,pengeluaranheader.updated_at, alatbayar.namaalatbayar as alatbayar_id, pgp.nobukti, pgp.tglbukti, parameter.memo as statusapproval, (SELECT (SUM(pengeluarandetail.nominal)) FROM pengeluarandetail 
+        WHERE pengeluarandetail.nobukti= pengeluaranheader.nobukti and pengeluaranheader.alatbayar_id=$alatBayar->id) as nominal")
+            )
+            ->distinct('pengeluaranheader.nobukti')
+            ->leftJoin(DB::raw("saldopengeluarandetail as pengeluarandetail with (readuncommitted)"), 'pengeluarandetail.nobukti', 'pengeluaranheader.nobukti')
+            ->leftJoin(DB::raw("pencairangiropengeluaranheader as pgp with (readuncommitted)"), 'pgp.pengeluaran_nobukti', 'pengeluaranheader.nobukti')
+            ->leftJoin(DB::raw("parameter with (readuncommitted)"), 'pgp.statusapproval', 'parameter.id')
+            ->leftJoin(DB::raw("bank with (readuncommitted)"), 'pengeluaranheader.bank_id', 'bank.id')
+            ->leftJoin(DB::raw("alatbayar with (readuncommitted)"), 'pengeluaranheader.alatbayar_id', 'alatbayar.id')
+            ->whereRaw("MONTH(pengeluaranheader.tglbukti) = $month")
+            ->whereRaw("YEAR(pengeluaranheader.tglbukti) = $year")
+            ->where('pengeluaranheader.alatbayar_id', $alatBayar->id);
 
+
+
+            $query3 = DB::table(DB::raw("({$query1->toSql()} UNION ALL {$query2->toSql()}) as V"))
+            ->mergeBindings($query1)
+            ->mergeBindings($query2);
+
+
+
+            $templist = '##templist' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+            Schema::create($templist, function ($table) {
+                $table->string('pengeluaran_nobukti',300)->nullable();
+                $table->integer('id')->nullable();
+                $table->longText('dibayarke')->nullable();
+                $table->longText('bank_id')->nullable();
+                $table->longText('transferkeac')->nullable();
+                $table->longText('alatbayar_id')->nullable();
+                $table->longText('nobukti')->nullable();
+                $table->date('tglbukti')->nullable();
+                $table->longText('statusapproval')->nullable();
+                $table->double('nominal')->nullable();
+                $table->longText('modifiedby')->nullable();
+                $table->dateTime('created_at')->nullable();
+                $table->dateTime('updated_at')->nullable();
+            });
+
+
+
+            DB::table($templist)->insertUsing([
+                'pengeluaran_nobukti',
+                'id',
+                'dibayarke',
+                'bank_id',
+                'transferkeac',
+                'modifiedby',
+                'created_at',
+                'updated_at',
+                'alatbayar_id',
+                'nobukti',
+                'tglbukti',
+                'statusapproval',
+                'nominal',
+
+            ], $query3);  
+
+            $query = DB::table($templist)->from(DB::raw($templist ." AS pengeluaranheader "))
+            ->select([
+                'pengeluaranheader.pengeluaran_nobukti',
+                'pengeluaranheader.id',
+                'pengeluaranheader.dibayarke',
+                'pengeluaranheader.bank_id',
+                'pengeluaranheader.transferkeac',
+                'pengeluaranheader.alatbayar_id',
+                'pengeluaranheader.nobukti',
+                'pengeluaranheader.tglbukti',
+                'pengeluaranheader.statusapproval',
+                'pengeluaranheader.nominal',
+                'pengeluaranheader.modifiedby',
+                'pengeluaranheader.created_at',
+                'pengeluaranheader.updated_at',
+            ]);
+
+
+            // dd( $query->get());
+
+        $this->sort($query, 'pengeluaranheader');
+   
+        $this->filter($query, 'pengeluaranheader');
+       
+        $this->paginate($query);
+   
 
         $this->totalRows = $query->count();
+       
         $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;
+        
         $data = $query->get();
-
+        // dd($data);
         return $data;
     }
 
@@ -115,22 +200,34 @@ class PencairanGiroPengeluaranHeader extends MyModel
         return  $temp;
     }
 
-
+    // 'a.pengeluaran_nobukti',
+    // 'a.id',
+    // 'a.dibayarke',
+    // 'a.bank_id',
+    // 'a.transferkeac',
+    // 'a.alatbayar_id',
+    // 'a.nobukti',
+    // 'a.tglbukti',
+    // 'a.statusapproval',
+    // 'a.nominal',
+    // 'a.modifiedby',
+    // 'a.created_at',
+    // 'a.updated_at',
     public function sort($query, $table)
     {
-        if ($this->params['sortIndex'] == 'bank_id') {
-            return $query->orderBy('bank.namabank', $this->params['sortOrder']);
-        } else if ($this->params['sortIndex'] == 'alatbayar_id') {
-            return $query->orderBy('alatbayar.keterangan', $this->params['sortOrder']);
-        } else if ($this->params['sortIndex'] == 'nobukti') {
-            return $query->orderBy('pgp.nobukti', $this->params['sortOrder']);
-        } else if ($this->params['sortIndex'] == 'tglbukti') {
-            return $query->orderBy('pgp.tglbukti', $this->params['sortOrder']);
-        } else if ($this->params['sortIndex'] == 'pengeluaran_nobukti') {
-            return $query->orderBy('pengeluaranheader.nobukti', $this->params['sortOrder']);
-        } else {
+        // if ($this->params['sortIndex'] == 'bank_id') {
+        //     return $query->orderBy('bank.namabank', $this->params['sortOrder']);
+        // } else if ($this->params['sortIndex'] == 'alatbayar_id') {
+        //     return $query->orderBy('alatbayar.keterangan', $this->params['sortOrder']);
+        // } else if ($this->params['sortIndex'] == 'nobukti') {
+        //     return $query->orderBy('pgp.nobukti', $this->params['sortOrder']);
+        // } else if ($this->params['sortIndex'] == 'tglbukti') {
+        //     return $query->orderBy('pgp.tglbukti', $this->params['sortOrder']);
+        // } else if ($this->params['sortIndex'] == 'pengeluaran_nobukti') {
+        //     return $query->orderBy('pengeluaranheader.nobukti', $this->params['sortOrder']);
+        // } else {
             return $query->orderBy($table . '.' . $this->params['sortIndex'], $this->params['sortOrder']);
-        }
+        // }
     }
 
     public function filter($query, $table, $relationFields = [])
@@ -139,27 +236,27 @@ class PencairanGiroPengeluaranHeader extends MyModel
             switch ($this->params['filters']['groupOp']) {
                 case "AND":
                     foreach ($this->params['filters']['rules'] as $index => $filters) {
-                        if ($filters['field'] == 'statusapproval') {
-                            $query = $query->where('parameter.text', '=', "$filters[data]");
-                        } else if ($filters['field'] == 'bank_id') {
-                            $query = $query->where('bank.namabank', 'LIKE', "%$filters[data]%");
-                        } else if ($filters['field'] == 'alatbayar_id') {
-                            $query = $query->where('alatbayar.namaalatbayar', 'LIKE', "%$filters[data]%");
-                        } else if ($filters['field'] == 'nobukti') {
-                            $query = $query->where('pgp.nobukti', 'LIKE', "%$filters[data]%");
-                        } else if ($filters['field'] == 'tglbukti') {
-                            $query->whereRaw("format(pgp.tglbukti, 'dd-MM-yyyy') LIKE '%$filters[data]%'");
-                        } else if ($filters['field'] == 'pengeluaran_nobukti') {
-                            $query = $query->where('pengeluaranheader.nobukti', 'LIKE', "%$filters[data]%");
-                        } else if ($filters['field'] == 'nominal') {
-                            $query = $query->whereRaw("format((SELECT (SUM(pengeluarandetail.nominal)) FROM pengeluarandetail 
-                            WHERE pengeluarandetail.nobukti= pengeluaranheader.nobukti), '#,#0.00') LIKE '%$filters[data]%'");
-                        } else if ($filters['field'] == 'created_at' || $filters['field'] == 'updated_at') {
-                            $query = $query->whereRaw("format(" . $table . "." . $filters['field'] . ", 'dd-MM-yyyy HH:mm:ss') LIKE '%$filters[data]%'");
-                        } else {
+                        // if ($filters['field'] == 'statusapproval') {
+                        //     $query = $query->where('parameter.text', '=', "$filters[data]");
+                        // } else if ($filters['field'] == 'bank_id') {
+                        //     $query = $query->where('bank.namabank', 'LIKE', "%$filters[data]%");
+                        // } else if ($filters['field'] == 'alatbayar_id') {
+                        //     $query = $query->where('alatbayar.namaalatbayar', 'LIKE', "%$filters[data]%");
+                        // } else if ($filters['field'] == 'nobukti') {
+                        //     $query = $query->where('pgp.nobukti', 'LIKE', "%$filters[data]%");
+                        // } else if ($filters['field'] == 'tglbukti') {
+                        //     $query->whereRaw("format(pgp.tglbukti, 'dd-MM-yyyy') LIKE '%$filters[data]%'");
+                        // } else if ($filters['field'] == 'pengeluaran_nobukti') {
+                        //     $query = $query->where('pengeluaranheader.nobukti', 'LIKE', "%$filters[data]%");
+                        // } else if ($filters['field'] == 'nominal') {
+                        //     $query = $query->whereRaw("format((SELECT (SUM(pengeluarandetail.nominal)) FROM pengeluarandetail 
+                        //     WHERE pengeluarandetail.nobukti= pengeluaranheader.nobukti), '#,#0.00') LIKE '%$filters[data]%'");
+                        // } else if ($filters['field'] == 'created_at' || $filters['field'] == 'updated_at') {
+                        //     $query = $query->whereRaw("format(" . $table . "." . $filters['field'] . ", 'dd-MM-yyyy HH:mm:ss') LIKE '%$filters[data]%'");
+                        // } else {
                             // $query = $query->where($table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
                             $query = $query->whereRaw($this->table . ".[" .  $filters['field'] . "] LIKE '%" . escapeLike($filters['data']) . "%' escape '|'");
-                        }
+                        // }
                     }
 
                     break;
@@ -167,27 +264,27 @@ class PencairanGiroPengeluaranHeader extends MyModel
 
                     $query = $query->where(function ($query) {
                         foreach ($this->params['filters']['rules'] as $index => $filters) {
-                            if ($filters['field'] == 'statusapproval') {
-                                $query = $query->orWhere('parameter.text', '=', "$filters[data]");
-                            } else if ($filters['field'] == 'bank_id') {
-                                $query = $query->orWhere('bank.namabank', 'LIKE', "%$filters[data]%");
-                            } else if ($filters['field'] == 'alatbayar_id') {
-                                $query = $query->orWhere('alatbayar.namaalatbayar', 'LIKE', "%$filters[data]%");
-                            } else if ($filters['field'] == 'nobukti') {
-                                $query = $query->orWhere('pgp.nobukti', 'LIKE', "%$filters[data]%");
-                            } else if ($filters['field'] == 'tglbukti') {
-                                $query->orWhereRaw("format(pgp.tglbukti, 'dd-MM-yyyy') LIKE '%$filters[data]%'");
-                            } else if ($filters['field'] == 'pengeluaran_nobukti') {
-                                $query = $query->orWhere('pengeluaranheader.nobukti', 'LIKE', "%$filters[data]%");
-                            } else if ($filters['field'] == 'nominal') {
-                                $query = $query->orWhereRaw("format((SELECT (SUM(pengeluarandetail.nominal)) FROM pengeluarandetail 
-                            WHERE pengeluarandetail.nobukti= pengeluaranheader.nobukti), '#,#0.00') LIKE '%$filters[data]%'");
-                            } else if ($filters['field'] == 'created_at' || $filters['field'] == 'updated_at') {
-                                $query = $query->orWhereRaw("format(" . $this->anotherTable . "." . $filters['field'] . ", 'dd-MM-yyyy HH:mm:ss') LIKE '%$filters[data]%'");
-                            } else {
+                            // if ($filters['field'] == 'statusapproval') {
+                            //     $query = $query->orWhere('parameter.text', '=', "$filters[data]");
+                            // } else if ($filters['field'] == 'bank_id') {
+                            //     $query = $query->orWhere('bank.namabank', 'LIKE', "%$filters[data]%");
+                            // } else if ($filters['field'] == 'alatbayar_id') {
+                            //     $query = $query->orWhere('alatbayar.namaalatbayar', 'LIKE', "%$filters[data]%");
+                            // } else if ($filters['field'] == 'nobukti') {
+                            //     $query = $query->orWhere('pgp.nobukti', 'LIKE', "%$filters[data]%");
+                            // } else if ($filters['field'] == 'tglbukti') {
+                            //     $query->orWhereRaw("format(pgp.tglbukti, 'dd-MM-yyyy') LIKE '%$filters[data]%'");
+                            // } else if ($filters['field'] == 'pengeluaran_nobukti') {
+                            //     $query = $query->orWhere('pengeluaranheader.nobukti', 'LIKE', "%$filters[data]%");
+                            // } else if ($filters['field'] == 'nominal') {
+                            //     $query = $query->orWhereRaw("format((SELECT (SUM(pengeluarandetail.nominal)) FROM pengeluarandetail 
+                            // WHERE pengeluarandetail.nobukti= pengeluaranheader.nobukti), '#,#0.00') LIKE '%$filters[data]%'");
+                            // } else if ($filters['field'] == 'created_at' || $filters['field'] == 'updated_at') {
+                            //     $query = $query->orWhereRaw("format(" . $this->anotherTable . "." . $filters['field'] . ", 'dd-MM-yyyy HH:mm:ss') LIKE '%$filters[data]%'");
+                            // } else {
                                 // $query = $query->orWhere($this->anotherTable . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
                                 $query = $query->OrwhereRaw($this->table . ".[" .  $filters['field'] . "] LIKE '%" . escapeLike($filters['data']) . "%' escape '|'");
-                            }
+                            // }
                         }
                     });
 
