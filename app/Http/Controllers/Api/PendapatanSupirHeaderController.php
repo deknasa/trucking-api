@@ -43,8 +43,8 @@ class PendapatanSupirHeaderController extends Controller
         DB::beginTransaction();
 
         try {
-            
-            
+
+
             $data = [
                 "tgldari" => $request->tgldari,
                 "tglsampai" => $request->tglsampai,
@@ -56,7 +56,7 @@ class PendapatanSupirHeaderController extends Controller
                 "keterangan_detail" => $request->keterangan_detail,
                 "postingdari" => $request->postingdari,
                 "bank_id" => $request->bank_id,
-                ];
+            ];
 
             $pendapatanSupirHeader = (new PendapatanSupirHeader())->processStore($data);
             $pendapatanSupirHeader->position = $this->getPosition($pendapatanSupirHeader, $pendapatanSupirHeader->getTable())->position;
@@ -68,12 +68,10 @@ class PendapatanSupirHeaderController extends Controller
                 'message' => 'Berhasil diubah',
                 'data' =>  $pendapatanSupirHeader
             ]);
-            
         } catch (\Throwable $th) {
             DB::rollBack();
             throw $th;
         }
-
     }
 
     /**
@@ -88,8 +86,8 @@ class PendapatanSupirHeaderController extends Controller
             'data' => $data,
             'detail' => $detail
         ]);
-    }  
-  
+    }
+
     /**
      * @ClassName 
      */
@@ -108,8 +106,8 @@ class PendapatanSupirHeaderController extends Controller
                 "postingdari" => $request->postingdari,
                 "bank_id" => $request->bank_id,
             ];
-                
-            
+
+
             $pendapatanSupirHeader = (new PendapatanSupirHeader())->processUpdate($pendapatanSupirHeader, $data);
             $pendapatanSupirHeader->position = $this->getPosition($pendapatanSupirHeader, $pendapatanSupirHeader->getTable())->position;
             $pendapatanSupirHeader->page = ceil($pendapatanSupirHeader->position / ($request->limit ?? 10));
@@ -120,12 +118,10 @@ class PendapatanSupirHeaderController extends Controller
                 'message' => 'Berhasil diubah',
                 'data' =>  $pendapatanSupirHeader
             ]);
-            
         } catch (\Throwable $th) {
             DB::rollBack();
             throw $th;
         }
-
     }
 
     /**
@@ -357,6 +353,22 @@ class PendapatanSupirHeaderController extends Controller
         $pendapatanSupirHeader = new PendapatanSupirHeader();
         return response([
             'data' => $pendapatanSupirHeader->getExport($id)
+        ]);
+    }
+
+    public function gettrip(Request $request)
+    {
+        $tgldari  = date('Y-m-d', strtotime($request->tgldari));
+        $tglsampai  = date('Y-m-d', strtotime($request->tglsampai));
+
+        $pendapatanSupir = new PendapatanSupirHeader();
+        return response([
+            'data' => $pendapatanSupir->getTrip($tgldari, $tglsampai),
+            'attributes' => [
+                'totalRows' => $pendapatanSupir->totalRows,
+                'totalPages' => $pendapatanSupir->totalPages,
+                'totalNominal' => $pendapatanSupir->totalNominal,
+            ]
         ]);
     }
 }

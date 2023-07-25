@@ -46,4 +46,20 @@ class LaporanPinjamanSupirKaryawanController extends Controller
             ]);
         }
     }
+
+     /**
+     * @ClassName
+     */
+    public function export(Request $request)
+    {
+        $sampai = $request->sampai;
+
+        $export = LaporanPinjamanSupirKaryawan::getReport($sampai);
+
+        return response([
+            'data' => $export
+        ]);
+
+       
+    }
 }

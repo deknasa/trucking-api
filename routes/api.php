@@ -1191,6 +1191,7 @@ route::middleware(['auth:api', 'authorized'])->group(function () {
     Route::get('pendapatansupirheader/{id}/export', [PendapatanSupirHeaderController::class, 'export'])->name('pendapatansupirheader.export')->whereNumber('id');
     Route::post('pendapatansupirheader/{id}/cekvalidasi', [PendapatanSupirHeaderController::class, 'cekvalidasi'])->name('pendapatansupirheader.cekvalidasi')->whereNumber('id');
     Route::post('pendapatansupirheader/approval', [PendapatanSupirHeaderController::class, 'approval']);
+    Route::get('pendapatansupirheader/gettrip', [PendapatanSupirHeaderController::class, 'gettrip']);
     Route::resource('pendapatansupirheader', PendapatanSupirHeaderController::class)->parameters(['pendapatansupirheader' => 'pendapatanSupirHeader'])->whereNumber('pendapatanSupirHeader');
     Route::resource('pendapatansupirdetail', PendapatanSupirDetailController::class)->whereNumber('pendapatansupirdetail');
 
@@ -1240,6 +1241,7 @@ route::middleware(['auth:api', 'authorized'])->group(function () {
     Route::get('laporandepositosupir/export', [LaporanDepositoSupirController::class, 'export'])->name('laporandepositosupir.export');
     Route::resource('laporandepositosupir', LaporanDepositoSupirController::class);
 
+    Route::get('laporanpinjamansupir/export', [LaporanPinjamanSupirController::class, 'export'])->name('laporanpinjamansupir.export');
     Route::get('laporanpinjamansupir/report', [LaporanPinjamanSupirController::class, 'report'])->name('laporanpinjamansupir.report');
     Route::resource('laporanpinjamansupir', LaporanPinjamanSupirController::class);
 
@@ -1331,6 +1333,7 @@ route::middleware(['auth:api', 'authorized'])->group(function () {
     Route::get('laporanuangjalan/report', [LaporanUangJalanController::class, 'report'])->name('laporanuangjalan.report');
     Route::get('laporanuangjalan/export', [LaporanUangJalanController::class, 'export'])->name('laporanuangjalan.export');
     Route::resource('laporanuangjalan', LaporanUangJalanController::class)->whereNumber('laporanuangjalan');
+    Route::get('laporanpinjamansupirkaryawan/export', [LaporanPinjamanSupirKaryawanController::class, 'export'])->name('laporanpinjamansupirkaryawan.export');
     Route::get('laporanpinjamansupirkaryawan/report', [LaporanPinjamanSupirKaryawanController::class, 'report'])->name('laporanpinjamansupirkaryawan.report');
     Route::resource('laporanpinjamansupirkaryawan', LaporanPinjamanSupirKaryawanController::class)->whereNumber('laporanpinjamansupirkaryawan');
     Route::get('laporanpemotonganpinjamanperebs/report', [LaporanPemotonganPinjamanPerEBSController::class, 'report'])->name('laporanpemotonganpinjamanperebs.report');
