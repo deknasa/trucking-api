@@ -33,18 +33,33 @@ class LaporanPinjamanSupirController extends Controller
         $jenis = $request->jenis ?? 83;
         $laporanPinjSupir = new LaporanPinjamanSupir();
 
-        $dataPinjSupir = $laporanPinjSupir->getReport($sampai,$jenis);
+        $dataPinjSupir = $laporanPinjSupir->getReport($sampai, $jenis);
 
         if (count($dataPinjSupir) == 0) {
             return response([
                 'data' => $dataPinjSupir,
                 'message' => 'tidak ada data'
             ], 500);
-        }else{
+        } else {
             return response([
                 'data' => $dataPinjSupir,
                 'message' => 'berhasil'
             ]);
         }
+    }
+
+    /**
+     * @ClassName
+     */
+    public function export(Request $request)
+    {
+        $sampai = $request->sampai;
+        $jenis = $request->jenis;
+
+        $export = LaporanPinjamanSupir::getReport($sampai, $jenis);
+
+        return response([
+            'data' => $export
+        ]);
     }
 }
