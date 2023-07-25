@@ -69,4 +69,22 @@ class LaporanKartuHutangPrediksiController extends Controller
         //     'data' => $report
         // ]);
     }
+    
+    /**
+     * @ClassName
+     */
+    public function export(Request $request)
+    {
+        $sampai = $request->sampai;
+        $dari = $request->dari;
+
+        $LaporanKartuHutangPrediksi = new LaporanKartuHutangPrediksi();
+
+        $dataHutangPrediksi = $LaporanKartuHutangPrediksi->getReport($sampai,$dari);
+
+
+        return response([
+            'data' => $dataHutangPrediksi
+        ]);
+    }
 }
