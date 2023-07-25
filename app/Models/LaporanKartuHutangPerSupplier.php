@@ -145,6 +145,7 @@ class LaporanKartuHutangPerSupplier extends MyModel
             ])
             ->where('A.tglbukti', '>', $dari);
 
+
         DB::table($Temphutangsaldo)->insertUsing([
             'tglbukti',
             'nobukti',
@@ -236,7 +237,7 @@ class LaporanKartuHutangPerSupplier extends MyModel
             ->where('A.tglbukti', '>', $dari)
             ->where('A.tglbukti', '<=', $sampai)
             ->groupBy('A.hutang_nobukti');
-
+       
         DB::table($Temphutangbyrberjalan)->insertUsing([
             'tglbukti',
             'nobukti',
@@ -309,14 +310,17 @@ class LaporanKartuHutangPerSupplier extends MyModel
             'urut',
         ], $select_TempCicilRekap);
         //  dd($select_TempCicilRekap->get());
-
+     
 
         $TempRekapHutang = '##TempRekapHutang' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
         Schema::create($TempRekapHutang, function ($table) {
-            $table->bigIncrements('id');
+            // $table->bigIncrements('id');
+            $table->id();
             $table->string('nobukti', 50);
             $table->double('nominal');
             $table->double('bayar');
+            $table->string('namasupplier', 1000);
+            $table->date('tglbukti');
         });
 
         // $select_TempRekapHutang = DB::table($Temphutangsaldo)->from(DB::raw($Temphutangsaldo))
@@ -335,35 +339,52 @@ class LaporanKartuHutangPerSupplier extends MyModel
             ->select([
                 'A.nobukti',
                 DB::raw("(ISNULL(A.nominal, 0) - ISNULL(B.nominal, 0)) as saldo"),
-                DB::raw("ISNULL(C.nominal, 0) as bayar")
+                DB::raw("ISNULL(C.nominal, 0) as bayar"),
+                DB::raw("ISNULL(i.namasupplier, '') as namasupplier"),
+                DB::raw("ISNULL(d.tglbukti, '1900/1/1') as tglbukti"),
+
             ])
             ->leftJoin($Temphutangbyrsaldo . ' AS B', 'A.nobukti', '=', 'B.hutang_nobukti')
             ->leftJoin($Temphutangbyrberjalan . ' AS C', 'A.nobukti', '=', 'C.hutang_nobukti')
             ->join('hutangheader AS D', 'A.nobukti', '=', 'D.nobukti')
+            ->join('supplier AS i', 'd.supplier_id', '=', 'i.id')
             ->where(DB::raw("(ISNULL(A.nominal, 0) - ISNULL(B.nominal, 0))"), '<>', 0)
-            ->orderBy('D.supplier_id')
-            ->orderBy('A.nobukti');
+            ->orderBy('i.namasupplier')
+            ->orderBy('d.tglbukti')
+            ->orderBy('a.nobukti');
+
+   
 
         DB::table($TempRekapHutang)->insertUsing([
             'nobukti',
             'nominal',
             'bayar',
+            'namasupplier',
+            'tglbukti',
         ], $select_TempRekapHutang);
         // dd($select_TempRekapHutang->get());
-
+      
         $select_TempRekapHutang2 = DB::table($Temphutangberjalan . ' AS A')
             ->select([
                 'A.nobukti',
                 'A.nominal',
-                DB::raw('ISNULL(C.nominal, 0) as bayar')
+                DB::raw('ISNULL(C.nominal, 0) as bayar'),
+                DB::raw("ISNULL(i.namasupplier, '') as namasupplier"),
+                DB::raw("ISNULL(d.tglbukti, '1900/1/1') as tglbukti"),                
             ])
-            ->leftJoin($Temphutangbyrberjalan . ' AS C', 'A.nobukti', '=', 'C.hutang_nobukti');
+            ->leftJoin($Temphutangbyrberjalan . ' AS C', 'A.nobukti', '=', 'C.hutang_nobukti')
+            ->leftjoin('hutangheader AS D', 'A.nobukti', '=', 'D.nobukti')
+            ->leftjoin('supplier AS i', 'd.supplier_id', '=', 'i.id');
 
         DB::table($TempRekapHutang)->insertUsing([
             'nobukti',
             'nominal',
             'bayar',
-        ], $select_TempRekapHutang);
+            'namasupplier',
+            'tglbukti',            
+        ], $select_TempRekapHutang2);
+
+        // dd('test');
         // dd($select_TempRekapHutang2->get());
 
         $Tempjt = '##Tempjt' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
@@ -385,10 +406,11 @@ class LaporanKartuHutangPerSupplier extends MyModel
             'nobukti',
             'tgljatuhtempo',
         ], $select_Tempjt);
-        // dd($select_Tempjt->get());
+        //  dd(db::table($TempRekapHutang)->get());
 
         $select_data = DB::table($TempRekapHutang . ' AS A')
             ->select([
+                'a.id',
                 'D.namasupplier',
                 'C.keterangan',
                 'A.nobukti',
@@ -397,7 +419,7 @@ class LaporanKartuHutangPerSupplier extends MyModel
                 DB::raw('ISNULL(B.urut, 0) + 1 as cicil'),
                 'A.nominal',
                 'A.bayar',
-                DB::raw('SUM((ISNULL(A.nominal, 0) - A.bayar)) OVER (PARTITION BY D.namasupplier ORDER BY A.id ASC) as Saldo'),
+                DB::raw('SUM((ISNULL(A.nominal, 0) - A.bayar)) OVER (PARTITION BY a.namasupplier ORDER BY A.id ASC) as Saldo'),
                 DB::raw("'$getJudul->text' AS text"),
                 DB::raw("'$dari' AS dari"),
                 DB::raw("'$sampai' AS sampai"),
@@ -410,9 +432,10 @@ class LaporanKartuHutangPerSupplier extends MyModel
             ->join('hutangheader AS C', 'A.nobukti', '=', 'C.nobukti')
             ->join('supplier AS D', 'C.supplier_id', '=', 'D.id')
             ->leftJoin($Tempjt . ' AS E', 'A.nobukti', '=', 'E.nobukti')
-            ->orderBy('D.namasupplier')
-            ->orderBy('C.tglbukti')
-            ->orderBy('C.nobukti');
+            ->orderBy('a.id');
+            // ->orderBy('a.tglbukti')
+            // ->orderBy('a.nobukti');
+
 
         // dd($select_data->get());
         $data = $select_data->get();
