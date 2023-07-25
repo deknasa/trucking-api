@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 
 class PencairanGiroPengeluaranDetail extends MyModel
 {
@@ -27,24 +28,78 @@ class PencairanGiroPengeluaranDetail extends MyModel
     {
         $this->setRequestParameters();
 
-        $query = DB::table($this->anotherTable)->from(DB::raw("$this->anotherTable with (readuncommitted)"));
+        $query1 = DB::table($this->anotherTable)->from(DB::raw("pengeluarandetail with (readuncommitted)"))
+            ->select(
+                'pengeluarandetail.nobukti',
+                'pengeluarandetail.nowarkat',
+                'pengeluarandetail.tgljatuhtempo',
+                'pengeluarandetail.nominal',
+                'coadebet.keterangancoa as coadebet',
+                'coakredit.keterangancoa as coakredit',
+                'pengeluarandetail.keterangan',
+                DB::raw("(case when (year(pengeluarandetail.bulanbeban) <= 2000) then null else pengeluarandetail.bulanbeban end ) as bulanbeban"),
+            )
+            ->leftJoin('akunpusat as coadebet', 'pengeluarandetail.coadebet', 'coadebet.coa')
+            ->leftJoin('akunpusat as coakredit', 'pengeluarandetail.coakredit', 'coakredit.coa')
+            ->where('pengeluarandetail.pengeluaran_id', '=', request()->pengeluaran_id);
 
-        $query->select(
-            $this->anotherTable . '.nobukti',
-            $this->anotherTable . '.nowarkat',
-            $this->anotherTable . '.tgljatuhtempo',
-            $this->anotherTable . '.nominal',
-            'coadebet.keterangancoa as coadebet',
-            'coakredit.keterangancoa as coakredit',
-            $this->anotherTable . '.keterangan',
-            DB::raw("(case when (year($this->anotherTable.bulanbeban) <= 2000) then null else $this->anotherTable.bulanbeban end ) as bulanbeban"),
-        )
-            ->leftJoin('akunpusat as coadebet', $this->anotherTable . '.coadebet', 'coadebet.coa')
-            ->leftJoin('akunpusat as coakredit', $this->anotherTable . '.coakredit', 'coakredit.coa');
+        $query2 = DB::table($this->anotherTable)->from(DB::raw("saldopengeluarandetail with (readuncommitted)"))
+            ->select(
+                'saldopengeluarandetail.nobukti',
+                'saldopengeluarandetail.nowarkat',
+                'saldopengeluarandetail.tgljatuhtempo',
+                'saldopengeluarandetail.nominal',
+                'coadebet.keterangancoa as coadebet',
+                'coakredit.keterangancoa as coakredit',
+                'saldopengeluarandetail.keterangan',
+                DB::raw("(case when (year(saldopengeluarandetail.bulanbeban) <= 2000) then null else saldopengeluarandetail.bulanbeban end ) as bulanbeban"),
+            )
+            ->leftJoin('akunpusat as coadebet', 'saldopengeluarandetail.coadebet', 'coadebet.coa')
+            ->leftJoin('akunpusat as coakredit', 'saldopengeluarandetail.coakredit', 'coakredit.coa')
+            ->where('saldopengeluarandetail.saldopengeluaran_id', '=', request()->pengeluaran_id);
+        $query3 = DB::table(DB::raw("({$query1->toSql()} UNION ALL {$query2->toSql()}) as V"))
+            ->mergeBindings($query1)
+            ->mergeBindings($query2);
 
-        $this->sort($query);
-        $query->where($this->anotherTable . '.pengeluaran_id', '=', request()->pengeluaran_id);
-        $this->filter($query);
+
+        $templist = '##templist' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+        Schema::create($templist, function ($table) {
+            $table->string('nobukti', 300)->nullable();
+            $table->string('nowarkat', 300)->nullable();
+            $table->date('tgljatuhtempo')->nullable();
+            $table->double('nominal')->nullable();
+            $table->longText('coadebet')->nullable();
+            $table->longText('coakredit')->nullable();
+            $table->longText('keterangan')->nullable();
+            $table->date('bulanbeban')->nullable();
+        });
+
+        DB::table($templist)->insertUsing([
+            'nobukti',
+            'nowarkat',
+            'tgljatuhtempo',
+            'nominal',
+            'coadebet',
+            'coakredit',
+            'keterangan',
+            'bulanbeban',
+
+        ], $query3);
+
+        $query = DB::table($templist)->from(DB::raw($templist . " AS pengeluarandetail "))
+            ->select([
+                'pengeluarandetail.nobukti',
+                'pengeluarandetail.nowarkat',
+                'pengeluarandetail.tgljatuhtempo',
+                'pengeluarandetail.nominal',
+                'pengeluarandetail.coadebet',
+                'pengeluarandetail.coakredit',
+                'pengeluarandetail.keterangan',
+                'pengeluarandetail.bulanbeban',
+            ]);
+
+        $this->sort($query, 'pengeluarandetail');
+        $this->filter($query, 'pengeluarandetail');
 
         $this->totalNominal = $query->sum('nominal');
         $this->totalRows = $query->count();
@@ -55,51 +110,51 @@ class PencairanGiroPengeluaranDetail extends MyModel
         return $query->get();
     }
 
-    public function sort($query)
+    public function sort($query,$table)
     {
-        if ($this->params['sortIndex'] == 'coadebet') {
-            return $query->orderBy('coadebet.keterangancoa', $this->params['sortOrder']);
-        } else if ($this->params['sortIndex'] == 'coakredit') {
-            return $query->orderBy('coakredit.keterangancoa', $this->params['sortOrder']);
-        } else {
-            return $query->orderBy($this->anotherTable . '.' . $this->params['sortIndex'], $this->params['sortOrder']);
-        }
+        // if ($this->params['sortIndex'] == 'coadebet') {
+        //     return $query->orderBy('coadebet.keterangancoa', $this->params['sortOrder']);
+        // } else if ($this->params['sortIndex'] == 'coakredit') {
+        //     return $query->orderBy('coakredit.keterangancoa', $this->params['sortOrder']);
+        // } else {
+            return $query->orderBy($table . '.' . $this->params['sortIndex'], $this->params['sortOrder']);
+        // }
     }
 
-    public function filter($query, $relationFields = [])
+    public function filter($query,$table, $relationFields = [])
     {
         if (count($this->params['filters']) > 0 && @$this->params['filters']['rules'][0]['data'] != '') {
             switch ($this->params['filters']['groupOp']) {
                 case "AND":
-                    $query->where(function ($query) {
+                    // $query->where(function ($query, $table) {
                         foreach ($this->params['filters']['rules'] as $index => $filters) {
-                            if ($filters['field'] == 'coadebet') {
-                                $query = $query->where('coadebet.keterangancoa', 'LIKE', "%$filters[data]%");
-                            } else if ($filters['field'] == 'coakredit') {
-                                $query = $query->where('coakredit.keterangancoa', 'LIKE', "%$filters[data]%");
-                            } else if ($filters['field'] == 'nominal') {
-                                $query = $query->whereRaw("format($this->anotherTable.nominal, '#,#0.00') LIKE '%$filters[data]%'");
+                            // if ($filters['field'] == 'coadebet') {
+                            //     $query = $query->where('coadebet.keterangancoa', 'LIKE', "%$filters[data]%");
+                            // } else if ($filters['field'] == 'coakredit') {
+                            //     $query = $query->where('coakredit.keterangancoa', 'LIKE', "%$filters[data]%");
+                            if ($filters['field'] == 'nominal') {
+                                $query = $query->whereRaw("format($table.nominal, '#,#0.00') LIKE '%$filters[data]%'");
                             } else {
-                                $query = $query->where($this->anotherTable . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
+                                $query = $query->where($table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
                             }
                         }
-                    });
+                    // });
 
                     break;
                 case "OR":
-                    $query->where(function ($query) {
+                    // $query->where(function ($query,$table) {
                         foreach ($this->params['filters']['rules'] as $index => $filters) {
-                            if ($filters['field'] == 'coadebet') {
-                                $query = $query->orWhere('coadebet.keterangancoa', 'LIKE', "%$filters[data]%");
-                            } else if ($filters['field'] == 'coakredit') {
-                                $query = $query->orWhere('coakredit.keterangancoa', 'LIKE', "%$filters[data]%");
-                            } else if ($filters['field'] == 'nominal') {
-                                $query = $query->orWhereRaw("format($this->anotherTable.nominal, '#,#0.00') LIKE '%$filters[data]%'");
+                            // if ($filters['field'] == 'coadebet') {
+                            //     $query = $query->orWhere('coadebet.keterangancoa', 'LIKE', "%$filters[data]%");
+                            // } else if ($filters['field'] == 'coakredit') {
+                            //     $query = $query->orWhere('coakredit.keterangancoa', 'LIKE', "%$filters[data]%");
+                            if ($filters['field'] == 'nominal') {
+                                $query = $query->orWhereRaw("format($table.nominal, '#,#0.00') LIKE '%$filters[data]%'");
                             } else {
-                                $query = $query->orWhere($this->anotherTable . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
+                                $query = $query->orWhere($table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
                             }
                         }
-                    });
+                    // });
                     break;
                 default:
 
