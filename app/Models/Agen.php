@@ -315,25 +315,25 @@ class Agen extends MyModel
             "$this->table.kodeagen",
             "$this->table.namaagen",
             "$this->table.keterangan",
-            "parameter_statusaktif.text as statusaktif",
+            "parameter.text as statusaktif",
             "$this->table.namaperusahaan",
             "$this->table.alamat",
             "$this->table.notelp",
             "$this->table.nohp",
             "$this->table.contactperson",
             "$this->table.top",
-            "parameter_statusapproval.text as statusapproval",
+            "statusapproval.text as statusapproval",
             "$this->table.userapproval",
             "$this->table.tglapproval",
-            "parameter_statustas.text as statustas",
+            "statustas.text as statustas",
             "jenisemkl.keterangan as jenisemkl",
             "$this->table.modifiedby",
             "$this->table.created_at",
             "$this->table.updated_at",
         )
-            ->leftJoin(DB::raw("parameter as parameter_statusaktif with (readuncommitted)"), "agen.statusaktif", "parameter_statusaktif.id")
-            ->leftJoin(DB::raw("parameter as parameter_statusapproval with (readuncommitted)"), "agen.statusapproval", "parameter_statusapproval.id")
-            ->leftJoin(DB::raw("parameter as parameter_statustas with (readuncommitted)"), "agen.statustas", "parameter_statustas.id")
+            ->leftJoin(DB::raw("parameter as parameter with (readuncommitted)"), "agen.statusaktif", "parameter.id")
+            ->leftJoin(DB::raw("parameter as statusapproval with (readuncommitted)"), "agen.statusapproval", "statusapproval.id")
+            ->leftJoin(DB::raw("parameter as statustas with (readuncommitted)"), "agen.statustas", "statustas.id")
             ->leftJoin(DB::raw("jenisemkl with (readuncommitted)"), "agen.jenisemkl", "jenisemkl.id");
     }
 

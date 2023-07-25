@@ -116,6 +116,7 @@ use App\Http\Controllers\Api\TarifRincianController;
 use App\Http\Controllers\Api\PengeluaranTruckingController;
 use App\Http\Controllers\Api\OrderanTruckingController;
 use App\Http\Controllers\Api\JobTruckingController;
+use App\Http\Controllers\Api\ChargeGandenganController;
 use App\Http\Controllers\Api\ProsesAbsensiSupirController;
 use App\Http\Controllers\Api\MekanikController;
 use App\Http\Controllers\Api\SuratPengantarController;
@@ -377,6 +378,8 @@ route::middleware(['auth:api', 'authorized'])->group(function () {
 
     Route::resource('jobtrucking', JobTruckingController::class);
 
+    Route::get('chargegandengan/export', [ChargeGandenganController::class, 'export']);
+    Route::resource('chargegandengan', ChargeGandenganController::class)->whereNumber('chargegandengan');
 
     Route::get('prosesabsensisupir/combo', [ProsesAbsensiSupirController::class, 'combo']);
     Route::get('prosesabsensisupir/field_length', [ProsesAbsensiSupirController::class, 'fieldLength']);
