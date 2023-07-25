@@ -552,6 +552,29 @@ class KartuStok extends MyModel
 
         // dump($tgldari);
         // dd($tglsampai);
+
+        if ($stokdari==0 || $stoksampai==0) {
+            $querystokdari=DB::table("stok")->from(
+                DB::raw("stok a with (readuncommitted)")
+            )
+            ->select(
+                'a.id'
+            )->orderBy('a.id','asc')
+            ->first();
+
+            $querystoksampai=DB::table("stok")->from(
+                DB::raw("stok a with (readuncommitted)")
+            )
+            ->select(
+                'a.id'
+            )->orderBy('a.id','desc')
+            ->first();
+
+            $stokdari=$querystokdari->id;
+            $stoksampai=$querystoksampai->id;
+
+
+        }
         
         $gudang_id = $gudang_id ?? 0;
         $trado_id = $trado_id ?? 0;
