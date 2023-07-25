@@ -16,7 +16,7 @@ class HutangHeaderSeeder extends Seeder
     public function run()
     {
         DB::statement("delete HutangHeader");
-        DB::statement("DBCC CHECKIDENT ('HutangHeader', RESEED, 1);");
+        DB::statement("DBCC CHECKIDENT ('HutangHeader', RESEED, 0);");
 
         hutangheader::create(['nobukti' => 'SPB 0001/III/2023', 'tglbukti' => '2023/3/1', 'keterangan' => 'saldo hutang SPB 0001/III/2023 Supplier HOKI JAYA', 'coa' => '01.10.02.01', 'coakredit' => '03.02.02.01', 'total' => '585000.00', 'postingdari' => 'saldo awal', 'pelanggan_id' => '0', 'supplier_id' => '25', 'statusformat' => '127', 'statuscetak' => '175', 'userbukacetak' => '', 'tglbukacetak' => '1900/1/1', 'jumlahcetak' => '0', 'statusapproval' => '3', 'tglapproval' => '2023/4/30', 'userapproval' => 'admin', 'modifiedby' => 'admin',]);
         hutangheader::create(['nobukti' => 'SPB 0001/IV/2023', 'tglbukti' => '2023/4/1', 'keterangan' => 'saldo hutang SPB 0001/IV/2023 Supplier CV. RODA MAS VULKANISIR BAN', 'coa' => '01.10.02.01', 'coakredit' => '03.02.02.01', 'total' => '4980000.00', 'postingdari' => 'saldo awal', 'pelanggan_id' => '0', 'supplier_id' => '18', 'statusformat' => '127', 'statuscetak' => '175', 'userbukacetak' => '', 'tglbukacetak' => '1900/1/1', 'jumlahcetak' => '0', 'statusapproval' => '3', 'tglapproval' => '2023/4/30', 'userapproval' => 'admin', 'modifiedby' => 'admin',]);
