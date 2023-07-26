@@ -48,4 +48,22 @@ class LaporanKlaimPJTSupirController extends Controller
             ]);
         }
     }
+    
+    /**
+     * @ClassName
+     */
+    public function export(Request $request)
+    {
+        $sampai = $request->sampai;
+        $dari = $request->dari;
+        $kelompok_id = $request->kelompok_id;
+        $laporanKlaim = new LaporanKlaimPJTSupir();
+
+
+        $laporan_klaim = $laporanKlaim->getReport($sampai,$dari,$kelompok_id);
+
+        return response([
+            'data' => $laporan_klaim
+        ]);
+    }
 }
