@@ -191,27 +191,43 @@ class InvoiceHeaderController extends Controller
     public function getSP(Request $request)
     {
         $invoice = new InvoiceHeader();
-        $dari = date('Y-m-d', strtotime($request->tgldari));
-        $sampai = date('Y-m-d', strtotime($request->tglsampai));
+        $datahasil=$invoice->getSPSearch($request);
+        // $dari = date('Y-m-d', strtotime($request->tgldari));
+        // $sampai = date('Y-m-d', strtotime($request->tglsampai));
 
-        $cekSP = SuratPengantar::from(DB::raw("suratpengantar with (readuncommitted)"))
-            ->whereRaw("agen_id = $request->agen_id")
-            ->whereRaw("jenisorder_id = $request->jenisorder_id")
-            ->whereRaw("tglbukti >= '$dari'")
-            ->whereRaw("tglbukti <= '$sampai'")
-            ->whereRaw("nocont != ''")
-            ->whereRaw("noseal != ''")
-            ->whereRaw("suratpengantar.jobtrucking not in(select orderantrucking_nobukti from invoicedetail)");
+        // $cekSP = SuratPengantar::from(DB::raw("suratpengantar with (readuncommitted)"))
+        //     ->whereRaw("agen_id = $request->agen_id")
+        //     ->whereRaw("jenisorder_id = $request->jenisorder_id")
+        //     ->whereRaw("tglbukti >= '$dari'")
+        //     ->whereRaw("tglbukti <= '$sampai'")
+        //     ->whereRaw("nocont != ''")
+        //     ->whereRaw("noseal != ''")
+        //     ->whereRaw("suratpengantar.jobtrucking not in(select orderantrucking_nobukti from invoicedetail)");
 
-        if ($cekSP->first()) {
+        // dd($datahasil);
+
+        if (isset($datahasil)) {
             return response([
-                "data" => $invoice->getSP($request)
+                // "data" => $invoice->getSP($request)
+                "data" => $datahasil
             ]);
         } else {
             return response([
+                // "data" => $invoice->getSP($request)
                 "data" => []
             ]);
+
         }
+        // if ($cekSP->first()) {
+        //     return response([
+        //         // "data" => $invoice->getSP($request)
+        //         "data" => $datahasil
+        //     ]);
+        // } else {
+        //     return response([
+        //         "data" => []
+        //     ]);
+        // }
     }
 
     public function getEdit($id, Request $request)

@@ -28,6 +28,7 @@ class CreateInvoiceheaderTable extends Migration
             $table->unsignedBigInteger('jenisorder_id')->nullable();
             $table->unsignedBigInteger('cabang_id')->nullable();
             $table->string('piutang_nobukti', 50)->nullable();
+            $table->integer('statuspilihaninvoice')->length(11)->nullable();
             $table->integer('statusapproval')->length(11)->nullable();
             $table->string('userapproval', 50)->nullable();
             $table->dateTime('tglapproval')->nullable();
