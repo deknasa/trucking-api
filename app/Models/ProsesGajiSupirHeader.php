@@ -1421,7 +1421,7 @@ class ProsesGajiSupirHeader extends MyModel
             $penerimaanHeaderPP = (new PenerimaanHeader())->processStore($penerimaanHeaderPPRequest);
 
             // UPDATE PENERIMAAN TRUCKING
-            foreach ($gajiSupir as $key => $value) {
+            foreach ($gajiSupirPP as $key => $value) {
                 $fetchPP = GajiSupirPelunasanPinjaman::from(DB::raw("gajisupirpelunasanpinjaman with (readuncommitted)"))->where('gajisupir_nobukti', $value->nobukti)->where('supir_id', '!=', '0')->first();
 
                 $penerimaanPP = PenerimaanTruckingHeader::from(DB::raw("penerimaantruckingheader with (readuncommitted)"))
