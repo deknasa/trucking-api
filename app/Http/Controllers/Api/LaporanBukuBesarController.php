@@ -61,4 +61,40 @@ class LaporanBukuBesarController extends Controller
             ]);
         }
     }
+    
+    /**
+     * @ClassName
+     */
+    public function export(ValidasiLaporanBukuBesarRequest $request)
+    {
+        if ($request->isCheck) {
+            return response([
+                'data' => 'ok'
+            ]);
+        } else {
+          
+            $laporanbukubesar = new LaporanBukuBesar();
+
+            
+            $coadari_id = AkunPusat::find($request->coadari_id);
+            $coasampai_id = AkunPusat::find($request->coasampai_id);
+            $cabang_id = auth('api')->user()->cabang_id;
+            $cabang = Cabang::find($cabang_id);
+            $dataHeader = [
+                'coadari' => $coadari_id->coa,
+                'coasampai' => $coasampai_id->coa,
+                'ketcoadari' => $coadari_id->keterangancoa,
+                'ketcoasampai' => $coasampai_id->keterangancoa,
+                'dari' => $request->dari,
+                'sampai' => $request->sampai,
+                'cabang' => $cabang->namacabang
+            ];
+
+         
+            return response([
+                'data' => $laporanbukubesar->getReport(),
+                'dataheader' => $dataHeader
+            ]);
+        }
+    }
 }

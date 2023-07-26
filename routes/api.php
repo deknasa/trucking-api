@@ -1218,6 +1218,7 @@ route::middleware(['auth:api', 'authorized'])->group(function () {
     Route::resource('laporankasbank', LaporanKasBankController::class)->whereNumber('laporankasbank');
 
     Route::get('laporanbukubesar/report', [LaporanBukuBesarController::class, 'report'])->name('laporanbukubesar.report');
+    Route::get('laporanbukubesar/export', [LaporanBukuBesarController::class, 'export'])->name('laporanbukubesar.export');
     Route::resource('laporanbukubesar', LaporanBukuBesarController::class)->whereNumber('laporanbukubesar');
 
     Route::post('prosesuangjalansupirheader/{id}/approval', [ProsesUangJalanSupirHeaderController::class, 'approval'])->name('prosesuangjalansupirheader.approval')->whereNumber('id');
