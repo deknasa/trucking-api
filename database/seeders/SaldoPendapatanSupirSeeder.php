@@ -3,9 +3,8 @@
 namespace Database\Seeders;
 
 use Illuminate\Database\Seeder;
-use App\Models\PenerimaanGiroHeader;
 
-class PenerimaanGiroHeaderSeeder extends Seeder
+class SaldoPendapatanSupirSeeder extends Seeder
 {
     /**
      * Run the database seeds.
@@ -14,6 +13,6 @@ class PenerimaanGiroHeaderSeeder extends Seeder
      */
     public function run()
     {
-      
+        //
     }
 }

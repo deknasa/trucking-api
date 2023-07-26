@@ -20,6 +20,5 @@ class MekanikSeeder extends Seeder
         DB::statement("DBCC CHECKIDENT ('Mekanik', RESEED, 1);");
 
         Mekanik::create(['namamekanik' => 'SUKIR', 'keterangan' => 'SUKIR', 'statusaktif' => '1', 'modifiedby' => 'ADMIN',]);
-        Mekanik::create(['namamekanik' => 'UDIN', 'keterangan' => 'JUNIOR 1', 'statusaktif' => '1', 'modifiedby' => 'ADMIN',]);
     }
 }
