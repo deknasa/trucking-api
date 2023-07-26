@@ -393,6 +393,8 @@ class ParameterSeeder extends Seeder
         parameter::create(['grp' => 'TIDAK ADA SUPIR', 'subgrp' => 'TIDAK ADA SUPIR', 'kelompok' => '', 'text' => '4', 'memo' => '{"MEMO":"TIDAK ADA SUPIR","SINGKATAN":"3","WARNA":"#28A745"}', 'type' => '118', 'modifiedby' => 'ADMIN', 'default' => '',]);
         parameter::create(['grp' => 'TIDAK ADA SUPIR', 'subgrp' => 'TIDAK ADA SUPIR', 'kelompok' => '', 'text' => '6', 'memo' => '{"MEMO":"TIDAK ADA SUPIR","SINGKATAN":"3","WARNA":"#28A745"}', 'type' => '118', 'modifiedby' => 'ADMIN', 'default' => '',]);
         parameter::create(['grp' => 'JURNAL KOMISI SUPIR', 'subgrp' => 'DEBET', 'kelompok' => '', 'text' => 'DEBET', 'memo' => '{"MEMO":"JURNAL KOMISI SUPIR DEBET","SINGKATAN":"JHEMK","WARNA":"#6C757D","JURNAL":"03.02.02.04"}', 'type' => '0', 'modifiedby' => 'ADMIN', 'default' => '',]);
+        parameter::create(['grp' => 'STATUS PILIHAN INVOICE', 'subgrp' => 'STATUS PILIHAN INVOICE', 'kelompok' => '', 'text' => 'PERIODE PISAH BULAN', 'memo' => '{"MEMO":"PERIODE PISAH BULAN","SINGKATAN":"PPB","WARNA":"#28A745"}', 'type' => '0', 'modifiedby' => 'ADMIN', 'default' => 'YA',]);
+        parameter::create(['grp' => 'STATUS PILIHAN INVOICE', 'subgrp' => 'STATUS PILIHAN INVOICE', 'kelompok' => '', 'text' => 'PERIODE OTOBON', 'memo' => '{"MEMO":"PERIODE OTOBON","SINGKATAN":"PO","WARNA":"#6C757D"}', 'type' => '0', 'modifiedby' => 'ADMIN', 'default' => '',]);
         
 
         
