@@ -22,8 +22,12 @@ class CreatePendapatansupirheaderTable extends Migration
             $table->date('tglbukti')->nullable();
             $table->longText('keterangan')->nullable();            
             $table->unsignedBigInteger('bank_id')->nullable();
+            $table->unsignedBigInteger('supir_id')->nullable();
             $table->date('tgldari')->nullable();
             $table->date('tglsampai')->nullable();
+            $table->string('pengeluaran_nobukti', 50)->nullable();            
+            $table->string('coa',50)->nullable();            
+            $table->unsignedBigInteger('alatbayar_id')->nullable();
             $table->integer('statusapproval')->length(11)->nullable();
             $table->string('userapproval',50)->nullable();
             $table->date('tglapproval')->nullable();

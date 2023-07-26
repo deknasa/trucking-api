@@ -14,13 +14,6 @@ class PendapatanSupirDetailSeeder extends Seeder
      */
     public function run()
     {
-        PendapatanSupirDetail::create([
-            'nobukti' => 'PST 0001/III/2022',
-            'pendapatansupir_id' => 1,
-            'supir_id' => 1,
-            'nominal' => 80000,
-            'keterangan' => 'PENDAPATAN SUPIR',
-            'modifiedby' => 'ADMIN',
-        ]);
+       
     }
 }
