@@ -79,7 +79,7 @@ class LaporanKartuHutangPerSupplierController extends Controller
         $suppliersampai = $request->suppliersampai_id;
 
         $laporankartuhutangpersupplier = new LaporanKartuHutangPerSupplier();
-        $laporan_kartuhutangpersupplier = $laporankartuhutangpersupplier->getExport($dari, $sampai, $supplierdari, $suppliersampai);
+        $laporan_kartuhutangpersupplier = $laporankartuhutangpersupplier->getReport($dari, $sampai, $supplierdari, $suppliersampai);
 
 
         if ($request->isCheck) {

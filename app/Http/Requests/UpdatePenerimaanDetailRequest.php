@@ -31,7 +31,7 @@ class UpdatePenerimaanDetailRequest extends FormRequest
         $rules = [
             'ketcoakredit.*' => 'required',
             'coakredit.*' =>  [new CoaKreditPenerimaanDetail, new AkunPusatPenerimaanDetail()],
-            'tgljatuhtempo.*' => ['required','date_format:d-m-Y','date_equals:'.request()->tglbukti],
+            'tgljatuhtempo.*' => ['required','date_format:d-m-Y','after_or_equal:'.request()->tglbukti],
             'nominal_detail.*' => 'required|numeric|gt:0',
             'keterangan_detail.*' => 'required',
             'bankpelanggan.*' => [new BankPelangganPenerimaanDetail()],
