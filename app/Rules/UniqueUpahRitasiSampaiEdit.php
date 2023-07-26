@@ -34,6 +34,7 @@ class UniqueUpahRitasiSampaiEdit implements Rule
                 'a.id'
             )
             ->where('a.kotasampai_id', '=', request()->kotasampai_id)
+            ->where('a.kotadari_id', '=', request()->kotadari_id)
             ->where('a.id', '<>', request()->id)
             ->first();
 
