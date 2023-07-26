@@ -32,16 +32,20 @@ class MandorAbsensiSupirRequest extends FormRequest
      */
     public function rules()
     {
-        $query = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))
+
+        $absen_id=$this->absen_id ?? 0;
+
+        $query = DB::table('parameter')->from(DB::raw("parameter as a with (readuncommitted)"))
             ->select(
                 'text',
             )
-            ->where('grp', 'TIDAK ADA SUPIR')
-            ->where('subgrp', 'TIDAK ADA SUPIR')
+            ->join(DB::raw("absentrado as b with (readuncommitted)"), 'a.text', '=', 'b.id')
+            ->where('a.grp', 'TIDAK ADA SUPIR')
+            ->where('a.subgrp', 'TIDAK ADA SUPIR')
+            ->where('b.id',$this->absen_id)
             ->first();
 
-            $absen_id=$this->absen_id ?? 0;
-        if ($absen_id == $query->text) {
+        if (isset($query)) {
             $rules = [
                 'trado' => 'required',
                 'trado_id' => 'required',
