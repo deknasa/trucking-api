@@ -76,6 +76,10 @@ class PendapatanSupirHeader extends MyModel
         return $data;
     }
 
+    public function gettrip( $tgldari, $tglsampai)
+    {
+
+    }
     public function findUpdate($id)
     {
         $data = DB::table('pendapatansupirheader')->from(DB::raw("pendapatansupirheader with (readuncommitted)"))
