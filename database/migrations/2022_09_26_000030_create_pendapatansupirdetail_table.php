@@ -23,6 +23,8 @@ class CreatePendapatansupirdetailTable extends Migration
             $table->unsignedBigInteger('supir_id')->nullable();
             $table->string('nobuktitrip',50)->nullable();
             $table->string('nobuktirincian',50)->nullable();
+            $table->Integer('dari_id')->nullable();
+            $table->Integer('sampai_id')->nullable();
             $table->double('nominal',15,2)->nullable();
             $table->longText('keterangan')->nullable();
             $table->string('modifiedby',50)->nullable();            
