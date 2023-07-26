@@ -1317,6 +1317,7 @@ route::middleware(['auth:api', 'authorized'])->group(function () {
     Route::resource('laporanpenyesuaianbarang', LaporanPenyesuaianBarangController::class)->whereNumber('laporanpenyesuaianbarang');
 
     Route::get('laporanpemakaianban/report', [LaporanPemakaianBanController::class, 'report'])->name('laporanpemakaianban.report');
+    Route::get('laporanpemakaianban/export', [LaporanPemakaianBanController::class, 'export'])->name('laporanpemakaianban.export');
     Route::resource('laporanpemakaianban', LaporanPemakaianBanController::class)->whereNumber('laporanpemakaianban');
 
     Route::get('laporantransaksiharian/report', [LaporanTransaksiHarianController::class, 'report'])->name('laporantransaksiharian.report');
@@ -1351,6 +1352,7 @@ route::middleware(['auth:api', 'authorized'])->group(function () {
     Route::get('laporanrekapsumbangan/export', [LaporanRekapSumbanganController::class, 'export'])->name('laporanrekapsumbangan.export');
     Route::resource('laporanrekapsumbangan', LaporanRekapSumbanganController::class)->whereNumber('laporanrekapsumbangan');
     Route::get('laporanklaimpjtsupir/report', [LaporanKlaimPJTSupirController::class, 'report'])->name('laporanklaimpjtsupir.report');
+    Route::get('laporanklaimpjtsupir/export', [LaporanKlaimPJTSupirController::class, 'export'])->name('laporanklaimpjtsupir.export');
     Route::resource('laporanklaimpjtsupir', LaporanKlaimPJTSupirController::class)->whereNumber('laporanklaimpjtsupir');
     Route::get('laporankartuhutangpervendor/report', [LaporanKartuHutangPerVendorController::class, 'report'])->name('laporankartuhutangpervendor.report');
     Route::resource('laporankartuhutangpervendor', LaporanKartuHutangPerVendorController::class)->whereNumber('laporankartuhutangpervendor');

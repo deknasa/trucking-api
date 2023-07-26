@@ -35,7 +35,7 @@ class LaporanPemakaianBanController extends Controller
         $jenisLaporan = 'ANALISA BAN';
         $posisiAkhir = '';
 
-       
+
 
 
         if ($request->isCheck) {
@@ -43,16 +43,37 @@ class LaporanPemakaianBanController extends Controller
                 'data' => 'ok'
             ]);
         } else {
-          
+
             $laporanpemakaianban = new LaporanPemakaianBan();
 
-            
 
 
-         
+
+
             return response([
                 'data' => $laporanpemakaianban->getReport($dari, $sampai, $posisiAkhir, $jenisLaporan),
             ]);
         }
+    }
+
+    /**
+     * @ClassName
+     */
+    public function export(Request $request)
+    {
+        $dari = $request->dari;
+        $sampai = $request->sampai;
+
+        // $jenisLaporan = $request->jenislaporan;
+        $jenisLaporan = 'ANALISA BAN';
+        $posisiAkhir = '';
+        $laporanpemakaianban = new LaporanPemakaianBan();
+
+
+        $laporan_pemakaian = $laporanpemakaianban->getReport($dari, $sampai, $posisiAkhir, $jenisLaporan);
+
+        return response([
+            'data' => $laporan_pemakaian
+        ]);
     }
 }
