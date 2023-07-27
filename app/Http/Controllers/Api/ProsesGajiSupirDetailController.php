@@ -135,10 +135,11 @@ class ProsesGajiSupirDetailController extends Controller
                 ->join(DB::raw("kasgantungheader with (readuncommitted)"), 'absensisupirheader.kasgantung_nobukti', 'kasgantungheader.nobukti')
                 ->join(DB::raw("gajisupirheader with (readuncommitted)"), 'gajisupiruangjalan.gajisupir_nobukti', 'gajisupirheader.nobukti')
                 ->whereRaw("gajisupiruangjalan.gajisupir_nobukti in (select gajisupir_nobukti from prosesgajisupirdetail where nobukti='$nobuktiEbs')")
-                ->groupBy('absensisupirheader.kasgantung_nobukti', 'kasgantungheader.coakaskeluar');
-                dd($fetch->tosql());
+                ->groupBy('absensisupirheader.kasgantung_nobukti', 'kasgantungheader.coakaskeluar')
+                ->first();
+                dd($fetch);
 
-            if ($fetch->first() != null) {
+            if ($fetch != null) {
                 $penerimaantrucking = PengembalianKasGantungHeader::from(DB::raw("pengembaliankasgantungheader with (readuncommitted)"))
                     ->leftJoin(DB::raw("pengembaliankasgantungdetail with (readuncommitted)"), 'pengembaliankasgantungheader.id', 'pengembaliankasgantungdetail.pengembaliankasgantung_id')
                     ->where('pengembaliankasgantungdetail.kasgantung_nobukti', $fetch->kasgantung_nobukti)
