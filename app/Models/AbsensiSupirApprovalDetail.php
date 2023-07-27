@@ -39,11 +39,17 @@ class AbsensiSupirApprovalDetail extends MyModel
                 "$this->table.supirserap_id",
                 "$this->table.modifiedby",
                 "trado.kodetrado as trado",
+                "b.uangjalan as uangjalan",
                 "supirutama.namasupir as supir",
                 "supirserap.namasupir as supirserap",
 
             )
             ->leftJoin("absensisupirapprovalheader", "$this->table.absensisupirapproval_id", "absensisupirapprovalheader.id")
+            ->join(DB::raw("absensisupirdetail as b with(readuncommitted)"), function ($join) {
+                $join->on('absensisupirapprovalheader.absensisupir_nobukti', '=', 'b.nobukti');
+                $join->on('absensisupirapprovalheader.trado_id', '=', 'b.trado_id');
+                $join->on('absensisupirapprovalheader.supir_id', '=', 'b.supir_id');
+            })
             ->leftJoin("trado", "$this->table.trado_id", "trado.id")
             ->leftJoin("supir as supirutama", "$this->table.supir_id", "supirutama.id")
             ->leftJoin("supir as supirserap", "$this->table.supirserap_id", "supirserap.id");
@@ -58,11 +64,17 @@ class AbsensiSupirApprovalDetail extends MyModel
                 "$this->table.supirserap_id",
                 "$this->table.modifiedby",
                 "trado.kodetrado as trado",
+                "b.uangjalan as uangjalan",
                 "supirutama.namasupir as supir",
                 "supirserap.namasupir as supirserap",
             )
 
             ->leftJoin("absensisupirapprovalheader", "$this->table.absensisupirapproval_id", "absensisupirapprovalheader.id")
+            ->join(DB::raw("absensisupirdetail as b with(readuncommitted)"), function ($join) {
+                $join->on('absensisupirapprovalheader.absensisupir_nobukti', '=', 'b.nobukti');
+                $join->on($this->table.'.trado_id', '=', 'b.trado_id');
+                $join->on($this->table.'.supir_id', '=', 'b.supir_id');
+            })
             ->leftJoin("trado", "$this->table.trado_id", "trado.id")
             ->leftJoin("supir as supirutama", "$this->table.supir_id", "supirutama.id")
             ->leftJoin("supir as supirserap", "$this->table.supirserap_id", "supirserap.id");
