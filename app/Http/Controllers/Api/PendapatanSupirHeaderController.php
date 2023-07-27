@@ -360,10 +360,12 @@ class PendapatanSupirHeaderController extends Controller
     {
         $tgldari  = date('Y-m-d', strtotime($request->tgldari));
         $tglsampai  = date('Y-m-d', strtotime($request->tglsampai));
-
+        $supir_id  = $request->supir_id;
+        $id  = $request->id;
+        // dd('test');
         $pendapatanSupir = new PendapatanSupirHeader();
         return response([
-            'data' => $pendapatanSupir->getTrip($tgldari, $tglsampai),
+            'data' => $pendapatanSupir->getTrip($tgldari, $tglsampai,$supir_id,$id),
             'attributes' => [
                 'totalRows' => $pendapatanSupir->totalRows,
                 'totalPages' => $pendapatanSupir->totalPages,
