@@ -239,7 +239,9 @@ class InvoiceHeaderController extends Controller
         $sampai = date('Y-m-d', strtotime($request->tglsampai));
 
         return response([
-            "data" => $invoice->getEdit($id, $request)
+            // "data" => $invoice->getEdit($id, $request)
+            "data" => $invoice->getSPSearch( $request)
+                        
         ]);
     }
 
