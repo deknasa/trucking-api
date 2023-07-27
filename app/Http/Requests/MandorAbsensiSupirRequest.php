@@ -8,6 +8,9 @@ use App\Models\MandorAbsensiSupir;
 use Illuminate\Foundation\Http\FormRequest;
 use App\Rules\MandorAbsensiSupirInputSupirValidasiTrado;
 use App\Rules\MandorAbsensiSupirEditSupirValidasiTrado;
+use App\Rules\DateAllowedAbsen;
+use App\Rules\DateTutupBuku;
+
 use Illuminate\Validation\Rule;
 use App\Models\Parameter;
 use Illuminate\Support\Facades\DB;
@@ -69,11 +72,22 @@ class MandorAbsensiSupirRequest extends FormRequest
         
             if (request()->isMethod('POST')) {
                 $rulesBeda = [
+                    'tglbukti' => [
+                        'required', 'date_format:d-m-Y',
+                        new DateAllowedAbsen(false),
+                        new DateTutupBuku(),
+                        
+                    ],
                     'trado' => 'required',
                     'supir_id' => ['required', new MandorAbsensiSupirInputSupirValidasiTrado()],
                 ];
             } else if (request()->isMethod('PATCH')) {
                 $rulesBeda = [
+                    'tglbukti' => [
+                        'required', 'date_format:d-m-Y',
+                        new DateAllowedAbsen(false),
+                        new DateTutupBuku(),
+                    ],
                     'trado' => 'required',
                     'supir_id' => ['required', new MandorAbsensiSupirEditSupirValidasiTrado()],
                 ];
