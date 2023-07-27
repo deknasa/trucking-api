@@ -35,10 +35,8 @@ class StoreInvoiceHeaderRequest extends FormRequest
         $tglbatasakhir = (date('Y') + 1) . '-01-01';
 
         $rules = [
-            'tglterima' => [
-                'required', 'date_format:d-m-Y',
-                new DateTutupBuku(),
-                'before_or_equal:' . date('d-m-Y'),
+            'statuspilihaninvoice' => [
+                'required', 
             ],
             'tglbukti' => [
                 'required', 'date_format:d-m-Y',
@@ -190,8 +188,8 @@ class StoreInvoiceHeaderRequest extends FormRequest
     {
         $attributes = [
             'tglbukti' => 'Tanggal Bukti',
-            'tglterima' => 'Tanggal Terima',
             'jenisorder' => 'Jenis Order',
+            'statuspilihaninvoice' => 'pilihan invoice',
         ];
 
         // return $attributes;
@@ -218,7 +216,6 @@ class StoreInvoiceHeaderRequest extends FormRequest
             'tglbukti.date_format' => app(ErrorController::class)->geterror('DF')->keterangan,
             'tgldari.date_format' => app(ErrorController::class)->geterror('DF')->keterangan,
             'tglsampai.date_format' => app(ErrorController::class)->geterror('DF')->keterangan,
-            'tglterima.date_format' => app(ErrorController::class)->geterror('DF')->keterangan,
             'tglsampai.after_or_equal' => ':attribute ' . (new ErrorController)->geterror('HBSD')->keterangan .' '.  date('d-m-Y', strtotime($this->tgldari)) ,
 
         ];

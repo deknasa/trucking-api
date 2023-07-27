@@ -51,10 +51,8 @@ class UpdateInvoiceHeaderRequest extends FormRequest
 
         $rules = [
             'id' => new ValidasiDestroyInvoiceHeader(),
-            'tglterima' => [
-                'required', 'date_format:d-m-Y',
-                new DateTutupBuku(),
-                'before_or_equal:' . date('d-m-Y'),
+            'statuspilihaninvoice' => [
+                'required', 
             ],
             'tglbukti' => [
                 'required', 'date_format:d-m-Y',
