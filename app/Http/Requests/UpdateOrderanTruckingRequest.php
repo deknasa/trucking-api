@@ -109,8 +109,8 @@ class UpdateOrderanTruckingRequest extends FormRequest
             'nobukti' => [
                 Rule::in($query->nobukti),
             ],
-            'statuslangsir' => ['required', Rule::in($statuslangsir)],
-            'statusperalihan' => ['required', Rule::in($statusperalihan)],
+            // 'statuslangsir' => ['required', Rule::in($statuslangsir)],
+            // 'statusperalihan' => ['required', Rule::in($statusperalihan)],
             'nojobemkl' => [new OrderanTruckingValidasijob2040()],
             'nojobemkl2' => [new OrderanTruckingValidasijob2x20()],
             'nocont' => 'required',
