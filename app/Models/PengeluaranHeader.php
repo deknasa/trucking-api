@@ -739,7 +739,7 @@ class PengeluaranHeader extends MyModel
             'tanpaprosesnobukti' => 1,
             'nobukti' => $pengeluaranHeader->nobukti,
             'tglbukti' => date('Y-m-d', strtotime($data['tglbukti'])),
-            'postingdari' => "ENTRY PENGELUARAN",
+            'postingdari' => $data['postingdari'] ?? "ENTRY PENGELUARAN",
             'statusapproval' => $statusApproval->id,
             'userapproval' => "",
             'tglapproval' => "",
@@ -799,8 +799,8 @@ class PengeluaranHeader extends MyModel
         ]);
 
         /*DELETE EXISTING JURNAL*/
-        $JurnalUmumDetail = JurnalUmumDetail::where('nobukti', $pengeluaranHeader->nobukti)->lockForUpdate()->delete();
-        $JurnalUmumHeader = JurnalUmumHeader::where('nobukti', $pengeluaranHeader->nobukti)->lockForUpdate()->delete();
+        // $JurnalUmumDetail = JurnalUmumDetail::where('nobukti', $pengeluaranHeader->nobukti)->lockForUpdate()->delete();
+        // $JurnalUmumHeader = JurnalUmumHeader::where('nobukti', $pengeluaranHeader->nobukti)->lockForUpdate()->delete();
         /*DELETE EXISTING Pengeluaran*/
         $pengeluaranDetail = PengeluaranDetail::where('pengeluaran_id', $pengeluaranHeader->id)->lockForUpdate()->delete();
 
@@ -845,7 +845,7 @@ class PengeluaranHeader extends MyModel
             'tanpaprosesnobukti' => 1,
             'nobukti' => $pengeluaranHeader->nobukti,
             'tglbukti' => date('Y-m-d', strtotime($data['tglbukti'])),
-            'postingdari' => "ENTRY PENGELUARAN",
+            'postingdari' =>  $data['postingdari'] ?? "ENTRY PENGELUARAN",
             'statusapproval' => $statusApproval->id,
             'userapproval' => "",
             'tglapproval' => "",
@@ -857,7 +857,11 @@ class PengeluaranHeader extends MyModel
             'keterangan_detail' => $keterangan_detail
         ];
 
-        $jurnalUmumHeader = (new JurnalUmumHeader())->processStore($jurnalRequest);
+        // $jurnalUmumHeader = (new JurnalUmumHeader())->processStore($jurnalRequest);
+        $getJurnal = JurnalUmumHeader::from(DB::raw("jurnalumumheader with (readuncommitted)"))->where('nobukti', $pengeluaranHeader->nobukti)->first();
+        $newJurnal = new JurnalUmumHeader();
+        $newJurnal = $newJurnal->find($getJurnal->id);
+        (new JurnalUmumHeader())->processUpdate($newJurnal, $jurnalRequest);
         return $pengeluaranHeader;
     }
 

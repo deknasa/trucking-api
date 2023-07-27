@@ -961,7 +961,7 @@ route::middleware(['auth:api', 'authorized'])->group(function () {
     Route::get('gajisupirheader/{id}/export', [GajiSupirHeaderController::class, 'export'])->whereNumber('id');
     Route::resource('gajisupirheader', GajiSupirHeaderController::class)->whereNumber('gajisupirheader');
 
-    Route::get('gajisupirdetail/jurnalbbm', [GajiSupirDetailController::class, 'jurnalBBM']);
+    Route::get('gajisupirdetail/bbm', [GajiSupirDetailController::class, 'bbm']);
     Route::get('gajisupirdetail/absensi', [GajiSupirDetailController::class, 'absensi']);
     Route::get('gajisupirdetail/deposito', [GajiSupirDetailController::class, 'deposito']);
     Route::get('gajisupirdetail/potpribadi', [GajiSupirDetailController::class, 'potPribadi']);

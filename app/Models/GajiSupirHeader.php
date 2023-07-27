@@ -456,7 +456,7 @@ class GajiSupirHeader extends MyModel
     {
         $temp = $this->createTempPinjSemua();
         $query = PengeluaranTruckingDetail::from(DB::raw("pengeluarantruckingdetail with (readuncommitted)"))
-            ->select(DB::raw("pengeluarantruckingdetail.nobukti as pinjSemua_nobukti,row_number() Over(Order By pengeluarantruckingdetail.nobukti) as id,$temp.tglbukti,pengeluarantruckingdetail.supir_id, 'SEMUA' as pinjSemua_supir,pengeluarantruckingdetail.keterangan as pinjSemua_keterangan,$temp.sisa as pinjSemua_sisa"))
+            ->select(DB::raw("pengeluarantruckingdetail.nobukti as pinjSemua_nobukti,row_number() Over(Order By pengeluarantruckingdetail.nobukti) as id,$temp.tglbukti as pinjSemua_tglbukti,pengeluarantruckingdetail.supir_id, 'SEMUA' as pinjSemua_supir,pengeluarantruckingdetail.keterangan as pinjSemua_keterangan,$temp.sisa as pinjSemua_sisa"))
             // ->distinct('pengeluarantruckingheader.tglbukti')
             ->join(DB::raw("$temp with (readuncommitted)"), $temp . '.nobukti', 'pengeluarantruckingdetail.nobukti')
             // ->leftJoin(DB::raw("penerimaantruckingdetail with (readuncommitted)"), 'penerimaantruckingdetail.pengeluarantruckingheader_nobukti', 'pengeluarantruckingdetail.nobukti')
@@ -501,7 +501,7 @@ class GajiSupirHeader extends MyModel
         $tempPribadi = $this->createTempPinjPribadi($supir_id);
 
         $query = PengeluaranTruckingDetail::from(DB::raw("pengeluarantruckingdetail with (readuncommitted)"))
-            ->select(DB::raw("row_number() Over(Order By pengeluarantruckingheader.tglbukti asc,pengeluarantruckingdetail.nobukti) as pinjPribadi_id,pengeluarantruckingheader.tglbukti,pengeluarantruckingdetail.nobukti as pinjPribadi_nobukti,pengeluarantruckingdetail.keterangan as pinjPribadi_keterangan," . $tempPribadi . ".sisa as pinjPribadi_sisa"))
+            ->select(DB::raw("row_number() Over(Order By pengeluarantruckingheader.tglbukti asc,pengeluarantruckingdetail.nobukti) as pinjPribadi_id,pengeluarantruckingheader.tglbukti as pinjPribadi_tglbukti,pengeluarantruckingdetail.nobukti as pinjPribadi_nobukti,pengeluarantruckingdetail.keterangan as pinjPribadi_keterangan," . $tempPribadi . ".sisa as pinjPribadi_sisa"))
             ->leftJoin(DB::raw("$tempPribadi with (readuncommitted)"), 'pengeluarantruckingdetail.nobukti', $tempPribadi . ".nobukti")
             ->leftJoin(DB::raw("pengeluarantruckingheader with (readuncommitted)"), 'pengeluarantruckingdetail.nobukti', "pengeluarantruckingheader.nobukti")
             ->whereRaw("pengeluarantruckingdetail.supir_id = $supir_id")
@@ -1249,7 +1249,7 @@ class GajiSupirHeader extends MyModel
                 $supirPS[] = 0;
                 $pengeluarantruckingheader_nobuktiPS[] = $data['pinjSemua_nobukti'][$i];
                 $nominalPS[] = $data['nominalPS'][$i];
-                $keteranganPS[] = $data['pinjSemua_keterangan'][$i];
+                $keteranganPS[] = "PINJAMAN SUPIR ".$data['supir'].' '.$data['pinjSemua_keterangan'][$i];
             }
 
             $penerimaanTruckingHeaderPS = [
@@ -1293,7 +1293,7 @@ class GajiSupirHeader extends MyModel
                 $supirPP[] = $gajiSupirHeader->supir_id;
                 $pengeluarantruckingheader_nobuktiPP[] = $data['pinjPribadi_nobukti'][$i];
                 $nominalPP[] = $data['nominalPP'][$i];
-                $keteranganPP[] = $data['pinjPribadi_keterangan'][$i];
+                $keteranganPP[] = "PINJAMAN SUPIR ".$data['supir'].' '.$data['pinjPribadi_keterangan'][$i];
             }
 
             $penerimaanTruckingHeaderPP = [
@@ -1333,7 +1333,7 @@ class GajiSupirHeader extends MyModel
             $supirDPO[] = $gajiSupirHeader->supir_id;
             $pengeluarantruckingheader_nobuktiDPO[] = '';
             $nominalDPO[] = $data['nomDeposito'];
-            $keteranganDPO[] = $data['ketDeposito'];
+            $keteranganDPO[] = "DEPOSITO SUPIR ".$data['supir']." PERIODE ".$data['tgldari']." S/D ".$data['tglsampai']." ".$data['ketDeposito'];
 
             $penerimaanTruckingHeaderDPO = [
                 'tanpaprosesnobukti' => '2',
@@ -1370,7 +1370,7 @@ class GajiSupirHeader extends MyModel
             $supirBBM[] = $gajiSupirHeader->supir_id;
             $pengeluarantruckingheader_nobuktiBBM[] = '';
             $nominalBBM[] = $data['nomBBM'];
-            $keteranganBBM[] = $data['ketBBM'];
+            $keteranganBBM[] = "HUTANG BBM SUPIR ".$data['supir']." PERIODE ".$data['tgldari']." S/D ".$data['tglsampai']." ".$data['ketBBM'];
 
             $penerimaanTruckingHeaderBBM = [
                 'tanpaprosesnobukti' => '2',
@@ -1399,23 +1399,23 @@ class GajiSupirHeader extends MyModel
 
             (new GajiSupirBBM())->processStore($gajiSupirBBM);
 
-            $coakredit_detail[] = $fetchFormatBBM->coakredit;
-            $coadebet_detail[] = $fetchFormatBBM->coadebet;
-            $nominal_detail[] = $data['nomBBM'];
-            $keterangan_detail[] = $data['ketBBM'];
+            // $coakredit_detail[] = $fetchFormatBBM->coakredit;
+            // $coadebet_detail[] = $fetchFormatBBM->coadebet;
+            // $nominal_detail[] = $data['nomBBM'];
+            // $keterangan_detail[] = $data['ketBBM'];
 
-            $jurnalRequest = [
-                'tanpaprosesnobukti' => 1,
-                'nobukti' => $penerimaanBBM->nobukti,
-                'tglbukti' => date('Y-m-d', strtotime($data['tglbukti'])),
-                'postingdari' => "ENTRY GAJI SUPIR",
-                'statusformat' => "0",
-                'coakredit_detail' => $coakredit_detail,
-                'coadebet_detail' => $coadebet_detail,
-                'nominal_detail' => $nominal_detail,
-                'keterangan_detail' => $keterangan_detail
-            ];
-            (new JurnalUmumHeader())->processStore($jurnalRequest);
+            // $jurnalRequest = [
+            //     'tanpaprosesnobukti' => 1,
+            //     'nobukti' => $penerimaanBBM->nobukti,
+            //     'tglbukti' => date('Y-m-d', strtotime($data['tglbukti'])),
+            //     'postingdari' => "ENTRY GAJI SUPIR",
+            //     'statusformat' => "0",
+            //     'coakredit_detail' => $coakredit_detail,
+            //     'coadebet_detail' => $coadebet_detail,
+            //     'nominal_detail' => $nominal_detail,
+            //     'keterangan_detail' => $keterangan_detail
+            // ];
+            // (new JurnalUmumHeader())->processStore($jurnalRequest);
         }
         if ($data['absensi_nobukti']) {
             for ($i = 0; $i < count($data['absensi_nobukti']); $i++) {
@@ -1541,7 +1541,7 @@ class GajiSupirHeader extends MyModel
                     $supirPS[] = 0;
                     $pengeluarantruckingheader_nobuktiPS[] = $data['pinjSemua_nobukti'][$i];
                     $nominalPS[] = $data['nominalPS'][$i];
-                    $keteranganPS[] = $data['pinjSemua_keterangan'][$i];
+                    $keteranganPS[] = "PINJAMAN SUPIR ".$data['supir'].' '.$data['pinjSemua_keterangan'][$i];
                 }
 
                 $penerimaanTruckingHeaderPS = [
@@ -1583,7 +1583,7 @@ class GajiSupirHeader extends MyModel
                     $supirPS[] = 0;
                     $pengeluarantruckingheader_nobuktiPS[] = $data['pinjSemua_nobukti'][$i];
                     $nominalPS[] = $data['nominalPS'][$i];
-                    $keteranganPS[] = $data['pinjSemua_keterangan'][$i];
+                    $keteranganPS[] =  "PINJAMAN SUPIR ".$data['supir'].' '.$data['pinjSemua_keterangan'][$i];
                 }
 
                 $penerimaanTruckingHeaderPS = [
@@ -1657,7 +1657,7 @@ class GajiSupirHeader extends MyModel
                     $supirPP[] = $gajiSupirHeader->supir_id;
                     $pengeluarantruckingheader_nobuktiPP[] = $data['pinjPribadi_nobukti'][$i];
                     $nominalPP[] = $data['nominalPP'][$i];
-                    $keteranganPP[] = $data['pinjPribadi_keterangan'][$i];
+                    $keteranganPP[] =  "PINJAMAN SUPIR ".$data['supir'].' '.$data['pinjPribadi_keterangan'][$i];
                 }
 
                 $penerimaanTruckingHeaderPP = [
@@ -1698,7 +1698,7 @@ class GajiSupirHeader extends MyModel
                     $supirPP[] = $gajiSupirHeader->supir_id;
                     $pengeluarantruckingheader_nobuktiPP[] = $data['pinjPribadi_nobukti'][$i];
                     $nominalPP[] = $data['nominalPP'][$i];
-                    $keteranganPP[] = $data['pinjPribadi_keterangan'][$i];
+                    $keteranganPP[] =  "PINJAMAN SUPIR ".$data['supir'].' '.$data['pinjPribadi_keterangan'][$i];
                 }
 
                 $penerimaanTruckingHeaderPP = [
@@ -1762,7 +1762,7 @@ class GajiSupirHeader extends MyModel
                 $supirDPO[] = $gajiSupirHeader->supir_id;
                 $pengeluarantruckingheader_nobuktiDPO[] = '';
                 $nominalDPO[] = $data['nomDeposito'];
-                $keteranganDPO[] = $data['ketDeposito'];
+                $keteranganDPO[] = "DEPOSITO SUPIR ".$data['supir']." PERIODE ".$data['tgldari']." S/D ".$data['tglsampai']." ".$data['ketDeposito'];
 
                 $penerimaanTruckingHeaderDPO = [
                     'tanpaprosesnobukti' => '2',
@@ -1797,7 +1797,7 @@ class GajiSupirHeader extends MyModel
                 $supirDPO[] = $gajiSupirHeader->supir_id;
                 $pengeluarantruckingheader_nobuktiDPO[] = '';
                 $nominalDPO[] = $data['nomDeposito'];
-                $keteranganDPO[] = $data['ketDeposito'];
+                $keteranganDPO[] = "DEPOSITO SUPIR ".$data['supir']." PERIODE ".$data['tgldari']." S/D ".$data['tglsampai']." ".$data['ketDeposito'];
 
                 $penerimaanTruckingHeaderDPO = [
                     'tanpaprosesnobukti' => '2',
@@ -1850,7 +1850,7 @@ class GajiSupirHeader extends MyModel
                 $supirBBM[] = $gajiSupirHeader->supir_id;
                 $pengeluarantruckingheader_nobuktiBBM[] = '';
                 $nominalBBM[] = $data['nomBBM'];
-                $keteranganBBM[] = $data['ketBBM'];
+                $keteranganBBM[] = "HUTANG BBM SUPIR ".$data['supir']." PERIODE ".$data['tgldari']." S/D ".$data['tglsampai']." ".$data['ketBBM'];
 
                 $penerimaanTruckingHeaderBBM = [
                     'tanpaprosesnobukti' => '2',
@@ -1883,29 +1883,29 @@ class GajiSupirHeader extends MyModel
 
                 (new GajiSupirBBM())->processStore($gajiSupirBBM);
 
-                $coakredit_detail[] = $fetchFormatBBM->coakredit;
-                $coadebet_detail[] = $fetchFormatBBM->coadebet;
-                $nominal_detail[] = $data['nomBBM'];
-                $keterangan_detail[] = $data['ketBBM'];
+                // $coakredit_detail[] = $fetchFormatBBM->coakredit;
+                // $coadebet_detail[] = $fetchFormatBBM->coadebet;
+                // $nominal_detail[] = $data['nomBBM'];
+                // $keterangan_detail[] = "HUTANG BBM SUPIR ".$data['supir']." PERIODE ".$data['tgldari']." S/D ".$data['tglsampai']." ".$data['ketBBM'];
 
-                $jurnalRequest = [
-                    'tanpaprosesnobukti' => 1,
-                    'postingdari' => "EDIT GAJI SUPIR",
-                    'coakredit_detail' => $coakredit_detail,
-                    'coadebet_detail' => $coadebet_detail,
-                    'nominal_detail' => $nominal_detail,
-                    'keterangan_detail' => $keterangan_detail
-                ];
-                $getJurnal = JurnalUmumHeader::from(DB::raw("jurnalumumheader with (readuncommitted)"))->where('nobukti', $fetchBBM->penerimaantrucking_nobukti)->first();
-                $newJurnal = new JurnalUmumHeader();
-                $newJurnal = $newJurnal->find($getJurnal->id);
-                $jurnalumumHeader = (new JurnalUmumHeader())->processUpdate($newJurnal, $jurnalRequest);
+                // $jurnalRequest = [
+                //     'tanpaprosesnobukti' => 1,
+                //     'postingdari' => "EDIT GAJI SUPIR",
+                //     'coakredit_detail' => $coakredit_detail,
+                //     'coadebet_detail' => $coadebet_detail,
+                //     'nominal_detail' => $nominal_detail,
+                //     'keterangan_detail' => $keterangan_detail
+                // ];
+                // $getJurnal = JurnalUmumHeader::from(DB::raw("jurnalumumheader with (readuncommitted)"))->where('nobukti', $fetchBBM->penerimaantrucking_nobukti)->first();
+                // $newJurnal = new JurnalUmumHeader();
+                // $newJurnal = $newJurnal->find($getJurnal->id);
+                // $jurnalumumHeader = (new JurnalUmumHeader())->processUpdate($newJurnal, $jurnalRequest);
             } else {
                 // jika tidak ada, maka insert
                 $supirBBM[] = $gajiSupirHeader->supir_id;
                 $pengeluarantruckingheader_nobuktiBBM[] = '';
                 $nominalBBM[] = $data['nomBBM'];
-                $keteranganBBM[] = $data['ketBBM'];
+                $keteranganBBM[] = "HUTANG BBM SUPIR ".$data['supir']." PERIODE ".$data['tgldari']." S/D ".$data['tglsampai']." ".$data['ketBBM'];
 
                 $penerimaanTruckingHeaderBBM = [
                     'tanpaprosesnobukti' => '2',
@@ -1934,23 +1934,23 @@ class GajiSupirHeader extends MyModel
 
                 (new GajiSupirBBM())->processStore($gajiSupirBBM);
 
-                $coakredit_detail[] = $fetchFormatBBM->coakredit;
-                $coadebet_detail[] = $fetchFormatBBM->coadebet;
-                $nominal_detail[] = $data['nomBBM'];
-                $keterangan_detail[] = $data['ketBBM'];
+                // $coakredit_detail[] = $fetchFormatBBM->coakredit;
+                // $coadebet_detail[] = $fetchFormatBBM->coadebet;
+                // $nominal_detail[] = $data['nomBBM'];
+                // $keterangan_detail[] = $data['ketBBM'];
 
-                $jurnalRequest = [
-                    'tanpaprosesnobukti' => 1,
-                    'nobukti' => $penerimaanBBM->nobukti,
-                    'tglbukti' => date('Y-m-d', strtotime($data['tglbukti'])),
-                    'postingdari' => "EDIT GAJI SUPIR",
-                    'statusformat' => "0",
-                    'coakredit_detail' => $coakredit_detail,
-                    'coadebet_detail' => $coadebet_detail,
-                    'nominal_detail' => $nominal_detail,
-                    'keterangan_detail' => $keterangan_detail
-                ];
-                (new JurnalUmumHeader())->processStore($jurnalRequest);
+                // $jurnalRequest = [
+                //     'tanpaprosesnobukti' => 1,
+                //     'nobukti' => $penerimaanBBM->nobukti,
+                //     'tglbukti' => date('Y-m-d', strtotime($data['tglbukti'])),
+                //     'postingdari' => "EDIT GAJI SUPIR",
+                //     'statusformat' => "0",
+                //     'coakredit_detail' => $coakredit_detail,
+                //     'coadebet_detail' => $coadebet_detail,
+                //     'nominal_detail' => $nominal_detail,
+                //     'keterangan_detail' => $keterangan_detail
+                // ];
+                // (new JurnalUmumHeader())->processStore($jurnalRequest);
             }
         } else {
             $fetchBBM = GajiSupirBBM::from(DB::raw("gajisupirbbm with (readuncommitted)"))
@@ -1986,6 +1986,13 @@ class GajiSupirHeader extends MyModel
                 ];
 
                 (new GajisUpirUangJalan())->processStore($gajiSupirUangJalan);
+            }
+        }else{
+            $cekUangjalan = GajisUpirUangJalan::from(DB::raw("gajisupiruangjalan with (readuncommitted)"))
+                ->where('gajisupir_nobukti', $gajiSupirHeader->nobukti)->where('supir_id', $data['supir_id'])->first();
+
+            if ($cekUangjalan != null) {
+                GajisUpirUangJalan::where('gajisupir_nobukti', $gajiSupirHeader->nobukti)->where('supir_id', $data['supir_id'])->delete();
             }
         }
 
@@ -2038,9 +2045,9 @@ class GajiSupirHeader extends MyModel
 
         if ($fetchBBM != null) {
             $getPenerimaanTrucking = PenerimaanTruckingHeader::from(DB::raw("penerimaantruckingheader with (readuncommitted)"))->where('nobukti', $fetchBBM->penerimaantrucking_nobukti)->first();
-            $getJurnalHeader = JurnalUmumHeader::lockForUpdate()->where('nobukti', $fetchBBM->penerimaantrucking_nobukti)->first();
+            // $getJurnalHeader = JurnalUmumHeader::lockForUpdate()->where('nobukti', $fetchBBM->penerimaantrucking_nobukti)->first();
             (new PenerimaanTruckingHeader())->processDestroy($getPenerimaanTrucking->id, $postingDari);
-            (new JurnalUmumHeader())->processDestroy($getJurnalHeader->id, $postingDari);
+            // (new JurnalUmumHeader())->processDestroy($getJurnalHeader->id, $postingDari);
 
             (new LogTrail())->processStore([
                 'namatabel' => 'GAJISUPIRBBM',

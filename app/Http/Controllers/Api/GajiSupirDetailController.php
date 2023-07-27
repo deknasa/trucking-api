@@ -129,32 +129,26 @@ class GajiSupirDetailController extends Controller
     /**
      * @ClassName
      */
-    public function jurnalBBM(): JsonResponse
+    public function bbm(): JsonResponse
     {
-        $jurnalDetail = new JurnalUmumDetail();
+        $BBM = new PenerimaanTruckingDetail();
 
-        $fetch = DB::table("gajisupirbbm")->from(DB::raw("gajisupirbbm with (readuncommitted)"))->where('gajisupir_nobukti', request()->nobukti)->first();
-
-        if ($fetch != null) {
-
+        if (request()->nobukti != 'false' && request()->nobukti != null) {
             return response()->json([
-                'data' => $jurnalDetail->getJurnalFromAnotherTable($fetch->penerimaantrucking_nobukti),
+                'data' => $BBM->getBBM(request()->nobukti),
                 'attributes' => [
-                    'totalRows' => $jurnalDetail->totalRows,
-                    'totalPages' => $jurnalDetail->totalPages,
-                    'totalNominalDebet' => $jurnalDetail->totalNominalDebet,
-                    'totalNominalKredit' => $jurnalDetail->totalNominalKredit,
+                    'totalRows' => $BBM->totalRows,
+                    'totalPages' => $BBM->totalPages,
+                    'totalNominalBBM' => $BBM->totalNominalBBM
                 ]
             ]);
         } else {
-
             return response()->json([
                 'data' => [],
                 'attributes' => [
-                    'totalRows' => $jurnalDetail->totalRows,
-                    'totalPages' => $jurnalDetail->totalPages,
-                    'totalNominalDebet' => 0,
-                    'totalNominalKredit' => 0,
+                    'totalRows' => $BBM->totalRows,
+                    'totalPages' => $BBM->totalPages,
+                    'totalNominalBBM' => 0
                 ]
             ]);
         }

@@ -98,23 +98,16 @@ class ProsesGajiSupirHeaderController extends Controller
                 'tglbukti' => date('Y-m-d', strtotime($request->tglbukti)),
                 'tgldari' => date('Y-m-d', strtotime($request->tgldari)),
                 'tglsampai' => date('Y-m-d', strtotime($request->tglsampai)),
-                'keterangan' => $request->keterangan,
-                'bank_idPR' => $request->bank_idPR,
-                'periode' => date('Y-m-d', strtotime($request->periode)),
+                'bank_id' => $request->bank_id,
                 'rincianId' => $request->rincianId,
                 'nobuktiRIC' => $request->nobuktiRIC,
                 'supir_id' => $request->supir_id,
                 'totalborongan' => $request->totalborongan,
                 'nomPS' => $request->nomPS,
-                'bank_idPS' => $request->bank_idPS,
                 'nomPP' => $request->nomPP,
-                'bank_idPP' => $request->bank_idPP,
                 'nomDeposito' => $request->nomDeposito,
-                'bank_idDeposito' => $request->bank_idDeposito,
                 'nomBBM' => $request->nomBBM,
-                'bank_idBBM' => $request->bank_idBBM,
-                'nomUangjalan' => $request->nomUangjalan,
-                'bank_idUangjalan' => $request->bank_idUangjalan
+                'nomUangjalan' => $request->nomUangjalan
             ];
 
             $prosesGajiSupirHeader = (new ProsesGajiSupirHeader())->processStore($data);
@@ -170,23 +163,16 @@ class ProsesGajiSupirHeaderController extends Controller
                 'tglbukti' => date('Y-m-d', strtotime($request->tglbukti)),
                 'tgldari' => date('Y-m-d', strtotime($request->tgldari)),
                 'tglsampai' => date('Y-m-d', strtotime($request->tglsampai)),
-                'keterangan' => $request->keterangan,
-                'bank_idPR' => $request->bank_idPR,
-                'periode' => date('Y-m-d', strtotime($request->periode)),
+                'bank_id' => $request->bank_id,
                 'rincianId' => $request->rincianId,
                 'nobuktiRIC' => $request->nobuktiRIC,
                 'supir_id' => $request->supir_id,
                 'totalborongan' => $request->totalborongan,
                 'nomPS' => $request->nomPS,
-                'bank_idPS' => $request->bank_idPS,
                 'nomPP' => $request->nomPP,
-                'bank_idPP' => $request->bank_idPP,
                 'nomDeposito' => $request->nomDeposito,
-                'bank_idDeposito' => $request->bank_idDeposito,
                 'nomBBM' => $request->nomBBM,
-                'bank_idBBM' => $request->bank_idBBM,
                 'nomUangjalan' => $request->nomUangjalan,
-                'bank_idUangjalan' => $request->bank_idUangjalan,
                 'nobuktiUangjalan' => $request->nobuktiUangjalan
             ];
 
