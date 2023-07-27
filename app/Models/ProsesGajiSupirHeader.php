@@ -914,6 +914,7 @@ class ProsesGajiSupirHeader extends MyModel
         $getUangjalan = GajisUpirUangJalan::from(DB::raw("gajisupiruangjalan with (readuncommitted)"))
             ->select('absensisupirheader.kasgantung_nobukti')
             ->join(DB::raw("absensisupirheader with (readuncommitted)"), 'gajisupiruangjalan.absensisupir_nobukti', 'absensisupirheader.nobukti')
+            ->join(DB::raw("pengembaliankasgantungdetail a with (readuncommitted)"), 'a.kasgantung_nobukti', 'absensisupirheader.kasgantung_nobukti')
             ->whereRaw("gajisupir_nobukti in ($allSP)")->get();
 
 
