@@ -221,6 +221,7 @@ class InvoiceHeader extends MyModel
 
     public function getSpSearch($request)
     {
+
         $kotapelabuhan = DB::table('parameter')->from(
             db::raw("parameter a with (readuncommitted)")
         )
@@ -335,7 +336,7 @@ class InvoiceHeader extends MyModel
             ->select(
                 'a.jobtrucking'
             )
-            ->where('a.dari_id', '=', $kotapelabuhanid)
+            ->whereRaw("(a.dari_id=" . $kotapelabuhanid . " or a.statuslangsir=" . $statuslangsir->id . ")")
             ->whereRaw("a.tglbukti>='" . date('Y-m-d', strtotime($request->tgldari)) . "' and  a.tglbukti<='" . date('Y-m-d', strtotime($request->tglsampai)) . "'")
             ->where('a.agen_id', $request->agen_id)
             ->where('a.jenisorder_id', $request->jenisorder_id)
@@ -375,6 +376,8 @@ class InvoiceHeader extends MyModel
                 ->where('a.agen_id', $request->agen_id)
                 ->where('a.jenisorder_id', $request->jenisorder_id)
                 ->groupBy('a.jobtrucking');
+
+
 
             DB::table($tempkepelabuhan)->insertUsing([
                 'jobtrucking',
@@ -417,6 +420,8 @@ class InvoiceHeader extends MyModel
                 ->where('a.jenisorder_id', $request->jenisorder_id)
                 ->groupBy('a.jobtrucking');
 
+                // dd($querykepelabuhanbeda->toSql());
+
             DB::table($tempkepelabuhanbeda)->insertUsing([
                 'jobtrucking',
                 'nominal',
@@ -434,6 +439,7 @@ class InvoiceHeader extends MyModel
                 ->join(DB::raw($tempkepelabuhanbeda) . " as b", 'a.jobtrucking', 'b.jobtrucking');
         }
 
+
         $temphasil = '##temphasil' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
         Schema::create($temphasil, function ($table) {
             $table->string('jobtrucking', 1000)->nullable();
@@ -446,6 +452,8 @@ class InvoiceHeader extends MyModel
             'nominal',
             'suratpengantar_nobukti',
         ], $queryhasil);
+
+
 
 
         $tempomsettambahan = '##tempomsettambahan' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
@@ -567,8 +575,86 @@ class InvoiceHeader extends MyModel
 
 
 
+        $tempdatahasil = '##tempdatahasil' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+        Schema::create($tempdatahasil, function ($table) {
+            $table->Integer('id')->nullable();
+            $table->longText('jobtrucking')->nullable();
+            $table->date('tglsp')->nullable();
+            $table->LongText('keterangan')->nullable();
+            $table->LongText('jenisorder_id')->nullable();
+            $table->LongText('agen_id')->nullable();
+            $table->LongText('statuslongtrip')->nullable();
+            $table->LongText('statusperalihan')->nullable();
+            $table->LongText('nocont')->nullable();
+            $table->LongText('tarif_id')->nullable();
+            $table->Double('omset',15,2)->nullable();
+            $table->Double('nominalextra',15,2)->nullable();
+            $table->Double('nominalretribusi',15,2)->nullable();
+            $table->Double('total',15,2)->nullable();
+            $table->LongText('nospfull')->nullable();
+            $table->LongText('nospempty')->nullable();
+            $table->LongText('nospfullempty')->nullable();
+        });
 
-        $query = DB::table($temphasil)->from(
+
+        $query2 = DB::table('invoicedetail')->from(
+            DB::raw("invoicedetail as a")
+        )
+            ->select(
+                'sp.id',
+                'a.orderantrucking_nobukti as jobtrucking',
+                'sp.tglbukti as tglsp',
+                'sp.keterangan as keterangan',
+                'jenisorder.keterangan as jenisorder_id',
+                'agen.namaagen as agen_id',
+                DB::raw("(case when sp.statuslongtrip=" . $statuslongtrip->id . " then 'true' else 'false' end) as statuslongtrip"),
+                DB::raw("(case when sp.statusperalihan=" . $statusperalihan->id . " then 'true' else 'false' end) as statusperalihan"),
+                'sp.nocont as nocont',
+                DB::raw("isnull(tarif.tujuan,'') as tarif_id"),
+                DB::raw("isnull(a.nominal,0) as omset"),
+                DB::raw("isnull(a.nominalextra,0) as nominalextra"),
+                DB::raw("isnull(a.nominalretribusi,0) as nominalretribusi"),
+                DB::raw("(isnull(a.nominal,0)+isnull(a.nominalextra,0)+isnull(a.nominalretribusi,0)) as total"),
+                DB::raw("isnull(e.nospfull,'') as nospfull"),
+                DB::raw("isnull(e.nospempty,'') as nospempty"),
+                DB::raw("isnull(e.nospfullempty,'') as nospfullempty"),
+
+            )
+            ->leftjoin(DB::raw($temphasil . " a1"), 'a.orderantrucking_nobukti', 'a1.jobtrucking')
+            ->join(DB::raw("suratpengantar sp with (readuncommitted)"), 'a1.suratpengantar_nobukti', 'sp.nobukti')
+            ->leftJoin(DB::raw("orderantrucking as ot with (readuncommitted)"), 'a.orderantrucking_nobukti', 'ot.nobukti')
+            ->leftJoin(DB::raw("tarif with (readuncommitted)"), 'sp.tarif_id', 'tarif.id')
+            ->leftJoin(DB::raw("jenisorder with (readuncommitted)"), 'sp.jenisorder_id', 'jenisorder.id')
+            ->leftJoin(DB::raw("agen with (readuncommitted)"), 'sp.agen_id', 'agen.id')
+            ->leftjoin(DB::raw($tempsp . " e"), 'a.orderantrucking_nobukti', 'e.jobtrucking')
+            ->where('a.invoice_id',$request->id)
+
+            ->orderBy("sp.tglbukti");
+
+            // dd($query2->get());
+
+            DB::table($tempdatahasil)->insertUsing([
+                'id',
+                'jobtrucking',
+                'tglsp',
+                'keterangan',
+                'jenisorder_id',
+                'agen_id',
+                'statuslongtrip',
+                'statusperalihan',
+                'nocont',
+                'tarif_id',
+                'omset',
+                'nominalextra',
+                'nominalretribusi',
+                'total',
+                'nospfull',
+                'nospempty',
+                'nospfullempty',
+            ], $query2);    
+
+
+        $query2 = DB::table($temphasil)->from(
             DB::raw($temphasil . " as a")
         )
             ->select(
@@ -584,6 +670,7 @@ class InvoiceHeader extends MyModel
                 DB::raw("isnull(tarif.tujuan,'') as tarif_id"),
                 DB::raw("isnull(a.nominal,0) as omset"),
                 DB::raw("isnull(c.nominal,0) as nominalextra"),
+                DB::raw("0 as nominalretribusi"),
                 DB::raw("(isnull(a.nominal,0)+isnull(c.nominal,0)) as total"),
                 DB::raw("isnull(e.nospfull,'') as nospfull"),
                 DB::raw("isnull(e.nospempty,'') as nospempty"),
@@ -597,10 +684,64 @@ class InvoiceHeader extends MyModel
             ->leftJoin(DB::raw("jenisorder with (readuncommitted)"), 'sp.jenisorder_id', 'jenisorder.id')
             ->leftJoin(DB::raw("agen with (readuncommitted)"), 'sp.agen_id', 'agen.id')
             ->leftjoin(DB::raw($tempsp . " e"), 'a.jobtrucking', 'e.jobtrucking')
+            ->leftJoin(DB::raw("invoicedetail f with (readuncommitted)"), 'a.jobtrucking', 'f.orderantrucking_nobukti')
+            ->whereRaw("isnull(f.orderantrucking_nobukti,'')=''")
 
             ->orderBy("sp.tglbukti");
 
+            // dd($query2->get());
+
+            DB::table($tempdatahasil)->insertUsing([
+                'id',
+                'jobtrucking',
+                'tglsp',
+                'keterangan',
+                'jenisorder_id',
+                'agen_id',
+                'statuslongtrip',
+                'statusperalihan',
+                'nocont',
+                'tarif_id',
+                'omset',
+                'nominalextra',
+                'nominalretribusi',
+                'total',
+                'nospfull',
+                'nospempty',
+                'nospfullempty',
+            ], $query2);            
+
+
+// dd(db::table($tempdatahasil)->get());
+
+
+            $query = DB::table($tempdatahasil)->from(
+                DB::raw($tempdatahasil . " as a")
+            )
+                ->select(
+                    'a.id',
+                    'a.jobtrucking',
+                    'a.tglsp',
+                    'a.keterangan',
+                    'a.jenisorder_id',
+                    'a.agen_id',
+                    'a.statuslongtrip',
+                    'a.statusperalihan',
+                    'a.nocont',
+                    'a.tarif_id',
+                    'a.nominalextra',
+                    'a.total',
+                    'a.nospfull',
+                    'a.nospempty',
+                    'a.nospfullempty',
+    
+                )
+                ->orderBy("a.tglsp");
+                
+                
         $data = $query->get();
+
+        // dd($data);
         return $data;
     }
 
