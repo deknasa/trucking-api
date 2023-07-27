@@ -577,6 +577,7 @@ class InvoiceHeader extends MyModel
         $tempdatahasil = '##tempdatahasil' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
         Schema::create($tempdatahasil, function ($table) {
             $table->Integer('id')->nullable();
+            $table->Integer('idinvoice')->nullable();
             $table->longText('jobtrucking')->nullable();
             $table->date('tglsp')->nullable();
             $table->LongText('keterangan')->nullable();
@@ -600,7 +601,8 @@ class InvoiceHeader extends MyModel
             DB::raw("invoicedetail as a")
         )
             ->select(
-                'sp.id',
+                'sp.id',                
+                'a.id as idinvoice',                
                 'a.orderantrucking_nobukti as jobtrucking',
                 'sp.tglbukti as tglsp',
                 'sp.keterangan as keterangan',
@@ -634,6 +636,7 @@ class InvoiceHeader extends MyModel
 
         DB::table($tempdatahasil)->insertUsing([
             'id',
+            'idinvoice',
             'jobtrucking',
             'tglsp',
             'keterangan',
@@ -657,7 +660,8 @@ class InvoiceHeader extends MyModel
             DB::raw($temphasil . " as a")
         )
             ->select(
-                'sp.id',
+                'a.id',
+                DB::raw("0 as idinvoice"),
                 'a.jobtrucking',
                 'sp.tglbukti as tglsp',
                 'sp.keterangan as keterangan',
@@ -692,6 +696,7 @@ class InvoiceHeader extends MyModel
 
         DB::table($tempdatahasil)->insertUsing([
             'id',
+            'idinvoice',
             'jobtrucking',
             'tglsp',
             'keterangan',
@@ -719,6 +724,7 @@ class InvoiceHeader extends MyModel
         )
             ->select(
                 'a.id',
+                'a.idinvoice',
                 'a.jobtrucking',
                 'a.tglsp',
                 'a.keterangan',
