@@ -157,6 +157,7 @@ class UpahSupirRincian extends MyModel
                 $table->longtext('modifiedby')->nullable();
                 $table->datetime('created_at')->nullable();
                 $table->datetime('updated_at')->nullable();
+                $table->string('kotadarisampai')->nullable();
             });
 
 
@@ -311,7 +312,9 @@ class UpahSupirRincian extends MyModel
                     'B.tglmulaiberlaku',
                     'B.modifiedby',
                     'B.created_at',
-                    'B.updated_at'
+                    'B.updated_at',
+                    DB::raw("(trim(b.kotadari)+' - '+trim(b.kotasampai)) as kotadarisampai"),
+
                 )
                 ->leftJoin(DB::raw("$temp as B with (readuncommitted)"), 'B.id', 'upahsupirrincian.upahsupir_id')
                 ->leftJoin(DB::raw("parameter with (readuncommitted)"), 'B.statusaktif', '=', 'parameter.id')
@@ -359,6 +362,7 @@ class UpahSupirRincian extends MyModel
                 'modifiedby',
                 'created_at',
                 'updated_at',
+                'kotadarisampai',
             ], $query);
         } else {
             $querydata = DB::table('listtemporarytabel')->from(
@@ -401,6 +405,7 @@ class UpahSupirRincian extends MyModel
                 'a.modifiedby',
                 'a.created_at',
                 'a.updated_at',
+                'a.kotadarisampai',
             );
 
 
