@@ -15,7 +15,7 @@ class MandorAbsensiSupir extends MyModel
     protected $table = 'trado';
 
     
-    public function tableTemp()
+    public function tableTemp($date = 'now')
     {
         $statusaktif = DB::table('parameter')->where('grp', 'STATUS AKTIF')->where('subgrp', 'STATUS AKTIF')->where('text', 'AKTIF')->first();
 
@@ -40,7 +40,7 @@ class MandorAbsensiSupir extends MyModel
                 'absensisupirdetail.jam',
                 'absensisupirheader.tglbukti'
             )
-            ->where('absensisupirheader.tglbukti', date('Y-m-d', strtotime('now')))
+            ->where('absensisupirheader.tglbukti', date('Y-m-d', strtotime($date)))
             ->leftJoin(DB::raw("absensisupirheader with (readuncommitted)"), 'absensisupirdetail.absensi_id', 'absensisupirheader.id')
             ->leftJoin(DB::raw("trado with (readuncommitted)"), 'absensisupirdetail.trado_id', 'trado.id')
             ->leftJoin(DB::raw("absentrado with (readuncommitted)"), 'absensisupirdetail.absen_id', 'absentrado.id')
@@ -72,7 +72,8 @@ class MandorAbsensiSupir extends MyModel
     public function get()
     {
         $this->setRequestParameters();
-        $query = $this->tableTemp();
+        $tglbukaabsensi = request()->tglbukaabsensi??'now' ;
+        $query = $this->tableTemp($tglbukaabsensi);
         $this->filter($query);
         $this->totalRows = $query->count();
         $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;
@@ -180,7 +181,7 @@ class MandorAbsensiSupir extends MyModel
     }
 
 
-    public function isAbsen($id)
+    public function isAbsen($id,$tanggal)
     {
         $absensisupirdetail = DB::table('absensisupirdetail')
             ->select(
@@ -196,7 +197,7 @@ class MandorAbsensiSupir extends MyModel
                 'absensisupirheader.tglbukti'
             )
             ->where('absensisupirdetail.trado_id', $id)
-            ->where('absensisupirheader.tglbukti', date('Y-m-d', strtotime('now')))
+            ->where('absensisupirheader.tglbukti', date('Y-m-d', strtotime($tanggal)))
             ->leftJoin(DB::raw("absensisupirheader with (readuncommitted)"), 'absensisupirdetail.absensi_id', 'absensisupirheader.id')
             ->leftJoin(DB::raw("trado with (readuncommitted)"), 'absensisupirdetail.trado_id', 'trado.id')
             ->leftJoin(DB::raw("absentrado with (readuncommitted)"), 'absensisupirdetail.absen_id', 'absentrado.id')
@@ -367,7 +368,7 @@ class MandorAbsensiSupir extends MyModel
 
     public function processStore(array $data)
     {
-        $AbsensiSupirHeader = AbsensiSupirHeader::where('tglbukti', date('Y-m-d', strtotime('now')))->first();
+        $AbsensiSupirHeader = AbsensiSupirHeader::where('tglbukti', date('Y-m-d', strtotime($data['tglbukti'])))->first();
         $tidakadasupir = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))->select('text')->where('grp', 'TIDAK ADA SUPIR')->where('subgrp', 'TIDAK ADA SUPIR')->first();
         if ($tidakadasupir->text == $data['absen_id'] ) {
             $data['supir_id'] = "";

@@ -11,6 +11,7 @@ use App\Models\Trado;
 use App\Models\Parameter;
 use App\Http\Requests\StoreAbsensiSupirDetailRequest;
 use App\Http\Requests\StoreKasGantungDetailRequest;
+use App\Http\Requests\GetMandorAbsensiSupirRequest;
 use App\Http\Requests\StoreKasGantungHeaderRequest;
 use App\Http\Requests\StoreLogTrailRequest;
 use App\Http\Requests\MandorAbsensiSupirRequest;
@@ -25,7 +26,7 @@ class MandorAbsensiSupirController extends Controller
     /**
      * @ClassName 
      */
-    public function index()
+    public function index(GetMandorAbsensiSupirRequest $request)
     {
         $mandorabsensisupir = new MandorAbsensiSupir();
         return response([
@@ -82,7 +83,8 @@ class MandorAbsensiSupirController extends Controller
     {
 
         $mandorabsensisupir = new MandorAbsensiSupir();
-        $isTradoAbsen = $mandorabsensisupir->isAbsen($id);
+        $tglbukaabsensi = request()->tanggal??'now' ;
+        $isTradoAbsen = $mandorabsensisupir->isAbsen($id,$tglbukaabsensi);
         if (!$isTradoAbsen) {
             $isTradoAbsen = $mandorabsensisupir->getTrado($id);
         }
@@ -202,10 +204,9 @@ class MandorAbsensiSupirController extends Controller
         }
     }
 
-    public function cekValidasi($tradoId)
+    public function cekValidasi(Request $request,$tradoId)
     {
-
-        $now = date("Y-m-d");
+        $now = date('Y-m-d', strtotime($request->tanggal));
         $getAbsen = AbsensiSupirHeader::from(DB::raw("absensisupirheader with (readuncommitted)"))->where('tglbukti', $now)->first();
 
         if ($getAbsen != null) {
@@ -227,12 +228,22 @@ class MandorAbsensiSupirController extends Controller
                 ]);
             }
         }
+        $getError = Error::from(DB::raw("error with (readuncommitted)"))
+                    ->select('keterangan')
+                    ->where('kodeerror', '=', 'TAB')
+                    ->first();
+
+                return response([
+                    'errors' => true,
+                    'message' => $getError->keterangan
+                ]);
     }
     
-    public function cekValidasiAdd($tradoId)
+    public function cekValidasiAdd(Request $request,$tradoId)
     {
+        $now = date('Y-m-d', strtotime($request->tanggal));
 
-        $now = date("Y-m-d");
+        // $now = date("Y-m-d");
         $getAbsen = AbsensiSupirHeader::from(DB::raw("absensisupirheader with (readuncommitted)"))->where('tglbukti', $now)->first();
         
         if ($getAbsen != null) {
