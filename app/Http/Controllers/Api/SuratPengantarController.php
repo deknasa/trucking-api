@@ -38,6 +38,8 @@ class SuratPengantarController extends Controller
 {
     /**
      * @ClassName 
+     * SuratPengantar
+     * @Detail1 SuratPengantarBiayaTambahanController
      */
     public function index(GetIndexRangeRequest $request)
     {
@@ -151,6 +153,7 @@ class SuratPengantarController extends Controller
                 'statuslongtrip' => $request->statuslongtrip,
                 'statusperalihan' => $request->statusperalihan,
                 'nominalperalihan' => $request->nominalperalihan,
+                'persentaseperalihan' => $request->persentaseperalihan,
                 'biayatambahan_id' => $request->biayatambahan_id,
                 'nosp' => $request->nosp,
                 'nosptagihlain' => $request->nosptagihlain,

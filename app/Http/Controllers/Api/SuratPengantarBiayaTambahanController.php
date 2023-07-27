@@ -6,17 +6,26 @@ use App\Http\Controllers\Controller;
 use App\Models\SuratPengantarBiayaTambahan;
 use App\Http\Requests\StoreSuratPengantarBiayaTambahanRequest;
 use App\Http\Requests\UpdateSuratPengantarBiayaTambahanRequest;
+use Illuminate\Http\JsonResponse;
 
 class SuratPengantarBiayaTambahanController extends Controller
 {
     /**
-     * Display a listing of the resource.
-     *
-     * @return \Illuminate\Http\Response
+     * @ClassName 
      */
-    public function index()
+    public function index(): JsonResponse
     {
-        //
+        $suratPengantarBiayaTambahan = new SuratPengantarBiayaTambahan();
+
+        return response()->json([
+            'data' => $suratPengantarBiayaTambahan->get(),
+            'attributes' => [
+                'totalRows' => $suratPengantarBiayaTambahan->totalRows,
+                'totalPages' => $suratPengantarBiayaTambahan->totalPages,
+                'totalNominal' => $suratPengantarBiayaTambahan->totalNominal,
+                'totalNominalTagih' => $suratPengantarBiayaTambahan->totalNominalTagih
+            ]
+        ]);
     }
 
     /**
