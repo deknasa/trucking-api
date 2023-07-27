@@ -240,6 +240,7 @@ use App\Http\Controllers\Api\MainAkunPusatController;
 use App\Http\Controllers\Api\LaporanHistoryDepositoController;
 use App\Http\Controllers\Api\LaporanPinjamanPerUnitTradoController;
 use App\Http\Controllers\Api\StokPusatController;
+use App\Http\Controllers\Api\SuratPengantarBiayaTambahanController;
 use App\Http\Controllers\Api\UbahPasswordController;
 
 
@@ -1081,6 +1082,7 @@ route::middleware(['auth:api', 'authorized'])->group(function () {
     Route::get('suratpengantar/getGaji/{dari}/{sampai}/{container}/{statuscontainer}', [SuratPengantarController::class, 'getGaji']);
     Route::get('suratpengantar/default', [SuratPengantarController::class, 'default']);
     Route::resource('suratpengantar', SuratPengantarController::class)->whereNumber('suratpengantar');
+    Route::resource('suratpengantarbiayatambahan', SuratPengantarBiayaTambahanController::class)->whereNumber('suratpengantarbiayatambahan');
 
     Route::get('penerimaanheader/{id}/printreport', [PenerimaanHeaderController::class, 'printReport'])->whereNumber('id');
     Route::post('penerimaanheader/{id}/approval', [PenerimaanHeaderController::class, 'approval'])->name('penerimaanheader.approval')->whereNumber('id');
