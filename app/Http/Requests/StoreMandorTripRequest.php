@@ -29,6 +29,7 @@ use App\Rules\ExistTarifRincianSuratPengantar;
 use App\Rules\ExistTrado;
 use App\Rules\ExistUpahSupirRincianSuratPengantar;
 use App\Rules\JenisRitasiInputTrip;
+use App\Rules\ValidasiExistOmsetTarif;
 use App\Rules\ValidasiKotaUpahZona;
 use App\Rules\ValidasiKotaZonaTrip;
 use Illuminate\Foundation\Http\FormRequest;
@@ -252,7 +253,7 @@ class StoreMandorTripRequest extends FormRequest
             ],
 
             "agen" => "required",
-            "tarifrincian" => ['required_if:statusupahzona,=,' . $getBukanUpahZona->id, new ValidasiKotaUpahZona($getBukanUpahZona->id)],
+            "tarifrincian" => ['required_if:statusupahzona,=,' . $getBukanUpahZona->id, new ValidasiExistOmsetTarif(), new ValidasiKotaUpahZona($getBukanUpahZona->id)],
             "container" => "required",
             "dari" => ["required"],
             "gandengan" => "required",
@@ -322,6 +323,7 @@ class StoreMandorTripRequest extends FormRequest
 
         return [
             'tglbukti.date_format' => app(ErrorController::class)->geterror('DF')->keterangan,
+            'tarifrincian.required_if' => 'TARIF '.app(ErrorController::class)->geterror('WI')->keterangan,
 
         ];
     }

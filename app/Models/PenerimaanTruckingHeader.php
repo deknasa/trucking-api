@@ -1070,6 +1070,61 @@ class PenerimaanTruckingHeader extends MyModel
             goto selesai;
         }
 
+        
+        $gajiSupirDeposito = DB::table('gajisupirdeposito')
+            ->from(
+                DB::raw("gajisupirdeposito as a with (readuncommitted)")
+            )
+            ->select(
+                'a.penerimaantrucking_nobukti'
+            )
+            ->where('a.penerimaantrucking_nobukti', '=', $nobukti)
+            ->first();
+        if (isset($gajiSupirDeposito)) {
+            $data = [
+                'kondisi' => true,
+                'keterangan' => 'Rincian Gaji Supir',
+                'kodeerror' => 'TDT'
+            ];
+            goto selesai;
+        }
+
+        $gajiSupirBBM = DB::table('gajisupirbbm')
+            ->from(
+                DB::raw("gajisupirbbm as a with (readuncommitted)")
+            )
+            ->select(
+                'a.penerimaantrucking_nobukti'
+            )
+            ->where('a.penerimaantrucking_nobukti', '=', $nobukti)
+            ->first();
+        if (isset($gajiSupirBBM)) {
+            $data = [
+                'kondisi' => true,
+                'keterangan' => 'Rincian Gaji Supir',
+                'kodeerror' => 'TDT'
+            ];
+            goto selesai;
+        }
+
+        $gajiSupirPelunasan = DB::table('gajisupirpelunasanpinjaman')
+            ->from(
+                DB::raw("gajisupirpelunasanpinjaman as a with (readuncommitted)")
+            )
+            ->select(
+                'a.penerimaantrucking_nobukti'
+            )
+            ->where('a.penerimaantrucking_nobukti', '=', $nobukti)
+            ->first();
+        if (isset($gajiSupirPelunasan)) {
+            $data = [
+                'kondisi' => true,
+                'keterangan' => 'Rincian Gaji Supir',
+                'kodeerror' => 'TDT'
+            ];
+            goto selesai;
+        }
+
         $data = [
             'kondisi' => false,
             'keterangan' => '',

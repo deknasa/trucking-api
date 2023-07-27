@@ -6,6 +6,7 @@ use App\Http\Controllers\Api\ErrorController;
 use App\Models\Parameter;
 use Illuminate\Foundation\Http\FormRequest;
 use App\Rules\DateTutupBuku;
+use App\Rules\ExistBank;
 
 class StoreProsesGajiSupirHeaderRequest extends FormRequest
 {
@@ -28,16 +29,23 @@ class StoreProsesGajiSupirHeaderRequest extends FormRequest
     {
         $tglbatasawal = date('Y-m-01');
         $tglbatasakhir = (date('Y') + 1) . '-01-01';
-
+        $bank_id = $this->bank_id;
+        $rulesBank_id = [];
+        if ($bank_id != null) {
+            $rulesBank_id = [
+                'bank_id' => ['required', 'numeric', 'min:1', new ExistBank()]
+            ];
+        } else if ($bank_id == null && $this->bank != '') {
+            $rulesBank_id = [
+                'bank_id' => ['required', 'numeric', 'min:1', new ExistBank()]
+            ];
+        }
         // First day of the month.
         $awalPeriode = date('Y-m-01', strtotime(request()->tgldari));
         $rules = [
 
-            'keterangan' => ['required'],
-            'periode' => [
-                'required', 'date_format:d-m-Y',
-                'before_or_equal:' . date('Y-m-d'),
-                'after_or_equal:' . $awalPeriode,
+            'bank' => [
+                'required',
             ],
             'tgldari' => [
                 'required', 'date_format:d-m-Y',
@@ -63,7 +71,8 @@ class StoreProsesGajiSupirHeaderRequest extends FormRequest
         foreach ($relatedRequests as $relatedRequest) {
             $rules = array_merge(
                 $rules,
-                (new $relatedRequest)->rules()
+                (new $relatedRequest)->rules(),
+                $rulesBank_id
             );
         }
         return $rules;
