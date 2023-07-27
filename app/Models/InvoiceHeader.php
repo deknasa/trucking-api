@@ -420,7 +420,7 @@ class InvoiceHeader extends MyModel
                 ->where('a.jenisorder_id', $request->jenisorder_id)
                 ->groupBy('a.jobtrucking');
 
-                // dd($querykepelabuhanbeda->toSql());
+            // dd($querykepelabuhanbeda->toSql());
 
             DB::table($tempkepelabuhanbeda)->insertUsing([
                 'jobtrucking',
@@ -509,7 +509,7 @@ class InvoiceHeader extends MyModel
 
             $datadetailsp = json_decode($querystatusfilter->get(), true);
             foreach ($datadetailsp as $itemsp) {
-     
+
 
                 $querystatusfilter2 = DB::table('suratpengantar')->from(
                     db::raw("suratpengantar a with (readuncommitted)")
@@ -527,9 +527,9 @@ class InvoiceHeader extends MyModel
                     if ($hit == 0) {
                         $nosp = $nosp . $itemsp2['nosp'];
                     } else {
-                        $nosp = $nosp . ',' . $itemsp2['nosp'];
+                        $nosp = $nosp . ', ' . $itemsp2['nosp'];
                     }
-                    $$hit=$hit+1;
+                    $hit = $hit + 1;
                 }
 
                 $queryinstemp = DB::table($tempsp)->from(
@@ -548,28 +548,27 @@ class InvoiceHeader extends MyModel
                         'nospfullempty' => '',
                     ]);
                 }
-      
+
 
                 // dd($statusfull);
                 // dd($nosp);
-                if ($statusfull->text==$item['id'])         {
+                if ($statusfull->text == $item['id']) {
                     DB::table($tempsp)
-                    ->where('jobtrucking', $itemsp['jobtrucking'])
-                    ->update(['nospfull' => $nosp]);
-                }        
+                        ->where('jobtrucking', $itemsp['jobtrucking'])
+                        ->update(['nospfull' => $nosp]);
+                }
 
-                if ($statusempty->text==$item['id'])         {
+                if ($statusempty->text == $item['id']) {
                     DB::table($tempsp)
-                    ->where('jobtrucking', $itemsp['jobtrucking'])
-                    ->update(['nospempty' => $nosp]);
-                }        
+                        ->where('jobtrucking', $itemsp['jobtrucking'])
+                        ->update(['nospempty' => $nosp]);
+                }
 
-                if ($statusfullempty->text==$item['id'])         {
+                if ($statusfullempty->text == $item['id']) {
                     DB::table($tempsp)
-                    ->where('jobtrucking', $itemsp['jobtrucking'])
-                    ->update(['nospfullempty' => $nosp]);
-                } 
-
+                        ->where('jobtrucking', $itemsp['jobtrucking'])
+                        ->update(['nospfullempty' => $nosp]);
+                }
             }
         }
 
@@ -587,10 +586,10 @@ class InvoiceHeader extends MyModel
             $table->LongText('statusperalihan')->nullable();
             $table->LongText('nocont')->nullable();
             $table->LongText('tarif_id')->nullable();
-            $table->Double('omset',15,2)->nullable();
-            $table->Double('nominalextra',15,2)->nullable();
-            $table->Double('nominalretribusi',15,2)->nullable();
-            $table->Double('total',15,2)->nullable();
+            $table->Double('omset', 15, 2)->nullable();
+            $table->Double('nominalextra', 15, 2)->nullable();
+            $table->Double('nominalretribusi', 15, 2)->nullable();
+            $table->Double('total', 15, 2)->nullable();
             $table->LongText('nospfull')->nullable();
             $table->LongText('nospempty')->nullable();
             $table->LongText('nospfullempty')->nullable();
@@ -627,31 +626,31 @@ class InvoiceHeader extends MyModel
             ->leftJoin(DB::raw("jenisorder with (readuncommitted)"), 'sp.jenisorder_id', 'jenisorder.id')
             ->leftJoin(DB::raw("agen with (readuncommitted)"), 'sp.agen_id', 'agen.id')
             ->leftjoin(DB::raw($tempsp . " e"), 'a.orderantrucking_nobukti', 'e.jobtrucking')
-            ->where('a.invoice_id',$request->id)
+            ->where('a.invoice_id', $request->id)
 
             ->orderBy("sp.tglbukti");
 
-            // dd($query2->get());
+        // dd($query2->get());
 
-            DB::table($tempdatahasil)->insertUsing([
-                'id',
-                'jobtrucking',
-                'tglsp',
-                'keterangan',
-                'jenisorder_id',
-                'agen_id',
-                'statuslongtrip',
-                'statusperalihan',
-                'nocont',
-                'tarif_id',
-                'omset',
-                'nominalextra',
-                'nominalretribusi',
-                'total',
-                'nospfull',
-                'nospempty',
-                'nospfullempty',
-            ], $query2);    
+        DB::table($tempdatahasil)->insertUsing([
+            'id',
+            'jobtrucking',
+            'tglsp',
+            'keterangan',
+            'jenisorder_id',
+            'agen_id',
+            'statuslongtrip',
+            'statusperalihan',
+            'nocont',
+            'tarif_id',
+            'omset',
+            'nominalextra',
+            'nominalretribusi',
+            'total',
+            'nospfull',
+            'nospempty',
+            'nospfullempty',
+        ], $query2);
 
 
         $query2 = DB::table($temphasil)->from(
@@ -689,56 +688,58 @@ class InvoiceHeader extends MyModel
 
             ->orderBy("sp.tglbukti");
 
-            // dd($query2->get());
+        // dd($query2->get());
 
-            DB::table($tempdatahasil)->insertUsing([
-                'id',
-                'jobtrucking',
-                'tglsp',
-                'keterangan',
-                'jenisorder_id',
-                'agen_id',
-                'statuslongtrip',
-                'statusperalihan',
-                'nocont',
-                'tarif_id',
-                'omset',
-                'nominalextra',
-                'nominalretribusi',
-                'total',
-                'nospfull',
-                'nospempty',
-                'nospfullempty',
-            ], $query2);            
-
-
-// dd(db::table($tempdatahasil)->get());
+        DB::table($tempdatahasil)->insertUsing([
+            'id',
+            'jobtrucking',
+            'tglsp',
+            'keterangan',
+            'jenisorder_id',
+            'agen_id',
+            'statuslongtrip',
+            'statusperalihan',
+            'nocont',
+            'tarif_id',
+            'omset',
+            'nominalextra',
+            'nominalretribusi',
+            'total',
+            'nospfull',
+            'nospempty',
+            'nospfullempty',
+        ], $query2);
 
 
-            $query = DB::table($tempdatahasil)->from(
-                DB::raw($tempdatahasil . " as a")
+        // dd(db::table($tempdatahasil)->get());
+
+
+        $query = DB::table($tempdatahasil)->from(
+            DB::raw($tempdatahasil . " as a")
+        )
+            ->select(
+                'a.id',
+                'a.jobtrucking',
+                'a.tglsp',
+                'a.keterangan',
+                'a.jenisorder_id',
+                'a.agen_id',
+                'a.statuslongtrip',
+                'a.statusperalihan',
+                'a.nocont',
+                'a.tarif_id',
+                'a.omset',
+                'a.nominalextra',
+                'a.nominalretribusi',
+                'a.total',
+                'a.nospfull',
+                'a.nospempty',
+                'a.nospfullempty',
+
             )
-                ->select(
-                    'a.id',
-                    'a.jobtrucking',
-                    'a.tglsp',
-                    'a.keterangan',
-                    'a.jenisorder_id',
-                    'a.agen_id',
-                    'a.statuslongtrip',
-                    'a.statusperalihan',
-                    'a.nocont',
-                    'a.tarif_id',
-                    'a.nominalextra',
-                    'a.total',
-                    'a.nospfull',
-                    'a.nospempty',
-                    'a.nospfullempty',
-    
-                )
-                ->orderBy("a.tglsp");
-                
-                
+            ->orderBy("a.tglsp");
+
+
         $data = $query->get();
 
         // dd($data);
