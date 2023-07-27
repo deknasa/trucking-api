@@ -291,6 +291,36 @@ class InvoiceHeader extends MyModel
             ->where('text', '=', 'LANGSIR')
             ->first();
 
+        $statusfull = DB::table('parameter')->from(
+            db::raw("parameter a with (readuncommitted)")
+        )
+            ->select(
+                'a.text'
+            )
+            ->where('grp', '=', 'STATUS CONTAINER')
+            ->where('subgrp', '=', 'STATUS CONTAINER FULL')
+            ->first();
+
+        $statusempty = DB::table('parameter')->from(
+            db::raw("parameter a with (readuncommitted)")
+        )
+            ->select(
+                'a.text'
+            )
+            ->where('grp', '=', 'STATUS CONTAINER')
+            ->where('subgrp', '=', 'STATUS CONTAINER EMPTY')
+            ->first();
+
+        $statusfullempty = DB::table('parameter')->from(
+            db::raw("parameter a with (readuncommitted)")
+        )
+            ->select(
+                'a.text'
+            )
+            ->where('grp', '=', 'STATUS CONTAINER')
+            ->where('subgrp', '=', 'STATUS CONTAINER FULL EMPTY')
+            ->first();
+
         $kotapelabuhanid = $kotapelabuhan->text ?? 0;
         $pilihanperiode = $request->pilihanperiode ?? 0;
 
@@ -340,7 +370,7 @@ class InvoiceHeader extends MyModel
                     db::raw("max(a.totalomset) as nominal"),
                     db::raw("max(a.nobukti) as suratpengantar_nobukti")
                 )
-                ->whereRaw("(a.sampai_id=" . $kotapelabuhanid . " or a.statuslangsir=" . $statuslangsir->id .")")
+                ->whereRaw("(a.sampai_id=" . $kotapelabuhanid . " or a.statuslangsir=" . $statuslangsir->id . ")")
                 ->whereRaw("a.tglbukti>='" . date('Y-m-d', strtotime($request->tgldari)) . "' and  a.tglbukti<='" . date('Y-m-d', strtotime($request->tglsampai)) . "'")
                 ->where('a.agen_id', $request->agen_id)
                 ->where('a.jenisorder_id', $request->jenisorder_id)
@@ -381,7 +411,7 @@ class InvoiceHeader extends MyModel
                     db::raw("max(a.totalomset) as nominal"),
                     db::raw("max(a.nobukti) as suratpengantar_nobukti")
                 )
-                ->whereRaw("(a.sampai_id=" . $kotapelabuhanid . " or a.statuslangsir=" . $statuslangsir->id .")")
+                ->whereRaw("(a.sampai_id=" . $kotapelabuhanid . " or a.statuslangsir=" . $statuslangsir->id . ")")
                 ->whereRaw("a.tglbukti>='" . date('Y-m-d', strtotime($request->tgldari)) . "'")
                 ->where('a.agen_id', $request->agen_id)
                 ->where('a.jenisorder_id', $request->jenisorder_id)
@@ -437,6 +467,105 @@ class InvoiceHeader extends MyModel
 
         DB::table($tempomsettambahan)->insertUsing(['jobtrucking', 'nominal'], $fetch);
 
+        $tempsp = '##tempsp' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+        Schema::create($tempsp, function ($table) {
+            $table->string('jobtrucking', 1000)->nullable();
+            $table->LongText('nospfull')->nullable();
+            $table->LongText('nospempty')->nullable();
+            $table->LongText('nospfullempty')->nullable();
+        });
+
+
+
+        $querystatuscontainer = DB::table('statuscontainer')->from(
+            db::raw("statuscontainer a with (readuncommitted)")
+        )
+            ->select(
+                'a.id',
+            )
+            ->orderBy('a.id');
+
+        $datadetail = json_decode($querystatuscontainer->get(), true);
+        foreach ($datadetail as $item) {
+            $nosp = '';
+            $hit = 0;
+            $querystatusfilter = DB::table($temphasil)->from(
+                db::raw($temphasil . " a with (readuncommitted)")
+            )
+                ->select(
+                    'a.jobtrucking',
+                )
+                ->join(DB::raw("suratpengantar sp with (readuncommitted)"), 'a.jobtrucking', 'sp.jobtrucking')
+                ->where('sp.statuscontainer_id', $item['id'])
+                ->OrderBy('sp.tglbukti');
+
+            $datadetailsp = json_decode($querystatusfilter->get(), true);
+            foreach ($datadetailsp as $itemsp) {
+     
+
+                $querystatusfilter2 = DB::table('suratpengantar')->from(
+                    db::raw("suratpengantar a with (readuncommitted)")
+                )
+                    ->select(
+                        'a.nosp',
+                    )
+                    ->where('a.jobtrucking', $itemsp['jobtrucking'])
+                    ->where('a.statuscontainer_id', $item['id'])
+                    ->groupby('a.nosp');
+                $nosp = '';
+                $hit = 0;
+                $datadetailsp2 = json_decode($querystatusfilter2->get(), true);
+                foreach ($datadetailsp2 as $itemsp2) {
+                    if ($hit == 0) {
+                        $nosp = $nosp . $itemsp2['nosp'];
+                    } else {
+                        $nosp = $nosp . ',' . $itemsp2['nosp'];
+                    }
+                    $$hit=$hit+1;
+                }
+
+                $queryinstemp = DB::table($tempsp)->from(
+                    DB::raw($tempsp . " a")
+                )
+                    ->select(
+                        'a.jobtrucking'
+                    )
+                    ->where('a.jobtrucking', $itemsp['jobtrucking'])
+                    ->first();
+                if (!isset($queryinstemp)) {
+                    DB::table($tempsp)->insert([
+                        'jobtrucking' => $itemsp['jobtrucking'],
+                        'nospfull' => '',
+                        'nospempty' => '',
+                        'nospfullempty' => '',
+                    ]);
+                }
+      
+
+                // dd($statusfull);
+                // dd($nosp);
+                if ($statusfull->text==$item['id'])         {
+                    DB::table($tempsp)
+                    ->where('jobtrucking', $itemsp['jobtrucking'])
+                    ->update(['nospfull' => $nosp]);
+                }        
+
+                if ($statusempty->text==$item['id'])         {
+                    DB::table($tempsp)
+                    ->where('jobtrucking', $itemsp['jobtrucking'])
+                    ->update(['nospempty' => $nosp]);
+                }        
+
+                if ($statusfullempty->text==$item['id'])         {
+                    DB::table($tempsp)
+                    ->where('jobtrucking', $itemsp['jobtrucking'])
+                    ->update(['nospfullempty' => $nosp]);
+                } 
+
+            }
+        }
+
+
 
 
         $query = DB::table($temphasil)->from(
@@ -456,6 +585,10 @@ class InvoiceHeader extends MyModel
                 DB::raw("isnull(a.nominal,0) as omset"),
                 DB::raw("isnull(c.nominal,0) as nominalextra"),
                 DB::raw("(isnull(a.nominal,0)+isnull(c.nominal,0)) as total"),
+                DB::raw("isnull(e.nospfull,'') as nospfull"),
+                DB::raw("isnull(e.nospempty,'') as nospempty"),
+                DB::raw("isnull(e.nospfullempty,'') as nospfullempty"),
+
             )
             ->join(DB::raw("suratpengantar sp with (readuncommitted)"), 'a.suratpengantar_nobukti', 'sp.nobukti')
             ->leftjoin(DB::raw($tempomsettambahan . " c"), 'a.jobtrucking', 'c.jobtrucking')
@@ -463,6 +596,8 @@ class InvoiceHeader extends MyModel
             ->leftJoin(DB::raw("tarif with (readuncommitted)"), 'sp.tarif_id', 'tarif.id')
             ->leftJoin(DB::raw("jenisorder with (readuncommitted)"), 'sp.jenisorder_id', 'jenisorder.id')
             ->leftJoin(DB::raw("agen with (readuncommitted)"), 'sp.agen_id', 'agen.id')
+            ->leftjoin(DB::raw($tempsp . " e"), 'a.jobtrucking', 'e.jobtrucking')
+
             ->orderBy("sp.tglbukti");
 
         $data = $query->get();
