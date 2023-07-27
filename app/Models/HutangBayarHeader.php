@@ -444,6 +444,7 @@ class HutangBayarHeader extends MyModel
         $hutangBayarHeader->statusformat = $format->id;
         $hutangBayarHeader->modifiedby = auth('api')->user()->name;
         $hutangBayarHeader->nobukti = (new RunningNumberService)->get($group, $subGroup, $hutangBayarHeader->getTable(), date('Y-m-d', strtotime($data['tglbukti'])));
+        
 
         if (!$hutangBayarHeader->save()) {
             throw new \Exception("Error storing pembayaran Hutang header.");
@@ -494,6 +495,31 @@ class HutangBayarHeader extends MyModel
         $tgljatuhtempo=[];
         $nowarkat=[];
 
+        $statusketerangan = DB::table('parameter')->from(
+            db::raw("parameter a with (readuncommitted)")
+        )
+            ->select(
+                'a.text'
+            )
+            ->where('grp', '=', 'KETERANGAN DEFAULT HUTANG USAHA')
+            ->where('subgrp', '=', 'KETERANGAN DEFAULT HUTANG USAHA')
+            ->first();
+
+            $querysupplier = DB::table('hutangbayarheader')->from(
+                db::raw("hutangbayarheader a with (readuncommitted)")
+            )
+                ->select(
+                    'b.namasupplier'
+                )
+                ->join(DB::raw("supplier b with (readuncommitted)"), 'a.supplier_id', 'b.id')
+                ->where('a.id', '=', $hutangBayarHeader->id)
+                ->first();
+
+        $supplier=$querysupplier->namasupplier ?? '';
+    
+        $statusketerangan=$statusketerangan->text ?? '';
+
+
         for ($i = 0; $i < count($data['hutang_id']); $i++) {
             $hutang = HutangDetail::where('nobukti', $data['hutang_nobukti'][$i])->first();
 
@@ -515,6 +541,8 @@ class HutangBayarHeader extends MyModel
             $coakredit []= $data['coakredit'] ?? $coakredits;
             $tgljatuhtempo[] = $hutang->tgljatuhtempo;
             $nowarkat[] = "";
+            $statusketerangandefault []=$statusketerangan . ' ' . $supplier. ' '.$data['keterangan'][$i];
+
         }
         (new LogTrail())->processStore([
             'namatabel' => strtoupper($hutangBayarDetail->getTable()),
@@ -548,7 +576,7 @@ class HutangBayarHeader extends MyModel
             "nominal_detail"=>$nominal_detail,
             "coadebet"=>$coadebet,
             "coakredit"=>$coakredit,
-            "keterangan_detail"=>$keterangan_detail,
+            "keterangan_detail"=>$statusketerangandefault,
             "bulanbeban"
         ];
 
