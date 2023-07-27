@@ -45,12 +45,14 @@ class PendapatanSupirHeader extends MyModel
                 'statuscetak.memo as statuscetak',
                 'pendapatansupirheader.userbukacetak',
                 'pendapatansupirheader.jumlahcetak',
-                'pendapatansupirheader.periode',
+                'pendapatansupirheader.pengeluaran_nobukti',
+                'supir.namasupir as supir_id',
                 'pendapatansupirheader.modifiedby',
                 'pendapatansupirheader.created_at',
                 'pendapatansupirheader.updated_at'
             )
             ->leftJoin(DB::raw("bank with (readuncommitted)"), 'pendapatansupirheader.bank_id', 'bank.id')
+            ->leftJoin(DB::raw("supir with (readuncommitted)"), 'pendapatansupirheader.supir_id', 'supir.id')
             ->leftJoin(DB::raw("parameter as statusapproval with (readuncommitted)"), 'pendapatansupirheader.statusapproval', 'statusapproval.id')
             ->leftJoin(DB::raw("parameter as statuscetak with (readuncommitted)"), 'pendapatansupirheader.statuscetak', 'statuscetak.id');
         if (request()->tgldari && request()->tglsampai) {
@@ -88,6 +90,7 @@ class PendapatanSupirHeader extends MyModel
             $table->integer('dari_id')->nullable();
             $table->integer('sampai_id')->nullable();
             $table->double('nominal')->nullable();
+            $table->longText('keterangan')->nullable();
         });
 
         $querysaldopendapatan = DB::table('saldopendapatansupir')->from(
@@ -102,6 +105,7 @@ class PendapatanSupirHeader extends MyModel
                 'a.dari_id',
                 'a.sampai_id',
                 'a.nominal',
+                DB::raw("'' as keterangan")
             )
             ->leftjoin(DB::raw("pendapatansupirdetail as b with(readuncommitted)"), function ($join) {
                 $join->on('a.supir_id', '=', 'b.supir_id');
@@ -113,7 +117,7 @@ class PendapatanSupirHeader extends MyModel
             ->where('a.supir_id', $supir_id)
             ->Orderby('a.suratpengantar_tglbukti', 'asc')
             ->Orderby('a.suratpengantar_nobukti', 'asc');
-     
+
 
 
         DB::table($tempsaldopendapatan)->insertUsing([
@@ -125,9 +129,11 @@ class PendapatanSupirHeader extends MyModel
             'dari_id',
             'sampai_id',
             'nominal',
+            'keterangan',
+
         ], $querysaldopendapatan);
-    
-       
+
+
         $querysaldopendapatan = DB::table('prosesgajisupirdetail')->from(
             db::raw("prosesgajisupirdetail a with (readuncommitted)")
         )
@@ -140,7 +146,8 @@ class PendapatanSupirHeader extends MyModel
                 'd.dari_id',
                 'd.sampai_id',
                 'c.komisisupir as nominal',
-            )
+                DB::raw("'' as keterangan")
+                )
             ->join(DB::raw("gajisupirdetail c with (readuncommitted)"), 'a.gajisupir_nobukti', 'c.nobukti')
             ->join(DB::raw("suratpengantar d with (readuncommitted)"), 'c.suratpengantar_nobukti', 'd.nobukti')
             ->leftjoin(DB::raw("pendapatansupirdetail as b with(readuncommitted)"), function ($join) {
@@ -163,6 +170,8 @@ class PendapatanSupirHeader extends MyModel
             'dari_id',
             'sampai_id',
             'nominal',
+            'keterangan',
+
         ], $querysaldopendapatan);
 
         $querysaldopendapatan = DB::table('pendapatansupirdetail')->from(
@@ -177,7 +186,8 @@ class PendapatanSupirHeader extends MyModel
                 'b.dari_id',
                 'b.sampai_id',
                 'a.nominal',
-            )
+                'a.keterangan'
+                )
             ->join(DB::raw("suratpengantar b with (readuncommitted)"), 'a.nobuktitrip', 'b.nobukti')
 
             ->where('a.pendapatansupir_id', $id)
@@ -193,6 +203,7 @@ class PendapatanSupirHeader extends MyModel
             'dari_id',
             'sampai_id',
             'nominal',
+            'keterangan',
         ], $querysaldopendapatan);
 
         $query = DB::table($tempsaldopendapatan)->from(
@@ -201,13 +212,19 @@ class PendapatanSupirHeader extends MyModel
             ->select(
                 'a.pendapatansupir_id',
                 'a.supir_id',
-                'a.gajisupir_nobukti',
-                'a.suratpengantar_nobukti',
-                'a.suratpengantar_tglbukti',
+                'a.gajisupir_nobukti as nobukti_ric',
+                'a.suratpengantar_nobukti  as nobukti_trip',
+                'a.suratpengantar_tglbukti as tgl_trip',
                 'a.dari_id',
+                DB::raw("isnull(b.kodekota,'') as dari"),
                 'a.sampai_id',
-                'a.nominal',
+                DB::raw("isnull(c.kodekota,'') as sampai"),
+                'a.nominal as nominal_detail',
+                'a.keterangan',
             )
+            ->leftJoin(DB::raw("kota b with (readuncommitted)"), 'a.dari_id', 'b.id')
+            ->leftJoin(DB::raw("kota c with (readuncommitted)"), 'a.sampai_id', 'c.id')
+
             ->Orderby('a.suratpengantar_tglbukti', 'asc')
             ->Orderby('a.suratpengantar_nobukti', 'asc');
 
@@ -317,6 +334,8 @@ class PendapatanSupirHeader extends MyModel
                         if ($filters['field'] != '') {
                             if ($filters['field'] == 'bank_id') {
                                 $query = $query->where('bank.namabank', 'LIKE', "%$filters[data]%");
+                            } else if ($filters['field'] == 'supir_id') {
+                                $query = $query->where('supir.namasupir', 'LIKE', "%$filters[data]%");
                             } else if ($filters['field'] == 'statusapproval') {
                                 $query = $query->where('statusapproval.text', '=', "$filters[data]");
                             } else if ($filters['field'] == 'statuscetak') {
@@ -335,7 +354,9 @@ class PendapatanSupirHeader extends MyModel
                             if ($filters['field'] != '') {
                                 if ($filters['field'] == 'bank_id') {
                                     $query = $query->orWhere('bank.namabank', 'LIKE', "%$filters[data]%");
-                                } else if ($filters['field'] == 'statusapproval') {
+                                } else if ($filters['field'] == 'supir_id') {
+                                    $query = $query->orwhere('supir.namasupir', 'LIKE', "%$filters[data]%");
+                                    } else if ($filters['field'] == 'statusapproval') {
                                     $query = $query->orWhere('statusapproval.text', '=', "$filters[data]");
                                 } else if ($filters['field'] == 'statuscetak') {
                                     $query = $query->orWhere('statuscetak.text', '=', "$filters[data]");
