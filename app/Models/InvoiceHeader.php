@@ -1077,6 +1077,7 @@ class InvoiceHeader extends MyModel
         $invoiceHeader->userapproval = '';
         $invoiceHeader->tglapproval = '';
         $invoiceHeader->statuscetak = $statusCetak->id;
+        $invoiceHeader->statuspilihaninvoice = $data['statuspilihaninvoice'] ?? '';
         $invoiceHeader->tgldari = date('Y-m-d', strtotime($data['tgldari']));
         $invoiceHeader->tglsampai = date('Y-m-d', strtotime($data['tglsampai']));
         $invoiceHeader->modifiedby = auth('api')->user()->name;
@@ -1177,6 +1178,8 @@ class InvoiceHeader extends MyModel
         $invoiceHeader->tgldari = date('Y-m-d', strtotime($data['tgldari']));
         $invoiceHeader->tglsampai = date('Y-m-d', strtotime($data['tglsampai']));
         $invoiceHeader->modifiedby = auth('api')->user()->name;
+        $invoiceHeader->statuspilihaninvoice = $data['statuspilihaninvoice'] ?? '';
+
 
         if (!$invoiceHeader->save()) {
             throw new \Exception("Error updating invoice header.");
