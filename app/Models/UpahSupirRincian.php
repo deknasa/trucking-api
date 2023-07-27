@@ -803,7 +803,7 @@ class UpahSupirRincian extends MyModel
         // } else if ($this->params['sortIndex'] == 'statuscontainer') {
         //     return $query->orderBy('statuscontainer.kodestatuscontainer', $this->params['sortOrder']);
         // } else {
-        return $query->orderBy($this->table . '.' . $this->params['sortIndex'], $this->params['sortOrder']);
+        return $query->orderBy( 'a.' . $this->params['sortIndex'], $this->params['sortOrder']);
         // }
     }
 
