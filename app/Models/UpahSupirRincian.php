@@ -60,7 +60,7 @@ class UpahSupirRincian extends MyModel
         $proses = request()->proses ?? 'reload';
         $user = auth('api')->user()->name;
         $class = 'UpahSupirRincianController';
-    
+
         $aktif = request()->aktif ?? '';
         $container_id = request()->container_id ?? 0;
         $statuscontainer_id = request()->statuscontainer_id ?? 0;
@@ -72,7 +72,7 @@ class UpahSupirRincian extends MyModel
             ->where("kodejenisorder", 'MUAT')
             ->orWhere("kodejenisorder", 'EKS')
             ->get();
-     
+
 
         $getJenisOrderMuatan = json_decode($getJenisOrderMuatan, true);
         foreach ($getJenisOrderMuatan as $item) {
@@ -100,8 +100,8 @@ class UpahSupirRincian extends MyModel
             $table->dateTime('updated_at')->nullable();
         });
 
-  
-        
+
+
         if ($proses == 'reload') {
 
             $temtabel = 'temp' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
@@ -318,6 +318,23 @@ class UpahSupirRincian extends MyModel
                 ->leftJoin(DB::raw("container with (readuncommitted)"), 'upahsupirrincian.container_id', 'container.id')
                 ->leftJoin(DB::raw("statuscontainer with (readuncommitted)"), 'upahsupirrincian.statuscontainer_id', 'statuscontainer.id');
 
+            if (($aktif == 'AKTIF')) {
+                $statusaktif = Parameter::from(
+                    DB::raw("parameter with (readuncommitted)")
+                )
+                    ->where('grp', '=', 'STATUS AKTIF')
+                    ->where('text', '=', 'AKTIF')
+                    ->first();
+
+                $query->where('B.statusaktif', '=', $statusaktif->id);
+            }
+            if ($container_id > 0) {
+                $query->where('upahsupirrincian.container_id', '=', $container_id);
+            }
+            if ($statuscontainer_id > 0) {
+                $query->where('upahsupirrincian.statuscontainer_id', '=', $statuscontainer_id);
+            }
+
             DB::table($temtabel)->insertUsing([
                 'id',
                 'kotadari_id',
@@ -391,22 +408,7 @@ class UpahSupirRincian extends MyModel
 
         $this->filter($query);
 
-        if (($aktif == 'AKTIF')) {
-            $statusaktif = Parameter::from(
-                DB::raw("parameter with (readuncommitted)")
-            )
-                ->where('grp', '=', 'STATUS AKTIF')
-                ->where('text', '=', 'AKTIF')
-                ->first();
 
-            $query->where('B.statusaktif', '=', $statusaktif->id);
-        }
-        if ($container_id > 0) {
-            $query->where('upahsupirrincian.container_id', '=', $container_id);
-        }
-        if ($statuscontainer_id > 0) {
-            $query->where('upahsupirrincian.statuscontainer_id', '=', $statuscontainer_id);
-        }
 
         $this->totalRows = $query->count();
         $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;
@@ -801,7 +803,7 @@ class UpahSupirRincian extends MyModel
         // } else if ($this->params['sortIndex'] == 'statuscontainer') {
         //     return $query->orderBy('statuscontainer.kodestatuscontainer', $this->params['sortOrder']);
         // } else {
-            return $query->orderBy($this->table . '.' . $this->params['sortIndex'], $this->params['sortOrder']);
+        return $query->orderBy($this->table . '.' . $this->params['sortIndex'], $this->params['sortOrder']);
         // }
     }
 
@@ -827,7 +829,7 @@ class UpahSupirRincian extends MyModel
                         // } else if ($filters['field'] == 'nominalsupir' || $filters['field'] == 'nominalkenek' || $filters['field'] == 'nominalkomisi') {
                         //     $query = $query->whereRaw("format(upahsupirrincian." . $filters['field'] . ", '#,#0.00') LIKE '%$filters[data]%'");
                         // } else {
-                            $query = $query->where('B.' . $filters['field'], 'LIKE', "%$filters[data]%");
+                        $query = $query->where('B.' . $filters['field'], 'LIKE', "%$filters[data]%");
                         // }
                     }
 
@@ -849,7 +851,7 @@ class UpahSupirRincian extends MyModel
                             // } else if ($filters['field'] == 'nominalsupir' || $filters['field'] == 'nominalkenek' || $filters['field'] == 'nominalkomisi') {
                             //     $query = $query->orWhereRaw("format(upahsupirrincian." . $filters['field'] . ", '#,#0.00') LIKE '%$filters[data]%'");
                             // } else {
-                                $query = $query->orWhere('B.' . $filters['field'], 'LIKE', "%$filters[data]%");
+                            $query = $query->orWhere('B.' . $filters['field'], 'LIKE', "%$filters[data]%");
                             // }
                         }
                     });
