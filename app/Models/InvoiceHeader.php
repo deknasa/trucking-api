@@ -602,7 +602,7 @@ class InvoiceHeader extends MyModel
         )
             ->select(
                 'sp.id',                
-                'a.id as idinvoice',                
+                'a.invoice_id as idinvoice',                
                 'a.orderantrucking_nobukti as jobtrucking',
                 'sp.tglbukti as tglsp',
                 'sp.keterangan as keterangan',
@@ -632,7 +632,6 @@ class InvoiceHeader extends MyModel
 
             ->orderBy("sp.tglbukti");
 
-        // dd($query2->get());
 
         DB::table($tempdatahasil)->insertUsing([
             'id',
@@ -655,13 +654,14 @@ class InvoiceHeader extends MyModel
             'nospfullempty',
         ], $query2);
 
+        // dd($query2->get());
 
         $query2 = DB::table($temphasil)->from(
             DB::raw($temphasil . " as a")
         )
             ->select(
-                'a.id',
-                DB::raw("0 as idinvoice"),
+                'sp.id',
+                DB::raw("null as idinvoice"),
                 'a.jobtrucking',
                 'sp.tglbukti as tglsp',
                 'sp.keterangan as keterangan',
@@ -692,7 +692,7 @@ class InvoiceHeader extends MyModel
 
             ->orderBy("sp.tglbukti");
 
-        // dd($query2->get());
+    //   dd($query2->get());
 
         DB::table($tempdatahasil)->insertUsing([
             'id',
