@@ -398,6 +398,7 @@ class ParameterSeeder extends Seeder
         parameter::create(['grp' => 'STATUS CONTAINER', 'subgrp' => 'STATUS CONTAINER FULL', 'kelompok' => '', 'text' => '1', 'memo' => '{"MEMO":"STATUS CONTAINER FULL","SINGKATAN":"SCF","WARNA":"#28A745"}', 'type' => '0', 'modifiedby' => 'ADMIN', 'default' => '',]);
         parameter::create(['grp' => 'STATUS CONTAINER', 'subgrp' => 'STATUS CONTAINER EMPTY', 'kelompok' => '', 'text' => '2', 'memo' => '{"MEMO":"STATUS CONTAINER EMPTY","SINGKATAN":"SCE","WARNA":"#28A745"}', 'type' => '0', 'modifiedby' => 'ADMIN', 'default' => '',]);
         parameter::create(['grp' => 'STATUS CONTAINER', 'subgrp' => 'STATUS CONTAINER FULL EMPTY', 'kelompok' => '', 'text' => '3', 'memo' => '{"MEMO":"STATUS CONTAINER FULL EMPTY","SINGKATAN":"SCFE","WARNA":"#28A745"}', 'type' => '0', 'modifiedby' => 'ADMIN', 'default' => '',]);
+        parameter::create(['grp' => 'KETERANGAN DEFAULT HUTANG USAHA', 'subgrp' => 'KETERANGAN DEFAULT HUTANG USAHA', 'kelompok' => '', 'text' => 'Pembayaran atas pembelian kepada ', 'memo' => '{"MEMO":"Pembayaran atas pembelian kepada","SINGKATAN":"KDHU","WARNA":"#28A745"}', 'type' => '0', 'modifiedby' => 'ADMIN', 'default' => '',]);
         
 
         
