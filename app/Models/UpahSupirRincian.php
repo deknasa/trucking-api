@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\DB;
 use App\Models\StatusContainer;
 use Illuminate\Support\Facades\Schema;
+use Illuminate\Database\Schema\Blueprint;
 
 class UpahSupirRincian extends MyModel
 {
@@ -56,17 +57,23 @@ class UpahSupirRincian extends MyModel
     {
         $this->setRequestParameters();
 
+        $proses = request()->proses ?? 'reload';
+        $user = auth('api')->user()->name;
+        $class = 'UpahSupirRincianController';
+    
         $aktif = request()->aktif ?? '';
-
         $container_id = request()->container_id ?? 0;
         $statuscontainer_id = request()->statuscontainer_id ?? 0;
         $jenisorder_id = request()->jenisorder_id ?? 0;
         $statusUpahZona = request()->statusupahzona ?? 0;
+
         $getJenisOrderMuatan = DB::table("jenisorder")->from(DB::raw("jenisorder with (readuncommitted)"))
             ->select('id')
             ->where("kodejenisorder", 'MUAT')
             ->orWhere("kodejenisorder", 'EKS')
             ->get();
+     
+
         $getJenisOrderMuatan = json_decode($getJenisOrderMuatan, true);
         foreach ($getJenisOrderMuatan as $item) {
             $dataMuatanEksport[] = $item['id'];
@@ -93,162 +100,291 @@ class UpahSupirRincian extends MyModel
             $table->dateTime('updated_at')->nullable();
         });
 
-        if (in_array($jenisorder_id, $dataMuatanEksport)) {
-            $queryEmpty = DB::table("statuscontainer")->from(DB::raw("statuscontainer with (readuncommitted)"))->where('kodestatuscontainer', 'EMPTY')->first();
-            // jika empty
-            if ($statuscontainer_id == $queryEmpty->id) {
-                $getKota = DB::table("upahsupir")->from(DB::raw("upahsupir with (readuncommitted)"))
-                    ->select(
-                        'upahsupir.id',
-                        'upahsupir.kotadari_id',
-                        'upahsupir.kotasampai_id',
-                        'kotadari.kodekota as kotadari',
-                        'kotasampai.kodekota as kotasampai',
-                        'upahsupir.zonadari_id',
-                        'upahsupir.zonasampai_id',
-                        'zonadari.zona as zonadari',
-                        'zonasampai.zona as zonasampai',
-                        'upahsupir.tarif_id',
-                        'tarif.tujuan as tarif',
-                        'upahsupir.penyesuaian',
-                        'upahsupir.jarak',
-                        'upahsupir.statusaktif',
-                        'upahsupir.tglmulaiberlaku',
-                        'upahsupir.modifiedby',
-                        'upahsupir.created_at',
-                        'upahsupir.updated_at'
-                    )
-                    ->leftJoin(DB::raw("kota as kotadari with (readuncommitted)"), 'upahsupir.kotadari_id', 'kotadari.id')
-                    ->leftJoin(DB::raw("kota as kotasampai with (readuncommitted)"), 'upahsupir.kotasampai_id', 'kotasampai.id')
-                    ->leftJoin(DB::raw("zona as zonadari with (readuncommitted)"), 'upahsupir.zonadari_id', 'zonadari.id')
-                    ->leftJoin(DB::raw("zona as zonasampai with (readuncommitted)"), 'upahsupir.zonasampai_id', 'zonasampai.id')
-                    ->leftJoin(DB::raw("tarif with (readuncommitted)"), 'upahsupir.tarif_id', 'tarif.id')
-                    ->where('upahsupir.statusupahzona', $statusUpahZona);
-            } else {
-                $getKota = DB::table("upahsupir")->from(DB::raw("upahsupir with (readuncommitted)"))
-                    ->select(
-                        'upahsupir.id',
-                        'upahsupir.kotasampai_id as kotadari_id',
-                        'upahsupir.kotadari_id as kotasampai_id',
-                        'kotasampai.kodekota as kotadari',
-                        'kotadari.kodekota as kotasampai',
-                        'upahsupir.zonasampai_id as zonadari_id',
-                        'upahsupir.zonadari_id as zonasampai_id',
-                        'zonasampai.zona as zonadari',
-                        'zonadari.zona as zonasampai',
-                        'upahsupir.tarif_id',
-                        'tarif.tujuan as tarif',
-                        'upahsupir.penyesuaian',
-                        'upahsupir.jarak',
-                        'upahsupir.statusaktif',
-                        'upahsupir.tglmulaiberlaku',
-                        'upahsupir.modifiedby',
-                        'upahsupir.created_at',
-                        'upahsupir.updated_at'
-                    )
-                    ->leftJoin(DB::raw("kota as kotadari with (readuncommitted)"), 'upahsupir.kotadari_id', 'kotadari.id')
-                    ->leftJoin(DB::raw("kota as kotasampai with (readuncommitted)"), 'upahsupir.kotasampai_id', 'kotasampai.id')
-                    ->leftJoin(DB::raw("zona as zonadari with (readuncommitted)"), 'upahsupir.zonadari_id', 'zonadari.id')
-                    ->leftJoin(DB::raw("zona as zonasampai with (readuncommitted)"), 'upahsupir.zonasampai_id', 'zonasampai.id')
-                    ->leftJoin(DB::raw("tarif with (readuncommitted)"), 'upahsupir.tarif_id', 'tarif.id')
-                    ->where('upahsupir.statusupahzona', $statusUpahZona);
+  
+        
+        if ($proses == 'reload') {
+
+            $temtabel = 'temp' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+
+            $querydata = DB::table('listtemporarytabel')->from(
+                DB::raw("listtemporarytabel a with (readuncommitted)")
+            )
+                ->select(
+                    'id',
+                    'class',
+                    'namatabel',
+                )
+                ->where('class', '=', $class)
+                ->where('modifiedby', '=', $user)
+                ->first();
+
+            if (isset($querydata)) {
+                Schema::dropIfExists($querydata->namatabel);
+                DB::table('listtemporarytabel')->where('id', $querydata->id)->delete();
             }
-            DB::table($temp)->insertUsing(['id', 'kotadari_id', 'kotasampai_id', 'kotadari', 'kotasampai', 'zonadari_id', 'zonasampai_id', 'zonadari', 'zonasampai', 'tarif_id', 'tarif', 'penyesuaian', 'jarak', 'statusaktif', 'tglmulaiberlaku', 'modifiedby', 'created_at', 'updated_at'], $getKota);
+
+            DB::table('listtemporarytabel')->insert(
+                [
+                    'class' => $class,
+                    'namatabel' => $temtabel,
+                    'modifiedby' => $user,
+                    'created_at' => date('Y/m/d H:i:s'),
+                    'updated_at' => date('Y/m/d H:i:s'),
+                ]
+            );
+
+            Schema::create($temtabel, function (Blueprint $table) {
+                $table->bigInteger('id')->nullable();
+                $table->longtext('kotadari_id')->nullable();
+                $table->longtext('kotasampai_id')->nullable();
+                $table->longtext('zonadari_id')->nullable();
+                $table->longtext('zonasampai_id')->nullable();
+                $table->longtext('tarif_id')->nullable();
+                $table->longtext('tarif')->nullable();
+                $table->longtext('kotadari')->nullable();
+                $table->longtext('kotasampai')->nullable();
+                $table->longtext('zonadari')->nullable();
+                $table->longtext('zonasampai')->nullable();
+                $table->longtext('penyesuaian')->nullable();
+                $table->double('jarak', 15, 2)->nullable();
+                $table->longtext('statusaktif')->nullable();
+                $table->longtext('container')->nullable();
+                $table->longtext('statuscontainer')->nullable();
+                $table->double('nominalsupir', 15, 2)->nullable();
+                $table->double('nominalkenek', 15, 2)->nullable();
+                $table->double('nominalkomisi', 15, 2)->nullable();
+                $table->date('tglmulaiberlaku')->nullable();
+                $table->longtext('modifiedby')->nullable();
+                $table->datetime('created_at')->nullable();
+                $table->datetime('updated_at')->nullable();
+            });
+
+
+
+            if (in_array($jenisorder_id, $dataMuatanEksport)) {
+                $queryEmpty = DB::table("statuscontainer")->from(DB::raw("statuscontainer with (readuncommitted)"))->where('kodestatuscontainer', 'EMPTY')->first();
+                // jika empty
+                if ($statuscontainer_id == $queryEmpty->id) {
+                    $getKota = DB::table("upahsupir")->from(DB::raw("upahsupir with (readuncommitted)"))
+                        ->select(
+                            'upahsupir.id',
+                            'upahsupir.kotadari_id',
+                            'upahsupir.kotasampai_id',
+                            'kotadari.kodekota as kotadari',
+                            'kotasampai.kodekota as kotasampai',
+                            'upahsupir.zonadari_id',
+                            'upahsupir.zonasampai_id',
+                            'zonadari.zona as zonadari',
+                            'zonasampai.zona as zonasampai',
+                            'upahsupir.tarif_id',
+                            'tarif.tujuan as tarif',
+                            'upahsupir.penyesuaian',
+                            'upahsupir.jarak',
+                            'upahsupir.statusaktif',
+                            'upahsupir.tglmulaiberlaku',
+                            'upahsupir.modifiedby',
+                            'upahsupir.created_at',
+                            'upahsupir.updated_at'
+                        )
+                        ->leftJoin(DB::raw("kota as kotadari with (readuncommitted)"), 'upahsupir.kotadari_id', 'kotadari.id')
+                        ->leftJoin(DB::raw("kota as kotasampai with (readuncommitted)"), 'upahsupir.kotasampai_id', 'kotasampai.id')
+                        ->leftJoin(DB::raw("zona as zonadari with (readuncommitted)"), 'upahsupir.zonadari_id', 'zonadari.id')
+                        ->leftJoin(DB::raw("zona as zonasampai with (readuncommitted)"), 'upahsupir.zonasampai_id', 'zonasampai.id')
+                        ->leftJoin(DB::raw("tarif with (readuncommitted)"), 'upahsupir.tarif_id', 'tarif.id')
+                        ->where('upahsupir.statusupahzona', $statusUpahZona);
+                } else {
+                    $getKota = DB::table("upahsupir")->from(DB::raw("upahsupir with (readuncommitted)"))
+                        ->select(
+                            'upahsupir.id',
+                            'upahsupir.kotasampai_id as kotadari_id',
+                            'upahsupir.kotadari_id as kotasampai_id',
+                            'kotasampai.kodekota as kotadari',
+                            'kotadari.kodekota as kotasampai',
+                            'upahsupir.zonasampai_id as zonadari_id',
+                            'upahsupir.zonadari_id as zonasampai_id',
+                            'zonasampai.zona as zonadari',
+                            'zonadari.zona as zonasampai',
+                            'upahsupir.tarif_id',
+                            'tarif.tujuan as tarif',
+                            'upahsupir.penyesuaian',
+                            'upahsupir.jarak',
+                            'upahsupir.statusaktif',
+                            'upahsupir.tglmulaiberlaku',
+                            'upahsupir.modifiedby',
+                            'upahsupir.created_at',
+                            'upahsupir.updated_at'
+                        )
+                        ->leftJoin(DB::raw("kota as kotadari with (readuncommitted)"), 'upahsupir.kotadari_id', 'kotadari.id')
+                        ->leftJoin(DB::raw("kota as kotasampai with (readuncommitted)"), 'upahsupir.kotasampai_id', 'kotasampai.id')
+                        ->leftJoin(DB::raw("zona as zonadari with (readuncommitted)"), 'upahsupir.zonadari_id', 'zonadari.id')
+                        ->leftJoin(DB::raw("zona as zonasampai with (readuncommitted)"), 'upahsupir.zonasampai_id', 'zonasampai.id')
+                        ->leftJoin(DB::raw("tarif with (readuncommitted)"), 'upahsupir.tarif_id', 'tarif.id')
+                        ->where('upahsupir.statusupahzona', $statusUpahZona);
+                }
+                DB::table($temp)->insertUsing(['id', 'kotadari_id', 'kotasampai_id', 'kotadari', 'kotasampai', 'zonadari_id', 'zonasampai_id', 'zonadari', 'zonasampai', 'tarif_id', 'tarif', 'penyesuaian', 'jarak', 'statusaktif', 'tglmulaiberlaku', 'modifiedby', 'created_at', 'updated_at'], $getKota);
+            } else {
+                $queryEmpty = DB::table("statuscontainer")->from(DB::raw("statuscontainer with (readuncommitted)"))->where('kodestatuscontainer', 'EMPTY')->first();
+                // jika empty
+                if ($statuscontainer_id == $queryEmpty->id) {
+                    $getKota = DB::table("upahsupir")->from(DB::raw("upahsupir with (readuncommitted)"))
+                        ->select(
+                            'upahsupir.id',
+                            'upahsupir.kotasampai_id as kotadari_id',
+                            'upahsupir.kotadari_id as kotasampai_id',
+                            'kotasampai.kodekota as kotadari',
+                            'kotadari.kodekota as kotasampai',
+                            'upahsupir.zonasampai_id as zonadari_id',
+                            'upahsupir.zonadari_id as zonasampai_id',
+                            'zonasampai.zona as zonadari',
+                            'zonadari.zona as zonasampai',
+                            'upahsupir.tarif_id',
+                            'tarif.tujuan as tarif',
+                            'upahsupir.penyesuaian',
+                            'upahsupir.jarak',
+                            'upahsupir.statusaktif',
+                            'upahsupir.tglmulaiberlaku',
+                            'upahsupir.modifiedby',
+                            'upahsupir.created_at',
+                            'upahsupir.updated_at'
+                        )
+                        ->leftJoin(DB::raw("kota as kotadari with (readuncommitted)"), 'upahsupir.kotadari_id', 'kotadari.id')
+                        ->leftJoin(DB::raw("kota as kotasampai with (readuncommitted)"), 'upahsupir.kotasampai_id', 'kotasampai.id')
+                        ->leftJoin(DB::raw("zona as zonadari with (readuncommitted)"), 'upahsupir.zonadari_id', 'zonadari.id')
+                        ->leftJoin(DB::raw("zona as zonasampai with (readuncommitted)"), 'upahsupir.zonasampai_id', 'zonasampai.id')
+                        ->leftJoin(DB::raw("tarif with (readuncommitted)"), 'upahsupir.tarif_id', 'tarif.id')
+                        ->where('upahsupir.statusupahzona', $statusUpahZona);
+                } else {
+                    $getKota = DB::table("upahsupir")->from(DB::raw("upahsupir with (readuncommitted)"))
+                        ->select(
+                            'upahsupir.id',
+                            'upahsupir.kotadari_id',
+                            'upahsupir.kotasampai_id',
+                            'kotadari.kodekota as kotadari',
+                            'kotasampai.kodekota as kotasampai',
+                            'upahsupir.zonadari_id',
+                            'upahsupir.zonasampai_id',
+                            'zonadari.zona as zonadari',
+                            'zonasampai.zona as zonasampai',
+                            'upahsupir.tarif_id',
+                            'tarif.tujuan as tarif',
+                            'upahsupir.penyesuaian',
+                            'upahsupir.jarak',
+                            'upahsupir.statusaktif',
+                            'upahsupir.tglmulaiberlaku',
+                            'upahsupir.modifiedby',
+                            'upahsupir.created_at',
+                            'upahsupir.updated_at'
+                        )
+                        ->leftJoin(DB::raw("kota as kotadari with (readuncommitted)"), 'upahsupir.kotadari_id', 'kotadari.id')
+                        ->leftJoin(DB::raw("kota as kotasampai with (readuncommitted)"), 'upahsupir.kotasampai_id', 'kotasampai.id')
+                        ->leftJoin(DB::raw("zona as zonadari with (readuncommitted)"), 'upahsupir.zonadari_id', 'zonadari.id')
+                        ->leftJoin(DB::raw("zona as zonasampai with (readuncommitted)"), 'upahsupir.zonasampai_id', 'zonasampai.id')
+                        ->leftJoin(DB::raw("tarif with (readuncommitted)"), 'upahsupir.tarif_id', 'tarif.id')
+                        ->where('upahsupir.statusupahzona', $statusUpahZona);
+                }
+                DB::table($temp)->insertUsing(['id', 'kotadari_id', 'kotasampai_id', 'kotadari', 'kotasampai', 'zonadari_id', 'zonasampai_id', 'zonadari', 'zonasampai', 'tarif_id', 'tarif', 'penyesuaian', 'jarak', 'statusaktif', 'tglmulaiberlaku', 'modifiedby', 'created_at', 'updated_at'], $getKota);
+            }
+
+
+
+            $query = DB::table("upahsupirrincian")->from(DB::raw("upahsupirrincian with (readuncommitted)"))
+                ->select(
+                    'B.id',
+                    'B.kotadari_id',
+                    'B.kotasampai_id',
+                    'B.zonadari_id',
+                    'B.zonasampai_id',
+                    'B.tarif_id',
+                    'B.tarif',
+                    'B.kotadari',
+                    'B.kotasampai',
+                    'B.zonadari',
+                    'B.zonasampai',
+                    'B.penyesuaian',
+                    'B.jarak',
+                    'parameter.memo as statusaktif',
+                    'container.kodecontainer as container',
+                    'statuscontainer.kodestatuscontainer as statuscontainer',
+                    'upahsupirrincian.nominalsupir',
+                    'upahsupirrincian.nominalkenek',
+                    'upahsupirrincian.nominalkomisi',
+                    'B.tglmulaiberlaku',
+                    'B.modifiedby',
+                    'B.created_at',
+                    'B.updated_at'
+                )
+                ->leftJoin(DB::raw("$temp as B with (readuncommitted)"), 'B.id', 'upahsupirrincian.upahsupir_id')
+                ->leftJoin(DB::raw("parameter with (readuncommitted)"), 'B.statusaktif', '=', 'parameter.id')
+                ->leftJoin(DB::raw("container with (readuncommitted)"), 'upahsupirrincian.container_id', 'container.id')
+                ->leftJoin(DB::raw("statuscontainer with (readuncommitted)"), 'upahsupirrincian.statuscontainer_id', 'statuscontainer.id');
+
+            DB::table($temtabel)->insertUsing([
+                'id',
+                'kotadari_id',
+                'kotasampai_id',
+                'zonadari_id',
+                'zonasampai_id',
+                'tarif_id',
+                'tarif',
+                'kotadari',
+                'kotasampai',
+                'zonadari',
+                'zonasampai',
+                'penyesuaian',
+                'jarak',
+                'statusaktif',
+                'container',
+                'statuscontainer',
+                'nominalsupir',
+                'nominalkenek',
+                'nominalkomisi',
+                'tglmulaiberlaku',
+                'modifiedby',
+                'created_at',
+                'updated_at',
+            ], $query);
         } else {
-            $queryEmpty = DB::table("statuscontainer")->from(DB::raw("statuscontainer with (readuncommitted)"))->where('kodestatuscontainer', 'EMPTY')->first();
-            // jika empty
-            if ($statuscontainer_id == $queryEmpty->id) {
-                $getKota = DB::table("upahsupir")->from(DB::raw("upahsupir with (readuncommitted)"))
-                    ->select(
-                        'upahsupir.id',
-                        'upahsupir.kotasampai_id as kotadari_id',
-                        'upahsupir.kotadari_id as kotasampai_id',
-                        'kotasampai.kodekota as kotadari',
-                        'kotadari.kodekota as kotasampai',
-                        'upahsupir.zonasampai_id as zonadari_id',
-                        'upahsupir.zonadari_id as zonasampai_id',
-                        'zonasampai.zona as zonadari',
-                        'zonadari.zona as zonasampai',
-                        'upahsupir.tarif_id',
-                        'tarif.tujuan as tarif',
-                        'upahsupir.penyesuaian',
-                        'upahsupir.jarak',
-                        'upahsupir.statusaktif',
-                        'upahsupir.tglmulaiberlaku',
-                        'upahsupir.modifiedby',
-                        'upahsupir.created_at',
-                        'upahsupir.updated_at'
-                    )
-                    ->leftJoin(DB::raw("kota as kotadari with (readuncommitted)"), 'upahsupir.kotadari_id', 'kotadari.id')
-                    ->leftJoin(DB::raw("kota as kotasampai with (readuncommitted)"), 'upahsupir.kotasampai_id', 'kotasampai.id')
-                    ->leftJoin(DB::raw("zona as zonadari with (readuncommitted)"), 'upahsupir.zonadari_id', 'zonadari.id')
-                    ->leftJoin(DB::raw("zona as zonasampai with (readuncommitted)"), 'upahsupir.zonasampai_id', 'zonasampai.id')
-                    ->leftJoin(DB::raw("tarif with (readuncommitted)"), 'upahsupir.tarif_id', 'tarif.id')
-                    ->where('upahsupir.statusupahzona', $statusUpahZona);
-            } else {
-                $getKota = DB::table("upahsupir")->from(DB::raw("upahsupir with (readuncommitted)"))
-                    ->select(
-                        'upahsupir.id',
-                        'upahsupir.kotadari_id',
-                        'upahsupir.kotasampai_id',
-                        'kotadari.kodekota as kotadari',
-                        'kotasampai.kodekota as kotasampai',
-                        'upahsupir.zonadari_id',
-                        'upahsupir.zonasampai_id',
-                        'zonadari.zona as zonadari',
-                        'zonasampai.zona as zonasampai',
-                        'upahsupir.tarif_id',
-                        'tarif.tujuan as tarif',
-                        'upahsupir.penyesuaian',
-                        'upahsupir.jarak',
-                        'upahsupir.statusaktif',
-                        'upahsupir.tglmulaiberlaku',
-                        'upahsupir.modifiedby',
-                        'upahsupir.created_at',
-                        'upahsupir.updated_at'
-                    )
-                    ->leftJoin(DB::raw("kota as kotadari with (readuncommitted)"), 'upahsupir.kotadari_id', 'kotadari.id')
-                    ->leftJoin(DB::raw("kota as kotasampai with (readuncommitted)"), 'upahsupir.kotasampai_id', 'kotasampai.id')
-                    ->leftJoin(DB::raw("zona as zonadari with (readuncommitted)"), 'upahsupir.zonadari_id', 'zonadari.id')
-                    ->leftJoin(DB::raw("zona as zonasampai with (readuncommitted)"), 'upahsupir.zonasampai_id', 'zonasampai.id')
-                    ->leftJoin(DB::raw("tarif with (readuncommitted)"), 'upahsupir.tarif_id', 'tarif.id')
-                    ->where('upahsupir.statusupahzona', $statusUpahZona);
-            }
-            DB::table($temp)->insertUsing(['id', 'kotadari_id', 'kotasampai_id', 'kotadari', 'kotasampai', 'zonadari_id', 'zonasampai_id', 'zonadari', 'zonasampai', 'tarif_id', 'tarif', 'penyesuaian', 'jarak', 'statusaktif', 'tglmulaiberlaku', 'modifiedby', 'created_at', 'updated_at'], $getKota);
+            $querydata = DB::table('listtemporarytabel')->from(
+                DB::raw("listtemporarytabel with (readuncommitted)")
+            )
+                ->select(
+                    'namatabel',
+                )
+                ->where('class', '=', $class)
+                ->where('modifiedby', '=', $user)
+                ->first();
+
+            $temtabel = $querydata->namatabel;
         }
 
-
-
-        $query = DB::table("upahsupirrincian")->from(DB::raw("upahsupirrincian with (readuncommitted)"))
+        $query = DB::table(DB::raw($temtabel))->from(
+            DB::raw(DB::raw($temtabel) . " a with (readuncommitted)")
+        )
             ->select(
-                'B.id',
-                'B.kotadari_id',
-                'B.kotasampai_id',
-                'B.zonadari_id',
-                'B.zonasampai_id',
-                'B.tarif_id',
-                'B.tarif',
-                'B.kotadari',
-                'B.kotasampai',
-                'B.zonadari',
-                'B.zonasampai',
-                'B.penyesuaian',
-                'B.jarak',
-                'parameter.memo as statusaktif',
-                'container.kodecontainer as container',
-                'statuscontainer.kodestatuscontainer as statuscontainer',
-                'upahsupirrincian.nominalsupir',
-                'upahsupirrincian.nominalkenek',
-                'upahsupirrincian.nominalkomisi',
-                'B.tglmulaiberlaku',
-                'B.modifiedby',
-                'B.created_at',
-                'B.updated_at'
-            )
-            ->leftJoin(DB::raw("$temp as B with (readuncommitted)"), 'B.id', 'upahsupirrincian.upahsupir_id')
-            ->leftJoin(DB::raw("parameter with (readuncommitted)"), 'B.statusaktif', '=', 'parameter.id')
-            ->leftJoin(DB::raw("container with (readuncommitted)"), 'upahsupirrincian.container_id', 'container.id')
-            ->leftJoin(DB::raw("statuscontainer with (readuncommitted)"), 'upahsupirrincian.statuscontainer_id', 'statuscontainer.id');
+                'a.id',
+                'a.kotadari_id',
+                'a.kotasampai_id',
+                'a.zonadari_id',
+                'a.zonasampai_id',
+                'a.tarif_id',
+                'a.tarif',
+                'a.kotadari',
+                'a.kotasampai',
+                'a.zonadari',
+                'a.zonasampai',
+                'a.penyesuaian',
+                'a.jarak',
+                'a.statusaktif',
+                'a.container',
+                'a.statuscontainer',
+                'a.nominalsupir',
+                'a.nominalkenek',
+                'a.nominalkomisi',
+                'a.tglmulaiberlaku',
+                'a.modifiedby',
+                'a.created_at',
+                'a.updated_at',
+            );
 
 
         $this->sort($query);
@@ -658,15 +794,15 @@ class UpahSupirRincian extends MyModel
 
     public function sort($query)
     {
-        if ($this->params['sortIndex'] == 'penyesuaian' || $this->params['sortIndex'] == 'jarak' || $this->params['sortIndex'] == 'tglmulaiberlaku' || $this->params['sortIndex'] == 'modifiedby' || $this->params['sortIndex'] == 'created_at' || $this->params['sortIndex'] == 'updated_at' || $this->params['sortIndex'] == 'statusaktif' || $this->params['sortIndex'] == 'kotadari' || $this->params['sortIndex'] == 'kotasampai') {
-            return $query->orderBy('B.' . $this->params['sortIndex'], $this->params['sortOrder']);
-        } else if ($this->params['sortIndex'] == 'container') {
-            return $query->orderBy('container.kodecontainer', $this->params['sortOrder']);
-        } else if ($this->params['sortIndex'] == 'statuscontainer') {
-            return $query->orderBy('statuscontainer.kodestatuscontainer', $this->params['sortOrder']);
-        } else {
+        // if ($this->params['sortIndex'] == 'penyesuaian' || $this->params['sortIndex'] == 'jarak' || $this->params['sortIndex'] == 'tglmulaiberlaku' || $this->params['sortIndex'] == 'modifiedby' || $this->params['sortIndex'] == 'created_at' || $this->params['sortIndex'] == 'updated_at' || $this->params['sortIndex'] == 'statusaktif' || $this->params['sortIndex'] == 'kotadari' || $this->params['sortIndex'] == 'kotasampai') {
+        //     return $query->orderBy('B.' . $this->params['sortIndex'], $this->params['sortOrder']);
+        // } else if ($this->params['sortIndex'] == 'container') {
+        //     return $query->orderBy('container.kodecontainer', $this->params['sortOrder']);
+        // } else if ($this->params['sortIndex'] == 'statuscontainer') {
+        //     return $query->orderBy('statuscontainer.kodestatuscontainer', $this->params['sortOrder']);
+        // } else {
             return $query->orderBy($this->table . '.' . $this->params['sortIndex'], $this->params['sortOrder']);
-        }
+        // }
     }
 
     public function filter($query, $relationFields = [])
@@ -678,21 +814,21 @@ class UpahSupirRincian extends MyModel
                 case "AND":
                     foreach ($this->params['filters']['rules'] as $index => $filters) {
 
-                        if ($filters['field'] == 'statusaktif') {
-                            $query = $query->where('parameter.text', '=', "$filters[data]");
-                        } elseif ($filters['field'] == 'container') {
-                            $query = $query->where('container.kodecontainer', 'LIKE', "%$filters[data]%");
-                        } elseif ($filters['field'] == 'statuscontainer') {
-                            $query = $query->where('statuscontainer.kodestatuscontainer', 'LIKE', "%$filters[data]%");
-                        } elseif ($filters['field'] == 'tglmulaiberlaku') {
-                            $query = $query->WhereRaw("format(B.tglmulaiberlaku,'dd-MM-yyyy') like '%$filters[data]%'");
-                        } else if ($filters['field'] == 'created_at' || $filters['field'] == 'updated_at') {
-                            $query = $query->whereRaw("format(B." . $filters['field'] . ", 'dd-MM-yyyy HH:mm:ss') LIKE '%$filters[data]%'");
-                        } else if ($filters['field'] == 'nominalsupir' || $filters['field'] == 'nominalkenek' || $filters['field'] == 'nominalkomisi') {
-                            $query = $query->whereRaw("format(upahsupirrincian." . $filters['field'] . ", '#,#0.00') LIKE '%$filters[data]%'");
-                        } else {
+                        // if ($filters['field'] == 'statusaktif') {
+                        //     $query = $query->where('parameter.text', '=', "$filters[data]");
+                        // } elseif ($filters['field'] == 'container') {
+                        //     $query = $query->where('container.kodecontainer', 'LIKE', "%$filters[data]%");
+                        // } elseif ($filters['field'] == 'statuscontainer') {
+                        //     $query = $query->where('statuscontainer.kodestatuscontainer', 'LIKE', "%$filters[data]%");
+                        // } elseif ($filters['field'] == 'tglmulaiberlaku') {
+                        //     $query = $query->WhereRaw("format(B.tglmulaiberlaku,'dd-MM-yyyy') like '%$filters[data]%'");
+                        // } else if ($filters['field'] == 'created_at' || $filters['field'] == 'updated_at') {
+                        //     $query = $query->whereRaw("format(B." . $filters['field'] . ", 'dd-MM-yyyy HH:mm:ss') LIKE '%$filters[data]%'");
+                        // } else if ($filters['field'] == 'nominalsupir' || $filters['field'] == 'nominalkenek' || $filters['field'] == 'nominalkomisi') {
+                        //     $query = $query->whereRaw("format(upahsupirrincian." . $filters['field'] . ", '#,#0.00') LIKE '%$filters[data]%'");
+                        // } else {
                             $query = $query->where('B.' . $filters['field'], 'LIKE', "%$filters[data]%");
-                        }
+                        // }
                     }
 
                     break;
@@ -700,21 +836,21 @@ class UpahSupirRincian extends MyModel
                     $query->where(function ($query) {
                         foreach ($this->params['filters']['rules'] as $index => $filters) {
 
-                            if ($filters['field'] == 'statusaktif') {
-                                $query = $query->orWhere('parameter.text', '=', "$filters[data]");
-                            } elseif ($filters['field'] == 'container') {
-                                $query = $query->orWhere('container.kodecontainer', 'LIKE', "%$filters[data]%");
-                            } elseif ($filters['field'] == 'statuscontainer') {
-                                $query = $query->orWhere('statuscontainer.kodestatuscontainer', 'LIKE', "%$filters[data]%");
-                            } elseif ($filters['field'] == 'tglmulaiberlaku') {
-                                $query = $query->orWhereRaw("format(B.tglmulaiberlaku,'dd-MM-yyyy') like '%$filters[data]%'");
-                            } else if ($filters['field'] == 'created_at' || $filters['field'] == 'updated_at') {
-                                $query = $query->orWhereRaw("format(B." . $filters['field'] . ", 'dd-MM-yyyy HH:mm:ss') LIKE '%$filters[data]%'");
-                            } else if ($filters['field'] == 'nominalsupir' || $filters['field'] == 'nominalkenek' || $filters['field'] == 'nominalkomisi') {
-                                $query = $query->orWhereRaw("format(upahsupirrincian." . $filters['field'] . ", '#,#0.00') LIKE '%$filters[data]%'");
-                            } else {
+                            // if ($filters['field'] == 'statusaktif') {
+                            //     $query = $query->orWhere('parameter.text', '=', "$filters[data]");
+                            // } elseif ($filters['field'] == 'container') {
+                            //     $query = $query->orWhere('container.kodecontainer', 'LIKE', "%$filters[data]%");
+                            // } elseif ($filters['field'] == 'statuscontainer') {
+                            //     $query = $query->orWhere('statuscontainer.kodestatuscontainer', 'LIKE', "%$filters[data]%");
+                            // } elseif ($filters['field'] == 'tglmulaiberlaku') {
+                            //     $query = $query->orWhereRaw("format(B.tglmulaiberlaku,'dd-MM-yyyy') like '%$filters[data]%'");
+                            // } else if ($filters['field'] == 'created_at' || $filters['field'] == 'updated_at') {
+                            //     $query = $query->orWhereRaw("format(B." . $filters['field'] . ", 'dd-MM-yyyy HH:mm:ss') LIKE '%$filters[data]%'");
+                            // } else if ($filters['field'] == 'nominalsupir' || $filters['field'] == 'nominalkenek' || $filters['field'] == 'nominalkomisi') {
+                            //     $query = $query->orWhereRaw("format(upahsupirrincian." . $filters['field'] . ", '#,#0.00') LIKE '%$filters[data]%'");
+                            // } else {
                                 $query = $query->orWhere('B.' . $filters['field'], 'LIKE', "%$filters[data]%");
-                            }
+                            // }
                         }
                     });
 
