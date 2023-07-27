@@ -829,7 +829,7 @@ class UpahSupirRincian extends MyModel
                         // } else if ($filters['field'] == 'nominalsupir' || $filters['field'] == 'nominalkenek' || $filters['field'] == 'nominalkomisi') {
                         //     $query = $query->whereRaw("format(upahsupirrincian." . $filters['field'] . ", '#,#0.00') LIKE '%$filters[data]%'");
                         // } else {
-                        $query = $query->where('B.' . $filters['field'], 'LIKE', "%$filters[data]%");
+                        $query = $query->where('a.' . $filters['field'], 'LIKE', "%$filters[data]%");
                         // }
                     }
 
@@ -851,7 +851,7 @@ class UpahSupirRincian extends MyModel
                             // } else if ($filters['field'] == 'nominalsupir' || $filters['field'] == 'nominalkenek' || $filters['field'] == 'nominalkomisi') {
                             //     $query = $query->orWhereRaw("format(upahsupirrincian." . $filters['field'] . ", '#,#0.00') LIKE '%$filters[data]%'");
                             // } else {
-                            $query = $query->orWhere('B.' . $filters['field'], 'LIKE', "%$filters[data]%");
+                            $query = $query->orWhere('a.' . $filters['field'], 'LIKE', "%$filters[data]%");
                             // }
                         }
                     });
