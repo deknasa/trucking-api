@@ -566,9 +566,9 @@ class KasGantungHeader extends MyModel
     public function processUpdate(KasGantungHeader $kasgantungHeader, array $data): KasGantungHeader
     {
         $isUpdateUangJalan = $data['isUpdateUangJalan'] ?? 0;
-
         $bank_id = $data['bank_id']??$kasgantungHeader->bank_id;
-        $bank = Bank::lockForUpdate()->find($bank_id);
+        $bank_id = $bank_id->id??$bank_id;
+        $bank = Bank::from(DB::raw("bank with (readuncommitted)"))->find($bank_id);
         $coakaskeluar = $bank->coa ?? null;
         $kasgantungHeader->penerima = $data['penerima'] ?? '';
         $kasgantungHeader->coakaskeluar = $data['coakaskeluar'] ?? $coakaskeluar ;
