@@ -475,38 +475,29 @@ class MenuController extends Controller
             ->orderby('id', 'asc')
             ->get();
 
-        // $datadetail = json_decode($dataquery, true);
+                // dd($dataquery );
+        $datadetail = json_decode($dataquery, true);
+        foreach ($datadetail as $item) {
+        
+            $cls=$this->listFolderFiles($item['class']);
+            if ($cls=='') {
+                // dump($item['id']);
+                DB::table($temprekap)->where('id', $item['id'])->delete();
+            }
+        }
 
-        // foreach ($datadetail as $item) {
-
-        //     $cls = $this->listFolderFiles($item['class']);
-        //     if ($cls == '') {
-        //         $query = DB::table($temprekap)->from(
-        //             db::raw($temprekap . " a")
-        //         )
-        //             ->select(
-        //                 'a.id'
-        //             )
-        //             ->where('a.id', $item['id'])
-        //             ->first();
-        //         if (!isset($query)) {
-        //             DB::table($temprekap)->where('id', $item['id'])->delete();
-        //         }
-        //     }
-        // }
-        // dd($datadetail);
         // ->get();
         // dd($data);
 
         // dd($this->listFolderFiles('AkunPusatDetailController'));
 
         $data = DB::table($temprekap)
-            ->select(
-                'class',
-                'id'
-            )
-            ->orderby('id', 'asc')
-            ->get();
+        ->select(
+            'class',
+            'id'
+        )
+        ->orderby('id', 'asc')
+        ->get();
 
         return response([
             'data' => $data ?? []
