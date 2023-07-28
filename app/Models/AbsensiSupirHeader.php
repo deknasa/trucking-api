@@ -469,6 +469,7 @@ class AbsensiSupirHeader extends MyModel
             throw new \Exception("Error storing pengeluaran Stok Detail.");
         }
 
+        $uangJalan = 0;
         for ($i = 0; $i < count($data['trado_id']); $i++) {
             $absensiSupirDetail = AbsensiSupirDetail::processStore($absensiSupir,[
                 'absensi_id' => $absensiSupir->id,
@@ -482,6 +483,7 @@ class AbsensiSupirHeader extends MyModel
                 'modifiedby' => $absensiSupir->modifiedby,
             ]);
             $absensiSupirDetails[] = $absensiSupirDetail->toArray();
+            $uangJalan += $data['uangjalan'][$i];
         }
         /*STORE KAS GANTUNG*/
         $bank = DB::table('bank')->from(DB::raw("bank with (readuncommitted)"))->select('id')->where('tipe', '=', 'KAS')->first();
@@ -494,8 +496,8 @@ class AbsensiSupirHeader extends MyModel
             "pengeluaran_nobukti" => '',
             "postingdari" => 'ENTRY ABSENSI SUPIR',
             
-            "nominal" => $data['uangjalan'],
-            "keterangan_detail" => $data['keterangan_detail'],
+            "nominal" => [$uangJalan],
+            "keterangan_detail" => ["Absensi Supir tgl ".date('Y-m-d', strtotime($data['tglbukti'])). " ".$absensiSupir->nobukti ],
         ];
 
         $kasgantungHeader = (new KasGantungHeader())->processStore($kasGantungRequest);
@@ -554,7 +556,7 @@ class AbsensiSupirHeader extends MyModel
         if (!$data['trado_id']) {
             throw new \Exception("Error storing pengeluaran Stok Detail.");
         }
-
+        $uangJalan = 0;
         for ($i = 0; $i < count($data['trado_id']); $i++) {
             $absensiSupirDetail = AbsensiSupirDetail::processStore($absensiSupir,[
                 'absensi_id' => $absensiSupir->id,
@@ -568,6 +570,7 @@ class AbsensiSupirHeader extends MyModel
                 'modifiedby' => $absensiSupir->modifiedby,
             ]);
             $absensiSupirDetails[] = $absensiSupirDetail->toArray();
+            $uangJalan += $data['uangjalan'][$i];
         }
         /*STORE KAS GANTUNG*/
         $bank = DB::table('bank')->from(DB::raw("bank with (readuncommitted)"))->select('id')->where('tipe', '=', 'KAS')->first();
@@ -580,8 +583,8 @@ class AbsensiSupirHeader extends MyModel
             "coakaskeluar" => null,
             "pengeluaran_nobukti" => null,
             "postingdari" => 'ENTRY ABSENSI SUPIR',
-            "nominal" => $data['uangjalan'],
-            "keterangan_detail" => $data['keterangan_detail'],
+            "nominal" => [$uangJalan],
+            "keterangan_detail" => ["Absensi Supir tgl ".date('Y-m-d', strtotime($data['tglbukti'])). " ".$absensiSupir->nobukti ],
         ];
 
         $kasGantungHeader = KasGantungHeader::from(DB::raw("kasgantungheader with (readuncommitted)"))->where('nobukti', $absensiSupir->kasgantung_nobukti)->first();
