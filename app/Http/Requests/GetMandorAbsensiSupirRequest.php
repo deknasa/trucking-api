@@ -4,6 +4,8 @@ namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
 use App\Rules\DateAllowedAbsen;
+use Illuminate\Support\Facades\DB;
+use App\Http\Controllers\Api\ErrorController;
 
 class GetMandorAbsensiSupirRequest extends FormRequest
 {
@@ -24,8 +26,33 @@ class GetMandorAbsensiSupirRequest extends FormRequest
      */
     public function rules()
     {
-        return [
-            "tglbukaabsensi"=>[new DateAllowedAbsen(false),]
-        ];
+        $formattedDate = date('Y-m-d', strtotime(request()->tglbukaabsensi));
+                    // Cek apakah ada data dengan tanggal yang sama dalam database
+                    $existingRecord = DB::table('absensisupirheader')->from(DB::raw("absensisupirheader with (readuncommitted)"))
+                    ->where('tglbukti', $formattedDate)
+                    ->whereRaw("cast(format(created_at,'yyyy/MM/dd') as date)<>cast(format(updated_at,'yyyy/MM/dd') as date)")
+                    ->first();
+                    
+                    if (isset($existingRecord)) {
+                        $rules= [
+                            "tglbukaabsensi"=>[
+                                new DateAllowedAbsen(false),
+                                ]
+                
+                        ];
+                    } else {
+
+                        $rules= [
+                            "tglbukaabsensi"=>[
+                                new DateAllowedAbsen(true),
+                                ]
+                
+                        ];
+                
+                                    }
+
+
+
+        return $rules;
     }
 }
