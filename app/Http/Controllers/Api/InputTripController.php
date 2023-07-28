@@ -61,6 +61,7 @@ class InputTripController extends Controller
                 'gandengan_id' => $request->gandengan_id,
                 'gandenganasal_id' => $request->gandenganasal_id,
                 'statuslongtrip' => $request->statuslongtrip,
+                'statuslangsir' => $request->statuslangsir,
                 'statusgudangsama' => $request->statusgudangsama,
                 'gudang' => $request->gudang,
                 'lokasibongkarmuat' => $request->lokasibongkarmuat,

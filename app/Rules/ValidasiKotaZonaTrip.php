@@ -27,7 +27,7 @@ class ValidasiKotaZonaTrip implements Rule
      */
     public function passes($attribute, $value)
     {
-        $getKota = DB::table("kota")->from(DB::raw("kota with (readuncommitted)"))->where('zona_id', $this->zona_id)->where('id', $value)->first();
+        $getKota = DB::table("kota")->from(DB::raw("kota with (readuncommitted)"))->where('id', $value)->first();
        
         if($getKota == null){
             return false;
