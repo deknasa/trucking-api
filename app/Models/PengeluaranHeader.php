@@ -567,6 +567,23 @@ class PengeluaranHeader extends MyModel
             ];
             goto selesai;
         }
+        $pendapatanSupir = DB::table('pendapatansupirheader')
+            ->from(
+                DB::raw("pendapatansupirheader as a with (readuncommitted)")
+            )
+            ->select(
+                'a.pengeluaran_nobukti'
+            )
+            ->where('a.pengeluaran_nobukti', '=', $nobukti)
+            ->first();
+        if (isset($pendapatanSupir)) {
+            $data = [
+                'kondisi' => true,
+                'keterangan' => 'Pendapatan Supir',
+                'kodeerror' => 'TDT'
+            ];
+            goto selesai;
+        }
 
 
         $data = [
