@@ -54,7 +54,7 @@ class StoreMandorTripRequest extends FormRequest
      * @return array
      */
     public function rules()
-    {      
+    {
 
         $parameter = new Parameter();
         $dataUpahZona = $parameter->getcombodata('STATUS UPAH ZONA', 'STATUS UPAH ZONA');
@@ -138,18 +138,7 @@ class StoreMandorTripRequest extends FormRequest
             ];
         }
 
-        $tarifrincian_id = $this->tarifrincian_id;
-        $rulesTarif_id = [];
-        if ($tarifrincian_id != null) {
-            $rulesTarif_id = [
-                'tarifrincian_id' => ['required', 'numeric', 'min:1', new ExistTarifRincianSuratPengantar()]
-            ];
-        } else if ($tarifrincian_id == null && request()->tarifrincian != '') {
-            $rulesTarif_id = [
-                'tarifrincian_id' => ['required', 'numeric', 'min:1', new ExistTarifRincianSuratPengantar()]
-            ];
-        }
-
+       
         $upah_id = $this->upah_id;
         $rulesUpah_id = [];
         if ($upah_id != null) {
@@ -163,7 +152,7 @@ class StoreMandorTripRequest extends FormRequest
         }
 
         $validasiUpah = (new UpahSupirRincian())->cekValidasiInputTripUpah(request()->statuscontainer_id, request()->jenisorder_id, request()->upah_id);
-        $getUpah = DB::table("upahsupir")->from(DB::raw("upahsupir with (readuncommitted)"))->select('zonadari_id','zonasampai_id')->where('id', request()->upah_id)->first();
+        $getUpah = DB::table("upahsupir")->from(DB::raw("upahsupir with (readuncommitted)"))->select('zonadari_id', 'zonasampai_id')->where('id', request()->upah_id)->first();
 
         $dari_id = $this->dari_id;
         $rulesDari_id = [];
@@ -246,30 +235,69 @@ class StoreMandorTripRequest extends FormRequest
             ];
         }
 
-        $rules = [
-            'tglbukti' => [
-                'required', 'date_format:d-m-Y',
-                new DateApprovalQuota()
-            ],
+        $rulesTarif_id = [];
+        if ((request()->dari_id == 1 && request()->sampai_id == 103) || (request()->dari_id == 103 && request()->sampai_id == 1) || (request()->statuslongtrip == 65)) {
+            $rules = [
+                'tglbukti' => [
+                    'required', 'date_format:d-m-Y',
+                    new DateApprovalQuota()
+                ],
 
-            "agen" => "required",
-            "tarifrincian" => ['required_if:statusupahzona,=,' . $getBukanUpahZona->id, new ValidasiExistOmsetTarif(), new ValidasiKotaUpahZona($getBukanUpahZona->id)],
-            "container" => "required",
-            "dari" => ["required"],
-            "gandengan" => "required",
-            "gudang" => "required",
-            "jenisorder" => "required",
-            "pelanggan" => "required",
-            "sampai" => ["required"],
-            "statuscontainer" => "required",
-            "statusgudangsama" => "required",
-            "statuslongtrip" => "required",
-            "statuslangsir" => "required",
-            // "lokasibongkarmuat" => "required",
-            "trado" => "required",
-            "upah" => ["required", new ExistNominalUpahSupir()],
-            'statusupahzona' => ['required', Rule::in($statusUpahZona)],
-        ];
+                "agen" => "required",
+                "container" => "required",
+                "dari" => ["required"],
+                "gandengan" => "required",
+                "gudang" => "required",
+                "jenisorder" => "required",
+                "pelanggan" => "required",
+                "sampai" => ["required"],
+                "statuscontainer" => "required",
+                "statusgudangsama" => "required",
+                "statuslongtrip" => "required",
+                "statuslangsir" => "required",
+                // "lokasibongkarmuat" => "required",
+                "trado" => "required",
+                "upah" => ["required", new ExistNominalUpahSupir()],
+                'statusupahzona' => ['required', Rule::in($statusUpahZona)],
+            ];
+        } else {
+            $tarifrincian_id = $this->tarifrincian_id;
+            $rulesTarif_id = [];
+            if ($tarifrincian_id != null) {
+                $rulesTarif_id = [
+                    'tarifrincian_id' => ['required', 'numeric', 'min:1', new ExistTarifRincianSuratPengantar()]
+                ];
+            } else if ($tarifrincian_id == null && request()->tarifrincian != '') {
+                $rulesTarif_id = [
+                    'tarifrincian_id' => ['required', 'numeric', 'min:1', new ExistTarifRincianSuratPengantar()]
+                ];
+            }
+    
+            $rules = [
+                'tglbukti' => [
+                    'required', 'date_format:d-m-Y',
+                    new DateApprovalQuota()
+                ],
+
+                "agen" => "required",
+                "tarifrincian" => ['required_if:statusupahzona,=,' . $getBukanUpahZona->id, new ValidasiExistOmsetTarif(), new ValidasiKotaUpahZona($getBukanUpahZona->id)],
+                "container" => "required",
+                "dari" => ["required"],
+                "gandengan" => "required",
+                "gudang" => "required",
+                "jenisorder" => "required",
+                "pelanggan" => "required",
+                "sampai" => ["required"],
+                "statuscontainer" => "required",
+                "statusgudangsama" => "required",
+                "statuslongtrip" => "required",
+                "statuslangsir" => "required",
+                // "lokasibongkarmuat" => "required",
+                "trado" => "required",
+                "upah" => ["required", new ExistNominalUpahSupir()],
+                'statusupahzona' => ['required', Rule::in($statusUpahZona)],
+            ];
+        }
 
         $rules = array_merge(
             $rules,
@@ -325,7 +353,7 @@ class StoreMandorTripRequest extends FormRequest
 
         return [
             'tglbukti.date_format' => app(ErrorController::class)->geterror('DF')->keterangan,
-            'tarifrincian.required_if' => 'TARIF '.app(ErrorController::class)->geterror('WI')->keterangan,
+            'tarifrincian.required_if' => 'TARIF ' . app(ErrorController::class)->geterror('WI')->keterangan,
 
         ];
     }
