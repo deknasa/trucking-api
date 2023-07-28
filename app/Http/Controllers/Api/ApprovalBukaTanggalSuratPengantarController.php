@@ -38,23 +38,6 @@ class ApprovalBukaTanggalSuratPengantarController extends Controller
     }
 
 
-    /**
-     * @ClassName 
-     */
-    public function store(StoreApprovalBukaTanggalSuratPengantarRequest $request)
-    {
-       
-        DB::beginTransaction();
-
-        try {
-           
-        } catch (\Throwable $th) {
-            DB::rollBack();
-            throw $th;
-        }
-    }
-
-
     public function show(ApprovalBukaTanggalSuratPengantar $approvalBukaTanggalSP)
     {
         return response([

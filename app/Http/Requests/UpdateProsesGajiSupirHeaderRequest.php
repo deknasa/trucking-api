@@ -7,6 +7,7 @@ use App\Models\ProsesGajiSupirHeader;
 use Illuminate\Foundation\Http\FormRequest;
 use App\Rules\DateTutupBuku;
 use App\Rules\DestroyProsesGajiSupir;
+use App\Rules\ExistBank;
 use Illuminate\Validation\Rule;
 
 class UpdateProsesGajiSupirHeaderRequest extends FormRequest
@@ -36,14 +37,23 @@ class UpdateProsesGajiSupirHeaderRequest extends FormRequest
         $tglbatasakhir = (date('Y') + 1) . '-01-01';
         // First day of the month.
         $awalPeriode = date('Y-m-01', strtotime(request()->tgldari));
+        $bank_id = $this->bank_id;
+        $rulesBank_id = [];
+        if ($bank_id != null) {
+            $rulesBank_id = [
+                'bank_id' => ['required', 'numeric', 'min:1', new ExistBank(),Rule::in($getDataProsesGaji->bank_id)]
+            ];
+        } else if ($bank_id == null && $this->bank != '') {
+            $rulesBank_id = [
+                'bank_id' => ['required', 'numeric', 'min:1', new ExistBank(),Rule::in($getDataProsesGaji->bank_id)]
+            ];
+        }
         $rules = [            
             'id' => new DestroyProsesGajiSupir(),
             'nobukti' => [Rule::in($getDataProsesGaji->nobukti)],
-            'periode' => [
-                'required', 'date_format:d-m-Y',
-                'before_or_equal:' . date('Y-m-d'),
-                'after_or_equal:'.$awalPeriode,
-            ],  
+            'bank' => [
+                'required',
+            ], 
             'tgldari' => [
                 'required', 'date_format:d-m-Y',
                 'before_or_equal:' .$tglbatasakhir,
@@ -59,7 +69,6 @@ class UpdateProsesGajiSupirHeaderRequest extends FormRequest
                 'date_equals:' . date('d-m-Y', strtotime($getDataProsesGaji->tglbukti)),
                 new DateTutupBuku()
             ],
-            'keterangan' => 'required'
         ];
         $relatedRequests = [
             UpdateProsesGajiSupirDetailRequest::class
@@ -69,6 +78,7 @@ class UpdateProsesGajiSupirHeaderRequest extends FormRequest
             $rules = array_merge(
                 $rules,
                 (new $relatedRequest)->rules(),
+                $rulesBank_id
             );
         }
         return $rules;

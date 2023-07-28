@@ -83,7 +83,8 @@ class UpdateSuratPengantarRequest extends FormRequest
 
         $getBukanUpahZona = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS UPAH ZONA')->where('text', 'NON UPAH ZONA')->first();
         $getUpahZona = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS UPAH ZONA')->where('text', 'UPAH ZONA')->first();
-        
+        $getPeralihan = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS PERALIHAN')->where('text', 'PERALIHAN')->first();
+
         $rules = [
             'tglbukti' => [
                 'required', 'date_format:d-m-Y',
@@ -100,11 +101,17 @@ class UpdateSuratPengantarRequest extends FormRequest
             'statusbatalmuat' => ['required', Rule::in($statusbatalmuat)],
             'statusgudangsama' => ['required', Rule::in($statusgudangsama)],
             'nosp' => 'required',
-            'upah' => ['required',new ExistNominalUpahSupir()],
-            'statusupahzona' => ['required', Rule::in($statusUpahZona)],
-
+            'upah' => ['required', new ExistNominalUpahSupir()],
+            'statusupahzona' => ['required', Rule::in($statusUpahZona)]
         ];
 
+        $rulesStatusPeralihan = [];
+        if (request()->statusperalihan == $getPeralihan->id) {
+            $rulesStatusPeralihan = [
+
+                'persentaseperalihan' => ['numeric', 'gt:0']
+            ];
+        }
         $jobtrucking = $this->jobtrucking;
         $rulesjobtrucking = [];
         if ($jobtrucking != '' && $this->jobtrucking != '') {
@@ -741,7 +748,7 @@ class UpdateSuratPengantarRequest extends FormRequest
                 ]
             ];
         }
-        
+
         $upah_id = $this->upah_id;
         $rulesUpah_id = [];
         if ($upah_id != null) {
@@ -768,7 +775,8 @@ class UpdateSuratPengantarRequest extends FormRequest
             $rulesagen_id,
             $rulesjenisorder_id,
             $rulestarifrincian_id,
-            $rulesUpah_id
+            $rulesUpah_id,
+            $rulesStatusPeralihan
         );
 
         return $rule;
@@ -785,7 +793,7 @@ class UpdateSuratPengantarRequest extends FormRequest
             'statusgudangsama' => 'status gudangsama',
             'tarifrincian' => 'tujuan tarif',
             'jenisorder' => 'jenis orderan',
-            'sampai' => 'tujuan',            
+            'sampai' => 'tujuan',
             "lokasibongkarmuat" => "lokasi bongkar/muat",
             // 'qtyton' => 'QTY ton',
             'statusbatalmuat' => 'status batal muat'

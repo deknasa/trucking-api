@@ -250,6 +250,8 @@ class HutangBayarDetail extends MyModel
 
     public function processStore(HutangBayarHeader $hutangBayarHeader, array $data): HutangBayarDetail
     {
+       
+
         $hutangBayarDetail = new HutangBayarDetail();
         $hutangBayarDetail->hutangbayar_id = $data['hutangbayar_id'];
         $hutangBayarDetail->nobukti = $data['nobukti'];

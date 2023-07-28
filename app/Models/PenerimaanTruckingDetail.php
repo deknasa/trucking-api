@@ -195,6 +195,42 @@ class PenerimaanTruckingDetail extends MyModel
             $this->totalNominalDeposito = 0;
         }
     }
+    
+    public function getBBM($nobukti)
+    {
+        $bbm = GajiSupirBBM::from(DB::raw("gajisupirbbm with (readuncommitted)"))
+            ->select(
+                'penerimaantrucking_nobukti'
+            )
+            ->where('gajisupir_nobukti', $nobukti)->first();
+        if ($bbm != null) {
+
+            $this->setRequestParameters();
+
+            $query = PenerimaanTruckingDetail::from(DB::raw("penerimaantruckingdetail with (readuncommitted)"))
+                ->select(
+                    'penerimaantruckingdetail.nobukti',
+                    'penerimaantruckingdetail.pengeluarantruckingheader_nobukti',
+                    "penerimaantruckingdetail.nominal",
+                    "penerimaantruckingdetail.keterangan",
+                    'supir.namasupir as supir_id'
+                )
+                ->leftJoin(DB::raw("supir with (readuncommitted)"), "penerimaantruckingdetail.supir_id", "supir.id")
+                ->where('nobukti', $bbm->penerimaantrucking_nobukti);
+
+            $this->sort($query);
+            $this->filter($query);
+            $this->paginate($query);
+            // dd($query->toSql());
+            $this->totalRows = $query->count();
+            $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;
+            $this->totalNominalBBM = $query->sum('nominal');
+
+            return $query->get();
+        } else {
+            $this->totalNominalBBM = 0;
+        }
+    }
 
     public function filter($query, $relationFields = [])
     {

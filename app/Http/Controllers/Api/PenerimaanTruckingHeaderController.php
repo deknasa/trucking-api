@@ -36,7 +36,7 @@ use Illuminate\Database\QueryException;
 class PenerimaanTruckingHeaderController extends Controller
 {
 
-      /**
+    /**
      * @ClassName 
      * PenerimaanTruckingHeader
      * @Detail1 PenerimaanTruckingDetailController
@@ -246,23 +246,22 @@ class PenerimaanTruckingHeaderController extends Controller
             $query = DB::table('error')
                 ->select('keterangan')
                 ->where('kodeerror', '=', 'SDC')
-                ->get();
-            $keterangan = $query['0'];
+                ->first();
+                
             $data = [
-                'message' => $keterangan,
-                'errors' => 'sudah cetak',
-                'kodestatus' => '1',
-                'kodenobukti' => '1'
+                'error' => true,
+                'message' => $query->keterangan,
+                'kodeerror' => 'SDC',
+                'statuspesan' => 'warning',
             ];
 
             return response($data);
         } else {
 
             $data = [
+                'error' => false,
                 'message' => '',
-                'errors' => 'belum approve',
-                'kodestatus' => '0',
-                'kodenobukti' => '1'
+                'statuspesan' => 'success',
             ];
 
             return response($data);
@@ -273,44 +272,56 @@ class PenerimaanTruckingHeaderController extends Controller
     {
         $penerimaan = new PenerimaanTruckingHeader();
         $PenerimaanTruckingHeader = PenerimaanTruckingHeader::from(DB::raw("penerimaantruckingheader"))->where('id', $id)->first();
-        
+
         $isUangJalanProcessed = $penerimaan->isUangJalanProcessed($PenerimaanTruckingHeader->nobukti);
         if ($isUangJalanProcessed) {
-            $query = DB::table('error')->select(    DB::raw("ltrim(rtrim(keterangan))+' (Proses Uang Jalan Supir )' as keterangan"))->where('kodeerror', '=', 'TDT')->get();
-            $keterangan = $query['0'];
+            $query = DB::table('error')->select(DB::raw("ltrim(rtrim(keterangan))+' (Proses Uang Jalan Supir )' as keterangan"))->where('kodeerror', '=', 'TDT')->first();
             $data = [
-                'status' => false,
-                'message' => $keterangan,
-                'errors' => '',
-                'kondisi' => true,
+                'error' => true,
+                'message' => $query->keterangan,
+                'kodeerror' => 'TDT',
+                'statuspesan' => 'warning',
             ];
             return response($data);
         }
 
         $isUangOut = $penerimaan->isUangOut($PenerimaanTruckingHeader->nobukti);
         if ($isUangOut) {
-            $query = DB::table('error')->select(    DB::raw("ltrim(rtrim(keterangan))+' (Proses Uang Jalan Supir )' as keterangan"))->where('kodeerror', '=', 'SATL')->get();
-            $keterangan = $query['0'];
+            $query = DB::table('error')->select(DB::raw("ltrim(rtrim(keterangan))+' (Proses Uang Jalan Supir )' as keterangan"))->where('kodeerror', '=', 'SATL')->first();
             $data = [
-                'status' => false,
-                'message' => $keterangan,
-                'errors' => '',
-                'kondisi' => true,
+                'error' => true,
+                'message' => $query->keterangan,
+                'kodeerror' => 'SATL',
+                'statuspesan' => 'warning',
             ];
             return response($data);
         }
-       
+
+        $cekdata = $penerimaan->cekvalidasiaksi($PenerimaanTruckingHeader->nobukti);
+        if ($cekdata['kondisi'] == true) {
+            $query = DB::table('error')
+                ->select(
+                    DB::raw("ltrim(rtrim(keterangan))+' (" . $cekdata['keterangan'] . ")' as keterangan")
+                )
+                ->where('kodeerror', '=', $cekdata['kodeerror'])
+                ->first();
+            $data = [
+                'error' => true,
+                'message' => $query->keterangan,
+                'kodeerror' => $cekdata['kodeerror'],
+                'statuspesan' => 'warning',
+            ];
+
+            return response($data);
+        }
+
         $data = [
-            'status' => true,
-            'message' => 'success',
-            'errors' => '',
-            'kondisi' => false,
+            'error' => false,
+            'message' => '',
+            'statuspesan' => 'success',
         ];
 
         return response($data);
-      
-
-        
     }
 
     public function fieldLength()
@@ -331,7 +342,8 @@ class PenerimaanTruckingHeaderController extends Controller
      * @ClassName 
      */
     public function report()
-    { }
+    {
+    }
 
     /**
      * @ClassName 

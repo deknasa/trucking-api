@@ -399,6 +399,21 @@ class TarifRincian extends MyModel
         return $data;
     }
 
+    public function getExistNominal($container_id, $id)
+    {
+        $query = DB::table("tarifrincian")->from(DB::raw("tarifrincian with (readuncommitted)"))
+            ->select(
+                'nominal',
+            )
+            ->where("tarif_id", $id)
+            ->where('container_id', $container_id);
+            
+        $data = $query->first();
+
+
+        return $data;
+    }
+
     public function sort($query)
     {
         if ($this->params['sortIndex'] == 'tujuan' || $this->params['sortIndex'] == 'tglmulaiberlaku' || $this->params['sortIndex'] == 'statussistemton' || $this->params['sortIndex'] == 'statuspenyesuaianharga' || $this->params['sortIndex'] == 'statusaktif') {

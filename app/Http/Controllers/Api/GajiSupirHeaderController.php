@@ -79,6 +79,7 @@ class GajiSupirHeaderController extends Controller
             $data = [
                 'tglbukti' => $request->tglbukti,
                 'supir_id' => $request->supir_id,
+                'supir' => $request->supir,
                 'tgldari' => $request->tgldari,
                 'tglsampai' => $request->tglsampai,
                 'uangjalan' => $request->uangjalan,
@@ -161,6 +162,7 @@ class GajiSupirHeaderController extends Controller
             $data = [
                 'tglbukti' => $request->tglbukti,
                 'supir_id' => $request->supir_id,
+                'supir' => $request->supir,
                 'tgldari' => $request->tgldari,
                 'tglsampai' => $request->tglsampai,
                 'uangjalan' => $request->uangjalan,

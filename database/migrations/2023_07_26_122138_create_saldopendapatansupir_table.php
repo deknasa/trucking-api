@@ -18,6 +18,7 @@ class CreateSaldopendapatansupirTable extends Migration
             $table->unsignedBigInteger('supir_id')->nullable();     
             $table->string('gajisupir_nobukti',100)->nullable();        
             $table->string('suratpengantar_nobukti',100)->nullable();        
+            $table->date('suratpengantar_tglbukti')->nullable();        
             $table->longText('dari_id')->nullable();        
             $table->longText('sampai_id')->nullable();        
             $table->double('nominal',15,2)->nullable();             

@@ -425,7 +425,7 @@ class SuratPengantar extends MyModel
                     'suratpengantar.nocont',
                     'suratpengantar.noseal',
                     'suratpengantar.statusperalihan',
-                    'suratpengantar.persentaseperalihan',
+                    DB::raw("(case when suratpengantar.persentaseperalihan IS NULL then 0 else suratpengantar.persentaseperalihan end) as persentaseperalihan"),
                     'suratpengantar.statusritasiomset',
                     'suratpengantar.nosptagihlain as nosp2',
                     'suratpengantar.statusgudangsama',
@@ -445,7 +445,7 @@ class SuratPengantar extends MyModel
                     'jenisorder.kodejenisorder as jenisorder',
                     'suratpengantar.tarif_id as tarifrincian_id',
                     'tarif.tujuan as tarifrincian',
-                    'suratpengantar.nominalperalihan',
+                    DB::raw("(case when suratpengantar.nominalperalihan IS NULL then 0 else suratpengantar.nominalperalihan end) as nominalperalihan"),
                     'suratpengantar.nojob',
                     'suratpengantar.nojob2',
                     'suratpengantar.cabang_id',
@@ -1232,17 +1232,15 @@ class SuratPengantar extends MyModel
             $suratPengantar->statusperalihan = $data['statusperalihan'];
             $suratPengantar->statusupahzona = $data['statusupahzona'];
             $suratPengantar->tarif_id = $orderanTrucking->tarif_id;
-            $suratPengantar->nominalperalihan = $data['nominalperalihan'] ?? 0;
-            $persentaseperalihan = 0;
-            if (array_key_exists('nominalperalihan', $data)) {
-                if ($data['nominalperalihan'] != 0) {
-                    $persentaseperalihan = $data['nominalperalihan'] / $tarif->nominal;
-                }
+            $nominalPeralihan = 0;
+            if ($data['persentaseperalihan'] != 0) {
+                $nominalPeralihan = ($tarif->nominal * ($data['persentaseperalihan'] / 100));
             }
 
-            $suratPengantar->persentaseperalihan = $persentaseperalihan;
-            $suratPengantar->discount = $persentaseperalihan;
-            $suratPengantar->totalomset = $tarif->nominal - ($tarif->nominal * ($persentaseperalihan / 100));
+            $suratPengantar->nominalperalihan = $nominalPeralihan;
+            $suratPengantar->persentaseperalihan = $data['persentaseperalihan'];
+            $suratPengantar->discount = $data['persentaseperalihan'];
+            $suratPengantar->totalomset = $tarif->nominal - ($tarif->nominal * ($data['persentaseperalihan'] / 100));
             $suratPengantar->biayatambahan_id = $data['biayatambahan_id'] ?? 0;
             $suratPengantar->nosp = $data['nosp'];
             $suratPengantar->tglsp = date('Y-m-d', strtotime($data['tglbukti']));

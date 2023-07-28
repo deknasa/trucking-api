@@ -332,6 +332,23 @@ class JurnalUmumHeader extends MyModel
             ];
             goto selesai;
         }
+        $penerimaanTrucking = DB::table('penerimaantruckingheader')
+            ->from(
+                DB::raw("penerimaantruckingheader as a with (readuncommitted)")
+            )
+            ->select(
+                'a.nobukti'
+            )
+            ->where('a.nobukti', '=', $nobukti)
+            ->first();
+        if (isset($penerimaanTrucking)) {
+            $data = [
+                'kondisi' => true,
+                'keterangan' => 'Penerimaan Trucking',
+                'kodeerror' => 'TDT'
+            ];
+            goto selesai;
+        }
 
 
         $data = [

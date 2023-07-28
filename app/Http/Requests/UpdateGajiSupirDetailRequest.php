@@ -41,18 +41,16 @@ class UpdateGajiSupirDetailRequest extends FormRequest
         }
 
         $rulesDeposito = [];
-        if(request()->nomDeposito > 0 || request()->ketDeposito != ''){
+        if(request()->nomDeposito > 0){
             $rulesDeposito = [
                 'nomDeposito' => ['required','numeric','gt:0'],
-                'ketDeposito' => 'required'
             ];
         }
 
         $rulesBBM = [];
-        if(request()->nomBBM > 0 || request()->ketBBM != '') {
+        if(request()->nomBBM > 0) {
             $rulesBBM = [
                 'nomBBM' => ['required','numeric','gt:0'],
-                'ketBBM' => 'required'
             ];
         }
         

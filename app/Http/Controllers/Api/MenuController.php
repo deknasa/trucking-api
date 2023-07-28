@@ -475,12 +475,13 @@ class MenuController extends Controller
             ->orderby('id', 'asc')
             ->get();
 
-
+                // dd($dataquery );
         $datadetail = json_decode($dataquery, true);
         foreach ($datadetail as $item) {
         
             $cls=$this->listFolderFiles($item['class']);
             if ($cls=='') {
+                // dump($item['id']);
                 DB::table($temprekap)->where('id', $item['id'])->delete();
             }
         }

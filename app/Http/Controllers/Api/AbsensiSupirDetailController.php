@@ -69,7 +69,7 @@ class AbsensiSupirDetailController extends Controller
 
     public function getDetailAbsensi(Request $request)
     {
-        $tglbukti = date('Y-m-d', strtotime('now'));
+        $tglbukti = date('Y-m-d', strtotime($request->tgltrip));
         $absensiSupirHeader = AbsensiSupirHeader::where('tglbukti', $tglbukti)->first();
         if (!$absensiSupirHeader) {
             return response([
