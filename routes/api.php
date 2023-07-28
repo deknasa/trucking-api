@@ -486,6 +486,7 @@ route::middleware(['auth:api', 'authorized'])->group(function () {
     Route::get('absensisupirapprovalheader/{absensi}/getapproval', [AbsensiSupirApprovalHeaderController::class, 'getApproval'])->whereNumber('absensi');
     Route::post('absensisupirapprovalheader/{id}/cekvalidasi', [AbsensiSupirApprovalHeaderController::class, 'cekvalidasi'])->name('absensisupirapprovalheader.cekvalidasi')->whereNumber('id');
     Route::post('absensisupirapprovalheader/{id}/approval', [AbsensiSupirApprovalHeaderController::class, 'approval'])->whereNumber('id');
+    Route::post('absensisupirapprovalheader/{id}/cekvalidasiaksi', [AbsensiSupirApprovalHeaderController::class, 'cekvalidasiaksi'])->whereNumber('id');
     Route::apiResource('absensisupirapprovalheader', AbsensiSupirApprovalHeaderController::class)->whereNumber('absensisupirapprovalheader');
     Route::apiResource('absensisupirapprovaldetail', AbsensiSupirApprovalDetailController::class)->whereNumber('absensisupirapprovaldetail');
 

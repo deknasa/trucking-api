@@ -75,6 +75,37 @@ class AbsensiSupirApprovalHeader extends MyModel
         return $data;
     }
 
+    public function cekvalidasiaksi($id)
+    {
+        $get = DB::table("absensisupirapprovalheader")->from(DB::raw("absensisupirapprovalheader with (readuncommitted)"))->where('id', $id)->first();
+        $absensiSupir = DB::table('absensisupirapprovalheader')
+            ->from(
+                DB::raw("absensisupirapprovalheader as a with (readuncommitted)")
+            )
+            ->select(
+                'a.nobukti'
+            )
+            ->join(DB::raw("jurnalumumpusatheader b with (readuncommitted)"), 'a.pengeluaran_nobukti', 'b.nobukti')
+            ->where('a.nobukti', '=', $get->nobukti)
+            ->first();
+        if (isset($absensiSupir)) {
+            $data = [
+                'kondisi' => true,
+                'keterangan' => 'Approval Jurnal',
+                'kodeerror' => 'SATL'
+            ];
+            goto selesai;
+        }
+
+
+        $data = [
+            'kondisi' => false,
+            'keterangan' => '',
+        ];
+        selesai:
+        return $data;
+    }
+
     public function createTemp(string $modelTable)
     {
         $this->setRequestParameters();
