@@ -466,7 +466,7 @@ class JurnalUmumHeader extends MyModel
             'datajson' => $jurnalUmumDetails,
             'modifiedby' => auth('api')->user()->user,
         ]);
-        
+
         if ($tanpaprosesnobukti == 0) {
             $jurnalRequest = [
                 'nobukti' => $jurnalUmumHeader->nobukti,
@@ -488,7 +488,7 @@ class JurnalUmumHeader extends MyModel
     public function processUpdate(JurnalUmumHeader $jurnalUmumHeader, array $data): JurnalUmumHeader
     {
         $jurnalUmumHeader->modifiedby = auth('api')->user()->name;
-        
+
 
         if (!$jurnalUmumHeader->save()) {
             throw new \Exception("Error updating jurnal umum header.");
@@ -654,36 +654,21 @@ class JurnalUmumHeader extends MyModel
 
             $jurnalumum = JurnalUmumHeader::find($data['jurnalId'][$i]);
 
+            $jurnalUmumPusat = JurnalUmumPusatHeader::from(DB::raw("jurnalumumpusatheader with (readuncommitted)"))->where('nobukti', $jurnalumum->nobukti)->first();
             if ($jurnalumum->statusapproval == $statusApproval->id) {
                 $jurnalumum->statusapproval = $statusNonApproval->id;
                 $jurnalumum->tglapproval = date('Y-m-d', strtotime("1900-01-01"));
                 $jurnalumum->userapproval = '';
                 $aksi = $statusNonApproval->text;
+
+                if ($jurnalUmumPusat != null) {
+                    (new JurnalUmumPusatHeader())->processDestroy($jurnalUmumPusat->id, "$aksi JURNAL UMUM");
+                }
             } else {
                 $jurnalumum->statusapproval = $statusApproval->id;
                 $aksi = $statusApproval->text;
                 $jurnalumum->tglapproval = date('Y-m-d H:i:s');
                 $jurnalumum->userapproval = auth('api')->user()->name;
-            }
-
-            if (!$jurnalumum->save()) {
-                throw new \Exception("Error approval jurnal umum header.");
-            }
-            (new LogTrail())->processStore([
-                'namatabel' => strtoupper($jurnalumum->getTable()),
-                'postingdari' => 'APPROVAL JURNAL UMUM',
-                'idtrans' => $jurnalumum->id,
-                'nobuktitrans' => $jurnalumum->nobukti,
-                'aksi' => $aksi,
-                'datajson' => $jurnalumum->toArray(),
-                'modifiedby' => auth('api')->user()->user
-            ]);
-
-            // PROSES JURNAL UMUM PUSAT
-            $jurnalUmumPusat = JurnalUmumPusatHeader::from(DB::raw("jurnalumumpusatheader with (readuncommitted)"))->where('nobukti', $jurnalumum->nobukti)->first();
-            if ($jurnalUmumPusat != null) {
-                (new JurnalUmumPusatHeader())->processDestroy($jurnalUmumPusat->id, "$aksi JURNAL UMUM");
-            } else {
 
                 $jurnalDetail = JurnalUmumDetail::where('jurnalumum_id', $data['jurnalId'][$i])->get();
                 $coa_detail = [];
@@ -712,6 +697,30 @@ class JurnalUmumHeader extends MyModel
 
                 (new JurnalUmumPusatHeader())->processStore($jurnalRequest);
             }
+
+            if (!$jurnalumum->save()) {
+                throw new \Exception("Error approval jurnal umum header.");
+            }
+            (new LogTrail())->processStore([
+                'namatabel' => strtoupper($jurnalumum->getTable()),
+                'postingdari' => 'APPROVAL JURNAL UMUM',
+                'idtrans' => $jurnalumum->id,
+                'nobuktitrans' => $jurnalumum->nobukti,
+                'aksi' => $aksi,
+                'datajson' => $jurnalumum->toArray(),
+                'modifiedby' => auth('api')->user()->user
+            ]);
+
+            // PROSES JURNAL UMUM PUSAT
+            // $jurnalUmumPusat = JurnalUmumPusatHeader::from(DB::raw("jurnalumumpusatheader with (readuncommitted)"))->where('nobukti', $jurnalumum->nobukti)->first();
+            // if ($jurnalUmumPusat != null) {
+            //     (new JurnalUmumPusatHeader())->processDestroy($jurnalUmumPusat->id, "$aksi JURNAL UMUM");
+            // } else {
+            //     if ($jurnalumum->statusapproval == $statusNonApproval->id) {
+
+
+            //     }
+            // }
         }
 
         return $jurnalumum;
