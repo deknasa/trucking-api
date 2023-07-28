@@ -398,7 +398,6 @@ class StoreOrderanTruckingRequest extends FormRequest
             $rulesagen_id,
             $rulesjenisorder_id,
             $rulespelanggan_id,
-            $rulestarifrincian_id,
         );
 
         return $rule;
