@@ -31,12 +31,18 @@ class ValidasiDestroyAbsensiSupirApprovalHeader implements Rule
 
         $absensisupir = AbsensiSupirApprovalHeader::findOrFail(request()->id);
 
-        $printValidation = AbsensiSupirApprovalHeader::printValidation(request()->id);
+        $printValidation = (new AbsensiSupirApprovalHeader())->printValidation(request()->id);
         if (!$printValidation) {
-            $this->message = "SDC";
+            $this->kodeerror = "SDC";
+            $this->keterangan = '';
             return false;
         }
-       
+        $cekdata = (new AbsensiSupirApprovalHeader())->cekvalidasiaksi(request()->id);
+        if ($cekdata['kondisi']) {
+            $this->kodeerror = $cekdata['kodeerror'];
+            $this->keterangan = ' ('. $cekdata['keterangan'].')';
+            return false;
+        }
         return true;
     }
 
@@ -47,6 +53,6 @@ class ValidasiDestroyAbsensiSupirApprovalHeader implements Rule
      */
     public function message()
     {
-        return app(ErrorController::class)->geterror($this->message)->keterangan;
+        return app(ErrorController::class)->geterror($this->kodeerror)->keterangan.$this->keterangan;
     }
 }

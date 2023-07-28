@@ -54,16 +54,16 @@ class AbsensiSupirApprovalHeaderController extends Controller
      */
     public function store(StoreAbsensiSupirApprovalHeaderRequest $request)
     {
-       
-// dd($request->all());
+
+        // dd($request->all());
         DB::beginTransaction();
         try {
-            $data =[
-                "tglbukti"=>$request->tglbukti,
-                "absensisupir_nobukti"=>$request->absensisupir_nobukti,
-                "kasgantung_nobukti"=>$request->kasgantung_nobukti,
-                "pengeluaran_nobukti"=>$request->pengeluaran_nobukti,
-                "tglkaskeluar"=>$request->tglkaskeluar,
+            $data = [
+                "tglbukti" => $request->tglbukti,
+                "absensisupir_nobukti" => $request->absensisupir_nobukti,
+                "kasgantung_nobukti" => $request->kasgantung_nobukti,
+                "pengeluaran_nobukti" => $request->pengeluaran_nobukti,
+                "tglkaskeluar" => $request->tglkaskeluar,
                 'supir_id' => $request->supir_id,
                 'trado_id' => $request->trado_id,
                 'uangjalan' => $request->uangjalan,
@@ -84,7 +84,7 @@ class AbsensiSupirApprovalHeaderController extends Controller
             return response()->json([
                 'message' => 'Berhasil disimpan',
                 'data' => $absensiSupirApprovalHeader
-            ], 201);    
+            ], 201);
         } catch (\Throwable $th) {
             DB::rollBack();
 
@@ -115,12 +115,12 @@ class AbsensiSupirApprovalHeaderController extends Controller
     {
         DB::beginTransaction();
         try {
-            $data =[
-                "tglbukti"=>$request->tglbukti,
-                "absensisupir_nobukti"=>$request->absensisupir_nobukti,
-                "kasgantung_nobukti"=>$request->kasgantung_nobukti,
-                "pengeluaran_nobukti"=>$request->pengeluaran_nobukti,
-                "tglkaskeluar"=>$request->tglkaskeluar,
+            $data = [
+                "tglbukti" => $request->tglbukti,
+                "absensisupir_nobukti" => $request->absensisupir_nobukti,
+                "kasgantung_nobukti" => $request->kasgantung_nobukti,
+                "pengeluaran_nobukti" => $request->pengeluaran_nobukti,
+                "tglkaskeluar" => $request->tglkaskeluar,
                 'supir_id' => $request->supir_id,
                 'trado_id' => $request->trado_id,
                 'uangjalan' => $request->uangjalan,
@@ -141,7 +141,7 @@ class AbsensiSupirApprovalHeaderController extends Controller
             return response()->json([
                 'message' => 'Berhasil disimpan',
                 'data' => $absensiSupirApprovalHeader
-            ], 201);    
+            ], 201);
         } catch (\Throwable $th) {
             DB::rollBack();
 
@@ -172,7 +172,7 @@ class AbsensiSupirApprovalHeaderController extends Controller
             return response()->json([
                 'message' => 'Berhasil disimpan',
                 'data' => $absensiSupirApprovalHeader
-            ], 201);    
+            ], 201);
         } catch (\Throwable $th) {
             DB::rollBack();
             throw $th;
@@ -261,31 +261,60 @@ class AbsensiSupirApprovalHeaderController extends Controller
     {
         $absensisupirapproval = AbsensiSupirApprovalHeader::find($id);
 
-         //validasi cetak
-         $printValidation = AbsensiSupirApprovalHeader::printValidation($id);
-         if (!$printValidation) {
-            $query = DB::table('error')->select('keterangan')->where('kodeerror', '=', 'SDC')->get();
-            $keterangan = $query['0'];
+        //validasi cetak
+        $printValidation = AbsensiSupirApprovalHeader::printValidation($id);
+        if (!$printValidation) {
+            $query = DB::table('error')->select('keterangan')->where('kodeerror', '=', 'SDC')->first();
             $data = [
-                'message' => $keterangan,
-                'errors' => 'status approve edit tidak boleh',
-                'kodestatus' => '1',
-                'kodenobukti' => '1'
+                'error' => true,
+                'message' =>  'No Bukti ' . $absensisupirapproval->nobukti . ' ' . $query->keterangan,
+                'kodeerror' => 'SDC',
+                'statuspesan' => 'warning',
             ];
 
             return response($data);
         } else {
 
             $data = [
+                'error' => false,
                 'message' => '',
-                'errors' => 'belum approve',
-                'kodestatus' => '0',
-                'kodenobukti' => '1'
+                'statuspesan' => 'success',
             ];
 
             return response($data);
         }
     }
+
+    public function cekValidasiAksi($id)
+    {
+        $absensiSupirHeader = new AbsensiSupirApprovalHeader();
+        $cekdata = $absensiSupirHeader->cekvalidasiaksi($id);
+        if ($cekdata['kondisi'] == true) {
+            $query = DB::table('error')
+                ->select(
+                    DB::raw("ltrim(rtrim(keterangan))+' (" . $cekdata['keterangan'] . ")' as keterangan")
+                )
+                ->where('kodeerror', '=', 'SATL')
+                ->first();
+
+            $data = [
+                'error' => true,
+                'message' => $query->keterangan,
+                'statuspesan' => 'warning',
+            ];
+
+            return response($data);
+        } else {
+            $data = [
+                'error' => false,
+                'message' => '',
+                'statuspesan' => 'success',
+            ];
+
+            return response($data);
+        }
+    }
+
 
     public function getApproval($absensi)
     {
