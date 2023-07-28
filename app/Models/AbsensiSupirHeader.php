@@ -491,7 +491,7 @@ class AbsensiSupirHeader extends MyModel
         $kasGantungRequest = [
             "tglbukti" => $data['tglbukti'],
             "penerima" => '',
-            "bank_id" => '',
+            "bank_id" => $bank->id,
             "coakaskeluar" => '',
             "pengeluaran_nobukti" => '',
             "postingdari" => 'ENTRY ABSENSI SUPIR',
@@ -574,12 +574,11 @@ class AbsensiSupirHeader extends MyModel
         }
         /*STORE KAS GANTUNG*/
         $bank = DB::table('bank')->from(DB::raw("bank with (readuncommitted)"))->select('id')->where('tipe', '=', 'KAS')->first();
-        $bank = DB::table('bank')->from(DB::raw("bank with (readuncommitted)"))->select('id')->where('tipe', '=', 'KAS')->first();
         
         $kasGantungRequest = [
             "tglbukti" => $data['tglbukti'],
             "penerima" => null,
-            "bank_id" => '',
+            "bank_id" => $bank->id,
             "coakaskeluar" => null,
             "pengeluaran_nobukti" => null,
             "postingdari" => 'ENTRY ABSENSI SUPIR',
@@ -595,7 +594,9 @@ class AbsensiSupirHeader extends MyModel
         if (!$this->todayValidation($date)) {
         // if (!$this->todayValidation($absensiSupir->id)) {
             $bukaAbsensi = BukaAbsensi::from(DB::raw("BukaAbsensi"))->where('tglabsensi', $absensiSupir->tglbukti)->first();
-            $bukaAbsensi = (new BukaAbsensi())->processDestroy($bukaAbsensi->id);
+            if (isset($bukaAbsensi)) {
+                $bukaAbsensi = (new BukaAbsensi())->processDestroy($bukaAbsensi->id);
+            }
         }
 
         $absensiSupirLogTrail = (new LogTrail())->processStore([
