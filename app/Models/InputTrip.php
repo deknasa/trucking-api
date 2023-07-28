@@ -72,7 +72,7 @@ class InputTrip extends MyModel
                 'nojobemkl2' => $data['nojobemkl2'] ?? '',
                 'nocont2' => $data['nocont2'] ?? '',
                 'noseal2' => $data['noseal2'] ?? '',
-                'statuslangsir' => $statuslangsir->id,
+                'statuslangsir' => $data['statuslangsir'] ?? $statuslangsir->id,
                 'statusperalihan' => $statusperalihan->id,
                 'inputtripmandor' =>  '1',
             ];

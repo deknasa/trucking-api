@@ -249,6 +249,7 @@ class SuratPengantar extends MyModel
             $table->unsignedBigInteger('statusbatalmuat')->nullable();
             $table->unsignedBigInteger('statusgandengan')->nullable();
             $table->unsignedBigInteger('statusupahzona')->nullable();
+            $table->unsignedBigInteger('statuslangsir')->nullable();
         });
 
         $status = Parameter::from(
@@ -347,6 +348,20 @@ class SuratPengantar extends MyModel
             ->first();
 
         $iddefaultstatusupahzona = $status->id ?? 0;
+        
+        $status = Parameter::from(
+
+            db::Raw("parameter with (readuncommitted)")
+        )
+            ->select(
+                'id'
+            )
+            ->where('grp', '=', 'STATUS LANGSIR')
+            ->where('subgrp', '=', 'STATUS LANGSIR')
+            ->where('default', '=', 'YA')
+            ->first();
+
+        $iddefaultstatuslangsir = $status->id ?? 0;
 
         DB::table($tempdefault)->insert(
             [
@@ -357,6 +372,7 @@ class SuratPengantar extends MyModel
                 "statusbatalmuat" => $iddefaultstatusbatal,
                 "statusgandengan" => $iddefaultstatusgandengan,
                 "statusupahzona" => $iddefaultstatusupahzona,
+                "statuslangsir" => $iddefaultstatuslangsir,
             ]
         );
 
@@ -371,6 +387,7 @@ class SuratPengantar extends MyModel
                 'statusbatalmuat',
                 'statusgandengan',
                 'statusupahzona',
+                'statuslangsir',
             );
 
         $data = $query->first();
