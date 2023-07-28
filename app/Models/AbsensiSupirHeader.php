@@ -557,6 +557,7 @@ class AbsensiSupirHeader extends MyModel
             throw new \Exception("Error storing pengeluaran Stok Detail.");
         }
         $uangJalan = 0;
+   
         for ($i = 0; $i < count($data['trado_id']); $i++) {
             $absensiSupirDetail = AbsensiSupirDetail::processStore($absensiSupir,[
                 'absensi_id' => $absensiSupir->id,
@@ -572,6 +573,8 @@ class AbsensiSupirHeader extends MyModel
             $absensiSupirDetails[] = $absensiSupirDetail->toArray();
             $uangJalan += $data['uangjalan'][$i];
         }
+
+        
         /*STORE KAS GANTUNG*/
         $bank = DB::table('bank')->from(DB::raw("bank with (readuncommitted)"))->select('id')->where('tipe', '=', 'KAS')->first();
         $bank = DB::table('bank')->from(DB::raw("bank with (readuncommitted)"))->select('id')->where('tipe', '=', 'KAS')->first();
@@ -594,10 +597,14 @@ class AbsensiSupirHeader extends MyModel
         $now = date('Y-m-d', strtotime('now'));
         if (!$this->todayValidation($date)) {
         // if (!$this->todayValidation($absensiSupir->id)) {
+               
             $bukaAbsensi = BukaAbsensi::from(DB::raw("BukaAbsensi"))->where('tglabsensi', $absensiSupir->tglbukti)->first();
-            $bukaAbsensi = (new BukaAbsensi())->processDestroy($bukaAbsensi->id);
+            if (isset($bukaAbsensi)) {
+                $bukaAbsensi = (new BukaAbsensi())->processDestroy($bukaAbsensi->id);    
+            }
+            
         }
-
+  
         $absensiSupirLogTrail = (new LogTrail())->processStore([
             'namatabel' => strtoupper($absensiSupir->getTable()),
             'postingdari' => $data['postingdari'] ??strtoupper('EDIT ABSENSI SUPIR Header '),
