@@ -264,7 +264,7 @@ class StoreMandorTripRequest extends FormRequest
             "statusgudangsama" => "required",
             "statuslongtrip" => "required",
             "statuslangsir" => "required",
-            "lokasibongkarmuat" => "required",
+            // "lokasibongkarmuat" => "required",
             "trado" => "required",
             "upah" => ["required", new ExistNominalUpahSupir()],
             'statusupahzona' => ['required', Rule::in($statusUpahZona)],
