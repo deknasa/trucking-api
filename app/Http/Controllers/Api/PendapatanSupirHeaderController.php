@@ -12,6 +12,7 @@ use App\Http\Requests\StorePendapatanSupirHeaderRequest;
 use App\Http\Requests\UpdatePendapatanSupirHeaderRequest;
 use App\Models\Parameter;
 use App\Models\PendapatanSupirDetail;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
@@ -34,28 +35,37 @@ class PendapatanSupirHeaderController extends Controller
             ]
         ]);
     }
+    public function default()
+    {
+        $pendapatanSupir = new PendapatanSupirHeader();
+        return response([
+            'status' => true,
+            'data' => $pendapatanSupir->default(),
+        ]);
+    }
 
     /**
      * @ClassName 
      */
-    public function store(StorePendapatanSupirHeaderRequest $request)
+    public function store(StorePendapatanSupirHeaderRequest $request): JsonResponse
     {
         DB::beginTransaction();
 
         try {
 
-
             $data = [
                 "tgldari" => $request->tgldari,
                 "tglsampai" => $request->tglsampai,
-                "periode" => $request->periode,
                 "tglbukti" => $request->tglbukti,
-                "nominal" => $request->nominal,
-                "supir_id" => $request->supir_id,
-                "nominal" => $request->nominal,
-                "keterangan_detail" => $request->keterangan_detail,
-                "postingdari" => $request->postingdari,
                 "bank_id" => $request->bank_id,
+                "supir_id" => $request->supir_id,                
+                "supir" => $request->supir,                
+                "id_detail" => $request->id_detail,
+                "nobukti_trip" => $request->nobukti_trip,
+                "nobukti_ric" => $request->nobukti_ric,
+                "dari_id" => $request->dari_id,
+                "sampai_id" => $request->sampai_id,
+                "nominal_detail" => $request->nominal_detail,
             ];
 
             $pendapatanSupirHeader = (new PendapatanSupirHeader())->processStore($data);
@@ -79,8 +89,11 @@ class PendapatanSupirHeaderController extends Controller
      */
     public function show($id)
     {
-        $data = PendapatanSupirHeader::findUpdate($id);
-        $detail = PendapatanSupirDetail::findUpdate($id);
+        // dd('test');
+
+        $data = (new PendapatanSupirHeader())->findUpdate($id);
+
+        $detail = (new PendapatanSupirHeader())->getTrip($data->tgldari, $data->tglsampai,$data->supir_id,$id, 'show');
 
         return response([
             'data' => $data,
@@ -91,21 +104,24 @@ class PendapatanSupirHeaderController extends Controller
     /**
      * @ClassName 
      */
-    public function update(UpdatePendapatanSupirHeaderRequest $request, PendapatanSupirHeader $pendapatanSupirHeader)
+    public function update(UpdatePendapatanSupirHeaderRequest $request, PendapatanSupirHeader $pendapatanSupirHeader): JsonResponse
     {
         try {
             $data = [
                 "tgldari" => $request->tgldari,
                 "tglsampai" => $request->tglsampai,
-                "periode" => $request->periode,
                 "tglbukti" => $request->tglbukti,
-                "nominal" => $request->nominal,
-                "supir_id" => $request->supir_id,
-                "nominal" => $request->nominal,
-                "keterangan_detail" => $request->keterangan_detail,
-                "postingdari" => $request->postingdari,
                 "bank_id" => $request->bank_id,
+                "supir_id" => $request->supir_id,                
+                "supir" => $request->supir,                
+                "id_detail" => $request->id_detail,
+                "nobukti_trip" => $request->nobukti_trip,
+                "nobukti_ric" => $request->nobukti_ric,
+                "dari_id" => $request->dari_id,
+                "sampai_id" => $request->sampai_id,
+                "nominal_detail" => $request->nominal_detail,
             ];
+
 
 
             $pendapatanSupirHeader = (new PendapatanSupirHeader())->processUpdate($pendapatanSupirHeader, $data);
@@ -127,65 +143,30 @@ class PendapatanSupirHeaderController extends Controller
     /**
      * @ClassName 
      */
-    public function destroy(DestroyPendapatanSupirHeaderRequest $request, $id)
+    public function destroy(DestroyPendapatanSupirHeaderRequest $request, $id): JsonResponse
     {
         DB::beginTransaction();
 
-
-        $getDetail = PendapatanSupirDetail::where('pendapatansupir_id', $id)->get();
-
-        $pendapatanSupir = new PendapatanSupirHeader();
-        $pendapatanSupir = $pendapatanSupir->lockAndDestroy($id);
-
-        if ($pendapatanSupir) {
-            $logTrail = [
-                'namatabel' => strtoupper($pendapatanSupir->getTable()),
-                'postingdari' => 'DELETE PENDAPATAN SUPIR HEADER',
-                'idtrans' => $pendapatanSupir->id,
-                'nobuktitrans' => $pendapatanSupir->nobukti,
-                'aksi' => 'DELETE',
-                'datajson' => $pendapatanSupir->toArray(),
-                'modifiedby' => auth('api')->user()->name
-            ];
-
-            $validatedLogTrail = new StoreLogTrailRequest($logTrail);
-            $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
-
-            // DELETE PENDAPATAN SUPIR DETAIL
-            $logTrailPendapatanDetail = [
-                'namatabel' => 'PENDAPATANSUPIRDETAIL',
-                'postingdari' => 'DELETE PENDAPATAN SUPIR DETAIL',
-                'idtrans' => $storedLogTrail['id'],
-                'nobuktitrans' => $pendapatanSupir->nobukti,
-                'aksi' => 'DELETE',
-                'datajson' => $getDetail->toArray(),
-                'modifiedby' => auth('api')->user()->name
-            ];
-
-            $validatedLogTrailPendapatanDetail = new StoreLogTrailRequest($logTrailPendapatanDetail);
-            app(LogTrailController::class)->store($validatedLogTrailPendapatanDetail);
-
-            DB::commit();
-
+        try {
+            $pendapatanSupir = (new PendapatanSupirHeader())->processDestroy($id, 'DELETE PENDAPATAN SUPIR');
             $selected = $this->getPosition($pendapatanSupir, $pendapatanSupir->getTable(), true);
             $pendapatanSupir->position = $selected->position;
             $pendapatanSupir->id = $selected->id;
             $pendapatanSupir->page = ceil($pendapatanSupir->position / ($request->limit ?? 10));
 
-            return response([
-                'status' => true,
+            DB::commit();
+
+            return response()->json([
                 'message' => 'Berhasil dihapus',
                 'data' => $pendapatanSupir
             ]);
-        } else {
+        } catch (\Throwable $th) {
             DB::rollBack();
 
-            return response([
-                'status' => false,
-                'message' => 'Gagal dihapus'
-            ]);
+            throw $th;
         }
     }
+
 
 
     /**
@@ -301,37 +282,33 @@ class PendapatanSupirHeaderController extends Controller
             $query = DB::table('error')
                 ->select('keterangan')
                 ->where('kodeerror', '=', 'SAP')
-                ->get();
-            $keterangan = $query['0'];
+                ->first();
             $data = [
-                'message' => $keterangan,
-                'errors' => 'sudah approve',
-                'kodestatus' => '1',
-                'kodenobukti' => '1'
+                'error' => true,
+                'message' =>  'No Bukti ' . $pendapatan->nobukti . ' ' . $query->keterangan,
+                'kodeerror' => 'SAP',
+                'statuspesan' => 'warning',
             ];
-
             return response($data);
         } else if ($statusdatacetak == $statusCetak->id) {
             $query = DB::table('error')
                 ->select('keterangan')
                 ->where('kodeerror', '=', 'SDC')
-                ->get();
-            $keterangan = $query['0'];
-            $data = [
-                'message' => $keterangan,
-                'errors' => 'sudah cetak',
-                'kodestatus' => '1',
-                'kodenobukti' => '1'
-            ];
+                ->first();
+                $data = [
+                    'error' => true,
+                    'message' =>  'No Bukti ' . $pendapatan->nobukti . ' ' . $query->keterangan,
+                    'kodeerror' => 'SDC',
+                    'statuspesan' => 'warning',
+                ];
 
             return response($data);
         } else {
 
             $data = [
+                'error' => false,
                 'message' => '',
-                'errors' => 'belum approve',
-                'kodestatus' => '0',
-                'kodenobukti' => '1'
+                'statuspesan' => 'success',
             ];
 
             return response($data);
@@ -361,7 +338,7 @@ class PendapatanSupirHeaderController extends Controller
         $tgldari  = date('Y-m-d', strtotime($request->tgldari));
         $tglsampai  = date('Y-m-d', strtotime($request->tglsampai));
         $supir_id  = $request->supir_id;
-        $id  = $request->id;
+        $id  = $request->idPendapatan;
         // dd('test');
         $pendapatanSupir = new PendapatanSupirHeader();
         return response([

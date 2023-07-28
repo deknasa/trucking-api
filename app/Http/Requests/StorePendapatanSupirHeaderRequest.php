@@ -6,6 +6,9 @@ use App\Http\Controllers\Api\ErrorController;
 use App\Models\Parameter;
 use Illuminate\Foundation\Http\FormRequest;
 use App\Rules\DateTutupBuku;
+use App\Rules\ExistBank;
+use App\Rules\ExistSupir;
+use App\Rules\ValidasiHutangList;
 
 class StorePendapatanSupirHeaderRequest extends FormRequest
 {
@@ -31,39 +34,60 @@ class StorePendapatanSupirHeaderRequest extends FormRequest
         $tglbatasawal = $getBatas->text;
         $tglbatasakhir = (date('Y') + 1) . '-01-01';
 
-        
+        $jumlahdetail = $this->jumlahdetail ?? 0;
+        $bank_id = $this->bank_id;
+        $ruleBank_id = [];
+        if ($bank_id != null) {
+            $ruleBank_id = [
+                'bank_id' => ['required', 'numeric', 'min:1', new ExistBank()]
+            ];
+        } else if ($bank_id == null && $this->bank != '') {
+            $ruleBank_id = [
+                'bank_id' => ['required', 'numeric', 'min:1', new ExistBank()]
+            ];
+        }
+
+        $supir_id = $this->supir_id;
+        $rulesSupir_id = [];
+        if ($supir_id != null) {
+            $rulesSupir_id = [
+                'supir_id' => ['required', 'numeric', 'min:1', new ExistSupir()]
+            ];
+        } else if ($supir_id == null && $this->supir != '') {
+            $rulesSupir_id = [
+                'supir_id' => ['required', 'numeric', 'min:1', new ExistSupir()]
+            ];
+        }
+
         $rules = [
             'tglbukti' => [
                 'required',
-                'date_equals:'.date('d-m-Y'),
+                'date_equals:' . date('d-m-Y'),
                 new DateTutupBuku()
             ],
             'bank' => 'required',
+            'supir' => [
+                'required',
+                new ValidasiHutangList($jumlahdetail)
+            ],
             'tgldari' => [
                 'required', 'date_format:d-m-Y',
-                'before:'.$tglbatasakhir,
-                'after_or_equal:'.$tglbatasawal,
+                'before:' . $tglbatasakhir,
+                'after_or_equal:' . $tglbatasawal,
             ],
             'tglsampai' => [
                 'required', 'date_format:d-m-Y',
-                'before:'.$tglbatasakhir,
-                'after_or_equal:'.$this->tgldari 
+                'before:' . $tglbatasakhir,
+                'after_or_equal:' . $this->tgldari
             ],
-            'periode' => [
-                'required', 'date_format:d-m-Y',
-                'before:'.$tglbatasakhir,
-            ],
-        ];
-        $relatedRequests = [
-            StorePendapatanSupirDetailRequest::class
         ];
 
-        foreach ($relatedRequests as $relatedRequest) {
-            $rules = array_merge(
-                $rules,
-                (new $relatedRequest)->rules()
-            );
-        }
+
+        $rules = array_merge(
+            $rules,
+            $ruleBank_id,
+            $rulesSupir_id
+        );
 
         return $rules;
     }
@@ -74,9 +98,6 @@ class StorePendapatanSupirHeaderRequest extends FormRequest
             'tglbukti' => 'tanggal bukti',
             'tgldari' => 'tanggal dari',
             'tglsampai' => 'tanggal sampai',
-            'supir.*' => 'supir',
-            'nominal.*' => 'nominal',
-            'keterangan_detail.*' => 'keterangan'
         ];
     }
 
@@ -84,11 +105,9 @@ class StorePendapatanSupirHeaderRequest extends FormRequest
     {
         $tglbatasakhir = (date('Y') + 1) . '-01-01';
         return [
-            'nominal.*.gt' => 'tidak boleh kosong',
             'tglbukti.date_format' => app(ErrorController::class)->geterror('DF')->keterangan,
-            'tgldari.before' => app(ErrorController::class)->geterror('NTLB')->keterangan. ' '.$tglbatasakhir,
-            'tglsampai.before' => app(ErrorController::class)->geterror('NTLB')->keterangan. ' '.$tglbatasakhir,
-            'periode.before' => app(ErrorController::class)->geterror('NTLB')->keterangan. ' '.$tglbatasakhir,
+            'tgldari.before' => app(ErrorController::class)->geterror('NTLB')->keterangan . ' ' . $tglbatasakhir,
+            'tglsampai.before' => app(ErrorController::class)->geterror('NTLB')->keterangan . ' ' . $tglbatasakhir,
         ];
     }
 }
