@@ -29,11 +29,12 @@ class ValidasiDestroyPendapatanSupirHeader implements Rule
      */
     public function passes($attribute, $value)
     {
-
-        $container = app(PendapatanSupirHeaderController::class);
-        $cekdata = $container->cekvalidasi(request()->id);
-        if($cekdata->original['kodestatus']){
-          return false;
+        $cekCetak = app(PendapatanSupirHeaderController::class)->cekvalidasi(request()->id);
+        $getOriginal = $cekCetak->original;
+        if ($getOriginal['error'] == true) {
+            $this->kodeerror = $getOriginal['kodeerror'];
+            $this->keterangan = '';
+            return false;
         }
         return true;
     }
@@ -45,6 +46,6 @@ class ValidasiDestroyPendapatanSupirHeader implements Rule
      */
     public function message()
     {
-        return app(ErrorController::class)->geterror('SATL')->keterangan;
+        return app(ErrorController::class)->geterror($this->kodeerror)->keterangan;
     }
 }
