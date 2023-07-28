@@ -95,7 +95,7 @@ class UpdateSuratPengantarRequest extends FormRequest
             'nobukti' => [
                 Rule::in($query->nobukti),
             ],
-            "lokasibongkarmuat" => "required",
+            // "lokasibongkarmuat" => "required",
             'statuslongtrip' => ['required', Rule::in($statuslongtrip)],
             'statusperalihan' => ['required', Rule::in($statusperalihan)],
             'statusbatalmuat' => ['required', Rule::in($statusbatalmuat)],
