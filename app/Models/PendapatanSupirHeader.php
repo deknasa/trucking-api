@@ -66,9 +66,12 @@ class PendapatanSupirHeader extends MyModel
         if ($statusCetak != '') {
             $query->where("pendapatansupirheader.statuscetak", $statusCetak);
         }
-        $this->totalRows = $query->count();
-        $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;
 
+        // dd($query->ToSql());
+        $this->totalRows = $query->count();
+
+        $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;
+   
         $this->sort($query);
         $this->filter($query);
         $this->paginate($query);
