@@ -70,8 +70,11 @@ class PendapatanSupirHeaderController extends Controller
 
             $pendapatanSupirHeader = (new PendapatanSupirHeader())->processStore($data);
             $pendapatanSupirHeader->position = $this->getPosition($pendapatanSupirHeader, $pendapatanSupirHeader->getTable())->position;
-            $pendapatanSupirHeader->page = ceil($pendapatanSupirHeader->position / ($request->limit ?? 10));
-
+            if ($request->limit==0) {
+                $pendapatanSupirHeader->page = ceil($pendapatanSupirHeader->position / (10));
+            } else {
+                $pendapatanSupirHeader->page = ceil($pendapatanSupirHeader->position / ($request->limit ?? 10));
+            }
             DB::commit();
 
             return response()->json([
@@ -126,8 +129,11 @@ class PendapatanSupirHeaderController extends Controller
 
             $pendapatanSupirHeader = (new PendapatanSupirHeader())->processUpdate($pendapatanSupirHeader, $data);
             $pendapatanSupirHeader->position = $this->getPosition($pendapatanSupirHeader, $pendapatanSupirHeader->getTable())->position;
-            $pendapatanSupirHeader->page = ceil($pendapatanSupirHeader->position / ($request->limit ?? 10));
-
+            if ($request->limit==0) {
+                $pendapatanSupirHeader->page = ceil($pendapatanSupirHeader->position / (10));
+            } else {
+                $pendapatanSupirHeader->page = ceil($pendapatanSupirHeader->position / ($request->limit ?? 10));
+            }
             DB::commit();
 
             return response()->json([
@@ -152,8 +158,11 @@ class PendapatanSupirHeaderController extends Controller
             $selected = $this->getPosition($pendapatanSupir, $pendapatanSupir->getTable(), true);
             $pendapatanSupir->position = $selected->position;
             $pendapatanSupir->id = $selected->id;
-            $pendapatanSupir->page = ceil($pendapatanSupir->position / ($request->limit ?? 10));
-
+            if ($request->limit==0) {
+                $pendapatanSupir->page = ceil($pendapatanSupir->position / (10));
+            } else {
+                $pendapatanSupir->page = ceil($pendapatanSupir->position / ($request->limit ?? 10));
+            }
             DB::commit();
 
             return response()->json([

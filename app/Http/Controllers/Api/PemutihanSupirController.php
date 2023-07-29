@@ -76,8 +76,11 @@ class PemutihanSupirController extends Controller
 
             $pemutihanSupir = (new PemutihanSupir())->processStore($data);
             $pemutihanSupir->position = $this->getPosition($pemutihanSupir, $pemutihanSupir->getTable())->position;
-            $pemutihanSupir->page = ceil($pemutihanSupir->position / ($request->limit ?? 10));
-
+            if ($request->limit == 0) {
+                $pemutihanSupir->page = ceil($pemutihanSupir->position / (10));
+            } else {
+                $pemutihanSupir->page = ceil($pemutihanSupir->position / ($request->limit ?? 10));
+            }
             DB::commit();
 
             return response()->json([
@@ -135,8 +138,11 @@ class PemutihanSupirController extends Controller
 
             $pemutihanSupir = (new PemutihanSupir())->processUpdate($pemutihansupir, $data);
             $pemutihanSupir->position = $this->getPosition($pemutihanSupir, $pemutihanSupir->getTable())->position;
-            $pemutihanSupir->page = ceil($pemutihanSupir->position / ($request->limit ?? 10));
-
+            if ($request->limit == 0) {
+                $pemutihanSupir->page = ceil($pemutihanSupir->position / (10));
+            } else {
+                $pemutihanSupir->page = ceil($pemutihanSupir->position / ($request->limit ?? 10));
+            }
             DB::commit();
 
             return response()->json([
@@ -161,8 +167,11 @@ class PemutihanSupirController extends Controller
             $selected = $this->getPosition($pemutihanSupir, $pemutihanSupir->getTable(), true);
             $pemutihanSupir->position = $selected->position;
             $pemutihanSupir->id = $selected->id;
-            $pemutihanSupir->page = ceil($pemutihanSupir->position / ($request->limit ?? 10));
-
+            if ($request->limit == 0) {
+                $pemutihanSupir->page = ceil($pemutihanSupir->position / (10));
+            } else {
+                $pemutihanSupir->page = ceil($pemutihanSupir->position / ($request->limit ?? 10));
+            }
             DB::commit();
 
             return response()->json([

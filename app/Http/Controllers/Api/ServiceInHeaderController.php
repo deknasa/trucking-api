@@ -20,7 +20,7 @@ use App\Http\Requests\StoreLogTrailRequest;
 
 class ServiceInHeaderController extends Controller
 {
-     /**
+    /**
      * @ClassName 
      * ServiceInHeaderHeader
      * @Detail1 ServiceInDetailController
@@ -55,8 +55,11 @@ class ServiceInHeaderController extends Controller
             ];
             $serviceInHeader = (new ServiceInHeader())->processStore($data);
             $serviceInHeader->position = $this->getPosition($serviceInHeader, $serviceInHeader->getTable())->position;
-            $serviceInHeader->page = ceil($serviceInHeader->position / ($request->limit ?? 10));
-
+            if ($request->limit == 0) {
+                $serviceInHeader->page = ceil($serviceInHeader->position / (10));
+            } else {
+                $serviceInHeader->page = ceil($serviceInHeader->position / ($request->limit ?? 10));
+            }
             DB::commit();
 
             return response()->json([
@@ -99,7 +102,11 @@ class ServiceInHeaderController extends Controller
             ];
             $serviceInHeader = (new ServiceInHeader())->processUpdate($serviceInHeader, $data);
             $serviceInHeader->position = $this->getPosition($serviceInHeader, $serviceInHeader->getTable())->position;
-            $serviceInHeader->page = ceil($serviceInHeader->position / ($request->limit ?? 10));
+            if ($request->limit == 0) {
+                $serviceInHeader->page = ceil($serviceInHeader->position / (10));
+            } else {
+                $serviceInHeader->page = ceil($serviceInHeader->position / ($request->limit ?? 10));
+            }
 
             DB::commit();
 
@@ -126,7 +133,11 @@ class ServiceInHeaderController extends Controller
             $selected = $this->getPosition($serviceInHeader, $serviceInHeader->getTable(), true);
             $serviceInHeader->position = $selected->position;
             $serviceInHeader->id = $selected->id;
-            $serviceInHeader->page = ceil($serviceInHeader->position / ($request->limit ?? 10));
+            if ($request->limit == 0) {
+                $serviceInHeader->page = ceil($serviceInHeader->position / (10));
+            } else {
+                $serviceInHeader->page = ceil($serviceInHeader->position / ($request->limit ?? 10));
+            }
 
             DB::commit();
 
@@ -254,7 +265,7 @@ class ServiceInHeaderController extends Controller
         }
     }
 
-     /**
+    /**
      * @ClassName 
      */
     public function export($id)

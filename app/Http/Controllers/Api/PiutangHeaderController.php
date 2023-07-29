@@ -70,8 +70,11 @@ class PiutangHeaderController extends Controller
             ];
             $piutangHeader = (new PiutangHeader())->processStore($data);
             $piutangHeader->position = $this->getPosition($piutangHeader, $piutangHeader->getTable())->position;
-            $piutangHeader->page = ceil($piutangHeader->position / ($request->limit ?? 10));
-
+            if ($request->limit==0) {
+                $piutangHeader->page = ceil($piutangHeader->position / (10));
+            } else {
+                $piutangHeader->page = ceil($piutangHeader->position / ($request->limit ?? 10));
+            }
             DB::commit();
 
             return response()->json([
@@ -110,8 +113,11 @@ class PiutangHeaderController extends Controller
             ];
             $piutang = (new PiutangHeader())->processUpdate($piutangHeader, $data);
             $piutang->position = $this->getPosition($piutang, $piutang->getTable())->position;
-            $piutang->page = ceil($piutang->position / ($request->limit ?? 10));
-
+            if ($request->limit==0) {
+                $piutang->page = ceil($piutang->position / (10));
+            } else {
+                $piutang->page = ceil($piutang->position / ($request->limit ?? 10));
+            }
             DB::commit();
 
             return response()->json([
@@ -137,8 +143,11 @@ class PiutangHeaderController extends Controller
             $selected = $this->getPosition($piutangHeader, $piutangHeader->getTable(), true);
             $piutangHeader->position = $selected->position;
             $piutangHeader->id = $selected->id;
-            $piutangHeader->page = ceil($piutangHeader->position / ($request->limit ?? 10));
-
+            if ($request->limit==0) {
+                $piutangHeader->page = ceil($piutangHeader->position / (10));
+            } else {
+                $piutangHeader->page = ceil($piutangHeader->position / ($request->limit ?? 10));
+            }
             DB::commit();
 
             return response()->json([

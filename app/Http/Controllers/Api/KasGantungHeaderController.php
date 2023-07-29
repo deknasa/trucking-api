@@ -96,7 +96,11 @@ class KasGantungHeaderController extends Controller
 
             $kasgantungHeader = (new KasGantungHeader())->processStore($data);
             $kasgantungHeader->position = $this->getPosition($kasgantungHeader, $kasgantungHeader->getTable())->position;
-            $kasgantungHeader->page = ceil($kasgantungHeader->position / ($request->limit ?? 10));
+            if ($request->limit==0) {
+                $kasgantungHeader->page = ceil($kasgantungHeader->position / (10));
+            } else {
+                $kasgantungHeader->page = ceil($kasgantungHeader->position / ($request->limit ?? 10));
+            }
 
             DB::commit();
 
@@ -157,8 +161,11 @@ class KasGantungHeaderController extends Controller
 
             $kasgantungHeader = (new KasGantungHeader())->processUpdate($kasgantungheader, $data);
             $kasgantungHeader->position = $this->getPosition($kasgantungHeader, $kasgantungHeader->getTable())->position;
-            $kasgantungHeader->page = ceil($kasgantungHeader->position / ($request->limit ?? 10));
-
+            if ($request->limit==0) {
+                $kasgantungHeader->page = ceil($kasgantungHeader->position / (10));
+            } else {
+                $kasgantungHeader->page = ceil($kasgantungHeader->position / ($request->limit ?? 10));
+            }
             DB::commit();
 
             return response()->json([
@@ -183,8 +190,11 @@ class KasGantungHeaderController extends Controller
             $selected = $this->getPosition($kasgantungHeader, $kasgantungHeader->getTable(), true);
             $kasgantungHeader->position = $selected->position;
             $kasgantungHeader->id = $selected->id;
-            $kasgantungHeader->page = ceil($kasgantungHeader->position / ($request->limit ?? 10));
-
+            if ($request->limit==0) {
+                $kasgantungHeader->page = ceil($kasgantungHeader->position / (10));
+            } else {
+                $kasgantungHeader->page = ceil($kasgantungHeader->position / ($request->limit ?? 10));
+            }
             DB::commit();
 
             return response()->json([

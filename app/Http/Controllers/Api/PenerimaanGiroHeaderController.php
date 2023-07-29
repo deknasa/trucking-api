@@ -86,8 +86,11 @@ class PenerimaanGiroHeaderController extends Controller
             ];
             $penerimaanGiroHeader = (new PenerimaanGiroHeader())->processStore($data);
             $penerimaanGiroHeader->position = $this->getPosition($penerimaanGiroHeader, $penerimaanGiroHeader->getTable())->position;
-            $penerimaanGiroHeader->page = ceil($penerimaanGiroHeader->position / ($request->limit ?? 10));
-
+            if ($request->limit==0) {
+                $penerimaanGiroHeader->page = ceil($penerimaanGiroHeader->position / (10));
+            } else {
+                $penerimaanGiroHeader->page = ceil($penerimaanGiroHeader->position / ($request->limit ?? 10));
+            }
             DB::commit();
 
             return response()->json([
@@ -138,8 +141,9 @@ class PenerimaanGiroHeaderController extends Controller
             $penerimaanGiroHeader = (new PenerimaanGiroHeader())->processUpdate($penerimaangiroheader, $data);
             /* Set position and page */
             $penerimaanGiroHeader->position = $this->getPosition($penerimaanGiroHeader, $penerimaanGiroHeader->getTable())->position;
-            $penerimaanGiroHeader->page = ceil($penerimaanGiroHeader->position / ($request->limit ?? 10));
-            if (isset($request->limit)) {
+            if ($request->limit==0) {
+                $penerimaanGiroHeader->page = ceil($penerimaanGiroHeader->position / (10));
+            } else {
                 $penerimaanGiroHeader->page = ceil($penerimaanGiroHeader->position / ($request->limit ?? 10));
             }
 
@@ -166,8 +170,11 @@ class PenerimaanGiroHeaderController extends Controller
             $selected = $this->getPosition($penerimaanGiroHeader, $penerimaanGiroHeader->getTable(), true);
             $penerimaanGiroHeader->position = $selected->position;
             $penerimaanGiroHeader->id = $selected->id;
-            $penerimaanGiroHeader->page = ceil($penerimaanGiroHeader->position / ($request->limit ?? 10));
-
+            if ($request->limit==0) {
+                $penerimaanGiroHeader->page = ceil($penerimaanGiroHeader->position / (10));
+            } else {
+                $penerimaanGiroHeader->page = ceil($penerimaanGiroHeader->position / ($request->limit ?? 10));
+            }
             DB::commit();
 
             return response()->json([

@@ -61,8 +61,11 @@ class ServiceOutHeaderController extends Controller
 
             $serviceOutHeader = (new ServiceOutHeader())->processStore($data);
             $serviceOutHeader->position = $this->getPosition($serviceOutHeader, $serviceOutHeader->getTable())->position;
-            $serviceOutHeader->page = ceil($serviceOutHeader->position / ($request->limit ?? 10));
-
+            if ($request->limit==0) {
+                $serviceOutHeader->page = ceil($serviceOutHeader->position / (10));
+            } else {
+                $serviceOutHeader->page = ceil($serviceOutHeader->position / ($request->limit ?? 10));
+            }
             DB::commit();
 
             return response()->json([
@@ -109,8 +112,11 @@ class ServiceOutHeaderController extends Controller
 
             $serviceoutheader = (new ServiceOutHeader())->processUpdate($serviceoutheader, $data);
             $serviceoutheader->position = $this->getPosition($serviceoutheader, $serviceoutheader->getTable())->position;
-            $serviceoutheader->page = ceil($serviceoutheader->position / ($request->limit ?? 10));
-
+            if ($request->limit==0) {
+                $serviceoutheader->page = ceil($serviceoutheader->position / (10));
+            } else {
+                $serviceoutheader->page = ceil($serviceoutheader->position / ($request->limit ?? 10));
+            }
             DB::commit();
 
             return response()->json([
@@ -136,8 +142,11 @@ class ServiceOutHeaderController extends Controller
             $selected = $this->getPosition($serviceOutHeader, $serviceOutHeader->getTable(), true);
             $serviceOutHeader->position = $selected->position;
             $serviceOutHeader->id = $selected->id;
-            $serviceOutHeader->page = ceil($serviceOutHeader->position / ($request->limit ?? 10));
-
+            if ($request->limit==0) {
+                $serviceOutHeader->page = ceil($serviceOutHeader->position / (10));
+            } else {
+                $serviceOutHeader->page = ceil($serviceOutHeader->position / ($request->limit ?? 10));
+            }
             DB::commit();
 
             return response()->json([
