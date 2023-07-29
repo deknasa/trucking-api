@@ -749,6 +749,15 @@ class UpdateSuratPengantarRequest extends FormRequest
             ];
         }
 
+        if ((request()->dari_id == 1 && request()->sampai_id == 103) || (request()->dari_id == 103 && request()->sampai_id == 1) || (request()->statuslongtrip == 65)) {
+            $rulestarifrincian_id = [
+                'tarifrincian' => [
+                    'nullable',
+                    new ExistTarifRincian(),
+                ]
+            ];
+        }
+
         $upah_id = $this->upah_id;
         $rulesUpah_id = [];
         if ($upah_id != null) {

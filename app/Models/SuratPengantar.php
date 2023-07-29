@@ -1180,6 +1180,7 @@ class SuratPengantar extends MyModel
 
         $tarif = Tarif::find($orderanTrucking->tarif_id);
         $tarif = TarifRincian::where('tarif_id', $orderanTrucking->tarif_id)->where('container_id', $orderanTrucking->container_id)->first();
+        $tarifNominal = $tarif->nominal?? 0;
 
         $statusTidakBolehEditTujuan = Parameter::from(DB::raw("parameter with (readuncommitted)"))->where('grp', '=', 'STATUS EDIT TUJUAN')->where('text', '=', 'TIDAK BOLEH EDIT TUJUAN')->first();
 
@@ -1224,7 +1225,7 @@ class SuratPengantar extends MyModel
             $suratPengantar->noseal = $orderanTrucking->noseal;
             $suratPengantar->noseal2 = $orderanTrucking->noseal2 ?? '';
             $suratPengantar->statuslongtrip = $data['statuslongtrip'];
-            $suratPengantar->omset = $tarif->nominal;
+            $suratPengantar->omset = $tarifNominal;
             $suratPengantar->gajisupir = $upahsupirRincian->nominalsupir;
             $suratPengantar->gajikenek = $upahsupirRincian->nominalkenek;
             $suratPengantar->agen_id = $orderanTrucking->agen_id;
@@ -1235,13 +1236,13 @@ class SuratPengantar extends MyModel
             $suratPengantar->tarif_id = $orderanTrucking->tarif_id;
             $nominalPeralihan = 0;
             if ($data['persentaseperalihan'] != 0) {
-                $nominalPeralihan = ($tarif->nominal * ($data['persentaseperalihan'] / 100));
+                $nominalPeralihan = ($tarifNominal * ($data['persentaseperalihan'] / 100));
             }
 
             $suratPengantar->nominalperalihan = $nominalPeralihan;
             $suratPengantar->persentaseperalihan = $data['persentaseperalihan'];
             $suratPengantar->discount = $data['persentaseperalihan'];
-            $suratPengantar->totalomset = $tarif->nominal - ($tarif->nominal * ($data['persentaseperalihan'] / 100));
+            $suratPengantar->totalomset = $tarifNominal - ($tarifNominal * ($data['persentaseperalihan'] / 100));
             $suratPengantar->biayatambahan_id = $data['biayatambahan_id'] ?? 0;
             $suratPengantar->nosp = $data['nosp'];
             $suratPengantar->tglsp = date('Y-m-d', strtotime($data['tglbukti']));
@@ -1251,7 +1252,7 @@ class SuratPengantar extends MyModel
             $suratPengantar->nosptagihlain = $data['nosptagihlain'] ?? '';
             $suratPengantar->liter = $upahsupirRincian->liter ?? 0;
             $suratPengantar->qtyton = $data['qtyton'] ?? 0;
-            $suratPengantar->totalton = $tarif->nominal * $data['qtyton'];
+            $suratPengantar->totalton = $tarifNominal * $data['qtyton'];
             $suratPengantar->mandorsupir_id = $trado->mandor_id;
             $suratPengantar->mandortrado_id = $trado->mandor_id;
             $suratPengantar->statusgudangsama = $data['statusgudangsama'];
