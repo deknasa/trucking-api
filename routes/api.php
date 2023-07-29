@@ -849,6 +849,7 @@ route::middleware(['auth:api', 'authorized'])->group(function () {
     Route::resource('invoiceextradetail', InvoiceExtraDetailController::class)->whereNumber('invoiceextradetail');
 
     Route::post('invoicechargegandenganheader/{id}/cekvalidasi', [InvoiceChargeGandenganHeaderController::class, 'cekvalidasi'])->name('invoicechargegandenganheader.cekvalidasi')->whereNumber('id');
+    Route::post('invoicechargegandenganheader/{id}/cekvalidasiAksi', [InvoiceChargeGandenganHeaderController::class, 'cekvalidasiAksi'])->name('invoicechargegandenganheader.cekvalidasiAksi')->whereNumber('id');
     Route::get('invoicechargegandenganheader/{id}/getinvoicegandengan', [InvoiceChargeGandenganHeaderController::class, 'getinvoicegandengan'])->name('invoicechargegandenganheader.getinvoicegandengan')->whereNumber('id');
     Route::get('invoicechargegandenganheader/{id}/export', [InvoiceChargeGandenganHeaderController::class, 'export'])->name('invoicechargegandenganheader.export')->whereNumber('id');
     Route::get('invoicechargegandenganheader/{id}/printreport', [InvoiceChargeGandenganHeaderController::class, 'printReport'])->whereNumber('id');

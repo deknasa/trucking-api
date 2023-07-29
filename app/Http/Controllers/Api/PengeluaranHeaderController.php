@@ -40,7 +40,7 @@ class PengeluaranHeaderController extends Controller
      * @ClassName 
      * pengeluaranheadercontainer
      * @Detail1 PengeluaranDetailController
-    */
+     */
     public function index(GetIndexRangeRequest $request)
     {
         $pengeluaran = new PengeluaranHeader();
@@ -77,14 +77,17 @@ class PengeluaranHeaderController extends Controller
         try {
             $pengeluaranHeader = (new PengeluaranHeader())->processStore($request->all());
             $pengeluaranHeader->position = $this->getPosition($pengeluaranHeader, $pengeluaranHeader->getTable())->position;
-            $pengeluaranHeader->page = ceil($pengeluaranHeader->position / ($request->limit ?? 10));
-
+            if ($request->limit == 0) {
+                $pengeluaranHeader->page = ceil($pengeluaranHeader->position / (10));
+            } else {
+                $pengeluaranHeader->page = ceil($pengeluaranHeader->position / ($request->limit ?? 10));
+            }
             DB::commit();
 
             return response()->json([
                 'message' => 'Berhasil disimpan',
                 'data' => $pengeluaranHeader
-            ], 201);            
+            ], 201);
         } catch (\Throwable $th) {
             DB::rollBack();
             throw $th;
@@ -106,31 +109,31 @@ class PengeluaranHeaderController extends Controller
     /**
      * @ClassName
      */
-    public function update(UpdatePengeluaranHeaderRequest $request, PengeluaranHeader $pengeluaranHeader,$id)
+    public function update(UpdatePengeluaranHeaderRequest $request, PengeluaranHeader $pengeluaranHeader, $id)
     {
-        DB::beginTransaction();        
+        DB::beginTransaction();
         try {
-           /* Store header */
-           $pengeluaranHeader = PengeluaranHeader::findOrFail($id);
-           $pengeluaranHeader = (new PengeluaranHeader())->processUpdate($pengeluaranHeader,$request->all());
-           /* Set position and page */
-           $pengeluaranHeader->position = $this->getPosition($pengeluaranHeader, $pengeluaranHeader->getTable())->position;
-           $pengeluaranHeader->page = ceil($pengeluaranHeader->position / ($request->limit ?? 10));
-           if (isset($request->limit)) {
-               $pengeluaranHeader->page = ceil($pengeluaranHeader->position / ($request->limit ?? 10));
-           }
+            /* Store header */
+            $pengeluaranHeader = PengeluaranHeader::findOrFail($id);
+            $pengeluaranHeader = (new PengeluaranHeader())->processUpdate($pengeluaranHeader, $request->all());
+            /* Set position and page */
+            $pengeluaranHeader->position = $this->getPosition($pengeluaranHeader, $pengeluaranHeader->getTable())->position;
+            if ($request->limit == 0) {
+                $pengeluaranHeader->page = ceil($pengeluaranHeader->position / (10));
+            } else {
+                $pengeluaranHeader->page = ceil($pengeluaranHeader->position / ($request->limit ?? 10));
+            }
 
-           DB::commit();
-           return response()->json([
-               'message' => 'Berhasil disimpan',
-               'data' => $pengeluaranHeader
-           ]);    
-       } catch (\Throwable $th) {
-           DB::rollBack();
+            DB::commit();
+            return response()->json([
+                'message' => 'Berhasil disimpan',
+                'data' => $pengeluaranHeader
+            ]);
+        } catch (\Throwable $th) {
+            DB::rollBack();
 
-           throw $th;
-       }
-
+            throw $th;
+        }
     }
 
     /**
@@ -145,8 +148,11 @@ class PengeluaranHeaderController extends Controller
             $selected = $this->getPosition($pengeluaranHeader, $pengeluaranHeader->getTable(), true);
             $pengeluaranHeader->position = $selected->position;
             $pengeluaranHeader->id = $selected->id;
-            $pengeluaranHeader->page = ceil($pengeluaranHeader->position / ($request->limit ?? 10));
-
+            if ($request->limit == 0) {
+                $pengeluaranHeader->page = ceil($pengeluaranHeader->position / (10));
+            } else {
+                $pengeluaranHeader->page = ceil($pengeluaranHeader->position / ($request->limit ?? 10));
+            }
             DB::commit();
 
             return response()->json([
@@ -314,7 +320,8 @@ class PengeluaranHeaderController extends Controller
             ];
 
             return response($data);
-        } if ($cekdata['kondisi'] == true) {
+        }
+        if ($cekdata['kondisi'] == true) {
             $query = DB::table('error')
                 ->select(
                     DB::raw("ltrim(rtrim(keterangan))+' (" . $cekdata['keterangan'] . ")' as keterangan")

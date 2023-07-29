@@ -154,8 +154,9 @@ class AbsensiSupirHeaderController extends Controller
             $absensiSupirHeader = (new absensiSupirHeader())->processStore($data);
             /* Set position and page */
             $absensiSupirHeader->position = $this->getPosition($absensiSupirHeader, $absensiSupirHeader->getTable())->position;
-            $absensiSupirHeader->page = ceil($absensiSupirHeader->position / ($request->limit ?? 10));
-            if (isset($request->limit)) {
+            if ($request->limit == 0) {
+                $absensiSupirHeader->page = ceil($absensiSupirHeader->position / (10));
+            } else {
                 $absensiSupirHeader->page = ceil($absensiSupirHeader->position / ($request->limit ?? 10));
             }
 
@@ -169,7 +170,6 @@ class AbsensiSupirHeaderController extends Controller
 
             throw $th;
         }
-
     }
 
     /**
@@ -198,8 +198,9 @@ class AbsensiSupirHeaderController extends Controller
             $absensiSupirHeader = (new absensiSupirHeader())->processUpdate($absensiSupirHeader, $data);
             /* Set position and page */
             $absensiSupirHeader->position = $this->getPosition($absensiSupirHeader, $absensiSupirHeader->getTable())->position;
-            $absensiSupirHeader->page = ceil($absensiSupirHeader->position / ($request->limit ?? 10));
-            if (isset($request->limit)) {
+            if ($request->limit == 0) {
+                $absensiSupirHeader->page = ceil($absensiSupirHeader->position / (10));
+            } else {
                 $absensiSupirHeader->page = ceil($absensiSupirHeader->position / ($request->limit ?? 10));
             }
 
@@ -225,12 +226,14 @@ class AbsensiSupirHeaderController extends Controller
             // dd($absensiSupirHeader);
             $absensiSupirHeader = (new AbsensiSupirHeader())->processDestroy($id);
             /* Set position and page */
-            $absensiSupirHeader->position = $this->getPosition($absensiSupirHeader, $absensiSupirHeader->getTable())->position;
-            $absensiSupirHeader->page = ceil($absensiSupirHeader->position / ($request->limit ?? 10));
-            if (isset($request->limit)) {
+            $selected = $this->getPosition($absensiSupirHeader, $absensiSupirHeader->getTable(), true);
+            $absensiSupirHeader->position = $selected->position;
+            $absensiSupirHeader->id = $selected->id;
+            if ($request->limit == 0) {
+                $absensiSupirHeader->page = ceil($absensiSupirHeader->position / (10));
+            } else {
                 $absensiSupirHeader->page = ceil($absensiSupirHeader->position / ($request->limit ?? 10));
             }
-
             DB::commit();
             return response()->json([
                 'message' => 'Berhasil disimpan',
@@ -372,7 +375,7 @@ class AbsensiSupirHeaderController extends Controller
 
             // return response($data);
         }
-        
+
         //validasi Hari ini
         $todayValidation = AbsensiSupirHeader::todayValidation($absensisupir->tglbukti);
         if (!$todayValidation) {

@@ -65,8 +65,11 @@ class InvoiceExtraHeaderController extends Controller
             ];
             $invoiceExtra = (new InvoiceExtraHeader())->processStore($data);
             $invoiceExtra->position = $this->getPosition($invoiceExtra, $invoiceExtra->getTable())->position;
-            $invoiceExtra->page = ceil($invoiceExtra->position / ($request->limit ?? 10));
-
+            if ($request->limit==0) {
+                $invoiceExtra->page = ceil($invoiceExtra->position / (10));
+            } else {
+                $invoiceExtra->page = ceil($invoiceExtra->position / ($request->limit ?? 10));
+            }
             DB::commit();
 
             return response()->json([
@@ -109,8 +112,11 @@ class InvoiceExtraHeaderController extends Controller
             ];
             $invoiceExtraHeader = (new InvoiceExtraHeader())->processUpdate($invoiceextraheader, $data);
             $invoiceExtraHeader->position = $this->getPosition($invoiceExtraHeader, $invoiceExtraHeader->getTable())->position;
-            $invoiceExtraHeader->page = ceil($invoiceExtraHeader->position / ($request->limit ?? 10));
-
+            if ($request->limit==0) {
+                $invoiceExtraHeader->page = ceil($invoiceExtraHeader->position / (10));
+            } else {
+                $invoiceExtraHeader->page = ceil($invoiceExtraHeader->position / ($request->limit ?? 10));
+            }
             DB::commit();
 
             return response()->json([
@@ -136,8 +142,11 @@ class InvoiceExtraHeaderController extends Controller
             $selected = $this->getPosition($invoiceExtraHeader, $invoiceExtraHeader->getTable(), true);
             $invoiceExtraHeader->position = $selected->position;
             $invoiceExtraHeader->id = $selected->id;
-            $invoiceExtraHeader->page = ceil($invoiceExtraHeader->position / ($request->limit ?? 10));
-
+            if ($request->limit==0) {
+                $invoiceExtraHeader->page = ceil($invoiceExtraHeader->position / (10));
+            } else {
+                $invoiceExtraHeader->page = ceil($invoiceExtraHeader->position / ($request->limit ?? 10));
+            }
             DB::commit();
 
             return response()->json([

@@ -75,11 +75,11 @@ class AbsensiSupirApprovalHeaderController extends Controller
             $absensiSupirApprovalHeader = (new AbsensiSupirApprovalHeader())->processStore($data);
             /* Set position and page */
             $absensiSupirApprovalHeader->position = $this->getPosition($absensiSupirApprovalHeader, $absensiSupirApprovalHeader->getTable())->position;
-            $absensiSupirApprovalHeader->page = ceil($absensiSupirApprovalHeader->position / ($request->limit ?? 10));
-            if (isset($request->limit)) {
+            if ($request->limit==0) {
+                $absensiSupirApprovalHeader->page = ceil($absensiSupirApprovalHeader->position / (10));
+            } else {
                 $absensiSupirApprovalHeader->page = ceil($absensiSupirApprovalHeader->position / ($request->limit ?? 10));
             }
-
             DB::commit();
             return response()->json([
                 'message' => 'Berhasil disimpan',
@@ -132,11 +132,11 @@ class AbsensiSupirApprovalHeaderController extends Controller
             $absensiSupirApprovalHeader = (new AbsensiSupirApprovalHeader())->processStore($data);
             /* Set position and page */
             $absensiSupirApprovalHeader->position = $this->getPosition($absensiSupirApprovalHeader, $absensiSupirApprovalHeader->getTable())->position;
-            $absensiSupirApprovalHeader->page = ceil($absensiSupirApprovalHeader->position / ($request->limit ?? 10));
-            if (isset($request->limit)) {
+            if ($request->limit==0) {
+                $absensiSupirApprovalHeader->page = ceil($absensiSupirApprovalHeader->position / (10));
+            } else {
                 $absensiSupirApprovalHeader->page = ceil($absensiSupirApprovalHeader->position / ($request->limit ?? 10));
             }
-
             DB::commit();
             return response()->json([
                 'message' => 'Berhasil disimpan',
@@ -162,9 +162,12 @@ class AbsensiSupirApprovalHeaderController extends Controller
             // dd($absensiSupirApprovalHeader);
             $absensiSupirApprovalHeader = (new AbsensiSupirApprovalHeader())->processDestroy($id);
             /* Set position and page */
-            $absensiSupirApprovalHeader->position = $this->getPosition($absensiSupirApprovalHeader, $absensiSupirApprovalHeader->getTable())->position;
-            $absensiSupirApprovalHeader->page = ceil($absensiSupirApprovalHeader->position / ($request->limit ?? 10));
-            if (isset($request->limit)) {
+            $selected = $this->getPosition($absensiSupirApprovalHeader, $absensiSupirApprovalHeader->getTable(), true);
+            $absensiSupirApprovalHeader->position = $selected->position;
+            $absensiSupirApprovalHeader->id = $selected->id;
+            if ($request->limit==0) {
+                $absensiSupirApprovalHeader->page = ceil($absensiSupirApprovalHeader->position / (10));
+            } else {
                 $absensiSupirApprovalHeader->page = ceil($absensiSupirApprovalHeader->position / ($request->limit ?? 10));
             }
 

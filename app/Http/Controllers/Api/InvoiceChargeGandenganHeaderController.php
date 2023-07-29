@@ -50,6 +50,7 @@ class InvoiceChargeGandenganHeaderController extends Controller
                 'tglbukti' => $request->tglbukti,
                 'agen_id' => $request->agen_id,
                 'tglproses' => $request->tglproses,
+                'tgljatuhtempo' => $request->tgljatuhtempo,
                 'id_detail' => $request->id_detail,
                 'jobtrucking_detail' => $request->jobtrucking_detail,
                 'nopolisi_detail' => $request->nopolisi_detail,
@@ -62,11 +63,14 @@ class InvoiceChargeGandenganHeaderController extends Controller
                 'jenisorder_detail' => $request->jenisorder_detail,
                 'namagudang_detail' => $request->namagudang_detail,
             ];
-            
+
             $invoiceChargeGandengan = (new InvoiceChargeGandenganHeader())->processStore($data);
             $invoiceChargeGandengan->position = $this->getPosition($invoiceChargeGandengan, $invoiceChargeGandengan->getTable())->position;
-            $invoiceChargeGandengan->page = ceil($invoiceChargeGandengan->position / ($request->limit ?? 10));
-
+            if ($request->limit==0) {
+                $invoiceChargeGandengan->page = ceil($invoiceChargeGandengan->position / (10));
+            } else {
+                $invoiceChargeGandengan->page = ceil($invoiceChargeGandengan->position / ($request->limit ?? 10));
+            }
             DB::commit();
 
             return response()->json([
@@ -101,6 +105,7 @@ class InvoiceChargeGandenganHeaderController extends Controller
                 'tglbukti' => $request->tglbukti,
                 'agen_id' => $request->agen_id,
                 'tglproses' => $request->tglproses,
+                'tgljatuhtempo' => $request->tgljatuhtempo,
                 'id_detail' => $request->id_detail,
                 'jobtrucking_detail' => $request->jobtrucking_detail,
                 'nopolisi_detail' => $request->nopolisi_detail,
@@ -115,8 +120,11 @@ class InvoiceChargeGandenganHeaderController extends Controller
             ];
             $invoiceChargeGandengan = (new InvoiceChargeGandenganHeader())->processUpdate($invoicechargegandenganheader, $data);
             $invoiceChargeGandengan->position = $this->getPosition($invoiceChargeGandengan, $invoiceChargeGandengan->getTable())->position;
-            $invoiceChargeGandengan->page = ceil($invoiceChargeGandengan->position / ($request->limit ?? 10));
-
+            if ($request->limit==0) {
+                $invoiceChargeGandengan->page = ceil($invoiceChargeGandengan->position / (10));
+            } else {
+                $invoiceChargeGandengan->page = ceil($invoiceChargeGandengan->position / ($request->limit ?? 10));
+            }
             DB::commit();
 
             return response()->json([
@@ -141,8 +149,11 @@ class InvoiceChargeGandenganHeaderController extends Controller
             $selected = $this->getPosition($invoiceChargeGandengan, $invoiceChargeGandengan->getTable(), true);
             $invoiceChargeGandengan->position = $selected->position;
             $invoiceChargeGandengan->id = $selected->id;
-            $invoiceChargeGandengan->page = ceil($invoiceChargeGandengan->position / ($request->limit ?? 10));
-
+            if ($request->limit==0) {
+                $invoiceChargeGandengan->page = ceil($invoiceChargeGandengan->position / (10));
+            } else {
+                $invoiceChargeGandengan->page = ceil($invoiceChargeGandengan->position / ($request->limit ?? 10));
+            }
             DB::commit();
 
             return response()->json([
@@ -200,6 +211,39 @@ class InvoiceChargeGandenganHeaderController extends Controller
                 'message' => '',
                 'statuspesan' => 'success',
             ];
+            return response($data);
+        }
+    }
+
+    public function cekvalidasiAksi($id)
+    {
+        $invoiceHeader = new InvoiceChargeGandenganHeader();
+        $nobukti = InvoiceChargeGandenganHeader::from(DB::raw("invoicechargegandenganheader"))->where('id', $id)->first();
+        $cekdata = $invoiceHeader->cekvalidasiaksi($nobukti->nobukti);
+        if ($cekdata['kondisi'] == true) {
+            $query = DB::table('error')
+                ->select(
+                    DB::raw("ltrim(rtrim(keterangan))+' (" . $cekdata['keterangan'] . ")' as keterangan")
+                )
+                ->where('kodeerror', '=', $cekdata['kodeerror'])
+                ->first();
+
+            $data = [
+                'error' => true,
+                'message' => $query->keterangan,
+                'kodeerror' => $cekdata['kodeerror'],
+                'statuspesan' => 'warning',
+            ];
+
+            return response($data);
+        } else {
+
+            $data = [
+                'error' => false,
+                'message' => '',
+                'statuspesan' => 'success',
+            ];
+
             return response($data);
         }
     }

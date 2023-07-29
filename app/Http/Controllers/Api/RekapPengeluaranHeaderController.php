@@ -58,8 +58,11 @@ class RekapPengeluaranHeaderController extends Controller
             ];
             $rekapPengeluaranHeader = (new RekapPengeluaranHeader())->processStore($data);
             $rekapPengeluaranHeader->position = $this->getPosition($rekapPengeluaranHeader, $rekapPengeluaranHeader->getTable())->position;
-            $rekapPengeluaranHeader->page = ceil($rekapPengeluaranHeader->position / ($request->limit ?? 10));
-
+            if ($request->limit==0) {
+                $rekapPengeluaranHeader->page = ceil($rekapPengeluaranHeader->position / (10));
+            } else {
+                $rekapPengeluaranHeader->page = ceil($rekapPengeluaranHeader->position / ($request->limit ?? 10));
+            }
             DB::commit();
 
             return response()->json([
@@ -101,8 +104,11 @@ class RekapPengeluaranHeaderController extends Controller
 
             $rekapPengeluaranHeader = (new RekapPengeluaranHeader())->processUpdate($rekappengeluaranheader, $data);
             $rekapPengeluaranHeader->position = $this->getPosition($rekapPengeluaranHeader, $rekapPengeluaranHeader->getTable())->position;
-            $rekapPengeluaranHeader->page = ceil($rekapPengeluaranHeader->position / ($request->limit ?? 10));
-
+            if ($request->limit==0) {
+                $rekapPengeluaranHeader->page = ceil($rekapPengeluaranHeader->position / (10));
+            } else {
+                $rekapPengeluaranHeader->page = ceil($rekapPengeluaranHeader->position / ($request->limit ?? 10));
+            }
             DB::commit();
 
             return response()->json([
@@ -127,8 +133,11 @@ class RekapPengeluaranHeaderController extends Controller
             $selected = $this->getPosition($rekapPengeluaranHeader, $rekapPengeluaranHeader->getTable(), true);
             $rekapPengeluaranHeader->position = $selected->position;
             $rekapPengeluaranHeader->id = $selected->id;
-            $rekapPengeluaranHeader->page = ceil($rekapPengeluaranHeader->position / ($request->limit ?? 10));
-
+            if ($request->limit==0) {
+                $rekapPengeluaranHeader->page = ceil($rekapPengeluaranHeader->position / (10));
+            } else {
+                $rekapPengeluaranHeader->page = ceil($rekapPengeluaranHeader->position / ($request->limit ?? 10));
+            }
             DB::commit();
 
             return response()->json([

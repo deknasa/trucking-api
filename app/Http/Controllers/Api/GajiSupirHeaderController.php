@@ -117,7 +117,12 @@ class GajiSupirHeaderController extends Controller
             ];
             $gajiSupirHeader = (new GajiSupirHeader())->processStore($data);
             $gajiSupirHeader->position = $this->getPosition($gajiSupirHeader, $gajiSupirHeader->getTable())->position;
-            $gajiSupirHeader->page = ceil($gajiSupirHeader->position / ($request->limit ?? 10));
+            
+            if ($request->limit==0) {
+                $gajiSupirHeader->page = ceil($gajiSupirHeader->position / (10));
+            } else {
+                $gajiSupirHeader->page = ceil($gajiSupirHeader->position / ($request->limit ?? 10));
+            }
 
             DB::commit();
 
@@ -200,8 +205,11 @@ class GajiSupirHeaderController extends Controller
             ];
             $gajiSupirHeader = (new GajiSupirHeader())->processUpdate($gajisupirheader, $data);
             $gajiSupirHeader->position = $this->getPosition($gajiSupirHeader, $gajiSupirHeader->getTable())->position;
-            $gajiSupirHeader->page = ceil($gajiSupirHeader->position / ($request->limit ?? 10));
-
+           if ($request->limit==0) {
+                $gajiSupirHeader->page = ceil($gajiSupirHeader->position / (10));
+            } else {
+                $gajiSupirHeader->page = ceil($gajiSupirHeader->position / ($request->limit ?? 10));
+            }
             DB::commit();
 
             return response()->json([
@@ -226,7 +234,11 @@ class GajiSupirHeaderController extends Controller
             $selected = $this->getPosition($gajiSupirHeader, $gajiSupirHeader->getTable(), true);
             $gajiSupirHeader->position = $selected->position;
             $gajiSupirHeader->id = $selected->id;
-            $gajiSupirHeader->page = ceil($gajiSupirHeader->position / ($request->limit ?? 10));
+            if ($request->limit==0) {
+                $gajiSupirHeader->page = ceil($gajiSupirHeader->position / (10));
+            } else {
+                $gajiSupirHeader->page = ceil($gajiSupirHeader->position / ($request->limit ?? 10));
+            }
 
             DB::commit();
 
@@ -245,9 +257,9 @@ class GajiSupirHeaderController extends Controller
     {
         $gajiSupir = new GajiSupirHeader();
 
-        $dari = request()->tgldari;
-        $sampai = request()->tglsampai;
-        $supir_id = request()->supir_id;
+        $dari = $request->tgldari;
+        $sampai = $request->tglsampai;
+        $supir_id = $request->supir_id;
         $tglDari = date('Y-m-d', strtotime($dari));
         $tglSampai = date('Y-m-d', strtotime($sampai));
 

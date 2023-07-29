@@ -63,8 +63,11 @@ class RekapPenerimaanHeaderController extends Controller
 
             $rekapPenerimaanHeader = (new RekapPenerimaanHeader())->processStore($data);
             $rekapPenerimaanHeader->position = $this->getPosition($rekapPenerimaanHeader, $rekapPenerimaanHeader->getTable())->position;
-            $rekapPenerimaanHeader->page = ceil($rekapPenerimaanHeader->position / ($request->limit ?? 10));
-
+            if ($request->limit==0) {
+                $rekapPenerimaanHeader->page = ceil($rekapPenerimaanHeader->position / (10));
+            } else {
+                $rekapPenerimaanHeader->page = ceil($rekapPenerimaanHeader->position / ($request->limit ?? 10));
+            }
             DB::commit();
 
             return response()->json([
@@ -109,8 +112,11 @@ class RekapPenerimaanHeaderController extends Controller
 
             $rekapPenerimaanHeader = (new RekapPenerimaanHeader())->processUpdate($rekappenerimaanheader, $data);
             $rekapPenerimaanHeader->position = $this->getPosition($rekapPenerimaanHeader, $rekapPenerimaanHeader->getTable())->position;
-            $rekapPenerimaanHeader->page = ceil($rekapPenerimaanHeader->position / ($request->limit ?? 10));
-
+            if ($request->limit==0) {
+                $rekapPenerimaanHeader->page = ceil($rekapPenerimaanHeader->position / (10));
+            } else {
+                $rekapPenerimaanHeader->page = ceil($rekapPenerimaanHeader->position / ($request->limit ?? 10));
+            }
             DB::commit();
 
             return response()->json([
@@ -134,8 +140,11 @@ class RekapPenerimaanHeaderController extends Controller
             $selected = $this->getPosition($rekapPenerimaanHeader, $rekapPenerimaanHeader->getTable(), true);
             $rekapPenerimaanHeader->position = $selected->position;
             $rekapPenerimaanHeader->id = $selected->id;
-            $rekapPenerimaanHeader->page = ceil($rekapPenerimaanHeader->position / ($request->limit ?? 10));
-
+            if ($request->limit==0) {
+                $rekapPenerimaanHeader->page = ceil($rekapPenerimaanHeader->position / (10));
+            } else {
+                $rekapPenerimaanHeader->page = ceil($rekapPenerimaanHeader->position / ($request->limit ?? 10));
+            }
             DB::commit();
 
             return response()->json([

@@ -82,8 +82,11 @@ class InvoiceHeaderController extends Controller
             ];
             $invoiceHeader = (new InvoiceHeader())->processStore($data);
             $invoiceHeader->position = $this->getPosition($invoiceHeader, $invoiceHeader->getTable())->position;
-            $invoiceHeader->page = ceil($invoiceHeader->position / ($request->limit ?? 10));
-
+            if ($request->limit==0) {
+                $invoiceHeader->page = ceil($invoiceHeader->position / (10));
+            } else {
+                $invoiceHeader->page = ceil($invoiceHeader->position / ($request->limit ?? 10));
+            }
             DB::commit();
 
             return response()->json([
@@ -134,8 +137,11 @@ class InvoiceHeaderController extends Controller
 
             $invoiceHeader = (new InvoiceHeader())->processUpdate($invoiceheader, $data);
             $invoiceHeader->position = $this->getPosition($invoiceHeader, $invoiceHeader->getTable())->position;
-            $invoiceHeader->page = ceil($invoiceHeader->position / ($request->limit ?? 10));
-
+            if ($request->limit==0) {
+                $invoiceHeader->page = ceil($invoiceHeader->position / (10));
+            } else {
+                $invoiceHeader->page = ceil($invoiceHeader->position / ($request->limit ?? 10));
+            }
             DB::commit();
 
             return response()->json([
@@ -161,8 +167,11 @@ class InvoiceHeaderController extends Controller
             $selected = $this->getPosition($invoiceHeader, $invoiceHeader->getTable(), true);
             $invoiceHeader->position = $selected->position;
             $invoiceHeader->id = $selected->id;
-            $invoiceHeader->page = ceil($invoiceHeader->position / ($request->limit ?? 10));
-
+            if ($request->limit==0) {
+                $invoiceHeader->page = ceil($invoiceHeader->position / (10));
+            } else {
+                $invoiceHeader->page = ceil($invoiceHeader->position / ($request->limit ?? 10));
+            }
             DB::commit();
 
             return response()->json([
