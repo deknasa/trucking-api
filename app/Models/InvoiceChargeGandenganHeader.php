@@ -310,7 +310,7 @@ class InvoiceChargeGandenganHeader extends MyModel
             DB::raw("'Laporan Charge Gandengan' as judulLaporan"),
             DB::raw("'" . $getJudul->text . "' as judul"),
             DB::raw("'Tgl Cetak:'+format(getdate(),'dd-MM-yyyy HH:mm:ss')as tglcetak"),
-            DB::raw(" 'User :".auth('api')->user()->name."' as usercetak")
+            DB::raw(" 'User :" . auth('api')->user()->name . "' as usercetak")
         )
             ->where("$this->table.id", $id)
             ->leftJoin(DB::raw("parameter with (readuncommitted)"), 'invoicechargegandenganheader.statusapproval', 'parameter.id')
@@ -355,20 +355,10 @@ class InvoiceChargeGandenganHeader extends MyModel
             throw new \Exception("Error storing invoice charge gandengan header.");
         }
 
-        $invoiceChargeGandenganHeaderLogTrail = (new LogTrail())->processStore([
-            'namatabel' => strtoupper($invoiceChargeGandenganHeader->getTable()),
-            'postingdari' => 'ENTRY INVOICE CHARGE GANDENGAN HEADER',
-            'idtrans' => $invoiceChargeGandenganHeader->id,
-            'nobuktitrans' => $invoiceChargeGandenganHeader->nobukti,
-            'aksi' => 'ENTRY',
-            'datajson' => $invoiceChargeGandenganHeader->toArray(),
-            'modifiedby' => auth('api')->user()->user
-        ]);
-
         $invoiceChargeGandenganDetails = [];
 
         for ($i = 0; $i < count($data['nominal_detail']); $i++) {
-            
+
             $invoiceChargeGandenganDetail = (new InvoiceChargeGandenganDetail())->processStore($invoiceChargeGandenganHeader, [
                 "jobtrucking_detail" => $data['jobtrucking_detail'][$i],
                 "trado_id" => $data['nopolisi_detail'][$i],
@@ -382,9 +372,35 @@ class InvoiceChargeGandenganHeader extends MyModel
                 "namagudang_detail" => $data['namagudang_detail'][$i],
             ]);
 
+            $keteranganDetail[] =  $data['keterangan_detail'][$i];
+            $nominalDetail[] =  $data['nominal_detail'][$i];
+            $invoiceNobukti[] =  $invoiceChargeGandenganHeader->nobukti;
             $invoiceChargeGandenganDetails[] = $invoiceChargeGandenganDetail->toArray();
         }
+        $invoiceRequest = [
+            'tglbukti' => date('Y-m-d', strtotime($data['tglbukti'])),
+            'tgljatuhtempo' => date('Y-m-d', strtotime($data['tgljatuhtempo'])),
+            'postingdari' => 'ENTRY INVOICE CHARGE GANDENGAN',
+            'invoice' => $invoiceChargeGandenganHeader->nobukti,
+            'agen_id' => $data['agen_id'],
+            'invoice_nobukti' => $invoiceNobukti,
+            'nominal_detail' => $nominalDetail,
+            'keterangan_detail' => $keteranganDetail,
+        ];
+        $piutangHeader = (new PiutangHeader())->processStore($invoiceRequest);
+        $invoiceChargeGandenganHeader->piutang_nobukti = $piutangHeader->nobukti;
+        $invoiceChargeGandenganHeader->save();
 
+
+        $invoiceChargeGandenganHeaderLogTrail = (new LogTrail())->processStore([
+            'namatabel' => strtoupper($invoiceChargeGandenganHeader->getTable()),
+            'postingdari' => 'ENTRY INVOICE CHARGE GANDENGAN HEADER',
+            'idtrans' => $invoiceChargeGandenganHeader->id,
+            'nobuktitrans' => $invoiceChargeGandenganHeader->nobukti,
+            'aksi' => 'ENTRY',
+            'datajson' => $invoiceChargeGandenganHeader->toArray(),
+            'modifiedby' => auth('api')->user()->user
+        ]);
         (new LogTrail())->processStore([
             'namatabel' => strtoupper($invoiceChargeGandenganDetail->getTable()),
             'postingdari' =>  'ENTRY INVOICE CHARGE GANDENGAN DETAIL',
@@ -405,7 +421,7 @@ class InvoiceChargeGandenganHeader extends MyModel
         $invoiceChargeGandenganHeader->tglproses = date('Y-m-d', strtotime($data['tglproses']));
         $invoiceChargeGandenganHeader->modifiedby = auth('api')->user()->name;
         $invoiceChargeGandenganHeader->nominal = array_sum($data['nominal_detail']);
-       
+
         if (!$invoiceChargeGandenganHeader->save()) {
             throw new \Exception("Error updating invoice charge header.");
         }
@@ -443,9 +459,11 @@ class InvoiceChargeGandenganHeader extends MyModel
                 "nominal_detail" => $data['nominal_detail'][$i],
                 "keterangan_detail" => $data['keterangan_detail'][$i],
                 "jenisorder_detail" => $data['jenisorder_detail'][$i],
-                "namagudang_detail" => $data['namagudang_detail'][$i],                
+                "namagudang_detail" => $data['namagudang_detail'][$i],
             ]);
-
+            $keteranganDetail[] =  $data['keterangan_detail'][$i];
+            $nominalDetail[] =  $data['nominal_detail'][$i];
+            $invoiceNobukti[] =  $invoiceChargeGandenganHeader->nobukti;
             $invoiceChargeGandenganDetails[] = $invoiceChargeGandenganDetail->toArray();
         }
 
@@ -458,6 +476,23 @@ class InvoiceChargeGandenganHeader extends MyModel
             'datajson' => $invoiceChargeGandenganDetails,
             'modifiedby' => auth('api')->user()->user,
         ]);
+
+        
+        $invoiceRequest = [
+            'postingdari' => 'EDIT INVOICE CHARGE GANDENGAN',
+            'invoice' => $invoiceChargeGandenganHeader->nobukti,
+            'tgljatuhtempo' => date('Y-m-d', strtotime($data['tgljatuhtempo'])),
+            'agen_id' => $data['agen_id'],
+            'invoice_nobukti' => $invoiceNobukti,
+            'nominal_detail' => $nominalDetail,
+            'keterangan_detail' => $keteranganDetail,
+        ];
+
+        $getPiutang = PiutangHeader::from(DB::raw("piutangheader with (readuncommitted)"))->where('invoice_nobukti', $invoiceChargeGandenganHeader->nobukti)->first();
+        $newPiutang = new PiutangHeader();
+        $newPiutang = $newPiutang->findUpdate($getPiutang->id);
+        (new PiutangHeader())->processUpdate($newPiutang, $invoiceRequest);
+
 
         return $invoiceChargeGandenganHeader;
     }
