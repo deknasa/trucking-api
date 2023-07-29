@@ -138,7 +138,7 @@ class StoreMandorTripRequest extends FormRequest
             ];
         }
 
-       
+
         $upah_id = $this->upah_id;
         $rulesUpah_id = [];
         if ($upah_id != null) {
@@ -190,17 +190,7 @@ class StoreMandorTripRequest extends FormRequest
             ];
         }
 
-        $gandengan_id = $this->gandengan_id;
-        $rulesGandengan_id = [];
-        if ($gandengan_id != null) {
-            $rulesGandengan_id = [
-                'gandengan_id' => ['required', 'numeric', 'min:1', new ExistGandengan()]
-            ];
-        } else if ($gandengan_id == null && $this->gandengan != '') {
-            $rulesGandengan_id = [
-                'gandengan_id' => ['required', 'numeric', 'min:1', new ExistGandengan()]
-            ];
-        }
+
 
         $jenisorder_id = $this->jenisorder_id;
         $rulesJenisOrder_id = [];
@@ -236,30 +226,71 @@ class StoreMandorTripRequest extends FormRequest
         }
 
         $rulesTarif_id = [];
+        $rulesGandengan_id = [];
         if ((request()->dari_id == 1 && request()->sampai_id == 103) || (request()->dari_id == 103 && request()->sampai_id == 1) || (request()->statuslongtrip == 65)) {
-            $rules = [
-                'tglbukti' => [
-                    'required', 'date_format:d-m-Y',
-                    new DateApprovalQuota()
-                ],
 
-                "agen" => "required",
-                "container" => "required",
-                "dari" => ["required"],
-                "gandengan" => "required",
-                "gudang" => "required",
-                "jenisorder" => "required",
-                "pelanggan" => "required",
-                "sampai" => ["required"],
-                "statuscontainer" => "required",
-                "statusgudangsama" => "required",
-                "statuslongtrip" => "required",
-                "statuslangsir" => "required",
-                // "lokasibongkarmuat" => "required",
-                "trado" => "required",
-                "upah" => ["required", new ExistNominalUpahSupir()],
-                'statusupahzona' => ['required', Rule::in($statusUpahZona)],
-            ];
+
+            $getgerobak = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS GEROBAK')->where('subgrp', 'STATUS GEROBAK')->where('text', 'GEROBAK')->first();
+            $gettrado = DB::table("trado")->from(DB::raw("trado with (readuncommitted)"))->where('id', request()->trado_id)->first();
+            if ($getgerobak->id == $gettrado->statusgerobak) {
+                $rules = [
+                    'tglbukti' => [
+                        'required', 'date_format:d-m-Y',
+                        new DateApprovalQuota()
+                    ],
+
+                    "agen" => "required",
+                    "container" => "required",
+                    "dari" => ["required"],
+                    "gudang" => "required",
+                    "jenisorder" => "required",
+                    "pelanggan" => "required",
+                    "sampai" => ["required"],
+                    "statuscontainer" => "required",
+                    "statusgudangsama" => "required",
+                    "statuslongtrip" => "required",
+                    "statuslangsir" => "required",
+                    // "lokasibongkarmuat" => "required",
+                    "trado" => "required",
+                    "upah" => ["required", new ExistNominalUpahSupir()],
+                    'statusupahzona' => ['required', Rule::in($statusUpahZona)],
+                ];
+            } else {
+                $gandengan_id = $this->gandengan_id;
+                $rulesGandengan_id = [];
+                if ($gandengan_id != null) {
+                    $rulesGandengan_id = [
+                        'gandengan_id' => ['required', 'numeric', 'min:1', new ExistGandengan()]
+                    ];
+                } else if ($gandengan_id == null && $this->gandengan != '') {
+                    $rulesGandengan_id = [
+                        'gandengan_id' => ['required', 'numeric', 'min:1', new ExistGandengan()]
+                    ];
+                }
+                $rules = [
+                    'tglbukti' => [
+                        'required', 'date_format:d-m-Y',
+                        new DateApprovalQuota()
+                    ],
+
+                    "agen" => "required",
+                    "container" => "required",
+                    "dari" => ["required"],
+                    "gandengan" => "required",
+                    "gudang" => "required",
+                    "jenisorder" => "required",
+                    "pelanggan" => "required",
+                    "sampai" => ["required"],
+                    "statuscontainer" => "required",
+                    "statusgudangsama" => "required",
+                    "statuslongtrip" => "required",
+                    "statuslangsir" => "required",
+                    // "lokasibongkarmuat" => "required",
+                    "trado" => "required",
+                    "upah" => ["required", new ExistNominalUpahSupir()],
+                    'statusupahzona' => ['required', Rule::in($statusUpahZona)],
+                ];
+            }
         } else {
             $tarifrincian_id = $this->tarifrincian_id;
             $rulesTarif_id = [];
@@ -272,31 +303,70 @@ class StoreMandorTripRequest extends FormRequest
                     'tarifrincian_id' => ['required', 'numeric', 'min:1', new ExistTarifRincianSuratPengantar()]
                 ];
             }
-    
-            $rules = [
-                'tglbukti' => [
-                    'required', 'date_format:d-m-Y',
-                    new DateApprovalQuota()
-                ],
 
-                "agen" => "required",
-                "tarifrincian" => ['required_if:statusupahzona,=,' . $getBukanUpahZona->id, new ValidasiExistOmsetTarif(), new ValidasiKotaUpahZona($getBukanUpahZona->id)],
-                "container" => "required",
-                "dari" => ["required"],
-                "gandengan" => "required",
-                "gudang" => "required",
-                "jenisorder" => "required",
-                "pelanggan" => "required",
-                "sampai" => ["required"],
-                "statuscontainer" => "required",
-                "statusgudangsama" => "required",
-                "statuslongtrip" => "required",
-                "statuslangsir" => "required",
-                // "lokasibongkarmuat" => "required",
-                "trado" => "required",
-                "upah" => ["required", new ExistNominalUpahSupir()],
-                'statusupahzona' => ['required', Rule::in($statusUpahZona)],
-            ];
+            $getgerobak = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS GEROBAK')->where('subgrp', 'STATUS GEROBAK')->where('text', 'GEROBAK')->first();
+            $gettrado = DB::table("trado")->from(DB::raw("trado with (readuncommitted)"))->where('id', request()->trado_id)->first();
+            if ($getgerobak->id == $gettrado->statusgerobak) {
+                $rules = [
+                    'tglbukti' => [
+                        'required', 'date_format:d-m-Y',
+                        new DateApprovalQuota()
+                    ],
+
+                    "agen" => "required",
+                    "tarifrincian" => ['required_if:statusupahzona,=,' . $getBukanUpahZona->id, new ValidasiExistOmsetTarif(), new ValidasiKotaUpahZona($getBukanUpahZona->id)],
+                    "container" => "required",
+                    "dari" => ["required"],
+                    "gudang" => "required",
+                    "jenisorder" => "required",
+                    "pelanggan" => "required",
+                    "sampai" => ["required"],
+                    "statuscontainer" => "required",
+                    "statusgudangsama" => "required",
+                    "statuslongtrip" => "required",
+                    "statuslangsir" => "required",
+                    // "lokasibongkarmuat" => "required",
+                    "trado" => "required",
+                    "upah" => ["required", new ExistNominalUpahSupir()],
+                    'statusupahzona' => ['required', Rule::in($statusUpahZona)],
+                ];
+            } else {
+                $gandengan_id = $this->gandengan_id;
+                $rulesGandengan_id = [];
+                if ($gandengan_id != null) {
+                    $rulesGandengan_id = [
+                        'gandengan_id' => ['required', 'numeric', 'min:1', new ExistGandengan()]
+                    ];
+                } else if ($gandengan_id == null && $this->gandengan != '') {
+                    $rulesGandengan_id = [
+                        'gandengan_id' => ['required', 'numeric', 'min:1', new ExistGandengan()]
+                    ];
+                }
+                $rules = [
+                    'tglbukti' => [
+                        'required', 'date_format:d-m-Y',
+                        new DateApprovalQuota()
+                    ],
+
+                    "agen" => "required",
+                    "tarifrincian" => ['required_if:statusupahzona,=,' . $getBukanUpahZona->id, new ValidasiExistOmsetTarif(), new ValidasiKotaUpahZona($getBukanUpahZona->id)],
+                    "container" => "required",
+                    "dari" => ["required"],
+                    "gandengan" => "required",
+                    "gudang" => "required",
+                    "jenisorder" => "required",
+                    "pelanggan" => "required",
+                    "sampai" => ["required"],
+                    "statuscontainer" => "required",
+                    "statusgudangsama" => "required",
+                    "statuslongtrip" => "required",
+                    "statuslangsir" => "required",
+                    // "lokasibongkarmuat" => "required",
+                    "trado" => "required",
+                    "upah" => ["required", new ExistNominalUpahSupir()],
+                    'statusupahzona' => ['required', Rule::in($statusUpahZona)],
+                ];
+            }
         }
 
         $rules = array_merge(
