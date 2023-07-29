@@ -76,20 +76,21 @@ class UpdateOrderanTruckingRequest extends FormRequest
             ->first();
 
         if ($this->jenisorder_id == $queryimport->text) {
-            $queryjenisimport = DB::table('jenisorder')->from(DB::raw("jenisorder with (readuncommitted)"))
-                ->select(
-                    'id',
-                )
-                ->where('id', $queryimport->id)
-                ->first();
+            // $queryjenisimport = DB::table('jenisorder')->from(DB::raw("jenisorder with (readuncommitted)"))
+            //     ->select(
+            //         'id',
+            //     )
+            //     ->where('id', $queryimport->text)
+            //     ->first();
 
-            if (isset($queryjenisimport)) {
-                $kondisi = false;
-            } else {
-                $kondisi = true;
-            }
-        } else {
+            // if (isset($queryjenisimport)) {
+            //     $kondisi = false;
+            // } else {
+            //     $kondisi = true;
+            // }
             $kondisi = true;
+        } else {
+            $kondisi = false;
         }
 
         if ($this->container_id == $queryukuran->text) {
