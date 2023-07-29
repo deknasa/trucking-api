@@ -43,7 +43,7 @@ class GetMandorAbsensiSupirRequest extends FormRequest
         } else {
             $existing = DB::table('absensisupirheader')->from(DB::raw("absensisupirheader with (readuncommitted)"))
                 ->select(
-                    db::raw("cast(format(created_at,'yyyy/MM/dd') as date) as created_at")
+                    db::raw("cast(format(created_at,'yyyy-MM-dd') as date) as created_at")
                 )
                 ->where('tglbukti', $formattedDate)
                 ->first();
