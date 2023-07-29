@@ -3,7 +3,7 @@
 namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
-use App\Rules\DateAllowedAbsen;
+use App\Rules\DateAllowedAbsenReload;
 use Illuminate\Support\Facades\DB;
 use App\Http\Controllers\Api\ErrorController;
 
@@ -27,6 +27,8 @@ class GetMandorAbsensiSupirRequest extends FormRequest
     public function rules()
     {
         $formattedDate = date('Y-m-d', strtotime(request()->tglbukaabsensi));
+        $now = date('Y-m-d');
+
         // Cek apakah ada data dengan tanggal yang sama dalam database
         $existingRecord = DB::table('absensisupirheader')->from(DB::raw("absensisupirheader with (readuncommitted)"))
             ->where('tglbukti', $formattedDate)
@@ -36,7 +38,7 @@ class GetMandorAbsensiSupirRequest extends FormRequest
         if (isset($existingRecord)) {
             $rules = [
                 "tglbukaabsensi" => [
-                    new DateAllowedAbsen(false),
+                    new DateAllowedAbsenReload(false),
                 ]
 
             ];
@@ -45,29 +47,34 @@ class GetMandorAbsensiSupirRequest extends FormRequest
                 ->select(
                     db::raw("cast(format(created_at,'yyyy-MM-dd') as date) as created_at")
                 )
-                ->where('tglbukti', $formattedDate)
+                ->whereRaw("tglbukti='" . $formattedDate . "'")
                 ->first();
 
+
             if (isset($existing)) {
-                if ($existing->created_at != $formattedDate) {
+             
+                if ($existing->created_at != $now) {
+                  
                     $rules = [
                         "tglbukaabsensi" => [
-                            new DateAllowedAbsen(false),
+                            new DateAllowedAbsenReload(false),
                         ]
 
                     ];
                 } else {
+         
                     $rules = [
                         "tglbukaabsensi" => [
-                            new DateAllowedAbsen(true),
+                            new DateAllowedAbsenReload(true),
                         ]
 
                     ];
                 }
             } else {
+
                 $rules = [
                     "tglbukaabsensi" => [
-                        new DateAllowedAbsen(true),
+                        new DateAllowedAbsenReload(true),
                     ]
 
                 ];
