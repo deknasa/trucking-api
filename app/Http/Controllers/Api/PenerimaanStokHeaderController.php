@@ -312,6 +312,21 @@ class PenerimaanStokHeaderController extends Controller
             return response($data);
         }
 
+        if ($penerimaanStokHeader->isEHTApprovedJurnal($id)) {
+            $query = Error::from(DB::raw("error with (readuncommitted)"))
+                ->select(DB::raw("keterangan + ' (APPROVAL JURNAL)' as keterangan"))
+                ->whereRaw("kodeerror = 'SAP'")
+                ->get();
+            $keterangan = $query['0'];
+            $data = [
+                'message' => $keterangan,
+                'errors' => 'Approval Jurnal',
+                'kodestatus' => '1',
+                'kodenobukti' => '1'
+            ];
+            return response($data);
+        }
+
         if ($penerimaanStokHeader->isPOUsed($id)) {
             $query = Error::from(DB::raw("error with (readuncommitted)"))
                 ->select('keterangan')

@@ -205,6 +205,25 @@ class PenerimaanHeader extends MyModel
             goto selesai;
         }
 
+        $jurnal = DB::table('penerimaanheader')
+            ->from(
+                DB::raw("penerimaanheader as a with (readuncommitted)")
+            )
+            ->select(
+                'a.nobukti'
+            )
+            ->join(DB::raw("jurnalumumpusatheader b with (readuncommitted)"), 'a.nobukti', 'b.nobukti')
+            ->where('a.nobukti', '=', $nobukti)
+            ->first();
+        if (isset($jurnal)) {
+            $data = [
+                'kondisi' => true,
+                'keterangan' => 'Approval Jurnal',
+                'kodeerror' => 'SAP'
+            ];
+            goto selesai;
+        }
+
 
         $data = [
             'kondisi' => false,
