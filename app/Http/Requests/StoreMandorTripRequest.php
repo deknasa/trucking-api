@@ -232,7 +232,8 @@ class StoreMandorTripRequest extends FormRequest
 
             $getgerobak = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS GEROBAK')->where('subgrp', 'STATUS GEROBAK')->where('text', 'GEROBAK')->first();
             $gettrado = DB::table("trado")->from(DB::raw("trado with (readuncommitted)"))->where('id', request()->trado_id)->first();
-            if ($getgerobak->id == $gettrado->statusgerobak) {
+            $gerobakVal = ($gettrado->statusgerobak == null) ? 0 : $gettrado->statusgerobak;
+            if ($getgerobak->id == $gerobakVal) {
                 $rules = [
                     'tglbukti' => [
                         'required', 'date_format:d-m-Y',
@@ -306,7 +307,8 @@ class StoreMandorTripRequest extends FormRequest
 
             $getgerobak = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS GEROBAK')->where('subgrp', 'STATUS GEROBAK')->where('text', 'GEROBAK')->first();
             $gettrado = DB::table("trado")->from(DB::raw("trado with (readuncommitted)"))->where('id', request()->trado_id)->first();
-            if ($getgerobak->id == $gettrado->statusgerobak) {
+            $gerobakVal = ($gettrado->statusgerobak == null) ? 0 : $gettrado->statusgerobak;
+            if ($getgerobak->id == $gerobakVal) {
                 $rules = [
                     'tglbukti' => [
                         'required', 'date_format:d-m-Y',
@@ -369,6 +371,13 @@ class StoreMandorTripRequest extends FormRequest
             }
         }
 
+        $rulesJobTrucking = [];
+        if((request()->statuslongtrip == 66) && (request()->statuslangsir == 80)){
+            // dd('disini');
+            $rulesJobTrucking = [
+                'jobtrucking' => ['required_unless:dari_id,1']
+            ];
+        }
         $rules = array_merge(
             $rules,
             $ritasiRule,
@@ -383,7 +392,8 @@ class StoreMandorTripRequest extends FormRequest
             $rulesTrado_id,
             $rulesTarif_id,
             $rulesUpah_id,
-            $ruleCekUpahRitasi
+            $ruleCekUpahRitasi,
+            $rulesJobTrucking
         );
 
         return $rules;

@@ -111,7 +111,7 @@ return [
     'regex' => 'The :attribute format is invalid.',
     'required' => ':attribute ' . (new ErrorController)->geterror('WI')->keterangan,
     'required_if' => 'The :attribute field is required when :other is :value.',
-    'required_unless' => 'The :attribute field is required unless :other is in :values.',
+    'required_unless' => ':attribute ' . (new ErrorController)->geterror('WI')->keterangan,
     'required_with' => 'The :attribute field is required when :values is present.',
     'required_with_all' => 'The :attribute field is required when :values are present.',
     'required_without' => 'Kolom :attribute harus diisi jika kolom :values tidak diisi.',
