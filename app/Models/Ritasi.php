@@ -332,6 +332,23 @@ class Ritasi extends MyModel
 
     public function processStore(array $data): Ritasi
     {
+        $urutke = 0;
+
+        $querytrip = DB::table('ritasi')->from(
+            db::raw("ritasi a with (readuncommitted)")
+        )
+            ->select(
+                'a.suratpengantar_urutke'
+            )
+            ->where('a.suratpengantar_nobukti', '=', $data['suratpengantar_nobukti'])
+            ->whereRaw("isnull(a.suratpengantar_urutke,0)<>''")
+            ->orderby('a.suratpengantar_urutke', 'desc')
+            ->first();
+
+        if (isset($querytrip)) {
+            $urutke = $querytrip->suratpengantar_urutke + 1;
+        } 
+
         $group = 'RITASI';
         $subGroup = 'RITASI';
 
@@ -348,6 +365,7 @@ class Ritasi extends MyModel
         $ritasi->statusritasi = $extra->statusritasi;
         $ritasi->dataritasi_id = $data['statusritasi_id'];
         $ritasi->suratpengantar_nobukti = $data['suratpengantar_nobukti'];
+        $ritasi->suratpengantar_urutke = $urutke;
         $ritasi->supir_id = $data['supir_id'];
         $ritasi->trado_id = $data['trado_id'];
         $ritasi->dari_id = $data['dari_id'];
@@ -380,6 +398,8 @@ class Ritasi extends MyModel
 
     public function processUpdate(Ritasi $ritasi, array $data): Ritasi
     {
+
+        
         $upahRitasi = DB::table('upahritasi')
             ->whereRaw("(upahritasi.kotadari_id=" . $data['dari_id'] . " and upahritasi.kotasampai_id=" . $data['sampai_id'] . ") or (upahritasi.kotasampai_id=" . $data['dari_id'] . " and upahritasi.kotadari_id=" . $data['sampai_id'] . ")")->first();
         $extra = DB::table("dataritasi")->from(DB::raw("dataritasi with (readuncommitted)"))->where('id', $data['statusritasi_id'])->first();

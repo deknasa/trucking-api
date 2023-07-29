@@ -156,7 +156,7 @@ class InputTrip extends MyModel
                     'supir_id' => $data['supir_id'],
                     'trado_id' => $data['trado_id'],
                     'dari_id' => $data['ritasidari_id'][$i],
-                    'sampai_id' => $data['ritasike_id'][$i]
+                    'sampai_id' => $data['ritasike_id'][$i],
                 ];
                 (new Ritasi())->processStore($ritasi);
             }
