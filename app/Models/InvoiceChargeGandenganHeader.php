@@ -51,6 +51,58 @@ class InvoiceChargeGandenganHeader extends MyModel
 
         return $data;
     }
+
+
+    public function cekvalidasiaksi($nobukti)
+    {
+
+        $pelunasanPiutang = DB::table('pelunasanpiutangdetail')
+            ->from(
+                DB::raw("pelunasanpiutangdetail as a with (readuncommitted)")
+            )
+            ->select(
+                'a.invoice_nobukti'
+            )
+            ->where('a.invoice_nobukti', '=', $nobukti)
+            ->first();
+        if (isset($pelunasanPiutang)) {
+            $data = [
+                'kondisi' => true,
+                'keterangan' => 'Pelunasan Piutang',
+                'kodeerror' => 'SATL'
+            ];
+            goto selesai;
+        }
+
+        $hutangBayar = DB::table('invoicechargegandenganheader')
+            ->from(
+                DB::raw("invoicechargegandenganheader as a with (readuncommitted)")
+            )
+            ->select(
+                'a.nobukti'
+            )
+            ->join(DB::raw("jurnalumumpusatheader b with (readuncommitted)"), 'a.piutang_nobukti', 'b.nobukti')
+            ->where('a.nobukti', '=', $nobukti)
+            ->first();
+        if (isset($hutangBayar)) {
+            $data = [
+                'kondisi' => true,
+                'keterangan' => 'Approval Jurnal',
+                'kodeerror' => 'SAP'
+            ];
+            goto selesai;
+        }
+
+
+
+        $data = [
+            'kondisi' => false,
+            'keterangan' => '',
+        ];
+        selesai:
+        return $data;
+    }
+
     public function selectColumns($query)
     {
         return $query->from(
@@ -61,8 +113,10 @@ class InvoiceChargeGandenganHeader extends MyModel
                 "$this->table.nobukti",
                 "$this->table.tglbukti",
                 "$this->table.tglproses",
+                "$this->table.tgljatuhtempo",
                 "$this->table.agen_id",
                 "$this->table.nominal",
+                "$this->table.piutang_nobukti",
                 "$this->table.statusapproval as statusapproval_id",
                 "$this->table.userapproval",
                 "$this->table.statusformat as statusformat_id",
@@ -95,6 +149,7 @@ class InvoiceChargeGandenganHeader extends MyModel
             $table->string('nobukti', 50)->unique();
             $table->date('tglbukti')->nullable();
             $table->date('tglproses')->nullable();
+            $table->date('tgljatuhtempo')->nullable();
             $table->unsignedBigInteger('agen_id')->nullable();
             $table->double('nominal')->nullable();
             $table->integer('statuscetak')->length(11)->nullable();
@@ -119,6 +174,7 @@ class InvoiceChargeGandenganHeader extends MyModel
                 "$this->table.nobukti",
                 "$this->table.tglbukti",
                 "$this->table.tglproses",
+                "$this->table.tgljatuhtempo",
                 "$this->table.agen_id",
                 "$this->table.nominal",
                 "$this->table.statusapproval",
@@ -139,6 +195,7 @@ class InvoiceChargeGandenganHeader extends MyModel
             'nobukti',
             'tglbukti',
             'tglproses',
+            'tgljatuhtempo',
             'agen_id',
             'nominal',
             'statusapproval',
@@ -344,6 +401,7 @@ class InvoiceChargeGandenganHeader extends MyModel
         $invoiceChargeGandenganHeader->tglbukti = date('Y-m-d', strtotime($data['tglbukti']));
         $invoiceChargeGandenganHeader->agen_id = $data['agen_id'];
         $invoiceChargeGandenganHeader->tglproses = date('Y-m-d', strtotime($data['tglproses']));
+        $invoiceChargeGandenganHeader->tgljatuhtempo = date('Y-m-d', strtotime($data['tgljatuhtempo']));
         $invoiceChargeGandenganHeader->statusapproval = $statusApproval->id;
         $invoiceChargeGandenganHeader->statuscetak = $statusCetak->id;
         $invoiceChargeGandenganHeader->nominal = array_sum($data['nominal_detail']);
@@ -372,7 +430,7 @@ class InvoiceChargeGandenganHeader extends MyModel
                 "namagudang_detail" => $data['namagudang_detail'][$i],
             ]);
 
-            $keteranganDetail[] =  $data['keterangan_detail'][$i];
+            $keteranganDetail[] = 'INVOICE CHARGE GANDENGAN PADA ORDERAN TRUCKING '. $data['jobtrucking_detail'][$i];
             $nominalDetail[] =  $data['nominal_detail'][$i];
             $invoiceNobukti[] =  $invoiceChargeGandenganHeader->nobukti;
             $invoiceChargeGandenganDetails[] = $invoiceChargeGandenganDetail->toArray();
@@ -461,7 +519,7 @@ class InvoiceChargeGandenganHeader extends MyModel
                 "jenisorder_detail" => $data['jenisorder_detail'][$i],
                 "namagudang_detail" => $data['namagudang_detail'][$i],
             ]);
-            $keteranganDetail[] =  $data['keterangan_detail'][$i];
+            $keteranganDetail[] = 'INVOICE CHARGE GANDENGAN PADA ORDERAN TRUCKING '. $data['jobtrucking_detail'][$i];
             $nominalDetail[] =  $data['nominal_detail'][$i];
             $invoiceNobukti[] =  $invoiceChargeGandenganHeader->nobukti;
             $invoiceChargeGandenganDetails[] = $invoiceChargeGandenganDetail->toArray();
@@ -477,7 +535,7 @@ class InvoiceChargeGandenganHeader extends MyModel
             'modifiedby' => auth('api')->user()->user,
         ]);
 
-        
+
         $invoiceRequest = [
             'postingdari' => 'EDIT INVOICE CHARGE GANDENGAN',
             'invoice' => $invoiceChargeGandenganHeader->nobukti,

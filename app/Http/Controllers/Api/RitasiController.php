@@ -70,7 +70,11 @@ class RitasiController extends Controller
             ];
             $ritasi = (new Ritasi())->processStore($data);
             $ritasi->position = $this->getPosition($ritasi, $ritasi->getTable())->position;
-            $ritasi->page = ceil($ritasi->position / ($request->limit ?? 10));
+            if ($request->limit==0) {
+                $ritasi->page = ceil($ritasi->position / (10));
+            } else {
+                $ritasi->page = ceil($ritasi->position / ($request->limit ?? 10));
+            }
 
             DB::commit();
 
@@ -111,8 +115,11 @@ class RitasiController extends Controller
             ];
             $ritasi = (new Ritasi())->processUpdate($ritasi, $data);
             $ritasi->position = $this->getPosition($ritasi, $ritasi->getTable())->position;
-            $ritasi->page = ceil($ritasi->position / ($request->limit ?? 10));
-
+            if ($request->limit==0) {
+                $ritasi->page = ceil($ritasi->position / (10));
+            } else {
+                $ritasi->page = ceil($ritasi->position / ($request->limit ?? 10));
+            }
             DB::commit();
 
             return response()->json([
@@ -136,8 +143,11 @@ class RitasiController extends Controller
             $selected = $this->getPosition($ritasi, $ritasi->getTable(), true);
             $ritasi->position = $selected->position;
             $ritasi->id = $selected->id;
-            $ritasi->page = ceil($ritasi->position / ($request->limit ?? 10));
-
+            if ($request->limit==0) {
+                $ritasi->page = ceil($ritasi->position / (10));
+            } else {
+                $ritasi->page = ceil($ritasi->position / ($request->limit ?? 10));
+            }
             DB::commit();
 
             return response()->json([

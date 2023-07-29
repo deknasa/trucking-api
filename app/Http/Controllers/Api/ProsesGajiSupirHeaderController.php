@@ -112,8 +112,11 @@ class ProsesGajiSupirHeaderController extends Controller
 
             $prosesGajiSupirHeader = (new ProsesGajiSupirHeader())->processStore($data);
             $prosesGajiSupirHeader->position = $this->getPosition($prosesGajiSupirHeader, $prosesGajiSupirHeader->getTable())->position;
-            $prosesGajiSupirHeader->page = ceil($prosesGajiSupirHeader->position / ($request->limit ?? 10));
-
+            if ($request->limit==0) {
+                $prosesGajiSupirHeader->page = ceil($prosesGajiSupirHeader->position / (10));
+            } else {
+                $prosesGajiSupirHeader->page = ceil($prosesGajiSupirHeader->position / ($request->limit ?? 10));
+            }
             DB::commit();
 
             return response()->json([
@@ -178,7 +181,11 @@ class ProsesGajiSupirHeaderController extends Controller
 
             $prosesGajiSupirHeader = (new ProsesGajiSupirHeader())->processUpdate($prosesgajisupirheader, $data);
             $prosesGajiSupirHeader->position = $this->getPosition($prosesGajiSupirHeader, $prosesGajiSupirHeader->getTable())->position;
-            $prosesGajiSupirHeader->page = ceil($prosesGajiSupirHeader->position / ($request->limit ?? 10));
+            if ($request->limit==0) {
+                $prosesGajiSupirHeader->page = ceil($prosesGajiSupirHeader->position / (10));
+            } else {
+                $prosesGajiSupirHeader->page = ceil($prosesGajiSupirHeader->position / ($request->limit ?? 10));
+            }
             DB::commit();
 
             return response()->json([
@@ -204,8 +211,12 @@ class ProsesGajiSupirHeaderController extends Controller
             $selected = $this->getPosition($prosesGajiSupirHeader, $prosesGajiSupirHeader->getTable(), true);
             $prosesGajiSupirHeader->position = $selected->position;
             $prosesGajiSupirHeader->id = $selected->id;
-            $prosesGajiSupirHeader->page = ceil($prosesGajiSupirHeader->position / ($request->limit ?? 10));
-
+            if ($request->limit==0) {
+                $prosesGajiSupirHeader->page = ceil($prosesGajiSupirHeader->position / (10));
+            } else {
+                $prosesGajiSupirHeader->page = ceil($prosesGajiSupirHeader->position / ($request->limit ?? 10));
+            }
+            
             DB::commit();
 
             return response()->json([

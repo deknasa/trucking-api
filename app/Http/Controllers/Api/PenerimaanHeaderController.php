@@ -89,8 +89,11 @@ class PenerimaanHeaderController extends Controller
             ];
             $penerimaanHeader = (new penerimaanHeader())->processStore($data);
             $penerimaanHeader->position = $this->getPosition($penerimaanHeader, $penerimaanHeader->getTable())->position;
-            $penerimaanHeader->page = ceil($penerimaanHeader->position / ($request->limit ?? 10));
-
+            if ($request->limit==0) {
+                $penerimaanHeader->page = ceil($penerimaanHeader->position / (10));
+            } else {
+                $penerimaanHeader->page = ceil($penerimaanHeader->position / ($request->limit ?? 10));
+            }
             DB::commit();
 
             return response()->json([
@@ -142,8 +145,9 @@ class PenerimaanHeaderController extends Controller
             $penerimaanheader = (new PenerimaanHeader())->processUpdate($penerimaanheader, $data);
             /* Set position and page */
             $penerimaanheader->position = $this->getPosition($penerimaanheader, $penerimaanheader->getTable())->position;
-            $penerimaanheader->page = ceil($penerimaanheader->position / ($request->limit ?? 10));
-            if (isset($request->limit)) {
+            if ($request->limit==0) {
+                $penerimaanheader->page = ceil($penerimaanheader->position / (10));
+            } else {
                 $penerimaanheader->page = ceil($penerimaanheader->position / ($request->limit ?? 10));
             }
 
@@ -171,8 +175,11 @@ class PenerimaanHeaderController extends Controller
             $selected = $this->getPosition($penerimaanHeader, $penerimaanHeader->getTable(), true);
             $penerimaanHeader->position = $selected->position;
             $penerimaanHeader->id = $selected->id;
-            $penerimaanHeader->page = ceil($penerimaanHeader->position / ($request->limit ?? 10));
-
+            if ($request->limit==0) {
+                $penerimaanHeader->page = ceil($penerimaanHeader->position / (10));
+            } else {
+                $penerimaanHeader->page = ceil($penerimaanHeader->position / ($request->limit ?? 10));
+            }
             DB::commit();
 
             return response()->json([

@@ -170,12 +170,12 @@ class SuratPengantarController extends Controller
             ];
             $suratPengantar = (new SuratPengantar())->processUpdate($suratpengantar, $data);
             $suratPengantar->position = $this->getPosition($suratPengantar, $suratPengantar->getTable())->position;
-            if ($request->limit==0) {
+            if ($request->limit == 0) {
                 $suratPengantar->page = ceil($suratPengantar->position / (10));
             } else {
                 $suratPengantar->page = ceil($suratPengantar->position / ($request->limit ?? 10));
             }
-            
+
 
             DB::commit();
 
@@ -211,7 +211,11 @@ class SuratPengantarController extends Controller
             $selected = $this->getPosition($suratPengantar, $suratPengantar->getTable(), true);
             $suratPengantar->position = $selected->position;
             $suratPengantar->id = $selected->id;
-            $suratPengantar->page = ceil($suratPengantar->position / ($request->limit ?? 10));
+            if ($request->limit == 0) {
+                $suratPengantar->page = ceil($suratPengantar->position / (10));
+            } else {
+                $suratPengantar->page = ceil($suratPengantar->position / ($request->limit ?? 10));
+            }
 
             DB::commit();
 
@@ -295,11 +299,11 @@ class SuratPengantarController extends Controller
         $edit = true;
         if (!$todayValidation) {
             $edit = false;
-            if(!$isEditAble){
+            if (!$isEditAble) {
                 $edit = false;
             }
-        }else{
-            if(!$isEditAble){
+        } else {
+            if (!$isEditAble) {
                 $edit = false;
             }
         }
@@ -420,7 +424,7 @@ class SuratPengantarController extends Controller
                 $suratPengantar->userapprovaleditsuratpengantar = '';
                 $aksi = $statusNonApproval->text;
             } else {
-                $suratPengantar->statusapprovaleditsuratpengantar = $statusApproval->id;                
+                $suratPengantar->statusapprovaleditsuratpengantar = $statusApproval->id;
                 $suratPengantar->tglapprovaleditsuratpengantar = date('Y-m-d H:i:s');
                 $suratPengantar->userapprovaleditsuratpengantar = auth('api')->user()->name;
                 $aksi = $statusApproval->text;

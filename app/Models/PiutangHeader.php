@@ -157,6 +157,23 @@ class PiutangHeader extends MyModel
             ];
             goto selesai;
         }
+        $invoiceCharge = DB::table('invoicechargegandenganheader')
+            ->from(
+                DB::raw("invoicechargegandenganheader as a with (readuncommitted)")
+            )
+            ->select(
+                'a.piutang_nobukti'
+            )
+            ->where('a.piutang_nobukti', '=', $nobukti)
+            ->first();
+        if (isset($invoiceCharge)) {
+            $data = [
+                'kondisi' => true,
+                'keterangan' => 'Invoice Charge Gandengan',
+                'kodeerror' => 'TDT'
+            ];
+            goto selesai;
+        }
 
         $jurnalpusat = DB::table('jurnalumumpusatheader')
             ->from(
