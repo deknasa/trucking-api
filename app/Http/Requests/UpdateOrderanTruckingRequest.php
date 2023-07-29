@@ -115,8 +115,8 @@ class UpdateOrderanTruckingRequest extends FormRequest
             'nojobemkl2' => [new OrderanTruckingValidasijob2x20()],
             'nocont' => 'required',
             'noseal' => [new OrderanTruckingNoSeal($kondisi)],
-            'nocont2' => [new OrderanTruckingValidasinocont2x20()],
-            'noseal2' => [new OrderanTruckingValidasinoseal2x20($kondisi,$kondisiukuran)],
+            // 'nocont2' => [new OrderanTruckingValidasinocont2x20()],
+            // 'noseal2' => [new OrderanTruckingValidasinoseal2x20($kondisi,$kondisiukuran)],
         ];
 
 
