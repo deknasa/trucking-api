@@ -165,7 +165,11 @@ class OrderanTruckingController extends Controller
             ];
             $orderanTrucking = (new OrderanTrucking())->processUpdate($orderantrucking, $data);
             $orderanTrucking->position = $this->getPosition($orderanTrucking, $orderanTrucking->getTable())->position;
-            $orderanTrucking->page = ceil($orderanTrucking->position / ($request->limit ?? 10));
+            if ($request->limit==0) {
+                $orderanTrucking->page = ceil($orderanTrucking->position / (10));
+            } else {
+                $orderanTrucking->page = ceil($orderanTrucking->position / ($request->limit ?? 10));
+            }
 
             DB::commit();
 
@@ -190,8 +194,11 @@ class OrderanTruckingController extends Controller
             $selected = $this->getPosition($orderanTrucking, $orderanTrucking->getTable(), true);
             $orderanTrucking->position = $selected->position;
             $orderanTrucking->id = $selected->id;
-            $orderanTrucking->page = ceil($orderanTrucking->position / ($request->limit ?? 10));
-
+            if ($request->limit==0) {
+                $orderanTrucking->page = ceil($orderanTrucking->position / (10));
+            } else {
+                $orderanTrucking->page = ceil($orderanTrucking->position / ($request->limit ?? 10));
+            }
             DB::commit();
 
             return response()->json([
