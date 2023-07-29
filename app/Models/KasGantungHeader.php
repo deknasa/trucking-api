@@ -81,6 +81,25 @@ class KasGantungHeader extends MyModel
         }
 
 
+        $jurnal = DB::table('kasgantungheader')
+            ->from(
+                DB::raw("kasgantungheader as a with (readuncommitted)")
+            )
+            ->select(
+                'a.nobukti'
+            )
+            ->join(DB::raw("jurnalumumpusatheader b with (readuncommitted)"), 'a.pengeluaran_nobukti', 'b.nobukti')
+            ->where('a.nobukti', '=', $nobukti)
+            ->first();
+        if (isset($jurnal)) {
+            $data = [
+                'kondisi' => true,
+                'keterangan' => 'Approval Jurnal',
+                'kodeerror' => 'SAP'
+            ];
+            goto selesai;
+        }
+
         $data = [
             'kondisi' => false,
             'keterangan' => '',
@@ -425,7 +444,7 @@ class KasGantungHeader extends MyModel
 
         /* Store header */
         $bank = Bank::find($data['bank_id']);
-        $coakaskeluar = $bank->coa ??null;
+        $coakaskeluar = $bank->coa ?? null;
         $group = 'KAS GANTUNG';
         $subgroup = 'NOMOR KAS GANTUNG';
         $format = DB::table('parameter')
@@ -447,7 +466,7 @@ class KasGantungHeader extends MyModel
         $kasgantungHeader->penerima = $data['penerima'] ?? '';
         $kasgantungHeader->bank_id = $data['bank_id'] ?? 0;
         $kasgantungHeader->pengeluaran_nobukti = $data['pengeluaran_nobukti'];
-        $kasgantungHeader->coakaskeluar = $data['coakaskeluar'] ?? $coakaskeluar ;
+        $kasgantungHeader->coakaskeluar = $data['coakaskeluar'] ?? $coakaskeluar;
         $kasgantungHeader->postingdari = $data['postingdari'] ?? 'ENTRY KAS GANTUNG';
         $kasgantungHeader->tglkaskeluar = date('Y-m-d', strtotime($data['tglbukti']));
         $kasgantungHeader->modifiedby = auth('api')->user()->name;
@@ -566,12 +585,12 @@ class KasGantungHeader extends MyModel
     public function processUpdate(KasGantungHeader $kasgantungHeader, array $data): KasGantungHeader
     {
         $isUpdateUangJalan = $data['isUpdateUangJalan'] ?? 0;
-        $bank_id = $data['bank_id']??$kasgantungHeader->bank_id;
-        $bank_id = $bank_id->id??$bank_id;
+        $bank_id = $data['bank_id'] ?? $kasgantungHeader->bank_id;
+        $bank_id = $bank_id->id ?? $bank_id;
         $bank = Bank::from(DB::raw("bank with (readuncommitted)"))->find($bank_id);
         $coakaskeluar = $bank->coa ?? null;
         $kasgantungHeader->penerima = $data['penerima'] ?? '';
-        $kasgantungHeader->coakaskeluar = $data['coakaskeluar'] ?? $coakaskeluar ;
+        $kasgantungHeader->coakaskeluar = $data['coakaskeluar'] ?? $coakaskeluar;
         $kasgantungHeader->postingdari = $data['postingdari'] ?? 'EDIT KAS GANTUNG';
         $kasgantungHeader->modifiedby = auth('api')->user()->name;
 
@@ -608,7 +627,7 @@ class KasGantungHeader extends MyModel
 
         // $penerima = Penerima::from(DB::raw("penerima with (readuncommitted)"))->where("id", $request->penerima_id)->first();
         $namaPenerima = ($data['penerima'] != null) ? $data['penerima'] : '';
-        $alatbayar = ($bank != null ) ?AlatBayar::from(DB::raw("alatbayar with (readuncommitted)"))->where('bank_id', $bank->id)->first() : '';
+        $alatbayar = ($bank != null) ? AlatBayar::from(DB::raw("alatbayar with (readuncommitted)"))->where('bank_id', $bank->id)->first() : '';
 
 
         for ($i = 0; $i < count($data['nominal']); $i++) {
@@ -649,8 +668,8 @@ class KasGantungHeader extends MyModel
             'pelanggan_id' => 0,
             'postingdari' => 'ENTRY KAS GANTUNG',
             'dibayarke' => $namaPenerima ?? '',
-            'alatbayar_id' => $alatbayar->id??'',
-            'bank_id' => $bank->id??'',
+            'alatbayar_id' => $alatbayar->id ?? '',
+            'bank_id' => $bank->id ?? '',
             'nowarkat' => $noWarkat,
 
             'tgljatuhtempo' =>  $tglJatuhTempo,
@@ -663,11 +682,11 @@ class KasGantungHeader extends MyModel
 
 
 
-        if ( $bank && $bank->tipe == 'KAS') {
+        if ($bank && $bank->tipe == 'KAS') {
             $jenisTransaksi = Parameter::from(DB::raw("parameter with (readuncommitted)"))
                 ->where('grp', 'JENIS TRANSAKSI')->where('text', 'KAS')->first();
         }
-        if ( $bank && $bank->tipe == 'BANK') {
+        if ($bank && $bank->tipe == 'BANK') {
             $jenisTransaksi = Parameter::from(DB::raw("parameter with (readuncommitted)"))
                 ->where('grp', 'JENIS TRANSAKSI')->where('text', 'BANK')->first();
         }
@@ -716,7 +735,6 @@ class KasGantungHeader extends MyModel
             $pengeluaran = (new PengeluaranHeader())->processStore($pengeluaranRequest);
             $kasgantungHeader->pengeluaran_nobukti = $pengeluaran->nobukti;
             $kasgantungHeader->save();
-            
         } else {
             if ($get) {
                 $newPengeluaran = new PengeluaranHeader();
@@ -746,7 +764,7 @@ class KasGantungHeader extends MyModel
             'modifiedby' => auth('api')->user()->name,
         ]);
 
-        
+
         (new LogTrail())->processStore([
             'namatabel' => 'KASGANTUNGDETAIL',
             'postingdari' => $postingDari,
@@ -762,7 +780,6 @@ class KasGantungHeader extends MyModel
             $pengeluaranHeader = (new PengeluaranHeader())->processDestroy($getPengeluaran->id, $postingDari);
         }
         return $kasgantungHeader;
-
     }
 
     public function getExport($id)
@@ -770,34 +787,34 @@ class KasGantungHeader extends MyModel
         $this->setRequestParameters();
 
         $getJudul = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))
-        ->select('text')
-        ->where('grp', 'JUDULAN LAPORAN')
-        ->where('subgrp', 'JUDULAN LAPORAN')
-        ->first();
+            ->select('text')
+            ->where('grp', 'JUDULAN LAPORAN')
+            ->where('subgrp', 'JUDULAN LAPORAN')
+            ->first();
 
         $query = DB::table($this->table)->from(DB::raw("kasgantungheader with (readuncommitted)"))
-        ->select(
-            'kasgantungheader.id',
-            'kasgantungheader.nobukti',
-            'kasgantungheader.tglbukti',
-            'kasgantungheader.penerima',
-            'penerima.namapenerima as penerima_id',
-            'bank.namabank as bank_id',
-            'kasgantungheader.pengeluaran_nobukti',
-            'kasgantungheader.coakaskeluar',
-            'kasgantungheader.postingdari',
-            'kasgantungheader.jumlahcetak',
-            'statuscetak.memo as statuscetak',
-            'statuscetak.id as  statuscetak_id',
-            DB::raw("'Laporan Kas Gantung' as judulLaporan"),
-            DB::raw("'" . $getJudul->text . "' as judul"),
-            DB::raw("'Tgl Cetak:'+format(getdate(),'dd-MM-yyyy HH:mm:ss')as tglcetak"),
-            DB::raw(" 'User :".auth('api')->user()->name."' as usercetak")
-        )
-        ->where("$this->table.id", $id)
-        ->leftJoin(DB::raw("parameter as statuscetak with (readuncommitted)"), 'kasgantungheader.statuscetak', 'statuscetak.id')
-        ->leftJoin(DB::raw("penerima with (readuncommitted)"), 'kasgantungheader.penerima_id', 'penerima.id')
-        ->leftJoin(DB::raw("bank with (readuncommitted)"), 'kasgantungheader.bank_id', 'bank.id');
+            ->select(
+                'kasgantungheader.id',
+                'kasgantungheader.nobukti',
+                'kasgantungheader.tglbukti',
+                'kasgantungheader.penerima',
+                'penerima.namapenerima as penerima_id',
+                'bank.namabank as bank_id',
+                'kasgantungheader.pengeluaran_nobukti',
+                'kasgantungheader.coakaskeluar',
+                'kasgantungheader.postingdari',
+                'kasgantungheader.jumlahcetak',
+                'statuscetak.memo as statuscetak',
+                'statuscetak.id as  statuscetak_id',
+                DB::raw("'Laporan Kas Gantung' as judulLaporan"),
+                DB::raw("'" . $getJudul->text . "' as judul"),
+                DB::raw("'Tgl Cetak:'+format(getdate(),'dd-MM-yyyy HH:mm:ss')as tglcetak"),
+                DB::raw(" 'User :" . auth('api')->user()->name . "' as usercetak")
+            )
+            ->where("$this->table.id", $id)
+            ->leftJoin(DB::raw("parameter as statuscetak with (readuncommitted)"), 'kasgantungheader.statuscetak', 'statuscetak.id')
+            ->leftJoin(DB::raw("penerima with (readuncommitted)"), 'kasgantungheader.penerima_id', 'penerima.id')
+            ->leftJoin(DB::raw("bank with (readuncommitted)"), 'kasgantungheader.bank_id', 'bank.id');
 
         $data = $query->first();
         return $data;

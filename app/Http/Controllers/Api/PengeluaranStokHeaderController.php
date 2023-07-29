@@ -47,7 +47,7 @@ use App\Models\JurnalUmumHeader;
 
 class PengeluaranStokHeaderController extends Controller
 {
-       /**
+    /**
      * @ClassName 
      * PengeluaranStokHeader
      * @Detail1 PengeluaranStokDetailController
@@ -311,8 +311,8 @@ class PengeluaranStokHeaderController extends Controller
 
     public function cekvalidasi($id)
     {
-        $pengeluaran = PengeluaranStokHeader::findOrFail($id);
-        
+        // $pengeluaran = PengeluaranStokHeader::findOrFail($id);
+        $pengeluaran  = new PengeluaranStokHeader();
         if ($pengeluaran->isInUsed($id)) {
             $query = Error::from(DB::raw("error with (readuncommitted)"))
                 ->select('keterangan')
@@ -322,6 +322,48 @@ class PengeluaranStokHeaderController extends Controller
             $data = [
                 'message' => $keterangan,
                 'errors' => 'Penerimaan stok',
+                'kodestatus' => '1',
+                'kodenobukti' => '1'
+            ];
+            return response($data);
+        }
+        if ($pengeluaran->isNobuktiApprovedJurnal($id)) {
+            $query = Error::from(DB::raw("error with (readuncommitted)"))
+            ->select(DB::raw("keterangan + ' (APPROVAL JURNAL)' as keterangan"))
+            ->whereRaw("kodeerror = 'SAP'")
+                ->get();
+            $keterangan = $query['0'];
+            $data = [
+                'message' => $keterangan,
+                'errors' => 'Penerimaan stok',
+                'kodestatus' => '1',
+                'kodenobukti' => '1'
+            ];
+            return response($data);
+        }
+        if ($pengeluaran->isKMTApprovedJurnal($id)) {
+            $query = Error::from(DB::raw("error with (readuncommitted)"))
+            ->select(DB::raw("keterangan + ' (APPROVAL JURNAL)' as keterangan"))
+            ->whereRaw("kodeerror = 'SAP'")
+                ->get();
+            $keterangan = $query['0'];
+            $data = [
+                'message' => $keterangan,
+                'errors' => 'Penerimaan stok',
+                'kodestatus' => '1',
+                'kodenobukti' => '1'
+            ];
+            return response($data);
+        }
+        if ($pengeluaran->isPPHApprovedJurnal($id)) {
+            $query = Error::from(DB::raw("error with (readuncommitted)"))
+                ->select(DB::raw("keterangan + ' (APPROVAL JURNAL)' as keterangan"))
+                ->whereRaw("kodeerror = 'SAP'")
+                ->get();
+            $keterangan = $query['0'];
+            $data = [
+                'message' => $keterangan,
+                'errors' => 'APPROVAL JURNAL',
                 'kodestatus' => '1',
                 'kodenobukti' => '1'
             ];

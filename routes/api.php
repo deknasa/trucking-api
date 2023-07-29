@@ -1193,6 +1193,7 @@ route::middleware(['auth:api', 'authorized'])->group(function () {
     Route::get('pendapatansupirheader/{id}/printreport', [PendapatanSupirHeaderController::class, 'printReport'])->whereNumber('id');
     Route::get('pendapatansupirheader/{id}/export', [PendapatanSupirHeaderController::class, 'export'])->name('pendapatansupirheader.export')->whereNumber('id');
     Route::post('pendapatansupirheader/{id}/cekvalidasi', [PendapatanSupirHeaderController::class, 'cekvalidasi'])->name('pendapatansupirheader.cekvalidasi')->whereNumber('id');
+    Route::post('pendapatansupirheader/{id}/cekValidasiAksi', [PendapatanSupirHeaderController::class, 'cekValidasiAksi'])->name('pendapatansupirheader.cekValidasiAksi')->whereNumber('id');
     Route::post('pendapatansupirheader/approval', [PendapatanSupirHeaderController::class, 'approval']);
     Route::get('pendapatansupirheader/gettrip', [PendapatanSupirHeaderController::class, 'gettrip']);
     Route::get('pendapatansupirheader/default', [PendapatanSupirHeaderController::class, 'default']);

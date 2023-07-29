@@ -86,6 +86,25 @@ class PengeluaranTruckingHeader extends MyModel
             goto selesai;
         }
 
+        $approvalJurnal = DB::table('pengeluarantruckingheader')
+            ->from(
+                DB::raw("pengeluarantruckingheader as a with (readuncommitted)")
+            )
+            ->select(
+                'a.nobukti'
+            )
+            ->join(DB::raw("jurnalumumpusatheader b with (readuncommitted)"), 'a.pengeluaran_nobukti', 'b.nobukti')
+            ->where('a.nobukti', '=', $nobukti)
+            ->first();
+        if (isset($approvalJurnal)) {
+            $data = [
+                'kondisi' => true,
+                'keterangan' => 'Approval Jurnal',
+                'kodeerror' => 'SAP'
+            ];
+            goto selesai;
+        }
+
         $data = [
             'kondisi' => false,
             'keterangan' => '',

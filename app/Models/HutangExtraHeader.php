@@ -46,6 +46,25 @@ class HutangExtraHeader extends MyModel
         }
 
 
+        $jurnal = DB::table('hutangextraheader')
+            ->from(
+                DB::raw("hutangextraheader as a with (readuncommitted)")
+            )
+            ->select(
+                'a.nobukti'
+            )
+            ->join(DB::raw("jurnalumumpusatheader b with (readuncommitted)"), 'a.hutang_nobukti', 'b.nobukti')
+            ->where('a.hutang_nobukti', '=', $nobukti)
+            ->first();
+
+            if (isset($jurnal)) {
+            $data = [
+                'kondisi' => true,
+                'keterangan' => 'Approval Jurnal',
+                'kodeerror' => 'SAP'
+            ];
+            goto selesai;
+        }
 
         $data = [
             'kondisi' => false,

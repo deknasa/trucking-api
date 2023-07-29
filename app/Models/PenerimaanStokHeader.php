@@ -976,6 +976,27 @@ class PenerimaanStokHeader extends MyModel
         
         return false;
     }
+    public function isEHTApprovedJurnal($id)
+    {
+        $query = DB::table($this->table)->from($this->table)->where('penerimaanstokheader.id',$id);
+        $data = $query->first();
+        $approvalJurnal = DB::table('penerimaanstokheader')
+            ->from(
+                DB::raw("penerimaanstokheader as a with (readuncommitted)")
+            )
+            ->select(
+                'a.nobukti'
+            )
+            ->join(DB::raw("jurnalumumpusatheader b with (readuncommitted)"), 'a.hutang_nobukti', 'b.nobukti')
+            ->where('a.nobukti', '=', $data->nobukti)
+            ->first();
+
+         if (isset($approvalJurnal)) {
+            return true;
+        }
+        
+        return false;
+    }
 
     public function printValidation($id)
     {

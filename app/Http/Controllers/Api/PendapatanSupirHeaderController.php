@@ -315,6 +315,38 @@ class PendapatanSupirHeaderController extends Controller
         }
     }
 
+    public function cekValidasiAksi($id)
+    {
+        $pendapatanSupir = new PendapatanSupirHeader();
+        $nobukti = PendapatanSupirHeader::from(DB::raw("pendapatansupirheader"))->where('id', $id)->first();
+        $cekdata = $pendapatanSupir->cekvalidasiaksi($nobukti->nobukti);
+        if ($cekdata['kondisi'] == true) {
+            $query = DB::table('error')
+                ->select(
+                    DB::raw("ltrim(rtrim(keterangan))+' (" . $cekdata['keterangan'] . ")' as keterangan")
+                )
+                ->where('kodeerror', '=', $cekdata['kodeerror'])
+                ->first();
+
+            $data = [
+                'error' => true,
+                'message' => $query->keterangan,
+                'statuspesan' => 'warning',
+            ];
+
+            return response($data);
+        } else {
+
+            $data = [
+                'error' => false,
+                'message' => '',
+                'statuspesan' => 'success',
+            ];
+
+            return response($data);
+        }
+    }
+
     /**
      * @ClassName 
      */
