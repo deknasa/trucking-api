@@ -322,7 +322,7 @@ class Ritasi extends MyModel
         $query = DB::table("upahritasi")->from(DB::raw("upahritasi with (readuncommitted)"))
             ->select(DB::raw("upahritasi.nominalsupir, upahritasirincian.liter"))
             ->join(DB::raw("upahritasirincian with (readuncommitted)"), 'upahritasi.id', 'upahritasirincian.upahritasi_id')
-            ->whereRaw("(upahritasi.kotadari_id=".$dari . " and upahritasi.kotasampai_id=" .$sampai. ") or (upahritasi.kotasampai_id=".$dari . " and upahritasi.kotadari_id=" .$sampai. ")")
+            ->whereRaw("(upahritasi.kotadari_id=" . $dari . " and upahritasi.kotasampai_id=" . $sampai . ") or (upahritasi.kotasampai_id=" . $dari . " and upahritasi.kotadari_id=" . $sampai . ")")
             // ->whereRaw('upahritasi.kotasampai_id', $sampai)
             ->whereRaw("upahritasi.nominalsupir != 0")
             ->first();
@@ -339,9 +339,10 @@ class Ritasi extends MyModel
             ->where('grp', $group)
             ->where('subgrp', $subGroup)
             ->first();
-        $upahRitasi = DB::table('upahritasi')->where('kotadari_id', $data['dari_id'])->where('kotasampai_id', $data['sampai_id'])->first();
+        $upahRitasi = DB::table('upahritasi')
+            ->whereRaw("(upahritasi.kotadari_id=" . $data['dari_id'] . " and upahritasi.kotasampai_id=" . $data['sampai_id'] . ") or (upahritasi.kotasampai_id=" . $data['dari_id'] . " and upahritasi.kotadari_id=" . $data['sampai_id'] . ")")->first();
         $extra = DB::table("dataritasi")->from(DB::raw("dataritasi with (readuncommitted)"))->where('id', $data['statusritasi_id'])->first();
-
+        $extraNominal = $extra->nominal ?? 0;
         $ritasi = new Ritasi();
         $ritasi->tglbukti = date('Y-m-d', strtotime($data['tglbukti']));
         $ritasi->statusritasi = $extra->statusritasi;
@@ -351,10 +352,10 @@ class Ritasi extends MyModel
         $ritasi->trado_id = $data['trado_id'];
         $ritasi->dari_id = $data['dari_id'];
         $ritasi->sampai_id = $data['sampai_id'];
-        $ritasi->jarak = $upahRitasi->jarak;
-        $ritasi->upah = $upahRitasi->nominalsupir;
-        $ritasi->extra = $extra->nominal;
-        $ritasi->gaji = $upahRitasi->nominalsupir + $extra->nominal;
+        $ritasi->jarak = $upahRitasi->jarak ?? 0;
+        $ritasi->upah = $upahRitasi->nominalsupir ?? 0;
+        $ritasi->extra = $extra->nominal ?? 0;
+        $ritasi->gaji = $upahRitasi->nominalsupir + $extraNominal;
         $ritasi->statusformat = $format->id;
         $ritasi->modifiedby = auth('api')->user()->name;
         $ritasi->nobukti = (new RunningNumberService)->get($group, $subGroup, $ritasi->getTable(), date('Y-m-d', strtotime($data['tglbukti'])));
@@ -379,18 +380,19 @@ class Ritasi extends MyModel
 
     public function processUpdate(Ritasi $ritasi, array $data): Ritasi
     {
-        $upahRitasi = DB::table('upahritasi')->where('kotadari_id', $data['dari_id'])->where('kotasampai_id', $data['sampai_id'])->first();
+        $upahRitasi = DB::table('upahritasi')
+            ->whereRaw("(upahritasi.kotadari_id=" . $data['dari_id'] . " and upahritasi.kotasampai_id=" . $data['sampai_id'] . ") or (upahritasi.kotasampai_id=" . $data['dari_id'] . " and upahritasi.kotadari_id=" . $data['sampai_id'] . ")")->first();
         $extra = DB::table("dataritasi")->from(DB::raw("dataritasi with (readuncommitted)"))->where('id', $data['statusritasi_id'])->first();
-
+        $extraNominal = $extra->nominal ?? 0;
         $ritasi->statusritasi = $extra->statusritasi;
         $ritasi->dataritasi_id = $data['statusritasi_id'];
         $ritasi->suratpengantar_nobukti = $data['suratpengantar_nobukti'];
         $ritasi->supir_id = $data['supir_id'];
         $ritasi->trado_id = $data['trado_id'];
-        $ritasi->jarak = $upahRitasi->jarak;
-        $ritasi->upah = $upahRitasi->nominalsupir;
-        $ritasi->extra = $extra->nominal;
-        $ritasi->gaji = $upahRitasi->nominalsupir + $extra->nominal;
+        $ritasi->jarak = $upahRitasi->jarak ?? 0;
+        $ritasi->upah = $upahRitasi->nominalsupir ?? 0;
+        $ritasi->extra = $extra->nominal ?? 0;
+        $ritasi->gaji = $upahRitasi->nominalsupir + $extraNominal;
         $ritasi->dari_id = $data['dari_id'];
         $ritasi->sampai_id = $data['sampai_id'];
         $ritasi->modifiedby = auth('api')->user()->name;
@@ -455,7 +457,7 @@ class Ritasi extends MyModel
                 DB::raw("'" . $dari . "' as tgldari"),
                 DB::raw("'" . $sampai . "' as tglsampai"),
                 DB::raw("'Tgl Cetak:'+format(getdate(),'dd-MM-yyyy HH:mm:ss')as tglcetak"),
-                DB::raw(" 'User :".auth('api')->user()->name."' as usercetak")
+                DB::raw(" 'User :" . auth('api')->user()->name . "' as usercetak")
             )
             ->whereBetween($this->table . '.tglbukti', [date('Y-m-d', strtotime($dari)), date('Y-m-d', strtotime($sampai))])
             ->leftJoin('parameter', 'ritasi.statusritasi', '=', 'parameter.id')
@@ -476,9 +478,9 @@ class Ritasi extends MyModel
     public function ExistTradoSupirRitasi($nobukti)
     {
         $query = DB::table("suratpengantar")->from(DB::raw("suratpengantar with (readuncommitted)"))
-        ->select('trado_id','supir_id')
-        ->where('nobukti', $nobukti)
-        ->first();
+            ->select('trado_id', 'supir_id')
+            ->where('nobukti', $nobukti)
+            ->first();
         return $query;
     }
 }
