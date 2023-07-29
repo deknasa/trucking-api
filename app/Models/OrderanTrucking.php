@@ -1209,7 +1209,7 @@ class OrderanTrucking extends MyModel
         $orderanTrucking->agen_id = $data['agen_id'];
         $orderanTrucking->jenisorder_id = $data['jenisorder_id'];
         $orderanTrucking->pelanggan_id = $data['pelanggan_id'];
-        $orderanTrucking->tarif_id = $data['tarifrincian_id'];
+        $orderanTrucking->tarif_id = $data['tarifrincian_id'] ?? 0;
         $orderanTrucking->nojobemkl = $data['nojobemkl'] ?? '';
         $orderanTrucking->nocont = $data['nocont'];
         $orderanTrucking->noseal = $data['noseal'];
@@ -1223,7 +1223,7 @@ class OrderanTrucking extends MyModel
         $orderanTrucking->modifiedby = auth('api')->user()->name;
 
         $tarifrincian = TarifRincian::from(DB::raw("tarifrincian"))->where('tarif_id', $data['tarifrincian_id'])->where('container_id', $data['container_id'])->first();
-        $orderanTrucking->nominal = $tarifrincian->nominal;
+        $orderanTrucking->nominal = $tarifrincian->nominal ?? 0;
 
         if (!$orderanTrucking->save()) {
             throw new \Exception("Error updating orderan trucking.");
@@ -1239,7 +1239,7 @@ class OrderanTrucking extends MyModel
             'modifiedby' => auth('api')->user()->user
         ]);
         $get = SuratPengantar::from(DB::raw("suratpengantar with (readuncommitted)"))
-            ->select('id', 'nominalperalihan', 'qtyton')
+            ->select('id', 'nominalperalihan', 'qtyton','nojob','nocont','noseal','nojob2','nocont2','noseal2','pelanggan_id','agen_id','jenisorder_id','container_id')
             ->where('jobtrucking', $orderanTrucking->nobukti)->get();
 
         $datadetail = json_decode($get, true);
