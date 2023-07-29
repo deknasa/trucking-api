@@ -19,6 +19,7 @@ class CreateInvoicechargegandenganheaderTable extends Migration
             $table->string('nobukti', 50)->unique();
             $table->date('tglbukti')->nullable();
             $table->date('tglproses')->nullable();
+            $table->date('tgljatuhtempo')->nullable();
             $table->longText('keterangan')->nullable();
             $table->unsignedBigInteger('agen_id')->nullable();
             $table->string('piutang_nobukti', 50)->nullable();

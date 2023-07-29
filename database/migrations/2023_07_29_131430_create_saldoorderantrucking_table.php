@@ -3,9 +3,8 @@
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
-use Illuminate\Support\Facades\DB;
 
-class CreateOrderantruckingTable extends Migration
+class CreateSaldoorderantruckingTable extends Migration
 {
     /**
      * Run the migrations.
@@ -14,9 +13,7 @@ class CreateOrderantruckingTable extends Migration
      */
     public function up()
     {
-        Schema::dropIfExists('orderantrucking');
-
-        Schema::create('orderantrucking', function (Blueprint $table) {
+        Schema::create('saldoorderantrucking', function (Blueprint $table) {
             $table->id();
             $table->string('nobukti',50)->unique();
             $table->date('tglbukti')->nullable();
@@ -41,29 +38,10 @@ class CreateOrderantruckingTable extends Migration
             $table->integer('statusapprovalbukatrip')->Length(11)->nullable();
             $table->date('tglapprovalbukatrip')->nullable();
             $table->string('userapprovalbukatrip',50)->nullable();
-            $table->integer('statusapprovaledit')->Length(11)->nullable();
-            $table->date('tglapprovaledit')->nullable();
-            $table->string('userapprovaledit',50)->nullable();
             $table->unsignedBigInteger('statusformat')->nullable();
             $table->string('modifiedby',50)->nullable();
             $table->timestamps();
-
-
-            $table->foreign('container_id', 'orderantrucking_container_container_id_foreign')->references('id')->on('container');
-            $table->foreign('agen_id', 'orderantrucking_agen_agen_id_foreign')->references('id')->on('agen');
-            $table->foreign('jenisorder_id', 'orderantrucking_jenisorder_jenisorder_id_foreign')->references('id')->on('jenisorder');
-            $table->foreign('pelanggan_id', 'orderantrucking_pelanggan_pelanggan_id_foreign')->references('id')->on('pelanggan');
-            $table->foreign('tarif_id', 'orderantrucking_tarif_tarif_id_foreign')->references('id')->on('tarif');
-
-
         });
-
-        DB::statement("ALTER TABLE orderantrucking NOCHECK CONSTRAINT orderantrucking_container_container_id_foreign");
-        DB::statement("ALTER TABLE orderantrucking NOCHECK CONSTRAINT orderantrucking_agen_agen_id_foreign");
-        DB::statement("ALTER TABLE orderantrucking NOCHECK CONSTRAINT orderantrucking_jenisorder_jenisorder_id_foreign");
-        DB::statement("ALTER TABLE orderantrucking NOCHECK CONSTRAINT orderantrucking_pelanggan_pelanggan_id_foreign");
-        DB::statement("ALTER TABLE orderantrucking NOCHECK CONSTRAINT orderantrucking_tarif_tarif_id_foreign");
-
     }
 
     /**
@@ -73,6 +51,6 @@ class CreateOrderantruckingTable extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('orderantrucking');
+        Schema::dropIfExists('saldoorderantrucking');
     }
 }
