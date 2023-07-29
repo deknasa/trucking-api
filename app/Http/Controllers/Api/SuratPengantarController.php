@@ -170,7 +170,12 @@ class SuratPengantarController extends Controller
             ];
             $suratPengantar = (new SuratPengantar())->processUpdate($suratpengantar, $data);
             $suratPengantar->position = $this->getPosition($suratPengantar, $suratPengantar->getTable())->position;
-            $suratPengantar->page = ceil($suratPengantar->position / ($request->limit ?? 10));
+            if ($request->limit==0) {
+                $suratPengantar->page = ceil($suratPengantar->position / (10));
+            } else {
+                $suratPengantar->page = ceil($suratPengantar->position / ($request->limit ?? 10));
+            }
+            
 
             DB::commit();
 
