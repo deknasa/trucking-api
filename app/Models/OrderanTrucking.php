@@ -1152,6 +1152,12 @@ class OrderanTrucking extends MyModel
             ->where('subgrp', $subGroup)
             ->first();
 
+            $defaultapproval = DB::table('parameter')
+            ->where('grp', 'STATUS APPROVAL')
+            ->where('subgrp', 'STATUS APPROVAL')
+            ->where('text', 'NON APPROVAL')
+            ->first();            
+
         $orderanTrucking->tglbukti = date('Y-m-d', strtotime($data['tglbukti']));
         $orderanTrucking->container_id = $data['container_id'];
         $orderanTrucking->agen_id = $data['agen_id'];
@@ -1165,6 +1171,7 @@ class OrderanTrucking extends MyModel
         $orderanTrucking->nocont2 = $data['nocont2'] ?? '';
         $orderanTrucking->noseal2 = $data['noseal2'] ?? '';
         $orderanTrucking->statuslangsir = $data['statuslangsir'];
+        $orderanTrucking->statusapprovalbukatrip = $defaultapproval->id;
         $orderanTrucking->statusperalihan = $data['statusperalihan'];
         $orderanTrucking->modifiedby = auth('api')->user()->name;
         $orderanTrucking->statusformat = $format->id;
@@ -1191,6 +1198,13 @@ class OrderanTrucking extends MyModel
 
     public function processUpdate(OrderanTrucking $orderanTrucking, array $data): OrderanTrucking
     {
+
+        $defaultapproval = DB::table('parameter')
+        ->where('grp', 'STATUS APPROVAL')
+        ->where('subgrp', 'STATUS APPROVAL')
+        ->where('text', 'NON APPROVAL')
+        ->first(); 
+        
         $orderanTrucking->container_id = $data['container_id'];
         $orderanTrucking->agen_id = $data['agen_id'];
         $orderanTrucking->jenisorder_id = $data['jenisorder_id'];
@@ -1204,6 +1218,8 @@ class OrderanTrucking extends MyModel
         $orderanTrucking->noseal2 = $data['noseal2'] ?? '';
         $orderanTrucking->statuslangsir = $data['statuslangsir'];
         $orderanTrucking->statusperalihan = $data['statusperalihan'];
+        $orderanTrucking->statusapprovalbukatrip = $defaultapproval->id;
+
         $orderanTrucking->modifiedby = auth('api')->user()->name;
 
         $tarifrincian = TarifRincian::from(DB::raw("tarifrincian"))->where('tarif_id', $data['tarifrincian_id'])->where('container_id', $data['container_id'])->first();

@@ -82,13 +82,17 @@ class JobTrucking extends MyModel
                 ->select(
                     'a.jobtrucking'
                 )
+                ->join(DB::raw("orderantrucking as b with(readuncommitted)"), 'a.jobtrucking', 'b.jobtrucking')
                 ->where('a.container_id', '=', request()->container_id)
                 ->where('a.jenisorder_id', '=', request()->jenisorder_id)
                 ->where('a.gandengan_id', '=', request()->gandengan_id)
                 ->where('a.pelanggan_id', '=', request()->pelanggan_id)
                 ->where('a.tarif_id', '=', request()->tarif_id)
                 ->whereRaw("isnull(a.jobtrucking,'')<>''")
-                 ->where('a.sampai_id', '=', $pelabuhan->text);
+                ->whereRaw("a.sampai_id=". $pelabuhan->text." and isnull(B.statusapprovalbuka,4)=4") ;
+                // ->where('a.sampai_id', '=', $pelabuhan->text);
+
+
 
 
             DB::table($tempselesai)->insertUsing([
