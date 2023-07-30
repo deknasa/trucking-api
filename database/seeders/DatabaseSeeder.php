@@ -126,6 +126,8 @@ class DatabaseSeeder extends Seeder
             InvoiceChargeGandenganHeaderSeeder::class,
             InvoiceChargeGandenganDetailSeeder::class,
             SaldoPendapatanSupirSeeder::class,
+            SaldoOrderanTruckingSeeder::class,
+            SaldoSuratPengantarSeeder::class,
 
         ]);
     }

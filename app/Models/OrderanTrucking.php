@@ -106,8 +106,178 @@ class OrderanTrucking extends MyModel
     {
         $this->setRequestParameters();
 
-        $query = DB::table($this->table)->from(
-            DB::raw($this->table . " with (readuncommitted)")
+        $temporderantrucking = '##temporderantrucking' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+        Schema::create($temporderantrucking, function ($table) {
+            $table->integer('id')->nullable();
+            $table->string('nobukti', 50)->nullable();
+            $table->date('tglbukti')->nullable();
+            $table->unsignedBigInteger('container_id')->nullable();
+            $table->unsignedBigInteger('agen_id')->nullable();
+            $table->unsignedBigInteger('jenisorder_id')->nullable();
+            $table->unsignedBigInteger('pelanggan_id')->nullable();
+            $table->unsignedBigInteger('tarif_id')->nullable();
+            $table->double('nominal', 15, 2)->nullable();
+            $table->string('nojobemkl', 50)->nullable();
+            $table->string('nocont', 50)->nullable();
+            $table->string('noseal', 50)->nullable();
+            $table->string('nojobemkl2', 50)->nullable();
+            $table->string('nocont2', 50)->nullable();
+            $table->string('noseal2', 50)->nullable();
+            $table->integer('statuslangsir')->length(11)->nullable();
+            $table->integer('statusperalihan')->length(11)->nullable();
+            $table->string('jobtruckingasal', 500)->nullable();
+            $table->integer('statusapprovalnonchargegandengan')->Length(11)->nullable();
+            $table->string('userapprovalnonchargegandengan', 50)->nullable();
+            $table->date('tglapprovalnonchargegandengan')->nullable();
+            $table->integer('statusapprovalbukatrip')->Length(11)->nullable();
+            $table->date('tglapprovalbukatrip')->nullable();
+            $table->string('userapprovalbukatrip', 50)->nullable();
+            $table->unsignedBigInteger('statusformat')->nullable();
+            $table->string('modifiedby', 50)->nullable();
+            $table->dateTime('created_at')->nullable();
+            $table->dateTime('updated_at')->nullable();
+        });
+
+        $queryorderantrucking = DB::table('orderantrucking')->from(
+            DB::raw("orderantrucking a with (readuncommitted)")
+        )
+            ->select(
+                'a.id',
+                'a.nobukti',
+                'a.tglbukti',
+                'a.container_id',
+                'a.agen_id',
+                'a.jenisorder_id',
+                'a.pelanggan_id',
+                'a.tarif_id',
+                'a.nominal',
+                'a.nojobemkl',
+                'a.nocont',
+                'a.noseal',
+                'a.nojobemkl2',
+                'a.nocont2',
+                'a.noseal2',
+                'a.statuslangsir',
+                'a.statusperalihan',
+                'a.jobtruckingasal',
+                'a.statusapprovalnonchargegandengan',
+                'a.userapprovalnonchargegandengan',
+                'a.tglapprovalnonchargegandengan',
+                'a.statusapprovalbukatrip',
+                'a.tglapprovalbukatrip',
+                'a.userapprovalbukatrip',
+                'a.statusformat',
+                'a.modifiedby',
+                'a.created_at',
+                'a.updated_at',
+            )
+            ->whereBetween('a.tglbukti', [date('Y-m-d', strtotime(request()->tgldari)), date('Y-m-d', strtotime(request()->tglsampai))]);
+
+
+        DB::table($temporderantrucking)->insertUsing([
+            'id',
+            'nobukti',
+            'tglbukti',
+            'container_id',
+            'agen_id',
+            'jenisorder_id',
+            'pelanggan_id',
+            'tarif_id',
+            'nominal',
+            'nojobemkl',
+            'nocont',
+            'noseal',
+            'nojobemkl2',
+            'nocont2',
+            'noseal2',
+            'statuslangsir',
+            'statusperalihan',
+            'jobtruckingasal',
+            'statusapprovalnonchargegandengan',
+            'userapprovalnonchargegandengan',
+            'tglapprovalnonchargegandengan',
+            'statusapprovalbukatrip',
+            'tglapprovalbukatrip',
+            'userapprovalbukatrip',
+            'statusformat',
+            'modifiedby',
+            'created_at',
+            'updated_at',
+
+        ], $queryorderantrucking);
+
+        $queryorderantrucking = DB::table('saldoorderantrucking')->from(
+            DB::raw("saldoorderantrucking a with (readuncommitted)")
+        )
+            ->select(
+                'a.id',
+                'a.nobukti',
+                'a.tglbukti',
+                'a.container_id',
+                'a.agen_id',
+                'a.jenisorder_id',
+                'a.pelanggan_id',
+                'a.tarif_id',
+                'a.nominal',
+                'a.nojobemkl',
+                'a.nocont',
+                'a.noseal',
+                'a.nojobemkl2',
+                'a.nocont2',
+                'a.noseal2',
+                'a.statuslangsir',
+                'a.statusperalihan',
+                'a.jobtruckingasal',
+                'a.statusapprovalnonchargegandengan',
+                'a.userapprovalnonchargegandengan',
+                'a.tglapprovalnonchargegandengan',
+                'a.statusapprovalbukatrip',
+                'a.tglapprovalbukatrip',
+                'a.userapprovalbukatrip',
+                'a.statusformat',
+                'a.modifiedby',
+                'a.created_at',
+                'a.updated_at',
+            )
+            ->whereBetween('a.tglbukti', [date('Y-m-d', strtotime(request()->tgldari)), date('Y-m-d', strtotime(request()->tglsampai))]);
+
+
+        DB::table($temporderantrucking)->insertUsing([
+            'id',
+            'nobukti',
+            'tglbukti',
+            'container_id',
+            'agen_id',
+            'jenisorder_id',
+            'pelanggan_id',
+            'tarif_id',
+            'nominal',
+            'nojobemkl',
+            'nocont',
+            'noseal',
+            'nojobemkl2',
+            'nocont2',
+            'noseal2',
+            'statuslangsir',
+            'statusperalihan',
+            'jobtruckingasal',
+            'statusapprovalnonchargegandengan',
+            'userapprovalnonchargegandengan',
+            'tglapprovalnonchargegandengan',
+            'statusapprovalbukatrip',
+            'tglapprovalbukatrip',
+            'userapprovalbukatrip',
+            'statusformat',
+            'modifiedby',
+            'created_at',
+            'updated_at',
+
+        ], $queryorderantrucking);
+
+
+
+        $query = DB::table($temporderantrucking)->from(
+            DB::raw($temporderantrucking . " as orderantrucking")
         )
             ->select(
                 'orderantrucking.id',
@@ -132,7 +302,7 @@ class OrderanTrucking extends MyModel
                 'orderantrucking.created_at',
                 'orderantrucking.updated_at'
             )
-            ->whereBetween($this->table . '.tglbukti', [date('Y-m-d', strtotime(request()->tgldari)), date('Y-m-d', strtotime(request()->tglsampai))])
+            ->whereBetween('orderantrucking.tglbukti', [date('Y-m-d', strtotime(request()->tgldari)), date('Y-m-d', strtotime(request()->tglsampai))])
             ->leftJoin(DB::raw("tarif with (readuncommitted)"), 'orderantrucking.tarif_id', '=', 'tarif.id')
             ->leftJoin(DB::raw("container with (readuncommitted)"), 'orderantrucking.container_id', '=', 'container.id')
             ->leftJoin(DB::raw("agen with (readuncommitted)"), 'orderantrucking.agen_id', '=', 'agen.id')
@@ -619,45 +789,45 @@ class OrderanTrucking extends MyModel
         return $pjumlah;
     }
 
-    public function getOrderanTrip($tglproses, $agen,$idinvoice)
+    public function getOrderanTrip($tglproses, $agen, $idinvoice)
     {
-        $queryagen=DB::table('agen')->from(
+        $queryagen = DB::table('agen')->from(
             DB::raw("agen a with (readuncommitted)")
         )
-        ->select (
-            'a.kodeagen'
-        )->where('a.id','=',$agen)
-        ->first();
+            ->select(
+                'a.kodeagen'
+            )->where('a.id', '=', $agen)
+            ->first();
 
-        $queryinvoice=DB::table('invoicechargegandenganheader')->from(
+        $queryinvoice = DB::table('invoicechargegandenganheader')->from(
             DB::raw("invoicechargegandenganheader a with (readuncommitted)")
         )
-        ->select (
-            'a.nobukti'
-        )->where('a.id','=',$idinvoice)
-        ->first();
+            ->select(
+                'a.nobukti'
+            )->where('a.id', '=', $idinvoice)
+            ->first();
 
-        if(isset($queryinvoice)){
+        if (isset($queryinvoice)) {
             $noinvoice = $queryinvoice->nobukti;
-        }else{
+        } else {
             $noinvoice = '';
         }
-        $querysp=DB::table('suratpengantar')->from(
+        $querysp = DB::table('suratpengantar')->from(
             DB::raw("suratpengantar a with (readuncommitted)")
         )
-        ->select (
-            'a.jobtrucking',
-            DB::raw("max(c.kodecontainer) as container"),
-            DB::raw("max(a.nojob) as nojob"),
-            DB::raw("max(a.nojob2) as nojob2"),
-            DB::raw("max(a.nocont) as nocont"),
-            DB::raw("max(a.nocont2) as nocont2"),
-            DB::raw("max(a.supir_id) as supir_id"),
+            ->select(
+                'a.jobtrucking',
+                DB::raw("max(c.kodecontainer) as container"),
+                DB::raw("max(a.nojob) as nojob"),
+                DB::raw("max(a.nojob2) as nojob2"),
+                DB::raw("max(a.nocont) as nocont"),
+                DB::raw("max(a.nocont2) as nocont2"),
+                DB::raw("max(a.supir_id) as supir_id"),
 
-        )
-        ->join(db::raw("invoicechargegandengandetail b with (readuncommitted)"),'a.jobtrucking','b.jobtrucking')
-        ->join(db::raw("container c with (readuncommitted)"),'a.container_id','c.id')
-        ->groupBy('a.jobtrucking');
+            )
+            ->join(db::raw("invoicechargegandengandetail b with (readuncommitted)"), 'a.jobtrucking', 'b.jobtrucking')
+            ->join(db::raw("container c with (readuncommitted)"), 'a.container_id', 'c.id')
+            ->groupBy('a.jobtrucking');
 
         $tempsp = '##tempsp' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
         Schema::create($tempsp, function ($table) {
@@ -707,38 +877,38 @@ class OrderanTrucking extends MyModel
             $table->integer('agen_id')->nullable();
         });
 
-        $query=DB::table("invoicechargegandengandetail")->from(
+        $query = DB::table("invoicechargegandengandetail")->from(
             db::raw("invoicechargegandengandetail a with (readuncommitted)")
         )
-        ->select (
-            'a.jobtrucking',
-            'b.kodegandengan as gandengan',
-            DB::raw("'1900/1/1' as tglawal"),
-            DB::raw("'1900/1/1' as tglkembali"),
-            'a.jumlahhari',
-            'a.jenisorder',
-            DB::raw("'" .$queryagen->kodeagen ."' as namaemkl"),
-            'c.container as ukurancontainer',
-            'c.nojob',
-            'c.nojob2',
-            'c.nocont',
-            'c.nocont2',
-            'd.kodetrado',
-            'e.namasupir as supir',
-            'a.namagudang',
-            DB::raw("'".$noinvoice ."' as noinvoice"),
-            'a.trado_id',
-            'a.gandengan_id',
-            DB::raw($agen ." as agen_id")
-        )
-        ->join(db::raw("gandengan b with (readuncommitted)"),'a.gandengan_id','b.id')
-        ->join(DB::raw($tempsp ." c"),'a.jobtrucking','c.jobtrucking')
-        ->join(db::raw("trado d with (readuncommitted)"),'a.trado_id','d.id')
-        ->join(db::raw("supir e with (readuncommitted)"),'c.supir_id','e.id')
-        ->where('invoicechargegandengan_id','=',$idinvoice);
+            ->select(
+                'a.jobtrucking',
+                'b.kodegandengan as gandengan',
+                DB::raw("'1900/1/1' as tglawal"),
+                DB::raw("'1900/1/1' as tglkembali"),
+                'a.jumlahhari',
+                'a.jenisorder',
+                DB::raw("'" . $queryagen->kodeagen . "' as namaemkl"),
+                'c.container as ukurancontainer',
+                'c.nojob',
+                'c.nojob2',
+                'c.nocont',
+                'c.nocont2',
+                'd.kodetrado',
+                'e.namasupir as supir',
+                'a.namagudang',
+                DB::raw("'" . $noinvoice . "' as noinvoice"),
+                'a.trado_id',
+                'a.gandengan_id',
+                DB::raw($agen . " as agen_id")
+            )
+            ->join(db::raw("gandengan b with (readuncommitted)"), 'a.gandengan_id', 'b.id')
+            ->join(DB::raw($tempsp . " c"), 'a.jobtrucking', 'c.jobtrucking')
+            ->join(db::raw("trado d with (readuncommitted)"), 'a.trado_id', 'd.id')
+            ->join(db::raw("supir e with (readuncommitted)"), 'c.supir_id', 'e.id')
+            ->where('invoicechargegandengan_id', '=', $idinvoice);
 
         // dd($query->toSql());
-        
+
         DB::table($tempdatalist)->insertUsing([
             'jobtrucking',
             'gandengan',
@@ -817,7 +987,7 @@ class OrderanTrucking extends MyModel
         return $data;
     }
 
-  
+
     public function sortInvoice($query)
     {
         if ($this->params['sortIndex'] == 'nopolisi') {
@@ -863,7 +1033,7 @@ class OrderanTrucking extends MyModel
                                     $query = $query->orWhereRaw("format(a.tglawal,'dd-MM-yyyy') like '%$filters[data]%'");
                                 } else if ($filters['field'] == 'tglkembali') {
                                     $query = $query->orWhereRaw("format(a.tglkembali,'dd-MM-yyyy') like '%$filters[data]%'");
-                                }else if ($filters['field'] == 'nominal_detail') {
+                                } else if ($filters['field'] == 'nominal_detail') {
                                     $query = $query->orWhereRaw("format((a.jumlahhari-5)*300000, '#,#0.00') LIKE '%$filters[data]%'");
                                 } else {
                                     $query = $query->orWhere('a.' . $filters['field'], 'LIKE', "%$filters[data]%");
@@ -1000,7 +1170,7 @@ class OrderanTrucking extends MyModel
         } else if ($this->params['sortIndex'] == 'tarif_id') {
             return $query->orderBy('tarif.tujuan', $this->params['sortOrder']);
         } else {
-            return $query->orderBy($this->table . '.' . $this->params['sortIndex'], $this->params['sortOrder']);
+            return $query->orderBy('orderantrucking.' . $this->params['sortIndex'], $this->params['sortOrder']);
         }
     }
 
@@ -1028,14 +1198,14 @@ class OrderanTrucking extends MyModel
                             } elseif ($filters['field'] == 'jenisorder_id') {
                                 $query = $query->where('jenisorder.keterangan', 'LIKE', "%$filters[data]%");
                             } else if ($filters['field'] == 'nominal') {
-                                $query = $query->whereRaw("format($this->table.nominal, '#,#0.00') LIKE '%$filters[data]%'");
+                                $query = $query->whereRaw("format(orderantrucking.nominal, '#,#0.00') LIKE '%$filters[data]%'");
                             } else if ($filters['field'] == 'tglbukti') {
-                                $query = $query->whereRaw("format(" . $this->table . "." . $filters['field'] . ", 'dd-MM-yyyy') LIKE '%$filters[data]%'");
+                                $query = $query->whereRaw("format(orderantrucking." . $filters['field'] . ", 'dd-MM-yyyy') LIKE '%$filters[data]%'");
                             } else if ($filters['field'] == 'created_at' || $filters['field'] == 'updated_at') {
-                                $query = $query->whereRaw("format(" . $this->table . "." . $filters['field'] . ", 'dd-MM-yyyy HH:mm:ss') LIKE '%$filters[data]%'");
+                                $query = $query->whereRaw("format(orderantrucking." . $filters['field'] . ", 'dd-MM-yyyy HH:mm:ss') LIKE '%$filters[data]%'");
                             } else {
                                 // $query = $query->where($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
-                                $query = $query->whereRaw($this->table . ".[" .  $filters['field'] . "] LIKE '%" . escapeLike($filters['data']) . "%' escape '|'");
+                                $query = $query->whereRaw("orderantrucking.[" .  $filters['field'] . "] LIKE '%" . escapeLike($filters['data']) . "%' escape '|'");
                             }
                         }
                     }
@@ -1061,14 +1231,14 @@ class OrderanTrucking extends MyModel
                             } elseif ($filters['field'] == 'jenisorder_id') {
                                 $query = $query->orWhere('jenisorder.keterangan', 'LIKE', "%$filters[data]%");
                             } else if ($filters['field'] == 'nominal') {
-                                $query = $query->orWhereRaw("format($this->table.nominal, '#,#0.00') LIKE '%$filters[data]%'");
+                                $query = $query->orWhereRaw("format(orderantrucking.nominal, '#,#0.00') LIKE '%$filters[data]%'");
                             } else if ($filters['field'] == 'tglbukti') {
-                                $query = $query->orWhereRaw("format(" . $this->table . "." . $filters['field'] . ", 'dd-MM-yyyy') LIKE '%$filters[data]%'");
+                                $query = $query->orWhereRaw("format(orderantrucking." . $filters['field'] . ", 'dd-MM-yyyy') LIKE '%$filters[data]%'");
                             } else if ($filters['field'] == 'created_at' || $filters['field'] == 'updated_at') {
-                                $query = $query->orWhereRaw("format(" . $this->table . "." . $filters['field'] . ", 'dd-MM-yyyy HH:mm:ss') LIKE '%$filters[data]%'");
+                                $query = $query->orWhereRaw("format(orderantrucking." . $filters['field'] . ", 'dd-MM-yyyy HH:mm:ss') LIKE '%$filters[data]%'");
                             } else {
                                 // $query = $query->orWhere($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
-                                $query = $query->OrwhereRaw($this->table . ".[" .  $filters['field'] . "] LIKE '%" . escapeLike($filters['data']) . "%' escape '|'");
+                                $query = $query->OrwhereRaw("orderantrucking.[" .  $filters['field'] . "] LIKE '%" . escapeLike($filters['data']) . "%' escape '|'");
                             }
                         }
                     }
@@ -1152,11 +1322,11 @@ class OrderanTrucking extends MyModel
             ->where('subgrp', $subGroup)
             ->first();
 
-            $defaultapproval = DB::table('parameter')
+        $defaultapproval = DB::table('parameter')
             ->where('grp', 'STATUS APPROVAL')
             ->where('subgrp', 'STATUS APPROVAL')
             ->where('text', 'NON APPROVAL')
-            ->first();            
+            ->first();
 
         $orderanTrucking->tglbukti = date('Y-m-d', strtotime($data['tglbukti']));
         $orderanTrucking->container_id = $data['container_id'];
@@ -1200,11 +1370,11 @@ class OrderanTrucking extends MyModel
     {
 
         $defaultapproval = DB::table('parameter')
-        ->where('grp', 'STATUS APPROVAL')
-        ->where('subgrp', 'STATUS APPROVAL')
-        ->where('text', 'NON APPROVAL')
-        ->first(); 
-        
+            ->where('grp', 'STATUS APPROVAL')
+            ->where('subgrp', 'STATUS APPROVAL')
+            ->where('text', 'NON APPROVAL')
+            ->first();
+
         $orderanTrucking->container_id = $data['container_id'];
         $orderanTrucking->agen_id = $data['agen_id'];
         $orderanTrucking->jenisorder_id = $data['jenisorder_id'];
@@ -1239,7 +1409,7 @@ class OrderanTrucking extends MyModel
             'modifiedby' => auth('api')->user()->user
         ]);
         $get = SuratPengantar::from(DB::raw("suratpengantar with (readuncommitted)"))
-            ->select('id', 'nominalperalihan', 'qtyton','nojob','nocont','noseal','nojob2','nocont2','noseal2','pelanggan_id','agen_id','jenisorder_id','container_id')
+            ->select('id', 'nominalperalihan', 'qtyton', 'nojob', 'nocont', 'noseal', 'nojob2', 'nocont2', 'noseal2', 'pelanggan_id', 'agen_id', 'jenisorder_id', 'container_id')
             ->where('jobtrucking', $orderanTrucking->nobukti)->get();
 
         $datadetail = json_decode($get, true);

@@ -286,9 +286,42 @@ class SuratPengantarController extends Controller
         }
     }
 
-    public function cekValidasi($id)
+    public function cekValidasi($id,Request $request)
     {
 
+        $nobuktilist=$request->nobukti ?? '';
+
+      
+
+        $querysp=DB::table('suratpengantar')->from(
+            DB::raw("suratpengantar a with (readuncommitted)")
+        )
+        ->select('a.id')
+        ->where('a.nobukti',$nobuktilist)
+        ->first();
+        if (isset($querysp)) {
+            goto validasilanjut;
+        } else {
+    
+            $data1 = [
+                'kondisi' => true,
+                'keterangan' => '',
+            ];
+
+            $edit = true;
+            $keterangan="Trip Merupakan dari Saldo, Tidak bisa edit";
+            $data = [
+                'status' => false,
+                'message' => $keterangan,
+                'errors' => '',
+                'edit' => $edit,
+                'kondisi' => $data1['kondisi'],
+            ];
+
+            return response($data);
+        }
+
+        validasilanjut:;
         $suratPengantar = new SuratPengantar();
         $nobukti = DB::table('SuratPengantar')->from(DB::raw("suratpengantar with (readuncommitted)"))
             ->where('id', $id)->first();
