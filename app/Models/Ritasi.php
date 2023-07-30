@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 
+
 class Ritasi extends MyModel
 {
     use HasFactory;
@@ -341,14 +342,17 @@ class Ritasi extends MyModel
                 'a.suratpengantar_urutke'
             )
             ->where('a.suratpengantar_nobukti', '=', $data['suratpengantar_nobukti'])
-            ->whereRaw("isnull(a.suratpengantar_urutke,0)<>''")
+            ->whereRaw("isnull(a.suratpengantar_nobukti,'')<>''")
             ->orderby('a.suratpengantar_urutke', 'desc')
             ->first();
 
         if (isset($querytrip)) {
             $urutke = $querytrip->suratpengantar_urutke + 1;
-        } 
+        } else {
+            $urutke=1;
+        }
 
+        // dd($urutke);
         $group = 'RITASI';
         $subGroup = 'RITASI';
 
@@ -399,7 +403,8 @@ class Ritasi extends MyModel
     public function processUpdate(Ritasi $ritasi, array $data): Ritasi
     {
 
-        
+
+
         $upahRitasi = DB::table('upahritasi')
             ->whereRaw("(upahritasi.kotadari_id=" . $data['dari_id'] . " and upahritasi.kotasampai_id=" . $data['sampai_id'] . ") or (upahritasi.kotasampai_id=" . $data['dari_id'] . " and upahritasi.kotadari_id=" . $data['sampai_id'] . ")")->first();
         $extra = DB::table("dataritasi")->from(DB::raw("dataritasi with (readuncommitted)"))->where('id', $data['statusritasi_id'])->first();
@@ -416,6 +421,27 @@ class Ritasi extends MyModel
         $ritasi->dari_id = $data['dari_id'];
         $ritasi->sampai_id = $data['sampai_id'];
         $ritasi->modifiedby = auth('api')->user()->name;
+
+        $notrip = $data['suratpengantar_nobukti'] ?? '';
+
+        $queryritasi = DB::table("ritasi")->from(
+            db::raw("ritasi a with (readuncommitted)")
+        )
+            ->select(
+                'a.nobukti'
+            )
+            ->where('a.suratpengantar_nobukti', $notrip)
+            ->orderBy('a.nobukti', 'asc')
+            ->get();
+        $urutke = 0;
+        $datadetail = json_decode($queryritasi, true);
+        foreach ($datadetail as $item) {
+            $urutke = $urutke + 1;
+            $ritasiUpdate  = Ritasi::lockForUpdate()->where("nobukti", $item['nobukti'])
+                ->firstorFail();
+            $ritasiUpdate->urutke = $urutke;
+            $ritasiUpdate->save();
+        }
 
         if (!$ritasi->save()) {
             throw new \Exception("Error updating ritasi.");
@@ -438,6 +464,42 @@ class Ritasi extends MyModel
     {
         $ritasi = new Ritasi();
         $ritasi = $ritasi->lockAndDestroy($id);
+
+        $notripquery = db::table("ritasi")->from(
+            db::raw("ritasi a with (readuncommitted)")
+        )
+        ->select(
+            'a.suratpengantar_nobukti'
+        )
+        ->where('a.id',$id)
+        ->first();
+
+        if (isset($notripquery)) {
+            $notrip=$notripquery->suratpengantar_nobukti;
+        } else {
+            $notrip='';
+        }
+
+        $queryritasi = DB::table("ritasi")->from(
+            db::raw("ritasi a with (readuncommitted)")
+        )
+            ->select(
+                'a.nobukti'
+            )
+            ->where('a.suratpengantar_nobukti', $notrip)
+            ->orderBy('a.nobukti', 'asc')
+            ->get();
+        $urutke = 0;
+        $datadetail = json_decode($queryritasi, true);
+        foreach ($datadetail as $item) {
+            $urutke = $urutke + 1;
+            $ritasiUpdate  = Ritasi::lockForUpdate()->where("nobukti", $item['nobukti'])
+                ->firstorFail();
+            $ritasiUpdate->urutke = $urutke;
+            $ritasiUpdate->save();
+        }
+
+
 
         (new LogTrail())->processStore([
             'namatabel' => $ritasi->getTable(),
