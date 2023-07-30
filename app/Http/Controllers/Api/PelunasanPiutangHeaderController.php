@@ -102,8 +102,11 @@ class PelunasanPiutangHeaderController extends Controller
             ];
             $pelunasanPiutangHeader = (new PelunasanPiutangHeader())->processStore($data);
             $pelunasanPiutangHeader->position = $this->getPosition($pelunasanPiutangHeader, $pelunasanPiutangHeader->getTable())->position;
-            $pelunasanPiutangHeader->page = ceil($pelunasanPiutangHeader->position / ($request->limit ?? 10));
-
+            if ($request->limit==0) {
+                $pelunasanPiutangHeader->page = ceil($pelunasanPiutangHeader->position / (10));
+            } else {
+                $pelunasanPiutangHeader->page = ceil($pelunasanPiutangHeader->position / ($request->limit ?? 10));
+            }
             DB::commit();
 
             return response()->json([
@@ -158,8 +161,11 @@ class PelunasanPiutangHeaderController extends Controller
             ];
             $pelunasanPiutangHeader = (new PelunasanPiutangHeader())->processUpdate($pelunasanpiutangheader, $data);
             $pelunasanPiutangHeader->position = $this->getPosition($pelunasanPiutangHeader, $pelunasanPiutangHeader->getTable())->position;
-            $pelunasanPiutangHeader->page = ceil($pelunasanPiutangHeader->position / ($request->limit ?? 10));
-
+            if ($request->limit==0) {
+                $pelunasanPiutangHeader->page = ceil($pelunasanPiutangHeader->position / (10));
+            } else {
+                $pelunasanPiutangHeader->page = ceil($pelunasanPiutangHeader->position / ($request->limit ?? 10));
+            }
             DB::commit();
 
             return response()->json([
@@ -184,8 +190,11 @@ class PelunasanPiutangHeaderController extends Controller
             $selected = $this->getPosition($pelunasanPiutangHeader, $pelunasanPiutangHeader->getTable(), true);
             $pelunasanPiutangHeader->position = $selected->position;
             $pelunasanPiutangHeader->id = $selected->id;
-            $pelunasanPiutangHeader->page = ceil($pelunasanPiutangHeader->position / ($request->limit ?? 10));
-
+            if ($request->limit==0) {
+                $pelunasanPiutangHeader->page = ceil($pelunasanPiutangHeader->position / (10));
+            } else {
+                $pelunasanPiutangHeader->page = ceil($pelunasanPiutangHeader->position / ($request->limit ?? 10));
+            }
             DB::commit();
 
             return response()->json([

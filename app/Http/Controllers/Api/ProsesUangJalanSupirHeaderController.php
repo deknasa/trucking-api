@@ -44,7 +44,7 @@ use Illuminate\Support\Facades\DB;
 
 class ProsesUangJalanSupirHeaderController extends Controller
 {
-       /**
+    /**
      * @ClassName 
      * ProsesUangJalanSupirHeader
      * @Detail1 ProsesUangJalanSupirDetailController
@@ -106,7 +106,11 @@ class ProsesUangJalanSupirHeaderController extends Controller
 
             $prosesUangJalanSupir = (new ProsesUangJalanSupirHeader())->processStore($data);
             $prosesUangJalanSupir->position = $this->getPosition($prosesUangJalanSupir, $prosesUangJalanSupir->getTable())->position;
-            $prosesUangJalanSupir->page = ceil($prosesUangJalanSupir->position / ($request->limit ?? 10));
+            if ($request->limit == 0) {
+                $prosesUangJalanSupir->page = ceil($prosesUangJalanSupir->position / (10));
+            } else {
+                $prosesUangJalanSupir->page = ceil($prosesUangJalanSupir->position / ($request->limit ?? 10));
+            }
             DB::commit();
 
             return response()->json([
@@ -183,8 +187,11 @@ class ProsesUangJalanSupirHeaderController extends Controller
 
             $prosesUangJalanSupir = (new ProsesUangJalanSupirHeader())->processUpdate($prosesuangjalansupirheader, $data);
             $prosesUangJalanSupir->position = $this->getPosition($prosesUangJalanSupir, $prosesUangJalanSupir->getTable())->position;
-            $prosesUangJalanSupir->page = ceil($prosesUangJalanSupir->position / ($request->limit ?? 10));
-
+            if ($request->limit == 0) {
+                $prosesUangJalanSupir->page = ceil($prosesUangJalanSupir->position / (10));
+            } else {
+                $prosesUangJalanSupir->page = ceil($prosesUangJalanSupir->position / ($request->limit ?? 10));
+            }
             DB::commit();
 
             return response()->json([
@@ -209,8 +216,11 @@ class ProsesUangJalanSupirHeaderController extends Controller
             $selected = $this->getPosition($prosesUangJalanSupir, $prosesUangJalanSupir->getTable(), true);
             $prosesUangJalanSupir->position = $selected->position;
             $prosesUangJalanSupir->id = $selected->id;
-            $prosesUangJalanSupir->page = ceil($prosesUangJalanSupir->position / ($request->limit ?? 10));
-
+            if ($request->limit == 0) {
+                $prosesUangJalanSupir->page = ceil($prosesUangJalanSupir->position / (10));
+            } else {
+                $prosesUangJalanSupir->page = ceil($prosesUangJalanSupir->position / ($request->limit ?? 10));
+            }
             DB::commit();
 
             return response()->json([

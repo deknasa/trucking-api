@@ -66,8 +66,11 @@ class JurnalUmumHeaderController extends Controller
             ];
             $jurnalUmumHeader = (new JurnalUmumHeader())->processStore($data);
             $jurnalUmumHeader->position = $this->getPosition($jurnalUmumHeader, $jurnalUmumHeader->getTable())->position;
-            $jurnalUmumHeader->page = ceil($jurnalUmumHeader->position / ($request->limit ?? 10));
-
+            if ($request->limit==0) {
+                $jurnalUmumHeader->page = ceil($jurnalUmumHeader->position / (10));
+            } else {
+                $jurnalUmumHeader->page = ceil($jurnalUmumHeader->position / ($request->limit ?? 10));
+            }
             DB::commit();
 
             return response()->json([
@@ -111,8 +114,11 @@ class JurnalUmumHeaderController extends Controller
             ];
             $jurnalumumHeader = (new JurnalUmumHeader())->processUpdate($jurnalumumheader, $data);
             $jurnalumumHeader->position = $this->getPosition($jurnalumumHeader, $jurnalumumHeader->getTable())->position;
-            $jurnalumumHeader->page = ceil($jurnalumumHeader->position / ($request->limit ?? 10));
-
+            if ($request->limit==0) {
+                $jurnalumumHeader->page = ceil($jurnalumumHeader->position / (10));
+            } else {
+                $jurnalumumHeader->page = ceil($jurnalumumHeader->position / ($request->limit ?? 10));
+            }
             DB::commit();
 
             return response()->json([
@@ -138,8 +144,11 @@ class JurnalUmumHeaderController extends Controller
             $selected = $this->getPosition($jurnalUmumHeader, $jurnalUmumHeader->getTable(), true);
             $jurnalUmumHeader->position = $selected->position;
             $jurnalUmumHeader->id = $selected->id;
-            $jurnalUmumHeader->page = ceil($jurnalUmumHeader->position / ($request->limit ?? 10));
-
+            if ($request->limit==0) {
+                $jurnalUmumHeader->page = ceil($jurnalUmumHeader->position / (10));
+            } else {
+                $jurnalUmumHeader->page = ceil($jurnalUmumHeader->position / ($request->limit ?? 10));
+            }
             DB::commit();
 
             return response()->json([

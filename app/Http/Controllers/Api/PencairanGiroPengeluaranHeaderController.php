@@ -70,8 +70,11 @@ class PencairanGiroPengeluaranHeaderController extends Controller
             ];
             $pencairanGiro = (new PencairanGiroPengeluaranHeader())->processStore($data);
             $pencairanGiro->position = $this->getPosition($pencairanGiro, $pencairanGiro->getTable())->position;
-            $pencairanGiro->page = ceil($pencairanGiro->position / ($request->limit ?? 10));
-            
+            if ($request->limit==0) {
+                $pencairanGiro->page = ceil($pencairanGiro->position / (10));
+            } else {
+                $pencairanGiro->page = ceil($pencairanGiro->position / ($request->limit ?? 10));
+            }
             DB::commit();
             return response()->json([
                 'message' => 'Berhasil disimpan',

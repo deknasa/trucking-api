@@ -56,8 +56,11 @@ class SuratPengantarApprovalInputTripController extends Controller
             ];
             $approvalTrip = (new SuratPengantarApprovalInputTrip())->processStore($data);
             $approvalTrip->position = $this->getPosition($approvalTrip, $approvalTrip->getTable())->position;
-            $approvalTrip->page = ceil($approvalTrip->position / ($request->limit ?? 10));
-
+            if ($request->limit==0) {
+                $approvalTrip->page = ceil($approvalTrip->position / (10));
+            } else {
+                $approvalTrip->page = ceil($approvalTrip->position / ($request->limit ?? 10));
+            }
             DB::commit();
 
             return response()->json([
@@ -93,8 +96,11 @@ class SuratPengantarApprovalInputTripController extends Controller
             ];
             $approvalBukaTanggal = (new SuratPengantarApprovalInputTrip())->processUpdate($suratpengantarapprovalinputtrip, $data);
             $approvalBukaTanggal->position = $this->getPosition($approvalBukaTanggal, $approvalBukaTanggal->getTable())->position;
-            $approvalBukaTanggal->page = ceil($approvalBukaTanggal->position / ($request->limit ?? 10));
-
+            if ($request->limit==0) {
+                $approvalBukaTanggal->page = ceil($approvalBukaTanggal->position / (10));
+            } else {
+                $approvalBukaTanggal->page = ceil($approvalBukaTanggal->position / ($request->limit ?? 10));
+            }
             DB::commit();
 
             return response()->json([
@@ -119,8 +125,11 @@ class SuratPengantarApprovalInputTripController extends Controller
             $selected = $this->getPosition($approvalBukaTanggal, $approvalBukaTanggal->getTable(), true);
             $approvalBukaTanggal->position = $selected->position;
             $approvalBukaTanggal->id = $selected->id;
-            $approvalBukaTanggal->page = ceil($approvalBukaTanggal->position / ($request->limit ?? 10));
-
+            if ($request->limit==0) {
+                $approvalBukaTanggal->page = ceil($approvalBukaTanggal->position / (10));
+            } else {
+                $approvalBukaTanggal->page = ceil($approvalBukaTanggal->position / ($request->limit ?? 10));
+            }
             DB::commit();
 
             return response()->json([

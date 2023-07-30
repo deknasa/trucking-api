@@ -90,8 +90,9 @@ class PengembalianKasGantungHeaderController extends Controller
             ]);
             /* Set position and page */
             $pengembalianKasGantungHeader->position = $this->getPosition($pengembalianKasGantungHeader, $pengembalianKasGantungHeader->getTable())->position;
-            $pengembalianKasGantungHeader->page = ceil($pengembalianKasGantungHeader->position / ($request->limit ?? 10));
-            if (isset($request->limit)) {
+            if ($request->limit==0) {
+                $pengembalianKasGantungHeader->page = ceil($pengembalianKasGantungHeader->position / (10));
+            } else {
                 $pengembalianKasGantungHeader->page = ceil($pengembalianKasGantungHeader->position / ($request->limit ?? 10));
             }
 
@@ -146,10 +147,12 @@ class PengembalianKasGantungHeaderController extends Controller
 
             /* Set position and page */
             $pengembalianKasGantungHeader->position = $this->getPosition($pengembalianKasGantungHeader, $pengembalianKasGantungHeader->getTable())->position;
-            $pengembalianKasGantungHeader->page = ceil($pengembalianKasGantungHeader->position / ($request->limit ?? 10));
-            if (isset($request->limit)) {
+            if ($request->limit==0) {
+                $pengembalianKasGantungHeader->page = ceil($pengembalianKasGantungHeader->position / (10));
+            } else {
                 $pengembalianKasGantungHeader->page = ceil($pengembalianKasGantungHeader->position / ($request->limit ?? 10));
             }
+
 
             DB::commit();
             return response()->json([
@@ -172,15 +175,17 @@ class PengembalianKasGantungHeaderController extends Controller
         try {
 
             /* delete header */
-            $pengembalianKasGantungHeader = PengembalianKasGantungHeader::findOrFail($id);
-            $pengembalianKasGantungHeader = (new PengembalianKasGantungHeader())->processDestroy($id);
+           $pengembalianKasGantungHeader = (new PengembalianKasGantungHeader())->processDestroy($id);
 
             /* Set position and page */
-            $pengembalianKasGantungHeader->position = $this->getPosition($pengembalianKasGantungHeader, $pengembalianKasGantungHeader->getTable())->position;
-            $pengembalianKasGantungHeader->page = ceil($pengembalianKasGantungHeader->position / ($request->limit ?? 10));
-            if (isset($request->limit)) {
+            $selected = $this->getPosition($pengembalianKasGantungHeader, $pengembalianKasGantungHeader->getTable(), true);
+            $pengembalianKasGantungHeader->position = $selected->position;
+            $pengembalianKasGantungHeader->id = $selected->id; if ($request->limit==0) {
+                $pengembalianKasGantungHeader->page = ceil($pengembalianKasGantungHeader->position / (10));
+            } else {
                 $pengembalianKasGantungHeader->page = ceil($pengembalianKasGantungHeader->position / ($request->limit ?? 10));
             }
+
 
             DB::commit();
             return response()->json([
