@@ -22,6 +22,7 @@ class CabangController extends Controller
     public function index()
     {
         $cabang = new Cabang();
+        // dd(system('getmac'));
         return response([
             'data' => $cabang->get(),
             'attributes' => [

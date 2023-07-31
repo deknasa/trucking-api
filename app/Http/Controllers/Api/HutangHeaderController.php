@@ -77,8 +77,9 @@ class HutangHeaderController extends Controller
             $hutangHeader = (new HutangHeader())->processStore($data);
             /* Set position and page */
             $hutangHeader->position = $this->getPosition($hutangHeader, $hutangHeader->getTable())->position;
-            $hutangHeader->page = ceil($hutangHeader->position / ($request->limit ?? 10));
-            if (isset($request->limit)) {
+            if ($request->limit==0) {
+                $hutangHeader->page = ceil($hutangHeader->position / (10));
+            } else {
                 $hutangHeader->page = ceil($hutangHeader->position / ($request->limit ?? 10));
             }
 
@@ -192,8 +193,9 @@ class HutangHeaderController extends Controller
             $hutangHeader = (new HutangHeader())->processUpdate($hutangHeader,$request->all());
             /* Set position and page */
             $hutangHeader->position = $this->getPosition($hutangHeader, $hutangHeader->getTable())->position;
-            $hutangHeader->page = ceil($hutangHeader->position / ($request->limit ?? 10));
-            if (isset($request->limit)) {
+            if ($request->limit==0) {
+                $hutangHeader->page = ceil($hutangHeader->position / (10));
+            } else {
                 $hutangHeader->page = ceil($hutangHeader->position / ($request->limit ?? 10));
             }
  
@@ -222,8 +224,11 @@ class HutangHeaderController extends Controller
             $selected = $this->getPosition($hutangHeader, $hutangHeader->getTable(), true);
             $hutangHeader->position = $selected->position;
             $hutangHeader->id = $selected->id;
-            $hutangHeader->page = ceil($hutangHeader->position / ($request->limit ?? 10));
-
+            if ($request->limit==0) {
+                $hutangHeader->page = ceil($hutangHeader->position / (10));
+            } else {
+                $hutangHeader->page = ceil($hutangHeader->position / ($request->limit ?? 10));
+            }
             DB::commit();
 
             return response()->json([
