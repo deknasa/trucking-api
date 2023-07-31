@@ -138,6 +138,7 @@ class SuratPengantarController extends Controller
             $data = [
                 'jobtrucking' => $request->jobtrucking,
                 'upah_id' => $request->upah_id,
+                'tarif_id' => $request->tarifrincian_id,
                 'container_id' => $request->container_id,
                 'tglbukti' => $request->tglbukti,
                 'keterangan' => $request->keterangan,
@@ -338,14 +339,15 @@ class SuratPengantarController extends Controller
         $edit = true;
         if (!$todayValidation) {
             $edit = false;
-            if (!$isEditAble) {
-                $edit = false;
+            if ($isEditAble) {
+                $edit = true;
             }
-        } else {
-            if (!$isEditAble) {
-                $edit = false;
-            }
-        }
+        } 
+        // else {
+        //     if (!$isEditAble) {
+        //         $edit = false;
+        //     }
+        // }
 
         $cekdata = $suratPengantar->cekvalidasihapus($nobukti->nobukti, $nobukti->jobtrucking);
         if ($cekdata['kondisi'] == true) {
