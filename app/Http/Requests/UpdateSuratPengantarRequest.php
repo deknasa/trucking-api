@@ -87,16 +87,7 @@ class UpdateSuratPengantarRequest extends FormRequest
         $getUpahZona = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS UPAH ZONA')->where('text', 'UPAH ZONA')->first();
         $getPeralihan = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS PERALIHAN')->where('text', 'PERALIHAN')->first();
 
-        $rulesEditSuratpengantar = [];
-        $cekTodayValidation = (new SuratPengantar())->todayValidation($this->id);
-        $isEditAble = (new SuratPengantar())->isEditAble($this->id);
-        if (!$cekTodayValidation) {
-            if (!$isEditAble) {
-                $rulesEditSuratpengantar = [
-                    'statusapprovaleditsuratpengantar' => 'required'
-                ];
-            }
-        } 
+       
         $rules = [
             'tglbukti' => [
                 'required', 'date_format:d-m-Y',
@@ -797,8 +788,7 @@ class UpdateSuratPengantarRequest extends FormRequest
             $rulesjenisorder_id,
             $rulestarifrincian_id,
             $rulesUpah_id,
-            $rulesStatusPeralihan,
-            $rulesEditSuratpengantar
+            $rulesStatusPeralihan
         );
 
         return $rule;
