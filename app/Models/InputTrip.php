@@ -125,6 +125,7 @@ class InputTrip extends MyModel
             'zonadari_id' => $data['zonadari_id'],
             'zonasampai_id' => $data['zonasampai_id'],
             'jenisorder_id' => $data['jenisorder_id'],
+            'jenisorderemkl_id' => $data['jenisorder_id'],
             'statusperalihan' => $statusperalihan->id,
             'totalomset' => $tarifrincian->nominal ?? 0,
             'tglsp' => $tglbukti,

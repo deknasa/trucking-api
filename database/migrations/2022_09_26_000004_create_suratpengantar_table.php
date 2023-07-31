@@ -50,6 +50,7 @@ class CreateSuratpengantarTable extends Migration
             $table->decimal('gajikenek', 15, 2)->nullable();
             $table->unsignedBigInteger('agen_id')->nullable();
             $table->unsignedBigInteger('jenisorder_id')->nullable();
+            $table->unsignedBigInteger('jenisorderemkl_id')->nullable();
             $table->integer('statusperalihan')->length(11)->nullable();
             $table->unsignedBigInteger('tarif_id')->nullable();
             $table->decimal('nominalperalihan', 15, 2)->nullable();
