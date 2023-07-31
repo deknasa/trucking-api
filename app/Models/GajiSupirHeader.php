@@ -1133,7 +1133,7 @@ class GajiSupirHeader extends MyModel
                 DB::raw("'Laporan Rincian Gaji Supir' as judulLaporan"),
                 DB::raw("'" . $getJudul->text . "' as judul"),
                 DB::raw("'Tgl Cetak:'+format(getdate(),'dd-MM-yyyy HH:mm:ss')as tglcetak"),
-                DB::raw(" 'User :".auth('api')->user()->name."' as usercetak")
+                DB::raw(" 'User :" . auth('api')->user()->name . "' as usercetak")
             )
             ->leftJoin(DB::raw("parameter as statuscetak with (readuncommitted)"), 'gajisupirheader.statuscetak', 'statuscetak.id')
             ->leftJoin(DB::raw("supir with (readuncommitted)"), 'gajisupirheader.supir_id', 'supir.id')
@@ -1249,7 +1249,7 @@ class GajiSupirHeader extends MyModel
                 $supirPS[] = 0;
                 $pengeluarantruckingheader_nobuktiPS[] = $data['pinjSemua_nobukti'][$i];
                 $nominalPS[] = $data['nominalPS'][$i];
-                $keteranganPS[] = "PINJAMAN SUPIR ".$data['supir'].' '.$data['pinjSemua_keterangan'][$i];
+                $keteranganPS[] = "PINJAMAN SUPIR " . $data['supir'] . ' ' . $data['pinjSemua_keterangan'][$i];
             }
 
             $penerimaanTruckingHeaderPS = [
@@ -1293,7 +1293,7 @@ class GajiSupirHeader extends MyModel
                 $supirPP[] = $gajiSupirHeader->supir_id;
                 $pengeluarantruckingheader_nobuktiPP[] = $data['pinjPribadi_nobukti'][$i];
                 $nominalPP[] = $data['nominalPP'][$i];
-                $keteranganPP[] = "PINJAMAN SUPIR ".$data['supir'].' '.$data['pinjPribadi_keterangan'][$i];
+                $keteranganPP[] = "PINJAMAN SUPIR " . $data['supir'] . ' ' . $data['pinjPribadi_keterangan'][$i];
             }
 
             $penerimaanTruckingHeaderPP = [
@@ -1333,7 +1333,7 @@ class GajiSupirHeader extends MyModel
             $supirDPO[] = $gajiSupirHeader->supir_id;
             $pengeluarantruckingheader_nobuktiDPO[] = '';
             $nominalDPO[] = $data['nomDeposito'];
-            $keteranganDPO[] = "DEPOSITO SUPIR ".$data['supir']." PERIODE ".$data['tgldari']." S/D ".$data['tglsampai']." ".$data['ketDeposito'];
+            $keteranganDPO[] = "DEPOSITO SUPIR " . $data['supir'] . " PERIODE " . $data['tgldari'] . " S/D " . $data['tglsampai'] . " " . $data['ketDeposito'];
 
             $penerimaanTruckingHeaderDPO = [
                 'tanpaprosesnobukti' => '2',
@@ -1370,7 +1370,7 @@ class GajiSupirHeader extends MyModel
             $supirBBM[] = $gajiSupirHeader->supir_id;
             $pengeluarantruckingheader_nobuktiBBM[] = '';
             $nominalBBM[] = $data['nomBBM'];
-            $keteranganBBM[] = "HUTANG BBM SUPIR ".$data['supir']." PERIODE ".$data['tgldari']." S/D ".$data['tglsampai']." ".$data['ketBBM'];
+            $keteranganBBM[] = "HUTANG BBM SUPIR " . $data['supir'] . " PERIODE " . $data['tgldari'] . " S/D " . $data['tglsampai'] . " " . $data['ketBBM'];
 
             $penerimaanTruckingHeaderBBM = [
                 'tanpaprosesnobukti' => '2',
@@ -1437,26 +1437,37 @@ class GajiSupirHeader extends MyModel
     public function processUpdate(GajiSupirHeader $gajiSupirHeader, array $data): GajiSupirHeader
     {
 
+        $nobuktiold = DB::table('gajisupirheader')->from(
+            DB::raw("gajisupirheader a with (readuncommitted)")
+        )
+            ->select(
+                'a.nobukti'
+            )
+            ->where('a.id', $gajiSupirHeader->id)
+            ->first();
+
+
+
         $group = 'RINCIAN GAJI SUPIR BUKTI';
         $subGroup = 'RINCIAN GAJI SUPIR BUKTI';
 
-        $querycek=DB::table('gajisupirheader')->from(
+        $querycek = DB::table('gajisupirheader')->from(
             DB::raw("gajisupirheader a with (readuncommitted)")
         )
-        ->select(
-            'a.nobukti'
-        )
-        ->where('a.id',$gajiSupirHeader->id)
-        ->whereRAw("format(a.tglbukti,'MM-yyyy')='".date('m-Y', strtotime($data['tglbukti'])) ."'")
-        ->first();
+            ->select(
+                'a.nobukti'
+            )
+            ->where('a.id', $gajiSupirHeader->id)
+            ->whereRAw("format(a.tglbukti,'MM-yyyy')='" . date('m-Y', strtotime($data['tglbukti'])) . "'")
+            ->first();
 
         if (isset($querycek)) {
-            $nobukti=$querycek->nobukti;
+            $nobukti = $querycek->nobukti;
         } else {
-            $nobukti=(new RunningNumberService)->get($group, $subGroup, $gajiSupirHeader->getTable(), date('Y-m-d', strtotime($data['tglbukti'])));
+            $nobukti = (new RunningNumberService)->get($group, $subGroup, $gajiSupirHeader->getTable(), date('Y-m-d', strtotime($data['tglbukti'])));
         }
 
-        
+
         $gajiSupirHeader->supir_id = $data['supir_id'];
         $gajiSupirHeader->nominal = '';
         $gajiSupirHeader->tgldari = date('Y-m-d', strtotime($data['tgldari']));
@@ -1546,7 +1557,7 @@ class GajiSupirHeader extends MyModel
                 ->first();
 
             $fetchPS = GajiSupirPelunasanPinjaman::from(DB::raw("gajisupirpelunasanpinjaman with (readuncommitted)"))
-                ->where('gajisupir_nobukti', $gajiSupirHeader->nobukti)->where('supir_id', '0')->first();
+                ->where('gajisupir_nobukti', $nobuktiold->nobukti)->where('supir_id', '0')->first();
 
             // jika ada maka update
             if ($fetchPS != null) {
@@ -1554,7 +1565,7 @@ class GajiSupirHeader extends MyModel
                 $pengeluaranPS = PenerimaanTruckingHeader::from(DB::raw("penerimaantruckingheader with (readuncommitted)"))
                     ->where('nobukti', $fetchPS->penerimaantrucking_nobukti)->first();
 
-                GajiSupirPelunasanPinjaman::where('gajisupir_nobukti', $gajiSupirHeader->nobukti)->where('supir_id', '0')->delete();
+                GajiSupirPelunasanPinjaman::where('gajisupir_nobukti', $nobuktiold->nobukti)->where('supir_id', '0')->delete();
 
                 $pengeluarantruckingheader_nobuktiPS = [];
                 $nominalPS = [];
@@ -1565,7 +1576,7 @@ class GajiSupirHeader extends MyModel
                     $supirPS[] = 0;
                     $pengeluarantruckingheader_nobuktiPS[] = $data['pinjSemua_nobukti'][$i];
                     $nominalPS[] = $data['nominalPS'][$i];
-                    $keteranganPS[] = "PINJAMAN SUPIR ".$data['supir'].' '.$data['pinjSemua_keterangan'][$i];
+                    $keteranganPS[] = "PINJAMAN SUPIR " . $data['supir'] . ' ' . $data['pinjSemua_keterangan'][$i];
                 }
 
                 $penerimaanTruckingHeaderPS = [
@@ -1607,7 +1618,7 @@ class GajiSupirHeader extends MyModel
                     $supirPS[] = 0;
                     $pengeluarantruckingheader_nobuktiPS[] = $data['pinjSemua_nobukti'][$i];
                     $nominalPS[] = $data['nominalPS'][$i];
-                    $keteranganPS[] =  "PINJAMAN SUPIR ".$data['supir'].' '.$data['pinjSemua_keterangan'][$i];
+                    $keteranganPS[] =  "PINJAMAN SUPIR " . $data['supir'] . ' ' . $data['pinjSemua_keterangan'][$i];
                 }
 
                 $penerimaanTruckingHeaderPS = [
@@ -1681,7 +1692,7 @@ class GajiSupirHeader extends MyModel
                     $supirPP[] = $gajiSupirHeader->supir_id;
                     $pengeluarantruckingheader_nobuktiPP[] = $data['pinjPribadi_nobukti'][$i];
                     $nominalPP[] = $data['nominalPP'][$i];
-                    $keteranganPP[] =  "PINJAMAN SUPIR ".$data['supir'].' '.$data['pinjPribadi_keterangan'][$i];
+                    $keteranganPP[] =  "PINJAMAN SUPIR " . $data['supir'] . ' ' . $data['pinjPribadi_keterangan'][$i];
                 }
 
                 $penerimaanTruckingHeaderPP = [
@@ -1722,7 +1733,7 @@ class GajiSupirHeader extends MyModel
                     $supirPP[] = $gajiSupirHeader->supir_id;
                     $pengeluarantruckingheader_nobuktiPP[] = $data['pinjPribadi_nobukti'][$i];
                     $nominalPP[] = $data['nominalPP'][$i];
-                    $keteranganPP[] =  "PINJAMAN SUPIR ".$data['supir'].' '.$data['pinjPribadi_keterangan'][$i];
+                    $keteranganPP[] =  "PINJAMAN SUPIR " . $data['supir'] . ' ' . $data['pinjPribadi_keterangan'][$i];
                 }
 
                 $penerimaanTruckingHeaderPP = [
@@ -1786,7 +1797,7 @@ class GajiSupirHeader extends MyModel
                 $supirDPO[] = $gajiSupirHeader->supir_id;
                 $pengeluarantruckingheader_nobuktiDPO[] = '';
                 $nominalDPO[] = $data['nomDeposito'];
-                $keteranganDPO[] = "DEPOSITO SUPIR ".$data['supir']." PERIODE ".$data['tgldari']." S/D ".$data['tglsampai']." ".$data['ketDeposito'];
+                $keteranganDPO[] = "DEPOSITO SUPIR " . $data['supir'] . " PERIODE " . $data['tgldari'] . " S/D " . $data['tglsampai'] . " " . $data['ketDeposito'];
 
                 $penerimaanTruckingHeaderDPO = [
                     'tanpaprosesnobukti' => '2',
@@ -1821,7 +1832,7 @@ class GajiSupirHeader extends MyModel
                 $supirDPO[] = $gajiSupirHeader->supir_id;
                 $pengeluarantruckingheader_nobuktiDPO[] = '';
                 $nominalDPO[] = $data['nomDeposito'];
-                $keteranganDPO[] = "DEPOSITO SUPIR ".$data['supir']." PERIODE ".$data['tgldari']." S/D ".$data['tglsampai']." ".$data['ketDeposito'];
+                $keteranganDPO[] = "DEPOSITO SUPIR " . $data['supir'] . " PERIODE " . $data['tgldari'] . " S/D " . $data['tglsampai'] . " " . $data['ketDeposito'];
 
                 $penerimaanTruckingHeaderDPO = [
                     'tanpaprosesnobukti' => '2',
@@ -1874,7 +1885,7 @@ class GajiSupirHeader extends MyModel
                 $supirBBM[] = $gajiSupirHeader->supir_id;
                 $pengeluarantruckingheader_nobuktiBBM[] = '';
                 $nominalBBM[] = $data['nomBBM'];
-                $keteranganBBM[] = "HUTANG BBM SUPIR ".$data['supir']." PERIODE ".$data['tgldari']." S/D ".$data['tglsampai']." ".$data['ketBBM'];
+                $keteranganBBM[] = "HUTANG BBM SUPIR " . $data['supir'] . " PERIODE " . $data['tgldari'] . " S/D " . $data['tglsampai'] . " " . $data['ketBBM'];
 
                 $penerimaanTruckingHeaderBBM = [
                     'tanpaprosesnobukti' => '2',
@@ -1929,7 +1940,7 @@ class GajiSupirHeader extends MyModel
                 $supirBBM[] = $gajiSupirHeader->supir_id;
                 $pengeluarantruckingheader_nobuktiBBM[] = '';
                 $nominalBBM[] = $data['nomBBM'];
-                $keteranganBBM[] = "HUTANG BBM SUPIR ".$data['supir']." PERIODE ".$data['tgldari']." S/D ".$data['tglsampai']." ".$data['ketBBM'];
+                $keteranganBBM[] = "HUTANG BBM SUPIR " . $data['supir'] . " PERIODE " . $data['tgldari'] . " S/D " . $data['tglsampai'] . " " . $data['ketBBM'];
 
                 $penerimaanTruckingHeaderBBM = [
                     'tanpaprosesnobukti' => '2',
@@ -2011,7 +2022,7 @@ class GajiSupirHeader extends MyModel
 
                 (new GajisUpirUangJalan())->processStore($gajiSupirUangJalan);
             }
-        }else{
+        } else {
             $cekUangjalan = GajisUpirUangJalan::from(DB::raw("gajisupiruangjalan with (readuncommitted)"))
                 ->where('gajisupir_nobukti', $gajiSupirHeader->nobukti)->where('supir_id', $data['supir_id'])->first();
 
