@@ -67,8 +67,9 @@ class HutangBayarHeaderController extends Controller
             $hutangBayarHeader = (new HutangBayarHeader())->processStore($request->all());
             /* Set position and page */
             $hutangBayarHeader->position = $this->getPosition($hutangBayarHeader, $hutangBayarHeader->getTable())->position;
-            $hutangBayarHeader->page = ceil($hutangBayarHeader->position / ($request->limit ?? 10));
-            if (isset($request->limit)) {
+            if ($request->limit==0) {
+                $hutangBayarHeader->page = ceil($hutangBayarHeader->position / (10));
+            } else {
                 $hutangBayarHeader->page = ceil($hutangBayarHeader->position / ($request->limit ?? 10));
             }
 
@@ -112,8 +113,9 @@ class HutangBayarHeaderController extends Controller
             $hutangBayarHeader = (new HutangBayarHeader())->processUpdate($hutangBayar, $request->all());
             /* Set position and page */
             $hutangBayarHeader->position = $this->getPosition($hutangBayarHeader, $hutangBayarHeader->getTable())->position;
-            $hutangBayarHeader->page = ceil($hutangBayarHeader->position / ($request->limit ?? 10));
-            if (isset($request->limit)) {
+            if ($request->limit==0) {
+                $hutangBayarHeader->page = ceil($hutangBayarHeader->position / (10));
+            } else {
                 $hutangBayarHeader->page = ceil($hutangBayarHeader->position / ($request->limit ?? 10));
             }
 
@@ -143,7 +145,11 @@ class HutangBayarHeaderController extends Controller
             $selected = $this->getPosition($hutangBayarHeader, $hutangBayarHeader->getTable(), true);
             $hutangBayarHeader->position = $selected->position;
             $hutangBayarHeader->id = $selected->id;
-            $hutangBayarHeader->page = ceil($hutangBayarHeader->position / ($request->limit ?? 10));
+            if ($request->limit==0) {
+                $hutangBayarHeader->page = ceil($hutangBayarHeader->position / (10));
+            } else {
+                $hutangBayarHeader->page = ceil($hutangBayarHeader->position / ($request->limit ?? 10));
+            }
 
             DB::commit();
 
