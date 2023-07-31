@@ -52,6 +52,36 @@ class OrderanTruckingController extends Controller
         $orderanTrucking = new OrderanTrucking();
         $nobukti = OrderanTrucking::from(DB::raw("orderantrucking"))->where('id', $id)->first();
         $cekdata = $orderanTrucking->cekvalidasihapus($nobukti->nobukti, $aksi);
+
+        $isEditAble = OrderanTrucking::isEditAble($nobukti->id);
+        if (!$isEditAble) {
+            $query = DB::table('error')->select('keterangan')->where('kodeerror', '=', 'BAED')->get();
+            $keterangan = $query['0'];
+            $data = [
+                'status' => false,
+                'message' => $keterangan,
+                'errors' => '',
+                'kondisi' => true,
+            ];
+            $passes = false;
+        }
+
+        $todayValidation = OrderanTrucking::todayValidation($nobukti->id);
+        if (!$todayValidation) {
+            $query = DB::table('error')->select('keterangan')->where('kodeerror', '=', 'SATL')->get();
+            // $keterangan = $query['0'];
+            $keterangan = ['keterangan' => 'transaksi Sudah beda tanggal']; //$query['0'];
+            $data = [
+                'message' => $keterangan,
+                'errors' => 'Tidak bisa edit di hari yang berbeda',
+                'kodestatus' => '1',
+                'kodenobukti' => '1'
+            ];
+            $passes = false;
+            // return response($data);
+        }
+        
+
         if ($cekdata['kondisi'] == true) {
             $query = DB::table('error')
                 ->select(
@@ -68,17 +98,20 @@ class OrderanTruckingController extends Controller
                 'kondisi' => $cekdata['kondisi'],
             ];
 
-            return response($data);
-        } else {
-            $data = [
-                'status' => true,
-                'message' => '',
-                'errors' => '',
-                'kondisi' => $cekdata['kondisi'],
-            ];
+            $passes = false;
+        }
 
+        if (!$cekdata['kondisi'] || $isEditAble || $todayValidation) {
+
+            $data = [
+                'message' => '',
+                'errors' => 'success',
+                'kodestatus' => '0',
+                'kodenobukti' => '1'
+            ];
             return response($data);
         }
+        return response($data);
     }
     public function default()
     {
@@ -276,6 +309,26 @@ class OrderanTruckingController extends Controller
 
         try {
             $orderanTrucking = (new OrderanTrucking())->processApproval($request->all());
+
+            DB::commit();
+            return response()->json([
+                'message' => 'Berhasil disimpan',
+                'data' => $orderanTrucking
+            ]);
+        } catch (\Throwable $th) {
+            throw $th;
+        }
+    }
+    /**
+     * @ClassName
+     * 
+     */
+    public function approvaledit(ValidasiApprovalOrderanTruckingRequest $request)
+    {
+        DB::beginTransaction();
+
+        try {
+            $orderanTrucking = (new OrderanTrucking())->processApprovalEdit($request->all());
 
             DB::commit();
             return response()->json([

@@ -102,6 +102,32 @@ class OrderanTrucking extends MyModel
         return $data;
     }
 
+    public function isEditAble($id)
+    {
+        $tidakBolehEdit = DB::table('orderantrucking')->from(DB::raw("parameter with (readuncommitted)"))->where('grp', '=', 'STATUS APPROVAL')->where('text', '=', 'NON APPROVAL')->first();
+        
+        $query = DB::table('orderantrucking')->from(DB::raw("orderantrucking with (readuncommitted)"))
+            ->select('statusapprovaledit')
+            ->where('id', $id)
+            ->first();
+
+        if ($query->statusapprovaledit != $tidakBolehEdit->id) return true;
+        return false;
+    }
+
+    public function todayValidation($id)
+    {
+        $query = DB::table('orderantrucking')->from(DB::raw("orderantrucking with (readuncommitted)"))
+            ->where('id', $id)
+            ->first();
+        $tglbukti = strtotime($query->created_at);
+        $tglbuktistr = strtotime($tglbukti);
+        $limit = strtotime($tglbukti.'+1 days +12 hours +9 minutes' );
+        $now = strtotime('now');
+        if ($now < $limit) return true;
+        return false;
+    }
+
     public function get()
     {
         $this->setRequestParameters();
@@ -1476,6 +1502,45 @@ class OrderanTrucking extends MyModel
 
             $orderanTrucking->tglapprovalbukatrip = date('Y-m-d H:i:s');
             $orderanTrucking->userapprovalbukatrip = auth('api')->user()->name;
+
+            if (!$orderanTrucking->save()) {
+                throw new \Exception('Error Un/approval orderan Trucking.');
+            }
+
+            (new LogTrail())->processStore([
+                'namatabel' => strtoupper($orderanTrucking->getTable()),
+                'postingdari' => "UN/APPROVAL orderan Trucking",
+                'idtrans' => $orderanTrucking->id,
+                'nobuktitrans' => $orderanTrucking->nobukti,
+                'aksi' => $aksi,
+                'datajson' => $orderanTrucking->toArray(),
+                'modifiedby' => auth('api')->user()->name,
+            ]);
+            $result[] = $orderanTrucking;
+        }
+
+        return $result;
+    }
+
+    public function processApprovalEdit(array $data)
+    {
+        $statusApproval = Parameter::from(DB::raw("parameter with (readuncommitted)"))
+            ->where('grp', '=', 'STATUS APPROVAL')->where('text', '=', 'APPROVAL')->first();
+        $statusNonApproval = Parameter::from(DB::raw("parameter with (readuncommitted)"))
+            ->where('grp', '=', 'STATUS APPROVAL')->where('text', '=', 'NON APPROVAL')->first();
+
+        for ($i = 0; $i < count($data['orderanTruckingId']); $i++) {
+            $orderanTrucking = OrderanTrucking::find($data['orderanTruckingId'][$i]);
+            if ($orderanTrucking->statusapprovaledit == $statusApproval->id) {
+                $orderanTrucking->statusapprovaledit = $statusNonApproval->id;
+                $aksi = $statusNonApproval->text;
+            } else {
+                $orderanTrucking->statusapprovaledit = $statusApproval->id;
+                $aksi = $statusApproval->text;
+            }
+
+            $orderanTrucking->tglapprovaledit = date('Y-m-d H:i:s');
+            $orderanTrucking->userapprovaledit = auth('api')->user()->name;
 
             if (!$orderanTrucking->save()) {
                 throw new \Exception('Error Un/approval orderan Trucking.');

@@ -3,6 +3,7 @@
 use App\Http\Controllers\Api\AkunPusatController;
 use App\Http\Controllers\Api\AbsensiSupirDetailController;
 use App\Http\Controllers\Api\AbsensiSupirHeaderController;
+use App\Http\Controllers\Api\ReminderServiceController;
 
 use App\Http\Controllers\Api\ApprovalSupirGambarController;
 use App\Http\Controllers\Api\ApprovalSupirKeteranganController;
@@ -374,6 +375,7 @@ route::middleware(['auth:api', 'authorized'])->group(function () {
     Route::get('orderantrucking/{id}/getcont', [OrderanTruckingController::class, 'getcont'])->whereNumber('id');
     Route::get('orderantrucking/export', [OrderanTruckingController::class, 'export']);
     Route::get('orderantrucking/getorderantrip', [OrderanTruckingController::class, 'getOrderanTrip']);
+    Route::post('orderantrucking/approvaledit', [OrderanTruckingController::class, 'approvaledit']);
     Route::post('orderantrucking/approval', [OrderanTruckingController::class, 'approval']);
     Route::resource('orderantrucking', OrderanTruckingController::class)->whereNumber('orderantrucking');
 
@@ -837,6 +839,8 @@ route::middleware(['auth:api', 'authorized'])->group(function () {
     Route::get('pengeluaranstokdetail/pengeluaran', [PengeluaranStokDetailController::class, 'pengeluaran']);
     Route::get('pengeluaranstokdetail/jurnal', [PengeluaranStokDetailController::class, 'jurnal']);
 
+    Route::get('reminderservice/index', [ReminderServiceController::class, 'index']);
+    Route::get('reminderservice', [ReminderServiceController::class, 'index']);
 
     Route::get('pengeluaranstok/field_length', [PengeluaranStokController::class, 'fieldLength']);
     Route::post('invoiceextraheader/{id}/approval', [InvoiceExtraHeaderController::class, 'approval'])->whereNumber('id');
