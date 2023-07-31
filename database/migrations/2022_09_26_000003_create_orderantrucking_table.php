@@ -23,6 +23,7 @@ class CreateOrderantruckingTable extends Migration
             $table->unsignedBigInteger('container_id')->nullable();
             $table->unsignedBigInteger('agen_id')->nullable();
             $table->unsignedBigInteger('jenisorder_id')->nullable();
+            $table->unsignedBigInteger('jenisorderemkl_id')->nullable();
             $table->unsignedBigInteger('pelanggan_id')->nullable();
             $table->unsignedBigInteger('tarif_id')->nullable();
             $table->double('nominal',15,2)->nullable();

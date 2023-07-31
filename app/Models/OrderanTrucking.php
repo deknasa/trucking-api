@@ -461,6 +461,7 @@ class OrderanTrucking extends MyModel
                 'orderantrucking.agen_id',
                 'agen.namaagen as agen',
                 'orderantrucking.jenisorder_id',
+                DB::raw("isnull(jenisorderemkl.keterangan,'') as jenisorderemkl"),
                 'jenisorder.keterangan as jenisorder',
                 'orderantrucking.pelanggan_id',
                 'pelanggan.namapelanggan as pelanggan',
@@ -484,6 +485,7 @@ class OrderanTrucking extends MyModel
             ->leftJoin(DB::raw("container with (readuncommitted)"), 'orderantrucking.container_id', '=', 'container.id')
             ->leftJoin(DB::raw("agen with (readuncommitted)"), 'orderantrucking.agen_id', '=', 'agen.id')
             ->leftJoin(DB::raw("jenisorder with (readuncommitted)"), 'orderantrucking.jenisorder_id', '=', 'jenisorder.id')
+            ->leftJoin(DB::raw("jenisorder as jenisorderemkl with (readuncommitted)"), 'orderantrucking.jenisorderemkl_id', '=', 'jenisorderemkl.id')
             ->leftJoin(DB::raw("pelanggan with (readuncommitted)"), 'orderantrucking.pelanggan_id', '=', 'pelanggan.id')
             ->where('orderantrucking.id', $id);
 
