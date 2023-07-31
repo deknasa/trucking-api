@@ -68,7 +68,7 @@ class UpdateGajiSupirHeaderRequest extends FormRequest
             ],
             'tglbukti' => [
                 'required', 'date_format:d-m-Y',
-                'date_equals:' . date('d-m-Y', strtotime($getDataGajiSupir->tglbukti)),
+                // 'date_equals:' . date('d-m-Y', strtotime($getDataGajiSupir->tglbukti)),
                 new DateTutupBuku()
             ],
         ];

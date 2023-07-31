@@ -1437,6 +1437,26 @@ class GajiSupirHeader extends MyModel
     public function processUpdate(GajiSupirHeader $gajiSupirHeader, array $data): GajiSupirHeader
     {
 
+        $group = 'RINCIAN GAJI SUPIR BUKTI';
+        $subGroup = 'RINCIAN GAJI SUPIR BUKTI';
+
+        $querycek=DB::table('gajisupirheader')->from(
+            DB::raw("gajisupirheader a with (readuncommitted)")
+        )
+        ->select(
+            'a.nobukti'
+        )
+        ->where('a.id',$gajiSupirHeader->id)
+        ->whereRAw("format(a.tglbukti,'MM-yyyy')='".date('m-Y', strtotime($data['tglbukti'])) ."'")
+        ->first();
+
+        if (isset($querycek)) {
+            $nobukti=$querycek->nobukti;
+        } else {
+            $nobukti=(new RunningNumberService)->get($group, $subGroup, $gajiSupirHeader->getTable(), date('Y-m-d', strtotime($data['tglbukti'])));
+        }
+
+        
         $gajiSupirHeader->supir_id = $data['supir_id'];
         $gajiSupirHeader->nominal = '';
         $gajiSupirHeader->tgldari = date('Y-m-d', strtotime($data['tgldari']));
@@ -1454,6 +1474,10 @@ class GajiSupirHeader extends MyModel
         $gajiSupirHeader->pinjamanpribadi = 0;
         $gajiSupirHeader->gajiminus = 0;
         $gajiSupirHeader->uangJalantidakterhitung = $data['uangjalantidakterhitung'] ?? 0;
+
+        $gajiSupirHeader->tglbukti = date('Y-m-d', strtotime($data['tglbukti']));
+        $gajiSupirHeader->nobukti = $nobukti;
+
         $gajiSupirHeader->modifiedby = auth('api')->user()->name;
 
         if (!$gajiSupirHeader->save()) {
