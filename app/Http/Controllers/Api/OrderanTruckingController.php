@@ -47,8 +47,48 @@ class OrderanTruckingController extends Controller
         ]);
     }
 
-    public function cekValidasi($id, $aksi)
+    public function cekValidasi($id, $aksi,Request $request)
     {
+
+        $nobuktilist=$request->nobukti ?? '';
+
+
+        $querysp=DB::table('orderantrucking')->from(
+            DB::raw("orderantrucking a with (readuncommitted)")
+        )
+        ->select('a.id')
+        ->where('a.nobukti',$nobuktilist)
+        ->first();
+        if (isset($querysp)) {
+            goto validasilanjut;
+        } else {
+    
+            $data1 = [
+                'kondisi' => true,
+                'keterangan' => '',
+            ];
+
+            $edit = true;
+            $query = DB::table('error')
+            ->select(
+                DB::raw("'No Bukti ". $nobuktilist ." '+ltrim(rtrim(keterangan)) as keterangan")
+            )
+            ->where('kodeerror', '=', 'BMS')
+            ->get();
+        $keterangan = $query['0'];
+            $data = [
+                'status' => false,
+                'message' => $keterangan,
+                'errors' => '',
+                'edit' => $edit,
+                'kondisi' => $data1['kondisi'],
+            ];
+
+            return response($data);
+        }
+
+
+        validasilanjut:;
         $orderanTrucking = new OrderanTrucking();
         $nobukti = OrderanTrucking::from(DB::raw("orderantrucking"))->where('id', $id)->first();
         $cekdata = $orderanTrucking->cekvalidasihapus($nobukti->nobukti, $aksi);
