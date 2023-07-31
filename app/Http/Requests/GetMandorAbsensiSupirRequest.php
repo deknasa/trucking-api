@@ -3,6 +3,7 @@
 namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
+use App\Rules\DateAllowedAbsen;
 use App\Rules\DateAllowedAbsenReload;
 use Illuminate\Support\Facades\DB;
 use App\Http\Controllers\Api\ErrorController;
@@ -36,9 +37,10 @@ class GetMandorAbsensiSupirRequest extends FormRequest
             ->first();
 
         if (isset($existingRecord)) {
+        
             $rules = [
                 "tglbukaabsensi" => [
-                    new DateAllowedAbsenReload(false),
+                    new DateAllowedAbsen(false),
                 ]
 
             ];
@@ -52,12 +54,11 @@ class GetMandorAbsensiSupirRequest extends FormRequest
 
 
             if (isset($existing)) {
-             
                 if ($existing->created_at != $now) {
                   
                     $rules = [
                         "tglbukaabsensi" => [
-                            new DateAllowedAbsenReload(false),
+                            new DateAllowedAbsen(false),
                         ]
 
                     ];
@@ -65,7 +66,7 @@ class GetMandorAbsensiSupirRequest extends FormRequest
          
                     $rules = [
                         "tglbukaabsensi" => [
-                            new DateAllowedAbsenReload(true),
+                            new DateAllowedAbsen(true),
                         ]
 
                     ];
@@ -74,7 +75,7 @@ class GetMandorAbsensiSupirRequest extends FormRequest
 
                 $rules = [
                     "tglbukaabsensi" => [
-                        new DateAllowedAbsenReload(true),
+                        new DateAllowedAbsen(true),
                     ]
 
                 ];
