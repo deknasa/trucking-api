@@ -775,7 +775,9 @@ class PenerimaanTruckingHeader extends MyModel
     public function processUpdate(PenerimaanTruckingHeader $penerimaanTruckingHeader, array $data): PenerimaanTruckingHeader
     {
         $isEBS = $data['ebs'] ?? false;
-        
+
+
+
         if ($isEBS == false) {
             $idpenerimaan = $data['penerimaantrucking_id'];
             $fetchFormat =  DB::table('penerimaantrucking')->where('id', $idpenerimaan)->first();
@@ -789,6 +791,10 @@ class PenerimaanTruckingHeader extends MyModel
                 $data['coa'] = $fetchFormat->coakredit;
             }
 
+
+    
+
+
             $statusformat = $fetchFormat->format;
             $fetchGrp = Parameter::from(DB::raw("parameter with (readuncommitted)"))->where('id', $statusformat)->first();
             $format = Parameter::from(DB::raw("parameter with (readuncommitted)"))->where('grp', $fetchGrp->grp)->where('subgrp', $fetchGrp->subgrp)->first();
@@ -796,6 +802,34 @@ class PenerimaanTruckingHeader extends MyModel
             $statusApproval = Parameter::from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS APPROVAL')->where('text', 'NON APPROVAL')->first();
             $statusCetak = Parameter::from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUSCETAK')->where('text', 'BELUM CETAK')->first();
             $coadebet = '';
+
+            $querycek = DB::table('penerimaantruckingheader')->from(
+                DB::raw("penerimaantruckingheader a with (readuncommitted)")
+            )
+                ->select(
+                    'a.nobukti'
+                )
+                ->where('a.id', $penerimaanTruckingHeader->id)
+                ->whereRAw("format(a.tglbukti,'MM-yyyy')='" . date('m-Y', strtotime($data['tglbukti'])) . "'")
+                ->first();
+
+                $nobuktiold = DB::table('penerimaantruckingheader')->from(
+                    DB::raw("penerimaantruckingheader a with (readuncommitted)")
+                )
+                    ->select(
+                        'a.nobukti'
+                    )
+                    ->where('a.id', $penerimaanTruckingHeader->id)
+                    ->first();                
+
+            if (isset($querycek)) {
+                $nobukti = $querycek->nobukti;
+            } else {
+                $nobukti = (new RunningNumberService)->get($fetchGrp->grp, $fetchGrp->subgrp, $penerimaanTruckingHeader->getTable(), date('Y-m-d', strtotime($data['tglbukti'])));
+            }
+
+
+
             if ($tanpaprosesnobukti != 2) {
                 // throw new \Exception($data['bank_id']);
                 $bank = $data['bank_id'];
@@ -815,6 +849,8 @@ class PenerimaanTruckingHeader extends MyModel
             $penerimaanTruckingHeader->supir_id = $data['supirheader_id'] ?? '';
             $penerimaanTruckingHeader->karyawan_id = $data['karyawanheader_id'] ?? '';
             $penerimaanTruckingHeader->modifiedby = auth('api')->user()->name;
+            $penerimaanTruckingHeader->tglbukti = date('Y-m-d', strtotime($data['tglbukti']));
+            $penerimaanTruckingHeader->nobukti = $nobukti;
         } else {
             $penerimaanTruckingHeader->bank_id = $data['bank_id'];
             $penerimaanTruckingHeader->penerimaan_nobukti = $data['penerimaan_nobukti'];
@@ -946,10 +982,10 @@ class PenerimaanTruckingHeader extends MyModel
         $this->setRequestParameters();
 
         $getJudul = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))
-        ->select('text')
-        ->where('grp', 'JUDULAN LAPORAN')
-        ->where('subgrp', 'JUDULAN LAPORAN')
-        ->first();
+            ->select('text')
+            ->where('grp', 'JUDULAN LAPORAN')
+            ->where('subgrp', 'JUDULAN LAPORAN')
+            ->first();
 
         $periode = request()->periode ?? '';
         $statusCetak = request()->statuscetak ?? '';
@@ -967,7 +1003,7 @@ class PenerimaanTruckingHeader extends MyModel
                 DB::raw("'Laporan Penerimaan Trucking' as judulLaporan"),
                 DB::raw("'" . $getJudul->text . "' as judul"),
                 DB::raw("'Tgl Cetak:'+format(getdate(),'dd-MM-yyyy HH:mm:ss')as tglcetak"),
-                DB::raw(" 'User :".auth('api')->user()->name."' as usercetak")
+                DB::raw(" 'User :" . auth('api')->user()->name . "' as usercetak")
             )
             ->where("$this->table.id", $id)
             ->leftJoin(DB::raw("parameter as statuscetak with (readuncommitted)"), 'penerimaantruckingheader.statuscetak', 'statuscetak.id')
@@ -994,7 +1030,7 @@ class PenerimaanTruckingHeader extends MyModel
 
     public function printValidation($id)
     {
-        $query = DB::table($this->table)->from($this->table)->where('penerimaantruckingheader.id',$id);
+        $query = DB::table($this->table)->from($this->table)->where('penerimaantruckingheader.id', $id);
         $data = $query->first();
         $status = $data->statuscetak;
         $statusCetak = Parameter::from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUSCETAK')->where('text', 'CETAK')->first();
@@ -1002,15 +1038,15 @@ class PenerimaanTruckingHeader extends MyModel
         if ($status == $statusCetak->id) {
             return true;
         }
-        
+
         return false;
     }
 
     public function isUangJalanProcessed($nobukti)
     {
         $prosesUangJalan = DB::table('prosesuangjalansupirdetail')->from(DB::raw("prosesuangjalansupirdetail as a with (readuncommitted)"))->select('a.penerimaantrucking_nobukti')
-        ->where('a.penerimaantrucking_nobukti', '=', $nobukti)
-        ->first();
+            ->where('a.penerimaantrucking_nobukti', '=', $nobukti)
+            ->first();
 
         if (isset($prosesUangJalan)) {
             //jika uang jalan ada maka true
@@ -1021,8 +1057,8 @@ class PenerimaanTruckingHeader extends MyModel
     public function isUangOut($nobukti)
     {
         $prosesUangJalan = DB::table('pengeluarantruckingdetail')->from(DB::raw("prosesuangjalansupirdetail as a with (readuncommitted)"))->select('a.penerimaantrucking_nobukti')
-        ->where('a.penerimaantrucking_nobukti', '=', $nobukti)
-        ->first();
+            ->where('a.penerimaantrucking_nobukti', '=', $nobukti)
+            ->first();
 
         if (isset($prosesUangJalan)) {
             //jika uang jalan ada maka true
@@ -1088,7 +1124,7 @@ class PenerimaanTruckingHeader extends MyModel
             ];
             goto selesai;
         }
-        
+
         $gajiSupirDeposito = DB::table('gajisupirdeposito')
             ->from(
                 DB::raw("gajisupirdeposito as a with (readuncommitted)")
@@ -1150,5 +1186,4 @@ class PenerimaanTruckingHeader extends MyModel
         selesai:
         return $data;
     }
-
 }

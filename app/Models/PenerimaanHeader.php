@@ -693,7 +693,7 @@ class PenerimaanHeader extends MyModel
 
         return $data;
     }
-    
+
     public function filterRekap($dataTemp, $temp, $relationFields = [])
     {
         if (count($this->params['filters']) > 0 && @$this->params['filters']['rules'][0]['data'] != '') {
@@ -852,6 +852,9 @@ class PenerimaanHeader extends MyModel
     }
     public function processUpdate(PenerimaanHeader $penerimaanHeader, array $data): PenerimaanHeader
     {
+
+     
+
         $bankid = $data['bank_id'];
 
         $querysubgrppenerimaan = Bank::from(DB::raw("bank with (readuncommitted)"))
@@ -871,6 +874,33 @@ class PenerimaanHeader extends MyModel
         $statusApproval = Parameter::from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS APPROVAL')->where('text', 'NON APPROVAL')->first();
         $statuscetak = Parameter::from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUSCETAK')->where('text', 'BELUM CETAK')->first();
 
+        $querycek = DB::table('penerimaanheader')->from(
+            DB::raw("penerimaanheader a with (readuncommitted)")
+        )
+            ->select(
+                'a.nobukti'
+            )
+            ->where('a.id', $penerimaanHeader->id)
+            ->whereRAw("format(a.tglbukti,'MM-yyyy')='" . date('m-Y', strtotime($data['tglbukti'])) . "'")
+            ->first();
+
+            $nobuktiold = DB::table('penerimaanheader')->from(
+                DB::raw("penerimaanheader a with (readuncommitted)")
+            )
+                ->select(
+                    'a.nobukti'
+                )
+                ->where('a.id', $penerimaanHeader->id)
+                ->first();                
+
+        if (isset($querycek)) {
+            $nobukti = $querycek->nobukti;
+        } else {
+            $nobukti = (new RunningNumberService)->get($group, $subGroup, $penerimaanHeader->getTable(), date('Y-m-d', strtotime($data['tglbukti'])));
+        }
+
+
+
         $penerimaanHeader->pelanggan_id = $data['pelanggan_id'] ?? '';
         $penerimaanHeader->diterimadari = $data['diterimadari'] ?? '';
         $penerimaanHeader->tgllunas = date('Y-m-d', strtotime($data['tgllunas']));
@@ -878,6 +908,8 @@ class PenerimaanHeader extends MyModel
         $penerimaanHeader->penerimaangiro_nobukti = $data['penerimaangiro_nobukti'] ?? '';
         $penerimaanHeader->modifiedby = auth('api')->user()->name;
         $penerimaanHeader->agen_id = $data['agen_id'] ?? '';
+        $penerimaanHeader->tglbukti = date('Y-m-d', strtotime($data['tglbukti']));
+        $penerimaanHeader->nobukti = $nobukti;
 
         if (!$penerimaanHeader->save()) {
             throw new \Exception("Error Update penerimaan header.");
