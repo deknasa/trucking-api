@@ -6,6 +6,7 @@ use App\Http\Controllers\Api\ErrorController;
 use Illuminate\Foundation\Http\FormRequest;
 use App\Rules\DateTutupBuku;
 use App\Models\Parameter;
+use App\Models\SuratPengantar;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
 use App\Rules\ExistContainer;
@@ -48,6 +49,7 @@ class UpdateSuratPengantarRequest extends FormRequest
             ->select(
                 'tglbukti',
                 'nobukti',
+                'statusapprovaleditsuratpengantar'
             )
             ->where('id', $this->id)
             ->first();
@@ -85,6 +87,16 @@ class UpdateSuratPengantarRequest extends FormRequest
         $getUpahZona = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS UPAH ZONA')->where('text', 'UPAH ZONA')->first();
         $getPeralihan = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS PERALIHAN')->where('text', 'PERALIHAN')->first();
 
+        $rulesEditSuratpengantar = [];
+        $cekTodayValidation = (new SuratPengantar())->todayValidation($this->id);
+        $isEditAble = (new SuratPengantar())->isEditAble($this->id);
+        if (!$cekTodayValidation) {
+            if (!$isEditAble) {
+                $rulesEditSuratpengantar = [
+                    'statusapprovaleditsuratpengantar' => 'required'
+                ];
+            }
+        } 
         $rules = [
             'tglbukti' => [
                 'required', 'date_format:d-m-Y',
@@ -102,7 +114,7 @@ class UpdateSuratPengantarRequest extends FormRequest
             'statusgudangsama' => ['required', Rule::in($statusgudangsama)],
             'nosp' => 'required',
             'upah' => ['required', new ExistNominalUpahSupir()],
-            'statusupahzona' => ['required', Rule::in($statusUpahZona)]
+            'statusupahzona' => ['required', Rule::in($statusUpahZona)],
         ];
 
         $rulesStatusPeralihan = [];
@@ -785,7 +797,8 @@ class UpdateSuratPengantarRequest extends FormRequest
             $rulesjenisorder_id,
             $rulestarifrincian_id,
             $rulesUpah_id,
-            $rulesStatusPeralihan
+            $rulesStatusPeralihan,
+            $rulesEditSuratpengantar
         );
 
         return $rule;
@@ -815,6 +828,8 @@ class UpdateSuratPengantarRequest extends FormRequest
     {
         return [
             'tglbukti.date_format' => app(ErrorController::class)->geterror('DF')->keterangan,
+            'tarifrincian.required_if' => app(ErrorController::class)->geterror('WI')->keterangan,
+            'statusapprovaleditsuratpengantar.required' => app(ErrorController::class)->geterror('BAED')->keterangan,
         ];
     }
 }

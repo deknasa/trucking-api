@@ -1359,7 +1359,7 @@ class OrderanTrucking extends MyModel
         $orderanTrucking->agen_id = $data['agen_id'];
         $orderanTrucking->jenisorder_id = $data['jenisorder_id'];
         $orderanTrucking->pelanggan_id = $data['pelanggan_id'];
-        $orderanTrucking->tarif_id = $data['tarifrincian_id'] ?? '';
+        $orderanTrucking->tarif_id = 0 ?? '';
         $orderanTrucking->nojobemkl = $data['nojobemkl'] ?? '';
         $orderanTrucking->nocont = $data['nocont'];
         $orderanTrucking->noseal = $data['noseal'];
@@ -1372,8 +1372,8 @@ class OrderanTrucking extends MyModel
         $orderanTrucking->modifiedby = auth('api')->user()->name;
         $orderanTrucking->statusformat = $format->id;
 
-        $tarifrincian = TarifRincian::find($data['tarifrincian_id']);
-        $orderanTrucking->nominal = $tarifrincian->nominal ?? '';
+        // $tarifrincian = TarifRincian::find($data['tarifrincian_id']);
+        $orderanTrucking->nominal = 0 ?? '';
         $orderanTrucking->nobukti = (new RunningNumberService)->get($group, $subGroup, $orderanTrucking->getTable(), date('Y-m-d', strtotime($data['tglbukti'])));
 
         if (!$orderanTrucking->save()) {
@@ -1405,7 +1405,7 @@ class OrderanTrucking extends MyModel
         $orderanTrucking->agen_id = $data['agen_id'];
         $orderanTrucking->jenisorder_id = $data['jenisorder_id'];
         $orderanTrucking->pelanggan_id = $data['pelanggan_id'];
-        $orderanTrucking->tarif_id = $data['tarifrincian_id'] ?? 0;
+        $orderanTrucking->tarif_id = 0;
         $orderanTrucking->nojobemkl = $data['nojobemkl'] ?? '';
         $orderanTrucking->nocont = $data['nocont'];
         $orderanTrucking->noseal = $data['noseal'];
@@ -1419,8 +1419,8 @@ class OrderanTrucking extends MyModel
 
         $orderanTrucking->modifiedby = auth('api')->user()->name;
 
-        $tarifrincian = TarifRincian::from(DB::raw("tarifrincian"))->where('tarif_id', $data['tarifrincian_id'])->where('container_id', $data['container_id'])->first();
-        $orderanTrucking->nominal = $tarifrincian->nominal ?? 0;
+        // $tarifrincian = TarifRincian::from(DB::raw("tarifrincian"))->where('tarif_id', $data['tarifrincian_id'])->where('container_id', $data['container_id'])->first();
+        $orderanTrucking->nominal = 0;
 
         if (!$orderanTrucking->save()) {
             throw new \Exception("Error updating orderan trucking.");
@@ -1455,7 +1455,7 @@ class OrderanTrucking extends MyModel
                     'agen_id' => $data['agen_id'],
                     'jenisorder_id' => $data['jenisorder_id'],
                     'pelanggan_id' => $data['pelanggan_id'],
-                    'tarif_id' => $data['tarifrincian_id'],
+                    // 'tarif_id' => $data['tarifrincian_id'],
                     'postingdari' => 'EDIT ORDERAN TRUCKING'
                 ];
                 $newSuratPengantar = new SuratPengantar();

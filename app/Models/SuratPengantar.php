@@ -1604,13 +1604,15 @@ class SuratPengantar extends MyModel
         $orderanTrucking = OrderanTrucking::where('nobukti', $data['jobtrucking'])->first();
 
         $tarif = Tarif::find($orderanTrucking->tarif_id);
-        $tarif = TarifRincian::where('tarif_id', $orderanTrucking->tarif_id)->where('container_id', $orderanTrucking->container_id)->first();
-        $tarifNominal = $tarif->nominal ?? 0;
-
+       
         $statusTidakBolehEditTujuan = Parameter::from(DB::raw("parameter with (readuncommitted)"))->where('grp', '=', 'STATUS EDIT TUJUAN')->where('text', '=', 'TIDAK BOLEH EDIT TUJUAN')->first();
 
-        if ($prosesLain == 0) {
+        $statusNonApproval = Parameter::from(DB::raw("parameter with (readuncommitted)"))->where('grp', '=', 'STATUS APPROVAL')->where('text', '=', 'NON APPROVAL')->first();
 
+        if ($prosesLain == 0) {
+            $tarif = TarifRincian::where('tarif_id', $data['tarif_id'])->where('container_id', $orderanTrucking->container_id)->first();
+            $tarifNominal = $tarif->nominal ?? 0;
+    
             $upahsupir = UpahSupir::where('id', $data['upah_id'])->first();
 
             $getZona = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS UPAH ZONA')->where('text', 'UPAH ZONA')->first();
@@ -1658,7 +1660,7 @@ class SuratPengantar extends MyModel
             $suratPengantar->jenisorder_id = $orderanTrucking->jenisorder_id;
             $suratPengantar->statusperalihan = $data['statusperalihan'];
             $suratPengantar->statusupahzona = $data['statusupahzona'];
-            $suratPengantar->tarif_id = $orderanTrucking->tarif_id;
+            $suratPengantar->tarif_id = $data['tarif_id'] ?? '';
             $nominalPeralihan = 0;
             if ($data['persentaseperalihan'] != 0) {
                 $nominalPeralihan = ($tarifNominal * ($data['persentaseperalihan'] / 100));
@@ -1686,6 +1688,7 @@ class SuratPengantar extends MyModel
             $suratPengantar->lokasibongkarmuat = $data['lokasibongkarmuat'];
             $suratPengantar->modifiedby = auth('api')->user()->name;
             $suratPengantar->statusedittujuan = $statusTidakBolehEditTujuan->id;
+            $suratPengantar->statusapprovaleditsuratpengantar = $statusNonApproval->id;
             if (!$suratPengantar->save()) {
                 throw new \Exception('Error edit surat pengantar.');
             }
@@ -1734,7 +1737,7 @@ class SuratPengantar extends MyModel
             $suratPengantar->noseal2 = $data['noseal2'] ?? '';
             $suratPengantar->agen_id = $data['agen_id'];
             $suratPengantar->jenisorder_id = $data['jenisorder_id'];
-            $suratPengantar->tarif_id = $data['tarif_id'];
+            // $suratPengantar->tarif_id = $data['tarif_id'];
 
             if (!$suratPengantar->save()) {
                 throw new \Exception('Error edit surat pengantar.');
