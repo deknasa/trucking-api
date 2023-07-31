@@ -28,7 +28,7 @@ class UpdateProsesGajiSupirHeaderRequest extends FormRequest
      * @return array
      */
     public function rules()
-    {        
+    {
         $prosesGaji = new ProsesGajiSupirHeader();
         $getDataProsesGaji = $prosesGaji->findAll(request()->id);
 
@@ -41,28 +41,30 @@ class UpdateProsesGajiSupirHeaderRequest extends FormRequest
         $rulesBank_id = [];
         if ($bank_id != null) {
             $rulesBank_id = [
-                'bank_id' => ['required', 'numeric', 'min:1', new ExistBank(),Rule::in($getDataProsesGaji->bank_id)]
+                'bank_id' => ['required', 'numeric', 'min:1', new ExistBank(), Rule::in($getDataProsesGaji->bank_id)]
             ];
         } else if ($bank_id == null && $this->bank != '') {
             $rulesBank_id = [
-                'bank_id' => ['required', 'numeric', 'min:1', new ExistBank(),Rule::in($getDataProsesGaji->bank_id)]
+                'bank_id' => ['required', 'numeric', 'min:1', new ExistBank(), Rule::in($getDataProsesGaji->bank_id)]
             ];
         }
-        $rules = [            
+        $rules = [
             'id' => new DestroyProsesGajiSupir(),
             'nobukti' => [Rule::in($getDataProsesGaji->nobukti)],
             'bank' => [
                 'required',
-            ], 
+            ],
             'tgldari' => [
                 'required', 'date_format:d-m-Y',
-                'before_or_equal:' .$tglbatasakhir,
-                'after_or_equal:'.$tglbataseedit,
+                // 'before_or_equal:' .$tglbatasakhir,
+                // 'after_or_equal:'.$tglbataseedit,
+                'before_or_equal:' . date('Y-m-d'),
+                new DateTutupBuku()
             ],
             'tglsampai' => [
                 'required', 'date_format:d-m-Y',
                 'before_or_equal:' . date('Y-m-d'),
-                'after_or_equal:'.$this->tgldari 
+                'after_or_equal:' . $this->tgldari
             ],
             'tglbukti' => [
                 'required', 'date_format:d-m-Y',
@@ -82,10 +84,10 @@ class UpdateProsesGajiSupirHeaderRequest extends FormRequest
             );
         }
         return $rules;
-
     }
 
-    public function attributes() {
+    public function attributes()
+    {
         return [
             'periode' => 'Periode',
             'tgldari' => 'Tanggal Dari',
