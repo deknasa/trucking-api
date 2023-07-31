@@ -240,6 +240,7 @@ use App\Http\Controllers\Api\LaporanMingguanSupirController;
 use App\Http\Controllers\Api\MainAkunPusatController;
 use App\Http\Controllers\Api\LaporanHistoryDepositoController;
 use App\Http\Controllers\Api\LaporanPinjamanPerUnitTradoController;
+use App\Http\Controllers\Api\LogAbsensiController;
 use App\Http\Controllers\Api\StokPusatController;
 use App\Http\Controllers\Api\SuratPengantarBiayaTambahanController;
 use App\Http\Controllers\Api\UbahPasswordController;
@@ -1510,6 +1511,10 @@ route::middleware(['auth:api', 'authorized'])->group(function () {
     Route::resource('hutangextraheader', HutangExtraHeaderController::class)->whereNumber('hutangextraheader');
     Route::get('hutangextradetail/hutang', [HutangExtraDetailController::class, 'hutang']);
     Route::resource('hutangextradetail', HutangExtraDetailController::class)->whereNumber('hutangextradetail');
+    
+    Route::get('logabsensi/report', [LogAbsensiController::class, 'report']);
+    Route::get('logabsensi/export', [LogAbsensiController::class, 'export']);
+    Route::resource('logabsensi', LogAbsensiController::class)->whereNumber('logabsensi');
 });
 Route::get('suratpengantarapprovalinputtrip/updateapproval', [SuratPengantarApprovalInputTripController::class, 'updateApproval']);
 
