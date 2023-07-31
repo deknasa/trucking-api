@@ -1245,6 +1245,7 @@ class OrderanTrucking extends MyModel
         $orderanTrucking->statuslangsir = $data['statuslangsir'];
         $orderanTrucking->statusperalihan = $data['statusperalihan'];
         $orderanTrucking->statusapprovalbukatrip = $defaultapproval->id;
+        $orderanTrucking->statusapprovaledit = $defaultapproval->id;
 
         $orderanTrucking->modifiedby = auth('api')->user()->name;
 

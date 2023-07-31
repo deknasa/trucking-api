@@ -5,6 +5,7 @@ namespace App\Http\Requests;
 use App\Http\Controllers\Api\ErrorController;
 use Illuminate\Foundation\Http\FormRequest;
 use App\Rules\DateTutupBuku;
+use App\Rules\DateAllowedOrderanTrucking;
 use App\Rules\OrderanTruckingValidasijob2040;
 use App\Rules\OrderanTruckingValidasijob2x20;
 use App\Rules\OrderanTruckingValidasinocont2x20;
@@ -101,6 +102,7 @@ class UpdateOrderanTruckingRequest extends FormRequest
 
 
         $rules = [
+            'id'=>[new DateAllowedOrderanTrucking()],
             'tglbukti' => [
                 'required', 'date_format:d-m-Y',
                 new DateTutupBuku(),
