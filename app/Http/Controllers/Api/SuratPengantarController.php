@@ -309,7 +309,13 @@ class SuratPengantarController extends Controller
             ];
 
             $edit = true;
-            $keterangan="Trip Merupakan dari Saldo, Tidak bisa edit";
+            $query = DB::table('error')
+            ->select(
+                DB::raw("'No Bukti ". $nobuktilist ." '+ltrim(rtrim(keterangan)) as keterangan")
+            )
+            ->where('kodeerror', '=', 'BMS')
+            ->get();
+        $keterangan = $query['0'];
             $data = [
                 'status' => false,
                 'message' => $keterangan,
