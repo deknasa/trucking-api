@@ -50,7 +50,7 @@ class StoreProsesGajiSupirHeaderRequest extends FormRequest
             'tgldari' => [
                 'required', 'date_format:d-m-Y',
                 'before_or_equal:' . date('Y-m-d'),
-                'after_or_equal:' . $tglbatasawal,
+                new DateTutupBuku()
             ],
             'tglsampai' => [
                 'required', 'date_format:d-m-Y',
