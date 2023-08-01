@@ -586,48 +586,48 @@ class SuratPengantar extends MyModel
         ], $querysuratpengantar);
 
         $query = DB::table($tempsuratpengantar)->from(
-            db::raw($tempsuratpengantar. ' suratpengantar')
+            db::raw($tempsuratpengantar . ' suratpengantar')
         )
             ->select(
-            'suratpengantar.id',
-            'suratpengantar.jobtrucking',
-            'suratpengantar.nobukti',
-            'suratpengantar.tglbukti',
-            'suratpengantar.nosp',
-            'suratpengantar.tglsp',
-            'suratpengantar.nojob',
-            'pelanggan.namapelanggan as pelanggan_id',
-            'suratpengantar.keterangan',
-            'kotadari.keterangan as dari_id',
-            'kotasampai.keterangan as sampai_id',
-            'suratpengantar.gajisupir',
-            'suratpengantar.jarak',
-            'agen.namaagen as agen_id',
-            'jenisorder.keterangan as jenisorder_id',
-            'container.keterangan as container_id',
-            'suratpengantar.nocont',
-            'suratpengantar.noseal',
-            'statuscontainer.keterangan as statuscontainer_id',
-            'suratpengantar.gudang',
-            'trado.kodetrado as trado_id',
-            'supir.namasupir as supir_id',
-            'suratpengantar.trado_id as tradolookup',
-            'suratpengantar.supir_id as supirlookup',
-            'gandengan.keterangan as gandengan_id',
-            'statuslongtrip.memo as statuslongtrip',
-            'statusperalihan.memo as statusperalihan',
-            'statusritasiomset.memo as statusritasiomset',
-            'statusapprovaleditsuratpengantar.memo as statusapprovaleditsuratpengantar',
-            'tarif.tujuan as tarif_id',
-            'mandortrado.namamandor as mandortrado_id',
-            'mandorsupir.namamandor as mandorsupir_id',
-            'statusgudangsama.memo as statusgudangsama',
-            'statusbatalmuat.memo as statusbatalmuat',
-            'suratpengantar.modifiedby',
-            'suratpengantar.created_at',
-            'suratpengantar.updated_at'
+                'suratpengantar.id',
+                'suratpengantar.jobtrucking',
+                'suratpengantar.nobukti',
+                'suratpengantar.tglbukti',
+                'suratpengantar.nosp',
+                'suratpengantar.tglsp',
+                'suratpengantar.nojob',
+                'pelanggan.namapelanggan as pelanggan_id',
+                'suratpengantar.keterangan',
+                'kotadari.keterangan as dari_id',
+                'kotasampai.keterangan as sampai_id',
+                'suratpengantar.gajisupir',
+                'suratpengantar.jarak',
+                'agen.namaagen as agen_id',
+                'jenisorder.keterangan as jenisorder_id',
+                'container.keterangan as container_id',
+                'suratpengantar.nocont',
+                'suratpengantar.noseal',
+                'statuscontainer.keterangan as statuscontainer_id',
+                'suratpengantar.gudang',
+                'trado.kodetrado as trado_id',
+                'supir.namasupir as supir_id',
+                'suratpengantar.trado_id as tradolookup',
+                'suratpengantar.supir_id as supirlookup',
+                'gandengan.keterangan as gandengan_id',
+                'statuslongtrip.memo as statuslongtrip',
+                'statusperalihan.memo as statusperalihan',
+                'statusritasiomset.memo as statusritasiomset',
+                'statusapprovaleditsuratpengantar.memo as statusapprovaleditsuratpengantar',
+                'tarif.tujuan as tarif_id',
+                'mandortrado.namamandor as mandortrado_id',
+                'mandorsupir.namamandor as mandorsupir_id',
+                'statusgudangsama.memo as statusgudangsama',
+                'statusbatalmuat.memo as statusbatalmuat',
+                'suratpengantar.modifiedby',
+                'suratpengantar.created_at',
+                'suratpengantar.updated_at'
 
-        )
+            )
 
             ->leftJoin('pelanggan', 'suratpengantar.pelanggan_id', 'pelanggan.id')
             ->leftJoin('kota as kotadari', 'kotadari.id', '=', 'suratpengantar.dari_id')
@@ -1602,9 +1602,10 @@ class SuratPengantar extends MyModel
     {
         $prosesLain = $data['proseslain'] ?? 0;
         $orderanTrucking = OrderanTrucking::where('nobukti', $data['jobtrucking'])->first();
+        if (!isset($orderanTrucking)) {
+            $orderanTrucking = DB::table("saldoorderantrucking")->from(DB::raw("saldoorderantrucking"))->where('nobukti', $data['jobtrucking'])->first();
+        }
 
-        $tarif = Tarif::find($orderanTrucking->tarif_id);
-       
         $statusTidakBolehEditTujuan = Parameter::from(DB::raw("parameter with (readuncommitted)"))->where('grp', '=', 'STATUS EDIT TUJUAN')->where('text', '=', 'TIDAK BOLEH EDIT TUJUAN')->first();
 
         $statusNonApproval = Parameter::from(DB::raw("parameter with (readuncommitted)"))->where('grp', '=', 'STATUS APPROVAL')->where('text', '=', 'NON APPROVAL')->first();
@@ -1612,7 +1613,7 @@ class SuratPengantar extends MyModel
         if ($prosesLain == 0) {
             $tarif = TarifRincian::where('tarif_id', $data['tarif_id'])->where('container_id', $orderanTrucking->container_id)->first();
             $tarifNominal = $tarif->nominal ?? 0;
-    
+
             $upahsupir = UpahSupir::where('id', $data['upah_id'])->first();
 
             $getZona = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS UPAH ZONA')->where('text', 'UPAH ZONA')->first();
