@@ -441,7 +441,7 @@ class GajiSupirHeader extends MyModel
             $table->increments('position');
         });
 
-        if((date('Y-m', strtotime(request()->tglbukti)) != date('Y-m', strtotime(request()->tgldariheader))) || (date('Y-m', strtotime(request()->tglbukti)) != date('Y-m', strtotime(request()->tglsampaiheader)))){
+        if ((date('Y-m', strtotime(request()->tglbukti)) != date('Y-m', strtotime(request()->tgldariheader))) || (date('Y-m', strtotime(request()->tglbukti)) != date('Y-m', strtotime(request()->tglsampaiheader)))) {
             request()->tgldariheader = date('Y-m-01', strtotime(request()->tglbukti));
             request()->tglsampaiheader = date('Y-m-t', strtotime(request()->tglbukti));
         }
@@ -450,7 +450,7 @@ class GajiSupirHeader extends MyModel
         $query = DB::table($modelTable);
         $query = $this->selectColumns($query);
         $this->sort($query);
-        $models = $this->filter($query);        
+        $models = $this->filter($query);
         $models =  $query->whereBetween($this->table . '.tglbukti', [date('Y-m-d', strtotime(request()->tgldariheader)), date('Y-m-d', strtotime(request()->tglsampaiheader))]);
         DB::table($temp)->insertUsing(['id', 'nobukti', 'tglbukti', 'supir_id',  'nominal', 'tgldari', 'tglsampai', 'total', 'statuscetak', 'userbukacetak', 'tglbukacetak', 'jumlahcetak', 'modifiedby', 'created_at', 'updated_at'], $models);
 
@@ -1661,12 +1661,15 @@ class GajiSupirHeader extends MyModel
             if ($fetchPS != null) {
                 $getPenerimaanTrucking = PenerimaanTruckingHeader::from(DB::raw("penerimaantruckingheader with (readuncommitted)"))->where('nobukti', $fetchPS->penerimaantrucking_nobukti)->first();
 
-                (new PenerimaanTruckingHeader())->processDestroy($getPenerimaanTrucking->id, 'EDIT GAJI SUPIR');
+                if (isset($getPenerimaanTrucking)) {
+                    (new PenerimaanTruckingHeader())->processDestroy($getPenerimaanTrucking->id, 'EDIT GAJI SUPIR');
+                }
 
                 $getDetailGSPS = GajiSupirPelunasanPinjaman::lockForUpdate()->where('gajisupir_id', $gajiSupirHeader->id)->where('supir_id', '0')->get();
-
-                foreach ($getDetailGSPS as $key => $value) {
-                    (new GajiSupirPelunasanPinjaman())->processDestroy($value->id, 'EDIT GAJI SUPIR');
+                if (isset($getDetailGSPS)) {
+                    foreach ($getDetailGSPS as $key => $value) {
+                        (new GajiSupirPelunasanPinjaman())->processDestroy($value->id, 'EDIT GAJI SUPIR');
+                    }
                 }
             }
         }
@@ -1774,13 +1777,14 @@ class GajiSupirHeader extends MyModel
                 ->where('gajisupir_id', $gajiSupirHeader->id)->where('supir_id', $data['supir_id'])->first();
             if ($fetchPP != null) {
                 $getPenerimaanTrucking = PenerimaanTruckingHeader::from(DB::raw("penerimaantruckingheader with (readuncommitted)"))->where('nobukti', $fetchPP->penerimaantrucking_nobukti)->first();
-
-                (new PenerimaanTruckingHeader())->processDestroy($getPenerimaanTrucking->id, 'EDIT GAJI SUPIR');
-
+                if (isset($getPenerimaanTrucking)) {
+                    (new PenerimaanTruckingHeader())->processDestroy($getPenerimaanTrucking->id, 'EDIT GAJI SUPIR');
+                }
                 $getDetailGSPP = GajiSupirPelunasanPinjaman::lockForUpdate()->where('gajisupir_id', $gajiSupirHeader->id)->where('supir_id', $gajiSupirHeader->supir_id)->get();
-
-                foreach ($getDetailGSPP as $key => $value) {
-                    (new GajiSupirPelunasanPinjaman())->processDestroy($value->id, 'EDIT GAJI SUPIR');
+                if (isset($getDetailGSPP)) {
+                    foreach ($getDetailGSPP as $key => $value) {
+                        (new GajiSupirPelunasanPinjaman())->processDestroy($value->id, 'EDIT GAJI SUPIR');
+                    }
                 }
             }
         }
@@ -1793,7 +1797,7 @@ class GajiSupirHeader extends MyModel
 
             $fetchDPO = GajiSupirDeposito::from(DB::raw("gajisupirdeposito with (readuncommitted)"))
                 ->where('gajisupir_id', $gajiSupirHeader->id)->first();
-            
+
             // jika ada maka update
             if ($fetchDPO != null) {
                 $penerimaanDepo = PenerimaanTruckingHeader::from(DB::raw("penerimaantruckingheader with (readuncommitted)"))
@@ -1870,7 +1874,9 @@ class GajiSupirHeader extends MyModel
                 ->where('gajisupir_id', $gajiSupirHeader->id)->first();
             if ($fetchDPO != null) {
                 $getPenerimaanTrucking = PenerimaanTruckingHeader::from(DB::raw("penerimaantruckingheader with (readuncommitted)"))->where('nobukti', $fetchDPO->penerimaantrucking_nobukti)->first();
-                $tes = (new PenerimaanTruckingHeader())->processDestroy($getPenerimaanTrucking->id, 'EDIT GAJI SUPIR');
+                if (isset($getPenerimaanTrucking)) {
+                    $tes = (new PenerimaanTruckingHeader())->processDestroy($getPenerimaanTrucking->id, 'EDIT GAJI SUPIR');
+                }
                 (new GajiSupirDeposito())->processDestroy($fetchDPO->id, 'EDIT GAJI SUPIR');
             }
         }
@@ -1999,9 +2005,9 @@ class GajiSupirHeader extends MyModel
                 $getPenerimaanTrucking = PenerimaanTruckingHeader::from(DB::raw("penerimaantruckingheader with (readuncommitted)"))->where('nobukti', $fetchBBM->penerimaantrucking_nobukti)->first();
 
                 // $getJurnalHeader = JurnalUmumHeader::lockForUpdate()->where('nobukti', $fetchBBM->penerimaantrucking_nobukti)->first();
-
-                (new PenerimaanTruckingHeader())->processDestroy($getPenerimaanTrucking->id, 'EDIT GAJI SUPIR');
-
+                if (isset($getPenerimaanTrucking)) {
+                    (new PenerimaanTruckingHeader())->processDestroy($getPenerimaanTrucking->id, 'EDIT GAJI SUPIR');
+                }
                 (new GajiSupirBBM())->processDestroy($fetchBBM->id, 'EDIT GAJI SUPIR');
 
                 // (new JurnalUmumHeader())->processDestroy($getJurnalHeader->id, 'EDIT GAJI SUPIR');
@@ -2070,8 +2076,9 @@ class GajiSupirHeader extends MyModel
 
         if ($fetchDPO != null) {
             $getPenerimaanTrucking = PenerimaanTruckingHeader::from(DB::raw("penerimaantruckingheader with (readuncommitted)"))->where('nobukti', $fetchDPO->penerimaantrucking_nobukti)->first();
-            (new PenerimaanTruckingHeader())->processDestroy($getPenerimaanTrucking->id, $postingDari);
-
+            if (isset($getPenerimaanTrucking)) {
+                (new PenerimaanTruckingHeader())->processDestroy($getPenerimaanTrucking->id, $postingDari);
+            }
             (new LogTrail())->processStore([
                 'namatabel' => 'GAJISUPIRDEPOSITO',
                 'postingdari' => $postingDari,
@@ -2086,7 +2093,9 @@ class GajiSupirHeader extends MyModel
         if ($fetchBBM != null) {
             $getPenerimaanTrucking = PenerimaanTruckingHeader::from(DB::raw("penerimaantruckingheader with (readuncommitted)"))->where('nobukti', $fetchBBM->penerimaantrucking_nobukti)->first();
             // $getJurnalHeader = JurnalUmumHeader::lockForUpdate()->where('nobukti', $fetchBBM->penerimaantrucking_nobukti)->first();
-            (new PenerimaanTruckingHeader())->processDestroy($getPenerimaanTrucking->id, $postingDari);
+            if (isset($getPenerimaanTrucking)) {
+                (new PenerimaanTruckingHeader())->processDestroy($getPenerimaanTrucking->id, $postingDari);
+            }
             // (new JurnalUmumHeader())->processDestroy($getJurnalHeader->id, $postingDari);
 
             (new LogTrail())->processStore([
@@ -2103,11 +2112,14 @@ class GajiSupirHeader extends MyModel
         $fetchPP = GajiSupirPelunasanPinjaman::from(DB::raw("gajisupirpelunasanpinjaman with (readuncommitted)"))->where('gajisupir_nobukti',  $gajiSupirHeader->nobukti)->where('supir_id', $gajiSupirHeader->supir_id)->first();
         if ($fetchPP != null) {
             $getPenerimaanTrucking = PenerimaanTruckingHeader::from(DB::raw("penerimaantruckingheader with (readuncommitted)"))->where('nobukti', $fetchPP->penerimaantrucking_nobukti)->first();
-            (new PenerimaanTruckingHeader())->processDestroy($getPenerimaanTrucking->id, $postingDari);
-
+            if (isset($getPenerimaanTrucking)) {
+                (new PenerimaanTruckingHeader())->processDestroy($getPenerimaanTrucking->id, $postingDari);
+            }
             $getDetailGSPP = GajiSupirPelunasanPinjaman::lockForUpdate()->where('gajisupir_nobukti',  $gajiSupirHeader->nobukti)->where('supir_id', $gajiSupirHeader->supir_id)->get();
-            foreach ($getDetailGSPP as $key => $value) {
-                (new GajiSupirPelunasanPinjaman())->processDestroy($value->id, $postingDari);
+            if (isset($getDetailGSPP)) {
+                foreach ($getDetailGSPP as $key => $value) {
+                    (new GajiSupirPelunasanPinjaman())->processDestroy($value->id, $postingDari);
+                }
             }
         }
 
@@ -2115,19 +2127,25 @@ class GajiSupirHeader extends MyModel
             ->where('gajisupir_nobukti', $gajiSupirHeader->nobukti)->where('supir_id', '0')->first();
         if ($fetchPS != null) {
             $getPenerimaanTrucking = PenerimaanTruckingHeader::from(DB::raw("penerimaantruckingheader with (readuncommitted)"))->where('nobukti', $fetchPS->penerimaantrucking_nobukti)->first();
-            (new PenerimaanTruckingHeader())->processDestroy($getPenerimaanTrucking->id, $postingDari);
+            if (isset($getPenerimaanTrucking)) {
+                (new PenerimaanTruckingHeader())->processDestroy($getPenerimaanTrucking->id, $postingDari);
+            }
 
             $getDetailGSPS = GajiSupirPelunasanPinjaman::lockForUpdate()->where('gajisupir_nobukti', $gajiSupirHeader->nobukti)->where('supir_id', '0')->get();
-            foreach ($getDetailGSPS as $key => $value) {
-                (new GajiSupirPelunasanPinjaman())->processDestroy($value->id, $postingDari);
+            if (isset($getDetailGSPS)) {
+                foreach ($getDetailGSPS as $key => $value) {
+                    (new GajiSupirPelunasanPinjaman())->processDestroy($value->id, $postingDari);
+                }
             }
         }
 
         $fetchUangJalan = GajisUpirUangJalan::from(DB::raw("gajisupiruangjalan with (readuncommitted)"))->whereRaw("gajisupir_id = $id")->first();
         if ($fetchUangJalan != null) {
             $getDetailUangJalan = GajisUpirUangJalan::lockForUpdate()->where('gajisupir_nobukti', $gajiSupirHeader->nobukti)->get();
-            foreach ($getDetailUangJalan as $key => $value) {
-                (new GajisUpirUangJalan())->processDestroy($value->id, $postingDari);
+            if (isset($getDetailUangJalan)) {
+                foreach ($getDetailUangJalan as $key => $value) {
+                    (new GajisUpirUangJalan())->processDestroy($value->id, $postingDari);
+                }
             }
         }
         return $gajiSupirHeader;
