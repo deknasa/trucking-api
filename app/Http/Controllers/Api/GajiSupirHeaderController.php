@@ -116,9 +116,12 @@ class GajiSupirHeaderController extends Controller
                 'absensi_uangjalan' => $request->absensi_uangjalan
             ];
             $gajiSupirHeader = (new GajiSupirHeader())->processStore($data);
-            $gajiSupirHeader->position = $this->getPosition($gajiSupirHeader, $gajiSupirHeader->getTable())->position;
+            $gajiSupirHeader->tgldariheader = date('Y-m-01', strtotime(request()->tglbukti));
+            $gajiSupirHeader->tglsampaiheader = date('Y-m-t', strtotime(request()->tglbukti));
             
-            if ($request->limit==0) {
+            $gajiSupirHeader->position = $this->getPosition($gajiSupirHeader, $gajiSupirHeader->getTable())->position;
+
+            if ($request->limit == 0) {
                 $gajiSupirHeader->page = ceil($gajiSupirHeader->position / (10));
             } else {
                 $gajiSupirHeader->page = ceil($gajiSupirHeader->position / ($request->limit ?? 10));
@@ -204,8 +207,11 @@ class GajiSupirHeaderController extends Controller
                 'absensi_uangjalan' => $request->absensi_uangjalan
             ];
             $gajiSupirHeader = (new GajiSupirHeader())->processUpdate($gajisupirheader, $data);
+            $gajiSupirHeader->tgldariheader = date('Y-m-01', strtotime(request()->tglbukti));
+            $gajiSupirHeader->tglsampaiheader = date('Y-m-t', strtotime(request()->tglbukti));
+            
             $gajiSupirHeader->position = $this->getPosition($gajiSupirHeader, $gajiSupirHeader->getTable())->position;
-           if ($request->limit==0) {
+            if ($request->limit == 0) {
                 $gajiSupirHeader->page = ceil($gajiSupirHeader->position / (10));
             } else {
                 $gajiSupirHeader->page = ceil($gajiSupirHeader->position / ($request->limit ?? 10));
@@ -232,9 +238,12 @@ class GajiSupirHeaderController extends Controller
         try {
             $gajiSupirHeader = (new GajiSupirHeader())->processDestroy($id, 'DELETE GAJI SUPIR');
             $selected = $this->getPosition($gajiSupirHeader, $gajiSupirHeader->getTable(), true);
+            $gajiSupirHeader->tgldariheader = date('Y-m-01', strtotime(request()->tglbukti));
+            $gajiSupirHeader->tglsampaiheader = date('Y-m-t', strtotime(request()->tglbukti));
+            
             $gajiSupirHeader->position = $selected->position;
             $gajiSupirHeader->id = $selected->id;
-            if ($request->limit==0) {
+            if ($request->limit == 0) {
                 $gajiSupirHeader->page = ceil($gajiSupirHeader->position / (10));
             } else {
                 $gajiSupirHeader->page = ceil($gajiSupirHeader->position / ($request->limit ?? 10));
@@ -422,7 +431,7 @@ class GajiSupirHeaderController extends Controller
 
             return response($data);
         } else {
-           
+
             $data = [
                 'error' => false,
                 'message' => '',
