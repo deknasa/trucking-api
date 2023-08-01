@@ -1806,7 +1806,7 @@ class GajiSupirHeader extends MyModel
                 $supirDPO[] = $gajiSupirHeader->supir_id;
                 $pengeluarantruckingheader_nobuktiDPO[] = '';
                 $nominalDPO[] = $data['nomDeposito'];
-                $keteranganDPO[] = "DEPOSITO SUPIR " . $data['supir'] . " PERIODE " . $data['tgldari'] . " S/D " . $data['tglsampai'] . " " . $data['ketDeposito'];
+                $keteranganDPO[] = "DEPOSITO SUPIR " . $data['supir'] . " PERIODE " . $data['tgldari'] . " S/D " . $data['tglsampai'];
 
                 $penerimaanTruckingHeaderDPO = [
                     'tanpaprosesnobukti' => '2',
@@ -1841,7 +1841,7 @@ class GajiSupirHeader extends MyModel
                 $supirDPO[] = $gajiSupirHeader->supir_id;
                 $pengeluarantruckingheader_nobuktiDPO[] = '';
                 $nominalDPO[] = $data['nomDeposito'];
-                $keteranganDPO[] = "DEPOSITO SUPIR " . $data['supir'] . " PERIODE " . $data['tgldari'] . " S/D " . $data['tglsampai'] . " " . $data['ketDeposito'];
+                $keteranganDPO[] = "DEPOSITO SUPIR " . $data['supir'] . " PERIODE " . $data['tgldari'] . " S/D " . $data['tglsampai'];
 
                 $penerimaanTruckingHeaderDPO = [
                     'tanpaprosesnobukti' => '2',
@@ -1896,7 +1896,7 @@ class GajiSupirHeader extends MyModel
                 $supirBBM[] = $gajiSupirHeader->supir_id;
                 $pengeluarantruckingheader_nobuktiBBM[] = '';
                 $nominalBBM[] = $data['nomBBM'];
-                $keteranganBBM[] = "HUTANG BBM SUPIR " . $data['supir'] . " PERIODE " . $data['tgldari'] . " S/D " . $data['tglsampai'] . " " . $data['ketBBM'];
+                $keteranganBBM[] = "HUTANG BBM SUPIR " . $data['supir'] . " PERIODE " . $data['tgldari'] . " S/D " . $data['tglsampai'];
 
                 $penerimaanTruckingHeaderBBM = [
                     'tanpaprosesnobukti' => '2',
@@ -1951,7 +1951,7 @@ class GajiSupirHeader extends MyModel
                 $supirBBM[] = $gajiSupirHeader->supir_id;
                 $pengeluarantruckingheader_nobuktiBBM[] = '';
                 $nominalBBM[] = $data['nomBBM'];
-                $keteranganBBM[] = "HUTANG BBM SUPIR " . $data['supir'] . " PERIODE " . $data['tgldari'] . " S/D " . $data['tglsampai'] . " " . $data['ketBBM'];
+                $keteranganBBM[] = "HUTANG BBM SUPIR " . $data['supir'] . " PERIODE " . $data['tgldari'] . " S/D " . $data['tglsampai'];
 
                 $penerimaanTruckingHeaderBBM = [
                     'tanpaprosesnobukti' => '2',
