@@ -792,7 +792,7 @@ class PenerimaanTruckingHeader extends MyModel
             }
 
 
-    
+
 
 
             $statusformat = $fetchFormat->format;
@@ -813,14 +813,14 @@ class PenerimaanTruckingHeader extends MyModel
                 ->whereRAw("format(a.tglbukti,'MM-yyyy')='" . date('m-Y', strtotime($data['tglbukti'])) . "'")
                 ->first();
 
-                $nobuktiold = DB::table('penerimaantruckingheader')->from(
-                    DB::raw("penerimaantruckingheader a with (readuncommitted)")
+            $nobuktiold = DB::table('penerimaantruckingheader')->from(
+                DB::raw("penerimaantruckingheader a with (readuncommitted)")
+            )
+                ->select(
+                    'a.nobukti'
                 )
-                    ->select(
-                        'a.nobukti'
-                    )
-                    ->where('a.id', $penerimaanTruckingHeader->id)
-                    ->first();                
+                ->where('a.id', $penerimaanTruckingHeader->id)
+                ->first();
 
             if (isset($querycek)) {
                 $nobukti = $querycek->nobukti;
@@ -970,8 +970,9 @@ class PenerimaanTruckingHeader extends MyModel
 
             $penerimaanHeader = PenerimaanHeader::where('nobukti', $penerimaanTruckingHeader->penerimaan_nobukti)->first();
             // throw new \Exception($penerimaanHeader->nobukti);
-
-            (new PenerimaanHeader())->processDestroy($penerimaanHeader->id, $postingDari);
+            if (isset($penerimaanHeader)) {
+                (new PenerimaanHeader())->processDestroy($penerimaanHeader->id, $postingDari);
+            }
             $penerimaanTruckingHeader->delete();
         }
         return $penerimaanTruckingHeader;
