@@ -28,13 +28,20 @@ class ExistOrderanTrucking implements Rule
     public function passes($attribute, $value)
     {
         $orderantrucking = DB::table("orderantrucking")->from(DB::raw("orderantrucking with (readuncommitted)"))
-        ->where('nobukti', request()->jobtrucking)
-        ->first();
-    if ($orderantrucking == null) {
-        return false;
-    } else {
-        return true;
-    }
+            ->where('nobukti', request()->jobtrucking)
+            ->first();
+        if ($orderantrucking == null) {
+            $orderantrucking = DB::table("saldoorderantrucking")->from(DB::raw("saldoorderantrucking with (readuncommitted)"))
+                ->where('nobukti', request()->jobtrucking)
+                ->first();
+            if ($orderantrucking == null) {
+                return false;
+            } else {
+                return true;
+            }
+        } else {
+            return true;
+        }
     }
 
     /**
