@@ -1510,7 +1510,9 @@ class SuratPengantar extends MyModel
             $suratPengantar->statusedittujuan = $statusTidakBolehEditTujuan->id;
         } else {
             $orderanTrucking = OrderanTrucking::where('nobukti', $data['jobtrucking'])->first();
-
+            if (!isset($orderanTrucking)) {
+                $orderanTrucking = DB::table("saldoorderantrucking")->from(DB::raw("saldoorderantrucking with (readuncommitted)"))->where('nobukti', $data['jobtrucking'])->first();
+            }
             $suratPengantar->jobtrucking = $data['jobtrucking'];
             $suratPengantar->tglbukti = date('Y-m-d', strtotime($data['tglbukti']));
             $suratPengantar->pelanggan_id = $data['pelanggan_id'];
