@@ -46,7 +46,7 @@ class CreateOrderantruckingTable extends Migration
             $table->integer('statusapprovaledit')->Length(11)->nullable();
             $table->date('tglapprovaledit')->nullable();
             $table->string('userapprovaledit',50)->nullable();
-            $table->dateTime('tglbatasedit')->nullable();
+            $table->dateTime('tglbataseditorderantrucking')->nullable();
             $table->unsignedBigInteger('statusformat')->nullable();
             $table->string('modifiedby',50)->nullable();
             $table->timestamps();
