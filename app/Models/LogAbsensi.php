@@ -108,9 +108,9 @@ class LogAbsensi extends MyModel
         $tempshift = '##tempshift' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
         Schema::create($tempshift, function ($table) {
             $table->integer('hari')->nullable();
-            $table->time('jammasukmulai',7)->nullable();
-            $table->time('jammasuk',7)->nullable();
-            $table->time('jampulang',7)->nullable();
+            $table->time('jammasukmulai', 7)->nullable();
+            $table->time('jammasuk', 7)->nullable();
+            $table->time('jampulang', 7)->nullable();
             $table->dateTime('batasjammasuk')->nullable();
         });
 
@@ -360,9 +360,9 @@ class LogAbsensi extends MyModel
                     'a.jammasuk',
                     'a.jampulang',
                     'a.batasjammasuk',
-    
+
                 );
-    
+
             DB::table($tempshiftkaryawan)->insertUsing([
                 'idabsen',
                 'hari',
@@ -370,12 +370,12 @@ class LogAbsensi extends MyModel
                 'jammasuk',
                 'jampulang',
                 'batasjammasuk',
-    
+
             ], $queryshiftkaryawan);
         }
 
 
-     
+
 
 
         $tempcuti = '##tempcuti' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
@@ -531,7 +531,7 @@ class LogAbsensi extends MyModel
         // dd('test');
         // dd(db::table($tempshiftkaryawan)->get());
         // dd(db::table($temptgl)->get());
-        
+
         // dd($query->get());
         return $query;
     }
@@ -583,7 +583,7 @@ class LogAbsensi extends MyModel
                 $table->string('cepatpulang', 100)->nullable();
                 $table->string('terlambatmasuk', 100)->nullable();
                 $table->string('terlambatpulang', 100)->nullable();
-                $table->longText('logwaktu', 100)->nullable();                 
+                $table->longText('logwaktu', 100)->nullable();
             });
 
             DB::table($temtabel)->insertUsing([
@@ -598,9 +598,6 @@ class LogAbsensi extends MyModel
                 'terlambatpulang',
                 'logwaktu',
             ], $this->getdata($tgldari, $tglsampai));
-    
-
-
         } else {
             $querydata = DB::table('listtemporarytabel')->from(
                 DB::raw("listtemporarytabel with (readuncommitted)")
@@ -644,9 +641,13 @@ class LogAbsensi extends MyModel
         //     'logwaktu',
         // ], $this->getdata($tgldari, $tglsampai));
 
-       
-        // dd(db::table($temprekapdata)->get());
 
+        // dd(db::table($temprekapdata)->get());
+        $getJudul = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))
+            ->select('text')
+            ->where('grp', 'JUDULAN LAPORAN')
+            ->where('subgrp', 'JUDULAN LAPORAN')
+            ->first();
         $query = db::table($temtabel)->from(
             db::raw($temtabel . " a")
         )
@@ -660,9 +661,13 @@ class LogAbsensi extends MyModel
                 'a.cepatpulang',
                 'a.terlambatmasuk',
                 'a.terlambatpulang',
-                'a.logwaktu'
+                'a.logwaktu',
+                DB::raw("'Laporan Log Absensi' as judulLaporan"),
+                DB::raw("'" . $getJudul->text . "' as judul"),
+                DB::raw("'Tgl Cetak :'+format(getdate(),'dd-MM-yyyy HH:mm:ss')as tglcetak"),
+                DB::raw(" 'User :" . auth('api')->user()->name . "' as usercetak")
             );
-            // dd('test');
+        // dd('test');
         $this->totalRows = $query->count();
 
         $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;
