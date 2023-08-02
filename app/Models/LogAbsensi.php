@@ -527,7 +527,7 @@ class LogAbsensi extends MyModel
             ->join(db::raw($tempkaryawan . " h "), 'a.idabsen', 'h.idabsen')
             ->leftjoin(DB::raw("karyawanlogabsensi as j"), function ($join) {
                 $join->on('a.idabsen', '=', 'j.idabsen');
-                $join->on(DB::raw("(a.tgl<=(case when year(isnull(j.tglresign,'1900/1/1'))=1900 then '1900/1/1' else j.tglresign end) or j.statusaktif=2)"));
+                DB::raw(" and (a.tgl<=(case when year(isnull(j.tglresign,'1900/1/1'))=1900 then '1900/1/1' else j.tglresign end) or j.statusaktif=2)");
                 // 'a.tgl', '>=', db::raw("(case when year(isnull(j.tglresign,'1900/1/1'))=1900 then '1900/1/1' else j.tglresign end)")
             })
             ->whereraw("isnull(j.idabsen,0)=0")
