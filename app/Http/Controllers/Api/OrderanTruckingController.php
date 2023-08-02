@@ -94,32 +94,36 @@ class OrderanTruckingController extends Controller
         $cekdata = $orderanTrucking->cekvalidasihapus($nobukti->nobukti, $aksi);
 
         $isEditAble = OrderanTrucking::isEditAble($nobukti->id);
+        $edit = true;
         if (!$isEditAble) {
-            $query = DB::table('error')->select('keterangan')->where('kodeerror', '=', 'BAED')->get();
-            $keterangan = $query['0'];
-            $data = [
-                'status' => false,
-                'message' => $keterangan,
-                'errors' => '',
-                'kondisi' => true,
-            ];
-            $passes = false;
+            $edit = false;
         }
+        // if (!$isEditAble) {
+        //     $query = DB::table('error')->select('keterangan')->where('kodeerror', '=', 'BAED')->get();
+        //     $keterangan = $query['0'];
+        //     $data = [
+        //         'status' => false,
+        //         'message' => $keterangan,
+        //         'errors' => '',
+        //         'kondisi' => true,
+        //     ];
+        //     $passes = false;
+        // }
 
-        $todayValidation = OrderanTrucking::todayValidation($nobukti->id);
-        if (!$todayValidation) {
-            $query = DB::table('error')->select('keterangan')->where('kodeerror', '=', 'SATL')->get();
-            // $keterangan = $query['0'];
-            $keterangan = ['keterangan' => 'transaksi Sudah beda tanggal']; //$query['0'];
-            $data = [
-                'message' => $keterangan,
-                'errors' => 'Tidak bisa edit di hari yang berbeda',
-                'kodestatus' => '1',
-                'kodenobukti' => '1'
-            ];
-            $passes = false;
-            // return response($data);
-        }
+        // $todayValidation = OrderanTrucking::todayValidation($nobukti->id);
+        // if (!$todayValidation) {
+        //     $query = DB::table('error')->select('keterangan')->where('kodeerror', '=', 'SATL')->get();
+        //     // $keterangan = $query['0'];
+        //     $keterangan = ['keterangan' => 'transaksi Sudah beda tanggal']; //$query['0'];
+        //     $data = [
+        //         'message' => $keterangan,
+        //         'errors' => 'Tidak bisa edit di hari yang berbeda',
+        //         'kodestatus' => '1',
+        //         'kodenobukti' => '1'
+        //     ];
+        //     $passes = false;
+        //     // return response($data);
+        // }
         
 
         if ($cekdata['kondisi'] == true) {
@@ -135,21 +139,20 @@ class OrderanTruckingController extends Controller
                 'status' => false,
                 'message' => $keterangan,
                 'errors' => '',
+                'edit' => $edit,
                 'kondisi' => $cekdata['kondisi'],
             ];
 
             $passes = false;
-        }
-
-        if (!$cekdata['kondisi'] || $isEditAble || $todayValidation) {
+        }else {
 
             $data = [
                 'message' => '',
                 'errors' => 'success',
                 'kodestatus' => '0',
+                'edit' => $edit,
                 'kodenobukti' => '1'
             ];
-            return response($data);
         }
         return response($data);
     }

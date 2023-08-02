@@ -333,20 +333,20 @@ class SuratPengantarController extends Controller
         $nobukti = DB::table('SuratPengantar')->from(DB::raw("suratpengantar with (readuncommitted)"))
             ->where('id', $id)->first();
         //validasi Hari ini
-        $todayValidation = SuratPengantar::todayValidation($nobukti->id);
+        // $todayValidation = SuratPengantar::todayValidation($nobukti->id);
         $isEditAble = SuratPengantar::isEditAble($nobukti->id);
 
         $edit = true;
-        if (!$todayValidation) {
-            $edit = false;
-            if ($isEditAble) {
-                $edit = true;
-            }
-        }
+        // if (!$todayValidation) {
+        //     $edit = false;
+            // if ($isEditAble) {
+            //     $edit = true;
+            // }
+        // }
         // else {
-        //     if (!$isEditAble) {
-        //         $edit = false;
-        //     }
+            if (!$isEditAble) {
+                $edit = false;
+            }
         // }
 
         $cekdata = $suratPengantar->cekvalidasihapus($nobukti->nobukti, $nobukti->jobtrucking);
