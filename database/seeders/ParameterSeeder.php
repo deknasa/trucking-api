@@ -401,6 +401,7 @@ class ParameterSeeder extends Seeder
         parameter::create(['grp' => 'KETERANGAN DEFAULT HUTANG USAHA', 'subgrp' => 'KETERANGAN DEFAULT HUTANG USAHA', 'kelompok' => '', 'text' => 'Pembayaran atas pembelian kepada ', 'memo' => '{"MEMO":"Pembayaran atas pembelian kepada","SINGKATAN":"KDHU","WARNA":"#28A745"}', 'type' => '0', 'modifiedby' => 'ADMIN', 'default' => '',]);
         parameter::create(['grp' => 'JAMBATASAPPROVAL', 'subgrp' => 'JAMBATASAPPROVAL', 'kelompok' => '', 'text' => '23:59:59 ', 'memo' => '{"MEMO":"23:59:59","SINGKATAN":"JBA","WARNA":"#28A745"}', 'type' => '0', 'modifiedby' => 'ADMIN', 'default' => '',]);
         parameter::create(['grp' => 'JAMBATASINPUTTRIP', 'subgrp' => 'JAMBATASINPUTTRIP', 'kelompok' => '', 'text' => '10:00:00 ', 'memo' => '{"MEMO":"10:00:00","SINGKATAN":"JBIT","WARNA":"#28A745"}', 'type' => '0', 'modifiedby' => 'ADMIN', 'default' => '',]);
+        parameter::create(['grp' => 'JAMBATASINPUTABSENSI', 'subgrp' => 'JAMBATASINPUTABSENSI', 'kelompok' => '', 'text' => '12:00:00 ', 'memo' => '{"MEMO":"10:00:00","SINGKATAN":"JBIA","WARNA":"#28A745"}', 'type' => '0', 'modifiedby' => 'ADMIN', 'default' => '',]);
         
 
         
