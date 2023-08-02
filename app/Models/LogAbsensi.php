@@ -711,8 +711,13 @@ class LogAbsensi extends MyModel
         // ], $this->getdata($tgldari, $tglsampai));
 
 
-        // dd(db::table($temprekapdata)->get());
 
+        // dd(db::table($temprekapdata)->get());
+        $getJudul = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))
+            ->select('text')
+            ->where('grp', 'JUDULAN LAPORAN')
+            ->where('subgrp', 'JUDULAN LAPORAN')
+            ->first();
         $query = db::table($temtabel)->from(
             db::raw($temtabel . " a")
         )
@@ -726,7 +731,11 @@ class LogAbsensi extends MyModel
                 'a.cepatpulang',
                 'a.terlambatmasuk',
                 'a.terlambatpulang',
-                'a.logwaktu'
+                'a.logwaktu',
+                DB::raw("'Laporan Log Absensi' as judulLaporan"),
+                DB::raw("'" . $getJudul->text . "' as judul"),
+                DB::raw("'Tgl Cetak :'+format(getdate(),'dd-MM-yyyy HH:mm:ss')as tglcetak"),
+                DB::raw(" 'User :" . auth('api')->user()->name . "' as usercetak")
             );
         // dd('test');
         $this->totalRows = $query->count();
