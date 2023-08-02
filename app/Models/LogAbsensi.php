@@ -79,7 +79,7 @@ class LogAbsensi extends MyModel
                 DB::raw($tempwaktu . " a ")
             )
                 ->select(
-                    DB::raw("a.waktu as waktu"),
+                    DB::raw("left(cast(a.waktu as varchar(50)),8)  as waktu"),
                 )
                 ->where('a.id', '=', $item['id'])
                 ->where('a.tgl', '=', $item['tgl'])
