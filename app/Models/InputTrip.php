@@ -57,6 +57,7 @@ class InputTrip extends MyModel
             ->first();
 
         $tarifrincian = TarifRincian::find($data['tarifrincian_id']);
+        $tglBatasEdit = date('Y-m-d', strtotime($data['tglbukti'].'+1 days')) . ' ' . '12:00:00';
 
         if ($jobtrucking == '') {
             $orderan = [
@@ -74,6 +75,7 @@ class InputTrip extends MyModel
                 'noseal2' => $data['noseal2'] ?? '',
                 'statuslangsir' => $data['statuslangsir'] ?? $statuslangsir->id,
                 'statusperalihan' => $statusperalihan->id,
+                'tglbataseditorderantrucking' => $tglBatasEdit,
                 'inputtripmandor' =>  '1',
             ];
             $orderanTrucking = (new OrderanTrucking())->processStore($orderan);
@@ -136,6 +138,7 @@ class InputTrip extends MyModel
             'tarif_id' => $data['tarifrincian_id'],
             'inputtripmandor' => '1',
             'nominal' => '',
+            'tglbataseditsuratpengantar' => $tglBatasEdit,
             'approvalbukatanggal_id' => $approvalId
         ];
         $suratPengantar = (new SuratPengantar())->processStore($dataSP);

@@ -287,23 +287,23 @@ class SuratPengantarController extends Controller
         }
     }
 
-    public function cekValidasi($id,Request $request)
+    public function cekValidasi($id, Request $request)
     {
 
-        $nobuktilist=$request->nobukti ?? '';
+        $nobuktilist = $request->nobukti ?? '';
 
-      
 
-        $querysp=DB::table('suratpengantar')->from(
+
+        $querysp = DB::table('suratpengantar')->from(
             DB::raw("suratpengantar a with (readuncommitted)")
         )
-        ->select('a.id')
-        ->where('a.nobukti',$nobuktilist)
-        ->first();
+            ->select('a.id')
+            ->where('a.nobukti', $nobuktilist)
+            ->first();
         if (isset($querysp)) {
             goto validasilanjut;
         } else {
-    
+
             $data1 = [
                 'kondisi' => true,
                 'keterangan' => '',
@@ -311,12 +311,12 @@ class SuratPengantarController extends Controller
 
             $edit = true;
             $query = DB::table('error')
-            ->select(
-                DB::raw("'No Bukti ". $nobuktilist ." '+ltrim(rtrim(keterangan)) as keterangan")
-            )
-            ->where('kodeerror', '=', 'BMS')
-            ->get();
-        $keterangan = $query['0'];
+                ->select(
+                    DB::raw("'No Bukti " . $nobuktilist . " '+ltrim(rtrim(keterangan)) as keterangan")
+                )
+                ->where('kodeerror', '=', 'BMS')
+                ->get();
+            $keterangan = $query['0'];
             $data = [
                 'status' => false,
                 'message' => $keterangan,
@@ -333,20 +333,20 @@ class SuratPengantarController extends Controller
         $nobukti = DB::table('SuratPengantar')->from(DB::raw("suratpengantar with (readuncommitted)"))
             ->where('id', $id)->first();
         //validasi Hari ini
-        $todayValidation = SuratPengantar::todayValidation($nobukti->id);
+        // $todayValidation = SuratPengantar::todayValidation($nobukti->id);
         $isEditAble = SuratPengantar::isEditAble($nobukti->id);
 
         $edit = true;
-        if (!$todayValidation) {
-            $edit = false;
-            if ($isEditAble) {
-                $edit = true;
-            }
-        } 
+        // if (!$todayValidation) {
+        //     $edit = false;
+            // if ($isEditAble) {
+            //     $edit = true;
+            // }
+        // }
         // else {
-        //     if (!$isEditAble) {
-        //         $edit = false;
-        //     }
+            if (!$isEditAble) {
+                $edit = false;
+            }
         // }
 
         $cekdata = $suratPengantar->cekvalidasihapus($nobukti->nobukti, $nobukti->jobtrucking);
@@ -458,15 +458,20 @@ class SuratPengantarController extends Controller
 
             $statusApproval = Parameter::from(DB::raw("parameter with (readuncommitted)"))->where('grp', '=', 'STATUS APPROVAL')->where('text', '=', 'APPROVAL')->first();
             $statusNonApproval = Parameter::from(DB::raw("parameter with (readuncommitted)"))->where('grp', '=', 'STATUS APPROVAL')->where('text', '=', 'NON APPROVAL')->first();
+
+            $jambatas = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))->select('text')->where('grp', '=', 'JAMBATASAPPROVAL')->where('subgrp', '=', 'JAMBATASAPPROVAL')->first();
+            $tglbatas = date('Y-m-d') . ' ' . $jambatas->text ?? '00:00:00';
             // statusapprovaleditabsensi,tglapprovaleditabsensi,userapprovaleditabsensi 
             if ($suratPengantar->statusapprovaleditsuratpengantar == $statusApproval->id) {
                 $suratPengantar->statusapprovaleditsuratpengantar = $statusNonApproval->id;
                 $suratPengantar->tglapprovaleditsuratpengantar = date('Y-m-d', strtotime("1900-01-01"));
+                $suratPengantar->tglbataseditsuratpengantar = '';
                 $suratPengantar->userapprovaleditsuratpengantar = '';
                 $aksi = $statusNonApproval->text;
             } else {
                 $suratPengantar->statusapprovaleditsuratpengantar = $statusApproval->id;
                 $suratPengantar->tglapprovaleditsuratpengantar = date('Y-m-d H:i:s');
+                $suratPengantar->tglbataseditsuratpengantar = $tglbatas;
                 $suratPengantar->userapprovaleditsuratpengantar = auth('api')->user()->name;
                 $aksi = $statusApproval->text;
             }
