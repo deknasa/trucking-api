@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Services\RunningNumberService;
+use DateTime;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
@@ -52,15 +53,15 @@ class SuratPengantar extends MyModel
 
     public function isEditAble($id)
     {
-        $approval = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS APPROVAL')->where('text', 'APPROVAL')->first();
-
         $query = DB::table('suratpengantar')->from(DB::raw("suratpengantar with (readuncommitted)"))
-            ->select('statusapprovaleditsuratpengantar as statusedit')
+            ->select('tglbataseditsuratpengantar as tglbatasedit')
             ->where('id', $id)
             ->first();
-
-        if ($query->statusedit == $approval->id) return true;
-        return false;
+        if(date('Y-m-d H:i:s', strtotime($query->tglbatasedit)) < date('Y-m-d H:i:s')){
+            return false;
+        }
+        // if ($query->tglbatasedit == $approval->id) return true;
+        return true;
     }
 
     public function cekvalidasihapus($nobukti, $jobtrucking)
@@ -1691,7 +1692,7 @@ class SuratPengantar extends MyModel
             $suratPengantar->lokasibongkarmuat = $data['lokasibongkarmuat'];
             $suratPengantar->modifiedby = auth('api')->user()->name;
             $suratPengantar->statusedittujuan = $statusTidakBolehEditTujuan->id;
-            $suratPengantar->statusapprovaleditsuratpengantar = $statusNonApproval->id;
+            // $suratPengantar->statusapprovaleditsuratpengantar = $statusNonApproval->id;
             if (!$suratPengantar->save()) {
                 throw new \Exception('Error edit surat pengantar.');
             }
