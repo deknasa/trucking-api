@@ -569,9 +569,7 @@ class LogAbsensi extends MyModel
         // })
         // ->whereraw("isnull(j.idabsen,0)=0")
 
-        DB::table($temphasil)->from(
-            db::raw($temphasil ." a with (readuncommitted)")
-        )
+        DB::table($temphasil,'a')
             ->Join(db::raw("karyawanlogabsensi b with (readuncommitted)"), 'a.idabsen', '=', 'b.idabsen')
             ->whereRaw("a.tanggal<=isnull(b.tglresign,'1900/1/1')")
             ->OrwhereRaw("isnull(b.statusaktif,2)=2")
