@@ -13,14 +13,16 @@ class LogAbsensiController extends Controller
     /**
      * @ClassName 
      */
-    public function index()
+    public function index(Request $request)
     {
-        $logAbensi = new LogAbsensi();
+        $tgldari=date('Y-m-d', strtotime($request->tgldari));
+        $tglsampai=date('Y-m-d', strtotime($request->tglsampai));
+        $logAbsensi = new LogAbsensi();
         return response([
-            'data' => [],
+            'data' => $logAbsensi->get($tgldari,$tglsampai),
             'attributes' => [
-                'totalRows' => $logAbensi->totalRows,
-                'totalPages' => $logAbensi->totalPages
+                'totalRows' => $logAbsensi->totalRows,
+                'totalPages' => $logAbsensi->totalPages
             ]
         ]);
     }
