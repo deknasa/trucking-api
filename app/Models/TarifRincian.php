@@ -371,7 +371,7 @@ class TarifRincian extends MyModel
             ->leftJoin(DB::raw("container with (readuncommitted)"), 'container.id', '=', "tarifrincian.container_id")
             ->leftJoin(DB::raw("parameter AS p with (readuncommitted)"), 'tarif.statuspenyesuaianharga', '=', 'p.id')
             ->leftJoin(DB::raw("parameter AS sistemton with (readuncommitted)"), 'tarif.statussistemton', '=', 'sistemton.id')
-            ->where('tarifrincian.id', '=', $id);
+            ->where('tarifrincian.tarif_id', '=', $id);
 
         $data = $query->first();
 
