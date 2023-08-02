@@ -350,31 +350,32 @@ class LogAbsensi extends MyModel
 
                 $atgl1 = date("Y-m-d", strtotime("+1 day", strtotime($atgl1)));
             }
+            $queryshiftkaryawan = DB::table($tempshift)->from(
+                DB::raw($tempshift . " a")
+            )
+                ->select(
+                    db::raw($item['idabsen'] . " as idabsen"),
+                    'a.hari',
+                    'a.jammasukmulai',
+                    'a.jammasuk',
+                    'a.jampulang',
+                    'a.batasjammasuk',
+    
+                );
+    
+            DB::table($tempshiftkaryawan)->insertUsing([
+                'idabsen',
+                'hari',
+                'jammasukmulai',
+                'jammasuk',
+                'jampulang',
+                'batasjammasuk',
+    
+            ], $queryshiftkaryawan);
         }
 
 
-        $queryshiftkaryawan = DB::table($tempshift)->from(
-            DB::raw($tempshift . " a")
-        )
-            ->select(
-                db::raw($item['idabsen'] . " as idabsen"),
-                'a.hari',
-                'a.jammasukmulai',
-                'a.jammasuk',
-                'a.jampulang',
-                'a.batasjammasuk',
-
-            );
-
-        DB::table($tempshiftkaryawan)->insertUsing([
-            'idabsen',
-            'hari',
-            'jammasukmulai',
-            'jammasuk',
-            'jampulang',
-            'batasjammasuk',
-
-        ], $queryshiftkaryawan);
+     
 
 
         $tempcuti = '##tempcuti' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
@@ -528,7 +529,7 @@ class LogAbsensi extends MyModel
             ->orderBy('a.tgl', 'asc');
 
         // dd('test');
-        // dd(db::table($tempshiftkaryawan)->get());
+        dd(db::table($tempshiftkaryawan)->get());
         // dd(db::table($temptgl)->get());
         
         // dd($query->get());
