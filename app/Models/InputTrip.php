@@ -56,7 +56,8 @@ class InputTrip extends MyModel
             ->where('a.text', '=', 'BUKAN BATAL MUAT')
             ->first();
 
-        $tarifrincian = TarifRincian::find($data['tarifrincian_id']);
+        $tarifrincian = TarifRincian::where('tarif_id', $data['tarifrincian_id'])->where('container_id', $data['container_id'])->first();
+            
         $tglBatasEdit = date('Y-m-d', strtotime($data['tglbukti'].'+1 days')) . ' ' . '12:00:00';
 
         if ($jobtrucking == '') {

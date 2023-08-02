@@ -611,6 +611,9 @@ class SuratPengantar extends MyModel
                 'container.keterangan as container_id',
                 'suratpengantar.nocont',
                 'suratpengantar.noseal',
+                'suratpengantar.omset',
+                DB::raw("(case when suratpengantar.nominalperalihan IS NULL then 0 else suratpengantar.nominalperalihan end) as nominalperalihan"),
+                'suratpengantar.totalomset',
                 'statuscontainer.keterangan as statuscontainer_id',
                 'suratpengantar.gudang',
                 'trado.kodetrado as trado_id',
@@ -860,6 +863,7 @@ class SuratPengantar extends MyModel
                     'suratpengantar.noseal',
                     'suratpengantar.statusperalihan',
                     DB::raw("(case when suratpengantar.persentaseperalihan IS NULL then 0 else suratpengantar.persentaseperalihan end) as persentaseperalihan"),
+                    'suratpengantar.omset',
                     'suratpengantar.statusritasiomset',
                     'suratpengantar.nosptagihlain as nosp2',
                     'suratpengantar.statusgudangsama',
@@ -1342,7 +1346,7 @@ class SuratPengantar extends MyModel
                             $query = $query->where('statusbatalmuat.text', '=', "$filters[data]");
                         } else if ($filters['field'] == 'statusapprovaleditsuratpengantar') {
                             $query = $query->where('statusapprovaleditsuratpengantar.text', '=', "$filters[data]");
-                        } else if ($filters['field'] == 'gajisupir' || $filters['field'] == 'jarak') {
+                        } else if ($filters['field'] == 'gajisupir' || $filters['field'] == 'jarak' || $filters['field'] == 'omset' || $filters['field'] == 'nominalperalihan' || $filters['field'] == 'totalomset') {
                             $query = $query->whereRaw("format(suratpengantar." . $filters['field'] . ", '#,#0.00') LIKE '%$filters[data]%'");
                         } else if ($filters['field'] == 'tglbukti' || $filters['field'] == 'tglsp') {
                             $query = $query->whereRaw("format(suratpengantar." . $filters['field'] . ", 'dd-MM-yyyy') LIKE '%$filters[data]%'");
@@ -1396,7 +1400,7 @@ class SuratPengantar extends MyModel
                                 $query = $query->orWhere('statusbatalmuat.text', '=', "$filters[data]");
                             } else if ($filters['field'] == 'statusapprovaleditsuratpengantar') {
                                 $query = $query->orWhere('statusapprovaleditsuratpengantar.text', '=', "$filters[data]");
-                            } else if ($filters['field'] == 'gajisupir' || $filters['field'] == 'jarak') {
+                            } else if ($filters['field'] == 'gajisupir' || $filters['field'] == 'jarak' || $filters['field'] == 'omset' || $filters['field'] == 'nominalperalihan' || $filters['field'] == 'totalomset') {
                                 $query = $query->orWhereRaw("format(suratpengantar." . $filters['field'] . ", '#,#0.00') LIKE '%$filters[data]%'");
                             } else if ($filters['field'] == 'tglbukti' || $filters['field'] == 'tglsp') {
                                 $query = $query->orWhereRaw("format(suratpengantar." . $filters['field'] . ", 'dd-MM-yyyy') LIKE '%$filters[data]%'");
@@ -1620,11 +1624,10 @@ class SuratPengantar extends MyModel
         $statusTidakBolehEditTujuan = Parameter::from(DB::raw("parameter with (readuncommitted)"))->where('grp', '=', 'STATUS EDIT TUJUAN')->where('text', '=', 'TIDAK BOLEH EDIT TUJUAN')->first();
 
         $statusNonApproval = Parameter::from(DB::raw("parameter with (readuncommitted)"))->where('grp', '=', 'STATUS APPROVAL')->where('text', '=', 'NON APPROVAL')->first();
-
+        
         if ($prosesLain == 0) {
             $tarif = TarifRincian::where('tarif_id', $data['tarif_id'])->where('container_id', $orderanTrucking->container_id)->first();
             $tarifNominal = $tarif->nominal ?? 0;
-
             $upahsupir = UpahSupir::where('id', $data['upah_id'])->first();
 
             $getZona = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS UPAH ZONA')->where('text', 'UPAH ZONA')->first();
