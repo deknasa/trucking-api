@@ -18,6 +18,7 @@ class DateAllowedAbsen implements Rule
         $this->kondisi = $param;
     }
     public $kondisi;
+    private $message;
     /**
      * Determine if the validation rule passes.
      *
@@ -45,6 +46,9 @@ class DateAllowedAbsen implements Rule
         else {
             $allowed = false ;   
         }
+        if (!$todayValidation) {
+            $this->message = "jam pada tanggal absensi ini sudah melewati batas waktu";
+        }
         
         return $allowed ;
     }
@@ -56,6 +60,9 @@ class DateAllowedAbsen implements Rule
      */
     public function message()
     {
+        if ($this->message) {
+            return $this->message;
+        }
         return 'Tidak Bisa memilih tanggal tersebut';
     }
 }

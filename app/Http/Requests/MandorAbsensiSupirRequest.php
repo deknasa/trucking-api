@@ -8,7 +8,7 @@ use App\Models\MandorAbsensiSupir;
 use Illuminate\Foundation\Http\FormRequest;
 use App\Rules\MandorAbsensiSupirInputSupirValidasiTrado;
 use App\Rules\MandorAbsensiSupirEditSupirValidasiTrado;
-use App\Rules\DateAllowedAbsen;
+use App\Rules\DateAllowedAbsenMandor; 
 use App\Rules\DateTutupBuku;
 
 use Illuminate\Validation\Rule;
@@ -74,7 +74,7 @@ class MandorAbsensiSupirRequest extends FormRequest
                 $rulesBeda = [
                     'tglbukti' => [
                         'required', 'date_format:d-m-Y',
-                        new DateAllowedAbsen(false),
+                        new DateAllowedAbsenMandor(),
                         new DateTutupBuku(),
                         
                     ],
@@ -85,7 +85,26 @@ class MandorAbsensiSupirRequest extends FormRequest
                 $rulesBeda = [
                     'tglbukti' => [
                         'required', 'date_format:d-m-Y',
-                        new DateAllowedAbsen(false),
+                        function ($attribute, $value, $fail) {
+                            
+                            // Ubah format tanggal dari input menjadi format yang ada di database
+                            $statusTidakbolehEditAbsensi = Parameter::from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS EDIT ABSENSI')->where('text', 'TIDAK BOLEH EDIT ABSENSI')->first();
+                            $formattedDate = date('Y-m-d', strtotime($value));
+    
+                            // Cek apakah ada data dengan tanggal yang sama dalam database
+                            $existingRecord = DB::table('absensisupirdetail')->from(DB::raw("absensisupirdetail with (readuncommitted)"))
+                            ->select(
+                                'absensisupirdetail.id',
+                                'header.statusapprovaleditabsensi as statusedit',
+                                'header.tglbataseditabsensi as tglbatas',
+                                )
+                            ->where('absensisupirdetail.id', $this->id)
+                            ->leftJoin(DB::raw("absensisupirheader as header with (readuncommitted)"), 'absensisupirdetail.absensi_id', 'header.id')
+                            ->first();
+                            if (strtotime($existingRecord->tglbatas) == strtotime($formattedDate)) {
+                                $fail(app(ErrorController::class)->geterror('TSTB')->keterangan);
+                            }
+                        },
                         new DateTutupBuku(),
                     ],
                     'trado' => 'required',

@@ -205,6 +205,16 @@ class MandorAbsensiSupir extends MyModel
         return $absensisupirdetail->first();
     }
 
+    public function isDateAllowedMandor($date)
+    {
+        $bukaAbsensi = BukaAbsensi::where('tglabsensi', '=', $date)->first();
+        $tglbatas = $bukaAbsensi->tglbatas ?? 0;
+        $limit = strtotime($tglbatas);
+        $now = strtotime('now');
+        if ($now < $limit) return true;
+        return false;
+    }
+
     public function getTrado($id)
     {
         $absensisupirdetail = DB::table('trado')
@@ -373,10 +383,24 @@ class MandorAbsensiSupir extends MyModel
         if ($tidakadasupir->text == $data['absen_id'] ) {
             $data['supir_id'] = "";
         }
+        $tglbataseditabsensi = null;
+        $tglbukti = date('Y-m-d', strtotime($data['tglbukti']));
+        $isDateAllowedMandor = $this->isDateAllowedMandor($tglbukti);
+        $bukaabsensi = DB::table('bukaabsensi')
+            ->select('tglbatas')
+            ->from(DB::raw("bukaabsensi with (readuncommitted)"))
+            ->where('tglabsensi',$tglbukti)
+            ->first();
+        if ($isDateAllowedMandor && $bukaabsensi->tglbatas) {
+            $tglbataseditabsensi = $bukaabsensi->tglbatas;
+        }
+            # code...
+
         if (!$AbsensiSupirHeader) {
             $absensiSupirRequest = [
                 "tglbukti" =>$data['tglbukti'],
                 "kasgantung_nobukti" =>$data['kasgantung_nobukti'],
+                "tglbataseditabsensi" =>$tglbataseditabsensi,
                 "uangjalan" =>[0],
                 "trado_id" =>[$data['trado_id']],
                 "supir_id" =>[$data['supir_id']],

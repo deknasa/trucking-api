@@ -3,8 +3,7 @@
 namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
-use App\Rules\DateAllowedAbsen;
-use App\Rules\DateAllowedAbsenReload;
+use App\Rules\GetAbsensiMandorRule;
 use Illuminate\Support\Facades\DB;
 use App\Http\Controllers\Api\ErrorController;
 
@@ -25,7 +24,17 @@ class GetMandorAbsensiSupirRequest extends FormRequest
      *
      * @return array
      */
+
     public function rules()
+    {
+
+        return [
+            "tglbukaabsensi" => new GetAbsensiMandorRule()
+        ];
+    }
+
+
+    public function aaarules()
     {
         $formattedDate = date('Y-m-d', strtotime(request()->tglbukaabsensi));
         $now = date('Y-m-d');
