@@ -460,6 +460,7 @@ class LogAbsensi extends MyModel
             db::raw($temptgl . " a")
         )
             ->select(
+                'a.idabsen',
                 'h.karyawan',
                 DB::raw("a.tgl as tanggal"),
                 db::raw("(case when datepart(dw,A.tgl)=1 then 'Libur' 
@@ -525,60 +526,75 @@ class LogAbsensi extends MyModel
                 $join->on('a.tgl', '=', 'i.tgl');
             })
             ->join(db::raw($tempkaryawan . " h "), 'a.idabsen', 'h.idabsen')
-            ->leftjoin(DB::raw("karyawanlogabsensi as j"), function ($join) {
-                $join->on('a.idabsen', '=', 'j.idabsen');
-                DB::raw(" and (a.tgl<=(case when year(isnull(j.tglresign,'1900/1/1'))=1900 then '1900/1/1' else j.tglresign end) or j.statusaktif=2)");
-                // 'a.tgl', '>=', db::raw("(case when year(isnull(j.tglresign,'1900/1/1'))=1900 then '1900/1/1' else j.tglresign end)")
-            })
-            ->whereraw("isnull(j.idabsen,0)=0")
             ->orderBy('h.karyawan', 'asc')
             ->orderBy('a.tgl', 'asc');
 
-            $temphasil = '##temphasil' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
-            Schema::create($temphasil, function (Blueprint $table) {
-                $table->string('karyawan', 255)->nullable();
-                $table->date('tanggal')->nullable();
-                $table->string('jadwalkerja', 1000)->nullable();
-                $table->string('statusabsen', 1000)->nullable();
-                $table->string('jamkerja', 1000)->nullable();
-                $table->string('cepatmasuk', 100)->nullable();
-                $table->string('cepatpulang', 100)->nullable();
-                $table->string('terlambatmasuk', 100)->nullable();
-                $table->string('terlambatpulang', 100)->nullable();
-                $table->longText('logwaktu', 100)->nullable();                 
-            });
 
-            DB::table($temphasil)->insertUsing([
-                'karyawan',
-                'tanggal',
-                'jadwalkerja',
-                'statusabsen',
-                'jamkerja',
-                'cepatmasuk', 
-                'cepatpulang', 
-                'terlambatmasuk', 
-                'terlambatpulang', 
-                'logwaktu',       
-    
-            ], $querytemphasil);
 
-        $query=DB::table($temphasil)->from(
-           db::raw($temphasil ." a") 
+        $temphasil = '##temphasil' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+        Schema::create($temphasil, function (Blueprint $table) {
+            $table->integer('idabsen')->nullable();
+            $table->string('karyawan', 255)->nullable();
+            $table->date('tanggal')->nullable();
+            $table->string('jadwalkerja', 1000)->nullable();
+            $table->string('statusabsen', 1000)->nullable();
+            $table->string('jamkerja', 1000)->nullable();
+            $table->string('cepatmasuk', 100)->nullable();
+            $table->string('cepatpulang', 100)->nullable();
+            $table->string('terlambatmasuk', 100)->nullable();
+            $table->string('terlambatpulang', 100)->nullable();
+            $table->longText('logwaktu', 100)->nullable();
+        });
+
+        DB::table($temphasil)->insertUsing([
+            'idabsen',
+            'karyawan',
+            'tanggal',
+            'jadwalkerja',
+            'statusabsen',
+            'jamkerja',
+            'cepatmasuk',
+            'cepatpulang',
+            'terlambatmasuk',
+            'terlambatpulang',
+            'logwaktu',
+
+        ], $querytemphasil);
+
+                // ->leftjoin(DB::raw("karyawanlogabsensi as j"), function ($join) {
+        //     $join->on('a.idabsen', '=', 'j.idabsen');
+        //     $join->on(DB::raw("(a.tgl<=(case when year(isnull(j.tglresign,'1900/1/1'))=1900 then '1900/1/1' else j.tglresign end) or j.statusaktif=2)"));
+        //     // 'a.tgl', '>=', db::raw("(case when year(isnull(j.tglresign,'1900/1/1'))=1900 then '1900/1/1' else j.tglresign end)")
+
+        // })
+        // ->whereraw("isnull(j.idabsen,0)=0")
+
+        DB::table($temphasil)->from(
+            db::raw($temphasil ." a with (readuncommitted)")
         )
-        ->select(
-            'a.karyawan',
-            'a.tanggal',
-            db::raw("max(a.jadwalkerja) as jadwalkerja"),
-            db::raw("max(a.statusabsen) as statusabsen"),
-            db::raw("max(a.jamkerja) as jamkerja"),
-            db::raw("max(a.cepatmasuk) as cepatmasuk"),
-            db::raw("max(a.cepatpulang) as cepatpulang"), 
-            db::raw("max(a.terlambatmasuk) as terlambatmasuk"),
-            db::raw("max(a.terlambatpulang) as terlambatpulang"), 
-            db::raw("max(a.logwaktu) as logwaktu"),
+            ->Join(db::raw("karyawanlogabsensi b with (readuncommitted)"), 'a.idabsen', '=', 'b.idabsen')
+            ->whereRaw("a.tanggal<=isnull(b.tglresign,'1900/1/1')")
+            ->OrwhereRaw("isnull(b.statusaktif,2)=2")
+            ->delete();
+
+
+        $query = DB::table($temphasil)->from(
+            db::raw($temphasil . " a")
         )
-        ->groupby('a.karyawan')
-        ->groupby('a.tanggal');
+            ->select(
+                'a.karyawan',
+                'a.tanggal',
+                db::raw("max(a.jadwalkerja) as jadwalkerja"),
+                db::raw("max(a.statusabsen) as statusabsen"),
+                db::raw("max(a.jamkerja) as jamkerja"),
+                db::raw("max(a.cepatmasuk) as cepatmasuk"),
+                db::raw("max(a.cepatpulang) as cepatpulang"),
+                db::raw("max(a.terlambatmasuk) as terlambatmasuk"),
+                db::raw("max(a.terlambatpulang) as terlambatpulang"),
+                db::raw("max(a.logwaktu) as logwaktu"),
+            )
+            ->groupby('a.karyawan')
+            ->groupby('a.tanggal');
 
 
         // dd('test');
@@ -693,6 +709,7 @@ class LogAbsensi extends MyModel
         //     'terlambatpulang',
         //     'logwaktu',
         // ], $this->getdata($tgldari, $tglsampai));
+
 
 
         // dd(db::table($temprekapdata)->get());
