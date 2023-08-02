@@ -322,17 +322,27 @@ class AbsensiSupirHeader extends MyModel
 
     public function todayValidation($tglbukti)
     {
-        // $query = DB::table('absensisupirheader')->from(DB::raw("absensisupirheader with (readuncommitted)"))
-        //     ->select('tglbukti')
-        //     ->where('id', $id)
-        //     ->first();
-        // $tglbukti = strtotime($query->tglbukti);
         $tglbuktistr = strtotime($tglbukti);
-        $limit = strtotime($tglbukti.'+1 days +12 hours +9 minutes' );
+        $jam = 12;
+        $menit = 0;
+        $limit = strtotime($tglbukti.' +'.$jam.' hours +'.$menit.' minutes' );
         $now = strtotime('now');
         if ($now < $limit) return true;
         return false;
     }
+    public function isBukaTanggalValidation($date)
+    {
+        $date = date('Y-m-d', strtotime($date));
+        $bukaAbsensi = BukaAbsensi::where('tglabsensi', '=', $date)->first();
+        $tglbatas = $bukaAbsensi->tglbatas ?? 0;
+        $limit = strtotime($tglbatas);
+        $now = strtotime('now');
+        // dd( date('Y-m-d H:i:s',$now), date('Y-m-d H:i:s',$limit));
+        if ($now < $limit) return true;
+        return false;
+    }
+
+
     public function isApproved($nobukti)
     {
         $absensiSupir = DB::table('absensisupirapprovalheader')
@@ -371,7 +381,11 @@ class AbsensiSupirHeader extends MyModel
         
         $date = date('Y-m-d', strtotime($query->tglbukti));
         $bukaAbsensi = BukaAbsensi::where('tglabsensi', '=', $date)->first();
-        if ($bukaAbsensi) return true;
+        $tglbatas = $bukaAbsensi->tglbatas ?? 0;
+        $limit = strtotime($tglbatas);
+        $now = strtotime('now');
+        // dd( date('Y-m-d H:i:s',$now), date('Y-m-d H:i:s',$limit));
+        if ($now < $limit) return true;
         return false;
     }
     public function isUsedTrip($id)
@@ -449,6 +463,16 @@ class AbsensiSupirHeader extends MyModel
         $statusCetak = Parameter::from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUSCETAK')->where('text', 'BELUM CETAK')->first();
         $statusEditAbsensi = Parameter::from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS EDIT ABSENSI')->where('default', 'YA')->first();
 
+        $bukaabsensi = DB::table('bukaabsensi')
+            ->select('tglbatas')
+            ->from(DB::raw("bukaabsensi with (readuncommitted)"))
+            ->where('tglabsensi',$tglbukti)
+            ->first();
+        if ($isDateAllowedMandor && $bukaabsensi->tglbatas) {
+            $tglbataseditabsensi = $bukaabsensi->tglbatas;
+        }
+
+
         /* Store header */
         $absensiSupir = new AbsensiSupirHeader();
         $absensiSupir->tglbukti = date('Y-m-d', strtotime($data['tglbukti']));
@@ -457,6 +481,7 @@ class AbsensiSupirHeader extends MyModel
         $absensiSupir->statusformat = $format->id;
         $absensiSupir->statuscetak = $statusCetak->id ?? 0;
         $absensiSupir->statusapprovaleditabsensi  = $statusEditAbsensi->id;
+        $absensiSupir->tglbataseditabsensi  = $data['tglbataseditabsensi'];
         $absensiSupir->modifiedby = auth('api')->user()->name;
         $absensiSupir->nobukti = (new RunningNumberService)->get($group, $subGroup, $absensiSupir->getTable(), date('Y-m-d', strtotime($data['tglbukti'])));
         
@@ -599,7 +624,7 @@ class AbsensiSupirHeader extends MyModel
                
             $bukaAbsensi = BukaAbsensi::from(DB::raw("BukaAbsensi"))->where('tglabsensi', $absensiSupir->tglbukti)->first();
             if (isset($bukaAbsensi)) {
-                $bukaAbsensi = (new BukaAbsensi())->processDestroy($bukaAbsensi->id);
+                // $bukaAbsensi = (new BukaAbsensi())->processDestroy($bukaAbsensi->id);
             }
 
         }

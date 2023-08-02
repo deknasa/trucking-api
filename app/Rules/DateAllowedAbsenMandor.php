@@ -5,15 +5,16 @@ namespace App\Rules;
 use Illuminate\Contracts\Validation\Rule;
 use App\Models\BukaAbsensi;
 use App\Models\AbsensiSupirHeader;
+use App\Models\MandorAbsensiSupir;
 
-class DateAllowedAbsen implements Rule
+class DateAllowedAbsenMandor implements Rule
 {
     /**
      * Create a new rule instance.
      *
      * @return void
      */
-    public function __construct($param)
+    public function __construct()
     {
        
     }
@@ -30,10 +31,15 @@ class DateAllowedAbsen implements Rule
         $today = date('Y-m-d', strtotime("today"));
         $allowed = false ;
         $bukaAbsensi = BukaAbsensi::where('tglabsensi', '=', $date)->first();
-        if ($bukaAbsensi){
+        $todayValidation = AbsensiSupirHeader::todayValidation($date);
+        $isDateAllowed = MandorAbsensiSupir::isDateAllowedMandor($date);
+
+        if($todayValidation){
             $allowed = true;
         }
-        
+        if ($isDateAllowed){
+            $allowed = true;
+        }
         
         return $allowed ;
     }
