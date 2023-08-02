@@ -307,7 +307,7 @@ class StoreMandorTripRequest extends FormRequest
 
             $getgerobak = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS GEROBAK')->where('subgrp', 'STATUS GEROBAK')->where('text', 'GEROBAK')->first();
             $gettrado = DB::table("trado")->from(DB::raw("trado with (readuncommitted)"))->where('id', request()->trado_id)->first();
-            $gerobakVal = ($gettrado->statusgerobak == null) ? 0 : $gettrado->statusgerobak;
+            $gerobakVal = ($gettrado == null) ? 0 : $gettrado->statusgerobak;
             if ($getgerobak->id == $gerobakVal) {
                 $rules = [
                     'tglbukti' => [

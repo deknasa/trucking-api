@@ -104,15 +104,14 @@ class OrderanTrucking extends MyModel
 
     public function isEditAble($id)
     {
-        $tidakBolehEdit = DB::table('orderantrucking')->from(DB::raw("parameter with (readuncommitted)"))->where('grp', '=', 'STATUS APPROVAL')->where('text', '=', 'NON APPROVAL')->first();
-        
         $query = DB::table('orderantrucking')->from(DB::raw("orderantrucking with (readuncommitted)"))
-            ->select('statusapprovaledit')
+            ->select('tglbataseditorderantrucking as tglbatasedit')
             ->where('id', $id)
             ->first();
-
-        if ($query->statusapprovaledit != $tidakBolehEdit->id) return true;
-        return false;
+        if (date('Y-m-d H:i:s', strtotime($query->tglbatasedit)) < date('Y-m-d H:i:s')) {
+            return false;
+        }
+        return true;
     }
 
     public function todayValidation($id)
@@ -122,7 +121,7 @@ class OrderanTrucking extends MyModel
             ->first();
         $tglbukti = strtotime($query->created_at);
         $tglbuktistr = strtotime($tglbukti);
-        $limit = strtotime($tglbukti.'+1 days +12 hours +9 minutes' );
+        $limit = strtotime($tglbukti . '+1 days +12 hours +9 minutes');
         $now = strtotime('now');
         if ($now < $limit) return true;
         return false;
@@ -158,6 +157,10 @@ class OrderanTrucking extends MyModel
             $table->integer('statusapprovalbukatrip')->Length(11)->nullable();
             $table->date('tglapprovalbukatrip')->nullable();
             $table->string('userapprovalbukatrip', 50)->nullable();
+            $table->integer('statusapprovaledit')->Length(11)->nullable();
+            $table->date('tglapprovaledit')->nullable();
+            $table->string('userapprovaledit', 50)->nullable();
+            $table->dateTime('tglbataseditorderantrucking')->nullable();
             $table->unsignedBigInteger('statusformat')->nullable();
             $table->string('modifiedby', 50)->nullable();
             $table->dateTime('created_at')->nullable();
@@ -192,6 +195,10 @@ class OrderanTrucking extends MyModel
                 'a.statusapprovalbukatrip',
                 'a.tglapprovalbukatrip',
                 'a.userapprovalbukatrip',
+                'a.statusapprovaledit',
+                'a.tglapprovaledit',
+                'a.userapprovaledit',
+                'a.tglbataseditorderantrucking',
                 'a.statusformat',
                 'a.modifiedby',
                 'a.created_at',
@@ -225,6 +232,10 @@ class OrderanTrucking extends MyModel
             'statusapprovalbukatrip',
             'tglapprovalbukatrip',
             'userapprovalbukatrip',
+            'statusapprovaledit',
+            'tglapprovaledit',
+            'userapprovaledit',
+            'tglbataseditorderantrucking',
             'statusformat',
             'modifiedby',
             'created_at',
@@ -324,6 +335,10 @@ class OrderanTrucking extends MyModel
                 'parameter.memo as statuslangsir',
                 'param2.memo as statusperalihan',
                 'statusapprovalbukatrip.memo as statusapprovalbukatrip',
+                'param3.memo as statusapprovaledit',
+                DB::raw("(case when year(isnull(orderantrucking.tglapprovaledit,'1900/1/1'))<2000 then null else orderantrucking.tglapprovaledit end) as tglapprovaledit"),
+                'orderantrucking.userapprovaledit',
+                DB::raw("(case when year(isnull(orderantrucking.tglbataseditorderantrucking,'1900/1/1 00:00:00.000'))<2000 then null else orderantrucking.tglbataseditorderantrucking end) as tglbataseditorderantrucking"),
                 'orderantrucking.modifiedby',
                 'orderantrucking.created_at',
                 'orderantrucking.updated_at'
@@ -336,7 +351,8 @@ class OrderanTrucking extends MyModel
             ->leftJoin(DB::raw("pelanggan with (readuncommitted)"), 'orderantrucking.pelanggan_id', '=', 'pelanggan.id')
             ->leftJoin(DB::raw("parameter with (readuncommitted)"), 'orderantrucking.statuslangsir', '=', 'parameter.id')
             ->leftJoin(DB::raw("parameter AS statusapprovalbukatrip with (readuncommitted)"), 'orderantrucking.statusapprovalbukatrip', '=', 'statusapprovalbukatrip.id')
-            ->leftJoin(DB::raw("parameter AS param2 with (readuncommitted)"), 'orderantrucking.statusperalihan', '=', 'param2.id');
+            ->leftJoin(DB::raw("parameter AS param2 with (readuncommitted)"), 'orderantrucking.statusperalihan', '=', 'param2.id')
+            ->leftJoin(DB::raw("parameter AS param3 with (readuncommitted)"), 'orderantrucking.statusapprovaledit', '=', 'param3.id');
 
         $this->totalRows = $query->count();
         $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;
@@ -1372,6 +1388,8 @@ class OrderanTrucking extends MyModel
         $orderanTrucking->statusapprovalbukatrip = $defaultapproval->id;
         $orderanTrucking->statusperalihan = $data['statusperalihan'];
         $orderanTrucking->modifiedby = auth('api')->user()->name;
+        $orderanTrucking->tglbataseditorderantrucking = $data['tglbataseditorderantrucking'];
+        $orderanTrucking->statusapprovaledit = $defaultapproval->id;
         $orderanTrucking->statusformat = $format->id;
 
         // $tarifrincian = TarifRincian::find($data['tarifrincian_id']);
@@ -1532,13 +1550,21 @@ class OrderanTrucking extends MyModel
         $statusNonApproval = Parameter::from(DB::raw("parameter with (readuncommitted)"))
             ->where('grp', '=', 'STATUS APPROVAL')->where('text', '=', 'NON APPROVAL')->first();
 
+        $jambatas = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))->select('text')->where('grp', '=', 'JAMBATASAPPROVAL')->where('subgrp', '=', 'JAMBATASAPPROVAL')->first();
+        $tglbatas = date('Y-m-d') . ' ' . $jambatas->text ?? '00:00:00';
         for ($i = 0; $i < count($data['orderanTruckingId']); $i++) {
             $orderanTrucking = OrderanTrucking::find($data['orderanTruckingId'][$i]);
             if ($orderanTrucking->statusapprovaledit == $statusApproval->id) {
                 $orderanTrucking->statusapprovaledit = $statusNonApproval->id;
+                $orderanTrucking->tglapprovaledit = '';
+                $orderanTrucking->userapprovaledit = '';
+                $orderanTrucking->tglbataseditorderantrucking = '';
                 $aksi = $statusNonApproval->text;
             } else {
                 $orderanTrucking->statusapprovaledit = $statusApproval->id;
+                $orderanTrucking->tglapprovaledit = date('Y-m-d H:i:s');
+                $orderanTrucking->userapprovaledit = auth('api')->user()->name;
+                $orderanTrucking->tglbataseditorderantrucking = $tglbatas;
                 $aksi = $statusApproval->text;
             }
 

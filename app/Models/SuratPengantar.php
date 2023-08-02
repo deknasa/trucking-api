@@ -242,6 +242,7 @@ class SuratPengantar extends MyModel
             $table->string('userapprovaleditsuratpengantar', 50)->nullable();
             $table->date('tglapprovaleditsuratpengantar')->nullable();
             $table->unsignedBigInteger('approvalbukatanggal_id')->nullable();
+            $table->dateTime('tglbataseditsuratpengantar')->nullable();
             $table->string('modifiedby', 50)->nullable();
             $table->dateTime('created_at')->nullable();
             $table->dateTime('updated_at')->nullable();
@@ -327,6 +328,7 @@ class SuratPengantar extends MyModel
                 'suratpengantar.userapprovaleditsuratpengantar',
                 'suratpengantar.tglapprovaleditsuratpengantar',
                 'suratpengantar.approvalbukatanggal_id',
+                'suratpengantar.tglbataseditsuratpengantar',
                 'suratpengantar.modifiedby',
                 'suratpengantar.created_at',
                 'suratpengantar.updated_at',
@@ -410,6 +412,7 @@ class SuratPengantar extends MyModel
             'userapprovaleditsuratpengantar',
             'tglapprovaleditsuratpengantar',
             'approvalbukatanggal_id',
+            'tglbataseditsuratpengantar',
             'modifiedby',
             'created_at',
             'updated_at',
@@ -624,6 +627,10 @@ class SuratPengantar extends MyModel
                 'mandorsupir.namamandor as mandorsupir_id',
                 'statusgudangsama.memo as statusgudangsama',
                 'statusbatalmuat.memo as statusbatalmuat',
+                'suratpengantar.userapprovaleditsuratpengantar',
+                DB::raw("(case when year(isnull(suratpengantar.tglapprovaleditsuratpengantar,'1900/1/1'))<2000 then null else suratpengantar.tglapprovaleditsuratpengantar end) as tglapprovaleditsuratpengantar"),
+                DB::raw("(case when year(isnull(suratpengantar.tglbataseditsuratpengantar,'1900/1/1 00:00:00.000'))<2000 then null else suratpengantar.tglbataseditsuratpengantar end) as tglbataseditsuratpengantar"),
+                'suratpengantar.modifiedby',
                 'suratpengantar.modifiedby',
                 'suratpengantar.created_at',
                 'suratpengantar.updated_at'
@@ -1561,6 +1568,7 @@ class SuratPengantar extends MyModel
             $suratPengantar->lokasibongkarmuat = $data['lokasibongkarmuat'];
             $suratPengantar->modifiedby = auth('api')->user()->name;
             $suratPengantar->statusformat = $format->id;
+            $suratPengantar->tglbataseditsuratpengantar = $data['tglbataseditsuratpengantar'];
             $suratPengantar->nobukti = (new RunningNumberService)->get($group, $subGroup, $suratPengantar->getTable(), date('Y-m-d', strtotime($data['tglbukti'])));
         }
 
