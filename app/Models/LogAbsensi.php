@@ -529,7 +529,7 @@ class LogAbsensi extends MyModel
             ->orderBy('a.tgl', 'asc');
 
         // dd('test');
-        dd(db::table($tempshiftkaryawan)->get());
+        // dd(db::table($tempshiftkaryawan)->get());
         // dd(db::table($temptgl)->get());
         
         // dd($query->get());
