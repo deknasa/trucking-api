@@ -167,7 +167,7 @@ class StorePengeluaranTruckingHeaderRequest extends FormRequest
             $rules = [
                 "tglbukti" => [
                     "required", 'date_format:d-m-Y',
-                    'date_equals:'.date('d-m-Y'),
+                    'before_or_equal:'.date('d-m-Y'),
                     new DateTutupBuku()
                 ],
                 'pengeluarantrucking' => 'required','numeric', 'min:1',
@@ -189,7 +189,7 @@ class StorePengeluaranTruckingHeaderRequest extends FormRequest
             $rules = [
                 "tglbukti" => [
                     "required", 'date_format:d-m-Y',
-                    'date_equals:'.date('d-m-Y'),
+                    'before_or_equal:'.date('d-m-Y'),
                     new DateTutupBuku()
                 ],
                 'pengeluarantrucking' => 'required','numeric', 'min:1',
@@ -222,7 +222,7 @@ class StorePengeluaranTruckingHeaderRequest extends FormRequest
             $rules = [
                 "tglbukti" => [
                     "required", 'date_format:d-m-Y',
-                    'date_equals:'.date('d-m-Y'),
+                    'before_or_equal:'.date('d-m-Y'),
                     new DateTutupBuku()
                 ],
                 'pengeluarantrucking' => 'required','numeric', 'min:1',
@@ -235,7 +235,7 @@ class StorePengeluaranTruckingHeaderRequest extends FormRequest
             $rules = [
                 "tglbukti" => [
                     "required", 'date_format:d-m-Y',
-                    'date_equals:'.date('d-m-Y'),
+                    'before_or_equal:'.date('d-m-Y'),
                     new DateTutupBuku()
                 ],
                 'pengeluarantrucking' => 'required','numeric', 'min:1',
