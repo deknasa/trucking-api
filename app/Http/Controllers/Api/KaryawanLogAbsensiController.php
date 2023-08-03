@@ -7,82 +7,115 @@ use App\Http\Controllers\Controller;
 use App\Models\KaryawanLogAbsensi;
 use App\Http\Requests\StoreKaryawanLogAbsensiRequest;
 use App\Http\Requests\UpdateKaryawanLogAbsensiRequest;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class KaryawanLogAbsensiController extends Controller
 {
+
     /**
-     * Display a listing of the resource.
-     *
-     * @return \Illuminate\Http\Response
+     * @ClassName
+     * 
      */
     public function index()
     {
-        //
+        $logAbsensi = new KaryawanLogAbsensi();
+        return response([
+            'data' => $logAbsensi->get(),
+            'attributes' => [
+                'totalRows' => $logAbsensi->totalRows,
+                'totalPages' => $logAbsensi->totalPages
+            ]
+        ]);
     }
 
-    /**
-     * Show the form for creating a new resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
-    public function create()
-    {
-        //
-    }
 
     /**
-     * Store a newly created resource in storage.
-     *
-     * @param  \App\Http\Requests\StoreKaryawanLogAbsensiRequest  $request
-     * @return \Illuminate\Http\Response
+     * @ClassName
+     * 
      */
     public function store(StoreKaryawanLogAbsensiRequest $request)
     {
         //
     }
 
-    /**
-     * Display the specified resource.
-     *
-     * @param  \App\Models\KaryawanLogAbsensi  $karyawanLogAbsensi
-     * @return \Illuminate\Http\Response
-     */
-    public function show(KaryawanLogAbsensi $karyawanLogAbsensi)
+
+    public function show($id)
     {
-        //
+        return response([
+            'data' => (new KaryawanLogAbsensi())->findAll($id),
+        ]);
     }
 
-    /**
-     * Show the form for editing the specified resource.
-     *
-     * @param  \App\Models\KaryawanLogAbsensi  $karyawanLogAbsensi
-     * @return \Illuminate\Http\Response
-     */
-    public function edit(KaryawanLogAbsensi $karyawanLogAbsensi)
-    {
-        //
-    }
 
     /**
-     * Update the specified resource in storage.
-     *
-     * @param  \App\Http\Requests\UpdateKaryawanLogAbsensiRequest  $request
-     * @param  \App\Models\KaryawanLogAbsensi  $karyawanLogAbsensi
-     * @return \Illuminate\Http\Response
+     * @ClassName
+     * 
      */
-    public function update(UpdateKaryawanLogAbsensiRequest $request, KaryawanLogAbsensi $karyawanLogAbsensi)
+    public function update(UpdateKaryawanLogAbsensiRequest $request, $id): JsonResponse
     {
-        //
+        DB::beginTransaction();
+
+        try {
+            $data = [
+                'tglresign' => $request->tglresign,
+                'statusaktif' => $request->statusaktif
+            ];
+            $karyawanLogAbsensi = (new KaryawanLogAbsensi())->processUpdate($id, $data);
+            $karyawanLogAbsensi->id =  $id;
+            $getPosition = (new KaryawanLogAbsensi())->createTemp($id);
+            $karyawanLogAbsensi->position =  $getPosition->position;
+            if ($request->limit == 0) {
+                $karyawanLogAbsensi->page = ceil($karyawanLogAbsensi->position / (10));
+            } else {
+                $karyawanLogAbsensi->page = ceil($karyawanLogAbsensi->position / ($request->limit ?? 10));
+            }
+            DB::commit();
+
+            return response()->json([
+                'status' => true,
+                'message' => 'Berhasil diubah.',
+                'data' => $karyawanLogAbsensi
+            ]);
+        } catch (\Throwable $th) {
+            DB::rollBack();
+
+            throw $th;
+        }
     }
 
+
     /**
-     * Remove the specified resource from storage.
-     *
-     * @param  \App\Models\KaryawanLogAbsensi  $karyawanLogAbsensi
-     * @return \Illuminate\Http\Response
+     * @ClassName
+     * 
      */
-    public function destroy(KaryawanLogAbsensi $karyawanLogAbsensi)
+    public function destroy(Request $request, $id): JsonResponse
     {
-        //
+        DB::beginTransaction();
+
+        try {
+            $karyawanLogAbsensi = (new KaryawanLogAbsensi())->processDestroy($id, 'DELETE KARYAWAN LOG ABSENSI');
+            // $selected = $this->getPosition($karyawanLogAbsensi, $karyawanLogAbsensi->getTable(), true);
+
+            $selected =  (new KaryawanLogAbsensi())->createTemp($id, true);
+            $karyawanLogAbsensi->position = $selected->position;
+            $karyawanLogAbsensi->id = $id;
+            if ($request->limit == 0) {
+                $karyawanLogAbsensi->page = ceil($karyawanLogAbsensi->position / (10));
+            } else {
+                $karyawanLogAbsensi->page = ceil($karyawanLogAbsensi->position / ($request->limit ?? 10));
+            }
+            DB::commit();
+
+            return response()->json([
+                'message' => 'Berhasil dihapus',
+                'data' => $karyawanLogAbsensi
+            ]);
+        } catch (\Throwable $th) {
+            DB::rollBack();
+
+            throw $th;
+        }
     }
 }

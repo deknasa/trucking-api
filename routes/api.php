@@ -176,6 +176,7 @@ use App\Http\Controllers\Api\HistoriPengeluaranStokController;
 use App\Http\Controllers\Api\HutangExtraDetailController;
 use App\Http\Controllers\Api\HutangExtraHeaderController;
 use App\Http\Controllers\Api\KaryawanController;
+use App\Http\Controllers\Api\KaryawanLogAbsensiController;
 use App\Http\Controllers\Api\LaporanBanGudangSementaraController;
 use App\Http\Controllers\Api\LaporanBukuBesarController;
 use App\Http\Controllers\Api\LaporanDepositoSupirController;
@@ -1516,6 +1517,8 @@ route::middleware(['auth:api', 'authorized'])->group(function () {
     Route::get('logabsensi/report', [LogAbsensiController::class, 'report']);
     Route::get('logabsensi/export', [LogAbsensiController::class, 'export']);
     Route::resource('logabsensi', LogAbsensiController::class)->whereNumber('logabsensi');
+
+    Route::resource('karyawanlogabsensi', KaryawanLogAbsensiController::class)->whereNumber('karyawanlogabsensi');
 });
 Route::get('suratpengantarapprovalinputtrip/updateapproval', [SuratPengantarApprovalInputTripController::class, 'updateApproval']);
 

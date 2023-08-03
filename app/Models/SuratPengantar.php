@@ -57,7 +57,7 @@ class SuratPengantar extends MyModel
             ->select('tglbataseditsuratpengantar as tglbatasedit')
             ->where('id', $id)
             ->first();
-        if(date('Y-m-d H:i:s', strtotime($query->tglbatasedit)) < date('Y-m-d H:i:s')){
+        if (date('Y-m-d H:i:s', strtotime($query->tglbatasedit)) < date('Y-m-d H:i:s')) {
             return false;
         }
         // if ($query->tglbatasedit == $approval->id) return true;
@@ -1624,7 +1624,7 @@ class SuratPengantar extends MyModel
         $statusTidakBolehEditTujuan = Parameter::from(DB::raw("parameter with (readuncommitted)"))->where('grp', '=', 'STATUS EDIT TUJUAN')->where('text', '=', 'TIDAK BOLEH EDIT TUJUAN')->first();
 
         $statusNonApproval = Parameter::from(DB::raw("parameter with (readuncommitted)"))->where('grp', '=', 'STATUS APPROVAL')->where('text', '=', 'NON APPROVAL')->first();
-        
+
         if ($prosesLain == 0) {
             $tarif = TarifRincian::where('tarif_id', $data['tarif_id'])->where('container_id', $orderanTrucking->container_id)->first();
             $tarifNominal = $tarif->nominal ?? 0;
@@ -1741,7 +1741,11 @@ class SuratPengantar extends MyModel
                 ]);
             }
         } else {
+            $upahsupirRincian = UpahSupirRincian::where('upahsupir_id', $suratPengantar->upah_id)->where('container_id', $data['container_id'])->where('statuscontainer_id', $suratPengantar->statuscontainer_id)->first();
+            $tarif = TarifRincian::where('tarif_id', $suratPengantar->tarifrincian_id)->where('container_id', $data['container_id'])->first();
 
+            $tarifNominal = $tarif->nominal ?? 0;
+            
             $suratPengantar->pelanggan_id = $data['pelanggan_id'];
             $suratPengantar->container_id = $data['container_id'];
             $suratPengantar->nojob = $data['nojob'];
@@ -1752,6 +1756,21 @@ class SuratPengantar extends MyModel
             $suratPengantar->noseal2 = $data['noseal2'] ?? '';
             $suratPengantar->agen_id = $data['agen_id'];
             $suratPengantar->jenisorder_id = $data['jenisorder_id'];
+            $suratPengantar->gajisupir = $upahsupirRincian->nominalsupir;
+            $suratPengantar->gajikenek = $upahsupirRincian->nominalkenek;
+            $suratPengantar->komisisupir = $upahsupirRincian->nominalkomisi;
+            $suratPengantar->tolsupir = $upahsupirRincian->nominaltol;
+            $suratPengantar->liter = $upahsupirRincian->liter ?? 0;
+            $suratPengantar->omset = $tarifNominal;
+            $nominalPeralihan = 0;
+            if ($suratPengantar->persentaseperalihan != 0) {
+                $nominalPeralihan = ($tarifNominal * ($suratPengantar->persentaseperalihan / 100));
+            }
+
+            $suratPengantar->nominalperalihan = $nominalPeralihan;
+            $suratPengantar->persentaseperalihan = $suratPengantar->persentaseperalihan;
+            $suratPengantar->totalomset = $tarifNominal - ($tarifNominal * ($suratPengantar->persentaseperalihan / 100));
+
             // $suratPengantar->tarif_id = $data['tarif_id'];
 
             if (!$suratPengantar->save()) {
