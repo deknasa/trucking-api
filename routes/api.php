@@ -138,6 +138,8 @@ use App\Http\Controllers\Api\PenerimaanTruckingHeaderController;
 use App\Http\Controllers\Api\MandorAbsensiSupirController;
 use App\Http\Controllers\Api\MandorTripController;
 use App\Http\Controllers\Api\PenerimaanTruckingDetailController;
+use App\Http\Controllers\Api\BukaPenerimaanStokController;
+use App\Http\Controllers\Api\BukaPengeluaranStokController;
 use App\Http\Controllers\Api\PenerimaanStokController;
 use App\Http\Controllers\Api\PenerimaanStokHeaderController;
 use App\Http\Controllers\Api\PenerimaanStokDetailController;
@@ -813,6 +815,11 @@ route::middleware(['auth:api', 'authorized'])->group(function () {
     Route::get('pengeluarantruckingheader/{id}/export', [PengeluaranTruckingHeaderController::class, 'export'])->name('pengeluarantruckingheader.export')->whereNumber('id');
     Route::resource('pengeluarantruckingheader', PengeluaranTruckingHeaderController::class)->whereNumber('pengeluarantruckingheader');
     Route::resource('pengeluarantruckingdetail', PengeluaranTruckingDetailController::class)->whereNumber('pengeluarantruckingdetail');
+    
+    Route::post('bukapenerimaanstok/{id}/updatetanggalbatas', [BukaPenerimaanStokController::class,'updateTanggalBatas']);
+    Route::apiResource('bukapenerimaanstok', BukaPenerimaanStokController::class)->whereNumber('bukapenerimaanstok');
+    Route::post('bukapengeluaranstok/{id}/updatetanggalbatas', [BukaPengeluaranStokController::class,'updateTanggalBatas']);
+    Route::apiResource('bukapengeluaranstok', BukaPengeluaranStokController::class)->whereNumber('bukapengeluaranstok');
 
     Route::get('penerimaanstok/field_length', [PenerimaanStokController::class, 'fieldLength']);
     Route::get('penerimaanstok/export', [PenerimaanStokController::class, 'export']);
