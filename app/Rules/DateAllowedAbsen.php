@@ -13,11 +13,11 @@ class DateAllowedAbsen implements Rule
      *
      * @return void
      */
-    public function __construct($param)
+    public function __construct()
     {
-        $this->kondisi = $param;
+       
     }
-    public $kondisi;
+    
     private $message;
     /**
      * Determine if the validation rule passes.
@@ -30,27 +30,27 @@ class DateAllowedAbsen implements Rule
     {
         $date = date('Y-m-d', strtotime($value));
         $today = date('Y-m-d', strtotime("today"));
-        $allowed = false ;
+        $allowed = true ;
         $bukaAbsensi = BukaAbsensi::where('tglabsensi', '=', $date)->first();
         $todayValidation = AbsensiSupirHeader::todayValidation($date);
-        
-        if($todayValidation){
-            $allowed = true;
+        //check apakah tanggal hari ini jika true  maka tidak masuk if
+        if(!$todayValidation){
+            $absensiSupirHeader = AbsensiSupirHeader::where('tglbukti',$date)->first();
+            $isBukaTanggalValidation = AbsensiSupirHeader::isBukaTanggalValidation($date);
+
+            if (!$absensiSupirHeader) {
+                //check tanggal sudah dibuka
+                return $isBukaTanggalValidation;
+            }
+            $tglbatas = $absensiSupirHeader->tglbataseditabsensi ?? 0;
+            $limit = strtotime($tglbatas);
+            $now = strtotime('now');
+            // dd($limit,$now);
+            if ($now < $limit) return true;
+            return false;
         }
-        else if ($bukaAbsensi){
-            $allowed = true;
-        }
-        else if  ($this->kondisi==true) {
-            $allowed = true;
-        }
-        else {
-            $allowed = false ;   
-        }
-        if (!$todayValidation) {
-            $this->message = "jam pada tanggal absensi ini sudah melewati batas waktu";
-        }
-        
-        return $allowed ;
+        return  $allowed;
+
     }
 
     /**

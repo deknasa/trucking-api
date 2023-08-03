@@ -449,6 +449,7 @@ route::middleware(['auth:api', 'authorized'])->group(function () {
 
     Route::get('absensisupirdetail/get', [AbsensiSupirDetailController::class, 'getDetailAbsensi']);
     Route::resource('absensisupirdetail', AbsensiSupirDetailController::class);
+    Route::post('bukaabsensi/{id}/updatetanggalbatas', [BukaAbsensiController::class,'updateTanggalBatas']);
     Route::resource('bukaabsensi', BukaAbsensiController::class)->whereNumber('bukaabsensi');
 
     Route::get('approvalsupirgambar/default', [ApprovalSupirGambarController::class, 'default']);

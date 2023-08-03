@@ -95,6 +95,7 @@ class BukaAbsensi extends MyModel
         Schema::create($temp, function ($table) {
             $table->bigInteger('id')->nullable();
             $table->date('tglabsensi')->nullable();
+            $table->dateTime('tglbatas')->nullable();
             $table->string('modifiedby', 1000)->nullable();
             $table->dateTime('created_at')->nullable();
             $table->dateTime('updated_at')->nullable();
@@ -108,6 +109,7 @@ class BukaAbsensi extends MyModel
         )->select(
             "bukaabsensi.id",
             "bukaabsensi.tglabsensi",
+            "bukaabsensi.tglbatas",
             "bukaabsensi.modifiedby",
             "bukaabsensi.created_at",
             "bukaabsensi.updated_at",
@@ -118,6 +120,7 @@ class BukaAbsensi extends MyModel
         DB::table($temp)->insertUsing([
             'id',
             'tglabsensi',
+            'tglbatas',
             'modifiedby',
             'created_at', 'updated_at'
         ], $models);
@@ -191,6 +194,16 @@ class BukaAbsensi extends MyModel
 
 
 
+        return $bukaAbsensi;
+    }
+
+    public function processTanggalBatasUpdate($id)
+    {
+        $jambatas = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))->select('text')->where('grp', '=', 'JAMBATASAPPROVAL')->where('subgrp', '=', 'JAMBATASAPPROVAL')->first();
+        $tglbatas = date('Y-m-d') . ' ' . $jambatas->text ?? '00:00:00';
+        $bukaAbsensi = BukaAbsensi::where('id',$id)->first();
+        $bukaAbsensi->tglbatas = $tglbatas;
+        $bukaAbsensi->save();
         return $bukaAbsensi;
     }
 }

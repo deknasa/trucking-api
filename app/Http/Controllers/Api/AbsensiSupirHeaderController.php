@@ -61,12 +61,16 @@ class AbsensiSupirHeaderController extends Controller
             // statusapprovaleditabsensi,tglapprovaleditabsensi,userapprovaleditabsensi 
             if ($absensiSupirHeader->statusapprovaleditabsensi == $statusBolehEdit->id) {
                 $absensiSupirHeader->statusapprovaleditabsensi = $statusTidakBolehEdit->id;
+                $absensiSupirHeader->tglbataseditabsensi = null;
                 $aksi = $statusTidakBolehEdit->text;
             } else {
+                $tglbtas = date("Y-m-d", strtotime('today'));
+                $tglbtas = date("Y-m-d H:i:s", strtotime($tglbtas. ' 23:59:00'));
+                $absensiSupirHeader->tglbataseditabsensi = $tglbtas;
                 $absensiSupirHeader->statusapprovaleditabsensi = $statusBolehEdit->id;
                 $aksi = $statusBolehEdit->text;
             }
-
+            
             $absensiSupirHeader->tglapprovaleditabsensi = date("Y-m-d", strtotime('today'));
             $absensiSupirHeader->userapprovaleditabsensi = auth('api')->user()->name;
 
@@ -147,6 +151,7 @@ class AbsensiSupirHeaderController extends Controller
                 "absen" => null,
                 "jam" => $request->jam,
                 "uangjalan" => $request->uangjalan,
+                'tglbataseditabsensi' => $request->tglbataseditabsensi,
             ];
 
 
@@ -190,6 +195,8 @@ class AbsensiSupirHeaderController extends Controller
                 "absen" => null,
                 "jam" => $request->jam,
                 "uangjalan" => $request->uangjalan,
+                'tglbataseditabsensi' => $request->tglbataseditabsensi,
+
             ];
 
 

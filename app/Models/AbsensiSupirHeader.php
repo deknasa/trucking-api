@@ -323,8 +323,9 @@ class AbsensiSupirHeader extends MyModel
     public function todayValidation($tglbukti)
     {
         $tglbuktistr = strtotime($tglbukti);
-        $jam = 12;
-        $menit = 0;
+        $jam_batas = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))->select('text')->where('grp', 'BATAS JAM EDIT ABSENSI')->where('subgrp', 'BATAS JAM EDIT ABSENSI')->first();
+        $jam = substr($jam_batas->text, 0, 2);
+        $menit = substr($jam_batas->text, 3, 2);
         $limit = strtotime($tglbukti.' +'.$jam.' hours +'.$menit.' minutes' );
         $now = strtotime('now');
         if ($now < $limit) return true;
@@ -363,11 +364,15 @@ class AbsensiSupirHeader extends MyModel
         $tidakBolehEdit = DB::table('absensisupirheader')->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS EDIT ABSENSI')->where('default', 'YA')->first();
 
         $query = DB::table('absensisupirheader')->from(DB::raw("absensisupirheader with (readuncommitted)"))
-            ->select('statusapprovaleditabsensi as statusedit')
+            ->select('statusapprovaleditabsensi as statusedit','tglbataseditabsensi')
             ->where('id', $id)
             ->first();
 
-        if ($query->statusedit != $tidakBolehEdit->id) return true;
+        if ($query->statusedit != $tidakBolehEdit->id) {
+            $limit = strtotime($query->tglbataseditabsensi);
+            $now = strtotime('now');
+            if ($now < $limit) return true;
+        }
         return false;
     }
     public function isDateAllowed($id)
@@ -466,9 +471,19 @@ class AbsensiSupirHeader extends MyModel
         $bukaabsensi = DB::table('bukaabsensi')
             ->select('tglbatas')
             ->from(DB::raw("bukaabsensi with (readuncommitted)"))
-            ->where('tglabsensi',$tglbukti)
+            ->where('tglabsensi',date('Y-m-d', strtotime($data['tglbukti'])))
             ->first();
-        if ($isDateAllowedMandor && $bukaabsensi->tglbatas) {
+            
+        $query_jam = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))->select('text')->where('grp', 'BATAS JAM EDIT ABSENSI')->where('subgrp', 'BATAS JAM EDIT ABSENSI')->first();
+        $jam = substr($query_jam->text, 0, 2);
+        $menit = substr($query_jam->text, 3, 2);
+        $tglbukti = date('Y-m-d', strtotime($data['tglbukti']));
+        $query_jam = strtotime($tglbukti.' '.$jam.':'.$menit.':00' );
+        $tglbataseditabsensi = date('Y-m-d H:i:s',$query_jam);
+        
+        if ($data['tglbataseditabsensi']) {
+            $tglbataseditabsensi = $data['tglbataseditabsensi'];
+        }else if (isset($bukaabsensi->tglbatas)) {
             $tglbataseditabsensi = $bukaabsensi->tglbatas;
         }
 
@@ -481,7 +496,7 @@ class AbsensiSupirHeader extends MyModel
         $absensiSupir->statusformat = $format->id;
         $absensiSupir->statuscetak = $statusCetak->id ?? 0;
         $absensiSupir->statusapprovaleditabsensi  = $statusEditAbsensi->id;
-        $absensiSupir->tglbataseditabsensi  = $data['tglbataseditabsensi'];
+        $absensiSupir->tglbataseditabsensi  = $tglbataseditabsensi;
         $absensiSupir->modifiedby = auth('api')->user()->name;
         $absensiSupir->nobukti = (new RunningNumberService)->get($group, $subGroup, $absensiSupir->getTable(), date('Y-m-d', strtotime($data['tglbukti'])));
         
@@ -562,12 +577,33 @@ class AbsensiSupirHeader extends MyModel
         $statusCetak = Parameter::from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUSCETAK')->where('text', 'BELUM CETAK')->first();
         $statusEditAbsensi = Parameter::from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS EDIT ABSENSI')->where('default', 'YA')->first();
 
+        $bukaabsensi = DB::table('bukaabsensi')
+            ->select('tglbatas')
+            ->from(DB::raw("bukaabsensi with (readuncommitted)"))
+            ->where('tglabsensi',date('Y-m-d', strtotime($data['tglbukti'])))
+            ->first();
+            
+        // $query_jam = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))->select('text')->where('grp', 'BATAS JAM EDIT ABSENSI')->where('subgrp', 'BATAS JAM EDIT ABSENSI')->first();
+        // $jam = substr($query_jam->text, 0, 2);
+        // $menit = substr($query_jam->text, 3, 2);
+        // $tglbukti = date('Y-m-d', strtotime($data['tglbukti']));
+        // $query_jam = strtotime($tglbukti.' '.$jam.':'.$menit.':00' );
+        // $tglbataseditabsensi = date('Y-m-d H:i:s',$query_jam);
+        $tglbataseditabsensi = $absensiSupir->tglbataseditabsensi;
+        
+        if ($data['tglbataseditabsensi']) {
+            $tglbataseditabsensi = $data['tglbataseditabsensi'];
+        }else if (isset($bukaabsensi->tglbatas)) {
+            $tglbataseditabsensi = $bukaabsensi->tglbatas;
+        }
+
         /* Store header */
         $absensiSupir->tglbukti = date('Y-m-d', strtotime($data['tglbukti']));
         $absensiSupir->nominal = array_sum($data['uangjalan']);
         $absensiSupir->statusformat = $format->id;
         $absensiSupir->statuscetak = $statusCetak->id ?? 0;
-        $absensiSupir->statusapprovaleditabsensi  = $statusEditAbsensi->id;
+        // $absensiSupir->statusapprovaleditabsensi  = $statusEditAbsensi->id;
+        $absensiSupir->tglbataseditabsensi  = $tglbataseditabsensi;
         $absensiSupir->modifiedby = auth('api')->user()->name;
         
         if (!$absensiSupir->save()) {
