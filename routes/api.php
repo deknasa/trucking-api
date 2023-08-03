@@ -816,8 +816,11 @@ route::middleware(['auth:api', 'authorized'])->group(function () {
     Route::resource('pengeluarantruckingheader', PengeluaranTruckingHeaderController::class)->whereNumber('pengeluarantruckingheader');
     Route::resource('pengeluarantruckingdetail', PengeluaranTruckingDetailController::class)->whereNumber('pengeluarantruckingdetail');
     
+    Route::get('bukapenerimaanstok/{id}/cektanggal', [BukaPenerimaanStokController::class, 'isTanggalAvaillable']);
     Route::post('bukapenerimaanstok/{id}/updatetanggalbatas', [BukaPenerimaanStokController::class,'updateTanggalBatas']);
     Route::apiResource('bukapenerimaanstok', BukaPenerimaanStokController::class)->whereNumber('bukapenerimaanstok');
+
+    Route::get('bukapengeluaranstok/{id}/cektanggal', [BukaPengeluaranStokController::class, 'isTanggalAvaillable']);
     Route::post('bukapengeluaranstok/{id}/updatetanggalbatas', [BukaPengeluaranStokController::class,'updateTanggalBatas']);
     Route::apiResource('bukapengeluaranstok', BukaPengeluaranStokController::class)->whereNumber('bukapengeluaranstok');
 

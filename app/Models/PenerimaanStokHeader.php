@@ -1011,6 +1011,17 @@ class PenerimaanStokHeader extends MyModel
         
         return false;
     }
+    public function isBukaTanggalValidation($date,$penerimaanstok_id)
+    {
+        $date = date('Y-m-d', strtotime($date));
+        $bukaPenerimaanStok = BukaPenerimaanStok::where('tglbukti', '=', $date)->where('penerimaanstok_id', '=', $penerimaanstok_id)->first();
+        $tglbatas = $bukaPenerimaanStok->tglbatas ?? 0;
+        $limit = strtotime($tglbatas);
+        $now = strtotime('now');
+        // dd( date('Y-m-d H:i:s',$now), date('Y-m-d H:i:s',$limit));
+        if ($now < $limit) return true;
+        return false;
+    }
 
     
 

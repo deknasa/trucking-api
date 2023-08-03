@@ -127,4 +127,16 @@ class BukaPenerimaanStokController extends Controller
             throw $th;
         }
     }
+
+    /**
+     * @ClassName
+     */
+    public function isTanggalAvaillable($id)
+    {
+        $bukaPenerimaanStok = new BukaPenerimaanStok;
+        return response([
+            'status' => true,
+            'data' => $bukaPenerimaanStok->isTanggalAvaillable($id)
+        ], 201);
+    }
 }
