@@ -4,6 +4,7 @@ namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
 use App\Rules\DateTutupBuku;
+use App\Rules\DatePenerimaanStokAllowed;
 use App\Http\Controllers\Api\ParameterController;
 use App\Http\Controllers\Api\ErrorController;
 use Illuminate\Validation\Rule;
@@ -87,6 +88,7 @@ class StorePenerimaanStokHeaderRequest extends FormRequest
         $rules = [
             'tglbukti' => [
                 'required',
+                new DatePenerimaanStokAllowed(),
                 new DateTutupBuku()
             ],
             "supplier" => $requiredSupplier,

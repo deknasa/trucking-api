@@ -127,4 +127,16 @@ class BukaPengeluaranStokController extends Controller
             throw $th;
         }
     }
+
+     /**
+     * @ClassName
+     */
+    public function isTanggalAvaillable($id)
+    {
+        $BukaPengeluaranStok = new BukaPengeluaranStok();
+        return response([
+            'status' => true,
+            'data' => $BukaPengeluaranStok->isTanggalAvaillable($id)
+        ], 201);
+    }
 }

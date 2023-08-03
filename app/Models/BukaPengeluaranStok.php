@@ -216,4 +216,25 @@ class BukaPengeluaranStok extends MyModel
         return $bukaPengeluaranStok;
     }
 
+    public function isTanggalAvaillable($id)
+    {
+
+        $tutupbuku = DB::table('parameter')->from(
+            DB::raw("parameter as a with (readuncommitted)")
+        )
+            ->where('a.grp', '=', 'TUTUP BUKU')
+            ->where('a.subgrp', '=', 'TUTUP BUKU')
+            ->first();
+        $approval = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where("grp", 'STATUS APPROVAL')->where("text", "APPROVAL")->first();
+       
+        $bukaPengeluaranStok = DB::table("bukapengeluaranstok")->from(DB::raw("bukapengeluaranstok with (readuncommitted)"))
+            ->select('bukapengeluaranstok.pengeluaranstok_id','bukapengeluaranstok.tglbukti')
+            ->where('bukapengeluaranstok.tglbukti', '>', $tutupbuku->text)
+            ->where('bukapengeluaranstok.pengeluaranstok_id', $id)
+            ->get();
+
+        return $bukaPengeluaranStok;
+    }
+
+
 }

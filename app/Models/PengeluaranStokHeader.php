@@ -470,6 +470,18 @@ class PengeluaranStokHeader extends MyModel
         return false;
     }
 
+    public function isBukaTanggalValidation($date,$pengeluaranstok_id)
+    {
+        $date = date('Y-m-d', strtotime($date));
+        $bukaPengeluaranStok = BukaPengeluaranStok::where('tglbukti', '=', $date)->where('pengeluaranstok_id', '=', $pengeluaranstok_id)->first();
+        $tglbatas = $bukaPengeluaranStok->tglbatas ?? 0;
+        $limit = strtotime($tglbatas);
+        $now = strtotime('now');
+        // dd( date('Y-m-d H:i:s',$now), date('Y-m-d H:i:s',$limit));
+        if ($now < $limit) return true;
+        return false;
+    }
+
     public function processStore(array $data): PengeluaranStokHeader
     {
         $idpengeluaran = $data['pengeluaranstok_id'];
