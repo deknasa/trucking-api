@@ -56,8 +56,8 @@ class UpdateInvoiceHeaderRequest extends FormRequest
             ],
             'tglbukti' => [
                 'required', 'date_format:d-m-Y',
+                'before_or_equal:'.date('d-m-Y'),
                 new DateTutupBuku(),
-                Rule::in(date('d-m-Y', strtotime($query->tglbukti))),
             ],
              'tgljatuhtempo' => [
                 'required','date_format:d-m-Y',

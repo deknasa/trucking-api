@@ -164,6 +164,10 @@ class PenerimaanTruckingHeader extends MyModel
             $table->dateTime('updated_at')->nullable();
             $table->increments('position');
         });
+        if ((date('Y-m', strtotime(request()->tglbukti)) != date('Y-m', strtotime(request()->tgldariheader))) || (date('Y-m', strtotime(request()->tglbukti)) != date('Y-m', strtotime(request()->tglsampaiheader)))) {
+            request()->tgldariheader = date('Y-m-01', strtotime(request()->tglbukti));
+            request()->tglsampaiheader = date('Y-m-t', strtotime(request()->tglbukti));
+        }
 
         $this->setRequestParameters();
         $query = DB::table($modelTable);
@@ -657,6 +661,8 @@ class PenerimaanTruckingHeader extends MyModel
             $data['coa'] = $fetchFormat->coapostingkredit;
         } else if ($fetchFormat->kodepenerimaan == 'BBM') {
             $data['coa'] = $fetchFormat->coakredit;
+        } else if ($fetchFormat->kodepenerimaan == 'DPO') {
+            $data['coa'] = $fetchFormat->coapostingkredit;
         }
 
         $statusformat = $fetchFormat->format;
@@ -722,7 +728,12 @@ class PenerimaanTruckingHeader extends MyModel
             $coakredit_detail[] = $data['coa'];
             $coadebet_detail[] = $coadebet;
             $nominal_detail[] = $data['nominal'][$i];
-            $keterangan_detail[] = $data['keterangan'][$i];
+            if ($fetchFormat->kodepenerimaan == 'DPO') {
+                $namasupir = DB::table("supir")->from(DB::raw("supir with (readuncommitted)"))->select('namasupir')->where('id', $data['supir_id'][$i])->first();
+                $keterangan_detail[] = "DEPOSITO $namasupir->namasupir " . $data['keterangan'][$i];
+            } else {
+                $keterangan_detail[] = $data['keterangan'][$i];
+            }
             $tgljatuhtempo[] = date('Y-m-d', strtotime($data['tglbukti']));
         }
 
@@ -789,6 +800,8 @@ class PenerimaanTruckingHeader extends MyModel
                 $data['coa'] = $fetchFormat->coapostingkredit;
             } else if ($fetchFormat->kodepenerimaan == 'BBM') {
                 $data['coa'] = $fetchFormat->coakredit;
+            }else if ($fetchFormat->kodepenerimaan == 'DPO') {
+                $data['coa'] = $fetchFormat->coapostingkredit;
             }
 
 
@@ -873,15 +886,7 @@ class PenerimaanTruckingHeader extends MyModel
             throw new \Exception("Error storing Penerimaan Trucking header.");
         }
 
-        $penerimaanTruckingHeaderLogTrail = (new LogTrail())->processStore([
-            'namatabel' => strtoupper($penerimaanTruckingHeader->getTable()),
-            'postingdari' => $data['postingdari'] ?? strtoupper('EDIT penerimaan Trucking Header '),
-            'idtrans' => $penerimaanTruckingHeader->id,
-            'nobuktitrans' => $penerimaanTruckingHeader->nobukti,
-            'aksi' => 'EDIT',
-            'datajson' => $penerimaanTruckingHeader->toArray(),
-            'modifiedby' => auth('api')->user()->user
-        ]);
+
 
         if ($isEBS == false) {
             /*DELETE EXISTING PenerimaanTruckingDetail*/
@@ -903,19 +908,15 @@ class PenerimaanTruckingHeader extends MyModel
                 $coakredit_detail[] = $data['coa'];
                 $coadebet_detail[] = $coadebet;
                 $nominal_detail[] = $data['nominal'][$i];
-                $keterangan_detail[] = $data['keterangan'][$i];
+                if ($fetchFormat->kodepenerimaan == 'DPO') {
+                    $namasupir = DB::table("supir")->from(DB::raw("supir with (readuncommitted)"))->select('namasupir')->where('id', $data['supir_id'][$i])->first();
+                    $keterangan_detail[] = "DEPOSITO $namasupir->namasupir " . $data['keterangan'][$i];
+                } else {
+                    $keterangan_detail[] = $data['keterangan'][$i];
+                }
                 $tgljatuhtempo[] = date('Y-m-d', strtotime($data['tglbukti']));
             }
 
-            $penerimaanTruckingDetailLogTrail = (new LogTrail())->processStore([
-                'namatabel' => strtoupper($penerimaanTruckingHeaderLogTrail->getTable()),
-                'postingdari' => $data['postingdari'] ?? strtoupper('ENTRY penerimaan Trucking detail '),
-                'idtrans' => $penerimaanTruckingHeaderLogTrail->id,
-                'nobuktitrans' => $penerimaanTruckingHeader->nobukti,
-                'aksi' => 'ENTRY',
-                'datajson' => $penerimaanTruckingDetails,
-                'modifiedby' => auth('api')->user()->user
-            ]);
 
             //if tanpaprosesnobukti NOT 2 STORE PENERIMAAN
             if ($tanpaprosesnobukti != 2) {
@@ -945,8 +946,30 @@ class PenerimaanTruckingHeader extends MyModel
                     'bulanbeban' => null,
                 ];
                 $penerimaanHeader = PenerimaanHeader::where('nobukti', $penerimaanTruckingHeader->penerimaan_nobukti)->first();
-                (new PenerimaanHeader())->processUpdate($penerimaanHeader, $penerimaanRequest);
+                $dataPenerimaan = (new PenerimaanHeader())->processUpdate($penerimaanHeader, $penerimaanRequest);
+                $penerimaanTruckingHeader->penerimaan_nobukti = $dataPenerimaan->nobukti;
+                $penerimaanTruckingHeader->save();
             }
+
+            $penerimaanTruckingHeaderLogTrail = (new LogTrail())->processStore([
+                'namatabel' => strtoupper($penerimaanTruckingHeader->getTable()),
+                'postingdari' => $data['postingdari'] ?? strtoupper('EDIT penerimaan Trucking Header '),
+                'idtrans' => $penerimaanTruckingHeader->id,
+                'nobuktitrans' => $penerimaanTruckingHeader->nobukti,
+                'aksi' => 'EDIT',
+                'datajson' => $penerimaanTruckingHeader->toArray(),
+                'modifiedby' => auth('api')->user()->user
+            ]);
+
+            $penerimaanTruckingDetailLogTrail = (new LogTrail())->processStore([
+                'namatabel' => strtoupper($penerimaanTruckingHeaderLogTrail->getTable()),
+                'postingdari' => $data['postingdari'] ?? strtoupper('ENTRY penerimaan Trucking detail '),
+                'idtrans' => $penerimaanTruckingHeaderLogTrail->id,
+                'nobuktitrans' => $penerimaanTruckingHeader->nobukti,
+                'aksi' => 'ENTRY',
+                'datajson' => $penerimaanTruckingDetails,
+                'modifiedby' => auth('api')->user()->user
+            ]);
         }
 
         return $penerimaanTruckingHeader;

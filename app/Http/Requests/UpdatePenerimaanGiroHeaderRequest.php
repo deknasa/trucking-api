@@ -42,6 +42,7 @@ class UpdatePenerimaanGiroHeaderRequest extends FormRequest
         $rules = [
             "tglbukti" => [
                 "required",'date_format:d-m-Y',
+                'before_or_equal:' . date('Y-m-d'),
                 new DateTutupBuku()
             ],
             'tgllunas' => 'required',

@@ -40,7 +40,7 @@ use PhpParser\Node\Stmt\Else_;
 class PengeluaranTruckingHeaderController extends Controller
 {
 
-       /**
+    /**
      * @ClassName 
      * PengeluaranTruckingHeader
      * @Detail1 PengeluaranTruckingDetailController
@@ -69,16 +69,14 @@ class PengeluaranTruckingHeaderController extends Controller
             $pengeluaranTruckingHeader = (new PengeluaranTruckingHeader())->processStore($request->all());
             /* Set position and page */
             $pengeluaranTruckingHeader->position = $this->getPosition($pengeluaranTruckingHeader, $pengeluaranTruckingHeader->getTable())->position;
-            // $pengeluaranTruckingHeader->page = ceil($pengeluaranTruckingHeader->position / ($request->limit ?? 10));
-            // if (isset($request->limit)) {
-            //     $pengeluaranTruckingHeader->page = ceil($pengeluaranTruckingHeader->position / ($request->limit ?? 10));
-            // }
-
-            if ($request->limit==0) {
+            if ($request->limit == 0) {
                 $pengeluaranTruckingHeader->page = ceil($pengeluaranTruckingHeader->position / (10));
             } else {
                 $pengeluaranTruckingHeader->page = ceil($pengeluaranTruckingHeader->position / ($request->limit ?? 10));
             }
+            $pengeluaranTruckingHeader->tgldariheader = date('Y-m-01', strtotime(request()->tglbukti));
+            $pengeluaranTruckingHeader->tglsampaiheader = date('Y-m-t', strtotime(request()->tglbukti));
+
 
             DB::commit();
             return response()->json([
@@ -146,16 +144,14 @@ class PengeluaranTruckingHeaderController extends Controller
             $pengeluaranTruckingHeader = (new PengeluaranTruckingHeader())->processUpdate($pengeluaranTruckingHeader, $request->all());
             /* Set position and page */
             $pengeluaranTruckingHeader->position = $this->getPosition($pengeluaranTruckingHeader, $pengeluaranTruckingHeader->getTable())->position;
-            // $pengeluaranTruckingHeader->page = ceil($pengeluaranTruckingHeader->position / ($request->limit ?? 10));
-            // if (isset($request->limit)) {
-            //     $pengeluaranTruckingHeader->page = ceil($pengeluaranTruckingHeader->position / ($request->limit ?? 10));
-            // }
-
-            if ($request->limit==0) {
+            if ($request->limit == 0) {
                 $pengeluaranTruckingHeader->page = ceil($pengeluaranTruckingHeader->position / (10));
             } else {
                 $pengeluaranTruckingHeader->page = ceil($pengeluaranTruckingHeader->position / ($request->limit ?? 10));
             }
+            $pengeluaranTruckingHeader->tgldariheader = date('Y-m-01', strtotime(request()->tglbukti));
+            $pengeluaranTruckingHeader->tglsampaiheader = date('Y-m-t', strtotime(request()->tglbukti));
+
 
             DB::commit();
             return response()->json([
@@ -224,17 +220,17 @@ class PengeluaranTruckingHeaderController extends Controller
             $pengeluaranTruckingHeader = PengeluaranTruckingHeader::findOrfail($id);
             $pengeluaranTruckingHeader = (new PengeluaranTruckingHeader())->processDestroy($id, $postingdari = "PENGELUARAN TRUCKING");
             /* Set position and page */
-            $pengeluaranTruckingHeader->position = $this->getPosition($pengeluaranTruckingHeader, $pengeluaranTruckingHeader->getTable())->position;
-            // $pengeluaranTruckingHeader->page = ceil($pengeluaranTruckingHeader->position / ($request->limit ?? 10));
-            // if (isset($request->limit)) {
-            //     $pengeluaranTruckingHeader->page = ceil($pengeluaranTruckingHeader->position / ($request->limit ?? 10));
-            // }
-
+            $selected = $this->getPosition($pengeluaranTruckingHeader, $pengeluaranTruckingHeader->getTable(), true);
+            $pengeluaranTruckingHeader->position = $selected->position;
+            $pengeluaranTruckingHeader->id = $selected->id;
             if ($request->limit==0) {
                 $pengeluaranTruckingHeader->page = ceil($pengeluaranTruckingHeader->position / (10));
             } else {
                 $pengeluaranTruckingHeader->page = ceil($pengeluaranTruckingHeader->position / ($request->limit ?? 10));
             }
+            $pengeluaranTruckingHeader->tgldariheader = date('Y-m-01', strtotime(request()->tglbukti));
+            $pengeluaranTruckingHeader->tglsampaiheader = date('Y-m-t', strtotime(request()->tglbukti));
+            
 
             DB::commit();
             return response()->json([
@@ -494,7 +490,8 @@ class PengeluaranTruckingHeaderController extends Controller
      * @ClassName 
      */
     public function report()
-    {}
+    {
+    }
 
     /**
      * @ClassName 

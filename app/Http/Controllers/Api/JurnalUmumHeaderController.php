@@ -71,6 +71,9 @@ class JurnalUmumHeaderController extends Controller
             } else {
                 $jurnalUmumHeader->page = ceil($jurnalUmumHeader->position / ($request->limit ?? 10));
             }
+            $jurnalUmumHeader->tgldariheader = date('Y-m-01', strtotime(request()->tglbukti));
+            $jurnalUmumHeader->tglsampaiheader = date('Y-m-t', strtotime(request()->tglbukti));
+
             DB::commit();
 
             return response()->json([
@@ -106,6 +109,7 @@ class JurnalUmumHeaderController extends Controller
 
         try {
             $data = [
+                'nobukti' => $request->nobukti,
                 'tglbukti' => $request->tglbukti,
                 'nominal_detail' => $request->nominal_detail,
                 'keterangan_detail' => $request->keterangan_detail,
@@ -119,6 +123,9 @@ class JurnalUmumHeaderController extends Controller
             } else {
                 $jurnalumumHeader->page = ceil($jurnalumumHeader->position / ($request->limit ?? 10));
             }
+            $jurnalumumHeader->tgldariheader = date('Y-m-01', strtotime(request()->tglbukti));
+            $jurnalumumHeader->tglsampaiheader = date('Y-m-t', strtotime(request()->tglbukti));
+
             DB::commit();
 
             return response()->json([
@@ -149,6 +156,9 @@ class JurnalUmumHeaderController extends Controller
             } else {
                 $jurnalUmumHeader->page = ceil($jurnalUmumHeader->position / ($request->limit ?? 10));
             }
+            $jurnalUmumHeader->tgldariheader = date('Y-m-01', strtotime(request()->tglbukti));
+            $jurnalUmumHeader->tglsampaiheader = date('Y-m-t', strtotime(request()->tglbukti));
+            
             DB::commit();
 
             return response()->json([

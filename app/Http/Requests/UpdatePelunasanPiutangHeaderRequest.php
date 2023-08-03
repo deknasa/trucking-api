@@ -91,7 +91,7 @@ class UpdatePelunasanPiutangHeaderRequest extends FormRequest
             'nobukti' => [Rule::in($getDataPelunasan->nobukti)],
             "tglbukti" => [
                 "required", 'date_format:d-m-Y',
-                'date_equals:' . date('d-m-Y', strtotime($getDataPelunasan->tglbukti)),
+                'before_or_equal:' . date('d-m-Y'),
                 new DateTutupBuku()
             ],
             'bank' => 'required',

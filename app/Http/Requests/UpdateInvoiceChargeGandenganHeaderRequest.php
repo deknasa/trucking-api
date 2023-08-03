@@ -47,7 +47,7 @@ class UpdateInvoiceChargeGandenganHeaderRequest extends FormRequest
         $rules = [
             'id' => new ValidasiDestroyInvoiceChargeGandengan(),
             'tglbukti' => [
-                'required', 'date_format:d-m-Y',
+                'required', 'date_format:d-m-Y','before_or_equal:' . date('d-m-Y'),
                 new DateTutupBuku()
             ],
             'agen' => 'required',

@@ -34,7 +34,7 @@ class UpdateJurnalUmumHeaderRequest extends FormRequest
             'nobukti' => [Rule::in($getData->nobukti)],
             "tglbukti" => [
                 "required",'date_format:d-m-Y',
-                'date_equals:'.date('d-m-Y', strtotime($getData->tglbukti)),
+                'before_or_equal:'. date('d-m-Y'),
                 new DateTutupBuku()
             ],
         ];

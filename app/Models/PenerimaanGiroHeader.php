@@ -243,7 +243,10 @@ class PenerimaanGiroHeader extends MyModel
             $table->dateTime('updated_at')->nullable();
             $table->increments('position');
         });
-
+        if ((date('Y-m', strtotime(request()->tglbukti)) != date('Y-m', strtotime(request()->tgldariheader))) || (date('Y-m', strtotime(request()->tglbukti)) != date('Y-m', strtotime(request()->tglsampaiheader)))) {
+            request()->tgldariheader = date('Y-m-01', strtotime(request()->tglbukti));
+            request()->tglsampaiheader = date('Y-m-t', strtotime(request()->tglbukti));
+        }
         $this->setRequestParameters();
         $query = DB::table($modelTable);
         $query = $this->selectColumns($query);
@@ -553,6 +556,28 @@ class PenerimaanGiroHeader extends MyModel
 
     public function processUpdate(PenerimaanGiroHeader $penerimaanGiroHeader, array $data): PenerimaanGiroHeader
     {
+        $nobuktiOld = $penerimaanGiroHeader->nobukti;
+        $group = 'PENERIMAAN GIRO BUKTI';
+        $subGroup = 'PENERIMAAN GIRO BUKTI';
+
+        $querycek = DB::table('penerimaangiroheader')->from(
+            DB::raw("penerimaangiroheader a with (readuncommitted)")
+        )
+            ->select(
+                'a.nobukti'
+            )
+            ->where('a.id', $penerimaanGiroHeader->id)
+            ->whereRAw("format(a.tglbukti,'MM-yyyy')='" . date('m-Y', strtotime($data['tglbukti'])) . "'")
+            ->first();
+         
+
+        if (isset($querycek)) {
+            $nobukti = $querycek->nobukti;
+        } else {
+            $nobukti = (new RunningNumberService)->get($group, $subGroup, $penerimaanGiroHeader->getTable(), date('Y-m-d', strtotime($data['tglbukti'])));
+        }
+        $penerimaanGiroHeader->tglbukti = date('Y-m-d', strtotime($data['tglbukti']));
+        $penerimaanGiroHeader->nobukti = $nobukti;
         $penerimaanGiroHeader->pelanggan_id = $data['pelanggan_id'] ?? '';
         $penerimaanGiroHeader->agen_id = $data['agen_id'] ?? '';
         $penerimaanGiroHeader->diterimadari = $data['diterimadari'];
@@ -623,13 +648,15 @@ class PenerimaanGiroHeader extends MyModel
 
         /*STORE JURNAL*/
         $jurnalRequest = [
+            'nobukti' => $penerimaanGiroHeader->nobukti,
+            'tglbukti' => date('Y-m-d', strtotime($data['tglbukti'])),
             'postingdari' => $data['postingdari'] ?? 'EDIT PENERIMAAN GIRO DETAIL',
             'coakredit_detail' => $coakredit_detail,
             'coadebet_detail' => $coadebet_detail,
             'nominal_detail' => $nominal_detail,
             'keterangan_detail' => $keterangan_detail
         ];
-        $getJurnal = JurnalUmumHeader::from(DB::raw("jurnalumumheader with (readuncommitted)"))->where('nobukti', $penerimaanGiroHeader->nobukti)->first();
+        $getJurnal = JurnalUmumHeader::from(DB::raw("jurnalumumheader with (readuncommitted)"))->where('nobukti', $nobuktiOld)->first();
         $newJurnal = new JurnalUmumHeader();
         $newJurnal = $newJurnal->find($getJurnal->id);
         (new JurnalUmumHeader())->processUpdate($newJurnal, $jurnalRequest);

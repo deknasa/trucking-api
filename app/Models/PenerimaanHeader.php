@@ -498,7 +498,10 @@ class PenerimaanHeader extends MyModel
             $table->dateTime('updated_at')->nullable();
             $table->increments('position');
         });
-
+        if ((date('Y-m', strtotime(request()->tglbukti)) != date('Y-m', strtotime(request()->tgldariheader))) || (date('Y-m', strtotime(request()->tglbukti)) != date('Y-m', strtotime(request()->tglsampaiheader)))) {
+            request()->tgldariheader = date('Y-m-01', strtotime(request()->tglbukti));
+            request()->tglsampaiheader = date('Y-m-t', strtotime(request()->tglbukti));
+        }
         $this->setRequestParameters();
         $query = DB::table($modelTable);
         $query = $this->selectColumns($query);
@@ -855,6 +858,7 @@ class PenerimaanHeader extends MyModel
 
      
 
+        $nobuktiOld = $penerimaanHeader->nobukti;
         $bankid = $data['bank_id'];
 
         $querysubgrppenerimaan = Bank::from(DB::raw("bank with (readuncommitted)"))
@@ -883,15 +887,7 @@ class PenerimaanHeader extends MyModel
             ->where('a.id', $penerimaanHeader->id)
             ->whereRAw("format(a.tglbukti,'MM-yyyy')='" . date('m-Y', strtotime($data['tglbukti'])) . "'")
             ->first();
-
-            $nobuktiold = DB::table('penerimaanheader')->from(
-                DB::raw("penerimaanheader a with (readuncommitted)")
-            )
-                ->select(
-                    'a.nobukti'
-                )
-                ->where('a.id', $penerimaanHeader->id)
-                ->first();                
+         
 
         if (isset($querycek)) {
             $nobukti = $querycek->nobukti;
@@ -986,7 +982,7 @@ class PenerimaanHeader extends MyModel
             'keterangan_detail' => $keterangan_detail
         ];
         /*DELETE EXISTING JURNAL*/
-        $getJurnal = JurnalUmumHeader::from(DB::raw("jurnalumumheader with (readuncommitted)"))->where('nobukti', $penerimaanHeader->nobukti)->first();
+        $getJurnal = JurnalUmumHeader::from(DB::raw("jurnalumumheader with (readuncommitted)"))->where('nobukti', $nobuktiOld)->first();
         $newJurnal = new JurnalUmumHeader();
         $newJurnal = $newJurnal->find($getJurnal->id);
         (new JurnalUmumHeader())->processUpdate($newJurnal, $jurnalRequest);

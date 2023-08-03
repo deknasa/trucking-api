@@ -71,6 +71,9 @@ class InvoiceChargeGandenganHeaderController extends Controller
             } else {
                 $invoiceChargeGandengan->page = ceil($invoiceChargeGandengan->position / ($request->limit ?? 10));
             }
+            $invoiceChargeGandengan->tgldariheader = date('Y-m-01', strtotime(request()->tglbukti));
+            $invoiceChargeGandengan->tglsampaiheader = date('Y-m-t', strtotime(request()->tglbukti));
+            
             DB::commit();
 
             return response()->json([
@@ -125,6 +128,9 @@ class InvoiceChargeGandenganHeaderController extends Controller
             } else {
                 $invoiceChargeGandengan->page = ceil($invoiceChargeGandengan->position / ($request->limit ?? 10));
             }
+            $invoiceChargeGandengan->tgldariheader = date('Y-m-01', strtotime(request()->tglbukti));
+            $invoiceChargeGandengan->tglsampaiheader = date('Y-m-t', strtotime(request()->tglbukti));
+            
             DB::commit();
 
             return response()->json([
@@ -154,6 +160,9 @@ class InvoiceChargeGandenganHeaderController extends Controller
             } else {
                 $invoiceChargeGandengan->page = ceil($invoiceChargeGandengan->position / ($request->limit ?? 10));
             }
+            $invoiceChargeGandengan->tgldariheader = date('Y-m-01', strtotime(request()->tglbukti));
+            $invoiceChargeGandengan->tglsampaiheader = date('Y-m-t', strtotime(request()->tglbukti));
+            
             DB::commit();
 
             return response()->json([

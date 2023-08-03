@@ -140,6 +140,11 @@ class JurnalUmumHeader extends MyModel
             $table->increments('position');
         });
 
+        if((date('Y-m', strtotime(request()->tglbukti)) != date('Y-m', strtotime(request()->tgldariheader))) || (date('Y-m', strtotime(request()->tglbukti)) != date('Y-m', strtotime(request()->tglsampaiheader)))){
+            request()->tgldariheader = date('Y-m-01', strtotime(request()->tglbukti));
+            request()->tglsampaiheader = date('Y-m-t', strtotime(request()->tglbukti));
+        }
+
         $this->setRequestParameters();
         $query = DB::table($modelTable);
         $query = $this->selectColumns($query);
@@ -486,7 +491,33 @@ class JurnalUmumHeader extends MyModel
     }
 
     public function processUpdate(JurnalUmumHeader $jurnalUmumHeader, array $data): JurnalUmumHeader
-    {
+    {        
+        $group = 'JURNAL UMUM BUKTI';
+        $subGroup = 'JURNAL UMUM BUKTI';
+
+        $querycek = DB::table('jurnalumumheader')->from(
+            DB::raw("jurnalumumheader a with (readuncommitted)")
+        )
+            ->select(
+                'a.nobukti'
+            )
+            ->where('a.id', $jurnalUmumHeader->id)
+            ->whereRAw("format(a.tglbukti,'MM-yyyy')='" . date('m-Y', strtotime($data['tglbukti'])) . "'")
+            ->first();
+
+        if (isset($querycek)) {
+            $nobukti = $querycek->nobukti;
+        } else {
+            if (str_contains($data['nobukti'], 'JU')) { 
+                $nobukti = (new RunningNumberService)->get($group, $subGroup, $jurnalUmumHeader->getTable(), date('Y-m-d', strtotime($data['tglbukti'])));
+            }else{
+                $nobukti = $data['nobukti'];
+            }
+        }
+
+
+        $jurnalUmumHeader->nobukti = $nobukti;
+        $jurnalUmumHeader->tglbukti = date('Y-m-d', strtotime($data['tglbukti']));
         $jurnalUmumHeader->modifiedby = auth('api')->user()->name;
 
 

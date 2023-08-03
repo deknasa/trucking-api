@@ -62,7 +62,7 @@ class ProsesGajiSupirDetailController extends Controller
             $fetch = GajiSupirPelunasanPinjaman::from(DB::raw("gajisupirpelunasanpinjaman with (readuncommitted)"))
             ->join(DB::raw("gajisupirheader with (readuncommitted)"), 'gajisupirpelunasanpinjaman.gajisupir_nobukti', 'gajisupirheader.nobukti')
             ->whereRaw("gajisupir_nobukti in (select gajisupir_nobukti from prosesgajisupirdetail where nobukti='$nobuktiEbs')")
-                ->where('supir_id', '0')
+                ->where('gajisupirpelunasanpinjaman.supir_id', '0')
                 ->first();
             if ($fetch != null) {
                 $penerimaantrucking = PenerimaanTruckingHeader::from(DB::raw("penerimaantruckingheader with (readuncommitted)"))
@@ -76,7 +76,7 @@ class ProsesGajiSupirDetailController extends Controller
             $fetch = GajiSupirPelunasanPinjaman::from(DB::raw("gajisupirpelunasanpinjaman with (readuncommitted)"))
             ->join(DB::raw("gajisupirheader with (readuncommitted)"), 'gajisupirpelunasanpinjaman.gajisupir_nobukti', 'gajisupirheader.nobukti')
                 ->whereRaw("gajisupir_nobukti in (select gajisupir_nobukti from prosesgajisupirdetail where nobukti='$nobuktiEbs')")
-                ->where('supir_id', '!=', '0')
+                ->where('gajisupirpelunasanpinjaman.supir_id', '!=', '0')
                 ->first();
             if ($fetch != null) {
                 $penerimaantrucking = PenerimaanTruckingHeader::from(DB::raw("penerimaantruckingheader with (readuncommitted)"))

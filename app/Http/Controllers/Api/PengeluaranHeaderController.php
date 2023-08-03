@@ -82,6 +82,8 @@ class PengeluaranHeaderController extends Controller
             } else {
                 $pengeluaranHeader->page = ceil($pengeluaranHeader->position / ($request->limit ?? 10));
             }
+            $pengeluaranHeader->tgldariheader = date('Y-m-01', strtotime(request()->tglbukti));
+            $pengeluaranHeader->tglsampaiheader = date('Y-m-t', strtotime(request()->tglbukti));
             DB::commit();
 
             return response()->json([
@@ -109,13 +111,12 @@ class PengeluaranHeaderController extends Controller
     /**
      * @ClassName
      */
-    public function update(UpdatePengeluaranHeaderRequest $request, PengeluaranHeader $pengeluaranHeader, $id)
+    public function update(UpdatePengeluaranHeaderRequest $request, PengeluaranHeader $pengeluaranheader)
     {
         DB::beginTransaction();
         try {
             /* Store header */
-            $pengeluaranHeader = PengeluaranHeader::findOrFail($id);
-            $pengeluaranHeader = (new PengeluaranHeader())->processUpdate($pengeluaranHeader, $request->all());
+            $pengeluaranHeader = (new PengeluaranHeader())->processUpdate($pengeluaranheader, $request->all());
             /* Set position and page */
             $pengeluaranHeader->position = $this->getPosition($pengeluaranHeader, $pengeluaranHeader->getTable())->position;
             if ($request->limit == 0) {
@@ -123,6 +124,8 @@ class PengeluaranHeaderController extends Controller
             } else {
                 $pengeluaranHeader->page = ceil($pengeluaranHeader->position / ($request->limit ?? 10));
             }
+            $pengeluaranHeader->tgldariheader = date('Y-m-01', strtotime(request()->tglbukti));
+            $pengeluaranHeader->tglsampaiheader = date('Y-m-t', strtotime(request()->tglbukti));
 
             DB::commit();
             return response()->json([
@@ -153,6 +156,8 @@ class PengeluaranHeaderController extends Controller
             } else {
                 $pengeluaranHeader->page = ceil($pengeluaranHeader->position / ($request->limit ?? 10));
             }
+            $pengeluaranHeader->tgldariheader = date('Y-m-01', strtotime(request()->tglbukti));
+            $pengeluaranHeader->tglsampaiheader = date('Y-m-t', strtotime(request()->tglbukti));
             DB::commit();
 
             return response()->json([

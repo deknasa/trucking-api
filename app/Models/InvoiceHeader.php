@@ -208,6 +208,11 @@ class InvoiceHeader extends MyModel
             $table->increments('position');
         });
 
+        if ((date('Y-m', strtotime(request()->tglbukti)) != date('Y-m', strtotime(request()->tgldariheader))) || (date('Y-m', strtotime(request()->tglbukti)) != date('Y-m', strtotime(request()->tglsampaiheader)))) {
+            request()->tgldariheader = date('Y-m-01', strtotime(request()->tglbukti));
+            request()->tglsampaiheader = date('Y-m-t', strtotime(request()->tglbukti));
+        }
+
         $this->setRequestParameters();
         $query = DB::table($modelTable);
         $query = $this->selectColumns($query);
@@ -601,8 +606,8 @@ class InvoiceHeader extends MyModel
             DB::raw("invoicedetail as a")
         )
             ->select(
-                'sp.id',                
-                'a.invoice_id as idinvoice',                
+                'sp.id',
+                'a.invoice_id as idinvoice',
                 'a.orderantrucking_nobukti as jobtrucking',
                 'sp.tglbukti as tglsp',
                 'sp.keterangan as keterangan',
@@ -692,7 +697,7 @@ class InvoiceHeader extends MyModel
 
             ->orderBy("sp.tglbukti");
 
-    //   dd($query2->get());
+        //   dd($query2->get());
 
         DB::table($tempdatahasil)->insertUsing([
             'id',
@@ -1179,6 +1184,27 @@ class InvoiceHeader extends MyModel
 
     public function processUpdate(InvoiceHeader $invoiceHeader, array $data): InvoiceHeader
     {
+
+        $nobuktiOld = $invoiceHeader->nobukti;
+        $group = 'INVOICE BUKTI';
+        $subGroup = 'INVOICE BUKTI';
+        $querycek = DB::table('invoiceheader')->from(
+            DB::raw("invoiceheader a with (readuncommitted)")
+        )
+            ->select(
+                'a.nobukti'
+            )
+            ->where('a.id', $invoiceHeader->id)
+            ->whereRAw("format(a.tglbukti,'MM-yyyy')='" . date('m-Y', strtotime($data['tglbukti'])) . "'")
+            ->first();
+
+        if (isset($querycek)) {
+            $nobukti = $querycek->nobukti;
+        } else {
+            $nobukti = (new RunningNumberService)->get($group, $subGroup, $invoiceHeader->getTable(), date('Y-m-d', strtotime($data['tglbukti'])));
+        }
+        $invoiceHeader->nobukti = $nobukti;
+        $invoiceHeader->tglbukti = date('Y-m-d', strtotime($data['tglbukti']));
         $invoiceHeader->tgljatuhtempo = date('Y-m-d', strtotime($data['tgljatuhtempo']));
         $invoiceHeader->nominal = '';
         $invoiceHeader->tglterima = date('Y-m-d', strtotime($data['tglterima']));
@@ -1192,15 +1218,7 @@ class InvoiceHeader extends MyModel
             throw new \Exception("Error updating invoice header.");
         }
 
-        $invoiceHeaderLogTrail = (new LogTrail())->processStore([
-            'namatabel' => strtoupper($invoiceHeader->getTable()),
-            'postingdari' => 'EDIT INVOICE HEADER',
-            'idtrans' => $invoiceHeader->id,
-            'nobuktitrans' => $invoiceHeader->nobukti,
-            'aksi' => 'EDIT',
-            'datajson' => $invoiceHeader->toArray(),
-            'modifiedby' => auth('api')->user()->user
-        ]);
+
 
         InvoiceDetail::where('invoice_id', $invoiceHeader->id)->delete();
 
@@ -1256,6 +1274,34 @@ class InvoiceHeader extends MyModel
         $invoiceHeader->nominal = $total;
         $invoiceHeader->save();
 
+        $invoiceRequest = [
+            'tgljatuhtempo' => date('Y-m-d', strtotime($data['tgljatuhtempo'])),
+            'postingdari' => 'EDIT INVOICE HEADER',
+            'tglbukti' => $data['tglbukti'],
+            'invoice' => $invoiceHeader->nobukti,
+            'agen_id' => $invoiceHeader->agen_id,
+            'invoice_nobukti' => $invoiceNobukti,
+            'nominal_detail' => $nominalDetail,
+            'keterangan_detail' => $keteranganDetail,
+        ];
+
+        $getPiutang = PiutangHeader::from(DB::raw("piutangheader with (readuncommitted)"))->where('invoice_nobukti', $nobuktiOld)->first();
+        $newPiutang = new PiutangHeader();
+        $newPiutang = $newPiutang->findUpdate($getPiutang->id);
+        $piutangHeader = (new PiutangHeader())->processUpdate($newPiutang, $invoiceRequest);
+
+        $invoiceHeader->piutang_nobukti = $piutangHeader->nobukti;
+        $invoiceHeader->save();
+        
+        $invoiceHeaderLogTrail = (new LogTrail())->processStore([
+            'namatabel' => strtoupper($invoiceHeader->getTable()),
+            'postingdari' => 'EDIT INVOICE HEADER',
+            'idtrans' => $invoiceHeader->id,
+            'nobuktitrans' => $invoiceHeader->nobukti,
+            'aksi' => 'EDIT',
+            'datajson' => $invoiceHeader->toArray(),
+            'modifiedby' => auth('api')->user()->user
+        ]);
         (new LogTrail())->processStore([
             'namatabel' => strtoupper($invoiceDetail->getTable()),
             'postingdari' => 'EDIT INVOICE DETAIL',
@@ -1265,21 +1311,6 @@ class InvoiceHeader extends MyModel
             'datajson' => $invoiceDetails,
             'modifiedby' => auth('api')->user()->user,
         ]);
-
-        $invoiceRequest = [
-            'tgljatuhtempo' => date('Y-m-d', strtotime($data['tgljatuhtempo'])),
-            'postingdari' => 'EDIT INVOICE HEADER',
-            'invoice' => $invoiceHeader->nobukti,
-            'agen_id' => $invoiceHeader->agen_id,
-            'invoice_nobukti' => $invoiceNobukti,
-            'nominal_detail' => $nominalDetail,
-            'keterangan_detail' => $keteranganDetail,
-        ];
-
-        $getPiutang = PiutangHeader::from(DB::raw("piutangheader with (readuncommitted)"))->where('invoice_nobukti', $invoiceHeader->nobukti)->first();
-        $newPiutang = new PiutangHeader();
-        $newPiutang = $newPiutang->findUpdate($getPiutang->id);
-        (new PiutangHeader())->processUpdate($newPiutang, $invoiceRequest);
 
         return $invoiceHeader;
     }
