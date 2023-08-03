@@ -108,10 +108,10 @@ class OrderanTrucking extends MyModel
             ->select('tglbataseditorderantrucking as tglbatasedit')
             ->where('id', $id)
             ->first();
-        if (date('Y-m-d H:i:s', strtotime($query->tglbatasedit)) < date('Y-m-d H:i:s')) {
-            return false;
+        if (date('Y-m-d H:i:s') < date('Y-m-d H:i:s', strtotime($query->tglbatasedit))) {            
+            return true;
         }
-        return true;
+        return false;
     }
 
     public function todayValidation($id)

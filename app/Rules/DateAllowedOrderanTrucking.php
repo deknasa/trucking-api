@@ -5,8 +5,7 @@ namespace App\Rules;
 use Illuminate\Contracts\Validation\Rule;
 use App\Models\BukaAbsensi;
 use App\Models\OrderanTrucking;
-use DB;
-
+use Illuminate\Support\Facades\DB;
 class DateAllowedOrderanTrucking implements Rule
 {
     /**
@@ -31,29 +30,31 @@ class DateAllowedOrderanTrucking implements Rule
     {
         $date = date('Y-m-d', strtotime($value));
         $today = date('Y-m-d', strtotime("today"));
-        $allowed = false ;
+        $allowed = true ;
         // $bukaAbsensi = BukaAbsensi::where('tglabsensi', '=', $date)->first();
         $todayValidation = OrderanTrucking::todayValidation($value);
         $isEditAble = OrderanTrucking::isEditAble($value);
         $nobukti = OrderanTrucking::from(DB::raw("orderantrucking"))->where('id', $value)->first();
-        $cekdata = OrderanTrucking::cekvalidasihapus($nobukti, 'edit');
+        $cekdata = OrderanTrucking::cekvalidasihapus($nobukti->nobukti, 'edit');
         
-        if(!$todayValidation){
+        $this->table = '';
+        // if(!$todayValidation){
+        //     $allowed = true;
+        //     $this->pesan = "BAED";
+        // }
+        // else 
+        if (!$isEditAble){
             $allowed = true;
             $this->pesan = "BAED";
         }
-        else if (!$isEditAble){
-            $allowed = true;
-            $this->pesan = "BAED";
-        }
-        else if  (!$cekdata['kondisi']) {
-            $allowed = true;
+        else if ($cekdata['kondisi']) {
+            $allowed = false;
             $this->pesan = "SATL";
+            $this->table = ' (GAJI SUPIR)';
         }
-        else {
-            $allowed = false ;   
-        }
-        
+        // else {
+        //     $allowed = false ;   
+        // }
         return $allowed ;
     }
 
@@ -64,8 +65,8 @@ class DateAllowedOrderanTrucking implements Rule
      */
     public function message()
     {
-        return DB::table('error')->select('keterangan')->where('kodeerror', '=', $this->pesan)->first()->keterangan;
+        return DB::table('error')->select('keterangan')->where('kodeerror', '=', $this->pesan)->first()->keterangan . $this->table;
 
-        return $this->pesan.'asdasd';
+        // return $this->pesan.'asdasd';
     }
 }

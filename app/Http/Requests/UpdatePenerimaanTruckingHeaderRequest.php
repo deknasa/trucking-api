@@ -134,7 +134,7 @@ class UpdatePenerimaanTruckingHeaderRequest extends FormRequest
                 'nobukti' => [Rule::in($getDataPenerimaan->nobukti)],
                 "tglbukti" => [
                 "required", 'date_format:d-m-Y',
-                'date_equals:' . date('d-m-Y', strtotime($getDataPenerimaan->tglbukti)),
+                'before_or_equal:'.date('d-m-Y'),
                     new DateTutupBuku(),
                 ],
                 'penerimaantrucking' => ['required',Rule::in($getDataPenerimaan->kodepenerimaan)],
@@ -152,7 +152,7 @@ class UpdatePenerimaanTruckingHeaderRequest extends FormRequest
                 'nobukti' => [Rule::in($getDataPenerimaan->nobukti)],
                 "tglbukti" => [
                 "required", 'date_format:d-m-Y',
-                'date_equals:' . date('d-m-Y', strtotime($getDataPenerimaan->tglbukti)),
+                'before_or_equal:'.date('d-m-Y'),
                     new DateTutupBuku(),
                 ],
                 'penerimaantrucking' => ['required',Rule::in($getDataPenerimaan->kodepenerimaan)],
@@ -169,7 +169,7 @@ class UpdatePenerimaanTruckingHeaderRequest extends FormRequest
                 'nobukti' => [Rule::in($getDataPenerimaan->nobukti)],
                 "tglbukti" => [
                 "required", 'date_format:d-m-Y',
-                'date_equals:' . date('d-m-Y', strtotime($getDataPenerimaan->tglbukti)),
+                'before_or_equal:'.date('d-m-Y'),
                     new DateTutupBuku(),
                 ],
                 'penerimaantrucking' => ['required',Rule::in($kodepenerimaan)],
