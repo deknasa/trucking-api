@@ -66,8 +66,10 @@ class PenerimaanTruckingHeaderController extends Controller
             $penerimaanTruckingHeader = (new PenerimaanTruckingHeader())->processStore($request->all());
             /* Set position and page */
             $penerimaanTruckingHeader->position = $this->getPosition($penerimaanTruckingHeader, $penerimaanTruckingHeader->getTable())->position;
-            $penerimaanTruckingHeader->page = ceil($penerimaanTruckingHeader->position / ($request->limit ?? 10));
-            if (isset($request->limit)) {
+            // $penerimaanTruckingHeader->page = ceil($penerimaanTruckingHeader->position / ($request->limit ?? 10));
+            if ($request->limit==0) {
+                $penerimaanTruckingHeader->page = ceil($penerimaanTruckingHeader->position / (10));
+            } else {
                 $penerimaanTruckingHeader->page = ceil($penerimaanTruckingHeader->position / ($request->limit ?? 10));
             }
 
@@ -110,8 +112,11 @@ class PenerimaanTruckingHeaderController extends Controller
             $penerimaanTruckingHeader = (new PenerimaanTruckingHeader())->processUpdate($penerimaantruckingheader, $request->all());
             /* Set position and page */
             $penerimaanTruckingHeader->position = $this->getPosition($penerimaanTruckingHeader, $penerimaanTruckingHeader->getTable())->position;
-            $penerimaanTruckingHeader->page = ceil($penerimaanTruckingHeader->position / ($request->limit ?? 10));
-            if (isset($request->limit)) {
+            // $penerimaanTruckingHeader->page = ceil($penerimaanTruckingHeader->position / ($request->limit ?? 10));
+   
+            if ($request->limit==0) {
+                $penerimaanTruckingHeader->page = ceil($penerimaanTruckingHeader->position / (10));
+            } else {
                 $penerimaanTruckingHeader->page = ceil($penerimaanTruckingHeader->position / ($request->limit ?? 10));
             }
 
@@ -140,8 +145,13 @@ class PenerimaanTruckingHeaderController extends Controller
             $selected = $this->getPosition($penerimaanTruckingHeader, $penerimaanTruckingHeader->getTable(), true);
             $penerimaanTruckingHeader->position = $selected->position;
             $penerimaanTruckingHeader->id = $selected->id;
-            $penerimaanTruckingHeader->page = ceil($penerimaanTruckingHeader->position / ($request->limit ?? 10));
+            // $penerimaanTruckingHeader->page = ceil($penerimaanTruckingHeader->position / ($request->limit ?? 10));
 
+            if ($request->limit==0) {
+                $penerimaanTruckingHeader->page = ceil($penerimaanTruckingHeader->position / (10));
+            } else {
+                $penerimaanTruckingHeader->page = ceil($penerimaanTruckingHeader->position / ($request->limit ?? 10));
+            }
             DB::commit();
 
             return response()->json([
