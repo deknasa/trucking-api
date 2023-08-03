@@ -1002,7 +1002,9 @@ class Supir extends MyModel
     {
 
         $supir = Supir::from(DB::raw("supir with (readuncommitted)"))->where('noktp',$noktp)->first();
-
+        if (!$supir) {
+            return false;
+        }
         $statusNonAktif = Parameter::from(DB::Raw("parameter with (readuncommitted)"))->select('id')->where('grp', '=', 'STATUS AKTIF')->where('subgrp', '=', 'STATUS AKTIF')->where('text', '=', 'NON AKTIF')->first();
         $statusAktif = Parameter::from(DB::Raw("parameter with (readuncommitted)"))->select('id')->where('grp', '=', 'STATUS AKTIF')->where('subgrp', '=', 'STATUS AKTIF')->where('text', '=', 'AKTIF')->first();
         
@@ -1027,7 +1029,9 @@ class Supir extends MyModel
     public function processStatusNonAktifGambar($noktp)
     {
         $supir = Supir::from(DB::raw("supir with (readuncommitted)"))->where('noktp',$noktp)->first();
-
+        if (!$supir) {
+            return false;
+        }
         $statusNonAktif = Parameter::from(DB::Raw("parameter with (readuncommitted)"))->select('id')->where('grp', '=', 'STATUS AKTIF')->where('subgrp', '=', 'STATUS AKTIF')->where('text', '=', 'NON AKTIF')->first();
         $statusAktif = Parameter::from(DB::Raw("parameter with (readuncommitted)"))->select('id')->where('grp', '=', 'STATUS AKTIF')->where('subgrp', '=', 'STATUS AKTIF')->where('text', '=', 'AKTIF')->first();
         
