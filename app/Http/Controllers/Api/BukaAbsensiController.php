@@ -105,6 +105,31 @@ class BukaAbsensiController extends Controller
             throw $th;
         }
     }
+    /**
+     * @ClassName
+     */
+    public function updateTanggalBatas($id)
+    {
+        DB::beginTransaction();
+        try {
+            $bukaAbsensi = (new BukaAbsensi())->processTanggalBatasUpdate($id);
+            /* Set position and page */
+            $bukaAbsensi->position = $this->getPosition($bukaAbsensi, $bukaAbsensi->getTable())->position;
+            $bukaAbsensi->page = ceil($bukaAbsensi->position / ($request->limit ?? 10));
+            if (isset($request->limit)) {
+                $bukaAbsensi->page = ceil($bukaAbsensi->position / ($request->limit ?? 10));
+            }
+
+            DB::commit();
+            return response()->json([
+                'message' => 'Berhasil disimpan',
+                'data' => $bukaAbsensi
+            ], 201);    
+        } catch (\Throwable $th) {
+            DB::rollBack();
+            throw $th;
+        }
+    }
 
     /**
      * @ClassName

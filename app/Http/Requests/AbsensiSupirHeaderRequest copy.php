@@ -50,13 +50,36 @@ class AbsensiSupirHeaderRequest extends FormRequest
         $rules = [];
         if (request()->isMethod('POST')) {
 
+
+
+            $awal  = date_create(date('Y-m-d', strtotime($this->tglbukti)));
+            $akhir = date_create();
+            $diff  = date_diff($awal, $akhir);
+
+            // dd($diff->days);
+
+            $detiknow = (substr($jamnow, 0, 2) * 3600) + (substr($jamnow, 4, 2) * 60);
+            $detikval = (substr($query->text, 0, 2) * 3600) + (substr($query->text, 4, 2) * 60);
+            $kondisi = true;
+            if ($diff->days == 1) {
+
+                if ($detiknow <= $detikval) {
+                    $kondisi = true;
+                } else {
+                    $kondisi = false;
+                }
+            } else {
+                $kondisi = false;
+            }
+
+
             $rulesBeda = [
                 'tglbukti' => [
                     'required',
                     'date_format:d-m-Y',
-                    //fungsi check unique
                     function ($attribute, $value, $fail) {
-                        
+                        // Ubah format tanggal dari input menjadi format yang ada di database
+                        // $formattedDate = \Carbon\Carbon::createFromFormat('d/m/Y', $value)->format('Y-m-d');
                         $formattedDate = date('Y-m-d', strtotime($value));
 
                         // Cek apakah ada data dengan tanggal yang sama dalam database
@@ -66,7 +89,7 @@ class AbsensiSupirHeaderRequest extends FormRequest
                             $fail(app(ErrorController::class)->geterror('TSTB')->keterangan);
                         }
                     },
-                    new DateAllowedAbsen(),
+                    new DateAllowedAbsen($kondisi),
                     new DateTutupBuku(),
                 ],
             ];
@@ -86,11 +109,39 @@ class AbsensiSupirHeaderRequest extends FormRequest
                             ->where('subgrp','STATUS EDIT ABSENSI')
                             ->first();
 
+
+
+            $awal  = date_create($queryexist->tglbukti);
+            $akhir = date_create();
+            $diff  = date_diff($awal, $akhir);
+
+            // dd($diff->days);
+
+            $detiknow = (substr($jamnow, 0, 2) * 3600) + (substr($jamnow, 4, 2) * 60);
+            $detikval = (substr($query->text, 0, 2) * 3600) + (substr($query->text, 4, 2) * 60);
+            $kondisi = true;
+            if ($diff->days == 1) {
+
+                if ($detiknow <= $detikval) {
+                    $kondisi = true;
+                } else {
+                    $kondisi = false;
+                }
+            } else {
+                $kondisi = false;
+            }
+
+            if ($queryexist->statusapprovaleditabsensi == $approvaledit->id) {
+                $kondisi = true;
+            }else{
+                $kondisi = false;
+            }
+            
             $tglbukti = date('d-m-Y', strtotime($queryexist->tglbukti));
             $rulesBeda = [
                 'tglbukti' => [
                     'required', 'date_format:d-m-Y',
-                    new DateAllowedAbsen(),
+                    new DateAllowedAbsen($kondisi),
                     new DateTutupBuku(),
                     Rule::in([$tglbukti]),
                 ],

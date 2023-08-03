@@ -383,7 +383,9 @@ class MandorAbsensiSupir extends MyModel
         if ($tidakadasupir->text == $data['absen_id'] ) {
             $data['supir_id'] = "";
         }
+        
         $tglbataseditabsensi = null;
+        $tglbukti = date('Y-m-d', strtotime($data['tglbukti']));
         $tglbukti = date('Y-m-d', strtotime($data['tglbukti']));
         $isDateAllowedMandor = $this->isDateAllowedMandor($tglbukti);
         $bukaabsensi = DB::table('bukaabsensi')
@@ -391,8 +393,15 @@ class MandorAbsensiSupir extends MyModel
             ->from(DB::raw("bukaabsensi with (readuncommitted)"))
             ->where('tglabsensi',$tglbukti)
             ->first();
-        if ($isDateAllowedMandor && $bukaabsensi->tglbatas) {
+        if ($isDateAllowedMandor && isset($bukaabsensi->tglbatas)) {
             $tglbataseditabsensi = $bukaabsensi->tglbatas;
+        }
+        if (AbsensiSupirHeader::todayValidation(date('Y-m-d', strtotime($tglbukti)))) {
+            $query_jam = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))->select('text')->where('grp', 'BATAS JAM EDIT ABSENSI')->where('subgrp', 'BATAS JAM EDIT ABSENSI')->first();
+            $jam = substr($query_jam->text, 0, 2);
+            $menit = substr($query_jam->text, 3, 2);
+            $query_jam = strtotime($tglbukti.' '.$jam.':'.$menit.':00' );
+            $tglbataseditabsensi = date('Y-m-d H:i:s',$query_jam);
         }
             # code...
 
