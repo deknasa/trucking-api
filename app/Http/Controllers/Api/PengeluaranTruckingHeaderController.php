@@ -69,8 +69,14 @@ class PengeluaranTruckingHeaderController extends Controller
             $pengeluaranTruckingHeader = (new PengeluaranTruckingHeader())->processStore($request->all());
             /* Set position and page */
             $pengeluaranTruckingHeader->position = $this->getPosition($pengeluaranTruckingHeader, $pengeluaranTruckingHeader->getTable())->position;
-            $pengeluaranTruckingHeader->page = ceil($pengeluaranTruckingHeader->position / ($request->limit ?? 10));
-            if (isset($request->limit)) {
+            // $pengeluaranTruckingHeader->page = ceil($pengeluaranTruckingHeader->position / ($request->limit ?? 10));
+            // if (isset($request->limit)) {
+            //     $pengeluaranTruckingHeader->page = ceil($pengeluaranTruckingHeader->position / ($request->limit ?? 10));
+            // }
+
+            if ($request->limit==0) {
+                $pengeluaranTruckingHeader->page = ceil($pengeluaranTruckingHeader->position / (10));
+            } else {
                 $pengeluaranTruckingHeader->page = ceil($pengeluaranTruckingHeader->position / ($request->limit ?? 10));
             }
 
@@ -140,8 +146,14 @@ class PengeluaranTruckingHeaderController extends Controller
             $pengeluaranTruckingHeader = (new PengeluaranTruckingHeader())->processUpdate($pengeluaranTruckingHeader, $request->all());
             /* Set position and page */
             $pengeluaranTruckingHeader->position = $this->getPosition($pengeluaranTruckingHeader, $pengeluaranTruckingHeader->getTable())->position;
-            $pengeluaranTruckingHeader->page = ceil($pengeluaranTruckingHeader->position / ($request->limit ?? 10));
-            if (isset($request->limit)) {
+            // $pengeluaranTruckingHeader->page = ceil($pengeluaranTruckingHeader->position / ($request->limit ?? 10));
+            // if (isset($request->limit)) {
+            //     $pengeluaranTruckingHeader->page = ceil($pengeluaranTruckingHeader->position / ($request->limit ?? 10));
+            // }
+
+            if ($request->limit==0) {
+                $pengeluaranTruckingHeader->page = ceil($pengeluaranTruckingHeader->position / (10));
+            } else {
                 $pengeluaranTruckingHeader->page = ceil($pengeluaranTruckingHeader->position / ($request->limit ?? 10));
             }
 
@@ -213,8 +225,14 @@ class PengeluaranTruckingHeaderController extends Controller
             $pengeluaranTruckingHeader = (new PengeluaranTruckingHeader())->processDestroy($id, $postingdari = "PENGELUARAN TRUCKING");
             /* Set position and page */
             $pengeluaranTruckingHeader->position = $this->getPosition($pengeluaranTruckingHeader, $pengeluaranTruckingHeader->getTable())->position;
-            $pengeluaranTruckingHeader->page = ceil($pengeluaranTruckingHeader->position / ($request->limit ?? 10));
-            if (isset($request->limit)) {
+            // $pengeluaranTruckingHeader->page = ceil($pengeluaranTruckingHeader->position / ($request->limit ?? 10));
+            // if (isset($request->limit)) {
+            //     $pengeluaranTruckingHeader->page = ceil($pengeluaranTruckingHeader->position / ($request->limit ?? 10));
+            // }
+
+            if ($request->limit==0) {
+                $pengeluaranTruckingHeader->page = ceil($pengeluaranTruckingHeader->position / (10));
+            } else {
                 $pengeluaranTruckingHeader->page = ceil($pengeluaranTruckingHeader->position / ($request->limit ?? 10));
             }
 
