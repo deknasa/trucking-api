@@ -792,14 +792,35 @@ class PengeluaranHeader extends MyModel
 
     public function processUpdate(PengeluaranHeader $pengeluaranHeader, array $data): PengeluaranHeader
     {
+        $nobuktiOld = $pengeluaranHeader->nobukti;
         $bankid = $data['bank_id'];
         $querysubgrppengeluaran = Bank::from(DB::raw("bank with (readuncommitted)"))
             ->select('parameter.grp', 'parameter.subgrp', 'bank.formatpengeluaran', 'bank.coa', 'bank.tipe')
             ->join(DB::raw("parameter with (readuncommitted)"), 'bank.formatpengeluaran', 'parameter.id')
             ->whereRaw("bank.id = $bankid")
             ->first();
+
+        $group = $querysubgrppengeluaran->grp;
+        $subGroup = $querysubgrppengeluaran->subgrp;
+
         $statusApproval = Parameter::from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS APPROVAL')->where('text', 'NON APPROVAL')->first();
         $statusCetak = Parameter::from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUSCETAK')->where('text', 'BELUM CETAK')->first();
+        $querycek = DB::table('pengeluaranheader')->from(
+            DB::raw("pengeluaranheader a with (readuncommitted)")
+        )
+            ->select(
+                'a.nobukti'
+            )
+            ->where('a.id', $pengeluaranHeader->id)
+            ->whereRAw("format(a.tglbukti,'MM-yyyy')='" . date('m-Y', strtotime($data['tglbukti'])) . "'")
+            ->first();
+
+
+        if (isset($querycek)) {
+            $nobukti = $querycek->nobukti;
+        } else {
+            $nobukti = (new RunningNumberService)->get($group, $subGroup, $pengeluaranHeader->getTable(), date('Y-m-d', strtotime($data['tglbukti'])));
+        }
 
         $pengeluaranHeader->tglbukti = date('Y-m-d', strtotime($data['tglbukti']));
         $pengeluaranHeader->pelanggan_id = $data['pelanggan_id'] ?? 0;
@@ -816,7 +837,8 @@ class PengeluaranHeader extends MyModel
         $pengeluaranHeader->statusformat = $data['statusformat'] ?? $querysubgrppengeluaran->formatpengeluaran;
         $pengeluaranHeader->statuscetak = $statusCetak->id;
         $pengeluaranHeader->userbukacetak = '';
-        $pengeluaranHeader->tglbukacetak = '';
+        $pengeluaranHeader->tglbukacetak = '';        
+        $pengeluaranHeader->nobukti = $nobukti;
         $pengeluaranHeader->modifiedby = auth('api')->user()->name;
 
         if (!$pengeluaranHeader->save()) {
@@ -893,7 +915,7 @@ class PengeluaranHeader extends MyModel
         ];
 
         // $jurnalUmumHeader = (new JurnalUmumHeader())->processStore($jurnalRequest);
-        $getJurnal = JurnalUmumHeader::from(DB::raw("jurnalumumheader with (readuncommitted)"))->where('nobukti', $pengeluaranHeader->nobukti)->first();
+        $getJurnal = JurnalUmumHeader::from(DB::raw("jurnalumumheader with (readuncommitted)"))->where('nobukti', $nobuktiOld)->first();
         $newJurnal = new JurnalUmumHeader();
         $newJurnal = $newJurnal->find($getJurnal->id);
         (new JurnalUmumHeader())->processUpdate($newJurnal, $jurnalRequest);

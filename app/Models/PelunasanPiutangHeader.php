@@ -825,6 +825,28 @@ class PelunasanPiutangHeader extends MyModel
 
     public function processUpdate(PelunasanPiutangHeader $pelunasanPiutangHeader, array $data): PelunasanPiutangHeader
     {
+        
+        $nobuktiOld = $pelunasanPiutangHeader->nobukti;
+        $group = 'PELUNASAN PIUTANG BUKTI';
+        $subGroup = 'PELUNASAN PIUTANG BUKTI';
+        $querycek = DB::table('pelunasanpiutangheader')->from(
+            DB::raw("pelunasanpiutangheader a with (readuncommitted)")
+        )
+            ->select(
+                'a.nobukti'
+            )
+            ->where('a.id', $pelunasanPiutangHeader->id)
+            ->whereRAw("format(a.tglbukti,'MM-yyyy')='" . date('m-Y', strtotime($data['tglbukti'])) . "'")
+            ->first();
+
+        if (isset($querycek)) {
+            $nobukti = $querycek->nobukti;
+        } else {
+            $nobukti = (new RunningNumberService)->get($group, $subGroup, $pelunasanPiutangHeader->getTable(), date('Y-m-d', strtotime($data['tglbukti'])));
+        }
+
+        $pelunasanPiutangHeader->nobukti = $nobukti;
+        $pelunasanPiutangHeader->tglbukti = date('Y-m-d', strtotime($data['tglbukti']));
         $pelunasanPiutangHeader->modifiedby = auth('api')->user()->name;
 
         if (!$pelunasanPiutangHeader->save()) {
@@ -919,7 +941,7 @@ class PelunasanPiutangHeader extends MyModel
             $penerimaanRequest = [
                 'pelanggan_id' => 0,
                 'agen_id' => $pelunasanPiutangHeader->agen_id,
-                'tglbukti' => $pelunasanPiutangHeader->tglbukti,
+                'tglbukti' => $data['tglbukti'],
                 'postingdari' => 'EDIT PELUNASAN PIUTANG',
                 'diterimadari' => $data['agen'],
                 'tgllunas' => $data['tglbukti'],
@@ -935,7 +957,8 @@ class PelunasanPiutangHeader extends MyModel
             ];
             $newPenerimaan = new PenerimaanHeader();
             $newPenerimaan = $newPenerimaan->findAll($get->id);
-            (new PenerimaanHeader())->processUpdate($newPenerimaan, $penerimaanRequest);
+            $getPenerimaan = (new PenerimaanHeader())->processUpdate($newPenerimaan, $penerimaanRequest);
+            $pelunasanPiutangHeader->penerimaan_nobukti = $getPenerimaan->nobukti;
         }
 
         if ($pelunasanPiutangHeader->penerimaangiro_nobukti != '-') {
@@ -945,6 +968,7 @@ class PelunasanPiutangHeader extends MyModel
                 ->where('nobukti', $pelunasanPiutangHeader->penerimaangiro_nobukti)->first();
             $penerimaanGiroRequest = [
                 'isUpdate' => 1,
+                'tglbukti' => $data['tglbukti'],
                 'agen_id' => $pelunasanPiutangHeader->agen_id,
                 'postingdari' => 'EDIT PELUNASAN PIUTANG',
                 'diterimadari' => $data['agen'],
@@ -962,7 +986,8 @@ class PelunasanPiutangHeader extends MyModel
 
             $newPenerimaanGiro = new PenerimaanGiroHeader();
             $newPenerimaanGiro = $newPenerimaanGiro->findAll($get->id);
-            (new PenerimaanGiroHeader())->processUpdate($newPenerimaanGiro, $penerimaanGiroRequest);
+            $getPenerimaanGiro = (new PenerimaanGiroHeader())->processUpdate($newPenerimaanGiro, $penerimaanGiroRequest);
+            $pelunasanPiutangHeader->penerimaangiro_nobukti = $getPenerimaanGiro->nobukti;
         }
 
         $notakredit = false;
@@ -990,6 +1015,7 @@ class PelunasanPiutangHeader extends MyModel
                     ->where('nobukti', $pelunasanPiutangHeader->notakredit_nobukti)->first();
                 $notaKreditRequest = [
                     'isUpdate' => 1,
+                    'tglbukti' => $data['tglbukti'],
                     'agen_id' => $pelunasanPiutangHeader->agen_id,
                     'postingdari' => 'EDIT PELUNASAN PIUTANG',
                     'invoice_nobukti' => $invoiceNobukti,
@@ -1004,7 +1030,8 @@ class PelunasanPiutangHeader extends MyModel
 
                 $newNotaKredit = new NotaKreditHeader();
                 $newNotaKredit = $newNotaKredit->findAll($get->id);
-                (new NotaKreditHeader())->processUpdate($newNotaKredit, $notaKreditRequest);
+                $getNotaKredit = (new NotaKreditHeader())->processUpdate($newNotaKredit, $notaKreditRequest);
+                $pelunasanPiutangHeader->notakredit_nobukti = $getNotaKredit->nobukti;
             } else {
                 $getNotaKredit = NotaKreditHeader::from(DB::raw("notakreditheader with (readuncommitted)"))->where('nobukti', $pelunasanPiutangHeader->notakredit_nobukti)->first();
 
@@ -1039,6 +1066,7 @@ class PelunasanPiutangHeader extends MyModel
                     ->where('nobukti', $pelunasanPiutangHeader->notadebet_nobukti)->first();
                 $notaDebetRequest = [
                     'isUpdate' => 1,
+                    'tglbukti' => $data['tglbukti'],
                     'agen_id' => $pelunasanPiutangHeader->agen_id,
                     'postingdari' => 'EDIT PELUNASAN PIUTANG',
                     'invoice_nobukti' => $invoiceNobukti,
@@ -1052,7 +1080,8 @@ class PelunasanPiutangHeader extends MyModel
 
                 $newNotaDebet = new NotaDebetHeader();
                 $newNotaDebet = $newNotaDebet->findAll($get->id);
-                (new NotaDebetHeader())->processUpdate($newNotaDebet, $notaDebetRequest);
+                $getNotaDebet = (new NotaDebetHeader())->processUpdate($newNotaDebet, $notaDebetRequest);
+                $pelunasanPiutangHeader->notadebet_nobukti = $getNotaDebet->nobukti;
             } else {
                 $getNotaDebet = NotaDebetHeader::from(DB::raw("notadebetheader with (readuncommitted)"))->where('nobukti', $pelunasanPiutangHeader->notadebet_nobukti)->first();
                 (new NotaDebetHeader())->processDestroy($getNotaDebet->id, 'DELETE PELUNASAN PIUTANG');

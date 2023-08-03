@@ -54,7 +54,7 @@ class UpdatePengembalianKasGantungHeaderRequest extends FormRequest
             'nobukti' => [Rule::in($getDataPengembalian), new DestroyPengembalianKasGantung()],
             'tglbukti' => [
                 'required', 'date_format:d-m-Y',
-                'date_equals:' . date('d-m-Y', strtotime($getDataPengembalian->tglbukti)),
+                'before_or_equal:' . date('d-m-Y'),
                 new DateTutupBuku()
             ],
 

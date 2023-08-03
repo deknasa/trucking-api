@@ -649,7 +649,10 @@ class PengeluaranTruckingHeader extends MyModel
             $table->dateTime('updated_at')->nullable();
             $table->increments('position');
         });
-
+        if ((date('Y-m', strtotime(request()->tglbukti)) != date('Y-m', strtotime(request()->tgldariheader))) || (date('Y-m', strtotime(request()->tglbukti)) != date('Y-m', strtotime(request()->tglsampaiheader)))) {
+            request()->tgldariheader = date('Y-m-01', strtotime(request()->tglbukti));
+            request()->tglsampaiheader = date('Y-m-t', strtotime(request()->tglbukti));
+        }
         $this->setRequestParameters();
         $query = DB::table($modelTable);
         $query = $this->selectColumns($query);
@@ -1016,12 +1019,27 @@ class PengeluaranTruckingHeader extends MyModel
         $statusApproval = Parameter::from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS APPROVAL')->where('text', 'NON APPROVAL')->first();
         $statusPosting = Parameter::from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS POSTING')->where('text', 'BUKAN POSTING')->first();
         $statusCetak = Parameter::from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUSCETAK')->where('text', 'BELUM CETAK')->first();
-        
+        $querycek = DB::table('pengeluarantruckingheader')->from(
+            DB::raw("pengeluarantruckingheader a with (readuncommitted)")
+        )
+            ->select(
+                'a.nobukti'
+            )
+            ->where('a.id', $pengeluaranTruckingHeader->id)
+            ->whereRAw("format(a.tglbukti,'MM-yyyy')='" . date('m-Y', strtotime($data['tglbukti'])) . "'")
+            ->first();
+
+        if (isset($querycek)) {
+            $nobukti = $querycek->nobukti;
+        } else {
+            $nobukti = (new RunningNumberService)->get($fetchGrp->grp, $fetchGrp->subgrp, $pengeluaranTruckingHeader->getTable(), date('Y-m-d', strtotime($data['tglbukti'])));
+        }
         $tgldari= null;
         $tglsampai= null;
         if (array_key_exists('tgldari',$data)) {  $tgldari = date('Y-m-d', strtotime($data['tgldari'])); } ;
         if (array_key_exists('tglsampai',$data)) {  $tglsampai = date('Y-m-d', strtotime($data['tglsampai'])); } ;
         
+        $pengeluaranTruckingHeader->nobukti = $nobukti;
         $pengeluaranTruckingHeader->tglbukti = date('Y-m-d', strtotime($data['tglbukti']));
         $pengeluaranTruckingHeader->coa = $data['coa'];
         $pengeluaranTruckingHeader->periodedari = $tgldari;
@@ -1134,13 +1152,16 @@ class PengeluaranTruckingHeader extends MyModel
             
                     $pengeluaranHeader = PengeluaranHeader::where('nobukti',$pengeluaranTruckingHeader->pengeluaran_nobukti)->first();
                     $pengeluaranHeader = (new PengeluaranHeader())->processUpdate($pengeluaranHeader,$pengeluaranRequest);
+                    $pengeluaranTruckingHeader->pengeluaran_nobukti = $pengeluaranHeader->nobukti;
+                    $pengeluaranTruckingHeader->save();
                 }
             }
         }
 
+        $pengeluaranTruckingHeader->save();
         $pengeluaranTruckingHeaderLogTrail = (new LogTrail())->processStore([
             'namatabel' => strtoupper($pengeluaranTruckingHeader->getTable()),
-            'postingdari' => $data['postingdari'] ??strtoupper('ENTRY penerimaan Header '),
+            'postingdari' => $data['postingdari'] ??strtoupper('ENTRY PENGELUARAN TRUCKING HEADER '),
             'idtrans' => $pengeluaranTruckingHeader->id,
             'nobuktitrans' => $pengeluaranTruckingHeader->nobukti,
             'aksi' => 'ENTRY',
@@ -1149,14 +1170,13 @@ class PengeluaranTruckingHeader extends MyModel
         ]);
         (new LogTrail())->processStore([
             'namatabel' => strtoupper($pengeluaranTruckingDetail->getTable()),
-            'postingdari' => $data['postingdari'] ?? strtoupper('ENTRY HUTANG BAYAR DETAIL'),
-            'idtrans' =>  $pengeluaranTruckingHeader->id,
+            'postingdari' => $data['postingdari'] ?? strtoupper('ENTRY PENGELUARAN TRUCKING DETAIL'),
+            'idtrans' =>  $pengeluaranTruckingHeaderLogTrail->id,
             'nobuktitrans' => $pengeluaranTruckingHeader->nobukti,
             'aksi' => 'ENTRY',
             'datajson' => $pengeluaranTruckingDetails,
             'modifiedby' => auth('api')->user()->user,
         ]);
-        $pengeluaranTruckingHeader->save();
         return $pengeluaranTruckingHeader;
     }
 

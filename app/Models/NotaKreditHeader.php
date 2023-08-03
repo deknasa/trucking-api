@@ -366,6 +366,27 @@ class NotaKreditHeader extends MyModel
 
     public function processUpdate(NotaKreditHeader $notaKreditHeader, array $data): NotaKreditHeader
     {
+        $nobuktiOld = $notaKreditHeader->nobukti;
+        $group = 'NOTA KREDIT BUKTI';
+        $subGroup = 'NOTA KREDIT BUKTI';
+        $querycek = DB::table('notakreditheader')->from(
+            DB::raw("notakreditheader a with (readuncommitted)")
+        )
+            ->select(
+                'a.nobukti'
+            )
+            ->where('a.id', $notaKreditHeader->id)
+            ->whereRAw("format(a.tglbukti,'MM-yyyy')='" . date('m-Y', strtotime($data['tglbukti'])) . "'")
+            ->first();
+
+        if (isset($querycek)) {
+            $nobukti = $querycek->nobukti;
+        } else {
+            $nobukti = (new RunningNumberService)->get($group, $subGroup, $notaKreditHeader->getTable(), date('Y-m-d', strtotime($data['tglbukti'])));
+        }
+
+        $notaKreditHeader->nobukti = $nobukti;
+        $notaKreditHeader->tglbukti = date('Y-m-d', strtotime($data['tglbukti']));
         $notaKreditHeader->agen_id = $data['agen_id'] ?? '';
         $notaKreditHeader->modifiedby = auth('api')->user()->name;
 
@@ -418,13 +439,15 @@ class NotaKreditHeader extends MyModel
 
         /*STORE JURNAL*/
         $jurnalRequest = [
+            'nobukti' => $notaKreditHeader->nobukti,
+            'tglbukti' => $data['tglbukti'],
             'postingdari' => $data['postingdari'],
             'coakredit_detail' => $coakredit_detail,
             'coadebet_detail' => $coadebet_detail,
             'nominal_detail' => $nominal_detail,
             'keterangan_detail' => $keterangan_detail
         ];
-        $getJurnal = JurnalUmumHeader::from(DB::raw("jurnalumumheader with (readuncommitted)"))->where('nobukti', $notaKreditHeader->nobukti)->first();
+        $getJurnal = JurnalUmumHeader::from(DB::raw("jurnalumumheader with (readuncommitted)"))->where('nobukti', $nobuktiOld)->first();
         $newJurnal = new JurnalUmumHeader();
         $newJurnal = $newJurnal->find($getJurnal->id);
         (new JurnalUmumHeader())->processUpdate($newJurnal, $jurnalRequest);

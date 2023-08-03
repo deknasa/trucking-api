@@ -75,6 +75,8 @@ class PiutangHeaderController extends Controller
             } else {
                 $piutangHeader->page = ceil($piutangHeader->position / ($request->limit ?? 10));
             }
+            $piutangHeader->tgldariheader = date('Y-m-01', strtotime(request()->tglbukti));
+            $piutangHeader->tglsampaiheader = date('Y-m-t', strtotime(request()->tglbukti));
             DB::commit();
 
             return response()->json([
@@ -118,6 +120,8 @@ class PiutangHeaderController extends Controller
             } else {
                 $piutang->page = ceil($piutang->position / ($request->limit ?? 10));
             }
+            $piutang->tgldariheader = date('Y-m-01', strtotime(request()->tglbukti));
+            $piutang->tglsampaiheader = date('Y-m-t', strtotime(request()->tglbukti));
             DB::commit();
 
             return response()->json([
@@ -148,6 +152,8 @@ class PiutangHeaderController extends Controller
             } else {
                 $piutangHeader->page = ceil($piutangHeader->position / ($request->limit ?? 10));
             }
+            $piutangHeader->tgldariheader = date('Y-m-01', strtotime(request()->tglbukti));
+            $piutangHeader->tglsampaiheader = date('Y-m-t', strtotime(request()->tglbukti));
             DB::commit();
 
             return response()->json([

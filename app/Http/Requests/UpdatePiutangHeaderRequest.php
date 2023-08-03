@@ -50,8 +50,8 @@ class UpdatePiutangHeaderRequest extends FormRequest
             'nobukti' => [Rule::in($getDataPiutang->nobukti)],
             'tglbukti' => [
                 'required','date_format:d-m-Y',
-                'date_equals:'.date('d-m-Y', strtotime($getDataPiutang->tglbukti)),
-                new NotOffDay(),
+                'before_or_equal:'. date('d-m-Y'),
+                // new NotOffDay(),
                 new DateTutupBuku()
             ],
             'tgljatuhtempo' => [

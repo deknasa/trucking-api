@@ -87,6 +87,9 @@ class InvoiceHeaderController extends Controller
             } else {
                 $invoiceHeader->page = ceil($invoiceHeader->position / ($request->limit ?? 10));
             }
+            $invoiceHeader->tgldariheader = date('Y-m-01', strtotime(request()->tglbukti));
+            $invoiceHeader->tglsampaiheader = date('Y-m-t', strtotime(request()->tglbukti));
+            
             DB::commit();
 
             return response()->json([
@@ -142,6 +145,8 @@ class InvoiceHeaderController extends Controller
             } else {
                 $invoiceHeader->page = ceil($invoiceHeader->position / ($request->limit ?? 10));
             }
+            $invoiceHeader->tgldariheader = date('Y-m-01', strtotime(request()->tglbukti));
+            $invoiceHeader->tglsampaiheader = date('Y-m-t', strtotime(request()->tglbukti));
             DB::commit();
 
             return response()->json([
@@ -172,6 +177,8 @@ class InvoiceHeaderController extends Controller
             } else {
                 $invoiceHeader->page = ceil($invoiceHeader->position / ($request->limit ?? 10));
             }
+            $invoiceHeader->tgldariheader = date('Y-m-01', strtotime(request()->tglbukti));
+            $invoiceHeader->tglsampaiheader = date('Y-m-t', strtotime(request()->tglbukti));
             DB::commit();
 
             return response()->json([

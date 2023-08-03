@@ -27,7 +27,7 @@ class GetRicRequest extends FormRequest
         // First day of the month.
         $awalPeriode = date('Y-m-01');
         return [
-            'tgldari' => ['required', 'date_format:d-m-Y', 'before_or_equal:' . date('Y-m-d'), 'after_or_equal:' . $awalPeriode],
+            'tgldari' => ['required', 'date_format:d-m-Y', 'before_or_equal:' . date('Y-m-d')],
             'tglsampai' => ['required', 'date_format:d-m-Y', 'before_or_equal:' . date('Y-m-d'), 'after_or_equal:' . date('Y-m-d', strtotime($this->tgldari))],
 
         ];

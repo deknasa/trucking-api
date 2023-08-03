@@ -65,7 +65,7 @@ class InvoiceExtraHeader extends MyModel
 
     public function cekvalidasiaksi($nobukti)
     {
-        
+
         $pelunasanPiutang = DB::table('pelunasanpiutangdetail')
             ->from(
                 DB::raw("pelunasanpiutangdetail as a with (readuncommitted)")
@@ -83,7 +83,7 @@ class InvoiceExtraHeader extends MyModel
             ];
             goto selesai;
         }
-        
+
         $hutangBayar = DB::table('invoiceextraheader')
             ->from(
                 DB::raw("invoiceextraheader as a with (readuncommitted)")
@@ -156,6 +156,10 @@ class InvoiceExtraHeader extends MyModel
                 "$this->table.modifiedby"
             );
 
+        if ((date('Y-m', strtotime(request()->tglbukti)) != date('Y-m', strtotime(request()->tgldariheader))) || (date('Y-m', strtotime(request()->tglbukti)) != date('Y-m', strtotime(request()->tglsampaiheader)))) {
+            request()->tgldariheader = date('Y-m-01', strtotime(request()->tglbukti));
+            request()->tglsampaiheader = date('Y-m-t', strtotime(request()->tglbukti));
+        }
         $query = $this->sort($query);
         $models = $this->filter($query);
         $models =  $query->whereBetween($this->table . '.tglbukti', [date('Y-m-d', strtotime(request()->tgldariheader)), date('Y-m-d', strtotime(request()->tglsampaiheader))]);
@@ -397,6 +401,26 @@ class InvoiceExtraHeader extends MyModel
 
     public function processUpdate(InvoiceExtraHeader $invoiceExtraHeader, array $data): InvoiceExtraHeader
     {
+        $nobuktiOld = $invoiceExtraHeader->nobukti;
+        $group = 'INVOICE EXTRA BUKTI';
+        $subGroup = 'INVOICE EXTRA BUKTI';
+        $querycek = DB::table('invoiceextraheader')->from(
+            DB::raw("invoiceextraheader a with (readuncommitted)")
+        )
+            ->select(
+                'a.nobukti'
+            )
+            ->where('a.id', $invoiceExtraHeader->id)
+            ->whereRAw("format(a.tglbukti,'MM-yyyy')='" . date('m-Y', strtotime($data['tglbukti'])) . "'")
+            ->first();
+
+        if (isset($querycek)) {
+            $nobukti = $querycek->nobukti;
+        } else {
+            $nobukti = (new RunningNumberService)->get($group, $subGroup, $invoiceExtraHeader->getTable(), date('Y-m-d', strtotime($data['tglbukti'])));
+        }
+        $invoiceExtraHeader->nobukti = $nobukti;
+        $invoiceExtraHeader->tglbukti = date('Y-m-d', strtotime($data['tglbukti']));
         $invoiceExtraHeader->nominal = $data['nominal'];
         $invoiceExtraHeader->agen_id = $data['agen_id'];
         $invoiceExtraHeader->tgljatuhtempo = date('Y-m-d', strtotime($data['tgljatuhtempo']));
@@ -406,15 +430,7 @@ class InvoiceExtraHeader extends MyModel
             throw new \Exception("Error updating invoice extra header.");
         }
 
-        $invoiceExtraHeaderLogTrail = (new LogTrail())->processStore([
-            'namatabel' => strtoupper($invoiceExtraHeader->getTable()),
-            'postingdari' => 'EDIT INVOICE EXTRA HEADER',
-            'idtrans' => $invoiceExtraHeader->id,
-            'nobuktitrans' => $invoiceExtraHeader->nobukti,
-            'aksi' => 'EDIT',
-            'datajson' => $invoiceExtraHeader->toArray(),
-            'modifiedby' => auth('api')->user()->user
-        ]);
+
 
         InvoiceExtraDetail::where('invoiceextra_id', $invoiceExtraHeader->id)->delete();
 
@@ -435,6 +451,33 @@ class InvoiceExtraHeader extends MyModel
             $invoiceExtraDetails[] = $invoiceExtraDetail->toArray();
         }
 
+        $invoiceRequest = [
+            'postingdari' => 'EDIT INVOICE EXTRA',
+            'invoice' => $invoiceExtraHeader->nobukti,
+            'tglbukti' => $data['tglbukti'],
+            'tgljatuhtempo' => date('Y-m-d', strtotime($data['tgljatuhtempo'])),
+            'agen_id' => $data['agen_id'],
+            'invoice_nobukti' => $invoiceNobukti,
+            'nominal_detail' => $nominalDetail,
+            'keterangan_detail' => $keteranganDetail,
+        ];
+
+        $getPiutang = PiutangHeader::from(DB::raw("piutangheader with (readuncommitted)"))->where('invoice_nobukti', $nobuktiOld)->first();
+        $newPiutang = new PiutangHeader();
+        $newPiutang = $newPiutang->findUpdate($getPiutang->id);
+        $piutangHeader = (new PiutangHeader())->processUpdate($newPiutang, $invoiceRequest);
+        $invoiceExtraHeader->piutang_nobukti = $piutangHeader->nobukti;
+        $invoiceExtraHeader->save();
+
+        $invoiceExtraHeaderLogTrail = (new LogTrail())->processStore([
+            'namatabel' => strtoupper($invoiceExtraHeader->getTable()),
+            'postingdari' => 'EDIT INVOICE EXTRA HEADER',
+            'idtrans' => $invoiceExtraHeader->id,
+            'nobuktitrans' => $invoiceExtraHeader->nobukti,
+            'aksi' => 'EDIT',
+            'datajson' => $invoiceExtraHeader->toArray(),
+            'modifiedby' => auth('api')->user()->user
+        ]);
         (new LogTrail())->processStore([
             'namatabel' => strtoupper($invoiceExtraDetail->getTable()),
             'postingdari' => 'EDIT INVOICE EXTRA DETAIL',
@@ -445,20 +488,6 @@ class InvoiceExtraHeader extends MyModel
             'modifiedby' => auth('api')->user()->user,
         ]);
 
-        $invoiceRequest = [
-            'postingdari' => 'EDIT INVOICE EXTRA',
-            'invoice' => $invoiceExtraHeader->nobukti,
-            'tgljatuhtempo' => date('Y-m-d', strtotime($data['tgljatuhtempo'])),
-            'agen_id' => $data['agen_id'],
-            'invoice_nobukti' => $invoiceNobukti,
-            'nominal_detail' => $nominalDetail,
-            'keterangan_detail' => $keteranganDetail,
-        ];
-
-        $getPiutang = PiutangHeader::from(DB::raw("piutangheader with (readuncommitted)"))->where('invoice_nobukti', $invoiceExtraHeader->nobukti)->first();
-        $newPiutang = new PiutangHeader();
-        $newPiutang = $newPiutang->findUpdate($getPiutang->id);
-        (new PiutangHeader())->processUpdate($newPiutang, $invoiceRequest);
 
         return $invoiceExtraHeader;
     }
@@ -500,10 +529,10 @@ class InvoiceExtraHeader extends MyModel
         $this->setRequestParameters();
 
         $getJudul = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))
-        ->select('text')
-        ->where('grp', 'JUDULAN LAPORAN')
-        ->where('subgrp', 'JUDULAN LAPORAN')
-        ->first();
+            ->select('text')
+            ->where('grp', 'JUDULAN LAPORAN')
+            ->where('subgrp', 'JUDULAN LAPORAN')
+            ->first();
 
         $periode = request()->periode ?? '';
         $statusCetak = request()->statuscetak ?? '';
@@ -524,7 +553,7 @@ class InvoiceExtraHeader extends MyModel
             DB::raw("'Laporan Invoice Extra' as judulLaporan"),
             DB::raw("'" . $getJudul->text . "' as judul"),
             DB::raw("'Tgl Cetak:'+format(getdate(),'dd-MM-yyyy HH:mm:ss')as tglcetak"),
-            DB::raw(" 'User :".auth('api')->user()->name."' as usercetak")
+            DB::raw(" 'User :" . auth('api')->user()->name . "' as usercetak")
         )
             ->leftJoin(DB::raw("parameter with (readuncommitted)"), 'invoiceextraheader.statusapproval', 'parameter.id')
             ->leftJoin(DB::raw("parameter as statuscetak with (readuncommitted)"), 'invoiceextraheader.statuscetak', 'statuscetak.id')
@@ -534,7 +563,7 @@ class InvoiceExtraHeader extends MyModel
 
         if (request()->tgldari && request()->tglsampai) {
             $query->whereBetween($this->table . '.tglbukti', [date('Y-m-d', strtotime(request()->tgldari)), date('Y-m-d', strtotime(request()->tglsampai))]);
-        } 
+        }
         if ($periode != '') {
             $periode = explode("-", $periode);
             $query->whereRaw("MONTH(invoiceextraheader.tglbukti) ='" . $periode[0] . "'")

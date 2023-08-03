@@ -66,12 +66,13 @@ class PenerimaanTruckingHeaderController extends Controller
             $penerimaanTruckingHeader = (new PenerimaanTruckingHeader())->processStore($request->all());
             /* Set position and page */
             $penerimaanTruckingHeader->position = $this->getPosition($penerimaanTruckingHeader, $penerimaanTruckingHeader->getTable())->position;
-            // $penerimaanTruckingHeader->page = ceil($penerimaanTruckingHeader->position / ($request->limit ?? 10));
             if ($request->limit==0) {
                 $penerimaanTruckingHeader->page = ceil($penerimaanTruckingHeader->position / (10));
             } else {
                 $penerimaanTruckingHeader->page = ceil($penerimaanTruckingHeader->position / ($request->limit ?? 10));
             }
+            $penerimaanTruckingHeader->tgldariheader = date('Y-m-01', strtotime(request()->tglbukti));
+            $penerimaanTruckingHeader->tglsampaiheader = date('Y-m-t', strtotime(request()->tglbukti));
 
             DB::commit();
             return response()->json([
@@ -112,13 +113,14 @@ class PenerimaanTruckingHeaderController extends Controller
             $penerimaanTruckingHeader = (new PenerimaanTruckingHeader())->processUpdate($penerimaantruckingheader, $request->all());
             /* Set position and page */
             $penerimaanTruckingHeader->position = $this->getPosition($penerimaanTruckingHeader, $penerimaanTruckingHeader->getTable())->position;
-            // $penerimaanTruckingHeader->page = ceil($penerimaanTruckingHeader->position / ($request->limit ?? 10));
-   
             if ($request->limit==0) {
                 $penerimaanTruckingHeader->page = ceil($penerimaanTruckingHeader->position / (10));
             } else {
                 $penerimaanTruckingHeader->page = ceil($penerimaanTruckingHeader->position / ($request->limit ?? 10));
             }
+            $penerimaanTruckingHeader->tgldariheader = date('Y-m-01', strtotime(request()->tglbukti));
+            $penerimaanTruckingHeader->tglsampaiheader = date('Y-m-t', strtotime(request()->tglbukti));
+
 
             DB::commit();
             return response()->json([
@@ -145,13 +147,13 @@ class PenerimaanTruckingHeaderController extends Controller
             $selected = $this->getPosition($penerimaanTruckingHeader, $penerimaanTruckingHeader->getTable(), true);
             $penerimaanTruckingHeader->position = $selected->position;
             $penerimaanTruckingHeader->id = $selected->id;
-            // $penerimaanTruckingHeader->page = ceil($penerimaanTruckingHeader->position / ($request->limit ?? 10));
-
             if ($request->limit==0) {
                 $penerimaanTruckingHeader->page = ceil($penerimaanTruckingHeader->position / (10));
             } else {
                 $penerimaanTruckingHeader->page = ceil($penerimaanTruckingHeader->position / ($request->limit ?? 10));
             }
+            $penerimaanTruckingHeader->tgldariheader = date('Y-m-01', strtotime(request()->tglbukti));
+            $penerimaanTruckingHeader->tglsampaiheader = date('Y-m-t', strtotime(request()->tglbukti));
             DB::commit();
 
             return response()->json([
@@ -257,7 +259,7 @@ class PenerimaanTruckingHeaderController extends Controller
                 ->select('keterangan')
                 ->where('kodeerror', '=', 'SDC')
                 ->first();
-                
+
             $data = [
                 'error' => true,
                 'message' => $query->keterangan,

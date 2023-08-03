@@ -535,7 +535,7 @@ class AbsensiSupirHeader extends MyModel
             "coakaskeluar" => '',
             "pengeluaran_nobukti" => '',
             "postingdari" => 'ENTRY ABSENSI SUPIR',
-            
+            'proseslain' => 'absensisupir',
             "nominal" => [$uangJalan],
             "keterangan_detail" => ["Absensi Supir tgl ".date('Y-m-d', strtotime($data['tglbukti'])). " ".$absensiSupir->nobukti ],
         ];

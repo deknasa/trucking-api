@@ -70,7 +70,7 @@ class UpdateKasGantungHeaderRequest extends FormRequest
             'nobukti' => [Rule::in($getDataKasgantung), new DestroyKasGantung()],
             "tglbukti" => [
                 "required", 'date_format:d-m-Y',
-                'date_equals:' . date('d-m-Y', strtotime($getDataKasgantung->tglbukti)),
+                'before_or_equal:' . date('d-m-Y'),
                 new DateTutupBuku()
             ],
             'bank' => 'required'

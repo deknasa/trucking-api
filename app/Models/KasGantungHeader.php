@@ -286,6 +286,11 @@ class KasGantungHeader extends MyModel
             $table->increments('position');
         });
 
+        if ((date('Y-m', strtotime(request()->tglbukti)) != date('Y-m', strtotime(request()->tgldariheader))) || (date('Y-m', strtotime(request()->tglbukti)) != date('Y-m', strtotime(request()->tglsampaiheader)))) {
+            request()->tgldariheader = date('Y-m-01', strtotime(request()->tglbukti));
+            request()->tglsampaiheader = date('Y-m-t', strtotime(request()->tglbukti));
+        }
+        
         $this->setRequestParameters();
         $query = DB::table($modelTable);
         $query = $this->selectColumns($query);
@@ -526,8 +531,9 @@ class KasGantungHeader extends MyModel
             $keterangan_detail[] = $data['keterangan_detail'][$i];
             $nominal[] = $data['nominal'][$i];
         }
+        $prosesLain = $data['proseslain'] ?? '';
 
-        if ($data['bank_id'] != '' || $data['bank_id'] != null) {
+        if ($prosesLain == '') {
 
             $parameterController = new ParameterController;
             $statusApp = $parameterController->getparameterid('STATUS APPROVAL', 'STATUS APPROVAL', 'NON APPROVAL');
@@ -584,6 +590,29 @@ class KasGantungHeader extends MyModel
 
     public function processUpdate(KasGantungHeader $kasgantungHeader, array $data): KasGantungHeader
     {
+        $nobuktiOld = $kasgantungHeader->nobukti;
+        $group = 'KAS GANTUNG';
+        $subgroup = 'NOMOR KAS GANTUNG';
+
+        $querycek = DB::table('kasgantungheader')->from(
+            DB::raw("kasgantungheader a with (readuncommitted)")
+        )
+            ->select(
+                'a.nobukti'
+            )
+            ->where('a.id', $kasgantungHeader->id)
+            ->whereRAw("format(a.tglbukti,'MM-yyyy')='" . date('m-Y', strtotime($data['tglbukti'])) . "'")
+            ->first();
+         
+
+        if (isset($querycek)) {
+            $nobukti = $querycek->nobukti;
+        } else {
+            $nobukti = (new RunningNumberService)->get($group, $subgroup, $kasgantungHeader->getTable(), date('Y-m-d', strtotime($data['tglbukti'])));
+        }
+
+
+
         $isUpdateUangJalan = $data['isUpdateUangJalan'] ?? 0;
         $bank_id = $data['bank_id'] ?? $kasgantungHeader->bank_id;
         $bank_id = $bank_id->id ?? $bank_id;
@@ -593,6 +622,8 @@ class KasGantungHeader extends MyModel
         $kasgantungHeader->coakaskeluar = $data['coakaskeluar'] ?? $coakaskeluar;
         $kasgantungHeader->postingdari = $data['postingdari'] ?? 'EDIT KAS GANTUNG';
         $kasgantungHeader->modifiedby = auth('api')->user()->name;
+        $kasgantungHeader->tglbukti = date('Y-m-d', strtotime($data['tglbukti']));
+        $kasgantungHeader->nobukti = $nobukti;
 
         if (!$kasgantungHeader->save()) {
             throw new \Exception("Error Update kas gantung header.");
@@ -739,7 +770,9 @@ class KasGantungHeader extends MyModel
             if ($get) {
                 $newPengeluaran = new PengeluaranHeader();
                 $newPengeluaran = $newPengeluaran->find($get->id);
-                (new PengeluaranHeader())->processUpdate($newPengeluaran, $pengeluaranRequest);
+                $pengeluaran = (new PengeluaranHeader())->processUpdate($newPengeluaran, $pengeluaranRequest);
+                $kasgantungHeader->pengeluaran_nobukti = $pengeluaran->nobukti;
+                $kasgantungHeader->save();
             }
         }
 
