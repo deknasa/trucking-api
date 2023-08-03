@@ -32,6 +32,10 @@ class CreatePenerimaantruckingheaderTable extends Migration
             $table->string('userbukacetak',50)->nullable();
             $table->date('tglbukacetak')->nullable();
             $table->integer('jumlahcetak')->Length(11)->nullable();
+            $table->integer('statusapprovaledit')->Length(11)->nullable();
+            $table->string('userapprovaledit',50)->nullable();
+            $table->date('tglapprovaledit')->nullable();
+            $table->dateTime('tglbatasedit')->nullable();
             $table->string('modifiedby',50)->nullable();
             $table->timestamps();
 
