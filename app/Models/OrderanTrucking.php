@@ -1376,6 +1376,7 @@ class OrderanTrucking extends MyModel
         $orderanTrucking->container_id = $data['container_id'];
         $orderanTrucking->agen_id = $data['agen_id'];
         $orderanTrucking->jenisorder_id = $data['jenisorder_id'];
+        $orderanTrucking->jenisorderemkl_id = $data['jenisorder_id'];
         $orderanTrucking->pelanggan_id = $data['pelanggan_id'];
         $orderanTrucking->tarif_id = 0 ?? '';
         $orderanTrucking->nojobemkl = $data['nojobemkl'] ?? '';
@@ -1424,6 +1425,7 @@ class OrderanTrucking extends MyModel
         $orderanTrucking->container_id = $data['container_id'];
         $orderanTrucking->agen_id = $data['agen_id'];
         $orderanTrucking->jenisorder_id = $data['jenisorder_id'];
+        $orderanTrucking->jenisorderemkl_id = $data['jenisorderemkl_id'];
         $orderanTrucking->pelanggan_id = $data['pelanggan_id'];
         $orderanTrucking->tarif_id = 0;
         $orderanTrucking->nojobemkl = $data['nojobemkl'] ?? '';

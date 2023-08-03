@@ -222,12 +222,23 @@ class OrderanTruckingController extends Controller
     public function update(UpdateOrderanTruckingRequest $request, OrderanTrucking $orderantrucking): JsonResponse
     {
         DB::beginTransaction();
+
         try {
+            $orderan=$request->jenisorderemkl ?? $request->jenisorder ;
+            $jenisorderemkl_id=db::table("jenisorder")->from(
+                db::raw("jenisorder a with (readuncommitted)")
+            )
+            ->select(
+                'a.id'
+            )
+            ->where ('a.keterangan','=', $orderan)
+            ->first();
             $data = [
                 'tglbukti' => $request->tglbukti,
                 'container_id' => $request->container_id,
                 'agen_id' => $request->agen_id,
                 'jenisorder_id' => $request->jenisorder_id,
+                'jenisorderemkl_id' => $jenisorderemkl_id->id,
                 'pelanggan_id' => $request->pelanggan_id,
                 'tarifrincian_id' => $request->tarifrincian_id,
                 'nojobemkl' => $request->nojobemkl,
