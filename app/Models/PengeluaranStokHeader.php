@@ -44,6 +44,7 @@ class PengeluaranStokHeader extends MyModel
             ->leftJoin('supplier', 'pengeluaranstokheader.supplier_id', 'supplier.id')
             ->leftJoin('kerusakan', 'pengeluaranstokheader.kerusakan_id', 'kerusakan.id')
             ->leftJoin('bank', 'pengeluaranstokheader.bank_id', 'bank.id')
+            ->leftJoin('parameter as statusedit','pengeluaranstokheader.statusapprovaledit','statusedit.id')
             ->leftJoin('penerimaanstokheader as penerimaan', 'pengeluaranstokheader.penerimaanstok_nobukti', 'penerimaan.nobukti')
             ->leftJoin('penerimaanheader', 'pengeluaranstokheader.penerimaan_nobukti', 'penerimaanheader.nobukti')
             ->leftJoin('hutangbayarheader', 'pengeluaranstokheader.hutangbayar_nobukti', 'hutangbayarheader.nobukti')
@@ -345,6 +346,8 @@ class PengeluaranStokHeader extends MyModel
             "gandengan.keterangan as gandengan",
             "supir.namasupir as supir",
             "supplier.namasupplier as supplier",
+            "statusedit.memo as  statusedit",
+            "statusedit.id as  statusedit_id",
             DB::raw("'" . $getJudul->text . "' as judul"),
             DB::raw("'Tgl Cetak:'+format(getdate(),'dd-MM-yyyy HH:mm:ss')as tglcetak"),
             DB::raw(" 'User :" . auth('api')->user()->name . "' as usercetak")
@@ -364,6 +367,7 @@ class PengeluaranStokHeader extends MyModel
             ->leftJoin('supplier', 'pengeluaranstokheader.supplier_id', 'supplier.id')
             ->leftJoin('kerusakan', 'pengeluaranstokheader.kerusakan_id', 'kerusakan.id')
             ->leftJoin('bank', 'pengeluaranstokheader.bank_id', 'bank.id')
+            ->leftJoin('parameter as statusedit','pengeluaranstokheader.statusapprovaledit','statusedit.id')
             ->leftJoin('penerimaanstokheader as penerimaan', 'pengeluaranstokheader.penerimaanstok_nobukti', 'penerimaan.nobukti')
             ->leftJoin('penerimaanheader', 'pengeluaranstokheader.penerimaan_nobukti', 'penerimaanheader.nobukti')
             ->leftJoin('hutangbayarheader', 'pengeluaranstokheader.hutangbayar_nobukti', 'hutangbayarheader.nobukti')
@@ -424,7 +428,7 @@ class PengeluaranStokHeader extends MyModel
             ->select(
                 'a.nobukti'
             )
-            ->join(DB::raw("jurnalumumpusatheader b with (readuncommitted)"), 'a.penerimaan_nobukri', 'b.nobukti')
+            ->join(DB::raw("jurnalumumpusatheader b with (readuncommitted)"), 'a.penerimaan_nobukti', 'b.nobukti')
             ->where('a.nobukti', '=', $data->nobukti)
             ->first();
 
@@ -481,6 +485,33 @@ class PengeluaranStokHeader extends MyModel
         if ($now < $limit) return true;
         return false;
     }
+    public function todayValidation($tglbukti)
+    {
+        $tglbuktistr = strtotime($tglbukti);
+        $jam = 23;
+        $menit = 59;
+        $limit = strtotime($tglbukti.' +'.$jam.' hours +'.$menit.' minutes' );
+        $now = strtotime('now');
+        if ($now < $limit) return true;
+        return false;
+    }
+    
+    public function isEditAble($id)
+    {
+        $tidakBolehEdit = DB::table('pengeluaranstokheader')->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS APPROVAL')->where('text', 'NON APPROVAL')->first();
+
+        $query = DB::table('pengeluaranstokheader')->from(DB::raw("pengeluaranstokheader with (readuncommitted)"))
+            ->select('statusapprovaledit as statusedit','tglbatasedit')
+            ->where('id', $id)
+            ->first();
+
+        if ($query->statusedit != $tidakBolehEdit->id) {
+            $limit = strtotime($query->tglbatasedit);
+            $now = strtotime('now');
+            if ($now < $limit) return true;
+        }
+        return false;
+    }
 
     public function processStore(array $data): PengeluaranStokHeader
     {
@@ -492,6 +523,8 @@ class PengeluaranStokHeader extends MyModel
         $group = $fetchGrp->grp;
         $subGroup = $fetchGrp->subgrp;
         $statusformat = $fetchFormat->format;
+        $jamBatas = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))->select('text')->where('grp', 'JAMBATASAPPROVAL')->where('subgrp', 'JAMBATASAPPROVAL')->first();
+        $tglbatasedit = date('Y-m-d H:i:s',strtotime(date('Y-m-d').' '.$jamBatas->text));
 
         $statusCetak = Parameter::where('grp', 'STATUSCETAK')->where('text', 'BELUM CETAK')->first();
         $statusApproval = Parameter::where('grp', 'STATUS APPROVAL')->where('text', 'NON APPROVAL')->first();
@@ -528,6 +561,7 @@ class PengeluaranStokHeader extends MyModel
         $pengeluaranStokHeader->tglkasmasuk      = date('Y-m-d', strtotime($data['tglkasmasuk']));
         $pengeluaranStokHeader->modifiedby        = auth('api')->user()->name;
         $pengeluaranStokHeader->statuscetak        = $statusCetak->id ?? 0;
+        $pengeluaranStokHeader->tglbatasedit        = $tglbatasedit;
 
         $pengeluaranStokHeader->nobukti                  = (new RunningNumberService)->get($group, $subGroup, $pengeluaranStokHeader->getTable(), date('Y-m-d', strtotime($data['tglbukti'])));
 

@@ -28,9 +28,12 @@ class DatePengeluaranStokAllowed implements Rule
     {
         $date = date('Y-m-d', strtotime($value));
         $allowed = true ;
-        $isBukaTanggalValidation = PengeluaranStokHeader::isBukaTanggalValidation($date,request()->pengeluaranstok_id);
-        return $isBukaTanggalValidation;
-                    
+        $todayValidation = PengeluaranStokheader::todayValidation($date);
+        if (!$todayValidation) {
+            $isBukaTanggalValidation = PengeluaranStokHeader::isBukaTanggalValidation($date,request()->pengeluaranstok_id);
+            return $isBukaTanggalValidation;
+        }
+
         return  $allowed;
     }
 

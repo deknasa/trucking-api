@@ -27,6 +27,7 @@ class ValidasiDestroyPenerimaanStokHeader implements Rule
      */
     public function passes($attribute, $value)
     {
+      $id =  $value;
       $penerimaanStokHeader = new PenerimaanStokHeader();
       if ($penerimaanStokHeader->isOutUsed($id)) {
         $this->message = 'SATL';
@@ -36,10 +37,7 @@ class ValidasiDestroyPenerimaanStokHeader implements Rule
         $this->message = 'SATL';
         return false;
       }
-      if ($penerimaanStokHeader->isApproved($id)) {
-        $this->message = 'SAP';
-        return false;
-      } else if ($penerimaanStokHeader->isPOUsed($id)) {
+      if ($penerimaanStokHeader->isPOUsed($id)) {
         $this->message = 'SATL';
         return false;
       } else if ($penerimaanStokHeader->printValidation($id)) {

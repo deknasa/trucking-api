@@ -4,6 +4,7 @@ namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
 use App\Rules\DateTutupBuku;
+use App\Rules\DatePenerimaanStokAllowed;
 use App\Rules\ValidasiDestroyPenerimaanStokHeader;
 use App\Http\Controllers\Api\ParameterController;
 use App\Http\Controllers\Api\ErrorController;
@@ -65,6 +66,7 @@ class UpdatePenerimaanStokHeaderRequest extends FormRequest
             'id' => [new ValidasiDestroyPenerimaanStokHeader()],
             'tglbukti' => [
                 'required',
+                new DatePenerimaanStokAllowed(),
                 new DateTutupBuku()
             ],
             "supplier" => $requiredSupplier,

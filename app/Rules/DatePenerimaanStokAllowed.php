@@ -28,8 +28,11 @@ class DatePenerimaanStokAllowed implements Rule
     {
         $date = date('Y-m-d', strtotime($value));
         $allowed = true ;
-        $isBukaTanggalValidation = PenerimaanStokHeader::isBukaTanggalValidation($date,request()->penerimaanstok_id);
-        return $isBukaTanggalValidation;
+        $todayValidation = PenerimaanStokHeader::todayValidation($date);
+        if (!$todayValidation) {
+            $isBukaTanggalValidation = PenerimaanStokHeader::isBukaTanggalValidation($date,request()->penerimaanstok_id);
+            return $isBukaTanggalValidation;
+        }
                     
         return  $allowed;
     }

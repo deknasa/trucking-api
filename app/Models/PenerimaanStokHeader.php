@@ -46,6 +46,7 @@ class PenerimaanStokHeader extends MyModel
         ->leftJoin('gudang as dari','penerimaanstokheader.gudangdari_id','dari.id')
         ->leftJoin('gudang as ke','penerimaanstokheader.gudangke_id','ke.id')
         ->leftJoin('parameter as statuscetak','penerimaanstokheader.statuscetak','statuscetak.id')
+        ->leftJoin('parameter as statusedit','penerimaanstokheader.statusapprovaledit','statusedit.id')
         ->leftJoin('penerimaanstok','penerimaanstokheader.penerimaanstok_id','penerimaanstok.id')
         ->leftJoin('akunpusat','penerimaanstokheader.coa','akunpusat.coa')
         ->leftJoin('trado','penerimaanstokheader.trado_id','trado.id')
@@ -175,8 +176,10 @@ class PenerimaanStokHeader extends MyModel
             "penerimaanstokheader.supplier_id",
             "penerimaanstokheader.jumlahcetak",
             "statuscetak.memo as  statuscetak",
+            "statusedit.memo as  statusedit",
             "nobuktipenerimaanstok.tglbukti as parrenttglbukti",
             "statuscetak.id as  statuscetak_id",
+            "statusedit.id as  statusedit_id",
             DB::raw("'" . $getJudul->text . "' as judul")
         );
     }
@@ -233,6 +236,7 @@ class PenerimaanStokHeader extends MyModel
         ->leftJoin('gudang as dari','penerimaanstokheader.gudangdari_id','dari.id')
         ->leftJoin('gudang as ke','penerimaanstokheader.gudangke_id','ke.id')
         ->leftJoin('parameter as statuscetak','penerimaanstokheader.statuscetak','statuscetak.id')
+        ->leftJoin('parameter as statusedit','penerimaanstokheader.statusapprovaledit','statusedit.id')
         ->leftJoin('penerimaanstok','penerimaanstokheader.penerimaanstok_id','penerimaanstok.id')
         ->leftJoin('trado','penerimaanstokheader.trado_id','trado.id')
         ->leftJoin('trado as tradodari ','penerimaanstokheader.tradodari_id','tradodari.id')
@@ -401,6 +405,7 @@ class PenerimaanStokHeader extends MyModel
         ->leftJoin('gudang as dari','penerimaanstokheader.gudangdari_id','dari.id')
         ->leftJoin('gudang as ke','penerimaanstokheader.gudangke_id','ke.id')
         ->leftJoin('parameter as statuscetak','penerimaanstokheader.statuscetak','statuscetak.id')
+        ->leftJoin('parameter as statusedit','penerimaanstokheader.statusapprovaledit','statusedit.id')
         ->leftJoin('trado as tradodari ','penerimaanstokheader.tradodari_id','tradodari.id')
         ->leftJoin('trado as tradoke ','penerimaanstokheader.tradoke_id','tradoke.id')
         ->leftJoin('akunpusat','penerimaanstokheader.coa','akunpusat.coa')
@@ -461,6 +466,9 @@ class PenerimaanStokHeader extends MyModel
         $subGroup = $fetchGrp->subgrp;
         $statusformat = $fetchFormat->format;
         $statusCetak = Parameter::where('grp', 'STATUSCETAK')->where('text', 'BELUM CETAK')->first();
+        $jamBatas = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))->select('text')->where('grp', 'JAMBATASAPPROVAL')->where('subgrp', 'JAMBATASAPPROVAL')->first();
+        $tglbatasedit = date('Y-m-d H:i:s',strtotime(date('Y-m-d').' '.$jamBatas->text));
+
 
         $spb = Parameter::where('grp', 'SPB STOK')->where('subgrp', 'SPB STOK')->first();
         $pg = Parameter::where('grp', 'PG STOK')->where('subgrp', 'PG STOK')->first();
@@ -538,6 +546,7 @@ class PenerimaanStokHeader extends MyModel
         $penerimaanStokHeader->statuspindahgudang       = ($statuspindahgudang == null) ? "" : $statuspindahgudang->id;
         $penerimaanStokHeader->modifiedby               = auth('api')->user()->name;
         $penerimaanStokHeader->statuscetak              = $statusCetak->id;
+        $penerimaanStokHeader->tglbatasedit             = $tglbatasedit;
         $data['sortname']                               = $data['sortname'] ?? 'id';
         $data['sortorder']                              = $data['sortorder'] ?? 'asc';
         
@@ -1022,7 +1031,32 @@ class PenerimaanStokHeader extends MyModel
         if ($now < $limit) return true;
         return false;
     }
+    public function todayValidation($tglbukti)
+    {
+        $tglbuktistr = strtotime($tglbukti);
+        $jam = 23;
+        $menit = 59;
+        $limit = strtotime($tglbukti.' +'.$jam.' hours +'.$menit.' minutes' );
+        $now = strtotime('now');
+        if ($now < $limit) return true;
+        return false;
+    }
+    public function isEditAble($id)
+    {
+        $tidakBolehEdit = DB::table('penerimaanstokheader')->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS APPROVAL')->where('text', 'NON APPROVAL')->first();
 
+        $query = DB::table('penerimaanstokheader')->from(DB::raw("penerimaanstokheader with (readuncommitted)"))
+            ->select('statusapprovaledit as statusedit','tglbatasedit')
+            ->where('id', $id)
+            ->first();
+
+        if ($query->statusedit != $tidakBolehEdit->id) {
+            $limit = strtotime($query->tglbatasedit);
+            $now = strtotime('now');
+            if ($now < $limit) return true;
+        }
+        return false;
+    }
     
 
     // public function checkTempat($stokId,$persediaan,$persediaanId)
