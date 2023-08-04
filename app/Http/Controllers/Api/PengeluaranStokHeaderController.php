@@ -110,8 +110,9 @@ class PengeluaranStokHeaderController extends Controller
             $pengeluaranStokHeader = (new PengeluaranStokHeader())->processStore($data);
             /* Set position and page */
             $pengeluaranStokHeader->position = $this->getPosition($pengeluaranStokHeader, $pengeluaranStokHeader->getTable())->position;
-            $pengeluaranStokHeader->page = ceil($pengeluaranStokHeader->position / ($request->limit ?? 10));
-            if (isset($request->limit)) {
+            if ($request->limit == 0) {
+                $pengeluaranStokHeader->page = ceil($pengeluaranStokHeader->position / (10));
+            } else {
                 $pengeluaranStokHeader->page = ceil($pengeluaranStokHeader->position / ($request->limit ?? 10));
             }
 
@@ -184,8 +185,9 @@ class PengeluaranStokHeaderController extends Controller
             $pengeluaranStokHeader = (new PengeluaranStokHeader())->processUpdate($pengeluaranStokHeader, $data);
             /* Set position and page */
             $pengeluaranStokHeader->position = $this->getPosition($pengeluaranStokHeader, $pengeluaranStokHeader->getTable())->position;
-            $pengeluaranStokHeader->page = ceil($pengeluaranStokHeader->position / ($request->limit ?? 10));
-            if (isset($request->limit)) {
+            if ($request->limit == 0) {
+                $pengeluaranStokHeader->page = ceil($pengeluaranStokHeader->position / (10));
+            } else {
                 $pengeluaranStokHeader->page = ceil($pengeluaranStokHeader->position / ($request->limit ?? 10));
             }
 
@@ -213,7 +215,11 @@ class PengeluaranStokHeaderController extends Controller
             $selected = $this->getPosition($pengeluaranStokHeader, $pengeluaranStokHeader->getTable(), true);
             $pengeluaranStokHeader->position = $selected->position;
             $pengeluaranStokHeader->id = $selected->id;
-            $pengeluaranStokHeader->page = ceil($pengeluaranStokHeader->position / ($request->limit ?? 10));
+            if ($request->limit == 0) {
+                $pengeluaranStokHeader->page = ceil($pengeluaranStokHeader->position / (10));
+            } else {
+                $pengeluaranStokHeader->page = ceil($pengeluaranStokHeader->position / ($request->limit ?? 10));
+            }
 
             DB::commit();
 
