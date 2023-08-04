@@ -2,6 +2,7 @@
 
 namespace App\Rules;
 
+use App\Http\Controllers\Api\ErrorController;
 use Illuminate\Contracts\Validation\Rule;
 use App\Models\AbsensiSupirHeader;
 
@@ -55,6 +56,6 @@ class GetAbsensiMandorRule implements Rule
      */
     public function message()
     {
-        return 'Tidak Bisa memilih tanggal tersebut';
+        return app(ErrorController::class)->geterror('TBT')->keterangan;
     }
 }
