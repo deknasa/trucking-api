@@ -199,6 +199,7 @@ class Trado extends MyModel
                 'trado.jumlahsumbu',
                 'trado.jumlahroda',
                 'trado.model',
+                'trado.tahun',
                 DB::raw("(case when trado.nominalplusborongan IS NULL then 0 else trado.nominalplusborongan end) as nominalplusborongan"),
                 'trado.nobpkb',
                 'trado.jumlahbanserap',

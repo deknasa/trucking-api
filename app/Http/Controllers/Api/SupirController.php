@@ -145,43 +145,60 @@ class SupirController extends Controller
         DB::beginTransaction();
         try {
             $supir = Supir::lockForUpdate()->findOrFail($id);
+            $cekValidasi = (new Supir())->validationSupirResign($supir->noktp, $id);
+            if ($cekValidasi == false) {
+                $query = DB::table('error')
+                    ->select('keterangan')
+                    ->where('kodeerror', '=', 'SPI')
+                    ->first();
+                $getSupir = DB::table("supir")->from(DB::raw("supir with (readuncommitted)"))->select('namasupir')
+                    ->where('noktp', $supir->noktp)
+                    ->whereRaw("isnull(tglberhentisupir,'1900-01-01') = '1900-01-01'")
+                    ->first();
+                return response([
+                    'errors' => true,
+                    'statuspesan' => 'warning',
+                    'message' => 'NO KTP SUPIR ' . $query->keterangan . " ($getSupir->namasupir)"
+                ], 500);
+            } else {
 
-            if ($request->action == "approve") {
-                $supir->tglberhentisupir = date('Y-m-d', strtotime($request->tglberhentisupir));
-                $aksi = "APPROVED SUPIR RESIGN";
-                // $supir->keteranganberhentisupir = ($request->keteranganberhentisupir == null) ? "" : $request->keteranganberhentisupir;
-                $supir->keteranganberhentisupir = $request->keteranganberhentisupir;
-            } else if ($request->action == "unapprove") {
-                $supir->tglberhentisupir = date('Y-m-d', strtotime("1900-01-01"));
-                $aksi = "UNAPPROVED SUPIR RESIGN";
-                $supir->keteranganberhentisupir = null;
+                if ($request->action == "approve") {
+                    $supir->tglberhentisupir = date('Y-m-d', strtotime($request->tglberhentisupir));
+                    $aksi = "APPROVED SUPIR RESIGN";
+                    // $supir->keteranganberhentisupir = ($request->keteranganberhentisupir == null) ? "" : $request->keteranganberhentisupir;
+                    $supir->keteranganberhentisupir = $request->keteranganberhentisupir;
+                } else if ($request->action == "unapprove") {
+                    $supir->tglberhentisupir = date('Y-m-d', strtotime("1900-01-01"));
+                    $aksi = "UNAPPROVED SUPIR RESIGN";
+                    $supir->keteranganberhentisupir = null;
+                }
+
+                // $supir->tglberhentisupir = $tanggalberhenti;
+                // return response([$supir],422);
+                if ($supir->save()) {
+                    $logTrail = [
+                        'namatabel' => strtoupper($supir->getTable()),
+                        'postingdari' => 'APPROVED SUPIR RESIGN',
+                        'idtrans' => $supir->id,
+                        'nobuktitrans' => $supir->id,
+                        'aksi' => $aksi,
+                        'datajson' => $supir->toArray(),
+                        'modifiedby' => auth('api')->user()->name
+                    ];
+
+                    $validatedLogTrail = new StoreLogTrailRequest($logTrail);
+                    $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
+
+                    DB::commit();
+                }
+
+                return response([
+                    "data" => [
+                        "id" => $supir->id
+                    ],
+                    'message' => 'Berhasil'
+                ]);
             }
-
-            // $supir->tglberhentisupir = $tanggalberhenti;
-            // return response([$supir],422);
-            if ($supir->save()) {
-                $logTrail = [
-                    'namatabel' => strtoupper($supir->getTable()),
-                    'postingdari' => 'APPROVED SUPIR RESIGN',
-                    'idtrans' => $supir->id,
-                    'nobuktitrans' => $supir->id,
-                    'aksi' => $aksi,
-                    'datajson' => $supir->toArray(),
-                    'modifiedby' => auth('api')->user()->name
-                ];
-
-                $validatedLogTrail = new StoreLogTrailRequest($logTrail);
-                $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
-
-                DB::commit();
-            }
-
-            return response([
-                "data" => [
-                    "id" => $supir->id
-                ],
-                'message' => 'Berhasil'
-            ]);
         } catch (\Throwable $th) {
             DB::rollBack();
             throw $th;
@@ -194,28 +211,38 @@ class SupirController extends Controller
         $supir = new Supir();
         $cekdata = $supir->cekvalidasihapus($id);
         if ($cekdata['kondisi'] == true) {
-            $query = DB::table('error')
-                ->select(
-                    DB::raw("ltrim(rtrim(keterangan))+' (" . $cekdata['keterangan'] . ")' as keterangan")
-                )
-                ->where('kodeerror', '=', 'SATL')
-                ->get();
-            $keterangan = $query['0'];
+            if (request()->aksi == 'EDIT') {
+
+                $query = DB::table('error')
+                    ->select(
+                        DB::raw("ltrim(rtrim(keterangan))+' (" . $cekdata['keterangan'] . ")' as keterangan")
+                    )
+                    ->where('kodeerror', '=', 'SR')
+                    ->first();
+                $keterangan = $query->keterangan;
+            } else {
+
+                $query = DB::table('error')
+                    ->select(
+                        DB::raw("ltrim(rtrim(keterangan))+' (" . $cekdata['keterangan'] . ")' as keterangan")
+                    )
+                    ->where('kodeerror', '=', 'SATL')
+                    ->first();
+                $keterangan = $query->keterangan;
+            }
 
             $data = [
-                'status' => false,
+                'error' => true,
                 'message' => $keterangan,
-                'errors' => '',
-                'kondisi' => $cekdata['kondisi'],
+                'statuspesan' => 'warning',
             ];
 
             return response($data);
         } else {
             $data = [
-                'status' => false,
+                'error' => false,
                 'message' => '',
-                'errors' => '',
-                'kondisi' => $cekdata['kondisi'],
+                'statuspesan' => 'success',
             ];
 
             return response($data);
@@ -288,7 +315,7 @@ class SupirController extends Controller
             ];
             $supir = (new supir())->processStore($data);
             $supir->position = $this->getPosition($supir, $supir->getTable())->position;
-           if ($request->limit==0) {
+            if ($request->limit == 0) {
                 $supir->page = ceil($supir->position / (10));
             } else {
                 $supir->page = ceil($supir->position / ($request->limit ?? 10));
@@ -353,7 +380,7 @@ class SupirController extends Controller
 
             $supir = (new Supir())->processUpdate($supir, $data);
             $supir->position = $this->getPosition($supir, $supir->getTable())->position;
-           if ($request->limit==0) {
+            if ($request->limit == 0) {
                 $supir->page = ceil($supir->position / (10));
             } else {
                 $supir->page = ceil($supir->position / ($request->limit ?? 10));
@@ -384,7 +411,7 @@ class SupirController extends Controller
             $selected = $this->getPosition($supir, $supir->getTable(), true);
             $supir->position = $selected->position;
             $supir->id = $selected->id;
-           if ($request->limit==0) {
+            if ($request->limit == 0) {
                 $supir->page = ceil($supir->position / (10));
             } else {
                 $supir->page = ceil($supir->position / ($request->limit ?? 10));
@@ -596,7 +623,7 @@ class SupirController extends Controller
         if (request()->cekExport) {
 
             if (request()->offset == "-1" && request()->limit == '1') {
-                
+
                 return response([
                     'errors' => [
                         "export" => app(ErrorController::class)->geterror('DTA')->keterangan
