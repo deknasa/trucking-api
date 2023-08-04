@@ -4,6 +4,7 @@ namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
 use App\Rules\DateTutupBuku;
+use App\Rules\DatePengeluaranStokAllowed;
 use App\Rules\ValidasiDestroyPengeluaranStokHeader;
 use App\Http\Controllers\Api\ParameterController;
 use App\Http\Controllers\Api\ErrorController;
@@ -39,6 +40,7 @@ class UpdatePengeluaranStokHeaderRequest extends FormRequest
             'id' => [new ValidasiDestroyPengeluaranStokHeader ()],
             "tglbukti" => [
                 "required",
+                new DatePengeluaranStokAllowed(),
                 new DateTutupBuku()
             ],
             

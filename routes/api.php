@@ -833,6 +833,7 @@ route::middleware(['auth:api', 'authorized'])->group(function () {
     Route::get('penerimaanstokheader/field_length', [PenerimaanStokHeaderController::class, 'fieldLength']);
     Route::get('penerimaanstokheader/{id}/printreport', [PenerimaanStokHeaderController::class, 'printReport'])->whereNumber('id');
     Route::post('penerimaanstokheader/{id}/cekvalidasi', [PenerimaanStokHeaderController::class, 'cekValidasi'])->name('penerimaanstokheader.cekValidasi')->whereNumber('id');
+    Route::post('penerimaanstokheader/{id}/approvaledit', [PenerimaanStokHeaderController::class, 'approvalEdit']);
     Route::get('penerimaanstokheader/{id}/pengeluaranstoknobukti', [PenerimaanStokHeaderController::class, 'getPengeluaranStok'])->name('penerimaanstokheader.pengeluaranstoknobukti')->whereNumber('id');
     Route::apiResource('penerimaanstokheader', PenerimaanStokHeaderController::class)->whereNumber('penerimaanstokheader');
     Route::get('penerimaanstokdetail/hutang', [PenerimaanStokDetailController::class, 'hutang']);
@@ -846,6 +847,7 @@ route::middleware(['auth:api', 'authorized'])->group(function () {
 
     Route::get('pengeluaranstokheader/{id}/printreport', [PengeluaranStokHeaderController::class, 'printReport'])->whereNumber('id');
     Route::post('pengeluaranstokheader/{id}/cekvalidasi', [PengeluaranStokHeaderController::class, 'cekValidasi'])->name('pengeluaranstokheader.cekValidasi')->whereNumber('id');
+    Route::post('pengeluaranstokheader/{id}/approvaledit', [PengeluaranStokHeaderController::class, 'approvalEdit']);
     Route::apiResource('pengeluaranstokheader', PengeluaranStokHeaderController::class)->whereNumber('pengeluaranstokheader');
     Route::apiResource('pengeluaranstokdetail', PengeluaranStokDetailController::class)->whereNumber('pengeluaranstokdetail');
     Route::get('pengeluaranstokdetail/hutangbayar', [PengeluaranStokDetailController::class, 'hutangbayar']);

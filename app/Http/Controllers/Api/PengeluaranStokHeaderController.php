@@ -389,6 +389,36 @@ class PengeluaranStokHeaderController extends Controller
             ];
 
             return response($data);
+        } else if (!$pengeluaran->todayValidation($pengeluaran->tglbukti)) {
+            $query = Error::from(DB::raw("error with (readuncommitted)"))
+            ->select('keterangan')
+            ->whereRaw("kodeerror = 'SDC'")
+            ->get();
+            // $keterangan = $query['0'];
+            $keterangan = ['keterangan' => 'transaksi Sudah berbeda tanggal']; //$query['0'];
+            $data = [
+                'message' => $keterangan,
+                'errors' => 'sudah cetak',
+                'kodestatus' => '1',
+                'kodenobukti' => '1'
+            ];
+
+            return response($data);
+        } else if (!$pengeluaran->isEditAble($id)) {
+            $query = Error::from(DB::raw("error with (readuncommitted)"))
+            ->select('keterangan')
+            ->whereRaw("kodeerror = 'SDC'")
+            ->get();
+            // $keterangan = $query['0'];
+            $keterangan = ['keterangan' => 'Transaksi Tidak Bisa diedit']; //$query['0'];
+            $data = [
+                'message' => $keterangan,
+                'errors' => 'sudah cetak',
+                'kodestatus' => '1',
+                'kodenobukti' => '1'
+            ];
+
+            return response($data);
         } else {
 
             $data = [
@@ -502,5 +532,58 @@ class PengeluaranStokHeaderController extends Controller
      */
     public function export()
     {
+    }
+
+    
+    /**
+     * @ClassName 
+     */
+    public function approvalEdit($id)
+    {
+        DB::beginTransaction();
+        try {
+            $pengeluaranStokHeader = PengeluaranStokheader::lockForUpdate()->findOrFail($id);
+            
+            $statusBolehEdit = DB::table('pengeluaranstokheader')->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS APPROVAL')->where('text', 'APPROVAL')->first();
+            $statusTidakBolehEdit = DB::table('pengeluaranstokheader')->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS APPROVAL')->where('text', 'NON APPROVAL')->first();
+            // statusapprovaleditabsensi,tglapprovaleditabsensi,userapprovaleditabsensi 
+            if ($pengeluaranStokHeader->statusapprovaledit == $statusBolehEdit->id) {
+                $pengeluaranStokHeader->statusapprovaledit = $statusTidakBolehEdit->id;
+                $pengeluaranStokHeader->tglbatasedit = null;
+                $aksi = $statusTidakBolehEdit->text;
+            } else {
+                $tglbatasedit = date("Y-m-d", strtotime('today'));
+                $tglbatasedit = date("Y-m-d H:i:s", strtotime($tglbatasedit. ' 23:59:00'));
+                $pengeluaranStokHeader->tglbatasedit = $tglbatasedit;
+                $pengeluaranStokHeader->statusapprovaledit = $statusBolehEdit->id;
+                $aksi = $statusBolehEdit->text;
+            }
+            $pengeluaranStokHeader->tglapprovaledit = date("Y-m-d", strtotime('today'));
+            $pengeluaranStokHeader->userapprovaledit = auth('api')->user()->name;
+
+            if ($pengeluaranStokHeader->save()) {
+                $logTrail = [
+                    'namatabel' => strtoupper($pengeluaranStokHeader->getTable()),
+                    'postingdari' => 'APPROVED SUPIR RESIGN',
+                    'idtrans' => $pengeluaranStokHeader->id,
+                    'nobuktitrans' => $pengeluaranStokHeader->id,
+                    'aksi' => $aksi,
+                    'datajson' => $pengeluaranStokHeader->toArray(),
+                    'modifiedby' => auth('api')->user()->name
+                ];
+
+                $validatedLogTrail = new StoreLogTrailRequest($logTrail);
+                $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
+
+                DB::commit();
+            }
+
+            return response([
+                'message' => 'Berhasil'
+            ]);
+        } catch (\Throwable $th) {
+            DB::rollBack();
+            throw $th;
+        }
     }
 }

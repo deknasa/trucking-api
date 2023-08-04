@@ -286,8 +286,8 @@ class PenerimaanStokHeaderController extends Controller
     {
         $penerimaanStokHeader  = new PenerimaanStokHeader();
 
-        // $peneimaan = $penerimaanStokHeader->findOrFail($id);
-
+        $peneimaan = $penerimaanStokHeader->findOrFail($id);
+        // dd($peneimaan->tglbukti);
         if ($penerimaanStokHeader->isOutUsed($id)) {
             $query = Error::from(DB::raw("error with (readuncommitted)"))
                 ->select('keterangan')
@@ -360,6 +360,36 @@ class PenerimaanStokHeaderController extends Controller
             ];
 
             return response($data);
+        } else if (!$penerimaanStokHeader->todayValidation($peneimaan->tglbukti)) {
+            $query = Error::from(DB::raw("error with (readuncommitted)"))
+            ->select('keterangan')
+            ->whereRaw("kodeerror = 'SDC'")
+            ->get();
+            // $keterangan = $query['0'];
+            $keterangan = ['keterangan' => 'transaksi Sudah berbeda tanggal']; //$query['0'];
+            $data = [
+                'message' => $keterangan,
+                'errors' => 'sudah cetak',
+                'kodestatus' => '1',
+                'kodenobukti' => '1'
+            ];
+
+            return response($data);
+        } else if (!$penerimaanStokHeader->isEditAble($id)) {
+            $query = Error::from(DB::raw("error with (readuncommitted)"))
+            ->select('keterangan')
+            ->whereRaw("kodeerror = 'SDC'")
+            ->get();
+            // $keterangan = $query['0'];
+            $keterangan = ['keterangan' => 'Transaksi Tidak Bisa diedit']; //$query['0'];
+            $data = [
+                'message' => $keterangan,
+                'errors' => 'sudah cetak',
+                'kodestatus' => '1',
+                'kodenobukti' => '1'
+            ];
+
+            return response($data);
         } else {
 
             $data = [
@@ -370,6 +400,58 @@ class PenerimaanStokHeaderController extends Controller
             ];
 
             return response($data);
+        }
+    }
+
+    /**
+     * @ClassName 
+     */
+    public function approvalEdit($id)
+    {
+        DB::beginTransaction();
+        try {
+            $penerimaanStokHeader = PenerimaanStokHeader::lockForUpdate()->findOrFail($id);
+            
+            $statusBolehEdit = DB::table('penerimaanstokheader')->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS APPROVAL')->where('text', 'APPROVAL')->first();
+            $statusTidakBolehEdit = DB::table('penerimaanstokheader')->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS APPROVAL')->where('text', 'NON APPROVAL')->first();
+            // statusapprovaleditabsensi,tglapprovaleditabsensi,userapprovaleditabsensi 
+            if ($penerimaanStokHeader->statusapprovaledit == $statusBolehEdit->id) {
+                $penerimaanStokHeader->statusapprovaledit = $statusTidakBolehEdit->id;
+                $penerimaanStokHeader->tglbatasedit = null;
+                $aksi = $statusTidakBolehEdit->text;
+            } else {
+                $tglbatasedit = date("Y-m-d", strtotime('today'));
+                $tglbatasedit = date("Y-m-d H:i:s", strtotime($tglbatasedit. ' 23:59:00'));
+                $penerimaanStokHeader->tglbatasedit = $tglbatasedit;
+                $penerimaanStokHeader->statusapprovaledit = $statusBolehEdit->id;
+                $aksi = $statusBolehEdit->text;
+            }
+            $penerimaanStokHeader->tglapprovaledit = date("Y-m-d", strtotime('today'));
+            $penerimaanStokHeader->userapprovaledit = auth('api')->user()->name;
+
+            if ($penerimaanStokHeader->save()) {
+                $logTrail = [
+                    'namatabel' => strtoupper($penerimaanStokHeader->getTable()),
+                    'postingdari' => 'APPROVED SUPIR RESIGN',
+                    'idtrans' => $penerimaanStokHeader->id,
+                    'nobuktitrans' => $penerimaanStokHeader->id,
+                    'aksi' => $aksi,
+                    'datajson' => $penerimaanStokHeader->toArray(),
+                    'modifiedby' => auth('api')->user()->name
+                ];
+
+                $validatedLogTrail = new StoreLogTrailRequest($logTrail);
+                $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
+
+                DB::commit();
+            }
+
+            return response([
+                'message' => 'Berhasil'
+            ]);
+        } catch (\Throwable $th) {
+            DB::rollBack();
+            throw $th;
         }
     }
     public function printReport($id)
