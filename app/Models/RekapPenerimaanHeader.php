@@ -211,6 +211,10 @@ class RekapPenerimaanHeader extends MyModel
             $table->increments('position');
         });
 
+        if ((date('Y-m', strtotime(request()->tglbukti)) != date('Y-m', strtotime(request()->tgldariheader))) || (date('Y-m', strtotime(request()->tglbukti)) != date('Y-m', strtotime(request()->tglsampaiheader)))) {
+            request()->tgldariheader = date('Y-m-01', strtotime(request()->tglbukti));
+            request()->tglsampaiheader = date('Y-m-t', strtotime(request()->tglbukti));
+        }
         $query = DB::table($modelTable);
         $query = $this->select(
             "id",
@@ -226,9 +230,8 @@ class RekapPenerimaanHeader extends MyModel
             "created_at",
             "updated_at",
         );
-        if (request()->tgldari) {
-            $query->whereBetween('tglbukti', [date('Y-m-d', strtotime(request()->tgldari)), date('Y-m-d', strtotime(request()->tglsampai))]);
-        }
+        $query->whereBetween('tglbukti', [date('Y-m-d', strtotime(request()->tgldariheader)), date('Y-m-d', strtotime(request()->tglsampaiheader))]);
+
         $this->sort($query);
         $models = $this->filter($query);
 
@@ -297,7 +300,7 @@ class RekapPenerimaanHeader extends MyModel
         } else {
             $query->orderBy('rekappenerimaandetail.' . $this->params['sortIndex'], $this->params['sortOrder']);
         }
-        
+
         $this->filter($query);
         $this->paginate($query);
         $data = $query->get();
@@ -328,10 +331,10 @@ class RekapPenerimaanHeader extends MyModel
         $this->setRequestParameters();
 
         $getJudul = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))
-        ->select('text')
-        ->where('grp', 'JUDULAN LAPORAN')
-        ->where('subgrp', 'JUDULAN LAPORAN')
-        ->first();
+            ->select('text')
+            ->where('grp', 'JUDULAN LAPORAN')
+            ->where('subgrp', 'JUDULAN LAPORAN')
+            ->first();
 
         $query = DB::table($this->table)->from(
             DB::raw($this->table . " with (readuncommitted)")
@@ -348,11 +351,11 @@ class RekapPenerimaanHeader extends MyModel
             DB::raw("'Bukti Rekap Penerimaan ' as judulLaporan"),
             DB::raw("'" . $getJudul->text . "' as judul"),
             DB::raw("'Tgl Cetak:'+format(getdate(),'dd-MM-yyyy HH:mm:ss')as tglcetak"),
-            DB::raw(" 'User :".auth('api')->user()->name."' as usercetak")
+            DB::raw(" 'User :" . auth('api')->user()->name . "' as usercetak")
         )
-        ->where("$this->table.id", $id)
-        ->leftJoin(DB::raw("parameter as statuscetak with (readuncommitted)"), 'rekappenerimaanheader.statuscetak', 'statuscetak.id')
-        ->leftJoin('bank','rekappenerimaanheader.bank_id','bank.id');
+            ->where("$this->table.id", $id)
+            ->leftJoin(DB::raw("parameter as statuscetak with (readuncommitted)"), 'rekappenerimaanheader.statuscetak', 'statuscetak.id')
+            ->leftJoin('bank', 'rekappenerimaanheader.bank_id', 'bank.id');
         $data = $query->first();
         return $data;
     }
@@ -402,8 +405,8 @@ class RekapPenerimaanHeader extends MyModel
             'modifiedby' => $rekapPenerimaanHeader->modifiedby
         ]);
 
+        $rekapPenerimaanDetails = [];
         if ($data['penerimaan_nobukti']) {
-            $rekapPenerimaanDetails = [];
             for ($i = 0; $i < count($data['penerimaan_nobukti']); $i++) {
 
                 $rekapPenerimaanDetail = (new RekapPenerimaanDetail())->processStore($rekapPenerimaanHeader, [
@@ -423,7 +426,7 @@ class RekapPenerimaanHeader extends MyModel
             'idtrans' =>  $rekapPenerimaanHeaderLogTrail->id,
             'nobuktitrans' => $rekapPenerimaanHeader->nobukti,
             'aksi' => 'ENTRY',
-            'datajson' => $rekapPenerimaanDetail,
+            'datajson' => $rekapPenerimaanDetails,
             'modifiedby' => auth('api')->user()->name,
 
         ]);
@@ -467,6 +470,7 @@ class RekapPenerimaanHeader extends MyModel
                     "keterangandetail" => $data['keterangan_detail'][$i],
                     "modifiedby" => auth('api')->user()->name
                 ]);
+                $rekapPenerimaanDetails[] = $rekapPenerimaanDetail->toArray();
             }
 
             (new LogTrail())->processStore([
@@ -475,7 +479,7 @@ class RekapPenerimaanHeader extends MyModel
                 'idtrans' =>  $rekapPenerimaanHeaderLogTrail->id,
                 'nobuktitrans' => $rekapPenerimaanheader->nobukti,
                 'aksi' => 'ENTRY',
-                'datajson' => $rekapPenerimaanDetail,
+                'datajson' => $rekapPenerimaanDetails,
                 'modifiedby' => auth('api')->user()->name,
 
             ]);

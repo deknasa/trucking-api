@@ -62,7 +62,7 @@ class StorePendapatanSupirHeaderRequest extends FormRequest
         $rules = [
             'tglbukti' => [
                 'required',
-                'date_equals:' . date('d-m-Y'),
+                'before_or_equal:' . date('d-m-Y'),
                 new DateTutupBuku()
             ],
             'bank' => 'required',
@@ -73,7 +73,7 @@ class StorePendapatanSupirHeaderRequest extends FormRequest
             'tgldari' => [
                 'required', 'date_format:d-m-Y',
                 'before:' . $tglbatasakhir,
-                'after_or_equal:' . $tglbatasawal,
+                new DateTutupBuku()
             ],
             'tglsampai' => [
                 'required', 'date_format:d-m-Y',

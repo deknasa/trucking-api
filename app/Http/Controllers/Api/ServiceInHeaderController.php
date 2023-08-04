@@ -60,6 +60,9 @@ class ServiceInHeaderController extends Controller
             } else {
                 $serviceInHeader->page = ceil($serviceInHeader->position / ($request->limit ?? 10));
             }
+            $serviceInHeader->tgldariheader = date('Y-m-01', strtotime(request()->tglbukti));
+            $serviceInHeader->tglsampaiheader = date('Y-m-t', strtotime(request()->tglbukti));
+            
             DB::commit();
 
             return response()->json([
@@ -107,7 +110,9 @@ class ServiceInHeaderController extends Controller
             } else {
                 $serviceInHeader->page = ceil($serviceInHeader->position / ($request->limit ?? 10));
             }
-
+            $serviceInHeader->tgldariheader = date('Y-m-01', strtotime(request()->tglbukti));
+            $serviceInHeader->tglsampaiheader = date('Y-m-t', strtotime(request()->tglbukti));
+            
             DB::commit();
 
             return response()->json([
@@ -138,7 +143,9 @@ class ServiceInHeaderController extends Controller
             } else {
                 $serviceInHeader->page = ceil($serviceInHeader->position / ($request->limit ?? 10));
             }
-
+            $serviceInHeader->tgldariheader = date('Y-m-01', strtotime(request()->tglbukti));
+            $serviceInHeader->tglsampaiheader = date('Y-m-t', strtotime(request()->tglbukti));
+            
             DB::commit();
 
             return response()->json([

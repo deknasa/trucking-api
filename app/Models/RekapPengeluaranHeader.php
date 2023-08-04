@@ -200,6 +200,11 @@ class RekapPengeluaranHeader extends MyModel
             $table->dateTime('updated_at')->nullable();
         });
 
+        if ((date('Y-m', strtotime(request()->tglbukti)) != date('Y-m', strtotime(request()->tgldariheader))) || (date('Y-m', strtotime(request()->tglbukti)) != date('Y-m', strtotime(request()->tglsampaiheader)))) {
+            request()->tgldariheader = date('Y-m-01', strtotime(request()->tglbukti));
+            request()->tglsampaiheader = date('Y-m-t', strtotime(request()->tglbukti));
+        }
+
         $query = DB::table($modelTable);
         $query = $this->select(
             "id",
@@ -214,9 +219,8 @@ class RekapPengeluaranHeader extends MyModel
             "statusformat",
             "modifiedby",
         );
-        if (request()->tgldari) {
-            $query->whereBetween('tglbukti', [date('Y-m-d', strtotime(request()->tgldari)), date('Y-m-d', strtotime(request()->tglsampai))]);
-        }
+        $query->whereBetween('tglbukti', [date('Y-m-d', strtotime(request()->tgldariheader)), date('Y-m-d', strtotime(request()->tglsampaiheader))]);
+
         $this->sort($query);
         $models = $this->filter($query);
 
@@ -315,10 +319,10 @@ class RekapPengeluaranHeader extends MyModel
         $this->setRequestParameters();
 
         $getJudul = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))
-        ->select('text')
-        ->where('grp', 'JUDULAN LAPORAN')
-        ->where('subgrp', 'JUDULAN LAPORAN')
-        ->first();
+            ->select('text')
+            ->where('grp', 'JUDULAN LAPORAN')
+            ->where('subgrp', 'JUDULAN LAPORAN')
+            ->first();
 
         $query = DB::table($this->table)->from(
             DB::raw($this->table . " with (readuncommitted)")
@@ -334,12 +338,12 @@ class RekapPengeluaranHeader extends MyModel
             DB::raw("'Bukti Rekap Pengeluaran ' as judulLaporan"),
             DB::raw("'" . $getJudul->text . "' as judul"),
             DB::raw("'Tgl Cetak:'+format(getdate(),'dd-MM-yyyy HH:mm:ss')as tglcetak"),
-            DB::raw(" 'User :".auth('api')->user()->name."' as usercetak")
+            DB::raw(" 'User :" . auth('api')->user()->name . "' as usercetak")
         )
-        ->where("$this->table.id", $id)
-        ->leftJoin(DB::raw("parameter as statuscetak with (readuncommitted)"), 'rekappengeluaranheader.statuscetak', 'statuscetak.id')
-        ->leftJoin('bank','rekappengeluaranheader.bank_id','bank.id');
-        
+            ->where("$this->table.id", $id)
+            ->leftJoin(DB::raw("parameter as statuscetak with (readuncommitted)"), 'rekappengeluaranheader.statuscetak', 'statuscetak.id')
+            ->leftJoin('bank', 'rekappengeluaranheader.bank_id', 'bank.id');
+
         $data = $query->first();
         return $data;
     }

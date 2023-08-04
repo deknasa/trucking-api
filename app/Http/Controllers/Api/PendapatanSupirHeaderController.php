@@ -75,6 +75,9 @@ class PendapatanSupirHeaderController extends Controller
             } else {
                 $pendapatanSupirHeader->page = ceil($pendapatanSupirHeader->position / ($request->limit ?? 10));
             }
+            $pendapatanSupirHeader->tgldariheader = date('Y-m-01', strtotime(request()->tglbukti));
+            $pendapatanSupirHeader->tglsampaiheader = date('Y-m-t', strtotime(request()->tglbukti));
+            
             DB::commit();
 
             return response()->json([
@@ -134,6 +137,9 @@ class PendapatanSupirHeaderController extends Controller
             } else {
                 $pendapatanSupirHeader->page = ceil($pendapatanSupirHeader->position / ($request->limit ?? 10));
             }
+            $pendapatanSupirHeader->tgldariheader = date('Y-m-01', strtotime(request()->tglbukti));
+            $pendapatanSupirHeader->tglsampaiheader = date('Y-m-t', strtotime(request()->tglbukti));
+            
             DB::commit();
 
             return response()->json([
@@ -163,6 +169,9 @@ class PendapatanSupirHeaderController extends Controller
             } else {
                 $pendapatanSupir->page = ceil($pendapatanSupir->position / ($request->limit ?? 10));
             }
+            $pendapatanSupir->tgldariheader = date('Y-m-01', strtotime(request()->tglbukti));
+            $pendapatanSupir->tglsampaiheader = date('Y-m-t', strtotime(request()->tglbukti));
+            
             DB::commit();
 
             return response()->json([

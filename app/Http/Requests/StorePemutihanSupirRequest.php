@@ -4,6 +4,9 @@ namespace App\Http\Requests;
 
 use App\Http\Controllers\Api\ErrorController;
 use App\Rules\DateTutupBuku;
+use App\Rules\ExistBank;
+use App\Rules\ExistSupir;
+use App\Rules\ValidasiHutangList;
 use Illuminate\Foundation\Http\FormRequest;
 
 class StorePemutihanSupirRequest extends FormRequest
@@ -25,15 +28,49 @@ class StorePemutihanSupirRequest extends FormRequest
      */
     public function rules()
     {
-        return [
+        $jumlahdetail = $this->jumlahdetail ?? 0;
+        $supir_id = $this->supir_id;
+        $rulesSupir_id = [];
+        if ($supir_id != null) {
+            $rulesSupir_id = [
+                'supir_id' => ['required', 'numeric', 'min:1', new ExistSupir()]
+            ];
+        } else if ($supir_id == null && $this->supir != '') {
+            $rulesSupir_id = [
+                'supir_id' => ['required', 'numeric', 'min:1', new ExistSupir()]
+            ];
+        }
+
+        $bank_id = $this->bank_id;
+        $ruleBank_id = [];
+        if ($bank_id != null) {
+            $ruleBank_id = [
+                'bank_id' => ['required', 'numeric', 'min:1', new ExistBank()]
+            ];
+        } else if ($bank_id == null && $this->bank != '') {
+            $ruleBank_id = [
+                'bank_id' => ['required', 'numeric', 'min:1', new ExistBank()]
+            ];
+        }
+
+        $rules = [
             'tglbukti' => [
                 'required', 'date_format:d-m-Y',
-                'date_equals:' . date('d-m-Y'),
+                'before_or_equal:' . date('d-m-Y'),
                 new DateTutupBuku()
             ],
-            'supir' => 'required', 'numeric', 'min:1',
-            'bank' => 'required', 'numeric', 'min:1'
+            'supir' => [
+                'required', new ValidasiHutangList($jumlahdetail)
+            ],
+            'bank' => 'required',
         ];
+        $rules = array_merge(
+            $rules,
+            $ruleBank_id,
+            $rulesSupir_id
+        );
+
+        return $rules;
     }
 
     public function messages()

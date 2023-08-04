@@ -191,6 +191,11 @@ class ProsesUangJalanSupirHeader extends MyModel
             $table->increments('position');
         });
 
+        if ((date('Y-m', strtotime(request()->tglbukti)) != date('Y-m', strtotime(request()->tgldariheader))) || (date('Y-m', strtotime(request()->tglbukti)) != date('Y-m', strtotime(request()->tglsampaiheader)))) {
+            request()->tgldariheader = date('Y-m-01', strtotime(request()->tglbukti));
+            request()->tglsampaiheader = date('Y-m-t', strtotime(request()->tglbukti));
+        }
+
         $this->setRequestParameters();
         $query = DB::table($modelTable);
         $query = $this->selectColumns($query);
@@ -640,6 +645,26 @@ class ProsesUangJalanSupirHeader extends MyModel
     public function processUpdate(ProsesUangJalanSupirHeader $prosesUangJalanSupirHeader, array $data): ProsesUangJalanSupirHeader
     {
 
+        $group = 'PROSES UANG JALAN BUKTI';
+        $subGroup = 'PROSES UANG JALAN BUKTI';
+        $querycek = DB::table('prosesuangjalansupirheader')->from(
+            DB::raw("prosesuangjalansupirheader a with (readuncommitted)")
+        )
+            ->select(
+                'a.nobukti'
+            )
+            ->where('a.id', $prosesUangJalanSupirHeader->id)
+            ->whereRAw("format(a.tglbukti,'MM-yyyy')='" . date('m-Y', strtotime($data['tglbukti'])) . "'")
+            ->first();
+
+        if (isset($querycek)) {
+            $nobukti = $querycek->nobukti;
+        } else {
+            $nobukti = (new RunningNumberService)->get($group, $subGroup, $prosesUangJalanSupirHeader->getTable(), date('Y-m-d', strtotime($data['tglbukti'])));
+        }
+
+        $prosesUangJalanSupirHeader->nobukti = $nobukti;
+        $prosesUangJalanSupirHeader->tglbukti = date('Y-m-d', strtotime($data['tglbukti']));
         $prosesUangJalanSupirHeader->modifiedby = auth('api')->user()->name;
 
         if (!$prosesUangJalanSupirHeader->save()) {

@@ -72,7 +72,7 @@ class UpdatePendapatanSupirHeaderRequest extends FormRequest
             "tglbukti" => [
                 "required",
                 'date_format:d-m-Y',
-                'date_equals:' . date('d-m-Y', strtotime($getData->tglbukti)),
+                'before_or_equal:' . date('d-m-Y'),
                 new DateTutupBuku()
             ], 
             'bank' => 'required',
@@ -82,11 +82,13 @@ class UpdatePendapatanSupirHeaderRequest extends FormRequest
             ],
             'tgldari' => [
                 'required', 'date_format:d-m-Y',
-                'date_equals:' . date('d-m-Y', strtotime($getData->tgldari)),
+                'before_or_equal:' . date('d-m-Y'),
             ],
             'tglsampai' => [
                 'required', 'date_format:d-m-Y',
-                'date_equals:' . date('d-m-Y', strtotime($getData->tglsampai)),
+                'after_or_equal:' . date('d-m-Y', strtotime($this->tgldari)),
+                'before_or_equal:' . date('d-m-Y'),
+
             ],
         ];
         $rules = array_merge(

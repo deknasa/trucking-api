@@ -43,6 +43,7 @@ class UpdateRekapPenerimaanHeaderRequest extends FormRequest
             'id' => [ new ValidasiUpdateRekapPenerimaanHeader($cekdata['kondisi'],$cekdtcetak)],
             "tglbukti" => [
                 "required",'date_format:d-m-Y',
+                'before_or_equal:' . date('d-m-Y'),
                 new DateTutupBuku()
             ],
             "tgltransaksi"=>"required|date_format:d-m-Y",

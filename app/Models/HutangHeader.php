@@ -204,7 +204,10 @@ class HutangHeader extends MyModel
             $table->bigInteger('statusformat')->nullable();
             $table->increments('position');
         });
-
+        if ((date('Y-m', strtotime(request()->tglbukti)) != date('Y-m', strtotime(request()->tgldariheader))) || (date('Y-m', strtotime(request()->tglbukti)) != date('Y-m', strtotime(request()->tglsampaiheader)))) {
+            request()->tgldariheader = date('Y-m-01', strtotime(request()->tglbukti));
+            request()->tglsampaiheader = date('Y-m-t', strtotime(request()->tglbukti));
+        }
         $this->setRequestParameters();
         $query = DB::table($modelTable);
         $query = $this->selectColumns($query);
@@ -408,10 +411,10 @@ class HutangHeader extends MyModel
         $temp = $this->createTempHutang($id);
 
         $approval = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))
-        ->where('grp', 'STATUS APPROVAL')
-        ->where('subgrp', 'STATUS APPROVAL')
-        ->where('text', 'APPROVAL')
-        ->first();
+            ->where('grp', 'STATUS APPROVAL')
+            ->where('subgrp', 'STATUS APPROVAL')
+            ->where('text', 'APPROVAL')
+            ->first();
 
         $approvalId = $approval->id;
 
@@ -460,7 +463,7 @@ class HutangHeader extends MyModel
     public function processStore(array $data): HutangHeader
     {
         // dd($data);
-        
+
         /*STORE HEADER*/
         $group = 'HUTANG BUKTI';
         $subGroup = 'HUTANG BUKTI';
@@ -482,7 +485,7 @@ class HutangHeader extends MyModel
             $coa = $data['coa'];
         }
         $hutangHeader = new HutangHeader();
-        
+
         $hutangHeader->tglbukti = $tglbukti;
         $hutangHeader->coa = $coa;
         $hutangHeader->supplier_id = $data['supplier_id'];
@@ -494,7 +497,7 @@ class HutangHeader extends MyModel
         $hutangHeader->modifiedby = auth('api')->user()->name;
         $hutangHeader->nobukti = (new RunningNumberService)->get($group, $subGroup, $hutangHeader->getTable(), date('Y-m-d', strtotime($data['tglbukti'])));
 
-        
+
         if (!$hutangHeader->save()) {
             throw new \Exception("Error storing Hutang header.");
         }
@@ -518,7 +521,7 @@ class HutangHeader extends MyModel
         $coadebet_detail = [];
         $nominal_detail = [];
         $keterangan_detail = [];
-        
+
         for ($i = 0; $i < count($data['total_detail']); $i++) {
 
             $hutangDetail = (new HutangDetail())->processStore($hutangHeader, [
@@ -532,16 +535,15 @@ class HutangHeader extends MyModel
                 'modifiedby' => $hutangHeader->modifiedby,
             ]);
             $hutangDetails[] = $hutangDetail->toArray();
-            $coakredit_detail[] = ($data['coakredit'] == null) ? $memoKredit['JURNAL'] : $data['coakredit']; 
-            $coadebet_detail[] = ($data['coadebet'] == null) ? $memo['JURNAL'] : $data['coadebet'];  
+            $coakredit_detail[] = ($data['coakredit'] == null) ? $memoKredit['JURNAL'] : $data['coakredit'];
+            $coadebet_detail[] = ($data['coadebet'] == null) ? $memo['JURNAL'] : $data['coadebet'];
             $nominal_detail[] = $data['total_detail'][$i];
             $keterangan_detail[] = $data['keterangan_detail'][$i];
-
         }
 
         (new LogTrail())->processStore([
             'namatabel' => strtoupper($hutangDetail->getTable()),
-            'postingdari' => $data['postingdari']??strtoupper('ENTRY hutang Header'),
+            'postingdari' => $data['postingdari'] ?? strtoupper('ENTRY hutang Header'),
             'idtrans' =>  $hutangHeaderLogTrail->id,
             'nobuktitrans' => $hutangHeader->nobukti,
             'aksi' => 'ENTRY',
@@ -554,7 +556,7 @@ class HutangHeader extends MyModel
             'tanpaprosesnobukti' => 1,
             'nobukti' => $hutangHeader->nobukti,
             'tglbukti' => date('Y-m-d', strtotime($data['tglbukti'])),
-            'postingdari' => "ENTRY HUTANG",
+            'postingdari' =>  $data['postingdari'] ?? 'ENTRY HUTANG',
             'statusapproval' => $statusApproval->id,
             'userapproval' => "",
             'tglapproval' => "",
@@ -571,9 +573,12 @@ class HutangHeader extends MyModel
         return $hutangHeader;
     }
 
-    public function processUpdate(HutangHeader $hutangHeader,array $data): HutangHeader
+    public function processUpdate(HutangHeader $hutangHeader, array $data): HutangHeader
     {
-        
+        $nobuktiOld = $hutangHeader->nobukti;
+
+        $group = 'HUTANG BUKTI';
+        $subGroup = 'HUTANG BUKTI';
         // dd($data);
         /*STORE HEADER*/
         $statusCetak = Parameter::where('grp', 'STATUSCETAK')->where('text', 'BELUM CETAK')->first();
@@ -588,30 +593,48 @@ class HutangHeader extends MyModel
             $total = $data['total'];
             $coa = $data['coa'];
         }
-        
+
+        $querycek = DB::table('hutangheader')->from(
+            DB::raw("hutangheader a with (readuncommitted)")
+        )
+            ->select(
+                'a.nobukti'
+            )
+            ->where('a.id', $hutangHeader->id)
+            ->whereRAw("format(a.tglbukti,'MM-yyyy')='" . date('m-Y', strtotime($data['tglbukti'])) . "'")
+            ->first();
+
+        if (isset($querycek)) {
+            $nobukti = $querycek->nobukti;
+        } else {
+            $nobukti = (new RunningNumberService)->get($group, $subGroup, $hutangHeader->getTable(), date('Y-m-d', strtotime($data['tglbukti'])));
+        }
+
+        $hutangHeader->nobukti = $nobukti;
+        $hutangHeader->tglbukti = date('Y-m-d', strtotime($data['tglbukti']));
         $hutangHeader->coa = $coa;
         $hutangHeader->supplier_id = $data['supplier_id'];
-        $hutangHeader->postingdari = $data['postingdari'] ?? 'ENTRY HUTANG';
+        $hutangHeader->postingdari = $data['postingdari'] ?? 'EDIT HUTANG';
         $hutangHeader->statuscetak = $statusCetak->id;
         $hutangHeader->statusapproval = $statusApproval->id;
         $hutangHeader->total = $total;
         $hutangHeader->modifiedby = auth('api')->user()->name;
 
-        
+
         if (!$hutangHeader->save()) {
             throw new \Exception("Error storing Hutang header.");
         }
 
         $hutangHeaderLogTrail = (new LogTrail())->processStore([
             'namatabel' => strtoupper($hutangHeader->getTable()),
-            'postingdari' => strtoupper('ENTRY Hutang Header'),
+            'postingdari' => $data['postingdari'] ?? strtoupper('EDIT HUTANG HEADER'),
             'idtrans' => $hutangHeader->id,
             'nobuktitrans' => $hutangHeader->nobukti,
-            'aksi' => 'ENTRY',
+            'aksi' => 'EDIT',
             'datajson' => $hutangHeader->toArray(),
             'modifiedby' => auth('api')->user()->user
         ]);
-        
+
         /*DELETE EXISTING HUTANG*/
         $hutangDetail = HutangDetail::where('hutang_id', $hutangHeader->id)->lockForUpdate()->delete();
 
@@ -624,7 +647,7 @@ class HutangHeader extends MyModel
         $coadebet_detail = [];
         $nominal_detail = [];
         $keterangan_detail = [];
-        
+
         for ($i = 0; $i < count($data['total_detail']); $i++) {
 
             $hutangDetail = (new HutangDetail())->processStore($hutangHeader, [
@@ -638,19 +661,18 @@ class HutangHeader extends MyModel
                 'modifiedby' => $hutangHeader->modifiedby,
             ]);
             $hutangDetails[] = $hutangDetail->toArray();
-            $coakredit_detail[] = ($data['coakredit'] == null) ? $memoKredit['JURNAL'] : $data['coakredit']; 
-            $coadebet_detail[] = ($data['coadebet'] == null) ? $memo['JURNAL'] : $data['coadebet'];  
+            $coakredit_detail[] = ($data['coakredit'] == null) ? $memoKredit['JURNAL'] : $data['coakredit'];
+            $coadebet_detail[] = ($data['coadebet'] == null) ? $memo['JURNAL'] : $data['coadebet'];
             $nominal_detail[] = $data['total_detail'][$i];
             $keterangan_detail[] = $data['keterangan_detail'][$i];
-
         }
 
         (new LogTrail())->processStore([
             'namatabel' => strtoupper($hutangDetail->getTable()),
-            'postingdari' => $data['postingdari']??strtoupper('ENTRY hutang Header'),
+            'postingdari' => $data['postingdari'] ?? strtoupper('EDIT hutang Header'),
             'idtrans' =>  $hutangHeaderLogTrail->id,
             'nobuktitrans' => $hutangHeader->nobukti,
-            'aksi' => 'ENTRY',
+            'aksi' => 'EDIT',
             'datajson' => $hutangDetails,
             'modifiedby' => auth('api')->user()->user,
         ]);
@@ -659,7 +681,7 @@ class HutangHeader extends MyModel
         $jurnalRequest = [
             'tanpaprosesnobukti' => 1,
             'nobukti' => $hutangHeader->nobukti,
-            'tglbukti' => $hutangHeader->tglbukti,
+            'tglbukti' => $data['tglbukti'],
             'postingdari' =>  $data['postingdari'] ?? "EDIT HUTANG HEADER",
             'statusformat' => "0",
             'coakredit_detail' => $coakredit_detail,
@@ -668,7 +690,7 @@ class HutangHeader extends MyModel
             'keterangan_detail' => $keterangan_detail
         ];
 
-        $getJurnal = JurnalUmumHeader::from(DB::raw("jurnalumumheader with (readuncommitted)"))->where('nobukti', $hutangHeader->nobukti)->first();
+        $getJurnal = JurnalUmumHeader::from(DB::raw("jurnalumumheader with (readuncommitted)"))->where('nobukti', $nobuktiOld)->first();
         $newJurnal = new JurnalUmumHeader();
         $newJurnal = $newJurnal->find($getJurnal->id);
         $jurnalumumHeader = (new JurnalUmumHeader())->processUpdate($newJurnal, $jurnalRequest);
@@ -681,8 +703,8 @@ class HutangHeader extends MyModel
     {
         $hutangDetail = HutangDetail::where('hutang_id', '=', $id)->get();
         $dataDetail = $hutangDetail->toArray();
-      
-       /*DELETE EXISTING HUTANG*/
+
+        /*DELETE EXISTING HUTANG*/
 
         $hutangHeader = new HutangHeader();
         $hutangHeader = $hutangHeader->lockAndDestroy($id);
@@ -693,18 +715,18 @@ class HutangHeader extends MyModel
             'idtrans' => $hutangHeader->id,
             'nobuktitrans' => $hutangHeader->nobukti,
             'aksi' => 'DELETE',
-            'datajson' =>$hutangHeader->toArray(),
+            'datajson' => $hutangHeader->toArray(),
             'modifiedby' => auth('api')->user()->name
         ]);
 
-     
+
         (new LogTrail())->processStore([
             'namatabel' => 'HUTANGDETAIL',
             'postingdari' => $postingDari,
             'idtrans' => $hutangLogTrail['id'],
             'nobuktitrans' => $hutangHeader->nobukti,
             'aksi' => 'DELETE',
-            'datajson' =>$dataDetail,
+            'datajson' => $dataDetail,
             'modifiedby' => auth('api')->user()->name
         ]);
 
@@ -718,10 +740,10 @@ class HutangHeader extends MyModel
         $this->setRequestParameters();
 
         $getJudul = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))
-        ->select('text')
-        ->where('grp', 'JUDULAN LAPORAN')
-        ->where('subgrp', 'JUDULAN LAPORAN')
-        ->first();
+            ->select('text')
+            ->where('grp', 'JUDULAN LAPORAN')
+            ->where('subgrp', 'JUDULAN LAPORAN')
+            ->first();
 
         $query = DB::table($this->table)->from(DB::raw("hutangheader with (readuncommitted)"))
             ->select(
@@ -736,16 +758,15 @@ class HutangHeader extends MyModel
                 DB::raw("'Cetak Hutang' as judulLaporan"),
                 DB::raw("'" . $getJudul->text . "' as judul"),
                 DB::raw("'Tgl Cetak:'+format(getdate(),'dd-MM-yyyy HH:mm:ss')as tglcetak"),
-                DB::raw(" 'User :".auth('api')->user()->name."' as usercetak")
+                DB::raw(" 'User :" . auth('api')->user()->name . "' as usercetak")
             )
             ->where("$this->table.id", $id)
             ->leftJoin(DB::raw("parameter as statuscetak with (readuncommitted)"), 'hutangheader.statuscetak', 'statuscetak.id')
             ->leftJoin(DB::raw("parameter as statusapproval with (readuncommitted)"), 'hutangheader.statusapproval', 'statusapproval.id')
             ->leftJoin(DB::raw("akunpusat with (readuncommitted)"), 'hutangheader.coa', 'akunpusat.coa')
             ->leftJoin(DB::raw("supplier with (readuncommitted)"), 'hutangheader.supplier_id', 'supplier.id');
-        
+
         $data = $query->first();
         return $data;
     }
-
 }

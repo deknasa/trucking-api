@@ -66,6 +66,9 @@ class ServiceOutHeaderController extends Controller
             } else {
                 $serviceOutHeader->page = ceil($serviceOutHeader->position / ($request->limit ?? 10));
             }
+            $serviceOutHeader->tgldariheader = date('Y-m-01', strtotime(request()->tglbukti));
+            $serviceOutHeader->tglsampaiheader = date('Y-m-t', strtotime(request()->tglbukti));
+            
             DB::commit();
 
             return response()->json([
@@ -110,13 +113,16 @@ class ServiceOutHeaderController extends Controller
                 'keterangan_detail' => $request->keterangan_detail ?? ''
             ];
 
-            $serviceoutheader = (new ServiceOutHeader())->processUpdate($serviceoutheader, $data);
-            $serviceoutheader->position = $this->getPosition($serviceoutheader, $serviceoutheader->getTable())->position;
+            $serviceOutHeader = (new ServiceOutHeader())->processUpdate($serviceoutheader, $data);
+            $serviceOutHeader->position = $this->getPosition($serviceOutHeader, $serviceOutHeader->getTable())->position;
             if ($request->limit==0) {
-                $serviceoutheader->page = ceil($serviceoutheader->position / (10));
+                $serviceOutHeader->page = ceil($serviceOutHeader->position / (10));
             } else {
-                $serviceoutheader->page = ceil($serviceoutheader->position / ($request->limit ?? 10));
+                $serviceOutHeader->page = ceil($serviceOutHeader->position / ($request->limit ?? 10));
             }
+            $serviceOutHeader->tgldariheader = date('Y-m-01', strtotime(request()->tglbukti));
+            $serviceOutHeader->tglsampaiheader = date('Y-m-t', strtotime(request()->tglbukti));
+            
             DB::commit();
 
             return response()->json([
@@ -147,6 +153,9 @@ class ServiceOutHeaderController extends Controller
             } else {
                 $serviceOutHeader->page = ceil($serviceOutHeader->position / ($request->limit ?? 10));
             }
+            $serviceOutHeader->tgldariheader = date('Y-m-01', strtotime(request()->tglbukti));
+            $serviceOutHeader->tglsampaiheader = date('Y-m-t', strtotime(request()->tglbukti));
+            
             DB::commit();
 
             return response()->json([
