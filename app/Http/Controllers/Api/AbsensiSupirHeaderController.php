@@ -201,7 +201,6 @@ class AbsensiSupirHeaderController extends Controller
 
 
             /* Store header */
-            // dd($absensiSupirHeader);
             $absensiSupirHeader = (new absensiSupirHeader())->processUpdate($absensiSupirHeader, $data);
             /* Set position and page */
             $absensiSupirHeader->position = $this->getPosition($absensiSupirHeader, $absensiSupirHeader->getTable())->position;

@@ -99,8 +99,9 @@ class PenerimaanStokHeaderController extends Controller
 
             /* Set position and page */
             $penerimaanStokHeader->position = $this->getPosition($penerimaanStokHeader, $penerimaanStokHeader->getTable())->position;
-            $penerimaanStokHeader->page = ceil($penerimaanStokHeader->position / ($request->limit ?? 10));
-            if (isset($request->limit)) {
+            if ($request->limit == 0) {
+                $penerimaanStokHeader->page = ceil($penerimaanStokHeader->position / (10));
+            } else {
                 $penerimaanStokHeader->page = ceil($penerimaanStokHeader->position / ($request->limit ?? 10));
             }
 
@@ -167,8 +168,9 @@ class PenerimaanStokHeaderController extends Controller
             $penerimaanStokHeader = (new PenerimaanStokHeader())->processUpdate($penerimaanStokHeader, $data);
             /* Set position and page */
             $penerimaanStokHeader->position = $this->getPosition($penerimaanStokHeader, $penerimaanStokHeader->getTable())->position;
-            $penerimaanStokHeader->page = ceil($penerimaanStokHeader->position / ($request->limit ?? 10));
-            if (isset($request->limit)) {
+            if ($request->limit == 0) {
+                $penerimaanStokHeader->page = ceil($penerimaanStokHeader->position / (10));
+            } else {
                 $penerimaanStokHeader->page = ceil($penerimaanStokHeader->position / ($request->limit ?? 10));
             }
 
@@ -196,7 +198,11 @@ class PenerimaanStokHeaderController extends Controller
             $selected = $this->getPosition($penerimaanStokHeader, $penerimaanStokHeader->getTable(), true);
             $penerimaanStokHeader->position = $selected->position;
             $penerimaanStokHeader->id = $selected->id;
-            $penerimaanStokHeader->page = ceil($penerimaanStokHeader->position / ($request->limit ?? 10));
+            if ($request->limit == 0) {
+                $penerimaanStokHeader->page = ceil($penerimaanStokHeader->position / (10));
+            } else {
+                $penerimaanStokHeader->page = ceil($penerimaanStokHeader->position / ($request->limit ?? 10));
+            }
 
             DB::commit();
 
