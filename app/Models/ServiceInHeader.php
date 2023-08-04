@@ -143,7 +143,10 @@ class ServiceInHeader extends MyModel
             $table->dateTime('updated_at')->nullable();
             $table->increments('position');
         });
-
+        if ((date('Y-m', strtotime(request()->tglbukti)) != date('Y-m', strtotime(request()->tgldariheader))) || (date('Y-m', strtotime(request()->tglbukti)) != date('Y-m', strtotime(request()->tglsampaiheader)))) {
+            request()->tgldariheader = date('Y-m-01', strtotime(request()->tglbukti));
+            request()->tglsampaiheader = date('Y-m-t', strtotime(request()->tglbukti));
+        }
         $this->setRequestParameters();
         $query = DB::table($modelTable);
         $query = $this->selectColumns($query);
@@ -295,6 +298,26 @@ class ServiceInHeader extends MyModel
 
     public function processUpdate(ServiceInHeader $serviceInHeader, array $data): ServiceInHeader
     {
+        $group = 'SERVICE IN BUKTI';
+        $subGroup = 'SERVICE IN BUKTI';
+
+        $querycek = DB::table('serviceinheader')->from(
+            DB::raw("serviceinheader a with (readuncommitted)")
+        )
+            ->select(
+                'a.nobukti'
+            )
+            ->where('a.id', $serviceInHeader->id)
+            ->whereRAw("format(a.tglbukti,'MM-yyyy')='" . date('m-Y', strtotime($data['tglbukti'])) . "'")
+            ->first();
+
+        if (isset($querycek)) {
+            $nobukti = $querycek->nobukti;
+        } else {
+            $nobukti = (new RunningNumberService)->get($group, $subGroup, $serviceInHeader->getTable(), date('Y-m-d', strtotime($data['tglbukti'])));
+        }
+
+        $serviceInHeader->nobukti = $nobukti;
         $serviceInHeader->tglbukti = date('Y-m-d', strtotime($data['tglbukti']));
         $serviceInHeader->trado_id = $data['trado_id'];
         $serviceInHeader->tglmasuk = date('Y-m-d', strtotime($data['tglmasuk']));

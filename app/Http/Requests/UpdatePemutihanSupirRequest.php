@@ -5,6 +5,9 @@ namespace App\Http\Requests;
 use App\Http\Controllers\Api\ErrorController;
 use App\Models\PemutihanSupir;
 use App\Rules\DateTutupBuku;
+use App\Rules\ExistBank;
+use App\Rules\ExistSupir;
+use App\Rules\ValidasiHutangList;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
@@ -30,17 +33,50 @@ class UpdatePemutihanSupirRequest extends FormRequest
         $pemutihanSupir = new PemutihanSupir();
         $getData = $pemutihanSupir->findAll(request()->id);
 
+        $jumlahdetail = $this->jumlahdetail ?? 0;
+        $supir_id = $this->supir_id;
+        $rulesSupir_id = [];
+        if ($supir_id != null) {
+            $rulesSupir_id = [
+                'supir_id' => ['required', 'numeric', 'min:1', new ExistSupir()]
+            ];
+        } else if ($supir_id == null && $this->supir != '') {
+            $rulesSupir_id = [
+                'supir_id' => ['required', 'numeric', 'min:1', new ExistSupir()]
+            ];
+        }
 
-        return [
+        $bank_id = $this->bank_id;
+        $ruleBank_id = [];
+        if ($bank_id != null) {
+            $ruleBank_id = [
+                'bank_id' => ['required', 'numeric', 'min:1', new ExistBank()]
+            ];
+        } else if ($bank_id == null && $this->bank != '') {
+            $ruleBank_id = [
+                'bank_id' => ['required', 'numeric', 'min:1', new ExistBank()]
+            ];
+        }
+
+        $rules = [
             'nobukti' => [Rule::in($getData->nobukti)],
             'tglbukti' => [
                 'required','date_format:d-m-Y',
-                'date_equals:' . date('d-m-Y', strtotime($getData->tglbukti)),
+                'before_or_equal:' . date('d-m-Y'),
                 new DateTutupBuku()
             ],
-            'supir' => 'required', 'numeric', 'min:1',
-            'bank' => 'required', 'numeric', 'min:1'
+            'supir' => [
+                'required', Rule::in($getData->supir), new ValidasiHutangList($jumlahdetail)
+            ],
+            'bank' => ['required', Rule::in($getData->bank)],
         ];
+        $rules = array_merge(
+            $rules,
+            $ruleBank_id,
+            $rulesSupir_id
+        );
+
+        return $rules;
     }
     public function messages() 
     {

@@ -111,6 +111,9 @@ class ProsesUangJalanSupirHeaderController extends Controller
             } else {
                 $prosesUangJalanSupir->page = ceil($prosesUangJalanSupir->position / ($request->limit ?? 10));
             }
+            $prosesUangJalanSupir->tgldariheader = date('Y-m-01', strtotime(request()->tglbukti));
+            $prosesUangJalanSupir->tglsampaiheader = date('Y-m-t', strtotime(request()->tglbukti));
+            
             DB::commit();
 
             return response()->json([
@@ -192,6 +195,9 @@ class ProsesUangJalanSupirHeaderController extends Controller
             } else {
                 $prosesUangJalanSupir->page = ceil($prosesUangJalanSupir->position / ($request->limit ?? 10));
             }
+            $prosesUangJalanSupir->tgldariheader = date('Y-m-01', strtotime(request()->tglbukti));
+            $prosesUangJalanSupir->tglsampaiheader = date('Y-m-t', strtotime(request()->tglbukti));
+            
             DB::commit();
 
             return response()->json([
@@ -221,6 +227,9 @@ class ProsesUangJalanSupirHeaderController extends Controller
             } else {
                 $prosesUangJalanSupir->page = ceil($prosesUangJalanSupir->position / ($request->limit ?? 10));
             }
+            $prosesUangJalanSupir->tgldariheader = date('Y-m-01', strtotime(request()->tglbukti));
+            $prosesUangJalanSupir->tglsampaiheader = date('Y-m-t', strtotime(request()->tglbukti));
+            
             DB::commit();
 
             return response()->json([

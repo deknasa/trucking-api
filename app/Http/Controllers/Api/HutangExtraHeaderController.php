@@ -56,7 +56,9 @@ class HutangExtraHeaderController extends Controller
             } else {
                 $hutangExtraHeader->page = ceil($hutangExtraHeader->position / ($request->limit ?? 10));
             }
-
+            $hutangExtraHeader->tgldariheader = date('Y-m-01', strtotime(request()->tglbukti));
+            $hutangExtraHeader->tglsampaiheader = date('Y-m-t', strtotime(request()->tglbukti));
+            
             DB::commit();
             return response()->json([
                 'message' => 'Berhasil disimpan',
@@ -103,6 +105,9 @@ class HutangExtraHeaderController extends Controller
             } else {
                 $hutangExtraHeader->page = ceil($hutangExtraHeader->position / ($request->limit ?? 10));
             }
+            $hutangExtraHeader->tgldariheader = date('Y-m-01', strtotime(request()->tglbukti));
+            $hutangExtraHeader->tglsampaiheader = date('Y-m-t', strtotime(request()->tglbukti));
+            
             DB::commit();
 
             return response()->json([
@@ -133,6 +138,9 @@ class HutangExtraHeaderController extends Controller
             } else {
                 $hutangExtraHeader->page = ceil($hutangExtraHeader->position / ($request->limit ?? 10));
             }
+            $hutangExtraHeader->tgldariheader = date('Y-m-01', strtotime(request()->tglbukti));
+            $hutangExtraHeader->tglsampaiheader = date('Y-m-t', strtotime(request()->tglbukti));
+            
             DB::commit();
 
             return response()->json([

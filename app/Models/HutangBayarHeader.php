@@ -177,7 +177,10 @@ class HutangBayarHeader extends MyModel
             $table->dateTime('updated_at')->nullable();
             $table->increments('position');
         });
-
+        if ((date('Y-m', strtotime(request()->tglbukti)) != date('Y-m', strtotime(request()->tgldariheader))) || (date('Y-m', strtotime(request()->tglbukti)) != date('Y-m', strtotime(request()->tglsampaiheader)))) {
+            request()->tgldariheader = date('Y-m-01', strtotime(request()->tglbukti));
+            request()->tglsampaiheader = date('Y-m-t', strtotime(request()->tglbukti));
+        }
         $this->setRequestParameters();
         $query = DB::table($modelTable);
         $query = $this->selectColumns($query);
@@ -593,13 +596,32 @@ class HutangBayarHeader extends MyModel
         $bankid = $data['bank_id'];
 
         /*STORE HEADER*/         
-      
+        $group = 'PEMBAYARAN HUTANG BUKTI';
+        $subGroup = 'PEMBAYARAN HUTANG BUKTI';
 
         $statusApproval = Parameter::from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS APPROVAL')->where('text', 'NON APPROVAL')->first();
         $statusCetak = Parameter::from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUSCETAK')->where('text', 'BELUM CETAK')->first();
         $getCoaDebet = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'JURNAL PEMBAYARAN HUTANG')->where('subgrp', 'DEBET')->first();
         $memo = json_decode($getCoaDebet->memo, true);
 
+        $querycek = DB::table('hutangbayarheader')->from(
+            DB::raw("hutangbayarheader a with (readuncommitted)")
+        )
+            ->select(
+                'a.nobukti'
+            )
+            ->where('a.id', $hutangBayarHeader->id)
+            ->whereRAw("format(a.tglbukti,'MM-yyyy')='" . date('m-Y', strtotime($data['tglbukti'])) . "'")
+            ->first();
+
+        if (isset($querycek)) {
+            $nobukti = $querycek->nobukti;
+        } else {
+            $nobukti = (new RunningNumberService)->get($group, $subGroup, $hutangBayarHeader->getTable(), date('Y-m-d', strtotime($data['tglbukti'])));
+        }
+
+        $hutangBayarHeader->nobukti = $nobukti;
+        $hutangBayarHeader->tglbukti = date('Y-m-d', strtotime($data['tglbukti']));
         $hutangBayarHeader->tglbukti = date('Y-m-d', strtotime($data['tglbukti']));
         $hutangBayarHeader->tglcair = date('Y-m-d', strtotime($data['tglcair']));
         $hutangBayarHeader->supplier_id = $data['supplier_id'] ?? '';
@@ -609,15 +631,6 @@ class HutangBayarHeader extends MyModel
             throw new \Exception("Error Update pembayaran Hutang header.");
         }
         
-        $hutangBayarHeaderLogTrail = (new LogTrail())->processStore([
-            'namatabel' => strtoupper($hutangBayarHeader->getTable()),
-            'postingdari' => $data['postingdari'] ??strtoupper('ENTRY hutang Bayar Header'),
-            'idtrans' => $hutangBayarHeader->id,
-            'nobuktitrans' => $hutangBayarHeader->nobukti,
-            'aksi' => 'ENTRY',
-            'datajson' => $hutangBayarHeader->toArray(),
-            'modifiedby' => auth('api')->user()->user
-        ]);
         
         // $pengeluaranHeader = PengeluaranHeader::where('nobukti', $hutangBayarHeader->pengeluaran_nobukti)->lockForUpdate()->first();
         // /*DELETE EXISTING JURNAL*/
@@ -688,21 +701,12 @@ class HutangBayarHeader extends MyModel
             $nowarkat[] = "";
         }
 
-        (new LogTrail())->processStore([
-            'namatabel' => strtoupper($hutangBayarDetail->getTable()),
-            'postingdari' => $data['postingdari'] ?? strtoupper('ENTRY HUTANG BAYAR DETAIL'),
-            'idtrans' =>  $hutangBayarHeaderLogTrail->id,
-            'nobuktitrans' => $hutangBayarHeader->nobukti,
-            'aksi' => 'ENTRY',
-            'datajson' => $hutangBayarDetails,
-            'modifiedby' => auth('api')->user()->user,
-        ]);
 
         /*STORE PENGELUARAN*/
         $supplier = Supplier::from(DB::raw("supplier with (readuncommitted)"))->where('id', $data['supplier_id'])->first();
 
         $pengeluaranRequest = [
-            'tglbukti' => date('Y-m-d', strtotime($data['tglbukti'])),
+            'tglbukti' => $data['tglbukti'],
             'pelanggan_id' => 0,
             'postingdari' => "ENTRY HUTANG BAYAR",
             'statusapproval' => $statusApproval->id,
@@ -727,7 +731,28 @@ class HutangBayarHeader extends MyModel
 
         $pengeluaranHeader = PengeluaranHeader::where('nobukti',$hutangBayarHeader->pengeluaran_nobukti)->first();
         $pengeluaranHeader = (new PengeluaranHeader())->processUpdate($pengeluaranHeader,$pengeluaranRequest);
-        // $hutangBayarHeader->save();
+        $hutangBayarHeader->pengeluaran_nobukti = $pengeluaranHeader->nobukti;
+        $hutangBayarHeader->save();
+
+        
+        $hutangBayarHeaderLogTrail = (new LogTrail())->processStore([
+            'namatabel' => strtoupper($hutangBayarHeader->getTable()),
+            'postingdari' => $data['postingdari'] ??strtoupper('ENTRY hutang Bayar Header'),
+            'idtrans' => $hutangBayarHeader->id,
+            'nobuktitrans' => $hutangBayarHeader->nobukti,
+            'aksi' => 'ENTRY',
+            'datajson' => $hutangBayarHeader->toArray(),
+            'modifiedby' => auth('api')->user()->user
+        ]);
+        (new LogTrail())->processStore([
+            'namatabel' => strtoupper($hutangBayarDetail->getTable()),
+            'postingdari' => $data['postingdari'] ?? strtoupper('ENTRY HUTANG BAYAR DETAIL'),
+            'idtrans' =>  $hutangBayarHeaderLogTrail->id,
+            'nobuktitrans' => $hutangBayarHeader->nobukti,
+            'aksi' => 'ENTRY',
+            'datajson' => $hutangBayarDetails,
+            'modifiedby' => auth('api')->user()->user,
+        ]);
         return $hutangBayarHeader;
     }
 

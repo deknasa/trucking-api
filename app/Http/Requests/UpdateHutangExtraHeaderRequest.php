@@ -42,7 +42,6 @@ class UpdateHutangExtraHeaderRequest extends FormRequest
                 'required', 'date_format:d-m-Y',
                 new DateTutupBuku(),
                 'before_or_equal:' . date('d-m-Y'),
-                Rule::in(date('d-m-Y', strtotime($query->tglbukti))),
             ],
             'nobukti' => [
                 Rule::in($query->nobukti),

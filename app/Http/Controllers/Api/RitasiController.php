@@ -75,7 +75,9 @@ class RitasiController extends Controller
             } else {
                 $ritasi->page = ceil($ritasi->position / ($request->limit ?? 10));
             }
-
+            $ritasi->tgldariheader = date('Y-m-01', strtotime(request()->tglbukti));
+            $ritasi->tglsampaiheader = date('Y-m-t', strtotime(request()->tglbukti));
+            
             DB::commit();
 
             return response()->json([
@@ -120,6 +122,9 @@ class RitasiController extends Controller
             } else {
                 $ritasi->page = ceil($ritasi->position / ($request->limit ?? 10));
             }
+            $ritasi->tgldariheader = date('Y-m-01', strtotime(request()->tglbukti));
+            $ritasi->tglsampaiheader = date('Y-m-t', strtotime(request()->tglbukti));
+            
             DB::commit();
 
             return response()->json([
@@ -148,6 +153,9 @@ class RitasiController extends Controller
             } else {
                 $ritasi->page = ceil($ritasi->position / ($request->limit ?? 10));
             }
+            $ritasi->tgldariheader = date('Y-m-01', strtotime(request()->tglbukti));
+            $ritasi->tglsampaiheader = date('Y-m-t', strtotime(request()->tglbukti));
+            
             DB::commit();
 
             return response()->json([

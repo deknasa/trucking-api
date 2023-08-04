@@ -60,7 +60,7 @@ class UpdateProsesUangJalanSupirHeaderRequest extends FormRequest
             'nobukti' => [Rule::in($getDataProsesUang->nobukti)],
             "tglbukti" => [
                 "required",'date_format:d-m-Y',
-                'date_equals:' . date('d-m-Y', strtotime($getDataProsesUang->tglbukti)),
+                'before_or_equal:' . date('d-m-Y'),
                 new DateTutupBuku()
             ],
             'absensisupir' => ['required', Rule::in($getDataProsesUang->absensisupir), new ExistAbsensiSupirHeader()],

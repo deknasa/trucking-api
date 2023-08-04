@@ -519,7 +519,10 @@ class PemutihanSupir extends MyModel
             $table->dateTime('updated_at')->nullable();
             $table->increments('position');
         });
-
+        if ((date('Y-m', strtotime(request()->tglbukti)) != date('Y-m', strtotime(request()->tgldariheader))) || (date('Y-m', strtotime(request()->tglbukti)) != date('Y-m', strtotime(request()->tglsampaiheader)))) {
+            request()->tgldariheader = date('Y-m-01', strtotime(request()->tglbukti));
+            request()->tglsampaiheader = date('Y-m-t', strtotime(request()->tglbukti));
+        }
         $this->setRequestParameters();
         $query = DB::table($modelTable);
         $query = $this->selectColumns($query);
@@ -721,10 +724,10 @@ class PemutihanSupir extends MyModel
         $this->setRequestParameters();
 
         $getJudul = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))
-        ->select('text')
-        ->where('grp', 'JUDULAN LAPORAN')
-        ->where('subgrp', 'JUDULAN LAPORAN')
-        ->first();
+            ->select('text')
+            ->where('grp', 'JUDULAN LAPORAN')
+            ->where('subgrp', 'JUDULAN LAPORAN')
+            ->first();
 
         $query = DB::table($this->table)->from(
             DB::raw($this->table . " with (readuncommitted)")
@@ -745,7 +748,7 @@ class PemutihanSupir extends MyModel
                 DB::raw("'Laporan Pemutihan Supir' as judulLaporan"),
                 DB::raw("'" . $getJudul->text . "' as judul"),
                 DB::raw("'Tgl Cetak:'+format(getdate(),'dd-MM-yyyy HH:mm:ss')as tglcetak"),
-                DB::raw(" 'User :".auth('api')->user()->name."' as usercetak")
+                DB::raw(" 'User :" . auth('api')->user()->name . "' as usercetak")
             )
             ->where("$this->table.id", $id)
             ->leftJoin(DB::raw("parameter as statuscetak with (readuncommitted)"), 'pemutihansupirheader.statuscetak', 'statuscetak.id')
@@ -896,9 +899,28 @@ class PemutihanSupir extends MyModel
 
     public function processUpdate(PemutihanSupir $pemutihanSupir, array $data): PemutihanSupir
     {
+        $group = 'PEMUTIHAN SUPIR BUKTI';
+        $subgroup = 'PEMUTIHAN SUPIR BUKTI';
 
         $coaPengembalian = PenerimaanTrucking::from(DB::raw("penerimaantrucking with (readuncommitted)"))->where('kodepenerimaan', 'PJP')->first();
+        $querycek = DB::table('pemutihansupirheader')->from(
+            DB::raw("pemutihansupirheader a with (readuncommitted)")
+        )
+            ->select(
+                'a.nobukti'
+            )
+            ->where('a.id', $pemutihanSupir->id)
+            ->whereRAw("format(a.tglbukti,'MM-yyyy')='" . date('m-Y', strtotime($data['tglbukti'])) . "'")
+            ->first();
 
+        if (isset($querycek)) {
+            $nobukti = $querycek->nobukti;
+        } else {
+            $nobukti = (new RunningNumberService)->get($group, $subgroup, $pemutihanSupir->getTable(), date('Y-m-d', strtotime($data['tglbukti'])));
+        }
+
+        $pemutihanSupir->nobukti = $nobukti;
+        $pemutihanSupir->tglbukti = date('Y-m-d', strtotime($data['tglbukti']));
         $pemutihanSupir->pengeluaransupir =  $data['pengeluaransupir'];
         $pemutihanSupir->penerimaansupir = $data['penerimaansupir'] ?? 0;
         $pemutihanSupir->coa = $data['coa'];
@@ -921,17 +943,6 @@ class PemutihanSupir extends MyModel
         if (!$pemutihanSupir->save()) {
             throw new \Exception("Error update pemutihan supir.");
         }
-
-
-        $pemutihanSupirLogTrail = (new LogTrail())->processStore([
-            'namatabel' => strtoupper($pemutihanSupir->getTable()),
-            'postingdari' => 'EDIT PEMUTIHAN SUPIR',
-            'idtrans' => $pemutihanSupir->id,
-            'nobuktitrans' => $pemutihanSupir->nobukti,
-            'aksi' => 'EDIT',
-            'datajson' => $pemutihanSupir->toArray(),
-            'modifiedby' => auth('api')->user()->name
-        ]);
 
         $pemutihanSupirdetail = PemutihanSupirDetail::where('pemutihansupir_id', $pemutihanSupir->id)->delete();
 
@@ -971,7 +982,7 @@ class PemutihanSupir extends MyModel
                 $statusApproval = 0;
             }
             $penerimaanRequest = [
-                'tglbukti' => date('Y-m-d', strtotime($data['tglbukti'])),
+                'tglbukti' => $data['tglbukti'],
                 'postingdari' => 'PEMUTIHAN SUPIR',
                 'diterimadari' => $data['supir'],
                 'tgllunas' => date('Y-m-d', strtotime($data['tglbukti'])),
@@ -983,8 +994,16 @@ class PemutihanSupir extends MyModel
                 'keterangan_detail' => $keterangan,
                 'bulanbeban' => date('Y-m-d', strtotime($data['tglbukti'])),
             ];
+            $get = PenerimaanHeader::from(DB::raw("penerimaanheader with (readuncommitted)"))
+                ->where('penerimaanheader.nobukti', $pemutihanSupir->penerimaan_nobukti)->first();
+            if ($get != null) {
+                $newPenerimaan = new PenerimaanHeader();
+                $newPenerimaan = $newPenerimaan->findAll($get->id);
+                $penerimaanHeader = (new PenerimaanHeader())->processUpdate($newPenerimaan, $penerimaanRequest);
+            } else {
+                $penerimaanHeader = (new PenerimaanHeader())->processStore($penerimaanRequest);
+            }
 
-            $penerimaanHeader = (new PenerimaanHeader())->processStore($penerimaanRequest);
             $pemutihanSupir->penerimaan_nobukti = $penerimaanHeader->nobukti;
             $pemutihanSupir->save();
         }
@@ -1004,6 +1023,16 @@ class PemutihanSupir extends MyModel
             }
         }
 
+        $pemutihanSupirLogTrail = (new LogTrail())->processStore([
+            'namatabel' => strtoupper($pemutihanSupir->getTable()),
+            'postingdari' => 'EDIT PEMUTIHAN SUPIR',
+            'idtrans' => $pemutihanSupir->id,
+            'nobuktitrans' => $pemutihanSupir->nobukti,
+            'aksi' => 'EDIT',
+            'datajson' => $pemutihanSupir->toArray(),
+            'modifiedby' => auth('api')->user()->name
+        ]);
+        
         $pemutihanSupirDetailLogTrail = (new LogTrail())->processStore([
             'namatabel' => strtoupper($pemutihanSupirDetail->getTable()),
             'postingdari' => 'EDIT PEMUTIHAN SUPIR DETAIL',

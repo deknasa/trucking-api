@@ -182,7 +182,10 @@ class Ritasi extends MyModel
             $table->dateTime('updated_at')->nullable();
             $table->increments('position');
         });
-
+        if ((date('Y-m', strtotime(request()->tglbukti)) != date('Y-m', strtotime(request()->tgldariheader))) || (date('Y-m', strtotime(request()->tglbukti)) != date('Y-m', strtotime(request()->tglsampaiheader)))) {
+            request()->tgldariheader = date('Y-m-01', strtotime(request()->tglbukti));
+            request()->tglsampaiheader = date('Y-m-t', strtotime(request()->tglbukti));
+        }
         $this->setRequestParameters();
         $query = DB::table($modelTable);
         $query = $this->selectColumns($query);
@@ -439,7 +442,7 @@ class Ritasi extends MyModel
             $urutke = $urutke + 1;
             $ritasiUpdate  = Ritasi::lockForUpdate()->where("nobukti", $item['nobukti'])
                 ->firstorFail();
-            $ritasiUpdate->urutke = $urutke;
+            $ritasiUpdate->suratpengantar_urutke = $urutke;
             $ritasiUpdate->save();
         }
 
@@ -495,7 +498,7 @@ class Ritasi extends MyModel
             $urutke = $urutke + 1;
             $ritasiUpdate  = Ritasi::lockForUpdate()->where("nobukti", $item['nobukti'])
                 ->firstorFail();
-            $ritasiUpdate->urutke = $urutke;
+            $ritasiUpdate->suratpengantar_urutke = $urutke;
             $ritasiUpdate->save();
         }
 

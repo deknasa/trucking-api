@@ -136,12 +136,18 @@ class AbsensiSupirApprovalHeader extends MyModel
             $table->increments('position');
         });
 
+        if ((date('Y-m', strtotime(request()->tglbukti)) != date('Y-m', strtotime(request()->tgldariheader))) || (date('Y-m', strtotime(request()->tglbukti)) != date('Y-m', strtotime(request()->tglsampaiheader)))) {
+            request()->tgldariheader = date('Y-m-01', strtotime(request()->tglbukti));
+            request()->tglsampaiheader = date('Y-m-t', strtotime(request()->tglbukti));
+        }
 
         $query = DB::table($modelTable);
         $query = $this->selectColumns($query);
 
         $query = $this->sort($query);
         $models = $this->filter($query);
+        $models = $query
+        ->whereBetween($this->table . '.tglbukti', [date('Y-m-d', strtotime(request()->tgldariheader)), date('Y-m-d', strtotime(request()->tglsampaiheader))]);
         DB::table($temp)->insertUsing([
             'id',
             'nobukti',
