@@ -92,7 +92,11 @@ class AbsenTradoController extends Controller
             ];
             $absenTrado = (new AbsenTrado())->processStore($data);
             $absenTrado->position = $this->getPosition($absenTrado, $absenTrado->getTable())->position;
-            $absenTrado->page = ceil($absenTrado->position / ($request->limit ?? 10));
+            if ($request->limit==0) {
+                $absenTrado->page = ceil($absenTrado->position / (10));
+            } else {
+                $absenTrado->page = ceil($absenTrado->position / ($request->limit ?? 10));
+            }
 
             DB::commit();
             return response()->json([
@@ -132,7 +136,11 @@ class AbsenTradoController extends Controller
 
             $absentrado = (new AbsenTrado())->processUpdate($absentrado, $data);
             $absentrado->position = $this->getPosition($absentrado, $absentrado->getTable())->position;
-            $absentrado->page = ceil($absentrado->position / ($request->limit ?? 10));
+            if ($request->limit==0) {
+                $absentrado->page = ceil($absentrado->position / (10));
+            } else {
+                $absentrado->page = ceil($absentrado->position / ($request->limit ?? 10));
+            }
 
             DB::commit();
 
@@ -160,7 +168,11 @@ class AbsenTradoController extends Controller
             $selected = $this->getPosition($absenTrado, $absenTrado->getTable(), true);
             $absenTrado->position = $selected->position;
             $absenTrado->id = $selected->id;
-            $absenTrado->page = ceil($absenTrado->position / ($request->limit ?? 10));
+            if ($request->limit==0) {
+                $absenTrado->page = ceil($absenTrado->position / (10));
+            } else {
+                $absenTrado->page = ceil($absenTrado->position / ($request->limit ?? 10));
+            }
 
             DB::commit();
 

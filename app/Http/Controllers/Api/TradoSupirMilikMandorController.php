@@ -44,8 +44,9 @@ class TradoSupirMilikMandorController extends Controller
             $tradoSupirMilikMandor = (new TradoSupirMilikMandor())->processStore($data);
             /* Set position and page */
             $tradoSupirMilikMandor->position = $this->getPosition($tradoSupirMilikMandor, $tradoSupirMilikMandor->getTable())->position;
-            $tradoSupirMilikMandor->page = ceil($tradoSupirMilikMandor->position / ($request->limit ?? 10));
-            if (isset($request->limit)) {
+            if ($request->limit==0) {
+                $tradoSupirMilikMandor->page = ceil($tradoSupirMilikMandor->position / (10));
+            } else {
                 $tradoSupirMilikMandor->page = ceil($tradoSupirMilikMandor->position / ($request->limit ?? 10));
             }
     
@@ -93,8 +94,9 @@ class TradoSupirMilikMandorController extends Controller
             $tradoSupirMilikMandor = (new TradoSupirMilikMandor())->processUpdate($tradoSupirMilikMandor,$data);
             /* Set position and page */
             $tradoSupirMilikMandor->position = $this->getPosition($tradoSupirMilikMandor, $tradoSupirMilikMandor->getTable())->position;
-            $tradoSupirMilikMandor->page = ceil($tradoSupirMilikMandor->position / ($request->limit ?? 10));
-            if (isset($request->limit)) {
+            if ($request->limit==0) {
+                $tradoSupirMilikMandor->page = ceil($tradoSupirMilikMandor->position / (10));
+            } else {
                 $tradoSupirMilikMandor->page = ceil($tradoSupirMilikMandor->position / ($request->limit ?? 10));
             }
 
@@ -113,7 +115,7 @@ class TradoSupirMilikMandorController extends Controller
     /**
      * @ClassName 
      */
-    public function destroy(TradoSupirMilikMandor $tradoSupirMilikMandor,$id)
+    public function destroy(TradoSupirMilikMandor $tradoSupirMilikMandor,$id, Request $request)
     {
         DB::beginTransaction();
         try {
@@ -121,8 +123,9 @@ class TradoSupirMilikMandorController extends Controller
             $tradoSupirMilikMandor = (new TradoSupirMilikMandor())->processDestroy($id);
             /* Set position and page */
             $tradoSupirMilikMandor->position = $this->getPosition($tradoSupirMilikMandor, $tradoSupirMilikMandor->getTable())->position;
-            $tradoSupirMilikMandor->page = ceil($tradoSupirMilikMandor->position / ($request->limit ?? 10));
-            if (isset($request->limit)) {
+            if ($request->limit==0) {
+                $tradoSupirMilikMandor->page = ceil($tradoSupirMilikMandor->position / (10));
+            } else {
                 $tradoSupirMilikMandor->page = ceil($tradoSupirMilikMandor->position / ($request->limit ?? 10));
             }
 

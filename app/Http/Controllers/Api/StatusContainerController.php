@@ -98,7 +98,11 @@ class StatusContainerController extends Controller
             ];
             $statusContainer = (new StatusContainer())->processStore($data);
             $statusContainer->position = $this->getPosition($statusContainer, $statusContainer->getTable())->position;
-            $statusContainer->page = ceil($statusContainer->position / ($request->limit ?? 10));
+            if ($request->limit==0) {
+                $statusContainer->page = ceil($statusContainer->position / (10));
+            } else {
+                $statusContainer->page = ceil($statusContainer->position / ($request->limit ?? 10));
+            }
 
             DB::commit();
 
@@ -128,7 +132,11 @@ class StatusContainerController extends Controller
             ];
             $statusContainer = (new StatusContainer())->processUpdate($statusContainer, $data);
             $statusContainer->position = $this->getPosition($statusContainer, $statusContainer->getTable())->position;
-            $statusContainer->page = ceil($statusContainer->position / ($request->limit ?? 10));
+            if ($request->limit==0) {
+                $statusContainer->page = ceil($statusContainer->position / (10));
+            } else {
+                $statusContainer->page = ceil($statusContainer->position / ($request->limit ?? 10));
+            }
 
             DB::commit();
 
@@ -156,7 +164,11 @@ class StatusContainerController extends Controller
             $selected = $this->getPosition($statusContainer, $statusContainer->getTable(), true);
             $statusContainer->position = $selected->position;
             $statusContainer->id = $selected->id;
-            $statusContainer->page = ceil($statusContainer->position / ($request->limit ?? 10));
+            if ($request->limit==0) {
+                $statusContainer->page = ceil($statusContainer->position / (10));
+            } else {
+                $statusContainer->page = ceil($statusContainer->position / ($request->limit ?? 10));
+            }
 
             DB::commit();
 

@@ -96,7 +96,11 @@ class KerusakanController extends Controller
             ];
             $kerusakan = (new Kerusakan())->processStore($data);
             $kerusakan->position = $this->getPosition($kerusakan, $kerusakan->getTable())->position;
-            $kerusakan->page = ceil($kerusakan->position / ($request->limit ?? 10));
+            if ($request->limit==0) {
+                $kerusakan->page = ceil($kerusakan->position / (10));
+            } else {
+                $kerusakan->page = ceil($kerusakan->position / ($request->limit ?? 10));
+            }
 
             DB::commit();
             return response([
@@ -131,7 +135,11 @@ class KerusakanController extends Controller
             ];
             $kerusakan = (new Kerusakan())->processUpdate($kerusakan, $data);
             $kerusakan->position = $this->getPosition($kerusakan, $kerusakan->getTable())->position;
-            $kerusakan->page = ceil($kerusakan->position / ($request->limit ?? 10));
+            if ($request->limit==0) {
+                $kerusakan->page = ceil($kerusakan->position / (10));
+            } else {
+                $kerusakan->page = ceil($kerusakan->position / ($request->limit ?? 10));
+            }
 
             DB::commit();
 
@@ -157,7 +165,11 @@ class KerusakanController extends Controller
             $selected = $this->getPosition($kerusakan, $kerusakan->getTable(), true);
             $kerusakan->position = $selected->position;
             $kerusakan->id = $selected->id;
-            $kerusakan->page = ceil($kerusakan->position / ($request->limit ?? 10));
+            if ($request->limit==0) {
+                $kerusakan->page = ceil($kerusakan->position / (10));
+            } else {
+                $kerusakan->page = ceil($kerusakan->position / ($request->limit ?? 10));
+            }
 
             DB::commit();
 

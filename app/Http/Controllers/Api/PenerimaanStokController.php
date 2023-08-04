@@ -88,7 +88,11 @@ class PenerimaanStokController extends Controller
             ];
             $penerimaanStok = (new PenerimaanStok())->processStore($data);
             $penerimaanStok->position = $this->getPosition($penerimaanStok, $penerimaanStok->getTable())->position;
-            $penerimaanStok->page = ceil($penerimaanStok->position / ($request->limit ?? 10));
+            if ($request->limit==0) {
+                $penerimaanStok->page = ceil($penerimaanStok->position / (10));
+            } else {
+                $penerimaanStok->page = ceil($penerimaanStok->position / ($request->limit ?? 10));
+            }
 
             DB::commit();
 
@@ -133,7 +137,11 @@ class PenerimaanStokController extends Controller
             $penerimaanStok = PenerimaanStok::findOrFail($id);
             $penerimaanStok = (new PenerimaanStok())->processUpdate($penerimaanStok, $data);
             $penerimaanStok->position = $this->getPosition($penerimaanStok, $penerimaanStok->getTable())->position;
-            $penerimaanStok->page = ceil($penerimaanStok->position / ($request->limit ?? 10));
+            if ($request->limit==0) {
+                $penerimaanStok->page = ceil($penerimaanStok->position / (10));
+            } else {
+                $penerimaanStok->page = ceil($penerimaanStok->position / ($request->limit ?? 10));
+            }
 
             DB::commit();
 
@@ -174,7 +182,11 @@ class PenerimaanStokController extends Controller
             $selected = $this->getPosition($penerimaanStok, $penerimaanStok->getTable(), true);
             $penerimaanStok->position = $selected->position;
             $penerimaanStok->id = $selected->id;
-            $penerimaanStok->page = ceil($penerimaanStok->position / ($request->limit ?? 10));
+            if ($request->limit==0) {
+                $penerimaanStok->page = ceil($penerimaanStok->position / (10));
+            } else {
+                $penerimaanStok->page = ceil($penerimaanStok->position / ($request->limit ?? 10));
+            }
 
             DB::commit();
 

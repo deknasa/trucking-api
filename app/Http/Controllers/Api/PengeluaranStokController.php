@@ -92,7 +92,11 @@ class PengeluaranStokController extends Controller
             ];
             $pengeluaranStok = (new PengeluaranStok())->processStore($data);
             $pengeluaranStok->position = $this->getPosition($pengeluaranStok, $pengeluaranStok->getTable())->position;
-            $pengeluaranStok->page = ceil($pengeluaranStok->position / ($request->limit ?? 10));
+            if ($request->limit==0) {
+                $pengeluaranStok->page = ceil($pengeluaranStok->position / (10));
+            } else {
+                $pengeluaranStok->page = ceil($pengeluaranStok->position / ($request->limit ?? 10));
+            }
 
             DB::commit();
 
@@ -138,7 +142,11 @@ class PengeluaranStokController extends Controller
             $pengeluaranStok = PengeluaranStok::findOrFail($id);
             $pengeluaranStok = (new PengeluaranStok())->processUpdate($pengeluaranStok, $data);
             $pengeluaranStok->position = $this->getPosition($pengeluaranStok, $pengeluaranStok->getTable())->position;
-            $pengeluaranStok->page = ceil($pengeluaranStok->position / ($request->limit ?? 10));
+            if ($request->limit==0) {
+                $pengeluaranStok->page = ceil($pengeluaranStok->position / (10));
+            } else {
+                $pengeluaranStok->page = ceil($pengeluaranStok->position / ($request->limit ?? 10));
+            }
 
             DB::commit();
 
@@ -179,7 +187,11 @@ class PengeluaranStokController extends Controller
             $selected = $this->getPosition($pengeluaranStok, $pengeluaranStok->getTable(), true);
             $pengeluaranStok->position = $selected->position;
             $pengeluaranStok->id = $selected->id;
-            $pengeluaranStok->page = ceil($pengeluaranStok->position / ($request->limit ?? 10));
+            if ($request->limit==0) {
+                $pengeluaranStok->page = ceil($pengeluaranStok->position / (10));
+            } else {
+                $pengeluaranStok->page = ceil($pengeluaranStok->position / ($request->limit ?? 10));
+            }
 
             DB::commit();
 

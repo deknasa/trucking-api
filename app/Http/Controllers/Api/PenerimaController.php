@@ -93,7 +93,11 @@ class PenerimaController extends Controller
             ];
             $penerima = (new Penerima())->processStore($data);
             $penerima->position = $this->getPosition($penerima, $penerima->getTable())->position;
-            $penerima->page = ceil($penerima->position / ($request->limit ?? 10));
+            if ($request->limit==0) {
+                $penerima->page = ceil($penerima->position / (10));
+            } else {
+                $penerima->page = ceil($penerima->position / ($request->limit ?? 10));
+            }
 
             DB::commit();
 
@@ -135,7 +139,11 @@ class PenerimaController extends Controller
 
             $penerima = (new Penerima())->processUpdate($penerima, $data);
             $penerima->position = $this->getPosition($penerima, $penerima->getTable())->position;
-            $penerima->page = ceil($penerima->position / ($request->limit ?? 10));
+           if ($request->limit==0) {
+                $penerima->page = ceil($penerima->position / (10));
+            } else {
+                $penerima->page = ceil($penerima->position / ($request->limit ?? 10));
+            }
 
             DB::commit();
 
@@ -162,7 +170,11 @@ class PenerimaController extends Controller
             $selected = $this->getPosition($penerima, $penerima->getTable(), true);
             $penerima->position = $selected->position;
             $penerima->id = $selected->id;
-            $penerima->page = ceil($penerima->position / ($request->limit ?? 10));
+           if ($request->limit==0) {
+                $penerima->page = ceil($penerima->position / (10));
+            } else {
+                $penerima->page = ceil($penerima->position / ($request->limit ?? 10));
+            }
 
             DB::commit();
 

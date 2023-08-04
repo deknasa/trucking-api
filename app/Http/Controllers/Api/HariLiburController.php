@@ -54,7 +54,11 @@ class HariLiburController extends Controller
             ];
             $hariLibur = (new HariLibur())->processStore($data);
             $hariLibur->position = $this->getPosition($hariLibur, $hariLibur->getTable())->position;
-            $hariLibur->page = ceil($hariLibur->position / ($request->limit ?? 10));
+            if ($request->limit==0) {
+                $hariLibur->page = ceil($hariLibur->position / (10));
+            } else {
+                $hariLibur->page = ceil($hariLibur->position / ($request->limit ?? 10));
+            }
 
             DB::commit();
 
@@ -94,7 +98,11 @@ class HariLiburController extends Controller
 
             $harilibur = (new harilibur())->processUpdate($harilibur, $data);
             $harilibur->position = $this->getPosition($harilibur, $harilibur->getTable())->position;
-            $harilibur->page = ceil($harilibur->position / ($request->limit ?? 10));
+            if ($request->limit==0) {
+                $harilibur->page = ceil($harilibur->position / (10));
+            } else {
+                $harilibur->page = ceil($harilibur->position / ($request->limit ?? 10));
+            }
 
             DB::commit();
 
@@ -121,7 +129,11 @@ class HariLiburController extends Controller
             $selected = $this->getPosition($harilibur, $harilibur->getTable(), true);
             $harilibur->position = $selected->position;
             $harilibur->id = $selected->id;
-            $harilibur->page = ceil($harilibur->position / ($request->limit ?? 10));
+            if ($request->limit==0) {
+                $harilibur->page = ceil($harilibur->position / (10));
+            } else {
+                $harilibur->page = ceil($harilibur->position / ($request->limit ?? 10));
+            }
 
             DB::commit();
 

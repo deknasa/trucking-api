@@ -96,7 +96,11 @@ class BankPelangganController extends Controller
             ];
             $bankpelanggan = (new BankPelanggan())->processStore($data);
             $bankpelanggan->position = $this->getPosition($bankpelanggan, $bankpelanggan->getTable())->position;
-            $bankpelanggan->page = ceil($bankpelanggan->position / ($request->limit ?? 10));
+            if ($request->limit==0) {
+                $bankpelanggan->page = ceil($bankpelanggan->position / (10));
+            } else {
+                $bankpelanggan->page = ceil($bankpelanggan->position / ($request->limit ?? 10));
+            }
 
             DB::commit();
 
@@ -135,7 +139,11 @@ class BankPelangganController extends Controller
 
             $bankpelanggan = (new BankPelanggan())->processUpdate($bankpelanggan, $data);
             $bankpelanggan->position = $this->getPosition($bankpelanggan, $bankpelanggan->getTable())->position;
-            $bankpelanggan->page = ceil($bankpelanggan->position / ($request->limit ?? 10));
+            if ($request->limit==0) {
+                $bankpelanggan->page = ceil($bankpelanggan->position / (10));
+            } else {
+                $bankpelanggan->page = ceil($bankpelanggan->position / ($request->limit ?? 10));
+            }
 
             DB::commit();
 
@@ -161,7 +169,11 @@ class BankPelangganController extends Controller
             $selected = $this->getPosition($bankpelanggan, $bankpelanggan->getTable(), true);
             $bankpelanggan->position = $selected->position;
             $bankpelanggan->id = $selected->id;
-            $bankpelanggan->page = ceil($bankpelanggan->position / ($request->limit ?? 10));
+            if ($request->limit==0) {
+                $bankpelanggan->page = ceil($bankpelanggan->position / (10));
+            } else {
+                $bankpelanggan->page = ceil($bankpelanggan->position / ($request->limit ?? 10));
+            }
 
             DB::commit();
 

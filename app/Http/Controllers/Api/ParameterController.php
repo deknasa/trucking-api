@@ -73,7 +73,11 @@ class ParameterController extends Controller
 
             $parameter = (new Parameter())->processStore( $data);
             $parameter->position = $this->getPosition($parameter, $parameter->getTable())->position;
-            $parameter->page = ceil($parameter->position / ($request->limit ?? 10));
+            if ($request->limit==0) {
+                $parameter->page = ceil($parameter->position / (10));
+            } else {
+                $parameter->page = ceil($parameter->position / ($request->limit ?? 10));
+            }
             
             if (isset($request->limit)) {
                 $parameter->page = ceil($parameter->position / $request->limit);
@@ -126,7 +130,11 @@ class ParameterController extends Controller
         try {
             $parameter = (new Parameter())->processUpdate($parameter, $data);
             $parameter->position = $this->getPosition($parameter, $parameter->getTable())->position;
-            $parameter->page = ceil($parameter->position / ($request->limit ?? 10));
+            if ($request->limit==0) {
+                $parameter->page = ceil($parameter->position / (10));
+            } else {
+                $parameter->page = ceil($parameter->position / ($request->limit ?? 10));
+            }
 
             DB::commit();
 
@@ -154,7 +162,11 @@ class ParameterController extends Controller
             $selected = $this->getPosition($parameter, $parameter->getTable(), true);
             $parameter->position = $selected->position;
             $parameter->id = $selected->id;
-            $parameter->page = ceil($parameter->position / ($request->limit ?? 10));
+            if ($request->limit==0) {
+                $parameter->page = ceil($parameter->position / (10));
+            } else {
+                $parameter->page = ceil($parameter->position / ($request->limit ?? 10));
+            }
 
             DB::commit();
 

@@ -93,7 +93,11 @@ class MerkController extends Controller
             ];
             $merk = (new Merk())->processStore($data);
             $merk->position = $this->getPosition($merk, $merk->getTable())->position;
-            $merk->page = ceil($merk->position / ($request->limit ?? 10));
+            if ($request->limit==0) {
+                $merk->page = ceil($merk->position / (10));
+            } else {
+                $merk->page = ceil($merk->position / ($request->limit ?? 10));
+            }
 
             DB::commit();
 
@@ -132,7 +136,11 @@ class MerkController extends Controller
 
             $merk = (new Merk())->processUpdate($merk, $data);
             $merk->position = $this->getPosition($merk, $merk->getTable())->position;
-            $merk->page = ceil($merk->position / ($request->limit ?? 10));
+            if ($request->limit==0) {
+                $merk->page = ceil($merk->position / (10));
+            } else {
+                $merk->page = ceil($merk->position / ($request->limit ?? 10));
+            }
 
             DB::commit();
 
@@ -158,7 +166,11 @@ class MerkController extends Controller
             $selected = $this->getPosition($merk, $merk->getTable(), true);
             $merk->position = $selected->position;
             $merk->id = $selected->id;
-            $merk->page = ceil($merk->position / ($request->limit ?? 10));
+            if ($request->limit==0) {
+                $merk->page = ceil($merk->position / (10));
+            } else {
+                $merk->page = ceil($merk->position / ($request->limit ?? 10));
+            }
 
             DB::commit();
 

@@ -94,7 +94,11 @@ class ZonaController extends Controller
             ];
             $zona = (new Zona())->processStore($data);
             $zona->position = $this->getPosition($zona, $zona->getTable())->position;
-            $zona->page = ceil($zona->position / ($request->limit ?? 10));
+            if ($request->limit==0) {
+                $zona->page = ceil($zona->position / (10));
+            } else {
+                $zona->page = ceil($zona->position / ($request->limit ?? 10));
+            }
 
             DB::commit();
 
@@ -131,7 +135,11 @@ class ZonaController extends Controller
             ];
             $zona = (new Zona())->processUpdate($zona, $data);
             $zona->position = $this->getPosition($zona, $zona->getTable())->position;
-            $zona->page = ceil($zona->position / ($request->limit ?? 10));
+            if ($request->limit==0) {
+                $zona->page = ceil($zona->position / (10));
+            } else {
+                $zona->page = ceil($zona->position / ($request->limit ?? 10));
+            }
 
             DB::commit();
 
@@ -157,7 +165,11 @@ class ZonaController extends Controller
             $selected = $this->getPosition($zona, $zona->getTable(), true);
             $zona->position = $selected->position;
             $zona->id = $selected->id;
-            $zona->page = ceil($zona->position / ($request->limit ?? 10));
+            if ($request->limit==0) {
+                $zona->page = ceil($zona->position / (10));
+            } else {
+                $zona->page = ceil($zona->position / ($request->limit ?? 10));
+            }
 
             DB::commit();
 

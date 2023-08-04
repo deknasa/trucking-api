@@ -44,11 +44,12 @@ class BlackListSupirController extends Controller
             $blackListSupir = (new BlackListSupir())->processStore($data);
             /* Set position and page */
             $blackListSupir->position = $this->getPosition($blackListSupir, $blackListSupir->getTable())->position;
-            $blackListSupir->page = ceil($blackListSupir->position / ($request->limit ?? 10));
-            if (isset($request->limit)) {
+            if ($request->limit==0) {
+                $blackListSupir->page = ceil($blackListSupir->position / (10));
+            } else {
                 $blackListSupir->page = ceil($blackListSupir->position / ($request->limit ?? 10));
             }
-    
+
             DB::commit();
             return response()->json([
                 'message' => 'Berhasil disimpan',
@@ -93,8 +94,9 @@ class BlackListSupirController extends Controller
             $blackListSupir = (new BlackListSupir())->processUpdate($blackListSupir,$data);
             /* Set position and page */
             $blackListSupir->position = $this->getPosition($blackListSupir, $blackListSupir->getTable())->position;
-            $blackListSupir->page = ceil($blackListSupir->position / ($request->limit ?? 10));
-            if (isset($request->limit)) {
+            if ($request->limit==0) {
+                $blackListSupir->page = ceil($blackListSupir->position / (10));
+            } else {
                 $blackListSupir->page = ceil($blackListSupir->position / ($request->limit ?? 10));
             }
 
@@ -113,7 +115,7 @@ class BlackListSupirController extends Controller
    /**
     * @ClassName 
     */
-    public function destroy(BlackListSupir $blackListSupir,$id)
+    public function destroy(BlackListSupir $blackListSupir,$id, Request $request)
     {
         DB::beginTransaction();
         try {
@@ -121,8 +123,9 @@ class BlackListSupirController extends Controller
             $blackListSupir = (new BlackListSupir())->processDestroy($id);
             /* Set position and page */
             $blackListSupir->position = $this->getPosition($blackListSupir, $blackListSupir->getTable())->position;
-            $blackListSupir->page = ceil($blackListSupir->position / ($request->limit ?? 10));
-            if (isset($request->limit)) {
+            if ($request->limit==0) {
+                $blackListSupir->page = ceil($blackListSupir->position / (10));
+            } else {
                 $blackListSupir->page = ceil($blackListSupir->position / ($request->limit ?? 10));
             }
 

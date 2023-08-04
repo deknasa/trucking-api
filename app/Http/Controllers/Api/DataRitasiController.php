@@ -89,7 +89,11 @@ class DataRitasiController extends Controller
             /* Set position and page */
             $selected = $this->getPosition($dataritasi, $dataritasi->getTable());
             $dataritasi->position = $selected->position;
-            $dataritasi->page = ceil($dataritasi->position / ($request->limit ?? 10));
+            if ($request->limit==0) {
+                $dataritasi->page = ceil($dataritasi->position / (10));
+            } else {
+                $dataritasi->page = ceil($dataritasi->position / ($request->limit ?? 10));
+            }
 
             return response([
                 'status' => true,
@@ -105,7 +109,6 @@ class DataRitasiController extends Controller
 
     public function show(DataRitasi $dataritasi)
     {
-        // dd($cabang);
         return response([
             'status' => true,
             'data' => $dataritasi
@@ -145,7 +148,11 @@ class DataRitasiController extends Controller
             /* Set position and page */
             $selected = $this->getPosition($dataritasi, $dataritasi->getTable());
             $dataritasi->position = $selected->position;
-            $dataritasi->page = ceil($dataritasi->position / ($request->limit ?? 10));
+            if ($request->limit==0) {
+                $dataritasi->page = ceil($dataritasi->position / (10));
+            } else {
+                $dataritasi->page = ceil($dataritasi->position / ($request->limit ?? 10));
+            }
 
             return response([
                 'status' => true,
@@ -187,7 +194,11 @@ class DataRitasiController extends Controller
             $selected = $this->getPosition($dataritasi, $dataritasi->getTable(), true);
             $dataritasi->position = $selected->position;
             $dataritasi->id = $selected->id;
-            $dataritasi->page = ceil($dataritasi->position / ($request->limit ?? 10));
+            if ($request->limit==0) {
+                $dataritasi->page = ceil($dataritasi->position / (10));
+            } else {
+                $dataritasi->page = ceil($dataritasi->position / ($request->limit ?? 10));
+            }
 
             return response([
                 'status' => true,

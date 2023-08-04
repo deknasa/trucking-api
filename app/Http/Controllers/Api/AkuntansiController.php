@@ -70,7 +70,11 @@ class AkuntansiController extends Controller
         try {
             $akuntansi = (new Akuntansi())->processStore($data);
             $akuntansi->position = $this->getPosition($akuntansi, $akuntansi->getTable())->position;
-            $akuntansi->page = ceil($akuntansi->position / ($request->limit ?? 10));
+            if ($request->limit==0) {
+                $akuntansi->page = ceil($akuntansi->position / (10));
+            } else {
+                $akuntansi->page = ceil($akuntansi->position / ($request->limit ?? 10));
+            }
 
             DB::commit();
 
@@ -110,7 +114,11 @@ class AkuntansiController extends Controller
         try {
             $akuntansi = (new Akuntansi())->processUpdate($akuntansi, $data);
             $akuntansi->position = $this->getPosition($akuntansi, $akuntansi->getTable())->position;
-            $akuntansi->page = ceil($akuntansi->position / ($request->limit ?? 10));
+            if ($request->limit==0) {
+                $akuntansi->page = ceil($akuntansi->position / (10));
+            } else {
+                $akuntansi->page = ceil($akuntansi->position / ($request->limit ?? 10));
+            }
 
             DB::commit();
 
@@ -138,7 +146,11 @@ class AkuntansiController extends Controller
             $selected = $this->getPosition($akuntansi, $akuntansi->getTable(), true);
             $akuntansi->position = $selected->position;
             $akuntansi->id = $selected->id;
-            $akuntansi->page = ceil($akuntansi->position / ($request->limit ?? 10));
+            if ($request->limit==0) {
+                $akuntansi->page = ceil($akuntansi->position / (10));
+            } else {
+                $akuntansi->page = ceil($akuntansi->position / ($request->limit ?? 10));
+            }
 
             DB::commit();
 

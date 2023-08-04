@@ -46,7 +46,11 @@ class ErrorController extends Controller
             ];
             $error = (new Error())->processStore($data);
             $error->position = $this->getPosition($error, $error->getTable())->position;
-            $error->page = ceil($error->position / ($request->limit ?? 10));
+            if ($request->limit==0) {
+                $error->page = ceil($error->position / (10));
+            } else {
+                $error->page = ceil($error->position / ($request->limit ?? 10));
+            }
 
             DB::commit();
 
@@ -82,7 +86,11 @@ class ErrorController extends Controller
             ];
             $error = (new Error())->processUpdate($error, $data);
             $error->position = $this->getPosition($error, $error->getTable())->position;
-            $error->page = ceil($error->position / ($request->limit ?? 10));
+            if ($request->limit==0) {
+                $error->page = ceil($error->position / (10));
+            } else {
+                $error->page = ceil($error->position / ($request->limit ?? 10));
+            }
 
             DB::commit();
 
@@ -109,7 +117,11 @@ class ErrorController extends Controller
             $selected = $this->getPosition($error, $error->getTable(), true);
             $error->position = $selected->position;
             $error->id = $selected->id;
-            $error->page = ceil($error->position / ($request->limit ?? 10));
+            if ($request->limit==0) {
+                $error->page = ceil($error->position / (10));
+            } else {
+                $error->page = ceil($error->position / ($request->limit ?? 10));
+            }
 
             DB::commit();
 

@@ -59,7 +59,11 @@ class SatuanController extends Controller
 
             $satuan = (new Satuan())->processStore($data);
             $satuan->position = $this->getPosition($satuan, $satuan->getTable())->position;
-            $satuan->page = ceil($satuan->position / ($request->limit ?? 10));
+            if ($request->limit==0) {
+                $satuan->page = ceil($satuan->position / (10));
+            } else {
+                $satuan->page = ceil($satuan->position / ($request->limit ?? 10));
+            }
 
             DB::commit();
 
@@ -97,7 +101,11 @@ class SatuanController extends Controller
 
             $satuan = (new Satuan())->processUpdate($satuan, $data);
             $satuan->position = $this->getPosition($satuan, $satuan->getTable())->position;
-            $satuan->page = ceil($satuan->position / ($request->limit ?? 10));
+            if ($request->limit==0) {
+                $satuan->page = ceil($satuan->position / (10));
+            } else {
+                $satuan->page = ceil($satuan->position / ($request->limit ?? 10));
+            }
 
             DB::commit();
 
@@ -123,7 +131,11 @@ class SatuanController extends Controller
             $selected = $this->getPosition($satuan, $satuan->getTable(), true);
             $satuan->position = $selected->position;
             $satuan->id = $selected->id;
-            $satuan->page = ceil($satuan->position / ($request->limit ?? 10));
+            if ($request->limit==0) {
+                $satuan->page = ceil($satuan->position / (10));
+            } else {
+                $satuan->page = ceil($satuan->position / ($request->limit ?? 10));
+            }
 
             DB::commit();
 

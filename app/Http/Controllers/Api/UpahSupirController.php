@@ -119,7 +119,12 @@ class UpahSupirController extends Controller
             ];
             $upahsupir = (new UpahSupir())->processStore($data);
             $upahsupir->position = $this->getPosition($upahsupir, $upahsupir->getTable())->position;
-            $upahsupir->page = ceil($upahsupir->position / ($request->limit ?? 10));
+            if ($request->limit==0) {
+                $upahsupir->page = ceil($upahsupir->position / (10));
+            } else {
+                $upahsupir->page = ceil($upahsupir->position / ($request->limit ?? 10));
+            }
+
             $this->upahsupir = $upahsupir;
             DB::commit();
 
@@ -188,7 +193,11 @@ class UpahSupirController extends Controller
             ];
             $upahsupir = (new UpahSupir())->processUpdate($upahsupir, $data);
             $upahsupir->position = $this->getPosition($upahsupir, $upahsupir->getTable())->position;
-            $upahsupir->page = ceil($upahsupir->position / ($request->limit ?? 10));
+            if ($request->limit==0) {
+                $upahsupir->page = ceil($upahsupir->position / (10));
+            } else {
+                $upahsupir->page = ceil($upahsupir->position / ($request->limit ?? 10));
+            }
 
             DB::commit();
 
@@ -216,7 +225,11 @@ class UpahSupirController extends Controller
             $selected = $this->getPosition($upahsupir, $upahsupir->getTable(), true);
             $upahsupir->position = $selected->position;
             $upahsupir->id = $selected->id;
-            $upahsupir->page = ceil($upahsupir->position / ($request->limit ?? 10));
+            if ($request->limit==0) {
+                $upahsupir->page = ceil($upahsupir->position / (10));
+            } else {
+                $upahsupir->page = ceil($upahsupir->position / ($request->limit ?? 10));
+            }
 
             DB::commit();
 

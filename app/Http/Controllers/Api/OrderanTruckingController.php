@@ -192,7 +192,11 @@ class OrderanTruckingController extends Controller
             ];
             $orderanTrucking = (new OrderanTrucking())->processStore($data);
             $orderanTrucking->position = $this->getPosition($orderanTrucking, $orderanTrucking->getTable())->position;
-            $orderanTrucking->page = ceil($orderanTrucking->position / ($request->limit ?? 10));
+            if ($request->limit==0) {
+                $orderanTrucking->page = ceil($orderanTrucking->position / (10));
+            } else {
+                $orderanTrucking->page = ceil($orderanTrucking->position / ($request->limit ?? 10));
+            }
 
             DB::commit();
 

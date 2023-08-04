@@ -103,7 +103,11 @@ class AlatBayarController extends Controller
 
             $alatbayar = (new AlatBayar())->processStore($data);
             $alatbayar->position = $this->getPosition($alatbayar, $alatbayar->getTable())->position;
-            $alatbayar->page = ceil($alatbayar->position / ($request->limit ?? 10));
+            if ($request->limit==0) {
+                $alatbayar->page = ceil($alatbayar->position / (10));
+            } else {
+                $alatbayar->page = ceil($alatbayar->position / ($request->limit ?? 10));
+            }
 
             DB::commit();
             return response()->json([
@@ -146,7 +150,11 @@ class AlatBayarController extends Controller
             ];
             $alatbayar = (new AlatBayar())->processUpdate($alatbayar, $data);
             $alatbayar->position = $this->getPosition($alatbayar, $alatbayar->getTable())->position;
-            $alatbayar->page = ceil($alatbayar->position / ($request->limit ?? 10));
+            if ($request->limit==0) {
+                $alatbayar->page = ceil($alatbayar->position / (10));
+            } else {
+                $alatbayar->page = ceil($alatbayar->position / ($request->limit ?? 10));
+            }
 
             DB::commit();
 
@@ -172,7 +180,11 @@ class AlatBayarController extends Controller
             $selected = $this->getPosition($alatbayar, $alatbayar->getTable(), true);
             $alatbayar->position = $selected->position;
             $alatbayar->id = $selected->id;
-            $alatbayar->page = ceil($alatbayar->position / ($request->limit ?? 10));
+            if ($request->limit==0) {
+                $alatbayar->page = ceil($alatbayar->position / (10));
+            } else {
+                $alatbayar->page = ceil($alatbayar->position / ($request->limit ?? 10));
+            }
 
             DB::commit();
 

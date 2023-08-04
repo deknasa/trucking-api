@@ -66,7 +66,11 @@ class TypeAkuntansiController extends Controller
         try {
             $typeakuntansi = (new TypeAkuntansi())->processStore($request->all());
             $typeakuntansi->position = $this->getPosition($typeakuntansi, $typeakuntansi->getTable())->position;
-            $typeakuntansi->page = ceil($typeakuntansi->position / ($request->limit ?? 10));
+            if ($request->limit==0) {
+                $typeakuntansi->page = ceil($typeakuntansi->position / (10));
+            } else {
+                $typeakuntansi->page = ceil($typeakuntansi->position / ($request->limit ?? 10));
+            }
 
             DB::commit();
 
@@ -100,7 +104,11 @@ class TypeAkuntansiController extends Controller
         try {
             $typeakuntansi = (new TypeAkuntansi())->processUpdate($typeakuntansi, $request->all());
             $typeakuntansi->position = $this->getPosition($typeakuntansi, $typeakuntansi->getTable())->position;
-            $typeakuntansi->page = ceil($typeakuntansi->position / ($request->limit ?? 10));
+            if ($request->limit==0) {
+                $typeakuntansi->page = ceil($typeakuntansi->position / (10));
+            } else {
+                $typeakuntansi->page = ceil($typeakuntansi->position / ($request->limit ?? 10));
+            }
 
             DB::commit();
 
@@ -128,7 +136,11 @@ class TypeAkuntansiController extends Controller
             $selected = $this->getPosition($typeakuntansi, $typeakuntansi->getTable(), true);
             $typeakuntansi->position = $selected->position;
             $typeakuntansi->id = $selected->id;
-            $typeakuntansi->page = ceil($typeakuntansi->position / ($request->limit ?? 10));
+            if ($request->limit==0) {
+                $typeakuntansi->page = ceil($typeakuntansi->position / (10));
+            } else {
+                $typeakuntansi->page = ceil($typeakuntansi->position / ($request->limit ?? 10));
+            }
 
             DB::commit();
 

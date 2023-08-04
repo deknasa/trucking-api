@@ -87,7 +87,11 @@ class KaryawanController extends Controller
             ];
             $karyawan = (new Karyawan())->processStore($data);
             $karyawan->position = $this->getPosition($karyawan, $karyawan->getTable())->position;
-            $karyawan->page = ceil($karyawan->position / ($request->limit ?? 10));
+            if ($request->limit==0) {
+                $karyawan->page = ceil($karyawan->position / (10));
+            } else {
+                $karyawan->page = ceil($karyawan->position / ($request->limit ?? 10));
+            }
 
             DB::commit();
 
@@ -126,7 +130,11 @@ class KaryawanController extends Controller
             ];
             $karyawan = (new Karyawan())->processUpdate($karyawan, $data);
             $karyawan->position = $this->getPosition($karyawan, $karyawan->getTable())->position;
-            $karyawan->page = ceil($karyawan->position / ($request->limit ?? 10));
+            if ($request->limit==0) {
+                $karyawan->page = ceil($karyawan->position / (10));
+            } else {
+                $karyawan->page = ceil($karyawan->position / ($request->limit ?? 10));
+            }
 
             DB::commit();
 
@@ -153,7 +161,11 @@ class KaryawanController extends Controller
             $selected = $this->getPosition($karyawan, $karyawan->getTable(), true);
             $karyawan->position = $selected->position;
             $karyawan->id = $selected->id;
-            $karyawan->page = ceil($karyawan->position / ($request->limit ?? 10));
+            if ($request->limit==0) {
+                $karyawan->page = ceil($karyawan->position / (10));
+            } else {
+                $karyawan->page = ceil($karyawan->position / ($request->limit ?? 10));
+            }
 
             DB::commit();
 

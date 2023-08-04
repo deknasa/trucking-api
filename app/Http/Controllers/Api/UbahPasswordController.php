@@ -35,7 +35,11 @@ class UbahPasswordController extends Controller
             ];
             $ubahPassword = (new UbahPassword())->processUpdate($ubah, $data);
             $ubahPassword->position = $this->getPosition($ubahPassword, $ubahPassword->getTable())->position;
-            $ubahPassword->page = ceil($ubahPassword->position / ($request->limit ?? 10));
+            if ($request->limit==0) {
+                $ubahPassword->page = ceil($ubahPassword->position / (10));
+            } else {
+                $ubahPassword->page = ceil($ubahPassword->position / ($request->limit ?? 10));
+            }
 
             DB::commit();
 

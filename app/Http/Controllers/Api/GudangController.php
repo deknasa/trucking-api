@@ -97,7 +97,11 @@ class GudangController extends Controller
             $gudang = (new Gudang())->processStore($data);
             $selected = $this->getPosition($gudang, $gudang->getTable());
             $gudang->position = $selected->position;
-            $gudang->page = ceil($gudang->position / ($request->limit ?? 10));
+           if ($request->limit==0) {
+                $gudang->page = ceil($gudang->position / (10));
+            } else {
+                $gudang->page = ceil($gudang->position / ($request->limit ?? 10));
+            }
 
             DB::commit();
 
@@ -134,7 +138,11 @@ class GudangController extends Controller
 
             $gudang = (new Gudang())->processUpdate($gudang, $data);
             $gudang->position = $this->getPosition($gudang, $gudang->getTable())->position;
-            $gudang->page = ceil($gudang->position / ($request->limit ?? 10));
+           if ($request->limit==0) {
+                $gudang->page = ceil($gudang->position / (10));
+            } else {
+                $gudang->page = ceil($gudang->position / ($request->limit ?? 10));
+            }
 
             DB::commit();
             return response()->json([
@@ -159,7 +167,11 @@ class GudangController extends Controller
             $selected = $this->getPosition($gudang, $gudang->getTable(), true);
             $gudang->position = $selected->position;
             $gudang->id = $selected->id;
-            $gudang->page = ceil($gudang->position / ($request->limit ?? 10));
+           if ($request->limit==0) {
+                $gudang->page = ceil($gudang->position / (10));
+            } else {
+                $gudang->page = ceil($gudang->position / ($request->limit ?? 10));
+            }
 
             DB::commit();
 

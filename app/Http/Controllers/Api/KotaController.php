@@ -98,7 +98,11 @@ class KotaController extends Controller
 
             $kota = (new Kota())->processStore($data);
             $kota->position = $this->getPosition($kota, $kota->getTable())->position;
-            $kota->page = ceil($kota->position / ($request->limit ?? 10));
+            if ($request->limit==0) {
+                $kota->page = ceil($kota->position / (10));
+            } else {
+                $kota->page = ceil($kota->position / ($request->limit ?? 10));
+            }
 
             DB::commit();
 
@@ -143,7 +147,11 @@ class KotaController extends Controller
 
             $kota = (new Kota())->processUpdate($kota, $data);
             $kota->position = $this->getPosition($kota, $kota->getTable())->position;
-            $kota->page = ceil($kota->position / ($request->limit ?? 10));
+            if ($request->limit==0) {
+                $kota->page = ceil($kota->position / (10));
+            } else {
+                $kota->page = ceil($kota->position / ($request->limit ?? 10));
+            }
 
             DB::commit();
 
@@ -169,7 +177,11 @@ class KotaController extends Controller
             $selected = $this->getPosition($kota, $kota->getTable(), true);
             $kota->position = $selected->position;
             $kota->id = $selected->id;
-            $kota->page = ceil($kota->position / ($request->limit ?? 10));
+            if ($request->limit==0) {
+                $kota->page = ceil($kota->position / (10));
+            } else {
+                $kota->page = ceil($kota->position / ($request->limit ?? 10));
+            }
 
             DB::commit();
 

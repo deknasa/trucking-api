@@ -94,8 +94,11 @@ class KategoriController extends Controller
             ];
             $kategori = (new Kategori())->processStore($data);
             $kategori->position = $this->getPosition($kategori, $kategori->getTable())->position;
-            $kategori->page = ceil($kategori->position / ($request->limit ?? 10));
-
+            if ($request->limit==0) {
+                $kategori->page = ceil($kategori->position / (10));
+            } else {
+                $kategori->page = ceil($kategori->position / ($request->limit ?? 10));
+            }
             DB::commit();
 
             return response()->json([
@@ -133,7 +136,12 @@ class KategoriController extends Controller
             ];
             $kategori = (new Kategori())->processUpdate($kategori, $data);
             $kategori->position = $this->getPosition($kategori, $kategori->getTable())->position;
-            $kategori->page = ceil($kategori->position / ((($request->limit)?$request->limit:10) ?? 10));
+            if ($request->limit==0) {
+                $kategori->page = ceil($kategori->position / (10));
+            } else {
+                $kategori->page = ceil($kategori->position / ($request->limit ?? 10));
+            }
+
             DB::commit();
 
             return response()->json([
@@ -158,8 +166,11 @@ class KategoriController extends Controller
             $selected = $this->getPosition($kategori, $kategori->getTable(), true);
             $kategori->position = $selected->position;
             $kategori->id = $selected->id;
-            $kategori->page = ceil($kategori->position / ($request->limit ?? 10));
-
+            if ($request->limit==0) {
+                $kategori->page = ceil($kategori->position / (10));
+            } else {
+                $kategori->page = ceil($kategori->position / ($request->limit ?? 10));
+            }
             DB::commit();
 
             return response()->json([

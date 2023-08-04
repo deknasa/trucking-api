@@ -84,7 +84,11 @@ class PengeluaranTruckingController extends Controller
             ];
             $pengeluaranTrucking = (new PengeluaranTrucking())->processStore($data);
             $pengeluaranTrucking->position = $this->getPosition($pengeluaranTrucking, $pengeluaranTrucking->getTable())->position;
-            $pengeluaranTrucking->page = ceil($pengeluaranTrucking->position / ($request->limit ?? 10));
+            if ($request->limit==0) {
+                $pengeluaranTrucking->page = ceil($pengeluaranTrucking->position / (10));
+            } else {
+                $pengeluaranTrucking->page = ceil($pengeluaranTrucking->position / ($request->limit ?? 10));
+            }
 
 
             DB::commit();
@@ -128,7 +132,11 @@ class PengeluaranTruckingController extends Controller
 
             $pengeluaranTrucking = (new PengeluaranTrucking())->processUpdate($pengeluaranTrucking, $data);
             $pengeluaranTrucking->position = $this->getPosition($pengeluaranTrucking, $pengeluaranTrucking->getTable())->position;
-            $pengeluaranTrucking->page = ceil($pengeluaranTrucking->position / ($request->limit ?? 10));
+            if ($request->limit==0) {
+                $pengeluaranTrucking->page = ceil($pengeluaranTrucking->position / (10));
+            } else {
+                $pengeluaranTrucking->page = ceil($pengeluaranTrucking->position / ($request->limit ?? 10));
+            }
 
             DB::commit();
 
@@ -153,7 +161,11 @@ class PengeluaranTruckingController extends Controller
             $selected = $this->getPosition($pengeluaranTrucking, $pengeluaranTrucking->getTable(), true);
             $pengeluaranTrucking->position = $selected->position;
             $pengeluaranTrucking->id = $selected->id;
-            $pengeluaranTrucking->page = ceil($pengeluaranTrucking->position / ($request->limit ?? 10));
+            if ($request->limit==0) {
+                $pengeluaranTrucking->page = ceil($pengeluaranTrucking->position / (10));
+            } else {
+                $pengeluaranTrucking->page = ceil($pengeluaranTrucking->position / ($request->limit ?? 10));
+            }
 
             DB::commit();
 

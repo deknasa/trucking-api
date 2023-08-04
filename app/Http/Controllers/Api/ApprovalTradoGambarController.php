@@ -59,7 +59,11 @@ class ApprovalTradoGambarController extends Controller
             DB::commit();
             $selected = $this->getPosition($approvalTradoGambar, $approvalTradoGambar->getTable());
             $approvalTradoGambar->position = $selected->position;
-            $approvalTradoGambar->page = ceil($approvalTradoGambar->position / ($request->limit ?? 10));
+            if ($request->limit==0) {
+                $approvalTradoGambar->page = ceil($approvalTradoGambar->position / (10));
+            } else {
+                $approvalTradoGambar->page = ceil($approvalTradoGambar->position / ($request->limit ?? 10));
+            }
 
             return response([
                 'status' => true,
@@ -160,7 +164,11 @@ class ApprovalTradoGambarController extends Controller
             DB::commit();
             $selected = $this->getPosition($approvaltradogambar, $approvaltradogambar->getTable());
             $approvaltradogambar->position = $selected->position;
-            $approvaltradogambar->page = ceil($approvaltradogambar->position / ($request->limit ?? 10));
+            if ($request->limit==0) {
+                $approvaltradogambar->page = ceil($approvaltradogambar->position / (10));
+            } else {
+                $approvaltradogambar->page = ceil($approvaltradogambar->position / ($request->limit ?? 10));
+            }
 
             return response([
                 'status' => true,
@@ -241,7 +249,11 @@ class ApprovalTradoGambarController extends Controller
             $selected = $this->getPosition($approvalTradoGambar, $approvalTradoGambar->getTable(), true);
             $approvalTradoGambar->position = $selected->position;
             $approvalTradoGambar->id = $selected->id;
-            $approvalTradoGambar->page = ceil($approvalTradoGambar->position / ($request->limit ?? 10));
+            if ($request->limit==0) {
+                $approvalTradoGambar->page = ceil($approvalTradoGambar->position / (10));
+            } else {
+                $approvalTradoGambar->page = ceil($approvalTradoGambar->position / ($request->limit ?? 10));
+            }
 
             return response([
                 'status' => true,

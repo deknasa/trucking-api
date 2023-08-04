@@ -150,7 +150,11 @@ class TarifController extends Controller
 
             $tarif = (new Tarif())->processStore($data);
             $tarif->position = $this->getPosition($tarif, $tarif->getTable())->position;
-            $tarif->page = ceil($tarif->position / ($request->limit ?? 10));
+            if ($request->limit==0) {
+                $tarif->page = ceil($tarif->position / (10));
+            } else {
+                $tarif->page = ceil($tarif->position / ($request->limit ?? 10));
+            }
 
             DB::commit();
 
@@ -208,7 +212,11 @@ class TarifController extends Controller
             ];
             $tarif = (new Tarif())->processUpdate($tarif, $data);
             $tarif->position = $this->getPosition($tarif, $tarif->getTable())->position;
-            $tarif->page = ceil($tarif->position / ($request->limit ?? 10));
+            if ($request->limit==0) {
+                $tarif->page = ceil($tarif->position / (10));
+            } else {
+                $tarif->page = ceil($tarif->position / ($request->limit ?? 10));
+            }
 
             DB::commit();
 
@@ -237,7 +245,11 @@ class TarifController extends Controller
             $selected = $this->getPosition($tarif, $tarif->getTable(), true);
             $tarif->position = $selected->position;
             $tarif->id = $selected->id;
-            $tarif->page = ceil($tarif->position / ($request->limit ?? 10));
+            if ($request->limit==0) {
+                $tarif->page = ceil($tarif->position / (10));
+            } else {
+                $tarif->page = ceil($tarif->position / ($request->limit ?? 10));
+            }
 
             DB::commit();
 
