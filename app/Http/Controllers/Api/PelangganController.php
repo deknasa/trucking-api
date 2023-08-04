@@ -100,7 +100,11 @@ class PelangganController extends Controller
             ];
             $pelanggan = (new Pelanggan())->processStore($data);
             $pelanggan->position = $this->getPosition($pelanggan, $pelanggan->getTable())->position;
-            $pelanggan->page = ceil($pelanggan->position / ($request->limit ?? 10));
+            if ($request->limit==0) {
+                $pelanggan->page = ceil($pelanggan->position / (10));
+            } else {
+                $pelanggan->page = ceil($pelanggan->position / ($request->limit ?? 10));
+            }
 
             DB::commit();
 
@@ -148,7 +152,11 @@ class PelangganController extends Controller
 
             $pelanggan = (new Pelanggan())->processUpdate($pelanggan, $data);
             $pelanggan->position = $this->getPosition($pelanggan, $pelanggan->getTable())->position;
-            $pelanggan->page = ceil($pelanggan->position / ($request->limit ?? 10));
+            if ($request->limit==0) {
+                $pelanggan->page = ceil($pelanggan->position / (10));
+            } else {
+                $pelanggan->page = ceil($pelanggan->position / ($request->limit ?? 10));
+            }
 
             DB::commit();
 
@@ -175,7 +183,11 @@ class PelangganController extends Controller
             $selected = $this->getPosition($pelanggan, $pelanggan->getTable(), true);
             $pelanggan->position = $selected->position;
             $pelanggan->id = $selected->id;
-            $pelanggan->page = ceil($pelanggan->position / ($request->limit ?? 10));
+            if ($request->limit==0) {
+                $pelanggan->page = ceil($pelanggan->position / (10));
+            } else {
+                $pelanggan->page = ceil($pelanggan->position / ($request->limit ?? 10));
+            }
 
             DB::commit();
 

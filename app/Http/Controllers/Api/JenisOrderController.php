@@ -92,8 +92,11 @@ class JenisOrderController extends Controller
             ];
             $jenisorder = (new JenisOrder())->processStore($data);
             $jenisorder->position = $this->getPosition($jenisorder, $jenisorder->getTable())->position;
-            $jenisorder->page = ceil($jenisorder->position / ($request->limit ?? 10));
-
+            if ($request->limit==0) {
+                $jenisorder->page = ceil($jenisorder->position / (10));
+            } else {
+                $jenisorder->page = ceil($jenisorder->position / ($request->limit ?? 10));
+            }
             DB::commit();
 
             return response()->json([
@@ -130,8 +133,11 @@ class JenisOrderController extends Controller
 
             $jenisorder = (new JenisOrder())->processUpdate($jenisorder, $data);
             $jenisorder->position = $this->getPosition($jenisorder, $jenisorder->getTable())->position;
-            $jenisorder->page = ceil($jenisorder->position / ($request->limit ?? 10));
-
+            if ($request->limit==0) {
+                $jenisorder->page = ceil($jenisorder->position / (10));
+            } else {
+                $jenisorder->page = ceil($jenisorder->position / ($request->limit ?? 10));
+            }
             DB::commit();
 
             return response()->json([
@@ -158,8 +164,11 @@ class JenisOrderController extends Controller
             $selected = $this->getPosition($jenisorder, $jenisorder->getTable(), true);
             $jenisorder->position = $selected->position;
             $jenisorder->id = $selected->id;
-            $jenisorder->page = ceil($jenisorder->position / ($request->limit ?? 10));
-
+            if ($request->limit==0) {
+                $jenisorder->page = ceil($jenisorder->position / (10));
+            } else {
+                $jenisorder->page = ceil($jenisorder->position / ($request->limit ?? 10));
+            }
             DB::commit();
 
             return response()->json([

@@ -46,7 +46,12 @@ class RoleController extends Controller
             ];
             $role = (new Role())->processStore($data);
             $role->position = $this->getPosition($role, $role->getTable())->position;
-            $role->page = ceil($role->position / ($request->limit ?? 10));
+            if ($request->limit==0) {
+                $role->page = ceil($role->position / (10));
+            } else {
+                $role->page = ceil($role->position / ($request->limit ?? 10));
+            }
+
             DB::commit();
 
             return response()->json([
@@ -89,7 +94,11 @@ class RoleController extends Controller
 
             $role = (new Role())->processUpdate($role, $data);
             $role->position = $this->getPosition($role, $role->getTable())->position;
-            $role->page = ceil($role->position / ($request->limit ?? 10));
+            if ($request->limit==0) {
+                $role->page = ceil($role->position / (10));
+            } else {
+                $role->page = ceil($role->position / ($request->limit ?? 10));
+            }
 
             DB::commit();
 
@@ -117,7 +126,11 @@ class RoleController extends Controller
             $selected = $this->getPosition($role, $role->getTable(), true);
             $role->position = $selected->position;
             $role->id = $selected->id;
-            $role->page = ceil($role->position / ($request->limit ?? 10));
+            if ($request->limit==0) {
+                $role->page = ceil($role->position / (10));
+            } else {
+                $role->page = ceil($role->position / ($request->limit ?? 10));
+            }
 
             DB::commit();
 

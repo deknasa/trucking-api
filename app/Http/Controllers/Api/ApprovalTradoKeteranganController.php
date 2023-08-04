@@ -60,7 +60,11 @@ class ApprovalTradoKeteranganController extends Controller
             DB::commit();
             $selected = $this->getPosition($approvalTradoKeterangan, $approvalTradoKeterangan->getTable());
             $approvalTradoKeterangan->position = $selected->position;
-            $approvalTradoKeterangan->page = ceil($approvalTradoKeterangan->position / ($request->limit ?? 10));
+           if ($request->limit==0) {
+                $approvalTradoKeterangan->page = ceil($approvalTradoKeterangan->position / (10));
+            } else {
+                $approvalTradoKeterangan->page = ceil($approvalTradoKeterangan->position / ($request->limit ?? 10));
+            }
 
             return response([
                 'status' => true,
@@ -156,7 +160,11 @@ class ApprovalTradoKeteranganController extends Controller
             DB::commit();
             $selected = $this->getPosition($approvaltradoketerangan, $approvaltradoketerangan->getTable());
             $approvaltradoketerangan->position = $selected->position;
-            $approvaltradoketerangan->page = ceil($approvaltradoketerangan->position / ($request->limit ?? 10));
+           if ($request->limit==0) {
+                $approvaltradoketerangan->page = ceil($approvaltradoketerangan->position / (10));
+            } else {
+                $approvaltradoketerangan->page = ceil($approvaltradoketerangan->position / ($request->limit ?? 10));
+            }
 
             return response([
                 'status' => true,
@@ -230,7 +238,11 @@ class ApprovalTradoKeteranganController extends Controller
             $selected = $this->getPosition($approvalTradoKeterangan, $approvalTradoKeterangan->getTable(), true);
             $approvalTradoKeterangan->position = $selected->position;
             $approvalTradoKeterangan->id = $selected->id;
-            $approvalTradoKeterangan->page = ceil($approvalTradoKeterangan->position / ($request->limit ?? 10));
+           if ($request->limit==0) {
+                $approvalTradoKeterangan->page = ceil($approvalTradoKeterangan->position / (10));
+            } else {
+                $approvalTradoKeterangan->page = ceil($approvalTradoKeterangan->position / ($request->limit ?? 10));
+            }
 
             return response([
                 'status' => true,

@@ -110,7 +110,11 @@ class StokController extends Controller
             ];
             $stok = (new Stok())->processStore($data);
             $stok->position = $this->getPosition($stok, $stok->getTable())->position;
-            $stok->page = ceil($stok->position / ($request->limit ?? 10));
+            if ($request->limit==0) {
+                $stok->page = ceil($stok->position / (10));
+            } else {
+                $stok->page = ceil($stok->position / ($request->limit ?? 10));
+            }
             // $this->stok = $stok;
             DB::commit();
 
@@ -185,7 +189,11 @@ class StokController extends Controller
 
             $stok = (new Stok())->processUpdate($stok, $data);
             $stok->position = $this->getPosition($stok, $stok->getTable())->position;
-            $stok->page = ceil($stok->position / ($request->limit ?? 10));
+            if ($request->limit==0) {
+                $stok->page = ceil($stok->position / (10));
+            } else {
+                $stok->page = ceil($stok->position / ($request->limit ?? 10));
+            }
 
             DB::commit();
 
@@ -212,7 +220,11 @@ class StokController extends Controller
             $selected = $this->getPosition($stok, $stok->getTable(), true);
             $stok->position = $selected->position;
             $stok->id = $selected->id;
-            $stok->page = ceil($stok->position / ($request->limit ?? 10));
+            if ($request->limit==0) {
+                $stok->page = ceil($stok->position / (10));
+            } else {
+                $stok->page = ceil($stok->position / ($request->limit ?? 10));
+            }
 
             DB::commit();
 

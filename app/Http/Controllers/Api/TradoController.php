@@ -132,7 +132,11 @@ class TradoController extends Controller
             $trado = (new Trado())->processStore($data);
             $selected = $this->getPosition($trado, $trado->getTable());
             $trado->position = $selected->position;
-            $trado->page = ceil($trado->position / ($request->limit ?? 10));
+            if ($request->limit==0) {
+                $trado->page = ceil($trado->position / (10));
+            } else {
+                $trado->page = ceil($trado->position / ($request->limit ?? 10));
+            }
 
             DB::commit();
 
@@ -189,7 +193,11 @@ class TradoController extends Controller
 
             $trado = (new Trado())->processUpdate($trado, $data);
             $trado->position = $this->getPosition($trado, $trado->getTable())->position;
-            $trado->page = ceil($trado->position / ($request->limit ?? 10));
+            if ($request->limit==0) {
+                $trado->page = ceil($trado->position / (10));
+            } else {
+                $trado->page = ceil($trado->position / ($request->limit ?? 10));
+            }
 
             DB::commit();
 
@@ -224,7 +232,11 @@ class TradoController extends Controller
             $selected = $this->getPosition($trado, $trado->getTable(), true);
             $trado->position = $selected->position;
             $trado->id = $selected->id;
-            $trado->page = ceil($trado->position / ($request->limit ?? 10));
+            if ($request->limit==0) {
+                $trado->page = ceil($trado->position / (10));
+            } else {
+                $trado->page = ceil($trado->position / ($request->limit ?? 10));
+            }
 
             DB::commit();
 

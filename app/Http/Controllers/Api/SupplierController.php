@@ -137,7 +137,11 @@ class SupplierController extends Controller
             ];
             $supplier = (new Supplier())->processStore($data);
             $supplier->position = $this->getPosition($supplier, $supplier->getTable())->position;
-            $supplier->page = ceil($supplier->position / ($request->limit ?? 10));
+            if ($request->limit==0) {
+                $supplier->page = ceil($supplier->position / (10));
+            } else {
+                $supplier->page = ceil($supplier->position / ($request->limit ?? 10));
+            }
 
             DB::commit();
 
@@ -188,7 +192,11 @@ class SupplierController extends Controller
 
             $supplier = (new Supplier())->processUpdate($supplier, $data);
             $supplier->position = $this->getPosition($supplier, $supplier->getTable())->position;
-            $supplier->page = ceil($supplier->position / ($request->limit ?? 10));
+            if ($request->limit==0) {
+                $supplier->page = ceil($supplier->position / (10));
+            } else {
+                $supplier->page = ceil($supplier->position / ($request->limit ?? 10));
+            }
 
             DB::commit();
 
@@ -214,7 +222,11 @@ class SupplierController extends Controller
             $selected = $this->getPosition($supplier, $supplier->getTable(), true);
             $supplier->position = $selected->position;
             $supplier->id = $selected->id;
-            $supplier->page = ceil($supplier->position / ($request->limit ?? 10));
+            if ($request->limit==0) {
+                $supplier->page = ceil($supplier->position / (10));
+            } else {
+                $supplier->page = ceil($supplier->position / ($request->limit ?? 10));
+            }
 
             DB::commit();
 

@@ -66,7 +66,11 @@ class MainTypeAkuntansiController extends Controller
         try {
             $maintypeakuntansi = (new MainTypeAkuntansi())->processStore($request->all());
             $maintypeakuntansi->position = $this->getPosition($maintypeakuntansi, $maintypeakuntansi->getTable())->position;
-            $maintypeakuntansi->page = ceil($maintypeakuntansi->position / ($request->limit ?? 10));
+            if ($request->limit==0) {
+                $maintypeakuntansi->page = ceil($maintypeakuntansi->position / (10));
+            } else {
+                $maintypeakuntansi->page = ceil($maintypeakuntansi->position / ($request->limit ?? 10));
+            }
 
             DB::commit();
 
@@ -100,7 +104,11 @@ class MainTypeAkuntansiController extends Controller
         try {
             $maintypeakuntansi = (new MainTypeAkuntansi())->processUpdate($maintypeakuntansi, $request->all());
             $maintypeakuntansi->position = $this->getPosition($maintypeakuntansi, $maintypeakuntansi->getTable())->position;
-            $maintypeakuntansi->page = ceil($maintypeakuntansi->position / ($request->limit ?? 10));
+            if ($request->limit==0) {
+                $maintypeakuntansi->page = ceil($maintypeakuntansi->position / (10));
+            } else {
+                $maintypeakuntansi->page = ceil($maintypeakuntansi->position / ($request->limit ?? 10));
+            }
 
             DB::commit();
 
@@ -128,7 +136,11 @@ class MainTypeAkuntansiController extends Controller
             $selected = $this->getPosition($maintypeakuntansi, $maintypeakuntansi->getTable(), true);
             $maintypeakuntansi->position = $selected->position;
             $maintypeakuntansi->id = $selected->id;
-            $maintypeakuntansi->page = ceil($maintypeakuntansi->position / ($request->limit ?? 10));
+            if ($request->limit==0) {
+                $maintypeakuntansi->page = ceil($maintypeakuntansi->position / (10));
+            } else {
+                $maintypeakuntansi->page = ceil($maintypeakuntansi->position / ($request->limit ?? 10));
+            }
 
             DB::commit();
 

@@ -117,7 +117,11 @@ class UserController extends Controller
             ];
             $user = (new User())->processStore($data);
             $user->position = $this->getPosition($user, $user->getTable())->position;
-            $user->page = ceil($user->position / ($request->limit ?? 10));
+            if ($request->limit==0) {
+                $user->page = ceil($user->position / (10));
+            } else {
+                $user->page = ceil($user->position / ($request->limit ?? 10));
+            }
 
             DB::commit();
 
@@ -167,7 +171,11 @@ class UserController extends Controller
 
             $user = (new User())->processUpdate($user, $data);
             $user->position = $this->getPosition($user, $user->getTable())->position;
-            $user->page = ceil($user->position / ($request->limit ?? 10));
+            if ($request->limit==0) {
+                $user->page = ceil($user->position / (10));
+            } else {
+                $user->page = ceil($user->position / ($request->limit ?? 10));
+            }
 
             DB::commit();
 
@@ -200,7 +208,11 @@ class UserController extends Controller
             $selected = $this->getPosition($user, $user->getTable(), true);
             $user->position = $selected->position;
             $user->id = $selected->id;
-            $user->page = ceil($user->position / ($request->limit ?? 10));
+            if ($request->limit==0) {
+                $user->page = ceil($user->position / (10));
+            } else {
+                $user->page = ceil($user->position / ($request->limit ?? 10));
+            }
 
             DB::commit();
 

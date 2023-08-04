@@ -288,7 +288,12 @@ class SupirController extends Controller
             ];
             $supir = (new supir())->processStore($data);
             $supir->position = $this->getPosition($supir, $supir->getTable())->position;
-            $supir->page = ceil($supir->position / ($request->limit ?? 10));
+           if ($request->limit==0) {
+                $supir->page = ceil($supir->position / (10));
+            } else {
+                $supir->page = ceil($supir->position / ($request->limit ?? 10));
+            }
+
             DB::commit();
 
             return response()->json([
@@ -348,7 +353,11 @@ class SupirController extends Controller
 
             $supir = (new Supir())->processUpdate($supir, $data);
             $supir->position = $this->getPosition($supir, $supir->getTable())->position;
-            $supir->page = ceil($supir->position / ($request->limit ?? 10));
+           if ($request->limit==0) {
+                $supir->page = ceil($supir->position / (10));
+            } else {
+                $supir->page = ceil($supir->position / ($request->limit ?? 10));
+            }
 
             DB::commit();
 
@@ -375,7 +384,11 @@ class SupirController extends Controller
             $selected = $this->getPosition($supir, $supir->getTable(), true);
             $supir->position = $selected->position;
             $supir->id = $selected->id;
-            $supir->page = ceil($supir->position / ($request->limit ?? 10));
+           if ($request->limit==0) {
+                $supir->page = ceil($supir->position / (10));
+            } else {
+                $supir->page = ceil($supir->position / ($request->limit ?? 10));
+            }
 
             DB::commit();
 

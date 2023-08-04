@@ -91,7 +91,11 @@ class KelompokController extends Controller
             ];
             $kelompok = (new Kelompok())->processStore($data);
             $kelompok->position = $this->getPosition($kelompok, $kelompok->getTable())->position;
-            $kelompok->page = ceil($kelompok->position / ($request->limit ?? 10));
+            if ($request->limit==0) {
+                $kelompok->page = ceil($kelompok->position / (10));
+            } else {
+                $kelompok->page = ceil($kelompok->position / ($request->limit ?? 10));
+            }
 
             DB::commit();
 
@@ -129,7 +133,11 @@ class KelompokController extends Controller
 
             $kelompok = (new Kelompok())->processUpdate($kelompok, $data);
             $kelompok->position = $this->getPosition($kelompok, $kelompok->getTable())->position;
-            $kelompok->page = ceil($kelompok->position / ($request->limit ?? 10));
+            if ($request->limit==0) {
+                $kelompok->page = ceil($kelompok->position / (10));
+            } else {
+                $kelompok->page = ceil($kelompok->position / ($request->limit ?? 10));
+            }
 
             DB::commit();
 
@@ -155,7 +163,11 @@ class KelompokController extends Controller
             $selected = $this->getPosition($kelompok, $kelompok->getTable(), true);
             $kelompok->position = $selected->position;
             $kelompok->id = $selected->id;
-            $kelompok->page = ceil($kelompok->position / ($request->limit ?? 10));
+            if ($request->limit==0) {
+                $kelompok->page = ceil($kelompok->position / (10));
+            } else {
+                $kelompok->page = ceil($kelompok->position / ($request->limit ?? 10));
+            }
 
             DB::commit();
 

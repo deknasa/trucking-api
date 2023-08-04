@@ -63,7 +63,11 @@ class MainAkunPusatController extends Controller
             ];
             $mainAkunPusat = (new MainAkunPusat())->processStore($data);
             $mainAkunPusat->position = $this->getPosition($mainAkunPusat, $mainAkunPusat->getTable())->position;
-            $mainAkunPusat->page = ceil($mainAkunPusat->position / ($request->limit ?? 10));
+            if ($request->limit==0) {
+                $mainAkunPusat->page = ceil($mainAkunPusat->position / (10));
+            } else {
+                $mainAkunPusat->page = ceil($mainAkunPusat->position / ($request->limit ?? 10));
+            }
 
             DB::commit();
 
@@ -111,7 +115,11 @@ class MainAkunPusatController extends Controller
             ];
             $mainAkunPusat = (new MainAkunPusat())->processUpdate($mainakunpusat, $data);
             $mainAkunPusat->position = $this->getPosition($mainAkunPusat, $mainAkunPusat->getTable())->position;
-            $mainAkunPusat->page = ceil($mainAkunPusat->position / ($request->limit ?? 10));
+            if ($request->limit==0) {
+                $mainAkunPusat->page = ceil($mainAkunPusat->position / (10));
+            } else {
+                $mainAkunPusat->page = ceil($mainAkunPusat->position / ($request->limit ?? 10));
+            }
 
             DB::commit();
 
@@ -139,7 +147,11 @@ class MainAkunPusatController extends Controller
             $selected = $this->getPosition($mainAkunPusat, $mainAkunPusat->getTable(), true);
             $mainAkunPusat->position = $selected->position;
             $mainAkunPusat->id = $selected->id;
-            $mainAkunPusat->page = ceil($mainAkunPusat->position / ($request->limit ?? 10));
+            if ($request->limit==0) {
+                $mainAkunPusat->page = ceil($mainAkunPusat->position / (10));
+            } else {
+                $mainAkunPusat->page = ceil($mainAkunPusat->position / ($request->limit ?? 10));
+            }
 
             DB::commit();
 

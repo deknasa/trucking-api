@@ -67,7 +67,11 @@ class CabangController extends Controller
         try {
             $cabang = (new Cabang())->processStore($data);
             $cabang->position = $this->getPosition($cabang, $cabang->getTable())->position;
-            $cabang->page = ceil($cabang->position / ($request->limit ?? 10));
+            if ($request->limit==0) {
+                $cabang->page = ceil($cabang->position / (10));
+            } else {
+                $cabang->page = ceil($cabang->position / ($request->limit ?? 10));
+            }
 
             DB::commit();
 
@@ -107,7 +111,11 @@ class CabangController extends Controller
         try {
             $cabang = (new Cabang())->processUpdate($cabang, $data);
             $cabang->position = $this->getPosition($cabang, $cabang->getTable())->position;
-            $cabang->page = ceil($cabang->position / ($request->limit ?? 10));
+            if ($request->limit==0) {
+                $cabang->page = ceil($cabang->position / (10));
+            } else {
+                $cabang->page = ceil($cabang->position / ($request->limit ?? 10));
+            }
 
             DB::commit();
 
@@ -135,7 +143,11 @@ class CabangController extends Controller
             $selected = $this->getPosition($cabang, $cabang->getTable(), true);
             $cabang->position = $selected->position;
             $cabang->id = $selected->id;
-            $cabang->page = ceil($cabang->position / ($request->limit ?? 10));
+            if ($request->limit==0) {
+                $cabang->page = ceil($cabang->position / (10));
+            } else {
+                $cabang->page = ceil($cabang->position / ($request->limit ?? 10));
+            }
 
             DB::commit();
 

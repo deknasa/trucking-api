@@ -45,8 +45,9 @@ class ApprovalSupirGambarController extends Controller
             $approvalSupirGambar = (new ApprovalSupirGambar())->processStore($data);
             /* Set position and page */
             $approvalSupirGambar->position = $this->getPosition($approvalSupirGambar, $approvalSupirGambar->getTable())->position;
-            $approvalSupirGambar->page = ceil($approvalSupirGambar->position / ($request->limit ?? 10));
-            if (isset($request->limit)) {
+            if ($request->limit==0) {
+                $approvalSupirGambar->page = ceil($approvalSupirGambar->position / (10));
+            } else {
                 $approvalSupirGambar->page = ceil($approvalSupirGambar->position / ($request->limit ?? 10));
             }
 
@@ -96,8 +97,9 @@ class ApprovalSupirGambarController extends Controller
             $approvalSupirGambar = (new ApprovalSupirGambar())->processUpdate($approvalSupirGambar,$data);
             /* Set position and page */
             $approvalSupirGambar->position = $this->getPosition($approvalSupirGambar, $approvalSupirGambar->getTable())->position;
-            $approvalSupirGambar->page = ceil($approvalSupirGambar->position / ($request->limit ?? 10));
-            if (isset($request->limit)) {
+            if ($request->limit==0) {
+                $approvalSupirGambar->page = ceil($approvalSupirGambar->position / (10));
+            } else {
                 $approvalSupirGambar->page = ceil($approvalSupirGambar->position / ($request->limit ?? 10));
             }
 
@@ -117,7 +119,7 @@ class ApprovalSupirGambarController extends Controller
     /**
      * @ClassName
      */
-    public function destroy(ApprovalSupirGambar $approvalSupirGambar,$id)
+    public function destroy(ApprovalSupirGambar $approvalSupirGambar,$id, Request $request)
     {
         DB::beginTransaction();
         try {
@@ -125,8 +127,9 @@ class ApprovalSupirGambarController extends Controller
             $approvalSupirGambar = (new ApprovalSupirGambar())->processDestroy($id);
             /* Set position and page */
             $approvalSupirGambar->position = $this->getPosition($approvalSupirGambar, $approvalSupirGambar->getTable())->position;
-            $approvalSupirGambar->page = ceil($approvalSupirGambar->position / ($request->limit ?? 10));
-            if (isset($request->limit)) {
+            if ($request->limit==0) {
+                $approvalSupirGambar->page = ceil($approvalSupirGambar->position / (10));
+            } else {
                 $approvalSupirGambar->page = ceil($approvalSupirGambar->position / ($request->limit ?? 10));
             }
 

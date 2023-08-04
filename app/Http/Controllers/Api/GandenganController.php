@@ -108,7 +108,11 @@ class GandenganController extends Controller
             $gandengan = (new Gandengan())->processStore($data);
             $selected = $this->getPosition($gandengan, $gandengan->getTable());
             $gandengan->position = $selected->position;
-            $gandengan->page = ceil($gandengan->position / ($request->limit ?? 10));
+           if ($request->limit==0) {
+                $gandengan->page = ceil($gandengan->position / (10));
+            } else {
+                $gandengan->page = ceil($gandengan->position / ($request->limit ?? 10));
+            }
 
             DB::commit();
 
@@ -158,7 +162,11 @@ class GandenganController extends Controller
             ];
             $gandengan = (new Gandengan())->processUpdate($gandengan, $data);
             $gandengan->position = $this->getPosition($gandengan, $gandengan->getTable())->position;
-            $gandengan->page = ceil($gandengan->position / ($request->limit ?? 10));
+           if ($request->limit==0) {
+                $gandengan->page = ceil($gandengan->position / (10));
+            } else {
+                $gandengan->page = ceil($gandengan->position / ($request->limit ?? 10));
+            }
 
             DB::commit();
 
@@ -186,7 +194,11 @@ class GandenganController extends Controller
             $selected = $this->getPosition($gandengan, $gandengan->getTable(), true);
             $gandengan->position = $selected->position;
             $gandengan->id = $selected->id;
-            $gandengan->page = ceil($gandengan->position / ($request->limit ?? 10));
+           if ($request->limit==0) {
+                $gandengan->page = ceil($gandengan->position / (10));
+            } else {
+                $gandengan->page = ceil($gandengan->position / ($request->limit ?? 10));
+            }
 
             DB::commit();
 

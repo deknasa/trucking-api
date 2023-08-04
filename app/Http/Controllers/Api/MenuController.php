@@ -61,7 +61,12 @@ class MenuController extends Controller
 
             $menu = (new Menu())->processStore($data);
             $menu->position = $this->getPosition($menu, $menu->getTable())->position;
-            $menu->page = ceil($menu->position / ($request->limit ?? 10));
+            if ($request->limit==0) {
+                $menu->page = ceil($menu->position / (10));
+            } else {
+                $menu->page = ceil($menu->position / ($request->limit ?? 10));
+            }
+
             DB::commit();
 
             return response([
@@ -102,7 +107,11 @@ class MenuController extends Controller
 
             $menu = (new Menu())->processUpdate($menu, $data);
             $menu->position = $this->getPosition($menu, $menu->getTable())->position;
-            $menu->page = ceil($menu->position / ($request->limit ?? 10));
+            if ($request->limit==0) {
+                $menu->page = ceil($menu->position / (10));
+            } else {
+                $menu->page = ceil($menu->position / ($request->limit ?? 10));
+            }
 
             DB::commit();
 
@@ -129,7 +138,11 @@ class MenuController extends Controller
             $selected = $this->getPosition($menu, $menu->getTable(), true);
             $menu->position = $selected->position;
             $menu->id = $selected->id;
-            $menu->page = ceil($menu->position / ($request->limit ?? 10));
+            if ($request->limit==0) {
+                $menu->page = ceil($menu->position / (10));
+            } else {
+                $menu->page = ceil($menu->position / ($request->limit ?? 10));
+            }
 
             DB::commit();
 

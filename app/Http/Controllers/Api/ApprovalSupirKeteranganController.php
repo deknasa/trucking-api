@@ -45,8 +45,9 @@ class ApprovalSupirKeteranganController extends Controller
             $approvalSupirKeterangan = (new ApprovalSupirKeterangan())->processStore($data);
             /* Set position and page */
             $approvalSupirKeterangan->position = $this->getPosition($approvalSupirKeterangan, $approvalSupirKeterangan->getTable())->position;
-            $approvalSupirKeterangan->page = ceil($approvalSupirKeterangan->position / ($request->limit ?? 10));
-            if (isset($request->limit)) {
+            if ($request->limit==0) {
+                $approvalSupirKeterangan->page = ceil($approvalSupirKeterangan->position / (10));
+            } else {
                 $approvalSupirKeterangan->page = ceil($approvalSupirKeterangan->position / ($request->limit ?? 10));
             }
     
@@ -95,8 +96,9 @@ class ApprovalSupirKeteranganController extends Controller
             $approvalSupirKeterangan = (new ApprovalSupirKeterangan())->processUpdate($approvalSupirKeterangan,$data);
             /* Set position and page */
             $approvalSupirKeterangan->position = $this->getPosition($approvalSupirKeterangan, $approvalSupirKeterangan->getTable())->position;
-            $approvalSupirKeterangan->page = ceil($approvalSupirKeterangan->position / ($request->limit ?? 10));
-            if (isset($request->limit)) {
+            if ($request->limit==0) {
+                $approvalSupirKeterangan->page = ceil($approvalSupirKeterangan->position / (10));
+            } else {
                 $approvalSupirKeterangan->page = ceil($approvalSupirKeterangan->position / ($request->limit ?? 10));
             }
 
@@ -115,7 +117,7 @@ class ApprovalSupirKeteranganController extends Controller
    /**
     * @ClassName 
     */
-    public function destroy(ApprovalSupirKeterangan $approvalSupirKeterangan,$id)
+    public function destroy(ApprovalSupirKeterangan $approvalSupirKeterangan,$id, Request $request)
     {
         DB::beginTransaction();
         try {
@@ -123,8 +125,9 @@ class ApprovalSupirKeteranganController extends Controller
             $approvalSupirKeterangan = (new ApprovalSupirKeterangan())->processDestroy($id);
             /* Set position and page */
             $approvalSupirKeterangan->position = $this->getPosition($approvalSupirKeterangan, $approvalSupirKeterangan->getTable())->position;
-            $approvalSupirKeterangan->page = ceil($approvalSupirKeterangan->position / ($request->limit ?? 10));
-            if (isset($request->limit)) {
+            if ($request->limit==0) {
+                $approvalSupirKeterangan->page = ceil($approvalSupirKeterangan->position / (10));
+            } else {
                 $approvalSupirKeterangan->page = ceil($approvalSupirKeterangan->position / ($request->limit ?? 10));
             }
 

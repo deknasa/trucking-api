@@ -85,7 +85,11 @@ class PenerimaanTruckingController extends Controller
             ];
             $penerimaanTrucking = (new PenerimaanTrucking())->processStore($data);
             $penerimaanTrucking->position = $this->getPosition($penerimaanTrucking, $penerimaanTrucking->getTable())->position;
-            $penerimaanTrucking->page = ceil($penerimaanTrucking->position / ($request->limit ?? 10));
+            if ($request->limit==0) {
+                $penerimaanTrucking->page = ceil($penerimaanTrucking->position / (10));
+            } else {
+                $penerimaanTrucking->page = ceil($penerimaanTrucking->position / ($request->limit ?? 10));
+            }
 
             DB::commit();
 
@@ -129,7 +133,11 @@ class PenerimaanTruckingController extends Controller
 
             $penerimaanTrucking = (new PenerimaanTrucking())->processUpdate($penerimaanTrucking, $data);
             $penerimaanTrucking->position = $this->getPosition($penerimaanTrucking, $penerimaanTrucking->getTable())->position;
-            $penerimaanTrucking->page = ceil($penerimaanTrucking->position / ($request->limit ?? 10));
+            if ($request->limit==0) {
+                $penerimaanTrucking->page = ceil($penerimaanTrucking->position / (10));
+            } else {
+                $penerimaanTrucking->page = ceil($penerimaanTrucking->position / ($request->limit ?? 10));
+            }
 
             DB::commit();
 
@@ -158,7 +166,11 @@ class PenerimaanTruckingController extends Controller
             $selected = $this->getPosition($penerimaanTrucking, $penerimaanTrucking->getTable(), true);
             $penerimaanTrucking->position = $selected->position;
             $penerimaanTrucking->id = $selected->id;
-            $penerimaanTrucking->page = ceil($penerimaanTrucking->position / ($request->limit ?? 10));
+            if ($request->limit==0) {
+                $penerimaanTrucking->page = ceil($penerimaanTrucking->position / (10));
+            } else {
+                $penerimaanTrucking->page = ceil($penerimaanTrucking->position / ($request->limit ?? 10));
+            }
 
             DB::commit();
 

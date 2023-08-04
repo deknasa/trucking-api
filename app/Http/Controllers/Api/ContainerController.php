@@ -99,7 +99,11 @@ class ContainerController extends Controller
 
             $container = (new container())->processStore($data);
             $container->position = $this->getPosition($container, $container->getTable())->position;
-            $container->page = ceil($container->position / ($request->limit ?? 10));
+            if ($request->limit==0) {
+                $container->page = ceil($container->position / (10));
+            } else {
+                $container->page = ceil($container->position / ($request->limit ?? 10));
+            }
 
             DB::commit();
 
@@ -140,7 +144,11 @@ class ContainerController extends Controller
 
             $container = (new Container())->processUpdate($container, $data);
             $container->position = $this->getPosition($container, $container->getTable())->position;
-            $container->page = ceil($container->position / ($request->limit ?? 10));
+            if ($request->limit==0) {
+                $container->page = ceil($container->position / (10));
+            } else {
+                $container->page = ceil($container->position / ($request->limit ?? 10));
+            }
 
             DB::commit();
 
@@ -166,7 +174,11 @@ class ContainerController extends Controller
             $selected = $this->getPosition($container, $container->getTable(), true);
             $container->position = $selected->position;
             $container->id = $selected->id;
-            $container->page = ceil($container->position / ($request->limit ?? 10));
+            if ($request->limit==0) {
+                $container->page = ceil($container->position / (10));
+            } else {
+                $container->page = ceil($container->position / ($request->limit ?? 10));
+            }
 
             DB::commit();
 

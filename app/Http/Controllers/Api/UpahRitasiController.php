@@ -106,7 +106,11 @@ class UpahRitasiController extends Controller
             ];
             $upahritasi = (new upahritasi())->processStore($data);
             $upahritasi->position = $this->getPosition($upahritasi, $upahritasi->getTable())->position;
-            $upahritasi->page = ceil($upahritasi->position / ($request->limit ?? 10));
+            if ($request->limit==0) {
+                $upahritasi->page = ceil($upahritasi->position / (10));
+            } else {
+                $upahritasi->page = ceil($upahritasi->position / ($request->limit ?? 10));
+            }
 
             DB::commit();
 
@@ -158,7 +162,11 @@ class UpahRitasiController extends Controller
 
             $upahritasi = (new UpahRitasi())->processUpdate($upahritasi, $data);
             $upahritasi->position = $this->getPosition($upahritasi, $upahritasi->getTable())->position;
-            $upahritasi->page = ceil($upahritasi->position / ($request->limit ?? 10));
+            if ($request->limit==0) {
+                $upahritasi->page = ceil($upahritasi->position / (10));
+            } else {
+                $upahritasi->page = ceil($upahritasi->position / ($request->limit ?? 10));
+            }
 
             DB::commit();
 
@@ -187,7 +195,11 @@ class UpahRitasiController extends Controller
             $selected = $this->getPosition($upahritasi, $upahritasi->getTable(), true);
             $upahritasi->position = $selected->position;
             $upahritasi->id = $selected->id;
-            $upahritasi->page = ceil($upahritasi->position / ($request->limit ?? 10));
+            if ($request->limit==0) {
+                $upahritasi->page = ceil($upahritasi->position / (10));
+            } else {
+                $upahritasi->page = ceil($upahritasi->position / ($request->limit ?? 10));
+            }
 
             DB::commit();
 

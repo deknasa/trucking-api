@@ -111,7 +111,12 @@ class JenisEmklController extends Controller
             /* Set position and page */
             $selected = $this->getPosition($jenisemkl, $jenisemkl->getTable());
             $jenisemkl->position = $selected->position;
-            $jenisemkl->page = ceil($jenisemkl->position / ($request->limit ?? 10));
+            if ($request->limit==0) {
+                $jenisemkl->page = ceil($jenisemkl->position / (10));
+            } else {
+                $jenisemkl->page = ceil($jenisemkl->position / ($request->limit ?? 10));
+            }
+
             return response([
                 'status' => true,
                 'message' => 'Berhasil disimpan',
@@ -162,7 +167,11 @@ class JenisEmklController extends Controller
             /* Set position and page */
             $selected = $this->getPosition($jenisemkl, $jenisemkl->getTable());
             $jenisemkl->position = $selected->position;
-            $jenisemkl->page = ceil($jenisemkl->position / ($request->limit ?? 10));
+            if ($request->limit==0) {
+                $jenisemkl->page = ceil($jenisemkl->position / (10));
+            } else {
+                $jenisemkl->page = ceil($jenisemkl->position / ($request->limit ?? 10));
+            }
 
             return response([
                 'status' => true,
@@ -203,7 +212,11 @@ class JenisEmklController extends Controller
             $selected = $this->getPosition($jenisEmkl, $jenisEmkl->getTable(), true);
             $jenisEmkl->position = $selected->position;
             $jenisEmkl->id = $selected->id;
-            $jenisEmkl->page = ceil($jenisEmkl->position / ($request->limit ?? 10));
+            if ($request->limit==0) {
+                $jenisEmkl->page = ceil($jenisEmkl->position / (10));
+            } else {
+                $jenisEmkl->page = ceil($jenisEmkl->position / ($request->limit ?? 10));
+            }
 
             return response([
                 'status' => true,

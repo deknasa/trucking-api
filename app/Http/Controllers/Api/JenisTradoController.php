@@ -93,7 +93,11 @@ class JenisTradoController extends Controller
             ];
             $jenistrado = (new JenisTrado())->processStore($data);
             $jenistrado->position = $this->getPosition($jenistrado, $jenistrado->getTable())->position;
-            $jenistrado->page = ceil($jenistrado->position / ($request->limit ?? 10));
+           if ($request->limit==0) {
+                $jenistrado->page = ceil($jenistrado->position / (10));
+            } else {
+                $jenistrado->page = ceil($jenistrado->position / ($request->limit ?? 10));
+            }
 
             DB::commit();
 
@@ -131,7 +135,11 @@ class JenisTradoController extends Controller
             ];
             $jenistrado = (new JenisTrado())->processUpdate($jenistrado, $data);
             $jenistrado->position = $this->getPosition($jenistrado, $jenistrado->getTable())->position;
-            $jenistrado->page = ceil($jenistrado->position / ($request->limit ?? 10));
+           if ($request->limit==0) {
+                $jenistrado->page = ceil($jenistrado->position / (10));
+            } else {
+                $jenistrado->page = ceil($jenistrado->position / ($request->limit ?? 10));
+            }
             DB::commit();
 
             return response([
@@ -158,7 +166,11 @@ class JenisTradoController extends Controller
             $selected = $this->getPosition($jenistrado, $jenistrado->getTable(), true);
             $jenistrado->position = $selected->position;
             $jenistrado->id = $selected->id;
-            $jenistrado->page = ceil($jenistrado->position / ($request->limit ?? 10));
+           if ($request->limit==0) {
+                $jenistrado->page = ceil($jenistrado->position / (10));
+            } else {
+                $jenistrado->page = ceil($jenistrado->position / ($request->limit ?? 10));
+            }
 
             DB::commit();
 

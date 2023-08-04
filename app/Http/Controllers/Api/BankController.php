@@ -97,7 +97,11 @@ class BankController extends Controller
 
             $bank = (new Bank())->processStore($data);
             $bank->position = $this->getPosition($bank, $bank->getTable())->position;
-            $bank->page = ceil($bank->position / ($request->limit ?? 10));
+            if ($request->limit==0) {
+                $bank->page = ceil($bank->position / (10));
+            } else {
+                $bank->page = ceil($bank->position / ($request->limit ?? 10));
+            }
 
             DB::commit();
 
@@ -139,7 +143,11 @@ class BankController extends Controller
 
             $bank = (new Bank())->processUpdate($bank, $data);
             $bank->position = $this->getPosition($bank, $bank->getTable())->position;
-            $bank->page = ceil($bank->position / ($request->limit ?? 10));
+            if ($request->limit==0) {
+                $bank->page = ceil($bank->position / (10));
+            } else {
+                $bank->page = ceil($bank->position / ($request->limit ?? 10));
+            }
 
             DB::commit();
 
@@ -166,7 +174,11 @@ class BankController extends Controller
             $selected = $this->getPosition($bank, $bank->getTable(), true);
             $bank->position = $selected->position;
             $bank->id = $selected->id;
-            $bank->page = ceil($bank->position / ($request->limit ?? 10));
+            if ($request->limit==0) {
+                $bank->page = ceil($bank->position / (10));
+            } else {
+                $bank->page = ceil($bank->position / ($request->limit ?? 10));
+            }
 
             DB::commit();
 

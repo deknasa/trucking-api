@@ -99,7 +99,11 @@ class SubKelompokController extends Controller
             ];
             $subKelompok = (new SubKelompok())->processStore($data);
             $subKelompok->position = $this->getPosition($subKelompok, $subKelompok->getTable())->position;
-            $subKelompok->page = ceil($subKelompok->position / ($request->limit ?? 10));
+            if ($request->limit==0) {
+                $subKelompok->page = ceil($subKelompok->position / (10));
+            } else {
+                $subKelompok->page = ceil($subKelompok->position / ($request->limit ?? 10));
+            }
 
             DB::commit();
 
@@ -131,7 +135,11 @@ class SubKelompokController extends Controller
 
             $subKelompok = (new SubKelompok())->processUpdate($subKelompok, $data);
             $subKelompok->position = $this->getPosition($subKelompok, $subKelompok->getTable())->position;
-            $subKelompok->page = ceil($subKelompok->position / ($request->limit ?? 10));
+            if ($request->limit==0) {
+                $subKelompok->page = ceil($subKelompok->position / (10));
+            } else {
+                $subKelompok->page = ceil($subKelompok->position / ($request->limit ?? 10));
+            }
 
             DB::commit();
 
@@ -157,7 +165,11 @@ class SubKelompokController extends Controller
             $selected = $this->getPosition($subKelompok, $subKelompok->getTable(), true);
             $subKelompok->position = $selected->position;
             $subKelompok->id = $selected->id;
-            $subKelompok->page = ceil($subKelompok->position / ($request->limit ?? 10));
+            if ($request->limit==0) {
+                $subKelompok->page = ceil($subKelompok->position / (10));
+            } else {
+                $subKelompok->page = ceil($subKelompok->position / ($request->limit ?? 10));
+            }
 
             DB::commit();
 

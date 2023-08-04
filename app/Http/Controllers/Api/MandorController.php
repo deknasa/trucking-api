@@ -94,8 +94,11 @@ class MandorController extends Controller
             ];
             $mandor = (new Mandor())->processStore($data);
             $mandor->position = $this->getPosition($mandor, $mandor->getTable())->position;
-            $mandor->page = ceil($mandor->position / ($request->limit ?? 10));
-
+            if ($request->limit==0) {
+                $mandor->page = ceil($mandor->position / (10));
+            } else {
+                $mandor->page = ceil($mandor->position / ($request->limit ?? 10));
+            }
             DB::commit();
 
             return response([
@@ -131,8 +134,11 @@ class MandorController extends Controller
             ];
             $mandor = (new Mandor())->processUpdate($mandor, $data);
             $mandor->position = $this->getPosition($mandor, $mandor->getTable())->position;
-            $mandor->page = ceil($mandor->position / ($request->limit ?? 10));
-
+            if ($request->limit==0) {
+                $mandor->page = ceil($mandor->position / (10));
+            } else {
+                $mandor->page = ceil($mandor->position / ($request->limit ?? 10));
+            }
             DB::commit();
 
             return response([
@@ -157,8 +163,11 @@ class MandorController extends Controller
             $selected = $this->getPosition($mandor, $mandor->getTable(), true);
             $mandor->position = $selected->position;
             $mandor->id = $selected->id;
-            $mandor->page = ceil($mandor->position / ($request->limit ?? 10));
-
+            if ($request->limit==0) {
+                $mandor->page = ceil($mandor->position / (10));
+            } else {
+                $mandor->page = ceil($mandor->position / ($request->limit ?? 10));
+            }
             DB::commit();
 
             return response([

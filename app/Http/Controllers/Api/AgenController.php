@@ -99,7 +99,11 @@ class AgenController extends Controller
         try {
             $agen = (new Agen())->processStore($data);
             $agen->position = $this->getPosition($agen, $agen->getTable())->position;
-            $agen->page = ceil($agen->position / ($request->limit ?? 10));
+            if ($request->limit==0) {
+                $agen->page = ceil($agen->position / (10));
+            } else {
+                $agen->page = ceil($agen->position / ($request->limit ?? 10));
+            }
 
             DB::commit();
 
@@ -147,7 +151,11 @@ class AgenController extends Controller
         try {
             $agen = (new Agen())->processUpdate($agen, $data);
             $agen->position = $this->getPosition($agen, $agen->getTable())->position;
-            $agen->page = ceil($agen->position / ($request->limit ?? 10));
+            if ($request->limit==0) {
+                $agen->page = ceil($agen->position / (10));
+            } else {
+                $agen->page = ceil($agen->position / ($request->limit ?? 10));
+            }
 
 
             DB::commit();
@@ -176,7 +184,11 @@ class AgenController extends Controller
             $selected = $this->getPosition($agen, $agen->getTable(), true);
             $agen->position = $selected->position;
             $agen->id = $selected->id;
-            $agen->page = ceil($agen->position / ($request->limit ?? 10));
+            if ($request->limit==0) {
+                $agen->page = ceil($agen->position / (10));
+            } else {
+                $agen->page = ceil($agen->position / ($request->limit ?? 10));
+            }
 
             DB::commit();
 
