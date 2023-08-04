@@ -45,6 +45,7 @@ class ExportLaporanMingguanSupir extends Model
             $table->double('gajisupir', 15, 2)->nullable();
             $table->string('nobuktiebs', 100)->nullable();
             $table->string('nobuktiric', 50)->nullable();
+            $table->string('pengeluarannobuktiebs', 500)->nullable();
         });
 
         $queryTempdata = DB::table("gajisupirheader")->from(
@@ -67,6 +68,7 @@ class ExportLaporanMingguanSupir extends Model
                 DB::raw("isnull(C.jobtrucking,'') as jobtrucking,isnull(c.gajisupir,0) as gajisupir"),
                 DB::raw("isnull(k.nobukti,'') as nobuktiebs"),
                 DB::raw("isnull(A.nobukti,'') as nobuktiric"),
+                DB::raw("isnull(l.pengeluaran_nobukti,'') as pengeluarannobuktiebs"),
             )
             ->join(DB::raw("gajisupirdetail as b with (readuncommitted) "), 'a.nobukti', 'b.nobukti')
             ->join(DB::raw("suratpengantar as c with (readuncommitted) "), 'b.suratpengantar_nobukti', 'c.nobukti')
@@ -78,6 +80,7 @@ class ExportLaporanMingguanSupir extends Model
             ->leftjoin(DB::raw("pelanggan as i with (readuncommitted) "), 'c.pelanggan_id', 'i.id')
             ->leftjoin(DB::raw("agen as j with (readuncommitted) "), 'c.agen_id', 'j.id')
             ->leftjoin(DB::raw("prosesgajisupirdetail as k with (readuncommitted) "), 'a.nobukti', 'k.gajisupir_nobukti')
+            ->leftjoin(DB::raw("prosesgajisupirheader as l with (readuncommitted) "), 'k.nobukti', 'l.nobukti')
             ->whereRaw("(c.tglbukti >= '$dari' and c.tglbukti <= '$sampai')")
             ->whereraw("(c.trado_id>=$tradodari")
             ->whereraw("c.trado_id<=$tradosampai)")
@@ -103,6 +106,7 @@ class ExportLaporanMingguanSupir extends Model
             'gajisupir',
             'nobuktiebs',
             'nobuktiric',
+            'pengeluarannobuktiebs',
         ], $queryTempdata);
 
         $tempDataOrderan = '##tempDataOrderan' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
@@ -315,6 +319,7 @@ class ExportLaporanMingguanSupir extends Model
                 DB::raw("isnull(c.invoice,'') as invoice"),
                 DB::raw("isnull(A.gajisupir,0) as gajisupir"),
                 DB::raw("isnull(A.nobuktiebs,'') as nobuktiebs"),
+                DB::raw("isnull(A.pengeluarannobuktiebs,'') as pengeluarannobuktiebs"),
             )
             ->leftjoin(DB::raw($tempInvoice . " as b "), 'a.nobukti', 'b.notrip')
             ->leftjoin(DB::raw($tempInvoice . " as c "), 'a.jobtrucking', 'c.jobtrucking')->get();
