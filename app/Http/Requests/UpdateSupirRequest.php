@@ -147,6 +147,21 @@ class UpdateSupirRequest extends FormRequest
             'nokk' => 'No KK',
             'tgllahir' => 'Tanggal Lahir',
             'tglterbitsim' => 'Tanggal Terbit SIM',
+            'pdfsuratperjanjian.*' => 'SURAT PERJANJIAN',
+            'photovaksin' => 'foto vaksin',
+            'photovaksin.*' => 'foto vaksin',
+            'photosupir' => 'foto supir',
+            'photosupir.*' => 'foto supir',
+            'photoktp' => 'foto ktp',
+            'photoktp.*' => 'foto ktp',
+            'photosim' => 'foto sim',
+            'photosim.*' => 'foto sim',
+            'photokk' => 'foto kk',
+            'photokk.*' => 'foto kk',
+            'photoskck' => 'foto skck',
+            'photoskck.*' => 'foto skck',
+            'photodomisili' => 'foto domisili',
+            'photodomisili.*' => 'foto domisili',
         ];
     }
     public function messages()
@@ -168,7 +183,7 @@ class UpdateSupirRequest extends FormRequest
             'noktp.unique' => ':attribute Sudah digunakan',
             'tgllahir.after_or_equal' => ':attribute ' . $controller->geterror('NTLK')->keterangan.' '. date('d-m-Y', strtotime($tglbatasawal)). ' dan '. $controller->geterror('NTLB')->keterangan.' '. date('d-m-Y', strtotime($tglbatasakhir)),            
             'tgllahir.before_or_equal' => ':attribute ' . $controller->geterror('NTLK')->keterangan.' '. date('d-m-Y', strtotime($tglbatasawal)). ' dan '. $controller->geterror('NTLB')->keterangan.' '. date('d-m-Y', strtotime($tglbatasakhir)),            
-            
+            'pdfsuratperjanjian.*.mimes' => 'TYPE FILE :attribute  HARUS PDF' 
         ];
     }
 }

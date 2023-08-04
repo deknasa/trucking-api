@@ -150,7 +150,7 @@ class KaryawanLogAbsensi extends MyModel
             ->select(
                 'idabsen as id',
                 'karyawan',
-                'tglresign',
+                DB::raw("(case when year(isnull(a.tglresign,'1900/1/1'))=1900 then null else a.tglresign end) as tglresign"),
                 'parameter.memo as statusaktif'
             )->leftJoin(DB::raw("parameter with (readuncommitted)"), 'a.statusaktif', 'parameter.id');
 

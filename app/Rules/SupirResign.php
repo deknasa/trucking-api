@@ -43,7 +43,6 @@ class SupirResign implements Rule
     public function message()
     {
         $controller = new ErrorController;
-        return ':attribute' . ' asdasdasd';
 
         return ':attribute' . ' ' . $controller->geterror('SPI')->keterangan;
     }

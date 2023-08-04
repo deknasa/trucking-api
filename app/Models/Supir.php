@@ -20,135 +20,165 @@ class Supir extends MyModel
     public function cekvalidasihapus($id)
     {
         // cek sudah ada absensi
-
-
-        $absen = DB::table('absensisupirdetail')
-            ->from(
-                DB::raw("absensisupirdetail as a with (readuncommitted)")
-            )
+        $cekTglResign = DB::table("supir")->from(DB::raw("supir with (readuncommitted)"))
             ->select(
-                'a.supir_id'
+                'namasupir',
+                DB::raw("(case when year(isnull(supir.tglberhentisupir,'1900/1/1'))=1900 then null else supir.tglberhentisupir end) as tglberhentisupir")
             )
-            ->where('a.supir_id', '=', $id)
+            ->where('id', $id)
             ->first();
-        if (isset($absen)) {
-            $data = [
-                'kondisi' => true,
-                'keterangan' => 'Absensi Supir',
-            ];
+        if (request()->aksi == 'EDIT') {
+
+            // dd($cekTglResign->tglberhentisupir);
+            if ($cekTglResign->tglberhentisupir != null) {
+                $data = [
+                    'kondisi' => true,
+                    'keterangan' => $cekTglResign->namasupir,
+                ];
 
 
-            goto selesai;
-        }
-
-        $gajiSupir = DB::table('gajisupirheader')
-            ->from(
-                DB::raw("gajisupirheader as a with (readuncommitted)")
-            )
-            ->select(
-                'a.supir_id'
-            )
-            ->where('a.supir_id', '=', $id)
-            ->first();
-        if (isset($gajiSupir)) {
-            $data = [
-                'kondisi' => true,
-                'keterangan' => 'Gaji Supir',
-            ];
-
-            goto selesai;
-        }
-
-        $trado = DB::table('trado')
-            ->from(
-                DB::raw("trado as a with (readuncommitted)")
-            )
-            ->select(
-                'a.supir_id'
-            )
-            ->where('a.supir_id', '=', $id)
-            ->first();
-        if (isset($trado)) {
-            $data = [
-                'kondisi' => true,
-                'keterangan' => 'Trado',
-            ];
-
-            goto selesai;
-        }
-
-        $suratPengantar = DB::table('suratpengantar')
-            ->from(
-                DB::raw("suratpengantar as a with (readuncommitted)")
-            )
-            ->select(
-                'a.supir_id'
-            )
-            ->where('a.supir_id', '=', $id)
-            ->first();
-        if (isset($suratPengantar)) {
-            $data = [
-                'kondisi' => true,
-                'keterangan' => 'Surat Pengantar',
-            ];
-
-            goto selesai;
-        }
-
-        $penerimaanTrucking = DB::table('penerimaantruckingdetail')
-            ->from(
-                DB::raw("penerimaantruckingdetail as a with (readuncommitted)")
-            )
-            ->select(
-                'a.supir_id'
-            )
-            ->where('a.supir_id', '=', $id)
-            ->first();
-        if (isset($penerimaanTrucking)) {
-            $data = [
-                'kondisi' => true,
-                'keterangan' => 'Penerimaan Trucking',
-            ];
-
-            goto selesai;
-        }
+                goto selesai;
+            }
+        } else {
+            
+            if ($cekTglResign->tglberhentisupir != null) {
+                $data = [
+                    'kondisi' => true,
+                    'keterangan' => $cekTglResign->namasupir,
+                ];
 
 
-        $pengeluaranTrucking = DB::table('pengeluarantruckingdetail')
-            ->from(
-                DB::raw("pengeluarantruckingdetail as a with (readuncommitted)")
-            )
-            ->select(
-                'a.supir_id'
-            )
-            ->where('a.supir_id', '=', $id)
-            ->first();
-        if (isset($pengeluaranTrucking)) {
-            $data = [
-                'kondisi' => true,
-                'keterangan' => 'Pengeluaran Trucking',
-            ];
+                goto selesai;
+            }
 
-            goto selesai;
-        }
+            $absen = DB::table('absensisupirdetail')
+                ->from(
+                    DB::raw("absensisupirdetail as a with (readuncommitted)")
+                )
+                ->select(
+                    'a.supir_id'
+                )
+                ->where('a.supir_id', '=', $id)
+                ->first();
+            if (isset($absen)) {
+                $data = [
+                    'kondisi' => true,
+                    'keterangan' => 'Absensi Supir',
+                ];
 
 
-        $ritasi = DB::table('ritasi')
-            ->from(
-                DB::raw("ritasi as a with (readuncommitted)")
-            )
-            ->select(
-                'a.supir_id'
-            )
-            ->where('a.supir_id', '=', $id)
-            ->first();
-        if (isset($ritasi)) {
-            $data = [
-                'kondisi' => true,
-                'keterangan' => 'Ritasi',
-            ];
+                goto selesai;
+            }
 
-            goto selesai;
+            $gajiSupir = DB::table('gajisupirheader')
+                ->from(
+                    DB::raw("gajisupirheader as a with (readuncommitted)")
+                )
+                ->select(
+                    'a.supir_id'
+                )
+                ->where('a.supir_id', '=', $id)
+                ->first();
+            if (isset($gajiSupir)) {
+                $data = [
+                    'kondisi' => true,
+                    'keterangan' => 'Gaji Supir',
+                ];
+
+                goto selesai;
+            }
+
+            $trado = DB::table('trado')
+                ->from(
+                    DB::raw("trado as a with (readuncommitted)")
+                )
+                ->select(
+                    'a.supir_id'
+                )
+                ->where('a.supir_id', '=', $id)
+                ->first();
+            if (isset($trado)) {
+                $data = [
+                    'kondisi' => true,
+                    'keterangan' => 'Trado',
+                ];
+
+                goto selesai;
+            }
+
+            $suratPengantar = DB::table('suratpengantar')
+                ->from(
+                    DB::raw("suratpengantar as a with (readuncommitted)")
+                )
+                ->select(
+                    'a.supir_id'
+                )
+                ->where('a.supir_id', '=', $id)
+                ->first();
+            if (isset($suratPengantar)) {
+                $data = [
+                    'kondisi' => true,
+                    'keterangan' => 'Surat Pengantar',
+                ];
+
+                goto selesai;
+            }
+
+            $penerimaanTrucking = DB::table('penerimaantruckingdetail')
+                ->from(
+                    DB::raw("penerimaantruckingdetail as a with (readuncommitted)")
+                )
+                ->select(
+                    'a.supir_id'
+                )
+                ->where('a.supir_id', '=', $id)
+                ->first();
+            if (isset($penerimaanTrucking)) {
+                $data = [
+                    'kondisi' => true,
+                    'keterangan' => 'Penerimaan Trucking',
+                ];
+
+                goto selesai;
+            }
+
+
+            $pengeluaranTrucking = DB::table('pengeluarantruckingdetail')
+                ->from(
+                    DB::raw("pengeluarantruckingdetail as a with (readuncommitted)")
+                )
+                ->select(
+                    'a.supir_id'
+                )
+                ->where('a.supir_id', '=', $id)
+                ->first();
+            if (isset($pengeluaranTrucking)) {
+                $data = [
+                    'kondisi' => true,
+                    'keterangan' => 'Pengeluaran Trucking',
+                ];
+
+                goto selesai;
+            }
+
+
+            $ritasi = DB::table('ritasi')
+                ->from(
+                    DB::raw("ritasi as a with (readuncommitted)")
+                )
+                ->select(
+                    'a.supir_id'
+                )
+                ->where('a.supir_id', '=', $id)
+                ->first();
+            if (isset($ritasi)) {
+                $data = [
+                    'kondisi' => true,
+                    'keterangan' => 'Ritasi',
+                ];
+
+                goto selesai;
+            }
         }
 
 
@@ -1001,13 +1031,13 @@ class Supir extends MyModel
     public function processStatusNonAktifKeterangan($noktp)
     {
 
-        $supir = Supir::from(DB::raw("supir with (readuncommitted)"))->where('noktp',$noktp)->first();
+        $supir = Supir::from(DB::raw("supir with (readuncommitted)"))->where('noktp', $noktp)->first();
         if (!$supir) {
             return false;
         }
         $statusNonAktif = Parameter::from(DB::Raw("parameter with (readuncommitted)"))->select('id')->where('grp', '=', 'STATUS AKTIF')->where('subgrp', '=', 'STATUS AKTIF')->where('text', '=', 'NON AKTIF')->first();
         $statusAktif = Parameter::from(DB::Raw("parameter with (readuncommitted)"))->select('id')->where('grp', '=', 'STATUS AKTIF')->where('subgrp', '=', 'STATUS AKTIF')->where('text', '=', 'AKTIF')->first();
-        
+
         $required = [
             "namasupir" => $supir->namasupir,
             "alamat" => $supir->alamat,
@@ -1028,14 +1058,14 @@ class Supir extends MyModel
     }
     public function processStatusNonAktifGambar($noktp)
     {
-        $supir = Supir::from(DB::raw("supir with (readuncommitted)"))->where('noktp',$noktp)->first();
+        $supir = Supir::from(DB::raw("supir with (readuncommitted)"))->where('noktp', $noktp)->first();
         if (!$supir) {
             return false;
         }
         $statusNonAktif = Parameter::from(DB::Raw("parameter with (readuncommitted)"))->select('id')->where('grp', '=', 'STATUS AKTIF')->where('subgrp', '=', 'STATUS AKTIF')->where('text', '=', 'NON AKTIF')->first();
         $statusAktif = Parameter::from(DB::Raw("parameter with (readuncommitted)"))->select('id')->where('grp', '=', 'STATUS AKTIF')->where('subgrp', '=', 'STATUS AKTIF')->where('text', '=', 'AKTIF')->first();
-        
-        $required=[
+
+        $required = [
             "photosupir" => $supir->photosupir,
             "photoktp" => $supir->photoktp,
             "photosim" => $supir->photosim,
@@ -1057,68 +1087,65 @@ class Supir extends MyModel
     public function getSupirResignModel($noktp)
     {
         $query = Supir::from(DB::raw("supir with (readuncommitted)"))
-        ->select(
-            'supir.id',
-            'supir.namasupir',
-            'supir.alamat',
-            'supir.kota',
-            'supir.telp',
-            'supir.statusaktif',
-            'supir.pemutihansupir_nobukti',
-            'supir.nominaldepositsa',
-            'supir.depositke',
-            'supir.tglmasuk',
-            'supir.nominalpinjamansaldoawal',
-            'supir.supirold_id',
-            'supirlama.namasupir as supirold',
-            'supir.tglexpsim',
-            'supir.nosim',
-            'supir.keterangan',
-            'supir.noktp',
-            'supir.nokk',
-            'supir.statusadaupdategambar',
-            'supir.statusluarkota',
-            'supir.statuszonatertentu',
-            'supir.zona_id',
-            'zona.keterangan as zona',
-            'supir.angsuranpinjaman',
-            'supir.plafondeposito',
-            'supir.photosupir',
-            'supir.photoktp',
-            'supir.photosim',
-            'supir.photokk',
-            'supir.photoskck',
-            'supir.photovaksin',
-            'supir.pdfsuratperjanjian',
-            'supir.photodomisili',
-            'supir.keteranganresign',
-            'supir.keteranganberhentisupir',
-            'supir.statusblacklist',
-            'supir.tglberhentisupir',
-            'supir.tgllahir',
-            'supir.tglterbitsim'
-        ) 
-        ->where('supir.noktp', $noktp)
-        ->leftJoin(DB::raw("zona with (readuncommitted)"), 'supir.zona_id', 'zona.id')
-        ->leftJoin(DB::raw("supir as supirlama with (readuncommitted)"), 'supir.supirold_id', '=', 'supirlama.id')
-        ->first();
-        
+            ->select(
+                'supir.id',
+                'supir.namasupir',
+                'supir.alamat',
+                'supir.kota',
+                'supir.telp',
+                'supir.statusaktif',
+                'supir.pemutihansupir_nobukti',
+                'supir.nominaldepositsa',
+                'supir.depositke',
+                'supir.tglmasuk',
+                'supir.nominalpinjamansaldoawal',
+                'supir.supirold_id',
+                'supirlama.namasupir as supirold',
+                'supir.tglexpsim',
+                'supir.nosim',
+                'supir.keterangan',
+                'supir.noktp',
+                'supir.nokk',
+                'supir.statusadaupdategambar',
+                'supir.statusluarkota',
+                'supir.statuszonatertentu',
+                'supir.zona_id',
+                'zona.keterangan as zona',
+                'supir.angsuranpinjaman',
+                'supir.plafondeposito',
+                'supir.photosupir',
+                'supir.photoktp',
+                'supir.photosim',
+                'supir.photokk',
+                'supir.photoskck',
+                'supir.photovaksin',
+                'supir.pdfsuratperjanjian',
+                'supir.photodomisili',
+                'supir.keteranganresign',
+                'supir.keteranganberhentisupir',
+                'supir.statusblacklist',
+                'supir.tglberhentisupir',
+                'supir.tgllahir',
+                'supir.tglterbitsim'
+            )
+            ->where('supir.noktp', $noktp)
+            ->leftJoin(DB::raw("zona with (readuncommitted)"), 'supir.zona_id', 'zona.id')
+            ->leftJoin(DB::raw("supir as supirlama with (readuncommitted)"), 'supir.supirold_id', '=', 'supirlama.id')
+            ->first();
+
         return $query;
     }
 
-    public function validationSupirResign($noktp, $id=0)
+    public function validationSupirResign($noktp, $id = 0)
     {
         $query = DB::table("supir")->from(DB::raw("supir with (readuncommitted)"))
             ->where("noktp", $noktp)
             ->whereRaw("isnull(tglberhentisupir,'1900-01-01') = '1900-01-01'");
-            if($id != 0)
-            {
-                $query->whereRaw("id != $id");
-                
-            }
+        if ($id != 0) {
+            $query->whereRaw("id != $id");
+        }
         $data = $query->first();
-        if($data != null)
-        {
+        if ($data != null) {
             return false;
         } else {
             return true;
