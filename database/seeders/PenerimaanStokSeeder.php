@@ -27,5 +27,6 @@ class PenerimaanStokSeeder extends Seeder
         PenerimaanStok::create(['kodepenerimaan' => 'SST', 'keterangan' => 'SALDO STOK TRUCKING', 'coa' => '', 'format' => '145', 'statushitungstok' => '177', 'modifiedby' => 'ADMIN',]);
         PenerimaanStok::create(['kodepenerimaan' => 'PST', 'keterangan' => 'PENGEMBALIAN SPAREPART GANTUNG TRUCKING', 'coa' => '', 'format' => '352', 'statushitungstok' => '177', 'modifiedby' => 'ADMIN',]);
         PenerimaanStok::create(['kodepenerimaan' => 'PSPK', 'keterangan' => 'PENGEMBALIAN SPK', 'coa' => '', 'format' => '361', 'statushitungstok' => '177', 'modifiedby' => 'ADMIN',]);
+        PenerimaanStok::create(['kodepenerimaan' => 'KORV', 'keterangan' => 'KOREKSI VULKAN', 'coa' => '', 'format' => '385', 'statushitungstok' => '178', 'modifiedby' => 'ADMIN',]);
     }
 }
