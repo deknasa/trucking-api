@@ -34,6 +34,7 @@ class UpdatePengeluaranStokHeaderRequest extends FormRequest
         $spk = DB::table('parameter')->where('grp', 'SPK STOK')->where('subgrp', 'SPK STOK')->first();
         $retur = DB::table('parameter')->where('grp', 'RETUR STOK')->where('subgrp', 'RETUR STOK')->first();
         $kor = DB::table('parameter')->where('grp', 'KOR MINUS STOK')->where('subgrp', 'KOR MINUS STOK')->first();
+        $reuse = DB::table('parameter')->where('grp', 'STATUS REUSE')->where('text', 'REUSE')->first();
         
         
         $rules = [
@@ -63,7 +64,21 @@ class UpdatePengeluaranStokHeaderRequest extends FormRequest
                 'gudang' => $salahSatuDari,
             ];
         }
+        $spkRules =[];
         if ($spk->text == request()->pengeluaranstok_id) {
+            $spkRules = [
+                'penerimaanstok_nobukti' => Rule::requiredIf(function () use ($reuse) {
+                    $required = false; //kalau true required
+                    foreach ($this->input('detail_stok_id') as $detail_stok_id) {
+                        $stok = DB::table('stok')->where('id', $detail_stok_id)->first();
+                        //check statusreuse pada stok ,jika = reuse maka wajib
+                        if ($reuse->id == $stok->statusreuse) {
+                            return true;
+                        }
+                    }
+                    return $required;
+                }),
+            ];
             $salahSatuDari = Rule::requiredIf(function () use ($spk) {
                 if ((empty($this->input('trado')) && empty($this->input('gandengan')) && $this->input('pengeluaranstok_id')) == $spk->text) {
                     return true;
@@ -88,7 +103,7 @@ class UpdatePengeluaranStokHeaderRequest extends FormRequest
                 $returRules = array_merge($returRules,["penerimaanstok_nobukti"=>'required']);
             }
         }
-        $rules = array_merge($rules, $gudangTradoGandengan,$returRules);
+        $rules = array_merge($rules, $gudangTradoGandengan,$returRules,$spkRules);
         
         $relatedRequests = [
             StorePengeluaranStokDetailRequest::class
