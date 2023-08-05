@@ -197,13 +197,13 @@ class PenerimaanStokDetail extends MyModel
 
             if (($penerimaanStokHeader->penerimaanstok_id == $spbs->text)||($penerimaanStokHeader->penerimaanstok_id == $do->text)) {
                 if (!$reuse) {
-                    throw ValidationException::withMessages("bukan stok reuse");                
+                    throw ValidationException::withMessages(["qty"=>"bukan stok reuse"]);                
 
                 }
                 $persediaanDari = $this->persediaan($penerimaanStokHeader->gudangdari_id,$penerimaanStokHeader->tradodari_id,$penerimaanStokHeader->gandengandari_id);
                 $dari = $this->persediaanDari($data['stok_id'],$persediaanDari['column'].'_id',$persediaanDari['value'],$data['qty']);
                 if (!$dari) {
-                    throw ValidationException::withMessages("qty tidak cukup");
+                    throw ValidationException::withMessages(["qty"=>"qty tidak cukup"]);
                 }
                 $persediaanKe = $this->persediaan($penerimaanStokHeader->gudangke_id,$penerimaanStokHeader->tradoke_id,$penerimaanStokHeader->gandenganke_id);
                 $ke = $this->persediaanKe($data['stok_id'],$persediaanKe['column'].'_id',$persediaanKe['value'],$data['qty']);
@@ -215,7 +215,8 @@ class PenerimaanStokDetail extends MyModel
                     $dari = $this->persediaanDari($data['stok_id'],$persediaanDari['column'].'_id',$persediaanDari['value'],$data['qty']);
                     
                     if (!$dari) {
-                        throw ValidationException::withMessages("qty tidak cukup");
+                        // dd()
+                        throw ValidationException::withMessages(["qty"=>"qty tidak cukup"]);
                     }
                     $persediaanKe = $this->persediaan($penerimaanStokHeader->gudangke_id,$penerimaanStokHeader->tradoke_id,$penerimaanStokHeader->gandenganke_id);
                     $ke = $this->persediaanKe($data['stok_id'],$persediaanKe['column'].'_id',$persediaanKe['value'],$data['qty']);
@@ -367,12 +368,12 @@ class PenerimaanStokDetail extends MyModel
                 $persediaanDari = $this->persediaan($gudangdari_id,$tradodari_id,$gandengandari_id);
                 $dari = $this->persediaanDariReturn($item['stok_id'],$persediaanDari['column'].'_id',$persediaanDari['value'],$item['qty']);
                 if (!$dari) {
-                    throw ValidationException::withMessages("qty tidak cukup dari");
+                    throw ValidationException::withMessages(["qty"=>"qty tidak cukup dari"]);
                 }
                 $persediaanKe = $this->persediaan($gudangke_id,$tradoke_id,$gandenganke_id);
                 $ke = $this->persediaanKeReturn($item['stok_id'],$persediaanKe['column'].'_id',$persediaanKe['value'],$item['qty']);
                 if (!$ke) {
-                    throw ValidationException::withMessages("qty tidak cukup ke");
+                    throw ValidationException::withMessages(["qty"=>"qty tidak cukup ke"]);
                 }
             }
         }
