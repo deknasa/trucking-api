@@ -140,6 +140,7 @@ use App\Http\Controllers\Api\MandorTripController;
 use App\Http\Controllers\Api\PenerimaanTruckingDetailController;
 use App\Http\Controllers\Api\BukaPenerimaanStokController;
 use App\Http\Controllers\Api\BukaPengeluaranStokController;
+use App\Http\Controllers\Api\DashboardController;
 use App\Http\Controllers\Api\PenerimaanStokController;
 use App\Http\Controllers\Api\PenerimaanStokHeaderController;
 use App\Http\Controllers\Api\PenerimaanStokDetailController;
@@ -282,6 +283,7 @@ Route::get('parameter/getparamrequest', [ParameterController::class, 'getparamre
 route::middleware(['auth:api', 'authorized'])->group(function () {
 
 
+    Route::resource('dashboard', DashboardController::class)->whereNumber('gudang');
     Route::get('kota/combo', [KotaController::class, 'combo']);
     Route::get('kota/field_length', [KotaController::class, 'fieldLength']);
     Route::get('kota/default', [KotaController::class, 'default']);
