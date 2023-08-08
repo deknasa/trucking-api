@@ -289,11 +289,12 @@ Route::get('stok/{filename}/{type}', [StokController::class, 'getImage']);
 Route::get('stokpusat/{filename}/{type}', [StokPusatController::class, 'getImage']);
 Route::get('upahsupir/{filename}/{type}', [UpahSupirController::class, 'getImage']);
 Route::get('parameter/getparamrequest', [ParameterController::class, 'getparamrequest']);
-Route::get('error/geterrors', [ErrorController::class, 'errorUrl']);
 
 
+Route::get('parameter', [ParameterController::class, 'index']);
 route::middleware(['auth:api'])->group(function () {
     Route::resource('dashboard', DashboardController::class)->whereNumber('dashboard');
+    Route::get('error/geterrors', [ErrorController::class, 'errorUrl']);
 
 });
 
@@ -451,7 +452,12 @@ route::middleware(['auth:api', 'authorized'])->group(function () {
     Route::get('parameter/comboapproval', [ParameterController::class, 'comboapproval']);
     Route::get('parameter/combolist', [ParameterController::class, 'combolist']);
     Route::get('parameter/getcoa', [ParameterController::class, 'getcoa']);
-    Route::resource('parameter', ParameterController::class)->whereNumber('parameter');
+    Route::get('parameter/{id}', [ParameterController::class, 'show']);
+    Route::post('parameter', [ParameterController::class, 'store']);
+    Route::put('parameter/{id}', [ParameterController::class, 'update']);
+    Route::delete('parameter/{id}', [ParameterController::class, 'destroy']);
+
+    // Route::resource('parameter', ParameterController::class)->whereNumber('parameter');
 
     Route::get('absensisupirheader/{id}/cekabsensi', [AbsensiSupirHeaderController::class, 'cekabsensi'])->name('absensi.cekabsensi')->whereNumber('id');
     Route::get('absensisupirheader/{id}/detail', [AbsensiSupirHeaderController::class, 'detail'])->name('absensi.detail')->whereNumber('id');
