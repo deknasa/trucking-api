@@ -14,7 +14,7 @@ class ReminderStokController extends Controller
     {
         $reminderStok = new ReminderStok();
         return response([
-            'data' => [],
+            'data' => $reminderStok->get(),
             'attributes' => [
                 'totalRows' => $reminderStok->totalRows,
                 'totalPages' => $reminderStok->totalPages

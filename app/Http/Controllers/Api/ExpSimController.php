@@ -14,7 +14,7 @@ class ExpSimController extends Controller
     {
         $expSim = new ExpSim();
         return response([
-            'data' => [],
+            'data' => $expSim->get(),
             'attributes' => [
                 'totalRows' => $expSim->totalRows,
                 'totalPages' => $expSim->totalPages

@@ -14,7 +14,7 @@ class ExpAsuransiController extends Controller
     {
         $expAsuransi = new ExpAsuransi();
         return response([
-            'data' => [],
+            'data' => $expAsuransi->get(),
             'attributes' => [
                 'totalRows' => $expAsuransi->totalRows,
                 'totalPages' => $expAsuransi->totalPages

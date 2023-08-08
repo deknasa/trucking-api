@@ -7,8 +7,10 @@ use App\Models\SpkHarian;
 
 class SpkHarianController extends Controller
 {
-    /**
+     /**
      * @ClassName 
+     * SpkHarianController
+     * @Detail1 SpkHarianDetailController
      */
     public function index()
     {

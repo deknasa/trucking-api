@@ -3,18 +3,16 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
-use App\Models\ReminderSpk;
+use App\Models\SpkHarianDetail;
 
-class ReminderSpkController extends Controller
+class SpkHarianDetailController extends Controller
 {
     /**
      * @ClassName 
-     * ReminderSpkController
-     * @Detail1 ReminderSpkDetailController
      */
     public function index()
     {
-        $reminderSpk = new ReminderSpk();
+        $reminderSpk = new SpkHarianDetail();
         return response([
             'data' => [],
             'attributes' => [
@@ -23,5 +21,4 @@ class ReminderSpkController extends Controller
             ]
         ]);
     }
-
 }
