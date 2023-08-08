@@ -412,6 +412,8 @@ class ParameterSeeder extends Seeder
         parameter::create(['grp' => 'BATAS MAX EXPIRED', 'subgrp' => 'BATAS MAX EXPIRED', 'kelompok' => '', 'text' => '4', 'memo' => '{"MEMO":"4","SINGKATAN":"4","WARNA":"#6C757D"}', 'type' => '0', 'modifiedby' => 'ADMIN', 'default' => '',]);
         parameter::create(['grp' => 'RENTANG EXPIRED', 'subgrp' => 'RENTANG EXPIRED', 'kelompok' => '', 'text' => '30', 'memo' => '{"MEMO":"30","SINGKATAN":"30","WARNA":"#6C757D"}', 'type' => '0', 'modifiedby' => 'ADMIN', 'default' => '',]);
         parameter::create(['grp' => 'PENERIMAAN STOK', 'subgrp' => 'PENAMBAHAN NILAI BUKTI', 'kelompok' => '', 'text' => '#SPBP #9999#/#R#/#Y', 'memo' => '{"MEMO":"PENAMBAHAN NILAI BUKTI","SINGKATAN":"#SPBP #9999#/#R#/#Y","WARNA":"#28A745"}', 'type' => '118', 'modifiedby' => 'ADMIN', 'default' => '',]);
+        parameter::create(['grp' => 'STATUS STOK MIN', 'subgrp' => 'STATUS STOK MIN', 'kelompok' => '', 'text' => 'STOK DIBAWAH QTY MINIMUM', 'memo' => '{"MEMO":"STOK DIBAWAH QTY MINIMUM","SINGKATAN":"SDQM","WARNA":"#CB1818"}', 'type' => '0', 'modifiedby' => 'ADMIN', 'default' => '',]);
+        parameter::create(['grp' => 'STATUS STOK MIN', 'subgrp' => 'STATUS STOK MIN', 'kelompok' => '', 'text' => 'STOK HAMPIR DIBAWAH QTY MINIMUM', 'memo' => '{"MEMO":"STOK HAMPIR DIBAWAH QTY MINIMUM","SINGKATAN":"SHDQM","WARNA":"#E16000"}', 'type' => '0', 'modifiedby' => 'ADMIN', 'default' => '',]);
 
         
     }
