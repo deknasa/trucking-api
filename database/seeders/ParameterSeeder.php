@@ -406,7 +406,11 @@ class ParameterSeeder extends Seeder
         parameter::create(['grp' => 'PENGELUARAN STOK', 'subgrp' => 'KOREKSI VULKAN MINUS BUKTI', 'kelompok' => '', 'text' => '#KORV #9999#/#R#/#Y', 'memo' => '{"MEMO":"KOREKSI VULKAN MINUS BUKTI","SINGKATAN":"#KORV #9999#/#R#/#Y","WARNA":"#28A745"}', 'type' => '118', 'modifiedby' => 'ADMIN', 'default' => '',]);
         parameter::create(['grp' => 'STATUS OLI', 'subgrp' => 'STATUS OLI', 'kelompok' => '', 'text' => 'TAMBAH', 'memo' => '{"MEMO":"TAMBAH","SINGKATAN":"T","WARNA":"#28A745"}', 'type' => '0', 'modifiedby' => 'ADMIN', 'default' => '',]);
         parameter::create(['grp' => 'STATUS OLI', 'subgrp' => 'STATUS OLI', 'kelompok' => '', 'text' => 'GANTI', 'memo' => '{"MEMO":"GANTI","SINGKATAN":"G","WARNA":"#6C757D"}', 'type' => '0', 'modifiedby' => 'ADMIN', 'default' => '',]);
-        
+        parameter::create(['grp' => 'STATUS EXPIRED', 'subgrp' => 'STATUS EXPIRED', 'kelompok' => '', 'text' => 'SUDAH EXPIRED', 'memo' => '{"MEMO":"SUDAH EXPIRED","SINGKATAN":"SE","WARNA":"#CB1818"}', 'type' => '0', 'modifiedby' => 'ADMIN', 'default' => '',]);
+        parameter::create(['grp' => 'STATUS EXPIRED', 'subgrp' => 'STATUS EXPIRED', 'kelompok' => '', 'text' => 'HAMPIR EXPIRED', 'memo' => '{"MEMO":"HAMPIR EXPIRED","SINGKATAN":"HE","WARNA":"#CB1818"}', 'type' => '0', 'modifiedby' => 'ADMIN', 'default' => '',]);
+        parameter::create(['grp' => 'STATUS EXPIRED', 'subgrp' => 'STATUS EXPIRED', 'kelompok' => '', 'text' => '30 HARI SEBELUM EXPIRED', 'memo' => '{"MEMO":"30 HARI SEBELUM EXPIRED","SINGKATAN":"30","WARNA":"#E16000"}', 'type' => '0', 'modifiedby' => 'ADMIN', 'default' => '',]);     
+        parameter::create(['grp' => 'BATAS MAX EXPIRED', 'subgrp' => 'BATAS MAX EXPIRED', 'kelompok' => '', 'text' => '4', 'memo' => '{"MEMO":"4","SINGKATAN":"4","WARNA":"#6C757D"}', 'type' => '0', 'modifiedby' => 'ADMIN', 'default' => '',]);
+        parameter::create(['grp' => 'RENTANG EXPIRED', 'subgrp' => 'RENTANG EXPIRED', 'kelompok' => '', 'text' => '30', 'memo' => '{"MEMO":"30","SINGKATAN":"30","WARNA":"#6C757D"}', 'type' => '0', 'modifiedby' => 'ADMIN', 'default' => '',]);
 
         
     }
