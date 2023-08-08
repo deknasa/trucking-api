@@ -192,6 +192,7 @@ class PengeluaranStokDetail extends MyModel
         $rtr = Parameter::where('grp', 'RETUR STOK')->where('subgrp', 'RETUR STOK')->first();
         $pja = Parameter::where('grp', 'PENJUALAN STOK AFKIR')->where('subgrp', 'PENJUALAN STOK AFKIR')->first();
         $gst = Parameter::where('grp', 'GST STOK')->where('subgrp', 'GST STOK')->first();
+        $korv = DB::table('pengeluaranstok')->where('kodepengeluaran', 'KORV')->first();
         $gudangkantor = Parameter::where('grp', 'GUDANG KANTOR')->where('subgrp', 'GUDANG KANTOR')->first();
         $gudangsementara = Parameter::where('grp', 'GUDANG SEMENTARA')->where('subgrp', 'GUDANG SEMENTARA')->first();
         $gudangpihak3 = Parameter::where('grp', 'GUDANG PIHAK3')->where('subgrp', 'GUDANG PIHAK3')->first();
@@ -264,6 +265,13 @@ class PengeluaranStokDetail extends MyModel
     
         } else {
             $idstatusservicerutin=0;
+        }
+
+        if ($korv->id == $pengeluaranStokHeader->pengeluaranstok_id) {
+            $vulkan =$this->vulkanStokMinus($data['stok_id'],$data['vulkanisirke']);
+            if (!$vulkan) {
+                throw ValidationException::withMessages(['vulkanisirke' => 'vulkannisir tidak cukup']);
+            }
         }
 
 
@@ -346,6 +354,49 @@ class PengeluaranStokDetail extends MyModel
         return (!$result) ? false :$result;
     }
 
+    public function vulkanStokMinus($stok_id,$vulkan)
+    {
+        $stok = Stok::find($stok_id);
+        if (!$stok) {
+            return false;
+        }
+        $total = $stok->totalvulkanisir - $vulkan;
+        if ($total < 0 ) {
+            return false;
+        }
+        $stok->totalvulkanisir = $total;
+        $stok->save();
+        return $stok;
+    }
+    
+    public function vulkanStokPlus($stok_id,$vulkan)
+    {
+        $stok = Stok::find($stok_id);
+        if (!$stok) {
+            return false;
+        }
+        $total = $stok->totalvulkanisir + $vulkan;
+        $stok->totalvulkanisir = $total;
+        $stok->save();
+        return true;
+    }
+
+    public function returnVulkanisir($id)
+    {
+        $pengeluaranStokHeader = PengeluaranStokHeader::findOrFail($id);
+        $pengeluaranStokDetail = PengeluaranStokDetail::where('pengeluaranstokheader_id', $id)->get();
+        $korv = DB::table('pengeluaranstok')->where('kodepengeluaran', 'KORV')->first();
+        
+        foreach ($pengeluaranStokDetail as $item) {
+            if ($pengeluaranStokHeader->pengeluaranstok_id == $korv->id) {
+                $dari = $this->vulkanStokPlus($item->stok_id,$item->vulkanisirke);
+            }    
+        }
+
+        // $stok = Stok::find($pengeluaranStokDetail[0]->stok_id);
+        // dd($stok->totalvulkanisir);
+    }
+    
 
     public function resetQtyPenerimaan($id)
     {
@@ -357,6 +408,8 @@ class PengeluaranStokDetail extends MyModel
         $rtr = Parameter::where('grp', 'RETUR STOK')->where('subgrp', 'RETUR STOK')->first();
         $pja = Parameter::where('grp', 'PENJUALAN STOK AFKIR')->where('subgrp', 'PENJUALAN STOK AFKIR')->first();
         $gst = Parameter::where('grp', 'GST STOK')->where('subgrp', 'GST STOK')->first();
+        $korv = DB::table('pengeluaranstok')->where('kodepengeluaran', 'KORV')->first();
+
         $gudangkantor = Parameter::where('grp', 'GUDANG KANTOR')->where('subgrp', 'GUDANG KANTOR')->first();
         $gudangsementara = Parameter::where('grp', 'GUDANG SEMENTARA')->where('subgrp', 'GUDANG SEMENTARA')->first();
         $gudangpihak3 = Parameter::where('grp', 'GUDANG PIHAK3')->where('subgrp', 'GUDANG PIHAK3')->first();
@@ -383,6 +436,11 @@ class PengeluaranStokDetail extends MyModel
                 $persediaan = $this->persediaan($pengeluaranStokHeader->gudang_id,$pengeluaranStokHeader->trado_id,$pengeluaranStokHeader->gandengan_id);
                 $dari = $this->persediaanKeReturn($detail->stok_id,$persediaan['column'].'_id',$persediaan['value'],$detail->qty);
             }
+            
+            if ($pengeluaranStokHeader->pengeluaranstok_id == $korv->id) {
+                $dari = $this->vulkanStokPlus($detail->stok_id,$detail->vulkanisirke);
+                dd($dari);
+            }    
         }
 
         $pengeluaranStokDetailFifo = PengeluaranStokDetailFifo::where('nobukti', $pengeluaranStokHeader->nobukti)->get();

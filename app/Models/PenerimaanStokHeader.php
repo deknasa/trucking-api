@@ -476,6 +476,7 @@ class PenerimaanStokHeader extends MyModel
         $spbs = Parameter::where('grp', 'REUSE STOK')->where('subgrp', 'REUSE STOK')->first();
         $pst = Parameter::where('grp', 'PST STOK')->where('subgrp', 'PST STOK')->first();
         $pspk = Parameter::where('grp', 'PSPK STOK')->where('subgrp', 'PSPK STOK')->first();
+        $korv = DB::table('penerimaanstok')->where('kodepenerimaan', 'KORV')->first();
 
         $datahitungstok = PenerimaanStok::select('statushitungstok as statushitungstok_id')->where('format', '=', $statusformat)->first();
         $statushitungstok = Parameter::where('grp', 'STATUS HITUNG STOK')->where('text', 'HITUNG STOK')->first();
@@ -489,6 +490,10 @@ class PenerimaanStokHeader extends MyModel
             $data['gudang_id'] = $gudangkantor->text;
         }
         if ($data['penerimaanstok_id'] == $pspk->text) {
+            $gudangkantor = Parameter::where('grp', 'GUDANG KANTOR')->where('subgrp', 'GUDANG KANTOR')->first();
+            $data['gudang_id'] = $gudangkantor->text;
+        }
+        if ($data['penerimaanstok_id'] == $korv->id) {
             $gudangkantor = Parameter::where('grp', 'GUDANG KANTOR')->where('subgrp', 'GUDANG KANTOR')->first();
             $data['gudang_id'] = $gudangkantor->text;
         }
@@ -691,6 +696,7 @@ class PenerimaanStokHeader extends MyModel
         $kor = Parameter::where('grp', 'KOR STOK')->where('subgrp', 'KOR STOK')->first();
         $pst = Parameter::where('grp', 'PST STOK')->where('subgrp', 'PST STOK')->first();
         $pspk = Parameter::where('grp', 'PSPK STOK')->where('subgrp', 'PSPK STOK')->first();
+        $korv = DB::table('penerimaanstok')->where('kodepenerimaan', 'KORV')->first();
 
         $datahitungstok = PenerimaanStok::select('statushitungstok as statushitungstok_id')->where('format', '=', $statusformat)->first();
         $statushitungstok = Parameter::where('grp', 'STATUS HITUNG STOK')->where('text', 'HITUNG STOK')->first();
@@ -774,6 +780,9 @@ class PenerimaanStokHeader extends MyModel
         if ($datahitungstok->statushitungstok_id == $statushitungstok->id) {
             $datadetail = PenerimaanStokDetail::select('stok_id', 'qty')->where('penerimaanstokheader_id', '=', $penerimaanStokHeader->id)->get();
             (new PenerimaanStokDetail())->returnStokPenerimaan($penerimaanStokHeader->id);
+        }
+        if ($data['penerimaanstok_id'] == $korv->id) {
+            (new PenerimaanStokDetail())->returnVulkanisir($penerimaanStokHeader->id);
         }
         /*DELETE EXISTING DETAIL*/
         $penerimaanStokDetail = PenerimaanStokDetail::where('penerimaanstokheader_id', $penerimaanStokHeader->id)->lockForUpdate()->delete();
@@ -890,6 +899,10 @@ class PenerimaanStokHeader extends MyModel
         if ($datahitungstok->statushitungstok_id == $statushitungstok->id) {
             $datadetail = PenerimaanStokDetail::select('stok_id', 'qty')->where('penerimaanstokheader_id', '=', $penerimaanStokHeader->id)->get();
             (new PenerimaanStokDetail())->returnStokPenerimaan($penerimaanStokHeader->id);
+        }
+        $korv = DB::table('penerimaanstok')->where('kodepenerimaan', 'KORV')->first();
+        if ($penerimaanStokHeader->penerimaanstok_id == $korv->id) {
+            (new PenerimaanStokDetail())->returnVulkanisir($penerimaanStokHeader->id);
         }
         /*DELETE EXISTING DETAIL*/
         $penerimaanStokDetail = PenerimaanStokDetail::where('penerimaanstokheader_id', $penerimaanStokHeader->id)->lockForUpdate()->delete();
