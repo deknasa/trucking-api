@@ -53,9 +53,9 @@ class Authorized
     {
         $permission = false;
 
-        $userRole = DB::table('userrole')
-            ->where('user_id', $userId)
-            ->first();
+        // $userRole = DB::table('userrole')
+        //     ->where('user_id', $userId)
+        //     ->first();
         
         $userRoleAcl = DB::table('userrole')
             ->select('acos.id')
@@ -64,7 +64,7 @@ class Authorized
             ->leftJoin('acos', 'acl.aco_id', 'acos.id')
             ->whereRaw("acos.[class] = '".$class ."'")
             ->whereRaw("acos.[method] = '".$method . "'")
-            ->whereRaw('userrole.user_id = '.$userRole->user_id);
+            ->whereRaw('userrole.user_id = '.$userId);
 
         $userAcl = DB::table('useracl')
             ->select('acos.id')
