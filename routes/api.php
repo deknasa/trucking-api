@@ -288,6 +288,8 @@ Route::get('stok/{filename}/{type}', [StokController::class, 'getImage']);
 Route::get('stokpusat/{filename}/{type}', [StokPusatController::class, 'getImage']);
 Route::get('upahsupir/{filename}/{type}', [UpahSupirController::class, 'getImage']);
 Route::get('parameter/getparamrequest', [ParameterController::class, 'getparamrequest']);
+Route::get('error/geterrors', [ErrorController::class, 'errorUrl']);
+
 
 route::middleware(['auth:api', 'authorized'])->group(function () {
 
@@ -634,7 +636,6 @@ route::middleware(['auth:api', 'authorized'])->group(function () {
     Route::resource('mainakunpusat', MainAkunPusatController::class)->whereNumber('mainakunpusat');
 
     Route::get('error/field_length', [ErrorController::class, 'fieldLength']);
-    Route::get('error/geterrors', [ErrorController::class, 'errorUrl']);
 
     Route::get('error/geterror', [ErrorController::class, 'geterror']);
     Route::get('error/export', [ErrorController::class, 'export'])->name('error.export');
