@@ -32,6 +32,7 @@ class StorePenerimaanStokDetailRequest extends FormRequest
         $do = DB::table('parameter')->where('grp', 'DO STOK')->where('subgrp', 'DO STOK')->first();
         $kor = DB::table('parameter')->where('grp', 'KOR STOK')->where('subgrp', 'KOR STOK')->first();
         $pg = DB::table('parameter')->where('grp', 'PG STOK')->where('subgrp', 'PG STOK')->first();
+        $korv = DB::table('penerimaanstok')->where('kodepenerimaan', 'KORV')->first();
         $reuse = DB::table('parameter')->where('grp', 'REUSE STOK')->where('subgrp', 'REUSE STOK')->first();
         $requiredQty = Rule::requiredIf((request()->penerimaanstok_id == $spb->text));
         
@@ -54,8 +55,25 @@ class StorePenerimaanStokDetailRequest extends FormRequest
                     $fail(app(ErrorController::class)->geterror('GT-ANGKA-0')->keterangan);
                 }
             },
-
-            'detail_qty.*' => 'numeric|gt:0',
+            'detail_vulkanisirke.*'=>[
+                'numeric',
+                function ($attribute, $value, $fail) use ($korv){
+                    if(($korv->id == request()->penerimaanstok_id) && ($value <= 0)){
+                        
+                        $fail(app(ErrorController::class)->geterror('GT-ANGKA-0')->keterangan);
+                    }
+                },
+            ],
+            'detail_qty.*' => [
+                'numeric',
+                function ($attribute, $value, $fail) use ($korv){
+                    // dd(($value <= 0),$value);
+                    if(($korv->id != request()->penerimaanstok_id) && ($value <= 0)){
+                        $fail(app(ErrorController::class)->geterror('GT-ANGKA-0')->keterangan);
+                    }
+                },
+                // 'gt:0'
+            ],
             'detail_persentasediscount.*' => 'numeric|max:100',
                 
             'penerimaanstokheader_id.*' => 'required',
@@ -70,6 +88,7 @@ class StorePenerimaanStokDetailRequest extends FormRequest
             'detail_stok.*' => 'stok',
             'detail_keterangan.*' => 'detail keterangan',
             'detail_qty.*' => 'qty',
+            'detail_vulkanisirke.*' => 'vulkanisir ke',
             'detail_harga.*' => 'harga',
             'detail_persentasediscount.*' => 'persentase discount',
         ];

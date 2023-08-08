@@ -30,6 +30,8 @@ class StorePengeluaranStokDetailRequest extends FormRequest
         $spk = DB::table('parameter')->where('grp', 'SPK STOK')->where('subgrp', 'SPK STOK')->first();
         $retur = DB::table('parameter')->where('grp', 'RETUR STOK')->where('subgrp', 'RETUR STOK')->first();
         $kor = DB::table('parameter')->where('grp', 'KOR MINUS STOK')->where('subgrp', 'KOR MINUS STOK')->first();
+        $korv = DB::table('pengeluaranstok')->where('kodepengeluaran', 'KORV')->first();
+
         return [
             'detail_stok' => 'required|array|distinct',
             'detail_stok.*' => ['required','distinct'],
@@ -41,7 +43,22 @@ class StorePengeluaranStokDetailRequest extends FormRequest
                 }
             },
 
-            'detail_qty.*' => 'numeric|gt:0',
+            'detail_qty.*' => [
+                'numeric',
+                function ($attribute, $value, $fail) use ($korv){
+                    if(($korv->id != request()->pengeluaranstok_id) && ($value <= 0)){
+                        $fail(app(ErrorController::class)->geterror('GT-ANGKA-0')->keterangan);
+                    }
+                },
+            ],  
+            'detail_vulkanisirke.*' => [
+                'numeric',
+                function ($attribute, $value, $fail) use ($korv){
+                    if(($korv->id == request()->pengeluaranstok_id) && ($value <= 0)){
+                        $fail(app(ErrorController::class)->geterror('GT-ANGKA-0')->keterangan);
+                    }
+                },
+            ],  
             'detail_persentasediscount.*' => 'numeric|max:100',
                 
             'pengeluaranstokheader_id.*' => 'required',
@@ -55,6 +72,7 @@ class StorePengeluaranStokDetailRequest extends FormRequest
             'detail_stok_id.*' => 'stok',
             'detail_stok.*' => 'stok',
             'detail_keterangan.*' => 'detail keterangan',
+            'detail_vulkanisirke.*' => 'vulkanisir ke',
             'detail_qty.*' => 'qty',
             'detail_harga.*' => 'harga',
             'detail_persentasediscount.*' => 'persentase discount',

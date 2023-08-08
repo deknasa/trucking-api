@@ -35,6 +35,7 @@ class UpdatePengeluaranStokHeaderRequest extends FormRequest
         $retur = DB::table('parameter')->where('grp', 'RETUR STOK')->where('subgrp', 'RETUR STOK')->first();
         $kor = DB::table('parameter')->where('grp', 'KOR MINUS STOK')->where('subgrp', 'KOR MINUS STOK')->first();
         $reuse = DB::table('parameter')->where('grp', 'STATUS REUSE')->where('text', 'REUSE')->first();
+        $korv = DB::table('pengeluaranstok')->where('kodepengeluaran', 'KORV')->first();
         
         
         $rules = [

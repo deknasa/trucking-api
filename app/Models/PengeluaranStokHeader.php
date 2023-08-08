@@ -534,14 +534,17 @@ class PengeluaranStokHeader extends MyModel
         $rtr = Parameter::where('grp', 'RETUR STOK')->where('subgrp', 'RETUR STOK')->first();
         $pja = Parameter::where('grp', 'PENJUALAN STOK AFKIR')->where('subgrp', 'PENJUALAN STOK AFKIR')->first();
         $gst = Parameter::where('grp', 'GST STOK')->where('subgrp', 'GST STOK')->first();
+        $korv = DB::table('pengeluaranstok')->where('kodepengeluaran', 'KORV')->first();
 
+        if ($korv->id == $data['pengeluaranstok_id']) {
+            $data['gudang_id'] =  Parameter::where('grp', 'GUDANG KANTOR')->where('subgrp', 'GUDANG KANTOR')->first()->text;
+        }
 
         $gudang_id = $data['gudang_id'];
         $trado_id = $data['trado_id'];
         $gandengan_id = $data['gandengan_id'];
         $penerimaanstok_nobukti = $data['penerimaanstok_nobukti'];
         $servicein_nobukti = $data['servicein_nobukti'];
-
         /* Store header */
         $pengeluaranStokHeader = new PengeluaranStokHeader();
         $pengeluaranStokHeader->tglbukti          = date('Y-m-d', strtotime($data['tglbukti']));
@@ -627,7 +630,7 @@ class PengeluaranStokHeader extends MyModel
                 $datadetailfifo['gudang_id'] = $gudangkantor->text;
             }
             //hanya pja dan koreksi yang tidak dari gudang yang tidak menggunakan fifo
-            if ((($kor->text == $data['pengeluaranstok_id']) && $gudang_id) || (($kor->text != $data['pengeluaranstok_id']) && ($pja->text != $data['pengeluaranstok_id']))) {
+            if ((($kor->text == $data['pengeluaranstok_id']) && $gudang_id) || (($kor->text != $data['pengeluaranstok_id']) && ($pja->text != $data['pengeluaranstok_id']) && ($korv->id != $data['pengeluaranstok_id']))) {
                 (new PengeluaranStokDetailFifo())->processStore($pengeluaranStokHeader, $datadetailfifo);
             }
 
@@ -802,6 +805,8 @@ class PengeluaranStokHeader extends MyModel
             $pengeluaranStokHeader->coa = $querysubgrppenerimaan->coa;
             $pengeluaranStokHeader->penerimaan_nobukti = $penerimaanHeader->nobukti;
             $pengeluaranStokHeader->save();
+        } else if ($korv->id == $data['pengeluaranstok_id']) {
+ 
         } else {
             $jurnalUmumHeader = (new JurnalUmumHeader())->processStore($jurnalRequest);
         }
@@ -852,6 +857,7 @@ class PengeluaranStokHeader extends MyModel
         $kor = Parameter::where('grp', 'KOR MINUS STOK')->where('subgrp', 'KOR MINUS STOK')->first();
         $rtr = Parameter::where('grp', 'RETUR STOK')->where('subgrp', 'RETUR STOK')->first();
         $pja = Parameter::where('grp', 'PENJUALAN STOK AFKIR')->where('subgrp', 'PENJUALAN STOK AFKIR')->first();
+        $korv = DB::table('pengeluaranstok')->where('kodepengeluaran', 'KORV')->first();
 
         if (array_key_exists("statuspotongretur", $data)) {
             $statuspotongretur = $data['statuspotongretur'];
@@ -915,6 +921,11 @@ class PengeluaranStokHeader extends MyModel
             (new PengeluaranStokDetail())->resetQtyPenerimaan($pengeluaranStokHeader->id);
         }
 
+        if ($pengeluaranStokHeader->pengeluaranstok_id == $korv->id) {
+            (new PengeluaranStokDetail())->returnVulkanisir($pengeluaranStokHeader->id);
+        }
+
+        // dd('asdas');
         /*DELETE EXISTING DETAIL*/
         $pengeluaranStokDetail = PengeluaranStokDetail::where('pengeluaranstokheader_id', $pengeluaranStokHeader->id)->lockForUpdate()->delete();
         $pengeluaranStokDetailFifo = PengeluaranStokDetailFifo::where('pengeluaranstokheader_id', $pengeluaranStokHeader->id)->lockForUpdate()->delete();
@@ -1017,7 +1028,7 @@ class PengeluaranStokHeader extends MyModel
             }
 
             //hanya pja dan koreksi yang tidak dari gudang yang tidak menggunakan fifo
-            if ((($kor->text == $fetchFormat->id) && $data['gudang_id']) || ($kor->text != $fetchFormat->id && $pja->text != $fetchFormat->id)) {
+            if ((($kor->text == $fetchFormat->id) && $data['gudang_id']) || ($kor->text != $fetchFormat->id && $pja->text != $fetchFormat->id && ($korv->id != $fetchFormat->id) ) ) {
                 (new PengeluaranStokDetailFifo())->processStore($pengeluaranStokHeader, $datadetailfifo);
             }
         }
@@ -1185,6 +1196,7 @@ class PengeluaranStokHeader extends MyModel
             $penerimaanHeader = (new PenerimaanHeader())->processUpdate($penerimaan, $penerimaanRequest);
             $pengeluaranStokHeader->coa = $querysubgrppenerimaan->coa;
             $pengeluaranStokHeader->save();
+        } else if ($korv->id == $data['pengeluaranstok_id']){
         } else {
             $jurnalUmumHeader = JurnalUmumHeader::where('nobukti', $pengeluaranStokHeader->nobukti)->lockForUpdate()->first();
             $jurnalUmumHeader = (new JurnalUmumHeader())->processUpdate($jurnalUmumHeader, $jurnalRequest);
@@ -1223,12 +1235,17 @@ class PengeluaranStokHeader extends MyModel
         $datahitungstok = $fetchFormat;
         $statushitungstok = Parameter::where('grp', 'STATUS HITUNG STOK')->where('text', 'HITUNG STOK')->first();
 
+        $korv = DB::table('pengeluaranstok')->where('kodepengeluaran', 'KORV')->first();
 
         /*RETURN STOK PENERIMAAN*/
         if ($datahitungstok->statushitungstok == $statushitungstok->id) {
             $datadetail = PengeluaranStokDetail::select('stok_id', 'qty')->where('pengeluaranstokheader_id', '=', $pengeluaranStokHeader->id)->get();
             (new PengeluaranStokDetail())->resetQtyPenerimaan($pengeluaranStokHeader->id);
         }
+        if ($pengeluaranStokHeader->pengeluaranstok_id == $korv->id) {
+            (new PengeluaranStokDetail())->returnVulkanisir($pengeluaranStokHeader->id);
+        }
+
         /*DELETE EXISTING DETAIL*/
         PengeluaranStokDetail::where('pengeluaranstokheader_id', $pengeluaranStokHeader->id)->lockForUpdate()->delete();
 
@@ -1245,7 +1262,9 @@ class PengeluaranStokHeader extends MyModel
         } else {
             /*DELETE EXISTING JURNALUMUMHEADER*/
             $jurnalUmumHeader = JurnalUmumHeader::where('nobukti', $pengeluaranStokHeader->nobukti)->lockForUpdate()->first();
-            (new JurnalUmumHeader())->processDestroy($jurnalUmumHeader->id);
+            if($jurnalUmumHeader){
+                (new JurnalUmumHeader())->processDestroy($jurnalUmumHeader->id);
+            }
         }
 
         $pengeluaranStokHeader = $pengeluaranStokHeader->lockAndDestroy($id);

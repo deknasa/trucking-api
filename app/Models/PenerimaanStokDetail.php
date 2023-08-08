@@ -188,6 +188,8 @@ class PenerimaanStokDetail extends MyModel
         $pg = Parameter::where('grp', 'PG STOK')->where('subgrp', 'PG STOK')->first();
         $pst = Parameter::where('grp', 'PST STOK')->where('subgrp', 'PST STOK')->first();
         $pspk = Parameter::where('grp', 'PSPK STOK')->where('subgrp', 'PSPK STOK')->first();
+        $korv = DB::table('penerimaanstok')->where('kodepenerimaan', 'KORV')->first();
+
         // dd($datahitungstok->statushitungstok_id);
         if ($datahitungstok->statushitungstok_id == $statushitungstok->id) {
             if (($penerimaanStokHeader->penerimaanstok_id == $spb->text)||($penerimaanStokHeader->penerimaanstok_id == $kor->text) ||($penerimaanStokHeader->penerimaanstok_id == $pst->text)||($penerimaanStokHeader->penerimaanstok_id == $pspk->text)) {
@@ -225,6 +227,12 @@ class PenerimaanStokDetail extends MyModel
             }
             
         }
+        if ($korv->id == $penerimaanStokHeader->penerimaanstok_id) {
+            $vulkan =$this->vulkanStokPlus($data['stok_id'],$data['vulkanisirke']);
+            if (!$vulkan) {
+                throw ValidationException::withMessages(['vulkanisirke' => 'vulkannisir tidak cukup']);
+            }
+        }
         
         $total = $data['qty'] * $data['harga'];
         $nominaldiscount = $total * ($data['persentasediscount'] / 100);
@@ -251,6 +259,35 @@ class PenerimaanStokDetail extends MyModel
 
         return $penerimaanStokDetail;
     }
+
+
+    public function vulkanStokPlus($stok_id,$vulkan)
+    {
+        $stok = Stok::find($stok_id);
+        if (!$stok) {
+            return false;
+        }
+        $total = $stok->totalvulkanisir + $vulkan;
+        $stok->totalvulkanisir = $total;
+        $stok->save();
+        return true;
+    }
+
+    public function vulkanStokMinus($stok_id,$vulkan)
+    {
+        $stok = Stok::find($stok_id);
+        if (!$stok) {
+            return false;
+        }
+        $total = $stok->totalvulkanisir - $vulkan;
+        if ($total < 0 ) {
+            return false;
+        }
+        
+        $stok->totalvulkanisir = $total;
+        $stok->save();
+        return $stok;
+    }    
 
     public function persediaan($gudang,$trado,$gandengan)
     {
@@ -378,7 +415,22 @@ class PenerimaanStokDetail extends MyModel
             }
         }
 
+
+
     }
 
+
+    public function returnVulkanisir($id)
+    {
+        $penerimaanStokHeader = PenerimaanStokHeader::findOrFail($id);
+        $penerimaanStokDetail = PenerimaanStokDetail::where('penerimaanstokheader_id', $id)->get();
+        $korv = DB::table('penerimaanstok')->where('kodepenerimaan', 'KORV')->first();
+
+        foreach ($penerimaanStokDetail as $item) {
+            if ($penerimaanStokHeader->penerimaanstok_id == $korv->id) {
+                $dari = $this->vulkanStokMinus($item->stok_id,$item->vulkanisirke);
+            }    
+        }
+    }
 
 }
