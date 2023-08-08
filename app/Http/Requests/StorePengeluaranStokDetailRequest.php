@@ -53,6 +53,7 @@ class StorePengeluaranStokDetailRequest extends FormRequest
             ],  
             'detail_vulkanisirke.*' => [
                 'numeric',
+                'nullable',
                 function ($attribute, $value, $fail) use ($korv){
                     if(($korv->id == request()->pengeluaranstok_id) && ($value <= 0)){
                         $fail(app(ErrorController::class)->geterror('GT-ANGKA-0')->keterangan);

@@ -57,6 +57,7 @@ class StorePenerimaanStokDetailRequest extends FormRequest
             },
             'detail_vulkanisirke.*'=>[
                 'numeric',
+                'nullable',
                 function ($attribute, $value, $fail) use ($korv){
                     if(($korv->id == request()->penerimaanstok_id) && ($value <= 0)){
                         
