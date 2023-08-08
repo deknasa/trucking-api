@@ -411,6 +411,7 @@ class ParameterSeeder extends Seeder
         parameter::create(['grp' => 'STATUS EXPIRED', 'subgrp' => 'STATUS EXPIRED', 'kelompok' => '', 'text' => '30 HARI SEBELUM EXPIRED', 'memo' => '{"MEMO":"30 HARI SEBELUM EXPIRED","SINGKATAN":"30","WARNA":"#E16000"}', 'type' => '0', 'modifiedby' => 'ADMIN', 'default' => '',]);     
         parameter::create(['grp' => 'BATAS MAX EXPIRED', 'subgrp' => 'BATAS MAX EXPIRED', 'kelompok' => '', 'text' => '4', 'memo' => '{"MEMO":"4","SINGKATAN":"4","WARNA":"#6C757D"}', 'type' => '0', 'modifiedby' => 'ADMIN', 'default' => '',]);
         parameter::create(['grp' => 'RENTANG EXPIRED', 'subgrp' => 'RENTANG EXPIRED', 'kelompok' => '', 'text' => '30', 'memo' => '{"MEMO":"30","SINGKATAN":"30","WARNA":"#6C757D"}', 'type' => '0', 'modifiedby' => 'ADMIN', 'default' => '',]);
+        parameter::create(['grp' => 'PENERIMAAN STOK', 'subgrp' => 'PENAMBAHAN NILAI BUKTI', 'kelompok' => '', 'text' => '#SPBP #9999#/#R#/#Y', 'memo' => '{"MEMO":"PENAMBAHAN NILAI BUKTI","SINGKATAN":"#SPBP #9999#/#R#/#Y","WARNA":"#28A745"}', 'type' => '118', 'modifiedby' => 'ADMIN', 'default' => '',]);
 
         
     }
