@@ -289,10 +289,15 @@ Route::get('stokpusat/{filename}/{type}', [StokPusatController::class, 'getImage
 Route::get('upahsupir/{filename}/{type}', [UpahSupirController::class, 'getImage']);
 Route::get('parameter/getparamrequest', [ParameterController::class, 'getparamrequest']);
 
+route::middleware(['auth:api'])->group(function () {
+    Route::resource('dashboard', DashboardController::class)->whereNumber('dashboard');
+
+});
+
 route::middleware(['auth:api', 'authorized'])->group(function () {
 
 
-    Route::resource('dashboard', DashboardController::class)->whereNumber('dashboard');
+    // Route::resource('dashboard', DashboardController::class)->whereNumber('dashboard');
     Route::get('kota/combo', [KotaController::class, 'combo']);
     Route::get('kota/field_length', [KotaController::class, 'fieldLength']);
     Route::get('kota/default', [KotaController::class, 'default']);
