@@ -404,6 +404,8 @@ class ParameterSeeder extends Seeder
         parameter::create(['grp' => 'JAMBATASINPUTABSENSI', 'subgrp' => 'JAMBATASINPUTABSENSI', 'kelompok' => '', 'text' => '12:00:00 ', 'memo' => '{"MEMO":"12:00:00","SINGKATAN":"JBIA","WARNA":"#28A745"}', 'type' => '0', 'modifiedby' => 'ADMIN', 'default' => '',]);
         parameter::create(['grp' => 'PENERIMAAN STOK', 'subgrp' => 'KOREKSI VULKAN PLUS BUKTI', 'kelompok' => '', 'text' => '#KORV #9999#/#R#/#Y', 'memo' => '{"MEMO":"KOREKSI VULKAN PLUS BUKTI","SINGKATAN":"#KORV #9999#/#R#/#Y","WARNA":"#28A745"}', 'type' => '118', 'modifiedby' => 'ADMIN', 'default' => '',]);
         parameter::create(['grp' => 'PENGELUARAN STOK', 'subgrp' => 'KOREKSI VULKAN MINUS BUKTI', 'kelompok' => '', 'text' => '#KORV #9999#/#R#/#Y', 'memo' => '{"MEMO":"KOREKSI VULKAN MINUS BUKTI","SINGKATAN":"#KORV #9999#/#R#/#Y","WARNA":"#28A745"}', 'type' => '118', 'modifiedby' => 'ADMIN', 'default' => '',]);
+        parameter::create(['grp' => 'STATUS OLI', 'subgrp' => 'STATUS OLI', 'kelompok' => '', 'text' => 'TAMBAH', 'memo' => '{"MEMO":"TAMBAH","SINGKATAN":"T","WARNA":"#28A745"}', 'type' => '0', 'modifiedby' => 'ADMIN', 'default' => '',]);
+        parameter::create(['grp' => 'STATUS OLI', 'subgrp' => 'STATUS OLI', 'kelompok' => '', 'text' => 'GANTI', 'memo' => '{"MEMO":"GANTI","SINGKATAN":"G","WARNA":"#6C757D"}', 'type' => '0', 'modifiedby' => 'ADMIN', 'default' => '',]);
         
 
         

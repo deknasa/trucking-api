@@ -141,6 +141,9 @@ use App\Http\Controllers\Api\PenerimaanTruckingDetailController;
 use App\Http\Controllers\Api\BukaPenerimaanStokController;
 use App\Http\Controllers\Api\BukaPengeluaranStokController;
 use App\Http\Controllers\Api\DashboardController;
+use App\Http\Controllers\Api\ExpAsuransiController;
+use App\Http\Controllers\Api\ExpSimController;
+use App\Http\Controllers\Api\ExpStnkController;
 use App\Http\Controllers\Api\PenerimaanStokController;
 use App\Http\Controllers\Api\PenerimaanStokHeaderController;
 use App\Http\Controllers\Api\PenerimaanStokDetailController;
@@ -245,6 +248,12 @@ use App\Http\Controllers\Api\MainAkunPusatController;
 use App\Http\Controllers\Api\LaporanHistoryDepositoController;
 use App\Http\Controllers\Api\LaporanPinjamanPerUnitTradoController;
 use App\Http\Controllers\Api\LogAbsensiController;
+use App\Http\Controllers\Api\ReminderOliController;
+use App\Http\Controllers\Api\ReminderSpkController;
+use App\Http\Controllers\Api\ReminderSpkDetailController;
+use App\Http\Controllers\Api\ReminderStokController;
+use App\Http\Controllers\Api\SpkHarianController;
+use App\Http\Controllers\Api\StatusOliTradoController;
 use App\Http\Controllers\Api\StokPusatController;
 use App\Http\Controllers\Api\SuratPengantarBiayaTambahanController;
 use App\Http\Controllers\Api\UbahPasswordController;
@@ -283,7 +292,7 @@ Route::get('parameter/getparamrequest', [ParameterController::class, 'getparamre
 route::middleware(['auth:api', 'authorized'])->group(function () {
 
 
-    Route::resource('dashboard', DashboardController::class)->whereNumber('gudang');
+    Route::resource('dashboard', DashboardController::class)->whereNumber('dashboard');
     Route::get('kota/combo', [KotaController::class, 'combo']);
     Route::get('kota/field_length', [KotaController::class, 'fieldLength']);
     Route::get('kota/default', [KotaController::class, 'default']);
@@ -1533,6 +1542,15 @@ route::middleware(['auth:api', 'authorized'])->group(function () {
     Route::resource('logabsensi', LogAbsensiController::class)->whereNumber('logabsensi');
 
     Route::resource('karyawanlogabsensi', KaryawanLogAbsensiController::class)->whereNumber('karyawanlogabsensi');
+    Route::resource('reminderoli', ReminderOliController::class)->whereNumber('reminderoli');
+    Route::resource('expsim', ExpSimController::class)->whereNumber('expsim');
+    Route::resource('expstnk', ExpStnkController::class)->whereNumber('expstnk');
+    Route::resource('expasuransi', ExpAsuransiController::class)->whereNumber('expasuransi');
+    Route::resource('reminderstok', ReminderStokController::class)->whereNumber('reminderstok');
+    Route::resource('statusolitrado', StatusOliTradoController::class)->whereNumber('statusolitrado');
+    Route::resource('reminderspk', ReminderSpkController::class)->whereNumber('reminderspk');
+    Route::resource('reminderspkdetail', ReminderSpkDetailController::class)->whereNumber('reminderspkdetail');
+    Route::resource('spkharian', SpkHarianController::class)->whereNumber('spkharian');
 });
 Route::get('suratpengantarapprovalinputtrip/updateapproval', [SuratPengantarApprovalInputTripController::class, 'updateApproval']);
 
