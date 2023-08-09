@@ -84,6 +84,37 @@ class PengeluaranStokDetailFifo extends MyModel
                 'furut'
             ], $querytempmasuk);
 
+            $querytempmasuk = Penerimaanstokdetail::select(
+                'B.nobukti as nobukti',
+                'B.tglbukti as tglbukti',
+                'D.namastok as fkstck',
+                'C.gudang as fkgdg',
+                db::raw("(penerimaanstokdetail.qty-isnull(penerimaanstokdetail.qtykeluar,0)) as qty"),
+                'penerimaanstokdetail.harga as harga',
+                db::raw("row_number() Over(Order By B.tglbukti ,penerimaanstokdetail.id ) as urut")
+            )
+                ->join('penerimaanstokheader as B', 'B.id', 'penerimaanstokdetail.penerimaanstokheader_id')
+                ->join('gudang as C', 'C.id', 'B.gudangke_id')
+                ->join('stok as D', 'D.id', 'penerimaanstokdetail.stok_id')
+                ->where('B.gudangke_id', '=',  $data['gudang_id'])
+                ->where('penerimaanstokdetail.stok_id', '=',  $data['stok_id'])
+                // ->where('penerimaanstokdetail.qtykeluar', '<',  'penerimaanstokdetail.qty')
+                ->whereRaw("isnull(penerimaanstokdetail.qtykeluar,0)<penerimaanstokdetail.qty")
+                ->orderBy('B.tglbukti', 'Asc')
+                ->orderBy('penerimaanstokdetail.id', 'Asc');
+
+
+
+            DB::table($tempmasuk)->insertUsing([
+                'fntrans',
+                'ftgl',
+                'fkstck',
+                'fkgdg',
+                'fqty',
+                'fhargasat',
+                'furut'
+            ], $querytempmasuk);
+
             $querymsk = DB::table($tempmasuk)
                 ->select(
                     DB::raw("sum(fqty) as qty")

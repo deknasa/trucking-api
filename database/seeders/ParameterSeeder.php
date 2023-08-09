@@ -415,6 +415,11 @@ class ParameterSeeder extends Seeder
         parameter::create(['grp' => 'STATUS STOK MIN', 'subgrp' => 'STATUS STOK MIN', 'kelompok' => '', 'text' => 'STOK DIBAWAH QTY MINIMUM', 'memo' => '{"MEMO":"STOK DIBAWAH QTY MINIMUM","SINGKATAN":"SDQM","WARNA":"#CB1818"}', 'type' => '0', 'modifiedby' => 'ADMIN', 'default' => '',]);
         parameter::create(['grp' => 'STATUS STOK MIN', 'subgrp' => 'STATUS STOK MIN', 'kelompok' => '', 'text' => 'STOK HAMPIR DIBAWAH QTY MINIMUM', 'memo' => '{"MEMO":"STOK HAMPIR DIBAWAH QTY MINIMUM","SINGKATAN":"SHDQM","WARNA":"#E16000"}', 'type' => '0', 'modifiedby' => 'ADMIN', 'default' => '',]);
         parameter::create(['grp' => 'WORK SHOP', 'subgrp' => 'WORK SHOP', 'kelompok' => '', 'text' => '4', 'memo' => '{"MEMO":"WORK SHOP","SINGKATAN":"4","WARNA":"#6C757D"}', 'type' => '0', 'modifiedby' => 'ADMIN', 'default' => '',]);
+        parameter::create(['grp' => 'SPB SERVICE STOK', 'subgrp' => 'SPB SERVICE STOK', 'kelompok' => '', 'text' => '6', 'memo' => '{"MEMO":"SPB SERVICE STOK","SINGKATAN":"6","WARNA":"#6C757D"}', 'type' => '0', 'modifiedby' => 'ADMIN', 'default' => '',]);
+        parameter::create(['grp' => 'PENGEMBALIAN SPAREPART STOK', 'subgrp' => 'PENGEMBALIAN SPAREPART STOK', 'kelompok' => '', 'text' => '8', 'memo' => '{"MEMO":"PENGEMBALIAN SPAREPART STOK","SINGKATAN":"8","WARNA":"#6C757D"}', 'type' => '0', 'modifiedby' => 'ADMIN', 'default' => '',]);
+        parameter::create(['grp' => 'PENGEMBALIAN SPK STOK', 'subgrp' => 'PENGEMBALIAN SPK STOK', 'kelompok' => '', 'text' => '9', 'memo' => '{"MEMO":"PENGEMBALIAN SPK STOK","SINGKATAN":"9","WARNA":"#6C757D"}', 'type' => '0', 'modifiedby' => 'ADMIN', 'default' => '',]);
+        parameter::create(['grp' => 'KOREKSI VULKAN STOK', 'subgrp' => 'KOREKSI VULKAN STOK', 'kelompok' => '', 'text' => '10', 'memo' => '{"MEMO":"KOREKSI VULKAN STOK","SINGKATAN":"10","WARNA":"#6C757D"}', 'type' => '0', 'modifiedby' => 'ADMIN', 'default' => '',]);
+        parameter::create(['grp' => 'PENAMBAHAN NILAI STOK', 'subgrp' => 'PENAMBAHAN NILAI STOK', 'kelompok' => '', 'text' => '11', 'memo' => '{"MEMO":"PENAMBAHAN NILAI STOK","SINGKATAN":"11","WARNA":"#6C757D"}', 'type' => '0', 'modifiedby' => 'ADMIN', 'default' => '',]);
 
         
     }
