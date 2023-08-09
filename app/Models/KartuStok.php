@@ -239,10 +239,11 @@ class KartuStok extends MyModel
         //     }
         // }
 
-
+       
         $this->totalRows = $query->count();
         $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;
         $query->orderBy('a.' . $this->params['sortIndex'], $this->params['sortOrder']);
+        // dd($query->toSql());
         $this->filter($query);
         $this->paginate($query);
 
@@ -1589,7 +1590,7 @@ class KartuStok extends MyModel
             ->leftjoin('kategori as B', 'a.kategori_id', 'B.id')
             ->orderBy('a.tglbukti', 'asc')
             ->orderBy('a.id', 'asc');
-        // dd($datalist->get());
+        //  dd($datalist->get());
         // dd($datalist->get());
 
         DB::table($temprekapall)->insertUsing([
@@ -1627,6 +1628,8 @@ class KartuStok extends MyModel
                 'a.modifiedby',
             )
             ->orderBy('a.id', 'asc');
+
+                //  dd($datalist->get());
 
         return $datalist;
     }
