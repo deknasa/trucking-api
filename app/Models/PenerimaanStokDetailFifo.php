@@ -26,7 +26,7 @@ class PenerimaanStokDetailFifo extends MyModel
         'updated_at',
     ];
 
-    public function processStore(PenerimaanStokHeader $penerimaanStokHeader, array $data) :PengeluaranStokDetailFifo
+    public function processStore(PenerimaanStokHeader $penerimaanStokHeader, array $data) :PenerimaanStokDetailFifo
     {
 
             $tempmasuk = '##tempmasuk' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
@@ -72,6 +72,7 @@ class PenerimaanStokDetailFifo extends MyModel
                 ->orderBy('penerimaanstokdetail.id', 'Asc');
 
 
+
             DB::table($tempmasuk)->insertUsing([
                 'fntrans',
                 'ftgl',
@@ -82,6 +83,39 @@ class PenerimaanStokDetailFifo extends MyModel
                 'furut'
             ], $querytempmasuk);
 
+            $querytempmasuk = Penerimaanstokdetail::select(
+                'B.nobukti as nobukti',
+                'B.tglbukti as tglbukti',
+                'D.namastok as fkstck',
+                'C.gudang as fkgdg',
+                db::raw("(penerimaanstokdetail.qty-isnull(penerimaanstokdetail.qtykeluar,0)) as qty"),
+                'penerimaanstokdetail.harga as harga',
+                db::raw("row_number() Over(Order By B.tglbukti ,penerimaanstokdetail.id ) as urut")
+            )
+                ->join('penerimaanstokheader as B', 'B.id', 'penerimaanstokdetail.penerimaanstokheader_id')
+                ->join('gudang as C', 'C.id', 'B.gudangke_id')
+                ->join('stok as D', 'D.id', 'penerimaanstokdetail.stok_id')
+                ->where('B.gudangke_id', '=',  $data['gudang_id'])
+                ->where('penerimaanstokdetail.stok_id', '=',  $data['stok_id'])
+                // ->where('penerimaanstokdetail.qtykeluar', '<',  'penerimaanstokdetail.qty')
+                ->whereRaw("isnull(penerimaanstokdetail.qtykeluar,0)<penerimaanstokdetail.qty")
+                ->orderBy('B.tglbukti', 'Asc')
+                ->orderBy('penerimaanstokdetail.id', 'Asc');
+
+
+
+            DB::table($tempmasuk)->insertUsing([
+                'fntrans',
+                'ftgl',
+                'fkstck',
+                'fkgdg',
+                'fqty',
+                'fhargasat',
+                'furut'
+            ], $querytempmasuk);
+            
+            // dd(db::table($tempmasuk)->get());
+
             $querymsk = DB::table($tempmasuk)
                 ->select(
                     DB::raw("sum(fqty) as qty")
@@ -89,6 +123,8 @@ class PenerimaanStokDetailFifo extends MyModel
                 ->first();
 
             $qtyin = $querymsk->qty ?? 0;
+
+            // dd($qtyin);
 
            
             if ( $data['qty'] > $qtyin) {
@@ -158,6 +194,7 @@ class PenerimaanStokDetailFifo extends MyModel
                     'id'
                 ], $querytempkeluarlist);
 
+     
                 $querytempkeluarlist = PenerimaanStokDetail::select(
                     'b.nobukti as FNtrans',
                     'b.tglbukti as Ftgl',
@@ -191,7 +228,7 @@ class PenerimaanStokDetailFifo extends MyModel
                     'tglbukti',
                     'id'
                 ], $querytempkeluarlist);
-
+             
                 $querytempkeluar = DB::table($tempkeluarlist)->from(
                     db::raw($tempkeluarlist . " as a")
                 )->select(
@@ -209,7 +246,7 @@ class PenerimaanStokDetailFifo extends MyModel
                     ->orderBy('a.id', 'Asc');                
 
 
-
+                    // dd($querytempkeluar->get());
             DB::table($tempkeluar)->insertUsing([
                 'fntrans',
                 'ftgl',
@@ -217,10 +254,13 @@ class PenerimaanStokDetailFifo extends MyModel
                 'fkgdg',
                 'fqty',
                 'furut',
-                'fid'
+                'fid',
+                'tglbukti',
+                'id',
             ], $querytempkeluar);
 
-
+            // dd('test');
+    
             $tempkeluarrekap = '##Tempkeluarrekap' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
             Schema::create($tempkeluarrekap, function ($table) {
                 $table->string('fntrans', 100)->nullable();
@@ -507,6 +547,8 @@ class PenerimaanStokDetailFifo extends MyModel
 
             // dd($datalist->get());
 
+            // dd($datalist->get());
+
             $datadetail = json_decode($datalist->get(), true);
             $totalharga = 0;
             $spk = Parameter::from(
@@ -565,14 +607,18 @@ class PenerimaanStokDetailFifo extends MyModel
                 ->where("nobukti", $data['nobukti'])
                 ->firstorFail();
 
+        
+
             $hrgsat = $totalharga / $data['qty'];
             $penerimaanstokdetail->harga =   $hrgsat;
             $penerimaanstokdetail->total =  $totalharga;
             // $penerimaanstokdetail->save();
             if (!$penerimaanstokdetail->save()) {
+         
+
                 throw new \Exception("Error storing pengeluaran Stok Detail  update fifo. ");
             }
-
+            // dd('test');
             return $penerimaanStokDetailFifo;
        
     }

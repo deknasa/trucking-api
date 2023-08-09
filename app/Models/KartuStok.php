@@ -101,10 +101,10 @@ class KartuStok extends MyModel
                 $table->double('nilaisaldo', 15, 2)->nullable();
                 $table->string('modifiedby', 100)->nullable();
 
-                $table->index('kodebarang', 'temtabel_kodebarang_index');                
-                $table->index('namabarang', 'temtabel_namabarang_index');                
-                $table->index('nobukti', 'temtabel_nobukti_index');                
-                $table->index('kategori_id', 'temtabel_kategori_id_index');                   
+                $table->index('kodebarang', 'temtabel_kodebarang_index');
+                $table->index('namabarang', 'temtabel_namabarang_index');
+                $table->index('nobukti', 'temtabel_nobukti_index');
+                $table->index('kategori_id', 'temtabel_kategori_id_index');
             });
 
             if ($datafilter == 0) {
@@ -239,7 +239,7 @@ class KartuStok extends MyModel
         //     }
         // }
 
-       
+
         $this->totalRows = $query->count();
         $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;
         $query->orderBy('a.' . $this->params['sortIndex'], $this->params['sortOrder']);
@@ -554,29 +554,27 @@ class KartuStok extends MyModel
         // dump($tgldari);
         // dd($tglsampai);
 
-        if ($stokdari==0 || $stoksampai==0) {
-            $querystokdari=DB::table("stok")->from(
+        if ($stokdari == 0 || $stoksampai == 0) {
+            $querystokdari = DB::table("stok")->from(
                 DB::raw("stok a with (readuncommitted)")
             )
-            ->select(
-                'a.id'
-            )->orderBy('a.id','asc')
-            ->first();
+                ->select(
+                    'a.id'
+                )->orderBy('a.id', 'asc')
+                ->first();
 
-            $querystoksampai=DB::table("stok")->from(
+            $querystoksampai = DB::table("stok")->from(
                 DB::raw("stok a with (readuncommitted)")
             )
-            ->select(
-                'a.id'
-            )->orderBy('a.id','desc')
-            ->first();
+                ->select(
+                    'a.id'
+                )->orderBy('a.id', 'desc')
+                ->first();
 
-            $stokdari=$querystokdari->id;
-            $stoksampai=$querystoksampai->id;
-
-
+            $stokdari = $querystokdari->id;
+            $stoksampai = $querystoksampai->id;
         }
-        
+
         $gudang_id = $gudang_id ?? 0;
         $trado_id = $trado_id ?? 0;
         $gandengan_id = $gandengan_id ?? 0;
@@ -618,6 +616,7 @@ class KartuStok extends MyModel
             $table->double('qtysaldo', 15, 2)->nullable();
             $table->double('nilaisaldo', 15, 2)->nullable();
             $table->string('modifiedby', 100)->nullable();
+            $table->integer('urutfifo')->length(11)->nullable();;
 
             $table->index('kodebarang', 'templaporan_kodebarang_index');
             $table->index('kategori_id', 'templaporan_kategori_id_index');
@@ -643,13 +642,13 @@ class KartuStok extends MyModel
             $table->double('qtysaldo', 15, 2)->nullable();
             $table->double('nilaisaldo', 15, 2)->nullable();
             $table->string('modifiedby', 100)->nullable();
+            $table->integer('urutfifo')->length(11)->nullable();;
 
             $table->index('statusmasuk', 'temprekap_statusmasuk_index');
             $table->index('kodebarang', 'temprekap_kodebarang_index');
             $table->index('kategori_id', 'temprekap_kategori_id_index');
             $table->index('namabarang', 'temprekap_namabarang_index');
             $table->index('nobukti', 'temprekap_nobukti_index');
-            
         });
 
 
@@ -660,7 +659,7 @@ class KartuStok extends MyModel
             $table->double('qtymasuk', 15, 2)->nullable();
             $table->double('nilaimasuk', 15, 2)->nullable();
 
-            $table->index('kodebarang', 'tempsaldoawalmasuk_kodebarang_index');            
+            $table->index('kodebarang', 'tempsaldoawalmasuk_kodebarang_index');
         });
 
         $tempsaldoawalkeluar = '##tempsaldoawalkeluar' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
@@ -670,7 +669,7 @@ class KartuStok extends MyModel
             $table->double('qtykeluar', 15, 2)->nullable();
             $table->double('nilaikeluar', 15, 2)->nullable();
 
-            $table->index('kodebarang', 'tempsaldoawalkeluar_kodebarang_index');                 
+            $table->index('kodebarang', 'tempsaldoawalkeluar_kodebarang_index');
         });
 
         $tempsaldoawal = '##tempsaldoawal' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
@@ -680,7 +679,7 @@ class KartuStok extends MyModel
             $table->double('qtysaldo', 15, 2)->nullable();
             $table->double('nilaisaldo', 15, 2)->nullable();
 
-            $table->index('kodebarang', 'tempsaldoawal_kodebarang_index');                  
+            $table->index('kodebarang', 'tempsaldoawal_kodebarang_index');
         });
 
         $gudangkantor = Parameter::where('grp', 'GUDANG KANTOR')->where('subgrp', 'GUDANG KANTOR')->first();
@@ -694,6 +693,7 @@ class KartuStok extends MyModel
             DB::raw("parameter with (readuncommitted)")
         )
             ->where('grp', 'SPB STOK')->where('subgrp', 'SPB STOK')->first();
+
 
         $korplus = Parameter::from(
             DB::raw("parameter with (readuncommitted)")
@@ -753,14 +753,14 @@ class KartuStok extends MyModel
             ->where('grp', 'GST STOK')->where('subgrp', 'GST STOK')->first();
 
 
-            // dump($filter);
-            // dump($filtergudang->text);
-            // dump($gudang_id);
-            // dd($gudangkantor->text);
+        // dump($filter);
+        // dump($filtergudang->text);
+        // dump($gudang_id);
+        // dd($gudangkantor->text);
         if ($filter == $filtergudang->text) {
             //=========================================saldo awal masuk=========================================
             if ($gudang_id == $gudangkantor->text) {
-                $penerimaanstok_id = $spb->text . ',' . $saldoawal->text . ',' . $korplus->text . ',' .  $spbs->text . ',' .  $pst->text . ',' .  $pspk->text;
+                $penerimaanstok_id = $spb->text . ',' . $saldoawal->text . ',' . $korplus->text . ',' .  $spbs->text . ',' .  $pst->text . ',' .  $pspk->text . ',' .  $pg->text;
                 $pengeluaranstok_id = $spk->text . ',' . $korminus->text . ',' . $retur->text . ',' . $gst->text;
             } else if ($gudang_id == $gudangsementara->text) {
                 $penerimaanstok_id = $pg->text . ',' . $pgdo->text . ',' . $spbs->text;
@@ -791,7 +791,7 @@ class KartuStok extends MyModel
             } else if ($gudang_id == $gudangpihak3->text) {
                 $penerimaanstok_id = $pg->text . ',' . $pgdo->text . ',' . $spbs->text;
                 $pengeluaranstok_id = $korminus->text;
-            }else if ($gudang_id == $workshop->text) {
+            } else if ($gudang_id == $workshop->text) {
                 $penerimaanstok_id = $pg->text . ',' . $pgdo->text . ',' . $spbs->text;
                 $pengeluaranstok_id = $korminus->text;
             }
@@ -928,6 +928,7 @@ class KartuStok extends MyModel
                 )
                 ->join(DB::raw("pengeluaranstokdetailfifo as b with (readuncommitted)"), 'a.id', 'b.pengeluaranstokheader_id')
                 ->join(DB::raw("stok as c with (readuncommitted)"), 'b.stok_id', 'c.id')
+
                 ->whereRaw("(b.stok_id>=" . $stokdari . " and B.stok_id<=" . $stoksampai . " )  and (a.tglBukti <'" . $tgldari . "')")
                 ->whereRaw("a.pengeluaranstok_id in(" . $pengeluaranstok_id2 . ")")
                 ->whereRaw("a.trado_id in(" . $trado_id . ")")
@@ -966,10 +967,12 @@ class KartuStok extends MyModel
                     DB::raw("0 as nilaikeluar"),
                     DB::raw("0 as qtysaldo"),
                     DB::raw("0 as nilaisaldo"),
-                    'a.modifiedby'
+                    'a.modifiedby',
+                    DB::raw("isnull(d.urutfifo,0) as urutfifo"),
                 )
                 ->join(DB::raw("penerimaanstokdetail as b with (readuncommitted)"), 'a.id', 'b.penerimaanstokheader_id')
                 ->join(DB::raw("stok as c with (readuncommitted)"), 'b.stok_id', 'c.id')
+                ->leftjoin(DB::raw("penerimaanstok as d with (readuncommitted)"), 'a.penerimaanstok_id', 'd.id')
                 ->whereRaw("(b.stok_id>=" . $stokdari . " and B.stok_id<=" . $stoksampai . " )  and (a.tglBukti >='" . $tgldari . "' and a.tglbukti<='" . $tglsampai . "')")
                 ->whereRaw("a.penerimaanstok_id in(" . $penerimaanstok_id  . ")")
                 ->whereRaw("(a.gudang_id=" . $gudang_id)
@@ -995,10 +998,13 @@ class KartuStok extends MyModel
                     DB::raw("0 as nilaikeluar"),
                     DB::raw("0 as qtysaldo"),
                     DB::raw("0 as nilaisaldo"),
-                    'a.modifiedby'
+                    'a.modifiedby',
+                    DB::raw("isnull(d.urutfifo,0) as urutfifo"),
                 )
                 ->join(DB::raw("penerimaanstokdetail as b with (readuncommitted)"), 'a.id', 'b.penerimaanstokheader_id')
                 ->join(DB::raw("stok as c with (readuncommitted)"), 'b.stok_id', 'c.id')
+                ->leftjoin(DB::raw("penerimaanstok as d with (readuncommitted)"), 'a.penerimaanstok_id', 'd.id')
+
                 ->whereRaw("(b.stok_id>=" . $stokdari . " and B.stok_id<=" . $stoksampai . " )  and (a.tglBukti >='" . $tgldari . "' and a.tglbukti<='" . $tglsampai . "')")
                 ->whereRaw("a.penerimaanstok_id in(" . $penerimaanstok_id  . ")")
                 ->whereRaw("(a.gandengan_id=" . $gandengan_id)
@@ -1024,10 +1030,13 @@ class KartuStok extends MyModel
                     DB::raw("0 as nilaikeluar"),
                     DB::raw("0 as qtysaldo"),
                     DB::raw("0 as nilaisaldo"),
-                    'a.modifiedby'
+                    'a.modifiedby',
+                    DB::raw("isnull(d.urutfifo,0) as urutfifo"),
                 )
                 ->join(DB::raw("penerimaanstokdetail as b with (readuncommitted)"), 'a.id', 'b.penerimaanstokheader_id')
                 ->join(DB::raw("stok as c with (readuncommitted)"), 'b.stok_id', 'c.id')
+                ->leftjoin(DB::raw("penerimaanstok as d with (readuncommitted)"), 'a.penerimaanstok_id', 'd.id')
+
                 ->whereRaw("(b.stok_id>=" . $stokdari . " and B.stok_id<=" . $stoksampai . " )  and (a.tglBukti >='" . $tgldari . "' and a.tglbukti<='" . $tglsampai . "')")
                 ->whereRaw("a.penerimaanstok_id in(" . $penerimaanstok_id  . ")")
                 ->whereRaw("(a.trado_id=" . $trado_id)
@@ -1053,10 +1062,12 @@ class KartuStok extends MyModel
                     DB::raw("0 as nilaikeluar"),
                     DB::raw("0 as qtysaldo"),
                     DB::raw("0 as nilaisaldo"),
-                    'a.modifiedby'
+                    'a.modifiedby',
+                    DB::raw("isnull(d.urutfifo,0) as urutfifo"),
                 )
                 ->join(DB::raw("penerimaanstokdetail as b with (readuncommitted)"), 'a.id', 'b.penerimaanstokheader_id')
                 ->join(DB::raw("stok as c with (readuncommitted)"), 'b.stok_id', 'c.id')
+                ->leftjoin(DB::raw("penerimaanstok as d with (readuncommitted)"), 'a.penerimaanstok_id', 'd.id')
                 ->whereRaw("(b.stok_id>=" . $stokdari . " and B.stok_id<=" . $stoksampai . " )  and (a.tglBukti >='" . $tgldari . "' and a.tglbukti<='" . $tglsampai . "')")
                 ->whereRaw("a.penerimaanstok_id in(" . $penerimaanstok_id  . ")")
                 ->whereRaw("(a.gudang_id=" . $gudang_id)
@@ -1082,7 +1093,9 @@ class KartuStok extends MyModel
             'qtysaldo',
             'nilaisaldo',
             'modifiedby',
+            'urutfifo',
         ], $queryrekap);
+
 
         if ($trado_id != 0) {
             $queryrekap = PengeluaranStokHeader::from(
@@ -1102,10 +1115,13 @@ class KartuStok extends MyModel
                     DB::raw("0 as nilaikeluar"),
                     DB::raw("0 as qtysaldo"),
                     DB::raw("0 as nilaisaldo"),
-                    'a.modifiedby'
+                    'a.modifiedby',
+                    DB::raw("isnull(d.urutfifo,0) as urutfifo"),
+
                 )
                 ->join(DB::raw("pengeluaranstokdetailfifo as b with (readuncommitted)"), 'a.id', 'b.pengeluaranstokheader_id')
                 ->join(DB::raw("stok as c with (readuncommitted)"), 'b.stok_id', 'c.id')
+                ->leftjoin(DB::raw("pengeluaranstok as d with (readuncommitted)"), 'a.penerimaanstok_id', 'd.id')
                 ->whereRaw("(b.stok_id>=" . $stokdari . " and B.stok_id<=" . $stoksampai . " )  and (a.tglBukti >='" . $tgldari . "' and a.tglbukti<='" . $tglsampai . "')")
                 ->whereRaw("a.pengeluaranstok_id in(" . $pengeluaranstok_id2 . ")")
                 ->whereRaw("c.statusreuse in(" . $statusreuse->id . ")")
@@ -1130,6 +1146,7 @@ class KartuStok extends MyModel
                 'qtysaldo',
                 'nilaisaldo',
                 'modifiedby',
+                'urutfifo',
             ], $queryrekap);
         } else  if ($gandengan_id != 0) {
             $queryrekap = PengeluaranStokHeader::from(
@@ -1149,10 +1166,14 @@ class KartuStok extends MyModel
                     DB::raw("0 as nilaikeluar"),
                     DB::raw("0 as qtysaldo"),
                     DB::raw("0 as nilaisaldo"),
-                    'a.modifiedby'
+                    'a.modifiedby',
+                    DB::raw("isnull(d.urutfifo,0) as urutfifo"),
+
                 )
                 ->join(DB::raw("pengeluaranstokdetailfifo as b with (readuncommitted)"), 'a.id', 'b.pengeluaranstokheader_id')
                 ->join(DB::raw("stok as c with (readuncommitted)"), 'b.stok_id', 'c.id')
+                ->leftjoin(DB::raw("pengeluaranstok as d with (readuncommitted)"), 'a.penerimaanstok_id', 'd.id')
+
                 ->whereRaw("(b.stok_id>=" . $stokdari . " and B.stok_id<=" . $stoksampai . " )  and (a.tglBukti >='" . $tgldari . "' and a.tglbukti<='" . $tglsampai . "')")
                 ->whereRaw("a.pengeluaranstok_id in(" . $pengeluaranstok_id2 . ")")
                 ->whereRaw("c.statusreuse in(" . $statusreuse->id . ")")
@@ -1177,6 +1198,7 @@ class KartuStok extends MyModel
                 'qtysaldo',
                 'nilaisaldo',
                 'modifiedby',
+                'urutfifo',
             ], $queryrekap);
         }
 
@@ -1318,9 +1340,12 @@ class KartuStok extends MyModel
                 DB::raw("0 as qtysaldo"),
                 DB::raw("0 as nilaisaldo"),
                 DB::raw("'' as modifiedby"),
+                DB::raw("0 as urutfifo"),
             )
             ->join(DB::raw("stok as c with (readuncommitted)"), 'a.kodebarang', 'c.id');
         //saldo awal
+
+
 
         DB::table($temprekap)->insertUsing([
             'statusmasuk',
@@ -1336,9 +1361,10 @@ class KartuStok extends MyModel
             'qtysaldo',
             'nilaisaldo',
             'modifiedby',
+            'urutfifo',
         ], $queryrekap);
 
-
+        // dd('test');
 
         $queryrekap = PengeluaranStokHeader::from(
             DB::raw("pengeluaranstokheader as a with (readuncommitted)")
@@ -1356,10 +1382,13 @@ class KartuStok extends MyModel
                 DB::raw("(b.penerimaanstok_qty*b.penerimaanstok_harga) as nilaikeluar"),
                 DB::raw("0 as qtysaldo"),
                 DB::raw("0 as nilaisaldo"),
-                'a.modifiedby'
+                'a.modifiedby',
+                DB::raw("isnull(d.urutfifo,0) as urutfifo"),
             )
             ->join(DB::raw("pengeluaranstokdetailfifo as b with (readuncommitted)"), 'a.id', 'b.pengeluaranstokheader_id')
             ->join(DB::raw("stok as c with (readuncommitted)"), 'b.stok_id', 'c.id')
+            ->leftjoin(DB::raw("pengeluaranstok as d with (readuncommitted)"), 'a.pengeluaranstok_id', 'd.id')
+
             ->whereRaw("(b.stok_id>=" . $stokdari . " and B.stok_id<=" . $stoksampai . " )  and (a.tglBukti >='" . $tgldari . "' and a.tglbukti<='" . $tglsampai . "')")
             ->whereRaw("a.pengeluaranstok_id in(" . $pengeluaranstok_id . ")")
             ->orderBy('a.id', 'Asc')
@@ -1382,6 +1411,7 @@ class KartuStok extends MyModel
             'qtysaldo',
             'nilaisaldo',
             'modifiedby',
+            'urutfifo',
         ], $queryrekap);
 
         if ($gudang_id != 0) {
@@ -1401,10 +1431,12 @@ class KartuStok extends MyModel
                     DB::raw("(b.qty*b.harga) as nilaikeluar"),
                     DB::raw("0 as qtysaldo"),
                     DB::raw("0 as nilaisaldo"),
-                    'a.modifiedby'
+                    'a.modifiedby',
+                    DB::raw("isnull(d.urutfifo,0) as urutfifo"),
                 )
                 ->join(DB::raw("penerimaanstokdetail as b with (readuncommitted)"), 'a.id', 'b.penerimaanstokheader_id')
                 ->join(DB::raw("stok as c with (readuncommitted)"), 'b.stok_id', 'c.id')
+                ->leftjoin(DB::raw("penerimaanstok as d with (readuncommitted)"), 'a.penerimaanstok_id', 'd.id')
                 ->whereRaw("(b.stok_id>=" . $stokdari . " and B.stok_id<=" . $stoksampai . " )  and (a.tglBukti >='" . $tgldari . "' and a.tglbukti<='" . $tglsampai . "')")
                 ->whereRaw("a.penerimaanstok_id in(" . $penerimaanstok_id  . ")")
                 ->where('a.gudangdari_id', $gudang_id)
@@ -1429,10 +1461,12 @@ class KartuStok extends MyModel
                     DB::raw("(b.qty*b.harga) as nilaikeluar"),
                     DB::raw("0 as qtysaldo"),
                     DB::raw("0 as nilaisaldo"),
-                    'a.modifiedby'
+                    'a.modifiedby',
+                    DB::raw("isnull(d.urutfifo,0) as urutfifo"),
                 )
                 ->join(DB::raw("penerimaanstokdetail as b with (readuncommitted)"), 'a.id', 'b.penerimaanstokheader_id')
                 ->join(DB::raw("stok as c with (readuncommitted)"), 'b.stok_id', 'c.id')
+                ->leftjoin(DB::raw("penerimaanstok as d with (readuncommitted)"), 'a.penerimaanstok_id', 'd.id')
                 ->whereRaw("(b.stok_id>=" . $stokdari . " and B.stok_id<=" . $stoksampai . " )  and (a.tglBukti >='" . $tgldari . "' and a.tglbukti<='" . $tglsampai . "')")
                 ->whereRaw("a.penerimaanstok_id in(" . $penerimaanstok_id  . ")")
                 ->where('a.gandengandari_id', $gandengan_id)
@@ -1457,10 +1491,12 @@ class KartuStok extends MyModel
                     DB::raw("(b.qty*b.harga) as nilaikeluar"),
                     DB::raw("0 as qtysaldo"),
                     DB::raw("0 as nilaisaldo"),
-                    'a.modifiedby'
+                    'a.modifiedby',
+                    DB::raw("isnull(d.urutfifo,0) as urutfifo"),
                 )
                 ->join(DB::raw("penerimaanstokdetail as b with (readuncommitted)"), 'a.id', 'b.penerimaanstokheader_id')
                 ->join(DB::raw("stok as c with (readuncommitted)"), 'b.stok_id', 'c.id')
+                ->leftjoin(DB::raw("penerimaanstok as d with (readuncommitted)"), 'a.penerimaanstok_id', 'd.id')
                 ->whereRaw("(b.stok_id>=" . $stokdari . " and B.stok_id<=" . $stoksampai . " )  and (a.tglBukti >='" . $tgldari . "' and a.tglbukti<='" . $tglsampai . "')")
                 ->whereRaw("a.penerimaanstok_id in(" . $penerimaanstok_id  . ")")
                 ->where('a.tradodari_id', $trado_id)
@@ -1485,10 +1521,13 @@ class KartuStok extends MyModel
                     DB::raw("(b.qty*b.harga) as nilaikeluar"),
                     DB::raw("0 as qtysaldo"),
                     DB::raw("0 as nilaisaldo"),
-                    'a.modifiedby'
+                    'a.modifiedby',
+                    DB::raw("isnull(d.urutfifo,0) as urutfifo"),
+
                 )
                 ->join(DB::raw("penerimaanstokdetail as b with (readuncommitted)"), 'a.id', 'b.penerimaanstokheader_id')
                 ->join(DB::raw("stok as c with (readuncommitted)"), 'b.stok_id', 'c.id')
+                ->leftjoin(DB::raw("penerimaanstok as d with (readuncommitted)"), 'a.penerimaanstok_id', 'd.id')
                 ->whereRaw("(b.stok_id>=" . $stokdari . " and B.stok_id<=" . $stoksampai . " )  and (a.tglBukti >='" . $tgldari . "' and a.tglbukti<='" . $tglsampai . "')")
                 ->whereRaw("a.penerimaanstok_id in(" . $penerimaanstok_id  . ")")
                 ->orderBy('a.id', 'Asc')
@@ -1512,6 +1551,7 @@ class KartuStok extends MyModel
             'qtysaldo',
             'nilaisaldo',
             'modifiedby',
+            'urutfifo',
         ], $queryrekap);
         //akhir if gudang sebelumnya 
         // }
@@ -1532,6 +1572,8 @@ class KartuStok extends MyModel
                 'A.qtysaldo',
                 'A.nilaisaldo',
                 'A.modifiedby',
+                'A.urutfifo',
+
             )
             ->orderBy('A.statusmasuk', 'Asc')
             ->orderBy('A.id', 'Asc');
@@ -1549,6 +1591,7 @@ class KartuStok extends MyModel
             'qtysaldo',
             'nilaisaldo',
             'modifiedby',
+            'urutfifo',
         ], $querylaporan);
 
         $temprekapall = '##temprkpall' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
@@ -1567,11 +1610,12 @@ class KartuStok extends MyModel
             $table->double('qtysaldo', 15, 2)->nullable();
             $table->double('nilaisaldo', 15, 2)->nullable();
             $table->string('modifiedby', 100)->nullable();
+            $table->integer('urutfifo')->nullable();
 
-            $table->index('kodebarang', 'temprekapall_kodebarang_index');                
-            $table->index('namabarang', 'temprekapall_namabarang_index');                
-            $table->index('nobukti', 'temprekapall_nobukti_index');                
-            $table->index('kategori_id', 'temprekapall_kategori_id_index');                
+            $table->index('kodebarang', 'temprekapall_kodebarang_index');
+            $table->index('namabarang', 'temprekapall_namabarang_index');
+            $table->index('nobukti', 'temprekapall_nobukti_index');
+            $table->index('kategori_id', 'temprekapall_kategori_id_index');
         });
 
 
@@ -1590,11 +1634,13 @@ class KartuStok extends MyModel
                 'a.nilaimasuk',
                 'a.qtykeluar',
                 'a.nilaikeluar',
-                DB::raw("sum ((isnull(a.qtysaldo,0)+a.qtymasuk)-a.qtykeluar) over (order by a.tglbukti,a.id ASC) as qtysaldo"),
-                DB::raw("sum ((isnull(a.nilaisaldo,0)+a.nilaimasuk)-a.nilaikeluar) over (order by a.tglbukti,a.id ASC) as nilaisaldo"),
+                DB::raw("sum ((isnull(a.qtysaldo,0)+a.qtymasuk)-a.qtykeluar) over (order by a.urutfifo,a.tglbukti,a.id ASC) as qtysaldo"),
+                DB::raw("sum ((isnull(a.nilaisaldo,0)+a.nilaimasuk)-a.nilaikeluar) over (order by a.urutfifo,a.tglbukti,a.id ASC) as nilaisaldo"),
                 'a.modifiedby',
+                'a.urutfifo',
             )
             ->leftjoin('kategori as B', 'a.kategori_id', 'B.id')
+            ->orderBy('a.urutfifo', 'asc')
             ->orderBy('a.tglbukti', 'asc')
             ->orderBy('a.id', 'asc');
         //  dd($datalist->get());
@@ -1614,6 +1660,7 @@ class KartuStok extends MyModel
             'qtysaldo',
             'nilaisaldo',
             'modifiedby',
+            'urutfifo'
         ],  $datalist);
 
         $datalist = DB::table($temprekapall)->from(
@@ -1636,7 +1683,7 @@ class KartuStok extends MyModel
             )
             ->orderBy('a.id', 'asc');
 
-                //  dd($datalist->get());
+        //  dd($datalist->get());
 
         return $datalist;
     }
