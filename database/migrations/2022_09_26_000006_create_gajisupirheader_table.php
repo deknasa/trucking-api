@@ -36,6 +36,7 @@ class CreateGajisupirheaderTable extends Migration
             $table->double('komisisupir',15,2)->nullable();            
             $table->double('tolsupir',15,2)->nullable();            
             $table->double('voucher',15,2)->nullable();            
+            $table->double('uangmakanberjenjang',15,2)->nullable();            
             $table->double('uangmakanharian',15,2)->nullable();            
             $table->double('pinjamanpribadi',15,2)->nullable();            
             $table->double('gajiminus',15,2)->nullable();            
