@@ -1121,7 +1121,7 @@ class KartuStok extends MyModel
                 )
                 ->join(DB::raw("pengeluaranstokdetailfifo as b with (readuncommitted)"), 'a.id', 'b.pengeluaranstokheader_id')
                 ->join(DB::raw("stok as c with (readuncommitted)"), 'b.stok_id', 'c.id')
-                ->leftjoin(DB::raw("pengeluaranstok as d with (readuncommitted)"), 'a.penerimaanstok_id', 'd.id')
+                ->leftjoin(DB::raw("pengeluaranstok as d with (readuncommitted)"), 'a.pengeluaranstok_id', 'd.id')
                 ->whereRaw("(b.stok_id>=" . $stokdari . " and B.stok_id<=" . $stoksampai . " )  and (a.tglBukti >='" . $tgldari . "' and a.tglbukti<='" . $tglsampai . "')")
                 ->whereRaw("a.pengeluaranstok_id in(" . $pengeluaranstok_id2 . ")")
                 ->whereRaw("c.statusreuse in(" . $statusreuse->id . ")")
@@ -1172,7 +1172,7 @@ class KartuStok extends MyModel
                 )
                 ->join(DB::raw("pengeluaranstokdetailfifo as b with (readuncommitted)"), 'a.id', 'b.pengeluaranstokheader_id')
                 ->join(DB::raw("stok as c with (readuncommitted)"), 'b.stok_id', 'c.id')
-                ->leftjoin(DB::raw("pengeluaranstok as d with (readuncommitted)"), 'a.penerimaanstok_id', 'd.id')
+                ->leftjoin(DB::raw("pengeluaranstok as d with (readuncommitted)"), 'a.pengeluaranstok_id', 'd.id')
 
                 ->whereRaw("(b.stok_id>=" . $stokdari . " and B.stok_id<=" . $stoksampai . " )  and (a.tglBukti >='" . $tgldari . "' and a.tglbukti<='" . $tglsampai . "')")
                 ->whereRaw("a.pengeluaranstok_id in(" . $pengeluaranstok_id2 . ")")
