@@ -38,6 +38,7 @@ class GajiSupirDetailController extends Controller
                 'totalUpahRitasi' => $gajiSupir->totalUpahRitasi,
                 'totalBiayaExtra' => $gajiSupir->totalBiayaExtra,
                 'totalTolSupir' => $gajiSupir->totalTolSupir,
+                'totalUangMakanBerjenjang' => $gajiSupir->totalUangMakanBerjenjang,
             ]
         ]);
     }

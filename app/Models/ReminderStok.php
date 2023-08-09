@@ -33,7 +33,7 @@ class ReminderStok extends MyModel
             ->where('grp', '=', 'STATUS STOK MIN')
             ->where('text', '=', 'STOK HAMPIR DIBAWAH QTY MINIMUM')
             ->first();
-       
+
 
         $class = 'ReminderStokController';
         $user = auth('api')->user()->name;
@@ -88,11 +88,11 @@ class ReminderStok extends MyModel
                 )
                 ->join(DB::raw("stokpersediaan with (readuncommitted)"), 'stokpersediaan.stok_id', 'stok.id')
                 ->where('stok.qtymin', '!=', '0')
-                ->where('stokpersediaan.gudang_id','1')
+                ->where('stokpersediaan.gudang_id', '1')
                 ->whereRaw("stokpersediaan.qty <= stok.qtymin")
                 ->where('stok.statusaktif', $statusaktif->id);
 
-            DB::table($temtabel)->insertUsing(['id', 'namastok', 'keterangan', 'qtymin','qty', 'status'], $getQuery);
+            DB::table($temtabel)->insertUsing(['id', 'namastok', 'keterangan', 'qtymin', 'qty', 'status'], $getQuery);
         } else {
             $querydata = DB::table('listtemporarytabel')->from(
                 DB::raw("listtemporarytabel with (readuncommitted)")
@@ -108,27 +108,52 @@ class ReminderStok extends MyModel
             $temtabel = $querydata->namatabel;
         }
 
-        $query = DB::table(DB::raw($temtabel))->from(
-            DB::raw(DB::raw($temtabel) . " stok with (readuncommitted)")
-        )
-            ->select(
-                'stok.id',
-                'stok.namastok',
-                'stok.keterangan',
-                'stok.qtymin',
-                'stok.qty',
-                'parameter.memo as status',
+        $forExport = request()->forExport ?? false;
+
+        if ($forExport) {
+            $getJudul = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))
+                ->select('text')
+                ->where('grp', 'JUDULAN LAPORAN')
+                ->where('subgrp', 'JUDULAN LAPORAN')
+                ->first();
+            $query = DB::table(DB::raw($temtabel))->from(
+                DB::raw(DB::raw($temtabel) . " stok with (readuncommitted)")
             )
-            ->leftJoin(DB::raw("parameter with (readuncommitted)"), 'stok.status', 'parameter.id');
+                ->select(
+                    'stok.id',
+                    'stok.namastok',
+                    'stok.keterangan',
+                    'stok.qtymin',
+                    'stok.qty',
+                    'parameter.memo as status',
+                    DB::raw("'Laporan Reminder Stok' as judulLaporan"),
+                    DB::raw("'" . $getJudul->text . "' as judul"),
+                )
+                ->leftJoin(DB::raw("parameter with (readuncommitted)"), 'stok.status', 'parameter.id');
+        } else {
+            $query = DB::table(DB::raw($temtabel))->from(
+                DB::raw(DB::raw($temtabel) . " stok with (readuncommitted)")
+            )
+                ->select(
+                    'stok.id',
+                    'stok.namastok',
+                    'stok.keterangan',
+                    'stok.qtymin',
+                    'stok.qty',
+                    'parameter.memo as status'
+                )
+                ->leftJoin(DB::raw("parameter with (readuncommitted)"), 'stok.status', 'parameter.id');
 
 
-        $this->filter($query);
+            $this->filter($query);
 
-        $this->totalRows = $query->count();
-        $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;
+            $this->totalRows = $query->count();
+            $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;
 
-        $this->sort($query);
-        $this->paginate($query);
+            $this->sort($query);
+            $this->paginate($query);
+        }
+
         $data = $query->get();
 
         return $data;
