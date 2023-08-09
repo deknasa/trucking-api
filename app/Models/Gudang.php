@@ -114,14 +114,14 @@ class Gudang extends MyModel
         }
         // dd($penerimaanStokPg)
         if ($penerimaanstok == $penerimaanStokPg->text) {
-            $gudangKantor = Gudang::from(
-                DB::raw("gudang with (readuncommitted)")
-            )
-                ->select('id')
-                ->where('gudang','GUDANG KANTOR')
-                ->orWhere('gudang','GUDANG PIHAK III')
-                ->get();
+            $gudangKantor = Gudang::from(DB::raw("gudang with (readuncommitted)"))
+            ->select('id')
+            ->where('gudang','GUDANG PIHAK III');
 
+            if (request()->gudangdarike == "ke") {
+                $gudangKantor = $gudangKantor->orWhere('gudang','GUDANG KANTOR');
+            }
+            $gudangKantor = $gudangKantor->get();
             $query->whereNotIn('gudang.id', $gudangKantor);
         }
 
