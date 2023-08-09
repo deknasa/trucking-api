@@ -686,6 +686,7 @@ class KartuStok extends MyModel
         $gudangkantor = Parameter::where('grp', 'GUDANG KANTOR')->where('subgrp', 'GUDANG KANTOR')->first();
         $gudangsementara = Parameter::where('grp', 'GUDANG SEMENTARA')->where('subgrp', 'GUDANG SEMENTARA')->first();
         $gudangpihak3 = Parameter::where('grp', 'GUDANG PIHAK3')->where('subgrp', 'GUDANG PIHAK3')->first();
+        $workshop = Parameter::where('grp', 'WORK SHOP')->where('subgrp', 'WORK SHOP')->first();
 
         // and $gudang_id = $gudangkantor->text)
 
@@ -767,6 +768,9 @@ class KartuStok extends MyModel
             } else if ($gudang_id == $gudangpihak3->text) {
                 $penerimaanstok_id = $pg->text . ',' . $pgdo->text . ',' . $spbs->text;
                 $pengeluaranstok_id = $korminus->text;
+            } else if ($gudang_id == $workshop->text) {
+                $penerimaanstok_id = $pg->text . ',' . $pgdo->text . ',' . $spbs->text;
+                $pengeluaranstok_id = $korminus->text;
             } else {
                 $penerimaanstok_id = $spb->text . ',' . $saldoawal->text . ',' . $korplus->text . ',' .  $pst->text . ',' .  $pspk->text;
                 $pengeluaranstok_id = $spk->text . ',' . $korminus->text . ',' . $retur->text . ',' . $gst->text;
@@ -785,6 +789,9 @@ class KartuStok extends MyModel
                 $penerimaanstok_id = $pg->text . ',' . $pgdo->text . ',' . $spbs->text;
                 $pengeluaranstok_id = $korminus->text;
             } else if ($gudang_id == $gudangpihak3->text) {
+                $penerimaanstok_id = $pg->text . ',' . $pgdo->text . ',' . $spbs->text;
+                $pengeluaranstok_id = $korminus->text;
+            }else if ($gudang_id == $workshop->text) {
                 $penerimaanstok_id = $pg->text . ',' . $pgdo->text . ',' . $spbs->text;
                 $pengeluaranstok_id = $korminus->text;
             }

@@ -468,7 +468,9 @@ class PenerimaanStokHeader extends MyModel
         $statusCetak = Parameter::where('grp', 'STATUSCETAK')->where('text', 'BELUM CETAK')->first();
         $jamBatas = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))->select('text')->where('grp', 'JAMBATASAPPROVAL')->where('subgrp', 'JAMBATASAPPROVAL')->first();
         $tglbatasedit = date('Y-m-d H:i:s',strtotime(date('Y-m-d').' '.$jamBatas->text));
-
+        $gudangkantor =  Parameter::where('grp', 'GUDANG KANTOR')->where('subgrp', 'GUDANG KANTOR')->first()->text;
+        $gudangsementara =  Parameter::where('grp', 'GUDANG SEMENTARA')->where('subgrp', 'GUDANG SEMENTARA')->first()->text;
+        
 
         $spb = Parameter::where('grp', 'SPB STOK')->where('subgrp', 'SPB STOK')->first();
         $pg = Parameter::where('grp', 'PG STOK')->where('subgrp', 'PG STOK')->first();
@@ -579,6 +581,28 @@ class PenerimaanStokHeader extends MyModel
                 "detail_keterangan" => $data['detail_keterangan'][$i],
                 "detail_penerimaanstoknobukti" => $data['detail_penerimaanstoknobukti'][$i],
             ]);
+
+            if (($gudangdari_id==$gudangkantor) && ($gudangke_id==$gudangsementara)) {
+
+                $datadetailfifo = [
+                    "penerimaanstokheader_id" => $penerimaanStokHeader->id,
+                    "penerimaanstok_id" => $data['penerimaanstok_id'],
+                    "nobukti" => $penerimaanStokHeader->nobukti,
+                    "stok_id" => $data['detail_stok_id'][$i],
+                    "gudang_id" => $gudangdari_id,
+                    "tglbukti" => $data['tglbukti'],
+                    "qty" => $data['detail_qty'][$i],
+                    "modifiedby" => auth('api')->user()->name,
+                    "keterangan" => $data['keterangan'] ?? '',
+                    "detail_keterangan" => $data['detail_keterangan'][$i] ?? '',
+                    "statusformat" => $statusformat,
+                ];
+
+                (new PenerimaanStokDetailFifo())->processStore($penerimaanStokHeader, $datadetailfifo);                
+            }
+
+ 
+            
             if ($data['penerimaanstok_id'] == $spb->text) {
                 $totalsat = ($data['detail_qty'][$i] * $data['detail_harga'][$i]);
                 $totalharga += $totalsat;
