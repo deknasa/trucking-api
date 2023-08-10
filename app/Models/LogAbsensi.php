@@ -761,7 +761,11 @@ class LogAbsensi extends MyModel
                 case "AND":
                     foreach ($this->params['filters']['rules'] as $index => $filters) {
                         // $query = $query->where($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
-                        $query = $query->whereRaw("a.[" .  $filters['field'] . "] LIKE '%" . escapeLike($filters['data']) . "%' escape '|'");
+                        if ($filters['field'] == 'tanggal') {
+                            $query = $query->whereRaw("format(a." . $filters['field'] . ", 'dd-MM-yyyy') LIKE '%$filters[data]%'");
+                        } else{
+                            $query = $query->whereRaw("a.[" .  $filters['field'] . "] LIKE '%" . escapeLike($filters['data']) . "%' escape '|'");
+                        }
                     }
 
                     break;
@@ -769,7 +773,11 @@ class LogAbsensi extends MyModel
                     $query = $query->where(function ($query) {
                         foreach ($this->params['filters']['rules'] as $index => $filters) {
                             // $query = $query->orWhere($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
-                            $query = $query->OrwhereRaw("a.[" .  $filters['field'] . "] LIKE '%" . escapeLike($filters['data']) . "%' escape '|'");
+                            if ($filters['field'] == 'tanggal') {
+                                $query = $query->orWhereRaw("format(a." . $filters['field'] . ", 'dd-MM-yyyy') LIKE '%$filters[data]%'");
+                            } else {
+                                $query = $query->OrwhereRaw("a.[" .  $filters['field'] . "] LIKE '%" . escapeLike($filters['data']) . "%' escape '|'");
+                            }
                         }
                     });
                     break;
