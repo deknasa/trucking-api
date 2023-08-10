@@ -8,7 +8,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Database\Schema\Blueprint;
 
-class StatusGandenganTruck extends Model
+class StatusGandenganTruck extends MyModel
 {
     use HasFactory;
 
@@ -376,6 +376,8 @@ class StatusGandenganTruck extends Model
 
             ->orderBY('a.gandengan_id', 'asc');
 
+        
+
         DB::table($tempdatarekap)->insertUsing([
             'gandengan_id',
             'dari_id',
@@ -391,13 +393,15 @@ class StatusGandenganTruck extends Model
             's_index'
         ], $querydatarekap);
 
-        DB::table($tempdatarekap, 'a')
-            ->whereRaw("a.s_index<>1")
+ 
+
+        DB::table($tempdatarekap)
+            ->whereRaw("s_index<>1")
             ->delete();
-
-
+      
+            // dd('test');
         $query = DB::table('gandengan')->from(
-            DB::raw("gandengan a with (readuncommitetd)")
+            DB::raw("gandengan a with (readuncommitted)")
         )
             ->select(
                 'a.id',
@@ -416,7 +420,7 @@ class StatusGandenganTruck extends Model
             ->leftjoin(DB::raw("statuscontainer as f with (readuncommitted)"), 'c.statuscontainer_id', 'f.id')
             ->where('a.statusaktif', '=', $statusaktif)
             ->orderBY('a.id', 'asc');
-
+            // dd('test');
             return $query;
     }
 }
