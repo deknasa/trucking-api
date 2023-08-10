@@ -616,7 +616,10 @@ class KartuStok extends MyModel
             $table->double('qtysaldo', 15, 2)->nullable();
             $table->double('nilaisaldo', 15, 2)->nullable();
             $table->string('modifiedby', 100)->nullable();
-            $table->integer('urutfifo')->length(11)->nullable();;
+            $table->integer('urutfifo')->length(11)->nullable();
+            $table->dateTime('created_at')->nullable();
+            
+
 
             $table->index('kodebarang', 'templaporan_kodebarang_index');
             $table->index('kategori_id', 'templaporan_kategori_id_index');
@@ -642,7 +645,9 @@ class KartuStok extends MyModel
             $table->double('qtysaldo', 15, 2)->nullable();
             $table->double('nilaisaldo', 15, 2)->nullable();
             $table->string('modifiedby', 100)->nullable();
-            $table->integer('urutfifo')->length(11)->nullable();;
+            $table->integer('urutfifo')->length(11)->nullable();
+            $table->dateTime('created_at')->nullable();
+
 
             $table->index('statusmasuk', 'temprekap_statusmasuk_index');
             $table->index('kodebarang', 'temprekap_kodebarang_index');
@@ -969,6 +974,7 @@ class KartuStok extends MyModel
                     DB::raw("0 as nilaisaldo"),
                     'a.modifiedby',
                     DB::raw("isnull(d.urutfifo,0) as urutfifo"),
+                    'a.created_at',
                 )
                 ->join(DB::raw("penerimaanstokdetail as b with (readuncommitted)"), 'a.id', 'b.penerimaanstokheader_id')
                 ->join(DB::raw("stok as c with (readuncommitted)"), 'b.stok_id', 'c.id')
@@ -1000,6 +1006,7 @@ class KartuStok extends MyModel
                     DB::raw("0 as nilaisaldo"),
                     'a.modifiedby',
                     DB::raw("isnull(d.urutfifo,0) as urutfifo"),
+                    'a.created_at',
                 )
                 ->join(DB::raw("penerimaanstokdetail as b with (readuncommitted)"), 'a.id', 'b.penerimaanstokheader_id')
                 ->join(DB::raw("stok as c with (readuncommitted)"), 'b.stok_id', 'c.id')
@@ -1032,6 +1039,7 @@ class KartuStok extends MyModel
                     DB::raw("0 as nilaisaldo"),
                     'a.modifiedby',
                     DB::raw("isnull(d.urutfifo,0) as urutfifo"),
+                    'a.created_at',
                 )
                 ->join(DB::raw("penerimaanstokdetail as b with (readuncommitted)"), 'a.id', 'b.penerimaanstokheader_id')
                 ->join(DB::raw("stok as c with (readuncommitted)"), 'b.stok_id', 'c.id')
@@ -1064,6 +1072,7 @@ class KartuStok extends MyModel
                     DB::raw("0 as nilaisaldo"),
                     'a.modifiedby',
                     DB::raw("isnull(d.urutfifo,0) as urutfifo"),
+                    'a.created_at',
                 )
                 ->join(DB::raw("penerimaanstokdetail as b with (readuncommitted)"), 'a.id', 'b.penerimaanstokheader_id')
                 ->join(DB::raw("stok as c with (readuncommitted)"), 'b.stok_id', 'c.id')
@@ -1094,6 +1103,7 @@ class KartuStok extends MyModel
             'nilaisaldo',
             'modifiedby',
             'urutfifo',
+            'created_at',
         ], $queryrekap);
 
 
@@ -1117,6 +1127,7 @@ class KartuStok extends MyModel
                     DB::raw("0 as nilaisaldo"),
                     'a.modifiedby',
                     DB::raw("isnull(d.urutfifo,0) as urutfifo"),
+                    'a.created_at',
 
                 )
                 ->join(DB::raw("pengeluaranstokdetailfifo as b with (readuncommitted)"), 'a.id', 'b.pengeluaranstokheader_id')
@@ -1147,6 +1158,7 @@ class KartuStok extends MyModel
                 'nilaisaldo',
                 'modifiedby',
                 'urutfifo',
+                'created_at',
             ], $queryrekap);
         } else  if ($gandengan_id != 0) {
             $queryrekap = PengeluaranStokHeader::from(
@@ -1168,6 +1180,7 @@ class KartuStok extends MyModel
                     DB::raw("0 as nilaisaldo"),
                     'a.modifiedby',
                     DB::raw("isnull(d.urutfifo,0) as urutfifo"),
+                    'a.created_at',
 
                 )
                 ->join(DB::raw("pengeluaranstokdetailfifo as b with (readuncommitted)"), 'a.id', 'b.pengeluaranstokheader_id')
@@ -1199,6 +1212,7 @@ class KartuStok extends MyModel
                 'nilaisaldo',
                 'modifiedby',
                 'urutfifo',
+                'created_at',
             ], $queryrekap);
         }
 
@@ -1341,6 +1355,9 @@ class KartuStok extends MyModel
                 DB::raw("0 as nilaisaldo"),
                 DB::raw("'' as modifiedby"),
                 DB::raw("0 as urutfifo"),
+                DB::raw("'1900/1/1' as created_at"),
+                
+                
             )
             ->join(DB::raw("stok as c with (readuncommitted)"), 'a.kodebarang', 'c.id');
         //saldo awal
@@ -1362,6 +1379,7 @@ class KartuStok extends MyModel
             'nilaisaldo',
             'modifiedby',
             'urutfifo',
+            'created_at',
         ], $queryrekap);
 
         // dd('test');
@@ -1384,6 +1402,7 @@ class KartuStok extends MyModel
                 DB::raw("0 as nilaisaldo"),
                 'a.modifiedby',
                 DB::raw("isnull(d.urutfifo,0) as urutfifo"),
+                'a.created_at',
             )
             ->join(DB::raw("pengeluaranstokdetailfifo as b with (readuncommitted)"), 'a.id', 'b.pengeluaranstokheader_id')
             ->join(DB::raw("stok as c with (readuncommitted)"), 'b.stok_id', 'c.id')
@@ -1412,6 +1431,7 @@ class KartuStok extends MyModel
             'nilaisaldo',
             'modifiedby',
             'urutfifo',
+            'created_at',
         ], $queryrekap);
 
         if ($gudang_id != 0) {
@@ -1433,6 +1453,7 @@ class KartuStok extends MyModel
                     DB::raw("0 as nilaisaldo"),
                     'a.modifiedby',
                     DB::raw("isnull(d.urutfifo,0) as urutfifo"),
+                    'a.created_at',
                 )
                 ->join(DB::raw("penerimaanstokdetail as b with (readuncommitted)"), 'a.id', 'b.penerimaanstokheader_id')
                 ->join(DB::raw("stok as c with (readuncommitted)"), 'b.stok_id', 'c.id')
@@ -1463,6 +1484,7 @@ class KartuStok extends MyModel
                     DB::raw("0 as nilaisaldo"),
                     'a.modifiedby',
                     DB::raw("isnull(d.urutfifo,0) as urutfifo"),
+                    'a.created_at',
                 )
                 ->join(DB::raw("penerimaanstokdetail as b with (readuncommitted)"), 'a.id', 'b.penerimaanstokheader_id')
                 ->join(DB::raw("stok as c with (readuncommitted)"), 'b.stok_id', 'c.id')
@@ -1493,6 +1515,7 @@ class KartuStok extends MyModel
                     DB::raw("0 as nilaisaldo"),
                     'a.modifiedby',
                     DB::raw("isnull(d.urutfifo,0) as urutfifo"),
+                    'a.created_at',
                 )
                 ->join(DB::raw("penerimaanstokdetail as b with (readuncommitted)"), 'a.id', 'b.penerimaanstokheader_id')
                 ->join(DB::raw("stok as c with (readuncommitted)"), 'b.stok_id', 'c.id')
@@ -1523,6 +1546,7 @@ class KartuStok extends MyModel
                     DB::raw("0 as nilaisaldo"),
                     'a.modifiedby',
                     DB::raw("isnull(d.urutfifo,0) as urutfifo"),
+                    'a.created_at',
 
                 )
                 ->join(DB::raw("penerimaanstokdetail as b with (readuncommitted)"), 'a.id', 'b.penerimaanstokheader_id')
@@ -1552,6 +1576,7 @@ class KartuStok extends MyModel
             'nilaisaldo',
             'modifiedby',
             'urutfifo',
+            'created_at',
         ], $queryrekap);
         //akhir if gudang sebelumnya 
         // }
@@ -1573,11 +1598,12 @@ class KartuStok extends MyModel
                 'A.nilaisaldo',
                 'A.modifiedby',
                 'A.urutfifo',
+                'A.created_at',
 
             )
             ->orderBy('A.statusmasuk', 'Asc')
             ->orderBy('A.id', 'Asc');
-
+       
         DB::table($templaporan)->insertUsing([
             'kodebarang',
             'namabarang',
@@ -1592,6 +1618,7 @@ class KartuStok extends MyModel
             'nilaisaldo',
             'modifiedby',
             'urutfifo',
+            'created_at',
         ], $querylaporan);
 
         $temprekapall = '##temprkpall' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
@@ -1611,6 +1638,7 @@ class KartuStok extends MyModel
             $table->double('nilaisaldo', 15, 2)->nullable();
             $table->string('modifiedby', 100)->nullable();
             $table->integer('urutfifo')->nullable();
+            $table->dateTime('created_at')->nullable();
 
             $table->index('kodebarang', 'temprekapall_kodebarang_index');
             $table->index('namabarang', 'temprekapall_namabarang_index');
@@ -1619,7 +1647,7 @@ class KartuStok extends MyModel
         });
 
 
-
+     
         $datalist = DB::table($templaporan)->from(
             DB::raw($templaporan . " as a")
         )
@@ -1634,18 +1662,20 @@ class KartuStok extends MyModel
                 'a.nilaimasuk',
                 'a.qtykeluar',
                 'a.nilaikeluar',
-                DB::raw("sum ((isnull(a.qtysaldo,0)+a.qtymasuk)-a.qtykeluar) over (order by a.urutfifo,a.tglbukti,a.id ASC) as qtysaldo"),
-                DB::raw("sum ((isnull(a.nilaisaldo,0)+a.nilaimasuk)-a.nilaikeluar) over (order by a.urutfifo,a.tglbukti,a.id ASC) as nilaisaldo"),
+                DB::raw("sum ((isnull(a.qtysaldo,0)+a.qtymasuk)-a.qtykeluar) over (order by a.created_at,a.urutfifo,a.tglbukti,a.id ASC) as qtysaldo"),
+                DB::raw("sum ((isnull(a.nilaisaldo,0)+a.nilaimasuk)-a.nilaikeluar) over (order by a.created_at,a.urutfifo,a.tglbukti,a.id ASC) as nilaisaldo"),
                 'a.modifiedby',
                 'a.urutfifo',
+                'a.created_at',
             )
             ->leftjoin('kategori as B', 'a.kategori_id', 'B.id')
+            ->orderBy('a.created_at', 'asc')
             ->orderBy('a.urutfifo', 'asc')
             ->orderBy('a.tglbukti', 'asc')
             ->orderBy('a.id', 'asc');
         //  dd($datalist->get());
         // dd($datalist->get());
-
+ 
         DB::table($temprekapall)->insertUsing([
             'lokasi',
             'kodebarang',
@@ -1660,9 +1690,10 @@ class KartuStok extends MyModel
             'qtysaldo',
             'nilaisaldo',
             'modifiedby',
-            'urutfifo'
+            'urutfifo',
+            'created_at',
         ],  $datalist);
-
+       
         $datalist = DB::table($temprekapall)->from(
             DB::raw($temprekapall . " as a")
         )
@@ -1680,11 +1711,11 @@ class KartuStok extends MyModel
                 'a.qtysaldo',
                 'a.nilaisaldo',
                 'a.modifiedby',
+                // 'a.created_at',
             )
             ->orderBy('a.id', 'asc');
 
         //  dd($datalist->get());
-
         return $datalist;
     }
 
