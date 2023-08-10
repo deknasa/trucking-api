@@ -51,6 +51,8 @@ class ProsesGajiSupirDetail extends MyModel
                 'gajisupirheader.deposito',
                 'gajisupirheader.komisisupir',
                 'gajisupirheader.tolsupir',
+                DB::raw("(case when gajisupirheader.uangmakanberjenjang IS NULL then 0 else gajisupirheader.uangmakanberjenjang end) as uangmakanberjenjang"),
+                
             )
                 ->leftJoin(DB::raw("supir with (readuncommitted)"), $this->table . '.supir_id', 'supir.id')
                 ->leftJoin(DB::raw("trado with (readuncommitted)"), $this->table . '.trado_id', 'trado.id')
@@ -69,6 +71,7 @@ class ProsesGajiSupirDetail extends MyModel
             $this->totalDeposito = $query->sum('gajisupirheader.deposito');
             $this->totalKomisi = $query->sum('gajisupirheader.komisisupir');
             $this->totalTol = $query->sum('gajisupirheader.tolsupir');
+            $this->totalUangMakanBerjenjang = $query->sum('gajisupirheader.uangmakanberjenjang');
             $this->totalRows = $query->count();
             $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;
 
