@@ -201,7 +201,7 @@ class ProsesGajiSupirHeader extends MyModel
                 (SELECT SUM(gajisupirheader.uangmakanharian)
                 FROM gajisupirheader 
                 WHERE gajisupirheader.nobukti in (select gajisupir_nobukti from prosesgajisupirdetail where prosesgajisupirheader.id = prosesgajisupirdetail.prosesgajisupir_id)) AS uangmakanharian,  
-                (SELECT SUM(gajisupirheader.uangmakanberjenjang)
+                (SELECT SUM(isnull(gajisupirheader.uangmakanberjenjang,0))
                 FROM gajisupirheader 
                 WHERE gajisupirheader.nobukti in (select gajisupir_nobukti from prosesgajisupirdetail where prosesgajisupirheader.id = prosesgajisupirdetail.prosesgajisupir_id)) AS uangmakanberjenjang,
                 (SELECT SUM(gajisupirheader.potonganpinjaman)

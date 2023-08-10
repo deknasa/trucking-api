@@ -254,6 +254,7 @@ use App\Http\Controllers\Api\ReminderSpkDetailController;
 use App\Http\Controllers\Api\ReminderStokController;
 use App\Http\Controllers\Api\SpkHarianController;
 use App\Http\Controllers\Api\SpkHarianDetailController;
+use App\Http\Controllers\Api\StatusGandenganTruckController;
 use App\Http\Controllers\Api\StatusOliTradoController;
 use App\Http\Controllers\Api\StokPusatController;
 use App\Http\Controllers\Api\SuratPengantarBiayaTambahanController;
@@ -1565,6 +1566,7 @@ route::middleware(['auth:api', 'authorized'])->group(function () {
     Route::resource('reminderspkdetail', ReminderSpkDetailController::class)->whereNumber('reminderspkdetail');
     Route::resource('spkharian', SpkHarianController::class)->whereNumber('spkharian');
     Route::resource('spkhariandetail', SpkHarianDetailController::class)->whereNumber('spkhariandetail');
+    Route::resource('statusgandengantruck', StatusGandenganTruckController::class)->whereNumber('statusgandengantruck');
 });
 Route::get('suratpengantarapprovalinputtrip/updateapproval', [SuratPengantarApprovalInputTripController::class, 'updateApproval']);
 
