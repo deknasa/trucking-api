@@ -5,6 +5,7 @@ namespace App\Http\Requests;
 use App\Http\Controllers\Api\ErrorController;
 use App\Models\Parameter;
 use App\Rules\BeforeTglSampaiGajiSupir;
+use App\Rules\CekPendapatanKeRic;
 use Illuminate\Foundation\Http\FormRequest;
 use App\Rules\DateTutupBuku;
 use App\Rules\ExistSupir;
@@ -51,6 +52,7 @@ class StoreGajiSupirHeaderRequest extends FormRequest
                 'required', 'date_format:d-m-Y',
                 'before:' . $tglbatasakhir,
                 'after_or_equal:' . $tglbatasawal,
+                new CekPendapatanKeRic()
             ],
             'tglsampai' => [
                 'required', 'date_format:d-m-Y',
