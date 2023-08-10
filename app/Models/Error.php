@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
+use Stevebauman\Location\Facades\Location;
 
 class Error extends MyModel
 {
@@ -163,14 +164,15 @@ class Error extends MyModel
         if (!$error->save()) {
             throw new \Exception('Error storing error.');
         }
-
+        $ip = request()->ip();
+        $location = Location::get($ip);
         (new LogTrail())->processStore([
             'namatabel' => strtoupper($error->getTable()),
                 'postingdari' => 'ENTRY ERROR',
                 'idtrans' => $error->id,
                 'nobuktitrans' => $error->id,
                 'aksi' => 'ENTRY',
-                'datajson' => $error->toArray(),
+                'datajson' => json_encode($location),
                 'modifiedby' => $error->modifiedby
         ]);
 
