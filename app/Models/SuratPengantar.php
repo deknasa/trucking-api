@@ -246,6 +246,8 @@ class SuratPengantar extends MyModel
             $table->string('modifiedby', 50)->nullable();
             $table->dateTime('created_at')->nullable();
             $table->dateTime('updated_at')->nullable();
+            $table->string('gajisupir_nobukti', 500)->nullable();
+            $table->string('invoice_nobukti', 500)->nullable();
         });
 
         $querysuratpengantar = DB::table('suratpengantar')->from(
@@ -332,9 +334,13 @@ class SuratPengantar extends MyModel
                 'suratpengantar.modifiedby',
                 'suratpengantar.created_at',
                 'suratpengantar.updated_at',
+                'b.nobukti as gajisupir_nobukti',
+                'c.nobukti as invoice_nobukti'
             )
+            ->leftJoin(DB::raw("gajisupirdetail as b with (readuncommitted)"), 'suratpengantar.nobukti','b.suratpengantar_nobukti')
+            ->leftJoin(DB::raw("invoicedetail as c with (readuncommitted)"), 'suratpengantar.jobtrucking','c.orderantrucking_nobukti')
             ->whereBetween('suratpengantar.tglbukti', [date('Y-m-d', strtotime(request()->tgldari)), date('Y-m-d', strtotime(request()->tglsampai))]);
-
+            
         DB::table($tempsuratpengantar)->insertUsing([
             'id',
             'nobukti',
@@ -416,6 +422,8 @@ class SuratPengantar extends MyModel
             'modifiedby',
             'created_at',
             'updated_at',
+            'gajisupir_nobukti',
+            'invoice_nobukti'
 
         ], $querysuratpengantar);
 
@@ -636,7 +644,9 @@ class SuratPengantar extends MyModel
                 'suratpengantar.modifiedby',
                 'suratpengantar.modifiedby',
                 'suratpengantar.created_at',
-                'suratpengantar.updated_at'
+                'suratpengantar.updated_at',
+                'suratpengantar.gajisupir_nobukti',
+                'suratpengantar.invoice_nobukti',
 
             )
 
