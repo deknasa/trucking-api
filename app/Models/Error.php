@@ -164,15 +164,15 @@ class Error extends MyModel
         if (!$error->save()) {
             throw new \Exception('Error storing error.');
         }
-        $ip = request()->ip();
-        $location = Location::get($ip);
+        // $ip = request()->ip();
+        // $location = Location::get($ip);
         (new LogTrail())->processStore([
             'namatabel' => strtoupper($error->getTable()),
                 'postingdari' => 'ENTRY ERROR',
                 'idtrans' => $error->id,
                 'nobuktitrans' => $error->id,
                 'aksi' => 'ENTRY',
-                'datajson' => json_encode($location),
+                'datajson' => $error->toArray(),
                 'modifiedby' => $error->modifiedby
         ]);
 
