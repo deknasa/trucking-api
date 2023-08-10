@@ -29,6 +29,8 @@ class PenerimaanStokDetail extends MyModel
         $this->setRequestParameters();
 
         $query = DB::table($this->table)->from(DB::raw("$this->table with (readuncommitted)"));
+        $spbp = DB::table('penerimaanstok')->where('kodepenerimaan', 'SPBP')->first();
+        $spbs = Parameter::where('grp', 'REUSE STOK')->where('subgrp', 'REUSE STOK')->first();
 
         if (isset(request()->id)) {
             $query->where("$this->table.id", request()->id);
@@ -69,6 +71,7 @@ class PenerimaanStokDetail extends MyModel
                 "$this->table.qty",
                 "$this->table.harga",
                 "$this->table.persentasediscount",
+                "$this->table.penerimaanstok_nobukti",
                 "$this->table.nominaldiscount",
                 "$this->table.total",
                 "$this->table.keterangan",
@@ -81,6 +84,24 @@ class PenerimaanStokDetail extends MyModel
             )
             ->leftJoin("penerimaanstokheader", "$this->table.penerimaanstokheader_id", "penerimaanstokheader.id")
             ->leftJoin("stok", "$this->table.stok_id", "stok.id");
+
+            if (request()->penerimaanstok_id==$spbp->id) {
+                if (request()->stok_id) {
+                    $query->where("penerimaanstokheader.penerimaanstok_id", $spbs->text)
+                    ->where("$this->table.stok_id", request()->stok_id)
+                    ->whereNotIn("$this->table.stok_id", function($query) {
+                        $query->select(
+                            DB::raw('DISTINCT penerimaanstokdetail.stok_id'),
+                        )
+                        ->from('penerimaanstokdetail')
+                        ->whereNotNull('penerimaanstokdetail.penerimaanstok_nobukti')
+                        ->where('penerimaanstokdetail.penerimaanstok_nobukti','!=','')
+                        ->where('penerimaanstokdetail.penerimaanstok_nobukti','like','SPBS%');
+                    });
+                }
+            }
+
+
             $this->totalNominal = $query->sum('total');
             $this->filter($query);
             $this->totalRows = $query->count();
@@ -103,6 +124,7 @@ class PenerimaanStokDetail extends MyModel
             "PenerimaanStokDetail.qty",
             "PenerimaanStokDetail.harga",
             "PenerimaanStokDetail.persentasediscount",
+            "PenerimaanStokDetail.penerimaanstok_nobukti",
             "PenerimaanStokDetail.nominaldiscount",
             "PenerimaanStokDetail.total",
             "PenerimaanStokDetail.keterangan",
