@@ -33,6 +33,7 @@ class StorePenerimaanStokDetailRequest extends FormRequest
         $kor = DB::table('parameter')->where('grp', 'KOR STOK')->where('subgrp', 'KOR STOK')->first();
         $pg = DB::table('parameter')->where('grp', 'PG STOK')->where('subgrp', 'PG STOK')->first();
         $korv = DB::table('penerimaanstok')->where('kodepenerimaan', 'KORV')->first();
+        $spbp = DB::table('penerimaanstok')->where('kodepenerimaan', 'SPBP')->first();
         $reuse = DB::table('parameter')->where('grp', 'REUSE STOK')->where('subgrp', 'REUSE STOK')->first();
         $requiredQty = Rule::requiredIf((request()->penerimaanstok_id == $spb->text));
         
@@ -67,9 +68,9 @@ class StorePenerimaanStokDetailRequest extends FormRequest
             ],
             'detail_qty.*' => [
                 'numeric',
-                function ($attribute, $value, $fail) use ($korv){
+                function ($attribute, $value, $fail) use ($korv,$spbp){
                     // dd(($value <= 0),$value);
-                    if(($korv->id != request()->penerimaanstok_id) && ($value <= 0)){
+                    if((($korv->id != request()->penerimaanstok_id) && ($spbp->id != request()->penerimaanstok_id)) && ($value <= 0)){
                         $fail(app(ErrorController::class)->geterror('GT-ANGKA-0')->keterangan);
                     }
                 },

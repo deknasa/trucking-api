@@ -34,6 +34,7 @@ class PenerimaanStokHeader extends MyModel
         $spb = Parameter::where('grp', 'SPB STOK')->where('subgrp', 'SPB STOK')->first();
         $po = Parameter::where('grp', 'PO STOK')->where('subgrp', 'PO STOK')->first();
         $spbs = Parameter::where('grp', 'REUSE STOK')->where('subgrp', 'REUSE STOK')->first();
+        $spbp = DB::table('penerimaanstok')->where('kodepenerimaan', 'SPBP')->first();
         $do = Parameter::where('grp', 'DO STOK')->where('subgrp', 'DO STOK')->first();
         $pg = Parameter::where('grp', 'PG STOK')->where('subgrp', 'PG STOK')->first();
         $rtb = Parameter::where('grp', 'RETUR STOK')->where('subgrp', 'RETUR STOK')->first();
@@ -82,6 +83,15 @@ class PenerimaanStokHeader extends MyModel
                       ->where('penerimaanstokheader.penerimaanstok_nobukti','!=','');
             });
             // return $query->get();
+        }
+        if (request()->penerimaanstok_id==$spbp->id) {
+            $query->where('penerimaanstokheader.penerimaanstok_id', '=', $spb->text)
+            ->whereNotIn('penerimaanstokheader.nobukti', function($query) {
+                $query->select(DB::raw('DISTINCT penerimaanstokheader.penerimaanstok_nobukti'))
+                      ->from('penerimaanstokheader')
+                      ->whereNotNull('penerimaanstokheader.penerimaanstok_nobukti')
+                      ->where('penerimaanstokheader.penerimaanstok_nobukti','!=','');
+            });
         }
 
         if (request()->supplier_id) {
@@ -755,7 +765,7 @@ class PenerimaanStokHeader extends MyModel
             if ($data['penerimaanstok_id'] === $spbs->text) {
                 $statuspindahgudang = Parameter::where('grp', 'STATUS PINDAH GUDANG')->where('text', 'GUDANG KE GUDANG')->first();
                 $gudangdari_id = Gudang::where('gudang','GUDANG PIHAK III')->first()->id;
-                $gudangke_id = Gudang::where('gudang','GUDANG SEMENTARA')->first()->id;
+                $gudangke_id = Gudang::where('gudang','GUDANG KANTOR')->first()->id;
             }
             
         }else {
