@@ -299,7 +299,7 @@ class ExportLaporanMingguanSupir extends Model
         ], $queryTempInvoice);
 
         $data =  DB::table($tempData)->from(
-            DB::raw($tempData." as a")
+            DB::raw($tempData . " as a")
         )
             ->select(
                 'a.nobukti',
@@ -316,14 +316,40 @@ class ExportLaporanMingguanSupir extends Model
                 'a.spfullempty',
                 'a.jobtrucking',
                 DB::raw("isnull(B.omset,0) as omset"),
+                DB::raw("0 as omsetextrabbm"),
                 DB::raw("isnull(c.invoice,'') as invoice"),
-                DB::raw("isnull(A.gajisupir,0) as gajisupir"),
+                DB::raw("147768 as borongan"),
                 DB::raw("isnull(A.nobuktiebs,'') as nobuktiebs"),
                 DB::raw("isnull(A.pengeluarannobuktiebs,'') as pengeluarannobuktiebs"),
+                DB::raw("0 as voucher"),
+                DB::raw("'' as novoucher"),
+                DB::raw("isnull(A.gajisupir,0) as gajisupir"),
+                DB::raw("10000 as komisi"),
+                DB::raw("0 as gajikenek"),
+                DB::raw("0 as gajimingguan"),
+                DB::raw("0 as gajilain"),
+                DB::raw("'' as ket"),
+                DB::raw("'' as nobuktikbtkomisi"),
+                DB::raw("0 as uanglain"),
+                DB::raw("0 as uangbon"),
+                DB::raw("'' as nobuktikbtebs2"),
+                DB::raw("30900 as ritasi"),
+                DB::raw("0 as extrabbm"),
+                DB::raw("'Naik/Turun Kepala Dari KIM (KANDANG) Ke TANJUNG MULIA' as ketritasi"),
+                DB::raw("200000 as uangjalan"),
+                DB::raw("154000 as uangbbm"),
+                DB::raw("100000 as uangmakan"),
+                DB::raw("454000 as totalbiaya"),
+                DB::raw("-10000 as sisa"),
+                DB::raw("0 as bongkarmuat"),
+                DB::raw("'' as panjar"),
+                DB::raw("'' as mandor"),
+                DB::raw("'' as supirex"),
+                DB::raw("2.5 as liter"),
             )
             ->leftjoin(DB::raw($tempInvoice . " as b "), 'a.nobukti', 'b.notrip')
             ->leftjoin(DB::raw($tempInvoice . " as c "), 'a.jobtrucking', 'c.jobtrucking')->get();
 
-       return $data;
+        return $data;
     }
 }
