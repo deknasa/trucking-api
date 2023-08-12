@@ -860,6 +860,7 @@ route::middleware(['auth:api', 'authorized'])->group(function () {
     Route::post('penerimaanstokheader/{id}/cekvalidasi', [PenerimaanStokHeaderController::class, 'cekValidasi'])->name('penerimaanstokheader.cekValidasi')->whereNumber('id');
     Route::post('penerimaanstokheader/{id}/approvaledit', [PenerimaanStokHeaderController::class, 'approvalEdit']);
     Route::get('penerimaanstokheader/{id}/pengeluaranstoknobukti', [PenerimaanStokHeaderController::class, 'getPengeluaranStok'])->name('penerimaanstokheader.pengeluaranstoknobukti')->whereNumber('id');
+    Route::get('penerimaanstokheader/{id}/detailspbp', [PenerimaanStokHeaderController::class, 'getDetailSPBP']);
     Route::apiResource('penerimaanstokheader', PenerimaanStokHeaderController::class)->whereNumber('penerimaanstokheader');
     Route::get('penerimaanstokdetail/hutang', [PenerimaanStokDetailController::class, 'hutang']);
     Route::apiResource('penerimaanstokdetail', PenerimaanStokDetailController::class)->whereNumber('penerimaanstokdetail');

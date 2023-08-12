@@ -489,6 +489,7 @@ class PenerimaanStokHeader extends MyModel
         $pst = Parameter::where('grp', 'PST STOK')->where('subgrp', 'PST STOK')->first();
         $pspk = Parameter::where('grp', 'PSPK STOK')->where('subgrp', 'PSPK STOK')->first();
         $korv = DB::table('penerimaanstok')->where('kodepenerimaan', 'KORV')->first();
+        $spbp = DB::table('penerimaanstok')->where('kodepenerimaan', 'SPBP')->first();
 
         $datahitungstok = PenerimaanStok::select('statushitungstok as statushitungstok_id')->where('format', '=', $statusformat)->first();
         $statushitungstok = Parameter::where('grp', 'STATUS HITUNG STOK')->where('text', 'HITUNG STOK')->first();
@@ -591,6 +592,17 @@ class PenerimaanStokHeader extends MyModel
                 "detail_keterangan" => $data['detail_keterangan'][$i],
                 "detail_penerimaanstoknobukti" => $data['detail_penerimaanstoknobukti'][$i],
             ]);
+
+            if ($data['penerimaanstok_id'] == $spbp->id) {
+                $penambahanNilai = (new PenerimaanStokPenambahanNilai())->processStore($penerimaanStokHeader, [
+                    "penerimaanstokheader_id" =>$penerimaanStokHeader->id,
+                    "nobukti" => $penerimaanStokHeader->nobukti,
+                    "stok_id" => $data['detail_stok_id'][$i],
+                    "qty" => $data['detail_qty'][$i],
+                    "harga" => $data['detail_harga'][$i],
+                    "penerimaanstok_nobukti" => $penerimaanStokHeader->penerimaanstok_nobukti,
+                ]);
+            }
 
             if (($gudangdari_id==$gudangkantor) && ($gudangke_id==$gudangsementara)) {
 
@@ -731,6 +743,7 @@ class PenerimaanStokHeader extends MyModel
         $pst = Parameter::where('grp', 'PST STOK')->where('subgrp', 'PST STOK')->first();
         $pspk = Parameter::where('grp', 'PSPK STOK')->where('subgrp', 'PSPK STOK')->first();
         $korv = DB::table('penerimaanstok')->where('kodepenerimaan', 'KORV')->first();
+        $spbp = DB::table('penerimaanstok')->where('kodepenerimaan', 'SPBP')->first();
 
         $datahitungstok = PenerimaanStok::select('statushitungstok as statushitungstok_id')->where('format', '=', $statusformat)->first();
         $statushitungstok = Parameter::where('grp', 'STATUS HITUNG STOK')->where('text', 'HITUNG STOK')->first();
@@ -820,6 +833,7 @@ class PenerimaanStokHeader extends MyModel
         }
         /*DELETE EXISTING DETAIL*/
         $penerimaanStokDetail = PenerimaanStokDetail::where('penerimaanstokheader_id', $penerimaanStokHeader->id)->lockForUpdate()->delete();
+        $PenambahanNilai = PenerimaanStokPenambahanNilai::where('penerimaanstokheader_id', $penerimaanStokHeader->id)->lockForUpdate()->delete();
        
         /*STORE DETAIL*/
         $penerimaanStokDetails = [];
@@ -839,6 +853,18 @@ class PenerimaanStokHeader extends MyModel
                 "detail_keterangan" => $data['detail_keterangan'][$i],
                 "detail_penerimaanstoknobukti" => $data['detail_penerimaanstoknobukti'][$i],
             ]);
+
+            if ($data['penerimaanstok_id'] == $spbp->id) {
+                $penambahanNilai = (new PenerimaanStokPenambahanNilai())->processStore($penerimaanStokHeader, [
+                    "penerimaanstokheader_id" =>$penerimaanStokHeader->id,
+                    "nobukti" => $penerimaanStokHeader->nobukti,
+                    "stok_id" => $data['detail_stok_id'][$i],
+                    "qty" => $data['detail_qty'][$i],
+                    "harga" => $data['detail_harga'][$i],
+                    "penerimaanstok_nobukti" => $penerimaanStokHeader->penerimaanstok_nobukti,
+                ]);
+            }
+
             if ($data['penerimaanstok_id'] == $spb->text) {
                 $totalsat = ($data['detail_qty'][$i] * $data['detail_harga'][$i]);
                 $totalharga += $totalsat;
@@ -940,6 +966,8 @@ class PenerimaanStokHeader extends MyModel
         }
         /*DELETE EXISTING DETAIL*/
         $penerimaanStokDetail = PenerimaanStokDetail::where('penerimaanstokheader_id', $penerimaanStokHeader->id)->lockForUpdate()->delete();
+        $PenambahanNilai = PenerimaanStokPenambahanNilai::where('penerimaanstokheader_id', $penerimaanStokHeader->id)->lockForUpdate()->delete();
+
         if (isset($penerimaanStokHeader->hutang_nobukti) && ($penerimaanStokHeader->hutang_nobukti !== "")) {
             // dd(isset($penerimaanStokHeader->hutang_nobukti) && ($penerimaanStokHeader->hutang_nobukti !== ""));
             $hutangHeader = HutangHeader::where('nobukti',$penerimaanStokHeader->hutang_nobukti)->first();

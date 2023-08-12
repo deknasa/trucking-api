@@ -36,7 +36,7 @@ class StorePenerimaanStokDetailRequest extends FormRequest
         $spbp = DB::table('penerimaanstok')->where('kodepenerimaan', 'SPBP')->first();
         $reuse = DB::table('parameter')->where('grp', 'REUSE STOK')->where('subgrp', 'REUSE STOK')->first();
         $requiredQty = Rule::requiredIf((request()->penerimaanstok_id == $spb->text));
-        
+        $requiredNobukti = Rule::requiredIf((request()->penerimaanstok_id == $spbp->id));
         
        
         return [
@@ -66,6 +66,7 @@ class StorePenerimaanStokDetailRequest extends FormRequest
                     }
                 },
             ],
+            'detail_penerimaanstoknobukti.*'=>[$requiredNobukti],
             'detail_qty.*' => [
                 'numeric',
                 function ($attribute, $value, $fail) use ($korv,$spbp){
