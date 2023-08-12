@@ -27,9 +27,9 @@ class UserAclController extends Controller
     public function index(User $user): JsonResponse
     {
         $userAcls = new UserAcl();
-
         return response()->json([
-            'data' => $userAcls->get($user->acls()),
+            // 'data' => $userAcls->get($user->acls()),
+            'data' => $userAcls->get($user->id),
             'attributes' => [
                 'totalRows' => $userAcls->totalRows,
                 'totalPages' => $userAcls->totalPages
