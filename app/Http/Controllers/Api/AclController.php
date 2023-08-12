@@ -50,9 +50,9 @@ class AclController extends Controller
     public function RoleAcl(Role $role): JsonResponse
     {
         $roleAcl = new Acl();
-
         return response()->json([
-            'data' => $roleAcl->getAclRole($role->acls()),
+            // 'data' => $roleAcl->getAclRole($role->acls()),
+            'data' => $roleAcl->getAclRole($role->id),
             'attributes' => [
                 'totalRows' => $roleAcl->totalRows,
                 'totalPages' => $roleAcl->totalPages
