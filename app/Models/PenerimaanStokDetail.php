@@ -87,16 +87,19 @@ class PenerimaanStokDetail extends MyModel
 
             if (request()->penerimaanstok_id==$spbp->id) {
                 if (request()->stok_id) {
+                    $nobukti = request()->nobukti;
                     $query->where("penerimaanstokheader.penerimaanstok_id", $spbs->text)
                     ->where("$this->table.stok_id", request()->stok_id)
-                    ->whereNotIn("$this->table.stok_id", function($query) {
+                    ->whereNotIn("$this->table.stok_id", function($query) use($nobukti) {
                         $query->select(
                             DB::raw('DISTINCT penerimaanstokdetail.stok_id'),
                         )
                         ->from('penerimaanstokdetail')
                         ->whereNotNull('penerimaanstokdetail.penerimaanstok_nobukti')
                         ->where('penerimaanstokdetail.penerimaanstok_nobukti','!=','')
+                        ->where('penerimaanstokdetail.penerimaanstok_nobukti','!=',$nobukti)
                         ->where('penerimaanstokdetail.penerimaanstok_nobukti','like','SPBS%');
+                        // dd($query->get());
                     });
                 }
             }
@@ -211,8 +214,14 @@ class PenerimaanStokDetail extends MyModel
         $pst = Parameter::where('grp', 'PST STOK')->where('subgrp', 'PST STOK')->first();
         $pspk = Parameter::where('grp', 'PSPK STOK')->where('subgrp', 'PSPK STOK')->first();
         $korv = DB::table('penerimaanstok')->where('kodepenerimaan', 'KORV')->first();
+        $spbp = DB::table('penerimaanstok')->where('kodepenerimaan', 'SPBP')->first();
 
-        // dd($datahitungstok->statushitungstok_id);
+        if ($penerimaanStokHeader->penerimaanstok_id == $spbp->id) {
+            $penerimaanStokDetailNobukti = PenerimaanStokDetail::where('nobukti',$data['detail_penerimaanstoknobukti'])->where('stok_id',$data['stok_id'])->first();
+            if (!$penerimaanStokDetailNobukti) {
+                throw ValidationException::withMessages(["detail_penerimaanstoknobukti"=>"penerimaan stok No Bukti tidak valid"]);                
+            }
+        }
         if ($datahitungstok->statushitungstok_id == $statushitungstok->id) {
             if (($penerimaanStokHeader->penerimaanstok_id == $spb->text)||($penerimaanStokHeader->penerimaanstok_id == $kor->text) ||($penerimaanStokHeader->penerimaanstok_id == $pst->text)||($penerimaanStokHeader->penerimaanstok_id == $pspk->text)) {
                 $persediaan = $this->persediaan($penerimaanStokHeader->gudang_id,$penerimaanStokHeader->trado_id,$penerimaanStokHeader->gandengan_id);

@@ -40,8 +40,11 @@ class UpdatePenerimaanStokHeaderRequest extends FormRequest
         $pst = DB::table('parameter')->where('grp', 'PST STOK')->where('subgrp', 'PST STOK')->first();
         $pspk = DB::table('parameter')->where('grp', 'PSPK STOK')->where('subgrp', 'PSPK STOK')->first();
         $korv = DB::table('penerimaanstok')->where('kodepenerimaan', 'KORV')->first();
-        
+        $spbp = DB::table('penerimaanstok')->where('kodepenerimaan', 'SPBP')->first();
+
         $requiredSupplier = Rule::requiredIf((request()->penerimaanstok_id == $spb->text)||(request()->penerimaanstok_id == $po->text)||(request()->penerimaanstok_id == $do->text)||(request()->penerimaanstok_id == $reuse->text));
+        
+        $requiredPenerimaanStokNobukti = Rule::requiredIf(request()->penerimaanstok_id == $spbp->id);
         // $requiredPenerimaanStokNobukti = Rule::requiredIf((request()->penerimaanstok_id == $spb->text));
         $requiredPengeluaranStokNobukti = Rule::requiredIf((request()->penerimaanstok_id == $pst->text) || (request()->penerimaanstok_id == $pspk->text));
 
