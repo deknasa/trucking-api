@@ -420,6 +420,10 @@ class ParameterSeeder extends Seeder
         parameter::create(['grp' => 'PENGEMBALIAN SPK STOK', 'subgrp' => 'PENGEMBALIAN SPK STOK', 'kelompok' => '', 'text' => '9', 'memo' => '{"MEMO":"PENGEMBALIAN SPK STOK","SINGKATAN":"9","WARNA":"#6C757D"}', 'type' => '0', 'modifiedby' => 'ADMIN', 'default' => '',]);
         parameter::create(['grp' => 'KOREKSI VULKAN STOK', 'subgrp' => 'KOREKSI VULKAN STOK', 'kelompok' => '', 'text' => '10', 'memo' => '{"MEMO":"KOREKSI VULKAN STOK","SINGKATAN":"10","WARNA":"#6C757D"}', 'type' => '0', 'modifiedby' => 'ADMIN', 'default' => '',]);
         parameter::create(['grp' => 'PENAMBAHAN NILAI STOK', 'subgrp' => 'PENAMBAHAN NILAI STOK', 'kelompok' => '', 'text' => '11', 'memo' => '{"MEMO":"PENAMBAHAN NILAI STOK","SINGKATAN":"11","WARNA":"#6C757D"}', 'type' => '0', 'modifiedby' => 'ADMIN', 'default' => '',]);
+        parameter::create(['grp' => 'BATAS PERGANTIAN OLI GARDAN', 'subgrp' => 'BATAS PERGANTIAN OLI GARDAN', 'kelompok' => '', 'text' => '50000', 'memo' => '{"MEMO":"BATAS PERGANTIAN OLI GARDAN","SINGKATAN":"BMLK","WARNA":"#28A745"}', 'type' => '0', 'modifiedby' => 'ADMIN', 'default' => '',]);
+        parameter::create(['grp' => 'BATAS PERGANTIAN OLI MESIN', 'subgrp' => 'BATAS PERGANTIAN OLI MESIN', 'kelompok' => '', 'text' => '10000', 'memo' => '{"MEMO":"BATAS PERGANTIAN OLI MESIN","SINGKATAN":"BMLK","WARNA":"#28A745"}', 'type' => '0', 'modifiedby' => 'ADMIN', 'default' => '',]);
+        parameter::create(['grp' => 'BATAS PERGANTIAN OLI PERSNELING', 'subgrp' => 'BATAS PERGANTIAN OLI PERSNELING', 'kelompok' => '', 'text' => '50000', 'memo' => '{"MEMO":"BATAS PERGANTIAN OLI PERSNELING","SINGKATAN":"BMLK","WARNA":"#28A745"}', 'type' => '0', 'modifiedby' => 'ADMIN', 'default' => '',]);
+        parameter::create(['grp' => 'BATAS PERGANTIAN SARINGAN HAWA', 'subgrp' => 'BATAS PERGANTIAN SARINGAN HAWA', 'kelompok' => '', 'text' => '25000', 'memo' => '{"MEMO":"BATAS PERGANTIAN SARINGAN HAWA","SINGKATAN":"BMLK","WARNA":"#28A745"}', 'type' => '0', 'modifiedby' => 'ADMIN', 'default' => '',]);
 
         
     }
