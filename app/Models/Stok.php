@@ -97,6 +97,8 @@ class Stok extends MyModel
             'stok.id',
             'stok.namastok',
             'parameter.memo as statusaktif',
+            'service.memo as statusservicerutin',
+            'service.text as servicerutin_text',
             'stok.qtymin',
             'stok.qtymax',
             'stok.keterangan',
@@ -120,6 +122,7 @@ class Stok extends MyModel
             ->leftJoin('subkelompok', 'stok.subkelompok_id', 'subkelompok.id')
             ->leftJoin('kategori', 'stok.kategori_id', 'kategori.id')
             ->leftJoin('parameter', 'stok.statusaktif', 'parameter.id')
+            ->leftJoin(DB::raw("parameter as service with (readuncommitted)"), 'stok.statusservicerutin', 'service.id')
             ->leftJoin('merk', 'stok.merk_id', 'merk.id');
 
 
@@ -397,7 +400,9 @@ class Stok extends MyModel
             switch ($this->params['filters']['groupOp']) {
                 case "AND":
                     foreach ($this->params['filters']['rules'] as $index => $filters) {
-                        if ($filters['field'] == 'jenistrado') {
+                        if ($filters['field'] == 'statusservicerutin') {
+                            $query = $query->where('service.text', '=', $filters['data']);
+                        } else if ($filters['field'] == 'jenistrado') {                            
                             $query = $query->whereRaw('jenistrado.keterangan LIKE'. "'%$filters[data]%'");
                         } else if ($filters['field'] == 'kelompok') {
                             $query = $query->whereRaw('kelompok.kodekelompok LIKE'. "'%$filters[data]%'");
@@ -419,7 +424,9 @@ class Stok extends MyModel
                 case "OR":
                     $query->where(function ($query) {
                         foreach ($this->params['filters']['rules'] as $index => $filters) {
-                            if ($filters['field'] == 'jenistrado') {
+                            if ($filters['field'] == 'statusservicerutin') {
+                                $query = $query->orWhere('service.text', '=', $filters['data']);
+                            } else if ($filters['field'] == 'jenistrado') {
                                 $query = $query->orWhereRaw('jenistrado.keterangan LIKE '. "'%$filters[data]%'");
                             } else if ($filters['field'] == 'kelompok') {
                                 $query = $query->orWhereRaw('kelompok.kodekelompok LIKE '. "'%$filters[data]%'");
