@@ -74,13 +74,15 @@ class PengeluaranStokDetail extends MyModel
                 "$this->table.total",
                 "$this->table.keterangan",
                 "$this->table.vulkanisirke",
+                "parameter.text as statusoli",
                 "$this->table.modifiedby",
                 DB::raw("'" . $getJudul->text . "' as judul"),
                 DB::raw("'Tgl Cetak:'+format(getdate(),'dd-MM-yyyy HH:mm:ss')as tglcetak"),
                 DB::raw(" 'User :".auth('api')->user()->name."' as usercetak")
             ) 
             ->leftJoin("pengeluaranstokheader", "$this->table.pengeluaranstokheader_id", "pengeluaranstokheader.id")
-            ->leftJoin("stok", "$this->table.stok_id", "stok.id");
+            ->leftJoin("stok", "$this->table.stok_id", "stok.id")
+            ->leftJoin("parameter", "$this->table.statusoli", "parameter.id");
 
             $this->totalNominal = $query->sum('total');
             $this->filter($query);
@@ -104,14 +106,17 @@ class PengeluaranStokDetail extends MyModel
             'PengeluaranStokDetail.stok_id',
             'PengeluaranStokDetail.qty',
             'PengeluaranStokDetail.harga',
+            'parameter.text as statusservicerutin',
             'PengeluaranStokDetail.persentasediscount',
             'PengeluaranStokDetail.nominaldiscount',
             'PengeluaranStokDetail.total',
             'PengeluaranStokDetail.keterangan',
+            'PengeluaranStokDetail.statusoli',
             'PengeluaranStokDetail.vulkanisirke',
             'PengeluaranStokDetail.modifiedby',
         )
-        ->leftJoin('stok','PengeluaranStokDetail.stok_id','stok.id');
+        ->leftJoin('stok','PengeluaranStokDetail.stok_id','stok.id')
+        ->leftJoin('parameter','PengeluaranStokDetail.statusservicerutin','parameter.id');
 
         $data = $query->where("Pengeluaranstokheader_id",$id)->get();
 
@@ -289,6 +294,7 @@ class PengeluaranStokDetail extends MyModel
         $pengeluaranStokDetail->total = $total;
         $pengeluaranStokDetail->persentasediscount = $data['persentasediscount'];
         $pengeluaranStokDetail->vulkanisirke = $data['vulkanisirke'];
+        $pengeluaranStokDetail->statusoli = $data['statusoli'];
         $pengeluaranStokDetail->keterangan = $data['detail_keterangan'];
         $pengeluaranStokDetail->statusservicerutin = $idstatusservicerutin;
 
