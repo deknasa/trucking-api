@@ -424,7 +424,10 @@ class ParameterSeeder extends Seeder
         parameter::create(['grp' => 'BATAS PERGANTIAN OLI MESIN', 'subgrp' => 'BATAS PERGANTIAN OLI MESIN', 'kelompok' => '', 'text' => '10000', 'memo' => '{"MEMO":"BATAS PERGANTIAN OLI MESIN","SINGKATAN":"BMLK","WARNA":"#28A745"}', 'type' => '0', 'modifiedby' => 'ADMIN', 'default' => '',]);
         parameter::create(['grp' => 'BATAS PERGANTIAN OLI PERSNELING', 'subgrp' => 'BATAS PERGANTIAN OLI PERSNELING', 'kelompok' => '', 'text' => '50000', 'memo' => '{"MEMO":"BATAS PERGANTIAN OLI PERSNELING","SINGKATAN":"BMLK","WARNA":"#28A745"}', 'type' => '0', 'modifiedby' => 'ADMIN', 'default' => '',]);
         parameter::create(['grp' => 'BATAS PERGANTIAN SARINGAN HAWA', 'subgrp' => 'BATAS PERGANTIAN SARINGAN HAWA', 'kelompok' => '', 'text' => '25000', 'memo' => '{"MEMO":"BATAS PERGANTIAN SARINGAN HAWA","SINGKATAN":"BMLK","WARNA":"#28A745"}', 'type' => '0', 'modifiedby' => 'ADMIN', 'default' => '',]);
-
+        parameter::create(['grp' => 'BATAS MAX PERGANTIAN OLI', 'subgrp' => 'BATAS MAX PERGANTIAN OLI', 'kelompok' => '', 'text' => '1000', 'memo' => '{"MEMO":"BATAS MAX PERGANTIAN OLI","SINGKATAN":"BMPO","WARNA":"#28A745"}', 'type' => '0', 'modifiedby' => 'ADMIN', 'default' => '',]);
+        parameter::create(['grp' => 'STATUS PERGANTIAN', 'subgrp' => 'STATUS PERGANTIAN', 'kelompok' => '', 'text' => 'SUDAH MELEWATI BATAS', 'memo' => '{"MEMO":"SUDAH MELEWATI BATAS","SINGKATAN":"SMB","WARNA":"#CB1818"}', 'type' => '0', 'modifiedby' => 'ADMIN', 'default' => '',]);
+        parameter::create(['grp' => 'STATUS PERGANTIAN', 'subgrp' => 'STATUS PERGANTIAN', 'kelompok' => '', 'text' => 'HAMPIR MELEWATI BATAS', 'memo' => '{"MEMO":"HAMPIR MELEWATI BATAS","SINGKATAN":"HMB","WARNA":"#E16000"}', 'type' => '0', 'modifiedby' => 'ADMIN', 'default' => '',]);
+       
         
     }
 }

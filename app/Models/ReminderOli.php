@@ -70,17 +70,17 @@ class ReminderOli extends MyModel
                 $table->string('status', 100)->nullable();
                 $table->double('km', 15, 2)->nullable();
                 $table->double('kmperjalanan', 15, 2)->nullable();
-
+                $table->integer('statusbatas')->nullable();
             });
 
-                DB::table($temtabel)->insertUsing([
-                    'nopol',
-                    'tanggal',
-                    'status',
-                    'km',
-                    'kmperjalanan',
-                ], $this->getdata($status));
-
+            DB::table($temtabel)->insertUsing([
+                'nopol',
+                'tanggal',
+                'status',
+                'km',
+                'kmperjalanan',
+                'statusbatas'
+            ], $this->getdata($status));
         } else {
             $querydata = DB::table('listtemporarytabel')->from(
                 DB::raw("listtemporarytabel with (readuncommitted)")
@@ -96,26 +96,78 @@ class ReminderOli extends MyModel
             $temtabel = $querydata->namatabel;
         }
 
-        $query = DB::table(DB::raw($temtabel))->from(
-            DB::raw(DB::raw($temtabel) . " a with (readuncommitted)")
-        )
-            ->select(
-                'a.nopol',
-                'a.tanggal',
-                'a.status',
-                'a.km',
-                'a.kmperjalanan',
-            );
+        $forExport = request()->forExport ?? false;
+        $getStatus = DB::table(DB::raw("parameter"))->from(
+            DB::raw("parameter with (readuncommitted)")
+        )->where('id', $status)->first();
 
+        if ($forExport) {
+            $getJudul = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))
+                ->select('text')
+                ->where('grp', 'JUDULAN LAPORAN')
+                ->where('subgrp', 'JUDULAN LAPORAN')
+                ->first();
+            $query = DB::table(DB::raw($temtabel))->from(
+                DB::raw(DB::raw($temtabel) . " a with (readuncommitted)")
+            )
+                ->select(
+                    'a.nopol',
+                    'a.tanggal',
+                    'a.status',
+                    'a.km',
+                    'a.kmperjalanan',
+                    DB::raw("'Laporan Reminder Oli' as judulLaporan"),
+                    DB::raw("'" . $getJudul->text . "' as judul"),
+                );
 
-       
+            if ($getStatus != null) {
+                if ($getStatus->text == 'PERGANTIAN BATERE') {
+                    $query->where('a.status', 'PENGGANTIAN AKI');
+                } else if ($getStatus->text == 'PERGANTIAN OLI GARDAN') {
+                    $query->where('a.status', 'PENGGANTIAN OLI GARDAN');
+                } else if ($getStatus->text == 'PERGANTIAN OLI MESIN') {
+                    $query->where('a.status', 'PENGGANTIAN OLI MESIN');
+                } else if ($getStatus->text == 'PERGANTIAN OLI PERSNELING') {
+                    $query->where('a.status', 'PENGGANTIAN OLI PERSNELING');
+                } else if ($getStatus->text == 'PERGANTIAN SARINGAN HAWA') {
+                    $query->where('a.status', 'PENGGANTIAN SARINGAN HAWA');
+                }
+            }
+        } else {
+            $query = DB::table(DB::raw($temtabel))->from(
+                DB::raw(DB::raw($temtabel) . " a with (readuncommitted)")
+            )
+                ->select(
+                    'a.nopol',
+                    'a.tanggal',
+                    'a.status',
+                    'a.km',
+                    'a.kmperjalanan',
+                    'parameter.memo as statusbatas',
+                )
+                ->leftJoin(DB::raw("parameter with (readuncommitted)"), 'a.statusbatas', 'parameter.id');
 
-        $this->totalRows = $query->count();
-        $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;
-        $query->orderBy('a.' . $this->params['sortIndex'], $this->params['sortOrder']);
-        // dd($query->toSql());
-        $this->filter($query);
-        $this->paginate($query);
+            $this->filter($query);
+            if ($getStatus != null) {
+                if ($getStatus->text == 'PERGANTIAN BATERE') {
+                    $query->where('a.status', 'PENGGANTIAN AKI');
+                } else if ($getStatus->text == 'PERGANTIAN OLI GARDAN') {
+                    $query->where('a.status', 'PENGGANTIAN OLI GARDAN');
+                } else if ($getStatus->text == 'PERGANTIAN OLI MESIN') {
+                    $query->where('a.status', 'PENGGANTIAN OLI MESIN');
+                } else if ($getStatus->text == 'PERGANTIAN OLI PERSNELING') {
+                    $query->where('a.status', 'PENGGANTIAN OLI PERSNELING');
+                } else if ($getStatus->text == 'PERGANTIAN SARINGAN HAWA') {
+                    $query->where('a.status', 'PENGGANTIAN SARINGAN HAWA');
+                }
+            }
+
+            $this->totalRows = $query->count();
+            $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;
+            $query->orderBy('a.' . $this->params['sortIndex'], $this->params['sortOrder']);
+            // dd($query->toSql());
+            $this->paginate($query);
+        }
 
         $data = $query->get();
 
@@ -127,18 +179,23 @@ class ReminderOli extends MyModel
         return $data;
     }
 
-    public function getdata($status) {
-        
+    public function getdata($status)
+    {
+
         $batasgardan = Parameter::where('grp', 'BATAS PERGANTIAN OLI GARDAN')->where('subgrp', 'BATAS PERGANTIAN OLI GARDAN')->first()->text;
         $bataspersneling = Parameter::where('grp', 'BATAS PERGANTIAN OLI PERSNELING')->where('subgrp', 'BATAS PERGANTIAN OLI PERSNELING')->first()->text;
         $batasmesin = Parameter::where('grp', 'BATAS PERGANTIAN OLI MESIN')->where('subgrp', 'BATAS PERGANTIAN OLI MESIN')->first()->text;
         $batassaringanhawa = Parameter::where('grp', 'BATAS PERGANTIAN SARINGAN HAWA')->where('subgrp', 'BATAS PERGANTIAN SARINGAN HAWA')->first()->text;
+        $batasmax = Parameter::where('grp', 'BATAS MAX PERGANTIAN OLI')->where('subgrp', 'BATAS MAX PERGANTIAN OLI')->first()->text;
+
+        $sudahLewat = Parameter::where('grp', 'STATUS PERGANTIAN')->where('text', 'SUDAH MELEWATI BATAS')->first()->id;
+        $hampirLewat = Parameter::where('grp', 'STATUS PERGANTIAN')->where('text', 'HAMPIR MELEWATI BATAS')->first()->id;
 
         $tempstatus = '##tempstatus' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
         Schema::create($tempstatus, function ($table) {
             $table->longText('status')->nullable();
             $table->double('batas')->nullable();
-        });        
+        });
 
         DB::table($tempstatus)->insert([
             'status' => 'PENGGANTIAN OLI GARDAN',
@@ -153,14 +210,62 @@ class ReminderOli extends MyModel
         DB::table($tempstatus)->insert([
             'status' => 'PENGGANTIAN OLI MESIN',
             'batas' => $batasmesin,
-        ]);        
+        ]);
 
         DB::table($tempstatus)->insert([
             'status' => 'PENGGANTIAN SARINGAN HAWA',
             'batas' => $batassaringanhawa,
-        ]);          
+        ]);
 
-        $query
+        $query = DB::table("saldoreminderpergantian")->from(DB::raw("saldoreminderpergantian with (readuncommitted)"))
+            ->select(
+                'nopol',
+                'tglsampai as tanggal',
+                'statusreminder as status',
+                DB::raw("(case 
+                    when saldoreminderpergantian.statusreminder = 'PENGGANTIAN OLI GARDAN' then $batasgardan 
+                    when saldoreminderpergantian.statusreminder = 'PENGGANTIAN OLI PERSNELING' then $bataspersneling
+                    when saldoreminderpergantian.statusreminder = 'PENGGANTIAN OLI MESIN' then $batasmesin
+                    else $batassaringanhawa end) 
+                    
+                    as km"),
+                'jarak as kmperjalanan',
+                DB::raw("(CASE 
+                    WHEN saldoreminderpergantian.statusreminder = 'PENGGANTIAN OLI PERSNELING' then 
+                        CASE
+                            WHEN ($batasgardan - saldoreminderpergantian.jarak) <= $batasmax and ($batasgardan - saldoreminderpergantian.jarak) > 0 then $hampirLewat
+                            WHEN ($batasgardan - saldoreminderpergantian.jarak) <= 0 then $sudahLewat
+                        ELSE ''
+                        END
+                    
+                    WHEN saldoreminderpergantian.statusreminder = 'PENGGANTIAN OLI GARDAN' then 
+                        CASE
+                            WHEN ($bataspersneling - saldoreminderpergantian.jarak) <= $batasmax and ($bataspersneling - saldoreminderpergantian.jarak) > 0 then $hampirLewat
+                            WHEN ($bataspersneling - saldoreminderpergantian.jarak) <= 0 then $sudahLewat
+                        ELSE ''
+                        END
+                    
+                    WHEN saldoreminderpergantian.statusreminder = 'PENGGANTIAN OLI MESIN' then 
+                        CASE
+                            WHEN ($batasmesin - saldoreminderpergantian.jarak) <= $batasmax and ($batasmesin - saldoreminderpergantian.jarak) > 0 then $hampirLewat
+                            WHEN ($batasmesin - saldoreminderpergantian.jarak) <= 0 then $sudahLewat
+                        ELSE ''
+                        END
+
+                    WHEN saldoreminderpergantian.statusreminder = 'PENGGANTIAN SARINGAN HAWA' then 
+                            CASE
+                                WHEN ($batassaringanhawa - saldoreminderpergantian.jarak) <= $batasmax and ($batassaringanhawa - saldoreminderpergantian.jarak) > 0 then $hampirLewat
+                                WHEN ($batassaringanhawa - saldoreminderpergantian.jarak) <= 0 then $sudahLewat
+                            ELSE ''
+                            END
+
+                
+                END) 
+                as statusbatas"),
+            )
+            ->leftJoin(DB::raw("$tempstatus with (readuncommitted)"), 'saldoreminderpergantian.statusreminder', $tempstatus . '.status');
+
+        return $query;
     }
 
     public function filter($query, $relationFields = [])
@@ -170,18 +275,32 @@ class ReminderOli extends MyModel
             switch ($this->params['filters']['groupOp']) {
                 case "AND":
                     foreach ($this->params['filters']['rules'] as $index => $filters) {
-                     
+                        if ($filters['field'] == 'statusbatas') {
+                            $query = $query->where('parameter.text', '=', "$filters[data]");
+                        } else if ($filters['field'] == 'tanggal') {
+                            $query = $query->whereRaw("format(a." . $filters['field'] . ", 'dd-MM-yyyy') LIKE '%$filters[data]%'");
+                        } else if ($filters['field'] == 'km' || $filters['field'] == 'kmperjalanan') {
+                            $query = $query->whereRaw("format(a." . $filters['field'] . ", '#,#0.00') LIKE '%$filters[data]%'");
+                        } else {
                             // $query = $query->where('a.' . $filters['field'], 'LIKE', "%$filters[data]%");
                             $query = $query->whereRaw('a' . ".[" .  $filters['field'] . "] LIKE '%" . escapeLike($filters['data']) . "%' escape '|'");
+                        }
                     }
 
                     break;
                 case "OR":
                     $query = $query->where(function ($query) {
                         foreach ($this->params['filters']['rules'] as $index => $filters) {
-
+                            if ($filters['field'] == 'statusbatas') {
+                                $query = $query->orWhere('parameter.text', '=', "$filters[data]");
+                            } else if ($filters['field'] == 'tanggal') {
+                                $query = $query->orWhereRaw("format(a." . $filters['field'] . ", 'dd-MM-yyyy') LIKE '%$filters[data]%'");
+                            } else if ($filters['field'] == 'km' || $filters['field'] == 'kmperjalanan') {
+                                $query = $query->orWhereRaw("format(a." . $filters['field'] . ", '#,#0.00') LIKE '%$filters[data]%'");
+                            } else {
                                 // $query->orWhere('a.' . $filters['field'], 'LIKE', "%$filters[data]%");
                                 $query = $query->OrwhereRaw('a' . ".[" .  $filters['field'] . "] LIKE '%" . escapeLike($filters['data']) . "%' escape '|'");
+                            }
                         }
                     });
 
