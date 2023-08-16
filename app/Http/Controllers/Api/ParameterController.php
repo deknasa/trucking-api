@@ -268,6 +268,22 @@ class ParameterController extends Controller
         return $data;
     }
 
+    public function getParamByText(Request $request)
+    {
+
+        $querydata = Parameter::where('grp', '=',  $request->grp)
+            ->where('text', '=',  $request->text)
+            ->first();
+
+        if($querydata != null){
+            $data = $querydata;
+        }else{
+            $data = [];
+        }
+
+        return $data;
+    }
+
      /**
      * @ClassName 
      */
