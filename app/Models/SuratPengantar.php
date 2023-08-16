@@ -337,10 +337,10 @@ class SuratPengantar extends MyModel
                 'b.nobukti as gajisupir_nobukti',
                 'c.nobukti as invoice_nobukti'
             )
-            ->leftJoin(DB::raw("gajisupirdetail as b with (readuncommitted)"), 'suratpengantar.nobukti','b.suratpengantar_nobukti')
-            ->leftJoin(DB::raw("invoicedetail as c with (readuncommitted)"), 'suratpengantar.jobtrucking','c.orderantrucking_nobukti')
+            ->leftJoin(DB::raw("gajisupirdetail as b with (readuncommitted)"), 'suratpengantar.nobukti', 'b.suratpengantar_nobukti')
+            ->leftJoin(DB::raw("invoicedetail as c with (readuncommitted)"), 'suratpengantar.jobtrucking', 'c.orderantrucking_nobukti')
             ->whereBetween('suratpengantar.tglbukti', [date('Y-m-d', strtotime(request()->tgldari)), date('Y-m-d', strtotime(request()->tglsampai))]);
-            
+
         DB::table($tempsuratpengantar)->insertUsing([
             'id',
             'nobukti',
@@ -1749,13 +1749,28 @@ class SuratPengantar extends MyModel
                     'datajson' => $suratPengantarBiayaTambahans,
                     'modifiedby' => auth('api')->user()->user,
                 ]);
+            } else {
+                $cekBiaya = SuratPengantarBiayaTambahan::where('suratpengantar_id', $suratPengantar->id)->first();
+                if ($cekBiaya != null) {
+                    $tambahan = SuratPengantarBiayaTambahan::where('suratpengantar_id', $suratPengantar->id)->get();
+                    SuratPengantarBiayaTambahan::where('suratpengantar_id', $suratPengantar->id)->lockForUpdate()->delete();
+                    (new LogTrail())->processStore([
+                        'namatabel' => 'SURATPENGANTARBIAYATAMBAHAN',
+                        'postingdari' => 'DELETE SURAT PENGANTAR BIAYA TAMBAHAN',
+                        'idtrans' =>  $suratPengantarLogTrail->id,
+                        'nobuktitrans' => $suratPengantar->nobukti,
+                        'aksi' => 'DELETE',
+                        'datajson' => $tambahan->toArray(),
+                        'modifiedby' => auth('api')->user()->user,
+                    ]);
+                }
             }
         } else {
             $upahsupirRincian = UpahSupirRincian::where('upahsupir_id', $suratPengantar->upah_id)->where('container_id', $data['container_id'])->where('statuscontainer_id', $suratPengantar->statuscontainer_id)->first();
             $tarif = TarifRincian::where('tarif_id', $suratPengantar->tarifrincian_id)->where('container_id', $data['container_id'])->first();
 
             $tarifNominal = $tarif->nominal ?? 0;
-            
+
             $suratPengantar->pelanggan_id = $data['pelanggan_id'];
             $suratPengantar->container_id = $data['container_id'];
             $suratPengantar->nojob = $data['nojob'];

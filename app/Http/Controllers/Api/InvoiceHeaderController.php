@@ -77,6 +77,7 @@ class InvoiceHeaderController extends Controller
                 'sp_id' => $request->sp_id,
                 'nominalretribusi' => $request->nominalretribusi,
                 'nominalextra' => $request->nominalextra,
+                'omset' => $request->omset,
                 'agen' => $request->agen,
                 'jenisorder' => $request->jenisorder
             ];
@@ -134,6 +135,7 @@ class InvoiceHeaderController extends Controller
                 'sp_id' => $request->sp_id,
                 'nominalretribusi' => $request->nominalretribusi,
                 'nominalextra' => $request->nominalextra,
+                'omset' => $request->omset,
                 'agen' => $request->agen,
                 'jenisorder' => $request->jenisorder
             ];

@@ -110,7 +110,7 @@ class ParameterController extends Controller
     /**
      * @ClassName
      */
-    public function update(UpdateParameterRequest $request, Parameter $parameter)
+    public function update(UpdateParameterRequest $request, $id)
     {
 
         $data = [
@@ -128,6 +128,7 @@ class ParameterController extends Controller
         DB::beginTransaction();
 
         try {
+            $parameter = Parameter::lockForUpdate()->findOrFail($id);
             $parameter = (new Parameter())->processUpdate($parameter, $data);
             $parameter->position = $this->getPosition($parameter, $parameter->getTable())->position;
             if ($request->limit==0) {
