@@ -450,6 +450,7 @@ route::middleware(['auth:api', 'authorized'])->group(function () {
     Route::get('parameter/default', [ParameterController::class, 'default']);
     Route::get('parameter/field_length', [ParameterController::class, 'fieldLength']);
     Route::get('parameter/combo', [ParameterController::class, 'combo']);
+    Route::get('parameter/getparambytext', [ParameterController::class, 'getParamByText']);    
     Route::get('parameter/comboapproval', [ParameterController::class, 'comboapproval']);
     Route::get('parameter/combolist', [ParameterController::class, 'combolist']);
     Route::get('parameter/getcoa', [ParameterController::class, 'getcoa']);

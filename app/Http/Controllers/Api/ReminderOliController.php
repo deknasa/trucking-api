@@ -16,7 +16,7 @@ class ReminderOliController extends Controller
         $reminderOli = new ReminderOli();
         // dd(system('getmac'));
         return response([
-            'data' => $reminderOli->get(),
+            'data' => $reminderOli->get(request()->status),
             'attributes' => [
                 'totalRows' => $reminderOli->totalRows,
                 'totalPages' => $reminderOli->totalPages

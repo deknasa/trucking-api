@@ -65,7 +65,8 @@ class StoreMandorTripRequest extends FormRequest
 
         $getBukanUpahZona = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS UPAH ZONA')->where('text', 'NON UPAH ZONA')->first();
         $getUpahZona = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS UPAH ZONA')->where('text', 'UPAH ZONA')->first();
-
+        $getListTampilan = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'UBAH TAMPILAN')->where('text', 'INPUTTRIP')->first();
+      
         // START VALIDASI RITASI
         $ritasiRule = [];
         $ruleCekUpahRitasi = [];
@@ -114,6 +115,7 @@ class StoreMandorTripRequest extends FormRequest
             }
         }
         // END VALIDASI RITASI
+
         $agen_id = $this->agen_id;
         $rulesAgen_id = [];
         if ($agen_id != null) {
@@ -354,7 +356,7 @@ class StoreMandorTripRequest extends FormRequest
                     "tarifrincian" => ['required_if:statusupahzona,=,' . $getBukanUpahZona->id, new ValidasiExistOmsetTarif(), new ValidasiKotaUpahZona($getBukanUpahZona->id)],
                     "container" => "required",
                     "dari" => ["required"],
-                    "gandengan" => "required",
+                    "gandengan" => ["required", 'nullable'],
                     "gudang" => "required",
                     "jenisorder" => "required",
                     "pelanggan" => "required",
@@ -371,8 +373,20 @@ class StoreMandorTripRequest extends FormRequest
             }
         }
 
+        if ($getListTampilan != null) {
+
+            $getListTampilan = json_decode($getListTampilan->memo);
+            $getListTampilan = (explode(",",$getListTampilan->INPUT));
+            foreach($getListTampilan as $value){
+                if (array_key_exists(strtolower($value), $rules) == true)
+                {
+                    unset($rules[strtolower($value)]);
+                }
+            }
+        }
+
         $rulesJobTrucking = [];
-        if((request()->statuslongtrip == 66) && (request()->statuslangsir == 80)){
+        if ((request()->statuslongtrip == 66) && (request()->statuslangsir == 80)) {
             // dd('disini');
             $rulesJobTrucking = [
                 'jobtrucking' => ['required_unless:dari_id,1']
