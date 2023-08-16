@@ -427,7 +427,19 @@ class ParameterSeeder extends Seeder
         parameter::create(['grp' => 'BATAS MAX PERGANTIAN OLI', 'subgrp' => 'BATAS MAX PERGANTIAN OLI', 'kelompok' => '', 'text' => '1000', 'memo' => '{"MEMO":"BATAS MAX PERGANTIAN OLI","SINGKATAN":"BMPO","WARNA":"#28A745"}', 'type' => '0', 'modifiedby' => 'ADMIN', 'default' => '',]);
         parameter::create(['grp' => 'STATUS PERGANTIAN', 'subgrp' => 'STATUS PERGANTIAN', 'kelompok' => '', 'text' => 'SUDAH MELEWATI BATAS', 'memo' => '{"MEMO":"SUDAH MELEWATI BATAS","SINGKATAN":"SMB","WARNA":"#CB1818"}', 'type' => '0', 'modifiedby' => 'ADMIN', 'default' => '',]);
         parameter::create(['grp' => 'STATUS PERGANTIAN', 'subgrp' => 'STATUS PERGANTIAN', 'kelompok' => '', 'text' => 'HAMPIR MELEWATI BATAS', 'memo' => '{"MEMO":"HAMPIR MELEWATI BATAS","SINGKATAN":"HMB","WARNA":"#E16000"}', 'type' => '0', 'modifiedby' => 'ADMIN', 'default' => '',]);
-       
+        parameter::create(['grp' => 'PENERIMAAN TRUCKING', 'subgrp' => 'PENGEMBALIAN TITIPAN EMKL', 'kelompok' => '', 'text' => '#PBT #9999#/#R#/#Y', 'memo' => '{"MEMO":"PENGEMBALIAN TITIPAN EMKL BUKTI","SINGKATAN":"#PBT #9999#/#R#/#Y","WARNA":"#28A745"}', 'type' => '118', 'modifiedby' => 'ADMIN', 'default' => '',]);
+        parameter::create(['grp' => 'PENGELUARAN TRUCKING', 'subgrp' => 'TITIPAN EMKL', 'kelompok' => '', 'text' => '#BBT #9999#/#R#/#Y', 'memo' => '{"MEMO":"TITIPAN EMKL BUKTI","SINGKATAN":"#BBT #9999#/#R#/#Y","WARNA":"#28A745"}', 'type' => '118', 'modifiedby' => 'ADMIN', 'default' => '',]);
+        parameter::create(['grp' => 'STATUS POSTING TNL', 'subgrp' => 'STATUS POSTING TNL', 'kelompok' => '', 'text' => 'POSTING TNL', 'memo' => '{"MEMO":"POSTING TNL","SINGKATAN":"SMB","WARNA":"#CB1818"}', 'type' => '0', 'modifiedby' => 'ADMIN', 'default' => '',]);
+        parameter::create(['grp' => 'STATUS POSTING TNL', 'subgrp' => 'STATUS POSTING TNL', 'kelompok' => '', 'text' => 'TIDAK POSTING TNL', 'memo' => '{"MEMO":"TIDAK POSTING TNL","SINGKATAN":"HMB","WARNA":"#E16000"}', 'type' => '0', 'modifiedby' => 'ADMIN', 'default' => '',]);
+        parameter::create(['grp' => 'BIAYA TITIPAN EMKL', 'subgrp' => 'BIAYA TITIPAN EMKL', 'kelompok' => '', 'text' => 'BIAYA LAP. BONGKAR', 'memo' => '{"MEMO":"BIAYA LAP. BONGKAR","SINGKATAN":"BLB","WARNA":"#E16000"}', 'type' => '0', 'modifiedby' => 'ADMIN', 'default' => '',]);
+        parameter::create(['grp' => 'BIAYA TITIPAN EMKL', 'subgrp' => 'BIAYA TITIPAN EMKL', 'kelompok' => '', 'text' => 'BIAYA LAP. MUAT', 'memo' => '{"MEMO":"BIAYA LAP. MUAT","SINGKATAN":"BLM","WARNA":"#E16000"}', 'type' => '0', 'modifiedby' => 'ADMIN', 'default' => '',]);
+        parameter::create(['grp' => 'BIAYA TITIPAN EMKL', 'subgrp' => 'BIAYA TITIPAN EMKL', 'kelompok' => '', 'text' => 'BIAYA LAP. LEMBUR', 'memo' => '{"MEMO":"BIAYA LAP. LEMBUR","SINGKATAN":"BLM","WARNA":"#E16000"}', 'type' => '0', 'modifiedby' => 'ADMIN', 'default' => '',]);
+        parameter::create(['grp' => 'BIAYA TITIPAN EMKL', 'subgrp' => 'BIAYA TITIPAN EMKL', 'kelompok' => '', 'text' => 'BIAYA LAP. PARKIR', 'memo' => '{"MEMO":"BIAYA LAP. PARKIR","SINGKATAN":"BLP","WARNA":"#E16000"}', 'type' => '0', 'modifiedby' => 'ADMIN', 'default' => '',]);
+
+        
+        
+        
+               
         
     }
 }
