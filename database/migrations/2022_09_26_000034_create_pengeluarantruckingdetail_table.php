@@ -31,7 +31,9 @@ class CreatePengeluarantruckingdetailTable extends Migration
             $table->string('penerimaantruckingheader_nobukti',50)->nullable();
             $table->string('invoice_nobukti',50)->nullable();
             $table->string('orderantrucking_nobukti', 50)->nullable();
+            $table->string('suratpengantar_nobukti', 50)->nullable();
             $table->double('nominal',15,2)->nullable();        
+            $table->double('nominaltagih',15,2)->nullable();        
             $table->longText('keterangan')->nullable();    
             $table->string('modifiedby',50)->nullable();                  
             $table->timestamps();

@@ -22,6 +22,7 @@ class PenerimaanTruckingSeeder extends Seeder
         PenerimaanTrucking::create(['kodepenerimaan' => 'PJP', 'keterangan' => 'PENGEMBALIAN PINJAMAN', 'coadebet' => '01.01.01.02', 'coakredit' => '01.05.02.02', 'coapostingdebet' => '01.01.01.02', 'coapostingkredit' => '01.05.02.02', 'format' => '126', 'modifiedby' => 'ADMIN',]);
         PenerimaanTrucking::create(['kodepenerimaan' => 'DPO', 'keterangan' => 'DEPOSITO SUPIR', 'coadebet' => '01.01.01.02', 'coakredit' => '01.04.02.01', 'coapostingdebet' => '01.01.01.02', 'coapostingkredit' => '01.04.02.01', 'format' => '125', 'modifiedby' => 'ADMIN',]);
         PenerimaanTrucking::create(['kodepenerimaan' => 'PJPK', 'keterangan' => 'PENGEMBALIAN PINJAMAN KARYAWAN', 'coadebet' => '01.01.01.02', 'coakredit' => '01.05.02.02', 'coapostingdebet' => '01.01.01.02', 'coapostingkredit' => '01.05.02.02', 'format' => '370', 'modifiedby' => 'ADMIN',]);
+        PenerimaanTrucking::create(['kodepenerimaan' => 'PBT', 'keterangan' => 'PENGEMBALIAN TITIPAN EMKL', 'coadebet' => '01.01.01.02', 'coakredit' => '01.08.01.06', 'coapostingdebet' => '01.01.01.02', 'coapostingkredit' => '01.08.01.06', 'format' => '410', 'modifiedby' => 'ADMIN',]);
 
    
         
