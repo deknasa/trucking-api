@@ -435,6 +435,8 @@ class ParameterSeeder extends Seeder
         parameter::create(['grp' => 'BIAYA TITIPAN EMKL', 'subgrp' => 'BIAYA TITIPAN EMKL', 'kelompok' => '', 'text' => 'BIAYA LAP. MUAT', 'memo' => '{"MEMO":"BIAYA LAP. MUAT","SINGKATAN":"BLM","WARNA":"#E16000"}', 'type' => '0', 'modifiedby' => 'ADMIN', 'default' => '',]);
         parameter::create(['grp' => 'BIAYA TITIPAN EMKL', 'subgrp' => 'BIAYA TITIPAN EMKL', 'kelompok' => '', 'text' => 'BIAYA LAP. LEMBUR', 'memo' => '{"MEMO":"BIAYA LAP. LEMBUR","SINGKATAN":"BLM","WARNA":"#E16000"}', 'type' => '0', 'modifiedby' => 'ADMIN', 'default' => '',]);
         parameter::create(['grp' => 'BIAYA TITIPAN EMKL', 'subgrp' => 'BIAYA TITIPAN EMKL', 'kelompok' => '', 'text' => 'BIAYA LAP. PARKIR', 'memo' => '{"MEMO":"BIAYA LAP. PARKIR","SINGKATAN":"BLP","WARNA":"#E16000"}', 'type' => '0', 'modifiedby' => 'ADMIN', 'default' => '',]);
+        parameter::create(['grp' => 'UBAH TAMPILAN', 'subgrp' => 'UBAH TAMPILAN', 'kelompok' => '', 'text' => 'INPUTTRIP', 'memo' => '{"MEMO":"UBAH TAMPILAN INPUTTRIP","SINGKATAN":"UTIT","WARNA":"#6C757D","INPUT":""}', 'type' => '0', 'modifiedby' => 'ADMIN', 'default' => '',]);
+        parameter::create(['grp' => 'UBAH TAMPILAN', 'subgrp' => 'UBAH TAMPILAN', 'kelompok' => '', 'text' => 'ABSENSISUPIR', 'memo' => '{"MEMO":"UBAH TAMPILAN ABSENSISUPIR","SINGKATAN":"UTAS","WARNA":"#6C757D","INPUT":""}', 'type' => '0', 'modifiedby' => 'ADMIN', 'default' => '',]);
 
         
         
