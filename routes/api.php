@@ -456,7 +456,7 @@ route::middleware(['auth:api', 'authorized'])->group(function () {
     Route::get('parameter/getcoa', [ParameterController::class, 'getcoa']);
     Route::get('parameter/{id}', [ParameterController::class, 'show']);
     Route::post('parameter', [ParameterController::class, 'store']);
-    Route::put('parameter/{id}', [ParameterController::class, 'update']);
+    Route::patch('parameter/{id}', [ParameterController::class, 'update']);
     Route::delete('parameter/{id}', [ParameterController::class, 'destroy']);
 
     // Route::resource('parameter', ParameterController::class)->whereNumber('parameter');

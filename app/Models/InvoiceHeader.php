@@ -1111,10 +1111,7 @@ class InvoiceHeader extends MyModel
 
             $SP = SuratPengantar::from(DB::raw("suratpengantar with (readuncommitted)"))
                 ->where('id', $data['sp_id'][$i])->first();
-            $orderantrucking = OrderanTrucking::from(DB::raw("orderantrucking with (readuncommitted)"))
-                ->where('nobukti', $SP->jobtrucking)->first();
-
-            $total = $total + $orderantrucking->nominal + $data['nominalretribusi'][$i] + $data['nominalextra'][$i];
+            $total = $total + $data['omset'][$i] + $data['nominalretribusi'][$i] + $data['nominalextra'][$i];
 
             $getSP = SuratPengantar::from(DB::raw("suratpengantar with (readuncommitted)"))
                 ->where('jobtrucking', $SP->jobtrucking)->get();
@@ -1129,10 +1126,10 @@ class InvoiceHeader extends MyModel
             }
 
             $invoiceDetail = (new InvoiceDetail())->processStore($invoiceHeader, [
-                'nominal' => $orderantrucking->nominal,
+                'nominal' => $data['omset'][$i],
                 'nominalextra' => $data['nominalextra'][$i],
                 'nominalretribusi' => $data['nominalretribusi'][$i],
-                'total' => $orderantrucking->nominal + $data['nominalretribusi'][$i] + $data['nominalextra'][$i],
+                'total' => $data['omset'][$i] + $data['nominalretribusi'][$i] + $data['nominalextra'][$i],
                 'keterangan' => $SP->keterangan,
                 'orderantrucking_nobukti' => $SP->jobtrucking,
                 'suratpengantar_nobukti' => $allSP
@@ -1237,10 +1234,8 @@ class InvoiceHeader extends MyModel
 
             $SP = SuratPengantar::from(DB::raw("suratpengantar with (readuncommitted)"))
                 ->where('id', $data['sp_id'][$i])->first();
-            $orderantrucking = OrderanTrucking::from(DB::raw("orderantrucking with (readuncommitted)"))
-                ->where('nobukti', $SP->jobtrucking)->first();
 
-            $total = $total + $orderantrucking->nominal + $data['nominalretribusi'][$i] + $data['nominalextra'][$i];
+            $total = $total + $data['omset'][$i] + $data['nominalretribusi'][$i] + $data['nominalextra'][$i];
 
             $getSP = SuratPengantar::from(DB::raw("suratpengantar with (readuncommitted)"))
                 ->where('jobtrucking', $SP->jobtrucking)->get();
@@ -1255,10 +1250,10 @@ class InvoiceHeader extends MyModel
             }
 
             $invoiceDetail = (new InvoiceDetail())->processStore($invoiceHeader, [
-                'nominal' => $orderantrucking->nominal,
+                'nominal' => $data['omset'][$i],
                 'nominalextra' => $data['nominalextra'][$i],
                 'nominalretribusi' => $data['nominalretribusi'][$i],
-                'total' => $orderantrucking->nominal + $data['nominalretribusi'][$i] + $data['nominalextra'][$i],
+                'total' => $data['omset'][$i] + $data['nominalretribusi'][$i] + $data['nominalextra'][$i],
                 'keterangan' => $SP->keterangan,
                 'orderantrucking_nobukti' => $SP->jobtrucking,
                 'suratpengantar_nobukti' => $allSP

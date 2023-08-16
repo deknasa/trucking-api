@@ -265,8 +265,32 @@ class GajiSupirHeader extends MyModel
         $data = ($data > 0) ? false : true;
         return $data;
     }
+    public function createTempBiayaTambahan($supirId, $tglDari, $tglSampai)
+    {
+
+        $tempTambahan = '##tempTambahan' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+        $biayaTambahan = DB::table("suratpengantarbiayatambahan")->from(DB::raw("suratpengantarbiayatambahan with (readuncommitted)"))
+            ->select(DB::raw("suratpengantar_id, STRING_AGG(keteranganbiaya, ', ') AS keteranganbiaya, SUM(isnull(nominal, 0)) as biayaextra"))
+            ->leftJoin(DB::raw("suratpengantar with (readuncommitted)"), 'suratpengantar.id', 'suratpengantarbiayatambahan.suratpengantar_id')
+            ->where('suratpengantar.supir_id', $supirId)
+            ->where('suratpengantar.tglbukti', '>=', $tglDari)
+            ->where('suratpengantar.tglbukti', '<=', $tglSampai)
+            ->whereRaw("suratpengantar.nobukti not in(select suratpengantar_nobukti from gajisupirdetail)")
+            ->groupBy('suratpengantar_id');
+
+        Schema::create($tempTambahan, function ($table) {
+            $table->bigInteger('suratpengantar_id')->nullable();
+            $table->string('keteranganbiaya')->nullable();
+            $table->bigInteger('biayaextra')->nullable();
+        });
+
+        DB::table($tempTambahan)->insertUsing(['suratpengantar_id','keteranganbiaya', 'biayaextra'], $biayaTambahan);
+        return $tempTambahan;
+    }
+
     public function createTempGetTrip($supirId, $tglDari, $tglSampai)
     {
+        $getBiaya = $this->createTempBiayaTambahan($supirId, $tglDari, $tglSampai);
         $temp = '##tempSP' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
 
         $fetch = SuratPengantar::from(DB::raw("suratpengantar with (readuncommitted)"))
@@ -285,14 +309,15 @@ class GajiSupirHeader extends MyModel
                 'ritasi.gaji as upahritasi',
                 'ritasi.nobukti as ritasi_nobukti',
                 'ritasi.statusritasi',
-                'suratpengantarbiayatambahan.nominal as biayaextra',
-                'suratpengantarbiayatambahan.keteranganbiaya'
+                
+                DB::raw("(case when ritasi.suratpengantar_urutke > 1 then 0 else biayatambahan.biayaextra end) as biayaextra"),
+                DB::raw("(case when ritasi.suratpengantar_urutke > 1 then '-' else biayatambahan.keteranganbiaya end) as keteranganbiaya"),
             )
             ->leftJoin(DB::raw("kota as kotaDari with (readuncommitted)"), 'suratpengantar.dari_id', 'kotaDari.id')
             ->leftJoin(DB::raw("kota as kotaSampai with (readuncommitted)"), 'suratpengantar.sampai_id', 'kotaSampai.id')
             ->leftJoin(DB::raw("trado with (readuncommitted)"), 'suratpengantar.trado_id', 'trado.id')
             ->leftJoin(DB::raw("ritasi with (readuncommitted)"), 'suratpengantar.nobukti', 'ritasi.suratpengantar_nobukti')
-            ->leftJoin(DB::raw("suratpengantarbiayatambahan with (readuncommitted)"), 'suratpengantar.id', 'suratpengantarbiayatambahan.suratpengantar_id')
+            ->leftJoin(DB::raw("$getBiaya as biayatambahan with (readuncommitted)"), 'suratpengantar.id', 'biayatambahan.suratpengantar_id')
             ->where('suratpengantar.supir_id', $supirId)
             ->where('suratpengantar.tglbukti', '>=', $tglDari)
             ->where('suratpengantar.tglbukti', '<=', $tglSampai)
@@ -319,6 +344,7 @@ class GajiSupirHeader extends MyModel
 
         $tes = DB::table($temp)->insertUsing(['nobuktitrip', 'tglbuktisp', 'trado_id', 'dari_id', 'sampai_id', 'nocont', 'nosp', 'gajisupir', 'gajikenek', 'komisisupir', 'tolsupir', 'upahritasi', 'ritasi_nobukti', 'statusritasi', 'biayaextra', 'keteranganbiaya'], $fetch);
 
+        // fetch ritasi yg tidak ada suratpengantar
         $fetch = Ritasi::from(DB::raw("ritasi with (readuncommitted)"))
             ->select(
                 DB::raw("ritasi.tglbukti as tglbuktisp,trado.kodetrado as trado_id,kotaDari.keterangan as dari_id,kotaSampai.keterangan as sampai_id, ritasi.gaji as upahritasi, ritasi.nobukti as ritasi_nobukti,ritasi.statusritasi")
@@ -766,6 +792,7 @@ class GajiSupirHeader extends MyModel
 
         $tes = DB::table($temp)->insertUsing(['nobuktitrip', 'tglbuktisp', 'trado_id', 'dari_id', 'sampai_id', 'uangmakanberjenjang', 'gajisupir', 'gajikenek', 'komisisupir', 'tolsupir', 'upahritasi', 'ritasi_nobukti', 'statusritasi', 'biayaextra', 'keteranganbiaya'], $fetch);
 
+        $getBiaya = $this->createTempBiayaTambahan($supir_id, $dari, $sampai);
         $fetch = SuratPengantar::from(DB::raw("suratpengantar with (readuncommitted)"))
             ->select(
                 'suratpengantar.nobukti as nobuktitrip',
@@ -783,14 +810,14 @@ class GajiSupirHeader extends MyModel
                 'ritasi.gaji as upahritasi',
                 'ritasi.nobukti as ritasi_nobukti',
                 'ritasi.statusritasi',
-                'suratpengantarbiayatambahan.nominal as biayaextra',
-                'suratpengantarbiayatambahan.keteranganbiaya'
+                DB::raw("(case when ritasi.suratpengantar_urutke > 1 then 0 else biayatambahan.biayaextra end) as biayaextra"),
+                DB::raw("(case when ritasi.suratpengantar_urutke > 1 then '-' else biayatambahan.keteranganbiaya end) as keteranganbiaya"),
             )
             ->leftJoin(DB::raw("kota as kotaDari with (readuncommitted)"), 'suratpengantar.dari_id', 'kotaDari.id')
             ->leftJoin(DB::raw("kota as kotaSampai with (readuncommitted)"), 'suratpengantar.sampai_id', 'kotaSampai.id')
             ->leftJoin(DB::raw("trado with (readuncommitted)"), 'suratpengantar.trado_id', 'trado.id')
             ->leftJoin(DB::raw("ritasi with (readuncommitted)"), 'suratpengantar.nobukti', 'ritasi.suratpengantar_nobukti')
-            ->leftJoin(DB::raw("suratpengantarbiayatambahan with (readuncommitted)"), 'suratpengantar.id', 'suratpengantarbiayatambahan.suratpengantar_id')
+            ->leftJoin(DB::raw("$getBiaya as biayatambahan with (readuncommitted)"), 'suratpengantar.id', 'biayatambahan.suratpengantar_id')
             ->where('suratpengantar.supir_id', $supir_id)
             ->where('suratpengantar.tglbukti', '>=', $dari)
             ->where('suratpengantar.tglbukti', '<=', $sampai)
