@@ -3,6 +3,7 @@
 namespace App\Http\Requests;
 
 use App\Http\Controllers\Api\ErrorController;
+use App\Rules\ValidationParameterInputValue;
 use Illuminate\Foundation\Http\FormRequest;
 
 class ParameterRequest extends FormRequest
@@ -32,7 +33,7 @@ class ParameterRequest extends FormRequest
             'key' => 'required|array',
             'key.*' => 'required',
             'value' => 'required|array',
-            'value.*' => 'required'
+            'value.*' => [new ValidationParameterInputValue()]
         ];
     }
 

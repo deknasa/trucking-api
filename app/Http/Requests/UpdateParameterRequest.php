@@ -6,6 +6,7 @@ use Illuminate\Foundation\Http\FormRequest;
 use App\Http\Controllers\Api\ErrorController;
 use Illuminate\Validation\Rule;
 use App\Models\Parameter;
+use App\Rules\ValidationParameterInputValue;
 
 class UpdateParameterRequest extends FormRequest
 {
@@ -35,7 +36,7 @@ class UpdateParameterRequest extends FormRequest
             'key' => 'required|array',
             'key.*' => 'required',
             'value' => 'required|array',
-            'value.*' => 'required'
+            'value.*' => [new ValidationParameterInputValue()]
         ];
     }
 
