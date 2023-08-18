@@ -374,8 +374,9 @@ class Parameter extends MyModel
 
         $detailmemo = [];
         for ($i = 0; $i < count($data['key']); $i++) {
+            $value = ($data['value'][$i] != null) ? $data['value'][$i] : "";
             $datadetailmemo = [
-                $data['key'][$i] => $data['value'][$i],
+                $data['key'][$i] => $value,
             ];
             $detailmemo = array_merge($detailmemo, $datadetailmemo);
         }
@@ -410,12 +411,12 @@ class Parameter extends MyModel
 
         $detailmemo = [];
         for ($i = 0; $i < count($data['key']); $i++) {
+            $value = ($data['value'][$i] != null) ? $data['value'][$i] : "";
             $datadetailmemo = [
-                $data['key'][$i] => $data['value'][$i],
+                $data['key'][$i] => $value,
             ];
             $detailmemo = array_merge($detailmemo, $datadetailmemo);
         }
-
         $parameter->memo = json_encode($detailmemo);
         if (!$parameter->save()) {
             throw new \Exception('Error storing parameter.');
