@@ -5,7 +5,8 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-
+use Config;
+use Illuminate\Support\Facades\Artisan;
 
 class AuthController extends Controller
 {
@@ -25,6 +26,16 @@ class AuthController extends Controller
 
         if (Auth::attempt($credentials)) {
             $user = Auth::user();
+            $path = base_path('.env');
+
+            if (file_exists($path)) {
+                file_put_contents($path, str_replace(
+                    'PASSWORD_TNL='. getenv('PASSWORD_TNL'),
+                    'PASSWORD_TNL=' . $request->password,
+                    file_get_contents($path)
+                ));
+                Artisan::call('cache:clear');
+            }
             return response([
                 'user' => $user,
                 'access_token' => $user->createToken('Access Token')->accessToken,
@@ -42,8 +53,8 @@ class AuthController extends Controller
         $ipclient = $this->get_client_ip();
         if ($request->ipclient) {
             $ipclient = $request->ipclient;
-            if ($ipclient=='::1' ) {
-                $ipclient= gethostbyname('tasmdn.kozow.com');
+            if ($ipclient == '::1') {
+                $ipclient = gethostbyname('tasmdn.kozow.com');
             }
         }
 
@@ -64,7 +75,6 @@ class AuthController extends Controller
                 'ipclient' => $ipclient,
                 'ipserver' =>  $ipserver,
             ];
-
         }
 
         // $data = [
