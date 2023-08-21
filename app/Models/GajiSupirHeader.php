@@ -582,7 +582,7 @@ class GajiSupirHeader extends MyModel
     public function createTempPinjSemua()
     {
         $temp = '##temp' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
-
+        $tglBukti = date('Y-m-d', strtotime(request()->tglbukti));
 
         $fetch = DB::table('pengeluarantruckingheader')
             ->from(
@@ -592,6 +592,7 @@ class GajiSupirHeader extends MyModel
             ->leftJoin(DB::raw("pengeluarantruckingdetail with (readuncommitted)"), 'pengeluarantruckingdetail.nobukti', 'pengeluarantruckingheader.nobukti')
             ->where("pengeluarantruckingdetail.supir_id", 0)
             ->where("pengeluarantruckingdetail.nobukti", 'LIKE', '%PJT%')
+            ->where("pengeluarantruckingheader.tglbukti","<=", $tglBukti)
             ->orderBy('pengeluarantruckingheader.tglbukti', 'asc')
             ->orderBy('pengeluarantruckingdetail.nobukti', 'asc');
         Schema::create($temp, function ($table) {
@@ -611,12 +612,14 @@ class GajiSupirHeader extends MyModel
     {
         $tempPribadi = $this->createTempPinjPribadi($supir_id);
 
+        $tglBukti = date('Y-m-d', strtotime(request()->tglbukti));
         $query = PengeluaranTruckingDetail::from(DB::raw("pengeluarantruckingdetail with (readuncommitted)"))
             ->select(DB::raw("row_number() Over(Order By pengeluarantruckingheader.tglbukti asc,pengeluarantruckingdetail.nobukti) as pinjPribadi_id,pengeluarantruckingheader.tglbukti as pinjPribadi_tglbukti,pengeluarantruckingdetail.nobukti as pinjPribadi_nobukti,pengeluarantruckingdetail.keterangan as pinjPribadi_keterangan," . $tempPribadi . ".sisa as pinjPribadi_sisa"))
             ->leftJoin(DB::raw("$tempPribadi with (readuncommitted)"), 'pengeluarantruckingdetail.nobukti', $tempPribadi . ".nobukti")
             ->leftJoin(DB::raw("pengeluarantruckingheader with (readuncommitted)"), 'pengeluarantruckingdetail.nobukti', "pengeluarantruckingheader.nobukti")
             ->whereRaw("pengeluarantruckingdetail.supir_id = $supir_id")
-            ->whereRaw("pengeluarantruckingdetail.nobukti = $tempPribadi.nobukti")
+            ->whereRaw("pengeluarantruckingdetail.nobukti = $tempPribadi.nobukti")            
+            ->where("pengeluarantruckingheader.tglbukti","<=", $tglBukti)
             ->where(function ($query) use ($tempPribadi) {
                 $query->whereRaw("$tempPribadi.sisa != 0")
                     ->orWhereRaw("$tempPribadi.sisa is null");
@@ -630,7 +633,6 @@ class GajiSupirHeader extends MyModel
     public function createTempPinjPribadi($supir_id)
     {
         $temp = '##temp' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
-
 
         $fetch = DB::table('pengeluarantruckingdetail')
             ->from(

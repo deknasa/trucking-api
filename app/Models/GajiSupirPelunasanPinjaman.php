@@ -69,6 +69,7 @@ class GajiSupirPelunasanPinjaman extends MyModel
     {
         $temp = '##tempPengeluaran' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
 
+        $tglBukti = date('Y-m-d', strtotime(request()->tglbukti));
         $fetchSisa = DB::table('pengeluarantruckingdetail')
             ->from(
                 DB::raw("pengeluarantruckingdetail with (readuncommitted)")
@@ -78,6 +79,7 @@ class GajiSupirPelunasanPinjaman extends MyModel
                 FROM gajisupirpelunasanpinjaman WHERE pengeluarantruckingdetail.nobukti= gajisupirpelunasanpinjaman.pengeluarantrucking_nobukti) AS sisa"))
             ->leftJoin(DB::raw("pengeluarantruckingheader with (readuncommitted)"), 'pengeluarantruckingdetail.nobukti', 'pengeluarantruckingheader.nobukti')
             ->whereRaw("pengeluarantruckingdetail.supir_id = $supir_id")
+            ->where("pengeluarantruckingheader.tglbukti","<=", $tglBukti)
             ->orderBy('pengeluarantruckingheader.tglbukti', 'asc')
             ->orderBy('pengeluarantruckingdetail.nobukti', 'asc');
 
@@ -99,6 +101,7 @@ class GajiSupirPelunasanPinjaman extends MyModel
     {
         $temp = '##tempPribadi' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
 
+        $tglBukti = date('Y-m-d', strtotime(request()->tglbukti));
 
         $fetch = DB::table('gajisupirpelunasanpinjaman')->from(DB::raw("gajisupirpelunasanpinjaman with (readuncommitted)"))
             ->select(DB::raw("pengeluarantruckingheader.tglbukti,gajisupirpelunasanpinjaman.pengeluarantrucking_nobukti, (SELECT (pengeluarantruckingdetail.nominal - COALESCE(SUM(gajisupirpelunasanpinjaman.nominal),0))
@@ -108,6 +111,7 @@ class GajiSupirPelunasanPinjaman extends MyModel
             ->join(DB::raw("pengeluarantruckingdetail with (readuncommitted)"), 'gajisupirpelunasanpinjaman.pengeluarantrucking_nobukti', 'pengeluarantruckingdetail.nobukti')
             ->join(DB::raw("pengeluarantruckingheader with (readuncommitted)"), 'pengeluarantruckingdetail.nobukti', 'pengeluarantruckingheader.nobukti')
             ->whereRaw("gajisupirpelunasanpinjaman.gajisupir_nobukti = '$nobukti'")
+            ->where("pengeluarantruckingheader.tglbukti","<=", $tglBukti)
             ->whereRaw("gajisupirpelunasanpinjaman.supir_id = $supir_id");
 
         Schema::create($temp, function ($table) {
@@ -170,6 +174,7 @@ class GajiSupirPelunasanPinjaman extends MyModel
     {
         $temp = '##tempPengeluaran' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
 
+        $tglBukti = date('Y-m-d', strtotime(request()->tglbukti));
         $fetchSisa = DB::table('pengeluarantruckingdetail')
             ->from(
                 DB::raw("pengeluarantruckingdetail with (readuncommitted)")
@@ -179,6 +184,7 @@ class GajiSupirPelunasanPinjaman extends MyModel
                 FROM gajisupirpelunasanpinjaman WHERE pengeluarantruckingdetail.nobukti= gajisupirpelunasanpinjaman.pengeluarantrucking_nobukti) AS sisa"))
             ->leftJoin(DB::raw("pengeluarantruckingheader with (readuncommitted)"), 'pengeluarantruckingdetail.nobukti', 'pengeluarantruckingheader.nobukti')
             ->whereRaw("pengeluarantruckingdetail.supir_id = 0")
+            ->where("pengeluarantruckingheader.tglbukti","<=", $tglBukti)
             ->orderBy('pengeluarantruckingheader.tglbukti', 'asc')
             ->orderBy('pengeluarantruckingdetail.nobukti', 'asc');
 
@@ -200,6 +206,7 @@ class GajiSupirPelunasanPinjaman extends MyModel
     {
         $temp = '##tempPribadi' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
 
+        $tglBukti = date('Y-m-d', strtotime(request()->tglbukti));
 
         $fetch = DB::table('gajisupirpelunasanpinjaman')->from(DB::raw("gajisupirpelunasanpinjaman with (readuncommitted)"))
             ->select(DB::raw("pengeluarantruckingheader.tglbukti,gajisupirpelunasanpinjaman.pengeluarantrucking_nobukti, (SELECT (pengeluarantruckingdetail.nominal - COALESCE(SUM(gajisupirpelunasanpinjaman.nominal),0))
@@ -209,6 +216,7 @@ class GajiSupirPelunasanPinjaman extends MyModel
             ->join(DB::raw("pengeluarantruckingdetail with (readuncommitted)"), 'gajisupirpelunasanpinjaman.pengeluarantrucking_nobukti', 'pengeluarantruckingdetail.nobukti')
             ->join(DB::raw("pengeluarantruckingheader with (readuncommitted)"), 'pengeluarantruckingdetail.nobukti', 'pengeluarantruckingheader.nobukti')
             ->whereRaw("gajisupirpelunasanpinjaman.gajisupir_nobukti = '$nobukti'")
+            ->where("pengeluarantruckingheader.tglbukti","<=", $tglBukti)
             ->whereRaw("gajisupirpelunasanpinjaman.supir_id = 0");
 
         Schema::create($temp, function ($table) {
