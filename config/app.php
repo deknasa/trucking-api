@@ -273,6 +273,7 @@ return [
     'server_btg' => env('BTG_SERVER', "http://tasbtg.kozow.com:8074/"),
     'user_api' => env('USER_API', "ADMIN"),
     'pass_api' => env('PASSWORD_API', "123456"),
+    'password_tnl' => env('PASSWORD_TNL', "123456898"),
     'web_url' => env('WEB_URL', 'http://localhost/trucking/'),
     'ipinfo_token' => env('IPINFO_TOKEN', '54d41850c96dc3'),
 

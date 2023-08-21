@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Schema;
 
 class Tarif extends MyModel
@@ -58,7 +59,7 @@ class Tarif extends MyModel
             ];
             goto selesai;
         }
-        
+
         $upahSupir = DB::table('upahsupir')
             ->from(
                 DB::raw("upahsupir as a with (readuncommitted)")
@@ -105,12 +106,13 @@ class Tarif extends MyModel
                 'zona.zona as zona_id',
                 'tarif.tglmulaiberlaku',
                 'p.memo as statuspenyesuaianharga',
+                'posting.memo as statuspostingtnl',
                 'tarif.keterangan',
                 'tarif.modifiedby',
                 'tarif.created_at',
                 'tarif.updated_at',
                 DB::raw("'Tgl Cetak :'+format(getdate(),'dd-MM-yyyy HH:mm:ss')as tglcetak"),
-                DB::raw(" 'User :".auth('api')->user()->name."' as usercetak")
+                DB::raw(" 'User :" . auth('api')->user()->name . "' as usercetak")
             )
             ->leftJoin(DB::raw("parameter with (readuncommitted)"), 'tarif.statusaktif', '=', 'parameter.id')
             ->leftJoin(DB::raw("kota with (readuncommitted)"), 'tarif.kota_id', '=', 'kota.id')
@@ -118,7 +120,8 @@ class Tarif extends MyModel
             ->leftJoin(DB::raw("$tempUpahsupir as B with (readuncommitted)"), 'tarif.upahsupir_id', '=', "B.id")
             ->leftJoin(DB::raw("tarif as parent with (readuncommitted)"), 'tarif.parent_id', '=', 'parent.id')
             ->leftJoin(DB::raw("parameter AS p with (readuncommitted)"), 'tarif.statuspenyesuaianharga', '=', 'p.id')
-            ->leftJoin(DB::raw("parameter AS sistemton with (readuncommitted)"), 'tarif.statussistemton', '=', 'sistemton.id');
+            ->leftJoin(DB::raw("parameter AS sistemton with (readuncommitted)"), 'tarif.statussistemton', '=', 'sistemton.id')
+            ->leftJoin(DB::raw("parameter AS posting with (readuncommitted)"), 'tarif.statuspostingtnl', '=', 'posting.id');
 
         $this->filter($query);
 
@@ -225,6 +228,7 @@ class Tarif extends MyModel
             $table->unsignedBigInteger('statusaktif')->nullable();
             $table->unsignedBigInteger('statussistemton')->nullable();
             $table->unsignedBigInteger('statuspenyesuaianharga')->nullable();
+            $table->unsignedBigInteger('statuspostingtnl')->nullable();
         });
 
         $status = Parameter::from(
@@ -266,11 +270,25 @@ class Tarif extends MyModel
 
         $iddefaultstatuspenyesuaianharga = $status->id ?? 0;
 
+        $status = Parameter::from(
+            db::Raw("parameter with (readuncommitted)")
+        )
+            ->select(
+                'id'
+            )
+            ->where('grp', '=', 'STATUS POSTING TNL')
+            ->where('subgrp', '=', 'STATUS POSTING TNL')
+            ->where('default', '=', 'YA')
+            ->first();
+
+        $iddefaultstatuspostingtnl = $status->id ?? 0;
+
         DB::table($tempdefault)->insert(
             [
                 "statusaktif" => $iddefaultstatusaktif,
                 "statussistemton" => $iddefaultstatussistemton,
-                "statuspenyesuaianharga" => $iddefaultstatuspenyesuaianharga
+                "statuspenyesuaianharga" => $iddefaultstatuspenyesuaianharga,
+                "statuspostingtnl" => $iddefaultstatuspostingtnl,
             ]
         );
 
@@ -281,6 +299,7 @@ class Tarif extends MyModel
                 'statusaktif',
                 'statussistemton',
                 'statuspenyesuaianharga',
+                'statuspostingtnl',
             );
 
         $data = $query->first();
@@ -359,6 +378,8 @@ class Tarif extends MyModel
                             $query = $query->where('zona.keterangan', 'LIKE', "%$filters[data]%");
                         } elseif ($filters['field'] == 'statuspenyesuaianharga') {
                             $query = $query->where('p.text', '=', "$filters[data]");
+                        } elseif ($filters['field'] == 'statuspostingtnl') {
+                            $query = $query->where('posting.text', '=', "$filters[data]");
                         } elseif ($filters['field'] == 'statussistemton') {
                             $query = $query->where('sistemton.text', '=', "$filters[data]");
                         } else if ($filters['field'] == 'tglmulaiberlaku') {
@@ -389,6 +410,8 @@ class Tarif extends MyModel
                                 $query = $query->orWhere('zona.keterangan', 'LIKE', "%$filters[data]%");
                             } elseif ($filters['field'] == 'statuspenyesuaianharga') {
                                 $query = $query->orWhere('p.text', '=', "$filters[data]");
+                            } elseif ($filters['field'] == 'statuspostingtnl') {
+                                $query = $query->orWhere('posting.text', '=', "$filters[data]");
                             } elseif ($filters['field'] == 'statussistemton') {
                                 $query = $query->orWhere('sistemton.text', '=', "$filters[data]");
                             } else if ($filters['field'] == 'tglmulaiberlaku') {
@@ -465,6 +488,7 @@ class Tarif extends MyModel
         $tarif->zona_id = $data['zona_id'] ?? '';
         $tarif->tglmulaiberlaku = date('Y-m-d', strtotime($data['tglmulaiberlaku']));
         $tarif->statuspenyesuaianharga = $data['statuspenyesuaianharga'];
+        $tarif->statuspostingtnl = $data['statuspostingtnl'];
         $tarif->keterangan = $data['keterangan'];
         $tarif->modifiedby = auth('api')->user()->user;
 
@@ -502,6 +526,16 @@ class Tarif extends MyModel
             'datajson' => $detaillog,
             'modifiedby' => auth('api')->user()->user
         ]);
+
+
+        $statusTnl = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS POSTING TNL')->where('text', 'POSTING TNL')->first();
+        if ($data['statuspostingtnl'] == $statusTnl->id) {
+            $statusBukanTnl = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS POSTING TNL')->where('text', 'TIDAK POSTING TNL')->first();
+            // posting ke tnl
+            $data['statuspostingtnl'] = $statusBukanTnl->id;
+
+            $postingTNL = $this->postingTnl($data);
+        }
 
         return $tarif;
     }
@@ -575,5 +609,38 @@ class Tarif extends MyModel
         ]);
 
         return $tarif;
+    }
+
+    public function postingTnl($data)
+    {
+        $server = config('app.server_jkt');
+        $getToken = Http::withHeaders([
+            'Content-Type' => 'application/json',
+            'Accept' => 'application/json'
+        ])
+            ->post($server . 'truckingtnl-api/public/api/token', [
+                'user' => auth('api')->user()->user,
+                'password' => getenv('PASSWORD_TNL'),
+            ]);
+
+        if ($getToken->getStatusCode() == '404') {
+            throw new \Exception("Akun Tidak Terdaftar di Trucking TNL");
+        } else if ($getToken->getStatusCode() == '200') {
+
+            $access_token = json_decode($getToken, TRUE)['access_token'];
+            $transferTarif = Http::withHeaders([
+                'Content-Type' => 'application/json',
+                'Accept' => 'application/json',
+                'Authorization' => 'Bearer ' . $access_token
+            ])->post($server . 'truckingtnl-api/public/api/tarif', $data);
+            $tesResp = $transferTarif->toPsrResponse();
+            $response = [
+                'statuscode' => $tesResp->getStatusCode(),
+                'data' => $transferTarif->json(),
+            ];
+            return $response;
+        } else {
+            throw new \Exception("server tidak bisa diakses");
+        }
     }
 }

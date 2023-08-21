@@ -66,7 +66,7 @@ class StoreMandorTripRequest extends FormRequest
         $getBukanUpahZona = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS UPAH ZONA')->where('text', 'NON UPAH ZONA')->first();
         $getUpahZona = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS UPAH ZONA')->where('text', 'UPAH ZONA')->first();
         $getListTampilan = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'UBAH TAMPILAN')->where('text', 'INPUTTRIP')->first();
-      
+
         // START VALIDASI RITASI
         $ritasiRule = [];
         $ruleCekUpahRitasi = [];
@@ -373,13 +373,12 @@ class StoreMandorTripRequest extends FormRequest
             }
         }
 
-        if ($getListTampilan != null) {
 
-            $getListTampilan = json_decode($getListTampilan->memo);
-            $getListTampilan = (explode(",",$getListTampilan->INPUT));
-            foreach($getListTampilan as $value){
-                if (array_key_exists(strtolower($value), $rules) == true)
-                {
+        $getListTampilan = json_decode($getListTampilan->memo);
+        if ($getListTampilan->INPUT != '') {
+            $getListTampilan = (explode(",", $getListTampilan->INPUT));
+            foreach ($getListTampilan as $value) {
+                if (array_key_exists(strtolower($value), $rules) == true) {
                     unset($rules[strtolower($value)]);
                 }
             }

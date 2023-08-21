@@ -9,6 +9,8 @@ use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\Storage;
 use App\Helpers\App;
 use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\File;
+use Illuminate\Support\Facades\Http;
 
 class UpahSupir extends MyModel
 {
@@ -336,6 +338,7 @@ class UpahSupir extends MyModel
             $table->unsignedBigInteger('statusluarkota')->nullable();
             $table->unsignedBigInteger('statussimpankandang')->nullable();
             $table->unsignedBigInteger('statusupahzona')->nullable();
+            $table->unsignedBigInteger('statuspostingtnl')->nullable();
         });
 
         $status = Parameter::from(
@@ -391,9 +394,21 @@ class UpahSupir extends MyModel
             ->first();
 
         $iddefaultstatusUpahZona = $status->id ?? 0;
+        $status = Parameter::from(
+            db::Raw("parameter with (readuncommitted)")
+        )
+            ->select(
+                'id'
+            )
+            ->where('grp', '=', 'STATUS POSTING TNL')
+            ->where('subgrp', '=', 'STATUS POSTING TNL')
+            ->where('default', '=', 'YA')
+            ->first();
+
+        $iddefaultstatusPostingTnl = $status->id ?? 0;
 
         DB::table($tempdefault)->insert(
-            ["statusaktif" => $iddefaultstatusaktif, "statusluarkota" => $iddefaultstatusluarkota, "statussimpankandang" => $iddefaultstatusSimpanKandang, "statusupahzona" => $iddefaultstatusUpahZona]
+            ["statusaktif" => $iddefaultstatusaktif, "statusluarkota" => $iddefaultstatusluarkota, "statussimpankandang" => $iddefaultstatusSimpanKandang, "statusupahzona" => $iddefaultstatusUpahZona, "statuspostingtnl" => $iddefaultstatusPostingTnl]
         );
 
         $query = DB::table($tempdefault)->from(
@@ -403,7 +418,8 @@ class UpahSupir extends MyModel
                 'statusaktif',
                 'statusluarkota',
                 'statussimpankandang',
-                'statusupahzona'
+                'statusupahzona',
+                'statuspostingtnl',
             );
 
         $data = $query->first();
@@ -828,6 +844,21 @@ class UpahSupir extends MyModel
         }
     }
 
+    private function storeFilesBase64(array $files, string $destinationFolder): string
+    {
+        $storedFiles = [];
+
+        foreach ($files as $file) {
+            $originalFileName = hash('sha256', $file) . '.jpg';
+            $imageData = base64_decode($file);
+            $storedFile = Storage::put($destinationFolder . '/' . $originalFileName, $imageData);
+            $resizedFiles = App::imageResize(storage_path("app/$destinationFolder/"), storage_path("app/upahsupir/$originalFileName"), $originalFileName);
+            $storedFiles[] = $originalFileName;
+        }
+
+        return json_encode($storedFiles);
+    }
+
     private function storeFiles(array $files, string $destinationFolder): string
     {
         $storedFiles = [];
@@ -842,7 +873,6 @@ class UpahSupir extends MyModel
 
         return json_encode($storedFiles);
     }
-
     public function processStore(array $data): UpahSupir
     {
         try {
@@ -879,9 +909,12 @@ class UpahSupir extends MyModel
             $upahsupir->keterangan = $data['keterangan'] ?? '';
             $upahsupir->modifiedby = auth('api')->user()->user;
             $this->deleteFiles($upahsupir);
-
             if (array_key_exists('gambar', $data)) {
-                $upahsupir->gambar = $this->storeFiles($data['gambar'], 'upahsupir');
+                if ($data['from'] != '') {
+                    $upahsupir->gambar = $this->storeFilesBase64($data['gambar'], 'upahsupir');
+                } else {
+                    $upahsupir->gambar = $this->storeFiles($data['gambar'], 'upahsupir');
+                }
             } else {
                 $upahsupir->gambar = '';
             }
@@ -999,6 +1032,22 @@ class UpahSupir extends MyModel
                     'modifiedby' => auth('api')->user()->user,
                 ]);
             }
+            $statusTnl = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS POSTING TNL')->where('text', 'POSTING TNL')->first();
+            if ($data['statuspostingtnl'] == $statusTnl->id) {
+                $statusBukanTnl = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS POSTING TNL')->where('text', 'TIDAK POSTING TNL')->first();
+                // posting ke tnl
+                $data['statuspostingtnl'] = $statusBukanTnl->id;
+
+                $postingTNL = $this->postingTnl($data, $upahsupir->gambar);
+                if ($postingTNL['statuscode'] != 201) {
+                    if($postingTNL['statuscode'] == 422){
+                        throw new \Exception($postingTNL['data']['errors']['penyesuaian'][0].' di TNL');
+                    }else{
+                        throw new \Exception($postingTNL['data']['message']);
+                    }
+                }
+            }
+
             return $upahsupir;
         } catch (\Throwable $th) {
             $this->deleteFiles($upahsupir);
@@ -1105,5 +1154,52 @@ class UpahSupir extends MyModel
         ]);
 
         return $upahSupir;
+    }
+
+
+    public function postingTnl($data, $gambar)
+    {
+        $gambar = json_decode($gambar);
+        // dd(storage_path("app/upahsupir/".$gambar[0]));
+        // $data['gambar'] = $data['gambartnl'];
+        // dd($data['gambar']);
+        $server = config('app.server_jkt');
+        $getToken = Http::withHeaders([
+            'Content-Type' => 'application/json',
+            'Accept' => 'application/json'
+        ])
+            ->post($server . 'truckingtnl-api/public/api/token', [
+                'user' => auth('api')->user()->user,
+                'password' => getenv('PASSWORD_TNL'),
+            ]);
+
+        if ($getToken->getStatusCode() == '404') {
+            throw new \Exception("Akun Tidak Terdaftar di Trucking TNL");
+        } else if ($getToken->getStatusCode() == '200') {
+
+            $access_token = json_decode($getToken, TRUE)['access_token'];
+
+            foreach ($gambar as $imagePath) {
+                $imageBase64[] = base64_encode(file_get_contents(storage_path("app/upahsupir/" . $imagePath)));
+            }
+            $data['gambar'] = $imageBase64;
+            $data['from'] = 'jkt';
+            $transferUpahSupir = Http::withHeaders([
+                'Accept' => 'application/json',
+                'Authorization' => 'Bearer ' . $access_token,
+                'Content-Type' => 'application/json',
+            ])
+
+                ->post($server . "truckingtnl-api/public/api/upahsupir", $data);
+
+            $tesResp = $transferUpahSupir->toPsrResponse();
+            $response = [
+                'statuscode' => $tesResp->getStatusCode(),
+                'data' => $transferUpahSupir->json(),
+            ];
+            return $response;
+        } else {
+            throw new \Exception("server tidak bisa diakses");
+        }
     }
 }

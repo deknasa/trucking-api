@@ -199,9 +199,13 @@ class StoreUpahSupirRequest extends FormRequest
                 'before:' . $tglBatasAkhir,
                 'after_or_equal:' . $tglbatasawal
             ],
-            'gambar.*' => 'image'
         ];
-
+        $rulesGambar = [];
+        if(request()->from == null){
+            $rulesGambar = [
+                'gambar.*' => 'image',
+            ];
+        }
         if (request()->statusupahzona == $getUpahZona->id) {
 
             $tidakSimpanKandang = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS SIMPAN KANDANG')->where('text', 'TIDAK SIMPAN KANDANG')->first();
@@ -218,6 +222,8 @@ class StoreUpahSupirRequest extends FormRequest
             StoreUpahSupirRincianRequest::class
         ];
 
+        $getListTampilan = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'UBAH TAMPILAN')->where('text', 'UPAHSUPIR')->first();
+
         foreach ($relatedRequests as $relatedRequest) {
             $rules = array_merge(
                 $rules,
@@ -229,10 +235,20 @@ class StoreUpahSupirRequest extends FormRequest
                 $rulesKotaSampai_id,
                 $rulesZonaDari_id,
                 $rulesZonaSampai_id,
-                $rulesStatusSimpanKandang
+                $rulesStatusSimpanKandang,
+                $rulesGambar
             );
         }
-
+        
+        $getListTampilan = json_decode($getListTampilan->memo);
+        if ($getListTampilan->INPUT != '') {
+            $getListTampilan = (explode(",", $getListTampilan->INPUT));
+            foreach ($getListTampilan as $value) {
+                if (array_key_exists(strtolower($value), $rules) == true) {
+                    unset($rules[strtolower($value)]);
+                }
+            }
+        }
         return $rules;
     }
 

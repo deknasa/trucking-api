@@ -27,14 +27,14 @@ class ExistUpahSupir implements Rule
      */
     public function passes($attribute, $value)
     {
-        $updahritasi = DB::table("updahritasi")->from(DB::raw("updahritasi with (readuncommitted)"))
-        ->where('id', $value)
-        ->first();
-    if ($updahritasi == null) {
-        return false;
-    } else {
-        return true;
-    }
+        $upahritasi = DB::table("upahritasi")->from(DB::raw("upahritasi with (readuncommitted)"))
+            ->where('id', $value)
+            ->first();
+        if ($upahritasi == null) {
+            return false;
+        } else {
+            return true;
+        }
     }
 
     /**

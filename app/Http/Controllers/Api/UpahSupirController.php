@@ -89,27 +89,36 @@ class UpahSupirController extends Controller
 
         try {
             $data = [
+                'kotadari' => $request->kotadari,
                 'kotadari_id' => $request->kotadari_id,
                 'parent_id' => $request->parent_id ?? 0,
+                'parent' => $request->parent,
                 'tarif_id' => $request->tarif_id ?? 0,
+                'tarif' => $request->tarif,
+                'kotasampai' => $request->kotasampai,
                 'kotasampai_id' => $request->kotasampai_id,
                 'penyesuaian' => $request->penyesuaian,
                 'jarak' => $request->jarak,
+                'zona' => $request->zona,
                 'zona_id' => ($request->zona_id == null) ? 0 : $request->zona_id ?? 0,
                 'statusaktif' => $request->statusaktif,
 
-                'tglmulaiberlaku' => date('Y-m-d', strtotime($request->tglmulaiberlaku)),
+                'tglmulaiberlaku' => $request->tglmulaiberlaku,
 
                 'statusupahzona' => $request->statusupahzona,
+                'statuspostingtnl' => $request->statuspostingtnl,
                 'zonadari_id' => $request->zonadari_id,
                 'zonasampai_id' => $request->zonasampai_id,
                 'statussimpankandang' => $request->statussimpankandang,
                 'statusluarkota' => $request->statusluarkota,
                 'keterangan' => $request->keterangan,
-                'gambar' => $request->gambar ?? [],
+                'gambar' => $request->file('gambar') ?? [],
+                'from' => $request->from ?? '',
 
                 'container_id' => $request->container_id,
+                'container' => $request->container,
                 'statuscontainer_id' => $request->statuscontainer_id,
+                'statuscontainer' => $request->statuscontainer,
                 'nominalsupir' => $request->nominalsupir,
                 'nominalkenek' => $request->nominalkenek ?? 0,
                 'nominalkomisi' => $request->nominalkomisi ?? 0,
