@@ -60,6 +60,11 @@ class StoreUpahSupirRequest extends FormRequest
         foreach ($dataUpahZona as $item) {
             $statusUpahZona[] = $item['id'];
         }
+        $dataPostingTnl = $parameter->getcombodata('STATUS POSTING TNL', 'STATUS POSTING TNL');
+        $dataPostingTnl = json_decode($dataPostingTnl, true);
+        foreach ($dataPostingTnl as $item) {
+            $statusPostingTnl[] = $item['id'];
+        }
 
         $getBukanUpahZona = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS UPAH ZONA')->where('text', 'NON UPAH ZONA')->first();
         $getUpahZona = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS UPAH ZONA')->where('text', 'UPAH ZONA')->first();
@@ -199,6 +204,7 @@ class StoreUpahSupirRequest extends FormRequest
                 'before:' . $tglBatasAkhir,
                 'after_or_equal:' . $tglbatasawal
             ],
+            'statuspostingtnl' => ['required', Rule::in($statusPostingTnl)],
         ];
         $rulesGambar = [];
         if(request()->from == null){
@@ -218,6 +224,16 @@ class StoreUpahSupirRequest extends FormRequest
             ];
         }
 
+        $getListTampilan = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'UBAH TAMPILAN')->where('text', 'UPAHSUPIR')->first();
+        $getListTampilan = json_decode($getListTampilan->memo);
+        if ($getListTampilan->INPUT != '') {
+            $getListTampilan = (explode(",", $getListTampilan->INPUT));
+            foreach ($getListTampilan as $value) {
+                if (array_key_exists(trim(strtolower($value)), $rules) == true) {
+                    unset($rules[trim(strtolower($value))]);
+                }
+            }
+        }
         $relatedRequests = [
             StoreUpahSupirRincianRequest::class
         ];

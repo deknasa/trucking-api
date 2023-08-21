@@ -327,6 +327,7 @@ class Tarif extends MyModel
                 'zona.keterangan as zona',
                 'tarif.tglmulaiberlaku',
                 'tarif.statuspenyesuaianharga',
+                DB::raw("(case when tarif.statuspostingtnl IS NULL then 0 else tarif.statuspostingtnl end) as statuspostingtnl"),
                 'tarif.keterangan'
             )
             ->leftJoin(DB::raw("kota with (readuncommitted)"), 'tarif.kota_id', '=', 'kota.id')
@@ -622,7 +623,7 @@ class Tarif extends MyModel
                 'user' => auth('api')->user()->user,
                 'password' => getenv('PASSWORD_TNL'),
             ]);
-
+            
         if ($getToken->getStatusCode() == '404') {
             throw new \Exception("Akun Tidak Terdaftar di Trucking TNL");
         } else if ($getToken->getStatusCode() == '200') {

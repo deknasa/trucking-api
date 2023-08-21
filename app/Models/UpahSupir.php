@@ -103,6 +103,9 @@ class UpahSupir extends MyModel
                 $table->longText('statusupahzona')->nullable();
                 $table->longText('statusupahzona_text')->nullable();
                 $table->bigInteger('statusupahzona_id')->nullable();
+                $table->longText('statuspostingtnl')->nullable();
+                $table->longText('statuspostingtnl_text')->nullable();
+                $table->bigInteger('statuspostingtnl_id')->nullable();
                 $table->date('tglmulaiberlaku')->nullable();
                 $table->longText('gambar')->nullable();
                 $table->longText('keterangan')->nullable();
@@ -149,6 +152,9 @@ class UpahSupir extends MyModel
                     'statusupahzona.text as statusupahzona_text',
                     'upahsupir.statusupahzona as statusupahzona_id',
 
+                    'statuspostingtnl.memo as statuspostingtnl',
+                    'statuspostingtnl.text as statuspostingtnl_text',
+                    'upahsupir.statuspostingtnl as statuspostingtnl_id',
                     'upahsupir.tglmulaiberlaku',
                     // 'upahsupir.tglakhirberlaku',
                     'upahsupir.gambar',
@@ -167,6 +173,7 @@ class UpahSupir extends MyModel
                 ->leftJoin(DB::raw("zona as zonasampai with (readuncommitted)"), 'zonasampai.id', '=', 'upahsupir.zonasampai_id')
                 ->leftJoin(DB::raw("parameter with (readuncommitted)"), 'upahsupir.statusaktif', 'parameter.id')
                 ->leftJoin(DB::raw("parameter as statusupahzona with (readuncommitted)"), 'upahsupir.statusupahzona', 'statusupahzona.id')
+                ->leftJoin(DB::raw("parameter as statuspostingtnl with (readuncommitted)"), 'upahsupir.statuspostingtnl', 'statuspostingtnl.id')
                 ->leftJoin(DB::raw("zona with (readuncommitted)"), 'upahsupir.zona_id', 'zona.id');
 
             DB::table($temtabel)->insertUsing([
@@ -186,6 +193,9 @@ class UpahSupir extends MyModel
                 'statusupahzona',
                 'statusupahzona_text',
                 'statusupahzona_id',
+                'statuspostingtnl',
+                'statuspostingtnl_text',
+                'statuspostingtnl_id',
                 'tglmulaiberlaku',
                 'gambar',
                 'keterangan',
@@ -225,6 +235,7 @@ class UpahSupir extends MyModel
                 'a.zona_id',
                 'a.statusaktif',
                 'a.statusupahzona',
+                'a.statuspostingtnl',
                 'a.tglmulaiberlaku',
                 'a.gambar',
                 'a.keterangan',
@@ -291,15 +302,16 @@ class UpahSupir extends MyModel
             DB::raw("(case when upahsupir.kotasampai_id=0 then null else upahsupir.kotasampai_id end) as kotasampai_id"),
             DB::raw("TRIM(kotasampai.keterangan) as kotasampai"),
 
-            'upahsupir.zonadari_id',
+            DB::raw("(case when upahsupir.zonadari_id=0 then null else upahsupir.zonadari_id end) as zonadari_id"),
             DB::raw("TRIM(zonadari.zona) as zonadari"),
-            'upahsupir.zonasampai_id',
+            DB::raw("(case when upahsupir.zonasampai_id=0 then null else upahsupir.zonasampai_id end) as zonasampai_id"),
             DB::raw("TRIM(zonasampai.zona) as zonasampai"),
             'upahsupir.jarak',
             'zona.keterangan as zona',
             DB::raw("(case when upahsupir.zona_id=0 then null else upahsupir.zona_id end) as zona_id"),
             'upahsupir.statusaktif',
             'upahsupir.statusupahzona',
+            'upahsupir.statuspostingtnl',
             'upahsupir.statussimpankandang',
 
             'upahsupir.tglmulaiberlaku',
@@ -616,6 +628,8 @@ class UpahSupir extends MyModel
                             $query = $query->where('a.statusaktif_text', '=', $filters['data']);
                         } else if ($filters['field'] == 'statusupahzona') {
                             $query = $query->where('a.statusupahzona_text', '=', $filters['data']);
+                        } else if ($filters['field'] == 'statuspostingtnl') {
+                            $query = $query->where('a.statuspostingtnl_text', '=', $filters['data']);
                         } elseif ($filters['field'] == 'parent_id') {
                             $query = $query->where('a.parent_id', '=', $filters['data']);
                         } else if ($filters['field'] == 'kotadari_id') {
@@ -648,6 +662,8 @@ class UpahSupir extends MyModel
                                 $query = $query->orWhere('a.statusaktif_text', '=', $filters['data']);
                             } elseif ($filters['field'] == 'statusupahzona') {
                                 $query = $query->orWhere('a.statusupahzona', '=', $filters['data']);
+                            } elseif ($filters['field'] == 'statuspostingtnl') {
+                                $query = $query->orWhere('a.statuspostingtnl', '=', $filters['data']);
                             } else if ($filters['field'] == 'kotadari_id') {
                                 $query = $query->orWhere('a.kotadari_id', 'LIKE', "%$filters[data]%");
                             } else if ($filters['field'] == 'zonadari_id') {
@@ -903,6 +919,7 @@ class UpahSupir extends MyModel
             $upahsupir->tglmulaiberlaku = date('Y-m-d', strtotime($data['tglmulaiberlaku']));
             $upahsupir->zonadari_id = $data['zonadari_id'] ?? 0;
             $upahsupir->zonasampai_id = $data['zonasampai_id'] ?? 0;
+            $upahsupir->statuspostingtnl = $data['statuspostingtnl'];
             $upahsupir->statusupahzona = $data['statusupahzona'];
             $upahsupir->statussimpankandang = $data['statussimpankandang'];
             $upahsupir->statusluarkota = $data['statusluarkota'] ?? '';

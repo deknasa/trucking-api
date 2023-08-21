@@ -378,8 +378,8 @@ class StoreMandorTripRequest extends FormRequest
         if ($getListTampilan->INPUT != '') {
             $getListTampilan = (explode(",", $getListTampilan->INPUT));
             foreach ($getListTampilan as $value) {
-                if (array_key_exists(strtolower($value), $rules) == true) {
-                    unset($rules[strtolower($value)]);
+                if (array_key_exists(trim(strtolower($value)), $rules) == true) {
+                    unset($rules[trim(strtolower($value))]);
                 }
             }
         }
