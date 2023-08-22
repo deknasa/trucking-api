@@ -164,6 +164,7 @@ class PendapatanSupirHeader extends MyModel
             $table->integer('dari_id')->nullable();
             $table->integer('sampai_id')->nullable();
             $table->double('nominal')->nullable();
+            $table->double('gajikenek')->nullable();
             $table->longText('keterangan')->nullable();
         });
 
@@ -179,6 +180,7 @@ class PendapatanSupirHeader extends MyModel
                 'a.dari_id',
                 'a.sampai_id',
                 'a.nominal',
+                DB::raw("'0' as gajikenek"),
                 DB::raw("'' as keterangan")
             )
             ->leftjoin(DB::raw("pendapatansupirdetail as b with(readuncommitted)"), function ($join) {
@@ -202,6 +204,7 @@ class PendapatanSupirHeader extends MyModel
             'dari_id',
             'sampai_id',
             'nominal',
+            'gajikenek',
             'keterangan',
 
         ], $querysaldopendapatan);
@@ -219,6 +222,7 @@ class PendapatanSupirHeader extends MyModel
                 'd.dari_id',
                 'd.sampai_id',
                 'c.komisisupir as nominal',
+                'c.gajikenek',
                 DB::raw("'' as keterangan")
             )
             ->join(DB::raw("gajisupirdetail c with (readuncommitted)"), 'a.gajisupir_nobukti', 'c.nobukti')
@@ -243,6 +247,7 @@ class PendapatanSupirHeader extends MyModel
             'dari_id',
             'sampai_id',
             'nominal',
+            'gajikenek',
             'keterangan',
 
         ], $querysaldopendapatan);
@@ -259,6 +264,7 @@ class PendapatanSupirHeader extends MyModel
                 'b.dari_id',
                 'b.sampai_id',
                 'a.nominal',
+                DB::raw("(case when a.gajikenek IS NULL then 0 else a.gajikenek end) as gajikenek"),
                 'a.keterangan'
             )
             ->join(DB::raw("suratpengantar b with (readuncommitted)"), 'a.nobuktitrip', 'b.nobukti')
@@ -276,6 +282,7 @@ class PendapatanSupirHeader extends MyModel
             'dari_id',
             'sampai_id',
             'nominal',
+            'gajikenek',
             'keterangan',
         ], $querysaldopendapatan);
 
@@ -291,6 +298,7 @@ class PendapatanSupirHeader extends MyModel
                 'b.dari_id',
                 'b.sampai_id',
                 'a.nominal',
+                DB::raw("(case when a.gajikenek IS NULL then 0 else a.gajikenek end) as gajikenek"),
                 'a.keterangan'
             )
             ->join(DB::raw("saldopendapatansupir b with (readuncommitted)"), 'a.nobuktitrip', 'b.suratpengantar_nobukti')
@@ -308,6 +316,7 @@ class PendapatanSupirHeader extends MyModel
             'dari_id',
             'sampai_id',
             'nominal',
+            'gajikenek',
             'keterangan',
         ], $querysaldopendapatan);
 
@@ -328,11 +337,12 @@ class PendapatanSupirHeader extends MyModel
                 'a.sampai_id',
                 DB::raw("isnull(c.kodekota,'') as sampai"),
                 'a.nominal as nominal_detail',
+                'a.gajikenek',
                 'a.keterangan',
             )
             ->leftJoin(DB::raw("kota b with (readuncommitted)"), 'a.dari_id', 'b.id')
             ->leftJoin(DB::raw("kota c with (readuncommitted)"), 'a.sampai_id', 'c.id')
-            ->where('a.nominal','!=','0');
+            ->where('a.nominal', '!=', '0');
 
         // ->Orderby('a.suratpengantar_tglbukti', 'asc')
         // ->Orderby('a.suratpengantar_nobukti', 'asc');
@@ -340,6 +350,7 @@ class PendapatanSupirHeader extends MyModel
         if ($aksi != 'show') {
             $this->filterTrip($query);
             $this->totalNominal = $query->sum('nominal');
+            $this->totalGajiKenek = $query->sum('gajikenek');
             $this->totalRows = $query->count();
             $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;
             $this->sortTrip($query);
@@ -394,6 +405,8 @@ class PendapatanSupirHeader extends MyModel
                                 $query = $query->whereRaw("format(a.suratpengantar_tglbukti,'dd-MM-yyyy') like '%$filters[data]%'");
                             } else if ($filters['field'] == 'nominal_detail') {
                                 $query = $query->whereRaw("format(a.nominal, '#,#0.00') LIKE '%$filters[data]%'");
+                            } else if ($filters['field'] == 'gajikenek') {
+                                $query = $query->whereRaw("format(a.gajikenek, '#,#0.00') LIKE '%$filters[data]%'");
                             } else {
                                 $query = $query->where('a.' . $filters['field'], 'LIKE', "%$filters[data]%");
                             }
@@ -417,6 +430,8 @@ class PendapatanSupirHeader extends MyModel
                                     $query = $query->orWhereRaw("format(a.suratpengantar_tglbukti,'dd-MM-yyyy') like '%$filters[data]%'");
                                 } else if ($filters['field'] == 'nominal_detail') {
                                     $query = $query->orWhereRaw("format(a.nominal, '#,#0.00') LIKE '%$filters[data]%'");
+                                } else if ($filters['field'] == 'gajikenek') {
+                                    $query = $query->orWhereRaw("format(a.gajikenek, '#,#0.00') LIKE '%$filters[data]%'");
                                 } else {
                                     $query = $query->orWhere('a.' . $filters['field'], 'LIKE', "%$filters[data]%");
                                 }
@@ -666,6 +681,16 @@ class PendapatanSupirHeader extends MyModel
             ->first();
         $memoDebet = json_decode($coaDebet->memo, true);
 
+        $getListTampilan = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'UBAH TAMPILAN')->where('text', 'PENDAPATANSUPIR')->first();
+        $getListTampilan = json_decode($getListTampilan->memo);
+        if ($getListTampilan->INPUT != '') {
+            $getListTampilan = (explode(",", $getListTampilan->INPUT));
+            foreach ($getListTampilan as $value) {
+                if (array_key_exists(trim(strtolower($value)), $data) == true) {
+                    unset($data[trim(strtolower($value))]);
+                }
+            }
+        }
         $pendapatanSupirHeader = new PendapatanSupirHeader();
 
         $pendapatanSupirHeader->tglbukti = date('Y-m-d', strtotime($data['tglbukti']));
@@ -686,14 +711,16 @@ class PendapatanSupirHeader extends MyModel
 
         $totalPengeluaran = 0;
         for ($i = 0; $i < count($data['id_detail']); $i++) {
+            $gajiKenek =  $data['gajikenek'][$i] ?? 0;
             $pendapatanSupirDetail = (new PendapatanSupirDetail)->processStore($pendapatanSupirHeader, [
                 'supir_id' => $data['supir_id'],
                 'nobuktitrip' => $data['nobukti_trip'][$i],
                 'nobuktirincian' => $data['nobukti_ric'][$i],
                 'nominal' => $data['nominal_detail'][$i],
+                'gajikenek' => $gajiKenek,
                 'modifiedby' => $pendapatanSupirHeader->modifiedby,
             ]);
-            $totalPengeluaran = $totalPengeluaran + $data['nominal_detail'][$i];
+            $totalPengeluaran = $totalPengeluaran + $data['nominal_detail'][$i] + $gajiKenek;
             $pendapatanSupirs[] = $pendapatanSupirHeader->toArray();
         }
 
@@ -702,9 +729,9 @@ class PendapatanSupirHeader extends MyModel
         $nominalDetailPengeluaran[] = $totalPengeluaran;
         $coaDebetPengeluaran[] = $memoDebet['JURNAL'];
         $keteranganDetailPengeluaran[] = "Pendapatan Supir " . $data['supir'] . ' ' . $data['tgldari'] . " s/d " . $data['tglsampai'];
-        if($data['bank_id'] == 1){
+        if ($data['bank_id'] == 1) {
             $alatBayar = DB::table("alatbayar")->from(DB::raw("alatbayar with (readuncommitted)"))->where('kodealatbayar', 'TUNAI')->first();
-        }else{
+        } else {
             $alatBayar = DB::table("alatbayar")->from(DB::raw("alatbayar with (readuncommitted)"))->where('kodealatbayar', 'TRANSFER')->first();
         }
 
@@ -774,6 +801,16 @@ class PendapatanSupirHeader extends MyModel
             $nobukti = (new RunningNumberService)->get($group, $subGroup, $pendapatanSupirHeader->getTable(), date('Y-m-d', strtotime($data['tglbukti'])));
         }
 
+        $getListTampilan = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'UBAH TAMPILAN')->where('text', 'PENDAPATANSUPIR')->first();
+        $getListTampilan = json_decode($getListTampilan->memo);
+        if ($getListTampilan->INPUT != '') {
+            $getListTampilan = (explode(",", $getListTampilan->INPUT));
+            foreach ($getListTampilan as $value) {
+                if (array_key_exists(trim(strtolower($value)), $data) == true) {
+                    unset($data[trim(strtolower($value))]);
+                }
+            }
+        }
         $pendapatanSupirHeader->nobukti = $nobukti;
         $pendapatanSupirHeader->tglbukti = date('Y-m-d', strtotime($data['tglbukti']));
         $pendapatanSupirHeader->tgldari = date('Y-m-d', strtotime($data['tgldari']));
@@ -787,15 +824,17 @@ class PendapatanSupirHeader extends MyModel
         PendapatanSupirDetail::where('pendapatansupir_id', $pendapatanSupirHeader->id)->lockForUpdate()->delete();
 
         $totalPengeluaran = 0;
-        for ($i = 0; $i < count($data['id_detail']); $i++) {
+        for ($i = 0; $i < count($data['id_detail']); $i++) {            
+            $gajiKenek =  $data['gajikenek'][$i] ?? 0;
             $pendapatanSupirDetail = (new PendapatanSupirDetail)->processStore($pendapatanSupirHeader, [
                 'supir_id' => $data['supir_id'],
                 'nobuktitrip' => $data['nobukti_trip'][$i],
                 'nobuktirincian' => $data['nobukti_ric'][$i],
                 'nominal' => $data['nominal_detail'][$i],
+                'gajikenek' => $gajiKenek,
                 'modifiedby' => $pendapatanSupirHeader->modifiedby,
             ]);
-            $totalPengeluaran = $totalPengeluaran + $data['nominal_detail'][$i];
+            $totalPengeluaran = $totalPengeluaran + $data['nominal_detail'][$i] + $gajiKenek;
             $pendapatanSupirs[] = $pendapatanSupirHeader->toArray();
         }
         $coaDebet = Parameter::from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'JURNAL PEMBAYARAN HUTANG')->where('subgrp', 'DEBET')
@@ -807,10 +846,10 @@ class PendapatanSupirHeader extends MyModel
         $nominalDetailPengeluaran[] = $totalPengeluaran;
         $coaDebetPengeluaran[] = $memoDebet['JURNAL'];
         $keteranganDetailPengeluaran[] = "Pendapatan Supir " . $data['supir'] . ' ' . $data['tgldari'] . " s/d " . $data['tglsampai'];
-        
-        if($pendapatanSupirHeader->bank_id == 1){
+
+        if ($pendapatanSupirHeader->bank_id == 1) {
             $alatBayar = DB::table("alatbayar")->from(DB::raw("alatbayar with (readuncommitted)"))->where('kodealatbayar', 'TUNAI')->first();
-        }else{
+        } else {
             $alatBayar = DB::table("alatbayar")->from(DB::raw("alatbayar with (readuncommitted)"))->where('kodealatbayar', 'TRANSFER')->first();
         }
 

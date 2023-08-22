@@ -25,7 +25,8 @@ class PendapatanSupirDetailController extends Controller
             'attributes' => [
                 'totalRows' => $pendapatanSupir->totalRows,
                 'totalPages' => $pendapatanSupir->totalPages,
-                'totalNominal' => $pendapatanSupir->totalNominal
+                'totalNominal' => $pendapatanSupir->totalNominal,
+                'totalGajiKenek' => $pendapatanSupir->totalGajiKenek
             ]
         ]);
     }
