@@ -35,7 +35,7 @@ class JurnalUmumHeader extends MyModel
         $this->setRequestParameters();
 
         $lennobukti = 3;
-
+        $lookup = request()->jurnal ?? '';
         $tempsummary = '##tempsummary' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
         Schema::create($tempsummary, function ($table) {
             $table->id();
@@ -84,6 +84,11 @@ class JurnalUmumHeader extends MyModel
             ->whereBetween($this->table . '.tglbukti', [date('Y-m-d', strtotime(request()->tgldari)), date('Y-m-d', strtotime(request()->tglsampai))])
             ->leftJoin(DB::raw("parameter as statusapproval with (readuncommitted)"), 'jurnalumumheader.statusapproval', 'statusapproval.id')
             ->leftjoin(DB::raw($tempsummary . " as c"), 'jurnalumumheader.nobukti', 'c.nobukti');
+
+        if ($lookup != '') {
+            $params = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'JURNAL UMUM BUKTI')->where('subgrp','JURNAL UMUM BUKTI')->first();
+            $query->where('jurnalumumheader.statusformat', $params->id);
+        }
 
         $this->totalRows = $query->count();
         $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;
@@ -140,7 +145,7 @@ class JurnalUmumHeader extends MyModel
             $table->increments('position');
         });
 
-        if((date('Y-m', strtotime(request()->tglbukti)) != date('Y-m', strtotime(request()->tgldariheader))) || (date('Y-m', strtotime(request()->tglbukti)) != date('Y-m', strtotime(request()->tglsampaiheader)))){
+        if ((date('Y-m', strtotime(request()->tglbukti)) != date('Y-m', strtotime(request()->tgldariheader))) || (date('Y-m', strtotime(request()->tglbukti)) != date('Y-m', strtotime(request()->tglsampaiheader)))) {
             request()->tgldariheader = date('Y-m-01', strtotime(request()->tglbukti));
             request()->tglsampaiheader = date('Y-m-t', strtotime(request()->tglbukti));
         }
@@ -491,7 +496,7 @@ class JurnalUmumHeader extends MyModel
     }
 
     public function processUpdate(JurnalUmumHeader $jurnalUmumHeader, array $data): JurnalUmumHeader
-    {        
+    {
         $group = 'JURNAL UMUM BUKTI';
         $subGroup = 'JURNAL UMUM BUKTI';
 
@@ -508,9 +513,9 @@ class JurnalUmumHeader extends MyModel
         if (isset($querycek)) {
             $nobukti = $querycek->nobukti;
         } else {
-            if (str_contains($data['nobukti'], 'JU')) { 
+            if (str_contains($data['nobukti'], 'JU')) {
                 $nobukti = (new RunningNumberService)->get($group, $subGroup, $jurnalUmumHeader->getTable(), date('Y-m-d', strtotime($data['tglbukti'])));
-            }else{
+            } else {
                 $nobukti = $data['nobukti'];
             }
         }

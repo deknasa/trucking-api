@@ -268,6 +268,18 @@ class ParameterController extends Controller
         $data = $querydata->first();
         return $data;
     }
+    public function getparamfirst(Request $request)
+    {
+
+        $querydata = Parameter::select('id as id', 'text')
+            ->where('grp', '=',  $request->grp)
+            ->where('subgrp', '=', $request->subgrp)
+            ->orderBy('id');
+
+
+        $data = $querydata->first();
+        return $data;
+    }
 
     public function getParamByText(Request $request)
     {

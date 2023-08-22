@@ -162,6 +162,27 @@ class JurnalUmumDetail extends MyModel
         return $query;
     }
 
+    public function getDetail($id){
+        $query = JurnalUmumDetail::from(
+            DB::raw("jurnalumumdetail as A with (readuncommitted)")
+        )->select(['A.coa as coadebet', 'debet.keterangancoa as ketcoadebet', 'b.coa as coakredit', 'kredit.keterangancoa as ketcoakredit', 'A.nominal', 'A.keterangan'])
+            ->join(
+                DB::raw("(SELECT baris,coa FROM jurnalumumdetail WHERE jurnalumum_id='$id' AND nominal<0) B"),
+                function ($join) {
+                    $join->on('A.baris', '=', 'B.baris');
+                }
+            )
+            ->join(DB::raw("akunpusat as debet with (readuncommitted)"), 'debet.coa', 'A.coa')
+            ->join(DB::raw("akunpusat as kredit with (readuncommitted)"), 'kredit.coa', 'B.coa')
+            ->where([
+                ['A.jurnalumum_id', '=', $id],
+                ['A.nominal', '>=', '0']
+            ])
+            ->get();
+
+        return $query;
+    }
+
     public function getJurnalFromAnotherTable($nobukti){
         $this->setRequestParameters();
         $query = JurnalUmumDetail::from(
