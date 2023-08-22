@@ -222,6 +222,7 @@ use App\Http\Controllers\Api\ProsesUangJalanSupirHeaderController;
 use App\Http\Controllers\Api\ReportNeracaController;
 use App\Http\Controllers\Api\StokPersediaanController;
 use App\Http\Controllers\Api\TutupBukuController;
+use App\Http\Controllers\Api\ApprovalOpnameController;
 use App\Http\Controllers\Api\LaporanKartuHutangPerVendorController;
 use App\Http\Controllers\Api\LaporanMutasiKasBankController;
 use App\Http\Controllers\Api\LaporanKartuStokController;
@@ -1117,6 +1118,7 @@ route::middleware(['auth:api', 'authorized'])->group(function () {
     Route::resource('invoicedetail', InvoiceDetailController::class)->whereNumber('invoicedetail');
 
     Route::resource('tutupbuku', TutupBukuController::class)->whereNumber('tutupbuku');
+    Route::resource('approvalopname', ApprovalOpnameController::class)->whereNumber('approvalopname');
 
 
     Route::get('suratpengantar/combo', [SuratPengantarController::class, 'combo']);
