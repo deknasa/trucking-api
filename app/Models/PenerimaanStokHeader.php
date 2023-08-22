@@ -73,9 +73,9 @@ class PenerimaanStokHeader extends MyModel
         }
 
         if (request()->penerimaanstok_id==$spbs->text) {
-            
-            // $query->leftJoin('penerimaanstokheader as po', 'penerimaanstokheader.penerimaanstok_nobukti', '=', 'po.nobukti')
+            $query->leftJoin('penerimaanstokdetail as detail', 'penerimaanstokheader.id', '=', 'detail.penerimaanstokheader_id');
             $query->where('penerimaanstokheader.penerimaanstok_id', '=', $do->text)
+            ->where('detail.stok_id' ,'=',request()->stok_id)
             ->whereNotIn('penerimaanstokheader.nobukti', function($query) {
                 $query->select(DB::raw('DISTINCT penerimaanstokheader.penerimaanstok_nobukti'))
                       ->from('penerimaanstokheader')
