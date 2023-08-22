@@ -13,6 +13,7 @@ use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 use App\Rules\UniqueTarifEdit;
 use App\Rules\ValidasiTujuanTarifDariUpahSupir;
+use Illuminate\Support\Facades\DB;
 
 class StoreTarifRequest extends FormRequest
 {
@@ -48,6 +49,11 @@ class StoreTarifRequest extends FormRequest
         $dataPenyesuaian = json_decode($dataPenyesuaian, true);
         foreach ($dataPenyesuaian as $item) {
             $statusPenyesuaian[] = $item['id'];
+        }
+        $dataPostingTnl = $parameter->getcombodata('STATUS POSTING TNL', 'STATUS POSTING TNL');
+        $dataPostingTnl = json_decode($dataPostingTnl, true);
+        foreach ($dataPostingTnl as $item) {
+            $statusPostingTnl[] = $item['id'];
         }
 
         $tglbatasawal = (date('Y-m-d'));
@@ -137,8 +143,18 @@ class StoreTarifRequest extends FormRequest
             ],
             'kota' => 'required',
             'statuspenyesuaianharga' => ['required', Rule::in($statusPenyesuaian)],
+            'statuspostingtnl' => ['required', Rule::in($statusPostingTnl)],
         ];
-
+        $getListTampilan = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'UBAH TAMPILAN')->where('text', 'TARIF')->first();
+        $getListTampilan = json_decode($getListTampilan->memo);
+        if ($getListTampilan->INPUT != '') {
+            $getListTampilan = (explode(",", $getListTampilan->INPUT));
+            foreach ($getListTampilan as $value) {
+                if (array_key_exists(trim(strtolower($value)), $rules) == true) {
+                    unset($rules[trim(strtolower($value))]);
+                }
+            }
+        }
         $relatedRequests = [
             StoreTarifRincianRequest::class
         ];

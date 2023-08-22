@@ -9,6 +9,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
 use App\Http\Controllers\Api\ParameterController;
 use App\Http\Controllers\Api\ErrorController;
+use App\Models\Parameter;
 use App\Models\Supir;
 use App\Rules\SupirResign;
 use App\Rules\SupirBlackListKtp;
@@ -54,6 +55,13 @@ class StoreSupirRequest extends FormRequest
             }
             return true;
         });
+        
+        $parameter = new Parameter();
+        $dataPostingTnl = $parameter->getcombodata('STATUS POSTING TNL', 'STATUS POSTING TNL');
+        $dataPostingTnl = json_decode($dataPostingTnl, true);
+        foreach ($dataPostingTnl as $item) {
+            $statusPostingTnl[] = $item['id'];
+        }
 
         $ruleKeterangan = Rule::requiredIf(function () {
             $noktp = request()->noktp;
@@ -90,7 +98,7 @@ class StoreSupirRequest extends FormRequest
         }else{
             $cekSupir = false;
         }
-        return [
+        $rules = [
             'namasupir' => ['required'],
             'alamat' => [$ruleKeterangan],
             'namaalias' => [$ruleKeterangan],
@@ -107,6 +115,7 @@ class StoreSupirRequest extends FormRequest
                 'after_or_equal:' . $tglbatasawal, 
                 'before_or_equal:' . $tglbatasakhir,'nullable'
             ],
+            'statuspostingtnl' => ['required', Rule::in($statusPostingTnl)],
             'tglterbitsim' => [$ruleKeterangan],
             'photosupir' => [$ruleGambar,'array'],
             'photosupir.*' => [$ruleGambar,'image'],
@@ -125,6 +134,18 @@ class StoreSupirRequest extends FormRequest
             'pdfsuratperjanjian' => [$ruleGambar,'array'],
             'pdfsuratperjanjian.*' => [$ruleGambar,'mimes:pdf']
         ];
+
+        $getListTampilan = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'UBAH TAMPILAN')->where('text', 'SUPIR')->first();
+        $getListTampilan = json_decode($getListTampilan->memo);
+        if ($getListTampilan->INPUT != '') {
+            $getListTampilan = (explode(",", $getListTampilan->INPUT));
+            foreach ($getListTampilan as $value) {
+                if (array_key_exists(trim(strtolower($value)), $rules) == true) {
+                    unset($rules[trim(strtolower($value))]);
+                }
+            }
+        }
+        return $rules;
     }
 
     public function attributes()

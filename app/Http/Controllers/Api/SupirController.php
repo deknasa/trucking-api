@@ -286,6 +286,7 @@ class SupirController extends Controller
                 'kota' => $request->kota,
                 'telp' => $request->telp,
                 'statusaktif' => $request->statusaktif,
+                'statuspostingtnl' => $request->statuspostingtnl,
                 'nominaldepositsa' => str_replace(',', '', $request->nominaldepositsa) ?? 0,
                 'depositke' => str_replace('.', '', $depositke) ?? 0,
                 'tglmasuk' => date('Y-m-d', strtotime($request->tglmasuk)),
@@ -303,15 +304,15 @@ class SupirController extends Controller
                 'tglterbitsim' => date('Y-m-d', strtotime($request->tglterbitsim)),
                 'modifiedby' => auth('api')->user()->name,
 
-                'photosupir' => ($request->photosupir) ? $this->storeFiles($request->photosupir, 'supir') : '',
-                'photoktp' => ($request->photoktp) ? $this->storeFiles($request->photoktp, 'ktp') : '',
-                'photosim' => ($request->photosim) ? $this->storeFiles($request->photosim, 'sim') : '',
-                'photokk' => ($request->photokk) ? $this->storeFiles($request->photokk, 'kk') : '',
-                'photoskck' => ($request->photoskck) ? $this->storeFiles($request->photoskck, 'skck') : '',
-                'photodomisili' => ($request->photodomisili) ? $this->storeFiles($request->photodomisili, 'domisili') : '',
-                'photovaksin' => ($request->photovaksin) ? $this->storeFiles($request->photovaksin, 'vaksin') : '',
-                'pdfsuratperjanjian' => ($request->pdfsuratperjanjian) ? $this->storePdfFiles($request->pdfsuratperjanjian, 'suratperjanjian') : ''
-
+                'photosupir' => $request->photosupir ?? [],
+                'photoktp' => $request->photoktp ?? [],
+                'photosim' => $request->photosim ?? [],
+                'photokk' => $request->photokk ?? [],
+                'photoskck' => $request->photoskck ?? [],
+                'photodomisili' => $request->photodomisili ?? [],
+                'photovaksin' => $request->photovaksin ?? [],
+                'pdfsuratperjanjian' => $request->pdfsuratperjanjian ?? [],
+                'from' => $request->from ?? '',
             ];
             $supir = (new supir())->processStore($data);
             $supir->position = $this->getPosition($supir, $supir->getTable())->position;
