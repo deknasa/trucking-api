@@ -105,7 +105,7 @@ class PenerimaanStokHeader extends MyModel
             $query->where('penerimaanstokheader.penerimaanstok_id','=',$spb->text);
         }
         if (request()->pengeluaranstok_id == $spk->text) {
-            //jika retur cari penerimaan hanya
+            //jika spk, dan stok_id adalah barang reuse harus ada pg dari tujuan ke gudang sementara untuk diperbaiki
             $query->where('penerimaanstokheader.penerimaanstok_id','=',$pg->text);
         }
         if (request()->tgldari) {
@@ -587,6 +587,8 @@ class PenerimaanStokHeader extends MyModel
                 "stok_id" => $data['detail_stok_id'][$i],
                 "qty" => $data['detail_qty'][$i],
                 "harga" => $data['detail_harga'][$i],
+                "totalItem" => $data['totalItem'][$i],
+                "totalsebelum" => $data['totalsebelum'][$i],
                 "persentasediscount" => $data['detail_persentasediscount'][$i],
                 "vulkanisirke" => $data['detail_vulkanisirke'][$i],
                 "detail_keterangan" => $data['detail_keterangan'][$i],
@@ -848,6 +850,8 @@ class PenerimaanStokHeader extends MyModel
                 "stok_id" => $data['detail_stok_id'][$i],
                 "qty" => $data['detail_qty'][$i],
                 "harga" => $data['detail_harga'][$i],
+                "totalItem" => $data['totalItem'][$i],
+                "totalsebelum" => $data['totalsebelum'][$i],
                 "persentasediscount" => $data['detail_persentasediscount'][$i],
                 "vulkanisirke" => $data['detail_vulkanisirke'][$i],
                 "detail_keterangan" => $data['detail_keterangan'][$i],

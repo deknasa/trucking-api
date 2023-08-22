@@ -195,6 +195,28 @@ class PengeluaranTruckingDetail extends MyModel
     }
     public function processStore(PengeluaranTruckingHeader $pengeluaranTruckingHeader, array $data): PengeluaranTruckingDetail
     {
+        
+        $suratpengantar_nobukti = null;
+        $trado_id = null;
+        $container_id = null;
+        $pelanggan_id = null;
+        $nominaltagih = null;
+        $jenisorder = null;
+        if ($data['suratpengantar_nobukti']) {
+            $suratpengantar = SuratPengantar::where('nobukti',$data['suratpengantar_nobukti'])->first();
+            if (!$suratpengantar) {
+                $suratpengantar = DB::table('saldosuratpengantar')->from(
+                    DB::raw("saldosuratpengantar suratpengantar with (readuncommitted)")
+                )->where('nobukti',$data['suratpengantar_nobukti'])->first();
+            }
+            $suratpengantar_nobukti = $suratpengantar->nobukti;
+            $trado_id = $suratpengantar->trado_id;
+            $container_id = $suratpengantar->container_id;
+            $pelanggan_id = $suratpengantar->pelanggan_id;
+            $nominaltagih = $data['nominaltagih'];
+            $jenisorder = $suratpengantar->jenisorder_id;
+        }
+    
         $pengeluaranTruckingDetail = new PengeluaranTruckingDetail();
         $pengeluaranTruckingDetail->pengeluarantruckingheader_id = $data['pengeluarantruckingheader_id'];
         $pengeluaranTruckingDetail->nobukti = $data['nobukti'];
@@ -210,6 +232,24 @@ class PengeluaranTruckingDetail extends MyModel
         $pengeluaranTruckingDetail->invoice_nobukti = $data['invoice_nobukti'];
         $pengeluaranTruckingDetail->orderantrucking_nobukti = $data['orderantrucking_nobukti'];
         $pengeluaranTruckingDetail->nominal = $data['nominal'];
+        $pengeluaranTruckingDetail->suratpengantar_nobukti = $suratpengantar_nobukti;
+        $pengeluaranTruckingDetail->trado_id = $trado_id;
+        // $pengeluaranTruckingDetail->container_id = $container_id;
+        // $pengeluaranTruckingDetail->pelanggan_id = $pelanggan_id;
+        $pengeluaranTruckingDetail->nominaltagih = $nominaltagih;
+        // $pengeluaranTruckingDetail->jenisorder = $jenisorder;
+
+
+
+
+        // 'suratpengantar_nobukti' => $data['suratpengantar_nobukti'] ?? null,
+        // 'trado_id' => $data['trado_id'] ?? null,
+        // 'container_id' => $data['container_id'] ?? null,
+        // 'pelanggan_id' => $data['pelanggan_id'] ?? null,
+        // 'nominaltagih' => $data['nominaltagih'] ?? null,
+        // 'jenisorder' => $data['jenisorder'] ?? null,
+
+
         $pengeluaranTruckingDetail->modifiedby = auth('api')->user()->name;
         
         if (!$pengeluaranTruckingDetail->save()) {
