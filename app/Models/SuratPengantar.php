@@ -857,6 +857,32 @@ class SuratPengantar extends MyModel
         $getBukanUpahZona = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS UPAH ZONA')->where('text', 'NON UPAH ZONA')->first();
         $get = DB::table("suratpengantar")->from(DB::raw("suratpengantar with (readuncommitted)"))->select('statusupahzona')->where('id', $id)->first();
 
+        $getGaji = DB::table('suratpengantar')->from(DB::raw("suratpengantar with (readuncommitted)"))
+        ->select('suratpengantar.id','upahsupirrincian.nominalsupir','upahsupirrincian.nominalkenek','upahsupirrincian.nominalkomisi','upahsupirrincian.nominaltol', 'upahsupirrincian.liter')
+        ->leftJoin(DB::raw("upahsupirrincian with (readuncommitted)"), 'suratpengantar.upah_id', 'upahsupirrincian.upahsupir_id')
+        ->where('suratpengantar.id', $id)
+        ->whereRaw("upahsupirrincian.container_id = suratpengantar.container_id")
+        ->whereRaw("upahsupirrincian.statuscontainer_id = suratpengantar.statuscontainer_id");
+
+        $tempGaji = '##tempGaji' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+        Schema::create($tempGaji, function ($table) {
+            $table->bigInteger('id')->nullable();
+            $table->decimal('nominalsupir', 15, 2)->nullable();
+            $table->decimal('nominalkenek', 15, 2)->nullable();
+            $table->decimal('nominalkomisi', 15, 2)->nullable();
+            $table->decimal('nominaltol', 15, 2)->nullable();
+            $table->decimal('liter', 15, 2)->nullable();
+        });
+
+        DB::table($tempGaji)->insertUsing([
+            'id',
+            'nominalsupir',
+            'nominalkenek',
+            'nominalkomisi',
+            'nominaltol',
+            'liter'
+        ], $getGaji);
+
         if ($get->statusupahzona == $getBukanUpahZona->id) {
 
             $data = SuratPengantar::from(DB::raw("suratpengantar with (readuncommitted)"))
@@ -912,9 +938,9 @@ class SuratPengantar extends MyModel
                     'suratpengantar.statusbatalmuat',
                     'suratpengantar.statusupahzona',
                     'suratpengantar.statusgandengan',
-                    'suratpengantar.gajisupir',
-                    'suratpengantar.gajikenek',
-                    'suratpengantar.komisisupir',
+                    $tempGaji.'.nominalsupir as gajisupir',
+                    $tempGaji.'.nominalkenek as gajikenek',
+                    $tempGaji.'.nominalkomisi as komisisupir',
                     'suratpengantar.upah_id',
                     'suratpengantar.statusapprovaleditsuratpengantar',
                     'kotaupah.kodekota as upah'
@@ -933,6 +959,7 @@ class SuratPengantar extends MyModel
                 ->leftJoin('cabang', 'suratpengantar.cabang_id', 'cabang.id')
                 ->leftJoin('pelanggan', 'suratpengantar.pelanggan_id', 'pelanggan.id')
                 ->leftJoin('gandengan', 'suratpengantar.gandengan_id', 'gandengan.id')
+                ->leftJoin(DB::raw("$tempGaji with (readuncommitted)"), "$tempGaji.id", "suratpengantar.id")
 
                 ->where('suratpengantar.id', $id)->first();
         } else {
@@ -989,9 +1016,9 @@ class SuratPengantar extends MyModel
                     'suratpengantar.statusbatalmuat',
                     'suratpengantar.statusupahzona',
                     'suratpengantar.statusgandengan',
-                    'suratpengantar.gajisupir',
-                    'suratpengantar.gajikenek',
-                    'suratpengantar.komisisupir',
+                    $tempGaji.'.nominalsupir as gajisupir',
+                    $tempGaji.'.nominalkenek as gajikenek',
+                    $tempGaji.'.nominalkomisi as komisisupir',
                     'suratpengantar.upah_id',
                     'suratpengantar.statusapprovaleditsuratpengantar',
                     'zonaupah.zona as upah'
@@ -1010,6 +1037,7 @@ class SuratPengantar extends MyModel
                 ->leftJoin('cabang', 'suratpengantar.cabang_id', 'cabang.id')
                 ->leftJoin('pelanggan', 'suratpengantar.pelanggan_id', 'pelanggan.id')
                 ->leftJoin('gandengan', 'suratpengantar.gandengan_id', 'gandengan.id')
+                ->leftJoin(DB::raw("$tempGaji with (readuncommitted)"), "$tempGaji.id", "suratpengantar.id")
 
                 ->where('suratpengantar.id', $id)->first();
         }
