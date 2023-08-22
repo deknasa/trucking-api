@@ -440,9 +440,9 @@ class ParameterSeeder extends Seeder
         parameter::create(['grp' => 'UBAH TAMPILAN', 'subgrp' => 'UBAH TAMPILAN', 'kelompok' => '', 'text' => 'TARIF', 'memo' => '{"MEMO":"UBAH TAMPILAN TARIF","SINGKATAN":"UTT","WARNA":"#6C757D","INPUT":""}', 'type' => '0', 'modifiedby' => 'ADMIN', 'default' => '',]);
         parameter::create(['grp' => 'UBAH TAMPILAN', 'subgrp' => 'UBAH TAMPILAN', 'kelompok' => '', 'text' => 'UPAHSUPIR', 'memo' => '{"MEMO":"UBAH TAMPILAN UPAHSUPIR","SINGKATAN":"UTUS","WARNA":"#6C757D","INPUT":""}', 'type' => '0', 'modifiedby' => 'ADMIN', 'default' => '',]);
         parameter::create(['grp' => 'UBAH TAMPILAN', 'subgrp' => 'UBAH TAMPILAN', 'kelompok' => '', 'text' => 'SUPIR', 'memo' => '{"MEMO":"UBAH TAMPILAN SUPIR","SINGKATAN":"UTS","WARNA":"#6C757D","INPUT":""}', 'type' => '0', 'modifiedby' => 'ADMIN', 'default' => '',]);
-        parameter::create(['grp' => 'PENDAPATAN SUPIR', 'subgrp' => 'GAJI KENEK', 'kelompok' => '', 'text' => 'YA', 'memo' => '{"MEMO":"GAJI KENEK PENDAPATAN","SINGKATAN":"GKP","WARNA":"#28A745"}', 'type' => '0', 'modifiedby' => 'ADMIN', 'default' => '',]);
+        parameter::create(['grp' => 'PENDAPATAN SUPIR', 'subgrp' => 'GAJI KENEK', 'kelompok' => '', 'text' => 'TIDAK', 'memo' => '{"MEMO":"GAJI KENEK PENDAPATAN","SINGKATAN":"GKP","WARNA":"#28A745"}', 'type' => '0', 'modifiedby' => 'ADMIN', 'default' => '',]);
         parameter::create(['grp' => 'OPNAME BUKTI', 'subgrp' => 'OPNAME BUKTI', 'kelompok' => '', 'text' => '#OPN #9999#/#R#/#Y', 'memo' => '{"MEMO":"OPNAME BUKTI","SINGKATAN":"#OPN #9999#/#R#/#Y","WARNA":"#28A745"}', 'type' => '118', 'modifiedby' => 'ADMIN', 'default' => '',]);
-
+        parameter::create(['grp' => 'UBAH TAMPILAN', 'subgrp' => 'UBAH TAMPILAN', 'kelompok' => '', 'text' => 'PENDAPATANSUPIR', 'memo' => '{"MEMO":"UBAH TAMPILAN PENDAPATANSUPIR","SINGKATAN":"UTPS","WARNA":"#6C757D","INPUT":""}', 'type' => '0', 'modifiedby' => 'ADMIN', 'default' => '',]);
         
         
         
