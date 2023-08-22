@@ -93,6 +93,7 @@ class PenerimaanStokHeaderController extends Controller
                 "detail_penerimaanstoknobukti_id" => $request->detail_penerimaanstoknobukti_id ?? [],
                 "detail_persentasediscount" => $request->detail_persentasediscount ?? [],
                 "totalItem" => $request->totalItem ?? [],
+                "totalsebelum" => $request->total_sebelum ?? [],
             ];
             $penerimaanStokHeader = (new PenerimaanStokHeader())->processStore($data);
 
@@ -163,6 +164,7 @@ class PenerimaanStokHeaderController extends Controller
                 "detail_penerimaanstoknobukti_id" => $request->detail_penerimaanstoknobukti_id ?? [],
                 "detail_persentasediscount" => $request->detail_persentasediscount ?? [],
                 "totalItem" => $request->totalItem ?? [],
+                "totalsebelum" => $request->total_sebelum ?? [],
             ];
             $penerimaanStokHeader = PenerimaanStokHeader::findOrFail($id);
             $penerimaanStokHeader = (new PenerimaanStokHeader())->processUpdate($penerimaanStokHeader, $data);

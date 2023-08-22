@@ -904,6 +904,14 @@ class PengeluaranTruckingHeader extends MyModel
                 'keterangan' => $data['keterangan'][$i] ?? '',
                 'nominal' => $data['nominal'][$i],
                 'modifiedby' => $pengeluaranTruckingHeader->modifiedby,
+
+                // 'suratpengantar_id' => $data['suratpengantar_id'][$i] ?? null,
+                'suratpengantar_nobukti' => $data['suratpengantar_nobukti'][$i] ?? null,
+                'trado_id' => $data['trado_id'][$i] ?? null,
+                'container_id' => $data['container_id'][$i] ?? null,
+                'pelanggan_id' => $data['pelanggan_id'][$i] ?? null,
+                'nominaltagih' => $data['nominaltagih'][$i] ?? 0,
+                'jenisorder' => $data['jenisorder'][$i] ?? null,
             ]);
             $pengeluaranTruckingDetails[] = $pengeluaranTruckingDetail->toArray();
             $nominal_detail []= $pengeluaranTruckingDetail->nominal;

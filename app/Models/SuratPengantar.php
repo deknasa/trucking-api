@@ -672,6 +672,15 @@ class SuratPengantar extends MyModel
         if (request()->tgldari) {
             $query->whereBetween('suratpengantar.tglbukti', [date('Y-m-d', strtotime(request()->tgldari)), date('Y-m-d', strtotime(request()->tglsampai))]);
         }
+
+        if (request()->pengeluarantruckingheader === "BBT") {
+            $query->whereNotIn('suratpengantar.nobukti', function($query) {
+                $query->select(DB::raw('DISTINCT pengeluarantruckingdetail.suratpengantar_nobukti'))
+                      ->from('pengeluarantruckingdetail')
+                      ->whereNotNull('pengeluarantruckingdetail.suratpengantar_nobukti')
+                      ->where('pengeluarantruckingdetail.suratpengantar_nobukti','!=','');
+            });
+        }
         $this->totalRows = $query->count();
         $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;
 
