@@ -451,6 +451,7 @@ route::middleware(['auth:api', 'authorized'])->group(function () {
     Route::get('parameter/field_length', [ParameterController::class, 'fieldLength']);
     Route::get('parameter/combo', [ParameterController::class, 'combo']);
     Route::get('parameter/getparambytext', [ParameterController::class, 'getParamByText']);    
+    Route::get('parameter/getparamfirst', [ParameterController::class, 'getparamfirst']);    
     Route::get('parameter/comboapproval', [ParameterController::class, 'comboapproval']);
     Route::get('parameter/combolist', [ParameterController::class, 'combolist']);
     Route::get('parameter/getcoa', [ParameterController::class, 'getcoa']);
@@ -808,6 +809,7 @@ route::middleware(['auth:api', 'authorized'])->group(function () {
     Route::get('jurnalumumheader/field_length', [JurnalUmumHeaderController::class, 'fieldLength']);
     Route::resource('jurnalumumheader', JurnalUmumHeaderController::class)->whereNumber('jurnalumumheader');
     Route::get('jurnalumumdetail/jurnal', [JurnalUmumDetailController::class, 'jurnal']);
+    Route::get('jurnalumumdetail/getDetail', [JurnalUmumDetailController::class, 'getDetail']);
     Route::resource('jurnalumumdetail', JurnalUmumDetailController::class)->whereNumber('jurnalumumdetail');
 
     Route::get('penerimaantruckingheader/{id}/printreport', [PenerimaanTruckingHeaderController::class, 'printReport'])->whereNumber('id');
