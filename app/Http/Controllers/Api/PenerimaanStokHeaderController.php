@@ -346,7 +346,7 @@ class PenerimaanStokHeaderController extends Controller
         if (!$todayValidation) {
             $query = Error::from(DB::raw("error with (readuncommitted)"))
             ->select('keterangan')
-            ->whereRaw("kodeerror = 'SDC'")
+            ->whereRaw("kodeerror = 'TEPT'")
             ->get();
             // $keterangan = $query['0'];
             $keterangan = ['keterangan' => 'transaksi Sudah berbeda tanggal']; //$query['0'];
@@ -364,7 +364,7 @@ class PenerimaanStokHeaderController extends Controller
         if (!$isEditAble) {
             $query = Error::from(DB::raw("error with (readuncommitted)"))
             ->select('keterangan')
-            ->whereRaw("kodeerror = 'SDC'")
+            ->whereRaw("kodeerror = 'TED'")
             ->get();
             // $keterangan = $query['0'];
             $keterangan = ['keterangan' => 'Transaksi Tidak Bisa diedit']; //$query['0'];
