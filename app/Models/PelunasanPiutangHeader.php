@@ -93,10 +93,10 @@ class PelunasanPiutangHeader extends MyModel
 
         return $data;
     }
-    
+
     public function cekvalidasiaksi($id)
     {
-        
+
         $pelunasan = DB::table("pelunasanpiutangheader")->from(DB::raw("pelunasanpiutangheader"))->where('id', $id)->first();
 
         $pelunasanPiutang = DB::table('pelunasanpiutangheader')
@@ -109,7 +109,7 @@ class PelunasanPiutangHeader extends MyModel
             ->join(DB::raw("jurnalumumpusatheader b with (readuncommitted)"), 'a.penerimaan_nobukti', 'b.nobukti')
             ->where('a.penerimaan_nobukti', '=', $pelunasan->penerimaan_nobukti)
             ->first();
-            
+
         if (isset($pelunasanPiutang)) {
             $data = [
                 'kondisi' => true,
@@ -137,7 +137,7 @@ class PelunasanPiutangHeader extends MyModel
             ];
             goto selesai;
         }
-        
+
         $pelunasanPiutang = DB::table('pelunasanpiutangheader')
             ->from(
                 DB::raw("pelunasanpiutangheader as a with (readuncommitted)")
@@ -156,7 +156,7 @@ class PelunasanPiutangHeader extends MyModel
             ];
             goto selesai;
         }
-        
+
         $pelunasanPiutang = DB::table('pelunasanpiutangheader')
             ->from(
                 DB::raw("pelunasanpiutangheader as a with (readuncommitted)")
@@ -190,6 +190,9 @@ class PelunasanPiutangHeader extends MyModel
     {
         $this->setRequestParameters();
 
+        $periode = request()->periode ?? '';
+        $statusCetak = request()->statuscetak ?? '';
+
         $query = DB::table($this->table)->from(DB::raw("pelunasanpiutangheader with (readuncommitted)"))
             ->select(
                 'pelunasanpiutangheader.id',
@@ -208,10 +211,21 @@ class PelunasanPiutangHeader extends MyModel
                 'alatbayar.namaalatbayar as alatbayar_id'
             )
             ->leftJoin(DB::raw("parameter as statuscetak with (readuncommitted)"), 'pelunasanpiutangheader.statuscetak', 'statuscetak.id')
-            ->whereBetween($this->table . '.tglbukti', [date('Y-m-d', strtotime(request()->tgldari)), date('Y-m-d', strtotime(request()->tglsampai))])
-            ->leftJoin(DB::raw("bank with (readuncommitted)"), 'pelunasanpiutangheader.bank_id', 'bank.id')
+           ->leftJoin(DB::raw("bank with (readuncommitted)"), 'pelunasanpiutangheader.bank_id', 'bank.id')
             ->leftJoin(DB::raw("agen with (readuncommitted)"), 'pelunasanpiutangheader.agen_id', 'agen.id')
             ->leftJoin(DB::raw("alatbayar with (readuncommitted)"), 'pelunasanpiutangheader.alatbayar_id', 'alatbayar.id');
+
+        if (request()->tgldari && request()->tglsampai) {
+            $query ->whereBetween($this->table . '.tglbukti', [date('Y-m-d', strtotime(request()->tgldari)), date('Y-m-d', strtotime(request()->tglsampai))]);
+        }
+        if ($periode != '') {
+            $periode = explode("-", $periode);
+            $query->whereRaw("MONTH(pelunasanpiutangheader.tglbukti) ='" . $periode[0] . "'")
+                ->whereRaw("year(pelunasanpiutangheader.tglbukti) ='" . $periode[1] . "'");
+        }
+        if ($statusCetak != '') {
+            $query->where("pelunasanpiutangheader.statuscetak", $statusCetak);
+        }
 
         $this->totalRows = $query->count();
         $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;
@@ -825,7 +839,7 @@ class PelunasanPiutangHeader extends MyModel
 
     public function processUpdate(PelunasanPiutangHeader $pelunasanPiutangHeader, array $data): PelunasanPiutangHeader
     {
-        
+
         $nobuktiOld = $pelunasanPiutangHeader->nobukti;
         $group = 'PELUNASAN PIUTANG BUKTI';
         $subGroup = 'PELUNASAN PIUTANG BUKTI';
