@@ -18,7 +18,5 @@ class PenerimaSeeder extends Seeder
         DB::statement("delete Penerima");
         DB::statement("DBCC CHECKIDENT ('Penerima', RESEED, 1);");
 
-        Penerima::create(['namapenerima' => 'A.RONI LUBIS', 'npwp' => '', 'noktp' => '12345678', 'statusaktif' => '1', 'statuskaryawan' => '6', 'modifiedby' => 'ADMIN',]);
-        Penerima::create(['namapenerima' => 'AMENG AC', 'npwp' => '', 'noktp' => '987456', 'statusaktif' => '1', 'statuskaryawan' => '7', 'modifiedby' => 'ADMIN',]);
     }
 }

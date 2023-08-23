@@ -18,6 +18,6 @@ class MandorSeeder extends Seeder
         DB::statement("delete Mandor");
         DB::statement("DBCC CHECKIDENT ('Mandor', RESEED, 1);");
 
-        Mandor::create([ 'namamandor' => 'ASAN', 'keterangan' => 'PENGURUS TRUCKING', 'statusaktif' => '1', 'modifiedby' => 'ADMIN',]);
+        
     }
 }

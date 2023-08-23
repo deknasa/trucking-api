@@ -16,12 +16,6 @@ class BankPelangganSeeder extends Seeder
     public function run()
     {
         //
-        BankPelanggan::create([
-            'kodebank' => 'BCA',
-            'namabank' => 'BANK CENTRAL ASIA',
-            'keterangan' => '-',
-            'statusaktif' => '1',
-            'modifiedby' => 'ADMIN',
-        ]);
+       
     }
 }

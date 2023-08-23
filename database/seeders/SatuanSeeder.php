@@ -18,6 +18,5 @@ class SatuanSeeder extends Seeder
         DB::statement("delete Satuan");
         DB::statement("DBCC CHECKIDENT ('Satuan', RESEED, 1);");
 
-        Satuan::create([ 'satuan' => 'PCS', 'statusaktif' => '1', 'modifiedby' => 'ADMIN',]);
     }
 }
