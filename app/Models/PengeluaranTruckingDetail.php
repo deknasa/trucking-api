@@ -116,16 +116,27 @@ class PengeluaranTruckingDetail extends MyModel
                 'supir.namasupir as supir',
                 'supir.id as supir_id',
                 'karyawan.namakaryawan as karyawan',
-                'karyawan.id as karyawan_id'
+                'karyawan.id as karyawan_id',
+                'pengeluarantruckingdetail.suratpengantar_nobukti',
+                'trado.kodetrado as trado_id',
+                'pengeluarantruckingdetail.nominaltagih',
+                
+
                 )
             ->leftJoin(DB::raw("orderantrucking as ot with (readuncommitted)"), 'pengeluarantruckingdetail.orderantrucking_nobukti', 'ot.nobukti')
             ->leftJoin(DB::raw("container with (readuncommitted)"), 'ot.container_id', 'container.id')    
             ->leftJoin(DB::raw("supir with (readuncommitted)"), 'pengeluarantruckingdetail.supir_id', 'supir.id')
             ->leftJoin(DB::raw("karyawan with (readuncommitted)"), 'pengeluarantruckingdetail.karyawan_id', 'karyawan.id')
             ->leftJoin(DB::raw("stok with (readuncommitted)"), 'pengeluarantruckingdetail.stok_id', 'stok.id')
+            ->leftJoin(DB::raw("trado with (readuncommitted)"), 'pengeluarantruckingdetail.trado_id', 'trado.id')
             ->leftJoin(DB::raw("pengeluaranstokheader with (readuncommitted)"), 'pengeluaranstokheader.nobukti', 'pengeluarantruckingdetail.pengeluaranstok_nobukti')
+            ->leftJoin(DB::raw("suratpengantar with (readuncommitted)"), 'suratpengantar.nobukti', 'pengeluarantruckingdetail.suratpengantar_nobukti')
+            // ->leftJoin('suratpengantar', function ($join) {
+            //     $join->on('pengeluarantruckingdetail.suratpengantar_nobukti', '=', 'suratpengantar.nobukti')
+            //         ->whereRaw('pengeluarantruckingdetail.suratpengantar_nobukti = suratpengantar.nobukti');
+            // })
+            // ->leftJoin('saldosuratpengantar', 'pengeluaran.suratpengantar_nobukti', '=', 'saldosuratpengantar.nobukti')
             ->where('pengeluarantruckingdetail.pengeluarantruckingheader_id', '=', $id);
-
 
         $data = $query->get();
 

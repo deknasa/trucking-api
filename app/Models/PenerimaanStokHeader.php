@@ -627,7 +627,7 @@ class PenerimaanStokHeader extends MyModel
 
  
             
-            if ($data['penerimaanstok_id'] == $spb->text) {
+            if ($data['penerimaanstok_id'] == $spb->text ||$data['penerimaanstok_id'] == $spbs->text) {
                 $totalsat = ($data['detail_qty'][$i] * $data['detail_harga'][$i]);
                 $totalharga += $totalsat;
                 $detaildata[] = $totalsat;
@@ -640,7 +640,7 @@ class PenerimaanStokHeader extends MyModel
         
         
         /*STORE HUTANG IF SPB*/
-        if ($data['penerimaanstok_id'] == $spb->text) {
+        if ($data['penerimaanstok_id'] == $spb->text || $data['penerimaanstok_id'] == $spbs->text) {
            
 
             $getCoaDebet = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'JURNAL HUTANG PEMBELIAN STOK')->where('subgrp', 'DEBET')->first();
@@ -869,7 +869,7 @@ class PenerimaanStokHeader extends MyModel
                 ]);
             }
 
-            if ($data['penerimaanstok_id'] == $spb->text) {
+            if ($data['penerimaanstok_id'] == $spb->text || $data['penerimaanstok_id'] == $spbs->text) {
                 $totalsat = ($data['detail_qty'][$i] * $data['detail_harga'][$i]);
                 $totalharga += $totalsat;
                 $detaildata[] = $totalsat;
@@ -890,7 +890,7 @@ class PenerimaanStokHeader extends MyModel
         ]);
         
         /*UPDATE HUTANG IF SPB*/
-        if ($data['penerimaanstok_id'] == $spb->text) {
+        if ($data['penerimaanstok_id'] == $spb->text || $data['penerimaanstok_id'] == $spbs->text) {
            
             $getCoaDebet = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'JURNAL HUTANG PEMBELIAN STOK')->where('subgrp', 'DEBET')->first();
             $memoDebet = json_decode($getCoaDebet->memo, true);

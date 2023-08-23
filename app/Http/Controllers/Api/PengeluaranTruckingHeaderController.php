@@ -10,6 +10,7 @@ use App\Http\Requests\GetInvoiceRequest;
 use App\Http\Requests\GetPengeluaranRangeRequest;
 use App\Models\PengeluaranTruckingHeader;
 use App\Models\AlatBayar;
+use App\Models\SuratPengantar;
 use App\Http\Requests\StorePengeluaranTruckingHeaderRequest;
 use App\Http\Requests\UpdatePengeluaranTruckingHeaderRequest;
 
@@ -110,24 +111,41 @@ class PengeluaranTruckingHeaderController extends Controller
         } else {
             $detail = PengeluaranTruckingDetail::getAll($id);
         }
-        // if (condition) {
-        //     # code...
-        // }
-        // foreach ($detail as $r ) {
-        //     if (isset($r->qty)) {
-        //         $pengeluaranstok = DB::table('pengeluaranstokdetail')->where('nobukti',$r->pengeluaranstok_nobukti)->first();
-        //         // dd($pengeluaranstok->qty);
-        //         $r->maxqty =$pengeluaranstok->qty;
-        //         dd($r);
-        //     }
-        // }
-        // dd($details);
-        // $datas = array_merge($data, $detail);
+        $details = [];
+        foreach ($detail as $r ) {
+            // $r->surat
+            if ($r->suratpengantar_nobukti) {
+                $suratpengantar =  DB::table('saldosuratpengantar')->from(
+                    DB::raw("suratpengantar with (readuncommitted)")
+                )->where('suratpengantar.nobukti',$r->suratpengantar_nobukti);
+                if (!$suratpengantar->first()) {
+                    $suratpengantar = DB::table('saldosuratpengantar')->from(
+                        DB::raw("saldosuratpengantar suratpengantar with (readuncommitted)")
+                    )->where('suratpengantar.nobukti',$r->suratpengantar_nobukti);
+                }
+                $suratpengantar->select(
+                    'pelanggan.namapelanggan as pelanggan_id',
+                    'jenisorder.keterangan as jenisorder_id',
+                    'container.keterangan as container_id',
+                )
+                ->leftJoin(DB::raw("container with (readuncommitted)"), 'suratpengantar.container_id', 'container.id')
+                ->leftJoin(DB::raw("pelanggan with (readuncommitted)"), 'suratpengantar.pelanggan_id', 'pelanggan.id')
+                ->leftJoin(DB::raw("jenisorder with (readuncommitted)"), 'suratpengantar.jenisorder_id', 'jenisorder.id');
+                // dd($suratpengantar->toSql());
+                $sp = $suratpengantar->first();
+            }
+            $r->container_id = $sp->container_id;
+            $r->pelanggan_id = $sp->pelanggan_id;
+            $r->jenisorder_id = $sp->jenisorder_id;
+            $details[] =  $r;
+            // $details[] = $r;
+        }
+        
 
         return response([
             'status' => true,
             'data' => $data,
-            'detail' => $detail
+            'detail' => $details
         ]);
     }
 
