@@ -27,6 +27,7 @@ class CreateTarifTable extends Migration
             $table->integer('statussistemton')->length(11)->nullable();
             $table->unsignedBigInteger('kota_id')->nullable();
             $table->unsignedBigInteger('zona_id')->nullable();
+            $table->unsignedBigInteger('jenisorder_id')->nullable();
             $table->date('tglmulaiberlaku')->nullable();
             $table->integer('statuspenyesuaianharga')->length(11)->nullable();
             $table->integer('statuspostingtnl')->length(11)->nullable();
