@@ -86,5 +86,6 @@ class ErrorSeeder extends Seeder
         error::create(['kodeerror' => 'TOP', 'keterangan' => 'MELEBIHI BATAS TOP AGEN', 'modifiedby' => 'ADMIN',]);
         error::create(['kodeerror' => 'TBA', 'keterangan' => 'NOMINAL TARIF BELUM ADA', 'modifiedby' => 'ADMIN',]);
         error::create(['kodeerror' => 'SIK', 'keterangan' => 'SUDAH INPUT KOMISI', 'modifiedby' => 'ADMIN',]);
+        error::create(['kodeerror' => 'TED', 'keterangan' => 'TRANSAKSI TIDAK BISA DIEDIT', 'modifiedby' => 'ADMIN',]);
     }
 }
