@@ -17,8 +17,6 @@ class KerusakanSeeder extends Seeder
         DB::statement("delete kerusakan");
         DB::statement("DBCC CHECKIDENT ('kerusakan', RESEED, 1);");
 
-        kerusakan::create([ 'keterangan' => 'RUSAK PARAH', 'statusaktif' => '1', 'modifiedby' => 'ADMIN',]);
-        kerusakan::create([ 'keterangan' => 'OPNAME', 'statusaktif' => '1', 'modifiedby' => 'ADMIN',]);
-        kerusakan::create([ 'keterangan' => 'SERVICE RUTIN', 'statusaktif' => '1', 'modifiedby' => 'ADMIN',]);
+      
     }
 }
