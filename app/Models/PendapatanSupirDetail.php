@@ -53,6 +53,7 @@ class PendapatanSupirDetail extends MyModel
             $table->integer('dari_id')->nullable();
             $table->integer('sampai_id')->nullable();
             $table->double('nominal')->nullable();
+            $table->double('gajikenek')->nullable();
         });
         $querysaldopendapatan = $query->select(
             $this->table . '.nobukti',
@@ -61,7 +62,8 @@ class PendapatanSupirDetail extends MyModel
             $this->table . '.nobuktirincian',
             DB::raw("(case when ISNULL(suratpengantar.dari_id, '') = '' then ISNULL(saldopendapatansupir.dari_id, '') else ISNULL(suratpengantar.dari_id, '')  end) as dari_id"),
             DB::raw("(case when ISNULL(suratpengantar.sampai_id, '') = '' then ISNULL(saldopendapatansupir.sampai_id, '') else ISNULL(suratpengantar.sampai_id, '')  end) as sampai_id"),
-            $this->table . '.nominal'
+            $this->table . '.nominal',            
+            DB::raw("(case when pendapatansupirdetail.gajikenek IS NULL then 0 else pendapatansupirdetail.gajikenek end) as gajikenek"),
         )
             ->leftJoin(DB::raw("suratpengantar with (readuncommitted)"), $this->table . '.nobuktitrip', 'suratpengantar.nobukti')
             ->leftJoin(DB::raw("saldopendapatansupir with (readuncommitted)"), $this->table . '.nobuktitrip', 'saldopendapatansupir.suratpengantar_nobukti')
@@ -75,6 +77,7 @@ class PendapatanSupirDetail extends MyModel
             'dari_id',
             'sampai_id',
             'nominal',
+            'gajikenek'
 
         ], $querysaldopendapatan);
         if (isset(request()->forReport) && request()->forReport) {
@@ -94,6 +97,7 @@ class PendapatanSupirDetail extends MyModel
                 DB::raw("isnull(b.kodekota,'') as dari"),
                 DB::raw("isnull(c.kodekota,'') as sampai"),
                 'a.nominal',
+                'a.gajikenek'
             )
                 ->leftJoin(DB::raw("pendapatansupirheader as header with (readuncommitted)"), 'header.nobukti', 'a.nobukti')
                 ->leftJoin(DB::raw("bank with (readuncommitted)"), 'header.bank_id', 'bank.id')
@@ -114,6 +118,7 @@ class PendapatanSupirDetail extends MyModel
                     DB::raw("isnull(b.kodekota,'') as dari"),
                     DB::raw("isnull(c.kodekota,'') as sampai"),
                     'a.nominal',
+                    'a.gajikenek'
                 )
                 ->leftJoin(DB::raw("kota b with (readuncommitted)"), 'a.dari_id', 'b.id')
                 ->leftJoin(DB::raw("kota c with (readuncommitted)"), 'a.sampai_id', 'c.id');
@@ -121,6 +126,7 @@ class PendapatanSupirDetail extends MyModel
             $this->sort($query);
             $this->filter($query);
             $this->totalNominal = $query->sum('nominal');
+            $this->totalGajiKenek = $query->sum('gajikenek');
             $this->totalRows = $query->count();
             $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;
 
@@ -152,6 +158,10 @@ class PendapatanSupirDetail extends MyModel
                                 $query = $query->where(DB::raw("isnull(b.kodekota,'')"), 'LIKE', "%$filters[data]%");
                             } else if ($filters['field'] == 'sampai') {
                                 $query = $query->where(DB::raw("isnull(c.kodekota,'')"), 'LIKE', "%$filters[data]%");
+                            } else if ($filters['field'] == 'nominal') {
+                                $query = $query->whereRaw("format(a.nominal, '#,#0.00') LIKE '%$filters[data]%'");
+                            } else if ($filters['field'] == 'gajikenek') {
+                                $query = $query->whereRaw("format(a.gajikenek, '#,#0.00') LIKE '%$filters[data]%'");
                             } else {
                                 $query = $query->where('a.' . $filters['field'], 'LIKE', "%$filters[data]%");
                             }
@@ -166,6 +176,10 @@ class PendapatanSupirDetail extends MyModel
                                 $query = $query->orWhere(DB::raw("isnull(b.kodekota,'')"), 'LIKE', "%$filters[data]%");
                             } else if ($filters['field'] == 'sampai') {
                                 $query = $query->orWhere(DB::raw("isnull(c.kodekota,'')"), 'LIKE', "%$filters[data]%");
+                            } else if ($filters['field'] == 'nominal') {
+                                $query = $query->orWhereRaw("format(a.nominal, '#,#0.00') LIKE '%$filters[data]%'");
+                            } else if ($filters['field'] == 'gajikenek') {
+                                $query = $query->orWhereRaw("format(a.gajikenek, '#,#0.00') LIKE '%$filters[data]%'");
                             } else {
                                 $query = $query->orWhere('a.' . $filters['field'], 'LIKE', "%$filters[data]%");
                             }
@@ -197,6 +211,7 @@ class PendapatanSupirDetail extends MyModel
         $pendapatanSupirDetail->nobukti = $pendapatanSupirHeader->nobukti;
         $pendapatanSupirDetail->supir_id = $data['supir_id'];
         $pendapatanSupirDetail->nominal = $data['nominal'];
+        $pendapatanSupirDetail->gajikenek = $data['gajikenek'];
         $pendapatanSupirDetail->nobuktirincian = $data['nobuktirincian'];
         $pendapatanSupirDetail->nobuktitrip = $data['nobuktitrip'];
         $pendapatanSupirDetail->modifiedby = $data['modifiedby'];

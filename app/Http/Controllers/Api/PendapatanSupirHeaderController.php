@@ -66,6 +66,7 @@ class PendapatanSupirHeaderController extends Controller
                 "dari_id" => $request->dari_id,
                 "sampai_id" => $request->sampai_id,
                 "nominal_detail" => $request->nominal_detail,
+                "gajikenek" => $request->gajikenek,
             ];
 
             $pendapatanSupirHeader = (new PendapatanSupirHeader())->processStore($data);
@@ -126,6 +127,7 @@ class PendapatanSupirHeaderController extends Controller
                 "dari_id" => $request->dari_id,
                 "sampai_id" => $request->sampai_id,
                 "nominal_detail" => $request->nominal_detail,
+                "gajikenek" => $request->gajikenek,
             ];
 
 
@@ -397,6 +399,7 @@ class PendapatanSupirHeaderController extends Controller
                 'totalRows' => $pendapatanSupir->totalRows,
                 'totalPages' => $pendapatanSupir->totalPages,
                 'totalNominal' => $pendapatanSupir->totalNominal,
+                'totalGajiKenek' => $pendapatanSupir->totalGajiKenek,
             ]
         ]);
     }

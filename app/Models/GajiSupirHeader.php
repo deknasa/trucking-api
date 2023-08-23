@@ -284,7 +284,7 @@ class GajiSupirHeader extends MyModel
             $table->bigInteger('biayaextra')->nullable();
         });
 
-        DB::table($tempTambahan)->insertUsing(['suratpengantar_id','keteranganbiaya', 'biayaextra'], $biayaTambahan);
+        DB::table($tempTambahan)->insertUsing(['suratpengantar_id', 'keteranganbiaya', 'biayaextra'], $biayaTambahan);
         return $tempTambahan;
     }
 
@@ -309,7 +309,7 @@ class GajiSupirHeader extends MyModel
                 'ritasi.gaji as upahritasi',
                 'ritasi.nobukti as ritasi_nobukti',
                 'ritasi.statusritasi',
-                
+
                 DB::raw("(case when ritasi.suratpengantar_urutke > 1 then 0 else biayatambahan.biayaextra end) as biayaextra"),
                 DB::raw("(case when ritasi.suratpengantar_urutke > 1 then '-' else biayatambahan.keteranganbiaya end) as keteranganbiaya"),
             )
@@ -592,7 +592,7 @@ class GajiSupirHeader extends MyModel
             ->leftJoin(DB::raw("pengeluarantruckingdetail with (readuncommitted)"), 'pengeluarantruckingdetail.nobukti', 'pengeluarantruckingheader.nobukti')
             ->where("pengeluarantruckingdetail.supir_id", 0)
             ->where("pengeluarantruckingdetail.nobukti", 'LIKE', '%PJT%')
-            ->where("pengeluarantruckingheader.tglbukti","<=", $tglBukti)
+            ->where("pengeluarantruckingheader.tglbukti", "<=", $tglBukti)
             ->orderBy('pengeluarantruckingheader.tglbukti', 'asc')
             ->orderBy('pengeluarantruckingdetail.nobukti', 'asc');
         Schema::create($temp, function ($table) {
@@ -618,8 +618,8 @@ class GajiSupirHeader extends MyModel
             ->leftJoin(DB::raw("$tempPribadi with (readuncommitted)"), 'pengeluarantruckingdetail.nobukti', $tempPribadi . ".nobukti")
             ->leftJoin(DB::raw("pengeluarantruckingheader with (readuncommitted)"), 'pengeluarantruckingdetail.nobukti', "pengeluarantruckingheader.nobukti")
             ->whereRaw("pengeluarantruckingdetail.supir_id = $supir_id")
-            ->whereRaw("pengeluarantruckingdetail.nobukti = $tempPribadi.nobukti")            
-            ->where("pengeluarantruckingheader.tglbukti","<=", $tglBukti)
+            ->whereRaw("pengeluarantruckingdetail.nobukti = $tempPribadi.nobukti")
+            ->where("pengeluarantruckingheader.tglbukti", "<=", $tglBukti)
             ->where(function ($query) use ($tempPribadi) {
                 $query->whereRaw("$tempPribadi.sisa != 0")
                     ->orWhereRaw("$tempPribadi.sisa is null");
@@ -1306,11 +1306,16 @@ class GajiSupirHeader extends MyModel
         }
 
         $gajiSupirDetails = [];
-
+        $params = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'PENDAPATAN SUPIR')->where('subgrp', 'GAJI KENEK')->first();
+        $komisi_gajisupir = $params->text;
         $total = 0;
         $urut = 1;
         for ($i = 0; $i < count($data['rincianId']); $i++) {
-            $total = $total + $data['rincian_gajisupir'][$i] + $data['rincian_gajikenek'][$i] + $data['rincian_upahritasi'][$i] + $data['rincian_biayaextra'][$i];
+            if ($komisi_gajisupir == 'YA') {
+                $total = $total + $data['rincian_gajisupir'][$i] + $data['rincian_upahritasi'][$i] + $data['rincian_biayaextra'][$i];
+            } else {
+                $total = $total + $data['rincian_gajisupir'][$i] + $data['rincian_gajikenek'][$i] + $data['rincian_upahritasi'][$i] + $data['rincian_biayaextra'][$i];
+            }
 
             $gajiSupirDetail = (new GajiSupirDetail())->processStore($gajiSupirHeader, [
                 'nominaldeposito' => 0,
@@ -1620,12 +1625,16 @@ class GajiSupirHeader extends MyModel
         GajiSupirDetail::where('gajisupir_id', $gajiSupirHeader->id)->delete();
 
         $gajiSupirDetails = [];
-
+        $params = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'PENDAPATAN SUPIR')->where('subgrp', 'GAJI KENEK')->first();
+        $komisi_gajisupir = $params->text;
         $total = 0;
         $urut = 1;
         for ($i = 0; $i < count($data['rincianId']); $i++) {
-            $total = $total + $data['rincian_gajisupir'][$i] + $data['rincian_gajikenek'][$i] + $data['rincian_upahritasi'][$i] + $data['rincian_biayaextra'][$i];
-
+            if ($komisi_gajisupir == 'YA') {
+                $total = $total + $data['rincian_gajisupir'][$i] + $data['rincian_upahritasi'][$i] + $data['rincian_biayaextra'][$i];
+            } else {
+                $total = $total + $data['rincian_gajisupir'][$i] + $data['rincian_gajikenek'][$i] + $data['rincian_upahritasi'][$i] + $data['rincian_biayaextra'][$i];
+            }
             $gajiSupirDetail = (new GajiSupirDetail())->processStore($gajiSupirHeader, [
                 'nominaldeposito' => 0,
                 'nourut' => $urut,
