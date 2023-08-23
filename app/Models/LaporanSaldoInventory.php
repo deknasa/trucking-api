@@ -108,6 +108,7 @@ class LaporanSaldoInventory extends MyModel
                 DB::raw("'' as stokdari"),
                 DB::raw("'' as stoksampai"),
                 DB::raw("'' as vulkanisirke"),
+                'a.kodebarang as id',
                 'a.kodebarang',
                 'a.namabarang',
                 DB::raw("'".$priode1."' as tanggal"),

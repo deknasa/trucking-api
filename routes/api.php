@@ -249,6 +249,8 @@ use App\Http\Controllers\Api\MainAkunPusatController;
 use App\Http\Controllers\Api\LaporanHistoryDepositoController;
 use App\Http\Controllers\Api\LaporanPinjamanPerUnitTradoController;
 use App\Http\Controllers\Api\LogAbsensiController;
+use App\Http\Controllers\Api\OpnameDetailController;
+use App\Http\Controllers\Api\OpnameHeaderController;
 use App\Http\Controllers\Api\ReminderOliController;
 use App\Http\Controllers\Api\ReminderSpkController;
 use App\Http\Controllers\Api\ReminderSpkDetailController;
@@ -1573,6 +1575,15 @@ route::middleware(['auth:api', 'authorized'])->group(function () {
     Route::resource('spkharian', SpkHarianController::class)->whereNumber('spkharian');
     Route::resource('spkhariandetail', SpkHarianDetailController::class)->whereNumber('spkhariandetail');
     Route::resource('statusgandengantruck', StatusGandenganTruckController::class)->whereNumber('statusgandengantruck');
+    
+    Route::get('opnameheader/{id}/printreport', [OpnameHeaderController::class, 'printReport'])->whereNumber('id');
+    Route::get('opnameheader/{id}/export', [OpnameHeaderController::class, 'export'])->name('opnameheader.export')->whereNumber('id');
+    Route::get('opnameheader/getstok', [OpnameHeaderController::class, 'getStok']);
+    Route::get('opnameheader/{id}/getEdit', [OpnameHeaderController::class, 'getEdit'])->whereNumber('id');
+    Route::get('opnameheader/{id}/export', [OpnameHeaderController::class, 'export'])->name('opnameheader.export')->whereNumber('id');
+    Route::post('opnameheader/{id}/cekvalidasi', [OpnameHeaderController::class, 'cekvalidasi'])->name('opnameheader.cekvalidasi')->whereNumber('id');
+    Route::resource('opnameheader', OpnameHeaderController::class)->whereNumber('opnameheader');
+    Route::resource('opnamedetail', OpnameDetailController::class)->whereNumber('opnamedetail');
 });
 Route::get('suratpengantarapprovalinputtrip/updateapproval', [SuratPengantarApprovalInputTripController::class, 'updateApproval']);
 
