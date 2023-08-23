@@ -313,6 +313,34 @@ class PenerimaanTruckingHeader extends MyModel
         return $query->get();
     }
 
+    public function getPengembalianTitipan(array $data)
+    {
+        $bbt = PengeluaranTrucking::from(DB::raw("pengeluarantrucking with (readuncommitted)"))->where('kodepengeluaran','BBT')->first();
+        $periodedari = date('Y-m-d',strtotime($data['periodedari']));
+        $periodesampai = date('Y-m-d',strtotime($data['periodesampai']));
+
+        $pengeluaranTruckingDetail = PengeluaranTruckingDetail::from(DB::raw("pengeluarantruckingdetail with (readuncommitted)"))
+        ->select(
+            'pengeluarantruckingheader.id',
+            'pengeluarantruckingdetail.nobukti',
+            'pengeluarantruckingheader.tglbukti',
+            DB::raw("SUM(pengeluarantruckingdetail.nominaltagih) as nominal"),
+            DB::raw("max(jenisorder.keterangan) as jenisorder_id"),
+            DB::raw("max(pengeluarantruckingdetail.keterangan) as keterangan"),
+            // 'pengeluarantruckingdetail.suratpengantar_nobukti',
+        )
+        ->leftJoin(DB::raw("pengeluarantruckingheader with (readuncommitted)"), 'pengeluarantruckingheader.id', 'pengeluarantruckingdetail.pengeluarantruckingheader_id')
+        ->leftJoin(DB::raw("suratpengantar with (readuncommitted)"), 'suratpengantar.nobukti', 'pengeluarantruckingdetail.suratpengantar_nobukti')
+        ->leftJoin(DB::raw("jenisorder with (readuncommitted)"), 'jenisorder.id', 'suratpengantar.jenisorder_id')
+        ->where('pengeluarantruckingheader.pengeluarantrucking_id', $bbt->id)
+        ->where('jenisorder.id', $data['jenisorderan_id'])
+        ->whereBetween('pengeluarantruckingheader.tglbukti', [$periodedari,$periodesampai])
+        ->groupBy('pengeluarantruckingheader.id','pengeluarantruckingdetail.nobukti','pengeluarantruckingheader.tglbukti');
+        
+        return $pengeluaranTruckingDetail->get();
+
+    }
+
     public function createTempPinjPribadi($supir_id)
     {
         $temp = '##temp' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
