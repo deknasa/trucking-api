@@ -810,6 +810,7 @@ route::middleware(['auth:api', 'authorized'])->group(function () {
     Route::get('jurnalumumdetail/jurnal', [JurnalUmumDetailController::class, 'jurnal']);
     Route::resource('jurnalumumdetail', JurnalUmumDetailController::class)->whereNumber('jurnalumumdetail');
 
+    Route::get('penerimaantruckingheader/getpengembaliantitipan', [PenerimaanTruckingHeaderController::class, 'getDataPengembalianTitipan']);
     Route::get('penerimaantruckingheader/{id}/printreport', [PenerimaanTruckingHeaderController::class, 'printReport'])->whereNumber('id');
     Route::post('penerimaantruckingheader/{id}/cekValidasiAksi', [PenerimaanTruckingHeaderController::class, 'cekValidasiAksi'])->name('penerimaantruckingheader.cekValidasiAksi')->whereNumber('id');
     Route::post('penerimaantruckingheader/{id}/cekvalidasi', [PenerimaanTruckingHeaderController::class, 'cekvalidasi'])->name('penerimaantruckingheader.cekvalidasi')->whereNumber('id');
