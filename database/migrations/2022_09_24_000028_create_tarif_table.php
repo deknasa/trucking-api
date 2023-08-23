@@ -35,12 +35,12 @@ class CreateTarifTable extends Migration
             $table->string('modifiedby',50)->nullable();
             $table->timestamps();
 
-            $table->foreign('kota_id', 'tarif_kota_kota_id_foreign')->references('id')->on('kota');
-            $table->foreign('zona_id', 'tarif_zona_zona_id_foreign')->references('id')->on('zona');
+            // $table->foreign('kota_id', 'tarif_kota_kota_id_foreign')->references('id')->on('kota');
+            // $table->foreign('zona_id', 'tarif_zona_zona_id_foreign')->references('id')->on('zona');
         });
 
-        DB::statement("ALTER TABLE tarif NOCHECK CONSTRAINT tarif_kota_kota_id_foreign");
-        DB::statement("ALTER TABLE tarif NOCHECK CONSTRAINT tarif_zona_zona_id_foreign");
+        // DB::statement("ALTER TABLE tarif NOCHECK CONSTRAINT tarif_kota_kota_id_foreign");
+        // DB::statement("ALTER TABLE tarif NOCHECK CONSTRAINT tarif_zona_zona_id_foreign");
     }
 
     /**
