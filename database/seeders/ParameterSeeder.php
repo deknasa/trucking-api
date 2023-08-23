@@ -446,6 +446,7 @@ class ParameterSeeder extends Seeder
         parameter::create(['grp' => 'STATUS OPNAME STOK', 'subgrp' => 'STATUS OPNAME STOK', 'kelompok' => 'STATUS OPNAME STOK', 'text' => 'YA', 'memo' => '{"MEMO":"STATUS OPNAME STOK","SINGKATAN":"SOS","WARNA":"#6C757D"}', 'type' => '0', 'modifiedby' => 'ADMIN', 'default' => '',]);
         parameter::create(['grp' => 'STATUS OPNAME STOK', 'subgrp' => 'STATUS OPNAME STOK', 'kelompok' => 'STATUS OPNAME STOK', 'text' => 'TIDAK', 'memo' => '{"MEMO":"STATUS OPNAME STOK","SINGKATAN":"SOS","WARNA":"#6C757D"}', 'type' => '0', 'modifiedby' => 'ADMIN', 'default' => 'YA',]);
         parameter::create(['grp' => 'UBAH TAMPILAN', 'subgrp' => 'UBAH TAMPILAN', 'kelompok' => '', 'text' => 'PENDAPATANSUPIR', 'memo' => '{"MEMO":"UBAH TAMPILAN PENDAPATANSUPIR","SINGKATAN":"UTPS","WARNA":"#6C757D","INPUT":""}', 'type' => '0', 'modifiedby' => 'ADMIN', 'default' => '',]);
+        parameter::create(['grp' => 'CETAKULANG', 'subgrp' => 'CETAKULANG', 'kelompok' => '', 'text' => 'PELUNASANPIUTANGHEADER', 'memo' => '{"MEMO":"DATA PELUNASAN PIUTANG","SINGKATAN":"","WARNA":"#28A745"}', 'type' => '0', 'modifiedby' => '1', 'default' => '',]);
         
         
         
