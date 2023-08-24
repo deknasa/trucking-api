@@ -10,6 +10,7 @@ use App\Rules\ExistBank;
 use App\Rules\ExistSupir;
 use App\Rules\ExistSupirForPengeluaranTrucking;
 use App\Rules\ValidasiDetail;
+use App\Rules\validasiJenisOrderanPengeluaranTrucking;
 use Illuminate\Validation\Rule;
 use Illuminate\Support\Facades\DB;
 
@@ -229,6 +230,20 @@ class StorePengeluaranTruckingHeaderRequest extends FormRequest
                 'statusposting' => 'required',
                 'bank' => [$ruleBank],
                 'supirheader' => ['required',  new ValidasiDetail($jumlahdetail)],
+                // 'keterangancoa' => 'required',
+            ];
+        }elseif($kodepengeluaran == 'BBT'){
+           
+            $rules = [
+                "tglbukti" => [
+                    "required", 'date_format:d-m-Y',
+                    'before_or_equal:'.date('d-m-Y'),
+                    new DateTutupBuku()
+                ],
+                'pengeluarantrucking' => 'required','numeric', 'min:1',
+                'statusposting' => 'required',
+                'bank' => [$ruleBank],
+                'jenisorderan' => ['required', new validasiJenisOrderanPengeluaranTrucking()]
                 // 'keterangancoa' => 'required',
             ];
         }else{

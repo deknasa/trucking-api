@@ -87,5 +87,6 @@ class ErrorSeeder extends Seeder
         error::create(['kodeerror' => 'TBA', 'keterangan' => 'NOMINAL TARIF BELUM ADA', 'modifiedby' => 'ADMIN',]);
         error::create(['kodeerror' => 'SIK', 'keterangan' => 'SUDAH INPUT KOMISI', 'modifiedby' => 'ADMIN',]);
         error::create(['kodeerror' => 'TED', 'keterangan' => 'TRANSAKSI TIDAK BISA DIEDIT', 'modifiedby' => 'ADMIN',]);
+        error::create(['kodeerror' => 'JOTS', 'keterangan' => 'JENIS ORDERAN TIDAK SAMA DENGAN DETAIL', 'modifiedby' => 'ADMIN',]);
     }
 }

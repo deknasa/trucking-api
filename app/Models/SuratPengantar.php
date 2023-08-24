@@ -681,6 +681,9 @@ class SuratPengantar extends MyModel
                       ->where('pengeluarantruckingdetail.suratpengantar_nobukti','!=','');
             });
         }
+        if (request()->jenisorder_id != null) {
+            $query->where('suratpengantar.jenisorder_id', request()->jenisorder_id);
+        }
         $this->totalRows = $query->count();
         $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;
 
