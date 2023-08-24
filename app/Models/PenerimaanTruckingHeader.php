@@ -103,7 +103,11 @@ class PenerimaanTruckingHeader extends MyModel
                 'jenisorder.id as jenisorder_id',
                 'penerimaantruckingheader.coa',
                 'akunpusat.keterangancoa',
-                'penerimaantruckingheader.penerimaan_nobukti'
+                'penerimaantruckingheader.penerimaan_nobukti',
+                'penerimaantruckingheader.jenisorder_id as jenisorderan_id',
+                'penerimaantruckingheader.periodedari',
+                'penerimaantruckingheader.periodesampai',
+                'jenisorder.keterangan as jenisorderan'
             )
             ->leftJoin(DB::raw("penerimaantrucking with (readuncommitted)"), 'penerimaantruckingheader.penerimaantrucking_id', 'penerimaantrucking.id')
             ->leftJoin(DB::raw("bank with (readuncommitted)"), 'penerimaantruckingheader.bank_id', 'bank.id')
@@ -320,36 +324,102 @@ class PenerimaanTruckingHeader extends MyModel
 
     public function getPengembalianTitipan(array $data)
     {
-        $bbt = PengeluaranTrucking::from(DB::raw("pengeluarantrucking with (readuncommitted)"))->where('kodepengeluaran','BBT')->first();
-        $periodedari = date('Y-m-d',strtotime($data['periodedari']));
-        $periodesampai = date('Y-m-d',strtotime($data['periodesampai']));
+        $bbt = PengeluaranTrucking::from(DB::raw("pengeluarantrucking with (readuncommitted)"))->where('kodepengeluaran', 'BBT')->first();
+        $periodedari = date('Y-m-d', strtotime($data['periodedari']));
+        $periodesampai = date('Y-m-d', strtotime($data['periodesampai']));
 
         $pengeluaranTruckingDetail = PengeluaranTruckingDetail::from(DB::raw("pengeluarantruckingdetail with (readuncommitted)"))
-        ->select(
-            'pengeluarantruckingheader.id',
-            'pengeluarantruckingdetail.nobukti',
-            'pengeluarantruckingheader.tglbukti',
-            DB::raw("SUM(pengeluarantruckingdetail.nominaltagih) as nominal"),
-            DB::raw("max(jenisorder.keterangan) as jenisorder_id"),
-            DB::raw("max(pengeluarantruckingdetail.keterangan) as keterangan"),
-            // 'pengeluarantruckingdetail.suratpengantar_nobukti',
-        )
-        ->leftJoin(DB::raw("pengeluarantruckingheader with (readuncommitted)"), 'pengeluarantruckingheader.id', 'pengeluarantruckingdetail.pengeluarantruckingheader_id')
-        ->leftJoin(DB::raw("suratpengantar with (readuncommitted)"), 'suratpengantar.nobukti', 'pengeluarantruckingdetail.suratpengantar_nobukti')
-        ->leftJoin(DB::raw("jenisorder with (readuncommitted)"), 'jenisorder.id', 'suratpengantar.jenisorder_id')
-        ->where('pengeluarantruckingheader.pengeluarantrucking_id', $bbt->id)
-        ->where('jenisorder.id', $data['jenisorder_id'])
-        ->whereNotIn('pengeluarantruckingheader.nobukti', function($query) {
-            $query->select(DB::raw('DISTINCT penerimaantruckingdetail.pengeluarantruckingheader_nobukti'))
-                  ->from('penerimaantruckingdetail')
-                  ->whereNotNull('penerimaantruckingdetail.pengeluarantruckingheader_nobukti')
-                  ->where('penerimaantruckingdetail.pengeluarantruckingheader_nobukti','!=','');
-        })
-        ->whereBetween('pengeluarantruckingheader.tglbukti', [$periodedari,$periodesampai])
-        ->groupBy('pengeluarantruckingheader.id','pengeluarantruckingdetail.nobukti','pengeluarantruckingheader.tglbukti');
-        
-        return $pengeluaranTruckingDetail->get();
 
+            ->select(
+                'pengeluarantruckingheader.id',
+                'pengeluarantruckingdetail.nobukti as nobukti_titipan',
+                'pengeluarantruckingheader.tglbukti as tglbukti_titipan',
+                DB::raw("SUM(pengeluarantruckingdetail.nominaltagih) as nominal_titipan"),
+                DB::raw("max(jenisorder.keterangan) as jenisorder_id"),
+                DB::raw("max(pengeluarantruckingdetail.keterangan) as keterangan_titipan"),
+                // 'pengeluarantruckingdetail.suratpengantar_nobukti',
+            )
+            ->leftJoin(DB::raw("pengeluarantruckingheader with (readuncommitted)"), 'pengeluarantruckingheader.id', 'pengeluarantruckingdetail.pengeluarantruckingheader_id')
+            ->leftJoin(DB::raw("jenisorder with (readuncommitted)"), 'jenisorder.id', 'pengeluarantruckingheader.jenisorder_id');
+
+        if ($data['id'] != null) {
+            $pengeluaranTruckingDetail->leftJoin(DB::raw("penerimaantruckingdetail with (readuncommitted)"), 'pengeluarantruckingheader.nobukti', 'penerimaantruckingdetail.pengeluarantruckingheader_nobukti')
+                ->where('penerimaantruckingdetail.penerimaantruckingheader_id', $data['id']);
+        } else {
+            $pengeluaranTruckingDetail->whereRaw("pengeluarantruckingheader.nobukti not in (select pengeluarantruckingheader_nobukti from penerimaantruckingdetail)");
+        }
+
+        $pengeluaranTruckingDetail->where('pengeluarantruckingheader.pengeluarantrucking_id', $bbt->id)
+            ->where('jenisorder.id', $data['jenisorderan_id'])
+            ->whereBetween('pengeluarantruckingheader.tglbukti', [$periodedari, $periodesampai])
+            ->groupBy('pengeluarantruckingheader.id', 'pengeluarantruckingdetail.nobukti', 'pengeluarantruckingheader.tglbukti');
+        $data = $pengeluaranTruckingDetail->get();
+
+        return $data;
+    }
+    public function getPengembalianTitipanReload(array $data)
+    {
+        $bbt = PengeluaranTrucking::from(DB::raw("pengeluarantrucking with (readuncommitted)"))->where('kodepengeluaran', 'BBT')->first();
+        $periodedari = date('Y-m-d', strtotime($data['periodedari']));
+        $periodesampai = date('Y-m-d', strtotime($data['periodesampai']));
+
+        $fetch = PengeluaranTruckingDetail::from(DB::raw("pengeluarantruckingdetail with (readuncommitted)"))
+            ->select(
+                'pengeluarantruckingheader.id',
+                'pengeluarantruckingdetail.nobukti as nobukti_titipan',
+                'pengeluarantruckingheader.tglbukti as tglbukti_titipan',
+                DB::raw("SUM(pengeluarantruckingdetail.nominaltagih) as nominal_titipan"),
+                DB::raw("max(jenisorder.keterangan) as jenisorder_id"),
+                DB::raw("max(pengeluarantruckingdetail.keterangan) as keterangan_titipan"),
+                // 'pengeluarantruckingdetail.suratpengantar_nobukti',
+            )
+            ->leftJoin(DB::raw("pengeluarantruckingheader with (readuncommitted)"), 'pengeluarantruckingheader.id', 'pengeluarantruckingdetail.pengeluarantruckingheader_id')
+            ->leftJoin(DB::raw("jenisorder with (readuncommitted)"), 'jenisorder.id', 'pengeluarantruckingheader.jenisorder_id')
+            ->leftJoin(DB::raw("penerimaantruckingdetail with (readuncommitted)"), 'pengeluarantruckingheader.nobukti', 'penerimaantruckingdetail.pengeluarantruckingheader_nobukti')
+            ->where('penerimaantruckingdetail.penerimaantruckingheader_id', $data['id'])
+            ->where('pengeluarantruckingheader.pengeluarantrucking_id', $bbt->id)
+            ->where('jenisorder.id', $data['jenisorderan_id'])
+            ->whereBetween('pengeluarantruckingheader.tglbukti', [$periodedari, $periodesampai])
+            ->groupBy('pengeluarantruckingheader.id', 'pengeluarantruckingdetail.nobukti', 'pengeluarantruckingheader.tglbukti');
+            
+        $temp = '##temp' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+        Schema::create($temp, function ($table) {
+            $table->bigInteger('id')->nullable();
+            $table->string('nobukti_titipan')->nullable();
+            $table->date('tglbukti_titipan')->nullable();
+            $table->float('nominal_titipan')->nullable();
+            $table->string('jenisorder_id')->nullable();
+            $table->string('keterangan_titipan')->nullable();
+        });
+
+        DB::table($temp)->insertUsing(['id', 'nobukti_titipan', 'tglbukti_titipan', 'nominal_titipan', 'jenisorder_id', 'keterangan_titipan'], $fetch);
+
+        
+        $fetch = PengeluaranTruckingDetail::from(DB::raw("pengeluarantruckingdetail with (readuncommitted)"))
+            ->select(
+                'pengeluarantruckingheader.id',
+                'pengeluarantruckingdetail.nobukti as nobukti_titipan',
+                'pengeluarantruckingheader.tglbukti as tglbukti_titipan',
+                DB::raw("SUM(pengeluarantruckingdetail.nominaltagih) as nominal_titipan"),
+                DB::raw("max(jenisorder.keterangan) as jenisorder_id"),
+                DB::raw("max(pengeluarantruckingdetail.keterangan) as keterangan_titipan"),
+                // 'pengeluarantruckingdetail.suratpengantar_nobukti',
+            )
+            ->leftJoin(DB::raw("pengeluarantruckingheader with (readuncommitted)"), 'pengeluarantruckingheader.id', 'pengeluarantruckingdetail.pengeluarantruckingheader_id')
+            ->leftJoin(DB::raw("jenisorder with (readuncommitted)"), 'jenisorder.id', 'pengeluarantruckingheader.jenisorder_id')
+            ->whereRaw("pengeluarantruckingheader.nobukti not in (select pengeluarantruckingheader_nobukti from penerimaantruckingdetail)")
+            ->where('pengeluarantruckingheader.pengeluarantrucking_id', $bbt->id)
+            ->where('jenisorder.id', $data['jenisorderan_id'])
+            ->whereBetween('pengeluarantruckingheader.tglbukti', [$periodedari, $periodesampai])
+            ->groupBy('pengeluarantruckingheader.id', 'pengeluarantruckingdetail.nobukti', 'pengeluarantruckingheader.tglbukti');
+
+            DB::table($temp)->insertUsing(['id', 'nobukti_titipan', 'tglbukti_titipan', 'nominal_titipan', 'jenisorder_id', 'keterangan_titipan'], $fetch);
+
+        $pengeluaranTruckingDetail = DB::table($temp)->from(DB::raw("$temp with (readuncommitted)"));
+
+        $data = $pengeluaranTruckingDetail->get();
+
+        return $data;
     }
 
     public function getPengembalianTitipanShow($id)
@@ -455,7 +525,7 @@ class PenerimaanTruckingHeader extends MyModel
     public function getPengembalianPinjamanKaryawan($id, $karyawan_id)
     {
         // return $karyawan_id;
-        $tempPribadi = $this->createTempPengembalianPinjaman($id, $karyawan_id);
+        $tempPribadi = $this->createTempPengembalianPinjamanKaryawan($id, $karyawan_id);
         $tempAll = $this->createTempPinjamanKaryawan($id, $karyawan_id);
 
         $temp = '##tempGet' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
@@ -756,6 +826,9 @@ class PenerimaanTruckingHeader extends MyModel
         $penerimaanTruckingHeader->periodedari = date('Y-m-d', strtotime($data['periodedari'])) ?? '';
         $penerimaanTruckingHeader->jenisorder_id = $data['jenisorder_id'] ?? '';
         $penerimaanTruckingHeader->penerimaan_nobukti = $data['penerimaan_nobukti'] ?? '';
+        $penerimaanTruckingHeader->jenisorder_id = $data['jenisorderan_id'] ?? '';
+        $penerimaanTruckingHeader->periodedari = array_key_exists("periodedari", $data) ? date('Y-m-d', strtotime($data['periodedari'])) : '';
+        $penerimaanTruckingHeader->periodesampai = array_key_exists("periodesampai", $data) ? date('Y-m-d', strtotime($data['periodesampai'])) : '';
         $penerimaanTruckingHeader->statusformat = $data['statusformat'] ?? $format->id;
         $penerimaanTruckingHeader->statuscetak = $statusCetak->id;
         $penerimaanTruckingHeader->modifiedby = auth('api')->user()->name;
@@ -864,7 +937,9 @@ class PenerimaanTruckingHeader extends MyModel
                 $data['coa'] = $fetchFormat->coapostingkredit;
             } else if ($fetchFormat->kodepenerimaan == 'BBM') {
                 $data['coa'] = $fetchFormat->coakredit;
-            }else if ($fetchFormat->kodepenerimaan == 'DPO') {
+            } else if ($fetchFormat->kodepenerimaan == 'DPO') {
+                $data['coa'] = $fetchFormat->coapostingkredit;
+            } else if ($fetchFormat->kodepenerimaan == 'PBT') {
                 $data['coa'] = $fetchFormat->coapostingkredit;
             }
 
@@ -945,6 +1020,10 @@ class PenerimaanTruckingHeader extends MyModel
             $penerimaanTruckingHeader->modifiedby = auth('api')->user()->name;
             $penerimaanTruckingHeader->tglbukti = date('Y-m-d', strtotime($data['tglbukti']));
             $penerimaanTruckingHeader->nobukti = $nobukti;
+            $penerimaanTruckingHeader->jenisorder_id = $data['jenisorderan_id'] ?? '';
+            $penerimaanTruckingHeader->periodedari = array_key_exists("periodedari", $data) ? date('Y-m-d', strtotime($data['periodedari'])) : '';
+            $penerimaanTruckingHeader->periodesampai = array_key_exists("periodesampai", $data) ? date('Y-m-d', strtotime($data['periodesampai'])) : '';
+            
         } else {
             $penerimaanTruckingHeader->bank_id = $data['bank_id'];
             $penerimaanTruckingHeader->penerimaan_nobukti = $data['penerimaan_nobukti'];

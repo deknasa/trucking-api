@@ -208,12 +208,25 @@ class PenerimaanTruckingHeaderController extends Controller
     public function getDataPengembalianTitipan(Request $request)
     {
         $penerimaanTrucking = new PenerimaanTruckingHeader();
-        return response([
-            'data' => $penerimaanTrucking->getPengembalianTitipan([
+        $reloadGrid = $request->reloadGrid;
+        if($reloadGrid != null){
+            $data = $penerimaanTrucking->getPengembalianTitipanReload([
                 "periodedari" => $request->periodedari,
                 "periodesampai" => $request->periodesampai,
-                "jenisorder_id" => $request->jenisorder_id,
-            ])
+                "jenisorderan_id" => $request->jenisorderan_id,
+                'id' => $request->id
+            ]);
+        } else {
+            $data = $penerimaanTrucking->getPengembalianTitipan([
+                "periodedari" => $request->periodedari,
+                "periodesampai" => $request->periodesampai,
+                "jenisorderan_id" => $request->jenisorderan_id,
+                'id' => $request->id
+            ]);
+        }
+        return response([
+            'data' => $data
+
         ]);
     }
     public function getDataPengembalianTitipanShow($id)

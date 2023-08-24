@@ -245,12 +245,15 @@ class PengeluaranTruckingHeader extends MyModel
                 'pengeluarantruckingheader.periodedari',
                 'pengeluarantruckingheader.periodesampai',
                 'akunpusat.keterangancoa',
-                'pengeluarantruckingheader.pengeluaran_nobukti'
+                'pengeluarantruckingheader.pengeluaran_nobukti',
+                'pengeluarantruckingheader.jenisorder_id as jenisorderan_id',
+                'jenisorder.keterangan as jenisorderan'
             )
             ->leftJoin(DB::raw("pengeluarantrucking with (readuncommitted)"), 'pengeluarantruckingheader.pengeluarantrucking_id', 'pengeluarantrucking.id')
             ->leftJoin(DB::raw("bank with (readuncommitted)"), 'pengeluarantruckingheader.bank_id', 'bank.id')
             ->leftJoin(DB::raw("supir with (readuncommitted)"), 'pengeluarantruckingheader.supir_id', 'supir.id')
             ->leftJoin(DB::raw("trado with (readuncommitted)"), 'pengeluarantruckingheader.trado_id', 'trado.id')
+            ->leftJoin(DB::raw("jenisorder with (readuncommitted)"), 'pengeluarantruckingheader.jenisorder_id', 'jenisorder.id')
             ->leftJoin(DB::raw("akunpusat with (readuncommitted)"), 'pengeluarantruckingheader.coa', 'akunpusat.coa')
             ->where('pengeluarantruckingheader.id', '=', $id);
 
@@ -368,7 +371,7 @@ class PengeluaranTruckingHeader extends MyModel
         Schema::create($temp, function ($table) {
             $table->bigInteger('pengeluarantruckingheader_id')->nullable();
             $table->string('nobukti');
-            $table->string('keterangan')->nullable();
+            $table->longText('keterangan')->nullable();
             $table->bigInteger('sisa')->nullable();
             $table->bigInteger('bayar')->nullable();
         });
@@ -402,13 +405,14 @@ class PengeluaranTruckingHeader extends MyModel
         (SELECT (penerimaantruckingdetail.nominal - coalesce(SUM(pengeluarantruckingdetail.nominal),0)) FROM pengeluarantruckingdetail WHERE pengeluarantruckingdetail.penerimaantruckingheader_nobukti= penerimaantruckingdetail.nobukti) AS sisa"))
             ->leftJoin(DB::raw("penerimaantruckingheader with (readuncommitted)"), 'penerimaantruckingheader.nobukti', 'penerimaantruckingdetail.nobukti')
             ->whereBetween('penerimaantruckingheader.tglbukti', [date('Y-m-d', strtotime($periodedari)), date('Y-m-d', strtotime($periodesampai))])
-            ->whereRaw("penerimaantruckingheader.nobukti not in (select penerimaantruckingheader_nobukti from pengeluarantruckingdetail where pengeluarantruckingheader_id=$id)")
+            ->whereRaw("penerimaantruckingheader.nobukti not in (select penerimaantruckingheader_nobukti from pengeluarantruckingdetail where pengeluarantruckingheader_id=$id)")            
+            ->where("penerimaantruckingdetail.nobukti",  'LIKE', "%BBM%")
             ->orderBy('penerimaantruckingheader.tglbukti', 'asc')
             ->orderBy('penerimaantruckingdetail.nobukti', 'asc');
 
         Schema::create($temp, function ($table) {
             $table->string('nobukti');
-            $table->string('keterangan');
+            $table->longText('keterangan');
             $table->bigInteger('sisa')->nullable();
         });
         // return $fetch->get();
@@ -429,13 +433,14 @@ class PengeluaranTruckingHeader extends MyModel
             ->leftJoin(DB::raw("pengeluarantruckingdetail with (readuncommitted)"), 'pengeluarantruckingdetail.penerimaantruckingheader_nobukti', 'penerimaantruckingdetail.nobukti')
             ->whereBetween('penerimaantruckingheader.tglbukti', [date('Y-m-d', strtotime($periodedari)), date('Y-m-d', strtotime($periodesampai))])
             ->where("pengeluarantruckingdetail.pengeluarantruckingheader_id", $id)
+            ->where("penerimaantruckingdetail.nobukti",  'LIKE', "%BBM%")
             ->orderBy('penerimaantruckingheader.tglbukti', 'asc')
             ->orderBy('penerimaantruckingdetail.nobukti', 'asc');
 
         Schema::create($temp, function ($table) {
             $table->bigInteger('pengeluarantruckingheader_id')->nullable();
             $table->string('nobukti');
-            $table->string('keterangan');
+            $table->longText('keterangan');
             $table->bigInteger('bayar')->nullable();
             $table->bigInteger('sisa')->nullable();
         });
@@ -878,6 +883,7 @@ class PengeluaranTruckingHeader extends MyModel
         $pengeluaranTruckingHeader->periodesampai = $tglsampai;
         $pengeluaranTruckingHeader->supir_id = $data['supirheader_id'] ?? '';
         $pengeluaranTruckingHeader->trado_id = $data['tradoheader_id'] ?? '';
+        $pengeluaranTruckingHeader->jenisorder_id = $data['jenisorderan_id'] ?? '';
         $pengeluaranTruckingHeader->statusformat = $data['statusformat'] ?? $format->id;
         $pengeluaranTruckingHeader->statuscetak = $statusCetak->id;
         $pengeluaranTruckingHeader->modifiedby = auth('api')->user()->name;
@@ -1054,6 +1060,7 @@ class PengeluaranTruckingHeader extends MyModel
         $pengeluaranTruckingHeader->periodesampai = $tglsampai;
         $pengeluaranTruckingHeader->supir_id = $data['supirheader_id'] ?? '';
         $pengeluaranTruckingHeader->trado_id = $data['tradoheader_id'] ?? '';
+        $pengeluaranTruckingHeader->jenisorder_id = $data['jenisorderan_id'] ?? '';
         $pengeluaranTruckingHeader->statusformat = $data['statusformat'] ?? $format->id;
         $pengeluaranTruckingHeader->modifiedby = auth('api')->user()->name;
         
@@ -1122,11 +1129,11 @@ class PengeluaranTruckingHeader extends MyModel
                     "pengeluarantrucking_id" => $pinjaman->id,
                     "statusposting" => $statusPosting->id,
                     'supir_id' => $pjt_supir_id,
-                    'karyawan_id' => $pjt_karyawan_id,
+                    'karyawan_id' => $data['karyawan_id'],
                     'nominal' => $pjt_nominal,
                     'keterangan' => $pjt_keterangan,
                 ];
-                
+
                 $pinjaman = $this->updatePinjamanPosting($pengeluaranTruckingHeader->pengeluarantrucking_nobukti,$pjtRequest);
                
                 

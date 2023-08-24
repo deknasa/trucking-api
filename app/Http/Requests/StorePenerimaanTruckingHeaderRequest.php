@@ -152,13 +152,40 @@ class StorePenerimaanTruckingHeaderRequest extends FormRequest
                 'supir_id.*' => [new SupirDPOPenerimaanTrucking, new ExistSupirDPOPenerimaanTrucking()],
                 // 'keterangancoa' => 'required'
             ];
-        }else{
+        }elseif($kodepenerimaan == 'PBT'){
+            
+            $jumlahdetail = $this->jumlahdetail ?? 0;
             $rules = [
                 'tglbukti' => [
                     'required',
                     'date_format:d-m-Y',
                     'before_or_equal:'.date('d-m-Y'),
                     new DateTutupBuku(),
+                ],
+                'penerimaantrucking' => ['required',Rule::in($penerimaanName)],
+                'bank' => [$ruleBank, $bank, 'required'],
+                'bank_id' => [Rule::in($bankIds), 'required', 'min:1'],
+                'jenisorderan' => ['required', new ValidasiDetail($jumlahdetail)],
+                'periodedari' => [
+                    'required',
+                    'date_format:d-m-Y',
+                    'before_or_equal:'.date('d-m-Y'),
+                    new DateTutupBuku(),
+                ],
+                'periodesampai' => [
+                    'required',
+                    'date_format:d-m-Y',
+                    'before_or_equal:'.date('d-m-Y'),
+                    new DateTutupBuku(),
+                ],
+                // 'keterangancoa' => 'required'
+            ];
+        }else{
+            $rules = [
+                'tglbukti' => [
+                    'required', 'date_format:d-m-Y',
+                    new DateTutupBuku(),
+                    'before_or_equal:' . date('d-m-Y')
                 ],
                 'penerimaantrucking' => ['required',Rule::in($penerimaanName)],
                 'bank' => [$ruleBank, $bank, 'required'],

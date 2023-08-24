@@ -10,6 +10,7 @@ use App\Rules\ExistSupirDPOPenerimaanTrucking;
 use App\Rules\SupirDPOPenerimaanTrucking;
 use App\Rules\ValidasiDetail;
 use App\Rules\DestroyPenerimaanTruckingHeader;
+use App\Rules\validasiJenisOrderanPengeluaranTrucking;
 use Illuminate\Validation\Rule;
 use Illuminate\Support\Facades\DB;
 
@@ -160,6 +161,34 @@ class UpdatePenerimaanTruckingHeaderRequest extends FormRequest
                 'bank_id' => [Rule::in($getDataPenerimaan->bank_id), 'required', 'min:1'],
                 'supir.*' => ['required', $supir],
                 'supir_id.*' => [new SupirDPOPenerimaanTrucking, new ExistSupirDPOPenerimaanTrucking()],
+                // 'keterangancoa' => 'required'
+            ];
+        }elseif($kodepenerimaan == 'PBT'){
+            
+            $jumlahdetail = $this->jumlahdetail ?? 0;
+            $rules = [
+                'tglbukti' => [
+                    'required',
+                    'date_format:d-m-Y',
+                    'before_or_equal:'.date('d-m-Y'),
+                    new DateTutupBuku(),
+                ],
+                'penerimaantrucking' => ['required',Rule::in($penerimaanName)],
+                'bank' => [$ruleBank, $bank, 'required'],
+                'bank_id' => [Rule::in($bankIds), 'required', 'min:1'],
+                'jenisorderan' => ['required', new ValidasiDetail($jumlahdetail), new validasiJenisOrderanPengeluaranTrucking()],
+                'periodedari' => [
+                    'required',
+                    'date_format:d-m-Y',
+                    'before_or_equal:'.date('d-m-Y'),
+                    new DateTutupBuku(),
+                ],
+                'periodesampai' => [
+                    'required',
+                    'date_format:d-m-Y',
+                    'before_or_equal:'.date('d-m-Y'),
+                    new DateTutupBuku(),
+                ],
                 // 'keterangancoa' => 'required'
             ];
         }else{

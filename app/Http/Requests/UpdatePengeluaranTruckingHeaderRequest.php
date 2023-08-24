@@ -12,7 +12,7 @@ use App\Rules\ValidasiDetail;
 use Illuminate\Validation\Rule;
 use Illuminate\Support\Facades\DB;
 use App\Rules\DestroyPengeluaranTruckingHeader;
-
+use App\Rules\validasiJenisOrderanPengeluaranTrucking;
 
 class UpdatePengeluaranTruckingHeaderRequest extends FormRequest
 {
@@ -196,6 +196,19 @@ class UpdatePengeluaranTruckingHeaderRequest extends FormRequest
                 'statusposting' => 'required',
                 'bank' => [$ruleBank],
                 'supirheader' => ['required',  new ValidasiDetail($jumlahdetail)],
+                // 'keterangancoa' => 'required',
+            ];
+        }elseif($kodepengeluaran == 'BBT'){
+            
+            $rules = [
+                "tglbukti" => [
+                    "required", 'date_format:d-m-Y',
+                    'before_or_equal:'.date('d-m-Y'),
+                    new DateTutupBuku()
+                ],
+                'pengeluarantrucking' => 'required','numeric', 'min:1',
+                'bank' => [$ruleBank],
+                'jenisorderan' => ['required', new validasiJenisOrderanPengeluaranTrucking()]
                 // 'keterangancoa' => 'required',
             ];
         }else{
