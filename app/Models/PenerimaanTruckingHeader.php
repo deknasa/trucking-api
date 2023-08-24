@@ -94,9 +94,13 @@ class PenerimaanTruckingHeader extends MyModel
                 'penerimaantruckingheader.bank_id',
                 'penerimaantruckingheader.supir_id as supirheader_id',
                 'penerimaantruckingheader.karyawan_id as karyawanheader_id',
+                'penerimaantruckingheader.periodedari',
+                'penerimaantruckingheader.periodesampai',
                 'bank.namabank as bank',
                 'supir.namasupir as supir',
                 'karyawan.namakaryawan as karyawan',
+                'jenisorder.keterangan as jenisorder',
+                'jenisorder.id as jenisorder_id',
                 'penerimaantruckingheader.coa',
                 'akunpusat.keterangancoa',
                 'penerimaantruckingheader.penerimaan_nobukti'
@@ -105,6 +109,7 @@ class PenerimaanTruckingHeader extends MyModel
             ->leftJoin(DB::raw("bank with (readuncommitted)"), 'penerimaantruckingheader.bank_id', 'bank.id')
             ->leftJoin(DB::raw("supir with (readuncommitted)"), 'penerimaantruckingheader.supir_id', 'supir.id')
             ->leftJoin(DB::raw("karyawan with (readuncommitted)"), 'penerimaantruckingheader.karyawan_id', 'karyawan.id')
+            ->leftJoin(DB::raw("jenisorder with (readuncommitted)"), 'penerimaantruckingheader.jenisorder_id', 'jenisorder.id')
             ->leftJoin(DB::raw("akunpusat with (readuncommitted)"), 'penerimaantruckingheader.coa', 'akunpusat.coa')
             ->where('penerimaantruckingheader.id', '=', $id);
 
@@ -333,11 +338,37 @@ class PenerimaanTruckingHeader extends MyModel
         ->leftJoin(DB::raw("suratpengantar with (readuncommitted)"), 'suratpengantar.nobukti', 'pengeluarantruckingdetail.suratpengantar_nobukti')
         ->leftJoin(DB::raw("jenisorder with (readuncommitted)"), 'jenisorder.id', 'suratpengantar.jenisorder_id')
         ->where('pengeluarantruckingheader.pengeluarantrucking_id', $bbt->id)
-        ->where('jenisorder.id', $data['jenisorderan_id'])
+        ->where('jenisorder.id', $data['jenisorder_id'])
+        ->whereNotIn('pengeluarantruckingheader.nobukti', function($query) {
+            $query->select(DB::raw('DISTINCT penerimaantruckingdetail.pengeluarantruckingheader_nobukti'))
+                  ->from('penerimaantruckingdetail')
+                  ->whereNotNull('penerimaantruckingdetail.pengeluarantruckingheader_nobukti')
+                  ->where('penerimaantruckingdetail.pengeluarantruckingheader_nobukti','!=','');
+        })
         ->whereBetween('pengeluarantruckingheader.tglbukti', [$periodedari,$periodesampai])
         ->groupBy('pengeluarantruckingheader.id','pengeluarantruckingdetail.nobukti','pengeluarantruckingheader.tglbukti');
         
         return $pengeluaranTruckingDetail->get();
+
+    }
+
+    public function getPengembalianTitipanShow($id)
+    {
+        $penerimaanTruckingDetail = PenerimaanTruckingHeader::from(DB::raw("penerimaantruckingheader with (readuncommitted)"))
+        ->select(
+            'penerimaantruckingdetail.id',
+            'penerimaantruckingdetail.pengeluarantruckingheader_nobukti as nobukti',
+            'penerimaantruckingdetail.nominal',
+            'jenisorder.keterangan as jenisorder_id',
+            'penerimaantruckingdetail.keterangan',
+            'pengeluarantruckingheader.tglbukti as tglbukti',
+        )
+        ->where('penerimaantruckingheader.id',$id)
+        // dd($penerimaantruckingdetail->get());
+        ->leftJoin(DB::raw("penerimaantruckingdetail with (readuncommitted)"), 'penerimaantruckingdetail.penerimaantruckingheader_id', 'penerimaantruckingheader.id')
+        ->leftJoin(DB::raw("pengeluarantruckingheader with (readuncommitted)"), 'pengeluarantruckingheader.nobukti', 'penerimaantruckingdetail.pengeluarantruckingheader_nobukti')
+        ->leftJoin(DB::raw("jenisorder with (readuncommitted)"), 'jenisorder.id', 'penerimaantruckingheader.jenisorder_id');
+        return $penerimaanTruckingDetail->get();
 
     }
 
@@ -691,6 +722,8 @@ class PenerimaanTruckingHeader extends MyModel
             $data['coa'] = $fetchFormat->coakredit;
         } else if ($fetchFormat->kodepenerimaan == 'DPO') {
             $data['coa'] = $fetchFormat->coapostingkredit;
+        } else if ($fetchFormat->kodepenerimaan == 'PBT') {
+            $data['coa'] = $fetchFormat->coapostingkredit;
         }
 
         $statusformat = $fetchFormat->format;
@@ -719,6 +752,9 @@ class PenerimaanTruckingHeader extends MyModel
         $penerimaanTruckingHeader->coa = $data['coa'] ?? '';
         $penerimaanTruckingHeader->supir_id = $data['supirheader_id'] ?? '';
         $penerimaanTruckingHeader->karyawan_id = $data['karyawanheader_id'] ?? '';
+        $penerimaanTruckingHeader->periodesampai = date('Y-m-d', strtotime($data['periodesampai'])) ?? '';
+        $penerimaanTruckingHeader->periodedari = date('Y-m-d', strtotime($data['periodedari'])) ?? '';
+        $penerimaanTruckingHeader->jenisorder_id = $data['jenisorder_id'] ?? '';
         $penerimaanTruckingHeader->penerimaan_nobukti = $data['penerimaan_nobukti'] ?? '';
         $penerimaanTruckingHeader->statusformat = $data['statusformat'] ?? $format->id;
         $penerimaanTruckingHeader->statuscetak = $statusCetak->id;
@@ -903,6 +939,9 @@ class PenerimaanTruckingHeader extends MyModel
             $penerimaanTruckingHeader->coa = $data['coa'] ?? '';
             $penerimaanTruckingHeader->supir_id = $data['supirheader_id'] ?? '';
             $penerimaanTruckingHeader->karyawan_id = $data['karyawanheader_id'] ?? '';
+            $penerimaanTruckingHeader->jenisorder_id = $data['jenisorder_id'] ?? '';
+            $penerimaanTruckingHeader->periodesampai = date('Y-m-d', strtotime($data['periodesampai'])) ?? '';
+            $penerimaanTruckingHeader->periodedari = date('Y-m-d', strtotime($data['periodedari'])) ?? '';
             $penerimaanTruckingHeader->modifiedby = auth('api')->user()->name;
             $penerimaanTruckingHeader->tglbukti = date('Y-m-d', strtotime($data['tglbukti']));
             $penerimaanTruckingHeader->nobukti = $nobukti;

@@ -212,8 +212,15 @@ class PenerimaanTruckingHeaderController extends Controller
             'data' => $penerimaanTrucking->getPengembalianTitipan([
                 "periodedari" => $request->periodedari,
                 "periodesampai" => $request->periodesampai,
-                "jenisorderan_id" => $request->jenisorderan_id,
+                "jenisorder_id" => $request->jenisorder_id,
             ])
+        ]);
+    }
+    public function getDataPengembalianTitipanShow($id)
+    {
+        $penerimaanTrucking = new PenerimaanTruckingHeader();
+        return response([
+            'data' => $penerimaanTrucking->getPengembalianTitipanShow($id)
         ]);
     }
 
