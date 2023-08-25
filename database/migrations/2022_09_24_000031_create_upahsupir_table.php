@@ -21,6 +21,10 @@ class CreateUpahsupirTable extends Migration
             $table->id();
             $table->unsignedBigInteger('parent_id')->nullable();
             $table->unsignedBigInteger('tarif_id')->nullable();
+            $table->unsignedBigInteger('tarifmuatan_id')->nullable();
+            $table->unsignedBigInteger('tarifbongkaran_id')->nullable();
+            $table->unsignedBigInteger('tarifimport_id')->nullable();
+            $table->unsignedBigInteger('tarifexport_id')->nullable();
             $table->unsignedBigInteger('kotadari_id')->nullable();
             $table->unsignedBigInteger('kotasampai_id')->nullable();
             $table->unsignedBigInteger('zonadari_id')->nullable();
