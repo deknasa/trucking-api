@@ -36,6 +36,7 @@ class CreateSupplierTable extends Migration
             $table->string('namarekening', 150)->nullable();
             $table->string('jabatan', 150)->nullable();
             $table->integer('statusdaftarharga')->length(11)->nullable();
+            $table->integer('statuspostingtnl')->length(11)->nullable();
             $table->string('kategoriusaha', 150)->nullable();
             $table->double('top', 15, 2)->nullable();
             $table->longText('keterangan')->nullable();
