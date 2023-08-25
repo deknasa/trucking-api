@@ -536,6 +536,13 @@ class Tarif extends MyModel
             $data['statuspostingtnl'] = $statusBukanTnl->id;
 
             $postingTNL = $this->postingTnl($data);
+            if ($postingTNL['statuscode'] != 201) {
+                if($postingTNL['statuscode'] == 422){
+                    throw new \Exception($postingTNL['data']['errors']['penyesuaian'][0].' di TNL');
+                }else{
+                    throw new \Exception($postingTNL['data']['message']);
+                }
+            }
         }
 
         return $tarif;

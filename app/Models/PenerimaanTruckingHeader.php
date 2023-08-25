@@ -329,7 +329,6 @@ class PenerimaanTruckingHeader extends MyModel
         $periodesampai = date('Y-m-d', strtotime($data['periodesampai']));
 
         $pengeluaranTruckingDetail = PengeluaranTruckingDetail::from(DB::raw("pengeluarantruckingdetail with (readuncommitted)"))
-
             ->select(
                 'pengeluarantruckingheader.id',
                 'pengeluarantruckingdetail.nobukti as nobukti_titipan',

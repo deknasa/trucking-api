@@ -226,7 +226,6 @@ class PenerimaanTruckingHeaderController extends Controller
         }
         return response([
             'data' => $data
-
         ]);
     }
     public function getDataPengembalianTitipanShow($id)
