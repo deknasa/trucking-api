@@ -392,6 +392,7 @@ class PenerimaanTruckingHeader extends MyModel
         });
 
         DB::table($temp)->insertUsing(['id', 'nobukti_titipan', 'tglbukti_titipan', 'nominal_titipan', 'jenisorder_id', 'keterangan_titipan'], $fetch);
+
         
         $fetch = PengeluaranTruckingDetail::from(DB::raw("pengeluarantruckingdetail with (readuncommitted)"))
             ->select(
