@@ -41,7 +41,7 @@ class Supir extends MyModel
                 goto selesai;
             }
         } else {
-            
+
             if ($cekTglResign->tglberhentisupir != null) {
                 $data = [
                     'kondisi' => true,
@@ -315,6 +315,7 @@ class Supir extends MyModel
             $table->unsignedBigInteger('statusluarkota')->nullable();
             $table->unsignedBigInteger('statuszonatertentu')->nullable();
             $table->unsignedBigInteger('statusblacklist')->nullable();
+            $table->unsignedBigInteger('statuspostingtnl')->nullable();
         });
 
         // AKTIF
@@ -389,7 +390,18 @@ class Supir extends MyModel
 
 
         $iddefaultstatusBlacklist = $status->id ?? 0;
+        $status = Parameter::from(
+            db::Raw("parameter with (readuncommitted)")
+        )
+            ->select(
+                'id'
+            )
+            ->where('grp', '=', 'STATUS POSTING TNL')
+            ->where('subgrp', '=', 'STATUS POSTING TNL')
+            ->where('default', '=', 'YA')
+            ->first();
 
+        $iddefaultstatuspostingtnl = $status->id ?? 0;
 
 
         DB::table($tempdefault)->insert(
@@ -399,6 +411,7 @@ class Supir extends MyModel
                 "statusluarkota" => $iddefaultstatusLuarKota,
                 "statuszonatertentu" => $iddefaultstatusZonaTertentu,
                 "statusblacklist" => $iddefaultstatusBlacklist,
+                "statuspostingtnl" => $iddefaultstatuspostingtnl
             ]
         );
 
@@ -410,7 +423,8 @@ class Supir extends MyModel
                 'statusadaupdategambar',
                 'statusluarkota',
                 'statuszonatertentu',
-                'statusblacklist'
+                'statusblacklist',
+                'statuspostingtnl',
             );
 
         $data = $query->first();
@@ -847,7 +861,7 @@ class Supir extends MyModel
         foreach ($files as $file) {
             $originalFileName = "SURAT-" . hash('sha256', $file) . '.pdf';
             $pdfData = base64_decode($file);
-            $storedFile = Storage::put('supir/' . $destinationFolder. '/' . $originalFileName,$pdfData);
+            $storedFile = Storage::put('supir/' . $destinationFolder . '/' . $originalFileName, $pdfData);
             $storedFiles[] = $originalFileName;
         }
 
@@ -863,7 +877,7 @@ class Supir extends MyModel
         foreach ($files as $file) {
             $originalFileName = "$destinationFolder-" . hash('sha256', $file) . '.jpg';
             $imageData = base64_decode($file);
-            $storedFile = Storage::put('supir/' . $destinationFolder. '/' . $originalFileName,$imageData);
+            $storedFile = Storage::put('supir/' . $destinationFolder . '/' . $originalFileName, $imageData);
             $resizedFiles = App::imageResize(storage_path("app/supir/$destinationFolder/"), storage_path("app/supir/$destinationFolder/$originalFileName"), $originalFileName);
 
             $storedFiles[] = $originalFileName;
@@ -914,6 +928,7 @@ class Supir extends MyModel
             $supir->plafondeposito = str_replace(',', '', $data['plafondeposito']) ?? 0;
             $supir->tgllahir = date('Y-m-d', strtotime($data['tgllahir']));
             $supir->tglterbitsim = date('Y-m-d', strtotime($data['tglterbitsim']));
+            $supir->statuspostingtnl = $data['statuspostingtnl'];
             $supir->modifiedby = auth('api')->user()->user;
 
             $supir->statusadaupdategambar = $statusAdaUpdateGambar->id;
@@ -1114,7 +1129,7 @@ class Supir extends MyModel
         $photoDomisili = json_decode($gambar['domisili']);
         $photoVaksin = json_decode($gambar['vaksin']);
         $photoPDF = json_decode($gambar['pdfsuratperjanjian']);
-        
+
         $server = config('app.server_jkt');
         $getToken = Http::withHeaders([
             'Content-Type' => 'application/json',
@@ -1124,7 +1139,6 @@ class Supir extends MyModel
                 'user' => auth('api')->user()->user,
                 'password' => getenv('PASSWORD_TNL'),
             ]);
-
         if ($getToken->getStatusCode() == '404') {
             throw new \Exception("Akun Tidak Terdaftar di Trucking TNL");
         } else if ($getToken->getStatusCode() == '200') {
@@ -1132,28 +1146,28 @@ class Supir extends MyModel
             $access_token = json_decode($getToken, TRUE)['access_token'];
 
             foreach ($photoSupir as $imagePath) {
-                $supirBase64[] = base64_encode(file_get_contents(storage_path("app/supir/profil" . $imagePath)));
+                $supirBase64[] = base64_encode(file_get_contents(storage_path("app/supir/profil/" . $imagePath)));
             }
             foreach ($photoKtp as $imagePath) {
-                $ktpBase64[] = base64_encode(file_get_contents(storage_path("app/supir/ktp" . $imagePath)));
+                $ktpBase64[] = base64_encode(file_get_contents(storage_path("app/supir/ktp/" . $imagePath)));
             }
             foreach ($photoSim as $imagePath) {
-                $simBase64[] = base64_encode(file_get_contents(storage_path("app/supir/sim" . $imagePath)));
+                $simBase64[] = base64_encode(file_get_contents(storage_path("app/supir/sim/" . $imagePath)));
             }
             foreach ($photoKk as $imagePath) {
-                $kkBase64[] = base64_encode(file_get_contents(storage_path("app/supir/kk" . $imagePath)));
+                $kkBase64[] = base64_encode(file_get_contents(storage_path("app/supir/kk/" . $imagePath)));
             }
             foreach ($photoSkck as $imagePath) {
-                $skckBase64[] = base64_encode(file_get_contents(storage_path("app/supir/skck" . $imagePath)));
+                $skckBase64[] = base64_encode(file_get_contents(storage_path("app/supir/skck/" . $imagePath)));
             }
             foreach ($photoDomisili as $imagePath) {
-                $domisiliBase64[] = base64_encode(file_get_contents(storage_path("app/supir/domisili" . $imagePath)));
+                $domisiliBase64[] = base64_encode(file_get_contents(storage_path("app/supir/domisili/" . $imagePath)));
             }
             foreach ($photoVaksin as $imagePath) {
-                $vaksinBase64[] = base64_encode(file_get_contents(storage_path("app/supir/vaksin" . $imagePath)));
+                $vaksinBase64[] = base64_encode(file_get_contents(storage_path("app/supir/vaksin/" . $imagePath)));
             }
             foreach ($photoPDF as $imagePath) {
-                $pdfBase64[] = base64_encode(file_get_contents(storage_path("app/supir/suratperjanjian" . $imagePath)));
+                $pdfBase64[] = base64_encode(file_get_contents(storage_path("app/supir/suratperjanjian/" . $imagePath)));
             }
             $data['photosupir'] = $supirBase64;
             $data['photoktp'] = $ktpBase64;

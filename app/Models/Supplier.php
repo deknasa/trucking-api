@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Schema;
 
 
@@ -142,6 +143,7 @@ class Supplier extends MyModel
             'parameter_statusdaftarharga.memo as statusdaftarharga',
             'supplier.kategoriusaha',
             'statusapproval.memo as statusapproval',
+            'statuspostingtnl.memo as statuspostingtnl',
             'supplier.modifiedby',
             'supplier.created_at',
             'supplier.updated_at',
@@ -153,8 +155,9 @@ class Supplier extends MyModel
         )
             ->leftJoin('parameter as parameter_statusaktif', "supplier.statusaktif", '=', 'parameter_statusaktif.id')
             ->leftJoin(DB::raw("parameter as statusapproval with (readuncommitted)"), 'supplier.statusapproval', 'statusapproval.id')
+            ->leftJoin(DB::raw("parameter as statuspostingtnl with (readuncommitted)"), 'supplier.statuspostingtnl', 'statuspostingtnl.id')
             ->leftJoin('parameter as parameter_statusdaftarharga', "supplier.statusdaftarharga", '=', 'parameter_statusdaftarharga.id');
-            
+
 
         if ($aktif == 'AKTIF') {
             $statusaktif = Parameter::from(
@@ -185,6 +188,7 @@ class Supplier extends MyModel
         Schema::create($tempdefault, function ($table) {
             $table->unsignedBigInteger('statusaktif')->nullable();
             $table->unsignedBigInteger('statusdaftarharga')->nullable();
+            $table->unsignedBigInteger('statuspostingtnl')->nullable();
         });
 
         $status = Parameter::from(
@@ -213,9 +217,20 @@ class Supplier extends MyModel
 
         $iddefaultstatusdaftarharga = $status->id ?? 0;
 
+        $status = Parameter::from(
+            db::Raw("parameter with (readuncommitted)")
+        )
+            ->select(
+                'id'
+            )
+            ->where('grp', '=', 'STATUS POSTING TNL')
+            ->where('subgrp', '=', 'STATUS POSTING TNL')
+            ->where('default', '=', 'YA')
+            ->first();
 
+        $iddefaultstatuspostingtnl = $status->id ?? 0;
         DB::table($tempdefault)->insert(
-            ["statusaktif" => $iddefaultstatusaktif, "statusdaftarharga" => $iddefaultstatusdaftarharga]
+            ["statusaktif" => $iddefaultstatusaktif, "statusdaftarharga" => $iddefaultstatusdaftarharga, "statuspostingtnl" => $iddefaultstatuspostingtnl,]
         );
 
         $query = DB::table($tempdefault)->from(
@@ -224,6 +239,7 @@ class Supplier extends MyModel
             ->select(
                 'statusaktif',
                 'statusdaftarharga',
+                'statuspostingtnl',
             );
 
         $data = $query->first();
@@ -257,6 +273,7 @@ class Supplier extends MyModel
             'supplier.jabatan',
 
             'supplier.statusdaftarharga',
+            'supplier.statuspostingtnl',
             'supplier.kategoriusaha',
             'supplier.statusapproval',
             'supplier.tglapproval',
@@ -300,6 +317,7 @@ class Supplier extends MyModel
             $this->table.namarekening,
             $this->table.jabatan,
             $this->table.statusdaftarharga,
+            $this->table.statuspostingtnl,
             $this->table.kategoriusaha,
             $this->table.statusapproval,
             $this->table.tglapproval,
@@ -337,10 +355,11 @@ class Supplier extends MyModel
             $table->string('namarekening', 150)->nullable();
             $table->string('jabatan', 150)->nullable();
             $table->string('statusdaftarharga')->length(11)->nullable();
+            $table->string('statuspostingtnl')->length(11)->nullable();
             $table->string('kategoriusaha', 150)->nullable();
-            $table->string('statusapproval',150)->nullable();
+            $table->string('statusapproval', 150)->nullable();
             $table->date('tglapproval')->nullable();
-            $table->string('userapproval',50)->nullable();            
+            $table->string('userapproval', 50)->nullable();
             $table->string('modifiedby', 50)->nullable();
             $table->dateTime('created_at')->nullable();
             $table->dateTime('updated_at')->nullable();
@@ -352,7 +371,7 @@ class Supplier extends MyModel
         $this->sort($query);
         $models = $this->filter($query);
         // dd($models->get());
-        DB::table($temp)->insertUsing(['id', 'namasupplier', 'namakontak','top','keterangan',  'alamat', 'kota', 'kodepos', 'notelp1', 'notelp2', 'email',  'statusaktif', 'web', 'namapemilik', 'jenisusaha', 'bank', 'coa', 'rekeningbank',  'namarekening', 'jabatan', 'statusdaftarharga', 'kategoriusaha','statusapproval','tglapproval','userapproval', 'modifiedby', 'created_at', 'updated_at'], $models);
+        DB::table($temp)->insertUsing(['id', 'namasupplier', 'namakontak', 'top', 'keterangan',  'alamat', 'kota', 'kodepos', 'notelp1', 'notelp2', 'email',  'statusaktif', 'web', 'namapemilik', 'jenisusaha', 'bank', 'coa', 'rekeningbank',  'namarekening', 'jabatan', 'statusdaftarharga', 'statuspostingtnl', 'kategoriusaha', 'statusapproval', 'tglapproval', 'userapproval', 'modifiedby', 'created_at', 'updated_at'], $models);
 
         return  $temp;
     }
@@ -374,6 +393,10 @@ class Supplier extends MyModel
                             $query = $query->where('parameter_statusaktif.text', '=', $filters['data']);
                         } else if ($filters['field'] == 'statusdaftarharga') {
                             $query = $query->where('parameter_statusdaftarharga.text', '=', $filters['data']);
+                        } else if ($filters['field'] == 'statusapproval') {
+                            $query = $query->where('statusapproval.text', '=', $filters['data']);
+                        } else if ($filters['field'] == 'statuspostingtnl') {
+                            $query = $query->where('statuspostingtnl.text', '=', $filters['data']);
                         } else if ($filters['field'] == 'created_at' || $filters['field'] == 'updated_at') {
                             $query = $query->whereRaw("format(" . $this->table . "." . $filters['field'] . ", 'dd-MM-yyyy HH:mm:ss') LIKE '%$filters[data]%'");
                         } else if ($filters['field'] == 'check') {
@@ -392,6 +415,10 @@ class Supplier extends MyModel
                                 $query = $query->orWhere('parameter_statusaktif.text', '=', $filters['data']);
                             } else if ($filters['field'] == 'statusdaftarharga') {
                                 $query = $query->orWhere('parameter_statusdaftarharga.text', '=', $filters['data']);
+                            } else if ($filters['field'] == 'statusapproval') {
+                                $query = $query->orWhere('statusapproval.text', '=', $filters['data']);
+                            } else if ($filters['field'] == 'statuspostingtnl') {
+                                $query = $query->orWhere('statuspostingtnl.text', '=', $filters['data']);
                             } else if ($filters['field'] == 'created_at' || $filters['field'] == 'updated_at') {
                                 $query = $query->orWhereRaw("format(" . $this->table . "." . $filters['field'] . ", 'dd-MM-yyyy HH:mm:ss') LIKE '%$filters[data]%'");
                             } else if ($filters['field'] == 'check') {
@@ -425,7 +452,7 @@ class Supplier extends MyModel
     {
 
         $statusNonApproval = Parameter::from(DB::raw("parameter with (readuncommitted)"))
-        ->where('grp', '=', 'STATUS APPROVAL')->where('text', '=', 'NON APPROVAL')->first();
+            ->where('grp', '=', 'STATUS APPROVAL')->where('text', '=', 'NON APPROVAL')->first();
 
         $supplier = new Supplier();
         $supplier->namasupplier = $data['namasupplier'];
@@ -450,6 +477,7 @@ class Supplier extends MyModel
         $supplier->namarekening = $data['namarekening'];
         $supplier->jabatan = $data['jabatan'];
         $supplier->statusdaftarharga = $data['statusdaftarharga'];
+        $supplier->statuspostingtnl = $data['statuspostingtnl'];
         $supplier->kategoriusaha = $data['kategoriusaha'];
         $supplier->modifiedby = auth('api')->user()->name;
 
@@ -468,6 +496,17 @@ class Supplier extends MyModel
             'modifiedby' => $supplier->modifiedby
         ]);
 
+        $statusTnl = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS POSTING TNL')->where('text', 'POSTING TNL')->first();
+        if ($data['statuspostingtnl'] == $statusTnl->id) {
+            $statusBukanTnl = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS POSTING TNL')->where('text', 'TIDAK POSTING TNL')->first();
+            // posting ke tnl
+            $data['statuspostingtnl'] = $statusBukanTnl->id;
+
+            $postingTNL = $this->postingTnl($data);
+            if ($postingTNL['statuscode'] != 201) {
+                throw new \Exception($postingTNL['data']['message']);
+            }
+        }
         return $supplier;
     }
 
@@ -529,5 +568,38 @@ class Supplier extends MyModel
         ]);
 
         return $supplier;
+    }
+
+    public function postingTnl($data)
+    {
+        $server = config('app.server_jkt');
+        $getToken = Http::withHeaders([
+            'Content-Type' => 'application/json',
+            'Accept' => 'application/json'
+        ])
+            ->post($server . 'truckingtnl-api/public/api/token', [
+                'user' => auth('api')->user()->user,
+                'password' => getenv('PASSWORD_TNL'),
+            ]);
+
+        if ($getToken->getStatusCode() == '404') {
+            throw new \Exception("Akun Tidak Terdaftar di Trucking TNL");
+        } else if ($getToken->getStatusCode() == '200') {
+
+            $access_token = json_decode($getToken, TRUE)['access_token'];
+            $transferTarif = Http::withHeaders([
+                'Content-Type' => 'application/json',
+                'Accept' => 'application/json',
+                'Authorization' => 'Bearer ' . $access_token
+            ])->post($server . 'truckingtnl-api/public/api/supplier', $data);
+            $tesResp = $transferTarif->toPsrResponse();
+            $response = [
+                'statuscode' => $tesResp->getStatusCode(),
+                'data' => $transferTarif->json(),
+            ];
+            return $response;
+        } else {
+            throw new \Exception("server tidak bisa diakses");
+        }
     }
 }

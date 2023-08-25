@@ -133,6 +133,7 @@ class SupplierController extends Controller
                 'namarekening' => $request->namarekening,
                 'jabatan' => $request->jabatan,
                 'statusdaftarharga' => $request->statusdaftarharga,
+                'statuspostingtnl' => $request->statuspostingtnl,
                 'kategoriusaha' => $request->kategoriusaha,
             ];
             $supplier = (new Supplier())->processStore($data);
