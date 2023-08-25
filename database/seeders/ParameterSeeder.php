@@ -448,9 +448,11 @@ class ParameterSeeder extends Seeder
         parameter::create(['grp' => 'UBAH TAMPILAN', 'subgrp' => 'UBAH TAMPILAN', 'kelompok' => '', 'text' => 'PENDAPATANSUPIR', 'memo' => '{"MEMO":"UBAH TAMPILAN PENDAPATANSUPIR","SINGKATAN":"UTPS","WARNA":"#6C757D","INPUT":""}', 'type' => '0', 'modifiedby' => 'ADMIN', 'default' => '',]);
         parameter::create(['grp' => 'CETAKULANG', 'subgrp' => 'CETAKULANG', 'kelompok' => '', 'text' => 'PELUNASANPIUTANGHEADER', 'memo' => '{"MEMO":"DATA PELUNASAN PIUTANG","SINGKATAN":"","WARNA":"#28A745"}', 'type' => '0', 'modifiedby' => '1', 'default' => '',]);
         parameter::create(['grp' => 'UBAH TAMPILAN', 'subgrp' => 'UBAH TAMPILAN', 'kelompok' => '', 'text' => 'SUPPLIER', 'memo' => '{"MEMO":"UBAH TAMPILAN SUPPLIER","SINGKATAN":"UTSR","WARNA":"#6C757D","INPUT":""}', 'type' => '0', 'modifiedby' => 'ADMIN', 'default' => '',]);
+        parameter::create(['grp' => 'PENERIMAAN BANK CIMB I', 'subgrp' => 'PENERIMAAN BANK CIMB I', 'kelompok' => 'PENERIMAAN BANK', 'text' => '#BMT-M CIMB I # 9999#/#R#/#Y', 'memo' => '{"MEMO":"PENERIMAAN BANK CIMB I","SINGKATAN":"#BMT-M CIMB I # 9999#/#R#/#Y","WARNA":"#28A745"}', 'type' => '0', 'modifiedby' => 'ADMIN', 'default' => '',]);
+        parameter::create(['grp' => 'PENGELUARAN BANK CIMB I', 'subgrp' => 'PENGELUARAN BANK CIMB I', 'kelompok' => 'PENGELUARAN BANK', 'text' => '#BKT-M CIMB I # 9999#/#R#/#Y', 'memo' => '{"MEMO":"PENGELUARAN BANK CIMB I","SINGKATAN":"#BKT-M CIMB I # 9999#/#R#/#Y","WARNA":"#28A745"}', 'type' => '0', 'modifiedby' => 'ADMIN', 'default' => '',]);
+        parameter::create(['grp' => 'PENERIMAAN BANK MAYA', 'subgrp' => 'PENERIMAAN BANK MAYA', 'kelompok' => 'PENERIMAAN BANK', 'text' => '#BMT-M MAYA # 9999#/#R#/#Y', 'memo' => '{"MEMO":"PENERIMAAN BANK MAYA","SINGKATAN":"#BMT-M MAYA # 9999#/#R#/#Y","WARNA":"#28A745"}', 'type' => '0', 'modifiedby' => 'ADMIN', 'default' => '',]);
+        parameter::create(['grp' => 'PENGELUARAN BANK MAYA', 'subgrp' => 'PENGELUARAN BANK MAYA', 'kelompok' => 'PENGELUARAN BANK', 'text' => '#BKT-M MAYA # 9999#/#R#/#Y', 'memo' => '{"MEMO":"PENGELUARAN BANK MAYA","SINGKATAN":"#BKT-M MAYA # 9999#/#R#/#Y","WARNA":"#28A745"}', 'type' => '0', 'modifiedby' => 'ADMIN', 'default' => '',]);
         
-        
-               
         
     }
 }
