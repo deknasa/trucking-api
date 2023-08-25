@@ -50,7 +50,7 @@ class LaporanTitipanEmklController extends Controller
      /**
      * @ClassName
      */
-    public function Export(LaporanTitipanEmklRequest $request)
+    public function export(LaporanTitipanEmklRequest $request)
     {
 
         $laporanTitipanEmkl = new LaporanTitipanEmkl();
