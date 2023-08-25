@@ -30,7 +30,7 @@ class LaporanRekapTitipanEmklRequest extends FormRequest
     {
         return [
             'periode' => [
-                'required', 'date_format:m-Y',
+                'required', 'date_format:d-m-Y',
             ],
         ];
     }

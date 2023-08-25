@@ -32,10 +32,13 @@ class LaporanTitipanEmklController extends Controller
      */
     public function report(LaporanTitipanEmklRequest $request)
     {
-
+        $tanggal = date('Y-m-d', strtotime($request->periode));
+        $tgldari = date('Y-m-d', strtotime($request->tgldari));
+        $tglsampai = date('Y-m-d', strtotime($request->tglsampai));
+        $jenisorder = $request->jenisorder ?? 0;
         $laporanTitipanEmkl = new LaporanTitipanEmkl();
 
-        $laporan_titipanemkl = $laporanTitipanEmkl->getData();
+        $laporan_titipanemkl = $laporanTitipanEmkl->getData($tanggal,$tgldari,$tglsampai,$jenisorder);
         
         // foreach ($laporan_titipanemkl as $item) {
         //     $item->tglbukti = date('d-m-Y', strtotime($item->tglbukti));
@@ -53,9 +56,14 @@ class LaporanTitipanEmklController extends Controller
     public function export(LaporanTitipanEmklRequest $request)
     {
 
+        $tanggal = date('Y-m-d', strtotime($request->periode));
+        $tgldari = date('Y-m-d', strtotime($request->tgldari));
+        $tglsampai = date('Y-m-d', strtotime($request->tglsampai));
+        $jenisorder = $request->jenisorder ?? 0;
+
         $laporanTitipanEmkl = new LaporanTitipanEmkl();
 
-        $laporan_titipanemkl = $laporanTitipanEmkl->getData();
+        $laporan_titipanemkl = $laporanTitipanEmkl->getData($tanggal,$tgldari,$tglsampai,$jenisorder);
         
         // foreach ($laporan_titipanemkl as $item) {
         //     $item->tglbukti = date('d-m-Y', strtotime($item->tglbukti));

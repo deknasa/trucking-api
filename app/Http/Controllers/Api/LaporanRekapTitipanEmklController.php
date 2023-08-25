@@ -14,8 +14,9 @@ class LaporanRekapTitipanEmklController extends Controller
      /**
      * @ClassName
      */
-    public function index()
+    public function index(Request $request)
     {
+       
         $laporanRekapTitipanEmkl = new LaporanRekapTitipanEmkl();
         return response([
             'data' => [],
@@ -31,10 +32,10 @@ class LaporanRekapTitipanEmklController extends Controller
      */
     public function report(LaporanRekapTitipanEmklRequest $request)
     {
-
+        $tanggal = date('Y-m-d', strtotime($request->periode));
         $laporanRekapTitipanEmkl = new LaporanRekapTitipanEmkl();
 
-        $laporan_titipanemkl = $laporanRekapTitipanEmkl->getData();
+        $laporan_titipanemkl = $laporanRekapTitipanEmkl->getData($tanggal);
         
         // foreach ($laporan_titipanemkl as $item) {
         //     $item->tglbukti = date('d-m-Y', strtotime($item->tglbukti));
@@ -52,9 +53,10 @@ class LaporanRekapTitipanEmklController extends Controller
     public function export(LaporanRekapTitipanEmklRequest $request)
     {
 
+            $tanggal = date('Y-m-d', strtotime($request->periode));
         $laporanRekapTitipanEmkl = new LaporanRekapTitipanEmkl();
 
-        $laporan_titipanemkl = $laporanRekapTitipanEmkl->getData();
+        $laporan_titipanemkl = $laporanRekapTitipanEmkl->getData($tanggal);
         
         // foreach ($laporan_titipanemkl as $item) {
         //     $item->tglbukti = date('d-m-Y', strtotime($item->tglbukti));
