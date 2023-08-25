@@ -228,6 +228,13 @@ class PenerimaanTruckingHeaderController extends Controller
             'data' => $data
         ]);
     }
+    public function getDataPengembalianTitipanShow($id)
+    {
+        $penerimaanTrucking = new PenerimaanTruckingHeader();
+        return response([
+            'data' => $penerimaanTrucking->getPengembalianTitipanShow($id)
+        ]);
+    }
 
     public function getPinjamanKaryawan($karyawan_id)
     {
