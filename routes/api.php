@@ -23,6 +23,7 @@ use App\Http\Controllers\Api\ApprovalBukaCetakController;
 use App\Http\Controllers\Api\HistoryTripController;
 use App\Http\Controllers\Api\ListTripController;
 use App\Http\Controllers\Api\InputTripController;
+use App\Http\Controllers\Api\LaporanTitipanEmklController;
 
 use App\Http\Controllers\Api\AbsenTradoController;
 use App\Http\Controllers\Api\CabangController;
@@ -1383,6 +1384,10 @@ route::middleware(['auth:api', 'authorized'])->group(function () {
     Route::get('laporantransaksiharian/report', [LaporanTransaksiHarianController::class, 'report'])->name('laporantransaksiharian.report');
     Route::get('laporantransaksiharian/export', [LaporanTransaksiHarianController::class, 'export'])->name('laporantransaksiharian.export');
     Route::resource('laporantransaksiharian', LaporanTransaksiHarianController::class)->whereNumber('laporantransaksiharian');
+
+    Route::get('laporantitipanemkl/report', [LaporanTitipanEmklController::class, 'report'])->name('laporantitipanemkl.report');
+    Route::get('laporantitipanemkl/export', [LaporanTitipanEmklController::class, 'export'])->name('laporantitipanemkl.export');
+    Route::resource('laporantitipanemkl', LaporanTitipanEmklController::class)->whereNumber('laporantitipanemkl');
 
     Route::resource('laporanestimasikasgantung', LaporanEstimasiKasGantungController::class)->whereNumber('laporanestimasikasgantung');
     Route::get('laporantriptrado/report', [LaporanTripTradoController::class, 'report'])->name('laporantriptrado.report');
