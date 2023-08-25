@@ -19,7 +19,7 @@ class CreateKategoriTable extends Migration
 
         Schema::create('kategori', function (Blueprint $table) {
             $table->id();
-            $table->string('kodekategori',50)->nullable();
+            $table->string('kodekategori',500)->nullable();
             $table->longText('keterangan')->nullable();
             $table->unsignedBigInteger('subkelompok_id')->nullable();
             $table->integer('statusaktif')->length(11)->nullable();
