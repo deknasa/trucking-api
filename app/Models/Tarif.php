@@ -90,6 +90,7 @@ class Tarif extends MyModel
         $this->setRequestParameters();
 
         $aktif = request()->aktif ?? '';
+        $jenisOrder = request()->jenisOrder ?? '';
 
         $tempUpahsupir = $this->tempUpahsupir();
         $query = DB::table($this->table)->from(DB::raw("$this->table with (readuncommitted)"))
@@ -104,6 +105,7 @@ class Tarif extends MyModel
                 'kota.kodekota as kota_id',
                 'tarif.kota_id as kotaId',
                 'zona.zona as zona_id',
+                'jenisorder.keterangan as jenisorder',
                 'tarif.tglmulaiberlaku',
                 'p.memo as statuspenyesuaianharga',
                 'posting.memo as statuspostingtnl',
@@ -117,13 +119,14 @@ class Tarif extends MyModel
             ->leftJoin(DB::raw("parameter with (readuncommitted)"), 'tarif.statusaktif', '=', 'parameter.id')
             ->leftJoin(DB::raw("kota with (readuncommitted)"), 'tarif.kota_id', '=', 'kota.id')
             ->leftJoin(DB::raw("zona with (readuncommitted)"), 'tarif.zona_id', '=', 'zona.id')
+            ->leftJoin(DB::raw("jenisorder with (readuncommitted)"), 'tarif.jenisorder_id', '=', 'jenisorder.id')
             ->leftJoin(DB::raw("$tempUpahsupir as B with (readuncommitted)"), 'tarif.upahsupir_id', '=', "B.id")
             ->leftJoin(DB::raw("tarif as parent with (readuncommitted)"), 'tarif.parent_id', '=', 'parent.id')
             ->leftJoin(DB::raw("parameter AS p with (readuncommitted)"), 'tarif.statuspenyesuaianharga', '=', 'p.id')
             ->leftJoin(DB::raw("parameter AS sistemton with (readuncommitted)"), 'tarif.statussistemton', '=', 'sistemton.id')
             ->leftJoin(DB::raw("parameter AS posting with (readuncommitted)"), 'tarif.statuspostingtnl', '=', 'posting.id');
 
-        $this->filter($query);
+        
 
         if ($aktif == 'AKTIF') {
             $statusaktif = Parameter::from(
@@ -135,10 +138,29 @@ class Tarif extends MyModel
 
             $query->where('tarif.statusaktif', '=', $statusaktif->id);
         }
+        if ($jenisOrder == 'MUATAN') {
+            $jenis = DB::table("jenisorder")->from(DB::raw("jenisorder with (readuncommitted)"))->where('keterangan', 'MUATAN')->first();
+
+            $query->where('tarif.jenisorder_id', '=', $jenis->id);
+        } else if ($jenisOrder == 'BONGKARAN') {
+            $jenis = DB::table("jenisorder")->from(DB::raw("jenisorder with (readuncommitted)"))->where('keterangan', 'BONGKARAN')->first();
+
+            $query->where('tarif.jenisorder_id', '=', $jenis->id);
+        } else if ($jenisOrder == 'IMPORT') {
+            $jenis = DB::table("jenisorder")->from(DB::raw("jenisorder with (readuncommitted)"))->where('keterangan', 'IMPORT')->first();
+
+            $query->where('tarif.jenisorder_id', '=', $jenis->id);
+        } else if ($jenisOrder == 'EKSPORT') {
+            $jenis = DB::table("jenisorder")->from(DB::raw("jenisorder with (readuncommitted)"))->where('keterangan', 'EKSPORT')->first();
+
+            $query->where('tarif.jenisorder_id', '=', $jenis->id);
+        }else{
+            $query->whereRaw("tarif.jenisorder_id = 0 or tarif.jenisorder_id IS NULL ");
+        }
 
         $this->totalRows = $query->count();
         $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;
-
+        $this->filter($query);
         $this->sort($query);
 
         $this->paginate($query);
@@ -325,6 +347,8 @@ class Tarif extends MyModel
                 'kota.keterangan as kota',
                 DB::raw("(case when tarif.zona_id=0 then null else tarif.zona_id end) as zona_id"),
                 'zona.keterangan as zona',
+                'jenisorder.id as jenisorder_id',
+                'jenisorder.keterangan as jenisorder',
                 'tarif.tglmulaiberlaku',
                 'tarif.statuspenyesuaianharga',
                 DB::raw("(case when tarif.statuspostingtnl IS NULL then 0 else tarif.statuspostingtnl end) as statuspostingtnl"),
@@ -332,6 +356,7 @@ class Tarif extends MyModel
             )
             ->leftJoin(DB::raw("kota with (readuncommitted)"), 'tarif.kota_id', '=', 'kota.id')
             ->leftJoin(DB::raw("zona with (readuncommitted)"), 'tarif.zona_id', '=', 'zona.id')
+            ->leftJoin(DB::raw("jenisorder with (readuncommitted)"), 'tarif.jenisorder_id', '=', 'jenisorder.id')
             ->leftJoin(DB::raw("tarif as parent with (readuncommitted)"), 'tarif.parent_id', '=', 'parent.id')
             ->leftJoin(DB::raw("$tempUpahsupir with (readuncommitted)"), 'tarif.upahsupir_id', '=', "$tempUpahsupir.id")
 
@@ -352,6 +377,8 @@ class Tarif extends MyModel
             return $query->orderBy('kota.kodekota', $this->params['sortOrder']);
         } else if ($this->params['sortIndex'] == 'zona_id') {
             return $query->orderBy('zona.zona', $this->params['sortOrder']);
+        } else if ($this->params['sortIndex'] == 'jenisorder') {
+            return $query->orderBy('jenisorder.keterangan', $this->params['sortOrder']);
         } else {
             return $query->orderBy($this->table . '.' . $this->params['sortIndex'], $this->params['sortOrder']);
         }
@@ -377,6 +404,8 @@ class Tarif extends MyModel
                             $query = $query->where('keterangan.keterangan', 'LIKE', "%$filters[data]%");
                         } elseif ($filters['field'] == 'zona_id') {
                             $query = $query->where('zona.keterangan', 'LIKE', "%$filters[data]%");
+                        } elseif ($filters['field'] == 'jenisorder') {
+                            $query = $query->where('jenisorder.keterangan', 'LIKE', "%$filters[data]%");
                         } elseif ($filters['field'] == 'statuspenyesuaianharga') {
                             $query = $query->where('p.text', '=', "$filters[data]");
                         } elseif ($filters['field'] == 'statuspostingtnl') {
@@ -409,6 +438,8 @@ class Tarif extends MyModel
                                 $query = $query->orWhere('kota.keterangan', 'LIKE', "%$filters[data]%");
                             } elseif ($filters['field'] == 'zona_id') {
                                 $query = $query->orWhere('zona.keterangan', 'LIKE', "%$filters[data]%");
+                            } elseif ($filters['field'] == 'jenisorder') {
+                                $query = $query->orWhere('jenisorder.keterangan', 'LIKE', "%$filters[data]%");
                             } elseif ($filters['field'] == 'statuspenyesuaianharga') {
                                 $query = $query->orWhere('p.text', '=', "$filters[data]");
                             } elseif ($filters['field'] == 'statuspostingtnl') {
@@ -487,6 +518,7 @@ class Tarif extends MyModel
         $tarif->statussistemton = $data['statussistemton'];
         $tarif->kota_id = $data['kota_id'];
         $tarif->zona_id = $data['zona_id'] ?? '';
+        $tarif->jenisorder_id = $data['jenisorder_id'] ?? 0;
         $tarif->tglmulaiberlaku = date('Y-m-d', strtotime($data['tglmulaiberlaku']));
         $tarif->statuspenyesuaianharga = $data['statuspenyesuaianharga'];
         $tarif->statuspostingtnl = $data['statuspostingtnl'];
@@ -558,6 +590,7 @@ class Tarif extends MyModel
         $tarif->statussistemton = $data['statussistemton'];
         $tarif->kota_id = $data['kota_id'];
         $tarif->zona_id = $data['zona_id'] ?? '';
+        $tarif->jenisorder_id = $data['jenisorder_id'] ?? 0;
         $tarif->tglmulaiberlaku = date('Y-m-d', strtotime($data['tglmulaiberlaku']));
         $tarif->statuspenyesuaianharga = $data['statuspenyesuaianharga'];
         $tarif->keterangan = $data['keterangan'];
