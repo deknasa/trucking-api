@@ -163,20 +163,20 @@ class UpahSupirRincian extends MyModel
 
 
             if (in_array($jenisorder_id, $dataMuatanEksport)) {
-                $queryEmpty = DB::table("statuscontainer")->from(DB::raw("statuscontainer with (readuncommitted)"))->where('kodestatuscontainer', 'EMPTY')->first();
+                $queryFull = DB::table("statuscontainer")->from(DB::raw("statuscontainer with (readuncommitted)"))->where('kodestatuscontainer', 'FULL')->first();
                 // jika empty
-                if ($statuscontainer_id == $queryEmpty->id) {
+                if ($statuscontainer_id == $queryFull->id) {
                     $getKota = DB::table("upahsupir")->from(DB::raw("upahsupir with (readuncommitted)"))
                         ->select(
                             'upahsupir.id',
-                            'upahsupir.kotadari_id',
-                            'upahsupir.kotasampai_id',
-                            'kotadari.kodekota as kotadari',
-                            'kotasampai.kodekota as kotasampai',
-                            'upahsupir.zonadari_id',
-                            'upahsupir.zonasampai_id',
-                            'zonadari.zona as zonadari',
-                            'zonasampai.zona as zonasampai',
+                            'upahsupir.kotasampai_id as kotadari_id',
+                            'upahsupir.kotadari_id as kotasampai_id',
+                            'kotasampai.kodekota as kotadari',
+                            'kotadari.kodekota as kotasampai',
+                            'upahsupir.zonasampai_id as zonadari_id',
+                            'upahsupir.zonadari_id as zonasampai_id',
+                            'zonasampai.zona as zonadari',
+                            'zonadari.zona as zonasampai',
                             'upahsupir.tarif_id',
                             'tarif.tujuan as tarif',
                             'upahsupir.penyesuaian',
@@ -197,14 +197,14 @@ class UpahSupirRincian extends MyModel
                     $getKota = DB::table("upahsupir")->from(DB::raw("upahsupir with (readuncommitted)"))
                         ->select(
                             'upahsupir.id',
-                            'upahsupir.kotasampai_id as kotadari_id',
-                            'upahsupir.kotadari_id as kotasampai_id',
-                            'kotasampai.kodekota as kotadari',
-                            'kotadari.kodekota as kotasampai',
-                            'upahsupir.zonasampai_id as zonadari_id',
-                            'upahsupir.zonadari_id as zonasampai_id',
-                            'zonasampai.zona as zonadari',
-                            'zonadari.zona as zonasampai',
+                            'upahsupir.kotadari_id',
+                            'upahsupir.kotasampai_id',
+                            'kotadari.kodekota as kotadari',
+                            'kotasampai.kodekota as kotasampai',
+                            'upahsupir.zonadari_id',
+                            'upahsupir.zonasampai_id',
+                            'zonadari.zona as zonadari',
+                            'zonasampai.zona as zonasampai',
                             'upahsupir.tarif_id',
                             'tarif.tujuan as tarif',
                             'upahsupir.penyesuaian',
