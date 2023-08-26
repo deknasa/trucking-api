@@ -1693,7 +1693,13 @@ class SuratPengantar extends MyModel
             // return response($tarif,422);
             $trado = Trado::find($data['trado_id']);
             $upahsupirRincian = UpahSupirRincian::where('upahsupir_id', $upahsupir->id)->where('container_id', $data['container_id'])->where('statuscontainer_id', $data['statuscontainer_id'])->first();
-
+            $params = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'PENDAPATAN SUPIR')->where('subgrp', 'GAJI KENEK')->first();
+            $komisi_gajisupir = $params->text;
+            if ($komisi_gajisupir == 'YA') {
+                $nominalSupir = $upahsupirRincian->nominalsupir - $upahsupirRincian->nominalkenek;
+            } else {
+                $nominalSupir = $upahsupirRincian->nominalsupir;
+            }
             $suratPengantar->jobtrucking = $data['jobtrucking'];
             $suratPengantar->tglbukti = date('Y-m-d', strtotime($data['tglbukti']));
             $suratPengantar->pelanggan_id = $orderanTrucking->pelanggan_id;
@@ -1718,7 +1724,7 @@ class SuratPengantar extends MyModel
             $suratPengantar->noseal2 = $orderanTrucking->noseal2 ?? '';
             $suratPengantar->statuslongtrip = $data['statuslongtrip'];
             $suratPengantar->omset = $tarifNominal;
-            $suratPengantar->gajisupir = $upahsupirRincian->nominalsupir;
+            $suratPengantar->gajisupir = $nominalSupir;
             $suratPengantar->gajikenek = $upahsupirRincian->nominalkenek;
             $suratPengantar->agen_id = $orderanTrucking->agen_id;
             $suratPengantar->penyesuaian = $data['penyesuaian'];
@@ -1808,7 +1814,13 @@ class SuratPengantar extends MyModel
         } else {
             $upahsupirRincian = UpahSupirRincian::where('upahsupir_id', $suratPengantar->upah_id)->where('container_id', $data['container_id'])->where('statuscontainer_id', $suratPengantar->statuscontainer_id)->first();
             $tarif = TarifRincian::where('tarif_id', $suratPengantar->tarifrincian_id)->where('container_id', $data['container_id'])->first();
-
+            $params = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'PENDAPATAN SUPIR')->where('subgrp', 'GAJI KENEK')->first();
+            $komisi_gajisupir = $params->text;
+            if ($komisi_gajisupir == 'YA') {
+                $nominalSupir = $upahsupirRincian->nominalsupir - $upahsupirRincian->nominalkenek;
+            } else {
+                $nominalSupir = $upahsupirRincian->nominalsupir;
+            }
             $tarifNominal = $tarif->nominal ?? 0;
 
             $suratPengantar->pelanggan_id = $data['pelanggan_id'];
@@ -1821,7 +1833,7 @@ class SuratPengantar extends MyModel
             $suratPengantar->noseal2 = $data['noseal2'] ?? '';
             $suratPengantar->agen_id = $data['agen_id'];
             $suratPengantar->jenisorder_id = $data['jenisorder_id'];
-            $suratPengantar->gajisupir = $upahsupirRincian->nominalsupir;
+            $suratPengantar->gajisupir = $nominalSupir;
             $suratPengantar->gajikenek = $upahsupirRincian->nominalkenek;
             $suratPengantar->komisisupir = $upahsupirRincian->nominalkomisi;
             $suratPengantar->tolsupir = $upahsupirRincian->nominaltol;
