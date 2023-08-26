@@ -398,10 +398,11 @@ class PenerimaanStokHeaderController extends Controller
         $isOutUsed = $penerimaanStokHeader->isOutUsed($id);
         if ($isOutUsed) {
             $query = Error::from(DB::raw("error with (readuncommitted)"))
-                ->select('keterangan')
+                ->select(db::raw("keterangan +' (". $isOutUsed[1] .")' as keterangan"))
                 ->whereRaw("kodeerror = 'SATL'")
-                ->get();
-            $keterangan = $query['0'];
+                ->first();
+            
+            $keterangan = $query ;
             $data = [
                 'message' => $keterangan,
                 'errors' => 'Pengeluaran stok',

@@ -1024,11 +1024,15 @@ class PenerimaanStokHeader extends MyModel
     {
         $query = DB::table($this->table)->from($this->table)
         ->where('penerimaanstokheader.id',$id)
-        ->leftJoin('pengeluaranstokdetailfifo','penerimaanstokheader.nobukti','pengeluaranstokdetailfifo.penerimaanstokheader_nobukti');
+        ->join('pengeluaranstokdetailfifo','penerimaanstokheader.nobukti','pengeluaranstokdetailfifo.penerimaanstokheader_nobukti');
         $data = $query->first();
-        if ($data->id) {
+        
+        if ($data) {
             # code...
-            return true;
+            return [
+                true,
+                $data->nobukti
+            ];
         }
         return false;
     }
