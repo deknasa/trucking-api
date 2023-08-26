@@ -29,7 +29,9 @@ class ValidasiExistOmsetTarif implements Rule
     {
         $tarifRincian = new TarifRincian();
         $dataTarif = $tarifRincian->getExistNominal(request()->container_id, request()->tarifrincian_id);
-        if($dataTarif->nominal == 0){
+        if($dataTarif == null){
+            return false;
+        } else if($dataTarif->nominal == 0){
             return false;
         }else{
             return true;
