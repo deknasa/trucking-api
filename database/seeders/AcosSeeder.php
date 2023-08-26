@@ -846,5 +846,12 @@ class AcosSeeder extends Seeder
         acos::create([ 'class' => 'statusolitrado', 'method' => 'index', 'nama' => 'index StatusOliTradoController', 'modifiedby' => 'ADMIN', 'idheader' => '0',]);
         acos::create([ 'class' => 'statusolitrado', 'method' => 'export', 'nama' => 'export StatusOliTradoController', 'modifiedby' => 'ADMIN', 'idheader' => '0',]);
         acos::create([ 'class' => 'statusgandengantruck', 'method' => 'index', 'nama' => 'index StatusGandenganTruckController', 'modifiedby' => 'ADMIN', 'idheader' => '0',]);
+        acos::create([ 'class' => 'opnameheader', 'method' => 'index', 'nama' => 'index OpnameHeaderController', 'modifiedby' => 'RYAN', 'idheader' => '0',]);
+        acos::create([ 'class' => 'opnamedetail', 'method' => 'index', 'nama' => 'index OpnameHeaderController', 'modifiedby' => 'RYAN', 'idheader' => '0',]);
+        acos::create([ 'class' => 'opnameheader', 'method' => 'store', 'nama' => 'store OpnameHeaderController', 'modifiedby' => 'RYAN', 'idheader' => '0',]);
+        acos::create([ 'class' => 'opnameheader', 'method' => 'update', 'nama' => 'update OpnameHeaderController', 'modifiedby' => 'RYAN', 'idheader' => '0',]);
+        acos::create([ 'class' => 'opnameheader', 'method' => 'destroy', 'nama' => 'destroy OpnameHeaderController', 'modifiedby' => 'RYAN', 'idheader' => '0',]);
+        acos::create([ 'class' => 'opnameheader', 'method' => 'report', 'nama' => 'report OpnameHeaderController', 'modifiedby' => 'RYAN', 'idheader' => '0',]);
+        acos::create([ 'class' => 'opnameheader', 'method' => 'export', 'nama' => 'export OpnameHeaderController', 'modifiedby' => 'RYAN', 'idheader' => '0',]);
     }
 }
