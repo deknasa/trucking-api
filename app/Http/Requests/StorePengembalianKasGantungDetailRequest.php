@@ -31,7 +31,6 @@ class StorePengembalianKasGantungDetailRequest extends FormRequest
         return [
             'nominal.*' => ['required','numeric','gt:0', new CekMaxBayarPengembalianKasgantung()],
             'keterangandetail.*' => 'required',
-            'coadetail.*' => 'required',
             'sisa.*' => ['required','numeric','min:0', new CekMinusSisaPengembalianKasgantung()],
         ];
     }
@@ -40,7 +39,6 @@ class StorePengembalianKasGantungDetailRequest extends FormRequest
     {
         return [
             'nominal' => 'nominal',
-            'coadetail' => 'kode perkiraan',
             'keterangandetail' => 'keterangan',
         ];
     }
@@ -50,7 +48,6 @@ class StorePengembalianKasGantungDetailRequest extends FormRequest
         $controller = new ErrorController;
 
         return [
-            'coadetail.required' => ':attribute ' . $controller->geterror('WI')->keterangan,
             'keterangandetail.required' => ':attribute ' . $controller->geterror('WI')->keterangan,
         ];
     }

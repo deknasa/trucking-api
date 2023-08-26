@@ -56,168 +56,168 @@ class UpahSupir extends MyModel
 
         $aktif = request()->aktif ?? '';
 
-        // if ($proses == 'reload') {
-        //     $temtabel = 'temp' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+        if ($proses == 'reload') {
+            $temtabel = 'temp' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
 
-        //     $querydata = DB::table('listtemporarytabel')->from(
-        //         DB::raw("listtemporarytabel a with (readuncommitted)")
-        //     )
-        //         ->select(
-        //             'id',
-        //             'class',
-        //             'namatabel',
-        //         )
-        //         ->where('class', '=', $class)
-        //         ->where('modifiedby', '=', $user)
-        //         ->first();
+            $querydata = DB::table('listtemporarytabel')->from(
+                DB::raw("listtemporarytabel a with (readuncommitted)")
+            )
+                ->select(
+                    'id',
+                    'class',
+                    'namatabel',
+                )
+                ->where('class', '=', $class)
+                ->where('modifiedby', '=', $user)
+                ->first();
 
-        //     if (isset($querydata)) {
-        //         Schema::dropIfExists($querydata->namatabel);
-        //         DB::table('listtemporarytabel')->where('id', $querydata->id)->delete();
-        //     }
+            if (isset($querydata)) {
+                Schema::dropIfExists($querydata->namatabel);
+                DB::table('listtemporarytabel')->where('id', $querydata->id)->delete();
+            }
 
-        //     DB::table('listtemporarytabel')->insert(
-        //         [
-        //             'class' => $class,
-        //             'namatabel' => $temtabel,
-        //             'modifiedby' => $user,
-        //             'created_at' => date('Y/m/d H:i:s'),
-        //             'updated_at' => date('Y/m/d H:i:s'),
-        //         ]
-        //     );
+            DB::table('listtemporarytabel')->insert(
+                [
+                    'class' => $class,
+                    'namatabel' => $temtabel,
+                    'modifiedby' => $user,
+                    'created_at' => date('Y/m/d H:i:s'),
+                    'updated_at' => date('Y/m/d H:i:s'),
+                ]
+            );
 
-        //     Schema::create($temtabel, function (Blueprint $table) {
-        //         $table->bigInteger('id')->nullable();
-        //         $table->longText('parent_id')->nullable();
-        //         $table->longText('tarif')->nullable();
-        //         $table->longText('kotadari_id')->nullable();
-        //         $table->longText('kotasampai_id')->nullable();
-        //         $table->longText('zonadari_id')->nullable();
-        //         $table->longText('zonasampai_id')->nullable();
-        //         $table->longText('penyesuaian')->nullable();
-        //         $table->longText('jarak')->nullable();
-        //         $table->longText('zona_id')->nullable()->nullable();
-        //         $table->longText('statusaktif')->nullable();
-        //         $table->longText('statusaktif_text')->nullable();
-        //         $table->bigInteger('statusaktif_id')->nullable();
-        //         $table->longText('statusupahzona')->nullable();
-        //         $table->longText('statusupahzona_text')->nullable();
-        //         $table->bigInteger('statusupahzona_id')->nullable();
-        //         $table->longText('statuspostingtnl')->nullable();
-        //         $table->longText('statuspostingtnl_text')->nullable();
-        //         $table->bigInteger('statuspostingtnl_id')->nullable();
-        //         $table->date('tglmulaiberlaku')->nullable();
-        //         $table->longText('gambar')->nullable();
-        //         $table->longText('keterangan')->nullable();
-        //         $table->dateTime('created_at')->nullable();
-        //         $table->longText('modifiedby')->nullable();
-        //         $table->dateTime('updated_at')->nullable();
-        //         $table->longText('judulLaporan')->nullable();
-        //         $table->longText('judul')->nullable();
-        //     });
+            Schema::create($temtabel, function (Blueprint $table) {
+                $table->bigInteger('id')->nullable();
+                $table->longText('parent_id')->nullable();
+                $table->longText('tarif')->nullable();
+                $table->longText('kotadari_id')->nullable();
+                $table->longText('kotasampai_id')->nullable();
+                $table->longText('zonadari_id')->nullable();
+                $table->longText('zonasampai_id')->nullable();
+                $table->longText('penyesuaian')->nullable();
+                $table->longText('jarak')->nullable();
+                $table->longText('zona_id')->nullable()->nullable();
+                $table->longText('statusaktif')->nullable();
+                $table->longText('statusaktif_text')->nullable();
+                $table->bigInteger('statusaktif_id')->nullable();
+                $table->longText('statusupahzona')->nullable();
+                $table->longText('statusupahzona_text')->nullable();
+                $table->bigInteger('statusupahzona_id')->nullable();
+                $table->longText('statuspostingtnl')->nullable();
+                $table->longText('statuspostingtnl_text')->nullable();
+                $table->bigInteger('statuspostingtnl_id')->nullable();
+                $table->date('tglmulaiberlaku')->nullable();
+                $table->longText('gambar')->nullable();
+                $table->longText('keterangan')->nullable();
+                $table->dateTime('created_at')->nullable();
+                $table->longText('modifiedby')->nullable();
+                $table->dateTime('updated_at')->nullable();
+                $table->longText('judulLaporan')->nullable();
+                $table->longText('judul')->nullable();
+            });
 
-        //     $tempParent = DB::table($this->table)->from(DB::raw("upahsupir with (readuncommitted)"))
-        //         ->select(
-        //             'upahsupir.id',
-        //             'upahsupir.parent_id',
-        //             'kota.keterangan'
-        //         )
-        //         ->leftJoin(DB::raw("kota with (readuncommitted)"), 'kota.id', 'upahsupir.kotasampai_id');
+            $tempParent = DB::table($this->table)->from(DB::raw("upahsupir with (readuncommitted)"))
+                ->select(
+                    'upahsupir.id',
+                    'upahsupir.parent_id',
+                    'kota.keterangan'
+                )
+                ->leftJoin(DB::raw("kota with (readuncommitted)"), 'kota.id', 'upahsupir.kotasampai_id');
 
-        //     $temp = '##temp' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
-        //     Schema::create($temp, function ($table) {
-        //         $table->unsignedBigInteger('id')->nullable();
-        //         $table->unsignedBigInteger('parent_id')->nullable();
-        //         $table->string('keterangan')->nullable();
-        //     });
-        //     DB::table($temp)->insertUsing(["id", 'parent_id', 'keterangan'], $tempParent);
+            $temp = '##temp' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+            Schema::create($temp, function ($table) {
+                $table->unsignedBigInteger('id')->nullable();
+                $table->unsignedBigInteger('parent_id')->nullable();
+                $table->string('keterangan')->nullable();
+            });
+            DB::table($temp)->insertUsing(["id", 'parent_id', 'keterangan'], $tempParent);
 
-        //     $query = DB::table($this->table)->from(DB::raw("upahsupir with (readuncommitted)"))
-        //         ->select(
-        //             'upahsupir.id',
-        //             'parent.keterangan as parent_id',
-        //             'tarif.tujuan as tarif',
-        //             'kotadari.keterangan as kotadari_id',
-        //             'kotasampai.keterangan as kotasampai_id',
-        //             'zonadari.zona as zonadari_id',
-        //             'zonasampai.zona as zonasampai_id',
-        //             'upahsupir.penyesuaian',
-        //             DB::raw("CONCAT(upahsupir.jarak, ' KM') as jarak"),
-        //             'zona.keterangan as zona_id',
-        //             'parameter.memo as statusaktif',
-        //             'parameter.text as statusaktif_text',
-        //             'upahsupir.statusaktif as statusaktif_id',
+            $query = DB::table($this->table)->from(DB::raw("upahsupir with (readuncommitted)"))
+                ->select(
+                    'upahsupir.id',
+                    'parent.keterangan as parent_id',
+                    'tarif.tujuan as tarif',
+                    'kotadari.keterangan as kotadari_id',
+                    'kotasampai.keterangan as kotasampai_id',
+                    'zonadari.zona as zonadari_id',
+                    'zonasampai.zona as zonasampai_id',
+                    'upahsupir.penyesuaian',
+                    DB::raw("CONCAT(upahsupir.jarak, ' KM') as jarak"),
+                    'zona.keterangan as zona_id',
+                    'parameter.memo as statusaktif',
+                    'parameter.text as statusaktif_text',
+                    'upahsupir.statusaktif as statusaktif_id',
 
-        //             'statusupahzona.memo as statusupahzona',
-        //             'statusupahzona.text as statusupahzona_text',
-        //             'upahsupir.statusupahzona as statusupahzona_id',
+                    'statusupahzona.memo as statusupahzona',
+                    'statusupahzona.text as statusupahzona_text',
+                    'upahsupir.statusupahzona as statusupahzona_id',
 
-        //             'statuspostingtnl.memo as statuspostingtnl',
-        //             'statuspostingtnl.text as statuspostingtnl_text',
-        //             'upahsupir.statuspostingtnl as statuspostingtnl_id',
-        //             'upahsupir.tglmulaiberlaku',
-        //             // 'upahsupir.tglakhirberlaku',
-        //             'upahsupir.gambar',
-        //             'upahsupir.keterangan',
-        //             'upahsupir.created_at',
-        //             'upahsupir.modifiedby',
-        //             'upahsupir.updated_at',
-        //             DB::raw("'Laporan Upah Supir' as judulLaporan"),
-        //             DB::raw("'" . $getJudul->text . "' as judul")
-        //         )
-        //         ->leftJoin(DB::raw("$temp as parent with (readuncommitted)"), 'parent.id', '=', 'upahsupir.parent_id')
-        //         ->leftJoin(DB::raw("tarif with (readuncommitted)"), 'upahsupir.tarif_id', '=', 'tarif.id')
-        //         ->leftJoin(DB::raw("kota as kotadari with (readuncommitted)"), 'kotadari.id', '=', 'upahsupir.kotadari_id')
-        //         ->leftJoin(DB::raw("kota as kotasampai with (readuncommitted)"), 'kotasampai.id', '=', 'upahsupir.kotasampai_id')
-        //         ->leftJoin(DB::raw("zona as zonadari with (readuncommitted)"), 'zonadari.id', '=', 'upahsupir.zonadari_id')
-        //         ->leftJoin(DB::raw("zona as zonasampai with (readuncommitted)"), 'zonasampai.id', '=', 'upahsupir.zonasampai_id')
-        //         ->leftJoin(DB::raw("parameter with (readuncommitted)"), 'upahsupir.statusaktif', 'parameter.id')
-        //         ->leftJoin(DB::raw("parameter as statusupahzona with (readuncommitted)"), 'upahsupir.statusupahzona', 'statusupahzona.id')
-        //         ->leftJoin(DB::raw("parameter as statuspostingtnl with (readuncommitted)"), 'upahsupir.statuspostingtnl', 'statuspostingtnl.id')
-        //         ->leftJoin(DB::raw("zona with (readuncommitted)"), 'upahsupir.zona_id', 'zona.id');
+                    'statuspostingtnl.memo as statuspostingtnl',
+                    'statuspostingtnl.text as statuspostingtnl_text',
+                    'upahsupir.statuspostingtnl as statuspostingtnl_id',
+                    'upahsupir.tglmulaiberlaku',
+                    // 'upahsupir.tglakhirberlaku',
+                    'upahsupir.gambar',
+                    'upahsupir.keterangan',
+                    'upahsupir.created_at',
+                    'upahsupir.modifiedby',
+                    'upahsupir.updated_at',
+                    DB::raw("'Laporan Upah Supir' as judulLaporan"),
+                    DB::raw("'" . $getJudul->text . "' as judul")
+                )
+                ->leftJoin(DB::raw("$temp as parent with (readuncommitted)"), 'parent.id', '=', 'upahsupir.parent_id')
+                ->leftJoin(DB::raw("tarif with (readuncommitted)"), 'upahsupir.tarif_id', '=', 'tarif.id')
+                ->leftJoin(DB::raw("kota as kotadari with (readuncommitted)"), 'kotadari.id', '=', 'upahsupir.kotadari_id')
+                ->leftJoin(DB::raw("kota as kotasampai with (readuncommitted)"), 'kotasampai.id', '=', 'upahsupir.kotasampai_id')
+                ->leftJoin(DB::raw("zona as zonadari with (readuncommitted)"), 'zonadari.id', '=', 'upahsupir.zonadari_id')
+                ->leftJoin(DB::raw("zona as zonasampai with (readuncommitted)"), 'zonasampai.id', '=', 'upahsupir.zonasampai_id')
+                ->leftJoin(DB::raw("parameter with (readuncommitted)"), 'upahsupir.statusaktif', 'parameter.id')
+                ->leftJoin(DB::raw("parameter as statusupahzona with (readuncommitted)"), 'upahsupir.statusupahzona', 'statusupahzona.id')
+                ->leftJoin(DB::raw("parameter as statuspostingtnl with (readuncommitted)"), 'upahsupir.statuspostingtnl', 'statuspostingtnl.id')
+                ->leftJoin(DB::raw("zona with (readuncommitted)"), 'upahsupir.zona_id', 'zona.id');
 
-        //     DB::table($temtabel)->insertUsing([
-        //         'id',
-        //         'parent_id',
-        //         'tarif',
-        //         'kotadari_id',
-        //         'kotasampai_id',
-        //         'zonadari_id',
-        //         'zonasampai_id',
-        //         'penyesuaian',
-        //         'jarak',
-        //         'zona_id',
-        //         'statusaktif',
-        //         'statusaktif_text',
-        //         'statusaktif_id',
-        //         'statusupahzona',
-        //         'statusupahzona_text',
-        //         'statusupahzona_id',
-        //         'statuspostingtnl',
-        //         'statuspostingtnl_text',
-        //         'statuspostingtnl_id',
-        //         'tglmulaiberlaku',
-        //         'gambar',
-        //         'keterangan',
-        //         'created_at',
-        //         'modifiedby',
-        //         'updated_at',
-        //         'judulLaporan',
-        //         'judul',
-        //     ], $query);
-        // } else {
-        //     $querydata = DB::table('listtemporarytabel')->from(
-        //         DB::raw("listtemporarytabel with (readuncommitted)")
-        //     )
-        //         ->select(
-        //             'namatabel',
-        //         )
-        //         ->where('class', '=', $class)
-        //         ->where('modifiedby', '=', $user)
-        //         ->first();
+            DB::table($temtabel)->insertUsing([
+                'id',
+                'parent_id',
+                'tarif',
+                'kotadari_id',
+                'kotasampai_id',
+                'zonadari_id',
+                'zonasampai_id',
+                'penyesuaian',
+                'jarak',
+                'zona_id',
+                'statusaktif',
+                'statusaktif_text',
+                'statusaktif_id',
+                'statusupahzona',
+                'statusupahzona_text',
+                'statusupahzona_id',
+                'statuspostingtnl',
+                'statuspostingtnl_text',
+                'statuspostingtnl_id',
+                'tglmulaiberlaku',
+                'gambar',
+                'keterangan',
+                'created_at',
+                'modifiedby',
+                'updated_at',
+                'judulLaporan',
+                'judul',
+            ], $query);
+        } else {
+            $querydata = DB::table('listtemporarytabel')->from(
+                DB::raw("listtemporarytabel with (readuncommitted)")
+            )
+                ->select(
+                    'namatabel',
+                )
+                ->where('class', '=', $class)
+                ->where('modifiedby', '=', $user)
+                ->first();
 
-        //     $temtabel = $querydata->namatabel;
-        // }
+            $temtabel = $querydata->namatabel;
+        }
 
         $querydata = DB::table('listtemporarytabel')->from(
             DB::raw("listtemporarytabel with (readuncommitted)")

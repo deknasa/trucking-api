@@ -28,7 +28,6 @@ class UpdatePengembalianKasGantungDetailRequest extends FormRequest
         return [
             'nominal.*' => ['required','numeric','gt:0', new CekMaxBayarPengembalianKasGantungEdit()],
             'keterangandetail.*' => 'required',
-            'coadetail.*' => 'required',
             'sisa.*' => ['required','numeric','min:0', new CekMinusPengembalianKasGantungEdit()],
         ];
     }
