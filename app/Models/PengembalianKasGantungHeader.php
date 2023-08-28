@@ -605,7 +605,7 @@ class PengembalianKasGantungHeader extends MyModel
             $tglJatuhTempo[] = $data['tglbukti'];
             $nominal_detail[] = $data['nominal'][$i];
             $coadebet_detail[] = $bank->coa;
-            $coakredit_detail[] = $memo['JURNAL'];
+            $coakredit_detail[] = $memoKasGantung['JURNAL'];
             $keterangan_detail[] = $data['keterangandetail'][$i];
         }
 
@@ -732,7 +732,7 @@ class PengembalianKasGantungHeader extends MyModel
             $tglJatuhTempo[] = $data['tglbukti'];
             $nominal_detail[] = $data['nominal'][$i];
             $coadebet_detail[] = $bank->coa;
-            $coakredit_detail[] = $memo['JURNAL'];
+            $coakredit_detail[] = $memoKasGantung['JURNAL'];
             $keterangan_detail[] = $data['keterangandetail'][$i];
         }
 
