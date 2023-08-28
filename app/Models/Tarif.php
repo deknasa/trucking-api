@@ -126,7 +126,7 @@ class Tarif extends MyModel
             ->leftJoin(DB::raw("parameter AS sistemton with (readuncommitted)"), 'tarif.statussistemton', '=', 'sistemton.id')
             ->leftJoin(DB::raw("parameter AS posting with (readuncommitted)"), 'tarif.statuspostingtnl', '=', 'posting.id');
 
-        
+
 
         if ($aktif == 'AKTIF') {
             $statusaktif = Parameter::from(
@@ -138,24 +138,26 @@ class Tarif extends MyModel
 
             $query->where('tarif.statusaktif', '=', $statusaktif->id);
         }
-        if ($jenisOrder == 'MUATAN') {
-            $jenis = DB::table("jenisorder")->from(DB::raw("jenisorder with (readuncommitted)"))->where('keterangan', 'MUATAN')->first();
+        if ($jenisOrder != '') {
+            if ($jenisOrder == 'MUATAN') {
+                $jenis = DB::table("jenisorder")->from(DB::raw("jenisorder with (readuncommitted)"))->where('keterangan', 'MUATAN')->first();
 
-            $query->where('tarif.jenisorder_id', '=', $jenis->id);
-        } else if ($jenisOrder == 'BONGKARAN') {
-            $jenis = DB::table("jenisorder")->from(DB::raw("jenisorder with (readuncommitted)"))->where('keterangan', 'BONGKARAN')->first();
+                $query->where('tarif.jenisorder_id', '=', $jenis->id);
+            } else if ($jenisOrder == 'BONGKARAN') {
+                $jenis = DB::table("jenisorder")->from(DB::raw("jenisorder with (readuncommitted)"))->where('keterangan', 'BONGKARAN')->first();
 
-            $query->where('tarif.jenisorder_id', '=', $jenis->id);
-        } else if ($jenisOrder == 'IMPORT') {
-            $jenis = DB::table("jenisorder")->from(DB::raw("jenisorder with (readuncommitted)"))->where('keterangan', 'IMPORT')->first();
+                $query->where('tarif.jenisorder_id', '=', $jenis->id);
+            } else if ($jenisOrder == 'IMPORT') {
+                $jenis = DB::table("jenisorder")->from(DB::raw("jenisorder with (readuncommitted)"))->where('keterangan', 'IMPORT')->first();
 
-            $query->where('tarif.jenisorder_id', '=', $jenis->id);
-        } else if ($jenisOrder == 'EKSPORT') {
-            $jenis = DB::table("jenisorder")->from(DB::raw("jenisorder with (readuncommitted)"))->where('keterangan', 'EKSPORT')->first();
+                $query->where('tarif.jenisorder_id', '=', $jenis->id);
+            } else if ($jenisOrder == 'EKSPORT') {
+                $jenis = DB::table("jenisorder")->from(DB::raw("jenisorder with (readuncommitted)"))->where('keterangan', 'EKSPORT')->first();
 
-            $query->where('tarif.jenisorder_id', '=', $jenis->id);
-        }else{
-            $query->whereRaw("tarif.jenisorder_id = 0 or tarif.jenisorder_id IS NULL ");
+                $query->where('tarif.jenisorder_id', '=', $jenis->id);
+            } else {
+                $query->whereRaw("(tarif.jenisorder_id = 0 or tarif.jenisorder_id IS NULL)");
+            }
         }
 
         $this->totalRows = $query->count();
@@ -569,9 +571,9 @@ class Tarif extends MyModel
 
             $postingTNL = $this->postingTnl($data);
             if ($postingTNL['statuscode'] != 201) {
-                if($postingTNL['statuscode'] == 422){
-                    throw new \Exception($postingTNL['data']['errors']['penyesuaian'][0].' di TNL');
-                }else{
+                if ($postingTNL['statuscode'] == 422) {
+                    throw new \Exception($postingTNL['data']['errors']['penyesuaian'][0] . ' di TNL');
+                } else {
                     throw new \Exception($postingTNL['data']['message']);
                 }
             }
@@ -663,7 +665,7 @@ class Tarif extends MyModel
                 'user' => auth('api')->user()->user,
                 'password' => getenv('PASSWORD_TNL'),
             ]);
-            
+
         if ($getToken->getStatusCode() == '404') {
             throw new \Exception("Akun Tidak Terdaftar di Trucking TNL");
         } else if ($getToken->getStatusCode() == '200') {
