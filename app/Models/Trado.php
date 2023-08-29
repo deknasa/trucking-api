@@ -214,6 +214,7 @@ class Trado extends MyModel
                 'parameter_statusmobilstoring.memo as statusmobilstoring',
                 'parameter_statusappeditban.memo as statusappeditban',
                 'parameter_statuslewatvalidasi.memo as statuslewatvalidasi',
+                'parameter_statusabsensisupir.memo as statusabsensisupir',
                 'mandor.namamandor as mandor_id',
                 'supir.namasupir as supir_id',
                 'trado.updated_at',
@@ -230,6 +231,7 @@ class Trado extends MyModel
             ->leftJoin(DB::raw("parameter as parameter_statusmobilstoring with (readuncommitted)"), 'trado.statusmobilstoring', 'parameter_statusmobilstoring.id')
             ->leftJoin(DB::raw("parameter as parameter_statusappeditban with (readuncommitted)"), 'trado.statusappeditban', 'parameter_statusappeditban.id')
             ->leftJoin(DB::raw("parameter as parameter_statuslewatvalidasi with (readuncommitted)"), 'trado.statuslewatvalidasi', 'parameter_statuslewatvalidasi.id')
+            ->leftJoin(DB::raw("parameter as parameter_statusabsensisupir with (readuncommitted)"), 'trado.statusabsensisupir', 'parameter_statusabsensisupir.id')
             ->leftJoin(DB::raw("mandor with (readuncommitted)"), 'trado.mandor_id', 'mandor.id')
             ->leftJoin(DB::raw("supir with (readuncommitted)"), 'trado.supir_id', 'supir.id');
             // ->where("trado.id" ,"=","37");
@@ -536,6 +538,8 @@ class Trado extends MyModel
                             $query = $query->where('parameter_statusappeditban.text', '=', $filters['data']);
                         } else if ($filters['field'] == 'statuslewatvalidasi') {
                             $query = $query->where('parameter_statuslewatvalidasi.text', '=', $filters['data']);
+                        } else if ($filters['field'] == 'statusabsensisupir') {
+                            $query = $query->where('parameter_statusabsensisupir.text', '=', $filters['data']);
                         } else if ($filters['field'] == 'statusvalidasikendaraan') {
                             $query = $query->where('parameter_statusvalidasikendaraan.text', '=', $filters['data']);
                         } else if ($filters['field'] == 'mandor_id') {
@@ -572,6 +576,8 @@ class Trado extends MyModel
                                 $query = $query->orWhere('parameter_statusappeditban.text', '=', $filters['data']);
                             } else if ($filters['field'] == 'statuslewatvalidasi') {
                                 $query = $query->orWhere('parameter_statuslewatvalidasi.text', '=', $filters['data']);
+                            } else if ($filters['field'] == 'statusabsensisupir') {
+                                $query = $query->orWhere('parameter_statusstatusabsensisupir.text', '=', $filters['data']);
                             } else if ($filters['field'] == 'statusvalidasikendaraan') {
                                 $query = $query->orWhere('parameter_statusvalidasikendaraan.text', '=', $filters['data']);
                             } else if ($filters['field'] == 'mandor_id') {
