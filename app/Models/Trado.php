@@ -270,6 +270,7 @@ class Trado extends MyModel
             $table->unsignedBigInteger('statusaktif')->nullable();
             $table->unsignedBigInteger('statusgerobak')->nullable();
             $table->unsignedBigInteger('statusjenisplat')->nullable();
+            $table->unsignedBigInteger('statusabsensisupir')->nullable();
         });
 
         // AKTIF
@@ -302,6 +303,20 @@ class Trado extends MyModel
 
         $iddefaultstatusGerobak = $status->id ?? 0;
 
+           // STATUS ABSENSI SUPIR
+           $status = Parameter::from(
+            db::Raw("parameter with (readuncommitted)")
+        )
+            ->select(
+                'id'
+            )
+            ->where('grp', '=', 'STATUS ABSENSI SUPIR')
+            ->where('subgrp', '=', 'STATUS ABSENSI SUPIR')
+            ->where("default", '=', 'YA')
+            ->first();
+
+        $iddefaultstatusAbsensiSupir = $status->id ?? 0;
+
         // 	JENIS PLAT
         $status = Parameter::from(
             db::Raw("parameter with (readuncommitted)")
@@ -322,6 +337,7 @@ class Trado extends MyModel
                 "statusaktif" => $iddefaultstatusaktif,
                 "statusgerobak" => $iddefaultstatusGerobak,
                 "statusjenisplat" => $iddefaultstatusJenisPlat,
+                "statusabsensisupir" => $iddefaultstatusAbsensiSupir,
             ]
         );
 
@@ -332,6 +348,7 @@ class Trado extends MyModel
                 'statusaktif',
                 'statusgerobak',
                 'statusjenisplat',
+                'statusabsensisupir',
             );
 
         $data = $query->first();
@@ -683,6 +700,7 @@ class Trado extends MyModel
             $trado->supir_id = $data['supir_id'] ?? 0;
             $trado->jumlahbanserap = $data['jumlahbanserap'];
             $trado->statusgerobak = $data['statusgerobak'];
+            $trado->statusgerobak = $data['statusabsensisupir'];
             $trado->statusappeditban = $statusAppeditban->id;
             $trado->statuslewatvalidasi = $statusLewatValidasi->id;
             $trado->nominalplusborongan = str_replace(',', '', $data['nominalplusborongan']) ?? 0;
@@ -798,6 +816,7 @@ class Trado extends MyModel
             $trado->supir_id = $data['supir_id'] ?? 0;
             $trado->jumlahbanserap = $data['jumlahbanserap'];
             $trado->statusgerobak = $data['statusgerobak'];
+            $trado->statusabsensisupir = $data['statusabsensisupir'];
             $trado->nominalplusborongan = str_replace(',', '', $data['nominalplusborongan']) ?? 0;
 
             $this->deleteFiles($trado);
