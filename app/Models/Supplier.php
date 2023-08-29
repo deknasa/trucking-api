@@ -455,7 +455,7 @@ class Supplier extends MyModel
             ->where('grp', '=', 'STATUS APPROVAL')->where('text', '=', 'NON APPROVAL')->first();
 
         $supplier = new Supplier();
-        $supplier->namasupplier = $data['namasupplier'];
+        $supplier->namasupplier = trim($data['namasupplier']);
         $supplier->namakontak = $data['namakontak'];
         $supplier->top = $data['top'];
         $supplier->keterangan = $data['keterangan'];
@@ -512,7 +512,7 @@ class Supplier extends MyModel
 
     public function processUpdate(Supplier $supplier, array $data): Supplier
     {
-        $supplier->namasupplier = $data['namasupplier'];
+        $supplier->namasupplier = trim($data['namasupplier']);
         $supplier->namakontak = $data['namakontak'];
         $supplier->top = $data['top'];
         $supplier->keterangan = $data['keterangan'];

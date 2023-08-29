@@ -754,6 +754,7 @@ route::middleware(['auth:api', 'authorized'])->group(function () {
     Route::post('supplier/{id}/cekValidasi', [SupplierController::class, 'cekValidasi'])->name('supplier.cekValidasi')->whereNumber('id');
     Route::get('supplier/export', [SupplierController::class, 'export']);
     Route::post('supplier/approval', [SupplierController::class, 'approval']);
+    Route::post('supplier/approvalTNL', [SupplierController::class, 'approvalTNL']);
     Route::get('supplier/report', [SupplierController::class, 'report']);
     Route::resource('supplier', SupplierController::class)->whereNumber('supplier');
 

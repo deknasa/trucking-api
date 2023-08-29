@@ -464,6 +464,7 @@ class ParameterSeeder extends Seeder
         parameter::create(['grp' => 'PENGELUARAN TRUCKING', 'subgrp' => 'BIAYA PORTAL', 'kelompok' => '', 'text' => '#BPT #9999#/#R#/#Y', 'memo' => '{"MEMO":"BIAYA PORTAL BUKTI","SINGKATAN":"#BPT #9999#/#R#/#Y","WARNA":"#28A745"}', 'type' => '118', 'modifiedby' => 'ADMIN', 'default' => '',]);
         parameter::create(['grp' => 'PENGELUARAN TRUCKING', 'subgrp' => 'BIAYA GAJI SUPIR', 'kelompok' => '', 'text' => '#BGS #9999#/#R#/#Y', 'memo' => '{"MEMO":"BIAYA GAJI SUPIR BUKTI","SINGKATAN":"#BGS #9999#/#R#/#Y","WARNA":"#28A745"}', 'type' => '118', 'modifiedby' => 'ADMIN', 'default' => '',]);
         parameter::create(['grp' => 'PENGELUARAN TRUCKING', 'subgrp' => 'BIAYA INSENTIF', 'kelompok' => '', 'text' => '#BIT #9999#/#R#/#Y', 'memo' => '{"MEMO":"BIAYA INSENTIF BUKTI","SINGKATAN":"#BIT #9999#/#R#/#Y","WARNA":"#28A745"}', 'type' => '118', 'modifiedby' => 'ADMIN', 'default' => '',]);
+        parameter::create(['grp' => 'APPROVAL TNL', 'subgrp' => 'APPROVAL TNL', 'kelompok' => '', 'text' => 'TIDAK', 'memo' => '{"MEMO":"APPROVAL TNL","SINGKATAN":"APPTNL","WARNA":"#28A745"}', 'type' => '0', 'modifiedby' => 'ADMIN', 'default' => '',]);
         
     }
 }

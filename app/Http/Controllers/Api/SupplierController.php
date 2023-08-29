@@ -18,7 +18,7 @@ use Illuminate\Support\Facades\Schema;
 use Illuminate\Database\QueryException;
 use Illuminate\Http\JsonResponse;
 use App\Http\Requests\ApprovalSupplierRequest;
-
+use Illuminate\Support\Facades\Http;
 
 class SupplierController extends Controller
 {
@@ -138,7 +138,7 @@ class SupplierController extends Controller
             ];
             $supplier = (new Supplier())->processStore($data);
             $supplier->position = $this->getPosition($supplier, $supplier->getTable())->position;
-            if ($request->limit==0) {
+            if ($request->limit == 0) {
                 $supplier->page = ceil($supplier->position / (10));
             } else {
                 $supplier->page = ceil($supplier->position / ($request->limit ?? 10));
@@ -193,7 +193,7 @@ class SupplierController extends Controller
 
             $supplier = (new Supplier())->processUpdate($supplier, $data);
             $supplier->position = $this->getPosition($supplier, $supplier->getTable())->position;
-            if ($request->limit==0) {
+            if ($request->limit == 0) {
                 $supplier->page = ceil($supplier->position / (10));
             } else {
                 $supplier->page = ceil($supplier->position / ($request->limit ?? 10));
@@ -223,7 +223,7 @@ class SupplierController extends Controller
             $selected = $this->getPosition($supplier, $supplier->getTable(), true);
             $supplier->position = $selected->position;
             $supplier->id = $selected->id;
-            if ($request->limit==0) {
+            if ($request->limit == 0) {
                 $supplier->page = ceil($supplier->position / (10));
             } else {
                 $supplier->page = ceil($supplier->position / ($request->limit ?? 10));
@@ -256,7 +256,7 @@ class SupplierController extends Controller
         ]);
     }
 
-        /**
+    /**
      * @ClassName 
      */
     public function approval(ApprovalSupplierRequest $request)
@@ -269,10 +269,9 @@ class SupplierController extends Controller
                 ->where('grp', '=', 'STATUS APPROVAL')->where('text', '=', 'APPROVAL')->first();
             $statusNonApproval = Parameter::from(DB::raw("parameter with (readuncommitted)"))
                 ->where('grp', '=', 'STATUS APPROVAL')->where('text', '=', 'NON APPROVAL')->first();
-
             for ($i = 0; $i < count($request->Id); $i++) {
                 $Supplier = Supplier::find($request->Id[$i]);
-        
+
                 if ($Supplier->statusapproval == $statusApproval->id) {
                     $Supplier->statusapproval = $statusNonApproval->id;
                     $aksi = $statusNonApproval->text;
@@ -288,7 +287,67 @@ class SupplierController extends Controller
                         'namatabel' => strtoupper($Supplier->getTable()),
                         'postingdari' => 'APPROVAL SUPPLIER',
                         'idtrans' => $Supplier->id,
-                        'nobuktitrans' => $Supplier->nobukti,
+                        'nobuktitrans' => $Supplier->id,
+                        'aksi' => $aksi,
+                        'datajson' => $Supplier->toArray(),
+                        'modifiedby' => auth('api')->user()->name
+                    ];
+
+                    $validatedLogTrail = new StoreLogTrailRequest($logTrail);
+                    $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
+                }
+            }
+            
+            $params = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'APPROVAL TNL')->where('subgrp', 'APPROVAL TNL')->first();
+            $approvalTnl = $params->text;
+            if ($approvalTnl == 'YA') {
+                $this->approvalToTNL($request);
+            }
+            DB::commit();
+            return response([
+                'message' => 'Berhasil'
+            ]);
+        } catch (\Throwable $th) {
+            throw $th;
+        }
+    }
+
+    public function approvalTNL(Request $request)
+    {
+        DB::beginTransaction();
+
+        try {
+
+            $statusApproval = Parameter::from(DB::raw("parameter with (readuncommitted)"))
+                ->where('grp', '=', 'STATUS APPROVAL')->where('text', '=', 'APPROVAL')->first();
+            $statusNonApproval = Parameter::from(DB::raw("parameter with (readuncommitted)"))
+                ->where('grp', '=', 'STATUS APPROVAL')->where('text', '=', 'NON APPROVAL')->first();
+
+            for ($i = 0; $i < count($request->nama); $i++) {
+                $Supplier = Supplier::where('namasupplier', trim($request->nama[$i]))->first();
+
+                if ($Supplier->statusapproval == $statusApproval->id) {
+                    DB::table('supplier')->where('namasupplier', $request->nama[$i])->update([
+                        'statusapproval' =>  $statusNonApproval->id,
+                        'tglapproval' => date('Y-m-d', time()),
+                        'userapproval' => auth('api')->user()->name
+                    ]);
+                    $aksi = $statusNonApproval->text;
+                } else {
+                    DB::table('supplier')->where('namasupplier', $request->nama[$i])->update([
+                        'statusapproval' =>  $statusApproval->id,
+                        'tglapproval' => date('Y-m-d', time()),
+                        'userapproval' => auth('api')->user()->name
+                    ]);
+                    $aksi = $statusApproval->text;
+                }
+
+                if ($Supplier->save()) {
+                    $logTrail = [
+                        'namatabel' => strtoupper($Supplier->getTable()),
+                        'postingdari' => 'APPROVAL SUPPLIER',
+                        'idtrans' => $Supplier->id,
+                        'nobuktitrans' => $Supplier->id,
                         'aksi' => $aksi,
                         'datajson' => $Supplier->toArray(),
                         'modifiedby' => auth('api')->user()->name
@@ -300,13 +359,45 @@ class SupplierController extends Controller
             }
             DB::commit();
             return response([
-                'message' => 'Berhasil'
+                'message' => 'Berhasil approval TNL'
             ]);
         } catch (\Throwable $th) {
             throw $th;
         }
     }
 
+    public function approvalToTNL($data)
+    {
+        $server = config('app.server_jkt');
+        $getToken = Http::withHeaders([
+            'Content-Type' => 'application/json',
+            'Accept' => 'application/json'
+        ])
+            ->post($server . 'truckingtnl-api/public/api/token', [
+                'user' => auth('api')->user()->user,
+                'password' => getenv('PASSWORD_TNL'),
+            ]);
+
+        if ($getToken->getStatusCode() == '404') {
+            throw new \Exception("Akun Tidak Terdaftar di Trucking TNL");
+        } else if ($getToken->getStatusCode() == '200') {
+
+            $access_token = json_decode($getToken, TRUE)['access_token'];
+            $transferTarif = Http::withHeaders([
+                'Content-Type' => 'application/json',
+                'Accept' => 'application/json',
+                'Authorization' => 'Bearer ' . $access_token
+            ])->post($server . 'truckingtnl-api/public/api/supplier/approvalTNL', $data);
+            $tesResp = $transferTarif->toPsrResponse();
+            $response = [
+                'statuscode' => $tesResp->getStatusCode(),
+                'data' => $transferTarif->json(),
+            ];
+            return $response;
+        } else {
+            throw new \Exception("server tidak bisa diakses");
+        }
+    }
 
     /**
      * @ClassName 
@@ -323,7 +414,7 @@ class SupplierController extends Controller
         if (request()->cekExport) {
 
             if (request()->offset == "-1" && request()->limit == '1') {
-                
+
                 return response([
                     'errors' => [
                         "export" => app(ErrorController::class)->geterror('DTA')->keterangan

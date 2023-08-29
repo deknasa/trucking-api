@@ -54,7 +54,7 @@ class UpdateSupplierRequest extends FormRequest
 
 
        $rules = [
-            'namasupplier' => 'required',
+            'namasupplier' => ['required',Rule::unique('supplier')->whereNotIn('id', [$this->id])],
             'namakontak' => 'required',
             'alamat' => 'required',
             'kota' => 'required',
