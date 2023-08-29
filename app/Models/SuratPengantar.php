@@ -674,11 +674,11 @@ class SuratPengantar extends MyModel
         }
 
         if (request()->pengeluarantruckingheader === "BBT") {
-            $query->whereNotIn('suratpengantar.nobukti', function($query) {
+            $query->whereNotIn('suratpengantar.nobukti', function ($query) {
                 $query->select(DB::raw('DISTINCT pengeluarantruckingdetail.suratpengantar_nobukti'))
-                      ->from('pengeluarantruckingdetail')
-                      ->whereNotNull('pengeluarantruckingdetail.suratpengantar_nobukti')
-                      ->where('pengeluarantruckingdetail.suratpengantar_nobukti','!=','');
+                    ->from('pengeluarantruckingdetail')
+                    ->whereNotNull('pengeluarantruckingdetail.suratpengantar_nobukti')
+                    ->where('pengeluarantruckingdetail.suratpengantar_nobukti', '!=', '');
             });
         }
         if (request()->jenisorder_id != null) {
@@ -856,16 +856,22 @@ class SuratPengantar extends MyModel
 
     public function findAll($id)
     {
+        $params = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'PENDAPATAN SUPIR')->where('subgrp', 'GAJI KENEK')->first();
+        $komisi_gajisupir = $params->text;
 
         $getBukanUpahZona = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS UPAH ZONA')->where('text', 'NON UPAH ZONA')->first();
         $get = DB::table("suratpengantar")->from(DB::raw("suratpengantar with (readuncommitted)"))->select('statusupahzona')->where('id', $id)->first();
 
-        $getGaji = DB::table('suratpengantar')->from(DB::raw("suratpengantar with (readuncommitted)"))
-        ->select('suratpengantar.id','upahsupirrincian.nominalsupir','upahsupirrincian.nominalkenek','upahsupirrincian.nominalkomisi','upahsupirrincian.nominaltol', 'upahsupirrincian.liter')
-        ->leftJoin(DB::raw("upahsupirrincian with (readuncommitted)"), 'suratpengantar.upah_id', 'upahsupirrincian.upahsupir_id')
-        ->where('suratpengantar.id', $id)
-        ->whereRaw("upahsupirrincian.container_id = suratpengantar.container_id")
-        ->whereRaw("upahsupirrincian.statuscontainer_id = suratpengantar.statuscontainer_id");
+        $getGaji = DB::table('suratpengantar')->from(DB::raw("suratpengantar with (readuncommitted)"));
+        if ($komisi_gajisupir == 'YA') {
+            $getGaji->select(DB::raw("suratpengantar.id, isnull(upahsupirrincian.nominalsupir,0) - isnull(upahsupirrincian.nominalkenek,0) as nominalsupir, upahsupirrincian.nominalkenek, upahsupirrincian.nominalkomisi, upahsupirrincian.nominaltol, upahsupirrincian.liter"));
+        } else {
+            $getGaji->select('suratpengantar.id', 'upahsupirrincian.nominalsupir', 'upahsupirrincian.nominalkenek', 'upahsupirrincian.nominalkomisi', 'upahsupirrincian.nominaltol', 'upahsupirrincian.liter');
+        }
+        $getGaji->leftJoin(DB::raw("upahsupirrincian with (readuncommitted)"), 'suratpengantar.upah_id', 'upahsupirrincian.upahsupir_id')
+            ->where('suratpengantar.id', $id)
+            ->whereRaw("upahsupirrincian.container_id = suratpengantar.container_id")
+            ->whereRaw("upahsupirrincian.statuscontainer_id = suratpengantar.statuscontainer_id");
 
         $tempGaji = '##tempGaji' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
         Schema::create($tempGaji, function ($table) {
@@ -941,9 +947,9 @@ class SuratPengantar extends MyModel
                     'suratpengantar.statusbatalmuat',
                     'suratpengantar.statusupahzona',
                     'suratpengantar.statusgandengan',
-                    $tempGaji.'.nominalsupir as gajisupir',
-                    $tempGaji.'.nominalkenek as gajikenek',
-                    $tempGaji.'.nominalkomisi as komisisupir',
+                    $tempGaji . '.nominalsupir as gajisupir',
+                    $tempGaji . '.nominalkenek as gajikenek',
+                    $tempGaji . '.nominalkomisi as komisisupir',
                     'suratpengantar.upah_id',
                     'suratpengantar.statusapprovaleditsuratpengantar',
                     'kotaupah.kodekota as upah'
@@ -1019,9 +1025,9 @@ class SuratPengantar extends MyModel
                     'suratpengantar.statusbatalmuat',
                     'suratpengantar.statusupahzona',
                     'suratpengantar.statusgandengan',
-                    $tempGaji.'.nominalsupir as gajisupir',
-                    $tempGaji.'.nominalkenek as gajikenek',
-                    $tempGaji.'.nominalkomisi as komisisupir',
+                    $tempGaji . '.nominalsupir as gajisupir',
+                    $tempGaji . '.nominalkenek as gajikenek',
+                    $tempGaji . '.nominalkomisi as komisisupir',
                     'suratpengantar.upah_id',
                     'suratpengantar.statusapprovaleditsuratpengantar',
                     'zonaupah.zona as upah'
