@@ -983,13 +983,33 @@ class ProsesGajiSupirHeader extends MyModel
 
             DB::table($tempGaji)->insertUsing(['nobukti'], $fetchGajiSupir);
         }
-        $tempRincian = '##Temprincian' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
-        $fetchTempRincian = DB::table($tempGaji)->from(DB::raw("$tempGaji as A with (readuncommitted)"))
+        $tempsuratpengantartambahan = '##tempsuratpengantartambahan' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+        Schema::create($tempsuratpengantartambahan, function ($table) {
+            $table->string('nobukti',50)->nullable();
+            $table->double('nominal',15,2)->nullable();
+        });
+
+        $fetchsuratpengantartambahan = DB::table($tempGaji)->from(DB::raw("$tempGaji as A with (readuncommitted)"))
             ->select(
-                DB::raw("C.tglbukti, sum(isnull(B.gajisupir,0)+isnull(B.gajiritasi,0)) as gajisupir")
+                DB::raw("C.nobukti, sum(isnull(d.nominal,0)) as nominal")
             )
             ->join(DB::raw("gajisupirdetail as B with (readuncommitted)"), 'A.nobukti', 'B.nobukti')
             ->join(DB::raw("suratpengantar as C with (readuncommitted)"), 'B.suratpengantar_nobukti', 'C.nobukti')
+            ->leftjoin(DB::raw("suratpengantarbiayatambahan as D with (readuncommitted)"), 'c.id', 'd.suratpengantar_id')
+            ->groupBy('C.nobukti');
+
+            DB::table($tempsuratpengantartambahan)->insertUsing(['nobukti', 'nominal'], $fetchsuratpengantartambahan);
+
+
+
+        $tempRincian = '##Temprincian' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+        $fetchTempRincian = DB::table($tempGaji)->from(DB::raw("$tempGaji as A with (readuncommitted)"))
+            ->select(
+                DB::raw("C.tglbukti, sum(isnull(B.gajisupir,0)+isnull(B.gajiritasi,0)+isnull(d.nominal,0)) as gajisupir")
+            )
+            ->join(DB::raw("gajisupirdetail as B with (readuncommitted)"), 'A.nobukti', 'B.nobukti')
+            ->join(DB::raw("suratpengantar as C with (readuncommitted)"), 'B.suratpengantar_nobukti', 'C.nobukti')
+            ->leftjoin(DB::raw($tempsuratpengantartambahan ." as d "), 'c.nobukti', 'd.nobukti')
             ->groupBy('C.tglbukti');
 
         Schema::create($tempRincian, function ($table) {
