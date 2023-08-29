@@ -17,7 +17,7 @@ class PengeluaranTruckingSeeder extends Seeder
     {
 
         DB::statement("delete PengeluaranTrucking");
-        DB::statement("DBCC CHECKIDENT ('PengeluaranTrucking', RESEED, 1);");
+        DB::statement("DBCC CHECKIDENT ('PengeluaranTrucking', RESEED, 0);");
 
         pengeluarantrucking::create(['kodepengeluaran' => 'PJT', 'keterangan' => 'PINJAMAN SUPIR', 'coadebet' => '01.05.02.02', 'coakredit' => '01.01.01.02', 'coapostingdebet' => '01.05.02.02', 'coapostingkredit' => '01.01.01.02', 'format' => '122', 'modifiedby' => 'ADMIN',]);
         pengeluarantrucking::create(['kodepengeluaran' => 'TDE', 'keterangan' => 'PENARIKAN DEPOSITO', 'coadebet' => '01.04.02.01', 'coakredit' => '01.01.01.02', 'coapostingdebet' => '01.04.02.01', 'coapostingkredit' => '01.01.01.02', 'format' => '251', 'modifiedby' => 'ADMIN',]);
@@ -28,5 +28,13 @@ class PengeluaranTruckingSeeder extends Seeder
         pengeluarantrucking::create(['kodepengeluaran' => 'KLAIM', 'keterangan' => 'KLAIM SUPIR', 'coadebet' => '', 'coakredit' => '', 'coapostingdebet' => '', 'coapostingkredit' => '', 'format' => '318', 'modifiedby' => 'ADMIN',]);
         pengeluarantrucking::create(['kodepengeluaran' => 'PJK', 'keterangan' => 'PINJAMAN KARYAWAN', 'coadebet' => '01.05.02.02', 'coakredit' => '01.01.01.02', 'coapostingdebet' => '01.05.02.02', 'coapostingkredit' => '01.01.01.02', 'format' => '369', 'modifiedby' => 'ADMIN',]);
         pengeluarantrucking::create(['kodepengeluaran' => 'BBT', 'keterangan' => 'TITIPAN EMKL', 'coadebet' => '01.08.01.06', 'coakredit' => '01.01.01.02', 'coapostingdebet' => '01.08.01.06', 'coapostingkredit' => '01.01.01.02', 'format' => '411', 'modifiedby' => 'ADMIN',]);
+        pengeluarantrucking::create(['kodepengeluaran' => 'BBT', 'keterangan' => 'BIAYA LAPANGAN LEMBUR', 'coadebet' => '01.08.01.06', 'coakredit' => '01.01.01.02', 'coapostingdebet' => '01.08.01.06', 'coapostingkredit' => '01.01.01.02', 'format' => '441', 'modifiedby' => 'ADMIN',]);
+        pengeluarantrucking::create(['kodepengeluaran' => 'BLN', 'keterangan' => 'BIAYA LAPANGAN NGINAP', 'coadebet' => '01.08.01.06', 'coakredit' => '01.01.01.02', 'coapostingdebet' => '01.08.01.06', 'coapostingkredit' => '01.01.01.02', 'format' => '442', 'modifiedby' => 'ADMIN',]);
+        pengeluarantrucking::create(['kodepengeluaran' => 'BTU', 'keterangan' => 'BIAYA LAPANGAN TAMBAHAN UANG JALAN', 'coadebet' => '01.08.01.06', 'coakredit' => '01.01.01.02', 'coapostingdebet' => '01.08.01.06', 'coapostingkredit' => '01.01.01.02', 'format' => '443', 'modifiedby' => 'ADMIN',]);
+        pengeluarantrucking::create(['kodepengeluaran' => 'BPT', 'keterangan' => 'BIAYA PORTAL', 'coadebet' => '01.08.01.06', 'coakredit' => '01.01.01.02', 'coapostingdebet' => '01.08.01.06', 'coapostingkredit' => '01.01.01.02', 'format' => '444', 'modifiedby' => 'ADMIN',]);
+        pengeluarantrucking::create(['kodepengeluaran' => 'BGS', 'keterangan' => 'BIAYA GAJI SUPIR', 'coadebet' => '01.08.01.06', 'coakredit' => '01.01.01.02', 'coapostingdebet' => '01.08.01.06', 'coapostingkredit' => '01.01.01.02', 'format' => '445', 'modifiedby' => 'ADMIN',]);
+        pengeluarantrucking::create(['kodepengeluaran' => 'BIT', 'keterangan' => 'BIAYA INSENTIF', 'coadebet' => '01.08.01.06', 'coakredit' => '01.01.01.02', 'coapostingdebet' => '01.08.01.06', 'coapostingkredit' => '01.01.01.02', 'format' => '446', 'modifiedby' => 'ADMIN',]);
+
+
     }
 }
