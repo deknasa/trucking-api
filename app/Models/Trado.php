@@ -577,7 +577,7 @@ class Trado extends MyModel
                             } else if ($filters['field'] == 'statuslewatvalidasi') {
                                 $query = $query->orWhere('parameter_statuslewatvalidasi.text', '=', $filters['data']);
                             } else if ($filters['field'] == 'statusabsensisupir') {
-                                $query = $query->orWhere('parameter_statusstatusabsensisupir.text', '=', $filters['data']);
+                                $query = $query->orWhere('parameter_statusabsensisupir.text', '=', $filters['data']);
                             } else if ($filters['field'] == 'statusvalidasikendaraan') {
                                 $query = $query->orWhere('parameter_statusvalidasikendaraan.text', '=', $filters['data']);
                             } else if ($filters['field'] == 'mandor_id') {
