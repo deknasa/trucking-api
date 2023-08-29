@@ -210,6 +210,11 @@ class AbsensiSupirHeader extends MyModel
 
     public function getAbsensi($id)
     {
+        $statusabsensi = db::table("parameter")->from(db::raw("parameter"))->select('id')
+            ->where('grp', 'STATUS ABSENSI SUPIR')
+            ->where('subgrp', 'STATUS ABSENSI SUPIR')
+            ->where('text', 'ABSENSI SUPIR')
+            ->first()->id ?? 0;
         $query = DB::table('absensisupirdetail')->from(DB::raw("absensisupirdetail with (readuncommitted)"))
             ->select(
                 'absensisupirdetail.keterangan as keterangan_detail',
@@ -233,7 +238,8 @@ class AbsensiSupirHeader extends MyModel
     left join absensisupirapprovalheader  with (readuncommitted)  on absensisupirapprovalheader.absensisupir_nobukti= absensisupirdetail.nobukti
     WHERE absensisupirapprovalheader.absensisupir_nobukti = absensisupirheader.nobukti 
           )")
-            ->where('absensi_id', $id);
+            ->where('absensi_id', $id)
+            ->where('trado.statusabsensisupir', $statusabsensi);
         //     $this->totalRows = $query->count();
         // $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;
 
@@ -682,7 +688,7 @@ class AbsensiSupirHeader extends MyModel
             $kasGantungHeader = KasGantungHeader::from(DB::raw("kasgantungheader with (readuncommitted)"))->where('nobukti', $absensiSupir->kasgantung_nobukti)->first();
             $kasGantungHeader = (new KasGantungHeader())->processUpdate($kasGantungHeader, $kasGantungRequest);
         }
-        
+
         $date = date('Y-m-d', strtotime($absensiSupir->tglbukti));
         $now = date('Y-m-d', strtotime('now'));
         if (!$this->todayValidation($date)) {
