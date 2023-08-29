@@ -108,6 +108,7 @@ class StoreTradoRequest extends FormRequest
             'nobpkb' => [$ruleKeterangan, 'max:15', 'unique:trado'],
             'jumlahbanserap' => [$ruleKeterangan,'numeric','min:1','digits_between:1,2','nullable'],
             'statusgerobak' => [$ruleKeterangan],
+            'statusabsensisupir' => [$ruleKeterangan],
             'nominalplusborongan' => [new NotDecimal()],
             'phototrado' => [$ruleGambar, 'array'],
             'phototrado.*' => [$ruleGambar, 'image'],
@@ -142,7 +143,8 @@ class StoreTradoRequest extends FormRequest
             'model' => 'Model',
             'nobpkb' => 'No BPKB',
             'jumlahbanserap' => 'Jumlah Ban Serap',
-            'statusgerobak' => 'Status Gerobak'
+            'statusgerobak' => 'Status Gerobak',
+            'statusabsensisupir' => 'Status Absensi Supir'
         ];
     }
     public function messages()
