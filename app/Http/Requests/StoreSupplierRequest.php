@@ -52,7 +52,7 @@ class StoreSupplierRequest extends FormRequest
         }
 
         return [
-            'namasupplier' => 'required',
+            'namasupplier' => ['required','unique:supplier'],
             'namakontak' => 'required',
             'alamat' => 'required',
             'kota' => 'required',
