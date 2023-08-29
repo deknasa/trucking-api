@@ -189,7 +189,7 @@ class Trado extends MyModel
                 'trado.created_at',
                 DB::raw("(case when year(isnull(trado.tglserviceopname,'1900/1/1'))=1900 then null else trado.tglserviceopname end) as tglserviceopname"),
                 'trado.keteranganprogressstandarisasi',
-                'trado.tglpajakstnk',
+                DB::raw("(case when year(isnull(trado.tglpajakstnk,'1900/1/1'))=1900 then null else trado.tglpajakstnk end) as tglpajakstnk"),
                 DB::raw("(case when year(isnull(trado.tglgantiakiterakhir,'1900/1/1'))=1900 then null else trado.tglgantiakiterakhir end) as tglgantiakiterakhir"),
                 'trado.tipe',
                 'trado.jenis',
@@ -706,7 +706,7 @@ class Trado extends MyModel
             $trado->supir_id = $data['supir_id'] ?? 0;
             $trado->jumlahbanserap = $data['jumlahbanserap'];
             $trado->statusgerobak = $data['statusgerobak'];
-            $trado->statusgerobak = $data['statusabsensisupir'];
+            $trado->statusabsensisupir = $data['statusabsensisupir'];
             $trado->statusappeditban = $statusAppeditban->id;
             $trado->statuslewatvalidasi = $statusLewatValidasi->id;
             $trado->nominalplusborongan = str_replace(',', '', $data['nominalplusborongan']) ?? 0;

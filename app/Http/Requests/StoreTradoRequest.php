@@ -39,9 +39,16 @@ class StoreTradoRequest extends FormRequest
                 ->whereRaw("text like '%NON APPROVAL%'")
                 ->first();
             $cekValidasi = DB::table('approvaltradogambar')->from(DB::raw("approvaltradogambar with (readuncommitted)"))
-                ->select('kodetrado', 'tglbatas','statusapproval')
+                ->select('kodetrado', 'tglbatas', 'statusapproval')
                 ->whereRaw("kodetrado in ('$kodeTrado')")
                 ->first();
+            $tradononabsensi = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))
+                ->where('grp', 'STATUS ABSENSI SUPIR')
+                ->where('subgrp', 'STATUS ABSENSI SUPIR')
+                ->where('text', 'NON ABSENSI SUPIR')
+                ->first()->id ?? 0;
+
+
             if ($cekValidasi != '') {
                 if ($cekValidasi->statusapproval == $nonApp->id) {
                     return true;
@@ -51,9 +58,10 @@ class StoreTradoRequest extends FormRequest
                     }
                     return false;
                 }
+            } else if ($tradononabsensi == request()->statusabsensisupir) {
+                return false;
             }
             return true;
-
         });
 
         $ruleKeterangan = Rule::requiredIf(function () {
@@ -63,18 +71,29 @@ class StoreTradoRequest extends FormRequest
                 ->whereRaw("text like '%NON APPROVAL%'")
                 ->first();
             $cekValidasi = DB::table('approvaltradoketerangan')->from(DB::raw("approvaltradoketerangan with (readuncommitted)"))
-                ->select('kodetrado', 'tglbatas','statusapproval')
+                ->select('kodetrado', 'tglbatas', 'statusapproval')
                 ->whereRaw("kodetrado in ('$kodetrado')")
                 ->first();
+                $tradononabsensi = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))
+                ->where('grp', 'STATUS ABSENSI SUPIR')
+                ->where('subgrp', 'STATUS ABSENSI SUPIR')
+                ->where('text', 'NON ABSENSI SUPIR')
+                ->first()->id ?? 0;
+
+                
             if ($cekValidasi != '') {
                 if ($cekValidasi->statusapproval == $nonApp->id) {
                     return false;
+         
                 } else {
                     if (date('Y-m-d') < $cekValidasi->tglbatas) {
                         return false;
                     }
                 }
+            } else if ($tradononabsensi == request()->statusabsensisupir) {
+                return false;
             }
+            
             return true;
         });
 
@@ -83,15 +102,15 @@ class StoreTradoRequest extends FormRequest
         $data = json_decode($data, true);
         foreach ($data as $item) {
             $status[] = $item['id'];
-        } 
+        }
 
         return [
-            'kodetrado' => ['required','unique:trado'],
+            'kodetrado' => ['required', 'unique:trado'],
             'statusaktif' => [$ruleKeterangan, Rule::in($status)],
-            'tahun' => [$ruleKeterangan,'min:4','max:4','nullable'],
+            'tahun' => [$ruleKeterangan, 'min:4', 'max:4', 'nullable'],
             'merek' => $ruleKeterangan,
             'norangka' => [$ruleKeterangan, 'max:20', 'unique:trado'],
-            'nomesin' =>  [$ruleKeterangan,'max:20', 'unique:trado'],
+            'nomesin' =>  [$ruleKeterangan, 'max:20', 'unique:trado'],
             'nama' => [$ruleKeterangan],
             'nostnk' =>  [$ruleKeterangan, 'max:50', 'unique:trado'],
             'alamatstnk' => [$ruleKeterangan],
@@ -99,14 +118,14 @@ class StoreTradoRequest extends FormRequest
             'tglpajakstnk' => [$ruleKeterangan],
             'tipe' => [$ruleKeterangan],
             'jenis' => [$ruleKeterangan],
-            'isisilinder' => [$ruleKeterangan,'numeric','min:1','digits_between:1,5','nullable'],
+            'isisilinder' => [$ruleKeterangan, 'numeric', 'min:1', 'digits_between:1,5', 'nullable'],
             'warna' => [$ruleKeterangan],
             'jenisbahanbakar' => [$ruleKeterangan],
-            'jumlahsumbu' => [$ruleKeterangan,'numeric','min:1','digits_between:1,2','nullable'],
-            'jumlahroda' => [$ruleKeterangan,'numeric','min:1','digits_between:1,2','nullable'],
+            'jumlahsumbu' => [$ruleKeterangan, 'numeric', 'min:1', 'digits_between:1,2', 'nullable'],
+            'jumlahroda' => [$ruleKeterangan, 'numeric', 'min:1', 'digits_between:1,2', 'nullable'],
             'model' => [$ruleKeterangan],
             'nobpkb' => [$ruleKeterangan, 'max:15', 'unique:trado'],
-            'jumlahbanserap' => [$ruleKeterangan,'numeric','min:1','digits_between:1,2','nullable'],
+            'jumlahbanserap' => [$ruleKeterangan, 'numeric', 'min:1', 'digits_between:1,2', 'nullable'],
             'statusgerobak' => [$ruleKeterangan],
             'statusabsensisupir' => [$ruleKeterangan],
             'nominalplusborongan' => [new NotDecimal()],
@@ -149,7 +168,7 @@ class StoreTradoRequest extends FormRequest
     }
     public function messages()
     {
-        return[
+        return [
             'tahun.min' => 'Min. 4 karakter',
             'tahun.max' => 'Max. 4 karakter',
 
@@ -164,7 +183,7 @@ class StoreTradoRequest extends FormRequest
 
             'nostnk.min' => 'Min. 8 karakter',
             'nostnk.max' => 'Max. 12 karakter',
-            
+
             'nobpkb.min' => 'Min. 8 karakter',
             'nobpkb.max' => 'Max. 15 karakter',
 
