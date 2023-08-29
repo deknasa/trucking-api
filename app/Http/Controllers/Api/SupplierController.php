@@ -264,45 +264,12 @@ class SupplierController extends Controller
         DB::beginTransaction();
 
         try {
+            $data = [
+                'Id' => $request->Id,
+                'nama' => $request->nama
+            ];
+            (new Supplier())->processApproval($data);
 
-            $statusApproval = Parameter::from(DB::raw("parameter with (readuncommitted)"))
-                ->where('grp', '=', 'STATUS APPROVAL')->where('text', '=', 'APPROVAL')->first();
-            $statusNonApproval = Parameter::from(DB::raw("parameter with (readuncommitted)"))
-                ->where('grp', '=', 'STATUS APPROVAL')->where('text', '=', 'NON APPROVAL')->first();
-            for ($i = 0; $i < count($request->Id); $i++) {
-                $Supplier = Supplier::find($request->Id[$i]);
-
-                if ($Supplier->statusapproval == $statusApproval->id) {
-                    $Supplier->statusapproval = $statusNonApproval->id;
-                    $aksi = $statusNonApproval->text;
-                } else {
-                    $Supplier->statusapproval = $statusApproval->id;
-                    $aksi = $statusApproval->text;
-                }
-
-                $Supplier->tglapproval = date('Y-m-d', time());
-                $Supplier->userapproval = auth('api')->user()->name;
-                if ($Supplier->save()) {
-                    $logTrail = [
-                        'namatabel' => strtoupper($Supplier->getTable()),
-                        'postingdari' => 'APPROVAL SUPPLIER',
-                        'idtrans' => $Supplier->id,
-                        'nobuktitrans' => $Supplier->id,
-                        'aksi' => $aksi,
-                        'datajson' => $Supplier->toArray(),
-                        'modifiedby' => auth('api')->user()->name
-                    ];
-
-                    $validatedLogTrail = new StoreLogTrailRequest($logTrail);
-                    $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
-                }
-            }
-            
-            $params = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'APPROVAL TNL')->where('subgrp', 'APPROVAL TNL')->first();
-            $approvalTnl = $params->text;
-            if ($approvalTnl == 'YA') {
-                (new Supplier())->approvalToTNL($request);
-            }
             DB::commit();
             return response([
                 'message' => 'Berhasil'
@@ -318,46 +285,12 @@ class SupplierController extends Controller
         DB::beginTransaction();
 
         try {
-
-            $statusApproval = Parameter::from(DB::raw("parameter with (readuncommitted)"))
-                ->where('grp', '=', 'STATUS APPROVAL')->where('text', '=', 'APPROVAL')->first();
-            $statusNonApproval = Parameter::from(DB::raw("parameter with (readuncommitted)"))
-                ->where('grp', '=', 'STATUS APPROVAL')->where('text', '=', 'NON APPROVAL')->first();
-
-            for ($i = 0; $i < count($request->nama); $i++) {
-                $Supplier = Supplier::where('namasupplier', trim($request->nama[$i]))->first();
-
-                if ($Supplier->statusapproval == $statusApproval->id) {
-                    DB::table('supplier')->where('namasupplier', $request->nama[$i])->update([
-                        'statusapproval' =>  $statusNonApproval->id,
-                        'tglapproval' => date('Y-m-d', time()),
-                        'userapproval' => auth('api')->user()->name
-                    ]);
-                    $aksi = $statusNonApproval->text;
-                } else {
-                    DB::table('supplier')->where('namasupplier', $request->nama[$i])->update([
-                        'statusapproval' =>  $statusApproval->id,
-                        'tglapproval' => date('Y-m-d', time()),
-                        'userapproval' => auth('api')->user()->name
-                    ]);
-                    $aksi = $statusApproval->text;
-                }
-
-                if ($Supplier->save()) {
-                    $logTrail = [
-                        'namatabel' => strtoupper($Supplier->getTable()),
-                        'postingdari' => 'APPROVAL SUPPLIER',
-                        'idtrans' => $Supplier->id,
-                        'nobuktitrans' => $Supplier->id,
-                        'aksi' => $aksi,
-                        'datajson' => $Supplier->toArray(),
-                        'modifiedby' => auth('api')->user()->name
-                    ];
-
-                    $validatedLogTrail = new StoreLogTrailRequest($logTrail);
-                    $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
-                }
-            }
+            $data = [
+                'Id' => $request->Id,
+                'nama' => $request->nama
+            ];
+            (new Supplier())->processApprovalTnl($data);
+            
             DB::commit();
             return response([
                 'message' => 'Berhasil approval TNL'
