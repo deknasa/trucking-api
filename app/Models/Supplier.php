@@ -602,4 +602,37 @@ class Supplier extends MyModel
             throw new \Exception("server tidak bisa diakses");
         }
     }
+    
+    public function approvalToTNL($data)
+    {
+        $server = config('app.server_jkt');
+        $getToken = Http::withHeaders([
+            'Content-Type' => 'application/json',
+            'Accept' => 'application/json'
+        ])
+            ->post($server . 'truckingtnl-api/public/api/token', [
+                'user' => auth('api')->user()->user,
+                'password' => getenv('PASSWORD_TNL'),
+            ]);
+
+        if ($getToken->getStatusCode() == '404') {
+            throw new \Exception("Akun Tidak Terdaftar di Trucking TNL");
+        } else if ($getToken->getStatusCode() == '200') {
+
+            $access_token = json_decode($getToken, TRUE)['access_token'];
+            $transferTarif = Http::withHeaders([
+                'Content-Type' => 'application/json',
+                'Accept' => 'application/json',
+                'Authorization' => 'Bearer ' . $access_token
+            ])->post($server . 'truckingtnl-api/public/api/supplier/approvalTNL', $data);
+            $tesResp = $transferTarif->toPsrResponse();
+            $response = [
+                'statuscode' => $tesResp->getStatusCode(),
+                'data' => $transferTarif->json(),
+            ];
+            return $response;
+        } else {
+            throw new \Exception("server tidak bisa diakses");
+        }
+    }
 }
