@@ -1077,7 +1077,9 @@ class ProsesGajiSupirHeader extends MyModel
 
             DB::table($tempRincianJurnal)->insertUsing(['tglbukti', 'nominal', 'keterangan'], $fetchTempRincianJurnal4);
         }
-        $data = DB::table($tempRincianJurnal)->orderBy('tglbukti')->orderBy('keterangan')->get();
+        $data = DB::table($tempRincianJurnal)
+                ->whereRaw("nominal<>0")
+                ->orderBy('tglbukti')->orderBy('keterangan')->get();
         return $data;
     }
 
