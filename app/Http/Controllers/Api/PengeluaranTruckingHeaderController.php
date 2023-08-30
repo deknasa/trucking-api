@@ -490,6 +490,16 @@ class PengeluaranTruckingHeaderController extends Controller
             ]
         ]);
     }
+
+    public function getbiayalapangan(Request $request)
+    {
+        $pengeluarantruckingheader = new PengeluaranTruckingHeader();
+        return response([
+            'data' => $pengeluarantruckingheader->getBiayaLapangan(),
+        ]);
+    }
+
+
     public function fieldLength()
     {
         $data = [];

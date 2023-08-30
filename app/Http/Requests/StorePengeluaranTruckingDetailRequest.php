@@ -32,7 +32,7 @@ class StorePengeluaranTruckingDetailRequest extends FormRequest
                 $fetchFormat =  DB::table('pengeluarantrucking')
                     ->where('id', $idpengeluaran)
                     ->first();
-                if ($fetchFormat->kodepengeluaran == 'TDE' || $fetchFormat->kodepengeluaran == 'BST' || $fetchFormat->kodepengeluaran == 'KBBM') {
+                if ($fetchFormat->kodepengeluaran == 'TDE' || $fetchFormat->kodepengeluaran == 'BST' || $fetchFormat->kodepengeluaran == 'KBBM' || $fetchFormat->kodepengeluaran == 'BLL' || $fetchFormat->kodepengeluaran == 'BLN' || $fetchFormat->kodepengeluaran == 'BTU' || $fetchFormat->kodepengeluaran == 'BPT' || $fetchFormat->kodepengeluaran == 'BGS' || $fetchFormat->kodepengeluaran == 'BIT') {
                     return false;
                 } else {
                     return true;
@@ -104,22 +104,34 @@ class StorePengeluaranTruckingDetailRequest extends FormRequest
                 ->first();
             $sisaNominus = Rule::when((($fetchFormat->kodepengeluaran == 'TDE' || $fetchFormat->kodepengeluaran == 'KBBM')), 'numeric|min:0');
         }
-        $rulseKlaim=[];
+        $rulseKlaim = [];
         if ($this->pengeluarantrucking_id) {
             $klaim = DB::table('pengeluarantrucking')->from(DB::raw("pengeluarantrucking with (readuncommitted)"))
-                    ->where('id',request()->pengeluarantrucking_id)
-                    ->where('keterangan','LIKE', "%klaim%")
-                    ->first();
+                ->where('id', request()->pengeluarantrucking_id)
+                ->where('keterangan', 'LIKE', "%klaim%")
+                ->first();
             if ($klaim->id ==  $this->pengeluarantrucking_id) {
-                $rulseKlaim =[
-                    "stok_id.*"  => ["required", ],
-                    "pengeluaranstok_nobukti.*"  => ["required", ],
-                    "qty.*"  => ["required", ],
-                    "harga.*"  => ["required", ],
-                ];    
+                $rulseKlaim = [
+                    "stok_id.*"  => ["required",],
+                    "pengeluaranstok_nobukti.*"  => ["required",],
+                    "qty.*"  => ["required",],
+                    "harga.*"  => ["required",],
+                ];
             }
         }
+        $min = '';
+        $idpengeluaran = request()->pengeluarantrucking_id;
+        $fetchFormat =  DB::table('pengeluarantrucking')
+            ->where('id', $idpengeluaran)
+            ->first();
+        if ($idpengeluaran != '') {
 
+            if ($fetchFormat->kodepengeluaran == 'BLL' || $fetchFormat->kodepengeluaran == 'BLN' || $fetchFormat->kodepengeluaran == 'BTU' || $fetchFormat->kodepengeluaran == 'BPT' || $fetchFormat->kodepengeluaran == 'BGS' || $fetchFormat->kodepengeluaran == 'BIT') {
+                $min = Rule::when((($fetchFormat->kodepengeluaran == 'BLL' || $fetchFormat->kodepengeluaran == 'BLN' || $fetchFormat->kodepengeluaran == 'BTU' || $fetchFormat->kodepengeluaran == 'BPT' || $fetchFormat->kodepengeluaran == 'BGS' || $fetchFormat->kodepengeluaran == 'BIT')), 'numeric|min:0');
+            } else {
+                $min = Rule::when((($fetchFormat->kodepengeluaran != 'BLL' || $fetchFormat->kodepengeluaran != 'BLN' || $fetchFormat->kodepengeluaran != 'BTU' || $fetchFormat->kodepengeluaran != 'BPT' || $fetchFormat->kodepengeluaran != 'BGS' || $fetchFormat->kodepengeluaran != 'BIT')), 'numeric|gt:0');
+            }
+        }
         $rules = [
             'kbbm_id' => [$requiredKBBM, 'array'],
             'kbbm_id.*' => $requiredKBBM,
@@ -128,15 +140,15 @@ class StorePengeluaranTruckingDetailRequest extends FormRequest
             'sisa.*' => [$requiredTDE, $requiredKBBM, $sisaNominus],
             'supir.*' => $requiredPJT,
             // 'nominal' => ['array','required', 'numeric', 'gt:0'],
-            'nominal.*' => ['required', 'numeric', 'gt:0'],
+            'nominal.*' => ['required', $min],
             'keterangan' => [$requiredKeterangan, 'array'],
             'keterangan.*' => $requiredKeterangan
         ];
 
-            $rules = array_merge(
-                $rules,
-                $rulseKlaim
-            );
+        $rules = array_merge(
+            $rules,
+            $rulseKlaim
+        );
 
         // dd($rules);
         return $rules;
