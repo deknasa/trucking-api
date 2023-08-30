@@ -18,6 +18,7 @@ class CreateAkuntansiTable extends Migration
             $table->string('kodeakuntansi', 100)->nullable();
             $table->longText('keterangan')->nullable();
             $table->integer('statusaktif')->length(11)->nullable();
+            $table->longText('info')->nullable();
             $table->string('modifiedby',50)->nullable();                 
             $table->timestamps();
         });

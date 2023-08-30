@@ -24,6 +24,7 @@ class CreateKasgantungdetailTable extends Migration
             $table->double('nominal',15,2)->nullable();
             $table->string('coa',50)->nullable();
             $table->longText('keterangan')->nullable();
+            $table->longText('info')->nullable();
             $table->string('modifiedby',50)->nullable();
             $table->timestamps();
 

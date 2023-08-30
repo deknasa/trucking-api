@@ -18,6 +18,7 @@ class CreateKaryawanlogabsensiTable extends Migration
             $table->integer('idabsen')->nullable();
             $table->date('tglresign')->nullable();
             $table->integer('statusaktif')->length(11)->nullable();            
+            $table->longText('info')->nullable();
             $table->string('modifiedby', 30)->nullable();                    
             $table->timestamps();
         });

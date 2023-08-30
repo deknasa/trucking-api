@@ -20,6 +20,7 @@ class CreatecabangTable extends Migration
             $table->string('kodecabang', 300)->nullable();
             $table->string('namacabang', 300)->nullable();
             $table->integer('statusaktif')->length(11)->nullable();
+            $table->longText('info')->nullable();
             $table->string('modifiedby', 30)->nullable();
             $table->timestamps();
         });

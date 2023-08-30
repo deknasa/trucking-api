@@ -27,6 +27,7 @@ class CreateNotadebetdetailTable extends Migration
             $table->double('lebihbayar',15,2)->nullable();
             $table->longText('keterangan')->nullable();
             $table->string('coalebihbayar',50)->nullable();
+            $table->longText('info')->nullable();            
             $table->string('modifiedby',50)->nullable();
             $table->timestamps();
 

@@ -35,6 +35,7 @@ class CreateHutangheaderTable extends Migration
             $table->integer('statusapproval')->Length(11)->nullable();
             $table->date('tglapproval')->nullable();
             $table->string('userapproval',50)->nullable();
+            $table->longText('info')->nullable();            
             $table->string('modifiedby', 50)->nullable();            
             $table->timestamps();
 

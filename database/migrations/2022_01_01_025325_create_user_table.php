@@ -27,6 +27,7 @@ class CreateUserTable extends Migration
             $table->integer('statusaktif')->length(11)->nullable();
             $table->integer('statusakses')->length(11)->nullable();
             $table->string('email',255)->nullable();
+            $table->longText('info')->nullable();
             $table->string('modifiedby',255)->nullable();
             $table->timestamps();
 

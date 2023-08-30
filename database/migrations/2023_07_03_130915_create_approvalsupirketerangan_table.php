@@ -19,6 +19,7 @@ class CreateApprovalsupirketeranganTable extends Migration
             $table->string('noktp', 30)->nullable();
             $table->integer('statusapproval')->length(11)->nullable();
             $table->date('tglbatas')->nullable();
+            $table->longText('info')->nullable();
             $table->string('modifiedby', 50)->nullable();
             $table->timestamps();
         });

@@ -29,6 +29,7 @@ class CreateInvoicechargegandengandetailTable extends Migration
             $table->longText('keterangan')->nullable();
             $table->string('jenisorder', 500)->nullable();
             $table->string('namagudang', 500)->nullable();
+            $table->longText('info')->nullable();
             $table->string('modifiedby', 50)->nullable();            
             $table->timestamps();
 

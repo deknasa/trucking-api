@@ -65,6 +65,7 @@ class CreateTradoTable extends Migration
             $table->string('photostnk', 1500)->nullable();
             $table->string('photobpkb', 1500)->nullable();
             $table->string('phototrado', 1500)->nullable();
+            $table->longText('info')->nullable();
             $table->string('modifiedby', 30)->nullable();
             $table->timestamps();
 

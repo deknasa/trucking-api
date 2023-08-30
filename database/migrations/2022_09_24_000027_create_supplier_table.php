@@ -45,6 +45,7 @@ class CreateSupplierTable extends Migration
             $table->string('userapproval', 50)->nullable();
             $table->string('modifiedby', 50)->nullable();
             $table->string('coa', 50)->nullable();
+            $table->longText('info')->nullable();
             $table->timestamps();
         });
     }

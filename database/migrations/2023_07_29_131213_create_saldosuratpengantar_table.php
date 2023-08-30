@@ -90,6 +90,7 @@ class CreateSaldosuratpengantarTable extends Migration
             $table->string('userapprovaleditsuratpengantar', 50)->nullable();
             $table->date('tglapprovaleditsuratpengantar')->nullable();
             $table->unsignedBigInteger('approvalbukatanggal_id')->nullable();
+            $table->longText('info')->nullable();
             $table->string('modifiedby', 50)->nullable();
             $table->timestamps();
         });

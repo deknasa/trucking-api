@@ -25,6 +25,7 @@ class CreateParameterTable extends Migration
             $table->longText('memo')->nullable();
             $table->integer('type')->length(11)->nullable();
             $table->string('default', 255)->nullable();
+            $table->longText('info')->nullable();
             $table->string('modifiedby', 50)->nullable();
             
             $table->timestamps();

@@ -23,6 +23,7 @@ class CreateGajisupirpelunasanpinjamanTable extends Migration
             $table->string('pengeluarantrucking_nobukti', 50)->nullable();            
             $table->unsignedBigInteger('supir_id')->nullable();   
             $table->double('nominal', 15,2)->nullable();            
+            $table->longText('info')->nullable();
             $table->string('modifiedby', 50)->nullable();            
             $table->timestamps();
 

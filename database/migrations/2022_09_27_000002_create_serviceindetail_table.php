@@ -23,6 +23,7 @@ class CreateServiceindetailTable extends Migration
             $table->unsignedBigInteger('karyawan_id')->nullable();
             $table->longText('keterangan')->nullable();
             $table->string('modifiedby',50)->nullable();
+            $table->longText('info')->nullable();
             $table->timestamps();
 
             $table->foreign('servicein_id', 'serviceindetail_serviceinheader_servicein_id_foreign')->references('id')->on('serviceinheader')->onDelete('cascade');    

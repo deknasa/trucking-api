@@ -24,7 +24,8 @@ class CreateHutangdetailTable extends Migration
             $table->double('total',15,2)->nullable();            
             $table->double('cicilan',15,2)->nullable();            
             $table->longText('keterangan')->nullable();            
-            $table->double('totalbayar',15,2)->nullable();            
+            $table->double('totalbayar',15,2)->nullable();    
+            $table->longText('info')->nullable();                    
             $table->string('modifiedby', 50)->nullable();            
             $table->timestamps();
 

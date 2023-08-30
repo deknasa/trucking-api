@@ -23,6 +23,7 @@ class CreateMenuTable extends Migration
             $table->string('link',2000)->nullable();
             $table->string('menuexe',200)->nullable();
             $table->string('menukode',50)->unique()->nullable();
+            $table->longText('info')->nullable();
             $table->string('modifiedby',50)->nullable();
             $table->timestamps();
         });

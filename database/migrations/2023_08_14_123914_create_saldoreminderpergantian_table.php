@@ -20,7 +20,8 @@ class CreateSaldoreminderpergantianTable extends Migration
             $table->string('statusreminder',100)->nullable();        
             $table->date('tglawal')->nullable();        
             $table->date('tglsampai')->nullable();        
-            $table->double('jarak',15,2)->nullable();              
+            $table->double('jarak',15,2)->nullable();     
+            $table->longText('info')->nullable();         
             $table->timestamps();
         });
     }
