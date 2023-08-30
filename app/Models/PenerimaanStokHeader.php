@@ -588,7 +588,7 @@ class PenerimaanStokHeader extends MyModel
                 "qty" => $data['detail_qty'][$i],
                 "harga" => $data['detail_harga'][$i],
                 "totalItem" => $data['totalItem'][$i],
-                "totalsebelum" => $data['totalsebelum'][$i],
+                "totalsebelum" => $data['totalsebelum'][$i]??0,
                 "persentasediscount" => $data['detail_persentasediscount'][$i],
                 "vulkanisirke" => $data['detail_vulkanisirke'][$i],
                 "detail_keterangan" => $data['detail_keterangan'][$i],
@@ -632,7 +632,7 @@ class PenerimaanStokHeader extends MyModel
                 $totalharga += $totalsat;
                 $detaildata[] = $totalsat;
                 $tgljatuhtempo[] =  $data['tglbukti'];
-                $keterangan_detail[] =  $data['tglbukti'];
+                $keterangan_detail[] =  $data['detail_keterangan'][$i];
             }
             $penerimaanStokDetails[] = $penerimaanStokDetail->toArray();
         }
@@ -851,7 +851,7 @@ class PenerimaanStokHeader extends MyModel
                 "qty" => $data['detail_qty'][$i],
                 "harga" => $data['detail_harga'][$i],
                 "totalItem" => $data['totalItem'][$i],
-                "totalsebelum" => $data['totalsebelum'][$i],
+                "totalsebelum" => $data['totalsebelum'][$i]??0,
                 "persentasediscount" => $data['detail_persentasediscount'][$i],
                 "vulkanisirke" => $data['detail_vulkanisirke'][$i],
                 "detail_keterangan" => $data['detail_keterangan'][$i],
@@ -874,7 +874,7 @@ class PenerimaanStokHeader extends MyModel
                 $totalharga += $totalsat;
                 $detaildata[] = $totalsat;
                 $tgljatuhtempo[] =  $data['tglbukti'];
-                $keterangan_detail[] =  $data['tglbukti'];
+                $keterangan_detail[] =  $data['detail_keterangan'][$i];
             }
             $penerimaanStokDetails[] = $penerimaanStokDetail->toArray();
         }
