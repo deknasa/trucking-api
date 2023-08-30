@@ -24,6 +24,7 @@ class CreatePelunasanhutangdetailTable extends Migration
             $table->string('userid', 50)->nullable();
             $table->double('potongan', 15, 2)->nullable();
             $table->longText('keterangan')->nullable();
+            $table->longText('info')->nullable();
             $table->string('modifiedby', 50)->nullable();
             $table->timestamps();
 

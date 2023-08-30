@@ -23,6 +23,7 @@ class CreatePengeluaranstokdetailrincianTable extends Migration
             $table->double('saldoqty', 15,2)->nullable();
             $table->string('penerimaanstok_nobukti',50)->nullable();
             $table->double('penerimaanstok_harga', 15,2)->nullable();
+            $table->longText('info')->nullable();
             $table->string('modifiedby',50)->nullable();                
             $table->timestamps();
 

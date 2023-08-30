@@ -190,7 +190,7 @@ class PendapatanSupirHeader extends MyModel
             })
             ->whereRaw("isnull(b.nobukti,'')=''")
             ->whereRaw("a.suratpengantar_tglbukti>='" . date('Y-m-d', strtotime($tgldari)) . "' and  a.suratpengantar_tglbukti<='" . date('Y-m-d', strtotime($tglsampai)) . "'")
-            ->where('a.supir_id', $supir_id)
+            ->whereRaw("(a.supir_id=" . $supir_id . " or " . $supir_id . "=0)")
             ->Orderby('a.suratpengantar_tglbukti', 'asc')
             ->Orderby('a.suratpengantar_nobukti', 'asc');
 
@@ -234,7 +234,8 @@ class PendapatanSupirHeader extends MyModel
             })
             ->whereRaw("isnull(b.nobukti,'')=''")
             ->whereRaw("d.tglbukti>='" . date('Y-m-d', strtotime($tgldari)) . "' and  d.tglbukti<='" . date('Y-m-d', strtotime($tglsampai)) . "'")
-            ->where('d.supir_id', $supir_id)
+            ->whereRaw("(d.supir_id=" . $supir_id . " or " . $supir_id . "=0)")
+
             ->Orderby('d.tglbukti', 'asc')
             ->Orderby('d.nobukti', 'asc');
 
@@ -329,6 +330,7 @@ class PendapatanSupirHeader extends MyModel
                 DB::raw("row_number() Over(Order By a.suratpengantar_nobukti) as id"),
                 'a.pendapatansupir_id',
                 'a.supir_id',
+                'd.namasupir',
                 'a.gajisupir_nobukti as nobukti_ric',
                 'a.suratpengantar_nobukti  as nobukti_trip',
                 'a.suratpengantar_tglbukti as tgl_trip',
@@ -342,6 +344,7 @@ class PendapatanSupirHeader extends MyModel
             )
             ->leftJoin(DB::raw("kota b with (readuncommitted)"), 'a.dari_id', 'b.id')
             ->leftJoin(DB::raw("kota c with (readuncommitted)"), 'a.sampai_id', 'c.id')
+            ->leftJoin(DB::raw("supir d with (readuncommitted)"), 'a.supir_id', 'd.id')
             ->where('a.nominal', '!=', '0');
 
         // ->Orderby('a.suratpengantar_tglbukti', 'asc')
@@ -824,7 +827,7 @@ class PendapatanSupirHeader extends MyModel
         PendapatanSupirDetail::where('pendapatansupir_id', $pendapatanSupirHeader->id)->lockForUpdate()->delete();
 
         $totalPengeluaran = 0;
-        for ($i = 0; $i < count($data['id_detail']); $i++) {            
+        for ($i = 0; $i < count($data['id_detail']); $i++) {
             $gajiKenek =  $data['gajikenek'][$i] ?? 0;
             $pendapatanSupirDetail = (new PendapatanSupirDetail)->processStore($pendapatanSupirHeader, [
                 'supir_id' => $data['supir_id'],

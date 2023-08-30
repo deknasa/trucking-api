@@ -18,8 +18,9 @@ class CreateAcosTable extends Migration
             $table->string('class', 50)->nullable();
             $table->string('method', 50)->nullable();
             $table->string('nama', 150)->nullable();
-            $table->string('modifiedby', 50)->nullable();
             $table->integer('idheader')->length(11)->nullable();
+            $table->longText('info')->nullable();
+            $table->string('modifiedby', 50)->nullable();
 
 
             $table->timestamps();

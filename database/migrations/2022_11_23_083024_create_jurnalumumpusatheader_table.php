@@ -26,6 +26,7 @@ class CreateJurnalumumpusatheaderTable extends Migration
             $table->string('userapproval',50)->nullable();
             $table->dateTime('tglapproval')->nullable();
             $table->unsignedBigInteger('statusformat')->nullable();              
+            $table->longText('info')->nullable();
             $table->string('modifiedby',50)->nullable();            
             $table->timestamps();
 

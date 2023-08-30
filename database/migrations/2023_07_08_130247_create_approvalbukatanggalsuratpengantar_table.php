@@ -18,6 +18,7 @@ class CreateApprovalbukatanggalsuratpengantarTable extends Migration
             $table->date('tglbukti')->nullable();      
             $table->integer('jumlah')->length(11)->nullable();
             $table->integer('statusapproval')->length(11)->nullable();
+            $table->longText('info')->nullable();
             $table->string('modifiedby',50)->nullable();             
             $table->timestamps();
         });

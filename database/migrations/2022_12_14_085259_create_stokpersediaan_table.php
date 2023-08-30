@@ -23,6 +23,7 @@ class CreateStokpersediaanTable extends Migration
             $table->unsignedBigInteger('trado_id')->nullable();
             $table->unsignedBigInteger('gandengan_id')->nullable();
             $table->double('qty',15,2)->nullable();
+            $table->longText('info')->nullable();
             $table->string('modifiedby',50)->nullable();            
             $table->timestamps();
 

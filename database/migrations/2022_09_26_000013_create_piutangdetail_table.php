@@ -23,6 +23,7 @@ class CreatePiutangdetailTable extends Migration
             $table->double('nominal',15,2)->nullable();
             $table->longText('keterangan')->nullable();
             $table->string('invoice_nobukti',50)->nullable();
+            $table->longText('info')->nullable();
             $table->string('modifiedby',50)->nullable();
             $table->timestamps();
 

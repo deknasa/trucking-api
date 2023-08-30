@@ -27,6 +27,7 @@ class CreateNotakreditdetailTable extends Migration
             $table->double('penyesuaian',15,2)->nullable();
             $table->longText('keterangan')->nullable();
             $table->string('coaadjust',50)->nullable();
+            $table->longText('info')->nullable();
             $table->string('modifiedby',50)->nullable();
             $table->timestamps();
 

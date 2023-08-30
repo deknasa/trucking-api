@@ -19,7 +19,8 @@ class CreateSaldoawalbankTable extends Migration
             $table->string('bulan',10)->nullable();        
             $table->unsignedBigInteger('bank_id')->nullable();     
             $table->double('nominaldebet',15,2)->nullable();             
-            $table->double('nominalkredit',15,2)->nullable();             
+            $table->double('nominalkredit',15,2)->nullable();
+            $table->longText('info')->nullable();             
             $table->timestamps();
 
             $table->foreign('bank_id', 'saldoawalbank_bank_bank_id_foreign')->references('id')->on('bank');

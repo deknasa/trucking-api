@@ -17,6 +17,7 @@ class CreateListtemporarytabelTable extends Migration
             $table->id();
             $table->string('class', 50)->nullable();
             $table->string('namatabel', 50)->nullable();
+            $table->longText('info')->nullable();
             $table->string('modifiedby', 50)->nullable();
             $table->timestamps();
         });

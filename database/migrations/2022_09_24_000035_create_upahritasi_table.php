@@ -28,6 +28,7 @@ class CreateUpahritasiTable extends Migration
             $table->unsignedBigInteger('zona_id')->nullable();
             $table->integer('statusaktif')->length(11)->nullable();
             $table->date('tglmulaiberlaku')->nullable();
+            $table->longText('info')->nullable();
             $table->string('modifiedby',50)->nullable();            
             $table->timestamps();
 

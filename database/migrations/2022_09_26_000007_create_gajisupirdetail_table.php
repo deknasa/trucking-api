@@ -35,7 +35,8 @@ class CreateGajisupirdetailTable extends Migration
             $table->double('biayatambahan', 15,2)->nullable();            
             $table->double('uangmakanberjenjang',15,2)->nullable();            
             $table->longText('keteranganbiayatambahan')->nullable();            
-            $table->double('nominalpengembalianpinjaman', 15,2)->nullable();            
+            $table->double('nominalpengembalianpinjaman', 15,2)->nullable();
+            $table->longText('info')->nullable();
             $table->string('modifiedby', 50)->nullable();            
             $table->timestamps();
 

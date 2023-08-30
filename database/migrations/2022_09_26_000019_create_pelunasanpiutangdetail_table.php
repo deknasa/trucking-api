@@ -30,6 +30,7 @@ class CreatePelunasanpiutangdetailTable extends Migration
             $table->string('coalebihbayar',50)->nullable();
             $table->string('invoice_nobukti',50)->nullable();
             $table->longText('keteranganpotongan')->nullable();
+            $table->longText('info')->nullable();
             $table->string('modifiedby',50)->nullable();
             $table->timestamps();
 

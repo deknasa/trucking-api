@@ -18,6 +18,7 @@ class CreateHariliburTable extends Migration
             $table->date('tgl')->nullable();
             $table->longText('keterangan')->nullable();
             $table->integer('statusaktif')->length(11)->nullable();
+            $table->longText('info')->nullable();
             $table->string('modifiedby',50)->nullable();            
             $table->timestamps();
         });

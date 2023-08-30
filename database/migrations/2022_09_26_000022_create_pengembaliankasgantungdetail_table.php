@@ -23,8 +23,9 @@ class CreatePengembaliankasgantungdetailTable extends Migration
             $table->double('nominal',15,2)->nullable();
             $table->string('coa',50)->nullable();
             $table->longText('keterangan')->nullable();
-            $table->string('modifiedby',50)->nullable();
             $table->string('kasgantung_nobukti',50)->nullable();
+            $table->longText('info')->nullable();
+            $table->string('modifiedby',50)->nullable();
             $table->timestamps();
 
             $table->foreign('pengembaliankasgantung_id', 'pengembaliankasgantungdetail_pengembaliankasgantungheader_pengembaliankasgantung_id_foreign')->references('id')->on('pengembaliankasgantungheader')->onDelete('cascade');    
