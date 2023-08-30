@@ -33,7 +33,7 @@ class UpdatePengeluaranTruckingDetailRequest extends FormRequest
                 $fetchFormat =  DB::table('pengeluarantrucking')
                     ->where('id', $idpengeluaran)
                     ->first();
-                if ($fetchFormat->kodepengeluaran == 'TDE' || $fetchFormat->kodepengeluaran == 'BST' || $fetchFormat->kodepengeluaran == 'KBBM') {
+                if ($fetchFormat->kodepengeluaran == 'TDE' || $fetchFormat->kodepengeluaran == 'BST' || $fetchFormat->kodepengeluaran == 'KBBM' || $fetchFormat->kodepengeluaran == 'BLL') {
                     return false;
                 } else {
                     return true;
@@ -120,6 +120,19 @@ class UpdatePengeluaranTruckingDetailRequest extends FormRequest
                     "harga.*"  => ["required", ],
                 ];    
             }
+        } 
+        $min = '';
+        $idpengeluaran = request()->pengeluarantrucking_id;
+        $fetchFormat =  DB::table('pengeluarantrucking')
+            ->where('id', $idpengeluaran)
+            ->first();
+        if ($idpengeluaran != '') {
+
+            if ($fetchFormat->kodepengeluaran == 'BLL') {
+                $min = Rule::when((($fetchFormat->kodepengeluaran == 'BLL')), 'numeric|min:0');
+            } else {
+                $min = Rule::when((($fetchFormat->kodepengeluaran != 'BLL')), 'numeric|gt:0');
+            }
         }
 
         $rules = [
@@ -131,8 +144,7 @@ class UpdatePengeluaranTruckingDetailRequest extends FormRequest
             'id_detail.*' => $requiredBST,
             'sisa.*' => [$requiredTDE, $requiredKBBM, $sisaNominus],
             'supir.*' => $requiredPJT,
-            'nominal' => 'required|array',
-            'nominal.*' => ['required', 'numeric', 'gt:0'],
+            'nominal.*' => ['required', $min],
             'keterangan' => [$requiredKeterangan, 'array'],
             'keterangan.*' => $requiredKeterangan
         ];
