@@ -598,6 +598,23 @@ class HutangBayarHeader extends MyModel
         $bankid = $data['bank_id'];
 
         /*STORE HEADER*/         
+
+        $coaDebet = Parameter::from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'JURNAL PEMBAYARAN HUTANG')->where('subgrp', 'DEBET')->first();
+        $coaDebetpembelian = Parameter::from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'JURNAL PEMBAYARAN HUTANG PEMBELIAN STOK')->where('subgrp', 'DEBET')->first();
+        $memo = json_decode($coaDebet->memo, true);
+        $memopembelian = json_decode($coaDebetpembelian->memo, true);
+
+        $query = HutangHeader::from(DB::raw("hutangheader a with (readuncommitted)"))
+        ->select('a.nobukti')
+        ->join(db::Raw("penerimaanstokheader b with (readuncommitted)"), 'a.nobukti', 'b.hutang_nobukti')
+        ->first();
+                   
+        if (isset($query)) {
+            $coa = $memopembelian['JURNAL'];
+        } else {
+            $coa = $memo['JURNAL'];
+        }
+        
         $group = 'PEMBAYARAN HUTANG BUKTI';
         $subGroup = 'PEMBAYARAN HUTANG BUKTI';
 
@@ -628,6 +645,8 @@ class HutangBayarHeader extends MyModel
         $hutangBayarHeader->tglcair = date('Y-m-d', strtotime($data['tglcair']));
         $hutangBayarHeader->supplier_id = $data['supplier_id'] ?? '';
         $hutangBayarHeader->modifiedby = auth('api')->user()->name;
+        $hutangBayarHeader->coa = $memo['JURNAL'];
+
 
         if (!$hutangBayarHeader->save()) {
             throw new \Exception("Error Update pembayaran Hutang header.");
