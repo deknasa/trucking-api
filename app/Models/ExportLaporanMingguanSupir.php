@@ -57,7 +57,7 @@ class ExportLaporanMingguanSupir extends Model
         });
 
 
-     
+
 
 
 
@@ -140,7 +140,7 @@ class ExportLaporanMingguanSupir extends Model
             'gajiritasi',
             'ketritasi',
             'urutric',
-            'omset'          
+            'omset'
         ], $queryTempdata);
 
         $tempuangjalan = '##tempdatauangjalan' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
@@ -154,13 +154,13 @@ class ExportLaporanMingguanSupir extends Model
         $querytempuangjalan = DB::table("gajisupirheader")->from(
             DB::raw("gajisupirheader as a with (readuncommitted)")
         )
-        ->select(
-            'a.nobukti',
-            'a.uangjalan as nominaluangjalan',
-            'a.bbm as nominaluangbbm',
-            'a.uangmakanharian as nominaluangmakan',
-        )
-        ->join(DB::raw($tempData ." as c "), 'a.nobukti', 'c.nobuktiric');
+            ->select(
+                'a.nobukti',
+                'a.uangjalan as nominaluangjalan',
+                'a.bbm as nominaluangbbm',
+                'a.uangmakanharian as nominaluangmakan',
+            )
+            ->join(DB::raw($tempData . " as c "), 'a.nobukti', 'c.nobuktiric');
 
         DB::table($tempuangjalan)->insertUsing([
             'nobukti',
@@ -169,28 +169,31 @@ class ExportLaporanMingguanSupir extends Model
             'nominaluangmakan',
         ], $querytempuangjalan);
 
-        // $temptrip = '##tempdatatrip' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
-        // Schema::create($temptrip, function ($table) {
-        //     $table->string('nobukti', 50)->nullable();
-        //     $table->double('liter', 15, 2)->nullable();
-        // });
+        $temptrip = '##tempdatatrip' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+        Schema::create($temptrip, function ($table) {
+            $table->string('nobukti', 50)->nullable();
+            $table->double('liter', 15, 2)->nullable();
+        });
 
-        // $querytemptrip = DB::table("suratpengantar")->from(
-        //     DB::raw("suratpengantar as a with (readuncommitted)")
-        // )
-        // ->select(
-        //     'a.nobukti',
-        //     'c.liter as nominaltrip',
-        // )
-        // ->join(DB::raw("upahsupir as b with(readuncommitted) "), 'a.upah_', 'c.nobuktiric');
-        // ->join(DB::raw($tempData ." as c "), 'a.nobukti', 'c.nobuktiric');
+        $querytemptrip = DB::table("suratpengantar")->from(
+            DB::raw("suratpengantar as a with (readuncommitted)")
+        )
+            ->select(
+                'a.nobukti',
+                'd.liter as liter',
+            )
+            ->join(DB::raw("upahsupir as b with(readuncommitted) "), 'a.upah_id', 'b.id')
+            ->join(DB::raw("upahsupirrincian as d with(readuncommitted) "), function ($join) {
+                $join->on('b.id', '=', 'd.upahsupir_id');
+                $join->on('a.container_id', '=', 'd.container_id');
+                $join->on('a.statuscontainer_id', '=', 'd.statuscontainer_id');
+            })
+            ->join(DB::raw($tempData . " as c "), 'a.nobukti', 'c.nobukti');
 
-        // DB::table($temptrip)->insertUsing([
-        //     'nobukti',
-        //     'nominaltrip',
-        //     'nominaluangbbm',
-        //     'nominaluangmakan',
-        // ], $querytemptrip);
+        DB::table($temptrip)->insertUsing([
+            'nobukti',
+            'liter',
+        ], $querytemptrip);
 
 
 
@@ -441,13 +444,14 @@ class ExportLaporanMingguanSupir extends Model
                 DB::raw("'' as panjar"),
                 DB::raw("'' as mandor"),
                 DB::raw("'' as supirex"),
-                DB::raw("2.5 as liter"),
+                DB::raw("isnull(e.liter,0) as liter"),
             )
             ->leftjoin(DB::raw($tempInvoice . " as b "), 'a.nobukti', 'b.notrip')
             ->leftjoin(DB::raw($tempInvoice . " as c "), 'a.jobtrucking', 'c.jobtrucking')
             ->leftjoin(DB::raw($tempuangjalan . " as d "), 'a.nobuktiric', 'd.nobukti')
+            ->leftjoin(DB::raw($temptrip . " as e "), 'a.nobukti', 'e.nobukti')
             ->get();
-            
+
 
         return $data;
     }
