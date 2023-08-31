@@ -40,8 +40,8 @@ class LaporanKartuPiutangPerAgenController extends Controller
         } else {
             $dari = date('Y-m-d', strtotime($request->dari));
             $sampai = date('Y-m-d', strtotime($request->sampai));
-            $agendari = $request->agendari_id;
-            $agensampai = $request->agensampai_id;
+            $agendari = $request->agendari_id ?? 0;
+            $agensampai = $request->agensampai_id ?? 0;
 
 
             $laporankartupiutangperagen = new LaporanKartuPiutangPerAgen();
