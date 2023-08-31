@@ -22,7 +22,7 @@ class AuthController extends Controller
             'password' => $request->password,
         ];
 
-
+        $info = $this->infoLocation($request->all());
 
         if (Auth::attempt($credentials)) {
             $user = Auth::user();
@@ -39,12 +39,27 @@ class AuthController extends Controller
             return response([
                 'user' => $user,
                 'access_token' => $user->createToken('Access Token')->accessToken,
+                'info' =>$info
             ]);
         } else {
             return response([
                 'message' => 'User not found'
             ], 404);
         }
+    }
+
+    public function infoLocation( $data)
+    {
+
+        $infoLoc['latlong'] = $data['latitude'].','.$data['longitude'];
+        $infoLoc['ipclient'] = $data['ipclient'];
+        if ($infoLoc['ipclient'] == '::1') {
+            $infoLoc['ipclient'] = getHostByName(getHostName());
+        }
+        $infoLoc['ipserver'] = $this->get_server_ip();
+
+        $info = json_encode($infoLoc);
+        return $info;
     }
 
     public function cekIp(Request $request)
@@ -54,7 +69,8 @@ class AuthController extends Controller
         if ($request->ipclient) {
             $ipclient = $request->ipclient;
             if ($ipclient == '::1') {
-                $ipclient = gethostbyname('tasmdn.kozow.com');
+                $ipclient = getHostByName(getHostName());
+                // $ipclient = gethostbyname('tasmdn.kozow.com');
             }
         }
 
