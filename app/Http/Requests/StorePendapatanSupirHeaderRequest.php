@@ -67,7 +67,6 @@ class StorePendapatanSupirHeaderRequest extends FormRequest
             ],
             'bank' => 'required',
             'supir' => [
-                'required',
                 new ValidasiHutangList($jumlahdetail)
             ],
             'tgldari' => [
@@ -85,8 +84,7 @@ class StorePendapatanSupirHeaderRequest extends FormRequest
 
         $rules = array_merge(
             $rules,
-            $ruleBank_id,
-            $rulesSupir_id
+            $ruleBank_id
         );
 
         return $rules;
