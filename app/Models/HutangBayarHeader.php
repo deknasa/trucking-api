@@ -361,7 +361,9 @@ class HutangBayarHeader extends MyModel
         DB::table($temp)->insertUsing(['hutangbayar_id', 'hutang_nobukti', 'tglbukti', 'bayar', 'keterangan',  'potongan', 'nominalhutang', 'sisa'], $hutang);
 
         $data = DB::table($temp)->from(DB::raw("$temp with (readuncommitted)"))
-            ->select(DB::raw("row_number() Over(Order By $temp.hutang_nobukti) as id,hutangbayar_id,hutang_nobukti as nobukti,tglbukti,bayar,keterangan,potongan,nominalhutang as nominal,sisa,
+            ->select(DB::raw("row_number() Over(Order By $temp.hutang_nobukti) as id,hutangbayar_id,hutang_nobukti as nobukti,tglbukti,bayar,keterangan,nominalhutang as nominal,
+            (case when potongan IS NULL then 0 else potongan end) as potongan,
+            (case when sisa IS NULL then 0 else sisa end) as sisa,
             (case when bayar IS NULL then 0 else (bayar + coalesce(potongan,0)) end) as total"))
             ->get();
 
