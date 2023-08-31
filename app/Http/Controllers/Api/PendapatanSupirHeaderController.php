@@ -76,6 +76,7 @@ class PendapatanSupirHeaderController extends Controller
                 "pinj_keterangan" => $request->pinj_keterangan,
                 "pinj_nobukti" => $request->pinj_nobukti,
                 "pinj_id" => $request->pinj_id,
+                "periode" => $request->periode,
             ];
 
             $pendapatanSupirHeader = (new PendapatanSupirHeader())->processStore($data);
@@ -150,6 +151,8 @@ class PendapatanSupirHeaderController extends Controller
                 "pinj_keterangan" => $request->pinj_keterangan,
                 "pinj_nobukti" => $request->pinj_nobukti,
                 "pinj_id" => $request->pinj_id,
+                "periode" => $request->periode,
+
             ];
 
 
