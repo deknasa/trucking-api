@@ -818,6 +818,7 @@ class PengeluaranTruckingHeader extends MyModel
                 'pengeluarantruckingheader.pengeluaran_nobukti',
                 'pengeluarantruckingheader.statusformat',
                 'pengeluarantrucking.keterangan as pengeluarantrucking_id',
+                'pengeluarantrucking.kodepengeluaran',
                 'bank.namabank as bank_id',
                 'trado.keterangan as trado',
                 'supir.namasupir as supir',

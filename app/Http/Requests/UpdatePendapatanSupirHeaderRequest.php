@@ -77,7 +77,6 @@ class UpdatePendapatanSupirHeaderRequest extends FormRequest
             ], 
             'bank' => 'required',
             'supir' => [
-                'required',
                 new ValidasiHutangList($jumlahdetail)
             ],
             'tgldari' => [
@@ -94,7 +93,7 @@ class UpdatePendapatanSupirHeaderRequest extends FormRequest
         $rules = array_merge(
             $rules,
             $ruleBank_id,
-            $rulesSupir_id
+            // $rulesSupir_id
         );
 
         return $rules;
