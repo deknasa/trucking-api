@@ -52,14 +52,14 @@ class ValidasiLaporanKartuHutangPerSupplierRequest extends FormRequest
             'dari' => [
                 'required', 'date_format:d-m-Y',
             ],
-            'supplierdari' => ['required'],
-            'suppliersampai' => ['required'],
+            // 'supplierdari' => ['required'],
+            // 'suppliersampai' => ['required'],
         ];
 
         $rule = array_merge(
             $rule,
-            $rulessupplierdari,
-            $rulessuppliersampai
+            // $rulessupplierdari,
+            // $rulessuppliersampai
         );
 
         return $rule;

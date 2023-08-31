@@ -27,7 +27,23 @@ class LaporanKartuPiutangPerAgen extends MyModel
     public function getReport($dari, $sampai, $agenDari, $agenSampai)
     {
 
+        if ($agenDari==0) {
+            $agenDari=db::table('agen')->from(db::raw("agen with (readuncommitted)"))
+                ->select('id')->orderby('id','asc')->first()->id ?? 0;
+        }
+     
+        if ($agenSampai==0) {
+            $agenSampai=db::table('agen')->from(db::raw("agen with (readuncommitted)"))
+                ->select('id')->orderby('id','desc')->first()->id ?? 0;
+        }
 
+        if ($agenDari>$agenSampai) {
+            $agenDari1=$agenSampai;
+            $agenSampai1=$agenDari;
+            $agenDari=$agenDari1;
+            $agenSampai=$agenSampai1;
+            
+        }
          
         $getJudul = DB::table('parameter')
             ->select('text')

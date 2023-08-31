@@ -27,7 +27,24 @@ class LaporanKartuHutangPerSupplier extends MyModel
     public function getReport($dari, $sampai, $supplierdari, $suppliersampai)
     {
 
+        if ($supplierdari==0) {
+            $supplierdari=db::table('supplier')->from(db::raw("supplier with (readuncommitted)"))
+                ->select('id')->orderby('id','asc')->first()->id ?? 0;
+        }
      
+        if ($suppliersampai==0) {
+            $suppliersampai=db::table('supplier')->from(db::raw("supplier with (readuncommitted)"))
+                ->select('id')->orderby('id','desc')->first()->id ?? 0;
+        }
+
+        if ($supplierdari>$suppliersampai) {
+            $supplierdari1=$suppliersampai;
+            $suppliersampai1=$supplierdari;
+            $supplierdari=$supplierdari1;
+            $suppliersampai=$suppliersampai1;
+            
+        }
+
 
         $getJudul = DB::table('parameter')
             ->select('text')

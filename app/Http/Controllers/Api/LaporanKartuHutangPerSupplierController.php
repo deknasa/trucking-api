@@ -35,8 +35,8 @@ class LaporanKartuHutangPerSupplierController extends Controller
     {
         $dari = date('Y-m-d', strtotime($request->dari));
         $sampai = date('Y-m-d', strtotime($request->sampai));
-        $supplierdari = $request->supplierdari_id;
-        $suppliersampai = $request->suppliersampai_id;
+        $supplierdari = $request->supplierdari_id ?? 0;
+        $suppliersampai = $request->suppliersampai_id ?? 0;
 
         $laporankartuhutangpersupplier = new LaporanKartuHutangPerSupplier();
 
