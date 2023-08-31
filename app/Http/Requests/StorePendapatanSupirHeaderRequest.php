@@ -9,6 +9,9 @@ use App\Rules\DateTutupBuku;
 use App\Rules\ExistBank;
 use App\Rules\ExistSupir;
 use App\Rules\ValidasiHutangList;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
+
 
 class StorePendapatanSupirHeaderRequest extends FormRequest
 {
@@ -29,6 +32,16 @@ class StorePendapatanSupirHeaderRequest extends FormRequest
      */
     public function rules()
     {
+
+        // $datakomisi = [
+        //     'supir_id' => $this->supirtrip,
+        //     'komisi' => $this->nominal_detail,
+        //     'gajikenek' => $this->gajikenek,
+        // ];
+
+      
+
+
         $parameter = new Parameter();
         $getBatas = $parameter->getBatasAwalTahun();
         $tglbatasawal = $getBatas->text;
