@@ -307,14 +307,14 @@ class PindahBuku extends MyModel
             ->first();
 
         $pindahBuku = new PindahBuku();
-        $getCoadebet = Bank::from(DB::raw("bank with (readuncommitted)"))->where('id', $data['bankdari_id'])->first();
-        $getCoakredit = Bank::from(DB::raw("bank with (readuncommitted)"))->where('id', $data['bankke_id'])->first();
+        $getCoaKredit = Bank::from(DB::raw("bank with (readuncommitted)"))->where('id', $data['bankdari_id'])->first();
+        $getCoaDebet = Bank::from(DB::raw("bank with (readuncommitted)"))->where('id', $data['bankke_id'])->first();
 
         $pindahBuku->tglbukti = date('Y-m-d', strtotime($data['tglbukti']));
         $pindahBuku->bankdari_id = $data['bankdari_id'];
         $pindahBuku->bankke_id = $data['bankke_id'];
-        $pindahBuku->coadebet = $getCoadebet->coa;
-        $pindahBuku->coakredit = $getCoakredit->coa;
+        $pindahBuku->coadebet = $getCoaDebet->coa;
+        $pindahBuku->coakredit = $getCoaKredit->coa;
         $pindahBuku->alatbayar_id = $data['alatbayar_id'];
         $pindahBuku->nowarkat = $data['nowarkat'] ?? '';
         $pindahBuku->tgljatuhtempo = date('Y-m-d', strtotime($data['tgljatuhtempo']));
@@ -340,8 +340,8 @@ class PindahBuku extends MyModel
             'modifiedby' => auth('api')->user()->user
         ]);
 
-        $coadebet_detail[] = $getCoadebet->coa;
-        $coakredit_detail[] = $getCoakredit->coa;
+        $coadebet_detail[] = $getCoaDebet->coa;
+        $coakredit_detail[] = $getCoaKredit->coa;
         $keterangan_detail[] = $data['keterangan'];
         $nominal_detail[] = $data['nominal'];
 
@@ -383,15 +383,15 @@ class PindahBuku extends MyModel
             $nobukti = (new RunningNumberService)->get($group, $subgroup, $pindahBuku->getTable(), date('Y-m-d', strtotime($data['tglbukti'])));
         }
 
-        $getCoadebet = Bank::from(DB::raw("bank with (readuncommitted)"))->where('id', $data['bankdari_id'])->first();
-        $getCoakredit = Bank::from(DB::raw("bank with (readuncommitted)"))->where('id', $data['bankke_id'])->first();
-        
+        $getCoaKredit = Bank::from(DB::raw("bank with (readuncommitted)"))->where('id', $data['bankdari_id'])->first();
+        $getCoaDebet = Bank::from(DB::raw("bank with (readuncommitted)"))->where('id', $data['bankke_id'])->first();
+
         $pindahBuku->nobukti = $nobukti;
         $pindahBuku->tglbukti = date('Y-m-d', strtotime($data['tglbukti']));
         $pindahBuku->bankdari_id = $data['bankdari_id'];
         $pindahBuku->bankke_id = $data['bankke_id'];
-        $pindahBuku->coadebet = $getCoadebet->coa;
-        $pindahBuku->coakredit = $getCoakredit->coa;
+        $pindahBuku->coadebet = $getCoaDebet->coa;
+        $pindahBuku->coakredit = $getCoaKredit->coa;
         $pindahBuku->alatbayar_id = $data['alatbayar_id'];
         $pindahBuku->nowarkat = $data['nowarkat'] ?? '';
         $pindahBuku->tgljatuhtempo = date('Y-m-d', strtotime($data['tgljatuhtempo']));
@@ -412,8 +412,8 @@ class PindahBuku extends MyModel
             'datajson' => $pindahBuku->toArray(),
             'modifiedby' => auth('api')->user()->user
         ]);
-        $coadebet_detail[] = $getCoadebet->coa;
-        $coakredit_detail[] = $getCoakredit->coa;
+        $coadebet_detail[] = $getCoaDebet->coa;
+        $coakredit_detail[] = $getCoaKredit->coa;
         $keterangan_detail[] = $data['keterangan'];
         $nominal_detail[] = $data['nominal'];
 
