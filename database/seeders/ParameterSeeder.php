@@ -466,6 +466,9 @@ class ParameterSeeder extends Seeder
         parameter::create(['grp' => 'PENGELUARAN TRUCKING', 'subgrp' => 'BIAYA INSENTIF', 'kelompok' => '', 'text' => '#BIT #9999#/#R#/#Y', 'memo' => '{"MEMO":"BIAYA INSENTIF BUKTI","SINGKATAN":"#BIT #9999#/#R#/#Y","WARNA":"#28A745"}', 'type' => '118', 'modifiedby' => 'ADMIN', 'default' => '',]);
         parameter::create(['grp' => 'APPROVAL TNL', 'subgrp' => 'APPROVAL TNL', 'kelompok' => '', 'text' => 'TIDAK', 'memo' => '{"MEMO":"APPROVAL TNL","SINGKATAN":"APPTNL","WARNA":"#28A745"}', 'type' => '0', 'modifiedby' => 'ADMIN', 'default' => '',]);
         parameter::create(['grp' => 'PENDAPATAN SUPIR', 'subgrp' => 'DEPOSITO', 'kelompok' => '', 'text' => 'TIDAK', 'memo' => '{"MEMO":"DEPOSITO PENDAPATAN","SINGKATAN":"DP","WARNA":"#28A745"}', 'type' => '0', 'modifiedby' => 'ADMIN', 'default' => '',]);
+        parameter::create(['grp' => 'EXPORT RINCIAN MINGGUAN', 'subgrp' => 'EXPORT RINCIAN MINGGUAN', 'kelompok' => '', 'text' => '1', 'memo' => '{"MEMO":"EXPORT RINCIAN MINGGUAN","SINGKATAN":"1","WARNA":"#28A745"}', 'type' => '0', 'modifiedby' => 'ADMIN', 'default' => '',]);
+        parameter::create(['grp' => 'DISETUJUI', 'subgrp' => 'DISETUJUI', 'kelompok' => '', 'text' => 'ROBERT', 'memo' => '{"MEMO":"DISETUJUI","SINGKATAN":"1","WARNA":"#28A745"}', 'type' => '0', 'modifiedby' => 'ADMIN', 'default' => '',]);
+        parameter::create(['grp' => 'DIPERIKSA', 'subgrp' => 'DIPERIKSA', 'kelompok' => '', 'text' => 'WAWA', 'memo' => '{"MEMO":"DIPERIKSA","SINGKATAN":"2","WARNA":"#28A745"}', 'type' => '0', 'modifiedby' => 'ADMIN', 'default' => '',]);
         
     }
 }
