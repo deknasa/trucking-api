@@ -385,6 +385,8 @@ class PendapatanSupirHeader extends MyModel
             return $query->orderBy(DB::raw("isnull(c.kodekota,'')"), $this->params['sortOrder']);
         } else if ($this->params['sortIndex'] == 'id') {
             return $query->orderBy('a.suratpengantar_nobukti', $this->params['sortOrder']);
+        } else if ($this->params['sortIndex'] == 'namasupir') {
+            return $query->orderBy('d.namasupir', $this->params['sortOrder']);
         } else {
             return $query->orderBy('a.' . $this->params['sortIndex'], $this->params['sortOrder']);
         }
