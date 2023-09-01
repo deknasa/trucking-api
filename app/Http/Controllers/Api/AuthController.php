@@ -57,7 +57,8 @@ class AuthController extends Controller
             $infoLoc['ipclient'] = getHostByName(getHostName());
         }
         $infoLoc['ipserverlocal'] = $this->get_server_ip();
-        $infoLoc['ipserverpublic'] = $_SERVER['SERVER_ADDR'];
+        // $infoLoc['ipserverpublic'] = $_SERVER['SERVER_ADDR'];
+        $infoLoc['ipserverpublic'] = gethostbyname(env('APP_HOSTNAME'));
         $infoLoc['browser'] = $data['browser'];
         $infoLoc['os'] = $data['os'];
 
