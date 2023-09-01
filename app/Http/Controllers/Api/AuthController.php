@@ -51,12 +51,13 @@ class AuthController extends Controller
     public function infoLocation( $data)
     {
 
-        $infoLoc['latlong'] = $data['latitude'].','.$data['longitude'];
+        $infoLoc['location'] = $data['latitude'].','.$data['longitude'];
         $infoLoc['ipclient'] = $data['ipclient'];
         if ($infoLoc['ipclient'] == '::1') {
             $infoLoc['ipclient'] = getHostByName(getHostName());
         }
-        $infoLoc['ipserver'] = $this->get_server_ip();
+        $infoLoc['ipserverlocal'] = $this->get_server_ip();
+        $infoLoc['ipserverpublic'] = $_SERVER['SERVER_ADDR'];
         $infoLoc['browser'] = $data['browser'];
         $infoLoc['os'] = $data['os'];
 
