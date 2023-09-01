@@ -9,6 +9,7 @@ use App\Rules\DateTutupBuku;
 use App\Rules\ExistBank;
 use App\Rules\ExistSupir;
 use App\Rules\ValidasiHutangList;
+use App\Rules\ValidasiPendapatanSupir;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 
@@ -33,109 +34,7 @@ class StorePendapatanSupirHeaderRequest extends FormRequest
     public function rules()
     {
 
-        $tempkomisi = '##tempkomisi' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
-        Schema::create($tempkomisi, function ($table) {
-            $table->integer('supir_id')->nullable();
-            $table->double('komisi')->nullable();
-            $table->double('gajikenek')->nullable();
-        });
-
-        // dd(request()->supir_id);
-        for ($i = 0; $i < count($this->id_detail); $i++) {
-            $supir_id =  $this->supirtrip[$i] ?? 0;
-            $komisi =  $this->nominal_detail[$i] ?? 0;
-            $gajikenek =  $this->gajikenek[$i] ?? 0;
-
-            DB::table($tempkomisi)->insert(
-                [
-                    'supir_id' => $supir_id ,
-                    'komisi' => $komisi,
-                    'gajikenek' => $gajikenek,
-                ]
-            );
-        }
-
-
-        $temprekapkomisi = '##temprekapkomisi' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
-        Schema::create($temprekapkomisi, function ($table) {
-            $table->integer('supir_id')->nullable();
-            $table->double('komisi')->nullable();
-            $table->double('gajikenek')->nullable();
-        });
-
-        $queryrekapkomisi = DB::table($tempkomisi)->from(
-            DB::raw($tempkomisi . " as a")
-        )
-            ->select(
-                'a.supir_id',
-                db::raw("sum(a.komisi) as komisi"),
-                db::raw("sum(a.gajikenek) as gajikenek")
-            )
-            ->groupby('a.supir_id');
-
-        DB::table($temprekapkomisi)->insertUsing([
-            'supir_id',
-            'komisi',
-            'gajikenek',
-        ], $queryrekapkomisi);
-
-        $tempdeposito = '##tempdeposito' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
-        Schema::create($tempdeposito, function ($table) {
-            $table->integer('supir_id')->nullable();
-            $table->double('deposito')->nullable();
-        });
-
-        // dd(request()->supir_id);
-        for ($i = 0; $i < count($this->supir_depo); $i++) {
-            $supir_id =  $this->supir_depo[$i] ?? 0;
-            $deposito =  $this->nominal_depo[$i] ?? 0;
-
-            DB::table($tempkomisi)->insert(
-                [
-                    'supir_id' => $supir_id ,
-                    'deposito' => $deposito,
-                ]
-            );
-        }        
-
-        $temppelunasanpinjaman = '##temppelunasanpinjaman' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
-        Schema::create($temppelunasanpinjaman, function ($table) {
-            $table->integer('supir_id')->nullable();
-            $table->double('pelunasanpinjaman')->nullable();
-        });
-
-        // dd(request()->supir_id);
-        for ($i = 0; $i < count($this->pinj_id); $i++) {
-            $supir_id =  $this->pinj_supir[$i] ?? 0;
-            $pelunasanpinjaman =  $this->pinj_nominal[$i] ?? 0;
-
-            DB::table($tempkomisi)->insert(
-                [
-                    'supir_id' => $supir_id ,
-                    'pelunasanpinjaman' => $pelunasanpinjaman,
-                ]
-            );
-        }  
-
-        $temprekappelunasanpinjaman = '##temprekappelunasanpinjaman' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
-        Schema::create($temprekappelunasanpinjaman, function ($table) {
-            $table->integer('supir_id')->nullable();
-            $table->double('pelunasanpinjaman')->nullable();
-        });
-
-        $queryrekappelunasanpinjaman = DB::table($temppelunasanpinjaman)->from(
-            DB::raw($temppelunasanpinjaman . " as a")
-        )
-            ->select(
-                'a.supir_id',
-                db::raw("sum(a.pelunasanpinjaman) as pelunasanpinjaman"),
-            )
-            ->groupby('a.supir_id');
-
-        DB::table($temprekappelunasanpinjaman)->insertUsing([
-            'supir_id',
-            'pelunasanpinjaman',
-        ], $queryrekappelunasanpinjaman);
+       
 
         $parameter = new Parameter();
         $getBatas = $parameter->getBatasAwalTahun();
@@ -180,12 +79,14 @@ class StorePendapatanSupirHeaderRequest extends FormRequest
             'tgldari' => [
                 'required', 'date_format:d-m-Y',
                 'before:' . $tglbatasakhir,
-                new DateTutupBuku()
+                new DateTutupBuku(),
+                new ValidasiPendapatanSupir()
             ],
             'tglsampai' => [
                 'required', 'date_format:d-m-Y',
                 'before:' . $tglbatasakhir,
-                'after_or_equal:' . $this->tgldari
+                'after_or_equal:' . $this->tgldari,
+                new ValidasiPendapatanSupir()
             ],
         ];
 
