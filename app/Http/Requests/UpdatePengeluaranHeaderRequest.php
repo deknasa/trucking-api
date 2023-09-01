@@ -44,6 +44,7 @@ class UpdatePengeluaranHeaderRequest extends FormRequest
         ->leftJoin(DB::raw("alatbayar d with (readuncommitted)"), 'a.alatbayar_id', 'd.id')
         ->where('a.id','=',$this->id)
         ->first();
+        // dd($query);
 
         $rules = [
             'tglbukti' => [
@@ -68,6 +69,7 @@ class UpdatePengeluaranHeaderRequest extends FormRequest
         $alatBayar = new AlatBayar();
         if ($bank_id != null && $bank_id != 0) {
             $getAlatBayar = $alatBayar->validateBankWithAlatbayar(request()->bank_id);
+            // dd($getAlatBayar);
             $getAlatBayar = json_decode($getAlatBayar, true);
             $kondisialatbayar = true;
             // dd($getAlatBayar);
@@ -77,7 +79,6 @@ class UpdatePengeluaranHeaderRequest extends FormRequest
                 }
             }
         }
-        // dd($kondisialatbayar);
         $rulesbank_id = [];
         if ($bank_id != '' && $this->bank != '') {
             // dd($kondisialatbayar);
