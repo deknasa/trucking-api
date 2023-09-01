@@ -58,14 +58,14 @@ class ValidasiLaporanMingguanSupirRequest extends FormRequest
                 'required', 'date_format:d-m-Y',
                 'after_or_equal:' . request()->dari
             ],
-            'tradodari' => ['required'],
-            'tradosampai' => ['required'],
+            // 'tradodari' => ['required'],
+            // 'tradosampai' => ['required'],
         ];
 
         $rule = array_merge(
             $rule,
-            $rulestradodari,
-            $rulestradosampai
+            // $rulestradodari,
+            // $rulestradosampai
         );
 
         return $rule;
