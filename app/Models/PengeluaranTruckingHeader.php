@@ -913,7 +913,7 @@ class PengeluaranTruckingHeader extends MyModel
             $tglsampai = date('Y-m-d', strtotime($data['tglsampai']));
         };
         if (array_key_exists('periode', $data)) {
-            $periode = date('Y-m-d', strtotime($data['periode']));
+            $periode = date('Y-m-d', strtotime('01-'.$data['periode']));
         };
 
         $pengeluaranTruckingHeader = new PengeluaranTruckingHeader();
@@ -1116,7 +1116,7 @@ class PengeluaranTruckingHeader extends MyModel
             $tglsampai = date('Y-m-d', strtotime($data['tglsampai']));
         };
         if (array_key_exists('periode', $data)) {
-            $periode = date('Y-m-d', strtotime($data['periode']));
+            $periode = date('Y-m-d', strtotime('01-'.$data['periode']));
         };
 
         $pengeluaranTruckingHeader->nobukti = $nobukti;
