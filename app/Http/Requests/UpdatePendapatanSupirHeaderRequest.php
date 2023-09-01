@@ -13,6 +13,7 @@ use App\Rules\ValidasiDestroyPendapatanSupirHeader;
 use App\Rules\ValidasiHutangList;
 use Illuminate\Validation\Rule;
 use Illuminate\Support\Facades\DB;
+use App\Rules\ValidasiPendapatanSupir;
 
 class UpdatePendapatanSupirHeaderRequest extends FormRequest
 {
@@ -82,11 +83,14 @@ class UpdatePendapatanSupirHeaderRequest extends FormRequest
             'tgldari' => [
                 'required', 'date_format:d-m-Y',
                 'before_or_equal:' . date('d-m-Y'),
+                new ValidasiPendapatanSupir()
             ],
             'tglsampai' => [
                 'required', 'date_format:d-m-Y',
                 'after_or_equal:' . date('d-m-Y', strtotime($this->tgldari)),
                 'before_or_equal:' . date('d-m-Y'),
+                new ValidasiPendapatanSupir()
+
 
             ],
         ];
