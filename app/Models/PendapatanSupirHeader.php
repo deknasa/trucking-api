@@ -1189,7 +1189,7 @@ class PendapatanSupirHeader extends MyModel
             DB::table($temp)->insertUsing(['nobukti', 'tglbukti', 'supir_id', 'keterangan', 'sisa'], $fetch2);
 
             $query = DB::table($temp)->from(DB::raw("$temp as a with (readuncommitted)"))
-                ->select(DB::raw("row_number() Over(Order By a.tglbukti asc,a.nobukti) as pinj_id, a.penerimaantruckingheader_id,a.tglbukti as pinj_tglbukti,a.nobukti as pinj_nobukti,a.keterangan as pinj_keterangan,a.supir_id as pinj_supirid, supir.namasupir as pinj_supir,
+                ->select(DB::raw("row_number() Over(Order By a.tglbukti asc,a.nobukti) as id, a.penerimaantruckingheader_id,a.tglbukti as pinj_tglbukti,a.nobukti as pinj_nobukti,a.keterangan as pinj_keterangan,a.supir_id as pinj_supirid, supir.namasupir as pinj_supir,
             
             (case when a.sisa IS NULL then 0 else a.sisa end) as pinj_sisa,
             (case when a.nominal IS NULL then 0 else a.nominal end) as pinj_nominal"))
@@ -1204,7 +1204,7 @@ class PendapatanSupirHeader extends MyModel
 
             $tempPribadi = $this->createTempPinjPribadi($supir_id);
             $query = PengeluaranTruckingDetail::from(DB::raw("pengeluarantruckingdetail with (readuncommitted)"))
-                ->select(DB::raw("row_number() Over(Order By pengeluarantruckingheader.tglbukti asc,pengeluarantruckingdetail.nobukti) as pinj_id,pengeluarantruckingheader.tglbukti as pinj_tglbukti,pengeluarantruckingdetail.nobukti as pinj_nobukti,pengeluarantruckingdetail.keterangan as pinj_keterangan,pengeluarantruckingdetail.supir_id as pinj_supirid, supir.namasupir as pinj_supir," . $tempPribadi . ".sisa as pinj_sisa"))
+                ->select(DB::raw("row_number() Over(Order By pengeluarantruckingheader.tglbukti asc,pengeluarantruckingdetail.nobukti) as id,pengeluarantruckingheader.tglbukti as pinj_tglbukti,pengeluarantruckingdetail.nobukti as pinj_nobukti,pengeluarantruckingdetail.keterangan as pinj_keterangan,pengeluarantruckingdetail.supir_id as pinj_supirid, supir.namasupir as pinj_supir," . $tempPribadi . ".sisa as pinj_sisa"))
                 ->leftJoin(DB::raw("$tempPribadi with (readuncommitted)"), 'pengeluarantruckingdetail.nobukti', $tempPribadi . ".nobukti")
                 ->leftJoin(DB::raw("pengeluarantruckingheader with (readuncommitted)"), 'pengeluarantruckingdetail.nobukti', "pengeluarantruckingheader.nobukti")
                 ->leftJoin(DB::raw("supir with (readuncommitted)"), 'pengeluarantruckingdetail.supir_id', "supir.id")
