@@ -42,9 +42,12 @@ class PengeluaranTruckingDetail extends MyModel
                 $this->table . '.orderantrucking_nobukti',
                 $this->table . '.keterangan',
                 $this->table . '.invoice_nobukti',
+                db::raw("(case when (row_number() Over( Order By " . $this->table . ".id )) %2 =0 then '' else (row_number() Over( Order By " . $this->table . ".id )) end) as urutganjil "),
+                db::raw("(case when (row_number() Over( Order By " . $this->table . ".id )) %2 =0 then (row_number() Over( Order By " . $this->table . ".id )) else  '' end) as urutgenap "),
             );
             if ($pengeluaranId == 10 || $pengeluaranId == 11 || $pengeluaranId == 12 || $pengeluaranId == 13 || $pengeluaranId == 14 || $pengeluaranId == 15) {
                 $query->where('nominal', '!=', 0);
+            } else {
             }
             $query->leftJoin(DB::raw("supir with (readuncommitted)"), $this->table . '.supir_id', 'supir.id')
                 ->leftJoin(DB::raw("karyawan with (readuncommitted)"), $this->table . '.karyawan_id', 'karyawan.id');
