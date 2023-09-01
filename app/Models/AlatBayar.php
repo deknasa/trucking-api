@@ -431,22 +431,30 @@ class AlatBayar extends MyModel
             ->where('id', '=', $bank_id)
             ->first();
 
+            // dd($bank_id);
+            $param1=$bank_id;
+            // dd($param1);
         $query = DB::table($this->table)->from(
             DB::raw($this->table . " with (readuncommitted)")
         )
             ->select(
                 'alatbayar.id',
                 'alatbayar.kodealatbayar',
-                'alatbayar.bank_id',
+                'bank.id as bank_id',
                 'bank.namabank as bank',
             )
-            ->leftJoin(DB::raw("bank with (readuncommitted)"), 'alatbayar.bank_id', 'bank.id')
+            ->join(DB::raw("bank  with(readuncommitted) "), function ($join) use ($param1) {
+                $join->on('alatbayar.tipe', '=', 'bank.tipe');
+                $join->on('bank.id', '=', DB::raw($param1 ));
+            })            
             ->leftJoin(DB::raw("parameter with (readuncommitted)"), 'alatbayar.statusaktif', 'parameter.id')
             ->where('bank.tipe', $bank->tipe)
             ->get();
 
 
-        return $query;
+            // dd($query->toSql());
+            // dd($query);
+            return $query;
     }
 
     public function processStore(array $data): AlatBayar
