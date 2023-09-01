@@ -57,6 +57,8 @@ class AuthController extends Controller
             $infoLoc['ipclient'] = getHostByName(getHostName());
         }
         $infoLoc['ipserver'] = $this->get_server_ip();
+        $infoLoc['browser'] = $data['browser'];
+        $infoLoc['os'] = $data['os'];
 
         $info = json_encode($infoLoc);
         return $info;
