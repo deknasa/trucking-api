@@ -36,7 +36,8 @@ class UpdateBankRequest extends FormRequest
         $rules = [
             'kodebank' => ['required',Rule::unique('bank')->whereNotIn('id', [$this->id])],
             'namabank' => ['required',Rule::unique('bank')->whereNotIn('id', [$this->id])],
-            'coa' => ['required',Rule::unique('bank')->whereNotIn('id', [$this->id])],
+            // 'coa' => ['required',Rule::unique('bank')->whereNotIn('id', [$this->id])],
+            'coa' => ['required'],
             'tipe' => 'required',
             'statusaktif' => ['required', Rule::in($status),'numeric', 'min:1'],
             'formatpenerimaan' => 'required','numeric', 'min:1',

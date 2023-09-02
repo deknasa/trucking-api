@@ -164,7 +164,7 @@ class ValidasiPendapatanSupir implements Rule
             ->get();
 
         $allowed = true;
-        if (isset($query)) {
+        if (count($query) > 0) {
             $query1 = json_decode($query, true);
             $this->supir='';
             $hit=0;
