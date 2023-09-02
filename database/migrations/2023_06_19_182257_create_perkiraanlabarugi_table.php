@@ -19,7 +19,8 @@ class CreatePerkiraanlabarugiTable extends Migration
             $table->integer('bulan')->length(11)->nullable();
             $table->integer('tahun')->length(11)->nullable();
             $table->longText('keterangancoa')->nullable();                
-            $table->string('type',50)->nullable();                       
+            $table->string('type',50)->nullable();           
+            $table->longText('info')->nullable();            
             $table->string('modifiedby',50)->nullable();                       
             $table->timestamps();
         });

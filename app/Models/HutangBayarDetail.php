@@ -85,7 +85,7 @@ class HutangBayarDetail extends MyModel
             Schema::create($temphutang, function ($table) {
                 $table->string('hutang_nobukti', 1000)->nullable();
                 $table->date('tgljatuhtempo')->nullable();
-                $table->float('nominal',15,2)->nullable();
+                $table->float('nominal', 15, 2)->nullable();
                 $table->string('spb_nobukti', 1000)->nullable();
             });
 
@@ -132,9 +132,9 @@ class HutangBayarDetail extends MyModel
             DB::table($temppelunasanhutang)->insertUsing([
                 'hutang_nobukti',
                 'nominal',
-            ], $querydatapelunasan);     
-            
-            
+            ], $querydatapelunasan);
+
+
             // 
 
             $temprekap = '##temrekap' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
@@ -162,7 +162,7 @@ class HutangBayarDetail extends MyModel
                 'nominalhutang',
                 'nominalpelunasan',
                 'nominalsisa',
-            ], $queryrekap);            
+            ], $queryrekap);
             //  dd( DB::table($temphutang)->get());
 
             $query->select(
@@ -171,22 +171,20 @@ class HutangBayarDetail extends MyModel
                 $this->table . '.hutang_nobukti',
                 DB::raw("isnull(b.spb_nobukti,'') as spb_nobukti"),
                 DB::raw("isnull(B.nominal,0) as nominalhutang"),
-                DB::raw("isnull(". $this->table. ".potongan,0) as diskon"),
-                DB::raw("(case when isnull(". $this->table. ".potongan,0)=0 then '' else 'POTONGAN HUTANG' END)  as keterangandiskon"),
+                DB::raw("isnull(" . $this->table . ".potongan,0) as diskon"),
+                DB::raw("(case when isnull(" . $this->table . ".potongan,0)=0 then '' else 'POTONGAN HUTANG' END)  as keterangandiskon"),
                 DB::raw("isnull(c.nominalsisa,0) as sisahutang"),
                 DB::raw("(case when year(isnull(b.tgljatuhtempo,'1900/1/1'))=1900 then null else isnull(b.tgljatuhtempo,'1900/1/1') end)  as tgljatuhtempo"),
             )
                 ->leftJoin(DB::raw($temphutang . " as b"), $this->table . '.hutang_nobukti', 'b.hutang_nobukti')
                 ->leftjoin(DB::raw($temprekap . " as c "), $this->table . '.hutang_nobukti', 'c.hutang_nobukti')
                 ->where($this->table . '.hutangbayar_id', '=', request()->hutangbayar_id);
-
-            
         } else {
             $query->select(
                 $this->table . '.nobukti',
                 $this->table . '.nominal',
                 $this->table . '.keterangan',
-                $this->table . '.potongan',
+                DB::raw("isnull($this->table.potongan,0) as potongan"),
                 $this->table . '.hutang_nobukti'
             );
             $this->sort($query);
@@ -250,7 +248,7 @@ class HutangBayarDetail extends MyModel
 
     public function processStore(HutangBayarHeader $hutangBayarHeader, array $data): HutangBayarDetail
     {
-       
+
 
         $hutangBayarDetail = new HutangBayarDetail();
         $hutangBayarDetail->hutangbayar_id = $data['hutangbayar_id'];

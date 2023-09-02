@@ -43,6 +43,7 @@ class CreatePengeluarantruckingheaderTable extends Migration
             $table->string('userapprovaledit',50)->nullable();
             $table->date('tglapprovaledit')->nullable();
             $table->dateTime('tglbatasedit')->nullable();
+            $table->longText('info')->nullable();
             $table->string('modifiedby',50)->nullable();
 
             $table->timestamps();

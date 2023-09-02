@@ -40,6 +40,7 @@ class CreateUpahsupirTable extends Migration
             $table->integer('statuspostingtnl')->length(11)->nullable();
             $table->longText('keterangan')->nullable();
             $table->longText('gambar')->nullable();
+            $table->longText('info')->nullable();
             $table->string('modifiedby',50)->nullable();            
             $table->timestamps();
 

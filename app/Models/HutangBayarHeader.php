@@ -353,7 +353,7 @@ class HutangBayarHeader extends MyModel
         DB::table($temp)->insertUsing(['hutangbayar_id', 'hutang_nobukti', 'tglbukti', 'bayar', 'keterangan',  'potongan', 'nominalhutang', 'sisa'], $pembayaran);
 
         $hutang = DB::table("$tempHutang as A")->from(DB::raw("$tempHutang as A with (readuncommitted)"))
-            ->select(DB::raw("null as hutangbayar_id,A.nobukti as hutang_nobukti, A.tglbukti as tglbukti, null as bayar, null as keterangan, null as potongan, A.nominalhutang, A.sisa as sisa"))
+            ->select(DB::raw("null as hutangbayar_id,A.nobukti as hutang_nobukti, A.tglbukti as tglbukti, 0 as bayar, null as keterangan, 0 as potongan, A.nominalhutang, A.sisa as sisa"))
             // ->distinct("A.nobukti")
             ->leftJoin(DB::raw("$tempPembayaran as B with (readuncommitted)"), "A.nobukti", "B.hutang_nobukti")
             ->whereRaw("isnull(b.hutang_nobukti,'') = ''")
@@ -361,7 +361,9 @@ class HutangBayarHeader extends MyModel
         DB::table($temp)->insertUsing(['hutangbayar_id', 'hutang_nobukti', 'tglbukti', 'bayar', 'keterangan',  'potongan', 'nominalhutang', 'sisa'], $hutang);
 
         $data = DB::table($temp)->from(DB::raw("$temp with (readuncommitted)"))
-            ->select(DB::raw("row_number() Over(Order By $temp.hutang_nobukti) as id,hutangbayar_id,hutang_nobukti as nobukti,tglbukti,bayar,keterangan,potongan,nominalhutang as nominal,sisa,
+            ->select(DB::raw("row_number() Over(Order By $temp.hutang_nobukti) as id,hutangbayar_id,hutang_nobukti as nobukti,tglbukti,bayar,keterangan,nominalhutang as nominal,
+            (case when potongan IS NULL then 0 else potongan end) as potongan,
+            (case when sisa IS NULL then 0 else sisa end) as sisa,
             (case when bayar IS NULL then 0 else (bayar + coalesce(potongan,0)) end) as total"))
             ->get();
 
@@ -596,6 +598,23 @@ class HutangBayarHeader extends MyModel
         $bankid = $data['bank_id'];
 
         /*STORE HEADER*/         
+
+        $coaDebet = Parameter::from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'JURNAL PEMBAYARAN HUTANG')->where('subgrp', 'DEBET')->first();
+        $coaDebetpembelian = Parameter::from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'JURNAL PEMBAYARAN HUTANG PEMBELIAN STOK')->where('subgrp', 'DEBET')->first();
+        $memo = json_decode($coaDebet->memo, true);
+        $memopembelian = json_decode($coaDebetpembelian->memo, true);
+
+        $query = HutangHeader::from(DB::raw("hutangheader a with (readuncommitted)"))
+        ->select('a.nobukti')
+        ->join(db::Raw("penerimaanstokheader b with (readuncommitted)"), 'a.nobukti', 'b.hutang_nobukti')
+        ->first();
+                   
+        if (isset($query)) {
+            $coa = $memopembelian['JURNAL'];
+        } else {
+            $coa = $memo['JURNAL'];
+        }
+        
         $group = 'PEMBAYARAN HUTANG BUKTI';
         $subGroup = 'PEMBAYARAN HUTANG BUKTI';
 
@@ -626,6 +645,8 @@ class HutangBayarHeader extends MyModel
         $hutangBayarHeader->tglcair = date('Y-m-d', strtotime($data['tglcair']));
         $hutangBayarHeader->supplier_id = $data['supplier_id'] ?? '';
         $hutangBayarHeader->modifiedby = auth('api')->user()->name;
+        $hutangBayarHeader->coa = $memo['JURNAL'];
+
 
         if (!$hutangBayarHeader->save()) {
             throw new \Exception("Error Update pembayaran Hutang header.");

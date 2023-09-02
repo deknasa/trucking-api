@@ -39,6 +39,7 @@ class CreateStokTable extends Migration
             $table->longText('keterangan')->nullable();
             $table->longText('gambar')->nullable();
             $table->longText('namaterpusat')->nullable();
+            $table->longText('info')->nullable();
             $table->string('modifiedby',50)->nullable();
             $table->timestamps();
 

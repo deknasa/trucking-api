@@ -23,6 +23,7 @@ class CreatePenerimaanpelunasanTable extends Migration
             $table->string('pelunasanpiutang_nobukti',50)->nullable();
             $table->date('tglterima')->nullable();
             $table->double('nominal',15,2)->nullable();
+            $table->longText('info')->nullable();
             $table->string('modifiedby',50)->nullable();
             $table->timestamps();
 

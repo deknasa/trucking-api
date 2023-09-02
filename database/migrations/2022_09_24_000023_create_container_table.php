@@ -22,6 +22,7 @@ class CreateContainerTable extends Migration
             $table->double('nominalsumbangan',15,2)->nullable();
             $table->longText('keterangan')->nullable();
             $table->integer('statusaktif')->length(11)->nullable();            
+            $table->longText('info')->nullable();
             $table->string('modifiedby', 300)->nullable();
             $table->timestamps();
         });

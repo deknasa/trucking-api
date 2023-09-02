@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Services\RunningNumberService;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\DB;
@@ -166,7 +167,10 @@ class PindahBuku extends MyModel
             $table->dateTime('updated_at')->nullable();
             $table->increments('position');
         });
-
+        if ((date('Y-m', strtotime(request()->tglbukti)) != date('Y-m', strtotime(request()->tgldariheader))) || (date('Y-m', strtotime(request()->tglbukti)) != date('Y-m', strtotime(request()->tglsampaiheader)))) {
+            request()->tgldariheader = date('Y-m-01', strtotime(request()->tglbukti));
+            request()->tglsampaiheader = date('Y-m-t', strtotime(request()->tglbukti));
+        }
         $this->setRequestParameters();
         $query = DB::table($modelTable);
         $query = $this->selectColumns($query);
@@ -174,32 +178,33 @@ class PindahBuku extends MyModel
         $models = $this->filter($query);
         $models = $query
             ->whereBetween($this->table . '.tglbukti', [date('Y-m-d', strtotime(request()->tgldariheader)), date('Y-m-d', strtotime(request()->tglsampaiheader))]);
-        DB::table($temp)->insertUsing(['id', 'nobukti', 'tglbukti', 'bankdari', 'bankke', 'coadebet', 'coakredit', 'alatbayar', 'nowarkat','tgljatuhtempo','nominal','keterangan', 'modifiedby', 'created_at', 'updated_at'], $models);
+        DB::table($temp)->insertUsing(['id', 'nobukti', 'tglbukti', 'bankdari', 'bankke', 'coadebet', 'coakredit', 'alatbayar', 'nowarkat', 'tgljatuhtempo', 'nominal', 'keterangan', 'modifiedby', 'created_at', 'updated_at'], $models);
 
         return $temp;
     }
 
-    public function findAll($id){
+    public function findAll($id)
+    {
         $query = DB::table($this->table)->from(DB::raw("pindahbuku with (readuncommitted)"))
-        ->select(
-            'pindahbuku.id',
-            'pindahbuku.nobukti',
-            'pindahbuku.tglbukti',
-            'pindahbuku.bankdari_id',
-            'bankdari.namabank as bankdari',
-            'pindahbuku.bankke_id',
-            'bankke.namabank as bankke',
-            'pindahbuku.alatbayar_id',
-            'alatbayar.namaalatbayar as alatbayar',
-            'pindahbuku.nowarkat',
-            'pindahbuku.tgljatuhtempo',
-            'pindahbuku.nominal',
-            'pindahbuku.keterangan'
-        )
-        ->leftJoin(DB::raw("bank as bankdari with (readuncommitted)"), 'pindahbuku.bankdari_id', 'bankdari.id')
-        ->leftJoin(DB::raw("bank as bankke with (readuncommitted)"), 'pindahbuku.bankke_id', 'bankke.id')
-        ->leftJoin(DB::raw("alatbayar with (readuncommitted)"), 'pindahbuku.alatbayar_id', 'alatbayar.id')
-        ->where('pindahbuku.id', $id);
+            ->select(
+                'pindahbuku.id',
+                'pindahbuku.nobukti',
+                'pindahbuku.tglbukti',
+                'pindahbuku.bankdari_id',
+                'bankdari.namabank as bankdari',
+                'pindahbuku.bankke_id',
+                'bankke.namabank as bankke',
+                'pindahbuku.alatbayar_id',
+                'alatbayar.namaalatbayar as alatbayar',
+                'pindahbuku.nowarkat',
+                'pindahbuku.tgljatuhtempo',
+                'pindahbuku.nominal',
+                'pindahbuku.keterangan'
+            )
+            ->leftJoin(DB::raw("bank as bankdari with (readuncommitted)"), 'pindahbuku.bankdari_id', 'bankdari.id')
+            ->leftJoin(DB::raw("bank as bankke with (readuncommitted)"), 'pindahbuku.bankke_id', 'bankke.id')
+            ->leftJoin(DB::raw("alatbayar with (readuncommitted)"), 'pindahbuku.alatbayar_id', 'alatbayar.id')
+            ->where('pindahbuku.id', $id);
 
         return $query->first();
     }
@@ -240,13 +245,12 @@ class PindahBuku extends MyModel
                         } else if ($filters['field'] == 'nominal') {
                             $query = $query->whereRaw("format($this->table.nominal, '#,#0.00') LIKE '%$filters[data]%'");
                         } else if ($filters['field'] == 'tglbukti' || $filters['field'] == 'tgljatuhtempo') {
-                            $query = $query->whereRaw("format(".$this->table . "." . $filters['field'].", 'dd-MM-yyyy') LIKE '%$filters[data]%'");
+                            $query = $query->whereRaw("format(" . $this->table . "." . $filters['field'] . ", 'dd-MM-yyyy') LIKE '%$filters[data]%'");
                         } else if ($filters['field'] == 'created_at' || $filters['field'] == 'updated_at') {
-                            $query = $query->whereRaw("format(".$this->table . "." . $filters['field'].", 'dd-MM-yyyy HH:mm:ss') LIKE '%$filters[data]%'");
+                            $query = $query->whereRaw("format(" . $this->table . "." . $filters['field'] . ", 'dd-MM-yyyy HH:mm:ss') LIKE '%$filters[data]%'");
                         } else {
                             // $query = $query->where($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
                             $query = $query->whereRaw($this->table . ".[" .  $filters['field'] . "] LIKE '%" . escapeLike($filters['data']) . "%' escape '|'");
-
                         }
                     }
 
@@ -267,13 +271,12 @@ class PindahBuku extends MyModel
                             } else if ($filters['field'] == 'nominal') {
                                 $query = $query->orWhereRaw("format($this->table.nominal, '#,#0.00') LIKE '%$filters[data]%'");
                             } else if ($filters['field'] == 'tglbukti' || $filters['field'] == 'tgljatuhtempo') {
-                                $query = $query->orWhereRaw("format(".$this->table . "." . $filters['field'].", 'dd-MM-yyyy') LIKE '%$filters[data]%'");
+                                $query = $query->orWhereRaw("format(" . $this->table . "." . $filters['field'] . ", 'dd-MM-yyyy') LIKE '%$filters[data]%'");
                             } else if ($filters['field'] == 'created_at' || $filters['field'] == 'updated_at') {
-                                $query = $query->orWhereRaw("format(".$this->table . "." . $filters['field'].", 'dd-MM-yyyy HH:mm:ss') LIKE '%$filters[data]%'");
+                                $query = $query->orWhereRaw("format(" . $this->table . "." . $filters['field'] . ", 'dd-MM-yyyy HH:mm:ss') LIKE '%$filters[data]%'");
                             } else {
                                 // $query = $query->orWhere($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
                                 $query = $query->OrwhereRaw($this->table . ".[" .  $filters['field'] . "] LIKE '%" . escapeLike($filters['data']) . "%' escape '|'");
-
                             }
                         }
                     });
@@ -290,5 +293,169 @@ class PindahBuku extends MyModel
     public function paginate($query)
     {
         return $query->skip($this->params['offset'])->take($this->params['limit']);
+    }
+
+    public function processStore(array $data): PindahBuku
+    {
+
+        $group = 'PINDAH BUKU';
+        $subgroup = 'NOMOR PINDAH BUKU';
+
+        $format = DB::table('parameter')
+            ->where('grp', $group)
+            ->where('subgrp', $subgroup)
+            ->first();
+
+        $pindahBuku = new PindahBuku();
+        $getCoaKredit = Bank::from(DB::raw("bank with (readuncommitted)"))->where('id', $data['bankdari_id'])->first();
+        $getCoaDebet = Bank::from(DB::raw("bank with (readuncommitted)"))->where('id', $data['bankke_id'])->first();
+
+        $pindahBuku->tglbukti = date('Y-m-d', strtotime($data['tglbukti']));
+        $pindahBuku->bankdari_id = $data['bankdari_id'];
+        $pindahBuku->bankke_id = $data['bankke_id'];
+        $pindahBuku->coadebet = $getCoaDebet->coa;
+        $pindahBuku->coakredit = $getCoaKredit->coa;
+        $pindahBuku->alatbayar_id = $data['alatbayar_id'];
+        $pindahBuku->nowarkat = $data['nowarkat'] ?? '';
+        $pindahBuku->tgljatuhtempo = date('Y-m-d', strtotime($data['tgljatuhtempo']));
+        $pindahBuku->nominal = $data['nominal'];
+        $pindahBuku->keterangan = $data['keterangan'];
+        $pindahBuku->statusformat = $format->id;
+        $pindahBuku->modifiedby = auth('api')->user()->name;
+
+
+        $pindahBuku->nobukti = (new RunningNumberService)->get($group, $subgroup, $pindahBuku->getTable(), date('Y-m-d', strtotime($data['tglbukti'])));
+
+        if (!$pindahBuku->save()) {
+            throw new \Exception("Error storing pindah buku.");
+        }
+
+        $pindahBukuLogTrail = (new LogTrail())->processStore([
+            'namatabel' => strtoupper($pindahBuku->getTable()),
+            'postingdari' => 'ENTRY PINDAH BUKU',
+            'idtrans' => $pindahBuku->id,
+            'nobuktitrans' => $pindahBuku->nobukti,
+            'aksi' => 'ENTRY',
+            'datajson' => $pindahBuku->toArray(),
+            'modifiedby' => auth('api')->user()->user
+        ]);
+
+        $coadebet_detail[] = $getCoaDebet->coa;
+        $coakredit_detail[] = $getCoaKredit->coa;
+        $keterangan_detail[] = $data['keterangan'];
+        $nominal_detail[] = $data['nominal'];
+
+
+        $jurnalRequest = [
+            'tanpaprosesnobukti' => 1,
+            'nobukti' => $pindahBuku->nobukti,
+            'tglbukti' => date('Y-m-d', strtotime($data['tglbukti'])),
+            'postingdari' => 'ENTRY PINDAH BUKU',
+            'statusformat' => "0",
+            'coakredit_detail' => $coakredit_detail,
+            'coadebet_detail' => $coadebet_detail,
+            'nominal_detail' => $nominal_detail,
+            'keterangan_detail' => $keterangan_detail
+        ];
+
+        (new JurnalUmumHeader())->processStore($jurnalRequest);
+        return $pindahBuku;
+    }
+    public function processUpdate(PindahBuku $pindahBuku, array $data): PindahBuku
+    {
+        $group = 'PINDAH BUKU';
+        $subgroup = 'NOMOR PINDAH BUKU';
+
+        $nobuktiOld = $pindahBuku->nobukti;
+        $querycek = DB::table('pindahbuku')->from(
+            DB::raw("pindahbuku a with (readuncommitted)")
+        )
+            ->select(
+                'a.nobukti'
+            )
+            ->where('a.id', $pindahBuku->id)
+            ->whereRAw("format(a.tglbukti,'MM-yyyy')='" . date('m-Y', strtotime($data['tglbukti'])) . "'")
+            ->first();
+
+        if (isset($querycek)) {
+            $nobukti = $querycek->nobukti;
+        } else {
+            $nobukti = (new RunningNumberService)->get($group, $subgroup, $pindahBuku->getTable(), date('Y-m-d', strtotime($data['tglbukti'])));
+        }
+
+        $getCoaKredit = Bank::from(DB::raw("bank with (readuncommitted)"))->where('id', $data['bankdari_id'])->first();
+        $getCoaDebet = Bank::from(DB::raw("bank with (readuncommitted)"))->where('id', $data['bankke_id'])->first();
+
+        $pindahBuku->nobukti = $nobukti;
+        $pindahBuku->tglbukti = date('Y-m-d', strtotime($data['tglbukti']));
+        $pindahBuku->bankdari_id = $data['bankdari_id'];
+        $pindahBuku->bankke_id = $data['bankke_id'];
+        $pindahBuku->coadebet = $getCoaDebet->coa;
+        $pindahBuku->coakredit = $getCoaKredit->coa;
+        $pindahBuku->alatbayar_id = $data['alatbayar_id'];
+        $pindahBuku->nowarkat = $data['nowarkat'] ?? '';
+        $pindahBuku->tgljatuhtempo = date('Y-m-d', strtotime($data['tgljatuhtempo']));
+        $pindahBuku->nominal = $data['nominal'];
+        $pindahBuku->keterangan = $data['keterangan'];
+        $pindahBuku->modifiedby = auth('api')->user()->name;
+
+        if (!$pindahBuku->save()) {
+            throw new \Exception("Error updating pindah buku.");
+        }
+
+        $pindahBukuLogTrail = (new LogTrail())->processStore([
+            'namatabel' => strtoupper($pindahBuku->getTable()),
+            'postingdari' => 'EDIT PINDAH BUKU',
+            'idtrans' => $pindahBuku->id,
+            'nobuktitrans' => $pindahBuku->nobukti,
+            'aksi' => 'EDIT',
+            'datajson' => $pindahBuku->toArray(),
+            'modifiedby' => auth('api')->user()->user
+        ]);
+        $coadebet_detail[] = $getCoaDebet->coa;
+        $coakredit_detail[] = $getCoaKredit->coa;
+        $keterangan_detail[] = $data['keterangan'];
+        $nominal_detail[] = $data['nominal'];
+
+
+        $jurnalRequest = [
+            'tanpaprosesnobukti' => 1,
+            'nobukti' => $pindahBuku->nobukti,
+            'tglbukti' => $data['tglbukti'],
+            'postingdari' => 'EDIT PINDAH BUKU',
+            'statusformat' => "0",
+            'coakredit_detail' => $coakredit_detail,
+            'coadebet_detail' => $coadebet_detail,
+            'nominal_detail' => $nominal_detail,
+            'keterangan_detail' => $keterangan_detail
+        ];
+        $getJurnal = JurnalUmumHeader::from(DB::raw("jurnalumumheader with (readuncommitted)"))->where('nobukti', $nobuktiOld)->first();
+       
+        $newJurnal = new JurnalUmumHeader();
+        $newJurnal = $newJurnal->find($getJurnal->id);
+        $jurnalumumHeader = (new JurnalUmumHeader())->processUpdate($newJurnal, $jurnalRequest);
+
+        return $pindahBuku;
+    }
+        
+    public function processDestroy($id, $postingDari = ''): PindahBuku
+    {
+
+        $pindahBuku = new PindahBuku();
+        $pindahBuku = $pindahBuku->lockAndDestroy($id);
+
+        $pindahBukuLogTrail = (new LogTrail())->processStore([
+            'namatabel' => $pindahBuku->getTable(),
+            'postingdari' => $postingDari,
+            'idtrans' => $pindahBuku->id,
+            'nobuktitrans' => $pindahBuku->nobukti,
+            'aksi' => 'DELETE',
+            'datajson' => $pindahBuku->toArray(),
+            'modifiedby' => auth('api')->user()->name
+        ]);
+
+        $getJurnal = JurnalUmumHeader::from(DB::raw("jurnalumumheader with (readuncommitted)"))->where('nobukti', $pindahBuku->nobukti)->first();
+        $jurnalumumHeader = (new JurnalUmumHeader())->processDestroy($getJurnal->id, $postingDari);
+        return $pindahBuku;
     }
 }

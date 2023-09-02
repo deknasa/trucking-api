@@ -28,6 +28,7 @@ class CreateInvoicedetailTable extends Migration
             $table->longText('keterangan')->nullable();
             $table->string('orderantrucking_nobukti', 50)->nullable();
             $table->longText('suratpengantar_nobukti')->nullable();
+            $table->longText('info')->nullable();
             $table->string('modifiedby', 50)->nullable();
             $table->timestamps();
 

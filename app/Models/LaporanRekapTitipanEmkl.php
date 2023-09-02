@@ -70,7 +70,7 @@ $querybiayatitipan = DB::table('pengeluarantruckingdetail')->from(
     ->select(
         'b.nobukti',
         db::raw("max(b.tglbukti) as tglbukti"),
-        db::raw("max(b.keterangan) as keterangan"),
+        db::raw("max((case when isnull(b.keterangan,'')='' then isnull(a.keterangan,'') else  isnull(b.keterangan,'') end)) as keterangan"),
         db::raw("max(b.jenisorder_id) as jenisorder_id"),
         db::raw("sum(a.nominal) as nominal"),
     )

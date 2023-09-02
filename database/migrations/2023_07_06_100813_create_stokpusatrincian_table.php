@@ -21,6 +21,7 @@ class CreateStokpusatrincianTable extends Migration
             $table->unsignedBigInteger('stok_id')->nullable();
             $table->unsignedBigInteger('cabang_id')->nullable();
             $table->longText('gambar')->nullable();
+            $table->longText('info')->nullable();
             $table->string('modifiedby',50)->nullable();            
             $table->timestamps();
             

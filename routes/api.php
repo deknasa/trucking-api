@@ -955,6 +955,7 @@ route::middleware(['auth:api', 'authorized'])->group(function () {
     Route::resource('pelunasanpiutangdetail', PelunasanPiutangDetailController::class)->whereNumber('pelunasanpiutangdetail');
 
     Route::get('hutangbayarheader/{id}/printreport', [HutangBayarHeaderController::class, 'printReport'])->whereNumber('id');
+    Route::post('hutangbayarheader/{id}/cekValidasiAksi', [HutangBayarHeaderController::class, 'cekValidasiAksi'])->name('hutangbayarheader.cekValidasiAksi')->whereNumber('id');
     Route::post('hutangbayarheader/{id}/cekvalidasi', [HutangBayarHeaderController::class, 'cekvalidasi'])->name('hutangbayarheader.cekvalidasi')->whereNumber('id');
     Route::get('hutangbayarheader/no_bukti', [HutangBayarHeaderController::class, 'getNoBukti']);
     Route::get('hutangbayarheader/field_length', [HutangBayarHeaderController::class, 'fieldLength']);
@@ -1254,9 +1255,12 @@ route::middleware(['auth:api', 'authorized'])->group(function () {
     Route::post('pendapatansupirheader/{id}/cekvalidasi', [PendapatanSupirHeaderController::class, 'cekvalidasi'])->name('pendapatansupirheader.cekvalidasi')->whereNumber('id');
     Route::post('pendapatansupirheader/{id}/cekValidasiAksi', [PendapatanSupirHeaderController::class, 'cekValidasiAksi'])->name('pendapatansupirheader.cekValidasiAksi')->whereNumber('id');
     Route::post('pendapatansupirheader/approval', [PendapatanSupirHeaderController::class, 'approval']);
+    Route::get('pendapatansupirheader/getDataDeposito', [PendapatanSupirHeaderController::class, 'getDataDeposito']);
+    Route::get('pendapatansupirheader/getPinjaman', [PendapatanSupirHeaderController::class, 'getPinjaman']);
     Route::get('pendapatansupirheader/gettrip', [PendapatanSupirHeaderController::class, 'gettrip']);
     Route::get('pendapatansupirheader/default', [PendapatanSupirHeaderController::class, 'default']);
     Route::resource('pendapatansupirheader', PendapatanSupirHeaderController::class)->parameters(['pendapatansupirheader' => 'pendapatanSupirHeader'])->whereNumber('pendapatanSupirHeader');
+    Route::get('pendapatansupirdetail/jurnal', [PendapatanSupirDetailController::class, 'jurnal']);
     Route::resource('pendapatansupirdetail', PendapatanSupirDetailController::class)->whereNumber('pendapatansupirdetail');
 
     Route::get('approvalpendapatansupir/default', [ApprovalPendapatanSupirController::class, 'default']);

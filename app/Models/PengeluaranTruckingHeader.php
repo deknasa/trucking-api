@@ -169,6 +169,7 @@ class PengeluaranTruckingHeader extends MyModel
                 'pengeluarantruckingheader.created_at',
                 'pengeluarantruckingheader.updated_at',
                 'pengeluarantruckingheader.pengeluaran_nobukti',
+                db::raw("isnull(penerimaantruckingdetail.nobukti,'') as penerimaantrucking_nobukti"),
                 'pengeluarantrucking.keterangan as pengeluarantrucking_id',
                 'bank.namabank as bank_id',
                 'pengeluarantruckingheader.trado_id',
@@ -189,9 +190,9 @@ class PengeluaranTruckingHeader extends MyModel
             ->leftJoin(DB::raw("akunpusat with (readuncommitted)"), 'pengeluarantruckingheader.coa', 'akunpusat.coa')
             ->leftJoin(DB::raw("trado with (readuncommitted)"), 'pengeluarantruckingheader.trado_id', 'trado.id')
             ->leftJoin(DB::raw("supir with (readuncommitted)"), 'pengeluarantruckingheader.supir_id', 'supir.id')
-
             ->leftJoin(DB::raw("parameter as statuscetak with (readuncommitted)"), 'pengeluarantruckingheader.statuscetak', 'statuscetak.id')
-            ->leftJoin(DB::raw("parameter as statusposting with (readuncommitted)"), 'pengeluarantruckingheader.statusposting', 'statusposting.id');
+            ->leftJoin(DB::raw("parameter as statusposting with (readuncommitted)"), 'pengeluarantruckingheader.statusposting', 'statusposting.id')
+            ->leftJoin(DB::raw("penerimaantruckingdetail with (readuncommitted)"), 'pengeluarantruckingheader.nobukti', 'penerimaantruckingdetail.pengeluarantruckingheader_nobukti');
 
 
         if (request()->tgldari) {
@@ -701,6 +702,8 @@ class PengeluaranTruckingHeader extends MyModel
                             $query = $query->where('bank.namabank', 'LIKE', "%$filters[data]%");
                         } else if ($filters['field'] == 'coa') {
                             $query = $query->where('akunpusat.keterangancoa', 'LIKE', "%$filters[data]%");
+                        } else if ($filters['field'] == 'penerimaantrucking_nobukti') {
+                            $query = $query->where('penerimaantruckingdetail.nobukti', 'LIKE', "%$filters[data]%");
                         } else if ($filters['field'] == 'statusposting') {
                             $query = $query->where('statusposting.text', '=', "$filters[data]");
                         } else if ($filters['field'] == 'statuscetak') {
@@ -725,6 +728,8 @@ class PengeluaranTruckingHeader extends MyModel
                                 $query->orWhere('bank.namabank', 'LIKE', "%$filters[data]%");
                             } else if ($filters['field'] == 'coa') {
                                 $query = $query->orWhere('akunpusat.keterangancoa', 'LIKE', "%$filters[data]%");
+                            } else if ($filters['field'] == 'penerimaantrucking_nobukti') {
+                                $query = $query->orwhere('penerimaantruckingdetail.nobukti', 'LIKE', "%$filters[data]%");
                             } else if ($filters['field'] == 'statusposting') {
                                 $query->orWhere('statusposting.text', '=', "$filters[data]");
                             } else if ($filters['field'] == 'statuscetak') {
@@ -811,7 +816,9 @@ class PengeluaranTruckingHeader extends MyModel
                 'pengeluarantruckingheader.nobukti',
                 'pengeluarantruckingheader.tglbukti',
                 'pengeluarantruckingheader.pengeluaran_nobukti',
+                'pengeluarantruckingheader.statusformat',
                 'pengeluarantrucking.keterangan as pengeluarantrucking_id',
+                'pengeluarantrucking.kodepengeluaran',
                 'bank.namabank as bank_id',
                 'trado.keterangan as trado',
                 'supir.namasupir as supir',
@@ -906,7 +913,7 @@ class PengeluaranTruckingHeader extends MyModel
             $tglsampai = date('Y-m-d', strtotime($data['tglsampai']));
         };
         if (array_key_exists('periode', $data)) {
-            $periode = date('Y-m-d', strtotime($data['periode']));
+            $periode = date('Y-m-d', strtotime('01-'.$data['periode']));
         };
 
         $pengeluaranTruckingHeader = new PengeluaranTruckingHeader();
@@ -1109,7 +1116,7 @@ class PengeluaranTruckingHeader extends MyModel
             $tglsampai = date('Y-m-d', strtotime($data['tglsampai']));
         };
         if (array_key_exists('periode', $data)) {
-            $periode = date('Y-m-d', strtotime($data['periode']));
+            $periode = date('Y-m-d', strtotime('01-'.$data['periode']));
         };
 
         $pengeluaranTruckingHeader->nobukti = $nobukti;

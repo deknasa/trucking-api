@@ -31,6 +31,9 @@ class PengeluaranTruckingDetail extends MyModel
         $query = DB::table($this->table)->from(DB::raw("$this->table with (readuncommitted)"));
 
         if (isset(request()->forReport) && request()->forReport) {
+            $getPengeluaranId = DB::table("pengeluarantruckingheader")->from(DB::raw("pengeluarantruckingheader with (readuncommitted)"))
+                ->where('id', request()->pengeluarantruckingheader_id)->first();
+            $pengeluaranId = $getPengeluaranId->pengeluarantrucking_id;
             $query->select(
                 'supir.namasupir as supir_id',
                 'karyawan.namakaryawan as karyawan_id',
@@ -39,8 +42,14 @@ class PengeluaranTruckingDetail extends MyModel
                 $this->table . '.orderantrucking_nobukti',
                 $this->table . '.keterangan',
                 $this->table . '.invoice_nobukti',
-            )
-                ->leftJoin(DB::raw("supir with (readuncommitted)"), $this->table . '.supir_id', 'supir.id')
+                db::raw("(case when (row_number() Over( Order By " . $this->table . ".id )) %2 =0 then '' else (row_number() Over( Order By " . $this->table . ".id )) end) as urutganjil "),
+                db::raw("(case when (row_number() Over( Order By " . $this->table . ".id )) %2 =0 then (row_number() Over( Order By " . $this->table . ".id )) else  '' end) as urutgenap "),
+            );
+            if ($pengeluaranId == 10 || $pengeluaranId == 11 || $pengeluaranId == 12 || $pengeluaranId == 13 || $pengeluaranId == 14 || $pengeluaranId == 15) {
+                $query->where('nominal', '!=', 0);
+            } else {
+            }
+            $query->leftJoin(DB::raw("supir with (readuncommitted)"), $this->table . '.supir_id', 'supir.id')
                 ->leftJoin(DB::raw("karyawan with (readuncommitted)"), $this->table . '.karyawan_id', 'karyawan.id');
 
             $query->where($this->table . '.pengeluarantruckingheader_id', '=', request()->pengeluarantruckingheader_id);
@@ -69,13 +78,13 @@ class PengeluaranTruckingDetail extends MyModel
 
                 ->leftJoin(DB::raw("container with (readuncommitted)"), 'ot.container_id', 'container.id');
 
-    
+
             $query->where($this->table . '.pengeluarantruckingheader_id', '=', request()->pengeluarantruckingheader_id);
 
             $this->sort($query);
             $this->filter($query);
 
-            $this->totalNominal = $query->sum($this->table.'.nominal');
+            $this->totalNominal = $query->sum($this->table . '.nominal');
             $this->filter($query);
             $this->totalRows = $query->count();
             $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;
@@ -112,7 +121,7 @@ class PengeluaranTruckingDetail extends MyModel
                     WHERE stok_id = [pengeluarantruckingdetail].[stok_id]
                     ) AS maxqty
                 "),
-                               
+
                 'supir.namasupir as supir',
                 'supir.id as supir_id',
                 'karyawan.namakaryawan as karyawan',
@@ -120,11 +129,11 @@ class PengeluaranTruckingDetail extends MyModel
                 'pengeluarantruckingdetail.suratpengantar_nobukti',
                 'trado.kodetrado as trado_id',
                 'pengeluarantruckingdetail.nominaltagih',
-                
 
-                )
+
+            )
             ->leftJoin(DB::raw("orderantrucking as ot with (readuncommitted)"), 'pengeluarantruckingdetail.orderantrucking_nobukti', 'ot.nobukti')
-            ->leftJoin(DB::raw("container with (readuncommitted)"), 'ot.container_id', 'container.id')    
+            ->leftJoin(DB::raw("container with (readuncommitted)"), 'ot.container_id', 'container.id')
             ->leftJoin(DB::raw("supir with (readuncommitted)"), 'pengeluarantruckingdetail.supir_id', 'supir.id')
             ->leftJoin(DB::raw("karyawan with (readuncommitted)"), 'pengeluarantruckingdetail.karyawan_id', 'karyawan.id')
             ->leftJoin(DB::raw("stok with (readuncommitted)"), 'pengeluarantruckingdetail.stok_id', 'stok.id')
@@ -178,7 +187,7 @@ class PengeluaranTruckingDetail extends MyModel
                         foreach ($this->params['filters']['rules'] as $index => $filters) {
                             if ($filters['field'] == 'supir_id') {
                                 $query = $query->orWhere('supir.namasupir', 'LIKE', "%$filters[data]%");
-                            }else if ($filters['field'] == 'karyawan_id') {
+                            } else if ($filters['field'] == 'karyawan_id') {
                                 $query = $query->orWhere('karyawan.namakaryawan', 'LIKE', "%$filters[data]%");
                             } else if ($filters['field'] == 'nominal') {
                                 $query = $query->orWhereRaw("format($this->table.nominal, '#,#0.00') LIKE '%$filters[data]%'");
@@ -206,7 +215,7 @@ class PengeluaranTruckingDetail extends MyModel
     }
     public function processStore(PengeluaranTruckingHeader $pengeluaranTruckingHeader, array $data): PengeluaranTruckingDetail
     {
-        
+
         $suratpengantar_nobukti = null;
         $trado_id = null;
         $container_id = null;
@@ -214,11 +223,11 @@ class PengeluaranTruckingDetail extends MyModel
         $nominaltagih = null;
         $jenisorder = null;
         if ($data['suratpengantar_nobukti']) {
-            $suratpengantar = SuratPengantar::where('nobukti',$data['suratpengantar_nobukti'])->first();
+            $suratpengantar = SuratPengantar::where('nobukti', $data['suratpengantar_nobukti'])->first();
             if (!$suratpengantar) {
                 $suratpengantar = DB::table('saldosuratpengantar')->from(
                     DB::raw("saldosuratpengantar suratpengantar with (readuncommitted)")
-                )->where('nobukti',$data['suratpengantar_nobukti'])->first();
+                )->where('nobukti', $data['suratpengantar_nobukti'])->first();
             }
             $suratpengantar_nobukti = $suratpengantar->nobukti;
             $trado_id = $suratpengantar->trado_id;
@@ -227,13 +236,13 @@ class PengeluaranTruckingDetail extends MyModel
             $nominaltagih = $data['nominaltagih'];
             $jenisorder = $suratpengantar->jenisorder_id;
         }
-    
+
         $pengeluaranTruckingDetail = new PengeluaranTruckingDetail();
         $pengeluaranTruckingDetail->pengeluarantruckingheader_id = $data['pengeluarantruckingheader_id'];
         $pengeluaranTruckingDetail->nobukti = $data['nobukti'];
         $pengeluaranTruckingDetail->supir_id = $data['supir_id'];
         $pengeluaranTruckingDetail->karyawan_id = $data['karyawan_id'];
-        $pengeluaranTruckingDetail->penerimaantruckingheader_nobukti = $data['penerimaantruckingheader_nobukti']??"";
+        $pengeluaranTruckingDetail->penerimaantruckingheader_nobukti = $data['penerimaantruckingheader_nobukti'] ?? "";
         $pengeluaranTruckingDetail->stok_id = $data['stok_id'] ?? 0;
         $pengeluaranTruckingDetail->pengeluaranstok_nobukti = $data['pengeluaranstok_nobukti'] ?? "";
         $pengeluaranTruckingDetail->qty = $data['qty'] ?? 0;
@@ -262,11 +271,10 @@ class PengeluaranTruckingDetail extends MyModel
 
 
         $pengeluaranTruckingDetail->modifiedby = auth('api')->user()->name;
-        
+
         if (!$pengeluaranTruckingDetail->save()) {
             throw new \Exception("Error storing pengeluaran Trucking Detail.");
         }
         return $pengeluaranTruckingDetail;
     }
-            
 }

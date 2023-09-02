@@ -359,13 +359,19 @@ class InvoiceHeader extends MyModel
 
         if ($pilihanperiodeotobon == $pilihanperiode) {
 
-
             $tempkepelabuhan = '##tempkepelabuhan' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
             Schema::create($tempkepelabuhan, function ($table) {
                 $table->string('jobtrucking', 1000)->nullable();
                 $table->double('nominal')->nullable();
                 $table->string('suratpengantar_nobukti', 1000)->nullable();
             });
+
+
+            $fullempty=db::table('parameter')->from(db::raw("parameter with (readuncommitted)"))
+            ->select('text as id')
+            ->where('grp','STATUS CONTAINER')
+            ->where('subgrp','STATUS CONTAINER FULL EMPTY')
+            ->first()->id ?? 0 ;
 
 
             $querykepelabuhan = DB::table('suratpengantar')->from(
@@ -380,6 +386,7 @@ class InvoiceHeader extends MyModel
                 ->whereRaw("a.tglbukti>='" . date('Y-m-d', strtotime($request->tgldari)) . "' and  a.tglbukti<='" . date('Y-m-d', strtotime($request->tglsampai)) . "'")
                 ->where('a.agen_id', $request->agen_id)
                 ->where('a.jenisorder_id', $request->jenisorder_id)
+                ->whereRaw("a.statuscontainer_id not in(" . $fullempty . ")")
                 ->groupBy('a.jobtrucking');
 
 
@@ -389,6 +396,32 @@ class InvoiceHeader extends MyModel
                 'nominal',
                 'suratpengantar_nobukti',
             ], $querykepelabuhan);
+
+
+            $querykepelabuhan = DB::table('suratpengantar')->from(
+                db::raw("suratpengantar a with (readuncommitted)")
+            )
+                ->select(
+                    'a.jobtrucking',
+                    db::raw("max(a.totalomset) as nominal"),
+                    db::raw("max(a.nobukti) as suratpengantar_nobukti")
+                )
+                ->whereRaw("a.tglbukti>='" . date('Y-m-d', strtotime($request->tgldari)) . "' and  a.tglbukti<='" . date('Y-m-d', strtotime($request->tglsampai)) . "'")
+                ->where('a.agen_id', $request->agen_id)
+                ->where('a.jenisorder_id', $request->jenisorder_id)
+                ->whereRaw("a.statuscontainer_id in(" . $fullempty . ")")
+                ->groupBy('a.jobtrucking');
+
+                // dd($querykepelabuhan->toSql());
+
+            DB::table($tempkepelabuhan)->insertUsing([
+                'jobtrucking',
+                'nominal',
+                'suratpengantar_nobukti',
+            ], $querykepelabuhan);            	
+
+          
+
 
 
 
@@ -403,6 +436,7 @@ class InvoiceHeader extends MyModel
                 ->join(DB::raw($tempkepelabuhan) . " as b", 'a.jobtrucking', 'b.jobtrucking');
         } else {
 
+            
             $tempkepelabuhanbeda = '##tempkepelabuhanbeda' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
             Schema::create($tempkepelabuhanbeda, function ($table) {
                 $table->string('jobtrucking', 1000)->nullable();
@@ -458,6 +492,9 @@ class InvoiceHeader extends MyModel
             'suratpengantar_nobukti',
         ], $queryhasil);
 
+        // dd('test');
+        // dd(db::table($temphasil)->get());
+
 
 
 
@@ -497,6 +534,8 @@ class InvoiceHeader extends MyModel
                 'a.id',
             )
             ->orderBy('a.id');
+
+    //    dd('test')            ;
 
         $datadetail = json_decode($querystatuscontainer->get(), true);
         foreach ($datadetail as $item) {
@@ -823,6 +862,7 @@ class InvoiceHeader extends MyModel
             ->whereRaw("nocont != ''")
             ->whereRaw("noseal != ''")
             ->groupBy('jobtrucking');
+
         Schema::create($temp, function ($table) {
             $table->bigInteger('id')->nullable();
             $table->string('jobtrucking')->nullable();
