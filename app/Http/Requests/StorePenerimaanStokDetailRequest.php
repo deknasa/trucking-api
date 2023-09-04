@@ -34,12 +34,22 @@ class StorePenerimaanStokDetailRequest extends FormRequest
         $pg = DB::table('parameter')->where('grp', 'PG STOK')->where('subgrp', 'PG STOK')->first();
         $korv = DB::table('penerimaanstok')->where('kodepenerimaan', 'KORV')->first();
         $spbp = DB::table('penerimaanstok')->where('kodepenerimaan', 'SPBP')->first();
+        $spbs = DB::table('penerimaanstok')->where('kodepenerimaan', 'SPBS')->first();
+        $pst = DB::table('penerimaanstok')->where('kodepenerimaan', 'PST')->first();
+        $pspk = DB::table('penerimaanstok')->where('kodepenerimaan', 'PSPK')->first();
         $reuse = DB::table('parameter')->where('grp', 'REUSE STOK')->where('subgrp', 'REUSE STOK')->first();
         $requiredQty = Rule::requiredIf((request()->penerimaanstok_id == $spb->text));
         $requiredNobukti = Rule::requiredIf((request()->penerimaanstok_id == $spbp->id));
+        $penerimaanStok = DB::table('PenerimaanStok')->select('id','kodepenerimaan')->get();
         
+        $data = json_decode($penerimaanStok, true);
+        foreach ($data as $item) {
+            $kode[] = $item['id'];
+            $kodepenerimaan[] = $item['kodepenerimaan'];
+        }
        
         return [
+            "penerimaanstok_id" => ["required",Rule::in($kode)],
             'detail_stok' => 'required|array|distinct',
             'detail_stok.*' => ['required','distinct'],
             'detail_stok_id' => 'required|array|distinct',
@@ -52,6 +62,11 @@ class StorePenerimaanStokDetailRequest extends FormRequest
             // },
             
             'detail_harga.*' => function ($attribute, $value, $fail) use ($spb, $po, $do, $kor, $pg, $reuse){
+                if((request()->penerimaanstok_id == $spb->text) && ($value <= 0)){
+                    $fail(app(ErrorController::class)->geterror('GT-ANGKA-0')->keterangan);
+                }
+            },
+            'total_sebelum.*' => function ($attribute, $value, $fail) use ($spb, $po, $do, $kor, $pg, $reuse){
                 if((request()->penerimaanstok_id == $spb->text) && ($value <= 0)){
                     $fail(app(ErrorController::class)->geterror('GT-ANGKA-0')->keterangan);
                 }
@@ -69,15 +84,23 @@ class StorePenerimaanStokDetailRequest extends FormRequest
             'detail_penerimaanstoknobukti.*'=>[$requiredNobukti],
             'detail_qty.*' => [
                 'numeric',
+                'nullable',
                 function ($attribute, $value, $fail) use ($korv,$spbp){
-                    // dd(($value <= 0),$value);
                     if((($korv->id != request()->penerimaanstok_id) && ($spbp->id != request()->penerimaanstok_id)) && ($value <= 0)){
                         $fail(app(ErrorController::class)->geterror('GT-ANGKA-0')->keterangan);
                     }
                 },
                 // 'gt:0'
             ],
-            'detail_persentasediscount.*' => 'numeric|max:100',
+            'detail_persentasediscount.*' => [
+                'numeric',
+                'nullable',
+                function ($attribute, $value, $fail) use ($spb,$spbs,$pst,$pspk,$spbp){
+                    if((($spb->text == request()->penerimaanstok_id)||($spbs->id == request()->penerimaanstok_id)||($pst->id == request()->penerimaanstok_id) || ($pspk->id == request()->penerimaanstok_id) || ($spbp->id == request()->penerimaanstok_id)) && ($value > 100) ){
+                        $fail(app(ErrorController::class)->geterror('SM-ANGKA-100')->keterangan);
+                    }
+                },
+            ],
                 
             'penerimaanstokheader_id.*' => 'required',
             'detail_keterangan.*' => 'required',
@@ -94,6 +117,7 @@ class StorePenerimaanStokDetailRequest extends FormRequest
             'detail_vulkanisirke.*' => 'vulkanisir ke',
             'detail_harga.*' => 'harga',
             'detail_persentasediscount.*' => 'persentase discount',
+            'total_sebelum.*' => 'total sebelum',
         ];
     }
     public function messages()
