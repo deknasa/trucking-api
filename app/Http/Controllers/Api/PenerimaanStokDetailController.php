@@ -223,6 +223,11 @@ class PenerimaanStokDetailController extends Controller
         }
     }
 
+    public function addrow(StorePenerimaanStokDetailRequest $request)
+    {
+        return true;
+    }
+
     public function persediaanDari($stokId, $persediaan, $persediaanId, $qty)
     {
         $stokpersediaangudang = $this->checkTempat($stokId, $persediaan, $persediaanId); //stok persediaan 
