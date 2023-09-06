@@ -703,7 +703,7 @@ class PendapatanSupirHeader extends MyModel
         $statusApp = Parameter::from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS APPROVAL')->where('text', 'NON APPROVAL')->first();
         $statusCetak = Parameter::from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUSCETAK')->where('text', 'BELUM CETAK')->first();
 
-        $coaDebet = Parameter::from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'JURNAL PEMBAYARAN HUTANG')->where('subgrp', 'DEBET')
+        $coaDebet = Parameter::from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'JURNAL PENDAPATAN SUPIR')->where('kelompok', 'DEBET')
             ->first();
         $memoDebet = json_decode($coaDebet->memo, true);
 
@@ -734,7 +734,8 @@ class PendapatanSupirHeader extends MyModel
         if (!$pendapatanSupirHeader->save()) {
             throw new \Exception("Error storing pendapatan Supir header.");
         }
-
+        $parameterKeterangan = Parameter::from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'KETERANGAN DEFAULT PENDAPATAN SUPIR')->where('subgrp', 'KETERANGAN DEFAULT PENDAPATAN SUPIR')
+        ->first();
         $totalPengeluaran = 0;
         for ($i = 0; $i < count($data['id_detail']); $i++) {
             $gajiKenek =  $data['gajikenek'][$i] ?? 0;
@@ -754,7 +755,7 @@ class PendapatanSupirHeader extends MyModel
         $tglJatuhTempo[] = $data['tglbukti'];
         $nominalDetailPengeluaran[] = $totalPengeluaran;
         $coaDebetPengeluaran[] = $memoDebet['JURNAL'];
-        $keteranganDetailPengeluaran[] = "Pendapatan Supir " . $data['tgldari'] . " s/d " . $data['tglsampai'];
+        $keteranganDetailPengeluaran[] = "$parameterKeterangan->text " . $data['tgldari'] . " s/d " . $data['tglsampai'];
         if ($data['bank_id'] == 1) {
             $alatBayar = DB::table("alatbayar")->from(DB::raw("alatbayar with (readuncommitted)"))->where('kodealatbayar', 'TUNAI')->first();
         } else {
@@ -893,6 +894,8 @@ class PendapatanSupirHeader extends MyModel
 
         PendapatanSupirDetail::where('pendapatansupir_id', $pendapatanSupirHeader->id)->lockForUpdate()->delete();
 
+        $parameterKeterangan = Parameter::from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'KETERANGAN DEFAULT PENDAPATAN SUPIR')->where('subgrp', 'KETERANGAN DEFAULT PENDAPATAN SUPIR')
+        ->first();
         $totalPengeluaran = 0;
         for ($i = 0; $i < count($data['id_detail']); $i++) {
             $gajiKenek =  $data['gajikenek'][$i] ?? 0;
@@ -907,7 +910,7 @@ class PendapatanSupirHeader extends MyModel
             $totalPengeluaran = $totalPengeluaran + $data['nominal_detail'][$i] + $gajiKenek;
             $pendapatanSupirs[] = $pendapatanSupirHeader->toArray();
         }
-        $coaDebet = Parameter::from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'JURNAL PEMBAYARAN HUTANG')->where('subgrp', 'DEBET')
+        $coaDebet = Parameter::from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'JURNAL PENDAPATAN SUPIR')->where('kelompok', 'DEBET')
             ->first();
         $memoDebet = json_decode($coaDebet->memo, true);
 
@@ -915,7 +918,7 @@ class PendapatanSupirHeader extends MyModel
         $tglJatuhTempo[] = $data['tglbukti'];
         $nominalDetailPengeluaran[] = $totalPengeluaran;
         $coaDebetPengeluaran[] = $memoDebet['JURNAL'];
-        $keteranganDetailPengeluaran[] = "Pendapatan Supir " . $data['tgldari'] . " s/d " . $data['tglsampai'];
+        $keteranganDetailPengeluaran[] = "$parameterKeterangan->text " . $data['tgldari'] . " s/d " . $data['tglsampai'];
 
         if ($pendapatanSupirHeader->bank_id == 1) {
             $alatBayar = DB::table("alatbayar")->from(DB::raw("alatbayar with (readuncommitted)"))->where('kodealatbayar', 'TUNAI')->first();
