@@ -95,6 +95,16 @@ class LaporanSaldoInventory extends MyModel
 
         DB::delete(DB::raw("delete " . $temprekapall . "  WHERE upper(nobukti)<>'SALDO AWAL'"));
 
+        $disetujui = db::table('parameter')->from(db::raw('parameter with (readuncommitted)'))
+        ->select('text')
+        ->where('grp', 'DISETUJUI')
+        ->where('subgrp', 'DISETUJUI')->first()->text ?? '';
+
+    $diperiksa = db::table('parameter')->from(db::raw('parameter with (readuncommitted)'))
+        ->select('text')
+        ->where('grp', 'DIPERIKSA')
+        ->where('subgrp', 'DIPERIKSA')->first()->text ?? '';
+
         $query = DB::table($temprekapall)->from(
             DB::raw($temprekapall . " a")
         )
@@ -115,6 +125,8 @@ class LaporanSaldoInventory extends MyModel
                 'a.qtymasuk as qty',
                 DB::raw("'' as satuan"),
                 'a.nilaimasuk as nominal',
+                db::raw("'" . $disetujui . "' as disetujui"),
+                db::raw("'" . $diperiksa . "' as diperiksa"),
 
             );
            

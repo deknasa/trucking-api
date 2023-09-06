@@ -132,6 +132,17 @@ class LaporanHistoryPinjaman extends MyModel
             'namasupir',
         ], $select_temphistoryrekap);
 // dd($select_temphistoryrekap->get());
+
+$disetujui = db::table('parameter')->from(db::raw('parameter with (readuncommitted)'))
+->select('text')
+->where('grp', 'DISETUJUI')
+->where('subgrp', 'DISETUJUI')->first()->text ?? '';
+
+$diperiksa = db::table('parameter')->from(db::raw('parameter with (readuncommitted)'))
+->select('text')
+->where('grp', 'DIPERIKSA')
+->where('subgrp', 'DIPERIKSA')->first()->text ?? '';
+
         
         $select_temphistoryrekap2 = DB::table($temphistoryrekap)->from(DB::raw($temphistoryrekap . " AS a"))
         ->select([
@@ -144,7 +155,9 @@ class LaporanHistoryPinjaman extends MyModel
         DB::raw("'Laporan History Pinjaman' as judulLaporan"),
         DB::raw("'" . $getJudul->text . "' as judul"),
         DB::raw("'Tgl Cetak :'+format(getdate(),'dd-MM-yyyy HH:mm:ss')as tglcetak"),
-        DB::raw(" 'User :".auth('api')->user()->name."' as usercetak") 
+        DB::raw(" 'User :".auth('api')->user()->name."' as usercetak") ,
+        db::raw("'" . $disetujui . "' as disetujui"),
+        db::raw("'" . $diperiksa . "' as diperiksa"),
         ])
         ->orderBy('A.id');
         // dd($select_temphistoryrekap2->get());

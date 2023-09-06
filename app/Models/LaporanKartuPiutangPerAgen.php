@@ -27,24 +27,23 @@ class LaporanKartuPiutangPerAgen extends MyModel
     public function getReport($dari, $sampai, $agenDari, $agenSampai)
     {
 
-        if ($agenDari==0) {
-            $agenDari=db::table('agen')->from(db::raw("agen with (readuncommitted)"))
-                ->select('id')->orderby('id','asc')->first()->id ?? 0;
-        }
-     
-        if ($agenSampai==0) {
-            $agenSampai=db::table('agen')->from(db::raw("agen with (readuncommitted)"))
-                ->select('id')->orderby('id','desc')->first()->id ?? 0;
+        if ($agenDari == 0) {
+            $agenDari = db::table('agen')->from(db::raw("agen with (readuncommitted)"))
+                ->select('id')->orderby('id', 'asc')->first()->id ?? 0;
         }
 
-        if ($agenDari>$agenSampai) {
-            $agenDari1=$agenSampai;
-            $agenSampai1=$agenDari;
-            $agenDari=$agenDari1;
-            $agenSampai=$agenSampai1;
-            
+        if ($agenSampai == 0) {
+            $agenSampai = db::table('agen')->from(db::raw("agen with (readuncommitted)"))
+                ->select('id')->orderby('id', 'desc')->first()->id ?? 0;
         }
-         
+
+        if ($agenDari > $agenSampai) {
+            $agenDari1 = $agenSampai;
+            $agenSampai1 = $agenDari;
+            $agenDari = $agenDari1;
+            $agenSampai = $agenSampai1;
+        }
+
         $getJudul = DB::table('parameter')
             ->select('text')
             ->where('grp', 'JUDULAN LAPORAN')
@@ -366,7 +365,15 @@ class LaporanKartuPiutangPerAgen extends MyModel
             'bayar',
         ], $select_TempRekappiutang2);
         // dd($select_TempRekappiutang2->get());
+        $disetujui = db::table('parameter')->from(db::raw('parameter with (readuncommitted)'))
+            ->select('text')
+            ->where('grp', 'DISETUJUI')
+            ->where('subgrp', 'DISETUJUI')->first()->text ?? '';
 
+        $diperiksa = db::table('parameter')->from(db::raw('parameter with (readuncommitted)'))
+            ->select('text')
+            ->where('grp', 'DIPERIKSA')
+            ->where('subgrp', 'DIPERIKSA')->first()->text ?? '';
 
         $select_data = DB::table($TempRekappiutang . ' AS A')
             ->select([
@@ -385,7 +392,9 @@ class LaporanKartuPiutangPerAgen extends MyModel
                 DB::raw("'Laporan Kartu Piutang Per Agen' as judulLaporan"),
                 DB::raw("'" . $getJudul->text . "' as judul"),
                 DB::raw("'Tgl Cetak :'+format(getdate(),'dd-MM-yyyy HH:mm:ss')as tglcetak"),
-                DB::raw(" 'User :" . auth('api')->user()->name . "' as usercetak")
+                DB::raw(" 'User :" . auth('api')->user()->name . "' as usercetak"),
+                db::raw("'" . $disetujui . "' as disetujui"),
+                db::raw("'" . $diperiksa . "' as diperiksa"),
             ])
             ->leftJoin($TempCicilRekap . ' AS B', 'A.nobukti', '=', 'B.piutang_nobukti')
             ->join(DB::raw("piutangheader AS C with (readuncommitted)"), 'A.nobukti', '=', 'C.nobukti')
@@ -698,6 +707,15 @@ class LaporanKartuPiutangPerAgen extends MyModel
         ], $select_TempRekappiutang2);
         // dd($select_TempRekappiutang2->get());
 
+        $disetujui = db::table('parameter')->from(db::raw('parameter with (readuncommitted)'))
+            ->select('text')
+            ->where('grp', 'DISETUJUI')
+            ->where('subgrp', 'DISETUJUI')->first()->text ?? '';
+
+        $diperiksa = db::table('parameter')->from(db::raw('parameter with (readuncommitted)'))
+            ->select('text')
+            ->where('grp', 'DIPERIKSA')
+            ->where('subgrp', 'DIPERIKSA')->first()->text ?? '';
 
         $select_data = DB::table($TempRekappiutang . ' AS A')
             ->select([
@@ -716,7 +734,9 @@ class LaporanKartuPiutangPerAgen extends MyModel
                 DB::raw("'Laporan Kartu Piutang Per Agen' as judulLaporan"),
                 DB::raw("'" . $getJudul->text . "' as judul"),
                 DB::raw("'Tgl Cetak :'+format(getdate(),'dd-MM-yyyy HH:mm:ss')as tglcetak"),
-                DB::raw(" 'User :" . auth('api')->user()->name . "' as usercetak")
+                DB::raw(" 'User :" . auth('api')->user()->name . "' as usercetak"),
+                db::raw("'" . $disetujui . "' as disetujui"),
+                db::raw("'" . $diperiksa . "' as diperiksa"),
             ])
             ->leftJoin($TempCicilRekap . ' AS B', 'A.nobukti', '=', 'B.piutang_nobukti')
             ->join('piutangheader AS C', 'A.nobukti', '=', 'C.nobukti')

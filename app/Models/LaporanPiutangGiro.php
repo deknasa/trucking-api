@@ -63,6 +63,15 @@ class LaporanPiutangGiro extends MyModel
             'tglbuktipencairan',
         ], $select_TempPencairan);
 
+        $disetujui = db::table('parameter')->from(db::raw('parameter with (readuncommitted)'))
+        ->select('text')
+        ->where('grp', 'DISETUJUI')
+        ->where('subgrp', 'DISETUJUI')->first()->text ?? '';
+
+    $diperiksa = db::table('parameter')->from(db::raw('parameter with (readuncommitted)'))
+        ->select('text')
+        ->where('grp', 'DIPERIKSA')
+        ->where('subgrp', 'DIPERIKSA')->first()->text ?? '';
 
         $select_TempPencairan2 = DB::table('penerimaangiroheader')->from(DB::raw("penerimaangiroheader AS A WITH (READUNCOMMITTED)"))
         ->select([
@@ -74,7 +83,10 @@ class LaporanPiutangGiro extends MyModel
             DB::raw("'Laporan Piutang Giro' as judulLaporan"),
             DB::raw("'" . $getJudul->text . "' as judul"),
             DB::raw("'Tgl Cetak :'+format(getdate(),'dd-MM-yyyy HH:mm:ss')as tglcetak"),
-            DB::raw(" 'User :".auth('api')->user()->name."' as usercetak") 
+            DB::raw(" 'User :".auth('api')->user()->name."' as usercetak") ,
+            db::raw("'" . $disetujui . "' as disetujui"),
+            db::raw("'" . $diperiksa . "' as diperiksa"),
+
             
         ])
         ->leftJoin(DB::raw("{$TempPencairan} AS b"), function ($join) {
@@ -128,6 +140,15 @@ class LaporanPiutangGiro extends MyModel
             'tglbuktipencairan',
         ], $select_TempPencairan);
 
+        $disetujui = db::table('parameter')->from(db::raw('parameter with (readuncommitted)'))
+        ->select('text')
+        ->where('grp', 'DISETUJUI')
+        ->where('subgrp', 'DISETUJUI')->first()->text ?? '';
+
+    $diperiksa = db::table('parameter')->from(db::raw('parameter with (readuncommitted)'))
+        ->select('text')
+        ->where('grp', 'DIPERIKSA')
+        ->where('subgrp', 'DIPERIKSA')->first()->text ?? '';
 
         $select_TempPencairan2 = DB::table('penerimaangiroheader')->from(DB::raw("penerimaangiroheader AS A WITH (READUNCOMMITTED)"))
         ->select([
@@ -139,7 +160,9 @@ class LaporanPiutangGiro extends MyModel
             DB::raw("'Laporan Piutang Giro' as judulLaporan"),
             DB::raw("'" . $getJudul->text . "' as judul"),
             DB::raw("'Tgl Cetak :'+format(getdate(),'dd-MM-yyyy HH:mm:ss')as tglcetak"),
-            DB::raw(" 'User :".auth('api')->user()->name."' as usercetak") 
+            DB::raw(" 'User :".auth('api')->user()->name."' as usercetak") ,
+            db::raw("'" . $disetujui . "' as disetujui"),
+            db::raw("'" . $diperiksa . "' as diperiksa"),
             
         ])
         ->leftJoin(DB::raw("{$TempPencairan} AS b"), function ($join) {

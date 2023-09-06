@@ -210,6 +210,16 @@ class LaporanUangJalan extends MyModel
         ], $select_Tempkembali);
 
 
+        $disetujui = db::table('parameter')->from(db::raw('parameter with (readuncommitted)'))
+        ->select('text')
+        ->where('grp', 'DISETUJUI')
+        ->where('subgrp', 'DISETUJUI')->first()->text ?? '';
+
+    $diperiksa = db::table('parameter')->from(db::raw('parameter with (readuncommitted)'))
+        ->select('text')
+        ->where('grp', 'DIPERIKSA')
+        ->where('subgrp', 'DIPERIKSA')->first()->text ?? '';
+
         $select_Tempkembali2 = DB::table($Tempambil . ' AS a')
         ->select([
             'c.namasupir',
@@ -217,7 +227,9 @@ class LaporanUangJalan extends MyModel
             'a.nominal AS nominalambil',
             'b.tgl AS tglkembali',
             'b.nobuktiric',
-            'b.nominal AS nominalkembali'
+            'b.nominal AS nominalkembali',
+            db::raw("'" . $disetujui . "' as disetujui"),
+            db::raw("'" . $diperiksa . "' as diperiksa"),
         ])
         ->leftJoin($Tempkembali . ' AS b', function ($join) {
             $join->on('a.tgl', '=', 'b.tgl')
@@ -363,6 +375,16 @@ class LaporanUangJalan extends MyModel
         ], $select_Tempkembali);
 
 
+        $disetujui = db::table('parameter')->from(db::raw('parameter with (readuncommitted)'))
+        ->select('text')
+        ->where('grp', 'DISETUJUI')
+        ->where('subgrp', 'DISETUJUI')->first()->text ?? '';
+
+    $diperiksa = db::table('parameter')->from(db::raw('parameter with (readuncommitted)'))
+        ->select('text')
+        ->where('grp', 'DIPERIKSA')
+        ->where('subgrp', 'DIPERIKSA')->first()->text ?? '';
+
         $select_Tempkembali2 = DB::table($Tempambil . ' AS a')
         ->select([
             'c.namasupir',
@@ -370,7 +392,10 @@ class LaporanUangJalan extends MyModel
             'a.nominal AS nominalambil',
             'b.tgl AS tglkembali',
             'b.nobuktiric',
-            'b.nominal AS nominalkembali'
+            'b.nominal AS nominalkembali',
+            db::raw("'" . $disetujui . "' as disetujui"),
+            db::raw("'" . $diperiksa . "' as diperiksa"),
+
         ])
         ->leftJoin($Tempkembali . ' AS b', function ($join) {
             $join->on('a.tgl', '=', 'b.tgl')

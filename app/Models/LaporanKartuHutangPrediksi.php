@@ -474,6 +474,16 @@ class LaporanKartuHutangPrediksi extends MyModel
             ->where('subgrp', 'JUDULAN LAPORAN')
             ->first();
 
+            $disetujui = db::table('parameter')->from(db::raw('parameter with (readuncommitted)'))
+            ->select('text')
+            ->where('grp', 'DISETUJUI')
+            ->where('subgrp', 'DISETUJUI')->first()->text ?? '';
+
+        $diperiksa = db::table('parameter')->from(db::raw('parameter with (readuncommitted)'))
+            ->select('text')
+            ->where('grp', 'DIPERIKSA')
+            ->where('subgrp', 'DIPERIKSA')->first()->text ?? '';
+
         $query = DB::table($templist)
             ->from(DB::raw($templist . " as a with (readuncommitted)"))
             ->select(
@@ -487,7 +497,9 @@ class LaporanKartuHutangPrediksi extends MyModel
                 DB::raw("'Laporan Kartu Hutang Prediksi (EBS)' as judulLaporan"),
                 DB::raw("'" . $getJudul->text . "' as judul"),
                 DB::raw("'Tgl Cetak :'+format(getdate(),'dd-MM-yyyy HH:mm:ss')as tglcetak"),
-                DB::raw(" 'User :" . auth('api')->user()->name . "' as usercetak")
+                DB::raw(" 'User :" . auth('api')->user()->name . "' as usercetak"),
+                db::raw("'" . $disetujui . "' as disetujui"),
+                db::raw("'" . $diperiksa . "' as diperiksa"),
             )
             ->Orderby('a.id');
 

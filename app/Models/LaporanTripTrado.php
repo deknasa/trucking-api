@@ -193,6 +193,17 @@ class LaporanTripTrado extends MyModel
             'empty',
         ], $queryRekapPort);
 
+        $disetujui = db::table('parameter')->from(db::raw('parameter with (readuncommitted)'))
+        ->select('text')
+        ->where('grp', 'DISETUJUI')
+        ->where('subgrp', 'DISETUJUI')->first()->text ?? '';
+
+    $diperiksa = db::table('parameter')->from(db::raw('parameter with (readuncommitted)'))
+        ->select('text')
+        ->where('grp', 'DIPERIKSA')
+        ->where('subgrp', 'DIPERIKSA')->first()->text ?? '';
+
+
         $result = DB::table("trado")->from(
             DB::raw("trado as a with (readuncommitted)")
         )
@@ -203,6 +214,8 @@ class LaporanTripTrado extends MyModel
                 DB::raw("isnull(B.namasupir, '') as NamaSupir"),
                 DB::raw("isnull(D.[full], 0) as [fullport]"),
                 DB::raw("isnull(D.[empty], 0) as [emptyport]"),
+                db::raw("'" . $disetujui . "' as disetujui"),
+                db::raw("'" . $diperiksa . "' as diperiksa"),
 
             )
            ->leftJoin(DB::raw("supir as b with (readuncommitted)"), 'a.supir_id', 'b.id')

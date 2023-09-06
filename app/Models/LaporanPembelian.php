@@ -34,6 +34,16 @@ class LaporanPembelian extends MyModel
             ->where('subgrp', 'JUDULAN LAPORAN')
             ->first();
 
+            $disetujui = db::table('parameter')->from(db::raw('parameter with (readuncommitted)'))
+            ->select('text')
+            ->where('grp', 'DISETUJUI')
+            ->where('subgrp', 'DISETUJUI')->first()->text ?? '';
+
+        $diperiksa = db::table('parameter')->from(db::raw('parameter with (readuncommitted)'))
+            ->select('text')
+            ->where('grp', 'DIPERIKSA')
+            ->where('subgrp', 'DIPERIKSA')->first()->text ?? '';
+
         if ($status == 'ORDER PEMBELIAN') {
             $getPOStok = DB::table('parameter')
             ->where('grp', 'PO STOK')
@@ -55,7 +65,9 @@ class LaporanPembelian extends MyModel
                         DB::raw("'Laporan Pembelian' as judulLaporan"),
                         DB::raw("'" . $getJudul->text . "' as judul"),
                         DB::raw("'Tgl Cetak :'+format(getdate(),'dd-MM-yyyy HH:mm:ss')as tglcetak"),
-                        DB::raw(" 'User :".auth('api')->user()->name."' as usercetak") 
+                        DB::raw(" 'User :".auth('api')->user()->name."' as usercetak") ,
+                        db::raw("'" . $disetujui . "' as disetujui"),
+                        db::raw("'" . $diperiksa . "' as diperiksa"),
                     )
                     ->join('penerimaanstokdetail AS b', 'a.nobukti', '=', 'b.nobukti')
                     ->leftJoin('supplier AS c', 'a.supplier_id', '=', 'c.id')
@@ -95,7 +107,9 @@ class LaporanPembelian extends MyModel
                     DB::raw("'Laporan Pembelian' as judulLaporan"),
                     DB::raw("'" . $getJudul->text . "' as judul"),
                     DB::raw("'Tgl Cetak :'+format(getdate(),'dd-MM-yyyy HH:mm:ss')as tglcetak"),
-                    DB::raw(" 'User :".auth('api')->user()->name."' as usercetak") 
+                    DB::raw(" 'User :".auth('api')->user()->name."' as usercetak") ,
+                    db::raw("'" . $disetujui . "' as disetujui"),
+                    db::raw("'" . $diperiksa . "' as diperiksa"),
                 )
                 ->join('penerimaanstokdetail AS b', 'a.nobukti', '=', 'b.nobukti')
                 ->leftJoin('supplier AS c', 'a.supplier_id', '=', 'c.id')
@@ -134,7 +148,9 @@ class LaporanPembelian extends MyModel
                     DB::raw("'Laporan Pembelian' as judulLaporan"),
                     DB::raw("'" . $getJudul->text . "' as judul"),
                     DB::raw("'Tgl Cetak :'+format(getdate(),'dd-MM-yyyy HH:mm:ss')as tglcetak"),
-                    DB::raw(" 'User :".auth('api')->user()->name."' as usercetak") 
+                    DB::raw(" 'User :".auth('api')->user()->name."' as usercetak"),
+                    db::raw("'" . $disetujui . "' as disetujui"),
+                    db::raw("'" . $diperiksa . "' as diperiksa"), 
                 )
                 ->join('penerimaanstokdetail AS b', 'a.nobukti', '=', 'b.nobukti')
                 ->leftJoin('supplier AS c', 'a.supplier_id', '=', 'c.id')
@@ -209,7 +225,9 @@ class LaporanPembelian extends MyModel
                     DB::raw("'Laporan Pembelian' as judulLaporan"),
                     DB::raw("'" . $getJudul->text . "' as judul"),
                     DB::raw("'Tgl Cetak :'+format(getdate(),'dd-MM-yyyy HH:mm:ss')as tglcetak"),
-                    DB::raw(" 'User :".auth('api')->user()->name."' as usercetak") 
+                    DB::raw(" 'User :".auth('api')->user()->name."' as usercetak") ,
+                    db::raw("'" . $disetujui . "' as disetujui"),
+                    db::raw("'" . $diperiksa . "' as diperiksa"),
                 )
                 ->join('penerimaanstokdetail AS b', 'a.nobukti', '=', 'b.nobukti')
                 ->leftJoin('supplier AS c', 'a.supplier_id', '=', 'c.id')
@@ -255,7 +273,9 @@ class LaporanPembelian extends MyModel
                     DB::raw("'Laporan Pembelian' as judulLaporan"),
                     DB::raw("'" . $getJudul->text . "' as judul"),
                     DB::raw("'Tgl Cetak :'+format(getdate(),'dd-MM-yyyy HH:mm:ss')as tglcetak"),
-                    DB::raw(" 'User :".auth('api')->user()->name."' as usercetak") 
+                    DB::raw(" 'User :".auth('api')->user()->name."' as usercetak") ,
+                    db::raw("'" . $disetujui . "' as disetujui"),
+                    db::raw("'" . $diperiksa . "' as diperiksa"),
                 )
                 ->join('pengeluaranstokdetail AS b', 'a.nobukti', '=', 'b.nobukti')
                 ->leftJoin('supplier AS c', 'a.supplier_id', '=', 'c.id')

@@ -26,7 +26,7 @@ class LaporanPinjamanSupir extends MyModel
 
 
 
-    public function getReport($sampai,$jenis)
+    public function getReport($sampai, $jenis)
     {
         $pengeluarantrucking_id = 1;
         $penerimaantrucking_id = 2;
@@ -251,6 +251,16 @@ class LaporanPinjamanSupir extends MyModel
             ->where('subgrp', 'JUDULAN LAPORAN')
             ->first();
 
+        $disetujui = db::table('parameter')->from(db::raw('parameter with (readuncommitted)'))
+            ->select('text')
+            ->where('grp', 'DISETUJUI')
+            ->where('subgrp', 'DISETUJUI')->first()->text ?? '';
+
+        $diperiksa = db::table('parameter')->from(db::raw('parameter with (readuncommitted)'))
+            ->select('text')
+            ->where('grp', 'DIPERIKSA')
+            ->where('subgrp', 'DIPERIKSA')->first()->text ?? '';
+
         $query = DB::table($temphasil)->from(
             DB::raw($temphasil . " a ")
         )
@@ -266,7 +276,9 @@ class LaporanPinjamanSupir extends MyModel
                 DB::raw("'Laporan Pinjaman Supir' as judulLaporan"),
                 DB::raw("'" . $getJudul->text . "' as judul"),
                 DB::raw("'Tgl Cetak :'+format(getdate(),'dd-MM-yyyy HH:mm:ss')as tglcetak"),
-                DB::raw(" 'User :" . auth('api')->user()->name . "' as usercetak")
+                DB::raw(" 'User :" . auth('api')->user()->name . "' as usercetak"),
+                db::raw("'" . $disetujui . "' as disetujui"),
+                db::raw("'" . $diperiksa . "' as diperiksa"),
             )
             ->leftjoin(DB::raw("pengeluarantruckingdetail as b with (readuncommitted) "), 'a.nobukti', 'b.nobukti')
 
