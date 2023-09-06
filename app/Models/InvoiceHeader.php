@@ -767,7 +767,8 @@ class InvoiceHeader extends MyModel
             DB::raw($tempdatahasil . " as a")
         )
             ->select(
-                'a.id',
+                DB::raw("row_number() Over(Order By tglsp) as id"),
+                'a.id as sp_id',
                 'a.idinvoice',
                 'a.jobtrucking',
                 'a.tglsp',
