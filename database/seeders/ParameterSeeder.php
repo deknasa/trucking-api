@@ -470,6 +470,8 @@ class ParameterSeeder extends Seeder
         parameter::create(['grp' => 'DISETUJUI', 'subgrp' => 'DISETUJUI', 'kelompok' => '', 'text' => 'ROBERT', 'memo' => '{"MEMO":"DISETUJUI","SINGKATAN":"1","WARNA":"#28A745","WARNATULISAN":"#fff"}', 'type' => '0', 'modifiedby' => 'ADMIN', 'default' => '',]);
         parameter::create(['grp' => 'DIPERIKSA', 'subgrp' => 'DIPERIKSA', 'kelompok' => '', 'text' => 'WAWA', 'memo' => '{"MEMO":"DIPERIKSA","SINGKATAN":"2","WARNA":"#28A745","WARNATULISAN":"#fff"}', 'type' => '0', 'modifiedby' => 'ADMIN', 'default' => '',]);
         parameter::create(['grp' => 'PENGEMBALIAN KE PUSAT BANK BCA-3', 'subgrp' => 'PENGEMBALIAN KE PUSAT BANK BCA-3', 'kelompok' => 'PENERIMAAN BANK', 'text' => '#BPT-M BCA3 # 9999#/#R#/#Y', 'memo' => '{"MEMO":"PENGEMBALIAN KE PUSAT BANK BCA3","SINGKATAN":"#BPT-M BCA3 # 9999#/#R#/#Y","WARNA":"#28A745","WARNATULISAN":"#fff"}', 'type' => '0', 'modifiedby' => 'ADMIN', 'default' => '',]);
+        parameter::create(['grp' => 'KETERANGAN DEFAULT PENDAPATAN SUPIR', 'subgrp' => 'KETERANGAN DEFAULT PENDAPATAN SUPIR', 'kelompok' => '', 'text' => 'KOMISI SUPIR', 'memo' => '{"MEMO":"KOMISI SUPIR","SINGKATAN":"KS","WARNA":"#28A745","WARNATULISAN":"#fff"}', 'type' => '0', 'modifiedby' => 'ADMIN', 'default' => '',]);
+        parameter::create(['grp' => 'JURNAL PENDAPATAN SUPIR', 'subgrp' => 'JURNAL PENDAPATAN SUPIR', 'kelompok' => 'DEBET', 'text' => 'DEBET', 'memo' => '{"MEMO":"DEBET","SINGKATAN":"DEBET","WARNA":"#28A745","WARNATULISAN":"#fff","JURNAL":"03.02.02.04"}', 'type' => '0', 'modifiedby' => 'ADMIN', 'default' => '',]);
         
     }
 }
