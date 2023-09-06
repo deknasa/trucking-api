@@ -495,6 +495,15 @@ class LaporanKeteranganPinjamanSupir extends MyModel
         ], $queryTempLaporan2);
 
       
+        $disetujui = db::table('parameter')->from(db::raw('parameter with (readuncommitted)'))
+            ->select('text')
+            ->where('grp', 'DISETUJUI')
+            ->where('subgrp', 'DISETUJUI')->first()->text ?? '';
+
+        $diperiksa = db::table('parameter')->from(db::raw('parameter with (readuncommitted)'))
+            ->select('text')
+            ->where('grp', 'DIPERIKSA')
+            ->where('subgrp', 'DIPERIKSA')->first()->text ?? '';
 
         $queryRekap = DB::table($tempLaporan2)->from(
             DB::raw($tempLaporan2 . " as a")
@@ -506,6 +515,8 @@ class LaporanKeteranganPinjamanSupir extends MyModel
                 'a.debet',
                 'a.kredit',
                 DB::raw("sum ((isnull(A.saldo,0)+A.debet)-A.Kredit) over (order by id asc) as Saldo"),
+                db::raw("'" . $disetujui . "' as disetujui"),
+                db::raw("'" . $diperiksa . "' as diperiksa"),
 
             )
             ->orderBy('a.id');

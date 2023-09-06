@@ -78,6 +78,17 @@ class LaporanTripGandenganDetail extends MyModel
             ->where('subgrp', 'JUDULAN LAPORAN')
             ->first();
 
+            $disetujui = db::table('parameter')->from(db::raw('parameter with (readuncommitted)'))
+            ->select('text')
+            ->where('grp', 'DISETUJUI')
+            ->where('subgrp', 'DISETUJUI')->first()->text ?? '';
+
+        $diperiksa = db::table('parameter')->from(db::raw('parameter with (readuncommitted)'))
+            ->select('text')
+            ->where('grp', 'DIPERIKSA')
+            ->where('subgrp', 'DIPERIKSA')->first()->text ?? '';
+
+
         $select_Tempsuratpengantar = DB::table('Tempsuratpengantar as A')->from(DB::raw($Tempsuratpengantar . " AS A"))
         ->select([
             DB::raw("B.keterangan as gandengan"),
@@ -92,7 +103,9 @@ class LaporanTripGandenganDetail extends MyModel
             DB::raw("'Laporan Trip Gandengan Detail' as judulLaporan"),
             DB::raw("'" . $getJudul->text . "' as judul"),
             DB::raw("'Tgl Cetak :'+format(getdate(),'dd-MM-yyyy HH:mm:ss')as tglcetak"),
-            DB::raw(" 'User :" . auth('api')->user()->name . "' as usercetak")
+            DB::raw(" 'User :" . auth('api')->user()->name . "' as usercetak"),
+                db::raw("'" . $disetujui . "' as disetujui"),
+                db::raw("'" . $diperiksa . "' as diperiksa"),
         ])
         ->join('gandengan as B', 'A.gandengan_id', '=', 'B.id')
         ->join('supir as C', 'A.supir_id', '=', 'C.id')

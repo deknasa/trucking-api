@@ -481,6 +481,16 @@ class LaporanPemakaianBan extends MyModel
             ->where('subgrp', 'JUDULAN LAPORAN')
             ->first();
 
+            $disetujui = db::table('parameter')->from(db::raw('parameter with (readuncommitted)'))
+            ->select('text')
+            ->where('grp', 'DISETUJUI')
+            ->where('subgrp', 'DISETUJUI')->first()->text ?? '';
+
+        $diperiksa = db::table('parameter')->from(db::raw('parameter with (readuncommitted)'))
+            ->select('text')
+            ->where('grp', 'DIPERIKSA')
+            ->where('subgrp', 'DIPERIKSA')->first()->text ?? '';
+
         $query = DB::table($temphasildata3rekap)->from(
             DB::raw($temphasildata3rekap . " as a ")
         )
@@ -501,7 +511,9 @@ class LaporanPemakaianBan extends MyModel
                 DB::raw("'Laporan Pemakaian Ban' as judulLaporan"),
                 DB::raw("'" . $getJudul->text . "' as judul"),
                 DB::raw("'Tgl Cetak :'+format(getdate(),'dd-MM-yyyy HH:mm:ss')as tglcetak"),
-                DB::raw(" 'User :" . auth('api')->user()->name . "' as usercetak")
+                DB::raw(" 'User :" . auth('api')->user()->name . "' as usercetak"),
+                db::raw("'" . $disetujui . "' as disetujui"),
+                db::raw("'" . $diperiksa . "' as diperiksa"),
             )
             ->whereRaw("a.urut=1")
             ->orderBy('a.id', 'asc');

@@ -170,6 +170,16 @@ class LaporanHutangGiro extends MyModel
         // dd($select_TempPencairan2->get());
 
 
+        $disetujui = db::table('parameter')->from(db::raw('parameter with (readuncommitted)'))
+            ->select('text')
+            ->where('grp', 'DISETUJUI')
+            ->where('subgrp', 'DISETUJUI')->first()->text ?? '';
+
+        $diperiksa = db::table('parameter')->from(db::raw('parameter with (readuncommitted)'))
+            ->select('text')
+            ->where('grp', 'DIPERIKSA')
+            ->where('subgrp', 'DIPERIKSA')->first()->text ?? '';
+
     $query = DB::table($TempPencairan2)->from(DB::raw($TempPencairan2 ." AS a "))
     ->select([
         'a.nobukti',
@@ -182,6 +192,8 @@ class LaporanHutangGiro extends MyModel
         'a.judul',
         'a.tglcetak',
         'a.usercetak',
+        db::raw("'" . $disetujui . "' as disetujui"),
+        db::raw("'" . $diperiksa . "' as diperiksa"),
     ])
     ->OrderBy('a.tglbukti')
     ->OrderBy('a.nobukti');

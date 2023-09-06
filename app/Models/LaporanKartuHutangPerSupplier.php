@@ -337,6 +337,16 @@ class LaporanKartuHutangPerSupplier extends MyModel
         ], $select_Tempjt);
         //  dd(db::table($TempRekapHutang)->get());
 
+        $disetujui = db::table('parameter')->from(db::raw('parameter with (readuncommitted)'))
+        ->select('text')
+        ->where('grp', 'DISETUJUI')
+        ->where('subgrp', 'DISETUJUI')->first()->text ?? '';
+
+    $diperiksa = db::table('parameter')->from(db::raw('parameter with (readuncommitted)'))
+        ->select('text')
+        ->where('grp', 'DIPERIKSA')
+        ->where('subgrp', 'DIPERIKSA')->first()->text ?? '';
+
         $select_data = DB::table($TempRekapHutang . ' AS A')
             ->select([
                 'a.id',
@@ -355,7 +365,10 @@ class LaporanKartuHutangPerSupplier extends MyModel
                 DB::raw("'Laporan Kartu Hutang Per Supplier' as judulLaporan"),
                 DB::raw("'" . $getJudul->text . "' as judul"),
                 DB::raw("'Tgl Cetak :'+format(getdate(),'dd-MM-yyyy HH:mm:ss')as tglcetak"),
-                DB::raw(" 'User :" . auth('api')->user()->name . "' as usercetak")
+                DB::raw(" 'User :" . auth('api')->user()->name . "' as usercetak"),
+                db::raw("'" . $disetujui . "' as disetujui"),
+                db::raw("'" . $diperiksa . "' as diperiksa"),
+
             ])
             ->leftJoin($TempCicilRekap . ' AS B', 'A.nobukti', '=', 'B.hutang_nobukti')
             ->join('hutangheader AS C', 'A.nobukti', '=', 'C.nobukti')
@@ -737,6 +750,15 @@ class LaporanKartuHutangPerSupplier extends MyModel
             'tgljatuhtempo',
         ], $select_Tempjt);
         // dd($select_Tempjt->get());
+        $disetujui = db::table('parameter')->from(db::raw('parameter with (readuncommitted)'))
+        ->select('text')
+        ->where('grp', 'DISETUJUI')
+        ->where('subgrp', 'DISETUJUI')->first()->text ?? '';
+
+    $diperiksa = db::table('parameter')->from(db::raw('parameter with (readuncommitted)'))
+        ->select('text')
+        ->where('grp', 'DIPERIKSA')
+        ->where('subgrp', 'DIPERIKSA')->first()->text ?? '';
 
         $select_data = DB::table($TempRekapHutang . ' AS A')
             ->select([
@@ -755,7 +777,10 @@ class LaporanKartuHutangPerSupplier extends MyModel
                 DB::raw("'Laporan Kartu Hutang Per Supplier' as judulLaporan"),
                 DB::raw("'" . $getJudul->text . "' as judul"),
                 DB::raw("'Tgl Cetak :'+format(getdate(),'dd-MM-yyyy HH:mm:ss')as tglcetak"),
-                DB::raw(" 'User :" . auth('api')->user()->name . "' as usercetak")
+                DB::raw(" 'User :" . auth('api')->user()->name . "' as usercetak"),
+                db::raw("'" . $disetujui . "' as disetujui"),
+                db::raw("'" . $diperiksa . "' as diperiksa"),
+
             ])
             ->leftJoin($TempCicilRekap . ' AS B', 'A.nobukti', '=', 'B.hutang_nobukti')
             ->join('hutangheader AS C', 'A.nobukti', '=', 'C.nobukti')

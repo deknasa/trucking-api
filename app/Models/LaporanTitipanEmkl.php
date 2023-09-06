@@ -190,6 +190,16 @@ class LaporanTitipanEmkl  extends MyModel
         ], $queryrekapnopollist);
 
 
+        $disetujui = db::table('parameter')->from(db::raw('parameter with (readuncommitted)'))
+        ->select('text')
+        ->where('grp', 'DISETUJUI')
+        ->where('subgrp', 'DISETUJUI')->first()->text ?? '';
+
+    $diperiksa = db::table('parameter')->from(db::raw('parameter with (readuncommitted)'))
+        ->select('text')
+        ->where('grp', 'DIPERIKSA')
+        ->where('subgrp', 'DIPERIKSA')->first()->text ?? '';
+
         $query = DB::table($temphasil)->from(
             DB::raw($temphasil . " a with (readuncommitted) ")
         )
@@ -206,7 +216,9 @@ class LaporanTitipanEmkl  extends MyModel
                 'a.fnosp as nosp',
                 'a.fnominal as nominal',
                 'a.furut as urut',
-                'b.furut as uruttrado'
+                'b.furut as uruttrado',
+                db::raw("'" . $disetujui . "' as disetujui"),
+                db::raw("'" . $diperiksa . "' as diperiksa"),
 
             )
             ->join(DB::raw($temprekapnopollist . " as b with (readuncommitted) "), 'a.fnopol', 'b.fnopol')
