@@ -310,6 +310,7 @@ class PenerimaanTruckingHeader extends MyModel
             ->select(DB::raw("row_number() Over(Order By pengeluarantruckingdetail.nobukti) as id,pengeluarantruckingheader.tglbukti,pengeluarantruckingdetail.nobukti,pengeluarantruckingdetail.keterangan," . $tempPribadi . ".sisa"))
             ->leftJoin(DB::raw("$tempPribadi with (readuncommitted)"), 'pengeluarantruckingdetail.nobukti', $tempPribadi . ".nobukti")
             ->leftJoin(DB::raw("pengeluarantruckingheader with (readuncommitted)"), 'pengeluarantruckingdetail.nobukti', "pengeluarantruckingheader.nobukti")
+            ->whereRaw("pengeluarantruckingheader.pengeluarantrucking_id=8")
             ->whereRaw("pengeluarantruckingdetail.karyawan_id = $karyawan_id")
             ->whereRaw("pengeluarantruckingdetail.nobukti = $tempPribadi.nobukti")
             ->where(function ($query) use ($tempPribadi) {
@@ -475,7 +476,6 @@ class PenerimaanTruckingHeader extends MyModel
             ->select(DB::raw("pengeluarantruckingdetail.nobukti, (SELECT (pengeluarantruckingdetail.nominal - coalesce(SUM(penerimaantruckingdetail.nominal),0)) FROM penerimaantruckingdetail WHERE penerimaantruckingdetail.pengeluarantruckingheader_nobukti= pengeluarantruckingdetail.nobukti) AS sisa"))
             // ->leftJoin(DB::raw("penerimaantruckingdetail with (readuncommitted)"), 'penerimaantruckingdetail.pengeluarantruckingheader_nobukti', 'pengeluarantruckingdetail.nobukti')
             ->whereRaw("pengeluarantruckingdetail.karyawan_id = $karyawan_id")
-            ->where("pengeluarantruckingdetail.nobukti",  'LIKE', "%PJK%")
             ->groupBy('pengeluarantruckingdetail.nobukti', 'pengeluarantruckingdetail.nominal');
 
         Schema::create($temp, function ($table) {
@@ -589,7 +589,7 @@ class PenerimaanTruckingHeader extends MyModel
             FROM penerimaantruckingdetail WHERE penerimaantruckingdetail.pengeluarantruckingheader_nobukti= pengeluarantruckingdetail.nobukti) AS sisa "))
             ->leftJoin(DB::raw("pengeluarantruckingheader with (readuncommitted)"), 'pengeluarantruckingheader.nobukti', 'pengeluarantruckingdetail.nobukti')
             ->whereRaw("pengeluarantruckingdetail.karyawan_id = $karyawan_id")
-            ->where("pengeluarantruckingdetail.nobukti",  'LIKE', "%PJK%")
+            ->where("pengeluarantruckingheader.pengeluarantrucking_id", "8")
             ->whereRaw("pengeluarantruckingheader.nobukti not in (select pengeluarantruckingheader_nobukti from penerimaantruckingdetail where penerimaantruckingheader_id=$id)")
             ->orderBy('pengeluarantruckingheader.tglbukti', 'asc')
             ->orderBy('pengeluarantruckingdetail.nobukti', 'asc');
@@ -650,8 +650,8 @@ class PenerimaanTruckingHeader extends MyModel
                 FROM penerimaantruckingdetail WHERE penerimaantruckingdetail.pengeluarantruckingheader_nobukti= pengeluarantruckingdetail.nobukti) AS sisa "))
             ->leftJoin(DB::raw("pengeluarantruckingheader with (readuncommitted)"), 'pengeluarantruckingheader.nobukti', 'pengeluarantruckingdetail.nobukti')
             ->leftJoin(DB::raw("penerimaantruckingdetail with (readuncommitted)"), 'penerimaantruckingdetail.pengeluarantruckingheader_nobukti', 'pengeluarantruckingdetail.nobukti')
+            ->where("pengeluarantruckingheader.pengeluarantrucking_id", "8")
             ->whereRaw("pengeluarantruckingdetail.karyawan_id = $karyawan_id")
-            ->where("pengeluarantruckingdetail.nobukti",  'LIKE', "%PJK%")
             ->where("penerimaantruckingdetail.penerimaantruckingheader_id", $id)
             ->orderBy('pengeluarantruckingheader.tglbukti', 'asc')
             ->orderBy('pengeluarantruckingdetail.nobukti', 'asc');
