@@ -754,7 +754,7 @@ class PendapatanSupirHeader extends MyModel
         $tglJatuhTempo[] = $data['tglbukti'];
         $nominalDetailPengeluaran[] = $totalPengeluaran;
         $coaDebetPengeluaran[] = $memoDebet['JURNAL'];
-        $keteranganDetailPengeluaran[] = "Pendapatan Supir " . $data['supir'] . ' ' . $data['tgldari'] . " s/d " . $data['tglsampai'];
+        $keteranganDetailPengeluaran[] = "Pendapatan Supir " . $data['tgldari'] . " s/d " . $data['tglsampai'];
         if ($data['bank_id'] == 1) {
             $alatBayar = DB::table("alatbayar")->from(DB::raw("alatbayar with (readuncommitted)"))->where('kodealatbayar', 'TUNAI')->first();
         } else {
@@ -915,7 +915,7 @@ class PendapatanSupirHeader extends MyModel
         $tglJatuhTempo[] = $data['tglbukti'];
         $nominalDetailPengeluaran[] = $totalPengeluaran;
         $coaDebetPengeluaran[] = $memoDebet['JURNAL'];
-        $keteranganDetailPengeluaran[] = "Pendapatan Supir " . $data['supir'] . ' ' . $data['tgldari'] . " s/d " . $data['tglsampai'];
+        $keteranganDetailPengeluaran[] = "Pendapatan Supir " . $data['tgldari'] . " s/d " . $data['tglsampai'];
 
         if ($pendapatanSupirHeader->bank_id == 1) {
             $alatBayar = DB::table("alatbayar")->from(DB::raw("alatbayar with (readuncommitted)"))->where('kodealatbayar', 'TUNAI')->first();
@@ -1135,11 +1135,12 @@ class PendapatanSupirHeader extends MyModel
             DB::table($temp)->insertUsing(['id', 'supirdeposito', 'nominal'], $fetch);
 
             $query = DB::table($temp)->from(DB::raw("$temp with (readuncommitted)"))
+                ->select(DB::raw("row_number() Over(Order By supirdeposito) as id, id as supir_id, supirdeposito, nominal"))
                 ->orderBy('supirdeposito')->get();
         } else {
 
             $query = DB::table("supir")->from(DB::raw("supir with (readuncommitted)"))
-                ->select('id', 'namasupir as supirdeposito')
+                ->select(DB::raw("row_number() Over(Order By namasupir) as id, id as supir_id, namasupir as supirdeposito"))
                 ->where('supir.statusaktif', '=', $statusaktif->id)
                 ->orderBy('namasupir')
                 ->get();
@@ -1172,7 +1173,8 @@ class PendapatanSupirHeader extends MyModel
                 ->leftJoin(DB::raw("penerimaantruckingheader as b"), 'b.id', 'a.penerimaantruckingheader_id')
                 ->leftJoin(DB::raw("pengeluarantruckingheader as c"), 'c.nobukti', 'a.pengeluarantruckingheader_nobukti')
                 ->leftJoin(DB::raw("pengeluarantruckingdetail as d"), 'c.nobukti', 'd.nobukti')
-                ->where('a.nobukti', 'like', "%PJP%");
+                ->where('b.penerimaantrucking_id', "2")
+                ->where('b.pendapatansupir_bukti', $nobukti);
 
             DB::table($temp)->insertUsing(['penerimaantruckingheader_id', 'nobukti', 'tglbukti', 'supir_id', 'nominal', 'keterangan', 'sisa'], $fetch);
 
@@ -1184,7 +1186,7 @@ class PendapatanSupirHeader extends MyModel
                 ->where("b.tglbukti", "<=", $tglBukti)
                 ->whereRaw("b.nobukti not in (select a.pengeluarantruckingheader_nobukti from penerimaantruckingdetail as a 
             left join penerimaantruckingheader as b on b.id = a.penerimaantruckingheader_id
-                        where b.pendapatansupir_bukti='$nobukti' and b.nobukti like '%PJP%')");
+                        where b.pendapatansupir_bukti='$nobukti' and b.penerimaantrucking_id=2)");
 
             DB::table($temp)->insertUsing(['nobukti', 'tglbukti', 'supir_id', 'keterangan', 'sisa'], $fetch2);
 

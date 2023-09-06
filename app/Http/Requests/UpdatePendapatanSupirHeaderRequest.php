@@ -77,12 +77,10 @@ class UpdatePendapatanSupirHeaderRequest extends FormRequest
                 new DateTutupBuku()
             ], 
             'bank' => 'required',
-            'supir' => [
-                new ValidasiHutangList($jumlahdetail)
-            ],
             'tgldari' => [
                 'required', 'date_format:d-m-Y',
-                'before_or_equal:' . date('d-m-Y'),
+                'before_or_equal:' . date('d-m-Y'),                
+                new ValidasiHutangList($jumlahdetail),
                 new ValidasiPendapatanSupir()
             ],
             'tglsampai' => [

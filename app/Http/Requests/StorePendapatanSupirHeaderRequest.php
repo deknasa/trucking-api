@@ -73,13 +73,11 @@ class StorePendapatanSupirHeaderRequest extends FormRequest
                 new DateTutupBuku()
             ],
             'bank' => 'required',
-            'supir' => [
-                new ValidasiHutangList($jumlahdetail)
-            ],
             'tgldari' => [
                 'required', 'date_format:d-m-Y',
                 'before:' . $tglbatasakhir,
                 new DateTutupBuku(),
+                new ValidasiHutangList($jumlahdetail),
                 new ValidasiPendapatanSupir()
             ],
             'tglsampai' => [
