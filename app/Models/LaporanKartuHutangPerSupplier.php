@@ -320,12 +320,15 @@ class LaporanKartuHutangPerSupplier extends MyModel
         Schema::create($Tempjt, function ($table) {
             $table->string('nobukti', 50);
             $table->datetime('tgljatuhtempo');
+            $table->LongText('keterangan');
         });
 
         $select_Tempjt = DB::table($TempRekapHutang . ' AS A')
             ->select([
                 'A.nobukti',
                 DB::raw('MAX(B.tgljatuhtempo) as tgljatuhtempo'),
+                DB::raw('MAX(B.keterangan) as keterangan'),
+
             ])
             ->join('hutangdetail as b', 'A.nobukti', 'b.nobukti')
             ->groupBy('A.nobukti');
@@ -334,6 +337,7 @@ class LaporanKartuHutangPerSupplier extends MyModel
         DB::table($Tempjt)->insertUsing([
             'nobukti',
             'tgljatuhtempo',
+            'keterangan'
         ], $select_Tempjt);
         //  dd(db::table($TempRekapHutang)->get());
 
@@ -351,7 +355,7 @@ class LaporanKartuHutangPerSupplier extends MyModel
             ->select([
                 'a.id',
                 'D.namasupplier',
-                'C.keterangan',
+                db::raw("(case when isnull(C.keterangan,'')='' then isnull(e.keterangan,'') else isnull(C.keterangan,'') end) as keterangan"),
                 'A.nobukti',
                 'C.tglbukti',
                 'E.tgljatuhtempo',

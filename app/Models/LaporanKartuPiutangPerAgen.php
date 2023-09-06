@@ -364,6 +364,28 @@ class LaporanKartuPiutangPerAgen extends MyModel
             'nominal',
             'bayar',
         ], $select_TempRekappiutang2);
+
+        $Tempketerangan = '##Tempketerangan' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+        Schema::create($Tempketerangan, function ($table) {
+            $table->string('nobukti', 50);
+            $table->LongText('keterangan');
+        });
+
+        $select_Tempketerangan = DB::table($TempRekappiutang . ' AS A')
+            ->select([
+                'A.nobukti',
+                DB::raw('MAX(B.keterangan) as keterangan'),
+
+            ])
+            ->join('piutangdetail as b', 'A.nobukti', 'b.nobukti')
+            ->groupBy('A.nobukti');
+
+
+        DB::table($Tempketerangan)->insertUsing([
+            'nobukti',
+            'keterangan'
+        ], $select_Tempketerangan);
+
         // dd($select_TempRekappiutang2->get());
         $disetujui = db::table('parameter')->from(db::raw('parameter with (readuncommitted)'))
             ->select('text')
@@ -378,7 +400,7 @@ class LaporanKartuPiutangPerAgen extends MyModel
         $select_data = DB::table($TempRekappiutang . ' AS A')
             ->select([
                 'D.namaagen',
-                'C.keterangan',
+                db::raw("(case when isnull(C.keterangan,'')='' then isnull(e.keterangan,'') else isnull(C.keterangan,'') end) as keterangan"),
                 'A.nobukti',
                 'C.tglbukti',
                 DB::raw("dateadd(d,isnull(d.[top],0),c.tglbukti) as tgljatuhtempo"),
@@ -399,6 +421,9 @@ class LaporanKartuPiutangPerAgen extends MyModel
             ->leftJoin($TempCicilRekap . ' AS B', 'A.nobukti', '=', 'B.piutang_nobukti')
             ->join(DB::raw("piutangheader AS C with (readuncommitted)"), 'A.nobukti', '=', 'C.nobukti')
             ->join(DB::raw("agen AS D with (readuncommitted)"), 'C.agen_id', '=', 'D.id')
+            ->leftJoin($Tempketerangan . ' AS e', 'e.nobukti', '=', 'a.nobukti')
+
+            
             ->orderBy('D.namaagen')
             ->orderBy('C.tglbukti')
             ->orderBy('C.nobukti');
