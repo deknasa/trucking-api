@@ -56,7 +56,7 @@ class GajiSupirPelunasanPinjaman extends MyModel
         DB::table($temp)->insertUsing(['tglbukti', 'nobukti', 'sisaawal', 'keterangan', 'gajisupir_id', 'nominal', 'sisa'], $fetchPengeluaran);
 
         $data = DB::table($temp)
-            ->select(DB::raw("row_number() Over(Order By $temp.tglbukti asc,$temp.nobukti) as pinjPribadi_id,tglbukti as pinjPribadi_tglbukti,nobukti as pinjPribadi_nobukti,sisaawal,keterangan as pinjPribadi_keterangan,
+            ->select(DB::raw("row_number() Over(Order By $temp.tglbukti asc,$temp.nobukti) as id,tglbukti as pinjPribadi_tglbukti,nobukti as pinjPribadi_nobukti,sisaawal,keterangan as pinjPribadi_keterangan,
             (case when nominal IS NULL then 0 else nominal end) as nominalPP ,gajisupir_id,sisa as pinjPribadi_sisa"))
             ->orderBy("$temp.tglbukti", 'asc')
             ->orderBy("$temp.nobukti", 'asc')
@@ -249,7 +249,7 @@ class GajiSupirPelunasanPinjaman extends MyModel
         $tempPinjaman = $this->createTempPinjamanPribadi($nobukti, $supirId);
 
         $data = DB::table($tempPinjaman)->from(DB::raw("$tempPinjaman with (readuncommitted)"))
-            ->select(DB::raw("row_number() Over(Order By $tempPinjaman.pengeluarantrucking_nobukti) as pinjPribadi_id,gajisupir_id, pengeluarantrucking_nobukti as pinjPribadi_nobukti,keterangan as pinjPribadi_keterangan,sisa as pinjPribadi_sisa,nominal as nominalPP"))
+            ->select(DB::raw("row_number() Over(Order By $tempPinjaman.pengeluarantrucking_nobukti) as id,gajisupir_id, pengeluarantrucking_nobukti as pinjPribadi_nobukti,keterangan as pinjPribadi_keterangan,sisa as pinjPribadi_sisa,nominal as nominalPP"))
             ->get();
         return $data;
     }

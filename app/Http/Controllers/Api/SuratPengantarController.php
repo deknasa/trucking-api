@@ -176,6 +176,8 @@ class SuratPengantarController extends Controller
             } else {
                 $suratPengantar->page = ceil($suratPengantar->position / ($request->limit ?? 10));
             }
+            // $suratPengantar->position = $suratpengantar->id;
+            // $suratPengantar->page = 1;
 
 
             DB::commit();
@@ -339,14 +341,14 @@ class SuratPengantarController extends Controller
         $edit = true;
         // if (!$todayValidation) {
         //     $edit = false;
-            // if ($isEditAble) {
-            //     $edit = true;
-            // }
+        // if ($isEditAble) {
+        //     $edit = true;
+        // }
         // }
         // else {
-            if (!$isEditAble) {
-                $edit = false;
-            }
+        if (!$isEditAble) {
+            $edit = false;
+        }
         // }
 
         $cekdata = $suratPengantar->cekvalidasihapus($nobukti->nobukti, $nobukti->jobtrucking);
