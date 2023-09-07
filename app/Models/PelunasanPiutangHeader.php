@@ -681,9 +681,17 @@ class PelunasanPiutangHeader extends MyModel
             ->where('grp', 'JURNAL NOTA DEBET')->where('subgrp', 'KREDIT')->first();
         $memoNotaDebetCoa = json_decode($getNotaDebetCoa->memo, true);
 
+        
+
         $getNotaKreditCoa = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->select('memo')
             ->where('grp', 'JURNAL NOTA KREDIT')->where('subgrp', 'KREDIT')->first();
         $memoNotaKreditCoa = json_decode($getNotaKreditCoa->memo, true);
+
+        $agen_id =$data['agen_id'] ??0 ;
+
+        $getcoadebetnk=db::table("emkl")->from(db::raw("emkl a with (readuncommitted)"))->select('coa')
+                ->where('id',$agen_id)
+                ->first()->coa ?? $memoNotaDebetCoa['JURNAL'] ;
 
         for ($i = 0; $i < count($data['piutang_id']); $i++) {
             $piutang = PiutangHeader::where('nobukti', $data['piutang_nobukti'][$i])->first();
@@ -692,7 +700,7 @@ class PelunasanPiutangHeader extends MyModel
                 $getNominalLebih = $memoNotaDebetCoa['JURNAL'];
                 $nominalLebihBayar[] = $data['nominallebihbayar'][$i] ?? 0;
                 $coaDebetNotaDebet[] = $getCoa->coa;
-                $coaKreditNotaDebet[] = $memoNotaDebetCoa['JURNAL'];
+                $coaKreditNotaDebet[] = $getcoadebetnk;
             }
 
             $pelunasanPiutangDetail = (new PelunasanPiutangDetail())->processStore($pelunasanPiutangHeader, [
