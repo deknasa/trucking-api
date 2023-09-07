@@ -175,6 +175,7 @@ class LaporanKeteranganPinjamanSupir extends MyModel
             'updated_at',
         ], $queryPenerimaanTruckingDetail);
 
+
         $pengeluaranTruckingHeader = '##pengeluaranTruckingHeader' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
         Schema::create($pengeluaranTruckingHeader, function ($table) {
             $table->BigInteger('id');
@@ -260,6 +261,7 @@ class LaporanKeteranganPinjamanSupir extends MyModel
         Schema::create($pengeluaranTruckingDetail, function ($table) {
             $table->string('nobukti', 50)->nullable();
             $table->longText('keterangan')->nullable();
+            $table->integer('supir_id')->nullable();
             $table->double('nominal', 15, 2)->nullable();
         });
 
@@ -270,6 +272,7 @@ class LaporanKeteranganPinjamanSupir extends MyModel
                 'a.nobukti',
                 DB::raw("max(a.keterangan) as keterangan"),
                 DB::raw("sum(a.nominal) as nominal"),
+                DB::raw("max(a.supir_id) as supir_id"),
 
             )
             ->join(DB::raw($pengeluaranTruckingHeader . " as b"), 'a.nobukti', 'b.nobukti')
@@ -279,6 +282,7 @@ class LaporanKeteranganPinjamanSupir extends MyModel
             'nobukti',
             'keterangan',
             'nominal',
+            'supir_id',
         ], $queryPengeluaranTruckingDetail);
 
 
@@ -360,6 +364,7 @@ class LaporanKeteranganPinjamanSupir extends MyModel
             $table->string('pengeluarantruckingheader_nobukti', 50)->nullable();
             $table->double('nominal', 15, 2)->nullable();
             $table->longText('keterangan')->nullable();
+            $table->integer('supir_id')->nullable();            
         });
 
         $queryPenerimaanTruckingDetail2 = DB::table("penerimaantruckingdetail")->from(
@@ -370,6 +375,7 @@ class LaporanKeteranganPinjamanSupir extends MyModel
                 'a.pengeluarantruckingheader_nobukti',
                 DB::raw("sum(a.nominal) as nominal"),
                 DB::raw("max(a.keterangan) as keterangan"),
+                DB::raw("max(a.supir_id) as supir_id"),
 
             )
             ->join(DB::raw($penerimaanTruckingHeader2 . " as b"), 'a.nobukti', 'b.nobukti')
@@ -380,6 +386,7 @@ class LaporanKeteranganPinjamanSupir extends MyModel
             'pengeluarantruckingheader_nobukti',
             'nominal',
             'keterangan',
+            'supir_id',
         ], $queryPenerimaanTruckingDetail2);
 
        
@@ -395,6 +402,7 @@ class LaporanKeteranganPinjamanSupir extends MyModel
             $table->double('debet', 15, 2)->nullable();
             $table->double('kredit', 15, 2)->nullable();
             $table->double('saldo', 15, 2)->nullable();
+            $table->string('namasupir', 1000)->nullable();
         });
 
         $queryTempLaporan = DB::table($pengeluaranTruckingHeader)->from(
@@ -408,15 +416,18 @@ class LaporanKeteranganPinjamanSupir extends MyModel
                 DB::raw("0 as flag"),
                 'c.nominal as debet',
                 DB::raw("0 as kredit"),
+                db::raw("isnull(d.namasupir,'') as namasupir")
 
             )
             ->leftjoin(DB::raw($penerimaanTruckingDetail . " as b "), 'a.nobukti', 'b.pengeluarantruckingheader_nobukti')
             ->join(DB::raw($pengeluaranTruckingDetail . " as c with (readuncommitted)"), 'a.nobukti', 'c.nobukti')
+            ->leftjoin(DB::raw("supir as d with (readuncommitted) "), 'c.supir_id', 'd.id')
             ->whereRaw("isnull(B.nobukti,'')=''")
+            ->orderBy('d.namasupir', 'ASC')
             ->orderBy('a.tglbukti', 'ASC')
             ->orderBy('c.nobukti', 'ASC');
 
-
+            // dd($queryTempLaporan->get());
         DB::table($tempLaporan)->insertUsing([
             'tglbuktipinjaman',
             'tglbukti',
@@ -425,6 +436,7 @@ class LaporanKeteranganPinjamanSupir extends MyModel
             'flag',
             'debet',
             'kredit',
+            'namasupir',
         ], $queryTempLaporan);
 
         
@@ -440,13 +452,17 @@ class LaporanKeteranganPinjamanSupir extends MyModel
                 DB::raw("1 as flag"),
                 DB::raw("0 as debet"),
                 'c.nominal as kredit',
+                db::raw("isnull(d.namasupir,'') as namasupir")                
 
             )
             ->join(DB::raw($penerimaanTruckingDetail2 . " as c with (readuncommitted)"), 'a.nobukti', 'c.nobukti')
             ->join(DB::raw("pengeluarantruckingheader as b"), 'c.pengeluarantruckingheader_nobukti', 'b.nobukti')
+            ->leftjoin(DB::raw("supir as d with (readuncommitted) "), 'c.supir_id', 'd.id')
             ->where('b.statusposting', '=', $statusposting)
+            ->orderBy('d.namasupir', 'ASC')
             ->orderBy('a.tglbukti', 'ASC')
             ->orderBy('c.pengeluarantruckingheader_nobukti', 'ASC');
+
 
         DB::table($tempLaporan)->insertUsing([
             'tglbuktipinjaman',
@@ -456,6 +472,7 @@ class LaporanKeteranganPinjamanSupir extends MyModel
             'flag',
             'debet',
             'kredit',
+            'namasupir'
         ], $queryTempLaporanDua);
 
         $tempLaporan2 = '##tempLaporan2' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
@@ -467,6 +484,7 @@ class LaporanKeteranganPinjamanSupir extends MyModel
             $table->double('debet', 15, 2)->nullable();
             $table->double('kredit', 15, 2)->nullable();
             $table->double('saldo', 15, 2)->nullable();
+            $table->string('namasupir', 1000)->nullable();
         });
 
         $queryTempLaporan2 = DB::table($tempLaporan)->from(
@@ -479,11 +497,15 @@ class LaporanKeteranganPinjamanSupir extends MyModel
                 'a.debet',
                 'a.kredit',
                 DB::raw("0 as saldo"),
+                'a.namasupir',
 
             )
+            ->orderBy('a.namasupir', 'ASC')
             ->orderBy('a.tglbuktipinjaman', 'ASC')
             ->orderBy('a.nobukti', 'ASC')
             ->orderBy('a.flag', 'ASC');
+
+         
 
         DB::table($tempLaporan2)->insertUsing([
             'tglbukti',
@@ -491,7 +513,8 @@ class LaporanKeteranganPinjamanSupir extends MyModel
             'keterangan',
             'debet',
             'kredit',
-            'saldo'
+            'saldo',
+            'namasupir'
         ], $queryTempLaporan2);
 
       
