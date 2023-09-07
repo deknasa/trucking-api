@@ -689,10 +689,11 @@ class PelunasanPiutangHeader extends MyModel
 
         $agen_id =$data['agen_id'] ??0 ;
 
-        $getcoadebetnk=db::table("emkl")->from(db::raw("emkl a with (readuncommitted)"))->select('coa')
+        $getcoadebetnk=db::table("agen")->from(db::raw("agen a with (readuncommitted)"))->select('coa')
                 ->where('id',$agen_id)
                 ->first()->coa ?? $memoNotaDebetCoa['JURNAL'] ;
 
+           
         for ($i = 0; $i < count($data['piutang_id']); $i++) {
             $piutang = PiutangHeader::where('nobukti', $data['piutang_nobukti'][$i])->first();
 
@@ -738,7 +739,7 @@ class PelunasanPiutangHeader extends MyModel
             $nominalBayar[] = $data['bayar'][$i];
             $nominalPotongan[] = $potongan;
             $coaPotongan[] = $data['coapotongan'][$i] ?? '';
-            $coaDebetNotaKredit[] = $memoNotaKreditCoa['JURNAL'];
+            $coaDebetNotaKredit[] = $getcoadebetnk ;//$memoNotaKreditCoa['JURNAL'];
         }
 
         if ($data['alatbayar_id'] != $alatbayarGiro->id) {
@@ -910,13 +911,22 @@ class PelunasanPiutangHeader extends MyModel
             ->where('grp', 'JURNAL NOTA KREDIT')->where('subgrp', 'KREDIT')->first();
         $memoNotaKreditCoa = json_decode($getNotaKreditCoa->memo, true);
 
+        
+        $agen_id =$data['agen_id'] ??0 ;
+
+        $getcoadebetnk=db::table("agen")->from(db::raw("agen a with (readuncommitted)"))->select('coa')
+                ->where('id',$agen_id)
+                ->first()->coa ?? $memoNotaDebetCoa['JURNAL'] ;
+
+                // dd($getcoadebetnk);
+
         for ($i = 0; $i < count($data['piutang_id']); $i++) {
             $piutang = PiutangHeader::where('nobukti', $data['piutang_nobukti'][$i])->first();
             if ($data['nominallebihbayar'][$i] > 0) {
                 $getNominalLebih = $memoNotaDebetCoa['JURNAL'];
                 $nominalLebihBayar[] = $data['nominallebihbayar'][$i] ?? '';
                 $coaDebetNotaDebet[] = $getCoa->coa;
-                $coaKreditNotaDebet[] = $memoNotaDebetCoa['JURNAL'];
+                $coaKreditNotaDebet[] =  $getcoadebetnk; // $memoNotaDebetCoa['JURNAL'];
             }
 
             $pelunasanPiutangDetail = (new PelunasanPiutangDetail())->processStore($pelunasanPiutangHeader, [
@@ -954,7 +964,7 @@ class PelunasanPiutangHeader extends MyModel
             $nominalBayar[] = $data['bayar'][$i];
             $nominalPotongan[] = $potongan;
             $coaPotongan[] = $data['coapotongan'][$i] ?? '';
-            $coaDebetNotaKredit[] = $memoNotaKreditCoa['JURNAL'];
+            $coaDebetNotaKredit[] =  $getcoadebetnk; //$memoNotaKreditCoa['JURNAL'];
         }
 
         if ($pelunasanPiutangHeader->penerimaan_nobukti != '-') {
@@ -1049,6 +1059,8 @@ class PelunasanPiutangHeader extends MyModel
                     'keteranganpotongan' => $keteranganDetail,
 
                 ];
+
+                // dd($notaKreditRequest);
 
                 $newNotaKredit = new NotaKreditHeader();
                 $newNotaKredit = $newNotaKredit->findAll($get->id);
