@@ -39,6 +39,7 @@ class LaporanPinjamanSupir extends MyModel
             $table->integer('supir_id')->nullable();
             $table->double('nominal')->nullable();
             $table->integer('tipe')->nullable();
+            $table->string('namasupir', 1000)->nullable();
         });
 
         $queryhistory = DB::table('pengeluarantruckingheader')->from(
@@ -49,14 +50,17 @@ class LaporanPinjamanSupir extends MyModel
                 'a.tglbukti',
                 'b.supir_id',
                 'b.nominal',
-                DB::raw("1 as tipe")
+                DB::raw("1 as tipe"),
+                db::raw("isnull(c.namasupir,'') as namasupir")
             )
             ->join(DB::raw("pengeluarantruckingdetail as b with (readuncommitted) "), 'a.nobukti', 'b.nobukti')
+            ->leftjoin(DB::raw("supir as c with (readuncommitted) "), 'b.supir_id', 'c.id')
             ->where('a.pengeluarantrucking_id', '=', $pengeluarantrucking_id)
             ->whereRaw("a.tglbukti<='" . date('Y/m/d', strtotime($sampai)) . "'")
             // ->whereRaw("isnull(b.supir_id,0)<>0")
             ->where('a.statusposting', '=', $jenis)
 
+            ->OrderBy('c.namasupir', 'asc')
             ->OrderBy('a.tglbukti', 'asc')
             ->OrderBy('a.nobukti', 'asc');
 
@@ -67,6 +71,7 @@ class LaporanPinjamanSupir extends MyModel
             'supir_id',
             'nominal',
             'tipe',
+            'namasupir',
         ], $queryhistory);
 
 
@@ -78,7 +83,9 @@ class LaporanPinjamanSupir extends MyModel
                 'a.tglbukti',
                 'b.supir_id',
                 'b.nominal',
-                DB::raw("1 as tipe")
+                DB::raw("1 as tipe"),
+                db::raw("isnull(f.namasupir,'') as namasupir")
+
             )
             ->join(DB::raw("penerimaantruckingdetail as b with (readuncommitted) "), 'a.nobukti', 'b.nobukti')
             ->join(DB::raw("gajisupirpelunasanpinjaman as c with(readuncommitted)"), function ($join) {
@@ -89,12 +96,15 @@ class LaporanPinjamanSupir extends MyModel
 
             ->leftjoin(DB::raw("prosesgajisupirdetail as d with (readuncommitted) "), 'c.gajisupir_nobukti', 'd.gajisupir_nobukti')
             ->leftjoin(DB::raw("pengeluarantruckingheader as e with (readuncommitted) "), 'b.pengeluarantruckingheader_nobukti', 'e.nobukti')
+            ->leftjoin(DB::raw("supir as f with (readuncommitted) "), 'b.supir_id', 'f.id')
+
 
             ->where('a.penerimaantrucking_id', '=', $penerimaantrucking_id)
             ->whereRaw("a.tglbukti<'" . date('Y/m/d', strtotime($sampai)) . "'")
             // ->whereRaw("isnull(b.supir_id,0)<>0")
             ->where('e.statusposting', '=', $jenis)
 
+            ->OrderBy('f.namasupir', 'asc')
             ->OrderBy('a.tglbukti', 'asc')
             ->OrderBy('a.nobukti', 'asc');
 
@@ -105,6 +115,7 @@ class LaporanPinjamanSupir extends MyModel
             'supir_id',
             'nominal',
             'tipe',
+            'namasupir',
         ], $queryhistory);
 
         $temprekapdata = '##temprekapdata' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
@@ -116,6 +127,8 @@ class LaporanPinjamanSupir extends MyModel
             $table->date('tglbukti')->nullable();
             $table->date('tglbuktipelunasan')->nullable();
             $table->double('nominal')->nullable();
+            $table->string('namasupir', 1000)->nullable();
+
         });
 
         $queryrekapdata = DB::table($temphistory)->from(
@@ -126,7 +139,8 @@ class LaporanPinjamanSupir extends MyModel
                 DB::raw("'' as nobuktipelunasan"),
                 DB::raw("min(a.tglbukti) as tglbukti"),
                 DB::raw("'1900/1/1' as tglbuktipelunasan"),
-                DB::raw("sum(a.nominal) as nominal")
+                DB::raw("sum(a.nominal) as nominal"),
+                DB::raw("max(a.namasupir) as namasupir"),
             )
             ->groupBy('a.nobukti');
 
@@ -136,6 +150,7 @@ class LaporanPinjamanSupir extends MyModel
             'tglbukti',
             'tglbuktipelunasan',
             'nominal',
+            'namasupir',
         ], $queryrekapdata);
 
         $queryrekapdata = DB::table('penerimaantruckingheader')->from(
@@ -147,7 +162,8 @@ class LaporanPinjamanSupir extends MyModel
              as nobuktipelunasan"),
                 'e.tglbukti',
                 'a.tglbukti as tglbuktipelunasan',
-                DB::raw("(b.nominal*-1) as nominal")
+                DB::raw("(b.nominal*-1) as nominal"),
+                db::raw("isnull(f.namasupir,'') as namasupir")
             )
             ->join(DB::raw("penerimaantruckingdetail as b with (readuncommitted) "), 'a.nobukti', 'b.nobukti')
             ->leftjoin(DB::raw("gajisupirpelunasanpinjaman as c with(readuncommitted)"), function ($join) {
@@ -158,10 +174,12 @@ class LaporanPinjamanSupir extends MyModel
 
             ->leftjoin(DB::raw("prosesgajisupirdetail as d with (readuncommitted) "), 'c.gajisupir_nobukti', 'd.gajisupir_nobukti')
             ->leftjoin(DB::raw("pengeluarantruckingheader as e with (readuncommitted) "), 'b.pengeluarantruckingheader_nobukti', 'e.nobukti')
+            ->leftjoin(DB::raw("supir as f with (readuncommitted) "), 'b.supir_id', 'f.id')
             ->where('a.penerimaantrucking_id', '=', $penerimaantrucking_id)
             ->whereRaw("a.tglbukti='" . date('Y/m/d', strtotime($sampai)) . "'")
             ->where('e.statusposting', '=', $jenis)
 
+            ->OrderBy('f.namasupir', 'asc')
             ->OrderBy('a.tglbukti', 'asc')
             ->OrderBy('a.nobukti', 'asc');
 
@@ -172,6 +190,7 @@ class LaporanPinjamanSupir extends MyModel
             'tglbukti',
             'tglbuktipelunasan',
             'nominal',
+            'namasupir',
         ], $queryrekapdata);
 
         $temprekapdatahasil = '##temprekapdatahasil' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
@@ -183,6 +202,8 @@ class LaporanPinjamanSupir extends MyModel
             $table->date('tglbukti')->nullable();
             $table->date('tglbuktipelunasan')->nullable();
             $table->double('nominal')->nullable();
+            $table->string('namasupir', 1000)->nullable();
+
         });
 
         $queryrekapdatahasil = DB::table($temprekapdata)->from(
@@ -193,8 +214,10 @@ class LaporanPinjamanSupir extends MyModel
                 'a.nobuktipelunasan',
                 'a.tglbukti',
                 'a.tglbuktipelunasan',
-                'a.nominal'
+                'a.nominal',
+                'a.namasupir'
             )
+            ->OrderBy('a.namasupir', 'asc')
             ->OrderBy('a.tglbukti', 'asc')
             ->OrderBy('a.nobukti', 'asc');
 
@@ -205,6 +228,7 @@ class LaporanPinjamanSupir extends MyModel
             'tglbukti',
             'tglbuktipelunasan',
             'nominal',
+            'namasupir',
         ], $queryrekapdatahasil);
 
         $temphasil = '##temphasil' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
