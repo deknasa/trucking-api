@@ -414,7 +414,7 @@ class LaporanKeteranganPinjamanSupir extends MyModel
                 'c.nobukti',
                 'c.keterangan',
                 DB::raw("0 as flag"),
-                'c.nominal as debet',
+                db::raw("(isnull(c.nominal,0)-isnull(b.nominal,0)) as debet"),
                 DB::raw("0 as kredit"),
                 db::raw("isnull(d.namasupir,'') as namasupir")
 
@@ -422,7 +422,7 @@ class LaporanKeteranganPinjamanSupir extends MyModel
             ->leftjoin(DB::raw($penerimaanTruckingDetail . " as b "), 'a.nobukti', 'b.pengeluarantruckingheader_nobukti')
             ->join(DB::raw($pengeluaranTruckingDetail . " as c with (readuncommitted)"), 'a.nobukti', 'c.nobukti')
             ->leftjoin(DB::raw("supir as d with (readuncommitted) "), 'c.supir_id', 'd.id')
-            ->whereRaw("isnull(B.nobukti,'')=''")
+            // ->whereRaw("isnull(B.nobukti,'')=''")
             ->orderBy('d.namasupir', 'ASC')
             ->orderBy('a.tglbukti', 'ASC')
             ->orderBy('c.nobukti', 'ASC');
