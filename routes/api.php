@@ -235,6 +235,9 @@ use App\Http\Controllers\Api\LapKartuHutangPerVendorDetailController;
 use App\Http\Controllers\Api\LaporanWarkatBelumCairController;
 use App\Http\Controllers\Api\LaporanPiutangGiroController;
 use App\Http\Controllers\Api\LaporanLabaRugiController;
+use App\Http\Controllers\Api\LaporanPemakaianStokController;
+use App\Http\Controllers\Api\LaporanPembelianBarangController;
+use App\Http\Controllers\Api\LaporanStokController;
 use App\Http\Controllers\Api\LaporanNeracaController;
 use App\Http\Controllers\Api\LaporanPenyesuaianBarangController;
 use App\Http\Controllers\Api\LaporanPemakaianBanController;
@@ -1375,6 +1378,18 @@ route::middleware(['auth:api', 'authorized'])->group(function () {
     Route::get('laporanlabarugi/report', [LaporanLabaRugiController::class, 'report'])->name('laporanlabarugi.report');
     Route::get('laporanlabarugi/export', [LaporanLabaRugiController::class, 'export'])->name('laporanlabarugi.export');
     Route::resource('laporanlabarugi', LaporanLabaRugiController::class)->whereNumber('laporanlabarugi');
+
+    Route::get('laporanpemakaianstok/report', [LaporanPemakaianStokController::class, 'report'])->name('laporanpemakaianstok.report');
+    Route::get('laporanpemakaianstok/export', [LaporanPemakaianStokController::class, 'export'])->name('laporanpemakaianstok.export');
+    Route::resource('laporanpemakaianstok', LaporanPemakaianStokController::class)->whereNumber('laporanpemakaianstok');
+
+    Route::get('laporanpembelianbarang/report', [LaporanPembelianBarangController::class, 'report'])->name('laporanpembelianbarang.report');
+    Route::get('laporanpembelianbarang/export', [LaporanPembelianBarangController::class, 'export'])->name('laporanpembelianbarang.export');
+    Route::resource('laporanpembelianbarang', LaporanPembelianBarangController::class)->whereNumber('laporanpembelianbarang');
+
+    Route::get('laporanstok/report', [LaporanStokController::class, 'report'])->name('laporanstok.report');
+    Route::get('laporanstok/export', [LaporanStokController::class, 'export'])->name('laporanstok.export');
+    Route::resource('laporanstok', LaporanStokController::class)->whereNumber('laporanstok');
 
     Route::get('laporanneraca/report', [LaporanNeracaController::class, 'report'])->name('laporanneraca.report');
     Route::get('laporanneraca/export', [LaporanNeracaController::class, 'export'])->name('laporanneraca.export');
