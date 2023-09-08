@@ -32,6 +32,7 @@ class CreatePelunasanpiutangheaderTable extends Migration
             $table->string('notadebet_nobukti', 50)->nullable();
             $table->date('tglcair')->nullable();
             $table->string('nowarkat', 50)->nullable();
+            $table->unsignedBigInteger('statuspelunasan')->nullable();
             $table->unsignedBigInteger('statusformat')->nullable();
             $table->integer('statuscetak')->Length(11)->nullable();
             $table->string('userbukacetak', 50)->nullable();
