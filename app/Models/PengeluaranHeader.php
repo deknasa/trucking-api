@@ -805,24 +805,30 @@ class PengeluaranHeader extends MyModel
 
         $statusApproval = Parameter::from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS APPROVAL')->where('text', 'NON APPROVAL')->first();
         $statusCetak = Parameter::from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUSCETAK')->where('text', 'BELUM CETAK')->first();
-        $querycek = DB::table('pengeluaranheader')->from(
-            DB::raw("pengeluaranheader a with (readuncommitted)")
-        )
-            ->select(
-                'a.nobukti'
+        $getTgl = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'EDIT TANGGAL BUKTI')->where('subgrp', 'PENGELUARAN KAS/BANK')->first();
+
+        if (trim($getTgl->text) == 'YA') {
+            $querycek = DB::table('pengeluaranheader')->from(
+                DB::raw("pengeluaranheader a with (readuncommitted)")
             )
-            ->where('a.id', $pengeluaranHeader->id)
-            ->whereRAw("format(a.tglbukti,'MM-yyyy')='" . date('m-Y', strtotime($data['tglbukti'])) . "'")
-            ->first();
+                ->select(
+                    'a.nobukti'
+                )
+                ->where('a.id', $pengeluaranHeader->id)
+                ->whereRAw("format(a.tglbukti,'MM-yyyy')='" . date('m-Y', strtotime($data['tglbukti'])) . "'")
+                ->first();
 
 
-        if (isset($querycek)) {
-            $nobukti = $querycek->nobukti;
-        } else {
-            $nobukti = (new RunningNumberService)->get($group, $subGroup, $pengeluaranHeader->getTable(), date('Y-m-d', strtotime($data['tglbukti'])));
+            if (isset($querycek)) {
+                $nobukti = $querycek->nobukti;
+            } else {
+                $nobukti = (new RunningNumberService)->get($group, $subGroup, $pengeluaranHeader->getTable(), date('Y-m-d', strtotime($data['tglbukti'])));
+            }
+
+            $pengeluaranHeader->nobukti = $nobukti;
+            $pengeluaranHeader->tglbukti = date('Y-m-d', strtotime($data['tglbukti']));
         }
 
-        $pengeluaranHeader->tglbukti = date('Y-m-d', strtotime($data['tglbukti']));
         $pengeluaranHeader->pelanggan_id = $data['pelanggan_id'] ?? 0;
         $pengeluaranHeader->postingdari = $data['postingdari'] ?? 'ENTRY PENGELUARAN KAS/BANK';
         $pengeluaranHeader->statusapproval = $statusApproval->id ?? $data['statusapproval'];
@@ -837,8 +843,7 @@ class PengeluaranHeader extends MyModel
         $pengeluaranHeader->statusformat = $data['statusformat'] ?? $querysubgrppengeluaran->formatpengeluaran;
         $pengeluaranHeader->statuscetak = $statusCetak->id;
         $pengeluaranHeader->userbukacetak = '';
-        $pengeluaranHeader->tglbukacetak = '';        
-        $pengeluaranHeader->nobukti = $nobukti;
+        $pengeluaranHeader->tglbukacetak = '';
         $pengeluaranHeader->modifiedby = auth('api')->user()->name;
 
         if (!$pengeluaranHeader->save()) {
@@ -901,7 +906,7 @@ class PengeluaranHeader extends MyModel
         $jurnalRequest = [
             'tanpaprosesnobukti' => 1,
             'nobukti' => $pengeluaranHeader->nobukti,
-            'tglbukti' => date('Y-m-d', strtotime($data['tglbukti'])),
+            'tglbukti' => $pengeluaranHeader->tglbukti,
             'postingdari' =>  $data['postingdari'] ?? "ENTRY PENGELUARAN",
             'statusapproval' => $statusApproval->id,
             'userapproval' => "",

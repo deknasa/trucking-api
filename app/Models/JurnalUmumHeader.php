@@ -86,7 +86,7 @@ class JurnalUmumHeader extends MyModel
             ->leftjoin(DB::raw($tempsummary . " as c"), 'jurnalumumheader.nobukti', 'c.nobukti');
 
         if ($lookup != '') {
-            $params = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'JURNAL UMUM BUKTI')->where('subgrp','JURNAL UMUM BUKTI')->first();
+            $params = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'JURNAL UMUM BUKTI')->where('subgrp', 'JURNAL UMUM BUKTI')->first();
             $query->where('jurnalumumheader.statusformat', $params->id);
         }
 
@@ -499,30 +499,33 @@ class JurnalUmumHeader extends MyModel
     {
         $group = 'JURNAL UMUM BUKTI';
         $subGroup = 'JURNAL UMUM BUKTI';
+        $getTgl = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'EDIT TANGGAL BUKTI')->where('subgrp', 'JURNAL UMUM')->first();
 
-        $querycek = DB::table('jurnalumumheader')->from(
-            DB::raw("jurnalumumheader a with (readuncommitted)")
-        )
-            ->select(
-                'a.nobukti'
+        if (trim($getTgl->text) == 'YA') {
+
+            $querycek = DB::table('jurnalumumheader')->from(
+                DB::raw("jurnalumumheader a with (readuncommitted)")
             )
-            ->where('a.id', $jurnalUmumHeader->id)
-            ->whereRAw("format(a.tglbukti,'MM-yyyy')='" . date('m-Y', strtotime($data['tglbukti'])) . "'")
-            ->first();
+                ->select(
+                    'a.nobukti'
+                )
+                ->where('a.id', $jurnalUmumHeader->id)
+                ->whereRAw("format(a.tglbukti,'MM-yyyy')='" . date('m-Y', strtotime($data['tglbukti'])) . "'")
+                ->first();
 
-        if (isset($querycek)) {
-            $nobukti = $querycek->nobukti;
-        } else {
-            if (str_contains($data['nobukti'], 'JU')) {
-                $nobukti = (new RunningNumberService)->get($group, $subGroup, $jurnalUmumHeader->getTable(), date('Y-m-d', strtotime($data['tglbukti'])));
+            if (isset($querycek)) {
+                $nobukti = $querycek->nobukti;
             } else {
-                $nobukti = $data['nobukti'];
+                if (str_contains($data['nobukti'], 'JU')) {
+                    $nobukti = (new RunningNumberService)->get($group, $subGroup, $jurnalUmumHeader->getTable(), date('Y-m-d', strtotime($data['tglbukti'])));
+                } else {
+                    $nobukti = $data['nobukti'];
+                }
             }
+            $jurnalUmumHeader->nobukti = $nobukti;
+            $jurnalUmumHeader->tglbukti = date('Y-m-d', strtotime($data['tglbukti']));
         }
 
-
-        $jurnalUmumHeader->nobukti = $nobukti;
-        $jurnalUmumHeader->tglbukti = date('Y-m-d', strtotime($data['tglbukti']));
         $jurnalUmumHeader->modifiedby = auth('api')->user()->name;
 
 

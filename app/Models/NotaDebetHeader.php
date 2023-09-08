@@ -304,7 +304,7 @@ class NotaDebetHeader extends MyModel
         $notaDebetHeader->statusformat = $format->id;
         $notaDebetHeader->statuscetak = $statusCetak->id;
         $notaDebetHeader->postingdari = $data['postingdari'];
-        $notaDebetHeader->modifiedby = auth('api')->user()->name; 
+        $notaDebetHeader->modifiedby = auth('api')->user()->name;
         $notaDebetHeader->nobukti = (new RunningNumberService)->get($group, $subGroup, $notaDebetHeader->getTable(), date('Y-m-d', strtotime($data['tglbukti'])));
 
         if (!$notaDebetHeader->save()) {
@@ -373,29 +373,34 @@ class NotaDebetHeader extends MyModel
         return $notaDebetHeader;
     }
 
-    public function processUpdate(NotaDebetHeader $notaDebetHeader,array $data): NotaDebetHeader
+    public function processUpdate(NotaDebetHeader $notaDebetHeader, array $data): NotaDebetHeader
     {
         $nobuktiOld = $notaDebetHeader->nobukti;
-        $group = 'NOTA DEBET BUKTI';
-        $subGroup = 'NOTA DEBET BUKTI';
-        $querycek = DB::table('notadebetheader')->from(
-            DB::raw("notadebetheader a with (readuncommitted)")
-        )
-            ->select(
-                'a.nobukti'
-            )
-            ->where('a.id', $notaDebetHeader->id)
-            ->whereRAw("format(a.tglbukti,'MM-yyyy')='" . date('m-Y', strtotime($data['tglbukti'])) . "'")
-            ->first();
+        $getTgl = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'EDIT TANGGAL BUKTI')->where('subgrp', 'NOTA DEBET')->first();
 
-        if (isset($querycek)) {
-            $nobukti = $querycek->nobukti;
-        } else {
-            $nobukti = (new RunningNumberService)->get($group, $subGroup, $notaDebetHeader->getTable(), date('Y-m-d', strtotime($data['tglbukti'])));
+        if (trim($getTgl->text) == 'YA') {
+            $group = 'NOTA DEBET BUKTI';
+            $subGroup = 'NOTA DEBET BUKTI';
+            $querycek = DB::table('notadebetheader')->from(
+                DB::raw("notadebetheader a with (readuncommitted)")
+            )
+                ->select(
+                    'a.nobukti'
+                )
+                ->where('a.id', $notaDebetHeader->id)
+                ->whereRAw("format(a.tglbukti,'MM-yyyy')='" . date('m-Y', strtotime($data['tglbukti'])) . "'")
+                ->first();
+
+            if (isset($querycek)) {
+                $nobukti = $querycek->nobukti;
+            } else {
+                $nobukti = (new RunningNumberService)->get($group, $subGroup, $notaDebetHeader->getTable(), date('Y-m-d', strtotime($data['tglbukti'])));
+            }
+
+            $notaDebetHeader->nobukti = $nobukti;
+            $notaDebetHeader->tglbukti = date('Y-m-d', strtotime($data['tglbukti']));
         }
 
-        $notaDebetHeader->nobukti = $nobukti;
-        $notaDebetHeader->tglbukti = date('Y-m-d', strtotime($data['tglbukti']));
         $notaDebetHeader->agen_id = $data['agen_id'] ?? '';
         $notaDebetHeader->modifiedby = auth('api')->user()->name;
 
@@ -414,12 +419,12 @@ class NotaDebetHeader extends MyModel
         ]);
 
         $notaDebetDetail = NotaDebetDetail::where('notadebet_id', $notaDebetHeader->id)->lockForUpdate()->delete();
-         
-        $notaDebetDetails =[];
-        $coakredit_detail =[];
-        $coadebet_detail =[];
-        $nominal_detail =[];
-        $keterangan_detail =[];
+
+        $notaDebetDetails = [];
+        $coakredit_detail = [];
+        $coadebet_detail = [];
+        $nominal_detail = [];
+        $keterangan_detail = [];
         for ($i = 0; $i < count($data['nominallebihbayar']); $i++) {
             $notaDebetDetail = (new NotaDebetDetail())->processStore($notaDebetHeader, [
                 "invoice_nobukti" => $data['invoice_nobukti'][$i],
@@ -434,7 +439,6 @@ class NotaDebetHeader extends MyModel
             $coadebet_detail[] = $data['coadebet'][$i];
             $nominal_detail[] = $data['nominallebihbayar'][$i]; //AMBIL LEBIH BAYAR ATAU GIMANA?
             $keterangan_detail[] = '-';
-
         }
 
         (new LogTrail())->processStore([
@@ -450,7 +454,7 @@ class NotaDebetHeader extends MyModel
         /*STORE JURNAL*/
         $jurnalRequest = [
             'nobukti' => $notaDebetHeader->nobukti,
-            'tglbukti' => $data['tglbukti'],
+            'tglbukti' => $notaDebetHeader->tglbukti,
             'postingdari' => $data['postingdari'],
             'coakredit_detail' => $coakredit_detail,
             'coadebet_detail' => $coadebet_detail,
@@ -493,7 +497,7 @@ class NotaDebetHeader extends MyModel
         ]);
         $getJurnal = JurnalUmumHeader::from(DB::raw("jurnalumumheader with (readuncommitted)"))->where('nobukti', $notaDebetHeader->nobukti)->first();
         (new JurnalUmumHeader())->processDestroy($getJurnal->id, $postingDari);
-        
+
         return $notaDebetHeader;
     }
 
@@ -502,10 +506,10 @@ class NotaDebetHeader extends MyModel
         $this->setRequestParameters();
 
         $getJudul = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))
-        ->select('text')
-        ->where('grp', 'JUDULAN LAPORAN')
-        ->where('subgrp', 'JUDULAN LAPORAN')
-        ->first();
+            ->select('text')
+            ->where('grp', 'JUDULAN LAPORAN')
+            ->where('subgrp', 'JUDULAN LAPORAN')
+            ->first();
 
         $query = DB::table($this->table)->from(DB::raw("notadebetheader with (readuncommitted)"))
             ->select(
@@ -522,7 +526,7 @@ class NotaDebetHeader extends MyModel
                 DB::raw("'Nota Debet' as judulLaporan"),
                 DB::raw("'" . $getJudul->text . "' as judul"),
                 DB::raw("'Tgl Cetak:'+format(getdate(),'dd-MM-yyyy HH:mm:ss')as tglcetak"),
-                DB::raw(" 'User :".auth('api')->user()->name."' as usercetak")
+                DB::raw(" 'User :" . auth('api')->user()->name . "' as usercetak")
             )
             ->where("$this->table.id", $id)
             ->leftJoin(DB::raw("pelunasanpiutangheader as pelunasanpiutang with (readuncommitted)"), 'notadebetheader.pelunasanpiutang_nobukti', 'pelunasanpiutang.nobukti')

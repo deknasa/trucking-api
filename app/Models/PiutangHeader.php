@@ -567,29 +567,32 @@ class PiutangHeader extends MyModel
     {
         $proseslain = $data['proseslain'] ?? 0;
         $nobuktiOld = $piutangHeader->nobukti;
+        $getTgl = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'EDIT TANGGAL BUKTI')->where('subgrp', 'PIUTANG')->first();
         $getCoa = Agen::from(DB::raw("agen with (readuncommitted)"))->where('id', $data['agen_id'])->first();
 
-        $group = 'PIUTANG BUKTI';
-        $subGroup = 'PIUTANG BUKTI';
+        if (trim($getTgl->text) == 'YA') {
+            $group = 'PIUTANG BUKTI';
+            $subGroup = 'PIUTANG BUKTI';
 
-        $querycek = DB::table('piutangheader')->from(
-            DB::raw("piutangheader a with (readuncommitted)")
-        )
-            ->select(
-                'a.nobukti'
+            $querycek = DB::table('piutangheader')->from(
+                DB::raw("piutangheader a with (readuncommitted)")
             )
-            ->where('a.id', $piutangHeader->id)
-            ->whereRAw("format(a.tglbukti,'MM-yyyy')='" . date('m-Y', strtotime($data['tglbukti'])) . "'")
-            ->first();
+                ->select(
+                    'a.nobukti'
+                )
+                ->where('a.id', $piutangHeader->id)
+                ->whereRAw("format(a.tglbukti,'MM-yyyy')='" . date('m-Y', strtotime($data['tglbukti'])) . "'")
+                ->first();
 
-        if (isset($querycek)) {
-            $nobukti = $querycek->nobukti;
-        } else {
-            $nobukti = (new RunningNumberService)->get($group, $subGroup, $piutangHeader->getTable(), date('Y-m-d', strtotime($data['tglbukti'])));
+            if (isset($querycek)) {
+                $nobukti = $querycek->nobukti;
+            } else {
+                $nobukti = (new RunningNumberService)->get($group, $subGroup, $piutangHeader->getTable(), date('Y-m-d', strtotime($data['tglbukti'])));
+            }
+            $piutangHeader->nobukti = $nobukti;
+            $piutangHeader->tglbukti = date('Y-m-d', strtotime($data['tglbukti']));
         }
 
-        $piutangHeader->nobukti = $nobukti;
-        $piutangHeader->tglbukti = date('Y-m-d', strtotime($data['tglbukti']));
         $piutangHeader->modifiedby = auth('api')->user()->name;
         $piutangHeader->tgljatuhtempo = date('Y-m-d', strtotime($data['tgljatuhtempo']));
         $piutangHeader->agen_id = $data['agen_id'];
@@ -646,7 +649,7 @@ class PiutangHeader extends MyModel
         $jurnalRequest = [
             'tanpaprosesnobukti' => 1,
             'nobukti' => $piutangHeader->nobukti,
-            'tglbukti' => $data['tglbukti'],
+            'tglbukti' => $piutangHeader->tglbukti,
             'postingdari' => $data['postingdari'] ?? 'EDIT PIUTANG HEADER',
             'statusformat' => "0",
             'coakredit_detail' => $coakredit_detail,
@@ -655,7 +658,7 @@ class PiutangHeader extends MyModel
             'keterangan_detail' => $keterangan_detail
         ];
         $getJurnal = JurnalUmumHeader::from(DB::raw("jurnalumumheader with (readuncommitted)"))->where('nobukti', $nobuktiOld)->first();
-       
+
         $newJurnal = new JurnalUmumHeader();
         $newJurnal = $newJurnal->find($getJurnal->id);
         $jurnalumumHeader = (new JurnalUmumHeader())->processUpdate($newJurnal, $jurnalRequest);

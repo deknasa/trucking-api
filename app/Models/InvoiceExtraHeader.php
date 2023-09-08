@@ -402,25 +402,29 @@ class InvoiceExtraHeader extends MyModel
     public function processUpdate(InvoiceExtraHeader $invoiceExtraHeader, array $data): InvoiceExtraHeader
     {
         $nobuktiOld = $invoiceExtraHeader->nobukti;
-        $group = 'INVOICE EXTRA BUKTI';
-        $subGroup = 'INVOICE EXTRA BUKTI';
-        $querycek = DB::table('invoiceextraheader')->from(
-            DB::raw("invoiceextraheader a with (readuncommitted)")
-        )
-            ->select(
-                'a.nobukti'
-            )
-            ->where('a.id', $invoiceExtraHeader->id)
-            ->whereRAw("format(a.tglbukti,'MM-yyyy')='" . date('m-Y', strtotime($data['tglbukti'])) . "'")
-            ->first();
+        $getTgl = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'EDIT TANGGAL BUKTI')->where('subgrp', 'INVOICE EXTRA')->first();
 
-        if (isset($querycek)) {
-            $nobukti = $querycek->nobukti;
-        } else {
-            $nobukti = (new RunningNumberService)->get($group, $subGroup, $invoiceExtraHeader->getTable(), date('Y-m-d', strtotime($data['tglbukti'])));
+        if (trim($getTgl->text) == 'YA') {
+            $group = 'INVOICE EXTRA BUKTI';
+            $subGroup = 'INVOICE EXTRA BUKTI';
+            $querycek = DB::table('invoiceextraheader')->from(
+                DB::raw("invoiceextraheader a with (readuncommitted)")
+            )
+                ->select(
+                    'a.nobukti'
+                )
+                ->where('a.id', $invoiceExtraHeader->id)
+                ->whereRAw("format(a.tglbukti,'MM-yyyy')='" . date('m-Y', strtotime($data['tglbukti'])) . "'")
+                ->first();
+
+            if (isset($querycek)) {
+                $nobukti = $querycek->nobukti;
+            } else {
+                $nobukti = (new RunningNumberService)->get($group, $subGroup, $invoiceExtraHeader->getTable(), date('Y-m-d', strtotime($data['tglbukti'])));
+            }
+            $invoiceExtraHeader->nobukti = $nobukti;
+            $invoiceExtraHeader->tglbukti = date('Y-m-d', strtotime($data['tglbukti']));
         }
-        $invoiceExtraHeader->nobukti = $nobukti;
-        $invoiceExtraHeader->tglbukti = date('Y-m-d', strtotime($data['tglbukti']));
         $invoiceExtraHeader->nominal = $data['nominal'];
         $invoiceExtraHeader->agen_id = $data['agen_id'];
         $invoiceExtraHeader->tgljatuhtempo = date('Y-m-d', strtotime($data['tgljatuhtempo']));
@@ -454,7 +458,7 @@ class InvoiceExtraHeader extends MyModel
         $invoiceRequest = [
             'postingdari' => 'EDIT INVOICE EXTRA',
             'invoice' => $invoiceExtraHeader->nobukti,
-            'tglbukti' => $data['tglbukti'],
+            'tglbukti' => $invoiceExtraHeader->tglbukti,
             'tgljatuhtempo' => date('Y-m-d', strtotime($data['tgljatuhtempo'])),
             'agen_id' => $data['agen_id'],
             'invoice_nobukti' => $invoiceNobukti,

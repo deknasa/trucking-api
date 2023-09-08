@@ -1713,6 +1713,7 @@ class GajiSupirHeader extends MyModel
 
                 $penerimaanTruckingHeaderPS = [
                     'tanpaprosesnobukti' => '2',
+                    'from' => 'ric',
                     'tglbukti' => date('Y-m-d', strtotime($data['tglbukti'])),
                     'penerimaantrucking_id' => $fetchFormatPS->id,
                     'bank_id' => 0,
@@ -1832,6 +1833,7 @@ class GajiSupirHeader extends MyModel
 
                 $penerimaanTruckingHeaderPP = [
                     'tanpaprosesnobukti' => '2',
+                    'from' => 'ric',
                     'tglbukti' => date('Y-m-d', strtotime($data['tglbukti'])),
                     'penerimaantrucking_id' => $fetchFormatPP->id,
                     'bank_id' => 0,
@@ -1937,6 +1939,7 @@ class GajiSupirHeader extends MyModel
 
                 $penerimaanTruckingHeaderDPO = [
                     'tanpaprosesnobukti' => '2',
+                    'from' => 'ric',
                     'tglbukti' => date('Y-m-d', strtotime($data['tglbukti'])),
                     'penerimaantrucking_id' => $fetchFormatDPO->id,
                     'bank_id' => 0,
@@ -2027,6 +2030,7 @@ class GajiSupirHeader extends MyModel
 
                 $penerimaanTruckingHeaderBBM = [
                     'tanpaprosesnobukti' => '2',
+                    'from' => 'ric',
                     'tglbukti' => date('Y-m-d', strtotime($data['tglbukti'])),
                     'penerimaantrucking_id' => $fetchFormatBBM->id,
                     'bank_id' => 0,

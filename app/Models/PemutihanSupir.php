@@ -899,28 +899,32 @@ class PemutihanSupir extends MyModel
 
     public function processUpdate(PemutihanSupir $pemutihanSupir, array $data): PemutihanSupir
     {
-        $group = 'PEMUTIHAN SUPIR BUKTI';
-        $subgroup = 'PEMUTIHAN SUPIR BUKTI';
+        $getTgl = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'EDIT TANGGAL BUKTI')->where('subgrp', 'PEMUTIHAN SUPIR')->first();
+        if (trim($getTgl->text) == 'YA') {
+            $group = 'PEMUTIHAN SUPIR BUKTI';
+            $subgroup = 'PEMUTIHAN SUPIR BUKTI';
 
-        $coaPengembalian = PenerimaanTrucking::from(DB::raw("penerimaantrucking with (readuncommitted)"))->where('kodepenerimaan', 'PJP')->first();
-        $querycek = DB::table('pemutihansupirheader')->from(
-            DB::raw("pemutihansupirheader a with (readuncommitted)")
-        )
-            ->select(
-                'a.nobukti'
+            $coaPengembalian = PenerimaanTrucking::from(DB::raw("penerimaantrucking with (readuncommitted)"))->where('kodepenerimaan', 'PJP')->first();
+            $querycek = DB::table('pemutihansupirheader')->from(
+                DB::raw("pemutihansupirheader a with (readuncommitted)")
             )
-            ->where('a.id', $pemutihanSupir->id)
-            ->whereRAw("format(a.tglbukti,'MM-yyyy')='" . date('m-Y', strtotime($data['tglbukti'])) . "'")
-            ->first();
+                ->select(
+                    'a.nobukti'
+                )
+                ->where('a.id', $pemutihanSupir->id)
+                ->whereRAw("format(a.tglbukti,'MM-yyyy')='" . date('m-Y', strtotime($data['tglbukti'])) . "'")
+                ->first();
 
-        if (isset($querycek)) {
-            $nobukti = $querycek->nobukti;
-        } else {
-            $nobukti = (new RunningNumberService)->get($group, $subgroup, $pemutihanSupir->getTable(), date('Y-m-d', strtotime($data['tglbukti'])));
+            if (isset($querycek)) {
+                $nobukti = $querycek->nobukti;
+            } else {
+                $nobukti = (new RunningNumberService)->get($group, $subgroup, $pemutihanSupir->getTable(), date('Y-m-d', strtotime($data['tglbukti'])));
+            }
+
+            $pemutihanSupir->nobukti = $nobukti;
+            $pemutihanSupir->tglbukti = date('Y-m-d', strtotime($data['tglbukti']));
         }
 
-        $pemutihanSupir->nobukti = $nobukti;
-        $pemutihanSupir->tglbukti = date('Y-m-d', strtotime($data['tglbukti']));
         $pemutihanSupir->pengeluaransupir =  $data['pengeluaransupir'];
         $pemutihanSupir->penerimaansupir = $data['penerimaansupir'] ?? 0;
         $pemutihanSupir->coa = $data['coa'];
@@ -982,7 +986,7 @@ class PemutihanSupir extends MyModel
                 $statusApproval = 0;
             }
             $penerimaanRequest = [
-                'tglbukti' => $data['tglbukti'],
+                'tglbukti' => $pemutihanSupir->tglbukti,
                 'postingdari' => 'PEMUTIHAN SUPIR',
                 'diterimadari' => $data['supir'],
                 'tgllunas' => date('Y-m-d', strtotime($data['tglbukti'])),
@@ -1032,7 +1036,7 @@ class PemutihanSupir extends MyModel
             'datajson' => $pemutihanSupir->toArray(),
             'modifiedby' => auth('api')->user()->name
         ]);
-        
+
         $pemutihanSupirDetailLogTrail = (new LogTrail())->processStore([
             'namatabel' => strtoupper($pemutihanSupirDetail->getTable()),
             'postingdari' => 'EDIT PEMUTIHAN SUPIR DETAIL',

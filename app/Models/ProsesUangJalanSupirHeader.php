@@ -321,26 +321,26 @@ class ProsesUangJalanSupirHeader extends MyModel
             ->first();
 
         $query = DB::table($this->table)->from(DB::raw("prosesuangjalansupirheader with (readuncommitted)"))
-        ->select(
-            'prosesuangjalansupirheader.id',
-            'prosesuangjalansupirheader.nobukti',
-            'prosesuangjalansupirheader.tglbukti',
-            'prosesuangjalansupirheader.absensisupir_nobukti',
-            'prosesuangjalansupirheader.nominaluangjalan',
-            'trado.kodetrado as trado_id',
-            'supir.namasupir as supir_id',
-            'statuscetak.memo as statuscetak',
-            "statuscetak.id as  statuscetak_id",
-            'prosesuangjalansupirheader.jumlahcetak',
-            DB::raw("'Laporan Proses Uang Jalan Supir' as judulLaporan"),
-            DB::raw("'" . $getJudul->text . "' as judul"),
-            DB::raw("'Tgl Cetak:'+format(getdate(),'dd-MM-yyyy HH:mm:ss')as tglcetak"),
-            DB::raw(" 'User :".auth('api')->user()->name."' as usercetak")
-        )
-        ->where("$this->table.id", $id)
-        ->leftJoin(DB::raw("parameter as statuscetak with (readuncommitted)"), 'prosesuangjalansupirheader.statuscetak', 'statuscetak.id')
-        ->leftJoin(DB::raw("trado with (readuncommitted)"), 'prosesuangjalansupirheader.trado_id', 'trado.id')
-        ->leftJoin(DB::raw("supir with (readuncommitted)"), 'prosesuangjalansupirheader.supir_id', 'supir.id');
+            ->select(
+                'prosesuangjalansupirheader.id',
+                'prosesuangjalansupirheader.nobukti',
+                'prosesuangjalansupirheader.tglbukti',
+                'prosesuangjalansupirheader.absensisupir_nobukti',
+                'prosesuangjalansupirheader.nominaluangjalan',
+                'trado.kodetrado as trado_id',
+                'supir.namasupir as supir_id',
+                'statuscetak.memo as statuscetak',
+                "statuscetak.id as  statuscetak_id",
+                'prosesuangjalansupirheader.jumlahcetak',
+                DB::raw("'Laporan Proses Uang Jalan Supir' as judulLaporan"),
+                DB::raw("'" . $getJudul->text . "' as judul"),
+                DB::raw("'Tgl Cetak:'+format(getdate(),'dd-MM-yyyy HH:mm:ss')as tglcetak"),
+                DB::raw(" 'User :" . auth('api')->user()->name . "' as usercetak")
+            )
+            ->where("$this->table.id", $id)
+            ->leftJoin(DB::raw("parameter as statuscetak with (readuncommitted)"), 'prosesuangjalansupirheader.statuscetak', 'statuscetak.id')
+            ->leftJoin(DB::raw("trado with (readuncommitted)"), 'prosesuangjalansupirheader.trado_id', 'trado.id')
+            ->leftJoin(DB::raw("supir with (readuncommitted)"), 'prosesuangjalansupirheader.supir_id', 'supir.id');
 
         $data = $query->first();
         return $data;
@@ -644,27 +644,31 @@ class ProsesUangJalanSupirHeader extends MyModel
 
     public function processUpdate(ProsesUangJalanSupirHeader $prosesUangJalanSupirHeader, array $data): ProsesUangJalanSupirHeader
     {
+        $getTgl = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'EDIT TANGGAL BUKTI')->where('subgrp', 'PROSES UANG JALAN')->first();
 
-        $group = 'PROSES UANG JALAN BUKTI';
-        $subGroup = 'PROSES UANG JALAN BUKTI';
-        $querycek = DB::table('prosesuangjalansupirheader')->from(
-            DB::raw("prosesuangjalansupirheader a with (readuncommitted)")
-        )
-            ->select(
-                'a.nobukti'
+        if (trim($getTgl->text) == 'YA') {
+            $group = 'PROSES UANG JALAN BUKTI';
+            $subGroup = 'PROSES UANG JALAN BUKTI';
+            $querycek = DB::table('prosesuangjalansupirheader')->from(
+                DB::raw("prosesuangjalansupirheader a with (readuncommitted)")
             )
-            ->where('a.id', $prosesUangJalanSupirHeader->id)
-            ->whereRAw("format(a.tglbukti,'MM-yyyy')='" . date('m-Y', strtotime($data['tglbukti'])) . "'")
-            ->first();
+                ->select(
+                    'a.nobukti'
+                )
+                ->where('a.id', $prosesUangJalanSupirHeader->id)
+                ->whereRAw("format(a.tglbukti,'MM-yyyy')='" . date('m-Y', strtotime($data['tglbukti'])) . "'")
+                ->first();
 
-        if (isset($querycek)) {
-            $nobukti = $querycek->nobukti;
-        } else {
-            $nobukti = (new RunningNumberService)->get($group, $subGroup, $prosesUangJalanSupirHeader->getTable(), date('Y-m-d', strtotime($data['tglbukti'])));
+            if (isset($querycek)) {
+                $nobukti = $querycek->nobukti;
+            } else {
+                $nobukti = (new RunningNumberService)->get($group, $subGroup, $prosesUangJalanSupirHeader->getTable(), date('Y-m-d', strtotime($data['tglbukti'])));
+            }
+
+            $prosesUangJalanSupirHeader->nobukti = $nobukti;
+            $prosesUangJalanSupirHeader->tglbukti = date('Y-m-d', strtotime($data['tglbukti']));
         }
-
-        $prosesUangJalanSupirHeader->nobukti = $nobukti;
-        $prosesUangJalanSupirHeader->tglbukti = date('Y-m-d', strtotime($data['tglbukti']));
+        
         $prosesUangJalanSupirHeader->modifiedby = auth('api')->user()->name;
 
         if (!$prosesUangJalanSupirHeader->save()) {

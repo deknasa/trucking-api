@@ -367,11 +367,11 @@ class InvoiceHeader extends MyModel
             });
 
 
-            $fullempty=db::table('parameter')->from(db::raw("parameter with (readuncommitted)"))
-            ->select('text as id')
-            ->where('grp','STATUS CONTAINER')
-            ->where('subgrp','STATUS CONTAINER FULL EMPTY')
-            ->first()->id ?? 0 ;
+            $fullempty = db::table('parameter')->from(db::raw("parameter with (readuncommitted)"))
+                ->select('text as id')
+                ->where('grp', 'STATUS CONTAINER')
+                ->where('subgrp', 'STATUS CONTAINER FULL EMPTY')
+                ->first()->id ?? 0;
 
 
             $querykepelabuhan = DB::table('suratpengantar')->from(
@@ -412,15 +412,15 @@ class InvoiceHeader extends MyModel
                 ->whereRaw("a.statuscontainer_id in(" . $fullempty . ")")
                 ->groupBy('a.jobtrucking');
 
-                // dd($querykepelabuhan->toSql());
+            // dd($querykepelabuhan->toSql());
 
             DB::table($tempkepelabuhan)->insertUsing([
                 'jobtrucking',
                 'nominal',
                 'suratpengantar_nobukti',
-            ], $querykepelabuhan);            	
+            ], $querykepelabuhan);
 
-          
+
 
 
 
@@ -436,7 +436,7 @@ class InvoiceHeader extends MyModel
                 ->join(DB::raw($tempkepelabuhan) . " as b", 'a.jobtrucking', 'b.jobtrucking');
         } else {
 
-            
+
             $tempkepelabuhanbeda = '##tempkepelabuhanbeda' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
             Schema::create($tempkepelabuhanbeda, function ($table) {
                 $table->string('jobtrucking', 1000)->nullable();
@@ -535,7 +535,7 @@ class InvoiceHeader extends MyModel
             )
             ->orderBy('a.id');
 
-    //    dd('test')            ;
+        //    dd('test')            ;
 
         $datadetail = json_decode($querystatuscontainer->get(), true);
         foreach ($datadetail as $item) {
@@ -1224,25 +1224,29 @@ class InvoiceHeader extends MyModel
     {
 
         $nobuktiOld = $invoiceHeader->nobukti;
-        $group = 'INVOICE BUKTI';
-        $subGroup = 'INVOICE BUKTI';
-        $querycek = DB::table('invoiceheader')->from(
-            DB::raw("invoiceheader a with (readuncommitted)")
-        )
-            ->select(
-                'a.nobukti'
+        $getTgl = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'EDIT TANGGAL BUKTI')->where('subgrp', 'INVOICE')->first();
+        if (trim($getTgl->text) == 'YA') {
+            $group = 'INVOICE BUKTI';
+            $subGroup = 'INVOICE BUKTI';
+            $querycek = DB::table('invoiceheader')->from(
+                DB::raw("invoiceheader a with (readuncommitted)")
             )
-            ->where('a.id', $invoiceHeader->id)
-            ->whereRAw("format(a.tglbukti,'MM-yyyy')='" . date('m-Y', strtotime($data['tglbukti'])) . "'")
-            ->first();
+                ->select(
+                    'a.nobukti'
+                )
+                ->where('a.id', $invoiceHeader->id)
+                ->whereRAw("format(a.tglbukti,'MM-yyyy')='" . date('m-Y', strtotime($data['tglbukti'])) . "'")
+                ->first();
 
-        if (isset($querycek)) {
-            $nobukti = $querycek->nobukti;
-        } else {
-            $nobukti = (new RunningNumberService)->get($group, $subGroup, $invoiceHeader->getTable(), date('Y-m-d', strtotime($data['tglbukti'])));
+            if (isset($querycek)) {
+                $nobukti = $querycek->nobukti;
+            } else {
+                $nobukti = (new RunningNumberService)->get($group, $subGroup, $invoiceHeader->getTable(), date('Y-m-d', strtotime($data['tglbukti'])));
+            }
+            $invoiceHeader->nobukti = $nobukti;
+            $invoiceHeader->tglbukti = date('Y-m-d', strtotime($data['tglbukti']));
         }
-        $invoiceHeader->nobukti = $nobukti;
-        $invoiceHeader->tglbukti = date('Y-m-d', strtotime($data['tglbukti']));
+
         $invoiceHeader->tgljatuhtempo = date('Y-m-d', strtotime($data['tgljatuhtempo']));
         $invoiceHeader->nominal = '';
         $invoiceHeader->tglterima = date('Y-m-d', strtotime($data['tglterima']));
@@ -1313,7 +1317,7 @@ class InvoiceHeader extends MyModel
         $invoiceRequest = [
             'tgljatuhtempo' => date('Y-m-d', strtotime($data['tgljatuhtempo'])),
             'postingdari' => 'EDIT INVOICE HEADER',
-            'tglbukti' => $data['tglbukti'],
+            'tglbukti' => $invoiceHeader->tglbukti,
             'invoice' => $invoiceHeader->nobukti,
             'agen_id' => $invoiceHeader->agen_id,
             'invoice_nobukti' => $invoiceNobukti,
@@ -1328,7 +1332,7 @@ class InvoiceHeader extends MyModel
 
         $invoiceHeader->piutang_nobukti = $piutangHeader->nobukti;
         $invoiceHeader->save();
-        
+
         $invoiceHeaderLogTrail = (new LogTrail())->processStore([
             'namatabel' => strtoupper($invoiceHeader->getTable()),
             'postingdari' => 'EDIT INVOICE HEADER',

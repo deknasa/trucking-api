@@ -402,26 +402,30 @@ class HutangExtraHeader extends MyModel
 
     public function processUpdate(HutangExtraHeader $hutangExtraHeader, array $data): HutangExtraHeader
     {
-        $group = 'HUTANG EXTRA BUKTI';
-        $subGroup = 'HUTANG EXTRA BUKTI';
-        $querycek = DB::table('hutangextraheader')->from(
-            DB::raw("hutangextraheader a with (readuncommitted)")
-        )
-            ->select(
-                'a.nobukti'
+        $getTgl = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'EDIT TANGGAL BUKTI')->where('subgrp', 'HUTANG EXTRA')->first();
+        if (trim($getTgl->text) == 'YA') {
+            $group = 'HUTANG EXTRA BUKTI';
+            $subGroup = 'HUTANG EXTRA BUKTI';
+            $querycek = DB::table('hutangextraheader')->from(
+                DB::raw("hutangextraheader a with (readuncommitted)")
             )
-            ->where('a.id', $hutangExtraHeader->id)
-            ->whereRAw("format(a.tglbukti,'MM-yyyy')='" . date('m-Y', strtotime($data['tglbukti'])) . "'")
-            ->first();
+                ->select(
+                    'a.nobukti'
+                )
+                ->where('a.id', $hutangExtraHeader->id)
+                ->whereRAw("format(a.tglbukti,'MM-yyyy')='" . date('m-Y', strtotime($data['tglbukti'])) . "'")
+                ->first();
 
-        if (isset($querycek)) {
-            $nobukti = $querycek->nobukti;
-        } else {
-            $nobukti = (new RunningNumberService)->get($group, $subGroup, $hutangExtraHeader->getTable(), date('Y-m-d', strtotime($data['tglbukti'])));
+            if (isset($querycek)) {
+                $nobukti = $querycek->nobukti;
+            } else {
+                $nobukti = (new RunningNumberService)->get($group, $subGroup, $hutangExtraHeader->getTable(), date('Y-m-d', strtotime($data['tglbukti'])));
+            }
+
+            $hutangExtraHeader->nobukti = $nobukti;
+            $hutangExtraHeader->tglbukti = date('Y-m-d', strtotime($data['tglbukti']));
         }
 
-        $hutangExtraHeader->nobukti = $nobukti;
-        $hutangExtraHeader->tglbukti = date('Y-m-d', strtotime($data['tglbukti']));
         $hutangExtraHeader->supplier_id = $data['supplier_id'];
         $hutangExtraHeader->postingdari = 'EDIT HUTANG EXTRA HEADER';
         $hutangExtraHeader->total = array_sum($data['total_detail']);
@@ -463,7 +467,7 @@ class HutangExtraHeader extends MyModel
         $hutangRequest = [
             'proseslain' => 'HUTANG EXTRA',
             'postingdari' => 'EDIT HUTANG EXTRA',
-            'tglbukti' => $data['tglbukti'],
+            'tglbukti' => $hutangExtraHeader->tglbukti,
             'coa' => $memo['JURNAL'],
             'supplier_id' => $data['supplier_id'],
             'modifiedby' => auth('api')->user()->name,

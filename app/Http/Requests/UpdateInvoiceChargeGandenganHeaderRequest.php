@@ -7,6 +7,7 @@ use App\Models\InvoiceChargeGandenganHeader;
 use App\Rules\DateTutupBuku;
 use App\Rules\ExistAgen;
 use App\Rules\ValidasiDestroyInvoiceChargeGandengan;
+use App\Rules\ValidasiDetail;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
@@ -31,6 +32,7 @@ class UpdateInvoiceChargeGandenganHeaderRequest extends FormRequest
     {
         $invoiceCharge = new InvoiceChargeGandenganHeader();
         $getData = $invoiceCharge->find(request()->id);
+        $jumlahdetail = $this->jumlahdetail ?? 0;
         
         $agen_id = $this->agen_id;
         $rulesAgen_id = [];
@@ -50,7 +52,8 @@ class UpdateInvoiceChargeGandenganHeaderRequest extends FormRequest
                 'required', 'date_format:d-m-Y','before_or_equal:' . date('d-m-Y'),
                 new DateTutupBuku()
             ],
-            'agen' => 'required',
+            'agen' => ['required',
+            new ValidasiDetail($jumlahdetail)],
             'tglproses' => 'required|date_format:d-m-Y'
         ];
 
