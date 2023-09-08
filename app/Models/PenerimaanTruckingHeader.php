@@ -1243,6 +1243,10 @@ class PenerimaanTruckingHeader extends MyModel
                 'penerimaantruckingheader.tglbukti',
                 'penerimaantrucking.keterangan as penerimaantrucking_id',
                 'penerimaantruckingheader.penerimaan_nobukti',
+                'penerimaantruckingheader.statusformat',
+                'penerimaantruckingheader.periodedari',
+                'penerimaantruckingheader.periodesampai',
+                'jenisorder.keterangan as jenisorder_id',
                 'bank.namabank as bank_id',
                 'akunpusat.keterangancoa as coa',
                 'statuscetak.memo as statuscetak',
@@ -1256,6 +1260,7 @@ class PenerimaanTruckingHeader extends MyModel
             ->leftJoin(DB::raw("parameter as statuscetak with (readuncommitted)"), 'penerimaantruckingheader.statuscetak', 'statuscetak.id')
             ->leftJoin(DB::raw("penerimaantrucking with (readuncommitted)"), 'penerimaantruckingheader.penerimaantrucking_id', 'penerimaantrucking.id')
             ->leftJoin(DB::raw("akunpusat with (readuncommitted)"), 'penerimaantruckingheader.coa', 'akunpusat.coa')
+            ->leftJoin(DB::raw("jenisorder with (readuncommitted)"), 'penerimaantruckingheader.jenisorder_id', 'jenisorder.id')
             ->leftJoin(DB::raw("bank with (readuncommitted)"), 'penerimaantruckingheader.bank_id', 'bank.id');
         if (request()->tgldari) {
             $query->whereBetween('penerimaantruckingheader.tglbukti', [date('Y-m-d', strtotime(request()->tgldari)), date('Y-m-d', strtotime(request()->tglsampai))]);
