@@ -5,6 +5,7 @@ namespace App\Http\Requests;
 use App\Http\Controllers\Api\ErrorController;
 use App\Rules\DateTutupBuku;
 use App\Rules\ExistAgen;
+use App\Rules\ValidasiDetail;
 use Illuminate\Foundation\Http\FormRequest;
 
 class StoreInvoiceChargeGandenganHeaderRequest extends FormRequest
@@ -27,6 +28,7 @@ class StoreInvoiceChargeGandenganHeaderRequest extends FormRequest
     public function rules()
     {
         $agen_id = $this->agen_id;
+        $jumlahdetail = $this->jumlahdetail ?? 0;
         $rulesAgen_id = [];
         if ($agen_id != null) {
             $rulesAgen_id = [
@@ -42,7 +44,8 @@ class StoreInvoiceChargeGandenganHeaderRequest extends FormRequest
                 'required', 'date_format:d-m-Y',
                 new DateTutupBuku()
             ],
-            'agen' => 'required',
+            'agen' => ['required',
+            new ValidasiDetail($jumlahdetail)],
             'tglproses' => 'required|date_format:d-m-Y'
         ];
 

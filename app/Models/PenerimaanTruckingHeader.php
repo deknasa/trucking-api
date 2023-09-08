@@ -948,6 +948,7 @@ class PenerimaanTruckingHeader extends MyModel
             $fetchFormat =  DB::table('penerimaantrucking')->where('id', $idpenerimaan)->first();
 
             $tanpaprosesnobukti = array_key_exists("tanpaprosesnobukti", $data) ? $data['tanpaprosesnobukti'] : 0;
+            $from = array_key_exists("from", $data) ? $data['from'] : '';
             if ($fetchFormat->kodepenerimaan == 'PJP') {
                 $data['coa'] = $fetchFormat->coapostingkredit;
             } else if ($fetchFormat->kodepenerimaan == 'PJPK') {
@@ -1012,21 +1013,48 @@ class PenerimaanTruckingHeader extends MyModel
         }
 
         if ($isEBS == false) {
-            $querycek = DB::table('penerimaantruckingheader')->from(
-                DB::raw("penerimaantruckingheader a with (readuncommitted)")
-            )
-                ->select(
-                    'a.nobukti'
+            if ($from == 'ric') {
+
+                $querycek = DB::table('penerimaantruckingheader')->from(
+                    DB::raw("penerimaantruckingheader a with (readuncommitted)")
                 )
-                ->where('a.id', $penerimaanTruckingHeader->id)
-                ->whereRAw("format(a.tglbukti,'MM-yyyy')='" . date('m-Y', strtotime($data['tglbukti'])) . "'")
-                ->first();
-            if (isset($querycek)) {
-                $nobukti = $querycek->nobukti;
+                    ->select(
+                        'a.nobukti'
+                    )
+                    ->where('a.id', $penerimaanTruckingHeader->id)
+                    ->whereRAw("format(a.tglbukti,'MM-yyyy')='" . date('m-Y', strtotime($data['tglbukti'])) . "'")
+                    ->first();
+                if (isset($querycek)) {
+                    $nobukti = $querycek->nobukti;
+                } else {
+                    $nobukti = (new RunningNumberService)->get($fetchGrp->grp, $fetchGrp->subgrp, $penerimaanTruckingHeader->getTable(), date('Y-m-d', strtotime($data['tglbukti'])));
+                }
+
+                $penerimaanTruckingHeader->nobukti = $nobukti;
+                $penerimaanTruckingHeader->tglbukti = date('Y-m-d', strtotime($data['tglbukti']));
             } else {
-                $nobukti = (new RunningNumberService)->get($fetchGrp->grp, $fetchGrp->subgrp, $penerimaanTruckingHeader->getTable(), date('Y-m-d', strtotime($data['tglbukti'])));
+                $getTgl = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'EDIT TANGGAL BUKTI')->where('subgrp', 'PENERIMAAN TRUCKING')->first();
+
+                if (trim($getTgl->text) == 'YA') {
+                    $querycek = DB::table('penerimaantruckingheader')->from(
+                        DB::raw("penerimaantruckingheader a with (readuncommitted)")
+                    )
+                        ->select(
+                            'a.nobukti'
+                        )
+                        ->where('a.id', $penerimaanTruckingHeader->id)
+                        ->whereRAw("format(a.tglbukti,'MM-yyyy')='" . date('m-Y', strtotime($data['tglbukti'])) . "'")
+                        ->first();
+                    if (isset($querycek)) {
+                        $nobukti = $querycek->nobukti;
+                    } else {
+                        $nobukti = (new RunningNumberService)->get($fetchGrp->grp, $fetchGrp->subgrp, $penerimaanTruckingHeader->getTable(), date('Y-m-d', strtotime($data['tglbukti'])));
+                    }
+
+                    $penerimaanTruckingHeader->nobukti = $nobukti;
+                    $penerimaanTruckingHeader->tglbukti = date('Y-m-d', strtotime($data['tglbukti']));
+                }
             }
-            $penerimaanTruckingHeader->tglbukti = date('Y-m-d', strtotime($data['tglbukti']));
             $penerimaanTruckingHeader->bank_id = $data['bank_id'];
             $penerimaanTruckingHeader->coa = $data['coa'] ?? '';
             $penerimaanTruckingHeader->supir_id = $data['supirheader_id'] ?? '';
@@ -1037,7 +1065,6 @@ class PenerimaanTruckingHeader extends MyModel
             $penerimaanTruckingHeader->modifiedby = auth('api')->user()->name;
             $penerimaanTruckingHeader->tglbukti = date('Y-m-d', strtotime($data['tglbukti']));
             $penerimaanTruckingHeader->pendapatansupir_bukti = $data['pendapatansupir_bukti'] ?? '';
-            $penerimaanTruckingHeader->nobukti = $nobukti;
             $penerimaanTruckingHeader->jenisorder_id = $data['jenisorderan_id'] ?? '';
             $penerimaanTruckingHeader->periodedari = array_key_exists("periodedari", $data) ? date('Y-m-d', strtotime($data['periodedari'])) : '';
             $penerimaanTruckingHeader->periodesampai = array_key_exists("periodesampai", $data) ? date('Y-m-d', strtotime($data['periodesampai'])) : '';
@@ -1106,7 +1133,7 @@ class PenerimaanTruckingHeader extends MyModel
                 }
                 /*UPDATE PENERIMAAN*/
                 $penerimaanRequest = [
-                    'tglbukti' => date('Y-m-d', strtotime($data['tglbukti'])),
+                    'tglbukti' => $penerimaanTruckingHeader->tglbukti,
                     'postingdari' => (array_key_exists("postingdari", $data)) ? $data['postingdari'] : "ENTRY PENERIMAAN TRUCKING HEADER",
                     'statusapproval' => $statusApproval->id,
                     'pelanggan_id' => 0,

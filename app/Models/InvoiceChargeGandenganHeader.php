@@ -478,25 +478,29 @@ class InvoiceChargeGandenganHeader extends MyModel
     public function processUpdate(InvoiceChargeGandenganHeader $invoiceChargeGandenganHeader, array $data): InvoiceChargeGandenganHeader
     {
         $nobuktiOld = $invoiceChargeGandenganHeader->nobukti;
-        $group = 'INVOICE CHARGE GANDENGAN';
-        $subGroup = 'INVOICE CHARGE GANDENGAN';
-        $querycek = DB::table('invoicechargegandenganheader')->from(
-            DB::raw("invoicechargegandenganheader a with (readuncommitted)")
-        )
-            ->select(
-                'a.nobukti'
+        $getTgl = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'EDIT TANGGAL BUKTI')->where('subgrp', 'INVOICE CHARGE')->first();
+        if (trim($getTgl->text) == 'YA') {
+            $group = 'INVOICE CHARGE GANDENGAN';
+            $subGroup = 'INVOICE CHARGE GANDENGAN';
+            $querycek = DB::table('invoicechargegandenganheader')->from(
+                DB::raw("invoicechargegandenganheader a with (readuncommitted)")
             )
-            ->where('a.id', $invoiceChargeGandenganHeader->id)
-            ->whereRAw("format(a.tglbukti,'MM-yyyy')='" . date('m-Y', strtotime($data['tglbukti'])) . "'")
-            ->first();
+                ->select(
+                    'a.nobukti'
+                )
+                ->where('a.id', $invoiceChargeGandenganHeader->id)
+                ->whereRAw("format(a.tglbukti,'MM-yyyy')='" . date('m-Y', strtotime($data['tglbukti'])) . "'")
+                ->first();
 
-        if (isset($querycek)) {
-            $nobukti = $querycek->nobukti;
-        } else {
-            $nobukti = (new RunningNumberService)->get($group, $subGroup, $invoiceChargeGandenganHeader->getTable(), date('Y-m-d', strtotime($data['tglbukti'])));
+            if (isset($querycek)) {
+                $nobukti = $querycek->nobukti;
+            } else {
+                $nobukti = (new RunningNumberService)->get($group, $subGroup, $invoiceChargeGandenganHeader->getTable(), date('Y-m-d', strtotime($data['tglbukti'])));
+            }
+            $invoiceChargeGandenganHeader->nobukti = $nobukti;
+            $invoiceChargeGandenganHeader->tglbukti = date('Y-m-d', strtotime($data['tglbukti']));
         }
-        $invoiceChargeGandenganHeader->nobukti = $nobukti;
-        $invoiceChargeGandenganHeader->tglbukti = date('Y-m-d', strtotime($data['tglbukti']));
+
         $invoiceChargeGandenganHeader->agen_id = $data['agen_id'];
         $invoiceChargeGandenganHeader->tglproses = date('Y-m-d', strtotime($data['tglproses']));
         $invoiceChargeGandenganHeader->modifiedby = auth('api')->user()->name;
@@ -542,7 +546,7 @@ class InvoiceChargeGandenganHeader extends MyModel
             'postingdari' => 'EDIT INVOICE CHARGE GANDENGAN',
             'invoice' => $invoiceChargeGandenganHeader->nobukti,
             'tgljatuhtempo' => date('Y-m-d', strtotime($data['tgljatuhtempo'])),
-            'tglbukti' => $data['tglbukti'],
+            'tglbukti' => $invoiceChargeGandenganHeader->tglbukti,
             'agen_id' => $data['agen_id'],
             'invoice_nobukti' => $invoiceNobukti,
             'nominal_detail' => $nominalDetail,

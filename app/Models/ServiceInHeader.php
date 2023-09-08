@@ -247,7 +247,7 @@ class ServiceInHeader extends MyModel
             ->first();
 
         $statusCetak = Parameter::from(DB::raw("parameter with (readuncommitted)"))
-        ->where('grp', 'STATUSCETAK')->where('text', 'BELUM CETAK')->first();
+            ->where('grp', 'STATUSCETAK')->where('text', 'BELUM CETAK')->first();
 
         $serviceInHeader = new ServiceInHeader();
         $serviceInHeader->tglbukti = date('Y-m-d', strtotime($data['tglbukti']));
@@ -298,27 +298,32 @@ class ServiceInHeader extends MyModel
 
     public function processUpdate(ServiceInHeader $serviceInHeader, array $data): ServiceInHeader
     {
-        $group = 'SERVICE IN BUKTI';
-        $subGroup = 'SERVICE IN BUKTI';
+        $getTgl = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'EDIT TANGGAL BUKTI')->where('subgrp', 'SERVICE IN')->first();
 
-        $querycek = DB::table('serviceinheader')->from(
-            DB::raw("serviceinheader a with (readuncommitted)")
-        )
-            ->select(
-                'a.nobukti'
+        if (trim($getTgl->text) == 'YA') {
+            $group = 'SERVICE IN BUKTI';
+            $subGroup = 'SERVICE IN BUKTI';
+
+            $querycek = DB::table('serviceinheader')->from(
+                DB::raw("serviceinheader a with (readuncommitted)")
             )
-            ->where('a.id', $serviceInHeader->id)
-            ->whereRAw("format(a.tglbukti,'MM-yyyy')='" . date('m-Y', strtotime($data['tglbukti'])) . "'")
-            ->first();
+                ->select(
+                    'a.nobukti'
+                )
+                ->where('a.id', $serviceInHeader->id)
+                ->whereRAw("format(a.tglbukti,'MM-yyyy')='" . date('m-Y', strtotime($data['tglbukti'])) . "'")
+                ->first();
 
-        if (isset($querycek)) {
-            $nobukti = $querycek->nobukti;
-        } else {
-            $nobukti = (new RunningNumberService)->get($group, $subGroup, $serviceInHeader->getTable(), date('Y-m-d', strtotime($data['tglbukti'])));
+            if (isset($querycek)) {
+                $nobukti = $querycek->nobukti;
+            } else {
+                $nobukti = (new RunningNumberService)->get($group, $subGroup, $serviceInHeader->getTable(), date('Y-m-d', strtotime($data['tglbukti'])));
+            }
+
+            $serviceInHeader->nobukti = $nobukti;
+            $serviceInHeader->tglbukti = date('Y-m-d', strtotime($data['tglbukti']));
         }
 
-        $serviceInHeader->nobukti = $nobukti;
-        $serviceInHeader->tglbukti = date('Y-m-d', strtotime($data['tglbukti']));
         $serviceInHeader->trado_id = $data['trado_id'];
         $serviceInHeader->tglmasuk = date('Y-m-d', strtotime($data['tglmasuk']));
         $serviceInHeader->modifiedby = auth('api')->user()->name;
@@ -398,10 +403,10 @@ class ServiceInHeader extends MyModel
         $this->setRequestParameters();
 
         $getJudul = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))
-        ->select('text')
-        ->where('grp', 'JUDULAN LAPORAN')
-        ->where('subgrp', 'JUDULAN LAPORAN')
-        ->first();
+            ->select('text')
+            ->where('grp', 'JUDULAN LAPORAN')
+            ->where('subgrp', 'JUDULAN LAPORAN')
+            ->first();
 
         $query = DB::table($this->table)->from(
             DB::raw("serviceinheader with (readuncommitted)")
@@ -418,12 +423,12 @@ class ServiceInHeader extends MyModel
                 DB::raw("'Laporan Service In' as judulLaporan"),
                 DB::raw("'" . $getJudul->text . "' as judul"),
                 DB::raw("'Tgl Cetak:'+format(getdate(),'dd-MM-yyyy HH:mm:ss')as tglcetak"),
-                DB::raw(" 'User :".auth('api')->user()->name."' as usercetak")
+                DB::raw(" 'User :" . auth('api')->user()->name . "' as usercetak")
             )
             ->where("$this->table.id", $id)
             ->leftJoin(DB::raw("parameter as statuscetak with (readuncommitted)"), 'serviceinheader.statuscetak', 'statuscetak.id')
             ->leftJoin(DB::raw("trado with (readuncommitted)"), 'serviceinheader.trado_id', 'trado.id');
-        
+
         $data = $query->first();
         return $data;
     }

@@ -367,26 +367,30 @@ class NotaKreditHeader extends MyModel
     public function processUpdate(NotaKreditHeader $notaKreditHeader, array $data): NotaKreditHeader
     {
         $nobuktiOld = $notaKreditHeader->nobukti;
-        $group = 'NOTA KREDIT BUKTI';
-        $subGroup = 'NOTA KREDIT BUKTI';
-        $querycek = DB::table('notakreditheader')->from(
-            DB::raw("notakreditheader a with (readuncommitted)")
-        )
-            ->select(
-                'a.nobukti'
+        $getTgl = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'EDIT TANGGAL BUKTI')->where('subgrp', 'NOTA KREDIT')->first();
+
+        if (trim($getTgl->text) == 'YA') {
+            $group = 'NOTA KREDIT BUKTI';
+            $subGroup = 'NOTA KREDIT BUKTI';
+            $querycek = DB::table('notakreditheader')->from(
+                DB::raw("notakreditheader a with (readuncommitted)")
             )
-            ->where('a.id', $notaKreditHeader->id)
-            ->whereRAw("format(a.tglbukti,'MM-yyyy')='" . date('m-Y', strtotime($data['tglbukti'])) . "'")
-            ->first();
+                ->select(
+                    'a.nobukti'
+                )
+                ->where('a.id', $notaKreditHeader->id)
+                ->whereRAw("format(a.tglbukti,'MM-yyyy')='" . date('m-Y', strtotime($data['tglbukti'])) . "'")
+                ->first();
 
-        if (isset($querycek)) {
-            $nobukti = $querycek->nobukti;
-        } else {
-            $nobukti = (new RunningNumberService)->get($group, $subGroup, $notaKreditHeader->getTable(), date('Y-m-d', strtotime($data['tglbukti'])));
+            if (isset($querycek)) {
+                $nobukti = $querycek->nobukti;
+            } else {
+                $nobukti = (new RunningNumberService)->get($group, $subGroup, $notaKreditHeader->getTable(), date('Y-m-d', strtotime($data['tglbukti'])));
+            }
+
+            $notaKreditHeader->nobukti = $nobukti;
+            $notaKreditHeader->tglbukti = date('Y-m-d', strtotime($data['tglbukti']));
         }
-
-        $notaKreditHeader->nobukti = $nobukti;
-        $notaKreditHeader->tglbukti = date('Y-m-d', strtotime($data['tglbukti']));
         $notaKreditHeader->agen_id = $data['agen_id'] ?? '';
         $notaKreditHeader->modifiedby = auth('api')->user()->name;
 
@@ -440,7 +444,7 @@ class NotaKreditHeader extends MyModel
         /*STORE JURNAL*/
         $jurnalRequest = [
             'nobukti' => $notaKreditHeader->nobukti,
-            'tglbukti' => $data['tglbukti'],
+            'tglbukti' => $notaKreditHeader->tglbukti,
             'postingdari' => $data['postingdari'],
             'coakredit_detail' => $coakredit_detail,
             'coadebet_detail' => $coadebet_detail,
@@ -492,28 +496,28 @@ class NotaKreditHeader extends MyModel
         $this->setRequestParameters();
 
         $getJudul = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))
-        ->select('text')
-        ->where('grp', 'JUDULAN LAPORAN')
-        ->where('subgrp', 'JUDULAN LAPORAN')
-        ->first();
+            ->select('text')
+            ->where('grp', 'JUDULAN LAPORAN')
+            ->where('subgrp', 'JUDULAN LAPORAN')
+            ->first();
 
         $query = DB::table($this->table)->from(DB::raw("notakreditheader with (readuncommitted)"))
             ->select(
-            "$this->table.id",
-            "$this->table.nobukti",
-            "$this->table.pelunasanpiutang_nobukti",
-            "$this->table.tglbukti",
-            "$this->table.postingdari",
-            "$this->table.tgllunas",
-            "$this->table.jumlahcetak",
-            'pelunasanpiutang.penerimaan_nobukti',
-            'statuscetak.memo as statuscetak',
-            'statuscetak.id as  statuscetak_id',
-            DB::raw("'Nota Kredit' as judulLaporan"),
-            DB::raw("'" . $getJudul->text . "' as judul"),
-            DB::raw("'Tgl Cetak:'+format(getdate(),'dd-MM-yyyy HH:mm:ss')as tglcetak"),
-            DB::raw(" 'User :".auth('api')->user()->name."' as usercetak")
-        )
+                "$this->table.id",
+                "$this->table.nobukti",
+                "$this->table.pelunasanpiutang_nobukti",
+                "$this->table.tglbukti",
+                "$this->table.postingdari",
+                "$this->table.tgllunas",
+                "$this->table.jumlahcetak",
+                'pelunasanpiutang.penerimaan_nobukti',
+                'statuscetak.memo as statuscetak',
+                'statuscetak.id as  statuscetak_id',
+                DB::raw("'Nota Kredit' as judulLaporan"),
+                DB::raw("'" . $getJudul->text . "' as judul"),
+                DB::raw("'Tgl Cetak:'+format(getdate(),'dd-MM-yyyy HH:mm:ss')as tglcetak"),
+                DB::raw(" 'User :" . auth('api')->user()->name . "' as usercetak")
+            )
             ->where("$this->table.id", $id)
             ->leftJoin(DB::raw("parameter as statuscetak with (readuncommitted)"), 'notakreditheader.statuscetak', 'statuscetak.id')
             ->leftJoin(DB::raw("pelunasanpiutangheader as pelunasanpiutang with (readuncommitted)"), 'notakreditheader.pelunasanpiutang_nobukti', 'pelunasanpiutang.nobukti');

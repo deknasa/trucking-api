@@ -292,8 +292,8 @@ class PenerimaanGiroHeader extends MyModel
         $this->setRequestParameters();
         $temp = '##tempDetail' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
         $fetch = DB::table("penerimaangirodetail")->from(DB::raw("penerimaangirodetail with (readuncommitted)"))
-        ->select(DB::raw("nobukti, isnull(sum(isnull(nominal,0)),0)"))
-        ->groupBy('nobukti');
+            ->select(DB::raw("nobukti, isnull(sum(isnull(nominal,0)),0)"))
+            ->groupBy('nobukti');
 
         Schema::create($temp, function ($table) {
             $table->string('nobukti')->nullable();
@@ -301,46 +301,46 @@ class PenerimaanGiroHeader extends MyModel
         });
         DB::table($temp)->insertUsing(['nobukti', 'nominal'], $fetch);
         $query = DB::table("penerimaangiroheader")->from(DB::raw("penerimaangiroheader with (readuncommitted)"))
-        ->select(
-            'penerimaangiroheader.id', 
-            'penerimaangiroheader.nobukti', 
-            'penerimaangiroheader.tglbukti', 
-            'penerimaangiroheader.postingdari', 
-            'penerimaangiroheader.diterimadari', 
-            'penerimaangiroheader.tgllunas', 
-            'penerimaangiroheader.modifiedby', 
-            'penerimaangiroheader.created_at', 
-            'penerimaangiroheader.updated_at',
-            'agen.namaagen as agen_id', 
-            'c.nominal'
-        )
-        ->leftJoin(DB::raw("$temp as c with (readuncommitted)"), 'penerimaangiroheader.nobukti', 'c.nobukti')
-        ->leftJoin(DB::raw("agen with (readuncommitted)"), 'penerimaangiroheader.agen_id', 'agen.id')
-        ->leftJoin(DB::raw("pelanggan with (readuncommitted)"), 'penerimaangiroheader.pelanggan_id', 'pelanggan.id');
+            ->select(
+                'penerimaangiroheader.id',
+                'penerimaangiroheader.nobukti',
+                'penerimaangiroheader.tglbukti',
+                'penerimaangiroheader.postingdari',
+                'penerimaangiroheader.diterimadari',
+                'penerimaangiroheader.tgllunas',
+                'penerimaangiroheader.modifiedby',
+                'penerimaangiroheader.created_at',
+                'penerimaangiroheader.updated_at',
+                'agen.namaagen as agen_id',
+                'c.nominal'
+            )
+            ->leftJoin(DB::raw("$temp as c with (readuncommitted)"), 'penerimaangiroheader.nobukti', 'c.nobukti')
+            ->leftJoin(DB::raw("agen with (readuncommitted)"), 'penerimaangiroheader.agen_id', 'agen.id')
+            ->leftJoin(DB::raw("pelanggan with (readuncommitted)"), 'penerimaangiroheader.pelanggan_id', 'pelanggan.id');
 
         if (request()->tgldari && request()->tglsampai) {
             $query->whereBetween($this->table . '.tglbukti', [date('Y-m-d', strtotime(request()->tgldari)), date('Y-m-d', strtotime(request()->tglsampai))]);
         }
 
-        if(request()->nobuktis != ''){
+        if (request()->nobuktis != '') {
             $nobukti = request()->nobuktis;
-            $query->whereNotIn('penerimaangiroheader.nobukti', function($query) {
+            $query->whereNotIn('penerimaangiroheader.nobukti', function ($query) {
                 $query->select(DB::raw('DISTINCT penerimaanheader.penerimaangiro_nobukti'))
-                ->from('penerimaanheader')
-                ->whereNotNull('penerimaanheader.penerimaangiro_nobukti')
-                ->where('penerimaanheader.penerimaangiro_nobukti','!=','');
-            });  
+                    ->from('penerimaanheader')
+                    ->whereNotNull('penerimaanheader.penerimaangiro_nobukti')
+                    ->where('penerimaanheader.penerimaangiro_nobukti', '!=', '');
+            });
             $query->orWhereRaw("penerimaangiroheader.nobukti in ('$nobukti')");
             // dd('asdas');
-        }else {
-            $query->whereNotIn('penerimaangiroheader.nobukti', function($query) {
+        } else {
+            $query->whereNotIn('penerimaangiroheader.nobukti', function ($query) {
                 $query->select(DB::raw('DISTINCT penerimaanheader.penerimaangiro_nobukti'))
-                ->from('penerimaanheader')
-                ->whereNotNull('penerimaanheader.penerimaangiro_nobukti')
-                ->where('penerimaanheader.penerimaangiro_nobukti','!=','');
-            });   
+                    ->from('penerimaanheader')
+                    ->whereNotNull('penerimaanheader.penerimaangiro_nobukti')
+                    ->where('penerimaanheader.penerimaangiro_nobukti', '!=', '');
+            });
         }
-        
+
         $this->sort($query);
         $this->filter($query);
         $this->paginate($query);
@@ -378,7 +378,7 @@ class PenerimaanGiroHeader extends MyModel
                             } else if ($filters['field'] == 'tglapproval') {
                                 $query = $query->whereRaw("format($this->table.tglapproval,'dd-MM-yyyy') like '%$filters[data]%'");
                             } else if ($filters['field'] == 'nominal') {
-                                $query = $query->whereRaw("format(c.nominal,'#,#0.00') like '%$filters[data]%'");                                
+                                $query = $query->whereRaw("format(c.nominal,'#,#0.00') like '%$filters[data]%'");
                             } else {
                                 // $query = $query->where($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
                                 $query = $query->whereRaw($this->table . ".[" .  $filters['field'] . "] LIKE '%" . escapeLike($filters['data']) . "%' escape '|'");
@@ -557,27 +557,30 @@ class PenerimaanGiroHeader extends MyModel
     public function processUpdate(PenerimaanGiroHeader $penerimaanGiroHeader, array $data): PenerimaanGiroHeader
     {
         $nobuktiOld = $penerimaanGiroHeader->nobukti;
-        $group = 'PENERIMAAN GIRO BUKTI';
-        $subGroup = 'PENERIMAAN GIRO BUKTI';
+        $getTgl = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'EDIT TANGGAL BUKTI')->where('subgrp', 'PENERIMAAN GIRO')->first();
+        if (trim($getTgl->text) == 'YA') {
+            $group = 'PENERIMAAN GIRO BUKTI';
+            $subGroup = 'PENERIMAAN GIRO BUKTI';
 
-        $querycek = DB::table('penerimaangiroheader')->from(
-            DB::raw("penerimaangiroheader a with (readuncommitted)")
-        )
-            ->select(
-                'a.nobukti'
+            $querycek = DB::table('penerimaangiroheader')->from(
+                DB::raw("penerimaangiroheader a with (readuncommitted)")
             )
-            ->where('a.id', $penerimaanGiroHeader->id)
-            ->whereRAw("format(a.tglbukti,'MM-yyyy')='" . date('m-Y', strtotime($data['tglbukti'])) . "'")
-            ->first();
-         
+                ->select(
+                    'a.nobukti'
+                )
+                ->where('a.id', $penerimaanGiroHeader->id)
+                ->whereRAw("format(a.tglbukti,'MM-yyyy')='" . date('m-Y', strtotime($data['tglbukti'])) . "'")
+                ->first();
 
-        if (isset($querycek)) {
-            $nobukti = $querycek->nobukti;
-        } else {
-            $nobukti = (new RunningNumberService)->get($group, $subGroup, $penerimaanGiroHeader->getTable(), date('Y-m-d', strtotime($data['tglbukti'])));
+
+            if (isset($querycek)) {
+                $nobukti = $querycek->nobukti;
+            } else {
+                $nobukti = (new RunningNumberService)->get($group, $subGroup, $penerimaanGiroHeader->getTable(), date('Y-m-d', strtotime($data['tglbukti'])));
+            }
+            $penerimaanGiroHeader->tglbukti = date('Y-m-d', strtotime($data['tglbukti']));
+            $penerimaanGiroHeader->nobukti = $nobukti;
         }
-        $penerimaanGiroHeader->tglbukti = date('Y-m-d', strtotime($data['tglbukti']));
-        $penerimaanGiroHeader->nobukti = $nobukti;
         $penerimaanGiroHeader->pelanggan_id = $data['pelanggan_id'] ?? '';
         $penerimaanGiroHeader->agen_id = $data['agen_id'] ?? '';
         $penerimaanGiroHeader->diterimadari = $data['diterimadari'];
@@ -649,7 +652,7 @@ class PenerimaanGiroHeader extends MyModel
         /*STORE JURNAL*/
         $jurnalRequest = [
             'nobukti' => $penerimaanGiroHeader->nobukti,
-            'tglbukti' => date('Y-m-d', strtotime($data['tglbukti'])),
+            'tglbukti' => $penerimaanGiroHeader->tglbukti,
             'postingdari' => $data['postingdari'] ?? 'EDIT PENERIMAAN GIRO DETAIL',
             'coakredit_detail' => $coakredit_detail,
             'coadebet_detail' => $coadebet_detail,
@@ -740,10 +743,10 @@ class PenerimaanGiroHeader extends MyModel
         $this->setRequestParameters();
 
         $getJudul = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))
-        ->select('text')
-        ->where('grp', 'JUDULAN LAPORAN')
-        ->where('subgrp', 'JUDULAN LAPORAN')
-        ->first();
+            ->select('text')
+            ->where('grp', 'JUDULAN LAPORAN')
+            ->where('subgrp', 'JUDULAN LAPORAN')
+            ->first();
 
         $query = DB::table($this->table)->from(DB::raw("penerimaangiroheader with (readuncommitted)"))
             ->select(
@@ -761,8 +764,8 @@ class PenerimaanGiroHeader extends MyModel
                 DB::raw("'Bukti Penerimaan Giro' as judulLaporan"),
                 DB::raw("'" . $getJudul->text . "' as judul"),
                 DB::raw("'Tgl Cetak:'+format(getdate(),'dd-MM-yyyy HH:mm:ss')as tglcetak"),
-                DB::raw(" 'User :".auth('api')->user()->name."' as usercetak")
-                
+                DB::raw(" 'User :" . auth('api')->user()->name . "' as usercetak")
+
             )
             ->where("$this->table.id", $id)
             ->leftJoin(DB::raw("penerimaangirodetail as detail with (readuncommitted)"), "penerimaangiroheader.id",  $this->table . '.id')
