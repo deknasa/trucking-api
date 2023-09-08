@@ -174,7 +174,7 @@ class LaporanDepositoSupir extends MyModel
         });
 
         $queryrangedeposito = DB::table($temprangedeposito1)->from(
-            DB::raw($temprangedeposito1 ." as a with (readuncommitted)")
+            DB::raw($temprangedeposito1 . " as a with (readuncommitted)")
         )
             ->select(
                 'a.id',
@@ -245,6 +245,16 @@ class LaporanDepositoSupir extends MyModel
             ->where('subgrp', 'JUDULAN LAPORAN')
             ->first();
 
+        $disetujui = db::table('parameter')->from(db::raw('parameter with (readuncommitted)'))
+            ->select('text')
+            ->where('grp', 'DISETUJUI')
+            ->where('subgrp', 'DISETUJUI')->first()->text ?? '';
+
+        $diperiksa = db::table('parameter')->from(db::raw('parameter with (readuncommitted)'))
+            ->select('text')
+            ->where('grp', 'DIPERIKSA')
+            ->where('subgrp', 'DIPERIKSA')->first()->text ?? '';
+
         $query = DB::table($tempsaldo)->from(
             DB::raw($tempsaldo . " as a")
         )
@@ -263,14 +273,16 @@ class LaporanDepositoSupir extends MyModel
                 DB::raw("'Laporan Deposito' as judulLaporan"),
                 DB::raw("'" . $getJudul->text . "' as judul"),
                 DB::raw("'Tgl Cetak :'+format(getdate(),'dd-MM-yyyy HH:mm:ss')as tglcetak"),
-                DB::raw(" 'User :" . auth('api')->user()->name . "' as usercetak")
+                DB::raw(" 'User :" . auth('api')->user()->name . "' as usercetak"),
+                db::raw("'" . $disetujui . "' as disetujui"),
+                db::raw("'" . $diperiksa . "' as diperiksa"),
             )
             ->join(DB::raw($temprangedeposito . " as b "), function ($join) {
                 $join->on('a.total', '>=', 'b.nominalawal');
                 $join->on('a.total', '<=', 'b.nominalakhir');
             })
-            ->orderBy('b.id','asc')
-            ->orderBy('a.namasupir','asc');
+            ->orderBy('b.id', 'asc')
+            ->orderBy('a.namasupir', 'asc');
 
         $data = $query->get();
 
