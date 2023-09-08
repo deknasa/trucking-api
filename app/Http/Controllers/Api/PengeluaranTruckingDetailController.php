@@ -70,5 +70,9 @@ class PengeluaranTruckingDetailController extends Controller
         }
     }
 
+    public function addrow(StorePengeluaranTruckingDetailRequest $request)
+    {
+       return true;
+    }
 
 }

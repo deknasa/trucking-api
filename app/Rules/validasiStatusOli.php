@@ -31,8 +31,8 @@ class validasiStatusOli implements Rule
         $attribute = substr($attribute, 17);
         $stok = request()->detail_stok_id[$attribute];
         $get = DB::table('stok')->select('statusservicerutin')->where('id', $stok)->first();
-        $status = $get->statusservicerutin;
         
+        $status = $get;
         // $fetchFormat =  PengeluaranStok::where('id', request()->pengeluaranstok_id)->first();
         if ($this->spk == request()->pengeluaranstok_id) {
             if ($status == '345' || $status == '346' || $status == '347') {

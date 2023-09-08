@@ -29,5 +29,16 @@ class StoreInvoiceExtraDetailRequest extends FormRequest
             'keterangan_detail' => 'required|array',
             'keterangan_detail.*' => 'required'
         ];
+
+        
+    }
+
+    public function attributes()
+    {
+        
+        return [
+            'nominal_detail.*' => 'Nominal',
+            'keterangan_detail.*' => 'Keterangan',
+        ];
     }
 }

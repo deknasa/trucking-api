@@ -41,4 +41,17 @@ class StorePenerimaanDetailRequest extends FormRequest
 
         return $rules;
     }
+
+    public function attributes() {
+        return [
+            'ketcoakredit.*' => 'nama perkiraan (kredit)',
+            'coakredit.*' => 'perkiraan (kredit)',
+            'tgljatuhtempo.*' => 'tgl jatuh tempo',
+            'nominal_detail.*' => 'nominal',
+            'keterangan_detail.*' => 'keterangan',
+            'bankpelanggan.*' => 'bank pelanggan',
+            'bankpelanggan_id.*' => 'bank pelanggan',
+        ];
+    }
+
 }

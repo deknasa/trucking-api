@@ -43,5 +43,10 @@ class HutangExtraDetailController extends Controller
         ]);
     }
 
+    public function addrow(StoreHutangExtraDetailRequest $request)
+    {
+        return true;
+    }
+
     
 }

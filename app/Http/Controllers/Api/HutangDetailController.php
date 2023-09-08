@@ -89,4 +89,9 @@ class HutangDetailController extends Controller
             throw $th;
         }
     }
+
+    public function addrow(StoreHutangDetailRequest $request)
+    {
+        return true;
+    }
 }

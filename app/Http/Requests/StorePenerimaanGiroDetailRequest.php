@@ -37,4 +37,15 @@ class StorePenerimaanGiroDetailRequest extends FormRequest
             'nowarkat.*' => 'required',
         ];
     }
+
+    public function attributes() {
+        return [
+            'ketcoadebet.*' => 'nama perkiraan (debet)',
+            'tgljatuhtempo.*' => 'tgl jatuh tempo',
+            'nominal.*' => 'nominal',
+            'keterangan_detail.*' => 'keterangan',
+            'bank.*' => 'bank',
+            'nowarkat.*' => 'nowarkat',
+        ];
+    }
 }

@@ -267,6 +267,10 @@ class PengeluaranStokDetailController extends Controller
             DB::rollBack();
         }
     }
+    public function addrow(StorePengeluaranStokDetailRequest $request)
+    {
+       return true;
+    }
 
     public function persediaan($gudang,$trado,$gandengan)
     {

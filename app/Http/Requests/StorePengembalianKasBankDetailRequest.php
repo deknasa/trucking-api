@@ -32,4 +32,12 @@ class StorePengembalianKasBankDetailRequest extends FormRequest
             'ketcoadebet.*' => 'required',
         ];
     }
+
+    public function attributes() {
+        return [
+            'nominal_detail.*' => 'nominal',
+            'keterangan_detail.*' => 'Keterangan',
+            'ketcoadebet.*' => 'nama Perkiraan (debet)',
+        ];
+    }
 }

@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\ProsesUangJalanSupirDetail;
 use App\Http\Requests\StoreProsesUangJalanSupirDetailRequest;
 use App\Http\Requests\UpdateProsesUangJalanSupirDetailRequest;
+use App\Http\Requests\StoreProsesUangJalanSupirDetailTransferRequest;
 use App\Models\JurnalUmumDetail;
 use App\Models\Parameter;
 use Illuminate\Http\JsonResponse;
@@ -101,5 +102,10 @@ class ProsesUangJalanSupirDetailController extends Controller
             DB::rollBack();
             throw $th;
         }
+    }
+
+    public function addrowtransfer(StoreProsesUangJalanSupirDetailTransferRequest $request)
+    {
+        return true;
     }
 }

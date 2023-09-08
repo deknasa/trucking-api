@@ -30,4 +30,11 @@ class StoreServiceOutDetailRequest extends FormRequest
             'keterangan_detail.*' => 'required'
         ];
     }
+
+    public function attributes() {
+        return [
+            'servicein_nobukti.*' => 'servicein nobukti',
+            'keterangan_detail.*' => 'Keterangan',
+        ];
+    }
 }

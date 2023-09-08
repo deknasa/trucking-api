@@ -143,4 +143,9 @@ class PiutangDetailController extends Controller
             throw $th;
         }
     }
+
+    public function addrow(StorePiutangDetailRequest $request)
+    {
+        return true;
+    }
 }

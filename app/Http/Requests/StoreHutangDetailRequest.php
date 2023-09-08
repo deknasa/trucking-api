@@ -42,5 +42,14 @@ class StoreHutangDetailRequest extends FormRequest
         return $rules;
     }
 
+    public function attributes()
+    {
+        
+        return [
+            'total_detail.*' => 'total',
+            'keterangan_detail.*' => 'Keterangan',
+        ];
+    }
+
 
 }

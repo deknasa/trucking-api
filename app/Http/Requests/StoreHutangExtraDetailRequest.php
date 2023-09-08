@@ -40,4 +40,13 @@ class StoreHutangExtraDetailRequest extends FormRequest
         ];
         return $rules;
     }
+
+    public function attributes() {
+        return [
+            'tgljatuhtempo.*' => 'tgl jatuh tempo',
+            'total_detail.*' => 'total',
+            'keterangan_detail.*' => 'keterangan',
+            
+        ];
+    }
 }

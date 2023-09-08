@@ -60,4 +60,8 @@ class ServiceInDetailController extends Controller
             throw $th;
         }
     }
+    public function addrow(StoreServiceInDetailRequest $request)
+    {
+        return true;
+    }
 }

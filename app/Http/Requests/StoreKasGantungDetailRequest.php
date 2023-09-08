@@ -30,4 +30,11 @@ class StoreKasGantungDetailRequest extends FormRequest
             'keterangan_detail.*' => 'required',
         ];
     }
+
+    public function attributes() {
+        return [
+            'nominal.*' => 'nominal',
+            'keterangan_detail.*' => 'Keterangan',
+        ];
+    }
 }
