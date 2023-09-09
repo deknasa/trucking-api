@@ -60,8 +60,8 @@ class LaporanStokController extends Controller
      */
     public function export(Request $request)
     {
-        $bulan = $request->bulan;
-        $tahun = $request->tahun;
+        $bulan = substr($request->sampai,0,2);
+        $tahun = substr($request->sampai,-4);
 
         $laporanstok = new Laporanstok();
 

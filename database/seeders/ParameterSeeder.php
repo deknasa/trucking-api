@@ -503,6 +503,8 @@ class ParameterSeeder extends Seeder
         parameter::create(['grp' => 'PELUNASAN', 'subgrp' => 'PELUNASAN', 'kelompok' => '', 'text' => 'NOTA DEBET', 'memo' => '{"MEMO":"NOTA DEBET","SINGKATAN":"NOTA DEBET","WARNA":"#28A745","WARNATULISAN":"#fff"}', 'type' => '0', 'modifiedby' => 'ADMIN', 'default' => '',]);
         parameter::create(['grp' => 'TIPENOTADEBET', 'subgrp' => 'TIPENOTADEBET', 'kelompok' => '', 'text' => 'PENDAPATAN LAIN', 'memo' => '{"MEMO":"PENDAPATAN LAIN","SINGKATAN":"PENDAPATAN LAIN","WARNA":"#28A745","JURNAL":"06.02.01.01","WARNATULISAN":"#fff"}', 'type' => '0', 'modifiedby' => '1', 'default' => '',]);
         parameter::create(['grp' => 'TIPENOTADEBET', 'subgrp' => 'TIPENOTADEBET', 'kelompok' => '', 'text' => 'UANG DITERIMA DIMUKA', 'memo' => '{"MEMO":"UANG DITERIMA DIMUKA","SINGKATAN":"UANG DITERIMA DIMUKA","WARNA":"#28A745","JURNAL":"03.02.02.08","WARNATULISAN":"#fff"}', 'type' => '0', 'modifiedby' => '1', 'default' => '',]);
+        parameter::create(['grp' => 'TIPENOTAKREDIT', 'subgrp' => 'TIPENOTAKREDIT', 'kelompok' => '', 'text' => 'POTONGAN PENDAPATAN', 'memo' => '{"MEMO":"POTONGAN PENDAPATAN","SINGKATAN":"POTONGAN PENDAPATAN","WARNA":"#28A745","JURNAL":"06.03.01.01","WARNATULISAN":"#fff"}', 'type' => '0', 'modifiedby' => '1', 'default' => '',]);
+        parameter::create(['grp' => 'TIPENOTAKREDIT', 'subgrp' => 'TIPENOTAKREDIT', 'kelompok' => '', 'text' => 'UANG DIBAYAR DIMUKA', 'memo' => '{"MEMO":"UANG DIBAYAR DIMUKA","SINGKATAN":"UANG DIBAYAR DIMUKA","WARNA":"#28A745","JURNAL":"01.09.01.04","WARNATULISAN":"#fff"}', 'type' => '0', 'modifiedby' => '1', 'default' => '',]);
         
     }
 }
