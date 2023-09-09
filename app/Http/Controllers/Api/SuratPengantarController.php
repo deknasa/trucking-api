@@ -33,6 +33,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
+use Illuminate\Support\Facades\Validator;
 
 class SuratPengantarController extends Controller
 {
@@ -551,5 +552,34 @@ class SuratPengantarController extends Controller
         return response([
             'data' => $suratPengantar->getExport($dari, $sampai),
         ]);
+    }
+
+    public function addrow(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'keterangan_detail.*' => 'required',
+            'nominal.*' => 'required|numeric|gt:0',
+            'nominalTagih.*' => 'required|numeric|gt:0',
+
+        ], [
+            'keterangan_detail.required' => ':attribute' . ' ' . app(ErrorController::class)->geterror('WI')->keterangan,
+            'nominal.required' => ':attribute' . ' ' . app(ErrorController::class)->geterror('WI')->keterangan,
+            'nominalTagih.required' => ':attribute' . ' ' . app(ErrorController::class)->geterror('WI')->keterangan,
+        ], [
+            'keterangan_detail' => 'keterangan',
+            'nominal' => 'nominal',
+            'nominalTagih' => 'nominal Tagih',
+            'keterangan_detail.*' => 'keterangan',
+            'nominal.*' => 'nominal',
+            'nominalTagih.*' => 'nominal Tagih',
+        ]);
+        if ($validator->fails()) {
+        
+            return response()->json( [
+                "message"=> "The given data was invalid.",
+                "errors"=> $validator->messages()
+            ],422);
+        }
+        return true;
     }
 }

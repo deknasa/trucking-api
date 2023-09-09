@@ -108,4 +108,10 @@ class JurnalUmumDetailController extends Controller
             throw $th;
         }
     }
+
+
+    public function addrow(StoreJurnalUmumDetailRequest $request)
+    {
+       return true;
+    }
 }

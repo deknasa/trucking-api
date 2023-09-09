@@ -72,7 +72,10 @@ class PengembalianKasBankDetailController extends Controller
         }
     }
 
-
+    public function addrow(StorePengembalianKasBankDetailRequest $request)
+    {
+        return true;
+    }
     /**
      * Show the form for editing the specified resource.
      *

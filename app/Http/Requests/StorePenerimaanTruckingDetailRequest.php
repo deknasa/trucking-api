@@ -98,7 +98,7 @@ class StorePenerimaanTruckingDetailRequest extends FormRequest
         return [
             'sisa.*' => [$requiredPJP, $sisaNominus],
             'nominal' => [$requiredNominal, 'array'],
-            'nominal.*' => ['required', 'numeric', $min],
+            'nominal.*' => ['required','gt:0', 'numeric', $min],
             'keterangan' => [$requiredKeterangan, 'array'],
             'keterangan.*' => $requiredKeterangan
         ];

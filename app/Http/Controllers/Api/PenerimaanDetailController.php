@@ -118,4 +118,10 @@ class PenerimaanDetailController extends Controller
             throw $th;
         }
     }
+
+    public function addrow(StorePenerimaanDetailRequest $request)
+    {
+        return true;
+    }
+
 }

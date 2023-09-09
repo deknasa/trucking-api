@@ -105,12 +105,12 @@ class StorePengeluaranTruckingDetailRequest extends FormRequest
             $sisaNominus = Rule::when((($fetchFormat->kodepengeluaran == 'TDE' || $fetchFormat->kodepengeluaran == 'KBBM')), 'numeric|min:0');
         }
         $rulseKlaim = [];
-        if ($this->pengeluarantrucking_id) {
+        if (request()->pengeluarantrucking_id) {
             $klaim = DB::table('pengeluarantrucking')->from(DB::raw("pengeluarantrucking with (readuncommitted)"))
-                ->where('id', request()->pengeluarantrucking_id)
+                // ->where('id', request()->pengeluarantrucking_id)
                 ->where('keterangan', 'LIKE', "%klaim%")
                 ->first();
-            if ($klaim->id ==  $this->pengeluarantrucking_id) {
+            if ($klaim->id ==  request()->pengeluarantrucking_id) {
                 $rulseKlaim = [
                     "stok_id.*"  => ["required",],
                     "pengeluaranstok_nobukti.*"  => ["required",],

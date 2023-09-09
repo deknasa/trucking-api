@@ -75,4 +75,10 @@ class PenerimaanGiroDetailController extends Controller
             DB::rollBack();
         }
     }
+
+    public function addrow(StorePenerimaanGiroDetailRequest $request)
+    {
+        return true;
+    }
+
 }

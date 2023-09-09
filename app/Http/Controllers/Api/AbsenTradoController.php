@@ -13,6 +13,8 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Database\QueryException;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Support\Facades\Validator;
+
 
 class AbsenTradoController extends Controller
 {
@@ -186,6 +188,31 @@ class AbsenTradoController extends Controller
             throw $th;
         }
     }
+
+    public function addrow(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'key.*' => 'required',
+            'value.*' => 'required',
+        ], [
+            'key.required' => ':attribute' . ' ' . app(ErrorController::class)->geterror('WI')->keterangan,
+            'value.required' => ':attribute' . ' ' . app(ErrorController::class)->geterror('WI')->keterangan,
+        ], [
+            'key' => 'judul',
+            'value' => 'keterangan',
+            'key.*' => 'judul',
+            'value.*' => 'keterangan',
+        ]);
+        if ($validator->fails()) {
+        
+            return response()->json( [
+                "message"=> "The given data was invalid.",
+                "errors"=> $validator->messages()
+            ],422);
+        }
+        return true;
+    }
+    
     public function detail()
     {
         $query = AbsenTrado::select('memo')->where('id', request()->id)->first();

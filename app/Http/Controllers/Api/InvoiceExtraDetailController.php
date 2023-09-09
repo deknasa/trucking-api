@@ -73,6 +73,10 @@ class InvoiceExtraDetailController extends Controller
         }
     }
 
+    public function addrow(StoreInvoiceExtraDetailRequest $request)
+    {
+        return true;
+    }
     public function export()
     {
     }
