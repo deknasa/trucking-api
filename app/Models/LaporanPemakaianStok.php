@@ -58,11 +58,12 @@ class LaporanPemakaianStok extends MyModel
                 
             )
 
-            ->join(DB::raw("pengeluaranstokheader as b with (readuncommitted)"), 'a.nobukti', '=', 'b.nobukti')
+            ->join(DB::raw("pengeluaranstokheader as b with (readuncommitted)"), 'a.nobukti', 'b.nobukti')
             ->leftjoin(db::raw("trado as c with (readuncommitted)"), 'b.trado_id', 'c.id')
             ->leftjoin(db::raw("stok as d with (readuncommitted)"), 'a.stok_id', 'd.id')
             ->leftjoin(db::raw("satuan as e with (readuncommitted)"), 'd.satuan_id', 'e.id')
             ->whereRaw("MONTH(b.tglbukti) = " . $bulan . " AND YEAR(b.tglbukti) = " . $tahun)
+            ->whereRaw("b.pengeluaranstok_id in (1,3)")
             ->OrderBy('c.kodetrado','asc')
             ->OrderBy('b.tglbukti','asc')
             ->get();
