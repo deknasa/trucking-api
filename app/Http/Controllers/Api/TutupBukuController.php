@@ -7,6 +7,7 @@ use App\Http\Requests\StoreLogTrailRequest;
 use App\Http\Requests\StoreTutupBukuRequest;
 use Illuminate\Support\Facades\DB;
 use App\Models\Parameter;
+use App\Models\TutupBuku;
 
 class TutupBukuController extends Controller
 {
@@ -30,28 +31,12 @@ class TutupBukuController extends Controller
         DB::beginTransaction();
 
         try {
-            $tgltutupbuku = date('Y-m-d', strtotime($request->tgltutupbuku));
-            $parameter = Parameter::where('grp', 'TUTUP BUKU')->where('subgrp', 'TUTUP BUKU')->first();
+            $data = [
+                'tgltutupbuku' => $request->tgltutupbuku,
+            ];
+            $parameter = (new TutupBuku())->processStore($data);
             
-            $parameter->text = $tgltutupbuku;
-            $parameter->modifiedby = auth('api')->user()->name;
-
-            if ($parameter->save()) {
-                $logTrail = [
-                    'namatabel' => strtoupper($parameter->getTable()),
-                    'postingdari' => 'TUTUP BUKU',
-                    'idtrans' => $parameter->id,
-                    'nobuktitrans' => $parameter->id,
-                    'aksi' => 'EDIT',
-                    'datajson' => $parameter->toArray(),
-                    'modifiedby' => $parameter->modifiedby
-                ];
-
-                $validatedLogTrail = new StoreLogTrailRequest($logTrail);
-                app(LogTrailController::class)->store($validatedLogTrail);
-
-                DB::commit();
-            }
+            DB::commit();
             return response([
                 'status' => true,
                 'message' => 'Proses Tutup Buku Berhasil',
