@@ -52,6 +52,8 @@ class LaporanPemakaianStok extends MyModel
                 db::raw("isnull(c.kodetrado,'') as kodetrado"),
                 'd.namastok',
                 'a.qty',
+                db::raw("isnull(a.total,0) as nominal"),
+                db::raw("isnull(a.harga,0) as harga"),
                 db::raw("isnull(e.satuan,'') as satuan"),
                 'a.harga',
                 'a.keterangan'
