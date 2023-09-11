@@ -33,12 +33,12 @@ class LaporanStok extends MyModel
         $tgldari = date('Y-m-d', strtotime($tgl));
         $tgl2 = date('t-m-Y', strtotime($tgl));
         $tglsampai = date('Y-m-d', strtotime($tgl2));
-        $tglsampai1 = date('Y-m-d', strtotime('+1 days', strtotime($tgl2))); 
-        
+        $tglsampai1 = date('Y-m-d', strtotime('+1 days', strtotime($tgl2)));
+
 
 
         // $tglsampai= date("Y-m-d", strtotime("+1 day", strtotime($tgldari)));
-        
+
 
         $temprekapall = '##temprekapall' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
         Schema::create($temprekapall, function ($table) {
@@ -58,19 +58,19 @@ class LaporanStok extends MyModel
             $table->string('modifiedby', 100)->nullable();
         });
 
-        $temprekapallnext = '##temprekapallnext' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
-        Schema::create($temprekapallnext, function ($table) {
+        $tempstoktransaksi = '##tempstoktransaksi' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+        Schema::create($tempstoktransaksi, function ($table) {
             $table->id();
             $table->string('kodebarang', 1000)->nullable();
         });
 
 
 
-        $idgudangkantor=db::table("parameter")->from(db::raw("parameter a with (readuncommitted)"))
-        ->select('a.text')
-        ->where('grp','GUDANG KANTOR')
-        ->where('subgrp','GUDANG KANTOR')
-        ->first()->text ?? 0;
+        $idgudangkantor = db::table("parameter")->from(db::raw("parameter a with (readuncommitted)"))
+            ->select('a.text')
+            ->where('grp', 'GUDANG KANTOR')
+            ->where('subgrp', 'GUDANG KANTOR')
+            ->first()->text ?? 0;
 
 
         $filtergudang = Parameter::where('grp', 'STOK PERSEDIAAN')->where('subgrp', 'STOK PERSEDIAAN')->where('text', 'GUDANG')->first();
@@ -79,8 +79,8 @@ class LaporanStok extends MyModel
         $gandengan_id = 0;
 
 
-        $stokdari_id=0;
-        $stoksampai_id=0;
+        $stokdari_id = 0;
+        $stoksampai_id = 0;
 
         // dd($filter);
         $kartustok = new KartuStok();
@@ -100,20 +100,31 @@ class LaporanStok extends MyModel
             'modifiedby',
         ], (new KartuStok())->getlaporan($tgldari, $tglsampai, $stokdari_id, $stoksampai_id, $idgudangkantor, $trado_id, $gandengan_id, $filtergudang));
 
-       
+        $querystoktransaksi = DB::table($temprekapall)->from(db::raw($temprekapall . " as a"))
+            ->select(
+                'a.kodebarang',
+            )
+            ->whereRaw("upper(a.nobukti)<>'SALDO AWAL'")
+            ->groupby('a.kodebarang');
 
-        DB::delete(DB::raw("delete " . $temprekapall . " from " . $temprekapall . " as a inner join ".$temprekapallnext ." b on a.kodebarang=b.kodebarang WHERE isnull(b.qtysaldo,0)=0"));
-        
+
+        DB::table($tempstoktransaksi)->insertUsing([
+            'kodebarang',
+        ],  $querystoktransaksi);
+
+        DB::delete(DB::raw("delete " . $temprekapall . " from " . $temprekapall . " as a left outer join " . $tempstoktransaksi . " b on a.kodebarang=b.kodebarang 
+                            WHERE isnull(b.kodebarang,'')='' and isnull(a.qtysaldo,0)=0"));
+
 
         $disetujui = db::table('parameter')->from(db::raw('parameter with (readuncommitted)'))
-        ->select('text')
-        ->where('grp', 'DISETUJUI')
-        ->where('subgrp', 'DISETUJUI')->first()->text ?? '';
+            ->select('text')
+            ->where('grp', 'DISETUJUI')
+            ->where('subgrp', 'DISETUJUI')->first()->text ?? '';
 
-    $diperiksa = db::table('parameter')->from(db::raw('parameter with (readuncommitted)'))
-        ->select('text')
-        ->where('grp', 'DIPERIKSA')
-        ->where('subgrp', 'DIPERIKSA')->first()->text ?? '';
+        $diperiksa = db::table('parameter')->from(db::raw('parameter with (readuncommitted)'))
+            ->select('text')
+            ->where('grp', 'DIPERIKSA')
+            ->where('subgrp', 'DIPERIKSA')->first()->text ?? '';
 
         $query = DB::table($temprekapall)->from(
             DB::raw($temprekapall . " a")
@@ -123,23 +134,27 @@ class LaporanStok extends MyModel
                 'a.lokasi',
                 'a.lokasi as namalokasi',
                 DB::raw("'' as kategori"),
-                DB::raw("'".$tgldari."' as tgldari"),
-                DB::raw("'".$tglsampai."' as tglsampai"),
+                DB::raw("'" . $tgldari . "' as tgldari"),
+                DB::raw("'" . $tglsampai . "' as tglsampai"),
                 DB::raw("'' as stokdari"),
                 DB::raw("'' as stoksampai"),
                 DB::raw("'' as vulkanisirke"),
                 'a.kodebarang as id',
                 'a.kodebarang',
                 'a.namabarang',
-                DB::raw("'".$tgldari."' as tanggal"),
-                'a.qtymasuk as qty',
+                DB::raw("'" . $tgldari . "' as tanggal"),
                 DB::raw("'' as satuan"),
-                'a.nilaimasuk as nominal',
+                'a.qtymasuk as qtymasuk',
+                'a.nilaimasuk as nominalmasuk',
+                'a.qtykeluar as qtykeluar',
+                'a.nilaikeluar as nominalkeluar',
+                'a.qtysaldo as qtysaldo',
+                'a.nilaisaldo as nominalsaldo',
                 db::raw("'" . $disetujui . "' as disetujui"),
                 db::raw("'" . $diperiksa . "' as diperiksa"),
 
             );
-           
+
 
 
         // 'header' => 'Laporan Saldo Inventory',
@@ -160,6 +175,7 @@ class LaporanStok extends MyModel
 
         // dd(DB::table($temprekapall)->get());
 
-        $data=$query->get();
-        return $data;    }
+        $data = $query->get();
+        return $data;
+    }
 }
