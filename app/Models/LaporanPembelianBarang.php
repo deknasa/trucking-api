@@ -33,6 +33,15 @@ class LaporanPembelianBarang extends MyModel
             ->where('subgrp', 'JUDULAN LAPORAN')
             ->first();
 
+        $disetujui = db::table('parameter')->from(db::raw('parameter with (readuncommitted)'))
+            ->select('text')
+            ->where('grp', 'DISETUJUI')
+            ->where('subgrp', 'DISETUJUI')->first()->text ?? '';
+
+        $diperiksa = db::table('parameter')->from(db::raw('parameter with (readuncommitted)'))
+            ->select('text')
+            ->where('grp', 'DIPERIKSA')
+            ->where('subgrp', 'DIPERIKSA')->first()->text ?? '';
 
         $cmpy = DB::table('parameter')
             ->select('text')
@@ -83,11 +92,12 @@ class LaporanPembelianBarang extends MyModel
                 'd.namastok',
                 'c.qty',
                 db::raw("isnull(e.satuan,'') as satuan"),
+                db::raw("isnull(c.harga,0) as harga"),
                 db::raw("isnull(c.total,0) as nominal"),
-                'c.keterangan'
-                
+                'c.keterangan',
+                db::raw("'" . $disetujui . "' as disetujui"),
+                db::raw("'" . $diperiksa . "' as diperiksa"),
             )
-
             ->join(DB::raw("penerimaanstokheader as b with (readuncommitted)"), 'a.nobukti',  'b.nobukti')
             ->join(db::raw("penerimaanstokdetail as c with (readuncommitted)"), 'a.nobukti', 'c.nobukti')
             ->join(db::raw("stok as d with (readuncommitted)"), 'c.stok_id', 'd.id')

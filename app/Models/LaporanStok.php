@@ -136,14 +136,13 @@ class LaporanStok extends MyModel
                 DB::raw("'' as kategori"),
                 DB::raw("'" . $tgldari . "' as tgldari"),
                 DB::raw("'" . $tglsampai . "' as tglsampai"),
-                DB::raw("'' as stokdari"),
-                DB::raw("'' as stoksampai"),
                 DB::raw("'' as vulkanisirke"),
+                DB::raw("'' as keterangan"),
+                'a.nobukti as nobukti',
                 'a.kodebarang as id',
                 'a.kodebarang',
                 'a.namabarang',
-                DB::raw("'" . $tgldari . "' as tanggal"),
-                DB::raw("'' as satuan"),
+                'a.tglbukti as tglbukti',
                 'a.qtymasuk as qtymasuk',
                 'a.nilaimasuk as nominalmasuk',
                 'a.qtykeluar as qtykeluar',
@@ -153,7 +152,10 @@ class LaporanStok extends MyModel
                 db::raw("'" . $disetujui . "' as disetujui"),
                 db::raw("'" . $diperiksa . "' as diperiksa"),
 
-            );
+            )
+            ->orderBy('a.namabarang','asc')
+            ->orderBy('a.tglbukti','asc')
+            ->orderBy(db::raw("(case when UPPER(isnull(a.nobukti,''))='SALDO AWAL' then '' else isnull(a.nobukti,'') end)"),'asc');
 
 
 
