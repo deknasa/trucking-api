@@ -4,7 +4,7 @@ namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
 use App\Models\Parameter;
-use App\Rules\DateTutupBuku;
+use App\Rules\DateSaldo;
 use App\Http\Controllers\Api\ErrorController;
 
 class StoreTutupBukuRequest extends FormRequest
@@ -28,13 +28,13 @@ class StoreTutupBukuRequest extends FormRequest
     {
         $parameter = new Parameter();
         $getBatas = $parameter->getTutupBuku();
-        $tglbatasawal = $getBatas->text;
+        $tglbatasawal = date('Y-m-d', strtotime('-2 month', strtotime($getBatas->text)));;
 
         $rules = [
             'tgltutupbuku' => [
                 'required', 'date_format:d-m-Y',
-                new DateTutupBuku(),
-                'after:'.$tglbatasawal,
+                new DateSaldo(),
+                'after:' . $tglbatasawal,
                 'before_or_equal:' . date('d-m-Y'),
 
             ]
@@ -46,7 +46,7 @@ class StoreTutupBukuRequest extends FormRequest
     public function attributes()
     {
         $attributes = [
-            'tgltutupbuku' => 'Tanggal Tutup Buku',
+            'tgltutupbuku' => 'Tanggal Saldo',
         ];
 
         return $attributes;

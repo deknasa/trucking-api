@@ -505,6 +505,7 @@ class ParameterSeeder extends Seeder
         parameter::create(['grp' => 'TIPENOTADEBET', 'subgrp' => 'TIPENOTADEBET', 'kelompok' => '', 'text' => 'UANG DITERIMA DIMUKA', 'memo' => '{"MEMO":"UANG DITERIMA DIMUKA","SINGKATAN":"UANG DITERIMA DIMUKA","WARNA":"#28A745","JURNAL":"03.02.02.08","WARNATULISAN":"#fff"}', 'type' => '0', 'modifiedby' => '1', 'default' => '',]);
         parameter::create(['grp' => 'TIPENOTAKREDIT', 'subgrp' => 'TIPENOTAKREDIT', 'kelompok' => '', 'text' => 'POTONGAN PENDAPATAN', 'memo' => '{"MEMO":"POTONGAN PENDAPATAN","SINGKATAN":"POTONGAN PENDAPATAN","WARNA":"#28A745","JURNAL":"06.03.01.01","WARNATULISAN":"#fff"}', 'type' => '0', 'modifiedby' => '1', 'default' => '',]);
         parameter::create(['grp' => 'TIPENOTAKREDIT', 'subgrp' => 'TIPENOTAKREDIT', 'kelompok' => '', 'text' => 'UANG DIBAYAR DIMUKA', 'memo' => '{"MEMO":"UANG DIBAYAR DIMUKA","SINGKATAN":"UANG DIBAYAR DIMUKA","WARNA":"#28A745","JURNAL":"01.09.01.04","WARNATULISAN":"#fff"}', 'type' => '0', 'modifiedby' => '1', 'default' => '',]);
+        parameter::create(['grp' => 'SALDO', 'subgrp' => 'SALDO', 'kelompok' => 'SALDO', 'text' => '2023-04-30', 'memo' => '{"MEMO":"SALDO","SINGKATAN":"TB","WARNA":"#6C757D","WARNATULISAN":"#fff"}', 'type' => '0', 'modifiedby' => 'ADMIN', 'default' => '',]);
         
     }
 }
