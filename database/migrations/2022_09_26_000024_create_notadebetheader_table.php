@@ -23,6 +23,9 @@ class CreateNotadebetheaderTable extends Migration
             $table->longText('keterangan')->nullable();            
             $table->unsignedBigInteger('pelanggan_id')->nullable();
             $table->unsignedBigInteger('agen_id')->nullable();
+            $table->unsignedBigInteger('bank_id')->nullable();
+            $table->unsignedBigInteger('alatbayar_id')->nullable();
+            $table->string('penerimaan_nobukti', 50)->nullable();
             $table->date('tglbukti')->nullable();
             $table->string('postingdari', 150)->nullable();
             $table->integer('statusapproval')->length(11)->nullable();

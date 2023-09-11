@@ -913,7 +913,7 @@ class PengeluaranTruckingHeader extends MyModel
             $tglsampai = date('Y-m-d', strtotime($data['tglsampai']));
         };
         if (array_key_exists('periode', $data)) {
-            $periode = date('Y-m-d', strtotime('01-'.$data['periode']));
+            $periode = date('Y-m-d', strtotime('01-' . $data['periode']));
         };
 
         $pengeluaranTruckingHeader = new PengeluaranTruckingHeader();
@@ -1091,21 +1091,29 @@ class PengeluaranTruckingHeader extends MyModel
         $statusApproval = Parameter::from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS APPROVAL')->where('text', 'NON APPROVAL')->first();
         $statusPosting = Parameter::from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS POSTING')->where('text', 'BUKAN POSTING')->first();
         $statusCetak = Parameter::from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUSCETAK')->where('text', 'BELUM CETAK')->first();
-        $querycek = DB::table('pengeluarantruckingheader')->from(
-            DB::raw("pengeluarantruckingheader a with (readuncommitted)")
-        )
-            ->select(
-                'a.nobukti'
-            )
-            ->where('a.id', $pengeluaranTruckingHeader->id)
-            ->whereRAw("format(a.tglbukti,'MM-yyyy')='" . date('m-Y', strtotime($data['tglbukti'])) . "'")
-            ->first();
+        $getTgl = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'EDIT TANGGAL BUKTI')->where('subgrp', 'PENGELUARAN TRUCKING')->first();
 
-        if (isset($querycek)) {
-            $nobukti = $querycek->nobukti;
-        } else {
-            $nobukti = (new RunningNumberService)->get($fetchGrp->grp, $fetchGrp->subgrp, $pengeluaranTruckingHeader->getTable(), date('Y-m-d', strtotime($data['tglbukti'])));
+        if (trim($getTgl->text) == 'YA') {
+            $querycek = DB::table('pengeluarantruckingheader')->from(
+                DB::raw("pengeluarantruckingheader a with (readuncommitted)")
+            )
+                ->select(
+                    'a.nobukti'
+                )
+                ->where('a.id', $pengeluaranTruckingHeader->id)
+                ->whereRAw("format(a.tglbukti,'MM-yyyy')='" . date('m-Y', strtotime($data['tglbukti'])) . "'")
+                ->first();
+
+            if (isset($querycek)) {
+                $nobukti = $querycek->nobukti;
+            } else {
+                $nobukti = (new RunningNumberService)->get($fetchGrp->grp, $fetchGrp->subgrp, $pengeluaranTruckingHeader->getTable(), date('Y-m-d', strtotime($data['tglbukti'])));
+            }
+
+            $pengeluaranTruckingHeader->nobukti = $nobukti;
+            $pengeluaranTruckingHeader->tglbukti = date('Y-m-d', strtotime($data['tglbukti']));
         }
+        
         $tgldari = null;
         $tglsampai = null;
         $periode = null;
@@ -1116,11 +1124,8 @@ class PengeluaranTruckingHeader extends MyModel
             $tglsampai = date('Y-m-d', strtotime($data['tglsampai']));
         };
         if (array_key_exists('periode', $data)) {
-            $periode = date('Y-m-d', strtotime('01-'.$data['periode']));
+            $periode = date('Y-m-d', strtotime('01-' . $data['periode']));
         };
-
-        $pengeluaranTruckingHeader->nobukti = $nobukti;
-        $pengeluaranTruckingHeader->tglbukti = date('Y-m-d', strtotime($data['tglbukti']));
         $pengeluaranTruckingHeader->coa = $data['coa'];
         $pengeluaranTruckingHeader->periodedari = $tgldari;
         $pengeluaranTruckingHeader->periodesampai = $tglsampai;
@@ -1228,7 +1233,7 @@ class PengeluaranTruckingHeader extends MyModel
                     }
                     /*STORE PENGELUARAN*/
                     $pengeluaranRequest = [
-                        'tglbukti' => date('Y-m-d', strtotime($data['tglbukti'])),
+                        'tglbukti' => $pengeluaranTruckingHeader->tglbukti,
                         'pelanggan_id' => 0,
                         'postingdari' => $data['postingdari'] ?? "ENTRY PENGELUARAN TRUCKING",
                         'statusapproval' => $statusApproval->id,
