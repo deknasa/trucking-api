@@ -25,6 +25,7 @@ class CreateNotakreditheaderTable extends Migration
             $table->unsignedBigInteger('agen_id')->nullable();            
             $table->unsignedBigInteger('bank_id')->nullable();
             $table->unsignedBigInteger('alatbayar_id')->nullable();
+            $table->string('nowarkat', 50)->nullable();
             $table->string('pengeluaran_nobukti', 50)->nullable();            
             $table->date('tglbukti')->nullable();
             $table->string('postingdari',50)->nullable();

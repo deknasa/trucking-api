@@ -190,6 +190,28 @@ class KartuStok extends MyModel
                     ], $this->getlaporan($tgldari, $tglsampai, request()->stokdari_id, request()->stoksampai_id, request()->datafilter, 0, 0, $filtergudang->text));
                 }
             }
+
+            $tempstoktransaksi = '##tempstoktransaksi' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+            Schema::create($tempstoktransaksi, function ($table) {
+                $table->id();
+                $table->string('kodebarang', 1000)->nullable();
+            });
+
+
+            $querystoktransaksi = DB::table($temtabel)->from(db::raw($temtabel . " as a"))
+                ->select(
+                    'a.kodebarang',
+                )
+                ->whereRaw("upper(a.nobukti)<>'SALDO AWAL'")
+                ->groupby('a.kodebarang');
+
+
+            DB::table($tempstoktransaksi)->insertUsing([
+                'kodebarang',
+            ],  $querystoktransaksi);
+
+            DB::delete(DB::raw("delete " . $temtabel . " from " . $temtabel . " as a left outer join " . $tempstoktransaksi . " b on a.kodebarang=b.kodebarang 
+                            WHERE isnull(b.kodebarang,'')='' and isnull(a.qtysaldo,0)=0"));
         } else {
             $querydata = DB::table('listtemporarytabel')->from(
                 DB::raw("listtemporarytabel with (readuncommitted)")
@@ -618,7 +640,7 @@ class KartuStok extends MyModel
             $table->string('modifiedby', 100)->nullable();
             $table->integer('urutfifo')->length(11)->nullable();
             $table->dateTime('created_at')->nullable();
-            
+
 
 
             $table->index('kodebarang', 'templaporan_kodebarang_index');
@@ -1356,8 +1378,8 @@ class KartuStok extends MyModel
                 DB::raw("'' as modifiedby"),
                 DB::raw("0 as urutfifo"),
                 DB::raw("'1900/1/1' as created_at"),
-                
-                
+
+
             )
             ->join(DB::raw("stok as c with (readuncommitted)"), 'a.kodebarang', 'c.id');
         //saldo awal
@@ -1603,7 +1625,7 @@ class KartuStok extends MyModel
             )
             ->orderBy('A.statusmasuk', 'Asc')
             ->orderBy('A.id', 'Asc');
-       
+
         DB::table($templaporan)->insertUsing([
             'kodebarang',
             'namabarang',
@@ -1647,7 +1669,7 @@ class KartuStok extends MyModel
         });
 
 
-     
+
         $datalist = DB::table($templaporan)->from(
             DB::raw($templaporan . " as a")
         )
@@ -1675,7 +1697,7 @@ class KartuStok extends MyModel
             ->orderBy('a.id', 'asc');
         //  dd($datalist->get());
         // dd($datalist->get());
- 
+
         DB::table($temprekapall)->insertUsing([
             'lokasi',
             'kodebarang',
@@ -1693,7 +1715,7 @@ class KartuStok extends MyModel
             'urutfifo',
             'created_at',
         ],  $datalist);
-       
+
         $datalist = DB::table($temprekapall)->from(
             DB::raw($temprekapall . " as a")
         )
