@@ -89,14 +89,17 @@ class PendapatanSupirDetail extends MyModel
                 $tempdepo = '##depopinjam' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
                 Schema::create($tempdepo, function ($table) {
                     $table->bigInteger('supir_id')->nullable();
+                    $table->double('deposito')->nullable();
+                    $table->double('pengembalianpinjaman')->nullable();
                     $table->double('total_amount')->nullable();
                 });
+
                 $fetch = DB::table(function ($subquery) {
                     $getNobukti = DB::table("pendapatansupirheader")->from(DB::raw("pendapatansupirheader with (readuncommitted)"))->where('id', request()->pendapatansupir_id)->first();
                     $subquery->select(
                         DB::raw('b.nominal as deposito'),
                         'b.supir_id',
-                        DB::raw('NULL as pinjaman')
+                        DB::raw('0 as pinjaman')
                     )
                         ->from('penerimaantruckingheader as a')
                         ->leftJoin('penerimaantruckingdetail as b', 'a.nobukti', '=', 'b.nobukti')
@@ -106,7 +109,7 @@ class PendapatanSupirDetail extends MyModel
                     $subquery->unionAll(
                         DB::table('penerimaantruckingheader as a')
                             ->select(
-                                DB::raw('NULL as deposito'),
+                                DB::raw('0 as deposito'),
                                 'b.supir_id',
                                 DB::raw('SUM(b.nominal) as pinjaman')
                             )
@@ -116,10 +119,12 @@ class PendapatanSupirDetail extends MyModel
                             ->groupBy('b.supir_id')
                     );
                 }, 'combined_data')
-                    ->select('combined_data.supir_id', DB::raw('SUM(isnull(combined_data.pinjaman, combined_data.deposito)) AS total_amount'))
+                    ->select('combined_data.supir_id', DB::raw('SUM(isnull(combined_data.deposito,0)) AS deposito'), 
+                                DB::raw('SUM(isnull(combined_data.pinjaman,0)) AS pengembalianpinjaman'), 
+                                DB::raw('SUM(isnull(combined_data.pinjaman, combined_data.deposito)) AS total_amount'))
                     ->groupBy('combined_data.supir_id');
 
-                DB::table($tempdepo)->insertUsing(['supir_id', 'total_amount'], $fetch);
+                DB::table($tempdepo)->insertUsing(['supir_id', 'deposito', 'pengembalianpinjaman', 'total_amount'], $fetch);
 
                 $getNobukti = DB::table("pendapatansupirheader")->from(DB::raw("pendapatansupirheader with (readuncommitted)"))->where('id', request()->pendapatansupir_id)->first();
 
@@ -146,28 +151,42 @@ class PendapatanSupirDetail extends MyModel
                     $table->bigInteger('trado_id')->nullable();
                     $table->string('kode_trado', 500)->nullable();
                     $table->string('namasupir', 500)->nullable();
+                    $table->double('komisi')->nullable();
+                    $table->double('deposito')->nullable();
+                    $table->double('pengembalianpinjaman')->nullable();
                     $table->double('total')->nullable();
                 });
 
                 $query = DB::table($tempPendapatan)->from(DB::raw("$tempPendapatan as t1 with (readuncommitted)"))
                     ->select(DB::raw("'SUPIR' as jenis,t1.trado_id,trado.kodetrado,isnull(supir.namasupir,'') as namasupir,
-                SUM(t1.nominal  - ISNULL(t2.total_amount, 0)) AS total"))
+                    SUM(t1.nominal) AS komisi,
+                    SUM(ISNULL(t2.deposito, 0)) AS deposito,
+                    SUM(ISNULL(t2.pengembalianpinjaman, 0)) AS pengembalianpinjaman,
+                    SUM(t1.nominal  - ISNULL(t2.total_amount, 0)) AS total
+                    "
+                )
+                )
                     ->leftJoin(DB::raw("$tempdepo as t2 with (readuncommitted)"), 't1.supir_id', 't2.supir_id')
                     ->leftJoin(DB::raw("trado with (readuncommitted)"), 't1.trado_id', 'trado.id')
                     ->leftJoin(DB::raw("supir with (readuncommitted)"), 't1.supir_id', 'supir.id')
                     ->groupBy('t1.trado_id', 'supir.namasupir', 'trado.kodetrado');
 
-                DB::table($tempkomisi)->insertUsing(['jenis', 'trado_id', 'kode_trado', 'namasupir', 'total'], $query);
+                DB::table($tempkomisi)->insertUsing(['jenis', 'trado_id', 'kode_trado', 'namasupir', 'komisi', 'deposito', 'pengembalianpinjaman', 'total'], $query);
 
                 $query = DB::table($tempPendapatan)->from(DB::raw("$tempPendapatan as t1 with (readuncommitted)"))
                     ->select(DB::raw("'KENEK' as jenis,t1.trado_id,trado.kodetrado,'' as namasupir,
-                SUM( t1.gajikenek ) AS total"))
+                SUM( t1.gajikenek ) AS komisi,
+                0 AS deposito,
+                0 AS pengembalianpinjaman,
+                SUM( t1.gajikenek ) AS total
+
+                "))
                     ->leftJoin(DB::raw("$tempdepo as t2 with (readuncommitted)"), 't1.supir_id', 't2.supir_id')
                     ->leftJoin(DB::raw("trado with (readuncommitted)"), 't1.trado_id', 'trado.id')
                     ->leftJoin(DB::raw("supir with (readuncommitted)"), 't1.supir_id', 'supir.id')
                     ->groupBy('t1.trado_id',  'trado.kodetrado');
 
-                DB::table($tempkomisi)->insertUsing(['jenis', 'trado_id', 'kode_trado', 'namasupir', 'total'], $query);
+                DB::table($tempkomisi)->insertUsing(['jenis', 'trado_id', 'kode_trado', 'namasupir', 'komisi', 'deposito', 'pengembalianpinjaman','total'], $query);
 
                 $query = db::table($tempkomisi)->from(db::raw($tempkomisi . " as a"))
                     ->select(
@@ -175,6 +194,9 @@ class PendapatanSupirDetail extends MyModel
                         'a.trado_id',
                         'a.kode_trado',
                         'a.namasupir',
+                        'a.komisi',
+                        'a.deposito',
+                        'a.pengembalianpinjaman',
                         'a.total',
                         DB::raw("'LAPORAN KOMISI '+a.jenis as judulLaporan"),
                     )
