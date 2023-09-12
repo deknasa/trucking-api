@@ -892,9 +892,6 @@ class PengeluaranTruckingHeader extends MyModel
             ->first();
         $tanpaprosesnobukti = $data['tanpaprosesnobukti'] ?? 0;
 
-        if ($fetchFormat->kodepengeluaran != 'BLS') {
-            $data['coa'] = $fetchFormat->coapostingdebet;
-        }
         $klaim = DB::table('pengeluarantrucking')->from(DB::raw("pengeluarantrucking with (readuncommitted)"))->where('kodepengeluaran', "KLAIM")->first();
         $statusformat = $fetchFormat->format;
         $fetchGrp = Parameter::where('id', $statusformat)->first();
@@ -902,6 +899,23 @@ class PengeluaranTruckingHeader extends MyModel
         $statusApproval = Parameter::from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS APPROVAL')->where('text', 'NON APPROVAL')->first();
         $statusPosting = Parameter::from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS POSTING')->where('text', 'BUKAN POSTING')->first();
         $statusCetak = Parameter::from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUSCETAK')->where('text', 'BELUM CETAK')->first();
+
+        $pinjamansupir = db::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))->SELECT('text','memo')->where('grp', 'PINJAMAN SUPIR')->where('subgrp', 'PINJAMAN SUPIR NON POSTING')->first() ?? '';
+        $statuspinjamanposting = $data['statusposting'] ?? $statusPosting->id;
+        if ($idpengeluaran == $pinjamansupir->text) {
+            if  ($statuspinjamanposting==$statusPosting->id) {
+                $memo = json_decode($pinjamansupir->memo, true);
+                $data['coa'] = $memo['JURNAL'];
+            } else {
+                $data['coa'] = $fetchFormat->coapostingdebet;
+
+            }
+        } else {
+            if ($fetchFormat->kodepengeluaran != 'BLS') {
+                $data['coa'] = $fetchFormat->coapostingdebet;
+            }
+        }
+
 
         $tgldari = null;
         $tglsampai = null;
@@ -1113,7 +1127,7 @@ class PengeluaranTruckingHeader extends MyModel
             $pengeluaranTruckingHeader->nobukti = $nobukti;
             $pengeluaranTruckingHeader->tglbukti = date('Y-m-d', strtotime($data['tglbukti']));
         }
-        
+
         $tgldari = null;
         $tglsampai = null;
         $periode = null;
