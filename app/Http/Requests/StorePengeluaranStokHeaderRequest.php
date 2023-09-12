@@ -111,13 +111,12 @@ class StorePengeluaranStokHeaderRequest extends FormRequest
             $returRules = [
                 'penerimaanstok_nobukti' => 'required',
                 'statuspotongretur' => 'required',
-                'bank_id' => 'required',
-                'bank' => 'required'
+                
             ];
-            // $potongHutang = DB::table('parameter')->where('grp', 'STATUS POTONG RETUR')->where('text', 'POTONG HUTANG')->first();
-            // if (request()->statuspotongretur ==$potongHutang->id) {
-            //     $returRules = array_merge($returRules,["penerimaanstok_nobukti"=>'required']);
-            // }
+            $potongKas = DB::table('parameter')->where('grp', 'STATUS POTONG RETUR')->where('text', 'POSTING KE KAS/BANK')->first();
+            if (request()->statuspotongretur == $potongKas->id) {
+                $returRules = array_merge($returRules,['bank_id' => 'required','bank' => 'required']);
+            }
         }
         $rules = array_merge($rules, $gudangTradoGandengan,$returRules,$spkRules);
         
