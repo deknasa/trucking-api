@@ -30,10 +30,34 @@ class NotaKreditHeader extends MyModel
         $this->setRequestParameters();
         $periode = request()->periode ?? '';
         $statusCetak = request()->statuscetak ?? '';
-        $query = DB::table($this->table);
-        $query = $this->selectColumns($query)
-
-            ->leftJoin(DB::raw("pelunasanpiutangheader as pelunasanpiutang with (readuncommitted)"), 'notakreditheader.pelunasanpiutang_nobukti', 'pelunasanpiutang.nobukti')
+        $query = DB::table($this->table)->from(DB::raw("notakreditheader with (readuncommitted)"))
+            ->select(
+                "$this->table.id",
+                "$this->table.nobukti",
+                "$this->table.pelunasanpiutang_nobukti",
+                "$this->table.tglbukti",
+                DB::raw('(case when (year(notakreditheader.tglapproval) <= 2000) then null else notakreditheader.tglapproval end ) as tglapproval'),
+                "$this->table.postingdari",
+                "$this->table.statusapproval",
+                "$this->table.tgllunas",
+                "$this->table.userapproval",
+                "$this->table.userbukacetak",
+                DB::raw('(case when (year(notakreditheader.tglbukacetak) <= 2000) then null else notakreditheader.tglbukacetak end ) as tglbukacetak'),
+                "$this->table.statusformat",
+                "$this->table.modifiedby",
+                "$this->table.statuscetak",
+                "$this->table.created_at",
+                "$this->table.updated_at",
+                "parameter.memo as  statusapproval_memo",
+                "statuscetak.memo as  statuscetak_memo",
+                "$this->table.pengeluaran_nobukti",
+                "agen.namaagen as agen",
+                "bank.namabank as bank",
+                "alatbayar.namaalatbayar as alatbayar"
+            )
+            ->leftJoin(DB::raw("bank with (readuncommitted)"), 'notakreditheader.bank_id', 'bank.id')
+            ->leftJoin(DB::raw("agen with (readuncommitted)"), 'notakreditheader.agen_id', 'agen.id')
+            ->leftJoin(DB::raw("alatbayar with (readuncommitted)"), 'notakreditheader.alatbayar_id', 'alatbayar.id')
             ->leftJoin('parameter as statuscetak', 'notakreditheader.statuscetak', 'statuscetak.id')
             ->leftJoin('parameter', 'notakreditheader.statusapproval', 'parameter.id');
         if (request()->tgldari && request()->tglsampai) {
@@ -60,6 +84,144 @@ class NotaKreditHeader extends MyModel
         return $data;
     }
 
+    public function cekvalidasiaksi($id)
+    {
+        $notaKredit = DB::table("notakreditheader")->from(DB::raw("notakreditheader with (readuncommitted)"))->where('id', $id)->first();
+        $pelunasanPiutang = DB::table('pelunasanpiutangheader')
+            ->from(
+                DB::raw("pelunasanpiutangheader as a with (readuncommitted)")
+            )
+            ->select(
+                'a.nobukti',
+                'a.notakredit_nobukti'
+            )
+            ->where('a.notakredit_nobukti', '=', $notaKredit->nobukti)
+            ->first();
+        if (isset($pelunasanPiutang)) {
+            $data = [
+                'kondisi' => true,
+                'keterangan' => 'Pelunasan Piutang ' . $pelunasanPiutang->nobukti,
+                'kodeerror' => 'TDT'
+            ];
+            goto selesai;
+        }
+
+        if ($notaKredit->pengeluaran_nobukti != '') {
+            $jurnal = DB::table('pengeluaranheader')
+                ->from(
+                    DB::raw("pengeluaranheader as a with (readuncommitted)")
+                )
+                ->select(
+                    'a.nobukti'
+                )
+                ->join(DB::raw("jurnalumumpusatheader b with (readuncommitted)"), 'a.nobukti', 'b.nobukti')
+                ->where('a.nobukti', '=', $notaKredit->pengeluaran_nobukti)
+                ->first();
+
+            if (isset($jurnal)) {
+                $data = [
+                    'kondisi' => true,
+                    'keterangan' => 'Approval Jurnal ' . $jurnal->nobukti,
+                    'kodeerror' => 'SAP'
+                ];
+                goto selesai;
+            }
+        } else {
+
+            $jurnal = DB::table('notakreditheader')
+                ->from(
+                    DB::raw("notakreditheader as a with (readuncommitted)")
+                )
+                ->select(
+                    'a.nobukti'
+                )
+                ->join(DB::raw("jurnalumumpusatheader b with (readuncommitted)"), 'a.nobukti', 'b.nobukti')
+                ->where('a.nobukti', '=', $notaKredit->nobukti)
+                ->first();
+            if (isset($jurnal)) {
+                $data = [
+                    'kondisi' => true,
+                    'keterangan' => 'Approval Jurnal ' . $jurnal->nobukti,
+                    'kodeerror' => 'SAP'
+                ];
+                goto selesai;
+            }
+        }
+
+        $data = [
+            'kondisi' => false,
+            'keterangan' => '',
+        ];
+        selesai:
+        return $data;
+    }
+
+    public function default()
+    {
+
+        $tempdefault = '##tempdefault' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+        Schema::create($tempdefault, function ($table) {
+            $table->unsignedBigInteger('bank_id')->nullable();
+            $table->string('bank', 255)->nullable();
+            $table->unsignedBigInteger('alatbayar_id')->nullable();
+            $table->string('alatbayar', 255)->nullable();
+        });
+
+
+        $bank = DB::table('bank')->from(
+            DB::raw('bank with (readuncommitted)')
+        )
+            ->select(
+                'id as bank_id',
+                'namabank as bank',
+
+            )
+            ->where('tipe', '=', 'KAS')
+            ->first();
+
+        $statusdefault = Parameter::from(
+            db::Raw("parameter with (readuncommitted)")
+        )
+            ->select(
+                'id'
+            )
+            ->where('grp', '=', 'STATUS DEFAULT')
+            ->where('subgrp', '=', 'STATUS DEFAULT')
+            ->where('text', '=', 'DEFAULT')
+            ->first();
+
+        $alatbayardefault = $statusdefault->id ?? 0;
+
+        $alatbayar = DB::table('alatbayar')->from(
+            DB::raw('alatbayar with (readuncommitted)')
+        )
+            ->select(
+                'id as alatbayar_id',
+                'namaalatbayar as alatbayar',
+
+            )
+            ->where('statusdefault', '=', $alatbayardefault)
+            ->first();
+
+
+        DB::table($tempdefault)->insert(
+            ["bank_id" => $bank->bank_id, "bank" => $bank->bank, "alatbayar_id" => $alatbayar->alatbayar_id, "alatbayar" => $alatbayar->alatbayar]
+        );
+
+        $query = DB::table($tempdefault)->from(
+            DB::raw($tempdefault)
+        )
+            ->select(
+                'bank_id',
+                'bank',
+                'alatbayar_id',
+                'alatbayar',
+            );
+
+        $data = $query->first();
+
+        return $data;
+    }
 
     public function createTemp(string $modelTable)
     {
@@ -70,76 +232,92 @@ class NotaKreditHeader extends MyModel
         Schema::create($temp, function ($table) {
             $table->bigInteger('id')->nullable();
             $table->string('nobukti', 50)->unique();
-            $table->string('pelunasanpiutang_nobukti', 50)->nullable();
             $table->date('tglbukti')->nullable();
+            $table->date('tgllunas')->nullable();
+            $table->string('agen', 200)->nullable();
+            $table->string('pelunasanpiutang_nobukti', 50)->nullable();
+            $table->string('bank', 50)->nullable();
+            $table->string('alatbayar', 50)->nullable();
+            $table->string('pengeluaran_nobukti', 50)->nullable();
             $table->string('postingdari', 50)->nullable();
             $table->integer('statusapproval')->length(11)->nullable();
-            $table->date('tgllunas')->nullable();
             $table->string('userapproval', 50)->nullable();
             $table->date('tglapproval')->nullable();
-            $table->unsignedBigInteger('statusformat')->nullable();
+            $table->integer('statuscetak')->length(11)->nullable();
+            $table->string('userbukacetak', 50)->nullable();
+            $table->date('tglbukacetak')->nullable();
             $table->string('modifiedby', 50)->nullable();
-            $table->increments('position');
             $table->dateTime('created_at')->nullable();
             $table->dateTime('updated_at')->nullable();
+            $table->increments('position');
         });
+        if ((date('Y-m', strtotime(request()->tglbukti)) != date('Y-m', strtotime(request()->tgldariheader))) || (date('Y-m', strtotime(request()->tglbukti)) != date('Y-m', strtotime(request()->tglsampaiheader)))) {
+            request()->tgldariheader = date('Y-m-01', strtotime(request()->tglbukti));
+            request()->tglsampaiheader = date('Y-m-t', strtotime(request()->tglbukti));
+        }
+
 
         $query = DB::table($modelTable);
-        $query = $this->select(
-            "id",
-            "nobukti",
-            "pelunasanpiutang_nobukti",
-            "tglbukti",
-            "postingdari",
-            "statusapproval",
-            "tgllunas",
-            "userapproval",
-            "tglapproval",
-            "statusformat",
-            "modifiedby",
-        );
+        $query = $this->selectColumns($query);
         $query = $this->sort($query);
         $models = $this->filter($query);
+        $models = $query
+            ->whereBetween($this->table . '.tglbukti', [date('Y-m-d', strtotime(request()->tgldariheader)), date('Y-m-d', strtotime(request()->tglsampaiheader))]);
 
         DB::table($temp)->insertUsing([
             "id",
             "nobukti",
-            "pelunasanpiutang_nobukti",
             "tglbukti",
+            "tgllunas",
+            "agen",
+            "pelunasanpiutang_nobukti",
+            "bank",
+            "alatbayar",
+            "pengeluaran_nobukti",
             "postingdari",
             "statusapproval",
-            "tgllunas",
             "userapproval",
             "tglapproval",
-            "statusformat",
+            "statuscetak",
+            "userbukacetak",
+            "tglbukacetak",
             "modifiedby",
+            "created_at",
+            "updated_at",
         ], $models);
         return $temp;
     }
 
     public function selectColumns($query)
     {
-        return $query->select(
-            "$this->table.id",
-            "$this->table.nobukti",
-            "$this->table.pelunasanpiutang_nobukti",
-            "$this->table.tglbukti",
-            DB::raw('(case when (year(notakreditheader.tglapproval) <= 2000) then null else notakreditheader.tglapproval end ) as tglapproval'),
-            "$this->table.postingdari",
-            "$this->table.statusapproval",
-            "$this->table.tgllunas",
-            "$this->table.userapproval",
-            "$this->table.userbukacetak",
-            DB::raw('(case when (year(notakreditheader.tglbukacetak) <= 2000) then null else notakreditheader.tglbukacetak end ) as tglbukacetak'),
-            "$this->table.statusformat",
-            "$this->table.modifiedby",
-            "$this->table.statuscetak",
-            "$this->table.created_at",
-            "$this->table.updated_at",
-            "parameter.memo as  statusapproval_memo",
-            "statuscetak.memo as  statuscetak_memo",
-            'pelunasanpiutang.penerimaan_nobukti'
-        );
+        return $query->from(
+            DB::raw($this->table . " with (readuncommitted)")
+        )
+            ->select(
+                "$this->table.id",
+                "$this->table.nobukti",
+                "$this->table.tglbukti",
+                "$this->table.tgllunas",
+                'agen.namaagen as agen',
+                "$this->table.pelunasanpiutang_nobukti",
+                'bank.namabank as bank',
+                'alatbayar.namaalatbayar as alatbayar',
+                "$this->table.pengeluaran_nobukti",
+                "$this->table.postingdari",
+                "$this->table.statusapproval",
+                "$this->table.userapproval",
+                DB::raw('(case when (year(notakreditheader.tglapproval) <= 2000) then null else notakreditheader.tglapproval end ) as tglapproval'),
+                "$this->table.statuscetak",
+                "$this->table.userbukacetak",
+                DB::raw('(case when (year(notakreditheader.tglbukacetak) <= 2000) then null else notakreditheader.tglbukacetak end ) as tglbukacetak'),
+                "$this->table.modifiedby",
+                "$this->table.created_at",
+                "$this->table.updated_at",
+            )
+
+            ->leftJoin(DB::raw("bank with (readuncommitted)"), 'notakreditheader.bank_id', 'bank.id')
+            ->leftJoin(DB::raw("agen with (readuncommitted)"), 'notakreditheader.agen_id', 'agen.id')
+            ->leftJoin(DB::raw("alatbayar with (readuncommitted)"), 'notakreditheader.alatbayar_id', 'alatbayar.id');
     }
 
     public function getNotaKredit($id)
@@ -181,21 +359,15 @@ class NotaKreditHeader extends MyModel
 
     public function sort($query)
     {
-        if ($this->params['sortIndex'] == 'grp') {
-            return $query
-                ->orderBy($this->table . '.' . $this->params['sortIndex'], $this->params['sortOrder'])
-                ->orderBy($this->table . '.subgrp', $this->params['sortOrder'])
-                ->orderBy($this->table . '.id', $this->params['sortOrder']);
+        if ($this->params['sortIndex'] == 'agen') {
+            return $query->orderBy('agen.namaagen', $this->params['sortOrder']);
+        } else if ($this->params['sortIndex'] == 'bank') {
+            return $query->orderBy('bank.namabank', $this->params['sortOrder']);
+        } else if ($this->params['sortIndex'] == 'alatbayar') {
+            return $query->orderBy('alatbayar.namaalatbayar', $this->params['sortOrder']);
+        } else {
+            return $query->orderBy($this->table . '.' . $this->params['sortIndex'], $this->params['sortOrder']);
         }
-
-        if ($this->params['sortIndex'] == 'subgrp') {
-            return $query
-                ->orderBy($this->table . '.' . $this->params['sortIndex'], $this->params['sortOrder'])
-                ->orderBy($this->table . '.grp', $this->params['sortOrder'])
-                ->orderBy($this->table . '.id', $this->params['sortOrder']);
-        }
-
-        return $query->orderBy($this->table . '.' . $this->params['sortIndex'], $this->params['sortOrder']);
     }
 
     public function filter($query, $relationFields = [])
@@ -209,6 +381,12 @@ class NotaKreditHeader extends MyModel
                                 $query = $query->where('parameter.text', '=', $filters['data']);
                             } else if ($filters['field'] == 'statuscetak_memo') {
                                 $query = $query->where('statuscetak.text', '=', $filters['data']);
+                            } else if ($filters['field'] == 'agen') {
+                                $query = $query->where('agen.namaagen', 'LIKE', "%$filters[data]%");
+                            } else if ($filters['field'] == 'bank') {
+                                $query = $query->where('bank.namabank', 'LIKE', "%$filters[data]%");
+                            } else if ($filters['field'] == 'alatbayar') {
+                                $query = $query->where('alatbayar.namaalatbayar', 'LIKE', "%$filters[data]%");
                             } else if ($filters['field'] == 'tglbukti' || $filters['field'] == 'tgllunas' || $filters['field'] == 'tglapproval' || $filters['field'] == 'tglbukacetak') {
                                 $query = $query->whereRaw("format(" . $this->table . "." . $filters['field'] . ", 'dd-MM-yyyy') LIKE '%$filters[data]%'");
                             } else if ($filters['field'] == 'created_at' || $filters['field'] == 'updated_at') {
@@ -229,6 +407,12 @@ class NotaKreditHeader extends MyModel
                                     $query = $query->orWhere('parameter.text', '=', $filters['data']);
                                 } else if ($filters['field'] == 'statuscetak_memo') {
                                     $query = $query->orWhere('statuscetak.text', '=', $filters['data']);
+                                } else if ($filters['field'] == 'agen') {
+                                    $query = $query->orWhere('agen.namaagen', 'LIKE', "%$filters[data]%");
+                                } else if ($filters['field'] == 'bank') {
+                                    $query = $query->orWhere('bank.namabank', 'LIKE', "%$filters[data]%");
+                                } else if ($filters['field'] == 'alatbayar') {
+                                    $query = $query->orWhere('alatbayar.namaalatbayar', 'LIKE', "%$filters[data]%");
                                 } else if ($filters['field'] == 'tglbukti' || $filters['field'] == 'tgllunas' || $filters['field'] == 'tglapproval' || $filters['field'] == 'tglbukacetak') {
                                     $query = $query->orWhereRaw("format(" . $this->table . "." . $filters['field'] . ", 'dd-MM-yyyy') LIKE '%$filters[data]%'");
                                 } else if ($filters['field'] == 'created_at' || $filters['field'] == 'updated_at') {
@@ -260,14 +444,26 @@ class NotaKreditHeader extends MyModel
     }
     public function findAll($id)
     {
-        $this->setRequestParameters();
-        $query = NotaKreditHeader::from(DB::raw("notakreditheader with (readuncommitted)"));
-        $query = $this->selectColumns($query)
-            ->leftJoin('parameter', 'notakreditheader.statusapproval', 'parameter.id')
-            ->leftJoin('parameter as statuscetak', 'notakreditheader.statuscetak', 'statuscetak.id')
-            ->leftJoin('pelunasanpiutangheader as pelunasanpiutang', 'notakreditheader.pelunasanpiutang_nobukti', 'pelunasanpiutang.nobukti');
+        $query = NotaKreditHeader::from(DB::raw("notakreditheader with (readuncommitted)"))
+            ->select(
+                'notakreditheader.id',
+                'notakreditheader.nobukti',
+                'notakreditheader.tglbukti',
+                'notakreditheader.tgllunas',
+                'notakreditheader.agen_id',
+                'agen.namaagen as agen',
+                'notakreditheader.bank_id',
+                'bank.namabank as bank',
+                'notakreditheader.alatbayar_id',
+                'alatbayar.namaalatbayar as alatbayar',
+                'notakreditheader.nowarkat',
+                'notakreditheader.pengeluaran_nobukti'
+            )
+            ->leftJoin(DB::raw("agen with (readuncommitted)"), 'notakreditheader.agen_id', 'agen.id')
+            ->leftJoin(DB::raw("bank with (readuncommitted)"), 'notakreditheader.bank_id', 'bank.id')
+            ->leftJoin(DB::raw("alatbayar with (readuncommitted)"), 'notakreditheader.alatbayar_id', 'alatbayar.id');
 
-        $data = $query->where("$this->table.id", $id)->first();
+        $data = $query->where("notakreditheader.id", $id)->first();
         return $data;
     }
     public function paginate($query)
@@ -277,6 +473,7 @@ class NotaKreditHeader extends MyModel
 
     public function processStore(array $data): NotaKreditHeader
     {
+        $tanpaprosesnobukti = $data['tanpaprosesnobukti'] ?? '';
         $group = 'NOTA KREDIT BUKTI';
         $subGroup = 'NOTA KREDIT BUKTI';
         $format = DB::table('parameter')->where('grp', $group)->where('subgrp', $subGroup)->first();
@@ -287,13 +484,16 @@ class NotaKreditHeader extends MyModel
         $notaKreditHeader = new NotaKreditHeader();
 
         $notaKreditHeader->tglbukti = date('Y-m-d', strtotime($data['tglbukti']));
-        $notaKreditHeader->pelunasanpiutang_nobukti = $data['pelunasanpiutang_nobukti'];
+        $notaKreditHeader->pelunasanpiutang_nobukti = $data['pelunasanpiutang_nobukti'] ?? '';
         $notaKreditHeader->agen_id = $data['agen_id'];
+        $notaKreditHeader->bank_id = $data['bank_id'] ?? '';
+        $notaKreditHeader->alatbayar_id = $data['alatbayar_id'] ?? '';
+        $notaKreditHeader->nowarkat = $data['nowarkat'] ?? '';
         $notaKreditHeader->statusapproval = $statusApproval->id;
         $notaKreditHeader->tgllunas = date('Y-m-d', strtotime($data['tgllunas']));
         $notaKreditHeader->statusformat = $format->id;
         $notaKreditHeader->statuscetak = $statusCetak->id;
-        $notaKreditHeader->postingdari = $data['postingdari'];
+        $notaKreditHeader->postingdari = $data['postingdari'] ?? 'ENTRY NOTA KREDIT HEADER';
         $notaKreditHeader->modifiedby = auth('api')->user()->name;
         $notaKreditHeader->nobukti = (new RunningNumberService)->get($group, $subGroup, $notaKreditHeader->getTable(), date('Y-m-d', strtotime($data['tglbukti'])));
 
@@ -303,7 +503,7 @@ class NotaKreditHeader extends MyModel
 
         $notaKreditHeaderLogTrail = (new LogTrail())->processStore([
             'namatabel' => strtoupper($notaKreditHeader->getTable()),
-            'postingdari' => $data['postingdari'],
+            'postingdari' => $data['postingdari'] ?? 'ENTRY NOTA KREDIT HEADER',
             'idtrans' => $notaKreditHeader->id,
             'nobuktitrans' => $notaKreditHeader->nobukti,
             'aksi' => 'ENTRY',
@@ -317,25 +517,34 @@ class NotaKreditHeader extends MyModel
         $nominal_detail = [];
         $keterangan_detail = [];
 
+        $getCoa = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))
+            ->where('grp', 'TIPENOTAKREDIT')->where('text', 'UANG DIBAYAR DIMUKA')->first();
+
+        $memoNotaKreditCoa = json_decode($getCoa->memo, true);
+        if ($tanpaprosesnobukti != 1) {
+            $data['cekcoadebet'] = $memoNotaKreditCoa['JURNAL'];
+        }
         for ($i = 0; $i < count($data['potongan']); $i++) {
             $notaKreditDetail = (new NotaKreditDetail())->processStore($notaKreditHeader, [
-                "invoice_nobukti" => $data['invoice_nobukti'][$i],
-                "nominal" => $data['nominalpiutang'][$i],
-                "nominalbayar" => $data['nominal'][$i],
+                "invoice_nobukti" => $data['invoice_nobukti'][$i] ?? '',
+                "nominal" => $data['nominalpiutang'][$i] ?? 0,
+                "nominalbayar" => $data['nominal'][$i] ?? 0,
                 "penyesuaian" => $data['potongan'][$i],
                 "keterangandetail" => $data['keteranganpotongan'][$i],
-                "coaadjust" => $data['coapotongan'][$i]
+                "coaadjust" => $data['coadebet'][$i] ?? $memoNotaKreditCoa['JURNAL']
             ]);
             $notaKreditDetails[] = $notaKreditDetail->toArray();
-            $coakredit_detail[] = $data['coapotongan'][$i];
-            $coadebet_detail[] = $data['coadebet'][$i];
-            $nominal_detail[] = $data['potongan'][$i]; //AMBIL LEBIH BAYAR ATAU GIMANA?
+            $coakredit_detail[] = $data['coakredit'][$i] ?? '';
+            $coadebet_detail[] = $data['coadebet'][$i] ?? $memoNotaKreditCoa['JURNAL'];
+            $nominal_detail[] = $data['potongan'][$i];
             $keterangan_detail[] = $data['keteranganpotongan'][$i];
+            $tglkasmasuk[] = $notaKreditHeader->tglbukti;
+            $nowarkat[] = $data['nowarkat'] ?? '';
         }
 
         (new LogTrail())->processStore([
             'namatabel' => strtoupper($notaKreditDetail->getTable()),
-            'postingdari' => $data['postingdari'],
+            'postingdari' => $data['postingdari'] ?? 'ENTRY NOTA KREDIT DETAIL',
             'idtrans' => $notaKreditHeaderLogTrail->id,
             'nobuktitrans' => $notaKreditHeader->nobukti,
             'aksi' => 'ENTRY',
@@ -343,29 +552,60 @@ class NotaKreditHeader extends MyModel
             'modifiedby' => auth('api')->user()->user
         ]);
 
-        /*STORE JURNAL*/
-        $jurnalRequest = [
-            'tanpaprosesnobukti' => 1,
-            'nobukti' => $notaKreditHeader->nobukti,
-            'tglbukti' => date('Y-m-d', strtotime($data['tglbukti'])),
-            'postingdari' => $data['postingdari'],
-            'statusapproval' => $statusApproval->id,
-            'userapproval' => "",
-            'tglapproval' => "",
-            'modifiedby' => auth('api')->user()->name,
-            'statusformat' => "0",
-            'coakredit_detail' => $coakredit_detail,
-            'coadebet_detail' => $coadebet_detail,
-            'nominal_detail' => $nominal_detail,
-            'keterangan_detail' => $keterangan_detail
-        ];
-        (new JurnalUmumHeader())->processStore($jurnalRequest);
+        if ($data['cekcoadebet'] == $memoNotaKreditCoa['JURNAL']) {
+            /*STORE PENGELUARAN*/
+            $pengeluaranRequest = [
+                'tglbukti' => date('Y-m-d', strtotime($data['tglbukti'])),
+                'pelanggan_id' => 0,
+                'postingdari' => $data['postingdari'] ?? "ENTRY NOTA KREDIT",
+                'statusapproval' => $statusApproval->id,
+                'dibayarke' => $data['agen'],
+                'alatbayar_id' => $data['alatbayar_id'],
+                'bank_id' => $data['bank_id'],
+                'transferkeac' => "",
+                'transferkean' => "",
+                'transferkebank' => "",
+                'userapproval' => "",
+                'tglapproval' => "",
 
+                'nowarkat' => $nowarkat,
+                'tgljatuhtempo' => $tglkasmasuk,
+                "nominal_detail" => $nominal_detail,
+                'coadebet' => $coadebet_detail,
+                "keterangan_detail" => $keterangan_detail,
+                'bulanbeban' => $tglkasmasuk,
+            ];
+
+            $pengeluaranHeader = (new PengeluaranHeader())->processStore($pengeluaranRequest);
+
+            $notaKreditHeader->pengeluaran_nobukti = $pengeluaranHeader->nobukti;
+            $notaKreditHeader->save();
+        } else {
+            /*STORE JURNAL*/
+            $jurnalRequest = [
+                'tanpaprosesnobukti' => 1,
+                'nobukti' => $notaKreditHeader->nobukti,
+                'tglbukti' => date('Y-m-d', strtotime($data['tglbukti'])),
+                'postingdari' => $data['postingdari'],
+                'statusapproval' => $statusApproval->id,
+                'userapproval' => "",
+                'tglapproval' => "",
+                'modifiedby' => auth('api')->user()->name,
+                'statusformat' => "0",
+                'coakredit_detail' => $coakredit_detail,
+                'coadebet_detail' => $coadebet_detail,
+                'nominal_detail' => $nominal_detail,
+                'keterangan_detail' => $keterangan_detail
+            ];
+
+            (new JurnalUmumHeader())->processStore($jurnalRequest);
+        }
         return $notaKreditHeader;
     }
 
     public function processUpdate(NotaKreditHeader $notaKreditHeader, array $data): NotaKreditHeader
     {
+        $tanpaprosesnobukti = $data['tanpaprosesnobukti'] ?? '';
         $nobuktiOld = $notaKreditHeader->nobukti;
         $getTgl = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'EDIT TANGGAL BUKTI')->where('subgrp', 'NOTA KREDIT')->first();
 
@@ -391,6 +631,8 @@ class NotaKreditHeader extends MyModel
             $notaKreditHeader->nobukti = $nobukti;
             $notaKreditHeader->tglbukti = date('Y-m-d', strtotime($data['tglbukti']));
         }
+        $notaKreditHeader->tgllunas = date('Y-m-d', strtotime($data['tgllunas']));
+        $notaKreditHeader->nowarkat = $data['nowarkat'] ?? '';
         $notaKreditHeader->agen_id = $data['agen_id'] ?? '';
         $notaKreditHeader->modifiedby = auth('api')->user()->name;
 
@@ -400,13 +642,14 @@ class NotaKreditHeader extends MyModel
 
         $notaKreditHeaderLogTrail = (new LogTrail())->processStore([
             'namatabel' => strtoupper($notaKreditHeader->getTable()),
-            'postingdari' => $data['postingdari'],
+            'postingdari' => $data['postingdari'] ?? 'EDIT NOTA KREDIT HEADER',
             'idtrans' => $notaKreditHeader->id,
             'nobuktitrans' => $notaKreditHeader->nobukti,
             'aksi' => 'EDIT',
             'datajson' => $notaKreditHeader->toArray(),
             'modifiedby' => auth('api')->user()->user
         ]);
+        $getPreviousCoa = DB::table("notakreditdetail")->from(DB::raw("notakreditdetail with (readuncommitted)"))->select('coaadjust')->where('notakredit_id', $notaKreditHeader->id)->first();
 
         NotaKreditDetail::where('notakredit_id', $notaKreditHeader->id)->lockForUpdate()->delete();
 
@@ -415,25 +658,34 @@ class NotaKreditHeader extends MyModel
         $coadebet_detail = [];
         $nominal_detail = [];
         $keterangan_detail = [];
+        $getCoa = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))
+            ->where('grp', 'TIPENOTAKREDIT')->where('text', 'UANG DIBAYAR DIMUKA')->first();
+
+        $memoNotaKreditCoa = json_decode($getCoa->memo, true);
+        if ($tanpaprosesnobukti != 1) {
+            $data['cekcoadebet'] = $memoNotaKreditCoa['JURNAL'];
+        }
         for ($i = 0; $i < count($data['potongan']); $i++) {
             $notaKreditDetail = (new NotaKreditDetail())->processStore($notaKreditHeader, [
-                "invoice_nobukti" => $data['invoice_nobukti'][$i],
-                "nominal" => $data['nominalpiutang'][$i],
-                "nominalbayar" => $data['nominal'][$i],
+                "invoice_nobukti" => $data['invoice_nobukti'][$i] ?? '',
+                "nominal" => $data['nominalpiutang'][$i] ?? 0,
+                "nominalbayar" => $data['nominal'][$i] ?? 0,
                 "penyesuaian" => $data['potongan'][$i],
                 "keterangandetail" => $data['keteranganpotongan'][$i],
-                "coaadjust" => $data['coapotongan'][$i]
+                "coaadjust" => $data['coadebet'][$i] ?? $memoNotaKreditCoa['JURNAL']
             ]);
             $notaKreditDetails[] = $notaKreditDetail->toArray();
-            $coakredit_detail[] = $data['coapotongan'][$i];
-            $coadebet_detail[] = $data['coadebet'][$i];
-            $nominal_detail[] = $data['potongan'][$i]; //AMBIL LEBIH BAYAR ATAU GIMANA?
+            $coakredit_detail[] = $data['coakredit'][$i] ?? '';
+            $coadebet_detail[] = $data['coadebet'][$i] ?? $memoNotaKreditCoa['JURNAL'];
+            $nominal_detail[] = $data['potongan'][$i];
             $keterangan_detail[] = $data['keteranganpotongan'][$i];
+            $tglkasmasuk[] = $notaKreditHeader->tglbukti;
+            $nowarkat[] = $data['nowarkat'] ?? '';
         }
 
         (new LogTrail())->processStore([
             'namatabel' => strtoupper($notaKreditDetail->getTable()),
-            'postingdari' => $data['postingdari'],
+            'postingdari' => $data['postingdari'] ?? 'EDIT NOTA KREDIT DETAIL',
             'idtrans' => $notaKreditHeaderLogTrail->id,
             'nobuktitrans' => $notaKreditHeader->nobukti,
             'aksi' => 'EDIT',
@@ -441,21 +693,118 @@ class NotaKreditHeader extends MyModel
             'modifiedby' => auth('api')->user()->user
         ]);
 
-        /*STORE JURNAL*/
-        $jurnalRequest = [
-            'nobukti' => $notaKreditHeader->nobukti,
-            'tglbukti' => $notaKreditHeader->tglbukti,
-            'postingdari' => $data['postingdari'],
-            'coakredit_detail' => $coakredit_detail,
-            'coadebet_detail' => $coadebet_detail,
-            'nominal_detail' => $nominal_detail,
-            'keterangan_detail' => $keterangan_detail
-        ];
-        $getJurnal = JurnalUmumHeader::from(DB::raw("jurnalumumheader with (readuncommitted)"))->where('nobukti', $nobuktiOld)->first();
-        $newJurnal = new JurnalUmumHeader();
-        $newJurnal = $newJurnal->find($getJurnal->id);
-        (new JurnalUmumHeader())->processUpdate($newJurnal, $jurnalRequest);
+        if ($tanpaprosesnobukti == 1) {
+            // CEK JIKA COA BERGANTI
+            if ($data['cekcoadebet'] != $getPreviousCoa->coaadjust) {
+                // DELETE EXISTED NO BUKTI
+                if ($getPreviousCoa->coaadjust == $memoNotaKreditCoa['JURNAL']) {
+                    $getPenerimaan = PengeluaranHeader::from(DB::raw("pengeluaranheader with (readuncommitted)"))->where('nobukti', $notaKreditHeader->pengeluaran_nobukti)->first();
+                    (new PengeluaranHeader())->processDestroy($getPenerimaan->id, $data['postingdari']);
 
+                    $notaKreditHeader->pengeluaran_nobukti = '';
+                    $notaKreditHeader->save();
+                } else {
+                    $getJurnal = JurnalUmumHeader::from(DB::raw("jurnalumumheader with (readuncommitted)"))->where('nobukti', $notaKreditHeader->nobukti)->first();
+                    (new JurnalUmumHeader())->processDestroy($getJurnal->id, $data['postingdari']);
+                }
+                $statusApproval = Parameter::from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS APPROVAL')->where('text', 'NON APPROVAL')->first();
+
+                if ($data['cekcoadebet'] == $memoNotaKreditCoa['JURNAL']) {
+                    /*STORE PENGELUARAN*/
+                    $pengeluaranRequest = [
+                        'tglbukti' => date('Y-m-d', strtotime($data['tglbukti'])),
+                        'pelanggan_id' => 0,
+                        'postingdari' => $data['postingdari'] ?? "ENTRY NOTA KREDIT",
+                        'statusapproval' => $statusApproval->id,
+                        'dibayarke' => $data['agen'],
+                        'alatbayar_id' => $data['alatbayar_id'],
+                        'bank_id' => $data['bank_id'],
+                        'transferkeac' => "",
+                        'transferkean' => "",
+                        'transferkebank' => "",
+                        'userapproval' => "",
+                        'tglapproval' => "",
+
+                        'nowarkat' => $nowarkat,
+                        'tgljatuhtempo' => $tglkasmasuk,
+                        "nominal_detail" => $nominal_detail,
+                        'coadebet' => $coadebet_detail,
+                        "keterangan_detail" => $keterangan_detail,
+                        'bulanbeban' => $tglkasmasuk,
+                    ];
+
+                    $pengeluaranHeader = (new PengeluaranHeader())->processStore($pengeluaranRequest);
+
+                    $notaKreditHeader->pengeluaran_nobukti = $pengeluaranHeader->nobukti;
+                    $notaKreditHeader->save();
+                } else {
+                    /*STORE JURNAL*/
+                    $jurnalRequest = [
+                        'tanpaprosesnobukti' => 1,
+                        'nobukti' => $notaKreditHeader->nobukti,
+                        'tglbukti' => date('Y-m-d', strtotime($data['tglbukti'])),
+                        'postingdari' => $data['postingdari'],
+                        'statusapproval' => $statusApproval->id,
+                        'userapproval' => "",
+                        'tglapproval' => "",
+                        'modifiedby' => auth('api')->user()->name,
+                        'statusformat' => "0",
+                        'coakredit_detail' => $coakredit_detail,
+                        'coadebet_detail' => $coadebet_detail,
+                        'nominal_detail' => $nominal_detail,
+                        'keterangan_detail' => $keterangan_detail
+                    ];
+
+                    (new JurnalUmumHeader())->processStore($jurnalRequest);
+                }
+            }
+        }
+        
+        if ($data['cekcoadebet'] == $getPreviousCoa->coaadjust) {
+            if ($data['cekcoadebet'] == $memoNotaKreditCoa['JURNAL']) {
+                $pengeluaranRequest = [
+                    'tglbukti' => $notaKreditHeader->tglbukti,
+                    'pelanggan_id' => 0,
+                    'postingdari' => $data['postingdari'] ?? "EDIT NOTA KREDIT",
+                    'dibayarke' => $data['agen'],
+                    'alatbayar_id' => $data['alatbayar_id'],
+                    'bank_id' => $data['bank_id'],
+                    'transferkeac' => "",
+                    'transferkean' => "",
+                    'transferkebank' => "",
+                    'userapproval' => "",
+                    'tglapproval' => "",
+
+                    'nowarkat' => $nowarkat,
+                    'tgljatuhtempo' => $tglkasmasuk,
+                    "nominal_detail" => $nominal_detail,
+                    'coadebet' => $coadebet_detail,
+                    "keterangan_detail" => $keterangan_detail,
+                    'bulanbeban' => $tglkasmasuk,
+                ];
+
+                $pengeluaranHeader = PengeluaranHeader::where('nobukti', $notaKreditHeader->pengeluaran_nobukti)->first();
+                $pengeluaranHeader = (new PengeluaranHeader())->processUpdate($pengeluaranHeader, $pengeluaranRequest);
+
+                $notaKreditHeader->pengeluaran_nobukti = $pengeluaranHeader->nobukti;
+                $notaKreditHeader->save();
+            } else {
+                /*STORE JURNAL*/
+                $jurnalRequest = [
+                    'nobukti' => $notaKreditHeader->nobukti,
+                    'tglbukti' => $notaKreditHeader->tglbukti,
+                    'postingdari' => $data['postingdari'],
+                    'coakredit_detail' => $coakredit_detail,
+                    'coadebet_detail' => $coadebet_detail,
+                    'nominal_detail' => $nominal_detail,
+                    'keterangan_detail' => $keterangan_detail
+                ];
+                $getJurnal = JurnalUmumHeader::from(DB::raw("jurnalumumheader with (readuncommitted)"))->where('nobukti', $nobuktiOld)->first();
+                $newJurnal = new JurnalUmumHeader();
+                $newJurnal = $newJurnal->find($getJurnal->id);
+                (new JurnalUmumHeader())->processUpdate($newJurnal, $jurnalRequest);
+            }
+        }
         return $notaKreditHeader;
     }
 
@@ -485,9 +834,13 @@ class NotaKreditHeader extends MyModel
             'datajson' => $notaKreditDetails->toArray(),
             'modifiedby' => auth('api')->user()->name
         ]);
-        $getJurnal = JurnalUmumHeader::from(DB::raw("jurnalumumheader with (readuncommitted)"))->where('nobukti', $notaKreditHeader->nobukti)->first();
-        (new JurnalUmumHeader())->processDestroy($getJurnal->id, $postingDari);
-
+        if ($notaKreditHeader->pengeluaran_nobukti != '') {
+            $getPenerimaan = PengeluaranHeader::from(DB::raw("pengeluaranheader with (readuncommitted)"))->where('nobukti', $notaKreditHeader->pengeluaran_nobukti)->first();
+            (new PengeluaranHeader())->processDestroy($getPenerimaan->id, $postingDari);
+        } else {
+            $getJurnal = JurnalUmumHeader::from(DB::raw("jurnalumumheader with (readuncommitted)"))->where('nobukti', $notaKreditHeader->nobukti)->first();
+            (new JurnalUmumHeader())->processDestroy($getJurnal->id, $postingDari);
+        }
         return $notaKreditHeader;
     }
 

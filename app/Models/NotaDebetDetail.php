@@ -72,6 +72,14 @@ class NotaDebetDetail extends MyModel
         return $query->get();
     }
 
+    public function findAll($id)
+    {
+        $query = DB::table("notadebetdetail")->from(DB::raw("notadebetdetail with (readuncommitted)"))
+        ->select('keterangan', 'lebihbayar')
+        ->where('notadebet_id', $id)
+        ->get();
+        return $query;
+    }
 
     public function sort($query)
     {
@@ -139,7 +147,7 @@ class NotaDebetDetail extends MyModel
         $notaDebetDetail = new NotaDebetDetail();
         $notaDebetDetail->notadebet_id = $notaDebetHeader->id;
         $notaDebetDetail->nobukti = $notaDebetHeader->nobukti;
-        $notaDebetDetail->tglterima = $notaDebetHeader->tglterima;
+        $notaDebetDetail->tglterima = $notaDebetHeader->tglbukti;
         $notaDebetDetail->invoice_nobukti = $data['invoice_nobukti'];
         $notaDebetDetail->nominal = $data['nominal'];
         $notaDebetDetail->nominalbayar = $data['nominalbayar'];

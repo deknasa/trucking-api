@@ -72,6 +72,15 @@ class NotaKreditDetail extends MyModel
         return $query->get();
     }
     
+    public function findAll($id)
+    {
+        $query = DB::table("notakreditdetail")->from(DB::raw("notakreditdetail with (readuncommitted)"))
+        ->select('keterangan', 'penyesuaian')
+        ->where('notakredit_id', $id)
+        ->get();
+        return $query;
+    }
+
     public function sort($query)
     {
         if($this->params['sortIndex'] == 'coaadjust'){

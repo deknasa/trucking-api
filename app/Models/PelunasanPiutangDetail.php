@@ -223,6 +223,8 @@ class PelunasanPiutangDetail extends MyModel
         $pelunasanPiutangDetail->keteranganpotongan = $data['keteranganpotongan'];
         $pelunasanPiutangDetail->nominallebihbayar = $data['nominallebihbayar'];
         $pelunasanPiutangDetail->coalebihbayar = $data['coalebihbayar'];
+        $pelunasanPiutangDetail->statusnotadebet = $data['statusnotadebet'];
+        $pelunasanPiutangDetail->statusnotakredit = $data['statusnotakredit'];
 
         $pelunasanPiutangDetail->modifiedby = auth('api')->user()->name;
 

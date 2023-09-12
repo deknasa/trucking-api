@@ -96,9 +96,10 @@ class PelunasanPiutangHeaderController extends Controller
                 'bayar' => $request->bayar,
                 'keterangan' => $request->keterangan,
                 'potongan' => $request->potongan,
-                'coapotongan' => $request->coapotongan,
+                'statusnotakredit' => $request->statusnotakredit,
                 'keteranganpotongan' => $request->keteranganpotongan,
                 'nominallebihbayar' => $request->nominallebihbayar,
+                'statusnotadebet' => $request->statusnotadebet
             ];
             $pelunasanPiutangHeader = (new PelunasanPiutangHeader())->processStore($data);
             $pelunasanPiutangHeader->position = $this->getPosition($pelunasanPiutangHeader, $pelunasanPiutangHeader->getTable())->position;
@@ -157,9 +158,10 @@ class PelunasanPiutangHeaderController extends Controller
                 'bayar' => $request->bayar,
                 'keterangan' => $request->keterangan,
                 'potongan' => $request->potongan,
-                'coapotongan' => $request->coapotongan,
+                'statusnotakredit' => $request->statusnotakredit,
                 'keteranganpotongan' => $request->keteranganpotongan,
                 'nominallebihbayar' => $request->nominallebihbayar,
+                'statusnotadebet' => $request->statusnotadebet
             ];
             $pelunasanPiutangHeader = (new PelunasanPiutangHeader())->processUpdate($pelunasanpiutangheader, $data);
             $pelunasanPiutangHeader->position = $this->getPosition($pelunasanPiutangHeader, $pelunasanPiutangHeader->getTable())->position;

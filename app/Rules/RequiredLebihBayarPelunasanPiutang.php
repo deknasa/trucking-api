@@ -3,10 +3,9 @@
 namespace App\Rules;
 
 use App\Http\Controllers\Api\ErrorController;
-use App\Models\PiutangHeader;
 use Illuminate\Contracts\Validation\Rule;
 
-class RequiredCoaPotonganPelunasanPiutang implements Rule
+class RequiredLebihBayarPelunasanPiutang implements Rule
 {
     /**
      * Create a new rule instance.
@@ -27,11 +26,10 @@ class RequiredCoaPotonganPelunasanPiutang implements Rule
      */
     public function passes($attribute, $value)
     {
-        $attribute = substr($attribute,17);
-        $potongan = request()->potongan[$attribute];
-        $ketPotongan = request()->keteranganpotongan[$attribute];
-        if($potongan != 0 || !empty($ketPotongan)){
-            if($value == '' || $value == 0) {
+        $attribute = substr($attribute,18);
+        $statusnotadebet = request()->statusnotadebet[$attribute];
+        if($statusnotadebet != 0){
+            if($value == 0) {
                 return false;
             }else{
                 return true;
