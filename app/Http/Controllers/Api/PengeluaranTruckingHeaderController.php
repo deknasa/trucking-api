@@ -67,7 +67,29 @@ class PengeluaranTruckingHeaderController extends Controller
         DB::beginTransaction();
         try {
             /* Store header */
-            $pengeluaranTruckingHeader = (new PengeluaranTruckingHeader())->processStore($request->all());
+            $pengeluaranTruckingHeader = (new PengeluaranTruckingHeader())->processStore([
+                "bank_id" => $request->bank_id,
+                "tglbukti" => $request->tglbukti,
+                "pelanggan_id" => $request->pelanggan_id,
+                "postingdari" => $request->postingdari,
+                "statusapproval" => $request->statusapproval,
+                "dibayarke" => $request->dibayarke,
+                "alatbayar_id" => $request->alatbayar_id,
+                "userapproval" => $request->userapproval,
+                "tglapproval" => $request->tglapproval,
+                "transferkeac" => $request->transferkeac,
+                "transferkean" => $request->transferkean,
+                "transferkebank" => $request->transferkebank,
+                "statusformat" => $request->statusformat,
+                "nominal_detail" => $request->nominal_detail,
+                "nowarkat" => $request->nowarkat,
+                "tgljatuhtempo" => $request->tgljatuhtempo,
+                "coadebet" => $request->coadebet,
+                "coakredit" => $request->coakredit,
+                "keterangan_detail" => $request->keterangan_detail,
+                "noinvoice" => $request->noinvoice,
+                "bank_detail" => $request->bank_detail,
+            ]);
             /* Set position and page */
             $pengeluaranTruckingHeader->position = $this->getPosition($pengeluaranTruckingHeader, $pengeluaranTruckingHeader->getTable())->position;
             if ($request->limit == 0) {
@@ -159,7 +181,29 @@ class PengeluaranTruckingHeaderController extends Controller
         try {
             /* Store header */
             $pengeluaranTruckingHeader = PengeluaranTruckingHeader::findOrfail($id);
-            $pengeluaranTruckingHeader = (new PengeluaranTruckingHeader())->processUpdate($pengeluaranTruckingHeader, $request->all());
+            $pengeluaranTruckingHeader = (new PengeluaranTruckingHeader())->processUpdate($pengeluaranTruckingHeader, [
+                "bank_id" => $request->bank_id,
+                "tglbukti" => $request->tglbukti,
+                "pelanggan_id" => $request->pelanggan_id,
+                "postingdari" => $request->postingdari,
+                "statusapproval" => $request->statusapproval,
+                "dibayarke" => $request->dibayarke,
+                "alatbayar_id" => $request->alatbayar_id,
+                "userapproval" => $request->userapproval,
+                "tglapproval" => $request->tglapproval,
+                "transferkeac" => $request->transferkeac,
+                "transferkean" => $request->transferkean,
+                "transferkebank" => $request->transferkebank,
+                "statusformat" => $request->statusformat,
+                "nominal_detail" => $request->nominal_detail,
+                "nowarkat" => $request->nowarkat,
+                "tgljatuhtempo" => $request->tgljatuhtempo,
+                "coadebet" => $request->coadebet,
+                "coakredit" => $request->coakredit,
+                "keterangan_detail" => $request->keterangan_detail,
+                "noinvoice" => $request->noinvoice,
+                "bank_detail" => $request->bank_detail,
+            ]);
             /* Set position and page */
             $pengeluaranTruckingHeader->position = $this->getPosition($pengeluaranTruckingHeader, $pengeluaranTruckingHeader->getTable())->position;
             if ($request->limit == 0) {

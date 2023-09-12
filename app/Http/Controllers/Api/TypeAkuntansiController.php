@@ -64,7 +64,13 @@ class TypeAkuntansiController extends Controller
         DB::beginTransaction();
 
         try {
-            $typeakuntansi = (new TypeAkuntansi())->processStore($request->all());
+            $typeakuntansi = (new TypeAkuntansi())->processStore([
+                "kodetype"=>$request->kodetype,
+                "order"=>$request->order,
+                "keterangantype"=>$request->keterangantype,
+                "akuntansi_id"=>$request->akuntansi_id,
+                "statusaktif"=>$request->statusaktif,
+            ]);
             $typeakuntansi->position = $this->getPosition($typeakuntansi, $typeakuntansi->getTable())->position;
             if ($request->limit==0) {
                 $typeakuntansi->page = ceil($typeakuntansi->position / (10));
@@ -102,7 +108,13 @@ class TypeAkuntansiController extends Controller
         DB::beginTransaction();
 
         try {
-            $typeakuntansi = (new TypeAkuntansi())->processUpdate($typeakuntansi, $request->all());
+            $typeakuntansi = (new TypeAkuntansi())->processUpdate($typeakuntansi, [
+                "kodetype"=>$request->kodetype,
+                "order"=>$request->order,
+                "keterangantype"=>$request->keterangantype,
+                "akuntansi_id"=>$request->akuntansi_id,
+                "statusaktif"=>$request->statusaktif,
+            ]);
             $typeakuntansi->position = $this->getPosition($typeakuntansi, $typeakuntansi->getTable())->position;
             if ($request->limit==0) {
                 $typeakuntansi->page = ceil($typeakuntansi->position / (10));

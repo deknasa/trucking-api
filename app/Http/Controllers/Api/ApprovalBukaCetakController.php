@@ -67,7 +67,11 @@ class ApprovalBukaCetakController extends Controller
         DB::beginTransaction();
 
         try {
-            $approvalBukaCetak = (new ApprovalBukaCetak())->processStore($request->all());
+            $approvalBukaCetak = (new ApprovalBukaCetak())->processStore([
+                "tableId"=>$request->tableId,
+                "periode"=>$request->periode,
+                "table"=>$request->table,
+            ]);
             DB::commit();
 
             return response()->json([
