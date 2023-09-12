@@ -728,11 +728,12 @@ class PengeluaranStokHeader extends MyModel
                 /*STORE HUTANGBAYAR*/
                 $penerimaanstok = Penerimaanstokheader::where('nobukti', $data['penerimaanstok_nobukti'])->first();
                 $hutang = HutangHeader::where('nobukti', $penerimaanstok->hutang_nobukti)->first();
-
+                $bank = ($data['bank_id'] == null) ? "" : $data['bank_id'];
+                // dd($bank);
                 $hutangBayarRequest = [
                     'tglbukti' => date('Y-m-d', strtotime($data['tglbukti'])),
 
-                    'bank_id' => $data['bank_id'],
+                    'bank_id' => $bank,
                     'supplier_id' => $data['supplier_id'],
                     'hutang_nobukti' => [$hutang->nobukti],
                     'statusapproval' => null,
