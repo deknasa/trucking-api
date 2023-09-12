@@ -10,6 +10,8 @@ use App\Rules\ExistAlatBayar;
 use App\Rules\ExistBank;
 use App\Rules\ValidasiDetail;
 use App\Rules\ValidasiNoWarkatPelunasanPiutang;
+use App\Rules\ValidasiStatusNotaDebet;
+use App\Rules\ValidasiStatusNotaKredit;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
@@ -97,7 +99,9 @@ class StorePelunasanPiutangHeaderRequest extends FormRequest
             'bank' => 'required',
             'agen' => [
                 'required',
-                new ValidasiDetail($jumlahdetail)
+                new ValidasiDetail($jumlahdetail),
+                new ValidasiStatusNotaDebet(),
+                new ValidasiStatusNotaKredit()
             ],
             'alatbayar' => ['required', Rule::in($dataKodeAlatBayar)]
         ];

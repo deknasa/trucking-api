@@ -55,7 +55,8 @@ class StoreTutupBukuRequest extends FormRequest
     public function messages()
     {
         return [
-            'tgltutupbuku.date_format' => app(ErrorController::class)->geterror('DF')->keterangan
+            'tgltutupbuku.date_format' => app(ErrorController::class)->geterror('DF')->keterangan,
+            'tgltutupbuku.after' => app(ErrorController::class)->geterror('MDB')->keterangan.' DARI TANGGAL TERAKHIR TUTUP BUKU',
         ];
     }
 }

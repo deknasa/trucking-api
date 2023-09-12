@@ -10,6 +10,7 @@ use App\Models\NotaKreditDetail;
 use Illuminate\Support\Facades\DB;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\ApprovalNotaKreditRequest;
+use App\Http\Requests\DestroyNotaKreditHeaderRequest;
 use App\Http\Requests\GetIndexRangeRequest;
 use App\Models\PelunasanPiutangHeader;
 use Illuminate\Support\Facades\Schema;
@@ -37,6 +38,15 @@ class NotaKreditHeaderController extends Controller
         ]);
     }
 
+    public function default()
+    {
+        $notaDebet = new NotaKreditHeader();
+        return response([
+            'status' => true,
+            'data' => $notaDebet->default(),
+        ]);
+    }
+
     /**
      * @ClassName 
      */
@@ -45,6 +55,34 @@ class NotaKreditHeaderController extends Controller
         DB::beginTransaction();
 
         try {
+            $data = [
+                'tglbukti' => $request->tglbukti,
+                'agen' => $request->agen,
+                'agen_id' => $request->agen_id,
+                'tgllunas' => $request->tgllunas,
+                'bank_id' => $request->bank_id,
+                'alatbayar_id' => $request->alatbayar_id,
+                'nowarkat' => $request->nowarkat,
+                'pelunasanpiutang_nobukti' => '',
+                'tanpaprosesnobukti' => 0,
+                'keteranganpotongan' => $request->keterangan_detail,
+                'potongan' => $request->nominal_detail
+            ];
+            $notaKreditHeader = (new NotaKreditHeader())->processStore($data);
+            $notaKreditHeader->position = $this->getPosition($notaKreditHeader, $notaKreditHeader->getTable())->position;
+            if ($request->limit == 0) {
+                $notaKreditHeader->page = ceil($notaKreditHeader->position / (10));
+            } else {
+                $notaKreditHeader->page = ceil($notaKreditHeader->position / ($request->limit ?? 10));
+            }
+            $notaKreditHeader->tgldariheader = date('Y-m-01', strtotime(request()->tglbukti));
+            $notaKreditHeader->tglsampaiheader = date('Y-m-t', strtotime(request()->tglbukti));
+            DB::commit();
+
+            return response()->json([
+                'message' => 'Berhasil disimpan',
+                'data' => $notaKreditHeader
+            ], 201);
         } catch (\Throwable $th) {
             DB::rollBack();
             throw $th;
@@ -54,12 +92,12 @@ class NotaKreditHeaderController extends Controller
     public function show(NotaKreditHeader $notaKreditHeader, $id)
     {
         $data = $notaKreditHeader->findAll($id);
-        // $detail = NotaKreditHeaderDetail::findAll($id);
+        $detail = (new NotaKreditDetail())->findAll($id);
 
         return response([
             'status' => true,
             'data' => $data,
-            // 'detail' => $detail
+            'detail' => $detail
         ]);
     }
 
@@ -70,6 +108,33 @@ class NotaKreditHeaderController extends Controller
     {
         DB::beginTransaction();
         try {
+            $data = [
+                'tglbukti' => $request->tglbukti,
+                'agen' => $request->agen,
+                'agen_id' => $request->agen_id,
+                'tgllunas' => $request->tgllunas,
+                'bank_id' => $request->bank_id,
+                'alatbayar_id' => $request->alatbayar_id,
+                'nowarkat' => $request->nowarkat,
+                'pelunasanpiutang_nobukti' => '',
+                'tanpaprosesnobukti' => 0,
+                'keteranganpotongan' => $request->keterangan_detail,
+                'potongan' => $request->nominal_detail
+            ];
+            $notaKreditHeader = (new NotaKreditHeader())->processUpdate($notakreditheader, $data);
+            $notaKreditHeader->position = $this->getPosition($notaKreditHeader, $notaKreditHeader->getTable())->position;
+            if ($request->limit == 0) {
+                $notaKreditHeader->page = ceil($notaKreditHeader->position / (10));
+            } else {
+                $notaKreditHeader->page = ceil($notaKreditHeader->position / ($request->limit ?? 10));
+            }
+            $notaKreditHeader->tgldariheader = date('Y-m-01', strtotime(request()->tglbukti));
+            $notaKreditHeader->tglsampaiheader = date('Y-m-t', strtotime(request()->tglbukti));
+            DB::commit();
+            return response()->json([
+                'message' => 'Berhasil diubah',
+                'data' => $notaKreditHeader
+            ]);
         } catch (\Throwable $th) {
             DB::rollBack();
             throw $th;
@@ -78,10 +143,27 @@ class NotaKreditHeaderController extends Controller
     /**
      * @ClassName 
      */
-    public function destroy(Request $request, $id)
+    public function destroy(DestroyNotaKreditHeaderRequest $request, $id)
     {
         DB::beginTransaction();
         try {
+            $notaKredit = (new NotaKreditHeader())->processDestroy($id, 'DELETE NOTA KREDIT');
+            $selected = $this->getPosition($notaKredit, $notaKredit->getTable(), true);
+            $notaKredit->position = $selected->position;
+            $notaKredit->id = $selected->id;
+            if ($request->limit==0) {
+                $notaKredit->page = ceil($notaKredit->position / (10));
+            } else {
+                $notaKredit->page = ceil($notaKredit->position / ($request->limit ?? 10));
+            }
+            $notaKredit->tgldariheader = date('Y-m-01', strtotime(request()->tglbukti));
+            $notaKredit->tglsampaiheader = date('Y-m-t', strtotime(request()->tglbukti));
+            DB::commit();
+
+            return response()->json([
+                'message' => 'Berhasil dihapus',
+                'data' => $notaKredit
+            ]);
         } catch (\Throwable $th) {
             DB::rollBack();
             throw $th;
@@ -195,13 +277,11 @@ class NotaKreditHeaderController extends Controller
             $query = DB::table('error')
                 ->select('keterangan')
                 ->where('kodeerror', '=', 'SAP')
-                ->get();
-            $keterangan = $query['0'];
+                ->first();
             $data = [
-                'message' => $keterangan,
-                'errors' => 'sudah approve',
-                'kodestatus' => '1',
-                'kodenobukti' => '1'
+                'error' => true,
+                'message' => $query->keterangan,
+                'statuspesan' => 'warning',
             ];
 
             return response($data);
@@ -209,29 +289,56 @@ class NotaKreditHeaderController extends Controller
             $query = DB::table('error')
                 ->select('keterangan')
                 ->where('kodeerror', '=', 'SDC')
-                ->get();
-            $keterangan = $query['0'];
+                ->first();
             $data = [
-                'message' => $keterangan,
-                'errors' => 'sudah cetak',
-                'kodestatus' => '1',
-                'kodenobukti' => '1'
+                'error' => true,
+                'message' => $query->keterangan,
+                'statuspesan' => 'warning',
             ];
 
             return response($data);
         } else {
 
             $data = [
+                'error' => false,
                 'message' => '',
-                'errors' => 'belum approve',
-                'kodestatus' => '0',
-                'kodenobukti' => '1'
+                'statuspesan' => 'success',
             ];
 
             return response($data);
         }
     }
 
+    public function cekValidasiAksi($id)
+    {
+        $notaKreditHeader = new NotaKreditHeader();
+        $cekdata = $notaKreditHeader->cekvalidasiaksi($id);
+        if ($cekdata['kondisi'] == true) {
+            $query = DB::table('error')
+                ->select(
+                    DB::raw("ltrim(rtrim(keterangan))+' (" . $cekdata['keterangan'] . ")' as keterangan")
+                )
+                ->where('kodeerror', '=', $cekdata['kodeerror'])
+                ->first();
+
+            $data = [
+                'error' => true,
+                'message' => $query->keterangan,
+                'statuspesan' => 'warning',
+            ];
+
+            return response($data);
+        } else {
+
+            $data = [
+                'error' => false,
+                'message' => '',
+                'statuspesan' => 'success',
+            ];
+
+            return response($data);
+        }
+    }
     public function printReport($id)
     {
         DB::beginTransaction();
@@ -274,7 +381,8 @@ class NotaKreditHeaderController extends Controller
      * @ClassName 
      */
     public function report()
-    { }
+    {
+    }
 
     /**
      * @ClassName 
