@@ -812,12 +812,36 @@ class PenerimaanTruckingHeader extends MyModel
             $coadebet = $querySubgrpPenerimaan->coa;
         }
 
+
+        $nobuktipengeluarantrucking = $data['pengeluarantruckingheader_nobukti'][0] ?? '';
+        if ($fetchFormat->kodepenerimaan == 'PJP') {
+            $queryposting = db::table('pengeluarantruckingheader')->from(db::raw("pengeluarantruckingheader a with (readuncommitted)"))
+                ->select('statusposting', 'coa')->where('nobukti', $nobuktipengeluarantrucking)->first();
+            if (isset($queryposting)) {
+                $bukanposting = db::table("parameter")->from(db::raw("parameter a with (readuncommitted)"))
+                    ->select('id')
+                    ->where('grp', 'STATUS POSTING')
+                    ->where('subgrp', 'STATUS POSTING')
+                    ->where('text', 'BUKAN POSTING')
+                    ->first()->id ?? 0;
+                if ($bukanposting == $queryposting->statusposting) {
+                    $coa =  $queryposting->coa ?? $data['coa'];
+                } else {
+                    $coa = $data['coa'];
+                }
+            } else {
+                $coa = $data['coa'];
+            }
+        } else {
+            $coa = $data['coa'];
+        }
+
         $penerimaanTruckingHeader = new PenerimaanTruckingHeader();
 
         $penerimaanTruckingHeader->tglbukti = date('Y-m-d', strtotime($data['tglbukti']));
         $penerimaanTruckingHeader->penerimaantrucking_id = $data['penerimaantrucking_id'] ?? $idpenerimaan;
         $penerimaanTruckingHeader->bank_id = $data['bank_id'];
-        $penerimaanTruckingHeader->coa = $data['coa'] ?? '';
+        $penerimaanTruckingHeader->coa = $coa ?? '';
         $penerimaanTruckingHeader->supir_id = $data['supirheader_id'] ?? '';
         $penerimaanTruckingHeader->karyawan_id = $data['karyawanheader_id'] ?? '';
         $penerimaanTruckingHeader->jenisorder_id = $data['jenisorder_id'] ?? '';
@@ -859,8 +883,29 @@ class PenerimaanTruckingHeader extends MyModel
                 'nominal' =>  $data['nominal'][$i],
                 'modifiedby' => $penerimaanTruckingHeader->modifiedby,
             ]);
+            $nobuktipengeluarantrucking = $data['pengeluarantruckingheader_nobukti'][$i] ?? '';
             $penerimaanDetails[] = $penerimaanTruckingDetail->toArray();
-            $coakredit_detail[] = $data['coa'];
+            if ($fetchFormat->kodepenerimaan == 'PJP') {
+                $queryposting = db::table('pengeluarantruckingheader')->from(db::raw("pengeluarantruckingheader a with (readuncommitted)"))
+                    ->select('statusposting', 'coa')->where('nobukti', $nobuktipengeluarantrucking)->first();
+                if (isset($queryposting)) {
+                    $bukanposting = db::table("parameter")->from(db::raw("parameter a with (readuncommitted)"))
+                        ->select('id')
+                        ->where('grp', 'STATUS POSTING')
+                        ->where('subgrp', 'STATUS POSTING')
+                        ->where('text', 'BUKAN POSTING')
+                        ->first()->id ?? 0;
+                    if ($bukanposting == $queryposting->statusposting) {
+                        $coakredit_detail[] =  $queryposting->coa ?? $data['coa'];
+                    } else {
+                        $coakredit_detail[] = $data['coa'];
+                    }
+                } else {
+                    $coakredit_detail[] = $data['coa'];
+                }
+            } else {
+                $coakredit_detail[] = $data['coa'];
+            }
             $coadebet_detail[] = $coadebet;
             $nominal_detail[] = $data['nominal'][$i];
             if ($fetchFormat->kodepenerimaan == 'DPO') {
@@ -1055,8 +1100,32 @@ class PenerimaanTruckingHeader extends MyModel
                     $penerimaanTruckingHeader->tglbukti = date('Y-m-d', strtotime($data['tglbukti']));
                 }
             }
+
+            $nobuktipengeluarantrucking = $data['pengeluarantruckingheader_nobukti'][0] ?? '';
+            if ($fetchFormat->kodepenerimaan == 'PJP') {
+                $queryposting = db::table('pengeluarantruckingheader')->from(db::raw("pengeluarantruckingheader a with (readuncommitted)"))
+                    ->select('statusposting', 'coa')->where('nobukti', $nobuktipengeluarantrucking)->first();
+                if (isset($queryposting)) {
+                    $bukanposting = db::table("parameter")->from(db::raw("parameter a with (readuncommitted)"))
+                        ->select('id')
+                        ->where('grp', 'STATUS POSTING')
+                        ->where('subgrp', 'STATUS POSTING')
+                        ->where('text', 'BUKAN POSTING')
+                        ->first()->id ?? 0;
+                    if ($bukanposting == $queryposting->statusposting) {
+                        $coa =  $queryposting->coa ?? $data['coa'];
+                    } else {
+                        $coa = $data['coa'];
+                    }
+                } else {
+                    $coa = $data['coa'];
+                }
+            } else {
+                $coa = $data['coa'];
+            }
+
             $penerimaanTruckingHeader->bank_id = $data['bank_id'];
-            $penerimaanTruckingHeader->coa = $data['coa'] ?? '';
+            $penerimaanTruckingHeader->coa = $coa ?? '';
             $penerimaanTruckingHeader->supir_id = $data['supirheader_id'] ?? '';
             $penerimaanTruckingHeader->karyawan_id = $data['karyawanheader_id'] ?? '';
             $penerimaanTruckingHeader->jenisorder_id = $data['jenisorder_id'] ?? '';
@@ -1096,7 +1165,27 @@ class PenerimaanTruckingHeader extends MyModel
                     'modifiedby' => $penerimaanTruckingHeader->modifiedby,
                 ]);
                 $penerimaanDetails[] = $penerimaanTruckingDetail->toArray();
-                $coakredit_detail[] = $data['coa'];
+                if ($fetchFormat->kodepenerimaan == 'PJP') {
+                    $queryposting = db::table('pengeluarantruckingheader')->from(db::raw("pengeluarantruckingheader a with (readuncommitted)"))
+                        ->select('statusposting', 'coa')->where('nobukti', $nobuktipengeluarantrucking)->first();
+                    if (isset($queryposting)) {
+                        $bukanposting = db::table("parameter")->from(db::raw("parameter a with (readuncommitted)"))
+                            ->select('id')
+                            ->where('grp', 'STATUS POSTING')
+                            ->where('subgrp', 'STATUS POSTING')
+                            ->where('text', 'BUKAN POSTING')
+                            ->first()->id ?? 0;
+                        if ($bukanposting == $queryposting->statusposting) {
+                            $coakredit_detail[] =  $queryposting->coa ?? $data['coa'];
+                        } else {
+                            $coakredit_detail[] = $data['coa'];
+                        }
+                    } else {
+                        $coakredit_detail[] = $data['coa'];
+                    }
+                } else {
+                    $coakredit_detail[] = $data['coa'];
+                }                
                 $coadebet_detail[] = $coadebet;
                 $nominal_detail[] = $data['nominal'][$i];
                 if ($fetchFormat->kodepenerimaan == 'DPO') {

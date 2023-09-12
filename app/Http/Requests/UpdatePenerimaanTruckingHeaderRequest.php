@@ -13,6 +13,7 @@ use App\Rules\DestroyPenerimaanTruckingHeader;
 use App\Rules\validasiJenisOrderanPengeluaranTrucking;
 use Illuminate\Validation\Rule;
 use Illuminate\Support\Facades\DB;
+use App\Rules\ValidasiPenerimaanTrucking;
 
 class UpdatePenerimaanTruckingHeaderRequest extends FormRequest
 {
@@ -141,7 +142,9 @@ class UpdatePenerimaanTruckingHeaderRequest extends FormRequest
                 'penerimaantrucking' => ['required',Rule::in($getDataPenerimaan->kodepenerimaan)],
                 'bank' => [$ruleBank, Rule::in($getDataPenerimaan->bank), 'required'],
                 'bank_id' => [Rule::in($getDataPenerimaan->bank_id), 'required', 'min:1','numeric'],
-                'supir' => ['required', Rule::in($getDataPenerimaan->supir),new ValidasiDetail($jumlahdetail)],
+                'supir' => ['required', Rule::in($getDataPenerimaan->supir),new ValidasiDetail($jumlahdetail),
+                new ValidasiPenerimaanTrucking()
+            ],
                 'supirheader_id' => ['required', Rule::in($getDataPenerimaan->supirheader_id), 'numeric','min:1'],
                 // 'keterangancoa' => 'required'
             ];

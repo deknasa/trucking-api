@@ -429,6 +429,12 @@ class HutangBayarHeader extends MyModel
 
         $format = DB::table('parameter')->where('grp', $group)->where('subgrp', $subGroup)->first();
 
+        $statusbayarhutang=db::table('parameter')->from(db::raw("parameter a with (readuncommitted)"))
+        ->select('id')->where('grp','PELUNASANHUTANG')->where('subgrp','PELUNASANHUTANG')->where('text','BANK/KAS')
+        ->first()->id ?? 0;
+
+        $bayarhutang=$data['statusbayarhutang'] ?? $statusbayarhutang;
+
         $statusApproval = Parameter::from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS APPROVAL')->where('text', 'NON APPROVAL')->first();
         $statusCetak = Parameter::from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUSCETAK')->where('text', 'BELUM CETAK')->first();
         $getCoaDebet = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'JURNAL PEMBAYARAN HUTANG')->where('subgrp', 'DEBET')->first();
@@ -441,6 +447,7 @@ class HutangBayarHeader extends MyModel
         $hutangBayarHeader->coa = $memo['JURNAL'];
         $hutangBayarHeader->pengeluaran_nobukti = '';
         $hutangBayarHeader->statusapproval = $statusApproval->id ?? $data['statusapproval'];
+        $hutangBayarHeader->statusbayarhutang = $bayarhutang ;
         $hutangBayarHeader->userapproval = '';
         $hutangBayarHeader->tglapproval = '';
         $hutangBayarHeader->alatbayar_id = $data['alatbayar_id'];
@@ -561,32 +568,38 @@ class HutangBayarHeader extends MyModel
         /*STORE PENGELUARAN*/
         $supplier = Supplier::from(DB::raw("supplier with (readuncommitted)"))->where('id', $data['supplier_id'])->first();
 
-        $pengeluaranRequest = [
-            'tglbukti' => date('Y-m-d', strtotime($data['tglbukti'])),
-            'pelanggan_id' => 0,
-            'postingdari' => "ENTRY HUTANG BAYAR",
-            'statusapproval' => $statusApproval->id,
-            'dibayarke' => $supplier->namasupplier,
-            'alatbayar_id' => $data['alatbayar_id'],
-            'bank_id' => $data['bank_id'],
-            'transferkeac' => $supplier->rekeningbank,
-            'transferkean' => $supplier->namarekening,
-            'transferkebank' => $supplier->bank,
-            'userapproval' => "",
-            'tglapproval' => "",
+        if ($bayarhutang==$statusbayarhutang) {
+            $pengeluaranRequest = [
+                'tglbukti' => date('Y-m-d', strtotime($data['tglbukti'])),
+                'pelanggan_id' => 0,
+                'postingdari' => "ENTRY HUTANG BAYAR",
+                'statusapproval' => $statusApproval->id,
+                'dibayarke' => $supplier->namasupplier,
+                'alatbayar_id' => $data['alatbayar_id'],
+                'bank_id' => $data['bank_id'],
+                'transferkeac' => $supplier->rekeningbank,
+                'transferkean' => $supplier->namarekening,
+                'transferkebank' => $supplier->bank,
+                'userapproval' => "",
+                'tglapproval' => "",
+    
+                'nowarkat' => $nowarkat,
+                'tgljatuhtempo' => $tgljatuhtempo,
+                "nominal_detail" => $nominal_detail,
+                "coadebet" => $coadebet,
+                "coakredit" => $coakredit,
+                "keterangan_detail" => $statusketerangandefault,
+                "bulanbeban"
+            ];
+    
+    
+            $pengeluaranHeader = (new PengeluaranHeader())->processStore($pengeluaranRequest);
+            $hutangBayarHeader->pengeluaran_nobukti = $pengeluaranHeader->nobukti;
+    
+        } else {
+            $hutangBayarHeader->pengeluaran_nobukti = '';
+        }
 
-            'nowarkat' => $nowarkat,
-            'tgljatuhtempo' => $tgljatuhtempo,
-            "nominal_detail" => $nominal_detail,
-            "coadebet" => $coadebet,
-            "coakredit" => $coakredit,
-            "keterangan_detail" => $statusketerangandefault,
-            "bulanbeban"
-        ];
-
-
-        $pengeluaranHeader = (new PengeluaranHeader())->processStore($pengeluaranRequest);
-        $hutangBayarHeader->pengeluaran_nobukti = $pengeluaranHeader->nobukti;
         $hutangBayarHeader->save();
         return $hutangBayarHeader;
     }
@@ -601,6 +614,12 @@ class HutangBayarHeader extends MyModel
         $coaDebetpembelian = Parameter::from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'JURNAL PEMBAYARAN HUTANG PEMBELIAN STOK')->where('subgrp', 'DEBET')->first();
         $memo = json_decode($coaDebet->memo, true);
         $memopembelian = json_decode($coaDebetpembelian->memo, true);
+
+        $statusbayarhutang=db::table('parameter')->from(db::raw("parameter a with (readuncommitted)"))
+        ->select('id')->where('grp','PELUNASANHUTANG')->where('subgrp','PELUNASANHUTANG')->where('text','BANK/KAS')
+        ->first()->id ?? 0;
+
+        $bayarhutang=$data['statusbayarhutang'] ?? $statusbayarhutang;
 
         $query = HutangHeader::from(DB::raw("hutangheader a with (readuncommitted)"))
             ->select('a.nobukti')
@@ -644,6 +663,8 @@ class HutangBayarHeader extends MyModel
         $hutangBayarHeader->supplier_id = $data['supplier_id'] ?? '';
         $hutangBayarHeader->modifiedby = auth('api')->user()->name;
         $hutangBayarHeader->coa = $memo['JURNAL'];
+        $hutangBayarHeader->statusapproval = $statusApproval->id ?? $data['statusapproval'];
+        $hutangBayarHeader->statusbayarhutang = $bayarhutang ;        
 
 
         if (!$hutangBayarHeader->save()) {
@@ -723,34 +744,38 @@ class HutangBayarHeader extends MyModel
 
         /*STORE PENGELUARAN*/
         $supplier = Supplier::from(DB::raw("supplier with (readuncommitted)"))->where('id', $data['supplier_id'])->first();
-
-        $pengeluaranRequest = [
-            'tglbukti' => $hutangBayarHeader->tglbukti,
-            'pelanggan_id' => 0,
-            'postingdari' => "ENTRY HUTANG BAYAR",
-            'statusapproval' => $statusApproval->id,
-            'dibayarke' => $supplier->namasupplier,
-            'alatbayar_id' => $data['alatbayar_id'],
-            'bank_id' => $data['bank_id'],
-            'transferkeac' => $supplier->rekeningbank,
-            'transferkean' => $supplier->namarekening,
-            'transferkebank' => $supplier->bank,
-            'userapproval' => "",
-            'tglapproval' => "",
-
-            'nowarkat' => $nowarkat,
-            'tgljatuhtempo' => $tgljatuhtempo,
-            "nominal_detail" => $nominal_detail,
-            "coadebet" => $coadebet,
-            "coakredit" => $coakredit,
-            "keterangan_detail" => $keterangan_detail,
-            "bulanbeban"
-        ];
-
-
-        $pengeluaranHeader = PengeluaranHeader::where('nobukti', $hutangBayarHeader->pengeluaran_nobukti)->first();
-        $pengeluaranHeader = (new PengeluaranHeader())->processUpdate($pengeluaranHeader, $pengeluaranRequest);
-        $hutangBayarHeader->pengeluaran_nobukti = $pengeluaranHeader->nobukti;
+        if ($bayarhutang==$statusbayarhutang) {
+            $pengeluaranRequest = [
+                'tglbukti' => $hutangBayarHeader->tglbukti,
+                'pelanggan_id' => 0,
+                'postingdari' => "ENTRY HUTANG BAYAR",
+                'statusapproval' => $statusApproval->id,
+                'dibayarke' => $supplier->namasupplier,
+                'alatbayar_id' => $data['alatbayar_id'],
+                'bank_id' => $data['bank_id'],
+                'transferkeac' => $supplier->rekeningbank,
+                'transferkean' => $supplier->namarekening,
+                'transferkebank' => $supplier->bank,
+                'userapproval' => "",
+                'tglapproval' => "",
+    
+                'nowarkat' => $nowarkat,
+                'tgljatuhtempo' => $tgljatuhtempo,
+                "nominal_detail" => $nominal_detail,
+                "coadebet" => $coadebet,
+                "coakredit" => $coakredit,
+                "keterangan_detail" => $keterangan_detail,
+                "bulanbeban"
+            ];
+    
+    
+            $pengeluaranHeader = PengeluaranHeader::where('nobukti', $hutangBayarHeader->pengeluaran_nobukti)->first();
+            $pengeluaranHeader = (new PengeluaranHeader())->processUpdate($pengeluaranHeader, $pengeluaranRequest);
+            $hutangBayarHeader->pengeluaran_nobukti = $pengeluaranHeader->nobukti;
+    
+        } else {
+            $hutangBayarHeader->pengeluaran_nobukti = '';
+        }
         $hutangBayarHeader->save();
 
 
