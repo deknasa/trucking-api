@@ -282,7 +282,6 @@ class PengeluaranStokDetail extends MyModel
 
 
 
-       
 
         $pengeluaranStokDetail = new PengeluaranStokDetail();
         $pengeluaranStokDetail->pengeluaranstokheader_id = $data['pengeluaranstokheader_id'];
