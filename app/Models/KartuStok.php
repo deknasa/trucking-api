@@ -17,7 +17,8 @@ class KartuStok extends MyModel
 {
     use HasFactory;
 
-    protected $table = 'pengeluaranstokdetailfifo';
+    // protected $table = 'pengeluaranstokdetailfifo';
+    protected $table = 'kartustok';
 
     protected $casts = [
         'created_at' => 'date:d-m-Y H:i:s',
@@ -1842,5 +1843,80 @@ class KartuStok extends MyModel
     public function paginate($query)
     {
         return $query->skip($this->params['offset'])->take($this->params['limit']);
+    }
+
+    public function processStore(array $data): kartustok
+    {
+
+        $stokid = $data['stok_id'] ?? 0;
+        $querystok = db::table("stok")->from(db::raw("stok as a with (readuncommitted)"))
+            ->select(
+                'a.namastok',
+                'a.kategori_id'
+            )->where('a.id', $stokid)
+            ->first();
+
+        $gudang_id = $data['gudang_id'] ?? 0;
+        $trado_id = $data['trado_id'] ?? 0;
+        $gandengan_id = $data['gandengan_id'] ?? 0;
+
+        if ($gudang_id != 0) {
+            $lokasi = db::table('gudang')->from(db::raw("gudang as a with (readuncommitted)"))->select('a.gudang')->where('a.id', $gudang_id)->first()->gudang ?? '';
+        }
+        if ($gandengan_id != 0) {
+            $lokasi = db::table('gandengan')->from(db::raw("gandengan as a with (readuncommitted)"))->select('a.kodegandengan')->where('a.id', $gandengan_id)->first()->kodegandengan ?? '';
+        }
+        if ($trado_id != 0) {
+            $lokasi = db::table('trado')->from(db::raw("trado as a with (readuncommitted)"))->select('a.kodetrado')->where('a.id', $trado_id)->first()->kodetrado ?? '';
+        }
+
+        $kartustok = new KartuStok();
+        $kartustok->gudang_id = $data['gudang_id'] ?? 0;
+        $kartustok->trado_id = $data['trado_id'] ?? 0;
+        $kartustok->gandengan_id = $data['gandengan_id'] ?? 0;
+        $kartustok->stok_id = $data['stok_id'] ?? 0;
+        $kartustok->lokasi = $lokasi ?? '';
+        $kartustok->kodebarang =  $querystok->namastok ?? '';
+        $kartustok->namabarang = $querystok->namastok ?? '';
+        $kartustok->tglbukti = $data['tglbukti'];
+        $kartustok->nobukti = $data['nobukti'] ?? '';
+        $kartustok->kategori_id = $querystok->kategori_id ?? 0;
+        $kartustok->qtymasuk = $data['qtymasuk'] ?? '';
+        $kartustok->nilaimasuk = $data['nilaimasuk'] ?? '';
+        $kartustok->qtykeluar = $data['qtykeluar'] ?? '';
+        $kartustok->nilaikeluar = $data['nilaikeluar'] ?? '';
+        $kartustok->urutfifo = $data['urutfifo'] ?? '';
+        $kartustok->modifiedby = auth('api')->user()->name;
+
+        if (!$kartustok->save()) {
+            throw new \Exception("Error storing kartu stok detail.");
+        }
+
+        return $kartustok;
+    }
+
+    public function processDestroy($nobukti): kartustok
+    {
+        $query = db::table("kartustok")->from(db::raw("kartustok as a with(readuncommitted)"))->select('a.id')
+            ->where('nobukti', $nobukti)->orderBy('a.id', 'asc')->get();
+
+        $datadetail = json_decode($query, true);
+        foreach ($datadetail as $item) {
+            $kartuStok = new KartuStok();
+            $kartuStok = $kartuStok->lockAndDestroy($item['id']);
+
+            $kartuStokLogTrail = (new LogTrail())->processStore([
+                'namatabel' => $kartuStok->getTable(),
+                'postingdari' => '',
+                'idtrans' => $kartuStok->id,
+                'nobuktitrans' => $kartuStok->nobukti,
+                'aksi' => 'DELETE',
+                'datajson' => $kartuStok->toArray(),
+                'modifiedby' => auth('api')->user()->name
+            ]);
+        }
+
+
+        return $kartuStok;
     }
 }
