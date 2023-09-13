@@ -105,6 +105,10 @@ class LaporanSaldoInventory extends MyModel
         ->where('grp', 'DIPERIKSA')
         ->where('subgrp', 'DIPERIKSA')->first()->text ?? '';
 
+
+        $priode2= date('m/d/Y', strtotime($priode1));
+       
+        DB::delete(DB::raw("delete " . $temprekapall . " from " . $temprekapall . " as a WHERE isnull(a.qtymasuk,0)=0"));
         $query = DB::table($temprekapall)->from(
             DB::raw($temprekapall . " a")
         )
@@ -121,7 +125,7 @@ class LaporanSaldoInventory extends MyModel
                 'a.kodebarang as id',
                 'a.kodebarang',
                 'a.namabarang',
-                DB::raw("'".$priode1."' as tanggal"),
+                DB::raw("'".$priode2."' as tanggal"),
                 'a.qtymasuk as qty',
                 DB::raw("'' as satuan"),
                 'a.nilaimasuk as nominal',
