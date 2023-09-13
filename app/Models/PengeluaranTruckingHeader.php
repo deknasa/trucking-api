@@ -1095,8 +1095,22 @@ class PengeluaranTruckingHeader extends MyModel
             ->first();
         $tanpaprosesnobukti = $data['tanpaprosesnobukti'] ?? 0;
         $from = $data['from'] ?? 'not';
-        if ($fetchFormat->kodepengeluaran != 'BLS') {
-            $data['coa'] = $fetchFormat->coapostingdebet;
+        $statusPosting = Parameter::from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS POSTING')->where('text', 'BUKAN POSTING')->first();
+        $pinjamansupir = db::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))->SELECT('text','memo')->where('grp', 'PINJAMAN SUPIR')->where('subgrp', 'PINJAMAN SUPIR NON POSTING')->first() ?? '';
+        $statuspinjamanposting = $pengeluaranTruckingHeader['statusposting'] ?? $statusPosting->id;
+        
+        if ($idpengeluaran == $pinjamansupir->text) {
+            if  ($statuspinjamanposting==$statusPosting->id) {
+                $memo = json_decode($pinjamansupir->memo, true);
+                $data['coa'] = $memo['JURNAL'];
+            } else {
+                $data['coa'] = $fetchFormat->coapostingdebet;
+
+            }
+        } else {
+            if ($fetchFormat->kodepengeluaran != 'BLS') {
+                $data['coa'] = $fetchFormat->coapostingdebet;
+            }
         }
         $klaim = DB::table('pengeluarantrucking')->from(DB::raw("pengeluarantrucking with (readuncommitted)"))->where('kodepengeluaran', "KLAIM")->first();
         $statusformat = $fetchFormat->format;
