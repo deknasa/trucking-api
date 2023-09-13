@@ -63,7 +63,30 @@ class PenerimaanTruckingHeaderController extends Controller
         DB::beginTransaction();
         try {
             /* Store header */
-            $penerimaanTruckingHeader = (new PenerimaanTruckingHeader())->processStore($request->all());
+            $penerimaanTruckingHeader = (new PenerimaanTruckingHeader())->processStore([
+                "periodedari" =>$request->periodedari,
+                "periodesampai" =>$request->periodesampai,
+                "jenisorderan_id" =>$request->jenisorderan_id,
+                "penerimaantrucking_id" =>$request->penerimaantrucking_id,
+                "tanpaprosesnobukti" =>$request->tanpaprosesnobukti,
+                "coa" =>$request->coa,
+                "bank_id" =>$request->bank_id,
+                "tglbukti" =>$request->tglbukti,
+                "supirheader_id" =>$request->supirheader_id,
+                "karyawanheader_id" =>$request->karyawanheader_id,
+                "jenisorder_id" =>$request->jenisorder_id,
+                "penerimaan_nobukti" =>$request->penerimaan_nobukti,
+                "pendapatansupir_bukti" =>$request->pendapatansupir_bukti,
+                "statusformat" =>$request->statusformat,
+                "postingdari" =>$request->postingdari,
+                "nominal" =>$request->nominal,
+                "supir_id" =>$request->supir_id,
+                "karyawan_id" =>$request->karyawan_id,
+                "pengeluarantruckingheader_nobukti" =>$request->pengeluarantruckingheader_nobukti,
+                "keterangan" =>$request->keterangan,
+                "ebs" =>$request->ebs,
+                "from" =>$request->from,
+            ]);
             /* Set position and page */
             $penerimaanTruckingHeader->position = $this->getPosition($penerimaanTruckingHeader, $penerimaanTruckingHeader->getTable())->position;
             if ($request->limit==0) {
@@ -110,7 +133,30 @@ class PenerimaanTruckingHeaderController extends Controller
         try {
             /* Store header */
             // PenerimaanTruckingHeader::findOrFail($id);
-            $penerimaanTruckingHeader = (new PenerimaanTruckingHeader())->processUpdate($penerimaantruckingheader, $request->all());
+            $penerimaanTruckingHeader = (new PenerimaanTruckingHeader())->processUpdate($penerimaantruckingheader, [
+                "periodedari" =>$request->periodedari,
+                "periodesampai" =>$request->periodesampai,
+                "jenisorderan_id" =>$request->jenisorderan_id,
+                "penerimaantrucking_id" =>$request->penerimaantrucking_id,
+                "tanpaprosesnobukti" =>$request->tanpaprosesnobukti,
+                "coa" =>$request->coa,
+                "bank_id" =>$request->bank_id,
+                "tglbukti" =>$request->tglbukti,
+                "supirheader_id" =>$request->supirheader_id,
+                "karyawanheader_id" =>$request->karyawanheader_id,
+                "jenisorder_id" =>$request->jenisorder_id,
+                "penerimaan_nobukti" =>$request->penerimaan_nobukti,
+                "pendapatansupir_bukti" =>$request->pendapatansupir_bukti,
+                "statusformat" =>$request->statusformat,
+                "postingdari" =>$request->postingdari,
+                "nominal" =>$request->nominal,
+                "supir_id" =>$request->supir_id,
+                "karyawan_id" =>$request->karyawan_id,
+                "pengeluarantruckingheader_nobukti" =>$request->pengeluarantruckingheader_nobukti,
+                "keterangan" =>$request->keterangan,
+                "ebs" =>$request->ebs,
+                "from" =>$request->from,
+            ]);
             /* Set position and page */
             $penerimaanTruckingHeader->position = $this->getPosition($penerimaanTruckingHeader, $penerimaanTruckingHeader->getTable())->position;
             if ($request->limit==0) {

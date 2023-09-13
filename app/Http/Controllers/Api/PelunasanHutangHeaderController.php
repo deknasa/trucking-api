@@ -64,7 +64,22 @@ class PelunasanHutangHeaderController extends Controller
         DB::beginTransaction();
         try {
             /* Store header */
-            $PelunasanHutangHeader = (new PelunasanHutangHeader())->processStore($request->all());
+            $PelunasanHutangHeader = (new PelunasanHutangHeader())->processStore([
+                'bank_id' =>$request->bank_id,
+                'tglbukti' =>$request->tglbukti,
+                'supplier_id' =>$request->supplier_id,
+                'statusapproval' =>$request->statusapproval,
+                'alatbayar_id' =>$request->alatbayar_id,
+                'tglcair' =>$request->tglcair,
+                'postingdari' =>$request->postingdari,
+                'hutang_id' =>$request->hutang_id,
+                'hutang_nobukti' =>$request->hutang_nobukti,
+                'bayar' =>$request->bayar,
+                'potongan' =>$request->potongan,
+                'keterangan' =>$request->keterangan,
+                'coadebet' =>$request->coadebet,
+                'coakredit' =>$request->coakredit,
+            ]);
             /* Set position and page */
             $PelunasanHutangHeader->position = $this->getPosition($PelunasanHutangHeader, $PelunasanHutangHeader->getTable())->position;
             $PelunasanHutangHeader->page = ceil($PelunasanHutangHeader->position / ($request->limit ?? 10));
@@ -109,7 +124,22 @@ class PelunasanHutangHeaderController extends Controller
         try {
             /* Store header */
             $PelunasanHutang = PelunasanHutangHeader::findOrFail($id);
-            $PelunasanHutangHeader = (new PelunasanHutangHeader())->processUpdate($PelunasanHutang, $request->all());
+            $PelunasanHutangHeader = (new PelunasanHutangHeader())->processUpdate($PelunasanHutang, [
+                'bank_id' =>$request->bank_id,
+                'tglbukti' =>$request->tglbukti,
+                'supplier_id' =>$request->supplier_id,
+                'statusapproval' =>$request->statusapproval,
+                'alatbayar_id' =>$request->alatbayar_id,
+                'tglcair' =>$request->tglcair,
+                'postingdari' =>$request->postingdari,
+                'hutang_id' =>$request->hutang_id,
+                'hutang_nobukti' =>$request->hutang_nobukti,
+                'bayar' =>$request->bayar,
+                'potongan' =>$request->potongan,
+                'keterangan' =>$request->keterangan,
+                'coadebet' =>$request->coadebet,
+                'coakredit' =>$request->coakredit,
+            ]);
             /* Set position and page */
             $PelunasanHutangHeader->position = $this->getPosition($PelunasanHutangHeader, $PelunasanHutangHeader->getTable())->position;
             $PelunasanHutangHeader->page = ceil($PelunasanHutangHeader->position / ($request->limit ?? 10));
