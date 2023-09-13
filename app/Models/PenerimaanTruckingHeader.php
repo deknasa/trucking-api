@@ -872,6 +872,14 @@ class PenerimaanTruckingHeader extends MyModel
 
         $penerimaanTruckingDetails = [];
         $totalDeposito = 0;
+        $firstBuktiPosting = '';
+        $firstBuktiNonPosting = '';
+        $nominalPostingNon = ['nonposting' => 0, 'posting' => 0];
+        $coakreditPostingNon = ['nonposting' => '', 'posting' => ''];
+        $keteranganPostingNon = ['nonposting' => '', 'posting' => ''];
+        $nobuktiPosting = '';
+        $nobuktiNonPosting = '';
+
         for ($i = 0; $i < count($data['nominal']); $i++) {
             $penerimaanTruckingDetail = (new PenerimaanTruckingDetail())->processStore($penerimaanTruckingHeader, [
                 'penerimaantruckingheader_id' => $penerimaanTruckingHeader->id,
@@ -896,9 +904,43 @@ class PenerimaanTruckingHeader extends MyModel
                         ->where('text', 'BUKAN POSTING')
                         ->first()->id ?? 0;
                     if ($bukanposting == $queryposting->statusposting) {
-                        $coakredit_detail[] =  $queryposting->coa ?? $data['coa'];
+
+                        if ($firstBuktiNonPosting == '') {
+                            $nobuktiNonPosting = $nobuktiNonPosting . $nobuktipengeluarantrucking;
+                            $coakreditPostingNon['nonposting'] =  $queryposting->coa ?? $data['coa'];
+                            $coadebet_detail[] = $coadebet;
+                            $tgljatuhtempo[] = date('Y-m-d', strtotime($data['tglbukti']));
+                            $firstBuktiNonPosting = $nobuktipengeluarantrucking;
+                        } else {
+                            $nobuktiNonPosting = $nobuktiNonPosting . ', ' . $nobuktipengeluarantrucking;
+                        }
+                        if ($tanpaprosesnobukti == 3) {
+                            if ($fetchFormat->kodepenerimaan == 'PJP') {
+
+                                $keteranganPostingNon['nonposting'] =  '(NON POSTING) PENGEMBALIAN PINJAMAN DARI PENDAPATAN SUPIR ' . $data['pendapatansupir_bukti'] . ' ' . $data['tglbukti'] . ' ' . $nobuktiNonPosting;
+                            }
+                        } else {
+                            $keteranganPostingNon['nonposting'] =  '(NON POSTING) PENGEMBALIAN PINJAMAN ' . $nobuktiNonPosting;
+                        }
+                        $nominalPostingNon['nonposting'] += $data['nominal'][$i];
                     } else {
-                        $coakredit_detail[] = $data['coa'];
+                        if ($firstBuktiPosting == '') {
+                            $nobuktiPosting = $nobuktiPosting . $nobuktipengeluarantrucking;
+                            $coakreditPostingNon['posting'] = $data['coa'];
+                            $coadebet_detail[] = $coadebet;
+                            $tgljatuhtempo[] = date('Y-m-d', strtotime($data['tglbukti']));
+                            $firstBuktiPosting = $nobuktipengeluarantrucking;
+                        } else {
+                            $nobuktiPosting = $nobuktiPosting . ', ' . $nobuktipengeluarantrucking;
+                        }
+                        if ($tanpaprosesnobukti == 3) {
+                            if ($fetchFormat->kodepenerimaan == 'PJP') {
+                                $keteranganPostingNon['posting'] =  '(POSTING) PENGEMBALIAN PINJAMAN DARI PENDAPATAN SUPIR' . $data['pendapatansupir_bukti'] . ' ' . $data['tglbukti'] . ' ' . $nobuktiPosting;
+                            }
+                        } else {
+                            $keteranganPostingNon['posting'] =  '(POSTING) PENGEMBALIAN PINJAMAN ' . $nobuktiPosting;
+                        }
+                        $nominalPostingNon['posting'] += $data['nominal'][$i];
                     }
                 } else {
                     $coakredit_detail[] = $data['coa'];
@@ -906,16 +948,39 @@ class PenerimaanTruckingHeader extends MyModel
             } else {
                 $coakredit_detail[] = $data['coa'];
             }
-            $coadebet_detail[] = $coadebet;
-            $nominal_detail[] = $data['nominal'][$i];
-            if ($fetchFormat->kodepenerimaan == 'DPO') {
-                $namasupir = DB::table("supir")->from(DB::raw("supir with (readuncommitted)"))->select('namasupir')->where('id', $data['supir_id'][$i])->first();
-                $keterangan_detail[] = "DEPOSITO $namasupir->namasupir " . $data['keterangan'][$i];
-            } else {
-                $keterangan_detail[] = $data['keterangan'][$i];
+
+            if ($fetchFormat->kodepenerimaan != 'PJP') {
+
+                $coadebet_detail[] = $coadebet;
+                $nominal_detail[] = $data['nominal'][$i];
+                if ($fetchFormat->kodepenerimaan == 'DPO') {
+                    $namasupir = DB::table("supir")->from(DB::raw("supir with (readuncommitted)"))->select('namasupir')->where('id', $data['supir_id'][$i])->first();
+                    $keterangan_detail[] = "DEPOSITO $namasupir->namasupir " . $data['keterangan'][$i];
+                } else {
+                    $keterangan_detail[] = $data['keterangan'][$i];
+                }
+                $tgljatuhtempo[] = date('Y-m-d', strtotime($data['tglbukti']));
+                $totalDeposito = $totalDeposito + $data['nominal'][$i];
             }
-            $tgljatuhtempo[] = date('Y-m-d', strtotime($data['tglbukti']));
-            $totalDeposito = $totalDeposito + $data['nominal'][$i];
+        }
+
+        // convert nominal dan coa pjp
+        if ($fetchFormat->kodepenerimaan == 'PJP') {
+            $nominalPostingNon = array_filter($nominalPostingNon, function ($value) {
+                return $value !== 0;
+            });
+            $coakreditPostingNon = array_filter($coakreditPostingNon, function ($value) {
+                return $value !== '';
+            });
+            $keteranganPostingNon = array_filter($keteranganPostingNon, function ($value) {
+                return $value !== '';
+            });
+            $nominalPostingNon = array_values($nominalPostingNon);
+            $coakreditPostingNon = array_values($coakreditPostingNon);
+            $keteranganPostingNon = array_values($keteranganPostingNon);
+            $nominal_detail = $nominalPostingNon;
+            $coakredit_detail = $coakreditPostingNon;
+            $keterangan_detail = $keteranganPostingNon;
         }
 
         $penerimaanTruckingDetailLogTrail = (new LogTrail())->processStore([
@@ -928,24 +993,23 @@ class PenerimaanTruckingHeader extends MyModel
             'modifiedby' => auth('api')->user()->user
         ]);
 
-        //if tanpaprosesnobukti NOT 2 STORE PENERIMAAN
+        //if tanpaprosesnobukti NOT 2 STORE PENERIMAAN karena 
+        // tanpaprosesnobukti = 2 dari gaji supir (tidak posting)
         if ($tanpaprosesnobukti != 2) {
 
             // tanpaprosesnobukti = 3 dari pendatapan supir jakarta
             if ($tanpaprosesnobukti == 3) {
-                $coakredit_detail = [];
-                $coadebet_detail = [];
-                $nominal_detail = [];
-                $keterangan_detail = [];
-                $tgljatuhtempo = [];
-                $tgljatuhtempo[] = date('Y-m-d', strtotime($data['tglbukti']));
-                $coakredit_detail[] = $data['coa'];
-                $coadebet_detail[] = $coadebet;
-                $nominal_detail[] = $totalDeposito;
-                if ($fetchFormat->kodepenerimaan == 'PJP') {
-                    $keterangan_detail[] = 'PENGEMBALIAN PINJAMAN DARI PENDAPATAN SUPIR ' . $data['pendapatansupir_bukti'] . ' ' . $data['tglbukti'];
-                }
                 if ($fetchFormat->kodepenerimaan == 'DPO') {
+
+                    $coakredit_detail = [];
+                    $coadebet_detail = [];
+                    $nominal_detail = [];
+                    $keterangan_detail = [];
+                    $tgljatuhtempo = [];
+                    $tgljatuhtempo[] = date('Y-m-d', strtotime($data['tglbukti']));
+                    $coakredit_detail[] = $data['coa'];
+                    $coadebet_detail[] = $coadebet;
+                    $nominal_detail[] = $totalDeposito;
                     $keterangan_detail[] = 'DEPOSITO DARI PENDAPATAN SUPIR ' . $data['pendapatansupir_bukti'] . ' ' . $data['tglbukti'];
                 }
             }
@@ -1153,6 +1217,14 @@ class PenerimaanTruckingHeader extends MyModel
 
             $penerimaanTruckingDetails = [];
             $totalDeposito = 0;
+            $firstBuktiPosting = '';
+            $firstBuktiNonPosting = '';
+            $nominalPostingNon = ['nonposting' => 0, 'posting' => 0];
+            $coakreditPostingNon = ['nonposting' => '', 'posting' => ''];
+            $keteranganPostingNon = ['nonposting' => '', 'posting' => ''];
+            $nobuktiPosting = '';
+            $nobuktiNonPosting = '';
+
             for ($i = 0; $i < count($data['nominal']); $i++) {
                 $penerimaanTruckingDetail = (new PenerimaanTruckingDetail())->processStore($penerimaanTruckingHeader, [
                     'penerimaantruckingheader_id' => $penerimaanTruckingHeader->id,
@@ -1164,6 +1236,7 @@ class PenerimaanTruckingHeader extends MyModel
                     'nominal' =>  $data['nominal'][$i],
                     'modifiedby' => $penerimaanTruckingHeader->modifiedby,
                 ]);
+                $nobuktipengeluarantrucking = $data['pengeluarantruckingheader_nobukti'][$i] ?? '';
                 $penerimaanDetails[] = $penerimaanTruckingDetail->toArray();
                 if ($fetchFormat->kodepenerimaan == 'PJP') {
                     $queryposting = db::table('pengeluarantruckingheader')->from(db::raw("pengeluarantruckingheader a with (readuncommitted)"))
@@ -1176,47 +1249,96 @@ class PenerimaanTruckingHeader extends MyModel
                             ->where('text', 'BUKAN POSTING')
                             ->first()->id ?? 0;
                         if ($bukanposting == $queryposting->statusposting) {
-                            $coakredit_detail[] =  $queryposting->coa ?? $data['coa'];
+                            if ($firstBuktiNonPosting == '') {
+                                $nobuktiNonPosting = $nobuktiNonPosting . $nobuktipengeluarantrucking;
+                                $coakreditPostingNon['nonposting'] =  $queryposting->coa ?? $data['coa'];
+                                $coadebet_detail[] = $coadebet;
+                                $tgljatuhtempo[] = date('Y-m-d', strtotime($data['tglbukti']));
+                                $firstBuktiNonPosting = $nobuktipengeluarantrucking;
+                            } else {
+                                $nobuktiNonPosting = $nobuktiNonPosting . ', ' . $nobuktipengeluarantrucking;
+                            }
+                            if ($tanpaprosesnobukti == 3) {
+                                if ($fetchFormat->kodepenerimaan == 'PJP') {
+                                    $keteranganPostingNon['nonposting'] =  '(NON POSTING) PENGEMBALIAN PINJAMAN DARI PENDAPATAN SUPIR ' . $data['pendapatansupir_bukti'] . ' ' . $data['tglbukti'] . ' ' . $nobuktiNonPosting;
+                                }
+                            } else {
+                                $keteranganPostingNon['nonposting'] =  '(NON POSTING) PENGEMBALIAN PINJAMAN ' . $nobuktiNonPosting;
+                            }
+                            $nominalPostingNon['nonposting'] += $data['nominal'][$i];
                         } else {
-                            $coakredit_detail[] = $data['coa'];
+                            if ($firstBuktiPosting == '') {
+                                $nobuktiPosting = $nobuktiPosting . $nobuktipengeluarantrucking;
+                                $coakreditPostingNon['posting'] = $data['coa'];
+                                $coadebet_detail[] = $coadebet;
+                                $tgljatuhtempo[] = date('Y-m-d', strtotime($data['tglbukti']));
+                                $firstBuktiPosting = $nobuktipengeluarantrucking;
+                            } else {
+                                $nobuktiPosting = $nobuktiPosting . ', ' . $nobuktipengeluarantrucking;
+                            }
+                            if ($tanpaprosesnobukti == 3) {
+                                if ($fetchFormat->kodepenerimaan == 'PJP') {
+                                    $keteranganPostingNon['posting'] =  '(POSTING) PENGEMBALIAN PINJAMAN DARI PENDAPATAN SUPIR' . $data['pendapatansupir_bukti'] . ' ' . $data['tglbukti'] . ' ' . $nobuktiPosting;
+                                }
+                            } else {
+                                $keteranganPostingNon['posting'] =  '(POSTING) PENGEMBALIAN PINJAMAN ' . $nobuktiPosting;
+                            }
+                            $nominalPostingNon['posting'] += $data['nominal'][$i];
                         }
                     } else {
                         $coakredit_detail[] = $data['coa'];
                     }
                 } else {
                     $coakredit_detail[] = $data['coa'];
-                }                
-                $coadebet_detail[] = $coadebet;
-                $nominal_detail[] = $data['nominal'][$i];
-                if ($fetchFormat->kodepenerimaan == 'DPO') {
-                    $namasupir = DB::table("supir")->from(DB::raw("supir with (readuncommitted)"))->select('namasupir')->where('id', $data['supir_id'][$i])->first();
-                    $keterangan_detail[] = "DEPOSITO $namasupir->namasupir " . $data['keterangan'][$i];
-                } else {
-                    $keterangan_detail[] = $data['keterangan'][$i];
                 }
-                $tgljatuhtempo[] = date('Y-m-d', strtotime($data['tglbukti']));
-                $totalDeposito = $totalDeposito + $data['nominal'][$i];
+                if ($fetchFormat->kodepenerimaan != 'PJP') {
+                    $coadebet_detail[] = $coadebet;
+                    $nominal_detail[] = $data['nominal'][$i];
+                    if ($fetchFormat->kodepenerimaan == 'DPO') {
+                        $namasupir = DB::table("supir")->from(DB::raw("supir with (readuncommitted)"))->select('namasupir')->where('id', $data['supir_id'][$i])->first();
+                        $keterangan_detail[] = "DEPOSITO $namasupir->namasupir " . $data['keterangan'][$i];
+                    } else {
+                        $keterangan_detail[] = $data['keterangan'][$i];
+                    }
+                    $tgljatuhtempo[] = date('Y-m-d', strtotime($data['tglbukti']));
+                    $totalDeposito = $totalDeposito + $data['nominal'][$i];
+                }
             }
 
+            // convert nominal dan coa pjp
+            if ($fetchFormat->kodepenerimaan == 'PJP') {
+                $nominalPostingNon = array_filter($nominalPostingNon, function ($value) {
+                    return $value !== 0;
+                });
+                $coakreditPostingNon = array_filter($coakreditPostingNon, function ($value) {
+                    return $value !== '';
+                });
+                $keteranganPostingNon = array_filter($keteranganPostingNon, function ($value) {
+                    return $value !== '';
+                });
+                $nominalPostingNon = array_values($nominalPostingNon);
+                $coakreditPostingNon = array_values($coakreditPostingNon);
+                $keteranganPostingNon = array_values($keteranganPostingNon);
+                $nominal_detail = $nominalPostingNon;
+                $coakredit_detail = $coakreditPostingNon;
+                $keterangan_detail = $keteranganPostingNon;
+            }
 
             //if tanpaprosesnobukti NOT 2 STORE PENERIMAAN
             if ($tanpaprosesnobukti != 2) {
 
                 // tanpaprosesnobukti = 3 dari pendapatan supir
                 if ($tanpaprosesnobukti == 3) {
-                    $coakredit_detail = [];
-                    $coadebet_detail = [];
-                    $nominal_detail = [];
-                    $keterangan_detail = [];
-                    $tgljatuhtempo = [];
-                    $tgljatuhtempo[] = date('Y-m-d', strtotime($data['tglbukti']));
-                    $coakredit_detail[] = $data['coa'];
-                    $coadebet_detail[] = $coadebet;
-                    $nominal_detail[] = $totalDeposito;
-                    if ($fetchFormat->kodepenerimaan == 'PJP') {
-                        $keterangan_detail[] = 'PENGEMBALIAN PINJAMAN DARI PENDAPATAN SUPIR ' . $data['pendapatansupir_bukti'] . ' ' . $data['tglbukti'];
-                    }
                     if ($fetchFormat->kodepenerimaan == 'DPO') {
+                        $coakredit_detail = [];
+                        $coadebet_detail = [];
+                        $nominal_detail = [];
+                        $keterangan_detail = [];
+                        $tgljatuhtempo = [];
+                        $tgljatuhtempo[] = date('Y-m-d', strtotime($data['tglbukti']));
+                        $coakredit_detail[] = $data['coa'];
+                        $coadebet_detail[] = $coadebet;
+                        $nominal_detail[] = $totalDeposito;
                         $keterangan_detail[] = 'DEPOSITO DARI PENDAPATAN SUPIR ' . $data['pendapatansupir_bukti'] . ' ' . $data['tglbukti'];
                     }
                 }
