@@ -350,7 +350,9 @@ class PengeluaranStokHeader extends MyModel
             "statusedit.id as  statusedit_id",
             DB::raw("'" . $getJudul->text . "' as judul"),
             DB::raw("'Tgl Cetak:'+format(getdate(),'dd-MM-yyyy HH:mm:ss')as tglcetak"),
-            DB::raw(" 'User :" . auth('api')->user()->name . "' as usercetak")
+            DB::raw(" 'User :" . auth('api')->user()->name . "' as usercetak"),
+            db::raw("cast((format(penerimaan.tglbukti,'yyyy/MM')+'/1') as tgldariheaderpenerimaanstok"),
+            db::raw("cast(format((cast((format(penerimaan.tglbukti,'yyyy/MM')+'/1') as datetime)+32),'yyyy/MM')+'/01' as datetime)-1 as tglsampaiheaderpenerimaanstok"),
         );
     }
 
