@@ -514,10 +514,21 @@ class PengeluaranStokDetailFifo extends MyModel
             $pengeluaranstokdetail  = PengeluaranStokDetail::lockForUpdate()->where("stok_id", $item['stok_id'])
                 ->where("nobukti", $data['nobukti'])
                 ->firstorFail();
-
+          
             $hrgsat = $totalharga / $data['qty'];
+        
+            if ($data['pengeluaranstok_id']==2) {
+                $totdetailharga=$data['detail_harga'];
+                $selisih=$hrgsat-$totdetailharga;
+       
+                $hrgsat=$data['detail_harga'];
+                $totalharga=$hrgsat*$data['qty'];
+            } else  {
+                $selisih=0;
+            }
             $pengeluaranstokdetail->harga =   $hrgsat;
             $pengeluaranstokdetail->total =  $totalharga;
+            $pengeluaranstokdetail->selisihhargafifo =  $selisih;
             // $pengeluaranstokdetail->save();
             if (!$pengeluaranstokdetail->save()) {
                 throw new \Exception("Error storing pengeluaran Stok Detail  update fifo. ");
