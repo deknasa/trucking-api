@@ -668,10 +668,13 @@ class HutangBayarHeader extends MyModel
             $hutangBayarHeader->nobukti = $nobukti;
             $hutangBayarHeader->tglbukti = date('Y-m-d', strtotime($data['tglbukti']));
         }
+
         $hutangBayarHeader->tglcair = date('Y-m-d', strtotime($data['tglcair']));
         $hutangBayarHeader->supplier_id = $data['supplier_id'] ?? '';
         $hutangBayarHeader->modifiedby = auth('api')->user()->name;
+
         $hutangBayarHeader->coa = $memo['JURNAL'];
+
         $hutangBayarHeader->statusapproval = $statusApproval->id ?? $data['statusapproval'];
         $hutangBayarHeader->statusbayarhutang = $bayarhutang;
 
@@ -707,13 +710,20 @@ class HutangBayarHeader extends MyModel
         } else {
             $coa = $memo['JURNAL'];
         }
+
         $langsungcair = Parameter::from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS LANGSUNG CAIR')->where('text', 'TIDAK LANGSUNG CAIR')->first();
         $queryalatbayar = AlatBayar::from(db::raw("alatbayar a with (readuncommitted)"))->select('a.coa')->where('a.id', '=', $data['alatbayar_id'])->where('a.statuslangsungcair', '=', $langsungcair->id)->first();
 
+        if ($hutangBayarHeader->bank_id == '') {
+            $bankid = 0;
+        } else {
+            $bankid = $hutangBayarHeader->bank_id ?? 0;
+        }
+
         $bank = Bank::from(DB::raw("bank with (readuncommitted)"))
-            ->select('bank.coa')->whereRaw("bank.id = $hutangBayarHeader->bank_id")
+            ->select('bank.coa')->whereRaw("bank.id = " . $bankid)
             ->first();
-        $coakredits = $bank->coa;
+        $coakredits = $bank->coa ?? '';
         if (isset($queryalatbayar)) {
             $coakredits =  $queryalatbayar->coa;
         }
@@ -744,6 +754,7 @@ class HutangBayarHeader extends MyModel
             $hutangBayarDetails[] = $hutangBayarDetail->toArray();
             $nominal_detail[] = $data['bayar'][$i] - $data['potongan'][$i];
             $keterangan_detail[] = $data['keterangan'][$i];
+
             $coadebet[] = $coa;
             $coakredit[] = $coakredits;
             $tgljatuhtempo[] = $hutang->tgljatuhtempo;
@@ -828,7 +839,7 @@ class HutangBayarHeader extends MyModel
             /*DELETE EXISTING Pengeluaran*/
             $pengeluaranDetail = PengeluaranDetail::where('pengeluaran_id', $pengeluaranHeader->id)->lockForUpdate()->delete();
             $pengeluaranHeader->delete();
-        } 
+        }
 
 
         /*DELETE EXISTING hutang bayar*/
