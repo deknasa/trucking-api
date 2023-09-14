@@ -30,6 +30,7 @@ class PenerimaanStokDetail extends MyModel
 
         $query = DB::table($this->table)->from(DB::raw("$this->table with (readuncommitted)"));
         $spbp = DB::table('penerimaanstok')->where('kodepenerimaan', 'SPBP')->first();
+        $rtr = DB::table('pengeluaranstok')->where('kodepengeluaran', 'RTR')->first();
         $spbs = Parameter::where('grp', 'REUSE STOK')->where('subgrp', 'REUSE STOK')->first();
 
         if (isset(request()->id)) {
@@ -104,8 +105,43 @@ class PenerimaanStokDetail extends MyModel
                 }
             }
 
+            if (request()->pengeluaranstok_id == $rtr->id) {
+                
+                $query->select(
+                    DB::raw('SUM(pengeluaranstokdetail.qty) as qty'), 
+                    "$this->table.nobukti", 
+                    "$this->table.stok_id", 
+                    'stok.namastok as stok', 
+                    // "$this->table.qty"', 
+                    DB::raw("$this->table.qty - COALESCE(SUM(pengeluaranstokdetail.qty), 0) as qty"),
 
-            $this->totalNominal = $query->sum('total');
+                    "$this->table.harga", 
+                    "$this->table.persentasediscount", 
+                    "$this->table.penerimaanstok_nobukti", 
+                    "$this->table.nominaldiscount", 
+                    "$this->table.total", 
+                    "$this->table.keterangan"
+                )
+                ->leftJoin('pengeluaranstokdetail', 'PenerimaanStokDetail.stok_id', '=', 'pengeluaranstokdetail.stok_id')
+                ->groupBy(
+                    "$this->table.nobukti", 
+                    "$this->table.stok_id", 
+                    'stok.namastok', 
+                    "$this->table.qty", 
+                    "$this->table.harga", 
+                    "$this->table.persentasediscount", 
+                    "$this->table.penerimaanstok_nobukti", 
+                    "$this->table.nominaldiscount", 
+                    "$this->table.total", 
+                    "$this->table.keterangan"
+                    )
+                ->havingRaw("$this->table.qty > COALESCE(SUM(pengeluaranstokdetail.qty), 0)");
+                return $query->get();
+
+                
+            }
+
+            $this->totalNominal = $query->sum($this->table.'.total');
             $this->filter($query);
             $this->totalRows = $query->count();
             $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;

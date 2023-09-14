@@ -66,4 +66,8 @@ class NotaDebetDetailController extends Controller
             DB::rollBack();
         }
     }
+    public function addrow(StoreNotaDebetDetailRequest $request)
+    {
+        return true;
+    }
 }

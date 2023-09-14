@@ -8,7 +8,9 @@ use App\Rules\CekMinusSisaPelunasanPiutang;
 use App\Rules\PotonganBayarPelunasanPiutang;
 use App\Rules\RequiredCoaPotonganPelunasanPiutang;
 use App\Rules\RequiredKetPotonganPelunasanPiutang;
+use App\Rules\RequiredLebihBayarPelunasanPiutang;
 use App\Rules\RequiredPotonganPelunasanPiutang;
+use App\Rules\RequiredStatusNotaDebetPelunasanPiutang;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
@@ -37,9 +39,10 @@ class StorePelunasanPiutangDetailRequest extends FormRequest
             'keterangan.*' => 'required',
             'sisa.*' => ['required', 'numeric', 'min:0', new CekMinusSisaPelunasanPiutang()],
             'potongan.*' => ['numeric', 'min:0', new PotonganBayarPelunasanPiutang(), new RequiredPotonganPelunasanPiutang()],
-            'nominallebihbayar.*' => ['numeric', 'min:0'],
+            'nominallebihbayar.*' => ['numeric', 'min:0', new RequiredLebihBayarPelunasanPiutang()],
             'keteranganpotongan.*' => new RequiredKetPotonganPelunasanPiutang(),
-            'coapotongan.*' => new RequiredCoaPotonganPelunasanPiutang()
+            'statusnotakredit.*' => new RequiredCoaPotonganPelunasanPiutang(),
+            'statusnotadebet.*' => new RequiredStatusNotaDebetPelunasanPiutang(),
         ];
     }
 }

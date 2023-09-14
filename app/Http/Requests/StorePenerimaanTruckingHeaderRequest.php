@@ -135,7 +135,7 @@ class StorePenerimaanTruckingHeaderRequest extends FormRequest
                 'bank' => [$ruleBank, $bank, 'required'],
                 'bank_id' => [Rule::in($bankIds), 'required', 'min:1', 'numeric'],
                 'supir' => ['required', $supir, new ValidasiDetail($jumlahdetail),
-                new ValidasiPenerimaanTrucking()
+                // new ValidasiPenerimaanTrucking()
             ],
                 'supirheader_id' => [
                     'required', $supirId, 'numeric', 'min:1'

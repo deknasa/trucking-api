@@ -89,6 +89,7 @@ class PelunasanPiutangHeaderController extends Controller
                 'alatbayar_id' => $request->alatbayar_id,
                 'agen_id' => $request->agen_id,
                 'agen' => $request->agen,
+                'statuspelunasan' => $request->statuspelunasan,
                 'nowarkat' => $request->nowarkat,
                 'piutang_id' => $request->piutang_id,
                 'piutang_nobukti' => $request->piutang_nobukti,
@@ -96,9 +97,10 @@ class PelunasanPiutangHeaderController extends Controller
                 'bayar' => $request->bayar,
                 'keterangan' => $request->keterangan,
                 'potongan' => $request->potongan,
-                'coapotongan' => $request->coapotongan,
+                'statusnotakredit' => $request->statusnotakredit,
                 'keteranganpotongan' => $request->keteranganpotongan,
                 'nominallebihbayar' => $request->nominallebihbayar,
+                'statusnotadebet' => $request->statusnotadebet
             ];
             $pelunasanPiutangHeader = (new PelunasanPiutangHeader())->processStore($data);
             $pelunasanPiutangHeader->position = $this->getPosition($pelunasanPiutangHeader, $pelunasanPiutangHeader->getTable())->position;
@@ -157,9 +159,10 @@ class PelunasanPiutangHeaderController extends Controller
                 'bayar' => $request->bayar,
                 'keterangan' => $request->keterangan,
                 'potongan' => $request->potongan,
-                'coapotongan' => $request->coapotongan,
+                'statusnotakredit' => $request->statusnotakredit,
                 'keteranganpotongan' => $request->keteranganpotongan,
                 'nominallebihbayar' => $request->nominallebihbayar,
+                'statusnotadebet' => $request->statusnotadebet
             ];
             $pelunasanPiutangHeader = (new PelunasanPiutangHeader())->processUpdate($pelunasanpiutangheader, $data);
             $pelunasanPiutangHeader->position = $this->getPosition($pelunasanPiutangHeader, $pelunasanPiutangHeader->getTable())->position;
