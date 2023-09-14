@@ -738,54 +738,54 @@ class Trado extends MyModel
                 $approvalTradoKeterangan->save();
             }
 
-            $param1 = $trado->id;
-            $param2 = $trado->modifiedby;
-            $stokgudang = Stok::from(DB::raw("stok with (readuncommitted)"))
-                ->select(DB::raw(
-                    "stok.id as stok_id,
-                    0  as gudang_id,"
-                        . $param1 . " as trado_id,
-                0 as gandengan_id,
-                0 as qty,'"
-                        . $param2 . "' as modifiedby"
-                ))
-                ->leftjoin('stokpersediaan', function ($join) use ($param1) {
-                    $join->on('stokpersediaan.stok_id', '=', 'stok.id');
-                    $join->on('stokpersediaan.trado_id', '=', DB::raw("'" . $param1 . "'"));
-                })
-                ->where(DB::raw("isnull(stokpersediaan.id,0)"), '=', 0);
+            // $param1 = $trado->id;
+            // $param2 = $trado->modifiedby;
+            // $stokgudang = Stok::from(DB::raw("stok with (readuncommitted)"))
+            //     ->select(DB::raw(
+            //         "stok.id as stok_id,
+            //         0  as gudang_id,"
+            //             . $param1 . " as trado_id,
+            //     0 as gandengan_id,
+            //     0 as qty,'"
+            //             . $param2 . "' as modifiedby"
+            //     ))
+            //     ->leftjoin('stokpersediaan', function ($join) use ($param1) {
+            //         $join->on('stokpersediaan.stok_id', '=', 'stok.id');
+            //         $join->on('stokpersediaan.trado_id', '=', DB::raw("'" . $param1 . "'"));
+            //     })
+            //     ->where(DB::raw("isnull(stokpersediaan.id,0)"), '=', 0);
 
-            $datadetail = json_decode($stokgudang->get(), true);
+            // $datadetail = json_decode($stokgudang->get(), true);
 
-            $dataexist = $stokgudang->exists();
-            $detaillogtrail = [];
-            foreach ($datadetail as $item) {
+            // $dataexist = $stokgudang->exists();
+            // $detaillogtrail = [];
+            // foreach ($datadetail as $item) {
 
 
-                $stokpersediaan = new StokPersediaan();
-                $stokpersediaan->stok_id = $item['stok_id'];
-                $stokpersediaan->gudang_id = $item['gudang_id'];
-                $stokpersediaan->trado_id = $item['trado_id'];
-                $stokpersediaan->gandengan_id = $item['gandengan_id'];
-                $stokpersediaan->qty = $item['qty'];
-                $stokpersediaan->modifiedby = $item['modifiedby'];
-                if (!$stokpersediaan->save()) {
-                    throw new \Exception('Error store stok persediaan.');
-                }
-                $detaillogtrail[] = $stokpersediaan->toArray();
-            }
+            //     $stokpersediaan = new StokPersediaan();
+            //     $stokpersediaan->stok_id = $item['stok_id'];
+            //     $stokpersediaan->gudang_id = $item['gudang_id'];
+            //     $stokpersediaan->trado_id = $item['trado_id'];
+            //     $stokpersediaan->gandengan_id = $item['gandengan_id'];
+            //     $stokpersediaan->qty = $item['qty'];
+            //     $stokpersediaan->modifiedby = $item['modifiedby'];
+            //     if (!$stokpersediaan->save()) {
+            //         throw new \Exception('Error store stok persediaan.');
+            //     }
+            //     $detaillogtrail[] = $stokpersediaan->toArray();
+            // }
 
-            if ($dataexist == true) {
-                (new LogTrail())->processStore([
-                    'namatabel' => strtoupper($stokpersediaan->getTable()),
-                    'postingdari' => 'STOK PERSEDIAAN',
-                    'idtrans' => $stokpersediaan->id,
-                    'nobuktitrans' => $stokpersediaan->id,
-                    'aksi' => 'EDIT',
-                    'datajson' => json_encode($detaillogtrail),
-                    'modifiedby' => auth('api')->user()->name
-                ]);
-            }
+            // if ($dataexist == true) {
+            //     (new LogTrail())->processStore([
+            //         'namatabel' => strtoupper($stokpersediaan->getTable()),
+            //         'postingdari' => 'STOK PERSEDIAAN',
+            //         'idtrans' => $stokpersediaan->id,
+            //         'nobuktitrans' => $stokpersediaan->id,
+            //         'aksi' => 'EDIT',
+            //         'datajson' => json_encode($detaillogtrail),
+            //         'modifiedby' => auth('api')->user()->name
+            //     ]);
+            // }
 
             return $trado;
         } catch (\Throwable $th) {
@@ -852,51 +852,51 @@ class Trado extends MyModel
                 $approvalTradoKeterangan->save();
             }
 
-            $param1 = $trado->id;
-            $param2 = $trado->modifiedby;
-            $stokgudang = Stok::from(DB::raw("stok with (readuncommitted)"))
-                ->select(DB::raw(
-                    "stok.id as stok_id,
-                    0  as gudang_id,"
-                        . $param1 . " as trado_id,
-                0 as gandengan_id,
-                0 as qty,'"
-                        . $param2 . "' as modifiedby"
-                ))
-                ->leftjoin('stokpersediaan', function ($join) use ($param1) {
-                    $join->on('stokpersediaan.stok_id', '=', 'stok.id');
-                    $join->on('stokpersediaan.trado_id', '=', DB::raw("'" . $param1 . "'"));
-                })
-                ->where(DB::raw("isnull(stokpersediaan.id,0)"), '=', 0);
-            $datadetail = json_decode($stokgudang->get(), true);
+            // $param1 = $trado->id;
+            // $param2 = $trado->modifiedby;
+            // $stokgudang = Stok::from(DB::raw("stok with (readuncommitted)"))
+            //     ->select(DB::raw(
+            //         "stok.id as stok_id,
+            //         0  as gudang_id,"
+            //             . $param1 . " as trado_id,
+            //     0 as gandengan_id,
+            //     0 as qty,'"
+            //             . $param2 . "' as modifiedby"
+            //     ))
+            //     ->leftjoin('stokpersediaan', function ($join) use ($param1) {
+            //         $join->on('stokpersediaan.stok_id', '=', 'stok.id');
+            //         $join->on('stokpersediaan.trado_id', '=', DB::raw("'" . $param1 . "'"));
+            //     })
+            //     ->where(DB::raw("isnull(stokpersediaan.id,0)"), '=', 0);
+            // $datadetail = json_decode($stokgudang->get(), true);
 
-            $dataexist = $stokgudang->exists();
-            $detaillogtrail = [];
-            foreach ($datadetail as $item) {
-                $stokpersediaan = new StokPersediaan();
-                $stokpersediaan->stok_id = $item['stok_id'];
-                $stokpersediaan->gudang_id = $item['gudang_id'];
-                $stokpersediaan->trado_id = $item['trado_id'];
-                $stokpersediaan->gandengan_id = $item['gandengan_id'];
-                $stokpersediaan->qty = $item['qty'];
-                $stokpersediaan->modifiedby = $item['modifiedby'];
-                if (!$stokpersediaan->save()) {
-                    throw new \Exception('Error store stok persediaan.');
-                }
-                $detaillogtrail[] = $stokpersediaan->toArray();
-            }
+            // $dataexist = $stokgudang->exists();
+            // $detaillogtrail = [];
+            // foreach ($datadetail as $item) {
+            //     $stokpersediaan = new StokPersediaan();
+            //     $stokpersediaan->stok_id = $item['stok_id'];
+            //     $stokpersediaan->gudang_id = $item['gudang_id'];
+            //     $stokpersediaan->trado_id = $item['trado_id'];
+            //     $stokpersediaan->gandengan_id = $item['gandengan_id'];
+            //     $stokpersediaan->qty = $item['qty'];
+            //     $stokpersediaan->modifiedby = $item['modifiedby'];
+            //     if (!$stokpersediaan->save()) {
+            //         throw new \Exception('Error store stok persediaan.');
+            //     }
+            //     $detaillogtrail[] = $stokpersediaan->toArray();
+            // }
 
-            if ($dataexist == true) {
-                (new LogTrail())->processStore([
-                    'namatabel' => strtoupper($stokpersediaan->getTable()),
-                    'postingdari' => 'STOK PERSEDIAAN',
-                    'idtrans' => $trado->id,
-                    'nobuktitrans' => $trado->id,
-                    'aksi' => 'EDIT',
-                    'datajson' => json_encode($detaillogtrail),
-                    'modifiedby' => $trado->modifiedby
-                ]);
-            }
+            // if ($dataexist == true) {
+            //     (new LogTrail())->processStore([
+            //         'namatabel' => strtoupper($stokpersediaan->getTable()),
+            //         'postingdari' => 'STOK PERSEDIAAN',
+            //         'idtrans' => $trado->id,
+            //         'nobuktitrans' => $trado->id,
+            //         'aksi' => 'EDIT',
+            //         'datajson' => json_encode($detaillogtrail),
+            //         'modifiedby' => $trado->modifiedby
+            //     ]);
+            // }
             return $trado;
         } catch (\Throwable $th) {
             $this->deleteFiles($trado);
