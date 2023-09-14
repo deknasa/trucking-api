@@ -125,6 +125,7 @@ class KartuStok extends MyModel
                     'modifiedby',
                 ], $this->getlaporan($tgldari, $tglsampai, request()->stokdari_id, request()->stoksampai_id, $datafilter, 0, 0, 0));
             } else {
+                $filtergudang->text;
                 if (request()->filter == $filtergudang->id) {
                     DB::table($temtabel)->insertUsing([
                         'lokasi',
@@ -188,7 +189,7 @@ class KartuStok extends MyModel
                         'qtysaldo',
                         'nilaisaldo',
                         'modifiedby',
-                    ], $this->getlaporan($tgldari, $tglsampai, request()->stokdari_id, request()->stoksampai_id, request()->datafilter, 0, 0, $filtergudang->text));
+                    ], $this->getlaporan($tgldari, $tglsampai, request()->stokdari_id, request()->stoksampai_id, 0, 0, 0, $filtergudang->text));
                 }
             }
 
@@ -587,11 +588,18 @@ class KartuStok extends MyModel
         $tgl = date('Y-m-d', strtotime($tgldari));
 
 
+    
         $gudang_id = $gudang_id ?? 0;
         $trado_id = $trado_id ?? 0;
         $gandengan_id = $gandengan_id ?? 0;
+        // dump($gudang_id);
+        // dump($trado_id);
+        // dump($gandengan_id);
+        // dd( $filter);
 
         $temprekap = '##temprekap' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+
+
 
 
 
@@ -674,38 +682,7 @@ class KartuStok extends MyModel
                 ->groupBy('a.gandengan_id');
     
         }  else if ($filter=='GUDANG') {
-            $queryrekap = db::table('stok')->from(
-                DB::raw("stok as a1 with (readuncommitted)")
-            )
-                ->select(
-                    'a1.id as stok_id',
-                    'a.gudang_id',
-                    'a.trado_id',
-                    'a.gandengan_id',
-                    db::raw("max(a.lokasi) as lokasi"),
-                    db::raw("max(a1.namastok) as kodebarang"),
-                    db::raw("max(a1.namastok) as namabarang"),
-                    db::raw("'" . $tgl . "' as tglbukti"),
-                    db::raw("'SALDO AWAL' as nobukti"),
-                    db::raw("max(a1.kategori_id) as kategori_id"),
-                    db::raw("0 as qtymasuk"),
-                    db::raw("0 as nilaimasuk"),
-                    db::raw("0 as qtykeluar"),
-                    db::raw("0 as nilaikeluar"),
-                    DB::raw("sum(isnull(a.qtymasuk,0)-isnull(a.qtykeluar,0) ) as qtysaldo"),
-                    DB::raw("sum(isnull(a.nilaimasuk,0)-isnull(a.nilaikeluar,0) ) as nilaisaldo"),
-                    db::raw("'ADMIN' as modifiedby"),
-                    db::raw("0 as urutfifo"),
-                )
-                ->leftjoin(db::raw("kartustok a with (readuncommitted)"), 'a1.id', 'a.stok_id')
-                ->whereRaw("a.tglbukti<='" . $tglsaldo . "'")
-                ->whereRaw("(a1.id>=" . $stokdari . " and a1.id<=" . $stoksampai . ")")
-                ->whereRaw("(a.gudang_id=" . $gudang_id . " or " . $gudang_id . "=0)")
-                ->groupBy('a1.id')
-                ->groupBy('a.gudang_id')
-                ->groupBy('a.trado_id')
-                ->groupBy('a.gandengan_id'); 
-            }  else if ($filter=='TRADO') {
+             if ($gudang_id==0) {
                 $queryrekap = db::table('stok')->from(
                     DB::raw("stok as a1 with (readuncommitted)")
                 )
@@ -732,12 +709,47 @@ class KartuStok extends MyModel
                     ->leftjoin(db::raw("kartustok a with (readuncommitted)"), 'a1.id', 'a.stok_id')
                     ->whereRaw("a.tglbukti<='" . $tglsaldo . "'")
                     ->whereRaw("(a1.id>=" . $stokdari . " and a1.id<=" . $stoksampai . ")")
-                    ->whereRaw("(a.trado_id=" . $trado_id . " or " . $trado_id . "=0)")
+                    ->whereRaw("(isnull(a.gudang_id,0)<>0)")
                     ->groupBy('a1.id')
                     ->groupBy('a.gudang_id')
                     ->groupBy('a.trado_id')
                     ->groupBy('a.gandengan_id'); 
-                }  else if ($filter=='GANDENGAN') {
+             } else {
+                $queryrekap = db::table('stok')->from(
+                    DB::raw("stok as a1 with (readuncommitted)")
+                )
+                    ->select(
+                        'a1.id as stok_id',
+                        'a.gudang_id',
+                        'a.trado_id',
+                        'a.gandengan_id',
+                        db::raw("max(a.lokasi) as lokasi"),
+                        db::raw("max(a1.namastok) as kodebarang"),
+                        db::raw("max(a1.namastok) as namabarang"),
+                        db::raw("'" . $tgl . "' as tglbukti"),
+                        db::raw("'SALDO AWAL' as nobukti"),
+                        db::raw("max(a1.kategori_id) as kategori_id"),
+                        db::raw("0 as qtymasuk"),
+                        db::raw("0 as nilaimasuk"),
+                        db::raw("0 as qtykeluar"),
+                        db::raw("0 as nilaikeluar"),
+                        DB::raw("sum(isnull(a.qtymasuk,0)-isnull(a.qtykeluar,0) ) as qtysaldo"),
+                        DB::raw("sum(isnull(a.nilaimasuk,0)-isnull(a.nilaikeluar,0) ) as nilaisaldo"),
+                        db::raw("'ADMIN' as modifiedby"),
+                        db::raw("0 as urutfifo"),
+                    )
+                    ->leftjoin(db::raw("kartustok a with (readuncommitted)"), 'a1.id', 'a.stok_id')
+                    ->whereRaw("a.tglbukti<='" . $tglsaldo . "'")
+                    ->whereRaw("(a1.id>=" . $stokdari . " and a1.id<=" . $stoksampai . ")")
+                    ->whereRaw("(a.gudang_id=" . $gudang_id . ")")
+                    ->groupBy('a1.id')
+                    ->groupBy('a.gudang_id')
+                    ->groupBy('a.trado_id')
+                    ->groupBy('a.gandengan_id'); 
+             }
+           
+            }  else if ($filter=='TRADO') {
+                if ($trado_id==0) {
                     $queryrekap = db::table('stok')->from(
                         DB::raw("stok as a1 with (readuncommitted)")
                     )
@@ -764,11 +776,113 @@ class KartuStok extends MyModel
                         ->leftjoin(db::raw("kartustok a with (readuncommitted)"), 'a1.id', 'a.stok_id')
                         ->whereRaw("a.tglbukti<='" . $tglsaldo . "'")
                         ->whereRaw("(a1.id>=" . $stokdari . " and a1.id<=" . $stoksampai . ")")
-                        ->whereRaw("(a.gandengan_id=" . $gandengan_id . " or " . $gandengan_id . "=0)")
+                        ->whereRaw("(isnull(a.trado_id,0)<>0)")
                         ->groupBy('a1.id')
                         ->groupBy('a.gudang_id')
                         ->groupBy('a.trado_id')
                         ->groupBy('a.gandengan_id'); 
+                } else {
+                    $queryrekap = db::table('stok')->from(
+                        DB::raw("stok as a1 with (readuncommitted)")
+                    )
+                        ->select(
+                            'a1.id as stok_id',
+                            'a.gudang_id',
+                            'a.trado_id',
+                            'a.gandengan_id',
+                            db::raw("max(a.lokasi) as lokasi"),
+                            db::raw("max(a1.namastok) as kodebarang"),
+                            db::raw("max(a1.namastok) as namabarang"),
+                            db::raw("'" . $tgl . "' as tglbukti"),
+                            db::raw("'SALDO AWAL' as nobukti"),
+                            db::raw("max(a1.kategori_id) as kategori_id"),
+                            db::raw("0 as qtymasuk"),
+                            db::raw("0 as nilaimasuk"),
+                            db::raw("0 as qtykeluar"),
+                            db::raw("0 as nilaikeluar"),
+                            DB::raw("sum(isnull(a.qtymasuk,0)-isnull(a.qtykeluar,0) ) as qtysaldo"),
+                            DB::raw("sum(isnull(a.nilaimasuk,0)-isnull(a.nilaikeluar,0) ) as nilaisaldo"),
+                            db::raw("'ADMIN' as modifiedby"),
+                            db::raw("0 as urutfifo"),
+                        )
+                        ->leftjoin(db::raw("kartustok a with (readuncommitted)"), 'a1.id', 'a.stok_id')
+                        ->whereRaw("a.tglbukti<='" . $tglsaldo . "'")
+                        ->whereRaw("(a1.id>=" . $stokdari . " and a1.id<=" . $stoksampai . ")")
+                        ->whereRaw("(a.trado_id=" . $trado_id . ")")
+                        ->groupBy('a1.id')
+                        ->groupBy('a.gudang_id')
+                        ->groupBy('a.trado_id')
+                        ->groupBy('a.gandengan_id'); 
+                }
+              
+                }  else if ($filter=='GANDENGAN') {
+                    if ($trado_id==0) {
+                        $queryrekap = db::table('stok')->from(
+                            DB::raw("stok as a1 with (readuncommitted)")
+                        )
+                            ->select(
+                                'a1.id as stok_id',
+                                'a.gudang_id',
+                                'a.trado_id',
+                                'a.gandengan_id',
+                                db::raw("max(a.lokasi) as lokasi"),
+                                db::raw("max(a1.namastok) as kodebarang"),
+                                db::raw("max(a1.namastok) as namabarang"),
+                                db::raw("'" . $tgl . "' as tglbukti"),
+                                db::raw("'SALDO AWAL' as nobukti"),
+                                db::raw("max(a1.kategori_id) as kategori_id"),
+                                db::raw("0 as qtymasuk"),
+                                db::raw("0 as nilaimasuk"),
+                                db::raw("0 as qtykeluar"),
+                                db::raw("0 as nilaikeluar"),
+                                DB::raw("sum(isnull(a.qtymasuk,0)-isnull(a.qtykeluar,0) ) as qtysaldo"),
+                                DB::raw("sum(isnull(a.nilaimasuk,0)-isnull(a.nilaikeluar,0) ) as nilaisaldo"),
+                                db::raw("'ADMIN' as modifiedby"),
+                                db::raw("0 as urutfifo"),
+                            )
+                            ->leftjoin(db::raw("kartustok a with (readuncommitted)"), 'a1.id', 'a.stok_id')
+                            ->whereRaw("a.tglbukti<='" . $tglsaldo . "'")
+                            ->whereRaw("(a1.id>=" . $stokdari . " and a1.id<=" . $stoksampai . ")")
+                            ->whereRaw("(isnull(a.gandengan_id,0)<>0)")
+                            ->groupBy('a1.id')
+                            ->groupBy('a.gudang_id')
+                            ->groupBy('a.trado_id')
+                            ->groupBy('a.gandengan_id'); 
+    
+                    } else {
+                        $queryrekap = db::table('stok')->from(
+                            DB::raw("stok as a1 with (readuncommitted)")
+                        )
+                            ->select(
+                                'a1.id as stok_id',
+                                'a.gudang_id',
+                                'a.trado_id',
+                                'a.gandengan_id',
+                                db::raw("max(a.lokasi) as lokasi"),
+                                db::raw("max(a1.namastok) as kodebarang"),
+                                db::raw("max(a1.namastok) as namabarang"),
+                                db::raw("'" . $tgl . "' as tglbukti"),
+                                db::raw("'SALDO AWAL' as nobukti"),
+                                db::raw("max(a1.kategori_id) as kategori_id"),
+                                db::raw("0 as qtymasuk"),
+                                db::raw("0 as nilaimasuk"),
+                                db::raw("0 as qtykeluar"),
+                                db::raw("0 as nilaikeluar"),
+                                DB::raw("sum(isnull(a.qtymasuk,0)-isnull(a.qtykeluar,0) ) as qtysaldo"),
+                                DB::raw("sum(isnull(a.nilaimasuk,0)-isnull(a.nilaikeluar,0) ) as nilaisaldo"),
+                                db::raw("'ADMIN' as modifiedby"),
+                                db::raw("0 as urutfifo"),
+                            )
+                            ->leftjoin(db::raw("kartustok a with (readuncommitted)"), 'a1.id', 'a.stok_id')
+                            ->whereRaw("a.tglbukti<='" . $tglsaldo . "'")
+                            ->whereRaw("(a1.id>=" . $stokdari . " and a1.id<=" . $stoksampai . ")")
+                            ->whereRaw("(a.gandengan_id=" . $gandengan_id . ")")
+                            ->groupBy('a1.id')
+                            ->groupBy('a.gudang_id')
+                            ->groupBy('a.trado_id')
+                            ->groupBy('a.gandengan_id'); 
+       
+                    }
                 } else {
                     $queryrekap = db::table('stok')->from(
                         DB::raw("stok as a1 with (readuncommitted)")
@@ -866,98 +980,200 @@ class KartuStok extends MyModel
                 ->orderby('a.nobukti', 'asc')
                 ->orderby('a.id', 'asc');
         } else if ($filter=='GUDANG') {
-            $queryrekap = db::table('kartustok')->from(
-                DB::raw("kartustok as a with (readuncommitted)")
-            )
-                ->select(
-                    'a.stok_id',
-                    'a.gudang_id',
-                    'a.trado_id',
-                    'a.gandengan_id',
-                    db::raw("(a.lokasi) as lokasi"),
-                    db::raw("(a.kodebarang) as kodebarang"),
-                    db::raw("(a.namabarang) as namabarang"),
-                    db::raw("a.tglbukti as tglbukti"),
-                    db::raw("a.nobukti as nobukti"),
-                    db::raw("(a.kategori_id) as kategori_id"),
-                    db::raw("isnull(a.qtymasuk,0) as qtymasuk"),
-                    db::raw("isnull(a.nilaimasuk,0) as nilaimasuk"),
-                    db::raw("isnull(a.qtykeluar,0) as qtykeluar"),
-                    db::raw("isnull(a.nilaikeluar,0) as nilaikeluar"),
-                    DB::raw("0 as qtysaldo"),
-                    DB::raw("0 as nilaisaldo"),
-                    db::raw("a.modifiedby"),
-                    db::raw("a.urutfifo as urutfifo"),
+            if ($gudang_id==0) {
+                $queryrekap = db::table('kartustok')->from(
+                    DB::raw("kartustok as a with (readuncommitted)")
                 )
-                ->whereRaw("(a.tglBukti >='" . $tgldari . "' and a.tglbukti<='" . $tglsampai . "')")
-                ->whereRaw("(a.stok_id>=" . $stokdari . " and a.stok_id<=" . $stoksampai . ")")
-                ->whereRaw("(a.gudang_id=" . $gudang_id . " or " . $gudang_id . "=0)")
-                ->orderby('a.tglbukti', 'asc')
-                ->orderby('a.urutfifo', 'asc')
-                ->orderby('a.nobukti', 'asc')
-                ->orderby('a.id', 'asc');
+                    ->select(
+                        'a.stok_id',
+                        'a.gudang_id',
+                        'a.trado_id',
+                        'a.gandengan_id',
+                        db::raw("(a.lokasi) as lokasi"),
+                        db::raw("(a.kodebarang) as kodebarang"),
+                        db::raw("(a.namabarang) as namabarang"),
+                        db::raw("a.tglbukti as tglbukti"),
+                        db::raw("a.nobukti as nobukti"),
+                        db::raw("(a.kategori_id) as kategori_id"),
+                        db::raw("isnull(a.qtymasuk,0) as qtymasuk"),
+                        db::raw("isnull(a.nilaimasuk,0) as nilaimasuk"),
+                        db::raw("isnull(a.qtykeluar,0) as qtykeluar"),
+                        db::raw("isnull(a.nilaikeluar,0) as nilaikeluar"),
+                        DB::raw("0 as qtysaldo"),
+                        DB::raw("0 as nilaisaldo"),
+                        db::raw("a.modifiedby"),
+                        db::raw("a.urutfifo as urutfifo"),
+                    )
+                    ->whereRaw("(a.tglBukti >='" . $tgldari . "' and a.tglbukti<='" . $tglsampai . "')")
+                    ->whereRaw("(a.stok_id>=" . $stokdari . " and a.stok_id<=" . $stoksampai . ")")
+                    ->whereRaw("(isnull(a.gudang_id,0)<>0)")
+                    ->orderby('a.tglbukti', 'asc')
+                    ->orderby('a.urutfifo', 'asc')
+                    ->orderby('a.nobukti', 'asc')
+                    ->orderby('a.id', 'asc');
+            } else {
+                $queryrekap = db::table('kartustok')->from(
+                    DB::raw("kartustok as a with (readuncommitted)")
+                )
+                    ->select(
+                        'a.stok_id',
+                        'a.gudang_id',
+                        'a.trado_id',
+                        'a.gandengan_id',
+                        db::raw("(a.lokasi) as lokasi"),
+                        db::raw("(a.kodebarang) as kodebarang"),
+                        db::raw("(a.namabarang) as namabarang"),
+                        db::raw("a.tglbukti as tglbukti"),
+                        db::raw("a.nobukti as nobukti"),
+                        db::raw("(a.kategori_id) as kategori_id"),
+                        db::raw("isnull(a.qtymasuk,0) as qtymasuk"),
+                        db::raw("isnull(a.nilaimasuk,0) as nilaimasuk"),
+                        db::raw("isnull(a.qtykeluar,0) as qtykeluar"),
+                        db::raw("isnull(a.nilaikeluar,0) as nilaikeluar"),
+                        DB::raw("0 as qtysaldo"),
+                        DB::raw("0 as nilaisaldo"),
+                        db::raw("a.modifiedby"),
+                        db::raw("a.urutfifo as urutfifo"),
+                    )
+                    ->whereRaw("(a.tglBukti >='" . $tgldari . "' and a.tglbukti<='" . $tglsampai . "')")
+                    ->whereRaw("(a.stok_id>=" . $stokdari . " and a.stok_id<=" . $stoksampai . ")")
+                    ->whereRaw("(a.gudang_id=" . $gudang_id . ")")
+                    ->orderby('a.tglbukti', 'asc')
+                    ->orderby('a.urutfifo', 'asc')
+                    ->orderby('a.nobukti', 'asc')
+                    ->orderby('a.id', 'asc');
+            }
+         
         } else if ($filter=='TRADO') {
-            $queryrekap = db::table('kartustok')->from(
-                DB::raw("kartustok as a with (readuncommitted)")
-            )
-                ->select(
-                    'a.stok_id',
-                    'a.gudang_id',
-                    'a.trado_id',
-                    'a.gandengan_id',
-                    db::raw("(a.lokasi) as lokasi"),
-                    db::raw("(a.kodebarang) as kodebarang"),
-                    db::raw("(a.namabarang) as namabarang"),
-                    db::raw("a.tglbukti as tglbukti"),
-                    db::raw("a.nobukti as nobukti"),
-                    db::raw("(a.kategori_id) as kategori_id"),
-                    db::raw("isnull(a.qtymasuk,0) as qtymasuk"),
-                    db::raw("isnull(a.nilaimasuk,0) as nilaimasuk"),
-                    db::raw("isnull(a.qtykeluar,0) as qtykeluar"),
-                    db::raw("isnull(a.nilaikeluar,0) as nilaikeluar"),
-                    DB::raw("0 as qtysaldo"),
-                    DB::raw("0 as nilaisaldo"),
-                    db::raw("a.modifiedby"),
-                    db::raw("a.urutfifo as urutfifo"),
+            if ($trado_id==0) {
+                $queryrekap = db::table('kartustok')->from(
+                    DB::raw("kartustok as a with (readuncommitted)")
                 )
-                ->whereRaw("(a.tglBukti >='" . $tgldari . "' and a.tglbukti<='" . $tglsampai . "')")
-                ->whereRaw("(a.stok_id>=" . $stokdari . " and a.stok_id<=" . $stoksampai . ")")
-                ->whereRaw("(a.trado_id=" . $trado_id . " or " . $trado_id . "=0)")
-                ->orderby('a.tglbukti', 'asc')
-                ->orderby('a.urutfifo', 'asc')
-                ->orderby('a.nobukti', 'asc')
-                ->orderby('a.id', 'asc');
+                    ->select(
+                        'a.stok_id',
+                        'a.gudang_id',
+                        'a.trado_id',
+                        'a.gandengan_id',
+                        db::raw("(a.lokasi) as lokasi"),
+                        db::raw("(a.kodebarang) as kodebarang"),
+                        db::raw("(a.namabarang) as namabarang"),
+                        db::raw("a.tglbukti as tglbukti"),
+                        db::raw("a.nobukti as nobukti"),
+                        db::raw("(a.kategori_id) as kategori_id"),
+                        db::raw("isnull(a.qtymasuk,0) as qtymasuk"),
+                        db::raw("isnull(a.nilaimasuk,0) as nilaimasuk"),
+                        db::raw("isnull(a.qtykeluar,0) as qtykeluar"),
+                        db::raw("isnull(a.nilaikeluar,0) as nilaikeluar"),
+                        DB::raw("0 as qtysaldo"),
+                        DB::raw("0 as nilaisaldo"),
+                        db::raw("a.modifiedby"),
+                        db::raw("a.urutfifo as urutfifo"),
+                    )
+                    ->whereRaw("(a.tglBukti >='" . $tgldari . "' and a.tglbukti<='" . $tglsampai . "')")
+                    ->whereRaw("(a.stok_id>=" . $stokdari . " and a.stok_id<=" . $stoksampai . ")")
+                    ->whereRaw("(isnull(a.trado_id,0)<>0)")
+                    ->orderby('a.tglbukti', 'asc')
+                    ->orderby('a.urutfifo', 'asc')
+                    ->orderby('a.nobukti', 'asc')
+                    ->orderby('a.id', 'asc');
+            } else {
+                $queryrekap = db::table('kartustok')->from(
+                    DB::raw("kartustok as a with (readuncommitted)")
+                )
+                    ->select(
+                        'a.stok_id',
+                        'a.gudang_id',
+                        'a.trado_id',
+                        'a.gandengan_id',
+                        db::raw("(a.lokasi) as lokasi"),
+                        db::raw("(a.kodebarang) as kodebarang"),
+                        db::raw("(a.namabarang) as namabarang"),
+                        db::raw("a.tglbukti as tglbukti"),
+                        db::raw("a.nobukti as nobukti"),
+                        db::raw("(a.kategori_id) as kategori_id"),
+                        db::raw("isnull(a.qtymasuk,0) as qtymasuk"),
+                        db::raw("isnull(a.nilaimasuk,0) as nilaimasuk"),
+                        db::raw("isnull(a.qtykeluar,0) as qtykeluar"),
+                        db::raw("isnull(a.nilaikeluar,0) as nilaikeluar"),
+                        DB::raw("0 as qtysaldo"),
+                        DB::raw("0 as nilaisaldo"),
+                        db::raw("a.modifiedby"),
+                        db::raw("a.urutfifo as urutfifo"),
+                    )
+                    ->whereRaw("(a.tglBukti >='" . $tgldari . "' and a.tglbukti<='" . $tglsampai . "')")
+                    ->whereRaw("(a.stok_id>=" . $stokdari . " and a.stok_id<=" . $stoksampai . ")")
+                    ->whereRaw("(a.trado_id=" . $trado_id . ")")
+                    ->orderby('a.tglbukti', 'asc')
+                    ->orderby('a.urutfifo', 'asc')
+                    ->orderby('a.nobukti', 'asc')
+                    ->orderby('a.id', 'asc');  
+            }
+           
         } else if ($filter=='GANDENGAN') {
-            $queryrekap = db::table('kartustok')->from(
-                DB::raw("kartustok as a with (readuncommitted)")
-            )
-                ->select(
-                    'a.stok_id',
-                    'a.gudang_id',
-                    'a.trado_id',
-                    'a.gandengan_id',
-                    db::raw("(a.lokasi) as lokasi"),
-                    db::raw("(a.kodebarang) as kodebarang"),
-                    db::raw("(a.namabarang) as namabarang"),
-                    db::raw("a.tglbukti as tglbukti"),
-                    db::raw("a.nobukti as nobukti"),
-                    db::raw("(a.kategori_id) as kategori_id"),
-                    db::raw("isnull(a.qtymasuk,0) as qtymasuk"),
-                    db::raw("isnull(a.nilaimasuk,0) as nilaimasuk"),
-                    db::raw("isnull(a.qtykeluar,0) as qtykeluar"),
-                    db::raw("isnull(a.nilaikeluar,0) as nilaikeluar"),
-                    DB::raw("0 as qtysaldo"),
-                    DB::raw("0 as nilaisaldo"),
-                    db::raw("a.modifiedby"),
-                    db::raw("a.urutfifo as urutfifo"),
+            if ($gandengan_id==0) {
+                $queryrekap = db::table('kartustok')->from(
+                    DB::raw("kartustok as a with (readuncommitted)")
                 )
-                ->whereRaw("(a.tglBukti >='" . $tgldari . "' and a.tglbukti<='" . $tglsampai . "')")
-                ->whereRaw("(a.stok_id>=" . $stokdari . " and a.stok_id<=" . $stoksampai . ")")
-                ->whereRaw("(a.gandengan_id=" . $gandengan_id . " or " . $gandengan_id . "=0)")
-                ->orderby('a.tglbukti', 'asc')
-                ->orderby('a.urutfifo', 'asc')
-                ->orderby('a.nobukti', 'asc')
-                ->orderby('a.id', 'asc');
+                    ->select(
+                        'a.stok_id',
+                        'a.gudang_id',
+                        'a.trado_id',
+                        'a.gandengan_id',
+                        db::raw("(a.lokasi) as lokasi"),
+                        db::raw("(a.kodebarang) as kodebarang"),
+                        db::raw("(a.namabarang) as namabarang"),
+                        db::raw("a.tglbukti as tglbukti"),
+                        db::raw("a.nobukti as nobukti"),
+                        db::raw("(a.kategori_id) as kategori_id"),
+                        db::raw("isnull(a.qtymasuk,0) as qtymasuk"),
+                        db::raw("isnull(a.nilaimasuk,0) as nilaimasuk"),
+                        db::raw("isnull(a.qtykeluar,0) as qtykeluar"),
+                        db::raw("isnull(a.nilaikeluar,0) as nilaikeluar"),
+                        DB::raw("0 as qtysaldo"),
+                        DB::raw("0 as nilaisaldo"),
+                        db::raw("a.modifiedby"),
+                        db::raw("a.urutfifo as urutfifo"),
+                    )
+                    ->whereRaw("(a.tglBukti >='" . $tgldari . "' and a.tglbukti<='" . $tglsampai . "')")
+                    ->whereRaw("(a.stok_id>=" . $stokdari . " and a.stok_id<=" . $stoksampai . ")")
+                    ->whereRaw("(isnull(a.gandengan_id,0)<>0)")
+                    ->orderby('a.tglbukti', 'asc')
+                    ->orderby('a.urutfifo', 'asc')
+                    ->orderby('a.nobukti', 'asc')
+                    ->orderby('a.id', 'asc');
+            } else {
+                $queryrekap = db::table('kartustok')->from(
+                    DB::raw("kartustok as a with (readuncommitted)")
+                )
+                    ->select(
+                        'a.stok_id',
+                        'a.gudang_id',
+                        'a.trado_id',
+                        'a.gandengan_id',
+                        db::raw("(a.lokasi) as lokasi"),
+                        db::raw("(a.kodebarang) as kodebarang"),
+                        db::raw("(a.namabarang) as namabarang"),
+                        db::raw("a.tglbukti as tglbukti"),
+                        db::raw("a.nobukti as nobukti"),
+                        db::raw("(a.kategori_id) as kategori_id"),
+                        db::raw("isnull(a.qtymasuk,0) as qtymasuk"),
+                        db::raw("isnull(a.nilaimasuk,0) as nilaimasuk"),
+                        db::raw("isnull(a.qtykeluar,0) as qtykeluar"),
+                        db::raw("isnull(a.nilaikeluar,0) as nilaikeluar"),
+                        DB::raw("0 as qtysaldo"),
+                        DB::raw("0 as nilaisaldo"),
+                        db::raw("a.modifiedby"),
+                        db::raw("a.urutfifo as urutfifo"),
+                    )
+                    ->whereRaw("(a.tglBukti >='" . $tgldari . "' and a.tglbukti<='" . $tglsampai . "')")
+                    ->whereRaw("(a.stok_id>=" . $stokdari . " and a.stok_id<=" . $stoksampai . ")")
+                    ->whereRaw("(a.gandengan_id=" . $gandengan_id . ")")
+                    ->orderby('a.tglbukti', 'asc')
+                    ->orderby('a.urutfifo', 'asc')
+                    ->orderby('a.nobukti', 'asc')
+                    ->orderby('a.id', 'asc');
+            }
+           
         } else {
             $queryrekap = db::table('kartustok')->from(
                 DB::raw("kartustok as a with (readuncommitted)")
