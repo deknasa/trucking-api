@@ -487,6 +487,36 @@ class PengeluaranStokDetailFifo extends MyModel
                 if (!$pengeluaranStokDetailFifo->save()) {
                     throw new \Exception("Error storing pengeluaran Stok Detail fifo.");
                 }
+                $ksqty=$item['penerimaan_qty'] ?? 0;
+                $ksharga=$item['penerimaan_harga'] ?? 0;
+                $kstotal=$ksqty *$ksharga;
+                $ksnobukti=$data['nobukti'] ?? '';
+
+                $pengeluaranstok_id=db::table("pengeluaranstokheader")->from(db::raw("pengeluaranstokheader as a with (readuncommitted)"))
+                ->select('a.pengeluaranstok_id','a.tglbukti')->where('a.nobukti', $ksnobukti)->first();
+
+                $kspengeluaranstok_id=$pengeluaranstok_id->pengeluaranstok_id ?? 0;
+                $kstglbukti=$pengeluaranstok_id->tglbukti ?? '1900/1/1';
+
+                $urutfifo = db::table("pengeluaranstok")->from(db::raw("pengeluaranstok as a with (readuncommitted)"))
+                ->select('a.urutfifo')->where('a.id', $kspengeluaranstok_id)->first()->urutfifo ?? 0;
+    
+
+                $kartuStok = (new KartuStok())->processStore([
+                    "gudang_id" => $data['gudang_id'] ?? 0,
+                    "trado_id" => 0,
+                    "gandengan_id" => 0,
+                    "stok_id" => $data['stok_id'] ?? 0,
+                    "nobukti" =>$data['nobukti'] ?? '',
+                    "tglbukti" => $kstglbukti,
+                    "qtymasuk" => 0,
+                    "nilaimasuk" =>  0,
+                    "qtykeluar" => $item['penerimaan_qty'] ?? 0,
+                    "nilaikeluar" =>$kstotal,
+                    "urutfifo" => $urutfifo,
+                ]);
+
+
                 if ($data['pengeluaranstok_id'] == $spk->text) {
                     $getCoaDebet = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))
                         ->where('grp', 'JURNAL PEMAKAIAN STOK')->where('subgrp', 'DEBET')->first();
