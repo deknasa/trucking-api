@@ -88,7 +88,13 @@ class StorePengeluaranTruckingDetailRequest extends FormRequest
                 $fetchFormat =  DB::table('pengeluarantrucking')
                     ->where('id', $idpengeluaran)
                     ->first();
-                if ($fetchFormat->kodepengeluaran == 'PJT' || $fetchFormat->kodepengeluaran == 'BSB') {
+                if ($fetchFormat->kodepengeluaran == 'PJT'){
+                    if(request()->statusposting == 84){
+                        return false;
+                    }else{
+                        return true;
+                    }
+                } else if($fetchFormat->kodepengeluaran == 'BSB') {
                     return true;
                 } else {
                     return false;
