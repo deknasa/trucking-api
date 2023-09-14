@@ -588,7 +588,7 @@ class PenerimaanStokHeader extends MyModel
             ->select('a.urutfifo')->where('a.id', $penerimaanstok_id)->first()->urutfifo ?? 0;
 
 
-            
+
         $masukgudang_id = $data['gudang_id'] ?? 0;
         $masuktrado_id = $data['trado_id'] ?? 0;
         $masukgandengan_id = $data['gandengan_id'] ?? 0;
@@ -626,8 +626,8 @@ class PenerimaanStokHeader extends MyModel
         $tgljatuhtempo = [];
         $keterangan_detail = [];
         for ($i = 0; $i < count($data['detail_harga']); $i++) {
-            $ksqty=$data['detail_qty'][$i] ?? 0;
-            $ksnilai=$data['totalItem'][$i] ?? 0;
+            $ksqty = $data['detail_qty'][$i] ?? 0;
+            $ksnilai = $data['totalItem'][$i] ?? 0;
             $penerimaanStokDetail = (new PenerimaanStokDetail())->processStore($penerimaanStokHeader, [
                 "penerimaanstokheader_id" => $penerimaanStokHeader->id,
                 "nobukti" => $penerimaanStokHeader->nobukti,
@@ -642,7 +642,7 @@ class PenerimaanStokHeader extends MyModel
                 "detail_penerimaanstoknobukti" => $data['detail_penerimaanstoknobukti'][$i],
             ]);
 
-            if ( $penerimaanstok_id != 2) {
+            if ($penerimaanstok_id != 2 && $penerimaanstok_id != 10  && $penerimaanstok_id != 11) {
                 if ($masukgudang_id != 0 || $masuktrado_id != 0  || $masukgandengan_id != 0) {
                     // dd($data['detail_qty'][$i]);
                     $kartuStok = (new KartuStok())->processStore([
@@ -945,7 +945,7 @@ class PenerimaanStokHeader extends MyModel
             ->select('a.urutfifo')->where('a.id', $penerimaanstok_id)->first()->urutfifo ?? 0;
 
 
-            
+
         $masukgudang_id = $data['gudang_id'] ?? 0;
         $masuktrado_id = $data['trado_id'] ?? 0;
         $masukgandengan_id = $data['gandengan_id'] ?? 0;
@@ -980,8 +980,8 @@ class PenerimaanStokHeader extends MyModel
 
         for ($i = 0; $i < count($data['detail_harga']); $i++) {
 
-            $ksqty=$data['detail_qty'][$i] ?? 0;
-            $ksnilai=$data['totalItem'][$i] ?? 0;
+            $ksqty = $data['detail_qty'][$i] ?? 0;
+            $ksnilai = $data['totalItem'][$i] ?? 0;
 
             $penerimaanStokDetail = (new PenerimaanStokDetail())->processStore($penerimaanStokHeader, [
                 "penerimaanstokheader_id" => $penerimaanStokHeader->id,
@@ -997,7 +997,7 @@ class PenerimaanStokHeader extends MyModel
                 "detail_penerimaanstoknobukti" => $data['detail_penerimaanstoknobukti'][$i],
             ]);
 
-            if ( $penerimaanstok_id != 2) {
+            if ($penerimaanstok_id != 2 && $penerimaanstok_id != 10  && $penerimaanstok_id != 11) {
                 if ($masukgudang_id != 0 || $masuktrado_id != 0  || $masukgandengan_id != 0) {
                     // dd($data['detail_qty'][$i]);
                     $kartuStok = (new KartuStok())->processStore([
