@@ -603,6 +603,24 @@ class PengeluaranHeader extends MyModel
             ];
             goto selesai;
         }
+        $hutangBayar = DB::table('pelunasanpiutangheader')
+            ->from(
+                DB::raw("pelunasanpiutangheader as a with (readuncommitted)")
+            )
+            ->select(
+                'a.nobukti',
+                'a.pengeluaran_nobukti'
+            )
+            ->where('a.pengeluaran_nobukti', '=', $nobukti)
+            ->first();
+        if (isset($hutangBayar)) {
+            $data = [
+                'kondisi' => true,
+                'keterangan' => 'Pelunasan Piutang '.$hutangBayar->nobukti,
+                'kodeerror' => 'TDT'
+            ];
+            goto selesai;
+        }
 
         $data = [
             'kondisi' => false,

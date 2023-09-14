@@ -233,6 +233,7 @@ class UpdatePengeluaranTruckingHeaderRequest extends FormRequest
             $rules = array_merge(
                 ['id' => new DestroyPengeluaranTruckingHeader() ],
                 $rules,
+                (new $relatedRequest)->rules(),
                 $rulseKlaim,
                 $rulesSupir_id
             );

@@ -143,7 +143,7 @@ class UpdatePenerimaanTruckingHeaderRequest extends FormRequest
                 'bank' => [$ruleBank, Rule::in($getDataPenerimaan->bank), 'required'],
                 'bank_id' => [Rule::in($getDataPenerimaan->bank_id), 'required', 'min:1','numeric'],
                 'supir' => ['required', Rule::in($getDataPenerimaan->supir),new ValidasiDetail($jumlahdetail),
-                new ValidasiPenerimaanTrucking()
+                // new ValidasiPenerimaanTrucking()
             ],
                 'supirheader_id' => ['required', Rule::in($getDataPenerimaan->supirheader_id), 'numeric','min:1'],
                 // 'keterangancoa' => 'required'

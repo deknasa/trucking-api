@@ -9,6 +9,8 @@ use Illuminate\Foundation\Http\FormRequest;
 use App\Rules\DateTutupBuku;
 use App\Rules\ValidasiDestroyPelunasanPiutang;
 use App\Rules\ValidasiDetail;
+use App\Rules\ValidasiStatusNotaDebet;
+use App\Rules\ValidasiStatusNotaKredit;
 use Illuminate\Validation\Rule;
 
 class UpdatePelunasanPiutangHeaderRequest extends FormRequest
@@ -97,7 +99,9 @@ class UpdatePelunasanPiutangHeaderRequest extends FormRequest
             'bank' => 'required',
             'agen' => [
                 'required',
-                new ValidasiDetail($jumlahdetail)
+                new ValidasiDetail($jumlahdetail),
+                new ValidasiStatusNotaDebet(),
+                new ValidasiStatusNotaKredit()
             ],
             'alatbayar' => ['required', Rule::in($dataKodeAlatBayar)],
         ];
