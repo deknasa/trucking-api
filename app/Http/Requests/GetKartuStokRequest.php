@@ -83,26 +83,26 @@ class GetKartuStokRequest extends FormRequest
                 'before:'.$tglbatasakhir,
                 'after_or_equal:'.date('Y-m-d', strtotime($this->tgldari))
             ],
-            'stokdari_id' => [
-                'required',
-                $stokIdRule,
-                'numeric',
-                'min:1'
-            ],
-            'stoksampai_id' => [
-                'required',
-                $stokIdRule,
-                'numeric',
-                'min:1'
-            ],
-            'stokdari' => [
-                'required',
-                $stokNamaRule
-            ],
-            'stoksampai' => [
-                'required',
-                $stokNamaRule
-            ],
+            // 'stokdari_id' => [
+            //     'required',
+            //     $stokIdRule,
+            //     'numeric',
+            //     'min:1'
+            // ],
+            // 'stoksampai_id' => [
+            //     'required',
+            //     $stokIdRule,
+            //     'numeric',
+            //     'min:1'
+            // ],
+            // 'stokdari' => [
+            //     'required',
+            //     $stokNamaRule
+            // ],
+            // 'stoksampai' => [
+            //     'required',
+            //     $stokNamaRule
+            // ],
             'filter' => [
                 'required',
                 Rule::in($status),
