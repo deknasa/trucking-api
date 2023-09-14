@@ -57,7 +57,7 @@ class PenerimaanStokDetail extends MyModel
             );
             $totalRows =  $query->count();
             $penerimaanStokDetail = $query->get();
-        }else{
+        } else {
             $getJudul = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))
                 ->select('text')
                 ->where('grp', 'JUDULAN LAPORAN')
@@ -81,67 +81,65 @@ class PenerimaanStokDetail extends MyModel
                 DB::raw("'Laporan Purchase Order (PO)' as judulLaporan"),
                 DB::raw("'" . $getJudul->text . "' as judul"),
                 DB::raw("'Tgl Cetak:'+format(getdate(),'dd-MM-yyyy HH:mm:ss')as tglcetak"),
-                DB::raw(" 'User :".auth('api')->user()->name."' as usercetak")
+                DB::raw(" 'User :" . auth('api')->user()->name . "' as usercetak")
             )
-            ->leftJoin("penerimaanstokheader", "$this->table.penerimaanstokheader_id", "penerimaanstokheader.id")
-            ->leftJoin("stok", "$this->table.stok_id", "stok.id");
+                ->leftJoin("penerimaanstokheader", "$this->table.penerimaanstokheader_id", "penerimaanstokheader.id")
+                ->leftJoin("stok", "$this->table.stok_id", "stok.id");
 
-            if (request()->penerimaanstok_id==$spbp->id) {
+            if (request()->penerimaanstok_id == $spbp->id) {
                 if (request()->stok_id) {
                     $nobukti = request()->nobukti;
                     $query->where("penerimaanstokheader.penerimaanstok_id", $spbs->text)
-                    ->where("$this->table.stok_id", request()->stok_id)
-                    ->whereNotIn("$this->table.stok_id", function($query) use($nobukti) {
-                        $query->select(
-                            DB::raw('DISTINCT penerimaanstokdetail.stok_id'),
-                        )
-                        ->from('penerimaanstokdetail')
-                        ->whereNotNull('penerimaanstokdetail.penerimaanstok_nobukti')
-                        ->where('penerimaanstokdetail.penerimaanstok_nobukti','!=','')
-                        ->where('penerimaanstokdetail.penerimaanstok_nobukti','!=',$nobukti)
-                        ->where('penerimaanstokdetail.penerimaanstok_nobukti','like','SPBS%');
-                        // dd($query->get());
-                    });
+                        ->where("$this->table.stok_id", request()->stok_id)
+                        ->whereNotIn("$this->table.stok_id", function ($query) use ($nobukti) {
+                            $query->select(
+                                DB::raw('DISTINCT penerimaanstokdetail.stok_id'),
+                            )
+                                ->from('penerimaanstokdetail')
+                                ->whereNotNull('penerimaanstokdetail.penerimaanstok_nobukti')
+                                ->where('penerimaanstokdetail.penerimaanstok_nobukti', '!=', '')
+                                ->where('penerimaanstokdetail.penerimaanstok_nobukti', '!=', $nobukti)
+                                ->where('penerimaanstokdetail.penerimaanstok_nobukti', 'like', 'SPBS%');
+                            // dd($query->get());
+                        });
                 }
             }
 
             if (request()->pengeluaranstok_id == $rtr->id) {
-                
+
                 $query->select(
-                    DB::raw('SUM(pengeluaranstokdetail.qty) as qty'), 
-                    "$this->table.nobukti", 
-                    "$this->table.stok_id", 
-                    'stok.namastok as stok', 
+                    DB::raw('SUM(pengeluaranstokdetail.qty) as qty'),
+                    "$this->table.nobukti",
+                    "$this->table.stok_id",
+                    'stok.namastok as stok',
                     // "$this->table.qty"', 
                     DB::raw("$this->table.qty - COALESCE(SUM(pengeluaranstokdetail.qty), 0) as qty"),
 
-                    "$this->table.harga", 
-                    "$this->table.persentasediscount", 
-                    "$this->table.penerimaanstok_nobukti", 
-                    "$this->table.nominaldiscount", 
-                    "$this->table.total", 
+                    "$this->table.harga",
+                    "$this->table.persentasediscount",
+                    "$this->table.penerimaanstok_nobukti",
+                    "$this->table.nominaldiscount",
+                    "$this->table.total",
                     "$this->table.keterangan"
                 )
-                ->leftJoin('pengeluaranstokdetail', 'PenerimaanStokDetail.stok_id', '=', 'pengeluaranstokdetail.stok_id')
-                ->groupBy(
-                    "$this->table.nobukti", 
-                    "$this->table.stok_id", 
-                    'stok.namastok', 
-                    "$this->table.qty", 
-                    "$this->table.harga", 
-                    "$this->table.persentasediscount", 
-                    "$this->table.penerimaanstok_nobukti", 
-                    "$this->table.nominaldiscount", 
-                    "$this->table.total", 
-                    "$this->table.keterangan"
+                    ->leftJoin('pengeluaranstokdetail', 'PenerimaanStokDetail.stok_id', '=', 'pengeluaranstokdetail.stok_id')
+                    ->groupBy(
+                        "$this->table.nobukti",
+                        "$this->table.stok_id",
+                        'stok.namastok',
+                        "$this->table.qty",
+                        "$this->table.harga",
+                        "$this->table.persentasediscount",
+                        "$this->table.penerimaanstok_nobukti",
+                        "$this->table.nominaldiscount",
+                        "$this->table.total",
+                        "$this->table.keterangan"
                     )
-                ->havingRaw("$this->table.qty > COALESCE(SUM(pengeluaranstokdetail.qty), 0)");
+                    ->havingRaw("$this->table.qty > COALESCE(SUM(pengeluaranstokdetail.qty), 0)");
                 return $query->get();
-
-                
             }
 
-            $this->totalNominal = $query->sum($this->table.'.total');
+            $this->totalNominal = $query->sum($this->table . '.total');
             $this->filter($query);
             $this->totalRows = $query->count();
             $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;
@@ -170,9 +168,9 @@ class PenerimaanStokDetail extends MyModel
             "PenerimaanStokDetail.vulkanisirke",
             "PenerimaanStokDetail.modifiedby",
         )
-        ->leftJoin("stok","penerimaanstokdetail.stok_id","stok.id");
+            ->leftJoin("stok", "penerimaanstokdetail.stok_id", "stok.id");
 
-        $data = $query->where("penerimaanstokheader_id",$id)->get();
+        $data = $query->where("penerimaanstokheader_id", $id)->get();
 
         return $data;
     }
@@ -186,7 +184,7 @@ class PenerimaanStokDetail extends MyModel
                             if ($filters['field'] == 'stok') {
                                 $query = $query->where('stok.namastok', 'LIKE', "%$filters[data]%");
                             } else if ($filters['field'] == 'qty' || $filters['field'] == 'harga' || $filters['field'] == 'persentasediscount' || $filters['field'] == 'nominaldiscount' || $filters['field'] == 'total') {
-                                $query = $query->whereRaw("format(".$this->table . "." . $filters['field'].", '#,#0.00') LIKE '%$filters[data]%'");
+                                $query = $query->whereRaw("format(" . $this->table . "." . $filters['field'] . ", '#,#0.00') LIKE '%$filters[data]%'");
                             } else {
                                 $query = $query->where($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
                             }
@@ -200,7 +198,7 @@ class PenerimaanStokDetail extends MyModel
                             if ($filters['field'] == 'stok') {
                                 $query = $query->orWhere('stok.namastok', 'LIKE', "%$filters[data]%");
                             } else if ($filters['field'] == 'qty' || $filters['field'] == 'harga' || $filters['field'] == 'persentasediscount' || $filters['field'] == 'nominaldiscount' || $filters['field'] == 'total') {
-                                $query = $query->orWhereRaw("format(".$this->table . "." . $filters['field'].", '#,#0.00') LIKE '%$filters[data]%'");
+                                $query = $query->orWhereRaw("format(" . $this->table . "." . $filters['field'] . ", '#,#0.00') LIKE '%$filters[data]%'");
                             } else {
                                 $query = $query->orWhere($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
                             }
@@ -212,7 +210,7 @@ class PenerimaanStokDetail extends MyModel
                     break;
             }
         }
-    }        
+    }
     public function sort($query)
     {
         if ($this->params['sortIndex'] == 'stok') {
@@ -229,19 +227,19 @@ class PenerimaanStokDetail extends MyModel
 
     public function processStore(PenerimaanStokHeader $penerimaanStokHeader, array $data): PenerimaanStokDetail
     {
-        $stok= Stok::where('id', $data['stok_id'])->first();
+        $stok = Stok::where('id', $data['stok_id'])->first();
         $stokreuse = Parameter::where('grp', 'STATUS REUSE')->where('subgrp', 'STATUS REUSE')->where('text', 'REUSE')->first();
-        
-        $reuse=false;
-        if ($stok->statusreuse==$stokreuse->id) {
-            $reuse=true;
-        } 
-        
+
+        $reuse = false;
+        if ($stok->statusreuse == $stokreuse->id) {
+            $reuse = true;
+        }
+
         $datahitungstok = PenerimaanStok::select('statushitungstok as statushitungstok_id')
             ->where('format', '=', $penerimaanStokHeader->statusformat)
             ->first();
         $statushitungstok = Parameter::where('grp', 'STATUS HITUNG STOK')->where('text', 'HITUNG STOK')->first();
-                
+
         $do = Parameter::where('grp', 'DO STOK')->where('subgrp', 'DO STOK')->first();
         $spb = Parameter::where('grp', 'SPB STOK')->where('subgrp', 'SPB STOK')->first();
         $kor = Parameter::where('grp', 'KOR STOK')->where('subgrp', 'KOR STOK')->first();
@@ -253,57 +251,53 @@ class PenerimaanStokDetail extends MyModel
         $spbp = DB::table('penerimaanstok')->where('kodepenerimaan', 'SPBP')->first();
 
         if ($penerimaanStokHeader->penerimaanstok_id == $spbp->id) {
-            $penerimaanStokDetailNobukti = PenerimaanStokDetail::where('nobukti',$data['detail_penerimaanstoknobukti'])->where('stok_id',$data['stok_id'])->first();
+            $penerimaanStokDetailNobukti = PenerimaanStokDetail::where('nobukti', $data['detail_penerimaanstoknobukti'])->where('stok_id', $data['stok_id'])->first();
             if (!$penerimaanStokDetailNobukti) {
-                throw ValidationException::withMessages(["detail_penerimaanstoknobukti"=>"penerimaan stok No Bukti tidak valid"]);                
+                throw ValidationException::withMessages(["detail_penerimaanstoknobukti" => "penerimaan stok No Bukti tidak valid"]);
             }
         }
         if ($datahitungstok->statushitungstok_id == $statushitungstok->id) {
-            if (($penerimaanStokHeader->penerimaanstok_id == $spb->text)||($penerimaanStokHeader->penerimaanstok_id == $kor->text) ||($penerimaanStokHeader->penerimaanstok_id == $pst->text)||($penerimaanStokHeader->penerimaanstok_id == $pspk->text)) {
-                $persediaan = $this->persediaan($penerimaanStokHeader->gudang_id,$penerimaanStokHeader->trado_id,$penerimaanStokHeader->gandengan_id);
-                $this->persediaanKe($data['stok_id'],$persediaan['column'].'_id',$persediaan['value'],$data['qty']);
+            if (($penerimaanStokHeader->penerimaanstok_id == $spb->text) || ($penerimaanStokHeader->penerimaanstok_id == $kor->text) || ($penerimaanStokHeader->penerimaanstok_id == $pst->text) || ($penerimaanStokHeader->penerimaanstok_id == $pspk->text)) {
+                $persediaan = $this->persediaan($penerimaanStokHeader->gudang_id, $penerimaanStokHeader->trado_id, $penerimaanStokHeader->gandengan_id);
+                $this->persediaanKe($data['stok_id'], $persediaan['column'] . '_id', $persediaan['value'], $data['qty']);
             }
 
-            if (($penerimaanStokHeader->penerimaanstok_id == $spbs->text)||($penerimaanStokHeader->penerimaanstok_id == $do->text)) {
+            if (($penerimaanStokHeader->penerimaanstok_id == $spbs->text) || ($penerimaanStokHeader->penerimaanstok_id == $do->text)) {
                 if (!$reuse) {
-                    throw ValidationException::withMessages(["qty"=>"bukan stok reuse"]);                
-
+                    throw ValidationException::withMessages(["qty" => "bukan stok reuse"]);
                 }
-                $persediaanDari = $this->persediaan($penerimaanStokHeader->gudangdari_id,$penerimaanStokHeader->tradodari_id,$penerimaanStokHeader->gandengandari_id);
-                $dari = $this->persediaanDari($data['stok_id'],$persediaanDari['column'].'_id',$persediaanDari['value'],$data['qty']);
+                $persediaanDari = $this->persediaan($penerimaanStokHeader->gudangdari_id, $penerimaanStokHeader->tradodari_id, $penerimaanStokHeader->gandengandari_id);
+                $dari = $this->persediaanDari($data['stok_id'], $persediaanDari['column'] . '_id', $persediaanDari['value'], $data['qty']);
                 if (!$dari) {
-                    throw ValidationException::withMessages(["qty"=>"qty tidak cukup"]);
+                    throw ValidationException::withMessages(["qty" => "qty tidak cukup"]);
                 }
-                $persediaanKe = $this->persediaan($penerimaanStokHeader->gudangke_id,$penerimaanStokHeader->tradoke_id,$penerimaanStokHeader->gandenganke_id);
-                $ke = $this->persediaanKe($data['stok_id'],$persediaanKe['column'].'_id',$persediaanKe['value'],$data['qty']);
+                $persediaanKe = $this->persediaan($penerimaanStokHeader->gudangke_id, $penerimaanStokHeader->tradoke_id, $penerimaanStokHeader->gandenganke_id);
+                $ke = $this->persediaanKe($data['stok_id'], $persediaanKe['column'] . '_id', $persediaanKe['value'], $data['qty']);
             }
-            
+
             if ($penerimaanStokHeader->penerimaanstok_id == $pg->text) {
-                
-                    $persediaanDari = $this->persediaan($penerimaanStokHeader->gudangdari_id,$penerimaanStokHeader->tradodari_id,$penerimaanStokHeader->gandengandari_id);
-                    $dari = $this->persediaanDari($data['stok_id'],$persediaanDari['column'].'_id',$persediaanDari['value'],$data['qty']);
-                    
-                    if (!$dari) {
-                        // dd()
-                        throw ValidationException::withMessages(["qty"=>"qty tidak cukup"]);
-                    }
-                    $persediaanKe = $this->persediaan($penerimaanStokHeader->gudangke_id,$penerimaanStokHeader->tradoke_id,$penerimaanStokHeader->gandenganke_id);
-                    $ke = $this->persediaanKe($data['stok_id'],$persediaanKe['column'].'_id',$persediaanKe['value'],$data['qty']);
-                    
-                
+
+                $persediaanDari = $this->persediaan($penerimaanStokHeader->gudangdari_id, $penerimaanStokHeader->tradodari_id, $penerimaanStokHeader->gandengandari_id);
+                $dari = $this->persediaanDari($data['stok_id'], $persediaanDari['column'] . '_id', $persediaanDari['value'], $data['qty']);
+
+                if (!$dari) {
+                    // dd()
+                    throw ValidationException::withMessages(["qty" => "qty tidak cukup"]);
+                }
+                $persediaanKe = $this->persediaan($penerimaanStokHeader->gudangke_id, $penerimaanStokHeader->tradoke_id, $penerimaanStokHeader->gandenganke_id);
+                $ke = $this->persediaanKe($data['stok_id'], $persediaanKe['column'] . '_id', $persediaanKe['value'], $data['qty']);
             }
-            
         }
         if ($korv->id == $penerimaanStokHeader->penerimaanstok_id) {
-            $vulkan =$this->vulkanStokPlus($data['stok_id'],$data['vulkanisirke']);
+            $vulkan = $this->vulkanStokPlus($data['stok_id'], $data['vulkanisirke']);
             if (!$vulkan) {
                 throw ValidationException::withMessages(['vulkanisirke' => 'vulkannisir tidak cukup']);
             }
         }
-        
+
         $total = $data['qty'] * $data['harga'];
         $nominaldiscount = $data['totalsebelum'] * ($data['persentasediscount'] / 100);
-        
+
         // $total -= $nominaldiscount;
         $penerimaanStokDetail = new PenerimaanStokDetail();
         $penerimaanStokDetail->penerimaanstokheader_id = $data['penerimaanstokheader_id'];
@@ -319,7 +313,7 @@ class PenerimaanStokDetail extends MyModel
         $penerimaanStokDetail->keterangan = $data['detail_keterangan'];
 
         $penerimaanStokDetail->modifiedby = auth('api')->user()->name;
-        
+
         if (!$penerimaanStokDetail->save()) {
             throw new \Exception("Error storing Penerimaan Stok Detail.");
         }
@@ -328,7 +322,7 @@ class PenerimaanStokDetail extends MyModel
     }
 
 
-    public function vulkanStokPlus($stok_id,$vulkan)
+    public function vulkanStokPlus($stok_id, $vulkan)
     {
         $stok = Stok::find($stok_id);
         if (!$stok) {
@@ -340,102 +334,138 @@ class PenerimaanStokDetail extends MyModel
         return true;
     }
 
-    public function vulkanStokMinus($stok_id,$vulkan)
+    public function vulkanStokMinus($stok_id, $vulkan)
     {
         $stok = Stok::find($stok_id);
         if (!$stok) {
             return false;
         }
         $total = $stok->totalvulkanisir - $vulkan;
-        if ($total < 0 ) {
+        if ($total < 0) {
             return false;
         }
-        
+
         $stok->totalvulkanisir = $total;
         $stok->save();
         return $stok;
-    }    
+    }
 
-    public function persediaan($gudang,$trado,$gandengan)
+    public function persediaan($gudang, $trado, $gandengan)
     {
         $kolom = null;
         $nama = null;
         $value = 0;
-        if(!empty($gudang)) {
+        if (!empty($gudang)) {
             $kolom = "gudang";
             $nama = "GUDANG";
             $value = $gudang;
-        } elseif(!empty($trado)) {
+        } elseif (!empty($trado)) {
             $kolom = "trado";
             $nama = "TRADO";
             $value = $trado;
-        } elseif(!empty($gandengan)) {
+        } elseif (!empty($gandengan)) {
             $kolom = "gandengan";
             $nama = "GANDENGAN";
             $value = $gandengan;
         }
         return [
-            "column"=>$kolom,
-            "value"=>$value,
-            "nama"=>$nama,
+            "column" => $kolom,
+            "value" => $value,
+            "nama" => $nama,
         ];
     }
 
-    public function persediaanDari($stokId,$persediaan,$persediaanId,$qty)
+    public function persediaanDari($stokId, $persediaan, $persediaanId, $qty)
     {
-        $stokpersediaangudang = $this->checkTempat($stokId,$persediaan,$persediaanId); //stok persediaan 
-        if (!$stokpersediaangudang) {
+
+        //check kartu stok
+        $stok = db::table('kartustok')->from(db::raw("kartustok a with (readuncommitted)"))
+            ->select(
+                db::raw("sum(isnull(qtymasuk,0)-isnull(qtykeluar,0)) as qty")
+            )
+            ->where("stok_id", $stokId)->where("$persediaan", $persediaanId)->first()
+            ->qty ?? 0;
+
+        if ($stok == 0) {
             return false;
         }
-        $stokpersediaan = StokPersediaan::lockForUpdate()->find($stokpersediaangudang->id);
-        if ($qty > $stokpersediaan->qty){ //check qty
+        if ($qty > $stok) {
             return false;
         }
-        $result = $stokpersediaan->qty - $qty;
-        $stokpersediaan->update(['qty'=> $result]);
-        return $stokpersediaan;
+
+        // $stokpersediaangudang = $this->checkTempat($stokId, $persediaan, $persediaanId); //stok persediaan 
+        // if (!$stokpersediaangudang) {
+        //     return false;
+        // }
+        // $stokpersediaan = StokPersediaan::lockForUpdate()->find($stokpersediaangudang->id);
+        // if ($qty > $stokpersediaan->qty) { 
+        //     return false;
+        // }
+        // $result = $stokpersediaan->qty - $qty;
+        // $stokpersediaan->update(['qty' => $result]);
+        // return $stokpersediaan;
+        return true;
     }
-    public function persediaanKe($stokId,$persediaan,$persediaanId,$qty)
+    public function persediaanKe($stokId, $persediaan, $persediaanId, $qty)
     {
-        $stokpersediaangudang = $this->checkTempat($stokId,$persediaan,$persediaanId); //stok persediaan 
-        if (!$stokpersediaangudang) {
-            $stokpersediaangudang= StokPersediaan::create(["stok_id"=> $stokId, $persediaan => $persediaanId]);
-        }
-        $stokpersediaangudang->qty += $qty;
-        $stokpersediaangudang->save();
-        return $stokpersediaangudang;
+        // $stokpersediaangudang = $this->checkTempat($stokId, $persediaan, $persediaanId); //stok persediaan 
+        // if (!$stokpersediaangudang) {
+        //     $stokpersediaangudang = StokPersediaan::create(["stok_id" => $stokId, $persediaan => $persediaanId]);
+        // }
+        // $stokpersediaangudang->qty += $qty;
+        // $stokpersediaangudang->save();
+        // return $stokpersediaangudang;
+        return true;
     }
-    
-    public function persediaanDariReturn($stokId,$persediaan,$persediaanId,$qty)
+
+    public function persediaanDariReturn($stokId, $persediaan, $persediaanId, $qty)
     {
-        $stokpersediaangudang = $this->checkTempat($stokId,$persediaan,$persediaanId); //stok persediaan 
+        $stokpersediaangudang = $this->checkTempat($stokId, $persediaan, $persediaanId); //stok persediaan 
         if (!$stokpersediaangudang) {
             return false;
         }
         $stokpersediaan = StokPersediaan::lockForUpdate()->find($stokpersediaangudang->id);
         $result = $stokpersediaan->qty + $qty;
-        $stokpersediaan->update(['qty'=> $result]);
+        $stokpersediaan->update(['qty' => $result]);
         return $stokpersediaan;
     }
-    public function persediaanKeReturn($stokId,$persediaan,$persediaanId,$qty)
+    public function persediaanKeReturn($stokId, $persediaan, $persediaanId, $qty)
     {
-        $stokpersediaangudang = $this->checkTempat($stokId,$persediaan,$persediaanId); //stok persediaan 
-        if (!$stokpersediaangudang) {
+
+        //check kartu stok
+        $stok = db::table('kartustok')->from(db::raw("kartustok a with (readuncommitted)"))
+            ->select(
+                db::raw("sum(isnull(qtymasuk,0)-isnull(qtykeluar,0)) as qty")
+            )
+            ->where("stok_id", $stokId)->where("$persediaan", $persediaanId)->first()
+            ->qty ?? 0;
+
+        if ($stok == 0) {
             return false;
         }
-        $stokpersediaan = StokPersediaan::lockForUpdate()->find($stokpersediaangudang->id);
-        if ($qty > $stokpersediaan->qty){ //check qty
+        if ($qty > $stok) {
             return false;
         }
-        $stokpersediaan->qty -= $qty;
-        $stokpersediaan->save();
-        return $stokpersediaan;
+
+
+        // $stokpersediaangudang = $this->checkTempat($stokId, $persediaan, $persediaanId); //stok persediaan 
+        // if (!$stokpersediaangudang) {
+        //     return false;
+        // }
+        // $stokpersediaan = StokPersediaan::lockForUpdate()->find($stokpersediaangudang->id);
+        // if ($qty > $stokpersediaan->qty) { 
+        //     return false;
+        // }
+        // $stokpersediaan->qty -= $qty;
+        // $stokpersediaan->save();
+        // return $stokpersediaan;
+        return true;
     }
 
-    public function checkTempat($stokId,$persediaan,$persediaanId)
+    public function checkTempat($stokId, $persediaan, $persediaanId)
     {
         $result = StokPersediaan::lockForUpdate()->where("stok_id", $stokId)->where("$persediaan", $persediaanId)->first();
-        return (!$result) ? false :$result;
+        return (!$result) ? false : $result;
     }
 
     public function returnStokPenerimaan($id)
@@ -463,27 +493,24 @@ class PenerimaanStokDetail extends MyModel
         $tradodari_id = $penerimaanStokHeader->tradodari_id;
         $gandengandari_id = $penerimaanStokHeader->gandengandari_id;
         foreach ($pengeluaranStokDetail as $item) {
-            if (($penerimaanStokHeader->penerimaanstok_id == $spb->text)||($penerimaanStokHeader->penerimaanstok_id == $kor->text) ||($penerimaanStokHeader->penerimaanstok_id == $pst->text)||($penerimaanStokHeader->penerimaanstok_id == $pspk->text)) {
-                $persediaan = $this->persediaan($gudang_id,$trado_id,$gandengan_id);
-                $this->persediaanKeReturn($item['stok_id'],$persediaan['column'].'_id',$persediaan['value'],$item['qty']);
+            if (($penerimaanStokHeader->penerimaanstok_id == $spb->text) || ($penerimaanStokHeader->penerimaanstok_id == $kor->text) || ($penerimaanStokHeader->penerimaanstok_id == $pst->text) || ($penerimaanStokHeader->penerimaanstok_id == $pspk->text)) {
+                $persediaan = $this->persediaan($gudang_id, $trado_id, $gandengan_id);
+                $this->persediaanKeReturn($item['stok_id'], $persediaan['column'] . '_id', $persediaan['value'], $item['qty']);
             }
 
-            if (($penerimaanStokHeader->penerimaanstok_id == $spbs->text)||($penerimaanStokHeader->penerimaanstok_id == $do->text)||($penerimaanStokHeader->penerimaanstok_id == $pg->text)) {
-                $persediaanDari = $this->persediaan($gudangdari_id,$tradodari_id,$gandengandari_id);
-                $dari = $this->persediaanDariReturn($item['stok_id'],$persediaanDari['column'].'_id',$persediaanDari['value'],$item['qty']);
+            if (($penerimaanStokHeader->penerimaanstok_id == $spbs->text) || ($penerimaanStokHeader->penerimaanstok_id == $do->text) || ($penerimaanStokHeader->penerimaanstok_id == $pg->text)) {
+                $persediaanDari = $this->persediaan($gudangdari_id, $tradodari_id, $gandengandari_id);
+                $dari = $this->persediaanDariReturn($item['stok_id'], $persediaanDari['column'] . '_id', $persediaanDari['value'], $item['qty']);
                 if (!$dari) {
-                    throw ValidationException::withMessages(["qty"=>"qty tidak cukup dari"]);
+                    throw ValidationException::withMessages(["qty" => "qty tidak cukup dari"]);
                 }
-                $persediaanKe = $this->persediaan($gudangke_id,$tradoke_id,$gandenganke_id);
-                $ke = $this->persediaanKeReturn($item['stok_id'],$persediaanKe['column'].'_id',$persediaanKe['value'],$item['qty']);
+                $persediaanKe = $this->persediaan($gudangke_id, $tradoke_id, $gandenganke_id);
+                $ke = $this->persediaanKeReturn($item['stok_id'], $persediaanKe['column'] . '_id', $persediaanKe['value'], $item['qty']);
                 if (!$ke) {
-                    throw ValidationException::withMessages(["qty"=>"qty tidak cukup ke"]);
+                    throw ValidationException::withMessages(["qty" => "qty tidak cukup ke"]);
                 }
             }
         }
-
-
-
     }
 
 
@@ -495,9 +522,8 @@ class PenerimaanStokDetail extends MyModel
 
         foreach ($penerimaanStokDetail as $item) {
             if ($penerimaanStokHeader->penerimaanstok_id == $korv->id) {
-                $dari = $this->vulkanStokMinus($item->stok_id,$item->vulkanisirke);
-            }    
+                $dari = $this->vulkanStokMinus($item->stok_id, $item->vulkanisirke);
+            }
         }
     }
-
 }
