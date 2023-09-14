@@ -39,7 +39,7 @@ class GajiSupirPelunasanPinjaman extends MyModel
             $table->date('tglbukti')->nullable();
             $table->string('nobukti');
             $table->bigInteger('sisaawal')->nullable();
-            $table->string('keterangan')->nullable();
+            $table->longText('keterangan')->nullable();
             $table->bigInteger('gajisupir_id')->nullable();
             $table->bigInteger('nominal')->nullable();
             $table->bigInteger('sisa')->nullable();
@@ -78,6 +78,7 @@ class GajiSupirPelunasanPinjaman extends MyModel
             (SELECT (pengeluarantruckingdetail.nominal - COALESCE(SUM(gajisupirpelunasanpinjaman.nominal),0))
                 FROM gajisupirpelunasanpinjaman WHERE pengeluarantruckingdetail.nobukti= gajisupirpelunasanpinjaman.pengeluarantrucking_nobukti) AS sisa"))
             ->leftJoin(DB::raw("pengeluarantruckingheader with (readuncommitted)"), 'pengeluarantruckingdetail.nobukti', 'pengeluarantruckingheader.nobukti')
+            ->where("pengeluarantruckingheader.pengeluarantrucking_id", 1)
             ->whereRaw("pengeluarantruckingdetail.supir_id = $supir_id")
             ->where("pengeluarantruckingheader.tglbukti","<=", $tglBukti)
             ->orderBy('pengeluarantruckingheader.tglbukti', 'asc')
@@ -88,7 +89,7 @@ class GajiSupirPelunasanPinjaman extends MyModel
             $table->date('tglbukti');
             $table->string('nobukti');
             $table->bigInteger('sisaawal');
-            $table->string('keterangan');
+            $table->longText('keterangan');
             $table->bigInteger('sisa');
         });
 
@@ -118,7 +119,7 @@ class GajiSupirPelunasanPinjaman extends MyModel
             $table->date('tglbukti');
             $table->string('pengeluarantrucking_nobukti');
             $table->bigInteger('sisaawal');
-            $table->string('keterangan');
+            $table->longText('keterangan');
             $table->bigInteger('gajisupir_id');
             $table->bigInteger('nominal');
             $table->bigInteger('sisa');
@@ -145,7 +146,7 @@ class GajiSupirPelunasanPinjaman extends MyModel
             $table->date('tglbukti')->nullable();
             $table->string('nobukti');
             $table->bigInteger('sisaawal')->nullable();
-            $table->string('keterangan')->nullable();
+            $table->longText('keterangan')->nullable();
             $table->bigInteger('gajisupir_id')->nullable();
             $table->bigInteger('nominal')->nullable();
             $table->bigInteger('sisa')->nullable();
@@ -183,7 +184,8 @@ class GajiSupirPelunasanPinjaman extends MyModel
             (SELECT (pengeluarantruckingdetail.nominal - COALESCE(SUM(gajisupirpelunasanpinjaman.nominal),0))
                 FROM gajisupirpelunasanpinjaman WHERE pengeluarantruckingdetail.nobukti= gajisupirpelunasanpinjaman.pengeluarantrucking_nobukti) AS sisa"))
             ->leftJoin(DB::raw("pengeluarantruckingheader with (readuncommitted)"), 'pengeluarantruckingdetail.nobukti', 'pengeluarantruckingheader.nobukti')
-            ->whereRaw("pengeluarantruckingdetail.supir_id = 0")
+            ->whereRaw("(pengeluarantruckingdetail.supir_id = 0 OR pengeluarantruckingdetail.supir_id IS NULL)")
+            ->where("pengeluarantruckingheader.pengeluarantrucking_id", 1)
             ->where("pengeluarantruckingheader.tglbukti","<=", $tglBukti)
             ->orderBy('pengeluarantruckingheader.tglbukti', 'asc')
             ->orderBy('pengeluarantruckingdetail.nobukti', 'asc');
@@ -193,7 +195,7 @@ class GajiSupirPelunasanPinjaman extends MyModel
             $table->date('tglbukti');
             $table->string('nobukti');
             $table->bigInteger('sisaawal');
-            $table->string('keterangan');
+            $table->longText('keterangan');
             $table->bigInteger('sisa');
         });
 
@@ -223,7 +225,7 @@ class GajiSupirPelunasanPinjaman extends MyModel
             $table->date('tglbukti');
             $table->string('pengeluarantrucking_nobukti');
             $table->bigInteger('sisaawal');
-            $table->string('keterangan');
+            $table->longText('keterangan');
             $table->bigInteger('gajisupir_id');
             $table->bigInteger('nominal');
             $table->bigInteger('sisa');
