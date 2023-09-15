@@ -503,10 +503,11 @@ class PengeluaranStokHeader extends MyModel
         $tidakBolehEdit = DB::table('pengeluaranstokheader')->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS APPROVAL')->where('text', 'NON APPROVAL')->first();
 
         $query = DB::table('pengeluaranstokheader')->from(DB::raw("pengeluaranstokheader with (readuncommitted)"))
-            ->select('statusapprovaledit as statusedit', 'tglbatasedit')
+            ->select(
+                db::raw("isnull(statusapprovaledit,4) as statusedit "),
+             'tglbatasedit')
             ->where('id', $id)
             ->first();
-
         if ($query->statusedit != $tidakBolehEdit->id) {
             $limit = strtotime($query->tglbatasedit);
             $now = strtotime('now');
