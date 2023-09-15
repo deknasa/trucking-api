@@ -402,10 +402,12 @@ class PendapatanSupirHeader extends MyModel
                                 $query = $query->where('a.gajisupir_nobukti', 'LIKE', "%$filters[data]%");
                             } else if ($filters['field'] == 'nobukti_trip') {
                                 $query = $query->where('a.suratpengantar_nobukti', 'LIKE', "%$filters[data]%");
+                            } else if ($filters['field'] == 'namasupir') {
+                                $query = $query->where('d.namasupir', 'LIKE', "%$filters[data]%");
                             } else if ($filters['field'] == 'dari') {
                                 $query = $query->where(DB::raw("isnull(b.kodekota,'')"), 'LIKE', "%$filters[data]%");
                             } else if ($filters['field'] == 'sampai') {
-                                $query = $query->where(DB::raw("isnull(c.kodekota,'')"), 'LIKE', "%$filters[data]%");
+                                $query = $query->where(DB::raw("c.kodekota"), 'LIKE', "%$filters[data]%");
                             } else if ($filters['field'] == 'tgltrip') {
                                 $query = $query->whereRaw("format(a.suratpengantar_tglbukti,'dd-MM-yyyy') like '%$filters[data]%'");
                             } else if ($filters['field'] == 'nominal_detail') {
@@ -427,6 +429,8 @@ class PendapatanSupirHeader extends MyModel
                                     $query = $query->orWhere('a.gajisupir_nobukti', 'LIKE', "%$filters[data]%");
                                 } else if ($filters['field'] == 'nobukti_trip') {
                                     $query = $query->orWhere('a.suratpengantar_nobukti', 'LIKE', "%$filters[data]%");
+                                } else if ($filters['field'] == 'namasupir') {
+                                    $query = $query->orWhere('d.namasupir', 'LIKE', "%$filters[data]%");
                                 } else if ($filters['field'] == 'dari') {
                                     $query = $query->orWhere(DB::raw("isnull(b.kodekota,'')"), 'LIKE', "%$filters[data]%");
                                 } else if ($filters['field'] == 'sampai') {

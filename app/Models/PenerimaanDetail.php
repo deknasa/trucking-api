@@ -59,7 +59,7 @@ class PenerimaanDetail extends MyModel
             $query->select(
                 "$this->table.nobukti",
                 "$this->table.nowarkat",
-                "$this->table.tgljatuhtempo",
+                DB::raw("(case when year(isnull($this->table.tgljatuhtempo,'1900/1/1'))< '2000' then null else $this->table.tgljatuhtempo end) as tgljatuhtempo"),
                 "$this->table.nominal",
                 "$this->table.keterangan",
                 "bank.namabank as bank_id",

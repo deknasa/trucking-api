@@ -91,7 +91,7 @@ class PengeluaranStokDetailController extends Controller
                         'totalNominal' => $pengeluaranDetail->totalNominal
                     ]
                 ]);
-            } else{
+            } else {
                 return response()->json([
                     'data' => [],
                     'attributes' => [
@@ -101,7 +101,6 @@ class PengeluaranStokDetailController extends Controller
                     ]
                 ]);
             }
-
         } else {
             return response()->json([
                 'data' => [],
@@ -120,15 +119,25 @@ class PengeluaranStokDetailController extends Controller
         if (request()->nobukti != 'false' && request()->nobukti != null) {
             if (request()->statuspotong == 219) { //penerimaan
                 $nobukti = request()->nobukti;
+
+                return response()->json([
+                    'data' => $jurnalDetail->jurnalForRetur($nobukti, request()->statuspotong),
+                    'attributes' => [
+                        'totalRows' => $jurnalDetail->totalRows,
+                        'totalPages' => $jurnalDetail->totalPages,
+                        'totalNominalDebet' => $jurnalDetail->totalNominalDebet,
+                        'totalNominalKredit' => $jurnalDetail->totalNominalKredit,
+                    ]
+                ]);
             } elseif (request()->statuspotong == 220) { // potong hutangbayar
                 $hutangBayar = HutangBayarHeader::from(DB::raw("hutangbayarheader with (readuncommitted)"))->where('nobukti', request()->nobukti)->first();
                 $pengeluaranHeader = PengeluaranHeader::from(DB::raw("pengeluaranheader with (readuncommitted)"))->where('nobukti', $hutangBayar->pengeluaran_nobukti)->first();
                 if (isset($pengeluaranHeader)) {
                     $nobukti = $pengeluaranHeader->nobukti ?? '';
                 } else {
-                    $pengeluaranstokbukti=db::table("pengeluaranstokheader")->from(db::raw("pengeluaranstokheader a with (readuncommitted)"))
-                    ->select('nobukti')->where('hutangbayar_nobukti',request()->nobukti)
-                    ->first()->nobukti ?? '';
+                    $pengeluaranstokbukti = db::table("pengeluaranstokheader")->from(db::raw("pengeluaranstokheader a with (readuncommitted)"))
+                        ->select('nobukti')->where('hutangbayar_nobukti', request()->nobukti)
+                        ->first()->nobukti ?? '';
                     $nobukti = $pengeluaranstokbukti;
                 }
             }
