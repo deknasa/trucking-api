@@ -52,6 +52,7 @@ class LaporanPinjamanSupirKaryawanController extends Controller
      */
     public function export(Request $request)
     {
+
         $sampai = $request->sampai;
 
         $export = LaporanPinjamanSupirKaryawan::getReport($sampai);

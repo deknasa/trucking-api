@@ -280,7 +280,7 @@ class LaporanPinjamanSupirKaryawan extends MyModel
                 'a.tglbuktipelunasan',
                 'b.keterangan',
                 'a.debet',
-                'a.kredit',
+                db::raw("abs(a.kredit) as kredit"),
                 DB::raw("sum ((isnull(a.saldo,0)+a.debet+a.kredit)) over (order by a.id asc) as Saldo"),
                 DB::raw("'Laporan Pinjaman Karyawan' as judulLaporan"),
                 DB::raw("'" . $getJudul->text . "' as judul"),
