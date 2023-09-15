@@ -40,7 +40,7 @@ class StorePengeluaranStokHeaderRequest extends FormRequest
         $rules = [
             "tglbukti" => [
                 "required",
-                // new DatePengeluaranStokAllowed(),
+                new DatePengeluaranStokAllowed(),
                 new DateTutupBuku()
             ],
             
