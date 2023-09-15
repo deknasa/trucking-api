@@ -149,7 +149,7 @@ class LaporanPinjamanSupirKaryawan extends MyModel
         )
             ->select(
                 'b.pengeluarantruckingheader_nobukti as nobukti',
-                DB::raw("a.nobukti as nobuktipelunasan"),
+                DB::raw("isnull(a.penerimaan_nobukti,'') as nobuktipelunasan"),
                 'e.tglbukti',
                 'a.tglbukti as tglbuktipelunasan',
                 DB::raw("(b.nominal*-1) as nominal"),
@@ -275,7 +275,7 @@ class LaporanPinjamanSupirKaryawan extends MyModel
             DB::raw($temphasil . " a ")
         )
             ->select(
-                'a.nobukti',
+                db::raw("(a.nobukti) + ' '+(case when isnull(a.nobuktipelunasan,'')='' then '' else '( '+isnull(a.nobuktipelunasan,'')+' )' end) as nobukti"),
                 'a.nobuktipelunasan',
                 'a.tglbukti',
                 'a.tglbuktipelunasan',
