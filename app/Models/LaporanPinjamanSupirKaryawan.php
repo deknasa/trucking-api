@@ -77,15 +77,16 @@ class LaporanPinjamanSupirKaryawan extends MyModel
             DB::raw("penerimaantruckingheader a with (readuncommitted) ")
         )
             ->select(
-                'a.nobukti',
+                'c.nobukti',
                 'a.tglbukti',
                 'b.karyawan_id',
-                'b.nominal',
+                db::raw("(b.nominal*-1) as nominal"),
                 DB::raw("1 as tipe"),
                 db::raw("isnull(f.namakaryawan,'') as namakaryawan")
 
             )
             ->join(DB::raw("penerimaantruckingdetail as b with (readuncommitted) "), 'a.nobukti', 'b.nobukti')
+            ->join(DB::raw("pengeluarantruckingheader as c with (readuncommitted) "), 'b.pengeluarantruckingheader_nobukti', 'c.nobukti')
             ->leftjoin(DB::raw("karyawan as f with (readuncommitted) "), 'b.karyawan_id', 'f.id')
 
             ->where('a.penerimaantrucking_id', '=', $penerimaantrucking_id)
@@ -96,7 +97,7 @@ class LaporanPinjamanSupirKaryawan extends MyModel
             ->OrderBy('a.nobukti', 'asc');
 
    
-
+//  dd($queryhistory->get());
 
         DB::table($temphistory)->insertUsing([
             'nobukti',
@@ -165,7 +166,7 @@ class LaporanPinjamanSupirKaryawan extends MyModel
             ->OrderBy('a.tglbukti', 'asc')
             ->OrderBy('a.nobukti', 'asc');
 
-            // dd($queryhistory->get());
+            // dd($queryrekapdata->get());
 
 
         DB::table($temprekapdata)->insertUsing([
