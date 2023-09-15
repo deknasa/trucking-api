@@ -34,6 +34,7 @@ class NotaKreditHeader extends MyModel
             ->select(
                 "$this->table.id",
                 "$this->table.nobukti",
+                "$this->table.nobukti as nobuktihidden",
                 "$this->table.pelunasanpiutang_nobukti",
                 "$this->table.tglbukti",
                 DB::raw('(case when (year(notakreditheader.tglapproval) <= 2000) then null else notakreditheader.tglapproval end ) as tglapproval'),
@@ -634,6 +635,7 @@ class NotaKreditHeader extends MyModel
         $notaKreditHeader->tgllunas = date('Y-m-d', strtotime($data['tgllunas']));
         $notaKreditHeader->nowarkat = $data['nowarkat'] ?? '';
         $notaKreditHeader->agen_id = $data['agen_id'] ?? '';
+        $notaKreditHeader->pelunasanpiutang_nobukti = $data['pelunasanpiutang_nobukti'] ?? '';
         $notaKreditHeader->modifiedby = auth('api')->user()->name;
 
         if (!$notaKreditHeader->save()) {
