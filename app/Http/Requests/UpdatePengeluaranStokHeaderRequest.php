@@ -42,7 +42,7 @@ class UpdatePengeluaranStokHeaderRequest extends FormRequest
             'id' => [new ValidasiDestroyPengeluaranStokHeader ()],
             "tglbukti" => [
                 "required",
-                new DatePengeluaranStokAllowed(),
+                // new DatePengeluaranStokAllowed(),
                 new DateTutupBuku()
             ],
             
