@@ -829,6 +829,8 @@ class LaporanKasGantung extends MyModel
             $table->float('debet');
             $table->float('kredit');
             $table->float('saldo')->nullable();
+            $table->longText('penerimaan_nobukti');
+
         });
 
         $temp_kasgantungheader = DB::table('kasgantungheader')->from(DB::raw($kasgantungheader . " AS a"))
@@ -840,6 +842,7 @@ class LaporanKasGantung extends MyModel
                 DB::raw('0 as flag'),
                 'C.nominal as debet',
                 DB::raw('0 as kredit'),
+                db::raw("c.nobukti as penerimaan_nobukti")
             ])
             ->leftJoin(DB::raw($pengembaliankasgantungdetail . " AS b"), function ($join) {
                 $join->on('a.nobukti', '=', 'b.kasgantung_nobukti')
@@ -856,7 +859,8 @@ class LaporanKasGantung extends MyModel
             'keterangan',
             'flag',
             'debet',
-            'kredit'
+            'kredit',
+            'penerimaan_nobukti',
         ], $temp_kasgantungheader);
         // dd($temp_kasgantungheader->get());
 
@@ -875,6 +879,7 @@ class LaporanKasGantung extends MyModel
                 DB::raw('1 as flag'),
                 DB::raw('0 as debet'),
                 'c.nominal as kredit',
+                'a.penerimaan_nobukti',
             ])
             ->join(DB::raw($pengembaliankasgantungdetail2 . " c with (readuncommitted)"), 'a.nobukti', '=', 'c.nobukti')
             ->join('kasgantungheader as b', 'c.kasgantung_nobukti', 'b.nobukti')
@@ -888,7 +893,8 @@ class LaporanKasGantung extends MyModel
             'keterangan',
             'flag',
             'debet',
-            'kredit'
+            'kredit',
+            'penerimaan_nobukti',
         ], $temp_pengembaliankasgantungheader2);
         // dd($temp_pengembaliankasgantungheader2->get());
 
@@ -907,7 +913,7 @@ class LaporanKasGantung extends MyModel
         $select_TempLaporan = DB::table('TempLaporan')->from(DB::raw($TempLaporan . " AS a"))
             ->select([
                 'A.tglbukti',
-                'A.nobukti',
+                db::raw("a.penerimaan_nobukti as nobukti"),
                 'A.keterangan',
                 'A.debet',
                 'A.kredit',
@@ -916,7 +922,9 @@ class LaporanKasGantung extends MyModel
             ])
             ->orderBy('a.tglbuktikasgantung', 'asc')
             ->orderBy('a.nobukti', 'asc')
-            ->orderBy('a.flag', 'desc');
+            ->orderBy('a.flag', 'asc');
+
+            // dd($select_TempLaporan ->get());
 
         DB::table($TempLaporan2)->insertUsing([
             'tglbukti',
