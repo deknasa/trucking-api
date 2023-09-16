@@ -82,7 +82,7 @@ class LaporanKasGantungController extends Controller
         //         "saldo" => "151511"
         //     ]
         // ];
-        $laporan_kas_gantung = $laporankasgantung->getExport($periode);
+        $laporan_kas_gantung = $laporankasgantung->getReport($periode);
         foreach($laporan_kas_gantung as $item){
             $item->tanggal = date('d-m-Y', strtotime($item->tanggal));
         }
