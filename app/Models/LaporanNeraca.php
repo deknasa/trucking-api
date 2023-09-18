@@ -51,6 +51,89 @@ class LaporanNeraca extends MyModel
         $judul = Parameter::where('grp', '=', 'JUDULAN LAPORAN')->first();
         $judulLaporan = $judul->text;
 
+        // rekap akunpusat detail
+
+
+//         DB::delete(DB::raw("delete akunpusatdetail from akunpusatdetail as a WHERE isnull(a.bulan,0)<>0"));
+
+
+//         $temprekap = '##temprekap' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+//         Schema::create($temprekap, function ($table) {
+//             $table->id();
+//             $table->longText('fcoa')->nullable();
+//             $table->integer('fthn')->nullable();
+//             $table->integer('fbln')->nullable();
+//             $table->double('nominal', 15, 2)->nullable();
+//         });
+
+//         $query1 = db::table('jurnalumumpusatheader')->from(db::raw("jurnalumumpusatheader j with (readuncommitted)"))
+//             ->select(
+//                 'd.coamain as fcoa',
+//                 db::raw("year(d.tglBukti) as fthn"),
+//                 db::raw("month(d.tglBukti) as fbln"),
+//                 db::raw("sum(d.nominal) as fnominal"),
+//             )
+//             ->join(db::raw("jurnalumumpusatdetail d with (readuncommitted)"), 'j.nobukti', 'd.nobukti')
+//             ->join(db::raw("mainakunpusat c with (readuncommitted)"), 'c.coa', 'd.coamain')
+//             ->whereRaw("d.tglbukti>='" . $ptgl . "'")
+//             ->groupby('d.coamain')
+//             ->groupby(db::raw("year(d.tglbukti)"))
+//             ->groupby(db::month("year(d.tglbukti)"));
+
+//         DB::table($temprekap)->insertUsing([
+//             'fcoa',
+//             'fthn',
+//             'fbln',
+//             'nominal',
+//         ], $query1);
+
+
+
+//         $query2 = db::table('jurnalumumpusatheader')->from(db::raw("jurnalumumpusatheader j with (readuncommitted)"))
+//             ->select(
+//                 'lr.coa as fcoa',
+//                 db::raw("year(d.tglBukti) as fthn"),
+//                 db::raw("month(d.tglBukti) as fbln"),
+//                 db::raw("sum(d.nominal) as fnominal"),
+//             )
+//             ->join(db::raw("jurnalumumpusatdetail d with (readuncommitted)"), 'j.nobukti', 'd.nobukti')
+//             ->join(DB::raw("perkiraanlabarugi lr with(readuncommitted)"), function ($join) {
+//                 $join->on('lr.tahun', '=', db::raw("year(j.tglbukti)"));
+//                 $join->on('lr.bulan', '=', db::raw("month(j.tglbukti)"));
+//             })
+//             ->whereRaw("D.coamain IN (SELECT DISTINCT C.coa FROM maintypeakuntansi AT INNER JOIN mainakunpusat C ON AT.kodetype = C.[Type]
+// 		            WHERE AT.[order] >= 4000 AND AT.[order] < 9000 AND C.[type]<>'Laba/Rugi')  ")
+//             ->whereRaw("d.tglbukti>='" . $ptgl . "'")
+//             ->groupby('lr.coa')
+//             ->groupby(db::raw("year(d.tglbukti)"))
+//             ->groupby(db::month("year(d.tglbukti)"));
+
+//         DB::table($temprekap)->insertUsing([
+//             'fcoa',
+//             'fthn',
+//             'fbln',
+//             'nominal',
+//         ], $query2);
+
+//         $query = db::table($temprekap)->from(db::raw($temprekap . " a "))
+//             ->select(
+//                 'a.fcoa',
+//                 'a.fthn',
+//                 'a.fbln',
+//                 db::raw("sum(a.fnominal) as fnominal ")
+//             )
+//             ->grpupBY('a.fcoa')
+//             ->grpupBY('a.fthn')
+//             ->grpupBY('a.fbln');
+
+//         DB::table('akunpusatdetail')->insertUsing([
+//             'fcoa',
+//             'fthn',
+//             'fbln',
+//             'nominal',
+//         ], $query);
+// // 
+
 
         DB::table('akunpusatdetail')
             ->where('bulan', '<>', 0)
