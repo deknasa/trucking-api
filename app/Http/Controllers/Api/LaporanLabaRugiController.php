@@ -61,7 +61,7 @@ class LaporanLabaRugiController extends Controller
         $laporanlabarugi = new LaporanLabaRugi();
 
 
-        $laporan_labarugi = $laporanlabarugi->getExport($bulan, $tahun);
+        $laporan_labarugi = $laporanlabarugi->getReport($bulan, $tahun);
         // foreach($laporan_labarugi as $item){
         //     $item->tglbukti = date('d-m-Y', strtotime($item->tglbukti));
         //     $item->tgljatuhtempo = date('d-m-Y', strtotime($item->tgljatuhtempo));
