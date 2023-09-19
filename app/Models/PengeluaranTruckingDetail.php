@@ -93,7 +93,21 @@ class PengeluaranTruckingDetail extends MyModel
                 'supir.namasupir as supir_id',
                 'karyawan.namakaryawan as karyawan_id',
                 $this->table . '.penerimaantruckingheader_nobukti',
+                db::raw("cast((format(penerimaantruckingheader.tglbukti,'yyyy/MM')+'/1') as date) as tgldariheaderpenerimaantruckingheader"),
+                db::raw("cast(cast(format((cast((format(penerimaantruckingheader.tglbukti,'yyyy/MM')+'/1') as datetime)+32),'yyyy/MM')+'/01' as datetime)-1 as date) as tglsampaiheaderpenerimaantruckingheader"), 
+                db::raw("cast((format(ot.tglbukti,'yyyy/MM')+'/1') as date) as tgldariheaderorderantrucking"),
+                db::raw("cast(cast(format((cast((format(ot.tglbukti,'yyyy/MM')+'/1') as datetime)+32),'yyyy/MM')+'/01' as datetime)-1 as date) as tglsampaiheaderorderantrucking"), 
+                db::raw("cast((format(pengeluaranstokheader.tglbukti,'yyyy/MM')+'/1') as date) as tgldariheaderpengeluaranstokheader"),
+                db::raw("cast(cast(format((cast((format(pengeluaranstokheader.tglbukti,'yyyy/MM')+'/1') as datetime)+32),'yyyy/MM')+'/01' as datetime)-1 as date) as tglsampaiheaderpengeluaranstokheader"), 
+                db::raw("cast((format(invoice.tglbukti,'yyyy/MM')+'/1') as date) as tgldariheaderinvoiceheader"),
+            db::raw("cast(cast(format((cast((format(invoice.tglbukti,'yyyy/MM')+'/1') as datetime)+32),'yyyy/MM')+'/01' as datetime)-1 as date) as tglsampaiheaderinvoiceheader"), 
+            db::raw("cast((format(invoiceextra.tglbukti,'yyyy/MM')+'/1') as date) as tgldariheaderinvoiceextraheader"),
+            db::raw("cast(cast(format((cast((format(invoiceextra.tglbukti,'yyyy/MM')+'/1') as datetime)+32),'yyyy/MM')+'/01' as datetime)-1 as date) as tglsampaiheaderinvoiceextraheader"), 
             )
+                ->leftJoin(DB::raw("invoiceheader as invoice with (readuncommitted)"), 'pengeluarantruckingdetail.invoice_nobukti', '=', 'invoice.nobukti')
+                ->leftJoin(DB::raw("invoiceextraheader as invoiceextra with (readuncommitted)"), 'pengeluarantruckingdetail.invoice_nobukti', '=', 'invoiceextra.nobukti')
+                ->leftJoin(DB::raw("penerimaantruckingheader with (readuncommitted)"), 'pengeluarantruckingdetail.penerimaantruckingheader_nobukti', '=', 'penerimaantruckingheader.nobukti')
+                ->leftJoin(DB::raw("pengeluaranstokheader with (readuncommitted)"), 'pengeluarantruckingdetail.pengeluaranstok_nobukti', '=', 'pengeluaranstokheader.nobukti')
                 ->leftJoin(DB::raw("karyawan with (readuncommitted)"), $this->table . '.karyawan_id', 'karyawan.id')
                 ->leftJoin(DB::raw("supir with (readuncommitted)"), $this->table . '.supir_id', 'supir.id')
                 ->leftJoin(DB::raw("orderantrucking as ot with (readuncommitted)"), 'pengeluarantruckingdetail.orderantrucking_nobukti', 'ot.nobukti')

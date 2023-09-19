@@ -185,8 +185,11 @@ class HutangBayarDetail extends MyModel
                 $this->table . '.nominal',
                 $this->table . '.keterangan',
                 DB::raw("isnull($this->table.potongan,0) as potongan"),
-                $this->table . '.hutang_nobukti'
-            );
+                $this->table . '.hutang_nobukti',
+                db::raw("cast((format(hutangheader.tglbukti,'yyyy/MM')+'/1') as date) as tgldariheaderhutangheader"),
+                db::raw("cast(cast(format((cast((format(hutangheader.tglbukti,'yyyy/MM')+'/1') as datetime)+32),'yyyy/MM')+'/01' as datetime)-1 as date) as tglsampaiheaderhutangheader"), 
+            )
+            ->leftJoin(DB::raw("hutangheader with (readuncommitted)"), 'hutangbayardetail.hutang_nobukti', '=', 'hutangheader.nobukti');
             $this->sort($query);
             $query->where($this->table . '.hutangbayar_id', '=', request()->hutangbayar_id);
             $this->filter($query);

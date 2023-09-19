@@ -70,17 +70,41 @@ class GajiSupirDetail extends MyModel
             $tempDetail = $this->createTemp();
             $this->tempTable = $tempDetail;
             $tempQuery = DB::table($tempDetail)->from(DB::raw("$tempDetail with (readuncommitted)"));
-
+            $tempQuery->select(
+                "$tempDetail.nobukti",
+                "$tempDetail.suratpengantar_nobukti",
+                "$tempDetail.tglsp",
+                "$tempDetail.dari",
+                "$tempDetail.sampai",
+                "$tempDetail.nocont",
+                "$tempDetail.nosp",
+                "$tempDetail.uangmakanberjenjang",
+                "$tempDetail.gajisupir",
+                "$tempDetail.gajikenek",
+                "$tempDetail.komisisupir",
+                "$tempDetail.tolsupir",
+                "$tempDetail.upahritasi",
+                "$tempDetail.ritasi_nobukti",
+                "$tempDetail.statusritasi",
+                "$tempDetail.biayaextra",
+                "$tempDetail.keteranganbiayatambahan",
+                db::raw("cast((format(suratpengantar.tglbukti,'yyyy/MM')+'/1') as date) as tgldariheadersuratpengantar"),
+                db::raw("cast(cast(format((cast((format(suratpengantar.tglbukti,'yyyy/MM')+'/1') as datetime)+32),'yyyy/MM')+'/01' as datetime)-1 as date) as tglsampaiheadersuratpengantar"), 
+                db::raw("cast((format(ritasi.tglbukti,'yyyy/MM')+'/1') as date) as tgldariheaderritasi"),
+                db::raw("cast(cast(format((cast((format(ritasi.tglbukti,'yyyy/MM')+'/1') as datetime)+32),'yyyy/MM')+'/01' as datetime)-1 as date) as tglsampaiheaderritasi"), 
+            )
+            ->leftJoin(DB::raw("suratpengantar with (readuncommitted)"), $tempDetail . '.suratpengantar_nobukti', 'suratpengantar.nobukti')
+            ->leftJoin(DB::raw("ritasi with (readuncommitted)"), $tempDetail . '.ritasi_nobukti', 'ritasi.nobukti');
             $tempQuery->orderBy($tempDetail . '.' . $this->params['sortIndex'], $this->params['sortOrder']);
 
             $this->filter($tempQuery, $tempDetail);
-            $this->totalGajiSupir = $tempQuery->sum('gajisupir');
-            $this->totalGajiKenek = $tempQuery->sum('gajikenek');
-            $this->totalKomisiSupir = $tempQuery->sum('komisisupir');
-            $this->totalUpahRitasi = $tempQuery->sum('upahritasi');
-            $this->totalBiayaExtra = $tempQuery->sum('biayaextra');
-            $this->totalTolSupir = $tempQuery->sum('tolsupir');
-            $this->totalUangMakanBerjenjang = $tempQuery->sum('uangmakanberjenjang');
+            $this->totalGajiSupir = $tempQuery->sum("$tempDetail.gajisupir");
+            $this->totalGajiKenek = $tempQuery->sum("$tempDetail.gajikenek");
+            $this->totalKomisiSupir = $tempQuery->sum("$tempDetail.komisisupir");
+            $this->totalUpahRitasi = $tempQuery->sum("$tempDetail.upahritasi");
+            $this->totalBiayaExtra = $tempQuery->sum("$tempDetail.biayaextra");
+            $this->totalTolSupir = $tempQuery->sum("$tempDetail.tolsupir");
+            $this->totalUangMakanBerjenjang = $tempQuery->sum("$tempDetail.uangmakanberjenjang");
 
             $this->totalRows = $tempQuery->count();
             $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;

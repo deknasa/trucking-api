@@ -764,7 +764,7 @@ class PengeluaranHeader extends MyModel
                 'tgljatuhtempo' =>  date('Y-m-d', strtotime($data['tgljatuhtempo'][$i])),
                 'nominal' => $data['nominal_detail'][$i],
                 'coadebet' =>  $data['coadebet'][$i],
-                'coakredit' => (array_key_exists("coakredit", $data)) ? $data['coakredit'][$i] : $querysubgrppengeluaran->coa,
+                'coakredit' => ($data['coakredit'])?$data['coakredit'][$i]: $querysubgrppengeluaran->coa,
                 'keterangan' => $data['keterangan_detail'][$i],
                 'noinvoice' => $data['noinvoice'][$i] ?? '',
                 'bank' => $data['bank_detail'][$i] ?? '',
@@ -772,7 +772,7 @@ class PengeluaranHeader extends MyModel
             ]);
             $pengeluaranDetails[] = $pengeluaranDetail->toArray();
             $coadebet_detail[] =  $data['coadebet'][$i];
-            $coakredit_detail[] = (array_key_exists("coakredit", $data)) ? $data['coakredit'][$i] : $querysubgrppengeluaran->coa;
+            $coakredit_detail[] = ($data['coakredit'])?$data['coakredit'][$i]: $querysubgrppengeluaran->coa;
             $nominal_detail[] = $data['nominal_detail'][$i];
             $keterangan_detail[] = $data['keterangan_detail'][$i];
         }
@@ -897,7 +897,7 @@ class PengeluaranHeader extends MyModel
                 'tgljatuhtempo' =>  date('Y-m-d', strtotime($data['tgljatuhtempo'][$i])),
                 'nominal' => $data['nominal_detail'][$i],
                 'coadebet' =>  $data['coadebet'][$i],
-                'coakredit' => (array_key_exists("coakredit", $data)) ? $data['coakredit'][$i] : $querysubgrppengeluaran->coa,
+                'coakredit' => ($data['coakredit'])?$data['coakredit'][$i] : $querysubgrppengeluaran->coa,
                 'keterangan' => $data['keterangan_detail'][$i],
                 'noinvoice' => $data['noinvoice'][$i] ?? '',
                 'bank' => $data['bank_detail'][$i] ?? '',
@@ -905,7 +905,7 @@ class PengeluaranHeader extends MyModel
             ]);
             $pengeluaranDetails[] = $pengeluaranDetail->toArray();
             $coadebet_detail[] =  $data['coadebet'][$i];
-            $coakredit_detail[] = (array_key_exists("coakredit", $data)) ? $data['coakredit'][$i] : $querysubgrppengeluaran->coa;
+            $coakredit_detail[] = ($data['coakredit'])?$data['coakredit'][$i] : $querysubgrppengeluaran->coa;
             $nominal_detail[] = $data['nominal_detail'][$i];
             $keterangan_detail[] = $data['keterangan_detail'][$i];
         }

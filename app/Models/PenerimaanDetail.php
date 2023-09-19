@@ -71,14 +71,26 @@ class PenerimaanDetail extends MyModel
                 DB::raw("(case when year(isnull($this->table.bulanbeban,'1900/1/1'))=1900 then null else $this->table.bulanbeban end) as bulanbeban"),
                 "a.keterangancoa as coadebet",
                 "b.keterangancoa as coakredit",
+                db::raw("cast((format(invoice.tglbukti,'yyyy/MM')+'/1') as date) as tgldariheaderinvoiceheader"),
+                db::raw("cast(cast(format((cast((format(invoice.tglbukti,'yyyy/MM')+'/1') as datetime)+32),'yyyy/MM')+'/01' as datetime)-1 as date) as tglsampaiheaderinvoiceheader"), 
+                db::raw("cast((format(invoiceextra.tglbukti,'yyyy/MM')+'/1') as date) as tgldariheaderinvoiceextraheader"),
+                db::raw("cast(cast(format((cast((format(invoiceextra.tglbukti,'yyyy/MM')+'/1') as datetime)+32),'yyyy/MM')+'/01' as datetime)-1 as date) as tglsampaiheaderinvoiceextraheader"), 
+                db::raw("cast((format(pelunasanpiutangheader.tglbukti,'yyyy/MM')+'/1') as date) as tgldariheaderpelunasanpiutangheader"),
+                db::raw("cast(cast(format((cast((format(pelunasanpiutangheader.tglbukti,'yyyy/MM')+'/1') as datetime)+32),'yyyy/MM')+'/01' as datetime)-1 as date) as tglsampaiheaderpelunasanpiutangheader"), 
+                db::raw("cast((format(penerimaangiroheader.tglbukti,'yyyy/MM')+'/1') as date) as tgldariheaderpenerimaangiroheader"),
+                db::raw("cast(cast(format((cast((format(penerimaangiroheader.tglbukti,'yyyy/MM')+'/1') as datetime)+32),'yyyy/MM')+'/01' as datetime)-1 as date) as tglsampaiheaderpenerimaangiroheader"), 
 
             )
+                ->leftJoin(DB::raw("invoiceheader as invoice with (readuncommitted)"), 'penerimaandetail.invoice_nobukti', '=', 'invoice.nobukti')
+                ->leftJoin(DB::raw("invoiceextraheader as invoiceextra with (readuncommitted)"), 'penerimaandetail.invoice_nobukti', '=', 'invoiceextra.nobukti')
+                ->leftJoin(DB::raw("pelunasanpiutangheader with (readuncommitted)"), 'penerimaandetail.pelunasanpiutang_nobukti', '=', 'pelunasanpiutangheader.nobukti')
+                ->leftJoin(DB::raw("penerimaangiroheader with (readuncommitted)"), 'penerimaandetail.penerimaangiro_nobukti', '=', 'penerimaangiroheader.nobukti')
                 ->leftJoin(DB::raw("bank with (readuncommitted)"), "bank.id", "=", "$this->table.bank_id")
                 ->leftJoin(DB::raw("akunpusat as a with (readuncommitted)"), "a.coa", "=", "$this->table.coadebet")
                 ->leftJoin(DB::raw("akunpusat as b with (readuncommitted)"), "b.coa", "=", "$this->table.coakredit")
                 ->leftJoin(DB::raw("bankpelanggan with (readuncommitted)"), "bankpelanggan.id", "=", "$this->table.bankpelanggan_id");
             $query->where($this->table . ".penerimaan_id", "=", request()->penerimaan_id);
-            $this->totalNominal = $query->sum('nominal');
+            $this->totalNominal = $query->sum('penerimaandetail.nominal');
             $this->filter($query);
             $this->totalRows = $query->count();
             $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;

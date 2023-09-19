@@ -223,8 +223,25 @@ class PelunasanPiutangHeader extends MyModel
                 'statuscetak.memo as statuscetak',
                 'bank.namabank as bank_id',
                 'agen.namaagen as agen_id',
-                'alatbayar.namaalatbayar as alatbayar_id'
+                'alatbayar.namaalatbayar as alatbayar_id',
+                db::raw("cast((format(penerimaangiroheader.tglbukti,'yyyy/MM')+'/1') as date) as tgldariheaderpenerimaangiroheader"),
+                db::raw("cast(cast(format((cast((format(penerimaangiroheader.tglbukti,'yyyy/MM')+'/1') as datetime)+32),'yyyy/MM')+'/01' as datetime)-1 as date) as tglsampaiheaderpenerimaangiroheader"), 
+                db::raw("cast((format(penerimaanheader.tglbukti,'yyyy/MM')+'/1') as date) as tgldariheaderpenerimaanheader"),
+                db::raw("cast(cast(format((cast((format(penerimaanheader.tglbukti,'yyyy/MM')+'/1') as datetime)+32),'yyyy/MM')+'/01' as datetime)-1 as date) as tglsampaiheaderpenerimaanheader"), 
+                db::raw("cast((format(pengeluaranheader.tglbukti,'yyyy/MM')+'/1') as date) as tgldariheaderpengeluaranheader"),
+                db::raw("cast(cast(format((cast((format(pengeluaranheader.tglbukti,'yyyy/MM')+'/1') as datetime)+32),'yyyy/MM')+'/01' as datetime)-1 as date) as tglsampaiheaderpengeluaranheader"), 
+                db::raw("cast((format(notadebetheader.tglbukti,'yyyy/MM')+'/1') as date) as tgldariheadernotadebetheader"),
+                db::raw("cast(cast(format((cast((format(notadebetheader.tglbukti,'yyyy/MM')+'/1') as datetime)+32),'yyyy/MM')+'/01' as datetime)-1 as date) as tglsampaiheadernotadebetheader"), 
+                db::raw("cast((format(notakreditheader.tglbukti,'yyyy/MM')+'/1') as date) as tgldariheadernotakreditheader"),
+                db::raw("cast(cast(format((cast((format(notakreditheader.tglbukti,'yyyy/MM')+'/1') as datetime)+32),'yyyy/MM')+'/01' as datetime)-1 as date) as tglsampaiheadernotakreditheader"), 
             )
+            
+            ->leftJoin(DB::raw("penerimaangiroheader with (readuncommitted)"), 'pelunasanpiutangheader.penerimaangiro_nobukti', '=', 'penerimaangiroheader.nobukti')
+            ->leftJoin(DB::raw("penerimaanheader with (readuncommitted)"), 'pelunasanpiutangheader.penerimaan_nobukti', '=', 'penerimaanheader.nobukti')
+            ->leftJoin(DB::raw("pengeluaranheader with (readuncommitted)"), 'pelunasanpiutangheader.pengeluaran_nobukti', '=', 'pengeluaranheader.nobukti')
+            ->leftJoin(DB::raw("notadebetheader with (readuncommitted)"), 'pelunasanpiutangheader.notadebet_nobukti', '=', 'notadebetheader.nobukti')
+            ->leftJoin(DB::raw("notakreditheader with (readuncommitted)"), 'pelunasanpiutangheader.notakredit_nobukti', '=', 'notakreditheader.nobukti')
+
             ->leftJoin(DB::raw("parameter as statuscetak with (readuncommitted)"), 'pelunasanpiutangheader.statuscetak', 'statuscetak.id')
             ->leftJoin(DB::raw("bank with (readuncommitted)"), 'pelunasanpiutangheader.bank_id', 'bank.id')
             ->leftJoin(DB::raw("agen with (readuncommitted)"), 'pelunasanpiutangheader.agen_id', 'agen.id')

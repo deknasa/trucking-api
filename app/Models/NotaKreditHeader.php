@@ -53,8 +53,14 @@ class NotaKreditHeader extends MyModel
                 "$this->table.pengeluaran_nobukti",
                 "agen.namaagen as agen",
                 "bank.namabank as bank",
-                "alatbayar.namaalatbayar as alatbayar"
+                "alatbayar.namaalatbayar as alatbayar",
+                db::raw("cast((format(pengeluaranheader.tglbukti,'yyyy/MM')+'/1') as date) as tgldariheaderpengeluaranheader"),
+                db::raw("cast(cast(format((cast((format(pengeluaranheader.tglbukti,'yyyy/MM')+'/1') as datetime)+32),'yyyy/MM')+'/01' as datetime)-1 as date) as tglsampaiheaderpengeluaranheader"), 
+                db::raw("cast((format(pelunasanpiutangheader.tglbukti,'yyyy/MM')+'/1') as date) as tgldariheaderpelunasanpiutangheader"),
+                db::raw("cast(cast(format((cast((format(pelunasanpiutangheader.tglbukti,'yyyy/MM')+'/1') as datetime)+32),'yyyy/MM')+'/01' as datetime)-1 as date) as tglsampaiheaderpelunasanpiutangheader"), 
             )
+            ->leftJoin(DB::raw("pelunasanpiutangheader with (readuncommitted)"), 'notakreditheader.pelunasanpiutang_nobukti', '=', 'pelunasanpiutangheader.nobukti')
+            ->leftJoin(DB::raw("pengeluaranheader with (readuncommitted)"), 'notakreditheader.pengeluaran_nobukti', '=', 'pengeluaranheader.nobukti')
             ->leftJoin(DB::raw("bank with (readuncommitted)"), 'notakreditheader.bank_id', 'bank.id')
             ->leftJoin(DB::raw("agen with (readuncommitted)"), 'notakreditheader.agen_id', 'agen.id')
             ->leftJoin(DB::raw("alatbayar with (readuncommitted)"), 'notakreditheader.alatbayar_id', 'alatbayar.id')

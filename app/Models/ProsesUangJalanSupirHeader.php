@@ -44,15 +44,18 @@ class ProsesUangJalanSupirHeader extends MyModel
                 'supir.namasupir as supir_id',
                 'prosesuangjalansupirheader.modifiedby',
                 'prosesuangjalansupirheader.created_at',
-                'prosesuangjalansupirheader.updated_at'
+                'prosesuangjalansupirheader.updated_at',
+                db::raw("cast((format(absensisupir.tglbukti,'yyyy/MM')+'/1') as date) as tgldariheaderabsensisupirheader"),
+                db::raw("cast(cast(format((cast((format(absensisupir.tglbukti,'yyyy/MM')+'/1') as datetime)+32),'yyyy/MM')+'/01' as datetime)-1 as date) as tglsampaiheaderabsensisupirheader"), 
             )
+            ->leftJoin(DB::raw("absensisupirheader as absensisupir with (readuncommitted)"), 'prosesuangjalansupirheader.absensisupir_nobukti', '=', 'absensisupir.nobukti')
             ->leftJoin(DB::raw("parameter as statuscetak with (readuncommitted)"), 'prosesuangjalansupirheader.statuscetak', 'statuscetak.id')
             ->leftJoin(DB::raw("parameter as statusapproval with (readuncommitted)"), 'prosesuangjalansupirheader.statusapproval', 'statusapproval.id')
             ->leftJoin(DB::raw("trado with (readuncommitted)"), 'prosesuangjalansupirheader.trado_id', 'trado.id')
             ->leftJoin(DB::raw("supir with (readuncommitted)"), 'prosesuangjalansupirheader.supir_id', 'supir.id');
 
         if (request()->tgldari) {
-            $query->whereBetween('tglbukti', [date('Y-m-d', strtotime(request()->tgldari)), date('Y-m-d', strtotime(request()->tglsampai))]);
+            $query->whereBetween('prosesuangjalansupirheader.tglbukti', [date('Y-m-d', strtotime(request()->tgldari)), date('Y-m-d', strtotime(request()->tglsampai))]);
         }
         $this->totalRows = $query->count();
         $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;

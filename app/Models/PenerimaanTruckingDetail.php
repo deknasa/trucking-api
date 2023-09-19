@@ -58,7 +58,10 @@ class PenerimaanTruckingDetail extends MyModel
                 "karyawan.namakaryawan as karyawan_id",
                 "supir.namasupir as supir_id",
                 "$this->table.pengeluarantruckingheader_nobukti",
+                db::raw("cast((format(pengeluarantruckingheader.tglbukti,'yyyy/MM')+'/1') as date) as tgldariheaderpengeluarantruckingheader"),
+                db::raw("cast(cast(format((cast((format(pengeluarantruckingheader.tglbukti,'yyyy/MM')+'/1') as datetime)+32),'yyyy/MM')+'/01' as datetime)-1 as date) as tglsampaiheaderpengeluarantruckingheader"), 
             )
+                ->leftJoin(DB::raw("pengeluarantruckingheader with (readuncommitted)"), 'penerimaantruckingdetail.pengeluarantruckingheader_nobukti', '=', 'pengeluarantruckingheader.nobukti')
                 ->leftJoin(DB::raw("karyawan with (readuncommitted)"), "$this->table.karyawan_id", "karyawan.id")
                 ->leftJoin(DB::raw("supir with (readuncommitted)"), "$this->table.supir_id", "supir.id");
             $this->totalNominal = $query->sum('nominal');

@@ -52,8 +52,15 @@ class NotaDebetDetail extends MyModel
                 "$this->table.lebihbayar",
                 "$this->table.keterangan",
                 "akunpusat.keterangancoa as coalebihbayar",
-                "$this->table.modifiedby"
+                "$this->table.modifiedby",
+                db::raw("cast((format(invoice.tglbukti,'yyyy/MM')+'/1') as date) as tgldariheaderinvoiceheader"),
+                db::raw("cast(cast(format((cast((format(invoice.tglbukti,'yyyy/MM')+'/1') as datetime)+32),'yyyy/MM')+'/01' as datetime)-1 as date) as tglsampaiheaderinvoiceheader"), 
+                db::raw("cast((format(invoiceextra.tglbukti,'yyyy/MM')+'/1') as date) as tgldariheaderinvoiceextraheader"),
+                db::raw("cast(cast(format((cast((format(invoiceextra.tglbukti,'yyyy/MM')+'/1') as datetime)+32),'yyyy/MM')+'/01' as datetime)-1 as date) as tglsampaiheaderinvoiceextraheader"), 
             )
+
+                ->leftJoin(DB::raw("invoiceheader as invoice with (readuncommitted)"), 'notadebetdetail.invoice_nobukti', '=', 'invoice.nobukti')
+                ->leftJoin(DB::raw("invoiceextraheader as invoiceextra with (readuncommitted)"), 'notadebetdetail.invoice_nobukti', '=', 'invoiceextra.nobukti')
                 ->leftJoin(DB::raw("akunpusat with (readuncommitted)"), "$this->table.coalebihbayar", 'akunpusat.coa');
 
             $this->sort($query);
@@ -61,9 +68,9 @@ class NotaDebetDetail extends MyModel
             $query->where($this->table . ".notadebet_id", "=", request()->notadebet_id);
             $this->filter($query);
 
-            $this->totalNominal = $query->sum('nominal');
-            $this->totalNominalBayar = $query->sum('nominalbayar');
-            $this->totalLebihBayar = $query->sum('lebihbayar');
+            $this->totalNominal = $query->sum('notadebetdetail.nominal');
+            $this->totalNominalBayar = $query->sum('notadebetdetail.nominalbayar');
+            $this->totalLebihBayar = $query->sum('notadebetdetail.lebihbayar');
             $this->totalRows = $query->count();
             $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;
 
