@@ -1122,6 +1122,8 @@ class ProsesGajiSupirHeader extends MyModel
                             $query = $query->whereRaw("format($this->tableTotal.potonganpinjamansemua, '#,#0.00') LIKE '%$filters[data]%'");
                         } else if ($filters['field'] == 'uangmakanharian') {
                             $query = $query->whereRaw("format($this->tableTotal.uangmakanharian, '#,#0.00') LIKE '%$filters[data]%'");
+                        } else if ($filters['field'] == 'uangmakanberjenjang') {
+                            $query = $query->whereRaw("format($this->tableTotal.uangmakanberjenjang, '#,#0.00') LIKE '%$filters[data]%'");
                         } else if ($filters['field'] == 'deposito') {
                             $query = $query->whereRaw("format($this->tableTotal.deposito, '#,#0.00') LIKE '%$filters[data]%'");
                         } else if ($filters['field'] == 'tglbukti' || $filters['field'] == 'tgldari' || $filters['field'] == 'tglsampai' || $filters['field'] == 'tglapproval' || $filters['field'] == 'tglbukacetak') {
@@ -1155,6 +1157,8 @@ class ProsesGajiSupirHeader extends MyModel
                                 $query = $query->orWhereRaw("format($this->tableTotal.potonganpinjamansemua, '#,#0.00') LIKE '%$filters[data]%'");
                             } else if ($filters['field'] == 'uangmakanharian') {
                                 $query = $query->orWhereRaw("format($this->tableTotal.uangmakanharian, '#,#0.00') LIKE '%$filters[data]%'");
+                            } else if ($filters['field'] == 'uangmakanberjenjang') {
+                                $query = $query->orWhereRaw("format($this->tableTotal.uangmakanberjenjang, '#,#0.00') LIKE '%$filters[data]%'");
                             } else if ($filters['field'] == 'deposito') {
                                 $query = $query->orWhereRaw("format($this->tableTotal.deposito, '#,#0.00') LIKE '%$filters[data]%'");
                             } else if ($filters['field'] == 'tglbukti' || $filters['field'] == 'tgldari' || $filters['field'] == 'tglsampai' || $filters['field'] == 'tglapproval' || $filters['field'] == 'tglbukacetak') {
