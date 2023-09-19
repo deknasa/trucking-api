@@ -51,88 +51,90 @@ class LaporanNeraca extends MyModel
         $judul = Parameter::where('grp', '=', 'JUDULAN LAPORAN')->first();
         $judulLaporan = $judul->text;
 
+
+
         // rekap akunpusat detail
 
 
-//         DB::delete(DB::raw("delete akunpusatdetail from akunpusatdetail as a WHERE isnull(a.bulan,0)<>0"));
+        //         DB::delete(DB::raw("delete akunpusatdetail from akunpusatdetail as a WHERE isnull(a.bulan,0)<>0"));
 
 
-//         $temprekap = '##temprekap' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
-//         Schema::create($temprekap, function ($table) {
-//             $table->id();
-//             $table->longText('fcoa')->nullable();
-//             $table->integer('fthn')->nullable();
-//             $table->integer('fbln')->nullable();
-//             $table->double('nominal', 15, 2)->nullable();
-//         });
+        //         $temprekap = '##temprekap' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+        //         Schema::create($temprekap, function ($table) {
+        //             $table->id();
+        //             $table->longText('fcoa')->nullable();
+        //             $table->integer('fthn')->nullable();
+        //             $table->integer('fbln')->nullable();
+        //             $table->double('nominal', 15, 2)->nullable();
+        //         });
 
-//         $query1 = db::table('jurnalumumpusatheader')->from(db::raw("jurnalumumpusatheader j with (readuncommitted)"))
-//             ->select(
-//                 'd.coamain as fcoa',
-//                 db::raw("year(d.tglBukti) as fthn"),
-//                 db::raw("month(d.tglBukti) as fbln"),
-//                 db::raw("sum(d.nominal) as fnominal"),
-//             )
-//             ->join(db::raw("jurnalumumpusatdetail d with (readuncommitted)"), 'j.nobukti', 'd.nobukti')
-//             ->join(db::raw("mainakunpusat c with (readuncommitted)"), 'c.coa', 'd.coamain')
-//             ->whereRaw("d.tglbukti>='" . $ptgl . "'")
-//             ->groupby('d.coamain')
-//             ->groupby(db::raw("year(d.tglbukti)"))
-//             ->groupby(db::month("year(d.tglbukti)"));
+        //         $query1 = db::table('jurnalumumpusatheader')->from(db::raw("jurnalumumpusatheader j with (readuncommitted)"))
+        //             ->select(
+        //                 'd.coamain as fcoa',
+        //                 db::raw("year(d.tglBukti) as fthn"),
+        //                 db::raw("month(d.tglBukti) as fbln"),
+        //                 db::raw("sum(d.nominal) as fnominal"),
+        //             )
+        //             ->join(db::raw("jurnalumumpusatdetail d with (readuncommitted)"), 'j.nobukti', 'd.nobukti')
+        //             ->join(db::raw("mainakunpusat c with (readuncommitted)"), 'c.coa', 'd.coamain')
+        //             ->whereRaw("d.tglbukti>='" . $ptgl . "'")
+        //             ->groupby('d.coamain')
+        //             ->groupby(db::raw("year(d.tglbukti)"))
+        //             ->groupby(db::month("year(d.tglbukti)"));
 
-//         DB::table($temprekap)->insertUsing([
-//             'fcoa',
-//             'fthn',
-//             'fbln',
-//             'nominal',
-//         ], $query1);
+        //         DB::table($temprekap)->insertUsing([
+        //             'fcoa',
+        //             'fthn',
+        //             'fbln',
+        //             'nominal',
+        //         ], $query1);
 
 
 
-//         $query2 = db::table('jurnalumumpusatheader')->from(db::raw("jurnalumumpusatheader j with (readuncommitted)"))
-//             ->select(
-//                 'lr.coa as fcoa',
-//                 db::raw("year(d.tglBukti) as fthn"),
-//                 db::raw("month(d.tglBukti) as fbln"),
-//                 db::raw("sum(d.nominal) as fnominal"),
-//             )
-//             ->join(db::raw("jurnalumumpusatdetail d with (readuncommitted)"), 'j.nobukti', 'd.nobukti')
-//             ->join(DB::raw("perkiraanlabarugi lr with(readuncommitted)"), function ($join) {
-//                 $join->on('lr.tahun', '=', db::raw("year(j.tglbukti)"));
-//                 $join->on('lr.bulan', '=', db::raw("month(j.tglbukti)"));
-//             })
-//             ->whereRaw("D.coamain IN (SELECT DISTINCT C.coa FROM maintypeakuntansi AT INNER JOIN mainakunpusat C ON AT.kodetype = C.[Type]
-// 		            WHERE AT.[order] >= 4000 AND AT.[order] < 9000 AND C.[type]<>'Laba/Rugi')  ")
-//             ->whereRaw("d.tglbukti>='" . $ptgl . "'")
-//             ->groupby('lr.coa')
-//             ->groupby(db::raw("year(d.tglbukti)"))
-//             ->groupby(db::month("year(d.tglbukti)"));
+        //         $query2 = db::table('jurnalumumpusatheader')->from(db::raw("jurnalumumpusatheader j with (readuncommitted)"))
+        //             ->select(
+        //                 'lr.coa as fcoa',
+        //                 db::raw("year(d.tglBukti) as fthn"),
+        //                 db::raw("month(d.tglBukti) as fbln"),
+        //                 db::raw("sum(d.nominal) as fnominal"),
+        //             )
+        //             ->join(db::raw("jurnalumumpusatdetail d with (readuncommitted)"), 'j.nobukti', 'd.nobukti')
+        //             ->join(DB::raw("perkiraanlabarugi lr with(readuncommitted)"), function ($join) {
+        //                 $join->on('lr.tahun', '=', db::raw("year(j.tglbukti)"));
+        //                 $join->on('lr.bulan', '=', db::raw("month(j.tglbukti)"));
+        //             })
+        //             ->whereRaw("D.coamain IN (SELECT DISTINCT C.coa FROM maintypeakuntansi AT INNER JOIN mainakunpusat C ON AT.kodetype = C.[Type]
+        // 		            WHERE AT.[order] >= 4000 AND AT.[order] < 9000 AND C.[type]<>'Laba/Rugi')  ")
+        //             ->whereRaw("d.tglbukti>='" . $ptgl . "'")
+        //             ->groupby('lr.coa')
+        //             ->groupby(db::raw("year(d.tglbukti)"))
+        //             ->groupby(db::month("year(d.tglbukti)"));
 
-//         DB::table($temprekap)->insertUsing([
-//             'fcoa',
-//             'fthn',
-//             'fbln',
-//             'nominal',
-//         ], $query2);
+        //         DB::table($temprekap)->insertUsing([
+        //             'fcoa',
+        //             'fthn',
+        //             'fbln',
+        //             'nominal',
+        //         ], $query2);
 
-//         $query = db::table($temprekap)->from(db::raw($temprekap . " a "))
-//             ->select(
-//                 'a.fcoa',
-//                 'a.fthn',
-//                 'a.fbln',
-//                 db::raw("sum(a.fnominal) as fnominal ")
-//             )
-//             ->grpupBY('a.fcoa')
-//             ->grpupBY('a.fthn')
-//             ->grpupBY('a.fbln');
+        //         $query = db::table($temprekap)->from(db::raw($temprekap . " a "))
+        //             ->select(
+        //                 'a.fcoa',
+        //                 'a.fthn',
+        //                 'a.fbln',
+        //                 db::raw("sum(a.fnominal) as fnominal ")
+        //             )
+        //             ->grpupBY('a.fcoa')
+        //             ->grpupBY('a.fthn')
+        //             ->grpupBY('a.fbln');
 
-//         DB::table('akunpusatdetail')->insertUsing([
-//             'fcoa',
-//             'fthn',
-//             'fbln',
-//             'nominal',
-//         ], $query);
-// // 
+        //         DB::table('akunpusatdetail')->insertUsing([
+        //             'fcoa',
+        //             'fthn',
+        //             'fbln',
+        //             'nominal',
+        //         ], $query);
+        // // 
 
 
         DB::table('akunpusatdetail')
@@ -243,41 +245,188 @@ class LaporanNeraca extends MyModel
 
         ], $queryTempAkunPusatDetail);
 
-        $data = DB::select(DB::raw("
-                SELECT xx.TipeMaster, xx.[Order], xx.[Type], xx.KeteranganType, xx.coa, xx.Parent,
-                xx.KeteranganCoa, xx.Nominal, xx.CmpyName, xx.pBulan, xx.pTahun,
-                xx.GNeraca, xx.GLR, xx.KeteranganCoaParent, xx.pTglSd
-        FROM
-        (
-            SELECT CASE d.akuntansi_id WHEN 1 THEN 'AKTIVA' ELSE 'PASSIVA' END AS TipeMaster,
-                d.[order], MAX(d.[Type]) AS Type, MAX(d.keterangantype) AS KeteranganType,
-                d.coa, MAX(d.Parent) AS Parent,
-                d.Keterangancoa,
-                CASE d.akuntansi_id WHEN 1 THEN SUM(d.Nominal) ELSE SUM(d.Nominal * -1) END AS Nominal,
-                '$judulLaporan' AS CmpyName,
-                MAX($bulan) AS pBulan, MAX($tahun) AS pTahun,
-                MAX(d.statusneraca) AS GNeraca, MAX(d.statuslabarugi) AS GLR,
-                (SELECT KeteranganCoa FROM akunpusat WHERE coa = MAX(d.Parent)) AS KeteranganCoaParent,
-                '$tglsd' AS pTglSd
-            FROM
-            (
-                SELECT C.[type], C.coa, C.keterangancoa,
-                    C.Parent, C.statusaktif, C.statusneraca, C.statuslabarugi,
-                    ISNULL(cd.tahun, $tahun) AS Tahun,
-                    ISNULL(cd.bulan, 0) AS Bulan,
-                    ISNULL(cd.nominal, 0) AS Nominal,
-                    A.[Order], A.keterangantype, A.akuntansi_id
-                FROM mainakunpusat C
-                LEFT OUTER JOIN $tempAkunPusatDetail cd ON C.coa = cd.coa
-                INNER JOIN maintypeakuntansi A ON A.[kodetype] = C.[type]
-            ) d
-            WHERE (d.Tahun = $tahun) AND (d.Bulan <= $bulan) AND (d.[Order] < 4000)
-            GROUP BY d.akuntansi_id, d.[order], d.coa, d.keterangancoa
-            HAVING SUM(d.Nominal) <> 0
-        ) xx
-        "));
+        $tempquery1 = '##tempquery1' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+        Schema::create($tempquery1, function ($table) {
+            $table->bigIncrements('id');
+            $table->string('type', 500)->nullable();
+            $table->string('coa', 500)->nullable();
+            $table->string('keterangancoa', 500)->nullable();
+            $table->string('parent', 500)->nullable();
+            $table->integer('statusaktif')->nullable();
+            $table->integer('statusneraca')->nullable();
+            $table->integer('statuslabarugi')->nullable();
+            $table->integer('tahun')->nullable();
+            $table->integer('bulan')->nullable();
+            $table->double('nominal')->nullable();
+            $table->integer('order')->nullable();
+            $table->string('keterangantype', 500)->nullable();
+            $table->integer('akuntansi_id')->nullable();
+        });
 
 
-        return $data;
+        $query1 = db::table('mainakunpusat')->from(db::raw("mainakunpusat c with (readuncommitted)"))
+            ->select(
+                'c.type',
+                'c.coa',
+                'c.keterangancoa',
+                'c.parent',
+                'c.statusaktif',
+                'c.statusneraca',
+                'c.statuslabarugi',
+                db::raw("isnull(cd.tahun," . $tahun . ") as tahun"),
+                db::raw("isnull(cd.bulan,0) as bulan"),
+                db::raw("isnull(cd.nominal,0) as nominal"),
+                'a.order',
+                'a.keterangantype',
+                'a.akuntansi_id',
+            )
+            ->join(db::raw($tempAkunPusatDetail . " cd with (readuncommitted)"), 'c.coa', 'cd.coa')
+            ->join(db::raw("maintypeakuntansi a with (readuncommitted)"), 'a.kodetype', 'c.type');
+
+        DB::table($tempquery1)->insertUsing([
+            'type',
+            'coa',
+            'keterangancoa',
+            'parent',
+            'statusaktif',
+            'statusneraca',
+            'statuslabarugi',
+            'tahun',
+            'bulan',
+            'nominal',
+            'order',
+            'keterangantype',
+            'akuntansi_id',
+
+        ], $query1);
+
+
+        $tempquery2 = '##tempquery2' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+        Schema::create($tempquery2, function ($table) {
+            $table->bigIncrements('id');
+            $table->string('tipemaster', 500)->nullable();
+            $table->integer('order')->nullable();
+            $table->string('type', 500)->nullable();
+            $table->string('keterangantype', 500)->nullable();
+            $table->string('coa', 500)->nullable();
+            $table->string('parent', 500)->nullable();
+            $table->string('keterangancoa', 500)->nullable();
+            $table->double('nominal')->nullable();
+            $table->string('cmpyname', 500)->nullable();
+            $table->integer('pbulan')->nullable();
+            $table->integer('ptahun')->nullable();
+            $table->integer('gneraca')->nullable();
+            $table->integer('glr')->nullable();
+            $table->string('keterangancoaparent', 500)->nullable();
+            $table->string('ptglsd', 50)->nullable();
+        });
+
+
+        $query2 = db::table($tempquery1)->from(db::raw($tempquery1 . " d"))
+            ->select(
+                db::raw("(CASE d.akuntansi_id WHEN 1 THEN 'AKTIVA' ELSE 'PASSIVA' END) AS tipemaster"),
+                'd.order',
+                db::raw("max(d.type) as type"),
+                db::raw("max(d.keterangantype) as keterangantype"),
+                'd.coa',
+                db::raw("max(d.parent) as parent"),
+                'd.keterangancoa',
+                db::raw("( CASE d.akuntansi_id WHEN 1 THEN SUM(d.Nominal) ELSE SUM(d.Nominal * -1) END)  AS nominal"),
+                db::raw("'" . $judulLaporan . "' as cmpyname"),
+                db::raw($bulan . " as pbulan"),
+                db::raw($tahun . " as ptahun"),
+                db::raw("max(d.statusneraca) as gneraca"),
+                db::raw("max(d.statuslabarugi) as glr"),
+                db::raw("max(isnull(e.keterangancoa,'')) as keterangancoaparent"),
+                db::raw($tglsd . " as ptglsd"),
+            )
+            ->leftjoin(db::raw("akunpusat e with (readuncommitted)"), 'd.parent', 'e.coa')
+            ->where('d.tahun', $tahun)
+            ->whereRaw("d.bulan<=cast(" . $bulan . " as integer)")
+            ->where('d.order', '<', 4000)
+            ->groupBy('d.akuntansi_id')
+            ->groupBy('d.order')
+            ->groupBy('d.coa')
+            ->groupBy('d.keterangancoa');
+            // ->having(DB::raw('sum(d.nominal)'), '<>', 0);
+
+        DB::table($tempquery2)->insertUsing([
+            'tipemaster',
+            'order',
+            'type',
+            'keterangantype',
+            'coa',
+            'parent',
+            'keterangancoa',
+            'nominal',
+            'cmpyname',
+            'pbulan',
+            'ptahun',
+            'gneraca',
+            'glr',
+            'keterangancoaparent',
+            'ptglsd',
+        ], $query2);
+
+        $data = db::table($tempquery2)->from(db::raw($tempquery2 . " xx"))
+            ->select(
+                'xx.TipeMaster',
+                'xx.Order',
+                'xx.Type',
+                'xx.KeteranganType',
+                'xx.coa',
+                'xx.Parent',
+                'xx.KeteranganCoa',
+                'xx.Nominal',
+                'xx.CmpyName',
+                'xx.pBulan',
+                'xx.pTahun',
+                'xx.GNeraca',
+                'xx.GLR',
+                'xx.KeteranganCoaParent',
+                'xx.pTglSd'
+            )
+            ->orderby('xx.id');
+
+
+
+
+
+        // $data = DB::select(DB::raw("
+        //         SELECT xx.TipeMaster, xx.[Order], xx.[Type], xx.KeteranganType, xx.coa, xx.Parent,
+        //         xx.KeteranganCoa, xx.Nominal, xx.CmpyName, xx.pBulan, xx.pTahun,
+        //         xx.GNeraca, xx.GLR, xx.KeteranganCoaParent, xx.pTglSd
+        // FROM
+        // (
+        //     SELECT CASE d.akuntansi_id WHEN 1 THEN 'AKTIVA' ELSE 'PASSIVA' END AS TipeMaster,
+        //         d.[order], MAX(d.[Type]) AS Type, MAX(d.keterangantype) AS KeteranganType,
+        //         d.coa, MAX(d.Parent) AS Parent,
+        //         d.Keterangancoa,
+        //         CASE d.akuntansi_id WHEN 1 THEN SUM(d.Nominal) ELSE SUM(d.Nominal * -1) END AS Nominal,
+        //         '$judulLaporan' AS CmpyName,
+        //         MAX($bulan) AS pBulan, MAX($tahun) AS pTahun,
+        //         MAX(d.statusneraca) AS GNeraca, MAX(d.statuslabarugi) AS GLR,
+        //         (SELECT KeteranganCoa FROM akunpusat WHERE coa = MAX(d.Parent)) AS KeteranganCoaParent,
+        //         '$tglsd' AS pTglSd
+        //     FROM
+        //     (
+        //         SELECT C.[type], C.coa, C.keterangancoa,
+        //             C.Parent, C.statusaktif, C.statusneraca, C.statuslabarugi,
+        //             ISNULL(cd.tahun, $tahun) AS Tahun,
+        //             ISNULL(cd.bulan, 0) AS Bulan,
+        //             ISNULL(cd.nominal, 0) AS Nominal,
+        //             A.[Order], A.keterangantype, A.akuntansi_id
+        //         FROM mainakunpusat C
+        //         LEFT OUTER JOIN $tempAkunPusatDetail cd ON C.coa = cd.coa
+        //         INNER JOIN maintypeakuntansi A ON A.[kodetype] = C.[type]
+        //     ) d
+        //     WHERE (d.Tahun = $tahun) AND (d.Bulan <= $bulan) AND (d.[Order] < 4000)
+        //     GROUP BY d.akuntansi_id, d.[order], d.coa, d.keterangancoa
+        //     HAVING SUM(d.Nominal) <> 0
+        // ) xx
+        // "));
+
+
+        return $data->get();
     }
 }

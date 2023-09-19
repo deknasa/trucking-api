@@ -154,6 +154,7 @@ class LaporanStok extends MyModel
                 'a.nilaisaldo as nominalsaldo',
                 db::raw("'" . $disetujui . "' as disetujui"),
                 db::raw("'" . $diperiksa . "' as diperiksa"),
+                db::raw("(case when a.nobukti='SALDO AWAL' then 1 else 0 end) as baris"),
 
             )
             ->orderBy('a.namabarang','asc')
