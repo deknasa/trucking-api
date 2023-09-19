@@ -69,6 +69,7 @@ class PemutihanSupirController extends Controller
                 'posting_nobukti' => $request->posting_nobukti ?? 0,
                 'nominal' => $request->posting_nominal ?? 0,
                 'posting_keterangan' => $request->posting_keterangan ?? '',
+                'nonposting_keterangan' => $request->nonposting_keterangan ?? '',
                 'postingId' => $request->postingId ?? '',
                 'nonpostingId' => $request->nonpostingId ?? ''
             ];
@@ -135,6 +136,7 @@ class PemutihanSupirController extends Controller
                 'posting_nobukti' => $request->posting_nobukti ?? 0,
                 'nominal' => $request->posting_nominal ?? 0,
                 'posting_keterangan' => $request->posting_keterangan ?? '',
+                'nonposting_keterangan' => $request->nonposting_keterangan ?? '',
                 'postingId' => $request->postingId ?? '',
                 'nonpostingId' => $request->nonpostingId ?? ''
             ];
