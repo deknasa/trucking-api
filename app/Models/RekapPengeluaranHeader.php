@@ -296,7 +296,7 @@ class RekapPengeluaranHeader extends MyModel
         return $data;
     }
 
-    public function find($id)
+    public function findAll($id)
     {
         $this->setRequestParameters();
 
@@ -489,6 +489,46 @@ class RekapPengeluaranHeader extends MyModel
             'datajson' => $getDetail->toArray(),
             'modifiedby' => auth('api')->user()->name
         ]);
+        return $rekapPengeluaranHeader;
+    }
+    public function processApproval(array $data)
+    {
+        // dd($data);
+
+        $statusApproval = Parameter::from(
+            DB::raw("parameter with (readuncommitted)")
+        )->where('grp', '=', 'STATUS APPROVAL')->where('text', '=', 'APPROVAL')->first();
+        $statusNonApproval = Parameter::from(
+            DB::raw("parameter with (readuncommitted)")
+        )->where('grp', '=', 'STATUS APPROVAL')->where('text', '=', 'NON APPROVAL')->first();
+
+        for ($i = 0; $i < count($data['rekapId']); $i++) {
+
+            $rekapPengeluaranHeader = RekapPengeluaranHeader::find($data['rekapId'][$i]);
+            if ($rekapPengeluaranHeader->statusapproval == $statusApproval->id) {
+                $rekapPengeluaranHeader->statusapproval = $statusNonApproval->id;
+                $rekapPengeluaranHeader->tglapproval = date('Y-m-d', strtotime("1900-01-01"));
+                $rekapPengeluaranHeader->userapproval = '';
+                $aksi = $statusNonApproval->text;
+            } else {
+                $rekapPengeluaranHeader->statusapproval = $statusApproval->id;
+                $rekapPengeluaranHeader->tglapproval = date('Y-m-d H:i:s');
+                $rekapPengeluaranHeader->userapproval = auth('api')->user()->name;
+                $aksi = $statusApproval->text;
+            }
+
+                $rekapPengeluaranHeader->save();
+            (new LogTrail())->processStore([
+                'namatabel' => strtoupper($rekapPengeluaranHeader->getTable()),
+                'postingdari' => 'APPROVAL REKAP PENGELUARAN',
+                'idtrans' => $rekapPengeluaranHeader->id,
+                'nobuktitrans' => $rekapPengeluaranHeader->nobukti,
+                'aksi' => $aksi,
+                'datajson' => $rekapPengeluaranHeader->toArray(),
+                'modifiedby' => auth('api')->user()->user
+            ]);
+        }
+
         return $rekapPengeluaranHeader;
     }
 }

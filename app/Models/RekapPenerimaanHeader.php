@@ -308,7 +308,7 @@ class RekapPenerimaanHeader extends MyModel
         return $data;
     }
 
-    public function find($id)
+    public function findAll($id)
     {
         $this->setRequestParameters();
 
@@ -515,6 +515,46 @@ class RekapPenerimaanHeader extends MyModel
             'modifiedby' => auth('api')->user()->name
         ]);
 
+
+        return $rekapPenerimaanHeader;
+    }
+    public function processApproval(array $data)
+    {
+        // dd($data);
+
+        $statusApproval = Parameter::from(
+            DB::raw("parameter with (readuncommitted)")
+        )->where('grp', '=', 'STATUS APPROVAL')->where('text', '=', 'APPROVAL')->first();
+        $statusNonApproval = Parameter::from(
+            DB::raw("parameter with (readuncommitted)")
+        )->where('grp', '=', 'STATUS APPROVAL')->where('text', '=', 'NON APPROVAL')->first();
+
+        for ($i = 0; $i < count($data['rekapId']); $i++) {
+
+            $rekapPenerimaanHeader = RekapPenerimaanHeader::find($data['rekapId'][$i]);
+            if ($rekapPenerimaanHeader->statusapproval == $statusApproval->id) {
+                $rekapPenerimaanHeader->statusapproval = $statusNonApproval->id;
+                $rekapPenerimaanHeader->tglapproval = date('Y-m-d', strtotime("1900-01-01"));
+                $rekapPenerimaanHeader->userapproval = '';
+                $aksi = $statusNonApproval->text;
+            } else {
+                $rekapPenerimaanHeader->statusapproval = $statusApproval->id;
+                $rekapPenerimaanHeader->tglapproval = date('Y-m-d H:i:s');
+                $rekapPenerimaanHeader->userapproval = auth('api')->user()->name;
+                $aksi = $statusApproval->text;
+            }
+
+                $rekapPenerimaanHeader->save();
+            (new LogTrail())->processStore([
+                'namatabel' => strtoupper($rekapPenerimaanHeader->getTable()),
+                'postingdari' => 'APPROVAL REKAP PENERIMAAN',
+                'idtrans' => $rekapPenerimaanHeader->id,
+                'nobuktitrans' => $rekapPenerimaanHeader->nobukti,
+                'aksi' => $aksi,
+                'datajson' => $rekapPenerimaanHeader->toArray(),
+                'modifiedby' => auth('api')->user()->user
+            ]);
+        }
 
         return $rekapPenerimaanHeader;
     }

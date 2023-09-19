@@ -6,7 +6,7 @@ use App\Models\Parameter;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use App\Http\Controllers\Controller;
-
+use App\Http\Requests\ApprovalRekapPenerimaanRequest;
 use App\Models\RekapPengeluaranHeader;
 use App\Http\Requests\StoreRekapPengeluaranHeaderRequest;
 use App\Http\Requests\UpdateRekapPengeluaranHeaderRequest;
@@ -79,7 +79,7 @@ class RekapPengeluaranHeaderController extends Controller
     }
     public function show(RekapPengeluaranHeader $rekapPengeluaranHeader, $id)
     {
-        $data = $rekapPengeluaranHeader->find($id);
+        $data = $rekapPengeluaranHeader->findAll($id);
 
         return response([
             'status' => true,
@@ -162,45 +162,23 @@ class RekapPengeluaranHeaderController extends Controller
     /**
      * @ClassName 
      */
-    public function approval($id)
+    public function approval(ApprovalRekapPenerimaanRequest $request)
     {
         DB::beginTransaction();
-        $rekapPengeluaranHeader = RekapPengeluaranHeader::lockForUpdate()->findOrFail($id);
         try {
-            $statusApproval = Parameter::where('grp', '=', 'STATUS APPROVAL')->where('text', '=', 'APPROVAL')->first();
-            $statusNonApproval = Parameter::where('grp', '=', 'STATUS APPROVAL')->where('text', '=', 'NON APPROVAL')->first();
+            $data = [
+                'rekapId' => $request->rekapId
+            ];
+            $rekapPengeluaranHeader = (new RekapPengeluaranHeader())->processApproval($data);
 
-            if ($rekapPengeluaranHeader->statusapproval == $statusApproval->id) {
-                $rekapPengeluaranHeader->statusapproval = $statusNonApproval->id;
-            } else {
-                $rekapPengeluaranHeader->statusapproval = $statusApproval->id;
-            }
-
-            $rekapPengeluaranHeader->tglapproval = date('Y-m-d', time());
-            $rekapPengeluaranHeader->userapproval = auth('api')->user()->name;
-
-            if ($rekapPengeluaranHeader->save()) {
-                $logTrail = [
-                    'namatabel' => strtoupper($rekapPengeluaranHeader->getTable()),
-                    'postingdari' => 'UN/APPROVE REKAP PENGELUARAN HEADER',
-                    'idtrans' => $rekapPengeluaranHeader->id,
-                    'nobuktitrans' => $rekapPengeluaranHeader->nobukti,
-                    'aksi' => 'UN/APPROVE',
-                    'datajson' => $rekapPengeluaranHeader->toArray(),
-                    'modifiedby' => $rekapPengeluaranHeader->modifiedby
-                ];
-
-                $validatedLogTrail = new StoreLogTrailRequest($logTrail);
-                $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
-
-                DB::commit();
-            }
+            DB::commit();
 
             return response([
                 'message' => 'Berhasil',
                 'data' => $rekapPengeluaranHeader
             ]);
         } catch (\Throwable $th) {
+            DB::rollBack();
             throw $th;
         }
     }
