@@ -24,29 +24,30 @@ class LaporanKartuHutangPerSupplier extends MyModel
         'updated_at',
     ];
 
-    public function getReport($dari, $sampai, $supplierdari, $suppliersampai)
+    public function getReport($dari, $sampai, $supplierdari, $suppliersampai, $prosesneraca)
     {
 
-        $sampai=$dari;
+        $prosesneraca = $prosesneraca ?? 0;
+
+        $sampai = $dari;
         $tgl = '01-' . date('m', strtotime($dari)) . '-' . date('Y', strtotime($dari));
         $dari1 = date('Y-m-d', strtotime($tgl));
 
-        if ($supplierdari==0) {
-            $supplierdari=db::table('supplier')->from(db::raw("supplier with (readuncommitted)"))
-                ->select('id')->orderby('id','asc')->first()->id ?? 0;
-        }
-     
-        if ($suppliersampai==0) {
-            $suppliersampai=db::table('supplier')->from(db::raw("supplier with (readuncommitted)"))
-                ->select('id')->orderby('id','desc')->first()->id ?? 0;
+        if ($supplierdari == 0) {
+            $supplierdari = db::table('supplier')->from(db::raw("supplier with (readuncommitted)"))
+                ->select('id')->orderby('id', 'asc')->first()->id ?? 0;
         }
 
-        if ($supplierdari>$suppliersampai) {
-            $supplierdari1=$suppliersampai;
-            $suppliersampai1=$supplierdari;
-            $supplierdari=$supplierdari1;
-            $suppliersampai=$suppliersampai1;
-            
+        if ($suppliersampai == 0) {
+            $suppliersampai = db::table('supplier')->from(db::raw("supplier with (readuncommitted)"))
+                ->select('id')->orderby('id', 'desc')->first()->id ?? 0;
+        }
+
+        if ($supplierdari > $suppliersampai) {
+            $supplierdari1 = $suppliersampai;
+            $suppliersampai1 = $supplierdari;
+            $supplierdari = $supplierdari1;
+            $suppliersampai = $suppliersampai1;
         }
 
 
@@ -110,7 +111,7 @@ class LaporanKartuHutangPerSupplier extends MyModel
 
         // 
 
-        
+
         $Temphutangbyr_saldo = '##Temphutangbyr_saldo' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
         Schema::create($Temphutangbyr_saldo, function ($table) {
             $table->datetime('tglbukti');
@@ -138,39 +139,39 @@ class LaporanKartuHutangPerSupplier extends MyModel
             'nominal',
         ], $select_Temphutangbyr_saldo);
 
-    // 
-    $Temphutangbyrretur = '##Temphutangbyrretur' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
-    Schema::create($Temphutangbyrretur, function ($table) {
-        $table->datetime('tglbukti');
-        $table->string('nobukti', 100);
-        $table->string('hutang_nobukti', 100);
-        $table->string('pengeluaranstok_nobukti', 100);
-        $table->double('nominal');
-    });
+        // 
+        $Temphutangbyrretur = '##Temphutangbyrretur' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+        Schema::create($Temphutangbyrretur, function ($table) {
+            $table->datetime('tglbukti');
+            $table->string('nobukti', 100);
+            $table->string('hutang_nobukti', 100);
+            $table->string('pengeluaranstok_nobukti', 100);
+            $table->double('nominal');
+        });
 
-    $select_Temphutangbyrretur = DB::table('hutangbayarheader')->from(DB::raw("hutangbayarheader as A with (readuncommitted)"))
-        ->select([
-            DB::raw('MAX(A.tglbukti) as tglbukti'),
-            'A.nobukti',
-            'B.hutang_nobukti',
-            DB::raw("max(d.nobukti) as pengeluaranstok_nobukti"),
-            DB::raw('SUM(B.nominal) as nominal')
-        ])
-        ->join(DB::raw("hutangbayardetail as B with (readuncommitted)"), 'A.nobukti', 'B.nobukti')
-        ->join(DB::raw($Temphutang . " AS C with (readuncommitted)"), 'B.hutang_nobukti', 'C.nobukti')
-        ->join(DB::raw("pengeluaranstokheader as d with (readuncommitted)"), 'A.nobukti', 'd.hutangbayar_nobukti')
-        ->whereRaw("isnull(a.pengeluaran_nobukti,'')=''")
-        ->whereRaw("isnull(d.hutangbayar_nobukti,'')<>''")
-        ->groupBy('A.nobukti', 'B.hutang_nobukti');
+        $select_Temphutangbyrretur = DB::table('hutangbayarheader')->from(DB::raw("hutangbayarheader as A with (readuncommitted)"))
+            ->select([
+                DB::raw('MAX(A.tglbukti) as tglbukti'),
+                'A.nobukti',
+                'B.hutang_nobukti',
+                DB::raw("max(d.nobukti) as pengeluaranstok_nobukti"),
+                DB::raw('SUM(B.nominal) as nominal')
+            ])
+            ->join(DB::raw("hutangbayardetail as B with (readuncommitted)"), 'A.nobukti', 'B.nobukti')
+            ->join(DB::raw($Temphutang . " AS C with (readuncommitted)"), 'B.hutang_nobukti', 'C.nobukti')
+            ->join(DB::raw("pengeluaranstokheader as d with (readuncommitted)"), 'A.nobukti', 'd.hutangbayar_nobukti')
+            ->whereRaw("isnull(a.pengeluaran_nobukti,'')=''")
+            ->whereRaw("isnull(d.hutangbayar_nobukti,'')<>''")
+            ->groupBy('A.nobukti', 'B.hutang_nobukti');
 
 
-    DB::table($Temphutangbyrretur)->insertUsing([
-        'tglbukti',
-        'nobukti',
-        'hutang_nobukti',
-        'pengeluaranstok_nobukti',
-        'nominal',
-    ], $select_Temphutangbyrretur);
+        DB::table($Temphutangbyrretur)->insertUsing([
+            'tglbukti',
+            'nobukti',
+            'hutang_nobukti',
+            'pengeluaranstok_nobukti',
+            'nominal',
+        ], $select_Temphutangbyrretur);
         //   dd($select_Temphutangbyr->get());
 
         //NOTE - Temphutangsaldo
@@ -182,19 +183,19 @@ class LaporanKartuHutangPerSupplier extends MyModel
         });
 
         $select_Temphutangsaldo = DB::table($Temphutang)->from(DB::raw($Temphutang . " AS a"))
-        ->select([
-            'A.tglbukti',
-            'A.nobukti',
-            'A.nominal'
-        ])
-        ->where('A.tglbukti', '<', $dari1);
+            ->select([
+                'A.tglbukti',
+                'A.nobukti',
+                'A.nominal'
+            ])
+            ->where('A.tglbukti', '<', $dari1);
 
 
         DB::table($Temphutangsaldo)->insertUsing([
             'tglbukti',
             'nobukti',
             'nominal'
-        ], $select_Temphutangsaldo);        
+        ], $select_Temphutangsaldo);
 
 
 
@@ -273,28 +274,28 @@ class LaporanKartuHutangPerSupplier extends MyModel
         });
 
         $select_Temphutangberjalan = DB::table($Temphutang)->from(DB::raw($Temphutang . " AS A"))
-        ->select([
-            'A.tglbukti',
-            'A.nobukti',
-            'A.nominal',
-        ])
-        ->where('A.tglbukti', '>=', $dari1)
-        ->where('A.tglbukti', '<=', $sampai);
+            ->select([
+                'A.tglbukti',
+                'A.nobukti',
+                'A.nominal',
+            ])
+            ->where('A.tglbukti', '>=', $dari1)
+            ->where('A.tglbukti', '<=', $sampai);
 
-     
+
         // dd(db::table($Temppiutang)->get());
         // dd($select_Temphutangberjalan->get());
 
-    DB::table($Temphutangberjalan)->insertUsing([
-        'tglbukti',
-        'nobukti',
-        'nominal'
-    ], $select_Temphutangberjalan);
+        DB::table($Temphutangberjalan)->insertUsing([
+            'tglbukti',
+            'nobukti',
+            'nominal'
+        ], $select_Temphutangberjalan);
 
-    // 
+        // 
 
 
-    // 
+        // 
 
 
 
@@ -306,56 +307,56 @@ class LaporanKartuHutangPerSupplier extends MyModel
             $table->double('nominal');
         });
 
-        
+
 
         $select_Temphutangbyrberjalan = DB::table($Temphutangbyr)->from(DB::raw($Temphutangbyr . " AS A"))
-        ->select([
-            DB::raw('MAX(A.tglbukti) as tglbukti'),
-            DB::raw('MAX(A.nobukti) as nobukti'),
-            'A.hutang_nobukti',
-            DB::raw('SUM(A.nominal) as nominal')
-        ])
-        ->where('A.tglbukti', '>=', $dari1)
-        ->where('A.tglbukti', '<=', $sampai)
-        ->groupBy('A.hutang_nobukti');
+            ->select([
+                DB::raw('MAX(A.tglbukti) as tglbukti'),
+                DB::raw('MAX(A.nobukti) as nobukti'),
+                'A.hutang_nobukti',
+                DB::raw('SUM(A.nominal) as nominal')
+            ])
+            ->where('A.tglbukti', '>=', $dari1)
+            ->where('A.tglbukti', '<=', $sampai)
+            ->groupBy('A.hutang_nobukti');
 
-    DB::table($Temphutangbyrberjalan)->insertUsing([
-        'tglbukti',
-        'nobukti',
-        'hutang_nobukti',
-        'nominal',
-    ], $select_Temphutangbyrberjalan);
-        
+        DB::table($Temphutangbyrberjalan)->insertUsing([
+            'tglbukti',
+            'nobukti',
+            'hutang_nobukti',
+            'nominal',
+        ], $select_Temphutangbyrberjalan);
 
-    // 
 
-    $Temphutangbyrberjalanretur = '##Temphutangbyrberjalanretur' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
-    Schema::create($Temphutangbyrberjalanretur, function ($table) {
-        $table->datetime('tglbukti');
-        $table->string('nobukti', 100);
-        $table->string('hutang_nobukti', 100);
-        $table->double('nominal');
-    });
+        // 
 
-    
+        $Temphutangbyrberjalanretur = '##Temphutangbyrberjalanretur' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+        Schema::create($Temphutangbyrberjalanretur, function ($table) {
+            $table->datetime('tglbukti');
+            $table->string('nobukti', 100);
+            $table->string('hutang_nobukti', 100);
+            $table->double('nominal');
+        });
 
-    $select_Temphutangbyrberjalanretur = DB::table($Temphutangbyrretur)->from(DB::raw($Temphutangbyrretur . " AS A"))
-    ->select([
-        DB::raw('MAX(A.tglbukti) as tglbukti'),
-        DB::raw('MAX(A.nobukti) as nobukti'),
-        'A.hutang_nobukti',
-        DB::raw('SUM(A.nominal) as nominal')
-    ])
-    ->where('A.tglbukti', '>=', $dari1)
-    ->where('A.tglbukti', '<=', $sampai)
-    ->groupBy('A.hutang_nobukti');
 
-DB::table($Temphutangbyrberjalanretur)->insertUsing([
-    'tglbukti',
-    'nobukti',
-    'hutang_nobukti',
-    'nominal',
-], $select_Temphutangbyrberjalanretur);
+
+        $select_Temphutangbyrberjalanretur = DB::table($Temphutangbyrretur)->from(DB::raw($Temphutangbyrretur . " AS A"))
+            ->select([
+                DB::raw('MAX(A.tglbukti) as tglbukti'),
+                DB::raw('MAX(A.nobukti) as nobukti'),
+                'A.hutang_nobukti',
+                DB::raw('SUM(A.nominal) as nominal')
+            ])
+            ->where('A.tglbukti', '>=', $dari1)
+            ->where('A.tglbukti', '<=', $sampai)
+            ->groupBy('A.hutang_nobukti');
+
+        DB::table($Temphutangbyrberjalanretur)->insertUsing([
+            'tglbukti',
+            'nobukti',
+            'hutang_nobukti',
+            'nominal',
+        ], $select_Temphutangbyrberjalanretur);
 
         // dd($select_TemphutangbyrberjalanCicil->get());
 
@@ -428,7 +429,7 @@ DB::table($Temphutangbyrberjalanretur)->insertUsing([
             'urut',
         ], $select_TempCicilRekap);
         //  dd($select_TempCicilRekap->get());
-     
+
 
         $TempRekapHutang = '##TempRekapHutang' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
         Schema::create($TempRekapHutang, function ($table) {
@@ -462,7 +463,7 @@ DB::table($Temphutangbyrberjalanretur)->insertUsing([
             ->orderBy('d.tglbukti')
             ->orderBy('a.nobukti');
 
-   
+
 
         DB::table($TempRekapHutang)->insertUsing([
             'nobukti',
@@ -473,7 +474,7 @@ DB::table($Temphutangbyrberjalanretur)->insertUsing([
             'supplier_id',
         ], $select_TempRekapHutang);
         // dd($select_TempRekapHutang->get());
-      
+
         $select_TempRekapHutang2 = DB::table($Temphutangberjalan . ' AS A')
             ->select([
                 'A.nobukti',
@@ -481,7 +482,7 @@ DB::table($Temphutangbyrberjalanretur)->insertUsing([
                 'A.nominal',
                 DB::raw('ISNULL(C.nominal, 0) as bayar'),
                 DB::raw("0 as bayarretur"),
-                DB::raw("d.supplier_id"),             
+                DB::raw("d.supplier_id"),
             ])
             ->leftJoin($Temphutangbyrberjalan . ' AS C', 'A.nobukti', '=', 'C.hutang_nobukti')
             ->leftjoin('hutangheader AS D', 'A.nobukti', '=', 'D.nobukti');
@@ -496,25 +497,25 @@ DB::table($Temphutangbyrberjalanretur)->insertUsing([
         ], $select_TempRekapHutang2);
 
         $querybayarretur = DB::table($Temphutangberjalan . ' AS A')
-        ->select([
-            'A.nobukti',
-            DB::raw("isnull(c.pengeluaranstok_nobukti,'') as nobuktiretur"),
-            'A.nominal',
-            DB::raw("0 as bayar"),
-            DB::raw('ISNULL(C.nominal, 0) as bayarretur'),
-            DB::raw("d.supplier_id"),             
-        ])
-        ->Join($Temphutangbyrretur . ' AS C', 'A.nobukti', '=', 'C.hutang_nobukti')
-        ->join('hutangheader AS D', 'A.nobukti', '=', 'D.nobukti');
+            ->select([
+                'A.nobukti',
+                DB::raw("isnull(c.pengeluaranstok_nobukti,'') as nobuktiretur"),
+                'A.nominal',
+                DB::raw("0 as bayar"),
+                DB::raw('ISNULL(C.nominal, 0) as bayarretur'),
+                DB::raw("d.supplier_id"),
+            ])
+            ->Join($Temphutangbyrretur . ' AS C', 'A.nobukti', '=', 'C.hutang_nobukti')
+            ->join('hutangheader AS D', 'A.nobukti', '=', 'D.nobukti');
 
-    DB::table($TempRekapHutang)->insertUsing([
-        'nobukti',
-        'nobuktiretur',
-        'nominal',
-        'bayar',
-        'bayarretur',
-        'supplier_id',
-    ], $querybayarretur);        
+        DB::table($TempRekapHutang)->insertUsing([
+            'nobukti',
+            'nobuktiretur',
+            'nominal',
+            'bayar',
+            'bayarretur',
+            'supplier_id',
+        ], $querybayarretur);
 
         // dd('test');
         // dd(db::table($TempRekapHutang)->get());
@@ -545,14 +546,14 @@ DB::table($Temphutangbyrberjalanretur)->insertUsing([
         //  dd(db::table($TempRekapHutang)->get());
 
         $disetujui = db::table('parameter')->from(db::raw('parameter with (readuncommitted)'))
-        ->select('text')
-        ->where('grp', 'DISETUJUI')
-        ->where('subgrp', 'DISETUJUI')->first()->text ?? '';
+            ->select('text')
+            ->where('grp', 'DISETUJUI')
+            ->where('subgrp', 'DISETUJUI')->first()->text ?? '';
 
-    $diperiksa = db::table('parameter')->from(db::raw('parameter with (readuncommitted)'))
-        ->select('text')
-        ->where('grp', 'DIPERIKSA')
-        ->where('subgrp', 'DIPERIKSA')->first()->text ?? '';
+        $diperiksa = db::table('parameter')->from(db::raw('parameter with (readuncommitted)'))
+            ->select('text')
+            ->where('grp', 'DIPERIKSA')
+            ->where('subgrp', 'DIPERIKSA')->first()->text ?? '';
 
         $select_data = DB::table($TempRekapHutang . ' AS A')
             ->select([
@@ -596,11 +597,12 @@ DB::table($Temphutangbyrberjalanretur)->insertUsing([
 
 
         // dd($select_data->get());
-        $data = $select_data->get();
+        if ($prosesneraca == 1) {
+            $data = $select_data;
+        } else {
+            $data = $select_data->get();
+        }
+
         return $data;
     }
-
-
-
-
 }
