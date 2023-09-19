@@ -136,6 +136,21 @@ class LaporanNeraca extends MyModel
         //         ], $query);
         // // 
 
+        // $tempperkiraanbanding = '##tempperkiraanbanding' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+        // Schema::create($tempperkiraanbanding, function ($table) {
+        //     $table->bigIncrements('id');
+        //     $table->string('coa', 50)->nullable();
+        //     $table->double('nominal')->nullable();
+        // });
+
+        // DB::table($tempperkiraanbanding)->insert(
+        //     [
+        //         'coa' => 'ALL',
+        //         'nominal' => '',
+        //     ]
+        // );
+
+
 
         DB::table('akunpusatdetail')
             ->where('bulan', '<>', 0)
