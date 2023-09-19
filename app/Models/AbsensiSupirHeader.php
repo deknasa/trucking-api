@@ -742,8 +742,10 @@ class AbsensiSupirHeader extends MyModel
 
         /*DELETE EXISTING JURNAL*/
         $kasGantungHeader = KasGantungHeader::where('nobukti', $absensiSupir->kasgantung_nobukti)->first();
-
-        (new KasGantungHeader())->processDestroy($kasGantungHeader->id, ($postingdari == "") ? $postingdari : strtoupper('DELETE ABSENSI SUPIR detail'));
+        
+        if ($kasGantungHeader) {
+            (new KasGantungHeader())->processDestroy($kasGantungHeader->id, ($postingdari == "") ? $postingdari : strtoupper('DELETE ABSENSI SUPIR detail'));
+        }
 
         $absensiSupir = $absensiSupir->lockAndDestroy($id);
         $hutangLogTrail = (new LogTrail())->processStore([
