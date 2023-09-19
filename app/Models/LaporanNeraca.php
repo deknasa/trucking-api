@@ -136,19 +136,83 @@ class LaporanNeraca extends MyModel
         //         ], $query);
         // // 
 
-        // $tempperkiraanbanding = '##tempperkiraanbanding' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
-        // Schema::create($tempperkiraanbanding, function ($table) {
-        //     $table->bigIncrements('id');
-        //     $table->string('coa', 50)->nullable();
-        //     $table->double('nominal')->nullable();
-        // });
+        $tempperkiraanbanding = '##tempperkiraanbanding' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+        Schema::create($tempperkiraanbanding, function ($table) {
+            $table->bigIncrements('id');
+            $table->string('coa', 50)->nullable();
+            $table->double('nominal')->nullable();
+        });
 
-        // DB::table($tempperkiraanbanding)->insert(
-        //     [
-        //         'coa' => 'ALL',
-        //         'nominal' => '',
-        //     ]
-        // );
+        $coahutangusaha = DB::table("parameter")->from(db::raw("parameter a with (readuncommitted)"))
+            ->select(
+                'a.memo'
+            )
+            ->where('grp', 'PERKIRAAN PEMBANDING NERACA')
+            ->where('subgrp', 'HUTANG USAHA')
+            ->where('text', 'HUTANG USAHA')
+            ->first();
+        $memo = json_decode($coahutangusaha->memo, true);
+
+        $tempkartuhutang = '##tempkartuhutang' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+        Schema::create($tempkartuhutang, function ($table) {
+            $table->integer('id')->nullable();
+            $table->string('namasupplier', 500)->nullable();
+            $table->string('keterangan', 500)->nullable();
+            $table->string('nobukti', 500)->nullable();
+            $table->date('tglbukti')->nullable();
+            $table->date('tgljatuhtempo')->nullable();
+            $table->integer('cicil')->nullable();
+            $table->double('nominal')->nullable();
+            $table->double('bayar')->nullable();
+            $table->double('saldo')->nullable();
+            $table->string('text', 500)->nullable();
+            $table->string('dari', 500)->nullable();
+            $table->string('sampai', 500)->nullable();
+            $table->string('judullaporan', 500)->nullable();
+            $table->string('judul', 500)->nullable();
+            $table->string('tglcetak', 500)->nullable();
+            $table->string('usercetak', 500)->nullable();
+            $table->string('disetujui', 500)->nullable();
+            $table->string('diperiksa', 500)->nullable();
+        });
+
+        DB::table($tempkartuhutang)->insertUsing([
+            'id',
+            'namasupplier',
+            'keterangan',
+            'nobukti',
+            'tglbukti',
+            'tgljatuhtempo',
+            'cicil',
+            'nominal',
+            'bayar',
+            'saldo',
+            'text',
+            'dari',
+            'sampai',
+            'judullaporan',
+            'judul',
+            'tglcetak',
+            'usercetak',
+            'disetujui',
+            'diperiksa',
+        ],  (new LaporanKartuHutangPerSupplier())->getReport($tglsd, $tglsd, 0, 0,1));
+
+       
+
+        $hutangusaha=db::table($tempkartuhutang)->from(db::raw($tempkartuhutang ." a"))
+        ->select(
+            db::raw("sum(nominal-bayar) as nominal")
+        )->first()->nominal ?? 0;
+
+        DB::table($tempperkiraanbanding)->insert(
+            [
+                'coa' =>  $memo['JURNAL'],
+                'nominal' => $hutangusaha,
+            ]
+        );
+
+        // dd(db::table($tempperkiraanbanding)->get());
 
 
 
@@ -363,7 +427,7 @@ class LaporanNeraca extends MyModel
             ->groupBy('d.order')
             ->groupBy('d.coa')
             ->groupBy('d.keterangancoa');
-            // ->having(DB::raw('sum(d.nominal)'), '<>', 0);
+        // ->having(DB::raw('sum(d.nominal)'), '<>', 0);
 
         DB::table($tempquery2)->insertUsing([
             'tipemaster',

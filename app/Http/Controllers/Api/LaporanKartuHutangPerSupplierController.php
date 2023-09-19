@@ -37,10 +37,11 @@ class LaporanKartuHutangPerSupplierController extends Controller
         $sampai = date('Y-m-d', strtotime($request->sampai));
         $supplierdari = $request->supplierdari_id ?? 0;
         $suppliersampai = $request->suppliersampai_id ?? 0;
+        $prosesneraca=0;
 
         $laporankartuhutangpersupplier = new LaporanKartuHutangPerSupplier();
 
-        $laporan_kartuhutangpersupplier = $laporankartuhutangpersupplier->getReport($dari, $sampai, $supplierdari, $suppliersampai);
+        $laporan_kartuhutangpersupplier = $laporankartuhutangpersupplier->getReport($dari, $sampai, $supplierdari, $suppliersampai,$prosesneraca);
 
         if ($request->isCheck) {
             if (count($laporan_kartuhutangpersupplier) === 0) {
