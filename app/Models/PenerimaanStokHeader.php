@@ -43,24 +43,27 @@ class PenerimaanStokHeader extends MyModel
 
         $query = DB::table($this->table);
         $query = $this->selectColumns($query)
-
-            ->leftJoin('gudang as gudangs', 'penerimaanstokheader.gudang_id', 'gudangs.id')
-            ->leftJoin('gudang as dari', 'penerimaanstokheader.gudangdari_id', 'dari.id')
-            ->leftJoin('gudang as ke', 'penerimaanstokheader.gudangke_id', 'ke.id')
-            ->leftJoin('parameter as statuscetak', 'penerimaanstokheader.statuscetak', 'statuscetak.id')
-            ->leftJoin('parameter as statusedit', 'penerimaanstokheader.statusapprovaledit', 'statusedit.id')
-            ->leftJoin('penerimaanstok', 'penerimaanstokheader.penerimaanstok_id', 'penerimaanstok.id')
-            ->leftJoin('akunpusat', 'penerimaanstokheader.coa', 'akunpusat.coa')
-            ->leftJoin('trado', 'penerimaanstokheader.trado_id', 'trado.id')
-            ->leftJoin('trado as tradodari ', 'penerimaanstokheader.tradodari_id', 'tradodari.id')
-            ->leftJoin('trado as tradoke ', 'penerimaanstokheader.tradoke_id', 'tradoke.id')
-            ->leftJoin('gandengan as gandengandari ', 'penerimaanstokheader.gandengandari_id', 'gandengandari.id')
-            ->leftJoin('gandengan as gandenganke ', 'penerimaanstokheader.gandenganke_id', 'gandenganke.id')
-            ->leftJoin('gandengan as gandengan ', 'penerimaanstokheader.gandenganke_id', 'gandengan.id')
-            ->leftJoin('penerimaanstokheader as nobuktipenerimaanstok', 'nobuktipenerimaanstok.nobukti', 'penerimaanstokheader.penerimaanstok_nobukti')
-            ->leftJoin('penerimaanstokheader as nobuktispb', 'penerimaanstokheader.nobukti', 'nobuktispb.penerimaanstok_nobukti')
-            ->leftJoin('supplier', 'penerimaanstokheader.supplier_id', 'supplier.id');
-        if (request()->penerimaanstok_id == $spb->text) {
+        
+        ->leftJoin('gudang as gudangs','penerimaanstokheader.gudang_id','gudangs.id')
+        ->leftJoin('gudang as dari','penerimaanstokheader.gudangdari_id','dari.id')
+        ->leftJoin('gudang as ke','penerimaanstokheader.gudangke_id','ke.id')
+        ->leftJoin('parameter as statuscetak','penerimaanstokheader.statuscetak','statuscetak.id')
+        ->leftJoin('parameter as statusedit','penerimaanstokheader.statusapprovaledit','statusedit.id')
+        ->leftJoin('penerimaanstok','penerimaanstokheader.penerimaanstok_id','penerimaanstok.id')
+        ->leftJoin('akunpusat','penerimaanstokheader.coa','akunpusat.coa')
+        ->leftJoin('trado','penerimaanstokheader.trado_id','trado.id')
+        ->leftJoin('trado as tradodari ','penerimaanstokheader.tradodari_id','tradodari.id')
+        ->leftJoin('trado as tradoke ','penerimaanstokheader.tradoke_id','tradoke.id')
+        ->leftJoin('gandengan as gandengandari ','penerimaanstokheader.gandengandari_id','gandengandari.id')
+        ->leftJoin('gandengan as gandenganke ','penerimaanstokheader.gandenganke_id','gandenganke.id')
+        ->leftJoin('gandengan as gandengan ','penerimaanstokheader.gandenganke_id','gandengan.id')
+        ->leftJoin('hutangheader','penerimaanstokheader.hutang_nobukti','hutangheader.nobukti')
+        ->leftJoin('pengeluaranstokheader as pengeluaranstok','penerimaanstokheader.pengeluaranstok_nobukti','pengeluaranstok.nobukti')
+        ->leftJoin('penerimaanstokheader as nobuktipenerimaanstok','nobuktipenerimaanstok.nobukti','penerimaanstokheader.penerimaanstok_nobukti')
+        ->leftJoin('penerimaanstokheader as nobuktispb','penerimaanstokheader.nobukti','nobuktispb.penerimaanstok_nobukti')
+        ->leftJoin('supplier','penerimaanstokheader.supplier_id','supplier.id');
+        if (request()->penerimaanstok_id==$spb->text) {
+            
 
             // $query->leftJoin('penerimaanstokheader as po', 'penerimaanstokheader.penerimaanstok_nobukti', '=', 'po.nobukti')
             $query->where('penerimaanstokheader.penerimaanstok_id', '=', $po->text)
@@ -138,9 +141,15 @@ class PenerimaanStokHeader extends MyModel
     public function selectColumns($query)
     {
         $po = Parameter::where('grp', 'PO STOK')->where('subgrp', 'PO STOK')->first();
-        $penerimaanstok_nobukti = $this->table . ".penerimaanstok_nobukti";
-        if (request()->penerimaanheader_id == $po->text) {
+        $penerimaanstok_nobukti = $this->table.".penerimaanstok_nobukti";
+        $tgldaripenerimaanstok_nobukti = db::raw("cast((format(nobuktipenerimaanstok.tglbukti,'yyyy/MM')+'/1') as date) as tgldariheadernobuktipenerimaanstok");
+        $tglsampaipenerimaanstok_nobukti = db::raw("cast(cast(format((cast((format(nobuktipenerimaanstok.tglbukti,'yyyy/MM')+'/1') as datetime)+32),'yyyy/MM')+'/01' as datetime)-1 as date) as tglsampaiheadernobuktipenerimaanstok");
+        if (request()->penerimaanheader_id==$po->text) {
+
             $penerimaanstok_nobukti = "nobuktispb.nobukti as penerimaanstok_nobukti";
+            $tgldaripenerimaanstok_nobukti = db::raw("cast((format(nobuktispb.tglbukti,'yyyy/MM')+'/1') as date) as tgldariheadernobuktipenerimaanstok");
+            $tglsampaipenerimaanstok_nobukti = db::raw("cast(cast(format((cast((format(nobuktispb.tglbukti,'yyyy/MM')+'/1') as datetime)+32),'yyyy/MM')+'/01' as datetime)-1 as date) as tglsampaiheadernobuktipenerimaanstok");
+    
         }
 
         $getJudul = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))
@@ -155,6 +164,8 @@ class PenerimaanStokHeader extends MyModel
             "$this->table.tglbukti",
             "penerimaanstok.kodepenerimaan as penerimaanstok",
             $penerimaanstok_nobukti,
+            $tgldaripenerimaanstok_nobukti,
+            $tglsampaipenerimaanstok_nobukti,
             "$this->table.pengeluaranstok_nobukti",
             "gudangs.gudang as gudang",
             "trado.kodetrado as trado",
@@ -191,6 +202,11 @@ class PenerimaanStokHeader extends MyModel
             "nobuktipenerimaanstok.tglbukti as parrenttglbukti",
             "statuscetak.id as  statuscetak_id",
             "statusedit.id as  statusedit_id",
+            db::raw("cast((format(hutangheader.tglbukti,'yyyy/MM')+'/1') as date) as tgldariheaderhutangheader"),
+            db::raw("cast(cast(format((cast((format(hutangheader.tglbukti,'yyyy/MM')+'/1') as datetime)+32),'yyyy/MM')+'/01' as datetime)-1 as date) as tglsampaiheaderhutangheader"), 
+            db::raw("cast((format(pengeluaranstok.tglbukti,'yyyy/MM')+'/1') as date) as tgldariheaderpengeluaranstok"),
+            db::raw("cast(cast(format((cast((format(pengeluaranstok.tglbukti,'yyyy/MM')+'/1') as datetime)+32),'yyyy/MM')+'/01' as datetime)-1 as date) as tglsampaiheaderpengeluaranstok"), 
+
             DB::raw("'" . $getJudul->text . "' as judul")
         );
     }
@@ -413,22 +429,26 @@ class PenerimaanStokHeader extends MyModel
 
         $query = DB::table($this->table);
         $query = $this->selectColumns($query)
-            ->leftJoin('gudang as gudangs', 'penerimaanstokheader.gudang_id', 'gudangs.id')
-            ->leftJoin('gudang as dari', 'penerimaanstokheader.gudangdari_id', 'dari.id')
-            ->leftJoin('gudang as ke', 'penerimaanstokheader.gudangke_id', 'ke.id')
-            ->leftJoin('parameter as statuscetak', 'penerimaanstokheader.statuscetak', 'statuscetak.id')
-            ->leftJoin('parameter as statusedit', 'penerimaanstokheader.statusapprovaledit', 'statusedit.id')
-            ->leftJoin('trado as tradodari ', 'penerimaanstokheader.tradodari_id', 'tradodari.id')
-            ->leftJoin('trado as tradoke ', 'penerimaanstokheader.tradoke_id', 'tradoke.id')
-            ->leftJoin('akunpusat', 'penerimaanstokheader.coa', 'akunpusat.coa')
-            ->leftJoin('gandengan as gandengandari ', 'penerimaanstokheader.gandengandari_id', 'gandengandari.id')
-            ->leftJoin('gandengan as gandenganke ', 'penerimaanstokheader.gandenganke_id', 'gandenganke.id')
-            ->leftJoin('gandengan as gandengan ', 'penerimaanstokheader.gandenganke_id', 'gandengan.id')
-            ->leftJoin('penerimaanstok', 'penerimaanstokheader.penerimaanstok_id', 'penerimaanstok.id')
-            ->leftJoin('trado', 'penerimaanstokheader.trado_id', 'trado.id')
-            ->leftJoin('penerimaanstokheader as nobuktipenerimaanstok', 'nobuktipenerimaanstok.nobukti', 'penerimaanstokheader.penerimaanstok_nobukti')
-            ->leftJoin('supplier', 'penerimaanstokheader.supplier_id', 'supplier.id');
-        $data = $query->where("$this->table.id", $id)->first();
+        ->leftJoin('gudang as gudangs','penerimaanstokheader.gudang_id','gudangs.id')
+        ->leftJoin('gudang as dari','penerimaanstokheader.gudangdari_id','dari.id')
+        ->leftJoin('gudang as ke','penerimaanstokheader.gudangke_id','ke.id')
+        ->leftJoin('parameter as statuscetak','penerimaanstokheader.statuscetak','statuscetak.id')
+        ->leftJoin('parameter as statusedit','penerimaanstokheader.statusapprovaledit','statusedit.id')
+        ->leftJoin('trado as tradodari ','penerimaanstokheader.tradodari_id','tradodari.id')
+        ->leftJoin('trado as tradoke ','penerimaanstokheader.tradoke_id','tradoke.id')
+        ->leftJoin('akunpusat','penerimaanstokheader.coa','akunpusat.coa')
+        ->leftJoin('gandengan as gandengandari ','penerimaanstokheader.gandengandari_id','gandengandari.id')
+        ->leftJoin('gandengan as gandenganke ','penerimaanstokheader.gandenganke_id','gandenganke.id')
+        ->leftJoin('gandengan as gandengan ','penerimaanstokheader.gandenganke_id','gandengan.id')
+        ->leftJoin('penerimaanstok','penerimaanstokheader.penerimaanstok_id','penerimaanstok.id')
+        ->leftJoin('trado','penerimaanstokheader.trado_id','trado.id')
+        ->leftJoin('hutangheader','penerimaanstokheader.hutang_nobukti','hutangheader.nobukti')
+        ->leftJoin('pengeluaranstokheader as pengeluaranstok','penerimaanstokheader.pengeluaranstok_nobukti','pengeluaranstok.nobukti')
+        ->leftJoin('penerimaanstokheader as nobuktipenerimaanstok','nobuktipenerimaanstok.nobukti','penerimaanstokheader.penerimaanstok_nobukti')
+        ->leftJoin('supplier','penerimaanstokheader.supplier_id','supplier.id');
+        $data = $query->where("$this->table.id",$id)->first();
+
+          
         return $data;
     }
 

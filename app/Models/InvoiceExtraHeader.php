@@ -38,6 +38,7 @@ class InvoiceExtraHeader extends MyModel
             ->leftJoin(DB::raw("parameter with (readuncommitted)"), 'invoiceextraheader.statusapproval', 'parameter.id')
             ->leftJoin(DB::raw("parameter as cetak with (readuncommitted)"), 'invoiceextraheader.statuscetak', 'cetak.id')
             ->leftJoin(DB::raw("pelanggan with (readuncommitted)"), 'invoiceextraheader.pelanggan_id', 'pelanggan.id')
+            ->leftJoin(DB::raw("piutangheader as piutang with (readuncommitted)"), 'invoiceextraheader.piutang_nobukti', '=', 'piutang.nobukti')
             ->leftJoin(DB::raw("agen with (readuncommitted)"), 'invoiceextraheader.agen_id', 'agen.id');
 
         if (request()->tgldari && request()->tglsampai) {
@@ -208,6 +209,8 @@ class InvoiceExtraHeader extends MyModel
                 "$this->table.modifiedby",
                 "pelanggan.namapelanggan as  pelanggan",
                 "agen.namaagen as  agen",
+                db::raw("cast((format(piutang.tglbukti,'yyyy/MM')+'/1') as date) as tgldariheaderpiutangheader"),
+                db::raw("cast(cast(format((cast((format(piutang.tglbukti,'yyyy/MM')+'/1') as datetime)+32),'yyyy/MM')+'/01' as datetime)-1 as date) as tglsampaiheaderpiutangheader"), 
             );
     }
 

@@ -95,11 +95,13 @@ class HutangExtraHeader extends MyModel
                 'hutangextraheader.userbukacetak',
                 'hutangextraheader.jumlahcetak',
                 DB::raw('(case when (year(hutangextraheader.tglbukacetak) <= 2000) then null else hutangextraheader.tglbukacetak end ) as tglbukacetak'),
-
+                DB::raw("cast((format(hutangheader.tglbukti,'yyyy/MM')+'/1') as date) as tgldariheaderhutangheader"),
+                DB::raw("cast(cast(format((cast((format(hutangheader.tglbukti,'yyyy/MM')+'/1') as datetime)+32),'yyyy/MM')+'/01' as datetime)-1 as date) as tglsampaiheaderhutangheader"), 
                 'hutangextraheader.modifiedby',
                 'hutangextraheader.created_at',
                 'hutangextraheader.updated_at'
             )
+            ->leftJoin('hutangheader','hutangextraheader.hutang_nobukti','hutangheader.nobukti')
             ->leftJoin(DB::raw("parameter with (readuncommitted)"), 'hutangextraheader.statuscetak', 'parameter.id')
             ->leftJoin(DB::raw("parameter as statusapproval with (readuncommitted)"), 'hutangextraheader.statusapproval', 'statusapproval.id')
             ->leftJoin(DB::raw("akunpusat with (readuncommitted)"), 'hutangextraheader.coa', 'akunpusat.coa')

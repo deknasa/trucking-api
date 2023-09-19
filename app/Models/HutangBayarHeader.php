@@ -53,9 +53,12 @@ class HutangBayarHeader extends MyModel
                 'bank.namabank as bank_id',
                 'supplier.namasupplier as supplier_id',
                 'alatbayar.keterangan as alatbayar_id',
-                'hutangbayarheader.tglcair'
+                'hutangbayarheader.tglcair',
+                db::raw("cast((format(pengeluaranheader.tglbukti,'yyyy/MM')+'/1') as date) as tgldariheaderpengeluaranheader"),
+                db::raw("cast(cast(format((cast((format(pengeluaranheader.tglbukti,'yyyy/MM')+'/1') as datetime)+32),'yyyy/MM')+'/01' as datetime)-1 as date) as tglsampaiheaderpengeluaranheader"), 
 
             )
+            ->leftJoin(DB::raw("pengeluaranheader with (readuncommitted)"), 'hutangbayarheader.pengeluaran_nobukti', '=', 'pengeluaranheader.nobukti')
             ->leftJoin(DB::raw("akunpusat with (readuncommitted)"), 'hutangbayarheader.coa', 'akunpusat.coa')
             ->leftJoin(DB::raw("bank with (readuncommitted)"), 'hutangbayarheader.bank_id', 'bank.id')
             ->leftJoin(DB::raw("supplier with (readuncommitted)"), 'hutangbayarheader.supplier_id', 'supplier.id')

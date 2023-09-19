@@ -52,6 +52,9 @@ class ProsesGajiSupirDetail extends MyModel
                 'gajisupirheader.komisisupir',
                 'gajisupirheader.tolsupir',
                 DB::raw("(case when gajisupirheader.uangmakanberjenjang IS NULL then 0 else gajisupirheader.uangmakanberjenjang end) as uangmakanberjenjang"),
+                db::raw("cast((format(gajisupirheader.tglbukti,'yyyy/MM')+'/1') as date) as tgldariheadergajisupirheaderheader"),
+                db::raw("cast(cast(format((cast((format(gajisupirheader.tglbukti,'yyyy/MM')+'/1') as datetime)+32),'yyyy/MM')+'/01' as datetime)-1 as date) as tglsampaiheadergajisupirheaderheader"), 
+
                 
             )
                 ->leftJoin(DB::raw("supir with (readuncommitted)"), $this->table . '.supir_id', 'supir.id')

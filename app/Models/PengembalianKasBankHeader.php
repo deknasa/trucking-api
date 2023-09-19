@@ -54,10 +54,13 @@ class PengembalianKasBankHeader extends MyModel
 
             'pengembaliankasbankheader.modifiedby',
             'pengembaliankasbankheader.created_at',
-            'pengembaliankasbankheader.updated_at'
+            'pengembaliankasbankheader.updated_at',
+            db::raw("cast((format(pengeluaranheader.tglbukti,'yyyy/MM')+'/1') as date) as tgldariheaderpengeluaranheader"),
+            db::raw("cast(cast(format((cast((format(pengeluaranheader.tglbukti,'yyyy/MM')+'/1') as datetime)+32),'yyyy/MM')+'/01' as datetime)-1 as date) as tglsampaiheaderpengeluaranheader"), 
 
         )
-
+        
+            ->leftJoin(DB::raw("pengeluaranheader with (readuncommitted)"), 'notakreditheader.pengeluaran_nobukti', '=', 'pengeluaranheader.nobukti')
             ->leftJoin('cabang', 'pengembaliankasbankheader.cabang_id', 'cabang.id')
             ->leftJoin('bank', 'pengembaliankasbankheader.bank_id', 'bank.id')
             ->leftJoin('parameter as statusapproval', 'pengembaliankasbankheader.statusapproval', 'statusapproval.id')

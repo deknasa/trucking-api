@@ -48,8 +48,11 @@ class Ritasi extends MyModel
                 'sampai.keterangan as sampai_id',
                 'ritasi.modifiedby',
                 'ritasi.created_at',
-                'ritasi.updated_at'
+                'ritasi.updated_at',
+                db::raw("cast((format(suratpengantar.tglbukti,'yyyy/MM')+'/1') as date) as tgldariheadersuratpengantar"),
+                db::raw("cast(cast(format((cast((format(suratpengantar.tglbukti,'yyyy/MM')+'/1') as datetime)+32),'yyyy/MM')+'/01' as datetime)-1 as date) as tglsampaiheadersuratpengantar"), 
             )
+            ->leftJoin(DB::raw("suratpengantar with (readuncommitted)"), 'ritasi.suratpengantar_nobukti', 'suratpengantar.nobukti')
             ->leftJoin(DB::raw("parameter with (readuncommitted)"), 'ritasi.statusritasi', '=', 'parameter.id')
             ->leftJoin(DB::raw("supir with (readuncommitted)"), 'ritasi.supir_id', '=', 'supir.id')
             ->leftJoin(DB::raw("trado with (readuncommitted)"), 'ritasi.trado_id', '=', 'trado.id')

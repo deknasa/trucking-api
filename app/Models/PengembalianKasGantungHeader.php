@@ -138,11 +138,13 @@ class PengembalianKasGantungHeader extends MyModel
             'pengembaliankasgantungheader.jumlahcetak',
             'pengembaliankasgantungheader.modifiedby',
             'pengembaliankasgantungheader.created_at',
-            'pengembaliankasgantungheader.updated_at'
+            'pengembaliankasgantungheader.updated_at',
+            db::raw("cast((format(penerimaanheader.tglbukti,'yyyy/MM')+'/1') as date) as tgldariheaderpenerimaanheader"),
+            db::raw("cast(cast(format((cast((format(penerimaanheader.tglbukti,'yyyy/MM')+'/1') as datetime)+32),'yyyy/MM')+'/01' as datetime)-1 as date) as tglsampaiheaderpenerimaanheader"), 
 
         )
-
-
+    
+            ->leftJoin(DB::raw("penerimaanheader with (readuncommitted)"), 'pengembaliankasgantungheader.penerimaan_nobukti', '=', 'penerimaanheader.nobukti')
             ->leftJoin('akunpusat', 'pengembaliankasgantungheader.coakasmasuk', 'akunpusat.coa')
             ->leftJoin('bank', 'pengembaliankasgantungheader.bank_id', 'bank.id')
             ->leftJoin('parameter as statuscetak', 'pengembaliankasgantungheader.statuscetak', 'statuscetak.id');
