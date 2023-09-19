@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\ApprovalRekapPenerimaanRequest;
 use App\Http\Requests\DestroyRekapPenerimaanHeaderRequest;
 use App\Http\Requests\GetIndexRangeRequest;
 use App\Models\RekapPenerimaanHeader;
@@ -85,7 +86,7 @@ class RekapPenerimaanHeaderController extends Controller
 
     public function show(RekapPenerimaanHeader $rekapPenerimaanHeader, $id)
     {
-        $data = $rekapPenerimaanHeader->find($id);
+        $data = $rekapPenerimaanHeader->findAll($id);
 
         return response([
             'status' => true,
@@ -170,45 +171,22 @@ class RekapPenerimaanHeaderController extends Controller
     /**
      * @ClassName 
      */
-    public function approval($id)
+    public function approval(ApprovalRekapPenerimaanRequest $request)
     {
         DB::beginTransaction();
-        $rekapPenerimaanHeader = RekapPenerimaanHeader::lockForUpdate()->findOrFail($id);
         try {
-            $statusApproval = Parameter::where('grp', '=', 'STATUS APPROVAL')->where('text', '=', 'APPROVAL')->first();
-            $statusNonApproval = Parameter::where('grp', '=', 'STATUS APPROVAL')->where('text', '=', 'NON APPROVAL')->first();
+            $data = [
+                'rekapId' => $request->rekapId
+            ];
+            $rekapPenerimaanHeader = (new RekapPenerimaanHeader())->processApproval($data);
 
-            if ($rekapPenerimaanHeader->statusapproval == $statusApproval->id) {
-                $rekapPenerimaanHeader->statusapproval = $statusNonApproval->id;
-            } else {
-                $rekapPenerimaanHeader->statusapproval = $statusApproval->id;
-            }
-
-            $rekapPenerimaanHeader->tglapproval = date('Y-m-d', time());
-            $rekapPenerimaanHeader->userapproval = auth('api')->user()->name;
-
-            if ($rekapPenerimaanHeader->save()) {
-                $logTrail = [
-                    'namatabel' => strtoupper($rekapPenerimaanHeader->getTable()),
-                    'postingdari' => 'UN/APPROVE REKAP PENERIMAAN HEADER',
-                    'idtrans' => $rekapPenerimaanHeader->id,
-                    'nobuktitrans' => $rekapPenerimaanHeader->id,
-                    'aksi' => 'UN/APPROVE',
-                    'datajson' => $rekapPenerimaanHeader->toArray(),
-                    'modifiedby' => $rekapPenerimaanHeader->modifiedby
-                ];
-
-                $validatedLogTrail = new StoreLogTrailRequest($logTrail);
-                $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
-
-                DB::commit();
-            }
-
+            DB::commit();
             return response([
                 'message' => 'Berhasil',
                 'data' => $rekapPenerimaanHeader
             ]);
         } catch (\Throwable $th) {
+            DB::rollBack();
             throw $th;
         }
     }

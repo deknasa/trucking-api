@@ -1074,7 +1074,7 @@ class PengeluaranTruckingHeader extends MyModel
 
         $pengeluaranTruckingHeaderLogTrail = (new LogTrail())->processStore([
             'namatabel' => strtoupper($pengeluaranTruckingHeader->getTable()),
-            'postingdari' => $data['postingdari'] ?? strtoupper('ENTRY penerimaan Header '),
+            'postingdari' => $data['postingdari'] ?? strtoupper('ENTRY pengeluaran trucking Header '),
             'idtrans' => $pengeluaranTruckingHeader->id,
             'nobuktitrans' => $pengeluaranTruckingHeader->nobukti,
             'aksi' => 'ENTRY',
@@ -1083,7 +1083,7 @@ class PengeluaranTruckingHeader extends MyModel
         ]);
         (new LogTrail())->processStore([
             'namatabel' => strtoupper($pengeluaranTruckingDetail->getTable()),
-            'postingdari' => $data['postingdari'] ?? strtoupper('ENTRY HUTANG BAYAR DETAIL'),
+            'postingdari' => $data['postingdari'] ?? strtoupper('ENTRY PENGELUARAN TRUCKING DETAIL'),
             'idtrans' =>  $pengeluaranTruckingHeader->id,
             'nobuktitrans' => $pengeluaranTruckingHeader->nobukti,
             'aksi' => 'ENTRY',

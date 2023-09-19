@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
+use App\Http\Requests\ApprovalHutangHeaderRequest;
 use App\Http\Requests\DestroyHutangExtraHeaderRequest;
 use App\Http\Requests\GetIndexRangeRequest;
 use App\Models\HutangExtraHeader;
@@ -284,6 +285,26 @@ class HutangExtraHeaderController extends Controller
                 'message' => 'Berhasil'
             ]);
         } catch (\Throwable $th) {
+            throw $th;
+        }
+    }
+
+    public function approval(ApprovalHutangHeaderRequest $request)
+    {
+        DB::beginTransaction();
+
+        try {
+            $data = [
+                'hutangId' => $request->hutangId
+            ];
+            $hutangExtraHeader = (new HutangExtraHeader())->processApproval($data);
+
+            DB::commit();
+            return response([
+                'message' => 'Berhasil'
+            ]);
+        } catch (\Throwable $th) {
+            DB::rollBack();
             throw $th;
         }
     }

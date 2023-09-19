@@ -1077,7 +1077,7 @@ route::middleware(['auth:api', 'authorized'])->group(function () {
     Route::get('rekappengeluaranheader/{id}/printreport', [RekapPengeluaranHeaderController::class, 'printReport'])->whereNumber('id');
     Route::get('rekappengeluaranheader/{id}/export', [RekapPengeluaranHeaderController::class, 'export'])->name('rekappengeluaranheader.export')->whereNumber('id');
     Route::get('rekappengeluaranheader/{id}/getrekappengeluaran', [RekapPengeluaranHeaderController::class, 'getRekapPengeluaran'])->whereNumber('id');
-    Route::post('rekappengeluaranheader/{id}/approval', [RekapPengeluaranHeaderController::class, 'approval'])->whereNumber('id');
+    Route::post('rekappengeluaranheader/approval', [RekapPengeluaranHeaderController::class, 'approval'])->whereNumber('id');
     Route::post('rekappengeluaranheader/{id}/cekvalidasi', [RekapPengeluaranHeaderController::class, 'cekvalidasi'])->name('rekappengeluaranheader.cekvalidasi')->whereNumber('id');
     Route::get('gandengan/default', [GandenganController::class, 'default']);
     Route::resource('rekappengeluaranheader', RekapPengeluaranHeaderController::class)->whereNumber('rekappengeluaranheader');
@@ -1088,7 +1088,7 @@ route::middleware(['auth:api', 'authorized'])->group(function () {
     Route::get('rekappenerimaanheader/{id}/printreport', [RekapPenerimaanHeaderController::class, 'printReport'])->whereNumber('id');
     Route::get('rekappenerimaanheader/{id}/export', [RekapPenerimaanHeaderController::class, 'export'])->name('rekappenerimaanheader.export')->whereNumber('id');
     Route::get('rekappenerimaanheader/{id}/getrekappenerimaan', [RekapPenerimaanHeaderController::class, 'getRekapPenerimaan'])->whereNumber('id');
-    Route::post('rekappenerimaanheader/{id}/approval', [RekapPenerimaanHeaderController::class, 'approval'])->whereNumber('id');
+    Route::post('rekappenerimaanheader/approval', [RekapPenerimaanHeaderController::class, 'approval'])->whereNumber('id');
     Route::post('rekappenerimaanheader/{id}/cekvalidasi', [RekapPenerimaanHeaderController::class, 'cekvalidasi'])->name('rekappenerimaanheader.cekvalidasi')->whereNumber('id');
     Route::resource('rekappenerimaanheader', RekapPenerimaanHeaderController::class)->whereNumber('rekappenerimaanheader');
     Route::resource('rekappenerimaandetail', RekapPenerimaanDetailController::class)->whereNumber('rekappenerimaandetail');

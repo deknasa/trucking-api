@@ -104,45 +104,17 @@ class HutangHeaderController extends Controller
 
         try {
 
-            $statusApproval = Parameter::from(DB::raw("parameter with (readuncommitted)"))
-                ->where('grp', '=', 'STATUS APPROVAL')->where('text', '=', 'APPROVAL')->first();
-            $statusNonApproval = Parameter::from(DB::raw("parameter with (readuncommitted)"))
-                ->where('grp', '=', 'STATUS APPROVAL')->where('text', '=', 'NON APPROVAL')->first();
+            $data = [
+                'hutangId' => $request->hutangId
+            ];
+            $hutangHeader = (new HutangHeader())->processApproval($data);
 
-            for ($i = 0; $i < count($request->hutangId); $i++) {
-                $hutangHeader = HutangHeader::find($request->hutangId[$i]);
-
-                if ($hutangHeader->statusapproval == $statusApproval->id) {
-                    $hutangHeader->statusapproval = $statusNonApproval->id;
-                    $aksi = $statusNonApproval->text;
-                } else {
-                    $hutangHeader->statusapproval = $statusApproval->id;
-                    $aksi = $statusApproval->text;
-                }
-
-                $hutangHeader->tglapproval = date('Y-m-d', time());
-                $hutangHeader->userapproval = auth('api')->user()->name;
-
-                if ($hutangHeader->save()) {
-                    $logTrail = [
-                        'namatabel' => strtoupper($hutangHeader->getTable()),
-                        'postingdari' => 'APPROVAL PENERIMAAN KAS/BANK',
-                        'idtrans' => $hutangHeader->id,
-                        'nobuktitrans' => $hutangHeader->nobukti,
-                        'aksi' => $aksi,
-                        'datajson' => $hutangHeader->toArray(),
-                        'modifiedby' => auth('api')->user()->name
-                    ];
-
-                    $validatedLogTrail = new StoreLogTrailRequest($logTrail);
-                    $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
-                }
-            }
             DB::commit();
             return response([
                 'message' => 'Berhasil'
             ]);
         } catch (\Throwable $th) {
+            DB::rollBack();
             throw $th;
         }
     }
