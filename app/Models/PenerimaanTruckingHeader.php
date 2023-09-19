@@ -1537,6 +1537,25 @@ class PenerimaanTruckingHeader extends MyModel
     public function cekvalidasiaksi($nobukti)
     {
 
+        $jurnal = DB::table('penerimaantruckingheader')
+            ->from(
+                DB::raw("penerimaantruckingheader as a with (readuncommitted)")
+            )
+            ->select(
+                'a.nobukti'
+            )
+            ->join(DB::raw("jurnalumumpusatheader b with (readuncommitted)"), 'a.penerimaan_nobukti', 'b.nobukti')
+            ->where('a.nobukti', '=', $nobukti)
+            ->first();
+        if (isset($jurnal)) {
+            $data = [
+                'kondisi' => true,
+                'keterangan' => 'Approval Jurnal',
+                'kodeerror' => 'SAP'
+            ];
+            goto selesai;
+        }
+
         $prosesUangJalan = DB::table('prosesuangjalansupirdetail')
             ->from(
                 DB::raw("prosesuangjalansupirdetail as a with (readuncommitted)")
@@ -1573,25 +1592,40 @@ class PenerimaanTruckingHeader extends MyModel
             goto selesai;
         }
 
-        $jurnal = DB::table('penerimaantruckingheader')
+        $jurnal = DB::table('pemutihansupirheader')
             ->from(
-                DB::raw("penerimaantruckingheader as a with (readuncommitted)")
+                DB::raw("pemutihansupirheader as a with (readuncommitted)")
             )
             ->select(
-                'a.nobukti'
+                'a.penerimaantruckingposting_nobukti'
             )
-            ->join(DB::raw("jurnalumumpusatheader b with (readuncommitted)"), 'a.penerimaan_nobukti', 'b.nobukti')
-            ->where('a.nobukti', '=', $nobukti)
+            ->where('a.penerimaantruckingposting_nobukti', '=', $nobukti)
             ->first();
         if (isset($jurnal)) {
             $data = [
                 'kondisi' => true,
-                'keterangan' => 'Approval Jurnal',
-                'kodeerror' => 'SAP'
+                'keterangan' => 'PEMUTIHAN SUPIR',
+                'kodeerror' => 'TDT'
             ];
             goto selesai;
         }
-
+        $jurnal = DB::table('pemutihansupirheader')
+            ->from(
+                DB::raw("pemutihansupirheader as a with (readuncommitted)")
+            )
+            ->select(
+                'a.penerimaantruckingnonposting_nobukti'
+            )
+            ->where('a.penerimaantruckingnonposting_nobukti', '=', $nobukti)
+            ->first();
+        if (isset($jurnal)) {
+            $data = [
+                'kondisi' => true,
+                'keterangan' => 'PEMUTIHAN SUPIR',
+                'kodeerror' => 'TDT'
+            ];
+            goto selesai;
+        }
         $gajiSupirDeposito = DB::table('gajisupirdeposito')
             ->from(
                 DB::raw("gajisupirdeposito as a with (readuncommitted)")
