@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
+use Illuminate\Database\Schema\Blueprint;
 
 class stokpersediaan extends MyModel
 {
@@ -111,36 +112,169 @@ class stokpersediaan extends MyModel
         return $data;
     }
 
+    public function getallstokpersediaan()
+    {
+
+        $tempkartustok = '##tempkartustok' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+        Schema::create($tempkartustok, function ($table) {
+            $table->id();
+            $table->unsignedBigInteger('gudang_id')->nullable();
+            $table->unsignedBigInteger('trado_id')->nullable();
+            $table->unsignedBigInteger('gandengan_id')->nullable();
+            $table->unsignedBigInteger('stok_id')->nullable();
+            $table->string('lokasi', 1000)->nullable();
+            $table->double('qty', 15, 2)->nullable();
+        });
+
+
+        $querykartustok = db::table('kartustok')->from(
+            DB::raw("kartustok as a with (readuncommitted)")
+        )
+            ->select(
+                'a.gudang_id',
+                'a.trado_id',
+                'a.gandengan_id',
+                'a.stok_id',
+                'a.lokasi',
+                DB::raw("sum(isnull(a.qtymasuk,0)-isnull(a.qtykeluar,0)) as qty"),
+            )
+            ->groupBy('a.gudang_id')
+            ->groupBy('a.trado_id')
+            ->groupBy('a.gandengan_id')
+            ->groupBy('a.stok_id')
+            ->groupBy('a.lokasi');
+
+            DB::table($tempkartustok)->insertUsing([
+                'gudang_id',
+                'trado_id',
+                'gandengan_id',
+                'stok_id',
+                'lokasi', 
+                'qty', 
+            ], $querykartustok);            
+
+        $query=db::table($tempkartustok)->from(db::raw(
+            $tempkartustok . " a"
+        ))
+        ->select(
+            'a.gudang_id',
+            'a.trado_id',
+            'a.gandengan_id',
+            'a.lokasi',
+            'b.namastok as stok_id',
+            'a.qty',
+            db::raw("'ADMIN' as modifiedby")
+        )
+        ->join(db::raw("stok b with (readuncommitted)"),'a.stok_id','b.id')
+        ->orderBy('a.lokasi')
+        ->orderBy('b.id');
+
+        return $query;
+
+
+    }
+
     public function get()
     {
         $this->setRequestParameters();
-        $query = DB::table($this->table)->select(
-            'stokpersediaan.id',
-            'stok.namastok as stok_id',
-            'stokpersediaan.qty',
-            'stokpersediaan.modifiedby'
-        )
-            ->leftJoin('stok', 'stokpersediaan.stok_id', 'stok.id');
+
+        $proses = request()->proses ?? 'reload';
+        $user = auth('api')->user()->name;
+        $class = 'StokPersediaanController';
+
+        if ($proses == 'reload') {
+            $temtabel = 'temp' . rand(1, getrandmax()) . str_replace('.', '', microtime(true)) . request()->nd ?? 0;
+
+            $querydata = DB::table('listtemporarytabel')->from(
+                DB::raw("listtemporarytabel a with (readuncommitted)")
+            )
+                ->select(
+                    'id',
+                    'class',
+                    'namatabel',
+                )
+                ->where('class', '=', $class)
+                ->where('modifiedby', '=', $user)
+                ->first();
+
+            if (isset($querydata)) {
+                Schema::dropIfExists($querydata->namatabel);
+                DB::table('listtemporarytabel')->where('id', $querydata->id)->delete();
+            }
+
+
+            DB::table('listtemporarytabel')->insert(
+                [
+                    'class' => $class,
+                    'namatabel' => $temtabel,
+                    'modifiedby' => $user,
+                    'created_at' => date('Y/m/d H:i:s'),
+                    'updated_at' => date('Y/m/d H:i:s'),
+                ]
+            );
+
+
+            Schema::create($temtabel, function (Blueprint $table) {
+                $table->id();
+                $table->unsignedBigInteger('gudang_id')->nullable();
+                $table->unsignedBigInteger('trado_id')->nullable();
+                $table->unsignedBigInteger('gandengan_id')->nullable();
+                $table->string('lokasi', 1000)->nullable();
+                $table->string('stok_id', 1000)->nullable();
+                $table->double('qty', 15, 2)->nullable();
+                $table->string('modifiedby', 100)->nullable();
+            });
+          
+            DB::table($temtabel)->insertUsing([
+                'gudang_id',
+                'trado_id',
+                'gandengan_id',
+                'lokasi',
+                'stok_id',
+                'qty',
+                'modifiedby',
+            ], $this->getallstokpersediaan());
+        } else {
+            $querydata = DB::table('listtemporarytabel')->from(
+                DB::raw("listtemporarytabel with (readuncommitted)")
+            )
+                ->select(
+                    'namatabel',
+                )
+                ->where('class', '=', $class)
+                ->where('modifiedby', '=', $user)
+                ->first();
+
+            // dd($querydata);
+            $temtabel = $querydata->namatabel;
+        }
+
+        // 
+
+        $query = DB::table( $temtabel)->select(
+            'id',
+            'lokasi',
+            'stok_id',
+            'qty',
+            'modifiedby'
+        );
 
         if (request()->keterangan && request()->data) {
 
             $parameter = Parameter::where('id', request()->keterangan)->first();
             if ($parameter->text == 'GUDANG') {
                 $gudang_id = request()->data;
-                $query->where('stokpersediaan.gudang_id', $gudang_id);
+                $query->where('gudang_id', $gudang_id);
             }
             if ($parameter->text == 'TRADO') {
                 $trado_id = request()->data;
-                $query->where('stokpersediaan.trado_id', $trado_id);
+                $query->where('trado_id', $trado_id);
             }
             if ($parameter->text == 'GANDENGAN') {
                 $gandengan_id = request()->data;
-                $query->where('stokpersediaan.gandengan_id', $gandengan_id);
+                $query->where('gandengan_id', $gandengan_id);
             }
-        } else {
-            $gudang = Gudang::first();
-            $query->where('stokpersediaan.gudang_id', $gudang->id);
-        }
+        } 
 
         $this->totalRows = $query->count();
         $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;
@@ -154,7 +288,7 @@ class stokpersediaan extends MyModel
     }
     public function sort($query)
     {
-        return $query->orderBy($this->table . '.' . $this->params['sortIndex'], $this->params['sortOrder']);
+        return $query->orderBy($this->params['sortIndex'], $this->params['sortOrder']);
     }
 
     public function filter($query, $relationFields = [])
@@ -164,13 +298,8 @@ class stokpersediaan extends MyModel
             switch ($this->params['filters']['groupOp']) {
                 case "AND":
                     foreach ($this->params['filters']['rules'] as $index => $filters) {
-                        if ($filters['field'] == 'stok_id') {
-                            $query = $query->where('stok.namastok', 'LIKE', "%$filters[data]%");
-                        } else {
                             // $query = $query->where($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
-                            $query = $query->whereRaw($this->table . ".[" .  $filters['field'] . "] LIKE '%" . escapeLike($filters['data']) . "%' escape '|'");
-
-                        }
+                            $query = $query->whereRaw( "[" .  $filters['field'] . "] LIKE '%" . escapeLike($filters['data']) . "%' escape '|'");
                     }
 
                     break;
@@ -178,13 +307,8 @@ class stokpersediaan extends MyModel
                     $query = $query->where(function ($query) {
                         foreach ($this->params['filters']['rules'] as $index => $filters) {
 
-                            if ($filters['field'] == 'stok_id') {
-                                $query = $query->orWhere('stok.namastok', 'LIKE', "%$filters[data]%");
-                            } else {
                                 // $query->orWhere($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
-                                $query = $query->OrwhereRaw($this->table . ".[" .  $filters['field'] . "] LIKE '%" . escapeLike($filters['data']) . "%' escape '|'");
-
-                            }
+                                $query = $query->OrwhereRaw("[" .  $filters['field'] . "] LIKE '%" . escapeLike($filters['data']) . "%' escape '|'");
                         }
                     });
 

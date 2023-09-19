@@ -77,15 +77,16 @@ class LaporanPinjamanSupirKaryawan extends MyModel
             DB::raw("penerimaantruckingheader a with (readuncommitted) ")
         )
             ->select(
-                'a.nobukti',
+                'c.nobukti',
                 'a.tglbukti',
                 'b.karyawan_id',
-                'b.nominal',
+                db::raw("(b.nominal*-1) as nominal"),
                 DB::raw("1 as tipe"),
                 db::raw("isnull(f.namakaryawan,'') as namakaryawan")
 
             )
             ->join(DB::raw("penerimaantruckingdetail as b with (readuncommitted) "), 'a.nobukti', 'b.nobukti')
+            ->join(DB::raw("pengeluarantruckingheader as c with (readuncommitted) "), 'b.pengeluarantruckingheader_nobukti', 'c.nobukti')
             ->leftjoin(DB::raw("karyawan as f with (readuncommitted) "), 'b.karyawan_id', 'f.id')
 
             ->where('a.penerimaantrucking_id', '=', $penerimaantrucking_id)
@@ -96,7 +97,7 @@ class LaporanPinjamanSupirKaryawan extends MyModel
             ->OrderBy('a.nobukti', 'asc');
 
    
-
+//  dd($queryhistory->get());
 
         DB::table($temphistory)->insertUsing([
             'nobukti',
@@ -148,7 +149,7 @@ class LaporanPinjamanSupirKaryawan extends MyModel
         )
             ->select(
                 'b.pengeluarantruckingheader_nobukti as nobukti',
-                DB::raw("a.nobukti as nobuktipelunasan"),
+                DB::raw("isnull(a.penerimaan_nobukti,'') as nobuktipelunasan"),
                 'e.tglbukti',
                 'a.tglbukti as tglbuktipelunasan',
                 DB::raw("(b.nominal*-1) as nominal"),
@@ -165,7 +166,7 @@ class LaporanPinjamanSupirKaryawan extends MyModel
             ->OrderBy('a.tglbukti', 'asc')
             ->OrderBy('a.nobukti', 'asc');
 
-            // dd($queryhistory->get());
+            // dd($queryrekapdata->get());
 
 
         DB::table($temprekapdata)->insertUsing([
@@ -274,13 +275,13 @@ class LaporanPinjamanSupirKaryawan extends MyModel
             DB::raw($temphasil . " a ")
         )
             ->select(
-                'a.nobukti',
+                db::raw("(a.nobukti) + ' '+(case when isnull(a.nobuktipelunasan,'')='' then '' else '( '+isnull(a.nobuktipelunasan,'')+' )' end) as nobukti"),
                 'a.nobuktipelunasan',
                 'a.tglbukti',
                 'a.tglbuktipelunasan',
                 'b.keterangan',
                 'a.debet',
-                'a.kredit',
+                db::raw("abs(a.kredit) as kredit"),
                 DB::raw("sum ((isnull(a.saldo,0)+a.debet+a.kredit)) over (order by a.id asc) as Saldo"),
                 DB::raw("'Laporan Pinjaman Karyawan' as judulLaporan"),
                 DB::raw("'" . $getJudul->text . "' as judul"),

@@ -90,6 +90,7 @@ class LaporanLabaRugi extends MyModel
             $table->string('coa', 100);
             $table->string('keterangancoa', 1000);
             $table->double('nominal');
+            $table->double('nominalparent');
             $table->string('cmpyname', 300);
             $table->integer('statuslabarugi');
             $table->integer('bln');
@@ -101,6 +102,47 @@ class LaporanLabaRugi extends MyModel
             $table->string('disetujui', 1000);
         });
 
+        $TempLabaRugiParent = '##TempLabaRugiParent' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+        Schema::create($TempLabaRugiParent, function ($table) {
+            $table->string('KeteranganParent', 1000);
+            $table->double('nominal');
+        });
+
+        $resultsparent = DB::table('mainakunpusat AS C')
+        ->select(
+            DB::raw("ISNULL(G.keterangancoa, '') AS KeteranganParent"),
+            DB::raw('sum(ISNULL(E.nominal, 0)) AS Nominal'),
+        )
+        ->join('mainTypeakuntansi AS AT', 'AT.id', '=', 'C.type_id')
+        ->leftJoin('mainakunpusat AS G', 'C.parent', '=', 'G.coa')
+        ->leftJoin($Temprekappendapatan . ' AS E', 'C.coa', '=', 'E.CoaMAin')
+        ->whereIn('AT.kodetype', ['Pendapatan'])
+        ->whereRaw("isnull(E.nominal,0)<>0")
+        ->whereRaw("ISNULL(G.keterangancoa, '')<>''")
+        ->groupBy('G.keterangancoa');
+
+        DB::table($TempLabaRugiParent)->insertUsing([
+            'KeteranganParent',
+            'nominal',
+        ], $resultsparent);     
+        
+        $results2parent = DB::table('mainakunpusat AS C')
+            ->select(
+                DB::raw("ISNULL(G.keterangancoa, '') AS KeteranganParent"),
+                DB::raw("sum(ISNULL(E.nominal, 0)) AS Nominal"),
+            )
+            ->join('mainTypeakuntansi AS AT', 'AT.id', '=', 'C.type_id')
+            ->leftJoin('mainakunpusat AS G', 'C.parent', '=', 'G.coa')
+            ->leftJoin($Temprekappendapatan . ' AS E', 'C.coa', '=', 'E.CoaMAin')
+            ->whereIn('AT.kodetype', ['Beban'])
+            ->whereRaw("isnull(E.nominal,0)<>0")
+            ->whereRaw("ISNULL(G.keterangancoa, '')<>''")    
+            ->groupBy('G.keterangancoa');
+
+            DB::table($TempLabaRugiParent)->insertUsing([
+                'KeteranganParent',
+                'nominal',
+            ], $results2parent);  
 
         //    $cmpy = 'PT. TRANSPORINDO AGUNG SEJAHTERA';
 
@@ -124,6 +166,7 @@ class LaporanLabaRugi extends MyModel
                 'C.COA AS coa',
                 'C.keterangancoa',
                 DB::raw('ISNULL(E.nominal, 0) AS Nominal'),
+                DB::raw('ISNULL(f.nominal, 0) AS Nominalparent'),
                 DB::raw("'$cmpy' AS CmpyName"),
                 'C.statuslabarugi',
                 DB::raw("'$bulan' AS bulan"),
@@ -139,6 +182,7 @@ class LaporanLabaRugi extends MyModel
             ->join('mainTypeakuntansi AS AT', 'AT.id', '=', 'C.type_id')
             ->leftJoin('mainakunpusat AS G', 'C.parent', '=', 'G.coa')
             ->leftJoin($Temprekappendapatan . ' AS E', 'C.coa', '=', 'E.CoaMAin')
+            ->leftJoin($TempLabaRugiParent . ' AS f', 'g.keterangancoa', '=', 'f.KeteranganParent')
             ->whereIn('AT.kodetype', ['Pendapatan'])
             ->whereRaw("isnull(E.nominal,0)<>0")
             ->orderBy('coa');
@@ -153,6 +197,7 @@ class LaporanLabaRugi extends MyModel
             'coa',
             'keterangancoa',
             'nominal',
+            'nominalparent',
             'cmpyname',
             'statuslabarugi',
             'bln',
@@ -173,6 +218,7 @@ class LaporanLabaRugi extends MyModel
                 'C.COA AS coa',
                 'C.keterangancoa',
                 DB::raw('ISNULL(E.nominal, 0) AS Nominal'),
+                DB::raw('ISNULL(f.nominal, 0) AS Nominalparent'),
                 DB::raw("'$cmpy' AS CmpyName"),
                 'C.statuslabarugi',
                 DB::raw("'$bulan' AS bulan"),
@@ -187,6 +233,7 @@ class LaporanLabaRugi extends MyModel
             ->join('mainTypeakuntansi AS AT', 'AT.id', '=', 'C.type_id')
             ->leftJoin('mainakunpusat AS G', 'C.parent', '=', 'G.coa')
             ->leftJoin($Temprekappendapatan . ' AS E', 'C.coa', '=', 'E.CoaMAin')
+            ->leftJoin($TempLabaRugiParent . ' AS f', 'g.keterangancoa', '=', 'f.KeteranganParent')
             ->whereIn('AT.kodetype', ['Beban'])
             ->whereRaw("isnull(E.nominal,0)<>0");
 
@@ -197,6 +244,7 @@ class LaporanLabaRugi extends MyModel
             'coa',
             'keterangancoa',
             'nominal',
+            'nominalparent',
             'cmpyname',
             'statuslabarugi',
             'bln',
@@ -264,6 +312,7 @@ class LaporanLabaRugi extends MyModel
             $table->string('coa', 100);
             $table->string('keterangancoa', 1000);
             $table->double('nominal');
+            $table->double('nominalparent');
             $table->string('cmpyname', 300);
             $table->integer('statuslabarugi');
             $table->integer('bln');
@@ -298,6 +347,7 @@ class LaporanLabaRugi extends MyModel
                 'C.COA AS coa',
                 'C.keterangancoa',
                 DB::raw('ISNULL(E.nominal, 0) AS Nominal'),
+                DB::raw('ISNULL(f.nominal, 0) AS Nominalparent'),
                 DB::raw("'$cmpy' AS CmpyName"),
                 'C.statuslabarugi',
                 DB::raw("'$bulan' AS bulan"),
@@ -305,6 +355,7 @@ class LaporanLabaRugi extends MyModel
                 'AT.Order',
                 'C.Parent',
                 DB::raw("ISNULL(G.keterangancoa, '') AS KeteranganParent"),
+                
                 db::raw("'" . $disetujui . "' as disetujui"),
                 db::raw("'" . $diperiksa . "' as diperiksa"),
 

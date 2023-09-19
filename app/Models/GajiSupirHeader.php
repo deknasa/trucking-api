@@ -33,6 +33,7 @@ class GajiSupirHeader extends MyModel
                 DB::raw("prosesgajisupirdetail as a with (readuncommitted)")
             )
             ->select(
+                'a.nobukti',
                 'a.gajisupir_nobukti'
             )
             ->where('a.gajisupir_nobukti', '=', $nobukti)
@@ -40,7 +41,7 @@ class GajiSupirHeader extends MyModel
         if (isset($rekap)) {
             $data = [
                 'kondisi' => true,
-                'keterangan' => 'PROSES GAJI SUPIR',
+                'keterangan' => 'PROSES GAJI SUPIR '.$rekap->nobukti,
                 'kodeerror' => 'SATL'
             ];
             goto selesai;
@@ -51,6 +52,7 @@ class GajiSupirHeader extends MyModel
                 DB::raw("pendapatansupirdetail as a with (readuncommitted)")
             )
             ->select(
+                'a.nobukti',
                 'a.nobuktirincian'
             )
             ->where('a.nobuktirincian', '=', $nobukti)
@@ -58,7 +60,7 @@ class GajiSupirHeader extends MyModel
         if (isset($rekap)) {
             $data = [
                 'kondisi' => true,
-                'keterangan' => 'PENDAPATAN SUPIR',
+                'keterangan' => 'PENDAPATAN SUPIR '.$rekap->nobukti,
                 'kodeerror' => 'SATL'
             ];
             goto selesai;
@@ -574,7 +576,7 @@ class GajiSupirHeader extends MyModel
             ->orderBy($temp . '.tglbukti', 'asc')
             ->orderBy($temp . '.nobukti', 'asc')
             ->where("$temp.sisa", '>', '0')
-            ->where("pengeluarantruckingdetail.supir_id", 0);
+            ->whereRaw("(pengeluarantruckingdetail.supir_id = 0 OR pengeluarantruckingdetail.supir_id IS NULL)");
 
         return $query->get();
     }
@@ -590,8 +592,8 @@ class GajiSupirHeader extends MyModel
             )
             ->select(DB::raw("pengeluarantruckingdetail.nobukti, pengeluarantruckingheader.tglbukti, (SELECT (pengeluarantruckingdetail.nominal - coalesce(SUM(penerimaantruckingdetail.nominal),0)) FROM penerimaantruckingdetail WHERE penerimaantruckingdetail.pengeluarantruckingheader_nobukti= pengeluarantruckingdetail.nobukti) AS sisa"))
             ->leftJoin(DB::raw("pengeluarantruckingdetail with (readuncommitted)"), 'pengeluarantruckingdetail.nobukti', 'pengeluarantruckingheader.nobukti')
-            ->where("pengeluarantruckingdetail.supir_id", 0)
-            ->where("pengeluarantruckingdetail.nobukti", 'LIKE', '%PJT%')
+            ->whereRaw("(pengeluarantruckingdetail.supir_id = 0 OR pengeluarantruckingdetail.supir_id IS NULL)")
+            ->where("pengeluarantruckingheader.pengeluarantrucking_id", 1)
             ->where("pengeluarantruckingheader.tglbukti", "<=", $tglBukti)
             ->orderBy('pengeluarantruckingheader.tglbukti', 'asc')
             ->orderBy('pengeluarantruckingdetail.nobukti', 'asc');
@@ -617,7 +619,8 @@ class GajiSupirHeader extends MyModel
             ->select(DB::raw("row_number() Over(Order By pengeluarantruckingheader.tglbukti asc,pengeluarantruckingdetail.nobukti) as id,pengeluarantruckingheader.tglbukti as pinjPribadi_tglbukti,pengeluarantruckingdetail.nobukti as pinjPribadi_nobukti,pengeluarantruckingdetail.keterangan as pinjPribadi_keterangan," . $tempPribadi . ".sisa as pinjPribadi_sisa"))
             ->leftJoin(DB::raw("$tempPribadi with (readuncommitted)"), 'pengeluarantruckingdetail.nobukti', $tempPribadi . ".nobukti")
             ->leftJoin(DB::raw("pengeluarantruckingheader with (readuncommitted)"), 'pengeluarantruckingdetail.nobukti', "pengeluarantruckingheader.nobukti")
-            ->whereRaw("pengeluarantruckingdetail.supir_id = $supir_id")
+            ->whereRaw("pengeluarantruckingdetail.supir_id = $supir_id") 
+            ->where("pengeluarantruckingheader.pengeluarantrucking_id", 1)
             ->whereRaw("pengeluarantruckingdetail.nobukti = $tempPribadi.nobukti")
             ->where("pengeluarantruckingheader.tglbukti", "<=", $tglBukti)
             ->where(function ($query) use ($tempPribadi) {

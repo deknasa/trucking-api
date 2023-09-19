@@ -100,6 +100,8 @@ class LaporanStok extends MyModel
             'modifiedby',
         ], (new KartuStok())->getlaporan($tgldari, $tglsampai, $stokdari_id, $stoksampai_id, $idgudangkantor, $trado_id, $gandengan_id, $filtergudang));
 
+        // dd(db::table($temprekapall)->where('kodebarang','3021/04831105 SWL')->get());
+
         $querystoktransaksi = DB::table($temprekapall)->from(db::raw($temprekapall . " as a"))
             ->select(
                 'a.kodebarang',
@@ -115,6 +117,7 @@ class LaporanStok extends MyModel
         DB::delete(DB::raw("delete " . $temprekapall . " from " . $temprekapall . " as a left outer join " . $tempstoktransaksi . " b on a.kodebarang=b.kodebarang 
                             WHERE isnull(b.kodebarang,'')='' and isnull(a.qtysaldo,0)=0"));
 
+           
 
         $disetujui = db::table('parameter')->from(db::raw('parameter with (readuncommitted)'))
             ->select('text')

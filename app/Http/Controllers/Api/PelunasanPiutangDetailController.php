@@ -39,6 +39,7 @@ class PelunasanPiutangDetailController extends Controller
      */
     public function getPelunasan(): JsonResponse
     {
+        
         $pelunasanPiutang = new PelunasanPiutangDetail();
         if (request()->nobukti != 'false' && request()->nobukti != null) {
             $fetch = PelunasanPiutangHeader::from(DB::raw("pelunasanpiutangheader with (readuncommitted)"))->where('nobukti', request()->nobukti)->first();

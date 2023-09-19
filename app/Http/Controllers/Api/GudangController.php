@@ -9,7 +9,6 @@ use App\Http\Requests\DestroyGudangRequest;
 use App\Http\Requests\StoreLogTrailRequest;
 use App\Models\Parameter;
 use App\Models\Stok;
-use App\Models\StokPersediaan;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\RangeExportReportRequest;

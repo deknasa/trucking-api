@@ -405,10 +405,12 @@ class PendapatanSupirHeader extends MyModel
                                 $query = $query->where('a.gajisupir_nobukti', 'LIKE', "%$filters[data]%");
                             } else if ($filters['field'] == 'nobukti_trip') {
                                 $query = $query->where('a.suratpengantar_nobukti', 'LIKE', "%$filters[data]%");
+                            } else if ($filters['field'] == 'namasupir') {
+                                $query = $query->where('d.namasupir', 'LIKE', "%$filters[data]%");
                             } else if ($filters['field'] == 'dari') {
                                 $query = $query->where(DB::raw("isnull(b.kodekota,'')"), 'LIKE', "%$filters[data]%");
                             } else if ($filters['field'] == 'sampai') {
-                                $query = $query->where(DB::raw("isnull(c.kodekota,'')"), 'LIKE', "%$filters[data]%");
+                                $query = $query->where(DB::raw("c.kodekota"), 'LIKE', "%$filters[data]%");
                             } else if ($filters['field'] == 'tgltrip') {
                                 $query = $query->whereRaw("format(a.suratpengantar_tglbukti,'dd-MM-yyyy') like '%$filters[data]%'");
                             } else if ($filters['field'] == 'nominal_detail') {
@@ -430,6 +432,8 @@ class PendapatanSupirHeader extends MyModel
                                     $query = $query->orWhere('a.gajisupir_nobukti', 'LIKE', "%$filters[data]%");
                                 } else if ($filters['field'] == 'nobukti_trip') {
                                     $query = $query->orWhere('a.suratpengantar_nobukti', 'LIKE', "%$filters[data]%");
+                                } else if ($filters['field'] == 'namasupir') {
+                                    $query = $query->orWhere('d.namasupir', 'LIKE', "%$filters[data]%");
                                 } else if ($filters['field'] == 'dari') {
                                     $query = $query->orWhere(DB::raw("isnull(b.kodekota,'')"), 'LIKE', "%$filters[data]%");
                                 } else if ($filters['field'] == 'sampai') {
@@ -1190,7 +1194,7 @@ class PendapatanSupirHeader extends MyModel
             $fetch2 = DB::table("pengeluarantruckingdetail")->from(DB::raw("pengeluarantruckingdetail as a with (readuncommitted)"))
                 ->select(DB::raw("b.nobukti,b.tglbukti, a.supir_id,a.keterangan,a.nominal as sisa"))
                 ->leftJoin(DB::raw("pengeluarantruckingheader as b"), 'b.nobukti', 'a.nobukti')
-                ->where('a.nobukti', 'like', "%PJT%")
+                ->where("b.pengeluarantrucking_id", 1)
                 ->whereRaw("(a.supir_id=" . $supir_id . " or " . $supir_id . "=0)")
                 ->where("b.tglbukti", "<=", $tglBukti)
                 ->whereRaw("b.nobukti not in (select a.pengeluarantruckingheader_nobukti from penerimaantruckingdetail as a 
@@ -1221,6 +1225,7 @@ class PendapatanSupirHeader extends MyModel
                 ->leftJoin(DB::raw("supir with (readuncommitted)"), 'pengeluarantruckingdetail.supir_id', "supir.id")
                 ->whereRaw("(pengeluarantruckingdetail.supir_id=" . $supir_id . " or " . $supir_id . "=0)")
                 ->whereRaw("pengeluarantruckingdetail.nobukti = $tempPribadi.nobukti")
+                ->where("pengeluarantruckingheader.pengeluarantrucking_id", 1)
                 ->where("pengeluarantruckingheader.tglbukti", "<=", $tglBukti)
                 ->where(function ($query) use ($tempPribadi) {
                     $query->whereRaw("$tempPribadi.sisa != 0")

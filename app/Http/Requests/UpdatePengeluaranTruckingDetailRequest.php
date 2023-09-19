@@ -26,7 +26,7 @@ class UpdatePengeluaranTruckingDetailRequest extends FormRequest
      */
     public function rules()
     {
-        
+
         $requiredKeterangan = Rule::requiredIf(function () {
             $idpengeluaran = request()->pengeluarantrucking_id;
             if ($idpengeluaran != '') {
@@ -89,7 +89,16 @@ class UpdatePengeluaranTruckingDetailRequest extends FormRequest
                 $fetchFormat =  DB::table('pengeluarantrucking')
                     ->where('id', $idpengeluaran)
                     ->first();
-                if ($fetchFormat->kodepengeluaran == 'PJT' || $fetchFormat->kodepengeluaran == 'BSB') {
+                if ($fetchFormat->kodepengeluaran == 'PJT') {
+                    $getPosting = DB::table('pengeluarantruckingheader')
+                        ->where('id', request()->id)
+                        ->first();
+                    if ($getPosting->statusposting == 84) {
+                        return false;
+                    } else {
+                        return true;
+                    }
+                } else if ($fetchFormat->kodepengeluaran == 'BSB') {
                     return true;
                 } else {
                     return false;
@@ -97,7 +106,7 @@ class UpdatePengeluaranTruckingDetailRequest extends FormRequest
             }
             return true;
         });
-        
+
         $sisaNominus = '';
         if (request()->pengeluarantrucking != '') {
             $idpengeluaran = request()->pengeluarantrucking_id;
@@ -106,21 +115,21 @@ class UpdatePengeluaranTruckingDetailRequest extends FormRequest
                 ->first();
             $sisaNominus = Rule::when((($fetchFormat->kodepengeluaran == 'TDE' || $fetchFormat->kodepengeluaran == 'KBBM')), 'numeric|min:0');
         }
-        $rulseKlaim=[];
+        $rulseKlaim = [];
         if ($this->pengeluarantrucking_id) {
             $klaim = DB::table('pengeluarantrucking')->from(DB::raw("pengeluarantrucking with (readuncommitted)"))
-                    ->where('id',request()->pengeluarantrucking_id)
-                    ->where('keterangan','LIKE', "%klaim%")
-                    ->first();
+                ->where('id', request()->pengeluarantrucking_id)
+                ->where('keterangan', 'LIKE', "%klaim%")
+                ->first();
             if ($klaim->id ==  $this->pengeluarantrucking_id) {
-                $rulseKlaim =[
-                    "stok_id.*"  => ["required", ],
-                    "pengeluaranstok_nobukti.*"  => ["required", ],
-                    "qty.*"  => ["required", ],
-                    "harga.*"  => ["required", ],
-                ];    
+                $rulseKlaim = [
+                    "stok_id.*"  => ["required",],
+                    "pengeluaranstok_nobukti.*"  => ["required",],
+                    "qty.*"  => ["required",],
+                    "harga.*"  => ["required",],
+                ];
             }
-        } 
+        }
         $min = '';
         $idpengeluaran = request()->pengeluarantrucking_id;
         $fetchFormat =  DB::table('pengeluarantrucking')
@@ -148,14 +157,13 @@ class UpdatePengeluaranTruckingDetailRequest extends FormRequest
             'keterangan' => [$requiredKeterangan, 'array'],
             'keterangan.*' => $requiredKeterangan
         ];
-        
+
         $rules = array_merge(
             $rules,
             $rulseKlaim
         );
 
         return $rules;
-
     }
 
     public function attributes()

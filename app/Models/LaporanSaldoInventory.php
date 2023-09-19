@@ -28,6 +28,7 @@ class LaporanSaldoInventory extends MyModel
     public function getReport($kelompok_id, $statusreuse, $statusban, $filter, $jenistgltampil, $priode, $stokdari_id, $stoksampai_id, $dataFilter)
     {
 
+        // dd('test');
         // dd($priode);
         $priode1= date('Y-m-d', strtotime($priode));
         $priode= date("Y-m-d", strtotime("+1 day", strtotime($priode)));
@@ -73,7 +74,14 @@ class LaporanSaldoInventory extends MyModel
             $filterdata=$filtergudang->text;
         }
 
-
+        // dump($priode);
+        // dump($priode); 
+        // dump($stokdari_id);
+        // dump($stoksampai_id);
+        // dump($gudang_id);
+        // dump($trado_id); 
+        // dump($gandengan_id);
+        // dd( $filterdata);
 
         // dd($filter);
         $kartustok = new KartuStok();
@@ -91,9 +99,11 @@ class LaporanSaldoInventory extends MyModel
             'qtysaldo',
             'nilaisaldo',
             'modifiedby',
-        ], (new KartuStok())->getlaporan($priode, $priode1, $stokdari_id, $stoksampai_id, $gudang_id, $trado_id, $gandengan_id, $filterdata));
+        ], (new KartuStok())->getlaporan($priode, $priode, $stokdari_id, $stoksampai_id, $gudang_id, $trado_id, $gandengan_id, $filterdata));
 
-        DB::delete(DB::raw("delete " . $temprekapall . "  WHERE upper(nobukti)<>'SALDO AWAL'"));
+        // dd(db::table($temprekapall)->get());
+
+        // DB::delete(DB::raw("delete " . $temprekapall . "  WHERE upper(nobukti)<>'SALDO AWAL'"));
 
         $disetujui = db::table('parameter')->from(db::raw('parameter with (readuncommitted)'))
         ->select('text')
@@ -105,6 +115,9 @@ class LaporanSaldoInventory extends MyModel
         ->where('grp', 'DIPERIKSA')
         ->where('subgrp', 'DIPERIKSA')->first()->text ?? '';
 
+
+        $priode2= date('m/d/Y', strtotime($priode1));
+       
         $query = DB::table($temprekapall)->from(
             DB::raw($temprekapall . " a")
         )
@@ -121,10 +134,10 @@ class LaporanSaldoInventory extends MyModel
                 'a.kodebarang as id',
                 'a.kodebarang',
                 'a.namabarang',
-                DB::raw("'".$priode1."' as tanggal"),
-                'a.qtymasuk as qty',
+                DB::raw("'".$priode2."' as tanggal"),
+                'a.qtysaldo as qty',
                 DB::raw("'' as satuan"),
-                'a.nilaimasuk as nominal',
+                'a.nilaisaldo as nominal',
                 db::raw("'" . $disetujui . "' as disetujui"),
                 db::raw("'" . $diperiksa . "' as diperiksa"),
 

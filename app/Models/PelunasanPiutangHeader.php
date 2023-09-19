@@ -218,6 +218,8 @@ class PelunasanPiutangHeader extends MyModel
                 'pelunasanpiutangheader.pengeluaran_nobukti',
                 'pelunasanpiutangheader.penerimaan_nobukti',
                 'pelunasanpiutangheader.penerimaangiro_nobukti',
+                db::raw("pelunasanpiutangheader.penerimaan_nobukti as penerimaan_nobuktihidden"),
+                db::raw("pelunasanpiutangheader.penerimaangiro_nobukti as penerimaangiro_nobuktihidden"),
                 'pelunasanpiutangheader.notadebet_nobukti',
                 'pelunasanpiutangheader.notakredit_nobukti',
                 'statuscetak.memo as statuscetak',
