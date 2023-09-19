@@ -514,6 +514,7 @@ class ParameterSeeder extends Seeder
         parameter::create(['grp' => 'PINJAMAN SUPIR', 'subgrp' => 'PINJAMAN SUPIR NON POSTING', 'kelompok' => '', 'text' => '1', 'memo' => '{"MEMO":"PINJAMAN SUPIR NON POSTING","SINGKATAN":"NOTA DEBET","WARNA":"#28A745","WARNATULISAN":"#fff","JURNAL":"06.02.01.01"}', 'type' => '0', 'modifiedby' => 'ADMIN', 'default' => '',]);
         parameter::create(['grp' => 'JURNAL SELISIH FIFO', 'subgrp' => 'DEBET', 'kelompok' => '', 'text' => 'DEBET', 'memo' => '{"MEMO":"JURNAL SELISIH FIFO DEBET","SINGKATAN":"D","WARNA":"#28A745","JURNAL":"07.03.01.03","WARNATULISAN":"#fff"}', 'type' => '0', 'modifiedby' => 'ADMIN', 'default' => '',]);
         parameter::create(['grp' => 'JURNAL SELISIH FIFO', 'subgrp' => 'KREDIT', 'kelompok' => '', 'text' => 'KREDIT', 'memo' => '{"MEMO":"JURNAL SELISIH FIFO KREDIT","SINGKATAN":"K","WARNA":"#6C757D","JURNAL":"01.10.03.01","WARNATULISAN":"#fff"}', 'type' => '0', 'modifiedby' => 'ADMIN', 'default' => '',]);
+        parameter::create(['grp' => 'PERKIRAAN PEMBANDING NERACA', 'subgrp' => 'HUTANG USAHA', 'kelompok' => 'HUTANG USAHA', 'text' => 'HUTANG USAHA', 'memo' => '{"MEMO":"PERKIRAAN PEMBANDING HUTANG USAHA","SINGKATAN":"K","WARNA":"#6C757D","JURNAL":"03.02.02.01","WARNATULISAN":"#fff"}', 'type' => '0', 'modifiedby' => 'ADMIN', 'default' => '',]);
         
     }
 }
