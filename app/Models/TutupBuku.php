@@ -20,6 +20,7 @@ class TutupBuku extends Model
 
         $parameter->text = $tgltutupbuku;
         $parameter->modifiedby = auth('api')->user()->name;
+        $parameter->info = html_entity_decode(request()->info);
         if (!$parameter->save()) {
             throw new \Exception("Error update tutup buku.");
         }

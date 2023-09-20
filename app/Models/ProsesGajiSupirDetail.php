@@ -208,6 +208,7 @@ class ProsesGajiSupirDetail extends MyModel
         $prosesGajiSupirDetail->nominal = $data['nominal'];
         $prosesGajiSupirDetail->keterangan = $data['keterangan'];
         $prosesGajiSupirDetail->modifiedby = auth('api')->user()->name;
+        $prosesGajiSupirDetail->info = html_entity_decode(request()->info);
         
         if (!$prosesGajiSupirDetail->save()) {
             throw new \Exception("Error storing Proses Gaji Supir Detail.");

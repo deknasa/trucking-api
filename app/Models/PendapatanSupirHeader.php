@@ -736,6 +736,7 @@ class PendapatanSupirHeader extends MyModel
         $pendapatanSupirHeader->statusformat = $format->id;
         $pendapatanSupirHeader->statuscetak = $statusCetak->id;
         $pendapatanSupirHeader->modifiedby = auth('api')->user()->name;
+        $pendapatanSupirHeader->info = html_entity_decode(request()->info);
         $pendapatanSupirHeader->nobukti = (new RunningNumberService)->get($group, $subGroup, $pendapatanSupirHeader->getTable(), date('Y-m-d', strtotime($data['tglbukti'])));
 
         if (!$pendapatanSupirHeader->save()) {
@@ -897,6 +898,7 @@ class PendapatanSupirHeader extends MyModel
         $pendapatanSupirHeader->tgldari = date('Y-m-d', strtotime($data['tgldari']));
         $pendapatanSupirHeader->tglsampai = date('Y-m-d', strtotime($data['tglsampai']));
         $pendapatanSupirHeader->modifiedby = auth('api')->user()->name;
+        $pendapatanSupirHeader->info = html_entity_decode(request()->info);
 
         if (!$pendapatanSupirHeader->save()) {
             throw new \Exception("Error storing pendapatan Supir header.");

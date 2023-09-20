@@ -485,6 +485,7 @@ class Stok extends MyModel
         $stok->hargabelimin = $data['hargabelimin'];
         $stok->hargabelimax = $data['hargabelimax'];
         $stok->modifiedby = auth('api')->user()->name;
+        $stok->info = html_entity_decode(request()->info);
         if ($data['gambar']) {
             $stok->gambar = $this->storeFiles($data['gambar'], 'stok');
         } else {
@@ -529,6 +530,7 @@ class Stok extends MyModel
         $stok->hargabelimin = $data['hargabelimin'];
         $stok->hargabelimax = $data['hargabelimax'];
         $stok->modifiedby = auth('api')->user()->name;
+        $stok->info = html_entity_decode(request()->info);
 
         $statusPakai = $this->cekvalidasihapus($stok->id);
         if (!$statusPakai['kondisi']){

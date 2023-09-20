@@ -386,6 +386,7 @@ class RekapPenerimaanHeader extends MyModel
         $rekapPenerimaanHeader->statuscetak = $statuscetak->id;
         $rekapPenerimaanHeader->statusformat = $format->id;
         $rekapPenerimaanHeader->modifiedby = auth('api')->user()->name;
+        $rekapPenerimaanHeader->info = html_entity_decode(request()->info);
 
         $rekapPenerimaanHeader->nobukti = (new RunningNumberService)->get($group, $subgroup, $rekapPenerimaanHeader->getTable(), date('Y-m-d', strtotime($data['tglbukti'])));
 
@@ -440,6 +441,7 @@ class RekapPenerimaanHeader extends MyModel
         $rekapPenerimaanheader->tgltransaksi  = date('Y-m-d', strtotime($data['tgltransaksi']));
         $rekapPenerimaanheader->bank_id = $data['bank_id'];
         $rekapPenerimaanheader->modifiedby = auth('api')->user()->name;
+        $rekapPenerimaanheader->info = html_entity_decode(request()->info);
 
         if (!$rekapPenerimaanheader->save()) {
             throw new \Exception("Error update rekap penerimaan header.");

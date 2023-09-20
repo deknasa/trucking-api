@@ -711,6 +711,7 @@ class Trado extends MyModel
             $trado->statuslewatvalidasi = $statusLewatValidasi->id;
             $trado->nominalplusborongan = str_replace(',', '', $data['nominalplusborongan']) ?? 0;
             $trado->modifiedby = auth('api')->user()->user;
+            $trado->info = html_entity_decode(request()->info);
 
             $trado->photostnk = $data['photostnk'];
             $trado->photobpkb = $data['photobpkb'];

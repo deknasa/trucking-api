@@ -237,6 +237,7 @@ class Mandor extends MyModel
         $mandor->keterangan = $data['keterangan'] ?? '';
         $mandor->statusaktif = $data['statusaktif'];
         $mandor->modifiedby = auth('api')->user()->user;
+        $mandor->info = html_entity_decode(request()->info);
         $data['sortname'] = $data['sortname'] ?? 'id';
         $data['sortorder'] = $data['sortorder'] ?? 'asc';
 
@@ -263,6 +264,7 @@ class Mandor extends MyModel
         $mandor->keterangan = $data['keterangan'] ?? '';
         $mandor->statusaktif = $data['statusaktif'];
         $mandor->modifiedby = auth('api')->user()->user;
+        $mandor->info = html_entity_decode(request()->info);
 
         
         if (!$mandor->save()) {

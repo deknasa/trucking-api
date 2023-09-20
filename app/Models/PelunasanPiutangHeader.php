@@ -690,6 +690,7 @@ class PelunasanPiutangHeader extends MyModel
         $pelunasanPiutangHeader->nowarkat = $data['nowarkat'] ?? '-';
         $pelunasanPiutangHeader->statusformat = $format->id;
         $pelunasanPiutangHeader->modifiedby = auth('api')->user()->name;
+        $pelunasanPiutangHeader->info = html_entity_decode(request()->info);
 
         $pelunasanPiutangHeader->nobukti = (new RunningNumberService)->get($group, $subGroup, $pelunasanPiutangHeader->getTable(), date('Y-m-d', strtotime($data['tglbukti'])));
 
@@ -965,6 +966,7 @@ class PelunasanPiutangHeader extends MyModel
         }
 
         $pelunasanPiutangHeader->modifiedby = auth('api')->user()->name;
+        $pelunasanPiutangHeader->info = html_entity_decode(request()->info);
 
         if (!$pelunasanPiutangHeader->save()) {
             throw new \Exception("Error Update pelunasan piutang header.");

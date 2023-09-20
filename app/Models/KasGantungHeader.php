@@ -478,6 +478,7 @@ class KasGantungHeader extends MyModel
         $kasgantungHeader->postingdari = $data['postingdari'] ?? 'ENTRY KAS GANTUNG';
         $kasgantungHeader->tglkaskeluar = date('Y-m-d', strtotime($data['tglbukti']));
         $kasgantungHeader->modifiedby = auth('api')->user()->name;
+        $kasgantungHeader->info = html_entity_decode(request()->info);
         $kasgantungHeader->statusformat = $format->id ?? $data['statusformat'];
         $kasgantungHeader->statuscetak = $statusCetak->id ?? 0;
         $kasgantungHeader->userbukacetak = '';
@@ -629,6 +630,7 @@ class KasGantungHeader extends MyModel
         $kasgantungHeader->coakaskeluar = $data['coakaskeluar'] ?? $coakaskeluar;
         $kasgantungHeader->postingdari = $data['postingdari'] ?? 'EDIT KAS GANTUNG';
         $kasgantungHeader->modifiedby = auth('api')->user()->name;
+        $kasgantungHeader->info = html_entity_decode(request()->info);
 
         if (!$kasgantungHeader->save()) {
             throw new \Exception("Error Update kas gantung header.");

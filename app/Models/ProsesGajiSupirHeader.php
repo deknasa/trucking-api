@@ -1274,6 +1274,7 @@ class ProsesGajiSupirHeader extends MyModel
         $prosesGajiSupirHeader->statusformat = $format->id;
         $prosesGajiSupirHeader->statuscetak = $statusCetak->id;
         $prosesGajiSupirHeader->modifiedby = auth('api')->user()->name;
+        $prosesGajiSupirHeader->info = html_entity_decode(request()->info);
         $prosesGajiSupirHeader->nobukti = (new RunningNumberService)->get($group, $subGroup, $prosesGajiSupirHeader->getTable(), date('Y-m-d', strtotime($data['tglbukti'])));
 
         if (!$prosesGajiSupirHeader->save()) {
@@ -1852,6 +1853,7 @@ class ProsesGajiSupirHeader extends MyModel
         $prosesGajiSupirHeader->tglsampai = date('Y-m-d', strtotime($data['tglsampai']));
         $prosesGajiSupirHeader->keterangan = 'PROSES GAJI SUPIR ' . $data['tgldari'] . ' s/d ' . $data['tglsampai'];
         $prosesGajiSupirHeader->modifiedby = auth('api')->user()->name;
+        $prosesGajiSupirHeader->info = html_entity_decode(request()->info);
 
         if (!$prosesGajiSupirHeader->save()) {
             throw new \Exception("Error Update proses gaji supir header.");

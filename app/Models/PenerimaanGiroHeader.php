@@ -470,6 +470,7 @@ class PenerimaanGiroHeader extends MyModel
         $penerimaanGiroHeader->statusformat = $format->id;
         $penerimaanGiroHeader->statuscetak = $statusCetak->id;
         $penerimaanGiroHeader->modifiedby = auth('api')->user()->name;
+        $penerimaanGiroHeader->info = html_entity_decode(request()->info);
         $penerimaanGiroHeader->statusformat = $data['statusformat'] ?? $format->id;
         $penerimaanGiroHeader->nobukti = (new RunningNumberService)->get($group, $subGroup, $penerimaanGiroHeader->getTable(), date('Y-m-d', strtotime($data['tglbukti'])));
 
@@ -586,6 +587,7 @@ class PenerimaanGiroHeader extends MyModel
         $penerimaanGiroHeader->diterimadari = $data['diterimadari'];
         $penerimaanGiroHeader->tgllunas = date('Y-m-d', strtotime($data['tgllunas']));
         $penerimaanGiroHeader->modifiedby = auth('api')->user()->name;
+        $penerimaanGiroHeader->info = html_entity_decode(request()->info);
 
         if (!$penerimaanGiroHeader->save()) {
             throw new \Exception("Error Update penerimaan giro header.");
@@ -718,6 +720,7 @@ class PenerimaanGiroHeader extends MyModel
 
             $penerimaanGiro->tglapproval = date('Y-m-d H:i:s');
             $penerimaanGiro->userapproval = auth('api')->user()->name;
+            $penerimaanGiro->info = html_entity_decode(request()->info);
 
             if (!$penerimaanGiro->save()) {
                 throw new \Exception('Error Un/approval penerimaan giro.');

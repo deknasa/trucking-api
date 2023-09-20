@@ -342,6 +342,7 @@ class HutangExtraHeader extends MyModel
         $hutangExtraHeader->statusapproval = $statusApproval->id;
         $hutangExtraHeader->total = array_sum($data['total_detail']);
         $hutangExtraHeader->modifiedby = auth('api')->user()->name;
+        $hutangExtraHeader->info = html_entity_decode(request()->info);
         $hutangExtraHeader->nobukti = (new RunningNumberService)->get($group, $subGroup, $hutangExtraHeader->getTable(), date('Y-m-d', strtotime($data['tglbukti'])));
 
 
@@ -443,6 +444,7 @@ class HutangExtraHeader extends MyModel
         $hutangExtraHeader->postingdari = 'EDIT HUTANG EXTRA HEADER';
         $hutangExtraHeader->total = array_sum($data['total_detail']);
         $hutangExtraHeader->modifiedby = auth('api')->user()->name;
+        $hutangExtraHeader->info = html_entity_decode(request()->info);
 
         $getCoaDebet = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'JURNAL HUTANG EXTRA MANUAL')->where('subgrp', 'DEBET')->first();
         $memo = json_decode($getCoaDebet->memo, true);

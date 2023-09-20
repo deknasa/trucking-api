@@ -167,6 +167,7 @@ class BukaPenerimaanStok extends MyModel
         $bukaPenerimaanStok->penerimaanstok_id = $data['penerimaanstok_id'];
         $bukaPenerimaanStok->tglbatas = $tglbatas;
         $bukaPenerimaanStok->modifiedby = auth('api')->user()->name;
+        $bukaPenerimaanStok->info = html_entity_decode(request()->info);
         
         if (!$bukaPenerimaanStok->save()) {
             throw new \Exception("Error Update Buka Penerimaan Stok.");

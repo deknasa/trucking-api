@@ -222,6 +222,7 @@ class PenerimaanGiroDetail extends MyModel
         $penerimaanGiroDetail->pelunasanpiutang_nobukti = $data['pelunasanpiutang_nobukti'];
         $penerimaanGiroDetail->bulanbeban = $data['bulanbeban'];
         $penerimaanGiroDetail->modifiedby = auth('api')->user()->name;
+        $penerimaanGiroDetail->info = html_entity_decode(request()->info);
 
         if (!$penerimaanGiroDetail->save()) {
             throw new \Exception("Error storing Penerimaan Giro Detail.");

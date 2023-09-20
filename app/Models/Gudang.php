@@ -272,6 +272,7 @@ class Gudang extends MyModel
         $gudang->gudang = $data['gudang'];
         $gudang->statusaktif = $data['statusaktif'];
         $gudang->modifiedby = auth('api')->user()->name;
+        $gudang->info = html_entity_decode(request()->info);
 
         if (!$gudang->save()) {
             throw new \Exception('Error storing gudang.');
@@ -416,6 +417,7 @@ class Gudang extends MyModel
         $gudang->gudang = $data['gudang'];
         $gudang->statusaktif = $data['statusaktif'];
         $gudang->modifiedby = auth('api')->user()->name;
+        $gudang->info = html_entity_decode(request()->info);
 
         if (!$gudang->save()) {
             throw new \Exception('Error updating gudang.');

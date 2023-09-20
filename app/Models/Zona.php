@@ -258,6 +258,7 @@ class Zona extends MyModel
         $zona->statusaktif = $data['statusaktif'];
         $zona->keterangan = $data['keterangan'] ?? '';
         $zona->modifiedby = auth('api')->user()->user;
+        $zona->info = html_entity_decode(request()->info);
         $data['sortname'] = $data['sortname'] ?? 'id';
         $data['sortorder'] = $data['sortorder'] ?? 'asc';
 
@@ -283,7 +284,7 @@ class Zona extends MyModel
         $zona->zona = $data['zona'];
         $zona->keterangan = $data['keterangan'] ?? '';
         $zona->statusaktif = $data['statusaktif'];
-        $zona->modifiedby = auth('api')->user()->user;
+        $zona->info = html_entity_decode(request()->info);
 
         if (!$zona->save()) {
             throw new \Exception('Error updating zona.');

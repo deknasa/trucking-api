@@ -459,6 +459,7 @@ class HutangBayarHeader extends MyModel
         $hutangBayarHeader->statuscetak = $statusCetak->id;
         $hutangBayarHeader->statusformat = $format->id;
         $hutangBayarHeader->modifiedby = auth('api')->user()->name;
+        $hutangBayarHeader->info = html_entity_decode(request()->info);
         $hutangBayarHeader->nobukti = (new RunningNumberService)->get($group, $subGroup, $hutangBayarHeader->getTable(), date('Y-m-d', strtotime($data['tglbukti'])));
 
 
@@ -675,6 +676,7 @@ class HutangBayarHeader extends MyModel
         $hutangBayarHeader->tglcair = date('Y-m-d', strtotime($data['tglcair']));
         $hutangBayarHeader->supplier_id = $data['supplier_id'] ?? '';
         $hutangBayarHeader->modifiedby = auth('api')->user()->name;
+        $hutangBayarHeader->info = html_entity_decode(request()->info);
 
         $hutangBayarHeader->coa = $memo['JURNAL'];
 

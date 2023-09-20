@@ -407,6 +407,7 @@ class Menu extends MyModel
         $menu->menuicon = strtolower($data['menuicon']);
         $menu->menuexe = strtolower($data['menuexe']);
         $menu->modifiedby = auth('api')->user()->user;
+        $menu->info = html_entity_decode(request()->info);
         $menu->link = "";
         $menu->aco_id = $menuacoid;
 

@@ -306,6 +306,7 @@ class PenerimaanTruckingDetail extends MyModel
         $penerimaantruckingDetail->keterangan = $data['keterangan'];
         $penerimaantruckingDetail->nominal = $data['nominal'];
         $penerimaantruckingDetail->modifiedby = auth('api')->user()->name;
+        $penerimaantruckingDetail->info = html_entity_decode(request()->info);
 
         if (!$penerimaantruckingDetail->save()) {
             throw new \Exception("Error storing Penerimaan Trucking Detail.");

@@ -526,6 +526,7 @@ class Tarif extends MyModel
         $tarif->statuspostingtnl = $data['statuspostingtnl'];
         $tarif->keterangan = $data['keterangan'];
         $tarif->modifiedby = auth('api')->user()->user;
+        $tarif->info = html_entity_decode(request()->info);
 
         if (!$tarif->save()) {
             throw new \Exception("Error storing tarif.");
@@ -596,7 +597,7 @@ class Tarif extends MyModel
         $tarif->tglmulaiberlaku = date('Y-m-d', strtotime($data['tglmulaiberlaku']));
         $tarif->statuspenyesuaianharga = $data['statuspenyesuaianharga'];
         $tarif->keterangan = $data['keterangan'];
-        $tarif->modifiedby = auth('api')->user()->user;
+        $tarif->info = html_entity_decode(request()->info);
 
         if (!$tarif->save()) {
             throw new \Exception("Error updating tarif.");

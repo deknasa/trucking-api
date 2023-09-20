@@ -513,6 +513,7 @@ class Bank extends MyModel
         $bank->formatpenerimaan = $data['formatpenerimaan'];
         $bank->formatpengeluaran = $data['formatpengeluaran'];
         $bank->modifiedby = auth('api')->user()->name;
+        $bank->info = html_entity_decode(request()->info);
 
         if (!$bank->save()) {
             throw new \Exception("Error storing service in header.");
@@ -541,6 +542,7 @@ class Bank extends MyModel
         $bank->formatpenerimaan = $data['formatpenerimaan'];
         $bank->formatpengeluaran = $data['formatpengeluaran'];
         $bank->modifiedby = auth('api')->user()->name;
+        $bank->info = html_entity_decode(request()->info);
 
         if (!$bank->save()) {
             throw new \Exception("Error update service in header.");

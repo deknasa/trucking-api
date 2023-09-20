@@ -322,6 +322,7 @@ class PindahBuku extends MyModel
         $pindahBuku->keterangan = $data['keterangan'];
         $pindahBuku->statusformat = $format->id;
         $pindahBuku->modifiedby = auth('api')->user()->name;
+        $pindahBuku->info = html_entity_decode(request()->info);
 
 
         $pindahBuku->nobukti = (new RunningNumberService)->get($group, $subgroup, $pindahBuku->getTable(), date('Y-m-d', strtotime($data['tglbukti'])));
@@ -398,6 +399,7 @@ class PindahBuku extends MyModel
         $pindahBuku->nominal = $data['nominal'];
         $pindahBuku->keterangan = $data['keterangan'];
         $pindahBuku->modifiedby = auth('api')->user()->name;
+        $pindahBuku->info = html_entity_decode(request()->info);
 
         if (!$pindahBuku->save()) {
             throw new \Exception("Error updating pindah buku.");

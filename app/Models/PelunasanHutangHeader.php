@@ -444,6 +444,7 @@ class PelunasanHutangHeader extends MyModel
         $PelunasanHutangHeader->statuscetak = $statusCetak->id;
         $PelunasanHutangHeader->statusformat = $format->id;
         $PelunasanHutangHeader->modifiedby = auth('api')->user()->name;
+        $PelunasanHutangHeader->info = html_entity_decode(request()->info);
         $PelunasanHutangHeader->nobukti = (new RunningNumberService)->get($group, $subGroup, $PelunasanHutangHeader->getTable(), date('Y-m-d', strtotime($data['tglbukti'])));
 
         if (!$PelunasanHutangHeader->save()) {
@@ -577,6 +578,7 @@ class PelunasanHutangHeader extends MyModel
         $PelunasanHutangHeader->tglcair = date('Y-m-d', strtotime($data['tglcair']));
         $PelunasanHutangHeader->supplier_id = $data['supplier_id'] ?? '';
         $PelunasanHutangHeader->modifiedby = auth('api')->user()->name;
+        $PelunasanHutangHeader->info = html_entity_decode(request()->info);
 
         if (!$PelunasanHutangHeader->save()) {
             throw new \Exception("Error Update pembayaran Hutang header.");

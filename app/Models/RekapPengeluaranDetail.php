@@ -132,6 +132,7 @@ class RekapPengeluaranDetail extends MyModel
         $rekapPengeluaranDetail->nominal = $data['nominal'];
         $rekapPengeluaranDetail->keterangan = $data['keterangan'];
         $rekapPengeluaranDetail->modifiedby = auth('api')->user()->name;
+        $rekapPengeluaranDetail->info = html_entity_decode(request()->info);
         
         if (!$rekapPengeluaranDetail->save()) {
             throw new \Exception("Error storing rekap pengeluaran detail.");

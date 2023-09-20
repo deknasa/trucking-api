@@ -37,6 +37,7 @@ class ApprovalBukaCetak extends MyModel
 
         $data->tglbukacetak = date('Y-m-d', time());
         $data->userbukacetak = auth('api')->user()->name;
+        $data->info = html_entity_decode(request()->info);
         if (!$data->save()) {
             throw new \Exception('Error Buka Cetak.');
         }

@@ -315,6 +315,7 @@ class ProsesUangJalanSupirDetail extends MyModel
         $prosesUangJalan->nominal = $data['nominal'];
         $prosesUangJalan->keterangan = $data['keterangan'];
         $prosesUangJalan->modifiedby = auth('api')->user()->name;
+        $prosesUangJalan->info = html_entity_decode(request()->info);
 
         if (!$prosesUangJalan->save()) {
             throw new \Exception("Error storing proses uang jalan detail.");

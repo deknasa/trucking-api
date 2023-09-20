@@ -210,6 +210,7 @@ class Satuan extends MyModel
         $satuan->satuan = $data['satuan'];
         $satuan->statusaktif = $data['statusaktif'];
         $satuan->modifiedby = auth('api')->user()->name;
+        $satuan->info = html_entity_decode(request()->info);
 
         if (!$satuan->save()) {
             throw new \Exception("Error storing service in header.");
@@ -233,6 +234,7 @@ class Satuan extends MyModel
         $satuan->satuan = $data['satuan'];
         $satuan->statusaktif = $data['statusaktif'];
         $satuan->modifiedby = auth('api')->user()->name;
+        $satuan->info = html_entity_decode(request()->info);
 
         if (!$satuan->save()) {
             throw new \Exception("Error update service in header.");

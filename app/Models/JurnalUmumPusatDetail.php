@@ -170,6 +170,7 @@ class JurnalUmumPusatDetail extends MyModel
         $jurnalUmumDetail->nominal = $data['nominal'];
         $jurnalUmumDetail->keterangan = $data['keterangan'] ?? '';
         $jurnalUmumDetail->modifiedby = auth('api')->user()->name;
+        $jurnalUmumDetail->info = html_entity_decode(request()->info);
         $jurnalUmumDetail->baris = $data['baris'];
         
         if (!$jurnalUmumDetail->save()) {

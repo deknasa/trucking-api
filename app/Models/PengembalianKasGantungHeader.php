@@ -573,6 +573,7 @@ class PengembalianKasGantungHeader extends MyModel
         $pengembalianKasGantungHeader->statusformat = $data['statusformat'] ?? $format->id;
         $pengembalianKasGantungHeader->statuscetak = $statusCetak->id ?? 0;
         $pengembalianKasGantungHeader->modifiedby = auth('api')->user()->name;
+        $pengembalianKasGantungHeader->info = html_entity_decode(request()->info);
         $pengembalianKasGantungHeader->nobukti = (new RunningNumberService)->get($group, $subgroup, $pengembalianKasGantungHeader->getTable(), date('Y-m-d', strtotime($data['tglbukti'])));
 
         $pengembalianKasGantungHeader->save();
@@ -707,6 +708,7 @@ class PengembalianKasGantungHeader extends MyModel
         $pengembalianKasGantungHeader->postingdari = $data['postingdari'] ?? "Pengembalian Kas Gantung";
         // $pengembalianKasGantungHeader->tglkasmasuk = date('Y-m-d', strtotime($data['tglbukti']));
         $pengembalianKasGantungHeader->modifiedby = auth('api')->user()->name;
+        $pengembalianKasGantungHeader->info = html_entity_decode(request()->info);
 
         $pengembalianKasGantungHeader->save();
 

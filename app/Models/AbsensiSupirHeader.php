@@ -508,6 +508,7 @@ class AbsensiSupirHeader extends MyModel
         $absensiSupir->statusapprovaleditabsensi  = $statusEditAbsensi->id;
         $absensiSupir->tglbataseditabsensi  = $tglbataseditabsensi;
         $absensiSupir->modifiedby = auth('api')->user()->name;
+        $absensiSupir->info = html_entity_decode(request()->info);
         $absensiSupir->nobukti = (new RunningNumberService)->get($group, $subGroup, $absensiSupir->getTable(), date('Y-m-d', strtotime($data['tglbukti'])));
 
         if (!$absensiSupir->save()) {
@@ -631,7 +632,7 @@ class AbsensiSupirHeader extends MyModel
         $absensiSupir->statuscetak = $statusCetak->id ?? 0;
         // $absensiSupir->statusapprovaleditabsensi  = $statusEditAbsensi->id;
         $absensiSupir->tglbataseditabsensi  = $tglbataseditabsensi;
-        $absensiSupir->modifiedby = auth('api')->user()->name;
+        $absensiSupir->info = html_entity_decode(request()->info);
 
         if (!$absensiSupir->save()) {
             throw new \Exception("Error storing Absensi Supir Header.");

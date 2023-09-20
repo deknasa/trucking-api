@@ -267,6 +267,7 @@ class SuratPengantarApprovalInputTrip extends MyModel
         $approvalBukaTanggal->jumlahtrip = $data['jumlahtrip'];
         $approvalBukaTanggal->statusapproval = $data['statusapproval'];
         $approvalBukaTanggal->modifiedby = auth('api')->user()->user;
+        $approvalBukaTanggal->info = html_entity_decode(request()->info);
 
         if (!$approvalBukaTanggal->save()) {
             throw new \Exception('Error storing surat pengantar approval input trip.');
@@ -290,6 +291,7 @@ class SuratPengantarApprovalInputTrip extends MyModel
         $approvalBukaTanggal->jumlahtrip = $data['jumlahtrip'];
         $approvalBukaTanggal->statusapproval = $data['statusapproval'];
         $approvalBukaTanggal->modifiedby = auth('api')->user()->user;
+        $approvalBukaTanggal->info = html_entity_decode(request()->info);
 
         if (!$approvalBukaTanggal->save()) {
             throw new \Exception('Error updating surat pengantar approval input trip.');

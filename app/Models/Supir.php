@@ -932,6 +932,7 @@ class Supir extends MyModel
             $supir->tglterbitsim = date('Y-m-d', strtotime($data['tglterbitsim']));
             $supir->statuspostingtnl = $data['statuspostingtnl'];
             $supir->modifiedby = auth('api')->user()->user;
+            $supir->info = html_entity_decode(request()->info);
 
             $supir->statusadaupdategambar = $statusAdaUpdateGambar->id;
             $supir->statusluarkota = $statusLuarKota->id;
@@ -1055,6 +1056,7 @@ class Supir extends MyModel
             $supir->tgllahir = date('Y-m-d', strtotime($data['tgllahir']));
             $supir->tglterbitsim = date('Y-m-d', strtotime($data['tglterbitsim']));
             $supir->modifiedby = auth('api')->user()->name;
+            $supir->info = html_entity_decode(request()->info);
 
             $this->deleteFiles($supir);
 

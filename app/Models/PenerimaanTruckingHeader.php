@@ -857,6 +857,7 @@ class PenerimaanTruckingHeader extends MyModel
         $penerimaanTruckingHeader->statusformat = $data['statusformat'] ?? $format->id;
         $penerimaanTruckingHeader->statuscetak = $statusCetak->id;
         $penerimaanTruckingHeader->modifiedby = auth('api')->user()->name;
+        $penerimaanTruckingHeader->info = html_entity_decode(request()->info);
         $penerimaanTruckingHeader->nobukti = (new RunningNumberService)->get($fetchGrp->grp, $fetchGrp->subgrp, $penerimaanTruckingHeader->getTable(), date('Y-m-d', strtotime($data['tglbukti'])));
 
         if (!$penerimaanTruckingHeader->save()) {
@@ -1200,6 +1201,7 @@ class PenerimaanTruckingHeader extends MyModel
             $penerimaanTruckingHeader->periodedari = array_key_exists("periodedari", $data) ? date('Y-m-d', strtotime($data['periodedari'])) : '';
             $penerimaanTruckingHeader->periodesampai = array_key_exists("periodesampai", $data) ? date('Y-m-d', strtotime($data['periodesampai'])) : '';
             $penerimaanTruckingHeader->modifiedby = auth('api')->user()->name;
+            $penerimaanTruckingHeader->info = html_entity_decode(request()->info);
             $penerimaanTruckingHeader->tglbukti = date('Y-m-d', strtotime($data['tglbukti']));
             $penerimaanTruckingHeader->pendapatansupir_bukti = $data['pendapatansupir_bukti'] ?? '';
             $penerimaanTruckingHeader->jenisorder_id = $data['jenisorderan_id'] ?? '';

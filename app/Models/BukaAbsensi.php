@@ -136,6 +136,7 @@ class BukaAbsensi extends MyModel
         $bukaAbsensi->tglabsensi = date('Y-m-d', strtotime($data['tglabsensi']));
         $bukaAbsensi->tglbatas = $tglbatas;
         $bukaAbsensi->modifiedby = auth('api')->user()->name;
+        $bukaAbsensi->info = html_entity_decode(request()->info);
 
         if (!$bukaAbsensi->save()) {
             throw new \Exception("Error Update Buka Absensi.");
@@ -158,6 +159,7 @@ class BukaAbsensi extends MyModel
         $bukaAbsensi = new BukaAbsensi();
         $bukaAbsensi->tglabsensi = date('Y-m-d', strtotime($data['tglabsensi']));
         $bukaAbsensi->modifiedby = auth('api')->user()->name;
+        $bukaAbsensi->info = html_entity_decode(request()->info);
 
         if (!$bukaAbsensi->save()) {
             throw new \Exception("Error Update Buka Absensi.");

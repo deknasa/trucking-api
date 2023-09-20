@@ -17,6 +17,7 @@ class UbahPassword extends MyModel
     {
         $user->password = $data['password'];
         $user->modifiedby = auth('api')->user()->name;
+        $user->info = html_entity_decode(request()->info);
 
         if (!$user->save()) {
             throw new \Exception('Error updating password user.');

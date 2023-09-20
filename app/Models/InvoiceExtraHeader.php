@@ -343,6 +343,7 @@ class InvoiceExtraHeader extends MyModel
         $invoiceExtraHeader->statuscetak = $statusCetak->id;
         $invoiceExtraHeader->statusformat = $format->id;
         $invoiceExtraHeader->modifiedby = auth('api')->user()->name;
+        $invoiceExtraHeader->info = html_entity_decode(request()->info);
         $invoiceExtraHeader->nobukti = (new RunningNumberService)->get($group, $subGroup, $invoiceExtraHeader->getTable(), date('Y-m-d', strtotime($data['tglbukti'])));
 
         if (!$invoiceExtraHeader->save()) {
@@ -432,6 +433,7 @@ class InvoiceExtraHeader extends MyModel
         $invoiceExtraHeader->agen_id = $data['agen_id'];
         $invoiceExtraHeader->tgljatuhtempo = date('Y-m-d', strtotime($data['tgljatuhtempo']));
         $invoiceExtraHeader->modifiedby = auth('api')->user()->name;
+        $invoiceExtraHeader->info = html_entity_decode(request()->info);
 
         if (!$invoiceExtraHeader->save()) {
             throw new \Exception("Error updating invoice extra header.");

@@ -409,6 +409,7 @@ class InvoiceChargeGandenganHeader extends MyModel
         $invoiceChargeGandenganHeader->statuscetak = $statusCetak->id;
         $invoiceChargeGandenganHeader->nominal = array_sum($data['nominal_detail']);
         $invoiceChargeGandenganHeader->modifiedby = auth('api')->user()->name;
+        $invoiceChargeGandenganHeader->info = html_entity_decode(request()->info);
         $invoiceChargeGandenganHeader->statusformat = $format->id;
         $invoiceChargeGandenganHeader->nobukti = (new RunningNumberService)->get($group, $subGroup, $invoiceChargeGandenganHeader->getTable(), date('Y-m-d', strtotime($data['tglbukti'])));
 
@@ -504,6 +505,7 @@ class InvoiceChargeGandenganHeader extends MyModel
         $invoiceChargeGandenganHeader->agen_id = $data['agen_id'];
         $invoiceChargeGandenganHeader->tglproses = date('Y-m-d', strtotime($data['tglproses']));
         $invoiceChargeGandenganHeader->modifiedby = auth('api')->user()->name;
+        $invoiceChargeGandenganHeader->info = html_entity_decode(request()->info);
         $invoiceChargeGandenganHeader->nominal = array_sum($data['nominal_detail']);
 
         if (!$invoiceChargeGandenganHeader->save()) {

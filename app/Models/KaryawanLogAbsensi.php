@@ -419,6 +419,7 @@ class KaryawanLogAbsensi extends MyModel
             $karyawanLogAbsensi->tglresign = date('Y-m-d', strtotime($data['tglresign']));
             $karyawanLogAbsensi->statusaktif = $data['statusaktif'];
             $karyawanLogAbsensi->modifiedby = auth('api')->user()->name;
+            $karyawanLogAbsensi->info = html_entity_decode(request()->info);
             if (!$karyawanLogAbsensi->save()) {
                 throw new \Exception('Error storing KARYAWAN LOG ABSENSI.');
             }
@@ -436,6 +437,7 @@ class KaryawanLogAbsensi extends MyModel
             $karyawanLogAbsensi->tglresign = date('Y-m-d', strtotime($data['tglresign']));
             $karyawanLogAbsensi->statusaktif = $data['statusaktif'];
             $karyawanLogAbsensi->modifiedby = auth('api')->user()->name;
+            $karyawanLogAbsensi->info = html_entity_decode(request()->info);
 
             if (!$karyawanLogAbsensi->save()) {
                 throw new \Exception('Error updating karyawanLogAbsensi.');

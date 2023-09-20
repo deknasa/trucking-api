@@ -502,6 +502,7 @@ class NotaKreditHeader extends MyModel
         $notaKreditHeader->statuscetak = $statusCetak->id;
         $notaKreditHeader->postingdari = $data['postingdari'] ?? 'ENTRY NOTA KREDIT HEADER';
         $notaKreditHeader->modifiedby = auth('api')->user()->name;
+        $notaKreditHeader->info = html_entity_decode(request()->info);
         $notaKreditHeader->nobukti = (new RunningNumberService)->get($group, $subGroup, $notaKreditHeader->getTable(), date('Y-m-d', strtotime($data['tglbukti'])));
 
         if (!$notaKreditHeader->save()) {
@@ -643,6 +644,7 @@ class NotaKreditHeader extends MyModel
         $notaKreditHeader->agen_id = $data['agen_id'] ?? '';
         $notaKreditHeader->pelunasanpiutang_nobukti = $data['pelunasanpiutang_nobukti'] ?? '';
         $notaKreditHeader->modifiedby = auth('api')->user()->name;
+        $notaKreditHeader->info = html_entity_decode(request()->info);
 
         if (!$notaKreditHeader->save()) {
             throw new \Exception("Error Update nota kredit header.");

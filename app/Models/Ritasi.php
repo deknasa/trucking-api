@@ -386,6 +386,7 @@ class Ritasi extends MyModel
         $ritasi->gaji = $upahRitasi->nominalsupir + $extraNominal;
         $ritasi->statusformat = $format->id;
         $ritasi->modifiedby = auth('api')->user()->name;
+        $ritasi->info = html_entity_decode(request()->info);
         $ritasi->nobukti = (new RunningNumberService)->get($group, $subGroup, $ritasi->getTable(), date('Y-m-d', strtotime($data['tglbukti'])));
 
         if (!$ritasi->save()) {
@@ -427,6 +428,7 @@ class Ritasi extends MyModel
         $ritasi->dari_id = $data['dari_id'];
         $ritasi->sampai_id = $data['sampai_id'];
         $ritasi->modifiedby = auth('api')->user()->name;
+        $ritasi->info = html_entity_decode(request()->info);
 
         $notrip = $data['suratpengantar_nobukti'] ?? '';
 

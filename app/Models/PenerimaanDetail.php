@@ -225,6 +225,7 @@ class PenerimaanDetail extends MyModel
         $penerimaanDetail->penerimaangiro_nobukti = $data['penerimaangiro_nobukti'] ?? '';
         $penerimaanDetail->bulanbeban = $data['bulanbeban'];
         $penerimaanDetail->modifiedby = auth('api')->user()->name;
+        $penerimaanDetail->info = html_entity_decode(request()->info);
         
         $penerimaanDetail->save();
         

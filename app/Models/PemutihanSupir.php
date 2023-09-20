@@ -823,6 +823,7 @@ class PemutihanSupir extends MyModel
         $pemutihanSupir->statuscetak = $statusCetak->id ?? 0;
         $pemutihanSupir->statusformat = $format->id;
         $pemutihanSupir->modifiedby = auth('api')->user()->name;
+        $pemutihanSupir->info = html_entity_decode(request()->info);
 
         $pemutihanSupir->penerimaan_nobukti = (new RunningNumberService)->get($group, $subgroup, $pemutihanSupir->getTable(), date('Y-m-d', strtotime($data['tglbukti'])));
 
@@ -986,6 +987,7 @@ class PemutihanSupir extends MyModel
         $pemutihanSupir->penerimaansupir = $data['penerimaansupir'] ?? 0;
         $pemutihanSupir->coa = $data['coa'];
         $pemutihanSupir->modifiedby = auth('api')->user()->name;
+        $pemutihanSupir->info = html_entity_decode(request()->info);
 
         // GET NO BUKTI PENERIMAAN
         $querysubgrppenerimaan = Bank::from(DB::raw("bank with (readuncommitted)"))

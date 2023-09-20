@@ -246,6 +246,7 @@ class InvoiceDetail extends MyModel
         $invoiceDetail->orderantrucking_nobukti = $data['orderantrucking_nobukti'];
         $invoiceDetail->suratpengantar_nobukti = $data['suratpengantar_nobukti'];
         $invoiceDetail->modifiedby = auth('api')->user()->name;
+        $invoiceDetail->info = html_entity_decode(request()->info);
 
         if (!$invoiceDetail->save()) {
             throw new \Exception("Error storing invoice detail.");

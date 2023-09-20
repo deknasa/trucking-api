@@ -480,6 +480,7 @@ class Supplier extends MyModel
         $supplier->statuspostingtnl = $data['statuspostingtnl'];
         $supplier->kategoriusaha = $data['kategoriusaha'];
         $supplier->modifiedby = auth('api')->user()->name;
+        $supplier->info = html_entity_decode(request()->info);
 
 
         if (!$supplier->save()) {
@@ -535,6 +536,7 @@ class Supplier extends MyModel
         $supplier->statusdaftarharga = $data['statusdaftarharga'];
         $supplier->kategoriusaha = $data['kategoriusaha'];
         $supplier->modifiedby = auth('api')->user()->name;
+        $supplier->info = html_entity_decode(request()->info);
 
         if (!$supplier->save()) {
             throw new \Exception("Error update service in header.");

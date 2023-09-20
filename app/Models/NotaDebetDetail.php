@@ -162,6 +162,7 @@ class NotaDebetDetail extends MyModel
         $notaDebetDetail->keterangan = $data['keterangandetail'];
         $notaDebetDetail->coalebihbayar = $data['coalebihbayar'];
         $notaDebetDetail->modifiedby = auth('api')->user()->name;
+        $notaDebetDetail->info = html_entity_decode(request()->info);
 
         if (!$notaDebetDetail->save()) {
             throw new \Exception("Error storing nota debet Detail.");

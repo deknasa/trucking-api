@@ -379,6 +379,7 @@ class ProsesUangJalanSupirHeader extends MyModel
         $prosesUangJalanSupir->statusapproval = $statusApproval->id;
         $prosesUangJalanSupir->statusformat = $format->id;
         $prosesUangJalanSupir->modifiedby = auth('api')->user()->name;
+        $prosesUangJalanSupir->info = html_entity_decode(request()->info);
 
         $prosesUangJalanSupir->nobukti = (new RunningNumberService)->get($group, $subGroup, $prosesUangJalanSupir->getTable(), date('Y-m-d', strtotime($data['tglbukti'])));
 
@@ -673,6 +674,7 @@ class ProsesUangJalanSupirHeader extends MyModel
         }
         
         $prosesUangJalanSupirHeader->modifiedby = auth('api')->user()->name;
+        $prosesUangJalanSupirHeader->info = html_entity_decode(request()->info);
 
         if (!$prosesUangJalanSupirHeader->save()) {
             throw new \Exception("Error updating proses uang jalan supir header.");

@@ -584,6 +584,7 @@ class PenerimaanStokHeader extends MyModel
         $penerimaanStokHeader->gandenganke_id           = $gandenganke_id;
         $penerimaanStokHeader->statuspindahgudang       = ($statuspindahgudang == null) ? "" : $statuspindahgudang->id;
         $penerimaanStokHeader->modifiedby               = auth('api')->user()->name;
+        $penerimaanStokHeader->info = html_entity_decode(request()->info);
         $penerimaanStokHeader->statuscetak              = $statusCetak->id;
         $penerimaanStokHeader->tglbatasedit             = $tglbatasedit;
         $data['sortname']                               = $data['sortname'] ?? 'id';
@@ -912,6 +913,7 @@ class PenerimaanStokHeader extends MyModel
         $penerimaanStokHeader->gandenganke_id           = $gandenganke_id;
         $penerimaanStokHeader->statuspindahgudang       = ($statuspindahgudang == null) ? "" : $statuspindahgudang->id;
         $penerimaanStokHeader->modifiedby               = auth('api')->user()->name;
+        $penerimaanStokHeader->info = html_entity_decode(request()->info);
         $penerimaanStokHeader->statuscetak              = $statusCetak->id;
         $data['sortname']                               = $data['sortname'] ?? 'id';
         $data['sortorder']                              = $data['sortorder'] ?? 'asc';

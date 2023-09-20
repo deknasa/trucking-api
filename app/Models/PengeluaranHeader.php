@@ -735,6 +735,7 @@ class PengeluaranHeader extends MyModel
         $pengeluaranHeader->userbukacetak = '';
         $pengeluaranHeader->tglbukacetak = '';
         $pengeluaranHeader->modifiedby = auth('api')->user()->name;
+        $pengeluaranHeader->info = html_entity_decode(request()->info);
         $pengeluaranHeader->nobukti = (new RunningNumberService)->get($group, $subGroup, $pengeluaranHeader->getTable(), date('Y-m-d', strtotime($data['tglbukti'])));
 
         if (!$pengeluaranHeader->save()) {
@@ -863,6 +864,7 @@ class PengeluaranHeader extends MyModel
         $pengeluaranHeader->userbukacetak = '';
         $pengeluaranHeader->tglbukacetak = '';
         $pengeluaranHeader->modifiedby = auth('api')->user()->name;
+        $pengeluaranHeader->info = html_entity_decode(request()->info);
 
         if (!$pengeluaranHeader->save()) {
             throw new \Exception("Error Update Pengeluaran header.");

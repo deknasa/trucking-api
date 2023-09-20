@@ -161,6 +161,7 @@ class NotaKreditDetail extends MyModel
         $notaKreditDetail->keterangan = $data['keterangandetail'];
         $notaKreditDetail->coaadjust = $data['coaadjust'];
         $notaKreditDetail->modifiedby = auth('api')->user()->name;
+        $notaKreditDetail->info = html_entity_decode(request()->info);
 
         if (!$notaKreditDetail->save()) {
             throw new \Exception("Error storing nota kredit Detail.");

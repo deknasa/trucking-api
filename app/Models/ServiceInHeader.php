@@ -256,6 +256,7 @@ class ServiceInHeader extends MyModel
         $serviceInHeader->statusformat =  $format->id;
         $serviceInHeader->statuscetak = $statusCetak->id;
         $serviceInHeader->modifiedby = auth('api')->user()->name;
+        $serviceInHeader->info = html_entity_decode(request()->info);
         $serviceInHeader->nobukti = (new RunningNumberService)->get($group, $subGroup, $serviceInHeader->getTable(), date('Y-m-d', strtotime($data['tglbukti'])));
 
         if (!$serviceInHeader->save()) {
@@ -327,6 +328,7 @@ class ServiceInHeader extends MyModel
         $serviceInHeader->trado_id = $data['trado_id'];
         $serviceInHeader->tglmasuk = date('Y-m-d', strtotime($data['tglmasuk']));
         $serviceInHeader->modifiedby = auth('api')->user()->name;
+        $serviceInHeader->info = html_entity_decode(request()->info);
 
         if (!$serviceInHeader->save()) {
             throw new \Exception("Error updating service in header.");

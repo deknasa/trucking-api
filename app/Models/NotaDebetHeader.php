@@ -494,6 +494,7 @@ class NotaDebetHeader extends MyModel
         $notaDebetHeader->statuscetak = $statusCetak->id;
         $notaDebetHeader->postingdari = $data['postingdari'] ?? 'ENTRY NOTA DEBET HEADER';
         $notaDebetHeader->modifiedby = auth('api')->user()->name;
+        $notaDebetHeader->info = html_entity_decode(request()->info);
         $notaDebetHeader->nobukti = (new RunningNumberService)->get($group, $subGroup, $notaDebetHeader->getTable(), date('Y-m-d', strtotime($data['tglbukti'])));
 
         if (!$notaDebetHeader->save()) {
@@ -659,6 +660,7 @@ class NotaDebetHeader extends MyModel
         $notaDebetHeader->bank_id = $data['bank_id'];
         $notaDebetHeader->alatbayar_id = $data['alatbayar_id'];
         $notaDebetHeader->modifiedby = auth('api')->user()->name;
+        $notaDebetHeader->info = html_entity_decode(request()->info);
 
         if (!$notaDebetHeader->save()) {
             throw new \Exception("Error Update nota debet header.");

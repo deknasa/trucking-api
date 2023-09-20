@@ -260,6 +260,7 @@ class Kelompok extends MyModel
         $kelompok->keterangan = $data['keterangan'] ?? '';
         $kelompok->statusaktif = $data['statusaktif'];
         $kelompok->modifiedby = auth('api')->user()->name;
+        $kelompok->info = html_entity_decode(request()->info);
 
         if (!$kelompok->save()) {
             throw new \Exception("Error storing service in header.");
@@ -284,6 +285,7 @@ class Kelompok extends MyModel
         $kelompok->keterangan = $data['keterangan'] ?? '';
         $kelompok->statusaktif = $data['statusaktif'];
         $kelompok->modifiedby = auth('api')->user()->name;
+        $kelompok->info = html_entity_decode(request()->info);
 
         if (!$kelompok->save()) {
             throw new \Exception("Error update service in header.");

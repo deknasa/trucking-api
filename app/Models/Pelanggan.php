@@ -357,6 +357,7 @@ class Pelanggan extends MyModel
         $pelanggan->kodepos = $data['kodepos'];
         $pelanggan->keterangan = $data['keterangan'] ?? '';
         $pelanggan->modifiedby = auth('api')->user()->name;
+        $pelanggan->info = html_entity_decode(request()->info);
         $pelanggan->statusaktif = $data['statusaktif'];
 
         if (!$pelanggan->save()) {
@@ -389,6 +390,7 @@ class Pelanggan extends MyModel
         $pelanggan->keterangan = $data['keterangan'] ?? '';
         $pelanggan->statusaktif = $data['statusaktif'];
         $pelanggan->modifiedby = auth('api')->user()->name;
+        $pelanggan->info = html_entity_decode(request()->info);
 
         if (!$pelanggan->save()) {
             throw new \Exception("Error update service in header.");

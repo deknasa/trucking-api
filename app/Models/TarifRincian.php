@@ -578,6 +578,7 @@ class TarifRincian extends MyModel
         $tarifRincian->container_id = $data['container_id'];
         $tarifRincian->nominal = $data['nominal'];
         $tarifRincian->modifiedby = auth('api')->user()->user;
+        $tarifRincian->info = html_entity_decode(request()->info);
         
         if (!$tarifRincian->save()) {
             throw new \Exception("Error storing tarif rincian.");
@@ -596,6 +597,7 @@ class TarifRincian extends MyModel
         $tarifRincian->container_id = $data['container_id'];
         $tarifRincian->nominal = $data['nominal'];
         $tarifRincian->modifiedby = auth('api')->user()->user;
+        $tarifRincian->info = html_entity_decode(request()->info);
 
         if (!$tarifRincian->save()) {
             throw new \Exception("Error updating tarif rincian.");

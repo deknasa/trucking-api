@@ -347,6 +347,7 @@ class PencairanGiroPengeluaranHeader extends MyModel
                     $pencairanGiro->userapproval = '';
                     $pencairanGiro->tglapproval = '';
                     $pencairanGiro->modifiedby = auth('api')->user()->name;
+                    $pencairanGiro->info = html_entity_decode(request()->info);
                     $pencairanGiro->statusformat = $format->id;
 
                     if (!$pencairanGiro->save()) {
@@ -436,6 +437,7 @@ class PencairanGiroPengeluaranHeader extends MyModel
                     $pencairanGiro->userapproval = '';
                     $pencairanGiro->tglapproval = '';
                     $pencairanGiro->modifiedby = auth('api')->user()->name;
+                    $pencairanGiro->info = html_entity_decode(request()->info);
                     $pencairanGiro->statusformat = $format->id;
 
                     if (!$pencairanGiro->save()) {

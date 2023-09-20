@@ -131,6 +131,7 @@ class ServiceOutDetail extends MyModel
         $serviceoutdetail->servicein_nobukti = $data['servicein_nobukti'];
         $serviceoutdetail->keterangan = $data['keterangan'];
         $serviceoutdetail->modifiedby = auth('api')->user()->name;
+        $serviceoutdetail->info = html_entity_decode(request()->info);
 
         if (!$serviceoutdetail->save()) {
             throw new \Exception("Error storing service in detail.");

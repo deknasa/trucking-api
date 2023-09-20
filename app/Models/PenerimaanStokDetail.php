@@ -313,6 +313,7 @@ class PenerimaanStokDetail extends MyModel
         $penerimaanStokDetail->keterangan = $data['detail_keterangan'];
 
         $penerimaanStokDetail->modifiedby = auth('api')->user()->name;
+        $penerimaanStokDetail->info = html_entity_decode(request()->info);
 
         if (!$penerimaanStokDetail->save()) {
             throw new \Exception("Error storing Penerimaan Stok Detail.");

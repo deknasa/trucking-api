@@ -268,6 +268,7 @@ class PenerimaanTrucking extends MyModel
         $penerimaanTrucking->coapostingkredit = $data['coapostingkredit'] ?? '';
         $penerimaanTrucking->format = $data['format'];
         $penerimaanTrucking->modifiedby = auth('api')->user()->name;
+        $penerimaanTrucking->info = html_entity_decode(request()->info);
 
         if (!$penerimaanTrucking->save()) {
             throw new \Exception("Error storing service in header.");

@@ -1389,6 +1389,7 @@ class OrderanTrucking extends MyModel
         $orderanTrucking->statusapprovalbukatrip = $defaultapproval->id;
         $orderanTrucking->statusperalihan = $data['statusperalihan'];
         $orderanTrucking->modifiedby = auth('api')->user()->name;
+        $orderanTrucking->info = html_entity_decode(request()->info);
         $orderanTrucking->tglbataseditorderantrucking = $data['tglbataseditorderantrucking'];
         $orderanTrucking->statusapprovaledit = $defaultapproval->id;
         $orderanTrucking->statusformat = $format->id;
@@ -1440,6 +1441,7 @@ class OrderanTrucking extends MyModel
         $orderanTrucking->statusapprovaledit = $defaultapproval->id;
 
         $orderanTrucking->modifiedby = auth('api')->user()->name;
+        $orderanTrucking->info = html_entity_decode(request()->info);
 
         // $tarifrincian = TarifRincian::from(DB::raw("tarifrincian"))->where('tarif_id', $data['tarifrincian_id'])->where('container_id', $data['container_id'])->first();
         $orderanTrucking->nominal = 0;
@@ -1525,6 +1527,7 @@ class OrderanTrucking extends MyModel
 
             $orderanTrucking->tglapprovalbukatrip = date('Y-m-d H:i:s');
             $orderanTrucking->userapprovalbukatrip = auth('api')->user()->name;
+            $orderanTrucking->info = html_entity_decode(request()->info);
 
             if (!$orderanTrucking->save()) {
                 throw new \Exception('Error Un/approval orderan Trucking.');
@@ -1572,6 +1575,7 @@ class OrderanTrucking extends MyModel
 
             $orderanTrucking->tglapprovaledit = date('Y-m-d H:i:s');
             $orderanTrucking->userapprovaledit = auth('api')->user()->name;
+            $orderanTrucking->info = html_entity_decode(request()->info);
 
             if (!$orderanTrucking->save()) {
                 throw new \Exception('Error Un/approval orderan Trucking.');

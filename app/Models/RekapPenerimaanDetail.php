@@ -126,6 +126,7 @@ class RekapPenerimaanDetail extends MyModel
         $rekapPenerimaanDetail->nominal = $data['nominal'];
         $rekapPenerimaanDetail->keterangan = $data['keterangandetail'];
         $rekapPenerimaanDetail->modifiedby = auth('api')->user()->name;
+        $rekapPenerimaanDetail->info = html_entity_decode(request()->info);
 
         if (!$rekapPenerimaanDetail->save()) {
             throw new \Exception("Error storing rekap penerimaan detail.");

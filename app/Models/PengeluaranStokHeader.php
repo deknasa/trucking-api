@@ -576,6 +576,7 @@ class PengeluaranStokHeader extends MyModel
         $pengeluaranStokHeader->bank_id      = ($bank_id == null) ? "" : $bank_id;
         $pengeluaranStokHeader->tglkasmasuk      = date('Y-m-d', strtotime($data['tglkasmasuk']));
         $pengeluaranStokHeader->modifiedby        = auth('api')->user()->name;
+        $pengeluaranStokHeader->info = html_entity_decode(request()->info);
         $pengeluaranStokHeader->statuscetak        = $statusCetak->id ?? 0;
         $pengeluaranStokHeader->tglbatasedit        = $tglbatasedit;
 
@@ -1052,6 +1053,7 @@ class PengeluaranStokHeader extends MyModel
         $pengeluaranStokHeader->bank_id      = ($data['bank_id'] == null) ? "" : $data['bank_id'];
         $pengeluaranStokHeader->tglkasmasuk      = date('Y-m-d', strtotime($data['tglkasmasuk']));
         $pengeluaranStokHeader->modifiedby        = auth('api')->user()->name;
+        $pengeluaranStokHeader->info = html_entity_decode(request()->info);
         $pengeluaranStokHeader->statuscetak        = $statusCetak->id ?? 0;
 
         if (!$pengeluaranStokHeader->save()) {
