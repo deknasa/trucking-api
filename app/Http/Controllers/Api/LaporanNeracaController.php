@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Api;
 
+use App\Events\LaporanNeracaEventPusher;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\ValidasiLaporanNeracaRequest;
@@ -29,20 +30,29 @@ class LaporanNeracaController extends Controller
      */
     public function report(ValidasiLaporanNeracaRequest $request)
     {
+        // event(new LaporanNeracaEventPusher(json_encode([
+        //     'id' => auth('api')->user()->id,
+        // ])));
         if ($request->isCheck) {
             return response([
                 'data' => 'ok'
             ]);
         } else {
 
-            $sampai = $request->sampai;
+        $sampai = $request->sampai;
+        $eksport = 0;
 
-            $report = LaporanNeraca::getReport($sampai);
+        $report = LaporanNeraca::getReport($sampai, $eksport);
+        // sleep(5);
 
-            return response([
-                'data' => $report
-            ]);
-        }
+        return response([
+            'data' => $report
+        ]);
+
+        // return response([
+        //     'data' => 'asdf',
+        // ]);
+         }
     }
 
     /**
@@ -57,8 +67,9 @@ class LaporanNeracaController extends Controller
         } else {
 
             $sampai = $request->sampai;
+            $eksport = 1;
 
-            $export = LaporanNeraca::getReport($sampai);
+            $export = LaporanNeraca::getReport($sampai, $eksport);
 
             return response([
                 'data' => $export

@@ -25,7 +25,7 @@ class LaporanNeraca extends MyModel
         'updated_at',
     ];
 
-    public function getReport($sampai)
+    public function getReport($sampai, $eksport)
     {
         $bulan = substr($sampai, 0, 2);
         $tahun = substr($sampai, -4);
@@ -52,6 +52,262 @@ class LaporanNeraca extends MyModel
         $judul = Parameter::where('grp', '=', 'JUDULAN LAPORAN')->first();
         $judulLaporan = $judul->text;
 
+        if ($eksport == 1) {
+
+            DB::table('akunpusatdetail')
+                ->where('bulan', '<>', 0)
+                ->delete();
+
+
+            $subquery1 = DB::table('jurnalumumpusatheader as J')
+                ->select('D.coamain as FCOA', DB::raw('YEAR(D.tglbukti) as FThn'), DB::raw('MONTH(D.tglbukti) as FBln'), DB::raw('SUM(D.nominal) as FNominal'))
+                ->join('jurnalumumpusatdetail as D', 'J.nobukti', '=', 'D.nobukti')
+                ->join('mainakunpusat as C', 'C.coa', '=', 'D.coamain')
+                ->where('D.tglbukti', '>=', $ptgl)
+                ->groupBy('D.coamain', DB::raw('YEAR(D.tglbukti)'), DB::raw('MONTH(D.tglbukti)'));
+
+            $subquery2 = DB::table('jurnalumumpusatheader as J')
+                ->select('LR.coa', DB::raw('YEAR(D.tglbukti) as FThn'), DB::raw('MONTH(D.tglbukti) as FBln'), DB::raw('SUM(D.nominal) as FNominal'))
+                ->join('jurnalumumpusatdetail as D', 'J.nobukti', '=', 'D.nobukti')
+                ->join('perkiraanlabarugi as LR', function ($join) {
+                    $join->on('LR.tahun', '=', DB::raw('YEAR(J.tglbukti)'))
+                        ->on('LR.bulan', '=', DB::raw('MONTH(J.tglbukti)'));
+                })
+                ->whereIn('D.coamain', function ($query) {
+                    $query->select(DB::raw('DISTINCT C.coa'))
+                        ->from('maintypeakuntansi as AT')
+                        ->join('mainakunpusat as C', 'AT.kodetype', '=', 'C.Type')
+                        ->where('AT.order', '>=', 4000)
+                        ->where('AT.order', '<', 9000)
+                        ->where('C.type', '<>', 'Laba/Rugi');
+                })
+                ->where('D.tglbukti', '>=', $ptgl)
+                ->groupBy('LR.coa', DB::raw('YEAR(D.tglbukti)'), DB::raw('MONTH(D.tglbukti)'));
+
+            $RecalKdPerkiraan = DB::table(DB::raw("({$subquery1->toSql()} UNION ALL {$subquery2->toSql()}) as V"))
+                ->mergeBindings($subquery1)
+                ->mergeBindings($subquery2)
+                ->groupBy('FCOA', 'FThn', 'FBln')
+                ->select('FCOA', 'FThn', 'FBln', DB::raw('SUM(FNominal) as FNominal'));
+
+            DB::table('akunpusatdetail')->insertUsing([
+                'coa',
+                'tahun',
+                'bulan',
+                'nominal',
+
+            ], $RecalKdPerkiraan);
+
+            $tempAkunPusatDetail = '##tempAkunPusatDetail' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+            Schema::create($tempAkunPusatDetail, function ($table) {
+                $table->bigIncrements('id');
+                $table->string('coa', 50)->nullable();
+                $table->integer('bulan')->nullable();
+                $table->integer('tahun')->nullable();
+                $table->double('nominal')->nullable();
+                $table->string('modifiedby')->nullable();
+                $table->datetime('created_at')->nullable();
+                $table->datetime('updated_at')->nullable();
+            });
+
+            $queryTempSaldoAkunPusatDetail = DB::table('saldoakunpusatdetail')->from(
+                DB::raw('saldoakunpusatdetail')
+            )
+                ->select(
+                    'coa',
+                    'bulan',
+                    'tahun',
+                    'nominal',
+                    'modifiedby',
+                    'created_at',
+                    'updated_at'
+
+                )
+                ->orderBy('id', 'asc');
+
+            DB::table($tempAkunPusatDetail)->insertUsing([
+                'coa',
+                'bulan',
+                'tahun',
+                'nominal',
+                'modifiedby',
+                'created_at',
+                'updated_at',
+
+            ], $queryTempSaldoAkunPusatDetail);
+
+            $queryTempAkunPusatDetail = DB::table('akunpusatdetail')->from(
+                DB::raw('akunpusatdetail')
+            )
+                ->select(
+                    'coa',
+                    'bulan',
+                    'tahun',
+                    'nominal',
+                    'modifiedby',
+                    'created_at',
+                    'updated_at'
+
+                )
+                ->orderBy('id', 'asc');
+
+            DB::table($tempAkunPusatDetail)->insertUsing([
+                'coa',
+                'bulan',
+                'tahun',
+                'nominal',
+                'modifiedby',
+                'created_at',
+                'updated_at',
+
+            ], $queryTempAkunPusatDetail);
+
+            $tempquery1 = '##tempquery1' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+            Schema::create($tempquery1, function ($table) {
+                $table->bigIncrements('id');
+                $table->string('type', 500)->nullable();
+                $table->string('coa', 500)->nullable();
+                $table->string('keterangancoa', 500)->nullable();
+                $table->string('parent', 500)->nullable();
+                $table->integer('statusaktif')->nullable();
+                $table->integer('statusneraca')->nullable();
+                $table->integer('statuslabarugi')->nullable();
+                $table->integer('tahun')->nullable();
+                $table->integer('bulan')->nullable();
+                $table->double('nominal')->nullable();
+                $table->integer('order')->nullable();
+                $table->string('keterangantype', 500)->nullable();
+                $table->integer('akuntansi_id')->nullable();
+            });
+
+
+            $query1 = db::table('mainakunpusat')->from(db::raw("mainakunpusat c with (readuncommitted)"))
+                ->select(
+                    'c.type',
+                    'c.coa',
+                    'c.keterangancoa',
+                    'c.parent',
+                    'c.statusaktif',
+                    'c.statusneraca',
+                    'c.statuslabarugi',
+                    db::raw("isnull(cd.tahun," . $tahun . ") as tahun"),
+                    db::raw("isnull(cd.bulan,0) as bulan"),
+                    db::raw("isnull(cd.nominal,0) as nominal"),
+                    'a.order',
+                    'a.keterangantype',
+                    'a.akuntansi_id',
+                )
+                ->join(db::raw($tempAkunPusatDetail . " cd with (readuncommitted)"), 'c.coa', 'cd.coa')
+                ->join(db::raw("maintypeakuntansi a with (readuncommitted)"), 'a.kodetype', 'c.type');
+
+            DB::table($tempquery1)->insertUsing([
+                'type',
+                'coa',
+                'keterangancoa',
+                'parent',
+                'statusaktif',
+                'statusneraca',
+                'statuslabarugi',
+                'tahun',
+                'bulan',
+                'nominal',
+                'order',
+                'keterangantype',
+                'akuntansi_id',
+
+            ], $query1);
+
+
+            $tempquery2 = '##tempquery2' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+            Schema::create($tempquery2, function ($table) {
+                $table->bigIncrements('id');
+                $table->string('tipemaster', 500)->nullable();
+                $table->integer('order')->nullable();
+                $table->string('type', 500)->nullable();
+                $table->string('keterangantype', 500)->nullable();
+                $table->string('coa', 500)->nullable();
+                $table->string('parent', 500)->nullable();
+                $table->string('keterangancoa', 500)->nullable();
+                $table->double('nominal')->nullable();
+                $table->string('cmpyname', 500)->nullable();
+                $table->integer('pbulan')->nullable();
+                $table->integer('ptahun')->nullable();
+                $table->integer('gneraca')->nullable();
+                $table->integer('glr')->nullable();
+                $table->string('keterangancoaparent', 500)->nullable();
+                $table->string('ptglsd', 50)->nullable();
+            });
+
+
+            $query2 = db::table($tempquery1)->from(db::raw($tempquery1 . " d"))
+                ->select(
+                    db::raw("(CASE d.akuntansi_id WHEN 1 THEN 'AKTIVA' ELSE 'PASSIVA' END) AS tipemaster"),
+                    'd.order',
+                    db::raw("max(d.type) as type"),
+                    db::raw("max(d.keterangantype) as keterangantype"),
+                    'd.coa',
+                    db::raw("max(d.parent) as parent"),
+                    'd.keterangancoa',
+                    db::raw("( CASE d.akuntansi_id WHEN 1 THEN SUM(d.Nominal) ELSE SUM(d.Nominal * -1) END)  AS nominal"),
+                    db::raw("'" . $judulLaporan . "' as cmpyname"),
+                    db::raw($bulan . " as pbulan"),
+                    db::raw($tahun . " as ptahun"),
+                    db::raw("max(d.statusneraca) as gneraca"),
+                    db::raw("max(d.statuslabarugi) as glr"),
+                    db::raw("max(isnull(e.keterangancoa,'')) as keterangancoaparent"),
+                    db::raw($tglsd . " as ptglsd"),
+                )
+                ->leftjoin(db::raw("akunpusat e with (readuncommitted)"), 'd.parent', 'e.coa')
+                ->where('d.tahun', $tahun)
+                ->whereRaw("d.bulan<=cast(" . $bulan . " as integer)")
+                ->where('d.order', '<', 4000)
+                ->groupBy('d.akuntansi_id')
+                ->groupBy('d.order')
+                ->groupBy('d.coa')
+                ->groupBy('d.keterangancoa');
+            // ->having(DB::raw('sum(d.nominal)'), '<>', 0);
+
+            DB::table($tempquery2)->insertUsing([
+                'tipemaster',
+                'order',
+                'type',
+                'keterangantype',
+                'coa',
+                'parent',
+                'keterangancoa',
+                'nominal',
+                'cmpyname',
+                'pbulan',
+                'ptahun',
+                'gneraca',
+                'glr',
+                'keterangancoaparent',
+                'ptglsd',
+            ], $query2);
+
+            $data = db::table($tempquery2)->from(db::raw($tempquery2 . " xx"))
+                ->select(
+                    'xx.TipeMaster',
+                    'xx.Order',
+                    'xx.Type',
+                    'xx.KeteranganType',
+                    'xx.coa',
+                    'xx.Parent',
+                    'xx.KeteranganCoa',
+                    db::raw("round(xx.Nominal,2) as Nominal"),
+                    'xx.CmpyName',
+                    'xx.pBulan',
+                    'xx.pTahun',
+                    'xx.GNeraca',
+                    'xx.GLR',
+                    'xx.KeteranganCoaParent',
+                    'xx.pTglSd',
+                )
+                ->whereRaw("isnull(xx.Nominal,0)<>0")
+                ->orderby('xx.id');
+
+            goto selesai;
+        }
 
 
         // rekap akunpusat detail
@@ -1184,7 +1440,7 @@ class LaporanNeraca extends MyModel
             )
             ->orderby('xx.id');
 
-
+        selesai:;
         // $data = DB::select(DB::raw("
         //         SELECT xx.TipeMaster, xx.[Order], xx.[Type], xx.KeteranganType, xx.coa, xx.Parent,
         //         xx.KeteranganCoa, xx.Nominal, xx.CmpyName, xx.pBulan, xx.pTahun,
