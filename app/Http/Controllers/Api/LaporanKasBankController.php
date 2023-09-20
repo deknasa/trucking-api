@@ -39,12 +39,12 @@ class LaporanKasBankController extends Controller
             $dari = $request->dari;
             $sampai = $request->sampai;
             $bank_id = $request->bank_id;
-     
+            $prosesneraca=0;
 
 
             $laporankasbank = new LaporanKasBank();
             return response([
-                'data' => $laporankasbank->getReport($dari, $sampai, $bank_id,)
+                'data' => $laporankasbank->getReport($dari, $sampai, $bank_id, $prosesneraca)
             ]);
         }
     }
@@ -62,10 +62,11 @@ class LaporanKasBankController extends Controller
             $dari = $request->dari;
             $sampai = $request->sampai;
             $bank_id = $request->bank_id;
+            $prosesneraca=0;
 
             $laporankasbank = new LaporanKasBank();
             return response([
-                'data' => $laporankasbank->getReport($dari, $sampai, $bank_id)
+                'data' => $laporankasbank->getReport($dari, $sampai, $bank_id, $prosesneraca)
             ]);
         }
     }

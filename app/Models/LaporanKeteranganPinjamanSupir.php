@@ -26,7 +26,7 @@ class LaporanKeteranganPinjamanSupir extends MyModel
 
 
 
-    public function getReport($periode, $jenis)
+    public function getReport($periode, $jenis, $prosesneraca)
     {
         // $sampai = date("Y-m-d", strtotime($sampai));
         // // data coba coba
@@ -43,6 +43,8 @@ class LaporanKeteranganPinjamanSupir extends MyModel
 
         // $data = $query->get();
         // return $data;
+        $prosesneraca = $prosesneraca ?? 0;
+
 
         $penerimaanTrucking = PenerimaanTrucking::where('kodepenerimaan', '=', 'PJP')->first();
 
@@ -559,7 +561,11 @@ class LaporanKeteranganPinjamanSupir extends MyModel
             ->orderBy('a.id');
 
 
-        $data = $queryRekap->get();
+        if ($prosesneraca == 1) {
+            $data = $queryRekap;
+        } else {
+            $data = $queryRekap->get();
+        }
 
         return $data;
     }

@@ -25,11 +25,12 @@ class LaporanSaldoInventory extends MyModel
         'updated_at',
     ];
 
-    public function getReport($kelompok_id, $statusreuse, $statusban, $filter, $jenistgltampil, $priode, $stokdari_id, $stoksampai_id, $dataFilter)
+    public function getReport($kelompok_id, $statusreuse, $statusban, $filter, $jenistgltampil, $priode, $stokdari_id, $stoksampai_id, $dataFilter, $prosesneraca)
     {
 
         // dd('test');
         // dd($priode);
+        $prosesneraca = $prosesneraca ?? 0;
         $priode1= date('Y-m-d', strtotime($priode));
         $priode= date("Y-m-d", strtotime("+1 day", strtotime($priode)));
         // $tglsampai= date("Y-m-d", strtotime("+1 day", strtotime($tgldari)));
@@ -163,7 +164,12 @@ class LaporanSaldoInventory extends MyModel
 
         // dd(DB::table($temprekapall)->get());
 
-        $data=$query->get();
+      
+        if ($prosesneraca == 1) {
+            $data=$query;
+        } else {
+            $data=$query->get();
+        }
         return $data;
     }
 }

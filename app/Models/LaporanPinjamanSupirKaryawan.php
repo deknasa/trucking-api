@@ -26,10 +26,11 @@ class LaporanPinjamanSupirKaryawan extends MyModel
 
 
 
-    public function getReport($sampai)
+    public function getReport($sampai,$prosesneraca)
     {
         $pengeluarantrucking_id = 8;
         $penerimaantrucking_id = 4;
+        $prosesneraca = $prosesneraca ?? 0;
 
         $temphistory = '##temphistory' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
 
@@ -295,7 +296,14 @@ class LaporanPinjamanSupirKaryawan extends MyModel
 
             ->OrderBy('a.id', 'asc');
 
-        $data = $query->get();
+            if ($prosesneraca == 1) {
+                $data = $query;
+
+            } else {
+                $data = $query->get();
+
+            }
+
         return $data;
     }
 }
