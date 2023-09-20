@@ -400,6 +400,7 @@ class Gandengan extends MyModel
         $gandengan->jumlahbanserap = $data['jumlahbanserap'];
         $gandengan->statusaktif = $data['statusaktif'];
         $gandengan->modifiedby = auth('api')->user()->name;
+        $gandengan->info = html_entity_decode(request()->info);
 
         if (!$gandengan->save()) {
             throw new \Exception('Error storing gandengan.');
@@ -475,6 +476,7 @@ class Gandengan extends MyModel
         $gandengan->jumlahbanserap = $data['jumlahbanserap'];
         $gandengan->statusaktif = $data['statusaktif'];
         $gandengan->modifiedby = auth('api')->user()->user;
+        $gandengan->info = html_entity_decode(request()->info);
 
         if (!$gandengan->save()) {
             throw new \Exception('Error updating gandengan.');

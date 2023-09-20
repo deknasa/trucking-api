@@ -48,7 +48,7 @@ class GajiSupirDeposito extends MyModel
         $gajiSupirDeposito->pengeluarantrucking_nobukti = $data['pengeluarantrucking_nobukti'];
         $gajiSupirDeposito->supir_id = $data['supir_id'];
         $gajiSupirDeposito->nominal = $data['nominal'];
-        $gajiSupirDeposito->modifiedby = auth('api')->user()->user;
+        $gajiSupirDeposito->info = html_entity_decode(request()->info);
 
         if (!$gajiSupirDeposito->save()) {
             throw new \Exception('Error storing gaji supir deposito.');

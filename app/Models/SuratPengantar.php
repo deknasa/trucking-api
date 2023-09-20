@@ -1570,6 +1570,7 @@ class SuratPengantar extends MyModel
             $suratPengantar->gudang = $data['gudang'];
             $suratPengantar->statusapprovaleditsuratpengantar = $statusNonApproval->id;
             $suratPengantar->modifiedby = auth('api')->user()->name;
+            $suratPengantar->info = html_entity_decode(request()->info);
             $suratPengantar->statusformat = $format->id;
 
             $suratPengantar->nobukti = (new RunningNumberService)->get($group, $subGroup, $suratPengantar->getTable(), date('Y-m-d', strtotime($data['tglbukti'])));
@@ -1627,6 +1628,7 @@ class SuratPengantar extends MyModel
             $suratPengantar->gudang = $data['gudang'];
             $suratPengantar->lokasibongkarmuat = $data['lokasibongkarmuat'];
             $suratPengantar->modifiedby = auth('api')->user()->name;
+            $suratPengantar->info = html_entity_decode(request()->info);
             $suratPengantar->statusformat = $format->id;
             $suratPengantar->tglbataseditsuratpengantar = $data['tglbataseditsuratpengantar'];
             $suratPengantar->nobukti = (new RunningNumberService)->get($group, $subGroup, $suratPengantar->getTable(), date('Y-m-d', strtotime($data['tglbukti'])));
@@ -1764,6 +1766,7 @@ class SuratPengantar extends MyModel
             $suratPengantar->gudang = $data['gudang'];
             $suratPengantar->lokasibongkarmuat = $data['lokasibongkarmuat'];
             $suratPengantar->modifiedby = auth('api')->user()->name;
+            $suratPengantar->info = html_entity_decode(request()->info);
             $suratPengantar->statusedittujuan = $statusTidakBolehEditTujuan->id;
             // $suratPengantar->statusapprovaleditsuratpengantar = $statusNonApproval->id;
             if (!$suratPengantar->save()) {

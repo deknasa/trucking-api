@@ -259,6 +259,7 @@ class BankPelanggan extends MyModel
         $bankpelanggan->keterangan = $data['keterangan'] ?? '';
         $bankpelanggan->statusaktif = $data['statusaktif'];
         $bankpelanggan->modifiedby = auth('api')->user()->name;
+        $bankpelanggan->info = html_entity_decode(request()->info);
 
         if (!$bankpelanggan->save()) {
             throw new \Exception("Error storing service in header.");
@@ -284,6 +285,7 @@ class BankPelanggan extends MyModel
         $bankpelanggan->keterangan = $data['keterangan'];
         $bankpelanggan->statusaktif = $data['statusaktif'];
         $bankpelanggan->modifiedby = auth('api')->user()->name;
+        $bankpelanggan->info = html_entity_decode(request()->info);
 
         if (!$bankpelanggan->save()) {
             throw new \Exception("Error update service in header.");

@@ -495,6 +495,7 @@ class HutangHeader extends MyModel
         $hutangHeader->statusapproval = $statusApproval->id;
         $hutangHeader->total = $total;
         $hutangHeader->modifiedby = auth('api')->user()->name;
+        $hutangHeader->info = html_entity_decode(request()->info);
         $hutangHeader->nobukti = (new RunningNumberService)->get($group, $subGroup, $hutangHeader->getTable(), date('Y-m-d', strtotime($data['tglbukti'])));
 
 
@@ -620,6 +621,7 @@ class HutangHeader extends MyModel
         $hutangHeader->statusapproval = $statusApproval->id;
         $hutangHeader->total = $total;
         $hutangHeader->modifiedby = auth('api')->user()->name;
+        $hutangHeader->info = html_entity_decode(request()->info);
 
 
         if (!$hutangHeader->save()) {

@@ -954,6 +954,7 @@ class PengeluaranTruckingHeader extends MyModel
         $pengeluaranTruckingHeader->statusformat = $data['statusformat'] ?? $format->id;
         $pengeluaranTruckingHeader->statuscetak = $statusCetak->id;
         $pengeluaranTruckingHeader->modifiedby = auth('api')->user()->name;
+        $pengeluaranTruckingHeader->info = html_entity_decode(request()->info);
         $pengeluaranTruckingHeader->nobukti = (new RunningNumberService)->get($fetchGrp->grp, $fetchGrp->subgrp, $pengeluaranTruckingHeader->getTable(), date('Y-m-d', strtotime($data['tglbukti'])));
 
         if (!$pengeluaranTruckingHeader->save()) {
@@ -1170,6 +1171,7 @@ class PengeluaranTruckingHeader extends MyModel
         $pengeluaranTruckingHeader->jenisorder_id = $data['jenisorderan_id'] ?? '';
         $pengeluaranTruckingHeader->statusformat = $data['statusformat'] ?? $format->id;
         $pengeluaranTruckingHeader->modifiedby = auth('api')->user()->name;
+        $pengeluaranTruckingHeader->info = html_entity_decode(request()->info);
 
         if (!$pengeluaranTruckingHeader->save()) {
             throw new \Exception("Error storing pengeluaran Trucking Header.");

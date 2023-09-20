@@ -321,6 +321,7 @@ class Karyawan extends MyModel
         $karyawan->statusaktif = $data['statusaktif'];
         $karyawan->statusstaff = $data['statusstaff'];
         $karyawan->modifiedby = auth('api')->user()->user;
+        $karyawan->info = html_entity_decode(request()->info);
 
         if (!$karyawan->save()) {
             throw new \Exception('Error storing karyawan.');
@@ -346,6 +347,7 @@ class Karyawan extends MyModel
         $karyawan->statusaktif = $data['statusaktif'];
         $karyawan->statusstaff = $data['statusstaff'];
         $karyawan->modifiedby = auth('api')->user()->user;
+        $karyawan->info = html_entity_decode(request()->info);
 
         if (!$karyawan->save()) {
             throw new \Exception('Error updating karayawan.');

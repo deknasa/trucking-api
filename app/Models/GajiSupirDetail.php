@@ -283,6 +283,7 @@ class GajiSupirDetail extends MyModel
         $gajiSupirDetail->uangmakanberjenjang = $data['uangmakanberjenjang'];
         
         $gajiSupirDetail->modifiedby = auth('api')->user()->name;
+        $gajiSupirDetail->info = html_entity_decode(request()->info);
         
         if (!$gajiSupirDetail->save()) {
             throw new \Exception("Error storing gaji supir detail.");

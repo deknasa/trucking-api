@@ -303,7 +303,7 @@ class OpnameHeader extends MyModel
         $opnameHeader->tglbukti = date('Y-m-d', strtotime($data['tglbukti']));
         $opnameHeader->keterangan = $data['keterangan'] ?? '';
         $opnameHeader->gudang_id = $data['gudang_id'];
-        $opnameHeader->modifiedby = auth('api')->user()->name;
+        $opnameHeader->info = html_entity_decode(request()->info);
 
         if (!$opnameHeader->save()) {
             throw new \Exception("Error updating opname header.");

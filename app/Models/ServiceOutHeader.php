@@ -251,6 +251,7 @@ class ServiceOutHeader extends MyModel
         $serviceout->statusformat =  $format->id;
         $serviceout->statuscetak = $statusCetak->id;
         $serviceout->modifiedby = auth('api')->user()->name;
+        $serviceout->info = html_entity_decode(request()->info);
 
         $serviceout->nobukti = (new RunningNumberService)->get($group, $subgroup, $serviceout->getTable(), date('Y-m-d', strtotime($data['tglbukti'])));
 
@@ -328,6 +329,7 @@ class ServiceOutHeader extends MyModel
         $serviceoutheader->trado_id = $data['trado_id'];
         $serviceoutheader->tglkeluar = date('Y-m-d', strtotime($data['tglkeluar']));
         $serviceoutheader->modifiedby = auth('api')->user()->name;
+        $serviceoutheader->info = html_entity_decode(request()->info);
 
         if (!$serviceoutheader->save()) {
             throw new \Exception("Error updating service in header.");

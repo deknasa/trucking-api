@@ -233,6 +233,7 @@ class Akuntansi extends MyModel
         $akuntansi->keterangan = $data['keterangan'];
         $akuntansi->statusaktif = $data['statusaktif'];
         $akuntansi->modifiedby = auth('api')->user()->user;
+        $akuntansi->info = html_entity_decode(request()->info);
 
         if (!$akuntansi->save()) {
             throw new \Exception('Error storing akuntansi.');
@@ -256,6 +257,7 @@ class Akuntansi extends MyModel
         $akuntansi->keterangan = $data['keterangan'];
         $akuntansi->statusaktif = $data['statusaktif'];
         $akuntansi->modifiedby = auth('api')->user()->user;
+        $akuntansi->info = html_entity_decode(request()->info);
 
         if (!$akuntansi->save()) {
             throw new \Exception('Error updating akuntansi.');

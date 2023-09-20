@@ -296,6 +296,7 @@ class PengeluaranStokDetail extends MyModel
         $pengeluaranStokDetail->statusservicerutin = $idstatusservicerutin;
 
         $pengeluaranStokDetail->modifiedby = auth('api')->user()->name;
+        $pengeluaranStokDetail->info = html_entity_decode(request()->info);
 
         if (!$pengeluaranStokDetail->save()) {
             throw new \Exception("Error storing pengeluaran Stok Detail.");

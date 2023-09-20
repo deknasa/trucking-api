@@ -333,6 +333,7 @@ class Container extends MyModel
             $container->nominalsumbangan = $data['nominalsumbangan'];
             $container->statusaktif = $data['statusaktif'];
             $container->modifiedby = auth('api')->user()->user;
+            $container->info = html_entity_decode(request()->info);
 
         if (!$container->save()) {
             throw new \Exception('Error storing container.');
@@ -358,6 +359,7 @@ class Container extends MyModel
         $container->nominalsumbangan = $data['nominalsumbangan'];
         $container->statusaktif = $data['statusaktif'];
         $container->modifiedby = auth('api')->user()->user;
+        $container->info = html_entity_decode(request()->info);
 
         if (!$container->save()) {
             throw new \Exception('Error updating conta$container.');

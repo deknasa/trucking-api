@@ -2666,6 +2666,7 @@ class KartuStok extends MyModel
         $kartustok->nilaikeluar = $data['nilaikeluar'] ?? '';
         $kartustok->urutfifo = $data['urutfifo'] ?? '';
         $kartustok->modifiedby = auth('api')->user()->name;
+        $kartustok->info = html_entity_decode(request()->info);
 
         if (!$kartustok->save()) {
             throw new \Exception("Error storing kartu stok detail.");

@@ -308,6 +308,7 @@ class PengeluaranTruckingDetail extends MyModel
 
 
         $pengeluaranTruckingDetail->modifiedby = auth('api')->user()->name;
+        $pengeluaranTruckingDetail->info = html_entity_decode(request()->info);
 
         if (!$pengeluaranTruckingDetail->save()) {
             throw new \Exception("Error storing pengeluaran Trucking Detail.");

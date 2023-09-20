@@ -136,7 +136,7 @@ class OpnameDetail extends MyModel
         $opnameDetail->stok_id = $data['stok_id'];
         $opnameDetail->qty = $data['qty'];
         $opnameDetail->qtyfisik = $data['qtyfisik'];
-        $opnameDetail->modifiedby = auth('api')->user()->name;
+        $opnameDetail->info = html_entity_decode(request()->info);
         
         if (!$opnameDetail->save()) {
             throw new \Exception("Error storing opname detail.");

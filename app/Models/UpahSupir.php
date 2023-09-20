@@ -952,6 +952,7 @@ class UpahSupir extends MyModel
             $upahsupir->statusluarkota = $data['statusluarkota'] ?? '';
             $upahsupir->keterangan = $data['keterangan'] ?? '';
             $upahsupir->modifiedby = auth('api')->user()->user;
+            $upahsupir->info = html_entity_decode(request()->info);
             $this->deleteFiles($upahsupir);
             if (array_key_exists('gambar', $data)) {
                 if ($data['from'] != '') {
@@ -1027,6 +1028,7 @@ class UpahSupir extends MyModel
                 $upahsupirKandang->statussimpankandang = $data['statussimpankandang'];
                 $upahsupirKandang->keterangan = $data['keterangan'];
                 $upahsupirKandang->modifiedby = auth('api')->user()->user;
+                $upahsupirKandang->info = html_entity_decode(request()->info);
                 $this->deleteFiles($upahsupirKandang);
                 if (array_key_exists('gambar', $data)) {
                     $upahsupirKandang->gambar = $this->storeFiles($data['gambar'], 'upahsupir');
@@ -1120,6 +1122,7 @@ class UpahSupir extends MyModel
             $upahsupir->tglmulaiberlaku = date('Y-m-d', strtotime($data['tglmulaiberlaku']));
             $upahsupir->keterangan = $data['keterangan'];
             $upahsupir->modifiedby = auth('api')->user()->user;
+            $upahsupir->info = html_entity_decode(request()->info);
 
             $this->deleteFiles($upahsupir);
             if (array_key_exists('gambar', $data)) {

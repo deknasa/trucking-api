@@ -183,6 +183,7 @@ class InvoiceChargeGandenganDetail extends MyModel
         $invoiceChargeGandenganDetail->namagudang = $data['namagudang_detail'];
         $invoiceChargeGandenganDetail->keterangan = $data['keterangan_detail'];
         $invoiceChargeGandenganDetail->modifiedby = auth('api')->user()->name;
+        $invoiceChargeGandenganDetail->info = html_entity_decode(request()->info);
         
         if (!$invoiceChargeGandenganDetail->save()) {
             throw new \Exception("Error storing invoice charge gandengan detail.");

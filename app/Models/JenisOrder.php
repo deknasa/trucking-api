@@ -283,6 +283,7 @@ class JenisOrder extends MyModel
         $jenisorder->statusaktif = $data['statusaktif'];
         $jenisorder->keterangan = $data['keterangan'] ?? '';
         $jenisorder->modifiedby = auth('api')->user()->name;
+        $jenisorder->info = html_entity_decode(request()->info);
         // $request->sortname = $request->sortname ?? 'id';
         // $request->sortorder = $request->sortorder ?? 'asc';
 
@@ -309,6 +310,7 @@ class JenisOrder extends MyModel
         $jenisorder->keterangan = $data['keterangan'] ?? '';
         $jenisorder->statusaktif =$data['statusaktif'];
         $jenisorder->modifiedby = auth('api')->user()->name;
+        $jenisorder->info = html_entity_decode(request()->info);
 
 
         if (!$jenisorder->save()) {

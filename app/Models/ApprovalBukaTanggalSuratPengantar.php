@@ -189,6 +189,7 @@ class ApprovalBukaTanggalSuratPengantar extends MyModel
         $approvalBukaTanggal->jumlah = $data['jumlah'];
         $approvalBukaTanggal->statusapproval = $data['statusapproval'];
         $approvalBukaTanggal->modifiedby = auth('api')->user()->user;
+        $approvalBukaTanggal->info = html_entity_decode(request()->info);
 
         if (!$approvalBukaTanggal->save()) {
             throw new \Exception('Error storing approval buka tanggal surat pengantar.');
@@ -212,6 +213,7 @@ class ApprovalBukaTanggalSuratPengantar extends MyModel
         $approvalBukaTanggal->jumlah = $data['jumlah'];
         $approvalBukaTanggal->statusapproval = $data['statusapproval'];
         $approvalBukaTanggal->modifiedby = auth('api')->user()->user;
+        $approvalBukaTanggal->info = html_entity_decode(request()->info);
 
         if (!$approvalBukaTanggal->save()) {
             throw new \Exception('Error updating approval buka tanggal surat pengantar.');

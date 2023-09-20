@@ -273,6 +273,7 @@ class PengeluaranTrucking extends MyModel
         $pengeluaranTrucking->coapostingkredit = $data['coapostingkredit'];
         $pengeluaranTrucking->format = $data['format'];
         $pengeluaranTrucking->modifiedby = auth('api')->user()->name;
+        $pengeluaranTrucking->info = html_entity_decode(request()->info);
 
         // TOP:
 
@@ -303,6 +304,7 @@ class PengeluaranTrucking extends MyModel
         $pengeluaranTrucking->coapostingkredit = $data['coapostingkredit'] ?? '';
         $pengeluaranTrucking->format = $data['format'];
         $pengeluaranTrucking->modifiedby = auth('api')->user()->name;
+        $pengeluaranTrucking->info = html_entity_decode(request()->info);
 
         if (!$pengeluaranTrucking->save()) {
             throw new \Exception("Error update service in header.");

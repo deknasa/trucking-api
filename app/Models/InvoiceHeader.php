@@ -1137,6 +1137,7 @@ class InvoiceHeader extends MyModel
         $invoiceHeader->tgldari = date('Y-m-d', strtotime($data['tgldari']));
         $invoiceHeader->tglsampai = date('Y-m-d', strtotime($data['tglsampai']));
         $invoiceHeader->modifiedby = auth('api')->user()->name;
+        $invoiceHeader->info = html_entity_decode(request()->info);
         $invoiceHeader->statusformat = $format->id;
         $invoiceHeader->nobukti = (new RunningNumberService)->get($group, $subGroup, $invoiceHeader->getTable(), date('Y-m-d', strtotime($data['tglbukti'])));
 
@@ -1256,6 +1257,7 @@ class InvoiceHeader extends MyModel
         $invoiceHeader->tgldari = date('Y-m-d', strtotime($data['tgldari']));
         $invoiceHeader->tglsampai = date('Y-m-d', strtotime($data['tglsampai']));
         $invoiceHeader->modifiedby = auth('api')->user()->name;
+        $invoiceHeader->info = html_entity_decode(request()->info);
         $invoiceHeader->statuspilihaninvoice = $data['statuspilihaninvoice'] ?? '';
 
 

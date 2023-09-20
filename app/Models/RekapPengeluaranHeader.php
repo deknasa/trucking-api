@@ -373,6 +373,7 @@ class RekapPengeluaranHeader extends MyModel
         $rekapPengeluaranHeader->statuscetak = $statusCetak->id;
         $rekapPengeluaranHeader->statusformat = $format->id;
         $rekapPengeluaranHeader->modifiedby = auth('api')->user()->name;
+        $rekapPengeluaranHeader->info = html_entity_decode(request()->info);
         $rekapPengeluaranHeader->nobukti = (new RunningNumberService)->get($group, $subGroup, $rekapPengeluaranHeader->getTable(), date('Y-m-d', strtotime($data['tglbukti'])));
 
         if (!$rekapPengeluaranHeader->save()) {
@@ -419,6 +420,7 @@ class RekapPengeluaranHeader extends MyModel
     public function processUpdate(RekapPengeluaranHeader $rekapPengeluaranHeader, array $data): RekapPengeluaranHeader
     {
         $rekapPengeluaranHeader->modifiedby = auth('api')->user()->name;
+        $rekapPengeluaranHeader->info = html_entity_decode(request()->info);
 
         if (!$rekapPengeluaranHeader->save()) {
             throw new \Exception("Error updating rekap pengeluaran header.");

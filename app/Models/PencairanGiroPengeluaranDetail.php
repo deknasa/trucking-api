@@ -187,6 +187,7 @@ class PencairanGiroPengeluaranDetail extends MyModel
         $pencairanGiroDetail->keterangan = $data['keterangan'];
         $pencairanGiroDetail->bulanbeban = $data['bulanbeban'];
         $pencairanGiroDetail->modifiedby = auth('api')->user()->name;
+        $pencairanGiroDetail->info = html_entity_decode(request()->info);
 
         $pencairanGiroDetail->save();
 

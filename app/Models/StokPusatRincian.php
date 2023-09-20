@@ -27,6 +27,7 @@ class StokPusatRincian extends Model
         $stokPusatRincian->cabang_id = $data['cabang_id'];
         $stokPusatRincian->gambar = $data['gambar'];
         $stokPusatRincian->modifiedby = auth('api')->user()->user;
+        $stokPusatRincian->info = html_entity_decode(request()->info);
 
         if (!$stokPusatRincian->save()) {
             throw new \Exception("Error storing stok pusat rincian.");

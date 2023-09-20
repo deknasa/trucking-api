@@ -233,6 +233,7 @@ class PiutangDetail extends MyModel
         $piutangDetail->keterangan = $data['keterangan'];
         $piutangDetail->invoice_nobukti = $data['invoice_nobukti'] ?? '';
         $piutangDetail->modifiedby = auth('api')->user()->name;
+        $piutangDetail->info = html_entity_decode(request()->info);
         
         if (!$piutangDetail->save()) {
             throw new \Exception("Error storing piutang detail.");

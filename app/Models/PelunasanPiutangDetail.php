@@ -236,6 +236,7 @@ class PelunasanPiutangDetail extends MyModel
         $pelunasanPiutangDetail->statusnotakredit = $data['statusnotakredit'];
 
         $pelunasanPiutangDetail->modifiedby = auth('api')->user()->name;
+        $pelunasanPiutangDetail->info = html_entity_decode(request()->info);
 
         if (!$pelunasanPiutangDetail->save()) {
             throw new \Exception("Error storing pelunasan piutang detail.");

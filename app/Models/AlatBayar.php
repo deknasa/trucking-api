@@ -469,6 +469,7 @@ class AlatBayar extends MyModel
         $alatbayar->coa = $data['coa'] ?? '';
         $alatbayar->statusaktif = $data['statusaktif'];
         $alatbayar->modifiedby = auth('api')->user()->name;
+        $alatbayar->info = html_entity_decode(request()->info);
 
 
         if (!$alatbayar->save()) {
@@ -499,6 +500,7 @@ class AlatBayar extends MyModel
         $alatbayar->coa = $data['coa'] ?? '';
         $alatbayar->statusaktif = $data['statusaktif'];
         $alatbayar->modifiedby = auth('api')->user()->name;
+        $alatbayar->info = html_entity_decode(request()->info);
 
         if (!$alatbayar->save()) {
             throw new \Exception("Error update service in header.");

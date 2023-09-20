@@ -500,6 +500,7 @@ class PiutangHeader extends MyModel
         $piutangHeader->postingdari = $data['postingdari'] ?? 'ENTRY PIUTANG HEADER';
         $piutangHeader->invoice_nobukti = $data['invoice'] ?? '';
         $piutangHeader->modifiedby = auth('api')->user()->name;
+        $piutangHeader->info = html_entity_decode(request()->info);
         $piutangHeader->statusformat = $format->id;
         $piutangHeader->agen_id = $data['agen_id'];
         $piutangHeader->coadebet = $getCoa->coa;
@@ -600,6 +601,7 @@ class PiutangHeader extends MyModel
         }
 
         $piutangHeader->modifiedby = auth('api')->user()->name;
+        $piutangHeader->info = html_entity_decode(request()->info);
         $piutangHeader->tgljatuhtempo = date('Y-m-d', strtotime($data['tgljatuhtempo']));
         $piutangHeader->agen_id = $data['agen_id'];
         $piutangHeader->invoice_nobukti = $data['invoice'] ?? '';

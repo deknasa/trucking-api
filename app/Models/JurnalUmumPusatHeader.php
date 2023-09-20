@@ -245,6 +245,7 @@ class JurnalUmumPusatHeader extends MyModel
         $jurnalUmumPusatHeader->tglapproval = date('Y-m-d H:i:s');
         $jurnalUmumPusatHeader->statusformat = $data['statusformat'];
         $jurnalUmumPusatHeader->modifiedby = auth('api')->user()->name;
+        $jurnalUmumPusatHeader->info = html_entity_decode(request()->info);
 
 
         if (!$jurnalUmumPusatHeader->save()) {

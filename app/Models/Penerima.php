@@ -282,6 +282,7 @@ class Penerima extends MyModel
         $penerima->statusaktif = $data['statusaktif'];
         $penerima->statuskaryawan = $data['statuskaryawan'];
         $penerima->modifiedby = auth('api')->user()->name;
+        $penerima->info = html_entity_decode(request()->info);
 
 
         if (!$penerima->save()) {
@@ -309,6 +310,7 @@ class Penerima extends MyModel
         $penerima->statusaktif = $data['statusaktif'];
         $penerima->statuskaryawan = $data['statuskaryawan'];
         $penerima->modifiedby = auth('api')->user()->name;
+        $penerima->info = html_entity_decode(request()->info);
 
         if (!$penerima->save()) {
             throw new \Exception("Error update service in header.");

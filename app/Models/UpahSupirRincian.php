@@ -972,6 +972,7 @@ class UpahSupirRincian extends MyModel
         $upahSupirRincian->nominaltol = $data['nominaltol'];
         $upahSupirRincian->liter = $data['liter'];
         $upahSupirRincian->modifiedby = auth('api')->user()->name;
+        $upahSupirRincian->info = html_entity_decode(request()->info);
 
         if (!$upahSupirRincian->save()) {
             throw new \Exception("Error storing upah supir in detail.");

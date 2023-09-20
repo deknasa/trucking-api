@@ -147,7 +147,7 @@ class InvoiceExtraDetail extends MyModel
         $invoiceExtraDetail->nobukti = $invoiceExtraHeader->nobukti;
         $invoiceExtraDetail->nominal =  $data['nominal_detail'];
         $invoiceExtraDetail->keterangan = $data['keterangan_detail'];
-        $invoiceExtraDetail->modifiedby = auth('api')->user()->name;
+        $invoiceExtraDetail->info = html_entity_decode(request()->info);
         
         if (!$invoiceExtraDetail->save()) {
             throw new \Exception("Error storing invoice extra detail.");

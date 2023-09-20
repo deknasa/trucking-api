@@ -270,6 +270,7 @@ class SubKelompok extends MyModel
         $subKelompok->kelompok_id = $data['kelompok_id'];
         $subKelompok->statusaktif = $data['statusaktif'];
         $subKelompok->modifiedby = auth('api')->user()->name;
+        $subKelompok->info = html_entity_decode(request()->info);
 
 
         if (!$subKelompok->save()) {
@@ -296,6 +297,7 @@ class SubKelompok extends MyModel
         $subKelompok->kelompok_id = $data['kelompok_id'];
         $subKelompok->statusaktif = $data['statusaktif'];
         $subKelompok->modifiedby = auth('api')->user()->name;
+        $subKelompok->info = html_entity_decode(request()->info);
 
         if (!$subKelompok->save()) {
             throw new \Exception("Error update service in header.");

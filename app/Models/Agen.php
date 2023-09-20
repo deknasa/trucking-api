@@ -479,6 +479,7 @@ class Agen extends MyModel
         // $agen->jenisemkl = $request->jenisemkl;
         $agen->tglapproval = '';
         $agen->modifiedby = auth('api')->user()->name;
+        $agen->info = html_entity_decode(request()->info);
         // $request->sortname = $request->sortname ?? 'id';
         // $request->sortorder = $request->sortorder ?? 'asc';
 
@@ -513,6 +514,7 @@ class Agen extends MyModel
         $agen->statustas = $data['statustas'];
         // $agen->jenisemkl = $request->jenisemkl;
         $agen->modifiedby = auth('api')->user()->name;
+        $agen->info = html_entity_decode(request()->info);
         // $request->sortname = $request->sortname ?? 'id';
         // $request->sortorder = $request->sortorder ?? 'asc';
 

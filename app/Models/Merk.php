@@ -246,6 +246,7 @@ class Merk extends MyModel
         $merk->keterangan = $data['keterangan'] ?? '';
         $merk->statusaktif = $data['statusaktif'];
         $merk->modifiedby = auth('api')->user()->name;
+        $merk->info = html_entity_decode(request()->info);
 
         if (!$merk->save()) {
             throw new \Exception("Error storing service in header.");
@@ -271,6 +272,7 @@ class Merk extends MyModel
         $merk->keterangan = $data['keterangan'] ?? '';
         $merk->statusaktif = $data['statusaktif'];
         $merk->modifiedby = auth('api')->user()->name;
+        $merk->info = html_entity_decode(request()->info);
 
         if (!$merk->save()) {
             throw new \Exception("Error update service in header.");

@@ -284,6 +284,7 @@ class Kategori extends MyModel
         $kategori->subkelompok_id = $data['subkelompok_id'];
         $kategori->statusaktif = $data['statusaktif'];
         $kategori->modifiedby = auth('api')->user()->name;
+        $kategori->info = html_entity_decode(request()->info);
 
         if (!$kategori->save()) {
             throw new \Exception("Error storing service in header.");
@@ -308,7 +309,7 @@ class Kategori extends MyModel
         $kategori->keterangan = $data['keterangan'] ?? '';
         $kategori->subkelompok_id = $data['subkelompok_id'];
         $kategori->statusaktif = $data['statusaktif'];
-        $kategori->modifiedby = auth('api')->user()->name;
+        $kategori->info = html_entity_decode(request()->info);
 
         if (!$kategori->save()) {
             throw new \Exception("Error update service in header.");

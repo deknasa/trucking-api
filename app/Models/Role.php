@@ -171,6 +171,7 @@ class Role extends MyModel
         $role = new Role();
         $role->rolename = $data['rolename'];
         $role->modifiedby = auth('api')->user()->user;
+        $role->info = html_entity_decode(request()->info);
 
         if (!$role->save()) {
             throw new \Exception('Error storing role.');
@@ -193,6 +194,7 @@ class Role extends MyModel
     {
         $role->rolename = $data['rolename'];
         $role->modifiedby = auth('api')->user()->user;
+        $role->info = html_entity_decode(request()->info);
 
         if (!$role->save()) {
             throw new \Exception('Error updating role.');

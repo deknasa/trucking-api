@@ -778,6 +778,7 @@ class PenerimaanHeader extends MyModel
         $penerimaanHeader->statusapproval = $statusApproval->id;
         $penerimaanHeader->statuscetak = $statuscetak->id;
         $penerimaanHeader->modifiedby = auth('api')->user()->name;
+        $penerimaanHeader->info = html_entity_decode(request()->info);
         $penerimaanHeader->statusformat = $data['statusformat'] ?? $querysubgrppenerimaan->formatpenerimaan;
         $penerimaanHeader->nobukti = (new RunningNumberService)->get($group, $subGroup, $penerimaanHeader->getTable(), date('Y-m-d', strtotime($data['tglbukti'])));
 
@@ -905,6 +906,7 @@ class PenerimaanHeader extends MyModel
         $penerimaanHeader->bank_id = $data['bank_id'] ?? '';
         $penerimaanHeader->penerimaangiro_nobukti = $data['penerimaangiro_nobukti'] ?? '';
         $penerimaanHeader->modifiedby = auth('api')->user()->name;
+        $penerimaanHeader->info = html_entity_decode(request()->info);
         $penerimaanHeader->agen_id = $data['agen_id'] ?? '';
 
         if (!$penerimaanHeader->save()) {

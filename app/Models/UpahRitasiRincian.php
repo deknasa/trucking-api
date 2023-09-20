@@ -391,6 +391,7 @@ class UpahRitasiRincian extends MyModel
         $upahritasirincian->nominalsupir = 0;
         $upahritasirincian->liter = $data['liter'];
         $upahritasirincian->modifiedby = auth('api')->user()->name;
+        $upahritasirincian->info = html_entity_decode(request()->info);
 
         if (!$upahritasirincian->save()) {
             throw new \Exception("Gagal menyimpan upah ritasi detail.");

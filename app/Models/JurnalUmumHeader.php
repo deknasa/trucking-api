@@ -407,6 +407,7 @@ class JurnalUmumHeader extends MyModel
         $jurnalUmumHeader->statuscetak = $statusCetak->id ?? 0;
         $jurnalUmumHeader->statusformat = $data['statusformat'] ?? $format->id;
         $jurnalUmumHeader->modifiedby = auth('api')->user()->name;
+        $jurnalUmumHeader->info = html_entity_decode(request()->info);
 
         if ($tanpaprosesnobukti == 0) {
             $jurnalUmumHeader->nobukti = (new RunningNumberService)->get($group, $subGroup, $jurnalUmumHeader->getTable(), date('Y-m-d', strtotime($data['tglbukti'])));
@@ -527,6 +528,7 @@ class JurnalUmumHeader extends MyModel
         }
 
         $jurnalUmumHeader->modifiedby = auth('api')->user()->name;
+        $jurnalUmumHeader->info = html_entity_decode(request()->info);
 
 
         if (!$jurnalUmumHeader->save()) {
@@ -708,6 +710,7 @@ class JurnalUmumHeader extends MyModel
                 $aksi = $statusApproval->text;
                 $jurnalumum->tglapproval = date('Y-m-d H:i:s');
                 $jurnalumum->userapproval = auth('api')->user()->name;
+                $jurnalumum->info = html_entity_decode(request()->info);
 
                 $jurnalDetail = JurnalUmumDetail::where('jurnalumum_id', $data['jurnalId'][$i])->get();
                 $coa_detail = [];

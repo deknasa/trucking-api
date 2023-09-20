@@ -138,6 +138,7 @@ class SuratPengantarBiayaTambahan extends MyModel
         $suratpengantarbiayatambahan->nominal = $data['nominal'];
         $suratpengantarbiayatambahan->nominaltagih = $data['nominaltagih'];
         $suratpengantarbiayatambahan->modifiedby = auth('api')->user()->name;;
+        $suratpengantarbiayatambahan->info = html_entity_decode(request()->info);
 
         if (!$suratpengantarbiayatambahan->save()) {
             throw new \Exception("Error storing surat pengantar biaya tambahan.");

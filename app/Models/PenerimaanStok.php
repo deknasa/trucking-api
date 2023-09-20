@@ -287,6 +287,7 @@ class PenerimaanStok extends MyModel
         $penerimaanStok->format = $data['format'];
         $penerimaanStok->statushitungstok = $data['statushitungstok'];
         $penerimaanStok->modifiedby = auth('api')->user()->name;
+        $penerimaanStok->info = html_entity_decode(request()->info);
 
         if (!$penerimaanStok->save()) {
             throw new \Exception("Error storing service in header.");
@@ -314,6 +315,7 @@ class PenerimaanStok extends MyModel
         $penerimaanStok->format = $data['format'];
         $penerimaanStok->statushitungstok = $data['statushitungstok'];
         $penerimaanStok->modifiedby = auth('api')->user()->name;
+        $penerimaanStok->info = html_entity_decode(request()->info);
         if (!$penerimaanStok->save()) {
             throw new \Exception("Error update service in header.");
         }

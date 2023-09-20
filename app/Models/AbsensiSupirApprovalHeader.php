@@ -418,6 +418,7 @@ class AbsensiSupirApprovalHeader extends MyModel
         $absensiSupirApprovalHeader->postingdari =  "ABSENSI SUPIR APPROVAL";
         $absensiSupirApprovalHeader->statuscetak = $statusCetak->id ?? 0;
         $absensiSupirApprovalHeader->modifiedby =  auth('api')->user()->name;
+        $absensiSupirApprovalHeader->info = html_entity_decode(request()->info);
         $absensiSupirApprovalHeader->nobukti = (new RunningNumberService)->get($group, $subGroup, $absensiSupirApprovalHeader->getTable(), date('Y-m-d', strtotime($data['tglbukti'])));
 
         if (!$absensiSupirApprovalHeader->save()) {
@@ -510,6 +511,7 @@ class AbsensiSupirApprovalHeader extends MyModel
         $absensiSupirApprovalHeader->postingdari =  "ABSENSI SUPIR APPROVAL";
         $absensiSupirApprovalHeader->statuscetak = $statusCetak->id ?? 0;
         $absensiSupirApprovalHeader->modifiedby =  auth('api')->user()->name;
+        $absensiSupirApprovalHeader->info = html_entity_decode(request()->info);
 
         if (!$absensiSupirApprovalHeader->save()) {
             throw new \Exception("Error storing absensi Supir Approval Header.");

@@ -1301,6 +1301,7 @@ class GajiSupirHeader extends MyModel
         $gajiSupirHeader->statusformat = $format->id;
         $gajiSupirHeader->statuscetak = $statusCetak->id;
         $gajiSupirHeader->modifiedby = auth('api')->user()->user;
+        $gajiSupirHeader->info = html_entity_decode(request()->info);
         $gajiSupirHeader->nobukti = (new RunningNumberService)->get($group, $subGroup, $gajiSupirHeader->getTable(), date('Y-m-d', strtotime($data['tglbukti'])));
 
 
@@ -1620,6 +1621,7 @@ class GajiSupirHeader extends MyModel
         $gajiSupirHeader->nobukti = $nobukti;
 
         $gajiSupirHeader->modifiedby = auth('api')->user()->name;
+        $gajiSupirHeader->info = html_entity_decode(request()->info);
 
         if (!$gajiSupirHeader->save()) {
             throw new \Exception('Error update gaji supir');

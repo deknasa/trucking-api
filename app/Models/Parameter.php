@@ -371,6 +371,7 @@ class Parameter extends MyModel
         $parameter->default = $data['default'] ?? '';
         $parameter->type = $data['type'] ?? 0;
         $parameter->modifiedby = auth('api')->user()->user;
+        $parameter->info = html_entity_decode(request()->info);
 
         $detailmemo = [];
         for ($i = 0; $i < count($data['key']); $i++) {
@@ -408,6 +409,7 @@ class Parameter extends MyModel
         $parameter->default = $data['default'] ?? '';
         $parameter->type =  $data['type'] ?? 0;
         $parameter->modifiedby = auth('api')->user()->user;
+        $parameter->info = html_entity_decode(request()->info);
 
         $detailmemo = [];
         for ($i = 0; $i < count($data['key']); $i++) {

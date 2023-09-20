@@ -266,6 +266,7 @@ class GajiSupirPelunasanPinjaman extends MyModel
         $gajiSupirPelunasanPinjaman->supir_id = $data['supir_id'];
         $gajiSupirPelunasanPinjaman->nominal = $data['nominal'];
         $gajiSupirPelunasanPinjaman->modifiedby = auth('api')->user()->user;
+        $gajiSupirPelunasanPinjaman->info = html_entity_decode(request()->info);
 
         if (!$gajiSupirPelunasanPinjaman->save()) {
             throw new \Exception('Error storing gaji supir pelunasan pinjaman.');

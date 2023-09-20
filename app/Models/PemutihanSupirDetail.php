@@ -130,7 +130,7 @@ class PemutihanSupirDetail extends MyModel
         $pemutihanSupirDetail->pengeluarantrucking_nobukti = $data['pengeluarantrucking_nobukti'];
         $pemutihanSupirDetail->nominal = $data['nominal'];
         $pemutihanSupirDetail->statusposting = $data['statusposting'];
-        $pemutihanSupirDetail->modifiedby = auth('api')->user()->name;
+        $pemutihanSupirDetail->info = html_entity_decode(request()->info);
 
         if (!$pemutihanSupirDetail->save()) {
             throw new \Exception("Error storing pemutihan supir detail.");

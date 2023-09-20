@@ -235,6 +235,7 @@ class AbsenTrado extends MyModel
         $absenTrado->keterangan = $data['keterangan'] ?? '';
         $absenTrado->statusaktif = $data['statusaktif'];
         $absenTrado->modifiedby = auth('api')->user()->name;
+        $absenTrado->info = html_entity_decode(request()->info);
 
         $detailmemo = [];
         for ($i = 0; $i < count($data['key']); $i++) {
@@ -268,6 +269,7 @@ class AbsenTrado extends MyModel
         $absentrado->keterangan = $data['keterangan'] ?? '';
         $absentrado->statusaktif = $data['statusaktif'];
         $absentrado->modifiedby = auth('api')->user()->name;
+        $absentrado->info = html_entity_decode(request()->info);
         $detailmemo = [];
         for ($i = 0; $i < count($data['key']); $i++) {
             $datadetailmemo = [
