@@ -26,13 +26,14 @@ class LaporanKasBank extends MyModel
 
 
 
-    public function getReport($dari, $sampai, $bank_id)
+    public function getReport($dari, $sampai, $bank_id, $prosesneraca)
     {
+        $prosesneraca = $prosesneraca ?? 0;
         $dariformat = date('Y/m/d', strtotime($dari));
         $sampaiformat = date('Y/m/d', strtotime($sampai));
 
-        $dari = date('Y-m-d', strtotime(request()->dari)) ?? '1900/1/1';
-        $sampai = date('Y-m-d', strtotime(request()->sampai)) ?? '1900/1/1';
+        $dari = date('Y-m-d', strtotime($dari)) ?? '1900/1/1';
+        $sampai = date('Y-m-d', strtotime($sampai)) ?? '1900/1/1';
         $bank_id = $bank_id;
 
         $tempsaldo = '##tempsaldo' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
@@ -249,8 +250,13 @@ class LaporanKasBank extends MyModel
             ->leftjoin(DB::raw("akunpusat as b with (readuncommitted)"), 'a.coa', 'b.coa')
             ->orderBy('a.id', 'Asc');
 
+            if ($prosesneraca == 1) {
+                $data = $queryhasil;
+            } else {
+                $data = $queryhasil->get();
+            }
+    
 
-        $data = $queryhasil->get();
         return $data;
     }
 }

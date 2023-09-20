@@ -24,8 +24,10 @@ class LaporanKartuPiutangPerAgen extends MyModel
         'updated_at',
     ];
 
-    public function getReport($dari, $sampai, $agenDari, $agenSampai)
+    public function getReport($dari, $sampai, $agenDari, $agenSampai, $prosesneraca)
     {
+
+        $prosesneraca = $prosesneraca ?? 0;
 
         $sampai=$dari;
         $tgl = '01-' . date('m', strtotime($dari)) . '-' . date('Y', strtotime($dari));
@@ -437,7 +439,13 @@ class LaporanKartuPiutangPerAgen extends MyModel
             ->orderBy('C.tglbukti')
             ->orderBy('C.nobukti');
         // dd($select_data->get());
-        $data = $select_data->get();
+        // $data = $select_data->get();
+
+        if ($prosesneraca == 1) {
+            $data = $select_data;
+        } else {
+            $data = $select_data->get();
+        }
         return $data;
     }
 

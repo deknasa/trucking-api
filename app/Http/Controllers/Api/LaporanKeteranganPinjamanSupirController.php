@@ -30,8 +30,9 @@ class LaporanKeteranganPinjamanSupirController extends Controller
     {
         $periode = $request->periode;
         $jenis = $request->jenis;
+        $prosesneraca=0;
 
-        $report = LaporanKeteranganPinjamanSupir::getReport($periode, $jenis);
+        $report = LaporanKeteranganPinjamanSupir::getReport($periode, $jenis,$prosesneraca);
         // $report = [
         //     [
         //         "tanggal" => "23/2/2023",
@@ -54,8 +55,10 @@ class LaporanKeteranganPinjamanSupirController extends Controller
     {
         $periode = $request->periode;
         $jenis = $request->jenis;
+        $prosesneraca=0;
 
-        $export = LaporanKeteranganPinjamanSupir::getReport($periode, $jenis);
+
+        $export = LaporanKeteranganPinjamanSupir::getReport($periode, $jenis,$prosesneraca);
 
         foreach ($export as $data) {
            

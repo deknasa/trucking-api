@@ -42,12 +42,13 @@ class LaporanKartuPiutangPerAgenController extends Controller
             $sampai = date('Y-m-d', strtotime($request->sampai));
             $agendari = $request->agendari_id ?? 0;
             $agensampai = $request->agensampai_id ?? 0;
+            $prosesneraca=0;
 
 
             $laporankartupiutangperagen = new LaporanKartuPiutangPerAgen();
 
 
-            $laporan_piutangperagen = $laporankartupiutangperagen->getReport($dari, $sampai, $agendari, $agensampai);
+            $laporan_piutangperagen = $laporankartupiutangperagen->getReport($dari, $sampai, $agendari, $agensampai,$prosesneraca);
             foreach ($laporan_piutangperagen as $item) {
                 $item->tglbukti = date('d-m-Y', strtotime($item->tglbukti));
                 $item->tgljatuhtempo = date('d-m-Y', strtotime($item->tgljatuhtempo));
@@ -69,12 +70,12 @@ class LaporanKartuPiutangPerAgenController extends Controller
         $sampai = date('Y-m-d', strtotime($request->sampai));
         $agendari = $request->agendari_id;
         $agensampai = $request->agensampai_id;
-
+        $prosesneraca=0;
 
         $laporankartupiutangperagen = new LaporanKartuPiutangPerAgen();
 
 
-        $laporan_piutangperagen = $laporankartupiutangperagen->getReport($dari, $sampai, $agendari, $agensampai);
+        $laporan_piutangperagen = $laporankartupiutangperagen->getReport($dari, $sampai, $agendari, $agensampai,$prosesneraca);
         foreach ($laporan_piutangperagen as $item) {
             $item->tglbukti = date('d-m-Y', strtotime($item->tglbukti));
             $item->tgljatuhtempo = date('d-m-Y', strtotime($item->tgljatuhtempo));

@@ -34,8 +34,9 @@ class LaporanRekapTitipanEmklController extends Controller
     {
         $tanggal = date('Y-m-d', strtotime($request->periode));
         $laporanRekapTitipanEmkl = new LaporanRekapTitipanEmkl();
+        $prosesneraca=0;
 
-        $laporan_titipanemkl = $laporanRekapTitipanEmkl->getData($tanggal);
+        $laporan_titipanemkl = $laporanRekapTitipanEmkl->getData($tanggal,$prosesneraca);
         
         // foreach ($laporan_titipanemkl as $item) {
         //     $item->tglbukti = date('d-m-Y', strtotime($item->tglbukti));
@@ -55,8 +56,9 @@ class LaporanRekapTitipanEmklController extends Controller
 
             $tanggal = date('Y-m-d', strtotime($request->periode));
         $laporanRekapTitipanEmkl = new LaporanRekapTitipanEmkl();
+        $prosesneraca=0;
 
-        $laporan_titipanemkl = $laporanRekapTitipanEmkl->getData($tanggal);
+        $laporan_titipanemkl = $laporanRekapTitipanEmkl->getData($tanggal,$prosesneraca);
         
         // foreach ($laporan_titipanemkl as $item) {
         //     $item->tglbukti = date('d-m-Y', strtotime($item->tglbukti));

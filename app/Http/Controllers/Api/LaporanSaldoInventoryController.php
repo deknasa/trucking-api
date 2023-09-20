@@ -41,7 +41,7 @@ class LaporanSaldoInventoryController extends Controller
         $stokdari_id = $request->stokdari_id ?? 0;
         $stoksampai_id = $request->stoksampai_id ?? 0;
         $dataFilter = $request->dataFilter;
-
+        $prosesneraca=0;
         // dump($kelompok_id);
         // dump($statusreuse);
         // dump($statusban);
@@ -53,7 +53,7 @@ class LaporanSaldoInventoryController extends Controller
         // dd($dataFilter);
         // dd($request->all());
         $laporanSaldoInventory = new LaporanSaldoInventory();
-        $report = LaporanSaldoInventory::getReport($kelompok_id, $statusreuse, $statusban, $filter, $jenistgltampil, $priode, $stokdari_id, $stoksampai_id, $dataFilter);
+        $report = LaporanSaldoInventory::getReport($kelompok_id, $statusreuse, $statusban, $filter, $jenistgltampil, $priode, $stokdari_id, $stoksampai_id, $dataFilter,$prosesneraca);
         // $report = [
         //     [
         //         'header' => 'Laporan Saldo Inventory',
@@ -156,6 +156,7 @@ class LaporanSaldoInventoryController extends Controller
         $stokdari_id = $request->stokdari_id ?? 0;
         $stoksampai_id = $request->stoksampai_id ?? 0;
         $dataFilter = $request->dataFilter;
+        $prosesneraca=0;
 
         // dump($kelompok_id);
         // dump($statusreuse);
@@ -168,7 +169,7 @@ class LaporanSaldoInventoryController extends Controller
         // dd($dataFilter);
         // dd($request->all());
         $laporanSaldoInventory = new LaporanSaldoInventory();
-        $report = LaporanSaldoInventory::getReport($kelompok_id, $statusreuse, $statusban, $filter, $jenistgltampil, $priode, $stokdari_id, $stoksampai_id, $dataFilter);
+        $report = LaporanSaldoInventory::getReport($kelompok_id, $statusreuse, $statusban, $filter, $jenistgltampil, $priode, $stokdari_id, $stoksampai_id, $dataFilter,$prosesneraca);
 
         // $report = [
         //     [
