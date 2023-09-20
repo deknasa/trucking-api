@@ -19,6 +19,7 @@ class CreateListtemporarytabelTable extends Migration
             $table->string('namatabel', 50)->nullable();
             $table->longText('info')->nullable();
             $table->string('modifiedby', 50)->nullable();
+            $table->dateTime('tglselesai')->nullable();
             $table->timestamps();
         });
     }
