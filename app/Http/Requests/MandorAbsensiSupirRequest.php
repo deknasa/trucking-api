@@ -8,13 +8,13 @@ use App\Models\MandorAbsensiSupir;
 use Illuminate\Foundation\Http\FormRequest;
 use App\Rules\MandorAbsensiSupirInputSupirValidasiTrado;
 use App\Rules\MandorAbsensiSupirEditSupirValidasiTrado;
-use App\Rules\DateAllowedAbsenMandor; 
+use App\Rules\DateAllowedAbsenMandor;
 use App\Rules\DateTutupBuku;
 
 use Illuminate\Validation\Rule;
 use App\Models\Parameter;
 use Illuminate\Support\Facades\DB;
-use App\Rules\ValidasiDestroyMandorAbsensiSupir ;
+use App\Rules\ValidasiDestroyMandorAbsensiSupir;
 
 class MandorAbsensiSupirRequest extends FormRequest
 {
@@ -36,7 +36,7 @@ class MandorAbsensiSupirRequest extends FormRequest
     public function rules()
     {
 
-        $absen_id=$this->absen_id ?? 0;
+        $absen_id = $this->absen_id ?? 0;
 
         $query = DB::table('parameter')->from(DB::raw("parameter as a with (readuncommitted)"))
             ->select(
@@ -45,7 +45,10 @@ class MandorAbsensiSupirRequest extends FormRequest
             ->join(DB::raw("absentrado as b with (readuncommitted)"), 'a.text', '=', 'b.id')
             ->where('a.grp', 'TIDAK ADA SUPIR')
             ->where('a.subgrp', 'TIDAK ADA SUPIR')
-            ->where('b.id',$this->absen_id)
+            ->where('b.id', $this->absen_id)
+            ->first();
+        $supirAbsen = DB::table("absentrado")->from(DB::raw("absentrado with (readuncommitted)"))
+            ->where('kodeabsen', 'S')
             ->first();
 
         if (isset($query)) {
@@ -60,7 +63,19 @@ class MandorAbsensiSupirRequest extends FormRequest
                 }), Rule::when(empty($this->input('absen')), 'date_format:H:i')]
             ];
             $rulesBeda = [];
-        } else {
+        } else if($supirAbsen->id == request()->absen_id){
+            $rules = [
+                'trado' => 'required',
+                'trado_id' => 'required',
+                'supir' => 'nullable',
+                'supir_id' => 'nullable',
+                'absen' => 'nullable',
+                'jam' => [Rule::requiredIf(function () {
+                    return empty($this->input('absen'));
+                }), Rule::when(empty($this->input('absen')), 'date_format:H:i')]
+            ];
+            $rulesBeda = [];
+        }else {
             $rules = [
                 'trado_id' => 'required',
                 'supir' => 'required',
@@ -69,14 +84,14 @@ class MandorAbsensiSupirRequest extends FormRequest
                     return empty($this->input('absen'));
                 }), Rule::when(empty($this->input('absen')), 'date_format:H:i')]
             ];
-        
+
             if (request()->isMethod('POST')) {
                 $rulesBeda = [
                     'tglbukti' => [
                         'required', 'date_format:d-m-Y',
                         new DateAllowedAbsenMandor(),
                         new DateTutupBuku(),
-                        
+
                     ],
                     'trado' => 'required',
                     'supir_id' => ['required', new MandorAbsensiSupirInputSupirValidasiTrado()],
@@ -86,21 +101,21 @@ class MandorAbsensiSupirRequest extends FormRequest
                     'tglbukti' => [
                         'required', 'date_format:d-m-Y',
                         function ($attribute, $value, $fail) {
-                            
+
                             // Ubah format tanggal dari input menjadi format yang ada di database
                             $statusTidakbolehEditAbsensi = Parameter::from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS EDIT ABSENSI')->where('text', 'TIDAK BOLEH EDIT ABSENSI')->first();
                             $formattedDate = date('Y-m-d', strtotime($value));
-    
+
                             // Cek apakah ada data dengan tanggal yang sama dalam database
                             $existingRecord = DB::table('absensisupirdetail')->from(DB::raw("absensisupirdetail with (readuncommitted)"))
-                            ->select(
-                                'absensisupirdetail.id',
-                                'header.statusapprovaleditabsensi as statusedit',
-                                'header.tglbataseditabsensi as tglbatas',
+                                ->select(
+                                    'absensisupirdetail.id',
+                                    'header.statusapprovaleditabsensi as statusedit',
+                                    'header.tglbataseditabsensi as tglbatas',
                                 )
-                            ->where('absensisupirdetail.id', $this->id)
-                            ->leftJoin(DB::raw("absensisupirheader as header with (readuncommitted)"), 'absensisupirdetail.absensi_id', 'header.id')
-                            ->first();
+                                ->where('absensisupirdetail.id', $this->id)
+                                ->leftJoin(DB::raw("absensisupirheader as header with (readuncommitted)"), 'absensisupirdetail.absensi_id', 'header.id')
+                                ->first();
                             if (strtotime($existingRecord->tglbatas) == strtotime($formattedDate)) {
                                 $fail(app(ErrorController::class)->geterror('TSTB')->keterangan);
                             }
@@ -112,12 +127,11 @@ class MandorAbsensiSupirRequest extends FormRequest
                 ];
             } else if (request()->isMethod('DELETE')) {
                 $mandorabsensisupir = new MandorAbsensiSupir();
-                $cekdata = $mandorabsensisupir->cekvalidasihapus($this->trado_id,$this->supir_id,date('Y-m-d', strtotime($this->tglbukti))); 
-                $rulesBeda= [
+                $cekdata = $mandorabsensisupir->cekvalidasihapus($this->trado_id, $this->supir_id, date('Y-m-d', strtotime($this->tglbukti)));
+                $rulesBeda = [
                     'supir' => 'nullable',
-                    'trado' => [ new ValidasiDestroyMandorAbsensiSupir($cekdata['kondisi'])],
-                ];               
-
+                    'trado' => [new ValidasiDestroyMandorAbsensiSupir($cekdata['kondisi'])],
+                ];
             } else {
                 $rulesBeda = [
                     'trado' => 'required',
