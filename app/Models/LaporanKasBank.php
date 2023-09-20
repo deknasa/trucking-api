@@ -236,7 +236,7 @@ class LaporanKasBank extends MyModel
                 'a.urut',
                 DB::raw("isnull(b.keterangancoa,'') as keterangancoa"),
                 DB::raw("'" . $querykasbank->namabank . "' as namabank"),
-                'a.tglbukti',
+                DB::raw("(case when year(isnull(a.tglbukti,'1900/1/1')) < '2000' then null else a.tglbukti end) as tglbukti"),
                 'a.nobukti',
                 'a.keterangan',
                 'a.debet',
