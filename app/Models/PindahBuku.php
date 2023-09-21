@@ -432,10 +432,29 @@ class PindahBuku extends MyModel
             'keterangan_detail' => $keterangan_detail
         ];
         $getJurnal = JurnalUmumHeader::from(DB::raw("jurnalumumheader with (readuncommitted)"))->where('nobukti', $nobuktiOld)->first();
+
+        if (isset($getJurnal)) {
+            $newJurnal = new JurnalUmumHeader();
+            $newJurnal = $newJurnal->find($getJurnal->id);
+            $jurnalumumHeader = (new JurnalUmumHeader())->processUpdate($newJurnal, $jurnalRequest);
+    
+        } else {
+            $jurnalRequest = [
+                'tanpaprosesnobukti' => 1,
+                'nobukti' => $pindahBuku->nobukti,
+                'tglbukti' => date('Y-m-d', strtotime($data['tglbukti'])),
+                'postingdari' => 'ENTRY PINDAH BUKU',
+                'statusformat' => "0",
+                'coakredit_detail' => $coakredit_detail,
+                'coadebet_detail' => $coadebet_detail,
+                'nominal_detail' => $nominal_detail,
+                'keterangan_detail' => $keterangan_detail
+            ];
+    
+            (new JurnalUmumHeader())->processStore($jurnalRequest);
+        }
+
        
-        $newJurnal = new JurnalUmumHeader();
-        $newJurnal = $newJurnal->find($getJurnal->id);
-        $jurnalumumHeader = (new JurnalUmumHeader())->processUpdate($newJurnal, $jurnalRequest);
 
         return $pindahBuku;
     }
