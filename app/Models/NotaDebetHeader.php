@@ -58,11 +58,11 @@ class NotaDebetHeader extends MyModel
             "bank.namabank as bank",
             "alatbayar.namaalatbayar as alatbayar",
             db::raw("cast((format(penerimaanheader.tglbukti,'yyyy/MM')+'/1') as date) as tgldariheaderpenerimaanheader"),
-            db::raw("cast(cast(format((cast((format(penerimaanheader.tglbukti,'yyyy/MM')+'/1') as datetime)+32),'yyyy/MM')+'/01' as datetime)-1 as date) as tglsampaiheaderpenerimaanheader"), 
+            db::raw("cast(cast(format((cast((format(penerimaanheader.tglbukti,'yyyy/MM')+'/1') as datetime)+32),'yyyy/MM')+'/01' as datetime)-1 as date) as tglsampaiheaderpenerimaanheader"),
             db::raw("cast((format(pelunasanpiutangheader.tglbukti,'yyyy/MM')+'/1') as date) as tgldariheaderpelunasanpiutangheader"),
-            db::raw("cast(cast(format((cast((format(pelunasanpiutangheader.tglbukti,'yyyy/MM')+'/1') as datetime)+32),'yyyy/MM')+'/01' as datetime)-1 as date) as tglsampaiheaderpelunasanpiutangheader"), 
+            db::raw("cast(cast(format((cast((format(pelunasanpiutangheader.tglbukti,'yyyy/MM')+'/1') as datetime)+32),'yyyy/MM')+'/01' as datetime)-1 as date) as tglsampaiheaderpelunasanpiutangheader"),
         )
-        
+
             ->leftJoin(DB::raw("pelunasanpiutangheader with (readuncommitted)"), 'notadebetheader.pelunasanpiutang_nobukti', '=', 'pelunasanpiutangheader.nobukti')
             ->leftJoin(DB::raw("penerimaanheader with (readuncommitted)"), 'notadebetheader.penerimaan_nobukti', '=', 'penerimaanheader.nobukti')
             ->leftJoin(DB::raw("bank with (readuncommitted)"), 'notadebetheader.bank_id', 'bank.id')
@@ -523,6 +523,7 @@ class NotaDebetHeader extends MyModel
         if ($tanpaprosesnobukti != 1) {
             $data['cekcoakredit'] = $memoNotaDebetCoa['JURNAL'];
         }
+        $nominal = 0;
         for ($i = 0; $i < count($data['nominallebihbayar']); $i++) {
             $notaDebetDetail = (new NotaDebetDetail())->processStore($notaDebetHeader, [
                 "invoice_nobukti" => $data['invoice_nobukti'][$i] ?? '',
@@ -542,6 +543,7 @@ class NotaDebetHeader extends MyModel
             $pelunasanPiutang[] = $data['pelunasanpiutang_nobukti'] ?? '';
             $noWarkat[] = $data['nowarkat'] ?? '';
             $bankId[] = $data['bank_id'];
+            $nominal = $nominal + $data['nominallebihbayar'][$i];
         }
 
         (new LogTrail())->processStore([
@@ -601,6 +603,10 @@ class NotaDebetHeader extends MyModel
                 $notaDebetHeader->penerimaan_nobukti = $penerimaanGiroHeader->nobukti;
                 $notaDebetHeader->save();
             }
+            $notaDebetRincian = (new NotaDebetRincian())->processStore($notaDebetHeader, [ 
+                "agen_id" => $data['agen_id'],
+                "nominal" => $nominal,
+            ]);
         } else {
 
             /*STORE JURNAL*/
@@ -679,6 +685,7 @@ class NotaDebetHeader extends MyModel
         $getPreviousCoa = DB::table("notadebetdetail")->from(DB::raw("notadebetdetail with (readuncommitted)"))->select('coalebihbayar')->where('notadebet_id', $notaDebetHeader->id)->first();
 
         $notaDebetDetail = NotaDebetDetail::where('notadebet_id', $notaDebetHeader->id)->lockForUpdate()->delete();
+        NotaDebetRincian::where('notadebet_id', $notaDebetHeader->id)->lockForUpdate()->delete();
 
         $notaDebetDetails = [];
         $coakredit_detail = [];
@@ -692,6 +699,7 @@ class NotaDebetHeader extends MyModel
         if ($tanpaprosesnobukti != 1) {
             $data['cekcoakredit'] = $memoNotaDebetCoa['JURNAL'];
         }
+        $nominal = 0;
         for ($i = 0; $i < count($data['nominallebihbayar']); $i++) {
             $notaDebetDetail = (new NotaDebetDetail())->processStore($notaDebetHeader, [
                 "invoice_nobukti" => $data['invoice_nobukti'][$i] ?? '',
@@ -711,8 +719,15 @@ class NotaDebetHeader extends MyModel
             $pelunasanPiutang[] = $data['pelunasanpiutang_nobukti'] ?? '';
             $noWarkat[] = $data['nowarkat'] ?? '';
             $bankId[] = $data['bank_id'];
+            $nominal = $nominal + $data['nominallebihbayar'][$i];
         }
 
+        if ($data['cekcoakredit'] == $memoNotaDebetCoa['JURNAL']) {
+            $notaDebetRincian = (new NotaDebetRincian())->processStore($notaDebetHeader, [
+                "agen_id" => $data['agen_id'],
+                "nominal" => $nominal,
+            ]);
+        }
         (new LogTrail())->processStore([
             'namatabel' => strtoupper($notaDebetDetail->getTable()),
             'postingdari' => $data['postingdari'] ?? 'EDIT NOTA DEBET DETAIL',

@@ -733,7 +733,7 @@ class PelunasanPiutangHeader extends MyModel
             $memoNotaKreditCoa = json_decode($getNotaKreditCoa->memo, true);
         }
 
-
+        $nominal = 0;
         for ($i = 0; $i < count($data['piutang_id']); $i++) {
             $piutang = PiutangHeader::where('nobukti', $data['piutang_nobukti'][$i])->first();
             $potongan = $data['potongan'][$i] ?? 0;
@@ -791,6 +791,7 @@ class PelunasanPiutangHeader extends MyModel
             $pelunasanNobukti[] = $pelunasanPiutangHeader->nobukti;
             $bankId[] = $pelunasanPiutangHeader->bank_id;
             $coaDebetPengeluaran[] = $memoJurnalPengeluaran['JURNAL'];
+            $nominal = $nominal + $data['bayar'][$i];
         }
 
         if ($data['alatbayar_id'] != $alatbayarGiro->id) {
@@ -910,6 +911,13 @@ class PelunasanPiutangHeader extends MyModel
             $pengeluaranHeader = (new PengeluaranHeader())->processStore($pengeluaranRequest);
 
             $pelunasanPiutangHeader->pengeluaran_nobukti = $pengeluaranHeader->nobukti;
+            // $detailFifo = [
+            //     'nominal' => $nominal,
+            //     'agen_id' => $data['agen_id'],
+            //     'pelunasanpiutang_id' => $pelunasanPiutangHeader->id,
+            //     'pelunasanpiutang_nobukti' => $pelunasanPiutangHeader->nobukti,
+            // ];
+            // (new NotaDebetFifo())->processStore($detailFifo);
         }
         $pelunasanPiutangHeader->save();
 
