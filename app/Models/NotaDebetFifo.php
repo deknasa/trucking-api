@@ -131,7 +131,7 @@ class NotaDebetFifo extends Model
             $table->bigInteger('agen_id')->nullable();
             $table->double('nominal', 15, 2)->nullable();
             $table->double('urut', 15, 2)->nullable();
-            $table->double('urut2', 15, 2)->nullable();
+            $table->double('nominal2', 15, 2)->nullable();
             $table->string('nobuktimasuk', 100)->nullable();
             $table->bigInteger('id')->nullable();
         });
@@ -159,7 +159,7 @@ class NotaDebetFifo extends Model
                 DB::raw(
                     "isnull(sum(i.nominal) over (
             partition by i.agen_id
-            order by i.tglbukri, i.nobukti
+            order by i.tglbukti, i.nobukti
             rows between unbounded preceding and 0 preceding
          ),0) as nominal2"
                 ),
@@ -187,14 +187,14 @@ class NotaDebetFifo extends Model
                 'i.nominal',
                 'i.urut',
                 DB::raw(
-                    "isnull(sum(i.nobukti) over (
+                    "isnull(sum(i.nominal) over (
                     partition by i.agen_id
                     order by i.tglbukti, i.nobukti
                     rows between unbounded preceding and 0 preceding
                  ),0) as nominal2"
                 )
             );
-
+            // dd($querytempmasukrekap ->get());
 
         DB::table($tempmasukrekap)->insertUsing([
             'nobukti',
@@ -222,7 +222,9 @@ class NotaDebetFifo extends Model
             'nominal2'
         )->get();
 
-        // dd($queryloopkeluarrekap);
+        
+        dd(db::table($tempmasukrekap)->get());
+        dd($queryloopkeluarrekap);
         $aqty = 1;
 
         $curut = 0;
@@ -232,20 +234,18 @@ class NotaDebetFifo extends Model
             // dump($aqty);
             // dump($item['fqty2']);
             // dump('AA');
-            while ($aqty <= $item['nominal2']) {
-                // dump($curut);
-                $curut += 1;
-                $datamasuk = DB::table($tempmasukrekap)->select(
-                    'nobukti',
-                    'nominal2'
-                )
-                    ->whereRaw($aqty . "<=nominal2")
-                    ->orderBy('nominal2', 'asc')
-                    ->first();
-
+            $datamasuk = DB::table($tempmasukrekap)->select(
+                'nobukti',
+                'nominal2',
+                'urut',
+            )
+                ->whereRaw($item['nominal2'] . "<=nominal2")
+                ->orderBy('urut', 'asc')
+                ->first();
+            
+            if (isset($datamasuk)) {
                 $selnominal = $datamasuk->nominal2 - $item['nominal2'];
-
-
+                $curut += 1;
                 DB::table($tempalur)->insert([
                     'nobuktikeluar' => $item['nobukti'],
                     'nominalout' => $item['nominal'],
@@ -255,11 +255,12 @@ class NotaDebetFifo extends Model
                     'selisih' => $selnominal,
                     'urut' => $curut,
                 ]);
+            } 
 
-                $aqty += 1;
-            }
+    
         }
 
+dd(db::table($tempalur)->get());
 
         $tempalurrekap = '##Tempalurrekap' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
         Schema::create($tempalurrekap, function ($table) {
@@ -276,7 +277,7 @@ class NotaDebetFifo extends Model
             ->select(
                 'i.nobuktikeluar',
                 'i.nobuktimasuk',
-                DB::raw("count(i.nobuktimasuk) as jumlah"),
+                DB::raw("sum(i.nominaloutberjalan) as jumlah"),
                 DB::raw("max(i.urut) as urut")
             )
             ->groupBy('i.nobuktikeluar', 'i.nobuktimasuk');
@@ -300,7 +301,7 @@ class NotaDebetFifo extends Model
             $table->double('urut', 15, 2)->nullable();
             $table->double('nominal2', 15, 2)->nullable();
             $table->longText('notadebet_nobukti')->nullable();
-            $table->double('notadebet_qty', 15, 2)->nullable();
+            $table->double('notadebet_nominal', 15, 2)->nullable();
             $table->double('notadebet_terpakai', 15, 2)->nullable();
             $table->bigInteger('id')->nullable();
         });
@@ -326,7 +327,7 @@ class NotaDebetFifo extends Model
                 'A.tglbukti',
                 DB::raw($data['agen_id'] . " as agen_id"),
                 'A.nominal',
-                DB::raw("row_number() Over(Order By A.FUrut,B.FUrut) As FUrut"),
+                DB::raw("row_number() Over(Order By A.Urut,B.Urut) As Urut"),
                 'A.nominal2',
                 'B.nobuktimasuk',
                 'B.jumlah as notadebet_nominal',
@@ -336,6 +337,8 @@ class NotaDebetFifo extends Model
 
             ->orderBy('A.urut', 'Asc');
 
+            // dd($querytemphasil2->get());
+
         DB::table($temphasil2)->insertUsing([
             'nobukti',
             'tglbukti',
@@ -344,7 +347,7 @@ class NotaDebetFifo extends Model
             'urut',
             'nominal2',
             'notadebet_nobukti',
-            'notadebet_qty',
+            'notadebet_nominal',
         ], $querytemphasil2);
 
 
@@ -371,6 +374,8 @@ class NotaDebetFifo extends Model
             ->leftjoin(DB::raw($tempkeluar . " as C"), 'A.nobukti', 'C.nobukti')
             ->orderBy('A.urut', 'Asc');
 
+            // dd($querytemphasil->get());
+
         DB::table($temphasil)->insertUsing([
             'nobukti',
             'tglbukti',
@@ -386,35 +391,28 @@ class NotaDebetFifo extends Model
 
 
         // $test = DB::table($temphasil)->orderBy('urut', 'Asc')->get();
+        // dd(DB::table($temphasil)->get());
 
         $datalist = DB::table($temphasil2);
 
-        // dd($datalist->get());
+        dd($datalist->get());
+        
 
         $datadetail = json_decode($datalist->get(), true);
-        $totalharga = 0;
-        $spk = Parameter::from(
-            db::Raw("parameter with (readuncommitted)")
-        )
-            ->where('grp', 'SPK STOK')->where('subgrp', 'SPK STOK')->first();
-
-        $statusApp = Parameter::from(
-            db::Raw("parameter with (readuncommitted)")
-        )
-            ->where('grp', 'STATUS APPROVAL')->where('subgrp', 'STATUS APPROVAL')->where('text', 'NON APPROVAL')->first();
+      
 
         foreach ($datadetail as $item) {
 
             $notadebetFifo = new notadebetFifo();
             $notadebetFifo->pelunasanpiutang_id = $data['pelunasanpiutang_id'] ?? 0;
             $notadebetFifo->pelunasanpiutang_nobukti = $data['pelunasanpiutang_nobukti'] ?? '';
-            $notadebetFifo->stok_id = $data['agen_id'] ?? 0;
+            $notadebetFifo->agen_id = $data['agen_id'] ?? 0;
             $notadebetFifo->urut = $item['urut'] ?? 0;
             $notadebetFifo->nominal = $item['nominal'] ?? 0;
-            $notadebetFifo->penerimaanstokheader_nobukti = $item['notadebet_nobukti'] ?? '';
+            $notadebetFifo->notadebet_nobukti = $item['notadebet_nobukti'] ?? '';
             $notadebetFifo->notadebet_nominal = $item['notadebet_nominal'] ?? 0;
             $notadebetFifo->modifiedby = $data['modifiedby'] ?? '';
-
+            // dd($item['notadebet_nominal']);
             if (!$notadebetFifo->save()) {
                 throw new \Exception("Error Simpan Nota Debet Detail fifo.");
             }
@@ -429,7 +427,7 @@ class NotaDebetFifo extends Model
         }
 
 
-
+ 
         // $pengeluaranstokdetail->save();
         if (!$notadebetrincian->save()) {
             throw new \Exception("Error storing pengeluaran Stok Detail  update fifo. ");

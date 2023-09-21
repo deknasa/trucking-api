@@ -58,15 +58,27 @@ class PenerimaanDetailController extends Controller
 
                 // dd(request()->nobukti);
                 $fetch = PenerimaanHeader::from(DB::raw("penerimaanheader with (readuncommitted)"))->where('nobukti', request()->nobukti)->first();
-                request()->penerimaan_id = $fetch->id;
-                return response()->json([
-                    'data' => $penerimaanDetail->get(request()->penerimaan_id),
-                    'attributes' => [
-                        'totalRows' => $penerimaanDetail->totalRows,
-                        'totalPages' => $penerimaanDetail->totalPages,
-                        'totalNominal' => $penerimaanDetail->totalNominal
-                    ]
-                ]);
+                if (isset($fetch)) {
+                    request()->penerimaan_id = $fetch->id;
+                    return response()->json([
+                        'data' => $penerimaanDetail->get(request()->penerimaan_id),
+                        'attributes' => [
+                            'totalRows' => $penerimaanDetail->totalRows,
+                            'totalPages' => $penerimaanDetail->totalPages,
+                            'totalNominal' => $penerimaanDetail->totalNominal
+                        ]
+                    ]);
+    
+                } else {
+                    return response()->json([
+                        'data' => [],
+                        'attributes' => [
+                            'totalRows' => $penerimaanDetail->totalRows,
+                            'totalPages' => $penerimaanDetail->totalPages,
+                            'totalNominal' => $penerimaanDetail->totalNominal
+                        ]
+                    ]);
+                }
             }
         } else {
             return response()->json([
