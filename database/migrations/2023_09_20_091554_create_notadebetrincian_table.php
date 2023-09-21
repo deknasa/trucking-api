@@ -23,6 +23,7 @@ class CreateNotadebetrincianTable extends Migration
             $table->unsignedBigInteger('agen_id')->nullable();
             $table->date('tglterima')->nullable();
             $table->double('nominal',15,2)->nullable();
+            $table->double('nominalkeluar',15,2)->nullable();
             $table->longText('info')->nullable();            
             $table->string('modifiedby',50)->nullable();
             $table->timestamps();

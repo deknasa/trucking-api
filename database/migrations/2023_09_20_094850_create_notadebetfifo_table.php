@@ -23,6 +23,7 @@ class CreateNotadebetfifoTable extends Migration
             $table->string('pelunasanpiutang_nobukti',50)->nullable();
             $table->unsignedBigInteger('agen_id')->nullable();
             $table->double('nominal',15,2)->nullable();
+            $table->double('notadebet_nominal',15,2)->nullable();
             $table->longText('info')->nullable();            
             $table->string('modifiedby',50)->nullable();
             $table->timestamps();

@@ -26,169 +26,124 @@ class NotaDebetFifo extends Model
 
     public function processStore(array $data): NotaDebetFifo
     {
-       
+
         $tempmasuk = '##tempmasuk' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
         Schema::create($tempmasuk, function ($table) {
-            $table->string('fntrans', 100)->nullable();
-            $table->dateTime('ftgl')->nullable();
-            $table->string('fkstck', 100)->nullable();
-            $table->string('fkgdg', 100)->nullable();
-            $table->double('fqty', 15, 2)->nullable();
-            $table->double('fhargasat', 15, 2)->nullable();
-            $table->bigInteger('furut')->nullable();
+            $table->string('nobukti', 100)->nullable();
+            $table->dateTime('tglbukti')->nullable();
+            $table->string('agen_id', 500)->nullable();
+            $table->double('nominal', 15, 2)->nullable();
+            $table->bigInteger('urut')->nullable();
         });
 
         $tempalur = '##tempalur' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
         Schema::create($tempalur, function ($table) {
-            $table->string('fntranskeluar', 100)->nullable();
-            $table->double('fqtyout', 15, 2)->nullable();
-            $table->double('fqtyoutberjalan', 15, 2)->nullable();
-            $table->string('fntransmasuk', 100)->nullable();
-            $table->double('fqtyinberjalan', 15, 2)->nullable();
-            $table->double('fselisih', 15, 2)->nullable();
-            $table->bigInteger('furut')->nullable();
+            $table->string('nobuktikeluar', 100)->nullable();
+            $table->double('nominalout', 15, 2)->nullable();
+            $table->double('nominaloutberjalan', 15, 2)->nullable();
+            $table->string('nobuktimasuk', 100)->nullable();
+            $table->double('nominalinberjalan', 15, 2)->nullable();
+            $table->double('selisih', 15, 2)->nullable();
+            $table->bigInteger('urut')->nullable();
         });
 
 
-        $querytempmasuk = db::table('notadebetrincian')->from(db::raw("notadebetrincian a with (readuncommitted)"))Penerimaanstokdetail::select(
-            'B.nobukti as nobukti',
-            'B.tglbukti as tglbukti',
-            'D.namastok as fkstck',
-            'C.gudang as fkgdg',
-            db::raw("(penerimaanstokdetail.qty-isnull(penerimaanstokdetail.qtykeluar,0)) as qty"),
-            'penerimaanstokdetail.harga as harga',
-            db::raw("row_number() Over(Order By B.tglbukti ,penerimaanstokdetail.id ) as urut")
-        )
-            ->join('notadebetheader as b with (readuncommitted)', 'b.id', 'a.notadebet_id')
-            ->join('gudang as C', 'C.id', 'B.gudang_id')
-            ->join('stok as D', 'D.id', 'penerimaanstokdetail.stok_id')
-            ->where('B.gudang_id', '=',  $data['gudang_id'])
-            ->where('penerimaanstokdetail.stok_id', '=',  $data['stok_id'])
-            // ->where('penerimaanstokdetail.qtykeluar', '<',  'penerimaanstokdetail.qty')
-            ->whereRaw("isnull(penerimaanstokdetail.qtykeluar,0)<penerimaanstokdetail.qty")
+        $querytempmasuk = db::table('notadebetrincian')->from(db::raw("notadebetrincian a with (readuncommitted)"))
+            ->select(
+                'b.nobukti as nobukti',
+                'b.tglbukti as tglbukti',
+                'b.agen_id',
+                db::raw("(a.nominal-isnull(a.nominalkeluar,0)) as nominal"),
+                db::raw("row_number() Over(Order By b.tglbukti ,a.id ) as urut")
+            )
+            ->join(db::raw("notadebetheader as b with (readuncommitted)"), 'b.id', 'a.notadebet_id')
+            ->where('b.agen_id', '=',  $data['agen_id'])
+            ->whereRaw("isnull(a.nominalkeluar,0)<a.nominal")
             ->orderBy('B.tglbukti', 'Asc')
-            ->orderBy('penerimaanstokdetail.id', 'Asc');
+            ->orderBy('a.id', 'Asc');
 
 
         DB::table($tempmasuk)->insertUsing([
-            'fntrans',
-            'ftgl',
-            'fkstck',
-            'fkgdg',
-            'fqty',
-            'fhargasat',
-            'furut'
+            'nobukti',
+            'tglbukti',
+            'agen_id', 
+            'nominal', 
+            'urut',
         ], $querytempmasuk);
 
-        $querytempmasuk = Penerimaanstokdetail::select(
-            'B.nobukti as nobukti',
-            'B.tglbukti as tglbukti',
-            'D.namastok as fkstck',
-            'C.gudang as fkgdg',
-            db::raw("(penerimaanstokdetail.qty-isnull(penerimaanstokdetail.qtykeluar,0)) as qty"),
-            'penerimaanstokdetail.harga as harga',
-            db::raw("row_number() Over(Order By B.tglbukti ,penerimaanstokdetail.id ) as urut")
-        )
-            ->join('penerimaanstokheader as B', 'B.id', 'penerimaanstokdetail.penerimaanstokheader_id')
-            ->join('gudang as C', 'C.id', 'B.gudangke_id')
-            ->join('stok as D', 'D.id', 'penerimaanstokdetail.stok_id')
-            ->where('B.gudangke_id', '=',  $data['gudang_id'])
-            ->where('penerimaanstokdetail.stok_id', '=',  $data['stok_id'])
-            // ->where('penerimaanstokdetail.qtykeluar', '<',  'penerimaanstokdetail.qty')
-            ->whereRaw("isnull(penerimaanstokdetail.qtykeluar,0)<penerimaanstokdetail.qty")
-            ->orderBy('B.tglbukti', 'Asc')
-            ->orderBy('penerimaanstokdetail.id', 'Asc');
-
-
-
-        DB::table($tempmasuk)->insertUsing([
-            'fntrans',
-            'ftgl',
-            'fkstck',
-            'fkgdg',
-            'fqty',
-            'fhargasat',
-            'furut'
-        ], $querytempmasuk);
+       
 
         $querymsk = DB::table($tempmasuk)
             ->select(
-                DB::raw("sum(fqty) as qty")
+                DB::raw("sum(nominal) as nominal")
             )
             ->first();
 
-        $qtyin = $querymsk->qty ?? 0;
+        $nominalin = $querymsk->nominal ?? 0;
 
-       
-        if ( $data['qty'] > $qtyin) {
+
+        if ($data['nominal'] > $nominalin) {
             // throw new \Exception("QTY " .app(ErrorController::class)->geterror('SMIN')->keterangan);
-            throw ValidationException::withMessages(['qty' => "QTY " .app(ErrorController::class)->geterror('SMIN')->keterangan]);
+            throw ValidationException::withMessages(['nominal' => "Nominal " . app(ErrorController::class)->geterror('SMIN')->keterangan]);
         }
-        
+
 
         $tempkeluar = '##tempkeluar' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
         Schema::create($tempkeluar, function ($table) {
-            $table->string('fntrans', 100)->nullable();
-            $table->dateTime('ftgl')->nullable();
-            $table->string('fkstck', 100)->nullable();
-            $table->string('fkgdg', 100)->nullable();
-            $table->double('fqty', 15, 2)->nullable();
-            $table->double('furut', 15, 2)->nullable();
-            $table->bigInteger('fid')->nullable();
+            $table->string('nobukti', 100)->nullable();
+            $table->dateTime('tglbukti')->nullable();
+            $table->bigInteger('agen_id')->nullable();
+            $table->double('nominal', 15, 2)->nullable();
+            $table->double('urut', 15, 2)->nullable();
+            $table->bigInteger('id')->nullable();
         });
 
 
 
-        $querytempkeluar = PengeluaranStokDetail::select(
-            'b.nobukti as FNtrans',
-            'b.tglbukti as Ftgl',
-            DB::raw("rtrim(ltrim(str(" . $data['stok_id'] . "))) as FKstck"),
-            'b.gudang_id as  FKgdg',
-            'PengeluaranStokDetail.qty as FQty',
-            DB::raw(" row_number() Over(Order By B.tglbukti ,PengeluaranStokDetail.id)  as urut"),
-            'PengeluaranStokDetail.id'
+        $querytempkeluar = db::table('pelunasanpiutangheader')->from(db::raw("pelunasanpiutangheader a with (readuncommitted)"))
+        ->select(
+            'a.nobukti',
+            'a.tglbukti',
+            'a.agen_id',
+            'a.nominallunas as nominal',
+            DB::raw(" row_number() Over(Order By a.tglbukti ,a.id)  as urut"),
+            'a.id'
         )
-            ->join('pengeluaranstokheader as B', 'B.id', 'pengeluaranstokdetail.pengeluaranstokheader_id')
-            ->join('stok as D', 'D.id', 'pengeluaranstokdetail.stok_id')
-            
-            ->where('pengeluaranstokdetail.stok_id', '=',  $data['stok_id'])
-            ->where('pengeluaranstokdetail.nobukti', '=',  $data['nobukti'])
-            ->orderBy('B.tglbukti', 'Asc')
-            ->orderBy('pengeluaranstokdetail.id', 'Asc');
+
+            ->where('a.nobukti', '=',  $data['pelunasanpiutang_nobukti'])
+            ->orderBy('a.tglbukti', 'Asc')
+            ->orderBy('a.id', 'Asc');
 
         DB::table($tempkeluar)->insertUsing([
-            'fntrans',
-            'ftgl',
-            'fkstck',
-            'fkgdg',
-            'fqty',
-            'furut',
-            'fid'
+            'nobukti',
+            'tglbukti',
+            'agen_id',
+            'nominal',
+            'urut',
+            'id'
         ], $querytempkeluar);
 
 
         $tempkeluarrekap = '##Tempkeluarrekap' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
         Schema::create($tempkeluarrekap, function ($table) {
-            $table->string('fntrans', 100)->nullable();
-            $table->dateTime('ftgl')->nullable();
-            $table->string('fkstck', 100)->nullable();
-            $table->string('fkgdg', 100)->nullable();
-            $table->double('fqty', 15, 2)->nullable();
-            $table->double('furut', 15, 2)->nullable();
-            $table->double('fqty2', 15, 2)->nullable();
-            $table->string('fntransmasuk', 100)->nullable();
-            $table->bigInteger('fid')->nullable();
+            $table->string('nobukti', 100)->nullable();
+            $table->dateTime('tglbukti')->nullable();
+            $table->bigInteger('agen_id')->nullable();
+            $table->double('nominal', 15, 2)->nullable();
+            $table->double('urut', 15, 2)->nullable();
+            $table->double('urut2', 15, 2)->nullable();
+            $table->string('nobuktimasuk', 100)->nullable();
+            $table->bigInteger('id')->nullable();
         });
 
         $tempmasukrekap = '##Tempmasukrekap' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
         Schema::create($tempmasukrekap, function ($table) {
-            $table->string('fntrans', 100)->nullable();
-            $table->dateTime('ftgl')->nullable();
-            $table->string('fkstck', 100)->nullable();
-            $table->string('fkgdg', 100)->nullable();
-            $table->double('fqty', 15, 2)->nullable();
-            $table->double('furut', 15, 2)->nullable();
-            $table->double('fqty2', 15, 2)->nullable();
+            $table->string('nobukti', 100)->nullable();
+            $table->dateTime('tglbukti')->nullable();
+            $table->string('agen_id', 100)->nullable();
+            $table->double('nominal', 15, 2)->nullable();
+            $table->double('urut', 15, 2)->nullable();
+            $table->double('nominal2', 15, 2)->nullable();
         });
 
 
@@ -196,31 +151,29 @@ class NotaDebetFifo extends Model
             DB::raw($tempkeluar . " as i")
         )
             ->select(
-                'i.fntrans',
-                'i.ftgl',
-                'i.fkstck',
-                'i.fkgdg',
-                'i.fqty',
-                'i.furut',
+                'i.nobukti',
+                'i.tglbukti',
+                'i.agen_id',
+                'i.nominal',
+                'i.urut',
                 DB::raw(
-                    "isnull(sum(i.fqty) over (
-            partition by i.fkstck
-            order by i.ftgl, i.fntrans
+                    "isnull(sum(i.nominal) over (
+            partition by i.agen_id
+            order by i.tglbukri, i.nobukti
             rows between unbounded preceding and 0 preceding
-         ),0) as fqty2"
+         ),0) as nominal2"
                 ),
-                'i.fid'
+                'i.id'
             );
 
         DB::table($tempkeluarrekap)->insertUsing([
-            'fntrans',
-            'ftgl',
-            'fkstck',
-            'fkgdg',
-            'fqty',
-            'furut',
-            'fqty2',
-            'fid'
+            'nobukti',
+            'tglbukti',
+            'agen_id',
+            'nominal',
+            'urut',
+            'nominal2',
+            'id'
         ], $querytempkeluarrekap);
 
 
@@ -228,48 +181,45 @@ class NotaDebetFifo extends Model
             DB::raw($tempmasuk . " as i")
         )
             ->select(
-                'i.fntrans',
-                'i.ftgl',
-                'i.fkstck',
-                'i.fkgdg',
-                'i.fqty',
-                'i.furut',
+                'i.nobukti',
+                'i.tglbukti',
+                'i.agen_id',
+                'i.nominal',
+                'i.urut',
                 DB::raw(
-                    "isnull(sum(i.fqty) over (
-                    partition by i.fkstck
-                    order by i.ftgl, i.fntrans
+                    "isnull(sum(i.nobukti) over (
+                    partition by i.agen_id
+                    order by i.tglbukti, i.nobukti
                     rows between unbounded preceding and 0 preceding
-                 ),0) as fqty2"
+                 ),0) as nominal2"
                 )
             );
 
 
         DB::table($tempmasukrekap)->insertUsing([
-            'fntrans',
-            'ftgl',
-            'fkstck',
-            'fkgdg',
-            'fqty',
-            'furut',
-            'fqty2'
+            'nobukti',
+            'tglbukti',
+            'agen_id',
+            'nominal',
+            'urut',
+            'nominal2'
         ], $querytempmasukrekap);
 
 
         $tempkeluarupdate = '##tempkeluarupdate' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
         Schema::create($tempkeluarupdate, function ($table) {
-            $table->string('fntransmasuk', 100)->nullable();
-            $table->double('fqty', 15, 2)->nullable();
+            $table->string('nobuktimasuk', 100)->nullable();
+            $table->double('nominal', 15, 2)->nullable();
         });
 
 
         $queryloopkeluarrekap = DB::table($tempkeluarrekap)->select(
-            'fntrans',
-            'ftgl',
-            'fkstck',
-            'fkgdg',
-            'fqty',
-            'furut',
-            'fqty2'
+            'nobukti',
+            'tglbukti',
+            'agen_id',
+            'nominal',
+            'urut',
+            'nominal2'
         )->get();
 
         // dd($queryloopkeluarrekap);
@@ -282,28 +232,28 @@ class NotaDebetFifo extends Model
             // dump($aqty);
             // dump($item['fqty2']);
             // dump('AA');
-            while ($aqty <= $item['fqty2']) {
+            while ($aqty <= $item['nominal2']) {
                 // dump($curut);
                 $curut += 1;
                 $datamasuk = DB::table($tempmasukrekap)->select(
-                    'fntrans',
-                    'fqty2'
+                    'nobukti',
+                    'nominal2'
                 )
-                    ->whereRaw($aqty . "<=fqty2")
-                    ->orderBy('fqty2', 'asc')
+                    ->whereRaw($aqty . "<=nominal2")
+                    ->orderBy('nominal2', 'asc')
                     ->first();
 
-                $selqty = $datamasuk->fqty2 - $item['fqty2'];
+                $selnominal = $datamasuk->nominal2 - $item['nominal2'];
 
 
                 DB::table($tempalur)->insert([
-                    'fntranskeluar' => $item['fntrans'],
-                    'fqtyout' => $item['fqty'],
-                    'fqtyoutberjalan' => $item['fqty2'],
-                    'fntransmasuk' => $datamasuk->fntrans,
-                    'fqtyinberjalan' => $datamasuk->fqty2,
-                    'fselisih' => $selqty,
-                    'furut' => $curut,
+                    'nobuktikeluar' => $item['nobukti'],
+                    'nominalout' => $item['nominal'],
+                    'nominaloutberjalan' => $item['nominal2'],
+                    'nobuktimasuk' => $datamasuk->nobukti,
+                    'nominalinberjalan' => $datamasuk->nominal2,
+                    'selisih' => $selnominal,
+                    'urut' => $curut,
                 ]);
 
                 $aqty += 1;
@@ -313,10 +263,10 @@ class NotaDebetFifo extends Model
 
         $tempalurrekap = '##Tempalurrekap' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
         Schema::create($tempalurrekap, function ($table) {
-            $table->string('fntrans', 100)->nullable();
-            $table->string('fntransmasuk', 100)->nullable();
-            $table->double('fjumlah', 15, 2)->nullable();
-            $table->double('furut', 15, 2)->nullable();
+            $table->string('nobukti', 100)->nullable();
+            $table->string('nobuktimasuk', 100)->nullable();
+            $table->double('jumlah', 15, 2)->nullable();
+            $table->double('urut', 15, 2)->nullable();
         });
 
 
@@ -324,19 +274,19 @@ class NotaDebetFifo extends Model
             DB::raw($tempalur . " as i")
         )
             ->select(
-                'i.fntranskeluar',
-                'i.fntransmasuk',
-                DB::raw("count(i.fntransmasuk) as fjumlah"),
-                DB::raw("max(i.furut) as furut")
+                'i.nobuktikeluar',
+                'i.nobuktimasuk',
+                DB::raw("count(i.nobuktimasuk) as jumlah"),
+                DB::raw("max(i.urut) as urut")
             )
-            ->groupBy('i.fntranskeluar', 'i.fntransmasuk');
+            ->groupBy('i.nobuktikeluar', 'i.nobuktimasuk');
 
 
         DB::table($tempalurrekap)->insertUsing([
-            'fntrans',
-            'fntransmasuk',
-            'fjumlah',
-            'furut'
+            'nobukti',
+            'nobuktimasuk',
+            'jumlah',
+            'urut'
         ], $querytempalurrekap);
 
 
@@ -345,15 +295,13 @@ class NotaDebetFifo extends Model
         Schema::create($temphasil, function ($table) {
             $table->string('nobukti', 100)->nullable();
             $table->dateTime('tglbukti')->nullable();
-            $table->bigInteger('stok_id')->nullable();
-            $table->bigInteger('gudang_id')->nullable();
-            $table->double('qty', 15, 2)->nullable();
+            $table->bigInteger('agen_id')->nullable();
+            $table->double('nominal', 15, 2)->nullable();
             $table->double('urut', 15, 2)->nullable();
-            $table->double('qty2', 15, 2)->nullable();
-            $table->longText('penerimaan_nobukti')->nullable();
-            $table->double('penerimaan_qty', 15, 2)->nullable();
-            $table->double('penerimaan_terpakai', 15, 2)->nullable();
-            $table->double('penerimaan_harga', 15, 2)->nullable();
+            $table->double('nominal2', 15, 2)->nullable();
+            $table->longText('notadebet_nobukti')->nullable();
+            $table->double('notadebet_qty', 15, 2)->nullable();
+            $table->double('notadebet_terpakai', 15, 2)->nullable();
             $table->bigInteger('id')->nullable();
         });
 
@@ -361,14 +309,12 @@ class NotaDebetFifo extends Model
         Schema::create($temphasil2, function ($table) {
             $table->string('nobukti', 100)->nullable();
             $table->dateTime('tglbukti')->nullable();
-            $table->bigInteger('stok_id')->nullable();
-            $table->bigInteger('gudang_id')->nullable();
-            $table->float('qty', 15, 2)->nullable();
+            $table->bigInteger('agen_id')->nullable();
+            $table->float('nominal', 15, 2)->nullable();
             $table->bigInteger('urut')->nullable();
-            $table->float('qty2', 15, 2)->nullable();
-            $table->longText('penerimaan_nobukti')->nullable();
-            $table->float('penerimaan_qty', 15, 2)->nullable();
-            $table->float('penerimaan_harga', 15, 2)->nullable();
+            $table->float('nominal2', 15, 2)->nullable();
+            $table->longText('notadebet_nobukti')->nullable();
+            $table->float('notadebet_nominal', 15, 2)->nullable();
         });
 
 
@@ -376,33 +322,29 @@ class NotaDebetFifo extends Model
             DB::raw($tempkeluarrekap . " as A")
         )
             ->select(
-                'A.fntrans',
-                'A.ftgl',
-                DB::raw($data['stok_id'] . " as stok_id"),
-                DB::raw($data['gudang_id'] . " as gudang_id"),
-                'A.fqty',
+                'A.nobukti',
+                'A.tglbukti',
+                DB::raw($data['agen_id'] . " as agen_id"),
+                'A.nominal',
                 DB::raw("row_number() Over(Order By A.FUrut,B.FUrut) As FUrut"),
-                'A.fqty2',
-                'B.fntransmasuk',
-                'B.fjumlah as fqty',
-                'C.fhargasat as fhargasat',
+                'A.nominal2',
+                'B.nobuktimasuk',
+                'B.jumlah as notadebet_nominal',
             )
-            ->leftjoin(DB::raw($tempalurrekap . " as B"), 'A.fntrans', 'b.fntrans')
-            ->leftjoin(DB::raw($tempmasuk . " as C"), 'B.fntransmasuk', 'c.fntrans')
+            ->leftjoin(DB::raw($tempalurrekap . " as B"), 'A.nobukti', 'b.nobukti')
+            ->leftjoin(DB::raw($tempmasuk . " as C"), 'B.nobuktimasuk', 'c.nobukti')
 
-            ->orderBy('A.furut', 'Asc');
+            ->orderBy('A.urut', 'Asc');
 
         DB::table($temphasil2)->insertUsing([
             'nobukti',
             'tglbukti',
-            'stok_id',
-            'gudang_id',
-            'qty',
+            'agen_id',
+            'nominal',
             'urut',
-            'qty2',
-            'penerimaan_nobukti',
-            'penerimaan_qty',
-            'penerimaan_harga',
+            'nominal2',
+            'notadebet_nobukti',
+            'notadebet_qty',
         ], $querytemphasil2);
 
 
@@ -412,37 +354,33 @@ class NotaDebetFifo extends Model
             ->select(
                 'A.nobukti',
                 'A.tglbukti',
-                DB::raw($data['stok_id'] . " as stok_id"),
-                DB::raw($data['gudang_id'] . " as gudang_id"),
-                'A.qty',
+                DB::raw($data['agen_id'] . " as agen_id"),
+                'A.nominal',
                 'A.urut',
-                'A.qty2',
-                'A.penerimaan_nobukti',
-                DB::raw("isnull(b.fqty,0) as fqty"),
-                DB::raw("isnull(sum(A.penerimaan_qty) over (
-                        partition by A.stok_id,A.gudang_id,A.nobukti
+                'A.nominal2',
+                'A.notadebet_nobukti',
+                DB::raw("isnull(b.nominal,0) as nominal"),
+                DB::raw("isnull(sum(A.notadebet_nominal) over (
+                        partition by A.agen_id,A.nobukti
                         order by a.urut
                         rows between unbounded preceding and 0 preceding
-                     ),0) as fsaldoqty"),
-                DB::raw("isnull(b.fhargasat,0) as fhargasat"),
-                DB::raw("isnull(c.fid,0) as fid"),
+                     ),0) as saldonominal"),
+                DB::raw("isnull(c.id,0) as id"),
             )
-            ->leftjoin(DB::raw($tempmasuk . " as B"), 'A.penerimaan_nobukti', 'B.fntrans')
-            ->leftjoin(DB::raw($tempkeluar . " as C"), 'A.nobukti', 'C.fntrans')
+            ->leftjoin(DB::raw($tempmasuk . " as B"), 'A.notadebet_nobukti', 'B.nobukti')
+            ->leftjoin(DB::raw($tempkeluar . " as C"), 'A.nobukti', 'C.nobukti')
             ->orderBy('A.urut', 'Asc');
 
         DB::table($temphasil)->insertUsing([
             'nobukti',
             'tglbukti',
-            'stok_id',
-            'gudang_id',
-            'qty',
+            'agen_id',
+            'nominal',
             'urut',
-            'qty2',
-            'penerimaan_nobukti',
-            'penerimaan_qty',
-            'penerimaan_terpakai',
-            'penerimaan_harga',
+            'nominal2',
+            'notadebet_nobukti',
+            'notadebet_nominal',
+            'notadebet_terpakai',
             'id',
         ], $querytemphasil);
 
@@ -467,103 +405,36 @@ class NotaDebetFifo extends Model
 
         foreach ($datadetail as $item) {
 
-            $pengeluaranStokDetailFifo = new PengeluaranStokDetailFifo();
-            $pengeluaranStokDetailFifo->pengeluaranstokheader_id = $data['pengeluaranstokheader_id'] ?? 0;
-            $pengeluaranStokDetailFifo->nobukti = $data['nobukti'] ?? '';
-            $pengeluaranStokDetailFifo->stok_id = $data['stok_id'] ?? 0;
-            $pengeluaranStokDetailFifo->gudang_id = $data['gudang_id'] ?? 0;
-            $pengeluaranStokDetailFifo->urut = $item['urut'] ?? 0;
-            $pengeluaranStokDetailFifo->qty = $item['qty'] ?? 0;
-            $pengeluaranStokDetailFifo->penerimaanstokheader_nobukti = $item['penerimaan_nobukti'] ?? '';
-            $pengeluaranStokDetailFifo->penerimaanstok_qty = $item['penerimaan_qty'] ?? 0;
-            $pengeluaranStokDetailFifo->penerimaanstok_harga = $item['penerimaan_harga'] ?? 0;
-            $pengeluaranStokDetailFifo->modifiedby = $data['modifiedby'] ?? '';
-            $total = $item['penerimaan_qty'] * $item['penerimaan_harga'];
-            
-            if (!$pengeluaranStokDetailFifo->save()) {
-                throw new \Exception("Error storing pengeluaran Stok Detail fifo.");
-            }
-            $ksqty=$item['penerimaan_qty'] ?? 0;
-            $ksharga=$item['penerimaan_harga'] ?? 0;
-            $kstotal=$ksqty *$ksharga;
-            $ksnobukti=$data['nobukti'] ?? '';
+            $notadebetFifo = new notadebetFifo();
+            $notadebetFifo->pelunasanpiutang_id = $data['pelunasanpiutang_id'] ?? 0;
+            $notadebetFifo->pelunasanpiutang_nobukti = $data['pelunasanpiutang_nobukti'] ?? '';
+            $notadebetFifo->stok_id = $data['agen_id'] ?? 0;
+            $notadebetFifo->urut = $item['urut'] ?? 0;
+            $notadebetFifo->nominal = $item['nominal'] ?? 0;
+            $notadebetFifo->penerimaanstokheader_nobukti = $item['notadebet_nobukti'] ?? '';
+            $notadebetFifo->notadebet_nominal = $item['notadebet_nominal'] ?? 0;
+            $notadebetFifo->modifiedby = $data['modifiedby'] ?? '';
 
-            $pengeluaranstok_id=db::table("pengeluaranstokheader")->from(db::raw("pengeluaranstokheader as a with (readuncommitted)"))
-            ->select('a.pengeluaranstok_id','a.tglbukti')->where('a.nobukti', $ksnobukti)->first();
-
-            $kspengeluaranstok_id=$pengeluaranstok_id->pengeluaranstok_id ?? 0;
-            $kstglbukti=$pengeluaranstok_id->tglbukti ?? '1900/1/1';
-
-            $urutfifo = db::table("pengeluaranstok")->from(db::raw("pengeluaranstok as a with (readuncommitted)"))
-            ->select('a.urutfifo')->where('a.id', $kspengeluaranstok_id)->first()->urutfifo ?? 0;
-
-
-
-            if ($kspengeluaranstok_id != 6) {
-                $kartuStok = (new KartuStok())->processStore([
-                    "gudang_id" => $data['gudang_id'] ?? 0,
-                    "trado_id" => 0,
-                    "gandengan_id" => 0,
-                    "stok_id" => $data['stok_id'] ?? 0,
-                    "nobukti" =>$data['nobukti'] ?? '',
-                    "tglbukti" => $kstglbukti,
-                    "qtymasuk" => 0,
-                    "nilaimasuk" =>  0,
-                    "qtykeluar" => $item['penerimaan_qty'] ?? 0,
-                    "nilaikeluar" =>$kstotal,
-                    "urutfifo" => $urutfifo,
-                ]);
-
-
+            if (!$notadebetFifo->save()) {
+                throw new \Exception("Error Simpan Nota Debet Detail fifo.");
             }
 
-            if ($data['pengeluaranstok_id'] == $spk->text) {
-                $getCoaDebet = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))
-                    ->where('grp', 'JURNAL PEMAKAIAN STOK')->where('subgrp', 'DEBET')->first();
-                $memo = json_decode($getCoaDebet->memo, true);
-                $getCoaKredit = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))
-                    ->where('grp', 'JURNAL PEMAKAIAN STOK')->where('subgrp', 'KREDIT')->first();
-                $memokredit = json_decode($getCoaKredit->memo, true);
 
-                
-            }
-            
-
-            $totalharga += ($item['penerimaan_harga'] * $item['penerimaan_qty']);
-
-
-            $penerimaanstokdetail  = PenerimaanStokDetail::lockForUpdate()->where("stok_id", $item['stok_id'])
-                ->where("nobukti", $item['penerimaan_nobukti'])
-                ->firstorFail();
-            $penerimaanstokdetail->qtykeluar += $item['penerimaan_qty'] ?? 0;
-            $penerimaanstokdetail->save();
-        }
-        
-
-
-        $pengeluaranstokdetail  = PengeluaranStokDetail::lockForUpdate()->where("stok_id", $item['stok_id'])
-            ->where("nobukti", $data['nobukti'])
-            ->firstorFail();
-      
-        $hrgsat = $totalharga / $data['qty'];
-    
-        if ($data['pengeluaranstok_id']==2) {
-            $totdetailharga=$data['detail_harga'];
-            $selisih=$hrgsat-$totdetailharga;
    
-            $hrgsat=$data['detail_harga'];
-            $totalharga=$hrgsat*$data['qty'];
-        } else  {
-            $selisih=0;
+            $notadebetrincian  = NotaDebetRincian::lockForUpdate()->where("agen_id", $item['agen_id'])
+                ->where("nobukti", $item['notadebet_nobukti'])
+                ->firstorFail();
+            $notadebetrincian->nominalkeluar += $item['notadebet_nominal'] ?? 0;
+            $notadebetrincian->save();
         }
-        $pengeluaranstokdetail->harga =   $hrgsat;
-        $pengeluaranstokdetail->total =  $totalharga;
-        $pengeluaranstokdetail->selisihhargafifo =  $selisih;
+
+
+
         // $pengeluaranstokdetail->save();
-        if (!$pengeluaranstokdetail->save()) {
+        if (!$notadebetrincian->save()) {
             throw new \Exception("Error storing pengeluaran Stok Detail  update fifo. ");
         }
 
-        return $pengeluaranStokDetailFifo;
+        return $notadebetFifo;
     }
 }
