@@ -674,6 +674,10 @@ class PelunasanPiutangHeader extends MyModel
                 break;
             }
         }
+        $nominallunas=0;
+        for ($i = 0; $i < count($data['piutang_id']); $i++) {
+            $nominallunas=$nominallunas+$data['bayar'][$i];
+        }
 
         $pelunasanPiutangHeader = new PelunasanPiutangHeader();
         $pelunasanPiutangHeader->tglbukti = date('Y-m-d', strtotime($data['tglbukti']));
@@ -689,6 +693,7 @@ class PelunasanPiutangHeader extends MyModel
         $pelunasanPiutangHeader->agen_id = $data['agen_id'];
         $pelunasanPiutangHeader->nowarkat = $data['nowarkat'] ?? '-';
         $pelunasanPiutangHeader->statusformat = $format->id;
+        $pelunasanPiutangHeader->nominallunas = $nominallunas;
         $pelunasanPiutangHeader->modifiedby = auth('api')->user()->name;
         $pelunasanPiutangHeader->info = html_entity_decode(request()->info);
 
@@ -734,6 +739,7 @@ class PelunasanPiutangHeader extends MyModel
         }
 
         $nominal = 0;
+      
         for ($i = 0; $i < count($data['piutang_id']); $i++) {
             $piutang = PiutangHeader::where('nobukti', $data['piutang_nobukti'][$i])->first();
             $potongan = $data['potongan'][$i] ?? 0;
@@ -757,6 +763,8 @@ class PelunasanPiutangHeader extends MyModel
                 $coaPotongan[] = $memoNotaKreditCoa['JURNAL'] ?? '';
                 $coaKreditNotaKredit[] = $getCoa->coa; //$memoNotaKreditCoa['JURNAL'];
             }
+
+         
 
             $pelunasanPiutangDetail = (new PelunasanPiutangDetail())->processStore($pelunasanPiutangHeader, [
                 'nominal' => $data['bayar'][$i],
@@ -915,13 +923,13 @@ class PelunasanPiutangHeader extends MyModel
 
             
   
-            // $detailFifo = [
-            //     'nominal' => $nominal,
-            //     'agen_id' => $data['agen_id'],
-            //     'pelunasanpiutang_id' => $pelunasanPiutangHeader->id,
-            //     'pelunasanpiutang_nobukti' => $pelunasanPiutangHeader->nobukti,
-            // ];
-            // (new NotaDebetFifo())->processStore($detailFifo);
+            $detailFifo = [
+                'nominal' => $nominal,
+                'agen_id' => $data['agen_id'],
+                'pelunasanpiutang_id' => $pelunasanPiutangHeader->id,
+                'pelunasanpiutang_nobukti' => $pelunasanPiutangHeader->nobukti,
+            ];
+            (new NotaDebetFifo())->processStore($detailFifo);
         }
         $pelunasanPiutangHeader->save();
 
