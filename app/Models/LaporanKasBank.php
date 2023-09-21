@@ -49,6 +49,16 @@ class LaporanKasBank extends MyModel
             $table->double('saldo', 15, 2)->nullable();
         });
 
+        $coabank = db::table("bank")->from(db::raw("bank a with (readuncommitted)"))
+            ->select(
+                'a.coa'
+            )->where('a.id', $bank_id)
+            ->first()->coa ?? '';
+
+
+
+
+
 
 
         $querysaldoawalpenerimaan = DB::table("penerimaanheader")->from(
@@ -97,6 +107,26 @@ class LaporanKasBank extends MyModel
             ->where('a.bankdari_id', '=', $bank_id)
             ->first();
 
+        $bankpengembaliankepusat = db::table('bank')->from(db::raw("bank a with (readuncommitted)"))
+            ->select('a.id')
+            ->where('a.coa', $coabank)
+            ->where('a.id', $bank_id)
+            ->first();
+        if (isset($bankpengembaliankepusat)) {
+            $querysaldoawalpengembaliankepusat = DB::table("pengeluaranheader")->from(
+                DB::raw("pengeluaranheader as a with (readuncommitted)")
+            )
+                ->select(
+                    DB::raw("sum(b.nominal) as nominal")
+                )
+                ->join(DB::raw("pengeluarandetail as b with (readuncommitted)"), 'a.nobukti', 'b.nobukti')
+                ->whereRaw("a.tglbukti>=cast(ltrim(rtrim(str(year('" . $dariformat . "'))))+'/'+ltrim(rtrim(str(month('" . $dariformat . "'))))+'/1' as datetime) ")
+                ->where('a.tglbukti', '<', $dari)
+                ->where('a.bank_id', '=', $bankpengembaliankepusat->id)
+                ->first();
+        }
+        $saldoawalpengembaliankepusat = $querysaldoawalpengembaliankepusat->nominal ?? 0;
+
 
 
         $querysaldoawal = DB::table("saldoawalbank")->from(
@@ -112,7 +142,7 @@ class LaporanKasBank extends MyModel
             ->first();
 
 
-        $saldoawal =  ($querysaldoawal->nominal + $querysaldoawalpenerimaan->nominal + $querysaldoawalpenerimaanpindahbuku->nominal) - ($querysaldoawalpengeluaran->nominal + $querysaldoawalpengeluaranpindahbuku->nominal);
+        $saldoawal =  ($querysaldoawal->nominal + $querysaldoawalpenerimaan->nominal + $querysaldoawalpenerimaanpindahbuku->nominal) - ($querysaldoawalpengeluaran->nominal + $querysaldoawalpengeluaranpindahbuku->nominal + $saldoawalpengembaliankepusat);
 
         // data coba coba
 
@@ -221,6 +251,38 @@ class LaporanKasBank extends MyModel
             'kredit',
             'saldo',
         ], $querypengeluaran);
+        if (isset($bankpengembaliankepusat)) {
+            $querypengeluaran = DB::table("pengeluaranheader")->from(
+                DB::raw("pengeluaranheader as a with (readuncommitted)")
+            )
+                ->select(
+                    DB::raw("4 as urut"),
+                    'b.coadebet as coa',
+                    'a.tglbukti',
+                    'a.nobukti',
+                    'b.keterangan',
+                    DB::raw("0 as debet"),
+                    'b.nominal as kredit',
+                    DB::raw("0 as saldo"),
+                )
+                ->join(DB::raw("pengeluarandetail as b with (readuncommitted)"), 'a.nobukti', 'b.nobukti')
+                ->where('a.tglbukti', '>=', $dari)
+                ->where('a.tglbukti', '<=', $sampai)
+                ->where('a.bank_id', '=', $bankpengembaliankepusat->id)
+                ->orderBy('a.tglbukti', 'Asc')
+                ->orderBy('a.nobukti', 'Asc');
+
+            DB::table($tempsaldo)->insertUsing([
+                'urut',
+                'coa',
+                'tglbukti',
+                'nobukti',
+                'keterangan',
+                'debet',
+                'kredit',
+                'saldo',
+            ], $querypengeluaran);
+        }
 
         $querypengeluaranpindahbuku = DB::table("pindahbuku")->from(
             DB::raw("pindahbuku as a with (readuncommitted)")
