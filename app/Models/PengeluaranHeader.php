@@ -616,7 +616,7 @@ class PengeluaranHeader extends MyModel
         if (isset($hutangBayar)) {
             $data = [
                 'kondisi' => true,
-                'keterangan' => 'Pelunasan Piutang '.$hutangBayar->nobukti,
+                'keterangan' => 'Pelunasan Piutang ' . $hutangBayar->nobukti,
                 'kodeerror' => 'TDT'
             ];
             goto selesai;
@@ -765,7 +765,7 @@ class PengeluaranHeader extends MyModel
                 'tgljatuhtempo' =>  date('Y-m-d', strtotime($data['tgljatuhtempo'][$i])),
                 'nominal' => $data['nominal_detail'][$i],
                 'coadebet' =>  $data['coadebet'][$i],
-                'coakredit' => ($data['coakredit'])?$data['coakredit'][$i]: $querysubgrppengeluaran->coa,
+                'coakredit' => ($data['coakredit']) ? $data['coakredit'][$i] : $querysubgrppengeluaran->coa,
                 'keterangan' => $data['keterangan_detail'][$i],
                 'noinvoice' => $data['noinvoice'][$i] ?? '',
                 'bank' => $data['bank_detail'][$i] ?? '',
@@ -773,7 +773,7 @@ class PengeluaranHeader extends MyModel
             ]);
             $pengeluaranDetails[] = $pengeluaranDetail->toArray();
             $coadebet_detail[] =  $data['coadebet'][$i];
-            $coakredit_detail[] = ($data['coakredit'])?$data['coakredit'][$i]: $querysubgrppengeluaran->coa;
+            $coakredit_detail[] = ($data['coakredit']) ? $data['coakredit'][$i] : $querysubgrppengeluaran->coa;
             $nominal_detail[] = $data['nominal_detail'][$i];
             $keterangan_detail[] = $data['keterangan_detail'][$i];
         }
@@ -891,7 +891,17 @@ class PengeluaranHeader extends MyModel
         $coakredit_detail = [];
         $nominal_detail = [];
         $keterangan_detail = [];
+
         for ($i = 0; $i < count($data['nominal_detail']); $i++) {
+
+            $coakredit = $data['coakredit'][$i] ?? '';
+
+            if ($coakredit == '') {
+                $coaKredit = $querysubgrppengeluaran->coa;
+            } else {
+                $coaKredit = $coakredit;
+            }
+
             $pengeluaranDetail = (new PengeluaranDetail())->processStore($pengeluaranHeader, [
                 'pengeluaran_id' => $pengeluaranHeader->id,
                 'nobukti' => $pengeluaranHeader->nobukti,
@@ -899,7 +909,7 @@ class PengeluaranHeader extends MyModel
                 'tgljatuhtempo' =>  date('Y-m-d', strtotime($data['tgljatuhtempo'][$i])),
                 'nominal' => $data['nominal_detail'][$i],
                 'coadebet' =>  $data['coadebet'][$i],
-                'coakredit' => ($data['coakredit'])?$data['coakredit'][$i] : $querysubgrppengeluaran->coa,
+                'coakredit' =>  $coaKredit, //( $coakredit) ?  $coakredit : $querysubgrppengeluaran->coa,
                 'keterangan' => $data['keterangan_detail'][$i],
                 'noinvoice' => $data['noinvoice'][$i] ?? '',
                 'bank' => $data['bank_detail'][$i] ?? '',
@@ -907,7 +917,7 @@ class PengeluaranHeader extends MyModel
             ]);
             $pengeluaranDetails[] = $pengeluaranDetail->toArray();
             $coadebet_detail[] =  $data['coadebet'][$i];
-            $coakredit_detail[] = ($data['coakredit'])?$data['coakredit'][$i] : $querysubgrppengeluaran->coa;
+            $coakredit_detail[] = $coaKredit; //($data['coakredit']) ? $data['coakredit'][$i] : $querysubgrppengeluaran->coa;
             $nominal_detail[] = $data['nominal_detail'][$i];
             $keterangan_detail[] = $data['keterangan_detail'][$i];
         }
@@ -941,9 +951,29 @@ class PengeluaranHeader extends MyModel
 
         // $jurnalUmumHeader = (new JurnalUmumHeader())->processStore($jurnalRequest);
         $getJurnal = JurnalUmumHeader::from(DB::raw("jurnalumumheader with (readuncommitted)"))->where('nobukti', $nobuktiOld)->first();
-        $newJurnal = new JurnalUmumHeader();
-        $newJurnal = $newJurnal->find($getJurnal->id);
-        (new JurnalUmumHeader())->processUpdate($newJurnal, $jurnalRequest);
+        if (isset($getJurnal)) {
+            $newJurnal = new JurnalUmumHeader();
+            $newJurnal = $newJurnal->find($getJurnal->id);
+            (new JurnalUmumHeader())->processUpdate($newJurnal, $jurnalRequest);
+        } else {
+            $jurnalRequest = [
+                'tanpaprosesnobukti' => 1,
+                'nobukti' => $pengeluaranHeader->nobukti,
+                'tglbukti' => date('Y-m-d', strtotime($data['tglbukti'])),
+                'postingdari' => $data['postingdari'] ?? "ENTRY PENGELUARAN",
+                'statusapproval' => $statusApproval->id,
+                'userapproval' => "",
+                'tglapproval' => "",
+                'modifiedby' => auth('api')->user()->name,
+                'statusformat' => "0",
+                'coakredit_detail' => $coakredit_detail,
+                'coadebet_detail' => $coadebet_detail,
+                'nominal_detail' => $nominal_detail,
+                'keterangan_detail' => $keterangan_detail
+            ];
+
+            $jurnalUmumHeader = (new JurnalUmumHeader())->processStore($jurnalRequest);
+        }
         return $pengeluaranHeader;
     }
 

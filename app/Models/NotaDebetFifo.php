@@ -50,7 +50,7 @@ class NotaDebetFifo extends Model
         });
 
 
-        $querytempmasuk = Penerimaanstokdetail::select(
+        $querytempmasuk = db::table('notadebetrincian')->from(db::raw("notadebetrincian a with (readuncommitted)"))Penerimaanstokdetail::select(
             'B.nobukti as nobukti',
             'B.tglbukti as tglbukti',
             'D.namastok as fkstck',
@@ -59,7 +59,7 @@ class NotaDebetFifo extends Model
             'penerimaanstokdetail.harga as harga',
             db::raw("row_number() Over(Order By B.tglbukti ,penerimaanstokdetail.id ) as urut")
         )
-            ->join('penerimaanstokheader as B', 'B.id', 'penerimaanstokdetail.penerimaanstokheader_id')
+            ->join('notadebetheader as b with (readuncommitted)', 'b.id', 'a.notadebet_id')
             ->join('gudang as C', 'C.id', 'B.gudang_id')
             ->join('stok as D', 'D.id', 'penerimaanstokdetail.stok_id')
             ->where('B.gudang_id', '=',  $data['gudang_id'])
