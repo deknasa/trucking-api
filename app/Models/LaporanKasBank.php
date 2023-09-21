@@ -110,7 +110,7 @@ class LaporanKasBank extends MyModel
         $bankpengembaliankepusat = db::table('bank')->from(db::raw("bank a with (readuncommitted)"))
             ->select('a.id')
             ->where('a.coa', $coabank)
-            ->where('a.id', $bank_id)
+            ->whereRaw("a.id<>" . $bank_id)
             ->first();
         if (isset($bankpengembaliankepusat)) {
             $querysaldoawalpengembaliankepusat = DB::table("pengeluaranheader")->from(
@@ -256,7 +256,7 @@ class LaporanKasBank extends MyModel
                 DB::raw("pengeluaranheader as a with (readuncommitted)")
             )
                 ->select(
-                    DB::raw("4 as urut"),
+                    DB::raw("5 as urut"),
                     'b.coadebet as coa',
                     'a.tglbukti',
                     'a.nobukti',
@@ -272,6 +272,7 @@ class LaporanKasBank extends MyModel
                 ->orderBy('a.tglbukti', 'Asc')
                 ->orderBy('a.nobukti', 'Asc');
 
+            // dd($bankpengembaliankepusat->id);
             DB::table($tempsaldo)->insertUsing([
                 'urut',
                 'coa',
@@ -288,7 +289,7 @@ class LaporanKasBank extends MyModel
             DB::raw("pindahbuku as a with (readuncommitted)")
         )
             ->select(
-                DB::raw("5 as urut"),
+                DB::raw("6 as urut"),
                 'a.coadebet as coa',
                 'a.tglbukti',
                 'a.nobukti',
