@@ -911,6 +911,10 @@ class PelunasanPiutangHeader extends MyModel
             $pengeluaranHeader = (new PengeluaranHeader())->processStore($pengeluaranRequest);
 
             $pelunasanPiutangHeader->pengeluaran_nobukti = $pengeluaranHeader->nobukti;
+
+
+            
+  
             // $detailFifo = [
             //     'nominal' => $nominal,
             //     'agen_id' => $data['agen_id'],
