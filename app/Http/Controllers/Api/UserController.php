@@ -125,9 +125,6 @@ class UserController extends Controller
 
             DB::commit();
 
-            if (isset($request->limit)) {
-                $user->page = ceil($user->position / $request->limit);
-            }
 
             return response()->json([
                 'status' => true,
@@ -178,10 +175,6 @@ class UserController extends Controller
             }
 
             DB::commit();
-
-            if (isset($request->limit)) {
-                $user->page = ceil($user->position / $request->limit);
-            }
 
             return response()->json([
                 'status' => true,
