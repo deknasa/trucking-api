@@ -80,6 +80,7 @@ class PelunasanPiutangHeaderController extends Controller
      */
     public function store(StorePelunasanPiutangHeaderRequest $request): JsonResponse
     {
+
         DB::beginTransaction();
 
         try {
@@ -151,6 +152,7 @@ class PelunasanPiutangHeaderController extends Controller
                 'bank_id' => $request->bank_id,
                 'alatbayar_id' => $request->alatbayar_id,
                 'agen_id' => $request->agen_id,
+                'statuspelunasan' => $request->statuspelunasan,
                 'agen' => $request->agen,
                 'nowarkat' => $request->nowarkat,
                 'piutang_id' => $request->piutang_id,
