@@ -12,6 +12,7 @@ use App\Rules\ValidasiDetail;
 use App\Rules\ValidasiNoWarkatPelunasanPiutang;
 use App\Rules\ValidasiStatusNotaDebet;
 use App\Rules\ValidasiStatusNotaKredit;
+use App\Rules\ValidasiNominalSaldo;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
@@ -101,7 +102,8 @@ class StorePelunasanPiutangHeaderRequest extends FormRequest
                 'required',
                 new ValidasiDetail($jumlahdetail),
                 new ValidasiStatusNotaDebet(),
-                new ValidasiStatusNotaKredit()
+                new ValidasiStatusNotaKredit(),
+                new ValidasiNominalSaldo()
             ],
             'alatbayar' => ['required', Rule::in($dataKodeAlatBayar)]
         ];
