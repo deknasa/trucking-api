@@ -923,13 +923,13 @@ class PelunasanPiutangHeader extends MyModel
 
             
   
-            $detailFifo = [
-                'nominal' => $nominal,
-                'agen_id' => $data['agen_id'],
-                'pelunasanpiutang_id' => $pelunasanPiutangHeader->id,
-                'pelunasanpiutang_nobukti' => $pelunasanPiutangHeader->nobukti,
-            ];
-            (new NotaDebetFifo())->processStore($detailFifo);
+            // $detailFifo = [
+            //     'nominal' => $nominal,
+            //     'agen_id' => $data['agen_id'],
+            //     'pelunasanpiutang_id' => $pelunasanPiutangHeader->id,
+            //     'pelunasanpiutang_nobukti' => $pelunasanPiutangHeader->nobukti,
+            // ];
+            // (new NotaDebetFifo())->processStore($detailFifo);
         }
         $pelunasanPiutangHeader->save();
 
