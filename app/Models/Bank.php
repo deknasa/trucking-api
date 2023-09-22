@@ -174,9 +174,9 @@ class Bank extends MyModel
             goto selesai;
         }
 
-        $hutangBayar = DB::table('hutangbayarheader')
+        $hutangBayar = DB::table('pelunasanhutangheader')
             ->from(
-                DB::raw("hutangbayarheader as a with (readuncommitted)")
+                DB::raw("pelunasanhutangheader as a with (readuncommitted)")
             )
             ->select(
                 'a.bank_id'

@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 
 class PelunasanHutangDetail extends MyModel
 {
@@ -49,38 +50,137 @@ class PelunasanHutangDetail extends MyModel
         $query = DB::table($this->table)->from(DB::raw("$this->table with (readuncommitted)"));
 
         if (isset(request()->forReport) && request()->forReport) {
-            $query->select(
-                'header.nobukti',
-                'header.tglbukti',
-                'header.keterangan as keteranganheader',
-                'header.pengeluaran_nobukti',
-                'header.coa',
-                'bank.namabank as bank',
-                'supplier.namasupplier as supplier',
-                'pelanggan.namapelanggan as pelanggan',
-                $this->table . '.nominal',
-                $this->table . '.keterangan',
-                'header.tglcair',
-                $this->table . '.potongan',
-                $this->table . '.hutang_nobukti',
-                'alatbayar.namaalatbayar as alatbayar_id',
-
+            $temphutangbayar = '##temhutangbayar' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+            Schema::create($temphutangbayar, function ($table) {
+                $table->string('hutang_nobukti', 1000)->nullable();
+                $table->string('spb_nobukti', 1000)->nullable();
+            });
+            $querydata = DB::table('pelunasanhutangdetail')->from(
+                DB::raw("pelunasanhutangdetail a with (readuncommitted)")
             )
-                ->leftJoin(DB::raw("PelunasanHutangheader as header with (readuncommitted)"), 'header.id', $this->table . '.PelunasanHutang_id')
-                ->leftJoin(DB::raw("bank with (readuncommitted)"), 'header.bank_id', 'bank.id')
-                ->leftJoin(DB::raw("supplier with (readuncommitted)"), 'header.supplier_id', 'supplier.id')
-                ->leftJoin(DB::raw("pelanggan with (readuncommitted)"), 'header.pelanggan_id', 'pelanggan.id')
-                ->leftJoin(DB::raw("alatbayar with (readuncommitted)"), 'header.alatbayar_id', 'alatbayar.id');
+                ->select(
+                    'a.hutang_nobukti',
+                    db::raw("(case when isnull(d.nobukti,'')<>'' then d.nobukti 
+                                   when isnull(e.nobukti,'')<>'' then e.nobukti 
+                                   else '' end) as spb_nobukti
+                    ")
+                )
+                ->leftjoin(DB::raw("penerimaanstokheader as d with (readuncommitted)"), 'a.hutang_nobukti', 'd.hutang_nobukti')
+                ->leftjoin(DB::raw("hutangextraheader as e with (readuncommitted)"), 'a.hutang_nobukti', 'e.hutang_nobukti')
+                ->where('PelunasanHutang_id', '=', request()->PelunasanHutang_id);
 
-            $query->where($this->table . '.PelunasanHutang_id', '=', request()->PelunasanHutang_id);
+
+            DB::table($temphutangbayar)->insertUsing([
+                'hutang_nobukti',
+                'spb_nobukti',
+            ], $querydata);
+
+            $temphutang = '##temhutang' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+            Schema::create($temphutang, function ($table) {
+                $table->string('hutang_nobukti', 1000)->nullable();
+                $table->date('tgljatuhtempo')->nullable();
+                $table->float('nominal', 15, 2)->nullable();
+                $table->string('spb_nobukti', 1000)->nullable();
+            });
+
+            $queryrekap = DB::table('hutangdetail')->from(
+                DB::raw("hutangdetail a with (readuncommitted)")
+            )
+                ->select(
+                    'b.nobukti as hutang_nobukti',
+                    db::raw("max(isnull(a.tgljatuhtempo,'1900/1/1')) as tgljatuhtempo"),
+                    db::raw("sum(isnull(a.total,0)) as nominal"),
+                    db::raw("max(isnull(c.spb_nobukti,'')) as spb_nobukti")
+                )
+                ->join(DB::raw("hutangheader as b with (readuncommitted)"), 'a.hutang_id', 'b.id')
+                ->join(DB::raw($temphutangbayar . " c "), 'b.nobukti', 'c.hutang_nobukti')
+                ->groupby('b.nobukti');
+
+            DB::table($temphutang)->insertUsing([
+                'hutang_nobukti',
+                'tgljatuhtempo',
+                'nominal',
+                'spb_nobukti',
+            ], $queryrekap);
+
+            
+            $temppelunasanhutang = '##temppelunasanhutang' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+            Schema::create($temppelunasanhutang, function ($table) {
+                $table->string('hutang_nobukti', 1000)->nullable();
+                $table->float('nominal')->nullable();
+            });
+
+            $querydatapelunasan = DB::table('pelunasanhutangdetail')->from(
+                DB::raw("pelunasanhutangdetail a with (readuncommitted)")
+            )
+                ->select(
+                    'a.hutang_nobukti',
+                    DB::raw("sum(isnull(a.nominal,0)+isnull(a.potongan,0)) as nominal"),
+                )
+                ->join(DB::raw($temphutang . " as b "), 'a.hutang_nobukti', 'b.hutang_nobukti')
+                ->where('a.PelunasanHutang_id', '<=', request()->PelunasanHutang_id)
+                ->groupby('a.hutang_nobukti');
+
+            DB::table($temppelunasanhutang)->insertUsing([
+                'hutang_nobukti',
+                'nominal',
+            ], $querydatapelunasan);
+
+
+            $temprekap = '##temrekap' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+            Schema::create($temprekap, function ($table) {
+                $table->string('hutang_nobukti', 1000)->nullable();
+                $table->float('nominalhutang')->nullable();
+                $table->float('nominalpelunasan')->nullable();
+                $table->float('nominalsisa')->nullable();
+            });
+
+            $queryrekap = DB::table($temphutang)->from(
+                DB::raw($temphutang . " a ")
+            )
+                ->select(
+                    'a.hutang_nobukti',
+                    DB::raw("isnull(a.nominal,0) as nominalhutang"),
+                    DB::raw("isnull(b.nominal,0) as nominalpelunasan"),
+                    DB::raw("(isnull(a.nominal,0)-isnull(b.nominal,0)) as nominalsisa"),
+                )
+                ->leftjoin(DB::raw($temppelunasanhutang . " as b "), 'a.hutang_nobukti', 'b.hutang_nobukti');
+
+
+            DB::table($temprekap)->insertUsing([
+                'hutang_nobukti',
+                'nominalhutang',
+                'nominalpelunasan',
+                'nominalsisa',
+            ], $queryrekap);
+
+           
+            $query->select(
+                $this->table . '.nominal as nominaLbayar',
+                $this->table . '.keterangan',
+                $this->table . '.hutang_nobukti',
+                DB::raw("isnull(b.spb_nobukti,'') as spb_nobukti"),
+                DB::raw("isnull(B.nominal,0) as nominalhutang"),
+                DB::raw("isnull(" . $this->table . ".potongan,0) as diskon"),
+                DB::raw("(case when isnull(" . $this->table . ".potongan,0)=0 then '' else 'POTONGAN HUTANG' END)  as keterangandiskon"),
+                DB::raw("isnull(c.nominalsisa,0) as sisahutang"),
+                DB::raw("(case when year(isnull(b.tgljatuhtempo,'1900/1/1'))=1900 then null else isnull(b.tgljatuhtempo,'1900/1/1') end)  as tgljatuhtempo"),
+            )
+                ->leftJoin(DB::raw($temphutang . " as b"), $this->table . '.hutang_nobukti', 'b.hutang_nobukti')
+                ->leftjoin(DB::raw($temprekap . " as c "), $this->table . '.hutang_nobukti', 'c.hutang_nobukti')
+                ->where($this->table . '.PelunasanHutang_id', '=', request()->PelunasanHutang_id);
         } else {
             $query->select(
                 $this->table . '.nobukti',
                 $this->table . '.nominal',
                 $this->table . '.keterangan',
-                $this->table . '.potongan',
-                $this->table . '.hutang_nobukti'
-            );
+                DB::raw("isnull($this->table.potongan,0) as potongan"),
+                $this->table . '.hutang_nobukti',
+                db::raw("cast((format(hutangheader.tglbukti,'yyyy/MM')+'/1') as date) as tgldariheaderhutangheader"),
+                db::raw("cast(cast(format((cast((format(hutangheader.tglbukti,'yyyy/MM')+'/1') as datetime)+32),'yyyy/MM')+'/01' as datetime)-1 as date) as tglsampaiheaderhutangheader"), 
+            )
+            ->leftJoin(DB::raw("hutangheader with (readuncommitted)"), 'pelunasanhutangdetail.hutang_nobukti', '=', 'hutangheader.nobukti');
+           
 
             $this->sort($query);
             $query->where($this->table . '.PelunasanHutang_id', '=', request()->PelunasanHutang_id);
@@ -155,7 +255,7 @@ class PelunasanHutangDetail extends MyModel
 
 
         if (!$PelunasanHutangDetail->save()) {
-            throw new \Exception("Error storing Pengeluaran Detail.");
+            throw new \Exception("Error storing pelunasan hutang Detail.");
         }
 
         return $PelunasanHutangDetail;

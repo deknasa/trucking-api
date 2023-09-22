@@ -27,10 +27,10 @@ class ExistHutangBayarDetail implements Rule
      */
     public function passes($attribute, $value)
     {
-        $hutangbayardetail = DB::table("hutangbayardetail")->from(DB::raw("hutangbayardetail with (readuncommitted)"))
+        $pelunasanHutangDetail = DB::table("pelunasanhutangdetail")->from(DB::raw("pelunasanhutangdetail with (readuncommitted)"))
         ->where('id', $value)
         ->first();
-    if ($hutangbayardetail == null) {
+    if ($pelunasanHutangDetail == null) {
         return false;
     } else {
         return true;

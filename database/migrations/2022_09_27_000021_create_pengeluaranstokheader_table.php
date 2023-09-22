@@ -63,7 +63,7 @@ class CreatePengeluaranstokheaderTable extends Migration
             $table->foreign('kerusakan_id', 'pengeluaranstokheader_kerusakan_kerusakan_id_foreign')->references('id')->on('kerusakan');  
             $table->foreign('servicein_nobukti', 'pengeluaranstokheader_servicein_servicein_nobukti_foreign')->references('nobukti')->on('serviceinheader');  
             $table->foreign('penerimaan_nobukti', 'pengeluaranstokheader_penerimaanheader_penerimaan_nobukti_foreign')->references('nobukti')->on('penerimaanheader');
-            $table->foreign('hutangbayar_nobukti', 'pengeluaranstokheader_hutangbayarheader_hutangbayar_nobukti_foreign')->references('nobukti')->on('hutangbayarheader');
+            $table->foreign('hutangbayar_nobukti', 'pengeluaranstokheader_pelunasanhutangheader_hutangbayar_nobukti_foreign')->references('nobukti')->on('pelunasanhutangheader');
 
             $schemaManager = Schema::getConnection()->getDoctrineSchemaManager();
             $indexesFound  = $schemaManager->listTableIndexes('pengeluaranstokheader');            
@@ -133,7 +133,7 @@ class CreatePengeluaranstokheaderTable extends Migration
         DB::statement("ALTER TABLE pengeluaranstokheader NOCHECK CONSTRAINT pengeluaranstokheader_kerusakan_kerusakan_id_foreign");
         DB::statement("ALTER TABLE pengeluaranstokheader NOCHECK CONSTRAINT pengeluaranstokheader_servicein_servicein_nobukti_foreign");
         DB::statement("ALTER TABLE pengeluaranstokheader NOCHECK CONSTRAINT pengeluaranstokheader_penerimaanheader_penerimaan_nobukti_foreign");
-        DB::statement("ALTER TABLE pengeluaranstokheader NOCHECK CONSTRAINT pengeluaranstokheader_hutangbayarheader_hutangbayar_nobukti_foreign");
+        DB::statement("ALTER TABLE pengeluaranstokheader NOCHECK CONSTRAINT pengeluaranstokheader_pelunasanhutangheader_hutangbayar_nobukti_foreign");
     }
 
     /**
