@@ -365,10 +365,21 @@ class PengeluaranStokDetail extends MyModel
         // $stokpersediaangudang->save();
         return true;
     }
-    public function checkTempat($stokId, $persediaan, $persediaanId)
+    public function checkTempat($stokId, $persediaan, $persediaanId, $qty)
     {
-        $result = StokPersediaan::lockForUpdate()->where("stok_id", $stokId)->where("$persediaan", $persediaanId)->first();
-        return (!$result) ? false : $result;
+        // $result = StokPersediaan::lockForUpdate()->where("stok_id", $stokId)->where("$persediaan", $persediaanId)->first();
+        $stok = db::table('kartustok')->from(db::raw("kartustok a with (readuncommitted)"))
+        ->select(
+            db::raw("sum(isnull(qtymasuk,0)-isnull(qtykeluar,0)) as qty")
+        )
+        ->where("stok_id", $stokId)->where("$persediaan", $persediaanId)->first()
+        ->qty ?? 0;
+
+        $qty = $qty + $stok;
+        if ($qty <= 0) {
+            return false;
+        }
+        return true;
     }
 
     public function vulkanStokMinus($stok_id, $vulkan)
@@ -471,15 +482,14 @@ class PengeluaranStokDetail extends MyModel
 
     public function persediaanDariReturn($stokId, $persediaan, $persediaanId, $qty)
     {
-        $stokpersediaangudang = $this->checkTempat($stokId, $persediaan, $persediaanId); //stok persediaan 
-        if (!$stokpersediaangudang) {
-            return false;
-        }
-        $stokpersediaan = StokPersediaan::lockForUpdate()->find($stokpersediaangudang->id);
-        $result = $stokpersediaan->qty + $qty;
-        $stokpersediaan->qty = $result;
-        $stokpersediaan->save();
-        return $stokpersediaan;
+        $stokpersediaangudang = $this->checkTempat($stokId, $persediaan, $persediaanId, $qty); //stok persediaan 
+        return $stokpersediaangudang;
+        // dd($stokpersediaangudang);
+        // $stokpersediaan = StokPersediaan::lockForUpdate()->find($stokpersediaangudang->id);
+        // $result = $stokpersediaan->qty + $qty;
+        // $stokpersediaan->qty = $result;
+        // $stokpersediaan->save();
+        // return $stokpersediaan;
     }
     public function persediaanKeReturn($stokId, $persediaan, $persediaanId, $qty)
     {
