@@ -45,19 +45,19 @@ class Supplier extends MyModel
             goto selesai;
         }
 
-        $hutangBayar = DB::table('hutangbayarheader')
+        $pelunasanHutang = DB::table('pelunasanhutangheader')
             ->from(
-                DB::raw("hutangbayarheader as a with (readuncommitted)")
+                DB::raw("pelunasanhutangheader as a with (readuncommitted)")
             )
             ->select(
                 'a.supplier_id'
             )
             ->where('a.supplier_id', '=', $id)
             ->first();
-        if (isset($hutangBayar)) {
+        if (isset($pelunasanHutang)) {
             $data = [
                 'kondisi' => true,
-                'keterangan' => 'Hutang Bayar',
+                'keterangan' => 'Pelunasan Hutang',
             ];
             goto selesai;
         }

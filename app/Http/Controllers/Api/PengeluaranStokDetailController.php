@@ -21,7 +21,8 @@ use App\Models\Stok;
 
 use App\Http\Requests\StorePengeluaranStokDetailRequest;
 use App\Http\Requests\UpdatePengeluaranStokDetailRequest;
-
+use App\Models\PelunasanHutangDetail;
+use App\Models\PelunasanHutangHeader;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
@@ -51,24 +52,24 @@ class PengeluaranStokDetailController extends Controller
 
     public function hutangbayar(): JsonResponse
     {
-        $hutangbayarDetail = new HutangBayarDetail();
+        $PelunasanHutangDetail = new PelunasanHutangDetail();
         if (request()->nobukti != 'false' && request()->nobukti != null) {
-            $fetch = HutangBayarHeader::from(DB::raw("hutangbayarheader with (readuncommitted)"))->where('nobukti', request()->nobukti)->first();
-            request()->hutangbayar_id = $fetch->id;
+            $fetch = PelunasanHutangHeader::from(DB::raw("pelunasanhutangheader with (readuncommitted)"))->where('nobukti', request()->nobukti)->first();
+            request()->PelunasanHutang_id = $fetch->id;
             return response()->json([
-                'data' => $hutangbayarDetail->get(request()->hutangbayar_id),
+                'data' => $PelunasanHutangDetail->get(request()->PelunasanHutang_id),
                 'attributes' => [
-                    'totalRows' => $hutangbayarDetail->totalRows,
-                    'totalPages' => $hutangbayarDetail->totalPages,
-                    'totalNominal' => $hutangbayarDetail->totalNominal
+                    'totalRows' => $PelunasanHutangDetail->totalRows,
+                    'totalPages' => $PelunasanHutangDetail->totalPages,
+                    'totalNominal' => $PelunasanHutangDetail->totalNominal
                 ]
             ]);
         } else {
             return response()->json([
                 'data' => [],
                 'attributes' => [
-                    'totalRows' => $hutangbayarDetail->totalRows,
-                    'totalPages' => $hutangbayarDetail->totalPages,
+                    'totalRows' => $PelunasanHutangDetail->totalRows,
+                    'totalPages' => $PelunasanHutangDetail->totalPages,
                     'totalNominal' => 0
                 ]
             ]);
@@ -78,7 +79,7 @@ class PengeluaranStokDetailController extends Controller
     {
         $pengeluaranDetail = new PengeluaranDetail();
         if (request()->nobukti != 'false' && request()->nobukti != null) {
-            $HutangBayar = HutangBayarHeader::from(DB::raw("hutangbayarheader with (readuncommitted)"))->where('nobukti', request()->nobukti)->first();
+            $HutangBayar = PelunasanHutangHeader::from(DB::raw("pelunasanhutangheader with (readuncommitted)"))->where('nobukti', request()->nobukti)->first();
 
             $fetch = PengeluaranHeader::from(DB::raw("pengeluaranheader with (readuncommitted)"))->where('nobukti', $HutangBayar->pengeluaran_nobukti)->first();
             if (isset($fetch)) {
@@ -130,7 +131,7 @@ class PengeluaranStokDetailController extends Controller
                     ]
                 ]);
             } elseif (request()->statuspotong == 220) { // potong hutangbayar
-                $hutangBayar = HutangBayarHeader::from(DB::raw("hutangbayarheader with (readuncommitted)"))->where('nobukti', request()->nobukti)->first();
+                $hutangBayar = PelunasanHutangHeader::from(DB::raw("pelunasanhutangheader with (readuncommitted)"))->where('nobukti', request()->nobukti)->first();
                 $pengeluaranHeader = PengeluaranHeader::from(DB::raw("pengeluaranheader with (readuncommitted)"))->where('nobukti', $hutangBayar->pengeluaran_nobukti)->first();
                 if (isset($pengeluaranHeader)) {
                     $nobukti = $pengeluaranHeader->nobukti ?? '';

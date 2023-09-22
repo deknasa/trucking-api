@@ -209,26 +209,26 @@ class UpdateInvoiceHeaderRequest extends FormRequest
     
     public function attributes()
     {
-        // $attributes = [
-        //     'tglbukti' => 'Tanggal Bukti',
-        //     'tglterima' => 'Tanggal Terima',
-        //     'jenisorder' => 'Jenis Order'
-        // ];
-
-        // return $attributes;
-
-        $attributes = [];
-        $relatedRequests = [
-            StoreHutangBayarDetailRequest::class
+        $attributes = [
+            'tglbukti' => 'Tanggal Bukti',
+            'tglterima' => 'Tanggal Terima',
+            'jenisorder' => 'Jenis Order'
         ];
 
-        foreach ($relatedRequests as $relatedRequest) {
-            $attributes = array_merge(
-                $attributes,
-                (new $relatedRequest)->attributes()
-            );
-        }
         return $attributes;
+
+        // $attributes = [];
+        // $relatedRequests = [
+        //     UpdateInvoiceDetailRequest::class
+        // ];
+
+        // foreach ($relatedRequests as $relatedRequest) {
+        //     $attributes = array_merge(
+        //         $attributes,
+        //         (new $relatedRequest)->attributes()
+        //     );
+        // }
+        // return $attributes;
     }
     public function messages()
     {

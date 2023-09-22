@@ -47,7 +47,7 @@ class PengeluaranStokHeader extends MyModel
             ->leftJoin('parameter as statusedit', 'pengeluaranstokheader.statusapprovaledit', 'statusedit.id')
             ->leftJoin('penerimaanstokheader as penerimaan', 'pengeluaranstokheader.penerimaanstok_nobukti', 'penerimaan.nobukti')
             ->leftJoin('penerimaanheader', 'pengeluaranstokheader.penerimaan_nobukti', 'penerimaanheader.nobukti')
-            ->leftJoin('hutangbayarheader', 'pengeluaranstokheader.hutangbayar_nobukti', 'hutangbayarheader.nobukti')
+            ->leftJoin('pelunasanhutangheader', 'pengeluaranstokheader.hutangbayar_nobukti', 'pelunasanhutangheader.nobukti')
             ->leftJoin('pengeluaranstokheader as pengeluaran', 'pengeluaranstokheader.pengeluaranstok_nobukti', 'pengeluaran.nobukti')
             ->leftJoin('serviceinheader', 'pengeluaranstokheader.servicein_nobukti', 'serviceinheader.nobukti')
             ->leftJoin('supir', 'pengeluaranstokheader.supir_id', 'supir.id');
@@ -355,8 +355,8 @@ class PengeluaranStokHeader extends MyModel
             db::raw("cast(cast(format((cast((format(penerimaan.tglbukti,'yyyy/MM')+'/1') as datetime)+32),'yyyy/MM')+'/01' as datetime)-1 as date) as tglsampaiheaderpenerimaanstok"),
             db::raw("cast((format(penerimaanheader.tglbukti,'yyyy/MM')+'/1') as date) as tgldariheaderpenerimaanheader"),
             db::raw("cast(cast(format((cast((format(penerimaanheader.tglbukti,'yyyy/MM')+'/1') as datetime)+32),'yyyy/MM')+'/01' as datetime)-1 as date) as tglsampaiheaderpenerimaanheader"),
-            db::raw("cast((format(hutangbayarheader.tglbukti,'yyyy/MM')+'/1') as date) as tgldariheaderhutangbayarheader"),
-            db::raw("cast(cast(format((cast((format(hutangbayarheader.tglbukti,'yyyy/MM')+'/1') as datetime)+32),'yyyy/MM')+'/01' as datetime)-1 as date) as tglsampaiheaderhutangbayarheader"),
+            db::raw("cast((format(pelunasanhutangheader.tglbukti,'yyyy/MM')+'/1') as date) as tgldariheaderhutangbayarheader"),
+            db::raw("cast(cast(format((cast((format(pelunasanhutangheader.tglbukti,'yyyy/MM')+'/1') as datetime)+32),'yyyy/MM')+'/01' as datetime)-1 as date) as tglsampaiheaderhutangbayarheader"),
             db::raw("cast((format(pengeluaran.tglbukti,'yyyy/MM')+'/1') as date) as tgldariheaderpengeluaran"),
             db::raw("cast(cast(format((cast((format(pengeluaran.tglbukti,'yyyy/MM')+'/1') as datetime)+32),'yyyy/MM')+'/01' as datetime)-1 as date) as tglsampaiheaderpengeluaran"),
             db::raw("cast((format(serviceinheader.tglbukti,'yyyy/MM')+'/1') as date) as tgldariheaderserviceinheader"),
@@ -381,7 +381,7 @@ class PengeluaranStokHeader extends MyModel
             ->leftJoin('parameter as statusedit', 'pengeluaranstokheader.statusapprovaledit', 'statusedit.id')
             ->leftJoin('penerimaanstokheader as penerimaan', 'pengeluaranstokheader.penerimaanstok_nobukti', 'penerimaan.nobukti')
             ->leftJoin('penerimaanheader', 'pengeluaranstokheader.penerimaan_nobukti', 'penerimaanheader.nobukti')
-            ->leftJoin('hutangbayarheader', 'pengeluaranstokheader.hutangbayar_nobukti', 'hutangbayarheader.nobukti')
+            ->leftJoin('pelunasanhutangheader', 'pengeluaranstokheader.hutangbayar_nobukti', 'pelunasanhutangheader.nobukti')
             ->leftJoin('pengeluaranstokheader as pengeluaran', 'pengeluaranstokheader.pengeluaranstok_nobukti', 'pengeluaran.nobukti')
             ->leftJoin('serviceinheader', 'pengeluaranstokheader.servicein_nobukti', 'serviceinheader.nobukti')
             ->leftJoin('supir', 'pengeluaranstokheader.supir_id', 'supir.id');
@@ -461,7 +461,7 @@ class PengeluaranStokHeader extends MyModel
             ->select(
                 'a.nobukti'
             )
-            ->join(DB::raw("hutangbayarheader b with (readuncommitted)"), 'a.hutangbayar_nobukti', 'b.nobukti')
+            ->join(DB::raw("pelunasanhutangheader b with (readuncommitted)"), 'a.hutangbayar_nobukti', 'b.nobukti')
             ->join(DB::raw("jurnalumumpusatheader c with (readuncommitted)"), 'b.pengeluaran_nobukti', 'c.nobukti')
             ->where('a.nobukti', '=', $data->nobukti)
             ->first();
@@ -842,7 +842,7 @@ class PengeluaranStokHeader extends MyModel
                 ];
                 // return response([$hutangHeader],422);
 
-                $hutangBayarHeader = (new HutangBayarHeader())->processStore($hutangBayarRequest);
+                $hutangBayarHeader = (new PelunasanHutangHeader())->processStore($hutangBayarRequest);
                 $pengeluaranStokHeader->hutangbayar_nobukti = $hutangBayarHeader->nobukti;
                 $pengeluaranStokHeader->save();
 
@@ -1368,8 +1368,8 @@ class PengeluaranStokHeader extends MyModel
                     'keterangan' => [$keterangan_detail[0]],
                 ];
                 // return response([$hutangHeader],422);
-                $hutangbayar = HutangBayarHeader::where('nobukti', $pengeluaranStokHeader->hutangbayar_nobukti)->lockForUpdate()->first();
-                $hutangBayarHeader = (new HutangBayarHeader())->processUpdate($hutangbayar, $hutangBayarRequest);
+                $hutangbayar = PelunasanHutangHeader::where('nobukti', $pengeluaranStokHeader->hutangbayar_nobukti)->lockForUpdate()->first();
+                $hutangBayarHeader = (new PelunasanHutangHeader())->processUpdate($hutangbayar, $hutangBayarRequest);
 
                 for ($i = 0; $i <= 1; $i++) {
                     if ($i == 0) {
@@ -1541,8 +1541,8 @@ class PengeluaranStokHeader extends MyModel
                 (new JurnalUmumHeader())->processDestroy($jurnalUmumHeader->id);
             }
         } else if ($statuspotongretur == $potongHutang->id) {
-            $hutangbayar = HutangBayarHeader::where('nobukti', $pengeluaranStokHeader->hutangbayar_nobukti)->lockForUpdate()->first();
-            (new HutangBayarHeader())->processDestroy($hutangbayar->id);
+            $hutangbayar = PelunasanHutangHeader::where('nobukti', $pengeluaranStokHeader->hutangbayar_nobukti)->lockForUpdate()->first();
+            (new PelunasanHutangHeader())->processDestroy($hutangbayar->id, 'DELETE PENGELUARAN STOK RETUR');
             $jurnalUmumHeader = JurnalUmumHeader::where('nobukti', $pengeluaranStokHeader->nobukti)->lockForUpdate()->first();
             if ($jurnalUmumHeader) {
                 (new JurnalUmumHeader())->processDestroy($jurnalUmumHeader->id);

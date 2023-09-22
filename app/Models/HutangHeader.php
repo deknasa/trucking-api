@@ -34,8 +34,8 @@ class HutangHeader extends MyModel
             $table->double('nominal', 15, 2)->nullable();
         });
 
-        $query = DB::table('hutangbayardetail')->from(
-            DB::raw("hutangbayardetail as a with (readuncommitted)")
+        $query = DB::table('pelunasanhutangdetail')->from(
+            DB::raw("pelunasanhutangdetail as a with (readuncommitted)")
         )
             ->select(
                 'a.hutang_nobukti',
@@ -138,8 +138,8 @@ class HutangHeader extends MyModel
             $table->double('nominal', 15, 2)->nullable();
         });
 
-        $tes = DB::table('hutangbayardetail')->from(
-            DB::raw("hutangbayardetail as a with (readuncommitted)")
+        $tes = DB::table('pelunasanhutangdetail')->from(
+            DB::raw("pelunasanhutangdetail as a with (readuncommitted)")
         )
             ->select(
                 'a.hutang_nobukti',
@@ -330,9 +330,9 @@ class HutangHeader extends MyModel
 
     public function cekvalidasiaksi($nobukti)
     {
-        $hutangBayar = DB::table('hutangbayardetail')
+        $hutangBayar = DB::table('pelunasanhutangdetail')
             ->from(
-                DB::raw("hutangbayardetail as a with (readuncommitted)")
+                DB::raw("pelunasanhutangdetail as a with (readuncommitted)")
             )
             ->select(
                 'a.hutang_nobukti'
@@ -445,8 +445,8 @@ class HutangHeader extends MyModel
         $fetch = DB::table('hutangheader')->from(
             DB::raw("hutangheader with (readuncommitted)")
         )
-            ->select(DB::raw("hutangheader.nobukti,sum(hutangbayardetail.nominal) as terbayar, (SELECT (hutangheader.total - coalesce(SUM(hutangbayardetail.nominal),0) - coalesce(SUM(hutangbayardetail.potongan),0)) FROM hutangbayardetail WHERE hutangbayardetail.hutang_nobukti= hutangheader.nobukti) AS sisa"))
-            ->leftJoin(DB::raw("hutangbayardetail with (readuncommitted)"), 'hutangbayardetail.hutang_nobukti', 'hutangheader.nobukti')
+            ->select(DB::raw("hutangheader.nobukti,sum(pelunasanhutangdetail.nominal) as terbayar, (SELECT (hutangheader.total - coalesce(SUM(pelunasanhutangdetail.nominal),0) - coalesce(SUM(pelunasanhutangdetail.potongan),0)) FROM pelunasanhutangdetail WHERE pelunasanhutangdetail.hutang_nobukti= hutangheader.nobukti) AS sisa"))
+            ->leftJoin(DB::raw("pelunasanhutangdetail with (readuncommitted)"), 'pelunasanhutangdetail.hutang_nobukti', 'hutangheader.nobukti')
             ->whereRaw("hutangheader.supplier_id = $id")
             ->groupBy('hutangheader.nobukti', 'hutangheader.total');
         // ->get();

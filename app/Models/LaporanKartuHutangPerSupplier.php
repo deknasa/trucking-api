@@ -89,14 +89,14 @@ class LaporanKartuHutangPerSupplier extends MyModel
             $table->double('nominal');
         });
 
-        $select_Temphutangbyr = DB::table('hutangbayarheader')->from(DB::raw("hutangbayarheader as A with (readuncommitted)"))
+        $select_Temphutangbyr = DB::table('pelunasanhutangheader')->from(DB::raw("pelunasanhutangheader as A with (readuncommitted)"))
             ->select([
                 DB::raw('MAX(A.tglbukti) as tglbukti'),
                 'A.nobukti',
                 'B.hutang_nobukti',
                 DB::raw('SUM(B.nominal) as nominal')
             ])
-            ->join(DB::raw("hutangbayardetail as B with (readuncommitted)"), 'A.nobukti', 'B.nobukti')
+            ->join(DB::raw("pelunasanhutangdetail as B with (readuncommitted)"), 'A.nobukti', 'B.nobukti')
             ->join(DB::raw($Temphutang . " AS C with (readuncommitted)"), 'B.hutang_nobukti', 'C.nobukti')
             ->whereRaw("isnull(a.pengeluaran_nobukti,'')<>''")
             ->groupBy('A.nobukti', 'B.hutang_nobukti');
@@ -120,14 +120,14 @@ class LaporanKartuHutangPerSupplier extends MyModel
             $table->double('nominal');
         });
 
-        $select_Temphutangbyr_saldo = DB::table('hutangbayarheader')->from(DB::raw("hutangbayarheader as A with (readuncommitted)"))
+        $select_Temphutangbyr_saldo = DB::table('pelunasanhutangheader')->from(DB::raw("pelunasanhutangheader as A with (readuncommitted)"))
             ->select([
                 DB::raw('MAX(A.tglbukti) as tglbukti'),
                 'A.nobukti',
                 'B.hutang_nobukti',
                 DB::raw('SUM(B.nominal) as nominal')
             ])
-            ->join(DB::raw("hutangbayardetail as B with (readuncommitted)"), 'A.nobukti', 'B.nobukti')
+            ->join(DB::raw("pelunasanhutangdetail as B with (readuncommitted)"), 'A.nobukti', 'B.nobukti')
             ->join(DB::raw($Temphutang . " AS C with (readuncommitted)"), 'B.hutang_nobukti', 'C.nobukti')
             ->groupBy('A.nobukti', 'B.hutang_nobukti');
 
@@ -149,7 +149,7 @@ class LaporanKartuHutangPerSupplier extends MyModel
             $table->double('nominal');
         });
 
-        $select_Temphutangbyrretur = DB::table('hutangbayarheader')->from(DB::raw("hutangbayarheader as A with (readuncommitted)"))
+        $select_Temphutangbyrretur = DB::table('pelunasanhutangheader')->from(DB::raw("pelunasanhutangheader as A with (readuncommitted)"))
             ->select([
                 DB::raw('MAX(A.tglbukti) as tglbukti'),
                 'A.nobukti',
@@ -157,7 +157,7 @@ class LaporanKartuHutangPerSupplier extends MyModel
                 DB::raw("max(d.nobukti) as pengeluaranstok_nobukti"),
                 DB::raw('SUM(B.nominal) as nominal')
             ])
-            ->join(DB::raw("hutangbayardetail as B with (readuncommitted)"), 'A.nobukti', 'B.nobukti')
+            ->join(DB::raw("pelunasanhutangdetail as B with (readuncommitted)"), 'A.nobukti', 'B.nobukti')
             ->join(DB::raw($Temphutang . " AS C with (readuncommitted)"), 'B.hutang_nobukti', 'C.nobukti')
             ->join(DB::raw("pengeluaranstokheader as d with (readuncommitted)"), 'A.nobukti', 'd.hutangbayar_nobukti')
             ->whereRaw("isnull(a.pengeluaran_nobukti,'')=''")

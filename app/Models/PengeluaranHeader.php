@@ -426,19 +426,19 @@ class PengeluaranHeader extends MyModel
             ];
             goto selesai;
         }
-        $hutangBayar = DB::table('hutangbayarheader')
+        $pelunasanhutangheader = DB::table('pelunasanhutangheader')
             ->from(
-                DB::raw("hutangbayarheader as a with (readuncommitted)")
+                DB::raw("pelunasanhutangheader as a with (readuncommitted)")
             )
             ->select(
                 'a.pengeluaran_nobukti'
             )
             ->where('a.pengeluaran_nobukti', '=', $nobukti)
             ->first();
-        if (isset($hutangBayar)) {
+        if (isset($pelunasanhutangheader)) {
             $data = [
                 'kondisi' => true,
-                'keterangan' => 'Pembayaran Hutang',
+                'keterangan' => 'Pelunasan Hutang',
                 'kodeerror' => 'TDT'
             ];
             goto selesai;
@@ -497,16 +497,16 @@ class PengeluaranHeader extends MyModel
             goto selesai;
         }
 
-        $hutangbayarheader = DB::table('hutangbayarheader')
+        $pelunasanHutangHeader = DB::table('pelunasanhutangheader')
             ->from(
-                DB::raw("hutangbayarheader as a with (readuncommitted)")
+                DB::raw("pelunasanhutangheader as a with (readuncommitted)")
             )
             ->select(
                 'a.pengeluaran_nobukti'
             )
             ->where('a.pengeluaran_nobukti', '=', $nobukti)
             ->first();
-        if (isset($hutangbayarheader)) {
+        if (isset($pelunasanHutangHeader)) {
             $data = [
                 'kondisi' => true,
                 'keterangan' => 'Hutang bayar header',

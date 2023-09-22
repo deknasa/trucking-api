@@ -27,9 +27,9 @@ class HutangExtraHeader extends MyModel
 
     public function cekvalidasiaksi($nobukti)
     {
-        $hutangBayar = DB::table('hutangbayardetail')
+        $hutangBayar = DB::table('pelunasanhutangdetail')
             ->from(
-                DB::raw("hutangbayardetail as a with (readuncommitted)")
+                DB::raw("pelunasanhutangdetail as a with (readuncommitted)")
             )
             ->select(
                 'a.hutang_nobukti'
@@ -39,7 +39,7 @@ class HutangExtraHeader extends MyModel
         if (isset($hutangBayar)) {
             $data = [
                 'kondisi' => true,
-                'keterangan' => 'HUTANG BAYAR',
+                'keterangan' => 'Pelunasan Hutang',
                 'kodeerror' => 'SATL'
             ];
             goto selesai;

@@ -85,8 +85,8 @@ class LaporanKartuHutangPrediksi extends MyModel
             'nobukti',
         ], $querylistbukti);
 
-        $querylistbukti = DB::table('hutangbayarheader')->from(
-            DB::raw("hutangbayarheader a with (readuncommitted)")
+        $querylistbukti = DB::table('pelunasanhutangheader')->from(
+            DB::raw("pelunasanhutangheader a with (readuncommitted)")
         )
             ->select(
                 'a.pengeluaran_nobukti as nobukti',
@@ -213,8 +213,8 @@ class LaporanKartuHutangPrediksi extends MyModel
         ], $querytemplist);
 
         // 5
-        $querytemplist = DB::table('hutangbayarheader')
-            ->from(DB::raw("hutangbayarheader as d with (readuncommitted)"))
+        $querytemplist = DB::table('pelunasanhutangheader')
+            ->from(DB::raw("pelunasanhutangheader as d with (readuncommitted)"))
             ->select(
                 'd.nobukti',
                 DB::raw("max(j.tglbukti) as tglbukti"),
@@ -365,8 +365,8 @@ class LaporanKartuHutangPrediksi extends MyModel
         ], $querytemplist);
 
         // 10
-        $querytemplist = DB::table('hutangbayarheader')
-            ->from(DB::raw("hutangbayarheader as d with (readuncommitted)"))
+        $querytemplist = DB::table('pelunasanhutangheader')
+            ->from(DB::raw("pelunasanhutangheader as d with (readuncommitted)"))
             ->select(
                 'j.nobukti',
                 'j.tglbukti',
