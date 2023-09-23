@@ -41,6 +41,7 @@ class StoreKaryawanRequest extends FormRequest
 
         $rules = [
             'namakaryawan' => ['required','unique:karyawan'],
+            'jabatan' => ['required'],
             'statusaktif' => ['required', Rule::in($status)],
             'statusstaff' => ['required', Rule::in($statusstaff)]
         ];
