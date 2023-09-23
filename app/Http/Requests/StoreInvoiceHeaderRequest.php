@@ -188,6 +188,7 @@ class StoreInvoiceHeaderRequest extends FormRequest
     {
         $attributes = [
             'tglbukti' => 'Tanggal Bukti',
+            'agen' => 'customer',
             'jenisorder' => 'Jenis Order',
             'statuspilihaninvoice' => 'pilihan invoice',
         ];

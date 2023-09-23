@@ -212,7 +212,8 @@ class UpdateInvoiceHeaderRequest extends FormRequest
         $attributes = [
             'tglbukti' => 'Tanggal Bukti',
             'tglterima' => 'Tanggal Terima',
-            'jenisorder' => 'Jenis Order'
+            'jenisorder' => 'Jenis Order',
+            'agen' => 'Customer'
         ];
 
         return $attributes;

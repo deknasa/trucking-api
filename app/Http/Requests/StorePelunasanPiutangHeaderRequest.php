@@ -131,6 +131,7 @@ class StorePelunasanPiutangHeaderRequest extends FormRequest
         $attributes = [
             'tglbukti' => 'Tanggal Bukti',
             'alatbayar' => 'alat bayar',
+            'agen' => 'customer',
             'bayar.*' => 'Nominal Bayar',
             'keterangan.*' => 'keterangan'
         ];
