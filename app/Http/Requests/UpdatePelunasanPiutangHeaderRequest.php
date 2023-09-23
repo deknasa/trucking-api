@@ -130,6 +130,7 @@ class UpdatePelunasanPiutangHeaderRequest extends FormRequest
         $attributes = [
             'tglbukti' => 'Tanggal Bukti',
             'alatbayar' => 'alat bayar',
+            'agen' => 'Customer',
             'bayar.*' => 'Nominal Bayar',
             'keterangan.*' => 'keterangan'
         ];

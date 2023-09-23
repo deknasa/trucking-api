@@ -212,7 +212,7 @@ class StoreNotaDebetHeaderRequest extends FormRequest
         $attributes = [
             'tglbukti' => 'Tanggal',
             'tgllunas' => 'Tanggal Lunas',
-            'agen' => 'Agen',
+            'agen' => 'Customer',
             'nominal_detail.*' => 'Nominal',
             'keterangan_detail.*' => 'Keterangan',
         ];

@@ -116,6 +116,7 @@ class StoreInvoiceExtraHeaderRequest extends FormRequest
     public function attributes()
     {
         $attributes = [
+            'agen' => 'customer',
             'tglbukti' => 'Tanggal Bukti',
             'nominal_detail.*' => 'Harga',
             'keterangan_detail.*' => 'Keterangan',

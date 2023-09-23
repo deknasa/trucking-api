@@ -71,6 +71,7 @@ class UpdatePenerimaanGiroHeaderRequest extends FormRequest
             'tglbukti' => 'Tanggal Bukti',
             'diterimadari' => 'Diterima Dari',
             'tgllunas' => 'Tanggal Lunas',
+            'agen' => 'customer',
             'tgljatuhtempo.*' => 'Tanggal jatuh tempo',
             'keterangan_detail.*' => 'Keterangan',
             'bank.*' => 'bank',

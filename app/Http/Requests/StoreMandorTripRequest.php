@@ -153,33 +153,35 @@ class StoreMandorTripRequest extends FormRequest
             ];
         }
 
-        $validasiUpah = (new UpahSupirRincian())->cekValidasiInputTripUpah(request()->statuscontainer_id, request()->jenisorder_id, request()->upah_id);
-        $getUpah = DB::table("upahsupir")->from(DB::raw("upahsupir with (readuncommitted)"))->select('zonadari_id', 'zonasampai_id')->where('id', request()->upah_id)->first();
-
-        $dari_id = $this->dari_id;
         $rulesDari_id = [];
-        if ($dari_id != null) {
-            $rulesDari_id = [
-                'dari_id' => ['required', 'numeric', 'min:1', new ExistKota(), (request()->statusupahzona == $getUpahZona->id) ? new ValidasiKotaZonaTrip($getUpah->zonadari_id) : Rule::in($validasiUpah->kotadari_id)]
-            ];
-        } else if ($dari_id == null && $this->dari != '') {
-            $rulesDari_id = [
-                'dari_id' => ['required', 'numeric', 'min:1', new ExistKota(), (request()->statusupahzona == $getUpahZona->id) ? new ValidasiKotaZonaTrip($getUpah->zonadari_id) : Rule::in($validasiUpah->kotadari_id)]
-            ];
-        }
-
-        $sampai_id = $this->sampai_id;
         $rulesSampai_id = [];
-        if ($sampai_id != null) {
-            $rulesSampai_id = [
-                'sampai_id' => ['required', 'numeric', 'min:1', new ExistKota(), (request()->statusupahzona == $getUpahZona->id) ? new ValidasiKotaZonaTrip($getUpah->zonasampai_id) : Rule::in($validasiUpah->kotasampai_id)]
-            ];
-        } else if ($sampai_id == null && $this->sampai != '') {
-            $rulesSampai_id = [
-                'sampai_id' => ['required', 'numeric', 'min:1', new ExistKota(), (request()->statusupahzona == $getUpahZona->id) ? new ValidasiKotaZonaTrip($getUpah->zonasampai_id) : Rule::in($validasiUpah->kotasampai_id)]
-            ];
-        }
+        
+        if ($upah_id != null) {
+            $validasiUpah = (new UpahSupirRincian())->cekValidasiInputTripUpah(request()->statuscontainer_id, request()->jenisorder_id, request()->upah_id);
+            $getUpah = DB::table("upahsupir")->from(DB::raw("upahsupir with (readuncommitted)"))->select('zonadari_id', 'zonasampai_id')->where('id', request()->upah_id)->first();
 
+            $dari_id = $this->dari_id;
+            if ($dari_id != null) {
+                $rulesDari_id = [
+                    'dari_id' => ['required', 'numeric', 'min:1', new ExistKota(), (request()->statusupahzona == $getUpahZona->id) ? new ValidasiKotaZonaTrip($getUpah->zonadari_id) : Rule::in($validasiUpah->kotadari_id)]
+                ];
+            } else if ($dari_id == null && $this->dari != '') {
+                $rulesDari_id = [
+                    'dari_id' => ['required', 'numeric', 'min:1', new ExistKota(), (request()->statusupahzona == $getUpahZona->id) ? new ValidasiKotaZonaTrip($getUpah->zonadari_id) : Rule::in($validasiUpah->kotadari_id)]
+                ];
+            }
+
+            $sampai_id = $this->sampai_id;
+            if ($sampai_id != null) {
+                $rulesSampai_id = [
+                    'sampai_id' => ['required', 'numeric', 'min:1', new ExistKota(), (request()->statusupahzona == $getUpahZona->id) ? new ValidasiKotaZonaTrip($getUpah->zonasampai_id) : Rule::in($validasiUpah->kotasampai_id)]
+                ];
+            } else if ($sampai_id == null && $this->sampai != '') {
+                $rulesSampai_id = [
+                    'sampai_id' => ['required', 'numeric', 'min:1', new ExistKota(), (request()->statusupahzona == $getUpahZona->id) ? new ValidasiKotaZonaTrip($getUpah->zonasampai_id) : Rule::in($validasiUpah->kotasampai_id)]
+                ];
+            }
+        }
         $pelanggan_id = $this->pelanggan_id;
         $rulesPelanggan_id = [];
         if ($pelanggan_id != null) {
@@ -414,8 +416,8 @@ class StoreMandorTripRequest extends FormRequest
     public function attributes()
     {
         return [
-            "agen_id" => "agen",
-            "agen" => "agen",
+            "agen_id" => "customer",
+            "agen" => "customer",
             "container_id" => "container",
             "container" => "container",
             "dari_id" => "dari",
