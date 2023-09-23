@@ -11,6 +11,7 @@ use App\Rules\ValidasiDestroyPelunasanPiutang;
 use App\Rules\ValidasiDetail;
 use App\Rules\ValidasiStatusNotaDebet;
 use App\Rules\ValidasiStatusNotaKredit;
+use App\Rules\ValidasiNominalSaldo;
 use Illuminate\Validation\Rule;
 
 class UpdatePelunasanPiutangHeaderRequest extends FormRequest
@@ -101,7 +102,8 @@ class UpdatePelunasanPiutangHeaderRequest extends FormRequest
                 'required',
                 new ValidasiDetail($jumlahdetail),
                 new ValidasiStatusNotaDebet(),
-                new ValidasiStatusNotaKredit()
+                new ValidasiStatusNotaKredit(),
+                new ValidasiNominalSaldo()
             ],
             'alatbayar' => ['required', Rule::in($dataKodeAlatBayar)],
         ];

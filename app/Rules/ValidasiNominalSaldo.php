@@ -27,7 +27,7 @@ class ValidasiNominalSaldo implements Rule
      */
     public function passes($attribute, $value)
     {
- 
+
 
         $pelunasannotadebet = db::table("parameter")->from(db::raw("parameter a with (readuncommitted)"))
             ->select('a.id')
@@ -43,7 +43,7 @@ class ValidasiNominalSaldo implements Rule
                 $table->double('nominal', 15, 2)->nullable();
             });
 
-    
+
 
             $querynotadebetfifo = db::table('notadebetfifo')->from(db::raw("notadebetfifo a with (readuncommitted)"))
                 ->select(
@@ -71,16 +71,32 @@ class ValidasiNominalSaldo implements Rule
                 ->where('c.agen_id', '=',   request()->agen_id)
                 ->first()->nominal ?? 0;
 
+            
+            $nominalbuktiedit = db::table('pelunasanpiutangdetail')->from(db::raw("pelunasanpiutangdetail a with (readuncommitted)"))
+                ->select(
+                    db::raw("sum(a.nominal) as nominal"),
+                )
+                ->where('a.nobukti', '=',   request()->nobukti)
+                ->first();
+
+            if (isset($nominalbuktiedit))  {
+                $nominaledit=$nominalbuktiedit->nominal ?? 0;
+            } else {
+                $nominaledit=0;
+            }
+
             $nominalbayar = 0;
             for ($i = 0; $i < count(request()->piutang_id); $i++) {
                 $bayar = request()->bayar[$i] ?? 0;
                 $nominalbayar = $nominalbayar + $bayar;
             }
 
-            
+            $sisa=$nominalsisa+$nominaledit;
+            // dd($sisa);
 
 
-            if ($nominalbayar > $nominalsisa) {
+
+            if ($nominalbayar > $sisa) {
                 return false;
             } else {
                 return true;
