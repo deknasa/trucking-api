@@ -40,6 +40,7 @@ class UpdateKaryawanRequest extends FormRequest
 
         $rules = [
             'namakaryawan' =>  ['required',Rule::unique('karyawan')->whereNotIn('id', [$this->id])],
+            'jabatan' => ['required'],
             'statusaktif' => ['required', Rule::in($status)],
             'statusstaff' => ['required', Rule::in($statusstaff)]
         ];
