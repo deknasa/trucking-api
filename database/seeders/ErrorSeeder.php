@@ -90,5 +90,6 @@ class ErrorSeeder extends Seeder
         error::create(['kodeerror' => 'JOTS', 'keterangan' => 'JENIS ORDERAN TIDAK SAMA DENGAN DETAIL', 'modifiedby' => 'ADMIN',]);
         error::create(['kodeerror' => 'MDB', 'keterangan' => 'MAX. 2 BULAN', 'modifiedby' => 'ADMIN',]);
         error::create(['kodeerror' => 'TBD', 'keterangan' => 'TIDAK BOLEH BERBEDA', 'modifiedby' => 'ADMIN',]);
+        error::create(['kodeerror' => 'NDP', 'keterangan' => 'KOSONGKAN NOMINAL LEBIH BAYAR DAN TIPE NOTA DEBET UNTUK MENGGUNAKAN PELUNASAN NOTA DEBET', 'modifiedby' => 'ADMIN',]);
     }
 }
