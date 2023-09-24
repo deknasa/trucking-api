@@ -14,12 +14,12 @@ class SpkHarianController extends Controller
      */
     public function index()
     {
-        $statusOli = new SpkHarian();
+        $spkHarian = new SpkHarian();
         return response([
             'data' => [],
             'attributes' => [
-                'totalRows' => $statusOli->totalRows,
-                'totalPages' => $statusOli->totalPages
+                'totalRows' => $spkHarian->totalRows,
+                'totalPages' => $spkHarian->totalPages
             ]
         ]);
     }

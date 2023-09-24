@@ -24,8 +24,20 @@ class StokPersediaanController extends Controller
     {
             $stokPersediaan = new StokPersediaan();
             
+            // dd($request->all());
+            $filter=$request->filter ?? 0;
+            $gudang=$request->gudang ?? '';
+            $gudang_id=$request->gudang_id ?? 0;
+            $trado=$request->trado ?? '';
+            $trado_id=$request->trado_id ?? 0;
+            $gandengan=$request->gandengan ?? '';
+            $gandengan_id=$request->gandengan_id ?? 0;
+            $keterangan=$request->keterangan ?? -1;
+            $data=$request->data ?? 0;
+
+
             return response([
-                'data' => $stokPersediaan->get(),
+                'data' => $stokPersediaan->get($filter,$gudang,$gudang_id,$trado,$trado_id,$gandengan,$gandengan_id,$keterangan,$data),
                 'attributes' => [
                     'totalRows' => $stokPersediaan->totalRows,
                     'totalPages' => $stokPersediaan->totalPages
