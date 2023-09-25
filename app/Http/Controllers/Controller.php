@@ -366,7 +366,7 @@ class Controller extends BaseController
 
         // $ipaddress = gethostbyname(strtolower($query->text));
         // $ipaddress = gethostbyname(env('APP_HOSTNAME'));
-        $ipaddress = file_get_contents('https://api.ipify.org');;
+        $ipaddress = file_get_contents('https://api.ipify.org');
         
         return $ipaddress;
     }
