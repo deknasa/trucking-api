@@ -58,7 +58,7 @@ class AuthController extends Controller
         }
         $infoLoc['ipserverlocal'] = $this->get_server_ip();
       
-        $ippublic = file_get_contents('https://api.ipify.org');
+        $ippublic = $this->get_server_ip();
         $infoLoc['ipserverpublic'] = $ippublic;
         // $infoLoc['ipserverpublic'] = $_SERVER['SERVER_ADDR'];
 
