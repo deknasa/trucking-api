@@ -372,6 +372,7 @@ route::middleware(['auth:api'])->group(function () {
     Route::get('bukapenerimaanstok/{id}/cektanggal', [BukaPenerimaanStokController::class, 'isTanggalAvaillable']);
     Route::get('bukapengeluaranstok/{id}/cektanggal', [BukaPengeluaranStokController::class, 'isTanggalAvaillable']);
     Route::get('jurnalumumdetail/jurnal', [JurnalUmumDetailController::class, 'jurnal']);
+    Route::get('parameter/combo', [ParameterController::class, 'combo']);
 
 });
 
@@ -502,7 +503,6 @@ route::middleware(['auth:api', 'authorized'])->group(function () {
     Route::get('parameter/detail', [ParameterController::class, 'detail']);
     Route::get('parameter/default', [ParameterController::class, 'default']);
     Route::get('parameter/field_length', [ParameterController::class, 'fieldLength']);
-    Route::get('parameter/combo', [ParameterController::class, 'combo']);
     Route::get('parameter/getparamfirst', [ParameterController::class, 'getparamfirst']);
     Route::get('parameter/comboapproval', [ParameterController::class, 'comboapproval']);
     Route::get('parameter/getcoa', [ParameterController::class, 'getcoa']);
