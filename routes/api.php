@@ -384,6 +384,7 @@ route::middleware(['auth:api'])->group(function () {
     Route::get('invoicedetail/piutang', [InvoiceDetailController::class, 'piutang']);
     Route::resource('invoicedetail', InvoiceDetailController::class)->whereNumber('invoicedetail');
     Route::get('jurnalumumheader/field_length', [JurnalUmumHeaderController::class, 'fieldLength']);
+    Route::resource('alatbayar', AlatBayarController::class)->whereNumber('alatbayar');
 });
 
 route::middleware(['auth:api', 'authorized'])->group(function () {
@@ -653,7 +654,6 @@ route::middleware(['auth:api', 'authorized'])->group(function () {
     Route::post('alatbayar/{id}/cekValidasi', [AlatBayarController::class, 'cekValidasi'])->name('alatbayar.cekValidasi')->whereNumber('id');
     Route::get('alatbayar/export', [AlatBayarController::class, 'export']);
     Route::get('alatbayar/report', [AlatBayarController::class, 'report']);
-    Route::resource('alatbayar', AlatBayarController::class)->whereNumber('alatbayar');
 
     Route::get('bankpelanggan/combo', [BankPelangganController::class, 'combo']);
     Route::get('bankpelanggan/field_length', [BankPelangganController::class, 'fieldLength']);
