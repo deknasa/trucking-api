@@ -373,7 +373,17 @@ route::middleware(['auth:api'])->group(function () {
     Route::get('bukapengeluaranstok/{id}/cektanggal', [BukaPengeluaranStokController::class, 'isTanggalAvaillable']);
     Route::get('jurnalumumdetail/jurnal', [JurnalUmumDetailController::class, 'jurnal']);
     Route::get('parameter/combo', [ParameterController::class, 'combo']);
-
+    Route::resource('pengeluarantruckingdetail', PengeluaranTruckingDetailController::class)->whereNumber('pengeluarantruckingdetail');
+    Route::resource('penerimaantruckingheader', PenerimaanTruckingHeaderController::class)->whereNumber('penerimaantruckingheader');
+    Route::apiResource('pengeluaranstokheader', PengeluaranStokHeaderController::class)->whereNumber('pengeluaranstokheader');
+    Route::apiResource('pengeluaranstokdetail', PengeluaranStokDetailController::class)->whereNumber('pengeluaranstokdetail');
+    Route::get('pengeluaranstokdetail/hutangbayar', [PengeluaranStokDetailController::class, 'hutangbayar']);
+    Route::get('pengeluaranstokdetail/pengeluaran', [PengeluaranStokDetailController::class, 'pengeluaran']);
+    Route::get('pengeluaranstokdetail/jurnal', [PengeluaranStokDetailController::class, 'jurnal']);
+    Route::resource('suratpengantar', SuratPengantarController::class)->whereNumber('suratpengantar');
+    Route::get('invoicedetail/piutang', [InvoiceDetailController::class, 'piutang']);
+    Route::resource('invoicedetail', InvoiceDetailController::class)->whereNumber('invoicedetail');
+    Route::get('jurnalumumheader/field_length', [JurnalUmumHeaderController::class, 'fieldLength']);
 });
 
 route::middleware(['auth:api', 'authorized'])->group(function () {
@@ -823,7 +833,6 @@ route::middleware(['auth:api', 'authorized'])->group(function () {
     Route::post('jurnalumumheader/{id}/cekvalidasiaksi', [JurnalUmumHeaderController::class, 'cekvalidasiaksi'])->whereNumber('id');
     Route::post('jurnalumumheader/copy', [JurnalUmumHeaderController::class, 'copy']);
     Route::post('jurnalumumheader/addrow', [JurnalUmumDetailController::class, 'addrow']);
-    Route::get('jurnalumumheader/field_length', [JurnalUmumHeaderController::class, 'fieldLength']);
     Route::resource('jurnalumumheader', JurnalUmumHeaderController::class)->whereNumber('jurnalumumheader');
     Route::get('jurnalumumdetail/getDetail', [JurnalUmumDetailController::class, 'getDetail']);
     Route::resource('jurnalumumdetail', JurnalUmumDetailController::class)->whereNumber('jurnalumumdetail');
@@ -843,7 +852,6 @@ route::middleware(['auth:api', 'authorized'])->group(function () {
     Route::get('penerimaantruckingheader/combo', [PenerimaanTruckingHeaderController::class, 'combo']);
     Route::get('penerimaantruckingheader/grid', [PenerimaanTruckingHeaderController::class, 'grid']);
     Route::get('penerimaantruckingheader/field_length', [PenerimaanTruckingHeaderController::class, 'fieldLength']);
-    Route::resource('penerimaantruckingheader', PenerimaanTruckingHeaderController::class)->whereNumber('penerimaantruckingheader');
     Route::resource('penerimaantruckingdetail', PenerimaanTruckingDetailController::class)->whereNumber('penerimaantruckingdetail');
 
     Route::get('pengeluarantruckingheader/getinvoice', [PengeluaranTruckingHeaderController::class, 'getInvoice']);
@@ -863,7 +871,6 @@ route::middleware(['auth:api', 'authorized'])->group(function () {
     Route::get('pengeluarantruckingheader/field_length', [PengeluaranTruckingHeaderController::class, 'fieldLength']);
     Route::get('pengeluarantruckingheader/{id}/export', [PengeluaranTruckingHeaderController::class, 'export'])->name('pengeluarantruckingheader.export')->whereNumber('id');
     Route::resource('pengeluarantruckingheader', PengeluaranTruckingHeaderController::class)->whereNumber('pengeluarantruckingheader');
-    Route::resource('pengeluarantruckingdetail', PengeluaranTruckingDetailController::class)->whereNumber('pengeluarantruckingdetail');
 
     
     Route::post('bukapenerimaanstok/{id}/updatetanggalbatas', [BukaPenerimaanStokController::class, 'updateTanggalBatas']);
@@ -899,11 +906,6 @@ route::middleware(['auth:api', 'authorized'])->group(function () {
     Route::get('pengeluaranstokheader/{id}/printreport', [PengeluaranStokHeaderController::class, 'printReport'])->whereNumber('id');
     Route::post('pengeluaranstokheader/{id}/cekvalidasi', [PengeluaranStokHeaderController::class, 'cekValidasi'])->name('pengeluaranstokheader.cekValidasi')->whereNumber('id');
     Route::post('pengeluaranstokheader/{id}/approvaledit', [PengeluaranStokHeaderController::class, 'approvalEdit']);
-    Route::apiResource('pengeluaranstokheader', PengeluaranStokHeaderController::class)->whereNumber('pengeluaranstokheader');
-    Route::apiResource('pengeluaranstokdetail', PengeluaranStokDetailController::class)->whereNumber('pengeluaranstokdetail');
-    Route::get('pengeluaranstokdetail/hutangbayar', [PengeluaranStokDetailController::class, 'hutangbayar']);
-    Route::get('pengeluaranstokdetail/pengeluaran', [PengeluaranStokDetailController::class, 'pengeluaran']);
-    Route::get('pengeluaranstokdetail/jurnal', [PengeluaranStokDetailController::class, 'jurnal']);
     Route::post('pengeluaranstokheader/addrow', [PengeluaranStokDetailController::class, 'addrow']);
 
     Route::get('reminderservice/index', [ReminderServiceController::class, 'index']);
@@ -1151,8 +1153,6 @@ route::middleware(['auth:api', 'authorized'])->group(function () {
     Route::post('invoiceheader/{id}/cekvalidasiAksi', [InvoiceHeaderController::class, 'cekvalidasiAksi'])->name('invoiceheader.cekvalidasiAksi')->whereNumber('id');
     Route::post('invoiceheader/{id}/cekvalidasi', [InvoiceHeaderController::class, 'cekvalidasi'])->name('invoiceheader.cekvalidasi')->whereNumber('id');
     Route::resource('invoiceheader', InvoiceHeaderController::class)->whereNumber('invoiceheader');
-    Route::get('invoicedetail/piutang', [InvoiceDetailController::class, 'piutang']);
-    Route::resource('invoicedetail', InvoiceDetailController::class)->whereNumber('invoicedetail');
 
     Route::resource('tutupbuku', TutupBukuController::class)->whereNumber('tutupbuku');
     Route::resource('approvalopname', ApprovalOpnameController::class)->whereNumber('approvalopname');
@@ -1169,7 +1169,6 @@ route::middleware(['auth:api', 'authorized'])->group(function () {
     Route::post('suratpengantar/{id}/edittujuan', [SuratPengantarController::class, 'approvalEditTujuan'])->whereNumber('id');
     Route::get('suratpengantar/{id}/getOrderanTrucking', [SuratPengantarController::class, 'getOrderanTrucking'])->whereNumber('id');
     Route::get('suratpengantar/getGaji/{dari}/{sampai}/{container}/{statuscontainer}', [SuratPengantarController::class, 'getGaji']);
-    Route::resource('suratpengantar', SuratPengantarController::class)->whereNumber('suratpengantar');
     Route::resource('suratpengantarbiayatambahan', SuratPengantarBiayaTambahanController::class)->whereNumber('suratpengantarbiayatambahan');
 
     Route::get('penerimaanheader/{id}/printreport', [PenerimaanHeaderController::class, 'printReport'])->whereNumber('id');
