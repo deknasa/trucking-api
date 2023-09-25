@@ -133,6 +133,7 @@ class UpdateInvoiceExtraHeaderRequest extends FormRequest
     public function attributes()
     {
         $attributes = [
+            'agen' => 'customer',
             'nominal_detail.*' => 'Harga',
             'keterangan_detail.*' => 'Keterangan',
         ];

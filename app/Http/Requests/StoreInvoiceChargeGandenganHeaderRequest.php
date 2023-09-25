@@ -56,6 +56,15 @@ class StoreInvoiceChargeGandenganHeaderRequest extends FormRequest
 
         return $rules;
     }
+    public function attributes()
+    {
+        $attributes = [
+            'agen' => 'customer',
+            'tglbukti' => 'Tanggal Bukti',
+        ];
+
+        return $attributes;
+    }
     public function messages()
     {
         return [

@@ -4,6 +4,7 @@ namespace App\Http\Requests;
 
 use App\Http\Controllers\Api\ErrorController;
 use App\Models\AlatBayar;
+use App\Models\Parameter;
 use App\Models\PelunasanPiutangHeader;
 use Illuminate\Foundation\Http\FormRequest;
 use App\Rules\DateTutupBuku;
@@ -12,6 +13,7 @@ use App\Rules\ValidasiDetail;
 use App\Rules\ValidasiStatusNotaDebet;
 use App\Rules\ValidasiStatusNotaKredit;
 use App\Rules\ValidasiNominalSaldo;
+use App\Rules\ValidasiStatusPelunasan;
 use Illuminate\Validation\Rule;
 
 class UpdatePelunasanPiutangHeaderRequest extends FormRequest
@@ -88,7 +90,7 @@ class UpdatePelunasanPiutangHeaderRequest extends FormRequest
                 'alatbayar_id' => ['required', 'numeric', 'min:1', Rule::in($getDataPelunasan->alatbayar_id)]
             ];
         }
-
+       
         $rules = [
             'id' => new ValidasiDestroyPelunasanPiutang(),
             'nobukti' => [Rule::in($getDataPelunasan->nobukti)],
@@ -97,6 +99,7 @@ class UpdatePelunasanPiutangHeaderRequest extends FormRequest
                 'before_or_equal:' . date('d-m-Y'),
                 new DateTutupBuku()
             ],
+            'statuspelunasan' =>  ['required', Rule::in($getDataPelunasan->statuspelunasan), new ValidasiStatusPelunasan()],
             'bank' => 'required',
             'agen' => [
                 'required',
@@ -130,6 +133,7 @@ class UpdatePelunasanPiutangHeaderRequest extends FormRequest
         $attributes = [
             'tglbukti' => 'Tanggal Bukti',
             'alatbayar' => 'alat bayar',
+            'agen' => 'Customer',
             'bayar.*' => 'Nominal Bayar',
             'keterangan.*' => 'keterangan'
         ];

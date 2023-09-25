@@ -44,6 +44,7 @@ class Karyawan extends MyModel
                 'karyawan.id',
                 'karyawan.namakaryawan',
                 'karyawan.keterangan',
+                'karyawan.jabatan',
                 'statusaktif.memo as statusaktif',
                 'statusstaff.memo as statusstaff',
                 'karyawan.modifiedby',
@@ -221,6 +222,7 @@ class Karyawan extends MyModel
                 $this->table.keterangan,
                 'parameter.text as statusaktif',
                 'statusstaff.text as statusstaff',
+                $this->table.jabatan,
                 $this->table.modifiedby,
                 $this->table.created_at,
                 $this->table.updated_at"
@@ -239,6 +241,7 @@ class Karyawan extends MyModel
             $table->string('keterangan', 1000)->nullable();
             $table->string('statusaktif', 1000)->nullable();
             $table->string('statusstaff', 1000)->nullable();
+            $table->string('jabatan', 50)->nullable();
             $table->string('modifiedby', 50)->nullable();
             $table->dateTime('created_at')->nullable();
             $table->dateTime('updated_at')->nullable();
@@ -250,7 +253,7 @@ class Karyawan extends MyModel
         $query = $this->selectColumns($query);
         $this->sort($query);
         $models = $this->filter($query);
-        DB::table($temp)->insertUsing(['id', 'namakaryawan', 'keterangan', 'statusaktif', 'statusstaff', 'modifiedby', 'created_at', 'updated_at'], $models);
+        DB::table($temp)->insertUsing(['id', 'namakaryawan', 'keterangan', 'statusaktif', 'statusstaff', 'jabatan', 'modifiedby', 'created_at', 'updated_at'], $models);
 
 
         return  $temp;
@@ -320,6 +323,7 @@ class Karyawan extends MyModel
         $karyawan->keterangan = $data['keterangan'] ?? '';
         $karyawan->statusaktif = $data['statusaktif'];
         $karyawan->statusstaff = $data['statusstaff'];
+        $karyawan->jabatan = $data['jabatan'] ?? '';
         $karyawan->modifiedby = auth('api')->user()->user;
         $karyawan->info = html_entity_decode(request()->info);
 
@@ -346,6 +350,7 @@ class Karyawan extends MyModel
         $karyawan->keterangan = $data['keterangan'] ?? '';
         $karyawan->statusaktif = $data['statusaktif'];
         $karyawan->statusstaff = $data['statusstaff'];
+        $karyawan->jabatan = $data['jabatan'] ?? '';
         $karyawan->modifiedby = auth('api')->user()->user;
         $karyawan->info = html_entity_decode(request()->info);
 

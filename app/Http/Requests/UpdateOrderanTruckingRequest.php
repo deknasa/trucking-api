@@ -422,6 +422,7 @@ class UpdateOrderanTruckingRequest extends FormRequest
             'statuslangsir' => 'status langsir',
             'statusperalihan' => 'status peralihan',
             'jenisorder' => 'jenis order',
+            'agen' => 'customer'
         ];
     }
 

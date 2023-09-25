@@ -210,7 +210,7 @@ class InvoiceExtraHeader extends MyModel
                 "pelanggan.namapelanggan as  pelanggan",
                 "agen.namaagen as  agen",
                 db::raw("cast((format(piutang.tglbukti,'yyyy/MM')+'/1') as date) as tgldariheaderpiutangheader"),
-                db::raw("cast(cast(format((cast((format(piutang.tglbukti,'yyyy/MM')+'/1') as datetime)+32),'yyyy/MM')+'/01' as datetime)-1 as date) as tglsampaiheaderpiutangheader"), 
+                db::raw("cast(cast(format((cast((format(piutang.tglbukti,'yyyy/MM')+'/1') as datetime)+32),'yyyy/MM')+'/01' as datetime)-1 as date) as tglsampaiheaderpiutangheader"),
             );
     }
 
@@ -299,15 +299,19 @@ class InvoiceExtraHeader extends MyModel
     {
         $this->setRequestParameters();
 
-        $query = DB::table($this->table);
-        $query = $this->selectColumns($query)->from(
+        $query = DB::table($this->table)->from(
             DB::raw($this->table . " with (readuncommitted)")
         )
-            ->leftJoin(DB::raw("parameter with (readuncommitted)"), 'invoiceextraheader.statusapproval', 'parameter.id')
+            ->select(
+                'invoiceextraheader.id',
+                'invoiceextraheader.nobukti',
+                'invoiceextraheader.tglbukti',
+                'invoiceextraheader.agen_id',
+                'agen.namaagen as agen',
+                'invoiceextraheader.tgljatuhtempo'
+            )
             ->leftJoin(DB::raw("pelanggan with (readuncommitted)"), 'invoiceextraheader.pelanggan_id', 'pelanggan.id')
-            ->leftJoin(DB::raw("parameter as cetak with (readuncommitted)"), 'invoiceextraheader.statuscetak', 'cetak.id')
-            ->leftJoin(DB::raw("agen with (readuncommitted)"), 'invoiceextraheader.agen_id', 'agen.id')
-            ->leftJoin(DB::raw("parameter as statusformat with (readuncommitted)"), 'invoiceextraheader.statusformat', 'statusformat.id');
+            ->leftJoin(DB::raw("agen with (readuncommitted)"), 'invoiceextraheader.agen_id', 'agen.id');
         $data = $query->where("$this->table.id", $id)->first();
         return $data;
     }

@@ -267,11 +267,11 @@ class AgenController extends Controller
                     'label' => 'No',
                 ],
                 [
-                    'label' => 'Kode Agen (EMKL)',
+                    'label' => 'Kode Customer',
                     'index' => 'kodeagen',
                 ],
                 [
-                    'label' => 'Nama Agen (EMKL)',
+                    'label' => 'Nama Customer',
                     'index' => 'namaagen',
                 ],
                 [

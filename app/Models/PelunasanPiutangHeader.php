@@ -693,7 +693,6 @@ class PelunasanPiutangHeader extends MyModel
         $pelunasanPiutangHeader->agen_id = $data['agen_id'];
         $pelunasanPiutangHeader->nowarkat = $data['nowarkat'] ?? '-';
         $pelunasanPiutangHeader->statusformat = $format->id;
-        $pelunasanPiutangHeader->nominallunas = $nominallunas;
         $pelunasanPiutangHeader->modifiedby = auth('api')->user()->name;
         $pelunasanPiutangHeader->info = html_entity_decode(request()->info);
 

@@ -808,7 +808,8 @@ class UpdateSuratPengantarRequest extends FormRequest
             'sampai' => 'tujuan',
             "lokasibongkarmuat" => "lokasi bongkar/muat",
             // 'qtyton' => 'QTY ton',
-            'statusbatalmuat' => 'status batal muat'
+            'statusbatalmuat' => 'status batal muat',
+            'agen' => 'customer'
 
 
         ];

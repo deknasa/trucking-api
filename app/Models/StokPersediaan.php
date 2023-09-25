@@ -174,7 +174,7 @@ class stokpersediaan extends MyModel
 
     }
 
-    public function get()
+    public function get($filter,$gudang,$gudang_id,$trado,$trado_id,$gandengan,$gandengan_id,$keterangan,$data)
     {
         $this->setRequestParameters();
 
@@ -256,25 +256,55 @@ class stokpersediaan extends MyModel
             'lokasi',
             'stok_id',
             'qty',
+            'gudang_id',
+            'trado_id',
+            'gandengan_id',
             'modifiedby'
         );
 
-        if (request()->keterangan && request()->data) {
+        // dump(request()->data);
+        // dd(request()->keterangan);
 
-            $parameter = Parameter::where('id', request()->keterangan)->first();
-            if ($parameter->text == 'GUDANG') {
-                $gudang_id = request()->data;
+        // if (request()->keterangan && request()->data) {
+// dd('test');
+
+// dd($keterangan);
+if ($keterangan>0) {
+    $filter=$keterangan;
+    $gudang_id=$data;
+    $gandengan_id=$data;
+    $trado_id=$data;
+
+} else if ($keterangan==0) {
+    $filter=0;
+} else if ($keterangan==-1) {
+    $querydefault=db::table('parameter')->from(db::raw("parameter a with (readuncommitted)"))
+        ->select('a.id')
+        ->where('grp','STOK PERSEDIAAN')
+        ->where('subgrp','STOK PERSEDIAAN')
+        ->where('text','GUDANG')
+        ->first()->id ?? 0;
+    $filter=$querydefault;
+}
+
+            $parameter = Parameter::where('id', $filter)->first();
+
+            
+            $datalokasi=$parameter->text ?? '';
+            // dd($datalokasi);
+            if ($datalokasi == 'GUDANG') {
+                $gudang_id =$gudang_id ?? 0;
                 $query->where('gudang_id', $gudang_id);
             }
-            if ($parameter->text == 'TRADO') {
-                $trado_id = request()->data;
+            if ($datalokasi == 'TRADO') {
+                $trado_id = $trado_id ?? 0;
                 $query->where('trado_id', $trado_id);
             }
-            if ($parameter->text == 'GANDENGAN') {
-                $gandengan_id = request()->data;
+            if ($datalokasi == 'GANDENGAN') {
+                $gandengan_id = $gandengan_id ?? 0;
                 $query->where('gandengan_id', $gandengan_id);
             }
-        } 
+        // } 
 
         $this->totalRows = $query->count();
         $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;
