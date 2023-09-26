@@ -1650,7 +1650,7 @@ class SuratPengantar extends MyModel
             $suratPengantar->info = html_entity_decode(request()->info);
             $suratPengantar->statusformat = $format->id;
             $suratPengantar->tglbataseditsuratpengantar = $data['tglbataseditsuratpengantar'];
-            $suratPengantar->statusapprovalbiayatitipanemkl = $statusNonApproval;
+            $suratPengantar->statusapprovalbiayatitipanemkl = $statusNonApproval->id;
             $suratPengantar->nobukti = (new RunningNumberService)->get($group, $subGroup, $suratPengantar->getTable(), date('Y-m-d', strtotime($data['tglbukti'])));
         }
 
