@@ -82,9 +82,9 @@ class AuthController extends Controller
         }
 
         $ipserver = $this->get_server_ip();
-        if ($ipclient != $ipserver) {
+        if ($this->ipToCheck($request->ipclient)) {
             $data = [
-                'status' => false,
+                'status' => true,
                 'message' => 'test',
                 'errors' => '',
                 'ipclient' => $ipclient,
@@ -92,7 +92,7 @@ class AuthController extends Controller
             ];
         } else {
             $data = [
-                'status' => true,
+                'status' => false,
                 'message' => '',
                 'errors' => '',
                 'ipclient' => $ipclient,
