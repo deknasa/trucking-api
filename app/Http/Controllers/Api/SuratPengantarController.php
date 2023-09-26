@@ -505,6 +505,59 @@ class SuratPengantarController extends Controller
         }
     }
 
+    /**
+     * @ClassName 
+     */
+    public function approvalTitipanEmkl($id)
+    {
+        DB::beginTransaction();
+        try {
+            $suratPengantar = SuratPengantar::lockForUpdate()->findOrFail($id);
+
+            $statusApproval = Parameter::from(DB::raw("parameter with (readuncommitted)"))->where('grp', '=', 'STATUS APPROVAL')->where('text', '=', 'APPROVAL')->first();
+            $statusNonApproval = Parameter::from(DB::raw("parameter with (readuncommitted)"))->where('grp', '=', 'STATUS APPROVAL')->where('text', '=', 'NON APPROVAL')->first();
+
+            $jambatas = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))->select('text')->where('grp', '=', 'JAMBATASAPPROVAL')->where('subgrp', '=', 'JAMBATASAPPROVAL')->first();
+            $tglbatas = date('Y-m-d') . ' ' . $jambatas->text ?? '00:00:00';
+            
+            if ($suratPengantar->statusapprovalbiayatitipanemkl == $statusApproval->id) {
+                $suratPengantar->statusapprovalbiayatitipanemkl = $statusNonApproval->id;
+                $suratPengantar->tglapprovalbiayatitipanemkl = date('Y-m-d', strtotime("1900-01-01"));
+                $suratPengantar->userapprovalbiayatitipanemkl = '';
+                $aksi = $statusNonApproval->text;
+            } else {
+                $suratPengantar->statusapprovalbiayatitipanemkl = $statusApproval->id;
+                $suratPengantar->tglapprovalbiayatitipanemkl = date('Y-m-d H:i:s');
+                $suratPengantar->userapprovalbiayatitipanemkl = auth('api')->user()->name;
+                $aksi = $statusApproval->text;
+            }
+
+            if ($suratPengantar->save()) {
+                $logTrail = [
+                    'namatabel' => strtoupper($suratPengantar->getTable()),
+                    'postingdari' => "$aksi TITIPAN EMKL SURAT PENGANTAR",
+                    'idtrans' => $suratPengantar->id,
+                    'nobuktitrans' => $suratPengantar->nobukti,
+                    'aksi' => $aksi,
+                    'datajson' => $suratPengantar->toArray(),
+                    'modifiedby' => auth('api')->user()->name
+                ];
+
+                $validatedLogTrail = new StoreLogTrailRequest($logTrail);
+                $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
+
+                DB::commit();
+            }
+
+            return response([
+                'message' => 'Berhasil'
+            ]);
+        } catch (\Throwable $th) {
+            DB::rollBack();
+            throw $th;
+        }
+    }
+
     public function getGaji($dari, $sampai, $container, $statuscontainer)
     {
 

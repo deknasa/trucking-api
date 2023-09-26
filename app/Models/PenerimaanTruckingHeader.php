@@ -38,6 +38,7 @@ class PenerimaanTruckingHeader extends MyModel
 
                 'penerimaantrucking.keterangan as penerimaantrucking_id',
                 'penerimaantruckingheader.penerimaan_nobukti',
+                'penerimaantruckingheader.keterangan as keteranganheader',
 
                 'bank.namabank as bank_id',
                 DB::raw('(case when (year(penerimaantruckingheader.tglbukacetak) <= 2000) then null else penerimaantruckingheader.tglbukacetak end ) as tglbukacetak'),
@@ -92,6 +93,7 @@ class PenerimaanTruckingHeader extends MyModel
                 'penerimaantruckingheader.id',
                 'penerimaantruckingheader.nobukti',
                 'penerimaantruckingheader.tglbukti',
+                'penerimaantruckingheader.keterangan as keteranganheader',
                 'penerimaantrucking.kodepenerimaan',
                 'penerimaantruckingheader.penerimaantrucking_id',
                 'penerimaantrucking.kodepenerimaan as penerimaantrucking',
@@ -103,15 +105,13 @@ class PenerimaanTruckingHeader extends MyModel
                 'bank.namabank as bank',
                 'supir.namasupir as supir',
                 'karyawan.namakaryawan as karyawan',
-                'jenisorder.keterangan as jenisorder',
-                'jenisorder.id as jenisorder_id',
                 'penerimaantruckingheader.coa',
                 'akunpusat.keterangancoa',
                 'penerimaantruckingheader.penerimaan_nobukti',
                 'penerimaantruckingheader.jenisorder_id as jenisorderan_id',
                 'penerimaantruckingheader.periodedari',
                 'penerimaantruckingheader.periodesampai',
-                'jenisorder.keterangan as jenisorderan'
+                'jenisorder.keterangan as jenisorder'
             )
             ->leftJoin(DB::raw("penerimaantrucking with (readuncommitted)"), 'penerimaantruckingheader.penerimaantrucking_id', 'penerimaantrucking.id')
             ->leftJoin(DB::raw("bank with (readuncommitted)"), 'penerimaantruckingheader.bank_id', 'bank.id')
@@ -846,9 +846,9 @@ class PenerimaanTruckingHeader extends MyModel
         $penerimaanTruckingHeader->penerimaantrucking_id = $data['penerimaantrucking_id'] ?? $idpenerimaan;
         $penerimaanTruckingHeader->bank_id = $data['bank_id'];
         $penerimaanTruckingHeader->coa = $coa ?? '';
+        $penerimaanTruckingHeader->keterangan = $data['keteranganheader'] ?? '';
         $penerimaanTruckingHeader->supir_id = $data['supirheader_id'] ?? '';
         $penerimaanTruckingHeader->karyawan_id = $data['karyawanheader_id'] ?? '';
-        $penerimaanTruckingHeader->jenisorder_id = $data['jenisorder_id'] ?? '';
         $penerimaanTruckingHeader->penerimaan_nobukti = $data['penerimaan_nobukti'] ?? '';
         $penerimaanTruckingHeader->pendapatansupir_bukti = $data['pendapatansupir_bukti'] ?? '';
         $penerimaanTruckingHeader->jenisorder_id = $data['jenisorderan_id'] ?? '';
@@ -988,6 +988,18 @@ class PenerimaanTruckingHeader extends MyModel
             $keterangan_detail = $keteranganPostingNon;
         }
 
+        if ($fetchFormat->kodepenerimaan == 'PBT') {
+             $coakredit_detail = [];
+            $coadebet_detail = [];
+            $nominal_detail = [];
+            $tgljatuhtempo = [];
+            $keterangan_detail = [];
+            $coakredit_detail[] = $data['coa'];
+            $coadebet_detail[] = $coadebet;
+            $nominal_detail[] = $totalDeposito;
+            $tgljatuhtempo[] = date('Y-m-d', strtotime($data['tglbukti']));
+            $keterangan_detail[] = "PENGEMBALIAN TITIPAN EMKL " . $penerimaanTruckingHeader->nobukti;
+        }
         $penerimaanTruckingDetailLogTrail = (new LogTrail())->processStore([
             'namatabel' => strtoupper($penerimaanTruckingHeaderLogTrail->getTable()),
             'postingdari' => $data['postingdari'] ?? strtoupper('ENTRY penerimaan Trucking detail '),
@@ -1195,9 +1207,9 @@ class PenerimaanTruckingHeader extends MyModel
 
             $penerimaanTruckingHeader->bank_id = $data['bank_id'];
             $penerimaanTruckingHeader->coa = $coa ?? '';
+            $penerimaanTruckingHeader->keterangan = $data['keteranganheader'] ?? '';
             $penerimaanTruckingHeader->supir_id = $data['supirheader_id'] ?? '';
             $penerimaanTruckingHeader->karyawan_id = $data['karyawanheader_id'] ?? '';
-            $penerimaanTruckingHeader->jenisorder_id = $data['jenisorder_id'] ?? '';
             $penerimaanTruckingHeader->periodedari = array_key_exists("periodedari", $data) ? date('Y-m-d', strtotime($data['periodedari'])) : '';
             $penerimaanTruckingHeader->periodesampai = array_key_exists("periodesampai", $data) ? date('Y-m-d', strtotime($data['periodesampai'])) : '';
             $penerimaanTruckingHeader->modifiedby = auth('api')->user()->name;
@@ -1330,6 +1342,18 @@ class PenerimaanTruckingHeader extends MyModel
                 $keterangan_detail = $keteranganPostingNon;
             }
 
+            if ($fetchFormat->kodepenerimaan == 'PBT') {
+                $coakredit_detail = [];
+               $coadebet_detail = [];
+               $nominal_detail = [];
+               $tgljatuhtempo = [];
+               $keterangan_detail = [];
+               $coakredit_detail[] = $data['coa'];
+               $coadebet_detail[] = $coadebet;
+               $nominal_detail[] = $totalDeposito;
+               $tgljatuhtempo[] = date('Y-m-d', strtotime($data['tglbukti']));
+               $keterangan_detail[] = "PENGEMBALIAN TITIPAN EMKL " . $penerimaanTruckingHeader->nobukti;
+           }
             //if tanpaprosesnobukti NOT 2 STORE PENERIMAAN
             if ($tanpaprosesnobukti != 2) {
 
@@ -1460,6 +1484,7 @@ class PenerimaanTruckingHeader extends MyModel
                 'penerimaantruckingheader.tglbukti',
                 'penerimaantrucking.keterangan as penerimaantrucking_id',
                 'penerimaantruckingheader.penerimaan_nobukti',
+                'penerimaantruckingheader.keterangan as keteranganheader',
                 'penerimaantruckingheader.statusformat',
                 'penerimaantruckingheader.periodedari',
                 'penerimaantruckingheader.periodesampai',
