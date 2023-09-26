@@ -93,7 +93,11 @@ class StorePendapatanSupirHeaderRequest extends FormRequest
             $rules,
             $ruleBank_id
         );
-
+        $cekBank = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'PENDAPATAN SUPIR')->where('subgrp', 'BANK')->first();
+        if($cekBank->text == 'TIDAK'){
+            unset($rules['bank']);
+            unset($rules['bank_id']);
+        }
         return $rules;
     }
 

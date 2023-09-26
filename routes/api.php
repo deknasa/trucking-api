@@ -385,6 +385,7 @@ route::middleware(['auth:api'])->group(function () {
     Route::resource('invoicedetail', InvoiceDetailController::class)->whereNumber('invoicedetail');
     Route::get('jurnalumumheader/field_length', [JurnalUmumHeaderController::class, 'fieldLength']);
     Route::resource('alatbayar', AlatBayarController::class)->whereNumber('alatbayar');
+    Route::get('parameter/getparamfirst', [ParameterController::class, 'getparamfirst']);
 });
 
 route::middleware(['auth:api', 'authorized'])->group(function () {
@@ -514,7 +515,6 @@ route::middleware(['auth:api', 'authorized'])->group(function () {
     Route::get('parameter/detail', [ParameterController::class, 'detail']);
     Route::get('parameter/default', [ParameterController::class, 'default']);
     Route::get('parameter/field_length', [ParameterController::class, 'fieldLength']);
-    Route::get('parameter/getparamfirst', [ParameterController::class, 'getparamfirst']);
     Route::get('parameter/comboapproval', [ParameterController::class, 'comboapproval']);
     Route::get('parameter/getcoa', [ParameterController::class, 'getcoa']);
     Route::get('parameter/{id}', [ParameterController::class, 'show']);

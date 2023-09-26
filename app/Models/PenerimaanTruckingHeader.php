@@ -50,14 +50,14 @@ class PenerimaanTruckingHeader extends MyModel
                 'penerimaantruckingheader.created_at',
                 'penerimaantruckingheader.updated_at',
                 db::raw("cast((format(penerimaanheader.tglbukti,'yyyy/MM')+'/1') as date) as tgldariheaderpenerimaanheader"),
-                db::raw("cast(cast(format((cast((format(penerimaanheader.tglbukti,'yyyy/MM')+'/1') as datetime)+32),'yyyy/MM')+'/01' as datetime)-1 as date) as tglsampaiheaderpenerimaanheader"), 
+                db::raw("cast(cast(format((cast((format(penerimaanheader.tglbukti,'yyyy/MM')+'/1') as datetime)+32),'yyyy/MM')+'/01' as datetime)-1 as date) as tglsampaiheaderpenerimaanheader"),
             )
             ->leftJoin(DB::raw("penerimaanheader with (readuncommitted)"), 'penerimaantruckingheader.penerimaan_nobukti', '=', 'penerimaanheader.nobukti')
             ->leftJoin(DB::raw("penerimaantrucking with (readuncommitted)"), 'penerimaantruckingheader.penerimaantrucking_id', 'penerimaantrucking.id')
             ->leftJoin(DB::raw("akunpusat with (readuncommitted)"), 'penerimaantruckingheader.coa', 'akunpusat.coa')
             ->leftJoin(DB::raw("parameter with (readuncommitted)"), 'penerimaantruckingheader.statuscetak', 'parameter.id')
             ->leftJoin(DB::raw("bank with (readuncommitted)"), 'penerimaantruckingheader.bank_id', 'bank.id');
-            
+
         if (request()->tgldari) {
             $query->whereBetween('penerimaantruckingheader.tglbukti', [date('Y-m-d', strtotime(request()->tgldari)), date('Y-m-d', strtotime(request()->tglsampai))]);
         }
@@ -989,7 +989,7 @@ class PenerimaanTruckingHeader extends MyModel
         }
 
         if ($fetchFormat->kodepenerimaan == 'PBT') {
-             $coakredit_detail = [];
+            $coakredit_detail = [];
             $coadebet_detail = [];
             $nominal_detail = [];
             $tgljatuhtempo = [];
@@ -1066,7 +1066,7 @@ class PenerimaanTruckingHeader extends MyModel
     public function processUpdate(PenerimaanTruckingHeader $penerimaanTruckingHeader, array $data): PenerimaanTruckingHeader
     {
         $isEBS = $data['ebs'] ?? false;
-
+        $isKomisi = $data['komisi'] ?? false;
 
 
         if ($isEBS == false) {
@@ -1344,16 +1344,16 @@ class PenerimaanTruckingHeader extends MyModel
 
             if ($fetchFormat->kodepenerimaan == 'PBT') {
                 $coakredit_detail = [];
-               $coadebet_detail = [];
-               $nominal_detail = [];
-               $tgljatuhtempo = [];
-               $keterangan_detail = [];
-               $coakredit_detail[] = $data['coa'];
-               $coadebet_detail[] = $coadebet;
-               $nominal_detail[] = $totalDeposito;
-               $tgljatuhtempo[] = date('Y-m-d', strtotime($data['tglbukti']));
-               $keterangan_detail[] = "PENGEMBALIAN TITIPAN EMKL " . $penerimaanTruckingHeader->nobukti;
-           }
+                $coadebet_detail = [];
+                $nominal_detail = [];
+                $tgljatuhtempo = [];
+                $keterangan_detail = [];
+                $coakredit_detail[] = $data['coa'];
+                $coadebet_detail[] = $coadebet;
+                $nominal_detail[] = $totalDeposito;
+                $tgljatuhtempo[] = date('Y-m-d', strtotime($data['tglbukti']));
+                $keterangan_detail[] = "PENGEMBALIAN TITIPAN EMKL " . $penerimaanTruckingHeader->nobukti;
+            }
             //if tanpaprosesnobukti NOT 2 STORE PENERIMAAN
             if ($tanpaprosesnobukti != 2) {
 
@@ -1401,6 +1401,156 @@ class PenerimaanTruckingHeader extends MyModel
                 $penerimaanTruckingHeader->save();
             }
 
+            // dari pendapatan
+            if ($isKomisi) {
+                if ($penerimaanTruckingHeader->penerimaan_nobukti == '') {
+                    if ($data['bank_id'] != 0 && $data['bank_id'] != '') {
+                        if ($fetchFormat->kodepenerimaan == 'DPO') {
+                            $coakredit_detail = [];
+                            $coadebet_detail = [];
+                            $nominal_detail = [];
+                            $keterangan_detail = [];
+                            $tgljatuhtempo = [];
+                            $tgljatuhtempo[] = date('Y-m-d', strtotime($data['tglbukti']));
+                            $coakredit_detail[] = $data['coa'];
+                            $coadebet_detail[] = $coadebet;
+                            $nominal_detail[] = $totalDeposito;
+                            $keterangan_detail[] = 'DEPOSITO DARI PENDAPATAN SUPIR ' . $data['pendapatansupir_bukti'] . ' ' . $data['tglbukti'];
+                        }
+
+                        /*STORE PENERIMAAN*/
+                        $penerimaanRequest = [
+                            'tglbukti' => date('Y-m-d', strtotime($data['tglbukti'])),
+                            'postingdari' => (array_key_exists("postingdari", $data)) ? $data['postingdari'] : "ENTRY PENERIMAAN TRUCKING HEADER",
+                            'statusapproval' => $statusApproval->id,
+                            'pelanggan_id' => 0,
+                            'agen_id' => 0,
+                            'diterimadari' => "PENERIMAAN TRUCKING HEADER",
+                            'tgllunas' => date('Y-m-d', strtotime($data['tglbukti'])),
+                            'statusformat' => $format->id,
+                            'bank_id' => $penerimaanTruckingHeader->bank_id,
+
+                            'nowarkat' => null,
+                            'tgljatuhtempo' => $tgljatuhtempo,
+                            'nominal_detail' => $nominal_detail,
+                            'coadebet' => $coadebet_detail,
+                            'coakredit' => $coakredit_detail,
+                            'keterangan_detail' => $keterangan_detail,
+                            'invoice_nobukti' => null,
+                            'bankpelanggan_id' => null,
+                            'pelunasanpiutang_nobukti' => null,
+                            'bulanbeban' => null,
+                        ];
+                        $penerimaanHeader = (new PenerimaanHeader())->processStore($penerimaanRequest);
+
+                        $penerimaanTruckingHeader->penerimaan_nobukti = $penerimaanHeader->nobukti;
+                        $penerimaanTruckingHeader->save();
+                    }
+                } else {
+                    if ($data['bank_id'] == 0 && $data['bank_id'] == '') {
+                        $getPenerimaan = PenerimaanHeader::from(DB::raw("penerimaanheader with (readuncommitted)"))->where('nobukti', $penerimaanTruckingHeader->penerimaan_nobukti)->first();
+                        if (isset($getPenerimaan)) {
+                            (new PenerimaanHeader())->processDestroy($getPenerimaan->id, 'EDIT PENDAPATAN SUPIR');
+                            $penerimaanTruckingHeader->penerimaan_nobukti = '';
+
+                            $penerimaanTruckingHeader->save();
+                        }
+                    } else {
+                        if ($data['bank_id'] != $data['prevBank']) {
+
+                            $getPenerimaan = PenerimaanHeader::from(DB::raw("penerimaanheader with (readuncommitted)"))->where('nobukti', $penerimaanTruckingHeader->penerimaan_nobukti)->first();
+                            if (isset($getPenerimaan)) {
+                                (new PenerimaanHeader())->processDestroy($getPenerimaan->id, 'EDIT PENDAPATAN SUPIR');
+                            }
+
+                            if ($fetchFormat->kodepenerimaan == 'DPO') {
+                                $coakredit_detail = [];
+                                $coadebet_detail = [];
+                                $nominal_detail = [];
+                                $keterangan_detail = [];
+                                $tgljatuhtempo = [];
+                                $tgljatuhtempo[] = date('Y-m-d', strtotime($data['tglbukti']));
+                                $coakredit_detail[] = $data['coa'];
+                                $coadebet_detail[] = $coadebet;
+                                $nominal_detail[] = $totalDeposito;
+                                $keterangan_detail[] = 'DEPOSITO DARI PENDAPATAN SUPIR ' . $data['pendapatansupir_bukti'] . ' ' . $data['tglbukti'];
+                            }
+
+                            /*STORE PENERIMAAN*/
+                            $penerimaanRequest = [
+                                'tglbukti' => date('Y-m-d', strtotime($data['tglbukti'])),
+                                'postingdari' => (array_key_exists("postingdari", $data)) ? $data['postingdari'] : "ENTRY PENERIMAAN TRUCKING HEADER",
+                                'statusapproval' => $statusApproval->id,
+                                'pelanggan_id' => 0,
+                                'agen_id' => 0,
+                                'diterimadari' => "PENERIMAAN TRUCKING HEADER",
+                                'tgllunas' => date('Y-m-d', strtotime($data['tglbukti'])),
+                                'statusformat' => $format->id,
+                                'bank_id' => $penerimaanTruckingHeader->bank_id,
+
+                                'nowarkat' => null,
+                                'tgljatuhtempo' => $tgljatuhtempo,
+                                'nominal_detail' => $nominal_detail,
+                                'coadebet' => $coadebet_detail,
+                                'coakredit' => $coakredit_detail,
+                                'keterangan_detail' => $keterangan_detail,
+                                'invoice_nobukti' => null,
+                                'bankpelanggan_id' => null,
+                                'pelunasanpiutang_nobukti' => null,
+                                'bulanbeban' => null,
+                            ];
+                            $penerimaanHeader = (new PenerimaanHeader())->processStore($penerimaanRequest);
+
+                            $penerimaanTruckingHeader->penerimaan_nobukti = $penerimaanHeader->nobukti;
+                            $penerimaanTruckingHeader->save();
+                        } else {
+
+                            // tanpaprosesnobukti = 3 dari pendapatan supir
+                            if ($tanpaprosesnobukti == 3) {
+                                if ($fetchFormat->kodepenerimaan == 'DPO') {
+                                    $coakredit_detail = [];
+                                    $coadebet_detail = [];
+                                    $nominal_detail = [];
+                                    $keterangan_detail = [];
+                                    $tgljatuhtempo = [];
+                                    $tgljatuhtempo[] = date('Y-m-d', strtotime($data['tglbukti']));
+                                    $coakredit_detail[] = $data['coa'];
+                                    $coadebet_detail[] = $coadebet;
+                                    $nominal_detail[] = $totalDeposito;
+                                    $keterangan_detail[] = 'DEPOSITO DARI PENDAPATAN SUPIR ' . $data['pendapatansupir_bukti'] . ' ' . $data['tglbukti'];
+                                }
+                            }
+                            /*UPDATE PENERIMAAN*/
+                            $penerimaanRequest = [
+                                'tglbukti' => $penerimaanTruckingHeader->tglbukti,
+                                'postingdari' => (array_key_exists("postingdari", $data)) ? $data['postingdari'] : "ENTRY PENERIMAAN TRUCKING HEADER",
+                                'statusapproval' => $statusApproval->id,
+                                'pelanggan_id' => 0,
+                                'agen_id' => 0,
+                                'diterimadari' => "PENERIMAAN TRUCKING HEADER",
+                                'tgllunas' => date('Y-m-d', strtotime($data['tglbukti'])),
+                                'statusformat' => $format->id,
+                                'bank_id' => $penerimaanTruckingHeader->bank_id,
+
+                                'nowarkat' => null,
+                                'tgljatuhtempo' => $tgljatuhtempo,
+                                'nominal_detail' => $nominal_detail,
+                                'coadebet' => $coadebet_detail,
+                                'coakredit' => $coakredit_detail,
+                                'keterangan_detail' => $keterangan_detail,
+                                'invoice_nobukti' => null,
+                                'bankpelanggan_id' => null,
+                                'pelunasanpiutang_nobukti' => null,
+                                'bulanbeban' => null,
+                            ];
+                            $penerimaanHeader = PenerimaanHeader::where('nobukti', $penerimaanTruckingHeader->penerimaan_nobukti)->first();
+                            $dataPenerimaan = (new PenerimaanHeader())->processUpdate($penerimaanHeader, $penerimaanRequest);
+                            $penerimaanTruckingHeader->penerimaan_nobukti = $dataPenerimaan->nobukti;
+                            $penerimaanTruckingHeader->save();
+                        }
+                    }
+                }
+            }
             $penerimaanTruckingHeaderLogTrail = (new LogTrail())->processStore([
                 'namatabel' => strtoupper($penerimaanTruckingHeader->getTable()),
                 'postingdari' => $data['postingdari'] ?? strtoupper('EDIT penerimaan Trucking Header '),

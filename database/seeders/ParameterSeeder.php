@@ -527,6 +527,7 @@ class ParameterSeeder extends Seeder
         parameter::create(['grp' => 'PERKIRAAN PEMBANDING NERACA', 'subgrp' => 'BCA-1', 'kelompok' => 'BCA-1', 'text' => 'BCA-1', 'memo' => '{"MEMO":"PERKIRAAN PEMBANDING BCA-1","SINGKATAN":"K","WARNA":"#6C757D","JURNAL":"01.02.03.04","WARNATULISAN":"#fff"}', 'type' => '0', 'modifiedby' => 'ADMIN', 'default' => '',]);
         parameter::create(['grp' => 'KAS/BANK', 'subgrp' => 'KAS', 'kelompok' => '', 'text' => '1', 'memo' => '{"MEMO":"KAS","SINGKATAN":"NOTA DEBET","WARNA":"#28A745","WARNATULISAN":"#fff","JURNAL":""}', 'type' => '0', 'modifiedby' => 'ADMIN', 'default' => '',]);
         parameter::create(['grp' => 'KAS/BANK', 'subgrp' => 'BANK', 'kelompok' => '', 'text' => '2', 'memo' => '{"MEMO":"BANK","SINGKATAN":"NOTA DEBET","WARNA":"#28A745","WARNATULISAN":"#fff","JURNAL":""}', 'type' => '0', 'modifiedby' => 'ADMIN', 'default' => '',]);
+        parameter::create(['grp' => 'PENDAPATAN SUPIR', 'subgrp' => 'BANK', 'kelompok' => '', 'text' => 'YA', 'memo' => '{"MEMO":"BANK PENDAPATAN","SINGKATAN":"BP","WARNA":"#28A745","WARNATULISAN":"#fff"}', 'type' => '0', 'modifiedby' => 'ADMIN', 'default' => '',]);
         
     }
 }
