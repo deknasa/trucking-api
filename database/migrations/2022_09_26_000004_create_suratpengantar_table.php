@@ -97,6 +97,9 @@ class CreateSuratpengantarTable extends Migration
             $table->date('tglapprovaleditsuratpengantar')->nullable();
             $table->dateTime('tglbataseditsuratpengantar')->nullable();
             $table->unsignedBigInteger('approvalbukatanggal_id')->nullable();
+            $table->integer('statusapprovalbiayatitipanemkl')->Length(11)->nullable();
+            $table->string('userapprovalbiayatitipanemkl', 50)->nullable();
+            $table->date('tglapprovalbiayatitipanemkl')->nullable();
             $table->longText('info')->nullable();
             $table->string('modifiedby', 50)->nullable();
             $table->timestamps();

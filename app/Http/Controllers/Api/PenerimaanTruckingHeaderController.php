@@ -64,6 +64,7 @@ class PenerimaanTruckingHeaderController extends Controller
         try {
             /* Store header */
             $penerimaanTruckingHeader = (new PenerimaanTruckingHeader())->processStore([
+                "keteranganheader" =>$request->keteranganheader,
                 "periodedari" =>$request->periodedari,
                 "periodesampai" =>$request->periodesampai,
                 "jenisorderan_id" =>$request->jenisorderan_id,
@@ -74,7 +75,6 @@ class PenerimaanTruckingHeaderController extends Controller
                 "tglbukti" =>$request->tglbukti,
                 "supirheader_id" =>$request->supirheader_id,
                 "karyawanheader_id" =>$request->karyawanheader_id,
-                "jenisorder_id" =>$request->jenisorder_id,
                 "penerimaan_nobukti" =>$request->penerimaan_nobukti,
                 "pendapatansupir_bukti" =>$request->pendapatansupir_bukti,
                 "statusformat" =>$request->statusformat,
@@ -83,7 +83,7 @@ class PenerimaanTruckingHeaderController extends Controller
                 "karyawan_id" =>$request->karyawan_id,
                 "pengeluarantruckingheader_nobukti" =>$request->pengeluarantruckingheader_nobukti,
                 "keterangan" =>$request->keterangan,
-                "ebs" =>$request->ebs,
+                "ebs" => false,
                 "from" =>$request->from,
             ]);
             /* Set position and page */
@@ -133,6 +133,7 @@ class PenerimaanTruckingHeaderController extends Controller
             /* Store header */
             // PenerimaanTruckingHeader::findOrFail($id);
             $penerimaanTruckingHeader = (new PenerimaanTruckingHeader())->processUpdate($penerimaantruckingheader, [
+                "keteranganheader" =>$request->keteranganheader,
                 "periodedari" =>$request->periodedari,
                 "periodesampai" =>$request->periodesampai,
                 "jenisorderan_id" =>$request->jenisorderan_id,
@@ -143,7 +144,6 @@ class PenerimaanTruckingHeaderController extends Controller
                 "tglbukti" =>$request->tglbukti,
                 "supirheader_id" =>$request->supirheader_id,
                 "karyawanheader_id" =>$request->karyawanheader_id,
-                "jenisorder_id" =>$request->jenisorder_id,
                 "penerimaan_nobukti" =>$request->penerimaan_nobukti,
                 "pendapatansupir_bukti" =>$request->pendapatansupir_bukti,
                 "statusformat" =>$request->statusformat,
@@ -152,7 +152,7 @@ class PenerimaanTruckingHeaderController extends Controller
                 "karyawan_id" =>$request->karyawan_id,
                 "pengeluarantruckingheader_nobukti" =>$request->pengeluarantruckingheader_nobukti,
                 "keterangan" =>$request->keterangan,
-                "ebs" =>$request->ebs,
+                "ebs" => false,
                 "from" =>$request->from,
             ]);
             /* Set position and page */

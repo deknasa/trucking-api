@@ -3,6 +3,7 @@
 namespace App\Http\Requests;
 
 use App\Http\Controllers\Api\ErrorController;
+use App\Rules\ValidasiStatusTitipanEMKL;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
@@ -106,6 +107,20 @@ class UpdatePengeluaranTruckingDetailRequest extends FormRequest
             }
             return true;
         });
+        $requiredBBT = Rule::requiredIf(function () {
+            $idpengeluaran = request()->pengeluarantrucking_id;
+            if ($idpengeluaran != '') {
+                $fetchFormat =  DB::table('pengeluarantrucking')
+                    ->where('id', $idpengeluaran)
+                    ->first();
+                if ($fetchFormat->kodepengeluaran == 'BBT') {
+                    return true;
+                } else {
+                    return false;
+                }
+            }
+            return false;
+        });
 
         $sisaNominus = '';
         if (request()->pengeluarantrucking != '') {
@@ -155,7 +170,11 @@ class UpdatePengeluaranTruckingDetailRequest extends FormRequest
             'supir.*' => $requiredPJT,
             'nominal.*' => ['required', $min],
             'keterangan' => [$requiredKeterangan, 'array'],
-            'keterangan.*' => $requiredKeterangan
+            'keterangan.*' => $requiredKeterangan,
+            'suratpengantar_nobukti' => [$requiredBBT, 'array'],
+            'suratpengantar_nobukti.*' => [$requiredBBT],
+            'detail_statustitipanemkl' => [$requiredBBT, 'array'],
+            'detail_statustitipanemkl.*' => [$requiredBBT, new ValidasiStatusTitipanEMKL(request()->id)]
         ];
 
         $rules = array_merge(
@@ -175,6 +194,8 @@ class UpdatePengeluaranTruckingDetailRequest extends FormRequest
             'supir.*' => 'supir',
             'nominal.*' => 'nominal',
             'keterangan.*' => 'keterangan',
+            'suratpengantar_nobukti.*' => 'no bukti SP',
+            'detail_statustitipanemkl.*' => 'titipan emkl',
         ];
     }
 

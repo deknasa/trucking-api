@@ -92,7 +92,8 @@ class PengeluaranTruckingHeaderController extends Controller
                 "transferkebank" => $request->transferkebank,
                 "supir_id" => $request->supir_id,
                 "trado_id" => $request->trado_id,
-                "suratpengantar_nobukti" => $request->suratpengantar_nobukti,
+                "suratpengantar_nobukti" => $request->suratpengantar_nobukti,                
+                "statustitipanemkl" => $request->detail_statustitipanemkl,
                 "container_id" => $request->container_id,
                 "pelanggan_id" => $request->pelanggan_id,
                 "karyawan_id" => $request->karyawan_id,
@@ -155,7 +156,7 @@ class PengeluaranTruckingHeaderController extends Controller
             $pengeluaranTrucking = new PengeluaranTruckingHeader();
             $detail = $pengeluaranTrucking->getShowInvoice($id, $data->periodedari, $data->periodesampai);
         } else {
-            $detail = PengeluaranTruckingDetail::getAll($id);
+            $detail = PengeluaranTruckingDetail::getAll($id, $data->kodepengeluaran);
         }
         // $details = [];
         // foreach ($detail as $r ) {
@@ -231,7 +232,8 @@ class PengeluaranTruckingHeaderController extends Controller
                 "transferkebank" => $request->transferkebank,
                 "supir_id" => $request->supir_id,
                 "trado_id" => $request->trado_id,
-                "suratpengantar_nobukti" => $request->suratpengantar_nobukti,
+                "suratpengantar_nobukti" => $request->suratpengantar_nobukti,            
+                "statustitipanemkl" => $request->detail_statustitipanemkl,
                 "container_id" => $request->container_id,
                 "pelanggan_id" => $request->pelanggan_id,
                 "karyawan_id" => $request->karyawan_id,

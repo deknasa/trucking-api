@@ -170,7 +170,7 @@ class StorePenerimaanTruckingHeaderRequest extends FormRequest
                 'penerimaantrucking' => ['required', Rule::in($penerimaanName)],
                 'bank' => [$ruleBank, $bank, 'required'],
                 'bank_id' => [Rule::in($bankIds), 'required', 'min:1'],
-                'jenisorderan' => ['required', new ValidasiDetail($jumlahdetail)],
+                'jenisorder' => ['required', new ValidasiDetail($jumlahdetail)],
                 'periodedari' => [
                     'required',
                     'date_format:d-m-Y',
@@ -183,7 +183,7 @@ class StorePenerimaanTruckingHeaderRequest extends FormRequest
                     'before_or_equal:' . date('d-m-Y'),
                     new DateTutupBuku(),
                 ],
-                // 'keterangancoa' => 'required'
+                'keteranganheader' => 'required'
             ];
         } else {
             $rules = [

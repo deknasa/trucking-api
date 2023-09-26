@@ -3,6 +3,7 @@
 namespace App\Http\Requests;
 
 use App\Http\Controllers\Api\ErrorController;
+use App\Rules\ValidasiStatusTitipanEMKL;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
@@ -102,6 +103,20 @@ class StorePengeluaranTruckingDetailRequest extends FormRequest
             }
             return true;
         });
+        $requiredBBT = Rule::requiredIf(function () {
+            $idpengeluaran = request()->pengeluarantrucking_id;
+            if ($idpengeluaran != '') {
+                $fetchFormat =  DB::table('pengeluarantrucking')
+                    ->where('id', $idpengeluaran)
+                    ->first();
+                if ($fetchFormat->kodepengeluaran == 'BBT') {
+                    return true;
+                } else {
+                    return false;
+                }
+            }
+            return false;
+        });
         $sisaNominus = '';
         if (request()->pengeluarantrucking != '') {
             $idpengeluaran = request()->pengeluarantrucking_id;
@@ -148,9 +163,13 @@ class StorePengeluaranTruckingDetailRequest extends FormRequest
             // 'nominal' => ['array','required', 'numeric', 'gt:0'],
             'nominal.*' => ['required', $min],
             'keterangan' => [$requiredKeterangan, 'array'],
-            'keterangan.*' => $requiredKeterangan
+            'keterangan.*' => $requiredKeterangan,
+            'suratpengantar_nobukti' => [$requiredBBT, 'array'],
+            'suratpengantar_nobukti.*' => [$requiredBBT],
+            'detail_statustitipanemkl' => [$requiredBBT, 'array'],
+            'detail_statustitipanemkl.*' => [$requiredBBT, new ValidasiStatusTitipanEMKL(request()->id)]
         ];
-
+        
         $rules = array_merge(
             $rules,
             $rulseKlaim
@@ -168,6 +187,8 @@ class StorePengeluaranTruckingDetailRequest extends FormRequest
             'supir.*' => 'supir',
             'nominal.*' => 'nominal',
             'keterangan.*' => 'keterangan',
+            'suratpengantar_nobukti.*' => 'no bukti SP',
+            'detail_statustitipanemkl.*' => 'titipan emkl',
         ];
     }
 

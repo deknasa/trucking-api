@@ -26,7 +26,8 @@ class PengeluaranTruckingDetailController extends Controller
             'attributes' => [
                 'totalRows' => $pengeluaranTrucking->totalRows,
                 'totalPages' => $pengeluaranTrucking->totalPages,
-                'totalNominal' => $pengeluaranTrucking->totalNominal
+                'totalNominal' => $pengeluaranTrucking->totalNominal,
+                'totalNominalTagih' => $pengeluaranTrucking->totalNominalTagih,
             ]
         ]);
     }

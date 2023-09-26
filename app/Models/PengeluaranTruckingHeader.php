@@ -907,15 +907,14 @@ class PengeluaranTruckingHeader extends MyModel
         $statusPosting = Parameter::from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS POSTING')->where('text', 'BUKAN POSTING')->first();
         $statusCetak = Parameter::from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUSCETAK')->where('text', 'BELUM CETAK')->first();
 
-        $pinjamansupir = db::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))->SELECT('text','memo')->where('grp', 'PINJAMAN SUPIR')->where('subgrp', 'PINJAMAN SUPIR NON POSTING')->first() ?? '';
+        $pinjamansupir = db::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))->SELECT('text', 'memo')->where('grp', 'PINJAMAN SUPIR')->where('subgrp', 'PINJAMAN SUPIR NON POSTING')->first() ?? '';
         $statuspinjamanposting = $data['statusposting'] ?? $statusPosting->id;
         if ($idpengeluaran == $pinjamansupir->text) {
-            if  ($statuspinjamanposting==$statusPosting->id) {
+            if ($statuspinjamanposting == $statusPosting->id) {
                 $memo = json_decode($pinjamansupir->memo, true);
                 $data['coa'] = $memo['JURNAL'];
             } else {
                 $data['coa'] = $fetchFormat->coapostingdebet;
-
             }
         } else {
             if ($fetchFormat->kodepengeluaran != 'BLS') {
@@ -981,6 +980,7 @@ class PengeluaranTruckingHeader extends MyModel
                 'modifiedby' => $pengeluaranTruckingHeader->modifiedby,
 
                 // 'suratpengantar_id' => $data['suratpengantar_id'][$i] ?? null,
+                'statustitipanemkl' => $data['statustitipanemkl'][$i] ?? null,
                 'suratpengantar_nobukti' => $data['suratpengantar_nobukti'][$i] ?? null,
                 'trado_id' => $data['trado_id'][$i] ?? null,
                 'container_id' => $data['container_id'][$i] ?? null,
@@ -1025,7 +1025,7 @@ class PengeluaranTruckingHeader extends MyModel
             } else {
                 $alatbayar = AlatBayar::where('bank_id', $pengeluaranTruckingHeader->bank_id)->first();
                 $queryPengeluaran = Bank::from(DB::raw("bank with (readuncommitted)"))->select('parameter.grp', 'parameter.subgrp', 'bank.formatpengeluaran', 'bank.coa', 'bank.tipe')->join(DB::raw("parameter with (readuncommitted)"), 'bank.formatpengeluaran', 'parameter.id')->where("bank.id", $data['bank_id'])->first();
-                if ($fetchFormat->kodepengeluaran == 'BLL' || $fetchFormat->kodepengeluaran == 'BLN' || $fetchFormat->kodepengeluaran == 'BTU' || $fetchFormat->kodepengeluaran == 'BPT' || $fetchFormat->kodepengeluaran == 'BGS' || $fetchFormat->kodepengeluaran == 'BIT') {
+                if ($fetchFormat->kodepengeluaran == 'BLL' || $fetchFormat->kodepengeluaran == 'BLN' || $fetchFormat->kodepengeluaran == 'BTU' || $fetchFormat->kodepengeluaran == 'BPT' || $fetchFormat->kodepengeluaran == 'BGS' || $fetchFormat->kodepengeluaran == 'BIT' || $fetchFormat->kodepengeluaran == 'BBT') {
                     $nominal_detail = [];
                     $keterangan_detail = [];
                     $coakredit_detail[] = $queryPengeluaran->coa;
@@ -1033,7 +1033,11 @@ class PengeluaranTruckingHeader extends MyModel
                     $nowarkat[] = "";
                     $tglkasmasuk[] = (array_key_exists('tglkasmasuk', $data)) ? date('Y-m-d', strtotime($data['tglkasmasuk'])) : date('Y-m-d', strtotime($data['tglbukti']));
                     $nominal_detail[] = $nominalBiaya;
-                    $keterangan_detail[] = "$fetchFormat->keterangan periode " . $data['periode'];
+                    if ($fetchFormat->kodepengeluaran == 'BBT') {
+                        $keterangan_detail[] = "$fetchFormat->keterangan $pengeluaranTruckingHeader->nobukti";
+                    } else {
+                        $keterangan_detail[] = "$fetchFormat->keterangan periode " . $data['periode'] . " $pengeluaranTruckingHeader->nobukti";
+                    }
                 } else {
                     for ($i = 0; $i < count($nominal_detail); $i++) {
                         $coakredit_detail[] = $queryPengeluaran->coa;
@@ -1104,16 +1108,15 @@ class PengeluaranTruckingHeader extends MyModel
         $tanpaprosesnobukti = $data['tanpaprosesnobukti'] ?? 0;
         $from = $data['from'] ?? 'not';
         $statusPosting = Parameter::from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS POSTING')->where('text', 'BUKAN POSTING')->first();
-        $pinjamansupir = db::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))->SELECT('text','memo')->where('grp', 'PINJAMAN SUPIR')->where('subgrp', 'PINJAMAN SUPIR NON POSTING')->first() ?? '';
+        $pinjamansupir = db::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))->SELECT('text', 'memo')->where('grp', 'PINJAMAN SUPIR')->where('subgrp', 'PINJAMAN SUPIR NON POSTING')->first() ?? '';
         $statuspinjamanposting = $pengeluaranTruckingHeader['statusposting'] ?? $statusPosting->id;
-        
+
         if ($idpengeluaran == $pinjamansupir->text) {
-            if  ($statuspinjamanposting==$statusPosting->id) {
+            if ($statuspinjamanposting == $statusPosting->id) {
                 $memo = json_decode($pinjamansupir->memo, true);
                 $data['coa'] = $memo['JURNAL'];
             } else {
                 $data['coa'] = $fetchFormat->coapostingdebet;
-
             }
         } else {
             if ($fetchFormat->kodepengeluaran != 'BLS') {
@@ -1207,6 +1210,7 @@ class PengeluaranTruckingHeader extends MyModel
                 'keterangan' => $data['keterangan'][$i] ?? '',
                 'nominal' => $data['nominal'][$i],
 
+                'statustitipanemkl' => $data['statustitipanemkl'][$i] ?? null,
                 'suratpengantar_nobukti' => $data['suratpengantar_nobukti'][$i] ?? null,
                 'trado_id' => $data['trado_id'][$i] ?? null,
                 'container_id' => $data['container_id'][$i] ?? null,
@@ -1250,7 +1254,7 @@ class PengeluaranTruckingHeader extends MyModel
                     $alatbayar = AlatBayar::where('bank_id', $pengeluaranTruckingHeader->bank_id)->first();
                     $queryPengeluaran = Bank::from(DB::raw("bank with (readuncommitted)"))->select('parameter.grp', 'parameter.subgrp', 'bank.formatpengeluaran', 'bank.coa', 'bank.tipe')->join(DB::raw("parameter with (readuncommitted)"), 'bank.formatpengeluaran', 'parameter.id')->where("bank.id", $data['bank_id'])->first();
 
-                    if ($fetchFormat->kodepengeluaran == 'BLL' || $fetchFormat->kodepengeluaran == 'BLN' || $fetchFormat->kodepengeluaran == 'BTU' || $fetchFormat->kodepengeluaran == 'BPT' || $fetchFormat->kodepengeluaran == 'BGS' || $fetchFormat->kodepengeluaran == 'BIT') {
+                    if ($fetchFormat->kodepengeluaran == 'BLL' || $fetchFormat->kodepengeluaran == 'BLN' || $fetchFormat->kodepengeluaran == 'BTU' || $fetchFormat->kodepengeluaran == 'BPT' || $fetchFormat->kodepengeluaran == 'BGS' || $fetchFormat->kodepengeluaran == 'BIT' || $fetchFormat->kodepengeluaran == 'BBT') {
                         $nominal_detail = [];
                         $keterangan_detail = [];
                         $coakredit_detail[] = $queryPengeluaran->coa;
@@ -1258,7 +1262,11 @@ class PengeluaranTruckingHeader extends MyModel
                         $nowarkat[] = "";
                         $tglkasmasuk[] = (array_key_exists('tglkasmasuk', $data)) ? date('Y-m-d', strtotime($data['tglkasmasuk'])) : date('Y-m-d', strtotime($data['tglbukti']));
                         $nominal_detail[] = $nominalBiaya;
-                        $keterangan_detail[] = "$fetchFormat->keterangan periode " . $data['periode'];
+                        if ($fetchFormat->kodepengeluaran == 'BBT') {
+                            $keterangan_detail[] = "$fetchFormat->keterangan $pengeluaranTruckingHeader->nobukti";
+                        } else {
+                            $keterangan_detail[] = "$fetchFormat->keterangan periode " . $data['periode'] . " $pengeluaranTruckingHeader->nobukti";
+                        }
                     } else {
 
                         for ($i = 0; $i < count($nominal_detail); $i++) {
