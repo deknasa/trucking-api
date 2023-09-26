@@ -727,7 +727,7 @@ class PendapatanSupirHeader extends MyModel
         $pendapatanSupirHeader = new PendapatanSupirHeader();
 
         $pendapatanSupirHeader->tglbukti = date('Y-m-d', strtotime($data['tglbukti']));
-        $pendapatanSupirHeader->bank_id  = $data['bank_id'];
+        $pendapatanSupirHeader->bank_id  = $data['bank_id'] ?? 0;
         $pendapatanSupirHeader->supir_id  = $data['supir_id'];
         $pendapatanSupirHeader->tgldari  = date('Y-m-d', strtotime($data['tgldari']));
         $pendapatanSupirHeader->tglsampai  = date('Y-m-d', strtotime($data['tglsampai']));
@@ -764,32 +764,34 @@ class PendapatanSupirHeader extends MyModel
         $nominalDetailPengeluaran[] = $totalPengeluaran;
         $coaDebetPengeluaran[] = $memoDebet['JURNAL'];
         $keteranganDetailPengeluaran[] = "$parameterKeterangan->text " . $data['tgldari'] . " s/d " . $data['tglsampai'];
-        if ($data['bank_id'] == 1) {
-            $alatBayar = DB::table("alatbayar")->from(DB::raw("alatbayar with (readuncommitted)"))->where('kodealatbayar', 'TUNAI')->first();
-        } else {
-            $alatBayar = DB::table("alatbayar")->from(DB::raw("alatbayar with (readuncommitted)"))->where('kodealatbayar', 'TRANSFER')->first();
+        if ($data['bank_id'] != '') {
+
+            if ($data['bank_id'] == 1) {
+                $alatBayar = DB::table("alatbayar")->from(DB::raw("alatbayar with (readuncommitted)"))->where('kodealatbayar', 'TUNAI')->first();
+            } else {
+                $alatBayar = DB::table("alatbayar")->from(DB::raw("alatbayar with (readuncommitted)"))->where('kodealatbayar', 'TRANSFER')->first();
+            }
+
+            // POSTING KE PENGELUARAN
+            $pengeluaranHeaderRequest = [
+                'tglbukti' => date('Y-m-d', strtotime($data['tglbukti'])),
+                'pelanggan_id' => 0,
+                'postingdari' => 'ENTRY PENDAPATANSUPIR',
+                'dibayarke' => 'PENDAPATAN SUPIR',
+                'bank_id' => $data['bank_id'],
+                'alatbayar_id' => $alatBayar->id,
+                'nowarkat' => $noWarkat,
+                'tgljatuhtempo' => $tglJatuhTempo,
+                'nominal_detail' => $nominalDetailPengeluaran,
+                'coadebet' => $coaDebetPengeluaran,
+                'keterangan_detail' => $keteranganDetailPengeluaran,
+            ];
+
+            $pengeluaranHeader = (new PengeluaranHeader())->processStore($pengeluaranHeaderRequest);
+            $pendapatanSupirHeader->pengeluaran_nobukti = $pengeluaranHeader->nobukti;
+
+            $pendapatanSupirHeader->save();
         }
-
-        // POSTING KE PENGELUARAN
-        $pengeluaranHeaderRequest = [
-            'tglbukti' => date('Y-m-d', strtotime($data['tglbukti'])),
-            'pelanggan_id' => 0,
-            'postingdari' => 'ENTRY PENDAPATANSUPIR',
-            'dibayarke' => 'PENDAPATAN SUPIR',
-            'bank_id' => $data['bank_id'],
-            'alatbayar_id' => $alatBayar->id,
-            'nowarkat' => $noWarkat,
-            'tgljatuhtempo' => $tglJatuhTempo,
-            'nominal_detail' => $nominalDetailPengeluaran,
-            'coadebet' => $coaDebetPengeluaran,
-            'keterangan_detail' => $keteranganDetailPengeluaran,
-        ];
-
-        $pengeluaranHeader = (new PengeluaranHeader())->processStore($pengeluaranHeaderRequest);
-        $pendapatanSupirHeader->pengeluaran_nobukti = $pengeluaranHeader->nobukti;
-
-        $pendapatanSupirHeader->save();
-
 
         $pendapatanSupirLogTrail = (new LogTrail())->processStore([
             'namatabel' => strtoupper($pendapatanSupirHeader->getTable()),
@@ -832,6 +834,9 @@ class PendapatanSupirHeader extends MyModel
                     'nominal' => $data['nominal_depo'],
                     'keterangan' => $data['keterangan_depo'],
                 ];
+                if ($data['bank_id'] == '') {
+                    $dataDeposito['tanpaprosesnobukti'] = 2;
+                }
                 $penerimaanPS = (new PenerimaanTruckingHeader())->processStore($dataDeposito);
             }
             $fetchFormat =  DB::table('penerimaantrucking')->where('kodepenerimaan', 'PJP')->first();
@@ -851,6 +856,10 @@ class PendapatanSupirHeader extends MyModel
                     'keterangan' => $data['pinj_keterangan'],
                     'pengeluarantruckingheader_nobukti' => $data['pinj_nobukti'],
                 ];
+
+                if ($data['bank_id'] == '') {
+                    $dataPinjaman['tanpaprosesnobukti'] = 2;
+                }
                 $penerimaanPS = (new PenerimaanTruckingHeader())->processStore($dataPinjaman);
             }
         }
@@ -862,6 +871,7 @@ class PendapatanSupirHeader extends MyModel
 
     public function processUpdate(PendapatanSupirHeader $pendapatanSupirHeader, array $data): PendapatanSupirHeader
     {
+        $prevBank = $pendapatanSupirHeader->bank_id;
         $getTgl = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'EDIT TANGGAL BUKTI')->where('subgrp', 'PENDAPATAN SUPIR')->first();
         if (trim($getTgl->text) == 'YA') {
             $group = 'PENDAPATAN SUPIR BUKTI';
@@ -895,6 +905,7 @@ class PendapatanSupirHeader extends MyModel
                 }
             }
         }
+        $pendapatanSupirHeader->bank_id = $data['bank_id'] ?? '';
         $pendapatanSupirHeader->tgldari = date('Y-m-d', strtotime($data['tgldari']));
         $pendapatanSupirHeader->tglsampai = date('Y-m-d', strtotime($data['tglsampai']));
         $pendapatanSupirHeader->modifiedby = auth('api')->user()->name;
@@ -932,35 +943,133 @@ class PendapatanSupirHeader extends MyModel
         $coaDebetPengeluaran[] = $memoDebet['JURNAL'];
         $keteranganDetailPengeluaran[] = "$parameterKeterangan->text " . $data['tgldari'] . " s/d " . $data['tglsampai'];
 
-        if ($pendapatanSupirHeader->bank_id == 1) {
-            $alatBayar = DB::table("alatbayar")->from(DB::raw("alatbayar with (readuncommitted)"))->where('kodealatbayar', 'TUNAI')->first();
-        } else {
-            $alatBayar = DB::table("alatbayar")->from(DB::raw("alatbayar with (readuncommitted)"))->where('kodealatbayar', 'TRANSFER')->first();
+        $cekBank = Parameter::from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'PENDAPATAN SUPIR')->where('subgrp', 'BANK')
+            ->first();
+
+        if ($cekBank->text == 'YA') {
+            if ($pendapatanSupirHeader->bank_id == 1) {
+                $alatBayar = DB::table("alatbayar")->from(DB::raw("alatbayar with (readuncommitted)"))->where('kodealatbayar', 'TUNAI')->first();
+            } else {
+                $alatBayar = DB::table("alatbayar")->from(DB::raw("alatbayar with (readuncommitted)"))->where('kodealatbayar', 'TRANSFER')->first();
+            }
+
+            // POSTING KE PENGELUARAN
+            $pengeluaranHeaderRequest = [
+                'tglbukti' => $pendapatanSupirHeader->tglbukti,
+                'pelanggan_id' => 0,
+                'postingdari' => 'EDIT PENDAPATAN SUPIR',
+                'dibayarke' => 'PENDAPATAN SUPIR',
+                'bank_id' => $pendapatanSupirHeader->bank_id,
+                'alatbayar_id' => $alatBayar->id,
+                'nowarkat' => $noWarkat,
+                'tgljatuhtempo' => $tglJatuhTempo,
+                'nominal_detail' => $nominalDetailPengeluaran,
+                'coadebet' => $coaDebetPengeluaran,
+                'keterangan_detail' => $keteranganDetailPengeluaran,
+            ];
+
+            $get = PengeluaranHeader::from(DB::raw("pengeluaranheader with (readuncommitted)"))
+                ->where('pengeluaranheader.nobukti', $pendapatanSupirHeader->pengeluaran_nobukti)->first();
+            $newPengeluaran = new PengeluaranHeader();
+            $newPengeluaran = $newPengeluaran->findAll($get->id);
+            $pengeluaranheader = (new PengeluaranHeader())->processUpdate($newPengeluaran, $pengeluaranHeaderRequest);
+            $pendapatanSupirHeader->pengeluaran_nobukti = $pengeluaranheader->nobukti;
+            $pendapatanSupirHeader->save();
         }
 
-        // POSTING KE PENGELUARAN
-        $pengeluaranHeaderRequest = [
-            'tglbukti' => $pendapatanSupirHeader->tglbukti,
-            'pelanggan_id' => 0,
-            'postingdari' => 'EDIT PENDAPATAN SUPIR',
-            'dibayarke' => 'PENDAPATAN SUPIR',
-            'bank_id' => $pendapatanSupirHeader->bank_id,
-            'alatbayar_id' => $alatBayar->id,
-            'nowarkat' => $noWarkat,
-            'tgljatuhtempo' => $tglJatuhTempo,
-            'nominal_detail' => $nominalDetailPengeluaran,
-            'coadebet' => $coaDebetPengeluaran,
-            'keterangan_detail' => $keteranganDetailPengeluaran,
-        ];
+        if ($cekBank->text == 'TIDAK') {
+            if ($pendapatanSupirHeader->pengeluaran_nobukti == '') {
+                if ($data['bank_id'] != 0 && $data['bank_id'] != '') {
+                    if ($data['bank_id'] == 1) {
+                        $alatBayar = DB::table("alatbayar")->from(DB::raw("alatbayar with (readuncommitted)"))->where('kodealatbayar', 'TUNAI')->first();
+                    } else {
+                        $alatBayar = DB::table("alatbayar")->from(DB::raw("alatbayar with (readuncommitted)"))->where('kodealatbayar', 'TRANSFER')->first();
+                    }
 
-        $get = PengeluaranHeader::from(DB::raw("pengeluaranheader with (readuncommitted)"))
-            ->where('pengeluaranheader.nobukti', $pendapatanSupirHeader->pengeluaran_nobukti)->first();
-        $newPengeluaran = new PengeluaranHeader();
-        $newPengeluaran = $newPengeluaran->findAll($get->id);
-        $pengeluaranheader = (new PengeluaranHeader())->processUpdate($newPengeluaran, $pengeluaranHeaderRequest);
-        $pendapatanSupirHeader->pengeluaran_nobukti = $pengeluaranheader->nobukti;
-        $pendapatanSupirHeader->save();
+                    // POSTING KE PENGELUARAN
+                    $pengeluaranHeaderRequest = [
+                        'tglbukti' => date('Y-m-d', strtotime($data['tglbukti'])),
+                        'pelanggan_id' => 0,
+                        'postingdari' => 'EDIT PENDAPATANSUPIR',
+                        'dibayarke' => 'PENDAPATAN SUPIR',
+                        'bank_id' => $data['bank_id'],
+                        'alatbayar_id' => $alatBayar->id,
+                        'nowarkat' => $noWarkat,
+                        'tgljatuhtempo' => $tglJatuhTempo,
+                        'nominal_detail' => $nominalDetailPengeluaran,
+                        'coadebet' => $coaDebetPengeluaran,
+                        'keterangan_detail' => $keteranganDetailPengeluaran,
+                    ];
 
+                    $pengeluaranHeader = (new PengeluaranHeader())->processStore($pengeluaranHeaderRequest);
+                    $pendapatanSupirHeader->pengeluaran_nobukti = $pengeluaranHeader->nobukti;
+
+                    $pendapatanSupirHeader->save();
+                }
+            } else {
+
+                if ($data['bank_id'] == 0 && $data['bank_id'] == '') {
+                    $getPengeluaran = PengeluaranHeader::from(DB::raw("pengeluaranheader with (readuncommitted)"))->where('nobukti', $pendapatanSupirHeader->pengeluaran_nobukti)->first();
+                    (new PengeluaranHeader())->processDestroy($getPengeluaran->id, 'EDIT PENDAPATAN SUPIR');
+                    $pendapatanSupirHeader->pengeluaran_nobukti = '';
+
+                    $pendapatanSupirHeader->save();
+                } else {
+                    if ($pendapatanSupirHeader->bank_id == 1) {
+                        $alatBayar = DB::table("alatbayar")->from(DB::raw("alatbayar with (readuncommitted)"))->where('kodealatbayar', 'TUNAI')->first();
+                    } else {
+                        $alatBayar = DB::table("alatbayar")->from(DB::raw("alatbayar with (readuncommitted)"))->where('kodealatbayar', 'TRANSFER')->first();
+                    }
+                    if ($data['bank_id'] != $prevBank) {
+                        $getPengeluaran = PengeluaranHeader::from(DB::raw("pengeluaranheader with (readuncommitted)"))->where('nobukti', $pendapatanSupirHeader->pengeluaran_nobukti)->first();
+                        (new PengeluaranHeader())->processDestroy($getPengeluaran->id, 'EDIT PENDAPATAN SUPIR');
+
+                        // POSTING KE PENGELUARAN
+                        $pengeluaranHeaderRequest = [
+                            'tglbukti' => date('Y-m-d', strtotime($data['tglbukti'])),
+                            'pelanggan_id' => 0,
+                            'postingdari' => 'EDIT PENDAPATANSUPIR',
+                            'dibayarke' => 'PENDAPATAN SUPIR',
+                            'bank_id' => $data['bank_id'],
+                            'alatbayar_id' => $alatBayar->id,
+                            'nowarkat' => $noWarkat,
+                            'tgljatuhtempo' => $tglJatuhTempo,
+                            'nominal_detail' => $nominalDetailPengeluaran,
+                            'coadebet' => $coaDebetPengeluaran,
+                            'keterangan_detail' => $keteranganDetailPengeluaran,
+                        ];
+
+                        $pengeluaranHeader = (new PengeluaranHeader())->processStore($pengeluaranHeaderRequest);
+                        $pendapatanSupirHeader->pengeluaran_nobukti = $pengeluaranHeader->nobukti;
+
+                        $pendapatanSupirHeader->save();
+                    } else {
+                        // POSTING KE PENGELUARAN
+                        $pengeluaranHeaderRequest = [
+                            'tglbukti' => $pendapatanSupirHeader->tglbukti,
+                            'pelanggan_id' => 0,
+                            'postingdari' => 'EDIT PENDAPATAN SUPIR',
+                            'dibayarke' => 'PENDAPATAN SUPIR',
+                            'bank_id' => $pendapatanSupirHeader->bank_id,
+                            'alatbayar_id' => $alatBayar->id,
+                            'nowarkat' => $noWarkat,
+                            'tgljatuhtempo' => $tglJatuhTempo,
+                            'nominal_detail' => $nominalDetailPengeluaran,
+                            'coadebet' => $coaDebetPengeluaran,
+                            'keterangan_detail' => $keteranganDetailPengeluaran,
+                        ];
+
+                        $get = PengeluaranHeader::from(DB::raw("pengeluaranheader with (readuncommitted)"))
+                            ->where('pengeluaranheader.nobukti', $pendapatanSupirHeader->pengeluaran_nobukti)->first();
+                        $newPengeluaran = new PengeluaranHeader();
+                        $newPengeluaran = $newPengeluaran->findAll($get->id);
+                        $pengeluaranheader = (new PengeluaranHeader())->processUpdate($newPengeluaran, $pengeluaranHeaderRequest);
+                        $pendapatanSupirHeader->pengeluaran_nobukti = $pengeluaranheader->nobukti;
+                        $pendapatanSupirHeader->save();
+                    }
+                }
+            }
+        }
         $pendapatanSupirLogTrail = (new LogTrail())->processStore([
             'namatabel' => strtoupper($pendapatanSupirHeader->getTable()),
             'postingdari' => $data['postingdari'] ?? 'EDIT pendapatan Supir HEADER',
@@ -988,16 +1097,19 @@ class PendapatanSupirHeader extends MyModel
                 ->where('pendapatansupir_bukti', $pendapatanSupirHeader->nobukti)
                 ->where('penerimaantrucking_id', 3)
                 ->first();
+
             if ($data['nominal_depo'] != '') {
                 $dataDeposito = [
-                    'tanpaprosesnobukti' => 3,
+                    'tanpaprosesnobukti' => 2,
                     'penerimaantrucking_id' => $fetchFormat->id,
                     'bank_id' => $data['bank_id'],
+                    'prevBank' => $prevBank,
                     'tglbukti' => $pendapatanSupirHeader->tglbukti,
                     'pendapatansupir_bukti' => $pendapatanSupirHeader->nobukti,
                     'supirheader_id' => 0,
                     'karyawanheader_id' => 0,
                     'jenisorder_id' => '',
+                    'komisi' => true,
                     'supir_id' => $data['supir_depo'],
                     'nominal' => $data['nominal_depo'],
                     'keterangan' => $data['keterangan_depo'],
@@ -1009,6 +1121,10 @@ class PendapatanSupirHeader extends MyModel
                         $penerimaanPS = (new PenerimaanTruckingHeader())->processUpdate($newPenerimaanTruckingPS, $dataDeposito);
                     }
                 } else {
+
+                    if ($data['bank_id'] != '' && $data['bank_id'] != 0) {
+                        $dataDeposito['tanpaprosesnobukti'] = 3;
+                    }
                     $penerimaanPS = (new PenerimaanTruckingHeader())->processStore($dataDeposito);
                 }
             } else {
@@ -1026,14 +1142,16 @@ class PendapatanSupirHeader extends MyModel
                 ->first();
             if ($data['pinj_nominal'] != '') {
                 $dataPinjaman = [
-                    'tanpaprosesnobukti' => 3,
+                    'tanpaprosesnobukti' => 2,
                     'penerimaantrucking_id' => $fetchFormat->id,
                     'bank_id' => $data['bank_id'],
                     'tglbukti' => $pendapatanSupirHeader->tglbukti,
                     'pendapatansupir_bukti' => $pendapatanSupirHeader->nobukti,
                     'supirheader_id' => 0,
                     'karyawanheader_id' => 0,
+                    'prevBank' => $prevBank,
                     'jenisorder_id' => '',
+                    'komisi' => true,
                     'supir_id' => $data['pinj_supir'],
                     'nominal' => $data['pinj_nominal'],
                     'keterangan' => $data['pinj_keterangan'],
@@ -1046,6 +1164,9 @@ class PendapatanSupirHeader extends MyModel
                         $penerimaanPS = (new PenerimaanTruckingHeader())->processUpdate($newPenerimaanTruckingPS, $dataPinjaman);
                     }
                 } else {
+                    if ($data['bank_id'] != '' && $data['bank_id'] != 0) {
+                        $dataPinjaman['tanpaprosesnobukti'] = 3;
+                    }
                     $penerimaanPS = (new PenerimaanTruckingHeader())->processStore($dataPinjaman);
                 }
             } else {
@@ -1090,7 +1211,9 @@ class PendapatanSupirHeader extends MyModel
         ]);
 
         $getPengeluaran = PengeluaranHeader::from(DB::raw("pengeluaranheader with (readuncommitted)"))->where('nobukti', $pendapatanSupirHeader->pengeluaran_nobukti)->first();
-        (new PengeluaranHeader())->processDestroy($getPengeluaran->id, $postingDari);
+        if (isset($getPengeluaran)) {
+            (new PengeluaranHeader())->processDestroy($getPengeluaran->id, $postingDari);
+        }
         $cekPinjaman = PenerimaanTruckingHeader::from(DB::raw("penerimaantruckingheader with (readuncommitted)"))
             ->where('pendapatansupir_bukti', $pendapatanSupirHeader->nobukti)
             ->where('penerimaantrucking_id', 2)
