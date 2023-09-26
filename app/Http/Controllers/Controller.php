@@ -370,4 +370,13 @@ class Controller extends BaseController
         
         return $ipaddress;
     }
+
+    function ipToCheck($ipRequest)
+    {
+        $ipArray = [
+			env('LOCAL_IP_LIST_1'),
+			env('LOCAL_IP_LIST_2'),
+		];
+        return in_array($ipRequest, $ipArray);
+    }
 }
