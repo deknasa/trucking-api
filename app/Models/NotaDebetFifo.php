@@ -121,10 +121,9 @@ class NotaDebetFifo extends Model
                         throw new \Exception("Error Simpan Nota Debet Detail fifo.");
                     }
                 }
-            } 
+            }
         }
         // dd('test1');
         return $notadebetFifo;
-
-            }
+    }
 }

@@ -365,7 +365,7 @@ class PengeluaranStokHeader extends MyModel
             db::raw("cast((format(pengeluaran.tglbukti,'yyyy/MM')+'/1') as date) as tgldariheaderpengeluaran"),
             db::raw("cast(cast(format((cast((format(pengeluaran.tglbukti,'yyyy/MM')+'/1') as datetime)+32),'yyyy/MM')+'/01' as datetime)-1 as date) as tglsampaiheaderpengeluaran"),
             db::raw("cast((format(serviceinheader.tglbukti,'yyyy/MM')+'/1') as date) as tgldariheaderserviceinheader"),
-            db::raw("cast(cast(format((cast((format(serviceinheader.tglbukti,'yyyy/MM')+'/1') as datetime)+32),'yyyy/MM')+'/01' as datetime)-1 as date) as tglsampaiheaderserviceinheader"),            
+            db::raw("cast(cast(format((cast((format(serviceinheader.tglbukti,'yyyy/MM')+'/1') as datetime)+32),'yyyy/MM')+'/01' as datetime)-1 as date) as tglsampaiheaderserviceinheader"),
 
         );
     }
@@ -405,9 +405,11 @@ class PengeluaranStokHeader extends MyModel
             ->where('pengeluaranstokheader.id', $id)
             ->leftJoin('penerimaanstokheader', 'pengeluaranstokheader.nobukti', 'penerimaanstokheader.pengeluaranstok_nobukti');
         $data = $query->first();
-        if ($data->id) {
-            # code...
-            return true;
+        if (isset($data)) {
+            if ($data->id) {
+                # code...
+                return true;
+            }
         }
         return false;
     }
@@ -416,42 +418,44 @@ class PengeluaranStokHeader extends MyModel
 
         $query = DB::table($this->table)->from($this->table)->where('pengeluaranstokheader.id', $id);
         $data = $query->first();
-        $approvalJurnal = DB::table('pengeluaranstokheader')
-            ->from(
-                DB::raw("pengeluaranstokheader as a with (readuncommitted)")
-            )
-            ->select(
-                'a.nobukti'
-            )
-            ->join(DB::raw("jurnalumumpusatheader b with (readuncommitted)"), 'a.nobukti', 'b.nobukti')
-            ->where('a.nobukti', '=', $data->nobukti)
-            ->first();
+        if (isset($data)) {
+            $approvalJurnal = DB::table('pengeluaranstokheader')
+                ->from(
+                    DB::raw("pengeluaranstokheader as a with (readuncommitted)")
+                )
+                ->select(
+                    'a.nobukti'
+                )
+                ->join(DB::raw("jurnalumumpusatheader b with (readuncommitted)"), 'a.nobukti', 'b.nobukti')
+                ->where('a.nobukti', '=', $data->nobukti)
+                ->first();
 
-        if (isset($approvalJurnal)) {
-            return true;
+            if (isset($approvalJurnal)) {
+                return true;
+            }
         }
-
         return false;
     }
     public function isKMTApprovedJurnal($id)
     {
         $query = DB::table($this->table)->from($this->table)->where('pengeluaranstokheader.id', $id);
         $data = $query->first();
-        $approvalJurnal = DB::table('pengeluaranstokheader')
-            ->from(
-                DB::raw("pengeluaranstokheader as a with (readuncommitted)")
-            )
-            ->select(
-                'a.nobukti'
-            )
-            ->join(DB::raw("jurnalumumpusatheader b with (readuncommitted)"), 'a.penerimaan_nobukti', 'b.nobukti')
-            ->where('a.nobukti', '=', $data->nobukti)
-            ->first();
+        if (isset($data)) {
+            $approvalJurnal = DB::table('pengeluaranstokheader')
+                ->from(
+                    DB::raw("pengeluaranstokheader as a with (readuncommitted)")
+                )
+                ->select(
+                    'a.nobukti'
+                )
+                ->join(DB::raw("jurnalumumpusatheader b with (readuncommitted)"), 'a.penerimaan_nobukti', 'b.nobukti')
+                ->where('a.nobukti', '=', $data->nobukti)
+                ->first();
 
-        if (isset($approvalJurnal)) {
-            return true;
+            if (isset($approvalJurnal)) {
+                return true;
+            }
         }
-
         return false;
     }
 
@@ -459,22 +463,23 @@ class PengeluaranStokHeader extends MyModel
     {
         $query = DB::table($this->table)->from($this->table)->where('pengeluaranstokheader.id', $id);
         $data = $query->first();
-        $approvalJurnal = DB::table('pengeluaranstokheader')
-            ->from(
-                DB::raw("pengeluaranstokheader as a with (readuncommitted)")
-            )
-            ->select(
-                'a.nobukti'
-            )
-            ->join(DB::raw("pelunasanhutangheader b with (readuncommitted)"), 'a.hutangbayar_nobukti', 'b.nobukti')
-            ->join(DB::raw("jurnalumumpusatheader c with (readuncommitted)"), 'b.pengeluaran_nobukti', 'c.nobukti')
-            ->where('a.nobukti', '=', $data->nobukti)
-            ->first();
+        if (isset($data)) {
+            $approvalJurnal = DB::table('pengeluaranstokheader')
+                ->from(
+                    DB::raw("pengeluaranstokheader as a with (readuncommitted)")
+                )
+                ->select(
+                    'a.nobukti'
+                )
+                ->join(DB::raw("pelunasanhutangheader b with (readuncommitted)"), 'a.hutangbayar_nobukti', 'b.nobukti')
+                ->join(DB::raw("jurnalumumpusatheader c with (readuncommitted)"), 'b.pengeluaran_nobukti', 'c.nobukti')
+                ->where('a.nobukti', '=', $data->nobukti)
+                ->first();
 
-        if (isset($approvalJurnal)) {
-            return true;
+            if (isset($approvalJurnal)) {
+                return true;
+            }
         }
-
         return false;
     }
 
@@ -482,10 +487,12 @@ class PengeluaranStokHeader extends MyModel
     {
         $query = DB::table($this->table)->from($this->table)->where('pengeluaranstokheader.id', $id);
         $data = $query->first();
-        $status = $data->statuscetak;
-        $statusCetak = Parameter::from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUSCETAK')->where('text', 'CETAK')->first();
-        if ($status == $statusCetak->id) {
-            return true;
+        if (isset($data)) {
+            $status = $data->statuscetak;
+            $statusCetak = Parameter::from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUSCETAK')->where('text', 'CETAK')->first();
+            if ($status == $statusCetak->id) {
+                return true;
+            }
         }
         return false;
     }
@@ -523,10 +530,12 @@ class PengeluaranStokHeader extends MyModel
             )
             ->where('id', $id)
             ->first();
-        if ($query->statusedit != $tidakBolehEdit->id) {
-            $limit = strtotime($query->tglbatasedit);
-            $now = strtotime('now');
-            if ($now < $limit) return true;
+        if (isset($query)) {
+            if ($query->statusedit != $tidakBolehEdit->id) {
+                $limit = strtotime($query->tglbatasedit);
+                $now = strtotime('now');
+                if ($now < $limit) return true;
+            }
         }
         return false;
     }
@@ -556,7 +565,7 @@ class PengeluaranStokHeader extends MyModel
 
         if ($korv->id == $data['pengeluaranstok_id']) {
             $data['gudang_id'] =  Parameter::where('grp', 'GUDANG KANTOR')->where('subgrp', 'GUDANG KANTOR')->first()->text;
-        } 
+        }
         if ($pja->text == $data['pengeluaranstok_id']) {
             $data['gudang_id'] =  Parameter::where('grp', 'GUDANG SEMENTARA')->where('subgrp', 'GUDANG SEMENTARA')->first()->text;
         }
