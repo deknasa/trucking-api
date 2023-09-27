@@ -168,7 +168,8 @@ class SuratPengantarController extends Controller
                 'keterangan_detail' => $request->keterangan_detail,
                 'nominal' => $request->nominal,
                 'nominalTagih' => $request->nominalTagih,
-                'komisisupir' => $request->komisisupir
+                'komisisupir' => $request->komisisupir,
+                'gajikenek' => $request->gajikenek
             ];
             $suratPengantar = (new SuratPengantar())->processUpdate($suratpengantar, $data);
             $suratPengantar->position = $this->getPosition($suratPengantar, $suratPengantar->getTable())->position;

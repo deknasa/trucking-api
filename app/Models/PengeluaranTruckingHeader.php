@@ -36,6 +36,7 @@ class PengeluaranTruckingHeader extends MyModel
                 DB::raw("prosesuangjalansupirdetail as a with (readuncommitted)")
             )
             ->select(
+                'a.nobukti',
                 'a.pengeluarantrucking_nobukti'
             )
             ->where('a.pengeluarantrucking_nobukti', '=', $nobukti)
@@ -43,7 +44,7 @@ class PengeluaranTruckingHeader extends MyModel
         if (isset($prosesUangJalan)) {
             $data = [
                 'kondisi' => true,
-                'keterangan' => 'Proses Uang Jalan Supir',
+                'keterangan' => 'Proses Uang Jalan Supir '. $prosesUangJalan->nobukti,
                 'kodeerror' => 'TDT'
             ];
             goto selesai;
@@ -73,6 +74,7 @@ class PengeluaranTruckingHeader extends MyModel
                 DB::raw("penerimaantruckingdetail as a with (readuncommitted)")
             )
             ->select(
+                'a.nobukti',
                 'a.pengeluarantruckingheader_nobukti'
             )
             ->where('a.pengeluarantruckingheader_nobukti', '=', $nobukti)
@@ -80,7 +82,7 @@ class PengeluaranTruckingHeader extends MyModel
         if (isset($penerimaanTrucking)) {
             $data = [
                 'kondisi' => true,
-                'keterangan' => 'Penerimaan Trucking',
+                'keterangan' => 'Penerimaan Trucking '. $penerimaanTrucking->nobukti,
                 'kodeerror' => 'SATL'
             ];
             goto selesai;
@@ -91,7 +93,8 @@ class PengeluaranTruckingHeader extends MyModel
                 DB::raw("pengeluarantruckingheader as a with (readuncommitted)")
             )
             ->select(
-                'a.nobukti'
+                'a.nobukti',
+                'a.pengeluaran_nobukti'
             )
             ->join(DB::raw("jurnalumumpusatheader b with (readuncommitted)"), 'a.pengeluaran_nobukti', 'b.nobukti')
             ->where('a.nobukti', '=', $nobukti)
@@ -99,7 +102,7 @@ class PengeluaranTruckingHeader extends MyModel
         if (isset($approvalJurnal)) {
             $data = [
                 'kondisi' => true,
-                'keterangan' => 'Approval Jurnal',
+                'keterangan' => 'Approval Jurnal '. $approvalJurnal->pengeluaran_nobukti,
                 'kodeerror' => 'SAP'
             ];
             goto selesai;

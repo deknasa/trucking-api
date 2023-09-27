@@ -90,7 +90,8 @@ class AbsensiSupirApprovalHeader extends MyModel
                 DB::raw("absensisupirapprovalheader as a with (readuncommitted)")
             )
             ->select(
-                'a.nobukti'
+                'a.nobukti',
+                'a.pengeluaran_nobukti'
             )
             ->join(DB::raw("jurnalumumpusatheader b with (readuncommitted)"), 'a.pengeluaran_nobukti', 'b.nobukti')
             ->where('a.nobukti', '=', $get->nobukti)
@@ -98,7 +99,7 @@ class AbsensiSupirApprovalHeader extends MyModel
         if (isset($absensiSupir)) {
             $data = [
                 'kondisi' => true,
-                'keterangan' => 'Approval Jurnal',
+                'keterangan' => 'Approval Jurnal '. $absensiSupir->pengeluaran_nobukti,
                 'kodeerror' => 'SATL'
             ];
             goto selesai;

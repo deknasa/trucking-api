@@ -50,14 +50,15 @@ class KasGantungHeader extends MyModel
                 DB::raw("absensisupirheader as a with (readuncommitted)")
             )
             ->select(
-                'a.kasgantung_nobukti'
+                'a.kasgantung_nobukti',
+                'a.nobukti'
             )
             ->where('a.kasgantung_nobukti', '=', $nobukti)
             ->first();
         if (isset($absensiSupir)) {
             $data = [
                 'kondisi' => true,
-                'keterangan' => 'Absensi Supir',
+                'keterangan' => 'Absensi Supir '. $absensiSupir->nobukti,
                 'kodeerror' => 'TDT'
             ];
             goto selesai;
@@ -67,14 +68,15 @@ class KasGantungHeader extends MyModel
                 DB::raw("pengembaliankasgantungdetail as a with (readuncommitted)")
             )
             ->select(
-                'a.kasgantung_nobukti'
+                'a.kasgantung_nobukti',
+                'a.nobukti'
             )
             ->where('a.kasgantung_nobukti', '=', $nobukti)
             ->first();
         if (isset($pengembalianKasgantung)) {
             $data = [
                 'kondisi' => true,
-                'keterangan' => 'Pengembalian Kas Gantung',
+                'keterangan' => 'Pengembalian Kas Gantung '. $pengembalianKasgantung->nobukti,
                 'kodeerror' => 'SATL'
             ];
             goto selesai;
@@ -86,7 +88,8 @@ class KasGantungHeader extends MyModel
                 DB::raw("kasgantungheader as a with (readuncommitted)")
             )
             ->select(
-                'a.nobukti'
+                'a.nobukti',
+                'a.pengeluaran_nobukti'
             )
             ->join(DB::raw("jurnalumumpusatheader b with (readuncommitted)"), 'a.pengeluaran_nobukti', 'b.nobukti')
             ->where('a.nobukti', '=', $nobukti)
@@ -94,7 +97,7 @@ class KasGantungHeader extends MyModel
         if (isset($jurnal)) {
             $data = [
                 'kondisi' => true,
-                'keterangan' => 'Approval Jurnal',
+                'keterangan' => 'Approval Jurnal '. $jurnal->pengeluaran_nobukti,
                 'kodeerror' => 'SAP'
             ];
             goto selesai;

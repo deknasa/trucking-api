@@ -302,6 +302,7 @@ class Ritasi extends MyModel
                 DB::raw("gajisupirdetail as a with (readuncommitted)")
             )
             ->select(
+                'a.nobukti',
                 'a.ritasi_nobukti'
             )
             ->where('a.ritasi_nobukti', '=', $nobukti)
@@ -309,7 +310,7 @@ class Ritasi extends MyModel
         if (isset($gajiSupir)) {
             $data = [
                 'kondisi' => true,
-                'keterangan' => 'GAJI SUPIR',
+                'keterangan' => 'GAJI SUPIR '. $gajiSupir->nobukti,
                 'kodeerror' => 'SATL'
             ];
             goto selesai;

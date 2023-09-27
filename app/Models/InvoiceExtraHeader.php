@@ -72,6 +72,7 @@ class InvoiceExtraHeader extends MyModel
                 DB::raw("pelunasanpiutangdetail as a with (readuncommitted)")
             )
             ->select(
+                'a.nobukti',
                 'a.invoice_nobukti'
             )
             ->where('a.invoice_nobukti', '=', $nobukti)
@@ -79,26 +80,27 @@ class InvoiceExtraHeader extends MyModel
         if (isset($pelunasanPiutang)) {
             $data = [
                 'kondisi' => true,
-                'keterangan' => 'Pelunasan Piutang',
+                'keterangan' => 'Pelunasan Piutang '. $pelunasanPiutang->nobukti,
                 'kodeerror' => 'SATL'
             ];
             goto selesai;
         }
 
-        $hutangBayar = DB::table('invoiceextraheader')
+        $invoice = DB::table('invoiceextraheader')
             ->from(
                 DB::raw("invoiceextraheader as a with (readuncommitted)")
             )
             ->select(
-                'a.nobukti'
+                'a.nobukti',
+                'a.piutang_nobukti'
             )
             ->join(DB::raw("jurnalumumpusatheader b with (readuncommitted)"), 'a.piutang_nobukti', 'b.nobukti')
             ->where('a.nobukti', '=', $nobukti)
             ->first();
-        if (isset($hutangBayar)) {
+        if (isset($invoice)) {
             $data = [
                 'kondisi' => true,
-                'keterangan' => 'Approval Jurnal',
+                'keterangan' => 'Approval Jurnal '. $invoice->piutang_nobukti,
                 'kodeerror' => 'SAP'
             ];
             goto selesai;

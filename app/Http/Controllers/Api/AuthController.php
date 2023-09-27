@@ -26,7 +26,8 @@ class AuthController extends Controller
 
         if (Auth::attempt($credentials)) {
             $user = Auth::user();
-            $path = base_path('.env');
+            $path = base_path('.env');            
+            Artisan::call('config:clear');
 
             if (file_exists($path)) {
                 file_put_contents($path, str_replace(

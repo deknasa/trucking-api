@@ -43,7 +43,7 @@ class OrderanTrucking extends MyModel
             if (isset($suratPengantar)) {
                 $data = [
                     'kondisi' => true,
-                    'keterangan' => 'Surat Pengantar',
+                    'keterangan' => 'Surat Pengantar '. $suratPengantar->nobukti,
                 ];
 
 
@@ -56,6 +56,7 @@ class OrderanTrucking extends MyModel
                         DB::raw("gajisupirdetail as a with (readuncommitted)")
                     )
                     ->select(
+                        'a.nobukti',
                         'a.suratpengantar_nobukti'
                     )
                     ->where('a.suratpengantar_nobukti', $suratPengantar->nobukti)
@@ -64,7 +65,7 @@ class OrderanTrucking extends MyModel
                 if (isset($gajiSupir)) {
                     $data = [
                         'kondisi' => true,
-                        'keterangan' => 'GAJI SUPIR',
+                        'keterangan' => 'GAJI SUPIR '. $gajiSupir->nobukti,
                     ];
 
 
@@ -78,6 +79,7 @@ class OrderanTrucking extends MyModel
                 DB::raw("invoicedetail as a with (readuncommitted)")
             )
             ->select(
+                'a.nobukti',
                 'a.orderantrucking_nobukti'
             )
             ->where('a.orderantrucking_nobukti', '=', $nobukti)
@@ -85,7 +87,7 @@ class OrderanTrucking extends MyModel
         if (isset($invoice)) {
             $data = [
                 'kondisi' => true,
-                'keterangan' => 'invoice',
+                'keterangan' => 'invoice '. $invoice->nobukti,
             ];
 
 

@@ -1719,7 +1719,8 @@ class PenerimaanTruckingHeader extends MyModel
                 DB::raw("penerimaantruckingheader as a with (readuncommitted)")
             )
             ->select(
-                'a.nobukti'
+                'a.nobukti',
+                'a.penerimaan_nobukti'
             )
             ->join(DB::raw("jurnalumumpusatheader b with (readuncommitted)"), 'a.penerimaan_nobukti', 'b.nobukti')
             ->where('a.nobukti', '=', $nobukti)
@@ -1727,7 +1728,7 @@ class PenerimaanTruckingHeader extends MyModel
         if (isset($jurnal)) {
             $data = [
                 'kondisi' => true,
-                'keterangan' => 'Approval Jurnal',
+                'keterangan' => 'Approval Jurnal '. $jurnal->penerimaan_nobukti,
                 'kodeerror' => 'SAP'
             ];
             goto selesai;
@@ -1738,6 +1739,7 @@ class PenerimaanTruckingHeader extends MyModel
                 DB::raw("prosesuangjalansupirdetail as a with (readuncommitted)")
             )
             ->select(
+                'a.nobukti',
                 'a.penerimaantrucking_nobukti'
             )
             ->where('a.penerimaantrucking_nobukti', '=', $nobukti)
@@ -1745,7 +1747,7 @@ class PenerimaanTruckingHeader extends MyModel
         if (isset($prosesUangJalan)) {
             $data = [
                 'kondisi' => true,
-                'keterangan' => 'Proses Uang Jalan Supir',
+                'keterangan' => 'Proses Uang Jalan Supir '. $prosesUangJalan->nobukti,
                 'kodeerror' => 'TDT'
             ];
             goto selesai;
@@ -1756,6 +1758,7 @@ class PenerimaanTruckingHeader extends MyModel
                 DB::raw("pengeluarantruckingdetail as a with (readuncommitted)")
             )
             ->select(
+                'a.nobukti',
                 'a.penerimaantruckingheader_nobukti'
             )
             ->where('a.penerimaantruckingheader_nobukti', '=', $nobukti)
@@ -1763,7 +1766,7 @@ class PenerimaanTruckingHeader extends MyModel
         if (isset($pengeluaranTrucking)) {
             $data = [
                 'kondisi' => true,
-                'keterangan' => 'Pengeluaran Trucking',
+                'keterangan' => 'Pengeluaran Trucking '. $pengeluaranTrucking->nobukti,
                 'kodeerror' => 'SATL'
             ];
             goto selesai;
@@ -1774,6 +1777,7 @@ class PenerimaanTruckingHeader extends MyModel
                 DB::raw("pemutihansupirheader as a with (readuncommitted)")
             )
             ->select(
+                'a.nobukti',
                 'a.penerimaantruckingposting_nobukti'
             )
             ->where('a.penerimaantruckingposting_nobukti', '=', $nobukti)
@@ -1781,7 +1785,7 @@ class PenerimaanTruckingHeader extends MyModel
         if (isset($jurnal)) {
             $data = [
                 'kondisi' => true,
-                'keterangan' => 'PEMUTIHAN SUPIR',
+                'keterangan' => 'PEMUTIHAN SUPIR '. $jurnal->nobukti,
                 'kodeerror' => 'TDT'
             ];
             goto selesai;
@@ -1791,6 +1795,7 @@ class PenerimaanTruckingHeader extends MyModel
                 DB::raw("pemutihansupirheader as a with (readuncommitted)")
             )
             ->select(
+                'a.nobukti',
                 'a.penerimaantruckingnonposting_nobukti'
             )
             ->where('a.penerimaantruckingnonposting_nobukti', '=', $nobukti)
@@ -1798,7 +1803,7 @@ class PenerimaanTruckingHeader extends MyModel
         if (isset($jurnal)) {
             $data = [
                 'kondisi' => true,
-                'keterangan' => 'PEMUTIHAN SUPIR',
+                'keterangan' => 'PEMUTIHAN SUPIR '. $jurnal->nobukti,
                 'kodeerror' => 'TDT'
             ];
             goto selesai;
@@ -1808,6 +1813,7 @@ class PenerimaanTruckingHeader extends MyModel
                 DB::raw("gajisupirdeposito as a with (readuncommitted)")
             )
             ->select(
+                'a.gajisupir_nobukti',
                 'a.penerimaantrucking_nobukti'
             )
             ->where('a.penerimaantrucking_nobukti', '=', $nobukti)
@@ -1815,7 +1821,7 @@ class PenerimaanTruckingHeader extends MyModel
         if (isset($gajiSupirDeposito)) {
             $data = [
                 'kondisi' => true,
-                'keterangan' => 'Rincian Gaji Supir',
+                'keterangan' => 'Rincian Gaji Supir '. $gajiSupirDeposito->gajisupir_nobukti,
                 'kodeerror' => 'TDT'
             ];
             goto selesai;
@@ -1826,6 +1832,7 @@ class PenerimaanTruckingHeader extends MyModel
                 DB::raw("gajisupirbbm as a with (readuncommitted)")
             )
             ->select(
+                'a.gajisupir_nobukti',
                 'a.penerimaantrucking_nobukti'
             )
             ->where('a.penerimaantrucking_nobukti', '=', $nobukti)
@@ -1833,7 +1840,7 @@ class PenerimaanTruckingHeader extends MyModel
         if (isset($gajiSupirBBM)) {
             $data = [
                 'kondisi' => true,
-                'keterangan' => 'Rincian Gaji Supir',
+                'keterangan' => 'Rincian Gaji Supir '. $gajiSupirDeposito->gajisupir_nobukti,
                 'kodeerror' => 'TDT'
             ];
             goto selesai;
@@ -1844,6 +1851,7 @@ class PenerimaanTruckingHeader extends MyModel
                 DB::raw("gajisupirpelunasanpinjaman as a with (readuncommitted)")
             )
             ->select(
+                'a.gajisupir_nobukti',
                 'a.penerimaantrucking_nobukti'
             )
             ->where('a.penerimaantrucking_nobukti', '=', $nobukti)
@@ -1851,7 +1859,7 @@ class PenerimaanTruckingHeader extends MyModel
         if (isset($gajiSupirPelunasan)) {
             $data = [
                 'kondisi' => true,
-                'keterangan' => 'Rincian Gaji Supir',
+                'keterangan' => 'Rincian Gaji Supir '. $gajiSupirDeposito->gajisupir_nobukti,
                 'kodeerror' => 'TDT'
             ];
             goto selesai;
@@ -1861,7 +1869,8 @@ class PenerimaanTruckingHeader extends MyModel
                 DB::raw("penerimaantruckingheader as a with (readuncommitted)")
             )
             ->select(
-                'a.nobukti'
+                'a.nobukti',
+                'b.nobukti as pendapatan'
             )
             ->join(DB::raw("pendapatansupirheader b with (readuncommitted)"), 'a.pendapatansupir_bukti', 'b.nobukti')
             ->where('a.nobukti', '=', $nobukti)
@@ -1869,7 +1878,7 @@ class PenerimaanTruckingHeader extends MyModel
         if (isset($pendapatan)) {
             $data = [
                 'kondisi' => true,
-                'keterangan' => 'pendapatan supir',
+                'keterangan' => 'pendapatan supir '. $pendapatan->pendapatan,
                 'kodeerror' => 'TDT'
             ];
             goto selesai;

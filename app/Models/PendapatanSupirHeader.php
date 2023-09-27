@@ -90,20 +90,21 @@ class PendapatanSupirHeader extends MyModel
     {
 
 
-        $hutangBayar = DB::table('pendapatansupirheader')
+        $jurnal = DB::table('pendapatansupirheader')
             ->from(
                 DB::raw("pendapatansupirheader as a with (readuncommitted)")
             )
             ->select(
-                'a.nobukti'
+                'a.nobukti',
+                'a.pengeluaran_nobukti'
             )
             ->join(DB::raw("jurnalumumpusatheader b with (readuncommitted)"), 'a.pengeluaran_nobukti', 'b.nobukti')
             ->where('a.nobukti', '=', $nobukti)
             ->first();
-        if (isset($hutangBayar)) {
+        if (isset($jurnal)) {
             $data = [
                 'kondisi' => true,
-                'keterangan' => 'Approval Jurnal',
+                'keterangan' => 'Approval Jurnal '.$jurnal->pengeluaran_nobukti,
                 'kodeerror' => 'SAP'
             ];
             goto selesai;
