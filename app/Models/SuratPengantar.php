@@ -73,7 +73,8 @@ class SuratPengantar extends MyModel
                 DB::raw("gajisupirdetail as a with (readuncommitted)")
             )
             ->select(
-                'a.suratpengantar_nobukti'
+                'a.suratpengantar_nobukti',
+                'a.nobukti'
             )
             ->where('a.suratpengantar_nobukti', '=', $nobukti)
             ->first();
@@ -82,7 +83,7 @@ class SuratPengantar extends MyModel
         if (isset($gajiSupir)) {
             $data = [
                 'kondisi' => true,
-                'keterangan' => 'gaji supir',
+                'keterangan' => 'gaji supir '. $gajiSupir->nobukti,
             ];
 
 
@@ -95,6 +96,7 @@ class SuratPengantar extends MyModel
                     DB::raw("ritasi as a with (readuncommitted)")
                 )
                 ->select(
+                    'a.nobukti',
                     'a.suratpengantar_nobukti'
                 )
                 ->where('a.suratpengantar_nobukti', '=', $nobukti)
@@ -104,7 +106,7 @@ class SuratPengantar extends MyModel
             if (isset($ritasi)) {
                 $data = [
                     'kondisi' => true,
-                    'keterangan' => 'ritasi',
+                    'keterangan' => 'ritasi '. $ritasi->nobukti,
                 ];
 
 
@@ -113,12 +115,13 @@ class SuratPengantar extends MyModel
         }
         $tempinvdetail = '##tempinvdetail' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
         Schema::create($tempinvdetail, function ($table) {
+            $table->string('nobukti')->nullable();
             $table->string('suratpengantar_nobukti')->nullable();
         });
 
         $status = InvoiceDetail::from(
             db::Raw("invoicedetail with (readuncommitted)")
-        )->select('suratpengantar_nobukti')
+        )->select('nobukti','suratpengantar_nobukti')
             ->where('orderantrucking_nobukti', $jobtrucking)->first();
 
 
@@ -127,7 +130,8 @@ class SuratPengantar extends MyModel
 
             for ($i = 0; $i < count($sp); $i++) {
                 DB::table($tempinvdetail)->insert(
-                    [
+                    [   
+                        "nobukti" => $status->nobukti,
                         "suratpengantar_nobukti" => $sp[$i]
                     ]
                 );
@@ -137,6 +141,7 @@ class SuratPengantar extends MyModel
 
         $query = DB::table($tempinvdetail)->from(DB::raw($tempinvdetail))
             ->select(
+                'nobukti',
                 'suratpengantar_nobukti',
             )->where('suratpengantar_nobukti', '=', $nobukti)
             ->first();
@@ -144,7 +149,22 @@ class SuratPengantar extends MyModel
         if (isset($query)) {
             $data = [
                 'kondisi' => true,
-                'keterangan' => 'invoice',
+                'keterangan' => 'invoice '. $query->nobukti,
+            ];
+            goto selesai;
+        }
+
+        $query = DB::table('pendapatansupirdetail')->from(DB::raw("pendapatansupirdetail with (readuncommitted)"))
+            ->select(
+                'nobuktitrip',
+                'nobukti'
+            )->where('nobuktitrip', '=', $nobukti)
+            ->first();
+
+        if (isset($query)) {
+            $data = [
+                'kondisi' => true,
+                'keterangan' => 'pendapatan supir '. $query->nobukti,
             ];
             goto selesai;
         }
@@ -872,12 +892,18 @@ class SuratPengantar extends MyModel
         $params = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'PENDAPATAN SUPIR')->where('subgrp', 'GAJI KENEK')->first();
         $komisi_gajisupir = $params->text;
 
+        $isKomisiReadonly = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'SURAT PENGANTAR')->where('subgrp', 'KOMISI')->first();
+
         $getBukanUpahZona = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS UPAH ZONA')->where('text', 'NON UPAH ZONA')->first();
         $get = DB::table("suratpengantar")->from(DB::raw("suratpengantar with (readuncommitted)"))->select('statusupahzona')->where('id', $id)->first();
 
         $getGaji = DB::table('suratpengantar')->from(DB::raw("suratpengantar with (readuncommitted)"));
         if ($komisi_gajisupir == 'YA') {
-            $getGaji->select(DB::raw("suratpengantar.id, isnull(upahsupirrincian.nominalsupir,0) - isnull(upahsupirrincian.nominalkenek,0) as nominalsupir, upahsupirrincian.nominalkenek, upahsupirrincian.nominalkomisi, upahsupirrincian.nominaltol, upahsupirrincian.liter"));
+            if (trim($isKomisiReadonly->text) == 'YA') {
+                $getGaji->select(DB::raw("suratpengantar.id, isnull(upahsupirrincian.nominalsupir,0) - isnull(upahsupirrincian.nominalkenek,0) as nominalsupir, upahsupirrincian.nominalkenek, upahsupirrincian.nominalkomisi, upahsupirrincian.nominaltol, upahsupirrincian.liter"));
+            } else {
+                $getGaji->select(DB::raw("suratpengantar.id, isnull(upahsupirrincian.nominalsupir,0) - isnull(upahsupirrincian.nominalkenek,0) as nominalsupir, upahsupirrincian.nominalkenek, suratpengantar.komisisupir as nominalkomisi, upahsupirrincian.nominaltol, upahsupirrincian.liter"));
+            }
         } else {
             $getGaji->select('suratpengantar.id', 'upahsupirrincian.nominalsupir', 'upahsupirrincian.nominalkenek', 'upahsupirrincian.nominalkomisi', 'upahsupirrincian.nominaltol', 'upahsupirrincian.liter');
         }
@@ -1698,6 +1724,7 @@ class SuratPengantar extends MyModel
         if (!isset($orderanTrucking)) {
             $orderanTrucking = DB::table("saldoorderantrucking")->from(DB::raw("saldoorderantrucking"))->where('nobukti', $data['jobtrucking'])->first();
         }
+        $isKomisiReadonly = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'SURAT PENGANTAR')->where('subgrp', 'KOMISI')->first();
 
         $statusTidakBolehEditTujuan = Parameter::from(DB::raw("parameter with (readuncommitted)"))->where('grp', '=', 'STATUS EDIT TUJUAN')->where('text', '=', 'TIDAK BOLEH EDIT TUJUAN')->first();
 
@@ -1765,6 +1792,11 @@ class SuratPengantar extends MyModel
                 $nominalPeralihan = ($tarifNominal * ($data['persentaseperalihan'] / 100));
             }
 
+            if (trim($isKomisiReadonly->text) == 'TIDAK') {
+                $suratPengantar->komisisupir = $data['komisisupir'];
+            } else {
+                $suratPengantar->komisisupir = $upahsupirRincian->nominalkomisi;
+            }
             $suratPengantar->nominalperalihan = $nominalPeralihan;
             $suratPengantar->persentaseperalihan = $data['persentaseperalihan'];
             $suratPengantar->discount = $data['persentaseperalihan'];
@@ -1772,7 +1804,6 @@ class SuratPengantar extends MyModel
             $suratPengantar->biayatambahan_id = $data['biayatambahan_id'] ?? 0;
             $suratPengantar->nosp = $data['nosp'];
             $suratPengantar->tglsp = date('Y-m-d', strtotime($data['tglbukti']));
-            $suratPengantar->komisisupir = $upahsupirRincian->nominalkomisi;
             $suratPengantar->tolsupir = $upahsupirRincian->nominaltol;
             $suratPengantar->jarak = $upahsupir->jarak;
             $suratPengantar->nosptagihlain = $data['nosptagihlain'] ?? '';
@@ -1864,7 +1895,9 @@ class SuratPengantar extends MyModel
             $suratPengantar->jenisorder_id = $data['jenisorder_id'];
             $suratPengantar->gajisupir = $nominalSupir;
             $suratPengantar->gajikenek = $upahsupirRincian->nominalkenek;
-            $suratPengantar->komisisupir = $upahsupirRincian->nominalkomisi;
+            if (trim($isKomisiReadonly->text) == 'YA') {
+                $suratPengantar->komisisupir = $upahsupirRincian->nominalkomisi;
+            }
             $suratPengantar->tolsupir = $upahsupirRincian->nominaltol;
             $suratPengantar->liter = $upahsupirRincian->liter ?? 0;
             $suratPengantar->omset = $tarifNominal;
