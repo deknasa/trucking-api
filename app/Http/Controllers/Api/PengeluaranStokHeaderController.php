@@ -116,6 +116,8 @@ class PengeluaranStokHeaderController extends Controller
             } else {
                 $pengeluaranStokHeader->page = ceil($pengeluaranStokHeader->position / ($request->limit ?? 10));
             }
+            $pengeluaranStokHeader->tgldariheader = date('Y-m-01', strtotime(request()->tglbukti));
+            $pengeluaranStokHeader->tglsampaiheader = date('Y-m-t', strtotime(request()->tglbukti));
 
             DB::commit();
             return response()->json([
@@ -193,6 +195,8 @@ class PengeluaranStokHeaderController extends Controller
                 $pengeluaranStokHeader->page = ceil($pengeluaranStokHeader->position / ($request->limit ?? 10));
             }
 
+            $pengeluaranStokHeader->tgldariheader = date('Y-m-01', strtotime(request()->tglbukti));
+            $pengeluaranStokHeader->tglsampaiheader = date('Y-m-t', strtotime(request()->tglbukti));
             DB::commit();
             return response()->json([
                 'message' => 'Berhasil disimpan',
