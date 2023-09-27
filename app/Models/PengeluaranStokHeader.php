@@ -278,7 +278,12 @@ class PengeluaranStokHeader extends MyModel
         );
         $query = $this->sort($query);
         $models = $this->filter($query);
-
+        if (request()->tgldariheader) {
+            $models->whereBetween('tglbukti', [date('Y-m-d', strtotime(request()->tgldariheader)), date('Y-m-d', strtotime(request()->tglsampaiheader))]);
+        }
+        if (request()->penerimaanheader_id) {
+            $models->where('penerimaanstok_id', request()->penerimaanstok_id);
+        }
         DB::table($temp)->insertUsing([
             "id",
             "nobukti",
@@ -551,6 +556,9 @@ class PengeluaranStokHeader extends MyModel
 
         if ($korv->id == $data['pengeluaranstok_id']) {
             $data['gudang_id'] =  Parameter::where('grp', 'GUDANG KANTOR')->where('subgrp', 'GUDANG KANTOR')->first()->text;
+        } 
+        if ($pja->text == $data['pengeluaranstok_id']) {
+            $data['gudang_id'] =  Parameter::where('grp', 'GUDANG SEMENTARA')->where('subgrp', 'GUDANG SEMENTARA')->first()->text;
         }
         $bank_id = $data['bank_id'] ?? 0;
         $gudang_id = $data['gudang_id'];
@@ -820,9 +828,12 @@ class PengeluaranStokHeader extends MyModel
                 $statusbayarhutang = db::table('parameter')->from(db::raw("parameter a with (readuncommitted)"))
                     ->select('id')->where('grp', 'PELUNASANHUTANG')->where('subgrp', 'PELUNASANHUTANG')->where('text', 'POTONG HUTANG (RETUR)')
                     ->first()->id ?? 0;
+                $bank = db::table('bank')->from(db::raw("bank a with (readuncommitted)"))
+                    ->select('id')->where('tipe', 'KAS')
+                    ->first()->id ?? 0;
                 $penerimaanstok = Penerimaanstokheader::where('nobukti', $data['penerimaanstok_nobukti'])->first();
                 $hutang = HutangHeader::where('nobukti', $penerimaanstok->hutang_nobukti)->first();
-                $bank = ($bank_id == null) ? "" : $bank_id;
+                $bank = ($bank_id == null) ? $bank : $bank_id;
                 // dd($bank);
                 $hutangBayarRequest = [
                     'tglbukti' => date('Y-m-d', strtotime($data['tglbukti'])),
