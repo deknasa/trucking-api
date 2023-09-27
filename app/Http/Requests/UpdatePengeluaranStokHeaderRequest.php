@@ -81,7 +81,7 @@ class UpdatePengeluaranStokHeaderRequest extends FormRequest
                 }),
             ];
             $salahSatuDari = Rule::requiredIf(function () use ($spk) {
-                if ((empty($this->input('trado')) && empty($this->input('gandengan')) && $this->input('pengeluaranstok_id')) == $spk->text) {
+                if ((empty($this->input('trado')) && empty($this->input('gandengan')) && empty($this->input('gudang')) && $this->input('pengeluaranstok_id')) == $spk->text) {
                     return true;
                 }
                 return false;
@@ -89,7 +89,7 @@ class UpdatePengeluaranStokHeaderRequest extends FormRequest
             $gudangTradoGandengan = [
                 'trado' => $salahSatuDari,
                 'gandengan' => $salahSatuDari,
-                'gudang' => "",
+                'gudang' => $salahSatuDari,
             ];
         }
         $returRules =[];
