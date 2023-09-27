@@ -33,6 +33,7 @@ class PengembalianKasGantungHeader extends MyModel
                 DB::raw("prosesuangjalansupirdetail as a with (readuncommitted)")
             )
             ->select(
+                'a.nobukti',
                 'a.pengembaliankasgantung_nobukti'
             )
             ->where('a.pengembaliankasgantung_nobukti', '=', $nobukti)
@@ -40,7 +41,7 @@ class PengembalianKasGantungHeader extends MyModel
         if (isset($prosesUangJalan)) {
             $data = [
                 'kondisi' => true,
-                'keterangan' => 'Proses Uang Jalan Supir',
+                'keterangan' => 'Proses Uang Jalan Supir '. $prosesUangJalan->nobukti,
                 'kodeerror' => 'TDT'
             ];
             goto selesai;
@@ -51,7 +52,8 @@ class PengembalianKasGantungHeader extends MyModel
                 DB::raw("pengembaliankasgantungheader as a with (readuncommitted)")
             )
             ->select(
-                'a.nobukti'
+                'a.nobukti',
+                'a.penerimaan_nobukti'
             )
             ->join(DB::raw("jurnalumumpusatheader b with (readuncommitted)"), 'a.penerimaan_nobukti', 'b.nobukti')
             ->where('a.nobukti', '=', $nobukti)
@@ -59,7 +61,7 @@ class PengembalianKasGantungHeader extends MyModel
         if (isset($jurnal)) {
             $data = [
                 'kondisi' => true,
-                'keterangan' => 'Approval Jurnal',
+                'keterangan' => 'Approval Jurnal '. $jurnal->penerimaan_nobukti,
                 'kodeerror' => 'SAP'
             ];
             goto selesai;

@@ -83,7 +83,7 @@ class ProsesGajiSupirHeader extends MyModel
         if (isset($hutangBayar)) {
             $data = [
                 'kondisi' => true,
-                'keterangan' => 'Approval Jurnal',
+                'keterangan' => 'Approval Jurnal '. $hutangBayar->nobukti,
                 'kodeerror' => 'SAP'
             ];
             goto selesai;
@@ -94,14 +94,14 @@ class ProsesGajiSupirHeader extends MyModel
                 DB::raw("jurnalumumpusatheader as a with (readuncommitted)")
             )
             ->select(
-                'a.nobukti'
+                'a.nobukti',
             )
             ->where('a.nobukti', '=', $prosesGaji->pengeluaran_nobukti)
             ->first();
         if (isset($hutangBayar)) {
             $data = [
                 'kondisi' => true,
-                'keterangan' => 'Approval Jurnal',
+                'keterangan' => 'Approval Jurnal '. $hutangBayar->nobukti,
                 'kodeerror' => 'SAP'
             ];
             goto selesai;

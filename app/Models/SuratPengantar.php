@@ -83,7 +83,7 @@ class SuratPengantar extends MyModel
         if (isset($gajiSupir)) {
             $data = [
                 'kondisi' => true,
-                'keterangan' => 'gaji supir '. $gajiSupir->nobukti,
+                'keterangan' => 'gaji supir ' . $gajiSupir->nobukti,
             ];
 
 
@@ -106,7 +106,7 @@ class SuratPengantar extends MyModel
             if (isset($ritasi)) {
                 $data = [
                     'kondisi' => true,
-                    'keterangan' => 'ritasi '. $ritasi->nobukti,
+                    'keterangan' => 'ritasi ' . $ritasi->nobukti,
                 ];
 
 
@@ -121,7 +121,7 @@ class SuratPengantar extends MyModel
 
         $status = InvoiceDetail::from(
             db::Raw("invoicedetail with (readuncommitted)")
-        )->select('nobukti','suratpengantar_nobukti')
+        )->select('nobukti', 'suratpengantar_nobukti')
             ->where('orderantrucking_nobukti', $jobtrucking)->first();
 
 
@@ -130,7 +130,7 @@ class SuratPengantar extends MyModel
 
             for ($i = 0; $i < count($sp); $i++) {
                 DB::table($tempinvdetail)->insert(
-                    [   
+                    [
                         "nobukti" => $status->nobukti,
                         "suratpengantar_nobukti" => $sp[$i]
                     ]
@@ -149,7 +149,7 @@ class SuratPengantar extends MyModel
         if (isset($query)) {
             $data = [
                 'kondisi' => true,
-                'keterangan' => 'invoice '. $query->nobukti,
+                'keterangan' => 'invoice ' . $query->nobukti,
             ];
             goto selesai;
         }
@@ -164,7 +164,7 @@ class SuratPengantar extends MyModel
         if (isset($query)) {
             $data = [
                 'kondisi' => true,
-                'keterangan' => 'pendapatan supir '. $query->nobukti,
+                'keterangan' => 'pendapatan supir ' . $query->nobukti,
             ];
             goto selesai;
         }
@@ -902,7 +902,7 @@ class SuratPengantar extends MyModel
             if (trim($isKomisiReadonly->text) == 'YA') {
                 $getGaji->select(DB::raw("suratpengantar.id, isnull(upahsupirrincian.nominalsupir,0) - isnull(upahsupirrincian.nominalkenek,0) as nominalsupir, upahsupirrincian.nominalkenek, upahsupirrincian.nominalkomisi, upahsupirrincian.nominaltol, upahsupirrincian.liter"));
             } else {
-                $getGaji->select(DB::raw("suratpengantar.id, isnull(upahsupirrincian.nominalsupir,0) - isnull(upahsupirrincian.nominalkenek,0) as nominalsupir, upahsupirrincian.nominalkenek, suratpengantar.komisisupir as nominalkomisi, upahsupirrincian.nominaltol, upahsupirrincian.liter"));
+                $getGaji->select(DB::raw("suratpengantar.id, isnull(upahsupirrincian.nominalsupir,0) - isnull(suratpengantar.gajikenek,0) as nominalsupir, suratpengantar.gajikenek as nominalkenek, suratpengantar.komisisupir as nominalkomisi, upahsupirrincian.nominaltol, upahsupirrincian.liter"));
             }
         } else {
             $getGaji->select('suratpengantar.id', 'upahsupirrincian.nominalsupir', 'upahsupirrincian.nominalkenek', 'upahsupirrincian.nominalkomisi', 'upahsupirrincian.nominaltol', 'upahsupirrincian.liter');
@@ -1751,7 +1751,11 @@ class SuratPengantar extends MyModel
             $params = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'PENDAPATAN SUPIR')->where('subgrp', 'GAJI KENEK')->first();
             $komisi_gajisupir = $params->text;
             if ($komisi_gajisupir == 'YA') {
-                $nominalSupir = $upahsupirRincian->nominalsupir - $upahsupirRincian->nominalkenek;
+                if (trim($isKomisiReadonly->text) == 'TIDAK') {
+                    $nominalSupir = $upahsupirRincian->nominalsupir - $data['gajikenek'];
+                } else {
+                    $nominalSupir = $upahsupirRincian->nominalsupir - $upahsupirRincian->nominalkenek;
+                }
             } else {
                 $nominalSupir = $upahsupirRincian->nominalsupir;
             }
@@ -1780,7 +1784,6 @@ class SuratPengantar extends MyModel
             $suratPengantar->statuslongtrip = $data['statuslongtrip'];
             $suratPengantar->omset = $tarifNominal;
             $suratPengantar->gajisupir = $nominalSupir;
-            $suratPengantar->gajikenek = $upahsupirRincian->nominalkenek;
             $suratPengantar->agen_id = $orderanTrucking->agen_id;
             $suratPengantar->penyesuaian = $data['penyesuaian'];
             $suratPengantar->jenisorder_id = $orderanTrucking->jenisorder_id;
@@ -1794,8 +1797,10 @@ class SuratPengantar extends MyModel
 
             if (trim($isKomisiReadonly->text) == 'TIDAK') {
                 $suratPengantar->komisisupir = $data['komisisupir'];
+                $suratPengantar->gajikenek = $data['gajikenek'];
             } else {
                 $suratPengantar->komisisupir = $upahsupirRincian->nominalkomisi;
+                $suratPengantar->gajikenek = $upahsupirRincian->nominalkenek;
             }
             $suratPengantar->nominalperalihan = $nominalPeralihan;
             $suratPengantar->persentaseperalihan = $data['persentaseperalihan'];
@@ -1877,7 +1882,11 @@ class SuratPengantar extends MyModel
             $params = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'PENDAPATAN SUPIR')->where('subgrp', 'GAJI KENEK')->first();
             $komisi_gajisupir = $params->text;
             if ($komisi_gajisupir == 'YA') {
-                $nominalSupir = $upahsupirRincian->nominalsupir - $upahsupirRincian->nominalkenek;
+                if (trim($isKomisiReadonly->text) == 'TIDAK') {
+                    $nominalSupir = $upahsupirRincian->nominalsupir - $suratPengantar->gajikenek;
+                } else {
+                    $nominalSupir = $upahsupirRincian->nominalsupir - $upahsupirRincian->nominalkenek;
+                }
             } else {
                 $nominalSupir = $upahsupirRincian->nominalsupir;
             }
@@ -1894,8 +1903,8 @@ class SuratPengantar extends MyModel
             $suratPengantar->agen_id = $data['agen_id'];
             $suratPengantar->jenisorder_id = $data['jenisorder_id'];
             $suratPengantar->gajisupir = $nominalSupir;
-            $suratPengantar->gajikenek = $upahsupirRincian->nominalkenek;
             if (trim($isKomisiReadonly->text) == 'YA') {
+                $suratPengantar->gajikenek = $upahsupirRincian->nominalkenek;
                 $suratPengantar->komisisupir = $upahsupirRincian->nominalkomisi;
             }
             $suratPengantar->tolsupir = $upahsupirRincian->nominaltol;

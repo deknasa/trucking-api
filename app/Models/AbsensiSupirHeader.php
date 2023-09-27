@@ -38,6 +38,7 @@ class AbsensiSupirHeader extends MyModel
                 DB::raw("absensisupirapprovalheader as a with (readuncommitted)")
             )
             ->select(
+                'a.nobukti',
                 'a.absensisupir_nobukti'
             )
             ->where('a.absensisupir_nobukti', '=', $nobukti)
@@ -45,7 +46,7 @@ class AbsensiSupirHeader extends MyModel
         if (isset($absensiSupir)) {
             $data = [
                 'kondisi' => true,
-                'keterangan' => 'Absensi Supir Posting',
+                'keterangan' => 'Absensi Supir Posting '. $absensiSupir->nobukti,
                 'kodeerror' => 'SATL'
             ];
             goto selesai;
