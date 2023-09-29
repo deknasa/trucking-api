@@ -44,7 +44,7 @@ class PengeluaranTruckingHeader extends MyModel
         if (isset($prosesUangJalan)) {
             $data = [
                 'kondisi' => true,
-                'keterangan' => 'Proses Uang Jalan Supir '. $prosesUangJalan->nobukti,
+                'keterangan' => 'Proses Uang Jalan Supir ' . $prosesUangJalan->nobukti,
                 'kodeerror' => 'TDT'
             ];
             goto selesai;
@@ -82,7 +82,7 @@ class PengeluaranTruckingHeader extends MyModel
         if (isset($penerimaanTrucking)) {
             $data = [
                 'kondisi' => true,
-                'keterangan' => 'Penerimaan Trucking '. $penerimaanTrucking->nobukti,
+                'keterangan' => 'Penerimaan Trucking ' . $penerimaanTrucking->nobukti,
                 'kodeerror' => 'SATL'
             ];
             goto selesai;
@@ -102,7 +102,7 @@ class PengeluaranTruckingHeader extends MyModel
         if (isset($approvalJurnal)) {
             $data = [
                 'kondisi' => true,
-                'keterangan' => 'Approval Jurnal '. $approvalJurnal->pengeluaran_nobukti,
+                'keterangan' => 'Approval Jurnal ' . $approvalJurnal->pengeluaran_nobukti,
                 'kodeerror' => 'SAP'
             ];
             goto selesai;
@@ -575,6 +575,7 @@ class PengeluaranTruckingHeader extends MyModel
     }
     public function getShowInvoice($id, $tgldari, $tglsampai)
     {
+        $aksi = request()->aksi ?? '';
         $this->setRequestParameters();
         $temp = '##tempGet' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
 
@@ -608,12 +609,15 @@ class PengeluaranTruckingHeader extends MyModel
             $query->orderBy($temp . '.' . $this->params['sortIndex'], $this->params['sortOrder']);
         }
 
-        $this->totalRows = $query->count();
-        $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;
         $this->totalNominal = $query->sum('nominal_detail');
-        // $this->filter($query);
-        $this->paginate($query);
+        if ($aksi == 'show') {
 
+            $this->totalRows = $query->count();
+            $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;
+            // $this->filter($query);
+            $this->paginate($query);
+
+        }
         return $query->get();
     }
 
@@ -1028,7 +1032,7 @@ class PengeluaranTruckingHeader extends MyModel
             } else {
                 $alatbayar = AlatBayar::where('bank_id', $pengeluaranTruckingHeader->bank_id)->first();
                 $queryPengeluaran = Bank::from(DB::raw("bank with (readuncommitted)"))->select('parameter.grp', 'parameter.subgrp', 'bank.formatpengeluaran', 'bank.coa', 'bank.tipe')->join(DB::raw("parameter with (readuncommitted)"), 'bank.formatpengeluaran', 'parameter.id')->where("bank.id", $data['bank_id'])->first();
-                if ($fetchFormat->kodepengeluaran == 'BLL' || $fetchFormat->kodepengeluaran == 'BLN' || $fetchFormat->kodepengeluaran == 'BTU' || $fetchFormat->kodepengeluaran == 'BPT' || $fetchFormat->kodepengeluaran == 'BGS' || $fetchFormat->kodepengeluaran == 'BIT' || $fetchFormat->kodepengeluaran == 'BBT') {
+                if ($fetchFormat->kodepengeluaran == 'BLL' || $fetchFormat->kodepengeluaran == 'BLN' || $fetchFormat->kodepengeluaran == 'BTU' || $fetchFormat->kodepengeluaran == 'BPT' || $fetchFormat->kodepengeluaran == 'BGS' || $fetchFormat->kodepengeluaran == 'BIT' || $fetchFormat->kodepengeluaran == 'BBT' || $fetchFormat->kodepengeluaran == 'BST') {
                     $nominal_detail = [];
                     $keterangan_detail = [];
                     $coakredit_detail[] = $queryPengeluaran->coa;
@@ -1036,7 +1040,7 @@ class PengeluaranTruckingHeader extends MyModel
                     $nowarkat[] = "";
                     $tglkasmasuk[] = (array_key_exists('tglkasmasuk', $data)) ? date('Y-m-d', strtotime($data['tglkasmasuk'])) : date('Y-m-d', strtotime($data['tglbukti']));
                     $nominal_detail[] = $nominalBiaya;
-                    if ($fetchFormat->kodepengeluaran == 'BBT') {
+                    if ($fetchFormat->kodepengeluaran == 'BBT' || $fetchFormat->kodepengeluaran == 'BST') {
                         $keterangan_detail[] = "$fetchFormat->keterangan $pengeluaranTruckingHeader->nobukti";
                     } else {
                         $keterangan_detail[] = "$fetchFormat->keterangan periode " . $data['periode'] . " $pengeluaranTruckingHeader->nobukti";
@@ -1257,7 +1261,7 @@ class PengeluaranTruckingHeader extends MyModel
                     $alatbayar = AlatBayar::where('bank_id', $pengeluaranTruckingHeader->bank_id)->first();
                     $queryPengeluaran = Bank::from(DB::raw("bank with (readuncommitted)"))->select('parameter.grp', 'parameter.subgrp', 'bank.formatpengeluaran', 'bank.coa', 'bank.tipe')->join(DB::raw("parameter with (readuncommitted)"), 'bank.formatpengeluaran', 'parameter.id')->where("bank.id", $data['bank_id'])->first();
 
-                    if ($fetchFormat->kodepengeluaran == 'BLL' || $fetchFormat->kodepengeluaran == 'BLN' || $fetchFormat->kodepengeluaran == 'BTU' || $fetchFormat->kodepengeluaran == 'BPT' || $fetchFormat->kodepengeluaran == 'BGS' || $fetchFormat->kodepengeluaran == 'BIT' || $fetchFormat->kodepengeluaran == 'BBT') {
+                    if ($fetchFormat->kodepengeluaran == 'BLL' || $fetchFormat->kodepengeluaran == 'BLN' || $fetchFormat->kodepengeluaran == 'BTU' || $fetchFormat->kodepengeluaran == 'BPT' || $fetchFormat->kodepengeluaran == 'BGS' || $fetchFormat->kodepengeluaran == 'BIT' || $fetchFormat->kodepengeluaran == 'BBT' || $fetchFormat->kodepengeluaran == 'BST') {
                         $nominal_detail = [];
                         $keterangan_detail = [];
                         $coakredit_detail[] = $queryPengeluaran->coa;
@@ -1265,7 +1269,7 @@ class PengeluaranTruckingHeader extends MyModel
                         $nowarkat[] = "";
                         $tglkasmasuk[] = (array_key_exists('tglkasmasuk', $data)) ? date('Y-m-d', strtotime($data['tglkasmasuk'])) : date('Y-m-d', strtotime($data['tglbukti']));
                         $nominal_detail[] = $nominalBiaya;
-                        if ($fetchFormat->kodepengeluaran == 'BBT') {
+                        if ($fetchFormat->kodepengeluaran == 'BBT' || $fetchFormat->kodepengeluaran == 'BST') {
                             $keterangan_detail[] = "$fetchFormat->keterangan $pengeluaranTruckingHeader->nobukti";
                         } else {
                             $keterangan_detail[] = "$fetchFormat->keterangan periode " . $data['periode'] . " $pengeluaranTruckingHeader->nobukti";
@@ -1283,7 +1287,7 @@ class PengeluaranTruckingHeader extends MyModel
                     $pengeluaranRequest = [
                         'tglbukti' => $pengeluaranTruckingHeader->tglbukti,
                         'pelanggan_id' => 0,
-                        'postingdari' => $data['postingdari'] ?? "ENTRY PENGELUARAN TRUCKING",
+                        'postingdari' => $data['postingdari'] ?? "EDIT PENGELUARAN TRUCKING",
                         'statusapproval' => $statusApproval->id,
                         'dibayarke' => '',
                         'alatbayar_id' => $alatbayar->id,
