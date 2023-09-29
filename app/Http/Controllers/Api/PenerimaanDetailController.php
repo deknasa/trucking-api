@@ -92,7 +92,13 @@ class PenerimaanDetailController extends Controller
         }
     }
 
+    public function getDetail(){
+        $penerimaanDetail = new PenerimaanDetail();
 
+        return response()->json([
+            'data' => $penerimaanDetail->findAll(request()->penerimaan_id),
+        ]);
+    }
     public function store(StorePenerimaanDetailRequest $request)
     {
         DB::beginTransaction();

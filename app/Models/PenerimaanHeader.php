@@ -238,6 +238,9 @@ class PenerimaanHeader extends MyModel
         $this->setRequestParameters();
         $periode = request()->periode ?? '';
         $statusCetak = request()->statuscetak ?? '';
+        $bankId = request()->bankId ?? '';
+        $isBmt = request()->isBmt ?? false;
+
         $query = DB::table($this->table)->from(DB::raw("penerimaanheader with (readuncommitted)"))
             ->select(
                 'penerimaanheader.id',
@@ -268,8 +271,32 @@ class PenerimaanHeader extends MyModel
             ->leftJoin(DB::raw("agen with (readuncommitted)"), 'penerimaanheader.agen_id', 'agen.id')
             ->leftJoin(DB::raw("parameter as statuscetak with (readuncommitted)"), 'penerimaanheader.statuscetak', 'statuscetak.id');
         if (request()->tgldari && request()->tglsampai) {
-            $query->whereBetween($this->table . '.tglbukti', [date('Y-m-d', strtotime(request()->tgldari)), date('Y-m-d', strtotime(request()->tglsampai))])
-                ->where('penerimaanheader.bank_id', request()->bank);
+            $query->whereBetween($this->table . '.tglbukti', [date('Y-m-d', strtotime(request()->tgldari)), date('Y-m-d', strtotime(request()->tglsampai))]);
+
+            if (request()->bank) {
+                $query->where('penerimaanheader.bank_id', request()->bank);
+            }
+        }
+        if ($isBmt == true) {
+            $getBankBmt = DB::table("bank")->from(DB::raw("bank with (readuncommitted)"))->whereRaw("coa = (select coa from bank where id=3)")->where('id', '!=', $bankId)->first();
+            $query->where('penerimaanheader.bank_id', $getBankBmt->id);
+            if (request()->nobuktiBmt != '') {
+                $nobukti = request()->nobuktiBmt;
+                $query->whereNotIn('penerimaanheader.nobukti', function ($query) {
+                    $query->select(DB::raw('DISTINCT pengeluaranheader.penerimaan_nobukti'))
+                        ->from('pengeluaranheader')
+                        ->whereNotNull('pengeluaranheader.penerimaan_nobukti')
+                        ->where('pengeluaranheader.penerimaan_nobukti', '!=', '');
+                });
+                $query->orWhereRaw("penerimaanheader.nobukti in ('$nobukti')");
+            } else {
+                $query->whereNotIn('penerimaanheader.nobukti', function ($query) {
+                    $query->select(DB::raw('DISTINCT pengeluaranheader.penerimaan_nobukti'))
+                        ->from('pengeluaranheader')
+                        ->whereNotNull('pengeluaranheader.penerimaan_nobukti')
+                        ->where('pengeluaranheader.penerimaan_nobukti', '!=', '');
+                });
+            }
         }
         if ($periode != '') {
             $periode = explode("-", $periode);

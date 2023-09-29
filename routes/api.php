@@ -1186,6 +1186,7 @@ route::middleware(['auth:api', 'authorized'])->group(function () {
     Route::get('penerimaanheader/default', [PenerimaanHeaderController::class, 'default']);
     Route::resource('penerimaanheader', PenerimaanHeaderController::class)->whereNumber('penerimaanheader');
     Route::get('penerimaandetail/getPenerimaan', [PenerimaanDetailController::class, 'getPenerimaan']);
+    Route::get('penerimaandetail/getDetail', [PenerimaanDetailController::class, 'getDetail']);
     Route::resource('penerimaandetail', PenerimaanDetailController::class)->whereNumber('penerimaandetail');
 
     // Route::get('running_number', [Controller::class, 'getRunningNumber'])->name('running_number');
