@@ -56,6 +56,7 @@ class PengeluaranHeader extends MyModel
                 DB::raw('(case when (year(pengeluaranheader.tglbukacetak) <= 2000) then null else pengeluaranheader.tglbukacetak end ) as tglbukacetak'),
                 'statuscetak.memo as statuscetak',
                 'pengeluaranheader.userbukacetak',
+                'pengeluaranheader.penerimaan_nobukti',
                 'pengeluaranheader.jumlahcetak',
                 'pengeluaranheader.modifiedby',
                 'pengeluaranheader.created_at',
@@ -111,6 +112,7 @@ class PengeluaranHeader extends MyModel
                 'pengeluaranheader.transferkeac',
                 'pengeluaranheader.transferkean',
                 'pengeluaranheader.transferkebank',
+                'pengeluaranheader.penerimaan_nobukti as nobukti_penerimaan',
                 'pengeluaranheader.statuscetak',
                 'pengeluaranheader.userbukacetak',
                 'pengeluaranheader.jumlahcetak',
@@ -146,6 +148,7 @@ class PengeluaranHeader extends MyModel
                  $this->table.userbukacetak,
                  $this->table.tglbukacetak,
                  $this->table.jumlahcetak,
+                 $this->table.penerimaan_nobukti,
                  $this->table.modifiedby,
                  $this->table.created_at,
                  $this->table.updated_at"
@@ -178,6 +181,7 @@ class PengeluaranHeader extends MyModel
             $table->string('userbukacetak', 50)->nullable();
             $table->date('tglbukacetak')->nullable();
             $table->integer('jumlahcetak')->Length(11)->nullable();
+            $table->string('penerimaan_nobukti')->default();
             $table->string('modifiedby')->default();
             $table->dateTime('created_at')->nullable();
             $table->dateTime('updated_at')->nullable();
@@ -190,7 +194,7 @@ class PengeluaranHeader extends MyModel
         $this->sort($query);
         $models = $this->filter($query);
         $models =  $query->whereBetween($this->table . '.tglbukti', [date('Y-m-d', strtotime(request()->tgldariheader)), date('Y-m-d', strtotime(request()->tglsampaiheader))])->where($this->table . '.bank_id', request()->bankheader);
-        DB::table($temp)->insertUsing(['id', 'nobukti', 'tglbukti', 'pelanggan_id', 'postingdari', 'dibayarke', 'alatbayar_id', 'bank_id', 'statusapproval', 'transferkeac', 'transferkean', 'transferkebank', 'statuscetak', 'userbukacetak', 'tglbukacetak', 'jumlahcetak', 'modifiedby', 'created_at', 'updated_at'], $models);
+        DB::table($temp)->insertUsing(['id', 'nobukti', 'tglbukti', 'pelanggan_id', 'postingdari', 'dibayarke', 'alatbayar_id', 'bank_id', 'statusapproval', 'transferkeac', 'transferkean', 'transferkebank', 'statuscetak', 'userbukacetak', 'tglbukacetak', 'jumlahcetak', 'penerimaan_nobukti', 'modifiedby', 'created_at', 'updated_at'], $models);
 
         return $temp;
     }
@@ -730,6 +734,7 @@ class PengeluaranHeader extends MyModel
         $pengeluaranHeader->transferkeac = $data['transferkeac'] ?? '';
         $pengeluaranHeader->transferkean = $data['transferkean'] ?? '';
         $pengeluaranHeader->transferkebank = $data['transferkebank'] ?? '';
+        $pengeluaranHeader->penerimaan_nobukti = $data['penerimaan_nobukti'] ?? '';
         $pengeluaranHeader->statusformat = $data['statusformat'] ?? $querysubgrppengeluaran->formatpengeluaran;
         $pengeluaranHeader->statuscetak = $statusCetak->id;
         $pengeluaranHeader->userbukacetak = '';
@@ -861,6 +866,7 @@ class PengeluaranHeader extends MyModel
         $pengeluaranHeader->transferkeac = $data['transferkeac'] ?? '';
         $pengeluaranHeader->transferkean = $data['transferkean'] ?? '';
         $pengeluaranHeader->transferkebank = $data['transferkebank'] ?? '';
+        $pengeluaranHeader->penerimaan_nobukti = $data['penerimaan_nobukti'] ?? '';
         $pengeluaranHeader->statusformat = $data['statusformat'] ?? $querysubgrppengeluaran->formatpengeluaran;
         $pengeluaranHeader->statuscetak = $statusCetak->id;
         $pengeluaranHeader->userbukacetak = '';
