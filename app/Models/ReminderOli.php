@@ -114,6 +114,7 @@ class ReminderOli extends MyModel
                     'a.nopol',
                     'a.tanggal',
                     'a.status',
+                    'a.statusbatas',
                     'a.km',
                     'a.kmperjalanan',
                     DB::raw("'Laporan Reminder Oli' as judulLaporan"),
@@ -141,6 +142,7 @@ class ReminderOli extends MyModel
                     'a.nopol',
                     'a.tanggal',
                     'a.status',
+                    'a.statusbatas',
                     'a.km',
                     'a.kmperjalanan',
                     'parameter.memo as statusbatas',
@@ -217,54 +219,149 @@ class ReminderOli extends MyModel
             'batas' => $batassaringanhawa,
         ]);
 
-        $query = DB::table("saldoreminderpergantian")->from(DB::raw("saldoreminderpergantian with (readuncommitted)"))
+        $Tempsaldoreminderoli = '##Tempsaldoreminderoli' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+        Schema::create($Tempsaldoreminderoli, function ($table) {
+            $table->integer('id');
+            $table->integer('trado_id');
+            $table->string('nopol', 1000);
+            $table->string('statusreminder', 100);
+            $table->date('tglawal');
+            $table->date('tglsampai');
+            $table->double('jarak',15,2);
+
+        });
+
+       
+        $querysaldo=db::table("saldoreminderpergantian")->from(DB::raw("saldoreminderpergantian a with (readuncommitted)"))
+          ->select(
+            'a.id',
+            'a.trado_id',
+            'a.nopol',
+            'a.statusreminder',
+            'a.tglawal',
+            'a.tglsampai',
+            'a.jarak',
+          )->orderby('a.id','asc');
+
+        DB::table($Tempsaldoreminderoli)->insertUsing([
+            'id',
+            'trado_id',
+            'nopol', 
+            'statusreminder',
+            'tglawal',
+            'tglsampai',
+            'jarak',
+        ], $querysaldo);   
+
+        $tglsaldo=db::table("parameter")->from(db::raw("parameter a with (readuncommitted)"))
+                ->select('a.text')
+                ->where('a.grp','SALDO')
+                ->where('a.subgrp','SALDO')
+                ->first()->text ?? '1900-01-01';
+        
+        $tglsaldoawal= date("Y-m-d", strtotime("+1 day", strtotime($tglsaldo)));
+
+        $Tempservicerutin = '##Tempservicerutin' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+        Schema::create($Tempservicerutin, function ($table) {
+            $table->integer('id');
+        }); 
+        $queryservicerutin=db::table("parameter")->from(DB::raw("parameter a with (readuncommitted)"))
+        ->select(
+          'a.id',
+        ) 
+        ->where('a.grp','STATUS SERVICE RUTIN')
+        ->where('a.subgrp','STATUS SERVICE RUTIN')
+        ->orderby('a.id','asc');
+
+        DB::table($Tempservicerutin)->insertUsing([
+            'id',
+        ], $queryservicerutin);
+
+        	
+        $pengeluaranstok_id=1;
+
+
+        $Temppergantian = '##Temppergantian' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+        Schema::create($Temppergantian, function ($table) {
+            $table->integer('trado_id');
+            $table->string('statusreminder', 100);
+            $table->date('tgl');
+
+        });    
+
+        $querypergantian=db::table("pengeluaranstokheader")->from(DB::raw("pengeluaranstokheader a with (readuncommitted)"))
+        ->select(
+          'a.trado_id',
+          'e.text as statusreminder',
+          db::raw("max(a.tglbukti) as tgl"),
+        )
+        ->join(db::raw("pengeluaranstokdetail b with (readuncommitted)"),'a.nobukti','b.nobukti')
+        ->join(db::raw("stok c with (readuncommitted)"),'b.stok_id','c.id')
+        ->join(db::raw($Tempservicerutin ." d "),'c.statusservicerutin','d.id')
+        ->join(db::raw("parameter e with (readuncommitted)"),'d.id','e.id')
+        ->where('a.pengeluaranstok_id',$pengeluaranstok_id)
+        ->groupBy('a.trado_id')
+        ->groupBy('e.text');
+        
+        DB::table($Temppergantian)->insertUsing([
+            'trado_id',
+            'statusreminder',
+            'tgl',
+        ], $querypergantian);           
+
+
+        $query = DB::table("saldoreminderpergantian")->from(DB::raw("saldoreminderpergantian a with (readuncommitted)"))
             ->select(
-                'nopol',
-                'tglsampai as tanggal',
-                'statusreminder as status',
+                'a.nopol',
+                'a.tglsampai as tanggal',
+                'a.statusreminder as status',
                 DB::raw("(case 
-                    when saldoreminderpergantian.statusreminder = 'PENGGANTIAN OLI GARDAN' then $batasgardan 
-                    when saldoreminderpergantian.statusreminder = 'PENGGANTIAN OLI PERSNELING' then $bataspersneling
-                    when saldoreminderpergantian.statusreminder = 'PENGGANTIAN OLI MESIN' then $batasmesin
+                    when a.statusreminder = 'PENGGANTIAN OLI GARDAN' then $batasgardan 
+                    when a.statusreminder = 'PENGGANTIAN OLI PERSNELING' then $bataspersneling
+                    when a.statusreminder = 'PENGGANTIAN OLI MESIN' then $batasmesin
                     else $batassaringanhawa end) 
                     
                     as km"),
-                'jarak as kmperjalanan',
+                db::raw("a.jarak as kmperjalanan"),
                 DB::raw("(CASE 
-                    WHEN saldoreminderpergantian.statusreminder = 'PENGGANTIAN OLI PERSNELING' then 
+                    WHEN upper(a.statusreminder) = 'PENGGANTIAN OLI PERSNELING' then 
                         CASE
-                            WHEN ($batasgardan - saldoreminderpergantian.jarak) <= $batasmax and ($batasgardan - saldoreminderpergantian.jarak) > 0 then $hampirLewat
-                            WHEN ($batasgardan - saldoreminderpergantian.jarak) <= 0 then $sudahLewat
+                            WHEN ($batasgardan - a.jarak) <= $batasmax and ($batasgardan - a.jarak) > 0 then $hampirLewat
+                            WHEN ($batasgardan - a.jarak) <= 0 then $sudahLewat
                         ELSE ''
                         END
                     
-                    WHEN saldoreminderpergantian.statusreminder = 'PENGGANTIAN OLI GARDAN' then 
+                    WHEN upper(a.statusreminder) = 'PENGGANTIAN OLI GARDAN' then 
                         CASE
-                            WHEN ($bataspersneling - saldoreminderpergantian.jarak) <= $batasmax and ($bataspersneling - saldoreminderpergantian.jarak) > 0 then $hampirLewat
-                            WHEN ($bataspersneling - saldoreminderpergantian.jarak) <= 0 then $sudahLewat
+                            WHEN ($bataspersneling - a.jarak) <= $batasmax and ($bataspersneling - a.jarak) > 0 then $hampirLewat
+                            WHEN ($bataspersneling - a.jarak) <= 0 then $sudahLewat
                         ELSE ''
                         END
                     
-                    WHEN saldoreminderpergantian.statusreminder = 'PENGGANTIAN OLI MESIN' then 
+                    WHEN upper(a.statusreminder) = 'PENGGANTIAN OLI MESIN' then 
                         CASE
-                            WHEN ($batasmesin - saldoreminderpergantian.jarak) <= $batasmax and ($batasmesin - saldoreminderpergantian.jarak) > 0 then $hampirLewat
-                            WHEN ($batasmesin - saldoreminderpergantian.jarak) <= 0 then $sudahLewat
+                            WHEN ($batasmesin - a.jarak) <= $batasmax and ($batasmesin - a.jarak) > 0 then $hampirLewat
+                            WHEN ($batasmesin - a.jarak) <= 0 then $sudahLewat
                         ELSE ''
                         END
 
-                    WHEN saldoreminderpergantian.statusreminder = 'PENGGANTIAN SARINGAN HAWA' then 
+                    WHEN upper(a.statusreminder) = 'PENGGANTIAN SARINGAN HAWA' then 
                             CASE
-                                WHEN ($batassaringanhawa - saldoreminderpergantian.jarak) <= $batasmax and ($batassaringanhawa - saldoreminderpergantian.jarak) > 0 then $hampirLewat
-                                WHEN ($batassaringanhawa - saldoreminderpergantian.jarak) <= 0 then $sudahLewat
+                                WHEN ($batassaringanhawa - a.jarak) <= $batasmax and ($batassaringanhawa - a.jarak) > 0 then $hampirLewat
+                                WHEN ($batassaringanhawa - a.jarak) <= 0 then $sudahLewat
                             ELSE ''
                             END
+                               
 
                 
                 END) 
                 as statusbatas"),
             )
-            ->leftJoin(DB::raw("$tempstatus with (readuncommitted)"), 'saldoreminderpergantian.statusreminder', $tempstatus . '.status');
+            ->Join(DB::raw("trado  b with (readuncommitted)"), 'a.trado_id', 'b.id')
+            ->Join(DB::raw("$tempstatus with (readuncommitted)"), 'a.statusreminder', $tempstatus . '.status')
+            ->Where('b.statusaktif',1);
 
+            // dd($query->get());
         return $query;
     }
 
