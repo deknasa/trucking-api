@@ -1046,12 +1046,16 @@ class PengeluaranTruckingHeader extends MyModel
                         $keterangan_detail[] = "$fetchFormat->keterangan periode " . $data['periode'] . " $pengeluaranTruckingHeader->nobukti";
                     }
                 } else {
-                    for ($i = 0; $i < count($nominal_detail); $i++) {
+                    // for ($i = 0; $i < count($nominal_detail); $i++) {
+                        $nominal_detail = [];
+                        $nominal_detail[] = $nominalBiaya;
+                        $keterangan_detail = [];
+                        $keterangan_detail[] = "$fetchFormat->keterangan $pengeluaranTruckingHeader->nobukti";
                         $coakredit_detail[] = $queryPengeluaran->coa;
                         $coadebet_detail[] = $data['coa'];
                         $nowarkat[] = "";
                         $tglkasmasuk[] = (array_key_exists('tglkasmasuk', $data)) ? date('Y-m-d', strtotime($data['tglkasmasuk'])) : date('Y-m-d', strtotime($data['tglbukti']));
-                    }
+                    // }
                 }
                 /*STORE PENGELUARAN*/
                 $pengeluaranRequest = [
@@ -1276,12 +1280,16 @@ class PengeluaranTruckingHeader extends MyModel
                         }
                     } else {
 
-                        for ($i = 0; $i < count($nominal_detail); $i++) {
+                        // for ($i = 0; $i < count($nominal_detail); $i++) {
+                            $nominal_detail = [];
+                            $nominal_detail[] = $nominalBiaya;
+                            $keterangan_detail = [];
+                            $keterangan_detail[] = "$fetchFormat->keterangan $pengeluaranTruckingHeader->nobukti";
                             $coakredit_detail[] = $queryPengeluaran->coa;
                             $coadebet_detail[] = $data['coa'];
                             $nowarkat[] = "";
                             $tglkasmasuk[] = (array_key_exists('tglkasmasuk', $data)) ? date('Y-m-d', strtotime($data['tglkasmasuk'])) : date('Y-m-d', strtotime($data['tglbukti']));
-                        }
+                        // }
                     }
                     /*STORE PENGELUARAN*/
                     $pengeluaranRequest = [
