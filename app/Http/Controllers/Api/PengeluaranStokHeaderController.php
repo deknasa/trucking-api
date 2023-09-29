@@ -226,6 +226,8 @@ class PengeluaranStokHeaderController extends Controller
             } else {
                 $pengeluaranStokHeader->page = ceil($pengeluaranStokHeader->position / ($request->limit ?? 10));
             }
+            $pengeluaranStokHeader->tgldariheader = date('Y-m-01', strtotime($pengeluaranStokHeader->tglbukti));
+            $pengeluaranStokHeader->tglsampaiheader = date('Y-m-t', strtotime($pengeluaranStokHeader->tglbukti));
 
             DB::commit();
 

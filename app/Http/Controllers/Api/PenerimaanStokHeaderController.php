@@ -208,7 +208,8 @@ class PenerimaanStokHeaderController extends Controller
             } else {
                 $penerimaanStokHeader->page = ceil($penerimaanStokHeader->position / ($request->limit ?? 10));
             }
-
+            $penerimaanStokHeader->tgldariheader = date('Y-m-01', strtotime($penerimaanStokHeader->tglbukti));
+            $penerimaanStokHeader->tglsampaiheader = date('Y-m-t', strtotime($penerimaanStokHeader->tglbukti));
             DB::commit();
 
             return response()->json([
