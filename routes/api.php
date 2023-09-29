@@ -386,6 +386,7 @@ route::middleware(['auth:api'])->group(function () {
     Route::get('jurnalumumheader/field_length', [JurnalUmumHeaderController::class, 'fieldLength']);
     Route::resource('alatbayar', AlatBayarController::class)->whereNumber('alatbayar');
     Route::get('parameter/getparamfirst', [ParameterController::class, 'getparamfirst']);
+    Route::get('cabang/combostatus', [CabangController::class, 'combostatus']);
 });
 
 route::middleware(['auth:api', 'authorized'])->group(function () {
@@ -595,7 +596,6 @@ route::middleware(['auth:api', 'authorized'])->group(function () {
     Route::get('agen/report', [AgenController::class, 'report']);
 
     Route::get('cabang/field_length', [CabangController::class, 'fieldLength']);
-    Route::get('cabang/combostatus', [CabangController::class, 'combostatus']);
     Route::get('cabang/default', [CabangController::class, 'default']);
     Route::get('cabang/report', [CabangController::class, 'report']);
     Route::get('cabang/export', [CabangController::class, 'export']);
@@ -711,7 +711,6 @@ route::middleware(['auth:api', 'authorized'])->group(function () {
     Route::resource('role', RoleController::class)->whereNumber('role');
 
     Route::get('cabang/field_length', [CabangController::class, 'fieldLength']);
-    Route::get('cabang/combostatus', [CabangController::class, 'combostatus']);
     Route::get('cabang/getPosition2', [CabangController::class, 'getPosition2']);
     Route::get('cabang/export', [CabangController::class, 'export'])->name('cabang.export');
 
@@ -1551,7 +1550,6 @@ route::middleware(['auth:api', 'authorized'])->group(function () {
     Route::resource('karyawan', KaryawanController::class)->whereNumber('karyawan');
 
     Route::get('cabang/field_length', [CabangController::class, 'fieldLength']);
-    Route::get('cabang/combostatus', [CabangController::class, 'combostatus']);
     Route::get('cabang/default', [CabangController::class, 'default']);
     Route::get('cabang/report', [CabangController::class, 'report']);
     Route::get('cabang/export', [CabangController::class, 'export']);
