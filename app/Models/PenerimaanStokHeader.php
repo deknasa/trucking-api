@@ -609,35 +609,42 @@ class PenerimaanStokHeader extends MyModel
             ->select('a.urutfifo')->where('a.id', $penerimaanstok_id)->first()->urutfifo ?? 0;
 
 
-
+            // dd($gudangke_id);
         $masukgudang_id = $data['gudang_id'] ?? 0;
         $masuktrado_id = $data['trado_id'] ?? 0;
         $masukgandengan_id = $data['gandengan_id'] ?? 0;
         if ($gudangke_id != 0) {
-            $masukgudang_id = $data['gudangke_id'] ?? 0;
+            $masukgudang_id = $gudangke_id ?? 0;
         }
-
         if ($gudangdari_id != 0) {
-            $keluargudang_id = $data['gudangdari_id'] ?? 0;
+            $keluargudang_id = $gudangdari_id ?? 0;
         }
 
 
         if ($tradoke_id != 0) {
-            $masuktrado_id = $data['tradoke_id'] ?? 0;
+            $masuktrado_id = $gudangke_id ?? 0;
         }
 
         if ($tradodari_id != 0) {
-            $keluartrado_id = $data['tradodari_id'] ?? 0;
+            $keluartrado_id = $tradodari_id ?? 0;
         }
 
 
         if ($gandenganke_id != 0) {
-            $masukgandengan_id = $data['gandenganke_id'] ?? 0;
+            $masukgandengan_id = $gandenganke_id ?? 0;
         }
 
         if ($gandengandari_id != 0) {
-            $keluargandengan_id = $data['gandengandari_id'] ?? 0;
+            $keluargandengan_id = $gandengandari_id ?? 0;
         }
+
+        // if ($penerimaanstok_id == 1) {
+        //     $masukgudang_id = $data['gudangke_id'] ?? 0;
+        // }
+        // if ($penerimaanstok_id == 6) {
+        //     $masukgudang_id = $data['gudangke_id'] ?? 0;
+        // }
+    
 
         /*STORE DETAIL*/
         $penerimaanStokDetails = [];
@@ -664,7 +671,6 @@ class PenerimaanStokHeader extends MyModel
             // dd($penerimaanstok_id);
             if ($penerimaanstok_id != 2 && $penerimaanstok_id != 10  && $penerimaanstok_id != 11) {
                 if ($masukgudang_id != 0 || $masuktrado_id != 0  || $masukgandengan_id != 0) {
-                    // dd($data['detail_qty'][$i]);
                     // dd('test');
                     $kartuStok = (new KartuStok())->processStore([
                         "gudang_id" => $masukgudang_id,
@@ -699,7 +705,7 @@ class PenerimaanStokHeader extends MyModel
                 }
             }
 
-
+            // dd('test');
 
 
             if ($data['penerimaanstok_id'] == $spbp->id) {
@@ -876,6 +882,9 @@ class PenerimaanStokHeader extends MyModel
         $gandengandari_id = $data['gandengandari_id'];
         $gandenganke_id = $data['gandenganke_id'];
 
+
+
+
         if ($data['penerimaanstok_id'] !== $pg->text) {
             $statuspindahgudang = Parameter::where('grp', 'STATUS PINDAH GUDANG')->where('text', 'BUKAN PINDAH GUDANG')->first();
             if ($data['penerimaanstok_id'] === $do->text) {
@@ -889,7 +898,9 @@ class PenerimaanStokHeader extends MyModel
                 $gudangke_id = Gudang::where('gudang', 'GUDANG KANTOR')->first()->id;
             }
         } else {
+        
             $dari = PenerimaanStokDetail::persediaan($data['gudangdari_id'], $data['tradodari_id'], $data['gandengandari_id']);
+    
             $ke = PenerimaanStokDetail::persediaan($data['gudangke_id'], $data['tradoke_id'], $data['gandenganke_id']);
             $statuspindahgudang = Parameter::where('grp', 'STATUS PINDAH GUDANG')->where("text", $dari['nama'] . " ke " . $ke['nama'])->first();
         }
@@ -922,6 +933,7 @@ class PenerimaanStokHeader extends MyModel
             throw new \Exception("Error updating Penerimaan Stok header.");
         }
 
+        // dd('test');
         $penerimaanStokHeaderLogTrail = (new LogTrail())->processStore([
             'namatabel' => strtoupper($penerimaanStokHeader->getTable()),
             'postingdari' => strtoupper('edit penerimaan Stok Header'),
@@ -936,9 +948,12 @@ class PenerimaanStokHeader extends MyModel
             $datadetail = PenerimaanStokDetail::select('stok_id', 'qty')->where('penerimaanstokheader_id', '=', $penerimaanStokHeader->id)->get();
             (new PenerimaanStokDetail())->returnStokPenerimaan($penerimaanStokHeader->id);
         }
+        // dd('test');
         if ($data['penerimaanstok_id'] == $korv->id) {
             (new PenerimaanStokDetail())->returnVulkanisir($penerimaanStokHeader->id);
         }
+
+
         /*DELETE EXISTING DETAIL*/
         $penerimaanStokDetail = PenerimaanStokDetail::where('penerimaanstokheader_id', $penerimaanStokHeader->id)->lockForUpdate()->delete();
         $kartuStok = kartuStok::where('nobukti', $penerimaanStokHeader->nobukti)->lockForUpdate()->delete();
@@ -960,6 +975,7 @@ class PenerimaanStokHeader extends MyModel
         $keluartrado_id = 0;
         $keluargandengan_id = 0;
 
+        $kartuStok = kartuStok::where('nobukti', $penerimaanStokHeader->nobukti)->lockForUpdate()->delete();
 
         $penerimaanstok_id = $data['penerimaanstok_id'] ?? 0;
 
@@ -973,29 +989,28 @@ class PenerimaanStokHeader extends MyModel
         $masukgandengan_id = $data['gandengan_id'] ?? 0;
 
         if ($gudangke_id != 0) {
-            $masukgudang_id = $data['gudangke_id'] ?? 0;
+            $masukgudang_id = $gudangke_id ?? 0;
         }
-
         if ($gudangdari_id != 0) {
-            $keluargudang_id = $data['gudangdari_id'] ?? 0;
+            $keluargudang_id = $gudangdari_id ?? 0;
         }
 
 
         if ($tradoke_id != 0) {
-            $masuktrado_id = $data['tradoke_id'] ?? 0;
+            $masuktrado_id = $gudangke_id ?? 0;
         }
 
         if ($tradodari_id != 0) {
-            $keluartrado_id = $data['tradodari_id'] ?? 0;
+            $keluartrado_id = $tradodari_id ?? 0;
         }
 
 
         if ($gandenganke_id != 0) {
-            $masukgandengan_id = $data['gandenganke_id'] ?? 0;
+            $masukgandengan_id = $gandenganke_id ?? 0;
         }
 
         if ($gandengandari_id != 0) {
-            $keluargandengan_id = $data['gandengandari_id'] ?? 0;
+            $keluargandengan_id = $gandengandari_id ?? 0;
         }
 
 
