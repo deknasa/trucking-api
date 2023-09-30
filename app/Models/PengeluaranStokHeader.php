@@ -678,7 +678,8 @@ class PengeluaranStokHeader extends MyModel
             ];
 
 
-            if ($ksgudang_id == 0 && ($pengeluaranstok_id != 1)) {
+
+            if ($ksgudang_id == 0 && ($pengeluaranstok_id != 1 && $pengeluaranstok_id != 5)) {
 
                 $ksqty = $data['detail_qty'][$i] ?? 0;
                 $ksharga = $data['detail_harga'][$i] ?? 0;
@@ -699,6 +700,46 @@ class PengeluaranStokHeader extends MyModel
                     "urutfifo" => $urutfifo,
                 ]);
             }
+            if ($pengeluaranstok_id == 1 ||  $pengeluaranstok_id == 5) {
+
+                $reuse = db::table("parameter")->from(db::raw("parameter a with (readuncommitted)"))
+                    ->select('a.id')
+                    ->where('grp', 'STATUS REUSE')
+                    ->where('subgrp', 'STATUS REUSE')
+                    ->where('text', 'REUSE')
+                    ->first()->id ?? 0;
+                $stokid = $data['detail_stok_id'][$i] ?? 0;
+                $stokreuse = db::table("stok")->from(db::raw("stok a with (readuncommitted)"))
+                    ->select(
+                        'a.id'
+                    )
+                    ->where('a.id', $stokid)
+                    ->where('a.statusreuse', $reuse)
+                    ->first();
+
+                if (isset($stokreuse)) {
+
+                    $ksqty = $data['detail_qty'][$i] ?? 0;
+                    $ksharga = $data['detail_harga'][$i] ?? 0;
+                    $kstotal = $ksqty * $ksharga;
+                    $ksnobukti = $pengeluaranStokHeader->nobukti ?? '';
+
+                    $kartuStok = (new KartuStok())->processStore([
+                        "gudang_id" =>  $ksgudang_id,
+                        "trado_id" =>  $kstrado_id,
+                        "gandengan_id" => $ksgandengan_id,
+                        "stok_id" => $data['detail_stok_id'][$i] ?? 0,
+                        "nobukti" => $ksnobukti ?? '',
+                        "tglbukti" => date('Y-m-d', strtotime($data['tglbukti'])),
+                        "qtymasuk" => $ksqty ?? 0,
+                        "nilaimasuk" =>  0,
+                        "qtykeluar" =>  0,
+                        "nilaikeluar" => 0,
+                        "urutfifo" => $urutfifo,
+                    ]);
+                }
+            }
+
 
             if (($kor->text != $data['pengeluaranstok_id'])) {
                 $gudangkantor = Parameter::where('grp', 'GUDANG KANTOR')->where('subgrp', 'GUDANG KANTOR')->first();

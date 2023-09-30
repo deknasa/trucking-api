@@ -438,8 +438,10 @@ class PenerimaanStokDetail extends MyModel
             ->select(
                 db::raw("sum(isnull(qtymasuk,0)-isnull(qtykeluar,0)) as qty")
             )
-            ->where("stok_id", $stokId)->where("$persediaan", $persediaanId)->first()
+            ->where("stok_id", $stokId)->where("$persediaan", $persediaanId)  ->first()
             ->qty ?? 0;
+
+            // dd($stok->toSql());
 
         if ($stok == 0) {
             return false;
@@ -505,11 +507,14 @@ class PenerimaanStokDetail extends MyModel
                 if (!$dari) {
                     throw ValidationException::withMessages(["qty" => "qty tidak cukup dari"]);
                 }
+                
                 $persediaanKe = $this->persediaan($gudangke_id, $tradoke_id, $gandenganke_id);
                 $ke = $this->persediaanKeReturn($item['stok_id'], $persediaanKe['column'] . '_id', $persediaanKe['value'], $item['qty']);
+                // dd($ke);
                 if (!$ke) {
                     throw ValidationException::withMessages(["qty" => "qty tidak cukup ke"]);
                 }
+                // dd('test');
             }
         }
     }
