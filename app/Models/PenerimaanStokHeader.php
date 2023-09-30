@@ -613,31 +613,30 @@ class PenerimaanStokHeader extends MyModel
         $masukgudang_id = $data['gudang_id'] ?? 0;
         $masuktrado_id = $data['trado_id'] ?? 0;
         $masukgandengan_id = $data['gandengan_id'] ?? 0;
-
         if ($gudangke_id != 0) {
-            $masukgudang_id = $data['$gudangke_id'] ?? 0;
+            $masukgudang_id = $data['gudangke_id'] ?? 0;
         }
 
         if ($gudangdari_id != 0) {
-            $keluargudang_id = $data['$gudangdari_id'] ?? 0;
+            $keluargudang_id = $data['gudangdari_id'] ?? 0;
         }
 
 
         if ($tradoke_id != 0) {
-            $masuktrado_id = $data['$tradoke_id'] ?? 0;
+            $masuktrado_id = $data['tradoke_id'] ?? 0;
         }
 
         if ($tradodari_id != 0) {
-            $keluartrado_id = $data['$tradodari_id'] ?? 0;
+            $keluartrado_id = $data['tradodari_id'] ?? 0;
         }
 
 
         if ($gandenganke_id != 0) {
-            $masukgandengan_id = $data['$gandenganke_id'] ?? 0;
+            $masukgandengan_id = $data['gandenganke_id'] ?? 0;
         }
 
         if ($gandengandari_id != 0) {
-            $keluargandengan_id = $data['$gandengandari_id'] ?? 0;
+            $keluargandengan_id = $data['gandengandari_id'] ?? 0;
         }
 
         /*STORE DETAIL*/
@@ -662,10 +661,11 @@ class PenerimaanStokHeader extends MyModel
                 "detail_keterangan" => $data['detail_keterangan'][$i],
                 "detail_penerimaanstoknobukti" => $data['detail_penerimaanstoknobukti'][$i],
             ]);
-
+            // dd($penerimaanstok_id);
             if ($penerimaanstok_id != 2 && $penerimaanstok_id != 10  && $penerimaanstok_id != 11) {
                 if ($masukgudang_id != 0 || $masuktrado_id != 0  || $masukgandengan_id != 0) {
                     // dd($data['detail_qty'][$i]);
+                    // dd('test');
                     $kartuStok = (new KartuStok())->processStore([
                         "gudang_id" => $masukgudang_id,
                         "trado_id" => $masuktrado_id,
@@ -679,6 +679,7 @@ class PenerimaanStokHeader extends MyModel
                         "nilaikeluar" => 0,
                         "urutfifo" => $urutfifo,
                     ]);
+                    
                 }
 
                 if ($keluargudang_id != 0 || $keluartrado_id != 0  || $keluargandengan_id != 0) {
@@ -697,7 +698,6 @@ class PenerimaanStokHeader extends MyModel
                     ]);
                 }
             }
-
 
 
 
@@ -973,29 +973,29 @@ class PenerimaanStokHeader extends MyModel
         $masukgandengan_id = $data['gandengan_id'] ?? 0;
 
         if ($gudangke_id != 0) {
-            $masukgudang_id = $data['$gudangke_id'] ?? 0;
+            $masukgudang_id = $data['gudangke_id'] ?? 0;
         }
 
         if ($gudangdari_id != 0) {
-            $keluargudang_id = $data['$gudangdari_id'] ?? 0;
+            $keluargudang_id = $data['gudangdari_id'] ?? 0;
         }
 
 
         if ($tradoke_id != 0) {
-            $masuktrado_id = $data['$tradoke_id'] ?? 0;
+            $masuktrado_id = $data['tradoke_id'] ?? 0;
         }
 
         if ($tradodari_id != 0) {
-            $keluartrado_id = $data['$tradodari_id'] ?? 0;
+            $keluartrado_id = $data['tradodari_id'] ?? 0;
         }
 
 
         if ($gandenganke_id != 0) {
-            $masukgandengan_id = $data['$gandenganke_id'] ?? 0;
+            $masukgandengan_id = $data['gandenganke_id'] ?? 0;
         }
 
         if ($gandengandari_id != 0) {
-            $keluargandengan_id = $data['$gandengandari_id'] ?? 0;
+            $keluargandengan_id = $data['gandengandari_id'] ?? 0;
         }
 
 
