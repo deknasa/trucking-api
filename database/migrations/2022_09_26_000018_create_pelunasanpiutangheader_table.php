@@ -28,6 +28,7 @@ class CreatePelunasanpiutangheaderTable extends Migration
             $table->unsignedBigInteger('pelanggan_id')->nullable();
             $table->string('penerimaangiro_nobukti', 50)->nullable();
             $table->string('penerimaan_nobukti', 50)->nullable();
+            $table->string('pengeluaran_nobukti', 50)->nullable();
             $table->string('notakredit_nobukti', 50)->nullable();
             $table->string('notadebet_nobukti', 50)->nullable();
             $table->date('tglcair')->nullable();
@@ -38,7 +39,6 @@ class CreatePelunasanpiutangheaderTable extends Migration
             $table->string('userbukacetak', 50)->nullable();
             $table->date('tglbukacetak')->nullable();
             $table->integer('jumlahcetak')->Length(11)->nullable();
-            $table->double('nominallunas',15,2)->nullable();
             $table->longText('info')->nullable();
             $table->string('modifiedby', 50)->nullable();
             $table->timestamps();
