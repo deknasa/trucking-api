@@ -28,6 +28,7 @@ class CreatePelunasanpiutangdetailTable extends Migration
             $table->string('coapotongan',50)->nullable();
             $table->double('nominallebihbayar',15,2)->nullable();
             $table->unsignedBigInteger('statusnotadebet')->nullable();
+            $table->unsignedBigInteger('statusnotakredit')->nullable();
             $table->string('coalebihbayar',50)->nullable();
             $table->string('invoice_nobukti',50)->nullable();
             $table->longText('keteranganpotongan')->nullable();
