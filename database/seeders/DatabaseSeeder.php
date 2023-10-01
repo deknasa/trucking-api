@@ -19,6 +19,7 @@ class DatabaseSeeder extends Seeder
             MainTypeAkuntansiSeeder::class,
             ParameterSeeder::class,
             CabangSeeder::class,
+            MethodSeeder::class,
             UserSeeder::class,
             AkunPusatSeeder::class,
             MainAkunPusatSeeder::class,
