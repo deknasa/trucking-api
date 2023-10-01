@@ -18,8 +18,11 @@ class GudangSeeder extends Seeder
         DB::statement("delete Gudang");
         DB::statement("DBCC CHECKIDENT ('Gudang', RESEED, 1);");
 
-        Gudang::create(['gudang' => 'GUDANG KANTOR', 'statusaktif' => '1', 'modifiedby' => 'ADMIN',]);
-        Gudang::create(['gudang' => 'GUDANG PIHAK III', 'statusaktif' => '1', 'modifiedby' => 'ADMIN',]);
-        Gudang::create(['gudang' => 'GUDANG SEMENTARA', 'statusaktif' => '1', 'modifiedby' => 'ADMIN',]);
+        gudang::create(['gudang' => 'GUDANG KANTOR', 'statusaktif' => '1', 'modifiedby' => 'ADMIN', 'info' => '',]);
+        gudang::create(['gudang' => 'GUDANG PIHAK III', 'statusaktif' => '1', 'modifiedby' => 'ADMIN', 'info' => '',]);
+        gudang::create(['gudang' => 'GUDANG SEMENTARA', 'statusaktif' => '1', 'modifiedby' => 'ADMIN', 'info' => '',]);
+        gudang::create(['gudang' => 'GUDANG GARASI', 'statusaktif' => '1', 'modifiedby' => 'ADMIN', 'info' => '',]);
+        gudang::create(['gudang' => 'WORK SHOP', 'statusaktif' => '1', 'modifiedby' => 'ADMIN', 'info' => '',]);
+        gudang::create(['gudang' => 'MEKANIK', 'statusaktif' => '1', 'modifiedby' => 'ADMIN', 'info' => '',]);
     }
 }

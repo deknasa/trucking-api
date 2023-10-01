@@ -18,7 +18,7 @@ class JenisEmklSeeder extends Seeder
         DB::statement("delete JenisEmkl");
         DB::statement("DBCC CHECKIDENT ('JenisEmkl', RESEED, 1);");
 
-        jenisemkl::create(['kodejenisemkl' => 'TAS', 'keterangan' => 'EMKL TAS', 'statusaktif' => '1', 'modifiedby' => 'ADMIN',]);
-        jenisemkl::create(['kodejenisemkl' => 'OL', 'keterangan' => 'ORDERAN LUAR', 'statusaktif' => '1', 'modifiedby' => 'ADMIN',]);
+        jenisemkl::create(['kodejenisemkl' => 'TAS', 'keterangan' => 'EMKL TAS', 'statusaktif' => '1', 'modifiedby' => 'ADMIN', 'info' => '',]);
+        jenisemkl::create(['kodejenisemkl' => 'OL', 'keterangan' => 'ORDERAN LUAR', 'statusaktif' => '1', 'modifiedby' => 'ADMIN', 'info' => '',]);
     }
 }

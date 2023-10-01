@@ -19,9 +19,9 @@ class JenisOrderSeeder extends Seeder
         DB::statement("delete JenisOrder");
         DB::statement("DBCC CHECKIDENT ('JenisOrder', RESEED, 1);");
 
-        JenisOrder::create(['kodejenisorder' => 'MUAT', 'keterangan' => 'MUATAN', 'statusaktif' => '1', 'modifiedby' => 'ADMIN',]);
-        JenisOrder::create(['kodejenisorder' => 'BKR', 'keterangan' => 'BONGKARAN', 'statusaktif' => '1', 'modifiedby' => 'ADMIN',]);
-        JenisOrder::create(['kodejenisorder' => 'IMP', 'keterangan' => 'IMPORT', 'statusaktif' => '1', 'modifiedby' => 'ADMIN',]);
-        JenisOrder::create(['kodejenisorder' => 'EKS', 'keterangan' => 'EKSPORT', 'statusaktif' => '1', 'modifiedby' => 'ADMIN',]);
+        jenisorder::create(['kodejenisorder' => 'MUAT', 'keterangan' => 'MUATAN', 'statusaktif' => '1', 'modifiedby' => 'ADMIN', 'info' => '',]);
+        jenisorder::create(['kodejenisorder' => 'BKR', 'keterangan' => 'BONGKARAN', 'statusaktif' => '1', 'modifiedby' => 'ADMIN', 'info' => '',]);
+        jenisorder::create(['kodejenisorder' => 'IMP', 'keterangan' => 'IMPORT', 'statusaktif' => '1', 'modifiedby' => 'ADMIN', 'info' => '',]);
+        jenisorder::create(['kodejenisorder' => 'EKS', 'keterangan' => 'EKSPORT', 'statusaktif' => '1', 'modifiedby' => 'ADMIN', 'info' => '',]);
     }
 }
