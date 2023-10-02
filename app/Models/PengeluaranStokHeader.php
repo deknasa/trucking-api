@@ -347,6 +347,12 @@ class PengeluaranStokHeader extends MyModel
             "kerusakan.keterangan as kerusakan",
             "bank.namabank as bank",
             "pengeluaranstok.kodepengeluaran as pengeluaranstok",
+            // db::raw("(case when $this->table.pengeluaranstok_id=1 then 
+            //     (case when isnull(trado.kodetrado,'')<>'' then trado.kodetrado
+            //     when isnull(gudang.gudang,'')<>'' then gudang.gudang
+            //     when isnull(gandengan.keterangan,'')<>'' then gandengan.keterangan
+            //     else '' end) else trado.kodetrado end) as trado
+            // "),
             "trado.kodetrado as trado",
             "gudang.gudang as gudang",
             "gandengan.keterangan as gandengan",
