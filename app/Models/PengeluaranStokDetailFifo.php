@@ -50,6 +50,7 @@ class PengeluaranStokDetailFifo extends MyModel
         });
 
         $a = 0;
+        $atotalharga=0;
         $kondisi = true;
         while ($kondisi == true) {
 
@@ -126,10 +127,13 @@ class PengeluaranStokDetailFifo extends MyModel
                     $pengeluaranStokDetailFifo->modifiedby = $data['modifiedby'] ?? '';
 
 
+                    $zqty = $qty ?? 0;
+                    $zharga = $querysisa->harga ?? 0;
+                    $atotalharga = $atotalharga + ($zqty * $zharga);
 
                     // 
-                    $ksqty = $item['penerimaan_qty'] ?? 0;
-                    $ksharga = $item['penerimaan_harga'] ?? 0;
+                    $ksqty = $qty ?? 0;
+                    $ksharga = $querysisa->harga ?? 0;
                     $kstotal = $ksqty * $ksharga;
                     $ksnobukti = $data['nobukti'] ?? '';
 
@@ -183,6 +187,7 @@ class PengeluaranStokDetailFifo extends MyModel
                     $penerimaanstokdetail->qtykeluar += $item['penerimaan_qty'] ?? 0;
                     $penerimaanstokdetail->save();
                     // 
+
                     $kondisi = false;
                     if (!$pengeluaranStokDetailFifo->save()) {
                         throw new \Exception("Error Simpan Pengeluaran Detail fifo.");
@@ -204,9 +209,14 @@ class PengeluaranStokDetailFifo extends MyModel
                     $pengeluaranStokDetailFifo->penerimaanstok_harga = $querysisa->harga ?? 0;
                     $pengeluaranStokDetailFifo->modifiedby = $data['modifiedby'] ?? '';
 
+
+                    $zqty = $qtysisa ?? 0;
+                    $zharga = $querysisa->harga ?? 0;
+                    $atotalharga = $atotalharga + ($zqty * $zharga);
+
                     // 
-                    $ksqty = $item['penerimaan_qty'] ?? 0;
-                    $ksharga = $item['penerimaan_harga'] ?? 0;
+                    $ksqty = $qtysisa ?? 0;
+                    $ksharga = $querysisa->harga ?? 0;
                     $kstotal = $ksqty * $ksharga;
                     $ksnobukti = $data['nobukti'] ?? '';
 
@@ -251,7 +261,7 @@ class PengeluaranStokDetailFifo extends MyModel
                     $aksnobukti = $querysisa->nobukti ?? '';
                     $aksstok_id = $data['stok_id'] ?? 0;
 
-                    $totalharga += ( $aksharga *  $aksqty);
+                    $totalharga += ($aksharga *  $aksqty);
 
 
                     $penerimaanstokdetail  = PenerimaanStokDetail::lockForUpdate()->where("stok_id",  $aksstok_id)
@@ -259,7 +269,8 @@ class PengeluaranStokDetailFifo extends MyModel
                         ->firstorFail();
                     $penerimaanstokdetail->qtykeluar += $item['penerimaan_qty'] ?? 0;
                     $penerimaanstokdetail->save();
-                    // 
+
+
 
                     if (!$pengeluaranStokDetailFifo->save()) {
                         throw new \Exception("Error Simpan pengeluaran detail fifo Detail fifo.");
@@ -267,6 +278,36 @@ class PengeluaranStokDetailFifo extends MyModel
                 }
             }
         }
+        // 
+
+        $nobuktipengeluaran = $data['nobukti'] ?? '';
+        $stokidpengeluaran = $data['stok_id'] ?? 0;
+        $pengeluaranstokdetail  = PengeluaranStokDetail::lockForUpdate()->where("stok_id", $stokidpengeluaran)
+            ->where("nobukti", $nobuktipengeluaran)
+            ->firstorFail();
+
+        $totalharga=$atotalharga;
+        // dump($totalharga);
+        // dd($data['qty']);
+        $hrgsat = $totalharga / $data['qty'];
+
+        if ($data['pengeluaranstok_id'] == 2) {
+            $totdetailharga = $data['detail_harga'];
+            $selisih = $hrgsat - $totdetailharga;
+
+            $hrgsat = $data['detail_harga'];
+            $totalharga = $hrgsat * $data['qty'];
+        } else {
+            $selisih = 0;
+        }
+        $pengeluaranstokdetail->harga =   $hrgsat;
+        $pengeluaranstokdetail->total =  $totalharga;
+        $pengeluaranstokdetail->selisihhargafifo =  $selisih;
+        // $pengeluaranstokdetail->save();
+        if (!$pengeluaranstokdetail->save()) {
+            throw new \Exception("Error storing pengeluaran Stok Detail  update fifo. ");
+        }
+        //
         return $pengeluaranStokDetailFifo;
     }
     public function processStoreOld(PengeluaranStokHeader $pengeluaranStokHeader, array $data): PengeluaranStokDetailFifo
