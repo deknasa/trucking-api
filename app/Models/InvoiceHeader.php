@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
+use Illuminate\Database\Schema\Blueprint;
 
 class InvoiceHeader extends MyModel
 {
@@ -52,7 +53,7 @@ class InvoiceHeader extends MyModel
                 'invoiceheader.created_at',
                 'invoiceheader.updated_at',
                 db::raw("cast((format(piutang.tglbukti,'yyyy/MM')+'/1') as date) as tgldariheaderpiutangheader"),
-                db::raw("cast(cast(format((cast((format(piutang.tglbukti,'yyyy/MM')+'/1') as datetime)+32),'yyyy/MM')+'/01' as datetime)-1 as date) as tglsampaiheaderpiutangheader"), 
+                db::raw("cast(cast(format((cast((format(piutang.tglbukti,'yyyy/MM')+'/1') as datetime)+32),'yyyy/MM')+'/01' as datetime)-1 as date) as tglsampaiheaderpiutangheader"),
             )
             ->leftJoin(DB::raw("piutangheader as piutang with (readuncommitted)"), 'invoiceheader.piutang_nobukti', '=', 'piutang.nobukti')
             ->leftJoin(DB::raw("parameter as statusapproval with (readuncommitted)"), 'invoiceheader.statusapproval', 'statusapproval.id')
@@ -99,7 +100,7 @@ class InvoiceHeader extends MyModel
         if (isset($pelunasanPiutang)) {
             $data = [
                 'kondisi' => true,
-                'keterangan' => 'Pelunasan Piutang '. $pelunasanPiutang->nobukti,
+                'keterangan' => 'Pelunasan Piutang ' . $pelunasanPiutang->nobukti,
                 'kodeerror' => 'SATL'
             ];
             goto selesai;
@@ -119,7 +120,7 @@ class InvoiceHeader extends MyModel
         if (isset($invoice)) {
             $data = [
                 'kondisi' => true,
-                'keterangan' => 'Approval Jurnal '. $invoice->piutang_nobukti,
+                'keterangan' => 'Approval Jurnal ' . $invoice->piutang_nobukti,
                 'kodeerror' => 'SAP'
             ];
             goto selesai;
@@ -881,7 +882,82 @@ class InvoiceHeader extends MyModel
     public function getInvoicePengeluaran($tgldari, $tglsampai)
     {
 
-        $query = InvoiceDetail::from(DB::raw("invoicedetail with (readuncommitted)"))
+        // 
+        $datafilter = request()->filter ?? 0;
+        $proses = request()->proses ?? 'reload';
+        $user = auth('api')->user()->name;
+        $class = 'SumbanganSosialController';
+
+
+
+        if ($proses == 'reload') {
+            $temtabel = 'temp' . rand(1, getrandmax()) . str_replace('.', '', microtime(true)) . request()->nd ?? 0;
+
+            $querydata = DB::table('listtemporarytabel')->from(
+                DB::raw("listtemporarytabel a with (readuncommitted)")
+            )
+                ->select(
+                    'id',
+                    'class',
+                    'namatabel',
+                )
+                ->where('class', '=', $class)
+                ->where('modifiedby', '=', $user)
+                ->first();
+
+            if (isset($querydata)) {
+                Schema::dropIfExists($querydata->namatabel);
+                DB::table('listtemporarytabel')->where('id', $querydata->id)->delete();
+            }
+
+            DB::table('listtemporarytabel')->insert(
+                [
+                    'class' => $class,
+                    'namatabel' => $temtabel,
+                    'modifiedby' => $user,
+                    'created_at' => date('Y/m/d H:i:s'),
+                    'updated_at' => date('Y/m/d H:i:s'),
+                ]
+            );
+
+
+            Schema::create($temtabel, function (Blueprint $table) {
+                $table->id();
+                $table->unsignedBigInteger('id_detail')->nullable();
+                $table->string('noinvoice_detail', 50)->nullable();
+                $table->string('nojobtrucking_detail', 50)->nullable();
+                $table->string('container_detail',1000)->nullable();
+                $table->date('tglbukti')->nullable();
+                $table->double('nominal_detail',15,2)->nullable();
+            });
+
+            $queryget = db::table("saldosumbangansosial")->from(db::raw("saldosumbangansosial a with (readuncommitted)"))
+            ->select(
+                'a.id_detail',
+                'a.noinvoice_detail',
+                'a.nojobtrucking_detail',
+                'container.keterangan as container_detail',
+                'a.tgl_bukti as tglbukti',
+                db::raw("(case when container.nominalsumbangan IS NULL then 0 else container.nominalsumbangan end) as nominal_detail")
+            )
+            ->leftJoin(DB::raw("container with (readuncommitted)"), 'a.container_id', 'container.id')
+            ->whereRaw("a.nojobtrucking_detail not in (select orderantrucking_nobukti from pengeluarantruckingdetail where orderantrucking_nobukti != '')")
+            ->whereBetween('a.tgl_bukti', [date('Y-m-d', strtotime($tgldari)), date('Y-m-d', strtotime($tglsampai))])
+            ->orderby('a.id', 'asc');
+
+        DB::table($temtabel)->insertUsing([
+            'id_detail',
+            'noinvoice_detail',
+            'nojobtrucking_detail',
+            'container_detail',
+            'tglbukti',
+            'nominal_detail',
+        ], $queryget);
+
+    
+
+
+        $query1 = InvoiceDetail::from(DB::raw("invoicedetail with (readuncommitted)"))
             ->select(DB::raw("
             invoicedetail.id as id_detail,
             invoicedetail.nobukti as noinvoice_detail,
@@ -898,11 +974,51 @@ class InvoiceHeader extends MyModel
             ->whereRaw("invoicedetail.orderantrucking_nobukti not in (select orderantrucking_nobukti from pengeluarantruckingdetail where orderantrucking_nobukti != '')")
             ->whereBetween('invoiceheader.tglbukti', [date('Y-m-d', strtotime($tgldari)), date('Y-m-d', strtotime($tglsampai))])
             ->whereRaw("isnull(invoicedetail.orderantrucking_nobukti, '') != ''");
+
+
+        DB::table($temtabel)->insertUsing([
+            'id_detail',
+            'noinvoice_detail',
+            'nojobtrucking_detail',
+            'container_detail',
+            'tglbukti',
+            'nominal_detail',
+        ], $query1);
+        } else {
+            $querydata = DB::table('listtemporarytabel')->from(
+                DB::raw("listtemporarytabel with (readuncommitted)")
+            )
+                ->select(
+                    'namatabel',
+                )
+                ->where('class', '=', $class)
+                ->where('modifiedby', '=', $user)
+                ->first();
+
+            // dd($querydata);
+            $temtabel = $querydata->namatabel;
+        }
+
+        // 
+
+
+       
         // ->where('invoiceheader.tsglbukti', '<=', date('Y-m-d', strtotime($tglsampai)));
+
+        // dd('test');
+        $query=db::table($temtabel)->from(db::raw($temtabel ))
+        ->select(
+            'id as id_detail',
+            'noinvoice_detail',
+            'nojobtrucking_detail',
+            'container_detail',
+            'tglbukti',
+            'nominal_detail',
+        )->orderBY('id');
 
         $this->totalRows = $query->count();
         $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;
-        $this->totalNominal = $query->sum('container.nominalsumbangan');
+        $this->totalNominal = $query->sum('nominal_detail');
         $data = $query->get();
 
 
