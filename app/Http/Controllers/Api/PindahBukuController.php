@@ -13,6 +13,7 @@ use App\Http\Requests\UpdatePindahBukuRequest;
 use App\Models\Bank;
 use App\Models\JurnalUmumDetail;
 use App\Models\JurnalUmumHeader;
+use App\Models\Parameter;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -66,7 +67,7 @@ class PindahBukuController extends Controller
             ];
             $pindahBuku = (new PindahBuku())->processStore($data);
             $pindahBuku->position = $this->getPosition($pindahBuku, $pindahBuku->getTable())->position;
-            if ($request->limit==0) {
+            if ($request->limit == 0) {
                 $pindahBuku->page = ceil($pindahBuku->position / (10));
             } else {
                 $pindahBuku->page = ceil($pindahBuku->position / ($request->limit ?? 10));
@@ -114,7 +115,7 @@ class PindahBukuController extends Controller
             ];
             $pindahBuku = (new PindahBuku())->processUpdate($pindahbuku, $data);
             $pindahBuku->position = $this->getPosition($pindahBuku, $pindahBuku->getTable())->position;
-            if ($request->limit==0) {
+            if ($request->limit == 0) {
                 $pindahBuku->page = ceil($pindahBuku->position / (10));
             } else {
                 $pindahBuku->page = ceil($pindahBuku->position / ($request->limit ?? 10));
@@ -146,7 +147,7 @@ class PindahBukuController extends Controller
             $selected = $this->getPosition($pindahBuku, $pindahBuku->getTable(), true);
             $pindahBuku->position = $selected->position;
             $pindahBuku->id = $selected->id;
-            if ($request->limit==0) {
+            if ($request->limit == 0) {
                 $pindahBuku->page = ceil($pindahBuku->position / (10));
             } else {
                 $pindahBuku->page = ceil($pindahBuku->position / ($request->limit ?? 10));
@@ -214,5 +215,52 @@ class PindahBukuController extends Controller
      */
     public function report()
     {
+    }
+
+    /**
+     * @ClassName
+     */
+    public function export($id)
+    {
+        $pindahBuku = new PindahBuku();
+        return response([
+            'data' => $pindahBuku->getExport($id)
+        ]);
+    }
+    public function printReport($id)
+    {
+        DB::beginTransaction();
+
+        try {
+            $pindahBuku = PindahBuku::findOrFail($id);
+            $statusSudahCetak = Parameter::where('grp', '=', 'STATUSCETAK')->where('text', '=', 'CETAK')->first();
+            $statusBelumCetak = Parameter::where('grp', '=', 'STATUSCETAK')->where('text', '=', 'BELUM CETAK')->first();
+
+            if ($pindahBuku->statuscetak != $statusSudahCetak->id) {
+                $pindahBuku->statuscetak = $statusSudahCetak->id;
+                $pindahBuku->tglbukacetak = date('Y-m-d H:i:s');
+                $pindahBuku->userbukacetak = auth('api')->user()->name;
+                $pindahBuku->jumlahcetak = $pindahBuku->jumlahcetak + 1;
+                if ($pindahBuku->save()) {
+                    $logTrail = [
+                        'namatabel' => strtoupper($pindahBuku->getTable()),
+                        'postingdari' => 'PRINT PINDAH BUKU',
+                        'idtrans' => $pindahBuku->id,
+                        'nobuktitrans' => $pindahBuku->id,
+                        'aksi' => 'PRINT',
+                        'datajson' => $pindahBuku->toArray(),
+                        'modifiedby' => $pindahBuku->modifiedby
+                    ];
+                    $validatedLogTrail = new StoreLogTrailRequest($logTrail);
+                    $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
+                    DB::commit();
+                }
+            }
+            return response([
+                'message' => 'Berhasil'
+            ]);
+        } catch (\Throwable $th) {
+            throw $th;
+        }
     }
 }

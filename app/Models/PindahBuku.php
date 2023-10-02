@@ -78,6 +78,8 @@ class PindahBuku extends MyModel
     {
         $this->setRequestParameters();
 
+        $periode = request()->periode ?? '';
+        $statusCetak = request()->statuscetak ?? '';
         $query = DB::table($this->table)->from(
             DB::raw("pindahbuku with (readuncommitted)")
         )
@@ -93,18 +95,32 @@ class PindahBuku extends MyModel
                 'pindahbuku.nowarkat',
                 'pindahbuku.tgljatuhtempo',
                 'pindahbuku.nominal',
-                'pindahbuku.keterangan',
+                'pindahbuku.keterangan', 
+                DB::raw('(case when (year(pindahbuku.tglbukacetak) <= 2000) then null else pindahbuku.tglbukacetak end ) as tglbukacetak'),
+                'statuscetak.memo as statuscetak',                
+                'pindahbuku.userbukacetak',
+                'pindahbuku.jumlahcetak',
                 'pindahbuku.modifiedby',
                 'pindahbuku.created_at',
                 'pindahbuku.updated_at'
             )
-            ->whereBetween($this->table . '.tglbukti', [date('Y-m-d', strtotime(request()->tgldari)), date('Y-m-d', strtotime(request()->tglsampai))])
             ->leftJoin(DB::raw("bank as bankdari with (readuncommitted)"), 'pindahbuku.bankdari_id', 'bankdari.id')
             ->leftJoin(DB::raw("bank as bankke with (readuncommitted)"), 'pindahbuku.bankke_id', 'bankke.id')
             ->leftJoin(DB::raw("akunpusat as coadebet with (readuncommitted)"), 'pindahbuku.coadebet', 'coadebet.coa')
+            ->leftJoin(DB::raw("parameter as statuscetak with (readuncommitted)"), 'pindahbuku.statuscetak', 'statuscetak.id')
             ->leftJoin(DB::raw("akunpusat as coakredit with (readuncommitted)"), 'pindahbuku.coakredit', 'coakredit.coa')
             ->leftJoin(DB::raw("alatbayar with (readuncommitted)"), 'pindahbuku.alatbayar_id', 'alatbayar.id');
-
+        if (request()->tgldari && request()->tglsampai) {
+            $query->whereBetween($this->table . '.tglbukti', [date('Y-m-d', strtotime(request()->tgldari)), date('Y-m-d', strtotime(request()->tglsampai))]);
+        }
+        if ($periode != '') {
+            $periode = explode("-", $periode);
+            $query->whereRaw("MONTH(pindahbuku.tglbukti) ='" . $periode[0] . "'")
+                ->whereRaw("year(pindahbuku.tglbukti) ='" . $periode[1] . "'");
+        }
+        if ($statusCetak != '') {
+            $query->where("pindahbuku.statuscetak", $statusCetak);
+        }
         $this->totalRows = $query->count();
         $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;
 
@@ -134,6 +150,9 @@ class PindahBuku extends MyModel
                  $this->table.tgljatuhtempo,
                  $this->table.nominal,
                  $this->table.keterangan,
+                 'statuscetak.text as statuscetak',
+                 $this->table.userbukacetak,
+                 $this->table.tglbukacetak,
                  $this->table.modifiedby,
                  $this->table.created_at,
                  $this->table.updated_at"
@@ -142,7 +161,8 @@ class PindahBuku extends MyModel
             ->leftJoin(DB::raw("bank as bankdari with (readuncommitted)"), 'pindahbuku.bankdari_id', 'bankdari.id')
             ->leftJoin(DB::raw("bank as bankke with (readuncommitted)"), 'pindahbuku.bankke_id', 'bankke.id')
             ->leftJoin(DB::raw("akunpusat as coadebet with (readuncommitted)"), 'pindahbuku.coadebet', 'coadebet.coa')
-            ->leftJoin(DB::raw("akunpusat as coakredit with (readuncommitted)"), 'pindahbuku.coakredit', 'coakredit.coa')
+            ->leftJoin(DB::raw("akunpusat as coakredit with (readuncommitted)"), 'pindahbuku.coakredit', 'coakredit.coa')            
+            ->leftJoin('parameter as statuscetak', 'pindahbuku.statuscetak', 'statuscetak.id')
             ->leftJoin(DB::raw("alatbayar with (readuncommitted)"), 'pindahbuku.alatbayar_id', 'alatbayar.id');
     }
 
@@ -162,6 +182,9 @@ class PindahBuku extends MyModel
             $table->date('tgljatuhtempo')->nullable();
             $table->float('nominal')->nullable();
             $table->string('keterangan')->nullable();
+            $table->string('statuscetak', 1000)->nullable();
+            $table->string('userbukacetak', 50)->nullable();
+            $table->date('tglbukacetak')->nullable();
             $table->string('modifiedby')->default();
             $table->dateTime('created_at')->nullable();
             $table->dateTime('updated_at')->nullable();
@@ -178,7 +201,7 @@ class PindahBuku extends MyModel
         $models = $this->filter($query);
         $models = $query
             ->whereBetween($this->table . '.tglbukti', [date('Y-m-d', strtotime(request()->tgldariheader)), date('Y-m-d', strtotime(request()->tglsampaiheader))]);
-        DB::table($temp)->insertUsing(['id', 'nobukti', 'tglbukti', 'bankdari', 'bankke', 'coadebet', 'coakredit', 'alatbayar', 'nowarkat', 'tgljatuhtempo', 'nominal', 'keterangan', 'modifiedby', 'created_at', 'updated_at'], $models);
+        DB::table($temp)->insertUsing(['id', 'nobukti', 'tglbukti', 'bankdari', 'bankke', 'coadebet', 'coakredit', 'alatbayar', 'nowarkat', 'tgljatuhtempo', 'nominal', 'keterangan', 'statuscetak', 'userbukacetak', 'tglbukacetak', 'modifiedby', 'created_at', 'updated_at'], $models);
 
         return $temp;
     }
@@ -309,6 +332,7 @@ class PindahBuku extends MyModel
         $pindahBuku = new PindahBuku();
         $getCoaKredit = Bank::from(DB::raw("bank with (readuncommitted)"))->where('id', $data['bankdari_id'])->first();
         $getCoaDebet = Bank::from(DB::raw("bank with (readuncommitted)"))->where('id', $data['bankke_id'])->first();
+        $statusCetak = Parameter::from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUSCETAK')->where('text', 'BELUM CETAK')->first();
 
         $pindahBuku->tglbukti = date('Y-m-d', strtotime($data['tglbukti']));
         $pindahBuku->bankdari_id = $data['bankdari_id'];
@@ -321,6 +345,7 @@ class PindahBuku extends MyModel
         $pindahBuku->nominal = $data['nominal'];
         $pindahBuku->keterangan = $data['keterangan'];
         $pindahBuku->statusformat = $format->id;
+        $pindahBuku->statuscetak = $statusCetak->id;
         $pindahBuku->modifiedby = auth('api')->user()->name;
         $pindahBuku->info = html_entity_decode(request()->info);
 
@@ -437,7 +462,6 @@ class PindahBuku extends MyModel
             $newJurnal = new JurnalUmumHeader();
             $newJurnal = $newJurnal->find($getJurnal->id);
             $jurnalumumHeader = (new JurnalUmumHeader())->processUpdate($newJurnal, $jurnalRequest);
-    
         } else {
             $jurnalRequest = [
                 'tanpaprosesnobukti' => 1,
@@ -450,15 +474,15 @@ class PindahBuku extends MyModel
                 'nominal_detail' => $nominal_detail,
                 'keterangan_detail' => $keterangan_detail
             ];
-    
+
             (new JurnalUmumHeader())->processStore($jurnalRequest);
         }
 
-       
+
 
         return $pindahBuku;
     }
-        
+
     public function processDestroy($id, $postingDari = ''): PindahBuku
     {
 
@@ -478,5 +502,45 @@ class PindahBuku extends MyModel
         $getJurnal = JurnalUmumHeader::from(DB::raw("jurnalumumheader with (readuncommitted)"))->where('nobukti', $pindahBuku->nobukti)->first();
         $jurnalumumHeader = (new JurnalUmumHeader())->processDestroy($getJurnal->id, $postingDari);
         return $pindahBuku;
+    }
+
+    public function getExport($id)
+    {
+        $this->setRequestParameters();
+
+        $getJudul = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))
+            ->select('text')
+            ->where('grp', 'JUDULAN LAPORAN')
+            ->where('subgrp', 'JUDULAN LAPORAN')
+            ->first();
+
+        $query = DB::table($this->table)->from(DB::raw("pindahbuku with (readuncommitted)"))
+            ->select(
+                'pindahbuku.id',
+                'pindahbuku.nobukti',
+                'pindahbuku.tglbukti',
+                'bankdari.kodebank as bankdari',
+                'bankke.kodebank as bankke',
+                'alatbayar.kodealatbayar',
+                'pindahbuku.tgljatuhtempo',
+                'pindahbuku.keterangan',
+                'pindahbuku.nowarkat',
+                'pindahbuku.nominal',
+                'statuscetak.memo as statuscetak',
+                'statuscetak.id as  statuscetak_id',
+                'pindahbuku.jumlahcetak',
+                DB::raw("'Laporan Pindah Buku' as judulLaporan"),
+                DB::raw("'" . $getJudul->text . "' as judul"),
+                DB::raw("'Tgl Cetak:'+format(getdate(),'dd-MM-yyyy HH:mm:ss')as tglcetak"),
+                DB::raw(" 'User :" . auth('api')->user()->name . "' as usercetak")
+            )
+            ->leftJoin(DB::raw("alatbayar with (readuncommitted)"), "pindahbuku.alatbayar_id", "alatbayar.id")
+            ->leftJoin(DB::raw("bank as bankdari with (readuncommitted)"), "pindahbuku.bankdari_id", "bankdari.id")
+            ->leftJoin(DB::raw("bank as bankke with (readuncommitted)"), "pindahbuku.bankke_id", "bankke.id")
+            ->leftJoin(DB::raw("parameter as statuscetak with (readuncommitted)"), 'pindahbuku.statuscetak', 'statuscetak.id')
+            ->where('pindahbuku.id', $id);
+
+        $data = $query->first();
+        return $data;
     }
 }
