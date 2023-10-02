@@ -45,6 +45,7 @@ class PengeluaranStokHeader extends MyModel
             ->leftJoin('kerusakan', 'pengeluaranstokheader.kerusakan_id', 'kerusakan.id')
             ->leftJoin('bank', 'pengeluaranstokheader.bank_id', 'bank.id')
             ->leftJoin('parameter as statusedit', 'pengeluaranstokheader.statusapprovaledit', 'statusedit.id')
+            ->leftJoin('parameter as statuscetak', 'pengeluaranstokheader.statuscetak', 'statuscetak.id')
             ->leftJoin('penerimaanstokheader as penerimaan', 'pengeluaranstokheader.penerimaanstok_nobukti', 'penerimaan.nobukti')
             ->leftJoin('penerimaanheader', 'pengeluaranstokheader.penerimaan_nobukti', 'penerimaanheader.nobukti')
             ->leftJoin('pelunasanhutangheader', 'pengeluaranstokheader.hutangbayar_nobukti', 'pelunasanhutangheader.nobukti')
@@ -334,7 +335,7 @@ class PengeluaranStokHeader extends MyModel
             "$this->table.hutangbayar_nobukti",
             "$this->table.servicein_nobukti",
             "$this->table.kerusakan_id",
-            "$this->table.statuscetak",
+            'statuscetak.memo as statuscetak',
             "$this->table.statusformat",
             "$this->table.statuspotongretur",
             "$this->table.bank_id",
@@ -384,6 +385,7 @@ class PengeluaranStokHeader extends MyModel
             ->leftJoin('kerusakan', 'pengeluaranstokheader.kerusakan_id', 'kerusakan.id')
             ->leftJoin('bank', 'pengeluaranstokheader.bank_id', 'bank.id')
             ->leftJoin('parameter as statusedit', 'pengeluaranstokheader.statusapprovaledit', 'statusedit.id')
+            ->leftJoin('parameter as statuscetak', 'pengeluaranstokheader.statuscetak', 'statuscetak.id')
             ->leftJoin('penerimaanstokheader as penerimaan', 'pengeluaranstokheader.penerimaanstok_nobukti', 'penerimaan.nobukti')
             ->leftJoin('penerimaanheader', 'pengeluaranstokheader.penerimaan_nobukti', 'penerimaanheader.nobukti')
             ->leftJoin('pelunasanhutangheader', 'pengeluaranstokheader.hutangbayar_nobukti', 'pelunasanhutangheader.nobukti')

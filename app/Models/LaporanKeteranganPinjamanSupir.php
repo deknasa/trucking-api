@@ -543,6 +543,11 @@ class LaporanKeteranganPinjamanSupir extends MyModel
             ->select('text')
             ->where('grp', 'DIPERIKSA')
             ->where('subgrp', 'DIPERIKSA')->first()->text ?? '';
+        $getJudul = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))
+            ->select('text')
+            ->where('grp', 'JUDULAN LAPORAN')
+            ->where('subgrp', 'JUDULAN LAPORAN')
+            ->first();
 
         $queryRekap = DB::table($tempLaporan2)->from(
             DB::raw($tempLaporan2 . " as a")
@@ -556,6 +561,10 @@ class LaporanKeteranganPinjamanSupir extends MyModel
                 DB::raw("sum ((isnull(A.saldo,0)+A.debet)-A.Kredit) over (order by id asc) as Saldo"),
                 db::raw("'" . $disetujui . "' as disetujui"),
                 db::raw("'" . $diperiksa . "' as diperiksa"),
+                DB::raw("'Laporan Keterangan Pinjaman Supir' as judulLaporan"),
+                DB::raw("'" . $getJudul->text . "' as judul"),
+                DB::raw("'Tgl Cetak:'+format(getdate(),'dd-MM-yyyy HH:mm:ss')as tglcetak"),
+                DB::raw(" 'User :".auth('api')->user()->name."' as usercetak")
 
             )
             ->orderBy('a.id');

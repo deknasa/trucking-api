@@ -1540,6 +1540,8 @@ route::middleware(['auth:api', 'authorized'])->group(function () {
     Route::get('exportlaporankasharian/export', [ExportLaporanKasHarianController::class, 'export'])->name('exportlaporankasharian.export');
     Route::resource('exportlaporankasharian', ExportLaporanKasHarianController::class)->whereNumber('exportlaporankasharian');
 
+    Route::get('pindahbuku/{id}/printreport', [PindahBukuController::class, 'printReport'])->whereNumber('id');
+    Route::get('pindahbuku/{id}/export', [PindahBukuController::class, 'export'])->name('pindahbuku.export')->whereNumber('id');
     Route::get('pindahbuku/default', [PindahBukuController::class, 'default']);
     Route::resource('pindahbuku', PindahBukuController::class)->whereNumber('pindahbuku');
 
