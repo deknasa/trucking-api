@@ -387,6 +387,8 @@ route::middleware(['auth:api'])->group(function () {
     Route::resource('alatbayar', AlatBayarController::class)->whereNumber('alatbayar');
     Route::get('parameter/getparamfirst', [ParameterController::class, 'getparamfirst']);
     Route::get('cabang/combostatus', [CabangController::class, 'combostatus']);
+    Route::apiResource('penerimaanstok', PenerimaanStokController::class)->whereNumber('penerimaanstok');
+    Route::get('pengeluaranstok', [PengeluaranStokController::class, 'index']);
 });
 
 route::middleware(['auth:api', 'authorized'])->group(function () {
@@ -883,7 +885,7 @@ route::middleware(['auth:api', 'authorized'])->group(function () {
     Route::get('penerimaanstok/export', [PenerimaanStokController::class, 'export']);
     Route::get('penerimaanstok/default', [PenerimaanStokController::class, 'default']);
     Route::post('penerimaanstok/{id}/cekValidasi', [PenerimaanStokController::class, 'cekValidasi'])->name('penerimaanstok.cekValidasi')->whereNumber('id');
-    Route::apiResource('penerimaanstok', PenerimaanStokController::class)->whereNumber('penerimaanstok');
+    
 
     Route::post('penerimaanstokheader/addrow', [PenerimaanStokDetailController::class, 'addrow']);
     Route::get('penerimaanstokheader/field_length', [PenerimaanStokHeaderController::class, 'fieldLength']);
