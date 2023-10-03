@@ -92,7 +92,7 @@ class Tarif extends MyModel
         $aktif = request()->aktif ?? '';
         $jenisOrder = request()->jenisOrder ?? '';
         $isParent = request()->isParent ?? false;
-        
+
         $tempUpahsupir = $this->tempUpahsupir();
         $query = DB::table($this->table)->from(DB::raw("$this->table with (readuncommitted)"))
             ->select(
@@ -162,9 +162,9 @@ class Tarif extends MyModel
         }
 
         if ($isParent == true) {
-            if ($jenisOrder == '') {
-                $query->whereRaw("(tarif.jenisorder_id = 0 or tarif.jenisorder_id IS NULL)");
-            }
+            // if ($jenisOrder == '') {
+            //     $query->whereRaw("(tarif.jenisorder_id = 0 or tarif.jenisorder_id IS NULL)");
+            // }
             $query->where('tarif.penyesuaian', '');
         }
         $this->totalRows = $query->count();
