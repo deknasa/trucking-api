@@ -295,7 +295,7 @@ class PenerimaanStokDetail extends MyModel
             }
         }
 
-        $total = round(($data['qty'] * $data['harga']),0);
+        $total = ceil(($data['qty'] * $data['harga']));
         $nominaldiscount = $data['totalsebelum'] * ($data['persentasediscount'] / 100);
 
         // $total -= $nominaldiscount;
