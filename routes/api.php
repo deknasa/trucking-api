@@ -388,7 +388,7 @@ route::middleware(['auth:api'])->group(function () {
     Route::get('parameter/getparamfirst', [ParameterController::class, 'getparamfirst']);
     Route::get('cabang/combostatus', [CabangController::class, 'combostatus']);
     Route::apiResource('penerimaanstok', PenerimaanStokController::class)->whereNumber('penerimaanstok');
-    Route::get('pengeluaranstok', [PengeluaranStokController::class, 'index']);
+    Route::apiResource('pengeluaranstok', PengeluaranStokController::class)->whereNumber('pengeluaranstok');
 });
 
 route::middleware(['auth:api', 'authorized'])->group(function () {
@@ -902,7 +902,7 @@ route::middleware(['auth:api', 'authorized'])->group(function () {
     Route::get('pengeluaranstok/export', [PengeluaranStokController::class, 'export']);
     Route::get('pengeluaranstok/default', [PengeluaranStokController::class, 'default']);
     Route::post('pengeluaranstok/{id}/cekValidasi', [PengeluaranStokController::class, 'cekValidasi'])->name('pengeluaranstok.cekValidasi')->whereNumber('id');
-    Route::apiResource('pengeluaranstok', PengeluaranStokController::class)->whereNumber('pengeluaranstok');
+    
 
     Route::get('pengeluaranstokheader/{id}/printreport', [PengeluaranStokHeaderController::class, 'printReport'])->whereNumber('id');
     Route::post('pengeluaranstokheader/{id}/cekvalidasi', [PengeluaranStokHeaderController::class, 'cekValidasi'])->name('pengeluaranstokheader.cekValidasi')->whereNumber('id');
