@@ -21,6 +21,14 @@ class ExpAsuransi extends MyModel
             ->where('text', '=', 'AKTIF')
             ->first();
 
+        $statusabsensisupir = Parameter::from(
+            DB::raw("parameter with (readuncommitted)")
+        )
+            ->where('grp', '=', 'STATUS ABSENSI SUPIR')
+            ->where('subgrp', '=', 'STATUS ABSENSI SUPIR')
+            ->where('text', '=', 'ABSENSI SUPIR')
+            ->first();
+
         $batasMax = Parameter::from(
             DB::raw("parameter with (readuncommitted)")
         )
@@ -95,7 +103,7 @@ class ExpAsuransi extends MyModel
                     'trado.id',
                     'trado.kodetrado',
                     DB::raw('(case when (year(trado.tglasuransimati) <= 2000) then null else trado.tglasuransimati end ) as tglasuransimati'),
-                
+
                     DB::raw("(case 
                     when DATEDIFF(dd,getdate(),tglasuransimati)>$batasMax->text then $belumExp->id 
                     when tglasuransimati <= getdate() then $sudahExp->id
@@ -104,6 +112,7 @@ class ExpAsuransi extends MyModel
                     as status")
                 )
                 ->where('statusaktif', $statusaktif->id)
+                ->where('statusabsensisupir', $statusabsensisupir->id)
                 ->where('tglasuransimati', '<=', date('Y/m/d', strtotime("+$rentang->text days")));
 
             DB::table($temtabel)->insertUsing(['id', 'kodetrado', 'tglasuransimati', 'status'], $getQuery);
