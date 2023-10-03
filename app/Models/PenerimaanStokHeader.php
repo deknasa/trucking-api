@@ -810,7 +810,7 @@ class PenerimaanStokHeader extends MyModel
                 'statusformat' => "0",
                 'coakredit_detail' => $coakredit_detail,
                 'coadebet_detail' => $coadebet_detail,
-                'nominal_detail' => $nominal_detail,
+                'nominal_detail' => ceil($nominal_detail),
                 'keterangan_detail' => $keterangan_detail
             ];
             $jurnalUmumHeader = (new JurnalUmumHeader())->processStore($jurnalRequest);
@@ -1150,7 +1150,7 @@ class PenerimaanStokHeader extends MyModel
                 'postingdari' => "EDIT PENERIMAAN STOK",
                 'coakredit_detail' => $coakredit_detail,
                 'coadebet_detail' => $coadebet_detail,
-                'nominal_detail' => $nominal_detail,
+                'nominal_detail' => ceil($nominal_detail),
                 'keterangan_detail' => $keterangan_detail
             ];
             $getJurnal = JurnalUmumHeader::from(DB::raw("jurnalumumheader with (readuncommitted)"))->where('nobukti', $penerimaanStokHeader->nobukti)->first();
