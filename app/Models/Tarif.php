@@ -91,13 +91,14 @@ class Tarif extends MyModel
 
         $aktif = request()->aktif ?? '';
         $jenisOrder = request()->jenisOrder ?? '';
-
+        $isParent = request()->isParent ?? false;
+        
         $tempUpahsupir = $this->tempUpahsupir();
         $query = DB::table($this->table)->from(DB::raw("$this->table with (readuncommitted)"))
             ->select(
                 'tarif.id',
                 'parent.tujuan as parent_id',
-                "B.kotasampai_id as upahsupir_id",
+                // "B.kotasampai_id as upahsupir_id",
                 'tarif.tujuan',
                 'tarif.penyesuaian',
                 'parameter.memo as statusaktif',
@@ -120,7 +121,7 @@ class Tarif extends MyModel
             ->leftJoin(DB::raw("kota with (readuncommitted)"), 'tarif.kota_id', '=', 'kota.id')
             ->leftJoin(DB::raw("zona with (readuncommitted)"), 'tarif.zona_id', '=', 'zona.id')
             ->leftJoin(DB::raw("jenisorder with (readuncommitted)"), 'tarif.jenisorder_id', '=', 'jenisorder.id')
-            ->leftJoin(DB::raw("$tempUpahsupir as B with (readuncommitted)"), 'tarif.upahsupir_id', '=', "B.id")
+            // ->leftJoin(DB::raw("$tempUpahsupir as B with (readuncommitted)"), 'tarif.upahsupir_id', '=', "B.id")
             ->leftJoin(DB::raw("tarif as parent with (readuncommitted)"), 'tarif.parent_id', '=', 'parent.id')
             ->leftJoin(DB::raw("parameter AS p with (readuncommitted)"), 'tarif.statuspenyesuaianharga', '=', 'p.id')
             ->leftJoin(DB::raw("parameter AS sistemton with (readuncommitted)"), 'tarif.statussistemton', '=', 'sistemton.id')
@@ -160,13 +161,19 @@ class Tarif extends MyModel
             }
         }
 
+        if ($isParent == true) {
+            if ($jenisOrder == '') {
+                $query->whereRaw("(tarif.jenisorder_id = 0 or tarif.jenisorder_id IS NULL)");
+            }
+            $query->where('tarif.penyesuaian', '');
+        }
         $this->totalRows = $query->count();
         $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;
         $this->filter($query);
         $this->sort($query);
 
         $this->paginate($query);
-
+        // dd($query->toSql());l
         $data = $query->get();
 
         return $data;
@@ -515,7 +522,7 @@ class Tarif extends MyModel
         $tarif->parent_id = $data['parent_id'] ?? '';
         $tarif->upahsupir_id = $data['upahsupir_id'] ?? '';
         $tarif->tujuan = $data['tujuan'];
-        $tarif->penyesuaian = $data['penyesuaian'];
+        $tarif->penyesuaian = $data['penyesuaian'] ?? '';
         $tarif->statusaktif = $data['statusaktif'];
         $tarif->statussistemton = $data['statussistemton'];
         $tarif->kota_id = $data['kota_id'];
@@ -588,7 +595,7 @@ class Tarif extends MyModel
         $tarif->parent_id = $data['parent_id'] ?? '';
         $tarif->upahsupir_id = $data['upahsupir_id'] ?? '';
         $tarif->tujuan = $data['tujuan'];
-        $tarif->penyesuaian = $data['penyesuaian'];
+        $tarif->penyesuaian = $data['penyesuaian'] ?? '';
         $tarif->statusaktif = $data['statusaktif'];
         $tarif->statussistemton = $data['statussistemton'];
         $tarif->kota_id = $data['kota_id'];

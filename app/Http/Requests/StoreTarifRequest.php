@@ -91,26 +91,6 @@ class StoreTarifRequest extends FormRequest
             ];
         }
 
-        $upahsupir_id = $this->upahsupir_id;
-        $rulesUpahSupir_id = [];
-        if ($upahsupir_id != null) {
-            if ($upahsupir_id == 0) {
-                $rulesUpahSupir_id = [
-                    'upahsupir_id' => ['required', 'numeric', 'min:1', new ExistUpahSupir()]
-                ];
-            } else {
-                if ($this->upahsupir == '') {
-                    $rulesUpahSupir_id = [
-                        'upahsupir' => ['required']
-                    ];
-                }
-            }
-        } else if ($upahsupir_id == null && $this->upahsupir != '') {
-            $rulesUpahSupir_id = [
-                'upahsupir_id' => ['required', 'numeric', 'min:1', new ExistUpahSupir()]
-            ];
-        }
-
         $zona_id = $this->zona_id;
         $rulesZona_id = [];
         if ($zona_id != null) {
@@ -132,7 +112,7 @@ class StoreTarifRequest extends FormRequest
         }
 
         $rules = [
-            'tujuan' =>  ['required', new ValidasiTujuanTarifDariUpahSupir()],
+            'tujuan' =>  ['required'],
             'penyesuaian' => [new UniqueTarif()],
             'statusaktif' => ['required', Rule::in($statusAktif)],
             'statussistemton' => ['required', Rule::in($statusTon)],
@@ -164,7 +144,6 @@ class StoreTarifRequest extends FormRequest
                 $rules,
                 (new $relatedRequest)->rules(),
                 $rulesParent_id,
-                $rulesUpahSupir_id,
                 $rulesKota_id,
                 $rulesZona_id
             );
