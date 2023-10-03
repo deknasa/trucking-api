@@ -179,6 +179,8 @@ class Trado extends MyModel
                 'trado.kmawal',
                 'trado.kmakhirgantioli',
                 DB::raw("(case when year(isnull(trado.tglasuransimati,'1900/1/1'))=1900 then null  else trado.tglasuransimati end) as tglasuransimati"),
+                DB::raw("(case when year(isnull(trado.tglspeksimati,'1900/1/1'))=1900 then null  else trado.tglspeksimati end) as tglspeksimati"),
+                DB::raw("(case when year(isnull(trado.tglstnkmati,'1900/1/1'))=1900 then null  else trado.tglstnkmati end) as tglstnkmati"),
                 'trado.merek',
                 'trado.norangka',
                 'trado.nomesin',
@@ -548,7 +550,7 @@ class Trado extends MyModel
                             $query = $query->where('supir.namasupir', 'LIKE', "%$filters[data]%");
                         } else if ($filters['field'] == 'created_at' || $filters['field'] == 'updated_at') {
                             $query = $query->whereRaw("format(" . $this->table . "." . $filters['field'] . ", 'dd-MM-yyyy HH:mm:ss') LIKE '%$filters[data]%'");
-                        } else if ($filters['field'] == 'tglasuransimati' || $filters['field'] == 'tglserviceopname' || $filters['field'] == 'tglpajakstnk' || $filters['field'] == 'tglgantiakiterakhir') {
+                        } else if ($filters['field'] == 'tglasuransimati' || $filters['field'] == 'tglserviceopname' || $filters['field'] == 'tglpajakstnk' || $filters['field'] == 'tglstnkmati' || $filters['field'] == 'tglasuransimati' || $filters['field'] == 'tglspeksimati' || $filters['field'] == 'tglgantiakiterakhir') {
                             $query = $query->whereRaw("format((case when year(isnull($this->table." . $filters['field'] . ",'1900/1/1'))<2000 then null else trado." . $filters['field'] . " end), 'dd-MM-yyyy') LIKE '%$filters[data]%'");
                         } else {
                             // $query = $query->where($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
@@ -584,7 +586,7 @@ class Trado extends MyModel
                                 $query = $query->orWhere('mandor.namamandor', 'LIKE', "%$filters[data]%");
                             } else if ($filters['field'] == 'supir_id') {
                                 $query = $query->orWhere('supir.namasupir', 'LIKE', "%$filters[data]%");
-                            } else if ($filters['field'] == 'tglasuransimati' || $filters['field'] == 'tglserviceopname' || $filters['field'] == 'tglpajakstnk' || $filters['field'] == 'tglgantiakiterakhir') {
+                            } else if ($filters['field'] == 'tglasuransimati' || $filters['field'] == 'tglserviceopname' || $filters['field'] == 'tglpajakstnk' || $filters['field'] == 'tglstnkmati' || $filters['field'] == 'tglasuransimati' || $filters['field'] == 'tglspeksimati' || $filters['field'] == 'tglgantiakiterakhir') {
                                 $query = $query->orWhereRaw("format((case when year(isnull($this->table." . $filters['field'] . ",'1900/1/1'))<2000 then null else trado." . $filters['field'] . " end), 'dd-MM-yyyy') LIKE '%$filters[data]%'");
                             } else {
                                 // $query = $query->orWhere($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
@@ -691,6 +693,9 @@ class Trado extends MyModel
             $trado->statusjenisplat = $data['statusjenisplat'];
             $trado->statusmutasi = $statusMutasi->id;
             $trado->tglpajakstnk = date('Y-m-d', strtotime($data['tglpajakstnk']));
+            $trado->tglstnkmati = date('Y-m-d', strtotime($data['tglstnkmati']));
+            $trado->tglasuransimati = date('Y-m-d', strtotime($data['tglasuransimati']));
+            $trado->tglspeksimati = date('Y-m-d', strtotime($data['tglspeksimati']));
             $trado->statusvalidasikendaraan = $statusValidasi->id;
             $trado->tipe = $data['tipe'];
             $trado->jenis = $data['jenis'];
@@ -812,6 +817,9 @@ class Trado extends MyModel
             $trado->tipe = $data['tipe'];
             $trado->jenis = $data['jenis'];
             $trado->tglpajakstnk = date('Y-m-d', strtotime($data['tglpajakstnk']));
+            $trado->tglstnkmati = date('Y-m-d', strtotime($data['tglstnkmati']));
+            $trado->tglasuransimati = date('Y-m-d', strtotime($data['tglasuransimati']));
+            $trado->tglspeksimati = date('Y-m-d', strtotime($data['tglspeksimati']));
             $trado->isisilinder =  str_replace(',', '', $data['isisilinder']);
             $trado->warna = $data['warna'];
             $trado->jenisbahanbakar = $data['jenisbahanbakar'];
