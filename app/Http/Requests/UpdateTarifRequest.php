@@ -85,26 +85,6 @@ class UpdateTarifRequest extends FormRequest
             ];
         }
 
-        $upahsupir_id = $this->upahsupir_id;
-        $rulesUpahSupir_id = [];
-        if ($upahsupir_id != null) {
-            if ($upahsupir_id == 0) {
-                $rulesUpahSupir_id = [
-                    'upahsupir_id' => ['required', 'numeric', 'min:1',  ($check['kondisi']) ? Rule::in($dataTarif->upahsupir_id) : '']
-                ];
-            } else {
-                if ($this->upahsupir == '') {
-                    $rulesUpahSupir_id = [
-                        'upahsupir' => ['required',  ($check['kondisi']) ? Rule::in($dataTarif->upahsupir) : '']
-                    ];
-                }
-            }
-        } else if ($upahsupir_id == null && $this->upahsupir != '') {
-            $rulesUpahSupir_id = [
-                'upahsupir_id' => ['required', 'numeric', 'min:1',  ($check['kondisi']) ? Rule::in($dataTarif->upahsupir_id) : '']
-            ];
-        }
-
         $zona_id = $this->zona_id;
         $rulesZona_id = [];
         if ($zona_id != null) {
@@ -126,7 +106,7 @@ class UpdateTarifRequest extends FormRequest
         }
 
         $rules = [
-            'tujuan' =>  ['required', new ValidasiTujuanTarifDariUpahSupir(), ($check['kondisi']) ? Rule::in($dataTarif->tujuan) : ''],
+            'tujuan' =>  ['required', ($check['kondisi']) ? Rule::in($dataTarif->tujuan) : ''],
             'penyesuaian' => [new UniqueTarifEdit(), ($check['kondisi']) ? Rule::in($dataTarif->penyesuaian) : ''],
             'statusaktif' => ['required', Rule::in($statusAktif)],
             'statussistemton' => ['required', Rule::in($statusTon)],
@@ -146,7 +126,6 @@ class UpdateTarifRequest extends FormRequest
                 $rules,
                 (new $relatedRequest)->rules(),
                 $rulesParent_id,
-                $rulesUpahSupir_id,
                 $rulesKota_id,
                 $rulesZona_id
             );
@@ -171,7 +150,6 @@ class UpdateTarifRequest extends FormRequest
         $tglbatasakhir = (date('Y') - 1) . '-01-01';
         return [
             'parent_id.required' => ':attribute ' . $controller->geterror('HPDL')->keterangan,
-            'upahsupir_id.required' => ':attribute ' . $controller->geterror('HPDL')->keterangan,
             'kota_id.required' => ':attribute ' . $controller->geterror('HPDL')->keterangan,
             'zona_id.required' => ':attribute ' . $controller->geterror('HPDL')->keterangan,
             'tgl.after_or_equal' => ':attribute ' . $controller->geterror('NTLK')->keterangan . ' ' . date('d-m-Y', strtotime($tglbatasawal)) . ' dan ' . $controller->geterror('NTLB')->keterangan . ' ' . date('d-m-Y', strtotime($tglbatasakhir)),

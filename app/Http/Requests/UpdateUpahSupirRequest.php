@@ -210,6 +210,19 @@ class UpdateUpahSupirRequest extends FormRequest
             );
         }
 
+        if((request()->tarifmuatan_id != 0 || request()->tarifmuatan_id != '') && (request()->tarifbongkaran_id != 0 || request()->tarifbongkaran_id != '')){
+            unset($rules['tarif']);
+        }
+        $getListTampilan = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'UBAH TAMPILAN')->where('text', 'UPAHSUPIR')->first();
+        $getListTampilan = json_decode($getListTampilan->memo);
+        if ($getListTampilan->INPUT != '') {
+            $getListTampilan = (explode(",", $getListTampilan->INPUT));
+            foreach ($getListTampilan as $value) {
+                if (array_key_exists(strtolower($value), $rules) == true) {
+                    unset($rules[strtolower($value)]);
+                }
+            }
+        }
         return $rules;
     }
 

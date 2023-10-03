@@ -55,6 +55,7 @@ class UpahSupir extends MyModel
             ->first();
 
         $aktif = request()->aktif ?? '';
+        $isParent = request()->isParent ?? false;
 
         if ($proses == 'reload') {
             $temtabel = 'temp' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
@@ -271,6 +272,9 @@ class UpahSupir extends MyModel
                 ->first();
 
             $query->where('a.statusaktif_id', '=', $statusaktif->id);
+        }
+        if($isParent == true){
+            $query->where('a.penyesuaian','');
         }
         $this->totalRows = $query->count();
         $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;

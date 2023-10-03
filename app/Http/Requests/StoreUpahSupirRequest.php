@@ -184,7 +184,6 @@ class StoreUpahSupirRequest extends FormRequest
                 'zonasampai_id' => ['required_if:statusupahzona,=' . $getUpahZona->id, 'numeric', 'min:1', new ExistZona(), new ValidasiZonaUpahZona($getUpahZona->id)]
             ];
         }
-
         $parameter = new Parameter();
         $getBatas = $parameter->getBatasAwalTahun();
         $tglbatasawal = $getBatas->text;
@@ -255,7 +254,9 @@ class StoreUpahSupirRequest extends FormRequest
                 $rulesGambar
             );
         }
-        
+        if((request()->tarifmuatan_id != 0 || request()->tarifmuatan_id != '') && (request()->tarifbongkaran_id != 0 || request()->tarifbongkaran_id != '')){
+            unset($rules['tarif']);
+        }
         $getListTampilan = json_decode($getListTampilan->memo);
         if ($getListTampilan->INPUT != '') {
             $getListTampilan = (explode(",", $getListTampilan->INPUT));
