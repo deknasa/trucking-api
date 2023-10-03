@@ -297,7 +297,7 @@ class PenerimaanStokDetail extends MyModel
 
         $total = ceil(($data['qty'] * $data['harga']));
         $nominaldiscount = $data['totalsebelum'] * ($data['persentasediscount'] / 100);
-
+        // dd($data['totalItem'],$data['totalsebelum'],$nominaldiscount,$total);
         // $total -= $nominaldiscount;
         $penerimaanStokDetail = new PenerimaanStokDetail();
         $penerimaanStokDetail->penerimaanstokheader_id = $data['penerimaanstokheader_id'];
@@ -306,7 +306,7 @@ class PenerimaanStokDetail extends MyModel
         $penerimaanStokDetail->qty = $data['qty'];
         $penerimaanStokDetail->harga = $data['harga'];
         $penerimaanStokDetail->nominaldiscount = $nominaldiscount;
-        $penerimaanStokDetail->total = $total;
+        $penerimaanStokDetail->total = $data['totalItem'];
         $penerimaanStokDetail->penerimaanstok_nobukti = $data['detail_penerimaanstoknobukti'];
         $penerimaanStokDetail->persentasediscount = $data['persentasediscount'] ?? 0;
         $penerimaanStokDetail->vulkanisirke = $data['vulkanisirke'] ?? '';
