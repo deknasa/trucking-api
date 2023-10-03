@@ -741,7 +741,8 @@ class PenerimaanStokHeader extends MyModel
 
 
             if ($data['penerimaanstok_id'] == $spb->text || $data['penerimaanstok_id'] == $spbs->text) {
-                $totalsat = ($data['detail_qty'][$i] * $data['detail_harga'][$i]);
+                // $totalsat = ($data['detail_qty'][$i] * $data['detail_harga'][$i]);
+                $totalsat = $data['totalItem'][$i];
                 $totalharga += $totalsat;
                 $detaildata[] = $totalsat;
                 $tgljatuhtempo[] =  $data['tglbukti'];
@@ -790,7 +791,8 @@ class PenerimaanStokHeader extends MyModel
             $memo = json_decode($getCoaDebet->memo, true);
 
             for ($i = 0; $i < count($data['detail_harga']); $i++) {
-                $totalsat = ($data['detail_qty'][$i] * $data['detail_harga'][$i]);
+                // $totalsat = ($data['detail_qty'][$i] * $data['detail_harga'][$i]);
+                $totalsat = $data['totalItem'][$i];
                 $coakredit_detail[] = $memokredit['JURNAL'];
                 $coadebet_detail[] = $memo['JURNAL'];
                 $nominal_detail[] = $totalsat;
@@ -1083,7 +1085,8 @@ class PenerimaanStokHeader extends MyModel
             }
 
             if ($data['penerimaanstok_id'] == $spb->text || $data['penerimaanstok_id'] == $spbs->text) {
-                $totalsat = ($data['detail_qty'][$i] * $data['detail_harga'][$i]);
+                // $totalsat = ($data['detail_qty'][$i] * $data['detail_harga'][$i]);
+                $totalsat = $data['totalItem'][$i];
                 $totalharga += $totalsat;
                 $detaildata[] = $totalsat;
                 $tgljatuhtempo[] =  $data['tglbukti'];
@@ -1137,7 +1140,8 @@ class PenerimaanStokHeader extends MyModel
             $memo = json_decode($getCoaDebet->memo, true);
 
             for ($i = 0; $i < count($data['detail_harga']); $i++) {
-                $totalsat = ($data['detail_qty'][$i] * $data['detail_harga'][$i]);
+                // $totalsat = ($data['detail_qty'][$i] * $data['detail_harga'][$i]);
+                $totalsat = $data['totalItem'][$i];
                 $coakredit_detail[] = $memokredit['JURNAL'];
                 $coadebet_detail[] = $memo['JURNAL'];
                 $nominal_detail[] = $totalsat;
