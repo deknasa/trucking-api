@@ -672,12 +672,16 @@ class Tarif extends MyModel
             ->post($server . 'truckingtnl-api/public/api/token', [
                 'user' => auth('api')->user()->user,
                 'password' => getenv('PASSWORD_TNL'),
+                'ipclient' => '',
+                'ipserver' => '',
+                'latitude' => '',
+                'longitude' => '',
+                'browser' => '',
+                'os' => '',
             ]);
-
         if ($getToken->getStatusCode() == '404') {
             throw new \Exception("Akun Tidak Terdaftar di Trucking TNL");
         } else if ($getToken->getStatusCode() == '200') {
-
             $access_token = json_decode($getToken, TRUE)['access_token'];
             $transferTarif = Http::withHeaders([
                 'Content-Type' => 'application/json',

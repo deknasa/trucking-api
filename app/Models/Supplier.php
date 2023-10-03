@@ -580,8 +580,14 @@ class Supplier extends MyModel
             'Accept' => 'application/json'
         ])
             ->post($server . 'truckingtnl-api/public/api/token', [
-                'user' => auth('api')->user()->user,
+                'user' => 'ADMIN',
                 'password' => getenv('PASSWORD_TNL'),
+                'ipclient' => '',
+                'ipserver' => '',
+                'latitude' => '',
+                'longitude' => '',
+                'browser' => '',
+                'os' => '',
             ]);
 
         if ($getToken->getStatusCode() == '404') {
@@ -654,8 +660,14 @@ class Supplier extends MyModel
             'Accept' => 'application/json'
         ])
             ->post($server . 'truckingtnl-api/public/api/token', [
-                'user' => auth('api')->user()->user,
+                'user' => 'ADMIN',
                 'password' => getenv('PASSWORD_TNL'),
+                'ipclient' => '',
+                'ipserver' => '',
+                'latitude' => '',
+                'longitude' => '',
+                'browser' => '',
+                'os' => '',
             ]);
 
         if ($getToken->getStatusCode() == '404') {
