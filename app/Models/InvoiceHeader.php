@@ -907,7 +907,12 @@ class InvoiceHeader extends MyModel
 
             if (isset($querydata)) {
                 Schema::dropIfExists($querydata->namatabel);
-                DB::table('listtemporarytabel')->where('id', $querydata->id)->delete();
+                $queryid=db::table('listtemporarytabel')->from(db::raw("listtemporarytabel a with (readuncommitetd)"))
+                ->select('id')->where('id', $querydata->id)->first();
+                if (isset($queryid)) {
+                    DB::table('listtemporarytabel')->where('id', $querydata->id)->delete();    
+                }
+                
             }
 
             DB::table('listtemporarytabel')->insert(
