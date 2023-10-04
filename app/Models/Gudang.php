@@ -120,11 +120,24 @@ class Gudang extends MyModel
             ->select('id')
             ->where('gudang','GUDANG PIHAK III');
 
+            $gudangKantorid = Gudang::from(DB::raw("gudang with (readuncommitted)"))
+            ->select('id')
+            ->where('gudang','GUDANG KANTOR')
+            ->first();
+
             if (request()->gudangdarike == "ke") {
                 $gudangKantor = $gudangKantor->orWhere('gudang','GUDANG KANTOR');
+       
             }
             $gudangKantor = $gudangKantor->get();
-            $query->whereNotIn('gudang.id', $gudangKantor);
+            if (request()->gudangdarike == "dari") {
+                // $query->whereNotIn('gudang.id', $gudangKantor);
+                $query->where('gudang.id','<>', $gudangKantorid->id);
+
+            } 
+
+
+
         }
 
         if ($pengeluaranstok == $pengeluaranStokSpk->text) {
