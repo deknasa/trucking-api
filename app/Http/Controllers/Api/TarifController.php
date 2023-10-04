@@ -133,6 +133,7 @@ class TarifController extends Controller
         try {
             $data = [
                 'parent_id' => $request->parent_id ?? '',
+                'parent' => $request->parent ?? '',
                 'upahsupir_id' => $request->upahsupir_id ?? '',
                 'tujuan' => $request->tujuan,
                 'penyesuaian' => $request->penyesuaian,
@@ -141,6 +142,7 @@ class TarifController extends Controller
                 'kota' => $request->kota,
                 'kota_id' => $request->kota_id,
                 'zona_id' => $request->zona_id ?? '',
+                'zona' => $request->zona ?? '',
                 'jenisorder_id' => $request->jenisorder_id ?? 0,
                 'tglmulaiberlaku' => $request->tglmulaiberlaku,
                 'statuspenyesuaianharga' => $request->statuspenyesuaianharga,

@@ -1159,6 +1159,7 @@ route::middleware(['auth:api', 'authorized'])->group(function () {
     Route::resource('approvalopname', ApprovalOpnameController::class)->whereNumber('approvalopname');
 
 
+    Route::get('suratpengantar/rekapcustomer', [SuratPengantarController::class, 'rekapcustomer']);
     Route::get('suratpengantar/combo', [SuratPengantarController::class, 'combo']);
     Route::post('suratpengantar/cekUpahSupir', [SuratPengantarController::class, 'cekUpahSupir']);
     Route::post('suratpengantar/addrow', [SuratPengantarController::class, 'addrow']);
