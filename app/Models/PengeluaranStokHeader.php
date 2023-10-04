@@ -1309,7 +1309,7 @@ class PengeluaranStokHeader extends MyModel
             'keterangan_detail' => $keterangan_detail
         ];
 
-
+       
         if ($rtr->text == $fetchFormat->id) {
             $potongKas = Parameter::where('grp', 'STATUS POTONG RETUR')->where('text', 'POSTING KE KAS/BANK')->first();
             $potongHutang = Parameter::where('grp', 'STATUS POTONG RETUR')->where('text', 'POTONG HUTANG')->first();
@@ -1481,7 +1481,9 @@ class PengeluaranStokHeader extends MyModel
                 ];
                 $jurnalUmumHeader = JurnalUmumHeader::where('nobukti', $pengeluaranStokHeader->nobukti)->lockForUpdate()->first();
                 if ($jurnalUmumHeader != null) {
+             
                     $jurnalUmumHeader = (new JurnalUmumHeader())->processUpdate($jurnalUmumHeader, $jurnalRequest);
+
                 } else {
                     $jurnalUmumHeader = (new JurnalUmumHeader())->processStore($jurnalRequest);
                 }
@@ -1545,6 +1547,7 @@ class PengeluaranStokHeader extends MyModel
             $pengeluaranStokHeader->save();
         } else if ($korv->id == $data['pengeluaranstok_id']) {
         } else {
+            // dd($jurnalRequest);
             $jurnalUmumHeader = JurnalUmumHeader::where('nobukti', $pengeluaranStokHeader->nobukti)->lockForUpdate()->first();
             $jurnalUmumHeader = (new JurnalUmumHeader())->processUpdate($jurnalUmumHeader, $jurnalRequest);
         }
