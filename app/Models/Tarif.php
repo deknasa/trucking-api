@@ -670,7 +670,7 @@ class Tarif extends MyModel
             'Accept' => 'application/json'
         ])
             ->post($server . 'truckingtnl-api/public/api/token', [
-                'user' => auth('api')->user()->user,
+                'user' => 'ADMIN',
                 'password' => getenv('PASSWORD_TNL'),
                 'ipclient' => '',
                 'ipserver' => '',
