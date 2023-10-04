@@ -547,9 +547,11 @@ class JurnalUmumHeader extends MyModel
 
         JurnalUmumDetail::where('jurnalumum_id', $jurnalUmumHeader->id)->delete();
 
+        // dd($data);
         $jurnalUmumDetails = [];
         for ($i = 0; $i < count($data['nominal_detail']); $i++) {
             for ($x = 0; $x <= 1; $x++) {
+                // $data['nominal_detail'][$i];
                 if ($x == 1) {
                     $jurnalUmumDetail = (new JurnalUmumDetail())->processStore($jurnalUmumHeader, [
                         'tglbukti' => (str_contains($jurnalUmumHeader->nobukti, 'EBS')) ? date('Y-m-d', strtotime($data['tglbukti_detail'][$i])) : $jurnalUmumHeader->tglbukti,
