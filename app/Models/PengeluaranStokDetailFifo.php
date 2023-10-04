@@ -50,7 +50,7 @@ class PengeluaranStokDetailFifo extends MyModel
         });
 
         $a = 0;
-        $atotalharga=0;
+        $atotalharga = 0;
         $kondisi = true;
         while ($kondisi == true) {
 
@@ -181,11 +181,7 @@ class PengeluaranStokDetailFifo extends MyModel
                     $totalharga += ($aksharga  * $aksqty);
 
 
-                    $penerimaanstokdetail  = PenerimaanStokDetail::lockForUpdate()->where("stok_id", $aksstok_id)
-                        ->where("nobukti", $aksnobukti)
-                        ->firstorFail();
-                    $penerimaanstokdetail->qtykeluar += $item['penerimaan_qty'] ?? 0;
-                    $penerimaanstokdetail->save();
+
                     // 
 
                     $kondisi = false;
@@ -264,11 +260,7 @@ class PengeluaranStokDetailFifo extends MyModel
                     $totalharga += ($aksharga *  $aksqty);
 
 
-                    $penerimaanstokdetail  = PenerimaanStokDetail::lockForUpdate()->where("stok_id",  $aksstok_id)
-                        ->where("nobukti", $aksnobukti)
-                        ->firstorFail();
-                    $penerimaanstokdetail->qtykeluar += $item['penerimaan_qty'] ?? 0;
-                    $penerimaanstokdetail->save();
+
 
 
 
@@ -286,7 +278,7 @@ class PengeluaranStokDetailFifo extends MyModel
             ->where("nobukti", $nobuktipengeluaran)
             ->firstorFail();
 
-        $totalharga=$atotalharga;
+        $totalharga = $atotalharga;
         // dump($totalharga);
         // dd($data['qty']);
         $hrgsat = $totalharga / $data['qty'];
@@ -307,6 +299,21 @@ class PengeluaranStokDetailFifo extends MyModel
         if (!$pengeluaranstokdetail->save()) {
             throw new \Exception("Error storing pengeluaran Stok Detail  update fifo. ");
         }
+
+        $qtyterimarekap = DB::table("pengeluaranstokdetailfifo")->from(db::raw("pengeluaranstokdetailfifo a with (readuncommitted)"))
+            ->select(
+                db::raw("sum(a.qty) as qty")
+            )
+            ->where("penerimaanstokheader_nobukti", $aksnobukti)
+            ->where("stok_id",  $aksstok_id)
+            ->first()->qty ?? 0;
+
+
+        $penerimaanstokdetail  = PenerimaanStokDetail::lockForUpdate()->where("stok_id", $aksstok_id)
+            ->where("nobukti", $aksnobukti)
+            ->firstorFail();
+        $penerimaanstokdetail->qtykeluar = $qtyterimarekap;
+        $penerimaanstokdetail->save();
         //
         return $pengeluaranStokDetailFifo;
     }

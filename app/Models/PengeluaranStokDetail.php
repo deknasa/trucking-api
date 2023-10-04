@@ -369,11 +369,11 @@ class PengeluaranStokDetail extends MyModel
     {
         // $result = StokPersediaan::lockForUpdate()->where("stok_id", $stokId)->where("$persediaan", $persediaanId)->first();
         $stok = db::table('kartustok')->from(db::raw("kartustok a with (readuncommitted)"))
-        ->select(
-            db::raw("sum(isnull(qtymasuk,0)-isnull(qtykeluar,0)) as qty")
-        )
-        ->where("stok_id", $stokId)->where("$persediaan", $persediaanId)->first()
-        ->qty ?? 0;
+            ->select(
+                db::raw("sum(isnull(qtymasuk,0)-isnull(qtykeluar,0)) as qty")
+            )
+            ->where("stok_id", $stokId)->where("$persediaan", $persediaanId)->first()
+            ->qty ?? 0;
 
         $qty = $qty + $stok;
         if ($qty <= 0) {
@@ -472,10 +472,23 @@ class PengeluaranStokDetail extends MyModel
         }
 
         $pengeluaranStokDetailFifo = PengeluaranStokDetailFifo::where('nobukti', $pengeluaranStokHeader->nobukti)->get();
-        foreach ($pengeluaranStokDetailFifo as $fifo) {
-            $penerimaanStok = PenerimaanStokDetail::where('nobukti', $fifo->penerimaanstokheader_nobukti)->where('stok_id', $fifo->stok_id)->first();
-            $penerimaanStok->qtykeluar -= $fifo->qty;
-            $penerimaanStok->save();
+        if (isset($pengeluaranStokDetailFifo)) {
+            foreach ($pengeluaranStokDetailFifo as $fifo) {
+                $penerimaanStok = PenerimaanStokDetail::where('nobukti', $fifo->penerimaanstokheader_nobukti)->where('stok_id', $fifo->stok_id)->first();
+                if (isset($penerimaanStok)) {
+
+                    $qtyterimarekap = DB::table("pengeluaranstokdetailfifo")->from(db::raw("pengeluaranstokdetailfifo a with (readuncommitted)"))
+                        ->select(
+                            db::raw("sum(a.qty) as qty")
+                        )
+                        ->where("penerimaanstokheader_nobukti",  $fifo->penerimaanstokheader_nobukti)
+                        ->where("stok_id",  $fifo->stok_id)
+                        ->first()->qty ?? 0;
+
+                    $penerimaanStok->qtykeluar = $qtyterimarekap;
+                    $penerimaanStok->save();
+                }
+            }
         }
     }
 
