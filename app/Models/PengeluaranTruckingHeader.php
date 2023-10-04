@@ -837,6 +837,8 @@ class PengeluaranTruckingHeader extends MyModel
                 'trado.keterangan as trado',
                 'supir.namasupir as supir',
                 'pengeluarantruckingheader.pengeluarantrucking_nobukti',
+                'pengeluarantruckingheader.periodedari',
+                'pengeluarantruckingheader.periodesampai',
                 'akunpusat.keterangancoa as coa',
                 'statuscetak.memo as statuscetak',
                 'statuscetak.id as  statuscetak_id',
