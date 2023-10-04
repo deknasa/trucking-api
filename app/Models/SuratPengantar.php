@@ -2045,4 +2045,15 @@ class SuratPengantar extends MyModel
         ];
         return $allData;
     }
+
+    public function getRekapCustomer($dari, $sampai)
+    {
+        $query = DB::table("suratpengantar")->from(DB::raw("suratpengantar with (readuncommitted)"))
+            ->select(DB::raw("agen.namaagen as agen, count(agen_id) as jumlah"))
+            ->join(DB::raw("agen with (readuncommitted)"), 'suratpengantar.agen_id', 'agen.id')
+            ->whereBetween('suratpengantar.tglbukti', [$dari, $sampai])
+            ->groupBy('agen.namaagen');
+
+        return $query->get();
+    }
 }

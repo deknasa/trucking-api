@@ -636,4 +636,15 @@ class SuratPengantarController extends Controller
         }
         return true;
     }
+
+    public function rekapcustomer(Request $request)
+    {
+        $dari = date('Y-m-d', strtotime($request->tgldari));
+        $sampai = date('Y-m-d', strtotime($request->tglsampai));
+        $suratPengantar = new SuratPengantar();
+        return response([
+            'data' => $suratPengantar->getRekapCustomer($dari, $sampai),
+        ]);
+        
+    }
 }
