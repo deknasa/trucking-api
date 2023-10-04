@@ -479,21 +479,26 @@ class HutangHeader extends MyModel
         $statusCetak = Parameter::where('grp', 'STATUSCETAK')->where('text', 'BELUM CETAK')->first();
         $getCoaDebet = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'JURNAL HUTANG MANUAL')->where('subgrp', 'DEBET')->first();
         $memo = json_decode($getCoaDebet->memo, true);
+        $getCoaKredit = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'JURNAL HUTANG MANUAL')->where('subgrp', 'KREDIT')->first();
+        $memoKredit = json_decode($getCoaKredit->memo, true);
         $statusApproval = Parameter::from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS APPROVAL')->where('text', 'NON APPROVAL')->first();
         $proseslain = $data['proseslain'] ?? "";
         if ($proseslain == "") {
             $total = array_sum($data['total_detail']);
             $tglbukti = date('Y-m-d', strtotime($data['tglbukti']));
             $coa = $memo['JURNAL'];
+            $coakredit = $memoKredit['JURNAL'];
         } else {
             $total = $data['total'];
             $tglbukti = $data['tglbukti'];
             $coa = $data['coa'];
+            $coakredit = ($data['coakredit'] == null) ? $memoKredit['JURNAL'] : $data['coakredit'];
         }
         $hutangHeader = new HutangHeader();
 
         $hutangHeader->tglbukti = $tglbukti;
         $hutangHeader->coa = $coa;
+        $hutangHeader->coakredit = $coakredit;
         $hutangHeader->supplier_id = $data['supplier_id'];
         $hutangHeader->postingdari = $data['postingdari'] ?? 'ENTRY HUTANG';
         $hutangHeader->statusformat = $format->id;
@@ -520,8 +525,6 @@ class HutangHeader extends MyModel
         ]);
 
         /* Store detail */
-        $getCoaKredit = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'JURNAL HUTANG MANUAL')->where('subgrp', 'KREDIT')->first();
-        $memoKredit = json_decode($getCoaKredit->memo, true);
 
         $hutangDetails = [];
         $coakredit_detail = [];
@@ -588,14 +591,18 @@ class HutangHeader extends MyModel
         $statusCetak = Parameter::where('grp', 'STATUSCETAK')->where('text', 'BELUM CETAK')->first();
         $getCoaDebet = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'JURNAL HUTANG MANUAL')->where('subgrp', 'DEBET')->first();
         $memo = json_decode($getCoaDebet->memo, true);
+        $getCoaKredit = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'JURNAL HUTANG MANUAL')->where('subgrp', 'KREDIT')->first();
+        $memoKredit = json_decode($getCoaKredit->memo, true);
         $statusApproval = Parameter::from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS APPROVAL')->where('text', 'NON APPROVAL')->first();
         $proseslain = $data['proseslain'] ?? "";
         if ($proseslain == "") {
             $total = array_sum($data['total_detail']);
             $coa = $memo['JURNAL'];
+            $coakredit = $memoKredit['JURNAL'];
         } else {
             $total = $data['total'];
             $coa = $data['coa'];
+            $coakredit = ($data['coakredit'] == null) ? $memoKredit['JURNAL'] : $data['coakredit'];            
         }
 
         if (trim($getTgl->text) == 'YA') {
@@ -621,6 +628,7 @@ class HutangHeader extends MyModel
             $hutangHeader->tglbukti = date('Y-m-d', strtotime($data['tglbukti']));
         }
         $hutangHeader->coa = $coa;
+        $hutangHeader->coakredit = $coakredit;
         $hutangHeader->supplier_id = $data['supplier_id'];
         $hutangHeader->postingdari = $data['postingdari'] ?? 'EDIT HUTANG';
         $hutangHeader->statuscetak = $statusCetak->id;
@@ -648,8 +656,6 @@ class HutangHeader extends MyModel
         $hutangDetail = HutangDetail::where('hutang_id', $hutangHeader->id)->lockForUpdate()->delete();
 
         /* Store detail */
-        $getCoaKredit = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'JURNAL HUTANG MANUAL')->where('subgrp', 'KREDIT')->first();
-        $memoKredit = json_decode($getCoaKredit->memo, true);
 
         $hutangDetails = [];
         $coakredit_detail = [];
