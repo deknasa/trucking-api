@@ -31,6 +31,7 @@ class CreateUpahsupirTable extends Migration
             $table->unsignedBigInteger('zonasampai_id')->nullable();
             $table->longText('penyesuaian')->nullable();            
             $table->double('jarak',15,2)->nullable();
+            $table->double('jarakfullempty',15,2)->nullable();
             $table->unsignedBigInteger('zona_id')->nullable();
             $table->integer('statusaktif')->length(11)->nullable();
             $table->date('tglmulaiberlaku')->nullable();
