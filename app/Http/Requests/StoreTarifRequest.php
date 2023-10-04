@@ -56,9 +56,8 @@ class StoreTarifRequest extends FormRequest
             $statusPostingTnl[] = $item['id'];
         }
 
-        $tglbatasawal = (date('Y-m-d'));
-        $tglbatasakhir = (date('Y') + 1) . '-01-01';
-
+        $tglbatasawal = (date('Y-m-d', strtotime('-7 days')));
+        $tglbatasakhir = (date('Y-m-d', strtotime('+7 days')));
         $kota_id = $this->kota_id;
         $rulesKota_id = [];
         if ($kota_id != null) {
@@ -118,7 +117,7 @@ class StoreTarifRequest extends FormRequest
             'statussistemton' => ['required', Rule::in($statusTon)],
             'tglmulaiberlaku' => [
                 'required', 'date_format:d-m-Y',
-                'after_or_equal:' . $tglbatasawal,
+                'after:' . $tglbatasawal,
                 'before:' . $tglbatasakhir,
             ],
             'kota' => 'required',

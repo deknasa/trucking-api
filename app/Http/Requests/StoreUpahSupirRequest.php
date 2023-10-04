@@ -186,8 +186,8 @@ class StoreUpahSupirRequest extends FormRequest
         }
         $parameter = new Parameter();
         $getBatas = $parameter->getBatasAwalTahun();
-        $tglbatasawal = $getBatas->text;
-        $tglBatasAkhir = (date('Y') + 1) . '-01-01';
+        $tglbatasawal = (date('Y-m-d', strtotime('-7 days')));
+        $tglbatasakhir = (date('Y-m-d', strtotime('+7 days')));
         $rules =  [
             'kotadari' => ['required_if:statusupahzona,=,' . $getBukanUpahZona->id, new ValidasiDariSimpanKandangUpahSupir(), new ValidasiKotaUpahZona($getBukanUpahZona->id)],
             'kotasampai' => ['required_if:statusupahzona,=,' . $getBukanUpahZona->id, new ValidasiKotaUpahZona($getBukanUpahZona->id)],
@@ -200,8 +200,8 @@ class StoreUpahSupirRequest extends FormRequest
             'statusupahzona' => ['required', Rule::in($statusUpahZona)],
             'tglmulaiberlaku' => [
                 'required', 'date_format:d-m-Y',
-                'before:' . $tglBatasAkhir,
-                'after_or_equal:' . $tglbatasawal
+                'after:' . $tglbatasawal,
+                'before:' . $tglbatasakhir,
             ],
             'statuspostingtnl' => ['required', Rule::in($statusPostingTnl)],
         ];
