@@ -91,7 +91,7 @@ class PengeluaranTruckingDetail extends MyModel
                 $this->table . '.harga',
                 // 'pengeluaranstokheader.id as pengeluaranstokheader_id',
                 $this->table . '.orderantrucking_nobukti',
-                $this->table . '.nominaltagih',
+                DB::raw("(case when pengeluarantruckingdetail.nominaltagih IS NULL then 0 else pengeluarantruckingdetail.nominaltagih end) as nominaltagih"),
                 $this->table . '.suratpengantar_nobukti',
                 $this->table . '.pengeluaranstok_nobukti',
                 DB::raw("container.keterangan as container"),
