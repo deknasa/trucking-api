@@ -1603,7 +1603,20 @@ class SuratPengantar extends MyModel
             $suratPengantar->tglsp = date('Y-m-d', strtotime($data['tglbukti']));
             $suratPengantar->komisisupir = $upahsupirRincian->nominalkomisi;
             $suratPengantar->tolsupir = $upahsupirRincian->nominaltol;
-            $suratPengantar->jarak = $upahsupir->jarak;
+            $statuscontainer_id = $data['statuscontainer_id'] ?? 0;
+            $idfullempty = db::table("parameter")->from(db::raw("parameter a with (readuncommitted)"))
+                ->select(
+                    'a.text as id'
+                )
+                ->where('grp', 'STATUS CONTAINER')
+                ->where('subgrp', 'STATUS CONTAINER FULL EMPTY')
+                ->first()->id ?? 0;
+
+            if ($statuscontainer_id == $idfullempty) {
+                $suratPengantar->jarak = $upahsupir->jarakfullempty;
+            } else {
+                $suratPengantar->jarak = $upahsupir->jarak;
+            }
             $suratPengantar->nosptagihlain = $data['nosptagihlain'] ?? '';
             $suratPengantar->liter = $upahsupirRincian->liter ?? 0;
             $suratPengantar->qtyton = $data['qtyton'] ?? 0;
@@ -1654,7 +1667,20 @@ class SuratPengantar extends MyModel
             $suratPengantar->tarif_id = $data['tarif_id'] ?? '';
             $suratPengantar->komisisupir = $upahsupirRincian->nominalkomisi;
             $suratPengantar->tolsupir = $upahsupirRincian->nominaltol;
-            $suratPengantar->jarak = $upahsupir->jarak;
+            $statuscontainer_id = $data['statuscontainer_id'] ?? 0;
+            $idfullempty = db::table("parameter")->from(db::raw("parameter a with (readuncommitted)"))
+                ->select(
+                    'a.text as id'
+                )
+                ->where('grp', 'STATUS CONTAINER')
+                ->where('subgrp', 'STATUS CONTAINER FULL EMPTY')
+                ->first()->id ?? 0;
+
+            if ($statuscontainer_id == $idfullempty) {
+                $suratPengantar->jarak = $upahsupir->jarakfullempty;
+            } else {
+                $suratPengantar->jarak = $upahsupir->jarak;
+            }
             $suratPengantar->liter = $upahsupirRincian->liter ?? 0;
             $suratPengantar->nocont = $orderanTrucking->nocont ?? '';
             $suratPengantar->nocont2 = $orderanTrucking->nocont2 ?? '';
@@ -1810,7 +1836,20 @@ class SuratPengantar extends MyModel
             $suratPengantar->nosp = $data['nosp'];
             $suratPengantar->tglsp = date('Y-m-d', strtotime($data['tglbukti']));
             $suratPengantar->tolsupir = $upahsupirRincian->nominaltol;
-            $suratPengantar->jarak = $upahsupir->jarak;
+            $statuscontainer_id = $data['statuscontainer_id'] ?? 0;
+            $idfullempty = db::table("parameter")->from(db::raw("parameter a with (readuncommitted)"))
+                ->select(
+                    'a.text as id'
+                )
+                ->where('grp', 'STATUS CONTAINER')
+                ->where('subgrp', 'STATUS CONTAINER FULL EMPTY')
+                ->first()->id ?? 0;
+
+            if ($statuscontainer_id == $idfullempty) {
+                $suratPengantar->jarak = $upahsupir->jarakfullempty;
+            } else {
+                $suratPengantar->jarak = $upahsupir->jarak;
+            }
             $suratPengantar->nosptagihlain = $data['nosptagihlain'] ?? '';
             $suratPengantar->liter = $upahsupirRincian->liter ?? 0;
             $suratPengantar->qtyton = $data['qtyton'] ?? 0;
