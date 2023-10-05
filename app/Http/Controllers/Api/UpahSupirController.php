@@ -144,6 +144,13 @@ class UpahSupirController extends Controller
                 $upahsupir->page = ceil($upahsupir->position / ($request->limit ?? 10));
             }
 
+            $statusTnl = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS POSTING TNL')->where('text', 'POSTING TNL')->first();
+            if ($data['statuspostingtnl'] == $statusTnl->id) {
+                $statusBukanTnl = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS POSTING TNL')->where('text', 'TIDAK POSTING TNL')->first();
+                $data['statuspostingtnl'] = $statusBukanTnl->id;
+
+                (new UpahSupir())->postingTnl($data, $upahsupir->gambar);
+            }
             $this->upahsupir = $upahsupir;
             DB::commit();
 

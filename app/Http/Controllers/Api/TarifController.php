@@ -162,6 +162,15 @@ class TarifController extends Controller
                 $tarif->page = ceil($tarif->position / ($request->limit ?? 10));
             }
 
+            $statusTnl = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS POSTING TNL')->where('text', 'POSTING TNL')->first();
+            if ($data['statuspostingtnl'] == $statusTnl->id) {
+                $statusBukanTnl = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS POSTING TNL')->where('text', 'TIDAK POSTING TNL')->first();
+                // posting ke tnl
+                $data['statuspostingtnl'] = $statusBukanTnl->id;
+    
+                $postingTNL = (new Tarif())->postingTnl($data);
+            }
+
             DB::commit();
 
             return response()->json([
