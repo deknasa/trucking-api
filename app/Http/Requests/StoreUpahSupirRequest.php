@@ -196,6 +196,7 @@ class StoreUpahSupirRequest extends FormRequest
             'tarif' => ['required_if:statusupahzona,=,' . $getBukanUpahZona->id, new ValidasiKotaUpahZona($getBukanUpahZona->id)],
             'penyesuaian' => [new UniqueUpahSupirSampai(), new ValidasiKotaUpahZona($getBukanUpahZona->id)],
             'jarak' => ['required', 'numeric', 'gt:0', 'max:' . (new ParameterController)->getparamid('BATAS KM UPAH SUPIR', 'BATAS KM UPAH SUPIR')->text],
+            'jarakfullempty' => ['required', 'numeric', 'gt:0', 'max:' . (new ParameterController)->getparamid('BATAS KM UPAH SUPIR', 'BATAS KM UPAH SUPIR')->text],
             'statusaktif' => ['required', Rule::in($statusAktif)],
             'statusupahzona' => ['required', Rule::in($statusUpahZona)],
             'tglmulaiberlaku' => [
