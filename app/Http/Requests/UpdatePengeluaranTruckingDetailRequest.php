@@ -177,6 +177,15 @@ class UpdatePengeluaranTruckingDetailRequest extends FormRequest
             'detail_statustitipanemkl.*' => [$requiredBBT, new ValidasiStatusTitipanEMKL(request()->id)]
         ];
 
+        if ( request()->pengeluarantrucking_id != '') {
+            if ($fetchFormat->kodepengeluaran == 'BST') {
+                
+                $rules = [
+                    "detail"=>"required"
+                ];
+            }
+        }
+
         $rules = array_merge(
             $rules,
             $rulseKlaim

@@ -41,20 +41,32 @@ class PenerimaanStokDetail extends MyModel
             $query->where("$this->table.penerimaanstokheader_id", request()->penerimaanstokheader_id);
         }
         if (isset(request()->forReport) && request()->forReport) {
+            $getJudul = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))
+            ->select('text')
+            ->where('grp', 'JUDULAN LAPORAN')
+            ->where('subgrp', 'JUDULAN LAPORAN')
+            ->first();
             $query->select(
                 "$this->table.penerimaanstokheader_id",
                 "$this->table.nobukti",
-                "stok.namastok as stok",
                 "$this->table.stok_id",
+                "stok.namastok as stok",
                 "$this->table.qty",
                 "$this->table.harga",
                 "$this->table.persentasediscount",
+                "$this->table.penerimaanstok_nobukti",
                 "$this->table.nominaldiscount",
                 "$this->table.total",
                 "$this->table.keterangan",
                 "$this->table.vulkanisirke",
                 "$this->table.modifiedby",
-            );
+                DB::raw("'Laporan Purchase Order (PO)' as judulLaporan"),
+                DB::raw("'" . $getJudul->text . "' as judul"),
+                DB::raw("'Tgl Cetak:'+format(getdate(),'dd-MM-yyyy HH:mm:ss')as tglcetak"),
+                DB::raw(" 'User :" . auth('api')->user()->name . "' as usercetak")
+            )
+                ->leftJoin("penerimaanstokheader", "$this->table.penerimaanstokheader_id", "penerimaanstokheader.id")
+                ->leftJoin("stok", "$this->table.stok_id", "stok.id");
             $totalRows =  $query->count();
             $penerimaanStokDetail = $query->get();
         } else {
