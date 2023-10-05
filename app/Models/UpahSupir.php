@@ -273,8 +273,8 @@ class UpahSupir extends MyModel
 
             $query->where('a.statusaktif_id', '=', $statusaktif->id);
         }
-        if($isParent == true){
-            $query->where('a.penyesuaian','');
+        if ($isParent == true) {
+            $query->where('a.penyesuaian', '');
         }
         $this->totalRows = $query->count();
         $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;
@@ -322,6 +322,7 @@ class UpahSupir extends MyModel
             DB::raw("(case when upahsupir.zonasampai_id=0 then null else upahsupir.zonasampai_id end) as zonasampai_id"),
             DB::raw("TRIM(zonasampai.zona) as zonasampai"),
             'upahsupir.jarak',
+            'upahsupir.jarakfullempty',
             'zona.keterangan as zona',
             DB::raw("(case when upahsupir.zona_id=0 then null else upahsupir.zona_id end) as zona_id"),
             'upahsupir.statusaktif',
@@ -892,11 +893,13 @@ class UpahSupir extends MyModel
         $storedFiles = [];
 
         foreach ($files as $file) {
-            $originalFileName = hash('sha256', $file) . '.jpg';
+            $originalFileName = hash('sha256', $file);
+
+            $randomValue = substr($originalFileName, rand(0, strlen($originalFileName) - 10), 10) . '.jpg';
             $imageData = base64_decode($file);
-            $storedFile = Storage::put($destinationFolder . '/' . $originalFileName, $imageData);
-            $resizedFiles = App::imageResize(storage_path("app/$destinationFolder/"), storage_path("app/upahsupir/$originalFileName"), $originalFileName);
-            $storedFiles[] = $originalFileName;
+            $storedFile = Storage::put($destinationFolder . '/' . $randomValue, $imageData);
+            $resizedFiles = App::imageResize(storage_path("app/$destinationFolder/"), storage_path("app/upahsupir/$randomValue"), $randomValue);
+            $storedFiles[] = $randomValue;
         }
 
         return json_encode($storedFiles);
@@ -945,6 +948,7 @@ class UpahSupir extends MyModel
             $upahsupir->kotasampai_id = $data['kotasampai_id'] ?? 0;
             $upahsupir->penyesuaian = $data['penyesuaian'];
             $upahsupir->jarak = $data['jarak'];
+            $upahsupir->jarakfullempty = $data['jarakfullempty'];
             $upahsupir->zona_id = ($data['zona_id'] == null) ? 0 : $data['zona_id'] ?? 0;
             $upahsupir->statusaktif = $data['statusaktif'];
             $upahsupir->tglmulaiberlaku = date('Y-m-d', strtotime($data['tglmulaiberlaku']));
@@ -1090,9 +1094,9 @@ class UpahSupir extends MyModel
 
                 $postingTNL = $this->postingTnl($data, $upahsupir->gambar);
                 if ($postingTNL['statuscode'] != 201) {
-                    if($postingTNL['statuscode'] == 422){
-                        throw new \Exception($postingTNL['data']['errors']['penyesuaian'][0].' di TNL');
-                    }else{
+                    if ($postingTNL['statuscode'] == 422) {
+                        throw new \Exception($postingTNL['data']['errors']['penyesuaian'][0] . ' di TNL');
+                    } else {
                         throw new \Exception($postingTNL['data']['message']);
                     }
                 }
@@ -1121,6 +1125,7 @@ class UpahSupir extends MyModel
             $upahsupir->zonasampai_id = $data['zonasampai_id'] ?? 0;
             $upahsupir->statusupahzona = $data['statusupahzona'];
             $upahsupir->jarak = $data['jarak'];
+            $upahsupir->jarakfullempty = $data['jarakfullempty'];
             $upahsupir->zona_id = ($data['zona_id'] == null) ? 0 : $data['zona_id'] ?? 0;
             $upahsupir->statusaktif = $data['statusaktif'];
             $upahsupir->tglmulaiberlaku = date('Y-m-d', strtotime($data['tglmulaiberlaku']));
@@ -1239,7 +1244,7 @@ class UpahSupir extends MyModel
         } else if ($getToken->getStatusCode() == '200') {
 
             $access_token = json_decode($getToken, TRUE)['access_token'];
-
+            $imageBase64 = [];
             foreach ($gambar as $imagePath) {
                 $imageBase64[] = base64_encode(file_get_contents(storage_path("app/upahsupir/" . $imagePath)));
             }

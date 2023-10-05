@@ -103,6 +103,7 @@ class UpahSupirController extends Controller
                 'kotasampai_id' => $request->kotasampai_id,
                 'penyesuaian' => $request->penyesuaian,
                 'jarak' => $request->jarak,
+                'jarakfullempty' => $request->jarakfullempty,
                 'zona' => $request->zona,
                 'zona_id' => ($request->zona_id == null) ? 0 : $request->zona_id ?? 0,
                 'statusaktif' => $request->statusaktif,
@@ -116,7 +117,6 @@ class UpahSupirController extends Controller
                 'statussimpankandang' => $request->statussimpankandang,
                 'statusluarkota' => $request->statusluarkota,
                 'keterangan' => $request->keterangan,
-                'gambar' => $request->file('gambar') ?? [],
                 'from' => $request->from ?? '',
 
                 'container_id' => $request->container_id,
@@ -130,6 +130,12 @@ class UpahSupirController extends Controller
                 'liter' => $request->liter ?? 0,
 
             ];
+            
+            if($request->from != ''){
+                $data['gambar'] = $request->gambar ?? [];
+            }else{                
+                $data['gambar'] = $request->file('gambar') ?? [];
+            }
             $upahsupir = (new UpahSupir())->processStore($data);
             $upahsupir->position = $this->getPosition($upahsupir, $upahsupir->getTable())->position;
             if ($request->limit==0) {
@@ -186,6 +192,7 @@ class UpahSupirController extends Controller
                 'kotasampai_id' => $request->kotasampai_id,
                 'penyesuaian' => $request->penyesuaian,
                 'jarak' => $request->jarak,
+                'jarakfullempty' => $request->jarakfullempty,
                 'zona_id' => ($request->zona_id == null) ? 0 : $request->zona_id ?? 0,
                 'statusaktif' => $request->statusaktif,
 
@@ -437,7 +444,11 @@ class UpahSupirController extends Controller
             if (Storage::exists("upahsupir/$filename")) {
                 return response()->file(storage_path("app/upahsupir/$filename"));
             } else {
-                return response('no-image');
+                if ($type == 'small') {
+                    return response()->file(storage_path("app/no-image.jpg"));
+                } else {
+                    return response('no-image');
+                }
             }
         }
     }
