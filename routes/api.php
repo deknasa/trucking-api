@@ -628,6 +628,7 @@ route::middleware(['auth:api', 'authorized'])->group(function () {
     Route::get('trado/report', [TradoController::class, 'report']);
 
     Route::get('absentrado/field_length', [AbsenTradoController::class, 'fieldLength']);
+    Route::get('absentrado/rekapabsentrado', [AbsenTradoController::class, 'rekapabsentrado']);
     Route::post('absentrado/addrow', [AbsenTradoController::class, 'addrow']);
     Route::get('absentrado/default', [AbsenTradoController::class, 'default']);
     Route::post('absentrado/{id}/cekValidasi', [AbsenTradoController::class, 'cekValidasi'])->name('absentrado.cekValidasi')->whereNumber('id');
@@ -1160,6 +1161,7 @@ route::middleware(['auth:api', 'authorized'])->group(function () {
 
 
     Route::get('suratpengantar/rekapcustomer', [SuratPengantarController::class, 'rekapcustomer']);
+    Route::get('absentrado/rekapabsentrado', [AbsenTradoController::class, 'rekapabsentrado']);
     Route::get('suratpengantar/combo', [SuratPengantarController::class, 'combo']);
     Route::post('suratpengantar/cekUpahSupir', [SuratPengantarController::class, 'cekUpahSupir']);
     Route::post('suratpengantar/addrow', [SuratPengantarController::class, 'addrow']);
