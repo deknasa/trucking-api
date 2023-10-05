@@ -567,6 +567,7 @@ class UpahSupir extends MyModel
                 $this->table.statusaktif,
                 $this->table.tglmulaiberlaku,
                 $this->table.statusupahzona,
+                tarif.tujuan as tarif,
                  $this->table.modifiedby,
                  $this->table.created_at,
                  $this->table.updated_at"
@@ -578,6 +579,7 @@ class UpahSupir extends MyModel
             ->leftJoin(DB::raw("zona as zonasampai with (readuncommitted)"), 'zonasampai.id', '=', 'upahsupir.zonasampai_id')
             ->leftJoin(DB::raw("parameter with (readuncommitted)"), 'upahsupir.statusaktif', 'parameter.id')
             ->leftJoin(DB::raw("parameter as statusupahzona with (readuncommitted)"), 'upahsupir.statusupahzona', 'statusupahzona.id')
+            ->leftJoin(DB::raw("tarif with (readuncommitted)"), 'upahsupir.tarif_id', 'tarif.id')
             ->leftJoin(DB::raw("zona with (readuncommitted)"), 'upahsupir.zona_id', 'zona.id');
     }
 
@@ -598,6 +600,7 @@ class UpahSupir extends MyModel
             $table->date('tglmulaiberlaku')->nullable();
             // $table->date('tglakhirberlaku')->nullable();
             $table->integer('statusupahzona')->length(11)->nullable();
+            $table->string('tarif')->nullable();
             $table->string('modifiedby', 50)->nullable();
             $table->dateTime('created_at')->nullable();
             $table->dateTime('updated_at')->nullable();
@@ -608,7 +611,7 @@ class UpahSupir extends MyModel
         $query = $this->selectColumns($query);
         $this->sortForPosition($query);
         $models = $this->filterForPosition($query);
-        DB::table($temp)->insertUsing(['id', 'parent_id', 'kotadari_id', 'kotasampai_id', 'zonadari_id', 'zonasampai_id', 'penyesuaian', 'zona_id', 'jarak', 'statusaktif', 'tglmulaiberlaku', 'statusupahzona', 'modifiedby', 'created_at', 'updated_at'], $models);
+        DB::table($temp)->insertUsing(['id', 'parent_id', 'kotadari_id', 'kotasampai_id', 'zonadari_id', 'zonasampai_id', 'penyesuaian', 'zona_id', 'jarak', 'statusaktif', 'tglmulaiberlaku', 'statusupahzona', 'tarif', 'modifiedby', 'created_at', 'updated_at'], $models);
         return $temp;
     }
 
@@ -641,6 +644,8 @@ class UpahSupir extends MyModel
             return $query->orderBy('zonasampai.zona', $this->params['sortOrder']);
         } else if ($this->params['sortIndex'] == 'zona_id') {
             return $query->orderBy('zona.keterangan', $this->params['sortOrder']);
+        } else if ($this->params['sortIndex'] == 'tarif') {
+            return $query->orderBy('tarif.tujuan', $this->params['sortOrder']);
         } else {
             return $query->orderBy($this->table . '.' . $this->params['sortIndex'], $this->params['sortOrder']);
         }
@@ -751,6 +756,8 @@ class UpahSupir extends MyModel
                             $query = $query->where('zonasampai.keterangan', 'LIKE', "%$filters[data]%");
                         } else if ($filters['field'] == 'zona_id') {
                             $query = $query->where('zona.keterangan', 'LIKE', "%$filters[data]%");
+                        } else if ($filters['field'] == 'tarif') {
+                            $query = $query->where('tarif.tujuan', 'LIKE', "%$filters[data]%");
                         } else if ($filters['field'] == 'jarak') {
                             $query = $query->whereRaw("format($this->table.jarak, '#,#0.00') LIKE '%$filters[data]%'");
                         } else if ($filters['field'] == 'tglmulaiberlaku') {
@@ -783,6 +790,8 @@ class UpahSupir extends MyModel
                                 $query = $query->orWhere('zonasampai.keterangan', 'LIKE', "%$filters[data]%");
                             } else if ($filters['field'] == 'zona_id') {
                                 $query = $query->orWhere('zona.keterangan', 'LIKE', "%$filters[data]%");
+                            } else if ($filters['field'] == 'tarif') {
+                                $query = $query->orWhere('tarif.tujuan', 'LIKE', "%$filters[data]%");
                             } else if ($filters['field'] == 'jarak') {
                                 $query = $query->orWhereRaw("format($this->table.jarak, '#,#0.00') LIKE '%$filters[data]%'");
                             } else if ($filters['field'] == 'tglmulaiberlaku') {
