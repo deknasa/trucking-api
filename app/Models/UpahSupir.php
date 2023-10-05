@@ -1086,21 +1086,21 @@ class UpahSupir extends MyModel
                     'modifiedby' => auth('api')->user()->user,
                 ]);
             }
-            $statusTnl = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS POSTING TNL')->where('text', 'POSTING TNL')->first();
-            if ($data['statuspostingtnl'] == $statusTnl->id) {
-                $statusBukanTnl = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS POSTING TNL')->where('text', 'TIDAK POSTING TNL')->first();
-                // posting ke tnl
-                $data['statuspostingtnl'] = $statusBukanTnl->id;
+            // $statusTnl = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS POSTING TNL')->where('text', 'POSTING TNL')->first();
+            // if ($data['statuspostingtnl'] == $statusTnl->id) {
+            //     $statusBukanTnl = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS POSTING TNL')->where('text', 'TIDAK POSTING TNL')->first();
+            //     // posting ke tnl
+            //     $data['statuspostingtnl'] = $statusBukanTnl->id;
 
-                $postingTNL = $this->postingTnl($data, $upahsupir->gambar);
-                if ($postingTNL['statuscode'] != 201) {
-                    if ($postingTNL['statuscode'] == 422) {
-                        throw new \Exception($postingTNL['data']['errors']['penyesuaian'][0] . ' di TNL');
-                    } else {
-                        throw new \Exception($postingTNL['data']['message']);
-                    }
-                }
-            }
+            //     $postingTNL = $this->postingTnl($data, $upahsupir->gambar);
+            //     if ($postingTNL['statuscode'] != 201) {
+            //         if ($postingTNL['statuscode'] == 422) {
+            //             throw new \Exception($postingTNL['data']['errors']['penyesuaian'][0] . ' di TNL');
+            //         } else {
+            //             throw new \Exception($postingTNL['data']['message']);
+            //         }
+            //     }
+            // }
 
             return $upahsupir;
         } catch (\Throwable $th) {
@@ -1263,6 +1263,14 @@ class UpahSupir extends MyModel
                 'statuscode' => $tesResp->getStatusCode(),
                 'data' => $transferUpahSupir->json(),
             ];
+            $dataResp = $transferUpahSupir->json();
+            if ($tesResp->getStatusCode() != 201) {
+                if ($tesResp->getStatusCode() == 422) {
+                    throw new \Exception($dataResp['errors']['penyesuaian'][0] . ' di TNL');
+                } else {
+                    throw new \Exception($dataResp['message']);
+                }
+            }
             return $response;
         } else {
             throw new \Exception("server tidak bisa diakses");
