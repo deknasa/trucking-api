@@ -156,7 +156,7 @@ class PengeluaranStokHeader extends MyModel
                         } else if ($filters['field'] == 'gudang') {
                             $query = $query->where('gudang.gudang', 'LIKE', "%$filters[data]%");
                         } else if ($filters['field'] == 'gandengan') {
-                            $query = $query->where('gandengan.keterangan', 'LIKE', "%$filters[data]%");
+                            $query = $query->where('gandengan.kodegandengan', 'LIKE', "%$filters[data]%");
                         } else if ($filters['field'] == 'trado') {
                             $query = $query->where('trado.kodetrado', 'LIKE', "%$filters[data]%");
                         } else if ($filters['field'] == 'supplier') {
@@ -187,7 +187,7 @@ class PengeluaranStokHeader extends MyModel
                             } else if ($filters['field'] == 'gudang') {
                                 $query = $query->orWhere('gudang.gudang', 'LIKE', "%$filters[data]%");
                             } else if ($filters['field'] == 'gandengan') {
-                                $query = $query->orWhere('gandengan.keterangan', 'LIKE', "%$filters[data]%");
+                                $query = $query->orWhere('gandengan.kodegandengan', 'LIKE', "%$filters[data]%");
                             } else if ($filters['field'] == 'trado') {
                                 $query = $query->orWhere('trado.kodetrado', 'LIKE', "%$filters[data]%");
                             } else if ($filters['field'] == 'supplier') {
@@ -355,7 +355,7 @@ class PengeluaranStokHeader extends MyModel
             // "),
             "trado.kodetrado as trado",
             "gudang.gudang as gudang",
-            "gandengan.keterangan as gandengan",
+            "gandengan.kodegandengan as gandengan",
             "supir.namasupir as supir",
             "supplier.namasupplier as supplier",
             "statusedit.memo as  statusedit",

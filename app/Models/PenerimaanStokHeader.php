@@ -169,7 +169,7 @@ class PenerimaanStokHeader extends MyModel
             "$this->table.pengeluaranstok_nobukti",
             "gudangs.gudang as gudang",
             "trado.kodetrado as trado",
-            "gandengan.keterangan as gandengan",
+            "gandengan.kodegandengan as gandengan",
             "tradodari.kodetrado as tradodari",
             "tradoke.kodetrado as tradoke",
             "gandengandari.keterangan as gandengandari",
@@ -350,6 +350,8 @@ class PenerimaanStokHeader extends MyModel
                             $query = $query->where('gudangs.gudang', 'LIKE', "%$filters[data]%");
                         } else if ($filters['field'] == 'trado') {
                             $query = $query->where('trado.kodetrado', 'LIKE', "%$filters[data]%");
+                        } else if ($filters['field'] == 'gandengan') {
+                            $query = $query->where('gandengan.kodegandengan', 'LIKE', "%$filters[data]%");
                         } else if ($filters['field'] == 'supplier') {
                             $query = $query->where('supplier.namasupplier', 'LIKE', "%$filters[data]%");
                         } else if ($filters['field'] == 'gudangdari') {
@@ -377,7 +379,9 @@ class PenerimaanStokHeader extends MyModel
                                 $query = $query->orWhere('gudangs.gudang', 'LIKE', "%$filters[data]%");
                             } else if ($filters['field'] == 'trado') {
                                 $query = $query->orWhere('trado.kodetrado', 'LIKE', "%$filters[data]%");
-                            } else if ($filters['field'] == 'supplier') {
+                            } else if ($filters['field'] == 'gandengan') {
+                                $query = $query->orwhere('gandengan.kodegandengan', 'LIKE', "%$filters[data]%");
+                                } else if ($filters['field'] == 'supplier') {
                                 $query = $query->orWhere('supplier.namasupplier', 'LIKE', "%$filters[data]%");
                             } else if ($filters['field'] == 'gudangdari') {
                                 $query = $query->orWhere('dari.gudang', 'LIKE', "%$filters[data]%");
