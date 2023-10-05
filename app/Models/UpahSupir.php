@@ -322,6 +322,7 @@ class UpahSupir extends MyModel
             DB::raw("(case when upahsupir.zonasampai_id=0 then null else upahsupir.zonasampai_id end) as zonasampai_id"),
             DB::raw("TRIM(zonasampai.zona) as zonasampai"),
             'upahsupir.jarak',
+            'upahsupir.jarakfullempty',
             'zona.keterangan as zona',
             DB::raw("(case when upahsupir.zona_id=0 then null else upahsupir.zona_id end) as zona_id"),
             'upahsupir.statusaktif',
