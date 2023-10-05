@@ -67,6 +67,23 @@ class PengeluaranTruckingHeaderController extends Controller
         DB::beginTransaction();
         try {
             /* Store header */
+            $idpengeluaran = request()->pengeluarantrucking_id;
+            $fetchFormat =  DB::table('pengeluarantrucking')->where('id', $idpengeluaran)->first();
+
+            $keterangan = $request->keterangan;
+            $nojobtrucking_detail = $request->nojobtrucking_detail;
+            $noinvoice_detail = $request->noinvoice_detail;
+            $nominal = $request->nominal;
+
+            if ($fetchFormat->kodepengeluaran == "BST") {
+                $detail = json_decode($request->detail);
+                
+                $keterangan = $detail->keterangan;
+                $nojobtrucking_detail = $detail->nojobtrucking_detail;
+                $noinvoice_detail = $detail->noinvoice_detail;
+                $nominal = $detail->nominal;
+            }
+
             $pengeluaranTruckingHeader = (new PengeluaranTruckingHeader())->processStore([
                 'pengeluarantrucking_id' => $request->pengeluarantrucking_id,
                 "supirheader_id" => $request->supirheader_id,
@@ -104,15 +121,15 @@ class PengeluaranTruckingHeaderController extends Controller
                 "pengeluaranstok_nobukti" => $request->pengeluaranstok_nobukti,
                 "harga" => $request->harga,
                 "nominaltagih" => $request->nominaltagih,
-                "nominal" => $request->nominal,
+                "nominal" => $nominal,
                 "jenisorder_id" => $request->jenisorder_id,
                 "nowarkat" => $request->nowarkat,
                 "tgljatuhtempo" => $request->tgljatuhtempo,
                 "coadebet" => $request->coadebet,
                 "coakredit" => $request->coakredit,
-                "keterangan" => $request->keterangan,
-                "noinvoice_detail" => $request->noinvoice_detail,
-                "nojobtrucking_detail" => $request->nojobtrucking_detail,
+                "keterangan" => $keterangan,
+                "noinvoice_detail" => $noinvoice_detail,
+                "nojobtrucking_detail" => $nojobtrucking_detail,
                 "bank_detail" => $request->bank_detail,
             ]);
             /* Set position and page */
@@ -205,6 +222,23 @@ class PengeluaranTruckingHeaderController extends Controller
         DB::beginTransaction();
         try {
             /* Store header */
+            $idpengeluaran = request()->pengeluarantrucking_id;
+            $fetchFormat =  DB::table('pengeluarantrucking')->where('id', $idpengeluaran)->first();
+
+            $keterangan = $request->keterangan;
+            $nojobtrucking_detail = $request->nojobtrucking_detail;
+            $noinvoice_detail = $request->noinvoice_detail;
+            $nominal = $request->nominal;
+
+            if ($fetchFormat->kodepengeluaran == "BST") {
+                $detail = json_decode($request->detail);
+                
+                $keterangan = $detail->keterangan;
+                $nojobtrucking_detail = $detail->nojobtrucking_detail;
+                $noinvoice_detail = $detail->noinvoice_detail;
+                $nominal = $detail->nominal;
+            }
+
             $pengeluaranTruckingHeader = PengeluaranTruckingHeader::findOrfail($id);
             $pengeluaranTruckingHeader = (new PengeluaranTruckingHeader())->processUpdate($pengeluaranTruckingHeader, [
                 
@@ -244,15 +278,15 @@ class PengeluaranTruckingHeaderController extends Controller
                 "pengeluaranstok_nobukti" => $request->pengeluaranstok_nobukti,
                 "harga" => $request->harga,
                 "nominaltagih" => $request->nominaltagih,
-                "nominal" => $request->nominal,
+                "nominal" => $nominal,
                 "jenisorder_id" => $request->jenisorder_id,
                 "nowarkat" => $request->nowarkat,
                 "tgljatuhtempo" => $request->tgljatuhtempo,
                 "coadebet" => $request->coadebet,
                 "coakredit" => $request->coakredit,
-                "keterangan" => $request->keterangan,
-                "noinvoice_detail" => $request->noinvoice_detail,
-                "nojobtrucking_detail" => $request->nojobtrucking_detail,
+                "keterangan" => $keterangan,
+                "noinvoice_detail" => $noinvoice_detail,
+                "nojobtrucking_detail" => $nojobtrucking_detail,
                 "bank_detail" => $request->bank_detail,
             ]);
             /* Set position and page */
