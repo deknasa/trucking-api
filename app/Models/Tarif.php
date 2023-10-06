@@ -682,7 +682,8 @@ class Tarif extends MyModel
         if ($getToken->getStatusCode() == '404') {
             throw new \Exception("Akun Tidak Terdaftar di Trucking TNL");
         } else if ($getToken->getStatusCode() == '200') {
-            $access_token = json_decode($getToken, TRUE)['access_token'];
+            $access_token = json_decode($getToken, TRUE)['access_token'];            
+            $data['from'] = 'jkt';
             $transferTarif = Http::withHeaders([
                 'Content-Type' => 'application/json',
                 'Accept' => 'application/json',
