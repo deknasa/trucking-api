@@ -309,7 +309,7 @@ class UpahSupir extends MyModel
             DB::raw("(case when upahsupir.parent_id=0 then null else upahsupir.parent_id end) as parent_id"),
             'parent.keterangan as parent',
             DB::raw("(case when upahsupir.tarif_id=0 then null else upahsupir.tarif_id end) as tarif_id"),
-            DB::raw("TRIM(tarif.tujuan) as tarif"),
+            DB::raw("(trim(tarif.tujuan)+' - '+trim(tarif.penyesuaian)) as tarif"),
             DB::raw("(case when upahsupir.kotadari_id=0 then null else upahsupir.kotadari_id end) as kotadari_id"),
             DB::raw("TRIM(kotadari.keterangan) as kotadari"),
             'upahsupir.keterangan',
@@ -337,13 +337,13 @@ class UpahSupir extends MyModel
             'upahsupir.gambar',
 
             DB::raw("upahsupir.tarifmuatan_id"),
-            DB::raw("TRIM(tarifmuatan.tujuan) as tarifmuatan"),
+            DB::raw("(trim(tarifmuatan.tujuan)+' - '+trim(tarifmuatan.penyesuaian)) as tarifmuatan"),
             DB::raw("upahsupir.tarifbongkaran_id"),
-            DB::raw("TRIM(tarifbongkaran.tujuan) as tarifbongkaran"),
+            DB::raw("(trim(tarifbongkaran.tujuan)+' - '+trim(tarifbongkaran.penyesuaian)) as tarifbongkaran"),
             DB::raw("upahsupir.tarifexport_id"),
-            DB::raw("TRIM(tarifexport.tujuan) as tarifexport"),
+            DB::raw("(trim(tarifexport.tujuan)+' - '+trim(tarifexport.penyesuaian)) as tarifexport"),
             DB::raw("upahsupir.tarifimport_id"),
-            DB::raw("TRIM(tarifimport.tujuan) as tarifimport"),
+            DB::raw("(trim(tarifimport.tujuan)+' - '+trim(tarifimport.penyesuaian)) as tarifimport"),
             'upahsupir.modifiedby',
             'upahsupir.updated_at'
         )
