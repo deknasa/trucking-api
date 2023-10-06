@@ -1042,8 +1042,10 @@ class PengeluaranTruckingHeader extends MyModel
                     $nowarkat[] = "";
                     $tglkasmasuk[] = (array_key_exists('tglkasmasuk', $data)) ? date('Y-m-d', strtotime($data['tglkasmasuk'])) : date('Y-m-d', strtotime($data['tglbukti']));
                     $nominal_detail[] = $nominalBiaya;
-                    if ($fetchFormat->kodepengeluaran == 'BBT' || $fetchFormat->kodepengeluaran == 'BST') {
-                        $keterangan_detail[] = "$fetchFormat->keterangan $pengeluaranTruckingHeader->nobukti";
+                    if ($fetchFormat->kodepengeluaran == 'BST') {
+                        $keterangan_detail[] = "$fetchFormat->keterangan ".$data['tgldari']." s/d ".$data['tglsampai']." $pengeluaranTruckingHeader->nobukti";
+                    } else if($fetchFormat->kodepengeluaran == 'BBT') { 
+                        $keterangan_detail[] = $data['keterangan'][0];
                     } else {
                         $keterangan_detail[] = "$fetchFormat->keterangan periode " . $data['periode'] . " $pengeluaranTruckingHeader->nobukti";
                     }
@@ -1052,7 +1054,7 @@ class PengeluaranTruckingHeader extends MyModel
                         $nominal_detail = [];
                         $nominal_detail[] = $nominalBiaya;
                         $keterangan_detail = [];
-                        $keterangan_detail[] = "$fetchFormat->keterangan $pengeluaranTruckingHeader->nobukti";
+                        $keterangan_detail[] = $data['keterangan'][0];
                         $coakredit_detail[] = $queryPengeluaran->coa;
                         $coadebet_detail[] = $data['coa'];
                         $nowarkat[] = "";
@@ -1275,9 +1277,11 @@ class PengeluaranTruckingHeader extends MyModel
                         $nowarkat[] = "";
                         $tglkasmasuk[] = (array_key_exists('tglkasmasuk', $data)) ? date('Y-m-d', strtotime($data['tglkasmasuk'])) : date('Y-m-d', strtotime($data['tglbukti']));
                         $nominal_detail[] = $nominalBiaya;
-                        if ($fetchFormat->kodepengeluaran == 'BBT' || $fetchFormat->kodepengeluaran == 'BST') {
-                            $keterangan_detail[] = "$fetchFormat->keterangan $pengeluaranTruckingHeader->nobukti";
-                        } else {
+                        if ($fetchFormat->kodepengeluaran == 'BST') {
+                            $keterangan_detail[] = "$fetchFormat->keterangan ".$data['tgldari']." s/d ".$data['tglsampai']." $pengeluaranTruckingHeader->nobukti";
+                        } else if($fetchFormat->kodepengeluaran == 'BBT') { 
+                            $keterangan_detail[] = $data['keterangan'][0];
+                        }else {
                             $keterangan_detail[] = "$fetchFormat->keterangan periode " . $data['periode'] . " $pengeluaranTruckingHeader->nobukti";
                         }
                     } else {
@@ -1286,7 +1290,7 @@ class PengeluaranTruckingHeader extends MyModel
                             $nominal_detail = [];
                             $nominal_detail[] = $nominalBiaya;
                             $keterangan_detail = [];
-                            $keterangan_detail[] = "$fetchFormat->keterangan $pengeluaranTruckingHeader->nobukti";
+                            $keterangan_detail[] = $data['keterangan'][0];
                             $coakredit_detail[] = $queryPengeluaran->coa;
                             $coadebet_detail[] = $data['coa'];
                             $nowarkat[] = "";

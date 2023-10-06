@@ -987,31 +987,7 @@ class Supir extends MyModel
                 'modifiedby' => $supir->modifiedby
             ]);
 
-            $statusTnl = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS POSTING TNL')->where('text', 'POSTING TNL')->first();
-            if ($data['statuspostingtnl'] == $statusTnl->id) {
-                $statusBukanTnl = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS POSTING TNL')->where('text', 'TIDAK POSTING TNL')->first();
-                // posting ke tnl
-                $data['statuspostingtnl'] = $statusBukanTnl->id;
-                $gambar = [
-                    'supir' => $supir->photosupir,
-                    'ktp' => $supir->photoktp,
-                    'sim' => $supir->photosim,
-                    'kk' => $supir->photokk,
-                    'skck' => $supir->photoskck,
-                    'domisili' => $supir->photodomisili,
-                    'vaksin' => $supir->photovaksin,
-                    'pdfsuratperjanjian' => $supir->pdfsuratperjanjian,
-                ];
-                $postingTNL = $this->postingTnl($data, $gambar);
-                if ($postingTNL['statuscode'] != 201) {
-                    if ($postingTNL['statuscode'] == 422) {
-                        throw new \Exception($postingTNL['data']['errors']['noktp'][0] . ' di TNL');
-                    } else {
-                        throw new \Exception($postingTNL['data']['message']);
-                    }
-                }
-            }
-
+            
             return $supir;
         } catch (\Throwable $th) {
             $this->deleteFiles($supir);
@@ -1201,6 +1177,14 @@ class Supir extends MyModel
                 'statuscode' => $tesResp->getStatusCode(),
                 'data' => $copySupir->json(),
             ];
+            $dataResp = $copySupir->json();
+            if ($tesResp->getStatusCode() != 201) {
+                if ($tesResp->getStatusCode() == 422) {
+                    throw new \Exception($dataResp['errors']['namasupir'][0] . ' di TNL');
+                } else {
+                    throw new \Exception($dataResp['message']);
+                }
+            }
             return $response;
         } else {
             throw new \Exception("server tidak bisa diakses");
