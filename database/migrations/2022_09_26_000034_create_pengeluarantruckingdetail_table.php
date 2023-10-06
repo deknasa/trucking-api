@@ -35,6 +35,8 @@ class CreatePengeluarantruckingdetailTable extends Migration
             $table->double('nominal',15,2)->nullable();        
             $table->double('nominaltagih',15,2)->nullable();        
             $table->longText('keterangan')->nullable();    
+            $table->double('nominaltambahan',15,2)->nullable();        
+            $table->longText('keterangantambahan')->nullable();    
             $table->integer('statustitipanemkl')->length(11)->nullable();
             $table->longText('info')->nullable();
             $table->string('modifiedby',50)->nullable();                  
