@@ -38,6 +38,7 @@ class UniqueTarifEdit implements Rule
             )
             ->where('a.tujuan', '=', request()->tujuan)
             ->where('a.penyesuaian', '=', request()->penyesuaian)
+            ->where('a.jenisorder_id', '=', (request()->jenisorder_id))
             ->where('a.id', '<>', request()->id)
             ->first();
 

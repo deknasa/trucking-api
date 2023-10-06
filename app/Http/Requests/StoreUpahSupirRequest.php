@@ -15,6 +15,7 @@ use App\Rules\UniqueUpahSupirDari;
 use App\Rules\UniqueUpahSupirSampai;
 use App\Rules\ValidasiDariSimpanKandangUpahSupir;
 use App\Rules\ValidasiKotaUpahZona;
+use App\Rules\ValidasiPenyesuaianUpahSupir;
 use App\Rules\ValidasiZonaUpahZona;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
@@ -195,7 +196,7 @@ class StoreUpahSupirRequest extends FormRequest
                 'zonadari' => ['required_if:statusupahzona,=,' . $getUpahZona->id, new ValidasiZonaUpahZona($getUpahZona->id)],
                 'zonasampai' => ['required_if:statusupahzona,=,' . $getUpahZona->id, new ValidasiZonaUpahZona($getUpahZona->id)],
                 'tarif' => ['required_if:statusupahzona,=,' . $getBukanUpahZona->id, new ValidasiKotaUpahZona($getBukanUpahZona->id)],
-                'penyesuaian' => [new UniqueUpahSupirSampai(), new ValidasiKotaUpahZona($getBukanUpahZona->id)],
+                'penyesuaian' => [new UniqueUpahSupirSampai(), new ValidasiPenyesuaianUpahSupir(), new ValidasiKotaUpahZona($getBukanUpahZona->id)],
                 'jarak' => ['required', 'numeric', 'gt:0', 'max:' . (new ParameterController)->getparamid('BATAS KM UPAH SUPIR', 'BATAS KM UPAH SUPIR')->text],
                 'jarakfullempty' => ['required', 'numeric', 'gt:0', 'max:' . (new ParameterController)->getparamid('BATAS KM UPAH SUPIR', 'BATAS KM UPAH SUPIR')->text],
                 'statusaktif' => ['required', Rule::in($statusAktif)],
