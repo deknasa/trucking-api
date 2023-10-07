@@ -660,4 +660,35 @@ class PengeluaranTruckingHeaderController extends Controller
             'data' => $pengeluarantruckingheader->getExport($id)
         ]);
     }
+
+    /**
+     * @ClassName 
+     */
+    public function pengeluarantruckingpinjamansupir()
+    {
+    
+    }
+
+    /**
+     * @ClassName 
+     */
+    public function pengeluarantruckingpenarikandeposito()
+    {
+    
+    }
+    
+    // BST	SUMBANGAN SOSIAL
+    // BSB	INSENTIF SUPIR
+    // KBBM	PELUNASAN HUTANG BBM
+    // BLS	BIAYA LAIN SUPIR
+    // KLAIM	KLAIM SUPIR
+    // PJK	PINJAMAN KARYAWAN
+    // BBT	TITIPAN EMKL
+    // BLL	BIAYA LAPANGAN LEMBUR
+    // BLN	BIAYA LAPANGAN NGINAP
+    // BTU	BIAYA LAPANGAN TAMBAHAN UANG JALAN
+    // BPT	BIAYA PORTAL
+    // BGS	BIAYA GAJI SUPIR
+    // BIT	BIAYA INSENTIF
+
 }

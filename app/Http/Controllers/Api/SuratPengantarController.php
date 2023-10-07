@@ -120,24 +120,44 @@ class SuratPengantarController extends Controller
     public function show($id)
     {
 
+        $query=db::table("suratpengantar")->from(db::raw("suratpengantar a with (readuncommitted)"))
+        ->select(
+            'a.id'
+        )
+        ->where('a.id',$id)
+        ->first();
 
-        $data = SuratPengantar::findAll($id);
-        $detail = SuratPengantarBiayaTambahan::where('suratpengantar_id', $id)->get();
-        if (isset($data)) {
-            return response([
-                'status' => true,
-                'data' => $data,
-                'detail' => $detail
-            ]);
+        if (isset($query)) {
+            $data = SuratPengantar::findAll($id);
+            $detail = SuratPengantarBiayaTambahan::where('suratpengantar_id', $id)->get();
         } else {
             $data = SaldoSuratPengantar::findAll($id);
-
-            return response([
-                'status' => true,
-                'data' => $data,
-                'detail' => $detail
-            ]);
+            $detail = null;
         }
+
+        return response([
+            'status' => true,
+            'data' => $data,
+            'detail' => $detail
+        ]);
+
+        // $data = SuratPengantar::findAll($id);
+        // $detail = SuratPengantarBiayaTambahan::where('suratpengantar_id', $id)->get();
+        // if (isset($data)) {
+        //     return response([
+        //         'status' => true,
+        //         'data' => $data,
+        //         'detail' => $detail
+        //     ]);
+        // } else {
+        //     $data = SaldoSuratPengantar::findAll($id);
+
+        //     return response([
+        //         'status' => true,
+        //         'data' => $data,
+        //         'detail' => $detail
+        //     ]);
+        // }
     }
 
     /**
