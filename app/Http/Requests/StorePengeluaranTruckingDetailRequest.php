@@ -3,6 +3,8 @@
 namespace App\Http\Requests;
 
 use App\Http\Controllers\Api\ErrorController;
+use App\Rules\ValidasiKlaimPenerimaanStok;
+use App\Rules\ValidasiKlaimPengeluaranStok;
 use App\Rules\ValidasiStatusTitipanEMKL;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Support\Facades\DB;
@@ -134,9 +136,10 @@ class StorePengeluaranTruckingDetailRequest extends FormRequest
             if ($klaim->id ==  request()->pengeluarantrucking_id) {
                 $rulseKlaim = [
                     "stok_id.*"  => ["required",],
-                    "pengeluaranstok_nobukti.*"  => ["required",],
+                    "pengeluaranstok_nobukti.*"  => [new ValidasiKlaimPengeluaranStok()],
+                    "penerimaanstok_nobukti.*"  => [new ValidasiKlaimPenerimaanStok()],
                     "qty.*"  => ["required",],
-                    "harga.*"  => ["required",],
+                    "nominaltambahan.*"  => ['numeric','min:0'],
                 ];
             }
         }

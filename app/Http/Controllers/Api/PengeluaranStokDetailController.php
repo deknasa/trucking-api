@@ -38,7 +38,20 @@ class PengeluaranStokDetailController extends Controller
     public function index(Request $request)
     {
         $pengeluaranStokDetail = new PengeluaranStokDetail();
+        if ($request->penerimaanstokheader_id != '') {
 
+            $penerimaanStokDetail = new PenerimaanStokDetail();
+
+            return response([
+                'data' => $penerimaanStokDetail->get(),
+                'attributes' => [
+                    'totalRows' => $penerimaanStokDetail->totalRows,
+                    'totalPages' => $penerimaanStokDetail->totalPages,
+                    'totalNominal' => $penerimaanStokDetail->totalNominal
+
+                ]
+            ]);
+        }
         return response([
             'data' => $pengeluaranStokDetail->get(),
             'attributes' => [
