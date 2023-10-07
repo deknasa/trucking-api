@@ -971,6 +971,16 @@ class PengeluaranTruckingHeader extends MyModel
         $pengeluaranTruckingDetails = [];
         $nominalBiaya = 0;
         for ($i = 0; $i < count($data['nominal']); $i++) {
+            $qty = $data['qty'][$i] ?? 0;
+            $harga = $data['harga'][$i] ?? 0;
+            $totalHarga = $qty * $harga;
+
+            if($data['pengeluarantrucking_id'] == $klaim->id){
+                $data['nominaltagih'][$i] = $data['nominal'][$i];
+                $tambahan =  $data['nominaltambahan'][$i] ?? 0;
+                $totalNominal = $data['nominal'][$i] + $tambahan;
+                $data['nominal'][$i] = $totalNominal;
+            }
             $pengeluaranTruckingDetail = (new PengeluaranTruckingDetail())->processStore($pengeluaranTruckingHeader, [
                 'pengeluarantruckingheader_id' => $pengeluaranTruckingHeader->id,
                 'nobukti' => $pengeluaranTruckingHeader->nobukti,
@@ -978,8 +988,10 @@ class PengeluaranTruckingHeader extends MyModel
                 'karyawan_id' => $data['karyawan_id'][$i] ?? null,
                 'stok_id' => $data['stok_id'][$i] ?? null,
                 'pengeluaranstok_nobukti' => $data['pengeluaranstok_nobukti'][$i] ?? null,
+                'penerimaanstok_nobukti' => $data['penerimaanstok_nobukti'][$i] ?? '',
                 'qty' => $data['qty'][$i] ?? null,
                 'harga' => $data['harga'][$i] ?? null,
+                'total' => $totalHarga ?? 0,
                 'trado_id' => $data['trado_id'][$i] ?? null,
                 'penerimaantruckingheader_nobukti' => $data['penerimaantruckingheader_nobukti'][$i] ?? '',
                 'invoice_nobukti' => $data['noinvoice_detail'][$i] ?? '',
@@ -996,6 +1008,8 @@ class PengeluaranTruckingHeader extends MyModel
                 'pelanggan_id' => $data['pelanggan_id'][$i] ?? null,
                 'nominaltagih' => $data['nominaltagih'][$i] ?? 0,
                 'jenisorder' => $data['jenisorder'][$i] ?? null,
+                'nominaltambahan' => $data['nominaltambahan'][$i] ?? 0,
+                'keterangantambahan' => $data['keterangantambahan'][$i] ?? '',
             ]);
             $pengeluaranTruckingDetails[] = $pengeluaranTruckingDetail->toArray();
             $nominal_detail[] = $pengeluaranTruckingDetail->nominal;
@@ -1209,6 +1223,16 @@ class PengeluaranTruckingHeader extends MyModel
         $pengeluaranTruckingDetails = [];
         $nominalBiaya = 0;
         for ($i = 0; $i < count($data['nominal']); $i++) {
+            $qty = $data['qty'][$i] ?? 0;
+            $harga = $data['harga'][$i] ?? 0;
+            $totalHarga = $qty * $harga;
+
+            if($data['pengeluarantrucking_id'] == $klaim->id){
+                $data['nominaltagih'][$i] = $data['nominal'][$i];
+                $tambahan =  $data['nominaltambahan'][$i] ?? 0;
+                $totalNominal = $data['nominal'][$i] + $tambahan;
+                $data['nominal'][$i] = $totalNominal;
+            }
             $pengeluaranTruckingDetail = (new PengeluaranTruckingDetail())->processStore($pengeluaranTruckingHeader, [
                 'pengeluarantruckingheader_id' => $pengeluaranTruckingHeader->id,
                 'nobukti' => $pengeluaranTruckingHeader->nobukti,
@@ -1216,8 +1240,10 @@ class PengeluaranTruckingHeader extends MyModel
                 'karyawan_id' => $data['karyawan_id'][$i] ?? null,
                 'stok_id' => $data['stok_id'][$i] ?? null,
                 'pengeluaranstok_nobukti' => $data['pengeluaranstok_nobukti'][$i] ?? null,
+                'penerimaanstok_nobukti' => $data['penerimaanstok_nobukti'][$i] ?? '',
                 'qty' => $data['qty'][$i] ?? null,
                 'harga' => $data['harga'][$i] ?? null,
+                'total' => $totalHarga ?? 0,
                 'trado_id' => $data['trado_id'][$i] ?? null,
                 'penerimaantruckingheader_nobukti' => $data['penerimaantruckingheader_nobukti'][$i] ?? '',
                 'invoice_nobukti' => $data['noinvoice_detail'][$i] ?? '',
@@ -1232,6 +1258,8 @@ class PengeluaranTruckingHeader extends MyModel
                 'pelanggan_id' => $data['pelanggan_id'][$i] ?? null,
                 'nominaltagih' => $data['nominaltagih'][$i] ?? 0,
                 'jenisorder' => $data['jenisorder'][$i] ?? null,
+                'nominaltambahan' => $data['nominaltambahan'][$i] ?? 0,
+                'keterangantambahan' => $data['keterangantambahan'][$i] ?? '',
                 'modifiedby' => $pengeluaranTruckingHeader->modifiedby,
             ]);
             $pengeluaranTruckingDetails[] = $pengeluaranTruckingDetail->toArray();

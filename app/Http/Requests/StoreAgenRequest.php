@@ -48,6 +48,8 @@ class StoreAgenRequest extends FormRequest
             "alamat" => "required",
             "notelp" => "required|unique:agen|min:11|max:13",
             "contactperson" => "required",
+            "keterangancoa" => "required",
+            "keterangancoapendapatan" => "required",
             "top" => "required|numeric|gt:0|max:999",
             "statustas" => ["required",Rule::in($statusTas),'numeric','min:1'],
             // "keteranganjenisemkl" => "required",
@@ -65,6 +67,8 @@ class StoreAgenRequest extends FormRequest
             "contactperson" => "nama kontak",
             "top" => "status pembayaran (top)",
             "statustas" => "status tas",
+            "keterangancoa" => "keterangan coa",
+            "keterangancoapendapatan" => "keterangan coa pendapatan",
             // "keteranganjenisemkl" => "jenis emkl",
         ];
     }

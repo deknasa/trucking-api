@@ -97,7 +97,16 @@ class PenerimaanStokHeader extends MyModel
                         ->where('penerimaanstokheader.penerimaanstok_nobukti', '!=', '');
                 });
         }
-
+        
+        if (request()->penerimaanstok_id == $pg->text) {
+            $query->where('penerimaanstokheader.penerimaanstok_id', '=', $pg->text)
+                ->whereNotIn('penerimaanstokheader.nobukti', function ($query) {
+                    $query->select(DB::raw('DISTINCT penerimaanstokheader.penerimaanstok_nobukti'))
+                        ->from('penerimaanstokheader')
+                        ->whereNotNull('penerimaanstokheader.penerimaanstok_nobukti')
+                        ->where('penerimaanstokheader.penerimaanstok_nobukti', '!=', '');
+                });
+        }
         if (request()->supplier_id) {
             // $query->leftJoin('penerimaanstokheader as pobeli','penerimaanstokheader.penerimaanstok_nobukti','pobeli.nobukti');
             $query->where('penerimaanstokheader.supplier_id', '=', request()->supplier_id);

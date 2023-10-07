@@ -93,6 +93,8 @@ class AgenController extends Controller
             'contactperson' => $request->contactperson,
             'top' => $request->top,
             'statustas' => $request->statustas,
+            'coa' => $request->coa,
+            'coapendapatan' => $request->coapendapatan,
         ];
         DB::beginTransaction();
 
@@ -120,10 +122,9 @@ class AgenController extends Controller
 
     public function show($id)
     {
-        $agen = Agen::from(DB::raw("agen with (readuncommitted)"))->where('agen.id', $id)->first();
         return response([
             'status' => true,
-            'data' => $agen
+            'data' => (new Agen())->findAll($id)
         ]);
     }
 
@@ -145,6 +146,8 @@ class AgenController extends Controller
             'contactperson' => $request->contactperson,
             'top' => $request->top,
             'statustas' => $request->statustas,
+            'coa' => $request->coa,
+            'coapendapatan' => $request->coapendapatan,
         ];
         DB::beginTransaction();
 

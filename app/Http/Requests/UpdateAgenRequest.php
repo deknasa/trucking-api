@@ -46,6 +46,8 @@ class UpdateAgenRequest extends FormRequest
             "statusaktif" => ['required', Rule::in($status),'numeric', 'min:1'],
             "namaperusahaan" => "required",
             "alamat" => "required",
+            "keterangancoa" => "required",
+            "keterangancoapendapatan" => "required",
             "notelp" => ["required",Rule::unique('agen')->whereNotIn('id', [$this->id]),"min:11","max:13"],
             "contactperson" => "required",
             "top" => "required|numeric|gt:0|max:999",
@@ -65,6 +67,8 @@ class UpdateAgenRequest extends FormRequest
             "contactperson" => "nama kontak",
             "top" => "status pembayaran (top)",
             "statustas" => "status tas",
+            "keterangancoa" => "keterangan coa",
+            "keterangancoapendapatan" => "keterangan coa pendapatan",
             // "keteranganjenisemkl" => "jenis emkl",
         ];
     }
