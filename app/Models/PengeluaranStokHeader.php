@@ -31,6 +31,32 @@ class PengeluaranStokHeader extends MyModel
         $periode = request()->periode ?? '';
         $statusCetak = request()->statuscetak ?? '';
 
+        $user_id = auth('api')->user()->id ?? 0;
+
+        $temprole = '##temprole' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+        Schema::create($temprole, function ($table) {
+            $table->bigInteger('aco_id')->nullable();
+        });
+
+        $queryaco = db::table("useracl")->from(db::raw("useracl a with (readuncommitted)"))
+            ->select('a.aco_id')
+            ->join(db::raw("pengeluaranstok b with (readuncommitted)"), 'a.aco_id', 'b.aco_id')
+            ->where('a.user_id', $user_id);
+
+        DB::table($temprole)->insertUsing(['aco_id'], $queryaco);
+
+
+        $queryrole = db::table("acl")->from(db::raw("acl a with (readuncommitted)"))
+            ->select('a.aco_id')
+            ->join(db::raw("userrole b with (readuncommitted)"), 'a.role_id', 'b.role_id')
+            ->join(db::raw("pengeluaranstok c with (readuncommitted)"), 'a.aco_id', 'c.aco_id')
+            ->leftjoin(db::raw($temprole . " d "), 'a.aco_id', 'd.aco_id')
+            ->where('b.user_id', $user_id)
+            ->whereRaw("isnull(d.aco_id,0)=0");
+
+        DB::table($temprole)->insertUsing(['aco_id'], $queryrole);
+
+
         $spk = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'SPK STOK')->where('subgrp', 'SPK STOK')->first();
         $pst = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'PST STOK')->where('subgrp', 'PST STOK')->first();
         $gst = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'GST STOK')->where('subgrp', 'GST STOK')->first();
@@ -51,7 +77,9 @@ class PengeluaranStokHeader extends MyModel
             ->leftJoin('pelunasanhutangheader', 'pengeluaranstokheader.hutangbayar_nobukti', 'pelunasanhutangheader.nobukti')
             ->leftJoin('pengeluaranstokheader as pengeluaran', 'pengeluaranstokheader.pengeluaranstok_nobukti', 'pengeluaran.nobukti')
             ->leftJoin('serviceinheader', 'pengeluaranstokheader.servicein_nobukti', 'serviceinheader.nobukti')
-            ->leftJoin('supir', 'pengeluaranstokheader.supir_id', 'supir.id');
+            ->leftJoin('supir', 'pengeluaranstokheader.supir_id', 'supir.id')
+            ->join(db::raw($temprole . " d "), 'pengeluaranstok.aco_id', 'd.aco_id');
+
         if (request()->tgldari) {
             $query->whereBetween('pengeluaranstokheader.tglbukti', [date('Y-m-d', strtotime(request()->tgldari)), date('Y-m-d', strtotime(request()->tglsampai))]);
         }
