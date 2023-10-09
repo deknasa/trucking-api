@@ -78,6 +78,7 @@ class PengeluaranStokHeaderController extends Controller
                 "pengeluaranstok_id" => $request->pengeluaranstok_id,
                 "penerimaanstok_nobukti" => $request->penerimaanstok_nobukti,
                 "pengeluaranstok_nobukti" => $request->pengeluaranstok_nobukti,
+                "pengeluarantrucking_nobukti" => $request->pengeluarantrucking_nobukti,
                 "supplier" => $request->supplier,
                 "supplier_id" => $request->supplier_id,
                 "kerusakan" => $request->kerusakan,
@@ -102,11 +103,13 @@ class PengeluaranStokHeaderController extends Controller
                 "detail_statusoli" => $request->detail_statusoli,
                 "detail_vulkanisirke" => $request->detail_vulkanisirke,
                 "detail_keterangan" => $request->detail_keterangan,
-                "detail_qty" => $request->detail_qty,
+                "detail_statusban" => $request->statusban,
+                "detail_qty" => $request->detail_qty??$request->qty_afkir,
                 "detail_harga" => $request->detail_harga,
                 "detail_persentasediscount" => $request->detail_persentasediscount,
                 "totalItem" => $request->totalItem,
             ];
+            // dd($data);
             /* Store header */
             $pengeluaranStokHeader = (new PengeluaranStokHeader())->processStore($data);
             /* Set position and page */
@@ -153,6 +156,7 @@ class PengeluaranStokHeaderController extends Controller
                 "pengeluaranstok" => $request->pengeluaranstok,
                 "pengeluaranstok_id" => $request->pengeluaranstok_id,
                 "penerimaanstok_nobukti" => $request->penerimaanstok_nobukti,
+                "pengeluarantrucking_nobukti" => $request->pengeluarantrucking_nobukti,
                 "pengeluaranstok_nobukti" => $request->pengeluaranstok_nobukti,
                 "supplier" => $request->supplier,
                 "supplier_id" => $request->supplier_id,
@@ -172,13 +176,14 @@ class PengeluaranStokHeaderController extends Controller
                 "bank_id" => $request->bank_id,
                 "tglkasmasuk" => $request->tglkasmasuk,
                 "penerimaan_nobukti" => $request->penerimaan_nobukti,
-
+               
                 "detail_stok" => $request->detail_stok,
                 "detail_stok_id" => $request->detail_stok_id,
                 "detail_statusoli" => $request->detail_statusoli,
                 "detail_vulkanisirke" => $request->detail_vulkanisirke,
+                "detail_statusban" => $request->statusban,
+                "detail_qty" => $request->detail_qty??$request->qty_afkir,
                 "detail_keterangan" => $request->detail_keterangan,
-                "detail_qty" => $request->detail_qty,
                 "detail_harga" => $request->detail_harga,
                 "detail_persentasediscount" => $request->detail_persentasediscount,
                 "totalItem" => $request->totalItem,

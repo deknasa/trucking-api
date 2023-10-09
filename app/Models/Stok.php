@@ -104,6 +104,7 @@ class Stok extends MyModel
             'stok.keterangan',
             'stok.gambar',
             'stok.namaterpusat',
+            'statusban.text as statusban',
             'stok.modifiedby',
             'jenistrado.keterangan as jenistrado',
             'kelompok.kodekelompok as kelompok',
@@ -123,6 +124,7 @@ class Stok extends MyModel
             ->leftJoin('kategori', 'stok.kategori_id', 'kategori.id')
             ->leftJoin('parameter', 'stok.statusaktif', 'parameter.id')
             ->leftJoin(DB::raw("parameter as service with (readuncommitted)"), 'stok.statusservicerutin', 'service.id')
+            ->leftJoin(DB::raw("parameter as statusban with (readuncommitted)"), 'stok.statusban', 'statusban.id')
             ->leftJoin('merk', 'stok.merk_id', 'merk.id');
 
 

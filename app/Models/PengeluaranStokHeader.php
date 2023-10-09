@@ -51,6 +51,7 @@ class PengeluaranStokHeader extends MyModel
             ->leftJoin('pelunasanhutangheader', 'pengeluaranstokheader.hutangbayar_nobukti', 'pelunasanhutangheader.nobukti')
             ->leftJoin('pengeluaranstokheader as pengeluaran', 'pengeluaranstokheader.pengeluaranstok_nobukti', 'pengeluaran.nobukti')
             ->leftJoin('serviceinheader', 'pengeluaranstokheader.servicein_nobukti', 'serviceinheader.nobukti')
+            ->leftJoin('pengeluarantruckingheader', 'pengeluaranstokheader.pengeluarantrucking_nobukti', 'pengeluarantruckingheader.nobukti')
             ->leftJoin('supir', 'pengeluaranstokheader.supir_id', 'supir.id');
         if (request()->tgldari) {
             $query->whereBetween('pengeluaranstokheader.tglbukti', [date('Y-m-d', strtotime(request()->tgldari)), date('Y-m-d', strtotime(request()->tglsampai))]);
@@ -331,6 +332,7 @@ class PengeluaranStokHeader extends MyModel
             "$this->table.supplier_id",
             "$this->table.pengeluaranstok_nobukti",
             "$this->table.penerimaanstok_nobukti",
+            "$this->table.pengeluarantrucking_nobukti",
             "$this->table.penerimaan_nobukti",
             "$this->table.hutangbayar_nobukti",
             "$this->table.servicein_nobukti",
@@ -373,6 +375,8 @@ class PengeluaranStokHeader extends MyModel
             db::raw("cast(cast(format((cast((format(pengeluaran.tglbukti,'yyyy/MM')+'/1') as datetime)+32),'yyyy/MM')+'/01' as datetime)-1 as date) as tglsampaiheaderpengeluaran"),
             db::raw("cast((format(serviceinheader.tglbukti,'yyyy/MM')+'/1') as date) as tgldariheaderserviceinheader"),
             db::raw("cast(cast(format((cast((format(serviceinheader.tglbukti,'yyyy/MM')+'/1') as datetime)+32),'yyyy/MM')+'/01' as datetime)-1 as date) as tglsampaiheaderserviceinheader"),
+            db::raw("cast((format(pengeluarantruckingheader.tglbukti,'yyyy/MM')+'/1') as date) as tgldariheaderpengeluarantruckingheader"),
+            db::raw("cast(cast(format((cast((format(pengeluarantruckingheader.tglbukti,'yyyy/MM')+'/1') as datetime)+32),'yyyy/MM')+'/01' as datetime)-1 as date) as tglsampaiheaderpengeluarantruckingheader"),
 
         );
     }
@@ -397,6 +401,7 @@ class PengeluaranStokHeader extends MyModel
             ->leftJoin('pelunasanhutangheader', 'pengeluaranstokheader.hutangbayar_nobukti', 'pelunasanhutangheader.nobukti')
             ->leftJoin('pengeluaranstokheader as pengeluaran', 'pengeluaranstokheader.pengeluaranstok_nobukti', 'pengeluaran.nobukti')
             ->leftJoin('serviceinheader', 'pengeluaranstokheader.servicein_nobukti', 'serviceinheader.nobukti')
+            ->leftJoin('pengeluarantruckingheader', 'pengeluaranstokheader.pengeluarantrucking_nobukti', 'pengeluarantruckingheader.nobukti')
             ->leftJoin('supir', 'pengeluaranstokheader.supir_id', 'supir.id');
 
         $data = $query->where("$this->table.id", $id)->first();
@@ -570,11 +575,12 @@ class PengeluaranStokHeader extends MyModel
         $pja = Parameter::where('grp', 'PENJUALAN STOK AFKIR')->where('subgrp', 'PENJUALAN STOK AFKIR')->first();
         $gst = Parameter::where('grp', 'GST STOK')->where('subgrp', 'GST STOK')->first();
         $korv = DB::table('pengeluaranstok')->where('kodepengeluaran', 'KORV')->first();
+        $afkir = DB::table('pengeluaranstok')->where('kodepengeluaran', 'AFKIR')->first();
 
         if ($korv->id == $data['pengeluaranstok_id']) {
             $data['gudang_id'] =  Parameter::where('grp', 'GUDANG KANTOR')->where('subgrp', 'GUDANG KANTOR')->first()->text;
         }
-        if ($pja->text == $data['pengeluaranstok_id']) {
+        if ($pja->text == $data['pengeluaranstok_id'] && $afkir->id == $data['pengeluaranstok_id']) {
             $data['gudang_id'] =  Parameter::where('grp', 'GUDANG SEMENTARA')->where('subgrp', 'GUDANG SEMENTARA')->first()->text;
         }
         $bank_id = $data['bank_id'] ?? 0;
@@ -594,6 +600,7 @@ class PengeluaranStokHeader extends MyModel
         $pengeluaranStokHeader->supplier_id         = ($data['supplier_id'] == null) ? "" : $data['supplier_id'];
         $pengeluaranStokHeader->pengeluaranstok_nobukti = ($data['pengeluaranstok_nobukti'] == null) ? "" : $data['pengeluaranstok_nobukti'];
         $pengeluaranStokHeader->penerimaanstok_nobukti  = $penerimaanstok_nobukti;
+        $pengeluaranStokHeader->pengeluarantrucking_nobukti  = $data['pengeluarantrucking_nobukti'];
         $pengeluaranStokHeader->servicein_nobukti    = $servicein_nobukti;
         $pengeluaranStokHeader->kerusakan_id         = ($data['kerusakan_id'] == null) ? "" : $data['kerusakan_id'];
         $pengeluaranStokHeader->statusformat      = ($statusformat == null) ? "" : $statusformat;
@@ -616,7 +623,7 @@ class PengeluaranStokHeader extends MyModel
         /*STORE DETAIL*/
         $potongHutang = Parameter::where('grp', 'STATUS POTONG RETUR')->where('text', 'POTONG HUTANG')->first();
         $pengeluaranStokDetails = [];
-        if (!$data['detail_harga']) {
+        if (!$data['detail_stok_id']) {
             throw new \Exception("Error storing pengeluaran Stok Detail.");
         }
         if ($idpengeluaran == $kor->text) {
@@ -647,17 +654,19 @@ class PengeluaranStokHeader extends MyModel
 
 
 
-        for ($i = 0; $i < count($data['detail_harga']); $i++) {
+        for ($i = 0; $i < count($data['detail_stok_id']); $i++) {
             $pengeluaranStokDetail = (new PengeluaranStokDetail())->processStore($pengeluaranStokHeader, [
                 "pengeluaranstokheader_id" => $pengeluaranStokHeader->id,
                 "nobukti" => $pengeluaranStokHeader->nobukti,
                 "stok_id" => $data['detail_stok_id'][$i],
-                "qty" => $data['detail_qty'][$i],
-                "harga" => $data['detail_harga'][$i],
-                "persentasediscount" => $data['detail_persentasediscount'][$i],
+                "qty" => ($data['detail_qty'])?$data['detail_qty'][$i]:null,
+                "harga" => ($data['detail_harga'])?$data['detail_harga'][$i]:null,
+                "persentasediscount" => ($data['detail_persentasediscount'])?$data['detail_persentasediscount'][$i]:null,
                 'statusoli' => ($fetchFormat->kodepengeluaran == 'SPK') ? $data['detail_statusoli'][$i] : "",
-                "vulkanisirke" => $data['detail_vulkanisirke'][$i],
-                "detail_keterangan" => $data['detail_keterangan'][$i],
+                "vulkanisirke" => ($data['detail_vulkanisirke'])?$data['detail_vulkanisirke'][$i]:null,
+                "statusban" => ($data['detail_statusban'])?$data['detail_statusban'][$i]:null,
+                "detail_keterangan" => ($data['detail_keterangan'])?$data['detail_keterangan'][$i]:null,
+                "detail_statusban" => ($data['detail_statusban'])?$data['detail_statusban'][$i]:null,
                 "trado_id" => ($trado_id == null) ? 0 : $trado_id,
                 "gandengan_id" => ($gandengan_id == null) ? 0 : $gandengan_id,
                 "gudang_id" => ($gudang_id == null) ? 0 : $gudang_id,
@@ -1073,6 +1082,7 @@ class PengeluaranStokHeader extends MyModel
         $rtr = Parameter::where('grp', 'RETUR STOK')->where('subgrp', 'RETUR STOK')->first();
         $pja = Parameter::where('grp', 'PENJUALAN STOK AFKIR')->where('subgrp', 'PENJUALAN STOK AFKIR')->first();
         $korv = DB::table('pengeluaranstok')->where('kodepengeluaran', 'KORV')->first();
+        $afkir = DB::table('pengeluaranstok')->where('kodepengeluaran', 'AFKIR')->first();
 
         if (array_key_exists("statuspotongretur", $data)) {
             $statuspotongretur = $data['statuspotongretur'];
@@ -1115,6 +1125,7 @@ class PengeluaranStokHeader extends MyModel
         $pengeluaranStokHeader->supplier_id         = ($data['supplier_id'] == null) ? "" : $data['supplier_id'];
         $pengeluaranStokHeader->pengeluaranstok_nobukti = ($data['pengeluaranstok_nobukti'] == null) ? "" : $data['pengeluaranstok_nobukti'];
         $pengeluaranStokHeader->penerimaanstok_nobukti  = $penerimaanstok_nobukti;
+        $pengeluaranStokHeader->pengeluarantrucking_nobukti  = $data['pengeluarantrucking_nobukti'];        
         $pengeluaranStokHeader->servicein_nobukti    = $servicein_nobukti;
         $pengeluaranStokHeader->kerusakan_id         = ($data['kerusakan_id'] == null) ? "" : $data['kerusakan_id'];
         $pengeluaranStokHeader->statusformat      = ($statusformat == null) ? "" : $statusformat;
@@ -1180,7 +1191,7 @@ class PengeluaranStokHeader extends MyModel
 
         /*STORE DETAIL*/
         $pengeluaranStokDetails = [];
-        if (!$data['detail_harga']) {
+        if (!$data['detail_stok_id']) {
             throw new \Exception("Error storing pengeluaran Stok Detail.");
         }
         if ($idpengeluaran == $kor->text) {
@@ -1211,19 +1222,21 @@ class PengeluaranStokHeader extends MyModel
             ->select('a.urutfifo')->where('a.id', $pengeluaranstok_id)->first()->urutfifo ?? 0;
 
 
-        for ($i = 0; $i < count($data['detail_harga']); $i++) {
-            $total = $data['detail_harga'][$i] * $data['detail_qty'][$i];
+        for ($i = 0; $i < count($data['detail_stok_id']); $i++) {
+            // $total = $data['detail_harga'][$i] * $data['detail_qty'][$i];
 
             $pengeluaranStokDetail = (new PengeluaranStokDetail())->processStore($pengeluaranStokHeader, [
                 "pengeluaranstokheader_id" => $pengeluaranStokHeader->id,
                 "nobukti" => $pengeluaranStokHeader->nobukti,
                 "stok_id" => $data['detail_stok_id'][$i],
-                "qty" => $data['detail_qty'][$i],
-                "harga" => $data['detail_harga'][$i],
-                "persentasediscount" => $data['detail_persentasediscount'][$i],
+                "qty" => ($data['detail_qty'])?$data['detail_qty'][$i]:null,
+                "harga" => ($data['detail_harga'])?$data['detail_harga'][$i]:null,
+                "persentasediscount" => ($data['detail_persentasediscount'])?$data['detail_persentasediscount'][$i]:null,
                 'statusoli' => ($fetchFormat->kodepengeluaran == 'SPK') ? $data['detail_statusoli'][$i] : "",
-                "vulkanisirke" => $data['detail_vulkanisirke'][$i],
-                "detail_keterangan" => $data['detail_keterangan'][$i],
+                "vulkanisirke" => ($data['detail_vulkanisirke'])?$data['detail_vulkanisirke'][$i]:null,
+                "statusban" => ($data['detail_statusban'])?$data['detail_statusban'][$i]:null,
+                "detail_keterangan" => ($data['detail_keterangan'])?$data['detail_keterangan'][$i]:null,
+                "detail_statusban" => ($data['detail_statusban'])?$data['detail_statusban'][$i]:null,
                 "trado_id" => ($trado_id == null) ? "" : $trado_id,
                 "gandengan_id" => ($gandengan_id == null) ? "" : $gandengan_id,
                 "gudang_id" => ($gudang_id == null) ? "" : $gudang_id,
@@ -1232,8 +1245,8 @@ class PengeluaranStokHeader extends MyModel
             $pengeluaranStokDetails[] = $pengeluaranStokDetail->toArray();
             $coadebet_detail[] = $memo['JURNAL'];
             $coakredit_detail[] = $memokredit['JURNAL'];
-            $nominal_detail[] = $total;
-            $summaryDetail += $total;
+            $nominal_detail[] = $pengeluaranStokDetail->total;
+            $summaryDetail += $pengeluaranStokDetail->total;
             $keterangan_detail[] = $data['detail_keterangan'][$i] ?? 'PENGELUARAN STOK RETUR';
 
             $ksgudang_id = $gudang_id ?? 0;

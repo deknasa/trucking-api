@@ -163,6 +163,10 @@ class PengeluaranTruckingHeader extends MyModel
         $this->setRequestParameters();
         $periode = request()->periode ?? '';
         $statusCetak = request()->statuscetak ?? '';
+
+        $afkir = Parameter::from(DB::raw("pengeluaranstok with (readuncommitted)"))->where('kodepengeluaran', 'AFKIR')->first();
+        
+
         $query = DB::table($this->table)->from(DB::raw("pengeluarantruckingheader with (readuncommitted)"))
             ->select(
                 'pengeluarantruckingheader.id',
@@ -205,6 +209,13 @@ class PengeluaranTruckingHeader extends MyModel
             ->leftJoin(DB::raw("penerimaantruckingheader with (readuncommitted)"), 'penerimaantruckingdetail.penerimaantruckingheader_id', 'penerimaantruckingheader.id');
 
 
+        if (request()->pengeluaranstok_id && request()->pengeluaranstok_id == $afkir->id) {
+            $query
+            ->addSelect('pengeluarantruckingdetail.qty')
+            ->addSelect('pengeluarantruckingdetail.harga')
+            ->leftJoin(DB::raw("pengeluarantruckingdetail with (readuncommitted)"), 'pengeluarantruckingheader.id', 'pengeluarantruckingdetail.pengeluarantruckingheader_id')
+            ->where("pengeluarantruckingdetail.stok_id", request()->stok_id);
+        }
         if (request()->tgldari) {
             $query->whereBetween('pengeluarantruckingheader.tglbukti', [date('Y-m-d', strtotime(request()->tgldari)), date('Y-m-d', strtotime(request()->tglsampai))]);
         }
