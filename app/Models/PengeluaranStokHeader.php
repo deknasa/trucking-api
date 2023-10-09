@@ -78,8 +78,6 @@ class PengeluaranStokHeader extends MyModel
             ->leftJoin('pengeluaranstokheader as pengeluaran', 'pengeluaranstokheader.pengeluaranstok_nobukti', 'pengeluaran.nobukti')
             ->leftJoin('serviceinheader', 'pengeluaranstokheader.servicein_nobukti', 'serviceinheader.nobukti')
             ->leftJoin('pengeluarantruckingheader', 'pengeluaranstokheader.pengeluarantrucking_nobukti', 'pengeluarantruckingheader.nobukti')
-            ->leftJoin('supir', 'pengeluaranstokheader.supir_id', 'supir.id');
-
             ->leftJoin('supir', 'pengeluaranstokheader.supir_id', 'supir.id')
             ->join(db::raw($temprole . " d "), 'pengeluaranstok.aco_id', 'd.aco_id');
 
