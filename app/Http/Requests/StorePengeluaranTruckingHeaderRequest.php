@@ -109,12 +109,25 @@ class StorePengeluaranTruckingHeaderRequest extends FormRequest
                     ->where('keterangan','LIKE', "%klaim%")
                     ->first();
             if ($klaim) {
+
+                // dd(
+                //     $this->input('tradoheader_id'),
+                //     $this->input('gandenganheader_id')
+                // );
                 if ($klaim->id ==  $this->pengeluarantrucking_id) {
+                    $salahSatuDari = Rule::requiredIf(function ()  {
+                        if ( empty($this->input('tradoheader_id')) && empty($this->input('gandenganheader_id')) ) {
+                            return true;
+                        }
+                        return false;
+                    });
                     $rulseKlaim =[
                         "supirheader_id" =>"required",
                         "supirheader" =>"required",
-                        "tradoheader_id" =>"required",
-                        "trado" =>"required",
+                        "tradoheader_id" =>$salahSatuDari,
+                        "gandenganheader_id" =>$salahSatuDari,
+                        "trado" =>$salahSatuDari,
+                        "gandengan" =>$salahSatuDari,
                         "postingpinjaman" =>"required",
                     ];    
                 }
