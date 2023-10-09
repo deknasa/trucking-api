@@ -112,6 +112,7 @@ class PengeluaranStokDetail extends MyModel
             'PengeluaranStokDetail.keterangan',
             'PengeluaranStokDetail.statusoli',
             'PengeluaranStokDetail.vulkanisirke',
+            "PengeluaranStokDetail.statusban",
             'PengeluaranStokDetail.modifiedby',
         )
             ->leftJoin('stok', 'PengeluaranStokDetail.stok_id', 'stok.id')
@@ -292,6 +293,7 @@ class PengeluaranStokDetail extends MyModel
         $pengeluaranStokDetail->persentasediscount = $data['persentasediscount'];
         $pengeluaranStokDetail->vulkanisirke = $data['vulkanisirke'];
         $pengeluaranStokDetail->statusoli = $data['statusoli'];
+        $pengeluaranStokDetail->statusban = $data['statusban'];
         $pengeluaranStokDetail->keterangan = $data['detail_keterangan'];
         $pengeluaranStokDetail->statusservicerutin = $idstatusservicerutin;
 
