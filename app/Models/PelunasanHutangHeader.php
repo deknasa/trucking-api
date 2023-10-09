@@ -548,7 +548,7 @@ class PelunasanHutangHeader extends MyModel
         $supplier = $querysupplier->namasupplier ?? '';
 
         $statusketerangan = $statusketerangan->text ?? '';
-
+        $total = 0;
         for ($i = 0; $i < count($data['hutang_id']); $i++) {
             $hutang = HutangDetail::where('nobukti', $data['hutang_nobukti'][$i])->first();
 
@@ -564,15 +564,8 @@ class PelunasanHutangHeader extends MyModel
                 'modifiedby' => $PelunasanHutangHeader->modifiedby
             ]);
             $PelunasanHutangDetails[] = $PelunasanHutangDetail->toArray();
-            $nominal_detail[] = $data['bayar'][$i] - $data['potongan'][$i];
+            $total = $total + ($data['bayar'][$i] - $data['potongan'][$i]);
             $keterangan_detail[] = $data['keterangan'][$i];
-            $coadebet[] = $data['coadebet'] ?? $coa;
-            if ($bank != null) {
-                $coakredit[] = $data['coakredit'] ?? $coakredits;
-            }
-            $tgljatuhtempo[] = $hutang->tgljatuhtempo;
-            $nowarkat[] = "";
-            $statusketerangandefault[] = $statusketerangan . ' ' . $supplier . ' ' . $data['keterangan'][$i];
         }
         (new LogTrail())->processStore([
             'namatabel' => strtoupper($PelunasanHutangDetail->getTable()),
@@ -587,6 +580,14 @@ class PelunasanHutangHeader extends MyModel
         /*STORE PENGELUARAN*/
         $supplier = Supplier::from(DB::raw("supplier with (readuncommitted)"))->where('id', $data['supplier_id'])->first();
         if ($bayarhutang == $statusbayarhutang) {
+            $coadebet[] = $data['coadebet'] ?? $coa;
+            if ($bank != null) {
+                $coakredit[] = $data['coakredit'] ?? $coakredits;
+            }
+            $tgljatuhtempo[] = $hutang->tgljatuhtempo;
+            $nowarkat[] = "";
+            $nominal_detail[] = $total;
+            $statusketerangandefault[] = $statusketerangan . ' ' . $supplier->namasupplier . ' ' . $data['keterangan'][0];
             $pengeluaranRequest = [
                 'tglbukti' => date('Y-m-d', strtotime($data['tglbukti'])),
                 'pelanggan_id' => 0,
@@ -740,6 +741,30 @@ class PelunasanHutangHeader extends MyModel
         $tgljatuhtempo = [];
         $nowarkat = [];
 
+        $statusketerangan = DB::table('parameter')->from(
+            db::raw("parameter a with (readuncommitted)")
+        )
+            ->select(
+                'a.text'
+            )
+            ->where('grp', '=', 'KETERANGAN DEFAULT HUTANG USAHA')
+            ->where('subgrp', '=', 'KETERANGAN DEFAULT HUTANG USAHA')
+            ->first();
+
+        $querysupplier = DB::table('PelunasanHutangheader')->from(
+            db::raw("PelunasanHutangheader a with (readuncommitted)")
+        )
+            ->select(
+                'b.namasupplier'
+            )
+            ->join(DB::raw("supplier b with (readuncommitted)"), 'a.supplier_id', 'b.id')
+            ->where('a.id', '=', $PelunasanHutangHeader->id)
+            ->first();
+
+        $supplier = $querysupplier->namasupplier ?? '';
+
+        $statusketerangan = $statusketerangan->text ?? '';
+        $total = 0;
         for ($i = 0; $i < count($data['hutang_id']); $i++) {
             $hutang = HutangDetail::where('nobukti', $data['hutang_nobukti'][$i])->first();
 
@@ -756,18 +781,20 @@ class PelunasanHutangHeader extends MyModel
             ]);
 
             $PelunasanHutangDetails[] = $PelunasanHutangDetail->toArray();
-            $nominal_detail[] = $data['bayar'][$i] - $data['potongan'][$i];
+            $total = $total + ($data['bayar'][$i] - $data['potongan'][$i]);
             $keterangan_detail[] = $data['keterangan'][$i];
-            $coadebet[] = $coa;
-            $coakredit[] = $coakredits;
-            $tgljatuhtempo[] = $hutang->tgljatuhtempo;
-            $nowarkat[] = "";
         }
 
         /*STORE PENGELUARAN*/
         $supplier = Supplier::from(DB::raw("supplier with (readuncommitted)"))->where('id', $data['supplier_id'])->first();
 
         if ($bayarhutang == $statusbayarhutang) {
+            $coadebet[] = $coa;
+            $coakredit[] = $coakredits;
+            $tgljatuhtempo[] = $hutang->tgljatuhtempo;
+            $nowarkat[] = "";
+            $nominal_detail[] = $total;
+            $statusketerangandefault[] = $statusketerangan . ' ' . $supplier->namasupplier . ' ' . $data['keterangan'][0];
             $pengeluaranRequest = [
                 'tglbukti' => $PelunasanHutangHeader->tglbukti,
                 'pelanggan_id' => 0,
@@ -787,7 +814,7 @@ class PelunasanHutangHeader extends MyModel
                 "nominal_detail" => $nominal_detail,
                 "coadebet" => $coadebet,
                 "coakredit" => $coakredit,
-                "keterangan_detail" => $keterangan_detail,
+                "keterangan_detail" => $statusketerangandefault,
                 "bulanbeban"
             ];
 

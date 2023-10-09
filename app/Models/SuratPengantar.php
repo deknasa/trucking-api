@@ -1878,11 +1878,11 @@ class SuratPengantar extends MyModel
                 'modifiedby' => auth('api')->user()->user
             ]);
 
-            if ($data['nominal'][0] != 0) {
+            if ($data['keterangan_detail'][0] != '') {
 
                 SuratPengantarBiayaTambahan::where('suratpengantar_id', $suratPengantar->id)->lockForUpdate()->delete();
                 $suratPengantarBiayaTambahans = [];
-                for ($i = 0; $i < count($data['nominal']); $i++) {
+                for ($i = 0; $i < count($data['keterangan_detail']); $i++) {
                     $suratPengantarBiayaTambahan = (new SuratPengantarBiayaTambahan())->processStore($suratPengantar, [
                         'keteranganbiaya' => $data['keterangan_detail'][$i],
                         'nominal' => $data['nominal'][$i],

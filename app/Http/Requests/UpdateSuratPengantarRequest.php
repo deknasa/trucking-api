@@ -87,7 +87,7 @@ class UpdateSuratPengantarRequest extends FormRequest
         $getUpahZona = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS UPAH ZONA')->where('text', 'UPAH ZONA')->first();
         $getPeralihan = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS PERALIHAN')->where('text', 'PERALIHAN')->first();
 
-       
+
         $rules = [
             'tglbukti' => [
                 'required', 'date_format:d-m-Y',
@@ -772,26 +772,32 @@ class UpdateSuratPengantarRequest extends FormRequest
                 'upah_id' => ['required', 'numeric', 'min:1', new ExistUpahSupirRincianSuratPengantar()]
             ];
         }
+        $relatedRequests = [
+            StoreSuratPengantarBiayaTambahanRequest::class
+        ];
 
-        $rule = array_merge(
-            $rules,
-            $rulescontainer_id,
-            $rulesjobtrucking,
-            $rulestrado_id,
-            $rulessupir_id,
-            // $rulesgandengan_id,
-            $rulesdari_id,
-            $rulessampai_id,
-            $rulesstatuscontainer_id,
-            $rulespelanggan_id,
-            $rulesagen_id,
-            $rulesjenisorder_id,
-            $rulestarifrincian_id,
-            $rulesUpah_id,
-            $rulesStatusPeralihan
-        );
+        foreach ($relatedRequests as $relatedRequest) {
+            $rules = array_merge(
+                $rules,
+                (new $relatedRequest)->rules(),
+                $rulescontainer_id,
+                $rulesjobtrucking,
+                $rulestrado_id,
+                $rulessupir_id,
+                // $rulesgandengan_id,
+                $rulesdari_id,
+                $rulessampai_id,
+                $rulesstatuscontainer_id,
+                $rulespelanggan_id,
+                $rulesagen_id,
+                $rulesjenisorder_id,
+                $rulestarifrincian_id,
+                $rulesUpah_id,
+                $rulesStatusPeralihan
+            );
+        }
 
-        return $rule;
+        return $rules;
     }
 
     public function attributes()
