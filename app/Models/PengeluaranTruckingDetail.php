@@ -89,11 +89,15 @@ class PengeluaranTruckingDetail extends MyModel
                 'stok.namastok as stok',
                 $this->table . '.qty',
                 $this->table . '.harga',
+                $this->table . '.total',
+                $this->table . '.nominaltambahan',
+                $this->table . '.keterangantambahan',
                 // 'pengeluaranstokheader.id as pengeluaranstokheader_id',
                 $this->table . '.orderantrucking_nobukti',
                 DB::raw("(case when pengeluarantruckingdetail.nominaltagih IS NULL then 0 else pengeluarantruckingdetail.nominaltagih end) as nominaltagih"),
                 $this->table . '.suratpengantar_nobukti',
                 $this->table . '.pengeluaranstok_nobukti',
+                $this->table . '.penerimaanstok_nobukti',
                 DB::raw("container.keterangan as container"),
                 'supir.namasupir as supir_id',
                 'karyawan.namakaryawan as karyawan_id',
@@ -143,24 +147,24 @@ class PengeluaranTruckingDetail extends MyModel
     {
         if ($kodepengeluaran == 'BBT') {
             $query = DB::table('pengeluarantruckingdetail')->from(DB::raw("pengeluarantruckingdetail with (readuncommitted)"))
-            ->select(
-                'pengeluarantruckingdetail.pengeluarantruckingheader_id',
-                'pengeluarantruckingdetail.nominal',
-                'pengeluarantruckingdetail.keterangan',
-                'pengeluarantruckingdetail.suratpengantar_nobukti',
-                'trado.kodetrado as trado_id',
-                'container.kodecontainer as container_id',
-                'pelanggan.kodepelanggan as pelanggan_id',
-                'pengeluarantruckingdetail.nominaltagih',
-                'pengeluarantruckingdetail.statustitipanemkl',
+                ->select(
+                    'pengeluarantruckingdetail.pengeluarantruckingheader_id',
+                    'pengeluarantruckingdetail.nominal',
+                    'pengeluarantruckingdetail.keterangan',
+                    'pengeluarantruckingdetail.suratpengantar_nobukti',
+                    'trado.kodetrado as trado_id',
+                    'container.kodecontainer as container_id',
+                    'pelanggan.kodepelanggan as pelanggan_id',
+                    'pengeluarantruckingdetail.nominaltagih',
+                    'pengeluarantruckingdetail.statustitipanemkl',
 
 
-            )
-            ->leftJoin(DB::raw("suratpengantar with (readuncommitted)"), 'suratpengantar.nobukti', 'pengeluarantruckingdetail.suratpengantar_nobukti')
-            ->leftJoin(DB::raw("container with (readuncommitted)"), 'suratpengantar.container_id', 'container.id')
-            ->leftJoin(DB::raw("pelanggan with (readuncommitted)"), 'suratpengantar.pelanggan_id', 'pelanggan.id')
-            ->leftJoin(DB::raw("trado with (readuncommitted)"), 'pengeluarantruckingdetail.trado_id', 'trado.id')
-            ->where('pengeluarantruckingdetail.pengeluarantruckingheader_id', '=', $id);
+                )
+                ->leftJoin(DB::raw("suratpengantar with (readuncommitted)"), 'suratpengantar.nobukti', 'pengeluarantruckingdetail.suratpengantar_nobukti')
+                ->leftJoin(DB::raw("container with (readuncommitted)"), 'suratpengantar.container_id', 'container.id')
+                ->leftJoin(DB::raw("pelanggan with (readuncommitted)"), 'suratpengantar.pelanggan_id', 'pelanggan.id')
+                ->leftJoin(DB::raw("trado with (readuncommitted)"), 'pengeluarantruckingdetail.trado_id', 'trado.id')
+                ->where('pengeluarantruckingdetail.pengeluarantruckingheader_id', '=', $id);
         } else {
 
 
@@ -171,16 +175,19 @@ class PengeluaranTruckingDetail extends MyModel
                     'pengeluarantruckingdetail.keterangan',
                     'pengeluarantruckingdetail.penerimaantruckingheader_nobukti',
                     'pengeluarantruckingdetail.pengeluaranstok_nobukti',
+                    'pengeluarantruckingdetail.penerimaanstok_nobukti',
                     'pengeluarantruckingdetail.stok_id',
                     'stok.namastok as stok',
                     'pengeluarantruckingdetail.qty',
                     'pengeluarantruckingdetail.harga',
+                    'pengeluarantruckingdetail.total',
                     'pengeluaranstokheader.id as pengeluaranstokheader_id',
                     DB::raw("pengeluarantruckingdetail.id as id_detail"),
                     DB::raw("pengeluarantruckingdetail.invoice_nobukti as noinvoice_detail"),
                     DB::raw("pengeluarantruckingdetail.orderantrucking_nobukti as nojobtrucking_detail"),
                     DB::raw("container.keterangan as container_detail"),
                     DB::raw("pengeluarantruckingdetail.nominal as nominal_detail"),
+                    DB::raw("pengeluarantruckingdetail.nominaltambahan"),
                     DB::raw("
                     (SELECT MAX(qty)
                     FROM pengeluaranstokdetail
@@ -196,6 +203,7 @@ class PengeluaranTruckingDetail extends MyModel
                     'trado.kodetrado as trado_id',
                     'pengeluarantruckingdetail.nominaltagih',
                     'pengeluarantruckingdetail.statustitipanemkl',
+                    'pengeluarantruckingdetail.keterangantambahan',
 
 
                 )
@@ -286,28 +294,32 @@ class PengeluaranTruckingDetail extends MyModel
     }
     public function processStore(PengeluaranTruckingHeader $pengeluaranTruckingHeader, array $data): PengeluaranTruckingDetail
     {
-
         $suratpengantar_nobukti = null;
         $trado_id = null;
         $container_id = null;
         $pelanggan_id = null;
         $nominaltagih = null;
         $jenisorder = null;
-        if ($data['suratpengantar_nobukti']) {
-            $suratpengantar = SuratPengantar::where('nobukti', $data['suratpengantar_nobukti'])->first();
-            if (!$suratpengantar) {
-                $suratpengantar = DB::table('saldosuratpengantar')->from(
-                    DB::raw("saldosuratpengantar suratpengantar with (readuncommitted)")
-                )->where('nobukti', $data['suratpengantar_nobukti'])->first();
-            }
-            $suratpengantar_nobukti = $suratpengantar->nobukti;
-            $trado_id = $suratpengantar->trado_id;
-            $container_id = $suratpengantar->container_id;
-            $pelanggan_id = $suratpengantar->pelanggan_id;
-            $nominaltagih = $data['nominaltagih'];
-            $jenisorder = $suratpengantar->jenisorder_id;
-        }
 
+        if ($pengeluaranTruckingHeader->pengeluarantrucking_id == 9) {          
+            if ($data['suratpengantar_nobukti']) {
+                $suratpengantar = SuratPengantar::where('nobukti', $data['suratpengantar_nobukti'])->first();
+                if (!$suratpengantar) {
+                    $suratpengantar = DB::table('saldosuratpengantar')->from(
+                        DB::raw("saldosuratpengantar suratpengantar with (readuncommitted)")
+                    )->where('nobukti', $data['suratpengantar_nobukti'])->first();
+                }
+                $suratpengantar_nobukti = $suratpengantar->nobukti;
+                $trado_id = $suratpengantar->trado_id;
+                $container_id = $suratpengantar->container_id;
+                $pelanggan_id = $suratpengantar->pelanggan_id;
+                $nominaltagih = $data['nominaltagih'];
+                $jenisorder = $suratpengantar->jenisorder_id;
+            }
+        }
+        if ($pengeluaranTruckingHeader->pengeluarantrucking_id == 7) {
+            $nominaltagih = $data['nominaltagih'];
+        }
         $pengeluaranTruckingDetail = new PengeluaranTruckingDetail();
         $pengeluaranTruckingDetail->pengeluarantruckingheader_id = $data['pengeluarantruckingheader_id'];
         $pengeluaranTruckingDetail->nobukti = $data['nobukti'];
@@ -316,8 +328,12 @@ class PengeluaranTruckingDetail extends MyModel
         $pengeluaranTruckingDetail->penerimaantruckingheader_nobukti = $data['penerimaantruckingheader_nobukti'] ?? "";
         $pengeluaranTruckingDetail->stok_id = $data['stok_id'] ?? 0;
         $pengeluaranTruckingDetail->pengeluaranstok_nobukti = $data['pengeluaranstok_nobukti'] ?? "";
+        $pengeluaranTruckingDetail->penerimaanstok_nobukti = $data['penerimaanstok_nobukti'] ?? "";
         $pengeluaranTruckingDetail->qty = $data['qty'] ?? 0;
         $pengeluaranTruckingDetail->harga = $data['harga'] ?? 0;
+        $pengeluaranTruckingDetail->total = $data['total'] ?? 0;
+        $pengeluaranTruckingDetail->nominaltambahan = $data['nominaltambahan'] ?? 0;
+        $pengeluaranTruckingDetail->keterangantambahan = $data['keterangantambahan'] ?? "";
         $pengeluaranTruckingDetail->trado_id = $data['trado_id'] ?? 0;
         $pengeluaranTruckingDetail->keterangan = $data['keterangan'];
         $pengeluaranTruckingDetail->invoice_nobukti = $data['invoice_nobukti'];
@@ -354,17 +370,102 @@ class PengeluaranTruckingDetail extends MyModel
     public function cekTitipanEMKL($statusTitipan, $suratPengantar, $id)
     {
 
-        $cekTitipan = DB::table("pengeluarantruckingdetail")->from(DB::raw("pengeluarantruckingdetail as a with (readuncommitted)"))
-            ->select('a.id', 'a.suratpengantar_nobukti', 'a.statustitipanemkl')
-            ->leftJoin(DB::raw("suratpengantar as b with (readuncommitted)"), 'a.suratpengantar_nobukti', 'b.nobukti')
-            ->whereRaw("(statusapprovalbiayatitipanemkl IS NULL or statusapprovalbiayatitipanemkl=4)")
-            ->where('a.suratpengantar_nobukti', $suratPengantar)
-            ->where('a.statustitipanemkl', $statusTitipan);
+        $querysp = db::table("suratpengantar")->from(db::raw("suratpengantar a with (readuncommitted)"))
+            ->select(
+                'a.id'
+            )
+            ->where('nobukti', $suratPengantar)
+            ->first();
+        if (isset($querysp)) {
+            $quesp = DB::table("suratpengantar")->from(db::raw("suratpengantar a with (readuncommitted)"))
+                ->select(
+                    'a.id',
+                    db::raw("(case when isnull(a.tglbatasbiayatitipanemkl,'1900/1/1')>=getdate() then 1 else 0 end) as statusbuka")
+                )
+                ->where('a.nobukti', $suratPengantar)
+                ->whereRaw("(isnull(statusapprovalbiayatitipanemkl,0)=3)")
+                ->first();
+            if (isset($quesp)) {
+                if ($quesp->statusbuka == 1) {
+                    $cekTitipan = null;
+                } else {
+                    $cekTitipan = DB::table("pengeluarantruckingdetail")->from(DB::raw("pengeluarantruckingdetail as a with (readuncommitted)"))
+                        ->select(
+                            'a.id',
+                            'a.suratpengantar_nobukti',
+                            'a.statustitipanemkl',
+                            db::raw("(case when isnull(b.tglbatasbiayatitipanemkl,'1900/1/1')<=getdate() then 1 else 0 end) as statusbuka")
+                        )
+                        ->leftJoin(DB::raw("suratpengantar as b with (readuncommitted)"), 'a.suratpengantar_nobukti', 'b.nobukti')
+                        ->whereRaw("(isnull(statusapprovalbiayatitipanemkl,0)<>4)")
+                        ->where('a.suratpengantar_nobukti', $suratPengantar)
+                        ->where('a.statustitipanemkl', $statusTitipan);
+                }
+            } else {
+                $cekTitipan = DB::table("pengeluarantruckingdetail")->from(DB::raw("pengeluarantruckingdetail as a with (readuncommitted)"))
+                    ->select(
+                        'a.id',
+                        'a.suratpengantar_nobukti',
+                        'a.statustitipanemkl',
+                        db::raw("(case when isnull(b.tglbatasbiayatitipanemkl,'1900/1/1')<=getdate() then 1 else 0 end) as statusbuka")
+                    )
+                    ->leftJoin(DB::raw("suratpengantar as b with (readuncommitted)"), 'a.suratpengantar_nobukti', 'b.nobukti')
+                    ->whereRaw("(isnull(statusapprovalbiayatitipanemkl,0)<>3)")
+                    ->where('a.suratpengantar_nobukti', $suratPengantar)
+                    ->where('a.statustitipanemkl', $statusTitipan);
+            }
+        } else {
+            $quesp = DB::table("saldosuratpengantar")->from(db::raw("saldosuratpengantar a with (readuncommitted)"))
+                ->select(
+                    'a.id',
+                    db::raw("(case when isnull(a.tglbatasbiayatitipanemkl,'1900/1/1')>=getdate() then 1 else 0 end) as statusbuka"),
+                    'a.tglbatasbiayatitipanemkl'
+                )
+                ->where('a.nobukti', $suratPengantar)
+                ->whereRaw("(isnull(statusapprovalbiayatitipanemkl,0)=3)")
+                ->first();
+            if (isset($quesp)) {
+                // dd($quesp->statusbuka);
+                if ($quesp->statusbuka == 1) {
+                    $cekTitipan = null;
+                    $id = null;
+                } else {
+                    $cekTitipan = DB::table("pengeluarantruckingdetail")->from(DB::raw("pengeluarantruckingdetail as a with (readuncommitted)"))
+                        ->select(
+                            'a.id',
+                            'a.suratpengantar_nobukti',
+                            'a.statustitipanemkl',
+                            db::raw("(case when isnull(b.tglbatasbiayatitipanemkl,'1900/1/1')<=getdate() then 1 else 0 end) as statusbuka")
+                        )
+                        ->leftJoin(DB::raw("saldosuratpengantar as b with (readuncommitted)"), 'a.suratpengantar_nobukti', 'b.nobukti')
+                        ->whereRaw("(isnull(statusapprovalbiayatitipanemkl,0)<>4)")
+                        ->where('a.suratpengantar_nobukti', $suratPengantar)
+                        ->where('a.statustitipanemkl', $statusTitipan);
+                }
+            } else {
+                $cekTitipan = DB::table("pengeluarantruckingdetail")->from(DB::raw("pengeluarantruckingdetail as a with (readuncommitted)"))
+                    ->select(
+                        'a.id',
+                        'a.suratpengantar_nobukti',
+                        'a.statustitipanemkl',
+                        db::raw("(case when isnull(b.tglbatasbiayatitipanemkl,'1900/1/1')<=getdate() then 1 else 0 end) as statusbuka")
+                    )
+                    ->leftJoin(DB::raw("saldosuratpengantar as b with (readuncommitted)"), 'a.suratpengantar_nobukti', 'b.nobukti')
+                    ->whereRaw("(isnull(statusapprovalbiayatitipanemkl,0)<>3)")
+                    ->where('a.suratpengantar_nobukti', $suratPengantar)
+                    ->where('a.statustitipanemkl', $statusTitipan);
+            }
+        }
+
         if ($id != null) {
             $cekTitipan->where('a.pengeluarantruckingheader_id', '!=', $id);
         }
 
-        $cekTitipan = $cekTitipan->first();
+        if ($cekTitipan != null) {
+            $cekTitipan = $cekTitipan->first();
+        }
+
+        // dd($cekTitipan);
         if ($cekTitipan != null) {
             return false;
         }

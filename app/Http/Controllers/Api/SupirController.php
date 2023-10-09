@@ -315,11 +315,31 @@ class SupirController extends Controller
                 'from' => $request->from ?? '',
             ];
             $supir = (new supir())->processStore($data);
-            $supir->position = $this->getPosition($supir, $supir->getTable())->position;
-            if ($request->limit == 0) {
-                $supir->page = ceil($supir->position / (10));
-            } else {
-                $supir->page = ceil($supir->position / ($request->limit ?? 10));
+            if ($request->from == '') {
+                $supir->position = $this->getPosition($supir, $supir->getTable())->position;
+                if ($request->limit == 0) {
+                    $supir->page = ceil($supir->position / (10));
+                } else {
+                    $supir->page = ceil($supir->position / ($request->limit ?? 10));
+                }
+            }
+
+            $statusTnl = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS POSTING TNL')->where('text', 'POSTING TNL')->first();
+            if ($data['statuspostingtnl'] == $statusTnl->id) {
+                $statusBukanTnl = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS POSTING TNL')->where('text', 'TIDAK POSTING TNL')->first();
+                // posting ke tnl
+                $data['statuspostingtnl'] = $statusBukanTnl->id;
+                $gambar = [
+                    'supir' => $supir->photosupir,
+                    'ktp' => $supir->photoktp,
+                    'sim' => $supir->photosim,
+                    'kk' => $supir->photokk,
+                    'skck' => $supir->photoskck,
+                    'domisili' => $supir->photodomisili,
+                    'vaksin' => $supir->photovaksin,
+                    'pdfsuratperjanjian' => $supir->pdfsuratperjanjian,
+                ];
+                $postingTNL = (new supir())->postingTnl($data, $gambar);
             }
 
             DB::commit();

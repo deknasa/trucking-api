@@ -115,7 +115,8 @@ class Tarif extends MyModel
                 'tarif.created_at',
                 'tarif.updated_at',
                 DB::raw("'Tgl Cetak :'+format(getdate(),'dd-MM-yyyy HH:mm:ss')as tglcetak"),
-                DB::raw(" 'User :" . auth('api')->user()->name . "' as usercetak")
+                DB::raw(" 'User :" . auth('api')->user()->name . "' as usercetak"),
+                DB::raw("(trim(tarif.tujuan)+' - '+trim(tarif.penyesuaian)) as tujuanpenyesuaian"),
             )
             ->leftJoin(DB::raw("parameter with (readuncommitted)"), 'tarif.statusaktif', '=', 'parameter.id')
             ->leftJoin(DB::raw("kota with (readuncommitted)"), 'tarif.kota_id', '=', 'kota.id')
@@ -413,6 +414,8 @@ class Tarif extends MyModel
                             $query = $query->where('keterangan.keterangan', 'LIKE', "%$filters[data]%");
                         } elseif ($filters['field'] == 'zona_id') {
                             $query = $query->where('zona.keterangan', 'LIKE', "%$filters[data]%");
+                        } elseif ($filters['field'] == 'tujuanpenyesuaian') {
+                            $query = $query->whereRaw("(trim(tarif.tujuan)+' - '+trim(tarif.penyesuaian)) LIKE '%$filters[data]%'");
                         } elseif ($filters['field'] == 'jenisorder') {
                             $query = $query->where('jenisorder.keterangan', 'LIKE', "%$filters[data]%");
                         } elseif ($filters['field'] == 'statuspenyesuaianharga') {
@@ -447,6 +450,8 @@ class Tarif extends MyModel
                                 $query = $query->orWhere('kota.keterangan', 'LIKE', "%$filters[data]%");
                             } elseif ($filters['field'] == 'zona_id') {
                                 $query = $query->orWhere('zona.keterangan', 'LIKE', "%$filters[data]%");
+                            } elseif ($filters['field'] == 'tujuanpenyesuaian') {
+                                $query = $query->orWhereRaw("(trim(tarif.tujuan)+' - '+trim(tarif.penyesuaian)) LIKE '%$filters[data]%'");
                             } elseif ($filters['field'] == 'jenisorder') {
                                 $query = $query->orWhere('jenisorder.keterangan', 'LIKE', "%$filters[data]%");
                             } elseif ($filters['field'] == 'statuspenyesuaianharga') {
@@ -571,21 +576,21 @@ class Tarif extends MyModel
         ]);
 
 
-        $statusTnl = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS POSTING TNL')->where('text', 'POSTING TNL')->first();
-        if ($data['statuspostingtnl'] == $statusTnl->id) {
-            $statusBukanTnl = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS POSTING TNL')->where('text', 'TIDAK POSTING TNL')->first();
-            // posting ke tnl
-            $data['statuspostingtnl'] = $statusBukanTnl->id;
+        // $statusTnl = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS POSTING TNL')->where('text', 'POSTING TNL')->first();
+        // if ($data['statuspostingtnl'] == $statusTnl->id) {
+        //     $statusBukanTnl = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS POSTING TNL')->where('text', 'TIDAK POSTING TNL')->first();
+        //     // posting ke tnl
+        //     $data['statuspostingtnl'] = $statusBukanTnl->id;
 
-            $postingTNL = $this->postingTnl($data);
-            if ($postingTNL['statuscode'] != 201) {
-                if ($postingTNL['statuscode'] == 422) {
-                    throw new \Exception($postingTNL['data']['errors']['penyesuaian'][0] . ' di TNL');
-                } else {
-                    throw new \Exception($postingTNL['data']['message']);
-                }
-            }
-        }
+        //     $postingTNL = $this->postingTnl($data);
+        //     if ($postingTNL['statuscode'] != 201) {
+        //         if ($postingTNL['statuscode'] == 422) {
+        //             throw new \Exception($postingTNL['data']['errors']['penyesuaian'][0] . ' di TNL');
+        //         } else {
+        //             throw new \Exception($postingTNL['data']['message']);
+        //         }
+        //     }
+        // }
 
         return $tarif;
     }
@@ -670,7 +675,7 @@ class Tarif extends MyModel
             'Accept' => 'application/json'
         ])
             ->post($server . 'truckingtnl-api/public/api/token', [
-                'user' => auth('api')->user()->user,
+                'user' => 'ADMIN',
                 'password' => getenv('PASSWORD_TNL'),
                 'ipclient' => '',
                 'ipserver' => '',
@@ -682,7 +687,8 @@ class Tarif extends MyModel
         if ($getToken->getStatusCode() == '404') {
             throw new \Exception("Akun Tidak Terdaftar di Trucking TNL");
         } else if ($getToken->getStatusCode() == '200') {
-            $access_token = json_decode($getToken, TRUE)['access_token'];
+            $access_token = json_decode($getToken, TRUE)['access_token'];            
+            $data['from'] = 'jkt';
             $transferTarif = Http::withHeaders([
                 'Content-Type' => 'application/json',
                 'Accept' => 'application/json',
@@ -693,6 +699,15 @@ class Tarif extends MyModel
                 'statuscode' => $tesResp->getStatusCode(),
                 'data' => $transferTarif->json(),
             ];
+            
+            $dataResp = $transferTarif->json();
+            if ($tesResp->getStatusCode() != 201) {
+                if ($tesResp->getStatusCode() == 422) {
+                    throw new \Exception($dataResp['errors']['penyesuaian'][0] . ' di TNL');
+                } else {
+                    throw new \Exception($dataResp['message']);
+                }
+            }
             return $response;
         } else {
             throw new \Exception("server tidak bisa diakses");

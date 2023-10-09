@@ -442,4 +442,35 @@ class PenerimaanTruckingHeaderController extends Controller
             'data' => $penerimaantruckingheader->getExport($id)
         ]);
     }
+
+     /**
+     * @ClassName 
+     */
+    public function penerimaantruckinghutangbbm()
+    {
+    }
+    /**
+     * @ClassName 
+     */
+    public function penerimaantruckingpengembalianpinjaman()
+    {
+    }
+    /**
+     * @ClassName 
+     */
+    public function penerimaantruckingdepositosupir()
+    {
+    }
+    /**
+     * @ClassName 
+     */
+    public function penerimaantruckingpengembalianpinjamankaryawan()
+    {
+    }
+    /**
+     * @ClassName 
+     */
+    public function penerimaantruckingpengembaliantitipanemkl()
+    {
+    }
 }

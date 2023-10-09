@@ -306,7 +306,7 @@ class Supplier extends MyModel
             $this->table.notelp1,
             $this->table.notelp2,
             $this->table.email,
-            $this->table.statusaktif,
+            'parameter_statusaktif.text as statusaktif',
 
             $this->table.web,
             $this->table.namapemilik,
@@ -316,10 +316,10 @@ class Supplier extends MyModel
             $this->table.rekeningbank,
             $this->table.namarekening,
             $this->table.jabatan,
-            $this->table.statusdaftarharga,
-            $this->table.statuspostingtnl,
+            'parameter_statusdaftarharga.text as statusdaftarharga',
+            'statuspostingtnl.text as statuspostingtnl',
             $this->table.kategoriusaha,
-            $this->table.statusapproval,
+            'statusapproval.text as statusapproval',
             $this->table.tglapproval,
             $this->table.userapproval,
             $this->table.modifiedby,
@@ -327,7 +327,11 @@ class Supplier extends MyModel
             $this->table.updated_at"
             )
 
-        );
+        )
+            ->leftJoin('parameter as parameter_statusaktif', "supplier.statusaktif", '=', 'parameter_statusaktif.id')
+            ->leftJoin(DB::raw("parameter as statusapproval with (readuncommitted)"), 'supplier.statusapproval', 'statusapproval.id')
+            ->leftJoin(DB::raw("parameter as statuspostingtnl with (readuncommitted)"), 'supplier.statuspostingtnl', 'statuspostingtnl.id')
+            ->leftJoin('parameter as parameter_statusdaftarharga', "supplier.statusdaftarharga", '=', 'parameter_statusdaftarharga.id');
     }
 
     public function createTemp(string $modelTable)
@@ -345,7 +349,7 @@ class Supplier extends MyModel
             $table->string('notelp1', 50)->nullable();
             $table->string('notelp2', 50)->nullable();
             $table->string('email', 50)->nullable();
-            $table->string('statusaktif')->length(11)->nullable();
+            $table->string('statusaktif')->nullable();
             $table->string('web', 50)->nullable();
             $table->string('namapemilik', 150)->nullable();
             $table->string('jenisusaha', 150)->nullable();
@@ -354,8 +358,8 @@ class Supplier extends MyModel
             $table->string('rekeningbank', 150)->nullable();
             $table->string('namarekening', 150)->nullable();
             $table->string('jabatan', 150)->nullable();
-            $table->string('statusdaftarharga')->length(11)->nullable();
-            $table->string('statuspostingtnl')->length(11)->nullable();
+            $table->string('statusdaftarharga')->nullable();
+            $table->string('statuspostingtnl')->nullable();
             $table->string('kategoriusaha', 150)->nullable();
             $table->string('statusapproval', 150)->nullable();
             $table->date('tglapproval')->nullable();
@@ -497,17 +501,6 @@ class Supplier extends MyModel
             'modifiedby' => $supplier->modifiedby
         ]);
 
-        $statusTnl = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS POSTING TNL')->where('text', 'POSTING TNL')->first();
-        if ($data['statuspostingtnl'] == $statusTnl->id) {
-            $statusBukanTnl = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS POSTING TNL')->where('text', 'TIDAK POSTING TNL')->first();
-            // posting ke tnl
-            $data['statuspostingtnl'] = $statusBukanTnl->id;
-
-            $postingTNL = $this->postingTnl($data);
-            if ($postingTNL['statuscode'] != 201) {
-                throw new \Exception($postingTNL['data']['message']);
-            }
-        }
         return $supplier;
     }
 
@@ -593,7 +586,7 @@ class Supplier extends MyModel
         if ($getToken->getStatusCode() == '404') {
             throw new \Exception("Akun Tidak Terdaftar di Trucking TNL");
         } else if ($getToken->getStatusCode() == '200') {
-
+            $data['from'] = 'jkt';
             $access_token = json_decode($getToken, TRUE)['access_token'];
             $transferTarif = Http::withHeaders([
                 'Content-Type' => 'application/json',
@@ -605,6 +598,14 @@ class Supplier extends MyModel
                 'statuscode' => $tesResp->getStatusCode(),
                 'data' => $transferTarif->json(),
             ];
+            $dataResp = $transferTarif->json();
+            if ($tesResp->getStatusCode() != 201) {
+                if ($tesResp->getStatusCode() == 422) {
+                    throw new \Exception($dataResp['errors']['namasupplier'][0] . ' di TNL');
+                } else {
+                    throw new \Exception($dataResp['message']);
+                }
+            }
             return $response;
         } else {
             throw new \Exception("server tidak bisa diakses");

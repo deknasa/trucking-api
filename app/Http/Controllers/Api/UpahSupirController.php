@@ -79,7 +79,7 @@ class UpahSupirController extends Controller
             ], 422);
         }
     }
-    
+
     /**
      * @ClassName 
      */
@@ -103,6 +103,7 @@ class UpahSupirController extends Controller
                 'kotasampai_id' => $request->kotasampai_id,
                 'penyesuaian' => $request->penyesuaian,
                 'jarak' => $request->jarak,
+                'jarakfullempty' => $request->jarakfullempty,
                 'zona' => $request->zona,
                 'zona_id' => ($request->zona_id == null) ? 0 : $request->zona_id ?? 0,
                 'statusaktif' => $request->statusaktif,
@@ -116,7 +117,6 @@ class UpahSupirController extends Controller
                 'statussimpankandang' => $request->statussimpankandang,
                 'statusluarkota' => $request->statusluarkota,
                 'keterangan' => $request->keterangan,
-                'gambar' => $request->file('gambar') ?? [],
                 'from' => $request->from ?? '',
 
                 'container_id' => $request->container_id,
@@ -130,14 +130,29 @@ class UpahSupirController extends Controller
                 'liter' => $request->liter ?? 0,
 
             ];
-            $upahsupir = (new UpahSupir())->processStore($data);
-            $upahsupir->position = $this->getPosition($upahsupir, $upahsupir->getTable())->position;
-            if ($request->limit==0) {
-                $upahsupir->page = ceil($upahsupir->position / (10));
+
+            if ($request->from != '') {
+                $data['gambar'] = $request->gambar ?? [];
             } else {
-                $upahsupir->page = ceil($upahsupir->position / ($request->limit ?? 10));
+                $data['gambar'] = $request->file('gambar') ?? [];
+            }
+            $upahsupir = (new UpahSupir())->processStore($data);
+            if ($request->from == '') {
+                $upahsupir->position = $this->getPosition($upahsupir, $upahsupir->getTable())->position;
+                if ($request->limit == 0) {
+                    $upahsupir->page = ceil($upahsupir->position / (10));
+                } else {
+                    $upahsupir->page = ceil($upahsupir->position / ($request->limit ?? 10));
+                }
             }
 
+            $statusTnl = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS POSTING TNL')->where('text', 'POSTING TNL')->first();
+            if ($data['statuspostingtnl'] == $statusTnl->id) {
+                $statusBukanTnl = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS POSTING TNL')->where('text', 'TIDAK POSTING TNL')->first();
+                $data['statuspostingtnl'] = $statusBukanTnl->id;
+
+                (new UpahSupir())->postingTnl($data, $upahsupir->gambar);
+            }
             $this->upahsupir = $upahsupir;
             DB::commit();
 
@@ -186,6 +201,7 @@ class UpahSupirController extends Controller
                 'kotasampai_id' => $request->kotasampai_id,
                 'penyesuaian' => $request->penyesuaian,
                 'jarak' => $request->jarak,
+                'jarakfullempty' => $request->jarakfullempty,
                 'zona_id' => ($request->zona_id == null) ? 0 : $request->zona_id ?? 0,
                 'statusaktif' => $request->statusaktif,
 
@@ -210,7 +226,7 @@ class UpahSupirController extends Controller
             ];
             $upahsupir = (new UpahSupir())->processUpdate($upahsupir, $data);
             $upahsupir->position = $this->getPosition($upahsupir, $upahsupir->getTable())->position;
-            if ($request->limit==0) {
+            if ($request->limit == 0) {
                 $upahsupir->page = ceil($upahsupir->position / (10));
             } else {
                 $upahsupir->page = ceil($upahsupir->position / ($request->limit ?? 10));
@@ -242,7 +258,7 @@ class UpahSupirController extends Controller
             $selected = $this->getPosition($upahsupir, $upahsupir->getTable(), true);
             $upahsupir->position = $selected->position;
             $upahsupir->id = $selected->id;
-            if ($request->limit==0) {
+            if ($request->limit == 0) {
                 $upahsupir->page = ceil($upahsupir->position / (10));
             } else {
                 $upahsupir->page = ceil($upahsupir->position / ($request->limit ?? 10));
@@ -437,7 +453,11 @@ class UpahSupirController extends Controller
             if (Storage::exists("upahsupir/$filename")) {
                 return response()->file(storage_path("app/upahsupir/$filename"));
             } else {
-                return response('no-image');
+                if ($type == 'small') {
+                    return response()->file(storage_path("app/no-image.jpg"));
+                } else {
+                    return response('no-image');
+                }
             }
         }
     }

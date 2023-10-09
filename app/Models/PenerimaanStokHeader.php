@@ -32,6 +32,32 @@ class PenerimaanStokHeader extends MyModel
         $statusCetak = request()->statuscetak ?? '';
         // dd(request());
 
+        $user_id = auth('api')->user()->id ?? 0;
+
+        $temprole = '##temprole' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+        Schema::create($temprole, function ($table) {
+            $table->bigInteger('aco_id')->nullable();
+        });
+
+        $queryaco = db::table("useracl")->from(db::raw("useracl a with (readuncommitted)"))
+            ->select('a.aco_id')
+            ->join(db::raw("penerimaanstok b with (readuncommitted)"), 'a.aco_id', 'b.aco_id')
+            ->where('a.user_id', $user_id);
+
+        DB::table($temprole)->insertUsing(['aco_id'], $queryaco);
+
+
+        $queryrole = db::table("acl")->from(db::raw("acl a with (readuncommitted)"))
+            ->select('a.aco_id')
+            ->join(db::raw("userrole b with (readuncommitted)"), 'a.role_id', 'b.role_id')
+            ->join(db::raw("penerimaanstok c with (readuncommitted)"), 'a.aco_id', 'c.aco_id')
+            ->leftjoin(db::raw($temprole ." d "), 'a.aco_id', 'd.aco_id')
+            ->where('b.user_id', $user_id)
+            ->whereRaw("isnull(d.aco_id,0)=0");
+
+        DB::table($temprole)->insertUsing(['aco_id'], $queryrole);
+
+
         $spb = Parameter::where('grp', 'SPB STOK')->where('subgrp', 'SPB STOK')->first();
         $po = Parameter::where('grp', 'PO STOK')->where('subgrp', 'PO STOK')->first();
         $spbs = Parameter::where('grp', 'REUSE STOK')->where('subgrp', 'REUSE STOK')->first();
@@ -61,7 +87,8 @@ class PenerimaanStokHeader extends MyModel
         ->leftJoin('pengeluaranstokheader as pengeluaranstok','penerimaanstokheader.pengeluaranstok_nobukti','pengeluaranstok.nobukti')
         ->leftJoin('penerimaanstokheader as nobuktipenerimaanstok','nobuktipenerimaanstok.nobukti','penerimaanstokheader.penerimaanstok_nobukti')
         ->leftJoin('penerimaanstokheader as nobuktispb','penerimaanstokheader.nobukti','nobuktispb.penerimaanstok_nobukti')
-        ->leftJoin('supplier','penerimaanstokheader.supplier_id','supplier.id');
+        ->leftJoin('supplier','penerimaanstokheader.supplier_id','supplier.id')
+        ->join(db::raw($temprole ." d "), 'penerimaanstok.aco_id', 'd.aco_id');
         if (request()->penerimaanstok_id==$spb->text) {
             
 
@@ -97,7 +124,16 @@ class PenerimaanStokHeader extends MyModel
                         ->where('penerimaanstokheader.penerimaanstok_nobukti', '!=', '');
                 });
         }
-
+        
+        if (request()->penerimaanstok_id == $pg->text) {
+            $query->where('penerimaanstokheader.penerimaanstok_id', '=', $pg->text)
+                ->whereNotIn('penerimaanstokheader.nobukti', function ($query) {
+                    $query->select(DB::raw('DISTINCT penerimaanstokheader.penerimaanstok_nobukti'))
+                        ->from('penerimaanstokheader')
+                        ->whereNotNull('penerimaanstokheader.penerimaanstok_nobukti')
+                        ->where('penerimaanstokheader.penerimaanstok_nobukti', '!=', '');
+                });
+        }
         if (request()->supplier_id) {
             // $query->leftJoin('penerimaanstokheader as pobeli','penerimaanstokheader.penerimaanstok_nobukti','pobeli.nobukti');
             $query->where('penerimaanstokheader.supplier_id', '=', request()->supplier_id);
@@ -169,7 +205,7 @@ class PenerimaanStokHeader extends MyModel
             "$this->table.pengeluaranstok_nobukti",
             "gudangs.gudang as gudang",
             "trado.kodetrado as trado",
-            "gandengan.keterangan as gandengan",
+            "gandengan.kodegandengan as gandengan",
             "tradodari.kodetrado as tradodari",
             "tradoke.kodetrado as tradoke",
             "gandengandari.keterangan as gandengandari",
@@ -350,6 +386,8 @@ class PenerimaanStokHeader extends MyModel
                             $query = $query->where('gudangs.gudang', 'LIKE', "%$filters[data]%");
                         } else if ($filters['field'] == 'trado') {
                             $query = $query->where('trado.kodetrado', 'LIKE', "%$filters[data]%");
+                        } else if ($filters['field'] == 'gandengan') {
+                            $query = $query->where('gandengan.kodegandengan', 'LIKE', "%$filters[data]%");
                         } else if ($filters['field'] == 'supplier') {
                             $query = $query->where('supplier.namasupplier', 'LIKE', "%$filters[data]%");
                         } else if ($filters['field'] == 'gudangdari') {
@@ -377,7 +415,9 @@ class PenerimaanStokHeader extends MyModel
                                 $query = $query->orWhere('gudangs.gudang', 'LIKE', "%$filters[data]%");
                             } else if ($filters['field'] == 'trado') {
                                 $query = $query->orWhere('trado.kodetrado', 'LIKE', "%$filters[data]%");
-                            } else if ($filters['field'] == 'supplier') {
+                            } else if ($filters['field'] == 'gandengan') {
+                                $query = $query->orwhere('gandengan.kodegandengan', 'LIKE', "%$filters[data]%");
+                                } else if ($filters['field'] == 'supplier') {
                                 $query = $query->orWhere('supplier.namasupplier', 'LIKE', "%$filters[data]%");
                             } else if ($filters['field'] == 'gudangdari') {
                                 $query = $query->orWhere('dari.gudang', 'LIKE', "%$filters[data]%");

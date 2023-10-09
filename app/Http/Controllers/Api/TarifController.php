@@ -133,6 +133,7 @@ class TarifController extends Controller
         try {
             $data = [
                 'parent_id' => $request->parent_id ?? '',
+                'parent' => $request->parent ?? '',
                 'upahsupir_id' => $request->upahsupir_id ?? '',
                 'tujuan' => $request->tujuan,
                 'penyesuaian' => $request->penyesuaian,
@@ -141,6 +142,8 @@ class TarifController extends Controller
                 'kota' => $request->kota,
                 'kota_id' => $request->kota_id,
                 'zona_id' => $request->zona_id ?? '',
+                'zona' => $request->zona ?? '',
+                'from' => $request->from ?? '',
                 'jenisorder_id' => $request->jenisorder_id ?? 0,
                 'tglmulaiberlaku' => $request->tglmulaiberlaku,
                 'statuspenyesuaianharga' => $request->statuspenyesuaianharga,
@@ -153,11 +156,22 @@ class TarifController extends Controller
             ];
 
             $tarif = (new Tarif())->processStore($data);
-            $tarif->position = $this->getPosition($tarif, $tarif->getTable())->position;
-            if ($request->limit==0) {
-                $tarif->page = ceil($tarif->position / (10));
-            } else {
-                $tarif->page = ceil($tarif->position / ($request->limit ?? 10));
+            if ($request->from == '') {
+                $tarif->position = $this->getPosition($tarif, $tarif->getTable())->position;
+                if ($request->limit == 0) {
+                    $tarif->page = ceil($tarif->position / (10));
+                } else {
+                    $tarif->page = ceil($tarif->position / ($request->limit ?? 10));
+                }
+            }
+
+            $statusTnl = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS POSTING TNL')->where('text', 'POSTING TNL')->first();
+            if ($data['statuspostingtnl'] == $statusTnl->id) {
+                $statusBukanTnl = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS POSTING TNL')->where('text', 'TIDAK POSTING TNL')->first();
+                // posting ke tnl
+                $data['statuspostingtnl'] = $statusBukanTnl->id;
+
+                $postingTNL = (new Tarif())->postingTnl($data);
             }
 
             DB::commit();
@@ -217,7 +231,7 @@ class TarifController extends Controller
             ];
             $tarif = (new Tarif())->processUpdate($tarif, $data);
             $tarif->position = $this->getPosition($tarif, $tarif->getTable())->position;
-            if ($request->limit==0) {
+            if ($request->limit == 0) {
                 $tarif->page = ceil($tarif->position / (10));
             } else {
                 $tarif->page = ceil($tarif->position / ($request->limit ?? 10));
@@ -250,7 +264,7 @@ class TarifController extends Controller
             $selected = $this->getPosition($tarif, $tarif->getTable(), true);
             $tarif->position = $selected->position;
             $tarif->id = $selected->id;
-            if ($request->limit==0) {
+            if ($request->limit == 0) {
                 $tarif->page = ceil($tarif->position / (10));
             } else {
                 $tarif->page = ceil($tarif->position / ($request->limit ?? 10));

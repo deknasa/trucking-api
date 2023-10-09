@@ -25,6 +25,7 @@ class CreatePengeluaranstokTable extends Migration
             $table->unsignedBigInteger('format')->nullable();   
             $table->integer('statushitungstok')->length(11)->nullable();                        
             $table->integer('urutfifo')->length(11)->nullable();      
+            $table->unsignedBigInteger('aco_id')->nullable();          
             $table->longText('info')->nullable();   
             $table->string('modifiedby',50)->nullable();                
             $table->timestamps();

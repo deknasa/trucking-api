@@ -167,6 +167,31 @@ class PengeluaranTruckingHeader extends MyModel
         $afkir = Parameter::from(DB::raw("pengeluaranstok with (readuncommitted)"))->where('kodepengeluaran', 'AFKIR')->first();
         
 
+        $user_id = auth('api')->user()->id ?? 0;
+
+        $temprole = '##temprole' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+        Schema::create($temprole, function ($table) {
+            $table->bigInteger('aco_id')->nullable();
+        });
+
+        $queryaco = db::table("useracl")->from(db::raw("useracl a with (readuncommitted)"))
+            ->select('a.aco_id')
+            ->join(db::raw("pengeluarantrucking b with (readuncommitted)"), 'a.aco_id', 'b.aco_id')
+            ->where('a.user_id', $user_id);
+
+        DB::table($temprole)->insertUsing(['aco_id'], $queryaco);
+
+
+        $queryrole = db::table("acl")->from(db::raw("acl a with (readuncommitted)"))
+            ->select('a.aco_id')
+            ->join(db::raw("userrole b with (readuncommitted)"), 'a.role_id', 'b.role_id')
+            ->join(db::raw("pengeluarantrucking c with (readuncommitted)"), 'a.aco_id', 'c.aco_id')
+            ->leftjoin(db::raw($temprole ." d "), 'a.aco_id', 'd.aco_id')
+            ->where('b.user_id', $user_id)
+            ->whereRaw("isnull(d.aco_id,0)=0");
+
+        DB::table($temprole)->insertUsing(['aco_id'], $queryrole);
+
         $query = DB::table($this->table)->from(DB::raw("pengeluarantruckingheader with (readuncommitted)"))
             ->select(
                 'pengeluarantruckingheader.id',
@@ -206,7 +231,9 @@ class PengeluaranTruckingHeader extends MyModel
             ->leftJoin(DB::raw("parameter as statuscetak with (readuncommitted)"), 'pengeluarantruckingheader.statuscetak', 'statuscetak.id')
             ->leftJoin(DB::raw("parameter as statusposting with (readuncommitted)"), 'pengeluarantruckingheader.statusposting', 'statusposting.id')
             ->leftJoin(DB::raw("penerimaantruckingdetail with (readuncommitted)"), 'pengeluarantruckingheader.nobukti', 'penerimaantruckingdetail.pengeluarantruckingheader_nobukti')
-            ->leftJoin(DB::raw("penerimaantruckingheader with (readuncommitted)"), 'penerimaantruckingdetail.penerimaantruckingheader_id', 'penerimaantruckingheader.id');
+            ->leftJoin(DB::raw("penerimaantruckingheader with (readuncommitted)"), 'penerimaantruckingdetail.penerimaantruckingheader_id', 'penerimaantruckingheader.id')
+            ->join(db::raw($temprole ." d "), 'pengeluarantrucking.aco_id', 'd.aco_id');
+
 
 
         if (request()->pengeluaranstok_id && request()->pengeluaranstok_id == $afkir->id) {
@@ -982,6 +1009,16 @@ class PengeluaranTruckingHeader extends MyModel
         $pengeluaranTruckingDetails = [];
         $nominalBiaya = 0;
         for ($i = 0; $i < count($data['nominal']); $i++) {
+            $qty = $data['qty'][$i] ?? 0;
+            $harga = $data['harga'][$i] ?? 0;
+            $totalHarga = $qty * $harga;
+
+            if($data['pengeluarantrucking_id'] == $klaim->id){
+                $data['nominaltagih'][$i] = $data['nominal'][$i];
+                $tambahan =  $data['nominaltambahan'][$i] ?? 0;
+                $totalNominal = $data['nominal'][$i] + $tambahan;
+                $data['nominal'][$i] = $totalNominal;
+            }
             $pengeluaranTruckingDetail = (new PengeluaranTruckingDetail())->processStore($pengeluaranTruckingHeader, [
                 'pengeluarantruckingheader_id' => $pengeluaranTruckingHeader->id,
                 'nobukti' => $pengeluaranTruckingHeader->nobukti,
@@ -989,8 +1026,10 @@ class PengeluaranTruckingHeader extends MyModel
                 'karyawan_id' => $data['karyawan_id'][$i] ?? null,
                 'stok_id' => $data['stok_id'][$i] ?? null,
                 'pengeluaranstok_nobukti' => $data['pengeluaranstok_nobukti'][$i] ?? null,
+                'penerimaanstok_nobukti' => $data['penerimaanstok_nobukti'][$i] ?? '',
                 'qty' => $data['qty'][$i] ?? null,
                 'harga' => $data['harga'][$i] ?? null,
+                'total' => $totalHarga ?? 0,
                 'trado_id' => $data['trado_id'][$i] ?? null,
                 'penerimaantruckingheader_nobukti' => $data['penerimaantruckingheader_nobukti'][$i] ?? '',
                 'invoice_nobukti' => $data['noinvoice_detail'][$i] ?? '',
@@ -1007,6 +1046,8 @@ class PengeluaranTruckingHeader extends MyModel
                 'pelanggan_id' => $data['pelanggan_id'][$i] ?? null,
                 'nominaltagih' => $data['nominaltagih'][$i] ?? 0,
                 'jenisorder' => $data['jenisorder'][$i] ?? null,
+                'nominaltambahan' => $data['nominaltambahan'][$i] ?? 0,
+                'keterangantambahan' => $data['keterangantambahan'][$i] ?? '',
             ]);
             $pengeluaranTruckingDetails[] = $pengeluaranTruckingDetail->toArray();
             $nominal_detail[] = $pengeluaranTruckingDetail->nominal;
@@ -1053,8 +1094,10 @@ class PengeluaranTruckingHeader extends MyModel
                     $nowarkat[] = "";
                     $tglkasmasuk[] = (array_key_exists('tglkasmasuk', $data)) ? date('Y-m-d', strtotime($data['tglkasmasuk'])) : date('Y-m-d', strtotime($data['tglbukti']));
                     $nominal_detail[] = $nominalBiaya;
-                    if ($fetchFormat->kodepengeluaran == 'BBT' || $fetchFormat->kodepengeluaran == 'BST') {
-                        $keterangan_detail[] = "$fetchFormat->keterangan $pengeluaranTruckingHeader->nobukti";
+                    if ($fetchFormat->kodepengeluaran == 'BST') {
+                        $keterangan_detail[] = "$fetchFormat->keterangan ".$data['tgldari']." s/d ".$data['tglsampai']." $pengeluaranTruckingHeader->nobukti";
+                    } else if($fetchFormat->kodepengeluaran == 'BBT') { 
+                        $keterangan_detail[] = $data['keterangan'][0];
                     } else {
                         $keterangan_detail[] = "$fetchFormat->keterangan periode " . $data['periode'] . " $pengeluaranTruckingHeader->nobukti";
                     }
@@ -1063,7 +1106,7 @@ class PengeluaranTruckingHeader extends MyModel
                         $nominal_detail = [];
                         $nominal_detail[] = $nominalBiaya;
                         $keterangan_detail = [];
-                        $keterangan_detail[] = "$fetchFormat->keterangan $pengeluaranTruckingHeader->nobukti";
+                        $keterangan_detail[] = $data['keterangan'][0];
                         $coakredit_detail[] = $queryPengeluaran->coa;
                         $coadebet_detail[] = $data['coa'];
                         $nowarkat[] = "";
@@ -1218,6 +1261,16 @@ class PengeluaranTruckingHeader extends MyModel
         $pengeluaranTruckingDetails = [];
         $nominalBiaya = 0;
         for ($i = 0; $i < count($data['nominal']); $i++) {
+            $qty = $data['qty'][$i] ?? 0;
+            $harga = $data['harga'][$i] ?? 0;
+            $totalHarga = $qty * $harga;
+
+            if($data['pengeluarantrucking_id'] == $klaim->id){
+                $data['nominaltagih'][$i] = $data['nominal'][$i];
+                $tambahan =  $data['nominaltambahan'][$i] ?? 0;
+                $totalNominal = $data['nominal'][$i] + $tambahan;
+                $data['nominal'][$i] = $totalNominal;
+            }
             $pengeluaranTruckingDetail = (new PengeluaranTruckingDetail())->processStore($pengeluaranTruckingHeader, [
                 'pengeluarantruckingheader_id' => $pengeluaranTruckingHeader->id,
                 'nobukti' => $pengeluaranTruckingHeader->nobukti,
@@ -1225,8 +1278,10 @@ class PengeluaranTruckingHeader extends MyModel
                 'karyawan_id' => $data['karyawan_id'][$i] ?? null,
                 'stok_id' => $data['stok_id'][$i] ?? null,
                 'pengeluaranstok_nobukti' => $data['pengeluaranstok_nobukti'][$i] ?? null,
+                'penerimaanstok_nobukti' => $data['penerimaanstok_nobukti'][$i] ?? '',
                 'qty' => $data['qty'][$i] ?? null,
                 'harga' => $data['harga'][$i] ?? null,
+                'total' => $totalHarga ?? 0,
                 'trado_id' => $data['trado_id'][$i] ?? null,
                 'penerimaantruckingheader_nobukti' => $data['penerimaantruckingheader_nobukti'][$i] ?? '',
                 'invoice_nobukti' => $data['noinvoice_detail'][$i] ?? '',
@@ -1241,6 +1296,8 @@ class PengeluaranTruckingHeader extends MyModel
                 'pelanggan_id' => $data['pelanggan_id'][$i] ?? null,
                 'nominaltagih' => $data['nominaltagih'][$i] ?? 0,
                 'jenisorder' => $data['jenisorder'][$i] ?? null,
+                'nominaltambahan' => $data['nominaltambahan'][$i] ?? 0,
+                'keterangantambahan' => $data['keterangantambahan'][$i] ?? '',
                 'modifiedby' => $pengeluaranTruckingHeader->modifiedby,
             ]);
             $pengeluaranTruckingDetails[] = $pengeluaranTruckingDetail->toArray();
@@ -1286,9 +1343,11 @@ class PengeluaranTruckingHeader extends MyModel
                         $nowarkat[] = "";
                         $tglkasmasuk[] = (array_key_exists('tglkasmasuk', $data)) ? date('Y-m-d', strtotime($data['tglkasmasuk'])) : date('Y-m-d', strtotime($data['tglbukti']));
                         $nominal_detail[] = $nominalBiaya;
-                        if ($fetchFormat->kodepengeluaran == 'BBT' || $fetchFormat->kodepengeluaran == 'BST') {
-                            $keterangan_detail[] = "$fetchFormat->keterangan $pengeluaranTruckingHeader->nobukti";
-                        } else {
+                        if ($fetchFormat->kodepengeluaran == 'BST') {
+                            $keterangan_detail[] = "$fetchFormat->keterangan ".$data['tgldari']." s/d ".$data['tglsampai']." $pengeluaranTruckingHeader->nobukti";
+                        } else if($fetchFormat->kodepengeluaran == 'BBT') { 
+                            $keterangan_detail[] = $data['keterangan'][0];
+                        }else {
                             $keterangan_detail[] = "$fetchFormat->keterangan periode " . $data['periode'] . " $pengeluaranTruckingHeader->nobukti";
                         }
                     } else {
@@ -1297,7 +1356,7 @@ class PengeluaranTruckingHeader extends MyModel
                             $nominal_detail = [];
                             $nominal_detail[] = $nominalBiaya;
                             $keterangan_detail = [];
-                            $keterangan_detail[] = "$fetchFormat->keterangan $pengeluaranTruckingHeader->nobukti";
+                            $keterangan_detail[] = $data['keterangan'][0];
                             $coakredit_detail[] = $queryPengeluaran->coa;
                             $coadebet_detail[] = $data['coa'];
                             $nowarkat[] = "";

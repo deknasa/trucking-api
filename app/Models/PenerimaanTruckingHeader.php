@@ -30,6 +30,32 @@ class PenerimaanTruckingHeader extends MyModel
         $this->setRequestParameters();
         $periode = request()->periode ?? '';
         $statusCetak = request()->statuscetak ?? '';
+
+        $user_id = auth('api')->user()->id ?? 0;
+
+        $temprole = '##temprole' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+        Schema::create($temprole, function ($table) {
+            $table->bigInteger('aco_id')->nullable();
+        });
+
+        $queryaco = db::table("useracl")->from(db::raw("useracl a with (readuncommitted)"))
+            ->select('a.aco_id')
+            ->join(db::raw("penerimaantrucking b with (readuncommitted)"), 'a.aco_id', 'b.aco_id')
+            ->where('a.user_id', $user_id);
+
+        DB::table($temprole)->insertUsing(['aco_id'], $queryaco);
+
+
+        $queryrole = db::table("acl")->from(db::raw("acl a with (readuncommitted)"))
+            ->select('a.aco_id')
+            ->join(db::raw("userrole b with (readuncommitted)"), 'a.role_id', 'b.role_id')
+            ->join(db::raw("penerimaantrucking c with (readuncommitted)"), 'a.aco_id', 'c.aco_id')
+            ->leftjoin(db::raw($temprole . " d "), 'a.aco_id', 'd.aco_id')
+            ->where('b.user_id', $user_id)
+            ->whereRaw("isnull(d.aco_id,0)=0");
+
+        DB::table($temprole)->insertUsing(['aco_id'], $queryrole);
+
         $query = DB::table($this->table)->from(DB::raw("penerimaantruckingheader with (readuncommitted)"))
             ->select(
                 'penerimaantruckingheader.id',
@@ -56,7 +82,8 @@ class PenerimaanTruckingHeader extends MyModel
             ->leftJoin(DB::raw("penerimaantrucking with (readuncommitted)"), 'penerimaantruckingheader.penerimaantrucking_id', 'penerimaantrucking.id')
             ->leftJoin(DB::raw("akunpusat with (readuncommitted)"), 'penerimaantruckingheader.coa', 'akunpusat.coa')
             ->leftJoin(DB::raw("parameter with (readuncommitted)"), 'penerimaantruckingheader.statuscetak', 'parameter.id')
-            ->leftJoin(DB::raw("bank with (readuncommitted)"), 'penerimaantruckingheader.bank_id', 'bank.id');
+            ->leftJoin(DB::raw("bank with (readuncommitted)"), 'penerimaantruckingheader.bank_id', 'bank.id')
+            ->join(db::raw($temprole . " d "), 'penerimaantrucking.aco_id', 'd.aco_id');
 
         if (request()->tgldari) {
             $query->whereBetween('penerimaantruckingheader.tglbukti', [date('Y-m-d', strtotime(request()->tgldari)), date('Y-m-d', strtotime(request()->tglsampai))]);
@@ -876,7 +903,7 @@ class PenerimaanTruckingHeader extends MyModel
 
 
         $penerimaanTruckingDetails = [];
-        $totalDeposito = 0;
+        $totalNominal = 0;
         $firstBuktiPosting = '';
         $firstBuktiNonPosting = '';
         $nominalPostingNon = ['nonposting' => 0, 'posting' => 0];
@@ -965,7 +992,7 @@ class PenerimaanTruckingHeader extends MyModel
                     $keterangan_detail[] = $data['keterangan'][$i];
                 }
                 $tgljatuhtempo[] = date('Y-m-d', strtotime($data['tglbukti']));
-                $totalDeposito = $totalDeposito + $data['nominal'][$i];
+                $totalNominal = $totalNominal + $data['nominal'][$i];
             }
         }
 
@@ -996,9 +1023,9 @@ class PenerimaanTruckingHeader extends MyModel
             $keterangan_detail = [];
             $coakredit_detail[] = $data['coa'];
             $coadebet_detail[] = $coadebet;
-            $nominal_detail[] = $totalDeposito;
+            $nominal_detail[] = $totalNominal;
             $tgljatuhtempo[] = date('Y-m-d', strtotime($data['tglbukti']));
-            $keterangan_detail[] = "PENGEMBALIAN TITIPAN EMKL " . $penerimaanTruckingHeader->nobukti;
+            $keterangan_detail[] = "PENGEMBALIAN TITIPAN EMKL " . $penerimaanTruckingHeader->nobukti . ". " . $data['keteranganheader'];
         }
         $penerimaanTruckingDetailLogTrail = (new LogTrail())->processStore([
             'namatabel' => strtoupper($penerimaanTruckingHeaderLogTrail->getTable()),
@@ -1015,20 +1042,34 @@ class PenerimaanTruckingHeader extends MyModel
         if ($tanpaprosesnobukti != 2) {
 
             // tanpaprosesnobukti = 3 dari pendatapan supir jakarta
-            if ($tanpaprosesnobukti == 3) {
-                if ($fetchFormat->kodepenerimaan == 'DPO') {
+            if ($fetchFormat->kodepenerimaan == 'DPO') {
 
-                    $coakredit_detail = [];
-                    $coadebet_detail = [];
-                    $nominal_detail = [];
-                    $keterangan_detail = [];
-                    $tgljatuhtempo = [];
-                    $tgljatuhtempo[] = date('Y-m-d', strtotime($data['tglbukti']));
-                    $coakredit_detail[] = $data['coa'];
-                    $coadebet_detail[] = $coadebet;
-                    $nominal_detail[] = $totalDeposito;
+                $coakredit_detail = [];
+                $coadebet_detail = [];
+                $nominal_detail = [];
+                $keterangan_detail = [];
+                $tgljatuhtempo = [];
+                $tgljatuhtempo[] = date('Y-m-d', strtotime($data['tglbukti']));
+                $coakredit_detail[] = $data['coa'];
+                $coadebet_detail[] = $coadebet;
+                $nominal_detail[] = $totalNominal;
+
+                if ($tanpaprosesnobukti == 3) {
                     $keterangan_detail[] = 'DEPOSITO DARI PENDAPATAN SUPIR ' . $data['pendapatansupir_bukti'] . ' ' . $data['tglbukti'];
+                } else {
+                    $keterangan_detail[] = $data['keterangan'][0];
                 }
+            } else if ($fetchFormat->kodepenerimaan == 'BBM' || $fetchFormat->kodepenerimaan == 'PJPK') {
+                $coakredit_detail = [];
+                $coadebet_detail = [];
+                $nominal_detail = [];
+                $keterangan_detail = [];
+                $tgljatuhtempo = [];
+                $tgljatuhtempo[] = date('Y-m-d', strtotime($data['tglbukti']));
+                $coakredit_detail[] = $data['coa'];
+                $coadebet_detail[] = $coadebet;
+                $nominal_detail[] = $totalNominal;
+                $keterangan_detail[] = $data['keterangan'][0];
             }
 
             /*STORE PENERIMAAN*/
@@ -1234,7 +1275,7 @@ class PenerimaanTruckingHeader extends MyModel
             $penerimaanTruckingDetail = PenerimaanTruckingDetail::where('penerimaantruckingheader_id', $penerimaanTruckingHeader->id)->lockForUpdate()->delete();
 
             $penerimaanTruckingDetails = [];
-            $totalDeposito = 0;
+            $totalNominal = 0;
             $firstBuktiPosting = '';
             $firstBuktiNonPosting = '';
             $nominalPostingNon = ['nonposting' => 0, 'posting' => 0];
@@ -1319,7 +1360,7 @@ class PenerimaanTruckingHeader extends MyModel
                         $keterangan_detail[] = $data['keterangan'][$i];
                     }
                     $tgljatuhtempo[] = date('Y-m-d', strtotime($data['tglbukti']));
-                    $totalDeposito = $totalDeposito + $data['nominal'][$i];
+                    $totalNominal = $totalNominal + $data['nominal'][$i];
                 }
             }
 
@@ -1350,27 +1391,41 @@ class PenerimaanTruckingHeader extends MyModel
                 $keterangan_detail = [];
                 $coakredit_detail[] = $data['coa'];
                 $coadebet_detail[] = $coadebet;
-                $nominal_detail[] = $totalDeposito;
+                $nominal_detail[] = $totalNominal;
                 $tgljatuhtempo[] = date('Y-m-d', strtotime($data['tglbukti']));
-                $keterangan_detail[] = "PENGEMBALIAN TITIPAN EMKL " . $penerimaanTruckingHeader->nobukti;
+                $keterangan_detail[] = "PENGEMBALIAN TITIPAN EMKL " . $penerimaanTruckingHeader->nobukti . ". " . $data['keteranganheader'];
             }
             //if tanpaprosesnobukti NOT 2 STORE PENERIMAAN
             if ($tanpaprosesnobukti != 2) {
 
                 // tanpaprosesnobukti = 3 dari pendapatan supir
-                if ($tanpaprosesnobukti == 3) {
-                    if ($fetchFormat->kodepenerimaan == 'DPO') {
-                        $coakredit_detail = [];
-                        $coadebet_detail = [];
-                        $nominal_detail = [];
-                        $keterangan_detail = [];
-                        $tgljatuhtempo = [];
-                        $tgljatuhtempo[] = date('Y-m-d', strtotime($data['tglbukti']));
-                        $coakredit_detail[] = $data['coa'];
-                        $coadebet_detail[] = $coadebet;
-                        $nominal_detail[] = $totalDeposito;
+
+                if ($fetchFormat->kodepenerimaan == 'DPO') {
+                    $coakredit_detail = [];
+                    $coadebet_detail = [];
+                    $nominal_detail = [];
+                    $keterangan_detail = [];
+                    $tgljatuhtempo = [];
+                    $tgljatuhtempo[] = date('Y-m-d', strtotime($data['tglbukti']));
+                    $coakredit_detail[] = $data['coa'];
+                    $coadebet_detail[] = $coadebet;
+                    $nominal_detail[] = $totalNominal;
+                    if ($tanpaprosesnobukti == 3) {
                         $keterangan_detail[] = 'DEPOSITO DARI PENDAPATAN SUPIR ' . $data['pendapatansupir_bukti'] . ' ' . $data['tglbukti'];
+                    } else {
+                        $keterangan_detail[] = $data['keterangan'][0];
                     }
+                } else if ($fetchFormat->kodepenerimaan == 'BBM' || $fetchFormat->kodepenerimaan == 'PJPK') {
+                    $coakredit_detail = [];
+                    $coadebet_detail = [];
+                    $nominal_detail = [];
+                    $keterangan_detail = [];
+                    $tgljatuhtempo = [];
+                    $tgljatuhtempo[] = date('Y-m-d', strtotime($data['tglbukti']));
+                    $coakredit_detail[] = $data['coa'];
+                    $coadebet_detail[] = $coadebet;
+                    $nominal_detail[] = $totalNominal;
+                    $keterangan_detail[] = $data['keterangan'][0];
                 }
                 /*UPDATE PENERIMAAN*/
                 $penerimaanRequest = [
@@ -1414,7 +1469,7 @@ class PenerimaanTruckingHeader extends MyModel
                             $tgljatuhtempo[] = date('Y-m-d', strtotime($data['tglbukti']));
                             $coakredit_detail[] = $data['coa'];
                             $coadebet_detail[] = $coadebet;
-                            $nominal_detail[] = $totalDeposito;
+                            $nominal_detail[] = $totalNominal;
                             $keterangan_detail[] = 'DEPOSITO DARI PENDAPATAN SUPIR ' . $data['pendapatansupir_bukti'] . ' ' . $data['tglbukti'];
                         }
 
@@ -1472,7 +1527,7 @@ class PenerimaanTruckingHeader extends MyModel
                                 $tgljatuhtempo[] = date('Y-m-d', strtotime($data['tglbukti']));
                                 $coakredit_detail[] = $data['coa'];
                                 $coadebet_detail[] = $coadebet;
-                                $nominal_detail[] = $totalDeposito;
+                                $nominal_detail[] = $totalNominal;
                                 $keterangan_detail[] = 'DEPOSITO DARI PENDAPATAN SUPIR ' . $data['pendapatansupir_bukti'] . ' ' . $data['tglbukti'];
                             }
 
@@ -1516,7 +1571,7 @@ class PenerimaanTruckingHeader extends MyModel
                                     $tgljatuhtempo[] = date('Y-m-d', strtotime($data['tglbukti']));
                                     $coakredit_detail[] = $data['coa'];
                                     $coadebet_detail[] = $coadebet;
-                                    $nominal_detail[] = $totalDeposito;
+                                    $nominal_detail[] = $totalNominal;
                                     $keterangan_detail[] = 'DEPOSITO DARI PENDAPATAN SUPIR ' . $data['pendapatansupir_bukti'] . ' ' . $data['tglbukti'];
                                 }
                             }
@@ -1728,7 +1783,7 @@ class PenerimaanTruckingHeader extends MyModel
         if (isset($jurnal)) {
             $data = [
                 'kondisi' => true,
-                'keterangan' => 'Approval Jurnal '. $jurnal->penerimaan_nobukti,
+                'keterangan' => 'Approval Jurnal ' . $jurnal->penerimaan_nobukti,
                 'kodeerror' => 'SAP'
             ];
             goto selesai;
@@ -1747,7 +1802,7 @@ class PenerimaanTruckingHeader extends MyModel
         if (isset($prosesUangJalan)) {
             $data = [
                 'kondisi' => true,
-                'keterangan' => 'Proses Uang Jalan Supir '. $prosesUangJalan->nobukti,
+                'keterangan' => 'Proses Uang Jalan Supir ' . $prosesUangJalan->nobukti,
                 'kodeerror' => 'TDT'
             ];
             goto selesai;
@@ -1766,7 +1821,7 @@ class PenerimaanTruckingHeader extends MyModel
         if (isset($pengeluaranTrucking)) {
             $data = [
                 'kondisi' => true,
-                'keterangan' => 'Pengeluaran Trucking '. $pengeluaranTrucking->nobukti,
+                'keterangan' => 'Pengeluaran Trucking ' . $pengeluaranTrucking->nobukti,
                 'kodeerror' => 'SATL'
             ];
             goto selesai;
@@ -1785,7 +1840,7 @@ class PenerimaanTruckingHeader extends MyModel
         if (isset($jurnal)) {
             $data = [
                 'kondisi' => true,
-                'keterangan' => 'PEMUTIHAN SUPIR '. $jurnal->nobukti,
+                'keterangan' => 'PEMUTIHAN SUPIR ' . $jurnal->nobukti,
                 'kodeerror' => 'TDT'
             ];
             goto selesai;
@@ -1803,7 +1858,7 @@ class PenerimaanTruckingHeader extends MyModel
         if (isset($jurnal)) {
             $data = [
                 'kondisi' => true,
-                'keterangan' => 'PEMUTIHAN SUPIR '. $jurnal->nobukti,
+                'keterangan' => 'PEMUTIHAN SUPIR ' . $jurnal->nobukti,
                 'kodeerror' => 'TDT'
             ];
             goto selesai;
@@ -1821,7 +1876,7 @@ class PenerimaanTruckingHeader extends MyModel
         if (isset($gajiSupirDeposito)) {
             $data = [
                 'kondisi' => true,
-                'keterangan' => 'Rincian Gaji Supir '. $gajiSupirDeposito->gajisupir_nobukti,
+                'keterangan' => 'Rincian Gaji Supir ' . $gajiSupirDeposito->gajisupir_nobukti,
                 'kodeerror' => 'TDT'
             ];
             goto selesai;
@@ -1840,7 +1895,7 @@ class PenerimaanTruckingHeader extends MyModel
         if (isset($gajiSupirBBM)) {
             $data = [
                 'kondisi' => true,
-                'keterangan' => 'Rincian Gaji Supir '. $gajiSupirDeposito->gajisupir_nobukti,
+                'keterangan' => 'Rincian Gaji Supir ' . $gajiSupirDeposito->gajisupir_nobukti,
                 'kodeerror' => 'TDT'
             ];
             goto selesai;
@@ -1859,7 +1914,7 @@ class PenerimaanTruckingHeader extends MyModel
         if (isset($gajiSupirPelunasan)) {
             $data = [
                 'kondisi' => true,
-                'keterangan' => 'Rincian Gaji Supir '. $gajiSupirDeposito->gajisupir_nobukti,
+                'keterangan' => 'Rincian Gaji Supir ' . $gajiSupirDeposito->gajisupir_nobukti,
                 'kodeerror' => 'TDT'
             ];
             goto selesai;
@@ -1878,7 +1933,7 @@ class PenerimaanTruckingHeader extends MyModel
         if (isset($pendapatan)) {
             $data = [
                 'kondisi' => true,
-                'keterangan' => 'pendapatan supir '. $pendapatan->pendapatan,
+                'keterangan' => 'pendapatan supir ' . $pendapatan->pendapatan,
                 'kodeerror' => 'TDT'
             ];
             goto selesai;

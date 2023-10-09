@@ -27,6 +27,7 @@ class CreatePengeluarantruckingTable extends Migration
             $table->string('coapostingkredit',50)->nullable();           
             $table->unsignedBigInteger('format')->nullable();          
             $table->integer('jenisorder_id')->nullable();          
+            $table->unsignedBigInteger('aco_id')->nullable();          
             $table->longText('info')->nullable();
             $table->string('modifiedby',50)->nullable();              
             $table->timestamps();

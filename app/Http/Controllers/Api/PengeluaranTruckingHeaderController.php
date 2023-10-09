@@ -77,7 +77,7 @@ class PengeluaranTruckingHeaderController extends Controller
 
             if ($fetchFormat->kodepengeluaran == "BST") {
                 $detail = json_decode($request->detail);
-                
+
                 $keterangan = $detail->keterangan;
                 $nojobtrucking_detail = $detail->nojobtrucking_detail;
                 $noinvoice_detail = $detail->noinvoice_detail;
@@ -109,7 +109,7 @@ class PengeluaranTruckingHeaderController extends Controller
                 "transferkebank" => $request->transferkebank,
                 "supir_id" => $request->supir_id,
                 "trado_id" => $request->trado_id,
-                "suratpengantar_nobukti" => $request->suratpengantar_nobukti,                
+                "suratpengantar_nobukti" => $request->suratpengantar_nobukti,
                 "statustitipanemkl" => $request->detail_statustitipanemkl,
                 "container_id" => $request->container_id,
                 "pelanggan_id" => $request->pelanggan_id,
@@ -119,8 +119,11 @@ class PengeluaranTruckingHeaderController extends Controller
                 "qty" => $request->qty,
                 "stok_id" => $request->stok_id,
                 "pengeluaranstok_nobukti" => $request->pengeluaranstok_nobukti,
+                "penerimaanstok_nobukti" => $request->penerimaanstok_nobukti,
                 "harga" => $request->harga,
                 "nominaltagih" => $request->nominaltagih,
+                "nominaltambahan" => $request->nominaltambahan,
+                "keterangantambahan" => $request->keterangantambahan,
                 "nominal" => $nominal,
                 "jenisorder_id" => $request->jenisorder_id,
                 "nowarkat" => $request->nowarkat,
@@ -204,7 +207,7 @@ class PengeluaranTruckingHeaderController extends Controller
         //     }
         //     // $details[] = $r;
         // }
-        
+
 
         return response([
             'status' => true,
@@ -232,7 +235,7 @@ class PengeluaranTruckingHeaderController extends Controller
 
             if ($fetchFormat->kodepengeluaran == "BST") {
                 $detail = json_decode($request->detail);
-                
+
                 $keterangan = $detail->keterangan;
                 $nojobtrucking_detail = $detail->nojobtrucking_detail;
                 $noinvoice_detail = $detail->noinvoice_detail;
@@ -241,7 +244,7 @@ class PengeluaranTruckingHeaderController extends Controller
 
             $pengeluaranTruckingHeader = PengeluaranTruckingHeader::findOrfail($id);
             $pengeluaranTruckingHeader = (new PengeluaranTruckingHeader())->processUpdate($pengeluaranTruckingHeader, [
-                
+
                 'pengeluarantrucking_id' => $request->pengeluarantrucking_id,
                 "supirheader_id" => $request->supirheader_id,
                 "tradoheader_id" => $request->tradoheader_id,
@@ -266,7 +269,7 @@ class PengeluaranTruckingHeaderController extends Controller
                 "transferkebank" => $request->transferkebank,
                 "supir_id" => $request->supir_id,
                 "trado_id" => $request->trado_id,
-                "suratpengantar_nobukti" => $request->suratpengantar_nobukti,            
+                "suratpengantar_nobukti" => $request->suratpengantar_nobukti,
                 "statustitipanemkl" => $request->detail_statustitipanemkl,
                 "container_id" => $request->container_id,
                 "pelanggan_id" => $request->pelanggan_id,
@@ -276,8 +279,11 @@ class PengeluaranTruckingHeaderController extends Controller
                 "qty" => $request->qty,
                 "stok_id" => $request->stok_id,
                 "pengeluaranstok_nobukti" => $request->pengeluaranstok_nobukti,
+                "penerimaanstok_nobukti" => $request->penerimaanstok_nobukti,
                 "harga" => $request->harga,
                 "nominaltagih" => $request->nominaltagih,
+                "nominaltambahan" => $request->nominaltambahan,
+                "keterangantambahan" => $request->keterangantambahan,
                 "nominal" => $nominal,
                 "jenisorder_id" => $request->jenisorder_id,
                 "nowarkat" => $request->nowarkat,
@@ -370,14 +376,14 @@ class PengeluaranTruckingHeaderController extends Controller
             $selected = $this->getPosition($pengeluaranTruckingHeader, $pengeluaranTruckingHeader->getTable(), true);
             $pengeluaranTruckingHeader->position = $selected->position;
             $pengeluaranTruckingHeader->id = $selected->id;
-            if ($request->limit==0) {
+            if ($request->limit == 0) {
                 $pengeluaranTruckingHeader->page = ceil($pengeluaranTruckingHeader->position / (10));
             } else {
                 $pengeluaranTruckingHeader->page = ceil($pengeluaranTruckingHeader->position / ($request->limit ?? 10));
             }
             $pengeluaranTruckingHeader->tgldariheader = date('Y-m-01', strtotime(request()->tglbukti));
             $pengeluaranTruckingHeader->tglsampaiheader = date('Y-m-t', strtotime(request()->tglbukti));
-            
+
 
             DB::commit();
             return response()->json([
@@ -659,5 +665,105 @@ class PengeluaranTruckingHeaderController extends Controller
         return response([
             'data' => $pengeluarantruckingheader->getExport($id)
         ]);
+    }
+
+    /**
+     * @ClassName 
+     */
+    public function pengeluarantruckingpinjamansupir()
+    {
+    }
+
+    /**
+     * @ClassName 
+     */
+    public function pengeluarantruckingpenarikandeposito()
+    {
+    }
+
+    /**
+     * @ClassName 
+     */
+    public function pengeluarantruckingsumbangansosial()
+    {
+    }
+
+    /**
+     * @ClassName 
+     */
+    public function pengeluarantruckinginsentifsupir()
+    {
+    }
+    /**
+     * @ClassName 
+     */
+    public function pengeluarantruckingpelunasanhutangbbm()
+    {
+    }
+
+    /**
+     * @ClassName 
+     */
+    public function pengeluarantruckingbiayalainsupir()
+    {
+    }
+
+    /**
+     * @ClassName 
+     */
+    public function pengeluarantruckingklaimsupir()
+    {
+    }
+
+    /**
+     * @ClassName 
+     */
+    public function pengeluarantruckingpinjamankaryawan()
+    {
+    }
+
+    /**
+     * @ClassName 
+     */
+    public function pengeluarantruckingtitipanemkl()
+    {
+    }
+    /**
+     * @ClassName 
+     */
+    public function pengeluarantruckinglapanganlembur()
+    {
+    }
+
+    /**
+     * @ClassName 
+     */
+    public function pengeluarantruckinglapangannginap()
+    {
+    }
+    /**
+     * @ClassName 
+     */
+    public function pengeluarantruckingportal()
+    {
+    }
+
+    /**
+     * @ClassName 
+     */
+    public function pengeluarantruckinggajisupir()
+    {
+    }
+    /**
+     * @ClassName 
+     */
+    public function pengeluarantruckingbiayainsentif()
+    {
+    }
+    /**
+     * @ClassName 
+     */
+    public function pengeluarantruckinglapanganuangjalan()
+    {
     }
 }

@@ -628,6 +628,7 @@ route::middleware(['auth:api', 'authorized'])->group(function () {
     Route::get('trado/report', [TradoController::class, 'report']);
 
     Route::get('absentrado/field_length', [AbsenTradoController::class, 'fieldLength']);
+    Route::get('absentrado/rekapabsentrado', [AbsenTradoController::class, 'rekapabsentrado']);
     Route::post('absentrado/addrow', [AbsenTradoController::class, 'addrow']);
     Route::get('absentrado/default', [AbsenTradoController::class, 'default']);
     Route::post('absentrado/{id}/cekValidasi', [AbsenTradoController::class, 'cekValidasi'])->name('absentrado.cekValidasi')->whereNumber('id');
@@ -1159,6 +1160,8 @@ route::middleware(['auth:api', 'authorized'])->group(function () {
     Route::resource('approvalopname', ApprovalOpnameController::class)->whereNumber('approvalopname');
 
 
+    Route::get('suratpengantar/rekapcustomer', [SuratPengantarController::class, 'rekapcustomer']);
+    Route::get('absentrado/rekapabsentrado', [AbsenTradoController::class, 'rekapabsentrado']);
     Route::get('suratpengantar/combo', [SuratPengantarController::class, 'combo']);
     Route::post('suratpengantar/cekUpahSupir', [SuratPengantarController::class, 'cekUpahSupir']);
     Route::post('suratpengantar/addrow', [SuratPengantarController::class, 'addrow']);
@@ -1168,7 +1171,7 @@ route::middleware(['auth:api', 'authorized'])->group(function () {
     Route::get('suratpengantar/{id}/getpelabuhan', [SuratPengantarController::class, 'getpelabuhan'])->whereNumber('id');
     Route::post('suratpengantar/{id}/batalmuat', [SuratPengantarController::class, 'approvalBatalMuat'])->whereNumber('id');
     Route::post('suratpengantar/{id}/edittujuan', [SuratPengantarController::class, 'approvalEditTujuan'])->whereNumber('id');
-    Route::post('suratpengantar/{id}/titipanemkl', [SuratPengantarController::class, 'approvalTitipanEmkl'])->whereNumber('id');
+    Route::post('suratpengantar/titipanemkl', [SuratPengantarController::class, 'approvalTitipanEmkl']);
     Route::get('suratpengantar/{id}/getOrderanTrucking', [SuratPengantarController::class, 'getOrderanTrucking'])->whereNumber('id');
     Route::get('suratpengantar/getGaji/{dari}/{sampai}/{container}/{statuscontainer}', [SuratPengantarController::class, 'getGaji']);
     Route::resource('suratpengantarbiayatambahan', SuratPengantarBiayaTambahanController::class)->whereNumber('suratpengantarbiayatambahan');

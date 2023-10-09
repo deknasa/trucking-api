@@ -37,7 +37,7 @@ use Illuminate\Http\JsonResponse;
 
 class PenerimaanStokHeaderController extends Controller
 {
-      /**
+    /**
      * @ClassName 
      * PenerimaanStokHeader
      * @Detail1 PenerimaanStokDetailController
@@ -295,7 +295,7 @@ class PenerimaanStokHeaderController extends Controller
 
         $peneimaan = $penerimaanStokHeader->findOrFail($id);
         $passes = true;
-       
+
         $isEhtUsed = $penerimaanStokHeader->isEhtUsed($id);
         if ($isEhtUsed) {
             $query = Error::from(DB::raw("error with (readuncommitted)"))
@@ -309,7 +309,7 @@ class PenerimaanStokHeaderController extends Controller
                 'kodestatus' => '1',
                 'kodenobukti' => '1'
             ];
-            $passes = false; 
+            $passes = false;
             // return response($data);
         }
 
@@ -326,7 +326,7 @@ class PenerimaanStokHeaderController extends Controller
                 'kodestatus' => '1',
                 'kodenobukti' => '1'
             ];
-            $passes = false; 
+            $passes = false;
             // return response($data);
         }
 
@@ -343,15 +343,15 @@ class PenerimaanStokHeaderController extends Controller
                 'kodestatus' => '1',
                 'kodenobukti' => '1'
             ];
-            $passes = false; 
+            $passes = false;
             // return response($data);
-        } 
+        }
         $todayValidation = $penerimaanStokHeader->todayValidation($peneimaan->tglbukti);
         if (!$todayValidation) {
             $query = Error::from(DB::raw("error with (readuncommitted)"))
-            ->select('keterangan')
-            ->whereRaw("kodeerror = 'TEPT'")
-            ->get();
+                ->select('keterangan')
+                ->whereRaw("kodeerror = 'TEPT'")
+                ->get();
             // $keterangan = $query['0'];
             $keterangan = ['keterangan' => 'transaksi Sudah berbeda tanggal']; //$query['0'];
             $data = [
@@ -361,15 +361,15 @@ class PenerimaanStokHeaderController extends Controller
                 'kodenobukti' => '1'
             ];
 
-            $passes = false; 
+            $passes = false;
             // return response($data);
-        } 
+        }
         $isEditAble = $penerimaanStokHeader->isEditAble($id);
         if (!$isEditAble) {
             $query = Error::from(DB::raw("error with (readuncommitted)"))
-            ->select('keterangan')
-            ->whereRaw("kodeerror = 'TED'")
-            ->get();
+                ->select('keterangan')
+                ->whereRaw("kodeerror = 'TED'")
+                ->get();
             // $keterangan = $query['0'];
             $keterangan = ['keterangan' => 'Transaksi Tidak Bisa diedit']; //$query['0'];
             $data = [
@@ -379,9 +379,9 @@ class PenerimaanStokHeaderController extends Controller
                 'kodenobukti' => '1'
             ];
 
-            $passes = false; 
+            $passes = false;
             // return response($data);
-        } 
+        }
         $printValidation = $penerimaanStokHeader->printValidation($id);
         if ($printValidation) {
             $query = Error::from(DB::raw("error with (readuncommitted)"))
@@ -396,24 +396,24 @@ class PenerimaanStokHeaderController extends Controller
                 'kodenobukti' => '1'
             ];
 
-            $passes = false; 
+            $passes = false;
             // return response($data);
-        } 
+        }
         $isOutUsed = $penerimaanStokHeader->isOutUsed($id);
         if ($isOutUsed) {
             $query = Error::from(DB::raw("error with (readuncommitted)"))
-                ->select(db::raw("keterangan +' (". $isOutUsed[1] .")' as keterangan"))
+                ->select(db::raw("keterangan +' (" . $isOutUsed[1] . ")' as keterangan"))
                 ->whereRaw("kodeerror = 'SATL'")
                 ->first();
-            
-            $keterangan = $query ;
+
+            $keterangan = $query;
             $data = [
                 'message' => $keterangan,
                 'errors' => 'Pengeluaran stok',
                 'kodestatus' => '1',
                 'kodenobukti' => '1'
             ];
-            $passes = false; 
+            $passes = false;
             // return response($data);
         }
 
@@ -434,8 +434,6 @@ class PenerimaanStokHeaderController extends Controller
             return response($data);
         }
         return response($data);
-            
-        
     }
 
     /**
@@ -446,7 +444,7 @@ class PenerimaanStokHeaderController extends Controller
         DB::beginTransaction();
         try {
             $penerimaanStokHeader = PenerimaanStokHeader::lockForUpdate()->findOrFail($id);
-            
+
             $statusBolehEdit = DB::table('penerimaanstokheader')->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS APPROVAL')->where('text', 'APPROVAL')->first();
             $statusTidakBolehEdit = DB::table('penerimaanstokheader')->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS APPROVAL')->where('text', 'NON APPROVAL')->first();
             // statusapprovaleditabsensi,tglapprovaleditabsensi,userapprovaleditabsensi 
@@ -456,7 +454,7 @@ class PenerimaanStokHeaderController extends Controller
                 $aksi = $statusTidakBolehEdit->text;
             } else {
                 $tglbatasedit = date("Y-m-d", strtotime('today'));
-                $tglbatasedit = date("Y-m-d H:i:s", strtotime($tglbatasedit. ' 23:59:00'));
+                $tglbatasedit = date("Y-m-d H:i:s", strtotime($tglbatasedit . ' 23:59:00'));
                 $penerimaanStokHeader->tglbatasedit = $tglbatasedit;
                 $penerimaanStokHeader->statusapprovaledit = $statusBolehEdit->id;
                 $aksi = $statusBolehEdit->text;
@@ -555,6 +553,73 @@ class PenerimaanStokHeaderController extends Controller
      * @ClassName 
      */
     public function export()
+    {
+    }
+
+    /**
+     * @ClassName 
+     */
+    public function penerimaanstokpgdo()
+    {
+    }
+    /**
+     * @ClassName 
+     */
+    public function penerimaanstokpostok()
+    {
+    }
+    /**
+     * @ClassName 
+     */
+    public function penerimaanstokbelistok()
+    {
+    }
+    /**
+     * @ClassName 
+     */
+    public function penerimaanstokkoreksistok()
+    {
+    }
+    /**
+     * @ClassName 
+     */
+    public function penerimaanstokpindahgudang()
+    {
+    }
+    /**
+     * @ClassName 
+     */
+    public function penerimaanstokperbaikanstok()
+    {
+    }
+    /**
+     * @ClassName 
+     */
+    public function penerimaanstoksaldostoktrucking()
+    {
+    }
+    /**
+     * @ClassName 
+     */
+    public function penerimaanstokpengembaliansparepartgantungtrucking()
+    {
+    }
+    /**
+     * @ClassName 
+     */
+    public function penerimaanstokpengembalianspk()
+    {
+    }
+    /**
+     * @ClassName 
+     */
+    public function penerimaanstokkoreksivulkan()
+    {
+    }
+    /**
+     * @ClassName 
+     */
+    public function penerimaanstokpenambahannilai()
     {
     }
 }

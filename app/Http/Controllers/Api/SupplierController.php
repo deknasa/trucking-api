@@ -135,15 +135,26 @@ class SupplierController extends Controller
                 'statusdaftarharga' => $request->statusdaftarharga,
                 'statuspostingtnl' => $request->statuspostingtnl,
                 'kategoriusaha' => $request->kategoriusaha,
+                'from' => $request->from ?? '',
             ];
             $supplier = (new Supplier())->processStore($data);
-            $supplier->position = $this->getPosition($supplier, $supplier->getTable())->position;
-            if ($request->limit == 0) {
-                $supplier->page = ceil($supplier->position / (10));
-            } else {
-                $supplier->page = ceil($supplier->position / ($request->limit ?? 10));
+            if ($request->from == '') {
+                $supplier->position = $this->getPosition($supplier, $supplier->getTable())->position;
+                if ($request->limit == 0) {
+                    $supplier->page = ceil($supplier->position / (10));
+                } else {
+                    $supplier->page = ceil($supplier->position / ($request->limit ?? 10));
+                }
             }
 
+            $statusTnl = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS POSTING TNL')->where('text', 'POSTING TNL')->first();
+            if ($data['statuspostingtnl'] == $statusTnl->id) {
+                $statusBukanTnl = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS POSTING TNL')->where('text', 'TIDAK POSTING TNL')->first();
+                // posting ke tnl
+                $data['statuspostingtnl'] = $statusBukanTnl->id;
+    
+                $postingTNL = (new Supplier())->postingTnl($data);
+            }
             DB::commit();
 
             return response()->json([
@@ -290,7 +301,7 @@ class SupplierController extends Controller
                 'nama' => $request->nama
             ];
             (new Supplier())->processApprovalTnl($data);
-            
+
             DB::commit();
             return response([
                 'message' => 'Berhasil approval TNL'

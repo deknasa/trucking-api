@@ -25,6 +25,7 @@ class CreatePengeluarantruckingdetailTable extends Migration
             $table->unsignedBigInteger('trado_id')->nullable();
             $table->unsignedBigInteger('stok_id')->nullable();
             $table->string('pengeluaranstok_nobukti',50)->nullable();
+            $table->string('penerimaanstok_nobukti',50)->nullable();
             $table->double('qty', 15,2)->nullable();
             $table->double('harga', 15,2)->nullable();
             $table->double('total', 15,2)->nullable();
@@ -35,6 +36,8 @@ class CreatePengeluarantruckingdetailTable extends Migration
             $table->double('nominal',15,2)->nullable();        
             $table->double('nominaltagih',15,2)->nullable();        
             $table->longText('keterangan')->nullable();    
+            $table->double('nominaltambahan',15,2)->nullable();        
+            $table->longText('keterangantambahan')->nullable();    
             $table->integer('statustitipanemkl')->length(11)->nullable();
             $table->longText('info')->nullable();
             $table->string('modifiedby',50)->nullable();                  
