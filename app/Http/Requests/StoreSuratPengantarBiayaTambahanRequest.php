@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests;
 
+use App\Rules\ValidasiKeteranganSPBiayaTambahan;
 use Illuminate\Foundation\Http\FormRequest;
 
 class StoreSuratPengantarBiayaTambahanRequest extends FormRequest
@@ -13,7 +14,7 @@ class StoreSuratPengantarBiayaTambahanRequest extends FormRequest
      */
     public function authorize()
     {
-        return false;
+        return true;
     }
 
     /**
@@ -24,7 +25,7 @@ class StoreSuratPengantarBiayaTambahanRequest extends FormRequest
     public function rules()
     {
         return [
-            //
+            'keterangan_detail.*' => [new ValidasiKeteranganSPBiayaTambahan],
         ];
     }
 }
