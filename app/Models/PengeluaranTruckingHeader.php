@@ -286,6 +286,9 @@ class PengeluaranTruckingHeader extends MyModel
                 'pengeluarantruckingheader.trado_id',
                 'trado.keterangan as trado',
                 'pengeluarantruckingheader.trado_id as tradoheader_id',
+                'pengeluarantruckingheader.gandengan_id',
+                'gandengan.keterangan as gandengan',
+                'pengeluarantruckingheader.gandengan_id as gandenganheader_id',
                 'supir.namasupir as supirheader',
                 'supir.namasupir as supir',
                 'pengeluarantruckingheader.pengeluarantrucking_nobukti',
@@ -303,6 +306,7 @@ class PengeluaranTruckingHeader extends MyModel
             ->leftJoin(DB::raw("bank with (readuncommitted)"), 'pengeluarantruckingheader.bank_id', 'bank.id')
             ->leftJoin(DB::raw("supir with (readuncommitted)"), 'pengeluarantruckingheader.supir_id', 'supir.id')
             ->leftJoin(DB::raw("trado with (readuncommitted)"), 'pengeluarantruckingheader.trado_id', 'trado.id')
+            ->leftJoin(DB::raw("gandengan with (readuncommitted)"), 'pengeluarantruckingheader.gandengan_id', 'gandengan.id')
             ->leftJoin(DB::raw("jenisorder with (readuncommitted)"), 'pengeluarantruckingheader.jenisorder_id', 'jenisorder.id')
             ->leftJoin(DB::raw("akunpusat with (readuncommitted)"), 'pengeluarantruckingheader.coa', 'akunpusat.coa')
             ->where('pengeluarantruckingheader.id', '=', $id);
@@ -996,6 +1000,7 @@ class PengeluaranTruckingHeader extends MyModel
         $pengeluaranTruckingHeader->periode = $periode;
         $pengeluaranTruckingHeader->supir_id = $data['supirheader_id'] ?? '';
         $pengeluaranTruckingHeader->trado_id = $data['tradoheader_id'] ?? '';
+        $pengeluaranTruckingHeader->gandengan_id = $data['gandenganheader_id'] ?? '';
         $pengeluaranTruckingHeader->jenisorder_id = $data['jenisorderan_id'] ?? '';
         $pengeluaranTruckingHeader->statusformat = $data['statusformat'] ?? $format->id;
         $pengeluaranTruckingHeader->statuscetak = $statusCetak->id;
@@ -1238,6 +1243,7 @@ class PengeluaranTruckingHeader extends MyModel
         $pengeluaranTruckingHeader->periode = $periode;
         $pengeluaranTruckingHeader->supir_id = $data['supirheader_id'] ?? '';
         $pengeluaranTruckingHeader->trado_id = $data['tradoheader_id'] ?? '';
+        $pengeluaranTruckingHeader->gandengan_id = $data['gandenganheader_id'] ?? '';
         $pengeluaranTruckingHeader->jenisorder_id = $data['jenisorderan_id'] ?? '';
         $pengeluaranTruckingHeader->statusformat = $data['statusformat'] ?? $format->id;
         $pengeluaranTruckingHeader->modifiedby = auth('api')->user()->name;
