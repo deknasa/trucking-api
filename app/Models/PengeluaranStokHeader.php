@@ -609,7 +609,10 @@ class PengeluaranStokHeader extends MyModel
         if ($korv->id == $data['pengeluaranstok_id']) {
             $data['gudang_id'] =  Parameter::where('grp', 'GUDANG KANTOR')->where('subgrp', 'GUDANG KANTOR')->first()->text;
         }
-        if ($pja->text == $data['pengeluaranstok_id'] && $afkir->id == $data['pengeluaranstok_id']) {
+        if ($pja->text == $data['pengeluaranstok_id']) {
+            $data['gudang_id'] =  Parameter::where('grp', 'GUDANG SEMENTARA')->where('subgrp', 'GUDANG SEMENTARA')->first()->text;
+        }
+        if ($afkir->id == $data['pengeluaranstok_id']) {
             $data['gudang_id'] =  Parameter::where('grp', 'GUDANG SEMENTARA')->where('subgrp', 'GUDANG SEMENTARA')->first()->text;
         }
         $bank_id = $data['bank_id'] ?? 0;
@@ -684,13 +687,24 @@ class PengeluaranStokHeader extends MyModel
 
 
         for ($i = 0; $i < count($data['detail_stok_id']); $i++) {
+            $pengeluarantrucking_nobukti = $data['pengeluarantrucking_nobukti'] ?? '';
+            if ($afkir->id == $data['pengeluaranstok_id']) {
+                if ($pengeluarantrucking_nobukti == '') {
+                    // $kartustok = KartuStok::getlaporan(date('Y-m-d',strtotime(request()->tgldariheader)), date('Y-m-d',strtotime(request()->tglsampaiheader)),$data['detail_stok_id'][$i], $data['detail_stok_id'][$i], $data['gudang_id'], 0,0, 'GUDANG');
+                    $ks = KartuStok::select('stok_id', DB::raw('SUM(qtymasuk) - SUM(qtykeluar) AS qty'))
+                    ->where('stok_id',$data['detail_stok_id'][$i])
+                    ->groupBy('stok_id')
+                    ->first();
+                    $data['detail_qty'][$i] = $ks->qty;
+                }
+            }
             $pengeluaranStokDetail = (new PengeluaranStokDetail())->processStore($pengeluaranStokHeader, [
                 "pengeluaranstokheader_id" => $pengeluaranStokHeader->id,
                 "nobukti" => $pengeluaranStokHeader->nobukti,
                 "stok_id" => $data['detail_stok_id'][$i],
-                "qty" => ($data['detail_qty'])?$data['detail_qty'][$i]:null,
-                "harga" => ($data['detail_harga'])?$data['detail_harga'][$i]:null,
-                "persentasediscount" => ($data['detail_persentasediscount'])?$data['detail_persentasediscount'][$i]:null,
+                "qty" => ($data['detail_qty'])?$data['detail_qty'][$i]:0,
+                "harga" => ($data['detail_harga'])?$data['detail_harga'][$i]:0,
+                "persentasediscount" => ($data['detail_persentasediscount'])?$data['detail_persentasediscount'][$i]:0,
                 'statusoli' => ($fetchFormat->kodepengeluaran == 'SPK') ? $data['detail_statusoli'][$i] : "",
                 "vulkanisirke" => ($data['detail_vulkanisirke'])?$data['detail_vulkanisirke'][$i]:null,
                 "statusban" => ($data['detail_statusban'])?$data['detail_statusban'][$i]:null,
@@ -724,8 +738,7 @@ class PengeluaranStokHeader extends MyModel
             ];
 
 
-
-            if ($ksgudang_id == 0 && ($pengeluaranstok_id != 1 && $pengeluaranstok_id != 5)) {
+            if (($ksgudang_id == 0 && ($pengeluaranstok_id != 1 && $pengeluaranstok_id != 5))|| ($pja->text == $data['pengeluaranstok_id'] ||$afkir->id == $data['pengeluaranstok_id'])) {
 
                 $ksqty = $data['detail_qty'][$i] ?? 0;
                 $ksharga = $data['detail_harga'][$i] ?? 0;
@@ -792,7 +805,7 @@ class PengeluaranStokHeader extends MyModel
                 $datadetailfifo['gudang_id'] = $gudangkantor->text;
             }
             //hanya pja dan koreksi yang tidak dari gudang yang tidak menggunakan fifo
-            if ((($kor->text == $data['pengeluaranstok_id']) && $gudang_id) || (($kor->text != $data['pengeluaranstok_id']) && ($pja->text != $data['pengeluaranstok_id']) && ($korv->id != $data['pengeluaranstok_id']))) {
+            if ((($kor->text == $data['pengeluaranstok_id']) && $gudang_id) || (($kor->text != $data['pengeluaranstok_id']) && ($pja->text != $data['pengeluaranstok_id']) && ($korv->id != $data['pengeluaranstok_id']) && ($afkir->id != $data['pengeluaranstok_id']))) {
                 (new PengeluaranStokDetailFifo())->processStore($pengeluaranStokHeader, $datadetailfifo);
             }
 
@@ -1189,35 +1202,6 @@ class PengeluaranStokHeader extends MyModel
 
         $potongKas = Parameter::where('grp', 'STATUS POTONG RETUR')->where('text', 'POSTING KE KAS/BANK')->first();
         $potongHutang = Parameter::where('grp', 'STATUS POTONG RETUR')->where('text', 'POTONG HUTANG')->first();
-        // /*DELETE EXISTING JURNALUMUMHEADER*/
-        // JurnalUmumDetail::where('nobukti', $pengeluaranStokHeader->nobukti)->delete();
-        // JurnalUmumHeader::where('nobukti', $pengeluaranStokHeader->nobukti)->delete();
-
-        // if ($statuspotongretur == $potongKas->id) {
-        //     /*DELETE EXISTING PENERIMAANHEADER*/
-        //     PenerimaanDetail::where('nobukti', $pengeluaranStokHeader->penerimaan_nobukti)->delete();
-        //     PenerimaanHeader::where('nobukti', $pengeluaranStokHeader->penerimaan_nobukti)->delete();
-        //     /*DELETE EXISTING JURNALUMUMHEADER DARI PENERIMAAN*/
-        //     JurnalUmumDetail::where('nobukti', $pengeluaranStokHeader->penerimaan_nobukti)->delete();
-        //     JurnalUmumHeader::where('nobukti', $pengeluaranStokHeader->penerimaan_nobukti)->delete();
-
-        // } else if ($statuspotongretur == $potongHutang->id) {
-        //     $hutangBayarHeader = HutangBayarHeader::where('nobukti', $pengeluaranStokHeader->hutangbayar_nobukti)->first();
-        //     $pengeluaranHeader = PengeluaranHeader::where('nobukti', $hutangBayarHeader->pengeluaran_nobukti)->first();
-
-        //     /*DELETE EXISTING JURNALUMUMHEADER DARI PENGELUARAN DARI HUTANGBAYAR*/
-        //     JurnalUmumDetail::where('nobukti', $pengeluaranHeader->nobukti)->delete();
-        //     JurnalUmumHeader::where('nobukti', $pengeluaranHeader->nobukti)->delete();
-
-        //     /*DELETE EXISTING PENGELUARAN DARI HUTANGBAYAR*/
-        //     PengeluaranDetail::where('nobukti', $pengeluaranHeader->nobukti)->delete();
-        //     PengeluaranHeader::where('nobukti', $pengeluaranHeader->nobukti)->delete();
-        //     /*DELETE EXISTING HUTANGBAYARHEADER*/
-        //     HutangBayarDetail::where('nobukti', $pengeluaranStokHeader->hutangbayar_nobukti)->delete();
-        //     HutangBayarHeader::where('nobukti', $pengeluaranStokHeader->hutangbayar_nobukti)->delete();
-        // }
-
-
         /*STORE DETAIL*/
         $pengeluaranStokDetails = [];
         if (!$data['detail_stok_id']) {
@@ -1254,13 +1238,25 @@ class PengeluaranStokHeader extends MyModel
         for ($i = 0; $i < count($data['detail_stok_id']); $i++) {
             // $total = $data['detail_harga'][$i] * $data['detail_qty'][$i];
 
+            $pengeluarantrucking_nobukti = $data['pengeluarantrucking_nobukti'] ?? '';
+            if ($afkir->id == $data['pengeluaranstok_id']) {
+                if ($pengeluarantrucking_nobukti == '') {
+                    // $kartustok = KartuStok::getlaporan(date('Y-m-d',strtotime(request()->tgldariheader)), date('Y-m-d',strtotime(request()->tglsampaiheader)),$data['detail_stok_id'][$i], $data['detail_stok_id'][$i], $data['gudang_id'], 0,0, 'GUDANG');
+                    $ks = KartuStok::select('stok_id', DB::raw('SUM(qtymasuk) - SUM(qtykeluar) AS qty'))
+                    ->where('stok_id',$data['detail_stok_id'][$i])
+                    ->groupBy('stok_id')
+                    ->first();
+                    $data['detail_qty'][$i] = $ks->qty;
+                }
+            }
+
             $pengeluaranStokDetail = (new PengeluaranStokDetail())->processStore($pengeluaranStokHeader, [
                 "pengeluaranstokheader_id" => $pengeluaranStokHeader->id,
                 "nobukti" => $pengeluaranStokHeader->nobukti,
                 "stok_id" => $data['detail_stok_id'][$i],
-                "qty" => ($data['detail_qty'])?$data['detail_qty'][$i]:null,
-                "harga" => ($data['detail_harga'])?$data['detail_harga'][$i]:null,
-                "persentasediscount" => ($data['detail_persentasediscount'])?$data['detail_persentasediscount'][$i]:null,
+                "qty" => ($data['detail_qty'])?$data['detail_qty'][$i]:0,
+                "harga" => ($data['detail_harga'])?$data['detail_harga'][$i]:0,
+                "persentasediscount" => ($data['detail_persentasediscount'])?$data['detail_persentasediscount'][$i]:0,
                 'statusoli' => ($fetchFormat->kodepengeluaran == 'SPK') ? $data['detail_statusoli'][$i] : "",
                 "vulkanisirke" => ($data['detail_vulkanisirke'])?$data['detail_vulkanisirke'][$i]:null,
                 "statusban" => ($data['detail_statusban'])?$data['detail_statusban'][$i]:null,
@@ -1300,7 +1296,7 @@ class PengeluaranStokHeader extends MyModel
             ];
 
 
-            if ($ksgudang_id == 0 && ($pengeluaranstok_id != 1)) {
+            if ($ksgudang_id == 0 && ($pengeluaranstok_id != 1)|| ($pja->text == $data['pengeluaranstok_id'] ||$afkir->id == $data['pengeluaranstok_id'])) {
 
                 $ksqty = $data['detail_qty'][$i] ?? 0;
                 $ksharga = $data['detail_harga'][$i] ?? 0;
@@ -1328,7 +1324,7 @@ class PengeluaranStokHeader extends MyModel
             }
 
             //hanya pja dan koreksi yang tidak dari gudang yang tidak menggunakan fifo
-            if ((($kor->text == $fetchFormat->id) && $data['gudang_id']) || ($kor->text != $fetchFormat->id && $pja->text != $fetchFormat->id && ($korv->id != $fetchFormat->id))) {
+            if ((($kor->text == $fetchFormat->id) && $data['gudang_id']) || ($kor->text != $fetchFormat->id && $pja->text != $fetchFormat->id && ($korv->id != $fetchFormat->id) && ($afkir->id != $fetchFormat->id))) {
                 (new PengeluaranStokDetailFifo())->processStore($pengeluaranStokHeader, $datadetailfifo);
             }
         }

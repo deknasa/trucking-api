@@ -35,6 +35,7 @@ class StorePengeluaranStokHeaderRequest extends FormRequest
         $gst = DB::table('parameter')->where('grp', 'GST STOK')->where('subgrp', 'GST STOK')->first();
         $reuse = DB::table('parameter')->where('grp', 'STATUS REUSE')->where('text', 'REUSE')->first();
         $korv = DB::table('pengeluaranstok')->where('kodepengeluaran', 'KORV')->first();
+        $afkir = DB::table('pengeluaranstok')->where('kodepengeluaran', 'AFKIR')->first();
         
         
         $rules = [
@@ -118,7 +119,18 @@ class StorePengeluaranStokHeaderRequest extends FormRequest
                 $returRules = array_merge($returRules,['bank_id' => 'required','bank' => 'required']);
             }
         }
-        $rules = array_merge($rules, $gudangTradoGandengan,$returRules,$spkRules);
+        if($afkir->id == request()->pengeluaranstok_id) {
+            $afkirRules = [
+                'pengeluarantrucking_nobukti' => function ($attribute, $value, $fail){
+                    if(request()->detail_vulkanisirke[0] > 3){
+                        $fail('pengeluaran trucking '.app(ErrorController::class)->geterror('WI')->keterangan);
+                    }
+                }  
+            ];
+        }
+
+        
+        $rules = array_merge($rules, $gudangTradoGandengan,$returRules,$spkRules,$afkirRules);
         
         $relatedRequests = [
             StorePengeluaranStokDetailRequest::class
