@@ -15,6 +15,14 @@ class CreateHutangprediksififoTable extends Migration
     {
         Schema::create('hutangprediksififo', function (Blueprint $table) {
             $table->id();
+            $table->string('nobukti',50)->nullable();
+            $table->string('nobukti_id',50)->nullable();
+            $table->unsignedBigInteger('urut')->nullable();
+            $table->double('nominal',15,2)->nullable();
+            $table->string('penerimaanhutangprediksi_nobukti',50)->nullable();
+            $table->double('penerimaanhutangprediksi_nominal',15,2)->nullable();
+            $table->longText('info')->nullable();            
+            $table->string('modifiedby',50)->nullable();
             $table->timestamps();
         });
     }
