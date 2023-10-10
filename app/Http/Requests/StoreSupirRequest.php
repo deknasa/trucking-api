@@ -108,7 +108,7 @@ class StoreSupirRequest extends FormRequest
                 'statusaktif' => [$ruleKeterangan, 'int', 'exists:parameter,id'],
                 'tglmasuk' => [$ruleKeterangan],
                 'tglexpsim' => [$ruleKeterangan],
-                'nosim' => [$ruleKeterangan, 'unique:supir', 'min:12', 'max:12', 'nullable'],
+                'nosim' => [$ruleKeterangan, 'unique:supir', 'min:12', 'max:15', 'nullable'],
                 'noktp' => ['required', 'unique:supir', 'min:16', 'max:16'],
                 'nokk' => [$ruleKeterangan, 'min:16', 'max:16', 'nullable'],
                 'tgllahir' => [
@@ -208,7 +208,7 @@ class StoreSupirRequest extends FormRequest
             'noktp.min' => 'Min. 16 karakter',
             'nokk.max' => 'Max. 16 karakter',
             'nokk.min' => 'Min. 16 karakter',
-            'nosim.max' => 'Max. 12 karakter',
+            'nosim.max' => 'Max. 15 karakter',
             'nosim.min' => 'Min. 12 karakter',
             'tgllahir.after_or_equal' => ':attribute ' . $controller->geterror('NTLK')->keterangan . ' ' . date('d-m-Y', strtotime($tglbatasawal)) . ' dan ' . $controller->geterror('NTLB')->keterangan . ' ' . date('d-m-Y', strtotime($tglbatasakhir)),
             'tgllahir.before_or_equal' => ':attribute ' . $controller->geterror('NTLK')->keterangan . ' ' . date('d-m-Y', strtotime($tglbatasawal)) . ' dan ' . $controller->geterror('NTLB')->keterangan . ' ' . date('d-m-Y', strtotime($tglbatasakhir)),
