@@ -38,7 +38,7 @@ class PengeluaranStokDetailController extends Controller
     public function index(Request $request)
     {
         $pengeluaranStokDetail = new PengeluaranStokDetail();
-        if ($request->penerimaanstokheader_id != '') {
+        if ($request->penerimaanstokheader_id != '' && $request->penerimaanstokheader_id != 0 || $request->penerimaanstokheader_id && 'undefined') {
 
             $penerimaanStokDetail = new PenerimaanStokDetail();
 

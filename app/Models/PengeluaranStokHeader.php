@@ -7,6 +7,8 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 use App\Services\RunningNumberService;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Http;
 
 class PengeluaranStokHeader extends MyModel
 {
@@ -127,6 +129,123 @@ class PengeluaranStokHeader extends MyModel
         return $data;
     }
 
+    public function getTNLForKlaim($dari, $sampai)
+    {
+        $server = config('app.url_tnl');
+        $getToken = Http::withHeaders([
+            'Content-Type' => 'application/json',
+            'Accept' => 'application/json'
+        ])
+            ->post($server . 'token', [
+                'user' => 'ADMIN',
+                'password' => getenv('PASSWORD_TNL'),
+                'ipclient' => '',
+                'ipserver' => '',
+                'latitude' => '',
+                'longitude' => '',
+                'browser' => '',
+                'os' => '',
+            ]);
+        $access_token = json_decode($getToken, TRUE)['access_token'];
+        $getTrado = Http::withHeaders([
+            'Accept' => 'application/json',
+            'Authorization' => 'Bearer ' . $access_token,
+            'Content-Type' => 'application/json',
+        ])
+
+            ->get($server . "pengeluaranstokheader?limit=0&tgldari=" .$dari . "&tglsampai=" . $sampai);
+        $data = $getTrado->json()['data'];
+
+        $class = 'PengeluaranStokHeaderController';
+        $user = auth('api')->user()->name;
+
+        $temtabel = 'tempspk' . rand(1, getrandmax()) . str_replace('.', '', microtime(true)) . request()->nd ?? 0;
+        $querydata = DB::table('listtemporarytabel')->from(
+            DB::raw("listtemporarytabel a with (readuncommitted)")
+        )
+            ->select(
+                'id',
+                'class',
+                'namatabel',
+            )
+            ->where('class', '=', $class)
+            ->where('modifiedby', '=', $user)
+            ->first();
+
+        if (isset($querydata)) {
+            Schema::dropIfExists($querydata->namatabel);
+            DB::table('listtemporarytabel')->where('id', $querydata->id)->delete();
+        }
+        DB::table('listtemporarytabel')->insert(
+            [
+                'class' => $class,
+                'namatabel' => $temtabel,
+                'modifiedby' => $user,
+                'created_at' => date('Y/m/d H:i:s'),
+                'updated_at' => date('Y/m/d H:i:s'),
+            ]
+        );
+
+        Schema::create($temtabel, function (Blueprint $table) {
+            $table->integer('id')->nullable();
+            $table->string('nobukti', 30)->nullable();
+            $table->date('tglbukti')->nullable();
+            $table->integer('pengeluaranstok_id')->length(11)->nullable();
+            $table->integer('trado_id')->length(11)->nullable();
+            $table->integer('gandengan_id')->length(11)->nullable();
+            $table->integer('gudang_id')->length(11)->nullable();
+            $table->integer('supir_id')->length(11)->nullable();
+            $table->integer('supplier_id')->length(11)->nullable();
+            $table->string('pengeluaranstok_nobukti', 50)->nullable();
+            $table->string('penerimaanstok_nobukti', 50)->nullable();
+            $table->string('pengeluarantrucking_nobukti', 50)->nullable();
+            $table->string('penerimaan_nobukti', 50)->nullable();
+            $table->string('hutangbayar_nobukti', 50)->nullable();
+            $table->string('servicein_nobukti', 50)->nullable();
+            $table->integer('kerusakan_id')->length(11)->nullable();
+            $table->string('statuscetak', 1500)->nullable();
+            $table->integer('statusformat')->length(11)->nullable();
+            $table->integer('statuspotongretur')->length(11)->nullable();
+            $table->integer('bank_id')->length(11)->nullable();
+            $table->date('tglkasmasuk')->nullable();
+            $table->string('modifiedby', 50)->nullable();
+            $table->dateTime('created_at')->nullable();
+            $table->dateTime('updated_at')->nullable();
+            $table->integer('jumlahcetak')->length(11)->nullable();
+            $table->string('kerusakan', 255)->nullable();
+            $table->string('bank', 70)->nullable();
+            $table->string('pengeluaranstok', 255)->nullable();
+            $table->string('trado', 50)->nullable();
+            $table->string('gudang', 50)->nullable();
+            $table->string('gandengan', 50)->nullable();
+            $table->string('supir', 100)->nullable();
+            $table->string('supplier', 1500)->nullable();
+            $table->string('statusedit', 1500)->nullable();
+            $table->integer('statusedit_id')->length(11)->nullable();
+        });
+
+        foreach ($data as $row) {
+
+            unset($row['judul']);
+            unset($row['tglcetak']);
+            unset($row['usercetak']);
+            unset($row['tgldariheaderpenerimaanstok']);
+            unset($row['tglsampaiheaderpenerimaanstok']);
+            unset($row['tgldariheaderpenerimaanheader']);
+            unset($row['tglsampaiheaderpenerimaanheader']);
+            unset($row['tgldariheaderhutangbayarheader']);
+            unset($row['tglsampaiheaderhutangbayarheader']);
+            unset($row['tgldariheaderpengeluaran']);
+            unset($row['tglsampaiheaderpengeluaran']);
+            unset($row['tgldariheaderserviceinheader']);
+            unset($row['tglsampaiheaderserviceinheader']);
+            unset($row['tgldariheaderpengeluarantruckingheader']);
+            unset($row['tglsampaiheaderpengeluarantruckingheader']);
+            DB::table($temtabel)->insert($row);
+        }
+        
+        return $temtabel;
+    }
     public function sort($query)
     {
         if ($this->params['sortIndex'] == 'grp') {
@@ -688,14 +807,14 @@ class PengeluaranStokHeader extends MyModel
                 "pengeluaranstokheader_id" => $pengeluaranStokHeader->id,
                 "nobukti" => $pengeluaranStokHeader->nobukti,
                 "stok_id" => $data['detail_stok_id'][$i],
-                "qty" => ($data['detail_qty'])?$data['detail_qty'][$i]:null,
-                "harga" => ($data['detail_harga'])?$data['detail_harga'][$i]:null,
-                "persentasediscount" => ($data['detail_persentasediscount'])?$data['detail_persentasediscount'][$i]:null,
+                "qty" => ($data['detail_qty']) ? $data['detail_qty'][$i] : null,
+                "harga" => ($data['detail_harga']) ? $data['detail_harga'][$i] : null,
+                "persentasediscount" => ($data['detail_persentasediscount']) ? $data['detail_persentasediscount'][$i] : null,
                 'statusoli' => ($fetchFormat->kodepengeluaran == 'SPK') ? $data['detail_statusoli'][$i] : "",
-                "vulkanisirke" => ($data['detail_vulkanisirke'])?$data['detail_vulkanisirke'][$i]:null,
-                "statusban" => ($data['detail_statusban'])?$data['detail_statusban'][$i]:null,
-                "detail_keterangan" => ($data['detail_keterangan'])?$data['detail_keterangan'][$i]:null,
-                "detail_statusban" => ($data['detail_statusban'])?$data['detail_statusban'][$i]:null,
+                "vulkanisirke" => ($data['detail_vulkanisirke']) ? $data['detail_vulkanisirke'][$i] : null,
+                "statusban" => ($data['detail_statusban']) ? $data['detail_statusban'][$i] : null,
+                "detail_keterangan" => ($data['detail_keterangan']) ? $data['detail_keterangan'][$i] : null,
+                "detail_statusban" => ($data['detail_statusban']) ? $data['detail_statusban'][$i] : null,
                 "trado_id" => ($trado_id == null) ? 0 : $trado_id,
                 "gandengan_id" => ($gandengan_id == null) ? 0 : $gandengan_id,
                 "gudang_id" => ($gudang_id == null) ? 0 : $gudang_id,
@@ -1154,7 +1273,7 @@ class PengeluaranStokHeader extends MyModel
         $pengeluaranStokHeader->supplier_id         = ($data['supplier_id'] == null) ? "" : $data['supplier_id'];
         $pengeluaranStokHeader->pengeluaranstok_nobukti = ($data['pengeluaranstok_nobukti'] == null) ? "" : $data['pengeluaranstok_nobukti'];
         $pengeluaranStokHeader->penerimaanstok_nobukti  = $penerimaanstok_nobukti;
-        $pengeluaranStokHeader->pengeluarantrucking_nobukti  = $data['pengeluarantrucking_nobukti'];        
+        $pengeluaranStokHeader->pengeluarantrucking_nobukti  = $data['pengeluarantrucking_nobukti'];
         $pengeluaranStokHeader->servicein_nobukti    = $servicein_nobukti;
         $pengeluaranStokHeader->kerusakan_id         = ($data['kerusakan_id'] == null) ? "" : $data['kerusakan_id'];
         $pengeluaranStokHeader->statusformat      = ($statusformat == null) ? "" : $statusformat;
@@ -1258,14 +1377,14 @@ class PengeluaranStokHeader extends MyModel
                 "pengeluaranstokheader_id" => $pengeluaranStokHeader->id,
                 "nobukti" => $pengeluaranStokHeader->nobukti,
                 "stok_id" => $data['detail_stok_id'][$i],
-                "qty" => ($data['detail_qty'])?$data['detail_qty'][$i]:null,
-                "harga" => ($data['detail_harga'])?$data['detail_harga'][$i]:null,
-                "persentasediscount" => ($data['detail_persentasediscount'])?$data['detail_persentasediscount'][$i]:null,
+                "qty" => ($data['detail_qty']) ? $data['detail_qty'][$i] : null,
+                "harga" => ($data['detail_harga']) ? $data['detail_harga'][$i] : null,
+                "persentasediscount" => ($data['detail_persentasediscount']) ? $data['detail_persentasediscount'][$i] : null,
                 'statusoli' => ($fetchFormat->kodepengeluaran == 'SPK') ? $data['detail_statusoli'][$i] : "",
-                "vulkanisirke" => ($data['detail_vulkanisirke'])?$data['detail_vulkanisirke'][$i]:null,
-                "statusban" => ($data['detail_statusban'])?$data['detail_statusban'][$i]:null,
-                "detail_keterangan" => ($data['detail_keterangan'])?$data['detail_keterangan'][$i]:null,
-                "detail_statusban" => ($data['detail_statusban'])?$data['detail_statusban'][$i]:null,
+                "vulkanisirke" => ($data['detail_vulkanisirke']) ? $data['detail_vulkanisirke'][$i] : null,
+                "statusban" => ($data['detail_statusban']) ? $data['detail_statusban'][$i] : null,
+                "detail_keterangan" => ($data['detail_keterangan']) ? $data['detail_keterangan'][$i] : null,
+                "detail_statusban" => ($data['detail_statusban']) ? $data['detail_statusban'][$i] : null,
                 "trado_id" => ($trado_id == null) ? "" : $trado_id,
                 "gandengan_id" => ($gandengan_id == null) ? "" : $gandengan_id,
                 "gudang_id" => ($gudang_id == null) ? "" : $gudang_id,
@@ -1351,7 +1470,7 @@ class PengeluaranStokHeader extends MyModel
             'keterangan_detail' => $keterangan_detail
         ];
 
-       
+
         if ($rtr->text == $fetchFormat->id) {
             $potongKas = Parameter::where('grp', 'STATUS POTONG RETUR')->where('text', 'POSTING KE KAS/BANK')->first();
             $potongHutang = Parameter::where('grp', 'STATUS POTONG RETUR')->where('text', 'POTONG HUTANG')->first();
@@ -1523,9 +1642,8 @@ class PengeluaranStokHeader extends MyModel
                 ];
                 $jurnalUmumHeader = JurnalUmumHeader::where('nobukti', $pengeluaranStokHeader->nobukti)->lockForUpdate()->first();
                 if ($jurnalUmumHeader != null) {
-             
-                    $jurnalUmumHeader = (new JurnalUmumHeader())->processUpdate($jurnalUmumHeader, $jurnalRequest);
 
+                    $jurnalUmumHeader = (new JurnalUmumHeader())->processUpdate($jurnalUmumHeader, $jurnalRequest);
                 } else {
                     $jurnalUmumHeader = (new JurnalUmumHeader())->processStore($jurnalRequest);
                 }

@@ -4,7 +4,9 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Validation\ValidationException;
 
@@ -94,6 +96,78 @@ class PengeluaranStokDetail extends MyModel
         }
         return $query->get();
     }
+
+    public function getTNLForKlaim()
+    {
+        $server = config('app.url_tnl');
+        $getToken = Http::withHeaders([
+            'Content-Type' => 'application/json',
+            'Accept' => 'application/json'
+        ])
+            ->post($server . 'token', [
+                'user' => 'ADMIN',
+                'password' => getenv('PASSWORD_TNL'),
+                'ipclient' => '',
+                'ipserver' => '',
+                'latitude' => '',
+                'longitude' => '',
+                'browser' => '',
+                'os' => '',
+            ]);
+        $access_token = json_decode($getToken, TRUE)['access_token'];
+
+        $getTrado = Http::withHeaders([
+            'Accept' => 'application/json',
+            'Authorization' => 'Bearer ' . $access_token,
+            'Content-Type' => 'application/json',
+        ])
+
+            ->get($server . "pengeluaranstokdetail?limit=0&pengeluaranstokheader_id=" . request()->pengeluaranstokheader_id);
+
+        $data = $getTrado->json()['data'];
+
+        $user = auth('api')->user()->name;
+        $class = 'PengeluaranStokDetailController';
+
+        $temtabel = 'tempspkdettnl' . rand(1, getrandmax()) . str_replace('.', '', microtime(true)) . request()->nd ?? 0;
+
+        DB::table('listtemporarytabel')->insert(
+            [
+                'class' => $class,
+                'namatabel' => $temtabel,
+                'modifiedby' => $user,
+                'created_at' => date('Y/m/d H:i:s'),
+                'updated_at' => date('Y/m/d H:i:s'),
+            ]
+        );
+
+        Schema::create($temtabel, function (Blueprint $table) {
+            $table->integer('pengeluaranstokheader_id')->nullable();
+            $table->string('nobukti', 300)->nullable();
+            $table->integer('stok_id')->nullable();
+            $table->string('stok', 300)->nullable();
+            $table->double('qty', 15, 2)->nullable();
+            $table->double('harga', 15, 2)->nullable();
+            $table->double('persentasediscount', 15, 2)->nullable();
+            $table->double('nominaldiscount', 15, 2)->nullable();
+            $table->double('total', 15, 2)->nullable();
+            $table->longText('keterangan')->nullable();
+            $table->unsignedBigInteger('vulkanisirke')->nullable();
+            $table->string('statusoli', 100)->nullable();
+            $table->string('modifiedby', 300)->nullable();
+        });
+
+        foreach ($data as $row) {
+            unset($row['judul']);
+            unset($row['tglcetak']);
+            unset($row['usercetak']);
+            DB::table($temtabel)->insert($row);
+        }
+
+        return $temtabel;
+    }
+
+
 
     public function getAll($id)
     {

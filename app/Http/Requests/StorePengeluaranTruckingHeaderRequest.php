@@ -129,6 +129,7 @@ class StorePengeluaranTruckingHeaderRequest extends FormRequest
                         "trado" =>$salahSatuDari,
                         "gandengan" =>$salahSatuDari,
                         "postingpinjaman" =>"required",
+                        "statuscabang" =>"required",
                     ];    
                 }
             }

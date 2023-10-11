@@ -276,5 +276,7 @@ return [
     'password_tnl' => env('PASSWORD_TNL', "123456898"),
     'web_url' => env('WEB_URL', 'http://localhost/trucking/'),
     'ipinfo_token' => env('IPINFO_TOKEN', '54d41850c96dc3'),
+    'url_tnl' => env('URL_TNL', "http://tasjkt.kozow.com:8074/truckingtnl-api/public/api/"),
+
 
 ];
