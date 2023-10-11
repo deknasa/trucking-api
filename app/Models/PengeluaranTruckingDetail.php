@@ -165,6 +165,87 @@ class PengeluaranTruckingDetail extends MyModel
                 ->leftJoin(DB::raw("pelanggan with (readuncommitted)"), 'suratpengantar.pelanggan_id', 'pelanggan.id')
                 ->leftJoin(DB::raw("trado with (readuncommitted)"), 'pengeluarantruckingdetail.trado_id', 'trado.id')
                 ->where('pengeluarantruckingdetail.pengeluarantruckingheader_id', '=', $id);
+        } else if ($kodepengeluaran == 'KLAIM') {
+            $cek  = PengeluaranTruckingHeader::from(DB::raw("pengeluarantruckingheader with (readuncommitted)"))
+                ->select('pengeluarantrucking_id', 'statuscabang','tglbukti')
+                ->where('id', $id)->first();
+            if ($cek->statuscabang == 516) {
+                $dari = date('01-m-Y', strtotime($cek->tglbukti));
+                $sampai = date('t-m-Y', strtotime($cek->tglbukti));
+                $tableStok = (new Stok())->getTNLForKlaim();
+                $tablePengeluaranStok = (new PengeluaranStokHeader())->getTNLForKlaim($dari, $sampai);
+                $tablePenerimaanStok = (new PenerimaanStokHeader())->getTNLForKlaim($dari, $sampai);
+
+                $query = DB::table('pengeluarantruckingdetail')->from(DB::raw("pengeluarantruckingdetail with (readuncommitted)"))
+                    ->select(
+                        'pengeluarantruckingdetail.pengeluarantruckingheader_id',
+                        'pengeluarantruckingdetail.nominal',
+                        'pengeluarantruckingdetail.keterangan',
+                        'pengeluarantruckingdetail.penerimaantruckingheader_nobukti',
+                        'pengeluarantruckingdetail.pengeluaranstoktnl_nobukti as pengeluaranstok_nobukti',
+                        'pengeluarantruckingdetail.penerimaanstoktnl_nobukti as penerimaanstok_nobukti',
+                        'pengeluarantruckingdetail.stoktnl_id as stok_id',
+                        'stok.namastok as stok',
+                        'pengeluarantruckingdetail.qty',
+                        'pengeluarantruckingdetail.harga',
+                        'pengeluarantruckingdetail.total',
+                        DB::raw("(case when pengeluaranstokheader.id IS NULL then 0 else pengeluaranstokheader.id end) as pengeluaranstokheader_id"),
+                        DB::raw("(case when penerimaanstokheader.id IS NULL then 0 else penerimaanstokheader.id end) as penerimaanstokheader_id"),
+                        DB::raw("pengeluarantruckingdetail.nominal as nominal_detail"),
+                        DB::raw("pengeluarantruckingdetail.nominaltambahan"),
+                        DB::raw("
+                    (SELECT MAX(qty)
+                    FROM pengeluaranstokdetail
+                    WHERE stok_id = [pengeluarantruckingdetail].[stoktnl_id]
+                    ) AS maxqty
+                "),
+                        'pengeluarantruckingdetail.nominaltagih',
+                        'pengeluarantruckingdetail.statustitipanemkl',
+                        'pengeluarantruckingdetail.keterangantambahan',
+
+
+                    )
+                    ->leftJoin(DB::raw("$tableStok as stok with (readuncommitted)"), 'pengeluarantruckingdetail.stoktnl_id', 'stok.id')
+                    ->leftJoin(DB::raw("$tablePengeluaranStok as pengeluaranstokheader with (readuncommitted)"), 'pengeluaranstokheader.nobukti', 'pengeluarantruckingdetail.pengeluaranstoktnl_nobukti')
+                    ->leftJoin(DB::raw("$tablePenerimaanStok as penerimaanstokheader with (readuncommitted)"), 'penerimaanstokheader.nobukti', 'pengeluarantruckingdetail.penerimaanstoktnl_nobukti')
+                    ->where('pengeluarantruckingdetail.pengeluarantruckingheader_id', '=', $id);
+            } else {
+                $query = DB::table('pengeluarantruckingdetail')->from(DB::raw("pengeluarantruckingdetail with (readuncommitted)"))
+                    ->select(
+                        'pengeluarantruckingdetail.pengeluarantruckingheader_id',
+                        'pengeluarantruckingdetail.nominal',
+                        'pengeluarantruckingdetail.keterangan',
+                        'pengeluarantruckingdetail.penerimaantruckingheader_nobukti',
+                        'pengeluarantruckingdetail.pengeluaranstok_nobukti',
+                        'pengeluarantruckingdetail.penerimaanstok_nobukti',
+                        'pengeluarantruckingdetail.stok_id',
+                        'stok.namastok as stok',
+                        'pengeluarantruckingdetail.qty',
+                        'pengeluarantruckingdetail.harga',
+                        'pengeluarantruckingdetail.total',
+                        'pengeluaranstokheader.id as pengeluaranstokheader_id',
+                        'penerimaanstokheader.id as penerimaanstokheader_id',
+                        DB::raw("pengeluarantruckingdetail.nominal as nominal_detail"),
+                        DB::raw("pengeluarantruckingdetail.nominaltambahan"),
+                        DB::raw("
+                    (SELECT MAX(qty)
+                    FROM pengeluaranstokdetail
+                    WHERE stok_id = [pengeluarantruckingdetail].[stok_id]
+                    ) AS maxqty
+                "),
+
+
+                        'pengeluarantruckingdetail.nominaltagih',
+                        'pengeluarantruckingdetail.statustitipanemkl',
+                        'pengeluarantruckingdetail.keterangantambahan',
+
+
+                    )
+                    ->leftJoin(DB::raw("stok with (readuncommitted)"), 'pengeluarantruckingdetail.stok_id', 'stok.id')
+                    ->leftJoin(DB::raw("pengeluaranstokheader with (readuncommitted)"), 'pengeluaranstokheader.nobukti', 'pengeluarantruckingdetail.pengeluaranstok_nobukti')
+                    ->leftJoin(DB::raw("penerimaanstokheader with (readuncommitted)"), 'penerimaanstokheader.nobukti', 'pengeluarantruckingdetail.penerimaanstok_nobukti')
+                    ->where('pengeluarantruckingdetail.pengeluarantruckingheader_id', '=', $id);
+            }
         } else {
 
 
@@ -301,7 +382,7 @@ class PengeluaranTruckingDetail extends MyModel
         $nominaltagih = null;
         $jenisorder = null;
 
-        if ($pengeluaranTruckingHeader->pengeluarantrucking_id == 9) {          
+        if ($pengeluaranTruckingHeader->pengeluarantrucking_id == 9) {
             if ($data['suratpengantar_nobukti']) {
                 $suratpengantar = SuratPengantar::where('nobukti', $data['suratpengantar_nobukti'])->first();
                 if (!$suratpengantar) {
@@ -329,6 +410,9 @@ class PengeluaranTruckingDetail extends MyModel
         $pengeluaranTruckingDetail->stok_id = $data['stok_id'] ?? 0;
         $pengeluaranTruckingDetail->pengeluaranstok_nobukti = $data['pengeluaranstok_nobukti'] ?? "";
         $pengeluaranTruckingDetail->penerimaanstok_nobukti = $data['penerimaanstok_nobukti'] ?? "";
+        $pengeluaranTruckingDetail->stoktnl_id = $data['stoktnl_id'] ?? 0;
+        $pengeluaranTruckingDetail->pengeluaranstoktnl_nobukti = $data['pengeluaranstoktnl_nobukti'] ?? "";
+        $pengeluaranTruckingDetail->penerimaanstoktnl_nobukti = $data['penerimaanstoktnl_nobukti'] ?? "";
         $pengeluaranTruckingDetail->qty = $data['qty'] ?? 0;
         $pengeluaranTruckingDetail->harga = $data['harga'] ?? 0;
         $pengeluaranTruckingDetail->total = $data['total'] ?? 0;
