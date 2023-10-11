@@ -7,7 +7,8 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\Storage;
 use App\Helpers\App;
-
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Http;
 
 class Trado extends MyModel
 {
@@ -162,6 +163,10 @@ class Trado extends MyModel
 
         $aktif = request()->aktif ?? '';
         $trado_id = request()->trado_id ?? '';
+        $cabang = request()->cabang ?? 'TAS';
+        $proses = request()->proses ?? 'reload';
+        $user = auth('api')->user()->name;
+
 
         $getJudul = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))
             ->select('text')
@@ -171,7 +176,7 @@ class Trado extends MyModel
 
 
         $query = DB::table($this->table)->from(DB::raw("$this->table with (readuncommitted)"))
-       
+
             ->select(
                 'trado.id',
                 'trado.keterangan',
@@ -223,7 +228,7 @@ class Trado extends MyModel
                 DB::raw("'Laporan Trado' as judulLaporan"),
                 DB::raw("'" . $getJudul->text . "' as judul"),
                 DB::raw("'Tgl Cetak :'+format(getdate(),'dd-MM-yyyy HH:mm:ss')as tglcetak"),
-                DB::raw(" 'User :".auth('api')->user()->name."' as usercetak") 
+                DB::raw(" 'User :" . auth('api')->user()->name . "' as usercetak")
             )
             ->leftJoin(DB::raw("parameter as parameter_statusaktif with (readuncommitted)"), 'trado.statusaktif', 'parameter_statusaktif.id')
             ->leftJoin(DB::raw("parameter as parameter_statusjenisplat with (readuncommitted)"), 'trado.statusjenisplat', 'parameter_statusjenisplat.id')
@@ -236,11 +241,8 @@ class Trado extends MyModel
             ->leftJoin(DB::raw("parameter as parameter_statusabsensisupir with (readuncommitted)"), 'trado.statusabsensisupir', 'parameter_statusabsensisupir.id')
             ->leftJoin(DB::raw("mandor with (readuncommitted)"), 'trado.mandor_id', 'mandor.id')
             ->leftJoin(DB::raw("supir with (readuncommitted)"), 'trado.supir_id', 'supir.id');
-            // ->where("trado.id" ,"=","37");
+        // ->where("trado.id" ,"=","37");
 
-      
-
-        $this->filter($query);
         if ($aktif == 'AKTIF') {
             $statusaktif = Parameter::from(
                 DB::raw("parameter with (readuncommitted)")
@@ -252,7 +254,9 @@ class Trado extends MyModel
             $query->where('trado.statusaktif', '=', $statusaktif->id);
         }
 
-        if($trado_id != ''){
+        $this->filter($query);
+
+        if ($trado_id != '') {
             $query->where('trado.id', $trado_id);
         }
         $this->totalRows = $query->count();
@@ -266,6 +270,126 @@ class Trado extends MyModel
         return $data;
     }
 
+    public function getTNLForKlaim()
+    {
+        $server = config('app.url_tnl');
+        $getToken = Http::withHeaders([
+            'Content-Type' => 'application/json',
+            'Accept' => 'application/json'
+        ])
+            ->post($server . 'token', [
+                'user' => 'ADMIN',
+                'password' => getenv('PASSWORD_TNL'),
+                'ipclient' => '',
+                'ipserver' => '',
+                'latitude' => '',
+                'longitude' => '',
+                'browser' => '',
+                'os' => '',
+            ]);
+        $access_token = json_decode($getToken, TRUE)['access_token'];
+
+        $getTrado = Http::withHeaders([
+            'Accept' => 'application/json',
+            'Authorization' => 'Bearer ' . $access_token,
+            'Content-Type' => 'application/json',
+        ])
+
+            ->get($server . "trado?limit=0&aktif=AKTIF");
+
+        $data = $getTrado->json()['data'];
+        $class = 'TradoLookupController';
+        $user = auth('api')->user()->name;
+
+        $temtabel = 'temptradotnl' . rand(1, getrandmax()) . str_replace('.', '', microtime(true)) . request()->nd ?? 0;
+
+        $querydata = DB::table('listtemporarytabel')->from(
+            DB::raw("listtemporarytabel a with (readuncommitted)")
+        )
+            ->select(
+                'id',
+                'class',
+                'namatabel',
+            )
+            ->where('class', '=', $class)
+            ->where('modifiedby', '=', $user)
+            ->first();
+
+        if (isset($querydata)) {
+            Schema::dropIfExists($querydata->namatabel);
+            DB::table('listtemporarytabel')->where('id', $querydata->id)->delete();
+        }
+
+        DB::table('listtemporarytabel')->insert(
+            [
+                'class' => $class,
+                'namatabel' => $temtabel,
+                'modifiedby' => $user,
+                'created_at' => date('Y/m/d H:i:s'),
+                'updated_at' => date('Y/m/d H:i:s'),
+            ]
+        );
+
+        Schema::create($temtabel, function (Blueprint $table) {
+            $table->integer('id')->nullable();
+            $table->longText('keterangan')->nullable();
+            $table->string('kodetrado', 30)->nullable();
+            $table->double('kmawal', 15, 2)->nullable();
+            $table->double('kmakhirgantioli', 15, 2)->nullable();
+            $table->date('tglasuransimati')->nullable();
+            $table->date('tglspeksimati')->nullable();
+            $table->date('tglstnkmati')->nullable();
+            $table->string('merek', 40)->nullable();
+            $table->string('norangka', 40)->nullable();
+            $table->string('nomesin', 40)->nullable();
+            $table->string('nama', 40)->nullable();
+            $table->string('nostnk', 50)->nullable();
+            $table->longText('alamatstnk')->nullable();
+            $table->string('modifiedby', 30)->nullable();
+            $table->dateTime('created_at')->nullable();
+            $table->date('tglserviceopname')->nullable();
+            $table->string('keteranganprogressstandarisasi', 100)->nullable();
+            $table->date('tglpajakstnk')->nullable();
+            $table->date('tglgantiakiterakhir')->nullable();
+            $table->string('tipe', 30)->nullable();
+            $table->string('jenis', 30)->nullable();
+            $table->integer('isisilinder')->length(11)->nullable();
+            $table->string('warna', 30)->nullable();
+            $table->string('jenisbahanbakar', 30)->nullable();
+            $table->integer('jumlahsumbu')->length(11)->nullable();
+            $table->integer('jumlahroda')->length(11)->nullable();
+            $table->string('model', 50)->nullable();
+            $table->string('tahun', 40)->nullable();
+            $table->double('nominalplusborongan', 15, 2)->nullable();
+            $table->string('nobpkb', 50)->nullable();
+            $table->integer('jumlahbanserap')->length(11)->nullable();
+            $table->string('mandor_id', 1500)->nullable();
+            $table->string('supir_id', 1500)->nullable();
+            $table->dateTime('updated_at')->nullable();
+        });
+
+        foreach ($data as $row) {
+            unset($row['judulLaporan']);
+            unset($row['judul']);
+            unset($row['tglcetak']);
+            unset($row['usercetak']);
+            unset($row['photostnk']);
+            unset($row['photobpkb']);
+            unset($row['phototrado']);
+            unset($row['statusaktif']);
+            unset($row['statusstandarisasi']);
+            unset($row['statusjenisplat']);
+            unset($row['statusmutasi']);
+            unset($row['statusvalidasikendaraan']);
+            unset($row['statusmobilstoring']);
+            unset($row['statusappeditban']);
+            unset($row['statuslewatvalidasi']);
+            unset($row['statusabsensisupir']);
+            DB::table($temtabel)->insert($row);
+        }
+        
+        return $temtabel;
+    }
     public function default()
     {
 
@@ -307,8 +431,8 @@ class Trado extends MyModel
 
         $iddefaultstatusGerobak = $status->id ?? 0;
 
-           // STATUS ABSENSI SUPIR
-           $status = Parameter::from(
+        // STATUS ABSENSI SUPIR
+        $status = Parameter::from(
             db::Raw("parameter with (readuncommitted)")
         )
             ->select(
@@ -550,7 +674,7 @@ class Trado extends MyModel
                             $query = $query->where('supir.namasupir', 'LIKE', "%$filters[data]%");
                         } else if ($filters['field'] == 'created_at' || $filters['field'] == 'updated_at') {
                             $query = $query->whereRaw("format(" . $this->table . "." . $filters['field'] . ", 'dd-MM-yyyy HH:mm:ss') LIKE '%$filters[data]%'");
-                        } else if ($filters['field'] == 'tglasuransimati' || $filters['field'] == 'tglserviceopname' || $filters['field'] == 'tglpajakstnk' || $filters['field'] == 'tglstnkmati' || $filters['field'] == 'tglasuransimati' || $filters['field'] == 'tglspeksimati' || $filters['field'] == 'tglgantiakiterakhir') {
+                        } else if ($filters['field'] == 'tglasuransimati' || $filters['field'] == 'tglserviceopname' || $filters['field'] == 'tglpajakstnk' || $filters['field'] == 'tglstnkmati' || $filters['field'] == 'tglasuransimati' || $filters['field'] == 'tglspeksimati' || $filters['field'] == 'tglgantiakiterakhir' || $filters['field'] == 'tglakhirgantioli') {
                             $query = $query->whereRaw("format((case when year(isnull($this->table." . $filters['field'] . ",'1900/1/1'))<2000 then null else trado." . $filters['field'] . " end), 'dd-MM-yyyy') LIKE '%$filters[data]%'");
                         } else {
                             // $query = $query->where($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
@@ -586,7 +710,7 @@ class Trado extends MyModel
                                 $query = $query->orWhere('mandor.namamandor', 'LIKE', "%$filters[data]%");
                             } else if ($filters['field'] == 'supir_id') {
                                 $query = $query->orWhere('supir.namasupir', 'LIKE', "%$filters[data]%");
-                            } else if ($filters['field'] == 'tglasuransimati' || $filters['field'] == 'tglserviceopname' || $filters['field'] == 'tglpajakstnk' || $filters['field'] == 'tglstnkmati' || $filters['field'] == 'tglasuransimati' || $filters['field'] == 'tglspeksimati' || $filters['field'] == 'tglgantiakiterakhir') {
+                            } else if ($filters['field'] == 'tglasuransimati' || $filters['field'] == 'tglserviceopname' || $filters['field'] == 'tglpajakstnk' || $filters['field'] == 'tglstnkmati' || $filters['field'] == 'tglasuransimati' || $filters['field'] == 'tglspeksimati' || $filters['field'] == 'tglgantiakiterakhir' || $filters['field'] == 'tglakhirgantioli') {
                                 $query = $query->orWhereRaw("format((case when year(isnull($this->table." . $filters['field'] . ",'1900/1/1'))<2000 then null else trado." . $filters['field'] . " end), 'dd-MM-yyyy') LIKE '%$filters[data]%'");
                             } else {
                                 // $query = $query->orWhere($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
@@ -674,7 +798,7 @@ class Trado extends MyModel
             $statusStandarisasi = DB::table('parameter')->where('grp', 'STATUS STANDARISASI')->where('default', 'YA')->first();
             $statusMutasi = DB::table('parameter')->where('grp', 'STATUS MUTASI')->where('default', 'YA')->first();
             $statusValidasi = DB::table('parameter')->where('grp', 'STATUS VALIDASI KENDARAAN')->where('default', 'YA')->first();
-            $statusMobStoring = DB::table('parameter')->where('grp', 'STATUS MOBIL STORING')->where('default', 'YA')->first(); 
+            $statusMobStoring = DB::table('parameter')->where('grp', 'STATUS MOBIL STORING')->where('default', 'YA')->first();
             $statusAppeditban = DB::table('parameter')->where('grp', 'STATUS APPROVAL EDIT BAN')->where('default', 'YA')->first();
             $statusLewatValidasi = DB::table('parameter')->where('grp', 'STATUS LEWAT VALIDASI')->where('default', 'YA')->first();
 
@@ -737,7 +861,7 @@ class Trado extends MyModel
             ]);
 
 
-            $approvalTradoKeterangan = ApprovalTradoKeterangan::where('kodetrado',$trado->kodetrado)->first();
+            $approvalTradoKeterangan = ApprovalTradoKeterangan::where('kodetrado', $trado->kodetrado)->first();
             if ($approvalTradoKeterangan) {
                 $nonApp = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))->whereRaw("grp like '%STATUS APPROVAL%'")->whereRaw("text like '%NON APPROVAL%'")->first();
                 $approvalTradoKeterangan->statusapproval = $nonApp->id;
@@ -854,7 +978,7 @@ class Trado extends MyModel
                 'modifiedby' => $trado->modifiedby
             ]);
 
-            $approvalTradoKeterangan = ApprovalTradoKeterangan::where('kodetrado',$trado->kodetrado)->first();
+            $approvalTradoKeterangan = ApprovalTradoKeterangan::where('kodetrado', $trado->kodetrado)->first();
             if ($approvalTradoKeterangan) {
                 $nonApp = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))->whereRaw("grp like '%STATUS APPROVAL%'")->whereRaw("text like '%NON APPROVAL%'")->first();
                 $approvalTradoKeterangan->statusapproval = $nonApp->id;
@@ -934,7 +1058,7 @@ class Trado extends MyModel
 
     public function processStatusNonAktifKeterangan($kodetrado)
     {
-        $trado = Trado::from(DB::raw("trado with (readuncommitted)"))->where('kodetrado',$kodetrado)->first();
+        $trado = Trado::from(DB::raw("trado with (readuncommitted)"))->where('kodetrado', $kodetrado)->first();
 
         $statusNonAktif = Parameter::from(DB::Raw("parameter with (readuncommitted)"))->select('id')->where('grp', '=', 'STATUS AKTIF')->where('subgrp', '=', 'STATUS AKTIF')->where('text', '=', 'NON AKTIF')->first();
         $statusAktif = Parameter::from(DB::Raw("parameter with (readuncommitted)"))->select('id')->where('grp', '=', 'STATUS AKTIF')->where('subgrp', '=', 'STATUS AKTIF')->where('text', '=', 'AKTIF')->first();
@@ -957,7 +1081,7 @@ class Trado extends MyModel
             "jumlahroda" => $trado->jumlahroda,
             "model" => $trado->model,
             "nobpkb" => $trado->nobpkb,
-            "jumlahbanserap" => $trado->jumlahbanserap, 
+            "jumlahbanserap" => $trado->jumlahbanserap,
         ];
         $key = array_keys($required, null);
         if (count($key)) {
@@ -966,5 +1090,4 @@ class Trado extends MyModel
         }
         return $key;
     }
-
 }

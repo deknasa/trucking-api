@@ -89,6 +89,7 @@ class PengeluaranTruckingHeaderController extends Controller
                 "supirheader_id" => $request->supirheader_id,
                 "tradoheader_id" => $request->tradoheader_id,
                 "gandenganheader_id" => $request->gandenganheader_id,
+                "statuscabang" => $request->statuscabang,
                 "bank_id" => $request->bank_id,
                 "tglbukti" => $request->tglbukti,
                 "pelanggan_id" => $request->pelanggan_id,
@@ -250,6 +251,7 @@ class PengeluaranTruckingHeaderController extends Controller
                 "supirheader_id" => $request->supirheader_id,
                 "tradoheader_id" => $request->tradoheader_id,
                 "gandenganheader_id" => $request->gandenganheader_id,
+                "statuscabang" => $request->statuscabang,
                 "bank_id" => $request->bank_id,
                 "tglbukti" => $request->tglbukti,
                 "pelanggan_id" => $request->pelanggan_id,
@@ -498,13 +500,13 @@ class PengeluaranTruckingHeaderController extends Controller
         $klaim = DB::table('pengeluarantrucking')->from(DB::raw("pengeluarantrucking with (readuncommitted)"))
             ->where('kodepengeluaran', "KLAIM")
             ->first();
-        if ($klaim->id == $PengeluaranTruckingHeader->pengeluarantrucking_id) {
-            $cekdata = $pengeluaran->cekvalidasiklaim($id);
-        } else {
+        // if ($klaim->id == $PengeluaranTruckingHeader->pengeluarantrucking_id) {
+        //     $cekdata = $pengeluaran->cekvalidasiklaim($id);
+        // } else {
             // dd($nobukti->pengeluaran_nobukti);
             $cekdata = $pengeluaran->cekvalidasiaksi($nobukti->nobukti);
             // $cekdata = $pengeluaran->cekvalidasiaksi($nobukti->pengeluaran_nobukti);
-        }
+        // }
 
 
         if ($cekdata['kondisi'] == true) {

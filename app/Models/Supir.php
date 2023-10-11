@@ -302,6 +302,7 @@ class Supir extends MyModel
         $this->sort($query);
         $this->paginate($query);
 
+        // dd($query->toSql());
         $data = $query->get();
 
         return $data;
@@ -544,7 +545,7 @@ class Supir extends MyModel
                 $this->table.tglberhentisupir,
                 statusblacklist.memo as statusblacklist,
                 $this->table.pemutihansupir_nobukti,
-
+                statuspostingtnl.memo as statuspostingtnl,
             $this->table.modifiedby,
             $this->table.created_at,
             $this->table.updated_at"
@@ -554,6 +555,7 @@ class Supir extends MyModel
             ->leftJoin(DB::raw("parameter with (readuncommitted)"), 'supir.statusaktif', '=', 'parameter.id')
             ->leftJoin(DB::raw("parameter as statusluarkota with (readuncommitted)"), 'supir.statusluarkota', '=', 'statusluarkota.id')
             ->leftJoin(DB::raw("parameter as statusblacklist with (readuncommitted)"), 'supir.statusblacklist', '=', 'statusblacklist.id')
+            ->leftJoin(DB::raw("parameter as statuspostingtnl with (readuncommitted)"), 'supir.statuspostingtnl', '=', 'statuspostingtnl.id')
             ->leftJoin('supir as supirlama', 'supir.supirold_id', '=', 'supirlama.id');
     }
 
@@ -592,6 +594,7 @@ class Supir extends MyModel
             $table->date('tglberhentisupir')->nullable();
             $table->longText('statusblacklist',)->nullable();
             $table->string('pemutihansupir_nobukti')->nullable();
+            $table->longText('statuspostingtnl')->nullable();
 
             $table->string('modifiedby', 50)->nullable();
             $table->dateTime('created_at')->nullable();
@@ -635,6 +638,7 @@ class Supir extends MyModel
             'tglberhentisupir',
             'statusblacklist',
             'pemutihansupir_nobukti',
+            'statuspostingtnl',
             'modifiedby',
             'created_at',
             'updated_at'

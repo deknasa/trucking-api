@@ -36,7 +36,7 @@ class UpdatePengeluaranTruckingDetailRequest extends FormRequest
                 $fetchFormat =  DB::table('pengeluarantrucking')
                     ->where('id', $idpengeluaran)
                     ->first();
-                if ($fetchFormat->kodepengeluaran == 'TDE' || $fetchFormat->kodepengeluaran == 'BST' || $fetchFormat->kodepengeluaran == 'KBBM' || $fetchFormat->kodepengeluaran == 'BLL') {
+                if ($fetchFormat->kodepengeluaran == 'TDE' || $fetchFormat->kodepengeluaran == 'BST' || $fetchFormat->kodepengeluaran == 'KBBM' || $fetchFormat->kodepengeluaran == 'BLL' || $fetchFormat->kodepengeluaran == 'BLN' || $fetchFormat->kodepengeluaran == 'BTU' || $fetchFormat->kodepengeluaran == 'BPT' || $fetchFormat->kodepengeluaran == 'BGS' || $fetchFormat->kodepengeluaran == 'BIT') {
                     return false;
                 } else {
                     return true;
@@ -144,7 +144,7 @@ class UpdatePengeluaranTruckingDetailRequest extends FormRequest
                     "pengeluaranstok_nobukti.*"  => [new ValidasiKlaimPengeluaranStok()],
                     "penerimaanstok_nobukti.*"  => [new ValidasiKlaimPenerimaanStok()],
                     "qty.*"  => ["required",],
-                    "nominaltambahan.*"  => ['numeric','min:0'],
+                    "nominaltambahan.*"  => ['numeric', 'min:0'],
                 ];
             }
         }
@@ -180,11 +180,11 @@ class UpdatePengeluaranTruckingDetailRequest extends FormRequest
             'detail_statustitipanemkl.*' => [$requiredBBT, new ValidasiStatusTitipanEMKL(request()->id)]
         ];
 
-        if ( request()->pengeluarantrucking_id != '') {
+        if (request()->pengeluarantrucking_id != '') {
             if ($fetchFormat->kodepengeluaran == 'BST') {
-                
+
                 $rules = [
-                    "detail"=>"required"
+                    "detail" => "required"
                 ];
             }
         }

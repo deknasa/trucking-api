@@ -17,7 +17,8 @@ class CreateSaldohutangprediksiTable extends Migration
             $table->id();
             $table->string('nobukti',200)->nullable();
             $table->longText('keterangan')->nullable();
-            $table->double('nominal',15,2)->nullable();             
+            $table->double('nominal',15,2)->nullable();
+            $table->integer('statushutangprediksi')->nullable();
             $table->longText('info')->nullable();
             $table->timestamps();
         });

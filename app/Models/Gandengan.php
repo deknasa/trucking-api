@@ -4,7 +4,9 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Schema;
 
 class Gandengan extends MyModel
@@ -111,9 +113,9 @@ class Gandengan extends MyModel
             });
 
             $getStatus = DB::table("gandengan")->from(DB::raw("gandengan with (readuncommitted)"))
-                    ->select('gandengan.id','suratpengantar.jobtrucking')
-                    ->join(DB::raw("suratpengantar with (readuncommitted)"), 'suratpengantar.gandengan_id', 'gandengan.id')
-                    ->where('suratpengantar.statusgandengan', $statusGandengan->id);
+                ->select('gandengan.id', 'suratpengantar.jobtrucking')
+                ->join(DB::raw("suratpengantar with (readuncommitted)"), 'suratpengantar.gandengan_id', 'gandengan.id')
+                ->where('suratpengantar.statusgandengan', $statusGandengan->id);
 
             DB::table($tempStatus)->insertUsing([
                 'id',
@@ -126,9 +128,9 @@ class Gandengan extends MyModel
             });
 
             $getJob = DB::table("$tempStatus")->from(DB::raw("$tempStatus as a with (readuncommitted)"))
-                    ->select('a.jobtrucking')
-                    ->join(DB::raw("suratpengantar as b with (readuncommitted)"), 'a.jobtrucking', 'b.jobtrucking')
-                    ->where('b.sampai_id', $belawan->id);
+                ->select('a.jobtrucking')
+                ->join(DB::raw("suratpengantar as b with (readuncommitted)"), 'a.jobtrucking', 'b.jobtrucking')
+                ->where('b.sampai_id', $belawan->id);
 
             DB::table($tempJob)->insertUsing([
                 'jobtrucking'
@@ -141,9 +143,9 @@ class Gandengan extends MyModel
             });
 
             $getAll = DB::table("$tempStatus")->from(DB::raw("$tempStatus as a with (readuncommitted)"))
-                    ->select('a.*')
-                    ->leftJoin(DB::raw("$tempJob as b with (readuncommitted)"), 'a.jobtrucking', 'b.jobtrucking')
-                    ->whereRaw("ISNULL(b.jobtrucking, '') = ''");
+                ->select('a.*')
+                ->leftJoin(DB::raw("$tempJob as b with (readuncommitted)"), 'a.jobtrucking', 'b.jobtrucking')
+                ->whereRaw("ISNULL(b.jobtrucking, '') = ''");
 
             DB::table($tempAll)->insertUsing([
                 'id',
@@ -172,10 +174,6 @@ class Gandengan extends MyModel
             )
             ->leftJoin(DB::raw("parameter with (readuncommitted)"), 'gandengan.statusaktif', 'parameter.id')
             ->leftJoin(DB::raw("trado with (readuncommitted)"), 'gandengan.trado_id', '=', 'trado.id');
-
-
-
-        $this->filter($query);
         if ($aktif == 'AKTIF') {
             $statusaktif = Parameter::from(
                 DB::raw("parameter with (readuncommitted)")
@@ -190,6 +188,9 @@ class Gandengan extends MyModel
         if ($asal == 'YA') {
             $query->whereRaw("gandengan.id in (select id from $tempAll)");
         }
+
+        $this->filter($query);
+
         $this->totalRows = $query->count();
         $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;
 
@@ -199,6 +200,90 @@ class Gandengan extends MyModel
         $data = $query->get();
 
         return $data;
+    }
+
+    public function getTNLForKlaim()
+    {
+        $server = config('app.url_tnl');
+        $getToken = Http::withHeaders([
+            'Content-Type' => 'application/json',
+            'Accept' => 'application/json'
+        ])
+            ->post($server . 'token', [
+                'user' => 'ADMIN',
+                'password' => getenv('PASSWORD_TNL'),
+                'ipclient' => '',
+                'ipserver' => '',
+                'latitude' => '',
+                'longitude' => '',
+                'browser' => '',
+                'os' => '',
+            ]);
+        $access_token = json_decode($getToken, TRUE)['access_token'];
+
+        $getTrado = Http::withHeaders([
+            'Accept' => 'application/json',
+            'Authorization' => 'Bearer ' . $access_token,
+            'Content-Type' => 'application/json',
+        ])
+
+            ->get($server . "gandengan?limit=0&aktif=AKTIF");
+
+        $data = $getTrado->json()['data'];
+
+        $class = 'GandenganLookupController';
+        $user = auth('api')->user()->name;
+        $temtabel = 'tempgdgntnl' . rand(1, getrandmax()) . str_replace('.', '', microtime(true)) . request()->nd ?? 0;
+
+        $querydata = DB::table('listtemporarytabel')->from(
+            DB::raw("listtemporarytabel a with (readuncommitted)")
+        )
+            ->select(
+                'id',
+                'class',
+                'namatabel',
+            )
+            ->where('class', '=', $class)
+            ->where('modifiedby', '=', $user)
+            ->first();
+
+        if (isset($querydata)) {
+            Schema::dropIfExists($querydata->namatabel);
+            DB::table('listtemporarytabel')->where('id', $querydata->id)->delete();
+        }
+
+        DB::table('listtemporarytabel')->insert(
+            [
+                'class' => $class,
+                'namatabel' => $temtabel,
+                'modifiedby' => $user,
+                'created_at' => date('Y/m/d H:i:s'),
+                'updated_at' => date('Y/m/d H:i:s'),
+            ]
+        );
+
+        Schema::create($temtabel, function (Blueprint $table) {
+            $table->integer('id')->nullable();
+            $table->string('kodegandengan', 300)->nullable();
+            $table->string('keterangan', 300)->nullable();
+            $table->string('trado', 300)->nullable();
+            $table->integer('jumlahroda')->length(11)->nullable();
+            $table->integer('jumlahbanserap')->length(11)->nullable();
+            $table->string('statusaktif', 300)->nullable();
+            $table->string('modifiedby', 300)->nullable();
+            $table->dateTime('created_at')->nullable();
+            $table->dateTime('updated_at')->nullable();
+            $table->string('judulLaporan', 1500)->nullable();
+            $table->string('judul', 1500)->nullable();
+            $table->string('tglcetak', 1500)->nullable();
+            $table->string('usercetak', 1500)->nullable();
+        });
+
+        foreach ($data as $row) {
+            DB::table($temtabel)->insert($row);
+        }
+        
+        return $temtabel;
     }
 
     public function default()
@@ -237,9 +322,9 @@ class Gandengan extends MyModel
     public function find($id)
     {
         $this->setRequestParameters();
-     
+
         $data = DB::table("gandengan")->from(DB::raw("gandengan with (readuncommitted)"))
-        
+
             ->select(
                 'gandengan.id',
                 'gandengan.kodegandengan',
@@ -253,12 +338,12 @@ class Gandengan extends MyModel
                 'gandengan.created_at',
                 'gandengan.updated_at',
             )
-            
+
             ->leftJoin(DB::raw("trado with (readuncommitted)"), 'gandengan.trado_id', '=', 'trado.id')
             ->where('gandengan.id', $id)
             ->first();
 
-            // dd("her");
+        // dd("her");
 
         return $data;
     }
@@ -343,7 +428,7 @@ class Gandengan extends MyModel
                             $query = $query->where('jumlahroda', 'LIKE', "%$filters[data]%");
                         } elseif ($filters['field'] == 'gandengan') {
                             $query = $query->where('jumlahbanserap', 'LIKE', "%$filters[data]%");
-                        }  else if ($filters['field'] == 'created_at' || $filters['field'] == 'updated_at') {
+                        } else if ($filters['field'] == 'created_at' || $filters['field'] == 'updated_at') {
                             $query = $query->whereRaw("format(" . $this->table . "." . $filters['field'] . ", 'dd-MM-yyyy HH:mm:ss') LIKE '%$filters[data]%'");
                         } else {
                             // $query = $query->where($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");

@@ -5,7 +5,9 @@ namespace App\Models;
 use App\Helpers\App;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\Storage;
 
@@ -119,7 +121,7 @@ class Stok extends MyModel
             DB::raw("'Laporan Stok' as judulLaporan"),
             DB::raw("'" . $getJudul->text . "' as judul"),
             DB::raw("'Tgl Cetak :'+format(getdate(),'dd-MM-yyyy HH:mm:ss')as tglcetak"),
-            DB::raw(" 'User :".auth('api')->user()->name."' as usercetak")
+            DB::raw(" 'User :" . auth('api')->user()->name . "' as usercetak")
         )
             ->leftJoin('jenistrado', 'stok.jenistrado_id', 'jenistrado.id')
             ->leftJoin('kelompok', 'stok.kelompok_id', 'kelompok.id')
@@ -157,7 +159,7 @@ class Stok extends MyModel
             $query->where('stok.statusreuse', '=', $statusaktif->id);
         }
 
-        if($kelompok != ''){
+        if ($kelompok != '') {
             $query->where('stok.kelompok_id', '=', $kelompok);
         }
         if ($penerimaanstokheader_nobukti) {
@@ -177,6 +179,100 @@ class Stok extends MyModel
         $data = $query->get();
 
         return $data;
+    }
+
+    public function getTNLForKlaim()
+    {
+        $server = config('app.url_tnl');
+        $getToken = Http::withHeaders([
+            'Content-Type' => 'application/json',
+            'Accept' => 'application/json'
+        ])
+            ->post($server . 'token', [
+                'user' => 'ADMIN',
+                'password' => getenv('PASSWORD_TNL'),
+                'ipclient' => '',
+                'ipserver' => '',
+                'latitude' => '',
+                'longitude' => '',
+                'browser' => '',
+                'os' => '',
+            ]);
+        $access_token = json_decode($getToken, TRUE)['access_token'];
+
+        $getStok = Http::withHeaders([
+            'Accept' => 'application/json',
+            'Authorization' => 'Bearer ' . $access_token,
+            'Content-Type' => 'application/json',
+        ])
+
+            ->get($server . "stok?limit=0&aktif=AKTIF");
+
+        $data = $getStok->json()['data'];
+
+        $proses = request()->proses ?? 'reload';
+        $user = auth('api')->user()->name;
+        $class = 'StokTruckingController';
+
+        $temtabel = 'tempstoktnl' . rand(1, getrandmax()) . str_replace('.', '', microtime(true)) . request()->nd ?? 0;
+
+        $querydata = DB::table('listtemporarytabel')->from(
+            DB::raw("listtemporarytabel a with (readuncommitted)")
+        )
+            ->select(
+                'id',
+                'class',
+                'namatabel',
+            )
+            ->where('class', '=', $class)
+            ->where('modifiedby', '=', $user)
+            ->first();
+
+        if (isset($querydata)) {
+            Schema::dropIfExists($querydata->namatabel);
+            DB::table('listtemporarytabel')->where('id', $querydata->id)->delete();
+        }
+        DB::table('listtemporarytabel')->insert(
+            [
+                'class' => $class,
+                'namatabel' => $temtabel,
+                'modifiedby' => $user,
+                'created_at' => date('Y/m/d H:i:s'),
+                'updated_at' => date('Y/m/d H:i:s'),
+            ]
+        );
+        Schema::create($temtabel, function (Blueprint $table) {
+            $table->integer('id')->nullable();
+            $table->string('namastok', 300)->nullable();
+            $table->string('statusaktif', 300)->nullable();
+            $table->string('statusservicerutin', 300)->nullable();
+            $table->string('servicerutin_text', 300)->nullable();
+            $table->double('qtymin',15,2)->nullable();
+            $table->double('qtymax',15,2)->nullable();
+            $table->longText('keterangan')->nullable();
+            $table->longText('gambar')->nullable();
+            $table->longText('namaterpusat')->nullable();
+            $table->string('statusban', 300)->nullable();
+            $table->string('modifiedby', 300)->nullable();
+            $table->double('totalvulkanisir',15,2)->nullable();
+            $table->string('jenistrado', 300)->nullable();
+            $table->string('kelompok', 300)->nullable();
+            $table->string('subkelompok', 300)->nullable();
+            $table->string('kategori', 300)->nullable();
+            $table->string('merk', 300)->nullable();
+            $table->dateTime('created_at')->nullable();
+            $table->dateTime('updated_at')->nullable();
+        });
+
+        foreach ($data as $row) {
+            unset($row['judulLaporan']);
+            unset($row['judul']);
+            unset($row['tglcetak']);
+            unset($row['usercetak']);
+            DB::table($temtabel)->insert($row);
+        }
+
+        return $temtabel;
     }
 
     public function default()
@@ -221,12 +317,12 @@ class Stok extends MyModel
             ->where('subgrp', '=', 'STATUS BAN')
             ->where('default', '=', 'YA')
             ->first();
-            
-            DB::table($tempdefault)->insert([
-                "statusaktif" => $statusaktif->id,
-                "statusreuse" => $statusreuse->id,
-                "statusban" => $statusban->id
-            ]);
+
+        DB::table($tempdefault)->insert([
+            "statusaktif" => $statusaktif->id,
+            "statusreuse" => $statusreuse->id,
+            "statusban" => $statusban->id
+        ]);
 
         $query = DB::table($tempdefault)->from(
             DB::raw($tempdefault)
@@ -281,9 +377,9 @@ class Stok extends MyModel
     public function getGambarName($id)
     {
         $query = DB::table("stok")->from(DB::raw("stok with (readuncommitted)"))
-        ->select('gambar')
-        ->where('id', $id)
-        ->first();
+            ->select('gambar')
+            ->where('id', $id)
+            ->first();
 
         return $query;
     }
@@ -332,12 +428,12 @@ class Stok extends MyModel
             'stok.created_at',
             'stok.updated_at'
         )
-        ->leftJoin('jenistrado', 'stok.jenistrado_id', 'jenistrado.id')
-        ->leftJoin('kelompok', 'stok.kelompok_id', 'kelompok.id')
-        ->leftJoin('subkelompok', 'stok.subkelompok_id', 'subkelompok.id')
-        ->leftJoin('kategori', 'stok.kategori_id', 'kategori.id')
-        ->leftJoin('parameter', 'stok.statusaktif', 'parameter.id')
-        ->leftJoin('merk', 'stok.merk_id', 'merk.id');
+            ->leftJoin('jenistrado', 'stok.jenistrado_id', 'jenistrado.id')
+            ->leftJoin('kelompok', 'stok.kelompok_id', 'kelompok.id')
+            ->leftJoin('subkelompok', 'stok.subkelompok_id', 'subkelompok.id')
+            ->leftJoin('kategori', 'stok.kategori_id', 'kategori.id')
+            ->leftJoin('parameter', 'stok.statusaktif', 'parameter.id')
+            ->leftJoin('merk', 'stok.merk_id', 'merk.id');
         $query = $this->sort($query);
         $models = $this->filter($query);
         DB::table($temp)->insertUsing([
@@ -365,7 +461,7 @@ class Stok extends MyModel
 
     public function selectColumns($query)
     {
-       
+
         return $query->select(
             DB::raw(
                 "$this->table.id,
@@ -386,15 +482,15 @@ class Stok extends MyModel
                 $this->table.updated_at"
             )
         )
-        ->leftJoin('jenistrado', 'stok.jenistrado_id', 'jenistrado.id')
-        ->leftJoin('kelompok', 'stok.kelompok_id', 'kelompok.id')
-        ->leftJoin('subkelompok', 'stok.subkelompok_id', 'subkelompok.id')
-        ->leftJoin('kategori', 'stok.kategori_id', 'kategori.id')
-        ->leftJoin('parameter', 'stok.statusaktif', 'parameter.id')
-        ->leftJoin('merk', 'stok.merk_id', 'merk.id');
+            ->leftJoin('jenistrado', 'stok.jenistrado_id', 'jenistrado.id')
+            ->leftJoin('kelompok', 'stok.kelompok_id', 'kelompok.id')
+            ->leftJoin('subkelompok', 'stok.subkelompok_id', 'subkelompok.id')
+            ->leftJoin('kategori', 'stok.kategori_id', 'kategori.id')
+            ->leftJoin('parameter', 'stok.statusaktif', 'parameter.id')
+            ->leftJoin('merk', 'stok.merk_id', 'merk.id');
     }
 
-    
+
     public function sort($query)
     {
         if ($this->params['sortIndex'] == 'jenistrado') {
@@ -420,16 +516,16 @@ class Stok extends MyModel
                     foreach ($this->params['filters']['rules'] as $index => $filters) {
                         if ($filters['field'] == 'statusservicerutin') {
                             $query = $query->where('service.text', '=', $filters['data']);
-                        } else if ($filters['field'] == 'jenistrado') {                            
-                            $query = $query->whereRaw('jenistrado.keterangan LIKE'. "'%$filters[data]%'");
+                        } else if ($filters['field'] == 'jenistrado') {
+                            $query = $query->whereRaw('jenistrado.keterangan LIKE' . "'%$filters[data]%'");
                         } else if ($filters['field'] == 'kelompok') {
-                            $query = $query->whereRaw('kelompok.kodekelompok LIKE'. "'%$filters[data]%'");
+                            $query = $query->whereRaw('kelompok.kodekelompok LIKE' . "'%$filters[data]%'");
                         } else if ($filters['field'] == 'subkelompok') {
-                            $query = $query->whereRaw('subkelompok.kodesubkelompok LIKE'. "'%$filters[data]%'");
+                            $query = $query->whereRaw('subkelompok.kodesubkelompok LIKE' . "'%$filters[data]%'");
                         } else if ($filters['field'] == 'kategori') {
-                            $query = $query->whereRaw('kategori.kodekategori LIKE'. "'%$filters[data]%'");
+                            $query = $query->whereRaw('kategori.kodekategori LIKE' . "'%$filters[data]%'");
                         } else if ($filters['field'] == 'merk') {
-                            $query = $query->whereRaw('merk.keterangan LIKE'. "'%$filters[data]%'");
+                            $query = $query->whereRaw('merk.keterangan LIKE' . "'%$filters[data]%'");
                         } else if ($filters['field'] == 'created_at' || $filters['field'] == 'updated_at') {
                             $query = $query->whereRaw("format(" . $this->table . "." . $filters['field'] . ", 'dd-MM-yyyy HH:mm:ss') LIKE '%$filters[data]%'");
                         } else {
@@ -445,15 +541,15 @@ class Stok extends MyModel
                             if ($filters['field'] == 'statusservicerutin') {
                                 $query = $query->orWhere('service.text', '=', $filters['data']);
                             } else if ($filters['field'] == 'jenistrado') {
-                                $query = $query->orWhereRaw('jenistrado.keterangan LIKE '. "'%$filters[data]%'");
+                                $query = $query->orWhereRaw('jenistrado.keterangan LIKE ' . "'%$filters[data]%'");
                             } else if ($filters['field'] == 'kelompok') {
-                                $query = $query->orWhereRaw('kelompok.kodekelompok LIKE '. "'%$filters[data]%'");
+                                $query = $query->orWhereRaw('kelompok.kodekelompok LIKE ' . "'%$filters[data]%'");
                             } else if ($filters['field'] == 'subkelompok') {
-                                $query = $query->orWhereRaw('subkelompok.kodesubkelompok LIKE '. "'%$filters[data]%'");
+                                $query = $query->orWhereRaw('subkelompok.kodesubkelompok LIKE ' . "'%$filters[data]%'");
                             } else if ($filters['field'] == 'kategori') {
-                                $query = $query->orWhereRaw('kategori.kodekategori LIKE '. "'%$filters[data]%'");
+                                $query = $query->orWhereRaw('kategori.kodekategori LIKE ' . "'%$filters[data]%'");
                             } else if ($filters['field'] == 'merk') {
-                                $query = $query->orWhereRaw('merk.keterangan LIKE '. "'%$filters[data]%'");
+                                $query = $query->orWhereRaw('merk.keterangan LIKE ' . "'%$filters[data]%'");
                             } else if ($filters['field'] == 'created_at' || $filters['field'] == 'updated_at') {
                                 $query = $query->orWhereRaw("format(" . $this->table . "." . $filters['field'] . ", 'dd-MM-yyyy HH:mm:ss') LIKE '%$filters[data]%'");
                             } else {
@@ -551,7 +647,7 @@ class Stok extends MyModel
         $stok->info = html_entity_decode(request()->info);
 
         $statusPakai = $this->cekvalidasihapus($stok->id);
-        if (!$statusPakai['kondisi']){
+        if (!$statusPakai['kondisi']) {
             $stok->statusreuse = $data['statusreuse'];
             $stok->vulkanisirawal = $data['vulkanisirawal'];
         }

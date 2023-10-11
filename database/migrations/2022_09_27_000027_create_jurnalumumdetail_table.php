@@ -26,6 +26,7 @@ class CreateJurnalumumdetailTable extends Migration
             $table->double('nominal',15,2)->nullable();
             $table->longText('keterangan')->nullable();
             $table->integer('baris')->length(11)->nullable();
+            $table->integer('statushutangprediksi')->nullable();
             $table->longText('info')->nullable();            
             $table->string('modifiedby',50)->nullable();
             $table->timestamps();

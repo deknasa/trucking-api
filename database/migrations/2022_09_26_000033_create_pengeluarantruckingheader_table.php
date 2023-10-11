@@ -26,6 +26,10 @@ class CreatePengeluarantruckingheaderTable extends Migration
             $table->unsignedBigInteger('karyawan_id')->nullable();
             $table->unsignedBigInteger('supir_id')->nullable();
             $table->unsignedBigInteger('trado_id')->nullable();
+            $table->unsignedBigInteger('gandengan_id')->nullable();
+            $table->unsignedBigInteger('statuscabang')->nullable();
+            $table->unsignedBigInteger('tradotnl_id')->nullable();
+            $table->unsignedBigInteger('gandengantnl_id')->nullable();
             $table->unsignedBigInteger('jenisorder_id')->nullable();
             $table->integer('statusposting')->length(11)->nullable();
             $table->date('periode')->nullable();            

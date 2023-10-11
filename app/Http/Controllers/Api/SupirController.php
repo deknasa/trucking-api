@@ -400,6 +400,7 @@ class SupirController extends Controller
             ];
 
             $supir = (new Supir())->processUpdate($supir, $data);
+            
             $supir->position = $this->getPosition($supir, $supir->getTable())->position;
             if ($request->limit == 0) {
                 $supir->page = ceil($supir->position / (10));

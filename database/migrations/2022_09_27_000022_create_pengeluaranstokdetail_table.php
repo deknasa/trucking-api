@@ -31,6 +31,7 @@ class CreatePengeluaranstokdetailTable extends Migration
             $table->unsignedBigInteger('vulkanisirke')->nullable();
             $table->integer('statusservicerutin')->length(11)->nullable();
             $table->integer('statusoli')->length(11)->nullable();
+            $table->integer('statusban')->length(11)->nullable();
             $table->string('pengeluaranstok_nobukti',50)->nullable();
             $table->longText('info')->nullable();            
             $table->string('modifiedby',50)->nullable();            
