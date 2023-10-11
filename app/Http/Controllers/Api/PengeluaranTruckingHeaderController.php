@@ -500,13 +500,13 @@ class PengeluaranTruckingHeaderController extends Controller
         $klaim = DB::table('pengeluarantrucking')->from(DB::raw("pengeluarantrucking with (readuncommitted)"))
             ->where('kodepengeluaran', "KLAIM")
             ->first();
-        if ($klaim->id == $PengeluaranTruckingHeader->pengeluarantrucking_id) {
-            $cekdata = $pengeluaran->cekvalidasiklaim($id);
-        } else {
+        // if ($klaim->id == $PengeluaranTruckingHeader->pengeluarantrucking_id) {
+        //     $cekdata = $pengeluaran->cekvalidasiklaim($id);
+        // } else {
             // dd($nobukti->pengeluaran_nobukti);
             $cekdata = $pengeluaran->cekvalidasiaksi($nobukti->nobukti);
             // $cekdata = $pengeluaran->cekvalidasiaksi($nobukti->pengeluaran_nobukti);
-        }
+        // }
 
 
         if ($cekdata['kondisi'] == true) {

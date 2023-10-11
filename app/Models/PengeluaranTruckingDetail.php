@@ -223,8 +223,8 @@ class PengeluaranTruckingDetail extends MyModel
                         'pengeluarantruckingdetail.qty',
                         'pengeluarantruckingdetail.harga',
                         'pengeluarantruckingdetail.total',
-                        'pengeluaranstokheader.id as pengeluaranstokheader_id',
-                        'penerimaanstokheader.id as penerimaanstokheader_id',
+                        DB::raw("(case when pengeluaranstokheader.id IS NULL then 0 else pengeluaranstokheader.id end) as pengeluaranstokheader_id"),
+                        DB::raw("(case when penerimaanstokheader.id IS NULL then 0 else penerimaanstokheader.id end) as penerimaanstokheader_id"),
                         DB::raw("pengeluarantruckingdetail.nominal as nominal_detail"),
                         DB::raw("pengeluarantruckingdetail.nominaltambahan"),
                         DB::raw("
