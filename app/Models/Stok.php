@@ -90,6 +90,7 @@ class Stok extends MyModel
             ->first();
 
         $aktif = request()->aktif ?? '';
+        $statusreuse = request()->statusreuse ?? '';
         $kelompok = request()->kelompok_id ?? '';
         $penerimaanstok_id = request()->penerimaanstok_id ?? '';
         $penerimaanstokheader_nobukti = request()->penerimaanstokheader_nobukti ?? '';
@@ -107,6 +108,7 @@ class Stok extends MyModel
             'stok.gambar',
             'stok.namaterpusat',
             'statusban.text as statusban',
+            'statusreuse.memo as statusreuse',
             'stok.modifiedby',
             'stok.totalvulkanisir',
             'jenistrado.keterangan as jenistrado',
@@ -128,6 +130,7 @@ class Stok extends MyModel
             ->leftJoin('parameter', 'stok.statusaktif', 'parameter.id')
             ->leftJoin(DB::raw("parameter as service with (readuncommitted)"), 'stok.statusservicerutin', 'service.id')
             ->leftJoin(DB::raw("parameter as statusban with (readuncommitted)"), 'stok.statusban', 'statusban.id')
+            ->leftJoin(DB::raw("parameter as statusreuse with (readuncommitted)"), 'stok.statusreuse', 'statusreuse.id')
             ->leftJoin('merk', 'stok.merk_id', 'merk.id');
 
 
@@ -144,6 +147,16 @@ class Stok extends MyModel
                 ->first();
 
             $query->where('stok.statusaktif', '=', $statusaktif->id);
+        }
+        if ($statusreuse == 'REUSE') {
+            $statusaktif = Parameter::from(
+                DB::raw("parameter with (readuncommitted)")
+            )
+                ->where('grp', '=', 'STATUS REUSE')
+                ->where('text', '=', 'REUSE')
+                ->first();
+
+            $query->where('stok.statusreuse', '=', $statusaktif->id);
         }
 
         if ($kelompok != '') {
@@ -339,6 +352,7 @@ class Stok extends MyModel
             'stok.jenistrado_id',
             'stok.kelompok_id',
             'stok.totalvulkanisir',
+            'stok.statusreuse',
             'stok.subkelompok_id',
             'stok.kategori_id',
             'stok.merk_id',

@@ -238,10 +238,14 @@ class PengeluaranTruckingHeader extends MyModel
 
         if (request()->pengeluaranstok_id && request()->pengeluaranstok_id == $afkir->id) {
             $query
-                ->addSelect('pengeluarantruckingdetail.qty')
-                ->addSelect('pengeluarantruckingdetail.harga')
-                ->leftJoin(DB::raw("pengeluarantruckingdetail with (readuncommitted)"), 'pengeluarantruckingheader.id', 'pengeluarantruckingdetail.pengeluarantruckingheader_id')
-                ->where("pengeluarantruckingdetail.stok_id", request()->stok_id);
+            ->addSelect('pengeluarantruckingdetail.qty')
+            ->addSelect('pengeluarantruckingdetail.harga')
+            ->leftJoin(DB::raw("pengeluarantruckingdetail with (readuncommitted)"), 'pengeluarantruckingheader.id', 'pengeluarantruckingdetail.pengeluarantruckingheader_id');
+            if (request()->from_tnl =="YA" ){
+				$query->where("pengeluarantruckingdetail.stoktnl_id", request()->stok_id);
+			}else{
+				$query->where("pengeluarantruckingdetail.stok_id", request()->stok_id);
+			}
         }
         if (request()->tgldari) {
             $query->whereBetween('pengeluarantruckingheader.tglbukti', [date('Y-m-d', strtotime(request()->tgldari)), date('Y-m-d', strtotime(request()->tglsampai))]);
