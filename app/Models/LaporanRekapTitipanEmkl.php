@@ -88,11 +88,18 @@ class LaporanRekapTitipanEmkl  extends MyModel
             'nominal',
         ], $querybiayatitipan);
 
+        
+        $getJudul = DB::table('parameter')
+            ->select('text')
+            ->where('grp', 'JUDULAN LAPORAN')
+            ->where('subgrp', 'JUDULAN LAPORAN')
+            ->first();
+
         $query = DB::table($tempbiayatitipan)->from(
             DB::raw($tempbiayatitipan . " a with (readuncommitted) ")
         )
             ->select(
-                db::raw("'Transporindo Agung Sejahtera' as judul"),
+                DB::raw("'" . $getJudul->text . "' as judul"),
                 db::raw("'Biaya Titipan Emkl Yang Belum Lunas' as judullaporan"),
                 db::raw("ROW_NUMBER() OVER(ORDER BY a.tglbukti,a.nobukti) as urut"),
                 'a.nobukti',

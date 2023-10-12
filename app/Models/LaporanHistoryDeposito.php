@@ -146,6 +146,8 @@ class LaporanHistoryDeposito extends MyModel
                 DB::raw('SUM((ISNULL(saldo, 0) + nominal)) OVER (ORDER BY id ASC) as Saldo'),
                 db::raw("'" . $disetujui . "' as disetujui"),
                 db::raw("'" . $diperiksa . "' as diperiksa"),
+                DB::raw("'" . $getJudul->text . "' as judul"),
+
             ])
             ->orderBy('id');
 

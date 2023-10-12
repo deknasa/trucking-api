@@ -55,8 +55,8 @@ class LaporanLabaRugiController extends Controller
      */
     public function export(Request $request)
     {
-        $bulan = $request->bulan;
-        $tahun = $request->tahun;
+        $bulan = substr($request->sampai, 0, 2);
+        $tahun = substr($request->sampai, 3, 4);
 
         $laporanlabarugi = new LaporanLabaRugi();
 
@@ -67,9 +67,16 @@ class LaporanLabaRugiController extends Controller
         //     $item->tgljatuhtempo = date('d-m-Y', strtotime($item->tgljatuhtempo));
         // }
 
-        return response([
-            'data' => $laporan_labarugi
-            // 'data' => $report
-        ]);
+        if (count($laporan_labarugi) == 0) {
+            return response([
+                'data' => $laporan_labarugi,
+                'message' => 'tidak ada data'
+            ], 500);
+        }else{
+            return response([
+                'data' => $laporan_labarugi,
+                'message' => 'berhasil'
+            ]);
+        }
     }
 }

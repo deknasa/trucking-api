@@ -200,11 +200,17 @@ class LaporanTitipanEmkl  extends MyModel
         ->where('grp', 'DIPERIKSA')
         ->where('subgrp', 'DIPERIKSA')->first()->text ?? '';
 
+        $getJudul = DB::table('parameter')
+        ->select('text')
+        ->where('grp', 'JUDULAN LAPORAN')
+        ->where('subgrp', 'JUDULAN LAPORAN')
+        ->first();
+
         $query = DB::table($temphasil)->from(
             DB::raw($temphasil . " a with (readuncommitted) ")
         )
             ->select(
-                db::raw("'Transporindo Agung Sejahtera' as judul"),
+                DB::raw("'" . $getJudul->text . "' as judul"),
                 db::raw("'Rekap Biaya Titipan Emkl Belum Lunas' as judullaporan"),
                 'a.fnopol as trado',
                 'a.ftgl as tglbukti',

@@ -113,7 +113,8 @@ class LaporanPemakaianStok extends MyModel
                 'a.nominal',
                 'a.harga',
                 'a.satuan',
-                'a.keterangan'
+                'a.keterangan',
+                DB::raw("'" . $getJudul->text . "' as judul"),
 
             )
             ->OrderBy('a.kodetrado', 'asc')
