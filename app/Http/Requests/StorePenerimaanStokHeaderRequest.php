@@ -103,12 +103,12 @@ class StorePenerimaanStokHeaderRequest extends FormRequest
             'trado' => $salahsatu,
             'gandengan' => $salahsatu,
             'gudang' => $salahsatu,
-            'tradodari' => $salahSatuDari,
-            'gandengandari' => $salahSatuDari,
-            'gudangdari' => $salahSatuDari,
-            'tradoke' => $salahSatuKe,
-            'gandenganke' => $salahSatuKe,
-            'gudangke' => $salahSatuKe,
+            'tradodari' => [$salahSatuDari],
+            'gandengandari' => [$salahSatuDari],
+            'gudangdari' => [$salahSatuDari],
+            'tradoke' => [$salahSatuKe,'different:tradodari'],
+            'gandenganke' => [$salahSatuKe,'different:gandengandari'],
+            'gudangke' => [$salahSatuKe,'different:gudangdari'],
         ];
 
         $relatedRequests = [
@@ -172,6 +172,9 @@ class StorePenerimaanStokHeaderRequest extends FormRequest
             'tradoke.required' => app(ErrorController::class)->geterror('STGGK')->keterangan,
             'gandenganke.required' => app(ErrorController::class)->geterror('STGGK')->keterangan,
             'gudangke.required' => app(ErrorController::class)->geterror('STGGK')->keterangan,
+            'tradoke.different' => "trado ke Harus berbeda dengan trado dari",
+            'gandenganke.different' => "gandengan ke Harus berbeda dengan gandengan dari",
+            'gudangke.different' => "gudang ke Harus berbeda dengan gudang dari",
         ];
 
         $relatedRequests = [

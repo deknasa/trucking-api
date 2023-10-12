@@ -94,7 +94,7 @@ class Stok extends MyModel
         $kelompok = request()->kelompok_id ?? '';
         $penerimaanstok_id = request()->penerimaanstok_id ?? '';
         $penerimaanstokheader_nobukti = request()->penerimaanstokheader_nobukti ?? '';
-
+        $pg = Parameter::where('grp', 'PG STOK')->where('subgrp', 'PG STOK')->first();
 
         $query = DB::table($this->table)->select(
             'stok.id',
@@ -148,13 +148,16 @@ class Stok extends MyModel
 
             $query->where('stok.statusaktif', '=', $statusaktif->id);
         }
-        if ($statusreuse == 'REUSE') {
+        if (($statusreuse == 'REUSE')||($pg->text == $penerimaanstok_id)) {
+
             $statusaktif = Parameter::from(
                 DB::raw("parameter with (readuncommitted)")
             )
                 ->where('grp', '=', 'STATUS REUSE')
                 ->where('text', '=', 'REUSE')
                 ->first();
+
+       
 
             $query->where('stok.statusreuse', '=', $statusaktif->id);
         }
