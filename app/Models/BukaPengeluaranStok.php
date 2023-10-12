@@ -167,6 +167,7 @@ class BukaPengeluaranStok extends MyModel
         $bukaPengeluaranStok->pengeluaranstok_id = $data['pengeluaranstok_id'];
         $bukaPengeluaranStok->tglbatas = $tglbatas;
         $bukaPengeluaranStok->modifiedby = auth('api')->user()->name;
+        $bukaPengeluaranStok->info = html_entity_decode(request()->info);
         
         if (!$bukaPengeluaranStok->save()) {
             throw new \Exception("Error Update Buka Pengeluaran Stok.");

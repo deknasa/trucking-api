@@ -33,8 +33,8 @@ class StorePiutangDetailRequest extends FormRequest
 
     public function attributes() {
         return [
-            'nominal_detail' => 'Nominal Detail',
-            'keterangan_detail' => 'Keterangan Detail',
+            'nominal_detail.*' => 'Nominal',
+            'keterangan_detail.*' => 'Keterangan',
         ];
     }
 }

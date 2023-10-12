@@ -347,6 +347,7 @@ class TarifRincian extends MyModel
         if ($id == 'undefined') {
             $id = 0;
         }
+        $container_id = request()->container_id;
         $query = Tarif::from(DB::raw("$this->table with (readuncommitted)"))
             ->select(
                 'tarif.id',
@@ -371,6 +372,7 @@ class TarifRincian extends MyModel
             ->leftJoin(DB::raw("container with (readuncommitted)"), 'container.id', '=', "tarifrincian.container_id")
             ->leftJoin(DB::raw("parameter AS p with (readuncommitted)"), 'tarif.statuspenyesuaianharga', '=', 'p.id')
             ->leftJoin(DB::raw("parameter AS sistemton with (readuncommitted)"), 'tarif.statussistemton', '=', 'sistemton.id')
+            ->where('tarifrincian.container_id', $container_id)
             ->where('tarifrincian.tarif_id', '=', $id);
 
         $data = $query->first();
@@ -578,6 +580,7 @@ class TarifRincian extends MyModel
         $tarifRincian->container_id = $data['container_id'];
         $tarifRincian->nominal = $data['nominal'];
         $tarifRincian->modifiedby = auth('api')->user()->user;
+        $tarifRincian->info = html_entity_decode(request()->info);
         
         if (!$tarifRincian->save()) {
             throw new \Exception("Error storing tarif rincian.");
@@ -596,6 +599,7 @@ class TarifRincian extends MyModel
         $tarifRincian->container_id = $data['container_id'];
         $tarifRincian->nominal = $data['nominal'];
         $tarifRincian->modifiedby = auth('api')->user()->user;
+        $tarifRincian->info = html_entity_decode(request()->info);
 
         if (!$tarifRincian->save()) {
             throw new \Exception("Error updating tarif rincian.");

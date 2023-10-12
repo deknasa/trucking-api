@@ -281,6 +281,16 @@ class LaporanPenyesuaianBarang extends MyModel
             'nominal',
         ], $queryTempData2);
 
+        $disetujui = db::table('parameter')->from(db::raw('parameter with (readuncommitted)'))
+        ->select('text')
+        ->where('grp', 'DISETUJUI')
+        ->where('subgrp', 'DISETUJUI')->first()->text ?? '';
+
+    $diperiksa = db::table('parameter')->from(db::raw('parameter with (readuncommitted)'))
+        ->select('text')
+        ->where('grp', 'DIPERIKSA')
+        ->where('subgrp', 'DIPERIKSA')->first()->text ?? '';
+
         $results = DB::table($tempData)->from(
             DB::raw($tempData)
         )
@@ -295,6 +305,8 @@ class LaporanPenyesuaianBarang extends MyModel
                 'qty',
                 'harga',
                 'nominal',
+                db::raw("'" . $disetujui . "' as disetujui"),
+                db::raw("'" . $diperiksa . "' as diperiksa"),
 
             )
             ->orderBy('tglbukti', 'ASC')

@@ -20,7 +20,8 @@ class CreateGajisupiruangjalanTable extends Migration
             $table->string('gajisupir_nobukti', 50)->nullable();            
             $table->string('absensisupir_nobukti', 50)->nullable();            
             $table->unsignedBigInteger('supir_id')->nullable();   
-            $table->double('nominal', 15,2)->nullable();                     
+            $table->double('nominal', 15,2)->nullable();          
+            $table->longText('info')->nullable();           
             $table->timestamps();
 
             $table->foreign('supir_id', 'gajisupiruangjalan_supir_supir_id_foreign')->references('id')->on('supir');

@@ -27,11 +27,11 @@ class RequiredCoaPotonganPelunasanPiutang implements Rule
      */
     public function passes($attribute, $value)
     {
-        $attribute = substr($attribute,12);
+        $attribute = substr($attribute,17);
         $potongan = request()->potongan[$attribute];
         $ketPotongan = request()->keteranganpotongan[$attribute];
         if($potongan != 0 || !empty($ketPotongan)){
-            if($value == '') {
+            if($value == '' || $value == 0) {
                 return false;
             }else{
                 return true;

@@ -296,7 +296,7 @@ class RekapPengeluaranHeader extends MyModel
         return $data;
     }
 
-    public function find($id)
+    public function findAll($id)
     {
         $this->setRequestParameters();
 
@@ -373,6 +373,7 @@ class RekapPengeluaranHeader extends MyModel
         $rekapPengeluaranHeader->statuscetak = $statusCetak->id;
         $rekapPengeluaranHeader->statusformat = $format->id;
         $rekapPengeluaranHeader->modifiedby = auth('api')->user()->name;
+        $rekapPengeluaranHeader->info = html_entity_decode(request()->info);
         $rekapPengeluaranHeader->nobukti = (new RunningNumberService)->get($group, $subGroup, $rekapPengeluaranHeader->getTable(), date('Y-m-d', strtotime($data['tglbukti'])));
 
         if (!$rekapPengeluaranHeader->save()) {
@@ -419,6 +420,7 @@ class RekapPengeluaranHeader extends MyModel
     public function processUpdate(RekapPengeluaranHeader $rekapPengeluaranHeader, array $data): RekapPengeluaranHeader
     {
         $rekapPengeluaranHeader->modifiedby = auth('api')->user()->name;
+        $rekapPengeluaranHeader->info = html_entity_decode(request()->info);
 
         if (!$rekapPengeluaranHeader->save()) {
             throw new \Exception("Error updating rekap pengeluaran header.");
@@ -489,6 +491,46 @@ class RekapPengeluaranHeader extends MyModel
             'datajson' => $getDetail->toArray(),
             'modifiedby' => auth('api')->user()->name
         ]);
+        return $rekapPengeluaranHeader;
+    }
+    public function processApproval(array $data)
+    {
+        // dd($data);
+
+        $statusApproval = Parameter::from(
+            DB::raw("parameter with (readuncommitted)")
+        )->where('grp', '=', 'STATUS APPROVAL')->where('text', '=', 'APPROVAL')->first();
+        $statusNonApproval = Parameter::from(
+            DB::raw("parameter with (readuncommitted)")
+        )->where('grp', '=', 'STATUS APPROVAL')->where('text', '=', 'NON APPROVAL')->first();
+
+        for ($i = 0; $i < count($data['rekapId']); $i++) {
+
+            $rekapPengeluaranHeader = RekapPengeluaranHeader::find($data['rekapId'][$i]);
+            if ($rekapPengeluaranHeader->statusapproval == $statusApproval->id) {
+                $rekapPengeluaranHeader->statusapproval = $statusNonApproval->id;
+                $rekapPengeluaranHeader->tglapproval = date('Y-m-d', strtotime("1900-01-01"));
+                $rekapPengeluaranHeader->userapproval = '';
+                $aksi = $statusNonApproval->text;
+            } else {
+                $rekapPengeluaranHeader->statusapproval = $statusApproval->id;
+                $rekapPengeluaranHeader->tglapproval = date('Y-m-d H:i:s');
+                $rekapPengeluaranHeader->userapproval = auth('api')->user()->name;
+                $aksi = $statusApproval->text;
+            }
+
+                $rekapPengeluaranHeader->save();
+            (new LogTrail())->processStore([
+                'namatabel' => strtoupper($rekapPengeluaranHeader->getTable()),
+                'postingdari' => 'APPROVAL REKAP PENGELUARAN',
+                'idtrans' => $rekapPengeluaranHeader->id,
+                'nobuktitrans' => $rekapPengeluaranHeader->nobukti,
+                'aksi' => $aksi,
+                'datajson' => $rekapPengeluaranHeader->toArray(),
+                'modifiedby' => auth('api')->user()->user
+            ]);
+        }
+
         return $rekapPengeluaranHeader;
     }
 }

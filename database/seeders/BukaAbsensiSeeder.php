@@ -19,7 +19,5 @@ class BukaAbsensiSeeder extends Seeder
         DB::statement("delete Bukaabsensi");
         DB::statement("DBCC CHECKIDENT ('Bukaabsensi', RESEED, 1);");
 
-        bukaabsensi::create(['tglabsensi' => '2023/2/1', 'modifiedby' => 'ADMIN',]);
-        bukaabsensi::create(['tglabsensi' => '2023/2/2', 'modifiedby' => 'ADMIN',]);
     }
 }

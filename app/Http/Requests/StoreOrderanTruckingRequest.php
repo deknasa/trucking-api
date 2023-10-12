@@ -421,6 +421,7 @@ class StoreOrderanTruckingRequest extends FormRequest
             'statusperalihan' => 'status peralihan',
             'jenisorder' => 'jenis order',
             'tarifrincian' => 'tujuan',
+            'agen' => 'customer'
         ];
     }
 

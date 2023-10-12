@@ -103,6 +103,13 @@ class InputTrip extends MyModel
             $data['zonadari_id'] = $upahZona->zonadari_id;
             $data['zonasampai_id'] = $upahZona->zonasampai_id;
         }
+        $params = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'PENDAPATAN SUPIR')->where('subgrp', 'GAJI KENEK')->first();
+        $komisi_gajisupir = $params->text;
+        if ($komisi_gajisupir == 'YA') {
+            $nominalSupir = $upahsupirRincian->nominalsupir - $upahsupirRincian->nominalkenek;
+        } else {
+            $nominalSupir = $upahsupirRincian->nominalsupir;
+        }
         $dataSP = [
 
             'jobtrucking' => $nobuktiorderantrucking,
@@ -122,7 +129,7 @@ class InputTrip extends MyModel
             'statusgandengan' => $data['statusgandengan'],
             'statusupahzona' => $data['statusupahzona'],
             'omset' => $tarifrincian->nominal ?? 0,
-            'gajisupir' => $upahsupirRincian->nominalsupir,
+            'gajisupir' => $nominalSupir,
             'gajikenek' => $upahsupirRincian->nominalkenek,
             'agen_id' => $data['agen_id'],
             'zonadari_id' => $data['zonadari_id'],

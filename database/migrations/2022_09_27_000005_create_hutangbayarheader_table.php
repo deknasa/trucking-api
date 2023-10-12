@@ -24,6 +24,7 @@ class CreateHutangbayarheaderTable extends Migration
             $table->unsignedBigInteger('bank_id')->nullable();            
             $table->unsignedBigInteger('supplier_id')->nullable();            
             $table->unsignedBigInteger('pelanggan_id')->nullable();            
+            $table->integer('statusbayarhutang')->Length(11)->nullable();
             $table->string('pengeluaran_nobukti', 50)->nullable();            
             $table->string('coa',50)->nullable();            
             $table->unsignedBigInteger('alatbayar_id')->nullable();
@@ -37,6 +38,7 @@ class CreateHutangbayarheaderTable extends Migration
             $table->string('userbukacetak',50)->nullable();
             $table->date('tglbukacetak')->nullable();
             $table->integer('jumlahcetak')->Length(11)->nullable();
+            $table->longText('info')->nullable();
             $table->string('modifiedby', 50)->nullable();            
             $table->timestamps();
 

@@ -22,6 +22,7 @@ class CreateSubkelompokTable extends Migration
             $table->longText('keterangan')->nullable();
             $table->unsignedBigInteger('kelompok_id')->nullable();
             $table->integer('statusaktif')->length(11)->nullable();
+            $table->longText('info')->nullable();
             $table->longText('modifiedby',50)->nullable();
             $table->timestamps();
 

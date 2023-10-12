@@ -188,8 +188,17 @@ class ProsesUangJalanSupirDetail extends MyModel
                 $this->table . '.nominal',
                 $this->table . '.keterangan',
                 'parameter.text as statusprosesuangjalan',
+                db::raw("cast((format(penerimaanheader.tglbukti,'yyyy/MM')+'/1') as date) as tgldariheaderpenerimaantruckingheader"),
+                db::raw("cast(cast(format((cast((format(penerimaanheader.tglbukti,'yyyy/MM')+'/1') as datetime)+32),'yyyy/MM')+'/01' as datetime)-1 as date) as tglsampaiheaderpenerimaantruckingheader"), 
+                db::raw("cast((format(pengembaliankasgantungheader.tglbukti,'yyyy/MM')+'/1') as date) as tgldariheaderpengembaliankasgantungheader"),
+                db::raw("cast(cast(format((cast((format(pengembaliankasgantungheader.tglbukti,'yyyy/MM')+'/1') as datetime)+32),'yyyy/MM')+'/01' as datetime)-1 as date) as tglsampaiheaderpengembaliankasgantungheader"),
+                db::raw("cast((format(pengeluaranheader.tglbukti,'yyyy/MM')+'/1') as date) as tgldariheaderpengeluarantruckingheader"),
+                db::raw("cast(cast(format((cast((format(pengeluaranheader.tglbukti,'yyyy/MM')+'/1') as datetime)+32),'yyyy/MM')+'/01' as datetime)-1 as date) as tglsampaiheaderpengeluarantruckingheader"),
 
             )
+                ->leftJoin(DB::raw("pengeluaranheader with (readuncommitted)"),  $this->table.'.pengeluarantrucking_nobukti', '=','pengeluaranheader.nobukti')
+                ->leftJoin(DB::raw("penerimaanheader with (readuncommitted)"),  $this->table.'.penerimaantrucking_nobukti', '=','penerimaanheader.nobukti')
+                ->leftJoin(DB::raw("pengembaliankasgantungheader with (readuncommitted)"),  $this->table.'.pengembaliankasgantung_nobukti', '=','pengembaliankasgantungheader.nobukti')
                 ->leftJoin(DB::raw("bank as penerimaanbank with (readuncommitted)"), 'penerimaanbank.id', '=', $this->table . '.penerimaantrucking_bank_id')
                 ->leftJoin(DB::raw("bank as pengeluaranbank with (readuncommitted)"), 'pengeluaranbank.id', '=', $this->table . '.pengeluarantrucking_bank_id')
                 ->leftJoin(DB::raw("bank as pengembalianbank with (readuncommitted)"), 'pengembalianbank.id', '=', $this->table . '.pengembaliankasgantung_bank_id')
@@ -306,6 +315,7 @@ class ProsesUangJalanSupirDetail extends MyModel
         $prosesUangJalan->nominal = $data['nominal'];
         $prosesUangJalan->keterangan = $data['keterangan'];
         $prosesUangJalan->modifiedby = auth('api')->user()->name;
+        $prosesUangJalan->info = html_entity_decode(request()->info);
 
         if (!$prosesUangJalan->save()) {
             throw new \Exception("Error storing proses uang jalan detail.");

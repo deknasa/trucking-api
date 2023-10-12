@@ -32,22 +32,24 @@ class UpdatePengeluaranHeaderRequest extends FormRequest
      */
     public function rules()
     {
-        $query=DB::table('pengeluaranheader')->from(
+        $query = DB::table('pengeluaranheader')->from(
             DB::raw('pengeluaranheader a with (readuncommitted)')
         )
-        ->select(
-            'a.tglbukti',
-            'c.kodebank as bank',
-            'd.kodealatbayar as alatbayar',
-        )
-        ->leftJoin(DB::raw("bank c with (readuncommitted)"), 'a.bank_id', 'c.id')
-        ->leftJoin(DB::raw("alatbayar d with (readuncommitted)"), 'a.alatbayar_id', 'd.id')
-        ->where('a.id','=',$this->id)
-        ->first();
+            ->select(
+                'a.tglbukti',
+                'a.bank_id',
+                'c.kodebank as bank',
+                'd.kodealatbayar as alatbayar',
+            )
+            ->leftJoin(DB::raw("bank c with (readuncommitted)"), 'a.bank_id', 'c.id')
+            ->leftJoin(DB::raw("alatbayar d with (readuncommitted)"), 'a.alatbayar_id', 'd.id')
+            ->where('a.id', '=', $this->id)
+            ->first();
+        // dd($query);
 
         $rules = [
             'tglbukti' => [
-                'required','date_format:d-m-Y',
+                'required', 'date_format:d-m-Y',
                 new DateTutupBuku(),
                 'before_or_equal:' . date('d-m-Y'),
 
@@ -56,7 +58,7 @@ class UpdatePengeluaranHeaderRequest extends FormRequest
         $relatedRequests = [
             StorePengeluaranDetailRequest::class
         ];
-        
+
         foreach ($relatedRequests as $relatedRequest) {
             $rules = array_merge(
                 $rules,
@@ -68,6 +70,7 @@ class UpdatePengeluaranHeaderRequest extends FormRequest
         $alatBayar = new AlatBayar();
         if ($bank_id != null && $bank_id != 0) {
             $getAlatBayar = $alatBayar->validateBankWithAlatbayar(request()->bank_id);
+            // dd($getAlatBayar);
             $getAlatBayar = json_decode($getAlatBayar, true);
             $kondisialatbayar = true;
             // dd($getAlatBayar);
@@ -77,7 +80,6 @@ class UpdatePengeluaranHeaderRequest extends FormRequest
                 }
             }
         }
-        // dd($kondisialatbayar);
         $rulesbank_id = [];
         if ($bank_id != '' && $this->bank != '') {
             // dd($kondisialatbayar);
@@ -86,6 +88,14 @@ class UpdatePengeluaranHeaderRequest extends FormRequest
                     new ExistBank(),
                     new ValidasiBankList($kondisialatbayar),
                     Rule::in($query->bank),
+                ],
+                'bank_id' => [
+                    'required',
+                    'numeric',
+                    'min:1',
+                    new ExistBank(),
+                    Rule::in($query->bank_id)
+
                 ]
             ];
         } else if ($bank_id != null) {
@@ -96,6 +106,7 @@ class UpdatePengeluaranHeaderRequest extends FormRequest
                         'numeric',
                         'min:1',
                         new ExistBank(),
+                        Rule::in($query->bank_id)
 
                     ]
 
@@ -117,6 +128,7 @@ class UpdatePengeluaranHeaderRequest extends FormRequest
                     'numeric',
                     'min:1',
                     new ExistBank(),
+                    Rule::in($query->bank_id)
                 ]
             ];
         } else {
@@ -126,6 +138,7 @@ class UpdatePengeluaranHeaderRequest extends FormRequest
                     'numeric',
                     'min:1',
                     new ExistBank(),
+                    Rule::in($query->bank)
                 ]
             ];
         }
@@ -185,7 +198,6 @@ class UpdatePengeluaranHeaderRequest extends FormRequest
         );
 
         return $rule;
-
     }
 
     public function attributes()

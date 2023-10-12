@@ -78,6 +78,7 @@ class PengeluaranStokHeaderController extends Controller
                 "pengeluaranstok_id" => $request->pengeluaranstok_id,
                 "penerimaanstok_nobukti" => $request->penerimaanstok_nobukti,
                 "pengeluaranstok_nobukti" => $request->pengeluaranstok_nobukti,
+                "pengeluarantrucking_nobukti" => $request->pengeluarantrucking_nobukti,
                 "supplier" => $request->supplier,
                 "supplier_id" => $request->supplier_id,
                 "kerusakan" => $request->kerusakan,
@@ -99,9 +100,11 @@ class PengeluaranStokHeaderController extends Controller
 
                 "detail_stok" => $request->detail_stok,
                 "detail_stok_id" => $request->detail_stok_id,
+                "detail_statusoli" => $request->detail_statusoli,
                 "detail_vulkanisirke" => $request->detail_vulkanisirke,
                 "detail_keterangan" => $request->detail_keterangan,
-                "detail_qty" => $request->detail_qty,
+                "detail_statusban" => $request->statusban,
+                "detail_qty" => $request->detail_qty??$request->qty_afkir,
                 "detail_harga" => $request->detail_harga,
                 "detail_persentasediscount" => $request->detail_persentasediscount,
                 "totalItem" => $request->totalItem,
@@ -115,6 +118,8 @@ class PengeluaranStokHeaderController extends Controller
             } else {
                 $pengeluaranStokHeader->page = ceil($pengeluaranStokHeader->position / ($request->limit ?? 10));
             }
+            $pengeluaranStokHeader->tgldariheader = date('Y-m-01', strtotime(request()->tglbukti));
+            $pengeluaranStokHeader->tglsampaiheader = date('Y-m-t', strtotime(request()->tglbukti));
 
             DB::commit();
             return response()->json([
@@ -150,6 +155,7 @@ class PengeluaranStokHeaderController extends Controller
                 "pengeluaranstok" => $request->pengeluaranstok,
                 "pengeluaranstok_id" => $request->pengeluaranstok_id,
                 "penerimaanstok_nobukti" => $request->penerimaanstok_nobukti,
+                "pengeluarantrucking_nobukti" => $request->pengeluarantrucking_nobukti,
                 "pengeluaranstok_nobukti" => $request->pengeluaranstok_nobukti,
                 "supplier" => $request->supplier,
                 "supplier_id" => $request->supplier_id,
@@ -169,12 +175,14 @@ class PengeluaranStokHeaderController extends Controller
                 "bank_id" => $request->bank_id,
                 "tglkasmasuk" => $request->tglkasmasuk,
                 "penerimaan_nobukti" => $request->penerimaan_nobukti,
-
+               
                 "detail_stok" => $request->detail_stok,
                 "detail_stok_id" => $request->detail_stok_id,
+                "detail_statusoli" => $request->detail_statusoli,
                 "detail_vulkanisirke" => $request->detail_vulkanisirke,
+                "detail_statusban" => $request->statusban,
+                "detail_qty" => $request->detail_qty??$request->qty_afkir,
                 "detail_keterangan" => $request->detail_keterangan,
-                "detail_qty" => $request->detail_qty,
                 "detail_harga" => $request->detail_harga,
                 "detail_persentasediscount" => $request->detail_persentasediscount,
                 "totalItem" => $request->totalItem,
@@ -191,6 +199,8 @@ class PengeluaranStokHeaderController extends Controller
                 $pengeluaranStokHeader->page = ceil($pengeluaranStokHeader->position / ($request->limit ?? 10));
             }
 
+            $pengeluaranStokHeader->tgldariheader = date('Y-m-01', strtotime(request()->tglbukti));
+            $pengeluaranStokHeader->tglsampaiheader = date('Y-m-t', strtotime(request()->tglbukti));
             DB::commit();
             return response()->json([
                 'message' => 'Berhasil disimpan',
@@ -220,6 +230,8 @@ class PengeluaranStokHeaderController extends Controller
             } else {
                 $pengeluaranStokHeader->page = ceil($pengeluaranStokHeader->position / ($request->limit ?? 10));
             }
+            $pengeluaranStokHeader->tgldariheader = date('Y-m-01', strtotime($pengeluaranStokHeader->tglbukti));
+            $pengeluaranStokHeader->tglsampaiheader = date('Y-m-t', strtotime($pengeluaranStokHeader->tglbukti));
 
             DB::commit();
 
@@ -335,8 +347,8 @@ class PengeluaranStokHeaderController extends Controller
         }
         if ($pengeluaran->isNobuktiApprovedJurnal($id)) {
             $query = Error::from(DB::raw("error with (readuncommitted)"))
-            ->select(DB::raw("keterangan + ' (APPROVAL JURNAL)' as keterangan"))
-            ->whereRaw("kodeerror = 'SAP'")
+                ->select(DB::raw("keterangan + ' (APPROVAL JURNAL)' as keterangan"))
+                ->whereRaw("kodeerror = 'SAP'")
                 ->get();
             $keterangan = $query['0'];
             $data = [
@@ -349,8 +361,8 @@ class PengeluaranStokHeaderController extends Controller
         }
         if ($pengeluaran->isKMTApprovedJurnal($id)) {
             $query = Error::from(DB::raw("error with (readuncommitted)"))
-            ->select(DB::raw("keterangan + ' (APPROVAL JURNAL)' as keterangan"))
-            ->whereRaw("kodeerror = 'SAP'")
+                ->select(DB::raw("keterangan + ' (APPROVAL JURNAL)' as keterangan"))
+                ->whereRaw("kodeerror = 'SAP'")
                 ->get();
             $keterangan = $query['0'];
             $data = [
@@ -391,9 +403,9 @@ class PengeluaranStokHeaderController extends Controller
             return response($data);
         } else if (!$pengeluaran->todayValidation($pengeluaran->tglbukti)) {
             $query = Error::from(DB::raw("error with (readuncommitted)"))
-            ->select('keterangan')
-            ->whereRaw("kodeerror = 'SDC'")
-            ->get();
+                ->select('keterangan')
+                ->whereRaw("kodeerror = 'SDC'")
+                ->get();
             // $keterangan = $query['0'];
             $keterangan = ['keterangan' => 'transaksi Sudah berbeda tanggal']; //$query['0'];
             $data = [
@@ -406,9 +418,9 @@ class PengeluaranStokHeaderController extends Controller
             return response($data);
         } else if (!$pengeluaran->isEditAble($id)) {
             $query = Error::from(DB::raw("error with (readuncommitted)"))
-            ->select('keterangan')
-            ->whereRaw("kodeerror = 'SDC'")
-            ->get();
+                ->select('keterangan')
+                ->whereRaw("kodeerror = 'SDC'")
+                ->get();
             // $keterangan = $query['0'];
             $keterangan = ['keterangan' => 'Transaksi Tidak Bisa diedit']; //$query['0'];
             $data = [
@@ -534,7 +546,7 @@ class PengeluaranStokHeaderController extends Controller
     {
     }
 
-    
+
     /**
      * @ClassName 
      */
@@ -543,7 +555,7 @@ class PengeluaranStokHeaderController extends Controller
         DB::beginTransaction();
         try {
             $pengeluaranStokHeader = PengeluaranStokheader::lockForUpdate()->findOrFail($id);
-            
+
             $statusBolehEdit = DB::table('pengeluaranstokheader')->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS APPROVAL')->where('text', 'APPROVAL')->first();
             $statusTidakBolehEdit = DB::table('pengeluaranstokheader')->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS APPROVAL')->where('text', 'NON APPROVAL')->first();
             // statusapprovaleditabsensi,tglapprovaleditabsensi,userapprovaleditabsensi 
@@ -553,7 +565,7 @@ class PengeluaranStokHeaderController extends Controller
                 $aksi = $statusTidakBolehEdit->text;
             } else {
                 $tglbatasedit = date("Y-m-d", strtotime('today'));
-                $tglbatasedit = date("Y-m-d H:i:s", strtotime($tglbatasedit. ' 23:59:00'));
+                $tglbatasedit = date("Y-m-d H:i:s", strtotime($tglbatasedit . ' 23:59:00'));
                 $pengeluaranStokHeader->tglbatasedit = $tglbatasedit;
                 $pengeluaranStokHeader->statusapprovaledit = $statusBolehEdit->id;
                 $aksi = $statusBolehEdit->text;
@@ -585,5 +597,48 @@ class PengeluaranStokHeaderController extends Controller
             DB::rollBack();
             throw $th;
         }
+    }
+
+    /**
+     * @ClassName 
+     */
+    public function pengeluaranstokspkstok()
+    {
+    }
+    /**
+     * @ClassName 
+     */
+    public function pengeluaranstokreturstok()
+    {
+    }
+    /**
+     * @ClassName 
+     */
+    public function pengeluaranstokkoreksistok()
+    {
+    }
+    /**
+     * @ClassName 
+     */
+    public function pengeluaranstokpenjualanstokafkir()
+    {
+    }
+    /**
+     * @ClassName 
+     */
+    public function pengeluaranstoksparepartgantungtrucking()
+    {
+    }
+    /**
+     * @ClassName 
+     */
+    public function pengeluaranstokkoreksivulkan()
+    {
+    }
+    /**
+     * @ClassName 
+     */
+    public function pengeluaranstoksetstatusafkir()
+    {
     }
 }

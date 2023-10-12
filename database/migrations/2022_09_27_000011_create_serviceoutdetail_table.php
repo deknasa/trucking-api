@@ -22,6 +22,7 @@ class CreateServiceoutdetailTable extends Migration
             $table->string('nobukti',50)->nullable();
             $table->string('servicein_nobukti',50)->nullable();
             $table->longText('keterangan')->nullable();
+            $table->longText('info')->nullable();
             $table->string('modifiedby',50)->nullable();            
             $table->timestamps();
 

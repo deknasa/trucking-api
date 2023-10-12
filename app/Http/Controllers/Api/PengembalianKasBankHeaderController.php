@@ -192,27 +192,23 @@ class PengembalianKasBankHeaderController extends Controller
             $validatedLogTrail = new StoreLogTrailRequest($datalogtrail);
             app(LogTrailController::class)->store($validatedLogTrail);
 
-            $pengeluaranDetail = [];
+            $nowarkat = [];
+            $tgljatuhtempo = [];
+            $nominal_detail = [];
+            $coadebet = [];
+            $coakredit = [];
+            $keterangan_detail = [];
             for ($i = 0; $i < count($request->nominal_detail); $i++) {
-                $detail = [];
+                
 
-                $detail = [
-                    'entriluar' => 1,
-                    'nobukti' =>  $nobuktiPengeluaran,
-                    'alatbayar_id' =>  $pengembalianKasBankHeader->alatbayar_id,
-                    'nowarkat' =>  $request->nowarkat[$i],
-                    'tgljatuhtempo' =>   date('Y-m-d', strtotime($request->tgljatuhtempo[$i])),
-                    'nominal' =>  $request->nominal_detail[$i],
-                    'coadebet' =>  $request->coadebet[$i],
-                    'coakredit' =>  $bank->coa,
-                    'keterangan' =>  $request->keterangan_detail[$i],
-                    'bulanbeban' =>  date('Y-m-d', strtotime($request->bulanbeban[$i] ?? '1900/1/1')),
-                    'modifiedby' =>  auth('api')->user()->name,
-                ];
-
-                $pengeluaranDetail[] = $detail;
+                $nowarkat[] = $request->nowarkat[$i];
+                $tgljatuhtempo[] =  date('Y-m-d', strtotime($request->tgljatuhtempo[$i]));
+                $nominal_detail[] = $request->nominal_detail[$i];
+                $coadebet[] =  $request->coadebet[$i];
+                $coakredit[] = $bank->coa;
+                $keterangan_detail[] = $request->keterangan_detail[$i];
             }
-
+            
             //SOTRE PENGELUARAN
             $pengeluaranHeader = [
                 'tanpaprosesnobukti' => 1,
@@ -231,7 +227,12 @@ class PengembalianKasBankHeaderController extends Controller
                 "transferkebank" => $pengembalianKasBankHeader->transferkebank,
                 "statusformat" => $formatPengeluaran->id,
                 "modifiedby" => $pengembalianKasBankHeader->modifiedby,
-                "datadetail" => $pengeluaranDetail
+                "nowarkat" => $nowarkat,
+                "tgljatuhtempo" => $tgljatuhtempo,
+                "nominal_detail" => $nominal_detail,
+                "coadebet" => $coadebet,
+                "coakredit" => $coakredit,
+                "keterangan_detail" => $keterangan_detail,
             ];
 
             $pengeluaran = new StorePengeluaranHeaderRequest($pengeluaranHeader);
@@ -379,7 +380,7 @@ class PengembalianKasBankHeaderController extends Controller
                     'nobukti' =>  $pengembalianKasBankHeader->nobukti,
                     'nowarkat' =>  $request->nowarkat[$i],
                     'tgljatuhtempo' =>   date('Y-m-d', strtotime($request->tgljatuhtempo[$i])),
-                    'nominal' =>  $request->nominal_detail[$i],
+                    'nominal_detail' =>  $request->nominal_detail[$i],
                     'coadebet' =>  $request->coadebet[$i],
                     'coakredit' =>  $bank->coa,
                     'keterangan' =>  $request->keterangan_detail[$i],

@@ -9,6 +9,8 @@ use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\Storage;
 use App\Helpers\App;
 use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\File;
+use Illuminate\Support\Facades\Http;
 
 class UpahSupir extends MyModel
 {
@@ -53,6 +55,7 @@ class UpahSupir extends MyModel
             ->first();
 
         $aktif = request()->aktif ?? '';
+        $isParent = request()->isParent ?? false;
 
         if ($proses == 'reload') {
             $temtabel = 'temp' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
@@ -101,6 +104,9 @@ class UpahSupir extends MyModel
                 $table->longText('statusupahzona')->nullable();
                 $table->longText('statusupahzona_text')->nullable();
                 $table->bigInteger('statusupahzona_id')->nullable();
+                $table->longText('statuspostingtnl')->nullable();
+                $table->longText('statuspostingtnl_text')->nullable();
+                $table->bigInteger('statuspostingtnl_id')->nullable();
                 $table->date('tglmulaiberlaku')->nullable();
                 $table->longText('gambar')->nullable();
                 $table->longText('keterangan')->nullable();
@@ -147,6 +153,9 @@ class UpahSupir extends MyModel
                     'statusupahzona.text as statusupahzona_text',
                     'upahsupir.statusupahzona as statusupahzona_id',
 
+                    'statuspostingtnl.memo as statuspostingtnl',
+                    'statuspostingtnl.text as statuspostingtnl_text',
+                    'upahsupir.statuspostingtnl as statuspostingtnl_id',
                     'upahsupir.tglmulaiberlaku',
                     // 'upahsupir.tglakhirberlaku',
                     'upahsupir.gambar',
@@ -165,6 +174,7 @@ class UpahSupir extends MyModel
                 ->leftJoin(DB::raw("zona as zonasampai with (readuncommitted)"), 'zonasampai.id', '=', 'upahsupir.zonasampai_id')
                 ->leftJoin(DB::raw("parameter with (readuncommitted)"), 'upahsupir.statusaktif', 'parameter.id')
                 ->leftJoin(DB::raw("parameter as statusupahzona with (readuncommitted)"), 'upahsupir.statusupahzona', 'statusupahzona.id')
+                ->leftJoin(DB::raw("parameter as statuspostingtnl with (readuncommitted)"), 'upahsupir.statuspostingtnl', 'statuspostingtnl.id')
                 ->leftJoin(DB::raw("zona with (readuncommitted)"), 'upahsupir.zona_id', 'zona.id');
 
             DB::table($temtabel)->insertUsing([
@@ -184,6 +194,9 @@ class UpahSupir extends MyModel
                 'statusupahzona',
                 'statusupahzona_text',
                 'statusupahzona_id',
+                'statuspostingtnl',
+                'statuspostingtnl_text',
+                'statuspostingtnl_id',
                 'tglmulaiberlaku',
                 'gambar',
                 'keterangan',
@@ -207,6 +220,17 @@ class UpahSupir extends MyModel
             $temtabel = $querydata->namatabel;
         }
 
+        $querydata = DB::table('listtemporarytabel')->from(
+            DB::raw("listtemporarytabel with (readuncommitted)")
+        )
+            ->select(
+                'namatabel',
+            )
+            ->where('class', '=', $class)
+            ->where('modifiedby', '=', $user)
+            ->first();
+
+        $temtabel = $querydata->namatabel;
         $query = DB::table(DB::raw($temtabel))->from(
             DB::raw(DB::raw($temtabel) . " a with (readuncommitted)")
         )
@@ -223,6 +247,7 @@ class UpahSupir extends MyModel
                 'a.zona_id',
                 'a.statusaktif',
                 'a.statusupahzona',
+                'a.statuspostingtnl',
                 'a.tglmulaiberlaku',
                 'a.gambar',
                 'a.keterangan',
@@ -247,6 +272,9 @@ class UpahSupir extends MyModel
                 ->first();
 
             $query->where('a.statusaktif_id', '=', $statusaktif->id);
+        }
+        if ($isParent == true) {
+            $query->where('a.penyesuaian', '');
         }
         $this->totalRows = $query->count();
         $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;
@@ -281,7 +309,7 @@ class UpahSupir extends MyModel
             DB::raw("(case when upahsupir.parent_id=0 then null else upahsupir.parent_id end) as parent_id"),
             'parent.keterangan as parent',
             DB::raw("(case when upahsupir.tarif_id=0 then null else upahsupir.tarif_id end) as tarif_id"),
-            DB::raw("TRIM(tarif.tujuan) as tarif"),
+            DB::raw("(trim(tarif.tujuan)+' - '+trim(tarif.penyesuaian)) as tarif"),
             DB::raw("(case when upahsupir.kotadari_id=0 then null else upahsupir.kotadari_id end) as kotadari_id"),
             DB::raw("TRIM(kotadari.keterangan) as kotadari"),
             'upahsupir.keterangan',
@@ -289,15 +317,17 @@ class UpahSupir extends MyModel
             DB::raw("(case when upahsupir.kotasampai_id=0 then null else upahsupir.kotasampai_id end) as kotasampai_id"),
             DB::raw("TRIM(kotasampai.keterangan) as kotasampai"),
 
-            'upahsupir.zonadari_id',
+            DB::raw("(case when upahsupir.zonadari_id=0 then null else upahsupir.zonadari_id end) as zonadari_id"),
             DB::raw("TRIM(zonadari.zona) as zonadari"),
-            'upahsupir.zonasampai_id',
+            DB::raw("(case when upahsupir.zonasampai_id=0 then null else upahsupir.zonasampai_id end) as zonasampai_id"),
             DB::raw("TRIM(zonasampai.zona) as zonasampai"),
             'upahsupir.jarak',
+            'upahsupir.jarakfullempty',
             'zona.keterangan as zona',
             DB::raw("(case when upahsupir.zona_id=0 then null else upahsupir.zona_id end) as zona_id"),
             'upahsupir.statusaktif',
             'upahsupir.statusupahzona',
+            'upahsupir.statuspostingtnl',
             'upahsupir.statussimpankandang',
 
             'upahsupir.tglmulaiberlaku',
@@ -306,6 +336,14 @@ class UpahSupir extends MyModel
             'statusluarkota.text as statusluarkotas',
             'upahsupir.gambar',
 
+            DB::raw("upahsupir.tarifmuatan_id"),
+            DB::raw("(trim(tarifmuatan.tujuan)+' - '+trim(tarifmuatan.penyesuaian)) as tarifmuatan"),
+            DB::raw("upahsupir.tarifbongkaran_id"),
+            DB::raw("(trim(tarifbongkaran.tujuan)+' - '+trim(tarifbongkaran.penyesuaian)) as tarifbongkaran"),
+            DB::raw("upahsupir.tarifexport_id"),
+            DB::raw("(trim(tarifexport.tujuan)+' - '+trim(tarifexport.penyesuaian)) as tarifexport"),
+            DB::raw("upahsupir.tarifimport_id"),
+            DB::raw("(trim(tarifimport.tujuan)+' - '+trim(tarifimport.penyesuaian)) as tarifimport"),
             'upahsupir.modifiedby',
             'upahsupir.updated_at'
         )
@@ -316,6 +354,10 @@ class UpahSupir extends MyModel
             ->leftJoin(DB::raw("zona as zonasampai with (readuncommitted)"), 'zonasampai.id', '=', 'upahsupir.zonasampai_id')
             ->leftJoin(DB::raw("zona with (readuncommitted)"), 'upahsupir.zona_id', 'zona.id')
             ->leftJoin(DB::raw("tarif with (readuncommitted)"), 'upahsupir.tarif_id', 'tarif.id')
+            ->leftJoin(DB::raw("tarif as tarifmuatan with (readuncommitted)"), 'upahsupir.tarifmuatan_id', 'tarifmuatan.id')
+            ->leftJoin(DB::raw("tarif as tarifbongkaran with (readuncommitted)"), 'upahsupir.tarifbongkaran_id', 'tarifbongkaran.id')
+            ->leftJoin(DB::raw("tarif as tarifexport with (readuncommitted)"), 'upahsupir.tarifexport_id', 'tarifexport.id')
+            ->leftJoin(DB::raw("tarif as tarifimport with (readuncommitted)"), 'upahsupir.tarifimport_id', 'tarifimport.id')
             ->leftJoin(DB::raw("parameter as statusluarkota with (readuncommitted)"), 'upahsupir.statusluarkota', 'statusluarkota.id')
 
             ->where('upahsupir.id', $id);
@@ -336,6 +378,7 @@ class UpahSupir extends MyModel
             $table->unsignedBigInteger('statusluarkota')->nullable();
             $table->unsignedBigInteger('statussimpankandang')->nullable();
             $table->unsignedBigInteger('statusupahzona')->nullable();
+            $table->unsignedBigInteger('statuspostingtnl')->nullable();
         });
 
         $status = Parameter::from(
@@ -391,9 +434,21 @@ class UpahSupir extends MyModel
             ->first();
 
         $iddefaultstatusUpahZona = $status->id ?? 0;
+        $status = Parameter::from(
+            db::Raw("parameter with (readuncommitted)")
+        )
+            ->select(
+                'id'
+            )
+            ->where('grp', '=', 'STATUS POSTING TNL')
+            ->where('subgrp', '=', 'STATUS POSTING TNL')
+            ->where('default', '=', 'YA')
+            ->first();
+
+        $iddefaultstatusPostingTnl = $status->id ?? 0;
 
         DB::table($tempdefault)->insert(
-            ["statusaktif" => $iddefaultstatusaktif, "statusluarkota" => $iddefaultstatusluarkota, "statussimpankandang" => $iddefaultstatusSimpanKandang, "statusupahzona" => $iddefaultstatusUpahZona]
+            ["statusaktif" => $iddefaultstatusaktif, "statusluarkota" => $iddefaultstatusluarkota, "statussimpankandang" => $iddefaultstatusSimpanKandang, "statusupahzona" => $iddefaultstatusUpahZona, "statuspostingtnl" => $iddefaultstatusPostingTnl]
         );
 
         $query = DB::table($tempdefault)->from(
@@ -403,7 +458,8 @@ class UpahSupir extends MyModel
                 'statusaktif',
                 'statusluarkota',
                 'statussimpankandang',
-                'statusupahzona'
+                'statusupahzona',
+                'statuspostingtnl',
             );
 
         $data = $query->first();
@@ -511,6 +567,7 @@ class UpahSupir extends MyModel
                 $this->table.statusaktif,
                 $this->table.tglmulaiberlaku,
                 $this->table.statusupahzona,
+                tarif.tujuan as tarif,
                  $this->table.modifiedby,
                  $this->table.created_at,
                  $this->table.updated_at"
@@ -522,6 +579,7 @@ class UpahSupir extends MyModel
             ->leftJoin(DB::raw("zona as zonasampai with (readuncommitted)"), 'zonasampai.id', '=', 'upahsupir.zonasampai_id')
             ->leftJoin(DB::raw("parameter with (readuncommitted)"), 'upahsupir.statusaktif', 'parameter.id')
             ->leftJoin(DB::raw("parameter as statusupahzona with (readuncommitted)"), 'upahsupir.statusupahzona', 'statusupahzona.id')
+            ->leftJoin(DB::raw("tarif with (readuncommitted)"), 'upahsupir.tarif_id', 'tarif.id')
             ->leftJoin(DB::raw("zona with (readuncommitted)"), 'upahsupir.zona_id', 'zona.id');
     }
 
@@ -542,6 +600,7 @@ class UpahSupir extends MyModel
             $table->date('tglmulaiberlaku')->nullable();
             // $table->date('tglakhirberlaku')->nullable();
             $table->integer('statusupahzona')->length(11)->nullable();
+            $table->string('tarif')->nullable();
             $table->string('modifiedby', 50)->nullable();
             $table->dateTime('created_at')->nullable();
             $table->dateTime('updated_at')->nullable();
@@ -552,7 +611,7 @@ class UpahSupir extends MyModel
         $query = $this->selectColumns($query);
         $this->sortForPosition($query);
         $models = $this->filterForPosition($query);
-        DB::table($temp)->insertUsing(['id', 'parent_id', 'kotadari_id', 'kotasampai_id', 'zonadari_id', 'zonasampai_id', 'penyesuaian', 'zona_id', 'jarak', 'statusaktif', 'tglmulaiberlaku', 'statusupahzona', 'modifiedby', 'created_at', 'updated_at'], $models);
+        DB::table($temp)->insertUsing(['id', 'parent_id', 'kotadari_id', 'kotasampai_id', 'zonadari_id', 'zonasampai_id', 'penyesuaian', 'zona_id', 'jarak', 'statusaktif', 'tglmulaiberlaku', 'statusupahzona', 'tarif', 'modifiedby', 'created_at', 'updated_at'], $models);
         return $temp;
     }
 
@@ -585,6 +644,8 @@ class UpahSupir extends MyModel
             return $query->orderBy('zonasampai.zona', $this->params['sortOrder']);
         } else if ($this->params['sortIndex'] == 'zona_id') {
             return $query->orderBy('zona.keterangan', $this->params['sortOrder']);
+        } else if ($this->params['sortIndex'] == 'tarif') {
+            return $query->orderBy('tarif.tujuan', $this->params['sortOrder']);
         } else {
             return $query->orderBy($this->table . '.' . $this->params['sortIndex'], $this->params['sortOrder']);
         }
@@ -600,6 +661,8 @@ class UpahSupir extends MyModel
                             $query = $query->where('a.statusaktif_text', '=', $filters['data']);
                         } else if ($filters['field'] == 'statusupahzona') {
                             $query = $query->where('a.statusupahzona_text', '=', $filters['data']);
+                        } else if ($filters['field'] == 'statuspostingtnl') {
+                            $query = $query->where('a.statuspostingtnl_text', '=', $filters['data']);
                         } elseif ($filters['field'] == 'parent_id') {
                             $query = $query->where('a.parent_id', '=', $filters['data']);
                         } else if ($filters['field'] == 'kotadari_id') {
@@ -632,6 +695,8 @@ class UpahSupir extends MyModel
                                 $query = $query->orWhere('a.statusaktif_text', '=', $filters['data']);
                             } elseif ($filters['field'] == 'statusupahzona') {
                                 $query = $query->orWhere('a.statusupahzona', '=', $filters['data']);
+                            } elseif ($filters['field'] == 'statuspostingtnl') {
+                                $query = $query->orWhere('a.statuspostingtnl', '=', $filters['data']);
                             } else if ($filters['field'] == 'kotadari_id') {
                                 $query = $query->orWhere('a.kotadari_id', 'LIKE', "%$filters[data]%");
                             } else if ($filters['field'] == 'zonadari_id') {
@@ -691,6 +756,8 @@ class UpahSupir extends MyModel
                             $query = $query->where('zonasampai.keterangan', 'LIKE', "%$filters[data]%");
                         } else if ($filters['field'] == 'zona_id') {
                             $query = $query->where('zona.keterangan', 'LIKE', "%$filters[data]%");
+                        } else if ($filters['field'] == 'tarif') {
+                            $query = $query->where('tarif.tujuan', 'LIKE', "%$filters[data]%");
                         } else if ($filters['field'] == 'jarak') {
                             $query = $query->whereRaw("format($this->table.jarak, '#,#0.00') LIKE '%$filters[data]%'");
                         } else if ($filters['field'] == 'tglmulaiberlaku') {
@@ -723,6 +790,8 @@ class UpahSupir extends MyModel
                                 $query = $query->orWhere('zonasampai.keterangan', 'LIKE', "%$filters[data]%");
                             } else if ($filters['field'] == 'zona_id') {
                                 $query = $query->orWhere('zona.keterangan', 'LIKE', "%$filters[data]%");
+                            } else if ($filters['field'] == 'tarif') {
+                                $query = $query->orWhere('tarif.tujuan', 'LIKE', "%$filters[data]%");
                             } else if ($filters['field'] == 'jarak') {
                                 $query = $query->orWhereRaw("format($this->table.jarak, '#,#0.00') LIKE '%$filters[data]%'");
                             } else if ($filters['field'] == 'tglmulaiberlaku') {
@@ -828,6 +897,23 @@ class UpahSupir extends MyModel
         }
     }
 
+    private function storeFilesBase64(array $files, string $destinationFolder): string
+    {
+        $storedFiles = [];
+
+        foreach ($files as $file) {
+            $originalFileName = hash('sha256', $file);
+
+            $randomValue = substr($originalFileName, rand(0, strlen($originalFileName) - 10), 10) . '.jpg';
+            $imageData = base64_decode($file);
+            $storedFile = Storage::put($destinationFolder . '/' . $randomValue, $imageData);
+            $resizedFiles = App::imageResize(storage_path("app/$destinationFolder/"), storage_path("app/upahsupir/$randomValue"), $randomValue);
+            $storedFiles[] = $randomValue;
+        }
+
+        return json_encode($storedFiles);
+    }
+
     private function storeFiles(array $files, string $destinationFolder): string
     {
         $storedFiles = [];
@@ -842,7 +928,6 @@ class UpahSupir extends MyModel
 
         return json_encode($storedFiles);
     }
-
     public function processStore(array $data): UpahSupir
     {
         try {
@@ -865,23 +950,33 @@ class UpahSupir extends MyModel
             $upahsupir->kotadari_id = $data['kotadari_id'] ?? 0;
             $upahsupir->parent_id = $data['parent_id'] ?? 0;
             $upahsupir->tarif_id = $data['tarif_id'] ?? 0;
+            $upahsupir->tarifmuatan_id = $data['tarifmuatan_id'] ?? 0;
+            $upahsupir->tarifbongkaran_id = $data['tarifbongkaran_id'] ?? 0;
+            $upahsupir->tarifimport_id = $data['tarifimport_id'] ?? 0;
+            $upahsupir->tarifexport_id = $data['tarifexport_id'] ?? 0;
             $upahsupir->kotasampai_id = $data['kotasampai_id'] ?? 0;
             $upahsupir->penyesuaian = $data['penyesuaian'];
             $upahsupir->jarak = $data['jarak'];
+            $upahsupir->jarakfullempty = $data['jarakfullempty'];
             $upahsupir->zona_id = ($data['zona_id'] == null) ? 0 : $data['zona_id'] ?? 0;
             $upahsupir->statusaktif = $data['statusaktif'];
             $upahsupir->tglmulaiberlaku = date('Y-m-d', strtotime($data['tglmulaiberlaku']));
             $upahsupir->zonadari_id = $data['zonadari_id'] ?? 0;
             $upahsupir->zonasampai_id = $data['zonasampai_id'] ?? 0;
+            $upahsupir->statuspostingtnl = $data['statuspostingtnl'];
             $upahsupir->statusupahzona = $data['statusupahzona'];
             $upahsupir->statussimpankandang = $data['statussimpankandang'];
             $upahsupir->statusluarkota = $data['statusluarkota'] ?? '';
             $upahsupir->keterangan = $data['keterangan'] ?? '';
             $upahsupir->modifiedby = auth('api')->user()->user;
+            $upahsupir->info = html_entity_decode(request()->info);
             $this->deleteFiles($upahsupir);
-
             if (array_key_exists('gambar', $data)) {
-                $upahsupir->gambar = $this->storeFiles($data['gambar'], 'upahsupir');
+                if ($data['from'] != '') {
+                    $upahsupir->gambar = $this->storeFilesBase64($data['gambar'], 'upahsupir');
+                } else {
+                    $upahsupir->gambar = $this->storeFiles($data['gambar'], 'upahsupir');
+                }
             } else {
                 $upahsupir->gambar = '';
             }
@@ -950,6 +1045,7 @@ class UpahSupir extends MyModel
                 $upahsupirKandang->statussimpankandang = $data['statussimpankandang'];
                 $upahsupirKandang->keterangan = $data['keterangan'];
                 $upahsupirKandang->modifiedby = auth('api')->user()->user;
+                $upahsupirKandang->info = html_entity_decode(request()->info);
                 $this->deleteFiles($upahsupirKandang);
                 if (array_key_exists('gambar', $data)) {
                     $upahsupirKandang->gambar = $this->storeFiles($data['gambar'], 'upahsupir');
@@ -999,6 +1095,22 @@ class UpahSupir extends MyModel
                     'modifiedby' => auth('api')->user()->user,
                 ]);
             }
+            // $statusTnl = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS POSTING TNL')->where('text', 'POSTING TNL')->first();
+            // if ($data['statuspostingtnl'] == $statusTnl->id) {
+            //     $statusBukanTnl = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS POSTING TNL')->where('text', 'TIDAK POSTING TNL')->first();
+            //     // posting ke tnl
+            //     $data['statuspostingtnl'] = $statusBukanTnl->id;
+
+            //     $postingTNL = $this->postingTnl($data, $upahsupir->gambar);
+            //     if ($postingTNL['statuscode'] != 201) {
+            //         if ($postingTNL['statuscode'] == 422) {
+            //             throw new \Exception($postingTNL['data']['errors']['penyesuaian'][0] . ' di TNL');
+            //         } else {
+            //             throw new \Exception($postingTNL['data']['message']);
+            //         }
+            //     }
+            // }
+
             return $upahsupir;
         } catch (\Throwable $th) {
             $this->deleteFiles($upahsupir);
@@ -1012,17 +1124,23 @@ class UpahSupir extends MyModel
             $upahsupir->kotadari_id = $data['kotadari_id'] ?? 0;
             $upahsupir->parent_id = $data['parent_id'] ?? 0;
             $upahsupir->tarif_id = $data['tarif_id'] ?? 0;
+            $upahsupir->tarifmuatan_id = $data['tarifmuatan_id'] ?? 0;
+            $upahsupir->tarifbongkaran_id = $data['tarifbongkaran_id'] ?? 0;
+            $upahsupir->tarifimport_id = $data['tarifimport_id'] ?? 0;
+            $upahsupir->tarifexport_id = $data['tarifexport_id'] ?? 0;
             $upahsupir->kotasampai_id = $data['kotasampai_id'] ?? 0;
             $upahsupir->penyesuaian = $data['penyesuaian'];
             $upahsupir->zonadari_id = $data['zonadari_id'] ?? 0;
             $upahsupir->zonasampai_id = $data['zonasampai_id'] ?? 0;
             $upahsupir->statusupahzona = $data['statusupahzona'];
             $upahsupir->jarak = $data['jarak'];
+            $upahsupir->jarakfullempty = $data['jarakfullempty'];
             $upahsupir->zona_id = ($data['zona_id'] == null) ? 0 : $data['zona_id'] ?? 0;
             $upahsupir->statusaktif = $data['statusaktif'];
             $upahsupir->tglmulaiberlaku = date('Y-m-d', strtotime($data['tglmulaiberlaku']));
             $upahsupir->keterangan = $data['keterangan'];
             $upahsupir->modifiedby = auth('api')->user()->user;
+            $upahsupir->info = html_entity_decode(request()->info);
 
             $this->deleteFiles($upahsupir);
             if (array_key_exists('gambar', $data)) {
@@ -1105,5 +1223,66 @@ class UpahSupir extends MyModel
         ]);
 
         return $upahSupir;
+    }
+
+
+    public function postingTnl($data, $gambar)
+    {
+        $gambar = json_decode($gambar);
+        // dd(storage_path("app/upahsupir/".$gambar[0]));
+        // $data['gambar'] = $data['gambartnl'];
+        // dd($data['gambar']);
+        $server = config('app.server_jkt');
+        $getToken = Http::withHeaders([
+            'Content-Type' => 'application/json',
+            'Accept' => 'application/json'
+        ])
+            ->post($server . 'truckingtnl-api/public/api/token', [
+                'user' => 'ADMIN',
+                'password' => getenv('PASSWORD_TNL'),
+                'ipclient' => '',
+                'ipserver' => '',
+                'latitude' => '',
+                'longitude' => '',
+                'browser' => '',
+                'os' => '',
+            ]);
+
+        if ($getToken->getStatusCode() == '404') {
+            throw new \Exception("Akun Tidak Terdaftar di Trucking TNL");
+        } else if ($getToken->getStatusCode() == '200') {
+
+            $access_token = json_decode($getToken, TRUE)['access_token'];
+            $imageBase64 = [];
+            foreach ($gambar as $imagePath) {
+                $imageBase64[] = base64_encode(file_get_contents(storage_path("app/upahsupir/" . $imagePath)));
+            }
+            $data['gambar'] = $imageBase64;
+            $data['from'] = 'jkt';
+            $transferUpahSupir = Http::withHeaders([
+                'Accept' => 'application/json',
+                'Authorization' => 'Bearer ' . $access_token,
+                'Content-Type' => 'application/json',
+            ])
+
+                ->post($server . "truckingtnl-api/public/api/upahsupir", $data);
+
+            $tesResp = $transferUpahSupir->toPsrResponse();
+            $response = [
+                'statuscode' => $tesResp->getStatusCode(),
+                'data' => $transferUpahSupir->json(),
+            ];
+            $dataResp = $transferUpahSupir->json();
+            if ($tesResp->getStatusCode() != 201) {
+                if ($tesResp->getStatusCode() == 422) {
+                    throw new \Exception($dataResp['errors']['penyesuaian'][0] . ' di TNL');
+                } else {
+                    throw new \Exception($dataResp['message']);
+                }
+            }
+            return $response;
+        } else {
+            throw new \Exception("server tidak bisa diakses");
+        }
     }
 }

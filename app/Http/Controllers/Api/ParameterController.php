@@ -21,6 +21,7 @@ use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
 use Illuminate\Database\QueryException;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Support\Facades\Validator;
 
 class ParameterController extends Controller
 {
@@ -96,6 +97,30 @@ class ParameterController extends Controller
         }
     }
 
+    public function addrow(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'key.*' => 'required',
+            'value.*' => 'required',
+        ], [
+            'key.required' => ':attribute' . ' ' . app(ErrorController::class)->geterror('WI')->keterangan,
+            'value.required' => ':attribute' . ' ' . app(ErrorController::class)->geterror('WI')->keterangan,
+        ], [
+            'key' => 'judul',
+            'value' => 'keterangan',
+            'key.*' => 'judul',
+            'value.*' => 'keterangan',
+        ]);
+        if ($validator->fails()) {
+        
+            return response()->json( [
+                "message"=> "The given data was invalid.",
+                "errors"=> $validator->messages()
+            ],422);
+        }
+        return true;
+    }
+
     public function show($id)
     {
         $parameter = new Parameter();
@@ -110,7 +135,7 @@ class ParameterController extends Controller
     /**
      * @ClassName
      */
-    public function update(UpdateParameterRequest $request, Parameter $parameter)
+    public function update(UpdateParameterRequest $request, $id)
     {
 
         $data = [
@@ -128,6 +153,7 @@ class ParameterController extends Controller
         DB::beginTransaction();
 
         try {
+            $parameter = Parameter::lockForUpdate()->findOrFail($id);
             $parameter = (new Parameter())->processUpdate($parameter, $data);
             $parameter->position = $this->getPosition($parameter, $parameter->getTable())->position;
             if ($request->limit==0) {
@@ -265,6 +291,34 @@ class ParameterController extends Controller
 
 
         $data = $querydata->first();
+        return $data;
+    }
+    public function getparamfirst(Request $request)
+    {
+
+        $querydata = Parameter::select('id as id', 'text')
+            ->where('grp', '=',  $request->grp)
+            ->where('subgrp', '=', $request->subgrp)
+            ->orderBy('id');
+
+
+        $data = $querydata->first();
+        return $data;
+    }
+
+    public function getParamByText(Request $request)
+    {
+
+        $querydata = Parameter::where('grp', '=',  $request->grp)
+            ->where('text', '=',  $request->text)
+            ->first();
+
+        if($querydata != null){
+            $data = $querydata;
+        }else{
+            $data = [];
+        }
+
         return $data;
     }
 

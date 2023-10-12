@@ -61,9 +61,11 @@ class CreateTradoTable extends Migration
             $table->integer('jumlahbanserap')->length(11)->nullable();
             $table->integer('statusappeditban')->length(11)->nullable();
             $table->integer('statuslewatvalidasi')->length(11)->nullable();
+            $table->integer('statusabsensisupir')->length(11)->nullable();
             $table->string('photostnk', 1500)->nullable();
             $table->string('photobpkb', 1500)->nullable();
             $table->string('phototrado', 1500)->nullable();
+            $table->longText('info')->nullable();
             $table->string('modifiedby', 30)->nullable();
             $table->timestamps();
 

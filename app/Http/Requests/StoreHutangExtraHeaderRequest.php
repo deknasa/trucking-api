@@ -92,4 +92,16 @@ class StoreHutangExtraHeaderRequest extends FormRequest
 
         return $rule;
     }
+
+    public function attributes()
+    {
+        return [
+            "tglbukti" => 'tgl bukti',
+            "supplier_id" => 'supplier',
+            "supplier" => 'supplier',
+            'tgljatuhtempo.*' => 'tgl jatuh tempo',
+            'total_detail.*' => 'total',
+            'keterangan_detail.*' => 'keterangan',
+        ];
+    }
 }

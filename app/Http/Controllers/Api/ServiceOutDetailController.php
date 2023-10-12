@@ -59,4 +59,9 @@ class ServiceOutDetailController extends Controller
             return response($th->getMessage());
         }
     }
+
+    public function addrow(StoreServiceOutDetailRequest $request)
+    {
+        return true;
+    }
 }

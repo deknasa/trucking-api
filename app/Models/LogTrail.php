@@ -32,6 +32,7 @@ class LogTrail extends MyModel
         $logTrail->aksi = $data['aksi'];
         $logTrail->datajson = $data['datajson'];
         $logTrail->modifiedby = auth('api')->user()->user;
+        $logTrail->info = html_entity_decode(request()->info);
 
         if (!$logTrail->save()) {
             throw new \Exception("Error storing log trail.");

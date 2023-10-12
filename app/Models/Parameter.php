@@ -275,6 +275,15 @@ class Parameter extends MyModel
                     }
 
                     break;
+                case "ANDNOT":
+                    foreach ($this->params['filters']['rules'] as $index => $filters) {
+                        if ($filters['field'] == 'grp') {
+                            $query = $query
+                                    ->whereRaw($this->table . ".[" .  $filters['field'] . "] LIKE '%" . escapeLike($filters['data']) . "%' escape '|'")
+                                    ->whereRaw($this->table . ".[" .  $filters['execpt_field'] . "] NOT LIKE '%" . escapeLike($filters['execpt_data']) . "%' escape '|'");
+                        }
+                    }
+                    break;
                 default:
 
                     break;
@@ -371,11 +380,13 @@ class Parameter extends MyModel
         $parameter->default = $data['default'] ?? '';
         $parameter->type = $data['type'] ?? 0;
         $parameter->modifiedby = auth('api')->user()->user;
+        $parameter->info = html_entity_decode(request()->info);
 
         $detailmemo = [];
         for ($i = 0; $i < count($data['key']); $i++) {
+            $value = ($data['value'][$i] != null) ? $data['value'][$i] : "";
             $datadetailmemo = [
-                $data['key'][$i] => $data['value'][$i],
+                $data['key'][$i] => $value,
             ];
             $detailmemo = array_merge($detailmemo, $datadetailmemo);
         }
@@ -407,15 +418,16 @@ class Parameter extends MyModel
         $parameter->default = $data['default'] ?? '';
         $parameter->type =  $data['type'] ?? 0;
         $parameter->modifiedby = auth('api')->user()->user;
+        $parameter->info = html_entity_decode(request()->info);
 
         $detailmemo = [];
         for ($i = 0; $i < count($data['key']); $i++) {
+            $value = ($data['value'][$i] != null) ? $data['value'][$i] : "";
             $datadetailmemo = [
-                $data['key'][$i] => $data['value'][$i],
+                $data['key'][$i] => $value,
             ];
             $detailmemo = array_merge($detailmemo, $datadetailmemo);
         }
-
         $parameter->memo = json_encode($detailmemo);
         if (!$parameter->save()) {
             throw new \Exception('Error storing parameter.');

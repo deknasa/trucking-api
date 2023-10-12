@@ -162,9 +162,124 @@ class JurnalUmumDetail extends MyModel
         return $query;
     }
 
-    public function getJurnalFromAnotherTable($nobukti){
+    public function getDetail($id)
+    {
+        $query = JurnalUmumDetail::from(
+            DB::raw("jurnalumumdetail as A with (readuncommitted)")
+        )->select(['A.coa as coadebet', 'debet.keterangancoa as ketcoadebet', 'b.coa as coakredit', 'kredit.keterangancoa as ketcoakredit', 'A.nominal', 'A.keterangan'])
+            ->join(
+                DB::raw("(SELECT baris,coa FROM jurnalumumdetail WHERE jurnalumum_id='$id' AND nominal<0) B"),
+                function ($join) {
+                    $join->on('A.baris', '=', 'B.baris');
+                }
+            )
+            ->join(DB::raw("akunpusat as debet with (readuncommitted)"), 'debet.coa', 'A.coa')
+            ->join(DB::raw("akunpusat as kredit with (readuncommitted)"), 'kredit.coa', 'B.coa')
+            ->where([
+                ['A.jurnalumum_id', '=', $id],
+                ['A.nominal', '>=', '0']
+            ])
+            ->get();
+
+        return $query;
+    }
+
+    public function getJurnalFromAnotherTable($nobukti)
+    {
         $this->setRequestParameters();
         $query = JurnalUmumDetail::from(
+            DB::raw("jurnalumumdetail with (readuncommitted)")
+        )
+            ->select(
+                'jurnalumumdetail.nobukti as nobukti',
+                'jurnalumumdetail.tglbukti as tglbukti',
+                'jurnalumumdetail.coa as coa',
+                'coa.keterangancoa as keterangancoa',
+                DB::raw("(case when jurnalumumdetail.nominal<=0 then 0 else jurnalumumdetail.nominal end) as nominaldebet"),
+                DB::raw("(case when jurnalumumdetail.nominal>=0 then 0 else abs(jurnalumumdetail.nominal) end) as nominalkredit"),
+                'jurnalumumdetail.keterangan as keterangan'
+            )
+            ->join(DB::raw("akunpusat as coa with (readuncommitted)"), 'coa.coa', 'jurnalumumdetail.coa');
+
+        $this->sort($query);
+        $query->where($this->table . '.nobukti', '=', $nobukti);
+        $this->filter($query);
+        // dd($query->toSql());
+        $this->totalRows = $query->count();
+        $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;
+
+        $this->paginate($query);
+        $temp = $this->getNominal($nobukti);
+        $tempNominal = DB::table($temp)->from(DB::raw("$temp with (readuncommitted)"))->select(DB::raw("sum(nominaldebet) as nominaldebet,sum(nominalkredit) as nominalkredit"))->first();
+
+        $this->totalNominalDebet = $tempNominal->nominaldebet;
+        $this->totalNominalKredit = $tempNominal->nominalkredit;
+
+        return $query->get();
+    }
+
+    public function jurnalForRetur($nobukti, $statuspotong)
+    {
+        $this->setRequestParameters();
+        if ($statuspotong == 219) {
+
+            $temp = '##temp' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+            $pengeluaranstokbukti = db::table("pengeluaranstokheader")->from(db::raw("pengeluaranstokheader a with (readuncommitted)"))
+                ->select('nobukti')->where('penerimaan_nobukti', request()->nobukti)
+                ->first()->nobukti ?? '';
+
+            $fetch1 = DB::table("jurnalumumdetail")->from(
+                DB::raw("jurnalumumdetail with (readuncommitted)")
+            )
+                ->select(
+                    'jurnalumumdetail.nobukti as nobukti',
+                    'jurnalumumdetail.tglbukti as tglbukti',
+                    'jurnalumumdetail.coa as coa',
+                    'jurnalumumdetail.nominal',
+                    'jurnalumumdetail.keterangan as keterangan'
+                )
+                ->where($this->table . '.nobukti', '=', $nobukti);
+            Schema::create($temp, function ($table) {
+                $table->string('nobukti')->nullable();
+                $table->date('tglbukti')->nullable();
+                $table->string('coa')->nullable();
+                $table->bigInteger('nominal')->nullable();
+                $table->longText('keterangan')->nullable();
+            });
+
+            $tes = DB::table($temp)->insertUsing(['nobukti', 'tglbukti', 'coa', 'nominal', 'keterangan'], $fetch1);
+            if (isset($pengeluaranstokbukti)) {
+
+                $fetch1 = DB::table("jurnalumumdetail")->from(
+                    DB::raw("jurnalumumdetail with (readuncommitted)")
+                )
+                    ->select(
+                        'jurnalumumdetail.nobukti as nobukti',
+                        'jurnalumumdetail.tglbukti as tglbukti',
+                        'jurnalumumdetail.coa as coa',
+                        'jurnalumumdetail.nominal',
+                        'jurnalumumdetail.keterangan as keterangan'
+                    )
+                    ->where($this->table . '.nobukti', '=', $pengeluaranstokbukti);
+                DB::table($temp)->insertUsing(['nobukti', 'tglbukti', 'coa', 'nominal', 'keterangan'], $fetch1);
+            }
+
+            $query = DB::table($temp)->from(
+                DB::raw("$temp as jurnalumumdetail with (readuncommitted)")
+            )
+                ->select(
+                    'jurnalumumdetail.nobukti as nobukti',
+                    'jurnalumumdetail.tglbukti as tglbukti',
+                    'jurnalumumdetail.coa as coa',
+                    'coa.keterangancoa as keterangancoa',
+                    DB::raw("(case when jurnalumumdetail.nominal<=0 then 0 else jurnalumumdetail.nominal end) as nominaldebet"),
+                    DB::raw("(case when jurnalumumdetail.nominal>=0 then 0 else abs(jurnalumumdetail.nominal) end) as nominalkredit"),
+                    'jurnalumumdetail.keterangan as keterangan'
+                )
+                ->join(DB::raw("akunpusat as coa with (readuncommitted)"), 'coa.coa', 'jurnalumumdetail.coa');
+        } else {
+
+            $query = JurnalUmumDetail::from(
                 DB::raw("jurnalumumdetail with (readuncommitted)")
             )
                 ->select(
@@ -178,22 +293,25 @@ class JurnalUmumDetail extends MyModel
                 )
                 ->join(DB::raw("akunpusat as coa with (readuncommitted)"), 'coa.coa', 'jurnalumumdetail.coa');
 
-            $this->sort($query);
             $query->where($this->table . '.nobukti', '=', $nobukti);
-            $this->filter($query);
-            // dd($query->toSql());
-            $this->totalRows = $query->count();
-            $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;
+        }
 
-            $this->paginate($query);
-            $temp = $this->getNominal($nobukti);
-            $tempNominal = DB::table($temp)->from(DB::raw("$temp with (readuncommitted)"))->select(DB::raw("sum(nominaldebet) as nominaldebet,sum(nominalkredit) as nominalkredit"))->first();
+        $this->sort($query);
+        $this->filter($query);
+        // dd($query->toSql());
+        $this->totalRows = $query->count();
+        $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;
 
-            $this->totalNominalDebet = $tempNominal->nominaldebet;
-            $this->totalNominalKredit = $tempNominal->nominalkredit;
-                
-            return $query->get();
+        $this->paginate($query);
+        $temp = $this->getNominal($nobukti);
+        $tempNominal = DB::table($temp)->from(DB::raw("$temp with (readuncommitted)"))->select(DB::raw("sum(nominaldebet) as nominaldebet,sum(nominalkredit) as nominalkredit"))->first();
+
+        $this->totalNominalDebet = $tempNominal->nominaldebet;
+        $this->totalNominalKredit = $tempNominal->nominalkredit;
+
+        return $query->get();
     }
+
     public function sort($query)
     {
         if ($this->params['sortIndex'] == 'keterangancoa') {
@@ -220,7 +338,7 @@ class JurnalUmumDetail extends MyModel
                             } else if ($filters['field'] == 'nominalkredit') {
                                 $query = $query->whereRaw("format((case when jurnalumumdetail.nominal>=0 then 0 else abs(jurnalumumdetail.nominal) end), '#,#0.00') LIKE '%$filters[data]%'");
                             } else if ($filters['field'] == 'tglbukti') {
-                                $query = $query->whereRaw("format(".$this->table . "." . $filters['field'].", 'dd-MM-yyyy') LIKE '%$filters[data]%'");
+                                $query = $query->whereRaw("format(" . $this->table . "." . $filters['field'] . ", 'dd-MM-yyyy') LIKE '%$filters[data]%'");
                             } else {
                                 $query = $query->where($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
                             }
@@ -238,7 +356,7 @@ class JurnalUmumDetail extends MyModel
                             } else if ($filters['field'] == 'nominalkredit') {
                                 $query = $query->orWhereRaw("format((case when jurnalumumdetail.nominal>=0 then 0 else abs(jurnalumumdetail.nominal) end), '#,#0.00') LIKE '%$filters[data]%'");
                             } else if ($filters['field'] == 'tglbukti') {
-                                $query = $query->orWhereRaw("format(".$this->table . "." . $filters['field'].", 'dd-MM-yyyy') LIKE '%$filters[data]%'");
+                                $query = $query->orWhereRaw("format(" . $this->table . "." . $filters['field'] . ", 'dd-MM-yyyy') LIKE '%$filters[data]%'");
                             } else {
                                 $query = $query->orWhere($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
                             }
@@ -267,14 +385,14 @@ class JurnalUmumDetail extends MyModel
     {
         $jurnalUmumDetail = new JurnalUmumDetail();
         $jurnalUmumDetail->jurnalumum_id = $jurnalUmumHeader->id;
-        $jurnalUmumDetail->nobukti = $jurnalUmumHeader->nobukti; 
+        $jurnalUmumDetail->nobukti = $jurnalUmumHeader->nobukti;
         $jurnalUmumDetail->tglbukti = $data['tglbukti'];
         $jurnalUmumDetail->coa = $data['coa'];
         $jurnalUmumDetail->nominal = $data['nominal'];
         $jurnalUmumDetail->keterangan = $data['keterangan'] ?? '';
         $jurnalUmumDetail->modifiedby = auth('api')->user()->name;
         $jurnalUmumDetail->baris = $data['baris'];
-        
+
         if (!$jurnalUmumDetail->save()) {
             throw new \Exception("Error storing jurnal umum detail.");
         }

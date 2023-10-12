@@ -21,6 +21,14 @@ class ExpStnk extends MyModel
             ->where('text', '=', 'AKTIF')
             ->first();
 
+            $statusabsensisupir = Parameter::from(
+                DB::raw("parameter with (readuncommitted)")
+            )
+                ->where('grp', '=', 'STATUS ABSENSI SUPIR')
+                ->where('subgrp', '=', 'STATUS ABSENSI SUPIR')
+                ->where('text', '=', 'ABSENSI SUPIR')
+                ->first();
+
         $batasMax = Parameter::from(
             DB::raw("parameter with (readuncommitted)")
         )
@@ -104,6 +112,8 @@ class ExpStnk extends MyModel
                     as status")
                 )
                 ->where('statusaktif', $statusaktif->id)
+                ->where('statusabsensisupir', $statusabsensisupir->id)
+
                 ->where('tglstnkmati', '<=', date('Y/m/d', strtotime("+$rentang->text days")));
 
             DB::table($temtabel)->insertUsing(['id', 'kodetrado', 'tglstnkmati', 'status'], $getQuery);

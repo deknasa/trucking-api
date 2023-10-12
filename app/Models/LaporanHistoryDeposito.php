@@ -108,42 +108,49 @@ class LaporanHistoryDeposito extends MyModel
             $table->double('saldo')->nullable();
         });
 
-         $select_Temprekap = DB::table($Temppenerimaanpengeluaran)->from(DB::raw($Temppenerimaanpengeluaran))
+        $select_Temprekap = DB::table($Temppenerimaanpengeluaran)->from(DB::raw($Temppenerimaanpengeluaran))
             ->select([
                 'nobukti',
                 'tglbukti',
                 'keterangan',
                 'nominal',
             ])
-            ->orderBy('tglbukti','asc')
-            ->orderBy('tipe','asc');
+            ->orderBy('tglbukti', 'asc')
+            ->orderBy('tipe', 'asc');
 
-            // dd($select_Temprekap->get());
-             
-            DB::table($Temprekap)->insertUsing([
-                'nobukti',
-                'tglbukti',
-                'keterangan',
-                'nominal',
-            ], $select_Temprekap);
-          
+        // dd($select_Temprekap->get());
 
+        DB::table($Temprekap)->insertUsing([
+            'nobukti',
+            'tglbukti',
+            'keterangan',
+            'nominal',
+        ], $select_Temprekap);
 
-            $select_Temprekap2 = DB::table($Temprekap)->from(DB::raw($Temprekap))
+        $disetujui = db::table('parameter')->from(db::raw('parameter with (readuncommitted)'))
+            ->select('text')
+            ->where('grp', 'DISETUJUI')
+            ->where('subgrp', 'DISETUJUI')->first()->text ?? '';
+
+        $diperiksa = db::table('parameter')->from(db::raw('parameter with (readuncommitted)'))
+            ->select('text')
+            ->where('grp', 'DIPERIKSA')
+            ->where('subgrp', 'DIPERIKSA')->first()->text ?? '';
+
+        $select_Temprekap2 = DB::table($Temprekap)->from(DB::raw($Temprekap))
             ->select([
                 'nobukti',
                 'tglbukti',
                 'keterangan',
                 'nominal',
-                DB::raw('SUM((ISNULL(saldo, 0) + nominal)) OVER (ORDER BY id ASC) as Saldo')
+                DB::raw('SUM((ISNULL(saldo, 0) + nominal)) OVER (ORDER BY id ASC) as Saldo'),
+                db::raw("'" . $disetujui . "' as disetujui"),
+                db::raw("'" . $diperiksa . "' as diperiksa"),
             ])
             ->orderBy('id');
-  
-            $data = $select_Temprekap2->get();
-            return $data;
 
-
-    
+        $data = $select_Temprekap2->get();
+        return $data;
     }
 
     public function getExport($supirdari_id)
@@ -154,7 +161,7 @@ class LaporanHistoryDeposito extends MyModel
             ->where('subgrp', 'JUDULAN LAPORAN')
             ->first();
 
-            $getJudul = DB::table('parameter')
+        $getJudul = DB::table('parameter')
             ->select('text')
             ->where('grp', 'JUDULAN LAPORAN')
             ->where('subgrp', 'JUDULAN LAPORAN')
@@ -235,39 +242,49 @@ class LaporanHistoryDeposito extends MyModel
             $table->double('saldo')->nullable();
         });
 
-         $select_Temprekap = DB::table($Temppenerimaanpengeluaran)->from(DB::raw($Temppenerimaanpengeluaran))
+        $select_Temprekap = DB::table($Temppenerimaanpengeluaran)->from(DB::raw($Temppenerimaanpengeluaran))
             ->select([
                 'nobukti',
                 'tglbukti',
                 'keterangan',
                 'nominal',
             ])
-            ->orderBy('tglbukti','asc')
-            ->orderBy('tipe','asc');
+            ->orderBy('tglbukti', 'asc')
+            ->orderBy('tipe', 'asc');
 
-            // dd($select_Temprekap->get());
-             
-            DB::table($Temprekap)->insertUsing([
-                'nobukti',
-                'tglbukti',
-                'keterangan',
-                'nominal',
-            ], $select_Temprekap);
-          
+        // dd($select_Temprekap->get());
 
+        DB::table($Temprekap)->insertUsing([
+            'nobukti',
+            'tglbukti',
+            'keterangan',
+            'nominal',
+        ], $select_Temprekap);
 
-            $select_Temprekap2 = DB::table($Temprekap)->from(DB::raw($Temprekap))
+        $disetujui = db::table('parameter')->from(db::raw('parameter with (readuncommitted)'))
+            ->select('text')
+            ->where('grp', 'DISETUJUI')
+            ->where('subgrp', 'DISETUJUI')->first()->text ?? '';
+
+        $diperiksa = db::table('parameter')->from(db::raw('parameter with (readuncommitted)'))
+            ->select('text')
+            ->where('grp', 'DIPERIKSA')
+            ->where('subgrp', 'DIPERIKSA')->first()->text ?? '';
+
+        $select_Temprekap2 = DB::table($Temprekap)->from(DB::raw($Temprekap))
             ->select([
                 'nobukti',
                 'tglbukti',
                 'keterangan',
                 'nominal',
-                DB::raw('SUM((ISNULL(saldo, 0) + nominal)) OVER (ORDER BY id ASC) as Saldo')
+                DB::raw('SUM((ISNULL(saldo, 0) + nominal)) OVER (ORDER BY id ASC) as Saldo'),
+                db::raw("'" . $disetujui . "' as disetujui"),
+                db::raw("'" . $diperiksa . "' as diperiksa"),
+
             ])
             ->orderBy('id');
-  
-            $data = $select_Temprekap2->get();
-            return $data;
 
+        $data = $select_Temprekap2->get();
+        return $data;
     }
 }

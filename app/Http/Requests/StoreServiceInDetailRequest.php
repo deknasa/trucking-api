@@ -30,4 +30,11 @@ class StoreServiceInDetailRequest extends FormRequest
             'keterangan_detail.*' => 'required'
         ];
     }
+
+    public function attributes() {
+        return [
+            'karyawan.*' => 'Mekanik',
+            'keterangan_detail.*' => 'Keterangan',
+        ];
+    }
 }

@@ -27,6 +27,7 @@ class CreatePengembaliankasbankdetailTable extends Migration
             $table->string('coakredit',50)->nullable();
             $table->longText('keterangan')->nullable();
             $table->date('bulanbeban')->nullable();
+            $table->longText('info')->nullable();
             $table->string('modifiedby',50)->nullable();            
             $table->timestamps();
 

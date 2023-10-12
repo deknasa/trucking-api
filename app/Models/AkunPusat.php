@@ -520,6 +520,7 @@ class AkunPusat extends MyModel
         $akunPusat->coamain = $data['coamain'];
         $akunPusat->statusaktif = $data['statusaktif'];
         $akunPusat->modifiedby = auth('api')->user()->name;
+        $akunPusat->info = html_entity_decode(request()->info);
 
         if (!$akunPusat->save()) {
             throw new \Exception("Error storing akun pusat.");
@@ -566,6 +567,7 @@ class AkunPusat extends MyModel
         $akunPusat->statusaktif = $data['statusaktif'];
         $akunPusat->coamain = $data['coamain'];
         $akunPusat->modifiedby = auth('api')->user()->name;
+        $akunPusat->info = html_entity_decode(request()->info);
 
         if (!$akunPusat->save()) {
             throw new \Exception("Error update akun pusat.");

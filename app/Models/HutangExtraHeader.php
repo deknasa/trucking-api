@@ -27,9 +27,9 @@ class HutangExtraHeader extends MyModel
 
     public function cekvalidasiaksi($nobukti)
     {
-        $hutangBayar = DB::table('hutangbayardetail')
+        $hutangBayar = DB::table('pelunasanhutangdetail')
             ->from(
-                DB::raw("hutangbayardetail as a with (readuncommitted)")
+                DB::raw("pelunasanhutangdetail as a with (readuncommitted)")
             )
             ->select(
                 'a.hutang_nobukti'
@@ -39,7 +39,7 @@ class HutangExtraHeader extends MyModel
         if (isset($hutangBayar)) {
             $data = [
                 'kondisi' => true,
-                'keterangan' => 'HUTANG BAYAR',
+                'keterangan' => 'Pelunasan Hutang',
                 'kodeerror' => 'SATL'
             ];
             goto selesai;
@@ -92,14 +92,19 @@ class HutangExtraHeader extends MyModel
 
                 'parameter.memo as statuscetak',
                 'statusapproval.memo as statusapproval',
+                'hutangextraheader.userapproval',
                 'hutangextraheader.userbukacetak',
                 'hutangextraheader.jumlahcetak',
                 DB::raw('(case when (year(hutangextraheader.tglbukacetak) <= 2000) then null else hutangextraheader.tglbukacetak end ) as tglbukacetak'),
+                DB::raw("cast((format(hutangheader.tglbukti,'yyyy/MM')+'/1') as date) as tgldariheaderhutangheader"),
+                DB::raw("cast(cast(format((cast((format(hutangheader.tglbukti,'yyyy/MM')+'/1') as datetime)+32),'yyyy/MM')+'/01' as datetime)-1 as date) as tglsampaiheaderhutangheader"), 
+                DB::raw('(case when (year(hutangextraheader.tglapproval) <= 2000) then null else hutangextraheader.tglapproval end ) as tglapproval'),
 
                 'hutangextraheader.modifiedby',
                 'hutangextraheader.created_at',
                 'hutangextraheader.updated_at'
             )
+            ->leftJoin('hutangheader','hutangextraheader.hutang_nobukti','hutangheader.nobukti')
             ->leftJoin(DB::raw("parameter with (readuncommitted)"), 'hutangextraheader.statuscetak', 'parameter.id')
             ->leftJoin(DB::raw("parameter as statusapproval with (readuncommitted)"), 'hutangextraheader.statusapproval', 'statusapproval.id')
             ->leftJoin(DB::raw("akunpusat with (readuncommitted)"), 'hutangextraheader.coa', 'akunpusat.coa')
@@ -162,6 +167,9 @@ class HutangExtraHeader extends MyModel
                  $this->table.postingdari,
                  'supplier.namasupplier as supplier_id',
                  $this->table.total,
+                 'statusapproval.text as statusapproval',
+                 $this->table.userapproval,
+                 $this->table.tglapproval,
                  'parameter.text as statuscetak',
                  $this->table.userbukacetak,
                  $this->table.tglbukacetak,
@@ -172,6 +180,7 @@ class HutangExtraHeader extends MyModel
                 )
 
             )
+            ->leftJoin(DB::raw("parameter as statusapproval with (readuncommitted)"), 'hutangextraheader.statusapproval', 'statusapproval.id')
             ->leftJoin(DB::raw("parameter with (readuncommitted)"), 'hutangextraheader.statuscetak', 'parameter.id')
             ->leftJoin(DB::raw("supplier with (readuncommitted)"), 'hutangextraheader.supplier_id', 'supplier.id');
     }
@@ -188,6 +197,9 @@ class HutangExtraHeader extends MyModel
             $table->string('postingdari', 50)->nullable();
             $table->string('supplier_id', 50)->nullable();
             $table->double('total', 15, 2)->nullable();
+            $table->string('statusapproval', 1000)->nullable();
+            $table->string('userapproval', 50)->nullable();
+            $table->date('tglapproval')->nullable();
             $table->string('statuscetak', 1000)->nullable();
             $table->string('userbukacetak', 50)->nullable();
             $table->date('tglbukacetak')->nullable();
@@ -209,7 +221,7 @@ class HutangExtraHeader extends MyModel
         $models = $query
             ->whereBetween($this->table . '.tglbukti', [date('Y-m-d', strtotime(request()->tgldariheader)), date('Y-m-d', strtotime(request()->tglsampaiheader))]);
 
-        DB::table($temp)->insertUsing(['id', 'nobukti', 'tglbukti', 'coa', 'hutang_nobukti', 'postingdari', 'supplier_id', 'total', 'statuscetak', 'userbukacetak', 'tglbukacetak', 'jumlahcetak', 'modifiedby', 'created_at', 'updated_at'], $models);
+        DB::table($temp)->insertUsing(['id', 'nobukti', 'tglbukti', 'coa', 'hutang_nobukti', 'postingdari', 'supplier_id', 'total', 'statusapproval', 'userapproval', 'tglapproval','statuscetak', 'userbukacetak', 'tglbukacetak', 'jumlahcetak', 'modifiedby', 'created_at', 'updated_at'], $models);
 
         return $temp;
     }
@@ -242,7 +254,7 @@ class HutangExtraHeader extends MyModel
                                 $query->where('akunpusat.keterangancoa', 'LIKE', "%$filters[data]%");
                             } else if ($filters['field'] == 'total') {
                                 $query = $query->whereRaw("format(hutangextraheader.total, '#,#0.00') LIKE '%$filters[data]%'");
-                            } else if ($filters['field'] == 'tglbukti') {
+                            } else if ($filters['field'] == 'tglbukti' || $filters['field'] == 'tglapproval' || $filters['field'] == 'tglbukacetak') {
                                 $query = $query->whereRaw("format(" . $this->table . "." . $filters['field'] . ", 'dd-MM-yyyy') LIKE '%$filters[data]%'");
                             } else if ($filters['field'] == 'created_at' || $filters['field'] == 'updated_at') {
                                 $query = $query->whereRaw("format(" . $this->table . "." . $filters['field'] . ", 'dd-MM-yyyy HH:mm:ss') LIKE '%$filters[data]%'");
@@ -266,7 +278,7 @@ class HutangExtraHeader extends MyModel
                                     $query->orWhere('supplier.namasupplier', 'LIKE', "%$filters[data]%");
                                 } else if ($filters['field'] == 'coa') {
                                     $query->orWhere('akunpusat.keterangancoa', 'LIKE', "%$filters[data]%");
-                                } else if ($filters['field'] == 'tglbukti') {
+                                } else if ($filters['field'] == 'tglbukti' || $filters['field'] == 'tglapproval' || $filters['field'] == 'tglbukacetak') {
                                     $query = $query->orWhereRaw("format(" . $this->table . "." . $filters['field'] . ", 'dd-MM-yyyy') LIKE '%$filters[data]%'");
                                 } else if ($filters['field'] == 'total') {
                                     $query = $query->orWhereRaw("format(hutangextraheader.total, '#,#0.00') LIKE '%$filters[data]%'");
@@ -327,8 +339,10 @@ class HutangExtraHeader extends MyModel
         $hutangExtraHeader->postingdari = 'ENTRY HUTANG EXTRA';
         $hutangExtraHeader->statusformat = $format->id;
         $hutangExtraHeader->statuscetak = $statusCetak->id;
+        $hutangExtraHeader->statusapproval = $statusApproval->id;
         $hutangExtraHeader->total = array_sum($data['total_detail']);
         $hutangExtraHeader->modifiedby = auth('api')->user()->name;
+        $hutangExtraHeader->info = html_entity_decode(request()->info);
         $hutangExtraHeader->nobukti = (new RunningNumberService)->get($group, $subGroup, $hutangExtraHeader->getTable(), date('Y-m-d', strtotime($data['tglbukti'])));
 
 
@@ -402,30 +416,35 @@ class HutangExtraHeader extends MyModel
 
     public function processUpdate(HutangExtraHeader $hutangExtraHeader, array $data): HutangExtraHeader
     {
-        $group = 'HUTANG EXTRA BUKTI';
-        $subGroup = 'HUTANG EXTRA BUKTI';
-        $querycek = DB::table('hutangextraheader')->from(
-            DB::raw("hutangextraheader a with (readuncommitted)")
-        )
-            ->select(
-                'a.nobukti'
+        $getTgl = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'EDIT TANGGAL BUKTI')->where('subgrp', 'HUTANG EXTRA')->first();
+        if (trim($getTgl->text) == 'YA') {
+            $group = 'HUTANG EXTRA BUKTI';
+            $subGroup = 'HUTANG EXTRA BUKTI';
+            $querycek = DB::table('hutangextraheader')->from(
+                DB::raw("hutangextraheader a with (readuncommitted)")
             )
-            ->where('a.id', $hutangExtraHeader->id)
-            ->whereRAw("format(a.tglbukti,'MM-yyyy')='" . date('m-Y', strtotime($data['tglbukti'])) . "'")
-            ->first();
+                ->select(
+                    'a.nobukti'
+                )
+                ->where('a.id', $hutangExtraHeader->id)
+                ->whereRAw("format(a.tglbukti,'MM-yyyy')='" . date('m-Y', strtotime($data['tglbukti'])) . "'")
+                ->first();
 
-        if (isset($querycek)) {
-            $nobukti = $querycek->nobukti;
-        } else {
-            $nobukti = (new RunningNumberService)->get($group, $subGroup, $hutangExtraHeader->getTable(), date('Y-m-d', strtotime($data['tglbukti'])));
+            if (isset($querycek)) {
+                $nobukti = $querycek->nobukti;
+            } else {
+                $nobukti = (new RunningNumberService)->get($group, $subGroup, $hutangExtraHeader->getTable(), date('Y-m-d', strtotime($data['tglbukti'])));
+            }
+
+            $hutangExtraHeader->nobukti = $nobukti;
+            $hutangExtraHeader->tglbukti = date('Y-m-d', strtotime($data['tglbukti']));
         }
 
-        $hutangExtraHeader->nobukti = $nobukti;
-        $hutangExtraHeader->tglbukti = date('Y-m-d', strtotime($data['tglbukti']));
         $hutangExtraHeader->supplier_id = $data['supplier_id'];
         $hutangExtraHeader->postingdari = 'EDIT HUTANG EXTRA HEADER';
         $hutangExtraHeader->total = array_sum($data['total_detail']);
         $hutangExtraHeader->modifiedby = auth('api')->user()->name;
+        $hutangExtraHeader->info = html_entity_decode(request()->info);
 
         $getCoaDebet = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'JURNAL HUTANG EXTRA MANUAL')->where('subgrp', 'DEBET')->first();
         $memo = json_decode($getCoaDebet->memo, true);
@@ -463,7 +482,7 @@ class HutangExtraHeader extends MyModel
         $hutangRequest = [
             'proseslain' => 'HUTANG EXTRA',
             'postingdari' => 'EDIT HUTANG EXTRA',
-            'tglbukti' => $data['tglbukti'],
+            'tglbukti' => $hutangExtraHeader->tglbukti,
             'coa' => $memo['JURNAL'],
             'supplier_id' => $data['supplier_id'],
             'modifiedby' => auth('api')->user()->name,
@@ -570,5 +589,46 @@ class HutangExtraHeader extends MyModel
 
         $data = $query->first();
         return $data;
+    }
+
+    public function processApproval(array $data)
+    {
+        // dd($data);
+
+        $statusApproval = Parameter::from(
+            DB::raw("parameter with (readuncommitted)")
+        )->where('grp', '=', 'STATUS APPROVAL')->where('text', '=', 'APPROVAL')->first();
+        $statusNonApproval = Parameter::from(
+            DB::raw("parameter with (readuncommitted)")
+        )->where('grp', '=', 'STATUS APPROVAL')->where('text', '=', 'NON APPROVAL')->first();
+
+        for ($i = 0; $i < count($data['hutangId']); $i++) {
+
+            $hutangExtraHeader = HutangExtraHeader::find($data['hutangId'][$i]);
+            if ($hutangExtraHeader->statusapproval == $statusApproval->id) {
+                $hutangExtraHeader->statusapproval = $statusNonApproval->id;
+                $hutangExtraHeader->tglapproval = date('Y-m-d', strtotime("1900-01-01"));
+                $hutangExtraHeader->userapproval = '';
+                $aksi = $statusNonApproval->text;
+            } else {
+                $hutangExtraHeader->statusapproval = $statusApproval->id;
+                $hutangExtraHeader->tglapproval = date('Y-m-d H:i:s');
+                $hutangExtraHeader->userapproval = auth('api')->user()->name;
+                $aksi = $statusApproval->text;
+            }
+
+            $hutangExtraHeader->save();
+            (new LogTrail())->processStore([
+                'namatabel' => strtoupper($hutangExtraHeader->getTable()),
+                'postingdari' => 'APPROVAL HUTANG EXTRA',
+                'idtrans' => $hutangExtraHeader->id,
+                'nobuktitrans' => $hutangExtraHeader->nobukti,
+                'aksi' => $aksi,
+                'datajson' => $hutangExtraHeader->toArray(),
+                'modifiedby' => auth('api')->user()->user
+            ]);
+        }
+
+        return $hutangExtraHeader;
     }
 }

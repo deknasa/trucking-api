@@ -62,12 +62,15 @@ class RekapPengeluaranDetail extends MyModel
                 "$this->table.nominal",
                 "$this->table.keterangan",
                 "$this->table.modifiedby",
+                db::raw("cast((format(pengeluaranheader.tglbukti,'yyyy/MM')+'/1') as date) as tgldariheaderpengeluaranheader"),
+                db::raw("cast(cast(format((cast((format(pengeluaranheader.tglbukti,'yyyy/MM')+'/1') as datetime)+32),'yyyy/MM')+'/01' as datetime)-1 as date) as tglsampaiheaderpengeluaranheader"), 
             )
-            ->leftJoin("rekappengeluaranheader", "$this->table.rekappengeluaran_id", "rekappengeluaranheader.id")
-            ->leftJoin("pengeluaranheader", "$this->table.pengeluaran_nobukti", "pengeluaranheader.nobukti");
+            ->leftJoin(DB::raw("pengeluaranheader with (readuncommitted)"), 'rekappengeluarandetail.pengeluaran_nobukti', '=', 'pengeluaranheader.nobukti')
+            ->leftJoin("rekappengeluaranheader", "$this->table.rekappengeluaran_id", "rekappengeluaranheader.id");
+            // ->leftJoin("pengeluaranheader", "$this->table.pengeluaran_nobukti", "pengeluaranheader.nobukti");
             $this->sort($query);
             $this->filter($query);
-            $this->totalNominal = $query->sum('nominal');
+            $this->totalNominal = $query->sum('rekappengeluarandetail.nominal');
             $this->totalRows = $query->count();
             $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;
             $this->paginate($query);
@@ -129,6 +132,7 @@ class RekapPengeluaranDetail extends MyModel
         $rekapPengeluaranDetail->nominal = $data['nominal'];
         $rekapPengeluaranDetail->keterangan = $data['keterangan'];
         $rekapPengeluaranDetail->modifiedby = auth('api')->user()->name;
+        $rekapPengeluaranDetail->info = html_entity_decode(request()->info);
         
         if (!$rekapPengeluaranDetail->save()) {
             throw new \Exception("Error storing rekap pengeluaran detail.");

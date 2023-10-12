@@ -5,7 +5,8 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-
+use Config;
+use Illuminate\Support\Facades\Artisan;
 
 class AuthController extends Controller
 {
@@ -21,13 +22,25 @@ class AuthController extends Controller
             'password' => $request->password,
         ];
 
-
+        $info = $this->infoLocation($request->all());
 
         if (Auth::attempt($credentials)) {
             $user = Auth::user();
+            // $path = base_path('.env');            
+            // Artisan::call('config:clear');
+
+            // if (file_exists($path)) {
+            //     file_put_contents($path, str_replace(
+            //         'PASSWORD_TNL='. getenv('PASSWORD_TNL'),
+            //         'PASSWORD_TNL=' . $request->password,
+            //         file_get_contents($path)
+            //     ));
+            //     Artisan::call('cache:clear');
+            // }
             return response([
                 'user' => $user,
                 'access_token' => $user->createToken('Access Token')->accessToken,
+                'info' =>$info
             ]);
         } else {
             return response([
@@ -36,21 +49,43 @@ class AuthController extends Controller
         }
     }
 
+    public function infoLocation( $data)
+    {
+
+        $infoLoc['location'] = $data['latitude'].','.$data['longitude'];
+        $infoLoc['ipclient'] = $data['ipclient'];
+        if ($infoLoc['ipclient'] == '::1') {
+            $infoLoc['ipclient'] = getHostByName(getHostName());
+        }
+        $infoLoc['ipserverlocal'] = $this->get_server_ip();
+      
+        $ippublic = $this->get_server_ip();
+        $infoLoc['ipserverpublic'] = $ippublic;
+        // $infoLoc['ipserverpublic'] = $_SERVER['SERVER_ADDR'];
+
+        $infoLoc['browser'] = $data['browser'];
+        $infoLoc['os'] = $data['os'];
+
+        $info = json_encode($infoLoc);
+        return $info;
+    }
+
     public function cekIp(Request $request)
     {
 
         $ipclient = $this->get_client_ip();
         if ($request->ipclient) {
             $ipclient = $request->ipclient;
-            if ($ipclient=='::1' ) {
-                $ipclient= gethostbyname('tasmdn.kozow.com');
+            if ($ipclient == '::1') {
+                $ipclient = getHostByName(getHostName());
+                // $ipclient = gethostbyname('tasmdn.kozow.com');
             }
         }
 
         $ipserver = $this->get_server_ip();
-        if ($ipclient != $ipserver) {
+        if ($this->ipToCheck($request->ipclient)) {
             $data = [
-                'status' => false,
+                'status' => true,
                 'message' => 'test',
                 'errors' => '',
                 'ipclient' => $ipclient,
@@ -58,13 +93,12 @@ class AuthController extends Controller
             ];
         } else {
             $data = [
-                'status' => true,
+                'status' => false,
                 'message' => '',
                 'errors' => '',
                 'ipclient' => $ipclient,
                 'ipserver' =>  $ipserver,
             ];
-
         }
 
         // $data = [

@@ -56,6 +56,7 @@ class PengeluaranHeader extends MyModel
                 DB::raw('(case when (year(pengeluaranheader.tglbukacetak) <= 2000) then null else pengeluaranheader.tglbukacetak end ) as tglbukacetak'),
                 'statuscetak.memo as statuscetak',
                 'pengeluaranheader.userbukacetak',
+                'pengeluaranheader.penerimaan_nobukti',
                 'pengeluaranheader.jumlahcetak',
                 'pengeluaranheader.modifiedby',
                 'pengeluaranheader.created_at',
@@ -111,6 +112,7 @@ class PengeluaranHeader extends MyModel
                 'pengeluaranheader.transferkeac',
                 'pengeluaranheader.transferkean',
                 'pengeluaranheader.transferkebank',
+                'pengeluaranheader.penerimaan_nobukti as nobukti_penerimaan',
                 'pengeluaranheader.statuscetak',
                 'pengeluaranheader.userbukacetak',
                 'pengeluaranheader.jumlahcetak',
@@ -146,6 +148,7 @@ class PengeluaranHeader extends MyModel
                  $this->table.userbukacetak,
                  $this->table.tglbukacetak,
                  $this->table.jumlahcetak,
+                 $this->table.penerimaan_nobukti,
                  $this->table.modifiedby,
                  $this->table.created_at,
                  $this->table.updated_at"
@@ -178,6 +181,7 @@ class PengeluaranHeader extends MyModel
             $table->string('userbukacetak', 50)->nullable();
             $table->date('tglbukacetak')->nullable();
             $table->integer('jumlahcetak')->Length(11)->nullable();
+            $table->string('penerimaan_nobukti')->default();
             $table->string('modifiedby')->default();
             $table->dateTime('created_at')->nullable();
             $table->dateTime('updated_at')->nullable();
@@ -190,7 +194,7 @@ class PengeluaranHeader extends MyModel
         $this->sort($query);
         $models = $this->filter($query);
         $models =  $query->whereBetween($this->table . '.tglbukti', [date('Y-m-d', strtotime(request()->tgldariheader)), date('Y-m-d', strtotime(request()->tglsampaiheader))])->where($this->table . '.bank_id', request()->bankheader);
-        DB::table($temp)->insertUsing(['id', 'nobukti', 'tglbukti', 'pelanggan_id', 'postingdari', 'dibayarke', 'alatbayar_id', 'bank_id', 'statusapproval', 'transferkeac', 'transferkean', 'transferkebank', 'statuscetak', 'userbukacetak', 'tglbukacetak', 'jumlahcetak', 'modifiedby', 'created_at', 'updated_at'], $models);
+        DB::table($temp)->insertUsing(['id', 'nobukti', 'tglbukti', 'pelanggan_id', 'postingdari', 'dibayarke', 'alatbayar_id', 'bank_id', 'statusapproval', 'transferkeac', 'transferkean', 'transferkebank', 'statuscetak', 'userbukacetak', 'tglbukacetak', 'jumlahcetak', 'penerimaan_nobukti', 'modifiedby', 'created_at', 'updated_at'], $models);
 
         return $temp;
     }
@@ -426,19 +430,19 @@ class PengeluaranHeader extends MyModel
             ];
             goto selesai;
         }
-        $hutangBayar = DB::table('hutangbayarheader')
+        $pelunasanhutangheader = DB::table('pelunasanhutangheader')
             ->from(
-                DB::raw("hutangbayarheader as a with (readuncommitted)")
+                DB::raw("pelunasanhutangheader as a with (readuncommitted)")
             )
             ->select(
                 'a.pengeluaran_nobukti'
             )
             ->where('a.pengeluaran_nobukti', '=', $nobukti)
             ->first();
-        if (isset($hutangBayar)) {
+        if (isset($pelunasanhutangheader)) {
             $data = [
                 'kondisi' => true,
-                'keterangan' => 'Pembayaran Hutang',
+                'keterangan' => 'Pelunasan Hutang',
                 'kodeerror' => 'TDT'
             ];
             goto selesai;
@@ -497,16 +501,16 @@ class PengeluaranHeader extends MyModel
             goto selesai;
         }
 
-        $hutangbayarheader = DB::table('hutangbayarheader')
+        $pelunasanHutangHeader = DB::table('pelunasanhutangheader')
             ->from(
-                DB::raw("hutangbayarheader as a with (readuncommitted)")
+                DB::raw("pelunasanhutangheader as a with (readuncommitted)")
             )
             ->select(
                 'a.pengeluaran_nobukti'
             )
             ->where('a.pengeluaran_nobukti', '=', $nobukti)
             ->first();
-        if (isset($hutangbayarheader)) {
+        if (isset($pelunasanHutangHeader)) {
             $data = [
                 'kondisi' => true,
                 'keterangan' => 'Hutang bayar header',
@@ -600,6 +604,24 @@ class PengeluaranHeader extends MyModel
                 'kondisi' => true,
                 'keterangan' => 'Approval Jurnal',
                 'kodeerror' => 'SAP'
+            ];
+            goto selesai;
+        }
+        $hutangBayar = DB::table('pelunasanpiutangheader')
+            ->from(
+                DB::raw("pelunasanpiutangheader as a with (readuncommitted)")
+            )
+            ->select(
+                'a.nobukti',
+                'a.pengeluaran_nobukti'
+            )
+            ->where('a.pengeluaran_nobukti', '=', $nobukti)
+            ->first();
+        if (isset($hutangBayar)) {
+            $data = [
+                'kondisi' => true,
+                'keterangan' => 'Pelunasan Piutang ' . $hutangBayar->nobukti,
+                'kodeerror' => 'TDT'
             ];
             goto selesai;
         }
@@ -712,11 +734,13 @@ class PengeluaranHeader extends MyModel
         $pengeluaranHeader->transferkeac = $data['transferkeac'] ?? '';
         $pengeluaranHeader->transferkean = $data['transferkean'] ?? '';
         $pengeluaranHeader->transferkebank = $data['transferkebank'] ?? '';
+        $pengeluaranHeader->penerimaan_nobukti = $data['penerimaan_nobukti'] ?? '';
         $pengeluaranHeader->statusformat = $data['statusformat'] ?? $querysubgrppengeluaran->formatpengeluaran;
         $pengeluaranHeader->statuscetak = $statusCetak->id;
         $pengeluaranHeader->userbukacetak = '';
         $pengeluaranHeader->tglbukacetak = '';
         $pengeluaranHeader->modifiedby = auth('api')->user()->name;
+        $pengeluaranHeader->info = html_entity_decode(request()->info);
         $pengeluaranHeader->nobukti = (new RunningNumberService)->get($group, $subGroup, $pengeluaranHeader->getTable(), date('Y-m-d', strtotime($data['tglbukti'])));
 
         if (!$pengeluaranHeader->save()) {
@@ -746,7 +770,8 @@ class PengeluaranHeader extends MyModel
                 'tgljatuhtempo' =>  date('Y-m-d', strtotime($data['tgljatuhtempo'][$i])),
                 'nominal' => $data['nominal_detail'][$i],
                 'coadebet' =>  $data['coadebet'][$i],
-                'coakredit' => (array_key_exists("coakredit", $data)) ? $data['coakredit'][$i] : $querysubgrppengeluaran->coa,
+                // 'coakredit' => ($data['coakredit']) ? $data['coakredit'][$i] : $querysubgrppengeluaran->coa,
+                 'coakredit' => $querysubgrppengeluaran->coa,
                 'keterangan' => $data['keterangan_detail'][$i],
                 'noinvoice' => $data['noinvoice'][$i] ?? '',
                 'bank' => $data['bank_detail'][$i] ?? '',
@@ -754,7 +779,8 @@ class PengeluaranHeader extends MyModel
             ]);
             $pengeluaranDetails[] = $pengeluaranDetail->toArray();
             $coadebet_detail[] =  $data['coadebet'][$i];
-            $coakredit_detail[] = (array_key_exists("coakredit", $data)) ? $data['coakredit'][$i] : $querysubgrppengeluaran->coa;
+            // $coakredit_detail[] = ($data['coakredit']) ? $data['coakredit'][$i] : $querysubgrppengeluaran->coa;
+            $coakredit_detail[] = $querysubgrppengeluaran->coa;
             $nominal_detail[] = $data['nominal_detail'][$i];
             $keterangan_detail[] = $data['keterangan_detail'][$i];
         }
@@ -805,24 +831,30 @@ class PengeluaranHeader extends MyModel
 
         $statusApproval = Parameter::from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS APPROVAL')->where('text', 'NON APPROVAL')->first();
         $statusCetak = Parameter::from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUSCETAK')->where('text', 'BELUM CETAK')->first();
-        $querycek = DB::table('pengeluaranheader')->from(
-            DB::raw("pengeluaranheader a with (readuncommitted)")
-        )
-            ->select(
-                'a.nobukti'
+        $getTgl = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'EDIT TANGGAL BUKTI')->where('subgrp', 'PENGELUARAN KAS/BANK')->first();
+
+        if (trim($getTgl->text) == 'YA') {
+            $querycek = DB::table('pengeluaranheader')->from(
+                DB::raw("pengeluaranheader a with (readuncommitted)")
             )
-            ->where('a.id', $pengeluaranHeader->id)
-            ->whereRAw("format(a.tglbukti,'MM-yyyy')='" . date('m-Y', strtotime($data['tglbukti'])) . "'")
-            ->first();
+                ->select(
+                    'a.nobukti'
+                )
+                ->where('a.id', $pengeluaranHeader->id)
+                ->whereRAw("format(a.tglbukti,'MM-yyyy')='" . date('m-Y', strtotime($data['tglbukti'])) . "'")
+                ->first();
 
 
-        if (isset($querycek)) {
-            $nobukti = $querycek->nobukti;
-        } else {
-            $nobukti = (new RunningNumberService)->get($group, $subGroup, $pengeluaranHeader->getTable(), date('Y-m-d', strtotime($data['tglbukti'])));
+            if (isset($querycek)) {
+                $nobukti = $querycek->nobukti;
+            } else {
+                $nobukti = (new RunningNumberService)->get($group, $subGroup, $pengeluaranHeader->getTable(), date('Y-m-d', strtotime($data['tglbukti'])));
+            }
+
+            $pengeluaranHeader->nobukti = $nobukti;
+            $pengeluaranHeader->tglbukti = date('Y-m-d', strtotime($data['tglbukti']));
         }
 
-        $pengeluaranHeader->tglbukti = date('Y-m-d', strtotime($data['tglbukti']));
         $pengeluaranHeader->pelanggan_id = $data['pelanggan_id'] ?? 0;
         $pengeluaranHeader->postingdari = $data['postingdari'] ?? 'ENTRY PENGELUARAN KAS/BANK';
         $pengeluaranHeader->statusapproval = $statusApproval->id ?? $data['statusapproval'];
@@ -834,12 +866,13 @@ class PengeluaranHeader extends MyModel
         $pengeluaranHeader->transferkeac = $data['transferkeac'] ?? '';
         $pengeluaranHeader->transferkean = $data['transferkean'] ?? '';
         $pengeluaranHeader->transferkebank = $data['transferkebank'] ?? '';
+        $pengeluaranHeader->penerimaan_nobukti = $data['penerimaan_nobukti'] ?? '';
         $pengeluaranHeader->statusformat = $data['statusformat'] ?? $querysubgrppengeluaran->formatpengeluaran;
         $pengeluaranHeader->statuscetak = $statusCetak->id;
         $pengeluaranHeader->userbukacetak = '';
-        $pengeluaranHeader->tglbukacetak = '';        
-        $pengeluaranHeader->nobukti = $nobukti;
+        $pengeluaranHeader->tglbukacetak = '';
         $pengeluaranHeader->modifiedby = auth('api')->user()->name;
+        $pengeluaranHeader->info = html_entity_decode(request()->info);
 
         if (!$pengeluaranHeader->save()) {
             throw new \Exception("Error Update Pengeluaran header.");
@@ -866,7 +899,17 @@ class PengeluaranHeader extends MyModel
         $coakredit_detail = [];
         $nominal_detail = [];
         $keterangan_detail = [];
+
         for ($i = 0; $i < count($data['nominal_detail']); $i++) {
+
+            $coakredit = $data['coakredit'][$i] ?? '';
+
+            if ($coakredit == '') {
+                $coaKredit = $querysubgrppengeluaran->coa;
+            } else {
+                $coaKredit = $coakredit;
+            }
+
             $pengeluaranDetail = (new PengeluaranDetail())->processStore($pengeluaranHeader, [
                 'pengeluaran_id' => $pengeluaranHeader->id,
                 'nobukti' => $pengeluaranHeader->nobukti,
@@ -874,7 +917,7 @@ class PengeluaranHeader extends MyModel
                 'tgljatuhtempo' =>  date('Y-m-d', strtotime($data['tgljatuhtempo'][$i])),
                 'nominal' => $data['nominal_detail'][$i],
                 'coadebet' =>  $data['coadebet'][$i],
-                'coakredit' => (array_key_exists("coakredit", $data)) ? $data['coakredit'][$i] : $querysubgrppengeluaran->coa,
+                'coakredit' =>  $coaKredit, //( $coakredit) ?  $coakredit : $querysubgrppengeluaran->coa,
                 'keterangan' => $data['keterangan_detail'][$i],
                 'noinvoice' => $data['noinvoice'][$i] ?? '',
                 'bank' => $data['bank_detail'][$i] ?? '',
@@ -882,7 +925,7 @@ class PengeluaranHeader extends MyModel
             ]);
             $pengeluaranDetails[] = $pengeluaranDetail->toArray();
             $coadebet_detail[] =  $data['coadebet'][$i];
-            $coakredit_detail[] = (array_key_exists("coakredit", $data)) ? $data['coakredit'][$i] : $querysubgrppengeluaran->coa;
+            $coakredit_detail[] = $coaKredit; //($data['coakredit']) ? $data['coakredit'][$i] : $querysubgrppengeluaran->coa;
             $nominal_detail[] = $data['nominal_detail'][$i];
             $keterangan_detail[] = $data['keterangan_detail'][$i];
         }
@@ -901,7 +944,7 @@ class PengeluaranHeader extends MyModel
         $jurnalRequest = [
             'tanpaprosesnobukti' => 1,
             'nobukti' => $pengeluaranHeader->nobukti,
-            'tglbukti' => date('Y-m-d', strtotime($data['tglbukti'])),
+            'tglbukti' => $pengeluaranHeader->tglbukti,
             'postingdari' =>  $data['postingdari'] ?? "ENTRY PENGELUARAN",
             'statusapproval' => $statusApproval->id,
             'userapproval' => "",
@@ -916,9 +959,29 @@ class PengeluaranHeader extends MyModel
 
         // $jurnalUmumHeader = (new JurnalUmumHeader())->processStore($jurnalRequest);
         $getJurnal = JurnalUmumHeader::from(DB::raw("jurnalumumheader with (readuncommitted)"))->where('nobukti', $nobuktiOld)->first();
-        $newJurnal = new JurnalUmumHeader();
-        $newJurnal = $newJurnal->find($getJurnal->id);
-        (new JurnalUmumHeader())->processUpdate($newJurnal, $jurnalRequest);
+        if (isset($getJurnal)) {
+            $newJurnal = new JurnalUmumHeader();
+            $newJurnal = $newJurnal->find($getJurnal->id);
+            (new JurnalUmumHeader())->processUpdate($newJurnal, $jurnalRequest);
+        } else {
+            $jurnalRequest = [
+                'tanpaprosesnobukti' => 1,
+                'nobukti' => $pengeluaranHeader->nobukti,
+                'tglbukti' => date('Y-m-d', strtotime($data['tglbukti'])),
+                'postingdari' => $data['postingdari'] ?? "ENTRY PENGELUARAN",
+                'statusapproval' => $statusApproval->id,
+                'userapproval' => "",
+                'tglapproval' => "",
+                'modifiedby' => auth('api')->user()->name,
+                'statusformat' => "0",
+                'coakredit_detail' => $coakredit_detail,
+                'coadebet_detail' => $coadebet_detail,
+                'nominal_detail' => $nominal_detail,
+                'keterangan_detail' => $keterangan_detail
+            ];
+
+            $jurnalUmumHeader = (new JurnalUmumHeader())->processStore($jurnalRequest);
+        }
         return $pengeluaranHeader;
     }
 

@@ -41,6 +41,12 @@ class JurnalUmumDetailController extends Controller
         ]);
     }
 
+    public function getDetail(Request $request)
+    {
+        return response([
+            'data' => (new JurnalUmumDetail())->getDetail($request->jurnalumum_id)
+        ]);
+    }
     public function jurnal(): JsonResponse
     {
         $jurnalDetail = new JurnalUmumDetail();
@@ -101,5 +107,11 @@ class JurnalUmumDetailController extends Controller
 
             throw $th;
         }
+    }
+
+
+    public function addrow(StoreJurnalUmumDetailRequest $request)
+    {
+       return true;
     }
 }

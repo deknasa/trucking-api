@@ -34,6 +34,7 @@ class CreatePenerimaangirodetailTable extends Migration
             $table->string('jenisbiaya',50)->nullable();
             $table->string('pelunasanpiutang_nobukti',50)->nullable();
             $table->date('bulanbeban')->nullable();
+            $table->longText('info')->nullable();
             $table->string('modifiedby',50)->nullable();
             $table->timestamps();
 

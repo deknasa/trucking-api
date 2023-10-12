@@ -10,6 +10,7 @@ use App\Http\Requests\GetInvoiceRequest;
 use App\Http\Requests\GetPengeluaranRangeRequest;
 use App\Models\PengeluaranTruckingHeader;
 use App\Models\AlatBayar;
+use App\Models\SuratPengantar;
 use App\Http\Requests\StorePengeluaranTruckingHeaderRequest;
 use App\Http\Requests\UpdatePengeluaranTruckingHeaderRequest;
 
@@ -66,7 +67,76 @@ class PengeluaranTruckingHeaderController extends Controller
         DB::beginTransaction();
         try {
             /* Store header */
-            $pengeluaranTruckingHeader = (new PengeluaranTruckingHeader())->processStore($request->all());
+            $idpengeluaran = request()->pengeluarantrucking_id;
+            $fetchFormat =  DB::table('pengeluarantrucking')->where('id', $idpengeluaran)->first();
+
+            $keterangan = $request->keterangan;
+            $nojobtrucking_detail = $request->nojobtrucking_detail;
+            $noinvoice_detail = $request->noinvoice_detail;
+            $nominal = $request->nominal;
+
+            if ($fetchFormat->kodepengeluaran == "BST") {
+                $detail = json_decode($request->detail);
+
+                $keterangan = $detail->keterangan;
+                $nojobtrucking_detail = $detail->nojobtrucking_detail;
+                $noinvoice_detail = $detail->noinvoice_detail;
+                $nominal = $detail->nominal;
+            }
+
+            $pengeluaranTruckingHeader = (new PengeluaranTruckingHeader())->processStore([
+                'pengeluarantrucking_id' => $request->pengeluarantrucking_id,
+                "supirheader_id" => $request->supirheader_id,
+                "tradoheader_id" => $request->tradoheader_id,
+                "gandenganheader_id" => $request->gandenganheader_id,
+                "statuscabang" => $request->statuscabang,
+                "bank_id" => $request->bank_id,
+                "tglbukti" => $request->tglbukti,
+                "pelanggan_id" => $request->pelanggan_id,
+                "statusapproval" => $request->statusapproval,
+                "statusposting" => $request->statusposting,
+                "postingpinjaman" => $request->postingpinjaman,
+                "periode" => $request->periode,
+                "tgldari" => $request->tgldari,
+                "tglsampai" => $request->tglsampai,
+                "jenisorderan_id" => $request->jenisorderan_id,
+                'coa' => $request->coa,
+                "pengeluaran_nobukti" => $request->pengeluaran_nobukti,
+                "dibayarke" => $request->dibayarke,
+                "alatbayar_id" => $request->alatbayar_id,
+                "userapproval" => $request->userapproval,
+                "tglapproval" => $request->tglapproval,
+                "transferkeac" => $request->transferkeac,
+                "transferkean" => $request->transferkean,
+                "transferkebank" => $request->transferkebank,
+                "supir_id" => $request->supir_id,
+                "trado_id" => $request->trado_id,
+                "suratpengantar_nobukti" => $request->suratpengantar_nobukti,
+                "statustitipanemkl" => $request->detail_statustitipanemkl,
+                "container_id" => $request->container_id,
+                "pelanggan_id" => $request->pelanggan_id,
+                "karyawan_id" => $request->karyawan_id,
+                "penerimaantruckingheader_nobukti" => $request->penerimaantruckingheader_nobukti,
+                "statusformat" => $request->statusformat,
+                "qty" => $request->qty,
+                "stok_id" => $request->stok_id,
+                "pengeluaranstok_nobukti" => $request->pengeluaranstok_nobukti,
+                "penerimaanstok_nobukti" => $request->penerimaanstok_nobukti,
+                "harga" => $request->harga,
+                "nominaltagih" => $request->nominaltagih,
+                "nominaltambahan" => $request->nominaltambahan,
+                "keterangantambahan" => $request->keterangantambahan,
+                "nominal" => $nominal,
+                "jenisorder_id" => $request->jenisorder_id,
+                "nowarkat" => $request->nowarkat,
+                "tgljatuhtempo" => $request->tgljatuhtempo,
+                "coadebet" => $request->coadebet,
+                "coakredit" => $request->coakredit,
+                "keterangan" => $keterangan,
+                "noinvoice_detail" => $noinvoice_detail,
+                "nojobtrucking_detail" => $nojobtrucking_detail,
+                "bank_detail" => $request->bank_detail,
+            ]);
             /* Set position and page */
             $pengeluaranTruckingHeader->position = $this->getPosition($pengeluaranTruckingHeader, $pengeluaranTruckingHeader->getTable())->position;
             if ($request->limit == 0) {
@@ -108,21 +178,38 @@ class PengeluaranTruckingHeaderController extends Controller
             $pengeluaranTrucking = new PengeluaranTruckingHeader();
             $detail = $pengeluaranTrucking->getShowInvoice($id, $data->periodedari, $data->periodesampai);
         } else {
-            $detail = PengeluaranTruckingDetail::getAll($id);
+            $detail = PengeluaranTruckingDetail::getAll($id, $data->kodepengeluaran);
         }
-        // if (condition) {
-        //     # code...
-        // }
+        // $details = [];
         // foreach ($detail as $r ) {
-        //     if (isset($r->qty)) {
-        //         $pengeluaranstok = DB::table('pengeluaranstokdetail')->where('nobukti',$r->pengeluaranstok_nobukti)->first();
-        //         // dd($pengeluaranstok->qty);
-        //         $r->maxqty =$pengeluaranstok->qty;
-        //         dd($r);
+        //     // $r->surat
+        //     if ($r->suratpengantar_nobukti) {
+        //         $suratpengantar =  DB::table('saldosuratpengantar')->from(
+        //             DB::raw("suratpengantar with (readuncommitted)")
+        //         )->where('suratpengantar.nobukti',$r->suratpengantar_nobukti);
+        //         if (!$suratpengantar->first()) {
+        //             $suratpengantar = DB::table('saldosuratpengantar')->from(
+        //                 DB::raw("saldosuratpengantar suratpengantar with (readuncommitted)")
+        //             )->where('suratpengantar.nobukti',$r->suratpengantar_nobukti);
+        //         }
+        //         $suratpengantar->select(
+        //             'pelanggan.namapelanggan as pelanggan_id',
+        //             'jenisorder.keterangan as jenisorder_id',
+        //             'container.keterangan as container_id',
+        //         )
+        //         ->leftJoin(DB::raw("container with (readuncommitted)"), 'suratpengantar.container_id', 'container.id')
+        //         ->leftJoin(DB::raw("pelanggan with (readuncommitted)"), 'suratpengantar.pelanggan_id', 'pelanggan.id')
+        //         ->leftJoin(DB::raw("jenisorder with (readuncommitted)"), 'suratpengantar.jenisorder_id', 'jenisorder.id');
+        //         // dd($suratpengantar->toSql());
+        //         $sp = $suratpengantar->first();
+        //         $r->container_id = $sp->container_id;
+        //         $r->pelanggan_id = $sp->pelanggan_id;
+        //         $r->jenisorder_id = $sp->jenisorder_id;
+        //         $details[] =  $r;
         //     }
+        //     // $details[] = $r;
         // }
-        // dd($details);
-        // $datas = array_merge($data, $detail);
+
 
         return response([
             'status' => true,
@@ -140,8 +227,78 @@ class PengeluaranTruckingHeaderController extends Controller
         DB::beginTransaction();
         try {
             /* Store header */
+            $idpengeluaran = request()->pengeluarantrucking_id;
+            $fetchFormat =  DB::table('pengeluarantrucking')->where('id', $idpengeluaran)->first();
+
+            $keterangan = $request->keterangan;
+            $nojobtrucking_detail = $request->nojobtrucking_detail;
+            $noinvoice_detail = $request->noinvoice_detail;
+            $nominal = $request->nominal;
+
+            if ($fetchFormat->kodepengeluaran == "BST") {
+                $detail = json_decode($request->detail);
+
+                $keterangan = $detail->keterangan;
+                $nojobtrucking_detail = $detail->nojobtrucking_detail;
+                $noinvoice_detail = $detail->noinvoice_detail;
+                $nominal = $detail->nominal;
+            }
+
             $pengeluaranTruckingHeader = PengeluaranTruckingHeader::findOrfail($id);
-            $pengeluaranTruckingHeader = (new PengeluaranTruckingHeader())->processUpdate($pengeluaranTruckingHeader, $request->all());
+            $pengeluaranTruckingHeader = (new PengeluaranTruckingHeader())->processUpdate($pengeluaranTruckingHeader, [
+
+                'pengeluarantrucking_id' => $request->pengeluarantrucking_id,
+                "supirheader_id" => $request->supirheader_id,
+                "tradoheader_id" => $request->tradoheader_id,
+                "gandenganheader_id" => $request->gandenganheader_id,
+                "statuscabang" => $request->statuscabang,
+                "bank_id" => $request->bank_id,
+                "tglbukti" => $request->tglbukti,
+                "pelanggan_id" => $request->pelanggan_id,
+                "statusapproval" => $request->statusapproval,
+                "statusposting" => $request->statusposting,
+                "postingpinjaman" => $request->postingpinjaman,
+                "periode" => $request->periode,
+                "tgldari" => $request->tgldari,
+                "tglsampai" => $request->tglsampai,
+                "jenisorderan_id" => $request->jenisorderan_id,
+                'coa' => $request->coa,
+                "pengeluaran_nobukti" => $request->pengeluaran_nobukti,
+                "dibayarke" => $request->dibayarke,
+                "alatbayar_id" => $request->alatbayar_id,
+                "userapproval" => $request->userapproval,
+                "tglapproval" => $request->tglapproval,
+                "transferkeac" => $request->transferkeac,
+                "transferkean" => $request->transferkean,
+                "transferkebank" => $request->transferkebank,
+                "supir_id" => $request->supir_id,
+                "trado_id" => $request->trado_id,
+                "suratpengantar_nobukti" => $request->suratpengantar_nobukti,
+                "statustitipanemkl" => $request->detail_statustitipanemkl,
+                "container_id" => $request->container_id,
+                "pelanggan_id" => $request->pelanggan_id,
+                "karyawan_id" => $request->karyawan_id,
+                "penerimaantruckingheader_nobukti" => $request->penerimaantruckingheader_nobukti,
+                "statusformat" => $request->statusformat,
+                "qty" => $request->qty,
+                "stok_id" => $request->stok_id,
+                "pengeluaranstok_nobukti" => $request->pengeluaranstok_nobukti,
+                "penerimaanstok_nobukti" => $request->penerimaanstok_nobukti,
+                "harga" => $request->harga,
+                "nominaltagih" => $request->nominaltagih,
+                "nominaltambahan" => $request->nominaltambahan,
+                "keterangantambahan" => $request->keterangantambahan,
+                "nominal" => $nominal,
+                "jenisorder_id" => $request->jenisorder_id,
+                "nowarkat" => $request->nowarkat,
+                "tgljatuhtempo" => $request->tgljatuhtempo,
+                "coadebet" => $request->coadebet,
+                "coakredit" => $request->coakredit,
+                "keterangan" => $keterangan,
+                "noinvoice_detail" => $noinvoice_detail,
+                "nojobtrucking_detail" => $nojobtrucking_detail,
+                "bank_detail" => $request->bank_detail,
+            ]);
             /* Set position and page */
             $pengeluaranTruckingHeader->position = $this->getPosition($pengeluaranTruckingHeader, $pengeluaranTruckingHeader->getTable())->position;
             if ($request->limit == 0) {
@@ -223,14 +380,14 @@ class PengeluaranTruckingHeaderController extends Controller
             $selected = $this->getPosition($pengeluaranTruckingHeader, $pengeluaranTruckingHeader->getTable(), true);
             $pengeluaranTruckingHeader->position = $selected->position;
             $pengeluaranTruckingHeader->id = $selected->id;
-            if ($request->limit==0) {
+            if ($request->limit == 0) {
                 $pengeluaranTruckingHeader->page = ceil($pengeluaranTruckingHeader->position / (10));
             } else {
                 $pengeluaranTruckingHeader->page = ceil($pengeluaranTruckingHeader->position / ($request->limit ?? 10));
             }
             $pengeluaranTruckingHeader->tgldariheader = date('Y-m-01', strtotime(request()->tglbukti));
             $pengeluaranTruckingHeader->tglsampaiheader = date('Y-m-t', strtotime(request()->tglbukti));
-            
+
 
             DB::commit();
             return response()->json([
@@ -343,13 +500,13 @@ class PengeluaranTruckingHeaderController extends Controller
         $klaim = DB::table('pengeluarantrucking')->from(DB::raw("pengeluarantrucking with (readuncommitted)"))
             ->where('kodepengeluaran', "KLAIM")
             ->first();
-        if ($klaim->id == $PengeluaranTruckingHeader->pengeluarantrucking_id) {
-            $cekdata = $pengeluaran->cekvalidasiklaim($id);
-        } else {
+        // if ($klaim->id == $PengeluaranTruckingHeader->pengeluarantrucking_id) {
+        //     $cekdata = $pengeluaran->cekvalidasiklaim($id);
+        // } else {
             // dd($nobukti->pengeluaran_nobukti);
             $cekdata = $pengeluaran->cekvalidasiaksi($nobukti->nobukti);
             // $cekdata = $pengeluaran->cekvalidasiaksi($nobukti->pengeluaran_nobukti);
-        }
+        // }
 
 
         if ($cekdata['kondisi'] == true) {
@@ -472,6 +629,16 @@ class PengeluaranTruckingHeaderController extends Controller
             ]
         ]);
     }
+
+    public function getbiayalapangan(Request $request)
+    {
+        $pengeluarantruckingheader = new PengeluaranTruckingHeader();
+        return response([
+            'data' => $pengeluarantruckingheader->getBiayaLapangan(),
+        ]);
+    }
+
+
     public function fieldLength()
     {
         $data = [];
@@ -502,5 +669,105 @@ class PengeluaranTruckingHeaderController extends Controller
         return response([
             'data' => $pengeluarantruckingheader->getExport($id)
         ]);
+    }
+
+    /**
+     * @ClassName 
+     */
+    public function pengeluarantruckingpinjamansupir()
+    {
+    }
+
+    /**
+     * @ClassName 
+     */
+    public function pengeluarantruckingpenarikandeposito()
+    {
+    }
+
+    /**
+     * @ClassName 
+     */
+    public function pengeluarantruckingsumbangansosial()
+    {
+    }
+
+    /**
+     * @ClassName 
+     */
+    public function pengeluarantruckinginsentifsupir()
+    {
+    }
+    /**
+     * @ClassName 
+     */
+    public function pengeluarantruckingpelunasanhutangbbm()
+    {
+    }
+
+    /**
+     * @ClassName 
+     */
+    public function pengeluarantruckingbiayalainsupir()
+    {
+    }
+
+    /**
+     * @ClassName 
+     */
+    public function pengeluarantruckingklaimsupir()
+    {
+    }
+
+    /**
+     * @ClassName 
+     */
+    public function pengeluarantruckingpinjamankaryawan()
+    {
+    }
+
+    /**
+     * @ClassName 
+     */
+    public function pengeluarantruckingtitipanemkl()
+    {
+    }
+    /**
+     * @ClassName 
+     */
+    public function pengeluarantruckinglapanganlembur()
+    {
+    }
+
+    /**
+     * @ClassName 
+     */
+    public function pengeluarantruckinglapangannginap()
+    {
+    }
+    /**
+     * @ClassName 
+     */
+    public function pengeluarantruckingportal()
+    {
+    }
+
+    /**
+     * @ClassName 
+     */
+    public function pengeluarantruckinggajisupir()
+    {
+    }
+    /**
+     * @ClassName 
+     */
+    public function pengeluarantruckingbiayainsentif()
+    {
+    }
+    /**
+     * @ClassName 
+     */
+    public function pengeluarantruckinglapanganuangjalan()
+    {
     }
 }

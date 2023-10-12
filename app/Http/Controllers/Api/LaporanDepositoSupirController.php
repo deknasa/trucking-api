@@ -30,11 +30,12 @@ class LaporanDepositoSupirController extends Controller
     {
         $sampai = $request->sampai;
         $jenis = $request->jenis;
+        $prosesneraca=0;
 
         $laporandepositosupir=new LaporanDepositoSupir();
         
         return response([
-            'data' => $laporandepositosupir->getReport($sampai, $jenis)
+            'data' => $laporandepositosupir->getReport($sampai, $jenis,$prosesneraca)
         ]);
     }
 
@@ -45,11 +46,12 @@ class LaporanDepositoSupirController extends Controller
     {
         $sampai = $request->sampai;
         $jenis = $request->jenis;
+        $prosesneraca=0;
 
         $laporandepositosupir=new LaporanDepositoSupir();
 
         return response([
-            'data' => $laporandepositosupir->getReport($sampai, $jenis)
+            'data' => $laporandepositosupir->getReport($sampai, $jenis,$prosesneraca)
         ]);
     }
 }

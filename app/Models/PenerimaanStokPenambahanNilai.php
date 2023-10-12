@@ -51,6 +51,7 @@ class PenerimaanStokPenambahanNilai extends MyModel
             $penambahanNilai->harga = 0;
             $penambahanNilai->penerimaanstok_nobukti = $data['penerimaanstok_nobukti'];
             $penambahanNilai->modifiedby = auth('api')->user()->name;
+            $penambahanNilai->info = html_entity_decode(request()->info);
             if (!$penambahanNilai->save()) {
                 throw new \Exception("Error storing Penambahan Nilai");
             }
@@ -64,6 +65,7 @@ class PenerimaanStokPenambahanNilai extends MyModel
             $penambahanNilai->harga = $data['harga'];
             $penambahanNilai->penerimaanstok_nobukti = $data['penerimaanstok_nobukti'];
             $penambahanNilai->modifiedby = auth('api')->user()->name;
+            $penambahanNilai->info = html_entity_decode(request()->info);
             if (!$penambahanNilai->save()) {
                 throw new \Exception("Error storing Penambahan Nilai");
             }

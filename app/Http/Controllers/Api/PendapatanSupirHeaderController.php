@@ -66,6 +66,17 @@ class PendapatanSupirHeaderController extends Controller
                 "dari_id" => $request->dari_id,
                 "sampai_id" => $request->sampai_id,
                 "nominal_detail" => $request->nominal_detail,
+                "gajikenek" => $request->gajikenek,
+                "supirtrip" => $request->supirtrip,
+                "nominal_depo" => $request->nominal_depo,
+                "keterangan_depo" => $request->keterangan_depo,
+                "supir_depo" => $request->supir_depo,
+                "pinj_supir" => $request->pinj_supir,
+                "pinj_nominal" => $request->pinj_nominal,
+                "pinj_keterangan" => $request->pinj_keterangan,
+                "pinj_nobukti" => $request->pinj_nobukti,
+                "pinj_id" => $request->pinj_id,
+                // "periode" => $request->periode,
             ];
 
             $pendapatanSupirHeader = (new PendapatanSupirHeader())->processStore($data);
@@ -99,11 +110,15 @@ class PendapatanSupirHeaderController extends Controller
 
         $data = (new PendapatanSupirHeader())->findUpdate($id);
 
-        $detail = (new PendapatanSupirHeader())->getTrip($data->tgldari, $data->tglsampai,$data->supir_id,$id, 'show');
+        $supir_id = ($data->supir_id == '') ? 0 : $data->supir_id;
+        $detail = (new PendapatanSupirHeader())->getTrip($data->tgldari, $data->tglsampai,$supir_id,$id, 'show');
+
 
         return response([
             'data' => $data,
-            'detail' => $detail
+            'detail' => $detail,
+            'pjp' => (new PendapatanSupirHeader())->getNobuktiPJP($data->nobukti),
+            'dpo' => (new PendapatanSupirHeader())->getNobuktiDPO($data->nobukti),
         ]);
     }
 
@@ -126,6 +141,18 @@ class PendapatanSupirHeaderController extends Controller
                 "dari_id" => $request->dari_id,
                 "sampai_id" => $request->sampai_id,
                 "nominal_detail" => $request->nominal_detail,
+                "gajikenek" => $request->gajikenek,
+                "supirtrip" => $request->supirtrip,
+                "nominal_depo" => $request->nominal_depo,
+                "keterangan_depo" => $request->keterangan_depo,
+                "supir_depo" => $request->supir_depo,
+                "pinj_supir" => $request->pinj_supir,
+                "pinj_nominal" => $request->pinj_nominal,
+                "pinj_keterangan" => $request->pinj_keterangan,
+                "pinj_nobukti" => $request->pinj_nobukti,
+                "pinj_id" => $request->pinj_id,
+                // "periode" => $request->periode,
+
             ];
 
 
@@ -397,7 +424,23 @@ class PendapatanSupirHeaderController extends Controller
                 'totalRows' => $pendapatanSupir->totalRows,
                 'totalPages' => $pendapatanSupir->totalPages,
                 'totalNominal' => $pendapatanSupir->totalNominal,
+                'totalGajiKenek' => $pendapatanSupir->totalGajiKenek,
             ]
+        ]);
+    }
+
+    public function getDataDeposito(Request $request)
+    {
+        $pendapatanSupir = new PendapatanSupirHeader();
+        return response([
+            'data' => $pendapatanSupir->getDataDeposito(),
+        ]);
+    }
+    public function getPinjaman(Request $request)
+    {
+        $pendapatanSupir = new PendapatanSupirHeader();
+        return response([
+            'data' => $pendapatanSupir->getPinjaman(),
         ]);
     }
 }

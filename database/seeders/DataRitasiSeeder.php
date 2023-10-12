@@ -19,8 +19,5 @@ class DataRitasiSeeder extends Seeder
         DB::statement("delete dataritasi");
         DB::statement("DBCC CHECKIDENT ('dataritasi', RESEED, 1);");
 
-        dataritasi::create(['statusritasi' => '91', 'nominal' => '6800.00', 'statusaktif' => '1', 'modifiedby' => 'ADMIN',]);
-        dataritasi::create(['statusritasi' => '92', 'nominal' => '6800.00', 'statusaktif' => '1', 'modifiedby' => 'ADMIN',]);
-        dataritasi::create(['statusritasi' => '272', 'nominal' => '0.00', 'statusaktif' => '1', 'modifiedby' => 'ADMIN',]);
     }
 }

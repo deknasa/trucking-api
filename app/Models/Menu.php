@@ -319,23 +319,32 @@ class Menu extends MyModel
             foreach ($class as $value) {
 
                 $namaclass = str_replace('controller', '', strtolower($value['class']));
+                $namaclassheader = str_replace('controller', '', strtolower($value['class']));
 
                 $dataaco = (new Acos())->processStore([
                     'class' => $namaclass,
                     'method' => $value['method'],
                     'nama' => $value['name'],
                     'modifiedby' => auth('api')->user()->user,
+                    'idheader' => 0,
                 ]);
 
                 if ($value['detail1'] != '') {
                     $classdetail1 = $this->listFolderFiles($value['detail1']);
                     foreach ($classdetail1 as $valuedetail1) {
                         $namaclass = str_replace('controller', '', strtolower($valuedetail1['class']));
+                        $idheader=DB::table('acos')->from(db::raw("acos a with (readuncommitted)"))
+                        ->select('id')
+                        ->where('class',$namaclassheader)
+                        ->where('method','index')
+                        ->first()->id ?? 0;
+
                         $dataaco = (new Acos())->processStore([
                             'class' => $namaclass,
                             'method' => $value['method'],
                             'nama' => $value['name'],
                             'modifiedby' => auth('api')->user()->user,
+                            'idheader' => $idheader,
                         ]);
                     }
                 }
@@ -344,11 +353,17 @@ class Menu extends MyModel
                     $classdetail2 = $this->listFolderFiles($value['detail2']);
                     foreach ($classdetail2 as $valuedetail2) {
                         $namaclass = str_replace('controller', '', strtolower($valuedetail2['class']));
+                        $idheader=DB::table('acos')->from(db::raw("acos a with (readuncommitted)"))
+                        ->select('id')
+                        ->where('class',$namaclassheader)
+                        ->where('method','index')
+                        ->first()->id ?? 0;
                         $dataaco = (new Acos())->processStore([
                             'class' => $namaclass,
                             'method' => $value['method'],
                             'nama' => $value['name'],
                             'modifiedby' => auth('api')->user()->user,
+                            'idheader' => $idheader,
                         ]);
                     }
                 }
@@ -357,11 +372,17 @@ class Menu extends MyModel
                     $classdetail3 = $this->listFolderFiles($value['detail3']);
                     foreach ($classdetail3 as $valuedetail3) {
                         $namaclass = str_replace('controller', '', strtolower($valuedetail3['class']));
+                        $idheader=DB::table('acos')->from(db::raw("acos a with (readuncommitted)"))
+                        ->select('id')
+                        ->where('class',$namaclassheader)
+                        ->where('method','index')
+                        ->first()->id ?? 0;
                         $dataaco = (new Acos())->processStore([
                             'class' => $namaclass,
                             'method' => $value['method'],
                             'nama' => $value['name'],
                             'modifiedby' => auth('api')->user()->user,
+                            'idheader' => $idheader,
                         ]);
                     }
                 }
@@ -386,6 +407,7 @@ class Menu extends MyModel
         $menu->menuicon = strtolower($data['menuicon']);
         $menu->menuexe = strtolower($data['menuexe']);
         $menu->modifiedby = auth('api')->user()->user;
+        $menu->info = html_entity_decode(request()->info);
         $menu->link = "";
         $menu->aco_id = $menuacoid;
 

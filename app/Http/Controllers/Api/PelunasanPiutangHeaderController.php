@@ -80,6 +80,7 @@ class PelunasanPiutangHeaderController extends Controller
      */
     public function store(StorePelunasanPiutangHeaderRequest $request): JsonResponse
     {
+
         DB::beginTransaction();
 
         try {
@@ -89,6 +90,7 @@ class PelunasanPiutangHeaderController extends Controller
                 'alatbayar_id' => $request->alatbayar_id,
                 'agen_id' => $request->agen_id,
                 'agen' => $request->agen,
+                'statuspelunasan' => $request->statuspelunasan,
                 'nowarkat' => $request->nowarkat,
                 'piutang_id' => $request->piutang_id,
                 'piutang_nobukti' => $request->piutang_nobukti,
@@ -96,9 +98,10 @@ class PelunasanPiutangHeaderController extends Controller
                 'bayar' => $request->bayar,
                 'keterangan' => $request->keterangan,
                 'potongan' => $request->potongan,
-                'coapotongan' => $request->coapotongan,
+                'statusnotakredit' => $request->statusnotakredit,
                 'keteranganpotongan' => $request->keteranganpotongan,
                 'nominallebihbayar' => $request->nominallebihbayar,
+                'statusnotadebet' => $request->statusnotadebet
             ];
             $pelunasanPiutangHeader = (new PelunasanPiutangHeader())->processStore($data);
             $pelunasanPiutangHeader->position = $this->getPosition($pelunasanPiutangHeader, $pelunasanPiutangHeader->getTable())->position;
@@ -149,6 +152,7 @@ class PelunasanPiutangHeaderController extends Controller
                 'bank_id' => $request->bank_id,
                 'alatbayar_id' => $request->alatbayar_id,
                 'agen_id' => $request->agen_id,
+                'statuspelunasan' => $request->statuspelunasan,
                 'agen' => $request->agen,
                 'nowarkat' => $request->nowarkat,
                 'piutang_id' => $request->piutang_id,
@@ -157,9 +161,10 @@ class PelunasanPiutangHeaderController extends Controller
                 'bayar' => $request->bayar,
                 'keterangan' => $request->keterangan,
                 'potongan' => $request->potongan,
-                'coapotongan' => $request->coapotongan,
+                'statusnotakredit' => $request->statusnotakredit,
                 'keteranganpotongan' => $request->keteranganpotongan,
                 'nominallebihbayar' => $request->nominallebihbayar,
+                'statusnotadebet' => $request->statusnotadebet
             ];
             $pelunasanPiutangHeader = (new PelunasanPiutangHeader())->processUpdate($pelunasanpiutangheader, $data);
             $pelunasanPiutangHeader->position = $this->getPosition($pelunasanPiutangHeader, $pelunasanPiutangHeader->getTable())->position;

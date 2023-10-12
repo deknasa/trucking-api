@@ -30,6 +30,7 @@ class CreatePenerimaanstokdetailTable extends Migration
             $table->unsignedBigInteger('vulkanisirke')->nullable();
             $table->string('penerimaanstok_nobukti',50)->nullable();
             $table->double('qtykeluar', 15,2)->nullable();
+            $table->longText('info')->nullable();
             $table->string('modifiedby',50)->nullable();            
 
             $table->timestamps();

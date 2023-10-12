@@ -54,18 +54,18 @@ class ServiceOutHeader extends MyModel
             )
             ->leftJoin(DB::raw("parameter as statuscetak with (readuncommitted)"), 'serviceoutheader.statuscetak', 'statuscetak.id')
             ->leftJoin(DB::raw("trado with (readuncommitted)"), 'serviceoutheader.trado_id', 'trado.id');
-            if (request()->tgldari) {
-                $query->whereBetween('serviceoutheader.tglbukti', [date('Y-m-d',strtotime(request()->tgldari )), date('Y-m-d',strtotime(request()->tglsampai ))]);
-            }
-            if ($periode != '') {
-                $periode = explode("-", $periode);
-                $query->whereRaw("MONTH(serviceoutheader.tglbukti) ='" . $periode[0] . "'")
-                    ->whereRaw("year(serviceoutheader.tglbukti) ='" . $periode[1] . "'");
-            }
-            if ($statusCetak != '') {
-                $query->where("serviceoutheader.statuscetak", $statusCetak);
-            }
-    
+        if (request()->tgldari) {
+            $query->whereBetween('serviceoutheader.tglbukti', [date('Y-m-d', strtotime(request()->tgldari)), date('Y-m-d', strtotime(request()->tglsampai))]);
+        }
+        if ($periode != '') {
+            $periode = explode("-", $periode);
+            $query->whereRaw("MONTH(serviceoutheader.tglbukti) ='" . $periode[0] . "'")
+                ->whereRaw("year(serviceoutheader.tglbukti) ='" . $periode[1] . "'");
+        }
+        if ($statusCetak != '') {
+            $query->where("serviceoutheader.statuscetak", $statusCetak);
+        }
+
         $this->totalRows = $query->count();
         $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;
 
@@ -251,6 +251,7 @@ class ServiceOutHeader extends MyModel
         $serviceout->statusformat =  $format->id;
         $serviceout->statuscetak = $statusCetak->id;
         $serviceout->modifiedby = auth('api')->user()->name;
+        $serviceout->info = html_entity_decode(request()->info);
 
         $serviceout->nobukti = (new RunningNumberService)->get($group, $subgroup, $serviceout->getTable(), date('Y-m-d', strtotime($data['tglbukti'])));
 
@@ -299,30 +300,36 @@ class ServiceOutHeader extends MyModel
 
     public function processUpdate(ServiceOutHeader $serviceoutheader, array $data): ServiceOutHeader
     {
-        $group = 'SERVICE OUT BUKTI';
-        $subgroup = 'SERVICE OUT BUKTI';
+        $getTgl = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'EDIT TANGGAL BUKTI')->where('subgrp', 'SERVICE OUT')->first();
 
-        $querycek = DB::table('serviceoutheader')->from(
-            DB::raw("serviceoutheader a with (readuncommitted)")
-        )
-            ->select(
-                'a.nobukti'
+        if (trim($getTgl->text) == 'YA') {
+            $group = 'SERVICE OUT BUKTI';
+            $subgroup = 'SERVICE OUT BUKTI';
+
+            $querycek = DB::table('serviceoutheader')->from(
+                DB::raw("serviceoutheader a with (readuncommitted)")
             )
-            ->where('a.id', $serviceoutheader->id)
-            ->whereRAw("format(a.tglbukti,'MM-yyyy')='" . date('m-Y', strtotime($data['tglbukti'])) . "'")
-            ->first();
+                ->select(
+                    'a.nobukti'
+                )
+                ->where('a.id', $serviceoutheader->id)
+                ->whereRAw("format(a.tglbukti,'MM-yyyy')='" . date('m-Y', strtotime($data['tglbukti'])) . "'")
+                ->first();
 
-        if (isset($querycek)) {
-            $nobukti = $querycek->nobukti;
-        } else {
-            $nobukti = (new RunningNumberService)->get($group, $subgroup, $serviceoutheader->getTable(), date('Y-m-d', strtotime($data['tglbukti'])));
+            if (isset($querycek)) {
+                $nobukti = $querycek->nobukti;
+            } else {
+                $nobukti = (new RunningNumberService)->get($group, $subgroup, $serviceoutheader->getTable(), date('Y-m-d', strtotime($data['tglbukti'])));
+            }
+
+            $serviceoutheader->nobukti = $nobukti;
+            $serviceoutheader->tglbukti = date('Y-m-d', strtotime($data['tglbukti']));
         }
 
-        $serviceoutheader->nobukti = $nobukti;
-        $serviceoutheader->tglbukti = date('Y-m-d', strtotime($data['tglbukti']));
         $serviceoutheader->trado_id = $data['trado_id'];
         $serviceoutheader->tglkeluar = date('Y-m-d', strtotime($data['tglkeluar']));
         $serviceoutheader->modifiedby = auth('api')->user()->name;
+        $serviceoutheader->info = html_entity_decode(request()->info);
 
         if (!$serviceoutheader->save()) {
             throw new \Exception("Error updating service in header.");
@@ -402,30 +409,30 @@ class ServiceOutHeader extends MyModel
         $this->setRequestParameters();
 
         $getJudul = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))
-        ->select('text')
-        ->where('grp', 'JUDULAN LAPORAN')
-        ->where('subgrp', 'JUDULAN LAPORAN')
-        ->first();
+            ->select('text')
+            ->where('grp', 'JUDULAN LAPORAN')
+            ->where('subgrp', 'JUDULAN LAPORAN')
+            ->first();
 
         $query = DB::table($this->table)->from(DB::raw("serviceoutheader with (readuncommitted)"))
-        ->select(
-            'serviceoutheader.id',
-            'serviceoutheader.nobukti',
-            'serviceoutheader.tglbukti',
-            'trado.kodetrado as trado_id',
-            'serviceoutheader.tglkeluar',
-            'statuscetak.memo as statuscetak',
-            "statuscetak.id as  statuscetak_id",
-            'serviceoutheader.jumlahcetak',
-            DB::raw("'Laporan Service Out' as judulLaporan"),
-            DB::raw("'" . $getJudul->text . "' as judul"),
-            DB::raw("'Tgl Cetak:'+format(getdate(),'dd-MM-yyyy HH:mm:ss')as tglcetak"),
-            DB::raw(" 'User :".auth('api')->user()->name."' as usercetak")
-        )
+            ->select(
+                'serviceoutheader.id',
+                'serviceoutheader.nobukti',
+                'serviceoutheader.tglbukti',
+                'trado.kodetrado as trado_id',
+                'serviceoutheader.tglkeluar',
+                'statuscetak.memo as statuscetak',
+                "statuscetak.id as  statuscetak_id",
+                'serviceoutheader.jumlahcetak',
+                DB::raw("'Laporan Service Out' as judulLaporan"),
+                DB::raw("'" . $getJudul->text . "' as judul"),
+                DB::raw("'Tgl Cetak:'+format(getdate(),'dd-MM-yyyy HH:mm:ss')as tglcetak"),
+                DB::raw(" 'User :" . auth('api')->user()->name . "' as usercetak")
+            )
             ->where("$this->table.id", $id)
             ->leftJoin(DB::raw("parameter as statuscetak with (readuncommitted)"), 'serviceoutheader.statuscetak', 'statuscetak.id')
             ->leftJoin(DB::raw("trado with (readuncommitted)"), 'serviceoutheader.trado_id', 'trado.id');
-        
+
         $data = $query->first();
         return $data;
     }

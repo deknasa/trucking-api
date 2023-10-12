@@ -132,17 +132,26 @@ class PelunasanPiutangDetail extends MyModel
                 $this->table . '.potongan',
                 $this->table . '.keteranganpotongan',
                 'akunpusat.keterangancoa as coapotongan',
-                $this->table . '.invoice_nobukti'
+                $this->table . '.invoice_nobukti',
+                db::raw("cast((format(invoice.tglbukti,'yyyy/MM')+'/1') as date) as tgldariheaderinvoiceheader"),
+                db::raw("cast(cast(format((cast((format(invoice.tglbukti,'yyyy/MM')+'/1') as datetime)+32),'yyyy/MM')+'/01' as datetime)-1 as date) as tglsampaiheaderinvoiceheader"), 
+                db::raw("cast((format(invoiceextra.tglbukti,'yyyy/MM')+'/1') as date) as tgldariheaderinvoiceextraheader"),
+                db::raw("cast(cast(format((cast((format(invoiceextra.tglbukti,'yyyy/MM')+'/1') as datetime)+32),'yyyy/MM')+'/01' as datetime)-1 as date) as tglsampaiheaderinvoiceextraheader"), 
+                db::raw("cast((format(piutangheader.tglbukti,'yyyy/MM')+'/1') as date) as tgldariheaderpiutangheader"),
+                db::raw("cast(cast(format((cast((format(piutangheader.tglbukti,'yyyy/MM')+'/1') as datetime)+32),'yyyy/MM')+'/01' as datetime)-1 as date) as tglsampaiheaderpiutangheader"), 
             )
+                ->leftJoin(DB::raw("invoiceheader as invoice with (readuncommitted)"), 'pelunasanpiutangdetail.invoice_nobukti', '=', 'invoice.nobukti')
+                ->leftJoin(DB::raw("invoiceextraheader as invoiceextra with (readuncommitted)"), 'pelunasanpiutangdetail.invoice_nobukti', '=', 'invoiceextra.nobukti')
+                ->leftJoin(DB::raw("piutangheader with (readuncommitted)"), 'pelunasanpiutangdetail.piutang_nobukti', '=', 'piutangheader.nobukti')
                 ->leftJoin(DB::raw("akunpusat with (readuncommitted)"), $this->table . '.coapotongan', 'akunpusat.coa');
 
             $this->sort($query);
             $query->where($this->table . '.pelunasanpiutang_id', '=', request()->pelunasanpiutang_id);
             $this->filter($query);
 
-            $this->totalNominal = $query->sum('nominal');
-            $this->totalPotongan = $query->sum('potongan');
-            $this->totalNominalLebih = $query->sum('nominallebihbayar');
+            $this->totalNominal = $query->sum('pelunasanpiutangdetail.nominal');
+            $this->totalPotongan = $query->sum('pelunasanpiutangdetail.potongan');
+            $this->totalNominalLebih = $query->sum('pelunasanpiutangdetail.nominallebihbayar');
             $this->totalRows = $query->count();
             $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;
 
@@ -223,8 +232,11 @@ class PelunasanPiutangDetail extends MyModel
         $pelunasanPiutangDetail->keteranganpotongan = $data['keteranganpotongan'];
         $pelunasanPiutangDetail->nominallebihbayar = $data['nominallebihbayar'];
         $pelunasanPiutangDetail->coalebihbayar = $data['coalebihbayar'];
+        $pelunasanPiutangDetail->statusnotadebet = $data['statusnotadebet'];
+        $pelunasanPiutangDetail->statusnotakredit = $data['statusnotakredit'];
 
         $pelunasanPiutangDetail->modifiedby = auth('api')->user()->name;
+        $pelunasanPiutangDetail->info = html_entity_decode(request()->info);
 
         if (!$pelunasanPiutangDetail->save()) {
             throw new \Exception("Error storing pelunasan piutang detail.");

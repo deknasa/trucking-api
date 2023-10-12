@@ -27,10 +27,10 @@ class ExistHutangBayarHeader implements Rule
      */
     public function passes($attribute, $value)
     {
-        $hutangbayarheader = DB::table("hutangbayarheader")->from(DB::raw("hutangbayarheader with (readuncommitted)"))
+        $pelunasanHutangHeader = DB::table("pelunasanhutangheader")->from(DB::raw("pelunasanhutangheader with (readuncommitted)"))
         ->where('id', $value)
         ->first();
-    if ($hutangbayarheader == null) {
+    if ($pelunasanHutangHeader == null) {
         return false;
     } else {
         return true;

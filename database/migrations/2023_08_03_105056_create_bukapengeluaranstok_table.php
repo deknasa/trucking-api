@@ -18,6 +18,7 @@ class CreateBukapengeluaranstokTable extends Migration
             $table->date('tglbukti')->nullable();
             $table->dateTime('tglbatas')->nullable();
             $table->unsignedBigInteger('pengeluaranstok_id')->nullable();
+            $table->longText('info')->nullable();
             $table->string('modifiedby', 50)->nullable();                  
             $table->timestamps();
         });

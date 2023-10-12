@@ -3,6 +3,9 @@
 namespace App\Http\Requests;
 
 use App\Http\Controllers\Api\ErrorController;
+use App\Rules\ValidasiKlaimPenerimaanStok;
+use App\Rules\ValidasiKlaimPengeluaranStok;
+use App\Rules\ValidasiStatusTitipanEMKL;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
@@ -32,7 +35,7 @@ class StorePengeluaranTruckingDetailRequest extends FormRequest
                 $fetchFormat =  DB::table('pengeluarantrucking')
                     ->where('id', $idpengeluaran)
                     ->first();
-                if ($fetchFormat->kodepengeluaran == 'TDE' || $fetchFormat->kodepengeluaran == 'BST' || $fetchFormat->kodepengeluaran == 'KBBM') {
+                if ($fetchFormat->kodepengeluaran == 'TDE' || $fetchFormat->kodepengeluaran == 'BST' || $fetchFormat->kodepengeluaran == 'KBBM' || $fetchFormat->kodepengeluaran == 'BLL' || $fetchFormat->kodepengeluaran == 'BLN' || $fetchFormat->kodepengeluaran == 'BTU' || $fetchFormat->kodepengeluaran == 'BPT' || $fetchFormat->kodepengeluaran == 'BGS' || $fetchFormat->kodepengeluaran == 'BIT') {
                     return false;
                 } else {
                     return true;
@@ -88,13 +91,33 @@ class StorePengeluaranTruckingDetailRequest extends FormRequest
                 $fetchFormat =  DB::table('pengeluarantrucking')
                     ->where('id', $idpengeluaran)
                     ->first();
-                if ($fetchFormat->kodepengeluaran == 'PJT' || $fetchFormat->kodepengeluaran == 'BSB') {
+                if ($fetchFormat->kodepengeluaran == 'PJT'){
+                    if(request()->statusposting == 84){
+                        return false;
+                    }else{
+                        return true;
+                    }
+                } else if($fetchFormat->kodepengeluaran == 'BSB') {
                     return true;
                 } else {
                     return false;
                 }
             }
             return true;
+        });
+        $requiredBBT = Rule::requiredIf(function () {
+            $idpengeluaran = request()->pengeluarantrucking_id;
+            if ($idpengeluaran != '') {
+                $fetchFormat =  DB::table('pengeluarantrucking')
+                    ->where('id', $idpengeluaran)
+                    ->first();
+                if ($fetchFormat->kodepengeluaran == 'BBT') {
+                    return true;
+                } else {
+                    return false;
+                }
+            }
+            return false;
         });
         $sisaNominus = '';
         if (request()->pengeluarantrucking != '') {
@@ -104,22 +127,35 @@ class StorePengeluaranTruckingDetailRequest extends FormRequest
                 ->first();
             $sisaNominus = Rule::when((($fetchFormat->kodepengeluaran == 'TDE' || $fetchFormat->kodepengeluaran == 'KBBM')), 'numeric|min:0');
         }
-        $rulseKlaim=[];
-        if ($this->pengeluarantrucking_id) {
+        $rulseKlaim = [];
+        if (request()->pengeluarantrucking_id) {
             $klaim = DB::table('pengeluarantrucking')->from(DB::raw("pengeluarantrucking with (readuncommitted)"))
-                    ->where('id',request()->pengeluarantrucking_id)
-                    ->where('keterangan','LIKE', "%klaim%")
-                    ->first();
-            if ($klaim->id ==  $this->pengeluarantrucking_id) {
-                $rulseKlaim =[
-                    "stok_id.*"  => ["required", ],
-                    "pengeluaranstok_nobukti.*"  => ["required", ],
-                    "qty.*"  => ["required", ],
-                    "harga.*"  => ["required", ],
-                ];    
+                // ->where('id', request()->pengeluarantrucking_id)
+                ->where('keterangan', 'LIKE', "%klaim%")
+                ->first();
+            if ($klaim->id ==  request()->pengeluarantrucking_id) {
+                $rulseKlaim = [
+                    "stok_id.*"  => ["required",],
+                    "pengeluaranstok_nobukti.*"  => [new ValidasiKlaimPengeluaranStok()],
+                    "penerimaanstok_nobukti.*"  => [new ValidasiKlaimPenerimaanStok()],
+                    "qty.*"  => ["required",],
+                    "nominaltambahan.*"  => ['numeric','min:0'],
+                ];
             }
         }
+        $min = '';
+        $idpengeluaran = request()->pengeluarantrucking_id;
+        $fetchFormat =  DB::table('pengeluarantrucking')
+            ->where('id', $idpengeluaran)
+            ->first();
+        if ($idpengeluaran != '') {
 
+            if ($fetchFormat->kodepengeluaran == 'BLL' || $fetchFormat->kodepengeluaran == 'BLN' || $fetchFormat->kodepengeluaran == 'BTU' || $fetchFormat->kodepengeluaran == 'BPT' || $fetchFormat->kodepengeluaran == 'BGS' || $fetchFormat->kodepengeluaran == 'BIT') {
+                $min = Rule::when((($fetchFormat->kodepengeluaran == 'BLL' || $fetchFormat->kodepengeluaran == 'BLN' || $fetchFormat->kodepengeluaran == 'BTU' || $fetchFormat->kodepengeluaran == 'BPT' || $fetchFormat->kodepengeluaran == 'BGS' || $fetchFormat->kodepengeluaran == 'BIT')), 'numeric|min:0');
+            } else {
+                $min = Rule::when((($fetchFormat->kodepengeluaran != 'BLL' || $fetchFormat->kodepengeluaran != 'BLN' || $fetchFormat->kodepengeluaran != 'BTU' || $fetchFormat->kodepengeluaran != 'BPT' || $fetchFormat->kodepengeluaran != 'BGS' || $fetchFormat->kodepengeluaran != 'BIT')), 'numeric|gt:0');
+            }
+        }
         $rules = [
             'kbbm_id' => [$requiredKBBM, 'array'],
             'kbbm_id.*' => $requiredKBBM,
@@ -128,15 +164,28 @@ class StorePengeluaranTruckingDetailRequest extends FormRequest
             'sisa.*' => [$requiredTDE, $requiredKBBM, $sisaNominus],
             'supir.*' => $requiredPJT,
             // 'nominal' => ['array','required', 'numeric', 'gt:0'],
-            'nominal.*' => ['required', 'numeric', 'gt:0'],
+            'nominal.*' => ['required', $min],
             'keterangan' => [$requiredKeterangan, 'array'],
-            'keterangan.*' => $requiredKeterangan
+            'keterangan.*' => $requiredKeterangan,
+            'suratpengantar_nobukti' => [$requiredBBT, 'array'],
+            'suratpengantar_nobukti.*' => [$requiredBBT],
+            'detail_statustitipanemkl' => [$requiredBBT, 'array'],
+            'detail_statustitipanemkl.*' => [$requiredBBT, new ValidasiStatusTitipanEMKL(request()->id)]
         ];
 
-            $rules = array_merge(
-                $rules,
-                $rulseKlaim
-            );
+        if ( request()->pengeluarantrucking_id != '') {
+            if ($fetchFormat->kodepengeluaran == 'BST') {
+                
+                $rules = [
+                    "detail"=>"required"
+                ];
+            }
+        }
+
+        $rules = array_merge(
+            $rules,
+            $rulseKlaim
+        );
 
         // dd($rules);
         return $rules;
@@ -150,6 +199,8 @@ class StorePengeluaranTruckingDetailRequest extends FormRequest
             'supir.*' => 'supir',
             'nominal.*' => 'nominal',
             'keterangan.*' => 'keterangan',
+            'suratpengantar_nobukti.*' => 'no bukti SP',
+            'detail_statustitipanemkl.*' => 'titipan emkl',
         ];
     }
 

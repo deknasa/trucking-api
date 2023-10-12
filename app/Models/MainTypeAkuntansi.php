@@ -285,6 +285,7 @@ class MainTypeAkuntansi extends MyModel
         $maintypeakuntansi->akuntansi_id = $data['akuntansi_id'];
         $maintypeakuntansi->statusaktif = $data['statusaktif'];
         $maintypeakuntansi->modifiedby = auth('api')->user()->user;
+        $maintypeakuntansi->info = html_entity_decode(request()->info);
 
         if (!$maintypeakuntansi->save()) {
             throw new \Exception('Error storing tipe akuntansi.');
@@ -310,6 +311,7 @@ class MainTypeAkuntansi extends MyModel
         $maintypeakuntansi->akuntansi_id = $data['akuntansi_id'];
         $maintypeakuntansi->statusaktif = $data['statusaktif'];
         $maintypeakuntansi->modifiedby = auth('api')->user()->user;
+        $maintypeakuntansi->info = html_entity_decode(request()->info);
 
         if (!$maintypeakuntansi->save()) {
             throw new \Exception('Error updating akuntansi.');

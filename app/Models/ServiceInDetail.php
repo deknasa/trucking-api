@@ -142,6 +142,7 @@ class ServiceInDetail extends MyModel
         $serviceInDetail->karyawan_id =  $data['karyawan_id'];
         $serviceInDetail->keterangan = $data['keterangan'];
         $serviceInDetail->modifiedby = auth('api')->user()->name;
+        $serviceInDetail->info = html_entity_decode(request()->info);
         
         if (!$serviceInDetail->save()) {
             throw new \Exception("Error storing service in detail.");

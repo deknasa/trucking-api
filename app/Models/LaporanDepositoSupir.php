@@ -26,11 +26,12 @@ class LaporanDepositoSupir extends MyModel
 
 
 
-    public function getReport($sampai, $jenis)
+    public function getReport($sampai, $jenis, $prosesneraca)
     {
+        $prosesneraca = $prosesneraca ?? 0;
         $penerimaantrucking_id = 3;
         $pengeluarantrucking_id = 2;
-        $sampai = date('Y-m-d', strtotime(request()->sampai)) ?? '1900/1/1';
+        $sampai = date('Y-m-d', strtotime($sampai)) ?? '1900/1/1';
         $jenis = request()->jenis ?? '';
 
         $temppenerimaantrucking = '##temppenerimaantrucking' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
@@ -39,7 +40,6 @@ class LaporanDepositoSupir extends MyModel
             $table->unsignedBigInteger('jumlah')->nullable();
             $table->double('nominal', 15, 2)->nullable();
         });
-
         $querypenerimaantrucking = DB::table('penerimaantruckingheader')->from(
             DB::raw("penerimaantruckingheader as a with (readuncommitted)")
         )
@@ -174,7 +174,7 @@ class LaporanDepositoSupir extends MyModel
         });
 
         $queryrangedeposito = DB::table($temprangedeposito1)->from(
-            DB::raw($temprangedeposito1 ." as a with (readuncommitted)")
+            DB::raw($temprangedeposito1 . " as a with (readuncommitted)")
         )
             ->select(
                 'a.id',
@@ -245,6 +245,16 @@ class LaporanDepositoSupir extends MyModel
             ->where('subgrp', 'JUDULAN LAPORAN')
             ->first();
 
+        $disetujui = db::table('parameter')->from(db::raw('parameter with (readuncommitted)'))
+            ->select('text')
+            ->where('grp', 'DISETUJUI')
+            ->where('subgrp', 'DISETUJUI')->first()->text ?? '';
+
+        $diperiksa = db::table('parameter')->from(db::raw('parameter with (readuncommitted)'))
+            ->select('text')
+            ->where('grp', 'DIPERIKSA')
+            ->where('subgrp', 'DIPERIKSA')->first()->text ?? '';
+
         $query = DB::table($tempsaldo)->from(
             DB::raw($tempsaldo . " as a")
         )
@@ -263,17 +273,23 @@ class LaporanDepositoSupir extends MyModel
                 DB::raw("'Laporan Deposito' as judulLaporan"),
                 DB::raw("'" . $getJudul->text . "' as judul"),
                 DB::raw("'Tgl Cetak :'+format(getdate(),'dd-MM-yyyy HH:mm:ss')as tglcetak"),
-                DB::raw(" 'User :" . auth('api')->user()->name . "' as usercetak")
+                DB::raw(" 'User :" . auth('api')->user()->name . "' as usercetak"),
+                db::raw("'" . $disetujui . "' as disetujui"),
+                db::raw("'" . $diperiksa . "' as diperiksa"),
             )
             ->join(DB::raw($temprangedeposito . " as b "), function ($join) {
                 $join->on('a.total', '>=', 'b.nominalawal');
                 $join->on('a.total', '<=', 'b.nominalakhir');
             })
-            ->orderBy('b.id','asc')
-            ->orderBy('a.namasupir','asc');
+            ->orderBy('b.id', 'asc')
+            ->orderBy('a.namasupir', 'asc');
 
-        $data = $query->get();
-
+    //   dd($query->get());
+        if ($prosesneraca == 1) {
+            $data = $query;
+        } else {
+            $data = $query->get();
+        }
 
         return $data;
     }

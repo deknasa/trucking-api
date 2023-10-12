@@ -34,7 +34,7 @@ class StorePenerimaanTruckingDetailRequest extends FormRequest
                 $fetchFormat =  DB::table('penerimaantrucking')
                     ->where('id', $idpenerimaan)
                     ->first();
-                if ($fetchFormat->kodepenerimaan == 'PJP') {
+                if ($fetchFormat->kodepenerimaan == 'PJP' || $fetchFormat->kodepenerimaan == 'PBT') {
                     return false;
                 } else {
                     return true;
@@ -57,6 +57,20 @@ class StorePenerimaanTruckingDetailRequest extends FormRequest
             }
             return false;
         });
+        $requiredNominal = Rule::requiredIf(function () {
+            $idpenerimaan = request()->penerimaantrucking_id;
+            if ($idpenerimaan != '') {
+                $fetchFormat =  DB::table('penerimaantrucking')
+                    ->where('id', $idpenerimaan)
+                    ->first();
+                if ($fetchFormat->kodepenerimaan == 'PBT') {
+                    return false;
+                } else {
+                    return true;
+                }
+            }
+            return true;
+        });
         $sisaNominus = '';
         if (request()->pengeluarantrucking != '') {
             $idpenerimaan = request()->penerimaantrucking_id;
@@ -65,14 +79,26 @@ class StorePenerimaanTruckingDetailRequest extends FormRequest
                 ->first();
             $sisaNominus = Rule::when((($fetchFormat->kodepengeluaran == 'PJP')), 'numeric|min:0');
         }
+        $min = '';
+        if (request()->pengeluarantrucking != '') {
+            $idpenerimaan = request()->penerimaantrucking_id;
+            $fetchFormat =  DB::table('penerimaantrucking')
+                ->where('id', $idpenerimaan)
+                ->first();
+            if ($fetchFormat->kodepenerimaan == 'PBT') {
+                $min = Rule::when((($fetchFormat->kodepenerimaan == 'PBT')), 'numeric|min:0');
+            }else{
+                $min = Rule::when((($fetchFormat->kodepenerimaan == 'PBT')), 'numeric|gt:0');
+            }
+        }
         $idpenerimaan = request()->penerimaantrucking_id;
         $fetchFormat =  DB::table('penerimaantrucking')
             ->where('id', $idpenerimaan)
             ->first();
         return [
             'sisa.*' => [$requiredPJP, $sisaNominus],
-            'nominal' => 'required|array',
-            'nominal.*' => ['required', 'numeric', 'gt:0'],
+            'nominal' => [$requiredNominal, 'array'],
+            'nominal.*' => ['required','gt:0', 'numeric', $min],
             'keterangan' => [$requiredKeterangan, 'array'],
             'keterangan.*' => $requiredKeterangan
         ];

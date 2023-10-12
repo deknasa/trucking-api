@@ -23,6 +23,8 @@ use App\Http\Controllers\Api\ApprovalBukaCetakController;
 use App\Http\Controllers\Api\HistoryTripController;
 use App\Http\Controllers\Api\ListTripController;
 use App\Http\Controllers\Api\InputTripController;
+use App\Http\Controllers\Api\LaporanTitipanEmklController;
+use App\Http\Controllers\Api\LaporanRekapTitipanEmklController;
 
 use App\Http\Controllers\Api\AbsenTradoController;
 use App\Http\Controllers\Api\CabangController;
@@ -222,6 +224,7 @@ use App\Http\Controllers\Api\ProsesUangJalanSupirHeaderController;
 use App\Http\Controllers\Api\ReportNeracaController;
 use App\Http\Controllers\Api\StokPersediaanController;
 use App\Http\Controllers\Api\TutupBukuController;
+use App\Http\Controllers\Api\ApprovalOpnameController;
 use App\Http\Controllers\Api\LaporanKartuHutangPerVendorController;
 use App\Http\Controllers\Api\LaporanMutasiKasBankController;
 use App\Http\Controllers\Api\LaporanKartuStokController;
@@ -232,6 +235,9 @@ use App\Http\Controllers\Api\LapKartuHutangPerVendorDetailController;
 use App\Http\Controllers\Api\LaporanWarkatBelumCairController;
 use App\Http\Controllers\Api\LaporanPiutangGiroController;
 use App\Http\Controllers\Api\LaporanLabaRugiController;
+use App\Http\Controllers\Api\LaporanPemakaianStokController;
+use App\Http\Controllers\Api\LaporanPembelianBarangController;
+use App\Http\Controllers\Api\LaporanStokController;
 use App\Http\Controllers\Api\LaporanNeracaController;
 use App\Http\Controllers\Api\LaporanPenyesuaianBarangController;
 use App\Http\Controllers\Api\LaporanPemakaianBanController;
@@ -248,6 +254,10 @@ use App\Http\Controllers\Api\MainAkunPusatController;
 use App\Http\Controllers\Api\LaporanHistoryDepositoController;
 use App\Http\Controllers\Api\LaporanPinjamanPerUnitTradoController;
 use App\Http\Controllers\Api\LogAbsensiController;
+use App\Http\Controllers\Api\OpnameDetailController;
+use App\Http\Controllers\Api\OpnameHeaderController;
+use App\Http\Controllers\Api\PelunasanHutangDetailController;
+use App\Http\Controllers\Api\PelunasanHutangHeaderController;
 use App\Http\Controllers\Api\ReminderOliController;
 use App\Http\Controllers\Api\ReminderSpkController;
 use App\Http\Controllers\Api\ReminderSpkDetailController;
@@ -292,11 +302,93 @@ Route::get('upahsupir/{filename}/{type}', [UpahSupirController::class, 'getImage
 Route::get('parameter/getparamrequest', [ParameterController::class, 'getparamrequest']);
 
 
-Route::get('parameter', [ParameterController::class, 'index']);
 route::middleware(['auth:api'])->group(function () {
     Route::resource('dashboard', DashboardController::class)->whereNumber('dashboard');
     Route::get('error/geterrors', [ErrorController::class, 'errorUrl']);
+});
 
+route::middleware(['auth:api'])->group(function () {
+    Route::get('parameter', [ParameterController::class, 'index']);
+    Route::get('user/combostatus', [UserController::class, 'combostatus']);
+    Route::get('mandor/default', [MandorController::class, 'default']);
+    Route::get('mandor/field_length', [MandorController::class, 'fieldLength']);
+    Route::resource('supir', SupirController::class)->whereNumber('supir');
+    Route::resource('absentrado', AbsenTradoController::class)->whereNumber('absentrado');
+    Route::get('parameter/getparambytext', [ParameterController::class, 'getParamByText']);
+    Route::get('parameter/combolist', [ParameterController::class, 'combolist']);
+    Route::get('suratpengantar/field_length', [SuratPengantarController::class, 'fieldLength']);
+    Route::resource('harilibur', HariLiburController::class)->whereNumber('harilibur');
+    Route::get('suratpengantarapprovalinputtrip/cektanggal', [SuratPengantarApprovalInputTripController::class, 'isTanggalAvaillable']);
+    Route::get('suratpengantar/default', [SuratPengantarController::class, 'default']);
+    Route::resource('agen', AgenController::class)->whereNumber('agen');
+    Route::resource('jenisorder', JenisOrderController::class)->whereNumber('jenisorder');
+    Route::resource('statuscontainer', StatusContainerController::class)->parameters(['statuscontainer' => 'statusContainer'])->whereNumber('statusContainer');
+    Route::resource('container', ContainerController::class)->whereNumber('container');
+    Route::resource('pelanggan', PelangganController::class)->whereNumber('pelanggan');
+    Route::get('upahsupirrincian/get', [UpahSupirRincianController::class, 'get']);
+    Route::get('absensisupirdetail/get', [AbsensiSupirDetailController::class, 'getDetailAbsensi']);
+    Route::resource('kota', KotaController::class)->whereNumber('kotum');
+    Route::resource('gudang', GudangController::class)->whereNumber('gudang');
+    Route::resource('kategori', KategoriController::class)->whereNumber('kategori');
+    Route::resource('kelompok', KelompokController::class)->whereNumber('kelompok');
+    Route::resource('kerusakan', KerusakanController::class)->whereNumber('kerusakan');
+    Route::resource('mandor', MandorController::class)->whereNumber('mandor');
+    Route::resource('merk', MerkController::class)->whereNumber('merk');
+    Route::resource('satuan', SatuanController::class)->whereNumber('satuan');
+    Route::resource('zona', ZonaController::class)->whereNumber('zona');
+    Route::resource('tarif', TarifController::class)->whereNumber('tarif');
+    Route::resource('tarifrincian', TarifRincianController::class)->whereNumber('tarifrincian');
+    Route::resource('orderantrucking', OrderanTruckingController::class)->whereNumber('orderantrucking');
+    Route::resource('chargegandengan', ChargeGandenganController::class)->whereNumber('chargegandengan');
+    Route::resource('prosesabsensisupir', ProsesAbsensiSupirController::class)->whereNumber('prosesabsensisupirs');
+    Route::resource('mandorabsensisupir', MandorAbsensiSupirController::class)->whereNumber('mandorabsensisupir');
+    Route::get('historytrip', [HistoryTripController::class, 'index']);
+    Route::get('listtrip', [ListTripController::class, 'index']);
+    Route::resource('mekanik', MekanikController::class)->whereNumber('mekanik');
+    Route::resource('upahsupir', UpahSupirController::class)->whereNumber('upahsupir');
+    Route::resource('upahsupirrincian', UpahSupirRincianController::class)->whereNumber('upahsupirrincian');
+    Route::resource('cabang', CabangController::class)->whereNumber('cabang');
+    Route::resource('gandengan', GandenganController::class)->whereNumber('gandengan');
+    Route::resource('trado', TradoController::class)->whereNumber('trado');
+    Route::resource('bank', BankController::class)->whereNumber('bank');
+    Route::resource('bankpelanggan', BankPelangganController::class)->whereNumber('bankpelanggan');
+    Route::resource('jenisemkl', JenisEmklController::class)->whereNumber('jenisemkl');
+    Route::resource('jenistrado', JenisTradoController::class)->whereNumber('jenistrado');
+    Route::resource('akunpusat', AkunPusatController::class)->parameters(['akunpusat' => 'akunPusat'])->whereNumber('akunPusat');
+    Route::resource('mainakunpusat', MainAkunPusatController::class)->whereNumber('mainakunpusat');
+    Route::resource('error', ErrorController::class)->whereNumber('error');
+    Route::resource('user', UserController::class)->whereNumber('user');
+    Route::resource('menu', MenuController::class)->whereNumber('menu')->whereNumber('menu');
+    Route::resource('userrole', UserRoleController::class)->whereNumber('userrole');
+    Route::resource('acl', AclController::class)->whereNumber('acl');
+    Route::resource('logtrail', LogTrailController::class)->whereNumber('logtrail');
+    Route::resource('trado', TradoController::class)->whereNumber('trado');
+    Route::resource('subkelompok', SubKelompokController::class)->parameters(['subkelompok' => 'subKelompok'])->whereNumber('subKelompok');
+    Route::resource('supplier', SupplierController::class)->whereNumber('supplier');
+    Route::apiResource('stok', StokController::class)->whereNumber('stok');
+    Route::resource('penerima', PenerimaController::class)->whereNumber('penerima');
+    Route::resource('penerimaantrucking', PenerimaanTruckingController::class)->parameters(['penerimaantrucking' => 'penerimaanTrucking'])->whereNumber('penerimaanTrucking');
+    Route::resource('pengeluarantrucking', PengeluaranTruckingController::class)->parameters(['pengeluarantrucking' => 'pengeluaranTrucking'])->whereNumber('pengeluaranTrucking');
+    Route::get('bukapenerimaanstok/{id}/cektanggal', [BukaPenerimaanStokController::class, 'isTanggalAvaillable']);
+    Route::get('bukapengeluaranstok/{id}/cektanggal', [BukaPengeluaranStokController::class, 'isTanggalAvaillable']);
+    Route::get('jurnalumumdetail/jurnal', [JurnalUmumDetailController::class, 'jurnal']);
+    Route::get('parameter/combo', [ParameterController::class, 'combo']);
+    Route::resource('pengeluarantruckingdetail', PengeluaranTruckingDetailController::class)->whereNumber('pengeluarantruckingdetail');
+    Route::resource('penerimaantruckingheader', PenerimaanTruckingHeaderController::class)->whereNumber('penerimaantruckingheader');
+    Route::apiResource('pengeluaranstokheader', PengeluaranStokHeaderController::class)->whereNumber('pengeluaranstokheader');
+    Route::apiResource('pengeluaranstokdetail', PengeluaranStokDetailController::class)->whereNumber('pengeluaranstokdetail');
+    Route::get('pengeluaranstokdetail/hutangbayar', [PengeluaranStokDetailController::class, 'hutangbayar']);
+    Route::get('pengeluaranstokdetail/pengeluaran', [PengeluaranStokDetailController::class, 'pengeluaran']);
+    Route::get('pengeluaranstokdetail/jurnal', [PengeluaranStokDetailController::class, 'jurnal']);
+    Route::resource('suratpengantar', SuratPengantarController::class)->whereNumber('suratpengantar');
+    Route::get('invoicedetail/piutang', [InvoiceDetailController::class, 'piutang']);
+    Route::resource('invoicedetail', InvoiceDetailController::class)->whereNumber('invoicedetail');
+    Route::get('jurnalumumheader/field_length', [JurnalUmumHeaderController::class, 'fieldLength']);
+    Route::resource('alatbayar', AlatBayarController::class)->whereNumber('alatbayar');
+    Route::get('parameter/getparamfirst', [ParameterController::class, 'getparamfirst']);
+    Route::get('cabang/combostatus', [CabangController::class, 'combostatus']);
+    Route::apiResource('penerimaanstok', PenerimaanStokController::class)->whereNumber('penerimaanstok');
+    Route::apiResource('pengeluaranstok', PengeluaranStokController::class)->whereNumber('pengeluaranstok');
 });
 
 route::middleware(['auth:api', 'authorized'])->group(function () {
@@ -309,7 +401,6 @@ route::middleware(['auth:api', 'authorized'])->group(function () {
     Route::post('kota/{id}/cekValidasi', [KotaController::class, 'cekValidasi'])->name('kota.cekValidasi')->whereNumber('id');
     Route::get('kota/export', [KotaController::class, 'export']);
     Route::get('kota/report', [KotaController::class, 'report']);
-    Route::resource('kota', KotaController::class)->whereNumber('kotum');
 
     Route::get('gudang/combo', [GudangController::class, 'combo']);
     Route::get('gudang/field_length', [GudangController::class, 'fieldLength']);
@@ -317,7 +408,6 @@ route::middleware(['auth:api', 'authorized'])->group(function () {
     Route::post('gudang/{id}/cekValidasi', [GudangController::class, 'cekValidasi'])->name('gudang.cekValidasi')->whereNumber('id');
     Route::get('gudang/export', [GudangController::class, 'export']);
     Route::get('gudang/report', [GudangController::class, 'report']);
-    Route::resource('gudang', GudangController::class)->whereNumber('gudang');
 
     Route::get('kategori/combo', [KategoriController::class, 'combo']);
     Route::get('kategori/field_length', [KategoriController::class, 'fieldLength']);
@@ -325,7 +415,6 @@ route::middleware(['auth:api', 'authorized'])->group(function () {
     Route::post('kategori/{id}/cekValidasi', [KategoriController::class, 'cekValidasi'])->name('kategori.cekValidasi')->whereNumber('id');
     Route::get('kategori/export', [KategoriController::class, 'export']);
     Route::get('kategori/report', [KategoriController::class, 'report']);
-    Route::resource('kategori', KategoriController::class)->whereNumber('kategori');
 
     Route::get('kelompok/combo', [KelompokController::class, 'combo']);
     Route::get('kelompok/field_length', [KelompokController::class, 'fieldLength']);
@@ -333,7 +422,6 @@ route::middleware(['auth:api', 'authorized'])->group(function () {
     Route::post('kelompok/{id}/cekValidasi', [KelompokController::class, 'cekValidasi'])->name('kelompok.cekValidasi')->whereNumber('id');
     Route::get('kelompok/export', [KelompokController::class, 'export']);
     Route::get('kelompok/report', [KelompokController::class, 'report']);
-    Route::resource('kelompok', KelompokController::class)->whereNumber('kelompok');
 
     Route::get('kerusakan/combo', [KerusakanController::class, 'combo']);
     Route::get('kerusakan/field_length', [KerusakanController::class, 'fieldLength']);
@@ -341,16 +429,12 @@ route::middleware(['auth:api', 'authorized'])->group(function () {
     Route::post('kerusakan/{id}/cekValidasi', [KerusakanController::class, 'cekValidasi'])->name('kerusakan.cekValidasi')->whereNumber('id');
     Route::get('kerusakan/export', [KerusakanController::class, 'export']);
     Route::get('kerusakan/report', [KerusakanController::class, 'report']);
-    Route::resource('kerusakan', KerusakanController::class)->whereNumber('kerusakan');
 
 
     Route::get('mandor/combo', [MandorController::class, 'combo']);
-    Route::get('mandor/field_length', [MandorController::class, 'fieldLength']);
-    Route::get('mandor/default', [MandorController::class, 'default']);
     Route::post('mandor/{id}/cekValidasi', [MandorController::class, 'cekValidasi'])->name('mandor.cekValidasi')->whereNumber('id');
     Route::get('mandor/export', [MandorController::class, 'export']);
     Route::get('mandor/report', [MandorController::class, 'report']);
-    Route::resource('mandor', MandorController::class)->whereNumber('mandor');
 
     Route::get('merk/combo', [MerkController::class, 'combo']);
     Route::get('merk/field_length', [MerkController::class, 'fieldLength']);
@@ -358,14 +442,12 @@ route::middleware(['auth:api', 'authorized'])->group(function () {
     Route::post('merk/{id}/cekValidasi', [MerkController::class, 'cekValidasi'])->name('merk.cekValidasi')->whereNumber('id');
     Route::get('merk/export', [MerkController::class, 'export']);
     Route::get('merk/report', [MerkController::class, 'report']);
-    Route::resource('merk', MerkController::class)->whereNumber('merk');
 
     Route::get('satuan/combo', [SatuanController::class, 'combo']);
     Route::get('satuan/field_length', [SatuanController::class, 'fieldLength']);
     Route::get('satuan/default', [SatuanController::class, 'default']);
     Route::get('satuan/export', [SatuanController::class, 'export']);
     Route::get('satuan/report', [SatuanController::class, 'report']);
-    Route::resource('satuan', SatuanController::class)->whereNumber('satuan');
 
     Route::get('zona/combo', [ZonaController::class, 'combo']);
     Route::get('zona/field_length', [ZonaController::class, 'fieldLength']);
@@ -373,7 +455,6 @@ route::middleware(['auth:api', 'authorized'])->group(function () {
     Route::post('zona/{id}/cekValidasi', [ZonaController::class, 'cekValidasi'])->name('zona.cekValidasi')->whereNumber('id');
     Route::get('zona/export', [ZonaController::class, 'export']);
     Route::get('zona/report', [ZonaController::class, 'report']);
-    Route::resource('zona', ZonaController::class)->whereNumber('zona');
 
 
     Route::get('tarif/combo', [TarifController::class, 'combo']);
@@ -384,12 +465,10 @@ route::middleware(['auth:api', 'authorized'])->group(function () {
     Route::get('tarif/export', [TarifController::class, 'export']);
     Route::get('tarif/report', [TarifController::class, 'report']);
     Route::post('tarif/{id}/cekValidasi', [TarifController::class, 'cekValidasi'])->name('tarif.cekValidasi')->whereNumber('id');
-    Route::resource('tarif', TarifController::class)->whereNumber('tarif');
 
     Route::get('tarifrincian/setuprow', [TarifRincianController::class, 'setUpRow']);
     Route::get('tarifrincian/get', [TarifRincianController::class, 'get']);
     Route::get('tarifrincian/setuprowshow/{id}', [TarifRincianController::class, 'setUpRowExcept'])->whereNumber('id');
-    Route::resource('tarifrincian', TarifRincianController::class)->whereNumber('tarifrincian');
 
 
     Route::get('orderantrucking/combo', [OrderanTruckingController::class, 'combo']);
@@ -402,26 +481,20 @@ route::middleware(['auth:api', 'authorized'])->group(function () {
     Route::get('orderantrucking/getorderantrip', [OrderanTruckingController::class, 'getOrderanTrip']);
     Route::post('orderantrucking/approvaledit', [OrderanTruckingController::class, 'approvaledit']);
     Route::post('orderantrucking/approval', [OrderanTruckingController::class, 'approval']);
-    Route::resource('orderantrucking', OrderanTruckingController::class)->whereNumber('orderantrucking');
 
     Route::resource('jobtrucking', JobTruckingController::class);
 
     Route::get('chargegandengan/export', [ChargeGandenganController::class, 'export']);
-    Route::resource('chargegandengan', ChargeGandenganController::class)->whereNumber('chargegandengan');
 
     Route::get('prosesabsensisupir/combo', [ProsesAbsensiSupirController::class, 'combo']);
     Route::get('prosesabsensisupir/field_length', [ProsesAbsensiSupirController::class, 'fieldLength']);
-    Route::resource('prosesabsensisupir', ProsesAbsensiSupirController::class)->whereNumber('prosesabsensisupirs');
 
     Route::get('mandorabsensisupir/{tradoId}/cekvalidasi', [MandorAbsensiSupirController::class, 'cekValidasi'])->whereNumber('tradoId');
     Route::get('mandorabsensisupir/{tradoId}/cekvalidasiadd', [MandorAbsensiSupirController::class, 'cekValidasiAdd'])->whereNumber('tradoId');
     Route::get('mandorabsensisupir/{tradoId}/getabsentrado', [MandorAbsensiSupirController::class, 'getabsentrado'])->whereNumber('tradoId');
     Route::patch('mandorabsensisupir/{id}/update', [MandorAbsensiSupirController::class, 'update'])->whereNumber('id');
     Route::delete('mandorabsensisupir/{id}/delete', [MandorAbsensiSupirController::class, 'destroy'])->whereNumber('id');
-    Route::resource('mandorabsensisupir', MandorAbsensiSupirController::class)->whereNumber('mandorabsensisupir');
 
-    Route::get('historytrip', [HistoryTripController::class, 'index']);
-    Route::get('listtrip', [ListTripController::class, 'index']);
     Route::post('inputtrip', [InputTripController::class, 'store']);
     Route::get('inputtrip/getKotaRitasi', [InputTripController::class, 'getKotaRitasi']);
 
@@ -430,7 +503,6 @@ route::middleware(['auth:api', 'authorized'])->group(function () {
     Route::get('mekanik/field_length', [MekanikController::class, 'fieldLength']);
     Route::get('mekanik/default', [MekanikController::class, 'default']);
     Route::post('mekanik/{id}/cekValidasi', [MekanikController::class, 'cekValidasi'])->name('mekanik.cekValidasi')->whereNumber('id');
-    Route::resource('mekanik', MekanikController::class)->whereNumber('mekanik');
 
     Route::get('upahsupir/combo', [UpahSupirController::class, 'combo']);
     Route::get('upahsupir/field_length', [UpahSupirController::class, 'fieldLength']);
@@ -438,24 +510,20 @@ route::middleware(['auth:api', 'authorized'])->group(function () {
     Route::get('upahsupir/export', [UpahSupirController::class, 'export']);
     Route::post('upahsupir/import', [UpahSupirController::class, 'import']);
     Route::post('upahsupir/{id}/cekValidasi', [UpahSupirController::class, 'cekValidasi'])->name('upahsupir.cekValidasi')->whereNumber('id');
-    Route::resource('upahsupir', UpahSupirController::class)->whereNumber('upahsupir');
 
     Route::get('upahsupirrincian/setuprow', [UpahSupirRincianController::class, 'setUpRow']);
     Route::get('upahsupirrincian/setuprowshow/{id}', [UpahSupirRincianController::class, 'setUpRowExcept'])->whereNumber('id');
-    Route::get('upahsupirrincian/get', [UpahSupirRincianController::class, 'get']);
-    Route::resource('upahsupirrincian', UpahSupirRincianController::class)->whereNumber('upahsupirrincian');
 
     Route::get('parameter/export', [ParameterController::class, 'export']);
     Route::get('parameter/detail', [ParameterController::class, 'detail']);
     Route::get('parameter/default', [ParameterController::class, 'default']);
     Route::get('parameter/field_length', [ParameterController::class, 'fieldLength']);
-    Route::get('parameter/combo', [ParameterController::class, 'combo']);
     Route::get('parameter/comboapproval', [ParameterController::class, 'comboapproval']);
-    Route::get('parameter/combolist', [ParameterController::class, 'combolist']);
     Route::get('parameter/getcoa', [ParameterController::class, 'getcoa']);
     Route::get('parameter/{id}', [ParameterController::class, 'show']);
+    Route::post('parameter/addrow', [ParameterController::class, 'addrow']);
     Route::post('parameter', [ParameterController::class, 'store']);
-    Route::put('parameter/{id}', [ParameterController::class, 'update']);
+    Route::patch('parameter/{id}', [ParameterController::class, 'update']);
     Route::delete('parameter/{id}', [ParameterController::class, 'destroy']);
 
     // Route::resource('parameter', ParameterController::class)->whereNumber('parameter');
@@ -476,27 +544,25 @@ route::middleware(['auth:api', 'authorized'])->group(function () {
     Route::post('absensisupirheader/{id}/approvalEditAbsensi', [AbsensiSupirHeaderController::class, 'approvalEditAbsensi'])->whereNumber('id');
     Route::apiResource('absensisupirheader', AbsensiSupirHeaderController::class)->parameter('absensisupirheader', 'absensiSupirHeader')->whereNumber('absensisupirheader');
 
-    Route::get('absensisupirdetail/get', [AbsensiSupirDetailController::class, 'getDetailAbsensi']);
     Route::resource('absensisupirdetail', AbsensiSupirDetailController::class);
-    Route::post('bukaabsensi/{id}/updatetanggalbatas', [BukaAbsensiController::class,'updateTanggalBatas']);
+    Route::post('bukaabsensi/{id}/updatetanggalbatas', [BukaAbsensiController::class, 'updateTanggalBatas']);
     Route::resource('bukaabsensi', BukaAbsensiController::class)->whereNumber('bukaabsensi');
 
     Route::get('approvalsupirgambar/default', [ApprovalSupirGambarController::class, 'default']);
     Route::resource('approvalsupirgambar', ApprovalSupirGambarController::class)->whereNumber('approvalsupirgambar');
-    
-    Route::get('approvalsupirketerangan/default', [ApprovalSupirKeteranganController::class,'default']);
+
+    Route::get('approvalsupirketerangan/default', [ApprovalSupirKeteranganController::class, 'default']);
     Route::resource('approvalsupirketerangan', ApprovalSupirKeteranganController::class)->whereNumber('approvalsupirketerangan');
 
-    Route::get('blacklistsupir/default', [BlackListSupirController::class,'default']);
+    Route::get('blacklistsupir/default', [BlackListSupirController::class, 'default']);
     Route::resource('blacklistsupir', BlackListSupirController::class)->whereNumber('blacklistsupir');
 
-    Route::get('tradosupirmilikmandor/default', [TradoSupirMilikMandorController::class,'default']);
+    Route::get('tradosupirmilikmandor/default', [TradoSupirMilikMandorController::class, 'default']);
     Route::resource('tradosupirmilikmandor', TradoSupirMilikMandorController::class)->whereNumber('tradosupirmilikmandor');
 
     Route::get('suratpengantarapprovalinputtrip/default', [SuratPengantarApprovalInputTripController::class, 'default']);
     Route::post('suratpengantarapprovalinputtrip/{id}/cekvalidasi', [SuratPengantarApprovalInputTripController::class, 'cekvalidasi'])->name('suratpengantarapprovalinputtrip.cekvalidasi')->whereNumber('id');
     Route::get('suratpengantarapprovalinputtrip/field_length', [SuratPengantarApprovalInputTripController::class, 'fieldLength']);
-    Route::get('suratpengantarapprovalinputtrip/cektanggal', [SuratPengantarApprovalInputTripController::class, 'isTanggalAvaillable']);
     Route::resource('suratpengantarapprovalinputtrip', SuratPengantarApprovalInputTripController::class)->whereNumber('suratpengantarapprovalinputtrip');
 
     Route::get('approvaltransaksiheader/combo', [ApprovalTransaksiHeaderController::class, 'combo']);
@@ -530,15 +596,12 @@ route::middleware(['auth:api', 'authorized'])->group(function () {
     Route::post('agen/{id}/cekValidasi', [AgenController::class, 'cekValidasi'])->name('agen.cekValidasi')->whereNumber('id');
     Route::get('agen/export', [AgenController::class, 'export']);
     Route::get('agen/report', [AgenController::class, 'report']);
-    Route::resource('agen', AgenController::class)->whereNumber('agen');
 
     Route::get('cabang/field_length', [CabangController::class, 'fieldLength']);
-    Route::get('cabang/combostatus', [CabangController::class, 'combostatus']);
     Route::get('cabang/default', [CabangController::class, 'default']);
     Route::get('cabang/report', [CabangController::class, 'report']);
     Route::get('cabang/export', [CabangController::class, 'export']);
     Route::get('cabang/getPosition2', [CabangController::class, 'getPosition2']);
-    Route::resource('cabang', CabangController::class)->whereNumber('cabang');
 
     Route::get('gandengan/field_length', [GandenganController::class, 'fieldLength']);
     Route::get('gandengan/combostatus', [GandenganController::class, 'combostatus']);
@@ -547,7 +610,6 @@ route::middleware(['auth:api', 'authorized'])->group(function () {
     Route::get('gandengan/report', [GandenganController::class, 'report']);
     Route::get('gandengan/export', [GandenganController::class, 'export']);
     Route::post('gandengan/{id}/cekValidasi', [GandenganController::class, 'cekValidasi'])->name('gandengan.cekValidasi')->whereNumber('id');
-    Route::resource('gandengan', GandenganController::class)->whereNumber('gandengan');
 
 
     Route::get('acos/field_length', [AcosController::class, 'fieldLength']);
@@ -564,14 +626,14 @@ route::middleware(['auth:api', 'authorized'])->group(function () {
     Route::post('trado/{id}/cekValidasi', [TradoController::class, 'cekValidasi'])->name('trado.cekValidasi')->whereNumber('id');
     Route::get('trado/export', [TradoController::class, 'export']);
     Route::get('trado/report', [TradoController::class, 'report']);
-    Route::resource('trado', TradoController::class)->whereNumber('trado');
 
     Route::get('absentrado/field_length', [AbsenTradoController::class, 'fieldLength']);
+    Route::get('absentrado/rekapabsentrado', [AbsenTradoController::class, 'rekapabsentrado']);
+    Route::post('absentrado/addrow', [AbsenTradoController::class, 'addrow']);
     Route::get('absentrado/default', [AbsenTradoController::class, 'default']);
     Route::post('absentrado/{id}/cekValidasi', [AbsenTradoController::class, 'cekValidasi'])->name('absentrado.cekValidasi')->whereNumber('id');
     Route::get('absentrado/export', [AbsenTradoController::class, 'export']);
     Route::get('absentrado/report', [AbsenTradoController::class, 'report']);
-    Route::resource('absentrado', AbsenTradoController::class)->whereNumber('absentrado');
     Route::get('absentrado/detail', [AbsenTradoController::class, 'detail']);
 
     Route::get('container/field_length', [ContainerController::class, 'fieldLength']);
@@ -581,7 +643,6 @@ route::middleware(['auth:api', 'authorized'])->group(function () {
     Route::post('container/{id}/cekValidasi', [ContainerController::class, 'cekValidasi'])->name('container.cekValidasi')->whereNumber('id');
     Route::get('container/export', [ContainerController::class, 'export']);
     Route::get('container/report', [ContainerController::class, 'report']);
-    Route::resource('container', ContainerController::class)->whereNumber('container');
 
     Route::get('bank/combo', [BankController::class, 'combo']);
     Route::get('bank/field_length', [BankController::class, 'fieldLength']);
@@ -589,7 +650,6 @@ route::middleware(['auth:api', 'authorized'])->group(function () {
     Route::post('bank/{id}/cekValidasi', [BankController::class, 'cekValidasi'])->name('bank.cekValidasi')->whereNumber('id');
     Route::get('bank/export', [BankController::class, 'export']);
     Route::get('bank/report', [BankController::class, 'report']);
-    Route::resource('bank', BankController::class)->whereNumber('bank');
 
     Route::get('alatbayar/combo', [AlatBayarController::class, 'combo']);
     Route::get('alatbayar/field_length', [AlatBayarController::class, 'fieldLength']);
@@ -597,7 +657,6 @@ route::middleware(['auth:api', 'authorized'])->group(function () {
     Route::post('alatbayar/{id}/cekValidasi', [AlatBayarController::class, 'cekValidasi'])->name('alatbayar.cekValidasi')->whereNumber('id');
     Route::get('alatbayar/export', [AlatBayarController::class, 'export']);
     Route::get('alatbayar/report', [AlatBayarController::class, 'report']);
-    Route::resource('alatbayar', AlatBayarController::class)->whereNumber('alatbayar');
 
     Route::get('bankpelanggan/combo', [BankPelangganController::class, 'combo']);
     Route::get('bankpelanggan/field_length', [BankPelangganController::class, 'fieldLength']);
@@ -605,7 +664,6 @@ route::middleware(['auth:api', 'authorized'])->group(function () {
     Route::post('bankpelanggan/{id}/cekValidasi', [BankPelangganController::class, 'cekValidasi'])->name('bankpelanggan.cekValidasi')->whereNumber('id');
     Route::get('bankpelanggan/export', [BankPelangganController::class, 'export']);
     Route::get('bankpelanggan/report', [BankPelangganController::class, 'report']);
-    Route::resource('bankpelanggan', BankPelangganController::class)->whereNumber('bankpelanggan');
 
     Route::get('jenisemkl/combo', [JenisEmklController::class, 'combo']);
     Route::get('jenisemkl/field_length', [JenisEmklController::class, 'fieldLength']);
@@ -613,7 +671,6 @@ route::middleware(['auth:api', 'authorized'])->group(function () {
     Route::post('jenisemkl/{id}/cekValidasi', [JenisEmklController::class, 'cekValidasi'])->name('jenisemkl.cekValidasi')->whereNumber('id');
     Route::get('jenisemkl/export', [JenisEmklController::class, 'export']);
     Route::get('jenisemkl/report', [JenisEmklController::class, 'report']);
-    Route::resource('jenisemkl', JenisEmklController::class)->whereNumber('jenisemkl');
 
     Route::get('jenisorder/combo', [JenisOrderController::class, 'combo']);
     Route::get('jenisorder/field_length', [JenisOrderController::class, 'fieldLength']);
@@ -621,7 +678,6 @@ route::middleware(['auth:api', 'authorized'])->group(function () {
     Route::post('jenisorder/{id}/cekValidasi', [JenisOrderController::class, 'cekValidasi'])->name('jenisorder.cekValidasi')->whereNumber('id');
     Route::get('jenisorder/export', [JenisOrderController::class, 'export']);
     Route::get('jenisorder/report', [JenisOrderController::class, 'report']);
-    Route::resource('jenisorder', JenisOrderController::class)->whereNumber('jenisorder');
 
     Route::get('jenistrado/combo', [JenisTradoController::class, 'combo']);
     Route::get('jenistrado/field_length', [JenisTradoController::class, 'fieldLength']);
@@ -629,7 +685,6 @@ route::middleware(['auth:api', 'authorized'])->group(function () {
     Route::post('jenistrado/{id}/cekValidasi', [JenisTradoController::class, 'cekValidasi'])->name('jenistrado.cekValidasi')->whereNumber('id');
     Route::get('jenistrado/export', [JenisTradoController::class, 'export']);
     Route::get('jenistrado/report', [JenisTradoController::class, 'report']);
-    Route::resource('jenistrado', JenisTradoController::class)->whereNumber('jenistrado');
 
     Route::get('akunpusat/field_length', [AkunPusatController::class, 'fieldLength']);
     Route::get('akunpusat/default', [AkunPusatController::class, 'default']);
@@ -639,20 +694,17 @@ route::middleware(['auth:api', 'authorized'])->group(function () {
     Route::delete('akunpusat/deleteCoa', [AkunPusatController::class, 'deleteCoa']);
     Route::get('akunpusat/checkCoa', [AkunPusatController::class, 'checkCoa']);
     Route::get('akunpusat/{id}/cekValidasi', [AkunPusatController::class, 'cekValidasi'])->name('akunpusat.cekValidasi')->whereNumber('id');
-    Route::resource('akunpusat', AkunPusatController::class)->parameters(['akunpusat' => 'akunPusat'])->whereNumber('akunPusat');
 
     Route::get('mainakunpusat/field_length', [MainAkunPusatController::class, 'fieldLength']);
     Route::get('mainakunpusat/default', [MainAkunPusatController::class, 'default']);
     Route::get('mainakunpusat/export', [MainAkunPusatController::class, 'export']);
     Route::get('mainakunpusat/report', [MainAkunPusatController::class, 'report']);
     Route::get('mainakunpusat/{id}/cekValidasi', [MainAkunPusatController::class, 'cekValidasi'])->name('mainakunpusat.cekValidasi')->whereNumber('id');
-    Route::resource('mainakunpusat', MainAkunPusatController::class)->whereNumber('mainakunpusat');
 
     Route::get('error/field_length', [ErrorController::class, 'fieldLength']);
 
     Route::get('error/geterror', [ErrorController::class, 'geterror']);
     Route::get('error/export', [ErrorController::class, 'export'])->name('error.export');
-    Route::resource('error', ErrorController::class)->whereNumber('error');
 
     Route::get('role/getroleid', [RoleController::class, 'getroleid']);
     Route::get('role/field_length', [RoleController::class, 'fieldLength']);
@@ -662,17 +714,14 @@ route::middleware(['auth:api', 'authorized'])->group(function () {
     Route::resource('role', RoleController::class)->whereNumber('role');
 
     Route::get('cabang/field_length', [CabangController::class, 'fieldLength']);
-    Route::get('cabang/combostatus', [CabangController::class, 'combostatus']);
     Route::get('cabang/getPosition2', [CabangController::class, 'getPosition2']);
     Route::get('cabang/export', [CabangController::class, 'export'])->name('cabang.export');
-    Route::resource('cabang', CabangController::class)->whereNumber('cabang');
 
     Route::get('acos/field_length', [AcosController::class, 'fieldLength']);
     Route::resource('acos', AcosController::class);
 
     Route::get('user/field_length', [UserController::class, 'fieldLength']);
     Route::get('user/export', [UserController::class, 'export'])->name('user.export');
-    Route::get('user/combostatus', [UserController::class, 'combostatus']);
     Route::get('user/combocabang', [UserController::class, 'combocabang']);
     Route::get('user/getuserid', [UserController::class, 'getuserid']);
     Route::get('user/default', [UserController::class, 'default']);
@@ -680,46 +729,35 @@ route::middleware(['auth:api', 'authorized'])->group(function () {
     Route::post('user/{user}/role', [UserController::class, 'storeRoles'])->whereNumber('user');
     Route::get('user/{user}/acl', [UserAclController::class, 'index'])->whereNumber('user');
     Route::post('user/{user}/acl', [UserAclController::class, 'store'])->whereNumber('user');
-    Route::resource('user', UserController::class)->whereNumber('user');
 
     Route::get('menu/field_length', [MenuController::class, 'fieldLength']);
     Route::get('menu/combomenuparent', [MenuController::class, 'combomenuparent']);
     Route::get('menu/controller', [MenuController::class, 'listclassall']);
     Route::get('menu/getdatanamaacos', [MenuController::class, 'getdatanamaacos']);
     Route::get('menu/export', [MenuController::class, 'export'])->name('menu.export');
-    Route::resource('menu', MenuController::class)->whereNumber('menu')->whereNumber('menu');
 
     Route::get('userrole/field_length', [UserRoleController::class, 'fieldLength']);
     Route::get('userrole/detail', [UserRoleController::class, 'detail']);
     Route::get('userrole/detaillist', [UserRoleController::class, 'detaillist']);
     Route::get('userrole/combostatus', [UserRoleController::class, 'combostatus']);
     Route::get('userrole/export', [UserRoleController::class, 'export'])->name('userrole.export');
-    Route::resource('userrole', UserRoleController::class)->whereNumber('userrole');
 
     Route::get('acl/field_length', [AclController::class, 'fieldLength']);
     Route::get('acl/detail/{roleId}', [AclController::class, 'detail'])->whereNumber('roleId');
     Route::get('acl/detaillist', [AclController::class, 'detaillist']);
     Route::get('acl/combostatus', [AclController::class, 'combostatus']);
     Route::get('acl/export', [AclController::class, 'export'])->name('acl.export');
-    Route::resource('acl', AclController::class)->whereNumber('acl');
 
     Route::get('logtrail/detail', [LogTrailController::class, 'detail']);
     Route::get('logtrail/header', [LogTrailController::class, 'header']);
-    Route::resource('logtrail', LogTrailController::class)->whereNumber('logtrail');
 
     Route::get('trado/combo', [TradoController::class, 'combo']);
     Route::get('trado/field_length', [TradoController::class, 'fieldLength']);
     Route::get('trado/getImage/{id}/{field}', [TradoController::class, 'getImage'])->whereNumber('id');
     Route::post('trado/upload_image/{id}', [TradoController::class, 'uploadImage'])->whereNumber('id');
-    Route::resource('trado', TradoController::class)->whereNumber('trado');
 
 
     Route::get('running_number', [Controller::class, 'getRunningNumber'])->name('running_number');
-
-    Route::get('container/field_length', [ContainerController::class, 'fieldLength']);
-    Route::get('container/combostatus', [ContainerController::class, 'combostatus']);
-    Route::get('container/getPosition2', [ContainerController::class, 'getPosition2']);
-    Route::resource('container', ContainerController::class)->whereNumber('container');
 
     Route::get('supir/combo', [SupirController::class, 'combo']);
     Route::get('supir/field_length', [SupirController::class, 'fieldLength']);
@@ -733,13 +771,11 @@ route::middleware(['auth:api', 'authorized'])->group(function () {
     Route::post('supir/{id}/cekValidasi', [SupirController::class, 'cekValidasi'])->name('supir.cekValidasi')->whereNumber('id');
     Route::get('supir/export', [SupirController::class, 'export']);
     Route::get('supir/report', [SupirController::class, 'report']);
-    Route::resource('supir', SupirController::class)->whereNumber('supir');
 
     Route::get('subkelompok/export', [SubKelompokController::class, 'export']);
     Route::get('subkelompok/field_length', [SubKelompokController::class, 'fieldLength']);
     Route::get('subkelompok/default', [SubKelompokController::class, 'default']);
     Route::post('subkelompok/{id}/cekValidasi', [SubKelompokController::class, 'cekValidasi'])->name('subkelompok.cekValidasi')->whereNumber('id');
-    Route::resource('subkelompok', SubKelompokController::class)->parameters(['subkelompok' => 'subKelompok'])->whereNumber('subKelompok');
 
     Route::get('supplier/export', [SupplierController::class, 'export']);
     Route::get('supplier/field_length', [SupplierController::class, 'fieldLength']);
@@ -747,8 +783,8 @@ route::middleware(['auth:api', 'authorized'])->group(function () {
     Route::post('supplier/{id}/cekValidasi', [SupplierController::class, 'cekValidasi'])->name('supplier.cekValidasi')->whereNumber('id');
     Route::get('supplier/export', [SupplierController::class, 'export']);
     Route::post('supplier/approval', [SupplierController::class, 'approval']);
+    Route::post('supplier/approvalTNL', [SupplierController::class, 'approvalTNL']);
     Route::get('supplier/report', [SupplierController::class, 'report']);
-    Route::resource('supplier', SupplierController::class)->whereNumber('supplier');
 
     Route::get('stok/getGambar', [StokController::class, 'getGambar']);
     Route::get('stok/default', [StokController::class, 'default']);
@@ -756,41 +792,35 @@ route::middleware(['auth:api', 'authorized'])->group(function () {
     Route::post('stok/{id}/cekValidasi', [StokController::class, 'cekValidasi'])->name('stok.cekValidasi')->whereNumber('id');
     Route::get('stok/export', [StokController::class, 'export']);
     Route::get('stok/report', [StokController::class, 'report']);
-    Route::apiResource('stok', StokController::class)->whereNumber('stok');
 
 
     Route::get('penerima/export', [PenerimaController::class, 'export']);
     Route::get('penerima/field_length', [PenerimaController::class, 'fieldLength']);
     Route::get('penerima/default', [PenerimaController::class, 'default']);
     Route::post('penerima/{id}/cekValidasi', [PenerimaController::class, 'cekValidasi'])->name('penerima.cekValidasi')->whereNumber('id');
-    Route::resource('penerima', PenerimaController::class)->whereNumber('penerima');
 
     Route::get('pelanggan/export', [PelangganController::class, 'export']);
     Route::get('pelanggan/field_length', [PelangganController::class, 'fieldLength']);
     Route::get('pelanggan/default', [PelangganController::class, 'default']);
     Route::post('pelanggan/{id}/cekValidasi', [PelangganController::class, 'cekValidasi'])->name('pelanggan.cekValidasi')->whereNumber('id');
     Route::get('pelanggan/combostatus', [PelangganController::class, 'combostatus']);
-    Route::resource('pelanggan', PelangganController::class)->whereNumber('pelanggan');
 
     Route::get('statuscontainer/export', [StatusContainerController::class, 'export']);
     Route::get('statuscontainer/field_length', [StatusContainerController::class, 'fieldLength']);
     Route::get('statuscontainer/default', [StatusContainerController::class, 'default']);
     Route::post('statuscontainer/{id}/cekValidasi', [StatusContainerController::class, 'cekValidasi'])->name('statuscontainer.cekValidasi')->whereNumber('id');
-    Route::resource('statuscontainer', StatusContainerController::class)->parameters(['statuscontainer' => 'statusContainer'])->whereNumber('statusContainer');
 
     Route::get('penerimaantrucking/export', [PenerimaanTruckingController::class, 'export']);
     Route::get('penerimaantrucking/field_length', [PenerimaanTruckingController::class, 'fieldLength']);
     Route::post('penerimaantrucking/{id}/cekValidasi', [PenerimaanTruckingController::class, 'cekValidasi'])->name('penerimaantrucking.cekValidasi')->whereNumber('id');
     Route::get('penerimaantrucking/export', [PenerimaanTruckingController::class, 'export']);
     Route::get('penerimaantrucking/report', [PenerimaanTruckingController::class, 'report']);
-    Route::resource('penerimaantrucking', PenerimaanTruckingController::class)->parameters(['penerimaantrucking' => 'penerimaanTrucking'])->whereNumber('penerimaanTrucking');
 
     Route::get('pengeluarantrucking/export', [PengeluaranTruckingController::class, 'export']);
     Route::get('pengeluarantrucking/field_length', [PengeluaranTruckingController::class, 'fieldLength']);
     Route::post('pengeluarantrucking/{id}/cekValidasi', [PengeluaranTruckingController::class, 'cekValidasi'])->name('pengeluarantrucking.cekValidasi')->whereNumber('id');
     Route::get('pengeluarantrucking/export', [PengeluaranTruckingController::class, 'export']);
     Route::get('pengeluarantrucking/report', [PengeluaranTruckingController::class, 'report']);
-    Route::resource('pengeluarantrucking', PengeluaranTruckingController::class)->parameters(['pengeluarantrucking' => 'pengeluaranTrucking'])->whereNumber('pengeluaranTrucking');
 
 
     Route::get('running_number', [Controller::class, 'getRunningNumber'])->name('running_number');
@@ -804,12 +834,15 @@ route::middleware(['auth:api', 'authorized'])->group(function () {
     Route::get('jurnalumumheader/{id}/export', [JurnalUmumHeaderController::class, 'export'])->name('jurnalumumheader.export')->whereNumber('id');
     Route::post('jurnalumumheader/{id}/cekvalidasiaksi', [JurnalUmumHeaderController::class, 'cekvalidasiaksi'])->whereNumber('id');
     Route::post('jurnalumumheader/copy', [JurnalUmumHeaderController::class, 'copy']);
-    Route::get('jurnalumumheader/field_length', [JurnalUmumHeaderController::class, 'fieldLength']);
+    Route::post('jurnalumumheader/addrow', [JurnalUmumDetailController::class, 'addrow']);
     Route::resource('jurnalumumheader', JurnalUmumHeaderController::class)->whereNumber('jurnalumumheader');
-    Route::get('jurnalumumdetail/jurnal', [JurnalUmumDetailController::class, 'jurnal']);
+    Route::get('jurnalumumdetail/getDetail', [JurnalUmumDetailController::class, 'getDetail']);
     Route::resource('jurnalumumdetail', JurnalUmumDetailController::class)->whereNumber('jurnalumumdetail');
 
+    Route::get('penerimaantruckingheader/getpengembaliantitipan', [PenerimaanTruckingHeaderController::class, 'getDataPengembalianTitipan']);
+    Route::get('penerimaantruckingheader/getpengembaliantitipan/{id}', [PenerimaanTruckingHeaderController::class, 'getDataPengembalianTitipanShow']);
     Route::get('penerimaantruckingheader/{id}/printreport', [PenerimaanTruckingHeaderController::class, 'printReport'])->whereNumber('id');
+    Route::post('penerimaantruckingheader/addrow', [PenerimaanTruckingDetailController::class, 'addrow']);
     Route::post('penerimaantruckingheader/{id}/cekValidasiAksi', [PenerimaanTruckingHeaderController::class, 'cekValidasiAksi'])->name('penerimaantruckingheader.cekValidasiAksi')->whereNumber('id');
     Route::post('penerimaantruckingheader/{id}/cekvalidasi', [PenerimaanTruckingHeaderController::class, 'cekvalidasi'])->name('penerimaantruckingheader.cekvalidasi')->whereNumber('id');
     Route::get('penerimaantruckingheader/{id}/{aksi}/getpengembalianpinjaman', [PenerimaanTruckingHeaderController::class, 'getPengembalianPinjaman'])->name('pengeluarantruckingheader.getPengembalianPinjaman')->whereNumber('id');
@@ -821,16 +854,17 @@ route::middleware(['auth:api', 'authorized'])->group(function () {
     Route::get('penerimaantruckingheader/combo', [PenerimaanTruckingHeaderController::class, 'combo']);
     Route::get('penerimaantruckingheader/grid', [PenerimaanTruckingHeaderController::class, 'grid']);
     Route::get('penerimaantruckingheader/field_length', [PenerimaanTruckingHeaderController::class, 'fieldLength']);
-    Route::resource('penerimaantruckingheader', PenerimaanTruckingHeaderController::class)->whereNumber('penerimaantruckingheader');
     Route::resource('penerimaantruckingdetail', PenerimaanTruckingDetailController::class)->whereNumber('penerimaantruckingdetail');
 
     Route::get('pengeluarantruckingheader/getinvoice', [PengeluaranTruckingHeaderController::class, 'getInvoice']);
     Route::get('pengeluarantruckingheader/{id}/geteditinvoice', [PengeluaranTruckingHeaderController::class, 'getEditInvoice'])->whereNumber('id');
     Route::get('pengeluarantruckingheader/{id}/printreport', [PengeluaranTruckingHeaderController::class, 'printReport'])->whereNumber('id');
     Route::post('pengeluarantruckingheader/{id}/cekValidasiAksi', [PengeluaranTruckingHeaderController::class, 'cekValidasiAksi'])->name('pengeluarantruckingheader.cekValidasiAksi')->whereNumber('id');
+    Route::post('pengeluarantruckingheader/addrow', [PengeluaranTruckingDetailController::class, 'addrow']);
     Route::post('pengeluarantruckingheader/{id}/cekvalidasi', [PengeluaranTruckingHeaderController::class, 'cekvalidasi'])->name('pengeluarantruckingheader.cekvalidasi')->whereNumber('id');
     Route::get('pengeluarantruckingheader/getdeposito', [PengeluaranTruckingHeaderController::class, 'getdeposito'])->name('pengeluarantruckingheader.getdeposito');
     Route::get('pengeluarantruckingheader/{id}/{aksi}/gettarikdeposito', [PengeluaranTruckingHeaderController::class, 'getTarikDeposito'])->name('pengeluarantruckingheader.gettarikdeposito')->whereNumber('id');
+    Route::get('pengeluarantruckingheader/getbiayalapangan', [PengeluaranTruckingHeaderController::class, 'getbiayalapangan'])->name('pengeluarantruckingheader.getbiayalapangan');
     Route::get('pengeluarantruckingheader/getpelunasan', [PengeluaranTruckingHeaderController::class, 'getpelunasan'])->name('pengeluarantruckingheader.getpelunasan');
     Route::get('pengeluarantruckingheader/{id}/{aksi}/geteditpelunasan', [PengeluaranTruckingHeaderController::class, 'getEditPelunasan'])->name('pengeluarantruckingheader.geteditpelunasan')->whereNumber('id');
     Route::get('pengeluarantruckingheader/no_bukti', [PengeluaranTruckingHeaderController::class, 'getNoBukti']);
@@ -839,22 +873,22 @@ route::middleware(['auth:api', 'authorized'])->group(function () {
     Route::get('pengeluarantruckingheader/field_length', [PengeluaranTruckingHeaderController::class, 'fieldLength']);
     Route::get('pengeluarantruckingheader/{id}/export', [PengeluaranTruckingHeaderController::class, 'export'])->name('pengeluarantruckingheader.export')->whereNumber('id');
     Route::resource('pengeluarantruckingheader', PengeluaranTruckingHeaderController::class)->whereNumber('pengeluarantruckingheader');
-    Route::resource('pengeluarantruckingdetail', PengeluaranTruckingDetailController::class)->whereNumber('pengeluarantruckingdetail');
+
     
-    Route::get('bukapenerimaanstok/{id}/cektanggal', [BukaPenerimaanStokController::class, 'isTanggalAvaillable']);
-    Route::post('bukapenerimaanstok/{id}/updatetanggalbatas', [BukaPenerimaanStokController::class,'updateTanggalBatas']);
+    Route::post('bukapenerimaanstok/{id}/updatetanggalbatas', [BukaPenerimaanStokController::class, 'updateTanggalBatas']);
     Route::apiResource('bukapenerimaanstok', BukaPenerimaanStokController::class)->whereNumber('bukapenerimaanstok');
 
-    Route::get('bukapengeluaranstok/{id}/cektanggal', [BukaPengeluaranStokController::class, 'isTanggalAvaillable']);
-    Route::post('bukapengeluaranstok/{id}/updatetanggalbatas', [BukaPengeluaranStokController::class,'updateTanggalBatas']);
+    
+    Route::post('bukapengeluaranstok/{id}/updatetanggalbatas', [BukaPengeluaranStokController::class, 'updateTanggalBatas']);
     Route::apiResource('bukapengeluaranstok', BukaPengeluaranStokController::class)->whereNumber('bukapengeluaranstok');
 
     Route::get('penerimaanstok/field_length', [PenerimaanStokController::class, 'fieldLength']);
     Route::get('penerimaanstok/export', [PenerimaanStokController::class, 'export']);
     Route::get('penerimaanstok/default', [PenerimaanStokController::class, 'default']);
     Route::post('penerimaanstok/{id}/cekValidasi', [PenerimaanStokController::class, 'cekValidasi'])->name('penerimaanstok.cekValidasi')->whereNumber('id');
-    Route::apiResource('penerimaanstok', PenerimaanStokController::class)->whereNumber('penerimaanstok');
+    
 
+    Route::post('penerimaanstokheader/addrow', [PenerimaanStokDetailController::class, 'addrow']);
     Route::get('penerimaanstokheader/field_length', [PenerimaanStokHeaderController::class, 'fieldLength']);
     Route::get('penerimaanstokheader/{id}/printreport', [PenerimaanStokHeaderController::class, 'printReport'])->whereNumber('id');
     Route::post('penerimaanstokheader/{id}/cekvalidasi', [PenerimaanStokHeaderController::class, 'cekValidasi'])->name('penerimaanstokheader.cekValidasi')->whereNumber('id');
@@ -869,21 +903,18 @@ route::middleware(['auth:api', 'authorized'])->group(function () {
     Route::get('pengeluaranstok/export', [PengeluaranStokController::class, 'export']);
     Route::get('pengeluaranstok/default', [PengeluaranStokController::class, 'default']);
     Route::post('pengeluaranstok/{id}/cekValidasi', [PengeluaranStokController::class, 'cekValidasi'])->name('pengeluaranstok.cekValidasi')->whereNumber('id');
-    Route::apiResource('pengeluaranstok', PengeluaranStokController::class)->whereNumber('pengeluaranstok');
+    
 
     Route::get('pengeluaranstokheader/{id}/printreport', [PengeluaranStokHeaderController::class, 'printReport'])->whereNumber('id');
     Route::post('pengeluaranstokheader/{id}/cekvalidasi', [PengeluaranStokHeaderController::class, 'cekValidasi'])->name('pengeluaranstokheader.cekValidasi')->whereNumber('id');
     Route::post('pengeluaranstokheader/{id}/approvaledit', [PengeluaranStokHeaderController::class, 'approvalEdit']);
-    Route::apiResource('pengeluaranstokheader', PengeluaranStokHeaderController::class)->whereNumber('pengeluaranstokheader');
-    Route::apiResource('pengeluaranstokdetail', PengeluaranStokDetailController::class)->whereNumber('pengeluaranstokdetail');
-    Route::get('pengeluaranstokdetail/hutangbayar', [PengeluaranStokDetailController::class, 'hutangbayar']);
-    Route::get('pengeluaranstokdetail/pengeluaran', [PengeluaranStokDetailController::class, 'pengeluaran']);
-    Route::get('pengeluaranstokdetail/jurnal', [PengeluaranStokDetailController::class, 'jurnal']);
+    Route::post('pengeluaranstokheader/addrow', [PengeluaranStokDetailController::class, 'addrow']);
 
     Route::get('reminderservice/index', [ReminderServiceController::class, 'index']);
     Route::get('reminderservice', [ReminderServiceController::class, 'index']);
 
     Route::get('pengeluaranstok/field_length', [PengeluaranStokController::class, 'fieldLength']);
+    Route::post('invoiceextraheader/addrow', [InvoiceExtraDetailController::class, 'addrow']);
     Route::post('invoiceextraheader/{id}/approval', [InvoiceExtraHeaderController::class, 'approval'])->whereNumber('id');
     Route::get('invoiceextraheader/{id}/printreport', [InvoiceExtraHeaderController::class, 'printReport'])->whereNumber('id');
     Route::post('invoiceextraheader/approval', [InvoiceExtraHeaderController::class, 'approval']);
@@ -902,6 +933,7 @@ route::middleware(['auth:api', 'authorized'])->group(function () {
     Route::resource('invoicechargegandengandetail', InvoiceChargeGandenganDetailController::class)->whereNumber('invoicechargegandengandetail');
 
     Route::get('piutangheader/{id}/printreport', [PiutangHeaderController::class, 'printReport'])->whereNumber('id');
+    Route::post('piutangheader/addrow', [PiutangDetailController::class, 'addrow']);
     Route::post('piutangheader/{id}/cekvalidasi', [PiutangHeaderController::class, 'cekvalidasi'])->name('piutangheader.cekvalidasi')->whereNumber('id');
     Route::get('piutangheader/no_bukti', [PiutangHeaderController::class, 'getNoBukti']);
     Route::get('piutangheader/grid', [PiutangHeaderController::class, 'grid']);
@@ -916,6 +948,7 @@ route::middleware(['auth:api', 'authorized'])->group(function () {
     Route::get('hutangheader/{id}/export', [HutangHeaderController::class, 'export'])->name('hutangheader.export')->whereNumber('id');
     Route::post('hutangheader/{id}/cekvalidasi', [HutangHeaderController::class, 'cekvalidasi'])->name('hutangheader.cekvalidasi')->whereNumber('id');
     Route::get('hutangheader/no_bukti', [HutangHeaderController::class, 'getNoBukti']);
+    Route::post('hutangheader/addrow', [HutangDetailController::class, 'addrow']);
     Route::post('hutangheader/approval', [HutangHeaderController::class, 'approval']);
     Route::get('hutangheader/combo', [HutangHeaderController::class, 'combo']);
     Route::get('hutangheader/grid', [HutangHeaderController::class, 'grid']);
@@ -943,6 +976,7 @@ route::middleware(['auth:api', 'authorized'])->group(function () {
     Route::resource('pelunasanpiutangdetail', PelunasanPiutangDetailController::class)->whereNumber('pelunasanpiutangdetail');
 
     Route::get('hutangbayarheader/{id}/printreport', [HutangBayarHeaderController::class, 'printReport'])->whereNumber('id');
+    Route::post('hutangbayarheader/{id}/cekValidasiAksi', [HutangBayarHeaderController::class, 'cekValidasiAksi'])->name('hutangbayarheader.cekValidasiAksi')->whereNumber('id');
     Route::post('hutangbayarheader/{id}/cekvalidasi', [HutangBayarHeaderController::class, 'cekvalidasi'])->name('hutangbayarheader.cekvalidasi')->whereNumber('id');
     Route::get('hutangbayarheader/no_bukti', [HutangBayarHeaderController::class, 'getNoBukti']);
     Route::get('hutangbayarheader/field_length', [HutangBayarHeaderController::class, 'fieldLength']);
@@ -964,6 +998,7 @@ route::middleware(['auth:api', 'authorized'])->group(function () {
     Route::get('serviceinheader/field_length', [ServiceInHeaderController::class, 'fieldLength']);
     Route::get('serviceinheader/{id}/printreport', [ServiceInHeaderController::class, 'printReport'])->whereNumber('id');
     Route::get('serviceinheader/{id}/export', [ServiceInHeaderController::class, 'export'])->name('serviceinheader.export')->whereNumber('id');
+    Route::post('serviceinheader/addrow', [ServiceInDetailController::class, 'addrow']);
     Route::post('serviceinheader/{id}/cekvalidasi', [ServiceInHeaderController::class, 'cekvalidasi'])->name('serviceinheader.cekvalidasi')->whereNumber('id');
     Route::resource('serviceinheader', ServiceInHeaderController::class)->parameter('serviceinheader', 'serviceInHeader')->whereNumber('serviceinheader');
     Route::resource('serviceindetail', ServiceInDetailController::class)->whereNumber('serviceindetail');
@@ -973,10 +1008,12 @@ route::middleware(['auth:api', 'authorized'])->group(function () {
     Route::get('serviceoutheader/field_length', [ServiceOutHeaderController::class, 'fieldLength']);
     Route::get('serviceoutheader/{id}/printreport', [ServiceOutHeaderController::class, 'printReport'])->whereNumber('id');
     Route::get('serviceoutheader/{id}/export', [ServiceOutHeaderController::class, 'export'])->name('serviceoutheader.export')->whereNumber('id');
+    Route::post('serviceoutheader/addrow', [ServiceOutDetailController::class, 'addrow']);
     Route::post('serviceoutheader/{id}/cekvalidasi', [ServiceOutHeaderController::class, 'cekvalidasi'])->name('serviceoutheader.cekvalidasi')->whereNumber('id');
     Route::resource('serviceoutheader', ServiceOutHeaderController::class)->whereNumber('serviceoutheader');
     Route::resource('serviceoutdetail', ServiceOutDetailController::class)->whereNumber('serviceoutdetail');
 
+    Route::post('kasgantungheader/addrow', [KasGantungDetailController::class, 'addrow']);
     Route::post('kasgantungheader/{id}/cekValidasiAksi', [KasGantungHeaderController::class, 'cekValidasiAksi'])->name('kasgantungheader.cekValidasiAksi')->whereNumber('id');
     Route::get('kasgantungheader/{id}/printreport', [KasGantungHeaderController::class, 'printReport'])->whereNumber('id');
     Route::get('kasgantungheader/combo', [KasGantungHeaderController::class, 'combo']);
@@ -1016,6 +1053,9 @@ route::middleware(['auth:api', 'authorized'])->group(function () {
     Route::get('gajisupirdetail/potsemua', [GajiSupirDetailController::class, 'potSemua']);
     Route::resource('gajisupirdetail', GajiSupirDetailController::class)->whereNumber('gajisupirdetail');
 
+    Route::post('notakreditheader/addrow', [NotaKreditDetailController::class, 'addrow']);
+    Route::post('notakreditheader/{id}/cekValidasiAksi', [NotaKreditHeaderController::class, 'cekValidasiAksi'])->name('notakreditheader.cekValidasiAksi')->whereNumber('id');
+    Route::get('notakreditheader/default', [NotaKreditHeaderController::class, 'default']);
     Route::post('notakreditheader/{id}/cekvalidasi', [NotaKreditHeaderController::class, 'cekvalidasi'])->name('notakreditheader.cekvalidasi')->whereNumber('id');
     Route::get('notakreditheader/{id}/printreport', [NotaKreditHeaderController::class, 'printReport'])->whereNumber('id');
     Route::get('notakreditheader/field_length', [NotaKreditHeaderController::class, 'fieldLength']);
@@ -1027,10 +1067,13 @@ route::middleware(['auth:api', 'authorized'])->group(function () {
     Route::resource('notakreditheader', NotaKreditHeaderController::class)->whereNumber('notakreditheader');
     Route::resource('notakreditdetail', NotaKreditDetailController::class)->whereNumber('notakreditdetail');
 
+    Route::post('notadebetheader/addrow', [NotaDebetDetailController::class, 'addrow']);
     Route::post('notadebetheader/{id}/cekvalidasi', [NotaDebetHeaderController::class, 'cekvalidasi'])->name('notadebetheader.cekvalidasi')->whereNumber('id');
     Route::get('notadebetheader/{id}/printreport', [NotaDebetHeaderController::class, 'printReport'])->whereNumber('id');
     Route::get('notadebetheader/{id}/export', [NotaDebetHeaderController::class, 'export'])->name('notadebetheader.export')->whereNumber('id');
     Route::get('notadebetheader/field_length', [NotaDebetHeaderController::class, 'fieldLength']);
+    Route::post('notadebetheader/{id}/cekValidasiAksi', [NotaDebetHeaderController::class, 'cekValidasiAksi'])->name('notadebetheader.cekValidasiAksi')->whereNumber('id');
+    Route::get('notadebetheader/default', [NotaDebetHeaderController::class, 'default']);
     Route::get('notadebetheader/{id}/getpelunasan', [NotaDebetHeaderController::class, 'getPelunasan'])->whereNumber('id');
     Route::get('notadebetheader/{id}/getnotadebet', [NotaDebetHeaderController::class, 'getNotaDebet'])->whereNumber('id');
     Route::post('notadebetheader/approval', [NotaDebetHeaderController::class, 'approval']);
@@ -1043,7 +1086,7 @@ route::middleware(['auth:api', 'authorized'])->group(function () {
     Route::get('rekappengeluaranheader/{id}/printreport', [RekapPengeluaranHeaderController::class, 'printReport'])->whereNumber('id');
     Route::get('rekappengeluaranheader/{id}/export', [RekapPengeluaranHeaderController::class, 'export'])->name('rekappengeluaranheader.export')->whereNumber('id');
     Route::get('rekappengeluaranheader/{id}/getrekappengeluaran', [RekapPengeluaranHeaderController::class, 'getRekapPengeluaran'])->whereNumber('id');
-    Route::post('rekappengeluaranheader/{id}/approval', [RekapPengeluaranHeaderController::class, 'approval'])->whereNumber('id');
+    Route::post('rekappengeluaranheader/approval', [RekapPengeluaranHeaderController::class, 'approval'])->whereNumber('id');
     Route::post('rekappengeluaranheader/{id}/cekvalidasi', [RekapPengeluaranHeaderController::class, 'cekvalidasi'])->name('rekappengeluaranheader.cekvalidasi')->whereNumber('id');
     Route::get('gandengan/default', [GandenganController::class, 'default']);
     Route::resource('rekappengeluaranheader', RekapPengeluaranHeaderController::class)->whereNumber('rekappengeluaranheader');
@@ -1054,7 +1097,7 @@ route::middleware(['auth:api', 'authorized'])->group(function () {
     Route::get('rekappenerimaanheader/{id}/printreport', [RekapPenerimaanHeaderController::class, 'printReport'])->whereNumber('id');
     Route::get('rekappenerimaanheader/{id}/export', [RekapPenerimaanHeaderController::class, 'export'])->name('rekappenerimaanheader.export')->whereNumber('id');
     Route::get('rekappenerimaanheader/{id}/getrekappenerimaan', [RekapPenerimaanHeaderController::class, 'getRekapPenerimaan'])->whereNumber('id');
-    Route::post('rekappenerimaanheader/{id}/approval', [RekapPenerimaanHeaderController::class, 'approval'])->whereNumber('id');
+    Route::post('rekappenerimaanheader/approval', [RekapPenerimaanHeaderController::class, 'approval'])->whereNumber('id');
     Route::post('rekappenerimaanheader/{id}/cekvalidasi', [RekapPenerimaanHeaderController::class, 'cekvalidasi'])->name('rekappenerimaanheader.cekvalidasi')->whereNumber('id');
     Route::resource('rekappenerimaanheader', RekapPenerimaanHeaderController::class)->whereNumber('rekappenerimaanheader');
     Route::resource('rekappenerimaandetail', RekapPenerimaanDetailController::class)->whereNumber('rekappenerimaandetail');
@@ -1064,6 +1107,7 @@ route::middleware(['auth:api', 'authorized'])->group(function () {
     Route::get('pengembaliankasgantungheader/{id}/{aksi}/getpengembalian', [PengembalianKasGantungHeaderController::class, 'getPengembalian'])->whereNumber('id');
     Route::get('pengembaliankasgantungheader/default', [PengembalianKasGantungHeaderController::class, 'default']);
     Route::get('pengembaliankasgantungheader/{id}/printreport', [PengembalianKasGantungHeaderController::class, 'printReport'])->whereNumber('id');
+    Route::post('pengembaliankasgantungheader/addrow', [PengembalianKasGantungDetailController::class, 'addrow']);
     Route::post('pengembaliankasgantungheader/{id}/cekValidasiAksi', [PengembalianKasGantungHeaderController::class, 'cekValidasiAksi'])->name('pengembaliankasgantungheader.cekValidasiAksi')->whereNumber('id');
     Route::post('pengembaliankasgantungheader/{id}/cekvalidasi', [PengembalianKasGantungHeaderController::class, 'cekvalidasi'])->name('pengembaliankasgantungheader.cekvalidasi')->whereNumber('id');
     Route::get('pengembaliankasgantungheader/{id}/export', [PengembalianKasGantungHeaderController::class, 'export'])->name('pengembaliankasgantungheader.export')->whereNumber('id');
@@ -1075,6 +1119,7 @@ route::middleware(['auth:api', 'authorized'])->group(function () {
     Route::get('pengembaliankasbankheader/field_length', [PengembalianKasBankHeaderController::class, 'fieldLength']);
     Route::get('pengembaliankasbankheader/combo', [PengembalianKasBankHeaderController::class, 'combo']);
     Route::get('pengembaliankasbankheader/default', [PengembalianKasBankHeaderController::class, 'default']);
+    Route::post('pengembaliankasbankheader/addrow', [PengembalianKasBankDetailController::class, 'addrow']);
     Route::post('pengembaliankasbankheader/{id}/approval', [PengembalianKasBankHeaderController::class, 'approval'])->whereNumber('id');
     Route::post('pengembaliankasbankheader/{id}/cekvalidasi', [PengembalianKasBankHeaderController::class, 'cekvalidasi'])->whereNumber('id');
     Route::get('pengembaliankasbankheader/grid', [PengembalianKasBankHeaderController::class, 'grid']);
@@ -1110,28 +1155,29 @@ route::middleware(['auth:api', 'authorized'])->group(function () {
     Route::post('invoiceheader/{id}/cekvalidasiAksi', [InvoiceHeaderController::class, 'cekvalidasiAksi'])->name('invoiceheader.cekvalidasiAksi')->whereNumber('id');
     Route::post('invoiceheader/{id}/cekvalidasi', [InvoiceHeaderController::class, 'cekvalidasi'])->name('invoiceheader.cekvalidasi')->whereNumber('id');
     Route::resource('invoiceheader', InvoiceHeaderController::class)->whereNumber('invoiceheader');
-    Route::get('invoicedetail/piutang', [InvoiceDetailController::class, 'piutang']);
-    Route::resource('invoicedetail', InvoiceDetailController::class)->whereNumber('invoicedetail');
 
     Route::resource('tutupbuku', TutupBukuController::class)->whereNumber('tutupbuku');
+    Route::resource('approvalopname', ApprovalOpnameController::class)->whereNumber('approvalopname');
 
 
+    Route::get('suratpengantar/rekapcustomer', [SuratPengantarController::class, 'rekapcustomer']);
+    Route::get('absentrado/rekapabsentrado', [AbsenTradoController::class, 'rekapabsentrado']);
     Route::get('suratpengantar/combo', [SuratPengantarController::class, 'combo']);
-    Route::get('suratpengantar/field_length', [SuratPengantarController::class, 'fieldLength']);
     Route::post('suratpengantar/cekUpahSupir', [SuratPengantarController::class, 'cekUpahSupir']);
+    Route::post('suratpengantar/addrow', [SuratPengantarController::class, 'addrow']);
     Route::get('suratpengantar/export', [SuratPengantarController::class, 'export']);
     Route::post('suratpengantar/{id}/cekValidasi', [SuratPengantarController::class, 'cekValidasi'])->whereNumber('id');
     Route::get('suratpengantar/{id}/getTarifOmset', [SuratPengantarController::class, 'getTarifOmset'])->whereNumber('id');
     Route::get('suratpengantar/{id}/getpelabuhan', [SuratPengantarController::class, 'getpelabuhan'])->whereNumber('id');
     Route::post('suratpengantar/{id}/batalmuat', [SuratPengantarController::class, 'approvalBatalMuat'])->whereNumber('id');
     Route::post('suratpengantar/{id}/edittujuan', [SuratPengantarController::class, 'approvalEditTujuan'])->whereNumber('id');
+    Route::post('suratpengantar/titipanemkl', [SuratPengantarController::class, 'approvalTitipanEmkl']);
     Route::get('suratpengantar/{id}/getOrderanTrucking', [SuratPengantarController::class, 'getOrderanTrucking'])->whereNumber('id');
     Route::get('suratpengantar/getGaji/{dari}/{sampai}/{container}/{statuscontainer}', [SuratPengantarController::class, 'getGaji']);
-    Route::get('suratpengantar/default', [SuratPengantarController::class, 'default']);
-    Route::resource('suratpengantar', SuratPengantarController::class)->whereNumber('suratpengantar');
     Route::resource('suratpengantarbiayatambahan', SuratPengantarBiayaTambahanController::class)->whereNumber('suratpengantarbiayatambahan');
 
     Route::get('penerimaanheader/{id}/printreport', [PenerimaanHeaderController::class, 'printReport'])->whereNumber('id');
+    Route::post('penerimaanheader/addrow', [PenerimaanDetailController::class, 'addrow']);
     Route::post('penerimaanheader/{id}/approval', [PenerimaanHeaderController::class, 'approval'])->name('penerimaanheader.approval')->whereNumber('id');
     Route::post('penerimaanheader/{id}/cekvalidasi', [PenerimaanHeaderController::class, 'cekvalidasi'])->name('penerimaanheader.cekvalidasi')->whereNumber('id');
     Route::post('penerimaanheader/{id}/cekValidasiAksi', [PenerimaanHeaderController::class, 'cekValidasiAksi'])->name('penerimaanheader.cekValidasiAksi')->whereNumber('id');
@@ -1145,6 +1191,7 @@ route::middleware(['auth:api', 'authorized'])->group(function () {
     Route::get('penerimaanheader/default', [PenerimaanHeaderController::class, 'default']);
     Route::resource('penerimaanheader', PenerimaanHeaderController::class)->whereNumber('penerimaanheader');
     Route::get('penerimaandetail/getPenerimaan', [PenerimaanDetailController::class, 'getPenerimaan']);
+    Route::get('penerimaandetail/getDetail', [PenerimaanDetailController::class, 'getDetail']);
     Route::resource('penerimaandetail', PenerimaanDetailController::class)->whereNumber('penerimaandetail');
 
     // Route::get('running_number', [Controller::class, 'getRunningNumber'])->name('running_number');
@@ -1176,6 +1223,7 @@ route::middleware(['auth:api', 'authorized'])->group(function () {
 
     //pengeluaran
     Route::get('pengeluaranheader/{id}/printreport', [PengeluaranHeaderController::class, 'printReport'])->whereNumber('id');
+    Route::post('pengeluaranheader/addrow', [PengeluaranDetailController::class, 'addrow']);
     Route::post('pengeluaranheader/{id}/approval', [PengeluaranHeaderController::class, 'approval'])->name('pengeluaranheader.approval')->whereNumber('id');
     Route::get('pengeluaranheader/no_bukti', [PengeluaranHeaderController::class, 'getNoBukti']);
     Route::get('pengeluaranheader/field_length', [PengeluaranHeaderController::class, 'fieldLength']);
@@ -1190,6 +1238,7 @@ route::middleware(['auth:api', 'authorized'])->group(function () {
     Route::get('pengeluarandetail/getPengeluaran', [PengeluaranDetailController::class, 'getPengeluaran']);
     Route::resource('pengeluarandetail', PengeluaranDetailController::class)->whereNumber('pengeluarandetail');
 
+    Route::post('penerimaangiroheader/addrow', [PenerimaanGiroDetailController::class, 'addrow']);
     Route::post('penerimaangiroheader/{id}/approval', [PenerimaanGiroHeaderController::class, 'approval'])->name('penerimaangiroheader.approval')->whereNumber('id');
     Route::post('penerimaangiroheader/{id}/cekvalidasi', [PenerimaanGiroHeaderController::class, 'cekvalidasi'])->name('penerimaangiroheader.cekvalidasi')->whereNumber('id');
     Route::post('penerimaangiroheader/{id}/cekValidasiAksi', [PenerimaanGiroHeaderController::class, 'cekValidasiAksi'])->name('penerimaangiroheader.cekValidasiAksi')->whereNumber('id');
@@ -1210,7 +1259,6 @@ route::middleware(['auth:api', 'authorized'])->group(function () {
     Route::get('harilibur/default', [HariLiburController::class, 'default']);
     Route::get('harilibur/export', [HariLiburController::class, 'export']);
     Route::get('harilibur/report', [HariLiburController::class, 'report']);
-    Route::resource('harilibur', HariLiburController::class)->whereNumber('harilibur');
 
     Route::get('jurnalumumpusatheader/grid', [JurnalUmumPusatHeaderController::class, 'grid']);
     Route::get('jurnalumumpusatheader/field_length', [JurnalUmumPusatHeaderController::class, 'fieldLength']);
@@ -1241,9 +1289,12 @@ route::middleware(['auth:api', 'authorized'])->group(function () {
     Route::post('pendapatansupirheader/{id}/cekvalidasi', [PendapatanSupirHeaderController::class, 'cekvalidasi'])->name('pendapatansupirheader.cekvalidasi')->whereNumber('id');
     Route::post('pendapatansupirheader/{id}/cekValidasiAksi', [PendapatanSupirHeaderController::class, 'cekValidasiAksi'])->name('pendapatansupirheader.cekValidasiAksi')->whereNumber('id');
     Route::post('pendapatansupirheader/approval', [PendapatanSupirHeaderController::class, 'approval']);
+    Route::get('pendapatansupirheader/getDataDeposito', [PendapatanSupirHeaderController::class, 'getDataDeposito']);
+    Route::get('pendapatansupirheader/getPinjaman', [PendapatanSupirHeaderController::class, 'getPinjaman']);
     Route::get('pendapatansupirheader/gettrip', [PendapatanSupirHeaderController::class, 'gettrip']);
     Route::get('pendapatansupirheader/default', [PendapatanSupirHeaderController::class, 'default']);
     Route::resource('pendapatansupirheader', PendapatanSupirHeaderController::class)->parameters(['pendapatansupirheader' => 'pendapatanSupirHeader'])->whereNumber('pendapatanSupirHeader');
+    Route::get('pendapatansupirdetail/jurnal', [PendapatanSupirDetailController::class, 'jurnal']);
     Route::resource('pendapatansupirdetail', PendapatanSupirDetailController::class)->whereNumber('pendapatansupirdetail');
 
     Route::get('approvalpendapatansupir/default', [ApprovalPendapatanSupirController::class, 'default']);
@@ -1273,6 +1324,7 @@ route::middleware(['auth:api', 'authorized'])->group(function () {
     Route::get('laporanbukubesar/export', [LaporanBukuBesarController::class, 'export'])->name('laporanbukubesar.export');
     Route::resource('laporanbukubesar', LaporanBukuBesarController::class)->whereNumber('laporanbukubesar');
 
+    Route::post('prosesuangjalansupirheader/addrowtransfer', [ProsesUangJalanSupirDetailController::class, 'addrowtransfer']);
     Route::post('prosesuangjalansupirheader/{id}/approval', [ProsesUangJalanSupirHeaderController::class, 'approval'])->name('prosesuangjalansupirheader.approval')->whereNumber('id');
     Route::post('prosesuangjalansupirheader/{id}/cekvalidasi', [ProsesUangJalanSupirHeaderController::class, 'cekvalidasi'])->name('prosesuangjalansupirheader.cekvalidasi')->whereNumber('id');
     Route::get('prosesuangjalansupirheader/{id}/printreport', [ProsesUangJalanSupirHeaderController::class, 'printReport'])->whereNumber('id');
@@ -1358,6 +1410,18 @@ route::middleware(['auth:api', 'authorized'])->group(function () {
     Route::get('laporanlabarugi/export', [LaporanLabaRugiController::class, 'export'])->name('laporanlabarugi.export');
     Route::resource('laporanlabarugi', LaporanLabaRugiController::class)->whereNumber('laporanlabarugi');
 
+    Route::get('laporanpemakaianstok/report', [LaporanPemakaianStokController::class, 'report'])->name('laporanpemakaianstok.report');
+    Route::get('laporanpemakaianstok/export', [LaporanPemakaianStokController::class, 'export'])->name('laporanpemakaianstok.export');
+    Route::resource('laporanpemakaianstok', LaporanPemakaianStokController::class)->whereNumber('laporanpemakaianstok');
+
+    Route::get('laporanpembelianbarang/report', [LaporanPembelianBarangController::class, 'report'])->name('laporanpembelianbarang.report');
+    Route::get('laporanpembelianbarang/export', [LaporanPembelianBarangController::class, 'export'])->name('laporanpembelianbarang.export');
+    Route::resource('laporanpembelianbarang', LaporanPembelianBarangController::class)->whereNumber('laporanpembelianbarang');
+
+    Route::get('laporanstok/report', [LaporanStokController::class, 'report'])->name('laporanstok.report');
+    Route::get('laporanstok/export', [LaporanStokController::class, 'export'])->name('laporanstok.export');
+    Route::resource('laporanstok', LaporanStokController::class)->whereNumber('laporanstok');
+
     Route::get('laporanneraca/report', [LaporanNeracaController::class, 'report'])->name('laporanneraca.report');
     Route::get('laporanneraca/export', [LaporanNeracaController::class, 'export'])->name('laporanneraca.export');
     Route::resource('laporanneraca', LaporanNeracaController::class)->whereNumber('laporanneraca');
@@ -1374,6 +1438,14 @@ route::middleware(['auth:api', 'authorized'])->group(function () {
     Route::get('laporantransaksiharian/report', [LaporanTransaksiHarianController::class, 'report'])->name('laporantransaksiharian.report');
     Route::get('laporantransaksiharian/export', [LaporanTransaksiHarianController::class, 'export'])->name('laporantransaksiharian.export');
     Route::resource('laporantransaksiharian', LaporanTransaksiHarianController::class)->whereNumber('laporantransaksiharian');
+
+    Route::get('laporantitipanemkl/report', [LaporanTitipanEmklController::class, 'report'])->name('laporantitipanemkl.report');
+    Route::get('laporantitipanemkl/export', [LaporanTitipanEmklController::class, 'export'])->name('laporantitipanemkl.export');
+    Route::resource('laporantitipanemkl', LaporanTitipanEmklController::class)->whereNumber('laporantitipanemkl');
+
+    Route::get('laporanrekaptitipanemkl/report', [LaporanRekapTitipanEmklController::class, 'report'])->name('laporanrekaptitipanemkl.report');
+    Route::get('laporanrekaptitipanemkl/export', [LaporanRekapTitipanEmklController::class, 'export'])->name('laporanrekaptitipanemkl.export');
+    Route::resource('laporanrekaptitipanemkl', LaporanRekapTitipanEmklController::class)->whereNumber('laporanrekaptitipanemkl');
 
     Route::resource('laporanestimasikasgantung', LaporanEstimasiKasGantungController::class)->whereNumber('laporanestimasikasgantung');
     Route::get('laporantriptrado/report', [LaporanTripTradoController::class, 'report'])->name('laporantriptrado.report');
@@ -1432,7 +1504,7 @@ route::middleware(['auth:api', 'authorized'])->group(function () {
 
 
     Route::get('laporansaldoinventory/export', [LaporanSaldoInventoryController::class, 'export'])->name('laporansaldoinventory.export');
-    Route::get('laporansaldoinventory/report', [LaporanSaldoInventoryController::class,'report'])->name('laporansaldoinventory.report');
+    Route::get('laporansaldoinventory/report', [LaporanSaldoInventoryController::class, 'report'])->name('laporansaldoinventory.report');
     Route::resource('laporansaldoinventory', LaporanSaldoInventoryController::class)->whereNumber('laporansaldoinventory');
 
     Route::get('exportlaporanstok/export', [ExportLaporanStokController::class, 'export'])->name('exportlaporanstok.export');
@@ -1473,6 +1545,8 @@ route::middleware(['auth:api', 'authorized'])->group(function () {
     Route::get('exportlaporankasharian/export', [ExportLaporanKasHarianController::class, 'export'])->name('exportlaporankasharian.export');
     Route::resource('exportlaporankasharian', ExportLaporanKasHarianController::class)->whereNumber('exportlaporankasharian');
 
+    Route::get('pindahbuku/{id}/printreport', [PindahBukuController::class, 'printReport'])->whereNumber('id');
+    Route::get('pindahbuku/{id}/export', [PindahBukuController::class, 'export'])->name('pindahbuku.export')->whereNumber('id');
     Route::get('pindahbuku/default', [PindahBukuController::class, 'default']);
     Route::resource('pindahbuku', PindahBukuController::class)->whereNumber('pindahbuku');
 
@@ -1484,12 +1558,10 @@ route::middleware(['auth:api', 'authorized'])->group(function () {
     Route::resource('karyawan', KaryawanController::class)->whereNumber('karyawan');
 
     Route::get('cabang/field_length', [CabangController::class, 'fieldLength']);
-    Route::get('cabang/combostatus', [CabangController::class, 'combostatus']);
     Route::get('cabang/default', [CabangController::class, 'default']);
     Route::get('cabang/report', [CabangController::class, 'report']);
     Route::get('cabang/export', [CabangController::class, 'export']);
     Route::get('cabang/getPosition2', [CabangController::class, 'getPosition2']);
-    Route::resource('cabang', CabangController::class)->whereNumber('cabang');
 
 
     Route::get('dataritasi/field_length', [DataRitasiController::class, 'fieldLength']);
@@ -1532,15 +1604,16 @@ route::middleware(['auth:api', 'authorized'])->group(function () {
 
     Route::get('ubahpassword/field_length', [UbahPasswordController::class, 'fieldLength']);
     Route::resource('ubahpassword', UbahPasswordController::class)->whereNumber('ubahpassword');
-    
+
     Route::get('laporanpinjamanperunittrado/report', [LaporanPinjamanPerUnitTradoController::class, 'report'])->name('laporanpinjamanperunittrado.report');
     Route::get('laporanpinjamanperunittrado/export', [LaporanPinjamanPerUnitTradoController::class, 'export'])->name('laporanpinjamanperunittrado.export');
     Route::resource('laporanpinjamanperunittrado', LaporanPinjamanPerUnitTradoController::class)->whereNumber('laporanpinjamanperunittrado');
-    
+
     Route::resource('stokpusat', StokPusatController::class)->whereNumber('stokpusat');
 
     Route::get('hutangextraheader/{id}/printreport', [HutangExtraHeaderController::class, 'printReport'])->whereNumber('id');
     Route::get('hutangextraheader/{id}/export', [HutangExtraHeaderController::class, 'export'])->name('hutangextraheader.export')->whereNumber('id');
+    Route::post('hutangextraheader/addrow', [HutangExtraDetailController::class, 'addrow']);
     Route::post('hutangextraheader/{id}/cekvalidasi', [HutangExtraHeaderController::class, 'cekvalidasi'])->name('hutangextraheader.cekvalidasi')->whereNumber('id');
     Route::post('hutangextraheader/{id}/cekValidasiAksi', [HutangExtraHeaderController::class, 'cekValidasiAksi'])->name('hutangextraheader.cekValidasiAksi')->whereNumber('id');
     Route::post('hutangextraheader/approval', [HutangExtraHeaderController::class, 'approval']);
@@ -1551,7 +1624,7 @@ route::middleware(['auth:api', 'authorized'])->group(function () {
     Route::resource('hutangextraheader', HutangExtraHeaderController::class)->whereNumber('hutangextraheader');
     Route::get('hutangextradetail/hutang', [HutangExtraDetailController::class, 'hutang']);
     Route::resource('hutangextradetail', HutangExtraDetailController::class)->whereNumber('hutangextradetail');
-    
+
     Route::get('logabsensi/report', [LogAbsensiController::class, 'report']);
     Route::get('logabsensi/export', [LogAbsensiController::class, 'export']);
     Route::resource('logabsensi', LogAbsensiController::class)->whereNumber('logabsensi');
@@ -1568,6 +1641,31 @@ route::middleware(['auth:api', 'authorized'])->group(function () {
     Route::resource('spkharian', SpkHarianController::class)->whereNumber('spkharian');
     Route::resource('spkhariandetail', SpkHarianDetailController::class)->whereNumber('spkhariandetail');
     Route::resource('statusgandengantruck', StatusGandenganTruckController::class)->whereNumber('statusgandengantruck');
+
+    Route::get('opnameheader/{id}/printreport', [OpnameHeaderController::class, 'printReport'])->whereNumber('id');
+    Route::get('opnameheader/{id}/export', [OpnameHeaderController::class, 'export'])->name('opnameheader.export')->whereNumber('id');
+    Route::get('opnameheader/getstok', [OpnameHeaderController::class, 'getStok']);
+    Route::get('opnameheader/{id}/getEdit', [OpnameHeaderController::class, 'getEdit'])->whereNumber('id');
+    Route::get('opnameheader/{id}/export', [OpnameHeaderController::class, 'export'])->name('opnameheader.export')->whereNumber('id');
+    Route::post('opnameheader/{id}/cekvalidasi', [OpnameHeaderController::class, 'cekvalidasi'])->name('opnameheader.cekvalidasi')->whereNumber('id');
+    Route::resource('opnameheader', OpnameHeaderController::class)->whereNumber('opnameheader');
+    Route::resource('opnamedetail', OpnameDetailController::class)->whereNumber('opnamedetail');
+
+    Route::get('pelunasanhutangheader/{id}/printreport', [PelunasanHutangHeaderController::class, 'printReport'])->whereNumber('id');
+    Route::post('pelunasanhutangheader/{id}/cekValidasiAksi', [PelunasanHutangHeaderController::class, 'cekValidasiAksi'])->name('pelunasanhutangheader.cekValidasiAksi')->whereNumber('id');
+    Route::post('pelunasanhutangheader/{id}/cekvalidasi', [PelunasanHutangHeaderController::class, 'cekvalidasi'])->name('pelunasanhutangheader.cekvalidasi')->whereNumber('id');
+    Route::get('pelunasanhutangheader/no_bukti', [PelunasanHutangHeaderController::class, 'getNoBukti']);
+    Route::get('pelunasanhutangheader/field_length', [PelunasanHutangHeaderController::class, 'fieldLength']);
+    Route::get('pelunasanhutangheader/combo', [PelunasanHutangHeaderController::class, 'combo']);
+    Route::get('pelunasanhutangheader/{id}/getHutang', [PelunasanHutangHeaderController::class, 'getHutang'])->name('pelunasanhutangheader.getHutang')->whereNumber('id');
+    Route::get('pelunasanhutangheader/comboapproval', [PelunasanHutangHeaderController::class, 'comboapproval']);
+    Route::post('pelunasanhutangheader/approval', [PelunasanHutangHeaderController::class, 'approval']);
+    Route::get('pelunasanhutangheader/{id}/export', [PelunasanHutangHeaderController::class, 'export'])->name('pelunasanhutangheader.export')->whereNumber('id');
+    Route::post('pelunasanhutangheader/{id}/cekapproval', [PelunasanHutangHeaderController::class, 'cekapproval'])->name('pelunasanhutangheader.cekapproval')->whereNumber('id');
+    Route::get('pelunasanhutangheader/{id}/{fieldid}/getPembayaran', [PelunasanHutangHeaderController::class, 'getPembayaran'])->whereNumber('id');
+    Route::get('pelunasanhutangheader/grid', [PelunasanHutangHeaderController::class, 'grid']);
+    Route::resource('pelunasanhutangheader', PelunasanHutangHeaderController::class)->whereNumber('pelunasanhutangheader');
+    Route::resource('pelunasanhutangdetail', PelunasanHutangDetailController::class)->whereNumber('pelunasanhutangdetail');
 });
 Route::get('suratpengantarapprovalinputtrip/updateapproval', [SuratPengantarApprovalInputTripController::class, 'updateApproval']);
 

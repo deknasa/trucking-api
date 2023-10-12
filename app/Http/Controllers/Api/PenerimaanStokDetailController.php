@@ -46,22 +46,22 @@ class PenerimaanStokDetailController extends Controller
         $hutangDetail = new HutangDetail();
 
         $query = HutangHeader::from(DB::raw("hutangheader with (readuncommitted)"))
-        ->select(
-            'id'
-        )
-        ->where('nobukti', request()->nobukti)->first();
+            ->select(
+                'id'
+            )
+            ->where('nobukti', request()->nobukti)->first();
 
         if (isset($query)) {
-            $hutang_id=$query->id;
+            $hutang_id = $query->id;
         } else {
-            $hutang_id=0;
+            $hutang_id = 0;
         }
 
         // dd($hutang_id);
         if ($hutang_id != 0) {
             if (request()->nobukti != 'false' && request()->nobukti != null) {
                 $fetch = HutangHeader::from(DB::raw("hutangheader with (readuncommitted)"))->where('nobukti', request()->nobukti)->first();
-                request()->hutang_id= $fetch->id;
+                request()->hutang_id = $fetch->id;
                 // dd('test');
                 return response()->json([
                     'data' => $hutangDetail->get(request()->hutang_id),
@@ -89,7 +89,7 @@ class PenerimaanStokDetailController extends Controller
                     'totalPages' => $hutangDetail->totalPages,
                     'totalNominal' => 0
                 ]
-            ]); 
+            ]);
         }
     }
 
@@ -223,19 +223,41 @@ class PenerimaanStokDetailController extends Controller
         }
     }
 
+    public function addrow(StorePenerimaanStokDetailRequest $request)
+    {
+        return true;
+    }
+
     public function persediaanDari($stokId, $persediaan, $persediaanId, $qty)
     {
-        $stokpersediaangudang = $this->checkTempat($stokId, $persediaan, $persediaanId); //stok persediaan 
-        if (!$stokpersediaangudang) {
+
+        //check kartu stok
+        $stok = db::table('kartustok')->from(db::raw("kartustok a with (readuncommitted)"))
+            ->select(
+                db::raw("sum(isnull(qtymasuk,0)-isnull(qtykeluar,0)) as qty")
+            )
+            ->where("stok_id", $stokId)->where("$persediaan", $persediaanId)->first()
+            ->qty ?? 0;
+
+        if ($stok == 0) {
             return false;
         }
-        $stokpersediaan = StokPersediaan::lockForUpdate()->find($stokpersediaangudang->id);
-        if ($qty > $stokpersediaan->qty) { //check qty
+        if ($qty > $stok) {
             return false;
         }
-        $result = $stokpersediaan->qty - $qty;
-        $stokpersediaan->update(['qty' => $result]);
-        return $stokpersediaan;
+
+        // $stokpersediaangudang = $this->checkTempat($stokId, $persediaan, $persediaanId); //stok persediaan 
+        // if (!$stokpersediaangudang) {
+        //     return false;
+        // }
+        // $stokpersediaan = StokPersediaan::lockForUpdate()->find($stokpersediaangudang->id);
+        // if ($qty > $stokpersediaan->qty) { //
+        //     return false;
+        // }
+        // $result = $stokpersediaan->qty - $qty;
+        // $stokpersediaan->update(['qty' => $result]);
+        // return $stokpersediaan;
+        return true;
     }
     public function persediaanKe($stokId, $persediaan, $persediaanId, $qty)
     {

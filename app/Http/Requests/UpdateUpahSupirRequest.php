@@ -13,6 +13,7 @@ use App\Rules\ExistZona;
 use App\Rules\SimpanKandangUpahSupir;
 use App\Rules\UniqueUpahSupirSampaiEdit;
 use App\Rules\ValidasiKotaUpahZona;
+use App\Rules\ValidasiPenyesuaianUpahSupir;
 use App\Rules\ValidasiZonaUpahZona;
 use Illuminate\Validation\Rule;
 
@@ -178,8 +179,9 @@ class UpdateUpahSupirRequest extends FormRequest
             'kotadari' => ['required_if:statusupahzona,=,' . $getBukanUpahZona->id, new ValidasiKotaUpahZona($getBukanUpahZona->id), ($check['kondisi']) ? Rule::in($dataUpahSupir->kotadari) : ''],
             'kotasampai' => ['required_if:statusupahzona,=,' . $getBukanUpahZona->id, new ValidasiKotaUpahZona($getBukanUpahZona->id), ($check['kondisi']) ? Rule::in($dataUpahSupir->kotasampai) : ''],
             'tarif' => ['required_if:statusupahzona,=,' . $getBukanUpahZona->id, new ValidasiKotaUpahZona($getBukanUpahZona->id), ($check['kondisi']) ? Rule::in($dataUpahSupir->tarif) : ''],
-            'penyesuaian' => [new UniqueUpahSupirSampaiEdit(), new ValidasiKotaUpahZona($getBukanUpahZona->id), ($check['kondisi']) ? Rule::in($dataUpahSupir->penyesuaian) : ''],
-            'jarak' => ['required', 'numeric', 'gt:0', 'max:' . (new ParameterController)->getparamid('BATAS KM UPAH SUPIR', 'BATAS KM UPAH SUPIR')->text],
+            'penyesuaian' => [new UniqueUpahSupirSampaiEdit(), new ValidasiPenyesuaianUpahSupir(), new ValidasiKotaUpahZona($getBukanUpahZona->id), ($check['kondisi']) ? Rule::in($dataUpahSupir->penyesuaian) : ''],
+            'jarak' => ['required', 'numeric', 'gt:0', 'max:' . (new ParameterController)->getparamid('BATAS KM UPAH SUPIR', 'BATAS KM UPAH SUPIR')->text],            
+            'jarakfullempty' => ['required', 'numeric', 'gt:0', 'max:' . (new ParameterController)->getparamid('BATAS KM UPAH SUPIR', 'BATAS KM UPAH SUPIR')->text],
             'statusaktif' => ['required', Rule::in($statusAktif)],
             'statussimpankandang' => [new SimpanKandangUpahSupir()],
             'statusupahzona' => ['required', Rule::in($statusUpahZona)],
@@ -210,6 +212,19 @@ class UpdateUpahSupirRequest extends FormRequest
             );
         }
 
+        if((request()->tarifmuatan_id != 0 || request()->tarifmuatan_id != '') && (request()->tarifbongkaran_id != 0 || request()->tarifbongkaran_id != '')){
+            unset($rules['tarif']);
+        }
+        $getListTampilan = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'UBAH TAMPILAN')->where('text', 'UPAHSUPIR')->first();
+        $getListTampilan = json_decode($getListTampilan->memo);
+        if ($getListTampilan->INPUT != '') {
+            $getListTampilan = (explode(",", $getListTampilan->INPUT));
+            foreach ($getListTampilan as $value) {
+                if (array_key_exists(strtolower($value), $rules) == true) {
+                    unset($rules[strtolower($value)]);
+                }
+            }
+        }
         return $rules;
     }
 

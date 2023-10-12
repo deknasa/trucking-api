@@ -28,6 +28,7 @@ class LaporanKasGantungController extends Controller
      */
     public function report(Request $request)
     {
+        $prosesneraca=0;
         $periode = date('Y-m-d', strtotime($request->periode)) ;
         
         $laporankasgantung = new LaporanKasGantung();
@@ -44,7 +45,7 @@ class LaporanKasGantungController extends Controller
         //     ]
         // ];
         return response([
-            'data' => $laporankasgantung->getReport($periode)
+            'data' => $laporankasgantung->getReport($periode, $prosesneraca)
             // 'data' => $report
         ]);
     }
@@ -53,6 +54,7 @@ class LaporanKasGantungController extends Controller
      * @ClassName
      */
     public function export(Request $request){
+        $prosesneraca=0;
         $periode = date('Y-m-d', strtotime($request->periode)) ;
         $laporankasgantung = new LaporanKasGantung();
         //   $export = LaporanKasGantung::getExport($sampai, $jenis);
@@ -82,7 +84,8 @@ class LaporanKasGantungController extends Controller
         //         "saldo" => "151511"
         //     ]
         // ];
-        $laporan_kas_gantung = $laporankasgantung->getExport($periode);
+        $prosesneraca=0;
+        $laporan_kas_gantung = $laporankasgantung->getReport($periode, $prosesneraca);
         foreach($laporan_kas_gantung as $item){
             $item->tanggal = date('d-m-Y', strtotime($item->tanggal));
         }

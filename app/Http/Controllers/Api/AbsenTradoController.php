@@ -13,6 +13,8 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Database\QueryException;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Support\Facades\Validator;
+
 
 class AbsenTradoController extends Controller
 {
@@ -92,7 +94,7 @@ class AbsenTradoController extends Controller
             ];
             $absenTrado = (new AbsenTrado())->processStore($data);
             $absenTrado->position = $this->getPosition($absenTrado, $absenTrado->getTable())->position;
-            if ($request->limit==0) {
+            if ($request->limit == 0) {
                 $absenTrado->page = ceil($absenTrado->position / (10));
             } else {
                 $absenTrado->page = ceil($absenTrado->position / ($request->limit ?? 10));
@@ -136,7 +138,7 @@ class AbsenTradoController extends Controller
 
             $absentrado = (new AbsenTrado())->processUpdate($absentrado, $data);
             $absentrado->position = $this->getPosition($absentrado, $absentrado->getTable())->position;
-            if ($request->limit==0) {
+            if ($request->limit == 0) {
                 $absentrado->page = ceil($absentrado->position / (10));
             } else {
                 $absentrado->page = ceil($absentrado->position / ($request->limit ?? 10));
@@ -168,7 +170,7 @@ class AbsenTradoController extends Controller
             $selected = $this->getPosition($absenTrado, $absenTrado->getTable(), true);
             $absenTrado->position = $selected->position;
             $absenTrado->id = $selected->id;
-            if ($request->limit==0) {
+            if ($request->limit == 0) {
                 $absenTrado->page = ceil($absenTrado->position / (10));
             } else {
                 $absenTrado->page = ceil($absenTrado->position / ($request->limit ?? 10));
@@ -186,6 +188,31 @@ class AbsenTradoController extends Controller
             throw $th;
         }
     }
+
+    public function addrow(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'key.*' => 'required',
+            'value.*' => 'required',
+        ], [
+            'key.required' => ':attribute' . ' ' . app(ErrorController::class)->geterror('WI')->keterangan,
+            'value.required' => ':attribute' . ' ' . app(ErrorController::class)->geterror('WI')->keterangan,
+        ], [
+            'key' => 'judul',
+            'value' => 'keterangan',
+            'key.*' => 'judul',
+            'value.*' => 'keterangan',
+        ]);
+        if ($validator->fails()) {
+
+            return response()->json([
+                "message" => "The given data was invalid.",
+                "errors" => $validator->messages()
+            ], 422);
+        }
+        return true;
+    }
+
     public function detail()
     {
         $query = AbsenTrado::select('memo')->where('id', request()->id)->first();
@@ -240,7 +267,7 @@ class AbsenTradoController extends Controller
         if (request()->cekExport) {
 
             if (request()->offset == "-1" && request()->limit == '1') {
-                
+
                 return response([
                     'errors' => [
                         "export" => app(ErrorController::class)->geterror('DTA')->keterangan
@@ -296,5 +323,14 @@ class AbsenTradoController extends Controller
 
             $this->toExcel($judulLaporan, $absentrados, $columns);
         }
+    }
+
+    public function rekapabsentrado(Request $request)
+    {
+        $id = $request->absensi_id;
+        $absenTrado = new AbsenTrado();
+        return response([
+            'data' => $absenTrado->getRekapAbsenTrado($id),
+        ]);
     }
 }

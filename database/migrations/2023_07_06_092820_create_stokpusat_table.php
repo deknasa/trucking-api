@@ -18,6 +18,7 @@ class CreateStokpusatTable extends Migration
             $table->string('namastok',200)->nullable();
             $table->unsignedBigInteger('kelompok_id')->nullable();
             $table->longText('gambar')->nullable();
+            $table->longText('info')->nullable();
             $table->string('modifiedby',50)->nullable();
             $table->timestamps();
         });

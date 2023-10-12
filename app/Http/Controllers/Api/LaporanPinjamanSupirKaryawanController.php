@@ -31,15 +31,16 @@ class LaporanPinjamanSupirKaryawanController extends Controller
     {
         $sampai = $request->sampai;
         $laporanPinjSupir = new LaporanPinjamanSupirKaryawan();
+        $prosesneraca = 0;
 
-        $dataPinjSupir = $laporanPinjSupir->getReport($sampai);
+        $dataPinjSupir = $laporanPinjSupir->getReport($sampai, $prosesneraca);
 
         if (count($dataPinjSupir) == 0) {
             return response([
                 'data' => $dataPinjSupir,
                 'message' => 'tidak ada data'
             ], 500);
-        }else{
+        } else {
             return response([
                 'data' => $dataPinjSupir,
                 'message' => 'berhasil'
@@ -47,19 +48,19 @@ class LaporanPinjamanSupirKaryawanController extends Controller
         }
     }
 
-     /**
+    /**
      * @ClassName
      */
     public function export(Request $request)
     {
-        $sampai = $request->sampai;
 
-        $export = LaporanPinjamanSupirKaryawan::getReport($sampai);
+        $sampai = $request->sampai;
+        $prosesneraca = 0;
+
+        $export = LaporanPinjamanSupirKaryawan::getReport($sampai, $prosesneraca);
 
         return response([
             'data' => $export
         ]);
-
-       
     }
 }

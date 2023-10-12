@@ -60,6 +60,13 @@ class AbsensiSupirDetail extends MyModel
                 ->where('text', '=', 'TIDAK ADA TRIP')
                 ->first();
 
+                $statusabsensi = db::table("parameter")->from(db::raw("parameter"))->select('id')
+                ->where('grp', 'STATUS ABSENSI SUPIR')
+                ->where('subgrp', 'STATUS ABSENSI SUPIR')
+                ->where('text', 'ABSENSI SUPIR')
+                ->first()->id ?? 0;
+
+
             $param1 = $query->tglbukti;
             $querysp = DB::table('absensisupirdetail')->from(
                 DB::raw("absensisupirdetail as a with (readuncommitted)")
@@ -172,7 +179,9 @@ class AbsensiSupirDetail extends MyModel
                     ->leftjoin(DB::raw($tempspgroup . " as c"), function ($join) {
                         $join->on("$this->table.supir_id", "=", "c.supir_id");
                         $join->on("$this->table.trado_id", "=", "c.trado_id");
-                    });
+                    })
+                    ->where('trado.statusabsensisupir', $statusabsensi);
+
             } else {
                 $query->select(
                     "trado.kodetrado as trado",
@@ -199,7 +208,8 @@ class AbsensiSupirDetail extends MyModel
                     ->leftjoin(DB::raw($tempspgroup . " as c"), function ($join) {
                         $join->on("$this->table.supir_id", "=", "c.supir_id");
                         $join->on("$this->table.trado_id", "=", "c.trado_id");
-                    });
+                    })
+                    ->where('trado.statusabsensisupir', $statusabsensi);
 
                 $this->totalRows = $query->count();
                 $this->totalNominal = $query->sum('uangjalan');
@@ -220,6 +230,14 @@ class AbsensiSupirDetail extends MyModel
 
     public function getAll($id)
     {
+
+        $statusabsensi = db::table("parameter")->from(db::raw("parameter"))->select('id')
+        ->where('grp', 'STATUS ABSENSI SUPIR')
+        ->where('subgrp', 'STATUS ABSENSI SUPIR')
+        ->where('text', 'ABSENSI SUPIR')
+        ->first()->id ?? 0;
+
+
         $statusaktif = DB::table('parameter')->where('grp', 'STATUS AKTIF')->where('subgrp', 'STATUS AKTIF')->where('text', 'AKTIF')->first();
         $query = DB::table('trado')->from(DB::raw("trado with (readuncommitted)"))
             ->select(
@@ -240,6 +258,7 @@ class AbsensiSupirDetail extends MyModel
             })
             ->leftjoin(DB::raw("supir with (readuncommitted)"), 'absensisupirdetail.supir_id', 'supir.id')
             ->leftJoin(DB::raw("absentrado with (readuncommitted)"), 'absensisupirdetail.absen_id', 'absentrado.id')
+            ->where('trado.statusabsensisupir', $statusabsensi)
             ->orderBy('trado.kodetrado','asc');
 
 

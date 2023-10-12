@@ -10,8 +10,10 @@ use App\Rules\ExistSupirDPOPenerimaanTrucking;
 use App\Rules\SupirDPOPenerimaanTrucking;
 use App\Rules\ValidasiDetail;
 use App\Rules\DestroyPenerimaanTruckingHeader;
+use App\Rules\validasiJenisOrderanPengeluaranTrucking;
 use Illuminate\Validation\Rule;
 use Illuminate\Support\Facades\DB;
+use App\Rules\ValidasiPenerimaanTrucking;
 
 class UpdatePenerimaanTruckingHeaderRequest extends FormRequest
 {
@@ -140,7 +142,9 @@ class UpdatePenerimaanTruckingHeaderRequest extends FormRequest
                 'penerimaantrucking' => ['required',Rule::in($getDataPenerimaan->kodepenerimaan)],
                 'bank' => [$ruleBank, Rule::in($getDataPenerimaan->bank), 'required'],
                 'bank_id' => [Rule::in($getDataPenerimaan->bank_id), 'required', 'min:1','numeric'],
-                'supir' => ['required', Rule::in($getDataPenerimaan->supir),new ValidasiDetail($jumlahdetail)],
+                'supir' => ['required', Rule::in($getDataPenerimaan->supir),new ValidasiDetail($jumlahdetail),
+                // new ValidasiPenerimaanTrucking()
+            ],
                 'supirheader_id' => ['required', Rule::in($getDataPenerimaan->supirheader_id), 'numeric','min:1'],
                 // 'keterangancoa' => 'required'
             ];
@@ -161,6 +165,34 @@ class UpdatePenerimaanTruckingHeaderRequest extends FormRequest
                 'supir.*' => ['required', $supir],
                 'supir_id.*' => [new SupirDPOPenerimaanTrucking, new ExistSupirDPOPenerimaanTrucking()],
                 // 'keterangancoa' => 'required'
+            ];
+        }elseif($kodepenerimaan == 'PBT'){
+            
+            $jumlahdetail = $this->jumlahdetail ?? 0;
+            $rules = [
+                'tglbukti' => [
+                    'required',
+                    'date_format:d-m-Y',
+                    'before_or_equal:'.date('d-m-Y'),
+                    new DateTutupBuku(),
+                ],
+                'penerimaantrucking' => ['required',Rule::in($penerimaanName)],
+                'bank' => [$ruleBank, $bank, 'required'],
+                'bank_id' => [Rule::in($bankIds), 'required', 'min:1'],
+                'jenisorder' => ['required', new ValidasiDetail($jumlahdetail), new validasiJenisOrderanPengeluaranTrucking()],
+                'periodedari' => [
+                    'required',
+                    'date_format:d-m-Y',
+                    'before_or_equal:'.date('d-m-Y'),
+                    new DateTutupBuku(),
+                ],
+                'periodesampai' => [
+                    'required',
+                    'date_format:d-m-Y',
+                    'before_or_equal:'.date('d-m-Y'),
+                    new DateTutupBuku(),
+                ],
+                'keteranganheader' => 'required'
             ];
         }else{
             $rules = [

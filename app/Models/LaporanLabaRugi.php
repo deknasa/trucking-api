@@ -41,21 +41,21 @@ class LaporanLabaRugi extends MyModel
 
     public function getReport($bulan, $tahun)
     {
-        
+
 
         $getJudul = DB::table('parameter')
-        ->select('text')
-        ->where('grp', 'JUDULAN LAPORAN')
-        ->where('subgrp', 'JUDULAN LAPORAN')
-        ->first();
+            ->select('text')
+            ->where('grp', 'JUDULAN LAPORAN')
+            ->where('subgrp', 'JUDULAN LAPORAN')
+            ->first();
 
-          
+
         $cmpy = DB::table('parameter')
-        ->select('text')
-        ->where('grp', 'JUDULAN LAPORAN')
-        ->where('subgrp', 'JUDULAN LAPORAN')
-        ->value('text');
-    
+            ->select('text')
+            ->where('grp', 'JUDULAN LAPORAN')
+            ->where('subgrp', 'JUDULAN LAPORAN')
+            ->value('text');
+
         $Temprekappendapatan = '##Temprekappendapatan' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
         Schema::create($Temprekappendapatan, function ($table) {
             $table->string('coamain', 30);
@@ -64,170 +64,221 @@ class LaporanLabaRugi extends MyModel
 
         $select_Temprekappendapatan = DB::table('jurnalumumpusatdetail')->from(DB::raw("jurnalumumpusatdetail AS D WITH (READUNCOMMITTED)"))
 
-    ->select(
-        'D.coamain', 
-        DB::raw('SUM(-D.Nominal)')
+            ->select(
+                'D.coamain',
+                DB::raw('SUM(-D.Nominal)')
+            )
+
+            ->join(DB::raw("jurnalumumpusatheader as H with (readuncommitted)"), 'H.nobukti', '=', 'D.nobukti')
+            ->join('mainakunpusat as CD', 'CD.COA', '=', 'D.coamain')
+            ->whereRaw("MONTH(D.tglbukti) = " . $bulan . " AND YEAR(D.tglbukti) = " . $tahun)
+            ->groupBy('D.coamain');
+
+        // dd("Adas");
+        DB::table($Temprekappendapatan)->insertUsing([
+            'coamain',
+            'nominal',
+        ], $select_Temprekappendapatan);
+        // dd($select_Temprekappendapatan->get());
+
+        $TempLabaRugi = '##TempLabaRugi' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+        Schema::create($TempLabaRugi, function ($table) {
+            $table->bigIncrements('id');
+            $table->string('keteranganmain', 500);
+            $table->integer('ordermain');
+            $table->string('type', 1000);
+            $table->string('coa', 100);
+            $table->string('keterangancoa', 1000);
+            $table->double('nominal');
+            $table->double('nominalparent');
+            $table->string('cmpyname', 300);
+            $table->integer('statuslabarugi');
+            $table->integer('bln');
+            $table->integer('thn');
+            $table->integer('order');
+            $table->string('parent', 30);
+            $table->string('KeteranganParent', 1000);
+            $table->string('diperiksa', 1000);
+            $table->string('disetujui', 1000);
+        });
+
+        $TempLabaRugiParent = '##TempLabaRugiParent' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+        Schema::create($TempLabaRugiParent, function ($table) {
+            $table->string('KeteranganParent', 1000);
+            $table->double('nominal');
+        });
+
+        $resultsparent = DB::table('mainakunpusat AS C')
+        ->select(
+            DB::raw("ISNULL(G.keterangancoa, '') AS KeteranganParent"),
+            DB::raw('sum(ISNULL(E.nominal, 0)) AS Nominal'),
         )
-  
-    ->join(DB::raw("jurnalumumpusatheader as H with (readuncommitted)"), 'H.nobukti', '=', 'D.nobukti')
-    ->join('mainakunpusat as CD', 'CD.COA', '=', 'D.coamain')
-    ->whereRaw("MONTH(D.tglbukti) = " . $bulan . " AND YEAR(D.tglbukti) = ". $tahun)
-    ->groupBy('D.coamain');
+        ->join('mainTypeakuntansi AS AT', 'AT.id', '=', 'C.type_id')
+        ->leftJoin('mainakunpusat AS G', 'C.parent', '=', 'G.coa')
+        ->leftJoin($Temprekappendapatan . ' AS E', 'C.coa', '=', 'E.CoaMAin')
+        ->whereIn('AT.kodetype', ['Pendapatan'])
+        ->whereRaw("isnull(E.nominal,0)<>0")
+        ->whereRaw("ISNULL(G.keterangancoa, '')<>''")
+        ->groupBy('G.keterangancoa');
 
-    // dd("Adas");
-    DB::table($Temprekappendapatan)->insertUsing([
-        'coamain',
-        'nominal',
-    ], $select_Temprekappendapatan);
-    // dd($select_Temprekappendapatan->get());
-    
-    $TempLabaRugi = '##TempLabaRugi' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
-   Schema::create($TempLabaRugi, function ($table) {
-    $table->bigIncrements('id');
-    $table->string('keteranganmain', 500);
-    $table->integer('ordermain');
-    $table->string('type', 1000);
-    $table->string('coa', 100);
-    $table->string('keterangancoa', 1000);
-    $table->double('nominal');
-    $table->string('cmpyname', 300);
-    $table->integer('statuslabarugi');
-    $table->integer('bln');
-    $table->integer('thn');
-    $table->integer('order');
-    $table->string('parent', 30);
-    $table->string('KeteranganParent', 1000);
-   });
-
-
-//    $cmpy = 'PT. TRANSPORINDO AGUNG SEJAHTERA';
-
-
-
-
-$results = DB::table('mainakunpusat AS C')
-->select(
-    DB::raw("'PENDAPATAN :' AS keteranganmain"),
-    DB::raw('1 AS ordermain'),
-    'AT.kodeType AS type',
-    'C.COA AS coa',
-    'C.keterangancoa',
-    DB::raw('ISNULL(E.nominal, 0) AS Nominal'),
-    DB::raw("'$cmpy' AS CmpyName"), 
-    'C.statuslabarugi', 
-    DB::raw("'$bulan' AS bulan"), 
-    DB::raw("'$tahun' AS tahun"), 
-    'AT.Order',
-    'C.Parent',
-    DB::raw("ISNULL(G.keterangancoa, '') AS KeteranganParent"),
-
-
-)
-->join('mainTypeakuntansi AS AT', 'AT.id', '=', 'C.type_id')
-->leftJoin('mainakunpusat AS G', 'C.parent', '=', 'G.coa')
-->leftJoin($Temprekappendapatan . ' AS E', 'C.coa', '=', 'E.CoaMAin')
-->whereIn('AT.kodetype', ['Pendapatan'])
-->whereRaw("isnull(E.nominal,0)<>0")
-->orderBy('coa');
-
-// dd($results->toSql());
-
-
-DB::table($TempLabaRugi)->insertUsing([
-    'keteranganmain',
-    'ordermain',
-    'type',
-    'coa',
-    'keterangancoa',
-    'nominal',
-    'cmpyname',
-    'statuslabarugi',
-    'bln',
-    'thn',
-    'order',
-    'parent',
-    'KeteranganParent'
-], $results);
-// dd($results->get()); 
-
-$results2 = DB::table('mainakunpusat AS C')
-    ->select(
-        DB::raw("'BIAYA - BIAYA :' AS keteranganmain"),
-        DB::raw('2 AS OrderMain'),
-        'AT.kodeType AS type',
-        'C.COA AS coa',
-        'C.keterangancoa',
-        DB::raw('ISNULL(E.nominal, 0) AS Nominal'),
-        DB::raw("'$cmpy' AS CmpyName"), 
-        'C.statuslabarugi', 
-        DB::raw("'$bulan' AS bulan"), 
-        DB::raw("'$tahun' AS tahun"), 
-        'AT.Order',
-        'C.Parent',
-        DB::raw("ISNULL(G.keterangancoa, '') AS KeteranganParent"),
+        DB::table($TempLabaRugiParent)->insertUsing([
+            'KeteranganParent',
+            'nominal',
+        ], $resultsparent);     
         
-    )
-    ->join('mainTypeakuntansi AS AT', 'AT.id', '=', 'C.type_id')
-    ->leftJoin('mainakunpusat AS G', 'C.parent', '=', 'G.coa')
-    ->leftJoin($Temprekappendapatan . ' AS E', 'C.coa', '=', 'E.CoaMAin')
-    ->whereIn('AT.kodetype', ['Beban'])
-    ->whereRaw("isnull(E.nominal,0)<>0");
+        $results2parent = DB::table('mainakunpusat AS C')
+            ->select(
+                DB::raw("ISNULL(G.keterangancoa, '') AS KeteranganParent"),
+                DB::raw("sum(ISNULL(E.nominal, 0)) AS Nominal"),
+            )
+            ->join('mainTypeakuntansi AS AT', 'AT.id', '=', 'C.type_id')
+            ->leftJoin('mainakunpusat AS G', 'C.parent', '=', 'G.coa')
+            ->leftJoin($Temprekappendapatan . ' AS E', 'C.coa', '=', 'E.CoaMAin')
+            ->whereIn('AT.kodetype', ['Beban'])
+            ->whereRaw("isnull(E.nominal,0)<>0")
+            ->whereRaw("ISNULL(G.keterangancoa, '')<>''")    
+            ->groupBy('G.keterangancoa');
 
-    DB::table($TempLabaRugi)->insertUsing([
-        'keteranganmain',
-        'ordermain',
-        'type',
-        'coa',
-        'keterangancoa',
-        'nominal',
-        'cmpyname',
-        'statuslabarugi',
-        'bln',
-        'thn',
-        'order',
-        'parent',
-        'KeteranganParent'
-    ], $results2);
+            DB::table($TempLabaRugiParent)->insertUsing([
+                'KeteranganParent',
+                'nominal',
+            ], $results2parent);  
 
-    $data1 = $results->get();
-    $data2 = $results2->get();
-    
-    $mergedData = $data1->concat($data2);
-    // return [$data1, $data2];
-    return $mergedData;
-    
-
-    
+        //    $cmpy = 'PT. TRANSPORINDO AGUNG SEJAHTERA';
 
 
+        $disetujui = db::table('parameter')->from(db::raw('parameter with (readuncommitted)'))
+            ->select('text')
+            ->where('grp', 'DISETUJUI')
+            ->where('subgrp', 'DISETUJUI')->first()->text ?? '';
+
+        $diperiksa = db::table('parameter')->from(db::raw('parameter with (readuncommitted)'))
+            ->select('text')
+            ->where('grp', 'DIPERIKSA')
+            ->where('subgrp', 'DIPERIKSA')->first()->text ?? '';
 
 
+        $results = DB::table('mainakunpusat AS C')
+            ->select(
+                DB::raw("'PENDAPATAN :' AS keteranganmain"),
+                DB::raw('1 AS ordermain'),
+                'AT.kodeType AS type',
+                'C.COA AS coa',
+                'C.keterangancoa',
+                DB::raw('ISNULL(E.nominal, 0) AS Nominal'),
+                DB::raw('ISNULL(f.nominal, 0) AS Nominalparent'),
+                DB::raw("'$cmpy' AS CmpyName"),
+                'C.statuslabarugi',
+                DB::raw("'$bulan' AS bulan"),
+                DB::raw("'$tahun' AS tahun"),
+                'AT.Order',
+                'C.Parent',
+                DB::raw("ISNULL(G.keterangancoa, '') AS KeteranganParent"),
+                db::raw("'" . $disetujui . "' as disetujui"),
+                db::raw("'" . $diperiksa . "' as diperiksa"),
 
 
+            )
+            ->join('mainTypeakuntansi AS AT', 'AT.id', '=', 'C.type_id')
+            ->leftJoin('mainakunpusat AS G', 'C.parent', '=', 'G.coa')
+            ->leftJoin($Temprekappendapatan . ' AS E', 'C.coa', '=', 'E.CoaMAin')
+            ->leftJoin($TempLabaRugiParent . ' AS f', 'g.keterangancoa', '=', 'f.KeteranganParent')
+            ->whereIn('AT.kodetype', ['Pendapatan'])
+            ->whereRaw("isnull(E.nominal,0)<>0")
+            ->orderBy('coa');
+
+        // dd($results->toSql());
 
 
-  
+        DB::table($TempLabaRugi)->insertUsing([
+            'keteranganmain',
+            'ordermain',
+            'type',
+            'coa',
+            'keterangancoa',
+            'nominal',
+            'nominalparent',
+            'cmpyname',
+            'statuslabarugi',
+            'bln',
+            'thn',
+            'order',
+            'parent',
+            'KeteranganParent',
+            'diperiksa',
+            'disetujui',
+        ], $results);
+        // dd($results->get()); 
 
+        $results2 = DB::table('mainakunpusat AS C')
+            ->select(
+                DB::raw("'BIAYA - BIAYA :' AS keteranganmain"),
+                DB::raw('2 AS OrderMain'),
+                'AT.kodeType AS type',
+                'C.COA AS coa',
+                'C.keterangancoa',
+                DB::raw('ISNULL(E.nominal, 0) AS Nominal'),
+                DB::raw('ISNULL(f.nominal, 0) AS Nominalparent'),
+                DB::raw("'$cmpy' AS CmpyName"),
+                'C.statuslabarugi',
+                DB::raw("'$bulan' AS bulan"),
+                DB::raw("'$tahun' AS tahun"),
+                'AT.Order',
+                'C.Parent',
+                DB::raw("ISNULL(G.keterangancoa, '') AS KeteranganParent"),
+                db::raw("'" . $disetujui . "' as disetujui"),
+                db::raw("'" . $diperiksa . "' as diperiksa"),
 
+            )
+            ->join('mainTypeakuntansi AS AT', 'AT.id', '=', 'C.type_id')
+            ->leftJoin('mainakunpusat AS G', 'C.parent', '=', 'G.coa')
+            ->leftJoin($Temprekappendapatan . ' AS E', 'C.coa', '=', 'E.CoaMAin')
+            ->leftJoin($TempLabaRugiParent . ' AS f', 'g.keterangancoa', '=', 'f.KeteranganParent')
+            ->whereIn('AT.kodetype', ['Beban'])
+            ->whereRaw("isnull(E.nominal,0)<>0");
 
+        DB::table($TempLabaRugi)->insertUsing([
+            'keteranganmain',
+            'ordermain',
+            'type',
+            'coa',
+            'keterangancoa',
+            'nominal',
+            'nominalparent',
+            'cmpyname',
+            'statuslabarugi',
+            'bln',
+            'thn',
+            'order',
+            'parent',
+            'KeteranganParent',
+            'diperiksa',
+            'disetujui',
+        ], $results2);
 
+        $data1 = $results->get();
+        $data2 = $results2->get();
+
+        $mergedData = $data1->concat($data2);
+        // return [$data1, $data2];
+        return $mergedData;
     }
 
     public function getExport($bulan, $tahun)
     {
         $getJudul = DB::table('parameter')
-        ->select('text')
-        ->where('grp', 'JUDULAN LAPORAN')
-        ->where('subgrp', 'JUDULAN LAPORAN')
-        ->first();
+            ->select('text')
+            ->where('grp', 'JUDULAN LAPORAN')
+            ->where('subgrp', 'JUDULAN LAPORAN')
+            ->first();
 
-          
+
         $cmpy = DB::table('parameter')
-        ->select('text')
-        ->where('grp', 'JUDULAN LAPORAN')
-        ->where('subgrp', 'JUDULAN LAPORAN')
-        ->value('text');
-    
+            ->select('text')
+            ->where('grp', 'JUDULAN LAPORAN')
+            ->where('subgrp', 'JUDULAN LAPORAN')
+            ->value('text');
+
         $Temprekappendapatan = '##Temprekappendapatan' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
         Schema::create($Temprekappendapatan, function ($table) {
             $table->string('coamain', 30);
@@ -236,132 +287,154 @@ $results2 = DB::table('mainakunpusat AS C')
 
         $select_Temprekappendapatan = DB::table('jurnalumumpusatdetail')->from(DB::raw("jurnalumumpusatdetail AS D WITH (READUNCOMMITTED)"))
 
-    ->select(
-        'D.coamain', 
-        DB::raw('SUM(-D.Nominal)')
-        )
-  
-    ->join(DB::raw("jurnalumumpusatheader as H with (readuncommitted)"), 'H.nobukti', '=', 'D.nobukti')
-    ->join('mainakunpusat as CD', 'CD.COA', '=', 'D.coamain')
-    ->whereRaw('MONTH(D.tglbukti) = ? AND YEAR(D.tglbukti) = ?', [$bulan, $tahun])
-    ->groupBy('D.coamain');
-    // dd("Adas");
-    DB::table($Temprekappendapatan)->insertUsing([
-        'coamain',
-        'nominal',
-    ], $select_Temprekappendapatan);
-    // dd($select_Temprekappendapatan->get());
-    
-    $TempLabaRugi = '##TempLabaRugi' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
-   Schema::create($TempLabaRugi, function ($table) {
-    $table->bigIncrements('id');
-    $table->string('keteranganmain', 500);
-    $table->integer('ordermain');
-    $table->string('type', 1000);
-    $table->string('coa', 100);
-    $table->string('keterangancoa', 1000);
-    $table->double('nominal');
-    $table->string('cmpyname', 300);
-    $table->integer('statuslabarugi');
-    $table->integer('bln');
-    $table->integer('thn');
-    $table->integer('order');
-    $table->string('parent', 30);
-    $table->string('KeteranganParent', 1000);
-   });
+            ->select(
+                'D.coamain',
+                DB::raw('SUM(-D.Nominal)')
+            )
+
+            ->join(DB::raw("jurnalumumpusatheader as H with (readuncommitted)"), 'H.nobukti', '=', 'D.nobukti')
+            ->join('mainakunpusat as CD', 'CD.COA', '=', 'D.coamain')
+            ->whereRaw('MONTH(D.tglbukti) = ? AND YEAR(D.tglbukti) = ?', [$bulan, $tahun])
+            ->groupBy('D.coamain');
+        // dd("Adas");
+        DB::table($Temprekappendapatan)->insertUsing([
+            'coamain',
+            'nominal',
+        ], $select_Temprekappendapatan);
+        // dd($select_Temprekappendapatan->get());
+
+        $TempLabaRugi = '##TempLabaRugi' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+        Schema::create($TempLabaRugi, function ($table) {
+            $table->bigIncrements('id');
+            $table->string('keteranganmain', 500);
+            $table->integer('ordermain');
+            $table->string('type', 1000);
+            $table->string('coa', 100);
+            $table->string('keterangancoa', 1000);
+            $table->double('nominal');
+            $table->double('nominalparent');
+            $table->string('cmpyname', 300);
+            $table->integer('statuslabarugi');
+            $table->integer('bln');
+            $table->integer('thn');
+            $table->integer('order');
+            $table->string('parent', 30);
+            $table->string('KeteranganParent', 1000);
+            $table->string('diperiksa', 1000);
+            $table->string('disetujui', 1000);
+        });
+
+        $disetujui = db::table('parameter')->from(db::raw('parameter with (readuncommitted)'))
+            ->select('text')
+            ->where('grp', 'DISETUJUI')
+            ->where('subgrp', 'DISETUJUI')->first()->text ?? '';
+
+        $diperiksa = db::table('parameter')->from(db::raw('parameter with (readuncommitted)'))
+            ->select('text')
+            ->where('grp', 'DIPERIKSA')
+            ->where('subgrp', 'DIPERIKSA')->first()->text ?? '';
+
+        $cmpy = 'PT. TRANSPORINDO AGUNG SEJAHTERA';
+        $bulan = '02';
+        $tahun = '2023';
 
 
-   $cmpy = 'PT. TRANSPORINDO AGUNG SEJAHTERA';
-$bulan = '02';
-$tahun = '2023';
+        $results = DB::table('mainakunpusat AS C')
+            ->select(
+                DB::raw("'PENDAPATAN :' AS keteranganmain"),
+                DB::raw('1 AS ordermain'),
+                'AT.kodeType AS type',
+                'C.COA AS coa',
+                'C.keterangancoa',
+                DB::raw('ISNULL(E.nominal, 0) AS Nominal'),
+                DB::raw('ISNULL(f.nominal, 0) AS Nominalparent'),
+                DB::raw("'$cmpy' AS CmpyName"),
+                'C.statuslabarugi',
+                DB::raw("'$bulan' AS bulan"),
+                DB::raw("'$tahun' AS tahun"),
+                'AT.Order',
+                'C.Parent',
+                DB::raw("ISNULL(G.keterangancoa, '') AS KeteranganParent"),
+                
+                db::raw("'" . $disetujui . "' as disetujui"),
+                db::raw("'" . $diperiksa . "' as diperiksa"),
 
 
-$results = DB::table('mainakunpusat AS C')
-->select(
-    DB::raw("'PENDAPATAN :' AS keteranganmain"),
-    DB::raw('1 AS ordermain'),
-    'AT.kodeType AS type',
-    'C.COA AS coa',
-    'C.keterangancoa',
-    DB::raw('ISNULL(E.nominal, 0) AS Nominal'),
-    DB::raw("'$cmpy' AS CmpyName"), 
-    'C.statuslabarugi', 
-    DB::raw("'$bulan' AS bulan"), 
-    DB::raw("'$tahun' AS tahun"), 
-    'AT.Order',
-    'C.Parent',
-    DB::raw("ISNULL(G.keterangancoa, '') AS KeteranganParent"),
+            )
+            ->join('mainTypeakuntansi AS AT', 'AT.id', '=', 'C.type_id')
+            ->leftJoin('mainakunpusat AS G', 'C.parent', '=', 'G.coa')
+            ->leftJoin($Temprekappendapatan . ' AS E', 'C.coa', '=', 'E.CoaMAin')
+            ->whereIn('AT.kodetype', ['Pendapatan'])
+            ->orderBy('coa');
 
 
-)
-->join('mainTypeakuntansi AS AT', 'AT.id', '=', 'C.type_id')
-->leftJoin('mainakunpusat AS G', 'C.parent', '=', 'G.coa')
-->leftJoin($Temprekappendapatan . ' AS E', 'C.coa', '=', 'E.CoaMAin')
-->whereIn('AT.kodetype', ['Pendapatan'])
-->orderBy('coa');
+        DB::table($TempLabaRugi)->insertUsing([
+            'keteranganmain',
+            'ordermain',
+            'type',
+            'coa',
+            'keterangancoa',
+            'nominal',
+            'cmpyname',
+            'statuslabarugi',
+            'bln',
+            'thn',
+            'order',
+            'parent',
+            'KeteranganParent',
+            'diperiksa',
+            'disetujui',
+        ], $results);
+        // dd($results->get()); 
+
+        $results2 = DB::table('mainakunpusat AS C')
+            ->select(
+                DB::raw("'BIAYA - BIAYA :' AS keteranganmain"),
+                DB::raw('2 AS OrderMain'),
+                'AT.kodeType AS type',
+                'C.COA AS coa',
+                'C.keterangancoa',
+                DB::raw('ISNULL(E.nominal, 0) AS Nominal'),
+                DB::raw("'$cmpy' AS CmpyName"),
+                'C.statuslabarugi',
+                DB::raw("'$bulan' AS bulan"),
+                DB::raw("'$tahun' AS tahun"),
+                'AT.Order',
+                'C.Parent',
+                DB::raw("ISNULL(G.keterangancoa, '') AS KeteranganParent"),
+                db::raw("'" . $disetujui . "' as disetujui"),
+                db::raw("'" . $diperiksa . "' as diperiksa"),
+
+            )
+            ->join('mainTypeakuntansi AS AT', 'AT.id', '=', 'C.type_id')
+            ->leftJoin('mainakunpusat AS G', 'C.parent', '=', 'G.coa')
+            ->leftJoin($Temprekappendapatan . ' AS E', 'C.coa', '=', 'E.CoaMAin')
+            ->whereIn('AT.kodetype', ['Beban']);
+
+        DB::table($TempLabaRugi)->insertUsing([
+            'keteranganmain',
+            'ordermain',
+            'type',
+            'coa',
+            'keterangancoa',
+            'nominal',
+            'cmpyname',
+            'statuslabarugi',
+            'bln',
+            'thn',
+            'order',
+            'parent',
+            'KeteranganParent',
+            'diperiksa',
+            'disetujui',
+        ], $results2);
 
 
-DB::table($TempLabaRugi)->insertUsing([
-    'keteranganmain',
-    'ordermain',
-    'type',
-    'coa',
-    'keterangancoa',
-    'nominal',
-    'cmpyname',
-    'statuslabarugi',
-    'bln',
-    'thn',
-    'order',
-    'parent',
-    'KeteranganParent'
-], $results);
-// dd($results->get()); 
+        $data1 = $results->get();
+        $data2 = $results2->get();
 
-$results2 = DB::table('mainakunpusat AS C')
-    ->select(
-        DB::raw("'BIAYA - BIAYA :' AS keteranganmain"),
-        DB::raw('2 AS OrderMain'),
-        'AT.kodeType AS type',
-        'C.COA AS coa',
-        'C.keterangancoa',
-        DB::raw('ISNULL(E.nominal, 0) AS Nominal'),
-        DB::raw("'$cmpy' AS CmpyName"), 
-        'C.statuslabarugi', 
-        DB::raw("'$bulan' AS bulan"), 
-        DB::raw("'$tahun' AS tahun"), 
-        'AT.Order',
-        'C.Parent',
-        DB::raw("ISNULL(G.keterangancoa, '') AS KeteranganParent"),
-        
-    )
-    ->join('mainTypeakuntansi AS AT', 'AT.id', '=', 'C.type_id')
-    ->leftJoin('mainakunpusat AS G', 'C.parent', '=', 'G.coa')
-    ->leftJoin($Temprekappendapatan . ' AS E', 'C.coa', '=', 'E.CoaMAin')
-    ->whereIn('AT.kodetype', ['Beban']);
+        $mergedData = $data1->concat($data2);
 
-    DB::table($TempLabaRugi)->insertUsing([
-        'keteranganmain',
-        'ordermain',
-        'type',
-        'coa',
-        'keterangancoa',
-        'nominal',
-        'cmpyname',
-        'statuslabarugi',
-        'bln',
-        'thn',
-        'order',
-        'parent',
-        'KeteranganParent'
-    ], $results2);
-
-    
-    $data1 = $results->get();
-    $data2 = $results2->get();
-    
-    $mergedData = $data1->concat($data2);
-    
-    return $mergedData;
+        return $mergedData;
     }
 }

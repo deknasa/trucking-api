@@ -37,7 +37,9 @@ class CreatePengeluaranheaderTable extends Migration
             $table->string('transferkeac',100)->nullable();
             $table->string('transferkean',100)->nullable();
             $table->string('transferkebank',100)->nullable();
+            $table->string('penerimaan_nobukti',100)->nullable();
             $table->unsignedBigInteger('statusformat')->nullable();
+            $table->longText('info')->nullable();
             $table->string('modifiedby',50)->nullable();
             $table->timestamps();
 

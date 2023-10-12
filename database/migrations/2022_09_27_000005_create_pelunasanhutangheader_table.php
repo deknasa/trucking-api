@@ -2,6 +2,7 @@
 
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 
 class CreatePelunasanhutangheaderTable extends Migration
@@ -13,6 +14,7 @@ class CreatePelunasanhutangheaderTable extends Migration
      */
     public function up()
     {
+        Schema::dropIfExists('pelunasanhutangheader');
         Schema::create('pelunasanhutangheader', function (Blueprint $table) {
             $table->id();
             $table->string('nobukti', 50)->unique();
@@ -21,6 +23,7 @@ class CreatePelunasanhutangheaderTable extends Migration
             $table->unsignedBigInteger('bank_id')->nullable();
             $table->unsignedBigInteger('supplier_id')->nullable();
             $table->unsignedBigInteger('pelanggan_id')->nullable();
+            $table->integer('statusbayarhutang')->Length(11)->nullable();
             $table->string('pengeluaran_nobukti', 50)->nullable();
             $table->string('coa', 50)->nullable();
             $table->unsignedBigInteger('alatbayar_id')->nullable();
@@ -34,6 +37,7 @@ class CreatePelunasanhutangheaderTable extends Migration
             $table->string('userbukacetak', 50)->nullable();
             $table->date('tglbukacetak')->nullable();
             $table->integer('jumlahcetak')->Length(11)->nullable();
+            $table->longText('info')->nullable();
             $table->string('modifiedby', 50)->nullable();
             $table->timestamps();
 
@@ -44,6 +48,13 @@ class CreatePelunasanhutangheaderTable extends Migration
             $table->foreign('pengeluaran_nobukti', 'pelunasanhutangheader_pengeluaranheader_pengeluaran_nobukti_foreign')->references('nobukti')->on('pengeluaranheader');    
             $table->foreign('alatbayar_id', 'pelunasanhutangheader_alatbayar_alatbayar_id_foreign')->references('id')->on('alatbayar');                
         });
+        
+        DB::statement("ALTER TABLE pelunasanhutangheader NOCHECK CONSTRAINT pelunasanhutangheader_supplier_supplier_id_foreign");
+        DB::statement("ALTER TABLE pelunasanhutangheader NOCHECK CONSTRAINT pelunasanhutangheader_pelanggan_pelanggan_id_foreign");
+        DB::statement("ALTER TABLE pelunasanhutangheader NOCHECK CONSTRAINT pelunasanhutangheader_bank_bank_id_foreign");
+        DB::statement("ALTER TABLE pelunasanhutangheader NOCHECK CONSTRAINT pelunasanhutangheader_akunpusat_coa_foreign");
+        DB::statement("ALTER TABLE pelunasanhutangheader NOCHECK CONSTRAINT pelunasanhutangheader_pengeluaranheader_pengeluaran_nobukti_foreign");
+        DB::statement("ALTER TABLE pelunasanhutangheader NOCHECK CONSTRAINT pelunasanhutangheader_alatbayar_alatbayar_id_foreign");
     }
 
     /**

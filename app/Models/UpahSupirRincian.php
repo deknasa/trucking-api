@@ -67,6 +67,26 @@ class UpahSupirRincian extends MyModel
         $jenisorder_id = request()->jenisorder_id ?? 0;
         $statusUpahZona = request()->statusupahzona ?? 0;
 
+        $jenisorderanmuatan = DB::table('parameter')->from(db::raw("parameter a  with (readuncommitted)"))->select('a.text as id')
+            ->where('a.grp', 'JENIS ORDERAN MUATAN')
+            ->where('a.subgrp', 'JENIS ORDERAN MUATAN')
+            ->first()->id;
+
+        $jenisorderanbongkaran = DB::table('parameter')->from(db::raw("parameter a  with (readuncommitted)"))->select('a.text as id')
+            ->where('a.grp', 'JENIS ORDERAN BONGKARAN')
+            ->where('a.subgrp', 'JENIS ORDERAN BONGKARAN')
+            ->first()->id;
+
+        $jenisorderanimport = DB::table('parameter')->from(db::raw("parameter a  with (readuncommitted)"))->select('a.text as id')
+            ->where('a.grp', 'JENIS ORDERAN IMPORT')
+            ->where('a.subgrp', 'JENIS ORDERAN IMPORT')
+            ->first()->id;
+
+        $jenisorderanexport = DB::table('parameter')->from(db::raw("parameter a  with (readuncommitted)"))->select('a.text as id')
+            ->where('a.grp', 'JENIS ORDERAN EXPORT')
+            ->where('a.subgrp', 'JENIS ORDERAN EXPORT')
+            ->first()->id;
+
         $getJenisOrderMuatan = DB::table("jenisorder")->from(DB::raw("jenisorder with (readuncommitted)"))
             ->select('id')
             ->where("kodejenisorder", 'MUAT')
@@ -163,37 +183,9 @@ class UpahSupirRincian extends MyModel
 
 
             if (in_array($jenisorder_id, $dataMuatanEksport)) {
-                $queryEmpty = DB::table("statuscontainer")->from(DB::raw("statuscontainer with (readuncommitted)"))->where('kodestatuscontainer', 'EMPTY')->first();
+                $queryFull = DB::table("statuscontainer")->from(DB::raw("statuscontainer with (readuncommitted)"))->where('kodestatuscontainer', 'FULL')->first();
                 // jika empty
-                if ($statuscontainer_id == $queryEmpty->id) {
-                    $getKota = DB::table("upahsupir")->from(DB::raw("upahsupir with (readuncommitted)"))
-                        ->select(
-                            'upahsupir.id',
-                            'upahsupir.kotadari_id',
-                            'upahsupir.kotasampai_id',
-                            'kotadari.kodekota as kotadari',
-                            'kotasampai.kodekota as kotasampai',
-                            'upahsupir.zonadari_id',
-                            'upahsupir.zonasampai_id',
-                            'zonadari.zona as zonadari',
-                            'zonasampai.zona as zonasampai',
-                            'upahsupir.tarif_id',
-                            'tarif.tujuan as tarif',
-                            'upahsupir.penyesuaian',
-                            'upahsupir.jarak',
-                            'upahsupir.statusaktif',
-                            'upahsupir.tglmulaiberlaku',
-                            'upahsupir.modifiedby',
-                            'upahsupir.created_at',
-                            'upahsupir.updated_at'
-                        )
-                        ->leftJoin(DB::raw("kota as kotadari with (readuncommitted)"), 'upahsupir.kotadari_id', 'kotadari.id')
-                        ->leftJoin(DB::raw("kota as kotasampai with (readuncommitted)"), 'upahsupir.kotasampai_id', 'kotasampai.id')
-                        ->leftJoin(DB::raw("zona as zonadari with (readuncommitted)"), 'upahsupir.zonadari_id', 'zonadari.id')
-                        ->leftJoin(DB::raw("zona as zonasampai with (readuncommitted)"), 'upahsupir.zonasampai_id', 'zonasampai.id')
-                        ->leftJoin(DB::raw("tarif with (readuncommitted)"), 'upahsupir.tarif_id', 'tarif.id')
-                        ->where('upahsupir.statusupahzona', $statusUpahZona);
-                } else {
+                if ($statuscontainer_id == $queryFull->id) {
                     $getKota = DB::table("upahsupir")->from(DB::raw("upahsupir with (readuncommitted)"))
                         ->select(
                             'upahsupir.id',
@@ -205,8 +197,19 @@ class UpahSupirRincian extends MyModel
                             'upahsupir.zonadari_id as zonasampai_id',
                             'zonasampai.zona as zonadari',
                             'zonadari.zona as zonasampai',
-                            'upahsupir.tarif_id',
-                            'tarif.tujuan as tarif',
+                            // 'upahsupir.tarif_id',
+                            db::raw("(case when isnull(tarifmuatan.id,0)<>0 and " . $jenisorderanmuatan . "=" . $jenisorder_id  . " then isnull(tarifmuatan.id,0)  
+                                           when isnull(tarifbongkaran.id,0)<>0 and " . $jenisorderanbongkaran . "=" . $jenisorder_id  . "then isnull(tarifbongkaran.id,0)  
+                                           when isnull(tarifimport.id,0)<>0 and " . $jenisorderanimport . "=" . $jenisorder_id  . " then isnull(tarifimport.id,0)  
+                                           when isnull(tarifexport.id,0)<>0 and " . $jenisorderanexport . "=" . $jenisorder_id  . " then isnull(tarifexport.id,0)  
+                                           else  isnull(tarif.id,0) end) as tarif_id
+                            "),
+                            db::raw("(case when isnull(tarifmuatan.id,0)<>0 and " . $jenisorderanmuatan . "=" . $jenisorder_id  . " then isnull(tarifmuatan.tujuan,0)  
+                                           when isnull(tarifbongkaran.id,0)<>0 and " . $jenisorderanbongkaran . "=" . $jenisorder_id  . " then isnull(tarifbongkaran.tujuan,0)  
+                                           when isnull(tarifimport.id,0)<>0 and " . $jenisorderanimport . "=" . $jenisorder_id  . " then isnull(tarifimport.tujuan,0)  
+                                           when isnull(tarifexport.id,0)<>0 and " . $jenisorderanexport . "=" . $jenisorder_id  . " then isnull(tarifexport.tujuan,0)  
+                                           else  isnull(tarif.tujuan,'') end) as tarif
+                            "),
                             'upahsupir.penyesuaian',
                             'upahsupir.jarak',
                             'upahsupir.statusaktif',
@@ -220,6 +223,53 @@ class UpahSupirRincian extends MyModel
                         ->leftJoin(DB::raw("zona as zonadari with (readuncommitted)"), 'upahsupir.zonadari_id', 'zonadari.id')
                         ->leftJoin(DB::raw("zona as zonasampai with (readuncommitted)"), 'upahsupir.zonasampai_id', 'zonasampai.id')
                         ->leftJoin(DB::raw("tarif with (readuncommitted)"), 'upahsupir.tarif_id', 'tarif.id')
+                        ->leftJoin(DB::raw("tarif as tarifmuatan with (readuncommitted)"), 'upahsupir.tarifmuatan_id', 'tarifmuatan.id')
+                        ->leftJoin(DB::raw("tarif as tarifbongkaran with (readuncommitted)"), 'upahsupir.tarifbongkaran_id', 'tarifbongkaran.id')
+                        ->leftJoin(DB::raw("tarif as tarifimport with (readuncommitted)"), 'upahsupir.tarifimport_id', 'tarifimport.id')
+                        ->leftJoin(DB::raw("tarif as tarifexport with (readuncommitted)"), 'upahsupir.tarifexport_id', 'tarifexport.id')
+                        ->where('upahsupir.statusupahzona', $statusUpahZona);
+                } else {
+                    $getKota = DB::table("upahsupir")->from(DB::raw("upahsupir with (readuncommitted)"))
+                        ->select(
+                            'upahsupir.id',
+                            'upahsupir.kotadari_id',
+                            'upahsupir.kotasampai_id',
+                            'kotadari.kodekota as kotadari',
+                            'kotasampai.kodekota as kotasampai',
+                            'upahsupir.zonadari_id',
+                            'upahsupir.zonasampai_id',
+                            'zonadari.zona as zonadari',
+                            'zonasampai.zona as zonasampai',
+                            // 'upahsupir.tarif_id',
+                            db::raw("(case when isnull(tarifmuatan.id,0)<>0 and " . $jenisorderanmuatan . "=" . $jenisorder_id  . " then isnull(tarifmuatan.id,0)  
+                            when isnull(tarifbongkaran.id,0)<>0 and " . $jenisorderanbongkaran . "=" . $jenisorder_id  . "then isnull(tarifbongkaran.id,0)  
+                            when isnull(tarifimport.id,0)<>0 and " . $jenisorderanimport . "=" . $jenisorder_id  . " then isnull(tarifimport.id,0)  
+                            when isnull(tarifexport.id,0)<>0 and " . $jenisorderanexport . "=" . $jenisorder_id  . " then isnull(tarifexport.id,0)  
+                            else  isnull(tarif.id,0) end) as tarif_id
+             "),
+                            db::raw("(case when isnull(tarifmuatan.id,0)<>0 and " . $jenisorderanmuatan . "=" . $jenisorder_id  . " then isnull(tarifmuatan.tujuan,0)  
+                            when isnull(tarifbongkaran.id,0)<>0 and " . $jenisorderanbongkaran . "=" . $jenisorder_id  . " then isnull(tarifbongkaran.tujuan,0)  
+                            when isnull(tarifimport.id,0)<>0 and " . $jenisorderanimport . "=" . $jenisorder_id  . " then isnull(tarifimport.tujuan,0)  
+                            when isnull(tarifexport.id,0)<>0 and " . $jenisorderanexport . "=" . $jenisorder_id  . " then isnull(tarifexport.tujuan,0)  
+                            else  isnull(tarif.tujuan,'') end) as tarif
+                            "),
+                            'upahsupir.penyesuaian',
+                            'upahsupir.jarak',
+                            'upahsupir.statusaktif',
+                            'upahsupir.tglmulaiberlaku',
+                            'upahsupir.modifiedby',
+                            'upahsupir.created_at',
+                            'upahsupir.updated_at'
+                        )
+                        ->leftJoin(DB::raw("kota as kotadari with (readuncommitted)"), 'upahsupir.kotadari_id', 'kotadari.id')
+                        ->leftJoin(DB::raw("kota as kotasampai with (readuncommitted)"), 'upahsupir.kotasampai_id', 'kotasampai.id')
+                        ->leftJoin(DB::raw("zona as zonadari with (readuncommitted)"), 'upahsupir.zonadari_id', 'zonadari.id')
+                        ->leftJoin(DB::raw("zona as zonasampai with (readuncommitted)"), 'upahsupir.zonasampai_id', 'zonasampai.id')
+                        ->leftJoin(DB::raw("tarif with (readuncommitted)"), 'upahsupir.tarif_id', 'tarif.id')
+                        ->leftJoin(DB::raw("tarif as tarifmuatan with (readuncommitted)"), 'upahsupir.tarifmuatan_id', 'tarifmuatan.id')
+                        ->leftJoin(DB::raw("tarif as tarifbongkaran with (readuncommitted)"), 'upahsupir.tarifbongkaran_id', 'tarifbongkaran.id')
+                        ->leftJoin(DB::raw("tarif as tarifimport with (readuncommitted)"), 'upahsupir.tarifimport_id', 'tarifimport.id')
+                        ->leftJoin(DB::raw("tarif as tarifexport with (readuncommitted)"), 'upahsupir.tarifexport_id', 'tarifexport.id')
                         ->where('upahsupir.statusupahzona', $statusUpahZona);
                 }
                 DB::table($temp)->insertUsing(['id', 'kotadari_id', 'kotasampai_id', 'kotadari', 'kotasampai', 'zonadari_id', 'zonasampai_id', 'zonadari', 'zonasampai', 'tarif_id', 'tarif', 'penyesuaian', 'jarak', 'statusaktif', 'tglmulaiberlaku', 'modifiedby', 'created_at', 'updated_at'], $getKota);
@@ -238,8 +288,18 @@ class UpahSupirRincian extends MyModel
                             'upahsupir.zonadari_id as zonasampai_id',
                             'zonasampai.zona as zonadari',
                             'zonadari.zona as zonasampai',
-                            'upahsupir.tarif_id',
-                            'tarif.tujuan as tarif',
+                            db::raw("(case when isnull(tarifmuatan.id,0)<>0 and " . $jenisorderanmuatan . "=" . $jenisorder_id  . " then isnull(tarifmuatan.id,0)  
+                            when isnull(tarifbongkaran.id,0)<>0 and " . $jenisorderanbongkaran . "=" . $jenisorder_id  . "then isnull(tarifbongkaran.id,0)  
+                            when isnull(tarifimport.id,0)<>0 and " . $jenisorderanimport . "=" . $jenisorder_id  . " then isnull(tarifimport.id,0)  
+                            when isnull(tarifexport.id,0)<>0 and " . $jenisorderanexport . "=" . $jenisorder_id  . " then isnull(tarifexport.id,0)  
+                            else  isnull(tarif.id,0) end) as tarif_id
+             "),
+                            db::raw("(case when isnull(tarifmuatan.id,0)<>0 and " . $jenisorderanmuatan . "=" . $jenisorder_id  . " then isnull(tarifmuatan.tujuan,0)  
+                            when isnull(tarifbongkaran.id,0)<>0 and " . $jenisorderanbongkaran . "=" . $jenisorder_id  . " then isnull(tarifbongkaran.tujuan,0)  
+                            when isnull(tarifimport.id,0)<>0 and " . $jenisorderanimport . "=" . $jenisorder_id  . " then isnull(tarifimport.tujuan,0)  
+                            when isnull(tarifexport.id,0)<>0 and " . $jenisorderanexport . "=" . $jenisorder_id  . " then isnull(tarifexport.tujuan,0)  
+                            else  isnull(tarif.tujuan,'') end) as tarif
+                         "),
                             'upahsupir.penyesuaian',
                             'upahsupir.jarak',
                             'upahsupir.statusaktif',
@@ -253,6 +313,10 @@ class UpahSupirRincian extends MyModel
                         ->leftJoin(DB::raw("zona as zonadari with (readuncommitted)"), 'upahsupir.zonadari_id', 'zonadari.id')
                         ->leftJoin(DB::raw("zona as zonasampai with (readuncommitted)"), 'upahsupir.zonasampai_id', 'zonasampai.id')
                         ->leftJoin(DB::raw("tarif with (readuncommitted)"), 'upahsupir.tarif_id', 'tarif.id')
+                        ->leftJoin(DB::raw("tarif as tarifmuatan with (readuncommitted)"), 'upahsupir.tarifmuatan_id', 'tarifmuatan.id')
+                        ->leftJoin(DB::raw("tarif as tarifbongkaran with (readuncommitted)"), 'upahsupir.tarifbongkaran_id', 'tarifbongkaran.id')
+                        ->leftJoin(DB::raw("tarif as tarifimport with (readuncommitted)"), 'upahsupir.tarifimport_id', 'tarifimport.id')
+                        ->leftJoin(DB::raw("tarif as tarifexport with (readuncommitted)"), 'upahsupir.tarifexport_id', 'tarifexport.id')
                         ->where('upahsupir.statusupahzona', $statusUpahZona);
                 } else {
                     $getKota = DB::table("upahsupir")->from(DB::raw("upahsupir with (readuncommitted)"))
@@ -266,8 +330,18 @@ class UpahSupirRincian extends MyModel
                             'upahsupir.zonasampai_id',
                             'zonadari.zona as zonadari',
                             'zonasampai.zona as zonasampai',
-                            'upahsupir.tarif_id',
-                            'tarif.tujuan as tarif',
+                            db::raw("(case when isnull(tarifmuatan.id,0)<>0 and " . $jenisorderanmuatan . "=" . $jenisorder_id  . " then isnull(tarifmuatan.id,0)  
+                            when isnull(tarifbongkaran.id,0)<>0 and " . $jenisorderanbongkaran . "=" . $jenisorder_id  . "then isnull(tarifbongkaran.id,0)  
+                            when isnull(tarifimport.id,0)<>0 and " . $jenisorderanimport . "=" . $jenisorder_id  . " then isnull(tarifimport.id,0)  
+                            when isnull(tarifexport.id,0)<>0 and " . $jenisorderanexport . "=" . $jenisorder_id  . " then isnull(tarifexport.id,0)  
+                            else  isnull(tarif.id,0) end) as tarif_id
+             "),
+                            db::raw("(case when isnull(tarifmuatan.id,0)<>0 and " . $jenisorderanmuatan . "=" . $jenisorder_id  . " then isnull(tarifmuatan.tujuan,0)  
+                            when isnull(tarifbongkaran.id,0)<>0 and " . $jenisorderanbongkaran . "=" . $jenisorder_id  . " then isnull(tarifbongkaran.tujuan,0)  
+                            when isnull(tarifimport.id,0)<>0 and " . $jenisorderanimport . "=" . $jenisorder_id  . " then isnull(tarifimport.tujuan,0)  
+                            when isnull(tarifexport.id,0)<>0 and " . $jenisorderanexport . "=" . $jenisorder_id  . " then isnull(tarifexport.tujuan,0)  
+                            else  isnull(tarif.tujuan,'') end) as tarif
+                             "),
                             'upahsupir.penyesuaian',
                             'upahsupir.jarak',
                             'upahsupir.statusaktif',
@@ -281,10 +355,17 @@ class UpahSupirRincian extends MyModel
                         ->leftJoin(DB::raw("zona as zonadari with (readuncommitted)"), 'upahsupir.zonadari_id', 'zonadari.id')
                         ->leftJoin(DB::raw("zona as zonasampai with (readuncommitted)"), 'upahsupir.zonasampai_id', 'zonasampai.id')
                         ->leftJoin(DB::raw("tarif with (readuncommitted)"), 'upahsupir.tarif_id', 'tarif.id')
+                        ->leftJoin(DB::raw("tarif as tarifmuatan with (readuncommitted)"), 'upahsupir.tarifmuatan_id', 'tarifmuatan.id')
+                        ->leftJoin(DB::raw("tarif as tarifbongkaran with (readuncommitted)"), 'upahsupir.tarifbongkaran_id', 'tarifbongkaran.id')
+                        ->leftJoin(DB::raw("tarif as tarifimport with (readuncommitted)"), 'upahsupir.tarifimport_id', 'tarifimport.id')
+                        ->leftJoin(DB::raw("tarif as tarifexport with (readuncommitted)"), 'upahsupir.tarifexport_id', 'tarifexport.id')
                         ->where('upahsupir.statusupahzona', $statusUpahZona);
                 }
+
                 DB::table($temp)->insertUsing(['id', 'kotadari_id', 'kotasampai_id', 'kotadari', 'kotasampai', 'zonadari_id', 'zonasampai_id', 'zonadari', 'zonasampai', 'tarif_id', 'tarif', 'penyesuaian', 'jarak', 'statusaktif', 'tglmulaiberlaku', 'modifiedby', 'created_at', 'updated_at'], $getKota);
             }
+
+            // dd(DB::table($temp)->get());
 
 
 
@@ -808,7 +889,7 @@ class UpahSupirRincian extends MyModel
         // } else if ($this->params['sortIndex'] == 'statuscontainer') {
         //     return $query->orderBy('statuscontainer.kodestatuscontainer', $this->params['sortOrder']);
         // } else {
-        return $query->orderBy( 'a.' . $this->params['sortIndex'], $this->params['sortOrder']);
+        return $query->orderBy('a.' . $this->params['sortIndex'], $this->params['sortOrder']);
         // }
     }
 
@@ -891,6 +972,7 @@ class UpahSupirRincian extends MyModel
         $upahSupirRincian->nominaltol = $data['nominaltol'];
         $upahSupirRincian->liter = $data['liter'];
         $upahSupirRincian->modifiedby = auth('api')->user()->name;
+        $upahSupirRincian->info = html_entity_decode(request()->info);
 
         if (!$upahSupirRincian->save()) {
             throw new \Exception("Error storing upah supir in detail.");
@@ -1072,11 +1154,33 @@ class UpahSupirRincian extends MyModel
     public function cekValidasiInputTripUpah($statuscontainer_id, $jenisorder_id, $upahsupir_id)
     {
 
+        // dd($upahsupir_id);
         $getJenisOrderMuatan = DB::table("jenisorder")->from(DB::raw("jenisorder with (readuncommitted)"))
             ->select('id')
             ->where("kodejenisorder", 'MUAT')
             ->orWhere("kodejenisorder", 'EKS')
             ->get();
+
+        $jenisorderanmuatan = DB::table('parameter')->from(db::raw("parameter a  with (readuncommitted)"))->select('a.text as id')
+            ->where('a.grp', 'JENIS ORDERAN MUATAN')
+            ->where('a.subgrp', 'JENIS ORDERAN MUATAN')
+            ->first()->id ?? 0;
+
+        $jenisorderanbongkaran = DB::table('parameter')->from(db::raw("parameter a  with (readuncommitted)"))->select('a.text as id')
+            ->where('a.grp', 'JENIS ORDERAN BONGKARAN')
+            ->where('a.subgrp', 'JENIS ORDERAN BONGKARAN')
+            ->first()->id ?? 0;
+
+        $jenisorderanimport = DB::table('parameter')->from(db::raw("parameter a  with (readuncommitted)"))->select('a.text as id')
+            ->where('a.grp', 'JENIS ORDERAN IMPORT')
+            ->where('a.subgrp', 'JENIS ORDERAN IMPORT')
+            ->first()->id ?? 0;
+
+        $jenisorderanexport = DB::table('parameter')->from(db::raw("parameter a  with (readuncommitted)"))->select('a.text as id')
+            ->where('a.grp', 'JENIS ORDERAN EXPORT')
+            ->where('a.subgrp', 'JENIS ORDERAN EXPORT')
+            ->first()->id ?? 0;
+
         $getJenisOrderMuatan = json_decode($getJenisOrderMuatan, true);
         foreach ($getJenisOrderMuatan as $item) {
             $dataMuatanEksport[] = $item['id'];
@@ -1094,42 +1198,83 @@ class UpahSupirRincian extends MyModel
         });
 
         if (in_array($jenisorder_id, $dataMuatanEksport)) {
-            $queryEmpty = DB::table("statuscontainer")->from(DB::raw("statuscontainer with (readuncommitted)"))->where('kodestatuscontainer', 'EMPTY')->first();
+            $queryFull = DB::table("statuscontainer")->from(DB::raw("statuscontainer with (readuncommitted)"))->where('kodestatuscontainer', 'FULL')->first();
             // jika empty
-            if ($statuscontainer_id == $queryEmpty->id) {
+            if ($statuscontainer_id == $queryFull->id) {
                 $getKota = DB::table("upahsupir")->from(DB::raw("upahsupir with (readuncommitted)"))
+                ->select(
+                    'upahsupir.id',
+                    'upahsupir.kotasampai_id as kotadari_id',
+                    'upahsupir.kotadari_id as kotasampai_id',
+                    'kotasampai.kodekota as kotadari',
+                    'kotadari.kodekota as kotasampai',
+                    // 'upahsupir.tarif_id',
+                    // 'tarif.tujuan as tarif',
+                    db::raw("(case when isnull(tarifmuatan.id,0)<>0 and " . $jenisorderanmuatan . "=" . $jenisorder_id  . " then isnull(tarifmuatan.id,0)  
+                    when isnull(tarifbongkaran.id,0)<>0 and " . $jenisorderanbongkaran . "=" . $jenisorder_id  . " then isnull(tarifbongkaran.id,0)  
+                    when isnull(tarifimport.id,0)<>0 and " . $jenisorderanimport . "=" . $jenisorder_id  . " then isnull(tarifimport.id,0)  
+                    when isnull(tarifexport.id,0)<>0 and " . $jenisorderanexport . "=" . $jenisorder_id  . " then isnull(tarifexport.id,0)  
+                    else  isnull(tarif.id,0) end) as tarif_id
+                 "),
+                    db::raw("(case when isnull(tarifmuatan.id,0)<>0 and " . $jenisorderanmuatan . "=" . $jenisorder_id  . " then isnull(tarifmuatan.tujuan,0)  
+                    when isnull(tarifbongkaran.id,0)<>0 and " . $jenisorderanbongkaran . "=" . $jenisorder_id  . " then isnull(tarifbongkaran.tujuan,0)  
+                    when isnull(tarifimport.id,0)<>0 and " . $jenisorderanimport . "=" . $jenisorder_id  . " then isnull(tarifimport.tujuan,0)  
+                    when isnull(tarifexport.id,0)<>0 and " . $jenisorderanexport . "=" . $jenisorder_id  . " then isnull(tarifexport.tujuan,0)  
+                    else  isnull(tarif.tujuan,'') end) as tarif
+                    "),
+
+                    'upahsupir.penyesuaian'
+                )
+                ->leftJoin(DB::raw("kota as kotadari with (readuncommitted)"), 'upahsupir.kotadari_id', 'kotadari.id')
+                ->leftJoin(DB::raw("kota as kotasampai with (readuncommitted)"), 'upahsupir.kotasampai_id', 'kotasampai.id')
+                ->leftJoin(DB::raw("tarif with (readuncommitted)"), 'upahsupir.tarif_id', 'tarif.id')
+                ->leftJoin(DB::raw("tarif as tarifmuatan with (readuncommitted)"), 'upahsupir.tarifmuatan_id', 'tarifmuatan.id')
+                ->leftJoin(DB::raw("tarif as tarifbongkaran with (readuncommitted)"), 'upahsupir.tarifbongkaran_id', 'tarifbongkaran.id')
+                ->leftJoin(DB::raw("tarif as tarifimport with (readuncommitted)"), 'upahsupir.tarifimport_id', 'tarifimport.id')
+                ->leftJoin(DB::raw("tarif as tarifexport with (readuncommitted)"), 'upahsupir.tarifexport_id', 'tarifexport.id')
+
+                ->where("upahsupir.id", $upahsupir_id);
+      
+      
+            } else {
+               
+            // 
+            $getKota = DB::table("upahsupir")->from(DB::raw("upahsupir with (readuncommitted)"))
                     ->select(
                         'upahsupir.id',
                         'upahsupir.kotadari_id',
                         'upahsupir.kotasampai_id',
                         'kotadari.kodekota as kotadari',
                         'kotasampai.kodekota as kotasampai',
-                        'upahsupir.tarif_id',
-                        'tarif.tujuan as tarif',
+                        // 'upahsupir.tarif_id',
+                        // 'tarif.tujuan as tarif',
+                        db::raw("(case when isnull(tarifmuatan.id,0)<>0 and " . $jenisorderanmuatan . "=" . $jenisorder_id  . " then isnull(tarifmuatan.id,0)  
+                        when isnull(tarifbongkaran.id,0)<>0 and " . $jenisorderanbongkaran . "=" . $jenisorder_id  . " then isnull(tarifbongkaran.id,0)  
+                        when isnull(tarifimport.id,0)<>0 and " . $jenisorderanimport . "=" . $jenisorder_id  . " then isnull(tarifimport.id,0)  
+                        when isnull(tarifexport.id,0)<>0 and " . $jenisorderanexport . "=" . $jenisorder_id  . " then isnull(tarifexport.id,0)  
+                        else  isnull(tarif.id,0) end) as tarif_id
+                     "),
+                        db::raw("(case when isnull(tarifmuatan.id,0)<>0 and " . $jenisorderanmuatan . "=" . $jenisorder_id  . " then isnull(tarifmuatan.tujuan,0)  
+                        when isnull(tarifbongkaran.id,0)<>0 and " . $jenisorderanbongkaran . "=" . $jenisorder_id  . " then isnull(tarifbongkaran.tujuan,0)  
+                        when isnull(tarifimport.id,0)<>0 and " . $jenisorderanimport . "=" . $jenisorder_id  . " then isnull(tarifimport.tujuan,0)  
+                        when isnull(tarifexport.id,0)<>0 and " . $jenisorderanexport . "=" . $jenisorder_id  . " then isnull(tarifexport.tujuan,0)  
+                        else  isnull(tarif.tujuan,'') end) as tarif
+                        "),
                         'upahsupir.penyesuaian'
                     )
                     ->leftJoin(DB::raw("kota as kotadari with (readuncommitted)"), 'upahsupir.kotadari_id', 'kotadari.id')
                     ->leftJoin(DB::raw("kota as kotasampai with (readuncommitted)"), 'upahsupir.kotasampai_id', 'kotasampai.id')
                     ->leftJoin(DB::raw("tarif with (readuncommitted)"), 'upahsupir.tarif_id', 'tarif.id')
+                    ->leftJoin(DB::raw("tarif as tarifmuatan with (readuncommitted)"), 'upahsupir.tarifmuatan_id', 'tarifmuatan.id')
+                    ->leftJoin(DB::raw("tarif as tarifbongkaran with (readuncommitted)"), 'upahsupir.tarifbongkaran_id', 'tarifbongkaran.id')
+                    ->leftJoin(DB::raw("tarif as tarifimport with (readuncommitted)"), 'upahsupir.tarifimport_id', 'tarifimport.id')
+                    ->leftJoin(DB::raw("tarif as tarifexport with (readuncommitted)"), 'upahsupir.tarifexport_id', 'tarifexport.id')
+
                     ->where("upahsupir.id", $upahsupir_id);
-            } else {
-                $getKota = DB::table("upahsupir")->from(DB::raw("upahsupir with (readuncommitted)"))
-                    ->select(
-                        'upahsupir.id',
-                        'upahsupir.kotasampai_id as kotadari_id',
-                        'upahsupir.kotadari_id as kotasampai_id',
-                        'kotasampai.kodekota as kotadari',
-                        'kotadari.kodekota as kotasampai',
-                        'upahsupir.tarif_id',
-                        'tarif.tujuan as tarif',
-                        'upahsupir.penyesuaian'
-                    )
-                    ->leftJoin(DB::raw("kota as kotadari with (readuncommitted)"), 'upahsupir.kotadari_id', 'kotadari.id')
-                    ->leftJoin(DB::raw("kota as kotasampai with (readuncommitted)"), 'upahsupir.kotasampai_id', 'kotasampai.id')
-                    ->leftJoin(DB::raw("tarif with (readuncommitted)"), 'upahsupir.tarif_id', 'tarif.id')
-                    ->where("upahsupir.id", $upahsupir_id);
-            }
+                }
+            //  dd($getKota->tosql());
             DB::table($temp)->insertUsing(['id', 'kotadari_id', 'kotasampai_id', 'kotadari', 'kotasampai', 'tarif_id', 'tarif', 'penyesuaian'], $getKota);
+            // dd('test');
         } else {
             $queryEmpty = DB::table("statuscontainer")->from(DB::raw("statuscontainer with (readuncommitted)"))->where('kodestatuscontainer', 'EMPTY')->first();
             // jika empty
@@ -1141,13 +1286,31 @@ class UpahSupirRincian extends MyModel
                         'upahsupir.kotadari_id as kotasampai_id',
                         'kotasampai.kodekota as kotadari',
                         'kotadari.kodekota as kotasampai',
-                        'upahsupir.tarif_id',
-                        'tarif.tujuan as tarif',
+                        // 'upahsupir.tarif_id',
+                        // 'tarif.tujuan as tarif',
+                        db::raw("(case when isnull(tarifmuatan.id,0)<>0 and " . $jenisorderanmuatan . "=" . $jenisorder_id  . " then isnull(tarifmuatan.id,0)  
+                        when isnull(tarifbongkaran.id,0)<>0 and " . $jenisorderanbongkaran . "=" . $jenisorder_id  . " then isnull(tarifbongkaran.id,0)  
+                        when isnull(tarifimport.id,0)<>0 and " . $jenisorderanimport . "=" . $jenisorder_id  . " then isnull(tarifimport.id,0)  
+                        when isnull(tarifexport.id,0)<>0 and " . $jenisorderanexport . "=" . $jenisorder_id  . " then isnull(tarifexport.id,0)  
+                        else  isnull(tarif.id,0) end) as tarif_id
+                     "),
+                        db::raw("(case when isnull(tarifmuatan.id,0)<>0 and " . $jenisorderanmuatan . "=" . $jenisorder_id  . " then isnull(tarifmuatan.tujuan,0)  
+                        when isnull(tarifbongkaran.id,0)<>0 and " . $jenisorderanbongkaran . "=" . $jenisorder_id  . " then isnull(tarifbongkaran.tujuan,0)  
+                        when isnull(tarifimport.id,0)<>0 and " . $jenisorderanimport . "=" . $jenisorder_id  . " then isnull(tarifimport.tujuan,0)  
+                        when isnull(tarifexport.id,0)<>0 and " . $jenisorderanexport . "=" . $jenisorder_id  . " then isnull(tarifexport.tujuan,0)  
+                        else  isnull(tarif.tujuan,'') end) as tarif
+                        "),
+
                         'upahsupir.penyesuaian'
                     )
                     ->leftJoin(DB::raw("kota as kotadari with (readuncommitted)"), 'upahsupir.kotadari_id', 'kotadari.id')
                     ->leftJoin(DB::raw("kota as kotasampai with (readuncommitted)"), 'upahsupir.kotasampai_id', 'kotasampai.id')
                     ->leftJoin(DB::raw("tarif with (readuncommitted)"), 'upahsupir.tarif_id', 'tarif.id')
+                    ->leftJoin(DB::raw("tarif as tarifmuatan with (readuncommitted)"), 'upahsupir.tarifmuatan_id', 'tarifmuatan.id')
+                    ->leftJoin(DB::raw("tarif as tarifbongkaran with (readuncommitted)"), 'upahsupir.tarifbongkaran_id', 'tarifbongkaran.id')
+                    ->leftJoin(DB::raw("tarif as tarifimport with (readuncommitted)"), 'upahsupir.tarifimport_id', 'tarifimport.id')
+                    ->leftJoin(DB::raw("tarif as tarifexport with (readuncommitted)"), 'upahsupir.tarifexport_id', 'tarifexport.id')
+
                     ->where("upahsupir.id", $upahsupir_id);
             } else {
                 $getKota = DB::table("upahsupir")->from(DB::raw("upahsupir with (readuncommitted)"))
@@ -1157,13 +1320,31 @@ class UpahSupirRincian extends MyModel
                         'upahsupir.kotasampai_id',
                         'kotadari.kodekota as kotadari',
                         'kotasampai.kodekota as kotasampai',
-                        'upahsupir.tarif_id',
-                        'tarif.tujuan as tarif',
+                        db::raw("(case when isnull(tarifmuatan.id,0)<>0 and " . $jenisorderanmuatan . "=" . $jenisorder_id  . " then isnull(tarifmuatan.id,0)  
+                        when isnull(tarifbongkaran.id,0)<>0 and " . $jenisorderanbongkaran . "=" . $jenisorder_id  . " then isnull(tarifbongkaran.id,0)  
+                        when isnull(tarifimport.id,0)<>0 and " . $jenisorderanimport . "=" . $jenisorder_id  . " then isnull(tarifimport.id,0)  
+                        when isnull(tarifexport.id,0)<>0 and " . $jenisorderanexport . "=" . $jenisorder_id  . " then isnull(tarifexport.id,0)  
+                        else  isnull(tarif.id,0) end) as tarif_id
+                     "),
+                        db::raw("(case when isnull(tarifmuatan.id,0)<>0 and " . $jenisorderanmuatan . "=" . $jenisorder_id  . " then isnull(tarifmuatan.tujuan,0)  
+                        when isnull(tarifbongkaran.id,0)<>0 and " . $jenisorderanbongkaran . "=" . $jenisorder_id  . " then isnull(tarifbongkaran.tujuan,0)  
+                        when isnull(tarifimport.id,0)<>0 and " . $jenisorderanimport . "=" . $jenisorder_id  . " then isnull(tarifimport.tujuan,0)  
+                        when isnull(tarifexport.id,0)<>0 and " . $jenisorderanexport . "=" . $jenisorder_id  . " then isnull(tarifexport.tujuan,0)  
+                        else  isnull(tarif.tujuan,'') end) as tarif
+                        "),
+
+                        // 'upahsupir.tarif_id',
+                        // 'tarif.tujuan as tarif',
                         'upahsupir.penyesuaian'
                     )
                     ->leftJoin(DB::raw("kota as kotadari with (readuncommitted)"), 'upahsupir.kotadari_id', 'kotadari.id')
                     ->leftJoin(DB::raw("kota as kotasampai with (readuncommitted)"), 'upahsupir.kotasampai_id', 'kotasampai.id')
                     ->leftJoin(DB::raw("tarif with (readuncommitted)"), 'upahsupir.tarif_id', 'tarif.id')
+                    ->leftJoin(DB::raw("tarif as tarifmuatan with (readuncommitted)"), 'upahsupir.tarifmuatan_id', 'tarifmuatan.id')
+                    ->leftJoin(DB::raw("tarif as tarifbongkaran with (readuncommitted)"), 'upahsupir.tarifbongkaran_id', 'tarifbongkaran.id')
+                    ->leftJoin(DB::raw("tarif as tarifimport with (readuncommitted)"), 'upahsupir.tarifimport_id', 'tarifimport.id')
+                    ->leftJoin(DB::raw("tarif as tarifexport with (readuncommitted)"), 'upahsupir.tarifexport_id', 'tarifexport.id')
+
                     ->where("upahsupir.id", $upahsupir_id);
             }
             DB::table($temp)->insertUsing(['id', 'kotadari_id', 'kotasampai_id', 'kotadari', 'kotasampai', 'tarif_id', 'tarif', 'penyesuaian'], $getKota);
@@ -1183,6 +1364,7 @@ class UpahSupirRincian extends MyModel
                 'B.penyesuaian',
             );
 
+        // dd($query->get());
         return $query->first();
     }
 }

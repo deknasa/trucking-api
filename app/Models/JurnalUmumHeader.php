@@ -35,7 +35,7 @@ class JurnalUmumHeader extends MyModel
         $this->setRequestParameters();
 
         $lennobukti = 3;
-
+        $lookup = request()->jurnal ?? '';
         $tempsummary = '##tempsummary' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
         Schema::create($tempsummary, function ($table) {
             $table->id();
@@ -84,6 +84,11 @@ class JurnalUmumHeader extends MyModel
             ->whereBetween($this->table . '.tglbukti', [date('Y-m-d', strtotime(request()->tgldari)), date('Y-m-d', strtotime(request()->tglsampai))])
             ->leftJoin(DB::raw("parameter as statusapproval with (readuncommitted)"), 'jurnalumumheader.statusapproval', 'statusapproval.id')
             ->leftjoin(DB::raw($tempsummary . " as c"), 'jurnalumumheader.nobukti', 'c.nobukti');
+
+        if ($lookup != '') {
+            $params = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'JURNAL UMUM BUKTI')->where('subgrp', 'JURNAL UMUM BUKTI')->first();
+            $query->where('jurnalumumheader.statusformat', $params->id);
+        }
 
         $this->totalRows = $query->count();
         $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;
@@ -140,7 +145,7 @@ class JurnalUmumHeader extends MyModel
             $table->increments('position');
         });
 
-        if((date('Y-m', strtotime(request()->tglbukti)) != date('Y-m', strtotime(request()->tgldariheader))) || (date('Y-m', strtotime(request()->tglbukti)) != date('Y-m', strtotime(request()->tglsampaiheader)))){
+        if ((date('Y-m', strtotime(request()->tglbukti)) != date('Y-m', strtotime(request()->tgldariheader))) || (date('Y-m', strtotime(request()->tglbukti)) != date('Y-m', strtotime(request()->tglsampaiheader)))) {
             request()->tgldariheader = date('Y-m-01', strtotime(request()->tglbukti));
             request()->tglsampaiheader = date('Y-m-t', strtotime(request()->tglbukti));
         }
@@ -402,6 +407,7 @@ class JurnalUmumHeader extends MyModel
         $jurnalUmumHeader->statuscetak = $statusCetak->id ?? 0;
         $jurnalUmumHeader->statusformat = $data['statusformat'] ?? $format->id;
         $jurnalUmumHeader->modifiedby = auth('api')->user()->name;
+        $jurnalUmumHeader->info = html_entity_decode(request()->info);
 
         if ($tanpaprosesnobukti == 0) {
             $jurnalUmumHeader->nobukti = (new RunningNumberService)->get($group, $subGroup, $jurnalUmumHeader->getTable(), date('Y-m-d', strtotime($data['tglbukti'])));
@@ -491,34 +497,38 @@ class JurnalUmumHeader extends MyModel
     }
 
     public function processUpdate(JurnalUmumHeader $jurnalUmumHeader, array $data): JurnalUmumHeader
-    {        
+    {
         $group = 'JURNAL UMUM BUKTI';
         $subGroup = 'JURNAL UMUM BUKTI';
+        $getTgl = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'EDIT TANGGAL BUKTI')->where('subgrp', 'JURNAL UMUM')->first();
 
-        $querycek = DB::table('jurnalumumheader')->from(
-            DB::raw("jurnalumumheader a with (readuncommitted)")
-        )
-            ->select(
-                'a.nobukti'
+        if (trim($getTgl->text) == 'YA') {
+
+            $querycek = DB::table('jurnalumumheader')->from(
+                DB::raw("jurnalumumheader a with (readuncommitted)")
             )
-            ->where('a.id', $jurnalUmumHeader->id)
-            ->whereRAw("format(a.tglbukti,'MM-yyyy')='" . date('m-Y', strtotime($data['tglbukti'])) . "'")
-            ->first();
+                ->select(
+                    'a.nobukti'
+                )
+                ->where('a.id', $jurnalUmumHeader->id)
+                ->whereRAw("format(a.tglbukti,'MM-yyyy')='" . date('m-Y', strtotime($data['tglbukti'])) . "'")
+                ->first();
 
-        if (isset($querycek)) {
-            $nobukti = $querycek->nobukti;
-        } else {
-            if (str_contains($data['nobukti'], 'JU')) { 
-                $nobukti = (new RunningNumberService)->get($group, $subGroup, $jurnalUmumHeader->getTable(), date('Y-m-d', strtotime($data['tglbukti'])));
-            }else{
-                $nobukti = $data['nobukti'];
+            if (isset($querycek)) {
+                $nobukti = $querycek->nobukti;
+            } else {
+                if (str_contains($data['nobukti'], 'JU')) {
+                    $nobukti = (new RunningNumberService)->get($group, $subGroup, $jurnalUmumHeader->getTable(), date('Y-m-d', strtotime($data['tglbukti'])));
+                } else {
+                    $nobukti = $data['nobukti'];
+                }
             }
+            $jurnalUmumHeader->nobukti = $nobukti;
+            $jurnalUmumHeader->tglbukti = date('Y-m-d', strtotime($data['tglbukti']));
         }
 
-
-        $jurnalUmumHeader->nobukti = $nobukti;
-        $jurnalUmumHeader->tglbukti = date('Y-m-d', strtotime($data['tglbukti']));
         $jurnalUmumHeader->modifiedby = auth('api')->user()->name;
+        $jurnalUmumHeader->info = html_entity_decode(request()->info);
 
 
         if (!$jurnalUmumHeader->save()) {
@@ -537,9 +547,11 @@ class JurnalUmumHeader extends MyModel
 
         JurnalUmumDetail::where('jurnalumum_id', $jurnalUmumHeader->id)->delete();
 
+        // dd($data);
         $jurnalUmumDetails = [];
         for ($i = 0; $i < count($data['nominal_detail']); $i++) {
             for ($x = 0; $x <= 1; $x++) {
+                // $data['nominal_detail'][$i];
                 if ($x == 1) {
                     $jurnalUmumDetail = (new JurnalUmumDetail())->processStore($jurnalUmumHeader, [
                         'tglbukti' => (str_contains($jurnalUmumHeader->nobukti, 'EBS')) ? date('Y-m-d', strtotime($data['tglbukti_detail'][$i])) : $jurnalUmumHeader->tglbukti,
@@ -700,6 +712,7 @@ class JurnalUmumHeader extends MyModel
                 $aksi = $statusApproval->text;
                 $jurnalumum->tglapproval = date('Y-m-d H:i:s');
                 $jurnalumum->userapproval = auth('api')->user()->name;
+                $jurnalumum->info = html_entity_decode(request()->info);
 
                 $jurnalDetail = JurnalUmumDetail::where('jurnalumum_id', $data['jurnalId'][$i])->get();
                 $coa_detail = [];

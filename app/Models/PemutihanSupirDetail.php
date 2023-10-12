@@ -51,8 +51,11 @@ class PemutihanSupirDetail extends MyModel
                 $this->table . '.nobukti',
                 $this->table . '.pengeluarantrucking_nobukti',
                 $this->table . '.nominal',
-                'parameter.text as statusposting'
+                'parameter.text as statusposting',
+                db::raw("cast((format(pengeluarantruckingheader.tglbukti,'yyyy/MM')+'/1') as date) as tgldariheaderpengeluarantruckingheader"),
+                db::raw("cast(cast(format((cast((format(pengeluarantruckingheader.tglbukti,'yyyy/MM')+'/1') as datetime)+32),'yyyy/MM')+'/01' as datetime)-1 as date) as tglsampaiheaderpengeluarantruckingheader"), 
             )
+            ->leftJoin(DB::raw("pengeluarantruckingheader with (readuncommitted)"), $this->table . '.pengeluarantrucking_nobukti', '=', 'pengeluarantruckingheader.nobukti')
             ->leftJoin(DB::raw("parameter with (readuncommitted)"), $this->table . '.statusposting', 'parameter.id');
 
             $query->where($this->table . '.pemutihansupir_id', '=', request()->pemutihansupir_id);
@@ -127,7 +130,7 @@ class PemutihanSupirDetail extends MyModel
         $pemutihanSupirDetail->pengeluarantrucking_nobukti = $data['pengeluarantrucking_nobukti'];
         $pemutihanSupirDetail->nominal = $data['nominal'];
         $pemutihanSupirDetail->statusposting = $data['statusposting'];
-        $pemutihanSupirDetail->modifiedby = auth('api')->user()->name;
+        $pemutihanSupirDetail->info = html_entity_decode(request()->info);
 
         if (!$pemutihanSupirDetail->save()) {
             throw new \Exception("Error storing pemutihan supir detail.");

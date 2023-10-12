@@ -60,4 +60,9 @@ class PenerimaanTruckingDetailController extends Controller
             DB::rollBack();
         }
     }
+
+    public function addrow(StorePenerimaanTruckingDetailRequest $request)
+    {
+       return true;
+    }
 }

@@ -17,8 +17,10 @@ class CreateKaryawanTable extends Migration
             $table->id();
             $table->string('namakaryawan', 300)->nullable();
             $table->longText('keterangan')->nullable();
+            $table->longText('jabatan')->nullable();
             $table->integer('statusaktif')->length(11)->nullable();
             $table->integer('statusstaff')->length(11)->nullable();
+            $table->longText('info')->nullable();            
             $table->string('modifiedby', 30)->nullable();            
             $table->timestamps();
         });

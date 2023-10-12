@@ -26,6 +26,8 @@ class CreatePenerimaantruckingTable extends Migration
             $table->string('coapostingdebet',50)->nullable();            
             $table->string('coapostingkredit',50)->nullable();            
             $table->unsignedBigInteger('format')->nullable();            
+            $table->unsignedBigInteger('aco_id')->nullable();          
+            $table->longText('info')->nullable();
             $table->string('modifiedby',50)->nullable();              
             $table->timestamps();
 

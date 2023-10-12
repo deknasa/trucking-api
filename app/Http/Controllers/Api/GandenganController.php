@@ -12,7 +12,6 @@ use App\Models\Gandengan;
 use App\Models\LogTrail;
 use App\Models\Parameter;
 use App\Models\Stok;
-use App\Models\StokPersediaan;
 
 
 use Illuminate\Support\Facades\Schema;

@@ -26,7 +26,13 @@ class CreatePengeluarantruckingheaderTable extends Migration
             $table->unsignedBigInteger('karyawan_id')->nullable();
             $table->unsignedBigInteger('supir_id')->nullable();
             $table->unsignedBigInteger('trado_id')->nullable();
+            $table->unsignedBigInteger('gandengan_id')->nullable();
+            $table->unsignedBigInteger('statuscabang')->nullable();
+            $table->unsignedBigInteger('tradotnl_id')->nullable();
+            $table->unsignedBigInteger('gandengantnl_id')->nullable();
+            $table->unsignedBigInteger('jenisorder_id')->nullable();
             $table->integer('statusposting')->length(11)->nullable();
+            $table->date('periode')->nullable();            
             $table->date('periodedari')->nullable();            
             $table->date('periodesampai')->nullable();            
             $table->string('coa',50)->nullable();
@@ -41,6 +47,7 @@ class CreatePengeluarantruckingheaderTable extends Migration
             $table->string('userapprovaledit',50)->nullable();
             $table->date('tglapprovaledit')->nullable();
             $table->dateTime('tglbatasedit')->nullable();
+            $table->longText('info')->nullable();
             $table->string('modifiedby',50)->nullable();
 
             $table->timestamps();

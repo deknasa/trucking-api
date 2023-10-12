@@ -50,14 +50,15 @@ class KasGantungHeader extends MyModel
                 DB::raw("absensisupirheader as a with (readuncommitted)")
             )
             ->select(
-                'a.kasgantung_nobukti'
+                'a.kasgantung_nobukti',
+                'a.nobukti'
             )
             ->where('a.kasgantung_nobukti', '=', $nobukti)
             ->first();
         if (isset($absensiSupir)) {
             $data = [
                 'kondisi' => true,
-                'keterangan' => 'Absensi Supir',
+                'keterangan' => 'Absensi Supir '. $absensiSupir->nobukti,
                 'kodeerror' => 'TDT'
             ];
             goto selesai;
@@ -67,14 +68,15 @@ class KasGantungHeader extends MyModel
                 DB::raw("pengembaliankasgantungdetail as a with (readuncommitted)")
             )
             ->select(
-                'a.kasgantung_nobukti'
+                'a.kasgantung_nobukti',
+                'a.nobukti'
             )
             ->where('a.kasgantung_nobukti', '=', $nobukti)
             ->first();
         if (isset($pengembalianKasgantung)) {
             $data = [
                 'kondisi' => true,
-                'keterangan' => 'Pengembalian Kas Gantung',
+                'keterangan' => 'Pengembalian Kas Gantung '. $pengembalianKasgantung->nobukti,
                 'kodeerror' => 'SATL'
             ];
             goto selesai;
@@ -86,7 +88,8 @@ class KasGantungHeader extends MyModel
                 DB::raw("kasgantungheader as a with (readuncommitted)")
             )
             ->select(
-                'a.nobukti'
+                'a.nobukti',
+                'a.pengeluaran_nobukti'
             )
             ->join(DB::raw("jurnalumumpusatheader b with (readuncommitted)"), 'a.pengeluaran_nobukti', 'b.nobukti')
             ->where('a.nobukti', '=', $nobukti)
@@ -94,7 +97,7 @@ class KasGantungHeader extends MyModel
         if (isset($jurnal)) {
             $data = [
                 'kondisi' => true,
-                'keterangan' => 'Approval Jurnal',
+                'keterangan' => 'Approval Jurnal '. $jurnal->pengeluaran_nobukti,
                 'kodeerror' => 'SAP'
             ];
             goto selesai;
@@ -171,12 +174,15 @@ class KasGantungHeader extends MyModel
                 'statuscetak.memo as statuscetak',
                 'kasgantungheader.modifiedby',
                 'kasgantungheader.created_at',
-                'kasgantungheader.updated_at'
+                'kasgantungheader.updated_at',
+                db::raw("cast((format(pengeluaran.tglbukti,'yyyy/MM')+'/1') as date) as tgldariheaderpengeluaranheader"),
+                db::raw("cast(cast(format((cast((format(pengeluaran.tglbukti,'yyyy/MM')+'/1') as datetime)+32),'yyyy/MM')+'/01' as datetime)-1 as date) as tglsampaiheaderpengeluaranheader"), 
             )
 
             ->leftJoin(DB::raw("parameter with (readuncommitted)"), 'kasgantungheader.statuscetak', 'parameter.id')
             ->leftJoin(DB::raw("penerima with (readuncommitted)"), 'kasgantungheader.penerima_id', 'penerima.id')
             ->leftJoin(DB::raw("parameter as statuscetak with (readuncommitted)"), 'kasgantungheader.statuscetak', 'statuscetak.id')
+            ->leftJoin(DB::raw("pengeluaranheader as pengeluaran with (readuncommitted)"), 'kasgantungheader.pengeluaran_nobukti', '=', 'pengeluaran.nobukti')
             ->leftJoin(DB::raw("bank with (readuncommitted)"), 'kasgantungheader.bank_id', 'bank.id');
         if (request()->tgldari && request()->tglsampai) {
             $query->whereBetween($this->table . '.tglbukti', [date('Y-m-d', strtotime(request()->tgldari)), date('Y-m-d', strtotime(request()->tglsampai))]);
@@ -290,7 +296,7 @@ class KasGantungHeader extends MyModel
             request()->tgldariheader = date('Y-m-01', strtotime(request()->tglbukti));
             request()->tglsampaiheader = date('Y-m-t', strtotime(request()->tglbukti));
         }
-        
+
         $this->setRequestParameters();
         $query = DB::table($modelTable);
         $query = $this->selectColumns($query);
@@ -475,6 +481,7 @@ class KasGantungHeader extends MyModel
         $kasgantungHeader->postingdari = $data['postingdari'] ?? 'ENTRY KAS GANTUNG';
         $kasgantungHeader->tglkaskeluar = date('Y-m-d', strtotime($data['tglbukti']));
         $kasgantungHeader->modifiedby = auth('api')->user()->name;
+        $kasgantungHeader->info = html_entity_decode(request()->info);
         $kasgantungHeader->statusformat = $format->id ?? $data['statusformat'];
         $kasgantungHeader->statuscetak = $statusCetak->id ?? 0;
         $kasgantungHeader->userbukacetak = '';
@@ -591,27 +598,31 @@ class KasGantungHeader extends MyModel
     public function processUpdate(KasGantungHeader $kasgantungHeader, array $data): KasGantungHeader
     {
         $nobuktiOld = $kasgantungHeader->nobukti;
-        $group = 'KAS GANTUNG';
-        $subgroup = 'NOMOR KAS GANTUNG';
+        $getTgl = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'EDIT TANGGAL BUKTI')->where('subgrp', 'KAS GANTUNG')->first();
+        if (trim($getTgl->text) == 'YA') {
+            $group = 'KAS GANTUNG';
+            $subgroup = 'NOMOR KAS GANTUNG';
 
-        $querycek = DB::table('kasgantungheader')->from(
-            DB::raw("kasgantungheader a with (readuncommitted)")
-        )
-            ->select(
-                'a.nobukti'
+            $querycek = DB::table('kasgantungheader')->from(
+                DB::raw("kasgantungheader a with (readuncommitted)")
             )
-            ->where('a.id', $kasgantungHeader->id)
-            ->whereRAw("format(a.tglbukti,'MM-yyyy')='" . date('m-Y', strtotime($data['tglbukti'])) . "'")
-            ->first();
-         
+                ->select(
+                    'a.nobukti'
+                )
+                ->where('a.id', $kasgantungHeader->id)
+                ->whereRAw("format(a.tglbukti,'MM-yyyy')='" . date('m-Y', strtotime($data['tglbukti'])) . "'")
+                ->first();
 
-        if (isset($querycek)) {
-            $nobukti = $querycek->nobukti;
-        } else {
-            $nobukti = (new RunningNumberService)->get($group, $subgroup, $kasgantungHeader->getTable(), date('Y-m-d', strtotime($data['tglbukti'])));
+
+            if (isset($querycek)) {
+                $nobukti = $querycek->nobukti;
+            } else {
+                $nobukti = (new RunningNumberService)->get($group, $subgroup, $kasgantungHeader->getTable(), date('Y-m-d', strtotime($data['tglbukti'])));
+            }
+
+            $kasgantungHeader->tglbukti = date('Y-m-d', strtotime($data['tglbukti']));
+            $kasgantungHeader->nobukti = $nobukti;
         }
-
-
 
         $isUpdateUangJalan = $data['isUpdateUangJalan'] ?? 0;
         $bank_id = $data['bank_id'] ?? $kasgantungHeader->bank_id;
@@ -622,8 +633,7 @@ class KasGantungHeader extends MyModel
         $kasgantungHeader->coakaskeluar = $data['coakaskeluar'] ?? $coakaskeluar;
         $kasgantungHeader->postingdari = $data['postingdari'] ?? 'EDIT KAS GANTUNG';
         $kasgantungHeader->modifiedby = auth('api')->user()->name;
-        $kasgantungHeader->tglbukti = date('Y-m-d', strtotime($data['tglbukti']));
-        $kasgantungHeader->nobukti = $nobukti;
+        $kasgantungHeader->info = html_entity_decode(request()->info);
 
         if (!$kasgantungHeader->save()) {
             throw new \Exception("Error Update kas gantung header.");

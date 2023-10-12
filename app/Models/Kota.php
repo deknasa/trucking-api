@@ -351,6 +351,7 @@ class Kota extends MyModel
         $kota->zona_id = $data['zona_id'];
         $kota->statusaktif = $data['statusaktif'];
         $kota->modifiedby = auth('api')->user()->user;
+        $kota->info = html_entity_decode(request()->info);
 
         if (!$kota->save()) {
             throw new \Exception('Error storing kota.');
@@ -377,6 +378,7 @@ class Kota extends MyModel
         $kota->zona_id = $data['zona_id'];
         $kota->statusaktif = $data['statusaktif'];
         $kota->modifiedby = auth('api')->user()->user;
+        $kota->info = html_entity_decode(request()->info);
 
         if (!$kota->save()) {
             throw new \Exception('Error updating kota.');

@@ -13,6 +13,7 @@ use App\Rules\ValidasiDestroyPendapatanSupirHeader;
 use App\Rules\ValidasiHutangList;
 use Illuminate\Validation\Rule;
 use Illuminate\Support\Facades\DB;
+use App\Rules\ValidasiPendapatanSupir;
 
 class UpdatePendapatanSupirHeaderRequest extends FormRequest
 {
@@ -76,27 +77,31 @@ class UpdatePendapatanSupirHeaderRequest extends FormRequest
                 new DateTutupBuku()
             ], 
             'bank' => 'required',
-            'supir' => [
-                'required',
-                new ValidasiHutangList($jumlahdetail)
-            ],
             'tgldari' => [
                 'required', 'date_format:d-m-Y',
-                'before_or_equal:' . date('d-m-Y'),
+                'before_or_equal:' . date('d-m-Y'),                
+                new ValidasiHutangList($jumlahdetail),
+                new ValidasiPendapatanSupir()
             ],
             'tglsampai' => [
                 'required', 'date_format:d-m-Y',
                 'after_or_equal:' . date('d-m-Y', strtotime($this->tgldari)),
                 'before_or_equal:' . date('d-m-Y'),
+                new ValidasiPendapatanSupir()
+
 
             ],
         ];
         $rules = array_merge(
             $rules,
             $ruleBank_id,
-            $rulesSupir_id
+            // $rulesSupir_id
         );
-
+        $cekBank = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'PENDAPATAN SUPIR')->where('subgrp', 'BANK')->first();
+        if($cekBank->text == 'TIDAK'){
+            unset($rules['bank']);
+            unset($rules['bank_id']);
+        }
         return $rules;
     }
 

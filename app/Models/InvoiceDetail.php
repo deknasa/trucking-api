@@ -159,16 +159,22 @@ class InvoiceDetail extends MyModel
                 $this->table . '.nominalretribusi',
                 $this->table . '.orderantrucking_nobukti',
                 $this->table . '.suratpengantar_nobukti',
-            );
+                db::raw("cast((format(orderantrucking.tglbukti,'yyyy/MM')+'/1') as date) as tgldariorderantrucking"),
+                db::raw("cast(cast(format((cast((format(orderantrucking.tglbukti,'yyyy/MM')+'/1') as datetime)+32),'yyyy/MM')+'/01' as datetime)-1 as date) as tglsampaiorderantrucking"), 
+                db::raw("cast((format(suratpengantar.tglbukti,'yyyy/MM')+'/1') as date) as tgldarisuratpengantar"),
+                db::raw("cast(cast(format((cast((format(suratpengantar.tglbukti,'yyyy/MM')+'/1') as datetime)+32),'yyyy/MM')+'/01' as datetime)-1 as date) as tglsampaisuratpengantar"), 
+            )
+            ->leftJoin(DB::raw("orderantrucking with (readuncommitted)"), 'invoicedetail.orderantrucking_nobukti', '=', 'orderantrucking.nobukti')
+            ->leftJoin(DB::raw("suratpengantar with (readuncommitted)"), 'invoicedetail.suratpengantar_nobukti', '=', 'suratpengantar.nobukti');
 
             $this->sort($query);
             $query->where($this->table . '.invoice_id', '=', request()->invoice_id);
             $this->filter($query);
 
-            $this->totalNominal = $query->sum('nominal');
-            $this->totalTotal = $query->sum('total');
-            $this->totalExtra = $query->sum('nominalextra');
-            $this->totalRetribusi = $query->sum('nominalretribusi');
+            $this->totalNominal = $query->sum('invoicedetail.nominal');
+            $this->totalTotal = $query->sum('invoicedetail.total');
+            $this->totalExtra = $query->sum('invoicedetail.nominalextra');
+            $this->totalRetribusi = $query->sum('invoicedetail.nominalretribusi');
             $this->totalRows = $query->count();
             $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;
 
@@ -240,6 +246,7 @@ class InvoiceDetail extends MyModel
         $invoiceDetail->orderantrucking_nobukti = $data['orderantrucking_nobukti'];
         $invoiceDetail->suratpengantar_nobukti = $data['suratpengantar_nobukti'];
         $invoiceDetail->modifiedby = auth('api')->user()->name;
+        $invoiceDetail->info = html_entity_decode(request()->info);
 
         if (!$invoiceDetail->save()) {
             throw new \Exception("Error storing invoice detail.");

@@ -113,4 +113,9 @@ class KasGantungDetailController extends Controller
             throw $th;
         }
     }
+
+    public function addrow(StoreKasGantungDetailRequest $request)
+    {
+        return true;
+    }
 }

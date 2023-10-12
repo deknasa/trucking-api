@@ -26,6 +26,7 @@ class CreateProsesAbsensiSupirTable extends Migration
             $table->double('nominal',15,2)->nullable();
             $table->unsignedBigInteger('statusformat')->nullable();            
             $table->string('modifiedby', 50)->nullable();
+            $table->longText('info')->nullable();            
             $table->timestamps();
 
 

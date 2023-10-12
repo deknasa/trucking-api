@@ -66,7 +66,10 @@ class PengembalianKasGantungDetail extends MyModel
                 "$this->table.nominal",
                 "$this->table.keterangan",
                 "akunpusat.keterangancoa as coa",
+                db::raw("cast((format(kasgantungheader.tglbukti,'yyyy/MM')+'/1') as date) as tgldariheaderkasgantungheader"),
+                db::raw("cast(cast(format((cast((format(kasgantungheader.tglbukti,'yyyy/MM')+'/1') as datetime)+32),'yyyy/MM')+'/01' as datetime)-1 as date) as tglsampaiheaderkasgantungheader"), 
             )
+            ->leftJoin(DB::raw("kasgantungheader with (readuncommitted)"), 'pengembaliankasgantungdetail.kasgantung_nobukti', '=', 'kasgantungheader.nobukti')
             ->leftJoin("akunpusat", "$this->table.coa", "akunpusat.coa");
             // $query->where($this->table . '.pengembaliankasgantung_id', '=', request()->pengembaliankasgantung_id);
             // dd($query->toSql());
@@ -162,6 +165,7 @@ class PengembalianKasGantungDetail extends MyModel
         $pengembalianKasGantungDetail->keterangan = $data['keterangandetail'];
         $pengembalianKasGantungDetail->kasgantung_nobukti = $data['kasgantung_nobukti'];
         $pengembalianKasGantungDetail->modifiedby = auth('api')->user()->name;
+        $pengembalianKasGantungDetail->info = html_entity_decode(request()->info);
         
         if (!$pengembalianKasGantungDetail->save()) {
             throw new \Exception("Error storing pengembalian Kas Gantung Detail");

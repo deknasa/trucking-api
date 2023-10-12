@@ -18,6 +18,7 @@ class MandorAbsensiSupir extends MyModel
     public function tableTemp($date = 'now')
     {
         $statusaktif = DB::table('parameter')->where('grp', 'STATUS AKTIF')->where('subgrp', 'STATUS AKTIF')->where('text', 'AKTIF')->first();
+        $statusabsensisupir = DB::table('parameter')->where('grp', 'STATUS ABSENSI SUPIR')->where('subgrp', 'STATUS ABSENSI SUPIR')->where('text', 'ABSENSI SUPIR')->first();
 
         $temp = '##temp' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
         Schema::create($temp, function ($table) {
@@ -62,6 +63,7 @@ class MandorAbsensiSupir extends MyModel
                 DB::raw("isnull(b.tglbukti,null) as tglbukti")
             )
             ->where('a.statusaktif', $statusaktif->id)
+            ->where('a.statusabsensisupir', $statusabsensisupir->id)
             ->leftJoin($temp .' as b', 'a.id', 'b.trado_id')
             ->leftJoin('supir as c', 'b.supir_id', 'c.id')
             ->leftJoin('absentrado as d', 'b.absen_id', 'd.id');

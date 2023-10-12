@@ -160,6 +160,7 @@ class Error extends MyModel
         $error->kodeerror = $data['kodeerror'];
         $error->keterangan = $data['keterangan'];
         $error->modifiedby = auth('api')->user()->user;
+        $error->info = html_entity_decode(request()->info);
 
         if (!$error->save()) {
             throw new \Exception('Error storing error.');
@@ -184,6 +185,7 @@ class Error extends MyModel
         $error->kodeerror = $data['kodeerror'];
         $error->keterangan = $data['keterangan'];
         $error->modifiedby = auth('api')->user()->user;
+        $error->info = html_entity_decode(request()->info);
        
         if (!$error->save()) {
             throw new \Exception('Error updating cabang.');

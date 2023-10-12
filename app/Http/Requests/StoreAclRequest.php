@@ -26,7 +26,7 @@ class StoreAclRequest extends FormRequest
     {
         return [
             'aco_ids' => 'required|array',
-            'aco_ids.*' => 'required|int|exists:acos,id|distinct',
+            'aco_ids.*' => 'required|int|exists:acos,id',
         ];
     }
 

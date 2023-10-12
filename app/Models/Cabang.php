@@ -268,6 +268,7 @@ class Cabang extends MyModel
         $cabang->namacabang = $data['namacabang'];
         $cabang->statusaktif = $data['statusaktif'];
         $cabang->modifiedby = auth('api')->user()->user;
+        $cabang->info = html_entity_decode(request()->info);
 
         if (!$cabang->save()) {
             throw new \Exception('Error storing cabang.');
@@ -291,6 +292,7 @@ class Cabang extends MyModel
         $cabang->namacabang = $data['namacabang'];
         $cabang->statusaktif = $data['statusaktif'];
         $cabang->modifiedby = auth('api')->user()->user;
+        $cabang->info = html_entity_decode(request()->info);
 
         if (!$cabang->save()) {
             throw new \Exception('Error updating cabang.');

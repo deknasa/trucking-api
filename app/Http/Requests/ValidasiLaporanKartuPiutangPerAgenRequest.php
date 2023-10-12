@@ -54,14 +54,14 @@ class ValidasiLaporanKartuPiutangPerAgenRequest extends FormRequest
                 'required', 'date_format:d-m-Y',
             ],
             
-            'agendari' => ['required'],
-            'agensampai' => ['required']
+            // 'agendari' => ['required'],
+            // 'agensampai' => ['required']
         ];
 
         $rule = array_merge(
             $rule,
-            $rulesAgenDari,
-            $rulesAgenSampai
+            // $rulesAgenDari,
+            // $rulesAgenSampai
         );
 
         return $rule;

@@ -375,6 +375,7 @@ class JurnalUmumHeaderController extends Controller
             //     'message' => 'Berhasil'
             // ]);
         } catch (\Throwable $th) {
+            DB::rollBack();
             throw $th;
         }
     }

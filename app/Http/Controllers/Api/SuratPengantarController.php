@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Models\SuratPengantar;
+use App\Models\SaldoSuratPengantar;
 use App\Models\SuratPengantarBiayaTambahan;
 use App\Models\Pelanggan;
 use App\Models\UpahSupir;
@@ -33,6 +34,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
+use Illuminate\Support\Facades\Validator;
 
 class SuratPengantarController extends Controller
 {
@@ -118,13 +120,44 @@ class SuratPengantarController extends Controller
     public function show($id)
     {
 
-        $data = SuratPengantar::findAll($id);
-        $detail = SuratPengantarBiayaTambahan::where('suratpengantar_id', $id)->get();
+        $query=db::table("suratpengantar")->from(db::raw("suratpengantar a with (readuncommitted)"))
+        ->select(
+            'a.id'
+        )
+        ->where('a.id',$id)
+        ->first();
+
+        if (isset($query)) {
+            $data = SuratPengantar::findAll($id);
+            $detail = SuratPengantarBiayaTambahan::where('suratpengantar_id', $id)->get();
+        } else {
+            $data = SaldoSuratPengantar::findAll($id);
+            $detail = null;
+        }
+
         return response([
             'status' => true,
             'data' => $data,
             'detail' => $detail
         ]);
+
+        // $data = SuratPengantar::findAll($id);
+        // $detail = SuratPengantarBiayaTambahan::where('suratpengantar_id', $id)->get();
+        // if (isset($data)) {
+        //     return response([
+        //         'status' => true,
+        //         'data' => $data,
+        //         'detail' => $detail
+        //     ]);
+        // } else {
+        //     $data = SaldoSuratPengantar::findAll($id);
+
+        //     return response([
+        //         'status' => true,
+        //         'data' => $data,
+        //         'detail' => $detail
+        //     ]);
+        // }
     }
 
     /**
@@ -167,7 +200,8 @@ class SuratPengantarController extends Controller
                 'keterangan_detail' => $request->keterangan_detail,
                 'nominal' => $request->nominal,
                 'nominalTagih' => $request->nominalTagih,
-
+                'komisisupir' => $request->komisisupir,
+                'gajikenek' => $request->gajikenek
             ];
             $suratPengantar = (new SuratPengantar())->processUpdate($suratpengantar, $data);
             $suratPengantar->position = $this->getPosition($suratPengantar, $suratPengantar->getTable())->position;
@@ -176,6 +210,8 @@ class SuratPengantarController extends Controller
             } else {
                 $suratPengantar->page = ceil($suratPengantar->position / ($request->limit ?? 10));
             }
+            // $suratPengantar->position = $suratpengantar->id;
+            // $suratPengantar->page = 1;
 
 
             DB::commit();
@@ -339,14 +375,14 @@ class SuratPengantarController extends Controller
         $edit = true;
         // if (!$todayValidation) {
         //     $edit = false;
-            // if ($isEditAble) {
-            //     $edit = true;
-            // }
+        // if ($isEditAble) {
+        //     $edit = true;
+        // }
         // }
         // else {
-            if (!$isEditAble) {
-                $edit = false;
-            }
+        if (!$isEditAble) {
+            $edit = false;
+        }
         // }
 
         $cekdata = $suratPengantar->cekvalidasihapus($nobukti->nobukti, $nobukti->jobtrucking);
@@ -502,6 +538,118 @@ class SuratPengantarController extends Controller
         }
     }
 
+    /**
+     * @ClassName 
+     */
+    public function approvalTitipanEmkl(Request $request)
+    {
+
+        $nobukti = $request->nobukti ?? '';
+
+        $jambatas = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))->select('text')->where('grp', '=', 'JAMBATASAPPROVAL')->where('subgrp', '=', 'JAMBATASAPPROVAL')->first();
+        $tglbatas = date('Y-m-d') . ' ' . $jambatas->text ?? '00:00:00';
+
+        DB::beginTransaction();
+        try {
+
+            $querysuratpengantar = DB::table("suratpengantar")->from(db::raw("suratpengantar a with (readuncommitted)"))
+                ->select(
+                    'a.id'
+                )->where('a.nobukti', $nobukti)
+                ->first();
+
+
+            if (isset($querysuratpengantar)) {
+                $id = $querysuratpengantar->id ?? 0;
+                $suratPengantar = SuratPengantar::lockForUpdate()->findOrFail($id);
+
+                $statusApproval = Parameter::from(DB::raw("parameter with (readuncommitted)"))->where('grp', '=', 'STATUS APPROVAL')->where('text', '=', 'APPROVAL')->first();
+                $statusNonApproval = Parameter::from(DB::raw("parameter with (readuncommitted)"))->where('grp', '=', 'STATUS APPROVAL')->where('text', '=', 'NON APPROVAL')->first();
+
+                $jambatas = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))->select('text')->where('grp', '=', 'JAMBATASAPPROVAL')->where('subgrp', '=', 'JAMBATASAPPROVAL')->first();
+                $tglbatas = date('Y-m-d') . ' ' . $jambatas->text ?? '00:00:00';
+
+                if ($suratPengantar->statusapprovalbiayatitipanemkl == $statusApproval->id) {
+                    $suratPengantar->statusapprovalbiayatitipanemkl = $statusNonApproval->id;
+                    $suratPengantar->tglapprovalbiayatitipanemkl = date('Y-m-d', strtotime("1900-01-01"));
+                    $suratPengantar->tglbatasbiayatitipanemkl = '';
+                    $suratPengantar->userapprovalbiayatitipanemkl = '';
+                    $aksi = $statusNonApproval->text;
+                } else {
+                    $suratPengantar->statusapprovalbiayatitipanemkl = $statusApproval->id;
+                    $suratPengantar->tglapprovalbiayatitipanemkl = date('Y-m-d H:i:s');
+                    $suratPengantar->tglbatasbiayatitipanemkl = $tglbatas;
+                    $suratPengantar->userapprovalbiayatitipanemkl = auth('api')->user()->name;
+                    $aksi = $statusApproval->text;
+                }
+                if ($suratPengantar->save()) {
+                    $logTrail = [
+                        'namatabel' => strtoupper($suratPengantar->getTable()),
+                        'postingdari' => "$aksi TITIPAN EMKL SURAT PENGANTAR",
+                        'idtrans' => $suratPengantar->id,
+                        'nobuktitrans' => $suratPengantar->nobukti,
+                        'aksi' => $aksi,
+                        'datajson' => $suratPengantar->toArray(),
+                        'modifiedby' => auth('api')->user()->name
+                    ];
+
+                    $validatedLogTrail = new StoreLogTrailRequest($logTrail);
+                    $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
+
+                    DB::commit();
+                }
+            } else {
+                $querysuratpengantar = DB::table("saldosuratpengantar")->from(db::raw("saldosuratpengantar a with (readuncommitted)"))
+                    ->select(
+                        'a.id'
+                    )->where('a.nobukti', $nobukti)
+                    ->first();
+
+
+                $id = $querysuratpengantar->id ?? 0;
+
+                $saldosuratPengantar = SaldoSuratPengantar::lockForUpdate()->findOrFail($id);
+
+                $statusApproval = Parameter::from(DB::raw("parameter with (readuncommitted)"))->where('grp', '=', 'STATUS APPROVAL')->where('text', '=', 'APPROVAL')->first();
+                $statusNonApproval = Parameter::from(DB::raw("parameter with (readuncommitted)"))->where('grp', '=', 'STATUS APPROVAL')->where('text', '=', 'NON APPROVAL')->first();
+
+                $jambatas = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))->select('text')->where('grp', '=', 'JAMBATASAPPROVAL')->where('subgrp', '=', 'JAMBATASAPPROVAL')->first();
+                $tglbatas = date('Y-m-d') . ' ' . $jambatas->text ?? '00:00:00';
+
+                if ($saldosuratPengantar->statusapprovalbiayatitipanemkl == $statusApproval->id) {
+                    $saldosuratPengantar->statusapprovalbiayatitipanemkl = $statusNonApproval->id;
+                    $saldosuratPengantar->tglapprovalbiayatitipanemkl = date('Y-m-d', strtotime("1900-01-01"));
+                    $saldosuratPengantar->tglbatasbiayatitipanemkl = '';
+                    $saldosuratPengantar->userapprovalbiayatitipanemkl = '';
+                    $aksi = $statusNonApproval->text;
+                } else {
+                    $saldosuratPengantar->statusapprovalbiayatitipanemkl = $statusApproval->id;
+                    $saldosuratPengantar->tglapprovalbiayatitipanemkl = date('Y-m-d H:i:s');
+                    $saldosuratPengantar->tglbatasbiayatitipanemkl = $tglbatas;
+                    $saldosuratPengantar->userapprovalbiayatitipanemkl = auth('api')->user()->name;
+                    $aksi = $statusApproval->text;
+                }
+                ;
+                if ($saldosuratPengantar->save()) {
+
+                    DB::commit();
+                }
+            }
+
+
+
+
+
+
+            return response([
+                'message' => 'Berhasil'
+            ]);
+        } catch (\Throwable $th) {
+            DB::rollBack();
+            throw $th;
+        }
+    }
+
     public function getGaji($dari, $sampai, $container, $statuscontainer)
     {
 
@@ -548,6 +696,45 @@ class SuratPengantarController extends Controller
         $suratPengantar = new SuratPengantar();
         return response([
             'data' => $suratPengantar->getExport($dari, $sampai),
+        ]);
+    }
+
+    public function addrow(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'keterangan_detail.*' => 'required',
+            'nominal.*' => 'required|numeric|gt:0',
+            'nominalTagih.*' => 'required|numeric|gt:0',
+
+        ], [
+            'keterangan_detail.required' => ':attribute' . ' ' . app(ErrorController::class)->geterror('WI')->keterangan,
+            'nominal.required' => ':attribute' . ' ' . app(ErrorController::class)->geterror('WI')->keterangan,
+            'nominalTagih.required' => ':attribute' . ' ' . app(ErrorController::class)->geterror('WI')->keterangan,
+        ], [
+            'keterangan_detail' => 'keterangan',
+            'nominal' => 'nominal',
+            'nominalTagih' => 'nominal Tagih',
+            'keterangan_detail.*' => 'keterangan',
+            'nominal.*' => 'nominal',
+            'nominalTagih.*' => 'nominal Tagih',
+        ]);
+        if ($validator->fails()) {
+
+            return response()->json([
+                "message" => "The given data was invalid.",
+                "errors" => $validator->messages()
+            ], 422);
+        }
+        return true;
+    }
+
+    public function rekapcustomer(Request $request)
+    {
+        $dari = date('Y-m-d', strtotime($request->tgldari));
+        $sampai = date('Y-m-d', strtotime($request->tglsampai));
+        $suratPengantar = new SuratPengantar();
+        return response([
+            'data' => $suratPengantar->getRekapCustomer($dari, $sampai),
         ]);
     }
 }

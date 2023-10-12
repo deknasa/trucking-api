@@ -18,8 +18,6 @@ class KaryawanSeeder extends Seeder
         DB::statement("delete Kota");
         DB::statement("DBCC CHECKIDENT ('Kota', RESEED, 1);");
 
-        karyawan::create(['namakaryawan' => 'DONAL T SINAGA', 'keterangan' => 'DONAL T SINAGA', 'statusaktif' => '1', 'statusstaff' => '280', 'modifiedby' => 'ADMIN',]);
-        karyawan::create(['namakaryawan' => 'JOKO SUKIRNO', 'keterangan' => 'JOKO SUKIRNO', 'statusaktif' => '1', 'statusstaff' => '280', 'modifiedby' => 'ADMIN',]);
-        karyawan::create(['namakaryawan' => 'NG BIN SAN', 'keterangan' => 'NG BIN SAN', 'statusaktif' => '1', 'statusstaff' => '280', 'modifiedby' => 'ADMIN',]);
+       
     }
 }

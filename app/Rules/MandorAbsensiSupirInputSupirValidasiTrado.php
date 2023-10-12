@@ -68,7 +68,7 @@ class MandorAbsensiSupirInputSupirValidasiTrado implements Rule
         )
         ->join(db::Raw("absensisupirdetail as b with (readuncommitted)"),'a.id','b.absensi_id')
         ->join(db::Raw("trado as c with (readuncommitted)"),'b.trado_id','c.id')
-        ->whereRaw("a.tglbukti='".date('Y-m-d')."'")
+        ->whereRaw("a.tglbukti='".date('Y-m-d', strtotime(request()->tglbukti))."'")
         ->where('b.supir_id','=',request()->supir_id)
         ->first();
 

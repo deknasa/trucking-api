@@ -54,7 +54,7 @@ class LaporanHistoryDepositoController extends Controller
         $laporanhistorydeposito = new LaporanHistoryDeposito();
 
 
-        $laporan_historydeposito= $laporanhistorydeposito->getExport($supirdari_id);
+        $laporan_historydeposito= $laporanhistorydeposito->getReport($supirdari_id);
         foreach($laporan_historydeposito as $item){
             $item->tglbukti = date('d-m-Y', strtotime($item->tglbukti));
         }

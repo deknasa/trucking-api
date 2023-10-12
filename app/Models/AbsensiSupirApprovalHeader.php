@@ -52,12 +52,19 @@ class AbsensiSupirApprovalHeader extends MyModel
             'absensisupirapprovalheader.modifiedby',
             'absensisupirapprovalheader.updated_at',
             'absensisupirapprovalheader.created_at',
+            db::raw("cast((format(pengeluaran.tglbukti,'yyyy/MM')+'/1') as date) as tgldariheaderpengeluaranheader"),
+            db::raw("cast(cast(format((cast((format(pengeluaran.tglbukti,'yyyy/MM')+'/1') as datetime)+32),'yyyy/MM')+'/01' as datetime)-1 as date) as tglsampaiheaderpengeluaranheader"), 
+            db::raw("cast((format(absensisupir.tglbukti,'yyyy/MM')+'/1') as date) as tgldariheaderabsensisupirheader"),
+            db::raw("cast(cast(format((cast((format(absensisupir.tglbukti,'yyyy/MM')+'/1') as datetime)+32),'yyyy/MM')+'/01' as datetime)-1 as date) as tglsampaiheaderabsensisupirheader"), 
+
         )
 
-            ->whereBetween('tglbukti', [date('Y-m-d', strtotime(request()->tgldari)), date('Y-m-d', strtotime(request()->tglsampai))])
+            ->whereBetween('absensisupirapprovalheader.tglbukti', [date('Y-m-d', strtotime(request()->tgldari)), date('Y-m-d', strtotime(request()->tglsampai))])
             ->leftJoin(DB::raw("akunpusat with (readuncommitted)"), 'absensisupirapprovalheader.coakaskeluar', 'akunpusat.coa')
             ->leftJoin(DB::raw("parameter as statusapproval with (readuncommitted)"), 'absensisupirapprovalheader.statusapproval', 'statusapproval.id')
             ->leftJoin(DB::raw("parameter as statuscetak with (readuncommitted)"), 'absensisupirapprovalheader.statuscetak', 'statuscetak.id')
+            ->leftJoin(DB::raw("pengeluaranheader as pengeluaran with (readuncommitted)"), 'absensisupirapprovalheader.pengeluaran_nobukti', '=', 'pengeluaran.nobukti')
+            ->leftJoin(DB::raw("absensisupirheader as absensisupir with (readuncommitted)"), 'absensisupirapprovalheader.absensisupir_nobukti', '=', 'absensisupir.nobukti')
             ->leftJoin(DB::raw("parameter as statusformat with (readuncommitted)"), 'absensisupirapprovalheader.statusformat', 'statusformat.id');
 
 
@@ -83,7 +90,8 @@ class AbsensiSupirApprovalHeader extends MyModel
                 DB::raw("absensisupirapprovalheader as a with (readuncommitted)")
             )
             ->select(
-                'a.nobukti'
+                'a.nobukti',
+                'a.pengeluaran_nobukti'
             )
             ->join(DB::raw("jurnalumumpusatheader b with (readuncommitted)"), 'a.pengeluaran_nobukti', 'b.nobukti')
             ->where('a.nobukti', '=', $get->nobukti)
@@ -91,7 +99,7 @@ class AbsensiSupirApprovalHeader extends MyModel
         if (isset($absensiSupir)) {
             $data = [
                 'kondisi' => true,
-                'keterangan' => 'Approval Jurnal',
+                'keterangan' => 'Approval Jurnal '. $absensiSupir->pengeluaran_nobukti,
                 'kodeerror' => 'SATL'
             ];
             goto selesai;
@@ -411,6 +419,7 @@ class AbsensiSupirApprovalHeader extends MyModel
         $absensiSupirApprovalHeader->postingdari =  "ABSENSI SUPIR APPROVAL";
         $absensiSupirApprovalHeader->statuscetak = $statusCetak->id ?? 0;
         $absensiSupirApprovalHeader->modifiedby =  auth('api')->user()->name;
+        $absensiSupirApprovalHeader->info = html_entity_decode(request()->info);
         $absensiSupirApprovalHeader->nobukti = (new RunningNumberService)->get($group, $subGroup, $absensiSupirApprovalHeader->getTable(), date('Y-m-d', strtotime($data['tglbukti'])));
 
         if (!$absensiSupirApprovalHeader->save()) {
@@ -503,6 +512,7 @@ class AbsensiSupirApprovalHeader extends MyModel
         $absensiSupirApprovalHeader->postingdari =  "ABSENSI SUPIR APPROVAL";
         $absensiSupirApprovalHeader->statuscetak = $statusCetak->id ?? 0;
         $absensiSupirApprovalHeader->modifiedby =  auth('api')->user()->name;
+        $absensiSupirApprovalHeader->info = html_entity_decode(request()->info);
 
         if (!$absensiSupirApprovalHeader->save()) {
             throw new \Exception("Error storing absensi Supir Approval Header.");

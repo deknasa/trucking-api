@@ -42,10 +42,12 @@ class PenerimaanTruckingDetail extends MyModel
         if (isset(request()->forReport) && request()->forReport) {
             $query->select(
                 "supir.namasupir as supir_id",
+                "karyawan.namakaryawan as karyawan_id",
                 "$this->table.pengeluarantruckingheader_nobukti",
                 "$this->table.nominal",
                 "$this->table.keterangan",
             )
+                ->leftJoin(DB::raw("karyawan with (readuncommitted)"), "$this->table.karyawan_id", "karyawan.id")
                 ->leftJoin(DB::raw("supir with (readuncommitted)"), "$this->table.supir_id", "supir.id");
         } else {
             $query->select(
@@ -53,9 +55,14 @@ class PenerimaanTruckingDetail extends MyModel
                 "$this->table.nominal",
                 "$this->table.keterangan",
 
+                "karyawan.namakaryawan as karyawan_id",
                 "supir.namasupir as supir_id",
                 "$this->table.pengeluarantruckingheader_nobukti",
+                db::raw("cast((format(pengeluarantruckingheader.tglbukti,'yyyy/MM')+'/1') as date) as tgldariheaderpengeluarantruckingheader"),
+                db::raw("cast(cast(format((cast((format(pengeluarantruckingheader.tglbukti,'yyyy/MM')+'/1') as datetime)+32),'yyyy/MM')+'/01' as datetime)-1 as date) as tglsampaiheaderpengeluarantruckingheader"), 
             )
+                ->leftJoin(DB::raw("pengeluarantruckingheader with (readuncommitted)"), 'penerimaantruckingdetail.pengeluarantruckingheader_nobukti', '=', 'pengeluarantruckingheader.nobukti')
+                ->leftJoin(DB::raw("karyawan with (readuncommitted)"), "$this->table.karyawan_id", "karyawan.id")
                 ->leftJoin(DB::raw("supir with (readuncommitted)"), "$this->table.supir_id", "supir.id");
             $this->totalNominal = $query->sum('nominal');
             $this->filter($query);
@@ -195,7 +202,7 @@ class PenerimaanTruckingDetail extends MyModel
             $this->totalNominalDeposito = 0;
         }
     }
-    
+
     public function getBBM($nobukti)
     {
         $bbm = GajiSupirBBM::from(DB::raw("gajisupirbbm with (readuncommitted)"))
@@ -270,7 +277,7 @@ class PenerimaanTruckingDetail extends MyModel
             }
         }
     }
-    
+
     public function sort($query)
     {
         if ($this->params['sortIndex'] == 'supir_id') {
@@ -288,9 +295,9 @@ class PenerimaanTruckingDetail extends MyModel
 
     public function processStore(PenerimaanTruckingHeader $penerimaanTruckingHeader, array $data): PenerimaanTruckingDetail
     {
-        
+
         $penerimaantruckingDetail = new PenerimaanTruckingDetail();
-        
+
         $penerimaantruckingDetail->penerimaantruckingheader_id = $data['penerimaantruckingheader_id'];
         $penerimaantruckingDetail->nobukti = $data['nobukti'];
         $penerimaantruckingDetail->supir_id = $data['supir_id'];
@@ -299,12 +306,12 @@ class PenerimaanTruckingDetail extends MyModel
         $penerimaantruckingDetail->keterangan = $data['keterangan'];
         $penerimaantruckingDetail->nominal = $data['nominal'];
         $penerimaantruckingDetail->modifiedby = auth('api')->user()->name;
-        
+        $penerimaantruckingDetail->info = html_entity_decode(request()->info);
+
         if (!$penerimaantruckingDetail->save()) {
             throw new \Exception("Error storing Penerimaan Trucking Detail.");
         }
 
         return $penerimaantruckingDetail;
     }
-
 }

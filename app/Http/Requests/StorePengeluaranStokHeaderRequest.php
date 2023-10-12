@@ -35,7 +35,9 @@ class StorePengeluaranStokHeaderRequest extends FormRequest
         $gst = DB::table('parameter')->where('grp', 'GST STOK')->where('subgrp', 'GST STOK')->first();
         $reuse = DB::table('parameter')->where('grp', 'STATUS REUSE')->where('text', 'REUSE')->first();
         $korv = DB::table('pengeluaranstok')->where('kodepengeluaran', 'KORV')->first();
+        $afkir = DB::table('pengeluaranstok')->where('kodepengeluaran', 'AFKIR')->first();
         
+        $afkirRules = [];
         
         $rules = [
             "tglbukti" => [
@@ -82,7 +84,7 @@ class StorePengeluaranStokHeaderRequest extends FormRequest
                 }),
             ];
             $salahSatuDari = Rule::requiredIf(function () use ($spk) {
-                if ((empty($this->input('trado')) && empty($this->input('gandengan')) && $this->input('pengeluaranstok_id')) == $spk->text) {
+                if ((empty($this->input('trado')) && empty($this->input('gandengan')) && empty($this->input('gudang')) && $this->input('pengeluaranstok_id')) == $spk->text) {
                     return true;
                 }
                 return false;
@@ -90,7 +92,7 @@ class StorePengeluaranStokHeaderRequest extends FormRequest
             $gudangTradoGandengan = [
                 'trado' => $salahSatuDari,
                 'gandengan' => $salahSatuDari,
-                'gudang' => "",
+                'gudang' => $salahSatuDari,
             ];
         }
         if ($gst->text == request()->pengeluaranstok_id) {
@@ -111,15 +113,26 @@ class StorePengeluaranStokHeaderRequest extends FormRequest
             $returRules = [
                 'penerimaanstok_nobukti' => 'required',
                 'statuspotongretur' => 'required',
-                'bank_id' => 'required',
-                'bank' => 'required'
+                
             ];
-            // $potongHutang = DB::table('parameter')->where('grp', 'STATUS POTONG RETUR')->where('text', 'POTONG HUTANG')->first();
-            // if (request()->statuspotongretur ==$potongHutang->id) {
-            //     $returRules = array_merge($returRules,["penerimaanstok_nobukti"=>'required']);
-            // }
+            $potongKas = DB::table('parameter')->where('grp', 'STATUS POTONG RETUR')->where('text', 'POSTING KE KAS/BANK')->first();
+            if (request()->statuspotongretur == $potongKas->id) {
+                $returRules = array_merge($returRules,['bank_id' => 'required','bank' => 'required']);
+            }
         }
-        $rules = array_merge($rules, $gudangTradoGandengan,$returRules,$spkRules);
+        $afkirRules = [];
+        if($afkir->id == request()->pengeluaranstok_id) {
+            $afkirRules = [
+                'pengeluarantrucking_nobukti' => function ($attribute, $value, $fail){
+                    if(request()->detail_vulkanisirke[0] > 3){
+                        $fail('pengeluaran trucking '.app(ErrorController::class)->geterror('WI')->keterangan);
+                    }
+                }  
+            ];
+        }
+
+        
+        $rules = array_merge($rules, $gudangTradoGandengan,$returRules,$spkRules,$afkirRules);
         
         $relatedRequests = [
             StorePengeluaranStokDetailRequest::class

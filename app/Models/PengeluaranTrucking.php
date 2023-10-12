@@ -60,6 +60,33 @@ class PengeluaranTrucking extends MyModel
     {
         $this->setRequestParameters();
 
+        $roleinput = request()->roleinput ?? '';
+        $user_id = auth('api')->user()->id ?? 0;
+
+        $temprole = '##temprole' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+        Schema::create($temprole, function ($table) {
+            $table->bigInteger('aco_id')->nullable();
+        });
+
+        $queryaco = db::table("useracl")->from(db::raw("useracl a with (readuncommitted)"))
+            ->select('a.aco_id')
+            ->join(db::raw("pengeluarantrucking b with (readuncommitted)"), 'a.aco_id', 'b.aco_id')
+            ->where('a.user_id', $user_id);
+
+        DB::table($temprole)->insertUsing(['aco_id'], $queryaco);
+
+
+        $queryrole = db::table("acl")->from(db::raw("acl a with (readuncommitted)"))
+            ->select('a.aco_id')
+            ->join(db::raw("userrole b with (readuncommitted)"), 'a.role_id', 'b.role_id')
+            ->join(db::raw("pengeluarantrucking c with (readuncommitted)"), 'a.aco_id', 'c.aco_id')
+            ->leftjoin(db::raw($temprole ." d "), 'a.aco_id', 'd.aco_id')
+            ->where('b.user_id', $user_id)
+            ->whereRaw("isnull(d.aco_id,0)=0");
+
+        DB::table($temprole)->insertUsing(['aco_id'], $queryrole);
+
+
         $getJudul = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))
             ->select('text')
             ->where('grp', 'JUDULAN LAPORAN')
@@ -86,7 +113,7 @@ class PengeluaranTrucking extends MyModel
                 DB::raw("'Laporan Pengeluaran Trucking' as judulLaporan"),
                 DB::raw("'" . $getJudul->text . "' as judul"),
                 DB::raw("'Tgl Cetak :'+format(getdate(),'dd-MM-yyyy HH:mm:ss')as tglcetak"),
-                DB::raw(" 'User :".auth('api')->user()->name."' as usercetak")
+                DB::raw(" 'User :" . auth('api')->user()->name . "' as usercetak")
             )
 
             ->leftJoin(DB::raw("akunpusat as debet  with (readuncommitted)"), "pengeluarantrucking.coadebet", "debet.coa")
@@ -95,11 +122,17 @@ class PengeluaranTrucking extends MyModel
             ->leftJoin(DB::raw("akunpusat as postingkredit  with (readuncommitted)"), "pengeluarantrucking.coapostingkredit", "postingkredit.coa")
             ->leftJoin(DB::raw("parameter with (readuncommitted)"), 'pengeluarantrucking.format', 'parameter.id');
 
+        $this->filter($query);
+
+        if ($roleinput != '') {
+            $query->join(db::raw($temprole ." d "), 'pengeluarantrucking.aco_id', 'd.aco_id');
+
+        }
+
         $this->totalRows = $query->count();
         $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;
 
         $this->sort($query);
-        $this->filter($query);
         $this->paginate($query);
 
         $data = $query->get();
@@ -273,6 +306,7 @@ class PengeluaranTrucking extends MyModel
         $pengeluaranTrucking->coapostingkredit = $data['coapostingkredit'];
         $pengeluaranTrucking->format = $data['format'];
         $pengeluaranTrucking->modifiedby = auth('api')->user()->name;
+        $pengeluaranTrucking->info = html_entity_decode(request()->info);
 
         // TOP:
 
@@ -303,6 +337,7 @@ class PengeluaranTrucking extends MyModel
         $pengeluaranTrucking->coapostingkredit = $data['coapostingkredit'] ?? '';
         $pengeluaranTrucking->format = $data['format'];
         $pengeluaranTrucking->modifiedby = auth('api')->user()->name;
+        $pengeluaranTrucking->info = html_entity_decode(request()->info);
 
         if (!$pengeluaranTrucking->save()) {
             throw new \Exception("Error update service in header.");

@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 use App\Helpers\App;
+use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Storage;
 
 
@@ -40,7 +41,7 @@ class Supir extends MyModel
                 goto selesai;
             }
         } else {
-            
+
             if ($cekTglResign->tglberhentisupir != null) {
                 $data = [
                     'kondisi' => true,
@@ -251,8 +252,10 @@ class Supir extends MyModel
                 'supir.keteranganresign',
                 'supir.keteranganberhentisupir',
                 'statusblacklist.memo as statusblacklist',
+                'statuspostingtnl.memo as statuspostingtnl',
                 DB::raw('(case when (year(supir.tglberhentisupir) <= 2000) then null else supir.tglberhentisupir end ) as tglberhentisupir'),
-
+                db::raw("cast((format(pemutihansupir.tglbukti,'yyyy/MM')+'/1') as date) as tgldariheaderpemutihansupir"),
+                db::raw("cast(cast(format((cast((format(pemutihansupir.tglbukti,'yyyy/MM')+'/1') as datetime)+32),'yyyy/MM')+'/01' as datetime)-1 as date) as tglsampaiheaderpemutihansupir"),  
                 'supir.modifiedby',
                 'supir.created_at',
                 'supir.updated_at',
@@ -267,6 +270,8 @@ class Supir extends MyModel
             ->leftJoin(DB::raw("parameter as statusluarkota with (readuncommitted)"), 'supir.statusluarkota', '=', 'statusluarkota.id')
             ->leftJoin(DB::raw("parameter as statuszonatertentu with (readuncommitted)"), 'supir.statuszonatertentu', '=', 'statuszonatertentu.id')
             ->leftJoin(DB::raw("parameter as statusblacklist with (readuncommitted)"), 'supir.statusblacklist', '=', 'statusblacklist.id')
+            ->leftJoin(DB::raw("parameter as statuspostingtnl with (readuncommitted)"), 'supir.statuspostingtnl', '=', 'statuspostingtnl.id')
+            ->leftJoin(DB::raw("pemutihansupirheader as pemutihansupir with (readuncommitted)"), 'supir.pemutihansupir_nobukti', '=', 'pemutihansupir.nobukti')
             ->leftJoin(DB::raw("supir as supirlama with (readuncommitted)"), 'supir.supirold_id', '=', 'supirlama.id');
 
 
@@ -297,6 +302,7 @@ class Supir extends MyModel
         $this->sort($query);
         $this->paginate($query);
 
+        // dd($query->toSql());
         $data = $query->get();
 
         return $data;
@@ -312,6 +318,7 @@ class Supir extends MyModel
             $table->unsignedBigInteger('statusluarkota')->nullable();
             $table->unsignedBigInteger('statuszonatertentu')->nullable();
             $table->unsignedBigInteger('statusblacklist')->nullable();
+            $table->unsignedBigInteger('statuspostingtnl')->nullable();
         });
 
         // AKTIF
@@ -386,7 +393,18 @@ class Supir extends MyModel
 
 
         $iddefaultstatusBlacklist = $status->id ?? 0;
+        $status = Parameter::from(
+            db::Raw("parameter with (readuncommitted)")
+        )
+            ->select(
+                'id'
+            )
+            ->where('grp', '=', 'STATUS POSTING TNL')
+            ->where('subgrp', '=', 'STATUS POSTING TNL')
+            ->where('default', '=', 'YA')
+            ->first();
 
+        $iddefaultstatuspostingtnl = $status->id ?? 0;
 
 
         DB::table($tempdefault)->insert(
@@ -396,6 +414,7 @@ class Supir extends MyModel
                 "statusluarkota" => $iddefaultstatusLuarKota,
                 "statuszonatertentu" => $iddefaultstatusZonaTertentu,
                 "statusblacklist" => $iddefaultstatusBlacklist,
+                "statuspostingtnl" => $iddefaultstatuspostingtnl
             ]
         );
 
@@ -407,7 +426,8 @@ class Supir extends MyModel
                 'statusadaupdategambar',
                 'statusluarkota',
                 'statuszonatertentu',
-                'statusblacklist'
+                'statusblacklist',
+                'statuspostingtnl',
             );
 
         $data = $query->first();
@@ -472,6 +492,7 @@ class Supir extends MyModel
                 'supir.keteranganresign',
                 'supir.keteranganberhentisupir',
                 'supir.statusblacklist',
+                'supir.statuspostingtnl',
                 'supir.tglberhentisupir',
                 'supir.tgllahir',
                 'supir.tglterbitsim',
@@ -524,7 +545,7 @@ class Supir extends MyModel
                 $this->table.tglberhentisupir,
                 statusblacklist.memo as statusblacklist,
                 $this->table.pemutihansupir_nobukti,
-
+                statuspostingtnl.memo as statuspostingtnl,
             $this->table.modifiedby,
             $this->table.created_at,
             $this->table.updated_at"
@@ -534,6 +555,7 @@ class Supir extends MyModel
             ->leftJoin(DB::raw("parameter with (readuncommitted)"), 'supir.statusaktif', '=', 'parameter.id')
             ->leftJoin(DB::raw("parameter as statusluarkota with (readuncommitted)"), 'supir.statusluarkota', '=', 'statusluarkota.id')
             ->leftJoin(DB::raw("parameter as statusblacklist with (readuncommitted)"), 'supir.statusblacklist', '=', 'statusblacklist.id')
+            ->leftJoin(DB::raw("parameter as statuspostingtnl with (readuncommitted)"), 'supir.statuspostingtnl', '=', 'statuspostingtnl.id')
             ->leftJoin('supir as supirlama', 'supir.supirold_id', '=', 'supirlama.id');
     }
 
@@ -572,6 +594,7 @@ class Supir extends MyModel
             $table->date('tglberhentisupir')->nullable();
             $table->longText('statusblacklist',)->nullable();
             $table->string('pemutihansupir_nobukti')->nullable();
+            $table->longText('statuspostingtnl')->nullable();
 
             $table->string('modifiedby', 50)->nullable();
             $table->dateTime('created_at')->nullable();
@@ -615,6 +638,7 @@ class Supir extends MyModel
             'tglberhentisupir',
             'statusblacklist',
             'pemutihansupir_nobukti',
+            'statuspostingtnl',
             'modifiedby',
             'created_at',
             'updated_at'
@@ -650,6 +674,8 @@ class Supir extends MyModel
                             $query = $query->where('statuszonatertentu.text', '=', $filters['data']);
                         } else if ($filters['field'] == 'statusblacklist') {
                             $query = $query->where('statusblacklist.text', '=', $filters['data']);
+                        } else if ($filters['field'] == 'statuspostingtnl') {
+                            $query = $query->where('statuspostingtnl.text', '=', $filters['data']);
                         } else if ($filters['field'] == 'zona_id') {
                             $query = $query->where('zona.zona', 'LIKE', "%$filters[data]%");
                         } else if ($filters['field'] == 'supirold_id') {
@@ -680,6 +706,8 @@ class Supir extends MyModel
                                 $query = $query->orWhere('statuszonatertentu.text', '=', $filters['data']);
                             } else if ($filters['field'] == 'statusblacklist') {
                                 $query = $query->orWhere('statusblacklist.text', '=', $filters['data']);
+                            } else if ($filters['field'] == 'statuspostingtnl') {
+                                $query = $query->orWhere('statuspostingtnl.text', '=', $filters['data']);
                             } else if ($filters['field'] == 'zona_id') {
                                 $query = $query->orWhere('zona.zona', 'LIKE', "%$filters[data]%");
                             } else if ($filters['field'] == 'supirold_id') {
@@ -832,6 +860,38 @@ class Supir extends MyModel
         return json_encode($storedFiles);
     }
 
+    private function storePdfFilesBase64(array $files, string $destinationFolder): string
+    {
+        $storedFiles = [];
+
+        foreach ($files as $file) {
+            $originalFileName = "SURAT-" . hash('sha256', $file) . '.pdf';
+            $pdfData = base64_decode($file);
+            $storedFile = Storage::put('supir/' . $destinationFolder . '/' . $originalFileName, $pdfData);
+            $storedFiles[] = $originalFileName;
+        }
+
+        return json_encode($storedFiles);
+    }
+
+    private function storeFilesBase64(array $files, string $destinationFolder): string
+    {
+        $storedFiles = [];
+        if ($destinationFolder == 'supir') {
+            $destinationFolder = 'profil';
+        }
+        foreach ($files as $file) {
+            $originalFileName = "$destinationFolder-" . hash('sha256', $file) . '.jpg';
+            $imageData = base64_decode($file);
+            $storedFile = Storage::put('supir/' . $destinationFolder . '/' . $originalFileName, $imageData);
+            $resizedFiles = App::imageResize(storage_path("app/supir/$destinationFolder/"), storage_path("app/supir/$destinationFolder/$originalFileName"), $originalFileName);
+
+            $storedFiles[] = $originalFileName;
+        }
+
+        return json_encode($storedFiles);
+    }
+
     public function processStore(array $data): Supir
     {
         try {
@@ -874,21 +934,34 @@ class Supir extends MyModel
             $supir->plafondeposito = str_replace(',', '', $data['plafondeposito']) ?? 0;
             $supir->tgllahir = date('Y-m-d', strtotime($data['tgllahir']));
             $supir->tglterbitsim = date('Y-m-d', strtotime($data['tglterbitsim']));
+            $supir->statuspostingtnl = $data['statuspostingtnl'];
             $supir->modifiedby = auth('api')->user()->user;
+            $supir->info = html_entity_decode(request()->info);
 
             $supir->statusadaupdategambar = $statusAdaUpdateGambar->id;
             $supir->statusluarkota = $statusLuarKota->id;
             $supir->statuszonatertentu = $statusZonaTertentu->id;
             $supir->statusblacklist = $statusBlackList->id;
 
-            $supir->photosupir = $data['photosupir'];
-            $supir->photoktp = $data['photoktp'];
-            $supir->photosim = $data['photosim'];
-            $supir->photokk = $data['photokk'];
-            $supir->photoskck = $data['photoskck'];
-            $supir->photodomisili = $data['photodomisili'];
-            $supir->photovaksin = $data['photovaksin'];
-            $supir->pdfsuratperjanjian = $data['pdfsuratperjanjian'];
+            if ($data['from'] != '') {
+                $supir->photosupir = $this->storeFilesBase64($data['photosupir'], 'supir');
+                $supir->photoktp = $this->storeFilesBase64($data['photoktp'], 'ktp');
+                $supir->photosim = $this->storeFilesBase64($data['photosim'], 'sim');
+                $supir->photokk = $this->storeFilesBase64($data['photokk'], 'kk');
+                $supir->photoskck = $this->storeFilesBase64($data['photoskck'], 'skck');
+                $supir->photodomisili = $this->storeFilesBase64($data['photodomisili'], 'domisili');
+                $supir->photovaksin = $this->storeFilesBase64($data['photovaksin'], 'vaksin');
+                $supir->pdfsuratperjanjian = $this->storePdfFilesBase64($data['pdfsuratperjanjian'], 'suratperjanjian');
+            } else {
+                $supir->photosupir = (count($data['photosupir']) > 0) ? $this->storeFiles($data['photosupir'], 'supir') : '';
+                $supir->photoktp = (count($data['photoktp']) > 0) ? $this->storeFiles($data['photoktp'], 'ktp') : '';
+                $supir->photosim = (count($data['photosim']) > 0) ? $this->storeFiles($data['photosim'], 'sim') : '';
+                $supir->photokk = (count($data['photokk']) > 0) ? $this->storeFiles($data['photokk'], 'kk') : '';
+                $supir->photoskck = (count($data['photoskck']) > 0) ? $this->storeFiles($data['photoskck'], 'skck') : '';
+                $supir->photodomisili = (count($data['photodomisili']) > 0) ? $this->storeFiles($data['photodomisili'], 'domisili') : '';
+                $supir->photovaksin = (count($data['photovaksin']) > 0) ? $this->storeFiles($data['photovaksin'], 'vaksin') : '';
+                $supir->pdfsuratperjanjian = (count($data['pdfsuratperjanjian']) > 0) ? $this->storePdfFiles($data['pdfsuratperjanjian'], 'suratperjanjian') : '';
+            }
 
             if (!$supir->save()) {
                 throw new \Exception("Error storing supir.");
@@ -918,6 +991,7 @@ class Supir extends MyModel
                 'modifiedby' => $supir->modifiedby
             ]);
 
+            
             return $supir;
         } catch (\Throwable $th) {
             $this->deleteFiles($supir);
@@ -962,6 +1036,7 @@ class Supir extends MyModel
             $supir->tgllahir = date('Y-m-d', strtotime($data['tgllahir']));
             $supir->tglterbitsim = date('Y-m-d', strtotime($data['tglterbitsim']));
             $supir->modifiedby = auth('api')->user()->name;
+            $supir->info = html_entity_decode(request()->info);
 
             $this->deleteFiles($supir);
 
@@ -1026,6 +1101,98 @@ class Supir extends MyModel
         $this->deleteFiles($supir);
 
         return $supir;
+    }
+
+    public function postingTnl($data, $gambar)
+    {
+        $photoSupir = json_decode($gambar['supir']);
+        $photoKtp = json_decode($gambar['ktp']);
+        $photoSim = json_decode($gambar['sim']);
+        $photoKk = json_decode($gambar['kk']);
+        $photoSkck = json_decode($gambar['skck']);
+        $photoDomisili = json_decode($gambar['domisili']);
+        $photoVaksin = json_decode($gambar['vaksin']);
+        $photoPDF = json_decode($gambar['pdfsuratperjanjian']);
+
+        $server = config('app.server_jkt');
+        $getToken = Http::withHeaders([
+            'Content-Type' => 'application/json',
+            'Accept' => 'application/json'
+        ])
+            ->post($server . 'truckingtnl-api/public/api/token', [
+                'user' => 'ADMIN',
+                'password' => getenv('PASSWORD_TNL'),
+                'ipclient' => '',
+                'ipserver' => '',
+                'latitude' => '',
+                'longitude' => '',
+                'browser' => '',
+                'os' => '',
+            ]);
+        if ($getToken->getStatusCode() == '404') {
+            throw new \Exception("Akun Tidak Terdaftar di Trucking TNL");
+        } else if ($getToken->getStatusCode() == '200') {
+
+            $access_token = json_decode($getToken, TRUE)['access_token'];
+
+            foreach ($photoSupir as $imagePath) {
+                $supirBase64[] = base64_encode(file_get_contents(storage_path("app/supir/profil/" . $imagePath)));
+            }
+            foreach ($photoKtp as $imagePath) {
+                $ktpBase64[] = base64_encode(file_get_contents(storage_path("app/supir/ktp/" . $imagePath)));
+            }
+            foreach ($photoSim as $imagePath) {
+                $simBase64[] = base64_encode(file_get_contents(storage_path("app/supir/sim/" . $imagePath)));
+            }
+            foreach ($photoKk as $imagePath) {
+                $kkBase64[] = base64_encode(file_get_contents(storage_path("app/supir/kk/" . $imagePath)));
+            }
+            foreach ($photoSkck as $imagePath) {
+                $skckBase64[] = base64_encode(file_get_contents(storage_path("app/supir/skck/" . $imagePath)));
+            }
+            foreach ($photoDomisili as $imagePath) {
+                $domisiliBase64[] = base64_encode(file_get_contents(storage_path("app/supir/domisili/" . $imagePath)));
+            }
+            foreach ($photoVaksin as $imagePath) {
+                $vaksinBase64[] = base64_encode(file_get_contents(storage_path("app/supir/vaksin/" . $imagePath)));
+            }
+            foreach ($photoPDF as $imagePath) {
+                $pdfBase64[] = base64_encode(file_get_contents(storage_path("app/supir/suratperjanjian/" . $imagePath)));
+            }
+            $data['photosupir'] = $supirBase64;
+            $data['photoktp'] = $ktpBase64;
+            $data['photosim'] = $simBase64;
+            $data['photokk'] = $kkBase64;
+            $data['photoskck'] = $skckBase64;
+            $data['photodomisili'] = $domisiliBase64;
+            $data['photovaksin'] = $vaksinBase64;
+            $data['pdfsuratperjanjian'] = $pdfBase64;
+            $data['from'] = 'jkt';
+            $copySupir = Http::withHeaders([
+                'Accept' => 'application/json',
+                'Authorization' => 'Bearer ' . $access_token,
+                'Content-Type' => 'application/json',
+            ])
+
+                ->post($server . "truckingtnl-api/public/api/supir", $data);
+
+            $tesResp = $copySupir->toPsrResponse();
+            $response = [
+                'statuscode' => $tesResp->getStatusCode(),
+                'data' => $copySupir->json(),
+            ];
+            $dataResp = $copySupir->json();
+            if ($tesResp->getStatusCode() != 201) {
+                if ($tesResp->getStatusCode() == 422) {
+                    throw new \Exception($dataResp['errors']['namasupir'][0] . ' di TNL');
+                } else {
+                    throw new \Exception($dataResp['message']);
+                }
+            }
+            return $response;
+        } else {
+            throw new \Exception("server tidak bisa diakses");
+        }
     }
 
     public function processStatusNonAktifKeterangan($noktp)

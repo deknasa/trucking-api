@@ -84,6 +84,7 @@ class KaryawanController extends Controller
                 'keterangan' => $request->keterangan ?? '',
                 'statusaktif' => $request->statusaktif,
                 'statusstaff' => $request->statusstaff,
+                'jabatan' => $request->jabatan,
             ];
             $karyawan = (new Karyawan())->processStore($data);
             $karyawan->position = $this->getPosition($karyawan, $karyawan->getTable())->position;
@@ -127,6 +128,7 @@ class KaryawanController extends Controller
                 'keterangan' => $request->keterangan ?? '',
                 'statusaktif' => $request->statusaktif,
                 'statusstaff' => $request->statusstaff,
+                'jabatan' => $request->jabatan,
             ];
             $karyawan = (new Karyawan())->processUpdate($karyawan, $data);
             $karyawan->position = $this->getPosition($karyawan, $karyawan->getTable())->position;
@@ -270,6 +272,10 @@ class KaryawanController extends Controller
                 [
                     'label' => 'Status Staff',
                     'index' => 'statusstaff',
+                ],
+                [
+                    'label' => 'Jabatan',
+                    'index' => 'jabatan',
                 ],
                 [
                     'label' => 'Status Aktif',

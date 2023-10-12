@@ -22,7 +22,7 @@ class CreateabsensisupirheaderTable extends Migration
             $table->string('nobukti', 50)->unique();
             $table->date('tglbukti')->nullable();
             $table->longText('keterangan')->nullable();            
-            $table->string('kasgantung_nobukti', 50)->unique();
+            $table->string('kasgantung_nobukti', 50)->nullable();
             $table->double('nominal',15,2)->nullable();
             $table->unsignedBigInteger('statusformat')->nullable();
             $table->integer('statuscetak')->Length(11)->nullable();
@@ -33,15 +33,14 @@ class CreateabsensisupirheaderTable extends Migration
             $table->string('userapprovaleditabsensi',50)->nullable();
             $table->date('tglapprovaleditabsensi')->nullable();
             $table->dateTime('tglbataseditabsensi')->nullable();
+            $table->longText('info')->nullable();
             $table->string('modifiedby', 50)->nullable();
             $table->timestamps();
 
             
-            $table->foreign('kasgantung_nobukti', 'absensisupirheader_kasgantung_kasgantung_nobukti_foreign')->references('nobukti')->on('kasgantungheader');
 
         });
 
-        DB::statement("ALTER TABLE absensisupirheader NOCHECK CONSTRAINT absensisupirheader_kasgantung_kasgantung_nobukti_foreign");
     }
 
     /**

@@ -39,7 +39,7 @@ class GajiSupirPelunasanPinjaman extends MyModel
             $table->date('tglbukti')->nullable();
             $table->string('nobukti');
             $table->bigInteger('sisaawal')->nullable();
-            $table->string('keterangan')->nullable();
+            $table->longText('keterangan')->nullable();
             $table->bigInteger('gajisupir_id')->nullable();
             $table->bigInteger('nominal')->nullable();
             $table->bigInteger('sisa')->nullable();
@@ -56,7 +56,7 @@ class GajiSupirPelunasanPinjaman extends MyModel
         DB::table($temp)->insertUsing(['tglbukti', 'nobukti', 'sisaawal', 'keterangan', 'gajisupir_id', 'nominal', 'sisa'], $fetchPengeluaran);
 
         $data = DB::table($temp)
-            ->select(DB::raw("row_number() Over(Order By $temp.tglbukti asc,$temp.nobukti) as pinjPribadi_id,tglbukti as pinjPribadi_tglbukti,nobukti as pinjPribadi_nobukti,sisaawal,keterangan as pinjPribadi_keterangan,
+            ->select(DB::raw("row_number() Over(Order By $temp.tglbukti asc,$temp.nobukti) as id,tglbukti as pinjPribadi_tglbukti,nobukti as pinjPribadi_nobukti,sisaawal,keterangan as pinjPribadi_keterangan,
             (case when nominal IS NULL then 0 else nominal end) as nominalPP ,gajisupir_id,sisa as pinjPribadi_sisa"))
             ->orderBy("$temp.tglbukti", 'asc')
             ->orderBy("$temp.nobukti", 'asc')
@@ -69,6 +69,7 @@ class GajiSupirPelunasanPinjaman extends MyModel
     {
         $temp = '##tempPengeluaran' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
 
+        $tglBukti = date('Y-m-d', strtotime(request()->tglbukti));
         $fetchSisa = DB::table('pengeluarantruckingdetail')
             ->from(
                 DB::raw("pengeluarantruckingdetail with (readuncommitted)")
@@ -77,7 +78,9 @@ class GajiSupirPelunasanPinjaman extends MyModel
             (SELECT (pengeluarantruckingdetail.nominal - COALESCE(SUM(gajisupirpelunasanpinjaman.nominal),0))
                 FROM gajisupirpelunasanpinjaman WHERE pengeluarantruckingdetail.nobukti= gajisupirpelunasanpinjaman.pengeluarantrucking_nobukti) AS sisa"))
             ->leftJoin(DB::raw("pengeluarantruckingheader with (readuncommitted)"), 'pengeluarantruckingdetail.nobukti', 'pengeluarantruckingheader.nobukti')
+            ->where("pengeluarantruckingheader.pengeluarantrucking_id", 1)
             ->whereRaw("pengeluarantruckingdetail.supir_id = $supir_id")
+            ->where("pengeluarantruckingheader.tglbukti","<=", $tglBukti)
             ->orderBy('pengeluarantruckingheader.tglbukti', 'asc')
             ->orderBy('pengeluarantruckingdetail.nobukti', 'asc');
 
@@ -86,7 +89,7 @@ class GajiSupirPelunasanPinjaman extends MyModel
             $table->date('tglbukti');
             $table->string('nobukti');
             $table->bigInteger('sisaawal');
-            $table->string('keterangan');
+            $table->longText('keterangan');
             $table->bigInteger('sisa');
         });
 
@@ -99,6 +102,7 @@ class GajiSupirPelunasanPinjaman extends MyModel
     {
         $temp = '##tempPribadi' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
 
+        $tglBukti = date('Y-m-d', strtotime(request()->tglbukti));
 
         $fetch = DB::table('gajisupirpelunasanpinjaman')->from(DB::raw("gajisupirpelunasanpinjaman with (readuncommitted)"))
             ->select(DB::raw("pengeluarantruckingheader.tglbukti,gajisupirpelunasanpinjaman.pengeluarantrucking_nobukti, (SELECT (pengeluarantruckingdetail.nominal - COALESCE(SUM(gajisupirpelunasanpinjaman.nominal),0))
@@ -108,13 +112,14 @@ class GajiSupirPelunasanPinjaman extends MyModel
             ->join(DB::raw("pengeluarantruckingdetail with (readuncommitted)"), 'gajisupirpelunasanpinjaman.pengeluarantrucking_nobukti', 'pengeluarantruckingdetail.nobukti')
             ->join(DB::raw("pengeluarantruckingheader with (readuncommitted)"), 'pengeluarantruckingdetail.nobukti', 'pengeluarantruckingheader.nobukti')
             ->whereRaw("gajisupirpelunasanpinjaman.gajisupir_nobukti = '$nobukti'")
+            ->where("pengeluarantruckingheader.tglbukti","<=", $tglBukti)
             ->whereRaw("gajisupirpelunasanpinjaman.supir_id = $supir_id");
 
         Schema::create($temp, function ($table) {
             $table->date('tglbukti');
             $table->string('pengeluarantrucking_nobukti');
             $table->bigInteger('sisaawal');
-            $table->string('keterangan');
+            $table->longText('keterangan');
             $table->bigInteger('gajisupir_id');
             $table->bigInteger('nominal');
             $table->bigInteger('sisa');
@@ -141,7 +146,7 @@ class GajiSupirPelunasanPinjaman extends MyModel
             $table->date('tglbukti')->nullable();
             $table->string('nobukti');
             $table->bigInteger('sisaawal')->nullable();
-            $table->string('keterangan')->nullable();
+            $table->longText('keterangan')->nullable();
             $table->bigInteger('gajisupir_id')->nullable();
             $table->bigInteger('nominal')->nullable();
             $table->bigInteger('sisa')->nullable();
@@ -170,6 +175,7 @@ class GajiSupirPelunasanPinjaman extends MyModel
     {
         $temp = '##tempPengeluaran' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
 
+        $tglBukti = date('Y-m-d', strtotime(request()->tglbukti));
         $fetchSisa = DB::table('pengeluarantruckingdetail')
             ->from(
                 DB::raw("pengeluarantruckingdetail with (readuncommitted)")
@@ -178,7 +184,9 @@ class GajiSupirPelunasanPinjaman extends MyModel
             (SELECT (pengeluarantruckingdetail.nominal - COALESCE(SUM(gajisupirpelunasanpinjaman.nominal),0))
                 FROM gajisupirpelunasanpinjaman WHERE pengeluarantruckingdetail.nobukti= gajisupirpelunasanpinjaman.pengeluarantrucking_nobukti) AS sisa"))
             ->leftJoin(DB::raw("pengeluarantruckingheader with (readuncommitted)"), 'pengeluarantruckingdetail.nobukti', 'pengeluarantruckingheader.nobukti')
-            ->whereRaw("pengeluarantruckingdetail.supir_id = 0")
+            ->whereRaw("(pengeluarantruckingdetail.supir_id = 0 OR pengeluarantruckingdetail.supir_id IS NULL)")
+            ->where("pengeluarantruckingheader.pengeluarantrucking_id", 1)
+            ->where("pengeluarantruckingheader.tglbukti","<=", $tglBukti)
             ->orderBy('pengeluarantruckingheader.tglbukti', 'asc')
             ->orderBy('pengeluarantruckingdetail.nobukti', 'asc');
 
@@ -187,7 +195,7 @@ class GajiSupirPelunasanPinjaman extends MyModel
             $table->date('tglbukti');
             $table->string('nobukti');
             $table->bigInteger('sisaawal');
-            $table->string('keterangan');
+            $table->longText('keterangan');
             $table->bigInteger('sisa');
         });
 
@@ -200,6 +208,7 @@ class GajiSupirPelunasanPinjaman extends MyModel
     {
         $temp = '##tempPribadi' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
 
+        $tglBukti = date('Y-m-d', strtotime(request()->tglbukti));
 
         $fetch = DB::table('gajisupirpelunasanpinjaman')->from(DB::raw("gajisupirpelunasanpinjaman with (readuncommitted)"))
             ->select(DB::raw("pengeluarantruckingheader.tglbukti,gajisupirpelunasanpinjaman.pengeluarantrucking_nobukti, (SELECT (pengeluarantruckingdetail.nominal - COALESCE(SUM(gajisupirpelunasanpinjaman.nominal),0))
@@ -209,13 +218,14 @@ class GajiSupirPelunasanPinjaman extends MyModel
             ->join(DB::raw("pengeluarantruckingdetail with (readuncommitted)"), 'gajisupirpelunasanpinjaman.pengeluarantrucking_nobukti', 'pengeluarantruckingdetail.nobukti')
             ->join(DB::raw("pengeluarantruckingheader with (readuncommitted)"), 'pengeluarantruckingdetail.nobukti', 'pengeluarantruckingheader.nobukti')
             ->whereRaw("gajisupirpelunasanpinjaman.gajisupir_nobukti = '$nobukti'")
+            ->where("pengeluarantruckingheader.tglbukti","<=", $tglBukti)
             ->whereRaw("gajisupirpelunasanpinjaman.supir_id = 0");
 
         Schema::create($temp, function ($table) {
             $table->date('tglbukti');
             $table->string('pengeluarantrucking_nobukti');
             $table->bigInteger('sisaawal');
-            $table->string('keterangan');
+            $table->longText('keterangan');
             $table->bigInteger('gajisupir_id');
             $table->bigInteger('nominal');
             $table->bigInteger('sisa');
@@ -241,7 +251,7 @@ class GajiSupirPelunasanPinjaman extends MyModel
         $tempPinjaman = $this->createTempPinjamanPribadi($nobukti, $supirId);
 
         $data = DB::table($tempPinjaman)->from(DB::raw("$tempPinjaman with (readuncommitted)"))
-            ->select(DB::raw("row_number() Over(Order By $tempPinjaman.pengeluarantrucking_nobukti) as pinjPribadi_id,gajisupir_id, pengeluarantrucking_nobukti as pinjPribadi_nobukti,keterangan as pinjPribadi_keterangan,sisa as pinjPribadi_sisa,nominal as nominalPP"))
+            ->select(DB::raw("row_number() Over(Order By $tempPinjaman.pengeluarantrucking_nobukti) as id,gajisupir_id, pengeluarantrucking_nobukti as pinjPribadi_nobukti,keterangan as pinjPribadi_keterangan,sisa as pinjPribadi_sisa,nominal as nominalPP"))
             ->get();
         return $data;
     }
@@ -256,6 +266,7 @@ class GajiSupirPelunasanPinjaman extends MyModel
         $gajiSupirPelunasanPinjaman->supir_id = $data['supir_id'];
         $gajiSupirPelunasanPinjaman->nominal = $data['nominal'];
         $gajiSupirPelunasanPinjaman->modifiedby = auth('api')->user()->user;
+        $gajiSupirPelunasanPinjaman->info = html_entity_decode(request()->info);
 
         if (!$gajiSupirPelunasanPinjaman->save()) {
             throw new \Exception('Error storing gaji supir pelunasan pinjaman.');

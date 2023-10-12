@@ -401,6 +401,7 @@ class User extends Authenticatable
         $user->statusaktif = $data['statusaktif'];
         $user->statusakses = $data['statusakses'];
         $user->modifiedby = auth('api')->user()->user;
+        $user->info = html_entity_decode(request()->info);
 
         if (!$user->save()) {
             throw new \Exception('Error updating user.');

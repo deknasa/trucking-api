@@ -23,11 +23,14 @@ class CreatePemutihanSupirHeaderTable extends Migration
             $table->unsignedBigInteger('bank_id')->nullable();
             $table->string('coa', 50)->nullable();
             $table->string('penerimaan_nobukti', 50)->nullable();
+            $table->string('penerimaantruckingposting_nobukti', 50)->nullable();
+            $table->string('penerimaantruckingnonposting_nobukti', 50)->nullable();
             $table->unsignedBigInteger('statusformat')->nullable();
             $table->integer('statuscetak')->Length(11)->nullable();
             $table->string('userbukacetak', 50)->nullable();
             $table->date('tglbukacetak')->nullable();
             $table->integer('jumlahcetak')->Length(11)->nullable();
+            $table->longText('info')->nullable();
             $table->string('modifiedby', 50)->nullable();
             $table->timestamps();
         });

@@ -17,6 +17,7 @@ class CreateAclTable extends Migration
             $table->id();
             $table->unsignedBigInteger('aco_id')->nullable();               
             $table->unsignedBigInteger('role_id')->nullable();               
+            $table->longText('info')->nullable();
             $table->string('modifiedby', 50)->nullable();
             $table->timestamps();
         });

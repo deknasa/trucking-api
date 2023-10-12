@@ -25,6 +25,7 @@ class CreateRekappengeluarandetailTable extends Migration
             $table->date('tgltransaksi')->nullable();
             $table->double('nominal',15,2)->nullable();
             $table->longText('keterangan')->nullable();
+            $table->longText('info')->nullable();
             $table->string('modifiedby',50)->nullable();            
             $table->timestamps();
 

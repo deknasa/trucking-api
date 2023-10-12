@@ -104,6 +104,18 @@ class LaporanRekapSumbangan extends MyModel
 
         ], $queryTempContainerJob);
 
+
+        $disetujui = db::table('parameter')->from(db::raw('parameter with (readuncommitted)'))
+        ->select('text')
+        ->where('grp', 'DISETUJUI')
+        ->where('subgrp', 'DISETUJUI')->first()->text ?? '';
+
+    $diperiksa = db::table('parameter')->from(db::raw('parameter with (readuncommitted)'))
+        ->select('text')
+        ->where('grp', 'DIPERIKSA')
+        ->where('subgrp', 'DIPERIKSA')->first()->text ?? '';
+
+        
         $result = DB::table($tempDataRekap)->from(
             DB::raw($tempDataRekap." as a")
         )
@@ -111,7 +123,9 @@ class LaporanRekapSumbangan extends MyModel
                 'a.noinvoice as nobukti',
                 DB::raw("max(c.keterangan) as container"),
                 DB::raw("sum(a.nominal) as nominal"),
-                'a.nobukti as nobst'
+                'a.nobukti as nobst',
+                db::raw("'" . $disetujui . "' as disetujui"),
+                db::raw("'" . $diperiksa . "' as diperiksa"),
                 
             )
             ->join(DB::raw($tempContainerJob." as b"), 'a.orderantrucking', 'b.orderantrucking')

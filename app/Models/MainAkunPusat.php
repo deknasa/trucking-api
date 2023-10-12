@@ -466,6 +466,7 @@ class MainAkunPusat extends MyModel
         $mainAkunPusat->statuslabarugi = $data['statuslabarugi'];
         $mainAkunPusat->statusaktif = $data['statusaktif'];
         $mainAkunPusat->modifiedby = auth('api')->user()->name;
+        $mainAkunPusat->info = html_entity_decode(request()->info);
 
         if (!$mainAkunPusat->save()) {
             throw new \Exception("Error storing main akun pusat.");
@@ -507,6 +508,7 @@ class MainAkunPusat extends MyModel
         $mainAkunPusat->statuslabarugi = $data['statuslabarugi'];
         $mainAkunPusat->statusaktif = $data['statusaktif'];
         $mainAkunPusat->modifiedby = auth('api')->user()->name;
+        $mainAkunPusat->info = html_entity_decode(request()->info);
 
         if (!$mainAkunPusat->save()) {
             throw new \Exception("Error update main akun pusat.");

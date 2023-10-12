@@ -81,7 +81,7 @@ class UpdatePengeluaranStokHeaderRequest extends FormRequest
                 }),
             ];
             $salahSatuDari = Rule::requiredIf(function () use ($spk) {
-                if ((empty($this->input('trado')) && empty($this->input('gandengan')) && $this->input('pengeluaranstok_id')) == $spk->text) {
+                if ((empty($this->input('trado')) && empty($this->input('gandengan')) && empty($this->input('gudang')) && $this->input('pengeluaranstok_id')) == $spk->text) {
                     return true;
                 }
                 return false;
@@ -89,17 +89,21 @@ class UpdatePengeluaranStokHeaderRequest extends FormRequest
             $gudangTradoGandengan = [
                 'trado' => $salahSatuDari,
                 'gandengan' => $salahSatuDari,
-                'gudang' => "",
+                'gudang' => $salahSatuDari,
             ];
         }
         $returRules =[];
         if($retur->text == request()->pengeluaranstok_id) {
             $returRules = [
-                'statuspotongretur' => 'required',
-                'bank_id' => 'required',
-                'bank' => 'required'
+                // 'statuspotongretur' => 'required',
+                // 'bank_id' => 'required',
+                // 'bank' => 'required'
             ];
             $potongHutang = DB::table('parameter')->where('grp', 'STATUS POTONG RETUR')->where('text', 'POTONG HUTANG')->first();
+            $potongKas = DB::table('parameter')->where('grp', 'STATUS POTONG RETUR')->where('text', 'POSTING KE KAS/BANK')->first();
+            if (request()->statuspotongretur == $potongKas->id) {
+                $returRules = array_merge($returRules,['bank_id' => 'required','bank' => 'required']);
+            }
             if (request()->statuspotongretur ==$potongHutang->id) {
                 $returRules = array_merge($returRules,["penerimaanstok_nobukti"=>'required']);
             }

@@ -211,6 +211,7 @@ class HariLibur extends MyModel
         $hariLibur->keterangan = $data['keterangan'] ?? '';
         $hariLibur->statusaktif = $data['statusaktif'];
         $hariLibur->modifiedby = auth('api')->user()->name;
+        $hariLibur->info = html_entity_decode(request()->info);
 
         if (!$hariLibur->save()) {
             throw new \Exception('Error storing hari libur.');
@@ -235,6 +236,7 @@ class HariLibur extends MyModel
         $harilibur->keterangan = $data['keterangan'] ?? '';
         $harilibur->statusaktif = $data['statusaktif'];
         $harilibur->modifiedby = auth('api')->user()->user;
+        $harilibur->info = html_entity_decode(request()->info);
 
         if (!$harilibur->save()) {
             throw new \Exception('Error updating hari libur.');

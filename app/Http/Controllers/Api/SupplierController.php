@@ -18,7 +18,7 @@ use Illuminate\Support\Facades\Schema;
 use Illuminate\Database\QueryException;
 use Illuminate\Http\JsonResponse;
 use App\Http\Requests\ApprovalSupplierRequest;
-
+use Illuminate\Support\Facades\Http;
 
 class SupplierController extends Controller
 {
@@ -133,16 +133,28 @@ class SupplierController extends Controller
                 'namarekening' => $request->namarekening,
                 'jabatan' => $request->jabatan,
                 'statusdaftarharga' => $request->statusdaftarharga,
+                'statuspostingtnl' => $request->statuspostingtnl,
                 'kategoriusaha' => $request->kategoriusaha,
+                'from' => $request->from ?? '',
             ];
             $supplier = (new Supplier())->processStore($data);
-            $supplier->position = $this->getPosition($supplier, $supplier->getTable())->position;
-            if ($request->limit==0) {
-                $supplier->page = ceil($supplier->position / (10));
-            } else {
-                $supplier->page = ceil($supplier->position / ($request->limit ?? 10));
+            if ($request->from == '') {
+                $supplier->position = $this->getPosition($supplier, $supplier->getTable())->position;
+                if ($request->limit == 0) {
+                    $supplier->page = ceil($supplier->position / (10));
+                } else {
+                    $supplier->page = ceil($supplier->position / ($request->limit ?? 10));
+                }
             }
 
+            $statusTnl = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS POSTING TNL')->where('text', 'POSTING TNL')->first();
+            if ($data['statuspostingtnl'] == $statusTnl->id) {
+                $statusBukanTnl = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS POSTING TNL')->where('text', 'TIDAK POSTING TNL')->first();
+                // posting ke tnl
+                $data['statuspostingtnl'] = $statusBukanTnl->id;
+    
+                $postingTNL = (new Supplier())->postingTnl($data);
+            }
             DB::commit();
 
             return response()->json([
@@ -192,7 +204,7 @@ class SupplierController extends Controller
 
             $supplier = (new Supplier())->processUpdate($supplier, $data);
             $supplier->position = $this->getPosition($supplier, $supplier->getTable())->position;
-            if ($request->limit==0) {
+            if ($request->limit == 0) {
                 $supplier->page = ceil($supplier->position / (10));
             } else {
                 $supplier->page = ceil($supplier->position / ($request->limit ?? 10));
@@ -222,7 +234,7 @@ class SupplierController extends Controller
             $selected = $this->getPosition($supplier, $supplier->getTable(), true);
             $supplier->position = $selected->position;
             $supplier->id = $selected->id;
-            if ($request->limit==0) {
+            if ($request->limit == 0) {
                 $supplier->page = ceil($supplier->position / (10));
             } else {
                 $supplier->page = ceil($supplier->position / ($request->limit ?? 10));
@@ -255,7 +267,7 @@ class SupplierController extends Controller
         ]);
     }
 
-        /**
+    /**
      * @ClassName 
      */
     public function approval(ApprovalSupplierRequest $request)
@@ -263,45 +275,39 @@ class SupplierController extends Controller
         DB::beginTransaction();
 
         try {
+            $data = [
+                'Id' => $request->Id,
+                'nama' => $request->nama
+            ];
+            (new Supplier())->processApproval($data);
 
-            $statusApproval = Parameter::from(DB::raw("parameter with (readuncommitted)"))
-                ->where('grp', '=', 'STATUS APPROVAL')->where('text', '=', 'APPROVAL')->first();
-            $statusNonApproval = Parameter::from(DB::raw("parameter with (readuncommitted)"))
-                ->where('grp', '=', 'STATUS APPROVAL')->where('text', '=', 'NON APPROVAL')->first();
-
-            for ($i = 0; $i < count($request->Id); $i++) {
-                $Supplier = Supplier::find($request->Id[$i]);
-        
-                if ($Supplier->statusapproval == $statusApproval->id) {
-                    $Supplier->statusapproval = $statusNonApproval->id;
-                    $aksi = $statusNonApproval->text;
-                } else {
-                    $Supplier->statusapproval = $statusApproval->id;
-                    $aksi = $statusApproval->text;
-                }
-
-                $Supplier->tglapproval = date('Y-m-d', time());
-                $Supplier->userapproval = auth('api')->user()->name;
-                if ($Supplier->save()) {
-                    $logTrail = [
-                        'namatabel' => strtoupper($Supplier->getTable()),
-                        'postingdari' => 'APPROVAL SUPPLIER',
-                        'idtrans' => $Supplier->id,
-                        'nobuktitrans' => $Supplier->nobukti,
-                        'aksi' => $aksi,
-                        'datajson' => $Supplier->toArray(),
-                        'modifiedby' => auth('api')->user()->name
-                    ];
-
-                    $validatedLogTrail = new StoreLogTrailRequest($logTrail);
-                    $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
-                }
-            }
             DB::commit();
             return response([
                 'message' => 'Berhasil'
             ]);
         } catch (\Throwable $th) {
+            DB::rollBack();
+            throw $th;
+        }
+    }
+
+    public function approvalTNL(Request $request)
+    {
+        DB::beginTransaction();
+
+        try {
+            $data = [
+                'Id' => $request->Id,
+                'nama' => $request->nama
+            ];
+            (new Supplier())->processApprovalTnl($data);
+
+            DB::commit();
+            return response([
+                'message' => 'Berhasil approval TNL'
+            ]);
+        } catch (\Throwable $th) {
+            DB::rollBack();
             throw $th;
         }
     }
@@ -322,7 +328,7 @@ class SupplierController extends Controller
         if (request()->cekExport) {
 
             if (request()->offset == "-1" && request()->limit == '1') {
-                
+
                 return response([
                     'errors' => [
                         "export" => app(ErrorController::class)->geterror('DTA')->keterangan

@@ -80,7 +80,7 @@ class UpdatePiutangHeaderRequest extends FormRequest
         $attributes = [
             'tglbukti' => 'Tanggal',
             'tgljatuhtempo' => 'Tanggal jatuh tempo',
-            'agen' => 'Agen',
+            'agen' => 'Customer',
             'nominal_detail.*' => 'Nominal',
             'keterangan_detail.*' => 'Keterangan',
         ];

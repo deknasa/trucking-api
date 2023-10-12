@@ -17,6 +17,7 @@ class CreateBukaabsensiTable extends Migration
             $table->id();
             $table->date('tglabsensi')->nullable();
             $table->dateTime('tglbatas')->nullable();
+            $table->longText('info')->nullable();
             $table->string('modifiedby', 50)->nullable();
             $table->timestamps();
         });

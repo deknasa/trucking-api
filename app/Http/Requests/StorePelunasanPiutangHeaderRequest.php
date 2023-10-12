@@ -4,12 +4,17 @@ namespace App\Http\Requests;
 
 use App\Http\Controllers\Api\ErrorController;
 use App\Models\AlatBayar;
+use App\Models\Parameter;
 use App\Rules\DateTutupBuku;
 use App\Rules\ExistAgen;
 use App\Rules\ExistAlatBayar;
 use App\Rules\ExistBank;
 use App\Rules\ValidasiDetail;
 use App\Rules\ValidasiNoWarkatPelunasanPiutang;
+use App\Rules\ValidasiStatusNotaDebet;
+use App\Rules\ValidasiStatusNotaKredit;
+use App\Rules\ValidasiNominalSaldo;
+use App\Rules\ValidasiStatusPelunasan;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
@@ -88,6 +93,13 @@ class StorePelunasanPiutangHeaderRequest extends FormRequest
                 'nowarkat' => 'required'
             ];
         }
+        $parameter = new Parameter();
+        $data = $parameter->getcombodata('PELUNASAN', 'PELUNASAN');
+        $data = json_decode($data, true);
+        foreach ($data as $item) {
+            $status[] = $item['id'];
+        }
+
         $rules = [
             'tglbukti' => [
                 'required', 'date_format:d-m-Y',
@@ -95,9 +107,13 @@ class StorePelunasanPiutangHeaderRequest extends FormRequest
                 'before_or_equal:' . date('d-m-Y')
             ],
             'bank' => 'required',
+            'statuspelunasan' =>  ['required', Rule::in($status), new ValidasiStatusPelunasan()],
             'agen' => [
                 'required',
-                new ValidasiDetail($jumlahdetail)
+                new ValidasiDetail($jumlahdetail),
+                new ValidasiStatusNotaDebet(),
+                new ValidasiStatusNotaKredit(),
+                new ValidasiNominalSaldo()
             ],
             'alatbayar' => ['required', Rule::in($dataKodeAlatBayar)]
         ];
@@ -125,6 +141,7 @@ class StorePelunasanPiutangHeaderRequest extends FormRequest
         $attributes = [
             'tglbukti' => 'Tanggal Bukti',
             'alatbayar' => 'alat bayar',
+            'agen' => 'customer',
             'bayar.*' => 'Nominal Bayar',
             'keterangan.*' => 'keterangan'
         ];

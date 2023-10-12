@@ -81,7 +81,9 @@ class Gudang extends MyModel
             
         $aktif = request()->aktif ?? '';
         $penerimaanStokPg = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'PG STOK')->where('subgrp', 'PG STOK')->first();
+        $pengeluaranStokSpk = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'SPK STOK')->where('subgrp', 'SPK STOK')->first();
         $penerimaanstok = request()->penerimaanstok_id ?? '';
+        $pengeluaranstok = request()->pengeluaranstok_id ?? '';
 
         $query = DB::table($this->table)->from(DB::raw("$this->table with (readuncommitted)"))
             ->select(
@@ -118,11 +120,29 @@ class Gudang extends MyModel
             ->select('id')
             ->where('gudang','GUDANG PIHAK III');
 
+            $gudangKantorid = Gudang::from(DB::raw("gudang with (readuncommitted)"))
+            ->select('id')
+            ->where('gudang','GUDANG KANTOR')
+            ->first();
+
             if (request()->gudangdarike == "ke") {
                 $gudangKantor = $gudangKantor->orWhere('gudang','GUDANG KANTOR');
+       
             }
             $gudangKantor = $gudangKantor->get();
-            $query->whereNotIn('gudang.id', $gudangKantor);
+            if (request()->gudangdarike == "dari") {
+                // $query->whereNotIn('gudang.id', $gudangKantor);
+                $query->where('gudang.id','<>', $gudangKantorid->id);
+
+            } 
+
+
+
+        }
+
+        if ($pengeluaranstok == $pengeluaranStokSpk->text) {
+            $namaGudang = ['GUDANG KANTOR', 'GUDANG PIHAK III', 'GUDANG SEMENTARA'];
+            $query->whereNotIn('gudang.gudang', $namaGudang);
         }
 
         $this->totalRows = $query->count();
@@ -272,6 +292,7 @@ class Gudang extends MyModel
         $gudang->gudang = $data['gudang'];
         $gudang->statusaktif = $data['statusaktif'];
         $gudang->modifiedby = auth('api')->user()->name;
+        $gudang->info = html_entity_decode(request()->info);
 
         if (!$gudang->save()) {
             throw new \Exception('Error storing gudang.');
@@ -287,124 +308,126 @@ class Gudang extends MyModel
             'modifiedby' => $gudang->modifiedby
         ]);
 
-        $param1 = $gudang->id;
-        $param2 = $gudang->modifiedby;
+        // proses stok persediaan tidak ada lagi
 
-        $statushitungstok = DB::table('parameter')->from(
-            DB::raw("parameter with (readuncommitted)")
-        )
-            ->select(
-                'id'
-            )
-            ->where('grp', '=', 'STATUS HITUNG STOK')
-            ->where('subgrp', '=', 'STATUS HITUNG STOK')
-            ->where('text', '=', 'HITUNG STOK')
-            ->first();
+        // $param1 = $gudang->id;
+        // $param2 = $gudang->modifiedby;
 
-        $tempmasuk = '##tempmasuk' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
-        Schema::create($tempmasuk, function ($table) {
-            $table->unsignedBigInteger('stok_id')->nullable();
-            $table->unsignedBigInteger('gudang_id')->nullable();
-            $table->double('qty', 15, 2)->nullable();
-        });
+        // $statushitungstok = DB::table('parameter')->from(
+        //     DB::raw("parameter with (readuncommitted)")
+        // )
+        //     ->select(
+        //         'id'
+        //     )
+        //     ->where('grp', '=', 'STATUS HITUNG STOK')
+        //     ->where('subgrp', '=', 'STATUS HITUNG STOK')
+        //     ->where('text', '=', 'HITUNG STOK')
+        //     ->first();
 
-
-        $querymasuk = DB::table('penerimaanstokdetail')->from(
-            DB::raw("penerimaanstokdetail as a with (readuncommitted)")
-        )
-            ->select(
-                'a.stok_id',
-                'b.gudang_id',
-                DB::raw("sum(a.qty) as qty"),
-            )
-            ->join(DB::raw("penerimaanstokheader as b"), 'a.penerimaanstokheader_id', 'b.id')
-            ->join(DB::raw("penerimaanstok as c"), 'b.penerimaanstok_id', 'c.id')
-            ->where('c.statushitungstok', '=', $statushitungstok->id)
-            ->whereRaw("isnull(b.gudang_id,0)<>0")
-            ->groupby('a.stok_id', 'b.gudang_id');
-
-        DB::table($tempmasuk)->insertUsing([
-            'stok_id',
-            'gudang_id',
-            'qty',
-        ], $querymasuk);
-
-        $tempkeluar = '##tempkeluar' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
-        Schema::create($tempkeluar, function ($table) {
-            $table->unsignedBigInteger('stok_id')->nullable();
-            $table->unsignedBigInteger('gudang_id')->nullable();
-            $table->double('qty', 15, 2)->nullable();
-        });
+        // $tempmasuk = '##tempmasuk' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+        // Schema::create($tempmasuk, function ($table) {
+        //     $table->unsignedBigInteger('stok_id')->nullable();
+        //     $table->unsignedBigInteger('gudang_id')->nullable();
+        //     $table->double('qty', 15, 2)->nullable();
+        // });
 
 
-        $querykeluar = DB::table('pengeluaranstokdetail')->from(
-            DB::raw("pengeluaranstokdetail as a with (readuncommitted)")
-        )
-            ->select(
-                'a.stok_id',
-                'b.gudang_id',
-                DB::raw("sum(a.qty) as qty"),
-            )
-            ->join(DB::raw("pengeluaranstokheader as b"), 'a.pengeluaranstokheader_id', 'b.id')
-            ->join(DB::raw("pengeluaranstok as c"), 'b.pengeluaranstok_id', 'c.id')
-            ->where('c.statushitungstok', '=', $statushitungstok->id)
-            ->whereRaw("isnull(b.gudang_id,0)<>0")
-            ->groupby('a.stok_id', 'b.gudang_id');
+        // $querymasuk = DB::table('penerimaanstokdetail')->from(
+        //     DB::raw("penerimaanstokdetail as a with (readuncommitted)")
+        // )
+        //     ->select(
+        //         'a.stok_id',
+        //         'b.gudang_id',
+        //         DB::raw("sum(a.qty) as qty"),
+        //     )
+        //     ->join(DB::raw("penerimaanstokheader as b"), 'a.penerimaanstokheader_id', 'b.id')
+        //     ->join(DB::raw("penerimaanstok as c"), 'b.penerimaanstok_id', 'c.id')
+        //     ->where('c.statushitungstok', '=', $statushitungstok->id)
+        //     ->whereRaw("isnull(b.gudang_id,0)<>0")
+        //     ->groupby('a.stok_id', 'b.gudang_id');
 
-        DB::table($tempkeluar)->insertUsing([
-            'stok_id',
-            'gudang_id',
-            'qty',
-        ], $querykeluar);
+        // DB::table($tempmasuk)->insertUsing([
+        //     'stok_id',
+        //     'gudang_id',
+        //     'qty',
+        // ], $querymasuk);
 
-        $stokgudang = Stok::from(DB::raw("stok with (readuncommitted)"))
-            ->select(DB::raw(
-                "stok.id as stok_id,"
-                    . $param1 . "  as gudang_id,
-                0 as trado_id,
-                0 as gandengan_id,
-                (isnull(b.qty,0)-isnull(C.Qty,0)) as qty,'"
-                    . $param2 . "' as modifiedby"
-            ))
-            ->leftjoin('stokpersediaan', function ($join) use ($param1) {
-                $join->on('stokpersediaan.stok_id', '=', 'stok.id');
-                $join->on('stokpersediaan.gudang_id', '=', DB::raw("'" . $param1 . "'"));
-            })
-            ->leftjoin(DB::raw($tempmasuk . " as b"), 'stok.id', 'b.stok_id')
-            ->leftjoin(DB::raw($tempkeluar . " as c"), 'stok.id', 'c.stok_id')
+        // $tempkeluar = '##tempkeluar' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+        // Schema::create($tempkeluar, function ($table) {
+        //     $table->unsignedBigInteger('stok_id')->nullable();
+        //     $table->unsignedBigInteger('gudang_id')->nullable();
+        //     $table->double('qty', 15, 2)->nullable();
+        // });
 
-            ->where(DB::raw("isnull(stokpersediaan.id,0)"), '=', 0);
 
-        // dd($stokgudang->get());
-        $datadetail = json_decode($stokgudang->get(), true);
+        // $querykeluar = DB::table('pengeluaranstokdetail')->from(
+        //     DB::raw("pengeluaranstokdetail as a with (readuncommitted)")
+        // )
+        //     ->select(
+        //         'a.stok_id',
+        //         'b.gudang_id',
+        //         DB::raw("sum(a.qty) as qty"),
+        //     )
+        //     ->join(DB::raw("pengeluaranstokheader as b"), 'a.pengeluaranstokheader_id', 'b.id')
+        //     ->join(DB::raw("pengeluaranstok as c"), 'b.pengeluaranstok_id', 'c.id')
+        //     ->where('c.statushitungstok', '=', $statushitungstok->id)
+        //     ->whereRaw("isnull(b.gudang_id,0)<>0")
+        //     ->groupby('a.stok_id', 'b.gudang_id');
 
-        $dataexist = $stokgudang->exists();
-        $detaillogtrail = [];
-        foreach ($datadetail as $item) {
-            $stokpersediaan = new StokPersediaan();
-            $stokpersediaan->stok_id = $item['stok_id'];
-            $stokpersediaan->gudang_id = $item['gudang_id'];
-            $stokpersediaan->trado_id = $item['trado_id'];
-            $stokpersediaan->gandengan_id = $item['gandengan_id'];
-            $stokpersediaan->qty = $item['qty'];
-            $stokpersediaan->modifiedby = $item['modifiedby'];
-            $stokpersediaan->save();
-            $detaillogtrail[] = $stokpersediaan->toArray();
-        }
+        // DB::table($tempkeluar)->insertUsing([
+        //     'stok_id',
+        //     'gudang_id',
+        //     'qty',
+        // ], $querykeluar);
 
-        if (!$dataexist == true) {
-            throw new \Exception('Error store stok persediaan.');
-        }
+        // $stokgudang = Stok::from(DB::raw("stok with (readuncommitted)"))
+        //     ->select(DB::raw(
+        //         "stok.id as stok_id,"
+        //             . $param1 . "  as gudang_id,
+        //         0 as trado_id,
+        //         0 as gandengan_id,
+        //         (isnull(b.qty,0)-isnull(C.Qty,0)) as qty,'"
+        //             . $param2 . "' as modifiedby"
+        //     ))
+        //     ->leftjoin('stokpersediaan', function ($join) use ($param1) {
+        //         $join->on('stokpersediaan.stok_id', '=', 'stok.id');
+        //         $join->on('stokpersediaan.gudang_id', '=', DB::raw("'" . $param1 . "'"));
+        //     })
+        //     ->leftjoin(DB::raw($tempmasuk . " as b"), 'stok.id', 'b.stok_id')
+        //     ->leftjoin(DB::raw($tempkeluar . " as c"), 'stok.id', 'c.stok_id')
 
-        (new LogTrail())->processStore([
-            'namatabel' => strtoupper($stokpersediaan->getTable()),
-            'postingdari' => 'STOK PERSEDIAAN',
-            'idtrans' => $gudang->id,
-            'nobuktitrans' => $gudang->id,
-            'aksi' => 'EDIT',
-            'datajson' => json_encode($detaillogtrail),
-            'modifiedby' => $gudang->modifiedby
-        ]);
+        //     ->where(DB::raw("isnull(stokpersediaan.id,0)"), '=', 0);
+
+        // // dd($stokgudang->get());
+        // $datadetail = json_decode($stokgudang->get(), true);
+
+        // $dataexist = $stokgudang->exists();
+        // $detaillogtrail = [];
+        // foreach ($datadetail as $item) {
+        //     $stokpersediaan = new StokPersediaan();
+        //     $stokpersediaan->stok_id = $item['stok_id'];
+        //     $stokpersediaan->gudang_id = $item['gudang_id'];
+        //     $stokpersediaan->trado_id = $item['trado_id'];
+        //     $stokpersediaan->gandengan_id = $item['gandengan_id'];
+        //     $stokpersediaan->qty = $item['qty'];
+        //     $stokpersediaan->modifiedby = $item['modifiedby'];
+        //     $stokpersediaan->save();
+        //     $detaillogtrail[] = $stokpersediaan->toArray();
+        // }
+
+        // if (!$dataexist == true) {
+        //     throw new \Exception('Error store stok persediaan.');
+        // }
+
+        // (new LogTrail())->processStore([
+        //     'namatabel' => strtoupper($stokpersediaan->getTable()),
+        //     'postingdari' => 'STOK PERSEDIAAN',
+        //     'idtrans' => $gudang->id,
+        //     'nobuktitrans' => $gudang->id,
+        //     'aksi' => 'EDIT',
+        //     'datajson' => json_encode($detaillogtrail),
+        //     'modifiedby' => $gudang->modifiedby
+        // ]);
 
         return $gudang;
     }
@@ -414,6 +437,7 @@ class Gudang extends MyModel
         $gudang->gudang = $data['gudang'];
         $gudang->statusaktif = $data['statusaktif'];
         $gudang->modifiedby = auth('api')->user()->name;
+        $gudang->info = html_entity_decode(request()->info);
 
         if (!$gudang->save()) {
             throw new \Exception('Error updating gudang.');
@@ -428,124 +452,124 @@ class Gudang extends MyModel
             'datajson' => $gudang->toArray(),
             'modifiedby' => $gudang->modifiedby
         ]);
-        $param1 = $gudang->id;
-        $param2 = $gudang->modifiedby;
+        // $param1 = $gudang->id;
+        // $param2 = $gudang->modifiedby;
 
-        $statushitungstok = DB::table('parameter')->from(
-            DB::raw("parameter with (readuncommitted)")
-        )
-            ->select(
-                'id'
-            )
-            ->where('grp', '=', 'STATUS HITUNG STOK')
-            ->where('subgrp', '=', 'STATUS HITUNG STOK')
-            ->where('text', '=', 'HITUNG STOK')
-            ->first();
+        // $statushitungstok = DB::table('parameter')->from(
+        //     DB::raw("parameter with (readuncommitted)")
+        // )
+        //     ->select(
+        //         'id'
+        //     )
+        //     ->where('grp', '=', 'STATUS HITUNG STOK')
+        //     ->where('subgrp', '=', 'STATUS HITUNG STOK')
+        //     ->where('text', '=', 'HITUNG STOK')
+        //     ->first();
 
-        $tempmasuk = '##tempmasuk' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
-        Schema::create($tempmasuk, function ($table) {
-            $table->unsignedBigInteger('stok_id')->nullable();
-            $table->unsignedBigInteger('gudang_id')->nullable();
-            $table->double('qty', 15, 2)->nullable();
-        });
-
-
-        $querymasuk = DB::table('penerimaanstokdetail')->from(
-            DB::raw("penerimaanstokdetail as a with (readuncommitted)")
-        )
-            ->select(
-                'a.stok_id',
-                'b.gudang_id',
-                DB::raw("sum(a.qty) as qty"),
-            )
-            ->join(DB::raw("penerimaanstokheader as b"), 'a.penerimaanstokheader_id', 'b.id')
-            ->join(DB::raw("penerimaanstok as c"), 'b.penerimaanstok_id', 'c.id')
-            ->where('c.statushitungstok', '=', $statushitungstok->id)
-            ->whereRaw("isnull(b.gudang_id,0)<>0")
-            ->groupby('a.stok_id', 'b.gudang_id');
-
-        DB::table($tempmasuk)->insertUsing([
-            'stok_id',
-            'gudang_id',
-            'qty',
-        ], $querymasuk);
-
-        $tempkeluar = '##tempkeluar' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
-        Schema::create($tempkeluar, function ($table) {
-            $table->unsignedBigInteger('stok_id')->nullable();
-            $table->unsignedBigInteger('gudang_id')->nullable();
-            $table->double('qty', 15, 2)->nullable();
-        });
+        // $tempmasuk = '##tempmasuk' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+        // Schema::create($tempmasuk, function ($table) {
+        //     $table->unsignedBigInteger('stok_id')->nullable();
+        //     $table->unsignedBigInteger('gudang_id')->nullable();
+        //     $table->double('qty', 15, 2)->nullable();
+        // });
 
 
-        $querykeluar = DB::table('pengeluaranstokdetail')->from(
-            DB::raw("pengeluaranstokdetail as a with (readuncommitted)")
-        )
-            ->select(
-                'a.stok_id',
-                'b.gudang_id',
-                DB::raw("sum(a.qty) as qty"),
-            )
-            ->join(DB::raw("pengeluaranstokheader as b"), 'a.pengeluaranstokheader_id', 'b.id')
-            ->join(DB::raw("pengeluaranstok as c"), 'b.pengeluaranstok_id', 'c.id')
-            ->where('c.statushitungstok', '=', $statushitungstok->id)
-            ->whereRaw("isnull(b.gudang_id,0)<>0")
-            ->groupby('a.stok_id', 'b.gudang_id');
+        // $querymasuk = DB::table('penerimaanstokdetail')->from(
+        //     DB::raw("penerimaanstokdetail as a with (readuncommitted)")
+        // )
+        //     ->select(
+        //         'a.stok_id',
+        //         'b.gudang_id',
+        //         DB::raw("sum(a.qty) as qty"),
+        //     )
+        //     ->join(DB::raw("penerimaanstokheader as b"), 'a.penerimaanstokheader_id', 'b.id')
+        //     ->join(DB::raw("penerimaanstok as c"), 'b.penerimaanstok_id', 'c.id')
+        //     ->where('c.statushitungstok', '=', $statushitungstok->id)
+        //     ->whereRaw("isnull(b.gudang_id,0)<>0")
+        //     ->groupby('a.stok_id', 'b.gudang_id');
 
-        DB::table($tempkeluar)->insertUsing([
-            'stok_id',
-            'gudang_id',
-            'qty',
-        ], $querykeluar);
+        // DB::table($tempmasuk)->insertUsing([
+        //     'stok_id',
+        //     'gudang_id',
+        //     'qty',
+        // ], $querymasuk);
 
-        $stokgudang = Stok::from(DB::raw("stok with (readuncommitted)"))
-            ->select(DB::raw(
-                "stok.id as stok_id,"
-                    . $param1 . "  as gudang_id,
-                0 as trado_id,
-                0 as gandengan_id,
-                (isnull(b.qty,0)-isnull(C.Qty,0)) as qty,'"
-                    . $param2 . "' as modifiedby"
-            ))
-            ->leftjoin('stokpersediaan', function ($join) use ($param1) {
-                $join->on('stokpersediaan.stok_id', '=', 'stok.id');
-                $join->on('stokpersediaan.gudang_id', '=', DB::raw("'" . $param1 . "'"));
-            })
-            ->leftjoin(DB::raw($tempmasuk . " as b"), 'stok.id', 'b.stok_id')
-            ->leftjoin(DB::raw($tempkeluar . " as c"), 'stok.id', 'c.stok_id')
+        // $tempkeluar = '##tempkeluar' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+        // Schema::create($tempkeluar, function ($table) {
+        //     $table->unsignedBigInteger('stok_id')->nullable();
+        //     $table->unsignedBigInteger('gudang_id')->nullable();
+        //     $table->double('qty', 15, 2)->nullable();
+        // });
 
-            ->where(DB::raw("isnull(stokpersediaan.id,0)"), '=', 0);
 
-        $datadetail = json_decode($stokgudang->get(), true);
+        // $querykeluar = DB::table('pengeluaranstokdetail')->from(
+        //     DB::raw("pengeluaranstokdetail as a with (readuncommitted)")
+        // )
+        //     ->select(
+        //         'a.stok_id',
+        //         'b.gudang_id',
+        //         DB::raw("sum(a.qty) as qty"),
+        //     )
+        //     ->join(DB::raw("pengeluaranstokheader as b"), 'a.pengeluaranstokheader_id', 'b.id')
+        //     ->join(DB::raw("pengeluaranstok as c"), 'b.pengeluaranstok_id', 'c.id')
+        //     ->where('c.statushitungstok', '=', $statushitungstok->id)
+        //     ->whereRaw("isnull(b.gudang_id,0)<>0")
+        //     ->groupby('a.stok_id', 'b.gudang_id');
 
-        $dataexist = $stokgudang->exists();
-        $detaillogtrail = [];
-        foreach ($datadetail as $item) {
-            $stokpersediaan = new StokPersediaan();
-            $stokpersediaan->stok_id = $item['stok_id'];
-            $stokpersediaan->gudang_id = $item['gudang_id'];
-            $stokpersediaan->trado_id = $item['trado_id'];
-            $stokpersediaan->gandengan_id = $item['gandengan_id'];
-            $stokpersediaan->qty = $item['qty'];
-            $stokpersediaan->modifiedby = $item['modifiedby'];
-            $stokpersediaan->save();
-            if (!$stokpersediaan->save()) {
-                throw new \Exception('Error store stok persediaan.');
-            }
-            $detaillogtrail[] = $stokpersediaan->toArray();
-        }
+        // DB::table($tempkeluar)->insertUsing([
+        //     'stok_id',
+        //     'gudang_id',
+        //     'qty',
+        // ], $querykeluar);
 
-        if ($dataexist == true) {
-            (new LogTrail())->processStore([
-                'namatabel' => strtoupper($stokpersediaan->getTable()),
-                'postingdari' => 'STOK PERSEDIAAN',
-                'idtrans' => $gudang->id,
-                'nobuktitrans' => $gudang->id,
-                'aksi' => 'EDIT',
-                'datajson' => json_encode($detaillogtrail),
-                'modifiedby' => $gudang->modifiedby
-            ]);
-        }
+        // $stokgudang = Stok::from(DB::raw("stok with (readuncommitted)"))
+        //     ->select(DB::raw(
+        //         "stok.id as stok_id,"
+        //             . $param1 . "  as gudang_id,
+        //         0 as trado_id,
+        //         0 as gandengan_id,
+        //         (isnull(b.qty,0)-isnull(C.Qty,0)) as qty,'"
+        //             . $param2 . "' as modifiedby"
+        //     ))
+        //     ->leftjoin('stokpersediaan', function ($join) use ($param1) {
+        //         $join->on('stokpersediaan.stok_id', '=', 'stok.id');
+        //         $join->on('stokpersediaan.gudang_id', '=', DB::raw("'" . $param1 . "'"));
+        //     })
+        //     ->leftjoin(DB::raw($tempmasuk . " as b"), 'stok.id', 'b.stok_id')
+        //     ->leftjoin(DB::raw($tempkeluar . " as c"), 'stok.id', 'c.stok_id')
+
+        //     ->where(DB::raw("isnull(stokpersediaan.id,0)"), '=', 0);
+
+        // $datadetail = json_decode($stokgudang->get(), true);
+
+        // $dataexist = $stokgudang->exists();
+        // $detaillogtrail = [];
+        // foreach ($datadetail as $item) {
+        //     $stokpersediaan = new StokPersediaan();
+        //     $stokpersediaan->stok_id = $item['stok_id'];
+        //     $stokpersediaan->gudang_id = $item['gudang_id'];
+        //     $stokpersediaan->trado_id = $item['trado_id'];
+        //     $stokpersediaan->gandengan_id = $item['gandengan_id'];
+        //     $stokpersediaan->qty = $item['qty'];
+        //     $stokpersediaan->modifiedby = $item['modifiedby'];
+        //     $stokpersediaan->save();
+        //     if (!$stokpersediaan->save()) {
+        //         throw new \Exception('Error store stok persediaan.');
+        //     }
+        //     $detaillogtrail[] = $stokpersediaan->toArray();
+        // }
+
+        // if ($dataexist == true) {
+        //     (new LogTrail())->processStore([
+        //         'namatabel' => strtoupper($stokpersediaan->getTable()),
+        //         'postingdari' => 'STOK PERSEDIAAN',
+        //         'idtrans' => $gudang->id,
+        //         'nobuktitrans' => $gudang->id,
+        //         'aksi' => 'EDIT',
+        //         'datajson' => json_encode($detaillogtrail),
+        //         'modifiedby' => $gudang->modifiedby
+        //     ]);
+        // }
 
         return $gudang;
     }

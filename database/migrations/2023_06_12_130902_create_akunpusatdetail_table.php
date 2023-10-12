@@ -19,6 +19,7 @@ class CreateAkunpusatdetailTable extends Migration
             $table->integer('bulan')->length(11)->nullable();
             $table->integer('tahun')->length(11)->nullable();
             $table->double('nominal',15,2)->nullable();             
+            $table->longText('info')->nullable();
             $table->string('modifiedby',50)->nullable();                
             $table->timestamps();
         });

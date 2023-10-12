@@ -247,6 +247,7 @@ class JenisTrado extends MyModel
         $jenistrado->statusaktif = $data['statusaktif'];
         $jenistrado->keterangan = $data['keterangan'] ?? '';
         $jenistrado->modifiedby = auth('api')->user()->name;
+        $jenistrado->info = html_entity_decode(request()->info);
         $data['sortname'] = $data['sortname']?? 'id';
         $data['sortorder'] = $data['sortorder'] ?? 'asc';
 
@@ -273,7 +274,7 @@ class JenisTrado extends MyModel
         $jenistrado->kodejenistrado = $data['kodejenistrado'];
         $jenistrado->keterangan = $data['keterangan'] ?? '';
         $jenistrado->statusaktif =  $data['statusaktif'];
-        $jenistrado->modifiedby = auth('api')->user()->name;
+        $jenistrado->info = html_entity_decode(request()->info);
 
         if (!$jenistrado->save()) {
             throw new \Exception('Error updating jenis trado.');

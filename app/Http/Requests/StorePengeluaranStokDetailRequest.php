@@ -6,6 +6,7 @@ use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 use Illuminate\Support\Facades\DB;
 use App\Http\Controllers\Api\ErrorController;
+use App\Rules\validasiStatusOli;
 
 class StorePengeluaranStokDetailRequest extends FormRequest
 {
@@ -16,7 +17,7 @@ class StorePengeluaranStokDetailRequest extends FormRequest
      */
     public function authorize()
     {
-        return false;
+        return true;
     }
 
     /**
@@ -41,7 +42,8 @@ class StorePengeluaranStokDetailRequest extends FormRequest
                 if((request()->pengeluaranstok_id == $retur->text) && ($value <= 0)){
                     $fail(app(ErrorController::class)->geterror('GT-ANGKA-0')->keterangan);
                 }
-            },
+            }, 
+            'detail_statusoli.*' => new validasiStatusOli($spk->text),
 
             'detail_qty.*' => [
                 'numeric',

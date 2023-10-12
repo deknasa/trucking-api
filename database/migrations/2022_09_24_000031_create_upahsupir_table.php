@@ -21,20 +21,27 @@ class CreateUpahsupirTable extends Migration
             $table->id();
             $table->unsignedBigInteger('parent_id')->nullable();
             $table->unsignedBigInteger('tarif_id')->nullable();
+            $table->unsignedBigInteger('tarifmuatan_id')->nullable();
+            $table->unsignedBigInteger('tarifbongkaran_id')->nullable();
+            $table->unsignedBigInteger('tarifimport_id')->nullable();
+            $table->unsignedBigInteger('tarifexport_id')->nullable();
             $table->unsignedBigInteger('kotadari_id')->nullable();
             $table->unsignedBigInteger('kotasampai_id')->nullable();
             $table->unsignedBigInteger('zonadari_id')->nullable();
             $table->unsignedBigInteger('zonasampai_id')->nullable();
             $table->longText('penyesuaian')->nullable();            
             $table->double('jarak',15,2)->nullable();
+            $table->double('jarakfullempty',15,2)->nullable();
             $table->unsignedBigInteger('zona_id')->nullable();
             $table->integer('statusaktif')->length(11)->nullable();
             $table->date('tglmulaiberlaku')->nullable();
             $table->integer('statusluarkota')->length(11)->nullable();
             $table->integer('statusupahzona')->length(11)->nullable();
             $table->integer('statussimpankandang')->length(11)->nullable();
+            $table->integer('statuspostingtnl')->length(11)->nullable();
             $table->longText('keterangan')->nullable();
             $table->longText('gambar')->nullable();
+            $table->longText('info')->nullable();
             $table->string('modifiedby',50)->nullable();            
             $table->timestamps();
 

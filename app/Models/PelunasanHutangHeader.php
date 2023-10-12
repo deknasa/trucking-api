@@ -54,9 +54,12 @@ class PelunasanHutangHeader extends MyModel
                 'bank.namabank as bank_id',
                 'supplier.namasupplier as supplier_id',
                 'alatbayar.keterangan as alatbayar_id',
-                'PelunasanHutangheader.tglcair'
+                'PelunasanHutangheader.tglcair',
+                db::raw("cast((format(pengeluaranheader.tglbukti,'yyyy/MM')+'/1') as date) as tgldariheaderpengeluaranheader"),
+                db::raw("cast(cast(format((cast((format(pengeluaranheader.tglbukti,'yyyy/MM')+'/1') as datetime)+32),'yyyy/MM')+'/01' as datetime)-1 as date) as tglsampaiheaderpengeluaranheader"),
 
             )
+            ->leftJoin(DB::raw("pengeluaranheader with (readuncommitted)"), 'PelunasanHutangheader.pengeluaran_nobukti', '=', 'pengeluaranheader.nobukti')
             ->leftJoin(DB::raw("akunpusat with (readuncommitted)"), 'PelunasanHutangheader.coa', 'akunpusat.coa')
             ->leftJoin(DB::raw("bank with (readuncommitted)"), 'PelunasanHutangheader.bank_id', 'bank.id')
             ->leftJoin(DB::raw("supplier with (readuncommitted)"), 'PelunasanHutangheader.supplier_id', 'supplier.id')
@@ -178,6 +181,10 @@ class PelunasanHutangHeader extends MyModel
             $table->dateTime('updated_at')->nullable();
             $table->increments('position');
         });
+        if ((date('Y-m', strtotime(request()->tglbukti)) != date('Y-m', strtotime(request()->tgldariheader))) || (date('Y-m', strtotime(request()->tglbukti)) != date('Y-m', strtotime(request()->tglsampaiheader)))) {
+            request()->tgldariheader = date('Y-m-01', strtotime(request()->tglbukti));
+            request()->tglsampaiheader = date('Y-m-t', strtotime(request()->tglbukti));
+        }
 
         $this->setRequestParameters();
         $query = DB::table($modelTable);
@@ -280,7 +287,7 @@ class PelunasanHutangHeader extends MyModel
         return $query->skip($this->params['offset'])->take($this->params['limit']);
     }
 
-    
+
     public function cekvalidasiaksi($nobukti)
     {
         $PelunasanHutang = DB::table('PelunasanHutangheader')
@@ -312,7 +319,7 @@ class PelunasanHutangHeader extends MyModel
         return $data;
     }
 
-    
+
     public function getPembayaran($id, $supplierId)
     {
         $this->setRequestParameters();
@@ -359,23 +366,33 @@ class PelunasanHutangHeader extends MyModel
         DB::table($temp)->insertUsing(['PelunasanHutang_id', 'hutang_nobukti', 'tglbukti', 'bayar', 'keterangan',  'potongan', 'nominalhutang', 'sisa'], $hutang);
 
         $data = DB::table($temp)->from(DB::raw("$temp with (readuncommitted)"))
-            ->select(DB::raw("row_number() Over(Order By $temp.hutang_nobukti) as id,PelunasanHutang_id,hutang_nobukti as nobukti,tglbukti,bayar,keterangan,potongan,nominalhutang as nominal,sisa,
+            ->select(DB::raw("row_number() Over(Order By $temp.hutang_nobukti) as id,PelunasanHutang_id,hutang_nobukti as nobukti,tglbukti as tglhutang,keterangan,nominalhutang as nominal,
+            (case when bayar IS NULL then 0 else bayar end) as bayar,
+            (case when potongan IS NULL then 0 else potongan end) as potongan,
+            (case when sisa IS NULL then 0 else sisa end) as sisa,
             (case when bayar IS NULL then 0 else (bayar + coalesce(potongan,0)) end) as total"))
             ->get();
 
         return $data;
     }
 
-    
+
     public function createTempHutang($supplierId)
     {
         $temp = '##tempHutang' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
 
+        $approval = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))
+            ->where('grp', 'STATUS APPROVAL')
+            ->where('subgrp', 'STATUS APPROVAL')
+            ->where('text', 'APPROVAL')
+            ->first();
 
+        $approvalId = $approval->id;
         $fetch = DB::table('hutangheader')->from(DB::raw("hutangheader with (readuncommitted)"))
             ->select(DB::raw("hutangheader.nobukti,hutangheader.tglbukti,hutangheader.supplier_id,hutangheader.total as nominalhutang, (SELECT (hutangheader.total - COALESCE(SUM(PelunasanHutangdetail.nominal),0) - COALESCE(SUM(PelunasanHutangdetail.potongan),0)) FROM PelunasanHutangdetail WHERE PelunasanHutangdetail.hutang_nobukti= hutangheader.nobukti) AS sisa"))
             ->leftJoin(DB::raw("PelunasanHutangdetail with (readuncommitted)"), 'hutangheader.nobukti', 'PelunasanHutangdetail.hutang_nobukti')
             ->whereRaw("hutangheader.supplier_id = $supplierId")
+            ->whereRaw("hutangheader.statusapproval = $approvalId")
             ->groupBy('hutangheader.id', 'hutangheader.nobukti', 'hutangheader.supplier_id', 'hutangheader.total', 'hutangheader.tglbukti');
 
         Schema::create($temp, function ($table) {
@@ -415,16 +432,21 @@ class PelunasanHutangHeader extends MyModel
 
         return $tempo;
     }
-    
+
     public function processStore(array $data): PelunasanHutangHeader
     {
         $bankid = $data['bank_id'];
         $group = 'PEMBAYARAN HUTANG BUKTI';
         $subGroup = 'PEMBAYARAN HUTANG BUKTI';
         /*STORE HEADER*/
-       
+
         $format = DB::table('parameter')->where('grp', $group)->where('subgrp', $subGroup)->first();
 
+        $statusbayarhutang = db::table('parameter')->from(db::raw("parameter a with (readuncommitted)"))
+            ->select('id')->where('grp', 'PELUNASANHUTANG')->where('subgrp', 'PELUNASANHUTANG')->where('text', 'BANK/KAS')
+            ->first()->id ?? 0;
+
+        $bayarhutang = $data['statusbayarhutang'] ?? $statusbayarhutang;
         $statusApproval = Parameter::from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS APPROVAL')->where('text', 'NON APPROVAL')->first();
         $statusCetak = Parameter::from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUSCETAK')->where('text', 'BELUM CETAK')->first();
         $getCoaDebet = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'JURNAL PEMBAYARAN HUTANG')->where('subgrp', 'DEBET')->first();
@@ -432,11 +454,12 @@ class PelunasanHutangHeader extends MyModel
         $PelunasanHutangHeader = new PelunasanHutangHeader();
 
         $PelunasanHutangHeader->tglbukti = date('Y-m-d', strtotime($data['tglbukti']));
-        $PelunasanHutangHeader->bank_id = $data['bank_id'];
+        $PelunasanHutangHeader->bank_id = $data['bank_id'] ?? 0;
         $PelunasanHutangHeader->supplier_id = $data['supplier_id'] ?? '';
         $PelunasanHutangHeader->coa = $memo['JURNAL'];
         $PelunasanHutangHeader->pengeluaran_nobukti = '';
         $PelunasanHutangHeader->statusapproval = $statusApproval->id ?? $data['statusapproval'];
+        $PelunasanHutangHeader->statusbayarhutang = $bayarhutang;
         $PelunasanHutangHeader->userapproval = '';
         $PelunasanHutangHeader->tglapproval = '';
         $PelunasanHutangHeader->alatbayar_id = $data['alatbayar_id'];
@@ -444,6 +467,7 @@ class PelunasanHutangHeader extends MyModel
         $PelunasanHutangHeader->statuscetak = $statusCetak->id;
         $PelunasanHutangHeader->statusformat = $format->id;
         $PelunasanHutangHeader->modifiedby = auth('api')->user()->name;
+        $PelunasanHutangHeader->info = html_entity_decode(request()->info);
         $PelunasanHutangHeader->nobukti = (new RunningNumberService)->get($group, $subGroup, $PelunasanHutangHeader->getTable(), date('Y-m-d', strtotime($data['tglbukti'])));
 
         if (!$PelunasanHutangHeader->save()) {
@@ -452,7 +476,7 @@ class PelunasanHutangHeader extends MyModel
 
         $PelunasanHutangHeaderLogTrail = (new LogTrail())->processStore([
             'namatabel' => strtoupper($PelunasanHutangHeader->getTable()),
-            'postingdari' => $data['postingdari'] ??strtoupper('ENTRY hutang Bayar Header'),
+            'postingdari' => $data['postingdari'] ?? strtoupper('ENTRY PELUNASAN HUTANG Header'),
             'idtrans' => $PelunasanHutangHeader->id,
             'nobuktitrans' => $PelunasanHutangHeader->nobukti,
             'aksi' => 'ENTRY',
@@ -467,10 +491,10 @@ class PelunasanHutangHeader extends MyModel
         $memopembelian = json_decode($coaDebetpembelian->memo, true);
 
         $query = HutangHeader::from(DB::raw("hutangheader a with (readuncommitted)"))
-        ->select('a.nobukti')
-        ->join(db::Raw("penerimaanstokheader b with (readuncommitted)"), 'a.nobukti', 'b.hutang_nobukti')
-        ->first();
-                   
+            ->select('a.nobukti')
+            ->join(db::Raw("penerimaanstokheader b with (readuncommitted)"), 'a.nobukti', 'b.hutang_nobukti')
+            ->first();
+
         if (isset($query)) {
             $coa = $memopembelian['JURNAL'];
         } else {
@@ -479,22 +503,52 @@ class PelunasanHutangHeader extends MyModel
         $langsungcair = Parameter::from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS LANGSUNG CAIR')->where('text', 'TIDAK LANGSUNG CAIR')->first();
         $queryalatbayar = AlatBayar::from(db::raw("alatbayar a with (readuncommitted)"))->select('a.coa')->where('a.id', '=', $data['alatbayar_id'])->where('a.statuslangsungcair', '=', $langsungcair->id)->first();
 
-        $bank = Bank::from(DB::raw("bank with (readuncommitted)"))
-            ->select('bank.coa')->whereRaw("bank.id = $PelunasanHutangHeader->bank_id")
-            ->first();
-        $coakredits = $bank->coa;
-        if (isset($queryalatbayar)) {
-            $coakredits =  $queryalatbayar->coa;
+        if ($PelunasanHutangHeader->bank_id == '') {
+            $bankid = 0;
+        } else {
+            $bankid = $PelunasanHutangHeader->bank_id ?? 0;
         }
+        $bank = Bank::from(DB::raw("bank with (readuncommitted)"))
+            ->select('bank.coa')->whereRaw("bank.id = $bankid")
+            ->first();
+        if ($bank != null) {
+            $coakredits = $bank->coa ?? '';
+            if (isset($queryalatbayar)) {
+                $coakredits =  $queryalatbayar->coa;
+            }
+        }
+        $PelunasanHutangDetails = [];
+        $nominal_detail = [];
+        $keterangan_detail = [];
+        $coadebet = [];
+        $coakredit = [];
+        $tgljatuhtempo = [];
+        $nowarkat = [];
 
-        $PelunasanHutangDetails=[];
-        $nominal_detail=[];
-        $keterangan_detail=[];
-        $coadebet=[];
-        $coakredit=[];
-        $tgljatuhtempo=[];
-        $nowarkat=[];
+        $statusketerangan = DB::table('parameter')->from(
+            db::raw("parameter a with (readuncommitted)")
+        )
+            ->select(
+                'a.text'
+            )
+            ->where('grp', '=', 'KETERANGAN DEFAULT HUTANG USAHA')
+            ->where('subgrp', '=', 'KETERANGAN DEFAULT HUTANG USAHA')
+            ->first();
 
+        $querysupplier = DB::table('PelunasanHutangheader')->from(
+            db::raw("PelunasanHutangheader a with (readuncommitted)")
+        )
+            ->select(
+                'b.namasupplier'
+            )
+            ->join(DB::raw("supplier b with (readuncommitted)"), 'a.supplier_id', 'b.id')
+            ->where('a.id', '=', $PelunasanHutangHeader->id)
+            ->first();
+
+        $supplier = $querysupplier->namasupplier ?? '';
+
+        $statusketerangan = $statusketerangan->text ?? '';
+        $total = 0;
         for ($i = 0; $i < count($data['hutang_id']); $i++) {
             $hutang = HutangDetail::where('nobukti', $data['hutang_nobukti'][$i])->first();
 
@@ -507,19 +561,15 @@ class PelunasanHutangHeader extends MyModel
                 'userid' => '',
                 'potongan' => $data['potongan'][$i],
                 'keterangan' => $data['keterangan'][$i],
-                'modifiedby' => $PelunasanHutangHeader->modifiedby                
+                'modifiedby' => $PelunasanHutangHeader->modifiedby
             ]);
             $PelunasanHutangDetails[] = $PelunasanHutangDetail->toArray();
-            $nominal_detail []= $data['bayar'][$i] - $data['potongan'][$i];
-            $keterangan_detail []= $data['keterangan'][$i];
-            $coadebet []= $data['coadebet'] ?? $coa;
-            $coakredit []= $data['coakredit'] ?? $coakredits;
-            $tgljatuhtempo[] = $hutang->tgljatuhtempo;
-            $nowarkat[] = "";
+            $total = $total + ($data['bayar'][$i] - $data['potongan'][$i]);
+            $keterangan_detail[] = $data['keterangan'][$i];
         }
         (new LogTrail())->processStore([
             'namatabel' => strtoupper($PelunasanHutangDetail->getTable()),
-            'postingdari' => $data['postingdari'] ?? strtoupper('ENTRY HUTANG BAYAR DETAIL'),
+            'postingdari' => $data['postingdari'] ?? strtoupper('ENTRY PELUNASAN HUTANG DETAIL'),
             'idtrans' =>  $PelunasanHutangHeaderLogTrail->id,
             'nobuktitrans' => $PelunasanHutangHeader->nobukti,
             'aksi' => 'ENTRY',
@@ -529,69 +579,117 @@ class PelunasanHutangHeader extends MyModel
 
         /*STORE PENGELUARAN*/
         $supplier = Supplier::from(DB::raw("supplier with (readuncommitted)"))->where('id', $data['supplier_id'])->first();
+        if ($bayarhutang == $statusbayarhutang) {
+            $coadebet[] = $data['coadebet'] ?? $coa;
+            if ($bank != null) {
+                $coakredit[] = $data['coakredit'] ?? $coakredits;
+            }
+            $tgljatuhtempo[] = $hutang->tgljatuhtempo;
+            $nowarkat[] = "";
+            $nominal_detail[] = $total;
+            $statusketerangandefault[] = $statusketerangan . ' ' . $supplier->namasupplier . ' ' . $data['keterangan'][0];
+            $pengeluaranRequest = [
+                'tglbukti' => date('Y-m-d', strtotime($data['tglbukti'])),
+                'pelanggan_id' => 0,
+                'postingdari' => "ENTRY HUTANG BAYAR",
+                'statusapproval' => $statusApproval->id,
+                'dibayarke' => $supplier->namasupplier,
+                'alatbayar_id' => $data['alatbayar_id'],
+                'bank_id' => $data['bank_id'],
+                'transferkeac' => $supplier->rekeningbank,
+                'transferkean' => $supplier->namarekening,
+                'transferkebank' => $supplier->bank,
+                'userapproval' => "",
+                'tglapproval' => "",
 
-        $pengeluaranRequest = [
-            'tglbukti' => date('Y-m-d', strtotime($data['tglbukti'])),
-            'pelanggan_id' => 0,
-            'postingdari' => "ENTRY HUTANG BAYAR",
-            'statusapproval' => $statusApproval->id,
-            'dibayarke' => $supplier->namasupplier,
-            'alatbayar_id' => $data['alatbayar_id'],
-            'bank_id'=> $data['bank_id'],
-            'transferkeac' => $supplier->rekeningbank,
-            'transferkean' => $supplier->namarekening,
-            'transferkebank' => $supplier->bank,
-            'userapproval'=>"",
-            'tglapproval'=>"",
-
-            'nowarkat'=>$nowarkat,
-            'tgljatuhtempo'=> $tgljatuhtempo,
-            "nominal_detail"=>$nominal_detail,
-            "coadebet"=>$coadebet,
-            "coakredit"=>$coakredit,
-            "keterangan_detail"=>$keterangan_detail,
-            "bulanbeban"
-        ];
+                'nowarkat' => $nowarkat,
+                'tgljatuhtempo' => $tgljatuhtempo,
+                "nominal_detail" => $nominal_detail,
+                "coadebet" => $coadebet,
+                "coakredit" => $coakredit,
+                "keterangan_detail" => $statusketerangandefault,
+                "bulanbeban"
+            ];
 
 
-        $pengeluaranHeader = (new PengeluaranHeader())->processStore($pengeluaranRequest);
-        $PelunasanHutangHeader->pengeluaran_nobukti = $pengeluaranHeader->nobukti;
+            $pengeluaranHeader = (new PengeluaranHeader())->processStore($pengeluaranRequest);
+            $PelunasanHutangHeader->pengeluaran_nobukti = $pengeluaranHeader->nobukti;
+        } else {
+            $PelunasanHutangHeader->pengeluaran_nobukti = '';
+        }
+
         $PelunasanHutangHeader->save();
         return $PelunasanHutangHeader;
-
     }
-    
+
     public function processUpdate(PelunasanHutangHeader $PelunasanHutangHeader, array $data): PelunasanHutangHeader
     {
         $bankid = $data['bank_id'];
 
-        /*STORE HEADER*/         
-      
+        /*STORE HEADER*/
+        $coaDebet = Parameter::from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'JURNAL PEMBAYARAN HUTANG')->where('subgrp', 'DEBET')->first();
+        $coaDebetpembelian = Parameter::from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'JURNAL PEMBAYARAN HUTANG PEMBELIAN STOK')->where('subgrp', 'DEBET')->first();
+        $memo = json_decode($coaDebet->memo, true);
+        $memopembelian = json_decode($coaDebetpembelian->memo, true);
+
+        $statusbayarhutang = db::table('parameter')->from(db::raw("parameter a with (readuncommitted)"))
+            ->select('id')->where('grp', 'PELUNASANHUTANG')->where('subgrp', 'PELUNASANHUTANG')->where('text', 'BANK/KAS')
+            ->first()->id ?? 0;
+
+        $bayarhutang = $data['statusbayarhutang'] ?? $statusbayarhutang;
+
+        $query = HutangHeader::from(DB::raw("hutangheader a with (readuncommitted)"))
+            ->select('a.nobukti')
+            ->join(db::Raw("penerimaanstokheader b with (readuncommitted)"), 'a.nobukti', 'b.hutang_nobukti')
+            ->first();
+
+        if (isset($query)) {
+            $coa = $memopembelian['JURNAL'];
+        } else {
+            $coa = $memo['JURNAL'];
+        }
 
         $statusApproval = Parameter::from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS APPROVAL')->where('text', 'NON APPROVAL')->first();
         $statusCetak = Parameter::from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUSCETAK')->where('text', 'BELUM CETAK')->first();
         $getCoaDebet = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'JURNAL PEMBAYARAN HUTANG')->where('subgrp', 'DEBET')->first();
         $memo = json_decode($getCoaDebet->memo, true);
 
-        $PelunasanHutangHeader->tglbukti = date('Y-m-d', strtotime($data['tglbukti']));
+        $getTgl = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'EDIT TANGGAL BUKTI')->where('subgrp', 'HUTANG BAYAR')->first();
+        if (trim($getTgl->text) == 'YA') {
+            $group = 'PEMBAYARAN HUTANG BUKTI';
+            $subGroup = 'PEMBAYARAN HUTANG BUKTI';
+            $querycek = DB::table('PelunasanHutangheader')->from(
+                DB::raw("PelunasanHutangheader a with (readuncommitted)")
+            )
+                ->select(
+                    'a.nobukti'
+                )
+                ->where('a.id', $PelunasanHutangHeader->id)
+                ->whereRAw("format(a.tglbukti,'MM-yyyy')='" . date('m-Y', strtotime($data['tglbukti'])) . "'")
+                ->first();
+
+            if (isset($querycek)) {
+                $nobukti = $querycek->nobukti;
+            } else {
+                $nobukti = (new RunningNumberService)->get($group, $subGroup, $PelunasanHutangHeader->getTable(), date('Y-m-d', strtotime($data['tglbukti'])));
+            }
+
+            $PelunasanHutangHeader->nobukti = $nobukti;
+            $PelunasanHutangHeader->tglbukti = date('Y-m-d', strtotime($data['tglbukti']));
+        }
+
         $PelunasanHutangHeader->tglcair = date('Y-m-d', strtotime($data['tglcair']));
         $PelunasanHutangHeader->supplier_id = $data['supplier_id'] ?? '';
         $PelunasanHutangHeader->modifiedby = auth('api')->user()->name;
+        $PelunasanHutangHeader->info = html_entity_decode(request()->info);
+
+        $PelunasanHutangHeader->coa = $memo['JURNAL'];
+        $PelunasanHutangHeader->statusbayarhutang = $bayarhutang;
 
         if (!$PelunasanHutangHeader->save()) {
             throw new \Exception("Error Update pembayaran Hutang header.");
         }
-        
-        $PelunasanHutangHeaderLogTrail = (new LogTrail())->processStore([
-            'namatabel' => strtoupper($PelunasanHutangHeader->getTable()),
-            'postingdari' => $data['postingdari'] ??strtoupper('ENTRY hutang Bayar Header'),
-            'idtrans' => $PelunasanHutangHeader->id,
-            'nobuktitrans' => $PelunasanHutangHeader->nobukti,
-            'aksi' => 'ENTRY',
-            'datajson' => $PelunasanHutangHeader->toArray(),
-            'modifiedby' => auth('api')->user()->user
-        ]);
-        
+
         // $pengeluaranHeader = PengeluaranHeader::where('nobukti', $PelunasanHutangHeader->pengeluaran_nobukti)->lockForUpdate()->first();
         // /*DELETE EXISTING JURNAL*/
         // $JurnalUmumDetail = JurnalUmumDetail::where('nobukti', $pengeluaranHeader->nobukti)->lockForUpdate()->delete();
@@ -601,7 +699,7 @@ class PelunasanHutangHeader extends MyModel
         // $pengeluaranHeader->delete();
         /*DELETE EXISTING hutang bayar*/
         PelunasanHutangDetail::where('PelunasanHutang_id', $PelunasanHutangHeader->id)->lockForUpdate()->delete();
-        
+
 
         $coaDebet = Parameter::from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'JURNAL PEMBAYARAN HUTANG')->where('subgrp', 'DEBET')->first();
         $coaDebetpembelian = Parameter::from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'JURNAL PEMBAYARAN HUTANG PEMBELIAN STOK')->where('subgrp', 'DEBET')->first();
@@ -609,10 +707,10 @@ class PelunasanHutangHeader extends MyModel
         $memopembelian = json_decode($coaDebetpembelian->memo, true);
 
         $query = HutangHeader::from(DB::raw("hutangheader a with (readuncommitted)"))
-        ->select('a.nobukti')
-        ->join(db::Raw("penerimaanstokheader b with (readuncommitted)"), 'a.nobukti', 'b.hutang_nobukti')
-        ->first();
-                   
+            ->select('a.nobukti')
+            ->join(db::Raw("penerimaanstokheader b with (readuncommitted)"), 'a.nobukti', 'b.hutang_nobukti')
+            ->first();
+
         if (isset($query)) {
             $coa = $memopembelian['JURNAL'];
         } else {
@@ -621,22 +719,52 @@ class PelunasanHutangHeader extends MyModel
         $langsungcair = Parameter::from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS LANGSUNG CAIR')->where('text', 'TIDAK LANGSUNG CAIR')->first();
         $queryalatbayar = AlatBayar::from(db::raw("alatbayar a with (readuncommitted)"))->select('a.coa')->where('a.id', '=', $data['alatbayar_id'])->where('a.statuslangsungcair', '=', $langsungcair->id)->first();
 
+        if ($PelunasanHutangHeader->bank_id == '') {
+            $bankid = 0;
+        } else {
+            $bankid = $PelunasanHutangHeader->bank_id ?? 0;
+        }
+
         $bank = Bank::from(DB::raw("bank with (readuncommitted)"))
             ->select('bank.coa')->whereRaw("bank.id = $PelunasanHutangHeader->bank_id")
             ->first();
-        $coakredits = $bank->coa;
+        $coakredits = $bank->coa ?? '';
         if (isset($queryalatbayar)) {
             $coakredits =  $queryalatbayar->coa;
         }
 
-        $PelunasanHutangDetails=[];
-        $nominal_detail=[];
-        $keterangan_detail=[];
-        $coadebet=[];
-        $coakredit=[];
-        $tgljatuhtempo=[];
-        $nowarkat=[];
+        $PelunasanHutangDetails = [];
+        $nominal_detail = [];
+        $keterangan_detail = [];
+        $coadebet = [];
+        $coakredit = [];
+        $tgljatuhtempo = [];
+        $nowarkat = [];
 
+        $statusketerangan = DB::table('parameter')->from(
+            db::raw("parameter a with (readuncommitted)")
+        )
+            ->select(
+                'a.text'
+            )
+            ->where('grp', '=', 'KETERANGAN DEFAULT HUTANG USAHA')
+            ->where('subgrp', '=', 'KETERANGAN DEFAULT HUTANG USAHA')
+            ->first();
+
+        $querysupplier = DB::table('PelunasanHutangheader')->from(
+            db::raw("PelunasanHutangheader a with (readuncommitted)")
+        )
+            ->select(
+                'b.namasupplier'
+            )
+            ->join(DB::raw("supplier b with (readuncommitted)"), 'a.supplier_id', 'b.id')
+            ->where('a.id', '=', $PelunasanHutangHeader->id)
+            ->first();
+
+        $supplier = $querysupplier->namasupplier ?? '';
+
+        $statusketerangan = $statusketerangan->text ?? '';
+        $total = 0;
         for ($i = 0; $i < count($data['hutang_id']); $i++) {
             $hutang = HutangDetail::where('nobukti', $data['hutang_nobukti'][$i])->first();
 
@@ -653,98 +781,116 @@ class PelunasanHutangHeader extends MyModel
             ]);
 
             $PelunasanHutangDetails[] = $PelunasanHutangDetail->toArray();
-            $nominal_detail []= $data['bayar'][$i] - $data['potongan'][$i];
-            $keterangan_detail []= $data['keterangan'][$i];
-            $coadebet []= $coa;
-            $coakredit []= $coakredits;
+            $total = $total + ($data['bayar'][$i] - $data['potongan'][$i]);
+            $keterangan_detail[] = $data['keterangan'][$i];
+        }
+
+        /*STORE PENGELUARAN*/
+        $supplier = Supplier::from(DB::raw("supplier with (readuncommitted)"))->where('id', $data['supplier_id'])->first();
+
+        if ($bayarhutang == $statusbayarhutang) {
+            $coadebet[] = $coa;
+            $coakredit[] = $coakredits;
             $tgljatuhtempo[] = $hutang->tgljatuhtempo;
             $nowarkat[] = "";
+            $nominal_detail[] = $total;
+            $statusketerangandefault[] = $statusketerangan . ' ' . $supplier->namasupplier . ' ' . $data['keterangan'][0];
+            $pengeluaranRequest = [
+                'tglbukti' => $PelunasanHutangHeader->tglbukti,
+                'pelanggan_id' => 0,
+                'postingdari' => "ENTRY HUTANG BAYAR",
+                'statusapproval' => $statusApproval->id,
+                'dibayarke' => $supplier->namasupplier,
+                'alatbayar_id' => $data['alatbayar_id'],
+                'bank_id' => $data['bank_id'],
+                'transferkeac' => $supplier->rekeningbank,
+                'transferkean' => $supplier->namarekening,
+                'transferkebank' => $supplier->bank,
+                'userapproval' => "",
+                'tglapproval' => "",
+
+                'nowarkat' => $nowarkat,
+                'tgljatuhtempo' => $tgljatuhtempo,
+                "nominal_detail" => $nominal_detail,
+                "coadebet" => $coadebet,
+                "coakredit" => $coakredit,
+                "keterangan_detail" => $statusketerangandefault,
+                "bulanbeban"
+            ];
+
+
+            $pengeluaranHeader = PengeluaranHeader::where('nobukti', $PelunasanHutangHeader->pengeluaran_nobukti)->first();
+            $pengeluaranHeader = (new PengeluaranHeader())->processUpdate($pengeluaranHeader, $pengeluaranRequest);
+            $PelunasanHutangHeader->pengeluaran_nobukti = $pengeluaranHeader->nobukti;
+        } else {
+            $PelunasanHutangHeader->pengeluaran_nobukti = '';
         }
+        $PelunasanHutangHeader->save();
+
+
+        $PelunasanHutangHeaderLogTrail = (new LogTrail())->processStore([
+            'namatabel' => strtoupper($PelunasanHutangHeader->getTable()),
+            'postingdari' => $data['postingdari'] ?? strtoupper('ENTRY PELUNASAN HUTANG Header'),
+            'idtrans' => $PelunasanHutangHeader->id,
+            'nobuktitrans' => $PelunasanHutangHeader->nobukti,
+            'aksi' => 'ENTRY',
+            'datajson' => $PelunasanHutangHeader->toArray(),
+            'modifiedby' => auth('api')->user()->user
+        ]);
 
         (new LogTrail())->processStore([
             'namatabel' => strtoupper($PelunasanHutangDetail->getTable()),
-            'postingdari' => $data['postingdari'] ?? strtoupper('ENTRY HUTANG BAYAR DETAIL'),
+            'postingdari' => $data['postingdari'] ?? strtoupper('ENTRY PELUNASAN HUTANG DETAIL'),
             'idtrans' =>  $PelunasanHutangHeaderLogTrail->id,
             'nobuktitrans' => $PelunasanHutangHeader->nobukti,
             'aksi' => 'ENTRY',
             'datajson' => $PelunasanHutangDetails,
             'modifiedby' => auth('api')->user()->user,
         ]);
-
-        /*STORE PENGELUARAN*/
-        $supplier = Supplier::from(DB::raw("supplier with (readuncommitted)"))->where('id', $data['supplier_id'])->first();
-
-        $pengeluaranRequest = [
-            'tglbukti' => date('Y-m-d', strtotime($data['tglbukti'])),
-            'pelanggan_id' => 0,
-            'postingdari' => "ENTRY HUTANG BAYAR",
-            'statusapproval' => $statusApproval->id,
-            'dibayarke' => $supplier->namasupplier,
-            'alatbayar_id' => $data['alatbayar_id'],
-            'bank_id'=> $data['bank_id'],
-            'transferkeac' => $supplier->rekeningbank,
-            'transferkean' => $supplier->namarekening,
-            'transferkebank' => $supplier->bank,
-            'userapproval'=>"",
-            'tglapproval'=>"",
-
-            'nowarkat'=>$nowarkat,
-            'tgljatuhtempo'=> $tgljatuhtempo,
-            "nominal_detail"=>$nominal_detail,
-            "coadebet"=>$coadebet,
-            "coakredit"=>$coakredit,
-            "keterangan_detail"=>$keterangan_detail,
-            "bulanbeban"
-        ];
-
-
-        $pengeluaranHeader = PengeluaranHeader::where('nobukti',$PelunasanHutangHeader->pengeluaran_nobukti)->first();
-        $pengeluaranHeader = (new PengeluaranHeader())->processUpdate($pengeluaranHeader,$pengeluaranRequest);
-        // $PelunasanHutangHeader->save();
         return $PelunasanHutangHeader;
     }
 
 
-    public function processDestroy($id): PelunasanHutangHeader
+    public function processDestroy($id, $postingDari = ''): PelunasanHutangHeader
     {
         $PelunasanHutangHeader = PelunasanHutangHeader::findOrFail($id);
         $dataHeader =  $PelunasanHutangHeader->toArray();
         $pengeluaranDetail = PelunasanHutangDetail::where('PelunasanHutang_id', '=', $PelunasanHutangHeader->id)->get();
         $dataDetail = $pengeluaranDetail->toArray();
-        
-        $pengeluaranHeader = PengeluaranHeader::where('nobukti', $PelunasanHutangHeader->pengeluaran_nobukti)->lockForUpdate()->first();
-        /*DELETE EXISTING JURNAL*/
-        $JurnalUmumDetail = JurnalUmumDetail::where('nobukti', $pengeluaranHeader->nobukti)->lockForUpdate()->delete();
-        $JurnalUmumHeader = JurnalUmumHeader::where('nobukti', $pengeluaranHeader->nobukti)->lockForUpdate()->delete();
-        /*DELETE EXISTING Pengeluaran*/
-        $pengeluaranDetail = PengeluaranDetail::where('pengeluaran_id', $pengeluaranHeader->id)->lockForUpdate()->delete();
-        $pengeluaranHeader->delete();
+
+        $buktipengeluaran = $PelunasanHutangHeader->pengeluaran_nobukti ?? '';
+        if ($buktipengeluaran != '') {
+            $getPengeluaran = PengeluaranHeader::from(DB::raw("pengeluaranheader with (readuncommitted)"))->where('nobukti', $PelunasanHutangHeader->pengeluaran_nobukti)->first();
+            if ($getPengeluaran != null) {
+                (new PengeluaranHeader())->processDestroy($getPengeluaran->id, $postingDari);
+            }
+        }
+
         /*DELETE EXISTING hutang bayar*/
         PelunasanHutangDetail::where('PelunasanHutang_id', $PelunasanHutangHeader->id)->lockForUpdate()->delete();
 
-         $PelunasanHutangHeader = $PelunasanHutangHeader->lockAndDestroy($id);
-         $hutangLogTrail = (new LogTrail())->processStore([
-             'namatabel' => $this->table,
-             'postingdari' => strtoupper('DELETE hutang bayar Header'),
-             'idtrans' => $PelunasanHutangHeader->id,
-             'nobuktitrans' => $PelunasanHutangHeader->nobukti,
-             'aksi' => 'DELETE',
-             'datajson' =>$dataHeader,
-             'modifiedby' => auth('api')->user()->name
-         ]);
- 
-         (new LogTrail())->processStore([
-             'namatabel' => (new LogTrail())->table,
-             'postingdari' => strtoupper('DELETE hutang bayar detail'),
-             'idtrans' => $hutangLogTrail['id'],
-             'nobuktitrans' => $PelunasanHutangHeader->nobukti,
-             'aksi' => 'DELETE',
-             'datajson' =>$dataDetail,
-             'modifiedby' => auth('api')->user()->name
-         ]);
- 
-         return $PelunasanHutangHeader;
-        
+        $PelunasanHutangHeader = $PelunasanHutangHeader->lockAndDestroy($id);
+        $hutangLogTrail = (new LogTrail())->processStore([
+            'namatabel' => $this->table,
+            'postingdari' => $postingDari,
+            'idtrans' => $PelunasanHutangHeader->id,
+            'nobuktitrans' => $PelunasanHutangHeader->nobukti,
+            'aksi' => 'DELETE',
+            'datajson' => $dataHeader,
+            'modifiedby' => auth('api')->user()->name
+        ]);
+
+        (new LogTrail())->processStore([
+            'namatabel' => 'PELUNASANHUTANGDETAIL',
+            'postingdari' => $postingDari,
+            'idtrans' => $hutangLogTrail['id'],
+            'nobuktitrans' => $PelunasanHutangHeader->nobukti,
+            'aksi' => 'DELETE',
+            'datajson' => $dataDetail,
+            'modifiedby' => auth('api')->user()->name
+        ]);
+
+        return $PelunasanHutangHeader;
     }
 
 
@@ -753,10 +899,10 @@ class PelunasanHutangHeader extends MyModel
         $this->setRequestParameters();
 
         $getJudul = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))
-        ->select('text')
-        ->where('grp', 'JUDULAN LAPORAN')
-        ->where('subgrp', 'JUDULAN LAPORAN')
-        ->first();
+            ->select('text')
+            ->where('grp', 'JUDULAN LAPORAN')
+            ->where('subgrp', 'JUDULAN LAPORAN')
+            ->first();
 
         $periode = request()->periode ?? '';
         $statusCetak = request()->statuscetak ?? '';
@@ -772,17 +918,21 @@ class PelunasanHutangHeader extends MyModel
                 'supplier.namasupplier as supplier_id',
                 'alatbayar.keterangan as alatbayar_id',
                 'PelunasanHutangheader.tglcair',
+                'statuscetak.memo as statuscetak',
+                'statuscetak.id as  statuscetak_id',
+                'PelunasanHutangheader.jumlahcetak',
                 DB::raw("'Laporan Pembayaran Hutang' as judulLaporan"),
                 DB::raw("'" . $getJudul->text . "' as judul"),
                 DB::raw("'Tgl Cetak:'+format(getdate(),'dd-MM-yyyy HH:mm:ss')as tglcetak"),
-                DB::raw(" 'User :".auth('api')->user()->name."' as usercetak")
+                DB::raw(" 'User :" . auth('api')->user()->name . "' as usercetak")
             )
             ->where("$this->table.id", $id)
+            ->leftJoin(DB::raw("parameter as statuscetak with (readuncommitted)"), 'PelunasanHutangheader.statuscetak', 'statuscetak.id')
             ->leftJoin(DB::raw("akunpusat with (readuncommitted)"), 'PelunasanHutangheader.coa', 'akunpusat.coa')
             ->leftJoin(DB::raw("bank with (readuncommitted)"), 'PelunasanHutangheader.bank_id', 'bank.id')
             ->leftJoin(DB::raw("supplier with (readuncommitted)"), 'PelunasanHutangheader.supplier_id', 'supplier.id')
             ->leftJoin(DB::raw("alatbayar with (readuncommitted)"), 'PelunasanHutangheader.alatbayar_id', 'alatbayar.id');
-        
+
         if (request()->tgldari) {
             $query->whereBetween($this->table . '.tglbukti', [date('Y-m-d', strtotime(request()->tgldari)), date('Y-m-d', strtotime(request()->tglsampai))]);
         }
@@ -797,5 +947,4 @@ class PelunasanHutangHeader extends MyModel
         $data = $query->first();
         return $data;
     }
-
 }

@@ -124,7 +124,11 @@ class PencairanGiroPengeluaranHeader extends MyModel
                 'pengeluaranheader.modifiedby',
                 'pengeluaranheader.created_at',
                 'pengeluaranheader.updated_at',
-            ]);
+                db::raw("cast((format(pengeluaran.tglbukti,'yyyy/MM')+'/1') as date) as tgldariheaderpengeluaranheader"),
+                db::raw("cast(cast(format((cast((format(pengeluaran.tglbukti,'yyyy/MM')+'/1') as datetime)+32),'yyyy/MM')+'/01' as datetime)-1 as date) as tglsampaiheaderpengeluaranheader"), 
+            ])            
+            ->leftJoin(DB::raw("pengeluaranheader as pengeluaran with (readuncommitted)"), 'pengeluaranheader.pengeluaran_nobukti', '=', 'pengeluaran.nobukti');
+
 
 
         // dd( $query->get());
@@ -343,6 +347,7 @@ class PencairanGiroPengeluaranHeader extends MyModel
                     $pencairanGiro->userapproval = '';
                     $pencairanGiro->tglapproval = '';
                     $pencairanGiro->modifiedby = auth('api')->user()->name;
+                    $pencairanGiro->info = html_entity_decode(request()->info);
                     $pencairanGiro->statusformat = $format->id;
 
                     if (!$pencairanGiro->save()) {
@@ -432,6 +437,7 @@ class PencairanGiroPengeluaranHeader extends MyModel
                     $pencairanGiro->userapproval = '';
                     $pencairanGiro->tglapproval = '';
                     $pencairanGiro->modifiedby = auth('api')->user()->name;
+                    $pencairanGiro->info = html_entity_decode(request()->info);
                     $pencairanGiro->statusformat = $format->id;
 
                     if (!$pencairanGiro->save()) {

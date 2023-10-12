@@ -13,6 +13,7 @@ use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 use App\Rules\UniqueTarifEdit;
 use App\Rules\ValidasiTujuanTarifDariUpahSupir;
+use Illuminate\Support\Facades\DB;
 
 class StoreTarifRequest extends FormRequest
 {
@@ -33,125 +34,122 @@ class StoreTarifRequest extends FormRequest
      */
     public function rules()
     {
-        $parameter = new Parameter();
-        $dataAktif = $parameter->getcombodata('STATUS AKTIF', 'STATUS AKTIF');
-        $dataAktif = json_decode($dataAktif, true);
-        foreach ($dataAktif as $item) {
-            $statusAktif[] = $item['id'];
-        }
-        $dataTon = $parameter->getcombodata('SISTEM TON', 'SISTEM TON');
-        $dataTon = json_decode($dataTon, true);
-        foreach ($dataTon as $item) {
-            $statusTon[] = $item['id'];
-        }
-        $dataPenyesuaian = $parameter->getcombodata('PENYESUAIAN HARGA', 'PENYESUAIAN HARGA');
-        $dataPenyesuaian = json_decode($dataPenyesuaian, true);
-        foreach ($dataPenyesuaian as $item) {
-            $statusPenyesuaian[] = $item['id'];
-        }
+        if (request()->from == '') {
+            $parameter = new Parameter();
+            $dataAktif = $parameter->getcombodata('STATUS AKTIF', 'STATUS AKTIF');
+            $dataAktif = json_decode($dataAktif, true);
+            foreach ($dataAktif as $item) {
+                $statusAktif[] = $item['id'];
+            }
+            $dataTon = $parameter->getcombodata('SISTEM TON', 'SISTEM TON');
+            $dataTon = json_decode($dataTon, true);
+            foreach ($dataTon as $item) {
+                $statusTon[] = $item['id'];
+            }
+            $dataPenyesuaian = $parameter->getcombodata('PENYESUAIAN HARGA', 'PENYESUAIAN HARGA');
+            $dataPenyesuaian = json_decode($dataPenyesuaian, true);
+            foreach ($dataPenyesuaian as $item) {
+                $statusPenyesuaian[] = $item['id'];
+            }
+            $dataPostingTnl = $parameter->getcombodata('STATUS POSTING TNL', 'STATUS POSTING TNL');
+            $dataPostingTnl = json_decode($dataPostingTnl, true);
+            foreach ($dataPostingTnl as $item) {
+                $statusPostingTnl[] = $item['id'];
+            }
 
-        $tglbatasawal = (date('Y-m-d'));
-        $tglbatasakhir = (date('Y') + 1) . '-01-01';
+            $tglbatasawal = (date('Y-m-d', strtotime('-7 days')));
+            $tglbatasakhir = (date('Y-m-d', strtotime('+7 days')));
+            $kota_id = $this->kota_id;
+            $rulesKota_id = [];
+            if ($kota_id != null) {
+                $rulesKota_id = [
+                    'kota_id' => ['required', 'numeric', 'min:1', new ExistKota()],
+                ];
+            } else if ($kota_id == null && $this->kota != '') {
+                $rulesKota_id = [
+                    'kota_id' => ['required', 'numeric', 'min:1', new ExistKota()],
+                ];
+            }
 
-        $kota_id = $this->kota_id;
-        $rulesKota_id = [];
-        if ($kota_id != null) {
-            $rulesKota_id = [
-                'kota_id' => ['required', 'numeric', 'min:1', new ExistKota()],
-            ];
-        } else if ($kota_id == null && $this->kota != '') {
-            $rulesKota_id = [
-                'kota_id' => ['required', 'numeric', 'min:1', new ExistKota()],
-            ];
-        }
-
-        $parent_id = $this->parent_id;
-        $rulesParent_id = [];
-        if ($parent_id != null) {
-            if ($parent_id == 0) {
+            $parent_id = $this->parent_id;
+            $rulesParent_id = [];
+            if ($parent_id != null) {
+                if ($parent_id == 0) {
+                    $rulesParent_id = [
+                        'parent_id' => ['required', 'numeric', 'min:1', new ExistTarif()]
+                    ];
+                } else {
+                    if ($this->parent == '') {
+                        $rulesParent_id = [
+                            'parent' => ['required']
+                        ];
+                    }
+                }
+            } else if ($parent_id == null && $this->parent != '') {
                 $rulesParent_id = [
                     'parent_id' => ['required', 'numeric', 'min:1', new ExistTarif()]
                 ];
-            } else {
-                if ($this->parent == '') {
-                    $rulesParent_id = [
-                        'parent' => ['required']
-                    ];
-                }
             }
-        } else if ($parent_id == null && $this->parent != '') {
-            $rulesParent_id = [
-                'parent_id' => ['required', 'numeric', 'min:1', new ExistTarif()]
-            ];
-        }
 
-        $upahsupir_id = $this->upahsupir_id;
-        $rulesUpahSupir_id = [];
-        if ($upahsupir_id != null) {
-            if ($upahsupir_id == 0) {
-                $rulesUpahSupir_id = [
-                    'upahsupir_id' => ['required', 'numeric', 'min:1', new ExistUpahSupir()]
-                ];
-            } else {
-                if ($this->upahsupir == '') {
-                    $rulesUpahSupir_id = [
-                        'upahsupir' => ['required']
+            $zona_id = $this->zona_id;
+            $rulesZona_id = [];
+            if ($zona_id != null) {
+                if ($zona_id == 0) {
+                    $rulesZona_id = [
+                        'zona_id' => ['required', 'numeric', 'min:1', new ExistZona()]
                     ];
+                } else {
+                    if ($this->zona == '') {
+                        $rulesZona_id = [
+                            'zona' => ['required']
+                        ];
+                    }
                 }
-            }
-        } else if ($upahsupir_id == null && $this->upahsupir != '') {
-            $rulesUpahSupir_id = [
-                'upahsupir_id' => ['required', 'numeric', 'min:1', new ExistUpahSupir()]
-            ];
-        }
-
-        $zona_id = $this->zona_id;
-        $rulesZona_id = [];
-        if ($zona_id != null) {
-            if ($zona_id == 0) {
+            } else if ($zona_id == null && $this->zona != '') {
                 $rulesZona_id = [
                     'zona_id' => ['required', 'numeric', 'min:1', new ExistZona()]
                 ];
-            } else {
-                if ($this->zona == '') {
-                    $rulesZona_id = [
-                        'zona' => ['required']
-                    ];
+            }
+
+            $rules = [
+                'tujuan' =>  ['required'],
+                'penyesuaian' => [new UniqueTarif()],
+                'statusaktif' => ['required', Rule::in($statusAktif)],
+                'statussistemton' => ['required', Rule::in($statusTon)],
+                'tglmulaiberlaku' => [
+                    'required', 'date_format:d-m-Y',
+                    'after:' . $tglbatasawal,
+                    'before:' . $tglbatasakhir,
+                ],
+                'kota' => 'required',
+                'statuspenyesuaianharga' => ['required', Rule::in($statusPenyesuaian)],
+                'statuspostingtnl' => ['required', Rule::in($statusPostingTnl)],
+            ];
+            $getListTampilan = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'UBAH TAMPILAN')->where('text', 'TARIF')->first();
+            $getListTampilan = json_decode($getListTampilan->memo);
+            if ($getListTampilan->INPUT != '') {
+                $getListTampilan = (explode(",", $getListTampilan->INPUT));
+                foreach ($getListTampilan as $value) {
+                    if (array_key_exists(trim(strtolower($value)), $rules) == true) {
+                        unset($rules[trim(strtolower($value))]);
+                    }
                 }
             }
-        } else if ($zona_id == null && $this->zona != '') {
-            $rulesZona_id = [
-                'zona_id' => ['required', 'numeric', 'min:1', new ExistZona()]
+            $relatedRequests = [
+                StoreTarifRincianRequest::class
             ];
-        }
 
-        $rules = [
-            'tujuan' =>  ['required', new ValidasiTujuanTarifDariUpahSupir()],
-            'penyesuaian' => [new UniqueTarif()],
-            'statusaktif' => ['required', Rule::in($statusAktif)],
-            'statussistemton' => ['required', Rule::in($statusTon)],
-            'tglmulaiberlaku' => [
-                'required', 'date_format:d-m-Y',
-                'after_or_equal:' . $tglbatasawal,
-                'before:' . $tglbatasakhir,
-            ],
-            'kota' => 'required',
-            'statuspenyesuaianharga' => ['required', Rule::in($statusPenyesuaian)],
-        ];
-
-        $relatedRequests = [
-            StoreTarifRincianRequest::class
-        ];
-
-        foreach ($relatedRequests as $relatedRequest) {
-            $rules = array_merge(
-                $rules,
-                (new $relatedRequest)->rules(),
-                $rulesParent_id,
-                $rulesUpahSupir_id,
-                $rulesKota_id,
-                $rulesZona_id
-            );
+            foreach ($relatedRequests as $relatedRequest) {
+                $rules = array_merge(
+                    $rules,
+                    (new $relatedRequest)->rules(),
+                    $rulesParent_id,
+                    $rulesKota_id,
+                    $rulesZona_id
+                );
+            }
+        } else {
+            $rules = [];
         }
         return $rules;
     }

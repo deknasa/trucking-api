@@ -23,6 +23,10 @@ class CreateNotakreditheaderTable extends Migration
             $table->longText('keterangan')->nullable();            
             $table->unsignedBigInteger('pelanggan_id')->nullable();
             $table->unsignedBigInteger('agen_id')->nullable();            
+            $table->unsignedBigInteger('bank_id')->nullable();
+            $table->unsignedBigInteger('alatbayar_id')->nullable();
+            $table->string('nowarkat', 50)->nullable();
+            $table->string('pengeluaran_nobukti', 50)->nullable();            
             $table->date('tglbukti')->nullable();
             $table->string('postingdari',50)->nullable();
             $table->integer('statusapproval')->length(11)->nullable();
@@ -34,6 +38,7 @@ class CreateNotakreditheaderTable extends Migration
             $table->string('userbukacetak',50)->nullable();
             $table->date('tglbukacetak')->nullable();
             $table->integer('jumlahcetak')->Length(11)->nullable();
+            $table->longText('info')->nullable();            
             $table->string('modifiedby',50)->nullable();
             $table->timestamps();
 

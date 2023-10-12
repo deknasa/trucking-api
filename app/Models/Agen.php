@@ -305,6 +305,33 @@ class Agen extends MyModel
         return $data;
     }
 
+    public function findAll($id)
+    {
+        $query = DB::table("agen")->from(DB::raw("agen with (readuncommitted)"))
+        ->select(
+            'agen.id',
+            'agen.kodeagen',
+            'agen.namaagen',
+            'agen.keterangan',
+            'agen.statusaktif',
+            'agen.namaperusahaan',
+            "agen.alamat",
+            "agen.notelp",
+            "agen.nohp",
+            "agen.contactperson",
+            "agen.top",
+            "agen.statustas",
+            "agen.coa",
+            'coa.keterangancoa as keterangancoa',
+            'coapendapatan.keterangancoa as keterangancoapendapatan',
+            "agen.coapendapatan",
+        )
+        ->leftJoin(DB::raw("akunpusat as coa with (readuncommitted)"), 'agen.coa', 'coa.coa')
+        ->leftJoin(DB::raw("akunpusat as coapendapatan with (readuncommitted)"), 'agen.coapendapatan', 'coapendapatan.coa')
+        ->where('agen.id', $id);
+
+        return $query->first();
+    }
 
     public function selectColumns($query)
     {
@@ -471,6 +498,8 @@ class Agen extends MyModel
         $agen->statusaktif = $data['statusaktif'];
         $agen->namaperusahaan = $data['namaperusahaan'];
         $agen->alamat = $data['alamat'];
+        $agen->coa = $data['coa'];
+        $agen->coapendapatan = $data['coapendapatan'];
         $agen->notelp = $data['notelp'];
         $agen->contactperson = $data['contactperson'];
         $agen->top = $data['top'];
@@ -479,6 +508,7 @@ class Agen extends MyModel
         // $agen->jenisemkl = $request->jenisemkl;
         $agen->tglapproval = '';
         $agen->modifiedby = auth('api')->user()->name;
+        $agen->info = html_entity_decode(request()->info);
         // $request->sortname = $request->sortname ?? 'id';
         // $request->sortorder = $request->sortorder ?? 'asc';
 
@@ -507,12 +537,15 @@ class Agen extends MyModel
         $agen->statusaktif = $data['statusaktif'];
         $agen->namaperusahaan = $data['namaperusahaan'];
         $agen->alamat = $data['alamat'];
+        $agen->coa = $data['coa'];
+        $agen->coapendapatan = $data['coapendapatan'];
         $agen->notelp = $data['notelp'];
         $agen->contactperson = $data['contactperson'];
         $agen->top = $data['top'];
         $agen->statustas = $data['statustas'];
         // $agen->jenisemkl = $request->jenisemkl;
         $agen->modifiedby = auth('api')->user()->name;
+        $agen->info = html_entity_decode(request()->info);
         // $request->sortname = $request->sortname ?? 'id';
         // $request->sortorder = $request->sortorder ?? 'asc';
 

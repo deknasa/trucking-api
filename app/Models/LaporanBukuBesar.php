@@ -233,8 +233,8 @@ class LaporanBukuBesar extends MyModel
             ->where('c.id', '>=', $coadari_id)
             ->where('c.id', '<=', $coasampai_id)
             ->orderBy('a.tglbukti', 'asc')
-            ->orderBy('b.nominal', 'desc')
             ->orderBy('a.nobukti', 'asc')
+            ->orderBy('b.nominal', 'desc')
             ->orderBy('b.id', 'asc');
 
 

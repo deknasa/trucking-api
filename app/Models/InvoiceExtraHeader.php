@@ -38,6 +38,7 @@ class InvoiceExtraHeader extends MyModel
             ->leftJoin(DB::raw("parameter with (readuncommitted)"), 'invoiceextraheader.statusapproval', 'parameter.id')
             ->leftJoin(DB::raw("parameter as cetak with (readuncommitted)"), 'invoiceextraheader.statuscetak', 'cetak.id')
             ->leftJoin(DB::raw("pelanggan with (readuncommitted)"), 'invoiceextraheader.pelanggan_id', 'pelanggan.id')
+            ->leftJoin(DB::raw("piutangheader as piutang with (readuncommitted)"), 'invoiceextraheader.piutang_nobukti', '=', 'piutang.nobukti')
             ->leftJoin(DB::raw("agen with (readuncommitted)"), 'invoiceextraheader.agen_id', 'agen.id');
 
         if (request()->tgldari && request()->tglsampai) {
@@ -71,6 +72,7 @@ class InvoiceExtraHeader extends MyModel
                 DB::raw("pelunasanpiutangdetail as a with (readuncommitted)")
             )
             ->select(
+                'a.nobukti',
                 'a.invoice_nobukti'
             )
             ->where('a.invoice_nobukti', '=', $nobukti)
@@ -78,26 +80,27 @@ class InvoiceExtraHeader extends MyModel
         if (isset($pelunasanPiutang)) {
             $data = [
                 'kondisi' => true,
-                'keterangan' => 'Pelunasan Piutang',
+                'keterangan' => 'Pelunasan Piutang '. $pelunasanPiutang->nobukti,
                 'kodeerror' => 'SATL'
             ];
             goto selesai;
         }
 
-        $hutangBayar = DB::table('invoiceextraheader')
+        $invoice = DB::table('invoiceextraheader')
             ->from(
                 DB::raw("invoiceextraheader as a with (readuncommitted)")
             )
             ->select(
-                'a.nobukti'
+                'a.nobukti',
+                'a.piutang_nobukti'
             )
             ->join(DB::raw("jurnalumumpusatheader b with (readuncommitted)"), 'a.piutang_nobukti', 'b.nobukti')
             ->where('a.nobukti', '=', $nobukti)
             ->first();
-        if (isset($hutangBayar)) {
+        if (isset($invoice)) {
             $data = [
                 'kondisi' => true,
-                'keterangan' => 'Approval Jurnal',
+                'keterangan' => 'Approval Jurnal '. $invoice->piutang_nobukti,
                 'kodeerror' => 'SAP'
             ];
             goto selesai;
@@ -208,6 +211,8 @@ class InvoiceExtraHeader extends MyModel
                 "$this->table.modifiedby",
                 "pelanggan.namapelanggan as  pelanggan",
                 "agen.namaagen as  agen",
+                db::raw("cast((format(piutang.tglbukti,'yyyy/MM')+'/1') as date) as tgldariheaderpiutangheader"),
+                db::raw("cast(cast(format((cast((format(piutang.tglbukti,'yyyy/MM')+'/1') as datetime)+32),'yyyy/MM')+'/01' as datetime)-1 as date) as tglsampaiheaderpiutangheader"),
             );
     }
 
@@ -296,15 +301,19 @@ class InvoiceExtraHeader extends MyModel
     {
         $this->setRequestParameters();
 
-        $query = DB::table($this->table);
-        $query = $this->selectColumns($query)->from(
+        $query = DB::table($this->table)->from(
             DB::raw($this->table . " with (readuncommitted)")
         )
-            ->leftJoin(DB::raw("parameter with (readuncommitted)"), 'invoiceextraheader.statusapproval', 'parameter.id')
+            ->select(
+                'invoiceextraheader.id',
+                'invoiceextraheader.nobukti',
+                'invoiceextraheader.tglbukti',
+                'invoiceextraheader.agen_id',
+                'agen.namaagen as agen',
+                'invoiceextraheader.tgljatuhtempo'
+            )
             ->leftJoin(DB::raw("pelanggan with (readuncommitted)"), 'invoiceextraheader.pelanggan_id', 'pelanggan.id')
-            ->leftJoin(DB::raw("parameter as cetak with (readuncommitted)"), 'invoiceextraheader.statuscetak', 'cetak.id')
-            ->leftJoin(DB::raw("agen with (readuncommitted)"), 'invoiceextraheader.agen_id', 'agen.id')
-            ->leftJoin(DB::raw("parameter as statusformat with (readuncommitted)"), 'invoiceextraheader.statusformat', 'statusformat.id');
+            ->leftJoin(DB::raw("agen with (readuncommitted)"), 'invoiceextraheader.agen_id', 'agen.id');
         $data = $query->where("$this->table.id", $id)->first();
         return $data;
     }
@@ -340,6 +349,7 @@ class InvoiceExtraHeader extends MyModel
         $invoiceExtraHeader->statuscetak = $statusCetak->id;
         $invoiceExtraHeader->statusformat = $format->id;
         $invoiceExtraHeader->modifiedby = auth('api')->user()->name;
+        $invoiceExtraHeader->info = html_entity_decode(request()->info);
         $invoiceExtraHeader->nobukti = (new RunningNumberService)->get($group, $subGroup, $invoiceExtraHeader->getTable(), date('Y-m-d', strtotime($data['tglbukti'])));
 
         if (!$invoiceExtraHeader->save()) {
@@ -402,29 +412,34 @@ class InvoiceExtraHeader extends MyModel
     public function processUpdate(InvoiceExtraHeader $invoiceExtraHeader, array $data): InvoiceExtraHeader
     {
         $nobuktiOld = $invoiceExtraHeader->nobukti;
-        $group = 'INVOICE EXTRA BUKTI';
-        $subGroup = 'INVOICE EXTRA BUKTI';
-        $querycek = DB::table('invoiceextraheader')->from(
-            DB::raw("invoiceextraheader a with (readuncommitted)")
-        )
-            ->select(
-                'a.nobukti'
-            )
-            ->where('a.id', $invoiceExtraHeader->id)
-            ->whereRAw("format(a.tglbukti,'MM-yyyy')='" . date('m-Y', strtotime($data['tglbukti'])) . "'")
-            ->first();
+        $getTgl = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'EDIT TANGGAL BUKTI')->where('subgrp', 'INVOICE EXTRA')->first();
 
-        if (isset($querycek)) {
-            $nobukti = $querycek->nobukti;
-        } else {
-            $nobukti = (new RunningNumberService)->get($group, $subGroup, $invoiceExtraHeader->getTable(), date('Y-m-d', strtotime($data['tglbukti'])));
+        if (trim($getTgl->text) == 'YA') {
+            $group = 'INVOICE EXTRA BUKTI';
+            $subGroup = 'INVOICE EXTRA BUKTI';
+            $querycek = DB::table('invoiceextraheader')->from(
+                DB::raw("invoiceextraheader a with (readuncommitted)")
+            )
+                ->select(
+                    'a.nobukti'
+                )
+                ->where('a.id', $invoiceExtraHeader->id)
+                ->whereRAw("format(a.tglbukti,'MM-yyyy')='" . date('m-Y', strtotime($data['tglbukti'])) . "'")
+                ->first();
+
+            if (isset($querycek)) {
+                $nobukti = $querycek->nobukti;
+            } else {
+                $nobukti = (new RunningNumberService)->get($group, $subGroup, $invoiceExtraHeader->getTable(), date('Y-m-d', strtotime($data['tglbukti'])));
+            }
+            $invoiceExtraHeader->nobukti = $nobukti;
+            $invoiceExtraHeader->tglbukti = date('Y-m-d', strtotime($data['tglbukti']));
         }
-        $invoiceExtraHeader->nobukti = $nobukti;
-        $invoiceExtraHeader->tglbukti = date('Y-m-d', strtotime($data['tglbukti']));
         $invoiceExtraHeader->nominal = $data['nominal'];
         $invoiceExtraHeader->agen_id = $data['agen_id'];
         $invoiceExtraHeader->tgljatuhtempo = date('Y-m-d', strtotime($data['tgljatuhtempo']));
         $invoiceExtraHeader->modifiedby = auth('api')->user()->name;
+        $invoiceExtraHeader->info = html_entity_decode(request()->info);
 
         if (!$invoiceExtraHeader->save()) {
             throw new \Exception("Error updating invoice extra header.");
@@ -454,7 +469,7 @@ class InvoiceExtraHeader extends MyModel
         $invoiceRequest = [
             'postingdari' => 'EDIT INVOICE EXTRA',
             'invoice' => $invoiceExtraHeader->nobukti,
-            'tglbukti' => $data['tglbukti'],
+            'tglbukti' => $invoiceExtraHeader->tglbukti,
             'tgljatuhtempo' => date('Y-m-d', strtotime($data['tgljatuhtempo'])),
             'agen_id' => $data['agen_id'],
             'invoice_nobukti' => $invoiceNobukti,

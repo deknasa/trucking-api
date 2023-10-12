@@ -9,6 +9,10 @@ use App\Rules\DateTutupBuku;
 use App\Rules\ExistBank;
 use App\Rules\ExistSupir;
 use App\Rules\ValidasiHutangList;
+use App\Rules\ValidasiPendapatanSupir;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
+
 
 class StorePendapatanSupirHeaderRequest extends FormRequest
 {
@@ -29,6 +33,9 @@ class StorePendapatanSupirHeaderRequest extends FormRequest
      */
     public function rules()
     {
+
+       
+
         $parameter = new Parameter();
         $getBatas = $parameter->getBatasAwalTahun();
         $tglbatasawal = $getBatas->text;
@@ -66,29 +73,31 @@ class StorePendapatanSupirHeaderRequest extends FormRequest
                 new DateTutupBuku()
             ],
             'bank' => 'required',
-            'supir' => [
-                'required',
-                new ValidasiHutangList($jumlahdetail)
-            ],
             'tgldari' => [
                 'required', 'date_format:d-m-Y',
                 'before:' . $tglbatasakhir,
-                new DateTutupBuku()
+                new DateTutupBuku(),
+                new ValidasiHutangList($jumlahdetail),
+                new ValidasiPendapatanSupir()
             ],
             'tglsampai' => [
                 'required', 'date_format:d-m-Y',
                 'before:' . $tglbatasakhir,
-                'after_or_equal:' . $this->tgldari
+                'after_or_equal:' . $this->tgldari,
+                new ValidasiPendapatanSupir()
             ],
         ];
 
 
         $rules = array_merge(
             $rules,
-            $ruleBank_id,
-            $rulesSupir_id
+            $ruleBank_id
         );
-
+        $cekBank = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'PENDAPATAN SUPIR')->where('subgrp', 'BANK')->first();
+        if($cekBank->text == 'TIDAK'){
+            unset($rules['bank']);
+            unset($rules['bank_id']);
+        }
         return $rules;
     }
 

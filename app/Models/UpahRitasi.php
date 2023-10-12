@@ -336,6 +336,7 @@ class UpahRitasi extends MyModel
         $upahritasi->statusaktif = $data['statusaktif'];
         $upahritasi->tglmulaiberlaku = date('Y-m-d', strtotime($data['tglmulaiberlaku']));
         $upahritasi->modifiedby = auth('api')->user()->user;
+        $upahritasi->info = html_entity_decode(request()->info);
 
         if (!$upahritasi->save()) {
             throw new \Exception('Error storing upah ritasi.');
@@ -385,6 +386,7 @@ class UpahRitasi extends MyModel
         $upahritasi->statusaktif = $data['statusaktif'];
         $upahritasi->tglmulaiberlaku = date('Y-m-d', strtotime($data['tglmulaiberlaku']));
         $upahritasi->modifiedby = auth('api')->user()->user;
+        $upahritasi->info = html_entity_decode(request()->info);
 
         if (!$upahritasi->save()) {
             throw new \Exception("Error updating service in header.");

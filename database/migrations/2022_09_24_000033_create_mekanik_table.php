@@ -20,6 +20,7 @@ class CreateMekanikTable extends Migration
             $table->string('namamekanik', 300)->nullable();
             $table->longText('keterangan')->nullable();
             $table->integer('statusaktif')->length(11)->nullable();
+            $table->longText('info')->nullable();
             $table->string('modifiedby', 30)->nullable();
 
             $table->timestamps();

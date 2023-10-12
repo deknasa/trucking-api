@@ -34,8 +34,8 @@ class HutangHeader extends MyModel
             $table->double('nominal', 15, 2)->nullable();
         });
 
-        $query = DB::table('hutangbayardetail')->from(
-            DB::raw("hutangbayardetail as a with (readuncommitted)")
+        $query = DB::table('pelunasanhutangdetail')->from(
+            DB::raw("pelunasanhutangdetail as a with (readuncommitted)")
         )
             ->select(
                 'a.hutang_nobukti',
@@ -66,9 +66,11 @@ class HutangHeader extends MyModel
 
                 'parameter.memo as statuscetak',
                 'statusapproval.memo as statusapproval',
+                'hutangheader.userapproval',
                 'hutangheader.userbukacetak',
                 'hutangheader.jumlahcetak',
                 DB::raw('(case when (year(hutangheader.tglbukacetak) <= 2000) then null else hutangheader.tglbukacetak end ) as tglbukacetak'),
+                DB::raw('(case when (year(hutangheader.tglapproval) <= 2000) then null else hutangheader.tglapproval end ) as tglapproval'),
 
                 'hutangheader.modifiedby',
                 'hutangheader.created_at',
@@ -136,8 +138,8 @@ class HutangHeader extends MyModel
             $table->double('nominal', 15, 2)->nullable();
         });
 
-        $tes = DB::table('hutangbayardetail')->from(
-            DB::raw("hutangbayardetail as a with (readuncommitted)")
+        $tes = DB::table('pelunasanhutangdetail')->from(
+            DB::raw("pelunasanhutangdetail as a with (readuncommitted)")
         )
             ->select(
                 'a.hutang_nobukti',
@@ -165,6 +167,8 @@ class HutangHeader extends MyModel
                 hutangheader.total-isnull(c.nominal,0) as sisahutang,
                  'parameter.text as statuscetak',
                  'statusapproval.text as statusapproval',
+                 $this->table.userapproval,
+                 $this->table.tglapproval,
                  $this->table.userbukacetak,
                  $this->table.tglbukacetak,
                  $this->table.jumlahcetak,
@@ -195,6 +199,8 @@ class HutangHeader extends MyModel
             $table->double('sisahutang', 15, 2)->nullable();
             $table->string('statuscetak', 1000)->nullable();
             $table->string('statusapproval', 1000)->nullable();
+            $table->string('userapproval', 50)->nullable();
+            $table->date('tglapproval')->nullable();
             $table->string('userbukacetak', 50)->nullable();
             $table->date('tglbukacetak')->nullable();
             $table->integer('jumlahcetak')->Length(11)->nullable();
@@ -216,7 +222,7 @@ class HutangHeader extends MyModel
         $models = $query
             ->whereBetween($this->table . '.tglbukti', [date('Y-m-d', strtotime(request()->tgldariheader)), date('Y-m-d', strtotime(request()->tglsampaiheader))]);
 
-        DB::table($temp)->insertUsing(['id', 'nobukti', 'tglbukti', 'coa', 'supplier_id', 'total', 'nominalbayar', 'sisahutang', 'statuscetak', 'statusapproval', 'userbukacetak', 'tglbukacetak', 'jumlahcetak', 'modifiedby', 'created_at', 'updated_at', 'statusformat'], $models);
+        DB::table($temp)->insertUsing(['id', 'nobukti', 'tglbukti', 'coa', 'supplier_id', 'total', 'nominalbayar', 'sisahutang', 'statuscetak', 'statusapproval', 'userapproval', 'tglapproval','userbukacetak', 'tglbukacetak', 'jumlahcetak', 'modifiedby', 'created_at', 'updated_at', 'statusformat'], $models);
 
         return $temp;
     }
@@ -253,7 +259,7 @@ class HutangHeader extends MyModel
                                 $query->where('akunpusat.keterangancoa', 'LIKE', "%$filters[data]%");
                             } else if ($filters['field'] == 'total') {
                                 $query = $query->whereRaw("format(hutangheader.total, '#,#0.00') LIKE '%$filters[data]%'");
-                            } else if ($filters['field'] == 'tglbukti') {
+                            } else if ($filters['field'] == 'tglbukti' || $filters['field'] == 'tglapproval' || $filters['field'] == 'tglbukacetak') {
                                 $query = $query->whereRaw("format(" . $this->table . "." . $filters['field'] . ", 'dd-MM-yyyy') LIKE '%$filters[data]%'");
                             } else if ($filters['field'] == 'nominalbayar') {
                                 $query = $query->whereRaw("format(c.nominal, '#,#0.00') LIKE '%$filters[data]%'");
@@ -281,7 +287,7 @@ class HutangHeader extends MyModel
                                     $query->orWhere('supplier.namasupplier', 'LIKE', "%$filters[data]%");
                                 } else if ($filters['field'] == 'coa') {
                                     $query->orWhere('akunpusat.keterangancoa', 'LIKE', "%$filters[data]%");
-                                } else if ($filters['field'] == 'tglbukti') {
+                                } else if ($filters['field'] == 'tglbukti' || $filters['field'] == 'tglapproval' || $filters['field'] == 'tglbukacetak') {
                                     $query = $query->orWhereRaw("format(" . $this->table . "." . $filters['field'] . ", 'dd-MM-yyyy') LIKE '%$filters[data]%'");
                                 } else if ($filters['field'] == 'total') {
                                     $query = $query->orWhereRaw("format(hutangheader.total, '#,#0.00') LIKE '%$filters[data]%'");
@@ -324,9 +330,9 @@ class HutangHeader extends MyModel
 
     public function cekvalidasiaksi($nobukti)
     {
-        $hutangBayar = DB::table('hutangbayardetail')
+        $hutangBayar = DB::table('pelunasanhutangdetail')
             ->from(
-                DB::raw("hutangbayardetail as a with (readuncommitted)")
+                DB::raw("pelunasanhutangdetail as a with (readuncommitted)")
             )
             ->select(
                 'a.hutang_nobukti'
@@ -419,7 +425,7 @@ class HutangHeader extends MyModel
         $approvalId = $approval->id;
 
         $query = DB::table('hutangheader')->from(DB::raw("hutangheader with (readuncommitted)"))
-            ->select(DB::raw("row_number() Over(Order By hutangheader.id) as id,hutangheader.nobukti as nobukti,hutangheader.tglbukti, hutangheader.total as nominal," . $temp . ".sisa, 0 as total"))
+            ->select(DB::raw("row_number() Over(Order By hutangheader.id) as id,hutangheader.nobukti as nobukti,hutangheader.tglbukti as tglhutang, hutangheader.total as nominal," . $temp . ".sisa, 0 as total"))
             ->join(DB::raw("$temp with (readuncommitted)"), 'hutangheader.nobukti', $temp . ".nobukti")
             ->whereRaw("hutangheader.nobukti = $temp.nobukti")
             ->whereRaw("hutangheader.statusapproval = $approvalId")
@@ -439,8 +445,8 @@ class HutangHeader extends MyModel
         $fetch = DB::table('hutangheader')->from(
             DB::raw("hutangheader with (readuncommitted)")
         )
-            ->select(DB::raw("hutangheader.nobukti,sum(hutangbayardetail.nominal) as terbayar, (SELECT (hutangheader.total - coalesce(SUM(hutangbayardetail.nominal),0) - coalesce(SUM(hutangbayardetail.potongan),0)) FROM hutangbayardetail WHERE hutangbayardetail.hutang_nobukti= hutangheader.nobukti) AS sisa"))
-            ->leftJoin(DB::raw("hutangbayardetail with (readuncommitted)"), 'hutangbayardetail.hutang_nobukti', 'hutangheader.nobukti')
+            ->select(DB::raw("hutangheader.nobukti,sum(pelunasanhutangdetail.nominal) as terbayar, (SELECT (hutangheader.total - coalesce(SUM(pelunasanhutangdetail.nominal),0) - coalesce(SUM(pelunasanhutangdetail.potongan),0)) FROM pelunasanhutangdetail WHERE pelunasanhutangdetail.hutang_nobukti= hutangheader.nobukti) AS sisa"))
+            ->leftJoin(DB::raw("pelunasanhutangdetail with (readuncommitted)"), 'pelunasanhutangdetail.hutang_nobukti', 'hutangheader.nobukti')
             ->whereRaw("hutangheader.supplier_id = $id")
             ->groupBy('hutangheader.nobukti', 'hutangheader.total');
         // ->get();
@@ -473,21 +479,26 @@ class HutangHeader extends MyModel
         $statusCetak = Parameter::where('grp', 'STATUSCETAK')->where('text', 'BELUM CETAK')->first();
         $getCoaDebet = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'JURNAL HUTANG MANUAL')->where('subgrp', 'DEBET')->first();
         $memo = json_decode($getCoaDebet->memo, true);
+        $getCoaKredit = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'JURNAL HUTANG MANUAL')->where('subgrp', 'KREDIT')->first();
+        $memoKredit = json_decode($getCoaKredit->memo, true);
         $statusApproval = Parameter::from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS APPROVAL')->where('text', 'NON APPROVAL')->first();
         $proseslain = $data['proseslain'] ?? "";
         if ($proseslain == "") {
             $total = array_sum($data['total_detail']);
             $tglbukti = date('Y-m-d', strtotime($data['tglbukti']));
             $coa = $memo['JURNAL'];
+            $coakredit = $memoKredit['JURNAL'];
         } else {
             $total = $data['total'];
             $tglbukti = $data['tglbukti'];
             $coa = $data['coa'];
+            $coakredit = ($data['coakredit'] == null) ? $memoKredit['JURNAL'] : $data['coakredit'];
         }
         $hutangHeader = new HutangHeader();
 
         $hutangHeader->tglbukti = $tglbukti;
         $hutangHeader->coa = $coa;
+        $hutangHeader->coakredit = $coakredit;
         $hutangHeader->supplier_id = $data['supplier_id'];
         $hutangHeader->postingdari = $data['postingdari'] ?? 'ENTRY HUTANG';
         $hutangHeader->statusformat = $format->id;
@@ -495,6 +506,7 @@ class HutangHeader extends MyModel
         $hutangHeader->statusapproval = $statusApproval->id;
         $hutangHeader->total = $total;
         $hutangHeader->modifiedby = auth('api')->user()->name;
+        $hutangHeader->info = html_entity_decode(request()->info);
         $hutangHeader->nobukti = (new RunningNumberService)->get($group, $subGroup, $hutangHeader->getTable(), date('Y-m-d', strtotime($data['tglbukti'])));
 
 
@@ -513,8 +525,6 @@ class HutangHeader extends MyModel
         ]);
 
         /* Store detail */
-        $getCoaKredit = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'JURNAL HUTANG MANUAL')->where('subgrp', 'KREDIT')->first();
-        $memoKredit = json_decode($getCoaKredit->memo, true);
 
         $hutangDetails = [];
         $coakredit_detail = [];
@@ -576,49 +586,56 @@ class HutangHeader extends MyModel
     public function processUpdate(HutangHeader $hutangHeader, array $data): HutangHeader
     {
         $nobuktiOld = $hutangHeader->nobukti;
-
-        $group = 'HUTANG BUKTI';
-        $subGroup = 'HUTANG BUKTI';
-        // dd($data);
+        $getTgl = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'EDIT TANGGAL BUKTI')->where('subgrp', 'HUTANG')->first();
         /*STORE HEADER*/
         $statusCetak = Parameter::where('grp', 'STATUSCETAK')->where('text', 'BELUM CETAK')->first();
         $getCoaDebet = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'JURNAL HUTANG MANUAL')->where('subgrp', 'DEBET')->first();
         $memo = json_decode($getCoaDebet->memo, true);
+        $getCoaKredit = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'JURNAL HUTANG MANUAL')->where('subgrp', 'KREDIT')->first();
+        $memoKredit = json_decode($getCoaKredit->memo, true);
         $statusApproval = Parameter::from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS APPROVAL')->where('text', 'NON APPROVAL')->first();
         $proseslain = $data['proseslain'] ?? "";
         if ($proseslain == "") {
             $total = array_sum($data['total_detail']);
             $coa = $memo['JURNAL'];
+            $coakredit = $memoKredit['JURNAL'];
         } else {
             $total = $data['total'];
             $coa = $data['coa'];
+            $coakredit = ($data['coakredit'] == null) ? $memoKredit['JURNAL'] : $data['coakredit'];            
         }
 
-        $querycek = DB::table('hutangheader')->from(
-            DB::raw("hutangheader a with (readuncommitted)")
-        )
-            ->select(
-                'a.nobukti'
+        if (trim($getTgl->text) == 'YA') {
+            $group = 'HUTANG BUKTI';
+            $subGroup = 'HUTANG BUKTI';
+            $querycek = DB::table('hutangheader')->from(
+                DB::raw("hutangheader a with (readuncommitted)")
             )
-            ->where('a.id', $hutangHeader->id)
-            ->whereRAw("format(a.tglbukti,'MM-yyyy')='" . date('m-Y', strtotime($data['tglbukti'])) . "'")
-            ->first();
+                ->select(
+                    'a.nobukti'
+                )
+                ->where('a.id', $hutangHeader->id)
+                ->whereRAw("format(a.tglbukti,'MM-yyyy')='" . date('m-Y', strtotime($data['tglbukti'])) . "'")
+                ->first();
 
-        if (isset($querycek)) {
-            $nobukti = $querycek->nobukti;
-        } else {
-            $nobukti = (new RunningNumberService)->get($group, $subGroup, $hutangHeader->getTable(), date('Y-m-d', strtotime($data['tglbukti'])));
+            if (isset($querycek)) {
+                $nobukti = $querycek->nobukti;
+            } else {
+                $nobukti = (new RunningNumberService)->get($group, $subGroup, $hutangHeader->getTable(), date('Y-m-d', strtotime($data['tglbukti'])));
+            }
+
+            $hutangHeader->nobukti = $nobukti;
+            $hutangHeader->tglbukti = date('Y-m-d', strtotime($data['tglbukti']));
         }
-
-        $hutangHeader->nobukti = $nobukti;
-        $hutangHeader->tglbukti = date('Y-m-d', strtotime($data['tglbukti']));
         $hutangHeader->coa = $coa;
+        $hutangHeader->coakredit = $coakredit;
         $hutangHeader->supplier_id = $data['supplier_id'];
         $hutangHeader->postingdari = $data['postingdari'] ?? 'EDIT HUTANG';
         $hutangHeader->statuscetak = $statusCetak->id;
         $hutangHeader->statusapproval = $statusApproval->id;
         $hutangHeader->total = $total;
         $hutangHeader->modifiedby = auth('api')->user()->name;
+        $hutangHeader->info = html_entity_decode(request()->info);
 
 
         if (!$hutangHeader->save()) {
@@ -639,8 +656,6 @@ class HutangHeader extends MyModel
         $hutangDetail = HutangDetail::where('hutang_id', $hutangHeader->id)->lockForUpdate()->delete();
 
         /* Store detail */
-        $getCoaKredit = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'JURNAL HUTANG MANUAL')->where('subgrp', 'KREDIT')->first();
-        $memoKredit = json_decode($getCoaKredit->memo, true);
 
         $hutangDetails = [];
         $coakredit_detail = [];
@@ -681,7 +696,7 @@ class HutangHeader extends MyModel
         $jurnalRequest = [
             'tanpaprosesnobukti' => 1,
             'nobukti' => $hutangHeader->nobukti,
-            'tglbukti' => $data['tglbukti'],
+            'tglbukti' => $hutangHeader->tglbukti,
             'postingdari' =>  $data['postingdari'] ?? "EDIT HUTANG HEADER",
             'statusformat' => "0",
             'coakredit_detail' => $coakredit_detail,
@@ -768,5 +783,46 @@ class HutangHeader extends MyModel
 
         $data = $query->first();
         return $data;
+    }
+    
+    public function processApproval(array $data)
+    {
+        // dd($data);
+
+        $statusApproval = Parameter::from(
+            DB::raw("parameter with (readuncommitted)")
+        )->where('grp', '=', 'STATUS APPROVAL')->where('text', '=', 'APPROVAL')->first();
+        $statusNonApproval = Parameter::from(
+            DB::raw("parameter with (readuncommitted)")
+        )->where('grp', '=', 'STATUS APPROVAL')->where('text', '=', 'NON APPROVAL')->first();
+
+        for ($i = 0; $i < count($data['hutangId']); $i++) {
+
+            $hutangHeader = HutangHeader::find($data['hutangId'][$i]);
+            if ($hutangHeader->statusapproval == $statusApproval->id) {
+                $hutangHeader->statusapproval = $statusNonApproval->id;
+                $hutangHeader->tglapproval = date('Y-m-d', strtotime("1900-01-01"));
+                $hutangHeader->userapproval = '';
+                $aksi = $statusNonApproval->text;
+            } else {
+                $hutangHeader->statusapproval = $statusApproval->id;
+                $hutangHeader->tglapproval = date('Y-m-d H:i:s');
+                $hutangHeader->userapproval = auth('api')->user()->name;
+                $aksi = $statusApproval->text;
+            }
+
+            $hutangHeader->save();
+            (new LogTrail())->processStore([
+                'namatabel' => strtoupper($hutangHeader->getTable()),
+                'postingdari' => 'APPROVAL HUTANG',
+                'idtrans' => $hutangHeader->id,
+                'nobuktitrans' => $hutangHeader->nobukti,
+                'aksi' => $aksi,
+                'datajson' => $hutangHeader->toArray(),
+                'modifiedby' => auth('api')->user()->user
+            ]);
+        }
+
+        return $hutangHeader;
     }
 }

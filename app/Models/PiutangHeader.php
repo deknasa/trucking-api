@@ -75,7 +75,13 @@ class PiutangHeader extends MyModel
             DB::raw('(case when (year(piutangheader.tglbukacetak) <= 2000) then null else piutangheader.tglbukacetak end ) as tglbukacetak'),
             'piutangheader.userbukacetak',
             'agen.namaagen as agen_id',
-        )
+            db::raw("cast((format(invoice.tglbukti,'yyyy/MM')+'/1') as date) as tgldariheaderinvoiceheader"),
+            db::raw("cast(cast(format((cast((format(invoice.tglbukti,'yyyy/MM')+'/1') as datetime)+32),'yyyy/MM')+'/01' as datetime)-1 as date) as tglsampaiheaderinvoiceheader"), 
+            db::raw("cast((format(invoiceextra.tglbukti,'yyyy/MM')+'/1') as date) as tgldariheaderinvoiceextraheader"),
+            db::raw("cast(cast(format((cast((format(invoiceextra.tglbukti,'yyyy/MM')+'/1') as datetime)+32),'yyyy/MM')+'/01' as datetime)-1 as date) as tglsampaiheaderinvoiceextraheader"), 
+            )
+            ->leftJoin(DB::raw("invoiceheader as invoice with (readuncommitted)"), 'piutangheader.invoice_nobukti', '=', 'invoice.nobukti')
+            ->leftJoin(DB::raw("invoiceextraheader as invoiceextra with (readuncommitted)"), 'piutangheader.invoice_nobukti', '=', 'invoiceextra.nobukti')
             ->leftJoin(DB::raw("parameter with (readuncommitted)"), 'piutangheader.statuscetak', 'parameter.id')
             ->leftJoin(DB::raw("agen with (readuncommitted)"), 'piutangheader.agen_id', 'agen.id')
             ->leftJoin(DB::raw("akunpusat as debet with (readuncommitted)"), 'piutangheader.coadebet', 'debet.coa')
@@ -234,7 +240,7 @@ class PiutangHeader extends MyModel
             ->from(
                 DB::raw("piutangheader with (readuncommitted)")
             )
-            ->select(DB::raw("piutangheader.nobukti,piutangheader.agen_id, sum(pelunasanpiutangdetail.nominal) as nominalbayar, (SELECT (piutangheader.nominal - coalesce(SUM(pelunasanpiutangdetail.nominal),0)) FROM pelunasanpiutangdetail WHERE pelunasanpiutangdetail.piutang_nobukti= piutangheader.nobukti) AS sisa"))
+            ->select(DB::raw("piutangheader.nobukti,piutangheader.agen_id, sum(pelunasanpiutangdetail.nominal) as nominalbayar, (SELECT (piutangheader.nominal - coalesce(SUM(pelunasanpiutangdetail.nominal),0) - coalesce(SUM(pelunasanpiutangdetail.potongan),0)) FROM pelunasanpiutangdetail WHERE pelunasanpiutangdetail.piutang_nobukti= piutangheader.nobukti) AS sisa"))
             ->leftJoin(DB::raw("pelunasanpiutangdetail with (readuncommitted)"), 'pelunasanpiutangdetail.piutang_nobukti', 'piutangheader.nobukti')
             ->whereRaw("piutangheader.agen_id = $id")
             ->groupBy('piutangheader.nobukti', 'piutangheader.agen_id', 'piutangheader.nominal');
@@ -494,6 +500,7 @@ class PiutangHeader extends MyModel
         $piutangHeader->postingdari = $data['postingdari'] ?? 'ENTRY PIUTANG HEADER';
         $piutangHeader->invoice_nobukti = $data['invoice'] ?? '';
         $piutangHeader->modifiedby = auth('api')->user()->name;
+        $piutangHeader->info = html_entity_decode(request()->info);
         $piutangHeader->statusformat = $format->id;
         $piutangHeader->agen_id = $data['agen_id'];
         $piutangHeader->coadebet = $getCoa->coa;
@@ -567,30 +574,34 @@ class PiutangHeader extends MyModel
     {
         $proseslain = $data['proseslain'] ?? 0;
         $nobuktiOld = $piutangHeader->nobukti;
+        $getTgl = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'EDIT TANGGAL BUKTI')->where('subgrp', 'PIUTANG')->first();
         $getCoa = Agen::from(DB::raw("agen with (readuncommitted)"))->where('id', $data['agen_id'])->first();
 
-        $group = 'PIUTANG BUKTI';
-        $subGroup = 'PIUTANG BUKTI';
+        if (trim($getTgl->text) == 'YA') {
+            $group = 'PIUTANG BUKTI';
+            $subGroup = 'PIUTANG BUKTI';
 
-        $querycek = DB::table('piutangheader')->from(
-            DB::raw("piutangheader a with (readuncommitted)")
-        )
-            ->select(
-                'a.nobukti'
+            $querycek = DB::table('piutangheader')->from(
+                DB::raw("piutangheader a with (readuncommitted)")
             )
-            ->where('a.id', $piutangHeader->id)
-            ->whereRAw("format(a.tglbukti,'MM-yyyy')='" . date('m-Y', strtotime($data['tglbukti'])) . "'")
-            ->first();
+                ->select(
+                    'a.nobukti'
+                )
+                ->where('a.id', $piutangHeader->id)
+                ->whereRAw("format(a.tglbukti,'MM-yyyy')='" . date('m-Y', strtotime($data['tglbukti'])) . "'")
+                ->first();
 
-        if (isset($querycek)) {
-            $nobukti = $querycek->nobukti;
-        } else {
-            $nobukti = (new RunningNumberService)->get($group, $subGroup, $piutangHeader->getTable(), date('Y-m-d', strtotime($data['tglbukti'])));
+            if (isset($querycek)) {
+                $nobukti = $querycek->nobukti;
+            } else {
+                $nobukti = (new RunningNumberService)->get($group, $subGroup, $piutangHeader->getTable(), date('Y-m-d', strtotime($data['tglbukti'])));
+            }
+            $piutangHeader->nobukti = $nobukti;
+            $piutangHeader->tglbukti = date('Y-m-d', strtotime($data['tglbukti']));
         }
 
-        $piutangHeader->nobukti = $nobukti;
-        $piutangHeader->tglbukti = date('Y-m-d', strtotime($data['tglbukti']));
         $piutangHeader->modifiedby = auth('api')->user()->name;
+        $piutangHeader->info = html_entity_decode(request()->info);
         $piutangHeader->tgljatuhtempo = date('Y-m-d', strtotime($data['tgljatuhtempo']));
         $piutangHeader->agen_id = $data['agen_id'];
         $piutangHeader->invoice_nobukti = $data['invoice'] ?? '';
@@ -646,7 +657,7 @@ class PiutangHeader extends MyModel
         $jurnalRequest = [
             'tanpaprosesnobukti' => 1,
             'nobukti' => $piutangHeader->nobukti,
-            'tglbukti' => $data['tglbukti'],
+            'tglbukti' => $piutangHeader->tglbukti,
             'postingdari' => $data['postingdari'] ?? 'EDIT PIUTANG HEADER',
             'statusformat' => "0",
             'coakredit_detail' => $coakredit_detail,
@@ -655,7 +666,7 @@ class PiutangHeader extends MyModel
             'keterangan_detail' => $keterangan_detail
         ];
         $getJurnal = JurnalUmumHeader::from(DB::raw("jurnalumumheader with (readuncommitted)"))->where('nobukti', $nobuktiOld)->first();
-       
+
         $newJurnal = new JurnalUmumHeader();
         $newJurnal = $newJurnal->find($getJurnal->id);
         $jurnalumumHeader = (new JurnalUmumHeader())->processUpdate($newJurnal, $jurnalRequest);

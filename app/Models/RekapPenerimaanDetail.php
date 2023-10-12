@@ -53,11 +53,14 @@ class RekapPenerimaanDetail extends MyModel
                 "$this->table.nominal",
                 "$this->table.keterangan",
                 "$this->table.modifiedby",
+                db::raw("cast((format(penerimaanheader.tglbukti,'yyyy/MM')+'/1') as date) as tgldariheaderpenerimaanheader"),
+            db::raw("cast(cast(format((cast((format(penerimaanheader.tglbukti,'yyyy/MM')+'/1') as datetime)+32),'yyyy/MM')+'/01' as datetime)-1 as date) as tglsampaiheaderpenerimaanheader"), 
             )
-            ->leftJoin('rekappenerimaanheader', "$this->table.rekappenerimaan_id", 'rekappenerimaanheader.id')
-            ->leftJoin('penerimaanheader', "$this->table.penerimaan_nobukti", 'penerimaanheader.nobukti');
+            ->leftJoin(DB::raw("penerimaanheader with (readuncommitted)"), 'rekappenerimaandetail.penerimaan_nobukti', '=', 'penerimaanheader.nobukti')
+            ->leftJoin('rekappenerimaanheader', "$this->table.rekappenerimaan_id", 'rekappenerimaanheader.id');
+            // ->leftJoin('penerimaanheader', "$this->table.penerimaan_nobukti", 'penerimaanheader.nobukti');
             $query->where($this->table . ".rekappenerimaan_id", "=", request()->rekappenerimaan_id);
-            $this->totalNominal = $query->sum('nominal');
+            $this->totalNominal = $query->sum('rekappenerimaandetail.nominal');
             $this->filter($query);
             $this->totalRows = $query->count();
             $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;
@@ -123,6 +126,7 @@ class RekapPenerimaanDetail extends MyModel
         $rekapPenerimaanDetail->nominal = $data['nominal'];
         $rekapPenerimaanDetail->keterangan = $data['keterangandetail'];
         $rekapPenerimaanDetail->modifiedby = auth('api')->user()->name;
+        $rekapPenerimaanDetail->info = html_entity_decode(request()->info);
 
         if (!$rekapPenerimaanDetail->save()) {
             throw new \Exception("Error storing rekap penerimaan detail.");

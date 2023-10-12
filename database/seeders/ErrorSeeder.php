@@ -85,5 +85,13 @@ class ErrorSeeder extends Seeder
         error::create(['kodeerror' => 'JTK', 'keterangan' => 'TIDAK BOLEH KURANG DARI JUMLAH TRIP YANG SUDAH DIBUAT', 'modifiedby' => 'ADMIN',]);
         error::create(['kodeerror' => 'TOP', 'keterangan' => 'MELEBIHI BATAS TOP AGEN', 'modifiedby' => 'ADMIN',]);
         error::create(['kodeerror' => 'TBA', 'keterangan' => 'NOMINAL TARIF BELUM ADA', 'modifiedby' => 'ADMIN',]);
+        error::create(['kodeerror' => 'SIK', 'keterangan' => 'SUDAH INPUT KOMISI', 'modifiedby' => 'ADMIN',]);
+        error::create(['kodeerror' => 'TED', 'keterangan' => 'TRANSAKSI TIDAK BISA DIEDIT', 'modifiedby' => 'ADMIN',]);
+        error::create(['kodeerror' => 'JOTS', 'keterangan' => 'JENIS ORDERAN TIDAK SAMA DENGAN DETAIL', 'modifiedby' => 'ADMIN',]);
+        error::create(['kodeerror' => 'MDB', 'keterangan' => 'MAX. 2 BULAN', 'modifiedby' => 'ADMIN',]);
+        error::create(['kodeerror' => 'TBD', 'keterangan' => 'TIDAK BOLEH BERBEDA', 'modifiedby' => 'ADMIN',]);
+        error::create(['kodeerror' => 'NDP', 'keterangan' => 'KOSONGKAN NOMINAL LEBIH BAYAR DAN TIPE NOTA DEBET UNTUK MENGGUNAKAN PELUNASAN NOTA DEBET', 'modifiedby' => 'ADMIN',]);
+        error::create(['kodeerror' => 'PTS', 'keterangan' => 'PENYESUAIAN TIDAK SAMA', 'modifiedby' => 'ADMIN',]);
+
     }
 }

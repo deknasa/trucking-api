@@ -49,6 +49,7 @@ class GajiSupirBBM extends MyModel
         $gajiSupirBBM->supir_id = $data['supir_id'];
         $gajiSupirBBM->nominal = $data['nominal'];
         $gajiSupirBBM->modifiedby = auth('api')->user()->user;
+        $gajiSupirBBM->info = html_entity_decode(request()->info);
 
         if (!$gajiSupirBBM->save()) {
             throw new \Exception('Error storing gaji supir bbm.');

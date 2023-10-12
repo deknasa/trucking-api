@@ -23,13 +23,17 @@ class CreatePengeluaranstokdetailTable extends Migration
             $table->unsignedBigInteger('stok_id');
             $table->double('qty', 15,2)->nullable();
             $table->double('harga', 15,2)->nullable();
+            $table->double('selisihhargafifo', 15,2)->nullable();
             $table->double('persentasediscount', 15,2)->nullable();
             $table->double('nominaldiscount', 15,2)->nullable();
             $table->double('total', 15,2)->nullable();
             $table->longText('keterangan')->nullable();
             $table->unsignedBigInteger('vulkanisirke')->nullable();
             $table->integer('statusservicerutin')->length(11)->nullable();
+            $table->integer('statusoli')->length(11)->nullable();
+            $table->integer('statusban')->length(11)->nullable();
             $table->string('pengeluaranstok_nobukti',50)->nullable();
+            $table->longText('info')->nullable();            
             $table->string('modifiedby',50)->nullable();            
             $table->timestamps();
 

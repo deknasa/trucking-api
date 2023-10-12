@@ -21,7 +21,8 @@ use App\Models\Stok;
 
 use App\Http\Requests\StorePengeluaranStokDetailRequest;
 use App\Http\Requests\UpdatePengeluaranStokDetailRequest;
-
+use App\Models\PelunasanHutangDetail;
+use App\Models\PelunasanHutangHeader;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
@@ -37,7 +38,20 @@ class PengeluaranStokDetailController extends Controller
     public function index(Request $request)
     {
         $pengeluaranStokDetail = new PengeluaranStokDetail();
-        
+        if ($request->penerimaanstokheader_id != '' && $request->penerimaanstokheader_id != 0 || $request->penerimaanstokheader_id && 'undefined') {
+
+            $penerimaanStokDetail = new PenerimaanStokDetail();
+
+            return response([
+                'data' => $penerimaanStokDetail->get(),
+                'attributes' => [
+                    'totalRows' => $penerimaanStokDetail->totalRows,
+                    'totalPages' => $penerimaanStokDetail->totalPages,
+                    'totalNominal' => $penerimaanStokDetail->totalNominal
+
+                ]
+            ]);
+        }
         return response([
             'data' => $pengeluaranStokDetail->get(),
             'attributes' => [
@@ -51,24 +65,24 @@ class PengeluaranStokDetailController extends Controller
 
     public function hutangbayar(): JsonResponse
     {
-        $hutangbayarDetail = new HutangBayarDetail();
-        if(request()->nobukti != 'false' && request()->nobukti != null){
-            $fetch = HutangBayarHeader::from(DB::raw("hutangbayarheader with (readuncommitted)"))->where('nobukti', request()->nobukti)->first();
-            request()->hutangbayar_id = $fetch->id;
+        $PelunasanHutangDetail = new PelunasanHutangDetail();
+        if (request()->nobukti != 'false' && request()->nobukti != null) {
+            $fetch = PelunasanHutangHeader::from(DB::raw("pelunasanhutangheader with (readuncommitted)"))->where('nobukti', request()->nobukti)->first();
+            request()->PelunasanHutang_id = $fetch->id;
             return response()->json([
-                'data' => $hutangbayarDetail->get(request()->hutangbayar_id),
+                'data' => $PelunasanHutangDetail->get(request()->PelunasanHutang_id),
                 'attributes' => [
-                    'totalRows' => $hutangbayarDetail->totalRows,
-                    'totalPages' => $hutangbayarDetail->totalPages,
-                    'totalNominal' => $hutangbayarDetail->totalNominal
+                    'totalRows' => $PelunasanHutangDetail->totalRows,
+                    'totalPages' => $PelunasanHutangDetail->totalPages,
+                    'totalNominal' => $PelunasanHutangDetail->totalNominal
                 ]
             ]);
-        }else{
+        } else {
             return response()->json([
                 'data' => [],
                 'attributes' => [
-                    'totalRows' => $hutangbayarDetail->totalRows,
-                    'totalPages' => $hutangbayarDetail->totalPages,
+                    'totalRows' => $PelunasanHutangDetail->totalRows,
+                    'totalPages' => $PelunasanHutangDetail->totalPages,
                     'totalNominal' => 0
                 ]
             ]);
@@ -78,18 +92,29 @@ class PengeluaranStokDetailController extends Controller
     {
         $pengeluaranDetail = new PengeluaranDetail();
         if (request()->nobukti != 'false' && request()->nobukti != null) {
-            $HutangBayar = HutangBayarHeader::from(DB::raw("hutangbayarheader with (readuncommitted)"))->where('nobukti', request()->nobukti)->first();
-            
+            $HutangBayar = PelunasanHutangHeader::from(DB::raw("pelunasanhutangheader with (readuncommitted)"))->where('nobukti', request()->nobukti)->first();
+
             $fetch = PengeluaranHeader::from(DB::raw("pengeluaranheader with (readuncommitted)"))->where('nobukti', $HutangBayar->pengeluaran_nobukti)->first();
-            request()->pengeluaran_id = $fetch->id;
-            return response()->json([
-                'data' => $pengeluaranDetail->get(request()->pengeluaran_id),
-                'attributes' => [
-                    'totalRows' => $pengeluaranDetail->totalRows,
-                    'totalPages' => $pengeluaranDetail->totalPages,
-                    'totalNominal' => $pengeluaranDetail->totalNominal
-                ]
-            ]);
+            if (isset($fetch)) {
+                request()->pengeluaran_id = $fetch->id;
+                return response()->json([
+                    'data' => $pengeluaranDetail->get(request()->pengeluaran_id),
+                    'attributes' => [
+                        'totalRows' => $pengeluaranDetail->totalRows,
+                        'totalPages' => $pengeluaranDetail->totalPages,
+                        'totalNominal' => $pengeluaranDetail->totalNominal
+                    ]
+                ]);
+            } else {
+                return response()->json([
+                    'data' => [],
+                    'attributes' => [
+                        'totalRows' => $pengeluaranDetail->totalRows,
+                        'totalPages' => $pengeluaranDetail->totalPages,
+                        'totalNominal' => $pengeluaranDetail->totalNominal
+                    ]
+                ]);
+            }
         } else {
             return response()->json([
                 'data' => [],
@@ -101,18 +126,34 @@ class PengeluaranStokDetailController extends Controller
             ]);
         }
     }
-    
+
     public function jurnal(): JsonResponse
     {
         $jurnalDetail = new JurnalUmumDetail();
-
-        if(request()->nobukti != 'false' && request()->nobukti != null){
-            if (request()->statuspotong == 219) {//penerimaan
+        if (request()->nobukti != 'false' && request()->nobukti != null) {
+            if (request()->statuspotong == 219) { //penerimaan
                 $nobukti = request()->nobukti;
-            }elseif (request()->statuspotong == 220) {// potong hutangbayar
-                $hutangBayar = HutangBayarHeader::from(DB::raw("hutangbayarheader with (readuncommitted)"))->where('nobukti', request()->nobukti)->first();
+
+                return response()->json([
+                    'data' => $jurnalDetail->jurnalForRetur($nobukti, request()->statuspotong),
+                    'attributes' => [
+                        'totalRows' => $jurnalDetail->totalRows,
+                        'totalPages' => $jurnalDetail->totalPages,
+                        'totalNominalDebet' => $jurnalDetail->totalNominalDebet,
+                        'totalNominalKredit' => $jurnalDetail->totalNominalKredit,
+                    ]
+                ]);
+            } elseif (request()->statuspotong == 220) { // potong hutangbayar
+                $hutangBayar = PelunasanHutangHeader::from(DB::raw("pelunasanhutangheader with (readuncommitted)"))->where('nobukti', request()->nobukti)->first();
                 $pengeluaranHeader = PengeluaranHeader::from(DB::raw("pengeluaranheader with (readuncommitted)"))->where('nobukti', $hutangBayar->pengeluaran_nobukti)->first();
-                $nobukti = $pengeluaranHeader->nobukti;
+                if (isset($pengeluaranHeader)) {
+                    $nobukti = $pengeluaranHeader->nobukti ?? '';
+                } else {
+                    $pengeluaranstokbukti = db::table("pengeluaranstokheader")->from(db::raw("pengeluaranstokheader a with (readuncommitted)"))
+                        ->select('nobukti')->where('hutangbayar_nobukti', request()->nobukti)
+                        ->first()->nobukti ?? '';
+                    $nobukti = $pengeluaranstokbukti;
+                }
             }
 
             return response()->json([
@@ -124,8 +165,8 @@ class PengeluaranStokDetailController extends Controller
                     'totalNominalKredit' => $jurnalDetail->totalNominalKredit,
                 ]
             ]);
-        }else{
-            
+        } else {
+
             return response()->json([
                 'data' => [],
                 'attributes' => [
@@ -137,7 +178,7 @@ class PengeluaranStokDetailController extends Controller
             ]);
         }
     }
- 
+
     public function store(StorePengeluaranStokDetailRequest $request)
     {
         DB::beginTransaction();
@@ -186,22 +227,22 @@ class PengeluaranStokDetailController extends Controller
         $total -= $nominaldiscount;
         $pengeluaranstokheader = PengeluaranStokHeader::where('id', $request->pengeluaranstokheader_id)->first();
 
-        $stok= Stok::where('id', $request->stok_id)->first();
+        $stok = Stok::where('id', $request->stok_id)->first();
         $stokreuse = Parameter::where('grp', 'STATUS REUSE')->where('subgrp', 'STATUS REUSE')->where('text', 'REUSE')->first();
-        
-        $reuse=false;
-        if ($stok->statusreuse==$stokreuse->id) {
-            $reuse=true;
-        } 
 
-        
+        $reuse = false;
+        if ($stok->statusreuse == $stokreuse->id) {
+            $reuse = true;
+        }
+
+
         try {
-            
+
             $datahitungstok = PengeluaranStok::select('statushitungstok as statushitungstok_id')
-            ->where('format', '=', $pengeluaranstokheader->statusformat)
-            ->first();
+                ->where('format', '=', $pengeluaranstokheader->statusformat)
+                ->first();
             $statushitungstok = Parameter::where('grp', 'STATUS HITUNG STOK')->where('text', 'HITUNG STOK')->first();
-            
+
             $spk = Parameter::where('grp', 'SPK STOK')->where('subgrp', 'SPK STOK')->first();
             $kor = Parameter::where('grp', 'KOR MINUS STOK')->where('subgrp', 'KOR MINUS STOK')->first();
             $rtr = Parameter::where('grp', 'RETUR STOK')->where('subgrp', 'RETUR STOK')->first();
@@ -209,17 +250,17 @@ class PengeluaranStokDetailController extends Controller
 
             if ($datahitungstok->statushitungstok_id == $statushitungstok->id) {
                 if ($pengeluaranstokheader->pengeluaranstok_id == $kor->text) {
-                    $persediaan = $this->persediaan($pengeluaranstokheader->gudang_id,$pengeluaranstokheader->trado_id,$pengeluaranstokheader->gandengan_id);
-                    $dari = $this->persediaanDari($request->stok_id,$persediaan['column'].'_id',$persediaan['value'],$request->qty);
-                }else {
-                    $dari = $this->persediaanDari($request->stok_id,'gudang_id', $gudangkantor->text,$request->qty);
+                    $persediaan = $this->persediaan($pengeluaranstokheader->gudang_id, $pengeluaranstokheader->trado_id, $pengeluaranstokheader->gandengan_id);
+                    $dari = $this->persediaanDari($request->stok_id, $persediaan['column'] . '_id', $persediaan['value'], $request->qty);
+                } else {
+                    $dari = $this->persediaanDari($request->stok_id, 'gudang_id', $gudangkantor->text, $request->qty);
                 }
                 if (!$dari) {
                     return [
                         'error' => true,
                         'errors' => [
-                            "qty"=>"qty tidak cukup",
-                            ] ,
+                            "qty" => "qty tidak cukup",
+                        ],
                     ];
                 }
                 if (($pengeluaranstokheader->pengeluaranstok_id != $spk->text)) {
@@ -227,14 +268,14 @@ class PengeluaranStokDetailController extends Controller
                         return [
                             'error' => true,
                             'errors' => [
-                                "stok"=>"bukan stok reuse",
-                                ] ,
+                                "stok" => "bukan stok reuse",
+                            ],
                         ];
                     }
                 }
-                if ($pengeluaranstokheader->pengeluaranstok_id != ($kor->text || $rtr->text )) {
-                    $persediaan = $this->persediaan($pengeluaranstokheader->gudang_id,$pengeluaranstokheader->trado_id,$pengeluaranstokheader->gandengan_id);
-                    $ke = $this->persediaanKe($request->stok_id,$column,$value,$request->qty);
+                if ($pengeluaranstokheader->pengeluaranstok_id != ($kor->text || $rtr->text)) {
+                    $persediaan = $this->persediaan($pengeluaranstokheader->gudang_id, $pengeluaranstokheader->trado_id, $pengeluaranstokheader->gandengan_id);
+                    $ke = $this->persediaanKe($request->stok_id, $column, $value, $request->qty);
                 }
             }
             $pengeluaranStokDetail = new PengeluaranStokDetail();
@@ -267,55 +308,59 @@ class PengeluaranStokDetailController extends Controller
             DB::rollBack();
         }
     }
+    public function addrow(StorePengeluaranStokDetailRequest $request)
+    {
+        return true;
+    }
 
-    public function persediaan($gudang,$trado,$gandengan)
+    public function persediaan($gudang, $trado, $gandengan)
     {
         $kolom = null;
         $value = 0;
-        if(!empty($gudang)) {
+        if (!empty($gudang)) {
             $kolom = "gudang";
             $value = $gudang;
-          } elseif(!empty($trado)) {
+        } elseif (!empty($trado)) {
             $kolom = "trado";
             $value = $trado;
-          } elseif(!empty($gandengan)) {
+        } elseif (!empty($gandengan)) {
             $kolom = "gandengan";
             $value = $gandengan;
-          }
-          return [
-            "column"=>$kolom,
-            "value"=>$value
+        }
+        return [
+            "column" => $kolom,
+            "value" => $value
         ];
     }
 
-    public function persediaanDari($stokId,$persediaan,$persediaanId,$qty)
+    public function persediaanDari($stokId, $persediaan, $persediaanId, $qty)
     {
-        $stokpersediaangudang = $this->checkTempat($stokId,$persediaan,$persediaanId); //stok persediaan 
+        $stokpersediaangudang = $this->checkTempat($stokId, $persediaan, $persediaanId); //stok persediaan 
         if (!$stokpersediaangudang) {
             return false;
         }
         $stokpersediaan = StokPersediaan::lockForUpdate()->find($stokpersediaangudang->id);
-        if ($qty > $stokpersediaan->qty){ //check qty
+        if ($qty > $stokpersediaan->qty) { //check qty
             return false;
         }
         $result = $stokpersediaan->qty - $qty;
-        $stokpersediaan->update(['qty'=> $result]);
+        $stokpersediaan->update(['qty' => $result]);
         return $stokpersediaan;
     }
-    public function persediaanKe($stokId,$persediaan,$persediaanId,$qty)
+    public function persediaanKe($stokId, $persediaan, $persediaanId, $qty)
     {
-        $stokpersediaangudang = $this->checkTempat($stokId,$persediaan,$persediaanId); //stok persediaan 
+        $stokpersediaangudang = $this->checkTempat($stokId, $persediaan, $persediaanId); //stok persediaan 
         if (!$stokpersediaangudang) {
-            $stokpersediaangudang= StokPersediaan::create(["stok_id"=> $stokId, $persediaan => $persediaanId]);
+            $stokpersediaangudang = StokPersediaan::create(["stok_id" => $stokId, $persediaan => $persediaanId]);
         }
         $stokpersediaangudang->qty += $qty;
         $stokpersediaangudang->save();
         return $stokpersediaangudang;
     }
-    public function checkTempat($stokId,$persediaan,$persediaanId)
+    public function checkTempat($stokId, $persediaan, $persediaanId)
     {
         $result = StokPersediaan::lockForUpdate()->where("stok_id", $stokId)->where("$persediaan", $persediaanId)->first();
-        return (!$result) ? false :$result;
+        return (!$result) ? false : $result;
     }
 
 
@@ -329,39 +374,36 @@ class PengeluaranStokDetailController extends Controller
         $rtr = Parameter::where('grp', 'RETUR STOK')->where('subgrp', 'RETUR STOK')->first();
         $gudangkantor = Parameter::where('grp', 'GUDANG KANTOR')->where('subgrp', 'GUDANG KANTOR')->first();
         $pengeluaranStokDetail = PengeluaranStokDetail::where('pengeluaranstokheader_id', $id)->get();
-        
+
         foreach ($pengeluaranStokDetail as $detail) {
             /*Update  di stok persediaan*/
             $dari = true;
-            if ($pengeluaranStokHeader->pengeluaranstok_id != ($kor->text || $rtr->text )) {
-                $persediaan = $this->persediaan($pengeluaranStokHeader->gudang_id,$pengeluaranStokHeader->trado_id,$pengeluaranStokHeader->gandengan_id);
-                $dari = $this->persediaanDari($detail->stok_id,$column,$value,$detail->qty);
+            if ($pengeluaranStokHeader->pengeluaranstok_id != ($kor->text || $rtr->text)) {
+                $persediaan = $this->persediaan($pengeluaranStokHeader->gudang_id, $pengeluaranStokHeader->trado_id, $pengeluaranStokHeader->gandengan_id);
+                $dari = $this->persediaanDari($detail->stok_id, $column, $value, $detail->qty);
             }
-            
+
             if (!$dari) {
                 return [
                     'error' => true,
                     'errors' => [
-                        "qty"=>"qty tidak cukup",
-                        ] ,
+                        "qty" => "qty tidak cukup",
+                    ],
                 ];
             }
             if ($pengeluaranStokHeader->pengeluaranstok_id == $kor->text) {
-                $persediaan = $this->persediaan($pengeluaranStokHeader->gudang_id,$pengeluaranStokHeader->trado_id,$pengeluaranStokHeader->gandengan_id);
-                $ke = $this->persediaanKe($detail->stok_id,$persediaan['column'].'_id',$persediaan['value'],$detail->qty);
-            }else {
-                $ke = $this->persediaanKe($detail->stok_id,'gudang_id', $gudangkantor->text,$detail->qty);
+                $persediaan = $this->persediaan($pengeluaranStokHeader->gudang_id, $pengeluaranStokHeader->trado_id, $pengeluaranStokHeader->gandengan_id);
+                $ke = $this->persediaanKe($detail->stok_id, $persediaan['column'] . '_id', $persediaan['value'], $detail->qty);
+            } else {
+                $ke = $this->persediaanKe($detail->stok_id, 'gudang_id', $gudangkantor->text, $detail->qty);
             }
-
-            
         }
 
         $pengeluaranStokDetailFifo = PengeluaranStokDetailFifo::where('nobukti', $pengeluaranStokHeader->nobukti)->get();
         foreach ($pengeluaranStokDetailFifo as $fifo) {
-            $penerimaanStok = PenerimaanStokDetail::where('nobukti',$fifo->penerimaanstokheader_nobukti)->where('stok_id',$fifo->stok_id)->first();
+            $penerimaanStok = PenerimaanStokDetail::where('nobukti', $fifo->penerimaanstokheader_nobukti)->where('stok_id', $fifo->stok_id)->first();
             $penerimaanStok->qtykeluar -= $fifo->qty;
             $penerimaanStok->save();
         }
-
     }
 }

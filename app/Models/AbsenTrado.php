@@ -235,6 +235,7 @@ class AbsenTrado extends MyModel
         $absenTrado->keterangan = $data['keterangan'] ?? '';
         $absenTrado->statusaktif = $data['statusaktif'];
         $absenTrado->modifiedby = auth('api')->user()->name;
+        $absenTrado->info = html_entity_decode(request()->info);
 
         $detailmemo = [];
         for ($i = 0; $i < count($data['key']); $i++) {
@@ -268,6 +269,7 @@ class AbsenTrado extends MyModel
         $absentrado->keterangan = $data['keterangan'] ?? '';
         $absentrado->statusaktif = $data['statusaktif'];
         $absentrado->modifiedby = auth('api')->user()->name;
+        $absentrado->info = html_entity_decode(request()->info);
         $detailmemo = [];
         for ($i = 0; $i < count($data['key']); $i++) {
             $datadetailmemo = [
@@ -312,4 +314,19 @@ class AbsenTrado extends MyModel
 
         return $absenTrado;
     }
+
+    public function getRekapAbsenTrado($id)
+    {
+        $query = DB::table("absensisupirheader")->from(DB::raw("absensisupirheader  a with (readuncommitted)"))
+            ->select(DB::raw("max(isnull(c.keterangan,'Tanpa Isi Status')) as keterangan, 
+            count(b.id) as jumlah"))
+            ->join(DB::raw("absensisupirdetail b with (readuncommitted)"), 'a.nobukti', 'b.nobukti')
+            ->leftjoin(DB::raw("absentrado c with (readuncommitted)"), 'b.absen_id', 'c.id')
+            ->where('a.id', $id)
+            ->groupBy('b.absen_id');
+
+
+        return $query->get();
+    }
+
 }

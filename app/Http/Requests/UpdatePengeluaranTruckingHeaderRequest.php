@@ -12,7 +12,7 @@ use App\Rules\ValidasiDetail;
 use Illuminate\Validation\Rule;
 use Illuminate\Support\Facades\DB;
 use App\Rules\DestroyPengeluaranTruckingHeader;
-
+use App\Rules\validasiJenisOrderanPengeluaranTrucking;
 
 class UpdatePengeluaranTruckingHeaderRequest extends FormRequest
 {
@@ -118,12 +118,21 @@ class UpdatePengeluaranTruckingHeaderRequest extends FormRequest
                     ->first();
             if ($klaim) {
                 if ($klaim->id ==  $this->pengeluarantrucking_id) {
+                    $salahSatuDari = Rule::requiredIf(function ()  {
+                        if ( empty($this->input('tradoheader_id')) && empty($this->input('gandenganheader_id')) ) {
+                            return true;
+                        }
+                        return false;
+                    });
                     $rulseKlaim =[
                         "supirheader_id" =>"required",
                         "supirheader" =>"required",
-                        "tradoheader_id" =>"required",
-                        "trado" =>"required",
+                        "tradoheader_id" =>$salahSatuDari,
+                        "gandenganheader_id" =>$salahSatuDari,
+                        "trado" =>$salahSatuDari,
+                        "gandengan" =>$salahSatuDari,
                         "postingpinjaman" =>"required",
+                        "statuscabang" =>"required",
                     ];    
                 }
             }
@@ -198,6 +207,19 @@ class UpdatePengeluaranTruckingHeaderRequest extends FormRequest
                 'supirheader' => ['required',  new ValidasiDetail($jumlahdetail)],
                 // 'keterangancoa' => 'required',
             ];
+        }elseif($kodepengeluaran == 'BBT'){
+            
+            $rules = [
+                "tglbukti" => [
+                    "required", 'date_format:d-m-Y',
+                    'before_or_equal:'.date('d-m-Y'),
+                    new DateTutupBuku()
+                ],
+                'pengeluarantrucking' => 'required','numeric', 'min:1',
+                'bank' => [$ruleBank],
+                'jenisorderan' => ['required', new validasiJenisOrderanPengeluaranTrucking()]
+                // 'keterangancoa' => 'required',
+            ];
         }else{
             $rules = [
                 'nobukti' => [Rule::in($getDataPengeluaran->nobukti)],
@@ -220,6 +242,7 @@ class UpdatePengeluaranTruckingHeaderRequest extends FormRequest
             $rules = array_merge(
                 ['id' => new DestroyPengeluaranTruckingHeader() ],
                 $rules,
+                (new $relatedRequest)->rules(),
                 $rulseKlaim,
                 $rulesSupir_id
             );

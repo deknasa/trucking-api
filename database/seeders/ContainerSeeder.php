@@ -20,8 +20,8 @@ class ContainerSeeder extends Seeder
         DB::statement("DBCC CHECKIDENT ('Container', RESEED, 1);");
 
 
-        container::create(['kodecontainer' => '20"', 'nominalsumbangan' => '5000','keterangan' => '20"', 'statusaktif' => '1', 'modifiedby' => 'ADMIN',]);
-        container::create(['kodecontainer' => '40"', 'nominalsumbangan' => '7500','keterangan' => '40"', 'statusaktif' => '1', 'modifiedby' => 'ADMIN',]);
-        container::create(['kodecontainer' => '2X20"', 'nominalsumbangan' => '7500','keterangan' => '2X20"', 'statusaktif' => '1', 'modifiedby' => 'ADMIN',]);
+        container::create(['kodecontainer' => '20"', 'nominalsumbangan' => '5000.00', 'keterangan' => '20"', 'statusaktif' => '1', 'modifiedby' => 'ADMIN', 'info' => '',]);
+        container::create(['kodecontainer' => '40"', 'nominalsumbangan' => '7500.00', 'keterangan' => '40"', 'statusaktif' => '1', 'modifiedby' => 'ADMIN', 'info' => '',]);
+        container::create(['kodecontainer' => '2X20"', 'nominalsumbangan' => '7500.00', 'keterangan' => '2X20"', 'statusaktif' => '1', 'modifiedby' => 'ADMIN', 'info' => '',]);
     }
 }

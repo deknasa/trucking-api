@@ -137,6 +137,16 @@ class LaporanTransaksiHarian extends MyModel
             'updated_at'
         ], $queryJurnalUmumDetail);
 
+        $disetujui = db::table('parameter')->from(db::raw('parameter with (readuncommitted)'))
+        ->select('text')
+        ->where('grp', 'DISETUJUI')
+        ->where('subgrp', 'DISETUJUI')->first()->text ?? '';
+
+    $diperiksa = db::table('parameter')->from(db::raw('parameter with (readuncommitted)'))
+        ->select('text')
+        ->where('grp', 'DIPERIKSA')
+        ->where('subgrp', 'DIPERIKSA')->first()->text ?? '';
+
         $result = DB::table($jurnalUmumHeader)->from(
             DB::raw($jurnalUmumHeader . " as a")
         )
@@ -147,6 +157,8 @@ class LaporanTransaksiHarian extends MyModel
                 'b.keterangan',
                 DB::raw("CASE SIGN(B.Nominal) WHEN 1 THEN B.Nominal ELSE 0 END AS debet"),
                 DB::raw("CASE SIGN(B.Nominal) WHEN 1 THEN 0 ELSE B.Nominal END AS kredit"),
+                db::raw("'" . $disetujui . "' as disetujui"),
+                db::raw("'" . $diperiksa . "' as diperiksa"),
 
             )
             ->join(DB::raw($jurnalUmumDetail . " as b with (readuncommitted)"), 'a.NObukti', 'b.nobukti')

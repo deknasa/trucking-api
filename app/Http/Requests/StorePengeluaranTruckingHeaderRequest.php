@@ -10,6 +10,7 @@ use App\Rules\ExistBank;
 use App\Rules\ExistSupir;
 use App\Rules\ExistSupirForPengeluaranTrucking;
 use App\Rules\ValidasiDetail;
+use App\Rules\validasiJenisOrderanPengeluaranTrucking;
 use Illuminate\Validation\Rule;
 use Illuminate\Support\Facades\DB;
 
@@ -108,13 +109,27 @@ class StorePengeluaranTruckingHeaderRequest extends FormRequest
                     ->where('keterangan','LIKE', "%klaim%")
                     ->first();
             if ($klaim) {
+
+                // dd(
+                //     $this->input('tradoheader_id'),
+                //     $this->input('gandenganheader_id')
+                // );
                 if ($klaim->id ==  $this->pengeluarantrucking_id) {
+                    $salahSatuDari = Rule::requiredIf(function ()  {
+                        if ( empty($this->input('tradoheader_id')) && empty($this->input('gandenganheader_id')) ) {
+                            return true;
+                        }
+                        return false;
+                    });
                     $rulseKlaim =[
                         "supirheader_id" =>"required",
                         "supirheader" =>"required",
-                        "tradoheader_id" =>"required",
-                        "trado" =>"required",
+                        "tradoheader_id" =>$salahSatuDari,
+                        "gandenganheader_id" =>$salahSatuDari,
+                        "trado" =>$salahSatuDari,
+                        "gandengan" =>$salahSatuDari,
                         "postingpinjaman" =>"required",
+                        "statuscabang" =>"required",
                     ];    
                 }
             }
@@ -229,6 +244,20 @@ class StorePengeluaranTruckingHeaderRequest extends FormRequest
                 'statusposting' => 'required',
                 'bank' => [$ruleBank],
                 'supirheader' => ['required',  new ValidasiDetail($jumlahdetail)],
+                // 'keterangancoa' => 'required',
+            ];
+        }elseif($kodepengeluaran == 'BBT'){
+           
+            $rules = [
+                "tglbukti" => [
+                    "required", 'date_format:d-m-Y',
+                    'before_or_equal:'.date('d-m-Y'),
+                    new DateTutupBuku()
+                ],
+                'pengeluarantrucking' => 'required','numeric', 'min:1',
+                'statusposting' => 'required',
+                'bank' => [$ruleBank],
+                'jenisorderan' => ['required', new validasiJenisOrderanPengeluaranTrucking()]
                 // 'keterangancoa' => 'required',
             ];
         }else{

@@ -111,24 +111,24 @@ class HutangDetail extends MyModel
         $hutang = DB::table("hutangheader")->from(DB::raw("hutangheader with (readuncommitted)"))->where('id', request()->hutang_id)->first();
         if ($hutang != null) {
 
-            $query = DB::table("hutangbayardetail")->from(DB::raw("hutangbayardetail with (readuncommitted)"));
+            $query = DB::table("pelunasanhutangdetail")->from(DB::raw("pelunasanhutangdetail with (readuncommitted)"));
 
             $query->select(
-                'hutangbayardetail.nobukti as nobukti_bayar',
-                'hutangbayardetail.hutang_nobukti',
-                'hutangbayardetail.keterangan as keterangan_bayar',
-                'hutangbayardetail.nominal as nominal_bayar',
-                'hutangbayardetail.potongan',
+                'pelunasanhutangdetail.nobukti as nobukti_bayar',
+                'pelunasanhutangdetail.hutang_nobukti',
+                'pelunasanhutangdetail.keterangan as keterangan_bayar',
+                'pelunasanhutangdetail.nominal as nominal_bayar',
+                'pelunasanhutangdetail.potongan',
             );
 
-            $query->where('hutangbayardetail.hutang_nobukti', '=', $hutang->nobukti);
+            $query->where('pelunasanhutangdetail.hutang_nobukti', '=', $hutang->nobukti);
 
             $this->totalNominal = $query->sum('nominal');
             $this->totalPotongan = $query->sum('potongan');
             $this->totalRows = $query->count();
             $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;
 
-            $this->sort($query, 'hutangbayardetail');
+            $this->sort($query, 'pelunasanhutangdetail');
             $this->filter($query);
             $this->paginate($query);
 
@@ -163,15 +163,15 @@ class HutangDetail extends MyModel
                     $query->where(function ($query) {
                         foreach ($this->params['filters']['rules'] as $index => $filters) {
                             if ($filters['field'] == 'hutang_nobukti') {
-                                $query = $query->where('hutangbayardetail.hutang_nobukti', 'LIKE', "%$filters[data]%");
+                                $query = $query->where('pelunasanhutangdetail.hutang_nobukti', 'LIKE', "%$filters[data]%");
                             } else if ($filters['field'] == 'keterangan_bayar') {
-                                $query = $query->where('hutangbayardetail.keterangan', 'LIKE', "%$filters[data]%");
+                                $query = $query->where('pelunasanhutangdetail.keterangan', 'LIKE', "%$filters[data]%");
                             } else if ($filters['field'] == 'nobukti_bayar') {
-                                $query = $query->where('hutangbayardetail.nobukti', 'LIKE', "%$filters[data]%");
+                                $query = $query->where('pelunasanhutangdetail.nobukti', 'LIKE', "%$filters[data]%");
                             } else if ($filters['field'] == 'nominal_bayar') {
-                                $query = $query->whereRaw("format(hutangbayardetail.nominal, '#,#0.00') LIKE '%$filters[data]%'");
+                                $query = $query->whereRaw("format(pelunasanhutangdetail.nominal, '#,#0.00') LIKE '%$filters[data]%'");
                             } else if ($filters['field'] == 'potongan') {
-                                $query = $query->whereRaw("format(hutangbayardetail.potongan, '#,#0.00') LIKE '%$filters[data]%'");
+                                $query = $query->whereRaw("format(pelunasanhutangdetail.potongan, '#,#0.00') LIKE '%$filters[data]%'");
                             } else if ($filters['field'] == 'total') {
                                 $query = $query->whereRaw("format(hutangdetail.total, '#,#0.00') LIKE '%$filters[data]%'");
                             } else if ($filters['field'] == 'tgljatuhtempo') {
@@ -187,15 +187,15 @@ class HutangDetail extends MyModel
                     $query->where(function ($query) {
                         foreach ($this->params['filters']['rules'] as $index => $filters) {
                             if ($filters['field'] == 'hutang_nobukti') {
-                                $query = $query->orWhere('hutangbayardetail.hutang_nobukti', 'LIKE', "%$filters[data]%");
+                                $query = $query->orWhere('pelunasanhutangdetail.hutang_nobukti', 'LIKE', "%$filters[data]%");
                             } else if ($filters['field'] == 'keterangan_bayar') {
-                                $query = $query->orWhere('hutangbayardetail.keterangan', 'LIKE', "%$filters[data]%");
+                                $query = $query->orWhere('pelunasanhutangdetail.keterangan', 'LIKE', "%$filters[data]%");
                             } else if ($filters['field'] == 'nobukti_bayar') {
-                                $query = $query->orWhere('hutangbayardetail.nobukti', 'LIKE', "%$filters[data]%");
+                                $query = $query->orWhere('pelunasanhutangdetail.nobukti', 'LIKE', "%$filters[data]%");
                             } else if ($filters['field'] == 'nominal_bayar') {
-                                $query = $query->orWhereRaw("format(hutangbayardetail.nominal, '#,#0.00') LIKE '%$filters[data]%'");
+                                $query = $query->orWhereRaw("format(pelunasanhutangdetail.nominal, '#,#0.00') LIKE '%$filters[data]%'");
                             } else if ($filters['field'] == 'potongan') {
-                                $query = $query->orWhereRaw("format(hutangbayardetail.potongan, '#,#0.00') LIKE '%$filters[data]%'");
+                                $query = $query->orWhereRaw("format(pelunasanhutangdetail.potongan, '#,#0.00') LIKE '%$filters[data]%'");
                             } else if ($filters['field'] == 'total') {
                                 $query = $query->orWhereRaw("format(hutangdetail.total, '#,#0.00') LIKE '%$filters[data]%'");
                             } else if ($filters['field'] == 'tgljatuhtempo') {

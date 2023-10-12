@@ -349,6 +349,17 @@ class LaporanHutangBBM extends MyModel
 
         ], $queryTempLaporan2);
 
+        $disetujui = db::table('parameter')->from(db::raw('parameter with (readuncommitted)'))
+            ->select('text')
+            ->where('grp', 'DISETUJUI')
+            ->where('subgrp', 'DISETUJUI')->first()->text ?? '';
+
+        $diperiksa = db::table('parameter')->from(db::raw('parameter with (readuncommitted)'))
+            ->select('text')
+            ->where('grp', 'DIPERIKSA')
+            ->where('subgrp', 'DIPERIKSA')->first()->text ?? '';
+
+
         $result = DB::table($tempLaporan2)->from(
             DB::raw($tempLaporan2 . " as a")
         )
@@ -360,6 +371,8 @@ class LaporanHutangBBM extends MyModel
                     order by
                         id asc
                 ) * -1 as Saldo"),
+                db::raw("'" . $disetujui . "' as disetujui"),
+                db::raw("'" . $diperiksa . "' as diperiksa"),
 
             )
             ->orderBy('a.id');
@@ -368,6 +381,5 @@ class LaporanHutangBBM extends MyModel
 
 
         return $data;
-
     }
 }

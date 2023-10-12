@@ -24,15 +24,25 @@ class CreatePengeluarantruckingdetailTable extends Migration
             $table->unsignedBigInteger('supir_id')->nullable();
             $table->unsignedBigInteger('trado_id')->nullable();
             $table->unsignedBigInteger('stok_id')->nullable();
+            $table->unsignedBigInteger('stoktnl_id')->nullable();
             $table->string('pengeluaranstok_nobukti',50)->nullable();
+            $table->string('penerimaanstok_nobukti',50)->nullable();
+            $table->string('pengeluaranstoktnl_nobukti',50)->nullable();
+            $table->string('penerimaanstoktnl_nobukti',50)->nullable();
             $table->double('qty', 15,2)->nullable();
             $table->double('harga', 15,2)->nullable();
             $table->double('total', 15,2)->nullable();
             $table->string('penerimaantruckingheader_nobukti',50)->nullable();
             $table->string('invoice_nobukti',50)->nullable();
             $table->string('orderantrucking_nobukti', 50)->nullable();
+            $table->string('suratpengantar_nobukti', 50)->nullable();
             $table->double('nominal',15,2)->nullable();        
+            $table->double('nominaltagih',15,2)->nullable();        
             $table->longText('keterangan')->nullable();    
+            $table->double('nominaltambahan',15,2)->nullable();        
+            $table->longText('keterangantambahan')->nullable();    
+            $table->integer('statustitipanemkl')->length(11)->nullable();
+            $table->longText('info')->nullable();
             $table->string('modifiedby',50)->nullable();                  
             $table->timestamps();
 

@@ -29,6 +29,7 @@ class CreatePengeluaranstokheaderTable extends Migration
             $table->unsignedBigInteger('supplier_id')->nullable();
             $table->string('pengeluaranstok_nobukti',50)->nullable();
             $table->string('penerimaanstok_nobukti',50)->nullable();
+            $table->string('pengeluarantrucking_nobukti',50)->nullable();
             $table->string('servicein_nobukti',50)->nullable();
             $table->unsignedBigInteger('kerusakan_id')->nullable();
             $table->integer('statuspotongretur')->Length(11)->nullable();
@@ -47,6 +48,7 @@ class CreatePengeluaranstokheaderTable extends Migration
             $table->string('userapprovaledit',50)->nullable();
             $table->date('tglapprovaledit')->nullable();
             $table->dateTime('tglbatasedit')->nullable();            
+            $table->longText('info')->nullable();
             $table->string('modifiedby',50)->nullable();
             $table->timestamps();
 
@@ -62,7 +64,7 @@ class CreatePengeluaranstokheaderTable extends Migration
             $table->foreign('kerusakan_id', 'pengeluaranstokheader_kerusakan_kerusakan_id_foreign')->references('id')->on('kerusakan');  
             $table->foreign('servicein_nobukti', 'pengeluaranstokheader_servicein_servicein_nobukti_foreign')->references('nobukti')->on('serviceinheader');  
             $table->foreign('penerimaan_nobukti', 'pengeluaranstokheader_penerimaanheader_penerimaan_nobukti_foreign')->references('nobukti')->on('penerimaanheader');
-            $table->foreign('hutangbayar_nobukti', 'pengeluaranstokheader_hutangbayarheader_hutangbayar_nobukti_foreign')->references('nobukti')->on('hutangbayarheader');
+            $table->foreign('hutangbayar_nobukti', 'pengeluaranstokheader_pelunasanhutangheader_hutangbayar_nobukti_foreign')->references('nobukti')->on('pelunasanhutangheader');
 
             $schemaManager = Schema::getConnection()->getDoctrineSchemaManager();
             $indexesFound  = $schemaManager->listTableIndexes('pengeluaranstokheader');            
@@ -132,7 +134,7 @@ class CreatePengeluaranstokheaderTable extends Migration
         DB::statement("ALTER TABLE pengeluaranstokheader NOCHECK CONSTRAINT pengeluaranstokheader_kerusakan_kerusakan_id_foreign");
         DB::statement("ALTER TABLE pengeluaranstokheader NOCHECK CONSTRAINT pengeluaranstokheader_servicein_servicein_nobukti_foreign");
         DB::statement("ALTER TABLE pengeluaranstokheader NOCHECK CONSTRAINT pengeluaranstokheader_penerimaanheader_penerimaan_nobukti_foreign");
-        DB::statement("ALTER TABLE pengeluaranstokheader NOCHECK CONSTRAINT pengeluaranstokheader_hutangbayarheader_hutangbayar_nobukti_foreign");
+        DB::statement("ALTER TABLE pengeluaranstokheader NOCHECK CONSTRAINT pengeluaranstokheader_pelunasanhutangheader_hutangbayar_nobukti_foreign");
     }
 
     /**

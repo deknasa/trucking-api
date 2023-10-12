@@ -75,7 +75,30 @@ class PengeluaranHeaderController extends Controller
         DB::beginTransaction();
 
         try {
-            $pengeluaranHeader = (new PengeluaranHeader())->processStore($request->all());
+            $pengeluaranHeader = (new PengeluaranHeader())->processStore([
+                "bank_id"=>$request->bank_id,
+                "tglbukti"=>$request->tglbukti,
+                "pelanggan_id"=>$request->pelanggan_id,
+                "postingdari"=>$request->postingdari,
+                "statusapproval"=>$request->statusapproval,
+                "dibayarke"=>$request->dibayarke,
+                "alatbayar_id"=>$request->alatbayar_id,
+                "userapproval"=>$request->userapproval,
+                "tglapproval"=>$request->tglapproval,
+                "transferkeac"=>$request->transferkeac,
+                "transferkean"=>$request->transferkean,
+                "transferkebank"=>$request->transferkebank,
+                "penerimaan_nobukti"=>$request->nobukti_penerimaan,
+                "statusformat"=>$request->statusformat,
+                "nominal_detail"=>$request->nominal_detail,
+                "nowarkat"=>$request->nowarkat,
+                "tgljatuhtempo"=>$request->tgljatuhtempo,
+                "coadebet"=>$request->coadebet,
+                // "coakredit"=>$request->coakredit,
+                "keterangan_detail"=>$request->keterangan_detail,
+                "noinvoice"=>$request->noinvoice,
+                "bank_detail"=>$request->bank_detail,
+            ]);
             $pengeluaranHeader->position = $this->getPosition($pengeluaranHeader, $pengeluaranHeader->getTable())->position;
             if ($request->limit == 0) {
                 $pengeluaranHeader->page = ceil($pengeluaranHeader->position / (10));
@@ -116,7 +139,30 @@ class PengeluaranHeaderController extends Controller
         DB::beginTransaction();
         try {
             /* Store header */
-            $pengeluaranHeader = (new PengeluaranHeader())->processUpdate($pengeluaranheader, $request->all());
+            $pengeluaranHeader = (new PengeluaranHeader())->processUpdate($pengeluaranheader,[
+                "bank_id"=>$request->bank_id,
+                "tglbukti"=>$request->tglbukti,
+                "pelanggan_id"=>$request->pelanggan_id,
+                "postingdari"=>$request->postingdari,
+                "statusapproval"=>$request->statusapproval,
+                "dibayarke"=>$request->dibayarke,
+                "alatbayar_id"=>$request->alatbayar_id,
+                "userapproval"=>$request->userapproval,
+                "tglapproval"=>$request->tglapproval,
+                "transferkeac"=>$request->transferkeac,
+                "transferkean"=>$request->transferkean,
+                "transferkebank"=>$request->transferkebank,
+                "penerimaan_nobukti"=>$request->nobukti_penerimaan,
+                "statusformat"=>$request->statusformat,
+                "nominal_detail"=>$request->nominal_detail,
+                "nowarkat"=>$request->nowarkat,
+                "tgljatuhtempo"=>$request->tgljatuhtempo,
+                "coadebet"=>$request->coadebet,
+                // "coakredit"=>$request->coakredit,
+                "keterangan_detail"=>$request->keterangan_detail,
+                "noinvoice"=>$request->noinvoice,
+                "bank_detail"=>$request->bank_detail,
+            ]);
             /* Set position and page */
             $pengeluaranHeader->position = $this->getPosition($pengeluaranHeader, $pengeluaranHeader->getTable())->position;
             if ($request->limit == 0) {

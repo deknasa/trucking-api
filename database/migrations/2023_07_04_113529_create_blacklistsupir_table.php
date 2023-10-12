@@ -18,6 +18,7 @@ class CreateBlacklistsupirTable extends Migration
             $table->string('namasupir', 500)->nullable();
             $table->string('noktp', 500)->nullable();
             $table->string('nosim', 500)->nullable();
+            $table->longText('info')->nullable();
             $table->string('modifiedby', 50)->nullable();            
             $table->timestamps();
         });

@@ -52,8 +52,15 @@ class NotaKreditDetail extends MyModel
                 "$this->table.penyesuaian",
                 "$this->table.keterangan",
                 "akunpusat.keterangancoa as coaadjust",
-                "$this->table.modifiedby"
+                "$this->table.modifiedby", 
+                db::raw("cast((format(invoice.tglbukti,'yyyy/MM')+'/1') as date) as tgldariheaderinvoiceheader"),
+                db::raw("cast(cast(format((cast((format(invoice.tglbukti,'yyyy/MM')+'/1') as datetime)+32),'yyyy/MM')+'/01' as datetime)-1 as date) as tglsampaiheaderinvoiceheader"), 
+                db::raw("cast((format(invoiceextra.tglbukti,'yyyy/MM')+'/1') as date) as tgldariheaderinvoiceextraheader"),
+                db::raw("cast(cast(format((cast((format(invoiceextra.tglbukti,'yyyy/MM')+'/1') as datetime)+32),'yyyy/MM')+'/01' as datetime)-1 as date) as tglsampaiheaderinvoiceextraheader"), 
             )
+
+            ->leftJoin(DB::raw("invoiceheader as invoice with (readuncommitted)"), 'notakreditdetail.invoice_nobukti', '=', 'invoice.nobukti')
+            ->leftJoin(DB::raw("invoiceextraheader as invoiceextra with (readuncommitted)"), 'notakreditdetail.invoice_nobukti', '=', 'invoiceextra.nobukti')
             ->leftJoin(DB::raw("akunpusat with (readuncommitted)"), "$this->table.coaadjust", 'akunpusat.coa');
             
             $this->sort($query);
@@ -61,9 +68,9 @@ class NotaKreditDetail extends MyModel
             $query->where($this->table . ".notakredit_id", "=", request()->notakredit_id);
             $this->filter($query);
             
-            $this->totalNominal = $query->sum('nominal');
-            $this->totalNominalBayar = $query->sum('nominalbayar');
-            $this->totalPenyesuaian = $query->sum('penyesuaian');
+            $this->totalNominal = $query->sum('notakreditdetail.nominal');
+            $this->totalNominalBayar = $query->sum('notakreditdetail.nominalbayar');
+            $this->totalPenyesuaian = $query->sum('notakreditdetail.penyesuaian');
             $this->totalRows = $query->count();
             $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;
 
@@ -72,6 +79,15 @@ class NotaKreditDetail extends MyModel
         return $query->get();
     }
     
+    public function findAll($id)
+    {
+        $query = DB::table("notakreditdetail")->from(DB::raw("notakreditdetail with (readuncommitted)"))
+        ->select('keterangan', 'penyesuaian')
+        ->where('notakredit_id', $id)
+        ->get();
+        return $query;
+    }
+
     public function sort($query)
     {
         if($this->params['sortIndex'] == 'coaadjust'){
@@ -145,6 +161,7 @@ class NotaKreditDetail extends MyModel
         $notaKreditDetail->keterangan = $data['keterangandetail'];
         $notaKreditDetail->coaadjust = $data['coaadjust'];
         $notaKreditDetail->modifiedby = auth('api')->user()->name;
+        $notaKreditDetail->info = html_entity_decode(request()->info);
 
         if (!$notaKreditDetail->save()) {
             throw new \Exception("Error storing nota kredit Detail.");

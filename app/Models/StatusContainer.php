@@ -242,6 +242,7 @@ class StatusContainer extends MyModel
             $statusContainer->keterangan = $data['keterangan'] ?? '';
             $statusContainer->statusaktif = $data['statusaktif'];
             $statusContainer->modifiedby = auth('api')->user()->USER;
+            $statusContainer->info = html_entity_decode(request()->info);
             $data['sortname'] = $data['sortname'] ?? 'id';
             $data['sortorder'] = $data['sortorder'] ?? 'asc';
 
@@ -268,6 +269,7 @@ class StatusContainer extends MyModel
         $statusContainer->keterangan = $data['keterangan'] ?? '';
         $statusContainer->statusaktif = $data['statusaktif'];
         $statusContainer->modifiedby = auth('api')->user()->user;
+        $statusContainer->info = html_entity_decode(request()->info);
 
         if (!$statusContainer->save()) {
             throw new \Exception('Error updating sta$statusContainer.');

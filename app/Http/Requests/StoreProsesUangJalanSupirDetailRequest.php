@@ -102,4 +102,30 @@ class StoreProsesUangJalanSupirDetailRequest extends FormRequest
 
         return $rules;
     }
+
+    public function attributes() {
+        return [
+            'bankadjust_id' => 'bank adjust',
+            'nilaideposit' => 'nilai deposit',
+            'keterangandeposit' => 'keterangan deposit',
+            'bankdeposit' => 'bank deposit',
+            'bank_iddeposit' => 'bank deposit',
+            'nombayar.*' => 'nominal bayar',
+            'keteranganpinjaman.*' => 'keterangan pinjaman',
+            'sisa.*' => 'sisa',
+            'bankpengembalian' => 'bank pengembalian',
+            'bank_idpengembalian' => 'bank pengembalian',
+            'totalAll' => 'total All',
+            'keterangantransfer.*' => 'keterangan transfer',
+            'nilaitransfer.*' => 'nilai transfer',
+            'banktransfer.*' => 'bank transfer',
+            'bank_idtransfer.*' => 'bank transfer',
+            'nilaiadjust' => 'nilai adjust',
+            'keteranganadjust' => 'keterangan adjust',
+            'bankadjust' => 'bank adjust',
+        ];
+    }
+
+    
+
 }

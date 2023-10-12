@@ -1,0 +1,272 @@
+<?php
+
+namespace App\Http\Controllers\Api;
+
+use App\Http\Controllers\Controller;
+use App\Http\Requests\DestroyOpnameHeaderRequest;
+use App\Http\Requests\StoreLogTrailRequest;
+use App\Models\OpnameHeader;
+use App\Http\Requests\StoreOpnameHeaderRequest;
+use App\Http\Requests\UpdateOpnameHeaderRequest;
+use App\Models\LaporanSaldoInventory;
+use App\Models\OpnameDetail;
+use App\Models\Parameter;
+use App\Rules\DateTutupBuku;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Validator;
+
+class OpnameHeaderController extends Controller
+{
+    /**
+     * @ClassName 
+     * OpnameHeaderController
+     * @Detail1 OpnameDetailController
+     */
+    public function index()
+    {
+        $opnameHeader = new OpnameHeader();
+        return response([
+            'data' => $opnameHeader->get(),
+            'attributes' => [
+                'totalRows' => $opnameHeader->totalRows,
+                'totalPages' => $opnameHeader->totalPages
+            ]
+        ]);
+    }
+
+    /**
+     * @ClassName
+     */
+    public function store(StoreOpnameHeaderRequest $request): JsonResponse
+    {
+        DB::beginTransaction();
+
+        try {
+            $requestData = json_decode($request->detail, true);
+            $data = [
+                'tglbukti' => $request->tglbukti,
+                'keterangan' => $request->keterangan,
+                'gudang_id' => $request->gudang_id,
+                'stok_id' => $requestData['stok_id'],
+                'qty' => $requestData['qty'],
+                'qtyfisik' => $requestData['qtyfisik']
+            ];
+            $opnameHeader = (new OpnameHeader())->processStore($data);
+            $opnameHeader->position = $this->getPosition($opnameHeader, $opnameHeader->getTable())->position;
+            if ($request->limit == 0) {
+                $opnameHeader->page = ceil($opnameHeader->position / (10));
+            } else {
+                $opnameHeader->page = ceil($opnameHeader->position / ($request->limit ?? 10));
+            }
+            $opnameHeader->tgldariheader = date('Y-m-01', strtotime($request->tglbukti));
+            $opnameHeader->tglsampaiheader = date('Y-m-t', strtotime($request->tglbukti));
+            DB::commit();
+
+            return response()->json([
+                'message' => 'Berhasil disimpan',
+                'data' => $opnameHeader
+            ], 201);
+        } catch (\Throwable $th) {
+            DB::rollBack();
+
+            throw $th;
+        }
+    }
+
+    public function show($id)
+    {
+        return response([
+            'data' => (new OpnameHeader())->findAll($id),
+        ]);
+    }
+
+    /**
+     * @ClassName
+     */
+    public function update(UpdateOpnameHeaderRequest $request, OpnameHeader $opnameheader): JsonResponse
+    {
+        DB::beginTransaction();
+
+        try {
+            $requestData = json_decode($request->detail, true);
+            $data = [
+                'tglbukti' => $request->tglbukti,
+                'keterangan' => $request->keterangan,
+                'gudang_id' => $request->gudang_id,
+                'stok_id' => $requestData['stok_id'],
+                'qty' => $requestData['qty'],
+                'qtyfisik' => $requestData['qtyfisik']
+            ];
+            $opnameHeader = (new OpnameHeader())->processUpdate($opnameheader, $data);
+            $opnameHeader->position = $this->getPosition($opnameHeader, $opnameHeader->getTable())->position;
+            if ($request->limit == 0) {
+                $opnameHeader->page = ceil($opnameHeader->position / (10));
+            } else {
+                $opnameHeader->page = ceil($opnameHeader->position / ($request->limit ?? 10));
+            }
+            $opnameHeader->tgldariheader = date('Y-m-01', strtotime(request()->tglbukti));
+            $opnameHeader->tglsampaiheader = date('Y-m-t', strtotime(request()->tglbukti));
+            DB::commit();
+
+            return response()->json([
+                'message' => 'Berhasil diubah',
+                'data' => $opnameHeader
+            ]);
+        } catch (\Throwable $th) {
+            DB::rollBack();
+
+            throw $th;
+        }
+    }
+
+    /**
+     * @ClassName
+     */
+    public function destroy(DestroyOpnameHeaderRequest $request, $id): JsonResponse
+    {
+        DB::beginTransaction();
+
+        try {
+            $opnameHeader = (new OpnameHeader())->processDestroy($id, 'DELETE OPNAME');
+            $selected = $this->getPosition($opnameHeader, $opnameHeader->getTable(), true);
+            $opnameHeader->position = $selected->position;
+            $opnameHeader->id = $selected->id;
+            if ($request->limit == 0) {
+                $opnameHeader->page = ceil($opnameHeader->position / (10));
+            } else {
+                $opnameHeader->page = ceil($opnameHeader->position / ($request->limit ?? 10));
+            }
+            $opnameHeader->tgldariheader = date('Y-m-01', strtotime(request()->tglbukti));
+            $opnameHeader->tglsampaiheader = date('Y-m-t', strtotime(request()->tglbukti));
+            DB::commit();
+
+            return response()->json([
+                'message' => 'Berhasil dihapus',
+                'data' => $opnameHeader
+            ]);
+        } catch (\Throwable $th) {
+            DB::rollBack();
+
+            throw $th;
+        }
+    }
+
+    public function cekvalidasi($id)
+    {
+        $opname = OpnameHeader::find($id);
+        $statusdatacetak = $opname->statuscetak;
+        $statusCetak = Parameter::from(
+            DB::raw("parameter with (readuncommitted)")
+        )->where('grp', 'STATUSCETAK')->where('text', 'CETAK')->first();
+
+        if ($statusdatacetak == $statusCetak->id) {
+            $query = DB::table('error')
+                ->select('keterangan')
+                ->where('kodeerror', '=', 'SDC')
+                ->first();
+
+            $data = [
+                'error' => true,
+                'message' =>  'No Bukti ' . $opname->nobukti . ' ' . $query->keterangan,
+                'kodeerror' => 'SDC',
+                'statuspesan' => 'warning',
+            ];
+
+            return response($data);
+        } else {
+
+            $data = [
+                'error' => false,
+                'message' => '',
+                'statuspesan' => 'success',
+            ];
+
+            return response($data);
+        }
+    }
+
+    /**
+     * @ClassName
+     */
+    public function report()
+    {
+    }
+
+    /**
+     * @ClassName
+     */
+    public function export($id)
+    {
+        $opnameHeader = new OpnameHeader();
+        return response([
+            'data' => $opnameHeader->getExport($id)
+        ]);
+    }
+
+    public function getStok(Request $request)
+    {
+
+        $getFilter = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STOK PERSEDIAAN')->where('text', 'GUDANG')->first();
+        $getJenisTgl = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'LAPORAN STOK INVENTORI')->where('text', 'TANGGAL MASUK GUDANG KANTOR')->first();
+        $kelompok_id = 0;
+        $statusreuse = 0;
+        $statusban = 0;
+        $filter = $getFilter->id;
+        $jenistgltampil = $getJenisTgl->id;
+        $priode = date('d-m-Y');
+        $stokdari_id = 0;
+        $stoksampai_id = 0;
+        $dataFilter = $request->gudang_id;
+        // dd($request->all());
+        $report = (new LaporanSaldoInventory())->getReport($kelompok_id, $statusreuse, $statusban, $filter, $jenistgltampil, $priode, $stokdari_id, $stoksampai_id, $dataFilter);
+
+        return response([
+            'data' => $report
+        ]);
+    }
+
+    public function getEdit($id)
+    {
+        return response([
+            'data' => (new OpnameDetail())->findAll($id)
+        ]);
+    }
+
+    public function printReport($id)
+    {
+        DB::beginTransaction();
+
+        try {
+            $opnameHeader = OpnameHeader::findOrFail($id);
+            $statusSudahCetak = Parameter::where('grp', '=', 'STATUSCETAK')->where('text', '=', 'CETAK')->first();
+            $statusBelumCetak = Parameter::where('grp', '=', 'STATUSCETAK')->where('text', '=', 'BELUM CETAK')->first();
+
+            if ($opnameHeader->statuscetak != $statusSudahCetak->id) {
+                $opnameHeader->statuscetak = $statusSudahCetak->id;
+                $opnameHeader->tglbukacetak = date('Y-m-d H:i:s');
+                $opnameHeader->userbukacetak = auth('api')->user()->name;
+                if ($opnameHeader->save()) {
+                    $logTrail = [
+                        'namatabel' => strtoupper($opnameHeader->getTable()),
+                        'postingdari' => 'PRINT OPNAME HEADER',
+                        'idtrans' => $opnameHeader->id,
+                        'nobuktitrans' => $opnameHeader->id,
+                        'aksi' => 'PRINT',
+                        'datajson' => $opnameHeader->toArray(),
+                        'modifiedby' => $opnameHeader->modifiedby
+                    ];
+                    $validatedLogTrail = new StoreLogTrailRequest($logTrail);
+                    $storedLogTrail = app(LogTrailController::class)->store($validatedLogTrail);
+                    DB::commit();
+                }
+            }
+            return response([
+                'message' => 'Berhasil'
+            ]);
+        } catch (\Throwable $th) {
+            throw $th;
+        }
+    }
+}

@@ -64,13 +64,30 @@ class PelunasanHutangHeaderController extends Controller
         DB::beginTransaction();
         try {
             /* Store header */
-            $PelunasanHutangHeader = (new PelunasanHutangHeader())->processStore($request->all());
+            $PelunasanHutangHeader = (new PelunasanHutangHeader())->processStore([
+                'bank_id' =>$request->bank_id,
+                'tglbukti' =>$request->tglbukti,
+                'supplier_id' =>$request->supplier_id,
+                'statusapproval' =>$request->statusapproval,
+                'alatbayar_id' =>$request->alatbayar_id,
+                'tglcair' =>$request->tglcair,
+                'hutang_id' =>$request->hutang_id,
+                'hutang_nobukti' =>$request->hutang_nobukti,
+                'bayar' =>$request->bayar,
+                'potongan' =>$request->potongan,
+                'keterangan' =>$request->keterangan,
+                // 'coadebet' =>$request->coadebet,
+            ]);
             /* Set position and page */
             $PelunasanHutangHeader->position = $this->getPosition($PelunasanHutangHeader, $PelunasanHutangHeader->getTable())->position;
-            $PelunasanHutangHeader->page = ceil($PelunasanHutangHeader->position / ($request->limit ?? 10));
-            if (isset($request->limit)) {
+            if ($request->limit==0) {
+                $PelunasanHutangHeader->page = ceil($PelunasanHutangHeader->position / (10));
+            } else {
                 $PelunasanHutangHeader->page = ceil($PelunasanHutangHeader->position / ($request->limit ?? 10));
             }
+            $PelunasanHutangHeader->tgldariheader = date('Y-m-01', strtotime(request()->tglbukti));
+            $PelunasanHutangHeader->tglsampaiheader = date('Y-m-t', strtotime(request()->tglbukti));
+            
 
             DB::commit();
             return response()->json([
@@ -109,13 +126,30 @@ class PelunasanHutangHeaderController extends Controller
         try {
             /* Store header */
             $PelunasanHutang = PelunasanHutangHeader::findOrFail($id);
-            $PelunasanHutangHeader = (new PelunasanHutangHeader())->processUpdate($PelunasanHutang, $request->all());
+            $PelunasanHutangHeader = (new PelunasanHutangHeader())->processUpdate($PelunasanHutang, [
+                'bank_id' =>$request->bank_id,
+                'tglbukti' =>$request->tglbukti,
+                'supplier_id' =>$request->supplier_id,
+                'statusapproval' =>$request->statusapproval,
+                'alatbayar_id' =>$request->alatbayar_id,
+                'tglcair' =>$request->tglcair,
+                'hutang_id' =>$request->hutang_id,
+                'hutang_nobukti' =>$request->hutang_nobukti,
+                'bayar' =>$request->bayar,
+                'potongan' =>$request->potongan,
+                'keterangan' =>$request->keterangan,
+                // 'coadebet' =>$request->coadebet,
+            ]);
             /* Set position and page */
             $PelunasanHutangHeader->position = $this->getPosition($PelunasanHutangHeader, $PelunasanHutangHeader->getTable())->position;
-            $PelunasanHutangHeader->page = ceil($PelunasanHutangHeader->position / ($request->limit ?? 10));
-            if (isset($request->limit)) {
+            if ($request->limit==0) {
+                $PelunasanHutangHeader->page = ceil($PelunasanHutangHeader->position / (10));
+            } else {
                 $PelunasanHutangHeader->page = ceil($PelunasanHutangHeader->position / ($request->limit ?? 10));
             }
+            $PelunasanHutangHeader->tgldariheader = date('Y-m-01', strtotime(request()->tglbukti));
+            $PelunasanHutangHeader->tglsampaiheader = date('Y-m-t', strtotime(request()->tglbukti));
+           
 
             DB::commit();
             return response()->json([
@@ -139,12 +173,17 @@ class PelunasanHutangHeaderController extends Controller
         DB::beginTransaction();
 
         try {
-            $PelunasanHutangHeader = (new PelunasanHutangHeader())->processDestroy($id);
+            $PelunasanHutangHeader = (new PelunasanHutangHeader())->processDestroy($id, 'DELETE PELUNASAN HUTANG');
             $selected = $this->getPosition($PelunasanHutangHeader, $PelunasanHutangHeader->getTable(), true);
             $PelunasanHutangHeader->position = $selected->position;
             $PelunasanHutangHeader->id = $selected->id;
-            $PelunasanHutangHeader->page = ceil($PelunasanHutangHeader->position / ($request->limit ?? 10));
-
+            if ($request->limit==0) {
+                $PelunasanHutangHeader->page = ceil($PelunasanHutangHeader->position / (10));
+            } else {
+                $PelunasanHutangHeader->page = ceil($PelunasanHutangHeader->position / ($request->limit ?? 10));
+            }
+            $PelunasanHutangHeader->tgldariheader = date('Y-m-01', strtotime(request()->tglbukti));
+            $PelunasanHutangHeader->tglsampaiheader = date('Y-m-t', strtotime(request()->tglbukti));
             DB::commit();
 
             return response()->json([
@@ -267,9 +306,9 @@ class PelunasanHutangHeaderController extends Controller
                     ->first();
                 return response([
                     'errors' => [
-                        'penerimaan' => "PEMBAYARAN HUTANG $query->keterangan"
+                        'penerimaan' => "PELUNASAN HUTANG $query->keterangan"
                     ],
-                    'message' => "PEMBAYARAN HUTANG $query->keterangan",
+                    'message' => "PELUNASAN HUTANG $query->keterangan",
                 ], 422);
             }
         } catch (\Throwable $th) {
@@ -367,6 +406,38 @@ class PelunasanHutangHeaderController extends Controller
                 'errors' => 'belum approve',
                 'kodestatus' => '0',
                 'kodenobukti' => '1'
+            ];
+
+            return response($data);
+        }
+    }
+    public function cekvalidasiAksi($id)
+    {
+        $hutang = DB::table("pelunasanhutangheader")->from(DB::raw("pelunasanhutangheader"))->where('id', $id)->first();
+
+        $cekdata = (new PelunasanHutangHeader())->cekvalidasiaksi($hutang->nobukti);
+        if ($cekdata['kondisi'] == true) {
+            $query = DB::table('error')
+                ->select(
+                    DB::raw("ltrim(rtrim(keterangan))+' (" . $cekdata['keterangan'] . ")' as keterangan")
+                )
+                ->where('kodeerror', '=', $cekdata['kodeerror'])
+                ->first();
+
+            $data = [
+                'error' => true,
+                'message' => $query->keterangan,
+                'kodeerror' => $cekdata['kodeerror'],
+                'statuspesan' => 'warning',
+            ];
+
+            return response($data);
+        } else {
+
+            $data = [
+                'error' => false,
+                'message' => '',
+                'statuspesan' => 'success',
             ];
 
             return response($data);

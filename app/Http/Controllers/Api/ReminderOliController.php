@@ -12,15 +12,17 @@ class ReminderOliController extends Controller
      */
     public function index()
     {
+       
         $reminderOli = new ReminderOli();
         // dd(system('getmac'));
         return response([
-            'data' => [],
+            'data' => $reminderOli->get(request()->status),
             'attributes' => [
                 'totalRows' => $reminderOli->totalRows,
                 'totalPages' => $reminderOli->totalPages
             ]
         ]);
+
     }
 
     /**

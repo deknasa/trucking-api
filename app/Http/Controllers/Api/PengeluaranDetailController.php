@@ -152,4 +152,9 @@ class PengeluaranDetailController extends Controller
             throw $th;
         }
     }
+    public function addrow(StorePengeluaranDetailRequest $request)
+    {
+        return true;
+    }
+
 }

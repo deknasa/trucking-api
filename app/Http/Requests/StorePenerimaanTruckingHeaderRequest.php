@@ -11,6 +11,8 @@ use App\Rules\SupirDPOPenerimaanTrucking;
 use App\Rules\ValidasiDetail;
 use Illuminate\Validation\Rule;
 use Illuminate\Support\Facades\DB;
+use App\Rules\ValidasiPenerimaanTrucking;
+
 
 class StorePenerimaanTruckingHeaderRequest extends FormRequest
 {
@@ -50,7 +52,7 @@ class StorePenerimaanTruckingHeaderRequest extends FormRequest
         }
 
         $penerimaanQuerys = DB::table('penerimaantrucking')->from(DB::raw('penerimaantrucking with (readuncommitted)'))->select('penerimaantrucking.keterangan')->get();
-       
+
         $penerimaanName = [];
         foreach ($penerimaanQuerys as $pt) {
             $penerimaanName[] = $pt->keterangan;
@@ -68,15 +70,15 @@ class StorePenerimaanTruckingHeaderRequest extends FormRequest
         $supirId = Rule::in($supirId);
 
         $rulespenerimaan_id = [];
-        $kodepenerimaan ="";
-        if($this->penerimaantrucking_id) {
+        $kodepenerimaan = "";
+        if ($this->penerimaantrucking_id) {
             $penerimaantrucking_id = $this->penerimaantrucking_id;
             $penerimaanTrucking = DB::table('penerimaantrucking')->from(DB::raw("penerimaantrucking with (readuncommitted)"))
-            ->whereRaw("id = ".$penerimaantrucking_id)
-            ->first();
+                ->whereRaw("id = " . $penerimaantrucking_id)
+                ->first();
             $kodepenerimaan = $penerimaanTrucking->kodepenerimaan;
         }
-            
+
 
         $penerimaanTruckingHeader = new PenerimaanTruckingHeader();
         $getDatapenerimaan = $penerimaanTruckingHeader->findAll(request()->id);
@@ -98,7 +100,7 @@ class StorePenerimaanTruckingHeaderRequest extends FormRequest
         foreach ($bankResults1 as $bankId) {
             $bankIds[] = $bankId->id;
         }
-        
+
         $ruleBank = Rule::requiredIf(function () {
             $postingParameter = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))
                 ->whereRaw("grp = 'STATUS POSTING'")
@@ -112,11 +114,11 @@ class StorePenerimaanTruckingHeaderRequest extends FormRequest
         $penerimaantrucking_id = $this->penerimaantrucking_id;
         if ($penerimaantrucking_id != null) {
             $rulespenerimaan_id = [
-                'penerimaantrucking_id' => ['required', 'numeric', 'min:1',Rule::in($penerimaanId)]
+                'penerimaantrucking_id' => ['required', 'numeric', 'min:1', Rule::in($penerimaanId)]
             ];
         } else if ($penerimaantrucking_id == null && $this->penerimaantrucking != '') {
             $rulespenerimaan_id = [
-                'penerimaantrucking_id' => ['required', 'numeric', 'min:1',Rule::in($penerimaanId)]
+                'penerimaantrucking_id' => ['required', 'numeric', 'min:1', Rule::in($penerimaanId)]
             ];
         }
 
@@ -126,41 +128,71 @@ class StorePenerimaanTruckingHeaderRequest extends FormRequest
                 'tglbukti' => [
                     'required',
                     'date_format:d-m-Y',
-                    'before_or_equal:'.date('d-m-Y'),
+                    'before_or_equal:' . date('d-m-Y'),
                     new DateTutupBuku(),
                 ],
-                'penerimaantrucking' => ['required',Rule::in($penerimaanName)],
+                'penerimaantrucking' => ['required', Rule::in($penerimaanName)],
                 'bank' => [$ruleBank, $bank, 'required'],
-                'bank_id' => [Rule::in($bankIds), 'required', 'min:1','numeric'],
-                'supir' => ['required', $supir, new ValidasiDetail($jumlahdetail)],
-                'supirheader_id' => ['required', $supirId, 'numeric','min:1'],
+                'bank_id' => [Rule::in($bankIds), 'required', 'min:1', 'numeric'],
+                'supir' => ['required', $supir, new ValidasiDetail($jumlahdetail),
+                // new ValidasiPenerimaanTrucking()
+            ],
+                'supirheader_id' => [
+                    'required', $supirId, 'numeric', 'min:1'
+                ],
                 // 'keterangancoa' => 'required'
             ];
-        
-        }elseif($kodepenerimaan == 'DPO'){
+        } elseif ($kodepenerimaan == 'DPO') {
             $rules = [
                 'tglbukti' => [
                     'required',
                     'date_format:d-m-Y',
-                    'before_or_equal:'.date('d-m-Y'),
+                    'before_or_equal:' . date('d-m-Y'),
                     new DateTutupBuku(),
                 ],
-                'penerimaantrucking' => ['required',Rule::in($penerimaanName)],
+                'penerimaantrucking' => ['required', Rule::in($penerimaanName)],
                 'bank' => [$ruleBank, $bank, 'required'],
                 'bank_id' => [Rule::in($bankIds), 'required', 'min:1'],
                 'supir.*' => ['required', $supir],
                 'supir_id.*' => [new SupirDPOPenerimaanTrucking, new ExistSupirDPOPenerimaanTrucking()],
                 // 'keterangancoa' => 'required'
             ];
-        }else{
+        } elseif ($kodepenerimaan == 'PBT') {
+
+            $jumlahdetail = $this->jumlahdetail ?? 0;
             $rules = [
                 'tglbukti' => [
                     'required',
                     'date_format:d-m-Y',
-                    'before_or_equal:'.date('d-m-Y'),
+                    'before_or_equal:' . date('d-m-Y'),
                     new DateTutupBuku(),
                 ],
-                'penerimaantrucking' => ['required',Rule::in($penerimaanName)],
+                'penerimaantrucking' => ['required', Rule::in($penerimaanName)],
+                'bank' => [$ruleBank, $bank, 'required'],
+                'bank_id' => [Rule::in($bankIds), 'required', 'min:1'],
+                'jenisorder' => ['required', new ValidasiDetail($jumlahdetail)],
+                'periodedari' => [
+                    'required',
+                    'date_format:d-m-Y',
+                    'before_or_equal:' . date('d-m-Y'),
+                    new DateTutupBuku(),
+                ],
+                'periodesampai' => [
+                    'required',
+                    'date_format:d-m-Y',
+                    'before_or_equal:' . date('d-m-Y'),
+                    new DateTutupBuku(),
+                ],
+                'keteranganheader' => 'required'
+            ];
+        } else {
+            $rules = [
+                'tglbukti' => [
+                    'required', 'date_format:d-m-Y',
+                    new DateTutupBuku(),
+                    'before_or_equal:' . date('d-m-Y')
+                ],
+                'penerimaantrucking' => ['required', Rule::in($penerimaanName)],
                 'bank' => [$ruleBank, $bank, 'required'],
                 'bank_id' => [Rule::in($bankIds), 'required', 'min:1'],
                 // 'keterangancoa' => 'required'

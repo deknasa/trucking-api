@@ -160,6 +160,7 @@ class KasGantungDetail extends MyModel
         $kasgantungDetail->keterangan = $data['keterangan'];
 
         $kasgantungDetail->modifiedby = auth('api')->user()->name;
+        $kasgantungDetail->info = html_entity_decode(request()->info);
 
         if (!$kasgantungDetail->save()) {
             throw new \Exception("Error storing kas gantung detail.");

@@ -159,6 +159,7 @@ class StokPusat extends MyModel
         $stokPusat->namastok = $data['namastok'];
         $stokPusat->kelompok_id = $data['kelompok_id'];
         $stokPusat->modifiedby = auth('api')->user()->name;
+        $stokPusat->info = html_entity_decode(request()->info);
 
         if (!$stokPusat->save()) {
             throw new \Exception("Error storing stokPusat.");
@@ -315,6 +316,7 @@ class StokPusat extends MyModel
         $stokPusat->namastok = $data['namastok'];
         $stokPusat->kelompok_id = $data['kelompok_id'];
         $stokPusat->modifiedby = auth('api')->user()->name;
+        $stokPusat->info = html_entity_decode(request()->info);
 
         if (!$stokPusat->save()) {
             throw new \Exception("Error storing stokPusat.");

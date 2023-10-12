@@ -286,39 +286,60 @@ class SupirController extends Controller
                 'kota' => $request->kota,
                 'telp' => $request->telp,
                 'statusaktif' => $request->statusaktif,
+                'statuspostingtnl' => $request->statuspostingtnl,
                 'nominaldepositsa' => str_replace(',', '', $request->nominaldepositsa) ?? 0,
                 'depositke' => str_replace('.', '', $depositke) ?? 0,
-                'tglmasuk' => date('Y-m-d', strtotime($request->tglmasuk)),
+                'tglmasuk' => $request->tglmasuk,
                 'nominalpinjamansaldoawal' => str_replace(',', '', $request->nominalpinjamansaldoawal) ?? 0,
                 'pemutihansupir_nobukti' => $request->pemutihansupir_nobukti ?? '',
                 'supirold_id' => $request->supirold_id ?? 0,
-                'tglexpsim' => date('Y-m-d', strtotime($request->tglexpsim)),
+                'tglexpsim' => $request->tglexpsim,
                 'nosim' => $request->nosim,
                 'keterangan' => $request->keterangan ?? '',
                 'noktp' => $request->noktp,
                 'nokk' => $request->nokk,
                 'angsuranpinjaman' => str_replace(',', '', $request->angsuranpinjaman) ?? 0,
                 'plafondeposito' => str_replace(',', '', $request->plafondeposito) ?? 0,
-                'tgllahir' => date('Y-m-d', strtotime($request->tgllahir)),
-                'tglterbitsim' => date('Y-m-d', strtotime($request->tglterbitsim)),
+                'tgllahir' => $request->tgllahir,
+                'tglterbitsim' => $request->tglterbitsim,
                 'modifiedby' => auth('api')->user()->name,
 
-                'photosupir' => ($request->photosupir) ? $this->storeFiles($request->photosupir, 'supir') : '',
-                'photoktp' => ($request->photoktp) ? $this->storeFiles($request->photoktp, 'ktp') : '',
-                'photosim' => ($request->photosim) ? $this->storeFiles($request->photosim, 'sim') : '',
-                'photokk' => ($request->photokk) ? $this->storeFiles($request->photokk, 'kk') : '',
-                'photoskck' => ($request->photoskck) ? $this->storeFiles($request->photoskck, 'skck') : '',
-                'photodomisili' => ($request->photodomisili) ? $this->storeFiles($request->photodomisili, 'domisili') : '',
-                'photovaksin' => ($request->photovaksin) ? $this->storeFiles($request->photovaksin, 'vaksin') : '',
-                'pdfsuratperjanjian' => ($request->pdfsuratperjanjian) ? $this->storePdfFiles($request->pdfsuratperjanjian, 'suratperjanjian') : ''
-
+                'photosupir' => $request->photosupir ?? [],
+                'photoktp' => $request->photoktp ?? [],
+                'photosim' => $request->photosim ?? [],
+                'photokk' => $request->photokk ?? [],
+                'photoskck' => $request->photoskck ?? [],
+                'photodomisili' => $request->photodomisili ?? [],
+                'photovaksin' => $request->photovaksin ?? [],
+                'pdfsuratperjanjian' => $request->pdfsuratperjanjian ?? [],
+                'from' => $request->from ?? '',
             ];
             $supir = (new supir())->processStore($data);
-            $supir->position = $this->getPosition($supir, $supir->getTable())->position;
-            if ($request->limit == 0) {
-                $supir->page = ceil($supir->position / (10));
-            } else {
-                $supir->page = ceil($supir->position / ($request->limit ?? 10));
+            if ($request->from == '') {
+                $supir->position = $this->getPosition($supir, $supir->getTable())->position;
+                if ($request->limit == 0) {
+                    $supir->page = ceil($supir->position / (10));
+                } else {
+                    $supir->page = ceil($supir->position / ($request->limit ?? 10));
+                }
+            }
+
+            $statusTnl = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS POSTING TNL')->where('text', 'POSTING TNL')->first();
+            if ($data['statuspostingtnl'] == $statusTnl->id) {
+                $statusBukanTnl = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS POSTING TNL')->where('text', 'TIDAK POSTING TNL')->first();
+                // posting ke tnl
+                $data['statuspostingtnl'] = $statusBukanTnl->id;
+                $gambar = [
+                    'supir' => $supir->photosupir,
+                    'ktp' => $supir->photoktp,
+                    'sim' => $supir->photosim,
+                    'kk' => $supir->photokk,
+                    'skck' => $supir->photoskck,
+                    'domisili' => $supir->photodomisili,
+                    'vaksin' => $supir->photovaksin,
+                    'pdfsuratperjanjian' => $supir->pdfsuratperjanjian,
+                ];
+                $postingTNL = (new supir())->postingTnl($data, $gambar);
             }
 
             DB::commit();
@@ -379,6 +400,7 @@ class SupirController extends Controller
             ];
 
             $supir = (new Supir())->processUpdate($supir, $data);
+            
             $supir->position = $this->getPosition($supir, $supir->getTable())->position;
             if ($request->limit == 0) {
                 $supir->page = ceil($supir->position / (10));
