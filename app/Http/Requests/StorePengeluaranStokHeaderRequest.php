@@ -37,6 +37,7 @@ class StorePengeluaranStokHeaderRequest extends FormRequest
         $korv = DB::table('pengeluaranstok')->where('kodepengeluaran', 'KORV')->first();
         $afkir = DB::table('pengeluaranstok')->where('kodepengeluaran', 'AFKIR')->first();
         
+        $afkirRules = [];
         
         $rules = [
             "tglbukti" => [
