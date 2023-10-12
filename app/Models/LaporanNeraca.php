@@ -285,6 +285,12 @@ class LaporanNeraca extends MyModel
                 'ptglsd',
             ], $query2);
 
+            $getJudul = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))
+            ->select('text')
+            ->where('grp', 'JUDULAN LAPORAN')
+            ->where('subgrp', 'JUDULAN LAPORAN')
+            ->first();
+
             $data = db::table($tempquery2)->from(db::raw($tempquery2 . " xx"))
                 ->select(
                     'xx.TipeMaster',
@@ -302,6 +308,7 @@ class LaporanNeraca extends MyModel
                     'xx.GLR',
                     'xx.KeteranganCoaParent',
                     'xx.pTglSd',
+                    DB::raw("'" . $getJudul->text . "' as judul")
                 )
                 ->whereRaw("isnull(xx.Nominal,0)<>0")
                 ->orderby('xx.id');

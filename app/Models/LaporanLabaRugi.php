@@ -334,7 +334,7 @@ class LaporanLabaRugi extends MyModel
             ->where('grp', 'DIPERIKSA')
             ->where('subgrp', 'DIPERIKSA')->first()->text ?? '';
 
-        $cmpy = 'PT. TRANSPORINDO AGUNG SEJAHTERA';
+        // $cmpy = 'PT. TRANSPORINDO AGUNG SEJAHTERA';
         $bulan = '02';
         $tahun = '2023';
 

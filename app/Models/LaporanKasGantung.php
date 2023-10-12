@@ -831,7 +831,6 @@ class LaporanKasGantung extends MyModel
             $table->float('kredit');
             $table->float('saldo')->nullable();
             $table->longText('penerimaan_nobukti');
-
         });
 
         $temp_kasgantungheader = DB::table('kasgantungheader')->from(DB::raw($kasgantungheader . " AS a"))
@@ -925,7 +924,7 @@ class LaporanKasGantung extends MyModel
             ->orderBy('a.nobukti', 'asc')
             ->orderBy('a.flag', 'asc');
 
-            // dd($select_TempLaporan ->get());
+        // dd($select_TempLaporan ->get());
 
         DB::table($TempLaporan2)->insertUsing([
             'tglbukti',
@@ -946,7 +945,11 @@ class LaporanKasGantung extends MyModel
             ->where('grp', 'DIPERIKSA')
             ->where('subgrp', 'DIPERIKSA')->first()->text ?? '';
 
-
+        $getJudul = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))
+            ->select('text')
+            ->where('grp', 'JUDULAN LAPORAN')
+            ->where('subgrp', 'JUDULAN LAPORAN')
+            ->first();
         $select_TempLaporan2 = DB::table('TempLaporan2')->from(DB::raw($TempLaporan2 . " AS a"))
             ->select([
                 'A.tglbukti as tanggal',
@@ -957,6 +960,10 @@ class LaporanKasGantung extends MyModel
                 DB::raw('sum((isnull(A.saldo, 0) + A.debet) - A.kredit) over (order by id asc) as Saldo'),
                 db::raw("'" . $disetujui . "' as disetujui"),
                 db::raw("'" . $diperiksa . "' as diperiksa"),
+                DB::raw("'Laporan Kas Gantung' as judulLaporan"),
+                DB::raw("'" . $getJudul->text . "' as judul"),
+                DB::raw("'Tgl Cetak:'+format(getdate(),'dd-MM-yyyy HH:mm:ss')as tglcetak"),
+                DB::raw(" 'User :" . auth('api')->user()->name . "' as usercetak")
 
             ])
             ->orderBy('a.id', 'asc');
@@ -967,8 +974,7 @@ class LaporanKasGantung extends MyModel
         } else {
             $data = $select_TempLaporan2->get();
         }
-        
+
         return $data;
     }
-
 }

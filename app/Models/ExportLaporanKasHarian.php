@@ -559,7 +559,16 @@ class ExportLaporanKasHarian extends MyModel
             'id'
         ], $queryLaporanRekap01Dua);
 
-        $getData = DB::table($tempLaporan)->select("*")
+        $getJudul = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))
+            ->select('text')
+            ->where('grp', 'JUDULAN LAPORAN')
+            ->where('subgrp', 'JUDULAN LAPORAN')
+            ->first();
+
+        $getData = DB::table($tempLaporan)->select(
+            "*",
+            DB::raw("'" . $getJudul->text . "' as judul")
+        )
             ->orderBy('jenislaporan', 'asc')
             ->orderBy('id', 'asc')
             ->get();
@@ -667,7 +676,8 @@ class ExportLaporanKasHarian extends MyModel
                 'a.coa',
                 DB::raw("(case when A.perkiraan='' then 'SALDO AWAL' else A.perkiraan end) perkiraan"),
                 DB::raw("isnull(B.nominal,0) as nominaldebet"),
-                DB::raw("isnull(C.nominal,0) as nominalkredit")
+                DB::raw("isnull(C.nominal,0) as nominalkredit"),
+                DB::raw("'" . $getJudul->text . "' as judul")
             )
             ->leftJoin($tempRekapDebet . " as b", 'a.coa', '=', 'b.coa')
             ->leftJoin($tempRekapKredit . " as c", 'a.coa', '=', 'c.coa')

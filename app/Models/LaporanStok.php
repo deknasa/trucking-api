@@ -117,7 +117,7 @@ class LaporanStok extends MyModel
         DB::delete(DB::raw("delete " . $temprekapall . " from " . $temprekapall . " as a left outer join " . $tempstoktransaksi . " b on a.kodebarang=b.kodebarang 
                             WHERE isnull(b.kodebarang,'')='' and isnull(a.qtysaldo,0)=0"));
 
-           
+
 
         $disetujui = db::table('parameter')->from(db::raw('parameter with (readuncommitted)'))
             ->select('text')
@@ -128,6 +128,11 @@ class LaporanStok extends MyModel
             ->select('text')
             ->where('grp', 'DIPERIKSA')
             ->where('subgrp', 'DIPERIKSA')->first()->text ?? '';
+        $getJudul = DB::table('parameter')
+            ->select('text')
+            ->where('grp', 'JUDULAN LAPORAN')
+            ->where('subgrp', 'JUDULAN LAPORAN')
+            ->first();
 
         $query = DB::table($temprekapall)->from(
             DB::raw($temprekapall . " a")
@@ -155,11 +160,12 @@ class LaporanStok extends MyModel
                 db::raw("'" . $disetujui . "' as disetujui"),
                 db::raw("'" . $diperiksa . "' as diperiksa"),
                 db::raw("(case when a.nobukti='SALDO AWAL' then 1 else 0 end) as baris"),
+                DB::raw("'" . $getJudul->text . "' as judul"),
 
             )
-            ->orderBy('a.namabarang','asc')
-            ->orderBy('a.tglbukti','asc')
-            ->orderBy(db::raw("(case when UPPER(isnull(a.nobukti,''))='SALDO AWAL' then '' else isnull(a.nobukti,'') end)"),'asc');
+            ->orderBy('a.namabarang', 'asc')
+            ->orderBy('a.tglbukti', 'asc')
+            ->orderBy(db::raw("(case when UPPER(isnull(a.nobukti,''))='SALDO AWAL' then '' else isnull(a.nobukti,'') end)"), 'asc');
 
 
 
