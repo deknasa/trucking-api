@@ -508,6 +508,10 @@ class LaporanNeraca extends MyModel
                 $table->double('saldo')->nullable();
                 $table->string('disetujui', 500)->nullable();
                 $table->string('diperiksa', 500)->nullable();
+                $table->string('judullaporan', 500)->nullable();
+                $table->string('judul', 500)->nullable();
+                $table->date('tglcetak')->nullable();
+                $table->string('usercetak', 500)->nullable();
             });
 
 
@@ -532,6 +536,10 @@ class LaporanNeraca extends MyModel
                 'saldo',
                 'disetujui',
                 'diperiksa',
+                'judullaporan',
+                'judul',
+                'tglcetak',
+                'usercetak',
             ], (new LaporanKeteranganPinjamanSupir())->getReport($tglsd, $jenis, 1));
 
             // Pinjaman karyawan
