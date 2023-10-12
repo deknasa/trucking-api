@@ -769,14 +769,14 @@ class PengeluaranTruckingHeader extends MyModel
                 "$this->table.id,
             $this->table.nobukti,
             $this->table.tglbukti,
-            'pengeluarantrucking.keterangan as pengeluarantrucking_id',
-            'bank.namabank as bank_id',
-            'statusposting.text as statusposting',
-            'statuscetak.memo as statuscetak',
-            'supir.namasupir as supir',
-            'gandengan.kodegandengan as gandengan',
-            'pengeluarantruckingheader.pengeluarantrucking_nobukti',
-            'trado.keterangan as trado',
+            pengeluarantrucking.keterangan as pengeluarantrucking_id,
+            bank.namabank as bank_id,
+            statusposting.text as statusposting,
+            statuscetak.memo as statuscetak,
+            supir.namasupir as supir,
+            gandengan.kodegandengan as gandengan,
+            pengeluarantruckingheader.pengeluarantrucking_nobukti,
+            trado.keterangan as trado,
             $this->table.userbukacetak,
             $this->table.tglbukacetak,
             $this->table.coa,
@@ -808,7 +808,7 @@ class PengeluaranTruckingHeader extends MyModel
             $table->string('supir', 100)->nullable();
             $table->string('gandengan', 50)->nullable();
             $table->string('pengeluarantrucking_nobukti', 50)->nullable();
-            $table->string('trado', 50)->nullable();
+            $table->string('trado', 100)->nullable();
             $table->string('userbukacetak', 50)->nullable();
             $table->date('tglbukacetak')->nullable();
             $table->string('coa', 1000)->nullable();
@@ -832,7 +832,7 @@ class PengeluaranTruckingHeader extends MyModel
         if (request()->pengeluaranheader_id) {
             $query->where('pengeluarantrucking_id', request()->pengeluaranheader_id);
         }
-        DB::table($temp)->insertUsing(['id', 'nobukti', 'tglbukti', 'pengeluarantrucking_id', 'bank_id', 'statusposting', 'statuscetak', 'supir','gandengan', 'pengeluarantrucking_nobukti','trado', 'userbukacetak', 'tglbukacetak', 'coa', 'pengeluaran_nobukti', 'modifiedby', 'updated_at'], $models);
+        DB::table($temp)->insertUsing(['id', 'nobukti', 'tglbukti', 'pengeluarantrucking_id', 'bank_id', 'statusposting', 'statuscetak', 'supir', 'gandengan', 'pengeluarantrucking_nobukti', 'trado', 'userbukacetak', 'tglbukacetak', 'coa', 'pengeluaran_nobukti', 'modifiedby', 'updated_at'], $models);
 
 
         return  $temp;
@@ -1124,7 +1124,7 @@ class PengeluaranTruckingHeader extends MyModel
             }
         }
         if (array_key_exists('postingpinjaman', $data)) {
-            if($data['postingpinjaman'] != '' && $data['postingpinjaman'] != 0){
+            if ($data['postingpinjaman'] != '' && $data['postingpinjaman'] != 0) {
                 $data['statusposting'] = $data['postingpinjaman'];
             }
         }
@@ -1360,6 +1360,12 @@ class PengeluaranTruckingHeader extends MyModel
                 $data['coa'] = $fetchFormat->coapostingdebet;
             }
         }
+
+        if (array_key_exists('postingpinjaman', $data)) {
+            if ($data['postingpinjaman'] != '' && $data['postingpinjaman'] != 0) {
+                $data['statusposting'] = $data['postingpinjaman'];
+            }
+        }
         $klaim = DB::table('pengeluarantrucking')->from(DB::raw("pengeluarantrucking with (readuncommitted)"))->where('kodepengeluaran', "KLAIM")->first();
         $statusformat = $fetchFormat->format;
         $fetchGrp = Parameter::where('id', $statusformat)->first();
@@ -1415,6 +1421,9 @@ class PengeluaranTruckingHeader extends MyModel
                 $gandenganTNL = $data['gandenganheader_id'];
                 $gandenganHeader = '';
             }
+        }
+        if ($klaim->id == $data['pengeluarantrucking_id']) {
+            $pengeluaranTruckingHeader->statusposting = $data['statusposting'] ?? $statusPosting->id;
         }
         $pengeluaranTruckingHeader->coa = $data['coa'];
         $pengeluaranTruckingHeader->periodedari = $tgldari;
