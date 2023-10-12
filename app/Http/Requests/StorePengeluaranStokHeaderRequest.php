@@ -120,6 +120,7 @@ class StorePengeluaranStokHeaderRequest extends FormRequest
                 $returRules = array_merge($returRules,['bank_id' => 'required','bank' => 'required']);
             }
         }
+        $afkirRules = [];
         if($afkir->id == request()->pengeluaranstok_id) {
             $afkirRules = [
                 'pengeluarantrucking_nobukti' => function ($attribute, $value, $fail){

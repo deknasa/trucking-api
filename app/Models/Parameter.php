@@ -275,6 +275,15 @@ class Parameter extends MyModel
                     }
 
                     break;
+                case "ANDNOT":
+                    foreach ($this->params['filters']['rules'] as $index => $filters) {
+                        if ($filters['field'] == 'grp') {
+                            $query = $query
+                                    ->whereRaw($this->table . ".[" .  $filters['field'] . "] LIKE '%" . escapeLike($filters['data']) . "%' escape '|'")
+                                    ->whereRaw($this->table . ".[" .  $filters['execpt_field'] . "] NOT LIKE '%" . escapeLike($filters['execpt_data']) . "%' escape '|'");
+                        }
+                    }
+                    break;
                 default:
 
                     break;
