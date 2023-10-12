@@ -1134,7 +1134,7 @@ class PengeluaranStokHeader extends MyModel
 
                 $jurnalUmumHeader = (new JurnalUmumHeader())->processStore($jurnalRequest);
             }
-        } else if ($pja->text == $data['pengeluaranstok_id']) {
+        } else if ($pja->text == $data['pengeluaranstok_id'] &&($pengeluaranStokHeader->bank_id != null)) {
             //jika potongkas                
             /*STORE PENERIMAANHEADER*/
             $coaKasMasuk = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))->select('memo')->where('grp', 'JURNAL PENJUALAN STOK AFKIR')->where('subgrp', 'KREDIT')->first();
@@ -1644,7 +1644,7 @@ class PengeluaranStokHeader extends MyModel
                     $jurnalUmumHeader = (new JurnalUmumHeader())->processStore($jurnalRequest);
                 }
             }
-        } else if ($pja->text == $data['pengeluaranstok_id']) {
+        } else if ($pja->text == $data['pengeluaranstok_id'] && ($pengeluaranStokHeader->bank_id)) {
             //jika potongkas                
             /*STORE PENERIMAANHEADER*/
             $coaKasMasuk = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))->select('memo')->where('grp', 'JURNAL RETUR STOK')->where('subgrp', 'KREDIT')->first();
@@ -1698,7 +1698,14 @@ class PengeluaranStokHeader extends MyModel
                 'bulanbeban' => null,
             ];
             $penerimaan = PenerimaanHeader::where('nobukti', $pengeluaranStokHeader->penerimaan_nobukti)->lockForUpdate()->first();
-            $penerimaanHeader = (new PenerimaanHeader())->processUpdate($penerimaan, $penerimaanRequest);
+            
+            if (!$penerimaan) {
+                $penerimaanHeader = (new PenerimaanHeader())->processStore($penerimaanRequest);
+                $pengeluaranStokHeader->penerimaan_nobukti = $penerimaanHeader->nobukti;
+
+            }else{
+                $penerimaanHeader = (new PenerimaanHeader())->processUpdate($penerimaan, $penerimaanRequest);
+            }
             $pengeluaranStokHeader->coa = $querysubgrppenerimaan->coa;
             $pengeluaranStokHeader->save();
         } else if ($korv->id == $data['pengeluaranstok_id']) {
