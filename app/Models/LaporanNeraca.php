@@ -48,6 +48,8 @@ class LaporanNeraca extends MyModel
         $datetime = $tahun2 . '-' . $bulan2 . '-1';
 
         $tglsd =  date('Y-m-d', strtotime($datetime . ' -1 day'));
+        $tglsd1 =  date('Y-m-d', strtotime($tglsd . ' +1 day'));
+
 
         $judul = Parameter::where('grp', '=', 'JUDULAN LAPORAN')->first();
         $judulLaporan = $judul->text;
@@ -496,7 +498,7 @@ class LaporanNeraca extends MyModel
                 'usercetak',
                 'disetujui',
                 'diperiksa',
-            ], (new LaporanKartuPiutangPerAgen())->getReport($tglsd, $tglsd, 0, 0, 1));
+            ], (new LaporanKartuPiutangPerAgen())->getReport($tglsd1, $tglsd1, 0, 0, 1));
 
             $temppinjamansupir = '##temppinjamansupir' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
             Schema::create($temppinjamansupir, function ($table) {
@@ -606,7 +608,7 @@ class LaporanNeraca extends MyModel
                 'keterangan',
                 'nominal',
                 'jenisorder',
-            ], (new LaporanRekapTitipanEmkl())->getData($tglsd, 1));
+            ], (new LaporanRekapTitipanEmkl())->getData($tglsd1, 1));
             // 
 
             // Deposito SUpir
@@ -702,7 +704,7 @@ class LaporanNeraca extends MyModel
             });
 
 
-
+            
 
             $kas_id = DB::table("parameter")->from(db::raw("parameter a with (readuncommitted)"))
                 ->select(
@@ -725,7 +727,7 @@ class LaporanNeraca extends MyModel
                 'judul',
                 'tglcetak',
                 'usercetak',
-            ], (new LaporanKasBank())->getReport($tglsd, $tglsd, $kas_id, 1));
+            ], (new LaporanKasBank())->getReport($tglsd1, $tglsd1, $kas_id, 1));
 
             // dd(db::table($tempkas)->get());
 
@@ -773,7 +775,7 @@ class LaporanNeraca extends MyModel
                 'judul',
                 'tglcetak',
                 'usercetak',
-            ], (new LaporanKasBank())->getReport($tglsd, $tglsd, $bank_id, 1));
+            ], (new LaporanKasBank())->getReport($tglsd1, $tglsd1, $bank_id, 1));
 
             // saldopersediaan 
 
