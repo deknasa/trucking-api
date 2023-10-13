@@ -34,8 +34,8 @@ class LaporanSupirLebihDariTradoController extends Controller
      */
     public function report(Request $request)
     {
-        $sampai = $request->sampai;
-        $dari = $request->dari;
+        $sampai = date('Y-m-d', strtotime($request->sampai));
+        $dari = date('Y-m-d', strtotime($request->dari));
 
         $laporansupirlebihdaritrado = new LaporanSupirLebihDariTrado();
         // $report = LaporanSupirLebihDariTrado::getReport($sampai, $dari);
@@ -67,8 +67,8 @@ class LaporanSupirLebihDariTradoController extends Controller
      */
     public function export(Request $request)
     {
-        $sampai = $request->sampai;
-        $dari = $request->dari;
+        $sampai = date('Y-m-d', strtotime($request->sampai));
+        $dari = date('Y-m-d', strtotime($request->dari));
 
         $laporansupirlebihdaritrado = new LaporanSupirLebihDariTrado();
         // $report = LaporanSupirLebihDariTrado::getReport($sampai, $dari);

@@ -329,6 +329,11 @@ class LaporanPemotonganPinjamanPerEBS extends MyModel
             ->where('subgrp', 'DIPERIKSA')->first()->text ?? '';
 
 
+        $getJudul = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))
+            ->select('text')
+            ->where('grp', 'JUDULAN LAPORAN')
+            ->where('subgrp', 'JUDULAN LAPORAN')
+            ->first();
         $select_TempListGajisupir3 = DB::table($TempListGajisupir . ' AS A')
             ->select([
                 'A.nobukti',
@@ -353,6 +358,10 @@ class LaporanPemotonganPinjamanPerEBS extends MyModel
                 DB::raw("ISNULL(c.keterangan, '') as keteranganpinjamansupirsemua"),
                 db::raw("'" . $disetujui . "' as disetujui"),
                 db::raw("'" . $diperiksa . "' as diperiksa"),
+                DB::raw("'LAPORAN PEMOTONGAN PEMINJAMAN SUPIR PER EBS' as judulLaporan"),
+                DB::raw("'" . $getJudul->text . "' as judul"),
+                DB::raw("'Tgl Cetak:'+format(getdate(),'dd-MM-yyyy HH:mm:ss')as tglcetak"),
+                DB::raw(" 'User :" . auth('api')->user()->name . "' as usercetak")
             ])
             ->leftJoin(DB::raw($Temppinjaman . " AS B"), function ($join) {
                 $join->on('A.gajisupir_nobukti', '=', 'B.gajisupir_nobukti');

@@ -141,7 +141,12 @@ class LaporanSupirLebihDariTrado extends MyModel
         ->select('text')
         ->where('grp', 'DIPERIKSA')
         ->where('subgrp', 'DIPERIKSA')->first()->text ?? '';
-
+        
+        $getJudul = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))
+            ->select('text')
+            ->where('grp', 'JUDULAN LAPORAN')
+            ->where('subgrp', 'JUDULAN LAPORAN')
+            ->first();
         $selectTemplistdata_2 = DB::table($Templistdata)->from(DB::raw($Templistdata . " AS a"))
             ->select(
                 'b.namasupir',
@@ -149,6 +154,10 @@ class LaporanSupirLebihDariTrado extends MyModel
                 'a.jumlah',
                 db::raw("'" . $disetujui . "' as disetujui"),
                 db::raw("'" . $diperiksa . "' as diperiksa"),
+                DB::raw("'LAPORAN 1 SUPIR LEBIH DARI 1 TRADO' as judulLaporan"),
+                DB::raw("'" . $getJudul->text . "' as judul"),
+                DB::raw("'Tgl Cetak:'+format(getdate(),'dd-MM-yyyy HH:mm:ss')as tglcetak"),
+                DB::raw(" 'User :" . auth('api')->user()->name . "' as usercetak")
             )
             ->leftJoin(DB::raw("supir as b with (readuncommitted)"), 'a.supir_id', 'b.id')
             ->where('a.jumlah', '>=', '1');
