@@ -911,8 +911,11 @@ class PenerimaanStokHeader extends MyModel
                 
                 $coadebet_detail[] = $memo['JURNAL'];
                 $coakredit_detail[] = $memokredit['JURNAL'];
-                $nominal_detail[] = $penerimaanStokDetail->total;
+                // $nominal_detail[] = $penerimaanStokDetail->total;
     
+                $penerimaanStokDetail = penerimaanStokDetail::where('id',$penerimaanStokDetail->id)->first();
+            
+                $nominal_detail[] = $penerimaanStokDetail->total;
 
                 
 
@@ -1319,6 +1322,9 @@ class PenerimaanStokHeader extends MyModel
                 
                 $coadebet_detail[] = $memo['JURNAL'];
                 $coakredit_detail[] = $memokredit['JURNAL'];
+                // $nominal_detail[] = $penerimaanStokDetail->total;
+                $penerimaanStokDetail = penerimaanStokDetail::where('id',$penerimaanStokDetail->id)->first();
+            
                 $nominal_detail[] = $penerimaanStokDetail->total;
     
 
