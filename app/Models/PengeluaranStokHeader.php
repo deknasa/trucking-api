@@ -153,7 +153,7 @@ class PengeluaranStokHeader extends MyModel
             'Content-Type' => 'application/json',
         ])
 
-            ->get($server . "pengeluaranstokheader?limit=0&tgldari=" .$dari . "&tglsampai=" . $sampai);
+            ->get($server . "pengeluaranstokheader?limit=0&tgldari=" . $dari . "&tglsampai=" . $sampai);
         $data = $getTrado->json()['data'];
 
         $class = 'PengeluaranStokHeaderController';
@@ -243,7 +243,7 @@ class PengeluaranStokHeader extends MyModel
             unset($row['tglsampaiheaderpengeluarantruckingheader']);
             DB::table($temtabel)->insert($row);
         }
-        
+
         return $temtabel;
     }
     public function sort($query)
@@ -787,7 +787,7 @@ class PengeluaranStokHeader extends MyModel
             $memo = json_decode($getCoaDebet->memo, true);
             $getCoaKredit = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'JURNAL RETUR POTONG HUTANG')->where('subgrp', 'KREDIT')->first();
             $memokredit = json_decode($getCoaKredit->memo, true);
-        } else if ($idpengeluaran == $pja->text ) {
+        } else if ($idpengeluaran == $pja->text) {
             $getCoaDebet = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'JURNAL PEMAKAIAN STOK')->where('subgrp', 'DEBET')->first();
             $memo = json_decode($getCoaDebet->memo, true);
             $getCoaKredit = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'JURNAL PENJUALAN STOK AFKIR')->where('subgrp', 'KREDIT')->first();
@@ -830,9 +830,9 @@ class PengeluaranStokHeader extends MyModel
                 "pengeluaranstokheader_id" => $pengeluaranStokHeader->id,
                 "nobukti" => $pengeluaranStokHeader->nobukti,
                 "stok_id" => $data['detail_stok_id'][$i],
-                "qty" => ($data['detail_qty'])?$data['detail_qty'][$i]:null,
-                "harga" => ($data['detail_harga'])?$data['detail_harga'][$i]:null,
-                "persentasediscount" => ($data['detail_persentasediscount'])?$data['detail_persentasediscount'][$i]:null,
+                "qty" => ($data['detail_qty']) ? $data['detail_qty'][$i] : null,
+                "harga" => ($data['detail_harga']) ? $data['detail_harga'][$i] : null,
+                "persentasediscount" => ($data['detail_persentasediscount']) ? $data['detail_persentasediscount'][$i] : null,
                 'statusoli' => ($fetchFormat->kodepengeluaran == 'SPK') ? $data['detail_statusoli'][$i] : "",
                 "vulkanisirke" => ($data['detail_vulkanisirke']) ? $data['detail_vulkanisirke'][$i] : null,
                 "statusban" => ($data['detail_statusban']) ? $data['detail_statusban'][$i] : null,
@@ -866,7 +866,7 @@ class PengeluaranStokHeader extends MyModel
             ];
 
 
-            if (($ksgudang_id == 0 && ($pengeluaranstok_id != 1 && $pengeluaranstok_id != 5))|| ($pja->text == $data['pengeluaranstok_id'] )) {
+            if (($ksgudang_id == 0 && ($pengeluaranstok_id != 1 && $pengeluaranstok_id != 5)) || ($pja->text == $data['pengeluaranstok_id'])) {
 
                 $ksqty = $data['detail_qty'][$i] ?? 0;
                 $ksharga = $data['detail_harga'][$i] ?? 0;
@@ -941,9 +941,14 @@ class PengeluaranStokHeader extends MyModel
             $pengeluaranStokDetails[] = $pengeluaranStokDetail->toArray();
             $coadebet_detail[] = $memo['JURNAL'];
             $coakredit_detail[] = $memokredit['JURNAL'];
+            // $nominal_detail[] = $pengeluaranStokDetail->total;
+            // $summaryDetail += $pengeluaranStokDetail->total;
+            $keterangan_detail[] = $data['detail_keterangan'][$i] ?? 'PENGELUARAN STOK RETUR';
+
+            $pengeluaranStokDetail = PengeluaranStokDetail::where('id',$pengeluaranStokDetail->id)->first();
+            
             $nominal_detail[] = $pengeluaranStokDetail->total;
             $summaryDetail += $pengeluaranStokDetail->total;
-            $keterangan_detail[] = $data['detail_keterangan'][$i] ?? 'PENGELUARAN STOK RETUR';
         }
 
 
@@ -1143,7 +1148,7 @@ class PengeluaranStokHeader extends MyModel
 
                 $jurnalUmumHeader = (new JurnalUmumHeader())->processStore($jurnalRequest);
             }
-        } else if ($pja->text == $data['pengeluaranstok_id'] &&($pengeluaranStokHeader->bank_id != null)) {
+        } else if ($pja->text == $data['pengeluaranstok_id'] && ($pengeluaranStokHeader->bank_id != null)) {
             //jika potongkas                
             /*STORE PENERIMAANHEADER*/
             $coaKasMasuk = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))->select('memo')->where('grp', 'JURNAL PENJUALAN STOK AFKIR')->where('subgrp', 'KREDIT')->first();
@@ -1345,7 +1350,7 @@ class PengeluaranStokHeader extends MyModel
             $memo = json_decode($getCoaDebet->memo, true);
             $getCoaKredit = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'JURNAL RETUR POTONG HUTANG')->where('subgrp', 'KREDIT')->first();
             $memokredit = json_decode($getCoaKredit->memo, true);
-        } else if ($idpengeluaran == $pja->text ) {
+        } else if ($idpengeluaran == $pja->text) {
             $getCoaDebet = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'JURNAL PEMAKAIAN STOK')->where('subgrp', 'DEBET')->first();
             $memo = json_decode($getCoaDebet->memo, true);
             $getCoaKredit = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'JURNAL PENJUALAN STOK AFKIR')->where('subgrp', 'KREDIT')->first();
@@ -1391,9 +1396,9 @@ class PengeluaranStokHeader extends MyModel
                 "pengeluaranstokheader_id" => $pengeluaranStokHeader->id,
                 "nobukti" => $pengeluaranStokHeader->nobukti,
                 "stok_id" => $data['detail_stok_id'][$i],
-                "qty" => ($data['detail_qty'])?$data['detail_qty'][$i]:null,
-                "harga" => ($data['detail_harga'])?$data['detail_harga'][$i]:null,
-                "persentasediscount" => ($data['detail_persentasediscount'])?$data['detail_persentasediscount'][$i]:null,
+                "qty" => ($data['detail_qty']) ? $data['detail_qty'][$i] : null,
+                "harga" => ($data['detail_harga']) ? $data['detail_harga'][$i] : null,
+                "persentasediscount" => ($data['detail_persentasediscount']) ? $data['detail_persentasediscount'][$i] : null,
                 'statusoli' => ($fetchFormat->kodepengeluaran == 'SPK') ? $data['detail_statusoli'][$i] : "",
                 "vulkanisirke" => ($data['detail_vulkanisirke']) ? $data['detail_vulkanisirke'][$i] : null,
                 "statusban" => ($data['detail_statusban']) ? $data['detail_statusban'][$i] : null,
@@ -1404,11 +1409,12 @@ class PengeluaranStokHeader extends MyModel
                 "gudang_id" => ($gudang_id == null) ? "" : $gudang_id,
 
             ]);
+
             $pengeluaranStokDetails[] = $pengeluaranStokDetail->toArray();
             $coadebet_detail[] = $memo['JURNAL'];
             $coakredit_detail[] = $memokredit['JURNAL'];
-            $nominal_detail[] = $pengeluaranStokDetail->total;
-            $summaryDetail += $pengeluaranStokDetail->total;
+            // $nominal_detail[] = $pengeluaranStokDetail->total;
+            // $summaryDetail += $pengeluaranStokDetail->total;
             $keterangan_detail[] = $data['detail_keterangan'][$i] ?? 'PENGELUARAN STOK RETUR';
 
             $ksgudang_id = $gudang_id ?? 0;
@@ -1433,7 +1439,8 @@ class PengeluaranStokHeader extends MyModel
             ];
 
 
-            if ($ksgudang_id == 0 && ($pengeluaranstok_id != 1)|| ($pja->text == $data['pengeluaranstok_id'] )) {
+
+            if ($ksgudang_id == 0 && ($pengeluaranstok_id != 1) || ($pja->text == $data['pengeluaranstok_id'])) {
 
                 $ksqty = $data['detail_qty'][$i] ?? 0;
                 $ksharga = $data['detail_harga'][$i] ?? 0;
@@ -1464,9 +1471,16 @@ class PengeluaranStokHeader extends MyModel
             if ((($kor->text == $fetchFormat->id) && $data['gudang_id']) || ($kor->text != $fetchFormat->id && $pja->text != $fetchFormat->id && ($korv->id != $fetchFormat->id) && ($afkir->id != $fetchFormat->id))) {
                 (new PengeluaranStokDetailFifo())->processStore($pengeluaranStokHeader, $datadetailfifo);
             }
+            
+
+            $pengeluaranStokDetail = PengeluaranStokDetail::where('id',$pengeluaranStokDetail->id)->first();
+            
+            $nominal_detail[] = $pengeluaranStokDetail->total;
+            $summaryDetail += $pengeluaranStokDetail->total;
         }
 
 
+        // dd(PengeluaranStokDetail::where('nobukti',$pengeluaranStokHeader->nobukti)->get());
         /*STORE JURNAL*/
         $jurnalRequest = [
             'tanpaprosesnobukti' => 1,
@@ -1716,12 +1730,11 @@ class PengeluaranStokHeader extends MyModel
                 'bulanbeban' => null,
             ];
             $penerimaan = PenerimaanHeader::where('nobukti', $pengeluaranStokHeader->penerimaan_nobukti)->lockForUpdate()->first();
-            
+
             if (!$penerimaan) {
                 $penerimaanHeader = (new PenerimaanHeader())->processStore($penerimaanRequest);
                 $pengeluaranStokHeader->penerimaan_nobukti = $penerimaanHeader->nobukti;
-
-            }else{
+            } else {
                 $penerimaanHeader = (new PenerimaanHeader())->processUpdate($penerimaan, $penerimaanRequest);
             }
             $pengeluaranStokHeader->coa = $querysubgrppenerimaan->coa;
