@@ -509,10 +509,19 @@ class PenerimaanStokDetail extends MyModel
         if (!$stokpersediaangudang) {
             return false;
         }
-        $stokpersediaan = StokPersediaan::lockForUpdate()->find($stokpersediaangudang->id);
-        $result = $stokpersediaan->qty + $qty;
-        $stokpersediaan->update(['qty' => $result]);
-        return $stokpersediaan;
+
+        $stok = db::table('kartustok')->from(db::raw("kartustok a with (readuncommitted)"))
+        ->select(
+            db::raw("sum(isnull(qtymasuk,0)-isnull(qtykeluar,0)) as qty")
+        )
+        ->where("stok_id", $stokId)->where("$persediaan", $persediaanId)->first()
+        ->qty ?? 0;
+
+        // $stokpersediaan = StokPersediaan::lockForUpdate()->find($stokpersediaangudang->id);
+        // $result = $stokpersediaan->qty + $qty;
+        $result = $stok + $qty;
+        // $stokpersediaan->update(['qty' => $result]);
+        return $result;
     }
     public function persediaanKeReturn($stokId, $persediaan, $persediaanId, $qty)
     {
