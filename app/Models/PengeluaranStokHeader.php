@@ -945,8 +945,8 @@ class PengeluaranStokHeader extends MyModel
             // $summaryDetail += $pengeluaranStokDetail->total;
             $keterangan_detail[] = $data['detail_keterangan'][$i] ?? 'PENGELUARAN STOK RETUR';
 
-            $pengeluaranStokDetail = PengeluaranStokDetail::where('id',$pengeluaranStokDetail->id)->first();
-            
+            $pengeluaranStokDetail = PengeluaranStokDetail::where('id', $pengeluaranStokDetail->id)->first();
+
             $nominal_detail[] = $pengeluaranStokDetail->total;
             $summaryDetail += $pengeluaranStokDetail->total;
         }
@@ -1471,10 +1471,10 @@ class PengeluaranStokHeader extends MyModel
             if ((($kor->text == $fetchFormat->id) && $data['gudang_id']) || ($kor->text != $fetchFormat->id && $pja->text != $fetchFormat->id && ($korv->id != $fetchFormat->id) && ($afkir->id != $fetchFormat->id))) {
                 (new PengeluaranStokDetailFifo())->processStore($pengeluaranStokHeader, $datadetailfifo);
             }
-            
 
-            $pengeluaranStokDetail = PengeluaranStokDetail::where('id',$pengeluaranStokDetail->id)->first();
-            
+
+            $pengeluaranStokDetail = PengeluaranStokDetail::where('id', $pengeluaranStokDetail->id)->first();
+
             $nominal_detail[] = $pengeluaranStokDetail->total;
             $summaryDetail += $pengeluaranStokDetail->total;
         }
@@ -1748,7 +1748,7 @@ class PengeluaranStokHeader extends MyModel
 
         $pengeluaranStokHeaderLogTrail = (new LogTrail())->processStore([
             'namatabel' => strtoupper($pengeluaranStokHeader->getTable()),
-            'postingdari' => strtoupper('ENTRY penerimaan Stok Header'),
+            'postingdari' => strtoupper('ENTRY Pengeluaran Stok Header'),
             'idtrans' => $pengeluaranStokHeader->id,
             'nobuktitrans' => $pengeluaranStokHeader->nobukti,
             'aksi' => 'ENTRY',
@@ -1758,13 +1758,146 @@ class PengeluaranStokHeader extends MyModel
         //store logtrail detail
         (new LogTrail())->processStore([
             'namatabel' => strtoupper($pengeluaranStokDetail->getTable()),
-            'postingdari' => strtoupper('ENTRY penerimaan Stok Detail'),
+            'postingdari' => strtoupper('ENTRY Pengeluaran Stok Detail'),
             'idtrans' =>  $pengeluaranStokHeaderLogTrail->id,
             'nobuktitrans' => $pengeluaranStokHeader->nobukti,
             'aksi' => 'ENTRY',
             'datajson' => $pengeluaranStokDetails,
             'modifiedby' => auth('api')->user()->user,
         ]);
+
+        if ((($kor->text == $fetchFormat->id) && $data['gudang_id']) || ($kor->text != $fetchFormat->id && $pja->text != $fetchFormat->id && ($korv->id != $fetchFormat->id) && ($afkir->id != $fetchFormat->id))) {
+            $spk = db::table("parameter")->from(db::raw("parameter a with (readuncommitted)"))
+                ->select(
+                    'a.text'
+                )
+                ->where('a.grp', 'SPK STOK')
+                ->where('a.subgrp', 'SPK STOK')
+                ->first()->text ?? 0;
+
+            $queryspklainheader = db::table("pengeluaranstokheader")->from(db::raw("pengeluaranstokheader a with (readuncommitted)"))
+                ->select(
+                    'a.id',
+                    'a.nobukti',
+                    'a.pengeluaranstok_id',
+                    'a.gudang_id',
+                    'a.tglbukti',
+                    'a.modifiedby',
+                    'a.keterangan',
+                    'a.statusformat',
+                )
+                ->whereRaw("a.id>" . $pengeluaranStokHeader->id)
+                ->where('a.pengeluaranstok_id', $spk)
+                ->orderBy('a.id', 'asc')
+                ->get();
+
+                // dd($queryspklainheader);
+            $dataheaderspk = json_decode($queryspklainheader, true);
+            foreach ($dataheaderspk as $itemspkheader) {
+                // dd($itemspkheader['nobukti']);
+                $coadebet_detailreset = [];
+                $coakredit_detailreset = [];
+                $nominal_detailreset = [];
+                $keterangan_detailreset = [];
+                $pengeluaranStokDetailsreset = [];
+                $pengeluaranStokDetailFiforeset = PengeluaranStokDetailFifo::where('pengeluaranstokheader_id', $itemspkheader['id'])->lockForUpdate()->delete();
+                $kartuStokreset = KartuStok::where('nobukti', $itemspkheader['nobukti'])->lockForUpdate()->delete();
+        
+                $queryspklaindetail = db::table("pengeluaranstokdetail")->from(db::raw("pengeluaranstokdetail a with (readuncommitted)"))
+                    ->select(
+                        'a.qty',
+                        'a.stok_id',
+                        'a.keterangan',
+                        'a.harga',
+                        'a.id',
+                    )
+                    ->where("a.nobukti", $itemspkheader['nobukti'])
+                    ->orderBy('a.id', 'asc')
+                    ->get();
+                $datadetailspk = json_decode($queryspklaindetail, true);
+                foreach ($datadetailspk as $itemspkdetail) {
+                    $datadetailfiforeset = [
+                        "pengeluaranstokheader_id" => $itemspkheader['id'],
+                        "pengeluaranstok_id" => $itemspkheader['pengeluaranstok_id'],
+                        "nobukti" => $itemspkheader['nobukti'],
+                        "stok_id" => $itemspkdetail['stok_id'],
+                        "gudang_id" => $gudangkantor->text,
+                        "tglbukti" => $itemspkheader['tglbukti'],
+                        "qty" => $itemspkdetail['qty'],
+                        "modifiedby" => $itemspkheader['modifiedby'],
+                        "keterangan" => $itemspkheader['keterangan'] ?? '',
+                        "detail_keterangan" => $itemspkdetail['keterangan'] ?? '',
+                        "detail_harga" => $itemspkdetail['harga'] ?? '' ?? '',
+                        "statusformat" => $itemspkheader['statusformat'] ?? '',
+                    ];
+                    // dd($datadetailfiforeset);
+                    (new PengeluaranStokDetailFifo())->processStore($pengeluaranStokHeader, $datadetailfiforeset);
+                    $pengeluaranStokDetailreset = PengeluaranStokDetail::where('id', $itemspkdetail['id'])
+                    ->where('nobukti', $itemspkheader['nobukti'])
+                    ->first();
+
+                    $nominal_detailreset[] = $pengeluaranStokDetailreset->total;
+                    $coadebet_detailreset[] = $memo['JURNAL'];
+                    $coakredit_detailreset[] = $memokredit['JURNAL'];
+                    $keterangan_detailreset[] = $itemspkdetail['keterangan'] ?? 'PENGELUARAN STOK RETUR';
+                    $pengeluaranStokDetailsreset[] = $pengeluaranStokDetailreset->toArray();
+
+                }
+                $jurnalRequestreset = [
+                    'tanpaprosesnobukti' => 1,
+                    'nobukti' => $itemspkheader['nobukti'],
+                    'tglbukti' => $itemspkheader['tglbukti'],
+                    'postingdari' => "ENTRY Pengeluaran stok header",
+                    'statusapproval' => $statusApproval->id,
+                    'userapproval' => "",
+                    'tglapproval' => "",
+                    'modifiedby' => $itemspkheader['modifiedby'],
+                    'statusformat' => "0",
+                    'coakredit_detail' => $coakredit_detailreset,
+                    'coadebet_detail' => $coadebet_detailreset,
+                    'nominal_detail' => $nominal_detailreset,
+                    'keterangan_detail' => $keterangan_detailreset,
+                ];
+
+                $jurnalUmumHeaderreset = JurnalUmumHeader::where('nobukti', $itemspkheader['nobukti'])->lockForUpdate()->first();
+                if ($jurnalUmumHeaderreset != null) {
+                    $jurnalUmumHeaderreset = (new JurnalUmumHeader())->processUpdate($jurnalUmumHeaderreset, $jurnalRequestreset);
+                } else {
+                    $jurnalUmumHeaderreset = (new JurnalUmumHeader())->processStore($jurnalRequestreset);
+                }
+
+                $pengeluaranStokHeaderLogTrailReset = (new LogTrail())->processStore([
+                    'namatabel' => strtoupper($pengeluaranStokHeader->getTable()),
+                    'postingdari' => strtoupper('ENTRY Pengeluaran Stok Header'),
+                    'idtrans' => $itemspkheader['id'],
+                    'nobuktitrans' => $itemspkheader['nobukti'],
+                    'aksi' => 'ENTRY',
+                    'datajson' => $pengeluaranStokHeader->toArray(),
+                    'modifiedby' => auth('api')->user()->user
+                ]);
+                //store logtrail detail
+                (new LogTrail())->processStore([
+                    'namatabel' => strtoupper($pengeluaranStokDetail->getTable()),
+                    'postingdari' => strtoupper('ENTRY penerimaan Stok Detail'),
+                    'idtrans' =>  $pengeluaranStokHeaderLogTrailReset->id,
+                    'nobuktitrans' => $itemspkheader['nobukti'],
+                    'aksi' => 'ENTRY',
+                    'datajson' => $pengeluaranStokDetailsreset,
+                    'modifiedby' => auth('api')->user()->user,
+                ]);
+            }
+        }
+
+
+        // if (($kor->text != $fetchFormat->id)) {
+        //     $gudangkantor = Parameter::where('grp', 'GUDANG KANTOR')->where('subgrp', 'GUDANG KANTOR')->first();
+        //     $datadetailfifo['gudang_id'] = $gudangkantor->text;
+        // }
+
+        // //hanya pja dan koreksi yang tidak dari gudang yang tidak menggunakan fifo
+        // if ((($kor->text == $fetchFormat->id) && $data['gudang_id']) || ($kor->text != $fetchFormat->id && $pja->text != $fetchFormat->id && ($korv->id != $fetchFormat->id) && ($afkir->id != $fetchFormat->id))) {
+        //     (new PengeluaranStokDetailFifo())->processStore($pengeluaranStokHeader, $datadetailfifo);
+        // }
         return $pengeluaranStokHeader;
     }
 
