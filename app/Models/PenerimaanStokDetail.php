@@ -505,23 +505,23 @@ class PenerimaanStokDetail extends MyModel
 
     public function persediaanDariReturn($stokId, $persediaan, $persediaanId, $qty)
     {
-        $stokpersediaangudang = $this->checkTempat($stokId, $persediaan, $persediaanId); //stok persediaan 
-        if (!$stokpersediaangudang) {
-            return false;
-        }
+        // $stokpersediaangudang = $this->checkTempat($stokId, $persediaan, $persediaanId); //stok persediaan 
+        // if (!$stokpersediaangudang) {
+        //     return false;
+        // }
 
-        $stok = db::table('kartustok')->from(db::raw("kartustok a with (readuncommitted)"))
-        ->select(
-            db::raw("sum(isnull(qtymasuk,0)-isnull(qtykeluar,0)) as qty")
-        )
-        ->where("stok_id", $stokId)->where("$persediaan", $persediaanId)->first()
-        ->qty ?? 0;
+        // $stok = db::table('kartustok')->from(db::raw("kartustok a with (readuncommitted)"))
+        // ->select(
+        //     db::raw("sum(isnull(qtymasuk,0)-isnull(qtykeluar,0)) as qty")
+        // )
+        // ->where("stok_id", $stokId)->where("$persediaan", $persediaanId)->first()
+        // ->qty ?? 0;
 
-        // $stokpersediaan = StokPersediaan::lockForUpdate()->find($stokpersediaangudang->id);
-        // $result = $stokpersediaan->qty + $qty;
-        $result = $stok + $qty;
-        // $stokpersediaan->update(['qty' => $result]);
-        return $result;
+        // // $stokpersediaan = StokPersediaan::lockForUpdate()->find($stokpersediaangudang->id);
+        // // $result = $stokpersediaan->qty + $qty;
+        // $result = $stok + $qty;
+        // // $stokpersediaan->update(['qty' => $result]);
+        return true;
     }
     public function persediaanKeReturn($stokId, $persediaan, $persediaanId, $qty)
     {
