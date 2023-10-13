@@ -272,6 +272,7 @@ class Stok extends MyModel
             unset($row['judul']);
             unset($row['tglcetak']);
             unset($row['usercetak']);
+            unset($row['statusreuse']);
             DB::table($temtabel)->insert($row);
         }
 
