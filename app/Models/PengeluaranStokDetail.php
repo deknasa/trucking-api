@@ -290,7 +290,7 @@ class PengeluaranStokDetail extends MyModel
                 $dari = $this->persediaanDari($data['stok_id'], 'gudang_id', $gudangkantor->text, $data['qty']);
             }
             if (!$dari) {
-                throw ValidationException::withMessages(['qty' => 'qty tidak cukup']);
+                throw ValidationException::withMessages(['qty' => $stok->namastok.' - qty tidak cukup ']);
             }
             // if (($pengeluaranStokHeader->pengeluaranstok_id != $spk->text) || ($pengeluaranStokHeader->pengeluaranstok_id != $gst->text)) {
             //     if (!$reuse) {
