@@ -676,6 +676,7 @@ class PenerimaanStokHeader extends MyModel
 
         $datahitungstok = PenerimaanStok::select('statushitungstok as statushitungstok_id')->where('format', '=', $statusformat)->first();
         $statushitungstok = Parameter::where('grp', 'STATUS HITUNG STOK')->where('text', 'HITUNG STOK')->first();
+        $statusApproval = Parameter::where('grp', 'STATUS APPROVAL')->where('text', 'NON APPROVAL')->first();
 
         if ($data['penerimaanstok_id'] == $spb->text) {
             $gudangkantor = Parameter::where('grp', 'GUDANG KANTOR')->where('subgrp', 'GUDANG KANTOR')->first();
@@ -814,6 +815,11 @@ class PenerimaanStokHeader extends MyModel
         $detaildata = [];
         $tgljatuhtempo = [];
         $keterangan_detail = [];
+
+        $coadebet_detail = [];
+        $coakredit_detail = [];
+        $nominal_detail = [];
+
         for ($i = 0; $i < count($data['detail_harga']); $i++) {
             $ksqty = $data['detail_qty'][$i] ?? 0;
             $ksnilai = $data['totalItem'][$i] ?? 0;
@@ -897,6 +903,36 @@ class PenerimaanStokHeader extends MyModel
                 ];
 
                 (new PenerimaanStokDetailFifo())->processStore($penerimaanStokHeader, $datadetailfifo);
+
+                $getCoaDebet = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'JURNAL PEMAKAIAN STOK')->where('subgrp', 'DEBET')->first();
+                $memo = json_decode($getCoaDebet->memo, true);
+                $getCoaKredit = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'JURNAL PEMAKAIAN STOK')->where('subgrp', 'KREDIT')->first();
+                $memokredit = json_decode($getCoaKredit->memo, true);
+                
+                $coadebet_detail[] = $memo['JURNAL'];
+                $coakredit_detail[] = $memokredit['JURNAL'];
+                $nominal_detail[] = $penerimaanStokDetail->total;
+    
+
+                
+
+                $jurnalRequest = [
+                    'tanpaprosesnobukti' => 1,
+                    'nobukti' => $penerimaanStokHeader->nobukti,
+                    'tglbukti' => date('Y-m-d', strtotime($data['tglbukti'])),
+                    'postingdari' => "ENTRY Penerimaan Stok Header",
+                    'statusapproval' => $statusApproval->id,
+                    'userapproval' => "",
+                    'tglapproval' => "",
+                    'modifiedby' => auth('api')->user()->name,
+                    'statusformat' => "0",
+                    'coakredit_detail' => $coakredit_detail,
+                    'coadebet_detail' => $coadebet_detail,
+                    'nominal_detail' => $nominal_detail,
+                    'keterangan_detail' => $keterangan_detail
+                ]; 
+                
+                $jurnalUmumHeader = (new JurnalUmumHeader())->processStore($jurnalRequest);                
             }
 
 
@@ -1021,9 +1057,14 @@ class PenerimaanStokHeader extends MyModel
         $pspk = Parameter::where('grp', 'PSPK STOK')->where('subgrp', 'PSPK STOK')->first();
         $korv = DB::table('penerimaanstok')->where('kodepenerimaan', 'KORV')->first();
         $spbp = DB::table('penerimaanstok')->where('kodepenerimaan', 'SPBP')->first();
+        $gudangkantor =  Parameter::where('grp', 'GUDANG KANTOR')->where('subgrp', 'GUDANG KANTOR')->first()->text;
+        $gudangsementara =  Parameter::where('grp', 'GUDANG SEMENTARA')->where('subgrp', 'GUDANG SEMENTARA')->first()->text;
+
 
         $datahitungstok = PenerimaanStok::select('statushitungstok as statushitungstok_id')->where('format', '=', $statusformat)->first();
         $statushitungstok = Parameter::where('grp', 'STATUS HITUNG STOK')->where('text', 'HITUNG STOK')->first();
+        $statusApproval = Parameter::where('grp', 'STATUS APPROVAL')->where('text', 'NON APPROVAL')->first();
+
 
         if ($data['penerimaanstok_id'] == $spb->text) {
             $gudangkantor = Parameter::where('grp', 'GUDANG KANTOR')->where('subgrp', 'GUDANG KANTOR')->first();
@@ -1121,6 +1162,7 @@ class PenerimaanStokHeader extends MyModel
         $penerimaanStokDetail = PenerimaanStokDetail::where('penerimaanstokheader_id', $penerimaanStokHeader->id)->lockForUpdate()->delete();
         $kartuStok = kartuStok::where('nobukti', $penerimaanStokHeader->nobukti)->lockForUpdate()->delete();
         $PenambahanNilai = PenerimaanStokPenambahanNilai::where('penerimaanstokheader_id', $penerimaanStokHeader->id)->lockForUpdate()->delete();
+        $penerimaanStokDetailFifo = PenerimaanStokDetailFifo::where('penerimaanstokheader_id', $penerimaanStokHeader->id)->lockForUpdate()->delete();
 
         /*STORE DETAIL*/
         $penerimaanStokDetails = [];
@@ -1176,7 +1218,10 @@ class PenerimaanStokHeader extends MyModel
             $keluargandengan_id = $gandengandari_id ?? 0;
         }
 
-
+        $coadebet_detail = [];
+        $coakredit_detail = [];
+        $nominal_detail = [];
+        $keterangan_detail = [];
 
         for ($i = 0; $i < count($data['detail_harga']); $i++) {
 
@@ -1196,6 +1241,10 @@ class PenerimaanStokHeader extends MyModel
                 "detail_keterangan" => $data['detail_keterangan'][$i],
                 "detail_penerimaanstoknobukti" => $data['detail_penerimaanstoknobukti'][$i],
             ]);
+
+ 
+            $keterangan_detail[] = $data['detail_keterangan'][$i] ?? 'PENERIMAAN STOK HEADER';
+
 
             if ($penerimaanstok_id != 2 && $penerimaanstok_id != 10  && $penerimaanstok_id != 11) {
                 if ($masukgudang_id != 0 || $masuktrado_id != 0  || $masukgandengan_id != 0) {
@@ -1244,6 +1293,66 @@ class PenerimaanStokHeader extends MyModel
                     "penerimaanstok_nobukti" => $penerimaanStokHeader->penerimaanstok_nobukti,
                 ]);
             }
+
+            if (($gudangdari_id == $gudangkantor) && ($gudangke_id == $gudangsementara)) {
+
+                $datadetailfifo = [
+                    "penerimaanstokheader_id" => $penerimaanStokHeader->id,
+                    "penerimaanstok_id" => $data['penerimaanstok_id'],
+                    "nobukti" => $penerimaanStokHeader->nobukti,
+                    "stok_id" => $data['detail_stok_id'][$i],
+                    "gudang_id" => $gudangdari_id,
+                    "tglbukti" => $data['tglbukti'],
+                    "qty" => $data['detail_qty'][$i],
+                    "modifiedby" => auth('api')->user()->name,
+                    "keterangan" => $data['keterangan'] ?? '',
+                    "detail_keterangan" => $data['detail_keterangan'][$i] ?? '',
+                    "statusformat" => $statusformat,
+                ];
+
+                (new PenerimaanStokDetailFifo())->processStore($penerimaanStokHeader, $datadetailfifo);
+
+                $getCoaDebet = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'JURNAL PEMAKAIAN STOK')->where('subgrp', 'DEBET')->first();
+                $memo = json_decode($getCoaDebet->memo, true);
+                $getCoaKredit = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'JURNAL PEMAKAIAN STOK')->where('subgrp', 'KREDIT')->first();
+                $memokredit = json_decode($getCoaKredit->memo, true);
+                
+                $coadebet_detail[] = $memo['JURNAL'];
+                $coakredit_detail[] = $memokredit['JURNAL'];
+                $nominal_detail[] = $penerimaanStokDetail->total;
+    
+
+                
+
+                $jurnalRequest = [
+                    'tanpaprosesnobukti' => 1,
+                    'nobukti' => $penerimaanStokHeader->nobukti,
+                    'tglbukti' => date('Y-m-d', strtotime($data['tglbukti'])),
+                    'postingdari' => "ENTRY Penerimaan Stok Header",
+                    'statusapproval' => $statusApproval->id,
+                    'userapproval' => "",
+                    'tglapproval' => "",
+                    'modifiedby' => auth('api')->user()->name,
+                    'statusformat' => "0",
+                    'coakredit_detail' => $coakredit_detail,
+                    'coadebet_detail' => $coadebet_detail,
+                    'nominal_detail' => $nominal_detail,
+                    'keterangan_detail' => $keterangan_detail
+                ]; 
+
+                
+                $jurnalUmumHeader = JurnalUmumHeader::where('nobukti', $penerimaanStokHeader->nobukti)->lockForUpdate()->first();
+
+                if ($jurnalUmumHeader != null) {
+
+                    $jurnalUmumHeader = (new JurnalUmumHeader())->processUpdate($jurnalUmumHeader, $jurnalRequest);
+                } else {
+                    $jurnalUmumHeader = (new JurnalUmumHeader())->processStore($jurnalRequest);
+                }                
+                
+
+            }
+
 
             if ($data['penerimaanstok_id'] == $spb->text || $data['penerimaanstok_id'] == $spbs->text) {
                 // $totalsat = ($data['detail_qty'][$i] * $data['detail_harga'][$i]);
@@ -1345,6 +1454,11 @@ class PenerimaanStokHeader extends MyModel
         if ($penerimaanStokHeader->penerimaanstok_id == $korv->id) {
             (new PenerimaanStokDetail())->returnVulkanisir($penerimaanStokHeader->id);
         }
+
+        $jurnalUmumHeader = JurnalUmumHeader::where('nobukti', $penerimaanStokHeader->nobukti)->lockForUpdate()->first();
+        if ($jurnalUmumHeader) {
+            (new JurnalUmumHeader())->processDestroy($jurnalUmumHeader->id);
+        }
         /*DELETE EXISTING DETAIL*/
         $penerimaanStokDetail = PenerimaanStokDetail::where('penerimaanstokheader_id', $penerimaanStokHeader->id)->lockForUpdate()->delete();
         $PenambahanNilai = PenerimaanStokPenambahanNilai::where('penerimaanstokheader_id', $penerimaanStokHeader->id)->lockForUpdate()->delete();
@@ -1363,6 +1477,7 @@ class PenerimaanStokHeader extends MyModel
         //delete kartu stok
         // (new KartuStok())->processDestroy($penerimaanStokHeader->nobukti);
         $kartuStok = kartuStok::where('nobukti', $penerimaanStokHeader->nobukti)->lockForUpdate()->delete();
+        $penerimaanStokDetailFifo = PenerimaanStokDetailFifo::where('penerimaanstokheader_id', $penerimaanStokHeader->id)->lockForUpdate()->delete();
 
 
         $penerimaanStokHeader = $penerimaanStokHeader->lockAndDestroy($id);
