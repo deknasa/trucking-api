@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests;
 
+use App\Rules\validasiNominalDetail;
 use Illuminate\Foundation\Http\FormRequest;
 
 class StorePengeluaranDetailRequest extends FormRequest
@@ -28,7 +29,7 @@ class StorePengeluaranDetailRequest extends FormRequest
             'tgljatuhtempo' => 'required|array',
             'tgljatuhtempo.*' => 'required|date_format:d-m-Y',
             'nominal_detail' => 'required|array',
-            'nominal_detail.*' => 'required|numeric|gt:0',
+            'nominal_detail.*' => ['required', 'numeric', new validasiNominalDetail()],
             'ketcoadebet' => 'required|array',
             'ketcoadebet.*' => 'required',
             'keterangan_detail' => 'required|array',

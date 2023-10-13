@@ -9,6 +9,7 @@ use App\Rules\ExistBank;
 use App\Rules\ExistAlatBayar;
 use App\Rules\ValidasiBankList;
 use App\Models\AlatBayar;
+use App\Rules\ValidasiTotalDetail;
 
 class StorePengeluaranHeaderRequest extends FormRequest
 {
@@ -68,6 +69,7 @@ class StorePengeluaranHeaderRequest extends FormRequest
                 'bank' => [
                     new ExistBank(),
                     new ValidasiBankList($kondisialatbayar),
+                    new ValidasiTotalDetail()
                 ]
             ];
         } else if ($bank_id != null) {
@@ -88,6 +90,7 @@ class StorePengeluaranHeaderRequest extends FormRequest
                         'bank' => [
                             'required',
                             new ExistBank(),
+                            new ValidasiTotalDetail()
                         ]
                     ];
                 }

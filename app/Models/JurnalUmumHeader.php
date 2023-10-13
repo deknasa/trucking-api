@@ -437,7 +437,7 @@ class JurnalUmumHeader extends MyModel
                     $jurnalUmumDetail = (new JurnalUmumDetail())->processStore($jurnalUmumHeader, [
                         'tglbukti' => (str_contains($jurnalUmumHeader->nobukti, 'EBS')) ? date('Y-m-d', strtotime($data['tglbukti_detail'][$i])) : $jurnalUmumHeader->tglbukti,
                         'coa' => $data['coakredit_detail'][$i],
-                        'nominal' => '-' . $data['nominal_detail'][$i],
+                        'nominal' => $data['nominal_detail'][$i] * -1,
                         'keterangan' => $data['keterangan_detail'][$i],
                         'baris' => $i,
                     ]);
@@ -452,7 +452,7 @@ class JurnalUmumHeader extends MyModel
                     $jurnalUmumDetail = (new JurnalUmumDetail())->processStore($jurnalUmumHeader, [
                         'tglbukti' => (str_contains($jurnalUmumHeader->nobukti, 'EBS')) ? date('Y-m-d', strtotime($data['tglbukti_detail'][$i])) : $jurnalUmumHeader->tglbukti,
                         'coa' => $data['coadebet_detail'][$i],
-                        'nominal' => $data['nominal_detail'][$i],
+                        'nominal' => $data['nominal_detail'][$i] * 1,
                         'keterangan' => $data['keterangan_detail'][$i],
                         'baris' => $i,
                     ]);
@@ -556,7 +556,7 @@ class JurnalUmumHeader extends MyModel
                     $jurnalUmumDetail = (new JurnalUmumDetail())->processStore($jurnalUmumHeader, [
                         'tglbukti' => (str_contains($jurnalUmumHeader->nobukti, 'EBS')) ? date('Y-m-d', strtotime($data['tglbukti_detail'][$i])) : $jurnalUmumHeader->tglbukti,
                         'coa' => $data['coakredit_detail'][$i],
-                        'nominal' => '-' . $data['nominal_detail'][$i],
+                        'nominal' => $data['nominal_detail'][$i] * -1,
                         'keterangan' => $data['keterangan_detail'][$i],
                         'baris' => $i,
                     ]);
@@ -564,7 +564,7 @@ class JurnalUmumHeader extends MyModel
                     $jurnalUmumDetail = (new JurnalUmumDetail())->processStore($jurnalUmumHeader, [
                         'tglbukti' => (str_contains($jurnalUmumHeader->nobukti, 'EBS')) ? date('Y-m-d', strtotime($data['tglbukti_detail'][$i])) : $jurnalUmumHeader->tglbukti,
                         'coa' => $data['coadebet_detail'][$i],
-                        'nominal' => $data['nominal_detail'][$i],
+                        'nominal' => $data['nominal_detail'][$i] * 1,
                         'keterangan' => $data['keterangan_detail'][$i],
                         'baris' => $i,
                     ]);

@@ -9,6 +9,7 @@ use App\Rules\ExistBank;
 use App\Rules\ExistAlatBayar;
 use App\Rules\ValidasiBankList;
 use App\Models\AlatBayar;
+use App\Rules\ValidasiTotalDetail;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Validation\Rule;
@@ -88,6 +89,7 @@ class UpdatePengeluaranHeaderRequest extends FormRequest
                     new ExistBank(),
                     new ValidasiBankList($kondisialatbayar),
                     Rule::in($query->bank),
+                    new ValidasiTotalDetail()
                 ],
                 'bank_id' => [
                     'required',
@@ -117,6 +119,7 @@ class UpdatePengeluaranHeaderRequest extends FormRequest
                         'bank' => [
                             'required',
                             new ExistBank(),
+                            new ValidasiTotalDetail()
                         ]
                     ];
                 }
