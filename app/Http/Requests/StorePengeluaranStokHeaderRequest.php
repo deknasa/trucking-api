@@ -124,7 +124,7 @@ class StorePengeluaranStokHeaderRequest extends FormRequest
         if($afkir->id == request()->pengeluaranstok_id) {
             $afkirRules = [
                 'pengeluarantrucking_nobukti' => function ($attribute, $value, $fail){
-                    if(request()->detail_vulkanisirke[0] > 3){
+                    if(request()->detail_vulkanisirke[0] < 3){
                         $fail('pengeluaran trucking '.app(ErrorController::class)->geterror('WI')->keterangan);
                     }
                 }  

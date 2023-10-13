@@ -815,11 +815,11 @@ class PengeluaranStokHeader extends MyModel
             if ($afkir->id == $data['pengeluaranstok_id']) {
                 if ($pengeluarantrucking_nobukti == '') {
                     // $kartustok = KartuStok::getlaporan(date('Y-m-d',strtotime(request()->tgldariheader)), date('Y-m-d',strtotime(request()->tglsampaiheader)),$data['detail_stok_id'][$i], $data['detail_stok_id'][$i], $data['gudang_id'], 0,0, 'GUDANG');
-                    $ks = KartuStok::select('stok_id', DB::raw('SUM(qtymasuk) - SUM(qtykeluar) AS qty'))
-                    ->where('stok_id',$data['detail_stok_id'][$i])
-                    ->groupBy('stok_id')
-                    ->first();
-                    $data['detail_qty'][$i] = $ks->qty;
+                    // $ks = KartuStok::select('stok_id', DB::raw('SUM(qtymasuk) - SUM(qtykeluar) AS qty'))
+                    // ->where('stok_id',$data['detail_stok_id'][$i])
+                    // ->groupBy('stok_id')
+                    // ->first();
+                    $data['detail_qty'][$i] = 0;
                 }
             }
             $pengeluaranStokDetail = (new PengeluaranStokDetail())->processStore($pengeluaranStokHeader, [
@@ -862,7 +862,7 @@ class PengeluaranStokHeader extends MyModel
             ];
 
 
-            if (($ksgudang_id == 0 && ($pengeluaranstok_id != 1 && $pengeluaranstok_id != 5))|| ($pja->text == $data['pengeluaranstok_id'] ||$afkir->id == $data['pengeluaranstok_id'])) {
+            if (($ksgudang_id == 0 && ($pengeluaranstok_id != 1 && $pengeluaranstok_id != 5))|| ($pja->text == $data['pengeluaranstok_id'] )) {
 
                 $ksqty = $data['detail_qty'][$i] ?? 0;
                 $ksharga = $data['detail_harga'][$i] ?? 0;
@@ -1371,11 +1371,11 @@ class PengeluaranStokHeader extends MyModel
             if ($afkir->id == $data['pengeluaranstok_id']) {
                 if ($pengeluarantrucking_nobukti == '') {
                     // $kartustok = KartuStok::getlaporan(date('Y-m-d',strtotime(request()->tgldariheader)), date('Y-m-d',strtotime(request()->tglsampaiheader)),$data['detail_stok_id'][$i], $data['detail_stok_id'][$i], $data['gudang_id'], 0,0, 'GUDANG');
-                    $ks = KartuStok::select('stok_id', DB::raw('SUM(qtymasuk) - SUM(qtykeluar) AS qty'))
-                    ->where('stok_id',$data['detail_stok_id'][$i])
-                    ->groupBy('stok_id')
-                    ->first();
-                    $data['detail_qty'][$i] = $ks->qty;
+                    // $ks = KartuStok::select('stok_id', DB::raw('SUM(qtymasuk) - SUM(qtykeluar) AS qty'))
+                    // ->where('stok_id',$data['detail_stok_id'][$i])
+                    // ->groupBy('stok_id')
+                    // ->first();
+                    $data['detail_qty'][$i] = 0;
                 }
             }
 
@@ -1425,7 +1425,7 @@ class PengeluaranStokHeader extends MyModel
             ];
 
 
-            if ($ksgudang_id == 0 && ($pengeluaranstok_id != 1)|| ($pja->text == $data['pengeluaranstok_id'] ||$afkir->id == $data['pengeluaranstok_id'])) {
+            if ($ksgudang_id == 0 && ($pengeluaranstok_id != 1)|| ($pja->text == $data['pengeluaranstok_id'] )) {
 
                 $ksqty = $data['detail_qty'][$i] ?? 0;
                 $ksharga = $data['detail_harga'][$i] ?? 0;
