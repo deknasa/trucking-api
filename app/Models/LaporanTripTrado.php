@@ -51,7 +51,8 @@ class LaporanTripTrado extends MyModel
 
         $statusContainer3 = StatusContainer::where('kodestatuscontainer', '=', 'FULL EMPTY')->first();
 
-        $kotaPort = Kota::where('kodekota', '=', 'BELAWAN')->first();
+        $getPelabuhan = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'PELABUHAN CABANG')->where('subgrp', 'PELABUHAN CABANG')->first();
+        $kotaPort = Kota::where('id', $getPelabuhan->text)->first();
 
         $full_id = $statusContainer1->id;
         $empty_id = $statusContainer2->id;
@@ -203,6 +204,11 @@ class LaporanTripTrado extends MyModel
         ->where('grp', 'DIPERIKSA')
         ->where('subgrp', 'DIPERIKSA')->first()->text ?? '';
 
+        $getJudul = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))
+            ->select('text')
+            ->where('grp', 'JUDULAN LAPORAN')
+            ->where('subgrp', 'JUDULAN LAPORAN')
+            ->first();
 
         $result = DB::table("trado")->from(
             DB::raw("trado as a with (readuncommitted)")
@@ -216,6 +222,10 @@ class LaporanTripTrado extends MyModel
                 DB::raw("isnull(D.[empty], 0) as [emptyport]"),
                 db::raw("'" . $disetujui . "' as disetujui"),
                 db::raw("'" . $diperiksa . "' as diperiksa"),
+                DB::raw("'Laporan Trip Trado' as judulLaporan"),
+                DB::raw("'" . $getJudul->text . "' as judul"),
+                DB::raw("'Tgl Cetak:'+format(getdate(),'dd-MM-yyyy HH:mm:ss')as tglcetak"),
+                DB::raw(" 'User :" . auth('api')->user()->name . "' as usercetak")
 
             )
            ->leftJoin(DB::raw("supir as b with (readuncommitted)"), 'a.supir_id', 'b.id')

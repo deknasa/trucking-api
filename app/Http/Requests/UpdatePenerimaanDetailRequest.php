@@ -7,6 +7,7 @@ use App\Rules\BankPelangganIdPenerimaanDetail;
 use App\Rules\BankPelangganPenerimaanDetail;
 use App\Rules\CoaKreditPenerimaanDetail;
 use App\Rules\ExistBankPelangganPenerimaanDetail;
+use App\Rules\validasiNominalDetail;
 use Illuminate\Foundation\Http\FormRequest;
 
 class UpdatePenerimaanDetailRequest extends FormRequest
@@ -32,7 +33,7 @@ class UpdatePenerimaanDetailRequest extends FormRequest
             'ketcoakredit.*' => 'required',
             'coakredit.*' =>  [new CoaKreditPenerimaanDetail, new AkunPusatPenerimaanDetail()],
             'tgljatuhtempo.*' => ['required','date_format:d-m-Y','after_or_equal:'.request()->tglbukti],
-            'nominal_detail.*' => 'required|numeric|gt:0',
+            'nominal_detail.*' => ['required', 'numeric', new validasiNominalDetail()],
             'keterangan_detail.*' => 'required',
             'bankpelanggan.*' => [new BankPelangganPenerimaanDetail()],
             'bankpelanggan_id.*' => [new BankPelangganIdPenerimaanDetail(), new ExistBankPelangganPenerimaanDetail()]

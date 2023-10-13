@@ -8,6 +8,7 @@ use Illuminate\Foundation\Http\FormRequest;
 use App\Rules\DateTutupBuku;
 use App\Rules\DestroyPenerimaan;
 use App\Rules\ExistPelanggan;
+use App\Rules\ValidasiTotalDetail;
 use Illuminate\Validation\Rule;
 
 class UpdatePenerimaanHeaderRequest extends FormRequest
@@ -53,7 +54,7 @@ class UpdatePenerimaanHeaderRequest extends FormRequest
                 new DateTutupBuku()
             ],
             'tgllunas'  => ['required','before_or_equal:'.date('d-m-Y'),],
-            'bank'   => 'required',
+            'bank'   => ['required', new ValidasiTotalDetail()],
             'bank_id' => ['required', Rule::in($getDataPenerimaan->bank_id)]
         ];
         $relatedRequests = [

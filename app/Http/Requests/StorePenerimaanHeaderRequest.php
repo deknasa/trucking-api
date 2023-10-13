@@ -7,6 +7,7 @@ use Illuminate\Foundation\Http\FormRequest;
 use App\Rules\DateTutupBuku;
 use App\Rules\ExistBank;
 use App\Rules\ExistPelanggan;
+use App\Rules\ValidasiTotalDetail;
 
 class StorePenerimaanHeaderRequest extends FormRequest
 {
@@ -67,7 +68,7 @@ class StorePenerimaanHeaderRequest extends FormRequest
             ],
             // 'cabang' => 'required',
             // 'statuskas' => 'required',
-            'bank'   => 'required',
+            'bank'   => ['required', new ValidasiTotalDetail()],
             // 'noresi' => 'required'
         ];
         $relatedRequests = [
