@@ -123,7 +123,7 @@ class StorePengeluaranStokHeaderRequest extends FormRequest
         $afkirRules = [];
         if($afkir->id == request()->pengeluaranstok_id) {
             $afkirRules = [
-                'pengeluarantrucking_nobukti' => Rule::requiredIf(request()->detail_vulkanisirke[0] < 3)
+                'pengeluarantrucking_nobukti' => Rule::requiredIf(request()->detail_vulkanisirke[0] < 2)
                 
                
             ];

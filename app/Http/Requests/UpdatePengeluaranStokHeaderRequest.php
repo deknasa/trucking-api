@@ -117,7 +117,7 @@ class UpdatePengeluaranStokHeaderRequest extends FormRequest
                 //         $fail('pengeluaran trucking '.app(ErrorController::class)->geterror('WI')->keterangan);
                 //     }
                 // }  
-                'pengeluarantrucking_nobukti' => Rule::requiredIf(request()->detail_vulkanisirke[0] < 3)
+                'pengeluarantrucking_nobukti' => Rule::requiredIf(request()->detail_vulkanisirke[0] < 2)
 
             ];
         }
