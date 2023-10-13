@@ -108,6 +108,18 @@ class UpdatePengeluaranStokHeaderRequest extends FormRequest
                 $returRules = array_merge($returRules,["penerimaanstok_nobukti"=>'required']);
             }
         }
+
+        $afkirRules = [];
+        if($afkir->id == request()->pengeluaranstok_id) {
+            $afkirRules = [
+                'pengeluarantrucking_nobukti' => function ($attribute, $value, $fail){
+                    if(request()->detail_vulkanisirke[0] < 3){
+                        $fail('pengeluaran trucking '.app(ErrorController::class)->geterror('WI')->keterangan);
+                    }
+                }  
+            ];
+        }
+
         $rules = array_merge($rules, $gudangTradoGandengan,$returRules,$spkRules);
         
         $relatedRequests = [
