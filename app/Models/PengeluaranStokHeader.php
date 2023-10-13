@@ -819,6 +819,10 @@ class PengeluaranStokHeader extends MyModel
                     // ->where('stok_id',$data['detail_stok_id'][$i])
                     // ->groupBy('stok_id')
                     // ->first();
+                    $statusafkir = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS KONDISI BAN')->where('subgrp', 'STATUS KONDISI BAN')->where('text', 'AFKIR')->first();
+                    $stok = (new Stok())->find($data['detail_stok_id'][$i]);
+                    $stok->statusban = $statusafkir->id;
+                    $stok->save();
                     $data['detail_qty'][$i] = 0;
                 }
             }
@@ -1375,6 +1379,10 @@ class PengeluaranStokHeader extends MyModel
                     // ->where('stok_id',$data['detail_stok_id'][$i])
                     // ->groupBy('stok_id')
                     // ->first();
+                    $statusafkir = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUS KONDISI BAN')->where('subgrp', 'STATUS KONDISI BAN')->where('text', 'AFKIR')->first();
+                    $stok = (new Stok())->find($data['detail_stok_id'][$i]);
+                    $stok->statusban = $statusafkir->id;
+                    $stok->save();
                     $data['detail_qty'][$i] = 0;
                 }
             }
