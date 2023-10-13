@@ -36,7 +36,7 @@ class UpdatePengeluaranStokHeaderRequest extends FormRequest
         $kor = DB::table('parameter')->where('grp', 'KOR MINUS STOK')->where('subgrp', 'KOR MINUS STOK')->first();
         $reuse = DB::table('parameter')->where('grp', 'STATUS REUSE')->where('text', 'REUSE')->first();
         $korv = DB::table('pengeluaranstok')->where('kodepengeluaran', 'KORV')->first();
-        
+        $afkir = DB::table('pengeluaranstok')->where('kodepengeluaran', 'AFKIR')->first();
         
         $rules = [
             'id' => [new ValidasiDestroyPengeluaranStokHeader ()],
