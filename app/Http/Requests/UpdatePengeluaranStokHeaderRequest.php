@@ -112,11 +112,13 @@ class UpdatePengeluaranStokHeaderRequest extends FormRequest
         $afkirRules = [];
         if($afkir->id == request()->pengeluaranstok_id) {
             $afkirRules = [
-                'pengeluarantrucking_nobukti' => function ($attribute, $value, $fail){
-                    if(request()->detail_vulkanisirke[0] < 3){
-                        $fail('pengeluaran trucking '.app(ErrorController::class)->geterror('WI')->keterangan);
-                    }
-                }  
+                // 'pengeluarantrucking_nobukti' => function ($attribute, $value, $fail){
+                //     if(request()->detail_vulkanisirke[0] < 3){
+                //         $fail('pengeluaran trucking '.app(ErrorController::class)->geterror('WI')->keterangan);
+                //     }
+                // }  
+                'pengeluarantrucking_nobukti' => Rule::requiredIf(request()->detail_vulkanisirke[0] < 3)
+
             ];
         }
 
