@@ -224,7 +224,9 @@ class PengeluaranStokDetailFifo extends MyModel
 
                     $zqty = $qty ?? 0;
                     $zharga = $querysisa->harga ?? 0;
-                    $atotalharga = $atotalharga + ($zqty * $zharga);
+                    // $atotalharga = $atotalharga + ($zqty * $zharga);
+                    $atotalharga = $atotalharga + ($zqty * ($belitotal / $beliqty));
+
 
                     // 
                     $ksqty = $qty ?? 0;
@@ -321,7 +323,8 @@ class PengeluaranStokDetailFifo extends MyModel
 
                     $zqty = $qtysisa ?? 0;
                     $zharga = $querysisa->harga ?? 0;
-                    $atotalharga = $atotalharga + ($zqty * $zharga);
+                    // $atotalharga = $atotalharga + ($zqty * $zharga);
+                    $atotalharga = $atotalharga + ($zqty * ($belitotal / $beliqty));
 
                     // 
                     $ksqty = $qtysisa ?? 0;
