@@ -219,7 +219,11 @@ class LaporanUangJalan extends MyModel
         ->select('text')
         ->where('grp', 'DIPERIKSA')
         ->where('subgrp', 'DIPERIKSA')->first()->text ?? '';
-
+        $getJudul = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))
+        ->select('text')
+        ->where('grp', 'JUDULAN LAPORAN')
+        ->where('subgrp', 'JUDULAN LAPORAN')
+        ->first();
         $select_Tempkembali2 = DB::table($Tempambil . ' AS a')
         ->select([
             'c.namasupir',
@@ -230,6 +234,10 @@ class LaporanUangJalan extends MyModel
             'b.nominal AS nominalkembali',
             db::raw("'" . $disetujui . "' as disetujui"),
             db::raw("'" . $diperiksa . "' as diperiksa"),
+            DB::raw("'LAPORAN UANG JALAN' as judulLaporan"),
+            DB::raw("'" . $getJudul->text . "' as judul"),
+            DB::raw("'Tgl Cetak:'+format(getdate(),'dd-MM-yyyy HH:mm:ss')as tglcetak"),
+            DB::raw(" 'User :" . auth('api')->user()->name . "' as usercetak")
         ])
         ->leftJoin($Tempkembali . ' AS b', function ($join) {
             $join->on('a.tgl', '=', 'b.tgl')
@@ -384,7 +392,11 @@ class LaporanUangJalan extends MyModel
         ->select('text')
         ->where('grp', 'DIPERIKSA')
         ->where('subgrp', 'DIPERIKSA')->first()->text ?? '';
-
+        $getJudul = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))
+        ->select('text')
+        ->where('grp', 'JUDULAN LAPORAN')
+        ->where('subgrp', 'JUDULAN LAPORAN')
+        ->first();
         $select_Tempkembali2 = DB::table($Tempambil . ' AS a')
         ->select([
             'c.namasupir',
@@ -395,6 +407,10 @@ class LaporanUangJalan extends MyModel
             'b.nominal AS nominalkembali',
             db::raw("'" . $disetujui . "' as disetujui"),
             db::raw("'" . $diperiksa . "' as diperiksa"),
+            DB::raw("'LAPORAN UANG JALAN' as judulLaporan"),
+            DB::raw("'" . $getJudul->text . "' as judul"),
+            DB::raw("'Tgl Cetak:'+format(getdate(),'dd-MM-yyyy HH:mm:ss')as tglcetak"),
+            DB::raw(" 'User :" . auth('api')->user()->name . "' as usercetak")
 
         ])
         ->leftJoin($Tempkembali . ' AS b', function ($join) {
