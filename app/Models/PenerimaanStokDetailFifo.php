@@ -357,7 +357,7 @@ class PenerimaanStokDetailFifo extends MyModel
                             "tglbukti" => $kstglbukti,
                             "qtymasuk" => 0,
                             "nilaimasuk" =>  0,
-                            "qtykeluar" => $querysisa->qty ?? 0,
+                            "qtykeluar" => $qtysisa ?? 0,
                             "nilaikeluar" => $kstotal,
                             "urutfifo" => $urutfifo,
                         ]);
