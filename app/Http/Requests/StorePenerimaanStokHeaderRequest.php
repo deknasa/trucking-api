@@ -103,12 +103,12 @@ class StorePenerimaanStokHeaderRequest extends FormRequest
             'trado' => $salahsatu,
             'gandengan' => $salahsatu,
             'gudang' => $salahsatu,
-            'tradodari' => [$salahSatuDari],
-            'gandengandari' => [$salahSatuDari],
-            'gudangdari' => [$salahSatuDari],
-            'tradoke' => [$salahSatuKe,'different:tradodari'],
-            'gandenganke' => [$salahSatuKe,'different:gandengandari'],
-            'gudangke' => [$salahSatuKe,'different:gudangdari'],
+            'tradodari' => [$salahSatuDari,'nullable'],
+            'gandengandari' => [$salahSatuDari,'nullable'],
+            'gudangdari' => [$salahSatuDari,'nullable'],
+            'tradoke' => [$salahSatuKe,'nullable','different:tradodari'],
+            'gandenganke' => [$salahSatuKe,'nullable','different:gandengandari'],
+            'gudangke' => [$salahSatuKe,'nullable','different:gudangdari'],
         ];
 
         $relatedRequests = [
