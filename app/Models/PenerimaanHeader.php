@@ -85,6 +85,7 @@ class PenerimaanHeader extends MyModel
                 DB::raw("rekappenerimaandetail as a with (readuncommitted)")
             )
             ->select(
+                'a.nobukti',
                 'a.penerimaan_nobukti'
             )
             ->where('a.penerimaan_nobukti', '=', $nobukti)
@@ -92,7 +93,7 @@ class PenerimaanHeader extends MyModel
         if (isset($rekap)) {
             $data = [
                 'kondisi' => true,
-                'keterangan' => 'Rekap Penerimaan',
+                'keterangan' => 'Rekap Penerimaan '. $rekap->nobukti,
                 'kodeerror' => 'SATL'
             ];
             goto selesai;
@@ -103,6 +104,7 @@ class PenerimaanHeader extends MyModel
                 DB::raw("pelunasanpiutangheader as a with (readuncommitted)")
             )
             ->select(
+                'a.nobukti',
                 'a.penerimaan_nobukti'
             )
             ->where('a.penerimaan_nobukti', '=', $nobukti)
@@ -110,7 +112,7 @@ class PenerimaanHeader extends MyModel
         if (isset($pelunasanPiutang)) {
             $data = [
                 'kondisi' => true,
-                'keterangan' => 'Pelunasan Piutang',
+                'keterangan' => 'Pelunasan Piutang '. $pelunasanPiutang->nobukti,
                 'kodeerror' => 'TDT'
             ];
             goto selesai;
@@ -121,6 +123,7 @@ class PenerimaanHeader extends MyModel
                 DB::raw("penerimaantruckingheader as a with (readuncommitted)")
             )
             ->select(
+                'a.nobukti',
                 'a.penerimaan_nobukti'
             )
             ->where('a.penerimaan_nobukti', '=', $nobukti)
@@ -128,7 +131,7 @@ class PenerimaanHeader extends MyModel
         if (isset($penerimaanTrucking)) {
             $data = [
                 'kondisi' => true,
-                'keterangan' => 'penerimaan trucking',
+                'keterangan' => 'penerimaan trucking '. $penerimaanTrucking->nobukti,
                 'kodeerror' => 'TDT'
             ];
             goto selesai;
@@ -139,6 +142,7 @@ class PenerimaanHeader extends MyModel
                 DB::raw("pengembaliankasgantungheader as a with (readuncommitted)")
             )
             ->select(
+                'a.nobukti',
                 'a.penerimaan_nobukti'
             )
             ->where('a.penerimaan_nobukti', '=', $nobukti)
@@ -146,7 +150,7 @@ class PenerimaanHeader extends MyModel
         if (isset($pengembalianKasgantung)) {
             $data = [
                 'kondisi' => true,
-                'keterangan' => 'pengembalian kas gantung',
+                'keterangan' => 'pengembalian kas gantung '. $pengembalianKasgantung->nobukti,
                 'kodeerror' => 'TDT'
             ];
             goto selesai;
@@ -156,6 +160,7 @@ class PenerimaanHeader extends MyModel
                 DB::raw("prosesuangjalansupirdetail as a with (readuncommitted)")
             )
             ->select(
+                'a.nobukti',
                 'a.penerimaantrucking_nobukti'
             )
             ->where('a.penerimaantrucking_nobukti', '=', $nobukti)
@@ -163,7 +168,7 @@ class PenerimaanHeader extends MyModel
         if (isset($prosesUangjalan)) {
             $data = [
                 'kondisi' => true,
-                'keterangan' => 'proses uang jalan supir',
+                'keterangan' => 'proses uang jalan supir '. $prosesUangjalan->nobukti,
                 'kodeerror' => 'TDT'
             ];
             goto selesai;
@@ -174,6 +179,7 @@ class PenerimaanHeader extends MyModel
                 DB::raw("pengeluaranstokheader as a with (readuncommitted)")
             )
             ->select(
+                'a.nobukti',
                 'a.penerimaan_nobukti'
             )
             ->where('a.penerimaan_nobukti', '=', $nobukti)
@@ -181,7 +187,7 @@ class PenerimaanHeader extends MyModel
         if (isset($pengeluaranStok)) {
             $data = [
                 'kondisi' => true,
-                'keterangan' => 'pengeluaran stok',
+                'keterangan' => 'pengeluaran stok '. $pengeluaranStok->nobukti,
                 'kodeerror' => 'TDT'
             ];
             goto selesai;
@@ -192,6 +198,7 @@ class PenerimaanHeader extends MyModel
                 DB::raw("pemutihansupirheader as a with (readuncommitted)")
             )
             ->select(
+                'a.nobukti',
                 'a.penerimaan_nobukti'
             )
             ->where('a.penerimaan_nobukti', '=', $nobukti)
@@ -199,7 +206,7 @@ class PenerimaanHeader extends MyModel
         if (isset($pemutihanSupir)) {
             $data = [
                 'kondisi' => true,
-                'keterangan' => 'pemutihan supir',
+                'keterangan' => 'pemutihan supir '. $pemutihanSupir->nobukti,
                 'kodeerror' => 'TDT'
             ];
             goto selesai;
@@ -218,7 +225,7 @@ class PenerimaanHeader extends MyModel
         if (isset($jurnal)) {
             $data = [
                 'kondisi' => true,
-                'keterangan' => 'Approval Jurnal',
+                'keterangan' => 'Approval Jurnal '. $jurnal->nobukti,
                 'kodeerror' => 'SAP'
             ];
             goto selesai;

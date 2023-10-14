@@ -240,14 +240,14 @@ class PengeluaranTruckingHeader extends MyModel
 
         if (request()->pengeluaranstok_id && request()->pengeluaranstok_id == $afkir->id) {
             $query
-            ->addSelect('pengeluarantruckingdetail.qty')
-            ->addSelect('pengeluarantruckingdetail.harga')
-            ->leftJoin(DB::raw("pengeluarantruckingdetail with (readuncommitted)"), 'pengeluarantruckingheader.id', 'pengeluarantruckingdetail.pengeluarantruckingheader_id');
-            if (request()->from_tnl =="YA" ){
-				$query->where("pengeluarantruckingdetail.stoktnl_id", request()->stok_id);
-			}else{
-				$query->where("pengeluarantruckingdetail.stok_id", request()->stok_id);
-			}
+                ->addSelect('pengeluarantruckingdetail.qty')
+                ->addSelect('pengeluarantruckingdetail.harga')
+                ->leftJoin(DB::raw("pengeluarantruckingdetail with (readuncommitted)"), 'pengeluarantruckingheader.id', 'pengeluarantruckingdetail.pengeluarantruckingheader_id');
+            if (request()->from_tnl == "YA") {
+                $query->where("pengeluarantruckingdetail.stoktnl_id", request()->stok_id);
+            } else {
+                $query->where("pengeluarantruckingdetail.stok_id", request()->stok_id);
+            }
         }
         if (request()->tgldari) {
             $query->whereBetween('pengeluarantruckingheader.tglbukti', [date('Y-m-d', strtotime(request()->tgldari)), date('Y-m-d', strtotime(request()->tglsampai))]);
@@ -962,12 +962,31 @@ class PengeluaranTruckingHeader extends MyModel
             ->first();
 
         if ($id != '' || $id != 0) {
-            $query = DB::table("supir")->from(DB::raw("supir with (readuncommitted)"))
-                ->select('pengeluarantruckingdetail.nominal', 'pengeluarantruckingdetail.keterangan as keteranganbll', 'supir.id', 'supir.namasupir as supirbiaya')
-                ->leftJoin(DB::raw("pengeluarantruckingdetail with (readuncommitted)"), 'pengeluarantruckingdetail.supir_id', 'supir.id')
+            $temp = '##tempBLL' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+            Schema::create($temp, function ($table) {
+                $table->bigInteger('id')->nullable();
+                $table->string('supirbiaya', 1000)->nullable();
+                $table->float('nominal')->nullable();
+                $table->longText('keteranganbll')->nullable();
+            });
+            $get = DB::table("pengeluarantruckingdetail")->from(DB::raw("pengeluarantruckingdetail with (readuncommitted)"))
+                ->select(DB::raw("supir.id, supir.namasupir as supirbiaya,pengeluarantruckingdetail.nominal, pengeluarantruckingdetail.keterangan as keteranganbll"))
+                ->leftJoin(DB::raw("supir with (readuncommitted)"), 'pengeluarantruckingdetail.supir_id', 'supir.id')
                 ->where('supir.statusaktif', '=', $statusaktif->id)
                 ->where('pengeluarantruckingdetail.pengeluarantruckingheader_id', $id)
-                ->orderBy('supir.namasupir')
+                ->orderBy('supir.namasupir');
+
+            DB::table($temp)->insertUsing(['id', 'supirbiaya', 'nominal', 'keteranganbll'], $get);
+
+            $get2 = DB::table("supir")->from(DB::raw("supir with (readuncommitted)"))
+                ->select('id', 'namasupir as supirbiaya')
+                ->where('statusaktif', '=', $statusaktif->id)
+                ->whereRaw("id not in (select supir_id from pengeluarantruckingdetail where pengeluarantruckingheader_id = $id)")
+                ->orderBy('namasupir');
+            DB::table($temp)->insertUsing(['id', 'supirbiaya'], $get2);
+
+            $query = DB::table("$temp")->from(DB::raw("$temp with (readuncommitted)"))
+                ->orderBy('supirbiaya')
                 ->get();
         } else {
 
@@ -1273,7 +1292,9 @@ class PengeluaranTruckingHeader extends MyModel
                     } else if ($fetchFormat->kodepengeluaran == 'BBT') {
                         $keterangan_detail[] = $data['keterangan'][0];
                     } else {
-                        $keterangan_detail[] = "$fetchFormat->keterangan periode " . $data['periode'] . " $pengeluaranTruckingHeader->nobukti";
+                        $nonEmptyArray = array_filter($data['keterangan']);
+                        $nonEmptyArray = array_values($nonEmptyArray);
+                        $keterangan_detail[] = $nonEmptyArray[0] ?? "$fetchFormat->keterangan periode " . $data['periode'] . " $pengeluaranTruckingHeader->nobukti";
                     }
                 } else {
                     // for ($i = 0; $i < count($nominal_detail); $i++) {
@@ -1570,7 +1591,9 @@ class PengeluaranTruckingHeader extends MyModel
                         } else if ($fetchFormat->kodepengeluaran == 'BBT') {
                             $keterangan_detail[] = $data['keterangan'][0];
                         } else {
-                            $keterangan_detail[] = "$fetchFormat->keterangan periode " . $data['periode'] . " $pengeluaranTruckingHeader->nobukti";
+                            $nonEmptyArray = array_filter($data['keterangan']);
+                            $nonEmptyArray = array_values($nonEmptyArray);
+                            $keterangan_detail[] = $nonEmptyArray[0] ?? "$fetchFormat->keterangan periode " . $data['periode'] . " $pengeluaranTruckingHeader->nobukti";
                         }
                     } else {
 
