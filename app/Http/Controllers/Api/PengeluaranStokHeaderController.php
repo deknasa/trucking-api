@@ -180,14 +180,14 @@ class PengeluaranStokHeaderController extends Controller
                 "detail_stok_id" => $request->detail_stok_id,
                 "detail_statusoli" => $request->detail_statusoli,
                 "detail_vulkanisirke" => $request->detail_vulkanisirke,
-                "detail_statusban" => $request->statusban,
+                "detail_statusban" => ($request->statusban)?$request->statusban:$request->detail_statusban,
                 "detail_qty" => $request->detail_qty??$request->qty_afkir,
                 "detail_keterangan" => $request->detail_keterangan,
                 "detail_harga" => $request->detail_harga,
                 "detail_persentasediscount" => $request->detail_persentasediscount,
                 "totalItem" => $request->totalItem,
             ];
-
+            // dd($data['detail_statusban']);
             /* Store header */
             $pengeluaranStokHeader = PengeluaranStokHeader::findOrFail($id);
             $pengeluaranStokHeader = (new PengeluaranStokHeader())->processUpdate($pengeluaranStokHeader, $data);
