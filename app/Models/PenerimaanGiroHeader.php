@@ -35,6 +35,7 @@ class PenerimaanGiroHeader extends MyModel
                 DB::raw("pelunasanpiutangheader as a with (readuncommitted)")
             )
             ->select(
+                'a.nobukti',
                 'a.penerimaangiro_nobukti'
             )
             ->where('a.penerimaangiro_nobukti', '=', $nobukti)
@@ -42,7 +43,7 @@ class PenerimaanGiroHeader extends MyModel
         if (isset($pelunasanPiutang)) {
             $data = [
                 'kondisi' => true,
-                'keterangan' => 'Pelunasan Piutang',
+                'keterangan' => 'Pelunasan Piutang '. $pelunasanPiutang->nobukti,
                 'kodeerror' => 'TDT'
             ];
             goto selesai;
@@ -53,6 +54,7 @@ class PenerimaanGiroHeader extends MyModel
                 DB::raw("penerimaandetail as a with (readuncommitted)")
             )
             ->select(
+                'a.nobukti',
                 'a.penerimaangiro_nobukti'
             )
             ->where('a.penerimaangiro_nobukti', '=', $nobukti)
@@ -60,7 +62,7 @@ class PenerimaanGiroHeader extends MyModel
         if (isset($penerimaan)) {
             $data = [
                 'kondisi' => true,
-                'keterangan' => 'Penerimaan Kas/Bank',
+                'keterangan' => 'Penerimaan Kas/Bank '. $penerimaan->nobukti,
                 'kodeerror' => 'SATL'
             ];
             goto selesai;
