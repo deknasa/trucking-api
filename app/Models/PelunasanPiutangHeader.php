@@ -118,6 +118,7 @@ class PelunasanPiutangHeader extends MyModel
                 DB::raw("pelunasanpiutangheader as a with (readuncommitted)")
             )
             ->select(
+                'a.penerimaan_nobukti',
                 'a.nobukti'
             )
             ->join(DB::raw("jurnalumumpusatheader b with (readuncommitted)"), 'a.penerimaan_nobukti', 'b.nobukti')
@@ -127,7 +128,7 @@ class PelunasanPiutangHeader extends MyModel
         if (isset($pelunasanPiutang)) {
             $data = [
                 'kondisi' => true,
-                'keterangan' => 'Approval Jurnal',
+                'keterangan' => 'Approval Jurnal '. $pelunasanPiutang->penerimaan_nobukti,
                 'kodeerror' => 'SAP'
             ];
             goto selesai;
@@ -138,6 +139,7 @@ class PelunasanPiutangHeader extends MyModel
                 DB::raw("pelunasanpiutangheader as a with (readuncommitted)")
             )
             ->select(
+                'a.penerimaangiro_nobukti',
                 'a.nobukti'
             )
             ->join(DB::raw("jurnalumumpusatheader b with (readuncommitted)"), 'a.penerimaangiro_nobukti', 'b.nobukti')
@@ -146,7 +148,7 @@ class PelunasanPiutangHeader extends MyModel
         if (isset($pelunasanPiutang)) {
             $data = [
                 'kondisi' => true,
-                'keterangan' => 'Approval Jurnal',
+                'keterangan' => 'Approval Jurnal '. $pelunasanPiutang->penerimaangiro_nobukti,
                 'kodeerror' => 'SAP'
             ];
             goto selesai;
@@ -157,6 +159,7 @@ class PelunasanPiutangHeader extends MyModel
                 DB::raw("pelunasanpiutangheader as a with (readuncommitted)")
             )
             ->select(
+                'a.notadebet_nobukti',
                 'a.nobukti'
             )
             ->join(DB::raw("jurnalumumpusatheader b with (readuncommitted)"), 'a.notadebet_nobukti', 'b.nobukti')
@@ -165,7 +168,7 @@ class PelunasanPiutangHeader extends MyModel
         if (isset($pelunasanPiutang)) {
             $data = [
                 'kondisi' => true,
-                'keterangan' => 'Approval Jurnal',
+                'keterangan' => 'Approval Jurnal '. $pelunasanPiutang->notadebet_nobukti,
                 'kodeerror' => 'SAP'
             ];
             goto selesai;
@@ -176,6 +179,7 @@ class PelunasanPiutangHeader extends MyModel
                 DB::raw("pelunasanpiutangheader as a with (readuncommitted)")
             )
             ->select(
+                'a.notakredit_nobukti',
                 'a.nobukti'
             )
             ->join(DB::raw("jurnalumumpusatheader b with (readuncommitted)"), 'a.notakredit_nobukti', 'b.nobukti')
@@ -184,7 +188,7 @@ class PelunasanPiutangHeader extends MyModel
         if (isset($pelunasanPiutang)) {
             $data = [
                 'kondisi' => true,
-                'keterangan' => 'Approval Jurnal',
+                'keterangan' => 'Approval Jurnal '. $pelunasanPiutang->notakredit_nobukti,
                 'kodeerror' => 'SAP'
             ];
             goto selesai;

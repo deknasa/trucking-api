@@ -27,19 +27,20 @@ class HutangExtraHeader extends MyModel
 
     public function cekvalidasiaksi($nobukti)
     {
-        $hutangBayar = DB::table('pelunasanhutangdetail')
+        $pelunasanHutang = DB::table('pelunasanhutangdetail')
             ->from(
                 DB::raw("pelunasanhutangdetail as a with (readuncommitted)")
             )
             ->select(
+                'a.nobukti',
                 'a.hutang_nobukti'
             )
             ->where('a.hutang_nobukti', '=', $nobukti)
             ->first();
-        if (isset($hutangBayar)) {
+        if (isset($pelunasanHutang)) {
             $data = [
                 'kondisi' => true,
-                'keterangan' => 'Pelunasan Hutang',
+                'keterangan' => 'Pelunasan Hutang '. $pelunasanHutang->nobukti,
                 'kodeerror' => 'SATL'
             ];
             goto selesai;
