@@ -1767,6 +1767,7 @@ class PengeluaranStokHeader extends MyModel
         $statushitungstok = Parameter::where('grp', 'STATUS HITUNG STOK')->where('text', 'HITUNG STOK')->first();
 
         $korv = DB::table('pengeluaranstok')->where('kodepengeluaran', 'KORV')->first();
+        $pja = DB::table('pengeluaranstok')->where('kodepengeluaran', 'PJA')->first();
 
         /*RETURN STOK PENERIMAAN*/
         if ($datahitungstok->statushitungstok == $statushitungstok->id) {
@@ -1796,6 +1797,13 @@ class PengeluaranStokHeader extends MyModel
         } else if ($statuspotongretur == $potongHutang->id) {
             $hutangbayar = PelunasanHutangHeader::where('nobukti', $pengeluaranStokHeader->hutangbayar_nobukti)->lockForUpdate()->first();
             (new PelunasanHutangHeader())->processDestroy($hutangbayar->id, 'DELETE PENGELUARAN STOK RETUR');
+            $jurnalUmumHeader = JurnalUmumHeader::where('nobukti', $pengeluaranStokHeader->nobukti)->lockForUpdate()->first();
+            if ($jurnalUmumHeader) {
+                (new JurnalUmumHeader())->processDestroy($jurnalUmumHeader->id);
+            }
+        } else if ($pengeluaranStokHeader->pengeluaranstok_id == $pja->id) {
+            $penerimaan = PenerimaanHeader::where('nobukti', $pengeluaranStokHeader->penerimaan_nobukti)->lockForUpdate()->first();
+            (new PenerimaanHeader())->processDestroy($penerimaan->id);
             $jurnalUmumHeader = JurnalUmumHeader::where('nobukti', $pengeluaranStokHeader->nobukti)->lockForUpdate()->first();
             if ($jurnalUmumHeader) {
                 (new JurnalUmumHeader())->processDestroy($jurnalUmumHeader->id);

@@ -354,8 +354,13 @@ class PengeluaranStokDetail extends MyModel
             if (!$vulkan) {
                 throw ValidationException::withMessages(['vulkanisirke' => 'vulkannisir tidak cukup']);
             }
+            $stok = (new Stok())->find($data['stok_id']);
+            $stok->statusban = $data['statusban'];
+            $stok->save();
+            
+            
         }
-
+        // dd($data['statusban']);
 
 
 
@@ -369,6 +374,7 @@ class PengeluaranStokDetail extends MyModel
         $pengeluaranStokDetail->nominaldiscount = $nominaldiscount;
         $pengeluaranStokDetail->total = $total;
         $pengeluaranStokDetail->persentasediscount = $data['persentasediscount'];
+        $pengeluaranStokDetail->statusban = $data['statusban'];
         $pengeluaranStokDetail->vulkanisirke = $data['vulkanisirke'];
         $pengeluaranStokDetail->statusoli = $data['statusoli'];
         $pengeluaranStokDetail->statusban = $data['statusban'];
