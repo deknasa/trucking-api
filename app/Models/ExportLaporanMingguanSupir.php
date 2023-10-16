@@ -192,6 +192,7 @@ class ExportLaporanMingguanSupir extends Model
         $temptrip = '##tempdatatrip' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
         Schema::create($temptrip, function ($table) {
             $table->string('nobukti', 50)->nullable();
+            $table->double('omsettambahan', 15,2)->nullable();
             $table->double('liter', 15, 2)->nullable();
         });
 
@@ -200,7 +201,8 @@ class ExportLaporanMingguanSupir extends Model
         )
             ->select(
                 'a.nobukti',
-                'd.liter as liter',
+                db::raw("sum(e.nominaltagih) as omsettambahan"),
+                db::raw("max(d.liter) as liter"),
             )
             ->join(DB::raw("upahsupir as b with(readuncommitted) "), 'a.upah_id', 'b.id')
             ->join(DB::raw("upahsupirrincian as d with(readuncommitted) "), function ($join) {
@@ -208,10 +210,13 @@ class ExportLaporanMingguanSupir extends Model
                 $join->on('a.container_id', '=', 'd.container_id');
                 $join->on('a.statuscontainer_id', '=', 'd.statuscontainer_id');
             })
-            ->join(DB::raw($tempData . " as c "), 'a.nobukti', 'c.nobukti');
+            ->join(DB::raw($tempData . " as c "), 'a.nobukti', 'c.nobukti')
+            ->leftjoin(DB::raw("suratpengantarbiayatambahan as e with (readuncommitted) "), 'a.id', 'e.suratpengantar_id')
+            ->GroupBy('a.nobukti');
 
         DB::table($temptrip)->insertUsing([
             'nobukti',
+            'omsettambahan',
             'liter',
         ], $querytemptrip);
 
@@ -496,6 +501,7 @@ class ExportLaporanMingguanSupir extends Model
         Schema::create($tempInvoice, function ($table) {
             $table->string('jobtrucking', 100)->nullable();
             $table->double('omset', 15, 2)->nullable();
+            $table->double('extralain', 15, 2)->nullable();
             $table->integer('id')->nullable();
             $table->string('invoice', 50)->nullable();
             $table->string('notrip', 50)->nullable();
@@ -507,6 +513,7 @@ class ExportLaporanMingguanSupir extends Model
             ->select(
                 'a.orderantrucking_nobukti',
                 'a.total as nominal',
+                DB::RAW("(a.nominalextra+a.nominalretribusi) as extralain"),
                 'b.id',
                 'a.nobukti',
                 'b.notrip'
@@ -516,6 +523,7 @@ class ExportLaporanMingguanSupir extends Model
         DB::table($tempInvoice)->insertUsing([
             'jobtrucking',
             'omset',
+            'extralain',
             'id',
             'invoice',
             'notrip',
@@ -565,6 +573,7 @@ class ExportLaporanMingguanSupir extends Model
                     'a.spfullempty',
                     'a.jobtrucking',
                     DB::raw("isnull(a.omset,0) as omset"),
+                    DB::raw("(case when isnull(b.notrip,'')='' then isnull(e.omsettambahan,0) else isnull(b.extralain,0)  end)  as omsettambahan"),
                     DB::raw("0 as omsetextrabbm"),
                     DB::raw("isnull(c.invoice,'') as invoice"),
                     DB::raw("isnull(A.gajisupir,0) as borongan"),
