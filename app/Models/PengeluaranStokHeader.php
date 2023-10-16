@@ -942,6 +942,7 @@ class PengeluaranStokHeader extends MyModel
             $coadebet_detail[] = $memo['JURNAL'];
             $coakredit_detail[] = $memokredit['JURNAL'];
             $nominal_detail[] = $pengeluaranStokDetail->total;
+            $tgljatuhtempo[] = date('Y-m-d', strtotime($data['tglbukti']));
             $summaryDetail += $pengeluaranStokDetail->total;
             $keterangan_detail[] = $data['detail_keterangan'][$i] ?? 'PENGELUARAN STOK RETUR';
         }
@@ -1144,7 +1145,7 @@ class PengeluaranStokHeader extends MyModel
                 $jurnalUmumHeader = (new JurnalUmumHeader())->processStore($jurnalRequest);
             }
         } else if ($pja->text == $data['pengeluaranstok_id'] &&($pengeluaranStokHeader->bank_id != null)) {
-            //jika potongkas                
+            //jika potongkas
             /*STORE PENERIMAANHEADER*/
             $coaKasMasuk = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))->select('memo')->where('grp', 'JURNAL PENJUALAN STOK AFKIR')->where('subgrp', 'KREDIT')->first();
             $memo = json_decode($coaKasMasuk->memo, true);
@@ -1186,7 +1187,7 @@ class PengeluaranStokHeader extends MyModel
                 'bank_id' => $pengeluaranStokHeader->bank_id,
 
                 'nowarkat' => null,
-                'tgljatuhtempo' => date('Y-m-d', strtotime($data['tglbukti'])),
+                'tgljatuhtempo' => $tgljatuhtempo,
                 'nominal_detail' => $nominal_detail,
                 'coadebet' => $coadebet_detail,
                 'coakredit' => $coakredit_detail,
@@ -1409,6 +1410,7 @@ class PengeluaranStokHeader extends MyModel
             $coakredit_detail[] = $memokredit['JURNAL'];
             $nominal_detail[] = $pengeluaranStokDetail->total;
             $summaryDetail += $pengeluaranStokDetail->total;
+            $tgljatuhtempo[] = date('Y-m-d', strtotime($data['tglbukti']));
             $keterangan_detail[] = $data['detail_keterangan'][$i] ?? 'PENGELUARAN STOK RETUR';
 
             $ksgudang_id = $gudang_id ?? 0;
@@ -1705,7 +1707,7 @@ class PengeluaranStokHeader extends MyModel
                 'bank_id' => $pengeluaranStokHeader->bank_id,
 
                 'nowarkat' => null,
-                'tgljatuhtempo' => date('Y-m-d', strtotime($data['tglbukti'])),
+                'tgljatuhtempo' => $tgljatuhtempo,
                 'nominal_detail' => $nominal_detail,
                 'coadebet' => $coadebet_detail,
                 'coakredit' => $coakredit_detail,
