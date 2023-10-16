@@ -89,7 +89,9 @@ class ExportLaporanMingguanSupir extends Model
                 'c.tglbukti',
                 'd.kodetrado as nopol',
                 'e.namasupir',
-                DB::raw("ltrim(rtrim(isnull(f.kodekota ,'')))+'-'+ltrim(rtrim(isnull(g.kodekota,''))) as rute"),
+                DB::raw("ltrim(rtrim(isnull(f.kodekota ,'')))+'-'+ltrim(rtrim(isnull(g.kodekota,''))) +
+                (case when isnull(c.penyesuaian,'')<>'' then ' ( '+isnull(c.penyesuaian,'')+' )' else '' end)
+                as rute"),
                 DB::raw("isnull(h.kodecontainer,'') as qty"),
                 DB::raw("isnull(i.namapelanggan,'') as lokasimuat"),
                 DB::raw("ltrim(rtrim(isnull(c.nocont,'')))+' / '+ltrim(rtrim(isnull(c.noseal,''))) as nocontseal"),
