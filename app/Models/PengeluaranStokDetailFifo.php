@@ -49,6 +49,85 @@ class PengeluaranStokDetailFifo extends MyModel
             $table->bigInteger('id')->nullable();
         });
 
+        $temprekappengeluaranfifo = '##temprekappengeluaranfifo' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+        Schema::create($temprekappengeluaranfifo, function ($table) {
+            $table->id();
+            $table->bigInteger('stokheader_id')->nullable();
+            $table->string('nobukti', 100)->nullable();
+            $table->bigInteger('stok_id')->nullable();
+            $table->bigInteger('gudang_id')->nullable();
+            $table->bigInteger('urut')->nullable();
+            $table->double('qty', 15, 2)->nullable();
+            $table->string('penerimaanstokheader_nobukti', 100)->nullable();
+            $table->double('penerimaanstok_qty', 15, 2)->nullable();
+            $table->double('penerimaanstok_harga', 15, 2)->nullable();
+            $table->double('penerimaanstokheader_total', 15, 2)->nullable();
+        });
+
+
+        $queryfifo = db::table('pengeluaranstokdetailfifo')->from(db::raw("pengeluaranstokdetailfifo a with (readuncommitted)"))
+            ->select(
+                'a.pengeluaranstokheader_id as stokheader_id',
+                'a.nobukti as nobukti',
+                'a.stok_id as stok_id',
+                'a.gudang_id as gudang_id',
+                'a.urut as urut',
+                'a.qty as qty',
+                'a.penerimaanstokheader_nobukti as penerimaanstokheader_nobukti',
+                'a.penerimaanstok_qty as penerimaanstokheader_qty',
+                'a.penerimaanstok_harga as penerimaanstokheader_harga',
+                'a.penerimaanstokheader_total as penerimaanstokheader_total',
+            )
+            ->where('a.stok_id', '=',   $data['stok_id'])
+            ->where('a.gudang_id', '=',   $data['gudang_id'])
+            ->orderby('a.id');
+
+
+        DB::table($temprekappengeluaranfifo)->insertUsing([
+            "stokheader_id",
+            "nobukti",
+            "stok_id",
+            "gudang_id",
+            "urut",
+            "qty",
+            "penerimaanstokheader_nobukti",
+            "penerimaanstok_qty",
+            "penerimaanstok_harga",
+            "penerimaanstokheader_total",
+        ], $queryfifo);
+
+        $queryfifo = db::table('penerimaanstokdetailfifo')->from(db::raw("penerimaanstokdetailfifo a with (readuncommitted)"))
+            ->select(
+                'a.penerimaanstokheader_id as stokheader_id',
+                'a.nobukti as nobukti',
+                'a.stok_id as stok_id',
+                'a.gudang_id as gudang_id',
+                'a.urut as urut',
+                'a.qty as qty',
+                'a.penerimaanstokheader_nobukti as penerimaanstokheader_nobukti',
+                'a.penerimaanstok_qty as penerimaanstokheader_qty',
+                'a.penerimaanstok_harga as penerimaanstokheader_harga',
+                'a.penerimaanstokheader_total as penerimaanstokheader_total',
+            )
+            ->where('a.stok_id', '=',   $data['stok_id'])
+            ->where('a.gudang_id', '=',   $data['gudang_id'])
+            ->orderby('a.id');
+
+
+        DB::table($temprekappengeluaranfifo)->insertUsing([
+            "stokheader_id",
+            "nobukti",
+            "stok_id",
+            "gudang_id",
+            "urut",
+            "qty",
+            "penerimaanstokheader_nobukti",
+            "penerimaanstok_qty",
+            "penerimaanstok_harga",
+            "penerimaanstokheader_total",
+        ], $queryfifo);
+
+
         $a = 0;
         $atotalharga = 0;
         $kondisi = true;
@@ -57,7 +136,7 @@ class PengeluaranStokDetailFifo extends MyModel
             DB::delete(DB::raw("delete " . $tempfifo));
 
 
-            $queryfifo = db::table('pengeluaranstokdetailfifo')->from(db::raw("pengeluaranstokdetailfifo a with (readuncommitted)"))
+            $queryfifo = db::table($temprekappengeluaranfifo)->from(db::raw($temprekappengeluaranfifo . " a with (readuncommitted)"))
                 ->select(
                     'a.penerimaanstokheader_nobukti as penerimaanstok_nobukti',
                     'a.stok_id as stok_id',
@@ -75,8 +154,6 @@ class PengeluaranStokDetailFifo extends MyModel
             DB::table($tempfifo)->insertUsing([
                 'penerimaanstok_nobukti',
                 'stok_id',
-
-                // 'penerimaanstok_qty',
                 'qty',
                 'id',
             ], $queryfifo);
@@ -87,6 +164,7 @@ class PengeluaranStokDetailFifo extends MyModel
                     'a.nobukti',
                     'a.qty',
                     'a.harga',
+                    'a.total',
                     'c.id as penerimaanstok_id',
                 )
                 // ->leftjoin(db::raw($tempfifo . " b "), 'a.nobukti', 'b.penerimaanstok_nobukti')
@@ -124,17 +202,36 @@ class PengeluaranStokDetailFifo extends MyModel
                     $pengeluaranStokDetailFifo->penerimaanstokheader_nobukti = $querysisa->nobukti ?? '';
                     $pengeluaranStokDetailFifo->penerimaanstok_qty = $querysisa->qty ?? 0;
                     $pengeluaranStokDetailFifo->penerimaanstok_harga = $querysisa->harga ?? 0;
+                    $pengeluaranStokDetailFifo->penerimaanstokheader_total = $querysisa->total ?? 0;
                     $pengeluaranStokDetailFifo->modifiedby = $data['modifiedby'] ?? '';
 
+                    DB::table($temprekappengeluaranfifo)->insert([
+                        'stokheader_id' => $data['pengeluaranstokheader_id'] ?? 0,
+                        'nobukti' =>  $data['nobukti'] ?? '',
+                        'stok_id' => $data['stok_id'] ?? 0,
+                        'gudang_id' => $data['gudang_id'] ?? 0,
+                        'urut' =>  $a,
+                        'qty' =>  $qty ?? 0,
+                        'penerimaanstokheader_nobukti' => $querysisa->nobukti ?? '',
+                        'penerimaanstok_qty' => $querysisa->qty ?? 0,
+                        'penerimaanstok_harga' => $querysisa->harga ?? 0,
+                        'penerimaanstokheader_total' => $querysisa->total ?? 0,
+                    ]);
+
+
+                    $belitotal = $querysisa->total ?? 0;
+                    $beliqty = $querysisa->qty ?? 0;
 
                     $zqty = $qty ?? 0;
                     $zharga = $querysisa->harga ?? 0;
-                    $atotalharga = $atotalharga + ($zqty * $zharga);
+                    // $atotalharga = $atotalharga + ($zqty * $zharga);
+                    $atotalharga = $atotalharga + ($zqty * ($belitotal / $beliqty));
+
 
                     // 
                     $ksqty = $qty ?? 0;
                     $ksharga = $querysisa->harga ?? 0;
-                    $kstotal = $ksqty * $ksharga;
+                    $kstotal = $ksqty * ($belitotal / $beliqty);
                     $ksnobukti = $data['nobukti'] ?? '';
 
                     $pengeluaranstok_id = db::table("pengeluaranstokheader")->from(db::raw("pengeluaranstokheader as a with (readuncommitted)"))
@@ -203,17 +300,36 @@ class PengeluaranStokDetailFifo extends MyModel
                     $pengeluaranStokDetailFifo->penerimaanstokheader_nobukti = $querysisa->nobukti ?? '';
                     $pengeluaranStokDetailFifo->penerimaanstok_qty = $querysisa->qty ?? 0;
                     $pengeluaranStokDetailFifo->penerimaanstok_harga = $querysisa->harga ?? 0;
+                    $pengeluaranStokDetailFifo->penerimaanstokheader_total = $querysisa->total ?? 0;
                     $pengeluaranStokDetailFifo->modifiedby = $data['modifiedby'] ?? '';
+
+                    DB::table($temprekappengeluaranfifo)->insert([
+                        'stokheader_id' => $data['pengeluaranstokheader_id'] ?? 0,
+                        'nobukti' =>  $data['nobukti'] ?? '',
+                        'stok_id' => $data['stok_id'] ?? 0,
+                        'gudang_id' => $data['gudang_id'] ?? 0,
+                        'urut' =>  $a,
+                        'qty' => $qtysisa ?? 0,
+                        'penerimaanstokheader_nobukti' => $querysisa->nobukti ?? '',
+                        'penerimaanstok_qty' => $querysisa->qty ?? 0,
+                        'penerimaanstok_harga' => $querysisa->harga ?? 0,
+                        'penerimaanstokheader_total' => $querysisa->total ?? 0,
+                    ]);
+
+
+                    $belitotal = $querysisa->total ?? 0;
+                    $beliqty = $querysisa->qty ?? 0;
 
 
                     $zqty = $qtysisa ?? 0;
                     $zharga = $querysisa->harga ?? 0;
-                    $atotalharga = $atotalharga + ($zqty * $zharga);
+                    // $atotalharga = $atotalharga + ($zqty * $zharga);
+                    $atotalharga = $atotalharga + ($zqty * ($belitotal / $beliqty));
 
                     // 
                     $ksqty = $qtysisa ?? 0;
                     $ksharga = $querysisa->harga ?? 0;
-                    $kstotal = $ksqty * $ksharga;
+                    $kstotal = $ksqty * ($belitotal / $beliqty);
                     $ksnobukti = $data['nobukti'] ?? '';
 
                     $pengeluaranstok_id = db::table("pengeluaranstokheader")->from(db::raw("pengeluaranstokheader as a with (readuncommitted)"))
@@ -237,7 +353,7 @@ class PengeluaranStokDetailFifo extends MyModel
                             "tglbukti" => $kstglbukti,
                             "qtymasuk" => 0,
                             "nilaimasuk" =>  0,
-                            "qtykeluar" => $querysisa->qty ?? 0,
+                            "qtykeluar" => $qtysisa ?? 0,
                             "nilaikeluar" => $kstotal,
                             "urutfifo" => $urutfifo,
                         ]);
@@ -308,11 +424,21 @@ class PengeluaranStokDetailFifo extends MyModel
             ->where("stok_id",  $aksstok_id)
             ->first()->qty ?? 0;
 
+        $qtyterimarekapklr = DB::table("penerimaanstokdetailfifo")->from(db::raw("penerimaanstokdetailfifo a with (readuncommitted)"))
+            ->select(
+                db::raw("sum(a.qty) as qty")
+            )
+            ->where("penerimaanstokheader_nobukti", $aksnobukti)
+            ->where("stok_id",  $aksstok_id)
+            ->first()->qty ?? 0;
+
+        $totalqtysisa = $qtyterimarekap + $qtyterimarekapklr;
+
 
         $penerimaanstokdetail  = PenerimaanStokDetail::lockForUpdate()->where("stok_id", $aksstok_id)
             ->where("nobukti", $aksnobukti)
             ->firstorFail();
-        $penerimaanstokdetail->qtykeluar = $qtyterimarekap;
+        $penerimaanstokdetail->qtykeluar = $totalqtysisa;
         $penerimaanstokdetail->save();
         //
         return $pengeluaranStokDetailFifo;

@@ -418,6 +418,7 @@ class PengeluaranHeader extends MyModel
                 DB::raw("rekappengeluarandetail as a with (readuncommitted)")
             )
             ->select(
+                'a.nobukti',
                 'a.pengeluaran_nobukti'
             )
             ->where('a.pengeluaran_nobukti', '=', $nobukti)
@@ -425,7 +426,7 @@ class PengeluaranHeader extends MyModel
         if (isset($rekap)) {
             $data = [
                 'kondisi' => true,
-                'keterangan' => 'Rekap Pengeluaran',
+                'keterangan' => 'Rekap Pengeluaran '. $rekap->nobukti,
                 'kodeerror' => 'SATL'
             ];
             goto selesai;
@@ -435,6 +436,7 @@ class PengeluaranHeader extends MyModel
                 DB::raw("pelunasanhutangheader as a with (readuncommitted)")
             )
             ->select(
+                'a.nobukti',
                 'a.pengeluaran_nobukti'
             )
             ->where('a.pengeluaran_nobukti', '=', $nobukti)
@@ -442,7 +444,7 @@ class PengeluaranHeader extends MyModel
         if (isset($pelunasanhutangheader)) {
             $data = [
                 'kondisi' => true,
-                'keterangan' => 'Pelunasan Hutang',
+                'keterangan' => 'Pelunasan Hutang '. $pelunasanhutangheader->nobukti,
                 'kodeerror' => 'TDT'
             ];
             goto selesai;
@@ -453,6 +455,7 @@ class PengeluaranHeader extends MyModel
                 DB::raw("kasgantungheader as a with (readuncommitted)")
             )
             ->select(
+                'a.nobukti',
                 'a.pengeluaran_nobukti'
             )
             ->where('a.pengeluaran_nobukti', '=', $nobukti)
@@ -460,7 +463,7 @@ class PengeluaranHeader extends MyModel
         if (isset($kasGantung)) {
             $data = [
                 'kondisi' => true,
-                'keterangan' => 'kas gantung',
+                'keterangan' => 'kas gantung '. $kasGantung->nobukti,
                 'kodeerror' => 'TDT'
             ];
             goto selesai;
@@ -470,6 +473,7 @@ class PengeluaranHeader extends MyModel
                 DB::raw("absensisupirapprovalheader as a with (readuncommitted)")
             )
             ->select(
+                'a.nobukti',
                 'a.pengeluaran_nobukti'
             )
             ->where('a.pengeluaran_nobukti', '=', $nobukti)
@@ -477,7 +481,7 @@ class PengeluaranHeader extends MyModel
         if (isset($absensiApproval)) {
             $data = [
                 'kondisi' => true,
-                'keterangan' => 'Absensi Supir posting',
+                'keterangan' => 'Absensi Supir posting '. $absensiApproval->nobukti,
                 'kodeerror' => 'TDT'
             ];
             goto selesai;
@@ -488,6 +492,7 @@ class PengeluaranHeader extends MyModel
                 DB::raw("prosesuangjalansupirdetail as a with (readuncommitted)")
             )
             ->select(
+                'a.nobukti',
                 'a.pengeluarantrucking_nobukti'
             )
             ->where('a.pengeluarantrucking_nobukti', '=', $nobukti)
@@ -495,7 +500,7 @@ class PengeluaranHeader extends MyModel
         if (isset($prosesUangjalan)) {
             $data = [
                 'kondisi' => true,
-                'keterangan' => 'proses uang jalan supir',
+                'keterangan' => 'proses uang jalan supir '. $prosesUangjalan->nobukti,
                 'kodeerror' => 'TDT'
             ];
             goto selesai;
@@ -506,6 +511,7 @@ class PengeluaranHeader extends MyModel
                 DB::raw("pelunasanhutangheader as a with (readuncommitted)")
             )
             ->select(
+                'a.nobukti',
                 'a.pengeluaran_nobukti'
             )
             ->where('a.pengeluaran_nobukti', '=', $nobukti)
@@ -513,7 +519,7 @@ class PengeluaranHeader extends MyModel
         if (isset($pelunasanHutangHeader)) {
             $data = [
                 'kondisi' => true,
-                'keterangan' => 'Hutang bayar header',
+                'keterangan' => 'PELUNASAN HUTANG '. $pelunasanHutangHeader->nobukti,
                 'kodeerror' => 'TDT'
             ];
             goto selesai;
@@ -524,6 +530,7 @@ class PengeluaranHeader extends MyModel
                 DB::raw("pengeluarantruckingheader as a with (readuncommitted)")
             )
             ->select(
+                'a.nobukti',
                 'a.pengeluaran_nobukti'
             )
             ->where('a.pengeluaran_nobukti', '=', $nobukti)
@@ -531,7 +538,7 @@ class PengeluaranHeader extends MyModel
         if (isset($pengeluaranTrucking)) {
             $data = [
                 'kondisi' => true,
-                'keterangan' => 'pengeluaran trucking',
+                'keterangan' => 'pengeluaran trucking '. $pengeluaranTrucking->nobukti,
                 'kodeerror' => 'TDT'
             ];
             goto selesai;
@@ -542,6 +549,7 @@ class PengeluaranHeader extends MyModel
                 DB::raw("pengembaliankasbankheader as a with (readuncommitted)")
             )
             ->select(
+                'a.nobukti',
                 'a.pengeluaran_nobukti'
             )
             ->where('a.pengeluaran_nobukti', '=', $nobukti)
@@ -549,7 +557,7 @@ class PengeluaranHeader extends MyModel
         if (isset($pengembalianKasbank)) {
             $data = [
                 'kondisi' => true,
-                'keterangan' => 'pengembalian kas/bank',
+                'keterangan' => 'pengembalian kas/bank '. $pengembalianKasbank->nobukti,
                 'kodeerror' => 'TDT'
             ];
             goto selesai;
@@ -559,6 +567,7 @@ class PengeluaranHeader extends MyModel
                 DB::raw("prosesgajisupirheader as a with (readuncommitted)")
             )
             ->select(
+                'a.nobukti',
                 'a.pengeluaran_nobukti'
             )
             ->where('a.pengeluaran_nobukti', '=', $nobukti)
@@ -566,7 +575,7 @@ class PengeluaranHeader extends MyModel
         if (isset($prosesGajiSupir)) {
             $data = [
                 'kondisi' => true,
-                'keterangan' => 'Proses Gaji Supir',
+                'keterangan' => 'Proses Gaji Supir '. $prosesGajiSupir->nobukti,
                 'kodeerror' => 'TDT'
             ];
             goto selesai;
@@ -576,6 +585,7 @@ class PengeluaranHeader extends MyModel
                 DB::raw("pendapatansupirheader as a with (readuncommitted)")
             )
             ->select(
+                'a.nobukti',
                 'a.pengeluaran_nobukti'
             )
             ->where('a.pengeluaran_nobukti', '=', $nobukti)
@@ -583,7 +593,7 @@ class PengeluaranHeader extends MyModel
         if (isset($pendapatanSupir)) {
             $data = [
                 'kondisi' => true,
-                'keterangan' => 'Pendapatan Supir',
+                'keterangan' => 'Pendapatan Supir '. $pendapatanSupir->nobukti,
                 'kodeerror' => 'TDT'
             ];
             goto selesai;
@@ -602,12 +612,12 @@ class PengeluaranHeader extends MyModel
         if (isset($jurnal)) {
             $data = [
                 'kondisi' => true,
-                'keterangan' => 'Approval Jurnal',
+                'keterangan' => 'Approval Jurnal '. $jurnal->nobukti,
                 'kodeerror' => 'SAP'
             ];
             goto selesai;
         }
-        $hutangBayar = DB::table('pelunasanpiutangheader')
+        $pelunasanPiutang = DB::table('pelunasanpiutangheader')
             ->from(
                 DB::raw("pelunasanpiutangheader as a with (readuncommitted)")
             )
@@ -617,10 +627,10 @@ class PengeluaranHeader extends MyModel
             )
             ->where('a.pengeluaran_nobukti', '=', $nobukti)
             ->first();
-        if (isset($hutangBayar)) {
+        if (isset($pelunasanPiutang)) {
             $data = [
                 'kondisi' => true,
-                'keterangan' => 'Pelunasan Piutang ' . $hutangBayar->nobukti,
+                'keterangan' => 'Pelunasan Piutang ' . $pelunasanPiutang->nobukti,
                 'kodeerror' => 'TDT'
             ];
             goto selesai;

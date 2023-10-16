@@ -295,6 +295,7 @@ class PelunasanHutangHeader extends MyModel
                 DB::raw("PelunasanHutangheader as a with (readuncommitted)")
             )
             ->select(
+                'a.pengeluaran_nobukti',
                 'a.nobukti'
             )
             ->join(DB::raw("jurnalumumpusatheader b with (readuncommitted)"), 'a.pengeluaran_nobukti', 'b.nobukti')
@@ -303,7 +304,7 @@ class PelunasanHutangHeader extends MyModel
         if (isset($PelunasanHutang)) {
             $data = [
                 'kondisi' => true,
-                'keterangan' => 'Approval Jurnal',
+                'keterangan' => 'Approval Jurnal '. $PelunasanHutang->pengeluaran_nobukti,
                 'kodeerror' => 'SATL'
             ];
             goto selesai;
@@ -584,7 +585,7 @@ class PelunasanHutangHeader extends MyModel
             if ($bank != null) {
                 $coakredit[] = $data['coakredit'] ?? $coakredits;
             }
-            $tgljatuhtempo[] = $hutang->tgljatuhtempo;
+            $tgljatuhtempo[] = $data['tglcair'];
             $nowarkat[] = "";
             $nominal_detail[] = $total;
             $statusketerangandefault[] = $statusketerangan . ' ' . $supplier->namasupplier . ' ' . $data['keterangan'][0];
@@ -791,7 +792,7 @@ class PelunasanHutangHeader extends MyModel
         if ($bayarhutang == $statusbayarhutang) {
             $coadebet[] = $coa;
             $coakredit[] = $coakredits;
-            $tgljatuhtempo[] = $hutang->tgljatuhtempo;
+            $tgljatuhtempo[] = $data['tglcair'];
             $nowarkat[] = "";
             $nominal_detail[] = $total;
             $statusketerangandefault[] = $statusketerangan . ' ' . $supplier->namasupplier . ' ' . $data['keterangan'][0];

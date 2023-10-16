@@ -330,19 +330,20 @@ class HutangHeader extends MyModel
 
     public function cekvalidasiaksi($nobukti)
     {
-        $hutangBayar = DB::table('pelunasanhutangdetail')
+        $pelunasanHutang = DB::table('pelunasanhutangdetail')
             ->from(
                 DB::raw("pelunasanhutangdetail as a with (readuncommitted)")
             )
             ->select(
+                'a.nobukti',
                 'a.hutang_nobukti'
             )
             ->where('a.hutang_nobukti', '=', $nobukti)
             ->first();
-        if (isset($hutangBayar)) {
+        if (isset($pelunasanHutang)) {
             $data = [
                 'kondisi' => true,
-                'keterangan' => 'Pembayaran Hutang',
+                'keterangan' => 'Pembayaran Hutang '. $pelunasanHutang->nobukti,
                 'kodeerror' => 'SATL'
             ];
             goto selesai;
@@ -353,6 +354,7 @@ class HutangHeader extends MyModel
                 DB::raw("penerimaanstokheader as a with (readuncommitted)")
             )
             ->select(
+                'a.nobukti',
                 'a.hutang_nobukti'
             )
             ->where('a.hutang_nobukti', '=', $nobukti)
@@ -360,7 +362,7 @@ class HutangHeader extends MyModel
         if (isset($penerimaanStok)) {
             $data = [
                 'kondisi' => true,
-                'keterangan' => 'Penerimaan Stok',
+                'keterangan' => 'Penerimaan Stok '. $penerimaanStok->nobukti,
                 'kodeerror' => 'TDT'
             ];
             goto selesai;
@@ -371,6 +373,7 @@ class HutangHeader extends MyModel
                 DB::raw("hutangextraheader as a with (readuncommitted)")
             )
             ->select(
+                'a.nobukti',
                 'a.hutang_nobukti'
             )
             ->where('a.hutang_nobukti', '=', $nobukti)
@@ -378,7 +381,7 @@ class HutangHeader extends MyModel
         if (isset($hutangExtra)) {
             $data = [
                 'kondisi' => true,
-                'keterangan' => 'Hutang Extra',
+                'keterangan' => 'Hutang Extra '. $hutangExtra->nobukti,
                 'kodeerror' => 'TDT'
             ];
             goto selesai;
@@ -396,7 +399,7 @@ class HutangHeader extends MyModel
         if (isset($jurnalpusat)) {
             $data = [
                 'kondisi' => true,
-                'keterangan' => 'Approval Jurnal',
+                'keterangan' => 'Approval Jurnal '. $jurnalpusat->nobukti,
                 'kodeerror' => 'SAP'
             ];
             goto selesai;
