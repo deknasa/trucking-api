@@ -96,7 +96,7 @@ class PenerimaanDetailController extends Controller
         $penerimaanDetail = new PenerimaanDetail();
 
         return response()->json([
-            'data' => $penerimaanDetail->findAll(request()->penerimaan_id),
+            'data' => $penerimaanDetail->findAllpengembalian(request()->penerimaan_id),
         ]);
     }
     public function store(StorePenerimaanDetailRequest $request)
