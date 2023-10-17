@@ -16,6 +16,7 @@ class CreateSaldoumurakiTable extends Migration
         Schema::create('saldoumuraki', function (Blueprint $table) {
             $table->id();
             $table->Integer('stok_id')->nullable();
+            $table->Integer('trado_id')->nullable();
             $table->date('tglawal')->nullable();
             $table->integer('jumlahharitrip')->nullable();
             $table->longText('info')->nullable();            
