@@ -720,7 +720,7 @@ class InvoiceHeader extends MyModel
                 DB::raw("(case when sp.statuslongtrip=" . $statuslongtrip->id . " then 'true' else 'false' end) as statuslongtrip"),
                 DB::raw("(case when sp.statusperalihan=" . $statusperalihan->id . " then 'true' else 'false' end) as statusperalihan"),
                 'sp.nocont as nocont',
-                DB::raw("isnull(tarif.tujuan,'') as tarif_id"),
+                DB::raw("isnull(tarif.tujuan,'')+(case when isnull(sp.penyesuaian,'')='' then '' else ' ( '+isnull(sp.penyesuaian,'')+' ) '  end) as tarif_id"),
                 DB::raw("isnull(a.nominal,0) as omset"),
                 DB::raw("isnull(c.nominal,0) as nominalextra"),
                 DB::raw("0 as nominalretribusi"),
