@@ -1286,7 +1286,7 @@ class KartuStok extends MyModel
                 db::raw("isnull(a.qtykeluar,0) as qtykeluar"),
                 db::raw("isnull(a.nilaikeluar,0) as nilaikeluar"),
                 DB::raw("sum ((isnull(a.qtysaldo,0)+a.qtymasuk)-a.qtykeluar) over (PARTITION BY a.stok_id,a.gudang_id,A.trado_id,A.gandengan_id order by a.stok_id,a.gudang_id,A.trado_id,A.gandengan_id,a.tglbukti,a.urutfifo,a.nobukti,a.id ASC) as qtysaldo"),
-                DB::raw("sum ((isnull(a.nilaisaldo,0)+a.nilaimasuk)-a.nilaikeluar) over (PARTITION BY a.stok_id,a.gudang_id,A.trado_id,A.gandengan_id order by a.stok_id,a.gudang_id,A.trado_id,A.gandengan_id,a.tglbukti,a.urutfifo,a.nobukti,a.id ASC) as nilaisaldo"),
+                DB::raw("cast(sum ((isnull(a.nilaisaldo,0)+a.nilaimasuk)-a.nilaikeluar) over (PARTITION BY a.stok_id,a.gudang_id,A.trado_id,A.gandengan_id order by a.stok_id,a.gudang_id,A.trado_id,A.gandengan_id,a.tglbukti,a.urutfifo,a.nobukti,a.id ASC) as money) as nilaisaldo"),
                 db::raw("a.modifiedby"),
                 db::raw("a.urutfifo as urutfifo"),
             )
