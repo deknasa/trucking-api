@@ -320,6 +320,8 @@ route::middleware(['auth:api'])->group(function () {
     Route::resource('harilibur', HariLiburController::class)->whereNumber('harilibur');
     Route::get('suratpengantarapprovalinputtrip/cektanggal', [SuratPengantarApprovalInputTripController::class, 'isTanggalAvaillable']);
     Route::get('suratpengantar/default', [SuratPengantarController::class, 'default']);
+    Route::get('saldoumuraki/getUmurAki', [SaldoUmurAkiController::class, 'getUmurAki']);
+
     Route::resource('agen', AgenController::class)->whereNumber('agen');
     Route::resource('jenisorder', JenisOrderController::class)->whereNumber('jenisorder');
     Route::resource('statuscontainer', StatusContainerController::class)->parameters(['statuscontainer' => 'statusContainer'])->whereNumber('statusContainer');

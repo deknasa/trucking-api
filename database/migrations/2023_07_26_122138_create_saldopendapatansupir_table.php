@@ -22,6 +22,7 @@ class CreateSaldopendapatansupirTable extends Migration
             $table->longText('dari_id')->nullable();        
             $table->longText('sampai_id')->nullable();        
             $table->double('nominal',15,2)->nullable();   
+            $table->double('gajikenek',15,2)->nullable();   
             $table->longText('info')->nullable();          
             $table->timestamps();
         });

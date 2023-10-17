@@ -184,7 +184,7 @@ class PendapatanSupirHeader extends MyModel
                 'a.dari_id',
                 'a.sampai_id',
                 'a.nominal',
-                DB::raw("'0' as gajikenek"),
+                DB::raw("isnull(a.gajikenek,0) as gajikenek"),
                 DB::raw("'' as keterangan")
             )
             ->leftjoin(DB::raw("pendapatansupirdetail as b with(readuncommitted)"), function ($join) {
