@@ -72,13 +72,13 @@ class PenerimaanDetail extends MyModel
                 "a.keterangancoa as coadebet",
                 "b.keterangancoa as coakredit",
                 db::raw("cast((format(invoice.tglbukti,'yyyy/MM')+'/1') as date) as tgldariheaderinvoiceheader"),
-                db::raw("cast(cast(format((cast((format(invoice.tglbukti,'yyyy/MM')+'/1') as datetime)+32),'yyyy/MM')+'/01' as datetime)-1 as date) as tglsampaiheaderinvoiceheader"), 
+                db::raw("cast(cast(format((cast((format(invoice.tglbukti,'yyyy/MM')+'/1') as datetime)+32),'yyyy/MM')+'/01' as datetime)-1 as date) as tglsampaiheaderinvoiceheader"),
                 db::raw("cast((format(invoiceextra.tglbukti,'yyyy/MM')+'/1') as date) as tgldariheaderinvoiceextraheader"),
-                db::raw("cast(cast(format((cast((format(invoiceextra.tglbukti,'yyyy/MM')+'/1') as datetime)+32),'yyyy/MM')+'/01' as datetime)-1 as date) as tglsampaiheaderinvoiceextraheader"), 
+                db::raw("cast(cast(format((cast((format(invoiceextra.tglbukti,'yyyy/MM')+'/1') as datetime)+32),'yyyy/MM')+'/01' as datetime)-1 as date) as tglsampaiheaderinvoiceextraheader"),
                 db::raw("cast((format(pelunasanpiutangheader.tglbukti,'yyyy/MM')+'/1') as date) as tgldariheaderpelunasanpiutangheader"),
-                db::raw("cast(cast(format((cast((format(pelunasanpiutangheader.tglbukti,'yyyy/MM')+'/1') as datetime)+32),'yyyy/MM')+'/01' as datetime)-1 as date) as tglsampaiheaderpelunasanpiutangheader"), 
+                db::raw("cast(cast(format((cast((format(pelunasanpiutangheader.tglbukti,'yyyy/MM')+'/1') as datetime)+32),'yyyy/MM')+'/01' as datetime)-1 as date) as tglsampaiheaderpelunasanpiutangheader"),
                 db::raw("cast((format(penerimaangiroheader.tglbukti,'yyyy/MM')+'/1') as date) as tgldariheaderpenerimaangiroheader"),
-                db::raw("cast(cast(format((cast((format(penerimaangiroheader.tglbukti,'yyyy/MM')+'/1') as datetime)+32),'yyyy/MM')+'/01' as datetime)-1 as date) as tglsampaiheaderpenerimaangiroheader"), 
+                db::raw("cast(cast(format((cast((format(penerimaangiroheader.tglbukti,'yyyy/MM')+'/1') as datetime)+32),'yyyy/MM')+'/01' as datetime)-1 as date) as tglsampaiheaderpenerimaangiroheader"),
 
             )
                 ->leftJoin(DB::raw("invoiceheader as invoice with (readuncommitted)"), 'penerimaandetail.invoice_nobukti', '=', 'invoice.nobukti')
@@ -127,6 +127,44 @@ class PenerimaanDetail extends MyModel
         return $detail;
     }
 
+    public function findAllpengembalian($id)
+    {
+
+        $coaKreditPengembalian = DB::table('parameter')->where('grp', 'PENGEMBALIAN KAS/BANK')->where('subgrp', 'PENGEMBALIAN KAS/BANK')->where('text', 'DEBET')->first();
+        $memoKredit = json_decode($coaKreditPengembalian->memo, true);
+        $debetpengembalian = $memoKredit['JURNAL'];
+        $ketcoapengembalian = db::table('akunpusat')->from(db::raw("akunpusat a with (readuncommitted)"))
+            ->select(
+                'a.keterangancoa'
+            )
+            ->where('a.coa', $debetpengembalian)
+            ->first()->keterangancoa ?? '';
+
+        $detail = DB::table("penerimaandetail")
+            ->select(
+                db::raw("'" . $debetpengembalian . "' as coakredit"),
+                db::raw("'" . $ketcoapengembalian . "' as ketcoakredit"),
+                'penerimaandetail.tgljatuhtempo',
+                'penerimaandetail.nowarkat',
+                DB::raw("(case when penerimaandetail.bankpelanggan_id=0 then null else penerimaandetail.bankpelanggan_id end) as bankpelanggan_id"),
+                'bankpelanggan.namabank as bankpelanggan',
+                'penerimaandetail.keterangan',
+                'penerimaandetail.nominal',
+                'penerimaandetail.invoice_nobukti',
+                'penerimaandetail.pelunasanpiutang_nobukti',
+                DB::raw("(case when year(cast(penerimaandetail.bulanbeban as datetime))='1900' then '' else format(penerimaandetail.bulanbeban,'yyyy-MM-dd') end) as bulanbeban"),
+            )
+            ->leftJoin(DB::raw("bankpelanggan with (readuncommitted)"), 'penerimaandetail.bankpelanggan_id', 'bankpelanggan.id')
+            ->leftJoin(DB::raw("akunpusat with (readuncommitted)"), 'penerimaandetail.coakredit', 'akunpusat.coa')
+            ->where('penerimaandetail.penerimaan_id', $id)
+            ->get();
+
+        //  dd($detail);
+
+        return $detail;
+    }
+
+
     public function filter($query, $relationFields = [])
     {
         if (count($this->params['filters']) > 0 && @$this->params['filters']['rules'][0]['data'] != '') {
@@ -150,7 +188,7 @@ class PenerimaanDetail extends MyModel
                             } else if ($filters['field'] == 'tgljatuhtempo') {
                                 $query = $query->whereRaw("format($this->table.tgljatuhtempo,'dd-MM-yyyy') like '%$filters[data]%'");
                             } else if ($filters['field'] == 'nominal') {
-                                $query = $query->whereRaw("format($this->table.nominal,'#,#0.00') like '%$filters[data]%'");                                
+                                $query = $query->whereRaw("format($this->table.nominal,'#,#0.00') like '%$filters[data]%'");
                             } else {
                                 $query = $query->where($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
                             }
@@ -226,9 +264,9 @@ class PenerimaanDetail extends MyModel
         $penerimaanDetail->bulanbeban = $data['bulanbeban'];
         $penerimaanDetail->modifiedby = auth('api')->user()->name;
         $penerimaanDetail->info = html_entity_decode(request()->info);
-        
+
         $penerimaanDetail->save();
-        
+
         if (!$penerimaanDetail->save()) {
             throw new \Exception("Error storing Penerimaan Detail.");
         }
