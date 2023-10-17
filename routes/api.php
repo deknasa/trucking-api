@@ -28,6 +28,8 @@ use App\Http\Controllers\Api\LaporanRekapTitipanEmklController;
 
 use App\Http\Controllers\Api\AbsenTradoController;
 use App\Http\Controllers\Api\CabangController;
+use App\Http\Controllers\Api\SaldoUmurAkiController;
+
 use App\Http\Controllers\Api\GandenganController;
 use App\Http\Controllers\Api\ParameterController;
 use App\Http\Controllers\Api\SupirController;
@@ -321,6 +323,7 @@ route::middleware(['auth:api'])->group(function () {
     Route::get('suratpengantarapprovalinputtrip/cektanggal', [SuratPengantarApprovalInputTripController::class, 'isTanggalAvaillable']);
     Route::get('suratpengantar/default', [SuratPengantarController::class, 'default']);
     Route::get('saldoumuraki/getUmurAki', [SaldoUmurAkiController::class, 'getUmurAki']);
+    Route::resource('saldoumuraki', SaldoUmurAkiController::class)->whereNumber('saldoumuraki');
 
     Route::resource('agen', AgenController::class)->whereNumber('agen');
     Route::resource('jenisorder', JenisOrderController::class)->whereNumber('jenisorder');
