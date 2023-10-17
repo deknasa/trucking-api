@@ -1769,7 +1769,8 @@ class PengeluaranStokHeader extends MyModel
             'modifiedby' => auth('api')->user()->user,
         ]);
 
-        if ((($kor->text == $fetchFormat->id) && $data['gudang_id']) || ($kor->text != $fetchFormat->id && $pja->text != $fetchFormat->id && ($korv->id != $fetchFormat->id) && ($afkir->id != $fetchFormat->id))) {
+        if ($spk->text == $fetchFormat->id) {
+        // if ((($kor->text == $fetchFormat->id) && $data['gudang_id']) || ($kor->text != $fetchFormat->id && $pja->text != $fetchFormat->id && ($korv->id != $fetchFormat->id) && ($afkir->id != $fetchFormat->id))) {
             $spk = db::table("parameter")->from(db::raw("parameter a with (readuncommitted)"))
                 ->select(
                     'a.text'
