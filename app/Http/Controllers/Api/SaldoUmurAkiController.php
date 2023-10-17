@@ -12,8 +12,9 @@ class SaldoUmurAkiController extends Controller
 {
 
     public function getUmurAki(){
+       
         $umurAki = new SaldoUmurAki();
-
+    
         return response()->json([
             'data' => $umurAki->get(request()->stok_id),
         ]);

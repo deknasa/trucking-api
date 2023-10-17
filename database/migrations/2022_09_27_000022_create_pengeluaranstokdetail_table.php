@@ -33,6 +33,7 @@ class CreatePengeluaranstokdetailTable extends Migration
             $table->integer('statusoli')->length(11)->nullable();
             $table->integer('statusban')->length(11)->nullable();
             $table->string('pengeluaranstok_nobukti',50)->nullable();
+            $table->integer('jumlahhariaki')->length(11)->nullable();
             $table->longText('info')->nullable();            
             $table->string('modifiedby',50)->nullable();            
             $table->timestamps();
