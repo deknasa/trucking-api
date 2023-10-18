@@ -48,7 +48,8 @@ class ExportLaporanKasGantungController extends Controller
             // }
 
             return response([
-                'data' => $export,
+                'data' => $export[0],
+                'dataDua' => $export[1],
             ]);
         }
     }
