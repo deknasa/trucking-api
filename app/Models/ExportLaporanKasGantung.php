@@ -43,6 +43,7 @@ class ExportLaporanKasGantung extends MyModel
 
         $tgl2 = $tahun2 . '-' . $bulan2 . '-1';
         $tgl1 = date('Y-m-d', strtotime($tanggal));
+        $tgl1rekap = date('Y-m-d', strtotime($tanggal));
         $tgl2 = date('Y-m-d', strtotime($tgl2 . ' -1 day'));
 
         $coagantung  = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'JURNAL KAS GANTUNG')->where('subgrp', 'DEBET')->first();
@@ -128,7 +129,8 @@ class ExportLaporanKasGantung extends MyModel
                 ->join(db::raw("kasgantungheader b with (readuncommitted)"), 'a.nobukti', 'b.nobukti')
                 ->leftjoin(db::raw($Temppengembalian . " c with (readuncommitted)"), 'a.nobukti', 'c.nobukti')
                 ->leftjoin(db::raw("akunpusat d with (readuncommitted)"), 'a.coa', 'd.coa')
-                ->whereRaw("(isnull(A.nominal,0)-isnull(c.nominal,0))<>0");
+                ->whereRaw("(isnull(A.nominal,0)-isnull(c.nominal,0))<>0")
+                ->whereRaw("b.tglbukti<'" . $tgl1 . "'");
 
 
             DB::table($TempRekap)->insertUsing([
@@ -179,7 +181,7 @@ class ExportLaporanKasGantung extends MyModel
 
 
 
-            // dd(db::table($TempRekap)->get());
+        // dd(db::table($TempRekap)->get());
 
         $getData = db::table($TempRekap)->from(db::raw($TempRekap . " a "))
             ->select(
@@ -200,9 +202,233 @@ class ExportLaporanKasGantung extends MyModel
             ->orderBy('a.nobukti', 'asc')
             ->get();
 
+        // rekap kas gantung
+        $Temppengembalianrekap = '##Temppengembalianrekap' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+        Schema::create($Temppengembalianrekap, function ($table) {
+            $table->string('nobukti', 50)->nullable();
+            $table->double('nominal', 15, 2)->nullable();
+        });
+
+        $Tempkasgantungrekap = '##Tempkasgantungrekap' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+        Schema::create($Tempkasgantungrekap, function ($table) {
+            $table->string('nobukti', 50)->nullable();
+            $table->double('nominal', 15, 2)->nullable();
+            $table->longtext('keterangan')->nullable();
+            $table->string('coa', 1000)->nullable();
+        });
 
 
-        return $getData;
+
+
+        $querykasgantungrekap = db::table("kasgantungheader")->from(db::raw("kasgantungheader a with (readuncommitted)"))
+            ->select(
+                'a.nobukti',
+                db::raw("sum(b.nominal) as nominal"),
+                db::raw("max(b.keterangan) as keterangan"),
+                db::raw("'" . $gantungcoa . "' as coa")
+            )
+            ->join(db::raw("kasgantungdetail b with (readuncommitted)"), 'a.nobukti', 'b.nobukti')
+            ->groupBy('a.nobukti');
+
+
+
+        DB::table($Tempkasgantungrekap)->insertUsing([
+            'nobukti',
+            'nominal',
+            'keterangan',
+            'coa',
+        ], $querykasgantungrekap);
+
+        $querytemppengembalianrekap = db::table("pengembaliankasgantungheader")->from(db::raw("pengembaliankasgantungheader a with (readuncommitted)"))
+            ->select(
+                'b.kasgantung_nobukti',
+                db::raw("sum(b.nominal) as nominal"),
+            )
+            ->join(db::raw("pengembaliankasgantungdetail b with (readuncommitted)"), 'a.nobukti', 'b.nobukti')
+            ->whereRaw("a.tglbukti<'" . $tgl1rekap . "'")
+            ->groupBy('b.kasgantung_nobukti');
+
+        DB::table($Temppengembalianrekap)->insertUsing([
+            'nobukti',
+            'nominal',
+        ], $querytemppengembalianrekap);
+
+
+        $TempRekapkasgantung = '##TempRekapkasgantung' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+        Schema::create($TempRekapkasgantung, function ($table) {
+            $table->Integer('jenis')->nullable();
+            $table->dateTime('tglbukti')->nullable();
+            $table->date('tglbukti2')->nullable();
+            $table->string('nobukti', 50)->nullable();
+            $table->string('nobukti2', 50)->nullable();
+            $table->string('coa', 1000)->nullable();
+            $table->longtext('keterangan')->nullable();
+            $table->double('nominal', 15, 2)->nullable();
+            $table->double('nominalbayar', 15, 2)->nullable();
+            $table->double('sisa', 15, 2)->nullable();
+        });
+
+        $queryTempRekapkasgantung = db::table($Tempkasgantungrekap)->from(db::raw($Tempkasgantungrekap . " a"))
+            ->select(
+                db::raw("1 as jenis"),
+                'c.tglbukti',
+                'c.tglbukti as tglbukti2',
+                'a.nobukti',
+                'a.nobukti as nobukti2',
+                'a.keterangan',
+                'a.nominal',
+                db::raw("0 as nominalbayar"),
+                db::raw("0 as nominalsisa"),
+            )
+            ->leftjoin(db::raw($Temppengembalianrekap . " b "), 'a.nobukti', 'b.nobukti')
+            ->join(db::raw("kasgantungheader c with (readuncommitted) "), 'a.nobukti', 'c.nobukti')
+            ->whereRaw("(isnull(a.nominal,0)-isnull(B.nominal,0))<>0")
+            ->orderBy('c.tglbukti', 'asc');
+
+        DB::table($TempRekapkasgantung)->insertUsing([
+            'jenis',
+            'tglbukti',
+            'tglbukti2',
+            'nobukti',
+            'nobukti2',
+            'keterangan',
+            'nominal',
+            'nominalbayar',
+            'sisa',
+        ], $queryTempRekapkasgantung);
+
+        $queryTempRekapkasgantung = db::table($Tempkasgantungrekap)->from(db::raw($Tempkasgantungrekap . " a"))
+            ->select(
+                db::raw("3 as jenis"),
+                'c.tglbukti',
+                'c.tglbukti as tglbukti2',
+                'a.nobukti',
+                'a.nobukti as nobukti2',
+                db::raw("'SISA PELUNASAN' as keterangan"),
+                db::raw("0 as nominal"),
+                db::raw("0 as nominalbayar"),
+                db::raw("0 as nominalsisa"),
+            )
+            ->leftjoin(db::raw($Temppengembalianrekap . " b "), 'a.nobukti', 'b.nobukti')
+            ->join(db::raw("kasgantungheader c with (readuncommitted) "), 'a.nobukti', 'c.nobukti')
+            ->whereRaw("(isnull(a.nominal,0)-isnull(B.nominal,0))<>0")
+            ->orderBy('c.tglbukti', 'asc');
+
+        DB::table($TempRekapkasgantung)->insertUsing([
+            'jenis',
+            'tglbukti',
+            'tglbukti2',
+            'nobukti',
+            'nobukti2',
+            'keterangan',
+            'nominal',
+            'nominalbayar',
+            'sisa',
+        ], $queryTempRekapkasgantung);
+
+
+        $queryTempRekapkasgantung = db::table($Tempkasgantungrekap)->from(db::raw($Tempkasgantungrekap . " a"))
+            ->select(
+
+                db::raw("2 as jenis"),
+                'd.tglbukti',
+                'c.tglbukti as tglbukti2',
+                'a.nobukti',
+                'c.penerimaan_nobukti  as nobukti2',
+                'b.keterangan',
+                db::raw("0 as nominal"),
+                'b.nominal as nominalbayar',
+                db::raw("0 as nominalsisa"),
+            )
+
+            ->join(db::raw("pengembaliankasgantungdetail b with (readuncommitted) "), 'a.nobukti', 'b.kasgantung_nobukti')
+            ->join(db::raw("pengembaliankasgantungheader c with (readuncommitted) "), 'b.nobukti', 'c.nobukti')
+            ->join(db::raw("kasgantungheader d with (readuncommitted) "), 'a.nobukti', 'd.nobukti')
+            ->orderBy('c.tglbukti', 'asc');
+
+        DB::table($TempRekapkasgantung)->insertUsing([
+            'jenis',
+            'tglbukti',
+            'tglbukti2',
+            'nobukti',
+            'nobukti2',
+            'keterangan',
+            'nominal',
+            'nominalbayar',
+            'sisa',
+        ], $queryTempRekapkasgantung);
+
+
+
+        $Temphasil = '##Temphasil' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+        Schema::create($Temphasil, function ($table) {
+            $table->id();
+            $table->Integer('jenis')->nullable();
+            $table->dateTime('tglbukti')->nullable();
+            $table->date('tglbukti2')->nullable();
+            $table->string('nobukti', 50)->nullable();
+            $table->string('nobukti2', 50)->nullable();
+            $table->string('coa', 1000)->nullable();
+            $table->longtext('keterangan')->nullable();
+            $table->double('nominal', 15, 2)->nullable();
+            $table->double('nominalbayar', 15, 2)->nullable();
+            $table->double('sisa', 15, 2)->nullable();
+        });
+
+
+        $queryhasil = db::table($TempRekapkasgantung)->from(db::raw($TempRekapkasgantung . " a"))
+            ->select(
+                'a.jenis',
+                'a.tglbukti',
+                'a.tglbukti2',
+                'a.nobukti',
+                'a.nobukti2',
+                'a.keterangan',
+                'a.nominal',
+                'a.nominalbayar',
+                db::raw("sum ((nominal-nominalbayar)) over (partition by nobukti order by tglbukti,nobukti,jenis,tglbukti2 asc) as sisa"),
+            )
+
+            ->orderBy('a.tglbukti', 'asc')
+            ->orderBy('a.nobukti', 'asc')
+            ->orderBy('a.jenis', 'asc')
+            ->orderBy('a.tglbukti2', 'asc');
+
+        DB::table($Temphasil)->insertUsing([
+            'jenis',
+            'tglbukti',
+            'tglbukti2',
+            'nobukti',
+            'nobukti2',
+            'keterangan',
+            'nominal',
+            'nominalbayar',
+            'sisa',
+        ], $queryhasil);
+
+
+
+        $getdata2 = db::table($Temphasil)->from(db::raw($Temphasil . " a"))
+            ->select(
+                 'a.jenis',
+                db::raw("format(a.tglbukti2,'dd-MM-yyyy') as tglbukti"),
+                'a.nobukti2 as nobukti',
+                'a.keterangan',
+                'a.nominal',
+                'a.nominalbayar',
+                db::raw("(case when a.jenis<>3 then 0 else a.sisa end) as sisa"),
+                // 'a.tglbukti as tglbukti3',
+                // 'a.nobukti as nobukti3',
+
+
+            )
+            ->orderby('a.id', 'asc')
+            ->get();
+
+
+
+
+        return [$getData, $getdata2];
     }
 
 
