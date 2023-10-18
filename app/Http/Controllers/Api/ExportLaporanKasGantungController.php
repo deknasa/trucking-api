@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\ExportLaporanKasGantung;
+use App\Http\Requests\ValidasiExportKasHarianRequest;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
@@ -26,14 +27,29 @@ class ExportLaporanKasGantungController extends Controller
     /**
      * @ClassName
      */
-    public function export(Request $request)
+    public function export(ValidasiExportKasHarianRequest $request)
     {
-        $periode = $request->periode;
+        if ($request->isCheck) {
+            return response([
+                'data' => 'ok'
+            ]);
+        } else {
 
-        $exportlaporankasgantung = new ExportLaporanKasGantung();
-        // $report = ExportLaporanKasGantung::getExport($periode);
-        return response([
-            'data' => $exportlaporankasgantung->getExport($periode)
-        ]);
+            $sampai = $request->periode;
+            $jenis = $request->bank_id;
+
+
+            $export = ExportLaporanKasGantung::getExport($sampai, $jenis);
+
+          
+
+            // foreach ($export[0] as $data) {
+            //     $data->tgl = date('d-m-Y', strtotime($data->tgl));
+            // }
+
+            return response([
+                'data' => $export,
+            ]);
+        }
     }
 }
