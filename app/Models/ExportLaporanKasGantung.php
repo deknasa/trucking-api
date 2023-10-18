@@ -418,7 +418,7 @@ class ExportLaporanKasGantung extends MyModel
                 'a.nominalbayar',
                 db::raw("(case when a.jenis<>3 then 0 else a.sisa end) as sisa"),
                 // 'a.tglbukti as tglbukti3',
-                // 'a.nobukti as nobukti3',
+                'a.nobukti as nobukti3',
 
 
             )
