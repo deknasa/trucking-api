@@ -83,7 +83,7 @@ class ProsesGajiSupirHeader extends MyModel
         if (isset($hutangBayar)) {
             $data = [
                 'kondisi' => true,
-                'keterangan' => 'Approval Jurnal '. $hutangBayar->nobukti,
+                'keterangan' => 'Approval Jurnal ' . $hutangBayar->nobukti,
                 'kodeerror' => 'SAP'
             ];
             goto selesai;
@@ -101,7 +101,7 @@ class ProsesGajiSupirHeader extends MyModel
         if (isset($hutangBayar)) {
             $data = [
                 'kondisi' => true,
-                'keterangan' => 'Approval Jurnal '. $hutangBayar->nobukti,
+                'keterangan' => 'Approval Jurnal ' . $hutangBayar->nobukti,
                 'kodeerror' => 'SAP'
             ];
             goto selesai;
@@ -154,8 +154,8 @@ class ProsesGajiSupirHeader extends MyModel
                 $this->tableTotal . '.potonganpinjamansemua',
                 $this->tableTotal . '.deposito',
                 db::raw("cast((format(pengeluaran.tglbukti,'yyyy/MM')+'/1') as date) as tgldariheaderpengeluaranheader"),
-                db::raw("cast(cast(format((cast((format(pengeluaran.tglbukti,'yyyy/MM')+'/1') as datetime)+32),'yyyy/MM')+'/01' as datetime)-1 as date) as tglsampaiheaderpengeluaranheader"), 
-                
+                db::raw("cast(cast(format((cast((format(pengeluaran.tglbukti,'yyyy/MM')+'/1') as datetime)+32),'yyyy/MM')+'/01' as datetime)-1 as date) as tglsampaiheaderpengeluaranheader"),
+
             )
 
             ->leftJoin(DB::raw("parameter as statuscetak with (readuncommitted)"), 'prosesgajisupirheader.statuscetak', 'statuscetak.id')
@@ -1059,6 +1059,32 @@ class ProsesGajiSupirHeader extends MyModel
             ->groupBy('C.tglbukti');
 
         DB::table($tempRincianJurnal)->insertUsing(['tglbukti', 'nominal', 'keterangan'], $fetchTempRincianJurnal2);
+
+        // gaji kenek
+
+        $queryebskenek = db::table("parameter")->from(db::raw("parameter a with (readuncommitted)"))
+            ->select(
+                'a.id'
+            )
+            ->where('a.grp', 'JURNAL EBS GAJI KENEK')
+            ->where('a.subgrp', 'JURNAL EBS GAJI KENEK')
+            ->where('a.text', 'YA')
+            ->first();
+        if (isset($queryebskenek)) {
+            $fetchTempRincianJurnal2 = DB::table($tempGaji)->from(DB::raw("$tempGaji as A with (readuncommitted)"))
+                ->select(
+                    DB::raw("C.tglbukti, isnull(sum(B.gajikenek),0) as nominal, 'Gaji Kenek' as keterangan")
+                )
+                ->join(DB::raw("gajisupirdetail as B with (readuncommitted)"), 'A.nobukti', 'B.nobukti')
+                ->join(DB::raw("suratpengantar as C with (readuncommitted)"), 'B.suratpengantar_nobukti', 'C.nobukti')
+                ->whereRaw("isnull(B.gajikenek ,0)<>0")
+                ->groupBy('C.tglbukti');
+
+            DB::table($tempRincianJurnal)->insertUsing(['tglbukti', 'nominal', 'keterangan'], $fetchTempRincianJurnal2);
+        }
+
+
+        // 
 
         $tgl = DB::table($tempRincianJurnal)->select(DB::raw("min(tglbukti) as tglbukti"))->first();
 
@@ -2056,7 +2082,7 @@ class ProsesGajiSupirHeader extends MyModel
 
             $fetchPS = GajiSupirPelunasanPinjaman::from(DB::raw("gajisupirpelunasanpinjaman with (readuncommitted)"))->where('gajisupir_nobukti', $data['nobuktiRIC'][$i])->where('supir_id', '0');
             $cekFetchPS = $fetchPS->first();
-            
+
             if ($cekFetchPS != null) {
                 $dataFetchPS = $fetchPS->get();
                 $getNominal = PenerimaanTruckingDetail::from(DB::raw("penerimaantruckingdetail with (readuncommitted)"))
@@ -2104,7 +2130,7 @@ class ProsesGajiSupirHeader extends MyModel
             $fetchPP = DB::table("gajisupirpelunasanpinjaman")->from(DB::raw("gajisupirpelunasanpinjaman with (readuncommitted)"))->where('gajisupir_nobukti', $data['nobuktiRIC'][$i])->where('supir_id', '!=', '0')->first();
             if ($fetchPP != null) {
                 $dataFetchPP = DB::table("gajisupirpelunasanpinjaman")->from(DB::raw("gajisupirpelunasanpinjaman with (readuncommitted)"))->where('gajisupir_nobukti', $data['nobuktiRIC'][$i])->where('supir_id', '!=', '0')->get();
-                
+
                 $getNominal = PenerimaanTruckingDetail::from(DB::raw("penerimaantruckingdetail with (readuncommitted)"))
                     ->where('nobukti', $fetchPP->penerimaantrucking_nobukti)->get();
                 $totalPotPribadi = $totalPotPribadi + $getNominal->sum('nominal');
@@ -2252,7 +2278,7 @@ class ProsesGajiSupirHeader extends MyModel
                 $nominalPP = $nominalPostingNon;
                 $coaKreditPP = $coakreditPostingNon;
                 $keteranganPP = $keteranganPostingNon;
-                
+
                 $penerimaanHeaderPP = [
                     'tglbukti' => $prosesGajiSupirHeader->tglbukti,
                     'pelanggan_id' => '',
