@@ -323,6 +323,7 @@ route::middleware(['auth:api'])->group(function () {
     Route::get('suratpengantarapprovalinputtrip/cektanggal', [SuratPengantarApprovalInputTripController::class, 'isTanggalAvaillable']);
     Route::get('suratpengantar/default', [SuratPengantarController::class, 'default']);
     Route::get('saldoumuraki/getUmurAki', [SaldoUmurAkiController::class, 'getUmurAki']);
+    Route::get('saldoumuraki/getUmurAkiAll', [SaldoUmurAkiController::class, 'getUmurAkiAll']);
     Route::resource('saldoumuraki', SaldoUmurAkiController::class)->whereNumber('saldoumuraki');
 
     Route::resource('agen', AgenController::class)->whereNumber('agen');

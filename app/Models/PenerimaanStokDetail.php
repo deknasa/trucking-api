@@ -43,6 +43,17 @@ class PenerimaanStokDetail extends MyModel
             $query->where("$this->table.penerimaanstokheader_id", request()->penerimaanstokheader_id);
         }
         if (isset(request()->forReport) && request()->forReport) {
+            $tempumuraki = '##tempumuraki' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+            Schema::create($tempumuraki, function ($table) {
+                $table->Integer('stok_id')->nullable();
+                $table->integer('jumlahhari')->nullable();
+            });
+
+            DB::table($tempumuraki)->insertUsing([
+                'stok_id',
+                'jumlahhari',
+            ], (new SaldoUmurAki())->getallstok());
+
             $getJudul = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))
                 ->select('text')
                 ->where('grp', 'JUDULAN LAPORAN')
@@ -52,7 +63,11 @@ class PenerimaanStokDetail extends MyModel
                 "$this->table.penerimaanstokheader_id",
                 "$this->table.nobukti",
                 "$this->table.stok_id",
-                "stok.namastok as stok",
+                db::raw("trim(stok.namastok)+
+                (case when isnull(c.stok_id,0)<>0 then ' ( UMUR AKI : '+format(isnull(c.jumlahhari,0),'#,#0')+' HARI )' 
+                      when isnull(stok.kelompok_id,0)=1 then ' ( VULKANISIR KE-'+format(isnull(stok.totalvulkanisir,0),'#,#0')+', STATUS BAN :'+isnull(parameter.text,'') +' )' 
+                else '' end)
+                as stok"),
                 "$this->table.qty",
                 "$this->table.harga",
                 "$this->table.persentasediscount",
@@ -68,7 +83,10 @@ class PenerimaanStokDetail extends MyModel
                 DB::raw(" 'User :" . auth('api')->user()->name . "' as usercetak")
             )
                 ->leftJoin("penerimaanstokheader", "$this->table.penerimaanstokheader_id", "penerimaanstokheader.id")
-                ->leftJoin("stok", "$this->table.stok_id", "stok.id");
+                ->leftJoin("stok", "$this->table.stok_id", "stok.id")
+                ->leftJoin("parameter", "stok.statusban", "parameter.id")
+                ->leftJoin(db::raw($tempumuraki ." c"), "$this->table.stok_id", "c.stok_id");
+                
             $totalRows =  $query->count();
             $penerimaanStokDetail = $query->get();
         } else {
