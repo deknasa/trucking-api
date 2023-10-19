@@ -1672,7 +1672,7 @@ class PengeluaranTruckingHeader extends MyModel
         $pengeluaranDetail = PengeluaranTruckingDetail::where('pengeluarantruckingheader_id', $pengeluaranTruckingHeader->id)->get();
         $dataDetail = $pengeluaranDetail->toArray();
         if ($klaim->id == $pengeluaranTruckingHeader->pengeluarantrucking_id) {
-            if ($pengeluaranTruckingHeader->postingpinjaman != $statusPosting->id) {
+            if ($pengeluaranTruckingHeader->statusposting != $statusPosting->id) {
                 $pinjaman = PengeluaranTruckingHeader::where('nobukti', $pengeluaranTruckingHeader->pengeluarantrucking_nobukti)->first();
                 // dd($pinjaman);
                 PengeluaranTruckingHeader::deletePinjamanPosting($pinjaman->id);

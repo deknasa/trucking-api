@@ -173,6 +173,18 @@ class ProsesGajiSupirHeader extends MyModel
         if ($statusCetak != '') {
             $query->where("prosesgajisupirheader.statuscetak", $statusCetak);
         }
+
+        
+        $this->totalAll = $query->sum($this->tableTotal.".total");
+        $this->totalPosting = $query->sum($this->tableTotal.".totalposting");
+        $this->totalJalan = $query->sum($this->tableTotal.".uangjalan");
+        $this->totalBbm = $query->sum($this->tableTotal.".bbm");
+        $this->totalMakan = $query->sum($this->tableTotal.".uangmakanharian");
+        $this->totalMakanBerjenjang = $query->sum($this->tableTotal.".uangmakanberjenjang");
+        $this->totalPotPinj = $query->sum($this->tableTotal.".potonganpinjaman");
+        $this->totalPotSemua = $query->sum($this->tableTotal.".potonganpinjamansemua");
+        $this->totalDeposito = $query->sum($this->tableTotal.".deposito");
+
         $this->totalRows = $query->count();
         $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;
 
