@@ -93,6 +93,7 @@ class ErrorSeeder extends Seeder
         error::create(['kodeerror' => 'NDP', 'keterangan' => 'KOSONGKAN NOMINAL LEBIH BAYAR DAN TIPE NOTA DEBET UNTUK MENGGUNAKAN PELUNASAN NOTA DEBET', 'modifiedby' => 'ADMIN',]);
         error::create(['kodeerror' => 'PTS', 'keterangan' => 'PENYESUAIAN TIDAK SAMA', 'modifiedby' => 'ADMIN',]);
         error::create(['kodeerror' => 'TB-0', 'keterangan' => 'TIDAK BOLEH 0', 'modifiedby' => 'ADMIN',]);
+        error::create(['kodeerror' => 'POST', 'keterangan' => 'YANG SUDAH DIPOSTING TIDAK DAPAT DIUBAH MENJADI BUKAN POSTING', 'modifiedby' => 'ADMIN',]);
 
     }
 }

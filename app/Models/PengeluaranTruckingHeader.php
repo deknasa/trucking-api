@@ -1552,7 +1552,7 @@ class PengeluaranTruckingHeader extends MyModel
 
         if (($tanpaprosesnobukti != 2)) {
             if ($klaim->id == $data['pengeluarantrucking_id']) {
-                if ($pengeluaranTruckingDetail->postingpinjaman != $statusPosting->id) {
+                if ($pengeluaranTruckingDetail->statusPosting != $statusPosting->id) {
                     $pinjaman = DB::table('pengeluarantrucking')->from(DB::raw("pengeluarantrucking with (readuncommitted)"))->where('kodepengeluaran', "PJT")->first();
                 }
 
@@ -1572,7 +1572,15 @@ class PengeluaranTruckingHeader extends MyModel
                     'keterangan' => $pjt_keterangan,
                 ];
 
-                $pinjaman = $this->updatePinjamanPosting($pengeluaranTruckingHeader->pengeluarantrucking_nobukti, $pjtRequest);
+                if ($pengeluaranTruckingDetail->statusPosting != $statusPosting->id) {
+                    if ($pengeluaranTruckingHeader->pengeluarantrucking_nobukti != '') {
+                        $pinjaman = $this->updatePinjamanPosting($pengeluaranTruckingHeader->pengeluarantrucking_nobukti, $pjtRequest);
+                    } else {
+                        $pinjaman = $this->storePinjamanPosting($pjtRequest);
+                        $pengeluaranTruckingHeader->pengeluarantrucking_nobukti = $pinjaman->nobukti;
+                        $pengeluaranTruckingHeader->save();
+                    }
+                }
             } else {
                 if ($pengeluaranTruckingHeader->statusposting != $statusPosting->id) {
                     $alatbayar = AlatBayar::where('bank_id', $pengeluaranTruckingHeader->bank_id)->first();
