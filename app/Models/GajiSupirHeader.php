@@ -9,6 +9,7 @@ use Illuminate\Database\Eloquent\Model;
 
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
+use Illuminate\Database\Schema\Blueprint;
 
 class GajiSupirHeader extends MyModel
 {
@@ -41,7 +42,7 @@ class GajiSupirHeader extends MyModel
         if (isset($rekap)) {
             $data = [
                 'kondisi' => true,
-                'keterangan' => 'PROSES GAJI SUPIR '.$rekap->nobukti,
+                'keterangan' => 'PROSES GAJI SUPIR ' . $rekap->nobukti,
                 'kodeerror' => 'SATL'
             ];
             goto selesai;
@@ -60,7 +61,7 @@ class GajiSupirHeader extends MyModel
         if (isset($rekap)) {
             $data = [
                 'kondisi' => true,
-                'keterangan' => 'PENDAPATAN SUPIR '.$rekap->nobukti,
+                'keterangan' => 'PENDAPATAN SUPIR ' . $rekap->nobukti,
                 'kodeerror' => 'SATL'
             ];
             goto selesai;
@@ -79,61 +80,250 @@ class GajiSupirHeader extends MyModel
         $this->setRequestParameters();
         $periode = request()->periode ?? '';
         $statusCetak = request()->statuscetak ?? '';
+        $proses = request()->proses ?? 'reload';
+        $user = auth('api')->user()->name;
+        $class = 'GajiSupirHeaderController';
 
-        $query = DB::table($this->table)->from(DB::raw("gajisupirheader with (readuncommitted)"))
-            ->select(
-                'gajisupirheader.id',
-                'gajisupirheader.nobukti',
-                'gajisupirheader.tglbukti',
-                'supir.namasupir as supir_id',
-                // 'gajisupirheader.keterangan',
-                'gajisupirheader.nominal',
-                'gajisupirheader.tgldari',
-                'gajisupirheader.tglsampai',
-                'gajisupirheader.total',
-                'gajisupirheader.uangjalan',
-                'gajisupirheader.bbm',
-                'gajisupirheader.deposito',
-                'gajisupirheader.potonganpinjaman',
-                'gajisupirheader.potonganpinjamansemua',
-                DB::raw("(case when gajisupirheader.uangmakanberjenjang IS NULL then 0 else gajisupirheader.uangmakanberjenjang end) as uangmakanberjenjang"),
-                'gajisupirheader.uangmakanharian',
-                'gajisupirheader.uangJalantidakterhitung',
-                'parameter.memo as statuscetak',
-                "parameter.text as statuscetak_text",
-                'gajisupirheader.userbukacetak',
-                'gajisupirheader.jumlahcetak',
-                DB::raw('(case when (year(gajisupirheader.tglbukacetak) <= 2000) then null else gajisupirheader.tglbukacetak end ) as tglbukacetak'),
-                'gajisupirheader.modifiedby',
-                'gajisupirheader.created_at',
-                'gajisupirheader.updated_at',
-                DB::raw('(total + uangmakanharian + isnull(uangmakanberjenjang,0) - uangJalantidakterhitung - uangjalan - potonganpinjaman - potonganpinjamansemua - deposito - bbm) as sisa')
+        if ($proses == 'reload') {
+            $temtabel = 'temp' . rand(1, getrandmax()) . str_replace('.', '', microtime(true)) . request()->nd ?? 0;
+
+            $querydata = DB::table('listtemporarytabel')->from(
+                DB::raw("listtemporarytabel a with (readuncommitted)")
             )
+                ->select(
+                    'id',
+                    'class',
+                    'namatabel',
+                )
+                ->where('class', '=', $class)
+                ->where('modifiedby', '=', $user)
+                ->first();
 
-            ->leftJoin(DB::raw("parameter with (readuncommitted)"), 'gajisupirheader.statuscetak', 'parameter.id')
-            ->leftJoin(DB::raw("supir with (readuncommitted)"), 'gajisupirheader.supir_id', 'supir.id');
-        if (request()->tgldari && request()->tglsampai) {
-            $query->whereBetween($this->table . '.tglbukti', [date('Y-m-d', strtotime(request()->tgldari)), date('Y-m-d', strtotime(request()->tglsampai))]);
+            if (isset($querydata)) {
+                Schema::dropIfExists($querydata->namatabel);
+                DB::table('listtemporarytabel')->where('id', $querydata->id)->delete();
+            }
+
+            DB::table('listtemporarytabel')->insert(
+                [
+                    'class' => $class,
+                    'namatabel' => $temtabel,
+                    'modifiedby' => $user,
+                    'created_at' => date('Y/m/d H:i:s'),
+                    'updated_at' => date('Y/m/d H:i:s'),
+                ]
+            );
+
+
+            Schema::create($temtabel, function (Blueprint $table) {
+                $table->integer('id')->nullable();
+                $table->string('nobukti', 1000)->nullable();
+                $table->dateTime('tglbukti')->nullable();
+                $table->longText('supir_id')->nullable();
+                $table->double('nominal', 15, 2)->nullable();
+                $table->date('tgldari')->nullable();
+                $table->date('tglsampai')->nullable();
+                $table->double('komisisupir', 15, 2)->nullable();
+                $table->double('gajikenek', 15, 2)->nullable();
+                $table->double('biayaextra', 15, 2)->nullable();
+                $table->double('total', 15, 2)->nullable();
+                $table->double('uangjalan', 15, 2)->nullable();
+                $table->double('bbm', 15, 2)->nullable();
+                $table->double('deposito', 15, 2)->nullable();
+                $table->double('potonganpinjaman', 15, 2)->nullable();
+                $table->double('potonganpinjamansemua', 15, 2)->nullable();
+                $table->double('uangmakanberjenjang', 15, 2)->nullable();
+                $table->double('uangmakanharian', 15, 2)->nullable();
+                $table->double('uangJalantidakterhitung', 15, 2)->nullable();
+                $table->longText('statuscetak')->nullable();
+                $table->longText('statuscetak_text')->nullable();
+                $table->string('userbukacetak', 1000)->nullable();
+                $table->integer('jumlahcetak')->nullable();
+                $table->date('tglbukacetak')->nullable();
+                $table->string('modifiedby', 1000)->nullable();
+                $table->dateTime('created_at')->nullable();
+                $table->dateTime('updated_at')->nullable();
+                $table->double('sisa', 15, 2)->nullable();
+            });
+
+            $tempgajidetail = '##tempgajidetail' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+            Schema::create($tempgajidetail, function ($table) {
+                $table->string('nobukti', 1000)->nullable();
+                $table->double('komisisupir', 15, 2)->nullable();
+                $table->double('gajikenek', 15, 2)->nullable();
+                $table->double('biayaextra', 15, 2)->nullable();
+            });
+
+            $querytempdetail = DB::table("gajisupirheader")->from(DB::raw("gajisupirheader with (readuncommitted)"))
+            ->select(
+                'gajisupirheader.nobukti',
+                db::raw("sum(gajisupirdetail.komisisupir) as komisisupir"),
+                db::raw("sum(gajisupirdetail.gajikenek) as gajikenek"),
+                db::raw("sum(gajisupirdetail.biayatambahan) as biayaextra"),
+            )
+            ->join(DB::raw("gajisupirdetail with (readuncommitted)"),'gajisupirheader.nobukti','gajisupirdetail.nobukti');
+
+            if (request()->tgldari && request()->tglsampai) {
+                $querytempdetail->whereBetween( 'gajisupirheader.tglbukti', [date('Y-m-d', strtotime(request()->tgldari)), date('Y-m-d', strtotime(request()->tglsampai))]);
+            }
+            if ($periode != '') {
+                $periode = explode("-", $periode);
+                $querytempdetail->whereRaw("MONTH(gajisupirheader.tglbukti) ='" . $periode[0] . "'")
+                    ->whereRaw("year(gajisupirheader.tglbukti) ='" . $periode[1] . "'");
+            }
+            if ($statusCetak != '') {
+                $querytempdetail->where("gajisupirheader.statuscetak", $statusCetak);
+            }
+            $querytempdetail->groupBy('gajisupirheader.nobukti');
+
+            DB::table($tempgajidetail)->insertUsing([
+                'nobukti',
+                'komisisupir',
+                'gajikenek',
+                'biayaextra',
+            ], $querytempdetail);
+            
+            $querytemp = DB::table($this->table)->from(DB::raw("gajisupirheader with (readuncommitted)"))
+                ->select(
+                    'gajisupirheader.id',
+                    'gajisupirheader.nobukti',
+                    'gajisupirheader.tglbukti',
+                    'supir.namasupir as supir_id',
+                    // 'gajisupirheader.keterangan',
+                    'gajisupirheader.nominal',
+                    'gajisupirheader.tgldari',
+                    'gajisupirheader.tglsampai',
+                    db::raw("isnull(C.komisisupir,0) as komisisupir"),
+                    db::raw("isnull(C.gajikenek,0) as gajikenek"),
+                    db::raw("isnull(C.biayaextra,0) as biayaextra"),
+                    db::raw("(gajisupirheader.total+isnull(C.komisisupir,0)+isnull(C.gajikenek,0)+isnull(C.biayaextra,0)) as total"),
+                    'gajisupirheader.uangjalan',
+                    'gajisupirheader.bbm',
+                    'gajisupirheader.deposito',
+                    'gajisupirheader.potonganpinjaman',
+                    'gajisupirheader.potonganpinjamansemua',
+                    DB::raw("(case when gajisupirheader.uangmakanberjenjang IS NULL then 0 else gajisupirheader.uangmakanberjenjang end) as uangmakanberjenjang"),
+                    'gajisupirheader.uangmakanharian',
+                    'gajisupirheader.uangJalantidakterhitung',
+                    'parameter.memo as statuscetak',
+                    "parameter.text as statuscetak_text",
+                    'gajisupirheader.userbukacetak',
+                    'gajisupirheader.jumlahcetak',
+                    DB::raw('(case when (year(gajisupirheader.tglbukacetak) <= 2000) then null else gajisupirheader.tglbukacetak end ) as tglbukacetak'),
+                    'gajisupirheader.modifiedby',
+                    'gajisupirheader.created_at',
+                    'gajisupirheader.updated_at',
+                    DB::raw('(total + uangmakanharian + isnull(uangmakanberjenjang,0) - uangJalantidakterhitung - uangjalan - potonganpinjaman - potonganpinjamansemua - deposito - bbm) as sisa')
+                )
+
+                ->leftJoin(DB::raw("parameter with (readuncommitted)"), 'gajisupirheader.statuscetak', 'parameter.id')
+                ->leftJoin(DB::raw("supir with (readuncommitted)"), 'gajisupirheader.supir_id', 'supir.id')
+                ->leftJoin(DB::raw($tempgajidetail . " c"), 'gajisupirheader.nobukti', 'c.nobukti');
+                
+            if (request()->tgldari && request()->tglsampai) {
+                $querytemp->whereBetween($this->table . '.tglbukti', [date('Y-m-d', strtotime(request()->tgldari)), date('Y-m-d', strtotime(request()->tglsampai))]);
+            }
+            if ($periode != '') {
+                $periode = explode("-", $periode);
+                $querytemp->whereRaw("MONTH(gajisupirheader.tglbukti) ='" . $periode[0] . "'")
+                    ->whereRaw("year(gajisupirheader.tglbukti) ='" . $periode[1] . "'");
+            }
+            if ($statusCetak != '') {
+                $querytemp->where("gajisupirheader.statuscetak", $statusCetak);
+            }
+
+            DB::table($temtabel)->insertUsing([
+                'id',
+                'nobukti',
+                'tglbukti',
+                'supir_id',
+                'nominal',
+                'tgldari',
+                'tglsampai',
+                'komisisupir',
+                'gajikenek',
+                'biayaextra',
+                'total',
+                'uangjalan',
+                'bbm',
+                'deposito',
+                'potonganpinjaman',
+                'potonganpinjamansemua',
+                'uangmakanberjenjang',
+                'uangmakanharian',
+                'uangJalantidakterhitung',
+                'statuscetak',
+                'statuscetak_text',
+                'userbukacetak',
+                'jumlahcetak',
+                'tglbukacetak',
+                'modifiedby',
+                'created_at',
+                'updated_at',
+                'sisa',
+            ], $querytemp);
+        } else {
+            $querydata = DB::table('listtemporarytabel')->from(
+                DB::raw("listtemporarytabel with (readuncommitted)")
+            )
+                ->select(
+                    'namatabel',
+                )
+                ->where('class', '=', $class)
+                ->where('modifiedby', '=', $user)
+                ->first();
+
+            // dd($querydata);
+            $temtabel = $querydata->namatabel;
         }
-        if ($periode != '') {
-            $periode = explode("-", $periode);
-            $query->whereRaw("MONTH(gajisupirheader.tglbukti) ='" . $periode[0] . "'")
-                ->whereRaw("year(gajisupirheader.tglbukti) ='" . $periode[1] . "'");
-        }
-        if ($statusCetak != '') {
-            $query->where("gajisupirheader.statuscetak", $statusCetak);
-        }
-        
-        
-        $this->totalAll = $query->sum("gajisupirheader.total");
-        $this->totalUangJalan = $query->sum("gajisupirheader.uangjalan");
-        $this->totalBbm = $query->sum("gajisupirheader.bbm");
-        $this->totalDeposito = $query->sum("gajisupirheader.deposito");
-        $this->totalPotPinj = $query->sum("gajisupirheader.potonganpinjaman");
-        $this->totalPotSemua = $query->sum("gajisupirheader.potonganpinjamansemua");
-        $this->totalJenjang = $query->sum("gajisupirheader.uangmakanberjenjang");
-        $this->totalMakan = $query->sum("gajisupirheader.uangmakanharian");
-        $this->totalNominal = $query->sum("gajisupirheader.nominal");
+
+        // dd(db::table($temtabel)->get()) ;
+
+        $query = DB::table($temtabel)->from(DB::raw($temtabel . " a "))
+            ->select(
+                'a.id',
+                'a.nobukti',
+                'a.tglbukti',
+                'a.supir_id',
+                'a.nominal',
+                'a.tgldari',
+                'a.tglsampai',
+                'a.komisisupir',
+                'a.gajikenek',
+                'a.biayaextra',
+                'a.total',
+                'a.uangjalan',
+                'a.bbm',
+                'a.deposito',
+                'a.potonganpinjaman',
+                'a.potonganpinjamansemua',
+                'a.uangmakanberjenjang',
+                'a.uangmakanharian',
+                'a.uangJalantidakterhitung',
+                'a.statuscetak',
+                'a.statuscetak_text',
+                'a.userbukacetak',
+                'a.jumlahcetak',
+                'a.tglbukacetak',
+                'a.modifiedby',
+                'a.created_at',
+                'a.updated_at',
+                'a.sisa',
+            );
+        // dd($query->get());
+
+        $this->totalAll = $query->sum("a.total");
+        $this->totalUangJalan = $query->sum("a.uangjalan");
+        $this->totalGajiKenek = $query->sum("a.gajikenek");
+        $this->totalKomisiSupir = $query->sum("a.komisisupir");
+        $this->totalBiayaExtra = $query->sum("a.biayaextra");
+        $this->totalBbm = $query->sum("a.bbm");
+        $this->totalDeposito = $query->sum("a.deposito");
+        $this->totalPotPinj = $query->sum("a.potonganpinjaman");
+        $this->totalPotSemua = $query->sum("a.potonganpinjamansemua");
+        $this->totalJenjang = $query->sum("a.uangmakanberjenjang");
+        $this->totalMakan = $query->sum("a.uangmakanharian");
+        $this->totalNominal = $query->sum("a.nominal");
 
         $this->totalRows = $query->count();
         $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;
@@ -630,7 +820,7 @@ class GajiSupirHeader extends MyModel
             ->select(DB::raw("row_number() Over(Order By pengeluarantruckingheader.tglbukti asc,pengeluarantruckingdetail.nobukti) as id,pengeluarantruckingheader.tglbukti as pinjPribadi_tglbukti,pengeluarantruckingdetail.nobukti as pinjPribadi_nobukti,pengeluarantruckingdetail.keterangan as pinjPribadi_keterangan," . $tempPribadi . ".sisa as pinjPribadi_sisa"))
             ->leftJoin(DB::raw("$tempPribadi with (readuncommitted)"), 'pengeluarantruckingdetail.nobukti', $tempPribadi . ".nobukti")
             ->leftJoin(DB::raw("pengeluarantruckingheader with (readuncommitted)"), 'pengeluarantruckingdetail.nobukti', "pengeluarantruckingheader.nobukti")
-            ->whereRaw("pengeluarantruckingdetail.supir_id = $supir_id") 
+            ->whereRaw("pengeluarantruckingdetail.supir_id = $supir_id")
             ->where("pengeluarantruckingheader.pengeluarantrucking_id", 1)
             ->whereRaw("pengeluarantruckingdetail.nobukti = $tempPribadi.nobukti")
             ->where("pengeluarantruckingheader.tglbukti", "<=", $tglBukti)
@@ -1025,7 +1215,7 @@ class GajiSupirHeader extends MyModel
 
     public function sort($query)
     {
-        return $query->orderBy($this->table . '.' . $this->params['sortIndex'], $this->params['sortOrder']);
+        return $query->orderBy('a.' . $this->params['sortIndex'], $this->params['sortOrder']);
     }
 
     public function filter($query, $relationFields = [])
@@ -1034,40 +1224,40 @@ class GajiSupirHeader extends MyModel
             switch ($this->params['filters']['groupOp']) {
                 case "AND":
                     foreach ($this->params['filters']['rules'] as $index => $filters) {
-                        if ($filters['field'] == 'statuscetak') {
-                            $query = $query->where('parameter.text', '=', "$filters[data]");
-                        } else if ($filters['field'] == 'supir_id') {
-                            $query = $query->where('supir.namasupir', 'LIKE', "%$filters[data]%");
-                        } else if ($filters['field'] == 'total' || $filters['field'] == 'uangjalan' || $filters['field'] == 'bbm' || $filters['field'] == 'deposito' || $filters['field'] == 'potonganpinjaman' || $filters['field'] == 'potonganpinjamansemua' || $filters['field'] == 'uangmakanharian' || $filters['field'] == 'uangmakanberjenjang') {
-                            $query = $query->whereRaw("format(" . $this->table . "." . $filters['field'] . ", '#,#0.00') LIKE '%$filters[data]%'");
-                        } else if ($filters['field'] == 'tglbukti' || $filters['field'] == 'tgldari' || $filters['field'] == 'tglsampai' || $filters['field'] == 'tglbukacetak') {
-                            $query = $query->whereRaw("format(" . $this->table . "." . $filters['field'] . ", 'dd-MM-yyyy') LIKE '%$filters[data]%'");
-                        } else if ($filters['field'] == 'created_at' || $filters['field'] == 'updated_at') {
-                            $query = $query->whereRaw("format(" . $this->table . "." . $filters['field'] . ", 'dd-MM-yyyy HH:mm:ss') LIKE '%$filters[data]%'");
-                        } else {
-                            // $query = $query->where($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
-                            $query = $query->whereRaw($this->table . ".[" .  $filters['field'] . "] LIKE '%" . escapeLike($filters['data']) . "%' escape '|'");
-                        }
+                        // if ($filters['field'] == 'statuscetak') {
+                        //     $query = $query->where('parameter.text', '=', "$filters[data]");
+                        // } else if ($filters['field'] == 'supir_id') {
+                        //     $query = $query->where('supir.namasupir', 'LIKE', "%$filters[data]%");
+                        // } else if ($filters['field'] == 'total' || $filters['field'] == 'uangjalan' || $filters['field'] == 'bbm' || $filters['field'] == 'deposito' || $filters['field'] == 'potonganpinjaman' || $filters['field'] == 'potonganpinjamansemua' || $filters['field'] == 'uangmakanharian' || $filters['field'] == 'uangmakanberjenjang') {
+                        //     $query = $query->whereRaw("format(" . $this->table . "." . $filters['field'] . ", '#,#0.00') LIKE '%$filters[data]%'");
+                        // } else if ($filters['field'] == 'tglbukti' || $filters['field'] == 'tgldari' || $filters['field'] == 'tglsampai' || $filters['field'] == 'tglbukacetak') {
+                        //     $query = $query->whereRaw("format(" . $this->table . "." . $filters['field'] . ", 'dd-MM-yyyy') LIKE '%$filters[data]%'");
+                        // } else if ($filters['field'] == 'created_at' || $filters['field'] == 'updated_at') {
+                        //     $query = $query->whereRaw("format(" . $this->table . "." . $filters['field'] . ", 'dd-MM-yyyy HH:mm:ss') LIKE '%$filters[data]%'");
+                        // } else {
+                        // $query = $query->where($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
+                        $query = $query->whereRaw("a.[" .  $filters['field'] . "] LIKE '%" . escapeLike($filters['data']) . "%' escape '|'");
+                        // }
                     }
 
                     break;
                 case "OR":
                     $query = $query->where(function ($query) {
                         foreach ($this->params['filters']['rules'] as $index => $filters) {
-                            if ($filters['field'] == 'statuscetak') {
-                                $query->orWhere('parameter.text', '=', "$filters[data]");
-                            } else if ($filters['field'] == 'supir_id') {
-                                $query->orWhere('supir.namasupir', 'LIKE', "%$filters[data]%");
-                            } else if ($filters['field'] == 'total' || $filters['field'] == 'uangjalan' || $filters['field'] == 'bbm' || $filters['field'] == 'deposito' || $filters['field'] == 'potonganpinjaman' || $filters['field'] == 'potonganpinjamansemua' || $filters['field'] == 'uangmakanharian' || $filters['field'] == 'uangmakanberjenjang') {
-                                $query = $query->orWhereRaw("format(" . $this->table . "." . $filters['field'] . ", '#,#0.00') LIKE '%$filters[data]%'");
-                            } else if ($filters['field'] == 'tglbukti' || $filters['field'] == 'tgldari' || $filters['field'] == 'tglsampai' || $filters['field'] == 'tglbukacetak') {
-                                $query = $query->orWhereRaw("format(" . $this->table . "." . $filters['field'] . ", 'dd-MM-yyyy') LIKE '%$filters[data]%'");
-                            } else if ($filters['field'] == 'created_at' || $filters['field'] == 'updated_at') {
-                                $query = $query->orWhereRaw("format(" . $this->table . "." . $filters['field'] . ", 'dd-MM-yyyy HH:mm:ss') LIKE '%$filters[data]%'");
-                            } else {
-                                // $query->orWhere($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
-                                $query = $query->OrwhereRaw($this->table . ".[" .  $filters['field'] . "] LIKE '%" . escapeLike($filters['data']) . "%' escape '|'");
-                            }
+                            // if ($filters['field'] == 'statuscetak') {
+                            //     $query->orWhere('parameter.text', '=', "$filters[data]");
+                            // } else if ($filters['field'] == 'supir_id') {
+                            //     $query->orWhere('supir.namasupir', 'LIKE', "%$filters[data]%");
+                            // } else if ($filters['field'] == 'total' || $filters['field'] == 'uangjalan' || $filters['field'] == 'bbm' || $filters['field'] == 'deposito' || $filters['field'] == 'potonganpinjaman' || $filters['field'] == 'potonganpinjamansemua' || $filters['field'] == 'uangmakanharian' || $filters['field'] == 'uangmakanberjenjang') {
+                            //     $query = $query->orWhereRaw("format(" . $this->table . "." . $filters['field'] . ", '#,#0.00') LIKE '%$filters[data]%'");
+                            // } else if ($filters['field'] == 'tglbukti' || $filters['field'] == 'tgldari' || $filters['field'] == 'tglsampai' || $filters['field'] == 'tglbukacetak') {
+                            //     $query = $query->orWhereRaw("format(" . $this->table . "." . $filters['field'] . ", 'dd-MM-yyyy') LIKE '%$filters[data]%'");
+                            // } else if ($filters['field'] == 'created_at' || $filters['field'] == 'updated_at') {
+                            //     $query = $query->orWhereRaw("format(" . $this->table . "." . $filters['field'] . ", 'dd-MM-yyyy HH:mm:ss') LIKE '%$filters[data]%'");
+                            // } else {
+                            // $query->orWhere($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
+                            $query = $query->OrwhereRaw("a.[" .  $filters['field'] . "] LIKE '%" . escapeLike($filters['data']) . "%' escape '|'");
+                            // }
                         }
                     });
 
@@ -1081,9 +1271,9 @@ class GajiSupirHeader extends MyModel
             $this->totalPages = $this->params['limit'] > 0 ? ceil($this->totalRows / $this->params['limit']) : 1;
         }
         if (request()->cetak && request()->periode) {
-            $query->where('gajisupirheader.statuscetak', '<>', request()->cetak)
-                ->whereYear('gajisupirheader.tglbukti', '=', request()->year)
-                ->whereMonth('gajisupirheader.tglbukti', '=', request()->month);
+            $query->where('a.statuscetak', '<>', request()->cetak)
+                ->whereYear('a.tglbukti', '=', request()->year)
+                ->whereMonth('a.tglbukti', '=', request()->month);
             return $query;
         }
         return $query;
