@@ -68,6 +68,7 @@ class PengeluaranStokDetail extends MyModel
                 "$this->table.nobukti",
                 "$this->table.stok_id",
                 "stok.namastok as stok",
+                'statusreuse.memo as statusreuse',    
                 "$this->table.qty",
                 "$this->table.harga",
                 "$this->table.persentasediscount",
@@ -75,6 +76,7 @@ class PengeluaranStokDetail extends MyModel
                 "$this->table.total",
                 "$this->table.keterangan",
                 "$this->table.vulkanisirke",
+                "$this->table.statusban",
                 "parameter.text as statusoli",
                 "$this->table.modifiedby",
                 DB::raw("'" . $getJudul->text . "' as judul"),
@@ -83,6 +85,7 @@ class PengeluaranStokDetail extends MyModel
             )
                 ->leftJoin("pengeluaranstokheader", "$this->table.pengeluaranstokheader_id", "pengeluaranstokheader.id")
                 ->leftJoin("stok", "$this->table.stok_id", "stok.id")
+                ->leftJoin(DB::raw("parameter as statusreuse with (readuncommitted)"), 'stok.statusreuse', 'statusreuse.id')
                 ->leftJoin("parameter", "$this->table.statusoli", "parameter.id");
 
             $this->totalNominal = $query->sum('total');
@@ -176,6 +179,8 @@ class PengeluaranStokDetail extends MyModel
             'PengeluaranStokDetail.Pengeluaranstokheader_id',
             'PengeluaranStokDetail.nobukti',
             'stok.namastok as stok',
+            'stok.statusreuse as statusreuse',
+            'PengeluaranStokDetail.jumlahhariaki as jlhhari',
             'PengeluaranStokDetail.stok_id',
             'PengeluaranStokDetail.qty',
             'PengeluaranStokDetail.harga',
@@ -370,6 +375,7 @@ class PengeluaranStokDetail extends MyModel
         $pengeluaranStokDetail->nobukti = $data['nobukti'];
         $pengeluaranStokDetail->stok_id = $data['stok_id'];
         $pengeluaranStokDetail->qty = $data['qty'];
+        $pengeluaranStokDetail->jumlahhariaki = $data['jlhhari'];
         $pengeluaranStokDetail->harga = $data['harga'];
         $pengeluaranStokDetail->nominaldiscount = $nominaldiscount;
         $pengeluaranStokDetail->total = $total;

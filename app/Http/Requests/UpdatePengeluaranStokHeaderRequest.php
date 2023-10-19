@@ -111,14 +111,17 @@ class UpdatePengeluaranStokHeaderRequest extends FormRequest
 
         $afkirRules = [];
         if($afkir->id == request()->pengeluaranstok_id) {
-            $afkirRules = [
-                // 'pengeluarantrucking_nobukti' => function ($attribute, $value, $fail){
-                //     if(request()->detail_vulkanisirke[0] < 3){
-                //         $fail('pengeluaran trucking '.app(ErrorController::class)->geterror('WI')->keterangan);
-                //     }
-                // }  
-                'pengeluarantrucking_nobukti' => Rule::requiredIf(request()->detail_vulkanisirke[0] < 2)
+            $stok = DB::table('stok')->select('kelompok.id as kelompok_id')->where('stok.id', request()->detail_stok_id[0])->leftJoin("kategori", "kategori.id", "stok.kategori_id")->leftJoin("subkelompok", "subkelompok.id", "kategori.subkelompok_id")->leftJoin("kelompok", "kelompok.id", "subkelompok.kelompok_id")->first();
+            $kelompok = DB::table('kelompok')->select('id')->where('kelompok.kodekelompok', 'AKI')->first();
+            $kolom = request()->detail_vulkanisirke[0];
+            $batas = 2;
+            if ($stok->kelompok_id == $kelompok->id) {
+                $kolom = request()->jlhhari;
+                $batas = 730;
+            }
 
+            $afkirRules = [
+                'pengeluarantrucking_nobukti' => Rule::requiredIf($kolom < $batas)
             ];
         }
 
