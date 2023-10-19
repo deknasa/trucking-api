@@ -912,7 +912,7 @@ class PenerimaanStokHeader extends MyModel
                 $coadebet_detail[] = $memo['JURNAL'];
                 $coakredit_detail[] = $memokredit['JURNAL'];
                 // $nominal_detail[] = $penerimaanStokDetail->total;
-    
+                $keterangan_detail[] =$data['detail_keterangan'][$i];
                 $penerimaanStokDetail = penerimaanStokDetail::where('id',$penerimaanStokDetail->id)->first();
             
                 $nominal_detail[] = $penerimaanStokDetail->total;
@@ -934,7 +934,7 @@ class PenerimaanStokHeader extends MyModel
                     'nominal_detail' => $nominal_detail,
                     'keterangan_detail' => $keterangan_detail
                 ]; 
-                
+
                 $jurnalUmumHeader = (new JurnalUmumHeader())->processStore($jurnalRequest);                
             }
 
@@ -995,7 +995,7 @@ class PenerimaanStokHeader extends MyModel
                 $totalsat = $data['totalItem'][$i];
                 $coakredit_detail[] = $memokredit['JURNAL'];
                 $coadebet_detail[] = $memo['JURNAL'];
-                $nominal_detail[] = $totalsat;
+                $nominal_detail[] = ceil($totalsat);
                 $keterangan_detail[] = $data['detail_keterangan'][$i];
             }
 
@@ -1012,7 +1012,7 @@ class PenerimaanStokHeader extends MyModel
                 'statusformat' => "0",
                 'coakredit_detail' => $coakredit_detail,
                 'coadebet_detail' => $coadebet_detail,
-                'nominal_detail' => ceil($nominal_detail),
+                'nominal_detail' => $nominal_detail,
                 'keterangan_detail' => $keterangan_detail
             ];
             $jurnalUmumHeader = (new JurnalUmumHeader())->processStore($jurnalRequest);
@@ -1420,7 +1420,7 @@ class PenerimaanStokHeader extends MyModel
                 $totalsat = $data['totalItem'][$i];
                 $coakredit_detail[] = $memokredit['JURNAL'];
                 $coadebet_detail[] = $memo['JURNAL'];
-                $nominal_detail[] = $totalsat;
+                $nominal_detail[] = ceil($totalsat);
                 $keterangan_detail[] = $data['detail_keterangan'][$i];
             }
 
@@ -1430,7 +1430,7 @@ class PenerimaanStokHeader extends MyModel
                 'postingdari' => "EDIT PENERIMAAN STOK",
                 'coakredit_detail' => $coakredit_detail,
                 'coadebet_detail' => $coadebet_detail,
-                'nominal_detail' => ceil($nominal_detail),
+                'nominal_detail' => $nominal_detail,
                 'keterangan_detail' => $keterangan_detail
             ];
             $getJurnal = JurnalUmumHeader::from(DB::raw("jurnalumumheader with (readuncommitted)"))->where('nobukti', $penerimaanStokHeader->nobukti)->first();
