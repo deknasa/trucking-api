@@ -758,8 +758,8 @@ class GajiSupirHeader extends MyModel
         $this->setRequestParameters();
         $query = DB::table($modelTable);
         $query = $this->selectColumns($query);
-        $this->sort($query);
-        $models = $this->filter($query);
+        $this->sortforposition($query);
+        $models = $this->filterforposition($query);
         $models =  $query->whereBetween($this->table . '.tglbukti', [date('Y-m-d', strtotime(request()->tgldariheader)), date('Y-m-d', strtotime(request()->tglsampaiheader))]);
         DB::table($temp)->insertUsing(['id', 'nobukti', 'tglbukti', 'supir_id',  'nominal', 'tgldari', 'tglsampai', 'total', 'statuscetak', 'userbukacetak', 'tglbukacetak', 'jumlahcetak', 'modifiedby', 'created_at', 'updated_at'], $models);
 
@@ -1218,6 +1218,10 @@ class GajiSupirHeader extends MyModel
         return $query->orderBy('a.' . $this->params['sortIndex'], $this->params['sortOrder']);
     }
 
+    public function sortforposition($query)
+    {
+        return $query->orderBy('gajisupirheader.' . $this->params['sortIndex'], $this->params['sortOrder']);
+    }
     public function filter($query, $relationFields = [])
     {
         if (count($this->params['filters']) > 0 && @$this->params['filters']['rules'][0]['data'] != '') {
@@ -1258,6 +1262,67 @@ class GajiSupirHeader extends MyModel
                             // $query->orWhere($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
                             $query = $query->OrwhereRaw("a.[" .  $filters['field'] . "] LIKE '%" . escapeLike($filters['data']) . "%' escape '|'");
                             // }
+                        }
+                    });
+
+                    break;
+                default:
+
+                    break;
+            }
+
+            $this->totalRows = $query->count();
+            $this->totalPages = $this->params['limit'] > 0 ? ceil($this->totalRows / $this->params['limit']) : 1;
+        }
+        if (request()->cetak && request()->periode) {
+            $query->where('a.statuscetak', '<>', request()->cetak)
+                ->whereYear('a.tglbukti', '=', request()->year)
+                ->whereMonth('a.tglbukti', '=', request()->month);
+            return $query;
+        }
+        return $query;
+    }
+
+    
+    public function filterforPosition($query, $relationFields = [])
+    {
+        if (count($this->params['filters']) > 0 && @$this->params['filters']['rules'][0]['data'] != '') {
+            switch ($this->params['filters']['groupOp']) {
+                case "AND":
+                    foreach ($this->params['filters']['rules'] as $index => $filters) {
+                        if ($filters['field'] == 'statuscetak') {
+                            $query = $query->where('parameter.text', '=', "$filters[data]");
+                        } else if ($filters['field'] == 'supir_id') {
+                            $query = $query->where('supir.namasupir', 'LIKE', "%$filters[data]%");
+                        } else if ($filters['field'] == 'total' || $filters['field'] == 'uangjalan' || $filters['field'] == 'bbm' || $filters['field'] == 'deposito' || $filters['field'] == 'potonganpinjaman' || $filters['field'] == 'potonganpinjamansemua' || $filters['field'] == 'uangmakanharian' || $filters['field'] == 'uangmakanberjenjang') {
+                            $query = $query->whereRaw("format(" . $this->table . "." . $filters['field'] . ", '#,#0.00') LIKE '%$filters[data]%'");
+                        } else if ($filters['field'] == 'tglbukti' || $filters['field'] == 'tgldari' || $filters['field'] == 'tglsampai' || $filters['field'] == 'tglbukacetak') {
+                            $query = $query->whereRaw("format(" . $this->table . "." . $filters['field'] . ", 'dd-MM-yyyy') LIKE '%$filters[data]%'");
+                        } else if ($filters['field'] == 'created_at' || $filters['field'] == 'updated_at') {
+                            $query = $query->whereRaw("format(" . $this->table . "." . $filters['field'] . ", 'dd-MM-yyyy HH:mm:ss') LIKE '%$filters[data]%'");
+                        } else {
+                        $query = $query->where($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
+                        // $query = $query->whereRaw("a.[" .  $filters['field'] . "] LIKE '%" . escapeLike($filters['data']) . "%' escape '|'");
+                        }
+                    }
+
+                    break;
+                case "OR":
+                    $query = $query->where(function ($query) {
+                        foreach ($this->params['filters']['rules'] as $index => $filters) {
+                            if ($filters['field'] == 'statuscetak') {
+                                $query->orWhere('parameter.text', '=', "$filters[data]");
+                            } else if ($filters['field'] == 'supir_id') {
+                                $query->orWhere('supir.namasupir', 'LIKE', "%$filters[data]%");
+                            } else if ($filters['field'] == 'total' || $filters['field'] == 'uangjalan' || $filters['field'] == 'bbm' || $filters['field'] == 'deposito' || $filters['field'] == 'potonganpinjaman' || $filters['field'] == 'potonganpinjamansemua' || $filters['field'] == 'uangmakanharian' || $filters['field'] == 'uangmakanberjenjang') {
+                                $query = $query->orWhereRaw("format(" . $this->table . "." . $filters['field'] . ", '#,#0.00') LIKE '%$filters[data]%'");
+                            } else if ($filters['field'] == 'tglbukti' || $filters['field'] == 'tgldari' || $filters['field'] == 'tglsampai' || $filters['field'] == 'tglbukacetak') {
+                                $query = $query->orWhereRaw("format(" . $this->table . "." . $filters['field'] . ", 'dd-MM-yyyy') LIKE '%$filters[data]%'");
+                            } else if ($filters['field'] == 'created_at' || $filters['field'] == 'updated_at') {
+                                $query = $query->orWhereRaw("format(" . $this->table . "." . $filters['field'] . ", 'dd-MM-yyyy HH:mm:ss') LIKE '%$filters[data]%'");
+                            } else {
+                            $query->orWhere($this->table . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
+                            }
                         }
                     });
 
