@@ -44,7 +44,7 @@ class SaldoUmurAki extends MyModel
             ->where('a.subgrp', 'PENJUALAN STOK AFKIR')
             ->first()->text ?? 0;
 
-       
+
 
         $querypja = db::table("pengeluaranstokheader")->from(db::raw("pengeluaranstokheader a with(readuncommitted)"))
             ->select(
@@ -61,7 +61,7 @@ class SaldoUmurAki extends MyModel
             'nobukti',
         ], $querypja);
 
-      
+
         $tempSaldoAki = '##tempSaldoAki' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
         Schema::create($tempSaldoAki, function ($table) {
             $table->id();
@@ -83,7 +83,7 @@ class SaldoUmurAki extends MyModel
             ->leftjoin(db::raw($tempstokpja . " b"), "a.stok_id", "b.stok_id")
             ->where('a.stok_id', $id)
             ->whereraw("isnull(b.stok_id,0)=0");
-        
+
 
         DB::table($tempSaldoAki)->insertUsing([
             'stok_id',
@@ -115,7 +115,7 @@ class SaldoUmurAki extends MyModel
             'tglbukti',
         ], $querytrip);
 
- 
+
         $tempumurakiberjalanrekap = '##tempumurakiberjalanrekap' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
         Schema::create($tempumurakiberjalanrekap, function ($table) {
             $table->id();
@@ -139,7 +139,7 @@ class SaldoUmurAki extends MyModel
                 db::raw("sum(a.jumlahharitrip) as jumlahhari")
             )
             ->first()->jumlahhari ?? 0;
-      
+
         $umur = db::table($tempumurakiberjalanrekap)->from(db::raw($tempumurakiberjalanrekap . " a "))
             ->select(
                 db::raw("sum(a.jumlahhari) as jumlahhari")
@@ -147,6 +147,175 @@ class SaldoUmurAki extends MyModel
             ->first()->jumlahhari ?? 0;
 
         $umuraki = $umursaldo + $umur;
+
+        return $umuraki;
+    }
+
+
+    public function getallstok()
+    {
+
+        // filter stok yang pja
+        // dd('test');
+        $tempstokpja = '##tempstokpja' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+        Schema::create($tempstokpja, function ($table) {
+            $table->id();
+            $table->Integer('stok_id')->nullable();
+            $table->string('nobukti', 50)->nullable();
+        });
+
+        $pengeluaranstok_pja = db::table("parameter")->from(db::raw("parameter a with (readuncommitted)"))
+            ->select(
+                'a.text'
+            )
+            ->where('a.grp', 'PENJUALAN STOK AFKIR')
+            ->where('a.subgrp', 'PENJUALAN STOK AFKIR')
+            ->first()->text ?? 0;
+
+
+
+        $querypja = db::table("pengeluaranstokheader")->from(db::raw("pengeluaranstokheader a with(readuncommitted)"))
+            ->select(
+                'b.stok_id',
+                'a.nobukti',
+
+            )
+            ->join(db::raw("pengeluaranstokdetail b with(readuncommitted)"), "a.nobukti", "b.nobukti")
+            ->join(db::raw("stok c with(readuncommitted)"), "b.stok_id", "c.id")
+            ->where("a.pengeluaranstok_id", $pengeluaranstok_pja)
+            ->whereRaw("isnull(C.kelompok_id,0)=3");
+
+        DB::table($tempstokpja)->insertUsing([
+            'stok_id',
+            'nobukti',
+        ], $querypja);
+
+
+        $tempSaldoAki = '##tempSaldoAki' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+        Schema::create($tempSaldoAki, function ($table) {
+            $table->id();
+            $table->Integer('stok_id')->nullable();
+            $table->Integer('trado_id')->nullable();
+            $table->date('tglawal')->nullable();
+            $table->integer('jumlahharitrip')->nullable();
+            $table->bigInteger('idsaldo')->nullable();
+        });
+
+        $querysaldo = db::table('saldoumuraki')->from(db::raw("saldoumuraki a with (readuncommitted)"))
+            ->select(
+                'a.stok_id',
+                'a.trado_id',
+                'a.tglawal',
+                'a.jumlahharitrip',
+                'a.id',
+            )
+            ->leftjoin(db::raw($tempstokpja . " b"), "a.stok_id", "b.stok_id")
+            ->join(db::raw("stok c with(readuncommitted)"), "a.stok_id", "c.id")
+            ->whereRaw("isnull(c.kelompok_id,0)=3")
+            ->whereraw("isnull(b.stok_id,0)=0");
+
+
+        DB::table($tempSaldoAki)->insertUsing([
+            'stok_id',
+            'trado_id',
+            'tglawal',
+            'jumlahharitrip',
+            'idsaldo',
+        ], $querysaldo);
+
+
+        $tempumurakiberjalan = '##tempumurakiberjalan' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+        Schema::create($tempumurakiberjalan, function ($table) {
+            $table->id();
+            $table->Integer('stok_id')->nullable();
+            $table->Integer('trado_id')->nullable();
+            $table->date('tglbukti')->nullable();
+        });
+
+        $querytrip = db::table('suratpengantar')->from(db::raw("suratpengantar a with (readuncommitted)"))
+            ->select(
+                'b.stok_id',
+                'a.trado_id',
+                'a.tglbukti',
+            )
+            ->join(db::raw($tempSaldoAki . " b"), "a.trado_id", "b.trado_id")
+            ->groupBy('b.stok_id')
+            ->groupBy('a.trado_id')
+            ->groupBy('a.tglbukti');
+
+        DB::table($tempumurakiberjalan)->insertUsing([
+            'stok_id',
+            'trado_id',
+            'tglbukti',
+        ], $querytrip);
+
+
+        $tempumurakiberjalanrekap = '##tempumurakiberjalanrekap' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+        Schema::create($tempumurakiberjalanrekap, function ($table) {
+            $table->id();
+            $table->Integer('stok_id')->nullable();
+            $table->Integer('trado_id')->nullable();
+            $table->integer('jumlahhari')->nullable();
+        });
+
+        $queryjumlah = db::table($tempumurakiberjalan)->from(db::raw($tempumurakiberjalan . " a "))
+            ->select(
+                'a.stok_id',
+                'a.trado_id',
+                db::raw("count(a.tglbukti) as jumlah"),
+            )
+            ->groupBy('a.stok_id')
+            ->groupBy('a.trado_id');
+        DB::table($tempumurakiberjalanrekap)->insertUsing([
+            'stok_id',
+            'trado_id',
+            'jumlahhari',
+        ], $queryjumlah);
+
+
+        $tempumurlistumuraki = '##tempumurlistumuraki' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+        Schema::create($tempumurlistumuraki, function ($table) {
+            $table->Integer('stok_id')->nullable();
+            $table->integer('jumlahhari')->nullable();
+        });
+
+
+        $umursaldo = db::table($tempSaldoAki)->from(db::raw($tempSaldoAki . " a "))
+            ->select(
+                'a.stok_id',
+                db::raw("sum(a.jumlahharitrip) as jumlahhari")
+            )
+            ->groupby('a.stok_id')
+            ->orderby('a.stok_id', 'asc');
+
+        DB::table($tempumurlistumuraki)->insertUsing([
+            'stok_id',
+            'jumlahhari',
+        ], $umursaldo);
+
+        $umur = db::table($tempumurakiberjalanrekap)->from(db::raw($tempumurakiberjalanrekap . " a "))
+            ->select(
+                'a.stok_id',
+                db::raw("sum(a.jumlahhari) as jumlahhari")
+            )
+            ->groupby('a.stok_id')
+            ->orderby('a.stok_id', 'asc');
+
+        DB::table($tempumurlistumuraki)->insertUsing([
+            'stok_id',
+            'jumlahhari',
+        ], $umur);
+
+       
+
+
+        $umuraki = db::table($tempumurlistumuraki)->from(db::raw($tempumurlistumuraki . " a "))
+        ->select(
+            'a.stok_id',
+            db::raw("sum(a.jumlahhari) as jumlahhari")
+        )
+        ->groupby('a.stok_id')
+        ->orderby('a.stok_id', 'asc');
 
         return $umuraki;
     }
