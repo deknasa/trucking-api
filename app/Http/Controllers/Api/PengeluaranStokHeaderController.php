@@ -100,6 +100,7 @@ class PengeluaranStokHeaderController extends Controller
 
                 "detail_stok" => $request->detail_stok,
                 "detail_stok_id" => $request->detail_stok_id,
+                "jlhhari" => $request->jlhhari,
                 "detail_statusoli" => $request->detail_statusoli,
                 "detail_vulkanisirke" => $request->detail_vulkanisirke,
                 "detail_keterangan" => $request->detail_keterangan,
@@ -178,6 +179,7 @@ class PengeluaranStokHeaderController extends Controller
                
                 "detail_stok" => $request->detail_stok,
                 "detail_stok_id" => $request->detail_stok_id,
+                "jlhhari" => $request->jlhhari,
                 "detail_statusoli" => $request->detail_statusoli,
                 "detail_vulkanisirke" => $request->detail_vulkanisirke,
                 "detail_statusban" => ($request->statusban)?$request->statusban:$request->detail_statusban,
