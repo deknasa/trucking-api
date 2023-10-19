@@ -72,7 +72,16 @@ class ProsesGajiSupirHeaderController extends Controller
             'data' => $prosesGajiSupirHeader->get(),
             'attributes' => [
                 'totalRows' => $prosesGajiSupirHeader->totalRows,
-                'totalPages' => $prosesGajiSupirHeader->totalPages
+                'totalPages' => $prosesGajiSupirHeader->totalPages,
+                'totalAll' => $prosesGajiSupirHeader->totalAll,
+                'totalPosting' => $prosesGajiSupirHeader->totalPosting,
+                'totalJalan' => $prosesGajiSupirHeader->totalJalan,
+                'totalBbm' => $prosesGajiSupirHeader->totalBbm,
+                'totalMakan' => $prosesGajiSupirHeader->totalMakan,
+                'totalMakanBerjenjang' => $prosesGajiSupirHeader->totalMakanBerjenjang,
+                'totalPotPinj' => $prosesGajiSupirHeader->totalPotPinj,
+                'totalPotSemua' => $prosesGajiSupirHeader->totalPotSemua,
+                'totalDeposito' => $prosesGajiSupirHeader->totalDeposito,
             ]
         ]);
     }
@@ -112,14 +121,14 @@ class ProsesGajiSupirHeaderController extends Controller
 
             $prosesGajiSupirHeader = (new ProsesGajiSupirHeader())->processStore($data);
             $prosesGajiSupirHeader->position = $this->getPosition($prosesGajiSupirHeader, $prosesGajiSupirHeader->getTable())->position;
-            if ($request->limit==0) {
+            if ($request->limit == 0) {
                 $prosesGajiSupirHeader->page = ceil($prosesGajiSupirHeader->position / (10));
             } else {
                 $prosesGajiSupirHeader->page = ceil($prosesGajiSupirHeader->position / ($request->limit ?? 10));
             }
             $prosesGajiSupirHeader->tgldariheader = date('Y-m-01', strtotime(request()->tglbukti));
             $prosesGajiSupirHeader->tglsampaiheader = date('Y-m-t', strtotime(request()->tglbukti));
-            
+
             DB::commit();
 
             return response()->json([
@@ -184,7 +193,7 @@ class ProsesGajiSupirHeaderController extends Controller
 
             $prosesGajiSupirHeader = (new ProsesGajiSupirHeader())->processUpdate($prosesgajisupirheader, $data);
             $prosesGajiSupirHeader->position = $this->getPosition($prosesGajiSupirHeader, $prosesGajiSupirHeader->getTable())->position;
-            if ($request->limit==0) {
+            if ($request->limit == 0) {
                 $prosesGajiSupirHeader->page = ceil($prosesGajiSupirHeader->position / (10));
             } else {
                 $prosesGajiSupirHeader->page = ceil($prosesGajiSupirHeader->position / ($request->limit ?? 10));
@@ -216,14 +225,14 @@ class ProsesGajiSupirHeaderController extends Controller
             $selected = $this->getPosition($prosesGajiSupirHeader, $prosesGajiSupirHeader->getTable(), true);
             $prosesGajiSupirHeader->position = $selected->position;
             $prosesGajiSupirHeader->id = $selected->id;
-            if ($request->limit==0) {
+            if ($request->limit == 0) {
                 $prosesGajiSupirHeader->page = ceil($prosesGajiSupirHeader->position / (10));
             } else {
                 $prosesGajiSupirHeader->page = ceil($prosesGajiSupirHeader->position / ($request->limit ?? 10));
             }
             $prosesGajiSupirHeader->tgldariheader = date('Y-m-01', strtotime(request()->tglbukti));
             $prosesGajiSupirHeader->tglsampaiheader = date('Y-m-t', strtotime(request()->tglbukti));
-            
+
             DB::commit();
 
             return response()->json([
@@ -374,7 +383,7 @@ class ProsesGajiSupirHeaderController extends Controller
 
             return response($data);
         }
-    }  
+    }
 
     public function cekValidasiAksi($id)
     {
