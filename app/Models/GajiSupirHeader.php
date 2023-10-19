@@ -123,13 +123,24 @@ class GajiSupirHeader extends MyModel
         if ($statusCetak != '') {
             $query->where("gajisupirheader.statuscetak", $statusCetak);
         }
+        
+        
+        $this->totalAll = $query->sum("gajisupirheader.total");
+        $this->totalUangJalan = $query->sum("gajisupirheader.uangjalan");
+        $this->totalBbm = $query->sum("gajisupirheader.bbm");
+        $this->totalDeposito = $query->sum("gajisupirheader.deposito");
+        $this->totalPotPinj = $query->sum("gajisupirheader.potonganpinjaman");
+        $this->totalPotSemua = $query->sum("gajisupirheader.potonganpinjamansemua");
+        $this->totalJenjang = $query->sum("gajisupirheader.uangmakanberjenjang");
+        $this->totalMakan = $query->sum("gajisupirheader.uangmakanharian");
+        $this->totalNominal = $query->sum("gajisupirheader.nominal");
+
         $this->totalRows = $query->count();
         $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;
 
         $this->sort($query);
         $this->filter($query);
         $this->paginate($query);
-
         $data = $query->get();
 
         return $data;
