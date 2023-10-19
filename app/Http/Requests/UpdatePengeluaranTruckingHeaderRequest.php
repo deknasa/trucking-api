@@ -13,6 +13,7 @@ use Illuminate\Validation\Rule;
 use Illuminate\Support\Facades\DB;
 use App\Rules\DestroyPengeluaranTruckingHeader;
 use App\Rules\validasiJenisOrderanPengeluaranTrucking;
+use App\Rules\ValidasiKlaimPosting;
 
 class UpdatePengeluaranTruckingHeaderRequest extends FormRequest
 {
@@ -131,7 +132,7 @@ class UpdatePengeluaranTruckingHeaderRequest extends FormRequest
                         "gandenganheader_id" =>$salahSatuDari,
                         "trado" =>$salahSatuDari,
                         "gandengan" =>$salahSatuDari,
-                        "postingpinjaman" =>"required",
+                        "postingpinjaman" => ["required", new ValidasiKlaimPosting()],
                         "statuscabang" =>"required",
                     ];    
                 }
