@@ -62,7 +62,16 @@ class GajiSupirHeaderController extends Controller
             'data' => $gajiSupirHeader->get(),
             'attributes' => [
                 'totalRows' => $gajiSupirHeader->totalRows,
-                'totalPages' => $gajiSupirHeader->totalPages
+                'totalPages' => $gajiSupirHeader->totalPages,
+                'totalAll' => $gajiSupirHeader->totalAll,
+                'totalUangJalan' => $gajiSupirHeader->totalUangJalan,
+                'totalBbm' => $gajiSupirHeader->totalBbm,
+                'totalDeposito' => $gajiSupirHeader->totalDeposito,
+                'totalPotPinj' => $gajiSupirHeader->totalPotPinj,
+                'totalPotSemua' => $gajiSupirHeader->totalPotSemua,
+                'totalJenjang' => $gajiSupirHeader->totalJenjang,
+                'totalMakan' => $gajiSupirHeader->totalMakan,
+                'totalNominal' => $gajiSupirHeader->totalNominal,
             ]
         ]);
     }
