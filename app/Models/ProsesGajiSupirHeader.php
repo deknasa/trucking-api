@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Model;
 
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
+use Illuminate\Database\Schema\Blueprint;
 
 class ProsesGajiSupirHeader extends MyModel
 {
@@ -121,69 +122,264 @@ class ProsesGajiSupirHeader extends MyModel
         $periode = request()->periode ?? '';
         $statusCetak = request()->statuscetak ?? '';
 
-        $this->tableTotal = $this->createTempTotal();
-        $query = DB::table($this->table)->from(DB::raw("prosesgajisupirheader with (readuncommitted)"))
+        $proses = request()->proses ?? 'reload';
+        $user = auth('api')->user()->name;
+        $class = 'ProsesGajiSupirHeaderController';
 
-            ->select(
 
-                'prosesgajisupirheader.id',
-                'prosesgajisupirheader.nobukti',
-                'prosesgajisupirheader.tglbukti',
-                'prosesgajisupirheader.tgldari',
-                'prosesgajisupirheader.tglsampai',
-                'prosesgajisupirheader.keterangan',
-                'prosesgajisupirheader.periode',
-                'prosesgajisupirheader.userapproval',
-                'statusapproval.memo as statusapproval',
-                'statuscetak.memo as statuscetak',
-                'prosesgajisupirheader.userbukacetak',
-                'prosesgajisupirheader.jumlahcetak',
-                'prosesgajisupirheader.pengeluaran_nobukti',
-                'prosesgajisupirheader.modifiedby',
-                'prosesgajisupirheader.created_at',
-                'prosesgajisupirheader.updated_at',
-                DB::raw("(case when (year(prosesgajisupirheader.tglapproval) <= 2000) then null else prosesgajisupirheader.tglapproval end ) as tglapproval"),
-                DB::raw("(case when (year(prosesgajisupirheader.tglbukacetak) <= 2000) then null else prosesgajisupirheader.tglbukacetak end ) as tglbukacetak"),
-                $this->tableTotal . '.total',
-                $this->tableTotal . '.totalposting',
-                $this->tableTotal . '.uangjalan',
-                $this->tableTotal . '.bbm',
-                $this->tableTotal . '.uangmakanharian',
-                $this->tableTotal . '.uangmakanberjenjang',
-                $this->tableTotal . '.potonganpinjaman',
-                $this->tableTotal . '.potonganpinjamansemua',
-                $this->tableTotal . '.deposito',
-                db::raw("cast((format(pengeluaran.tglbukti,'yyyy/MM')+'/1') as date) as tgldariheaderpengeluaranheader"),
-                db::raw("cast(cast(format((cast((format(pengeluaran.tglbukti,'yyyy/MM')+'/1') as datetime)+32),'yyyy/MM')+'/01' as datetime)-1 as date) as tglsampaiheaderpengeluaranheader"),
+        if ($proses == 'reload') {
+            $temtabel = 'temp' . rand(1, getrandmax()) . str_replace('.', '', microtime(true)) . request()->nd ?? 0;
 
+            $querydata = DB::table('listtemporarytabel')->from(
+                DB::raw("listtemporarytabel a with (readuncommitted)")
             )
+                ->select(
+                    'id',
+                    'class',
+                    'namatabel',
+                )
+                ->where('class', '=', $class)
+                ->where('modifiedby', '=', $user)
+                ->first();
 
-            ->leftJoin(DB::raw("parameter as statuscetak with (readuncommitted)"), 'prosesgajisupirheader.statuscetak', 'statuscetak.id')
-            ->leftJoin(DB::raw("parameter as statusapproval with (readuncommitted)"), 'prosesgajisupirheader.statusapproval', 'statusapproval.id')
-            ->leftJoin(DB::raw("pengeluaranheader as pengeluaran with (readuncommitted)"), 'prosesgajisupirheader.pengeluaran_nobukti', '=', 'pengeluaran.nobukti')
-            ->leftJoin($this->tableTotal, $this->tableTotal . '.nobukti', 'prosesgajisupirheader.nobukti');
-        if (request()->tgldari && request()->tglsampai) {
-            $query->whereBetween($this->table . '.tglbukti', [date('Y-m-d', strtotime(request()->tgldari)), date('Y-m-d', strtotime(request()->tglsampai))]);
-        }
-        if ($periode != '') {
-            $periode = explode("-", $periode);
-            $query->whereRaw("MONTH(prosesgajisupirheader.tglbukti) ='" . $periode[0] . "'")
-                ->whereRaw("year(prosesgajisupirheader.tglbukti) ='" . $periode[1] . "'");
-        }
-        if ($statusCetak != '') {
-            $query->where("prosesgajisupirheader.statuscetak", $statusCetak);
+            if (isset($querydata)) {
+                Schema::dropIfExists($querydata->namatabel);
+                DB::table('listtemporarytabel')->where('id', $querydata->id)->delete();
+            }
+
+            DB::table('listtemporarytabel')->insert(
+                [
+                    'class' => $class,
+                    'namatabel' => $temtabel,
+                    'modifiedby' => $user,
+                    'created_at' => date('Y/m/d H:i:s'),
+                    'updated_at' => date('Y/m/d H:i:s'),
+                ]
+            );
+
+
+            Schema::create($temtabel, function (Blueprint $table) {
+                $table->integer('id')->nullable();
+                $table->string('nobukti', 1000)->nullable();
+                $table->dateTime('tglbukti')->nullable();
+                $table->date('tgldari')->nullable();
+                $table->date('tglsampai')->nullable();
+                $table->longText('keterangan')->nullable();
+                $table->longText('periode')->nullable();
+                $table->longText('userapproval')->nullable();
+                $table->longText('statusapproval')->nullable();
+                $table->longText('statuscetak')->nullable();
+                $table->longText('userbukacetak')->nullable();
+                $table->integer('jumlahcetak')->nullable();
+                $table->string('pengeluaran_nobukti', 1000)->nullable();
+                $table->string('modifiedby', 1000)->nullable();
+                $table->dateTime('created_at')->nullable();
+                $table->dateTime('updated_at')->nullable();
+                $table->dateTime('tglapproval')->nullable();
+                $table->dateTime('tglbukacetak')->nullable();
+                $table->double('total', 15, 2)->nullable();
+                $table->double('totalposting', 15, 2)->nullable();
+                $table->double('uangjalan', 15, 2)->nullable();
+                $table->double('bbm', 15, 2)->nullable();
+                $table->double('uangmakanharian', 15, 2)->nullable();
+                $table->double('uangmakanberjenjang', 15, 2)->nullable();
+                $table->double('potonganpinjaman', 15, 2)->nullable();
+                $table->double('potonganpinjamansemua', 15, 2)->nullable();
+                $table->double('deposito', 15, 2)->nullable();
+                $table->double('komisisupir', 15, 2)->nullable();
+                $table->double('gajikenek', 15, 2)->nullable();
+                $table->double('biayaextra', 15, 2)->nullable();
+                $table->dateTime('tgldariheaderpengeluaranheader')->nullable();
+                $table->dateTime('tglsampaiheaderpengeluaranheader')->nullable();
+            });
+
+            $tempgajidetail = '##tempgajidetail' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+            Schema::create($tempgajidetail, function ($table) {
+                $table->string('nobukti', 1000)->nullable();
+                $table->double('komisisupir', 15, 2)->nullable();
+                $table->double('gajikenek', 15, 2)->nullable();
+                $table->double('biayaextra', 15, 2)->nullable();
+            });
+
+            $querytempdetail = DB::table("prosesgajisupirheader")->from(DB::raw("prosesgajisupirheader with (readuncommitted)"))
+                ->select(
+                    'prosesgajisupirheader.nobukti',
+                    db::raw("sum(gajisupirdetail.komisisupir) as komisisupir"),
+                    db::raw("sum(gajisupirdetail.gajikenek) as gajikenek"),
+                    db::raw("sum(gajisupirdetail.biayatambahan) as biayaextra"),
+                )
+                ->join(DB::raw("prosesgajisupirdetail with (readuncommitted)"), 'prosesgajisupirheader.nobukti', 'prosesgajisupirdetail.nobukti')
+                ->join(DB::raw("gajisupirheader with (readuncommitted)"), 'prosesgajisupirdetail.gajisupir_nobukti', 'gajisupirheader.nobukti')
+                ->join(DB::raw("gajisupirdetail with (readuncommitted)"), 'gajisupirheader.nobukti', 'gajisupirdetail.nobukti');
+
+
+            if (request()->tgldari && request()->tglsampai) {
+                $querytempdetail->whereBetween($this->table . '.tglbukti', [date('Y-m-d', strtotime(request()->tgldari)), date('Y-m-d', strtotime(request()->tglsampai))]);
+            }
+            if ($periode != '') {
+                $periode = explode("-", $periode);
+                $querytempdetail->whereRaw("MONTH(prosesgajisupirheader.tglbukti) ='" . $periode[0] . "'")
+                    ->whereRaw("year(prosesgajisupirheader.tglbukti) ='" . $periode[1] . "'");
+            }
+            if ($statusCetak != '') {
+                $querytempdetail->where("prosesgajisupirheader.statuscetak", $statusCetak);
+            }
+
+            $querytempdetail->groupBy('prosesgajisupirheader.nobukti');
+
+            DB::table($tempgajidetail)->insertUsing([
+                'nobukti',
+                'komisisupir',
+                'gajikenek',
+                'biayaextra',
+            ], $querytempdetail);
+
+            $this->tableTotal = $this->createTempTotal();
+            $querytemp = DB::table($this->table)->from(DB::raw("prosesgajisupirheader with (readuncommitted)"))
+
+                ->select(
+
+                    'prosesgajisupirheader.id',
+                    'prosesgajisupirheader.nobukti',
+                    'prosesgajisupirheader.tglbukti',
+                    'prosesgajisupirheader.tgldari',
+                    'prosesgajisupirheader.tglsampai',
+                    'prosesgajisupirheader.keterangan',
+                    'prosesgajisupirheader.periode',
+                    'prosesgajisupirheader.userapproval',
+                    'statusapproval.memo as statusapproval',
+                    'statuscetak.memo as statuscetak',
+                    'prosesgajisupirheader.userbukacetak',
+                    'prosesgajisupirheader.jumlahcetak',
+                    'prosesgajisupirheader.pengeluaran_nobukti',
+                    'prosesgajisupirheader.modifiedby',
+                    'prosesgajisupirheader.created_at',
+                    'prosesgajisupirheader.updated_at',
+                    DB::raw("(case when (year(prosesgajisupirheader.tglapproval) <= 2000) then null else prosesgajisupirheader.tglapproval end ) as tglapproval"),
+                    DB::raw("(case when (year(prosesgajisupirheader.tglbukacetak) <= 2000) then null else prosesgajisupirheader.tglbukacetak end ) as tglbukacetak"),
+                    db::raw("(" . $this->tableTotal . ".total+isnull(c.komisisupir,0)+isnull(c.gajikenek,0) ) as total"),
+                    $this->tableTotal . '.totalposting',
+                    $this->tableTotal . '.uangjalan',
+                    $this->tableTotal . '.bbm',
+                    $this->tableTotal . '.uangmakanharian',
+                    $this->tableTotal . '.uangmakanberjenjang',
+                    $this->tableTotal . '.potonganpinjaman',
+                    $this->tableTotal . '.potonganpinjamansemua',
+                    $this->tableTotal . '.deposito',
+                    db::raw("isnull(c.komisisupir,0) as komisisupir"),
+                    db::raw("isnull(c.gajikenek,0) as gajikenek"),
+                    db::raw("isnull(c.biayaextra,0) as biayaextra"),
+                    db::raw("cast((format(pengeluaran.tglbukti,'yyyy/MM')+'/1') as date) as tgldariheaderpengeluaranheader"),
+                    db::raw("cast(cast(format((cast((format(pengeluaran.tglbukti,'yyyy/MM')+'/1') as datetime)+32),'yyyy/MM')+'/01' as datetime)-1 as date) as tglsampaiheaderpengeluaranheader"),
+
+                )
+
+                ->leftJoin(DB::raw("parameter as statuscetak with (readuncommitted)"), 'prosesgajisupirheader.statuscetak', 'statuscetak.id')
+                ->leftJoin(DB::raw("parameter as statusapproval with (readuncommitted)"), 'prosesgajisupirheader.statusapproval', 'statusapproval.id')
+                ->leftJoin(DB::raw("pengeluaranheader as pengeluaran with (readuncommitted)"), 'prosesgajisupirheader.pengeluaran_nobukti', '=', 'pengeluaran.nobukti')
+                ->leftJoin($this->tableTotal, $this->tableTotal . '.nobukti', 'prosesgajisupirheader.nobukti')
+                ->leftJoin(DB::raw($tempgajidetail . " c"), 'prosesgajisupirheader.nobukti', 'c.nobukti');
+
+            if (request()->tgldari && request()->tglsampai) {
+                $querytemp->whereBetween($this->table . '.tglbukti', [date('Y-m-d', strtotime(request()->tgldari)), date('Y-m-d', strtotime(request()->tglsampai))]);
+            }
+            if ($periode != '') {
+                $periode = explode("-", $periode);
+                $querytemp->whereRaw("MONTH(gajisupirheader.tglbukti) ='" . $periode[0] . "'")
+                    ->whereRaw("year(gajisupirheader.tglbukti) ='" . $periode[1] . "'");
+            }
+            if ($statusCetak != '') {
+                $querytemp->where("gajisupirheader.statuscetak", $statusCetak);
+            }
+
+            DB::table($temtabel)->insertUsing([
+                'id',
+                'nobukti',
+                'tglbukti',
+                'tgldari',
+                'tglsampai',
+                'keterangan',
+                'periode',
+                'userapproval',
+                'statusapproval',
+                'statuscetak',
+                'userbukacetak',
+                'jumlahcetak',
+                'pengeluaran_nobukti',
+                'modifiedby',
+                'created_at',
+                'updated_at',
+                'tglapproval',
+                'tglbukacetak',
+                'total',
+                'totalposting',
+                'uangjalan',
+                'bbm',
+                'uangmakanharian',
+                'uangmakanberjenjang',
+                'potonganpinjaman',
+                'potonganpinjamansemua',
+                'deposito',
+                'komisisupir',
+                'gajikenek',
+                'biayaextra',
+                'tgldariheaderpengeluaranheader',
+                'tglsampaiheaderpengeluaranheader',
+            ], $querytemp);
+        } else {
+            $querydata = DB::table('listtemporarytabel')->from(
+                DB::raw("listtemporarytabel with (readuncommitted)")
+            )
+                ->select(
+                    'namatabel',
+                )
+                ->where('class', '=', $class)
+                ->where('modifiedby', '=', $user)
+                ->first();
+
+            // dd($querydata);
+            $temtabel = $querydata->namatabel;
         }
 
-        
-        $this->totalAll = $query->sum($this->tableTotal.".total");
-        $this->totalPosting = $query->sum($this->tableTotal.".totalposting");
-        $this->totalJalan = $query->sum($this->tableTotal.".uangjalan");
-        $this->totalBbm = $query->sum($this->tableTotal.".bbm");
-        $this->totalMakan = $query->sum($this->tableTotal.".uangmakanharian");
-        $this->totalMakanBerjenjang = $query->sum($this->tableTotal.".uangmakanberjenjang");
-        $this->totalPotPinj = $query->sum($this->tableTotal.".potonganpinjaman");
-        $this->totalPotSemua = $query->sum($this->tableTotal.".potonganpinjamansemua");
-        $this->totalDeposito = $query->sum($this->tableTotal.".deposito");
+
+
+        $query = DB::table($temtabel)->from(DB::raw($temtabel . " a "))
+            ->select(
+                'a.id',
+                'a.nobukti',
+                'a.tglbukti',
+                'a.tgldari',
+                'a.tglsampai',
+                'a.keterangan',
+                'a.periode',
+                'a.userapproval',
+                'a.statusapproval',
+                'a.statuscetak',
+                'a.userbukacetak',
+                'a.jumlahcetak',
+                'a.pengeluaran_nobukti',
+                'a.modifiedby',
+                'a.created_at',
+                'a.updated_at',
+                'a.tglapproval',
+                'a.tglbukacetak',
+                'a.total',
+                'a.totalposting',
+                'a.uangjalan',
+                'a.bbm',
+                'a.uangmakanharian',
+                'a.uangmakanberjenjang',
+                'a.potonganpinjaman',
+                'a.potonganpinjamansemua',
+                'a.deposito',
+                'a.komisisupir',
+                'a.gajikenek',
+                'a.biayaextra',
+                'a.tgldariheaderpengeluaranheader',
+                'a.tglsampaiheaderpengeluaranheader',
+            );
+        // dd($query->get());
+
 
         $this->totalRows = $query->count();
         $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;
@@ -192,6 +388,49 @@ class ProsesGajiSupirHeader extends MyModel
         $this->filter($query);
         $this->paginate($query);
         $data = $query->get();
+
+        $tempbuktisum = '##tempbuktisum' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+        Schema::create($tempbuktisum, function ($table) {
+            $table->string('nobukti', 100)->nullable();
+        });
+        $databukti = json_decode($data, true);
+        foreach ($databukti as $item) {
+
+            DB::table($tempbuktisum)->insert([
+                'nobukti' => $item['nobukti'],
+            ]);
+        }
+        $querytotal = DB::table($temtabel)->from(DB::raw($temtabel . " a "))
+            ->select(
+                db::raw("sum(a.komisisupir) as komisisupir"),
+                db::raw("sum(a.gajikenek) as gajikenek"),
+                db::raw("sum(a.biayaextra) as biayaextra"),
+                db::raw("sum(a.total) as total"),
+                db::raw("sum(a.totalposting) as totalposting"),
+                db::raw("sum(a.uangjalan) as uangjalan"),
+                db::raw("sum(a.bbm) as bbm"),
+                db::raw("sum(a.uangmakanharian) as uangmakanharian"),
+                db::raw("sum(a.uangmakanberjenjang) as uangmakanberjenjang"),
+                db::raw("sum(a.potonganpinjaman) as potonganpinjaman"),
+                db::raw("sum(a.potonganpinjamansemua) as potonganpinjamansemua"),
+                db::raw("sum(a.deposito) as deposito"),
+            )
+            ->join(db::raw($tempbuktisum . " b "), 'a.nobukti', 'b.nobukti')
+            ->first();
+
+        $this->totalAll = $querytotal->total ?? 0;
+        $this->totalPosting = $querytotal->totalposting ?? 0;
+        $this->totalJalan = $querytotal->uangjalan ?? 0;
+        $this->totalGajiKenek = $querytotal->gajikenek ?? 0;
+        $this->totalKomisiSupir = $querytotal->komisisupir ?? 0;
+        $this->totalBiayaExtra = $querytotal->biayaextra ?? 0;
+        $this->totalBbm = $querytotal->bbm ?? 0;
+        $this->totalDeposito = $querytotal->deposito ?? 0;
+        $this->totalPotPinj = $querytotal->potonganpinjaman ?? 0;
+        $this->totalPotSemua = $querytotal->potonganpinjamansemua ?? 0;
+        $this->totalMakanBerjenjang = $querytotal->uangmakanberjenjang ?? 0;
+        $this->totalMakan = $querytotal->uangmakanharian ?? 0;
+
 
         return $data;
     }
@@ -495,8 +734,8 @@ class ProsesGajiSupirHeader extends MyModel
         if (request()->tgldari) {
             $query->whereBetween('tglbukti', [date('Y-m-d', strtotime(request()->tgldari)), date('Y-m-d', strtotime(request()->tglsampai))]);
         }
-        $this->sort($query);
-        $models = $this->filter($query);
+        $this->sortposition($query);
+        $models = $this->filterposition($query);
         DB::table($temp)->insertUsing(['id', 'nobukti', 'tglbukti', 'tgldari', 'tglsampai', 'statusapproval', 'userapproval', 'tglapproval', 'statuscetak', 'userbukacetak', 'tglbukacetak', 'jumlahcetak', 'periode', 'modifiedby', 'created_at', 'updated_at'], $models);
 
         return $temp;
@@ -1127,6 +1366,11 @@ class ProsesGajiSupirHeader extends MyModel
 
     public function sort($query)
     {
+        return $query->orderBy('a.' . $this->params['sortIndex'], $this->params['sortOrder']);
+    }
+
+    public function sortposition($query)
+    {
         if ($this->params['sortIndex'] == 'total' || $this->params['sortIndex'] == 'uangjalan' || $this->params['sortIndex'] == 'bbm' || $this->params['sortIndex'] == 'potonganpinjaman' || $this->params['sortIndex'] == 'potonganpinjamansemua' || $this->params['sortIndex'] == 'uangmakanharian' || $this->params['sortIndex'] == 'deposito') {
 
             return $query->orderBy($this->tableTotal . '.' . $this->params['sortIndex'], $this->params['sortOrder']);
@@ -1137,6 +1381,37 @@ class ProsesGajiSupirHeader extends MyModel
     }
 
     public function filter($query, $relationFields = [])
+    {
+        if (count($this->params['filters']) > 0 && @$this->params['filters']['rules'][0]['data'] != '') {
+            switch ($this->params['filters']['groupOp']) {
+                case "AND":
+                    foreach ($this->params['filters']['rules'] as $index => $filters) {
+
+                        $query = $query->where('a.' . $filters['field'], 'LIKE', "%$filters[data]%");
+                    }
+
+                    break;
+                case "OR":
+                    $query = $query->where(function ($query) {
+                        foreach ($this->params['filters']['rules'] as $index => $filters) {
+                            $query = $query->orWhere('a.' . $filters['field'], 'LIKE', "%$filters[data]%");
+                        }
+                    });
+
+                    break;
+                default:
+
+                    break;
+            }
+
+            $this->totalRows = $query->count();
+            $this->totalPages = $this->params['limit'] > 0 ? ceil($this->totalRows / $this->params['limit']) : 1;
+        }
+
+        return $query;
+    }
+
+    public function filterposition($query, $relationFields = [])
     {
         if (count($this->params['filters']) > 0 && @$this->params['filters']['rules'][0]['data'] != '') {
             switch ($this->params['filters']['groupOp']) {
@@ -1221,6 +1496,7 @@ class ProsesGajiSupirHeader extends MyModel
 
         return $query;
     }
+
 
     public function paginate($query)
     {
