@@ -114,7 +114,7 @@ class GajiSupirDetail extends MyModel
             foreach ($databukti as $item) {
 
                 DB::table($tempbuktisum)->insert([
-                    'nobukti' => $item['nobukti'],
+                    'nobukti' => $item['suratpengantar_nobukti'],
                 ]);
             }
             $querytotal = DB::table($tempDetail)->from(DB::raw($tempDetail . " a "))
@@ -128,7 +128,7 @@ class GajiSupirDetail extends MyModel
                     db::raw("sum(a.tolsupir) as tolsupir"),
                     db::raw("sum(a.uangmakanberjenjang) as uangmakanberjenjang"),
                 )
-                ->join(db::raw($tempbuktisum . " b "), 'a.nobukti', 'b.nobukti')
+                ->join(db::raw($tempbuktisum . " b "), 'a.suratpengantar_nobukti', 'b.nobukti')
                 ->first();
 
             $this->total = $querytotal->total ?? 0;

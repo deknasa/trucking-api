@@ -45,6 +45,9 @@ class ProsesGajiSupirDetailController extends Controller
                 'totalPinjamanSemua' => $prosesGajiSupir->totalPinjamanSemua,
                 'totalDeposito' => $prosesGajiSupir->totalDeposito,
                 'totalKomisi' => $prosesGajiSupir->totalKomisi,
+                'totalGajiSupir' => $prosesGajiSupir->totalGajiSupir,
+                'totalGajiKenek' => $prosesGajiSupir->totalGajiKenek,
+                'totalBiayaExtra' => $prosesGajiSupir->totalBiayaExtra,
                 'totalTol' => $prosesGajiSupir->totalTol,
 
             ]
