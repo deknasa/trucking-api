@@ -794,6 +794,7 @@ class InvoiceHeader extends MyModel
                 'a.nospfullempty',
 
             )
+            ->where('a.nocont', '!=', '')
             ->orderBy("a.tglsp");
 
 
