@@ -44,10 +44,21 @@ class LaporanKasGantungController extends Controller
         //         "saldo" => "151511"
         //     ]
         // ];
-        return response([
-            'data' => $laporankasgantung->getReport($periode, $prosesneraca)
-            // 'data' => $report
-        ]);
+        // return response([
+        //     'data' => $laporankasgantung->getReport($periode, $prosesneraca)
+        //     // 'data' => $report
+        // ]);
+
+        if ($request->isCheck) {
+            return response([
+                'data' => 'ok'
+            ]);
+        } else {
+ 
+            return response([
+                'data' => $laporankasgantung->getReport($periode, $prosesneraca)
+            ]);
+        }
     }
 
     /**

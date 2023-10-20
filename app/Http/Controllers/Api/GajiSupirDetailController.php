@@ -32,6 +32,7 @@ class GajiSupirDetailController extends Controller
             'attributes' => [
                 'totalRows' => $gajiSupir->totalRows,
                 'totalPages' => $gajiSupir->totalPages,
+                'total' => $gajiSupir->total,
                 'totalGajiSupir' => $gajiSupir->totalGajiSupir,
                 'totalGajiKenek' => $gajiSupir->totalGajiKenek,
                 'totalKomisiSupir' => $gajiSupir->totalKomisiSupir,
