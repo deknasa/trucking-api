@@ -190,13 +190,13 @@ class GajiSupirHeader extends MyModel
                     'gajisupirheader.tglbukti',
                     'supir.namasupir as supir_id',
                     // 'gajisupirheader.keterangan',
-                    'gajisupirheader.nominal',
+                    db::raw("(gajisupirheader.nominal-isnull(C.biayaextra,0)) as nominal"),
                     'gajisupirheader.tgldari',
                     'gajisupirheader.tglsampai',
                     db::raw("isnull(C.komisisupir,0) as komisisupir"),
                     db::raw("isnull(C.gajikenek,0) as gajikenek"),
                     db::raw("isnull(C.biayaextra,0) as biayaextra"),
-                    db::raw("(gajisupirheader.total+isnull(C.komisisupir,0)+isnull(C.gajikenek,0)+isnull(C.biayaextra,0)) as total"),
+                    db::raw("(gajisupirheader.total+isnull(C.komisisupir,0)+isnull(C.gajikenek,0)) as total"),
                     'gajisupirheader.uangjalan',
                     'gajisupirheader.bbm',
                     'gajisupirheader.deposito',
@@ -312,18 +312,7 @@ class GajiSupirHeader extends MyModel
             );
         // dd($query->get());
 
-        $this->totalAll = $query->sum("a.total");
-        $this->totalUangJalan = $query->sum("a.uangjalan");
-        $this->totalGajiKenek = $query->sum("a.gajikenek");
-        $this->totalKomisiSupir = $query->sum("a.komisisupir");
-        $this->totalBiayaExtra = $query->sum("a.biayaextra");
-        $this->totalBbm = $query->sum("a.bbm");
-        $this->totalDeposito = $query->sum("a.deposito");
-        $this->totalPotPinj = $query->sum("a.potonganpinjaman");
-        $this->totalPotSemua = $query->sum("a.potonganpinjamansemua");
-        $this->totalJenjang = $query->sum("a.uangmakanberjenjang");
-        $this->totalMakan = $query->sum("a.uangmakanharian");
-        $this->totalNominal = $query->sum("a.nominal");
+
 
         $this->totalRows = $query->count();
         $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;
@@ -331,7 +320,53 @@ class GajiSupirHeader extends MyModel
         $this->sort($query);
         $this->filter($query);
         $this->paginate($query);
+
+        
         $data = $query->get();
+
+        $tempbuktisum = '##tempbuktisum' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+        Schema::create($tempbuktisum, function ($table) {
+            $table->string('nobukti', 100)->nullable();
+        });
+        $databukti = json_decode($data, true);
+        foreach ($databukti as $item) {
+            
+            DB::table($tempbuktisum)->insert([
+                'nobukti' => $item['nobukti'],
+            ]);
+        }
+        $querytotal = DB::table($temtabel)->from(DB::raw($temtabel . " a "))
+        ->select(
+            db::raw("sum(a.nominal) as nominal"),
+            db::raw("sum(a.komisisupir) as komisisupir"),
+            db::raw("sum(a.gajikenek) as gajikenek"),
+            db::raw("sum(a.biayaextra) as biayaextra"),
+            db::raw("sum(a.total) as total"),
+            db::raw("sum(a.uangjalan) as uangjalan"),
+            db::raw("sum(a.bbm) as bbm"),
+            db::raw("sum(a.deposito) as deposito"),
+            db::raw("sum(a.potonganpinjaman) as potonganpinjaman"),
+            db::raw("sum(a.potonganpinjamansemua) as potonganpinjamansemua"),
+            db::raw("sum(a.uangmakanberjenjang) as uangmakanberjenjang"),
+            db::raw("sum(a.uangmakanharian) as uangmakanharian"),
+            db::raw("sum(a.uangJalantidakterhitung) as uangJalantidakterhitung"),
+            db::raw("sum(a.sisa) as sisa"),
+        )
+        ->join(db::raw($tempbuktisum ." b "),'a.nobukti','b.nobukti')
+        ->first();
+
+        $this->totalAll = $querytotal->total ?? 0;
+        $this->totalUangJalan = $querytotal->uangjalan ?? 0;
+        $this->totalGajiKenek = $querytotal->gajikenek ?? 0;
+        $this->totalKomisiSupir = $querytotal->komisisupir ?? 0;
+        $this->totalBiayaExtra = $querytotal->biayaextra ?? 0;
+        $this->totalBbm = $querytotal->bbm ?? 0;
+        $this->totalDeposito = $querytotal->deposito ?? 0;
+        $this->totalPotPinj = $querytotal->potonganpinjaman ?? 0;
+        $this->totalPotSemua = $querytotal->potonganpinjamansemua ?? 0;
+        $this->totalJenjang = $querytotal->uangmakanberjenjang ?? 0;
+        $this->totalMakan = $querytotal->uangmakanharian ?? 0;
+        $this->totalNominal = $querytotal->nominal ?? 0;
 
         return $data;
     }

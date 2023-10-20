@@ -89,27 +89,56 @@ class GajiSupirDetail extends MyModel
                 "$tempDetail.biayaextra",
                 "$tempDetail.keteranganbiayatambahan",
                 db::raw("cast((format(suratpengantar.tglbukti,'yyyy/MM')+'/1') as date) as tgldariheadersuratpengantar"),
-                db::raw("cast(cast(format((cast((format(suratpengantar.tglbukti,'yyyy/MM')+'/1') as datetime)+32),'yyyy/MM')+'/01' as datetime)-1 as date) as tglsampaiheadersuratpengantar"), 
+                db::raw("cast(cast(format((cast((format(suratpengantar.tglbukti,'yyyy/MM')+'/1') as datetime)+32),'yyyy/MM')+'/01' as datetime)-1 as date) as tglsampaiheadersuratpengantar"),
                 db::raw("cast((format(ritasi.tglbukti,'yyyy/MM')+'/1') as date) as tgldariheaderritasi"),
-                db::raw("cast(cast(format((cast((format(ritasi.tglbukti,'yyyy/MM')+'/1') as datetime)+32),'yyyy/MM')+'/01' as datetime)-1 as date) as tglsampaiheaderritasi"), 
+                db::raw("cast(cast(format((cast((format(ritasi.tglbukti,'yyyy/MM')+'/1') as datetime)+32),'yyyy/MM')+'/01' as datetime)-1 as date) as tglsampaiheaderritasi"),
+                db::raw("$tempDetail.total"),
+
             )
-            ->leftJoin(DB::raw("suratpengantar with (readuncommitted)"), $tempDetail . '.suratpengantar_nobukti', 'suratpengantar.nobukti')
-            ->leftJoin(DB::raw("ritasi with (readuncommitted)"), $tempDetail . '.ritasi_nobukti', 'ritasi.nobukti');
+                ->leftJoin(DB::raw("suratpengantar with (readuncommitted)"), $tempDetail . '.suratpengantar_nobukti', 'suratpengantar.nobukti')
+                ->leftJoin(DB::raw("ritasi with (readuncommitted)"), $tempDetail . '.ritasi_nobukti', 'ritasi.nobukti');
             $tempQuery->orderBy($tempDetail . '.' . $this->params['sortIndex'], $this->params['sortOrder']);
 
             $this->filter($tempQuery, $tempDetail);
-            $this->totalGajiSupir = $tempQuery->sum("$tempDetail.gajisupir");
-            $this->totalGajiKenek = $tempQuery->sum("$tempDetail.gajikenek");
-            $this->totalKomisiSupir = $tempQuery->sum("$tempDetail.komisisupir");
-            $this->totalUpahRitasi = $tempQuery->sum("$tempDetail.upahritasi");
-            $this->totalBiayaExtra = $tempQuery->sum("$tempDetail.biayaextra");
-            $this->totalTolSupir = $tempQuery->sum("$tempDetail.tolsupir");
-            $this->totalUangMakanBerjenjang = $tempQuery->sum("$tempDetail.uangmakanberjenjang");
 
             $this->totalRows = $tempQuery->count();
             $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;
 
             $this->paginate($tempQuery);
+
+            $tempbuktisum = '##tempbuktisum' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+            Schema::create($tempbuktisum, function ($table) {
+                $table->string('nobukti', 100)->nullable();
+            });
+            $databukti = json_decode($tempQuery->get(), true);
+            foreach ($databukti as $item) {
+
+                DB::table($tempbuktisum)->insert([
+                    'nobukti' => $item['nobukti'],
+                ]);
+            }
+            $querytotal = DB::table($tempDetail)->from(DB::raw($tempDetail . " a "))
+                ->select(
+                    db::raw("sum(a.total) as total"),
+                    db::raw("sum(a.gajisupir) as gajisupir"),
+                    db::raw("sum(a.gajikenek) as gajikenek"),
+                    db::raw("sum(a.komisisupir) as komisisupir"),
+                    db::raw("sum(a.upahritasi) as upahritasi"),
+                    db::raw("sum(a.biayaextra) as biayaextra"),
+                    db::raw("sum(a.tolsupir) as tolsupir"),
+                    db::raw("sum(a.uangmakanberjenjang) as uangmakanberjenjang"),
+                )
+                ->join(db::raw($tempbuktisum . " b "), 'a.nobukti', 'b.nobukti')
+                ->first();
+
+            $this->total = $querytotal->total ?? 0;
+            $this->totalGajiSupir = $querytotal->gajisupir ?? 0;
+            $this->totalGajiKenek = $querytotal->gajikenek ?? 0;
+            $this->totalKomisiSupir = $querytotal->komisisupir ?? 0;
+            $this->totalUpahRitasi = $querytotal->upahritasi ?? 0;
+            $this->totalBiayaExtra = $querytotal->biayaextra ?? 0;
+            $this->totalTolSupir = $querytotal->tolsupir ?? 0;
+            $this->totalUangMakanBerjenjang = $querytotal->uangmakanberjenjang ?? 0;
             return $tempQuery->get();
         }
     }
@@ -139,7 +168,9 @@ class GajiSupirDetail extends MyModel
                 'ritasi.nobukti as ritasi_nobukti',
                 'parameter.text as statusritasi',
                 'gajisupirdetail.biayatambahan as biayaextra',
-                'gajisupirdetail.keteranganbiayatambahan'
+                'gajisupirdetail.keteranganbiayatambahan',
+                db::raw("(gajisupirdetail.gajisupir+gajisupirdetail.gajikenek+gajisupirdetail.komisisupir+gajisupirdetail.biayatambahan) as total"),
+
             )
             ->leftJoin(DB::raw("suratpengantar with (readuncommitted)"), 'gajisupirdetail.suratpengantar_nobukti', 'suratpengantar.nobukti')
             ->leftJoin(DB::raw("kota as dari with (readuncommitted)"), 'suratpengantar.dari_id', 'dari.id')
@@ -159,19 +190,20 @@ class GajiSupirDetail extends MyModel
             $table->string('sampai')->nullable();
             $table->string('nocont')->nullable();
             $table->string('nosp')->nullable();
-            $table->bigInteger('uangmakanberjenjang')->nullable();
-            $table->bigInteger('gajisupir')->nullable();
-            $table->bigInteger('gajikenek')->nullable();
-            $table->bigInteger('komisisupir')->nullable();
-            $table->bigInteger('tolsupir')->nullable();
-            $table->bigInteger('upahritasi')->nullable();
+            $table->double('uangmakanberjenjang', 15, 2)->nullable();
+            $table->double('gajisupir', 15, 2)->nullable();
+            $table->double('gajikenek', 15, 2)->nullable();
+            $table->double('komisisupir', 15, 2)->nullable();
+            $table->double('tolsupir', 15, 2)->nullable();
+            $table->double('upahritasi', 15, 2)->nullable();
             $table->string('ritasi_nobukti')->nullable();
             $table->string('statusritasi')->nullable();
-            $table->bigInteger('biayaextra')->nullable();
+            $table->double('biayaextra', 15, 2)->nullable();
             $table->string('keteranganbiayatambahan')->nullable();
+            $table->double('total', 15, 2)->nullable();
         });
 
-        $tes = DB::table($temp)->insertUsing(['nobukti', 'suratpengantar_nobukti', 'tglsp', 'dari', 'sampai', 'nocont', 'nosp','uangmakanberjenjang', 'gajisupir', 'gajikenek', 'komisisupir', 'tolsupir', 'upahritasi', 'ritasi_nobukti', 'statusritasi', 'biayaextra', 'keteranganbiayatambahan'], $fetch);
+        $tes = DB::table($temp)->insertUsing(['nobukti', 'suratpengantar_nobukti', 'tglsp', 'dari', 'sampai', 'nocont', 'nosp', 'uangmakanberjenjang', 'gajisupir', 'gajikenek', 'komisisupir', 'tolsupir', 'upahritasi', 'ritasi_nobukti', 'statusritasi', 'biayaextra', 'keteranganbiayatambahan', 'total'], $fetch);
 
         $fetch = DB::table('gajisupirdetail')->from(DB::raw("gajisupirdetail with (readuncommitted)"))
             ->select(
@@ -190,7 +222,8 @@ class GajiSupirDetail extends MyModel
                 'parameter.text as statusritasi',
                 'gajisupirdetail.biayatambahan as biayaextra',
                 'gajisupirdetail.keteranganbiayatambahan',
-                
+                db::raw("(gajisupirdetail.gajisupir+gajisupirdetail.gajikenek+gajisupirdetail.komisisupir+gajisupirdetail.biayatambahan) as total"),
+
 
             )
             ->leftJoin(DB::raw("ritasi with (readuncommitted)"), 'gajisupirdetail.ritasi_nobukti', 'ritasi.nobukti')
@@ -201,7 +234,7 @@ class GajiSupirDetail extends MyModel
             ->where('gajisupirdetail.suratpengantar_nobukti', '-')
             ->where('gajisupirdetail.gajisupir_id', request()->gajisupir_id);
 
-        $tes = DB::table($temp)->insertUsing(['nobukti', 'suratpengantar_nobukti', 'tglsp', 'dari', 'sampai','uangmakanberjenjang', 'gajisupir', 'gajikenek', 'komisisupir', 'tolsupir', 'upahritasi', 'ritasi_nobukti', 'statusritasi', 'biayaextra', 'keteranganbiayatambahan'], $fetch);
+        $tes = DB::table($temp)->insertUsing(['nobukti', 'suratpengantar_nobukti', 'tglsp', 'dari', 'sampai', 'uangmakanberjenjang', 'gajisupir', 'gajikenek', 'komisisupir', 'tolsupir', 'upahritasi', 'ritasi_nobukti', 'statusritasi', 'biayaextra', 'keteranganbiayatambahan', 'total'], $fetch);
 
         return $temp;
     }
@@ -220,10 +253,10 @@ class GajiSupirDetail extends MyModel
                     $tempQuery->where(function ($tempQuery) {
                         foreach ($this->params['filters']['rules'] as $index => $filters) {
                             if ($filters['field'] == 'uangmakanberjenjang' || $filters['field'] == 'gajisupir' || $filters['field'] == 'gajikenek' || $filters['field'] == 'komisisupir' || $filters['field'] == 'tolsupir' || $filters['field'] == 'upahritasi' || $filters['field'] == 'biayaextra') {
-                                $query = $tempQuery->whereRaw("format(".$this->tempTable . "." . $filters['field'].", '#,#0.00') LIKE '%$filters[data]%'");
+                                $query = $tempQuery->whereRaw("format(" . $this->tempTable . "." . $filters['field'] . ", '#,#0.00') LIKE '%$filters[data]%'");
                             } else if ($filters['field'] == 'tglsp') {
-                                $query = $tempQuery->whereRaw("format(".$this->tempTable . "." . $filters['field'].", 'dd-MM-yyyy') LIKE '%$filters[data]%'");
-                            } else{
+                                $query = $tempQuery->whereRaw("format(" . $this->tempTable . "." . $filters['field'] . ", 'dd-MM-yyyy') LIKE '%$filters[data]%'");
+                            } else {
                                 $tempQuery = $tempQuery->where($this->tempTable . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
                             }
                         }
@@ -235,10 +268,10 @@ class GajiSupirDetail extends MyModel
                     $tempQuery->where(function ($tempQuery) {
                         foreach ($this->params['filters']['rules'] as $index => $filters) {
                             if ($filters['field'] == 'uangmakanberjenjang' || $filters['field'] == 'gajisupir' || $filters['field'] == 'gajikenek' || $filters['field'] == 'komisisupir' || $filters['field'] == 'tolsupir' || $filters['field'] == 'upahritasi' || $filters['field'] == 'biayaextra') {
-                                $query = $tempQuery->orWhereRaw("format(".$this->tempTable . "." . $filters['field'].", '#,#0.00') LIKE '%$filters[data]%'");
+                                $query = $tempQuery->orWhereRaw("format(" . $this->tempTable . "." . $filters['field'] . ", '#,#0.00') LIKE '%$filters[data]%'");
                             } else if ($filters['field'] == 'tglsp') {
-                                $query = $tempQuery->orWhereRaw("format(".$this->tempTable . "." . $filters['field'].", 'dd-MM-yyyy') LIKE '%$filters[data]%'");
-                            } else{
+                                $query = $tempQuery->orWhereRaw("format(" . $this->tempTable . "." . $filters['field'] . ", 'dd-MM-yyyy') LIKE '%$filters[data]%'");
+                            } else {
                                 $tempQuery = $tempQuery->orWhere($this->tempTable . '.' . $filters['field'], 'LIKE', "%$filters[data]%");
                             }
                         }
@@ -281,10 +314,10 @@ class GajiSupirDetail extends MyModel
         $gajiSupirDetail->keteranganbiayatambahan = $data['keteranganbiayatambahan'];
         $gajiSupirDetail->nominalpengembalianpinjaman = $data['nominalpengembalianpinjaman'];
         $gajiSupirDetail->uangmakanberjenjang = $data['uangmakanberjenjang'];
-        
+
         $gajiSupirDetail->modifiedby = auth('api')->user()->name;
         $gajiSupirDetail->info = html_entity_decode(request()->info);
-        
+
         if (!$gajiSupirDetail->save()) {
             throw new \Exception("Error storing gaji supir detail.");
         }
