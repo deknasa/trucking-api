@@ -989,7 +989,7 @@ class PenerimaanStokHeader extends MyModel
             $memokredit = json_decode($getCoaKredit->memo, true);
             $getCoaDebet = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'JURNAL PEMAKAIAN STOK')->where('subgrp', 'KREDIT')->first();
             $memo = json_decode($getCoaDebet->memo, true);
-
+            $isPostJurnal = false;
             for ($i = 0; $i < count($data['detail_harga']); $i++) {
                 // $totalsat = ($data['detail_qty'][$i] * $data['detail_harga'][$i]);
                 $totalsat = $data['totalItem'][$i];
@@ -997,6 +997,10 @@ class PenerimaanStokHeader extends MyModel
                 $coadebet_detail[] = $memo['JURNAL'];
                 $nominal_detail[] = ceil($totalsat);
                 $keterangan_detail[] = $data['detail_keterangan'][$i];
+
+                if ( $totalsat ) {
+                    $isPostJurnal = true;
+                }
             }
 
             /*STORE JURNAL*/
@@ -1015,7 +1019,9 @@ class PenerimaanStokHeader extends MyModel
                 'nominal_detail' => $nominal_detail,
                 'keterangan_detail' => $keterangan_detail
             ];
-            $jurnalUmumHeader = (new JurnalUmumHeader())->processStore($jurnalRequest);
+            if ($isPostJurnal) {
+                $jurnalUmumHeader = (new JurnalUmumHeader())->processStore($jurnalRequest);
+            }
         }
 
         $penerimaanStokHeaderLogTrail = (new LogTrail())->processStore([
@@ -1156,7 +1162,7 @@ class PenerimaanStokHeader extends MyModel
             (new PenerimaanStokDetail())->returnStokPenerimaan($penerimaanStokHeader->id);
         }
         // dd('test');
-        if ($data['penerimaanstok_id'] == $korv->id) {
+        if (($data['penerimaanstok_id'] == $korv->id) || ($data['penerimaanstok_id'] === $spbs->text)) {
             (new PenerimaanStokDetail())->returnVulkanisir($penerimaanStokHeader->id);
         }
 
@@ -1314,7 +1320,7 @@ class PenerimaanStokHeader extends MyModel
                 ];
 
                 (new PenerimaanStokDetailFifo())->processStore($penerimaanStokHeader, $datadetailfifo);
-
+                $isPostJurnal = false;
                 $getCoaDebet = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'JURNAL PEMAKAIAN STOK')->where('subgrp', 'DEBET')->first();
                 $memo = json_decode($getCoaDebet->memo, true);
                 $getCoaKredit = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'JURNAL PEMAKAIAN STOK')->where('subgrp', 'KREDIT')->first();
@@ -1326,7 +1332,9 @@ class PenerimaanStokHeader extends MyModel
                 $penerimaanStokDetail = penerimaanStokDetail::where('id',$penerimaanStokDetail->id)->first();
             
                 $nominal_detail[] = $penerimaanStokDetail->total;
-    
+                if ( $totalsat ) {
+                    $isPostJurnal = true;
+                }
 
                 
 
@@ -1353,7 +1361,9 @@ class PenerimaanStokHeader extends MyModel
 
                     $jurnalUmumHeader = (new JurnalUmumHeader())->processUpdate($jurnalUmumHeader, $jurnalRequest);
                 } else {
-                    $jurnalUmumHeader = (new JurnalUmumHeader())->processStore($jurnalRequest);
+                    if ($isPostJurnal) {
+                        $jurnalUmumHeader = (new JurnalUmumHeader())->processStore($jurnalRequest);
+                    }
                 }                
                 
 
@@ -1457,7 +1467,9 @@ class PenerimaanStokHeader extends MyModel
             (new PenerimaanStokDetail())->returnStokPenerimaan($penerimaanStokHeader->id);
         }
         $korv = DB::table('penerimaanstok')->where('kodepenerimaan', 'KORV')->first();
-        if ($penerimaanStokHeader->penerimaanstok_id == $korv->id) {
+        $spbs = Parameter::where('grp', 'REUSE STOK')->where('subgrp', 'REUSE STOK')->first();
+
+        if (($penerimaanStokHeader->penerimaanstok_id == $korv->id)||($penerimaanStokHeader->penerimaanstok_id ==$spbs->text )) {
             (new PenerimaanStokDetail())->returnVulkanisir($penerimaanStokHeader->id);
         }
 

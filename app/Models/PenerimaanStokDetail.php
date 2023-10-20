@@ -375,6 +375,10 @@ class PenerimaanStokDetail extends MyModel
                 }
                 $persediaanKe = $this->persediaan($penerimaanStokHeader->gudangke_id, $penerimaanStokHeader->tradoke_id, $penerimaanStokHeader->gandenganke_id);
                 $ke = $this->persediaanKe($data['stok_id'], $persediaanKe['column'] . '_id', $persediaanKe['value'], $data['qty']);
+                if ($penerimaanStokHeader->penerimaanstok_id == $spbs->text) {
+                    $this->vulkanStokPlus($data['stok_id'], 1);
+                    $data['vulkanisirke'] = 1;
+                }
             }
 
             if ($penerimaanStokHeader->penerimaanstok_id == $pg->text) {
@@ -636,9 +640,9 @@ class PenerimaanStokDetail extends MyModel
         $penerimaanStokHeader = PenerimaanStokHeader::findOrFail($id);
         $penerimaanStokDetail = PenerimaanStokDetail::where('penerimaanstokheader_id', $id)->get();
         $korv = DB::table('penerimaanstok')->where('kodepenerimaan', 'KORV')->first();
-
+        $spbs = Parameter::where('grp', 'REUSE STOK')->where('subgrp', 'REUSE STOK')->first();
         foreach ($penerimaanStokDetail as $item) {
-            if ($penerimaanStokHeader->penerimaanstok_id == $korv->id) {
+            if (($penerimaanStokHeader->penerimaanstok_id == $korv->id) ||($penerimaanStokHeader->penerimaanstok_id == $spbs->text)) {
                 $dari = $this->vulkanStokMinus($item->stok_id, $item->vulkanisirke);
             }
         }
