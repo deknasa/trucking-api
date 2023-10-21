@@ -137,6 +137,7 @@ class LaporanSaldoInventory extends MyModel
             )
             ->join(db::raw("cabang b with (readuncommitted)"), 'a.cabang_id', 'b.id')
             ->where('a.cabang_id', $cabangpst)
+            ->where('a.user',  $user)
             ->first();
 
         if (isset($cabangpusat)) {
