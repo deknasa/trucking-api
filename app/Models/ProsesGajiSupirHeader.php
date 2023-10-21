@@ -675,52 +675,235 @@ class ProsesGajiSupirHeader extends MyModel
 
         return $temp;
     }
-    public function selectColumns($query)
+    public function selectColumns()
     {
-        return $query->select(
-            DB::raw("
-            $this->table.id,
-            $this->table.nobukti,
-            $this->table.tglbukti,
-            $this->table.tgldari,
-            $this->table.tglsampai,
-            'statusapproval.text as statusapproval',
-            $this->table.userapproval,
-            $this->table.tglapproval,
-            'statuscetak.text as statuscetak',
-            $this->table.userbukacetak,
-            $this->table.tglbukacetak,
-            $this->table.jumlahcetak,
-            $this->table.periode,
-            $this->table.modifiedby,
-            $this->table.created_at,
-            $this->table.updated_at
-            ")
-        )
-            ->leftJoin('parameter as statuscetak', 'prosesgajisupirheader.statuscetak', 'statuscetak.id')
-            ->leftJoin('parameter as statusapproval', 'prosesgajisupirheader.statusapproval', 'statusapproval.id');
+        $temtabel = '##temp' . rand(1, getrandmax()) . str_replace('.', '', microtime(true)) . request()->nd ?? 0;
+
+
+        Schema::create($temtabel, function (Blueprint $table) {
+            $table->integer('id')->nullable();
+            $table->string('nobukti', 1000)->nullable();
+            $table->dateTime('tglbukti')->nullable();
+            $table->date('tgldari')->nullable();
+            $table->date('tglsampai')->nullable();
+            $table->longText('keterangan')->nullable();
+            $table->longText('periode')->nullable();
+            $table->longText('userapproval')->nullable();
+            $table->longText('statusapproval')->nullable();
+            $table->longText('statuscetak')->nullable();
+            $table->longText('userbukacetak')->nullable();
+            $table->integer('jumlahcetak')->nullable();
+            $table->string('pengeluaran_nobukti', 1000)->nullable();
+            $table->string('modifiedby', 1000)->nullable();
+            $table->dateTime('created_at')->nullable();
+            $table->dateTime('updated_at')->nullable();
+            $table->dateTime('tglapproval')->nullable();
+            $table->dateTime('tglbukacetak')->nullable();
+            $table->double('total', 15, 2)->nullable();
+            $table->double('totalposting', 15, 2)->nullable();
+            $table->double('uangjalan', 15, 2)->nullable();
+            $table->double('bbm', 15, 2)->nullable();
+            $table->double('uangmakanharian', 15, 2)->nullable();
+            $table->double('uangmakanberjenjang', 15, 2)->nullable();
+            $table->double('potonganpinjaman', 15, 2)->nullable();
+            $table->double('potonganpinjamansemua', 15, 2)->nullable();
+            $table->double('deposito', 15, 2)->nullable();
+            $table->double('komisisupir', 15, 2)->nullable();
+            $table->double('gajikenek', 15, 2)->nullable();
+            $table->double('biayaextra', 15, 2)->nullable();
+            $table->dateTime('tgldariheaderpengeluaranheader')->nullable();
+            $table->dateTime('tglsampaiheaderpengeluaranheader')->nullable();
+        });
+
+        $tempgajidetail = '##tempgajidetail' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+        Schema::create($tempgajidetail, function ($table) {
+            $table->string('nobukti', 1000)->nullable();
+            $table->double('komisisupir', 15, 2)->nullable();
+            $table->double('gajikenek', 15, 2)->nullable();
+            $table->double('biayaextra', 15, 2)->nullable();
+        });
+
+        $querytempdetail = DB::table("prosesgajisupirheader")->from(DB::raw("prosesgajisupirheader with (readuncommitted)"))
+            ->select(
+                'prosesgajisupirheader.nobukti',
+                db::raw("sum(gajisupirdetail.komisisupir) as komisisupir"),
+                db::raw("sum(gajisupirdetail.gajikenek) as gajikenek"),
+                db::raw("sum(gajisupirdetail.biayatambahan) as biayaextra"),
+            )
+            ->join(DB::raw("prosesgajisupirdetail with (readuncommitted)"), 'prosesgajisupirheader.nobukti', 'prosesgajisupirdetail.nobukti')
+            ->join(DB::raw("gajisupirheader with (readuncommitted)"), 'prosesgajisupirdetail.gajisupir_nobukti', 'gajisupirheader.nobukti')
+            ->join(DB::raw("gajisupirdetail with (readuncommitted)"), 'gajisupirheader.nobukti', 'gajisupirdetail.nobukti');
+
+
+        if (request()->tgldari && request()->tglsampai) {
+            $querytempdetail->whereBetween($this->table . '.tglbukti', [date('Y-m-d', strtotime(request()->tgldari)), date('Y-m-d', strtotime(request()->tglsampai))]);
+        }
+        $querytempdetail->groupBy('prosesgajisupirheader.nobukti');
+
+        DB::table($tempgajidetail)->insertUsing([
+            'nobukti',
+            'komisisupir',
+            'gajikenek',
+            'biayaextra',
+        ], $querytempdetail);
+
+        $this->tableTotal = $this->createTempTotal();
+        $querytemp = DB::table($this->table)->from(DB::raw("prosesgajisupirheader with (readuncommitted)"))
+
+            ->select(
+
+                'prosesgajisupirheader.id',
+                'prosesgajisupirheader.nobukti',
+                'prosesgajisupirheader.tglbukti',
+                'prosesgajisupirheader.tgldari',
+                'prosesgajisupirheader.tglsampai',
+                'prosesgajisupirheader.keterangan',
+                'prosesgajisupirheader.periode',
+                'prosesgajisupirheader.userapproval',
+                'statusapproval.memo as statusapproval',
+                'statuscetak.memo as statuscetak',
+                'prosesgajisupirheader.userbukacetak',
+                'prosesgajisupirheader.jumlahcetak',
+                'prosesgajisupirheader.pengeluaran_nobukti',
+                'prosesgajisupirheader.modifiedby',
+                'prosesgajisupirheader.created_at',
+                'prosesgajisupirheader.updated_at',
+                DB::raw("(case when (year(prosesgajisupirheader.tglapproval) <= 2000) then null else prosesgajisupirheader.tglapproval end ) as tglapproval"),
+                DB::raw("(case when (year(prosesgajisupirheader.tglbukacetak) <= 2000) then null else prosesgajisupirheader.tglbukacetak end ) as tglbukacetak"),
+                db::raw("(" . $this->tableTotal . ".total+isnull(c.komisisupir,0)+isnull(c.gajikenek,0) ) as total"),
+                $this->tableTotal . '.totalposting',
+                $this->tableTotal . '.uangjalan',
+                $this->tableTotal . '.bbm',
+                $this->tableTotal . '.uangmakanharian',
+                $this->tableTotal . '.uangmakanberjenjang',
+                $this->tableTotal . '.potonganpinjaman',
+                $this->tableTotal . '.potonganpinjamansemua',
+                $this->tableTotal . '.deposito',
+                db::raw("isnull(c.komisisupir,0) as komisisupir"),
+                db::raw("isnull(c.gajikenek,0) as gajikenek"),
+                db::raw("isnull(c.biayaextra,0) as biayaextra"),
+                db::raw("cast((format(pengeluaran.tglbukti,'yyyy/MM')+'/1') as date) as tgldariheaderpengeluaranheader"),
+                db::raw("cast(cast(format((cast((format(pengeluaran.tglbukti,'yyyy/MM')+'/1') as datetime)+32),'yyyy/MM')+'/01' as datetime)-1 as date) as tglsampaiheaderpengeluaranheader"),
+
+            )
+
+            ->leftJoin(DB::raw("parameter as statuscetak with (readuncommitted)"), 'prosesgajisupirheader.statuscetak', 'statuscetak.id')
+            ->leftJoin(DB::raw("parameter as statusapproval with (readuncommitted)"), 'prosesgajisupirheader.statusapproval', 'statusapproval.id')
+            ->leftJoin(DB::raw("pengeluaranheader as pengeluaran with (readuncommitted)"), 'prosesgajisupirheader.pengeluaran_nobukti', '=', 'pengeluaran.nobukti')
+            ->leftJoin($this->tableTotal, $this->tableTotal . '.nobukti', 'prosesgajisupirheader.nobukti')
+            ->leftJoin(DB::raw($tempgajidetail . " c"), 'prosesgajisupirheader.nobukti', 'c.nobukti');
+
+        DB::table($temtabel)->insertUsing([
+            'id',
+            'nobukti',
+            'tglbukti',
+            'tgldari',
+            'tglsampai',
+            'keterangan',
+            'periode',
+            'userapproval',
+            'statusapproval',
+            'statuscetak',
+            'userbukacetak',
+            'jumlahcetak',
+            'pengeluaran_nobukti',
+            'modifiedby',
+            'created_at',
+            'updated_at',
+            'tglapproval',
+            'tglbukacetak',
+            'total',
+            'totalposting',
+            'uangjalan',
+            'bbm',
+            'uangmakanharian',
+            'uangmakanberjenjang',
+            'potonganpinjaman',
+            'potonganpinjamansemua',
+            'deposito',
+            'komisisupir',
+            'gajikenek',
+            'biayaextra',
+            'tgldariheaderpengeluaranheader',
+            'tglsampaiheaderpengeluaranheader',
+        ], $querytemp);
+
+
+        $query = DB::table($temtabel)->from(DB::raw($temtabel . " a "))
+            ->select(
+                'a.id',
+                'a.nobukti',
+                'a.tglbukti',
+                'a.tgldari',
+                'a.tglsampai',
+                'a.keterangan',
+                'a.periode',
+                'a.userapproval',
+                'a.statusapproval',
+                'a.statuscetak',
+                'a.userbukacetak',
+                'a.jumlahcetak',
+                'a.pengeluaran_nobukti',
+                'a.modifiedby',
+                'a.created_at',
+                'a.updated_at',
+                'a.tglapproval',
+                'a.tglbukacetak',
+                'a.total',
+                'a.totalposting',
+                'a.uangjalan',
+                'a.bbm',
+                'a.uangmakanharian',
+                'a.uangmakanberjenjang',
+                'a.potonganpinjaman',
+                'a.potonganpinjamansemua',
+                'a.deposito',
+                'a.komisisupir',
+                'a.gajikenek',
+                'a.biayaextra',
+                'a.tgldariheaderpengeluaranheader',
+                'a.tglsampaiheaderpengeluaranheader',
+            );
+
+        return $query;
     }
 
     public function createTemp(string $modelTable)
     {
         $temp = '##temp' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
         Schema::create($temp, function ($table) {
-            $table->bigInteger('id')->nullable();
+            $table->integer('id')->nullable();
             $table->string('nobukti', 1000)->nullable();
-            $table->date('tglbukti')->nullable();
+            $table->dateTime('tglbukti')->nullable();
             $table->date('tgldari')->nullable();
             $table->date('tglsampai')->nullable();
-            $table->string('statusapproval', 1000)->nullable();
-            $table->string('userapproval', 1000)->nullable();
-            $table->date('tglapproval')->nullable();
-            $table->string('statuscetak', 1000)->nullable();
-            $table->string('userbukacetak', 50)->nullable();
-            $table->date('tglbukacetak')->nullable();
-            $table->integer('jumlahcetak')->Length(11)->nullable();
-            $table->date('periode')->nullable();
-            $table->string('modifiedby')->default();
+            $table->longText('keterangan')->nullable();
+            $table->longText('periode')->nullable();
+            $table->longText('userapproval')->nullable();
+            $table->longText('statusapproval')->nullable();
+            $table->longText('statuscetak')->nullable();
+            $table->longText('userbukacetak')->nullable();
+            $table->integer('jumlahcetak')->nullable();
+            $table->string('pengeluaran_nobukti', 1000)->nullable();
+            $table->string('modifiedby', 1000)->nullable();
             $table->dateTime('created_at')->nullable();
             $table->dateTime('updated_at')->nullable();
+            $table->dateTime('tglapproval')->nullable();
+            $table->dateTime('tglbukacetak')->nullable();
+            $table->double('total', 15, 2)->nullable();
+            $table->double('totalposting', 15, 2)->nullable();
+            $table->double('uangjalan', 15, 2)->nullable();
+            $table->double('bbm', 15, 2)->nullable();
+            $table->double('uangmakanharian', 15, 2)->nullable();
+            $table->double('uangmakanberjenjang', 15, 2)->nullable();
+            $table->double('potonganpinjaman', 15, 2)->nullable();
+            $table->double('potonganpinjamansemua', 15, 2)->nullable();
+            $table->double('deposito', 15, 2)->nullable();
+            $table->double('komisisupir', 15, 2)->nullable();
+            $table->double('gajikenek', 15, 2)->nullable();
+            $table->double('biayaextra', 15, 2)->nullable();
+            $table->dateTime('tgldariheaderpengeluaranheader')->nullable();
+            $table->dateTime('tglsampaiheaderpengeluaranheader')->nullable();
             $table->increments('position');
         });
         if ((date('Y-m', strtotime(request()->tglbukti)) != date('Y-m', strtotime(request()->tgldariheader))) || (date('Y-m', strtotime(request()->tglbukti)) != date('Y-m', strtotime(request()->tglsampaiheader)))) {
@@ -729,14 +912,46 @@ class ProsesGajiSupirHeader extends MyModel
         }
 
         $this->setRequestParameters();
-        $query = DB::table($modelTable);
-        $query = $this->selectColumns($query);
+        $query = $this->selectColumns();
         if (request()->tgldari) {
             $query->whereBetween('tglbukti', [date('Y-m-d', strtotime(request()->tgldari)), date('Y-m-d', strtotime(request()->tglsampai))]);
         }
-        $this->sortposition($query);
-        $models = $this->filterposition($query);
-        DB::table($temp)->insertUsing(['id', 'nobukti', 'tglbukti', 'tgldari', 'tglsampai', 'statusapproval', 'userapproval', 'tglapproval', 'statuscetak', 'userbukacetak', 'tglbukacetak', 'jumlahcetak', 'periode', 'modifiedby', 'created_at', 'updated_at'], $models);
+        $this->sort($query);
+        $models = $this->filter($query);
+        DB::table($temp)->insertUsing([
+            'id',
+            'nobukti',
+            'tglbukti',
+            'tgldari',
+            'tglsampai',
+            'keterangan',
+            'periode',
+            'userapproval',
+            'statusapproval',
+            'statuscetak',
+            'userbukacetak',
+            'jumlahcetak',
+            'pengeluaran_nobukti',
+            'modifiedby',
+            'created_at',
+            'updated_at',
+            'tglapproval',
+            'tglbukacetak',
+            'total',
+            'totalposting',
+            'uangjalan',
+            'bbm',
+            'uangmakanharian',
+            'uangmakanberjenjang',
+            'potonganpinjaman',
+            'potonganpinjamansemua',
+            'deposito',
+            'komisisupir',
+            'gajikenek',
+            'biayaextra',
+            'tgldariheaderpengeluaranheader',
+            'tglsampaiheaderpengeluaranheader',
+        ], $models);
 
         return $temp;
     }
