@@ -127,11 +127,11 @@ class LaporanSaldoInventory extends MyModel
             )
             ->where('a.grp', 'OPNAME STOK')
             ->where('a.subgrp', 'OPNAME STOK')
-            ->where('a.kelompo', 'OPNAME STOK')
+            ->where('a.kelompok', 'OPNAME STOK')
             ->first()->id ?? 0;
 
         $cabangpst = 1;
-        $cabangpusat = db::table("user")->from(db::raw("user a with (readuncommitted)"))
+        $cabangpusat = db::table("user")->from(db::raw("[user] a with (readuncommitted)"))
             ->select(
                 'a.user'
             )
@@ -142,14 +142,29 @@ class LaporanSaldoInventory extends MyModel
         if (isset($cabangpusat)) {
             $pusat=1;
         } else {
-            $pusat=0;
+            if ( $tutupqty==3) {
+                $pusat=1;
+            } else {
+                $pusat=0;
+            }
+            
         }
+
+        // dd($pusat);
+
+        $getJudul = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))
+        ->select('text')
+        ->where('grp', 'JUDULAN LAPORAN')
+        ->where('subgrp', 'JUDULAN LAPORAN')
+        ->first();
+
 
         $query = DB::table($temprekapall)->from(
             DB::raw($temprekapall . " a")
         )
             ->select(
                 DB::raw("upper('Laporan Saldo Inventory') as header"),
+                DB::raw("'" . $getJudul->text . "' as judul"),                
                 'a.lokasi',
                 'a.lokasi as namalokasi',
                 DB::raw("'' as kategori"),
@@ -170,6 +185,10 @@ class LaporanSaldoInventory extends MyModel
 
             )
             ->whereraw("a.nilaisaldo>0");
+
+           
+
+                
 
 
 
