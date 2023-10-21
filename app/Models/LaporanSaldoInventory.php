@@ -137,19 +137,20 @@ class LaporanSaldoInventory extends MyModel
             )
             ->join(db::raw("cabang b with (readuncommitted)"), 'a.cabang_id', 'b.id')
             ->where('a.cabang_id', $cabangpst)
+            ->where('a.user',  $user)
             ->first();
 
         if (isset($cabangpusat)) {
             $pusat=1;
         } else {
-            if ( $tutupqty==4) {
+            if ( $tutupqty=='4') {
                 $pusat=1;
             } else {
                 $pusat=0;
             }
             
         }
-
+        // dd($tutupqty);
         // dd($pusat);
 
         $getJudul = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))
