@@ -6,7 +6,7 @@ use App\Http\Controllers\Controller;
 
 use App\Models\ApprovalOpname;
 use App\Http\Requests\StoreApprovalOpnameRequest;
-Use App\Http\Requests\StoreLogTrailRequest;
+use App\Http\Requests\StoreLogTrailRequest;
 use App\Http\Requests\UpdateApprovalOpnameRequest;
 use App\Models\Parameter;
 use Illuminate\Support\Facades\DB;
@@ -19,20 +19,23 @@ class ApprovalOpnameController extends Controller
     public function index()
     {
         $parameter = Parameter::where('grp', 'OPNAME STOK')->where('subgrp', 'OPNAME STOK')->first();
+        $text = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('id', $parameter->text)->first();
+        $statusNonApproval = Parameter::from(
+            DB::raw("parameter with (readuncommitted)")
+        )->where('grp', 'STATUS APPROVAL')->where('text', 'NON APPROVAL')->first();
+        if ($parameter->text == $statusNonApproval->id) {
 
+            $statusApproval = Parameter::from(
+                DB::raw("parameter with (readuncommitted)")
+            )->where('grp', 'STATUS APPROVAL')->where('text', 'APPROVAL')->first();
+            $status = $statusApproval->id;
+        } else {
+            $status = $statusNonApproval->id;
+        }
         return response([
-            'data' => $parameter,
+            'terakhir' => $text->text,
+            'status' => $status,
         ]);
-    }
-
-    /**
-     * Show the form for creating a new resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
-    public function create()
-    {
-        //
     }
 
     /**
@@ -43,81 +46,36 @@ class ApprovalOpnameController extends Controller
         DB::beginTransaction();
 
         try {
-            $statusopname = $request->statusopname ?? 'TIDAK';
-            $parameter = Parameter::where('grp', 'OPNAME STOK')->where('subgrp', 'OPNAME STOK')->first();
-            
-            $parameter->text = $statusopname;
-            $parameter->modifiedby = auth('api')->user()->name;
+            $data = [
+                'statusopname' => $request->statusopname,
+            ];
+            $parameter = (new ApprovalOpname())->processStore($data);
+            $text = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('id', $parameter->text)->first();
 
-            if ($parameter->save()) {
-                $logTrail = [
-                    'namatabel' => strtoupper($parameter->getTable()),
-                    'postingdari' => 'OPNAME STOK',
-                    'idtrans' => $parameter->id,
-                    'nobuktitrans' => $parameter->id,
-                    'aksi' => 'EDIT',
-                    'datajson' => $parameter->toArray(),
-                    'modifiedby' => $parameter->modifiedby
-                ];
+            $statusNonApproval = Parameter::from(
+                DB::raw("parameter with (readuncommitted)")
+            )->where('grp', 'STATUS APPROVAL')->where('text', 'NON APPROVAL')->first();
+            if ($parameter->text == $statusNonApproval->id) {
 
-                $validatedLogTrail = new StoreLogTrailRequest($logTrail);
-                app(LogTrailController::class)->store($validatedLogTrail);
-
-                DB::commit();
+                $statusApproval = Parameter::from(
+                    DB::raw("parameter with (readuncommitted)")
+                )->where('grp', 'STATUS APPROVAL')->where('text', 'APPROVAL')->first();
+                $status = $statusApproval->id;
+            } else {
+                $status = $statusNonApproval->id;
             }
+
+            DB::commit();
             return response([
                 'status' => true,
-                'message' => 'Proses Tutup Buku Berhasil',
+                'message' => 'Proses '.$text->text.' opname stok berhasil',
+                'text' => $text->text,
+                'statusapproval' => $status,
                 'data' => $parameter
             ]);
         } catch (\Throwable $th) {
             DB::rollBack();
             throw $th;
         }
-    }
-
-    /**
-     * Display the specified resource.
-     *
-     * @param  \App\Models\ApprovalOpname  $approvalOpname
-     * @return \Illuminate\Http\Response
-     */
-    public function show(ApprovalOpname $approvalOpname)
-    {
-        //
-    }
-
-    /**
-     * Show the form for editing the specified resource.
-     *
-     * @param  \App\Models\ApprovalOpname  $approvalOpname
-     * @return \Illuminate\Http\Response
-     */
-    public function edit(ApprovalOpname $approvalOpname)
-    {
-        //
-    }
-
-    /**
-     * Update the specified resource in storage.
-     *
-     * @param  \App\Http\Requests\UpdateApprovalOpnameRequest  $request
-     * @param  \App\Models\ApprovalOpname  $approvalOpname
-     * @return \Illuminate\Http\Response
-     */
-    public function update(UpdateApprovalOpnameRequest $request, ApprovalOpname $approvalOpname)
-    {
-        //
-    }
-
-    /**
-     * Remove the specified resource from storage.
-     *
-     * @param  \App\Models\ApprovalOpname  $approvalOpname
-     * @return \Illuminate\Http\Response
-     */
-    public function destroy(ApprovalOpname $approvalOpname)
-    {
-        //
     }
 }
