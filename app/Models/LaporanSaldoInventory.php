@@ -31,10 +31,10 @@ class LaporanSaldoInventory extends MyModel
         // dd('test');
         // dd($priode);
         $prosesneraca = $prosesneraca ?? 0;
-        $priode1= date('Y-m-d', strtotime($priode));
-        $priode= date("Y-m-d", strtotime("+1 day", strtotime($priode)));
+        $priode1 = date('Y-m-d', strtotime($priode));
+        $priode = date("Y-m-d", strtotime("+1 day", strtotime($priode)));
         // $tglsampai= date("Y-m-d", strtotime("+1 day", strtotime($tgldari)));
-        
+
 
         $temprekapall = '##temprekapall' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
         Schema::create($temprekapall, function ($table) {
@@ -63,16 +63,16 @@ class LaporanSaldoInventory extends MyModel
         $gandengan_id = $gandengan_id ?? 0;
         if ($filter == $filtergudang->id) {
             $gudang_id = $dataFilter ?? 0;
-            $filterdata=$filtergudang->text;
+            $filterdata = $filtergudang->text;
         } else if ($filter == $filtertrado->id) {
             $trado_id = $dataFilter ?? 0;
-            $filterdata=$filtertrado->text;
+            $filterdata = $filtertrado->text;
         } else if ($filter == $filtergandengan->id) {
             $gandengan_id = $dataFilter ?? 0;
-            $filterdata=$filtergandengan->text;
+            $filterdata = $filtergandengan->text;
         } else {
             $gudang_id = $dataFilter ?? 0;
-            $filterdata=$filtergudang->text;
+            $filterdata = $filtergudang->text;
         }
 
         // dump($priode);
@@ -107,43 +107,71 @@ class LaporanSaldoInventory extends MyModel
         // DB::delete(DB::raw("delete " . $temprekapall . "  WHERE upper(nobukti)<>'SALDO AWAL'"));
 
         $disetujui = db::table('parameter')->from(db::raw('parameter with (readuncommitted)'))
-        ->select('text')
-        ->where('grp', 'DISETUJUI')
-        ->where('subgrp', 'DISETUJUI')->first()->text ?? '';
+            ->select('text')
+            ->where('grp', 'DISETUJUI')
+            ->where('subgrp', 'DISETUJUI')->first()->text ?? '';
 
-    $diperiksa = db::table('parameter')->from(db::raw('parameter with (readuncommitted)'))
-        ->select('text')
-        ->where('grp', 'DIPERIKSA')
-        ->where('subgrp', 'DIPERIKSA')->first()->text ?? '';
+        $diperiksa = db::table('parameter')->from(db::raw('parameter with (readuncommitted)'))
+            ->select('text')
+            ->where('grp', 'DIPERIKSA')
+            ->where('subgrp', 'DIPERIKSA')->first()->text ?? '';
 
 
-        $priode2= date('m/d/Y', strtotime($priode1));
-       
+        $priode2 = date('m/d/Y', strtotime($priode1));
+
+
+        $user = auth('api')->user()->name;
+        $tutupqty = db::table("parameter")->from(db::raw("parameter a with (readuncommitted)"))
+            ->select(
+                'a.text as id'
+            )
+            ->where('a.grp', 'OPNAME STOK')
+            ->where('a.subgrp', 'OPNAME STOK')
+            ->where('a.kelompo', 'OPNAME STOK')
+            ->first()->id ?? 0;
+
+        $cabangpst = 1;
+        $cabangpusat = db::table("user")->from(db::raw("user a with (readuncommitted)"))
+            ->select(
+                'a.user'
+            )
+            ->join(db::raw("cabang b with (readuncommitted)"), 'a.cabang_id', 'b.id')
+            ->where('a.cabang_id', $cabangpst)
+            ->first();
+
+        if (isset($cabangpusat)) {
+            $pusat=1;
+        } else {
+            $pusat=0;
+        }
+
         $query = DB::table($temprekapall)->from(
             DB::raw($temprekapall . " a")
         )
             ->select(
-                DB::raw("'Laporan Saldo Inventory' as header"),
+                DB::raw("upper('Laporan Saldo Inventory') as header"),
                 'a.lokasi',
                 'a.lokasi as namalokasi',
                 DB::raw("'' as kategori"),
-                DB::raw("'".$priode1."' as tgldari"),
-                DB::raw("'".$priode1."' as tglsampai"),
+                DB::raw("'" . $priode1 . "' as tgldari"),
+                DB::raw("'" . $priode1 . "' as tglsampai"),
                 DB::raw("'' as stokdari"),
                 DB::raw("'' as stoksampai"),
                 DB::raw("'' as vulkanisirke"),
                 'a.kodebarang as id',
                 'a.kodebarang',
                 'a.namabarang',
-                DB::raw("'".$priode2."' as tanggal"),
-                'a.qtysaldo as qty',
+                DB::raw("'" . $priode2 . "' as tanggal"),
+                db::raw("(case when " .$pusat. "=0 then 0 else a.qtysaldo  end) as qty"),
                 DB::raw("'' as satuan"),
-                'a.nilaisaldo as nominal',
+                db::raw("(case when " .$pusat. "=0 then 0 else a.nilaisaldo  end) as nominal"),
                 db::raw("'" . $disetujui . "' as disetujui"),
                 db::raw("'" . $diperiksa . "' as diperiksa"),
 
-            );
-           
+            )
+            ->whereraw("a.nilaisaldo>0");
+
+
 
 
         // 'header' => 'Laporan Saldo Inventory',
@@ -164,11 +192,11 @@ class LaporanSaldoInventory extends MyModel
 
         // dd(DB::table($temprekapall)->get());
 
-      
+
         if ($prosesneraca == 1) {
-            $data=$query;
+            $data = $query;
         } else {
-            $data=$query->get();
+            $data = $query->get();
         }
         return $data;
     }
