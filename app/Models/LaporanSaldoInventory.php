@@ -142,7 +142,7 @@ class LaporanSaldoInventory extends MyModel
         if (isset($cabangpusat)) {
             $pusat=1;
         } else {
-            if ( $tutupqty==3) {
+            if ( $tutupqty==4) {
                 $pusat=1;
             } else {
                 $pusat=0;
