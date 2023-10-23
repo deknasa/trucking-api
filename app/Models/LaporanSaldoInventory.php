@@ -30,6 +30,7 @@ class LaporanSaldoInventory extends MyModel
 
         // dd('test');
         // dd($priode);
+
         $prosesneraca = $prosesneraca ?? 0;
         $priode1 = date('Y-m-d', strtotime($priode));
         $priode = date("Y-m-d", strtotime("+1 day", strtotime($priode)));
@@ -39,6 +40,10 @@ class LaporanSaldoInventory extends MyModel
         $temprekapall = '##temprekapall' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
         Schema::create($temprekapall, function ($table) {
             $table->id();
+            $table->unsignedBigInteger('stok_id')->nullable();
+            $table->unsignedBigInteger('gudang_id')->nullable();
+            $table->unsignedBigInteger('trado_id')->nullable();
+            $table->unsignedBigInteger('gandengan_id')->nullable();
             $table->longText('lokasi')->nullable();
             $table->string('kodebarang', 1000)->nullable();
             $table->string('namabarang', 1000)->nullable();
@@ -87,6 +92,10 @@ class LaporanSaldoInventory extends MyModel
         // dd($filter);
         $kartustok = new KartuStok();
         DB::table($temprekapall)->insertUsing([
+            'stok_id',
+            'gudang_id',
+            'trado_id',
+            'gandengan_id',
             'lokasi',
             'kodebarang',
             'namabarang',
@@ -141,31 +150,39 @@ class LaporanSaldoInventory extends MyModel
             ->first();
 
         if (isset($cabangpusat)) {
-            $pusat=1;
+            $pusat = 1;
         } else {
-            if ( $tutupqty=='4') {
-                $pusat=1;
+            if ($tutupqty == '4') {
+                $pusat = 1;
             } else {
-                $pusat=0;
+                $pusat = 0;
             }
-            
         }
         // dd($tutupqty);
         // dd($pusat);
 
         $getJudul = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))
-        ->select('text')
-        ->where('grp', 'JUDULAN LAPORAN')
-        ->where('subgrp', 'JUDULAN LAPORAN')
-        ->first();
+            ->select('text')
+            ->where('grp', 'JUDULAN LAPORAN')
+            ->where('subgrp', 'JUDULAN LAPORAN')
+            ->first();
 
+        if ($kelompok_id == '') {
+            $kategori = 'ALL KATEGORI';
+        } else {
+            $kategori = db::table("kelompok")->from(db::raw("kelompok a with (readuncommitted)"))
+                ->select(
+                    'a.kodekelompok as kategori'
+                )->where('a.id', $kelompok_id)
+                ->first()->kategori ?? '';
+        }
 
         $query = DB::table($temprekapall)->from(
             DB::raw($temprekapall . " a")
         )
             ->select(
                 DB::raw("upper('Laporan Saldo Inventory') as header"),
-                DB::raw("'" . $getJudul->text . "' as judul"),                
+                DB::raw("'" . $getJudul->text . "' as judul"),
                 'a.lokasi',
                 'a.lokasi as namalokasi',
                 DB::raw("'' as kategori"),
@@ -178,18 +195,30 @@ class LaporanSaldoInventory extends MyModel
                 'a.kodebarang',
                 'a.namabarang',
                 DB::raw("'" . $priode2 . "' as tanggal"),
-                db::raw("(case when " .$pusat. "=0 then 0 else a.qtysaldo  end) as qty"),
+                db::raw("(case when " . $pusat . "=0 then 0 else a.qtysaldo  end) as qty"),
                 DB::raw("'' as satuan"),
-                db::raw("(case when " .$pusat. "=0 then 0 else a.nilaisaldo  end) as nominal"),
+                db::raw("(case when " . $pusat . "=0 then 0 else a.nilaisaldo  end) as nominal"),
                 db::raw("'" . $disetujui . "' as disetujui"),
                 db::raw("'" . $diperiksa . "' as diperiksa"),
+                db::raw("'" . $kategori . "' as kategori"),
 
             )
+            ->join(db::raw("stok b with (readuncommitted)"), 'a.stok_id', 'b.id')
+            ->whereRaw("(isnull(b.kelompok_id,0)=" . $kelompok_id . " or " . $kelompok_id . "='')")
             ->whereraw("a.nilaisaldo>0");
 
-           
+        if ($statusreuse != '') {
+            $query->whereRaw("(isnull(b.statusreuse,0)=" . $statusreuse . ")");
+        }
 
-                
+        if ($statusban != '') {
+            $query->whereRaw("(isnull(b.statusban,0)=" . $statusban . ")");
+
+        }
+
+
+
+
 
 
 
