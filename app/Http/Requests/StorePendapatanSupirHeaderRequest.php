@@ -69,7 +69,7 @@ class StorePendapatanSupirHeaderRequest extends FormRequest
         $rules = [
             'tglbukti' => [
                 'required',
-                'before_or_equal:' . date('d-m-Y'),
+                'before_or_equal:' . date('Y-m-t'),
                 new DateTutupBuku()
             ],
             'bank' => 'required',
