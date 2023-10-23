@@ -14,8 +14,8 @@ class ExpStnkController extends Controller
     {
         $expStnk = new ExpStnk();
         return response([
-            // 'data' => $expStnk->get(),
-            'data' => $expStnk->reminderemailstnk(),
+            'data' => $expStnk->get(),
+            // 'data' => $expStnk->reminderemailstnk(),
             'attributes' => [
                 'totalRows' => $expStnk->totalRows,
                 'totalPages' => $expStnk->totalPages
