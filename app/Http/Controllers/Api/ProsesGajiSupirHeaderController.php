@@ -75,6 +75,7 @@ class ProsesGajiSupirHeaderController extends Controller
                 'totalPages' => $prosesGajiSupirHeader->totalPages,
                 'totalAll' => $prosesGajiSupirHeader->totalAll,
                 'totalPosting' => $prosesGajiSupirHeader->totalPosting,
+                'totalGajiSupir' => $prosesGajiSupirHeader->totalGajiSupir,
                 'totalGajiKenek' => $prosesGajiSupirHeader->totalGajiKenek,
                 'totalKomisiSupir' => $prosesGajiSupirHeader->totalKomisiSupir,
                 'totalBiayaExtra' => $prosesGajiSupirHeader->totalBiayaExtra,
@@ -281,7 +282,9 @@ class ProsesGajiSupirHeaderController extends Controller
                     'totalPotPinjSemua' => $gajiSupir->totalPotPinjSemua,
                     'totalDeposito' => $gajiSupir->totalDeposito,
                     'totalKomisi' => $gajiSupir->totalKomisi,
-                    'totalTol' => $gajiSupir->totalTol
+                    'totalTol' => $gajiSupir->totalTol,
+                    'totalGajiSupir' => $gajiSupir->totalGajiSupir,
+                    'totalGajiKenek' => $gajiSupir->totalGajiKenek,
                 ]
             ]);
         } else {
