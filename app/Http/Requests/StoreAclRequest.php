@@ -25,8 +25,8 @@ class StoreAclRequest extends FormRequest
     public function rules()
     {
         return [
-            'aco_ids' => 'required|array',
-            'aco_ids.*' => 'required|int|exists:acos,id',
+            'aco_ids' => 'required',
+            // 'aco_ids.*' => 'required|int|exists:acos,id',
         ];
     }
 
@@ -34,7 +34,7 @@ class StoreAclRequest extends FormRequest
     {
         return [
             'aco_ids' => 'aco',
-            'aco_ids.*' => 'aco',
+            // 'aco_ids.*' => 'aco',
         ];
     }
 }
