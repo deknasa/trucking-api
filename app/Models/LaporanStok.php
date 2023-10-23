@@ -108,6 +108,83 @@ class LaporanStok extends MyModel
             'modifiedby',
         ], (new KartuStok())->getlaporan($tgldari, $tglsampai, $stokdari_id, $stoksampai_id, $idgudangkantor, $trado_id, $gandengan_id, $filtergudang));
 
+        $tempstok = '##tempstok' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+        Schema::create($tempstok, function ($table) {
+            $table->id();
+            $table->unsignedBigInteger('stok_id')->nullable();
+            $table->unsignedBigInteger('gudang_id')->nullable();
+            $table->unsignedBigInteger('trado_id')->nullable();
+            $table->unsignedBigInteger('gandengan_id')->nullable();
+        });        
+
+        $querystok=db::table($temprekapall)->from(db::raw($temprekapall ." a "))
+        ->select (
+            'a.stok_id',
+            'a.gudang_id',
+            'a.trado_id',
+            'a.gandengan_id',            
+        )
+        ->groupby('a.stok_id')
+        ->groupby('a.gudang_id')
+        ->groupby('a.trado_id')
+        ->groupby('a.gandengan_id');
+
+        DB::table($tempstok)->insertUsing([
+            'stok_id',
+            'gudang_id',
+            'trado_id',
+            'gandengan_id',
+        ], $querystok);
+
+        DB::delete(DB::raw("delete " . $tempstok . " from " . $tempstok . " as a inner join " . $temprekapall . " b on isnull(a.stok_id,0)=isnull(b.stok_id,0) and isnull(a.gudang_id,0)=isnull(b.gudang_id,0)
+        and isnull(a.trado_id,0)=isnull(b.trado_id,0) and isnull(a.gandengan_id,0)=isnull(b.gandengan_id,0) and isnull(b.nobukti,'')='SALDO AWAL'
+        "));
+
+        $querysaldoawal=db::table($tempstok)->from(db::raw($tempstok ." a "))
+        ->select (
+            'a.stok_id',
+            'a.gudang_id',
+            'a.trado_id',
+            'a.gandengan_id',
+            db::raw("'' as lokasi"),
+            db::raw("isnull(b.namastok,'') as kodebarang"),
+            db::raw("isnull(b.namastok,'') as namabarang"),
+            db::raw("'". $tgldari ."' as tglbukti"),
+            db::raw("'SALDO AWAL' as nobukti"),
+            db::raw("'' as kategori_id"),
+            db::raw("0 as qtymasuk"),
+            db::raw("0 as nilaimasuk"),
+            db::raw("0 as qtykeluar"),
+            db::raw("0 as nilaikeluar"),
+            db::raw("0 as qtysaldo"),
+            db::raw("0 as nilaisaldo"),
+            db::raw("0 as modifiedby"),
+        )
+        ->join(db::raw("stok b with (readuncommitted)"),'a.stok_id','b.id');
+
+        DB::table($temprekapall)->insertUsing([
+            'stok_id',
+            'gudang_id',
+            'trado_id',
+            'gandengan_id',
+            'lokasi',
+            'kodebarang',
+            'namabarang',
+            'tglbukti',
+            'nobukti',
+            'kategori_id',
+            'qtymasuk',
+            'nilaimasuk',
+            'qtykeluar',
+            'nilaikeluar',
+            'qtysaldo',
+            'nilaisaldo',
+            'modifiedby',
+        ], $querysaldoawal);
+
+
+
+
 
         // $querystoktransaksi = DB::table($temprekapall)->from(db::raw($temprekapall . " as a"))
         //     ->select(
@@ -158,12 +235,18 @@ class LaporanStok extends MyModel
                 'a.kodebarang',
                 'a.namabarang',
                 'a.tglbukti as tglbukti',
-                'a.qtymasuk as qtymasuk',
-                'a.nilaimasuk as nominalmasuk',
+                db::raw("(isnull(a.qtymasuk,0)+
+                (case when a.nobukti='SALDO AWAL' then 
+                isnull(a.qtysaldo,0) else 0 end)) as qtymasuk"),
+                db::raw("(isnull(a.nilaimasuk,0)+
+                (case when a.nobukti='SALDO AWAL' then 
+                isnull(a.nilaisaldo,0) else 0 end)) as nominalmasuk"),
                 'a.qtykeluar as qtykeluar',
                 'a.nilaikeluar as nominalkeluar',
-                'a.qtysaldo as qtysaldo',
-                'a.nilaisaldo as nominalsaldo',
+                // 'a.qtysaldo as qtysaldo',
+                // 'a.nilaisaldo as nominalsaldo',
+                db::raw("0 as qtysaldo"),
+                db::raw("0 as nominalsaldo"),
                 db::raw("'" . $disetujui . "' as disetujui"),
                 db::raw("'" . $diperiksa . "' as diperiksa"),
                 db::raw("(case when (row_number() Over(partition BY a.namabarang Order By a.namabarang,a.tglbukti))=1 then 1 else 0 end) as baris"),
