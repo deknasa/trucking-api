@@ -227,6 +227,7 @@ use App\Http\Controllers\Api\ReportNeracaController;
 use App\Http\Controllers\Api\StokPersediaanController;
 use App\Http\Controllers\Api\TutupBukuController;
 use App\Http\Controllers\Api\ApprovalOpnameController;
+use App\Http\Controllers\Api\ExportRicController;
 use App\Http\Controllers\Api\LaporanKartuHutangPerVendorController;
 use App\Http\Controllers\Api\LaporanMutasiKasBankController;
 use App\Http\Controllers\Api\LaporanKartuStokController;
@@ -1672,6 +1673,9 @@ route::middleware(['auth:api', 'authorized'])->group(function () {
     Route::get('pelunasanhutangheader/grid', [PelunasanHutangHeaderController::class, 'grid']);
     Route::resource('pelunasanhutangheader', PelunasanHutangHeaderController::class)->whereNumber('pelunasanhutangheader');
     Route::resource('pelunasanhutangdetail', PelunasanHutangDetailController::class)->whereNumber('pelunasanhutangdetail');
+    
+    Route::get('exportric/export', [ExportRicController::class, 'export'])->name('exportric.export');
+    Route::resource('exportric', ExportRicController::class);
 });
 Route::get('suratpengantarapprovalinputtrip/updateapproval', [SuratPengantarApprovalInputTripController::class, 'updateApproval']);
 

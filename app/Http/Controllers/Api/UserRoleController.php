@@ -60,7 +60,8 @@ class UserRoleController extends Controller
         try {
             $role->acls()->detach();
 
-            foreach ($request->aco_ids as $aco_id) {
+            $requestData = json_decode($request->aco_ids, true);
+            foreach ($requestData['aco_ids'] as $aco_id) {
                 $role->acls()->attach($aco_id, [
                     'modifiedby' => auth('api')->user()->name
                 ]);
