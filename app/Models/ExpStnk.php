@@ -404,7 +404,7 @@ class ExpStnk extends MyModel
             ->select('a.text')
             ->where('a.grp', 'CABANG')->where('a.subgrp', 'CABANG')->first()
             ->text ?? '';
-            
+
         $query = db::table($tempreminder)->from(db::raw($tempreminder . " a"))
             ->select(
                 'a.tgl',
@@ -415,7 +415,7 @@ class ExpStnk extends MyModel
                 db::raw("'" . $toemail . "' as toemail"),
                 db::raw("'" . $ccemail . "' as ccemail"),
                 db::raw("'" . $bccemail . "' as bccemail"),
-                db::raw("'Reminder Pajak STNK, Asuransi dan KIR Akan Jatuh Tempo 30 Hari Ke Depan ( " . $cabang . " )' as bccemail"),
+                db::raw("'Reminder Pajak STNK, Asuransi dan KIR Akan Jatuh Tempo 30 Hari Ke Depan ( " . $cabang . " )' as judul"),
             )->orderby('a.id', 'asc')
             ->get();
 
