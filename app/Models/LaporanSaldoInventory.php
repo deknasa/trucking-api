@@ -77,7 +77,7 @@ class LaporanSaldoInventory extends MyModel
             $filterdata = $filtergandengan->text;
         } else {
             $gudang_id = $dataFilter ?? 0;
-            $filterdata = $filtergudang->text;
+            $filterdata = '';
         }
 
         // dump($priode);
@@ -183,14 +183,18 @@ class LaporanSaldoInventory extends MyModel
             ->select(
                 DB::raw("upper('Laporan Saldo Inventory') as header"),
                 DB::raw("'" . $getJudul->text . "' as judul"),
-                'a.lokasi',
+                db::raw("(case when isnull(a.gudang_id,0)<>0 then 'GUDANG'
+                when isnull(a.trado_id,0)<>0 then 'TRADO'
+                when isnull(a.gandengan_id,0)<>0 then 'GANDENGAN'
+                else 'GUDANG' END) AS lokasi
+                "),
                 'a.lokasi as namalokasi',
                 db::raw("'" . $kategori . "' as kategori"),
                 DB::raw("'" . $priode1 . "' as tgldari"),
                 DB::raw("'" . $priode1 . "' as tglsampai"),
                 DB::raw("'' as stokdari"),
                 DB::raw("'' as stoksampai"),
-                DB::raw("'' as vulkanisirke"),
+                DB::raw("'VulKe :'+trim(str(isnull(b.totalvulkanisir,0))) as vulkanisirke"),
                 'a.kodebarang as id',
                 'a.kodebarang',
                 'a.namabarang',
@@ -203,7 +207,7 @@ class LaporanSaldoInventory extends MyModel
 
             )
             ->join(db::raw("stok b with (readuncommitted)"), 'a.stok_id', 'b.id')
-            ->whereraw("a.nilaisaldo>0");
+            ->whereraw("(a.qtysaldo<>0 or a.nilaisaldo<>0)");
 
             
         if ($prosesneraca != 1) {
