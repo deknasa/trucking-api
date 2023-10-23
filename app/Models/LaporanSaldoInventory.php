@@ -185,7 +185,7 @@ class LaporanSaldoInventory extends MyModel
                 DB::raw("'" . $getJudul->text . "' as judul"),
                 'a.lokasi',
                 'a.lokasi as namalokasi',
-                DB::raw("'' as kategori"),
+                db::raw("'" . $kategori . "' as kategori"),
                 DB::raw("'" . $priode1 . "' as tgldari"),
                 DB::raw("'" . $priode1 . "' as tglsampai"),
                 DB::raw("'' as stokdari"),
@@ -200,12 +200,15 @@ class LaporanSaldoInventory extends MyModel
                 db::raw("(case when " . $pusat . "=0 then 0 else a.nilaisaldo  end) as nominal"),
                 db::raw("'" . $disetujui . "' as disetujui"),
                 db::raw("'" . $diperiksa . "' as diperiksa"),
-                db::raw("'" . $kategori . "' as kategori"),
 
             )
             ->join(db::raw("stok b with (readuncommitted)"), 'a.stok_id', 'b.id')
-            ->whereRaw("(isnull(b.kelompok_id,0)=" . $kelompok_id . " or " . $kelompok_id . "='')")
             ->whereraw("a.nilaisaldo>0");
+
+            
+        if ($prosesneraca != 1) {
+            $query->whereRaw("(isnull(b.kelompok_id,0)=" . $kelompok_id . " or " . $kelompok_id . "='')");
+        }
 
         if ($statusreuse != '') {
             $query->whereRaw("(isnull(b.statusreuse,0)=" . $statusreuse . ")");
@@ -244,6 +247,7 @@ class LaporanSaldoInventory extends MyModel
 
         if ($prosesneraca == 1) {
             $data = $query;
+            // dd($data->get());
         } else {
             $data = $query->get();
         }

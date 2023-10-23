@@ -288,10 +288,10 @@ class LaporanNeraca extends MyModel
             ], $query2);
 
             $getJudul = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))
-            ->select('text')
-            ->where('grp', 'JUDULAN LAPORAN')
-            ->where('subgrp', 'JUDULAN LAPORAN')
-            ->first();
+                ->select('text')
+                ->where('grp', 'JUDULAN LAPORAN')
+                ->where('subgrp', 'JUDULAN LAPORAN')
+                ->first();
 
             $data = db::table($tempquery2)->from(db::raw($tempquery2 . " xx"))
                 ->select(
@@ -317,7 +317,7 @@ class LaporanNeraca extends MyModel
 
             goto selesai;
         }
-
+        // goto mulai;
 
         // rekap akunpusat detail
 
@@ -509,7 +509,7 @@ class LaporanNeraca extends MyModel
 
             $temppinjamansupir = '##temppinjamansupir' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
             Schema::create($temppinjamansupir, function ($table) {
-                $table->date('tanggal')->nullable();
+                $table->dateTime('tanggal')->nullable();
                 $table->string('nobukti', 500)->nullable();
                 $table->string('keterangan', 500)->nullable();
                 $table->double('debet')->nullable();
@@ -519,7 +519,7 @@ class LaporanNeraca extends MyModel
                 $table->string('diperiksa', 500)->nullable();
                 $table->string('judullaporan', 500)->nullable();
                 $table->string('judul', 500)->nullable();
-                $table->date('tglcetak')->nullable();
+                $table->longText('tglcetak')->nullable();
                 $table->string('usercetak', 500)->nullable();
             });
 
@@ -535,6 +535,7 @@ class LaporanNeraca extends MyModel
 
             // dump($tglsd);
             // DD($jenis);
+            
 
             DB::table($temppinjamansupir)->insertUsing([
                 'tanggal',
@@ -664,10 +665,12 @@ class LaporanNeraca extends MyModel
             ], (new LaporanDepositoSupir())->getReport($tglsd, '', 1));
 
             // Kas Gantung
+            
+            // mulai:;
 
             $tempkasgantung = '##tempkasgantung' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
             Schema::create($tempkasgantung, function ($table) {
-                $table->date('tanggal')->nullable();
+                $table->datetime('tanggal')->nullable();
                 $table->string('nobukti', 500)->nullable();
                 $table->string('keterangan', 500)->nullable();
                 $table->double('debet')->nullable();
@@ -675,7 +678,13 @@ class LaporanNeraca extends MyModel
                 $table->double('saldo')->nullable();
                 $table->string('disetujui', 500)->nullable();
                 $table->string('diperiksa', 500)->nullable();
+                $table->string('judul', 500)->nullable();
+                $table->string('judullaporan', 500)->nullable();
+                $table->longtext('tglcetak')->nullable();
+                $table->string('usercetak', 500)->nullable();
+
             });
+
 
 
 
@@ -688,6 +697,10 @@ class LaporanNeraca extends MyModel
                 'saldo',
                 'disetujui',
                 'diperiksa',
+                'judul',
+                'judullaporan',
+                'tglcetak',
+                'usercetak',
             ], (new LaporanKasGantung())->getReport($tglsd, 1));
 
             // Kas 
@@ -711,7 +724,7 @@ class LaporanNeraca extends MyModel
             });
 
 
-            
+
 
             $kas_id = DB::table("parameter")->from(db::raw("parameter a with (readuncommitted)"))
                 ->select(
@@ -786,9 +799,12 @@ class LaporanNeraca extends MyModel
 
             // saldopersediaan 
 
+            // mulai:;
+
             $tempstok = '##tempstok' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
             Schema::create($tempstok, function ($table) {
                 $table->string('header', 500)->nullable();
+                $table->string('judul', 500)->nullable();
                 $table->string('lokasi', 500)->nullable();
                 $table->string('namalokasi', 500)->nullable();
                 $table->string('kategori', 500)->nullable();
@@ -813,6 +829,7 @@ class LaporanNeraca extends MyModel
 
             DB::table($tempstok)->insertUsing([
                 'header',
+                'judul',
                 'lokasi',
                 'namalokasi',
                 'kategori',
@@ -1457,7 +1474,8 @@ class LaporanNeraca extends MyModel
             )
             ->orderby('xx.id');
 
-        selesai:;
+            selesai:;
+            
         // $data = DB::select(DB::raw("
         //         SELECT xx.TipeMaster, xx.[Order], xx.[Type], xx.KeteranganType, xx.coa, xx.Parent,
         //         xx.KeteranganCoa, xx.Nominal, xx.CmpyName, xx.pBulan, xx.pTahun,
