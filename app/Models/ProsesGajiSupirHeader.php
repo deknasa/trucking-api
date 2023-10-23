@@ -187,6 +187,7 @@ class ProsesGajiSupirHeader extends MyModel
                 $table->double('potonganpinjamansemua', 15, 2)->nullable();
                 $table->double('deposito', 15, 2)->nullable();
                 $table->double('komisisupir', 15, 2)->nullable();
+                $table->double('gajisupir', 15, 2)->nullable();
                 $table->double('gajikenek', 15, 2)->nullable();
                 $table->double('biayaextra', 15, 2)->nullable();
                 $table->dateTime('tgldariheaderpengeluaranheader')->nullable();
@@ -197,6 +198,7 @@ class ProsesGajiSupirHeader extends MyModel
             Schema::create($tempgajidetail, function ($table) {
                 $table->string('nobukti', 1000)->nullable();
                 $table->double('komisisupir', 15, 2)->nullable();
+                $table->double('gajisupir', 15, 2)->nullable();
                 $table->double('gajikenek', 15, 2)->nullable();
                 $table->double('biayaextra', 15, 2)->nullable();
             });
@@ -205,6 +207,7 @@ class ProsesGajiSupirHeader extends MyModel
                 ->select(
                     'prosesgajisupirheader.nobukti',
                     db::raw("sum(gajisupirdetail.komisisupir) as komisisupir"),
+                    db::raw("sum(gajisupirdetail.gajisupir) as gajisupir"),
                     db::raw("sum(gajisupirdetail.gajikenek) as gajikenek"),
                     db::raw("sum(gajisupirdetail.biayatambahan) as biayaextra"),
                 )
@@ -230,6 +233,7 @@ class ProsesGajiSupirHeader extends MyModel
             DB::table($tempgajidetail)->insertUsing([
                 'nobukti',
                 'komisisupir',
+                'gajisupir',
                 'gajikenek',
                 'biayaextra',
             ], $querytempdetail);
@@ -267,6 +271,7 @@ class ProsesGajiSupirHeader extends MyModel
                     $this->tableTotal . '.potonganpinjamansemua',
                     $this->tableTotal . '.deposito',
                     db::raw("isnull(c.komisisupir,0) as komisisupir"),
+                    db::raw("isnull(c.gajisupir,0) as gajisupir"),
                     db::raw("isnull(c.gajikenek,0) as gajikenek"),
                     db::raw("isnull(c.biayaextra,0) as biayaextra"),
                     db::raw("cast((format(pengeluaran.tglbukti,'yyyy/MM')+'/1') as date) as tgldariheaderpengeluaranheader"),
@@ -321,6 +326,7 @@ class ProsesGajiSupirHeader extends MyModel
                 'potonganpinjamansemua',
                 'deposito',
                 'komisisupir',
+                'gajisupir',
                 'gajikenek',
                 'biayaextra',
                 'tgldariheaderpengeluaranheader',
@@ -373,6 +379,7 @@ class ProsesGajiSupirHeader extends MyModel
                 'a.potonganpinjamansemua',
                 'a.deposito',
                 'a.komisisupir',
+                'a.gajisupir',
                 'a.gajikenek',
                 'a.biayaextra',
                 'a.tgldariheaderpengeluaranheader',
@@ -403,6 +410,7 @@ class ProsesGajiSupirHeader extends MyModel
         $querytotal = DB::table($temtabel)->from(DB::raw($temtabel . " a "))
             ->select(
                 db::raw("sum(a.komisisupir) as komisisupir"),
+                db::raw("sum(a.gajisupir) as gajisupir"),
                 db::raw("sum(a.gajikenek) as gajikenek"),
                 db::raw("sum(a.biayaextra) as biayaextra"),
                 db::raw("sum(a.total) as total"),
@@ -421,6 +429,7 @@ class ProsesGajiSupirHeader extends MyModel
         $this->totalAll = $querytotal->total ?? 0;
         $this->totalPosting = $querytotal->totalposting ?? 0;
         $this->totalJalan = $querytotal->uangjalan ?? 0;
+        $this->totalGajiSupir = $querytotal->gajisupir ?? 0;
         $this->totalGajiKenek = $querytotal->gajikenek ?? 0;
         $this->totalKomisiSupir = $querytotal->komisisupir ?? 0;
         $this->totalBiayaExtra = $querytotal->biayaextra ?? 0;
@@ -518,7 +527,10 @@ class ProsesGajiSupirHeader extends MyModel
                 $tempRIC . '.potonganpinjamansemua',
                 $tempRIC . '.deposito',
                 $tempRIC . '.komisisupir',
-                $tempRIC . '.tolsupir'
+                $tempRIC . '.tolsupir',
+                $tempRIC . '.gajisupir',
+                $tempRIC . '.gajikenek',
+                $tempRIC . '.extra',
             );
         $this->totalRows = $query->count();
         $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;
@@ -545,6 +557,8 @@ class ProsesGajiSupirHeader extends MyModel
         $this->totalDeposito = $query->sum('deposito');
         $this->totalKomisi = $query->sum('komisisupir');
         $this->totalTol = $query->sum('tolsupir');
+        $this->totalGajiSupir = $query->sum('gajisupir');
+        $this->totalGajikenek = $query->sum('gajikenek');
         return $data;
     }
 
@@ -570,7 +584,10 @@ class ProsesGajiSupirHeader extends MyModel
                 $tempRIC . '.potonganpinjamansemua',
                 $tempRIC . '.deposito',
                 $tempRIC . '.komisisupir',
-                $tempRIC . '.tolsupir'
+                $tempRIC . '.tolsupir',
+                $tempRIC . '.gajisupir',
+                $tempRIC . '.gajikenek',
+                $tempRIC . '.extra',
             );
         $this->totalRows = $query->count();
         $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;
@@ -597,6 +614,27 @@ class ProsesGajiSupirHeader extends MyModel
     {
         $temp = '##tempRIC' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
 
+        $tempDetail = '##tempDetail' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+        $fetchDetail = DB::table("gajisupirdetail")->from(DB::raw("gajisupirdetail with (readuncommitted)"))
+        ->select(
+            'gajisupirdetail.nobukti',
+            DB::raw("SUM(gajisupirdetail.gajisupir) AS gajisupir"),
+            DB::raw("SUM(gajisupirdetail.gajikenek) AS gajikenek"),
+            DB::raw("SUM(gajisupirdetail.biayatambahan) AS extra"),
+        )
+        ->leftJoin(DB::raw("prosesgajisupirdetail with (readuncommitted)"), 'prosesgajisupirdetail.gajisupir_nobukti', 'gajisupirdetail.nobukti')
+        ->where('prosesgajisupirdetail.prosesgajisupir_id', $gajiId)
+        ->groupBy('gajisupirdetail.nobukti');
+
+        Schema::create($tempDetail, function ($table) {
+            $table->string('nobukti');
+            $table->float('gajisupir')->nullable();
+            $table->float('gajikenek')->nullable();
+            $table->float('extra')->nullable();
+        });
+
+        DB::table($tempDetail)->insertUsing(['nobukti', 'gajisupir', 'gajikenek', 'extra'], $fetchDetail);
+
         $fetch = ProsesGajiSupirDetail::from(DB::raw("prosesgajisupirdetail with (readuncommitted)"))
             ->select(
                 'gajisupirheader.id as idric',
@@ -615,9 +653,13 @@ class ProsesGajiSupirHeader extends MyModel
                 'gajisupirheader.potonganpinjamansemua',
                 'gajisupirheader.deposito',
                 'gajisupirheader.komisisupir',
-                'gajisupirheader.tolsupir'
+                'gajisupirheader.tolsupir',
+                'detail.gajisupir',
+                'detail.gajikenek',
+                'detail.extra'
             )
             ->leftJoin(DB::raw("gajisupirheader with (readuncommitted)"), 'prosesgajisupirdetail.gajisupir_nobukti', 'gajisupirheader.nobukti')
+            ->leftJoin(DB::raw("$tempDetail as detail with (readuncommitted)"), 'prosesgajisupirdetail.gajisupir_nobukti', 'detail.nobukti')
             ->leftJoin(DB::raw("supir with (readuncommitted)"), 'gajisupirheader.supir_id', 'supir.id')
             ->where('prosesgajisupirdetail.prosesgajisupir_id', $gajiId);
 
@@ -639,12 +681,37 @@ class ProsesGajiSupirHeader extends MyModel
             $table->bigInteger('deposito')->nullable();
             $table->bigInteger('komisisupir')->nullable();
             $table->bigInteger('tolsupir')->nullable();
+            $table->float('gajisupir')->nullable();
+            $table->float('gajikenek')->nullable();
+            $table->float('extra')->nullable();
         });
 
-        $tes = DB::table($temp)->insertUsing(['idric', 'nobuktiric', 'tglbuktiric', 'supir_id', 'supir', 'tgldariric', 'tglsampairic', 'borongan', 'uangjalan', 'bbm', 'uangmakanharian', 'uangmakanberjenjang', 'potonganpinjaman', 'potonganpinjamansemua', 'deposito', 'komisisupir', 'tolsupir'], $fetch);
+        $tes = DB::table($temp)->insertUsing(['idric', 'nobuktiric', 'tglbuktiric', 'supir_id', 'supir', 'tgldariric', 'tglsampairic', 'borongan', 'uangjalan', 'bbm', 'uangmakanharian', 'uangmakanberjenjang', 'potonganpinjaman', 'potonganpinjamansemua', 'deposito', 'komisisupir', 'tolsupir', 'gajisupir', 'gajikenek', 'extra'], $fetch);
 
         if ($aksi != '') {
-
+            $tempDetail = '##tempDet' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+            $fetchDetail = DB::table("gajisupirdetail")->from(DB::raw("gajisupirdetail with (readuncommitted)"))
+            ->select(
+                'gajisupirdetail.nobukti',
+                DB::raw("SUM(gajisupirdetail.gajisupir) AS gajisupir"),
+                DB::raw("SUM(gajisupirdetail.gajikenek) AS gajikenek"),
+                DB::raw("SUM(gajisupirdetail.biayatambahan) AS extra"),
+            )
+            ->leftJoin(DB::raw("gajisupirheader with (readuncommitted)"), 'gajisupirheader.nobukti', 'gajisupirdetail.nobukti')
+            ->where('gajisupirheader.tglbukti', '>=', $dari)
+            ->where('gajisupirheader.tglbukti', '<=', $sampai)
+            ->whereRaw("gajisupirheader.nobukti not in(select gajisupir_nobukti from prosesgajisupirdetail)")
+            ->groupBy('gajisupirdetail.nobukti');
+    
+            Schema::create($tempDetail, function ($table) {
+                $table->string('nobukti');
+                $table->float('gajisupir')->nullable();
+                $table->float('gajikenek')->nullable();
+                $table->float('extra')->nullable();
+            });
+    
+            DB::table($tempDetail)->insertUsing(['nobukti', 'gajisupir', 'gajikenek', 'extra'], $fetchDetail);
+    
             $fetch = GajiSupirHeader::from(DB::raw("gajisupirheader with (readuncommitted)"))
                 ->select(
                     'gajisupirheader.id as idric',
@@ -663,14 +730,18 @@ class ProsesGajiSupirHeader extends MyModel
                     'gajisupirheader.potonganpinjamansemua',
                     'gajisupirheader.deposito',
                     'gajisupirheader.komisisupir',
-                    'gajisupirheader.tolsupir'
+                    'gajisupirheader.tolsupir',
+                    'detail.gajisupir',
+                    'detail.gajikenek',
+                    'detail.extra'
                 )
                 ->leftJoin(DB::raw("supir with (readuncommitted)"), 'gajisupirheader.supir_id', 'supir.id')
+                ->leftJoin(DB::raw("$tempDetail as detail with (readuncommitted)"), 'gajisupirheader.nobukti', 'detail.nobukti')
                 ->where('gajisupirheader.tglbukti', '>=', $dari)
                 ->where('gajisupirheader.tglbukti', '<=', $sampai)
                 ->whereRaw("gajisupirheader.nobukti not in(select gajisupir_nobukti from prosesgajisupirdetail)");
 
-            $tes = DB::table($temp)->insertUsing(['idric', 'nobuktiric', 'tglbuktiric', 'supir_id', 'supir', 'tgldariric', 'tglsampairic', 'borongan', 'uangjalan', 'bbm', 'uangmakanharian', 'uangmakanberjenjang', 'potonganpinjaman', 'potonganpinjamansemua', 'deposito', 'komisisupir', 'tolsupir'], $fetch);
+            $tes = DB::table($temp)->insertUsing(['idric', 'nobuktiric', 'tglbuktiric', 'supir_id', 'supir', 'tgldariric', 'tglsampairic', 'borongan', 'uangjalan', 'bbm', 'uangmakanharian', 'uangmakanberjenjang', 'potonganpinjaman', 'potonganpinjamansemua', 'deposito', 'komisisupir', 'tolsupir', 'gajisupir', 'gajikenek','extra'], $fetch);
         }
 
         return $temp;
@@ -709,6 +780,7 @@ class ProsesGajiSupirHeader extends MyModel
             $table->double('potonganpinjamansemua', 15, 2)->nullable();
             $table->double('deposito', 15, 2)->nullable();
             $table->double('komisisupir', 15, 2)->nullable();
+            $table->double('gajisupir', 15, 2)->nullable();
             $table->double('gajikenek', 15, 2)->nullable();
             $table->double('biayaextra', 15, 2)->nullable();
             $table->dateTime('tgldariheaderpengeluaranheader')->nullable();
@@ -719,6 +791,7 @@ class ProsesGajiSupirHeader extends MyModel
         Schema::create($tempgajidetail, function ($table) {
             $table->string('nobukti', 1000)->nullable();
             $table->double('komisisupir', 15, 2)->nullable();
+            $table->double('gajisupir', 15, 2)->nullable();
             $table->double('gajikenek', 15, 2)->nullable();
             $table->double('biayaextra', 15, 2)->nullable();
         });
@@ -727,6 +800,7 @@ class ProsesGajiSupirHeader extends MyModel
             ->select(
                 'prosesgajisupirheader.nobukti',
                 db::raw("sum(gajisupirdetail.komisisupir) as komisisupir"),
+                db::raw("sum(gajisupirdetail.gajisupir) as gajisupir"),
                 db::raw("sum(gajisupirdetail.gajikenek) as gajikenek"),
                 db::raw("sum(gajisupirdetail.biayatambahan) as biayaextra"),
             )
@@ -743,6 +817,7 @@ class ProsesGajiSupirHeader extends MyModel
         DB::table($tempgajidetail)->insertUsing([
             'nobukti',
             'komisisupir',
+            'gajisupir',
             'gajikenek',
             'biayaextra',
         ], $querytempdetail);
@@ -780,6 +855,7 @@ class ProsesGajiSupirHeader extends MyModel
                 $this->tableTotal . '.potonganpinjamansemua',
                 $this->tableTotal . '.deposito',
                 db::raw("isnull(c.komisisupir,0) as komisisupir"),
+                db::raw("isnull(c.gajisupir,0) as gajisupir"),
                 db::raw("isnull(c.gajikenek,0) as gajikenek"),
                 db::raw("isnull(c.biayaextra,0) as biayaextra"),
                 db::raw("cast((format(pengeluaran.tglbukti,'yyyy/MM')+'/1') as date) as tgldariheaderpengeluaranheader"),
@@ -822,6 +898,7 @@ class ProsesGajiSupirHeader extends MyModel
             'potonganpinjamansemua',
             'deposito',
             'komisisupir',
+            'gajisupir',
             'gajikenek',
             'biayaextra',
             'tgldariheaderpengeluaranheader',
@@ -859,6 +936,7 @@ class ProsesGajiSupirHeader extends MyModel
                 'a.potonganpinjamansemua',
                 'a.deposito',
                 'a.komisisupir',
+                'a.gajisupir',
                 'a.gajikenek',
                 'a.biayaextra',
                 'a.tgldariheaderpengeluaranheader',
@@ -900,6 +978,7 @@ class ProsesGajiSupirHeader extends MyModel
             $table->double('potonganpinjamansemua', 15, 2)->nullable();
             $table->double('deposito', 15, 2)->nullable();
             $table->double('komisisupir', 15, 2)->nullable();
+            $table->double('gajisupir', 15, 2)->nullable();
             $table->double('gajikenek', 15, 2)->nullable();
             $table->double('biayaextra', 15, 2)->nullable();
             $table->dateTime('tgldariheaderpengeluaranheader')->nullable();
@@ -913,11 +992,11 @@ class ProsesGajiSupirHeader extends MyModel
 
         $this->setRequestParameters();
         $query = $this->selectColumns();
-        if (request()->tgldari) {
-            $query->whereBetween('tglbukti', [date('Y-m-d', strtotime(request()->tgldari)), date('Y-m-d', strtotime(request()->tglsampai))]);
-        }
         $this->sort($query);
         $models = $this->filter($query);
+        $models = $query
+        ->whereBetween('a.tglbukti', [date('Y-m-d', strtotime(request()->tgldariheader)), date('Y-m-d', strtotime(request()->tglsampaiheader))]);
+    
         DB::table($temp)->insertUsing([
             'id',
             'nobukti',
@@ -947,6 +1026,7 @@ class ProsesGajiSupirHeader extends MyModel
             'potonganpinjamansemua',
             'deposito',
             'komisisupir',
+            'gajisupir',
             'gajikenek',
             'biayaextra',
             'tgldariheaderpengeluaranheader',
@@ -980,7 +1060,10 @@ class ProsesGajiSupirHeader extends MyModel
                 $getRIC . '.potonganpinjamansemua',
                 $getRIC . '.deposito',
                 $getRIC . '.komisisupir',
-                $getRIC . '.tolsupir'
+                $getRIC . '.tolsupir',
+                $getRIC . '.gajisupir',
+                $getRIC . '.gajikenek',
+                $getRIC . '.extra',
             );
         $this->totalRows = $query->count();
         $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;
@@ -1000,11 +1083,38 @@ class ProsesGajiSupirHeader extends MyModel
         $this->totalDeposito = $query->sum('deposito');
         $this->totalKomisi = $query->sum('komisisupir');
         $this->totalTol = $query->sum('tolsupir');
+        $this->totalGajiSupir = $query->sum('gajisupir');
+        $this->totalGajikenek = $query->sum('gajikenek');
         return $data;
     }
 
     public function createTempGetRIC($dari, $sampai)
     {
+        
+        $tempDetail = '##tempDetail' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+        $fetchDetail = DB::table("gajisupirdetail")->from(DB::raw("gajisupirdetail with (readuncommitted)"))
+        ->select(
+            'gajisupirdetail.nobukti',
+            DB::raw("SUM(gajisupirdetail.gajisupir) AS gajisupir"),
+            DB::raw("SUM(gajisupirdetail.gajikenek) AS gajikenek"),
+            DB::raw("SUM(gajisupirdetail.biayatambahan) AS extra"),
+        )
+        ->leftJoin(DB::raw("gajisupirheader with (readuncommitted)"), 'gajisupirheader.nobukti', 'gajisupirdetail.nobukti')
+        ->where('gajisupirheader.tglbukti', '>=', $dari)
+        ->where('gajisupirheader.tglbukti', '<=', $sampai)
+        ->whereRaw("gajisupirheader.nobukti not in(select gajisupir_nobukti from prosesgajisupirdetail)")
+        ->groupBy('gajisupirdetail.nobukti');
+
+        Schema::create($tempDetail, function ($table) {
+            $table->string('nobukti');
+            $table->float('gajisupir')->nullable();
+            $table->float('gajikenek')->nullable();
+            $table->float('extra')->nullable();
+        });
+
+        DB::table($tempDetail)->insertUsing(['nobukti', 'gajisupir', 'gajikenek','extra'], $fetchDetail);
+
+        
         $temp = '##tempRIC' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
         $fetch = GajiSupirHeader::from(DB::raw("gajisupirheader with (readuncommitted)"))
             ->select(
@@ -1024,9 +1134,13 @@ class ProsesGajiSupirHeader extends MyModel
                 'gajisupirheader.potonganpinjamansemua',
                 'gajisupirheader.deposito',
                 'gajisupirheader.komisisupir',
-                'gajisupirheader.tolsupir'
+                'gajisupirheader.tolsupir',
+                'detail.gajisupir',
+                'detail.gajikenek',
+                'detail.extra'
             )
             ->leftJoin(DB::raw("supir with (readuncommitted)"), 'gajisupirheader.supir_id', 'supir.id')
+            ->leftJoin(DB::raw("$tempDetail as detail with (readuncommitted)"), 'gajisupirheader.nobukti', 'detail.nobukti')
             ->where('gajisupirheader.tglbukti', '>=', $dari)
             ->where('gajisupirheader.tglbukti', '<=', $sampai)
             ->whereRaw("gajisupirheader.nobukti not in(select gajisupir_nobukti from prosesgajisupirdetail)");
@@ -1049,9 +1163,12 @@ class ProsesGajiSupirHeader extends MyModel
             $table->bigInteger('deposito')->nullable();
             $table->bigInteger('komisisupir')->nullable();
             $table->bigInteger('tolsupir')->nullable();
+            $table->float('gajisupir')->nullable();
+            $table->float('gajikenek')->nullable();
+            $table->float('extra')->nullable();
         });
 
-        $tes = DB::table($temp)->insertUsing(['idric', 'nobuktiric', 'tglbuktiric', 'supir_id', 'supir', 'tgldariric', 'tglsampairic', 'borongan', 'uangjalan', 'bbm', 'uangmakanharian', 'uangmakanberjenjang', 'potonganpinjaman', 'potonganpinjamansemua', 'deposito', 'komisisupir', 'tolsupir'], $fetch);
+        $tes = DB::table($temp)->insertUsing(['idric', 'nobuktiric', 'tglbuktiric', 'supir_id', 'supir', 'tgldariric', 'tglsampairic', 'borongan', 'uangjalan', 'bbm', 'uangmakanharian', 'uangmakanberjenjang', 'potonganpinjaman', 'potonganpinjamansemua', 'deposito', 'komisisupir', 'tolsupir', 'gajisupir', 'gajikenek','extra'], $fetch);
 
         return $temp;
     }

@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
+
 class ProsesGajiSupirDetail extends MyModel
 {
     use HasFactory;
@@ -25,10 +26,9 @@ class ProsesGajiSupirDetail extends MyModel
     public function get()
     {
         $this->setRequestParameters();
-
-        $query = DB::table($this->table)->from(DB::raw("$this->table with (readuncommitted)"));
-
+        
         if (isset(request()->forReport) && request()->forReport) {
+            $query = DB::table($this->table)->from(DB::raw("$this->table with (readuncommitted)"));
 
             $query->select(
                 $this->table . '.nominal',
@@ -37,92 +37,127 @@ class ProsesGajiSupirDetail extends MyModel
             )
                 ->leftJoin(DB::raw("prosesgajisupirheader with (readuncommitted)"), $this->table . '.prosesgajisupir_id', 'prosesgajisupirheader.id');
             $query->where($this->table . '.prosesgajisupir_id', '=', request()->prosesgajisupir_id);
+
+            return $query->get();
         } else {
-            $temp = '##tempebs' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
 
-            Schema::create($temp, function ($table) {
-                $table->unsignedBigInteger('prosesgajisupir_id')->nullable();
-                $table->string('nobukti',50)->nullable();
-                $table->string('gajisupir_nobukti',50)->nullable();
-                $table->string('supir_id',200)->nullable();
-                $table->string('trado_id',200)->nullable();
-                $table->double('total', 15, 2)->nullable();
-                $table->double('uangjalan', 15, 2)->nullable();
-                $table->double('bbm', 15, 2)->nullable();
-                $table->double('uangmakanharian', 15, 2)->nullable();
-                $table->double('potonganpinjaman', 15, 2)->nullable();
-                $table->double('potonganpinjamansemua', 15, 2)->nullable();
-                $table->double('deposito', 15, 2)->nullable();
-                $table->double('komisisupir', 15, 2)->nullable();
-                $table->double('tolsupir', 15, 2)->nullable();
-                $table->double('uangmakanberjenjang', 15, 2)->nullable();
-                $table->double('gajisupir', 15, 2)->nullable();
-                $table->double('gajikenek', 15, 2)->nullable();
-                $table->double('biayaextra', 15, 2)->nullable();
-                $table->dateTime('tgldariheadergajisupirheaderheader')->nullable();
-                $table->dateTime('tglsampaiheadergajisupirheaderheader')->nullable();
-            });
+            $proses = request()->proses ?? 'reload';
+            $user = auth('api')->user()->name;
+            $class = 'ProsesGajiSupirDetailController';
 
-            $tempric1 = '##tempricebs' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+            if ($proses == 'reload') {
+                $temtabel = 'tempebs' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+                $querydata = DB::table('listtemporarytabel')->from(
+                    DB::raw("listtemporarytabel a with (readuncommitted)")
+                )
+                    ->select(
+                        'id',
+                        'class',
+                        'namatabel',
+                    )
+                    ->where('class', '=', $class)
+                    ->where('modifiedby', '=', $user)
+                    ->first();
 
-            Schema::create($tempric1, function ($table) {
-                $table->string('gajisupir_nobukti',50)->nullable();
-                $table->double('gajisupir', 15, 2)->nullable();
-                $table->double('gajikenek', 15, 2)->nullable();
-                $table->double('biayaextra', 15, 2)->nullable();
-            });
+                if (isset($querydata)) {
+                    Schema::dropIfExists($querydata->namatabel);
+                    DB::table('listtemporarytabel')->where('id', $querydata->id)->delete();
+                }
 
-            $queryric=db::table("gajisupirdetail")->from(db::raw("gajisupirdetail a with (readuncommitted)"))
-            ->select(
-                'b.gajisupir_nobukti',
-                db::raw("sum(a.gajisupir) as gajisupir"),
-                db::raw("sum(a.gajikenek) as gajikenek"),
-                db::raw("sum(a.biayatambahan) as biayaextra"),
-            )
-            ->join(db::raw("prosesgajisupirdetail b with (readuncommitted)"),'a.nobukti','b.gajisupir_nobukti')
-            ->where('b.prosesgajisupir_id',request()->prosesgajisupir_id)
-            ->groupby("b.gajisupir_nobukti");
+                DB::table('listtemporarytabel')->insert(
+                    [
+                        'class' => $class,
+                        'namatabel' => $temtabel,
+                        'modifiedby' => $user,
+                        'created_at' => date('Y/m/d H:i:s'),
+                        'updated_at' => date('Y/m/d H:i:s'),
+                    ]
+                );
+                Schema::create($temtabel, function ($table) {
+                    $table->unsignedBigInteger('id')->nullable();
+                    $table->unsignedBigInteger('prosesgajisupir_id')->nullable();
+                    $table->string('nobukti', 50)->nullable();
+                    $table->string('gajisupir_nobukti', 50)->nullable();
+                    $table->string('supir_id', 200)->nullable();
+                    $table->string('trado_id', 200)->nullable();
+                    $table->double('total', 15, 2)->nullable();
+                    $table->double('uangjalan', 15, 2)->nullable();
+                    $table->double('bbm', 15, 2)->nullable();
+                    $table->double('uangmakanharian', 15, 2)->nullable();
+                    $table->double('potonganpinjaman', 15, 2)->nullable();
+                    $table->double('potonganpinjamansemua', 15, 2)->nullable();
+                    $table->double('deposito', 15, 2)->nullable();
+                    $table->double('komisisupir', 15, 2)->nullable();
+                    $table->double('tolsupir', 15, 2)->nullable();
+                    $table->double('uangmakanberjenjang', 15, 2)->nullable();
+                    $table->double('gajisupir', 15, 2)->nullable();
+                    $table->double('gajikenek', 15, 2)->nullable();
+                    $table->double('biayaextra', 15, 2)->nullable();
+                    $table->dateTime('tgldariheadergajisupirheaderheader')->nullable();
+                    $table->dateTime('tglsampaiheadergajisupirheaderheader')->nullable();
+                });
 
-            DB::table($tempric1)->insertUsing([
-                'gajisupir_nobukti',
-                'gajisupir',
-                'gajikenek',
-                'biayaextra',
-            ], $queryric);
+                $tempric1 = '##tempricebs' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+
+                Schema::create($tempric1, function ($table) {
+                    $table->string('gajisupir_nobukti', 50)->nullable();
+                    $table->double('gajisupir', 15, 2)->nullable();
+                    $table->double('gajikenek', 15, 2)->nullable();
+                    $table->double('biayaextra', 15, 2)->nullable();
+                });
+
+                $queryric = db::table("gajisupirdetail")->from(db::raw("gajisupirdetail a with (readuncommitted)"))
+                    ->select(
+                        'b.gajisupir_nobukti',
+                        db::raw("sum(a.gajisupir) as gajisupir"),
+                        db::raw("sum(a.gajikenek) as gajikenek"),
+                        db::raw("sum(a.biayatambahan) as biayaextra"),
+                    )
+                    ->join(db::raw("prosesgajisupirdetail b with (readuncommitted)"), 'a.nobukti', 'b.gajisupir_nobukti')
+                    ->where('b.prosesgajisupir_id', request()->prosesgajisupir_id)
+                    ->groupby("b.gajisupir_nobukti");
+
+                DB::table($tempric1)->insertUsing([
+                    'gajisupir_nobukti',
+                    'gajisupir',
+                    'gajikenek',
+                    'biayaextra',
+                ], $queryric);
+
+                $queryebs = db::table("prosesgajisupirdetail")->from(db::raw("prosesgajisupirdetail a with (readuncommitted)"))
+                    ->select(
+                        'a.id',
+                        'a.prosesgajisupir_id',
+                        'a.nobukti',
+                        'a.gajisupir_nobukti',
+                        'supir.namasupir as supir_id',
+                        'trado.kodetrado as trado_id',
+                        DB::RAW("(gajisupirheader.total+gajisupirheader.komisisupir+isnull(d.gajikenek,0)) as total"),
+                        'gajisupirheader.uangjalan',
+                        'gajisupirheader.bbm',
+                        'gajisupirheader.uangmakanharian',
+                        'gajisupirheader.potonganpinjaman',
+                        'gajisupirheader.potonganpinjamansemua',
+                        'gajisupirheader.deposito',
+                        'gajisupirheader.komisisupir',
+                        'gajisupirheader.tolsupir',
+                        DB::raw("(case when gajisupirheader.uangmakanberjenjang IS NULL then 0 else gajisupirheader.uangmakanberjenjang end) as uangmakanberjenjang"),
+                        db::raw("isnull(d.gajisupir,0) as gajisupir"),
+                        db::raw("isnull(d.gajikenek,0) as gajikenek"),
+                        db::raw("isnull(d.biayaextra,0) as biayaextra"),
+                        db::raw("cast((format(gajisupirheader.tglbukti,'yyyy/MM')+'/1') as date) as tgldariheadergajisupirheaderheader"),
+                        db::raw("cast(cast(format((cast((format(gajisupirheader.tglbukti,'yyyy/MM')+'/1') as datetime)+32),'yyyy/MM')+'/01' as datetime)-1 as date) as tglsampaiheadergajisupirheaderheader"),
+                    )
+                    ->leftJoin(DB::raw("supir with (readuncommitted)"), 'a.supir_id', 'supir.id')
+                    ->leftJoin(DB::raw("trado with (readuncommitted)"), 'a.trado_id', 'trado.id')
+                    ->leftJoin(DB::raw("prosesgajisupirheader with (readuncommitted)"), 'a.nobukti', 'prosesgajisupirheader.nobukti')
+                    ->leftJoin(DB::raw("gajisupirheader with (readuncommitted)"), 'a.gajisupir_nobukti', 'gajisupirheader.nobukti')
+                    ->leftJoin(DB::raw($tempric1 . " d"), 'a.gajisupir_nobukti', 'd.gajisupir_nobukti')
+                    ->where('a.prosesgajisupir_id', '=', request()->prosesgajisupir_id);
 
 
-            $queryebs=db::table("prosesgajisupirdetail")->from(db::raw("prosesgajisupirdetail a with (readuncommitted)"))
-            ->select(
-                'a.prosesgajisupir_id',
-                'a.nobukti',
-                'a.gajisupir_nobukti',
-                'supir.namasupir as supir_id',
-                'trado.kodetrado as trado_id',
-                DB::RAW("(gajisupirheader.total+gajisupirheader.komisisupir+isnull(d.gajikenek,0)) as total"),
-                'gajisupirheader.uangjalan',
-                'gajisupirheader.bbm',
-                'gajisupirheader.uangmakanharian',
-                'gajisupirheader.potonganpinjaman',
-                'gajisupirheader.potonganpinjamansemua',
-                'gajisupirheader.deposito',
-                'gajisupirheader.komisisupir',
-                'gajisupirheader.tolsupir',
-                DB::raw("(case when gajisupirheader.uangmakanberjenjang IS NULL then 0 else gajisupirheader.uangmakanberjenjang end) as uangmakanberjenjang"),
-                db::raw("isnull(d.gajisupir,0) as gajisupir"),
-                db::raw("isnull(d.gajikenek,0) as gajikenek"),
-                db::raw("isnull(d.biayaextra,0) as biayaextra"),
-                db::raw("cast((format(gajisupirheader.tglbukti,'yyyy/MM')+'/1') as date) as tgldariheadergajisupirheaderheader"),
-                db::raw("cast(cast(format((cast((format(gajisupirheader.tglbukti,'yyyy/MM')+'/1') as datetime)+32),'yyyy/MM')+'/01' as datetime)-1 as date) as tglsampaiheadergajisupirheaderheader"), 
-            )
-                ->leftJoin(DB::raw("supir with (readuncommitted)"), 'a.supir_id', 'supir.id')
-                ->leftJoin(DB::raw("trado with (readuncommitted)"), 'a.trado_id', 'trado.id')
-                ->leftJoin(DB::raw("prosesgajisupirheader with (readuncommitted)"), 'a.nobukti', 'prosesgajisupirheader.nobukti')
-                ->leftJoin(DB::raw("gajisupirheader with (readuncommitted)"), 'a.gajisupir_nobukti', 'gajisupirheader.nobukti')
-                ->leftJoin(DB::raw( $tempric1." d"), 'a.gajisupir_nobukti', 'd.gajisupir_nobukti');
-
-         
-
-                DB::table($temp)->insertUsing([
+                DB::table($temtabel)->insertUsing([
+                    'id',
                     'prosesgajisupir_id',
                     'nobukti',
                     'gajisupir_nobukti',
@@ -144,11 +179,24 @@ class ProsesGajiSupirDetail extends MyModel
                     'tgldariheadergajisupirheaderheader',
                     'tglsampaiheadergajisupirheaderheader',
                 ], $queryebs);
-    
+            } else {
+                $querydata = DB::table('listtemporarytabel')->from(
+                    DB::raw("listtemporarytabel with (readuncommitted)")
+                )
+                    ->select(
+                        'namatabel',
+                    )
+                    ->where('class', '=', $class)
+                    ->where('modifiedby', '=', $user)
+                    ->first();
 
-       
-            $tempQuery = DB::table($temp)->from(DB::raw($temp  ." a "));
-            $tempQuery->select(
+                // dd($querydata);
+                $temtabel = $querydata->namatabel;
+            }
+            
+            $query = DB::table($temtabel)->from(DB::raw($temtabel  . " a "));
+            $query->select(
+                'id',
                 'a.gajisupir_nobukti',
                 'a.supir_id',
                 'a.trado_id',
@@ -166,25 +214,22 @@ class ProsesGajiSupirDetail extends MyModel
                 'a.tolsupir',
                 'a.uangmakanberjenjang',
                 'a.tgldariheadergajisupirheaderheader',
-                'a.tglsampaiheadergajisupirheaderheader', 
+                'a.tglsampaiheadergajisupirheaderheader',
             );
-   
             
-            $this->sort($tempQuery);
-            $tempQuery->where('a.prosesgajisupir_id', '=', request()->prosesgajisupir_id);
-            $this->filter($tempQuery);
-
-
-            $this->totalRows = $tempQuery->count();
+            $this->totalRows = $query->count();
             $this->totalPages = request()->limit > 0 ? ceil($this->totalRows / request()->limit) : 1;
-
+            $query->where('a.prosesgajisupir_id', '=', request()->prosesgajisupir_id);
+            $this->sort($query);
+            $this->filter($query);
             $this->paginate($query);
-     
+            $data = $query->get();
+
             $tempbuktisum = '##tempbuktisum' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
             Schema::create($tempbuktisum, function ($table) {
                 $table->string('nobukti', 100)->nullable();
             });
-            $databukti = json_decode($query->get(), true);
+            $databukti = json_decode($data, true);
             foreach ($databukti as $item) {
 
                 DB::table($tempbuktisum)->insert([
@@ -192,8 +237,8 @@ class ProsesGajiSupirDetail extends MyModel
                 ]);
             }
 
- 
-            $querytotal = DB::table($temp)->from(DB::raw($temp . " a "))
+
+            $querytotal = DB::table($temtabel)->from(DB::raw($temtabel . " a "))
                 ->select(
                     db::raw("sum(a.total) as total"),
                     db::raw("sum(a.uangjalan) as uangjalan"),
@@ -211,7 +256,7 @@ class ProsesGajiSupirDetail extends MyModel
                 )
                 ->join(db::raw($tempbuktisum . " b "), 'a.gajisupir_nobukti', 'b.nobukti')
                 ->first();
-                // dd('test');
+            // dd('test');
             $this->totalNominal = $querytotal->total ?? 0;
             $this->totalUangJalan = $querytotal->uangjalan ?? 0;
             $this->totalBBM = $querytotal->bbm ?? 0;
@@ -225,11 +270,9 @@ class ProsesGajiSupirDetail extends MyModel
             $this->totalGajiKenek = $querytotal->gajikenek ?? 0;
             $this->totalTol = $querytotal->tolsupir ?? 0;
             $this->totalUangMakanBerjenjang = $querytotal->uangmakanberjenjang ?? 0;
-            
-            return $tempQuery->get();
-        }
 
-        return $query->get();
+            return $data;
+        }
     }
 
     public function sortposition($query)
@@ -263,7 +306,7 @@ class ProsesGajiSupirDetail extends MyModel
 
     public function sort($query)
     {
-            return $query->orderBy('a.' . $this->params['sortIndex'], $this->params['sortOrder']);
+        return $query->orderBy('a.' . $this->params['sortIndex'], $this->params['sortOrder']);
     }
 
     public function filter($query, $relationFields = [])
@@ -273,7 +316,7 @@ class ProsesGajiSupirDetail extends MyModel
                 case "AND":
                     $query->where(function ($query) {
                         foreach ($this->params['filters']['rules'] as $index => $filters) {
-                                $query = $query->where('a.' . $filters['field'], 'LIKE', "%$filters[data]%");
+                            $query = $query->where('a.' . $filters['field'], 'LIKE', "%$filters[data]%");
                         }
                     });
 
@@ -281,7 +324,7 @@ class ProsesGajiSupirDetail extends MyModel
                 case "OR":
                     $query->where(function ($query) {
                         foreach ($this->params['filters']['rules'] as $index => $filters) {
-                                $query = $query->orWhere( 'a.' . $filters['field'], 'LIKE', "%$filters[data]%");
+                            $query = $query->orWhere('a.' . $filters['field'], 'LIKE', "%$filters[data]%");
                         }
                     });
                     break;
@@ -299,7 +342,7 @@ class ProsesGajiSupirDetail extends MyModel
     }
 
 
-    
+
     public function filterposition($query, $relationFields = [])
     {
         if (count($this->params['filters']) > 0 && @$this->params['filters']['rules'][0]['data'] != '') {
@@ -398,7 +441,7 @@ class ProsesGajiSupirDetail extends MyModel
         $prosesGajiSupirDetail->keterangan = $data['keterangan'];
         $prosesGajiSupirDetail->modifiedby = auth('api')->user()->name;
         $prosesGajiSupirDetail->info = html_entity_decode(request()->info);
-        
+
         if (!$prosesGajiSupirDetail->save()) {
             throw new \Exception("Error storing Proses Gaji Supir Detail.");
         }
