@@ -51,17 +51,21 @@ class LaporanBukuBesar extends MyModel
                 'a.coa',
                 DB::raw("sum(isnull(a.nominal,0)) as nominal")
             )
+            ->join(db::raw("akunpusat b with (readuncommitted)"),'a.coa','b.coa')
+            ->join(db::raw("typeakuntansi c with (readuncommitted)"),'b.type_id','c.id')
+            ->whereRaw("(c.[order] BETWEEN 1110 AND 3310)")
             ->whereRaw("cast(right(a.bulan,4)+'/'+left(a.bulan,2)+'/1' as date)<'" . $dariformat . "'")
             ->whereRaw("a.bulan<>format(cast('" . $dariformat . "' as date),'MM-yyyy')")
             ->groupBy('a.coa');     
 
          
             
+            
             DB::table($tempsaldorekap)->insertUsing([
                 'coa',
                 'saldo',
             ], $querysaldoawal);            
-
+            // dd('test');
 
             // dd(dB::table($tempsaldorekap)->get());
 
@@ -95,6 +99,8 @@ class LaporanBukuBesar extends MyModel
             )
             ->join(DB::raw("jurnalumumpusatdetail as b with (readuncommitted)"), 'a.nobukti', 'b.nobukti')
             ->join(DB::raw("akunpusat as c with(readuncommitted)"), 'b.coa', 'c.coa')
+            ->join(db::raw("typeakuntansi d with (readuncommitted)"),'c.type_id','d.id')
+            ->whereRaw("(d.[Order] BETWEEN 1110 AND 3310)")
             ->whereRaw("a.tglbukti>=cast(ltrim(rtrim(str(year('" . $dariformat . "'))))+'/'+ltrim(rtrim(str(month('" . $dariformat . "'))))+'/1' as datetime) ")
             ->where('a.tglbukti', '<', $dari)
             ->whereRaw("(c.id >=" . $coadari_id)
@@ -136,9 +142,13 @@ class LaporanBukuBesar extends MyModel
                 DB::raw("0 as saldo")
             )
             ->leftjoin(DB::raw($tempsaldo2)." as b",'a.coa','b.coa')
+            ->join(DB::raw("akunpusat as c with(readuncommitted)"), 'a.coa', 'c.coa')
+            ->join(db::raw("typeakuntansi d with (readuncommitted)"),'c.type_id','d.id')            
+            ->whereRaw("(d.[Order] BETWEEN 1110 AND 3310)")
             ->whereRaw("(a.id >=" . $coadari_id)
             ->whereRaw(DB::raw("a.id <=" . $coasampai_id . ")"))
             ->whereRaw("isnull(B.coa,'')=''");
+
             // dd($querysaldoawal->toSql());
             DB::table($tempsaldo2)->insertUsing([
                 'urut',
@@ -182,6 +192,7 @@ class LaporanBukuBesar extends MyModel
                     DB::raw("(isnull(a.saldo,0)+isnull(b.saldo,0)) as saldo")
                 )
                 ->leftjoin(DB::raw($tempsaldorekap)." as b",'a.coa','b.coa');
+                // ->whereRaw("(isnull(a.saldo,0)+isnull(b.saldo,0))<>0");
 
                 DB::table($tempsaldo)->insertUsing([
                     'urut',
