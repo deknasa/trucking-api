@@ -43,6 +43,10 @@ class LaporanStok extends MyModel
         $temprekapall = '##temprekapall' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
         Schema::create($temprekapall, function ($table) {
             $table->id();
+            $table->unsignedBigInteger('stok_id')->nullable();
+            $table->unsignedBigInteger('gudang_id')->nullable();
+            $table->unsignedBigInteger('trado_id')->nullable();
+            $table->unsignedBigInteger('gandengan_id')->nullable();
             $table->longText('lokasi')->nullable();
             $table->string('kodebarang', 1000)->nullable();
             $table->string('namabarang', 1000)->nullable();
@@ -85,6 +89,10 @@ class LaporanStok extends MyModel
         // dd($filter);
         $kartustok = new KartuStok();
         DB::table($temprekapall)->insertUsing([
+            'stok_id',
+            'gudang_id',
+            'trado_id',
+            'gandengan_id',
             'lokasi',
             'kodebarang',
             'namabarang',

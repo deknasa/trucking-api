@@ -1328,6 +1328,10 @@ class KartuStok extends MyModel
             DB::raw($temprekapall . " as a")
         )
             ->select(
+                'a.stok_id',
+                'a.gudang_id',
+                'a.trado_id',
+                'a.gandengan_id',
                 'a.lokasi',
                 'a.kodebarang',
                 'a.namabarang',
