@@ -582,7 +582,8 @@ class KartuStok extends MyModel
 
     public function getlaporan($tgldari, $tglsampai, $stokdari, $stoksampai, $gudang_id, $trado_id, $gandengan_id, $filter)
     {
-        // dd($gudang_id);
+        // dump($filter);
+        // dd($gandengan_id);
 
         $tglsaldo = date('Y-m-d', strtotime('-1 days', strtotime($tgldari)));
         $tgl = date('Y-m-d', strtotime($tgldari));
@@ -681,6 +682,9 @@ class KartuStok extends MyModel
                 ->groupBy('a.trado_id')
                 ->groupBy('a.gandengan_id');
     
+                // dd($queryrekap ->get());
+                // dd('test');
+                // dd
         }  else if ($filter=='GUDANG') {
              if ($gudang_id==0) {
                 $queryrekap = db::table('stok')->from(
@@ -816,7 +820,7 @@ class KartuStok extends MyModel
                 }
               
                 }  else if ($filter=='GANDENGAN') {
-                    if ($trado_id==0) {
+                    if ($gandengan_id==0) {
                         $queryrekap = db::table('stok')->from(
                             DB::raw("stok as a1 with (readuncommitted)")
                         )
@@ -1239,6 +1243,7 @@ class KartuStok extends MyModel
             'urutfifo',
         ], $queryrekap);
 
+        // dd(db::table($temprekap)->get());
 
 
 
@@ -1268,13 +1273,13 @@ class KartuStok extends MyModel
 
   
         $queryrekapall =  db::table($temprekap)->from(
-            DB::raw($temprekap . " as a with (readuncommitted)")
+            DB::raw($temprekap . " as a ")
         )
             ->select(
                 'a.stok_id',
-                'a.gudang_id',
-                'a.trado_id',
-                'a.gandengan_id',
+                db::raw("isnull(a.gudang_id,0) as gudang_id"),
+                db::raw("isnull(a.trado_id,0) as trado_id"),
+                db::raw("isnull(a.gandengan_id,0) as gandengan_id"),
                 db::raw("(a.lokasi) as lokasi"),
                 db::raw("(a.kodebarang) as kodebarang"),
                 db::raw("(a.namabarang) as namabarang"),
@@ -1285,12 +1290,16 @@ class KartuStok extends MyModel
                 db::raw("isnull(a.nilaimasuk,0) as nilaimasuk"),
                 db::raw("isnull(a.qtykeluar,0) as qtykeluar"),
                 db::raw("isnull(a.nilaikeluar,0) as nilaikeluar"),
-                DB::raw("sum ((isnull(a.qtysaldo,0)+a.qtymasuk)-a.qtykeluar) over (PARTITION BY a.stok_id,a.gudang_id,A.trado_id,A.gandengan_id order by a.stok_id,a.gudang_id,A.trado_id,A.gandengan_id,a.tglbukti,a.urutfifo,a.nobukti,a.id ASC) as qtysaldo"),
-                DB::raw("cast(sum ((isnull(a.nilaisaldo,0)+a.nilaimasuk)-a.nilaikeluar) over (PARTITION BY a.stok_id,a.gudang_id,A.trado_id,A.gandengan_id order by a.stok_id,a.gudang_id,A.trado_id,A.gandengan_id,a.tglbukti,a.urutfifo,a.nobukti,a.id ASC) as money) as nilaisaldo"),
+                DB::raw("sum ((isnull(a.qtysaldo,0)+a.qtymasuk)-a.qtykeluar) over (PARTITION BY isnull(a.stok_id,0),isnull(a.gudang_id,0),isnull(A.trado_id,0),isnull(A.gandengan_id,0) order by a.stok_id,isnull(a.gudang_id,0),isnull(A.trado_id,0),isnull(A.gandengan_id,0),isnull(a.tglbukti,0),a.urutfifo,a.nobukti,a.id ASC) as qtysaldo"),
+                DB::raw("cast(sum ((isnull(a.nilaisaldo,0)+a.nilaimasuk)-a.nilaikeluar) over (PARTITION BY a.stok_id,isnull(a.gudang_id,0),isnull(A.trado_id,0),isnull(A.gandengan_id,0) order by isnull(a.stok_id,0),isnull(a.gudang_id,0),isnull(A.trado_id,0),isnull(A.gandengan_id,0),a.tglbukti,a.urutfifo,a.nobukti,a.id ASC) as money) as nilaisaldo"),
                 db::raw("a.modifiedby"),
                 db::raw("a.urutfifo as urutfifo"),
             )
             // ->where('kodebarang','3021/04831105 SWL')
+            //    ->whereraw("isnull(a.gudang_id,0)=0")
+            // ->orderby('a.gudang_id', 'asc')
+            // ->orderby('a.trado_id', 'asc')
+            // ->orderby('a.gandengan_id', 'asc')
             ->orderby('a.tglbukti', 'asc')
             ->orderby('a.urutfifo', 'asc')
             ->orderby('a.nobukti', 'asc')
@@ -1322,6 +1331,7 @@ class KartuStok extends MyModel
 
 
                 // dd( db::table($temprekap)->where('kodebarang','3021/04831105 SWL')->get());
+                // dd( db::table($temprekap)->get());
 
 
         $datalist = DB::table($temprekapall)->from(
@@ -1345,9 +1355,10 @@ class KartuStok extends MyModel
                 'a.qtysaldo',
                 'a.nilaisaldo',
                 'a.modifiedby',
+
                 // 'a.created_at',
             )
-            // ->where('kodebarang','3021/04831105 SWL')
+            // ->whereraw("isnull(a.gudang_id,0)=0")
             ->orderBy('a.id', 'asc');
 
         //  dd($datalist->get());
