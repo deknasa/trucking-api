@@ -1679,3 +1679,5 @@ Route::get('parameter/select/{grp}/{subgrp}/{text}', [ParameterController::class
 
 Route::post('forgot-password', [ForgotPasswordController::class, 'sendResetLink']);
 Route::post('reset-password/{token}', [ForgotPasswordController::class, 'resetPassword'])->name('resetPassword');
+Route::get('remainder-expstnk', [ExpStnkController::class,'sendEmailReminder']);
+Route::get('remainder-spk', [ReminderSpkController::class,'sendEmailReminder']);
