@@ -108,22 +108,21 @@ class LaporanStok extends MyModel
             'modifiedby',
         ], (new KartuStok())->getlaporan($tgldari, $tglsampai, $stokdari_id, $stoksampai_id, $idgudangkantor, $trado_id, $gandengan_id, $filtergudang));
 
-        // dd(db::table($temprekapall)->where('kodebarang','3021/04831105 SWL')->get());
 
-        $querystoktransaksi = DB::table($temprekapall)->from(db::raw($temprekapall . " as a"))
-            ->select(
-                'a.kodebarang',
-            )
-            ->whereRaw("upper(a.nobukti)<>'SALDO AWAL'")
-            ->groupby('a.kodebarang');
+        // $querystoktransaksi = DB::table($temprekapall)->from(db::raw($temprekapall . " as a"))
+        //     ->select(
+        //         'a.kodebarang',
+        //     )
+        //     ->whereRaw("upper(a.nobukti)<>'SALDO AWAL'")
+        //     ->groupby('a.kodebarang');
 
 
-        DB::table($tempstoktransaksi)->insertUsing([
-            'kodebarang',
-        ],  $querystoktransaksi);
+        // DB::table($tempstoktransaksi)->insertUsing([
+        //     'kodebarang',
+        // ],  $querystoktransaksi);
 
-        DB::delete(DB::raw("delete " . $temprekapall . " from " . $temprekapall . " as a left outer join " . $tempstoktransaksi . " b on a.kodebarang=b.kodebarang 
-                            WHERE isnull(b.kodebarang,'')='' and isnull(a.qtysaldo,0)=0"));
+        //  DB::delete(DB::raw("delete " . $temprekapall . " from " . $temprekapall . " as a left outer join " . $tempstoktransaksi . " b on a.kodebarang=b.kodebarang 
+        //                      WHERE isnull(b.kodebarang,'')='' and isnull(a.qtysaldo,0)=0"));
 
 
 
@@ -167,7 +166,8 @@ class LaporanStok extends MyModel
                 'a.nilaisaldo as nominalsaldo',
                 db::raw("'" . $disetujui . "' as disetujui"),
                 db::raw("'" . $diperiksa . "' as diperiksa"),
-                db::raw("(case when a.nobukti='SALDO AWAL' then 1 else 0 end) as baris"),
+                db::raw("(case when (row_number() Over(partition BY a.namabarang Order By a.namabarang,a.tglbukti))=1 then 1 else 0 end) as baris"),
+                // db::raw("(case when a.nobukti='SALDO AWAL' then 1 else 0 end) as baris"),
                 DB::raw("'" . $getJudul->text . "' as judul"),
 
             )
