@@ -971,6 +971,7 @@ class LaporanKasGantung extends MyModel
 
         if ($prosesneraca == 1) {
             $data = $select_TempLaporan2;
+            // dd($data->get());
         } else {
             $data = $select_TempLaporan2->get();
         }

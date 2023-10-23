@@ -40,7 +40,7 @@ class LaporanNeracaController extends Controller
         } else {
 
         $sampai = $request->sampai;
-        $eksport = 1;
+        $eksport = 0;
 
         $report = LaporanNeraca::getReport($sampai, $eksport);
         // sleep(5);

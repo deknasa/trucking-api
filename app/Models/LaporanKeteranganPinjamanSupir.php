@@ -572,6 +572,7 @@ class LaporanKeteranganPinjamanSupir extends MyModel
 
         if ($prosesneraca == 1) {
             $data = $queryRekap;
+            // dd($data->get());
         } else {
             $data = $queryRekap->get();
         }
