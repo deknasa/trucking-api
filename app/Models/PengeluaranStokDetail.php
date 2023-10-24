@@ -40,24 +40,11 @@ class PengeluaranStokDetail extends MyModel
             $query->where("$this->table.pengeluaranstokheader_id", request()->pengeluaranstokheader_id);
         }
         if (isset(request()->forReport) && request()->forReport) {
-
-            $tempumuraki = '##tempumuraki' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
-            Schema::create($tempumuraki, function ($table) {
-                $table->Integer('stok_id')->nullable();
-                $table->integer('jumlahhari')->nullable();
-            });
-
-            DB::table($tempumuraki)->insertUsing([
-                'stok_id',
-                'jumlahhari',
-            ], (new SaldoUmurAki())->getallstok());
-
-
             $query->select(
                 "$this->table.pengeluaranstokheader_id",
                 "$this->table.nobukti",
                 db::raw("trim(stok.namastok)+
-                (case when isnull(c.stok_id,0)<>0 then ' ( UMUR AKI : '+format(isnull(c.jumlahhari,0),'#,#0')+' HARI )' 
+                (case
                       when isnull(stok.kelompok_id,0)=1 then ' ( VULKANISIR KE-'+format(isnull(stok.totalvulkanisir,0),'#,#0')+', STATUS BAN :'+isnull(parameter.text,'') +' )' 
                 else '' end)
                 as stok"),
@@ -72,24 +59,10 @@ class PengeluaranStokDetail extends MyModel
                 "$this->table.modifiedby",
             )
             ->leftJoin("stok", "$this->table.stok_id", "stok.id")
-            ->leftJoin("parameter", "stok.statusban", "parameter.id")
-            ->leftJoin(db::raw($tempumuraki ." c"), "$this->table.stok_id", "c.stok_id");
+            ->leftJoin("parameter", "stok.statusban", "parameter.id");
 
             $this->totalRows = $query->count();
         } else {
-
-
-            $tempumuraki = '##tempumuraki' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
-            Schema::create($tempumuraki, function ($table) {
-                $table->Integer('stok_id')->nullable();
-                $table->integer('jumlahhari')->nullable();
-            });
-
-            DB::table($tempumuraki)->insertUsing([
-                'stok_id',
-                'jumlahhari',
-            ], (new SaldoUmurAki())->getallstok());
-
 
             $getJudul = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))
                 ->select('text')
@@ -124,8 +97,7 @@ class PengeluaranStokDetail extends MyModel
                 ->leftJoin("stok", "$this->table.stok_id", "stok.id")
                 ->leftJoin(DB::raw("parameter as statusreuse with (readuncommitted)"), 'stok.statusreuse', 'statusreuse.id')
                 ->leftJoin("parameter", "$this->table.statusoli", "parameter.id")
-                ->leftJoin("parameter as statusban", "stok.statusban", "statusban.id")
-                ->leftJoin(db::raw($tempumuraki ." c"), "$this->table.stok_id", "c.stok_id");
+                ->leftJoin("parameter as statusban", "stok.statusban", "statusban.id");
     
 
             $this->totalNominal = $query->sum('total');

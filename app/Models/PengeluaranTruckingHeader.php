@@ -192,6 +192,30 @@ class PengeluaranTruckingHeader extends MyModel
 
         DB::table($temprole)->insertUsing(['aco_id'], $queryrole);
 
+        // get namasupir pjt
+        $tempSupir = '##tempsupir' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+        Schema::create($tempSupir, function ($table) {
+            $table->string('nobukti')->nullable();
+            $table->string('supir')->nullable();
+
+        });
+        if(request()->pengeluaranheader_id == 1){    
+            $getSupir = DB::table("pengeluarantruckingdetail")->from(DB::raw("pengeluarantruckingdetail"))
+            ->select(DB::raw("pengeluarantruckingdetail.nobukti, STRING_AGG(supir.namasupir, ', ') AS supir"))
+            ->leftJoin(DB::raw("supir with (readuncommitted)"), 'pengeluarantruckingdetail.supir_id', 'supir.id')
+            ->whereRaw("nobukti like '%pjt%'")
+            ->groupBy("pengeluarantruckingdetail.nobukti");
+
+            DB::table($tempSupir)->insertUsing(['nobukti','supir'], $getSupir);
+        }else {
+
+            $getSupir = DB::table("pengeluarantruckingheader")->from(DB::raw("pengeluarantruckingheader"))
+            ->select(DB::raw("pengeluarantruckingheader.nobukti, supir.namasupir AS supir"))
+            ->leftJoin(DB::raw("supir with (readuncommitted)"), 'pengeluarantruckingheader.supir_id', 'supir.id')
+            ->where('pengeluarantruckingheader.pengeluarantrucking_id', '!=', 1);
+            DB::table($tempSupir)->insertUsing(['nobukti','supir'], $getSupir);
+        }
+
         $query = DB::table($this->table)->from(DB::raw("pengeluarantruckingheader with (readuncommitted)"))
             ->select(
                 'pengeluarantruckingheader.id',
@@ -207,8 +231,8 @@ class PengeluaranTruckingHeader extends MyModel
                 'pengeluarantruckingheader.trado_id',
                 'trado.keterangan as trado',
                 'pengeluarantruckingheader.trado_id as tradoheader_id',
-                'supir.namasupir as supirheader',
-                'supir.namasupir as supir',
+                'getsupir.supir as supirheader',
+                'getsupir.supir as supir',
                 'gandengan.kodegandengan as gandengan',
                 'pengeluarantruckingheader.pengeluarantrucking_nobukti',
                 DB::raw('(case when (year(pengeluarantruckingheader.tglbukacetak) <= 2000) then null else pengeluarantruckingheader.tglbukacetak end ) as tglbukacetak'),
@@ -228,9 +252,9 @@ class PengeluaranTruckingHeader extends MyModel
             ->leftJoin(DB::raw("bank with (readuncommitted)"), 'pengeluarantruckingheader.bank_id', 'bank.id')
             ->leftJoin(DB::raw("akunpusat with (readuncommitted)"), 'pengeluarantruckingheader.coa', 'akunpusat.coa')
             ->leftJoin(DB::raw("trado with (readuncommitted)"), 'pengeluarantruckingheader.trado_id', 'trado.id')
-            ->leftJoin(DB::raw("supir with (readuncommitted)"), 'pengeluarantruckingheader.supir_id', 'supir.id')
             ->leftJoin(DB::raw("gandengan with (readuncommitted)"), 'pengeluarantruckingheader.gandengan_id', 'gandengan.id')
             ->leftJoin(DB::raw("parameter as statuscetak with (readuncommitted)"), 'pengeluarantruckingheader.statuscetak', 'statuscetak.id')
+            ->leftJoin(DB::raw("$tempSupir as getsupir with (readuncommitted)"), 'pengeluarantruckingheader.nobukti', 'getsupir.nobukti')
             ->leftJoin(DB::raw("parameter as statusposting with (readuncommitted)"), 'pengeluarantruckingheader.statusposting', 'statusposting.id')
             ->leftJoin(DB::raw("penerimaantruckingdetail with (readuncommitted)"), 'pengeluarantruckingheader.nobukti', 'penerimaantruckingdetail.pengeluarantruckingheader_nobukti')
             ->leftJoin(DB::raw("penerimaantruckingheader with (readuncommitted)"), 'penerimaantruckingdetail.penerimaantruckingheader_id', 'penerimaantruckingheader.id')
@@ -767,34 +791,60 @@ class PengeluaranTruckingHeader extends MyModel
     }
 
     public function selectColumns($query)
-    {
+    { 
+        $tempSupir = '##tempsupir' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+        Schema::create($tempSupir, function ($table) {
+            $table->string('nobukti')->nullable();
+            $table->string('supir')->nullable();
+
+        });
+        if(request()->pengeluaranheader_id == 1){    
+            $getSupir = DB::table("pengeluarantruckingdetail")->from(DB::raw("pengeluarantruckingdetail"))
+            ->select(DB::raw("pengeluarantruckingdetail.nobukti, STRING_AGG(supir.namasupir, ', ') AS supir"))
+            ->leftJoin(DB::raw("supir with (readuncommitted)"), 'pengeluarantruckingdetail.supir_id', 'supir.id')
+            ->whereRaw("nobukti like '%pjt%'")
+            ->groupBy("pengeluarantruckingdetail.nobukti");
+
+            DB::table($tempSupir)->insertUsing(['nobukti','supir'], $getSupir);
+        }else {
+
+            $getSupir = DB::table("pengeluarantruckingheader")->from(DB::raw("pengeluarantruckingheader"))
+            ->select(DB::raw("pengeluarantruckingheader.nobukti, supir.namasupir AS supir"))
+            ->leftJoin(DB::raw("supir with (readuncommitted)"), 'pengeluarantruckingheader.supir_id', 'supir.id')
+            ->where('pengeluarantruckingheader.pengeluarantrucking_id', '!=', 1);
+            DB::table($tempSupir)->insertUsing(['nobukti','supir'], $getSupir);
+        }
         return $query->select(
             DB::raw(
                 "$this->table.id,
             $this->table.nobukti,
             $this->table.tglbukti,
             pengeluarantrucking.keterangan as pengeluarantrucking_id,
+            isnull(penerimaantruckingdetail.nobukti,'') as penerimaantrucking_nobukti,
             bank.namabank as bank_id,
             statusposting.text as statusposting,
             statuscetak.memo as statuscetak,
-            supir.namasupir as supir,
+            getsupir.supir as supir,
             gandengan.kodegandengan as gandengan,
             pengeluarantruckingheader.pengeluarantrucking_nobukti,
             trado.keterangan as trado,
             $this->table.userbukacetak,
             $this->table.tglbukacetak,
-            $this->table.coa,
+            akunpusat.keterangancoa as coa,
             $this->table.pengeluaran_nobukti,
             $this->table.modifiedby,
+            $this->table.created_at,
             $this->table.updated_at"
             )
         )
             ->leftJoin('pengeluarantrucking', 'pengeluarantruckingheader.pengeluarantrucking_id', 'pengeluarantrucking.id')
             ->leftJoin('bank', 'pengeluarantruckingheader.bank_id', 'bank.id')
             ->leftJoin(DB::raw("trado with (readuncommitted)"), 'pengeluarantruckingheader.trado_id', 'trado.id')
-            ->leftJoin(DB::raw("supir with (readuncommitted)"), 'pengeluarantruckingheader.supir_id', 'supir.id')
+            ->leftJoin(DB::raw("akunpusat with (readuncommitted)"), 'pengeluarantruckingheader.coa', 'akunpusat.coa')
+            ->leftJoin(DB::raw("$tempSupir as getsupir with (readuncommitted)"), 'pengeluarantruckingheader.nobukti', 'getsupir.nobukti')
             ->leftJoin(DB::raw("gandengan with (readuncommitted)"), 'pengeluarantruckingheader.gandengan_id', 'gandengan.id')
             ->leftJoin('parameter as statuscetak', 'pengeluarantruckingheader.statuscetak', 'statuscetak.id')
+            ->leftJoin(DB::raw("penerimaantruckingdetail with (readuncommitted)"), 'pengeluarantruckingheader.nobukti', 'penerimaantruckingdetail.pengeluarantruckingheader_nobukti')
             ->leftJoin('parameter as statusposting', 'pengeluarantruckingheader.statusposting', 'statusposting.id');
     }
 
@@ -806,6 +856,7 @@ class PengeluaranTruckingHeader extends MyModel
             $table->string('nobukti', 1000)->nullable();
             $table->date('tglbukti')->nullable();
             $table->string('pengeluarantrucking_id', 1000)->nullable();
+            $table->string('penerimaantrucking_nobukti', 1000)->nullable();
             $table->string('bank_id', 1000)->nullable();
             $table->string('statusposting', 1000)->nullable();
             $table->string('statuscetak', 1000)->nullable();
@@ -818,6 +869,7 @@ class PengeluaranTruckingHeader extends MyModel
             $table->string('coa', 1000)->nullable();
             $table->string('pengeluaran_nobukti', 1000)->nullable();
             $table->string('modifiedby', 50)->nullable();
+            $table->dateTime('created_at')->nullable();
             $table->dateTime('updated_at')->nullable();
             $table->increments('position');
         });
@@ -836,7 +888,7 @@ class PengeluaranTruckingHeader extends MyModel
         if (request()->pengeluaranheader_id) {
             $query->where('pengeluarantrucking_id', request()->pengeluaranheader_id);
         }
-        DB::table($temp)->insertUsing(['id', 'nobukti', 'tglbukti', 'pengeluarantrucking_id', 'bank_id', 'statusposting', 'statuscetak', 'supir', 'gandengan', 'pengeluarantrucking_nobukti', 'trado', 'userbukacetak', 'tglbukacetak', 'coa', 'pengeluaran_nobukti', 'modifiedby', 'updated_at'], $models);
+        DB::table($temp)->insertUsing(['id', 'nobukti', 'tglbukti', 'pengeluarantrucking_id','penerimaantrucking_nobukti', 'bank_id', 'statusposting', 'statuscetak', 'supir', 'gandengan', 'pengeluarantrucking_nobukti', 'trado', 'userbukacetak', 'tglbukacetak', 'coa', 'pengeluaran_nobukti', 'modifiedby','created_at', 'updated_at'], $models);
 
 
         return  $temp;
@@ -853,7 +905,7 @@ class PengeluaranTruckingHeader extends MyModel
         } else if ($this->params['sortIndex'] == 'gandengan') {
             return $query->orderBy('gandengan.kodegandengan', $this->params['sortOrder']);
         } else if ($this->params['sortIndex'] == 'supir') {
-            return $query->orderBy('supir.namasupir', $this->params['sortOrder']);
+            return $query->orderBy('getsupir.supir', $this->params['sortOrder']);
         } else if ($this->params['sortIndex'] == 'trado') {
             return $query->orderBy('trado.keterangan', $this->params['sortOrder']);
         } else {
@@ -874,9 +926,9 @@ class PengeluaranTruckingHeader extends MyModel
                         } else if ($filters['field'] == 'coa') {
                             $query = $query->where('akunpusat.keterangancoa', 'LIKE', "%$filters[data]%");
                         } else if ($filters['field'] == 'supir') {
-                            $query = $query->where('supir.namasupir', 'LIKE', "%$filters[data]%");
+                            $query = $query->where('getsupir.supir', 'LIKE', "%$filters[data]%");
                         } else if ($filters['field'] == 'gandengan') {
-                            $query = $query->where('gandengan.kodegandegan', 'LIKE', "%$filters[data]%");
+                            $query = $query->where('gandengan.kodegandengan', 'LIKE', "%$filters[data]%");
                         } else if ($filters['field'] == 'trado') {
                             $query = $query->where('trado.keterangan', 'LIKE', "%$filters[data]%");
                         } else if ($filters['field'] == 'penerimaantrucking_nobukti') {
@@ -908,9 +960,9 @@ class PengeluaranTruckingHeader extends MyModel
                             } else if ($filters['field'] == 'penerimaantrucking_nobukti') {
                                 $query = $query->orwhere('penerimaantruckingdetail.nobukti', 'LIKE', "%$filters[data]%");
                             } else if ($filters['field'] == 'supir') {
-                                $query = $query->orwhere('supir.namasupir', 'LIKE', "%$filters[data]%");
+                                $query = $query->orwhere('getsupir.supir', 'LIKE', "%$filters[data]%");
                             } else if ($filters['field'] == 'gandengan') {
-                                $query = $query->orwhere('gandengan.kodegandegan', 'LIKE', "%$filters[data]%");
+                                $query = $query->orwhere('gandengan.kodegandengan', 'LIKE', "%$filters[data]%");
                             } else if ($filters['field'] == 'trado') {
                                 $query = $query->orwhere('trado.keterangan', 'LIKE', "%$filters[data]%");
                             } else if ($filters['field'] == 'statusposting') {
