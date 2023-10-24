@@ -296,7 +296,7 @@ class PengembalianKasGantungHeader extends MyModel
         DB::table($temp)->insertUsing(['pengembaliankasgantungheader_id', 'nobukti', 'tglbukti', 'keterangan', 'coa', 'sisa', 'bayar'], $pengembalian);
 
         $pinjaman = DB::table($tempAll)->from(DB::raw("$tempAll with (readuncommitted)"))
-            ->select(DB::raw("null as pengembaliankasgantungheader_id,nobukti,tglbukti,null as keterangan, null as coa,sisa, 0 as bayar"))
+            ->select(DB::raw("null as pengembaliankasgantungheader_id,nobukti,tglbukti,keterangan, null as coa,sisa, 0 as bayar"))
             ->where(function ($query) use ($tempAll) {
                 $query->whereRaw("$tempAll.sisa != 0")
                     ->orWhereRaw("$tempAll.sisa is null");
@@ -349,7 +349,7 @@ class PengembalianKasGantungHeader extends MyModel
             ->from(
                 DB::raw("kasgantungdetail with (readuncommitted)")
             )
-            ->select(DB::raw("kasgantungdetail.nobukti,kasgantungheader.tglbukti,(SELECT (sum(kasgantungdetail.nominal) - coalesce(SUM(pengembaliankasgantungdetail.nominal),0)) FROM pengembaliankasgantungdetail WHERE pengembaliankasgantungdetail.kasgantung_nobukti= kasgantungdetail.nobukti) AS sisa"))
+            ->select(DB::raw("kasgantungdetail.nobukti,kasgantungheader.tglbukti,(SELECT (sum(kasgantungdetail.nominal) - coalesce(SUM(pengembaliankasgantungdetail.nominal),0)) FROM pengembaliankasgantungdetail WHERE pengembaliankasgantungdetail.kasgantung_nobukti= kasgantungdetail.nobukti) AS sisa, MAX(kasgantungdetail.keterangan)"))
             ->leftJoin(DB::raw("kasgantungheader with (readuncommitted)"), 'kasgantungheader.nobukti', 'kasgantungdetail.nobukti')
             ->whereRaw("kasgantungheader.nobukti not in (select kasgantung_nobukti from pengembaliankasgantungdetail where pengembaliankasgantung_id=$id)")
             ->whereBetween('kasgantungheader.tglbukti', [$dari, $sampai])
@@ -360,8 +360,9 @@ class PengembalianKasGantungHeader extends MyModel
             $table->string('nobukti');
             $table->date('tglbukti');
             $table->bigInteger('sisa')->nullable();
+            $table->longText('keterangan')->nullabble();
         });
-        $tes = DB::table($temp)->insertUsing(['nobukti', 'tglbukti', 'sisa'], $fetch);
+        $tes = DB::table($temp)->insertUsing(['nobukti', 'tglbukti', 'sisa','keterangan'], $fetch);
         return $temp;
     }
 
