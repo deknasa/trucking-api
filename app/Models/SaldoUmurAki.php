@@ -134,19 +134,46 @@ class SaldoUmurAki extends MyModel
             'jumlahhari',
         ], $queryjumlah);
 
-        $umursaldo = db::table($tempSaldoAki)->from(db::raw($tempSaldoAki . " a "))
+        $hariaki = db::table("parameter")->from(db::raw("parameter a with (readuncommitted)"))
             ->select(
-                db::raw("sum(a.jumlahharitrip) as jumlahhari")
+                'a.text as id'
             )
-            ->first()->jumlahhari ?? 0;
+            ->where('a.grp', 'HARIAKI')
+            ->where('a.subgrp', 'HARIAKI')
+            ->where('a.text', 'TANGGAL')
+            ->first();
 
-        $umur = db::table($tempumurakiberjalanrekap)->from(db::raw($tempumurakiberjalanrekap . " a "))
-            ->select(
-                db::raw("sum(a.jumlahhari) as jumlahhari")
-            )
-            ->first()->jumlahhari ?? 0;
+      
+        if (isset($hariaki)) {
+            $queryaki = db::table($tempSaldoAki)->from(db::raw($tempSaldoAki . " a"))
+                ->select(
+                    'a.tglawal'
+                )
+                ->where('a.stok_id', $id)
+                ->first();
+            if (isset($queryaki)) {
+                $awal  = date_create(date('Y-m-d', strtotime($queryaki->tglawal)));
+                $akhir = date_create();
+                $umuraki  = date_diff($awal, $akhir)->days;
+      
+            } else {
+                $umuraki = 0;
+            }
+        } else {
+            $umursaldo = db::table($tempSaldoAki)->from(db::raw($tempSaldoAki . " a "))
+                ->select(
+                    db::raw("sum(a.jumlahharitrip) as jumlahhari")
+                )
+                ->first()->jumlahhari ?? 0;
 
-        $umuraki = $umursaldo + $umur;
+            $umur = db::table($tempumurakiberjalanrekap)->from(db::raw($tempumurakiberjalanrekap . " a "))
+                ->select(
+                    db::raw("sum(a.jumlahhari) as jumlahhari")
+                )
+                ->first()->jumlahhari ?? 0;
+
+            $umuraki = $umursaldo + $umur;
+        }
 
         return $umuraki;
     }
@@ -280,42 +307,73 @@ class SaldoUmurAki extends MyModel
         });
 
 
-        $umursaldo = db::table($tempSaldoAki)->from(db::raw($tempSaldoAki . " a "))
+        $hariaki = db::table("parameter")->from(db::raw("parameter a with (readuncommitted)"))
+            ->select(
+                'a.text as id'
+            )
+            ->where('a.grp', 'HARIAKI')
+            ->where('a.subgrp', 'HARIAKI')
+            ->where('a.text', 'TANGGAL')
+            ->first();
+        if (isset($hariaki)) {
+            $umursaldo = db::table($tempSaldoAki)->from(db::raw($tempSaldoAki . " a "))
+                ->select(
+                    'a.stok_id',
+                    db::raw("DATEDIFF(d ,a.tglawal,cast(format(getdate(),'yyyy/MM/dd') as datetime)) as jumlahhari ")
+                )
+                ->orderby('a.stok_id', 'asc');
+
+            DB::table($tempumurlistumuraki)->insertUsing([
+                'stok_id',
+                'jumlahhari',
+            ], $umursaldo);
+
+            $umuraki = db::table($tempumurlistumuraki)->from(db::raw($tempumurlistumuraki . " a "))
             ->select(
                 'a.stok_id',
-                db::raw("sum(a.jumlahharitrip) as jumlahhari")
+                db::raw("a.jumlahhari as jumlahhari"),
+                'b.tglawal'
+                
+            )
+            ->join(db::raw($tempSaldoAki ." b"),'a.stok_id','b.stok_id')
+
+            ->orderby('a.stok_id', 'asc');
+        } else {
+            $umursaldo = db::table($tempSaldoAki)->from(db::raw($tempSaldoAki . " a "))
+                ->select(
+                    'a.stok_id',
+                    db::raw("sum(a.jumlahharitrip) as jumlahhari")
+                )
+                ->groupby('a.stok_id')
+                ->orderby('a.stok_id', 'asc');
+
+            DB::table($tempumurlistumuraki)->insertUsing([
+                'stok_id',
+                'jumlahhari',
+            ], $umursaldo);
+
+            $umur = db::table($tempumurakiberjalanrekap)->from(db::raw($tempumurakiberjalanrekap . " a "))
+                ->select(
+                    'a.stok_id',
+                    db::raw("sum(a.jumlahhari) as jumlahhari")
+                )
+                ->groupby('a.stok_id')
+                ->orderby('a.stok_id', 'asc');
+
+            DB::table($tempumurlistumuraki)->insertUsing([
+                'stok_id',
+                'jumlahhari',
+            ], $umur);
+            $umuraki = db::table($tempumurlistumuraki)->from(db::raw($tempumurlistumuraki . " a "))
+            ->select(
+                'a.stok_id',
+                db::raw("sum(a.jumlahhari) as jumlahhari"),
+                db::raw("'1900/1/1' as tglawal")
             )
             ->groupby('a.stok_id')
             ->orderby('a.stok_id', 'asc');
+        }
 
-        DB::table($tempumurlistumuraki)->insertUsing([
-            'stok_id',
-            'jumlahhari',
-        ], $umursaldo);
-
-        $umur = db::table($tempumurakiberjalanrekap)->from(db::raw($tempumurakiberjalanrekap . " a "))
-            ->select(
-                'a.stok_id',
-                db::raw("sum(a.jumlahhari) as jumlahhari")
-            )
-            ->groupby('a.stok_id')
-            ->orderby('a.stok_id', 'asc');
-
-        DB::table($tempumurlistumuraki)->insertUsing([
-            'stok_id',
-            'jumlahhari',
-        ], $umur);
-
-       
-
-
-        $umuraki = db::table($tempumurlistumuraki)->from(db::raw($tempumurlistumuraki . " a "))
-        ->select(
-            'a.stok_id',
-            db::raw("sum(a.jumlahhari) as jumlahhari")
-        )
-        ->groupby('a.stok_id')
-        ->orderby('a.stok_id', 'asc');
 
         return $umuraki;
     }
