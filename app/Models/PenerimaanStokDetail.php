@@ -47,12 +47,28 @@ class PenerimaanStokDetail extends MyModel
             Schema::create($tempumuraki, function ($table) {
                 $table->Integer('stok_id')->nullable();
                 $table->integer('jumlahhari')->nullable();
+                $table->date('tglawal')->nullable();
             });
 
             DB::table($tempumuraki)->insertUsing([
                 'stok_id',
                 'jumlahhari',
+                'tglawal',
             ], (new SaldoUmurAki())->getallstok());
+
+            $hariaki = db::table("parameter")->from(db::raw("parameter a with (readuncommitted)"))
+            ->select(
+                'a.text as id'
+            )
+            ->where('a.grp', 'HARIAKI')
+            ->where('a.subgrp', 'HARIAKI')
+            ->where('a.text', 'TANGGAL')
+            ->first();
+            if (isset($hariaki)) {
+                $bytgl=1;
+            } else {
+                $bytgl=0;
+            }
 
             $getJudul = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))
                 ->select('text')
@@ -64,7 +80,9 @@ class PenerimaanStokDetail extends MyModel
                 "$this->table.nobukti",
                 "$this->table.stok_id",
                 db::raw("trim(stok.namastok)+
-                (case when isnull(c.stok_id,0)<>0 then ' ( UMUR AKI : '+format(isnull(c.jumlahhari,0),'#,#0')+' HARI )' 
+                (case when isnull(c.stok_id,0)<>0 then ' ( '+
+                    (case when ".$bytgl. "=1 then 'TGL PAKAI '+format(c.tglawal,'dd-MM-yyyy')+',' else '' end)+
+                    'UMUR AKI : '+format(isnull(c.jumlahhari,0),'#,#0')+' HARI )' 
                       when isnull(stok.kelompok_id,0)=1 then ' ( VULKANISIR KE-'+format(isnull(stok.totalvulkanisir,0),'#,#0')+', STATUS BAN :'+isnull(parameter.text,'') +' )' 
                 else '' end)
                 as stok"),
