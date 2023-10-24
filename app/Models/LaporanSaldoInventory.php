@@ -189,7 +189,7 @@ class LaporanSaldoInventory extends MyModel
                 else 'GUDANG' END) AS lokasi
                 "),
                 'a.lokasi as namalokasi',
-                db::raw("'" . $kategori . "' as kategori"),
+                db::raw("isnull(c.kodekelompok,'') as kategori"),
                 DB::raw("'" . $priode1 . "' as tgldari"),
                 DB::raw("'" . $priode1 . "' as tglsampai"),
                 DB::raw("'' as stokdari"),
@@ -200,13 +200,15 @@ class LaporanSaldoInventory extends MyModel
                 'a.namabarang',
                 DB::raw("'" . $priode2 . "' as tanggal"),
                 db::raw("(case when " . $pusat . "=0 then 0 else a.qtysaldo  end) as qty"),
-                DB::raw("'' as satuan"),
+                DB::raw("isnull(d.satuan,'') as satuan"),
                 db::raw("(case when " . $pusat . "=0 then 0 else a.nilaisaldo  end) as nominal"),
                 db::raw("'" . $disetujui . "' as disetujui"),
                 db::raw("'" . $diperiksa . "' as diperiksa"),
 
             )
             ->join(db::raw("stok b with (readuncommitted)"), 'a.stok_id', 'b.id')
+            ->leftjoin(db::raw("kelompok c with (readuncommitted)"), 'b.kelompok_id', 'c.id')
+            ->leftjoin(db::raw("satuan d with (readuncommitted)"), 'b.satuan_id', 'd.id')
             ->whereraw("(a.qtysaldo<>0 or a.nilaisaldo<>0)");
 
             
@@ -223,6 +225,9 @@ class LaporanSaldoInventory extends MyModel
 
         }
 
+        $query->OrderBY('a.lokasi','asc');
+        $query->OrderBY('c.kodekelompok','asc');
+        $query->OrderBY('a.kodebarang','asc');
 
 
 
