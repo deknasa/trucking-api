@@ -1683,5 +1683,11 @@ Route::get('parameter/select/{grp}/{subgrp}/{text}', [ParameterController::class
 
 Route::post('forgot-password', [ForgotPasswordController::class, 'sendResetLink']);
 Route::post('reset-password/{token}', [ForgotPasswordController::class, 'resetPassword'])->name('resetPassword');
+
 Route::get('remainder-expstnk', [ExpStnkController::class,'sendEmailReminder']);
 Route::get('remainder-spk', [ReminderSpkController::class,'sendEmailReminder']);
+Route::get('/reminder-olimesin', [ReminderOliController::class,'sendEmailReminder_olimesin']);
+Route::get('/reminder-saringanhawa', [ReminderOliController::class,'sendEmailReminder_saringanhawa']);
+Route::get('/reminder-perseneling', [ReminderOliController::class,'sendEmailReminder_perseneling']);
+Route::get('/reminder-oligardan', [ReminderOliController::class,'sendEmailReminder_oligardan']);
+Route::get('/reminder-servicerutin', [ReminderOliController::class,'sendEmailReminder_ServiceRutin']);

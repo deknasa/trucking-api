@@ -8,7 +8,7 @@
         }
         table {
             border-collapse: collapse;
-            width: 50%;
+            width: 75%;
             margin: 0 auto;
         }
         th, td {
@@ -30,6 +30,19 @@
             width:60%;
             margin: 0 auto;
         }
+
+        .red-text {
+            color: red;
+        }
+        
+        .star-list {
+            list-style-type: none;
+        }
+        
+        .star-list li::before {
+            content: "*"; /* kode untuk bintang */
+            margin-right: 0.5em;
+        }
     </style>
 </head>
 <body>
@@ -41,25 +54,34 @@
         <table>
             <tr>
                 <th>No</th>
-                <th>No Pol</th>
-                <th>Tgl Jatuh Tempo</th>
+                <th>kodetrado</th>
+                <th>Tanggal Service Terakhir</th>
+                <th>Tanggal Service Berikutnya</th>
                 <th>Keterangan</th>
             </tr>
             @foreach (json_decode($data) as $sim)
             <tr  style="background-color: {{$sim->warna}}; ">
                 <td>{{$loop->iteration}}</td>
                 <td>{{$sim->kodetrado}}</td>
-                <td>{{$sim->tglstr}}</td>
-                <td>{{$sim->jenis}}</td>
+                <td>{{$sim->tanggaldari}}</td>
+                <td>{{$sim->tanggalsampai}}</td>
+                <td>{{$sim->keterangan}}</td>
             </tr>
             @endforeach
         </table>
-
+        
+        
         <p>Email ini dikirimkan secara otomatis melalui system.</p>
         <p>Harap jangan membalas ke email ini. [TAS_AUTO_GENERATED_EMAIL]</p>
+        <ul class="star-list">
+            <li class="red-text">Untuk Service yang telah dilakukan harap dientry di Form Service In.</li>
+            <li class="red-text">Service In dapat dilanjutkan dengan SPK maupun tanpa SPK.</li>
+            <li class="red-text">Untuk Trado yang masih dalam tahap Standarisasi harap diinfokan.</li>
+            <li class="red-text">Untuk Trado yang sudah selesai Standarisasi harap diinfokan juga.</li>
+        </ul>        
         <p>Thx & Regards</p>
         <p>IT Pusat</p>
-        
+
         {{ config('app.name') }}
         
     </div>
