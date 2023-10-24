@@ -1,1 +1,0 @@
-"C:\laragon\bin\php\php-7.3.27-Win32-VC15-x64\php.exe" -f "C:\laragon\www\trucking-apii\cronjob\unApprovalTrip.php"
