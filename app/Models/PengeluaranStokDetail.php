@@ -102,8 +102,7 @@ class PengeluaranStokDetail extends MyModel
                 "$this->table.nobukti",
                 "$this->table.stok_id",
                 db::raw("trim(stok.namastok)+
-                (case when isnull(c.stok_id,0)<>0 then ' ( UMUR AKI : '+format(isnull(c.jumlahhari,0),'#,#0')+' HARI )' 
-                      when isnull(stok.kelompok_id,0)=1 then ' ( VULKANISIR KE-'+format(isnull(stok.totalvulkanisir,0),'#,#0')+', STATUS BAN :'+isnull(statusban.text,'') +' )' 
+                (case when isnull(stok.kelompok_id,0)=1 then ' ( VULKANISIR KE-'+format(isnull(stok.totalvulkanisir,0),'#,#0')+', STATUS BAN :'+isnull(statusban.text,'') +' )' 
                 else '' end)
                 as stok"),
                 'statusreuse.memo as statusreuse',    
