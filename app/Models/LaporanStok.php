@@ -233,7 +233,7 @@ class LaporanStok extends MyModel
                 'a.nobukti as nobukti',
                 'a.kodebarang as id',
                 'a.kodebarang',
-                db::raw("(case when isnull(b.keterangan,'')='' then a.namabarang else isnull(B.keterangan,'') end) as namabarang"),
+                db::raw("(case when isnull(b.keterangan,'')='' then a.namabarang else isnull(b.keterangan,'') end) as namabarang"),
                 'a.tglbukti as tglbukti',
                 db::raw("(isnull(a.qtymasuk,0)+
                 (case when a.nobukti='SALDO AWAL' then 
@@ -254,7 +254,7 @@ class LaporanStok extends MyModel
                 DB::raw("'" . $getJudul->text . "' as judul"),
 
             )
-            ->join(db::raw("stok b with (readuncommitted)"),'a.stok_id','b.stok_id')
+            ->join(db::raw("stok b with (readuncommitted)"),'a.stok_id','b.id')
             ->orderBy('a.namabarang', 'asc')
             ->orderBy('a.tglbukti', 'asc')
             ->orderBy(db::raw("(case when UPPER(isnull(a.nobukti,''))='SALDO AWAL' then '' else isnull(a.nobukti,'') end)"), 'asc');
