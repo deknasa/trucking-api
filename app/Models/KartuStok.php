@@ -243,7 +243,7 @@ class KartuStok extends MyModel
             $kelompok_id = request()->kelompok_id ?? '';
             if ($kelompok_id != '') {
 
-                DB::delete(DB::raw("delete " . $temtabel . " from " . $temtabel . " as a  inner join stok b on a.stok_id=b.stok_id
+                DB::delete(DB::raw("delete " . $temtabel . " from " . $temtabel . " as a  inner join stok b on a.stok_id=b.id
                 WHERE isnull(b.kelompok_id,0) not in(" . $kelompok_id . ")"));
             }
         } else {
