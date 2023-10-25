@@ -66,7 +66,7 @@ class JurnalUmumHeaderController extends Controller
             ];
             $jurnalUmumHeader = (new JurnalUmumHeader())->processStore($data);
             $jurnalUmumHeader->position = $this->getPosition($jurnalUmumHeader, $jurnalUmumHeader->getTable())->position;
-            if ($request->limit==0) {
+            if ($request->limit == 0) {
                 $jurnalUmumHeader->page = ceil($jurnalUmumHeader->position / (10));
             } else {
                 $jurnalUmumHeader->page = ceil($jurnalUmumHeader->position / ($request->limit ?? 10));
@@ -118,7 +118,7 @@ class JurnalUmumHeaderController extends Controller
             ];
             $jurnalumumHeader = (new JurnalUmumHeader())->processUpdate($jurnalumumheader, $data);
             $jurnalumumHeader->position = $this->getPosition($jurnalumumHeader, $jurnalumumHeader->getTable())->position;
-            if ($request->limit==0) {
+            if ($request->limit == 0) {
                 $jurnalumumHeader->page = ceil($jurnalumumHeader->position / (10));
             } else {
                 $jurnalumumHeader->page = ceil($jurnalumumHeader->position / ($request->limit ?? 10));
@@ -151,14 +151,14 @@ class JurnalUmumHeaderController extends Controller
             $selected = $this->getPosition($jurnalUmumHeader, $jurnalUmumHeader->getTable(), true);
             $jurnalUmumHeader->position = $selected->position;
             $jurnalUmumHeader->id = $selected->id;
-            if ($request->limit==0) {
+            if ($request->limit == 0) {
                 $jurnalUmumHeader->page = ceil($jurnalUmumHeader->position / (10));
             } else {
                 $jurnalUmumHeader->page = ceil($jurnalUmumHeader->position / ($request->limit ?? 10));
             }
             $jurnalUmumHeader->tgldariheader = date('Y-m-01', strtotime(request()->tglbukti));
             $jurnalUmumHeader->tglsampaiheader = date('Y-m-t', strtotime(request()->tglbukti));
-            
+
             DB::commit();
 
             return response()->json([
@@ -524,8 +524,14 @@ class JurnalUmumHeaderController extends Controller
     {
         $jurnalumum = JurnalUmumHeader::find($id);
         $status = $jurnalumum->statusapproval;
+        $statusApproval = Parameter::from(DB::raw("parameter with (readuncommitted)"))
+            ->where('grp', 'STATUS APPROVAL')->where('text', 'APPROVAL')->first();
+        $statusdatacetak = $jurnalumum->statuscetak;
+        $statusCetak = Parameter::from(DB::raw("parameter with (readuncommitted)"))
+            ->where('grp', 'STATUSCETAK')->where('text', 'CETAK')->first();
+        $aksi = request()->aksi ?? '';
 
-        if ($status == '3') {
+        if ($status == $statusApproval->id && ($aksi == 'DELETE' || $aksi == 'EDIT')) {
             $query = DB::table('error')
                 ->select('keterangan')
                 ->where('kodeerror', '=', 'SAP')
@@ -534,6 +540,20 @@ class JurnalUmumHeaderController extends Controller
             $data = [
                 'message' => $keterangan,
                 'errors' => 'sudah approve',
+                'kodestatus' => '1',
+                'kodenobukti' => '1'
+            ];
+
+            return response($data);
+        } else if ($statusdatacetak == $statusCetak->id) {
+            $query = DB::table('error')
+                ->select('keterangan')
+                ->where('kodeerror', '=', 'SDC')
+                ->get();
+            $keterangan = $query['0'];
+            $data = [
+                'message' => $keterangan,
+                'errors' => 'sudah cetak',
                 'kodestatus' => '1',
                 'kodenobukti' => '1'
             ];

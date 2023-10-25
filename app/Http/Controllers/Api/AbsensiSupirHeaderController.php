@@ -65,12 +65,12 @@ class AbsensiSupirHeaderController extends Controller
                 $aksi = $statusTidakBolehEdit->text;
             } else {
                 $tglbtas = date("Y-m-d", strtotime('today'));
-                $tglbtas = date("Y-m-d H:i:s", strtotime($tglbtas. ' 23:59:00'));
+                $tglbtas = date("Y-m-d H:i:s", strtotime($tglbtas . ' 23:59:00'));
                 $absensiSupirHeader->tglbataseditabsensi = $tglbtas;
                 $absensiSupirHeader->statusapprovaleditabsensi = $statusBolehEdit->id;
                 $aksi = $statusBolehEdit->text;
             }
-            
+
             $absensiSupirHeader->tglapprovaleditabsensi = date("Y-m-d", strtotime('today'));
             $absensiSupirHeader->userapprovaleditabsensi = auth('api')->user()->name;
 
@@ -331,100 +331,127 @@ class AbsensiSupirHeaderController extends Controller
     {
         $absensisupir = AbsensiSupirHeader::findOrFail($id);
 
+        $aksi = request()->aksi ?? '';
         $passes = true;
         $keterangan = [];
 
-        $isDateAllowed = AbsensiSupirHeader::isDateAllowed($id);
-        if (!$isDateAllowed) {
-            $query = DB::table('error')->select('keterangan')->where('kodeerror', '=', 'TEPT')->get();
-            $keterangan = $query['0'];
+        if ($aksi == 'PRINTER BESAR' || $aksi == 'PRINTER KECIL') {
+            //validasi cetak
+            $printValidation = AbsensiSupirHeader::printValidation($id);
+            if (!$printValidation) {
+                $query = DB::table('error')->select('keterangan')->where('kodeerror', '=', 'SDC')->get();
+                $keterangan = $query['0'];
+                $data = [
+                    'message' => $keterangan,
+                    'errors' => 'Sudah cetak',
+                    'kodestatus' => '1',
+                    'kodenobukti' => '1'
+                ];
+                $passes = false;
 
-            $data = [
-                'message' => $keterangan,
-                'errors' => 'data tidak bisa diedit pada tanggal ini',
-                'kodestatus' => '1',
-                'kodenobukti' => '1'
-            ];
-            $passes = false;
-            // return response($data);
-        }
+            }else{
+                $data = [
+                    'message' => '',
+                    'errors' => 'success',
+                    'kodestatus' => '0',
+                    'kodenobukti' => '1'
+                ];
+            }
+            return response($data);
+        } else {
 
-        //validasi status edit
-        $passes = true;
-        $isEditAble = AbsensiSupirHeader::isEditAble($id);
-        if (!$isEditAble) {
-            $query = DB::table('error')->select('keterangan')->where('kodeerror', '=', 'BAED')->get();
-            $keterangan = $query['0'];
+            $isDateAllowed = AbsensiSupirHeader::isDateAllowed($id);
+            if (!$isDateAllowed) {
+                $query = DB::table('error')->select('keterangan')->where('kodeerror', '=', 'TEPT')->get();
+                $keterangan = $query['0'];
 
-            $data = [
-                'message' => $keterangan,
-                'errors' => 'status approve edit tidak boleh',
-                'kodestatus' => '1',
-                'kodenobukti' => '1'
-            ];
-            $passes = false;
-            // return response($data);
-        }
+                $data = [
+                    'message' => $keterangan,
+                    'errors' => 'data tidak bisa diedit pada tanggal ini',
+                    'kodestatus' => '1',
+                    'kodenobukti' => '1'
+                ];
+                $passes = false;
+                // return response($data);
+            }
 
-        //validasi cetak
-        $printValidation = AbsensiSupirHeader::printValidation($id);
-        if (!$printValidation) {
-            $query = DB::table('error')->select('keterangan')->where('kodeerror', '=', 'SDC')->get();
-            $keterangan = $query['0'];
-            $data = [
-                'message' => $keterangan,
-                'errors' => 'Sudah cetak',
-                'kodestatus' => '1',
-                'kodenobukti' => '1'
-            ];
-            $passes = false;
+            //validasi status edit
+            $passes = true;
+            $isEditAble = AbsensiSupirHeader::isEditAble($id);
+            if (!$isEditAble) {
+                $query = DB::table('error')->select('keterangan')->where('kodeerror', '=', 'BAED')->get();
+                $keterangan = $query['0'];
 
-            // return response($data);
-        }
+                $data = [
+                    'message' => $keterangan,
+                    'errors' => 'status approve edit tidak boleh',
+                    'kodestatus' => '1',
+                    'kodenobukti' => '1'
+                ];
+                $passes = false;
+                // return response($data);
+            }
 
-        //validasi Hari ini
-        $todayValidation = AbsensiSupirHeader::todayValidation($absensisupir->tglbukti);
-        if (!$todayValidation) {
-            $query = DB::table('error')->select('keterangan')->where('kodeerror', '=', 'SATL')->get();
-            // $keterangan = $query['0'];
-            $keterangan = ['keterangan' => 'transaksi Sudah beda tanggal']; //$query['0'];
-            $data = [
-                'message' => $keterangan,
-                'errors' => 'Tidak bisa edit di hari yang berbeda',
-                'kodestatus' => '1',
-                'kodenobukti' => '1'
-            ];
-            $passes = false;
-            // return response($data);
-        }
+            //validasi cetak
+            $printValidation = AbsensiSupirHeader::printValidation($id);
+            if (!$printValidation) {
+                $query = DB::table('error')->select('keterangan')->where('kodeerror', '=', 'SDC')->get();
+                $keterangan = $query['0'];
+                $data = [
+                    'message' => $keterangan,
+                    'errors' => 'Sudah cetak',
+                    'kodestatus' => '1',
+                    'kodenobukti' => '1'
+                ];
+                $passes = false;
 
-        //validasi approval
-        $isApproved = AbsensiSupirHeader::isApproved($absensisupir->nobukti);
-        if (!$isApproved) {
-            $query = DB::table('error')->select('keterangan')->where('kodeerror', '=', 'SATL')->get();
-            $keterangan = $query['0'];
-            $keterangan = ['keterangan' => 'transaksi Sudah di approved']; //$query['0'];
+                // return response($data);
+            }
 
-            $data = [
-                'message' => $keterangan,
-                'errors' => 'sudah approve',
-                'kodestatus' => '1',
-                'kodenobukti' => '1'
-            ];
-            $passes = false;
-            // return response($data);
-        }
-        if (($todayValidation && $isApproved) || ($isEditAble && $printValidation) || $isDateAllowed) {
-            $data = [
-                'message' => '',
-                'errors' => 'success',
-                'kodestatus' => '0',
-                'kodenobukti' => '1'
-            ];
+            //validasi Hari ini
+            $todayValidation = AbsensiSupirHeader::todayValidation($absensisupir->tglbukti);
+            if (!$todayValidation) {
+                $query = DB::table('error')->select('keterangan')->where('kodeerror', '=', 'SATL')->get();
+                // $keterangan = $query['0'];
+                $keterangan = ['keterangan' => 'transaksi Sudah beda tanggal']; //$query['0'];
+                $data = [
+                    'message' => $keterangan,
+                    'errors' => 'Tidak bisa edit di hari yang berbeda',
+                    'kodestatus' => '1',
+                    'kodenobukti' => '1'
+                ];
+                $passes = false;
+                // return response($data);
+            }
+
+            //validasi approval
+            $isApproved = AbsensiSupirHeader::isApproved($absensisupir->nobukti);
+            if (!$isApproved) {
+                $query = DB::table('error')->select('keterangan')->where('kodeerror', '=', 'SATL')->get();
+                $keterangan = $query['0'];
+                $keterangan = ['keterangan' => 'transaksi Sudah di approved']; //$query['0'];
+
+                $data = [
+                    'message' => $keterangan,
+                    'errors' => 'sudah approve',
+                    'kodestatus' => '1',
+                    'kodenobukti' => '1'
+                ];
+                $passes = false;
+                // return response($data);
+            }
+            if (($todayValidation && $isApproved) || ($isEditAble && $printValidation) || $isDateAllowed) {
+                $data = [
+                    'message' => '',
+                    'errors' => 'success',
+                    'kodestatus' => '0',
+                    'kodenobukti' => '1'
+                ];
+                return response($data);
+            }
+
             return response($data);
         }
-
-        return response($data);
     }
     /**
      * @ClassName 
