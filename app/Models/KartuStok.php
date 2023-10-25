@@ -85,6 +85,28 @@ class KartuStok extends MyModel
                 ]
             );
 
+            $temprekapall = '##temprekapall' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+            Schema::create($temprekapall, function ($table) {
+                $table->id();
+                $table->integer('stok_id')->nullable();
+                $table->integer('gudang_id')->nullable();
+                $table->integer('trado_id')->nullable();
+                $table->integer('gandengan_id')->nullable();
+                $table->longText('lokasi')->nullable();
+                $table->string('kodebarang', 1000)->nullable();
+                $table->string('namabarang', 1000)->nullable();
+                $table->dateTime('tglbukti')->nullable();
+                $table->string('nobukti', 100)->nullable();
+                $table->string('kategori_id', 500)->nullable();
+                $table->double('qtymasuk', 15, 2)->nullable();
+                $table->double('nilaimasuk', 15, 2)->nullable();
+                $table->double('qtykeluar', 15, 2)->nullable();
+                $table->double('nilaikeluar', 15, 2)->nullable();
+                $table->double('qtysaldo', 15, 2)->nullable();
+                $table->double('nilaisaldo', 15, 2)->nullable();
+                $table->string('modifiedby', 100)->nullable();
+            });
+
 
             Schema::create($temtabel, function (Blueprint $table) {
                 $table->id();
@@ -113,7 +135,7 @@ class KartuStok extends MyModel
             });
 
             if ($datafilter == 0) {
-                DB::table($temtabel)->insertUsing([
+                DB::table($temprekapall)->insertUsing([
                     'stok_id',
                     'gudang_id',
                     'trado_id',
@@ -135,7 +157,7 @@ class KartuStok extends MyModel
             } else {
                 $filtergudang->text;
                 if (request()->filter == $filtergudang->id) {
-                    DB::table($temtabel)->insertUsing([
+                    DB::table($temprekapall)->insertUsing([
                         'stok_id',
                         'gudang_id',
                         'trado_id',
@@ -155,7 +177,7 @@ class KartuStok extends MyModel
                         'modifiedby',
                     ], $this->getlaporan($tgldari, $tglsampai, request()->stokdari_id, request()->stoksampai_id, request()->datafilter, 0, 0, $filtergudang->text));
                 } else if (request()->filter == $filtertrado->id) {
-                    DB::table($temtabel)->insertUsing([
+                    DB::table($temprekapall)->insertUsing([
                         'stok_id',
                         'gudang_id',
                         'trado_id',
@@ -175,7 +197,7 @@ class KartuStok extends MyModel
                         'modifiedby',
                     ], $this->getlaporan($tgldari, $tglsampai, request()->stokdari_id, request()->stoksampai_id, 0, request()->datafilter, 0, $filtertrado->text));
                 } else if (request()->filter == $filtergandengan->id) {
-                    DB::table($temtabel)->insertUsing([
+                    DB::table($temprekapall)->insertUsing([
                         'stok_id',
                         'gudang_id',
                         'trado_id',
@@ -195,7 +217,7 @@ class KartuStok extends MyModel
                         'modifiedby',
                     ], $this->getlaporan($tgldari, $tglsampai, request()->stokdari_id, request()->stoksampai_id, 0, 0, request()->datafilter, $filtergandengan->text));
                 } else {
-                    DB::table($temtabel)->insertUsing([
+                    DB::table($temprekapall)->insertUsing([
                         'stok_id',
                         'gudang_id',
                         'trado_id',
@@ -217,6 +239,58 @@ class KartuStok extends MyModel
                 }
             }
 
+            $statustampilan=request()->statustampil ?? 0;
+            // $statustampilan=531;
+
+            $queryytampilan=db::table("parameter")->from(db::raw("parameter a with (readuncommitted)"))
+            ->select(
+                'a.id'
+            )
+            ->where('a.grp','STATUS TAMPILAN KARTU STOK')
+            ->where('a.subgrp','STATUS TAMPILAN KARTU STOK')
+            ->where('a.text','PERGERAKAN')
+            ->where('a.id',$statustampilan)
+            ->first();
+
+            $tempstokjumlah = '##tempstokjumlah' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+            Schema::create($tempstokjumlah, function ($table) {
+                $table->integer('stok_id')->nullable();
+                $table->integer('gudang_id')->nullable();
+                $table->integer('trado_id')->nullable();
+                $table->integer('gandengan_id')->nullable();
+                $table->integer('jumlah')->nullable();
+            });
+
+            if (isset($queryytampilan)) {
+                $queryjumlah=db::table($temprekapall)->from(db::raw($temprekapall ." a"))
+                ->select (
+                    'a.stok_id',
+                    'a.gudang_id',
+                    'a.trado_id',
+                    'a.gandengan_id',
+                    db::raw("count(a.stok_id) as jumlah"),
+                )
+                ->groupby('a.stok_id')
+                ->groupby('a.gudang_id')
+                ->groupby('a.trado_id')
+                ->groupby('a.gandengan_id');
+
+                DB::table($tempstokjumlah)->insertUsing([
+                    'stok_id',
+                    'gudang_id',
+                    'trado_id',
+                    'gandengan_id',
+                    'jumlah',
+                ],  $queryjumlah);
+
+                DB::delete(DB::raw("delete " . $tempstokjumlah . " from " . $tempstokjumlah . " as a  
+                WHERE isnull(a.jumlah,0)>1"));
+
+                DB::delete(DB::raw("delete " . $temprekapall . " from " . $temprekapall . " as a inner join " . $tempstokjumlah . " b on a.stok_id=b.stok_id
+                and a.trado_id=b.trado_id and a.gudang_id=b.gudang_id and a.gandengan_id=b.gandengan_id"));
+
+            }
+
             $tempstoktransaksi = '##tempstoktransaksi' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
             Schema::create($tempstoktransaksi, function ($table) {
                 $table->id();
@@ -224,7 +298,7 @@ class KartuStok extends MyModel
             });
 
 
-            $querystoktransaksi = DB::table($temtabel)->from(db::raw($temtabel . " as a"))
+            $querystoktransaksi = DB::table($temprekapall)->from(db::raw($temprekapall . " as a"))
                 ->select(
                     'a.kodebarang',
                 )
@@ -238,14 +312,133 @@ class KartuStok extends MyModel
 
 
 
-            DB::delete(DB::raw("delete " . $temtabel . " from " . $temtabel . " as a left outer join " . $tempstoktransaksi . " b on a.kodebarang=b.kodebarang 
+            DB::delete(DB::raw("delete " . $temprekapall . " from " . $temprekapall . " as a left outer join " . $tempstoktransaksi . " b on a.kodebarang=b.kodebarang 
                             WHERE isnull(b.kodebarang,'')='' and isnull(a.qtysaldo,0)=0"));
             $kelompok_id = request()->kelompok_id ?? '';
             if ($kelompok_id != '') {
 
-                DB::delete(DB::raw("delete " . $temtabel . " from " . $temtabel . " as a  inner join stok b on a.stok_id=b.id
+                DB::delete(DB::raw("delete " . $temprekapall . " from " . $temprekapall . " as a  inner join stok b on a.stok_id=b.id
                 WHERE isnull(b.kelompok_id,0) not in(" . $kelompok_id . ")"));
             }
+
+            $tempstok = '##tempstok' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+            Schema::create($tempstok, function ($table) {
+                $table->id();
+                $table->unsignedBigInteger('stok_id')->nullable();
+                $table->unsignedBigInteger('gudang_id')->nullable();
+                $table->unsignedBigInteger('trado_id')->nullable();
+                $table->unsignedBigInteger('gandengan_id')->nullable();
+            });        
+    
+            $querystok=db::table($temprekapall)->from(db::raw($temprekapall ." a "))
+            ->select (
+                'a.stok_id',
+                'a.gudang_id',
+                'a.trado_id',
+                'a.gandengan_id',            
+            )
+            ->groupby('a.stok_id')
+            ->groupby('a.gudang_id')
+            ->groupby('a.trado_id')
+            ->groupby('a.gandengan_id');
+    
+            DB::table($tempstok)->insertUsing([
+                'stok_id',
+                'gudang_id',
+                'trado_id',
+                'gandengan_id',
+            ], $querystok);
+
+            DB::delete(DB::raw("delete " . $tempstok . " from " . $tempstok . " as a inner join " . $temprekapall . " b on isnull(a.stok_id,0)=isnull(b.stok_id,0) and isnull(a.gudang_id,0)=isnull(b.gudang_id,0)
+            and isnull(a.trado_id,0)=isnull(b.trado_id,0) and isnull(a.gandengan_id,0)=isnull(b.gandengan_id,0) and isnull(b.nobukti,'')='SALDO AWAL'
+            "));
+    
+            $querysaldoawal=db::table($tempstok)->from(db::raw($tempstok ." a "))
+            ->select (
+                'a.stok_id',
+                'a.gudang_id',
+                'a.trado_id',
+                'a.gandengan_id',
+                db::raw("'' as lokasi"),
+                db::raw("isnull(b.namastok,'') as kodebarang"),
+                db::raw("isnull(b.namastok,'') as namabarang"),
+                db::raw("'". $tgldari ."' as tglbukti"),
+                db::raw("'SALDO AWAL' as nobukti"),
+                db::raw("'' as kategori_id"),
+                db::raw("0 as qtymasuk"),
+                db::raw("0 as nilaimasuk"),
+                db::raw("0 as qtykeluar"),
+                db::raw("0 as nilaikeluar"),
+                db::raw("0 as qtysaldo"),
+                db::raw("0 as nilaisaldo"),
+                db::raw("0 as modifiedby"),
+            )
+            ->join(db::raw("stok b with (readuncommitted)"),'a.stok_id','b.id');
+    
+            DB::table($temprekapall)->insertUsing([
+                'stok_id',
+                'gudang_id',
+                'trado_id',
+                'gandengan_id',
+                'lokasi',
+                'kodebarang',
+                'namabarang',
+                'tglbukti',
+                'nobukti',
+                'kategori_id',
+                'qtymasuk',
+                'nilaimasuk',
+                'qtykeluar',
+                'nilaikeluar',
+                'qtysaldo',
+                'nilaisaldo',
+                'modifiedby',
+            ], $querysaldoawal);
+
+            $querylist=db::table($temprekapall)->from(db::raw( $temprekapall ." a"))
+            ->select(
+                'a.stok_id',
+                'a.gudang_id',
+                'a.trado_id',
+                'a.gandengan_id',
+                'a.lokasi',
+                'a.kodebarang',
+                'a.namabarang',
+                'a.tglbukti',
+                'a.nobukti',
+                'a.kategori_id',
+                'a.qtymasuk',
+                'a.nilaimasuk',
+                'a.qtykeluar',
+                'a.nilaikeluar',
+                'a.qtysaldo',
+                'a.nilaisaldo',
+                'a.modifiedby', 
+            )
+            ->orderBy('a.namabarang', 'asc')
+            ->orderBy('a.tglbukti', 'asc')
+            ->orderBy(db::raw("(case when UPPER(isnull(a.nobukti,''))='SALDO AWAL' then '' else isnull(a.nobukti,'') end)"), 'asc');
+
+            DB::table($temtabel)->insertUsing([
+                'stok_id',
+                'gudang_id',
+                'trado_id',
+                'gandengan_id',
+                'lokasi',
+                'kodebarang',
+                'namabarang',
+                'tglbukti',
+                'nobukti',
+                'kategori_id',
+                'qtymasuk',
+                'nilaimasuk',
+                'qtykeluar',
+                'nilaikeluar',
+                'qtysaldo',
+                'nilaisaldo',
+                'modifiedby',
+            ], $querylist);
+
         } else {
             $querydata = DB::table('listtemporarytabel')->from(
                 DB::raw("listtemporarytabel with (readuncommitted)")
@@ -267,6 +460,11 @@ class KartuStok extends MyModel
             DB::raw(DB::raw($temtabel) . " a with (readuncommitted)")
         )
             ->select(
+                db::raw("(case when isnull(a.gudang_id,0)<>0 then 'GUDANG'
+                when isnull(a.trado_id,0)<>0 then 'TRADO'
+                when isnull(a.gandengan_id,0)<>0 then 'GANDENGAN'
+                else 'GUDANG' END) AS namalokasi
+                "),
                 'a.lokasi',
                 'a.kodebarang',
                 'a.namabarang',
