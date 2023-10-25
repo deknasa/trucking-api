@@ -240,6 +240,12 @@ class KartuStok extends MyModel
 
             DB::delete(DB::raw("delete " . $temtabel . " from " . $temtabel . " as a left outer join " . $tempstoktransaksi . " b on a.kodebarang=b.kodebarang 
                             WHERE isnull(b.kodebarang,'')='' and isnull(a.qtysaldo,0)=0"));
+            $kelompok_id = request()->kelompok_id ?? '';
+            if ($kelompok_id != '') {
+
+                DB::delete(DB::raw("delete " . $temtabel . " from " . $temtabel . " as a  inner join stok b on a.kodebarang=b.kodebarang 
+                WHERE isnull(b.kelompok_id,0) not in(" . $kelompok_id . ")"));
+            }
         } else {
             $querydata = DB::table('listtemporarytabel')->from(
                 DB::raw("listtemporarytabel with (readuncommitted)")
@@ -1364,7 +1370,7 @@ class KartuStok extends MyModel
                 'a.namabarang',
                 'a.tglbukti',
                 'a.nobukti',
-                'a.kategori_id',
+                db::raw("isnull(c.kodekelompok,'') as kategori_id"),
                 'a.qtymasuk',
                 'a.nilaimasuk',
                 'a.qtykeluar',
@@ -1375,6 +1381,8 @@ class KartuStok extends MyModel
 
                 // 'a.created_at',
             )
+            ->join(db::raw("stok b with (readuncommitted)"),'a.stok_id','b.id')
+            ->leftjoin(db::raw("kelompok c with (readuncommitted)"),'b.kelompok_id','c.id')
             // ->whereraw("isnull(a.gudang_id,0)=0")
             ->orderBy('a.id', 'asc');
 
