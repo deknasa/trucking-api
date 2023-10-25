@@ -37,11 +37,11 @@ use Illuminate\Support\Facades\Schema;
 
 class InvoiceHeaderController extends Controller
 {
-   /**
+    /**
      * @ClassName 
      * InvoiceHeader
      * @Detail1 InvoiceDetailController
-    */
+     */
     public function index(GetIndexRangeRequest $request)
     {
         $invoice = new InvoiceHeader();
@@ -54,7 +54,7 @@ class InvoiceHeaderController extends Controller
         ]);
     }
 
-    
+
 
     /**
      * @ClassName
@@ -83,14 +83,14 @@ class InvoiceHeaderController extends Controller
             ];
             $invoiceHeader = (new InvoiceHeader())->processStore($data);
             $invoiceHeader->position = $this->getPosition($invoiceHeader, $invoiceHeader->getTable())->position;
-            if ($request->limit==0) {
+            if ($request->limit == 0) {
                 $invoiceHeader->page = ceil($invoiceHeader->position / (10));
             } else {
                 $invoiceHeader->page = ceil($invoiceHeader->position / ($request->limit ?? 10));
             }
             $invoiceHeader->tgldariheader = date('Y-m-01', strtotime(request()->tglbukti));
             $invoiceHeader->tglsampaiheader = date('Y-m-t', strtotime(request()->tglbukti));
-            
+
             DB::commit();
 
             return response()->json([
@@ -142,7 +142,7 @@ class InvoiceHeaderController extends Controller
 
             $invoiceHeader = (new InvoiceHeader())->processUpdate($invoiceheader, $data);
             $invoiceHeader->position = $this->getPosition($invoiceHeader, $invoiceHeader->getTable())->position;
-            if ($request->limit==0) {
+            if ($request->limit == 0) {
                 $invoiceHeader->page = ceil($invoiceHeader->position / (10));
             } else {
                 $invoiceHeader->page = ceil($invoiceHeader->position / ($request->limit ?? 10));
@@ -174,7 +174,7 @@ class InvoiceHeaderController extends Controller
             $selected = $this->getPosition($invoiceHeader, $invoiceHeader->getTable(), true);
             $invoiceHeader->position = $selected->position;
             $invoiceHeader->id = $selected->id;
-            if ($request->limit==0) {
+            if ($request->limit == 0) {
                 $invoiceHeader->page = ceil($invoiceHeader->position / (10));
             } else {
                 $invoiceHeader->page = ceil($invoiceHeader->position / ($request->limit ?? 10));
@@ -211,7 +211,7 @@ class InvoiceHeaderController extends Controller
     public function getSP(Request $request)
     {
         $invoice = new InvoiceHeader();
-        $datahasil=$invoice->getSPSearch($request);
+        $datahasil = $invoice->getSPSearch($request);
         // $dari = date('Y-m-d', strtotime($request->tgldari));
         // $sampai = date('Y-m-d', strtotime($request->tglsampai));
 
@@ -236,7 +236,6 @@ class InvoiceHeaderController extends Controller
                 // "data" => $invoice->getSP($request)
                 "data" => []
             ]);
-
         }
         // if ($cekSP->first()) {
         //     return response([
@@ -258,8 +257,8 @@ class InvoiceHeaderController extends Controller
 
         return response([
             // "data" => $invoice->getEdit($id, $request)
-            "data" => $invoice->getSPSearch( $request)
-                        
+            "data" => $invoice->getSPSearch($request)
+
         ]);
     }
 
@@ -271,7 +270,7 @@ class InvoiceHeaderController extends Controller
 
         return response([
             // "data" => $invoice->getAllEdit($id, $request)
-            "data" => $invoice->getSPSearch( $request)
+            "data" => $invoice->getSPSearch($request)
         ]);
     }
 
@@ -426,13 +425,14 @@ class InvoiceHeaderController extends Controller
         $statusdatacetak = $pengeluaran->statuscetak;
         $statusCetak = Parameter::from(DB::raw("parameter with (readuncommitted)"))
             ->where('grp', 'STATUSCETAK')->where('text', 'CETAK')->first();
+        $aksi = request()->aksi ?? '';
 
-        if ($status == $statusApproval->id) {
+        if ($status == $statusApproval->id && ($aksi == 'DELETE' || $aksi == 'EDIT')) {
             $query = Error::from(DB::raw("error with (readuncommitted)"))
                 ->select('keterangan')
                 ->whereRaw("kodeerror = 'SAP'")
                 ->first();
-         
+
             $data = [
                 'error' => true,
                 'message' =>  'No Bukti ' . $pengeluaran->nobukti . ' ' . $query->keterangan,
@@ -446,11 +446,11 @@ class InvoiceHeaderController extends Controller
                 ->select('keterangan')
                 ->whereRaw("kodeerror = 'SDC'")
                 ->first();
-            
+
             $data = [
                 'error' => true,
                 'message' =>  'No Bukti ' . $pengeluaran->nobukti . ' ' . $query->keterangan,
-                'kodeerror' =>'SDC',
+                'kodeerror' => 'SDC',
                 'statuspesan' => 'warning',
             ];
             return response($data);

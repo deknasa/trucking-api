@@ -329,7 +329,7 @@ class PenerimaanTruckingHeaderController extends Controller
     {
         $penerimaanTrucking = PenerimaanTruckingHeader::find($id);
 
-        if ($penerimaanTrucking->printValidation($id)) {
+        if ((new PenerimaanTruckingHeader())->printValidation($id)) {
             $query = DB::table('error')
                 ->select('keterangan')
                 ->where('kodeerror', '=', 'SDC')

@@ -1555,6 +1555,7 @@ route::middleware(['auth:api', 'authorized'])->group(function () {
     Route::get('pindahbuku/{id}/printreport', [PindahBukuController::class, 'printReport'])->whereNumber('id');
     Route::get('pindahbuku/{id}/export', [PindahBukuController::class, 'export'])->name('pindahbuku.export')->whereNumber('id');
     Route::get('pindahbuku/default', [PindahBukuController::class, 'default']);
+    Route::post('pindahbuku/{id}/cekvalidasi', [PindahBukuController::class, 'cekvalidasi'])->name('pindahbuku.cekvalidasi')->whereNumber('id');
     Route::resource('pindahbuku', PindahBukuController::class)->whereNumber('pindahbuku');
 
     Route::get('karyawan/field_length', [KaryawanController::class, 'fieldLength']);

@@ -89,14 +89,14 @@ class PenerimaanHeaderController extends Controller
             ];
             $penerimaanHeader = (new penerimaanHeader())->processStore($data);
             $penerimaanHeader->position = $this->getPosition($penerimaanHeader, $penerimaanHeader->getTable())->position;
-            if ($request->limit==0) {
+            if ($request->limit == 0) {
                 $penerimaanHeader->page = ceil($penerimaanHeader->position / (10));
             } else {
                 $penerimaanHeader->page = ceil($penerimaanHeader->position / ($request->limit ?? 10));
             }
             $penerimaanHeader->tgldariheader = date('Y-m-01', strtotime(request()->tglbukti));
             $penerimaanHeader->tglsampaiheader = date('Y-m-t', strtotime(request()->tglbukti));
-            
+
             DB::commit();
 
             return response()->json([
@@ -148,14 +148,14 @@ class PenerimaanHeaderController extends Controller
             $penerimaanheader = (new PenerimaanHeader())->processUpdate($penerimaanheader, $data);
             /* Set position and page */
             $penerimaanheader->position = $this->getPosition($penerimaanheader, $penerimaanheader->getTable())->position;
-            if ($request->limit==0) {
+            if ($request->limit == 0) {
                 $penerimaanheader->page = ceil($penerimaanheader->position / (10));
             } else {
                 $penerimaanheader->page = ceil($penerimaanheader->position / ($request->limit ?? 10));
             }
             $penerimaanheader->tgldariheader = date('Y-m-01', strtotime(request()->tglbukti));
             $penerimaanheader->tglsampaiheader = date('Y-m-t', strtotime(request()->tglbukti));
-            
+
 
             DB::commit();
             return response()->json([
@@ -181,14 +181,14 @@ class PenerimaanHeaderController extends Controller
             $selected = $this->getPosition($penerimaanHeader, $penerimaanHeader->getTable(), true);
             $penerimaanHeader->position = $selected->position;
             $penerimaanHeader->id = $selected->id;
-            if ($request->limit==0) {
+            if ($request->limit == 0) {
                 $penerimaanHeader->page = ceil($penerimaanHeader->position / (10));
             } else {
                 $penerimaanHeader->page = ceil($penerimaanHeader->position / ($request->limit ?? 10));
             }
             $penerimaanHeader->tgldariheader = date('Y-m-01', strtotime(request()->tglbukti));
             $penerimaanHeader->tglsampaiheader = date('Y-m-t', strtotime(request()->tglbukti));
-            
+
             DB::commit();
 
             return response()->json([
@@ -327,8 +327,9 @@ class PenerimaanHeaderController extends Controller
         $statusdatacetak = $pengeluaran->statuscetak;
         $statusCetak = Parameter::from(DB::raw("parameter with (readuncommitted)"))
             ->where('grp', 'STATUSCETAK')->where('text', 'CETAK')->first();
+        $aksi = request()->aksi ?? '';
 
-        if ($status == $statusApproval->id) {
+        if ($status == $statusApproval->id && ($aksi == 'DELETE' || $aksi == 'EDIT')) {
             $query = Error::from(DB::raw("error with (readuncommitted)"))
                 ->select('keterangan')
                 ->where('kodeerror', '=', 'SAP')
@@ -438,7 +439,8 @@ class PenerimaanHeaderController extends Controller
      * @ClassName 
      */
     public function report()
-    {}
+    {
+    }
 
     /**
      * @ClassName 

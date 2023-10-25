@@ -50,7 +50,9 @@ class KartuStokController extends Controller
         $kartuStok = new KartuStok();
 
         $stokdari_id = Stok::find($request->stokdari_id);
+        $stokdari = ($stokdari_id != null) ? $stokdari_id->namastok : '';
         $stoksampai_id = Stok::find($request->stoksampai_id);
+        $stoksampai = ($stoksampai_id != null) ? $stoksampai_id->namastok : '';
         $filter = Parameter::find($request->filter);
         if ($filter) {
             if($filter->text == 'GUDANG'){
@@ -69,8 +71,8 @@ class KartuStokController extends Controller
         $userCetak = $user->name;
 
         $report = [
-            'stokdari' => $stokdari_id->namastok,
-            'stoksampai' => $stoksampai_id->namastok,
+            'stokdari' => $stokdari,
+            'stoksampai' => $stoksampai,
             'dari' => $request->dari,
             'sampai' => $request->sampai,
             'filter' => $filter->text??"",

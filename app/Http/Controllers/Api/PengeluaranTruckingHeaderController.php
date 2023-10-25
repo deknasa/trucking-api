@@ -445,21 +445,7 @@ class PengeluaranTruckingHeaderController extends Controller
         $statusCetak = Parameter::from(DB::raw("parameter with (readuncommitted)"))
             ->where('grp', 'STATUSCETAK')->where('text', 'CETAK')->first();
 
-        if ($status == $statusApproval->id) {
-            $query = DB::table('error')
-                ->select('keterangan')
-                ->where('kodeerror', '=', 'SAP')
-                ->get();
-            $keterangan = $query['0'];
-            $data = [
-                'message' => $keterangan,
-                'errors' => 'sudah approve',
-                'kodestatus' => '1',
-                'kodenobukti' => '1'
-            ];
-
-            return response($data);
-        } else if ($statusdatacetak == $statusCetak->id) {
+        if ($statusdatacetak == $statusCetak->id) {
             $query = DB::table('error')
                 ->select('keterangan')
                 ->where('kodeerror', '=', 'SDC')
@@ -500,9 +486,9 @@ class PengeluaranTruckingHeaderController extends Controller
         // if ($klaim->id == $PengeluaranTruckingHeader->pengeluarantrucking_id) {
         //     $cekdata = $pengeluaran->cekvalidasiklaim($id);
         // } else {
-            // dd($nobukti->pengeluaran_nobukti);
-            $cekdata = $pengeluaran->cekvalidasiaksi($nobukti->nobukti);
-            // $cekdata = $pengeluaran->cekvalidasiaksi($nobukti->pengeluaran_nobukti);
+        // dd($nobukti->pengeluaran_nobukti);
+        $cekdata = $pengeluaran->cekvalidasiaksi($nobukti->nobukti);
+        // $cekdata = $pengeluaran->cekvalidasiaksi($nobukti->pengeluaran_nobukti);
         // }
 
 

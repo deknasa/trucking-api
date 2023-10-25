@@ -11,6 +11,7 @@ use App\Http\Requests\StorePindahBukuRequest;
 use App\Http\Requests\UpdateJurnalUmumHeaderRequest;
 use App\Http\Requests\UpdatePindahBukuRequest;
 use App\Models\Bank;
+use App\Models\Error;
 use App\Models\JurnalUmumDetail;
 use App\Models\JurnalUmumHeader;
 use App\Models\Parameter;
@@ -261,6 +262,37 @@ class PindahBukuController extends Controller
             ]);
         } catch (\Throwable $th) {
             throw $th;
+        }
+    }
+
+    
+    public function cekvalidasi($id)
+    {
+        $pengeluaran = PindahBuku::find($id);
+        $statusdatacetak = $pengeluaran->statuscetak;
+        $statusCetak = Parameter::from(DB::raw("parameter with (readuncommitted)"))
+            ->where('grp', 'STATUSCETAK')->where('text', 'CETAK')->first();
+        if ($statusdatacetak == $statusCetak->id) {
+            $query = Error::from(DB::raw("error with (readuncommitted)"))
+                ->select('keterangan')
+                ->where('kodeerror', '=', 'SDC')
+                ->first();
+            $data = [
+                'error' => true,
+                'message' => $query->keterangan,
+                'statuspesan' => 'warning',
+            ];
+
+            return response($data);
+        } else {
+
+            $data = [
+                'error' => false,
+                'message' => '',
+                'statuspesan' => 'success',
+            ];
+
+            return response($data);
         }
     }
 }

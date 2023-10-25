@@ -35,7 +35,7 @@ use Illuminate\Http\JsonResponse;
 
 class KasGantungHeaderController extends Controller
 {
-      /**
+    /**
      * @ClassName 
      * KasGantungHeader
      * @Detail1 KasGantungDetailController
@@ -66,37 +66,37 @@ class KasGantungHeaderController extends Controller
     /**
      * @ClassName 
      */
-    public function store(StoreKasGantungHeaderRequest $request) :JsonResponse
+    public function store(StoreKasGantungHeaderRequest $request): JsonResponse
     {
         DB::beginTransaction();
 
         try {
 
             $bank = Bank::find($request->bank_id);
-          
-            $data = [
-            'tglbukti' => date('Y-m-d', strtotime($request->tglbukti)) ?? '1900/1/1',
-            'penerima_id' => $request->penerima_id ?? '',
-            'penerima' => $request->penerima ?? '',
-            'bank_id' => $request->bank_id ?? 0,
-            'pengeluaran_nobukti' => $request->pengeluaran_nobukti ?? '',
-            'coakaskeluar' => $bank->coa ?? '',
-            'postingdari' => $request->postingdari ?? 'ENTRY KAS GANTUNG',
-            'tglkaskeluar' => date('Y-m-d', strtotime($request->tglbukti)),
-            'modifiedby' => auth('api')->user()->name,
-            'statusformat' => $request->statusformat,
-            'statuscetak' => 0 ?? '',
-            'userbukacetak' => '',
-            'tglbukacetak' => '',
 
-            'nominal' => $request->nominal ,
-            'keterangan_detail' => $request->keterangan_detail ,
+            $data = [
+                'tglbukti' => date('Y-m-d', strtotime($request->tglbukti)) ?? '1900/1/1',
+                'penerima_id' => $request->penerima_id ?? '',
+                'penerima' => $request->penerima ?? '',
+                'bank_id' => $request->bank_id ?? 0,
+                'pengeluaran_nobukti' => $request->pengeluaran_nobukti ?? '',
+                'coakaskeluar' => $bank->coa ?? '',
+                'postingdari' => $request->postingdari ?? 'ENTRY KAS GANTUNG',
+                'tglkaskeluar' => date('Y-m-d', strtotime($request->tglbukti)),
+                'modifiedby' => auth('api')->user()->name,
+                'statusformat' => $request->statusformat,
+                'statuscetak' => 0 ?? '',
+                'userbukacetak' => '',
+                'tglbukacetak' => '',
+
+                'nominal' => $request->nominal,
+                'keterangan_detail' => $request->keterangan_detail,
             ];
 
 
             $kasgantungHeader = (new KasGantungHeader())->processStore($data);
             $kasgantungHeader->position = $this->getPosition($kasgantungHeader, $kasgantungHeader->getTable())->position;
-            if ($request->limit==0) {
+            if ($request->limit == 0) {
                 $kasgantungHeader->page = ceil($kasgantungHeader->position / (10));
             } else {
                 $kasgantungHeader->page = ceil($kasgantungHeader->position / ($request->limit ?? 10));
@@ -110,7 +110,6 @@ class KasGantungHeaderController extends Controller
                 'message' => 'Berhasil disimpan',
                 'data' => $kasgantungHeader
             ], 201);
-
         } catch (\Throwable $th) {
             DB::rollBack();
             throw $th;
@@ -132,7 +131,7 @@ class KasGantungHeaderController extends Controller
     /**
      * @ClassName 
      */
-    public function update(UpdateKasGantungHeaderRequest $request, KasGantungHeader $kasgantungheader) :JsonResponse
+    public function update(UpdateKasGantungHeaderRequest $request, KasGantungHeader $kasgantungheader): JsonResponse
     {
         //   dd($request->all());
 
@@ -156,14 +155,14 @@ class KasGantungHeaderController extends Controller
                 'userbukacetak' => '',
                 'coakredit' => '',
                 'coadebet' => '',
-    
+
                 'nominal' => $request->nominal ?? 0,
                 'keterangan_detail' => $request->keterangan_detail ?? ''
-                ];
+            ];
 
             $kasgantungHeader = (new KasGantungHeader())->processUpdate($kasgantungheader, $data);
             $kasgantungHeader->position = $this->getPosition($kasgantungHeader, $kasgantungHeader->getTable())->position;
-            if ($request->limit==0) {
+            if ($request->limit == 0) {
                 $kasgantungHeader->page = ceil($kasgantungHeader->position / (10));
             } else {
                 $kasgantungHeader->page = ceil($kasgantungHeader->position / ($request->limit ?? 10));
@@ -176,7 +175,6 @@ class KasGantungHeaderController extends Controller
                 'message' => 'Berhasil diubah',
                 'data' =>  $kasgantungHeader
             ]);
-            
         } catch (\Throwable $th) {
             DB::rollBack();
             throw $th;
@@ -185,7 +183,7 @@ class KasGantungHeaderController extends Controller
     /**
      * @ClassName 
      */
-    public function destroy(DestroyKasGantungHeaderRequest $request, $id) : JsonResponse
+    public function destroy(DestroyKasGantungHeaderRequest $request, $id): JsonResponse
     {
         DB::beginTransaction();
 
@@ -194,14 +192,14 @@ class KasGantungHeaderController extends Controller
             $selected = $this->getPosition($kasgantungHeader, $kasgantungHeader->getTable(), true);
             $kasgantungHeader->position = $selected->position;
             $kasgantungHeader->id = $selected->id;
-            if ($request->limit==0) {
+            if ($request->limit == 0) {
                 $kasgantungHeader->page = ceil($kasgantungHeader->position / (10));
             } else {
                 $kasgantungHeader->page = ceil($kasgantungHeader->position / ($request->limit ?? 10));
             }
             $kasgantungHeader->tgldariheader = date('Y-m-01', strtotime(request()->tglbukti));
             $kasgantungHeader->tglsampaiheader = date('Y-m-t', strtotime(request()->tglbukti));
-            
+
             DB::commit();
 
             return response()->json([
@@ -301,28 +299,11 @@ class KasGantungHeaderController extends Controller
     public function cekvalidasi($id)
     {
         $kasgantung = KasGantungHeader::find($id);
-        $status = $kasgantung->statusapproval;
-        $statusApproval = Parameter::from(DB::raw("parameter with (readuncommitted)"))
-            ->where('grp', 'STATUS APPROVAL')->where('text', 'APPROVAL')->first();
         $statusdatacetak = $kasgantung->statuscetak;
         $statusCetak = Parameter::from(DB::raw("parameter with (readuncommitted)"))
             ->where('grp', 'STATUSCETAK')->where('text', 'CETAK')->first();
 
-        if ($status == $statusApproval->id) {
-            $query = DB::table('error')
-                ->select('keterangan')
-                ->where('kodeerror', '=', 'SAP')
-                ->get();
-            $keterangan = $query['0'];
-            $data = [
-                'message' => $keterangan,
-                'errors' => 'sudah approve',
-                'kodestatus' => '1',
-                'kodenobukti' => '1'
-            ];
-
-            return response($data);
-        } else if ($statusdatacetak == $statusCetak->id) {
+        if ($statusdatacetak == $statusCetak->id) {
             $query = DB::table('error')
                 ->select('keterangan')
                 ->where('kodeerror', '=', 'SDC')
@@ -363,11 +344,12 @@ class KasGantungHeaderController extends Controller
         ]);
     }
 
-        /**
+    /**
      * @ClassName 
      */
     public function report()
-    { }
+    {
+    }
 
     /**
      * @ClassName 

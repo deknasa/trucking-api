@@ -70,7 +70,7 @@ class PiutangHeaderController extends Controller
             ];
             $piutangHeader = (new PiutangHeader())->processStore($data);
             $piutangHeader->position = $this->getPosition($piutangHeader, $piutangHeader->getTable())->position;
-            if ($request->limit==0) {
+            if ($request->limit == 0) {
                 $piutangHeader->page = ceil($piutangHeader->position / (10));
             } else {
                 $piutangHeader->page = ceil($piutangHeader->position / ($request->limit ?? 10));
@@ -115,7 +115,7 @@ class PiutangHeaderController extends Controller
             ];
             $piutang = (new PiutangHeader())->processUpdate($piutangHeader, $data);
             $piutang->position = $this->getPosition($piutang, $piutang->getTable())->position;
-            if ($request->limit==0) {
+            if ($request->limit == 0) {
                 $piutang->page = ceil($piutang->position / (10));
             } else {
                 $piutang->page = ceil($piutang->position / ($request->limit ?? 10));
@@ -147,7 +147,7 @@ class PiutangHeaderController extends Controller
             $selected = $this->getPosition($piutangHeader, $piutangHeader->getTable(), true);
             $piutangHeader->position = $selected->position;
             $piutangHeader->id = $selected->id;
-            if ($request->limit==0) {
+            if ($request->limit == 0) {
                 $piutangHeader->page = ceil($piutangHeader->position / (10));
             } else {
                 $piutangHeader->page = ceil($piutangHeader->position / ($request->limit ?? 10));
@@ -289,21 +289,7 @@ class PiutangHeaderController extends Controller
             DB::raw("parameter with (readuncommitted)")
         )->where('grp', 'STATUSCETAK')->where('text', 'CETAK')->first();
 
-        if ($status == $statusApproval->id) {
-            $query = DB::table('error')
-                ->select('keterangan')
-                ->where('kodeerror', '=', 'SAP')
-                ->first();
-
-            $data = [
-                'error' => true,
-                'message' =>  'No Bukti ' . $pengeluaran->nobukti . ' ' . $query->keterangan,
-                'kodeerror' => 'SAP',
-                'statuspesan' => 'warning',
-            ];
-
-            return response($data);
-        } else if ($statusdatacetak == $statusCetak->id) {
+        if ($statusdatacetak == $statusCetak->id) {
             $query = DB::table('error')
                 ->select('keterangan')
                 ->where('kodeerror', '=', 'SDC')
