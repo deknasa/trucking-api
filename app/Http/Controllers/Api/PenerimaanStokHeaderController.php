@@ -89,7 +89,7 @@ class PenerimaanStokHeaderController extends Controller
                 "detail_keterangan" => $request->detail_keterangan ?? [],
                 "detail_qty" => $request->detail_qty ?? [],
                 "detail_harga" => $request->detail_harga ?? [],
-                "detail_statusban" => ($request->statusban)?$request->statusban:$request->detail_statusban,                
+                "detail_statusban" => ($request->statusban) ? $request->statusban : $request->detail_statusban,
                 "detail_penerimaanstoknobukti" => $request->detail_penerimaanstoknobukti ?? [],
                 "detail_penerimaanstoknobukti_id" => $request->detail_penerimaanstoknobukti_id ?? [],
                 "detail_persentasediscount" => $request->detail_persentasediscount ?? [],
@@ -163,7 +163,7 @@ class PenerimaanStokHeaderController extends Controller
                 "detail_keterangan" => $request->detail_keterangan ?? [],
                 "detail_qty" => $request->detail_qty ?? [],
                 "detail_harga" => $request->detail_harga ?? [],
-                "detail_statusban" => ($request->statusban)?$request->statusban:$request->detail_statusban,                
+                "detail_statusban" => ($request->statusban) ? $request->statusban : $request->detail_statusban,
                 "detail_penerimaanstoknobukti" => $request->detail_penerimaanstoknobukti ?? [],
                 "detail_penerimaanstoknobukti_id" => $request->detail_penerimaanstoknobukti_id ?? [],
                 "detail_persentasediscount" => $request->detail_persentasediscount ?? [],
@@ -295,145 +295,174 @@ class PenerimaanStokHeaderController extends Controller
         $penerimaanStokHeader  = new PenerimaanStokHeader();
         $spb = Parameter::where('grp', 'SPB STOK')->where('subgrp', 'SPB STOK')->first();
 
+        $aksi = request()->aksi ?? '';
         $peneimaan = $penerimaanStokHeader->findOrFail($id);
         $passes = true;
 
-        $isEhtUsed = $penerimaanStokHeader->isEhtUsed($id);
-        if ($isEhtUsed) {
-            $query = Error::from(DB::raw("error with (readuncommitted)"))
-                ->select('keterangan')
-                ->whereRaw("kodeerror = 'SATL'")
-                ->get();
-            $keterangan = $query['0'];
-            $data = [
-                'message' => $keterangan,
-                'errors' => 'Hutang',
-                'kodestatus' => '1',
-                'kodenobukti' => '1'
-            ];
-            $passes = false;
-            // return response($data);
-        }
+        if ($aksi == 'PRINTER BESAR' || $aksi == 'PRINTER KECIL') {
 
-        $isEHTApprovedJurnal = $penerimaanStokHeader->isEHTApprovedJurnal($id);
-        if ($isEHTApprovedJurnal) {
-            $query = Error::from(DB::raw("error with (readuncommitted)"))
-                ->select(DB::raw("keterangan + ' (APPROVAL JURNAL)' as keterangan"))
-                ->whereRaw("kodeerror = 'SAP'")
-                ->get();
-            $keterangan = $query['0'];
-            $data = [
-                'message' => $keterangan,
-                'errors' => 'Approval Jurnal',
-                'kodestatus' => '1',
-                'kodenobukti' => '1'
-            ];
-            $passes = false;
-            // return response($data);
-        }
-
-        $isPOUsed = $penerimaanStokHeader->isPOUsed($id);
-        if ($isPOUsed) {
-            $query = Error::from(DB::raw("error with (readuncommitted)"))
-                ->select('keterangan')
-                ->whereRaw("kodeerror = 'SATL'")
-                ->get();
-            $keterangan = $query['0'];
-            $data = [
-                'message' => $keterangan,
-                'errors' => 'sudah approve',
-                'kodestatus' => '1',
-                'kodenobukti' => '1'
-            ];
-            $passes = false;
-            // return response($data);
-        }
-        $todayValidation = $penerimaanStokHeader->todayValidation($peneimaan->tglbukti);
-        if (!$todayValidation) {
-            $query = Error::from(DB::raw("error with (readuncommitted)"))
-                ->select('keterangan')
-                ->whereRaw("kodeerror = 'TEPT'")
-                ->get();
-            // $keterangan = $query['0'];
-            $keterangan = ['keterangan' => 'transaksi Sudah berbeda tanggal']; //$query['0'];
-            $data = [
-                'message' => $keterangan,
-                'errors' => 'sudah cetak',
-                'kodestatus' => '1',
-                'kodenobukti' => '1'
-            ];
-
-            $passes = false;
-            // return response($data);
-        }
-        $isEditAble = $penerimaanStokHeader->isEditAble($id);
-        if (!$isEditAble) {
-            $query = Error::from(DB::raw("error with (readuncommitted)"))
-                ->select('keterangan')
-                ->whereRaw("kodeerror = 'TED'")
-                ->get();
-            // $keterangan = $query['0'];
-            $keterangan = ['keterangan' => 'Transaksi Tidak Bisa diedit']; //$query['0'];
-            $data = [
-                'message' => $keterangan,
-                'errors' => 'sudah cetak',
-                'kodestatus' => '1',
-                'kodenobukti' => '1'
-            ];
-
-            $passes = false;
-            // return response($data);
-        }
-        $printValidation = $penerimaanStokHeader->printValidation($id);
-        if ($printValidation) {
-            $query = Error::from(DB::raw("error with (readuncommitted)"))
-                ->select('keterangan')
-                ->whereRaw("kodeerror = 'SDC'")
-                ->get();
-            $keterangan = $query['0'];
-            $data = [
-                'message' => $keterangan,
-                'errors' => 'sudah cetak',
-                'kodestatus' => '1',
-                'kodenobukti' => '1'
-            ];
-
-            $passes = false;
-            // return response($data);
-        }
-        $isOutUsed = $penerimaanStokHeader->isOutUsed($id);
-        if ($isOutUsed) {
-            $query = Error::from(DB::raw("error with (readuncommitted)"))
-                ->select(db::raw("keterangan +' (" . $isOutUsed[1] . ")' as keterangan"))
-                ->whereRaw("kodeerror = 'SATL'")
-                ->first();
-
-            $keterangan = $query;
-            $data = [
-                'message' => $keterangan,
-                'errors' => 'Pengeluaran stok',
-                'kodestatus' => '1',
-                'kodenobukti' => '1'
-            ];
-            $passes = false;
-            // return response($data);
-        }
-
-        if (($todayValidation || ($isEditAble && !$printValidation)) && !$isOutUsed) {
-            //check apaka spb
-            $data = [
-                'message' => '',
-                'errors' => 'bisa',
-                'kodestatus' => '0',
-                'kodenobukti' => '1'
-            ];
-            if ($spb->text == $peneimaan->penerimaanstok_id) {
-                //ika sudah digunakan di eth, jurnal, dan po
-                if ($isEhtUsed || $isEHTApprovedJurnal || $isPOUsed) {
-                    return response($data);
-                }
+            $statusdatacetak = $peneimaan->statuscetak;
+            $statusCetak = Parameter::from(DB::raw("parameter with (readuncommitted)"))
+                ->where('grp', 'STATUSCETAK')->where('text', 'CETAK')->first();
+            if ($statusdatacetak == $statusCetak->id) {
+                $query = DB::table('error')
+                    ->select('keterangan')
+                    ->where('kodeerror', '=', 'SDC')
+                    ->get();
+                $keterangan = $query['0'];
+                $data = [
+                    'message' => $keterangan,
+                    'errors' => 'sudah cetak',
+                    'kodestatus' => '1',
+                    'kodenobukti' => '1'
+                ];
+            } else {
+                $data = [
+                    'message' => '',
+                    'errors' => 'bisa',
+                    'kodestatus' => '0',
+                    'kodenobukti' => '1'
+                ];
             }
-            return response($data);
+        } else {
+
+            $isEhtUsed = $penerimaanStokHeader->isEhtUsed($id);
+            if ($isEhtUsed) {
+                $query = Error::from(DB::raw("error with (readuncommitted)"))
+                    ->select('keterangan')
+                    ->whereRaw("kodeerror = 'SATL'")
+                    ->get();
+                $keterangan = $query['0'];
+                $data = [
+                    'message' => $keterangan,
+                    'errors' => 'Hutang',
+                    'kodestatus' => '1',
+                    'kodenobukti' => '1'
+                ];
+                $passes = false;
+                // return response($data);
+            }
+
+            $isEHTApprovedJurnal = $penerimaanStokHeader->isEHTApprovedJurnal($id);
+            if ($isEHTApprovedJurnal) {
+                $query = Error::from(DB::raw("error with (readuncommitted)"))
+                    ->select(DB::raw("keterangan + ' (APPROVAL JURNAL)' as keterangan"))
+                    ->whereRaw("kodeerror = 'SAP'")
+                    ->get();
+                $keterangan = $query['0'];
+                $data = [
+                    'message' => $keterangan,
+                    'errors' => 'Approval Jurnal',
+                    'kodestatus' => '1',
+                    'kodenobukti' => '1'
+                ];
+                $passes = false;
+                // return response($data);
+            }
+
+            $isPOUsed = $penerimaanStokHeader->isPOUsed($id);
+            if ($isPOUsed) {
+                $query = Error::from(DB::raw("error with (readuncommitted)"))
+                    ->select('keterangan')
+                    ->whereRaw("kodeerror = 'SATL'")
+                    ->get();
+                $keterangan = $query['0'];
+                $data = [
+                    'message' => $keterangan,
+                    'errors' => 'sudah approve',
+                    'kodestatus' => '1',
+                    'kodenobukti' => '1'
+                ];
+                $passes = false;
+                // return response($data);
+            }
+            $todayValidation = $penerimaanStokHeader->todayValidation($peneimaan->tglbukti);
+            if (!$todayValidation) {
+                $query = Error::from(DB::raw("error with (readuncommitted)"))
+                    ->select('keterangan')
+                    ->whereRaw("kodeerror = 'TEPT'")
+                    ->get();
+                // $keterangan = $query['0'];
+                $keterangan = ['keterangan' => 'transaksi Sudah berbeda tanggal']; //$query['0'];
+                $data = [
+                    'message' => $keterangan,
+                    'errors' => 'sudah cetak',
+                    'kodestatus' => '1',
+                    'kodenobukti' => '1'
+                ];
+
+                $passes = false;
+                // return response($data);
+            }
+            $isEditAble = $penerimaanStokHeader->isEditAble($id);
+            if (!$isEditAble) {
+                $query = Error::from(DB::raw("error with (readuncommitted)"))
+                    ->select('keterangan')
+                    ->whereRaw("kodeerror = 'TED'")
+                    ->get();
+                // $keterangan = $query['0'];
+                $keterangan = ['keterangan' => 'Transaksi Tidak Bisa diedit']; //$query['0'];
+                $data = [
+                    'message' => $keterangan,
+                    'errors' => 'sudah cetak',
+                    'kodestatus' => '1',
+                    'kodenobukti' => '1'
+                ];
+
+                $passes = false;
+                // return response($data);
+            }
+            $printValidation = $penerimaanStokHeader->printValidation($id);
+            if ($printValidation) {
+                $query = Error::from(DB::raw("error with (readuncommitted)"))
+                    ->select('keterangan')
+                    ->whereRaw("kodeerror = 'SDC'")
+                    ->get();
+                $keterangan = $query['0'];
+                $data = [
+                    'message' => $keterangan,
+                    'errors' => 'sudah cetak',
+                    'kodestatus' => '1',
+                    'kodenobukti' => '1'
+                ];
+
+                $passes = false;
+                // return response($data);
+            }
+            $isOutUsed = $penerimaanStokHeader->isOutUsed($id);
+            if ($isOutUsed) {
+                $query = Error::from(DB::raw("error with (readuncommitted)"))
+                    ->select(db::raw("keterangan +' (" . $isOutUsed[1] . ")' as keterangan"))
+                    ->whereRaw("kodeerror = 'SATL'")
+                    ->first();
+
+                $keterangan = $query;
+                $data = [
+                    'message' => $keterangan,
+                    'errors' => 'Pengeluaran stok',
+                    'kodestatus' => '1',
+                    'kodenobukti' => '1'
+                ];
+                $passes = false;
+                // return response($data);
+            }
+
+            if (($todayValidation || ($isEditAble && !$printValidation)) && !$isOutUsed) {
+                //check apaka spb
+                $data = [
+                    'message' => '',
+                    'errors' => 'bisa',
+                    'kodestatus' => '0',
+                    'kodenobukti' => '1'
+                ];
+                if ($spb->text == $peneimaan->penerimaanstok_id) {
+                    //ika sudah digunakan di eth, jurnal, dan po
+                    if ($isEhtUsed || $isEHTApprovedJurnal || $isPOUsed) {
+                        return response($data);
+                    }
+                }
+                return response($data);
+            }
         }
         return response($data);
     }
