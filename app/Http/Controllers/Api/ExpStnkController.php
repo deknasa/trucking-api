@@ -38,7 +38,7 @@ class ExpStnkController extends Controller
         ->cc($ccemail)
         ->bcc($bccemail)
         ->send(new ReiminderExpStnk($expSTNK));
-        return (new ReiminderExpStnk($expSTNK))->render();
+        // return (new ReiminderExpStnk($expSTNK))->render();
 
     }
 
