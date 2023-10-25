@@ -76,28 +76,28 @@ class PengeluaranHeaderController extends Controller
 
         try {
             $pengeluaranHeader = (new PengeluaranHeader())->processStore([
-                "bank_id"=>$request->bank_id,
-                "tglbukti"=>$request->tglbukti,
-                "pelanggan_id"=>$request->pelanggan_id,
-                "postingdari"=>$request->postingdari,
-                "statusapproval"=>$request->statusapproval,
-                "dibayarke"=>$request->dibayarke,
-                "alatbayar_id"=>$request->alatbayar_id,
-                "userapproval"=>$request->userapproval,
-                "tglapproval"=>$request->tglapproval,
-                "transferkeac"=>$request->transferkeac,
-                "transferkean"=>$request->transferkean,
-                "transferkebank"=>$request->transferkebank,
-                "penerimaan_nobukti"=>$request->nobukti_penerimaan,
-                "statusformat"=>$request->statusformat,
-                "nominal_detail"=>$request->nominal_detail,
-                "nowarkat"=>$request->nowarkat,
-                "tgljatuhtempo"=>$request->tgljatuhtempo,
-                "coadebet"=>$request->coadebet,
+                "bank_id" => $request->bank_id,
+                "tglbukti" => $request->tglbukti,
+                "pelanggan_id" => $request->pelanggan_id,
+                "postingdari" => $request->postingdari,
+                "statusapproval" => $request->statusapproval,
+                "dibayarke" => $request->dibayarke,
+                "alatbayar_id" => $request->alatbayar_id,
+                "userapproval" => $request->userapproval,
+                "tglapproval" => $request->tglapproval,
+                "transferkeac" => $request->transferkeac,
+                "transferkean" => $request->transferkean,
+                "transferkebank" => $request->transferkebank,
+                "penerimaan_nobukti" => $request->nobukti_penerimaan,
+                "statusformat" => $request->statusformat,
+                "nominal_detail" => $request->nominal_detail,
+                "nowarkat" => $request->nowarkat,
+                "tgljatuhtempo" => $request->tgljatuhtempo,
+                "coadebet" => $request->coadebet,
                 // "coakredit"=>$request->coakredit,
-                "keterangan_detail"=>$request->keterangan_detail,
-                "noinvoice"=>$request->noinvoice,
-                "bank_detail"=>$request->bank_detail,
+                "keterangan_detail" => $request->keterangan_detail,
+                "noinvoice" => $request->noinvoice,
+                "bank_detail" => $request->bank_detail,
             ]);
             $pengeluaranHeader->position = $this->getPosition($pengeluaranHeader, $pengeluaranHeader->getTable())->position;
             if ($request->limit == 0) {
@@ -139,29 +139,29 @@ class PengeluaranHeaderController extends Controller
         DB::beginTransaction();
         try {
             /* Store header */
-            $pengeluaranHeader = (new PengeluaranHeader())->processUpdate($pengeluaranheader,[
-                "bank_id"=>$request->bank_id,
-                "tglbukti"=>$request->tglbukti,
-                "pelanggan_id"=>$request->pelanggan_id,
-                "postingdari"=>$request->postingdari,
-                "statusapproval"=>$request->statusapproval,
-                "dibayarke"=>$request->dibayarke,
-                "alatbayar_id"=>$request->alatbayar_id,
-                "userapproval"=>$request->userapproval,
-                "tglapproval"=>$request->tglapproval,
-                "transferkeac"=>$request->transferkeac,
-                "transferkean"=>$request->transferkean,
-                "transferkebank"=>$request->transferkebank,
-                "penerimaan_nobukti"=>$request->nobukti_penerimaan,
-                "statusformat"=>$request->statusformat,
-                "nominal_detail"=>$request->nominal_detail,
-                "nowarkat"=>$request->nowarkat,
-                "tgljatuhtempo"=>$request->tgljatuhtempo,
-                "coadebet"=>$request->coadebet,
+            $pengeluaranHeader = (new PengeluaranHeader())->processUpdate($pengeluaranheader, [
+                "bank_id" => $request->bank_id,
+                "tglbukti" => $request->tglbukti,
+                "pelanggan_id" => $request->pelanggan_id,
+                "postingdari" => $request->postingdari,
+                "statusapproval" => $request->statusapproval,
+                "dibayarke" => $request->dibayarke,
+                "alatbayar_id" => $request->alatbayar_id,
+                "userapproval" => $request->userapproval,
+                "tglapproval" => $request->tglapproval,
+                "transferkeac" => $request->transferkeac,
+                "transferkean" => $request->transferkean,
+                "transferkebank" => $request->transferkebank,
+                "penerimaan_nobukti" => $request->nobukti_penerimaan,
+                "statusformat" => $request->statusformat,
+                "nominal_detail" => $request->nominal_detail,
+                "nowarkat" => $request->nowarkat,
+                "tgljatuhtempo" => $request->tgljatuhtempo,
+                "coadebet" => $request->coadebet,
                 // "coakredit"=>$request->coakredit,
-                "keterangan_detail"=>$request->keterangan_detail,
-                "noinvoice"=>$request->noinvoice,
-                "bank_detail"=>$request->bank_detail,
+                "keterangan_detail" => $request->keterangan_detail,
+                "noinvoice" => $request->noinvoice,
+                "bank_detail" => $request->bank_detail,
             ]);
             /* Set position and page */
             $pengeluaranHeader->position = $this->getPosition($pengeluaranHeader, $pengeluaranHeader->getTable())->position;
@@ -335,7 +335,7 @@ class PengeluaranHeaderController extends Controller
     public function cekvalidasi($id)
     {
         $pengeluaran = PengeluaranHeader::find($id);
-        $cekdata = $pengeluaran->cekvalidasiaksi($pengeluaran->nobukti);
+        // $cekdata = $pengeluaran->cekvalidasiaksi($pengeluaran->nobukti);
         $status = $pengeluaran->statusapproval;
         $statusApproval = Parameter::from(DB::raw("parameter with (readuncommitted)"))
             ->where('grp', 'STATUS APPROVAL')->where('text', 'APPROVAL')->first();
@@ -343,7 +343,8 @@ class PengeluaranHeaderController extends Controller
         $statusCetak = Parameter::from(DB::raw("parameter with (readuncommitted)"))
             ->where('grp', 'STATUSCETAK')->where('text', 'CETAK')->first();
 
-        if ($status == $statusApproval->id) {
+        $aksi = request()->aksi ?? '';
+        if ($status == $statusApproval->id && ($aksi == 'DELETE' || $aksi == 'EDIT')) {
             $query = Error::from(DB::raw("error with (readuncommitted)"))
                 ->select('keterangan')
                 ->whereRaw("kodeerror = 'SAP'")
@@ -368,24 +369,6 @@ class PengeluaranHeaderController extends Controller
                 'errors' => 'sudah cetak',
                 'kodestatus' => '1',
                 'kodenobukti' => '1'
-            ];
-
-            return response($data);
-        }
-        if ($cekdata['kondisi'] == true) {
-            $query = DB::table('error')
-                ->select(
-                    DB::raw("ltrim(rtrim(keterangan))+' (" . $cekdata['keterangan'] . ")' as keterangan")
-                )
-                ->where('kodeerror', '=', $cekdata['kodeerror'])
-                ->get();
-            $keterangan = $query['0'];
-
-            $data = [
-                'status' => false,
-                'message' => $keterangan,
-                'errors' => '',
-                'kondisi' => $cekdata['kondisi'],
             ];
 
             return response($data);

@@ -65,14 +65,14 @@ class InvoiceExtraHeaderController extends Controller
             ];
             $invoiceExtra = (new InvoiceExtraHeader())->processStore($data);
             $invoiceExtra->position = $this->getPosition($invoiceExtra, $invoiceExtra->getTable())->position;
-            if ($request->limit==0) {
+            if ($request->limit == 0) {
                 $invoiceExtra->page = ceil($invoiceExtra->position / (10));
             } else {
                 $invoiceExtra->page = ceil($invoiceExtra->position / ($request->limit ?? 10));
             }
             $invoiceExtra->tgldariheader = date('Y-m-01', strtotime(request()->tglbukti));
             $invoiceExtra->tglsampaiheader = date('Y-m-t', strtotime(request()->tglbukti));
-            
+
             DB::commit();
 
             return response()->json([
@@ -115,14 +115,14 @@ class InvoiceExtraHeaderController extends Controller
             ];
             $invoiceExtraHeader = (new InvoiceExtraHeader())->processUpdate($invoiceextraheader, $data);
             $invoiceExtraHeader->position = $this->getPosition($invoiceExtraHeader, $invoiceExtraHeader->getTable())->position;
-            if ($request->limit==0) {
+            if ($request->limit == 0) {
                 $invoiceExtraHeader->page = ceil($invoiceExtraHeader->position / (10));
             } else {
                 $invoiceExtraHeader->page = ceil($invoiceExtraHeader->position / ($request->limit ?? 10));
             }
             $invoiceExtraHeader->tgldariheader = date('Y-m-01', strtotime(request()->tglbukti));
             $invoiceExtraHeader->tglsampaiheader = date('Y-m-t', strtotime(request()->tglbukti));
-            
+
             DB::commit();
 
             return response()->json([
@@ -148,14 +148,14 @@ class InvoiceExtraHeaderController extends Controller
             $selected = $this->getPosition($invoiceExtraHeader, $invoiceExtraHeader->getTable(), true);
             $invoiceExtraHeader->position = $selected->position;
             $invoiceExtraHeader->id = $selected->id;
-            if ($request->limit==0) {
+            if ($request->limit == 0) {
                 $invoiceExtraHeader->page = ceil($invoiceExtraHeader->position / (10));
             } else {
                 $invoiceExtraHeader->page = ceil($invoiceExtraHeader->position / ($request->limit ?? 10));
             }
             $invoiceExtraHeader->tgldariheader = date('Y-m-01', strtotime(request()->tglbukti));
             $invoiceExtraHeader->tglsampaiheader = date('Y-m-t', strtotime(request()->tglbukti));
-            
+
             DB::commit();
 
             return response()->json([
@@ -241,8 +241,9 @@ class InvoiceExtraHeaderController extends Controller
         $statusdatacetak = $pengeluaran->statuscetak;
         $statusCetak = Parameter::from(DB::raw("parameter with (readuncommitted)"))
             ->where('grp', 'STATUSCETAK')->where('text', 'CETAK')->first();
+        $aksi = request()->aksi ?? '';
 
-        if ($status == $statusApproval->id) {
+        if ($status == $statusApproval->id && ($aksi == 'DELETE' || $aksi == 'EDIT')) {
             $query = Error::from(DB::raw("error with (readuncommitted)"))
                 ->select('keterangan')
                 ->whereRaw("kodeerror = 'SAP'")

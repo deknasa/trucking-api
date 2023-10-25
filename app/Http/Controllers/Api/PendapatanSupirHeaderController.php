@@ -322,8 +322,9 @@ class PendapatanSupirHeaderController extends Controller
         $statusdatacetak = $pendapatan->statuscetak;
         $statusCetak = Parameter::from(DB::raw("parameter with (readuncommitted)"))
             ->where('grp', 'STATUSCETAK')->where('text', 'CETAK')->first();
+            $aksi = request()->aksi ?? '';
 
-        if ($status == $statusApproval->id) {
+        if ($status == $statusApproval->id && ($aksi == 'DELETE' || $aksi == 'EDIT')) {
             $query = DB::table('error')
                 ->select('keterangan')
                 ->where('kodeerror', '=', 'SAP')

@@ -86,7 +86,7 @@ class PenerimaanGiroHeaderController extends Controller
             ];
             $penerimaanGiroHeader = (new PenerimaanGiroHeader())->processStore($data);
             $penerimaanGiroHeader->position = $this->getPosition($penerimaanGiroHeader, $penerimaanGiroHeader->getTable())->position;
-            if ($request->limit==0) {
+            if ($request->limit == 0) {
                 $penerimaanGiroHeader->page = ceil($penerimaanGiroHeader->position / (10));
             } else {
                 $penerimaanGiroHeader->page = ceil($penerimaanGiroHeader->position / ($request->limit ?? 10));
@@ -143,7 +143,7 @@ class PenerimaanGiroHeaderController extends Controller
             $penerimaanGiroHeader = (new PenerimaanGiroHeader())->processUpdate($penerimaangiroheader, $data);
             /* Set position and page */
             $penerimaanGiroHeader->position = $this->getPosition($penerimaanGiroHeader, $penerimaanGiroHeader->getTable())->position;
-            if ($request->limit==0) {
+            if ($request->limit == 0) {
                 $penerimaanGiroHeader->page = ceil($penerimaanGiroHeader->position / (10));
             } else {
                 $penerimaanGiroHeader->page = ceil($penerimaanGiroHeader->position / ($request->limit ?? 10));
@@ -174,7 +174,7 @@ class PenerimaanGiroHeaderController extends Controller
             $selected = $this->getPosition($penerimaanGiroHeader, $penerimaanGiroHeader->getTable(), true);
             $penerimaanGiroHeader->position = $selected->position;
             $penerimaanGiroHeader->id = $selected->id;
-            if ($request->limit==0) {
+            if ($request->limit == 0) {
                 $penerimaanGiroHeader->page = ceil($penerimaanGiroHeader->position / (10));
             } else {
                 $penerimaanGiroHeader->page = ceil($penerimaanGiroHeader->position / ($request->limit ?? 10));
@@ -277,8 +277,9 @@ class PenerimaanGiroHeaderController extends Controller
         $statusdatacetak = $pengeluaran->statuscetak;
         $statusCetak = Parameter::from(DB::raw("parameter with (readuncommitted)"))
             ->where('grp', 'STATUSCETAK')->where('text', 'CETAK')->first();
+        $aksi = request()->aksi ?? '';
 
-        if ($status == $statusApproval->id) {
+        if ($status == $statusApproval->id && ($aksi == 'DELETE' || $aksi == 'EDIT')) {
             $query = DB::table('error')
                 ->select('keterangan')
                 ->where('kodeerror', '=', 'SAP')
@@ -358,8 +359,9 @@ class PenerimaanGiroHeaderController extends Controller
      * @ClassName 
      */
     public function report()
-    { } 
-    
+    {
+    }
+
     /**
      * @ClassName 
      */

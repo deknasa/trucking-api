@@ -274,11 +274,12 @@ class NotaDebetHeaderController extends Controller
         $statusApproval = Parameter::where('grp', 'STATUS APPROVAL')->where('text', 'APPROVAL')->first();
         $statusdatacetak = $notaDebet->statuscetak;
         $statusCetak = Parameter::where('grp', 'STATUSCETAK')->where('text', 'CETAK')->first();
+        $aksi = request()->aksi ?? '';
 
-        if ($status == $statusApproval->id) {
+        if ($statusdatacetak == $statusCetak->id) {
             $query = DB::table('error')
                 ->select('keterangan')
-                ->where('kodeerror', '=', 'SAP')
+                ->where('kodeerror', '=', 'SDC')
                 ->first();
             $data = [
                 'error' => true,
@@ -287,10 +288,10 @@ class NotaDebetHeaderController extends Controller
             ];
 
             return response($data);
-        } else if ($statusdatacetak == $statusCetak->id) {
+        } else if ($status == $statusApproval->id && ($aksi == 'DELETE' || $aksi == 'EDIT')) {
             $query = DB::table('error')
                 ->select('keterangan')
-                ->where('kodeerror', '=', 'SDC')
+                ->where('kodeerror', '=', 'SAP')
                 ->first();
             $data = [
                 'error' => true,

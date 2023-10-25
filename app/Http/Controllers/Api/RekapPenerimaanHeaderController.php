@@ -64,14 +64,14 @@ class RekapPenerimaanHeaderController extends Controller
 
             $rekapPenerimaanHeader = (new RekapPenerimaanHeader())->processStore($data);
             $rekapPenerimaanHeader->position = $this->getPosition($rekapPenerimaanHeader, $rekapPenerimaanHeader->getTable())->position;
-            if ($request->limit==0) {
+            if ($request->limit == 0) {
                 $rekapPenerimaanHeader->page = ceil($rekapPenerimaanHeader->position / (10));
             } else {
                 $rekapPenerimaanHeader->page = ceil($rekapPenerimaanHeader->position / ($request->limit ?? 10));
             }
             $rekapPenerimaanHeader->tgldariheader = date('Y-m-01', strtotime(request()->tglbukti));
             $rekapPenerimaanHeader->tglsampaiheader = date('Y-m-t', strtotime(request()->tglbukti));
-            
+
             DB::commit();
 
             return response()->json([
@@ -116,14 +116,14 @@ class RekapPenerimaanHeaderController extends Controller
 
             $rekapPenerimaanHeader = (new RekapPenerimaanHeader())->processUpdate($rekappenerimaanheader, $data);
             $rekapPenerimaanHeader->position = $this->getPosition($rekapPenerimaanHeader, $rekapPenerimaanHeader->getTable())->position;
-            if ($request->limit==0) {
+            if ($request->limit == 0) {
                 $rekapPenerimaanHeader->page = ceil($rekapPenerimaanHeader->position / (10));
             } else {
                 $rekapPenerimaanHeader->page = ceil($rekapPenerimaanHeader->position / ($request->limit ?? 10));
             }
             $rekapPenerimaanHeader->tgldariheader = date('Y-m-01', strtotime(request()->tglbukti));
             $rekapPenerimaanHeader->tglsampaiheader = date('Y-m-t', strtotime(request()->tglbukti));
-            
+
             DB::commit();
 
             return response()->json([
@@ -147,14 +147,14 @@ class RekapPenerimaanHeaderController extends Controller
             $selected = $this->getPosition($rekapPenerimaanHeader, $rekapPenerimaanHeader->getTable(), true);
             $rekapPenerimaanHeader->position = $selected->position;
             $rekapPenerimaanHeader->id = $selected->id;
-            if ($request->limit==0) {
+            if ($request->limit == 0) {
                 $rekapPenerimaanHeader->page = ceil($rekapPenerimaanHeader->position / (10));
             } else {
                 $rekapPenerimaanHeader->page = ceil($rekapPenerimaanHeader->position / ($request->limit ?? 10));
             }
             $rekapPenerimaanHeader->tgldariheader = date('Y-m-01', strtotime(request()->tglbukti));
             $rekapPenerimaanHeader->tglsampaiheader = date('Y-m-t', strtotime(request()->tglbukti));
-            
+
             DB::commit();
 
             return response()->json([
@@ -200,8 +200,9 @@ class RekapPenerimaanHeaderController extends Controller
         $statusdatacetak = $pengeluaran->statuscetak;
         $statusCetak = Parameter::from(DB::raw("parameter with (readuncommitted)"))
             ->where('grp', 'STATUSCETAK')->where('text', 'CETAK')->first();
+        $aksi = request()->aksi ?? '';
 
-        if ($status == $statusApproval->id) {
+        if ($status == $statusApproval->id && ($aksi == 'DELETE' || $aksi == 'EDIT')) {
             $query = Error::from(DB::raw("error with (readuncommitted)"))
                 ->select('keterangan')
                 ->whereRaw("kodeerror = 'SAP'")
@@ -317,7 +318,8 @@ class RekapPenerimaanHeaderController extends Controller
      * @ClassName 
      */
     public function report()
-    {}
+    {
+    }
 
     /**
      * @ClassName 
