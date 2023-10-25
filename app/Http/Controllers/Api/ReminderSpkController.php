@@ -55,7 +55,7 @@ class ReminderSpkController extends Controller
         ->cc($ccemail)
         ->bcc($bccemail)
         ->send(new EmailReiminderSpk($expSTNK));
-        return (new EmailReiminderSpk($expSTNK))->render();
+        // return (new EmailReiminderSpk($expSTNK))->render();
 
     }
 
