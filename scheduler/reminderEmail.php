@@ -15,8 +15,8 @@
 $curlHandles = array();
 
 // Inisialisasi beberapa handle cURL
-$curlHandles[] = curl_init("http://localhost/trucking-laravel/public/api/remainder-expstnk");
-$curlHandles[] = curl_init("http://localhost/trucking-laravel/public/api/remainder-spk");
+$curlHandles[] = curl_init("http://localhost/trucking-laravel/public/api/reminder-expstnk");
+$curlHandles[] = curl_init("http://localhost/trucking-laravel/public/api/reminder-spk");
 $curlHandles[] = curl_init("http://localhost/trucking-laravel/public/api/reminder-olimesin");
 $curlHandles[] = curl_init("http://localhost/trucking-laravel/public/api/reminder-saringanhawa");
 $curlHandles[] = curl_init("http://localhost/trucking-laravel/public/api/reminder-perseneling");
