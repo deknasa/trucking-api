@@ -169,21 +169,22 @@ class ServiceInHeaderController extends Controller
         $statusCetak = Parameter::from(DB::raw("parameter with (readuncommitted)"))
             ->where('grp', 'STATUSCETAK')->where('text', 'CETAK')->first();
 
-        if ($status == $statusApproval->id) {
-            $query = Error::from(DB::raw("error with (readuncommitted)"))
-                ->select('keterangan')
-                ->whereRaw("kodeerror = 'SAP'")
-                ->get();
-            $keterangan = $query['0'];
-            $data = [
-                'message' => $keterangan,
-                'errors' => 'sudah approve',
-                'kodestatus' => '1',
-                'kodenobukti' => '1'
-            ];
+        // if ($status == $statusApproval->id) {
+        //     $query = Error::from(DB::raw("error with (readuncommitted)"))
+        //         ->select('keterangan')
+        //         ->whereRaw("kodeerror = 'SAP'")
+        //         ->get();
+        //     $keterangan = $query['0'];
+        //     $data = [
+        //         'message' => $keterangan,
+        //         'errors' => 'sudah approve',
+        //         'kodestatus' => '1',
+        //         'kodenobukti' => '1'
+        //     ];
 
-            return response($data);
-        } else if ($statusdatacetak == $statusCetak->id) {
+        //     return response($data);
+        // } else 
+        if ($statusdatacetak == $statusCetak->id) {
             $query = Error::from(DB::raw("error with (readuncommitted)"))
                 ->select('keterangan')
                 ->whereRaw("kodeerror = 'SDC'")
