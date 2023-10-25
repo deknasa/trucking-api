@@ -41,53 +41,34 @@
         <table>
             <tr>
                 <th>No</th>
-                <th>Gudang</th>
-                <th>Tanggal</th>
-                <th>No PG</th>
-                <th>Kode Ban</th>
+                <th>kodetrado</th>
+                <th>Tanggal Ganti Terakhir</th>
+                <th>Batas Ganti (KM)</th>
+                <th>KM Berjalan	</th>
+                <th>Keterangan</th>
             </tr>
             @foreach (json_decode($data) as $sim)
             <tr  style="background-color: {{$sim->warna}}; ">
                 <td>{{$loop->iteration}}</td>
-                <td>{{$sim->gudang}}</td>
+                <td>{{$sim->batasganti}}</td>
                 <td>{{$sim->tanggal}}</td>
-                <td>{{$sim->nopg}}</td>
-                <td>{{$sim->kodeban}}</td>
+                <td>{{$sim->kberjalan}}</td>
+                <td>{{$sim->batasganti}}</td>
+                <td>{{$sim->kberjalan}}</td>
             </tr>
             @endforeach
         </table>
         
-        <h4>Kepada seluruh Pengurus Cabang</h4>
-        <p>Disampaikan perihal menggunakan Jasa Vulkanisir ban ada beberapa hal yang harus diperhatikan sbb :</p>
-        <ol>
-            <li>
-                Menggunakan Jasa Vulkanisir dari Pabrik bukan Agen
-            </li>
-            <li>
-                Meminta Garansi kepada Pabrik atas hasil Jasa Vulkan yang terkelupas
-            </li>
-            <li>
-                Meminta Garansi kepada Pabrik atas hasil Jasa Vulkan yang masa pemakaian tidak wajar karena ada campuran bahan karet oplosan
-            </li>
-            <li>
-                Meminta Tanggung Jawab atas bahan Ban yang sudah dijemput
-            </li>
-        </ol>
-        
-        
+        <p>Kepada Pengurus mohon Ingatkan & Arahkan team mekanik untuk ikutin alur Prosedur setiap Penggantian Oli Persneling & Gardan sbb :</p>
 
-        NB:
         <ol>
-            <li>
-                Ban kondisi sisa 2 mm ( meskipun bagian lainnya masih diatas 2 mm ) WAJIB di Ganti & Vulkanisir
-            </li>
-            <li>
-                Pada point 1, kalu diketemukan ketipisan yang tidak merata harap dilakukan pengecekan terhadap As, Bearing/Lakher/Setelan As, Kanvas Rem , Velg, King Pen , Per dan juga Penyetelan Rem harus merata fungsinya
-     
-            </li>
-           
+            <li>Pemeriksaan oli Perneling yang diganti apakah ada mengandung Gram besi dalam oli bekas tersebut atau tidak, jika ada <b>Wajib</b> dibongkar untuk pemeriksaan lebih lanjut.</li>
+            <li>Terhadap point 1, jika Persneling sudah turun, <b>Wajib</b> lakukan pengecekan Bearing/Lakher <b>As klos</b>, lakukan grease ulang dengan grease bagus atau ganti saja jika ragu dengan kondisinya.</li>
+            <li>Pemeriksaan bekas oli Gardan yang diganti apakah ada mengandung <b>Gram besi</b> dalam oli tersebut atau tidak, jika ada <b>Wajib</b> dibongkar untuk pemeriksaan lebih lanjut.</li>
+            <li>Pembukaan <b>Dinamo Ampere </b>untuk pengecekan Bearing/Lakher, lakukan grease ulang dengan grease bagus atau ganti saja jika ragu dengan kondisinya.</li>
+            <li>Pembukaan <b>Water pump</b> pengecekan kondisi Bearing/Lakher, lakukan grease ulang dengan grease bagus atau ganti saja jika ragu dengan kondisinya.</li>
         </ol>
-       
+        
         <p>Email ini dikirimkan secara otomatis melalui system.</p>
         <p>Harap jangan membalas ke email ini. [TAS_AUTO_GENERATED_EMAIL]</p>
         <p>Thx & Regards</p>
