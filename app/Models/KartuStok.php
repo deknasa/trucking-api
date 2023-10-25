@@ -54,7 +54,7 @@ class KartuStok extends MyModel
         $class = 'KartuStokController';
 
 
-
+        // dd('test');
         if ($proses == 'reload') {
             $temtabel = 'temp' . rand(1, getrandmax()) . str_replace('.', '', microtime(true)) . request()->nd ?? 0;
 
@@ -217,6 +217,7 @@ class KartuStok extends MyModel
                         'modifiedby',
                     ], $this->getlaporan($tgldari, $tglsampai, request()->stokdari_id, request()->stoksampai_id, 0, 0, request()->datafilter, $filtergandengan->text));
                 } else {
+               
                     DB::table($temprekapall)->insertUsing([
                         'stok_id',
                         'gudang_id',
@@ -238,9 +239,10 @@ class KartuStok extends MyModel
                     ], $this->getlaporan($tgldari, $tglsampai, request()->stokdari_id, request()->stoksampai_id, 0, 0, 0, $filtergudang->text));
                 }
             }
-
+            // dd(request()->statustampil);
             $statustampilan=request()->statustampil ?? 0;
             // $statustampilan=531;
+            // dd(db::table($temprekapall)->get());
 
             $queryytampilan=db::table("parameter")->from(db::raw("parameter a with (readuncommitted)"))
             ->select(
@@ -252,6 +254,8 @@ class KartuStok extends MyModel
             ->where('a.id',$statustampilan)
             ->first();
 
+            // dd($queryytampilan);
+
             $tempstokjumlah = '##tempstokjumlah' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
             Schema::create($tempstokjumlah, function ($table) {
                 $table->integer('stok_id')->nullable();
@@ -262,6 +266,7 @@ class KartuStok extends MyModel
             });
 
             if (isset($queryytampilan)) {
+                // dd('test');
                 $queryjumlah=db::table($temprekapall)->from(db::raw($temprekapall ." a"))
                 ->select (
                     'a.stok_id',
@@ -286,10 +291,14 @@ class KartuStok extends MyModel
                 DB::delete(DB::raw("delete " . $tempstokjumlah . " from " . $tempstokjumlah . " as a  
                 WHERE isnull(a.jumlah,0)>1"));
 
+                // dd(db::table($temprekapall)->where('stok_id',3492)->get());
+
                 DB::delete(DB::raw("delete " . $temprekapall . " from " . $temprekapall . " as a inner join " . $tempstokjumlah . " b on a.stok_id=b.stok_id
-                and a.trado_id=b.trado_id and a.gudang_id=b.gudang_id and a.gandengan_id=b.gandengan_id"));
+                and isnull(a.trado_id,0)=isnull(b.trado_id,0) and isnull(a.gudang_id,0)=isnull(b.gudang_id,0) and isnull(a.gandengan_id,0)=isnull(b.gandengan_id,0)"));
+        
 
             }
+            // dd('test1');
 
             $tempstoktransaksi = '##tempstoktransaksi' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
             Schema::create($tempstoktransaksi, function ($table) {
@@ -320,7 +329,7 @@ class KartuStok extends MyModel
                 DB::delete(DB::raw("delete " . $temprekapall . " from " . $temprekapall . " as a  inner join stok b on a.stok_id=b.id
                 WHERE isnull(b.kelompok_id,0) not in(" . $kelompok_id . ")"));
             }
-
+     
             $tempstok = '##tempstok' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
             Schema::create($tempstok, function ($table) {
                 $table->id();
@@ -328,6 +337,7 @@ class KartuStok extends MyModel
                 $table->unsignedBigInteger('gudang_id')->nullable();
                 $table->unsignedBigInteger('trado_id')->nullable();
                 $table->unsignedBigInteger('gandengan_id')->nullable();
+                $table->string('lokasi',500)->nullable();
             });        
     
             $querystok=db::table($temprekapall)->from(db::raw($temprekapall ." a "))
@@ -336,6 +346,7 @@ class KartuStok extends MyModel
                 'a.gudang_id',
                 'a.trado_id',
                 'a.gandengan_id',            
+                db::raw("max(a.lokasi) as lokasi"),            
             )
             ->groupby('a.stok_id')
             ->groupby('a.gudang_id')
@@ -347,6 +358,7 @@ class KartuStok extends MyModel
                 'gudang_id',
                 'trado_id',
                 'gandengan_id',
+                'lokasi',
             ], $querystok);
 
             DB::delete(DB::raw("delete " . $tempstok . " from " . $tempstok . " as a inner join " . $temprekapall . " b on isnull(a.stok_id,0)=isnull(b.stok_id,0) and isnull(a.gudang_id,0)=isnull(b.gudang_id,0)
@@ -359,7 +371,7 @@ class KartuStok extends MyModel
                 'a.gudang_id',
                 'a.trado_id',
                 'a.gandengan_id',
-                db::raw("'' as lokasi"),
+                db::raw("a.lokasi as lokasi"),
                 db::raw("isnull(b.namastok,'') as kodebarang"),
                 db::raw("isnull(b.namastok,'') as namabarang"),
                 db::raw("'". $tgldari ."' as tglbukti"),
@@ -395,6 +407,7 @@ class KartuStok extends MyModel
                 'modifiedby',
             ], $querysaldoawal);
 
+
             $querylist=db::table($temprekapall)->from(db::raw( $temprekapall ." a"))
             ->select(
                 'a.stok_id',
@@ -419,6 +432,10 @@ class KartuStok extends MyModel
             ->orderBy('a.tglbukti', 'asc')
             ->orderBy(db::raw("(case when UPPER(isnull(a.nobukti,''))='SALDO AWAL' then '' else isnull(a.nobukti,'') end)"), 'asc');
 
+            // dd(db::table($temprekapall)->where('stok_id',94)->get());
+
+           
+
             DB::table($temtabel)->insertUsing([
                 'stok_id',
                 'gudang_id',
@@ -438,6 +455,9 @@ class KartuStok extends MyModel
                 'nilaisaldo',
                 'modifiedby',
             ], $querylist);
+
+            // dd(db::table($temtabel)->get());
+
 
         } else {
             $querydata = DB::table('listtemporarytabel')->from(
@@ -478,7 +498,10 @@ class KartuStok extends MyModel
                 'a.qtysaldo',
                 'a.nilaisaldo',
                 'a.modifiedby',
-            );
+                db::raw("isnull(C.satuan,'') as satuan"),
+            )
+            ->join(db::raw("stok b with (readuncommitted)"),'a.stok_id','b.id')
+            ->leftjoin(db::raw("satuan c with (readuncommitted)"),'b.satuan_id','c.id');
 
 
 

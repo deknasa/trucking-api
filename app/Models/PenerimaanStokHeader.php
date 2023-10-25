@@ -856,19 +856,36 @@ class PenerimaanStokHeader extends MyModel
                 }
 
                 if ($keluargudang_id != 0 || $keluartrado_id != 0  || $keluargandengan_id != 0) {
-                    $kartuStok = (new KartuStok())->processStore([
-                        "gudang_id" => $keluargudang_id,
-                        "trado_id" => $keluartrado_id,
-                        "gandengan_id" => $keluargandengan_id,
-                        "stok_id" => $data['detail_stok_id'][$i],
-                        "nobukti" => $penerimaanStokHeader->nobukti,
-                        "tglbukti" => date('Y-m-d', strtotime($data['tglbukti'])),
-                        "qtymasuk" => 0,
-                        "nilaimasuk" => 0,
-                        "qtykeluar" => $ksqty ?? 0,
-                        "nilaikeluar" => $ksnilai ?? 0,
-                        "urutfifo" => $urutfifo,
-                    ]);
+                    if ($penerimaanstok_id == 6) {
+                        $kartuStok = (new KartuStok())->processStore([
+                            "gudang_id" => $keluargudang_id,
+                            "trado_id" => $keluartrado_id,
+                            "gandengan_id" => $keluargandengan_id,
+                            "stok_id" => $data['detail_stok_id'][$i],
+                            "nobukti" => $penerimaanStokHeader->nobukti,
+                            "tglbukti" => date('Y-m-d', strtotime($data['tglbukti'])),
+                            "qtymasuk" => 0,
+                            "nilaimasuk" => 0,
+                            "qtykeluar" => $ksqty ?? 0,
+                            "nilaikeluar" => 0,
+                            "urutfifo" => $urutfifo,
+                        ]);
+                    } else {
+                        $kartuStok = (new KartuStok())->processStore([
+                            "gudang_id" => $keluargudang_id,
+                            "trado_id" => $keluartrado_id,
+                            "gandengan_id" => $keluargandengan_id,
+                            "stok_id" => $data['detail_stok_id'][$i],
+                            "nobukti" => $penerimaanStokHeader->nobukti,
+                            "tglbukti" => date('Y-m-d', strtotime($data['tglbukti'])),
+                            "qtymasuk" => 0,
+                            "nilaimasuk" => 0,
+                            "qtykeluar" => $ksqty ?? 0,
+                            "nilaikeluar" => $ksnilai ?? 0,
+                            "urutfifo" => $urutfifo,
+                        ]);
+                    }
+                   
                 }
             }
 
@@ -1274,19 +1291,37 @@ class PenerimaanStokHeader extends MyModel
                 }
 
                 if ($keluargudang_id != 0 || $keluartrado_id != 0  || $keluargandengan_id != 0) {
-                    $kartuStok = (new KartuStok())->processStore([
-                        "gudang_id" => $keluargudang_id,
-                        "trado_id" => $keluartrado_id,
-                        "gandengan_id" => $keluargandengan_id,
-                        "stok_id" => $data['detail_stok_id'][$i],
-                        "nobukti" => $penerimaanStokHeader->nobukti,
-                        "tglbukti" => date('Y-m-d', strtotime($data['tglbukti'])),
-                        "qtymasuk" => 0,
-                        "nilaimasuk" => 0,
-                        "qtykeluar" => $ksqty ?? 0,
-                        "nilaikeluar" => $ksnilai ?? 0,
-                        "urutfifo" => $urutfifo,
-                    ]);
+                    if ($penerimaanstok_id == 6) {
+                        $kartuStok = (new KartuStok())->processStore([
+                            "gudang_id" => $keluargudang_id,
+                            "trado_id" => $keluartrado_id,
+                            "gandengan_id" => $keluargandengan_id,
+                            "stok_id" => $data['detail_stok_id'][$i],
+                            "nobukti" => $penerimaanStokHeader->nobukti,
+                            "tglbukti" => date('Y-m-d', strtotime($data['tglbukti'])),
+                            "qtymasuk" => 0,
+                            "nilaimasuk" => 0,
+                            "qtykeluar" => $ksqty ?? 0,
+                            "nilaikeluar" => 0,
+                            "urutfifo" => $urutfifo,
+                        ]);
+    
+                    } else {
+                        $kartuStok = (new KartuStok())->processStore([
+                            "gudang_id" => $keluargudang_id,
+                            "trado_id" => $keluartrado_id,
+                            "gandengan_id" => $keluargandengan_id,
+                            "stok_id" => $data['detail_stok_id'][$i],
+                            "nobukti" => $penerimaanStokHeader->nobukti,
+                            "tglbukti" => date('Y-m-d', strtotime($data['tglbukti'])),
+                            "qtymasuk" => 0,
+                            "nilaimasuk" => 0,
+                            "qtykeluar" => $ksqty ?? 0,
+                            "nilaikeluar" => $ksnilai ?? 0,
+                            "urutfifo" => $urutfifo,
+                        ]);
+    
+                    }
                 }
             }
 
