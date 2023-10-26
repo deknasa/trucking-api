@@ -1846,7 +1846,9 @@ class PengeluaranStokHeader extends MyModel
         } else {
             // dd($jurnalRequest);
             $jurnalUmumHeader = JurnalUmumHeader::where('nobukti', $pengeluaranStokHeader->nobukti)->lockForUpdate()->first();
-            $jurnalUmumHeader = (new JurnalUmumHeader())->processUpdate($jurnalUmumHeader, $jurnalRequest);
+            if ($jurnalUmumHeader != null) {
+                $jurnalUmumHeader = (new JurnalUmumHeader())->processUpdate($jurnalUmumHeader, $jurnalRequest);
+            }
         }
 
         $pengeluaranStokHeaderLogTrail = (new LogTrail())->processStore([
