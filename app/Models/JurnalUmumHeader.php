@@ -376,7 +376,18 @@ class JurnalUmumHeader extends MyModel
 
     public function processStore(array $data): JurnalUmumHeader
     {
-        // dd($data);
+        
+        
+        $sumNominal = 0;
+        for ($i=0; $i < count($data['nominal_detail']); $i++) { 
+            $sumNominal+= $data['nominal_detail'][$i];
+        }
+        if (!$sumNominal) {
+            return ( new JurnalUmumHeader());
+            // dd($sumNominal);
+        }
+
+
         $tanpaprosesnobukti = $data['tanpaprosesnobukti'] ?? 0;
         $statusCetak = Parameter::from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'STATUSCETAK')->where('text', 'BELUM CETAK')->first();
 
@@ -498,6 +509,13 @@ class JurnalUmumHeader extends MyModel
 
     public function processUpdate(JurnalUmumHeader $jurnalUmumHeader, array $data): JurnalUmumHeader
     {
+        $sumNominal = 0;
+        for ($i=0; $i < count($data['nominal_detail']); $i++) { 
+            $sumNominal+= $data['nominal_detail'][$i];
+        }
+        if (!$sumNominal) {
+            return $jurnalUmumHeader;
+        }
         $group = 'JURNAL UMUM BUKTI';
         $subGroup = 'JURNAL UMUM BUKTI';
         $getTgl = DB::table("parameter")->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'EDIT TANGGAL BUKTI')->where('subgrp', 'JURNAL UMUM')->first();
