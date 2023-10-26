@@ -105,6 +105,8 @@ class KartuStok extends MyModel
                 $table->double('qtysaldo', 15, 2)->nullable();
                 $table->double('nilaisaldo', 15, 2)->nullable();
                 $table->string('modifiedby', 100)->nullable();
+                $table->integer('urutfifo')->nullable();
+                $table->integer('iddata')->nullable();
             });
 
 
@@ -127,6 +129,8 @@ class KartuStok extends MyModel
                 $table->double('qtysaldo', 15, 2)->nullable();
                 $table->double('nilaisaldo', 15, 2)->nullable();
                 $table->string('modifiedby', 100)->nullable();
+                $table->integer('urutfifo')->nullable();
+                $table->integer('iddata')->nullable();
 
                 $table->index('kodebarang', 'temtabel_kodebarang_index');
                 $table->index('namabarang', 'temtabel_namabarang_index');
@@ -153,6 +157,8 @@ class KartuStok extends MyModel
                     'qtysaldo',
                     'nilaisaldo',
                     'modifiedby',
+                    'urutfifo',
+                    'iddata',
                 ], $this->getlaporan($tgldari, $tglsampai, request()->stokdari_id, request()->stoksampai_id, $datafilter, 0, 0, 0));
             } else {
                 $filtergudang->text;
@@ -175,6 +181,9 @@ class KartuStok extends MyModel
                         'qtysaldo',
                         'nilaisaldo',
                         'modifiedby',
+                        'urutfifo',
+                        'iddata',
+
                     ], $this->getlaporan($tgldari, $tglsampai, request()->stokdari_id, request()->stoksampai_id, request()->datafilter, 0, 0, $filtergudang->text));
                 } else if (request()->filter == $filtertrado->id) {
                     DB::table($temprekapall)->insertUsing([
@@ -195,6 +204,9 @@ class KartuStok extends MyModel
                         'qtysaldo',
                         'nilaisaldo',
                         'modifiedby',
+                        'urutfifo',
+                        'iddata',
+
                     ], $this->getlaporan($tgldari, $tglsampai, request()->stokdari_id, request()->stoksampai_id, 0, request()->datafilter, 0, $filtertrado->text));
                 } else if (request()->filter == $filtergandengan->id) {
                     DB::table($temprekapall)->insertUsing([
@@ -215,6 +227,9 @@ class KartuStok extends MyModel
                         'qtysaldo',
                         'nilaisaldo',
                         'modifiedby',
+                        'urutfifo',
+                        'iddata',
+
                     ], $this->getlaporan($tgldari, $tglsampai, request()->stokdari_id, request()->stoksampai_id, 0, 0, request()->datafilter, $filtergandengan->text));
                 } else {
                
@@ -236,6 +251,9 @@ class KartuStok extends MyModel
                         'qtysaldo',
                         'nilaisaldo',
                         'modifiedby',
+                        'urutfifo',
+                        'iddata',
+
                     ], $this->getlaporan($tgldari, $tglsampai, request()->stokdari_id, request()->stoksampai_id, 0, 0, 0, $filtergudang->text));
                 }
             }
@@ -384,6 +402,9 @@ class KartuStok extends MyModel
                 db::raw("0 as qtysaldo"),
                 db::raw("0 as nilaisaldo"),
                 db::raw("0 as modifiedby"),
+                db::raw("0 as urutfifo"),
+                db::raw("0 as iddata"),
+
             )
             ->join(db::raw("stok b with (readuncommitted)"),'a.stok_id','b.id');
     
@@ -405,6 +426,8 @@ class KartuStok extends MyModel
                 'qtysaldo',
                 'nilaisaldo',
                 'modifiedby',
+                'urutfifo',
+                'iddata',
             ], $querysaldoawal);
 
 
@@ -424,13 +447,26 @@ class KartuStok extends MyModel
                 'a.nilaimasuk',
                 'a.qtykeluar',
                 'a.nilaikeluar',
+                // DB::raw("sum ((
+                //     (case when a.nobukti='SALDO AWAL' then a.qtysaldo else 0 end)+a.qtymasuk
+                //     )-a.qtykeluar) over (PARTITION BY isnull(a.stok_id,0),isnull(a.gudang_id,0),isnull(A.trado_id,0),isnull(A.gandengan_id,0) order by a.stok_id,isnull(a.gudang_id,0),isnull(A.trado_id,0),isnull(A.gandengan_id,0),isnull(a.tglbukti,0),a.urutfifo,a.nobukti,a.iddata ASC) as qtysaldo"),
+                // DB::raw("cast(sum ((isnull(a.nilaisaldo,0)+a.nilaimasuk)-a.nilaikeluar) over (PARTITION BY a.stok_id,isnull(a.gudang_id,0),isnull(A.trado_id,0),isnull(A.gandengan_id,0) order by isnull(a.stok_id,0),isnull(a.gudang_id,0),isnull(A.trado_id,0),isnull(A.gandengan_id,0),a.tglbukti,a.urutfifo,a.nobukti,a.iddata ASC) as money) as nilaisaldo"),
+
                 'a.qtysaldo',
                 'a.nilaisaldo',
                 'a.modifiedby', 
+                'a.urutfifo', 
+                'a.iddata', 
             )
-            ->orderBy('a.namabarang', 'asc')
+            ->orderBy('a.stok_id', 'asc')
+            ->orderBy('a.gudang_id', 'asc')
+            ->orderBy('a.trado_id', 'asc')
+            ->orderBy('a.gandengan_id', 'asc')
             ->orderBy('a.tglbukti', 'asc')
-            ->orderBy(db::raw("(case when UPPER(isnull(a.nobukti,''))='SALDO AWAL' then '' else isnull(a.nobukti,'') end)"), 'asc');
+            ->orderBy('a.urutfifo', 'asc')
+            ->orderBy('a.nobukti', 'asc')
+            ->orderBy('a.iddata', 'asc');
+            // ->orderBy(db::raw("(case when UPPER(isnull(a.nobukti,''))='SALDO AWAL' then '' else isnull(a.nobukti,'') end)"), 'asc');
 
             // dd(db::table($temprekapall)->where('stok_id',94)->get());
 
@@ -454,6 +490,8 @@ class KartuStok extends MyModel
                 'qtysaldo',
                 'nilaisaldo',
                 'modifiedby',
+                'urutfifo',
+                'iddata',
             ], $querylist);
 
             // dd(db::table($temtabel)->get());
@@ -498,6 +536,12 @@ class KartuStok extends MyModel
                 'a.qtysaldo',
                 'a.nilaisaldo',
                 'a.modifiedby',
+                // 'a.stok_id',
+                // 'a.gudang_id',
+                // 'a.trado_id',
+                // 'a.gandengan_id',
+                // 'a.iddata',
+                
                 db::raw("isnull(C.satuan,'') as satuan"),
             )
             ->join(db::raw("stok b with (readuncommitted)"),'a.stok_id','b.id')
@@ -1642,10 +1686,10 @@ class KartuStok extends MyModel
             DB::raw($temprekapall . " as a")
         )
             ->select(
-                'a.stok_id',
-                'a.gudang_id',
-                'a.trado_id',
-                'a.gandengan_id',
+                db::raw("isnull(a.stok_id,0) as stok_id"),
+                db::raw("isnull(a.gudang_id,0) as gudang_id"),
+                db::raw("isnull(a.trado_id,0) as trado_id"),
+                db::raw("isnull(a.gandengan_id,0) as gandengan_id"),
                 'a.lokasi',
                 'a.kodebarang',
                 'a.namabarang',
@@ -1659,6 +1703,8 @@ class KartuStok extends MyModel
                 'a.qtysaldo',
                 'a.nilaisaldo',
                 'a.modifiedby',
+                'a.urutfifo',
+                'a.id as iddata',
 
                 // 'a.created_at',
             )
