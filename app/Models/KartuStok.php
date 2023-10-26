@@ -536,11 +536,12 @@ class KartuStok extends MyModel
                 'a.qtysaldo',
                 'a.nilaisaldo',
                 'a.modifiedby',
-                // 'a.stok_id',
-                // 'a.gudang_id',
-                // 'a.trado_id',
-                // 'a.gandengan_id',
-                // 'a.iddata',
+                'a.stok_id',
+                'a.gudang_id',
+                'a.trado_id',
+                'a.gandengan_id',
+                'a.iddata',
+                'a.urutfifo',
                 
                 db::raw("isnull(C.satuan,'') as satuan"),
             )
