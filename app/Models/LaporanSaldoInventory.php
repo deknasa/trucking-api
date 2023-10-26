@@ -57,6 +57,8 @@ class LaporanSaldoInventory extends MyModel
             $table->double('qtysaldo', 15, 2)->nullable();
             $table->double('nilaisaldo', 15, 2)->nullable();
             $table->string('modifiedby', 100)->nullable();
+            $table->integer('urutfifo')->nullable();
+            $table->integer('iddata')->nullable();            
         });
 
         $filtergudang = Parameter::where('grp', 'STOK PERSEDIAAN')->where('subgrp', 'STOK PERSEDIAAN')->where('text', 'GUDANG')->first();
@@ -109,6 +111,8 @@ class LaporanSaldoInventory extends MyModel
             'qtysaldo',
             'nilaisaldo',
             'modifiedby',
+            'urutfifo',
+            'iddata',
         ], (new KartuStok())->getlaporan($priode, $priode, $stokdari_id, $stoksampai_id, $gudang_id, $trado_id, $gandengan_id, $filterdata));
 
         // dd(db::table($temprekapall)->get());

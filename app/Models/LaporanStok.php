@@ -60,6 +60,8 @@ class LaporanStok extends MyModel
             $table->double('qtysaldo', 15, 2)->nullable();
             $table->double('nilaisaldo', 15, 2)->nullable();
             $table->string('modifiedby', 100)->nullable();
+            $table->integer('urutfifo')->nullable();
+            $table->integer('iddata')->nullable();            
         });
 
         $tempstoktransaksi = '##tempstoktransaksi' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
@@ -106,6 +108,8 @@ class LaporanStok extends MyModel
             'qtysaldo',
             'nilaisaldo',
             'modifiedby',
+            'urutfifo',
+            'iddata',            
         ], (new KartuStok())->getlaporan($tgldari, $tglsampai, $stokdari_id, $stoksampai_id, $idgudangkantor, $trado_id, $gandengan_id, $filtergudang));
 
         $tempstok = '##tempstok' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
