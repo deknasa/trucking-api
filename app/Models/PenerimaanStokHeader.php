@@ -293,7 +293,7 @@ class PenerimaanStokHeader extends MyModel
             unset($row['judul']);
             DB::table($temtabel)->insert($row);
         }
-        
+
         return $temtabel;
     }
 
@@ -392,6 +392,7 @@ class PenerimaanStokHeader extends MyModel
             $table->string('coa', 50)->nullable();
             $table->longText('keterangan')->nullable();
             $table->unsignedBigInteger('statusformat')->nullable();
+            $table->string('statuscetak', 50)->nullable();
             $table->string('modifiedby', 50)->nullable();
             $table->increments('position');
             $table->dateTime('created_at')->nullable();
@@ -416,6 +417,7 @@ class PenerimaanStokHeader extends MyModel
             "$modelTable.coa",
             "$modelTable.keterangan",
             "$modelTable.statusformat",
+            "statuscetak.text as statuscetak",
             "$modelTable.modifiedby"
         )
             ->leftJoin('gudang as gudangs', 'penerimaanstokheader.gudang_id', 'gudangs.id')
@@ -427,6 +429,7 @@ class PenerimaanStokHeader extends MyModel
             ->leftJoin('trado', 'penerimaanstokheader.trado_id', 'trado.id')
             ->leftJoin('trado as tradodari ', 'penerimaanstokheader.tradodari_id', 'tradodari.id')
             ->leftJoin('trado as tradoke ', 'penerimaanstokheader.tradoke_id', 'tradoke.id')
+            ->leftJoin('akunpusat', 'penerimaanstokheader.coa', 'akunpusat.coa')
             ->leftJoin('gandengan as gandengandari ', 'penerimaanstokheader.gandengandari_id', 'gandengandari.id')
             ->leftJoin('gandengan as gandenganke ', 'penerimaanstokheader.gandenganke_id', 'gandenganke.id')
             ->leftJoin('gandengan as gandengan ', 'penerimaanstokheader.gandenganke_id', 'gandengan.id')
@@ -456,6 +459,7 @@ class PenerimaanStokHeader extends MyModel
             'coa',
             'keterangan',
             'statusformat',
+            'statuscetak',
             'modifiedby',
         ], $models);
 
@@ -502,7 +506,9 @@ class PenerimaanStokHeader extends MyModel
             switch ($this->params['filters']['groupOp']) {
                 case "AND":
                     foreach ($this->params['filters']['rules'] as $index => $filters) {
-                        if ($filters['field'] == 'penerimaanstok') {
+                        if ($filters['field'] == 'statuscetak') {
+                            $query = $query->where('statuscetak.text', '=', "$filters[data]");
+                        } else if ($filters['field'] == 'penerimaanstok') {
                             $query = $query->where('penerimaanstok.kodepenerimaan', 'LIKE', "%$filters[data]%");
                         } else if ($filters['field'] == 'gudang') {
                             $query = $query->where('gudangs.gudang', 'LIKE', "%$filters[data]%");
@@ -531,7 +537,9 @@ class PenerimaanStokHeader extends MyModel
                 case "OR":
                     $query = $query->where(function ($query) {
                         foreach ($this->params['filters']['rules'] as $index => $filters) {
-                            if ($filters['field'] == 'penerimaanstok') {
+                            if ($filters['field'] == 'statuscetak') {
+                                $query = $query->orWhere('statuscetak.text', '=', "$filters[data]");
+                            } else if ($filters['field'] == 'penerimaanstok') {
                                 $query = $query->orWhere('penerimaanstok.kodepenerimaan', 'LIKE', "%$filters[data]%");
                             } else if ($filters['field'] == 'gudang') {
                                 $query = $query->orWhere('gudangs.gudang', 'LIKE', "%$filters[data]%");
@@ -925,16 +933,16 @@ class PenerimaanStokHeader extends MyModel
                 $memo = json_decode($getCoaDebet->memo, true);
                 $getCoaKredit = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'JURNAL PEMAKAIAN STOK')->where('subgrp', 'KREDIT')->first();
                 $memokredit = json_decode($getCoaKredit->memo, true);
-                
+
                 $coadebet_detail[] = $memo['JURNAL'];
                 $coakredit_detail[] = $memokredit['JURNAL'];
                 // $nominal_detail[] = $penerimaanStokDetail->total;
-                $keterangan_detail[] =$data['detail_keterangan'][$i];
-                $penerimaanStokDetail = penerimaanStokDetail::where('id',$penerimaanStokDetail->id)->first();
-            
+                $keterangan_detail[] = $data['detail_keterangan'][$i];
+                $penerimaanStokDetail = penerimaanStokDetail::where('id', $penerimaanStokDetail->id)->first();
+
                 $nominal_detail[] = $penerimaanStokDetail->total;
 
-                
+
 
                 $jurnalRequest = [
                     'tanpaprosesnobukti' => 1,
@@ -950,9 +958,9 @@ class PenerimaanStokHeader extends MyModel
                     'coadebet_detail' => $coadebet_detail,
                     'nominal_detail' => $nominal_detail,
                     'keterangan_detail' => $keterangan_detail
-                ]; 
+                ];
 
-                $jurnalUmumHeader = (new JurnalUmumHeader())->processStore($jurnalRequest);                
+                $jurnalUmumHeader = (new JurnalUmumHeader())->processStore($jurnalRequest);
             }
 
 
@@ -1015,7 +1023,7 @@ class PenerimaanStokHeader extends MyModel
                 $nominal_detail[] = ceil($totalsat);
                 $keterangan_detail[] = $data['detail_keterangan'][$i];
 
-                if ( $totalsat ) {
+                if ($totalsat) {
                     $isPostJurnal = true;
                 }
             }
@@ -1268,7 +1276,7 @@ class PenerimaanStokHeader extends MyModel
                 "detail_penerimaanstoknobukti" => $data['detail_penerimaanstoknobukti'][$i],
             ]);
 
- 
+
             $keterangan_detail[] = $data['detail_keterangan'][$i] ?? 'PENERIMAAN STOK HEADER';
 
 
@@ -1360,18 +1368,18 @@ class PenerimaanStokHeader extends MyModel
                 $memo = json_decode($getCoaDebet->memo, true);
                 $getCoaKredit = DB::table('parameter')->from(DB::raw("parameter with (readuncommitted)"))->where('grp', 'JURNAL PEMAKAIAN STOK')->where('subgrp', 'KREDIT')->first();
                 $memokredit = json_decode($getCoaKredit->memo, true);
-                
+
                 $coadebet_detail[] = $memo['JURNAL'];
                 $coakredit_detail[] = $memokredit['JURNAL'];
                 // $nominal_detail[] = $penerimaanStokDetail->total;
-                $penerimaanStokDetail = penerimaanStokDetail::where('id',$penerimaanStokDetail->id)->first();
-            
+                $penerimaanStokDetail = penerimaanStokDetail::where('id', $penerimaanStokDetail->id)->first();
+
                 $nominal_detail[] = $penerimaanStokDetail->total;
-                if ( $totalsat ) {
+                if ($totalsat) {
                     $isPostJurnal = true;
                 }
 
-                
+
 
                 $jurnalRequest = [
                     'tanpaprosesnobukti' => 1,
@@ -1387,9 +1395,9 @@ class PenerimaanStokHeader extends MyModel
                     'coadebet_detail' => $coadebet_detail,
                     'nominal_detail' => $nominal_detail,
                     'keterangan_detail' => $keterangan_detail
-                ]; 
+                ];
 
-                
+
                 $jurnalUmumHeader = JurnalUmumHeader::where('nobukti', $penerimaanStokHeader->nobukti)->lockForUpdate()->first();
 
                 if ($jurnalUmumHeader != null) {
@@ -1399,9 +1407,7 @@ class PenerimaanStokHeader extends MyModel
                     if ($isPostJurnal) {
                         $jurnalUmumHeader = (new JurnalUmumHeader())->processStore($jurnalRequest);
                     }
-                }                
-                
-
+                }
             }
 
 
@@ -1504,7 +1510,7 @@ class PenerimaanStokHeader extends MyModel
         $korv = DB::table('penerimaanstok')->where('kodepenerimaan', 'KORV')->first();
         $spbs = Parameter::where('grp', 'REUSE STOK')->where('subgrp', 'REUSE STOK')->first();
 
-        if (($penerimaanStokHeader->penerimaanstok_id == $korv->id)||($penerimaanStokHeader->penerimaanstok_id ==$spbs->text )) {
+        if (($penerimaanStokHeader->penerimaanstok_id == $korv->id) || ($penerimaanStokHeader->penerimaanstok_id == $spbs->text)) {
             (new PenerimaanStokDetail())->returnVulkanisir($penerimaanStokHeader->id);
         }
 
