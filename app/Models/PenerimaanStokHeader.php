@@ -849,7 +849,7 @@ class PenerimaanStokHeader extends MyModel
             if ($penerimaanstok_id != 2 && $penerimaanstok_id != 10  && $penerimaanstok_id != 11) {
                 if ($masukgudang_id != 0 || $masuktrado_id != 0  || $masukgandengan_id != 0) {
                     // dd('test');
-                    if ($masukgudang_id == $gdgkantor) {
+                    if ($masukgudang_id == $gdgkantor->text) {
                         $kartuStok = (new KartuStok())->processStore([
                             "gudang_id" => $masukgudang_id,
                             "trado_id" => $masuktrado_id,
@@ -882,7 +882,7 @@ class PenerimaanStokHeader extends MyModel
 
                 if ($keluargudang_id != 0 || $keluartrado_id != 0  || $keluargandengan_id != 0) {
                     if ($penerimaanstok_id == 6) {
-                        if ($keluargudang_id == $gdgkantor) {
+                        if ($keluargudang_id == $gdgkantor->text) {
                             $kartuStok = (new KartuStok())->processStore([
                                 "gudang_id" => $keluargudang_id,
                                 "trado_id" => $keluartrado_id,
@@ -913,7 +913,7 @@ class PenerimaanStokHeader extends MyModel
                         }
           
                     } else {
-                        if ($keluargudang_id == $gdgkantor) {
+                        if ($keluargudang_id == $gdgkantor->text) {
                             $kartuStok = (new KartuStok())->processStore([
                                 "gudang_id" => $keluargudang_id,
                                 "trado_id" => $keluartrado_id,
@@ -1334,7 +1334,7 @@ class PenerimaanStokHeader extends MyModel
             if ($penerimaanstok_id != 2 && $penerimaanstok_id != 10  && $penerimaanstok_id != 11) {
                 if ($masukgudang_id != 0 || $masuktrado_id != 0  || $masukgandengan_id != 0) {
                     // dd($data['detail_qty'][$i]);
-                    if ($masukgudang_id == $gdgkantor) {
+                    if ($masukgudang_id == $gdgkantor->text) {
                         $kartuStok = (new KartuStok())->processStore([
                             "gudang_id" => $masukgudang_id,
                             "trado_id" => $masuktrado_id,
@@ -1368,7 +1368,7 @@ class PenerimaanStokHeader extends MyModel
 
                 if ($keluargudang_id != 0 || $keluartrado_id != 0  || $keluargandengan_id != 0) {
                     if ($penerimaanstok_id == 6) {
-                        if ($keluargudang_id == $gdgkantor) {
+                        if ($keluargudang_id == $gdgkantor->text) {
                             $kartuStok = (new KartuStok())->processStore([
                                 "gudang_id" => $keluargudang_id,
                                 "trado_id" => $keluartrado_id,
@@ -1399,7 +1399,7 @@ class PenerimaanStokHeader extends MyModel
                         }
                        
                     } else {
-                        if ($keluargudang_id == $gdgkantor) {
+                        if ($keluargudang_id == $gdgkantor->text) {
                             $kartuStok = (new KartuStok())->processStore([
                                 "gudang_id" => $keluargudang_id,
                                 "trado_id" => $keluartrado_id,
