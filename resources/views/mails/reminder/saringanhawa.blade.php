@@ -9,7 +9,7 @@
         table {
             border-collapse: collapse;
             width: 75%;
-            margin: 0 auto;
+            /* margin: 0 auto; */
         }
         th, td {
             border: 1px solid black;
@@ -26,8 +26,8 @@
         .container {
             font-family: Arial, sans-serif;
             font-size: 14px;
-            padding: 20px;
-            width:60%;
+            /* padding: 20px; */
+            width:100%;
             margin: 0 auto;
         }
     </style>

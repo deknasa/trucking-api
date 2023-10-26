@@ -28,11 +28,20 @@ class ExpStnkController extends Controller
     public function sendEmailReminder()
     {
 
-        $ExpStnk = (new ExpStnk())->reminderemailstnk()->get();
+        $data = [
+            (object)[
+                "toemail"=> "iqbal13rafli@gmail.com;ryan_vixy1402@yahoo.com",
+                "ccemail"=> "iqbal13rafli@gmail.com;ryan_vixy1402@yahoo.com;denicetas15@gmail.com",
+                "bccemail"=> "ryan_vixy1402@yahoo.com",
+                "judul"=> "Reminder Ban Lebih dari 7 Hari di Gdg Sementara/Pihak Ke 3 (Makassar)",
+            ],
+        ];
+        $ExpStnk =  $data;
         $toemail = explode(';',$ExpStnk[0]->toemail);
         $ccemail = explode(';',$ExpStnk[0]->ccemail);
         $bccemail = explode(';',$ExpStnk[0]->bccemail);
-
+        
+        $ExpStnk = (new ExpStnk())->reminderemailstnk()->get();
         $expSTNK = json_encode($ExpStnk);
         Mail::to($toemail)
         ->cc($ccemail)
