@@ -102,7 +102,9 @@ class JurnalUmumDetail extends MyModel
 
             $this->paginate($jurnalUmumDetail);
             $temp = $this->getNominal($nobukti);
-            $tempNominal = DB::table($temp)->from(DB::raw("$temp with (readuncommitted)"))->select(DB::raw("sum(nominaldebet) as nominaldebet,sum(nominalkredit) as nominalkredit"))->first();
+            $tempNominal = DB::table($temp)->from(DB::raw("$temp with (readuncommitted)"))->select(DB::raw("
+            sum((case when nominaldebet<=0 then 0 else nominaldebet end)) as nominaldebet,
+            sum((case when nominalkredit>=0 then 0 else abs(nominalkredit) end)) as nominalkredit"))->first();
 
             $this->totalNominalDebet = $tempNominal->nominaldebet;
             $this->totalNominalKredit = $tempNominal->nominalkredit;
