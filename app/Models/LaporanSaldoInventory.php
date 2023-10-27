@@ -121,6 +121,44 @@ class LaporanSaldoInventory extends MyModel
 
         DB::delete(DB::raw("delete " . $temprekapall . "  WHERE upper(nobukti)<>'SALDO AWAL'"));
 
+        $tempmaxin = '##tempmaxin' . rand(1, getrandmax()) . str_replace('.', '', microtime(true));
+        Schema::create($tempmaxin, function ($table) {
+            $table->integer('stok_id')->nullable();
+            $table->integer('gudang_id')->nullable();
+            $table->integer('trado_id')->nullable();
+            $table->integer('gandengan_id')->nullable();
+            $table->date('tglbukti')->nullable();
+        });
+
+        $querymaxin = db::table($temprekapall)->from(db::raw($temprekapall . " a"))
+        ->select(
+            db::raw("isnull(a.stok_id,0) as stok_id"),
+            db::raw("isnull(a.gudang_id,0) as gudang_id"),
+            db::raw("isnull(a.trado_id,0) as trado_id"),
+            db::raw("isnull(a.gandengan_id,0) as gandengan_id"),
+            db::raw("max(e.tglbukti) as tglbukti"),
+        )
+        ->join(DB::raw("kartustok as e"), function ($join)  {
+            $join->on('a.stok_id', '=', db::raw("isnull(e.stok_id,0)"));
+            $join->on('a.trado_id', '=', db::raw("isnull(e.trado_id,0)"));
+            $join->on('a.gudang_id', '=', db::raw("isnull(e.gudang_id,0)"));
+            $join->on('a.gandengan_id', '=', db::raw("isnull(e.gandengan_id,0)"));
+        })  
+        ->whereRaw("isnull(e.qtymasuk,0)<>0")
+        ->groupby(db::raw("isnull(a.stok_id,0)"))
+        ->groupby(db::raw("isnull(a.gudang_id,0)"))
+        ->groupby(db::raw("isnull(a.trado_id,0)"))
+        ->groupby(db::raw("isnull(a.gandengan_id,0)"));
+
+        DB::table($tempmaxin)->insertUsing([
+            'stok_id',
+            'gudang_id',
+            'trado_id',
+            'gandengan_id',
+            'tglbukti',
+        ],  $querymaxin);
+
+// dd(db::table($tempmaxin)->get());
         $disetujui = db::table('parameter')->from(db::raw('parameter with (readuncommitted)'))
             ->select('text')
             ->where('grp', 'DISETUJUI')
@@ -203,8 +241,8 @@ class LaporanSaldoInventory extends MyModel
                 DB::raw("'VulKe :'+trim(str(isnull(b.totalvulkanisir,0))) as vulkanisirke"),
                 'a.kodebarang as id',
                 'a.kodebarang',
-                'a.namabarang',
-                DB::raw("'" . $priode2 . "' as tanggal"),
+                db::raw("(case when isnull(b.keterangan,'')='' then b.namastok else b.keterangan end) as namabarang"),
+                DB::raw("isnull(e.tglbukti,'1900/1/1') as tanggal"),
                 db::raw("(case when " . $pusat . "=0 then 0 else a.qtysaldo  end) as qty"),
                 DB::raw("isnull(d.satuan,'') as satuan"),
                 db::raw("(case when " . $pusat . "=0 then 0 else a.nilaisaldo  end) as nominal"),
@@ -215,6 +253,12 @@ class LaporanSaldoInventory extends MyModel
             ->join(db::raw("stok b with (readuncommitted)"), 'a.stok_id', 'b.id')
             ->leftjoin(db::raw("kelompok c with (readuncommitted)"), 'b.kelompok_id', 'c.id')
             ->leftjoin(db::raw("satuan d with (readuncommitted)"), 'b.satuan_id', 'd.id')
+            ->leftjoin(DB::raw($tempmaxin . " as e"), function ($join)  {
+                $join->on('a.stok_id', '=', 'e.stok_id');
+                $join->on('a.trado_id', '=', 'e.trado_id');
+                $join->on('a.gudang_id', '=', 'e.gudang_id');
+                $join->on('a.gandengan_id', '=', 'e.gandengan_id');
+            })            
             ->whereraw("(a.qtysaldo<>0 or a.nilaisaldo<>0)");
 
             
