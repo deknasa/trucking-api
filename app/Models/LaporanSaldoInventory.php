@@ -34,6 +34,7 @@ class LaporanSaldoInventory extends MyModel
         $prosesneraca = $prosesneraca ?? 0;
         $priode1 = date('Y-m-d', strtotime($priode));
         $priode = date("Y-m-d", strtotime("+1 day", strtotime($priode)));
+        // $priode = date("Y-m-d", strtotime($priode));
         // $tglsampai= date("Y-m-d", strtotime("+1 day", strtotime($tgldari)));
 
 
@@ -115,9 +116,10 @@ class LaporanSaldoInventory extends MyModel
             'iddata',
         ], (new KartuStok())->getlaporan($priode, $priode, $stokdari_id, $stoksampai_id, $gudang_id, $trado_id, $gandengan_id, $filterdata));
 
+        // dd($priode);
         // dd(db::table($temprekapall)->get());
 
-        // DB::delete(DB::raw("delete " . $temprekapall . "  WHERE upper(nobukti)<>'SALDO AWAL'"));
+        DB::delete(DB::raw("delete " . $temprekapall . "  WHERE upper(nobukti)<>'SALDO AWAL'"));
 
         $disetujui = db::table('parameter')->from(db::raw('parameter with (readuncommitted)'))
             ->select('text')
